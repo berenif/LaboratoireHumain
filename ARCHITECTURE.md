@@ -1,49 +1,64 @@
-# Embodied Motion Physics Demo
+# Architecture
 
-## Delivery boundary
+## Module ownership
 
-- Fresh project and private Site. No prior body-lab source, assets, evidence, or deployment were inspected or reused.
-- Movement and physics are the release surface. The figure is original procedural geometry.
-- World units are metres, +Y is up, and +Z is forward. One fixed-step integrator runs at 60 Hz; rendering interpolates snapshots and never advances simulation.
+| Module | Responsibility | Allowed project dependencies |
+| --- | --- | --- |
+| `app/` | Framework routes, document layout, global styles | Demo composition and hosting integration |
+| `src/demo/` | Wires subsystems together and adapts them to React | Core, character, interaction, scene, UI |
+| `src/core/` | Shared data contracts, humanoid definitions, geometry, math, fixed-step clock | Core |
+| `src/character/` | Physics world, motion ownership, balance and recovery controllers, procedural pose | Core and character |
+| `src/interaction/` | Pointer capture, drag planes, queued intent, synthetic replay helpers | Core and interaction |
+| `src/scene/` | Camera projection, camera gestures, interpolation and presentation | Core and scene |
+| `src/ui/` | Controls receiving state and callbacks | Core types and shared UI components |
 
-## Stack decision
+ESLint restricts imports between these layers, including type-only imports. Core does not import character implementation details. Character, interaction, and scene do not import one another; their shared contracts and picking geometry live in core. React composition belongs in demo, and Three.js belongs in the WebGL presentation adapter.
 
-Three.js 0.185.1 + `@dimforge/rapier3d-compat` 0.20.0 was selected over Babylon.js + Havok. Rapier exposes a renderer-independent physics `World` and a collider-based kinematic character controller, so the identical real simulation can feed WebGL2, Canvas2D, and non-rendering verification. Three.js is used only by the WebGL2 presentation adapter. Canvas2D is a second view, not a second solver.
+The `character/index.ts` and `interaction/index.ts` files expose existing public entrypoints. Implementations have explicit filenames. The old interaction picking path and grab diagnostic type exports remain compatible re-exports.
 
-Official references checked on 2026-09-06:
+## Runtime and React
 
-- https://rapier.rs/docs/user_guides/javascript/character_controller/
-- https://rapier.rs/docs/user_guides/javascript/rigid_body_type/
-- https://doc.babylonjs.com/features/featuresDeepDive/physics/characterController
-- https://threejs.org/docs/pages/WebGLRenderer.html
+`DemoRuntime` owns one character, one shared camera, pointer and camera controllers, one selected view, the fixed-step loop, resize observation, and performance samples. It provides renderer switching, pause/resume, reset, subscriptions, and idempotent disposal.
 
-## Ownership and data flow
+`useDemoRuntime` owns the React effect and browser-level error, focus, and visibility listeners. It aborts pending initialization on cleanup and disposes completed runtimes. It converts runtime notifications into React state at approximately 10 Hz, with frame summaries refreshed approximately once per second.
 
-`PointerInteraction` emits grab intent with a stable region, segment, body-local anchor, and world target. `EmbodiedCharacter` consumes that intent only on fixed updates and publishes complete immutable pose snapshots. Exactly one selected view reads the same previous/current snapshots. `EmbodiedDemo` owns one shared camera projection used by both views, picking, and drag-plane ray construction. Camera controls mutate only this projection, never simulation state or poses.
+`EmbodiedDemo` renders the workspace and connects control callbacks. `BrowserVerification` owns optional QA state and evidence capture. The replay implementation loads only when a replay is requested. `browser-api.ts` installs the existing read-only browser automation API and removes only the API instance it installed.
 
-Upright, reacting, and stepping use a collision-aware kinematic root plus one pose compositor. Falling and fallen states disable root/pose writes before Rapier dynamic bodies and joints take ownership. Reset clears grabs, queued input, physics bodies, pose history, clock accumulation, and restores the exact default camera while retaining the viewport.
+Teardown stops animation, disconnects resize observation, detaches input, disposes the renderer, and frees the Rapier world. An initialization failure or cancellation releases any physics resources already allocated.
 
-## Procedural body
+## Simulation data flow
 
-Sixteen rigid/procedural segments total 72.2 kg: pelvis, torso, neck, head, paired upper arms, forearms, hands, thighs, shins, and feet. Seven stable selectable regions are head, torso, pelvis, both hands, and both feet. Shared definitions in `src/core/humanoid.ts` record masses, shapes, rest offsets, joint anchors and limits, region mappings, and collision group intent. Body colliders interact with the floor/boundaries but not one another, preventing adjacent-body activation explosions.
+1. Pointer interaction picks an oriented body primitive and captures a stable region, segment, body-local anchor, and world target.
+2. Pointer movement intersects a fixed camera-facing plane through the initial hit. Intent is queued; terminal commands take precedence over begin/move commands.
+3. `FixedStepLoop` consumes input and advances the character at 60 Hz, with at most five catch-up steps per rendered frame. Runtime input availability is synchronized before and after each substep, so a fall clears capture and queued movement before the next integration.
+4. The character publishes pose and diagnostic snapshots. Previous and current snapshots are retained for interpolation.
+5. The selected view interpolates and renders snapshots. Presentation never advances physics or writes simulation poses.
 
-## Drag rule
+World units are metres, +Y is up, and +Z is forward. Both renderers and picking use the same runtime-owned camera projection. Camera controls mutate that projection without affecting physics.
 
-Picking uses a camera ray against shared body proxies. The initial hit creates a camera-facing plane through the world hit point. Pointer motion intersects that fixed plane, preserving depth and the anatomical local anchor. A second pointer is ignored while the primary pointer owns capture.
+## Character ownership
 
+The shared humanoid defines sixteen segments, seven selectable regions, masses, shapes, rest offsets, joint anchors and limits, and collision groups.
 
-## S1 functional successor (2026-09-06)
+`EmbodiedCharacter` owns Rapier bodies, joints, the collision-aware root motor, handoffs, motion-state transitions, and snapshots. `BalanceController` reads solved poses and masses to estimate COM, momentum, eligible foot support, and reachable corrective steps. `pose.ts` composes upright poses and connected limb geometry from explicit inputs without accessing Rapier or the DOM. `DynamicRecovery` observes actual floor contacts and applies bounded joint and supported pelvis impulses. `GrabAnchorController` remains a separate bounded-grab utility and compatibility export; dynamic recovery does not use it to accept dragging.
 
-The old dynamic grab used `addForceAtPoint` every fixed update. Rapier stores user forces, so those calls accumulated and continued to accelerate the body after input release. S1 replaces that complete path with one `applyImpulseAtPoint` per fixed update. The point controller solves the full effective inverse-mass matrix using each selected body's world inverse inertia and actual center of mass. An implicit damped velocity response is bounded by 180 N × dt linear impulse, 12 Nm × dt angular impulse, and 36 W × dt positive kinetic work. The control target is speed/acceleration limited; raw target and body-local anchor remain separate and unchanged at handoff.
+Upright, reacting, and stepping states use the kinematic root and procedural pose compositor. Falling, fallen, and recovering states disable those writes before dynamic bodies and joints take ownership. Every recovery phase remains dynamic and contact-dependent. Body colliders interact with the environment rather than adjacent body segments.
 
-Handoff reads newly constructed Rapier bodies before any physics step, measures all segment and selected-anchor continuity errors, and clears target derivative history. Falling/fallen motion remains exclusively Rapier owned. Release removes the one-step contribution without modifying velocity. Reset clears input, bodies, controller, timing, interpolation, and camera. Rendering never writes simulation poses or advances physics.
+External grab forces, equal/opposite joint muscle torques, and supported pelvis assistance have separate bounds and diagnostics. A fall clears the grab immediately. Recovery returns authority only after persistent load on both feet, low body motion, and upright posture; the procedural motor starts from the recovered world position, heading, and segment poses. See [balance controller](docs/balance-controller.md) and [dynamic recovery](docs/dynamic-recovery.md) for the fixed thresholds and phase conditions.
 
-The S1 launch passed with the original camera. The one separately recorded S1-F1 follow-up removes control-target arrival snapping, which bypassed the already frozen acceleration limit. No controller constants or acceptance limits changed.
+## Lifecycle invariants
 
-Picking now intersects each oriented visible primitive and sorts by nearest surface distance, with stable region priority only for coincident hits. The original oblique camera physically occluded the left-hand center with the pelvis. The accepted more frontal view at (1.6, 2.25, 5.1), looking at (0, 1.02, 0), remains the exact default/reset view and removes that overlap across the full idle sway. It changes only through explicit user input and never follows the body or alters the physics trajectory.
+- **Fall lockout:** use `bodyInputAvailable` for picking, interaction, and status; drop queued body commands and capture immediately, without advancing physics during cleanup. Held pointers need a fresh press after recovery.
+- **Pause and focus loss:** clear pointer intent, consume its terminal command, pause physics and clock accumulation, and synchronize interpolation snapshots.
+- **Resume:** clear stale input and resume the character and clock.
+- **Reset:** clear input, reset the body, restore the camera while retaining viewport dimensions, clear timing and performance history, synchronize snapshots, and retain the paused state.
+- **Renderer switch:** prepare the replacement view, cancel active body interaction, replace only presentation, preserve the shared camera and character, and restart performance warmup.
+- **Dispose:** release browser and physics resources exactly once, including after incomplete initialization.
 
-Camera input is attached in the bubble phase behind the capture-phase body interaction. A selectable-body hit stops propagation and exclusively owns the pointer. Blank-space primary or right drag orbits; Shift-primary, Shift-right, or middle drag pans; wheel zooms. On a supported touch surface, one blank-space touch orbits and two blank-space touches pan/pinch. Orbit, pan, and zoom are finite and bounded. Renderer changes preserve the shared view, and Reset restores it exactly.
+## Verification and tooling
 
-Browser QA is available only when the URL includes `?qa=1`. Its replay dispatches synthetic DOM PointerEvents through installed listeners and uses the real fixed clock and UI controls. It is explicitly labeled synthetic, and native mouse CUA evidence is recorded separately. Native touch and GPU performance are not inferred from synthetic events or Canvas2D results.
+`npm run lint` enforces layer boundaries. `npm run typecheck` checks shared contracts. `npm test` builds and checks rendered HTML, UI semantics, geometry, snapshot isolation, disposal, and runtime transitions. `npm run test:physics` evaluates the deterministic physics acceptance scenarios and regenerates local evidence. The [acceptance guide](docs/physics-acceptance.md) records independent numerical limits, explicit fixtures, handoff measurements, and input-isolation comparisons.
 
-The visible interface is a full-viewport body view with one always-compact dock for Canvas 2D/WebGL2 selection, Pause, and Reset. Motion state and a one-line gesture hint remain visible; detailed diagnostic values stay screen-reader/test accessible without becoming a rapidly updating live region. Visibility replay retains every missed sample and keeps the original 100% visibility threshold.
+The Node-based tool launcher supports local development and bounded builds across operating systems. Hosting bindings are optional for source-only checkouts. Hosting support, database examples, and the shared UI catalog remain separate from the simulation.
+
+Generated dependencies, build output, tool state, and physics evidence are ignored. Browser replay is explicitly synthetic; its results do not imply native touch support or measured GPU performance.

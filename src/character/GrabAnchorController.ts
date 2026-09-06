@@ -1,5 +1,6 @@
 import type { RigidBody } from "@dimforge/rapier3d-compat";
-import type { Vec3 } from "../core/types";
+import type { GrabControlDiagnostics, Vec3 } from "../core/types";
+export type { GrabControlDiagnostics, HandoffDiagnostics } from "../core/types";
 import { add, clampLength, cross, dot, length, normalize, scale, sub, worldPoint } from "./math";
 
 /** Successor S1: frozen before its first corrected acceptance replay. */
@@ -13,43 +14,6 @@ export const GRAB_CONTROL_LIMITS = Object.freeze({
 });
 
 const ZERO: Vec3 = { x: 0, y: 0, z: 0 };
-
-export interface GrabControlDiagnostics {
-  active: boolean;
-  rawTarget: Vec3;
-  controlTarget: Vec3;
-  targetVelocity: Vec3;
-  targetError: Vec3;
-  anchorWorld: Vec3;
-  anchorVelocity: Vec3;
-  force: Vec3;
-  impulse: Vec3;
-  torque: Vec3;
-  angularImpulse: Vec3;
-  bodyLinearVelocity: Vec3;
-  bodyAngularVelocity: Vec3;
-  effectiveMassKg: number;
-  targetSpeedMps: number;
-  selectedAnchorErrorM: number;
-  injectedWorkJ: number;
-  cumulativeInjectedWorkJ: number;
-  storedUserForceN: number;
-  storedUserTorqueNm: number;
-  linearImpulseLimitNs: number;
-  angularImpulseLimitNms: number;
-  positiveWorkLimitJ: number;
-}
-
-export interface HandoffDiagnostics {
-  sequence: number;
-  maxTranslationErrorM: number;
-  maxAngularErrorDegrees: number;
-  selectedAnchorErrorM: number;
-  rawTargetErrorM: number;
-  localAnchorErrorM: number;
-  jointSeparationM: number;
-  targetDerivativeSpeedMps: number;
-}
 
 export function emptyGrabDiagnostics(cumulativeInjectedWorkJ = 0): GrabControlDiagnostics {
   return {

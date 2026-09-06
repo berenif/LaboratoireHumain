@@ -7,14 +7,14 @@
   },
   "scripts": {
     "install:ci": "bash scripts/install-ci.sh",
-    "dev": "WRANGLER_LOG_PATH=.wrangler/wrangler.log vite",
-    "build": "bash scripts/build-verified.sh",
-    "start": "WRANGLER_LOG_PATH=.wrangler/wrangler.log vinext start",
+    "dev": "node scripts/run-tool.mjs vite",
+    "build": "node scripts/run-tool.mjs vinext build",
+    "start": "node scripts/run-tool.mjs vinext start",
     "test": "npm run build && node --test tests/*.test.mjs",
     "test:physics": "node --import tsx scripts/run-physics-harness.ts",
     "typecheck": "tsc --noEmit --pretty false",
-    "lint": "bash scripts/sites-env.sh -- eslint . --ignore-pattern dist --ignore-pattern .next",
-    "db:generate": "bash scripts/sites-env.sh -- drizzle-kit generate"
+    "lint": "node scripts/run-tool.mjs eslint . --ignore-pattern dist --ignore-pattern .next",
+    "db:generate": "node scripts/run-tool.mjs drizzle-kit generate"
   },
   "dependencies": {
     "@base-ui/react": "^1.7.0",

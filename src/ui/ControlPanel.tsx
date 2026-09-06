@@ -59,7 +59,8 @@ export function ControlPanel({
     ? Math.max(0, diagnostics?.appliedGrabForceN ?? 0)
     : 0;
   const ready = Boolean(diagnostics?.simulationReady && diagnostics.interactiveViewReady);
-  const statusLabel = paused ? "Paused" : ready ? "Ready" : "Starting";
+  const bodyInputAvailable = Boolean(!paused && diagnostics?.bodyInputAvailable);
+  const statusLabel = paused ? "Paused" : !ready ? "Starting" : bodyInputAvailable ? "Ready" : labelToken(diagnostics!.state);
   const compact = Boolean(diagnostics?.activeGrab || diagnostics?.authority === "ragdoll");
 
   return (
@@ -123,7 +124,13 @@ export function ControlPanel({
         </span>
         <span aria-hidden="true"> · </span>
         <span>
-          {diagnostics?.activeGrab
+          {paused
+            ? "Resume to continue · camera and Reset remain available"
+            : ready && !bodyInputAvailable
+              ? diagnostics?.state === "recovering"
+                ? "Getting up · body control returns after stable standing"
+                : "Protecting the fall · automatic recovery follows"
+            : diagnostics?.activeGrab
             ? `Moving ${labelRegion(diagnostics.selectedRegion)} · release to keep momentum`
             : "Drag body · drag empty space to orbit · wheel or pinch to zoom"}
         </span>
@@ -131,6 +138,7 @@ export function ControlPanel({
 
       <div className="sr-only">
         <span data-testid="readiness-status">{statusLabel}</span>
+        <span data-testid="body-input-availability">{bodyInputAvailable ? "Available" : "Unavailable"}</span>
         <span data-testid="motion-authority">
           {diagnostics ? labelToken(diagnostics.authority) : "Waiting"}
         </span>

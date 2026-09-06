@@ -1,5 +1,3 @@
-import type { GrabControlDiagnostics, HandoffDiagnostics } from "../character/GrabAnchorController";
-
 export const REGION_IDS = [
   "head",
   "torso",
@@ -23,7 +21,7 @@ export type SegmentId =
   | "rightThigh"
   | "rightShin";
 
-export type MotionState = "upright" | "reacting" | "stepping" | "falling" | "fallen";
+export type MotionState = "upright" | "reacting" | "stepping" | "falling" | "fallen" | "recovering";
 export type RendererMode = "webgl" | "canvas2d";
 export type Vec3 = Readonly<{ x: number; y: number; z: number }>;
 export type Quat = Readonly<{ x: number; y: number; z: number; w: number }>;
@@ -62,7 +60,77 @@ export interface SupportState {
   grounded: boolean;
 }
 
+export interface GrabControlDiagnostics {
+  active: boolean;
+  rawTarget: Vec3;
+  controlTarget: Vec3;
+  targetVelocity: Vec3;
+  targetError: Vec3;
+  anchorWorld: Vec3;
+  anchorVelocity: Vec3;
+  force: Vec3;
+  impulse: Vec3;
+  torque: Vec3;
+  angularImpulse: Vec3;
+  bodyLinearVelocity: Vec3;
+  bodyAngularVelocity: Vec3;
+  effectiveMassKg: number;
+  targetSpeedMps: number;
+  selectedAnchorErrorM: number;
+  injectedWorkJ: number;
+  cumulativeInjectedWorkJ: number;
+  storedUserForceN: number;
+  storedUserTorqueNm: number;
+  linearImpulseLimitNs: number;
+  angularImpulseLimitNms: number;
+  positiveWorkLimitJ: number;
+}
+
+export interface HandoffDiagnostics {
+  sequence: number;
+  maxTranslationErrorM: number;
+  maxAngularErrorDegrees: number;
+  selectedAnchorErrorM: number;
+  rawTargetErrorM: number;
+  localAnchorErrorM: number;
+  jointSeparationM: number;
+  targetDerivativeSpeedMps: number;
+}
+
+export type RecoveryPhase = "none" | "protect" | "settle" | "roll" | "brace" | "kneel" | "stand";
+export interface SupportingContact {
+  segment: SegmentId;
+  normalY: number;
+  forceN: number;
+  persistenceS: number;
+  point: Vec3;
+  loadBearing: boolean;
+}
+export interface RecoveryDiagnostics {
+  phase: RecoveryPhase;
+  orientation: "forward" | "backward" | "left" | "right";
+  contacts: SupportingContact[];
+  phaseTimeS: number;
+  settledTimeS: number;
+  stableTimeS: number;
+  stalledTimeS: number;
+  retries: number;
+  assistanceForce: Vec3;
+  assistanceTorque: Vec3;
+  assistanceForceCapN: number;
+  assistanceTorqueCapNm: number;
+  maxMotorTorqueNm: number;
+  supporting: SegmentId[];
+}
+export interface BalanceStateDiagnostics {
+  centerOfMass: Vec3; centerOfMassVelocity: Vec3; capturePoint: Vec3; supportCenter: Vec3;
+  supportingFeet: ("leftFoot" | "rightFoot")[]; supportMarginM: number; instabilitySeconds: number;
+  recoveryCapacityM: number; externalForce: Vec3; balanceAcceleration: Vec3; stepTarget: Vec3 | null;
+}
 export interface DiagnosticsSnapshot {
+  balance: BalanceStateDiagnostics | null;
+  bodyInputAvailable: boolean;
+  recovery: RecoveryDiagnostics;
   grabControl: GrabControlDiagnostics;
   handoff: HandoffDiagnostics | null;
   authority: "character-motor" | "ragdoll";
@@ -151,12 +219,14 @@ export interface PoseView {
 }
 
 export interface CharacterController {
+  clearBodyInput(): void;
   fixedUpdate(dt: number, command: GrabCommand | null): void;
   getSnapshot(renderer: RendererMode): PoseSnapshot;
   pick(ray: Ray): PickResult | null;
   pause(): void;
   resume(): void;
   reset(): void;
+  dispose(): void;
   diagnostics(): DiagnosticsSnapshot;
 }
 

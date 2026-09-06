@@ -12,6 +12,7 @@ const root = fileURLToPath(new URL("..", import.meta.url));
 const vite = await createServer({
   appType: "custom",
   configFile: false,
+  cacheDir: path.join(root, ".sites-runtime", "vite-tests"),
   root,
   resolve: { alias: { "@": root } },
   server: { middlewareMode: true },
@@ -133,4 +134,25 @@ test("renders only the compact renderer and simulation controls", async () => {
   assert.match(html, /data-testid="reset-button"/);
   assert.match(html, /drag empty space to orbit/i);
   assert.doesNotMatch(html, /Motion lab|Direct body control|Pull effort/);
+});
+
+
+test("body lockout status uses availability while preserving all simulation controls", async () => {
+  const { ControlPanel } = await vite.ssrLoadModule("/src/ui/ControlPanel.tsx");
+  for (const state of ["falling", "fallen", "recovering"]) {
+    const html = renderToStaticMarkup(React.createElement(ControlPanel, {
+      diagnostics: {
+        simulationReady: true, interactiveViewReady: true, state, bodyInputAvailable: false,
+        authority: "ragdoll", activeGrab: false, selectedRegion: null, stepCount: 1, appliedGrabForceN: 0, errors: [],
+      },
+      renderer: "canvas2d", paused: false, onRendererChange() {}, onPauseToggle() {}, onReset() {},
+    }));
+    assert.match(html, /data-testid="body-input-availability">Unavailable/);
+    assert.doesNotMatch(html, /Drag body/);
+    assert.match(html, state === "recovering" ? /Getting up/ : /Protecting the fall/);
+    assert.match(html, /data-testid="renderer-picker"/);
+    assert.match(html, /data-testid="pause-toggle"/);
+    assert.match(html, /data-testid="reset-button"/);
+    assert.doesNotMatch(html, /<button[^>]*\sdisabled(?:=|\s|>)/);
+  }
 });
