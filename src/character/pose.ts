@@ -1,4 +1,4 @@
-import { SEGMENT_BY_ID, SEGMENTS } from "../core/humanoid";
+import { HUMAN_PROPORTIONS, SEGMENT_BY_ID, SEGMENTS } from "../core/humanoid";
 import type { Quat, RegionId, SegmentId, SegmentPose, Vec3 } from "../core/types";
 import {
   add, clamp, clampLength, cross, dot, length, lerp, normalize,
@@ -69,8 +69,8 @@ export function restPoseMap(): Map<SegmentId, MutablePose> {
     const rotation = parent
       ? quatMultiply(parent.rotation, definition.restLocalRotation)
       : definition.restLocalRotation;
-    const position = parent
-      ? add(parent.position, rotate(parent.rotation, definition.localOffset))
+    const position = parent && definition.jointAnchorParent && definition.jointAnchorChild
+      ? sub(poseAnchor(parent, definition.jointAnchorParent), rotate(rotation, definition.jointAnchorChild))
       : definition.localOffset;
     poses.set(definition.id, {
       id: definition.id,
@@ -184,11 +184,16 @@ function composeArm(
   const forearmId = `${side}Forearm` as SegmentId;
   const handId = `${side}Hand` as RegionId;
   const upperDefinition = SEGMENT_BY_ID.get(upperId)!;
+  const forearmDefinition = SEGMENT_BY_ID.get(forearmId)!;
+  const handDefinition = SEGMENT_BY_ID.get(handId)!;
   const shoulder = poseAnchor(torso, upperDefinition.jointAnchorParent!);
+  const upperLength = length(sub(upperDefinition.jointAnchorChild!, forearmDefinition.jointAnchorParent!));
+  const forearmLength = length(sub(forearmDefinition.jointAnchorChild!, handDefinition.jointAnchorParent!));
+  const handCenterOffset = length(handDefinition.jointAnchorChild!);
   const idle = Math.sin(input.simulationTime * 1.7 + (side === "left" ? 0 : Math.PI)) * 0.018;
   let desiredHand: Vec3 = add(shoulder, rotate(torso.rotation, {
-    x: sign * 0.075,
-    y: -0.625,
+    x: sign * HUMAN_PROPORTIONS.arm.relaxedLateralOffsetM,
+    y: -(upperLength + forearmLength + handCenterOffset - HUMAN_PROPORTIONS.arm.relaxedShorteningM),
     z: idle,
   }));
   if (input.activeGrab?.region === handId) {
@@ -199,24 +204,23 @@ function composeArm(
   }
 
   const approximateAxis = normalize(sub(shoulder, desiredHand), UP);
-  const requestedWrist = add(desiredHand, scale(approximateAxis, 0.105));
+  const requestedWrist = add(desiredHand, scale(approximateAxis, handCenterOffset));
   const solved = solveTwoBone(
     shoulder,
     requestedWrist,
-    0.28,
-    0.26,
+    upperLength,
+    forearmLength,
     rotate(quatFromAxisAngle(UP, input.heading ?? 0), normalize({ x: sign * 0.22, y: 0, z: 1 })),
   );
   const upperAxis = normalize(sub(shoulder, solved.middle), UP);
   const forearmAxis = normalize(sub(solved.middle, solved.end), UP);
   const yaw = quatFromAxisAngle(UP, input.heading ?? 0);
-  const upper = makePose(upperId, midpoint(shoulder, solved.middle), quatMultiply(quatFromTo(UP, upperAxis), yaw));
-  const forearm = makePose(forearmId, midpoint(solved.middle, solved.end), quatMultiply(quatFromTo(UP, forearmAxis), yaw));
-  const hand = makePose(
-    handId,
-    sub(solved.end, scale(forearmAxis, 0.105)),
-    quatMultiply(quatFromTo(UP, forearmAxis), yaw),
-  );
+  const upperRotation = quatMultiply(quatFromTo(UP, upperAxis), yaw);
+  const forearmRotation = quatMultiply(quatFromTo(UP, forearmAxis), yaw);
+  const handRotation = forearmRotation;
+  const upper = makePose(upperId, sub(shoulder, rotate(upperRotation, upperDefinition.jointAnchorChild!)), upperRotation);
+  const forearm = makePose(forearmId, sub(solved.middle, rotate(forearmRotation, forearmDefinition.jointAnchorChild!)), forearmRotation);
+  const hand = makePose(handId, sub(solved.end, rotate(handRotation, handDefinition.jointAnchorChild!)), handRotation);
   output.set(upperId, upper);
   output.set(forearmId, forearm);
   output.set(handId, hand);
@@ -233,26 +237,40 @@ function composeLeg(
   const shinId = `${side}Shin` as SegmentId;
   const footId = `${side}Foot` as "leftFoot" | "rightFoot";
   const thighDefinition = SEGMENT_BY_ID.get(thighId)!;
+  const shinDefinition = SEGMENT_BY_ID.get(shinId)!;
   const footDefinition = SEGMENT_BY_ID.get(footId)!;
   const hip = poseAnchor(pelvis, thighDefinition.jointAnchorParent!);
+  const thighLength = length(sub(thighDefinition.jointAnchorChild!, shinDefinition.jointAnchorParent!));
+  const shinLength = length(sub(shinDefinition.jointAnchorChild!, footDefinition.jointAnchorParent!));
   let footPosition = input.supportFeet[footId];
 
   if (input.step?.foot === footId) {
     const progress = smooth01(input.step.elapsed / input.step.duration);
     const base = lerp(input.step.from, input.step.to, progress);
-    footPosition = { ...base, y: base.y + Math.sin(Math.PI * progress) * 0.17 };
+    const travel = length(horizontal(sub(input.step.to, input.step.from)));
+    const clearance = clamp(
+      HUMAN_PROPORTIONS.foot.stepClearanceBaseM + travel * HUMAN_PROPORTIONS.foot.stepClearancePerTravel,
+      HUMAN_PROPORTIONS.foot.minStepClearanceM,
+      HUMAN_PROPORTIONS.foot.maxStepClearanceM,
+    );
+    footPosition = { ...base, y: base.y + Math.sin(Math.PI * progress) * clearance };
   } else if (input.activeGrab?.region === footId) {
     footPosition = add(input.activeGrab.startSegmentPosition, clampLength(drag, 0.58));
-    footPosition = { ...footPosition, y: Math.max(0.07, footPosition.y) };
+    const soleHeight = footDefinition.shape.kind === "box"
+      ? footDefinition.shape.halfExtents.y
+      : HUMAN_PROPORTIONS.foot.halfExtentsM.y;
+    footPosition = { ...footPosition, y: Math.max(soleHeight + 0.005, footPosition.y) };
   }
 
   const footRotation = quatFromAxisAngle(UP, input.heading ?? 0);
   const ankle = worldPoint(footPosition, footRotation, footDefinition.jointAnchorChild!);
-  const solved = solveTwoBone(hip, ankle, 0.38, 0.36, rotate(footRotation, FORWARD));
+  const solved = solveTwoBone(hip, ankle, thighLength, shinLength, rotate(footRotation, FORWARD));
   const thighAxis = normalize(sub(hip, solved.middle), UP);
   const shinAxis = normalize(sub(solved.middle, solved.end), UP);
-  output.set(thighId, makePose(thighId, midpoint(hip, solved.middle), quatMultiply(quatFromTo(UP, thighAxis), footRotation)));
-  output.set(shinId, makePose(shinId, midpoint(solved.middle, solved.end), quatMultiply(quatFromTo(UP, shinAxis), footRotation)));
+  const thighRotation = quatMultiply(quatFromTo(UP, thighAxis), footRotation);
+  const shinRotation = quatMultiply(quatFromTo(UP, shinAxis), footRotation);
+  output.set(thighId, makePose(thighId, sub(hip, rotate(thighRotation, thighDefinition.jointAnchorChild!)), thighRotation));
+  output.set(shinId, makePose(shinId, sub(solved.middle, rotate(shinRotation, shinDefinition.jointAnchorChild!)), shinRotation));
   // Keep the foot attached to the solved ankle when its target exceeds leg reach.
   const solvedFootPosition = sub(solved.end, rotate(footRotation, footDefinition.jointAnchorChild!));
   output.set(footId, makePose(footId, solvedFootPosition, footRotation));

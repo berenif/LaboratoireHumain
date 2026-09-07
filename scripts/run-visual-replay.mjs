@@ -19,7 +19,7 @@ const replayVideo = page.video();
 const errors = [];
 const evidence = [];
 const samples = [];
-const sourceFiles = ["src/character/EmbodiedCharacter.ts", "src/character/BalanceController.ts", "src/character/DynamicRecovery.ts", "src/character/pose.ts", "src/core/types.ts", "src/demo/DemoRuntime.ts", "src/interaction/PointerInteraction.ts"];
+const sourceFiles = ["src/character/EmbodiedCharacter.ts", "src/character/BalanceController.ts", "src/character/DynamicRecovery.ts", "src/character/pose.ts", "src/core/humanoid.ts", "src/core/types.ts", "src/demo/DemoRuntime.ts", "src/interaction/PointerInteraction.ts"];
 const fingerprint = async () => Object.fromEntries(await Promise.all(sourceFiles.map(async file => [file, createHash("sha256").update(await readFile(file)).digest("hex")])));
 const sourceBefore = await fingerprint();
 await writeFile(resolve(outputDirectory, "source-before.json"), JSON.stringify(sourceBefore, null, 2));

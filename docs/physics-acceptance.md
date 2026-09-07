@@ -15,6 +15,8 @@ The harness writes `evidence/physics-results.json` and `evidence/successor-trace
 | Representative automatic recovery | At most 25 simulated seconds from committed fall |
 | Stable upright observation after recovery | At least 1 consecutive second |
 | Repeated complete fall/recovery cycles without Reset | 5 |
+| Neutral 30-second root drift at headings 0, +pi/3, and -pi/4 | At most 0.001 m, with zero corrective steps |
+| Neutral peak segment linear / angular speed | At most 0.1 m/s / 0.5 rad/s |
 | Joint motor torque | At most 110 Nm |
 | Pelvis assistance force / torque | At most 950 N / 300 Nm |
 | Transfer initialization linear / angular speed | Clamp inherited values to 3 m/s / 6 rad/s |
@@ -54,7 +56,7 @@ Phase assertions inspect the preceding integrated contact and pose evidence: rol
 
 Recoverable fixtures exercise both hands and feet, forward/backward/lateral pulls, non-default headings, reversal, held targets, and release during an actual corrective swing. Their geometry must stay connected and the documented minimum number of corrective steps must occur. Strong five-tick pulls and sustained 180-tick pulls must fall, protect, land, settle, recover, and remain stably upright within the fixed limit.
 
-Paired replay uses the same initial pose, build, backend, and timestep sequence. One character receives no new body grabs during lockout; the other receives repeated begin/move attempts. Every segment's trajectory and every state transition must match within the stated tolerances. A new press after stable recovery must be accepted.
+Paired replay uses the same initial pose, build, backend, and timestep sequence. One character receives no new body grabs during lockout; the other receives repeated begin/move attempts. Lockout covers every dynamic frame and all 45 frames of the motor-owned recovered-pose seed, during which balance diagnostics remain null. Every segment's trajectory, body-input transition, balance-availability transition, and motion-state transition must match within the stated tolerances. A new press after stable recovery must be accepted.
 
 Support loss is tested by disabling the floor before integration. Assistance must be zero immediately; a separate prolonged loss must cause a dynamic retry and must never force standing after a timeout. A supported obstruction fixture adds a fixed ceiling at Y=1.30 m, with half-extents (4, 0.05, 4), after contact-based settling. It verifies actual stalled progress with loaded support, repeated dynamic retry, and no forced standing for 25 seconds.
 

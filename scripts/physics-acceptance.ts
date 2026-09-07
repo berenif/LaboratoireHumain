@@ -4,12 +4,14 @@ import RAPIER, { type Collider, type RigidBody, type World } from "@dimforge/rap
 import { createEmbodiedCharacter } from "../src/character/index";
 import { RECOVERY_LIMITS } from "../src/character/DynamicRecovery";
 import { add, clamp, clampLength, length, lerp, normalize, quatFromAxisAngle, quatInverse, quatMultiply, rotate, sub, worldPoint } from "../src/character/math";
-import { SEGMENTS, TOTAL_MASS_KG } from "../src/core/humanoid";
+import { SEGMENT_BY_ID, SEGMENTS, TOTAL_MASS_KG } from "../src/core/humanoid";
 import { REGION_IDS, type CharacterController, type GrabCommand, type MotionState, type PoseSnapshot, type Quat, type RecoveryPhase, type RegionId, type SegmentId, type SegmentPose, type Vec3 } from "../src/core/types";
 import { SharedCameraProjection } from "../src/scene/camera";
 import { ACCEPTANCE, PULL_FIXTURES, NATIVE_REGRESSION_FIXTURES, RECOVERY_ACCEPTANCE, type PullFixture } from "./physics-fixtures";
 
 const DT = ACCEPTANCE.fixedDtS, ZERO: Vec3 = { x: 0, y: 0, z: 0 }, UP: Vec3 = { x: 0, y: 1, z: 0 };
+const KNOWN_FLOOR_PENETRATION_M = 0.035;
+const RECOVERY_SEED_LOCKOUT_FRAMES = 45;
 const LOCKED = new Set<MotionState>(["falling", "fallen", "recovering"]);
 const ELIGIBLE: Record<RecoveryPhase, ReadonlyArray<SegmentId>> = {
   none: [], protect: [], settle: [],
@@ -91,12 +93,17 @@ function measure(r: RecordData, snapshot: PoseSnapshot, character: CharacterCont
   r.maxLinearMps = Math.max(r.maxLinearMps, ...snapshot.segments.map(p => length(p.linearVelocity)));
   r.maxAngularRadps = Math.max(r.maxAngularRadps, ...snapshot.segments.map(p => length(p.angularVelocity)));
   r.maxStepCount = Math.max(r.maxStepCount, d.stepCount);
+  const recoverySeedLocked = d.authority === "character-motor" && snapshot.state === "upright"
+    && !d.bodyInputAvailable && d.balance === null && d.handoff !== null;
   if (LOCKED.has(snapshot.state)) {
     r.lockedFrames++; r.firstFallS ??= snapshot.simulationTime;
     if (d.bodyInputAvailable || !zeroExternal(snapshot)) r.violations.add("Body input/grab contribution survived lockout");
     if (d.authority !== "ragdoll") r.violations.add("Locked state lost dynamic authority");
     const bodies = (character as Inspectable).ragdollBodies;
     if (bodies.size !== SEGMENTS.length || [...bodies.values()].some(b => !b.isDynamic())) r.violations.add("Falling/recovering segment is not dynamic");
+  } else if (recoverySeedLocked) {
+    r.lockedFrames++;
+    if (!zeroExternal(snapshot)) r.violations.add("Body input/grab contribution survived recovery settling");
   } else if (!d.bodyInputAvailable) r.violations.add("Standing body input unavailable");
   if (r.firstFallS !== null && r.recoveredS === null && snapshot.state === "upright") r.recoveredS = snapshot.simulationTime;
   if (snapshot.support.swingFoot && snapshot.support.planted.includes(snapshot.support.swingFoot)) r.violations.add("Swinging foot counted as supporting");
@@ -306,19 +313,39 @@ await scenario("frozen-recovery-threshold-contract", async failures => {
 });
 await scenario("finite-floor-penetration-semantics", async failures => {
   const c=await create(),original=c.getSnapshot("canvas2d"),floor=(c as Inspectable).floorCollider;
+  const foot=SEGMENT_BY_ID.get("leftFoot");
+  if(!foot || foot.shape.kind!=="box") throw new Error("Finite-floor fixture requires the left foot box shape");
+  const penetratingFootCenterY=foot.shape.halfExtents.y-KNOWN_FLOOR_PENETRATION_M;
   const raised={...original,segments:original.segments.map(p=>({...p,position:add(p.position,{x:0,y:3,z:0})}))};
   const outside={...original,segments:original.segments.map(p=>({...p,position:add(p.position,{x:20,y:-2,z:0})}))};
-  const penetrating={...raised,segments:raised.segments.map(p=>p.id==="leftFoot"?{...p,position:{x:0,y:0.03,z:0},rotation:{x:0,y:0,z:0,w:1}}:p)};
+  const penetrating={...raised,segments:raised.segments.map(p=>p.id==="leftFoot"?{...p,position:{x:0,y:penetratingFootCenterY,z:0},rotation:{x:0,y:0,z:0,w:1}}:p)};
   const clearance=floorError(raised,c),outsideDepth=floorError(outside,c),penetration=floorError(penetrating,c);
   floor.setEnabled(false);const disabled=floorError(penetrating,c);floor.setEnabled(true);
-  if(clearance!==0 || outsideDepth!==0 || disabled!==0 || Math.abs(penetration-0.035)>1e-6) failures.push("Finite floor query confuses clearance, absence, or outside-footprint geometry with penetration");
-  return {clearanceM:clearance,outsideDepthM:outsideDepth,disabledDepthM:disabled,knownPenetrationM:penetration,expectedPenetrationM:0.035};
+  if(clearance!==0 || outsideDepth!==0 || disabled!==0 || Math.abs(penetration-KNOWN_FLOOR_PENETRATION_M)>1e-6) failures.push("Finite floor query confuses clearance, absence, or outside-footprint geometry with penetration");
+  return {clearanceM:clearance,outsideDepthM:outsideDepth,disabledDepthM:disabled,knownPenetrationM:penetration,expectedPenetrationM:KNOWN_FLOOR_PENETRATION_M,penetratingFootCenterY};
 });
 await scenario("idle-30-seconds", async failures => {
-  const c = await create(), start = c.getSnapshot("canvas2d"); advance(c, ACCEPTANCE.idleDurationS * 60);
-  const end = c.getSnapshot("canvas2d"), drift = length(sub(end.rootPosition, start.rootPosition));
-  if (end.state !== "upright" || drift > ACCEPTANCE.idleRootDriftM || end.support.planted.length !== 2) failures.push("Idle drifted or lost stable support");
-  return { driftM: drift };
+  const runs: Array<{ heading: number; driftM: number; maxLinearMps: number; maxAngularRadps: number; steps: number; finalState: MotionState }> = [];
+  for (const heading of [0, Math.PI / 3, -Math.PI / 4]) {
+    const c = await create({ heading }), start = c.getSnapshot("canvas2d");
+    advance(c, ACCEPTANCE.idleDurationS * 60);
+    const end = c.getSnapshot("canvas2d"), record = records.get(c)!;
+    const drift = length(sub(end.rootPosition, start.rootPosition));
+    if (end.state !== "upright" || drift > ACCEPTANCE.idleRootDriftM
+      || record.maxLinearMps > ACCEPTANCE.idleMaxLinearMps || record.maxAngularRadps > ACCEPTANCE.idleMaxAngularRadps
+      || end.support.planted.length !== 2 || record.maxStepCount !== 0) {
+      failures.push("Idle drifted, moved too quickly, stepped, or lost stable support at heading " + heading);
+    }
+    runs.push({
+      heading,
+      driftM: drift,
+      maxLinearMps: record.maxLinearMps,
+      maxAngularRadps: record.maxAngularRadps,
+      steps: record.maxStepCount,
+      finalState: end.state,
+    });
+  }
+  return { driftM: Math.max(...runs.map(run => run.driftM)), runs };
 });
 await scenario("seven-region-picking", async failures => {
   const c = await create(), snapshot = c.getSnapshot("canvas2d"), camera = new SharedCameraProjection().getState().position;
@@ -352,22 +379,29 @@ await scenario("lockout-input-identical-trajectories", async failures => {
   const f = PULL_FIXTURES.find(f => f.id === "fast-forward")!, clean = await create(f.initial), attempted = await create(f.initial);
   const aGrab = begin(clean, f.region, 50, f.localAnchor), bGrab = begin(attempted, f.region, 50, f.localAnchor);
   clean.fixedUpdate(DT, aGrab.command); attempted.fixedUpdate(DT, bGrab.command);
-  let maxPosition = 0, maxAngle = 0, maxVelocity = 0, attemptedFrames = 0, transitionMismatch = false;
+  let maxPosition = 0, maxAngle = 0, maxVelocity = 0, attemptedFrames = 0, seedAttemptedFrames = 0, transitionMismatch = false;
   for (let frame = 1; frame <= f.observeUntilFrame; frame++) {
-    const locked = LOCKED.has(clean.getSnapshot("canvas2d").state), normal = commandAt(f, frame, aGrab.start, 50);
+    const before = clean.getSnapshot("canvas2d");
+    const locked = !before.diagnostics.bodyInputAvailable, seedLocked = locked && !LOCKED.has(before.state);
+    const normal = commandAt(f, frame, aGrab.start, 50);
     clean.fixedUpdate(DT, normal);
     const intrusion: GrabCommand = frame % 3 === 0 ? { kind: "begin", pointerId: 900, region: "pelvis", segment: "pelvis", localAnchor: ZERO, worldTarget: { x: 4, y: 4, z: -4 }, timestampMs: frame * DT * 1000 }
       : { kind: "move", pointerId: frame % 2 ? 50 : 900, worldTarget: { x: Math.sin(frame) * 4, y: 3, z: Math.cos(frame) * 4 }, timestampMs: frame * DT * 1000 };
-    attempted.fixedUpdate(DT, locked ? intrusion : normal); if (locked) attemptedFrames++;
+    attempted.fixedUpdate(DT, locked ? intrusion : normal);
+    if (locked) attemptedFrames++;
+    if (seedLocked) seedAttemptedFrames++;
     const a = clean.getSnapshot("canvas2d"), b = attempted.getSnapshot("canvas2d"); transitionMismatch ||= a.state !== b.state;
+    transitionMismatch ||= a.diagnostics.bodyInputAvailable !== b.diagnostics.bodyInputAvailable
+      || (a.diagnostics.balance === null) !== (b.diagnostics.balance === null);
     for (const d of SEGMENTS) { const pa = pose(a, d.id), pb = pose(b, d.id); maxPosition = Math.max(maxPosition, length(sub(pa.position, pb.position))); maxAngle = Math.max(maxAngle, angleDegrees(pa.rotation, pb.rotation)); maxVelocity = Math.max(maxVelocity, length(sub(pa.linearVelocity, pb.linearVelocity)), length(sub(pa.angularVelocity, pb.angularVelocity))); }
   }
   if (!attemptedFrames) failures.push("No locked input attempts exercised");
+  if (seedAttemptedFrames !== RECOVERY_SEED_LOCKOUT_FRAMES) failures.push("Paired replay did not exercise all 45 recovery-seed lockout frames");
   if (transitionMismatch || maxPosition > ACCEPTANCE.trajectoryPositionToleranceM || maxAngle > ACCEPTANCE.trajectoryRotationToleranceDegrees || maxVelocity > ACCEPTANCE.trajectoryVelocityTolerance) failures.push("Lockout input changed segment trajectories or transitions");
   requireRecovery(records.get(clean)!, failures); requireRecovery(records.get(attempted)!, failures);
   const fresh = begin(attempted, "rightHand", 901); attempted.fixedUpdate(DT, fresh.command);
   if (!attempted.diagnostics().activeGrab) failures.push("Fresh press after recovery rejected"); attempted.clearBodyInput();
-  return { attemptedFrames, maxPositionM: maxPosition, maxRotationDegrees: maxAngle, maxVelocityDifference: maxVelocity };
+  return { attemptedFrames, seedAttemptedFrames, maxPositionM: maxPosition, maxRotationDegrees: maxAngle, maxVelocityDifference: maxVelocity };
 });
 
 await scenario("support-loss-stops-assistance-and-retries", async failures => {
@@ -380,7 +414,18 @@ await scenario("support-loss-stops-assistance-and-retries", async failures => {
   internal.floorCollider.setEnabled(false); r.floorPresent = false; c.fixedUpdate(DT, null);
   const immediate = c.diagnostics();
   if (length(immediate.recovery.assistanceForce) !== 0 || length(immediate.recovery.assistanceTorque) !== 0 || immediate.recovery.supporting.length) failures.push("Support loss did not stop assistance before the next integration");
-  internal.floorCollider.setEnabled(true); r.floorPresent = true; advance(c, 60);
+  internal.floorCollider.setEnabled(true); r.floorPresent = true;
+  let supportReturnFrame = -1;
+  for (let frame = 1; frame <= 300; frame++) {
+    c.fixedUpdate(DT, null);
+    const current = c.diagnostics();
+    if (current.authority === "ragdoll" && current.recovery.supporting.length > 0
+      && length(current.recovery.assistanceForce) > 0) {
+      supportReturnFrame = frame;
+      break;
+    }
+  }
+  if (supportReturnFrame < 0) failures.push("Floor restoration did not re-establish supported recovery assistance");
   internal.floorCollider.setEnabled(false); r.floorPresent = false;
   const retriesBefore = c.diagnostics().recovery.retries;
   advance(c, Math.ceil(RECOVERY_LIMITS.supportLossS / DT) + 2);
@@ -388,7 +433,7 @@ await scenario("support-loss-stops-assistance-and-retries", async failures => {
   if (unsupported.authority !== "ragdoll" || unsupported.recovery.retries <= retriesBefore) failures.push("Support loss did not dynamically retry");
   advance(c, ACCEPTANCE.recoveryLimitS * 60);
   if (c.diagnostics().authority !== "ragdoll" || c.diagnostics().bodyInputAvailable || length(c.diagnostics().recovery.assistanceForce) !== 0) failures.push("Support-unavailable timeout forced standing or assistance");
-  return { assistanceFrame, retriesBefore, retriesAfterLoss: unsupported.recovery.retries, afterLoss: immediate.recovery };
+  return { assistanceFrame, supportReturnFrame, retriesBefore, retriesAfterLoss: unsupported.recovery.retries, afterLoss: immediate.recovery };
 });
 
 await scenario("supported-obstruction-stall-retries", async failures => {

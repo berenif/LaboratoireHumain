@@ -1,4 +1,5 @@
 import type { RegionId, Vec3 } from "../src/core/types";
+import { HUMAN_PROPORTIONS } from "../src/core/humanoid";
 
 /** Acceptance values are fixed before validation; scenarios run at exactly 60 Hz. */
 export const ACCEPTANCE = Object.freeze({
@@ -16,7 +17,9 @@ export const ACCEPTANCE = Object.freeze({
   recoveryLimitS: 25,
   stableObservationS: 1,
   idleDurationS: 30,
-  idleRootDriftM: 0.08,
+  idleRootDriftM: 0.001,
+  idleMaxLinearMps: 0.1,
+  idleMaxAngularRadps: 0.5,
   maximumJointMotorTorqueNm: 110,
   repeatedCycles: 5,
 });
@@ -51,7 +54,7 @@ export interface PullFixture {
 }
 
 const initial = (heading = 0): PullFixture["initial"] => ({
-  pose: "upright-rest", position: { x: 0, y: 0.977, z: 0 }, heading,
+  pose: "upright-rest", position: { x: 0, y: HUMAN_PROPORTIONS.pelvis.centerHeightM, z: 0 }, heading,
 });
 const anchor = { x: 0.025, y: 0.015, z: 0.01 };
 const slow = (id: string, region: RegionId, offset: Vec3, heading = 0): PullFixture => ({

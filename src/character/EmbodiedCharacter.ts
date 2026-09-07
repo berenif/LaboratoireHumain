@@ -6,7 +6,7 @@ import RAPIER, {
   type World,
 } from "@dimforge/rapier3d-compat";
 
-import { REGION_TO_SEGMENT, SEGMENT_BY_ID, SEGMENTS } from "../core/humanoid";
+import { HUMAN_PROPORTIONS, REGION_TO_SEGMENT, SEGMENT_BY_ID, SEGMENTS } from "../core/humanoid";
 import { pickRegionProxies } from "../core/picking";
 import {
   emptyGrabDiagnostics,
@@ -57,7 +57,21 @@ import {
 const ZERO: Vec3 = { x: 0, y: 0, z: 0 };
 const UP: Vec3 = { x: 0, y: 1, z: 0 };
 const FORWARD: Vec3 = { x: 0, y: 0, z: 1 };
-const INITIAL_ROOT: Vec3 = { x: 0, y: 0.977, z: 0 };
+const INITIAL_ROOT: Vec3 = { x: 0, y: HUMAN_PROPORTIONS.pelvis.centerHeightM, z: 0 };
+const footShape = SEGMENT_BY_ID.get("leftFoot")!.shape;
+const FOOT_CENTER_HEIGHT = footShape.kind === "box"
+  ? footShape.halfExtents.y
+  : HUMAN_PROPORTIONS.foot.halfExtentsM.y;
+const ROOT_COLLIDER_RADIUS = Math.max(
+  HUMAN_PROPORTIONS.torso.halfExtentsM.x,
+  HUMAN_PROPORTIONS.pelvis.halfExtentsM.x,
+);
+const ROOT_COLLIDER_FLOOR_CLEARANCE = 0.012;
+const ROOT_COLLIDER_CENTER_Y = (HUMAN_PROPORTIONS.totalHeightM + ROOT_COLLIDER_FLOOR_CLEARANCE) / 2;
+const ROOT_COLLIDER_HALF_HEIGHT = (
+  HUMAN_PROPORTIONS.totalHeightM - ROOT_COLLIDER_FLOOR_CLEARANCE
+) / 2 - ROOT_COLLIDER_RADIUS;
+const ROOT_COLLIDER_OFFSET_Y = ROOT_COLLIDER_CENTER_Y - INITIAL_ROOT.y;
 const CHARACTER_GROUP = (0x0001 << 16) | 0x0002;
 const ENVIRONMENT_GROUP = (0x0002 << 16) | 0x0001;
 
@@ -119,7 +133,7 @@ class EmbodiedCharacter implements CharacterController {
   private activeGrab: ActiveGrab | null = null;
   private readonly balance = new BalanceController();
   private balanceData: BalanceDiagnostics | null = null;
-  private kneeFlexion = 0.12;
+  private kneeFlexion: number = HUMAN_PROPORTIONS.stance.neutralKneeFlexion;
   private readonly recovery = new DynamicRecovery();
   private readonly floorCollider: Collider;
   private heading = 0;
@@ -165,9 +179,13 @@ class EmbodiedCharacter implements CharacterController {
         .setCollisionGroups(ENVIRONMENT_GROUP),
       floorBody,
     );
+    // Rapier's character controller queries the broad phase before World.step.
+    // Prime the static floor now, while no dynamic bodies exist, so the first
+    // grounded update cannot move through it and create a false velocity spike.
+    this.world.step();
     this.supportFeet = {
-      leftFoot: { ...this.rest.get("leftFoot")!.position, y: 0.065 },
-      rightFoot: { ...this.rest.get("rightFoot")!.position, y: 0.065 },
+      leftFoot: { ...this.rest.get("leftFoot")!.position, y: FOOT_CENTER_HEIGHT },
+      rightFoot: { ...this.rest.get("rightFoot")!.position, y: FOOT_CENTER_HEIGHT },
     };
     for (const foot of ["leftFoot", "rightFoot"] as const) {
       const local = sub(this.supportFeet[foot], { ...INITIAL_ROOT, y: 0 });
@@ -255,7 +273,7 @@ class EmbodiedCharacter implements CharacterController {
     this.removeRootMotor();
     this.state = "upright";
     this.heading = this.initialHeading;
-    this.poseSeed = null; this.poseSeedTime = 0; this.kneeFlexion = 0.12; this.balanceData = null;
+    this.poseSeed = null; this.poseSeedTime = 0; this.kneeFlexion = HUMAN_PROPORTIONS.stance.neutralKneeFlexion; this.balanceData = null;
     this.paused = false;
     this.sequence = 0;
     this.simulationTime = 0;
@@ -273,8 +291,8 @@ class EmbodiedCharacter implements CharacterController {
     this.poses = restPoseMap();
     this.previousPoses = restPoseMap();
     this.supportFeet = {
-      leftFoot: { ...this.rest.get("leftFoot")!.position, y: 0.065 },
-      rightFoot: { ...this.rest.get("rightFoot")!.position, y: 0.065 },
+      leftFoot: { ...this.rest.get("leftFoot")!.position, y: FOOT_CENTER_HEIGHT },
+      rightFoot: { ...this.rest.get("rightFoot")!.position, y: FOOT_CENTER_HEIGHT },
     };
     for (const foot of ["leftFoot", "rightFoot"] as const) {
       const local = sub(this.supportFeet[foot], { ...INITIAL_ROOT, y: 0 });
@@ -297,7 +315,7 @@ class EmbodiedCharacter implements CharacterController {
     if (!finite) errors.push("NONFINITE_CHARACTER_STATE");
     return {
       balance: this.balanceData ? structuredClone(this.balanceData) : null,
-      bodyInputAvailable: !this.disposed && !this.paused && !this.isDynamic(),
+      bodyInputAvailable: !this.disposed && !this.paused && !this.isDynamic() && !this.poseSeed,
       recovery: this.isDynamic() ? this.recovery.diagnostics() : emptyRecoveryDiagnostics(),
       authority: this.isDynamic() ? "ragdoll" : "character-motor",
       state: this.state,
@@ -325,7 +343,7 @@ class EmbodiedCharacter implements CharacterController {
   }
 
   private processCommand(command: GrabCommand | null): void {
-    if (this.isDynamic()) { this.clearGrab(); return; }
+    if (this.isDynamic() || this.poseSeed) { this.clearGrab(); return; }
     if (!command) {
       if (this.activeGrab) this.activeGrab.targetVelocity = scale(this.activeGrab.targetVelocity, 0.72);
       return;
@@ -376,19 +394,37 @@ class EmbodiedCharacter implements CharacterController {
   private updateUpright(dt: number): void {
     if (!this.rootBody || !this.rootCollider || !this.motor) return;
     const result = this.balance.update({ dt, poses: this.poses, rootPosition: this.rootBody.translation(), activeGrab: this.activeGrab, heading: this.heading });
-    this.balanceData = result.diagnostics;
-    this.reactionOffset = result.reactionOffset; this.kneeFlexion = result.kneeFlexion;
-    this.supportFeet = result.supportFeet; this.step = result.step; this.stepCount = result.stepCount;
-    this.state = result.state; this.appliedGrabForceN = result.appliedGrabForceN;
+    const settling = this.poseSeed !== null;
+    if (settling) {
+      this.balanceData = null;
+      this.reactionOffset = ZERO;
+      this.kneeFlexion = HUMAN_PROPORTIONS.stance.neutralKneeFlexion;
+      this.step = null;
+      this.state = "upright";
+      this.appliedGrabForceN = 0;
+    } else {
+      this.balanceData = result.diagnostics;
+      this.reactionOffset = result.reactionOffset; this.kneeFlexion = result.kneeFlexion;
+      this.supportFeet = result.supportFeet; this.step = result.step; this.stepCount = result.stepCount;
+      this.state = result.state; this.appliedGrabForceN = result.appliedGrabForceN;
+    }
     const current = this.rootBody.translation();
-    const desired = sub(result.rootTarget, current);
-    this.motor.computeColliderMovement(this.rootCollider, { ...desired, y: -0.035 });
-    const movement = this.motor.computedMovement();
-    this.grounded = this.motor.computedGrounded() || result.diagnostics.supportingFeet.length > 0;
+    const desired = settling ? ZERO : sub(result.rootTarget, current);
+    // A planted stance already sits at the controller's configured separation.
+    // Repeated downward probes can occasionally tunnel the kinematic capsule
+    // through Rapier's contact offset; probe only after support is actually lost.
+    this.motor.computeColliderMovement(this.rootCollider, { ...desired, y: this.grounded ? 0 : -0.035 });
+    const computedMovement = this.motor.computedMovement();
+    // Snap-to-ground may return a small downward correction even for a zero-Y
+    // request. Anatomical foot support already establishes the flat-floor
+    // height, so retain it until support is genuinely lost.
+    const movement = this.grounded ? { ...computedMovement, y: 0 } : computedMovement;
+    this.grounded = settling || this.motor.computedGrounded() || result.diagnostics.supportingFeet.length > 0;
     this.rootBody.setNextKinematicTranslation(add(current, movement));
     this.world.step();
     this.previousPoses = this.clonePoses(this.poses);
     const target = this.composeUprightPose();
+    let finishedSettling = false;
     if (this.poseSeed) {
       this.poseSeedTime += dt;
       const amount = clamp(this.poseSeedTime / 0.75, 0, 1);
@@ -401,11 +437,23 @@ class EmbodiedCharacter implements CharacterController {
           pose.position = sub(poseAnchor(parent, definition.jointAnchorParent!), rotate(pose.rotation, definition.jointAnchorChild!));
         }
       }
-      if (amount >= 1) this.poseSeed = null;
+      if (amount >= 1) {
+        this.poseSeed = null;
+        finishedSettling = true;
+      }
     }
     this.poses = target;
     this.writePoseVelocities(dt);
-    if (result.shouldFall) this.activateRagdoll(result.fallDirection);
+    if (finishedSettling) {
+      for (const pose of this.poses.values()) {
+        pose.linearVelocity = ZERO;
+        pose.angularVelocity = ZERO;
+      }
+      this.previousPoses = this.clonePoses(this.poses);
+      this.balance.reset(this.poses, this.heading);
+      this.balanceData = null;
+    }
+    if (!settling && result.shouldFall) this.activateRagdoll(result.fallDirection);
   }
 
   private composeUprightPose(): Map<SegmentId, MutablePose> {
@@ -543,7 +591,7 @@ class EmbodiedCharacter implements CharacterController {
     this.clearGrab(); this.clearRagdoll();
     this.createRootMotor(pelvis.position);
     this.supportFeet = { leftFoot: { ...before.get("leftFoot")!.position }, rightFoot: { ...before.get("rightFoot")!.position } };
-    this.reactionOffset = ZERO; this.step = null;
+    this.reactionOffset = ZERO; this.kneeFlexion = HUMAN_PROPORTIONS.stance.neutralKneeFlexion; this.step = null;
     this.state = "upright"; this.grounded = true;
     // The first motor snapshot is the recovered segment pose, at exactly the same simulation instant.
     this.poses = before; this.previousPoses = this.clonePoses(before);
@@ -580,12 +628,13 @@ class EmbodiedCharacter implements CharacterController {
       ),
     );
     this.rootCollider = this.world.createCollider(
-      RAPIER.ColliderDesc.capsule(0.725, 0.24)
+      RAPIER.ColliderDesc.capsule(ROOT_COLLIDER_HALF_HEIGHT, ROOT_COLLIDER_RADIUS)
+        .setTranslation(0, ROOT_COLLIDER_OFFSET_Y, 0)
         .setFriction(0.9)
         .setCollisionGroups(CHARACTER_GROUP),
       this.rootBody,
     );
-    this.motor = this.world.createCharacterController(0.012);
+    this.motor = this.world.createCharacterController(ROOT_COLLIDER_FLOOR_CLEARANCE);
     this.motor.setUp(UP);
     this.motor.setSlideEnabled(true);
     this.motor.enableSnapToGround(0.08);

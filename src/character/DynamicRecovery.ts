@@ -1,10 +1,11 @@
 import type { Collider, RigidBody, World } from "@dimforge/rapier3d-compat";
-import { SEGMENTS, TOTAL_MASS_KG } from "../core/humanoid";
+import { HUMAN_PROPORTIONS, SEGMENT_BY_ID, SEGMENTS, TOTAL_MASS_KG } from "../core/humanoid";
 import type { MotionState, Quat, RecoveryDiagnostics, RecoveryPhase, SegmentId, SupportingContact, Vec3 } from "../core/types";
-import { add, angularVelocity, clamp, clampLength, length, quatFromAxisAngle, quatInverse, quatMultiply, rotate, scale, sub } from "./math";
+import { add, angularVelocity, clamp, clampLength, length, quatFromAxisAngle, quatInverse, quatMultiply, rotate, scale, sub, worldPoint } from "./math";
 
 const ZERO: Vec3 = { x: 0, y: 0, z: 0 };
 const UP: Vec3 = { x: 0, y: 1, z: 0 };
+const KNEEL_PELVIS_HEIGHT_M = 0.72;
 /** Frozen acceptance parameters. Persistence always requires consecutive qualifying frames. */
 export const RECOVERY_LIMITS = Object.freeze({
   normalY: 0.65, contactDistanceM: 0.012, minimumLoadN: 3,
@@ -166,7 +167,7 @@ export class DynamicRecovery {
     this.data.supporting = supports.map(c => c.segment);
     if (recovering) {
       this.noSupportTime = supports.length ? 0 : this.noSupportTime + dt;
-      const desiredHeight = this.data.phase === "roll" ? 0.43 : this.data.phase === "brace" ? 0.57 : this.data.phase === "kneel" ? 0.72 : 1.012;
+      const desiredHeight = this.data.phase === "roll" ? 0.43 : this.data.phase === "brace" ? 0.57 : this.data.phase === "kneel" ? KNEEL_PELVIS_HEIGHT_M : HUMAN_PROPORTIONS.pelvis.centerHeightM;
       const error = Math.abs(desiredHeight - pelvis.translation().y) + Math.max(0, 1 - up) * 0.4;
       const stabilityProgress = this.data.phase === "stand" && this.data.stableTimeS > this.bestStableTime + 1e-9;
       this.bestStableTime = Math.max(this.bestStableTime, this.data.stableTimeS);
@@ -216,9 +217,14 @@ export class DynamicRecovery {
     const qualified = this.supporting();
     if (recoveryActive && qualified.length > 0) {
       const supportCenter = scale(qualified.reduce((sum, c) => add(sum, c.point), ZERO), 1 / qualified.length);
-      const footCenter = feet.length ? sub(scale(feet.reduce((sum, c) => add(sum, bodies.get(c.segment)!.translation()), ZERO), 1 / feet.length), rotate(quatFromAxisAngle(UP, this.heading), { x: 0, y: 0, z: 0.075 })) : supportCenter;
-      const y = phase === "roll" ? this.rollHeight : phase === "brace" ? 0.57 : phase === "kneel" ? 0.72 : 0.72 + 0.292 * this.rise;
-      const center = phase === "stand" || phase === "kneel" ? footCenter : this.targetOrigin;
+      const ankleCenter = feet.length ? scale(feet.reduce((sum, contact) => {
+        const foot = bodies.get(contact.segment)!;
+        const anchor = SEGMENT_BY_ID.get(contact.segment)?.jointAnchorChild;
+        return anchor ? add(sum, worldPoint(foot.translation(), foot.rotation(), anchor)) : sum;
+      }, ZERO), 1 / feet.length) : supportCenter;
+      const y = phase === "roll" ? this.rollHeight : phase === "brace" ? 0.57 : phase === "kneel" ? KNEEL_PELVIS_HEIGHT_M
+        : KNEEL_PELVIS_HEIGHT_M + (HUMAN_PROPORTIONS.pelvis.centerHeightM - KNEEL_PELVIS_HEIGHT_M) * this.rise;
+      const center = phase === "stand" || phase === "kneel" ? ankleCenter : this.targetOrigin;
       const target = { x: center.x, y, z: center.z };
       const error = sub(target, pelvis.translation());
       const velocity = pelvis.linvel();
@@ -237,7 +243,13 @@ export class DynamicRecovery {
     const targets = new Map<SegmentId, Vec3>();
     const recovery = ["roll", "brace", "kneel", "stand"].includes(phase);
     const backward = this.data.orientation === "backward";
-    targets.set("torso", { x: phase === "roll" ? (backward ? 0.40 : 0.15) : recovery ? -0.10 : backward ? 0.30 : -0.18, y: 0, z: 0 });
+    targets.set("torso", {
+      x: phase === "roll" ? (backward ? 0.40 : 0.15)
+        : phase === "stand" ? 0
+          : recovery ? -0.10 : backward ? 0.30 : -0.18,
+      y: 0,
+      z: 0,
+    });
     targets.set("head", { x: recovery ? 0 : 0.32, y: 0, z: 0 });
     for (const side of ["left", "right"] as const) {
       const sign = side === "left" ? -1 : 1;
