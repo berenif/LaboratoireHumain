@@ -9,6 +9,7 @@ const [tool, ...args] = process.argv.slice(2);
 const entrypoints = {
   vite: "vite/bin/vite.js",
   vinext: "vinext/dist/cli.js",
+  next: "next/dist/bin/next",
   eslint: "eslint/bin/eslint.js",
   "drizzle-kit": "drizzle-kit/bin.cjs",
 };
@@ -32,7 +33,8 @@ function durationMs(name, fallback) {
   return Number(match[1]) * units[match[2] ?? "s"];
 }
 
-const isBuild = tool === "vinext" && args[0] === "build";
+const isBuild = (tool === "vinext" || tool === "next") && args[0] === "build";
+const isGitHubPagesBuild = tool === "next" && args[0] === "build";
 const buildTimeout = isBuild ? durationMs("SITES_BUILD_TIMEOUT", "3m") : 0;
 const killAfter = isBuild ? durationMs("SITES_BUILD_KILL_AFTER", "10s") : 0;
 const logPath = resolve(runtime, "wrangler", "logs");
@@ -43,6 +45,7 @@ const child = spawn(process.execPath, [entrypoint, ...args], {
   stdio: "inherit",
   env: {
     ...process.env,
+    ...(isGitHubPagesBuild ? { DEPLOY_TARGET: "github-pages" } : {}),
     WRANGLER_WRITE_LOGS: "false",
     WRANGLER_LOG_PATH: logPath,
     MINIFLARE_REGISTRY_PATH: resolve(runtime, "wrangler", "registry"),

@@ -17,6 +17,35 @@ A source checkout runs without `.openai/hosting.json`. When that file exists, Vi
 
 Use **View** to select Canvas2D or WebGL2. Drag the colored head, torso, pelvis, hands, or feet. Body dragging pauses during falling and recovery, then requires a fresh press after stable standing. Drag empty space to orbit, use Shift-drag to pan, and scroll to zoom. **Reset body** restores the body and camera and preserves the paused state.
 
+## Deploy to GitHub Pages
+
+The repository includes a GitHub Actions workflow that builds a static Next.js export and deploys `out/` to GitHub Pages. It also applies the repository subpath automatically, so project sites such as `https://berenif.github.io/LaboratoireHumain/` load their scripts, styles, and favicon correctly.
+
+1. In the GitHub repository, open **Settings → Pages**.
+2. Set **Source** to **GitHub Actions**.
+3. Push to `main`, or run **Deploy to GitHub Pages** manually from the Actions tab.
+
+To test the Pages build locally at the domain root:
+
+```bash
+npm run test:pages
+```
+
+To reproduce a project-site subpath build:
+
+```bash
+PAGES_BASE_PATH=/LaboratoireHumain npm run test:pages
+```
+
+PowerShell equivalent:
+
+```powershell
+$env:PAGES_BASE_PATH = "/LaboratoireHumain"
+npm run test:pages
+```
+
+The normal `npm run build` command still produces the existing Vinext/Sites build. Use `npm run build:pages` when you specifically need the static GitHub Pages artifact.
+
 ## Verify
 
 ```bash

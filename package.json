@@ -9,11 +9,14 @@
     "install:ci": "bash scripts/install-ci.sh",
     "dev": "node scripts/run-tool.mjs vite",
     "build": "node scripts/run-tool.mjs vinext build",
+    "build:pages": "node scripts/run-tool.mjs next build",
     "start": "node scripts/run-tool.mjs vinext start",
     "test": "npm run build && node --test tests/*.test.mjs",
+    "test:pages": "npm run build:pages && npm run verify:pages",
     "test:physics": "node --import tsx scripts/run-physics-harness.ts",
     "typecheck": "tsc --noEmit --pretty false",
     "lint": "node scripts/run-tool.mjs eslint . --ignore-pattern dist --ignore-pattern .next",
+    "verify:pages": "node scripts/verify-pages.mjs",
     "db:generate": "node scripts/run-tool.mjs drizzle-kit generate"
   },
   "dependencies": {

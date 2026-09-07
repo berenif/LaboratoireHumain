@@ -1,6 +1,12 @@
 import type { Metadata } from "next";
 import "./globals.css";
 
+const configuredBasePath = process.env.PAGES_BASE_PATH?.trim() ?? "";
+const basePath = configuredBasePath === "/"
+  ? ""
+  : configuredBasePath.replace(/\/+$/, "");
+const faviconPath = `${basePath}/favicon.svg`;
+
 export const metadata: Metadata = {
   title: "Embodied Motion Physics Demo",
   description:
@@ -9,8 +15,8 @@ export const metadata: Metadata = {
     "codex-preview": "development",
   },
   icons: {
-    icon: "/favicon.svg",
-    shortcut: "/favicon.svg",
+    icon: faviconPath,
+    shortcut: faviconPath,
   },
 };
 
