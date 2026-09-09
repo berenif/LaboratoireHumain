@@ -104,10 +104,25 @@ export interface SupportingContact {
   forceN: number;
   persistenceS: number;
   point: Vec3;
+  /** Copied world-space solver contact patch. */
+  points?: readonly Vec3[];
   loadBearing: boolean;
 }
 export interface RecoveryDiagnostics {
   phase: RecoveryPhase;
+  route: "none" | "crouch" | "half-kneel" | "prone" | "roll";
+  leadingSide: "left" | "right" | null;
+  rollSide: "left" | "right" | null;
+  transferStage: "none" | "roll" | "brace" | "tuck-knee" | "plant-lead" | "shift-weight" | "bring-trailing" | "extend" | "relax";
+  supportMarginM: number;
+  centerOfMass: Vec3;
+  projectedCenterOfMass: Vec3;
+  plantedTargets: { segment: SegmentId; position: Vec3; rotation: Quat; driftM: number }[];
+  releasedSupports: SegmentId[];
+  releaseMarginM: number | null;
+  extension: number;
+  progressError: number | null;
+  noSupportTimeS: number;
   orientation: "forward" | "backward" | "left" | "right";
   contacts: SupportingContact[];
   phaseTimeS: number;

@@ -7,6 +7,8 @@ import { add, clamp, clampLength, length, lerp, normalize, quatFromAxisAngle, qu
 import { SEGMENT_BY_ID, SEGMENTS, TOTAL_MASS_KG } from "../src/core/humanoid";
 import { REGION_IDS, type CharacterController, type GrabCommand, type MotionState, type PoseSnapshot, type Quat, type RecoveryPhase, type RegionId, type SegmentId, type SegmentPose, type Vec3 } from "../src/core/types";
 import { SharedCameraProjection } from "../src/scene/camera";
+import { RECOVERY_POSE_FIXTURES, seedRecoveryFixture } from "./recovery-fixtures";
+import { measureRecoveryPhysics, measuredProneBraceSupport, newRecoveryPhysicsMeasurements, type RecoveryPhysicsMeasurements } from "./recovery-measurements";
 import { ACCEPTANCE, PULL_FIXTURES, NATIVE_REGRESSION_FIXTURES, RECOVERY_ACCEPTANCE, type PullFixture } from "./physics-fixtures";
 
 const DT = ACCEPTANCE.fixedDtS, ZERO: Vec3 = { x: 0, y: 0, z: 0 }, UP: Vec3 = { x: 0, y: 1, z: 0 };
@@ -20,10 +22,10 @@ const ELIGIBLE: Record<RecoveryPhase, ReadonlyArray<SegmentId>> = {
   kneel: ["leftShin", "rightShin", "leftFoot", "rightFoot", "leftHand", "rightHand"], stand: ["leftFoot", "rightFoot"],
 };
 /** Private adapter access is limited to transfer instrumentation and the explicit support-loss fixture. */
-type Inspectable = CharacterController & { world: World; floorCollider: Collider; ragdollBodies: Map<SegmentId, RigidBody>; activateRagdoll(direction: Vec3): void; restoreUpright(): void };
+type Inspectable = CharacterController & { world: World; floorCollider: Collider; ragdollBodies: Map<SegmentId, RigidBody>; ragdollColliders: Map<SegmentId, Collider>; activateRagdoll(direction: Vec3): void; restoreUpright(): void };
 type Transfer = { direction: string; simulationTime: number; translationM: number; rotationDegrees: number; bySegment: Array<{ id: SegmentId; translationM: number; rotationDegrees: number }> };
 type RecordData = {
-  states: MotionState[]; phases: RecoveryPhase[]; violations: Set<string>; transfers: Transfer[];
+  physicalRecovery: RecoveryPhysicsMeasurements; states: MotionState[]; phases: RecoveryPhase[]; violations: Set<string>; transfers: Transfer[];
   maxJointM: number; maxFloorM: number; maxLinearMps: number; maxAngularRadps: number; maxStepCount: number;
   lockedFrames: number; supportedFrames: number; assistedFrames: number; firstFallS: number | null; recoveredS: number | null;
   final: PoseSnapshot; samples: number; floorPresent: boolean; protectiveElbowDegrees: number; protectiveHeadDegrees: number;
@@ -85,6 +87,9 @@ function measure(r: RecordData, snapshot: PoseSnapshot, character: CharacterCont
   const previous = r.final;
   r.samples++; r.final = snapshot;
   const d = snapshot.diagnostics, recovery = d.recovery;
+  const physicalContactsBefore=r.physicalRecovery.previousContacts;
+  const releasedBefore=new Set(r.physicalRecovery.deliberatelyReleased);
+  measureRecoveryPhysics(r.physicalRecovery, snapshot, previous, character as Inspectable, r.violations);
   if (!d.finite || d.errors.length || snapshot.segments.some(p => ![...Object.values(p.position), ...Object.values(p.rotation), ...Object.values(p.linearVelocity), ...Object.values(p.angularVelocity)].every(Number.isFinite))) r.violations.add("Nonfinite pose/velocity or runtime error");
   if (r.states.at(-1) !== snapshot.state) r.states.push(snapshot.state);
   if (r.phases.at(-1) !== recovery.phase) r.phases.push(recovery.phase);
@@ -117,12 +122,14 @@ function measure(r: RecordData, snapshot: PoseSnapshot, character: CharacterCont
   if (recovery.supporting.length) r.supportedFrames++;
   if (aided) {
     r.assistedFrames++;
-    if (!recovery.supporting.length) r.violations.add("Pelvis assistance without eligible support");
+    if (!physicalContactsBefore.some(c=>ELIGIBLE[recovery.phase].includes(c.segment) && !releasedBefore.has(c.segment) && !recovery.releasedSupports.includes(c.segment))) r.violations.add("Pelvis assistance without eligible support before integration");
     if (length(recovery.assistanceForce) > recovery.assistanceForceCapN + 1e-8 || length(recovery.assistanceTorque) > recovery.assistanceTorqueCapNm + 1e-8) r.violations.add("Pelvis assistance exceeds force/torque cap");
   }
   if (recovery.maxMotorTorqueNm > ACCEPTANCE.maximumJointMotorTorqueNm + 1e-8) r.violations.add("Joint motor torque exceeds 110 Nm");
   if (recovery.phase === "protect") {
-    const loadedLandingContact = recovery.contacts.some(c => !c.segment.endsWith("Foot") && c.normalY >= RECOVERY_LIMITS.normalY && c.forceN >= RECOVERY_LIMITS.minimumLoadN);
+    const supportedCrouch = recovery.contacts.filter(c => c.segment.endsWith("Foot") && c.loadBearing).length === 2
+      && rotate(pose(snapshot,"torso").rotation, UP).y > 0.65 && pose(snapshot,"pelvis").position.y < 0.85;
+    const loadedLandingContact = supportedCrouch || recovery.contacts.some(c => !c.segment.endsWith("Foot") && c.normalY >= RECOVERY_LIMITS.normalY && c.forceN >= RECOVERY_LIMITS.minimumLoadN);
     r.landingContactS = loadedLandingContact ? r.landingContactS + Math.max(0,snapshot.simulationTime - previous.simulationTime) : 0;
   }
   if (recovery.phase !== previous.diagnostics.recovery.phase) {
@@ -131,9 +138,9 @@ function measure(r: RecordData, snapshot: PoseSnapshot, character: CharacterCont
     const shins = contacts.filter(c => c.segment === "leftShin" || c.segment === "rightShin");
     const hands = contacts.filter(c => /Hand|Forearm/.test(c.segment));
     const torsoUp = rotate(pose(previous,"torso").rotation, UP).y, pelvisHeight = pose(previous,"pelvis").position.y;
-    if (previous.diagnostics.recovery.phase === "protect" && recovery.phase === "settle" && (!previous.diagnostics.recovery.contacts.some(c => !c.segment.endsWith("Foot") && c.normalY >= RECOVERY_LIMITS.normalY && c.forceN >= RECOVERY_LIMITS.minimumLoadN) || r.landingContactS + 1e-8 < RECOVERY_LIMITS.landingPersistenceS)) r.violations.add("Landing lacks 0.10 s consecutive loaded non-foot floor contact");
-    if (recovery.phase === "roll" && (previous.diagnostics.recovery.settledTimeS + DT < RECOVERY_LIMITS.settlePersistenceS || !contacts.length)) r.violations.add("Recovery began without persistent settled contact");
-    if (recovery.phase === "brace" && (!(hands.length || shins.length || feet.length) || torsoUp <= 0.25 || pelvisHeight <= 0.28)) r.violations.add("Brace phase advanced without contact/pose evidence");
+    if (previous.diagnostics.recovery.phase === "protect" && recovery.phase === "settle" && ((!previous.diagnostics.recovery.contacts.some(c => !c.segment.endsWith("Foot") && c.normalY >= RECOVERY_LIMITS.normalY && c.forceN >= RECOVERY_LIMITS.minimumLoadN) && !(feet.length === 2 && torsoUp > 0.65 && pelvisHeight < 0.85)) || r.landingContactS + 1e-8 < RECOVERY_LIMITS.landingPersistenceS)) r.violations.add("Landing lacks 0.10 s consecutive loaded floor contact or balanced supported crouch");
+    if (previous.diagnostics.recovery.phase === "settle" && ["roll", "brace", "kneel", "stand"].includes(recovery.phase) && (previous.diagnostics.recovery.settledTimeS + DT < RECOVERY_LIMITS.settlePersistenceS || !contacts.length)) r.violations.add("Recovery began without persistent settled contact");
+    if (recovery.phase === "brace" && (!(hands.length || shins.length || feet.length) || (torsoUp <= 0.25 || pelvisHeight <= 0.28) && !measuredProneBraceSupport(previous,physicalContactsBefore))) r.violations.add("Brace phase advanced without contact/pose evidence");
     if (recovery.phase === "kneel" && (!(shins.length || feet.length) || torsoUp <= 0.65 || pelvisHeight <= 0.38)) r.violations.add("Kneel phase advanced without contact/pose evidence");
     if (recovery.phase === "stand" && (feet.length !== 2 || torsoUp <= 0.88 || pelvisHeight <= 0.55)) r.violations.add("Stand phase advanced without contact/pose evidence");
   }
@@ -165,7 +172,7 @@ function measure(r: RecordData, snapshot: PoseSnapshot, character: CharacterCont
 async function create(options: { heading?: number; position?: Vec3 } = {}): Promise<CharacterController> {
   const factory = createEmbodiedCharacter as unknown as (renderer: "canvas2d", options: { heading?: number; position?: Vec3 }) => Promise<CharacterController>;
   const character = await factory("canvas2d", options), initial = character.getSnapshot("canvas2d");
-  const r: RecordData = { states: [], phases: [], violations: new Set(), transfers: [], maxJointM: 0, maxFloorM: 0, maxLinearMps: 0, maxAngularRadps: 0, maxStepCount: 0,
+  const r: RecordData = { physicalRecovery: newRecoveryPhysicsMeasurements(), states: [], phases: [], violations: new Set(), transfers: [], maxJointM: 0, maxFloorM: 0, maxLinearMps: 0, maxAngularRadps: 0, maxStepCount: 0,
     lockedFrames: 0, supportedFrames: 0, assistedFrames: 0, firstFallS: null, recoveredS: null, final: initial, samples: 0, floorPresent: true,
     protectiveElbowDegrees: 0, protectiveHeadDegrees: 0, protectiveTorsoDegrees: 0, lateralNearArmTargetProgressDegrees: 0, nearArmEntryErrorDegrees: null, lateralBracedContact: false, stableStandingS: 0, landingContactS: 0, orientations: new Set() };
   records.set(character, r);
@@ -210,6 +217,8 @@ async function create(options: { heading?: number; position?: Vec3 } = {}): Prom
             const originalImpulse = body.applyImpulse.bind(body);
             Object.defineProperty(body, "applyImpulse", { configurable: true, value: (impulse: Vec3, wake: boolean) => {
               if (!r.floorPresent && length(impulse) > 0) r.violations.add("Unsupported pelvis received an assistance impulse");
+              if (impulse.y / DT > TOTAL_MASS_KG * 9.81 * 0.20 + 1e-6) r.violations.add("Actual pelvis upward impulse exceeds 20% body weight");
+              if (this.diagnostics().recovery.phase === "roll" && impulse.y > 1e-9) r.violations.add("Actual upward pelvis assistance during rolling");
               return originalImpulse(impulse, wake);
             } });
           }
@@ -242,7 +251,7 @@ function commandAt(f: PullFixture, frame: number, start: Vec3, pointerId: number
   return { kind: "move", pointerId, worldTarget: add(start, rotate(quatFromAxisAngle(UP, f.initial.heading), offsetAt(f, frame))), timestampMs: frame * DT * 1000 };
 }
 function describe(r: RecordData): Record<string, unknown> {
-  return { states: r.states, phases: r.phases, samples: r.samples, maxJointSeparationM: r.maxJointM, maxFloorPenetrationM: r.maxFloorM,
+  return { physicalRecovery: r.physicalRecovery.report, states: r.states, phases: r.phases, samples: r.samples, maxJointSeparationM: r.maxJointM, maxFloorPenetrationM: r.maxFloorM,
     maxLinearMps: r.maxLinearMps, maxAngularRadps: r.maxAngularRadps, steps: r.maxStepCount, lockedFrames: r.lockedFrames, supportedFrames: r.supportedFrames, assistedFrames: r.assistedFrames,
     firstFallS: r.firstFallS, recoveredS: r.recoveredS, recoveryDurationS: r.recoveredS !== null && r.firstFallS !== null ? r.recoveredS - r.firstFallS : null,
     transfers: r.transfers, finalState: r.final.state, finalRoot: r.final.rootPosition, finalRecovery: r.final.diagnostics.recovery,
@@ -353,6 +362,16 @@ await scenario("seven-region-picking", async failures => {
   if (picked.some(p => p.region !== p.hit)) failures.push("Not all seven regions can be picked"); return { picked };
 });
 for (const f of [...PULL_FIXTURES,...NATIVE_REGRESSION_FIXTURES]) await scenario(f.id, failures => runPull(f, failures));
+
+for (const fixture of RECOVERY_POSE_FIXTURES) await scenario(fixture.id, async failures => {
+  const c = await create({ heading: fixture.heading });
+  seedRecoveryFixture(c, fixture);
+  const initial = c.getSnapshot("canvas2d"), r = records.get(c)!;
+  advance(c, (ACCEPTANCE.recoveryLimitS + ACCEPTANCE.stableObservationS + 1) * 60);
+  requireRecovery(r, failures);
+  if (!r.physicalRecovery.report.routeEntries.length) failures.push("Landed fixture never selected a support-driven route");
+  return { fixture, initial, physical: r.physicalRecovery.report };
+});
 
 for(const fixture of NATIVE_STREAMS.fixtures) await scenario("captured-"+fixture.id,async failures=>{
   const c=await create(),r=records.get(c)!,initial=c.getSnapshot("canvas2d");
@@ -482,13 +501,14 @@ for (const targetState of ["falling", "fallen", "recovering"] as const) await sc
   const fresh = begin(c, "leftHand", 72); c.fixedUpdate(DT, fresh.command); if (!c.diagnostics().activeGrab) failures.push("Fresh input rejected after Reset"); c.clearBodyInput(); return { targetState, pausedSequence: paused.sequence, resetState: reset.state };
 });
 
+if (!results.length) throw new Error("No physics scenarios matched " + (SCENARIO_PATTERN ?? "the configured selection"));
 const failed = results.filter(r => !r.passed);
 const report = { schema: 3, objective: "support-and-momentum-balance-protective-fall-dynamic-recovery", generatedAt: new Date().toISOString(), engine: "Rapier " + RAPIER.version(), node: process.version, fixedHz: 60,
-  selection: SCENARIO_PATTERN ?? "all", acceptance: ACCEPTANCE, recoveryThresholds: RECOVERY_LIMITS, supportEligibility: ELIGIBLE, nativeCommandFixtureFile:"scripts/fixtures/native-fixed-streams.json", fixtures: [...PULL_FIXTURES,...NATIVE_REGRESSION_FIXTURES],
+  selection: SCENARIO_PATTERN ?? "all", acceptance: ACCEPTANCE, recoveryThresholds: RECOVERY_LIMITS, supportEligibility: ELIGIBLE, nativeCommandFixtureFile:"scripts/fixtures/native-fixed-streams.json", fixtures: [...PULL_FIXTURES,...NATIVE_REGRESSION_FIXTURES], landedPoseFixtures: RECOVERY_POSE_FIXTURES,
   measurement: { joints: "World-space distance between paired anatomical anchors every fixed update and both same-instant handoffs", floor: "Nonnegative penetration from an independent Rapier contactShape query between the actual finite enabled floor and each oriented Ball/Capsule/Cuboid; clearance or missing floor is zero error", handoff: "All segment poses before/after transfer without integration; shortest relative quaternion angle", trajectories: "Identical initial state, Rapier backend, build, 1/60 s sequence; compare every segment every tick" },
   summary: { passed: failed.length === 0, passedScenarios: results.length - failed.length, failedScenarios: failed.length }, results };
 mkdirSync("evidence", { recursive: true });
-const outputPrefix=SCENARIO_PATTERN?"evidence/physics-selected":"evidence/physics";
+const outputPrefix=process.env.PHYSICS_OUTPUT_PREFIX ?? (SCENARIO_PATTERN?"evidence/physics-selected":"evidence/physics");
 writeFileSync(outputPrefix+"-results.json", JSON.stringify(report, null, 2) + "\n");
-writeFileSync(SCENARIO_PATTERN?"evidence/physics-selected-trace.ndjson":"evidence/successor-trace.ndjson", trace.map(row => JSON.stringify(row)).join("\n") + "\n");
+writeFileSync(process.env.PHYSICS_OUTPUT_PREFIX ? outputPrefix+"-trace.ndjson" : SCENARIO_PATTERN?"evidence/physics-selected-trace.ndjson":"evidence/successor-trace.ndjson", trace.map(row => JSON.stringify(row)).join("\n") + "\n");
 console.log(JSON.stringify(report.summary)); process.exitCode = failed.length ? 1 : 0;

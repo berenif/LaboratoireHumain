@@ -32,28 +32,30 @@ Touching alone does not authorize assistance. A load-bearing segment must also b
 | `kneel` | Hands, shins, feet |
 | `stand` | Feet |
 
-Landing requires loaded **non-foot** floor contact for **0.10 consecutive seconds**; already planted feet cannot establish landing. Settling requires a loaded floor contact together with mass-weighted RMS linear speed at most **0.65 m/s** and RMS angular speed at most **1.8 rad/s**, continuously for **0.30 seconds**. Each RMS includes all sixteen segments, weighted by the declared segment masses.
+Landing requires loaded **non-foot** floor contact for **0.10 consecutive seconds**, or two loaded feet in an already supported low crouch (torso-up Y > 0.65 and pelvis Y < 0.85 m). Settling requires a loaded floor contact together with mass-weighted RMS linear speed at most **0.65 m/s** and RMS angular speed at most **1.8 rad/s**, continuously for **0.30 seconds**. Each RMS includes all sixteen segments, weighted by the declared segment masses.
 
 ## Protective motion and phase progression
 
 At fall entry, the initial protective direction is expressed relative to the character heading. Forward protection brings bent arms forward; lateral protection abducts the near arm; backward protection bends the torso and tucks the head. The arm, elbow, torso, head, hip, knee, and ankle targets are relative joint angles constrained by the anatomical target limits in `src/core/humanoid.ts`.
 
-Once settled, the actual landed torso orientation selects forward, backward, left, or right recovery. Its world forward/right axes determine which side faces the floor. Rolling uses a corresponding pelvis pitch target: **-0.30 rad forward**, **-0.50 rad backward**, or **-0.45 rad lateral**. A backward roll keeps the torso flexed at **+0.40 rad** relative to the pelvis and targets upper-arm pitch **+0.40 rad**. Other roll orientations target torso pitch **+0.15 rad** and upper-arm pitch **-1.45 rad**. These targets retain trunk flexion while the body establishes bracing contact; the following phases progressively bring the pelvis over lower supporting segments and extend the legs.
+After the existing settling interval, route selection prefers established support: balanced planted soles select a crouch rise; a planted foot with the opposite shin supporting selects half-kneeling; a prone body with arm support selects arm-assisted preparation; remaining poses roll toward arm support. The chosen route, leading side, and roll side remain fixed until a retry. Ties use deterministic side order. Reachable foot placements are calculated with the shared two-bone solver and anatomical joint limits before comparing required travel.
+
+Measured physical conditions may skip preparation. A balanced crouch can enter `stand` directly only with both persistent loaded soles, foot-up Y > 0.85, torso-up Y > 0.88, pelvis Y > 0.55 m, and projected mass inside the actual sole support hull. A supported half-kneel can start in `kneel`; that phase includes the initial rise and trailing-foot placement. A prone body first repositions unusable arms while its existing body and limb contacts remain grounded.
 
 | Transition | Required contact and pose evidence |
 | --- | --- |
-| `protect` → `settle` | Loaded non-foot floor contact for 0.10 s |
-| `settle` → `roll` | Loaded floor contact and the settling motion bounds for 0.30 s |
-| `roll` → `brace` | At least 0.20 s in phase; a load-bearing hand/forearm, shin, or foot; torso-up Y > 0.25; pelvis Y > 0.28 m |
+| `protect` → `settle` | Loaded non-foot floor contact for 0.10 s, or an already supported low crouch |
+| `settle` → selected preparation | Loaded floor contact and the settling motion bounds for 0.30 s |
+| `roll` → `brace` | Established bracing support; ordinary route requires at least 0.20 s, torso-up Y > 0.25 and pelvis Y > 0.28 m; a prone preparation may instead establish measured usable arm support over grounded body support |
 | `brace` → `kneel` | At least 0.20 s in phase; a load-bearing shin or foot; torso-up Y > 0.65; pelvis Y > 0.38 m |
-| `kneel` → `stand` | At least 0.20 s in phase; both feet load-bearing; torso-up Y > 0.88; pelvis Y > 0.55 m |
+| `kneel` → `stand` | At least 0.20 s in phase; both feet load-bearing and sole-up Y > 0.85; torso-up Y > 0.88; pelvis Y > 0.55 m |
 | `stand` → procedural `upright` | The stable standing conditions below persist for 0.55 s |
 
 Stable standing requires **both load-bearing feet**, each foot-up Y **> 0.97**, torso and pelvis up-vector Y **≥ 0.97**, pelvis Y **> 0.93 m**, mass-weighted RMS linear speed **≤ 0.22 m/s**, and RMS angular speed **≤ 0.65 rad/s**. Failure of any condition resets the stable timer. Elapsed phase time alone cannot complete a transition.
 
 ## Bounded muscles and assistance
 
-Joint muscles use an implicit proportional/derivative response based on world inverse inertia. The implementation copies Rapier's temporary inertia result before another query can reuse its backing buffer. Each target remains anatomically bounded, and the resulting torque vector is independently capped before applying equal and opposite parent/child torque impulses.
+Joint muscles use relative rotation targets from the same reachable two-bone geometry as the upright solver. Targets blend from the measured entry rotations and retain the anatomical knee and elbow bend directions. All muscle impulses are computed from one measured state, using copied world inverse-inertia tensors. A coupled implicit proportional/derivative solve accounts for shared bodies; bounded block solves propagate each saturated torque into neighboring motors. Every joint impulse has an equal and opposite parent impulse. No target is written into a dynamic body's pose.
 
 | Joint group | Maximum torque magnitude |
 | --- | --- |
@@ -64,19 +66,19 @@ Joint muscles use an implicit proportional/derivative response based on world in
 | Neck and head | **22 Nm** |
 | Hands | **9 Nm** |
 
-Pelvis assistance has separate vector caps of **950 N** and **300 Nm**. It can act only in `roll`, `brace`, `kneel`, or `stand` while at least one eligible, persistent load-bearing contact exists. Impulses equal the bounded force or torque multiplied by the fixed timestep. Joint muscles and pelvis assistance are separate from external grab forces.
+Residual pelvis assistance retains the 950 N total force ceiling and is capped at **60 Nm** of torque. Its upward component is at most **20% of body weight**, and is zero throughout rolling or without adequate loaded lower support and projected balance. There is no upward rolling target and no body-weight compensation term. The pelvis orientation target joins the same coupled torque solve and blends from the measured entry rotation.
 
-The `rollHeight` target starts at the actual pelvis Y position when `roll` begins. With qualifying support, it can advance when torso-up Y is **> 0.25**, or while a prone body has both a persistent load-bearing **hand or forearm** and an eligible load-bearing **thigh, shin, or foot**. The latter path lets the braced trunk rise before it points upward; it does not bypass the contact and pose requirements for entering `brace`.
+Joint load compensation uses the measured contact distribution and descendant masses. Those torques act internally, with equal and opposite impulses; only Rapier's floor reactions and the separately capped residual assistance can raise the character.
 
-Each qualifying tick sets `rollHeight = min(0.43, max(previousRollHeight, actualPelvisY) + dt * 0.22)`: the target follows the higher of its previous value and the current pelvis height, adds a **0.22 m/s** rise, and caps the result at **0.43 m**. While rolling with torso-up Y **< 0.25**, the upward assistance component remains limited to **55% of total body weight**; the overall **950 N** force and **300 Nm** torque caps still apply. This starts from the landed height and limits lift while the trunk is inverted, while allowing established arm-and-leg support to make progress.
+A plant captures its world target when contact has persisted for 0.05 s. Sliding cannot move that target. The controller retains it until a deliberate release or sustained loss of support. A deliberately released support cannot count again until a measured unload followed by three freshly loaded frames. Releasing an adjacent segment does not erase that unload history.
 
-Pelvis height targets are **0.57 m** in `brace` and **0.72 m** in `kneel`. In supported `stand`, a bounded progress variable advances at **0.6/s**, raising the target from **0.72 m** to the skeleton's declared **0.99 m pelvis-center height** and extending the hip/knee targets. This variable shapes the motor target; it cannot declare standing. Horizontal assistance targets the landed pelvis location in early phases and, in kneeling/standing, the average world-space ankle position computed from each supporting foot's actual transform and anatomical joint anchor.
+Weight transfer uses the full mass-weighted center of mass and velocity. Before deliberately releasing loaded support, its position projected **0.15 seconds** forward must lie inside the convex hull of the remaining loaded solver contact points. Released, unloaded, and merely planned contacts cannot enlarge that hull. A point or line provides no support area. The release margin and released segments are recorded for independent verification.
 
-Assistance authorization stops when qualifying support disappears; the next integration receives no pelvis assistance without suitable support. Disabling the floor between updates invalidates its contact evidence before applying assistance. Unsupported recovery remains dynamic.
+Disabling the floor invalidates its contact evidence before the next assistance decision. Unsupported recovery remains dynamic and can retry.
 
 ## Retry instead of forced completion
 
-A recovering phase returns to `settle` after more than **0.20 seconds** without eligible supporting contact, or more than **3.0 seconds** without sufficient progress. Pose progress is the reduction in absolute pelvis-height error plus **0.4 × max(0, 1 - torso-up Y)**; an improvement over the best error by more than **0.015** resets the stall timer. The progress metric uses the final phase height goal, including **0.43 m** for rolling, separately from the gradual motor height target.
+A recovering phase returns to `settle` after more than **0.20 seconds** without eligible supporting contact, or more than **3.0 seconds** without sufficient progress. Progress is measured from physical height, torso orientation, and active placement error. Arm preparation measures hand travel toward captured targets; a successful placement need not raise the pelvis. Improvement exceeding 0.015 resets the stall timer. Route and transfer-stage changes capture new measured entry targets.
 
 During `stand`, a **new best consecutive stable interval** also resets the stall timer. The `bestStableTime` field retains the longest interval achieved in the current phase; only an interval longer than that record, with a **1e-9 s** comparison tolerance, counts as new progress. Repeated short intervals cannot indefinitely reset a stall. The completion condition still requires **0.55 uninterrupted seconds**, and the stall threshold remains **3.0 seconds**. Phase entry resets the pose-progress record, best stable interval, and support-loss timer.
 
@@ -95,3 +97,7 @@ Cleanup calls `clearBodyInput` directly and does not advance a physics step. A p
 Diagnostics expose COM and capture-point balance, stance/support intent, instability persistence, actual dynamic contact loads and ages, recovery phase and timers, retry count, bounded assistance, maximum joint motor torque, handoff measurements, and body-input availability. External grab diagnostics remain separate from motor and recovery assistance diagnostics. Procedural `balance` diagnostics are **null during dynamic states and throughout the 0.75-second return transition**, then populate after the recalibrated controller resumes; this prevents stale support or force data from a previous authority. The balance step count starts a new cycle after recovery.
 
 Floor penetration is measured against the **finite, enabled floor collider** with Rapier `contactShape` and each segment's actual oriented shape. Only negative contact distance contributes positive penetration depth. Clearance, an absent contact beyond the floor, or a disabled floor contributes zero; an infinite plane approximation is not used.
+
+## Current implementation verification
+
+The new crouch path has passed all four mirrored and rotated crouch fixtures, with 2.02–2.05-second recovery and 2.2–3.4 cm maximum measured planted drift in `evidence/crouch-tuning-production.json`. These are intermediate results, not acceptance of all routes. Arm-assisted, rolling, and half-kneeling recoveries are still being tuned. The full physics harness and final visual acceptance must pass before this iteration is complete.

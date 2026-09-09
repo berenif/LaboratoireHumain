@@ -91,7 +91,7 @@ export function poseAnchor(pose: MutablePose, anchor: Vec3): Vec3 {
   return worldPoint(pose.position, pose.rotation, anchor);
 }
 
-function solveTwoBone(
+export function solveTwoBone(
   start: Vec3,
   requestedEnd: Vec3,
   firstLength: number,

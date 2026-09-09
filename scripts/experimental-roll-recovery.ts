@@ -1,18 +1,18 @@
 import type { Collider, RigidBody, World } from "@dimforge/rapier3d-compat";
-import { HUMAN_PROPORTIONS, SEGMENT_BY_ID, SEGMENTS, TOTAL_MASS_KG } from "../core/humanoid";
-import type { MotionState, Quat, RecoveryDiagnostics, RecoveryPhase, SegmentId, SupportingContact, SegmentPose, Vec3 } from "../core/types";
-import { add, angularVelocity, clamp, clampLength, length, lerp, dot, cross, normalize, quatFromTo, smooth01, quatFromAxisAngle, quatInverse, quatMultiply, rotate, scale, sub, worldPoint } from "./math";
+import { HUMAN_PROPORTIONS, SEGMENT_BY_ID, SEGMENTS, TOTAL_MASS_KG } from "../src/core/humanoid";
+import type { MotionState, Quat, RecoveryDiagnostics, RecoveryPhase, SegmentId, SupportingContact, SegmentPose, Vec3 } from "../src/core/types";
+import { add, angularVelocity, clamp, clampLength, length, lerp, dot, cross, normalize, quatFromTo, smooth01, quatFromAxisAngle, quatInverse, quatMultiply, rotate, scale, sub, worldPoint } from "../src/character/math";
 
 const ZERO: Vec3 = { x: 0, y: 0, z: 0 };
 const UP: Vec3 = { x: 0, y: 1, z: 0 };
-import { solveTwoBone } from "./pose";
-import { reachableFootTarget } from "./recovery-foot-targets";
-import { solveRecoveryMotorTorques, type RecoveryMotorIntent, type RecoveryBodyInverseInertia } from "./recovery-motors";
-import { recoveryMassState, selectRecoveryRoute, supportGeometry, reachableArmBraceTarget, solveRecoveryArmTarget, usableRecoveryArmSupport, type RecoveryArmBraceTarget } from "./recovery-support";
+import { solveTwoBone } from "../src/character/pose";
+import { reachableFootTarget } from "../src/character/recovery-foot-targets";
+import { solveRecoveryMotorTorques, type RecoveryMotorIntent, type RecoveryBodyInverseInertia } from "../src/character/recovery-motors";
+import { recoveryMassState, selectRecoveryRoute, supportGeometry, reachableArmBraceTarget, usableRecoveryArmSupport, type RecoveryArmBraceTarget } from "../src/character/recovery-support";
 const SIDES = ["left", "right"] as const;
 type Side = typeof SIDES[number];
 type Stage = RecoveryDiagnostics["transferStage"];
-type Plant = { position: Vec3; rotation: Quat; absentS: number; contact?:Vec3 };
+type Plant = { position: Vec3; rotation: Quat; absentS: number };
 const WEIGHT_N = TOTAL_MASS_KG * 9.81;
 const FORWARD = { x: 0, y: 0, z: 1 };
 /** Frozen acceptance parameters. Persistence always requires consecutive qualifying frames. */
@@ -66,14 +66,12 @@ export class DynamicRecovery {
   private rootGoal: Vec3 = ZERO;
   private rootRotation: Quat = { x: 0, y: 0, z: 0, w: 1 };
   private rollTurned = false;
-  private riseOrigin:Vec3=ZERO;
-  private swingOrigin:Vec3=ZERO;
+  private rollArmsPrepared=false;
   private placingProneArms = false;
   private placementRootRotation:Quat={x:0,y:0,z:0,w:1};
   private placementTorsoRotation:Quat={x:0,y:0,z:0,w:1};
   private armBraces=new Map<Side,RecoveryArmBraceTarget>();
   private armStarts=new Map<Side,Vec3>();
-  private armTimes=new Map<Side,number>();
   private rootEntry:Quat={x:0,y:0,z:0,w:1};
 
   reset(heading: number, direction: Vec3): void {
@@ -81,7 +79,7 @@ export class DynamicRecovery {
     this.heading = heading;
     const local = rotate(quatInverse(quatFromAxisAngle(UP, heading)), direction);
     this.data.orientation = Math.abs(local.x) > Math.abs(local.z) ? (local.x < 0 ? "left" : "right") : (local.z < 0 ? "backward" : "forward");
-    this.placingProneArms=false; this.armBraces.clear(); this.armStarts.clear(); this.armTimes.clear();
+    this.placingProneArms=false; this.armBraces.clear(); this.armStarts.clear();
     this.contactAges.clear(); this.plants.clear(); this.placements.clear(); this.released.clear(); this.releasedUnloaded.clear(); this.entry.clear(); this.bend.clear();
     this.landingTime = 0; this.noSupportTime = 0; this.bestError = Infinity; this.bestStableTime = 0; this.stageTime = 0;
   }
@@ -144,7 +142,7 @@ export class DynamicRecovery {
     for (const c of contacts) {
       if (!c.loadBearing || this.plants.has(c.segment) || this.released.has(c.segment) || !/Hand|Forearm|Shin|Foot/.test(c.segment)) continue;
       const pose = poses.get(c.segment)!;
-      this.plants.set(c.segment, { position: {...pose.position}, rotation: {...pose.rotation}, absentS: 0, contact:{...c.point} });
+      this.plants.set(c.segment, { position: {...pose.position}, rotation: {...pose.rotation}, absentS: 0 });
     }
     this.data.plantedTargets = [...this.plants].map(([segment, p]) => ({segment, position:p.position, rotation:p.rotation,
       driftM: length(sub(poses.get(segment)!.position, p.position))}));
@@ -152,7 +150,7 @@ export class DynamicRecovery {
     this.data.centerOfMass = mass.position; this.data.projectedCenterOfMass = geometry.projectedCenterOfMass;
     this.data.supportMarginM = geometry.marginM;
     this.data.supporting = this.supporting().map(c => c.segment);
-    // Retain the impulse actually applied this step, even if contact is lost during integration.
+    if (!this.data.supporting.length) { this.data.assistanceForce = ZERO; this.data.assistanceTorque = ZERO; }
   }
 
   private supporting(): SupportingContact[] {
@@ -179,13 +177,17 @@ export class DynamicRecovery {
   private enter(phase: RecoveryPhase, bodies: Map<SegmentId, RigidBody>): void {
     this.data.phase = phase; this.data.phaseTimeS = 0; this.data.stalledTimeS = 0; this.data.stableTimeS = 0;
     this.noSupportTime = 0; this.bestError = Infinity; this.bestStableTime = 0; this.captureEntry(bodies);
-    if (phase === "settle") { this.data.transferStage = "none"; this.data.route = "none"; this.released.clear(); this.releasedUnloaded.clear(); }
+    if (phase === "settle") { this.data.transferStage = "none"; this.data.route = "none"; this.released.clear(); }
   }
   private chooseRoute(bodies: Map<SegmentId, RigidBody>): void {
     const poses = this.poses(bodies), pelvis = poses.get("pelvis")!;
     const forward = rotate(poses.get("torso")!.rotation, FORWARD), right = rotate(poses.get("torso")!.rotation, {x:1,y:0,z:0});
     this.data.orientation = Math.abs(right.y) > Math.abs(forward.y) ? (right.y > 0 ? "left" : "right") : (forward.y > 0 ? "backward" : "forward");
-    this.rootGoal = {...pelvis.position}; this.riseOrigin={...pelvis.position}; this.placements.clear(); this.released.clear(); this.rollTurned = false;
+    this.rootGoal = {...pelvis.position}; this.placements.clear(); this.released.clear(); this.rollTurned = false; this.rollArmsPrepared=false;
+    const bodyUp=rotate(poses.get("torso")!.rotation,UP);
+    const bodyForward=rotate(pelvis.rotation,FORWARD);
+    const floorDirection=bodyUp.y>.65 && pelvis.position.y>.38 ? bodyForward : bodyUp;
+    if(Math.hypot(floorDirection.x,floorDirection.z)>.25) this.heading=Math.atan2(floorDirection.x,floorDirection.z);
     const footTargets = {left: reachableFootTarget("left",poses,this.heading)!.position, right: reachableFootTarget("right",poses,this.heading)!.position};
     for (const side of SIDES) {
       const foot: SegmentId = `${side}Foot`, hand: SegmentId = `${side}Hand`;
@@ -208,14 +210,8 @@ export class DynamicRecovery {
     }
     const selected = selectRecoveryRoute({poses,contacts:this.data.contacts,footTargets});
     this.data.route = selected.route; this.data.leadingSide = selected.leadingSide; this.data.rollSide = selected.rollSide;
-    this.armBraces.clear(); this.armStarts.clear(); this.armTimes.clear();
-    if(selected.route!=="crouch" && selected.route!=="half-kneel") for(const side of SIDES) {
-      const target=reachableArmBraceTarget(side,poses,this.heading);
-      if(target?.floorReachable && target.jointLimitErrorRad<1e-6) this.armBraces.set(side,target);
-      this.armStarts.set(side,{...poses.get(`${side}Hand`)!.position});
-    }
-    this.placementRootRotation={...pelvis.rotation};
-    this.placementTorsoRotation=quatMultiply(quatInverse(pelvis.rotation),poses.get("torso")!.rotation);
+    if(selected.route!=="crouch" && selected.route!=="half-kneel") this.prepareArms(bodies,poses);
+    else {this.armBraces.clear();this.armStarts.clear();}
     this.placingProneArms=selected.route==="prone" && !SIDES.every(side=>usableRecoveryArmSupport(side,poses,this.data.contacts.filter(c=>c.segment.endsWith("Hand"))));
     const up = rotate(poses.get("torso")!.rotation,UP).y;
     const lower = this.data.contacts.some(c=>c.loadBearing && /Shin|Foot/.test(c.segment));
@@ -230,10 +226,23 @@ export class DynamicRecovery {
     else { this.enter("roll",bodies); this.stage("roll",bodies); }
   }
 
+  private prepareArms(bodies:Map<SegmentId,RigidBody>,poses:Map<SegmentId,SegmentPose>):void {
+    const pelvis=poses.get("pelvis")!;
+    const right=rotate(poses.get("torso")!.rotation,{x:1,y:0,z:0});
+    const braceHeading=Math.hypot(right.x,right.z)>.25?Math.atan2(-right.z,right.x):this.heading;
+    this.armBraces.clear(); this.armStarts.clear();
+    for(const side of SIDES) {
+      const target=reachableArmBraceTarget(side,poses,braceHeading);
+      if(target?.floorReachable && target.jointLimitErrorRad<1e-6) this.armBraces.set(side,target);
+      this.armStarts.set(side,{...poses.get(`${side}Hand`)!.position});
+    }
+    this.placementRootRotation={...pelvis.rotation};
+    this.placementTorsoRotation=quatMultiply(quatInverse(pelvis.rotation),poses.get("torso")!.rotation);
+    this.captureEntry(bodies);
+  }
+
   private armPlacementReady(side:Side,poses:Map<SegmentId,SegmentPose>):boolean {
-    const target=this.armBraces.get(side);
-    return !!target && usableRecoveryArmSupport(side,poses,this.data.contacts.filter(c=>c.segment.endsWith("Hand") && !this.released.has(c.segment)))
-      && length(sub(poses.get(`${side}Hand`)!.position,target.position))<.14;
+    return usableRecoveryArmSupport(side,poses,this.data.contacts.filter(c=>c.segment.endsWith("Hand") && !this.released.has(c.segment)));
   }
   private release(ids: SegmentId[], poses: Map<SegmentId,SegmentPose>): boolean {
     if(ids.every(id=>this.released.has(id))) return false;
@@ -316,29 +325,36 @@ export class DynamicRecovery {
     let center=geometry.center;
     let height=pelvis.position.y;
     let tilt=.0;
+    const torso=poses.get("torso")!;
+    if(phase==="roll" && !this.placingProneArms) {
+      this.rollTurned ||= rotate(torso.rotation,FORWARD).y<-.5;
+      if(this.rollTurned && !this.rollArmsPrepared && rotate(torso.rotation,FORWARD).y<-.5 && Math.abs(rotate(torso.rotation,{x:1,y:0,z:0}).y)<.35 && pelvis.position.y<.40) {
+        this.prepareArms(bodies,poses);this.rollArmsPrepared=true;this.placingProneArms=true;
+      }
+    }
     if(phase==="roll" && this.placingProneArms) {
       this.rootGoal={...pelvis.position};this.rootRotation=this.placementRootRotation;
       const first=this.data.rollSide!,second:Side=first==="left"?"right":"left";
       for(const side of [first,second]) {
         if(this.armPlacementReady(side,poses)) continue;
         const target=this.armBraces.get(side); if(!target)continue;
-        const moving=this.released.has(`${side}Hand`);
         if(this.release([`${side}Hand`,`${side}Forearm`],poses) || (this.released.has(`${side}Hand`) && this.released.has(`${side}Forearm`))) {
-          if(!moving) {this.armStarts.set(side,{...poses.get(`${side}Hand`)!.position});this.armTimes.set(side,0);}
-          const t=(this.armTimes.get(side)??0)+dt;this.armTimes.set(side,t);
           const start=this.armStarts.get(side)??poses.get(`${side}Hand`)!.position;
-          const p=lerp(start,target.position,smooth01(t/.8));
-          const lift=.15*smooth01(t/.25)*(1-smooth01((t-.8)/.35));
+          const p=lerp(start,target.position,smooth01(this.stageTime/.8));
+          const lift=.15*smooth01(this.stageTime/.25)*(1-smooth01((this.stageTime-.8)/.35));
           this.placements.set(`${side}Hand`,{...p,y:p.y+lift});
           this.bend.set(`${side}UpperArm`,rotate(quatInverse(poses.get("torso")!.rotation),target.bend));
         }
       }
       return;
     }    if(phase==="roll") {
+      for(const side of [this.data.rollSide==="left"?"right":"left",this.data.rollSide!] as Side[]) {
+        this.release([`${side}Foot`,`${side}Shin`],poses);this.release([`${side}Hand`,`${side}Forearm`],poses);
+      }
       const forward=rotate(pelvis.rotation,FORWARD);
-      this.rollTurned ||= forward.y<-.45;
-      tilt=.90;
-      this.rootRotation=quatMultiply(yaw,rotation(tilt,0,this.rollTurned||this.data.route==="prone"?0:(this.data.rollSide==="left"?1:-1)*1.25));
+      void forward;
+      tilt=Math.PI/2;
+      this.rootRotation=quatMultiply(quatMultiply(yaw,pitch(tilt)),quatFromAxisAngle(UP,this.rollTurned||this.data.route==="prone"?0:(this.data.rollSide==="left"?1:-1)*1.25));
       if(this.data.route==="prone" || this.rollTurned) {
         for(const side of SIDES) {
           const foot:SegmentId=`${side}Foot`;
@@ -355,7 +371,7 @@ export class DynamicRecovery {
           if(this.release([foot,`${trail}Shin`],poses)) this.placements.set(foot,{...add(pelvis.position,rotate(yaw,{x:(trail==="left"?-1:1)*.16,y:0,z:-.36})),y:.066});
         }
       }
-      else if(phase==="kneel") { height=(loaded(leadFoot) || this.plants.has(leadFoot))?.80:.58; tilt=.18; }
+      else if(phase==="kneel") { height=loaded(leadFoot)?.80:.58; tilt=.18; }
       else { height=HUMAN_PROPORTIONS.pelvis.centerHeightM; tilt=0; }
       const feet=this.data.contacts.filter(c=>c.segment.endsWith("Foot") && loaded(c.segment));
       if (feet.length===2) {
@@ -367,18 +383,14 @@ export class DynamicRecovery {
         center=ankle;
       }
       // Shift the virtual root so the whole mass, including the bent torso, moves over support.
-      const riseBlend=phase==="kneel"?smooth01((pelvis.position.y-.65)/.13):1;
-      const initialCorrection=clampLength({x:this.riseOrigin.x-pelvis.position.x,y:0,z:this.riseOrigin.z-pelvis.position.z},.05);
-      const centerCorrection=clampLength({x:center.x-mass.position.x,y:0,z:center.z-mass.position.z},.16);
-      const correction=phase==="kneel"?add(scale(initialCorrection,1-riseBlend),scale(centerCorrection,riseBlend)):centerCorrection;
+      const correction=clampLength({x:center.x-mass.position.x,y:0,z:center.z-mass.position.z},.16);
       const measured=pelvis.position;
       this.rootGoal={x:measured.x+correction.x,y:Math.min(height,measured.y+.10),z:measured.z+correction.z};
-      const intendedRotation=quatMultiply(yaw,pitch(tilt)),rootDelta=angularVelocity(this.rootEntry,intendedRotation,1);
-      this.rootRotation=phase==="kneel"?quatMultiply(quatFromAxisAngle(normalize(rootDelta),length(rootDelta)*riseBlend),this.rootEntry):intendedRotation;
+      this.rootRotation=quatMultiply(yaw,pitch(tilt));
       for(const side of SIDES) {
         const shin:SegmentId=`${side}Shin`, plant=this.plants.get(shin);
         if(!plant || this.released.has(shin)) continue;
-        const knee=this.plantedKnee(side,plant);
+        const knee=worldPoint(plant.position,plant.rotation,SEGMENT_BY_ID.get(shin)!.jointAnchorChild!);
         const anchor=SEGMENT_BY_ID.get(`${side}Thigh`)!.jointAnchorParent!;
         const hip=worldPoint(this.rootGoal,this.rootRotation,anchor),delta=sub(hip,knee);
         if(length(delta)>.418) this.rootGoal=sub(add(knee,scale(normalize(delta),.418)),rotate(this.rootRotation,anchor));
@@ -390,17 +402,15 @@ export class DynamicRecovery {
           const toe=this.data.contacts.find(c=>c.segment===trailingFoot && c.loadBearing && !this.released.has(trailingFoot));
           if(toe && this.plants.has(`${trail}Shin`)) this.release([`${trail}Shin`],poses);
           const leadLoad=this.data.contacts.find(c=>c.segment===leadFoot)?.forceN??0;
-          const readyToLift=leadLoad>WEIGHT_N*.55 && mass.velocity.y>-.05 && pelvis.position.y>.65;
+          const readyToLift=leadLoad>WEIGHT_N*.55 && mass.velocity.y>-.05 && (toe ? pelvis.position.y>.62 : pelvis.position.y>.52);
           if(this.data.transferStage!=="bring-trailing" && readyToLift && this.release([`${trail}Shin`,trailingFoot],poses)) {
-            this.stage("bring-trailing",bodies); this.swingOrigin={...poses.get(trailingFoot)!.position};
+            this.stage("bring-trailing",bodies);
             const foot=this.plants.get(leadFoot)??poses.get(leadFoot)!;
             const offset=rotate(yaw,{x:(trail==="left"?-1:1)*.24,y:0,z:-.04});
             this.placements.set(trailingFoot,{...add(foot.position,offset),y:.049});
           }
         } else this.stage("extend",bodies);
       }
-      if(phase==="kneel" && this.data.transferStage==="bring-trailing" && this.plants.has(trailingFoot)
-        && length(sub(poses.get(trailingFoot)!.position,this.placements.get(trailingFoot)!))>.12) this.release([trailingFoot],poses);
       if(phase==="stand" && pelvis.position.y>.86) {
         const arms=this.data.contacts.filter(c=>c.loadBearing&&/Hand|Forearm/.test(c.segment)).map(c=>c.segment);
         if(this.release(arms,poses)) this.stage("relax",bodies);
@@ -409,29 +419,16 @@ export class DynamicRecovery {
     if(phase==="roll") this.rootGoal={...pelvis.position};
     this.data.extension=clamp((pelvis.position.y-.55)/.44,0,1);
     // A planned foot may be captured again once it has actually replanted.
-
+    
     void dt;
   }
 
-  private plantedKnee(side:Side,plant:Plant):Vec3 {
-    const definition=SEGMENT_BY_ID.get(`${side}Shin`)!;
-    if(this.data.phase!=="kneel" || side===this.data.leadingSide || !plant.contact)
-      return worldPoint(plant.position,plant.rotation,definition.jointAnchorChild!);
-    const shape=definition.shape;
-    if(shape.kind!=="capsule")return worldPoint(plant.position,plant.rotation,definition.jointAnchorChild!);
-    const q=quatMultiply(quatFromAxisAngle(UP,this.heading),pitch(1.8));
-    return add(add(plant.contact,{x:0,y:shape.radius,z:0}),rotate(q,{x:0,y:definition.jointAnchorChild!.y-shape.halfHeight,z:0}));
-  }
-  private kneelTorso(poses:Map<SegmentId,SegmentPose>):Quat {
-    const u=smooth01((poses.get("pelvis")!.position.y-.65)/.15);
-    return rotation(.3-.22*u,0,(this.data.leadingSide==="left"?1:-1)*(.20-.14*u));
-  }
   private limbTargets(side:Side,arm:boolean,poses:Map<SegmentId,SegmentPose>,targets:Map<SegmentId,Quat>):void {
     const upper:SegmentId=arm?`${side}UpperArm`:`${side}Thigh`, lower:SegmentId=arm?`${side}Forearm`:`${side}Shin`, end:SegmentId=arm?`${side}Hand`:`${side}Foot`;
     const ud=SEGMENT_BY_ID.get(upper)!,ld=SEGMENT_BY_ID.get(lower)!,ed=SEGMENT_BY_ID.get(end)!;
     const yaw=quatFromAxisAngle(UP,this.heading), phase=this.data.phase;
     const rootRotation=this.rootRotation;
-    const torsoRotation=quatMultiply(rootRotation,this.placingProneArms?this.placementTorsoRotation:phase==="kneel" ? this.kneelTorso(poses) : pitch(phase==="roll"?-.3:phase==="brace"?-.12:0));
+    const torsoRotation=quatMultiply(rootRotation,this.placingProneArms?this.placementTorsoRotation:phase==="kneel" ? rotation(.3,0,this.data.leadingSide==="left"?.20:-.20) : pitch(phase==="roll"?-.3:phase==="brace"?-.12:0));
     const torsoDef=SEGMENT_BY_ID.get("torso")!;
     const torsoPosition=sub(worldPoint(this.rootGoal,rootRotation,torsoDef.jointAnchorParent!),rotate(torsoRotation,torsoDef.jointAnchorChild!));
     const parentRotation=arm?torsoRotation:rootRotation;
@@ -441,13 +438,11 @@ export class DynamicRecovery {
     const plant=this.plants.get(end);
     const lowerPlant=this.plants.get(lower);
     if(lowerPlant && !this.released.has(lower)) {
-      const middle=arm?worldPoint(lowerPlant.position,lowerPlant.rotation,ld.jointAnchorChild!):this.plantedKnee(side,lowerPlant);
-      const pivoting=!arm && phase==="kneel" && side!==this.data.leadingSide && !!lowerPlant.contact;
-      const lowerRotation=pivoting?quatMultiply(yaw,pitch(1.8)):lowerPlant.rotation;
+      const middle=worldPoint(lowerPlant.position,lowerPlant.rotation,ld.jointAnchorChild!);
       const upperWorld=quatMultiply(quatFromTo(UP,normalize(sub(start,middle))),yaw);
       targets.set(upper,quatMultiply(quatInverse(parentRotation),upperWorld));
-      targets.set(lower,quatMultiply(quatInverse(upperWorld),lowerRotation));
-      targets.set(end,pivoting?pitch(-.65):poses.get(end) ? quatMultiply(quatInverse(poses.get(lower)!.rotation),poses.get(end)!.rotation) : pitch(0));
+      targets.set(lower,quatMultiply(quatInverse(upperWorld),lowerPlant.rotation));
+      targets.set(end,poses.get(end) ? quatMultiply(quatInverse(poses.get(lower)!.rotation),poses.get(end)!.rotation) : pitch(0));
       return;
     }
     if(plant) {desired=plant.position;endRotation=plant.rotation;}
@@ -460,18 +455,6 @@ export class DynamicRecovery {
     if(!arm && (phase==="brace"||phase==="kneel") && side!==this.data.leadingSide && this.data.transferStage!=="bring-trailing" && this.data.transferStage!=="extend" && !plant) {
       desired={...add(this.rootGoal,rotate(yaw,{x:(side==="left"?-1:1)*.14,y:0,z:-.38})),y:.07};
       endRotation=quatMultiply(yaw,pitch(.3));
-    }
-    if(!arm && side!==this.data.leadingSide && this.data.transferStage==="bring-trailing" && !plant) {
-      const u=clamp(this.stageTime/.42,0,1),t=smooth01(u),goal=this.placements.get(end)!;
-      const swing=lerp(this.swingOrigin,goal,t);desired={...swing,y:swing.y+.12*Math.sin(Math.PI*u)};
-    }
-    const brace=this.armBraces.get(side);
-    if(arm && this.placingProneArms && !plant && !lowerPlant && brace) {
-      const solved=solveRecoveryArmTarget(start,desired,brace.trajectoryBend,brace.wristRotation,this.heading);
-      targets.set(upper,quatMultiply(quatInverse(parentRotation),solved.upperRotation));
-      targets.set(lower,quatMultiply(quatInverse(solved.upperRotation),solved.forearmRotation));
-      targets.set(end,brace.wristRotation);
-      return;
     }
     // The same reach-limited geometry solver is shared with procedural standing.
     const requested=worldPoint(desired,endRotation,ed.jointAnchorChild!);
@@ -493,11 +476,22 @@ export class DynamicRecovery {
     const holdCrouch=!active && poses.get("pelvis")!.position.y>.40 && poses.get("pelvis")!.position.y<.85
       && rotate(poses.get("torso")!.rotation,UP).y>.65 && SIDES.some(side=>poses.get(`${side}Foot`)!.position.y<.13);
     if(active) {
-      targets.set("torso",this.placingProneArms?this.placementTorsoRotation:this.data.phase==="kneel" ? this.kneelTorso(poses) : pitch(this.data.phase==="roll"?-.3:this.data.phase==="brace"?-.12:0));
+      targets.set("torso",this.placingProneArms?this.placementTorsoRotation:this.data.phase==="kneel" ? rotation(.3,0,this.data.leadingSide==="left"?.20:-.20) : pitch(this.data.phase==="roll"?-.3:this.data.phase==="brace"?-.12:0));
       for(const side of SIDES) {
-        if(this.placingProneArms) for(const suffix of ["Thigh","Shin","Foot"] as const) targets.set(`${side}${suffix}`,this.entry.get(`${side}${suffix}`)!);
+        if(this.placingProneArms || this.data.phase==="roll") for(const suffix of ["Thigh","Shin","Foot"] as const) targets.set(`${side}${suffix}`,this.entry.get(`${side}${suffix}`)!);
         else this.limbTargets(side,false,poses,targets);
         this.limbTargets(side,true,poses,targets);
+      }
+      if(this.data.phase==="roll" && !this.placingProneArms) {
+        for(const [id,q] of this.entry) targets.set(id,q);
+        const rollSign=this.data.rollSide==="left"?-1:1;
+        targets.set("torso",quatMultiply(this.entry.get("torso")!,quatFromAxisAngle(UP,rollSign*.50)));
+        for(const side of SIDES) {
+          targets.set(`${side}UpperArm`,rotation(-.95,0,rollSign*1.1));
+          targets.set(`${side}Forearm`,pitch(-1.8));
+          targets.set(`${side}Thigh`,rotation(-.8,0,rollSign*.65));
+          targets.set(`${side}Shin`,pitch(1.6));targets.set(`${side}Foot`,pitch(-.45));
+        }
       }
     } else {
       const backward=this.data.orientation==="backward";
@@ -560,7 +554,7 @@ export class DynamicRecovery {
       const target=rotation(clamp(x,d.id.endsWith("Shin")?.025:-limit.x,d.id.endsWith("Forearm")?-.025:limit.x),clamp(y,-limit.y,limit.y),clamp(z,-limit.z,limit.z));
       const entry=this.entry.get(d.id)??target;
       const delta=angularVelocity(entry,target,1);
-      const blended=quatMultiply(quatFromAxisAngle(normalize(delta),length(delta)*(active && this.data.transferStage==="bring-trailing" && d.id.startsWith(this.data.leadingSide==="left"?"right":"left") && /Thigh|Shin|Foot/.test(d.id)?smooth01(this.stageTime/.22):blend)),entry);
+      const blended=quatMultiply(quatFromAxisAngle(normalize(delta),length(delta)*blend),entry);
       const relative=quatMultiply(quatInverse(parent.rotation()),child.rotation());
       const error=rotate(parent.rotation(),angularVelocity(relative,blended,1));
       const large=/Thigh|Shin|torso/.test(d.id);
@@ -568,12 +562,12 @@ export class DynamicRecovery {
       const kp=active||holdCrouch?(d.id==="torso"?4500:large||/Foot/.test(d.id)?2800:/neck|head/.test(d.id)?1500:500):(large?35:12);
       const kd=active||holdCrouch?(large?85:/Foot/.test(d.id)?35:/neck|head/.test(d.id)?12:16):(large?6:1.6);
       let feedforward=ZERO;
-      if((active||holdCrouch) && !this.placingProneArms && supportingEnds.length) {
+      if((active||holdCrouch) && !this.placingProneArms && this.data.phase!=="roll" && supportingEnds.length) {
         const joint=worldPoint(child.translation(),child.rotation(),d.jointAnchorChild!);
         for(const [contactIndex,contact] of supportingEnds.entries()) if(descends(contact.segment,d.id)) {
           const point=pressurePoints[contactIndex];
           const correction=active ? clampLength(sub(scale(sub(this.rootGoal,poses.get("pelvis")!.position),650),scale(massState.velocity,180)),160) : ZERO;
-          feedforward=add(feedforward,cross(sub(point,joint),{x:-correction.x*shares[contactIndex],y:-(active ? (this.data.phase==="kneel" ? .8*WEIGHT_N+clamp((this.rootGoal.y-poses.get("pelvis")!.position.y)*250-massState.velocity.y*100,0,30) : WEIGHT_N + (this.data.phase==="roll"?0:Math.max(0,this.rootGoal.y-poses.get("pelvis")!.position.y)*1000)) : WEIGHT_N)*shares[contactIndex],z:-correction.z*shares[contactIndex]}));
+          feedforward=add(feedforward,cross(sub(point,joint),{x:-correction.x*shares[contactIndex],y:-(active ? (WEIGHT_N + (Math.max(0,this.rootGoal.y-poses.get("pelvis")!.position.y)*1000)) : WEIGHT_N)*shares[contactIndex],z:-correction.z*shares[contactIndex]}));
         }
         for(const [id,plant] of this.plants) if(descends(id,d.id) && !this.released.has(id) && this.data.contacts.some(c=>c.segment===id&&c.loadBearing)) {
           const pose=poses.get(id)!;
@@ -610,7 +604,7 @@ export class DynamicRecovery {
     const enough=geometry.loadedForceN>WEIGHT_N*.25 && geometry.marginM>=0 && this.supporting().some(c=>/Foot|Shin/.test(c.segment));
     const error=sub(this.rootGoal,pelvis.translation()),velocity=pelvis.linvel();
     const force=phase==="roll"?ZERO:clampLength({x:error.x*500-mass.velocity.x*150,
-      y:enough?clamp(error.y*(phase==="kneel"?1500:600)-velocity.y*(phase==="kneel"?150:100),0,WEIGHT_N*.2):0,z:error.z*500-mass.velocity.z*150},RECOVERY_LIMITS.assistanceForceN);
+      y:enough?clamp(error.y*600-velocity.y*100,0,WEIGHT_N*.2):0,z:error.z*500-mass.velocity.z*150},RECOVERY_LIMITS.assistanceForceN);
 
     pelvis.applyImpulse(scale(force,dt),true);
     this.data.assistanceForce=force;

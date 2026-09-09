@@ -31,7 +31,7 @@ export const RECOVERY_ACCEPTANCE = Object.freeze({
   settleLinearMps: 0.65, settleAngularRadps: 1.8,
   stablePersistenceS: 0.55, stableLinearMps: 0.22, stableAngularRadps: 0.65,
   stableUpDot: 0.97, phaseMinimumS: 0.20, stallS: 3.0, supportLossS: 0.20,
-  assistanceForceN: 950, assistanceTorqueNm: 300,
+  assistanceForceN: 950, assistanceTorqueNm: 60,
 });
 
 export interface PullFixture {

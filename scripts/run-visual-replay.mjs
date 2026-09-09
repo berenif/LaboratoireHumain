@@ -19,7 +19,7 @@ const replayVideo = page.video();
 const errors = [];
 const evidence = [];
 const samples = [];
-const sourceFiles = ["src/character/EmbodiedCharacter.ts", "src/character/BalanceController.ts", "src/character/DynamicRecovery.ts", "src/character/pose.ts", "src/core/humanoid.ts", "src/core/types.ts", "src/demo/DemoRuntime.ts", "src/interaction/PointerInteraction.ts"];
+const sourceFiles = ["src/character/EmbodiedCharacter.ts", "src/character/BalanceController.ts", "src/character/DynamicRecovery.ts", "src/character/recovery-support.ts", "src/character/recovery-motors.ts", "src/character/pose.ts", "src/core/humanoid.ts", "src/core/types.ts", "src/demo/DemoRuntime.ts", "src/interaction/PointerInteraction.ts"];
 const fingerprint = async () => Object.fromEntries(await Promise.all(sourceFiles.map(async file => [file, createHash("sha256").update(await readFile(file)).digest("hex")])));
 const sourceBefore = await fingerprint();
 await writeFile(resolve(outputDirectory, "source-before.json"), JSON.stringify(sourceBefore, null, 2));
@@ -105,8 +105,10 @@ try {
         activeGrab: after.diagnostics.activeGrab, externalGrabForceN: after.diagnostics.appliedGrabForceN,
         maxJointSeparationM: after.diagnostics.maxJointSeparationM, maxFloorPenetrationM: after.diagnostics.maxFloorPenetrationM,
         finite: after.diagnostics.finite, pelvisHeightM: pelvis.position.y, torsoUp: upDot(torso.rotation), pelvisUp: upDot(pelvis.rotation),
-        rmsLinearMps: rms("linearVelocity"), rmsAngularRadps: rms("angularVelocity"), bestError: character.recovery.bestError,
-        noSupportTimeS: character.recovery.noSupportTime, rise: character.recovery.rise, targetOrigin: { ...character.recovery.targetOrigin },
+        rmsLinearMps: rms("linearVelocity"), rmsAngularRadps: rms("angularVelocity"), progressError: recovery.progressError,
+        noSupportTimeS: recovery.noSupportTimeS, extension: recovery.extension,
+        route: recovery.route, leadingSide: recovery.leadingSide, transferStage: recovery.transferStage,
+        supportMarginM: recovery.supportMarginM,
       });
       if (before.diagnostics.authority !== after.diagnostics.authority) trace.transfers.push({ resetId, before, after });
       if (before.state !== after.state || before.diagnostics.recovery.phase !== recovery.phase) trace.phaseSnapshots.push({ resetId, snapshot: after });
