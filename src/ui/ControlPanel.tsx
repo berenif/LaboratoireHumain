@@ -61,7 +61,8 @@ export function ControlPanel({
   const ready = Boolean(diagnostics?.simulationReady && diagnostics.interactiveViewReady);
   const bodyInputAvailable = Boolean(!paused && diagnostics?.bodyInputAvailable);
   const statusLabel = paused ? "Paused" : !ready ? "Starting" : bodyInputAvailable ? "Ready" : labelToken(diagnostics!.state);
-  const compact = Boolean(diagnostics?.activeGrab || diagnostics?.authority === "ragdoll");
+  const compact = Boolean(diagnostics?.activeGrab
+    || diagnostics && ["falling", "fallen", "recovering"].includes(diagnostics.state));
 
   return (
     <aside
@@ -139,11 +140,14 @@ export function ControlPanel({
       <div className="sr-only">
         <span data-testid="readiness-status">{statusLabel}</span>
         <span data-testid="body-input-availability">{bodyInputAvailable ? "Available" : "Unavailable"}</span>
-        <span data-testid="motion-authority">
-          {diagnostics ? labelToken(diagnostics.authority) : "Waiting"}
+        <span data-testid="physics-ownership">
+          {diagnostics ? labelToken(diagnostics.physicsOwnership) : "Waiting"}
         </span>
         <span data-testid="selected-region">
           {labelRegion(diagnostics?.selectedRegion ?? null)}
+        </span>
+        <span data-testid="selected-segment">
+          {diagnostics?.selectedSegment ?? "None"}
         </span>
         <span data-testid="step-count">{diagnostics?.stepCount ?? 0}</span>
         <span data-testid="pull-effort">{Math.round(force)} N</span>

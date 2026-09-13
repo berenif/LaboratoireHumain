@@ -54,18 +54,21 @@ function physicalMetrics(snapshot, previous, supportEpisodes) {
   const feet = {};
   for (const side of ["left", "right"]) {
     const foot = segments[`${side}Foot`], thigh = segments[`${side}Thigh`], shin = segments[`${side}Shin`];
-    const id = foot.id;
-    const contact = loaded.find(item => item.segment === id);
-    if (contact && !supportEpisodes.has(id)) supportEpisodes.set(id, { position: foot.position, sequence: snapshot.sequence });
-    if (!contact) supportEpisodes.delete(id);
-    const episode = supportEpisodes.get(id);
+    const supportIds = [`${side}Foot`, `${side}Forefoot`];
+    const contacts = loaded.filter(item => supportIds.includes(item.segment));
+    for (const id of supportIds) {
+      const pose = segments[id], contact = contacts.find(item => item.segment === id);
+      if (contact && !supportEpisodes.has(id)) supportEpisodes.set(id, { position: pose.position, sequence: snapshot.sequence });
+      if (!contact) supportEpisodes.delete(id);
+    }
     const thighAxis = rotate(thigh.rotation, { x: 0, y: -1, z: 0 });
     const shinAxis = rotate(shin.rotation, { x: 0, y: -1, z: 0 });
     const bendRadians = Math.acos(Math.min(1, Math.max(-1, dot(thighAxis, shinAxis))));
-    const priorFoot = previous?.segments.find(segment => segment.id === id);
-    feet[side] = { position: foot.position, forceN: contact?.forceN ?? 0, loaded: Boolean(contact),
-      continuousPlantDriftM: episode ? horizontalDistance(foot.position, episode.position) : 0,
-      continuousPlantTimeS: episode ? (snapshot.sequence-episode.sequence)/60 : 0,
+    const plantedEpisodes = supportIds.flatMap(id => supportEpisodes.has(id) ? [{ id, ...supportEpisodes.get(id) }] : []);
+    const priorFoot = previous?.segments.find(segment => segment.id === foot.id);
+    feet[side] = { position: foot.position, forceN: contacts.reduce((sum, contact) => sum + contact.forceN, 0), loaded: contacts.length > 0,
+      continuousPlantDriftM: Math.max(0, ...plantedEpisodes.map(episode => horizontalDistance(segments[episode.id].position, episode.position))),
+      continuousPlantTimeS: Math.max(0, ...plantedEpisodes.map(episode => (snapshot.sequence-episode.sequence)/60)),
       speedMps: priorFoot ? distance(foot.position, priorFoot.position)*60 : 0,
       kneeBendRadians: bendRadians,
       kneeForward: dot(sub(thighAxis, shinAxis), rotate(snapshot.rootRotation, { x: 0, y: 0, z: 1 })),
@@ -92,17 +95,20 @@ async function generateTrace(fixture) {
       if (!previous || snapshot.diagnostics.recovery.phase !== previous.diagnostics.recovery.phase || snapshot.diagnostics.recovery.transferStage !== previous.diagnostics.recovery.transferStage) {
         phaseEntries.push({ frame, timeS: frame/60, state: snapshot.state, recovery: snapshot.diagnostics.recovery, metrics });
       }
-      if (snapshot.diagnostics.authority === "character-motor" && snapshot.state === "upright" && frame > 0 && stableFrame === null) stableFrame = frame;
+      if (snapshot.state === "upright" && snapshot.diagnostics.bodyInputAvailable && frame > 0 && stableFrame === null) stableFrame = frame;
       if (stableFrame !== null && frame >= stableFrame+60) break;
       previous = snapshot;
       character.fixedUpdate(1/60, null);
     }
-    const active = snapshots.filter(snapshot => snapshot.diagnostics.authority === "ragdoll");
+    const active = snapshots.filter(snapshot => ["falling", "fallen", "recovering"].includes(snapshot.state));
     const summary = { fixture, frames: snapshots.length, durationS: (snapshots.length-1)/60, recovered: stableFrame !== null,
       recoveryTimeS: stableFrame === null ? null : stableFrame/60,
       selectedRoutes: [...new Set(snapshots.map(snapshot => snapshot.diagnostics.recovery.route).filter(route => route && route !== "none"))],
       maxJointSeparationM: Math.max(...snapshots.map(snapshot => snapshot.diagnostics.maxJointSeparationM)),
       maxFloorPenetrationM: Math.max(...snapshots.map(snapshot => snapshot.diagnostics.maxFloorPenetrationM)),
+      maxJointLimitErrorRad: Math.max(...snapshots.map(snapshot => snapshot.diagnostics.maxJointLimitErrorRad)),
+      maxMotorSaturationRatio: Math.max(...snapshots.map(snapshot => snapshot.diagnostics.maxMotorSaturationRatio)),
+      maxLoadBearingContacts: Math.max(...snapshots.map(snapshot => snapshot.diagnostics.contactDiagnostics.loadBearingCount)),
       maxUpwardAssistanceN: Math.max(0, ...active.map(snapshot => snapshot.diagnostics.recovery.assistanceForce.y)),
       maxRollingUpwardAssistanceN: Math.max(0, ...active.filter(snapshot => snapshot.diagnostics.recovery.phase === "roll").map(snapshot => snapshot.diagnostics.recovery.assistanceForce.y)),
       maxPelvisAssistanceTorqueNm: Math.max(0, ...active.map(snapshot => magnitude(snapshot.diagnostics.recovery.assistanceTorque))),
@@ -110,7 +116,8 @@ async function generateTrace(fixture) {
       maxContinuousFootDriftM: Math.max(0, ...measurements.flatMap(metrics => [metrics.feet.left.continuousPlantDriftM, metrics.feet.right.continuousPlantDriftM])),
       maxCapturedPlantDriftM: Math.max(0, ...active.flatMap(snapshot => snapshot.diagnostics.recovery.plantedTargets.map(plant => plant.driftM))),
       allFinite: snapshots.every(snapshot => snapshot.diagnostics.finite),
-      assistanceWithinLimits: active.every(snapshot => snapshot.diagnostics.recovery.assistanceForce.y <= .2*totalMass*9.81+1e-6 && magnitude(snapshot.diagnostics.recovery.assistanceTorque) <= 60+1e-6),
+      allRapierDynamic: snapshots.every(snapshot => snapshot.diagnostics.physicsOwnership === "rapier-dynamic"),
+      noDirectPelvisAssistance: active.every(snapshot => magnitude(snapshot.diagnostics.recovery.assistanceForce) <= 1e-8 && magnitude(snapshot.diagnostics.recovery.assistanceTorque) <= 1e-8),
       phaseEntries,
     };
     return { schema: 1, fixture, fixedHz: 60, snapshots, measurements, summary };
@@ -161,7 +168,7 @@ try {
           const previous = trace.snapshots[Math.max(0, frame-1)], current = trace.snapshots[frame];
           const r = current.diagnostics.recovery, metrics = trace.measurements[frame];
           for (const { view } of views) { view.setSnapshot(previous, current, alpha); view.render(); }
-          document.querySelector("#status").textContent = `${(frame/60).toFixed(2)} s · ${r.route ?? "none"} · ${r.phase}/${r.transferStage ?? "none"} · lead ${r.leadingSide ?? "—"} · margin ${Number.isFinite(r.supportMarginM) ? r.supportMarginM.toFixed(3) : "—"} m · foot loads L ${Math.round(metrics.feet.left.forceN)} / R ${Math.round(metrics.feet.right.forceN)} N · lift ${r.assistanceForce.y.toFixed(1)} N`;
+          document.querySelector("#status").textContent = `${(frame/60).toFixed(2)} s · ${r.route ?? "none"} · ${r.phase}/${r.transferStage ?? "none"} · lead ${r.leadingSide ?? "—"} · margin ${Number.isFinite(r.supportMarginM) ? r.supportMarginM.toFixed(3) : "—"} m · foot loads L ${Math.round(metrics.feet.left.forceN)} / R ${Math.round(metrics.feet.right.forceN)} N · direct pelvis ${r.assistanceForce.y.toFixed(1)} N`;
           this.frame = frame;
         } };
         window.__RECOVERY_REPLAY__.present(0, 1);
@@ -221,6 +228,6 @@ try {
 }
 if (!evidence.sourcesUnchanged) throw new Error("Controller or presentation source changed while recording; rerun before acceptance.");
 if (evidence.browserErrors.length) throw new Error(`Browser errors: ${evidence.browserErrors.join("; ")}`);
-if (evidence.scenarios.some(scenario => !scenario.recovered || !scenario.assistanceWithinLimits || scenario.maxRollingUpwardAssistanceN > 1e-6)) process.exitCode = 1;
+if (evidence.scenarios.some(scenario => !scenario.recovered || !scenario.noDirectPelvisAssistance || !scenario.allRapierDynamic)) process.exitCode = 1;
 
 

@@ -9,7 +9,7 @@ const { HUMAN_PROPORTIONS, SEGMENT_BY_ID, SEGMENTS } = await import("../src/core
 const { createEmbodiedCharacter } = await import("../src/character/index.ts");
 const { quatFromAxisAngle, quatMultiply, rotate, sub, length, worldPoint } = await import("../src/character/math.ts");
 const zero = { x: 0, y: 0, z: 0 }, dt = 1 / 60;
-const footCenterHeight = SEGMENT_BY_ID.get("leftFoot").shape.halfExtents.y;
+const footCenterHeight = -SEGMENT_BY_ID.get("leftFoot").geometry.localBounds.min.y;
 
 function poseInput(heading = 0) {
   const rest = restPoseMap(), yaw = quatFromAxisAngle({ x: 0, y: 1, z: 0 }, heading);
@@ -91,23 +91,36 @@ test("slow pulls stay connected and stepping remains available after release and
         character.fixedUpdate(dt, command);
         const snapshot = character.getSnapshot("canvas2d");
 
-        assert.equal(snapshot.diagnostics.authority, "character-motor", `heading ${heading}, tick ${tick}`);
-        assert.ok(snapshot.diagnostics.maxJointSeparationM < 1e-8);
+        assert.equal(snapshot.diagnostics.physicsOwnership, "rapier-dynamic", `heading ${heading}, tick ${tick}`);
+        assert.equal(
+          snapshot.diagnostics.bodyInputAvailable,
+          !["falling", "fallen", "recovering"].includes(snapshot.state),
+          `heading ${heading}, tick ${tick}`,
+        );
+        assert.ok(
+          snapshot.diagnostics.maxJointSeparationM <= 0.08,
+          `heading ${heading}, tick ${tick}: joint separation ${snapshot.diagnostics.maxJointSeparationM}m`,
+        );
         assert.ok(snapshot.diagnostics.maxFloorPenetrationM <= 0.08);
         assert.ok(snapshot.diagnostics.finite);
-        if (snapshot.support.swingFoot) assert.ok(!snapshot.support.planted.includes(snapshot.support.swingFoot));
+        assert.ok(snapshot.support.planted.every((foot) => foot === "leftFoot" || foot === "rightFoot"));
+        assert.equal(new Set(snapshot.support.planted).size, snapshot.support.planted.length);
       }
       const done = character.getSnapshot("canvas2d");
-      assert.ok(done.diagnostics.stepCount >= 1);
-      assert.equal(done.state, "upright");
+      assert.ok(
+        done.diagnostics.stepCount >= 1,
+        `heading ${heading}: ${done.state}, ${done.diagnostics.stepCount} steps, ${done.diagnostics.rootDisplacementM}m root displacement`,
+      );
+      assert.equal(done.state, "upright", `heading ${heading}`);
 
     } finally { character.dispose(); }
   }
 });
 
-test("a planted reversal step does not create a transient unsupported fall", async () => {
+test("a planted reversal preserves ownership without a transient unsupported fall", async () => {
   const character = await createEmbodiedCharacter("canvas2d");
   const localAnchor = { x: 0.025, y: 0.015, z: 0.01 };
+  let sawFallLockout = false;
   try {
     const hand = character.getSnapshot("canvas2d").segments.find(p => p.id === "rightHand");
     const start = worldPoint(hand.position, hand.rotation, localAnchor);
@@ -124,11 +137,23 @@ test("a planted reversal step does not create a transient unsupported fall", asy
       }
       character.fixedUpdate(dt, command);
       const snapshot = character.getSnapshot("canvas2d");
-      assert.equal(snapshot.diagnostics.authority, "character-motor", `tick ${tick}`);
+      assert.equal(snapshot.diagnostics.physicsOwnership, "rapier-dynamic", `tick ${tick}`);
+      assert.equal(
+        snapshot.diagnostics.bodyInputAvailable,
+        !["falling", "fallen", "recovering"].includes(snapshot.state),
+        `tick ${tick}`,
+      );
+      if (["falling", "fallen", "recovering"].includes(snapshot.state)) {
+        sawFallLockout = true;
+        assert.equal(snapshot.diagnostics.activeGrab, false, `tick ${tick}`);
+        assert.equal(snapshot.diagnostics.appliedGrabForceN, 0, `tick ${tick}`);
+      }
     }
 
     const done = character.getSnapshot("canvas2d");
-    assert.ok(done.diagnostics.stepCount >= 2);
+    assert.ok(done.diagnostics.stepCount >= 2,
+      `${done.state}, ${done.diagnostics.stepCount} steps, ${done.diagnostics.rootDisplacementM}m root displacement`);
+    assert.equal(sawFallLockout, false, "the bounded reversal must not enter the motion-state input lockout");
     assert.equal(done.state, "upright");
   } finally { character.dispose(); }
 });

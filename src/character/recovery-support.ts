@@ -1,15 +1,71 @@
+import { lowestWorldPoint } from "../core/geometry";
 import { HUMAN_PROPORTIONS, SEGMENT_BY_ID } from "../core/humanoid";
-import type { Quat, SegmentId, SegmentPose, SupportingContact, Vec3 } from "../core/types";
+import type { Quat, RecoveryDiagnostics, RecoveryPhase, SegmentId, SegmentPose, SupportingContact, Vec3 } from "../core/types";
 import { add, clamp, cross, dot, length, normalize, quatFromAxisAngle, quatFromTo, quatInverse, quatMultiply, quatNormalize, rotate, scale, sub, worldPoint } from "./math";
 import { solveTwoBone } from "./pose";
+import {
+  limitRecoveryJoint,
+  reconstructRecoveryLimb,
+  recoveryJointLimitError,
+  recoveryJointRotation,
+} from "./recovery-joints";
 
 const ZERO: Vec3 = { x: 0, y: 0, z: 0 };
 const UP: Vec3 = { x: 0, y: 1, z: 0 };
+const RIGHT: Vec3 = { x: 1, y: 0, z: 0 };
+const FORWARD: Vec3 = { x: 0, y: 0, z: 1 };
 const SIDES = ["left", "right"] as const;
 const GEOMETRY_EPSILON = 1e-8;
 
 export type RecoveryRoute = "none" | "crouch" | "half-kneel" | "prone" | "roll";
 export type RecoverySide = (typeof SIDES)[number];
+
+const armSupports = SIDES.flatMap((side) => [
+  `${side}Hand`, `${side}ForearmTwist`, `${side}Forearm`,
+] as SegmentId[]);
+const legSupports = SIDES.flatMap((side) => [
+  `${side}Shin`, `${side}Ankle`, `${side}Foot`, `${side}Forefoot`,
+] as SegmentId[]);
+const footSupports = SIDES.flatMap((side) => [
+  `${side}Foot`, `${side}Forefoot`,
+] as SegmentId[]);
+
+export const RECOVERY_SUPPORT_ELIGIBILITY: Record<RecoveryPhase, readonly SegmentId[]> = {
+  none: [], protect: [], settle: [],
+  roll: ["pelvis", "lumbar", "torso", ...armSupports, ...legSupports],
+  brace: [...armSupports, ...legSupports],
+  kneel: [...armSupports, ...legSupports],
+  stand: footSupports,
+};
+
+export function isRecoveryFootSegment(id: SegmentId): boolean {
+  const role = SEGMENT_BY_ID.get(id)?.role;
+  return role === "hindfoot" || role === "forefoot";
+}
+
+export function isRecoveryArmSupportSegment(id: SegmentId): boolean {
+  const role = SEGMENT_BY_ID.get(id)?.role;
+  return role === "hand" || role === "forearm" || role === "forearm-twist";
+}
+
+export function isRecoveryLegSupportSegment(id: SegmentId): boolean {
+  const role = SEGMENT_BY_ID.get(id)?.role;
+  return role === "shin" || role === "ankle" || role === "hindfoot" || role === "forefoot";
+}
+
+/** One selection policy for current and prospective support; never grows contact patches. */
+export function selectRecoveryContacts<T extends RecoverySupportContact>(
+  contacts: readonly T[], poses: ReadonlyMap<SegmentId, SegmentPose> | undefined,
+  phase: RecoveryPhase, stage: RecoveryDiagnostics["transferStage"], leadingSide: RecoverySide | null,
+  excluded: ReadonlySet<SegmentId> = new Set(),
+): T[] {
+  const toeSide = phase === "kneel" && stage === "shift-weight" && leadingSide
+    ? (leadingSide === "left" ? "right" : "left") : null;
+  return contacts.filter(contact => contact.loadBearing && contact.forceN > 0 && contact.normalY >= .65
+    && !excluded.has(contact.segment) && RECOVERY_SUPPORT_ELIGIBILITY[phase].includes(contact.segment)
+    && (!isRecoveryFootSegment(contact.segment) || !poses || SEGMENT_BY_ID.get(contact.segment)?.side === toeSide
+      || (!!poses.get(contact.segment) && rotate(poses.get(contact.segment)!.rotation, UP).y > .85)));
+}
 
 /** Solver contact points are preferable to a reconstructed collision-shape patch. */
 export interface RecoverySupportContact extends Omit<SupportingContact, "points"> {
@@ -88,18 +144,14 @@ export function recoverySupportMargin(point: Vec3, polygon: readonly Vec3[]): nu
 
 function contactPatch(contact: RecoverySupportContact, pose: SegmentPose | undefined): readonly Vec3[] {
   if (contact.points?.length) return contact.points;
-  const shape = SEGMENT_BY_ID.get(contact.segment)?.shape;
-  if (!pose || shape?.kind !== "box") return [contact.point];
-  const half = shape.halfExtents;
-  const corners: Vec3[] = [];
-  for (const x of [-half.x, half.x]) for (const y of [-half.y, half.y]) for (const z of [-half.z, half.z]) {
-    corners.push(worldPoint(pose.position, pose.rotation, { x, y, z }));
-  }
-  // Only the contacting face/edge contributes. A tilted foot must not acquire
-  // a whole horizontal sole rectangle or a fictitious round support radius.
-  const minimumY = Math.min(...corners.map(point => point.y));
+  const geometry = SEGMENT_BY_ID.get(contact.segment)?.geometry;
+  if (!pose || !geometry) return [contact.point];
+  const candidates = (geometry.supportPatch?.length ? geometry.supportPatch : geometry.vertices)
+    .map(point => worldPoint(pose.position, pose.rotation, point));
+  const minimumY = Math.min(...candidates.map(point => point.y));
   const floorY = contact.point.y;
-  return corners.filter(point => point.y <= minimumY + 0.012 && Math.abs(point.y - floorY) <= 0.024);
+  const patch = candidates.filter(point => point.y <= minimumY + 0.012 && Math.abs(point.y - floorY) <= 0.024);
+  return patch.length ? patch : [contact.point];
 }
 
 /** Loaded solver geometry only; no convex hull expansion or unloaded limb targets. */
@@ -159,23 +211,70 @@ function loadedContact(contacts: readonly RecoverySupportContact[], segment: Seg
 }
 
 function armHeight(side: RecoverySide, poses: ReadonlyMap<SegmentId, SegmentPose>): number {
-  return Math.min(...([`${side}Hand`, `${side}Forearm`] as SegmentId[]).map(id => {
-    const pose = poses.get(id), shape = SEGMENT_BY_ID.get(id)?.shape;
-    if (!pose || !shape) return Infinity;
-    if (shape.kind === "sphere") return pose.position.y - shape.radius;
-    const axisY = Math.abs(rotate(pose.rotation, UP).y);
-    if (shape.kind === "capsule") return pose.position.y - axisY * shape.halfHeight - shape.radius;
-    const axisX = Math.abs(rotate(pose.rotation, { x: 1, y: 0, z: 0 }).y);
-    const axisZ = Math.abs(rotate(pose.rotation, { x: 0, y: 0, z: 1 }).y);
-    return pose.position.y - axisX * shape.halfExtents.x - axisY * shape.halfExtents.y - axisZ * shape.halfExtents.z;
+  return Math.min(...([`${side}Hand`, `${side}ForearmTwist`, `${side}Forearm`] as SegmentId[]).map(id => {
+    const pose = poses.get(id), geometry = SEGMENT_BY_ID.get(id)?.geometry;
+    return pose && geometry ? lowestWorldPoint(geometry, pose.position, pose.rotation).y : Infinity;
   }));
+}
+
+/**
+ * Recovery paths need to be able to return to an already captured endpoint.
+ * The posture helper intentionally keeps 2 mm of extension reserve, which is
+ * useful for live IK but would make a captured plant drift on the final frame.
+ */
+function solveCapturedTwoBone(
+  start: Vec3,
+  requestedEnd: Vec3,
+  firstLength: number,
+  secondLength: number,
+  preferredBend: Vec3,
+  maximumBendRadians: number,
+): Readonly<{ middle: Vec3; end: Vec3 }> {
+  const raw = sub(requestedEnd, start);
+  const direction = normalize(raw, { x: 0, y: -1, z: 0 });
+  const bendLimit = clamp(maximumBendRadians, 0, Math.PI);
+  const minimumFromLimit = Math.sqrt(Math.max(
+    0,
+    firstLength ** 2 + secondLength ** 2
+      + 2 * firstLength * secondLength * Math.cos(bendLimit),
+  ));
+  const maximum = firstLength + secondLength;
+  const minimum = Math.min(maximum, Math.max(
+    Math.abs(firstLength - secondLength),
+    minimumFromLimit,
+  ));
+  const distance = clamp(length(raw), minimum, maximum);
+  const end = add(start, scale(direction, distance));
+  const along = distance > GEOMETRY_EPSILON
+    ? (firstLength ** 2 - secondLength ** 2 + distance ** 2) / (2 * distance)
+    : firstLength;
+  const bendHeight = Math.sqrt(Math.max(0, firstLength ** 2 - along ** 2));
+  let bend = sub(preferredBend, scale(direction, dot(preferredBend, direction)));
+  if (length(bend) < 1e-4) bend = cross(direction, RIGHT);
+  bend = normalize(bend, FORWARD);
+  return {
+    middle: add(add(start, scale(direction, along)), scale(bend, bendHeight)),
+    end,
+  };
+}
+
+function loadedFootContact(
+  contacts: readonly RecoverySupportContact[],
+  side: RecoverySide,
+): RecoverySupportContact | undefined {
+  return contacts
+    .filter((contact) => SEGMENT_BY_ID.get(contact.segment)?.side === side
+      && isRecoveryFootSegment(contact.segment))
+    .map((contact) => loadedContact(contacts, contact.segment))
+    .filter((contact): contact is RecoverySupportContact => !!contact)
+    .sort((a, b) => b.forceN - a.forceN)[0];
 }
 
 /** Called once after settling, and retained by the controller until a retry. */
 export function selectRecoveryRoute(input: RecoveryRouteInput): RecoveryRouteChoice {
   const { poses, contacts } = input;
-  const feet = SIDES.map(side => ({ side, contact: loadedContact(contacts, `${side}Foot`), pose: poses.get(`${side}Foot`) }))
-    .filter(({ contact, pose }) => contact && pose && rotate(pose.rotation, UP).y > 0.5);
+  const feet = SIDES.map(side => ({ side, contact: loadedFootContact(contacts, side), pose: poses.get(`${side}Foot`) }))
+    .filter(({ contact, pose }) => contact && pose);
   const travel = (side: RecoverySide): number => {
     const foot = poses.get(`${side}Foot`), target = input.footTargets?.[side];
     return foot && target ? length(sub(target, foot.position)) : Infinity;
@@ -184,14 +283,16 @@ export function selectRecoveryRoute(input: RecoveryRouteInput): RecoveryRouteCho
   feet.sort((a, b) => b.contact!.forceN - a.contact!.forceN || travel(a.side) - travel(b.side)
     || SIDES.indexOf(a.side) - SIDES.indexOf(b.side));
   const leadingSide = feet[0]?.side ?? (travel("right") < travel("left") - 1e-8 ? "right" : "left");
-  const armLoad = (side: RecoverySide): number => ["Hand", "Forearm"].reduce((sum, suffix) =>
-    sum + (loadedContact(contacts, `${side}${suffix}` as SegmentId)?.forceN ?? 0), 0);
+  const armLoad = (side: RecoverySide): number => contacts.reduce((sum, contact) =>
+    sum + (SEGMENT_BY_ID.get(contact.segment)?.side === side && isRecoveryArmSupportSegment(contact.segment)
+      ? loadedContact(contacts, contact.segment)?.forceN ?? 0
+      : 0), 0);
   const leftLoad = armLoad("left"), rightLoad = armLoad("right");
   const rollSide = rightLoad > leftLoad + 1e-8 ? "right" : leftLoad > rightLoad + 1e-8 ? "left"
     : armHeight("right", poses) < armHeight("left", poses) - 1e-8 ? "right" : "left";
   const mass = recoveryMassState(poses.values());
   const footMargin = input.supportMarginM ?? supportGeometry(
-    contacts.filter(contact => contact.segment.endsWith("Foot")), poses, mass,
+    contacts.filter(contact => isRecoveryFootSegment(contact.segment)), poses, mass,
   ).marginM;
   if (feet.length === 2 && footMargin >= 0) return { route: "crouch", leadingSide, rollSide };
   for (const { side } of feet) {
@@ -213,11 +314,33 @@ export interface RecoveryArmBraceTarget {
   elbow: Vec3;
   movementM: number;
   reachErrorM: number;
+  floorClearanceM: number;
   floorReachable: boolean;
   jointLimitErrorRad: number;
   /** Local hand-from-forearm rotation, reusable through an unplanted trajectory. */
   wristRotation: Quat;
   trajectoryBend: Vec3;
+}
+
+/**
+ * Numerical residue accepted while projecting a floor brace through the
+ * bounded shoulder/elbow/wrist chain. The final command is still clamped by
+ * the anatomical profiles and Rapier's structural constraints. The floor
+ * allowance matches the contact/command clearance used by live recovery.
+ */
+export const RECOVERY_ARM_TARGET_TOLERANCE = Object.freeze({
+  maximumReachErrorM: 0.004,
+  maximumFloorPenetrationM: 0.012,
+  maximumJointLimitErrorRad: 0.0005,
+});
+
+export function acceptableRecoveryArmBraceTarget(
+  target: Pick<RecoveryArmBraceTarget, "reachErrorM" | "floorClearanceM" | "jointLimitErrorRad">,
+  floorY = 0,
+): boolean {
+  return target.reachErrorM <= RECOVERY_ARM_TARGET_TOLERANCE.maximumReachErrorM
+    && target.floorClearanceM >= floorY - RECOVERY_ARM_TARGET_TOLERANCE.maximumFloorPenetrationM
+    && target.jointLimitErrorRad <= RECOVERY_ARM_TARGET_TOLERANCE.maximumJointLimitErrorRad;
 }
 
 /** A loaded sprawled arm cannot supply a useful upward brace about the shoulder. */
@@ -226,19 +349,29 @@ export function usableRecoveryArmSupport(
   poses: ReadonlyMap<SegmentId, SegmentPose>,
   contacts: readonly RecoverySupportContact[],
 ): boolean {
-  const torso = poses.get("torso"), upper = SEGMENT_BY_ID.get(`${side}UpperArm`)!;
-  if (!torso) return false;
-  const shoulder = worldPoint(torso.position, torso.rotation, upper.jointAnchorParent!);
-  return ([`${side}Hand`, `${side}Forearm`] as SegmentId[]).some(id => {
+  const girdle = poses.get(`${side}ShoulderGirdle`);
+  const upper = SEGMENT_BY_ID.get(`${side}UpperArm`)!;
+  if (!girdle) return false;
+  const shoulder = worldPoint(
+    girdle.position,
+    girdle.rotation,
+    upper.jointProfile!.parentFrame.anchor,
+  );
+  return ([`${side}Hand`, `${side}ForearmTwist`, `${side}Forearm`] as SegmentId[]).some(id => {
     const contact = loadedContact(contacts, id), pose = poses.get(id);
     if (!contact || !pose) return false;
     const patch = contactPatch(contact, pose);
     const center = patch.length ? scale(patch.reduce(add, ZERO), 1 / patch.length) : contact.point;
     // The upper arm must remain over the brace rather than pulling on a hand
     // stretched behind the chest. A forearm can support only near its elbow.
-    const maximumLever = id.endsWith("Hand") ? 0.36 : HUMAN_PROPORTIONS.arm.upperLengthM + 0.025;
+    const maximumLever = id.endsWith("Hand")
+      ? HUMAN_PROPORTIONS.arm.upperLengthM + HUMAN_PROPORTIONS.arm.forearmLengthM
+        + HUMAN_PROPORTIONS.arm.handHalfExtentsM.y * 2 + .01
+      : HUMAN_PROPORTIONS.arm.upperLengthM + 0.025;
+    const minimumShoulderClearance = HUMAN_PROPORTIONS.arm.upperRadiusM
+      + HUMAN_PROPORTIONS.arm.forearmRadiusM + .02;
     return length(horizontal(sub(center, shoulder))) <= maximumLever
-      && shoulder.y >= center.y - 0.025;
+      && shoulder.y - center.y >= minimumShoulderClearance;
   });
 }
 
@@ -249,88 +382,116 @@ export function reachableArmBraceTarget(
   heading: number,
   floorY = 0,
 ): RecoveryArmBraceTarget | null {
-  const torso = poses.get("torso"), hand = poses.get(`${side}Hand`);
-  if (!torso || !hand) return null;
-  const upper = SEGMENT_BY_ID.get(`${side}UpperArm`)!, handDefinition = SEGMENT_BY_ID.get(`${side}Hand`)!;
-  const shoulder = worldPoint(torso.position, torso.rotation, upper.jointAnchorParent!);
+  const torso = poses.get("torso"), girdle = poses.get(`${side}ShoulderGirdle`);
+  const hand = poses.get(`${side}Hand`);
+  if (!torso || !girdle || !hand) return null;
+  const girdleId = `${side}ShoulderGirdle` as SegmentId;
+  const upperId = `${side}UpperArm` as SegmentId;
+  const forearmId = `${side}Forearm` as SegmentId;
+  const twistId = `${side}ForearmTwist` as SegmentId;
+  const handId = `${side}Hand` as SegmentId;
+  const upper = SEGMENT_BY_ID.get(upperId)!;
+  const handDefinition = SEGMENT_BY_ID.get(handId)!;
+  const shoulder = worldPoint(girdle.position, girdle.rotation, upper.jointProfile!.parentFrame.anchor);
   const sign = side === "left" ? -1 : 1, yaw = quatFromAxisAngle(UP, heading);
   const lateral = rotate(yaw, { x: sign, y: 0, z: 0 }), forward = rotate(yaw, { x: 0, y: 0, z: 1 });
-  const half = HUMAN_PROPORTIONS.arm.handHalfExtentsM;
-  // Backward relative to the measured torso is upward when prone. The lateral
-  // component keeps mirrored elbows out of the chest and avoids yaw-only poles.
-  const anatomical = add(scale(lateral, 0.20), scale(rotate(torso.rotation, { x: 0, y: 0, z: -1 }), 0.65));
-  const bend = normalize({ ...anatomical, y: Math.max(0.25, anatomical.y) });
+  // Keep the elbow below and slightly outside the shoulder. This selects the
+  // positive-X elbow solution while the torso is prone or on its side.
+  const bend = normalize(add(scale(lateral, 0.20), { x: 0, y: -0.65, z: 0 }));
   const delta = sub(hand.position, shoulder);
   const nearestLateral = clamp(dot(delta, lateral), 0.08, 0.25);
-  const nearestForward = clamp(dot(delta, forward), -0.20, 0.10);
+  const nearestForward = clamp(dot(delta, forward), -0.90, 0.15);
   const lateralOffsets = [nearestLateral, 0.08, 0.12, 0.16, 0.20, 0.25];
-  const forwardOffsets = [nearestForward, -0.20, -0.15, -0.10, -0.05, 0, 0.05, 0.10, 0.15, 0.20];
-  const firstLength = HUMAN_PROPORTIONS.arm.upperLengthM, secondLength = HUMAN_PROPORTIONS.arm.forearmLengthM;
-  const elbowLimit = SEGMENT_BY_ID.get(`${side}Forearm`)!.jointLimitRadians!.x;
+  const forwardOffsets = [nearestForward, ...Array.from({ length: 12 }, (_, index) => -0.90 + index * 0.10)];
+  const jointSpan = (parentId: SegmentId, childId: SegmentId): number => length(sub(
+    SEGMENT_BY_ID.get(parentId)!.jointProfile!.childFrame.anchor,
+    SEGMENT_BY_ID.get(childId)!.jointProfile!.parentFrame.anchor,
+  ));
+  const firstLength = jointSpan(upperId, forearmId);
+  const secondLength = jointSpan(forearmId, twistId) + jointSpan(twistId, handId);
+  const elbowLimit = SEGMENT_BY_ID.get(forearmId)!.jointProfile!.axes
+    .find(({ coordinate }) => coordinate === "x")!.maxRadians;
   const minimumReach = Math.sqrt(firstLength ** 2 + secondLength ** 2 + 2 * firstLength * secondLength * Math.cos(elbowLimit));
   const armFrame = (elbow: Vec3, wrist: Vec3): { upper: Quat; forearm: Quat } => {
     const axisA = normalize(sub(shoulder, elbow)), axisB = normalize(sub(elbow, wrist));
-    const hinge = normalize(scale(cross(axisA, axisB), -1), rotate(yaw, { x: 1, y: 0, z: 0 }));
+    const hinge = normalize(cross(axisA, axisB), rotate(yaw, { x: 1, y: 0, z: 0 }));
     const base = quatFromTo(UP, axisA), baseX = rotate(base, { x: 1, y: 0, z: 0 });
     const twist = Math.atan2(dot(axisA, cross(baseX, hinge)), dot(baseX, hinge));
     const upper = quatMultiply(quatFromAxisAngle(axisA, twist), base);
-    return { upper, forearm: quatMultiply(upper, quatFromAxisAngle({ x: 1, y: 0, z: 0 }, -Math.acos(clamp(dot(axisA, axisB), -1, 1)))) };
-  };
-  const limitError = (q: Quat, limit: Vec3): number => {
-    const x = Math.asin(clamp(2 * (q.w * q.x - q.y * q.z), -1, 1));
-    const y = Math.atan2(2 * (q.x * q.z + q.w * q.y), 1 - 2 * (q.x * q.x + q.y * q.y));
-    const z = Math.atan2(2 * (q.x * q.y + q.w * q.z), 1 - 2 * (q.x * q.x + q.z * q.z));
-    const excess = (angles: Vec3): number => Math.hypot(Math.max(0, Math.abs(angles.x) - limit.x),
-      Math.max(0, Math.abs(angles.y) - limit.y), Math.max(0, Math.abs(angles.z) - limit.z));
-    const wrap = (angle: number): number => Math.atan2(Math.sin(angle), Math.cos(angle));
-    return Math.min(excess({ x, y, z }), excess({ x: x >= 0 ? Math.PI - x : -Math.PI - x, y: wrap(y + Math.PI), z: wrap(z + Math.PI) }));
+    return { upper, forearm: quatMultiply(upper, quatFromAxisAngle({ x: 1, y: 0, z: 0 }, Math.acos(clamp(dot(axisA, axisB), -1, 1)))) };
   };
   let best: RecoveryArmBraceTarget | null = null, bestScore = Infinity;
   for (const lateralOffset of lateralOffsets) for (const forwardOffset of forwardOffsets) for (const wristFlex of [-0.45, 0, 0.45]) {
     const horizontalCenter = add(shoulder, add(scale(lateral, lateralOffset), scale(forward, forwardOffset)));
-    let rotation = hand.rotation, requestedWrist = shoulder;
+    let rotation = hand.rotation, requestedWrist = shoulder, requestedCenter = hand.position;
     let solved = { middle: shoulder, end: shoulder } as Readonly<{ middle: Vec3; end: Vec3 }>;
+    const wristRotation = recoveryJointRotation(handId, { x: wristFlex, y: 0, z: 0 });
     // Hand orientation and floor height depend on the forearm frame. Converge
     // them together instead of imposing an unreachable world wrist rotation.
-    for (let iteration = 0; iteration < 48; iteration++) {
-      const floorExtent = Math.abs(rotate(rotation, { x: 1, y: 0, z: 0 }).y) * half.x
-        + Math.abs(rotate(rotation, UP).y) * half.y
-        + Math.abs(rotate(rotation, { x: 0, y: 0, z: 1 }).y) * half.z;
-      const requestedCenter = { ...horizontalCenter, y: floorY + floorExtent + 0.002 };
-      requestedWrist = add(requestedCenter, rotate(rotation, handDefinition.jointAnchorChild!));
+    const convergenceIterations = 32;
+    for (let iteration = 0; iteration < convergenceIterations; iteration++) {
+      const floorExtent = -lowestWorldPoint(handDefinition.geometry, ZERO, rotation).y;
+      requestedCenter = { ...horizontalCenter, y: floorY + floorExtent + 0.002 };
+      requestedWrist = add(requestedCenter, rotate(rotation, handDefinition.jointProfile!.childFrame.anchor));
       const raw = sub(requestedWrist, shoulder), rawLength = length(raw);
       const limitedWrist = rawLength < minimumReach ? add(shoulder, scale(normalize(raw), minimumReach)) : requestedWrist;
       solved = solveTwoBone(shoulder, limitedWrist, firstLength, secondLength, bend);
-      if (iteration === 47) break;
-      let next = quatMultiply(armFrame(solved.middle, solved.end).forearm, quatFromAxisAngle({ x: 1, y: 0, z: 0 }, wristFlex));
+      if (iteration === convergenceIterations - 1) break;
+      let next = quatMultiply(armFrame(solved.middle, solved.end).forearm, wristRotation);
       if (rotation.x * next.x + rotation.y * next.y + rotation.z * next.z + rotation.w * next.w < 0)
         next = { x: -next.x, y: -next.y, z: -next.z, w: -next.w };
       rotation = quatNormalize({ x: rotation.x + next.x, y: rotation.y + next.y, z: rotation.z + next.z, w: rotation.w + next.w });
     }
-    const position = sub(solved.end, rotate(rotation, handDefinition.jointAnchorChild!));
-    const reachErrorM = length(sub(solved.end, requestedWrist));
     const frame = armFrame(solved.middle, solved.end);
-    const jointLimitErrorRad = limitError(quatMultiply(quatInverse(torso.rotation), frame.upper), upper.jointLimitRadians!)
-      + limitError(quatMultiply(quatInverse(frame.forearm), rotation), handDefinition.jointLimitRadians!);
-    const floorReachable = reachErrorM < 1e-6 && solved.middle.y >= floorY + HUMAN_PROPORTIONS.arm.forearmRadiusM;
+    const rawGirdle = quatMultiply(quatInverse(torso.rotation), girdle.rotation);
+    const girdleRotation = limitRecoveryJoint(girdleId, rawGirdle);
+    const girdleWorld = quatMultiply(torso.rotation, girdleRotation);
+    const rawUpper = quatMultiply(quatInverse(girdleWorld), frame.upper);
+    const upperRotation = limitRecoveryJoint(upperId, rawUpper);
+    const upperWorld = quatMultiply(girdleWorld, upperRotation);
+    const rawForearm = quatMultiply(quatInverse(upperWorld), frame.forearm);
+    const forearmRotation = limitRecoveryJoint(forearmId, rawForearm);
+    const forearmWorld = quatMultiply(upperWorld, forearmRotation);
+    const twistRotation = recoveryJointRotation(twistId, ZERO);
+    const twistWorld = quatMultiply(forearmWorld, twistRotation);
+    const rawHand = quatMultiply(quatInverse(twistWorld), rotation);
+    const handRotation = limitRecoveryJoint(handId, rawHand);
+    const rotations = new Map<SegmentId, Quat>([
+      [girdleId, girdleRotation], [upperId, upperRotation], [forearmId, forearmRotation],
+      [twistId, twistRotation], [handId, handRotation],
+    ]);
+    const rebuilt = reconstructRecoveryLimb(side, true, torso, rotations);
+    const upperPose = rebuilt.poses.find(({ id }) => id === upperId)!;
+    const handPose = rebuilt.poses.find(({ id }) => id === handId)!;
+    const position = handPose.position;
+    const actualWrist = worldPoint(position, handPose.rotation, handDefinition.jointProfile!.childFrame.anchor);
+    const actualElbow = worldPoint(upperPose.position, upperPose.rotation,
+      SEGMENT_BY_ID.get(forearmId)!.jointProfile!.parentFrame.anchor);
+    const reachErrorM = length(sub(position, requestedCenter));
+    const jointLimitErrorRad = recoveryJointLimitError(girdleId, rawGirdle)
+      + recoveryJointLimitError(upperId, rawUpper)
+      + recoveryJointLimitError(forearmId, rawForearm)
+      + recoveryJointLimitError(handId, rawHand);
+    const floorClearanceM = rebuilt.floorClearanceM;
+    const floorReachable = reachErrorM <= RECOVERY_ARM_TARGET_TOLERANCE.maximumReachErrorM
+      && floorClearanceM >= floorY - RECOVERY_ARM_TARGET_TOLERANCE.maximumFloorPenetrationM;
     const movementM = length(sub(position, hand.position));
-    const corners: Vec3[] = [];
-    for (const x of [-half.x, half.x]) for (const y of [-half.y, half.y]) for (const z of [-half.z, half.z])
-      corners.push(worldPoint(position, rotation, { x, y, z }));
-    const lowest = Math.min(...corners.map(point => point.y));
-    const patch = corners.filter(point => point.y <= lowest + .003);
-    const pressureCenter = scale(patch.reduce(add, ZERO), 1 / patch.length);
+    const localPatch = handDefinition.geometry.supportPatch ?? handDefinition.geometry.vertices;
+    const worldPatch = localPatch.map(point => worldPoint(position, handPose.rotation, point));
+    const lowest = Math.min(...worldPatch.map(point => point.y));
+    const patch = worldPatch.filter(point => point.y <= lowest + .003);
+    const pressureCenter = patch.length ? scale(patch.reduce(add, ZERO), 1 / patch.length) : position;
     const contactLever = length(horizontal(sub(pressureCenter, shoulder)));
     // Judge the actual contacting edge, not just the hand centre. Keep a small
     // reserve for the measured contact to settle within the useful brace area.
-    const supportCost = Math.max(0, contactLever - .32) * 20;
+    const supportCost = Math.max(0, contactLever - .82) * 20;
     const score = (floorReachable ? 0 : 10 + reachErrorM) + jointLimitErrorRad * 10 + supportCost + movementM;
     if (score < bestScore - 1e-9) {
       bestScore = score;
-      best = { position, rotation, bend, shoulder, wrist: solved.end, elbow: solved.middle,
-        movementM, reachErrorM, floorReachable, jointLimitErrorRad,
-        wristRotation: quatMultiply(quatInverse(frame.forearm), rotation),
-        trajectoryBend: normalize(sub(sub(solved.middle, shoulder), scale(normalize(sub(position, shoulder)), dot(sub(solved.middle, shoulder), normalize(sub(position, shoulder)))))) };
+      best = { position, rotation: handPose.rotation, bend, shoulder, wrist: actualWrist, elbow: actualElbow,
+        movementM, reachErrorM, floorClearanceM, floorReachable, jointLimitErrorRad,
+        wristRotation: handRotation,
+        trajectoryBend: normalize(sub(sub(actualElbow, shoulder), scale(normalize(sub(position, shoulder)), dot(sub(actualElbow, shoulder), normalize(sub(position, shoulder)))))) };
     }
   }
   return best;
@@ -341,6 +502,7 @@ export interface RecoveryArmTargetGeometry {
   handRotation: Quat;
   upperRotation: Quat;
   forearmRotation: Quat;
+  forearmTwistRotation: Quat;
   elbow: Vec3;
   wrist: Vec3;
   reachErrorM: number;
@@ -354,34 +516,43 @@ export function solveRecoveryArmTarget(
   wristRotation: Quat,
   heading = 0,
 ): RecoveryArmTargetGeometry {
-  const firstLength = HUMAN_PROPORTIONS.arm.upperLengthM, forearmLength = HUMAN_PROPORTIONS.arm.forearmLengthM;
-  const anchor = { x: 0, y: HUMAN_PROPORTIONS.arm.handHalfExtentsM.y, z: 0 };
-  const wristAngle = 2 * Math.atan2(wristRotation.x, wristRotation.w);
-  const wristFlex = clamp(Math.atan2(Math.sin(wristAngle), Math.cos(wristAngle)), -.6, .6);
-  const localWrist = quatFromAxisAngle({ x: 1, y: 0, z: 0 }, wristFlex);
+  const firstLength = HUMAN_PROPORTIONS.arm.upperLengthM;
+  const forearmLength = HUMAN_PROPORTIONS.arm.forearmLengthM;
+  const anchor = SEGMENT_BY_ID.get("leftHand")!.jointProfile!.childFrame.anchor;
+  const localWrist = wristRotation;
   // With fixed local wrist flex, forearm + hand form one rigid effective bone.
   // Solving this exact geometry avoids a non-convergent wrist/orientation loop
   // when a clearance path passes close to the shoulder.
   const effectiveAxis = add({ x: 0, y: forearmLength, z: 0 }, rotate(localWrist, anchor));
-  const effectiveLength = length(effectiveAxis), offsetAngle = Math.atan2(effectiveAxis.z, effectiveAxis.y);
-  const minimumBend = Math.max(.025, .025 - offsetAngle), maximumBend = 2.35 - offsetAngle;
+  const effectiveLength = length(effectiveAxis);
+  const effectiveOffset = quatFromTo(UP, normalize(effectiveAxis));
+  const maximumBend = SEGMENT_BY_ID.get("leftForearm")!.jointProfile!.axes
+    .find(({ coordinate }) => coordinate === "x")!.maxRadians;
   const distanceAt = (angle: number): number => Math.sqrt(firstLength ** 2 + effectiveLength ** 2
     + 2 * firstLength * effectiveLength * Math.cos(angle));
   const delta = sub(requestedHandCenter, shoulder);
-  const boundedCenter = add(shoulder, scale(normalize(delta), clamp(length(delta), distanceAt(maximumBend), distanceAt(minimumBend))));
-  const solved = solveTwoBone(shoulder, boundedCenter, firstLength, effectiveLength, bend);
+  const boundedCenter = add(shoulder, scale(normalize(delta), clamp(length(delta), distanceAt(maximumBend), distanceAt(0))));
+  const solved = solveCapturedTwoBone(
+    shoulder,
+    boundedCenter,
+    firstLength,
+    effectiveLength,
+    bend,
+    maximumBend,
+  );
   const axisA = normalize(sub(shoulder, solved.middle)), axisB = normalize(sub(solved.middle, solved.end));
   const yaw = quatFromAxisAngle(UP, heading);
-  const hinge = normalize(scale(cross(axisA, axisB), -1), rotate(yaw, { x: 1, y: 0, z: 0 }));
+  const hinge = normalize(cross(axisA, axisB), rotate(yaw, { x: 1, y: 0, z: 0 }));
   const base = quatFromTo(UP, axisA), baseX = rotate(base, { x: 1, y: 0, z: 0 });
   const twist = Math.atan2(dot(axisA, cross(baseX, hinge)), dot(baseX, hinge));
   const upperRotation = quatMultiply(quatFromAxisAngle(axisA, twist), base);
-  const effectiveRotation = quatMultiply(upperRotation, quatFromAxisAngle({ x: 1, y: 0, z: 0 }, -Math.acos(clamp(dot(axisA, axisB), -1, 1))));
-  const forearmRotation = quatMultiply(effectiveRotation, quatFromAxisAngle({ x: 1, y: 0, z: 0 }, -offsetAngle));
+  const effectiveRotation = quatMultiply(upperRotation, quatFromAxisAngle({ x: 1, y: 0, z: 0 }, Math.acos(clamp(dot(axisA, axisB), -1, 1))));
+  const forearmRotation = quatMultiply(effectiveRotation, quatInverse(effectiveOffset));
+  const forearmTwistRotation = forearmRotation;
   const handRotation = quatMultiply(forearmRotation, localWrist);
   const wrist = sub(solved.middle, rotate(forearmRotation, { x: 0, y: forearmLength, z: 0 }));
   const handPosition = sub(wrist, rotate(handRotation, anchor));
-  return { handPosition, handRotation, upperRotation, forearmRotation, elbow: solved.middle, wrist,
+  return { handPosition, handRotation, upperRotation, forearmRotation, forearmTwistRotation, elbow: solved.middle, wrist,
     reachErrorM: length(sub(handPosition, requestedHandCenter)) };
 }
 

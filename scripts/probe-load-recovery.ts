@@ -12,7 +12,7 @@ for(const experiment of [{id:"higher-kneel-budget",feedforwardScale:1,balancedRi
   const summary={time:(frame+1)/60,phase:r.phase,stage:r.transferStage,height:pelvis.position.y,torsoUp:1-2*(torso.rotation.x**2+torso.rotation.z**2),margin:r.supportMarginM,load:r.contacts.filter(c=>c.forceN>3).map(c=>({segment:c.segment,forceN:c.forceN,point:c.point})),segments:s.segments.filter(p=>/pelvis|torso|Thigh|Shin|Foot/.test(p.id)),com:r.centerOfMass,projectedCom:r.projectedCenterOfMass,rootGoal:(recovery as unknown as{rootGoal:unknown}).rootGoal};
   if(`${r.phase}-${r.transferStage}`!==previous){entries.push(summary);previous=`${r.phase}-${r.transferStage}`;}
   if(frame%3===0&&frame<150)samples.push({...summary,motors:recovery.lastMotorTrace.filter(m=>/Thigh|Shin|Foot|pelvis|torso/.test(m.id))});
-  if(s.diagnostics.authority==="character-motor"){recoveredS=(frame+1)/60;break;}
+  if(s.state==="upright"&&s.diagnostics.bodyInputAvailable){recoveredS=(frame+1)/60;break;}
   if(frame>60&&pelvis.position.y<.25){earlyFall=true;break;}
  }
  const result={experiment,maximumHeight,recoveredS,earlyFall,entries,samples};results.push(result);console.log(JSON.stringify({...result,samples:undefined,entries:entries.map(e=>{const entry={...(e as Record<string,unknown>)};delete entry.segments;return entry;})}));c.dispose();

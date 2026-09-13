@@ -1,7 +1,8 @@
 import { SEGMENT_BY_ID, SEGMENTS } from "../src/core/humanoid";
 import type { CharacterController, Quat, SegmentId, Vec3 } from "../src/core/types";
 import { add, quatFromAxisAngle, quatMultiply, rotate, sub, worldPoint } from "../src/character/math";
-import { composeUprightPose, type MutablePose } from "../src/character/pose";
+import { clampJointCoordinates, jointRotationFromCoordinates } from "../src/character/joint-coordinates";
+import type { MutablePose } from "../src/character/pose";
 
 export interface RecoveryPoseFixture {
   id: string;
@@ -27,10 +28,12 @@ const UP: Vec3 = { x: 0, y: 1, z: 0 };
 const pitch = (angle: number): Quat => quatFromAxisAngle({ x: 1, y: 0, z: 0 }, angle);
 const roll = (angle: number): Quat => quatFromAxisAngle({ x: 0, y: 0, z: 1 }, angle);
 
-function setChild(poses: Map<SegmentId, MutablePose>, id: SegmentId, localRotation: Quat): void {
+function setChild(poses: Map<SegmentId, MutablePose>, id: SegmentId, requested: Vec3 = ZERO): void {
   const definition = SEGMENT_BY_ID.get(id)!;
   const parent = poses.get(definition.parent!)!;
-  const rotation = quatMultiply(parent.rotation, localRotation);
+  if (!definition.jointProfile) throw new Error(`Fixture segment ${id} has no joint profile`);
+  const coordinates = clampJointCoordinates(requested, definition.jointProfile);
+  const rotation = quatMultiply(parent.rotation, jointRotationFromCoordinates(coordinates, definition.jointProfile));
   poses.set(id, { id, rotation,
     position: sub(worldPoint(parent.position, parent.rotation, definition.jointAnchorParent!), rotate(rotation, definition.jointAnchorChild!)),
     linearVelocity: ZERO, angularVelocity: ZERO });
@@ -38,11 +41,8 @@ function setChild(poses: Map<SegmentId, MutablePose>, id: SegmentId, localRotati
 
 function lowestPoint(poses: Map<SegmentId, MutablePose>): number {
   return Math.min(...SEGMENTS.map(definition => {
-    const pose = poses.get(definition.id)!, shape = definition.shape;
-    if (shape.kind === "sphere") return pose.position.y - shape.radius;
-    if (shape.kind === "capsule") return pose.position.y - shape.radius - Math.abs(rotate(pose.rotation, UP).y) * shape.halfHeight;
-    const x = rotate(pose.rotation, { x: 1, y: 0, z: 0 }), y = rotate(pose.rotation, UP), z = rotate(pose.rotation, { x: 0, y: 0, z: 1 });
-    return pose.position.y - Math.abs(x.y) * shape.halfExtents.x - Math.abs(y.y) * shape.halfExtents.y - Math.abs(z.y) * shape.halfExtents.z;
+    const pose = poses.get(definition.id)!;
+    return Math.min(...definition.geometry.vertices.map(vertex => worldPoint(pose.position, pose.rotation, vertex).y));
   }));
 }
 
@@ -50,13 +50,20 @@ export function recoveryFixturePoses(fixture: RecoveryPoseFixture): Map<SegmentI
   const leading = fixture.side;
   let poses: Map<SegmentId, MutablePose>;
   if (fixture.pose === "crouch") {
-    poses = composeUprightPose({ rootTranslation: { x: 0, y: 0.825, z: 0 }, reactionOffset: ZERO,
-      simulationTime: 0, activeGrab: null, step: null, heading: 0, kneeFlexion: 0,
-      supportFeet: { leftFoot: { x: -0.11, y: 0.045, z: 0.10 }, rightFoot: { x: 0.11, y: 0.045, z: 0.10 } } }).poses;
-    for (const side of ["left", "right"] as const) {
-      setChild(poses, `${side}UpperArm`, quatMultiply(pitch(-0.10), roll(side === "left" ? -0.04 : 0.04)));
-      setChild(poses, `${side}Forearm`, pitch(-0.20));
-      setChild(poses, `${side}Hand`, pitch(0));
+    poses = new Map();
+    poses.set("pelvis", { id: "pelvis", position: ZERO, rotation: { x: 0, y: 0, z: 0, w: 1 },
+      linearVelocity: ZERO, angularVelocity: ZERO });
+    for (const definition of SEGMENTS) {
+      if (!definition.parent) continue;
+      let coordinates = ZERO;
+      if (definition.id.endsWith("UpperArm")) coordinates = {
+        x: -0.10, y: 0, z: definition.id.startsWith("left") ? -0.04 : 0.04,
+      };
+      if (definition.role === "forearm") coordinates = { x: 0.20, y: 0, z: 0 };
+      if (definition.role === "thigh") coordinates = { x: -0.34, y: 0, z: 0 };
+      if (definition.role === "shin") coordinates = { x: 1.10, y: 0, z: 0 };
+      if (definition.role === "ankle") coordinates = { x: -0.76, y: 0, z: 0 };
+      setChild(poses, definition.id, coordinates);
     }
   } else if (fixture.pose === "half-kneel") {
     poses = new Map();
@@ -64,15 +71,25 @@ export function recoveryFixturePoses(fixture: RecoveryPoseFixture): Map<SegmentI
     for (const definition of SEGMENTS) {
       if (!definition.parent) continue;
       const lead = definition.id.startsWith(leading);
-      let local = pitch(0);
-      if (definition.id === "torso") local = fixture.support === "weak" ? pitch(0.15)
-        : quatMultiply(pitch(0.45), roll(leading === "left" ? -0.30 : 0.30));
-      if (definition.id.endsWith("UpperArm")) local = quatMultiply(pitch(-0.10), roll(definition.id.startsWith("left") ? -0.04 : 0.04));
-      if (definition.id.endsWith("Forearm")) local = pitch(-0.20);
-      if (definition.id.endsWith("Thigh")) local = pitch(lead ? -1.35 : 0.15);
-      if (definition.id.endsWith("Shin")) local = pitch(2.10);
-      if (definition.id.endsWith("Foot")) local = pitch(-0.60);
-      setChild(poses, definition.id, local);
+      let coordinates = ZERO;
+      if (definition.id === "lumbar") coordinates = fixture.support === "weak"
+        ? { x: 0.07, y: 0, z: 0 }
+        : { x: 0.18, y: 0, z: leading === "left" ? -0.14 : 0.14 };
+      if (definition.id === "torso") coordinates = fixture.support === "weak"
+        ? { x: 0.08, y: 0, z: 0 }
+        : { x: 0.20, y: 0, z: leading === "left" ? -0.16 : 0.16 };
+      if (definition.id.endsWith("UpperArm")) coordinates = {
+        x: -0.10, y: 0, z: definition.id.startsWith("left") ? -0.04 : 0.04,
+      };
+      if (definition.role === "forearm") coordinates = { x: 0.20, y: 0, z: 0 };
+      if (definition.id.endsWith("Thigh")) {
+        const mirror = definition.id.startsWith("left") ? 1 : -1;
+        coordinates = { x: lead ? 1.25 : 0.05, y: 0, z: mirror * (lead ? 0.36 : 0.14) };
+      }
+      if (definition.id.endsWith("Shin")) coordinates = { x: lead ? 0.268 : 2.30, y: 0, z: 0 };
+      if (definition.id.endsWith("Ankle")) coordinates = { x: lead ? -0.785 : 0.315, y: 0, z: 0 };
+      if (definition.id.endsWith("Forefoot")) coordinates = { x: lead ? -0.349 : 0.751, y: 0, z: 0 };
+      setChild(poses, definition.id, coordinates);
     }
   } else {
     poses = new Map();
@@ -83,14 +100,18 @@ export function recoveryFixturePoses(fixture: RecoveryPoseFixture): Map<SegmentI
     for (const definition of SEGMENTS) {
       if (!definition.parent) continue;
       const near = definition.id.startsWith(fixture.side);
-      let rotation: Quat = { x: 0, y: 0, z: 0, w: 1 };
-      if (definition.id.endsWith("UpperArm")) rotation = quatMultiply(pitch(fixture.pose === "supine" ? -0.30 : 0.12), roll((definition.id.startsWith("left") ? -1 : 1) * (near ? 0.18 : 0.45)));
-      if (definition.id.endsWith("Forearm")) rotation = pitch(near ? -0.40 : -0.72);
-      if (definition.id.endsWith("Hand")) rotation = pitch(0.28);
-      if (definition.id.endsWith("Thigh")) rotation = pitch(near ? -0.18 : -0.35);
-      if (definition.id.endsWith("Shin")) rotation = pitch(near ? 0.30 : 0.55);
-      if (definition.id.endsWith("Foot")) rotation = pitch(-0.12);
-      setChild(poses, definition.id, rotation);
+      let coordinates = ZERO;
+      if (definition.id.endsWith("UpperArm")) coordinates = {
+        x: fixture.pose === "supine" ? -0.30 : 0.12,
+        y: 0,
+        z: (definition.id.startsWith("left") ? -1 : 1) * (near ? 0.18 : 0.34),
+      };
+      if (definition.role === "forearm") coordinates = { x: near ? 0.40 : 0.72, y: 0, z: 0 };
+      if (definition.id.endsWith("Hand")) coordinates = { x: 0.28, y: 0, z: 0 };
+      if (definition.id.endsWith("Thigh")) coordinates = { x: near ? -0.18 : -0.34, y: 0, z: 0 };
+      if (definition.id.endsWith("Shin")) coordinates = { x: near ? 0.30 : 0.55, y: 0, z: 0 };
+      if (definition.id.endsWith("Ankle")) coordinates = { x: -0.12, y: 0, z: 0 };
+      setChild(poses, definition.id, coordinates);
     }
   }
   // Position the actual oriented collider surface on the floor, preserving every anatomical anchor.
@@ -103,10 +124,13 @@ export function recoveryFixturePoses(fixture: RecoveryPoseFixture): Map<SegmentI
 
 /** Test setup only: create the dynamic bodies from the measured fixture before any integration. */
 export function seedRecoveryFixture(character: CharacterController, fixture: RecoveryPoseFixture): void {
-  const target = character as unknown as { poses: Map<SegmentId, MutablePose>; previousPoses: Map<SegmentId, MutablePose>; activateRagdoll(direction: Vec3): void };
-  target.poses = recoveryFixturePoses(fixture);
-  target.previousPoses = new Map([...target.poses].map(([id, pose]) => [id, { ...pose }]));
-  target.activateRagdoll(ZERO);
+  const target = character as CharacterController & {
+    seedRecoveryFixture(poses: ReadonlyMap<SegmentId, MutablePose>, direction: Vec3): void;
+  };
+  if (typeof target.seedRecoveryFixture !== "function") {
+    throw new Error("Character does not expose the recovery fixture initialization entrypoint");
+  }
+  target.seedRecoveryFixture(recoveryFixturePoses(fixture), ZERO);
 }
 
 

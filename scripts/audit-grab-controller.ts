@@ -3,6 +3,7 @@ import { readFileSync, writeFileSync } from "node:fs";
 import RAPIER from "@dimforge/rapier3d-compat";
 import { GRAB_CONTROL_LIMITS, GrabAnchorController, type GrabControlDiagnostics } from "../src/character/GrabAnchorController";
 import { SEGMENT_BY_ID } from "../src/core/humanoid";
+import { flattenGeometryIndices, flattenGeometryVertices } from "../src/core/geometry";
 import type { DiagnosticsSnapshot, SegmentDefinition, Vec3 } from "../src/core/types";
 
 const DT = 1 / 60;
@@ -93,10 +94,12 @@ for (let i = 0; i < rows.length; i += 1) {
 
 await RAPIER.init();
 function collider(definition: SegmentDefinition): RAPIER.ColliderDesc {
-  const shape = definition.shape;
-  if (shape.kind === "box") return RAPIER.ColliderDesc.cuboid(shape.halfExtents.x, shape.halfExtents.y, shape.halfExtents.z);
-  if (shape.kind === "sphere") return RAPIER.ColliderDesc.ball(shape.radius);
-  return RAPIER.ColliderDesc.capsule(shape.halfHeight, shape.radius);
+  const descriptor = RAPIER.ColliderDesc.convexMesh(
+    flattenGeometryVertices(definition.geometry),
+    flattenGeometryIndices(definition.geometry),
+  );
+  if (!descriptor) throw new Error(`Invalid convex geometry for ${definition.id}`);
+  return descriptor;
 }
 
 // Bounded API-level mass/inertia comparison: original colliders, identical

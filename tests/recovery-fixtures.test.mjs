@@ -3,8 +3,12 @@ import test, { after } from "node:test";
 import { register } from "tsx/esm/api";
 const unregister = register(); after(unregister);
 const { RECOVERY_POSE_FIXTURES, recoveryFixturePoses } = await import("../scripts/recovery-fixtures.ts");
-const { SEGMENTS } = await import("../src/core/humanoid.ts");
-const { length, sub, worldPoint, rotate, quatFromAxisAngle, quatInverse, quatMultiply } = await import("../src/character/math.ts");
+const { SEGMENT_BY_ID, SEGMENTS } = await import("../src/core/humanoid.ts");
+const { length, sub, worldPoint, rotate, quatFromAxisAngle } = await import("../src/character/math.ts");
+const { jointCoordinates, jointLimitErrorMagnitude } = await import("../src/character/joint-coordinates.ts");
+
+const soleLowestPoint = (poses, side) => Math.min(...[`${side}Foot`, `${side}Forefoot`].flatMap((id) =>
+  SEGMENT_BY_ID.get(id).geometry.vertices.map((vertex) => worldPoint(poses.get(id).position, poses.get(id).rotation, vertex).y)));
 
 test("landed recovery fixtures preserve anatomy, finite transforms and zero initial momentum", () => {
   assert.equal(RECOVERY_POSE_FIXTURES.length, 24);
@@ -41,33 +45,40 @@ test("landed fixtures transform exactly with heading and mirror every asymmetric
 test("supported crouch seeds two level soles underneath and half-kneel seeds a raised trailing foot", () => {
   for (const side of ["left", "right"]) {
     const crouch = recoveryFixturePoses({ id: "check", pose: "crouch", side, heading: 0 });
-    for (const foot of ["leftFoot", "rightFoot"]) {
-      assert.ok(Math.abs(crouch.get(foot).position.y - 0.046) < 1e-10);
-      assert.ok(rotate(crouch.get(foot).rotation, { x: 0, y: 1, z: 0 }).y > 0.999);
+    for (const footSide of ["left", "right"]) {
+      const soleParts = [`${footSide}Foot`, `${footSide}Forefoot`];
+      const lowest = soleLowestPoint(crouch, footSide);
+      assert.ok(Math.abs(lowest - 0.001) < 1e-10, `${footSide} articulated sole reaches the floor`);
+      assert.ok(soleParts.every((id) => rotate(crouch.get(id).rotation, { x: 0, y: 1, z: 0 }).y > 0.98));
     }
     const kneel = recoveryFixturePoses({ id: "check", pose: "half-kneel", side, heading: 0 });
     const trailing = side === "left" ? "right" : "left";
-    assert.ok(kneel.get(`${side}Foot`).position.y < 0.06, "leading foot begins at floor");
-    assert.ok(kneel.get(`${trailing}Foot`).position.y > kneel.get(`${side}Foot`).position.y + 0.07, "trailing foot is folded back");
-    const thigh = kneel.get(`${trailing}Thigh`);
-    const knee = worldPoint(thigh.position, thigh.rotation, { x: 0, y: -0.21, z: 0 });
-    assert.ok(knee.y < 0.085, `trailing knee begins near floor: ${knee.y}`);
+    const leadingSoleY = soleLowestPoint(kneel, side);
+    const trailingSoleY = soleLowestPoint(kneel, trailing);
+    assert.ok(leadingSoleY < 0.004, `leading articulated sole begins at floor: ${leadingSoleY}`);
+    assert.ok(trailingSoleY > leadingSoleY + 0.02, `trailing articulated sole is folded back: ${trailingSoleY}`);
+    const trailingShin = `${trailing}Shin`;
+    const shinLowest = Math.min(...SEGMENT_BY_ID.get(trailingShin).geometry.vertices.map(vertex =>
+      worldPoint(kneel.get(trailingShin).position, kneel.get(trailingShin).rotation, vertex).y));
+    assert.ok(shinLowest < 0.006, `trailing shin begins at its exact floor surface: ${shinLowest}`);
   }
 });
 
 
-test("landed fixture joint rotations stay within existing motor ranges", () => {
+test("landed fixture joint coordinates stay within shared asymmetric profiles", () => {
   for (const fixture of RECOVERY_POSE_FIXTURES) {
     const poses = recoveryFixturePoses(fixture);
     for (const d of SEGMENTS) {
       if (!d.parent) continue;
-      const q = quatMultiply(quatInverse(poses.get(d.parent).rotation), poses.get(d.id).rotation);
-      const x = /Shin|Forearm/.test(d.id) ? 2 * Math.atan2(q.x, q.w) : Math.asin(Math.max(-1, Math.min(1, 2 * (q.w * q.x - q.y * q.z))));
-      const y = /Shin|Forearm/.test(d.id) ? 0 : Math.atan2(2 * (q.x * q.z + q.w * q.y), 1 - 2 * (q.x * q.x + q.y * q.y));
-      const z = /Shin|Forearm/.test(d.id) ? 0 : Math.atan2(2 * (q.x * q.y + q.w * q.z), 1 - 2 * (q.x * q.x + q.z * q.z));
-      for (const [axis, angle] of Object.entries({ x, y, z })) assert.ok(Math.abs(angle) <= d.jointLimitRadians[axis] + 1e-8, fixture.id + "/" + d.id + "/" + axis + " motor range: " + angle);
-      if (d.id.endsWith("Shin")) assert.ok(x >= 0, fixture.id + " knee bends forward");
-      if (d.id.endsWith("Forearm")) assert.ok(x <= 0, fixture.id + " elbow keeps natural bend");
+      const coordinates = jointCoordinates(poses.get(d.parent).rotation, poses.get(d.id).rotation, d.jointProfile);
+      assert.ok(jointLimitErrorMagnitude(coordinates, d.jointProfile) < 1e-8,
+        fixture.id + "/" + d.id + " stays inside its profile: " + JSON.stringify(coordinates));
+      const permitted = new Set(d.jointProfile.axes.map(({ coordinate }) => coordinate));
+      for (const axis of ["x", "y", "z"]) {
+        if (!permitted.has(axis)) assert.ok(Math.abs(coordinates[axis]) < 1e-8, `${fixture.id}/${d.id}/${axis} is locked`);
+      }
+      if (d.role === "shin") assert.ok(coordinates.x >= -1e-8, fixture.id + " knee bends forward");
+      if (d.role === "forearm") assert.ok(coordinates.x >= -1e-8, fixture.id + " elbow flexion is positive");
     }
   }
 });
@@ -98,7 +109,7 @@ test("balanced half-kneeling starts with actual loaded foot and shin contacts ar
         if (points.length && forceN >= 3) contacts.push({ segment, point: points[0], points, normalY: 1, forceN, loadBearing: true, persistenceS: 1 / 60 });
       }
       const trailing = fixture.side === "left" ? "right" : "left";
-      assert.ok(contacts.some(c => c.segment === fixture.side + "Foot"), fixture.id + " leading sole carries actual solver load");
+      assert.ok(contacts.some(c => c.segment === fixture.side + "Foot" || c.segment === fixture.side + "Forefoot"), fixture.id + " leading sole carries actual solver load");
       assert.ok(contacts.some(c => c.segment === trailing + "Shin"), fixture.id + " trailing shin carries actual solver load");
       const geometry = supportGeometry(contacts, new Map(snapshot.segments.map(p => [p.id, p])), recoveryMassState(snapshot.segments));
       assert.ok(geometry.marginM >= 0, fixture.id + " projected COM starts inside actual loaded support: " + geometry.marginM);

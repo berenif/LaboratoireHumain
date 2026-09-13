@@ -9,39 +9,106 @@ export const REGION_IDS = [
 ] as const;
 
 export type RegionId = (typeof REGION_IDS)[number];
-export type SegmentId =
-  | RegionId
-  | "neck"
-  | "leftUpperArm"
-  | "leftForearm"
-  | "rightUpperArm"
-  | "rightForearm"
-  | "leftThigh"
-  | "leftShin"
-  | "rightThigh"
-  | "rightShin";
+export const SEGMENT_IDS = [
+  "pelvis",
+  "lumbar",
+  "torso",
+  "neck",
+  "head",
+  "leftShoulderGirdle",
+  "leftUpperArm",
+  "leftForearm",
+  "leftForearmTwist",
+  "leftHand",
+  "rightShoulderGirdle",
+  "rightUpperArm",
+  "rightForearm",
+  "rightForearmTwist",
+  "rightHand",
+  "leftThigh",
+  "leftShin",
+  "leftAnkle",
+  "leftFoot",
+  "leftForefoot",
+  "rightThigh",
+  "rightShin",
+  "rightAnkle",
+  "rightFoot",
+  "rightForefoot",
+] as const;
+
+export type SegmentId = (typeof SEGMENT_IDS)[number];
 
 export type MotionState = "upright" | "reacting" | "stepping" | "falling" | "fallen" | "recovering";
 export type RendererMode = "webgl" | "canvas2d";
 export type Vec3 = Readonly<{ x: number; y: number; z: number }>;
 export type Quat = Readonly<{ x: number; y: number; z: number; w: number }>;
 
-export type SegmentShape =
-  | Readonly<{ kind: "capsule"; radius: number; halfHeight: number }>
-  | Readonly<{ kind: "box"; halfExtents: Vec3 }>
-  | Readonly<{ kind: "sphere"; radius: number }>;
+export type SegmentSide = "left" | "right" | null;
+export type SegmentRole =
+  | "pelvis"
+  | "lumbar"
+  | "ribcage"
+  | "neck"
+  | "head"
+  | "shoulder-girdle"
+  | "upper-arm"
+  | "forearm"
+  | "forearm-twist"
+  | "hand"
+  | "thigh"
+  | "shin"
+  | "ankle"
+  | "hindfoot"
+  | "forefoot";
+
+export type JointCoordinate = "x" | "y" | "z";
+
+export interface JointFrame {
+  anchor: Vec3;
+  rotation: Quat;
+}
+
+export interface JointAxisProfile {
+  coordinate: JointCoordinate;
+  minRadians: number;
+  maxRadians: number;
+  passiveStiffnessNmPerRad: number;
+  dampingNmsPerRad: number;
+  maxMotorTorqueNm: number;
+}
+
+export interface JointProfile {
+  kind: "hinge" | "multi-axis";
+  parentFrame: JointFrame;
+  childFrame: JointFrame;
+  axes: readonly JointAxisProfile[];
+  limitSoftZoneFraction: number;
+}
+
+/** Canonical local-space surface shared by collision, rendering, and picking. */
+export interface ConvexGeometry {
+  kind: "convex";
+  vertices: readonly Vec3[];
+  triangles: readonly (readonly [number, number, number])[];
+  localBounds: Readonly<{ min: Vec3; max: Vec3 }>;
+  supportPatch?: readonly Vec3[];
+}
 
 export interface SegmentDefinition {
   id: SegmentId;
   parent: SegmentId | null;
   region: RegionId | null;
+  side: SegmentSide;
+  role: SegmentRole;
   massKg: number;
-  shape: SegmentShape;
+  geometry: ConvexGeometry;
   localOffset: Vec3;
   restLocalRotation: Quat;
   jointAnchorParent: Vec3 | null;
   jointAnchorChild: Vec3 | null;
-  jointLimitRadians: Readonly<{ x: number; y: number; z: number }> | null;
+  jointProfile: JointProfile | null;
+  collisionExclusions: readonly SegmentId[];
   collisionGroup: number;
 }
 
@@ -86,17 +153,6 @@ export interface GrabControlDiagnostics {
   positiveWorkLimitJ: number;
 }
 
-export interface HandoffDiagnostics {
-  sequence: number;
-  maxTranslationErrorM: number;
-  maxAngularErrorDegrees: number;
-  selectedAnchorErrorM: number;
-  rawTargetErrorM: number;
-  localAnchorErrorM: number;
-  jointSeparationM: number;
-  targetDerivativeSpeedMps: number;
-}
-
 export type RecoveryPhase = "none" | "protect" | "settle" | "roll" | "brace" | "kneel" | "stand";
 export interface SupportingContact {
   segment: SegmentId;
@@ -108,12 +164,35 @@ export interface SupportingContact {
   points?: readonly Vec3[];
   loadBearing: boolean;
 }
+export interface RecoveryTransferGuardDiagnostics {
+  segment: SegmentId;
+  hasContact: boolean;
+  persistenceS: number;
+  forceN: number;
+  footUpDot: number;
+  footHeightM: number;
+  targetDistanceM: number | null;
+  supportMarginM: number;
+  massVelocityYMps: number;
+  leadingLoadN: number;
+  readyToLift: boolean;
+  qualified: boolean;
+}
 export interface RecoveryDiagnostics {
   phase: RecoveryPhase;
   route: "none" | "crouch" | "half-kneel" | "prone" | "roll";
   leadingSide: "left" | "right" | null;
   rollSide: "left" | "right" | null;
-  transferStage: "none" | "roll" | "brace" | "tuck-knee" | "plant-lead" | "shift-weight" | "bring-trailing" | "extend" | "relax";
+  /** Measured axis/heading captured in settle for roll-aware planning. */
+  recoveryHeading?: number | null;
+  /** Planned recovery axis in world frame captured during settle. */
+  recoveryAxis?: Vec3;
+  /** Planned support segments that are currently being chased in recovery. */
+  plannedSupportSources?: SegmentId[];
+  /** Established support currently allowed for transfer/authority decisions. */
+  establishedSupportSources?: SegmentId[];
+  transferStage: "none" | "roll" | "arm-preparation" | "push-brace" | "brace" | "tuck-knee" | "plant-lead" | "shift-weight" | "bring-trailing" | "extend" | "relax";
+  transferGuard?: RecoveryTransferGuardDiagnostics | null;
   supportMarginM: number;
   centerOfMass: Vec3;
   projectedCenterOfMass: Vec3;
@@ -122,6 +201,9 @@ export interface RecoveryDiagnostics {
   releaseMarginM: number | null;
   extension: number;
   progressError: number | null;
+  stageAction?: string;
+  blockingPredicate?: string | null;
+  progressMeasure?: string;
   noSupportTimeS: number;
   orientation: "forward" | "backward" | "left" | "right";
   contacts: SupportingContact[];
@@ -129,6 +211,10 @@ export interface RecoveryDiagnostics {
   settledTimeS: number;
   stableTimeS: number;
   stalledTimeS: number;
+  /** Reason captured when a retry is queued. */
+  retryReason?: string | null;
+  /** Reason captured while support is temporarily missing. */
+  noSupportReason?: string | null;
   retries: number;
   assistanceForce: Vec3;
   assistanceTorque: Vec3;
@@ -142,13 +228,32 @@ export interface BalanceStateDiagnostics {
   supportingFeet: ("leftFoot" | "rightFoot")[]; supportMarginM: number; instabilitySeconds: number;
   recoveryCapacityM: number; externalForce: Vec3; balanceAcceleration: Vec3; stepTarget: Vec3 | null;
 }
+export interface JointStateDiagnostics {
+  segment: SegmentId;
+  coordinates: Vec3;
+  targetCoordinates: Vec3;
+  limitError: Vec3;
+  limitErrorMagnitudeRad: number;
+  motorTorqueNm: number;
+  motorSaturationRatio: number;
+}
+export interface ContactStateDiagnostics {
+  count: number;
+  loadBearingCount: number;
+  totalNormalForceN: number;
+  supportingSegments: SegmentId[];
+}
 export interface DiagnosticsSnapshot {
   balance: BalanceStateDiagnostics | null;
   bodyInputAvailable: boolean;
   recovery: RecoveryDiagnostics;
   grabControl: GrabControlDiagnostics;
-  handoff: HandoffDiagnostics | null;
-  authority: "character-motor" | "ragdoll";
+  /** The continuous dynamic assembly owns every rendered transform in every state. */
+  physicsOwnership: "rapier-dynamic";
+  jointDiagnostics: JointStateDiagnostics[];
+  contactDiagnostics: ContactStateDiagnostics;
+  maxJointLimitErrorRad: number;
+  maxMotorSaturationRatio: number;
   state: MotionState;
   simulationReady: boolean;
   interactiveViewReady: boolean;
@@ -156,6 +261,8 @@ export interface DiagnosticsSnapshot {
   activeGrab: boolean;
   activePointerId: number | null;
   selectedRegion: RegionId | null;
+  /** Exact picked rigid segment; region remains the seven-item UI grouping. */
+  selectedSegment?: SegmentId | null;
   queuedTarget: boolean;
   appliedGrabForceN: number;
   leanRadians: number;

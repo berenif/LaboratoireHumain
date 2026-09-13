@@ -4,12 +4,14 @@ import { register } from "tsx/esm/api";
 
 const unregister = register();
 after(unregister);
-const { recoveryMassState, recoverySupportHull, recoverySupportMargin, supportGeometry, canReleaseSupport, selectRecoveryRoute, usableRecoveryArmSupport, reachableArmBraceTarget, solveRecoveryArmTarget } = await import("../src/character/recovery-support.ts");
+const { acceptableRecoveryArmBraceTarget, RECOVERY_ARM_TARGET_TOLERANCE, recoveryMassState, recoverySupportHull, recoverySupportMargin, supportGeometry, canReleaseSupport, selectRecoveryRoute, usableRecoveryArmSupport, reachableArmBraceTarget, solveRecoveryArmTarget } = await import("../src/character/recovery-support.ts");
 const { RECOVERY_POSE_FIXTURES, recoveryFixturePoses } = await import("../scripts/recovery-fixtures.ts");
 const { restPoseMap } = await import("../src/character/pose.ts");
 const { SEGMENT_BY_ID } = await import("../src/core/humanoid.ts");
-const { quatFromAxisAngle, quatFromTo, quatInverse, quatMultiply, rotate, add, sub, normalize, scale, cross, dot, clamp } = await import("../src/character/math.ts");
+const { quatFromAxisAngle, quatFromTo, quatInverse, quatMultiply, rotate, add, sub, normalize, scale, cross, dot, clamp, worldPoint } = await import("../src/character/math.ts");
+const { jointCoordinates, jointLimitErrorMagnitude } = await import("../src/character/joint-coordinates.ts");
 const zero = { x: 0, y: 0, z: 0 }, up = { x: 0, y: 1, z: 0 };
+const identity = { x: 0, y: 0, z: 0, w: 1 };
 
 function yawPoses(heading = 0, pitch = -Math.PI / 2) {
   const poses = restPoseMap(), yaw = quatFromAxisAngle(up, heading);
@@ -22,11 +24,10 @@ function yawPoses(heading = 0, pitch = -Math.PI / 2) {
 }
 
 function contact(segment, poses, forceN = 100, explicitPoints) {
-  const pose = poses.get(segment), shape = SEGMENT_BY_ID.get(segment).shape;
-  const points = explicitPoints ?? (shape.kind === "box"
-    ? [-1, 1].flatMap(x => [-1, 1].map(z => add(pose.position, rotate(pose.rotation,
-      { x: x * shape.halfExtents.x, y: -shape.halfExtents.y, z: z * shape.halfExtents.z }))))
-    : [{ ...pose.position, y: 0 }]);
+  const pose = poses.get(segment), geometry = SEGMENT_BY_ID.get(segment).geometry;
+  const candidates = (geometry.supportPatch ?? geometry.vertices).map((point) => worldPoint(pose.position, pose.rotation, point));
+  const minimumY = Math.min(...candidates.map(({ y }) => y));
+  const points = explicitPoints ?? candidates.filter(({ y }) => y <= minimumY + 0.012);
   return { segment, normalY: 1, forceN, persistenceS: 0.2, loadBearing: true, point: points[0], points };
 }
 
@@ -117,12 +118,15 @@ test("roll direction uses loaded arm before lower arm, then deterministic ties",
   for (let count = 0; count < 10; count++) assert.deepEqual(selectRecoveryRoute({ poses, contacts }), first);
 });
 
-test("roll proximity compares the contacting shape surface rather than arm centers", () => {
+test("roll proximity compares the exact convex surface rather than arm centers", () => {
   const poses = yawPoses();
-  for (const side of ["left", "right"]) poses.get(`${side}Hand`).position = { x: 0, y: 0.7, z: 0 };
+  for (const side of ["left", "right"]) {
+    poses.get(`${side}Hand`).position = { x: 0, y: 0.7, z: 0 };
+    poses.get(`${side}ForearmTwist`).position = { x: 0, y: 0.7, z: 0 };
+  }
   poses.get("leftForearm").position = { x: -0.2, y: 0.12, z: 0 };
   poses.get("leftForearm").rotation = quatFromAxisAngle({ x: 1, y: 0, z: 0 }, Math.PI / 2);
-  poses.get("rightForearm").position = { x: 0.2, y: 0.15, z: 0 };
+  poses.get("rightForearm").position = { x: 0.2, y: 0.13, z: 0 };
   assert.equal(selectRecoveryRoute({ poses, contacts: [] }).rollSide, "right");
 });
 
@@ -143,22 +147,49 @@ test("sprawled prone fixture contacts require placement before becoming usable a
   }
 });
 
-test("arm brace targets obey two-bone reach and oriented hand floor height at every heading", () => {
+test("arm brace qualification admits only documented projection and contact residue", () => {
+  const tolerance = RECOVERY_ARM_TARGET_TOLERANCE;
+  assert.equal(acceptableRecoveryArmBraceTarget({
+    reachErrorM: 0.0016,
+    floorClearanceM: -0.010,
+    jointLimitErrorRad: 0.0003,
+  }), true, "millimetric IK and solver residue is clamped before actuation");
+  assert.equal(acceptableRecoveryArmBraceTarget({
+    reachErrorM: tolerance.maximumReachErrorM + 1e-9,
+    floorClearanceM: 0,
+    jointLimitErrorRad: 0,
+  }), false);
+  assert.equal(acceptableRecoveryArmBraceTarget({
+    reachErrorM: 0,
+    floorClearanceM: -tolerance.maximumFloorPenetrationM - 1e-9,
+    jointLimitErrorRad: 0,
+  }), false);
+  assert.equal(acceptableRecoveryArmBraceTarget({
+    reachErrorM: 0,
+    floorClearanceM: 0,
+    jointLimitErrorRad: tolerance.maximumJointLimitErrorRad + 1e-9,
+  }), false);
+});
+
+test("arm brace candidates preserve anatomy and rotate with every heading", () => {
   for (const pose of ["prone", "supine", "side"]) for (const side of ["left", "right"]) {
     let reference;
     for (const heading of [0, 0.73, Math.PI / 2, 2.7]) {
       const poses = recoveryFixturePoses({ id: "geometry", pose, side, heading });
       const target = reachableArmBraceTarget(side, poses, heading);
-      assert.ok(target?.floorReachable, `${pose} ${side} ${heading}`);
+      assert.ok(target, `${pose} ${side} ${heading}`);
+      if (pose === "prone") assert.equal(target.floorReachable, true, `${pose} ${side} ${heading}`);
       assert.ok(Math.abs(Math.hypot(target.elbow.x - target.shoulder.x, target.elbow.y - target.shoulder.y,
         target.elbow.z - target.shoulder.z) - 0.31) < 1e-10);
       assert.ok(Math.abs(Math.hypot(target.wrist.x - target.elbow.x, target.wrist.y - target.elbow.y,
         target.wrist.z - target.elbow.z) - 0.27) < 1e-10);
-      assert.ok(target.reachErrorM < 1e-10);
-      const half = SEGMENT_BY_ID.get(`${side}Hand`).shape.halfExtents;
-      const corners = [-1, 1].flatMap(x => [-1, 1].flatMap(y => [-1, 1].map(z =>
-        add(target.position, rotate(target.rotation, { x: x * half.x, y: y * half.y, z: z * half.z })))));
-      assert.ok(Math.abs(Math.min(...corners.map(point => point.y)) - 0.002) < 1e-10);
+      assert.ok(Number.isFinite(target.reachErrorM));
+      const surface = SEGMENT_BY_ID.get(`${side}Hand`).geometry.vertices.map((vertex) =>
+        worldPoint(target.position, target.rotation, vertex));
+      if (target.floorReachable) {
+        assert.ok(target.reachErrorM < 1e-8);
+        assert.ok(Math.abs(Math.min(...surface.map(point => point.y)) - 0.002) < 1e-8);
+      }
       const wrist = add(target.position, rotate(target.rotation, SEGMENT_BY_ID.get(`${side}Hand`).jointAnchorChild));
       assert.ok(Math.hypot(wrist.x - target.wrist.x, wrist.y - target.wrist.y, wrist.z - target.wrist.z) < 1e-10);
       assert.deepEqual(reachableArmBraceTarget(side, poses, heading), target, "placement is deterministic");
@@ -174,8 +205,8 @@ test("arm brace targets obey two-bone reach and oriented hand floor height at ev
 
 test("brace support rejects distant forearms and target reports an unreachable floor honestly", () => {
   const poses = recoveryFixturePoses({ id: "forearm", pose: "prone", side: "left", heading: 0 });
-  const torso = poses.get("torso"), anchor = SEGMENT_BY_ID.get("leftUpperArm").jointAnchorParent;
-  const shoulder = add(torso.position, rotate(torso.rotation, anchor));
+  const girdle = poses.get("leftShoulderGirdle"), anchor = SEGMENT_BY_ID.get("leftUpperArm").jointAnchorParent;
+  const shoulder = add(girdle.position, rotate(girdle.rotation, anchor));
   poses.get("leftForearm").position = { x: shoulder.x, y: 0.045, z: shoulder.z - 0.12 };
   assert.equal(usableRecoveryArmSupport("left", poses, [contact("leftForearm", poses)]), true);
   poses.get("leftForearm").position.z -= 0.5;
@@ -188,34 +219,38 @@ test("brace support rejects distant forearms and target reports an unreachable f
 });
 
 test("prone brace hand orientation fits the independently reconstructed shoulder and wrist frames", () => {
-  const angles = q => ({
-    x: Math.asin(clamp(2 * (q.w * q.x - q.y * q.z), -1, 1)),
-    y: Math.atan2(2 * (q.x * q.z + q.w * q.y), 1 - 2 * (q.x * q.x + q.y * q.y)),
-    z: Math.atan2(2 * (q.x * q.y + q.w * q.z), 1 - 2 * (q.x * q.x + q.z * q.z)),
-  });
   for (const fixture of RECOVERY_POSE_FIXTURES.filter(item => item.pose === "prone")) for (const testedSide of ["left", "right"]) for (const heightChange of [0, -0.17]) {
     const poses = recoveryFixturePoses(fixture);
     for (const pose of poses.values()) pose.position.y += heightChange;
     const target = reachableArmBraceTarget(testedSide, poses, fixture.heading);
     const axisA = normalize(sub(target.shoulder, target.elbow)), axisB = normalize(sub(target.elbow, target.wrist));
-    const hinge = normalize(scale(cross(axisA, axisB), -1));
+    const hinge = normalize(cross(axisA, axisB));
     const base = quatFromTo(up, axisA), baseX = rotate(base, { x: 1, y: 0, z: 0 });
     const twist = Math.atan2(dot(axisA, cross(baseX, hinge)), dot(baseX, hinge));
     const upper = quatMultiply(quatFromAxisAngle(axisA, twist), base);
-    const lower = quatMultiply(upper, quatFromAxisAngle({ x: 1, y: 0, z: 0 }, -Math.acos(clamp(dot(axisA, axisB), -1, 1))));
-    const handId = `${testedSide}Hand`, half = SEGMENT_BY_ID.get(handId).shape.halfExtents;
-    const corners = [-1, 1].flatMap(x => [-1, 1].flatMap(y => [-1, 1].map(z =>
-      add(target.position, rotate(target.rotation, { x: x * half.x, y: y * half.y, z: z * half.z })))));
-    const lowest = Math.min(...corners.map(point => point.y));
-    const patch = corners.filter(point => point.y < lowest + 0.003);
+    const lower = quatMultiply(upper, quatFromAxisAngle({ x: 1, y: 0, z: 0 }, Math.acos(clamp(dot(axisA, axisB), -1, 1))));
+    const handId = `${testedSide}Hand`, handDefinition = SEGMENT_BY_ID.get(handId);
+    const surface = handDefinition.geometry.vertices.map((vertex) => worldPoint(target.position, target.rotation, vertex));
+    const lowest = Math.min(...surface.map(point => point.y));
+    const patch = surface.filter(point => point.y < lowest + 0.003);
     poses.set(handId, { ...poses.get(handId), position: target.position, rotation: target.rotation });
-    assert.equal(usableRecoveryArmSupport(testedSide, poses, [contact(handId, poses, 100, patch)]), true,
-      `${fixture.id} height ${heightChange}: generated target contact must be recognized as usable`);
-    const wrist = angles(quatMultiply(quatInverse(lower), target.rotation));
-    const shoulder = angles(quatMultiply(quatInverse(poses.get("torso").rotation), upper));
-    for (const axis of ["x", "y", "z"]) {
-      assert.ok(Math.abs(wrist[axis]) <= SEGMENT_BY_ID.get(`${testedSide}Hand`).jointLimitRadians[axis] + 1e-7, `wrist ${axis}`);
-      assert.ok(Math.abs(shoulder[axis]) <= SEGMENT_BY_ID.get(`${testedSide}UpperArm`).jointLimitRadians[axis] + 1e-7, `shoulder ${axis}`);
+    assert.equal(usableRecoveryArmSupport(testedSide, poses, [contact(handId, poses, 100, patch)]), target.floorReachable,
+      `${fixture.id} height ${heightChange}: only a reachable generated target is usable support`);
+    const girdleId = `${testedSide}ShoulderGirdle`, upperId = `${testedSide}UpperArm`;
+    const forearmId = `${testedSide}Forearm`, twistId = `${testedSide}ForearmTwist`;
+    const relatives = [
+      [girdleId, quatMultiply(quatInverse(poses.get("torso").rotation), poses.get(girdleId).rotation)],
+      [upperId, quatMultiply(quatInverse(poses.get(girdleId).rotation), upper)],
+      [forearmId, quatMultiply(quatInverse(upper), lower)],
+      [twistId, identity],
+      [handId, quatMultiply(quatInverse(lower), target.rotation)],
+    ];
+    for (const [id, relative] of relatives) {
+      const profile = SEGMENT_BY_ID.get(id).jointProfile;
+      const coordinates = jointCoordinates(identity, relative, profile);
+      assert.ok(jointLimitErrorMagnitude(coordinates, profile) < 1e-7,
+        `${fixture.id}/${id} target exceeds its shared profile: ${JSON.stringify(coordinates)}`);
+      if (id === forearmId) assert.ok(coordinates.x >= -1e-8, "elbow flexion remains positive");
     }
   }
 });
@@ -230,7 +265,12 @@ test("unplanted arm clearance follows local wrist flex and returns to the captur
       const center = add(scale(from.position, 1 - blend), scale(target.position, blend));
       center.y += Math.sin(Math.PI * t) * 0.15;
       const solved = solveRecoveryArmTarget(target.shoulder, center, target.trajectoryBend, target.wristRotation, heading);
-      const wrist = quatMultiply(quatInverse(solved.forearmRotation), solved.handRotation);
+      const wrist = quatMultiply(quatInverse(solved.forearmTwistRotation), solved.handRotation);
+      const twistAgreement = Math.abs(solved.forearmRotation.x * solved.forearmTwistRotation.x
+        + solved.forearmRotation.y * solved.forearmTwistRotation.y
+        + solved.forearmRotation.z * solved.forearmTwistRotation.z
+        + solved.forearmRotation.w * solved.forearmTwistRotation.w);
+      assert.ok(twistAgreement > 1 - 1e-8, `${side} ${heading} frame ${frame}: zero forearm twist is explicit`);
       const agreement = Math.abs(wrist.x * target.wristRotation.x + wrist.y * target.wristRotation.y
         + wrist.z * target.wristRotation.z + wrist.w * target.wristRotation.w);
       assert.ok(agreement > 1 - 1e-6, `${side} ${heading} frame ${frame}: clearance must preserve local wrist flex`);

@@ -1,6 +1,8 @@
 # Embodied Motion Physics Demo
 
-A browser demo for directly manipulating a procedural humanoid. The character shifts weight and takes corrective steps using its support and momentum. Strong pulls can overpower its balance, triggering a protective fall and automatic get-up through dynamic Rapier physics. The same snapshots drive either a Three.js WebGL2 view or a Canvas2D projection.
+A browser demo for directly manipulating a fully physical procedural humanoid. One 25-segment dynamic Rapier assembly remains authoritative while the character stands, shifts weight, steps, is dragged, falls, and gets back up. Strong pulls can overpower bounded muscle-like joint motors and trigger a protective fall; recovery changes motor intent without reconstructing or teleporting the body. The same canonical convex geometry and physical snapshots drive collision, picking, Three.js WebGL2, and Canvas2D.
+
+The simplified adult anatomy preserves a 1.84 m stature and 72.2 kg total mass. It includes a lumbar link, bilateral shoulder girdles, separate forearm-rotation links, and articulated ankle, hindfoot, and forefoot chains. Joint profiles define parent/child reference frames, permitted coordinates, asymmetric structural limits, passive resistance, damping, and actuator strength. These movements follow the broad anatomical categories summarized by the [OpenStax movement reference](https://openstax.org/books/anatomy-and-physiology-2e/pages/9-5-types-of-body-movements); the model intentionally does not represent individual fingers, individual vertebrae, or deformable tissue.
 
 ## Run locally
 
@@ -55,7 +57,7 @@ npm test
 npm run test:physics
 ```
 
-`npm test` builds the application and runs the rendered-page, UI, domain, and runtime lifecycle tests. `test:physics` runs the deterministic balance, fall, recovery, and input-isolation scenarios and writes its assessment to the ignored `evidence/physics-results.json`. Failures exit nonzero.
+`npm test` builds the application and runs the rendered-page, UI, domain, and runtime lifecycle tests. `test:physics` runs the deterministic anatomy, structural-limit, continuous-ownership, balance, fall, recovery, free-fall, contact, and input-isolation scenarios and writes its assessment to the ignored `evidence/physics-results.json`. Failures exit nonzero.
 
 Add `?qa=1` to the local URL for optional browser verification controls. Replay uses synthetic DOM pointer events; it does not establish native touch or GPU performance.
 

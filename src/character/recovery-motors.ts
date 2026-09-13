@@ -1,4 +1,4 @@
-import type { SegmentId, Vec3 } from "../core/types";
+import type { JointCoordinate, SegmentId, Vec3 } from "../core/types";
 import { clampLength } from "./math";
 
 /** A copied, symmetric Rapier world inverse-inertia tensor; no WASM-backed views. */
@@ -22,6 +22,50 @@ export interface RecoveryMotorIntent {
 export interface RecoveryMotorSolveOptions {
   /** Equilibrium torque cancels an external load; command torque accelerates the body. */
   readonly feedforwardMode?: "equilibrium" | "command";
+}
+
+/**
+ * One generalized rotational coordinate. `worldAxis` is its physical,
+ * power-conjugate world torque vector and deliberately need not be unit length.
+ */
+export interface ReducedCoordinateMotorAxisIntent {
+  readonly coordinate: JointCoordinate;
+  readonly worldAxis: Vec3;
+  readonly error: number;
+  readonly velocity: number;
+  readonly kp: number;
+  readonly kd: number;
+  /** Equilibrium load in this generalized coordinate. */
+  readonly feedforward?: number;
+  readonly cap: number;
+}
+
+/** A joint contributes only the anatomical coordinates listed in `axes`. */
+export interface ReducedCoordinateMotorIntent {
+  readonly id: SegmentId;
+  readonly parent: SegmentId | null;
+  readonly axes: readonly ReducedCoordinateMotorAxisIntent[];
+}
+
+export interface ReducedCoordinateMotorResult {
+  readonly torqueWorld: Vec3;
+  readonly coordinateTorques: Readonly<Partial<Record<JointCoordinate, number>>>;
+  /** Unconstrained optimum, retained so diagnostics can report requested saturation. */
+  readonly requestedCoordinateTorques: Readonly<Partial<Record<JointCoordinate, number>>>;
+}
+
+export interface ReducedCoordinateResponse {
+  get(
+    leftId: SegmentId,
+    leftCoordinate: JointCoordinate,
+    rightId: SegmentId,
+    rightCoordinate: JointCoordinate,
+  ): number | undefined;
+}
+
+export interface ReducedCoordinateMotorSolveOptions {
+  /** Constraint-aware joint-coordinate inverse mass; falls back to free bodies. */
+  readonly response?: ReducedCoordinateResponse;
 }
 
 function solvePositiveDefinite(matrix: Float64Array, rhs: Float64Array): Float64Array {
@@ -105,7 +149,10 @@ function solveBoundedPositiveDefinite(matrix:Float64Array,rhs:Float64Array,caps:
  *
  * J has +I for each child and -I for its parent, so M = J I^-1 J^T includes
  * the response of every shared body. With K_j = kd_j dt + kp_j dt², the
- * semi-implicit motor equation is (I + K M) tau = kp error - kd velocity + FF.
+ * semi-implicit motor equation is
+ * (I + K M) tau = kp error - (kd + kp dt) velocity + FF.
+ * The extra kp dt term evaluates position error at the end of the step rather
+ * than asking the motor to correct motion that has already happened.
  * Scaling each row by 1/K gives the symmetric positive-definite M + K^-1.
  *
  * Equilibrium FF assumes an opposing external acceleration -M FF. Including
@@ -141,7 +188,9 @@ export function solveRecoveryMotorTorques(
       const row = index * 3 + axis;
       gain[row] = k;
       feedforward[row] = motor.feedforward[field];
-      base[row] = motor.kp * motor.error[field] - motor.kd * motor.velocity[field] + (command ? feedforward[row] : 0);
+      base[row] = motor.kp * motor.error[field]
+        - (motor.kd + motor.kp * dt) * motor.velocity[field]
+        + (command ? feedforward[row] : 0);
     }
     for (const [id, sign] of [[motor.id, 1], [motor.parent, -1]] as const) {
       if (id === null) continue;
@@ -190,6 +239,228 @@ export function solveRecoveryMotorTorques(
       y: torque[row + 1],
       z: torque[row + 2],
     }, motor.cap));
+  }
+  return result;
+}
+
+type ReducedRow = Readonly<{
+  motorIndex: number;
+  coordinate: JointCoordinate;
+  worldAxis: Vec3;
+  error: number;
+  velocity: number;
+  kp: number;
+  kd: number;
+  feedforward: number;
+  cap: number;
+}>;
+
+function inertiaAlong(
+  inertia: RecoveryBodyInverseInertia,
+  left: Vec3,
+  right: Vec3,
+): number {
+  const x = inertia.m11 * right.x + inertia.m12 * right.y + inertia.m13 * right.z;
+  const y = inertia.m12 * right.x + inertia.m22 * right.y + inertia.m23 * right.z;
+  const z = inertia.m13 * right.x + inertia.m23 * right.y + inertia.m33 * right.z;
+  return left.x * x + left.y * y + left.z * z;
+}
+
+/** Box-constrained SPD optimum, with one bound per anatomical coordinate. */
+function solveBoundedScalars(
+  matrix: Float64Array,
+  rhs: Float64Array,
+  caps: Float64Array,
+): Readonly<{ values: Float64Array; unconstrained: Float64Array }> {
+  const unconstrained = solvePositiveDefinite(new Float64Array(matrix), rhs);
+  const values = new Float64Array(unconstrained);
+  let bounded = false;
+  for (let row = 0; row < values.length; row++) {
+    const value = Math.max(-caps[row], Math.min(caps[row], values[row]));
+    bounded ||= value !== values[row];
+    values[row] = value;
+  }
+  if (!bounded) return { values, unconstrained };
+
+  // Convex coordinate descent re-solves every clipped coordinate against the
+  // current values of its coupled neighbors. This propagates a saturated hip,
+  // knee, or ankle through the chain instead of clipping a free solution once.
+  for (let iteration = 0; iteration < 96; iteration++) {
+    let change = 0;
+    for (let row = 0; row < values.length; row++) {
+      let local = rhs[row];
+      for (let column = 0; column < values.length; column++) {
+        if (column !== row) local -= matrix[row * values.length + column] * values[column];
+      }
+      const value = Math.max(-caps[row], Math.min(caps[row], local / matrix[row * values.length + row]));
+      change = Math.max(change, Math.abs(value - values[row]));
+      values[row] = value;
+    }
+    if (change < 1e-8) break;
+  }
+  return { values, unconstrained };
+}
+
+/**
+ * Solve a coupled motor system in its actual anatomical coordinates.
+ *
+ * Each scalar row is a permitted joint axis. Locked axes never enter the
+ * response matrix, so the solve cannot assign useful work to a torque that the
+ * caller or Rapier will discard. The incidence signs still apply every result
+ * equally and oppositely to the child and parent bodies.
+ */
+export function solveReducedCoordinateMotorTorques(
+  motors: readonly ReducedCoordinateMotorIntent[],
+  bodyInverseInertia: ReadonlyMap<SegmentId, RecoveryBodyInverseInertia>,
+  dt: number,
+  options: ReducedCoordinateMotorSolveOptions = {},
+): Map<SegmentId, ReducedCoordinateMotorResult> {
+  if (!(dt > 0) || !Number.isFinite(dt)) {
+    throw new RangeError("Reduced-coordinate motor timestep must be positive and finite.");
+  }
+
+  const rows: ReducedRow[] = [];
+  const seen = new Set<SegmentId>();
+  for (const [motorIndex, motor] of motors.entries()) {
+    if (seen.has(motor.id) || motor.id === motor.parent) {
+      throw new RangeError("Reduced-coordinate motors require distinct child IDs and parents.");
+    }
+    seen.add(motor.id);
+    const coordinates = new Set<JointCoordinate>();
+    for (const axis of motor.axes) {
+      if (coordinates.has(axis.coordinate)) {
+        throw new RangeError(`Reduced-coordinate motor ${motor.id} repeats ${axis.coordinate}.`);
+      }
+      coordinates.add(axis.coordinate);
+      const values = [
+        axis.worldAxis.x, axis.worldAxis.y, axis.worldAxis.z,
+        axis.error, axis.velocity, axis.kp, axis.kd, axis.feedforward ?? 0, axis.cap,
+      ];
+      const magnitude = Math.hypot(axis.worldAxis.x, axis.worldAxis.y, axis.worldAxis.z);
+      if (!values.every(Number.isFinite) || !(magnitude > 1e-8)
+        || axis.kp < 0 || axis.kd < 0 || axis.cap < 0) {
+        throw new RangeError("Reduced-coordinate motor inputs must be finite with a nonzero axis and nonnegative gains and caps.");
+      }
+      rows.push({
+        motorIndex,
+        coordinate: axis.coordinate,
+        // Preserve the complete coordinate Jacobian. Normalizing this vector
+        // would change both coordinate rate and virtual work at combined
+        // rotations, making the response matrix inconsistent with the torque
+        // ultimately applied to the bodies.
+        worldAxis: { ...axis.worldAxis },
+        error: axis.error,
+        velocity: axis.velocity,
+        kp: axis.kp,
+        kd: axis.kd,
+        feedforward: axis.feedforward ?? 0,
+        cap: axis.cap,
+      });
+    }
+  }
+
+  const activeRows = rows.filter((row) => row.cap > 0 && (row.kp > 0 || row.kd > 0));
+  const size = activeRows.length;
+  const response = new Float64Array(size * size);
+  const incidence = new Map<SegmentId, { row: number; sign: number }[]>();
+  for (const [row, axis] of activeRows.entries()) {
+    const motor = motors[axis.motorIndex];
+    for (const [id, sign] of [[motor.id, 1], [motor.parent, -1]] as const) {
+      if (id === null) continue;
+      const entries = incidence.get(id) ?? [];
+      entries.push({ row, sign });
+      incidence.set(id, entries);
+    }
+  }
+  if (options.response) {
+    for (let left = 0; left < size; left++) {
+      const leftAxis = activeRows[left];
+      const leftMotor = motors[leftAxis.motorIndex];
+      for (let right = 0; right < size; right++) {
+        const rightAxis = activeRows[right];
+        const rightMotor = motors[rightAxis.motorIndex];
+        const value = options.response.get(
+          leftMotor.id, leftAxis.coordinate, rightMotor.id, rightAxis.coordinate,
+        );
+        if (value === undefined || !Number.isFinite(value)) {
+          throw new RangeError("Missing or nonfinite articulated coordinate response.");
+        }
+        response[left * size + right] = value;
+      }
+    }
+  } else {
+    for (const [body, entries] of incidence) {
+      const inertia = bodyInverseInertia.get(body);
+      if (!inertia || !Object.values(inertia).every(Number.isFinite)) {
+        throw new RangeError(`Missing or nonfinite recovery inertia for ${body}.`);
+      }
+      for (const left of entries) for (const right of entries) {
+        response[left.row * size + right.row] += left.sign * right.sign * inertiaAlong(
+          inertia,
+          activeRows[left.row].worldAxis,
+          activeRows[right.row].worldAxis,
+        );
+      }
+    }
+  }
+
+  const matrix = new Float64Array(response);
+  const rhs = new Float64Array(size);
+  const feedforward = new Float64Array(size);
+  const caps = new Float64Array(size);
+  for (let row = 0; row < size; row++) {
+    const axis = activeRows[row];
+    const gain = axis.kd * dt + axis.kp * dt * dt;
+    // activeRows excludes only kp=kd=0, so gain is strictly positive here.
+    matrix[row * size + row] += 1 / gain;
+    rhs[row] = (
+      axis.kp * axis.error
+      - (axis.kd + axis.kp * dt) * axis.velocity
+    ) / gain;
+    feedforward[row] = axis.feedforward;
+    caps[row] = axis.cap;
+  }
+  // Equilibrium loads cancel an opposing external acceleration. Solving them
+  // in the reduced matrix (rather than adding them afterward) lets saturation
+  // and shared-body response propagate only through real anatomical axes.
+  for (let row = 0; row < size; row++) {
+    for (let column = 0; column < size; column++) {
+      rhs[row] += matrix[row * size + column] * feedforward[column];
+    }
+  }
+  const solved = size > 0
+    ? solveBoundedScalars(matrix, rhs, caps)
+    : { values: new Float64Array(), unconstrained: new Float64Array() };
+
+  const coordinateTorques = motors.map(() => ({} as Partial<Record<JointCoordinate, number>>));
+  const requestedCoordinateTorques = motors.map(() => ({} as Partial<Record<JointCoordinate, number>>));
+  for (const row of rows) {
+    coordinateTorques[row.motorIndex][row.coordinate] = 0;
+    requestedCoordinateTorques[row.motorIndex][row.coordinate] = 0;
+  }
+  for (let row = 0; row < size; row++) {
+    const axis = activeRows[row];
+    coordinateTorques[axis.motorIndex][axis.coordinate] = solved.values[row];
+    requestedCoordinateTorques[axis.motorIndex][axis.coordinate] = solved.unconstrained[row];
+  }
+
+  const result = new Map<SegmentId, ReducedCoordinateMotorResult>();
+  for (const [motorIndex, motor] of motors.entries()) {
+    let torqueWorld: Vec3 = { x: 0, y: 0, z: 0 };
+    for (const axis of rows) {
+      if (axis.motorIndex !== motorIndex) continue;
+      const torque = coordinateTorques[motorIndex][axis.coordinate] ?? 0;
+      torqueWorld = {
+        x: torqueWorld.x + axis.worldAxis.x * torque,
+        y: torqueWorld.y + axis.worldAxis.y * torque,
+        z: torqueWorld.z + axis.worldAxis.z * torque,
+      };
+    }
+    result.set(motor.id, {
+      torqueWorld,
+      coordinateTorques: coordinateTorques[motorIndex],
+      requestedCoordinateTorques: requestedCoordinateTorques[motorIndex],
+    });
   }
   return result;
 }

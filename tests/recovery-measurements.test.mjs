@@ -14,7 +14,7 @@ function sensors() {
     const mass = SEGMENTS.find(d => d.id === p.id).massKg / TOTAL_MASS_KG;
     for (const axis of ["x", "y", "z"]) center[axis] += p.position[axis] * mass;
   }
-  const snapshot = (time, released = []) => ({ simulationTime: time, segments, diagnostics: { authority: "ragdoll", recovery: {
+  const snapshot = (time, released = []) => ({ simulationTime: time, state: "recovering", segments, diagnostics: { physicsOwnership: "rapier-dynamic", recovery: {
     phase: "kneel", route: "none", retries: 0, transferStage: "none", leadingSide: "left", rollSide: "left",
     centerOfMass: center, projectedCenterOfMass: center, assistanceForce: zero, assistanceTorque: zero,
     plantedTargets: [], releasedSupports: released,

@@ -1,6 +1,6 @@
 import type { RigidBody } from "@dimforge/rapier3d-compat";
 import type { GrabControlDiagnostics, Vec3 } from "../core/types";
-export type { GrabControlDiagnostics, HandoffDiagnostics } from "../core/types";
+export type { GrabControlDiagnostics } from "../core/types";
 import { add, clampLength, cross, dot, length, normalize, scale, sub, worldPoint } from "./math";
 
 /** Successor S1: frozen before its first corrected acceptance replay. */

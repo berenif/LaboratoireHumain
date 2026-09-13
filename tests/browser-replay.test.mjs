@@ -14,6 +14,7 @@ function fixture(t) {
   const reads = [];
   let timerId = 0;
   let selectedRegion = null;
+  let selectedSegment = null;
   const zero = { x: 0, y: 0, z: 0 };
   const positions = REGION_IDS.map((id, x) => ({ id, position: { x, y: 0, z: 0 } }));
   const replacements = {
@@ -39,7 +40,7 @@ function fixture(t) {
         querySelector(selector) {
           return {
             getAttribute() { return "false"; },
-            click() { clicks.push(selector); selectedRegion = null; },
+            click() { clicks.push(selector); selectedRegion = null; selectedSegment = null; },
           };
         },
       },
@@ -47,12 +48,13 @@ function fixture(t) {
       dispatchEvent(event) {
         events.push(event.type);
         selectedRegion = event.type === "pointerdown" ? REGION_IDS[event.clientX] : null;
+        selectedSegment = selectedRegion;
       },
     },
     interaction: {
       getStatus() {
         reads.push("interaction");
-        return { selectedRegion, localAnchor: zero };
+        return { selectedRegion, selectedSegment, localAnchor: zero };
       },
       getActivePointerId() { return selectedRegion ? 4001 : null; },
     },
@@ -60,7 +62,11 @@ function fixture(t) {
     projection() { reads.push("projection"); return { project: (point) => point }; },
     diagnostics() {
       reads.push("diagnostics");
-      return { selectedRegion, activeGrab: selectedRegion !== null, appliedGrabForceN: 0, finite: true, errors: [] };
+      return {
+        state: "upright", bodyInputAvailable: true, physicsOwnership: "rapier-dynamic",
+        selectedRegion, selectedSegment, activeGrab: selectedRegion !== null,
+        appliedGrabForceN: 0, stepCount: 0, finite: true, errors: [],
+      };
     },
   };
   return {
@@ -111,6 +117,7 @@ test("selection replay without a signal still completes and resets its UI", asyn
   await replay;
   assert.equal(result.passed, true);
   assert.equal(result.results.length, REGION_IDS.length);
+  assert.deepEqual(result.results.map(({ metrics }) => metrics.selectedSegment), REGION_IDS);
   assert.equal(result.synthetic, true);
   assert.equal(f.events.filter((type) => type === "pointerdown").length, REGION_IDS.length);
   assert.equal(f.events.at(-1), "pointercancel");

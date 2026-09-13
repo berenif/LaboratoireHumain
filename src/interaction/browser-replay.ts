@@ -207,10 +207,18 @@ export async function runInteractionReplay(
         const failures = status.selectedRegion === region ? [] : [`visible ${region} center selected ${status.selectedRegion}`];
         const diagnostics = readDiagnostics();
         if (diagnostics.selectedRegion !== region) failures.push(`simulation selected ${diagnostics.selectedRegion}`);
+        if (!status.selectedSegment || diagnostics.selectedSegment !== status.selectedSegment) {
+          failures.push("exact picked segment was not retained consistently");
+        }
         dispatch("pointerup");
         await wait(70);
         failures.push(...releasedFailures());
-        record(`center-select-${region}`, failures, { selectedRegion: status.selectedRegion, localAnchor: status.localAnchor, coordinate: clientPoint });
+        record(`center-select-${region}`, failures, {
+          selectedRegion: status.selectedRegion,
+          selectedSegment: status.selectedSegment,
+          localAnchor: status.localAnchor,
+          coordinate: clientPoint,
+        });
       }
     }
     if (suite === "all" || suite === "lifecycle") {
@@ -231,7 +239,9 @@ export async function runInteractionReplay(
         const after = readDiagnostics();
         const failures = releasedFailures();
         if (initial.selectedRegion !== "rightHand" || !before.activeGrab) failures.push("pre-interruption grab was not active");
-        if (action === "reset" && (after.authority !== "character-motor" || after.stepCount !== 0)) failures.push("reset did not restore upright controller");
+        if (action === "reset" && (after.physicsOwnership !== "rapier-dynamic" || after.state !== "upright" || after.stepCount !== 0)) {
+          failures.push("reset did not restore the upright dynamic assembly");
+        }
         record(`interrupt-${action}`, failures, { before, after, inputStatus: readInteractionStatus(), eventSource: "synthetic DOM event / integrated UI click" });
       }
       await resetUI();
@@ -286,6 +296,9 @@ export async function runInteractionReplay(
         const observe = () => {
           const snapshot = readSnapshot();
           const diagnostics = snapshot.diagnostics;
+          if (diagnostics.physicsOwnership !== "rapier-dynamic") {
+            lockoutFailures.add("physics ownership left the continuous dynamic assembly");
+          }
           maxJointSeparationM = Math.max(maxJointSeparationM, diagnostics.maxJointSeparationM);
           maxFloorPenetrationM = Math.max(maxFloorPenetrationM, diagnostics.maxFloorPenetrationM);
           finite &&= diagnostics.finite && diagnostics.errors.length === 0;
@@ -323,14 +336,15 @@ export async function runInteractionReplay(
           await wait(33);
           observe();
         }
-        const handoffSnapshot = observe();
-        if (handoffSnapshot.diagnostics.authority !== "ragdoll" || handoffSnapshot.diagnostics.bodyInputAvailable) {
+        const fallSnapshot = observe();
+        if (!["falling", "fallen", "recovering"].includes(fallSnapshot.state)
+          || fallSnapshot.diagnostics.bodyInputAvailable) {
           failures.push("overpowering pull did not enter body lockout");
         }
         reportProgress(`cycle ${cycle + 1}/${cycles}: automatic recovery with rejected body input`);
-        const fallTime = captures.falling?.simulationTime ?? handoffSnapshot.simulationTime;
+        const fallTime = captures.falling?.simulationTime ?? fallSnapshot.simulationTime;
         const wallDeadline = performance.now() + BROWSER_RECOVERY_LIMIT_SECONDS * 3000;
-        let recovered = handoffSnapshot;
+        let recovered = fallSnapshot;
         // A separate press during lockout must never be deferred into a grab.
         const rejectedPointer = pointerId + 100;
         dispatch("pointerdown", regionPoint("torso"), rejectedPointer);
@@ -352,7 +366,9 @@ export async function runInteractionReplay(
         dispatch("pointerup", clientPoint, rejectedPointer);
         failures.push(...lockoutFailures);
         if (!captures.falling || !captures.fallen || !captures.recovering) failures.push("protective fall, settled landing, or recovery phase was not observed");
-        if (!recovered.diagnostics.bodyInputAvailable || recovered.diagnostics.authority !== "character-motor" || recovered.state !== "upright") {
+        if (!recovered.diagnostics.bodyInputAvailable
+          || recovered.diagnostics.physicsOwnership !== "rapier-dynamic"
+          || recovered.state !== "upright") {
           failures.push(`stable standing did not return within ${BROWSER_RECOVERY_LIMIT_SECONDS}s simulated time`);
         }
         if (maxJointSeparationM > 0.08) failures.push(`joint separation ${maxJointSeparationM.toFixed(4)}m`);
@@ -365,6 +381,7 @@ export async function runInteractionReplay(
         else if (recovered.diagnostics.bodyInputAvailable) {
           const freshPress = await begin(freshRegion);
           if (freshPress.selectedRegion !== freshRegion) failures.push("fresh pointer press was rejected after recovery");
+          if (!freshPress.selectedSegment) failures.push("fresh pointer press lost its exact segment");
           dispatch("pointerup");
           await wait(35);
           failures.push(...releasedFailures());
@@ -375,7 +392,7 @@ export async function runInteractionReplay(
           recoveryTimeSeconds: recovered.simulationTime - fallTime,
           recoveryLimitSeconds: BROWSER_RECOVERY_LIMIT_SECONDS,
           recoveredMaxSpeedMps: maxSpeed(recovered), visibilityMiss,
-          captures: { ...captures, step: stepSnapshot, handoff: handoffSnapshot, recovered, heldAfterRecovery },
+          captures: { ...captures, step: stepSnapshot, fallEntry: fallSnapshot, recovered, heldAfterRecovery },
         });
         if (!recovered.diagnostics.bodyInputAvailable) break;
       }

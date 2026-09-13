@@ -1,10 +1,17 @@
 import type { Collider, World } from "@dimforge/rapier3d-compat";
-import { SEGMENTS, TOTAL_MASS_KG } from "../src/core/humanoid";
+import { SEGMENT_BY_ID, SEGMENTS, TOTAL_MASS_KG } from "../src/core/humanoid";
 import type { PoseSnapshot, SegmentId, Vec3 } from "../src/core/types";
-import { add, length, quatInverse, quatMultiply, rotate, scale, sub } from "../src/character/math";
+import { add, length, quatInverse, rotate, scale, sub, worldPoint } from "../src/character/math";
+import { jointCoordinates } from "../src/character/joint-coordinates";
 
 const DT = 1 / 60, ZERO: Vec3 = { x: 0, y: 0, z: 0 };
 const horizontalDistance = (a: Vec3, b: Vec3) => Math.hypot(a.x - b.x, a.z - b.z);
+const recoveryMotion = (state: PoseSnapshot["state"]): boolean =>
+  state === "falling" || state === "fallen" || state === "recovering";
+const isFootSupport = (segment: SegmentId): boolean => {
+  const role = SEGMENT_BY_ID.get(segment)?.role;
+  return role === "hindfoot" || role === "forefoot";
+};
 interface MeasuredContact { segment: SegmentId; points: Vec3[]; forceN: number }
 interface CapturedPlant { target: Vec3; materialPoint: Vec3; worldPoint: Vec3 }
 export interface RecoveryPhysicsMeasurements {
@@ -58,19 +65,25 @@ export function measuredProneBraceSupport(snapshot: PoseSnapshot, contacts: Meas
   if(rotate(torso.rotation,{x:0,y:0,z:1}).y>=-.25)return false;
   const supportedArm=contacts.some(contact=>{
     if(!/Hand|Forearm/.test(contact.segment))return false;
-    const side=contact.segment.startsWith("left")?-1:1;
-    const shoulder=add(torso.position,rotate(torso.rotation,{x:side*.225,y:.13,z:0}));
+    const side=contact.segment.startsWith("left")?"left":"right";
+    const upper=SEGMENT_BY_ID.get(`${side}UpperArm`)!;
+    const parent=snapshot.segments.find(p=>p.id===upper.parent)!;
+    const shoulder=worldPoint(parent.position,parent.rotation,upper.jointAnchorParent!);
     return contact.points.some(point=>shoulder.y>point.y+.035 && horizontalDistance(point,shoulder)<=(contact.segment.endsWith("Hand")?.36:.335));
   });
   const mass=massState(snapshot), projected=add(mass.position,scale(mass.velocity,.15));
-  return supportedArm && contacts.some(c=>/torso|pelvis|Thigh|Shin|Foot/.test(c.segment)) && margin(contacts.flatMap(c=>c.points),projected)>=-1e-5;
+  return supportedArm && contacts.some(c=>/torso|pelvis|Thigh|Shin/.test(c.segment) || isFootSupport(c.segment))
+    && margin(contacts.flatMap(c=>c.points),projected)>=-1e-5;
 }
 
 export function measureRecoveryPhysics(measured: RecoveryPhysicsMeasurements, snapshot: PoseSnapshot, previous: PoseSnapshot,
   internals: { world: World; floorCollider: Collider; ragdollColliders: Map<SegmentId, Collider> }, violations: Set<string>): void {
   const d = snapshot.diagnostics.recovery, before = previous.diagnostics.recovery, report = measured.report;
   const contacts: MeasuredContact[] = [], rawLoaded = new Set<SegmentId>();
-  if (snapshot.diagnostics.authority !== "ragdoll") { measured.planted.clear(); measured.ages.clear(); measured.previousContacts = []; measured.deliberatelyReleased.clear(); measured.unloadedReleased.clear(); return; }
+  if (snapshot.diagnostics.physicsOwnership !== "rapier-dynamic") {
+    violations.add("Physics ownership left the continuous Rapier dynamic assembly");
+  }
+  if (!recoveryMotion(snapshot.state)) { measured.planted.clear(); measured.ages.clear(); measured.previousContacts = []; measured.deliberatelyReleased.clear(); measured.unloadedReleased.clear(); return; }
   const integrated = snapshot.simulationTime > previous.simulationTime;
   if (d.retries !== before.retries) { measured.deliberatelyReleased.clear(); measured.unloadedReleased.clear(); }
   for (const [segment, collider] of internals.ragdollColliders) {
@@ -101,9 +114,10 @@ export function measureRecoveryPhysics(measured: RecoveryPhysicsMeasurements, sn
   }
   if (before.phase === "settle" && d.phase === "stand") {
     const entryMass = massState(previous), projection = add(entryMass.position, scale(entryMass.velocity, 0.15));
-    const loadedFeet = measured.previousContacts.filter(c => c.segment.endsWith("Foot"));
+    const loadedFeet = measured.previousContacts.filter(c => isFootSupport(c.segment));
+    const loadedSides = new Set(loadedFeet.map(c => c.segment.startsWith("left") ? "left" : "right"));
     const torso = previous.segments.find(p => p.id === "torso")!, pelvis = previous.segments.find(p => p.id === "pelvis")!;
-    if (loadedFeet.length !== 2 || loadedFeet.some(c => rotate(previous.segments.find(p => p.id === c.segment)!.rotation, { x: 0, y: 1, z: 0 }).y <= 0.85)
+    if (loadedSides.size !== 2 || loadedFeet.some(c => rotate(previous.segments.find(p => p.id === c.segment)!.rotation, { x: 0, y: 1, z: 0 }).y <= 0.85)
       || rotate(torso.rotation, { x: 0, y: 1, z: 0 }).y <= 0.88 || pelvis.position.y <= 0.55
       || margin(loadedFeet.flatMap(c => c.points), projection) < -1e-5) {
       violations.add("Crouch rise shortcut lacks independently measured planted soles, entry height, upright torso and projected balance");
@@ -111,18 +125,19 @@ export function measureRecoveryPhysics(measured: RecoveryPhysicsMeasurements, sn
   }
   const currentMass = massState(snapshot);
   // Dynamic activation itself resets diagnostics without integrating recovery.
-  const recoveryIntegrated=integrated && previous.diagnostics.authority === "ragdoll";
+  const recoveryIntegrated=integrated && recoveryMotion(previous.state);
   if (recoveryIntegrated && length(sub(d.centerOfMass, currentMass.position)) > 1e-7) violations.add("Recovery COM is not the independent mass-weighted body center");
   const expectedProjection = add(currentMass.position, scale(currentMass.velocity, 0.15));
   if (recoveryIntegrated && horizontalDistance(d.projectedCenterOfMass, expectedProjection) > 1e-7) violations.add("Recovery projected COM does not use the independent 0.15 s mass-weighted velocity");
   report.maxUpwardAssistanceN = Math.max(report.maxUpwardAssistanceN, d.assistanceForce.y);
   report.maxPelvisTorqueNm = Math.max(report.maxPelvisTorqueNm, length(d.assistanceTorque));
-  if (d.assistanceForce.y > TOTAL_MASS_KG * 9.81 * 0.20 + 1e-8) violations.add("Upward assistance exceeds 20% body weight");
-  if (length(d.assistanceTorque) > 60 + 1e-8) violations.add("Residual pelvis torque exceeds 60 Nm");
-  if (d.phase === "roll" && d.assistanceForce.y > 1e-9) violations.add("Rolling includes upward pelvis assistance");
-  const feet = contacts.filter(c => c.segment.endsWith("Foot"));
+  if (length(d.assistanceForce) > 1e-8) violations.add("Recovery includes direct pelvis assistance force");
+  if (length(d.assistanceTorque) > 1e-8) violations.add("Recovery includes direct pelvis assistance torque");
+  const feet = contacts.filter(c => isFootSupport(c.segment));
   if (feet.length) report.loadedFootFrames++;
-  const footLoad = (side: string) => contacts.find(c => c.segment === `${side}Foot`)?.forceN ?? 0;
+  const footLoad = (side: string) => contacts
+    .filter(c => c.segment.startsWith(side) && isFootSupport(c.segment))
+    .reduce((sum, contact) => sum + contact.forceN, 0);
   const totalFootLoad = footLoad("left") + footLoad("right");
   if (totalFootLoad > 3 && Math.abs(footLoad("left") - footLoad("right")) / totalFootLoad > 0.35) report.asymmetricallyLoadedFrames++;
   if (d.route !== "none" && (d.route !== before.route || d.retries !== before.retries || before.phase === "settle" && d.phase !== "settle")) {
@@ -137,18 +152,26 @@ export function measureRecoveryPhysics(measured: RecoveryPhysicsMeasurements, sn
   if (d.route !== "none" && before.route !== "none" && d.retries === before.retries && before.phase !== "settle" && d.phase !== "settle"
     && (d.route !== before.route || d.leadingSide !== before.leadingSide || d.rollSide !== before.rollSide)) violations.add("Recovery route or side changed before a retry");
   for (const side of ["left", "right"] as const) {
-    const thigh = snapshot.segments.find(p => p.id === `${side}Thigh`)!, shin = snapshot.segments.find(p => p.id === `${side}Shin`)!;
-    const hip = add(thigh.position, rotate(thigh.rotation, { x: 0, y: 0.21, z: 0 }));
-    const ankle = add(shin.position, rotate(shin.rotation, { x: 0, y: -0.20, z: 0 }));
-    const extension = length(sub(ankle, hip)) / 0.82;
+    const thighId = `${side}Thigh` as SegmentId, shinId = `${side}Shin` as SegmentId;
+    const ankleId = `${side}Ankle` as SegmentId, forearmId = `${side}Forearm` as SegmentId;
+    const thigh = snapshot.segments.find(p => p.id === thighId)!, shin = snapshot.segments.find(p => p.id === shinId)!;
+    const thighDefinition = SEGMENT_BY_ID.get(thighId)!, shinDefinition = SEGMENT_BY_ID.get(shinId)!;
+    const ankleDefinition = SEGMENT_BY_ID.get(ankleId)!;
+    const hip = worldPoint(thigh.position, thigh.rotation, thighDefinition.jointAnchorChild!);
+    const ankle = worldPoint(shin.position, shin.rotation, ankleDefinition.jointAnchorParent!);
+    const legLength = length(sub(thighDefinition.jointAnchorChild!, shinDefinition.jointAnchorParent!))
+      + length(sub(shinDefinition.jointAnchorChild!, ankleDefinition.jointAnchorParent!));
+    const extension = length(sub(ankle, hip)) / legLength;
     report.maxLegExtension[side] = Math.max(report.maxLegExtension[side], extension);
     report.minLegExtension[side] = Math.min(report.minLegExtension[side], extension);
     if (["roll", "brace", "kneel", "stand"].includes(d.phase)) {
-      const upperArm = snapshot.segments.find(p => p.id === `${side}UpperArm`)!, forearm = snapshot.segments.find(p => p.id === `${side}Forearm`)!;
-      const knee = quatMultiply(quatInverse(thigh.rotation), shin.rotation), elbow = quatMultiply(quatInverse(upperArm.rotation), forearm.rotation);
-      const angle = (q: typeof knee) => Math.atan2(2 * (q.w * q.x + q.y * q.z), 1 - 2 * (q.x * q.x + q.y * q.y));
-      report.maximumKneeReverseRadians = Math.max(report.maximumKneeReverseRadians, -angle(knee));
-      report.maximumElbowReverseRadians = Math.max(report.maximumElbowReverseRadians, angle(elbow));
+      const upperArm = snapshot.segments.find(p => p.id === `${side}UpperArm`)!;
+      const forearm = snapshot.segments.find(p => p.id === forearmId)!;
+      const knee = jointCoordinates(thigh.rotation, shin.rotation, shinDefinition.jointProfile!);
+      const elbowDefinition = SEGMENT_BY_ID.get(forearmId)!;
+      const elbow = jointCoordinates(upperArm.rotation, forearm.rotation, elbowDefinition.jointProfile!);
+      report.maximumKneeReverseRadians = Math.max(report.maximumKneeReverseRadians, Math.max(0, -knee.x));
+      report.maximumElbowReverseRadians = Math.max(report.maximumElbowReverseRadians, Math.max(0, -elbow.x));
     }
   }
   for (const planted of d.plantedTargets) {

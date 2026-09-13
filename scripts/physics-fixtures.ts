@@ -6,21 +6,18 @@ export const ACCEPTANCE = Object.freeze({
   fixedDtS: 1 / 60,
   maxJointSeparationM: 0.08,
   maxFloorPenetrationM: 0.08,
-  handoffTranslationM: 0.025,
-  handoffRotationDegrees: 3,
   trajectoryPositionToleranceM: 1e-7,
   trajectoryRotationToleranceDegrees: 1e-5,
   trajectoryVelocityTolerance: 1e-7,
-  inheritedLinearVelocityMps: 3,
-  inheritedAngularVelocityRadps: 6,
-  handoffVelocityTolerance: 1e-5,
   recoveryLimitS: 25,
   stableObservationS: 1,
+  idleSettlingS: 2,
   idleDurationS: 30,
-  idleRootDriftM: 0.001,
+  idleRootDriftM: 0.03,
+  idlePlantedFootDriftM: 0.01,
   idleMaxLinearMps: 0.1,
   idleMaxAngularRadps: 0.5,
-  maximumJointMotorTorqueNm: 110,
+  maximumStructuralLimitErrorRad: 0.06,
   repeatedCycles: 5,
 });
 
@@ -31,7 +28,7 @@ export const RECOVERY_ACCEPTANCE = Object.freeze({
   settleLinearMps: 0.65, settleAngularRadps: 1.8,
   stablePersistenceS: 0.55, stableLinearMps: 0.22, stableAngularRadps: 0.65,
   stableUpDot: 0.97, phaseMinimumS: 0.20, stallS: 3.0, supportLossS: 0.20,
-  assistanceForceN: 950, assistanceTorqueNm: 60,
+  assistanceForceN: 0, assistanceTorqueNm: 0,
 });
 
 export interface PullFixture {

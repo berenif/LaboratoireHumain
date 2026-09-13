@@ -2,6 +2,7 @@ import type { Collider, RigidBody, World } from "@dimforge/rapier3d-compat";
 import { HUMAN_PROPORTIONS, SEGMENT_BY_ID, SEGMENTS, TOTAL_MASS_KG } from "../src/core/humanoid";
 import type { MotionState, Quat, RecoveryDiagnostics, RecoveryPhase, SegmentId, SupportingContact, Vec3 } from "../src/core/types";
 import { add, cross, angularVelocity, clamp, clampLength, length, quatFromAxisAngle, quatInverse, quatMultiply, rotate, scale, sub, worldPoint } from "../src/character/math";
+import { clampJointCoordinates, jointRotationFromCoordinates } from "../src/character/joint-coordinates";
 
 import { emptyRecoveryDiagnostics as currentEmptyRecoveryDiagnostics } from "../src/character/DynamicRecovery";
 import { recoveryMassState, supportGeometry } from "../src/character/recovery-support";
@@ -27,9 +28,6 @@ const ELIGIBLE: Record<RecoveryPhase, ReadonlyArray<SegmentId>> = {
 };
 
 function pitch(angle: number): Quat { return quatFromAxisAngle({ x: 1, y: 0, z: 0 }, angle); }
-function rotation(x = 0, y = 0, z = 0): Quat {
-  return quatMultiply(quatMultiply(quatFromAxisAngle({ x: 0, y: 1, z: 0 }, y), pitch(x)), quatFromAxisAngle({ x: 0, y: 0, z: 1 }, z));
-}
 
 export function emptyRecoveryDiagnostics(): RecoveryDiagnostics {
   return { ...currentEmptyRecoveryDiagnostics(), phase: "none", orientation: "forward", contacts: [], phaseTimeS: 0, settledTimeS: 0,
@@ -216,8 +214,10 @@ export class DynamicRecovery {
       if (!definition.parent) continue;
       const child = bodies.get(definition.id)!, parent = bodies.get(definition.parent)!;
       const angles = targets.get(definition.id) ?? ZERO;
-      const limit = definition.jointLimitRadians!;
-      const target = holdEntry ? this.entry.get(definition.id)! : rotation(clamp(angles.x, -limit.x, limit.x), clamp(angles.y, -limit.y, limit.y), clamp(angles.z, -limit.z, limit.z));
+      const profile = definition.jointProfile!;
+      const target = holdEntry
+        ? this.entry.get(definition.id)!
+        : jointRotationFromCoordinates(clampJointCoordinates(angles, profile), profile);
       const relative = quatMultiply(quatInverse(parent.rotation()), child.rotation());
       const error = rotate(parent.rotation(), angularVelocity(relative, target, 1));
       const relativeVelocity = sub(child.angvel(), parent.angvel());
@@ -298,4 +298,3 @@ export class DynamicRecovery {
     return targets;
   }
 }
-

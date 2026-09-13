@@ -1,9 +1,19 @@
-import type { RegionId, SegmentDefinition, SegmentId } from "./types";
+import { createEllipsoidGeometry, createTaperedPrismGeometry } from "./geometry";
+import {
+  REGION_IDS,
+  type JointAxisProfile,
+  type JointCoordinate,
+  type JointProfile,
+  type RegionId,
+  type SegmentDefinition,
+  type SegmentId,
+  type Vec3,
+} from "./types";
 
-const identity = { x: 0, y: 0, z: 0, w: 1 } as const;
-const noLimit = { x: Math.PI, y: Math.PI, z: Math.PI } as const;
+const identity = Object.freeze({ x: 0, y: 0, z: 0, w: 1 });
+const radians = (degrees: number): number => degrees * Math.PI / 180;
 
-/** Adult body dimensions in metres, shared by geometry, pose composition, and tests. */
+/** Adult body dimensions in metres, shared by anatomy, pose targets, and tests. */
 export const HUMAN_PROPORTIONS = {
   totalHeightM: 1.84,
   pelvis: {
@@ -13,19 +23,33 @@ export const HUMAN_PROPORTIONS = {
     hipAnchorXM: 0.09,
     hipAnchorYM: -0.08,
   },
-  torso: {
-    halfExtentsM: { x: 0.225, y: 0.22, z: 0.11 },
-    pelvisAnchorYM: -0.20,
-    neckAnchorYM: 0.22,
-    shoulderAnchorXM: 0.225,
-    shoulderAnchorYM: 0.13,
+  lumbar: {
+    halfHeightM: 0.06,
+    radiusXM: 0.16,
+    radiusZM: 0.10,
   },
-  neck: { radiusM: 0.05, halfHeightM: 0.015, anchorYM: 0.035 },
-  head: { radiusM: 0.115 },
+  torso: {
+    halfExtentsM: { x: 0.225, y: 0.15, z: 0.11 },
+    pelvisAnchorYM: -0.15,
+    lumbarAnchorYM: -0.15,
+    neckAnchorYM: 0.15,
+    shoulderInnerAnchorXM: 0.10,
+    shoulderAnchorXM: 0.225,
+    shoulderAnchorYM: 0.10,
+  },
+  shoulderGirdle: {
+    halfLengthM: 0.0625,
+    radiusYM: 0.045,
+    radiusZM: 0.055,
+  },
+  neck: { radiusM: 0.05, halfHeightM: 0.035, anchorYM: 0.035 },
+  head: { radiusM: 0.115, radiusXM: 0.10, radiusZM: 0.105 },
   arm: {
     upperLengthM: 0.31,
     upperRadiusM: 0.055,
     forearmLengthM: 0.27,
+    proximalForearmLengthM: 0.135,
+    distalForearmLengthM: 0.135,
     forearmRadiusM: 0.045,
     handHalfExtentsM: { x: 0.045, y: 0.09, z: 0.025 },
     relaxedLateralOffsetM: 0.025,
@@ -37,116 +61,413 @@ export const HUMAN_PROPORTIONS = {
     shinLengthM: 0.40,
     shinRadiusM: 0.06,
   },
+  ankle: { radiusXM: 0.065, halfHeightM: 0.035, radiusZM: 0.055 },
   foot: {
     halfExtentsM: { x: 0.05, y: 0.045, z: 0.135 },
+    hindfootCenterZM: 0.035,
+    hindfootBackZM: -0.075,
+    hindfootFrontZM: 0.075,
+    forefootCenterZM: 0.17,
+    forefootHalfLengthM: 0.06,
+    forefootJointZM: 0.11,
     ankleOffsetZM: -0.085,
-    stepClearanceBaseM: 0.055,
-    stepClearancePerTravel: 0.15,
-    minStepClearanceM: 0.06,
-    maxStepClearanceM: 0.12,
+    // A corrective shuffle only needs enough clearance to release the sole.
+    // Keeping this proportional prevents short balance steps from turning into
+    // high, slow kicks that cannot re-establish a loaded contact patch.
+    stepClearanceBaseM: 0.02,
+    stepClearancePerTravel: 0.08,
+    minStepClearanceM: 0.025,
+    maxStepClearanceM: 0.07,
   },
   stance: { neutralKneeFlexion: 0.12 },
 } as const;
 
 const P = HUMAN_PROPORTIONS;
 const upperArmHalfLength = P.arm.upperLengthM / 2;
-const forearmHalfLength = P.arm.forearmLengthM / 2;
+const proximalForearmHalfLength = P.arm.proximalForearmLengthM / 2;
+const distalForearmHalfLength = P.arm.distalForearmLengthM / 2;
 const thighHalfLength = P.leg.thighLengthM / 2;
 const shinHalfLength = P.leg.shinLengthM / 2;
 
-export const SEGMENTS: ReadonlyArray<SegmentDefinition> = [
-  {
-    id: "pelvis", parent: null, region: "pelvis", massKg: 12,
-    shape: { kind: "box", halfExtents: P.pelvis.halfExtentsM },
+function axis(
+  coordinate: JointCoordinate,
+  minDegrees: number,
+  maxDegrees: number,
+  passiveStiffnessNmPerRad: number,
+  dampingNmsPerRad: number,
+  maxMotorTorqueNm: number,
+): JointAxisProfile {
+  return Object.freeze({
+    coordinate,
+    minRadians: radians(minDegrees),
+    maxRadians: radians(maxDegrees),
+    passiveStiffnessNmPerRad,
+    dampingNmsPerRad,
+    maxMotorTorqueNm,
+  });
+}
+
+function joint(
+  kind: JointProfile["kind"],
+  parentAnchor: Vec3,
+  childAnchor: Vec3,
+  axes: readonly JointAxisProfile[],
+): JointProfile {
+  const frozenParentAnchor = Object.freeze({ ...parentAnchor });
+  const frozenChildAnchor = Object.freeze({ ...childAnchor });
+  return Object.freeze({
+    kind,
+    parentFrame: Object.freeze({ anchor: frozenParentAnchor, rotation: identity }),
+    childFrame: Object.freeze({ anchor: frozenChildAnchor, rotation: identity }),
+    axes: Object.freeze([...axes]),
+    limitSoftZoneFraction: 0.035,
+  });
+}
+
+type SegmentInput = Omit<
+  SegmentDefinition,
+  "jointAnchorParent" | "jointAnchorChild" | "collisionExclusions" | "collisionGroup"
+> & { collisionExclusions?: readonly SegmentId[] };
+
+function segment(input: SegmentInput): SegmentDefinition {
+  return {
+    ...input,
+    jointAnchorParent: input.jointProfile?.parentFrame.anchor ?? null,
+    jointAnchorChild: input.jointProfile?.childFrame.anchor ?? null,
+    collisionExclusions: input.collisionExclusions ?? [],
+    collisionGroup: 1,
+  };
+}
+
+const pelvisGeometry = createEllipsoidGeometry(P.pelvis.halfExtentsM, {
+  radialSegments: 14, latitudeSegments: 8, bottomScale: 0.82, topScale: 1.04,
+});
+const lumbarGeometry = createEllipsoidGeometry(
+  { x: P.lumbar.radiusXM, y: P.lumbar.halfHeightM, z: P.lumbar.radiusZM },
+  { radialSegments: 14, latitudeSegments: 6, bottomScale: 1.04, topScale: 0.92 },
+);
+const torsoGeometry = createEllipsoidGeometry(P.torso.halfExtentsM, {
+  radialSegments: 16, latitudeSegments: 9, bottomScale: 0.72, topScale: 1.04,
+});
+const neckGeometry = createEllipsoidGeometry(
+  { x: P.neck.radiusM, y: P.neck.halfHeightM, z: P.neck.radiusM * 0.88 },
+  { radialSegments: 10, latitudeSegments: 5, bottomScale: 0.92, topScale: 0.86 },
+);
+const headGeometry = createEllipsoidGeometry(
+  { x: P.head.radiusXM, y: P.head.radiusM, z: P.head.radiusZM },
+  { radialSegments: 16, latitudeSegments: 10, bottomScale: 0.82, topScale: 0.96 },
+);
+const shoulderGirdleGeometry = createEllipsoidGeometry(
+  { x: P.shoulderGirdle.halfLengthM, y: P.shoulderGirdle.radiusYM, z: P.shoulderGirdle.radiusZM },
+  { radialSegments: 10, latitudeSegments: 6, bottomScale: 0.95, topScale: 1.02 },
+);
+const upperArmGeometry = createEllipsoidGeometry(
+  { x: P.arm.upperRadiusM, y: upperArmHalfLength, z: P.arm.upperRadiusM },
+  { radialSegments: 10, latitudeSegments: 7, bottomScale: 0.78, topScale: 1.05 },
+);
+const proximalForearmGeometry = createEllipsoidGeometry(
+  { x: P.arm.forearmRadiusM, y: proximalForearmHalfLength, z: P.arm.forearmRadiusM },
+  { radialSegments: 10, latitudeSegments: 6, bottomScale: 0.88, topScale: 1.06 },
+);
+const distalForearmGeometry = createEllipsoidGeometry(
+  { x: P.arm.forearmRadiusM * 0.88, y: distalForearmHalfLength, z: P.arm.forearmRadiusM * 0.88 },
+  { radialSegments: 10, latitudeSegments: 6, bottomScale: 0.78, topScale: 1.02 },
+);
+const handGeometry = createEllipsoidGeometry(
+  { x: P.arm.handHalfExtentsM.x, y: P.arm.handHalfExtentsM.y, z: P.arm.handHalfExtentsM.z },
+  { radialSegments: 10, latitudeSegments: 7, bottomScale: 0.72, topScale: 0.98 },
+);
+const thighGeometry = createEllipsoidGeometry(
+  { x: P.leg.thighRadiusM, y: thighHalfLength, z: P.leg.thighRadiusM },
+  { radialSegments: 12, latitudeSegments: 8, bottomScale: 0.75, topScale: 1.05 },
+);
+const shinGeometry = createEllipsoidGeometry(
+  { x: P.leg.shinRadiusM, y: shinHalfLength, z: P.leg.shinRadiusM },
+  { radialSegments: 12, latitudeSegments: 8, bottomScale: 0.72, topScale: 1.05 },
+);
+const ankleGeometry = createEllipsoidGeometry(
+  { x: P.ankle.radiusXM, y: P.ankle.halfHeightM, z: P.ankle.radiusZM },
+  { radialSegments: 10, latitudeSegments: 5, bottomScale: 0.92, topScale: 0.98 },
+);
+const hindfootGeometry = createTaperedPrismGeometry(
+  [
+    { z: P.foot.hindfootBackZM, halfWidth: 0.044 },
+    { z: 0, halfWidth: 0.053 },
+    { z: P.foot.hindfootFrontZM, halfWidth: 0.052 },
+  ],
+  -P.foot.halfExtentsM.y,
+  P.foot.halfExtentsM.y,
+);
+const forefootGeometry = createTaperedPrismGeometry(
+  [
+    { z: -P.foot.forefootHalfLengthM, halfWidth: 0.052 },
+    { z: 0, halfWidth: 0.054 },
+    { z: P.foot.forefootHalfLengthM, halfWidth: 0.045 },
+  ],
+  -P.foot.halfExtentsM.y,
+  P.foot.halfExtentsM.y * 0.78,
+);
+
+const rawSegments: SegmentDefinition[] = [
+  segment({
+    id: "pelvis", parent: null, region: "pelvis", side: null, role: "pelvis", massKg: 12,
+    geometry: pelvisGeometry,
     localOffset: { x: 0, y: P.pelvis.centerHeightM, z: 0 }, restLocalRotation: identity,
-    jointAnchorParent: null, jointAnchorChild: null, jointLimitRadians: null, collisionGroup: 1,
-  },
-  {
-    id: "torso", parent: "pelvis", region: "torso", massKg: 22,
-    shape: { kind: "box", halfExtents: P.torso.halfExtentsM },
-    localOffset: { x: 0, y: P.pelvis.spineAnchorYM - P.torso.pelvisAnchorYM, z: 0 }, restLocalRotation: identity,
-    jointAnchorParent: { x: 0, y: P.pelvis.spineAnchorYM, z: 0 }, jointAnchorChild: { x: 0, y: P.torso.pelvisAnchorYM, z: 0 },
-    jointLimitRadians: { x: 0.45, y: 0.55, z: 0.4 }, collisionGroup: 1,
-  },
-  {
-    id: "neck", parent: "torso", region: null, massKg: 1,
-    shape: { kind: "capsule", radius: P.neck.radiusM, halfHeight: P.neck.halfHeightM },
+    jointProfile: null,
+  }),
+  segment({
+    id: "lumbar", parent: "pelvis", region: "torso", side: null, role: "lumbar", massKg: 6,
+    geometry: lumbarGeometry,
+    localOffset: { x: 0, y: P.pelvis.spineAnchorYM + P.lumbar.halfHeightM, z: 0 }, restLocalRotation: identity,
+    jointProfile: joint(
+      "multi-axis",
+      { x: 0, y: P.pelvis.spineAnchorYM, z: 0 },
+      { x: 0, y: -P.lumbar.halfHeightM, z: 0 },
+      [axis("x", -10, 18, 120, 10, 100), axis("y", -8, 8, 80, 8, 70), axis("z", -10, 10, 100, 9, 90)],
+    ),
+  }),
+  segment({
+    id: "torso", parent: "lumbar", region: "torso", side: null, role: "ribcage", massKg: 16,
+    geometry: torsoGeometry,
+    localOffset: { x: 0, y: P.lumbar.halfHeightM - P.torso.lumbarAnchorYM, z: 0 }, restLocalRotation: identity,
+    jointProfile: joint(
+      "multi-axis",
+      { x: 0, y: P.lumbar.halfHeightM, z: 0 },
+      { x: 0, y: P.torso.lumbarAnchorYM, z: 0 },
+      [axis("x", -10, 15, 100, 9, 90), axis("y", -12, 12, 70, 7, 60), axis("z", -12, 12, 90, 8, 75)],
+    ),
+  }),
+  segment({
+    id: "neck", parent: "torso", region: null, side: null, role: "neck", massKg: 1,
+    geometry: neckGeometry,
     localOffset: { x: 0, y: P.torso.neckAnchorYM + P.neck.anchorYM, z: 0 }, restLocalRotation: identity,
-    jointAnchorParent: { x: 0, y: P.torso.neckAnchorYM, z: 0 }, jointAnchorChild: { x: 0, y: -P.neck.anchorYM, z: 0 },
-    jointLimitRadians: { x: 0.4, y: 0.6, z: 0.35 }, collisionGroup: 1,
-  },
-  {
-    id: "head", parent: "neck", region: "head", massKg: 5,
-    shape: { kind: "sphere", radius: P.head.radiusM },
+    jointProfile: joint(
+      "multi-axis",
+      { x: 0, y: P.torso.neckAnchorYM, z: 0 },
+      { x: 0, y: -P.neck.anchorYM, z: 0 },
+      [axis("x", -15, 20, 20, 2.5, 24), axis("y", -25, 25, 15, 1.8, 15), axis("z", -15, 15, 18, 2, 18)],
+    ),
+  }),
+  segment({
+    id: "head", parent: "neck", region: "head", side: null, role: "head", massKg: 5,
+    geometry: headGeometry,
     localOffset: { x: 0, y: P.neck.anchorYM + P.head.radiusM, z: 0 }, restLocalRotation: identity,
-    jointAnchorParent: { x: 0, y: P.neck.anchorYM, z: 0 }, jointAnchorChild: { x: 0, y: -P.head.radiusM, z: 0 },
-    jointLimitRadians: { x: 0.55, y: 0.8, z: 0.45 }, collisionGroup: 1,
-  },
+    jointProfile: joint(
+      "multi-axis",
+      { x: 0, y: P.neck.anchorYM, z: 0 },
+      { x: 0, y: -P.head.radiusM, z: 0 },
+      [axis("x", -25, 25, 15, 1.8, 18), axis("y", -35, 35, 10, 1.2, 12), axis("z", -15, 15, 12, 1.5, 14)],
+    ),
+  }),
   ...(["left", "right"] as const).flatMap((side) => {
     const sign = side === "left" ? -1 : 1;
+    const girdleId = `${side}ShoulderGirdle` as SegmentId;
     const upperId = `${side}UpperArm` as SegmentId;
-    const foreId = `${side}Forearm` as SegmentId;
-    const handId = `${side}Hand` as RegionId;
+    const forearmId = `${side}Forearm` as SegmentId;
+    const twistId = `${side}ForearmTwist` as SegmentId;
+    const handId = `${side}Hand` as SegmentId;
+    const handRegion = handId as RegionId;
+    const shoulderYaw: [number, number] = side === "left" ? [-55, 65] : [-65, 55];
+    const shoulderLateral: [number, number] = side === "left" ? [-20, 100] : [-100, 20];
+    const wristDeviation: [number, number] = side === "left" ? [-15, 30] : [-30, 15];
     return [
-      {
-        id: upperId, parent: "torso" as SegmentId, region: null, massKg: 2.2,
-        shape: { kind: "capsule" as const, radius: P.arm.upperRadiusM, halfHeight: upperArmHalfLength - P.arm.upperRadiusM },
-        localOffset: { x: sign * P.torso.shoulderAnchorXM, y: P.torso.shoulderAnchorYM - upperArmHalfLength, z: 0 }, restLocalRotation: identity,
-        jointAnchorParent: { x: sign * P.torso.shoulderAnchorXM, y: P.torso.shoulderAnchorYM, z: 0 },
-        jointAnchorChild: { x: 0, y: upperArmHalfLength, z: 0 },
-        jointLimitRadians: { x: 1.55, y: 1.25, z: 1.55 }, collisionGroup: 1,
-      },
-      {
-        id: foreId, parent: upperId, region: null, massKg: 1.5,
-        shape: { kind: "capsule" as const, radius: P.arm.forearmRadiusM, halfHeight: forearmHalfLength - P.arm.forearmRadiusM },
-        localOffset: { x: 0, y: -upperArmHalfLength - forearmHalfLength, z: 0 }, restLocalRotation: identity,
-        jointAnchorParent: { x: 0, y: -upperArmHalfLength, z: 0 }, jointAnchorChild: { x: 0, y: forearmHalfLength, z: 0 },
-        jointLimitRadians: { x: 2.35, y: 0.25, z: 0.25 }, collisionGroup: 1,
-      },
-      {
-        id: handId, parent: foreId, region: handId, massKg: 0.6,
-        shape: { kind: "box" as const, halfExtents: P.arm.handHalfExtentsM },
-        localOffset: { x: 0, y: -forearmHalfLength - P.arm.handHalfExtentsM.y, z: 0 }, restLocalRotation: identity,
-        jointAnchorParent: { x: 0, y: -forearmHalfLength, z: 0 }, jointAnchorChild: { x: 0, y: P.arm.handHalfExtentsM.y, z: 0 },
-        jointLimitRadians: { x: 0.6, y: 0.45, z: 0.45 }, collisionGroup: 1,
-      },
+      segment({
+        id: girdleId, parent: "torso", region: "torso", side, role: "shoulder-girdle", massKg: 0.4,
+        geometry: shoulderGirdleGeometry,
+        localOffset: {
+          x: sign * (P.torso.shoulderInnerAnchorXM + P.shoulderGirdle.halfLengthM),
+          y: P.torso.shoulderAnchorYM,
+          z: 0,
+        },
+        restLocalRotation: identity,
+        jointProfile: joint(
+          "multi-axis",
+          { x: sign * P.torso.shoulderInnerAnchorXM, y: P.torso.shoulderAnchorYM, z: 0 },
+          { x: -sign * P.shoulderGirdle.halfLengthM, y: 0, z: 0 },
+          [axis("x", -10, 30, 35, 3, 32), axis("y", -15, 20, 30, 2.5, 28), axis("z", -8, 20, 35, 3, 30)],
+        ),
+      }),
+      segment({
+        id: upperId, parent: girdleId, region: null, side, role: "upper-arm", massKg: 1.8,
+        geometry: upperArmGeometry,
+        localOffset: { x: sign * P.shoulderGirdle.halfLengthM, y: -upperArmHalfLength, z: 0 },
+        restLocalRotation: identity,
+        jointProfile: joint(
+          "multi-axis",
+          { x: sign * P.shoulderGirdle.halfLengthM, y: 0, z: 0 },
+          { x: 0, y: upperArmHalfLength, z: 0 },
+          [
+            axis("x", -35, 120, 60, 5, 70),
+            axis("y", shoulderYaw[0], shoulderYaw[1], 40, 4, 45),
+            axis("z", shoulderLateral[0], shoulderLateral[1], 55, 5, 65),
+          ],
+        ),
+        collisionExclusions: ["torso"],
+      }),
+      segment({
+        id: forearmId, parent: upperId, region: null, side, role: "forearm", massKg: 0.9,
+        geometry: proximalForearmGeometry,
+        localOffset: { x: 0, y: -upperArmHalfLength - proximalForearmHalfLength, z: 0 },
+        restLocalRotation: identity,
+        jointProfile: joint(
+          "hinge",
+          { x: 0, y: -upperArmHalfLength, z: 0 },
+          { x: 0, y: proximalForearmHalfLength, z: 0 },
+          [axis("x", 0, 145, 80, 5, 55)],
+        ),
+      }),
+      segment({
+        id: twistId, parent: forearmId, region: null, side, role: "forearm-twist", massKg: 0.6,
+        geometry: distalForearmGeometry,
+        localOffset: { x: 0, y: -proximalForearmHalfLength - distalForearmHalfLength, z: 0 },
+        restLocalRotation: identity,
+        jointProfile: joint(
+          "hinge",
+          { x: 0, y: -proximalForearmHalfLength, z: 0 },
+          { x: 0, y: distalForearmHalfLength, z: 0 },
+          [axis("y", -80, 80, 20, 1.5, 15)],
+        ),
+      }),
+      segment({
+        id: handId, parent: twistId, region: handRegion, side, role: "hand", massKg: 0.6,
+        geometry: handGeometry,
+        localOffset: { x: 0, y: -distalForearmHalfLength - P.arm.handHalfExtentsM.y, z: 0 },
+        restLocalRotation: identity,
+        jointProfile: joint(
+          "multi-axis",
+          { x: 0, y: -distalForearmHalfLength, z: 0 },
+          { x: 0, y: P.arm.handHalfExtentsM.y, z: 0 },
+          [axis("x", -45, 55, 25, 2, 18), axis("z", wristDeviation[0], wristDeviation[1], 20, 1.5, 14)],
+        ),
+      }),
     ];
   }),
   ...(["left", "right"] as const).flatMap((side) => {
     const sign = side === "left" ? -1 : 1;
     const thighId = `${side}Thigh` as SegmentId;
     const shinId = `${side}Shin` as SegmentId;
-    const footId = `${side}Foot` as RegionId;
+    const ankleId = `${side}Ankle` as SegmentId;
+    const footId = `${side}Foot` as SegmentId;
+    const forefootId = `${side}Forefoot` as SegmentId;
+    const footRegion = footId as RegionId;
+    const hipYaw: [number, number] = side === "left" ? [-30, 40] : [-40, 30];
+    const hipLateral: [number, number] = side === "left" ? [-20, 40] : [-40, 20];
+    const footTilt: [number, number] = side === "left" ? [-10, 25] : [-25, 10];
     return [
-      {
-        id: thighId, parent: "pelvis" as SegmentId, region: null, massKg: 6.5,
-        shape: { kind: "capsule" as const, radius: P.leg.thighRadiusM, halfHeight: thighHalfLength - P.leg.thighRadiusM },
-        localOffset: { x: sign * P.pelvis.hipAnchorXM, y: P.pelvis.hipAnchorYM - thighHalfLength, z: 0 }, restLocalRotation: identity,
-        jointAnchorParent: { x: sign * P.pelvis.hipAnchorXM, y: P.pelvis.hipAnchorYM, z: 0 }, jointAnchorChild: { x: 0, y: thighHalfLength, z: 0 },
-        jointLimitRadians: { x: 1.35, y: 0.65, z: 0.65 }, collisionGroup: 1,
-      },
-      {
-        id: shinId, parent: thighId, region: null, massKg: 4.3,
-        shape: { kind: "capsule" as const, radius: P.leg.shinRadiusM, halfHeight: shinHalfLength - P.leg.shinRadiusM },
-        localOffset: { x: 0, y: -thighHalfLength - shinHalfLength, z: 0 }, restLocalRotation: identity,
-        jointAnchorParent: { x: 0, y: -thighHalfLength, z: 0 }, jointAnchorChild: { x: 0, y: shinHalfLength, z: 0 },
-        jointLimitRadians: { x: 2.25, y: 0.12, z: 0.12 }, collisionGroup: 1,
-      },
-      {
-        id: footId, parent: shinId, region: footId, massKg: 1,
-        shape: { kind: "box" as const, halfExtents: P.foot.halfExtentsM },
-        localOffset: { x: 0, y: -shinHalfLength - P.foot.halfExtentsM.y, z: -P.foot.ankleOffsetZM }, restLocalRotation: identity,
-        jointAnchorParent: { x: 0, y: -shinHalfLength, z: 0 }, jointAnchorChild: { x: 0, y: P.foot.halfExtentsM.y, z: P.foot.ankleOffsetZM },
-        jointLimitRadians: { x: 0.65, y: 0.35, z: 0.35 }, collisionGroup: 1,
-      },
+      segment({
+        id: thighId, parent: "pelvis", region: null, side, role: "thigh", massKg: 6.5,
+        geometry: thighGeometry,
+        localOffset: { x: sign * P.pelvis.hipAnchorXM, y: P.pelvis.hipAnchorYM - thighHalfLength, z: 0 },
+        restLocalRotation: identity,
+        jointProfile: joint(
+          "multi-axis",
+          { x: sign * P.pelvis.hipAnchorXM, y: P.pelvis.hipAnchorYM, z: 0 },
+          { x: 0, y: thighHalfLength, z: 0 },
+          [axis("x", -20, 110, 160, 12, 150), axis("y", hipYaw[0], hipYaw[1], 100, 9, 100), axis("z", hipLateral[0], hipLateral[1], 140, 10, 125)],
+        ),
+      }),
+      segment({
+        id: shinId, parent: thighId, region: null, side, role: "shin", massKg: 4.3,
+        geometry: shinGeometry,
+        localOffset: { x: 0, y: -thighHalfLength - shinHalfLength, z: 0 },
+        restLocalRotation: identity,
+        jointProfile: joint(
+          "hinge",
+          { x: 0, y: -thighHalfLength, z: 0 },
+          { x: 0, y: shinHalfLength, z: 0 },
+          [axis("x", 0, 140, 180, 10, 165)],
+        ),
+        // The compact ankle/forefoot housings overlap the distal shin in the
+        // neutral stance. They are intentional joint-neighbour overlaps, not
+        // self-contact; leaving the forefoot active here kicks the entire leg
+        // on the first solver step.
+        collisionExclusions: [footId, forefootId],
+      }),
+      segment({
+        id: ankleId, parent: shinId, region: footRegion, side, role: "ankle", massKg: 0.2,
+        geometry: ankleGeometry,
+        localOffset: { x: 0, y: -shinHalfLength, z: 0 }, restLocalRotation: identity,
+        jointProfile: joint(
+          "hinge",
+          { x: 0, y: -shinHalfLength, z: 0 },
+          { x: 0, y: 0, z: 0 },
+          [axis("x", -45, 20, 120, 7, 110)],
+        ),
+      }),
+      segment({
+        id: footId, parent: ankleId, region: footRegion, side, role: "hindfoot", massKg: 0.55,
+        geometry: hindfootGeometry,
+        localOffset: { x: 0, y: -P.foot.halfExtentsM.y, z: P.foot.hindfootCenterZM },
+        restLocalRotation: identity,
+        jointProfile: joint(
+          "multi-axis",
+          { x: 0, y: 0, z: 0 },
+          { x: 0, y: P.foot.halfExtentsM.y, z: -P.foot.hindfootCenterZM },
+          [axis("z", footTilt[0], footTilt[1], 60, 4, 50)],
+        ),
+        collisionExclusions: [shinId],
+      }),
+      segment({
+        id: forefootId, parent: footId, region: footRegion, side, role: "forefoot", massKg: 0.25,
+        geometry: forefootGeometry,
+        localOffset: {
+          x: 0,
+          y: 0,
+          z: P.foot.forefootCenterZM - P.foot.hindfootCenterZM,
+        },
+        restLocalRotation: identity,
+        jointProfile: joint(
+          "hinge",
+          { x: 0, y: -0.015, z: P.foot.forefootJointZM - P.foot.hindfootCenterZM },
+          { x: 0, y: -0.015, z: P.foot.forefootJointZM - P.foot.forefootCenterZM },
+          [axis("x", -20, 45, 45, 3, 35)],
+        ),
+      }),
     ];
   }),
-] satisfies ReadonlyArray<SegmentDefinition>;
+];
 
-export const SEGMENT_BY_ID = new Map(SEGMENTS.map((segment) => [segment.id, segment]));
-export const REGION_TO_SEGMENT = new Map(
-  SEGMENTS.filter((segment) => segment.region).map((segment) => [segment.region!, segment.id]),
+// Every direct joint pair is excluded, plus the non-adjacent pairs whose
+// simplified joint housings intentionally overlap around shoulders and ankles.
+const exclusionSets = new Map<SegmentId, Set<SegmentId>>(
+  rawSegments.map(({ id, collisionExclusions }) => [id, new Set(collisionExclusions)]),
 );
+for (const definition of rawSegments) {
+  if (!definition.parent) continue;
+  exclusionSets.get(definition.id)!.add(definition.parent);
+  exclusionSets.get(definition.parent)!.add(definition.id);
+}
+
+export const SEGMENTS: readonly SegmentDefinition[] = Object.freeze(rawSegments.map((definition) =>
+  Object.freeze({
+    ...definition,
+    collisionExclusions: Object.freeze([...exclusionSets.get(definition.id)!]),
+  }),
+));
+
+export const SEGMENT_BY_ID: ReadonlyMap<SegmentId, SegmentDefinition> = new Map(
+  SEGMENTS.map((definition) => [definition.id, definition]),
+);
+
+export const SEGMENTS_BY_REGION: ReadonlyMap<RegionId, readonly SegmentId[]> = new Map(
+  REGION_IDS.map((region) => [
+    region,
+    Object.freeze(SEGMENTS.filter((definition) => definition.region === region).map(({ id }) => id)),
+  ]),
+);
+
+export const PRIMARY_SEGMENT_BY_REGION: ReadonlyMap<RegionId, SegmentId> = new Map([
+  ["head", "head"],
+  ["torso", "torso"],
+  ["pelvis", "pelvis"],
+  ["leftHand", "leftHand"],
+  ["rightHand", "rightHand"],
+  ["leftFoot", "leftFoot"],
+  ["rightFoot", "rightFoot"],
+]);
+
+/** @deprecated Use PRIMARY_SEGMENT_BY_REGION or SEGMENTS_BY_REGION. */
+export const REGION_TO_SEGMENT = PRIMARY_SEGMENT_BY_REGION;
 
 export const REGION_COLORS: Readonly<Record<RegionId, string>> = {
   head: "#ffd166",
@@ -159,5 +480,7 @@ export const REGION_COLORS: Readonly<Record<RegionId, string>> = {
 };
 
 export const PASSIVE_COLOR = "#b8c5d9";
-export const TOTAL_MASS_KG = SEGMENTS.reduce((sum, segment) => sum + segment.massKg, 0);
-export const UNLIMITED_JOINT = noLimit;
+export const TOTAL_MASS_KG = SEGMENTS.reduce((sum, definition) => sum + definition.massKg, 0);
+
+/** @deprecated Joint profiles now carry asymmetric per-coordinate limits. */
+export const UNLIMITED_JOINT = Object.freeze({ x: Math.PI, y: Math.PI, z: Math.PI });

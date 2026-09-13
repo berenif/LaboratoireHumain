@@ -1,3 +1,4 @@
+import { PRIMARY_SEGMENT_BY_REGION } from "../core/humanoid";
 import { REGION_IDS } from "../core/types";
 import type { CameraProjection, PickResult, PoseSnapshot, Ray, RegionId } from "../core/types";
 
@@ -20,7 +21,10 @@ export function projectVisibleRegions(
 ): ProjectedRegionDiagnostic[] {
   const camera = projection.getState();
   return REGION_IDS.flatMap((region) => {
-    const segment = snapshot.segments.find((pose) => pose.id === region);
+    const primary = PRIMARY_SEGMENT_BY_REGION.get(region);
+    const segment = primary
+      ? snapshot.segments.find((pose) => pose.id === primary)
+      : undefined;
     if (!segment) return [];
     const point = projection.project(segment.position);
     // Scale projected CSS coordinates to the actual event target rectangle.

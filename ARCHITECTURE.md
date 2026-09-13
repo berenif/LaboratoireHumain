@@ -28,7 +28,7 @@ Teardown stops animation, disconnects resize observation, detaches input, dispos
 
 ## Simulation data flow
 
-1. Pointer interaction picks an oriented body primitive and captures a stable region, segment, body-local anchor, and world target.
+1. Pointer interaction raycasts the canonical oriented convex surfaces and captures a stable region, exact segment, body-local anchor, and world target.
 2. Pointer movement intersects a fixed camera-facing plane through the initial hit. Intent is queued; terminal commands take precedence over begin/move commands.
 3. `FixedStepLoop` consumes input and advances the character at 60 Hz, with at most five catch-up steps per rendered frame. Runtime input availability is synchronized before and after each substep, so a fall clears capture and queued movement before the next integration.
 4. The character publishes pose and diagnostic snapshots. Previous and current snapshots are retained for interpolation.
@@ -38,13 +38,15 @@ World units are metres, +Y is up, and +Z is forward. Both renderers and picking 
 
 ## Character ownership
 
-The shared humanoid defines sixteen segments, seven selectable regions, masses, shapes, rest offsets, joint anchors and limits, and collision groups.
+The shared humanoid defines 25 segments grouped into seven selectable regions. Each definition owns its mass, canonical procedural convex surface, rest offset, anatomical role, side, joint reference frames, permitted rotation coordinates, asymmetric limits, passive resistance, damping, actuator strength, and explicit collision exclusions. The total remains 72.2 kg at a 1.84 m rest stature.
 
-`EmbodiedCharacter` owns Rapier bodies, joints, the collision-aware root motor, handoffs, motion-state transitions, and snapshots. `BalanceController` reads solved poses and masses to estimate COM, momentum, eligible foot support, and reachable corrective steps. `pose.ts` composes upright poses and connected limb geometry from explicit inputs without accessing Rapier or the DOM. `DynamicRecovery` observes actual floor contacts and applies bounded joint and supported pelvis impulses. `GrabAnchorController` remains a separate bounded-grab utility and compatibility export; dynamic recovery does not use it to accept dragging.
+`EmbodiedCharacter` creates one dynamic Rapier body assembly and keeps it alive until Reset or disposal. Rapier owns every runtime transform and velocity in every motion state. `BalanceController`, `pose.ts`, inverse kinematics, and `DynamicRecovery` generate target intent only; they never install a rendered pose. State changes blend joint targets and strength while preserving body identity, position, rotation, and momentum.
 
-Upright, reacting, and stepping states use the kinematic root and procedural pose compositor. Falling, fallen, and recovering states disable those writes before dynamic bodies and joints take ownership. Every recovery phase remains dynamic and contact-dependent. Body colliders interact with the environment rather than adjacent body segments.
+`BalanceController` reads measured segment mass state and loaded contact patches to estimate center of mass, momentum, available support, and reachable corrective steps. Support-chain compensation is expressed as bounded joint torques. `DynamicRecovery` observes actual contacts and advances only from physical support and movement evidence. `GrabAnchorController` applies its force-, torque-, and power-limited command at the exact picked surface anchor.
 
-External grab forces, equal/opposite joint muscle torques, and supported pelvis assistance have separate bounds and diagnostics. A fall clears the grab immediately. Recovery returns authority only after persistent load on both feet, low body motion, and upright posture; the procedural motor starts from the recovered world position, heading, and segment poses. See [balance controller](docs/balance-controller.md) and [dynamic recovery](docs/dynamic-recovery.md) for the fixed thresholds and phase conditions.
+Every actuator produces equal-and-opposite parent/child torque impulses projected onto the joint profile's permitted world axes. Rapier enforces the structural limits independently of active posture control. There is no direct pelvis force or torque assistance. Nonadjacent character parts self-collide; connected parts and intentionally overlapping joint housings are explicitly excluded.
+
+A fall clears the grab immediately but does not rebuild the body. Recovery completes only after persistent bilateral loaded support, low body motion, and upright posture; the standing controller then blends from the measured joint coordinates on the same bodies. See [balance controller](docs/balance-controller.md) and [dynamic recovery](docs/dynamic-recovery.md) for the controller and phase rules.
 
 ## Lifecycle invariants
 
@@ -57,7 +59,7 @@ External grab forces, equal/opposite joint muscle torques, and supported pelvis 
 
 ## Verification and tooling
 
-`npm run lint` enforces layer boundaries. `npm run typecheck` checks shared contracts. `npm test` builds and checks rendered HTML, UI semantics, geometry, snapshot isolation, disposal, and runtime transitions. `npm run test:physics` evaluates the deterministic physics acceptance scenarios and regenerates local evidence. The [acceptance guide](docs/physics-acceptance.md) records independent numerical limits, explicit fixtures, handoff measurements, and input-isolation comparisons.
+`npm run lint` enforces layer boundaries. `npm run typecheck` checks shared contracts. `npm test` builds and checks rendered HTML, UI semantics, geometry, snapshot isolation, disposal, and runtime transitions. `npm run test:physics` evaluates the deterministic physics acceptance scenarios and regenerates local evidence. The [acceptance guide](docs/physics-acceptance.md) records independent numerical limits, explicit fixtures, continuous-ownership checks, structural-limit loading, free-fall integrity, diagnostics, and input-isolation comparisons.
 
 The Node-based tool launcher supports local development and bounded builds across operating systems. Hosting bindings are optional for source-only checkouts. Hosting support, database examples, and the shared UI catalog remain separate from the simulation.
 

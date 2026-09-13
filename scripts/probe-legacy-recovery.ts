@@ -18,7 +18,7 @@ for(const pose of ["half-kneel"]){
    const event={time:(frame+1)/60,phase:d.phase,pelvisY:p.position.y,torsoUp:up(t.rotation),support:d.contacts.filter(c=>c.loadBearing).map(c=>c.segment),retries:d.retries};
    if(d.phase!==previous){entries.push(event);previous=d.phase;}if(frame%30===0)samples.push(event);
    maxY=Math.max(maxY,p.position.y);maxLift=Math.max(maxLift,d.assistanceForce.y);if(d.phase==="roll")maxRollLift=Math.max(maxRollLift,d.assistanceForce.y);maxTorque=Math.max(maxTorque,Math.hypot(d.assistanceTorque.x,d.assistanceTorque.y,d.assistanceTorque.z));maxJoint=Math.max(maxJoint,d.maxMotorTorqueNm);maxSeparation=Math.max(maxSeparation,s.diagnostics.maxJointSeparationM);maxPenetration=Math.max(maxPenetration,s.diagnostics.maxFloorPenetrationM);
-   if(s.diagnostics.authority==="character-motor"){recoveredS=(frame+1)/60;break;}
+   if(s.state==="upright"&&s.diagnostics.bodyInputAvailable){recoveredS=(frame+1)/60;break;}
   }
   c.dispose();const result={fixture:fixture.id,experiment,recoveredS,maxY,maxLift,maxRollLift,maxTorque,maxJoint,maxSeparation,maxPenetration,entries,samples};results.push(result);console.log(JSON.stringify({...result,samples:undefined}));
  }

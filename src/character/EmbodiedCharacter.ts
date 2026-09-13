@@ -1,22 +1,29 @@
 import RAPIER, {
   type Collider,
+  type EventQueue,
   type ImpulseJoint,
-  type KinematicCharacterController,
+  type PhysicsHooks,
   type RigidBody,
   type World,
 } from "@dimforge/rapier3d-compat";
 
-import { HUMAN_PROPORTIONS, REGION_TO_SEGMENT, SEGMENT_BY_ID, SEGMENTS } from "../core/humanoid";
-import { pickRegionProxies } from "../core/picking";
 import {
-  emptyGrabDiagnostics,
-} from "./GrabAnchorController";
+  HUMAN_PROPORTIONS,
+  REGION_TO_SEGMENT,
+  SEGMENT_BY_ID,
+  SEGMENTS,
+  TOTAL_MASS_KG,
+} from "../core/humanoid";
+import { flattenGeometryIndices, flattenGeometryVertices, lowestWorldPoint } from "../core/geometry";
+import { pickRegionProxies } from "../core/picking";
 import type {
   CharacterController,
   DiagnosticsSnapshot,
   GrabCommand,
   GrabControlDiagnostics,
-  HandoffDiagnostics,
+  JointCoordinate,
+  JointProfile,
+  JointStateDiagnostics,
   MotionState,
   PickResult,
   PoseSnapshot,
@@ -29,51 +36,60 @@ import type {
   SupportState,
   Vec3,
 } from "../core/types";
+import { BalanceController, type BalanceDiagnostics } from "./BalanceController";
+import { DynamicRecovery, emptyRecoveryDiagnostics } from "./DynamicRecovery";
+import { GrabAnchorController, emptyGrabDiagnostics } from "./GrabAnchorController";
+import type { ArticulatedSupportConstraint } from "./articulated-inertia";
+import {
+  clampJointCoordinates,
+  jointCoordinates,
+  jointLimitError,
+  jointLimitErrorMagnitude,
+  jointRotationFromCoordinates,
+} from "./joint-coordinates";
+import {
+  applyCoupledJointMotors,
+  applyPassiveJointResistance,
+  type JointMotorCommand,
+  type JointMotorResult,
+} from "./joint-motors";
 import {
   add,
-  angularVelocity,
   clamp,
   clampLength,
+  cross,
   dot,
   length,
-  lerp,
   normalize,
+  quatFromAxisAngle,
+  quatInverse,
+  quatMultiply,
   rotate,
   scale,
+  smooth01,
   sub,
   worldPoint,
 } from "./math";
-
-import { BalanceController, type BalanceDiagnostics } from "./BalanceController";
-import { DynamicRecovery, emptyRecoveryDiagnostics } from "./DynamicRecovery";
-import { Q } from "../core/math";
-import { quatFromAxisAngle } from "./math";
-
+import { createRapierJointLimitAdapter } from "./rapier-joint-adapter";
 import {
-  composeUprightPose, horizontal, immutablePose, poseAnchor, restPoseMap,
-  type MutablePose, type StepMotion,
+  composeUprightPose,
+  horizontal,
+  immutablePose,
+  poseAnchor,
+  restPoseMap,
+  type MutablePose,
+  type StepMotion,
 } from "./pose";
 
 const ZERO: Vec3 = { x: 0, y: 0, z: 0 };
 const UP: Vec3 = { x: 0, y: 1, z: 0 };
 const FORWARD: Vec3 = { x: 0, y: 0, z: 1 };
 const INITIAL_ROOT: Vec3 = { x: 0, y: HUMAN_PROPORTIONS.pelvis.centerHeightM, z: 0 };
-const footShape = SEGMENT_BY_ID.get("leftFoot")!.shape;
-const FOOT_CENTER_HEIGHT = footShape.kind === "box"
-  ? footShape.halfExtents.y
-  : HUMAN_PROPORTIONS.foot.halfExtentsM.y;
-const ROOT_COLLIDER_RADIUS = Math.max(
-  HUMAN_PROPORTIONS.torso.halfExtentsM.x,
-  HUMAN_PROPORTIONS.pelvis.halfExtentsM.x,
-);
-const ROOT_COLLIDER_FLOOR_CLEARANCE = 0.012;
-const ROOT_COLLIDER_CENTER_Y = (HUMAN_PROPORTIONS.totalHeightM + ROOT_COLLIDER_FLOOR_CLEARANCE) / 2;
-const ROOT_COLLIDER_HALF_HEIGHT = (
-  HUMAN_PROPORTIONS.totalHeightM - ROOT_COLLIDER_FLOOR_CLEARANCE
-) / 2 - ROOT_COLLIDER_RADIUS;
-const ROOT_COLLIDER_OFFSET_Y = ROOT_COLLIDER_CENTER_Y - INITIAL_ROOT.y;
-const CHARACTER_GROUP = (0x0001 << 16) | 0x0002;
+// Character colliders see both character and environment. The hook removes only
+// the explicit anatomical exclusions, leaving nonadjacent self-collision on.
+const CHARACTER_GROUP = (0x0001 << 16) | 0x0003;
 const ENVIRONMENT_GROUP = (0x0002 << 16) | 0x0001;
+const COORDINATES = ["x", "y", "z"] as const satisfies readonly JointCoordinate[];
 
 type ActiveGrab = {
   pointerId: number;
@@ -85,6 +101,7 @@ type ActiveGrab = {
   startSegmentPosition: Vec3;
   targetVelocity: Vec3;
   lastCommandTimestampMs: number;
+  controller: GrabAnchorController;
 };
 
 let rapierInitialization: Promise<void> | null = null;
@@ -94,38 +111,73 @@ function ensureRapier(): Promise<void> {
   return rapierInitialization;
 }
 
-function segmentCollider(definition: SegmentDefinition): RAPIER.ColliderDesc {
-  switch (definition.shape.kind) {
-    case "sphere":
-      return RAPIER.ColliderDesc.ball(definition.shape.radius);
-    case "box":
-      return RAPIER.ColliderDesc.cuboid(
-        definition.shape.halfExtents.x,
-        definition.shape.halfExtents.y,
-        definition.shape.halfExtents.z,
-      );
-    case "capsule":
-      return RAPIER.ColliderDesc.capsule(definition.shape.halfHeight, definition.shape.radius);
+function convexCollider(definition: SegmentDefinition): RAPIER.ColliderDesc {
+  const descriptor = RAPIER.ColliderDesc.convexMesh(
+    flattenGeometryVertices(definition.geometry),
+    flattenGeometryIndices(definition.geometry),
+  );
+  if (!descriptor) throw new Error(`INVALID_CONVEX_GEOMETRY:${definition.id}`);
+  return descriptor;
+}
+
+function finiteVec(value: Vec3): boolean {
+  return Number.isFinite(value.x) && Number.isFinite(value.y) && Number.isFinite(value.z);
+}
+
+function finiteQuat(value: Quat): boolean {
+  return Number.isFinite(value.x) && Number.isFinite(value.y)
+    && Number.isFinite(value.z) && Number.isFinite(value.w);
+}
+
+function pairKey(a: SegmentId, b: SegmentId): string {
+  return a < b ? `${a}|${b}` : `${b}|${a}`;
+}
+
+function localAxis(profile: JointProfile): Vec3 {
+  const coordinate = profile.axes[0]?.coordinate ?? "x";
+  const basis = coordinate === "x" ? { x: 1, y: 0, z: 0 }
+    : coordinate === "y" ? { x: 0, y: 1, z: 0 }
+      : { x: 0, y: 0, z: 1 };
+  return rotate(profile.parentFrame.rotation, basis);
+}
+
+function roleGains(definition: SegmentDefinition): Readonly<{ stiffness: number; damping: number }> {
+  switch (definition.role) {
+    case "lumbar": return { stiffness: 220, damping: 32 };
+    case "ribcage": return { stiffness: 200, damping: 30 };
+    case "neck": return { stiffness: 12, damping: 1.4 };
+    case "head": return { stiffness: 10, damping: 1.2 };
+    case "shoulder-girdle": return { stiffness: 12, damping: 1.4 };
+    case "upper-arm": return { stiffness: 16, damping: 1.8 };
+    case "forearm": return { stiffness: 18, damping: 2 };
+    case "forearm-twist": return { stiffness: 8, damping: 0.8 };
+    case "hand": return { stiffness: 7, damping: 0.7 };
+    case "thigh": return { stiffness: 180, damping: 30 };
+    case "shin": return { stiffness: 240, damping: 32 };
+    case "ankle": return { stiffness: 120, damping: 20 };
+    case "hindfoot": return { stiffness: 90, damping: 16 };
+    case "forefoot": return { stiffness: 65, damping: 10 };
+    default: return { stiffness: 12, damping: 1.5 };
   }
 }
 
-function finiteVec(v: Vec3): boolean {
-  return Number.isFinite(v.x) && Number.isFinite(v.y) && Number.isFinite(v.z);
-}
-
-function finiteQuat(q: Quat): boolean {
-  return Number.isFinite(q.x) && Number.isFinite(q.y) && Number.isFinite(q.z) && Number.isFinite(q.w);
+function roleEffort(definition: SegmentDefinition): number {
+  void definition;
+  return 1;
 }
 
 class EmbodiedCharacter implements CharacterController {
   private readonly world: World;
-  private rootBody: RigidBody | null = null;
-  private rootCollider: Collider | null = null;
-  private motor: KinematicCharacterController | null = null;
+  /** Kept under the historical name so existing QA probes can inspect handles. */
   private readonly ragdollBodies = new Map<SegmentId, RigidBody>();
   private readonly ragdollColliders = new Map<SegmentId, Collider>();
   private readonly ragdollJoints: ImpulseJoint[] = [];
-  private readonly rest = restPoseMap();
+  private readonly jointsByChild = new Map<SegmentId, ImpulseJoint>();
+  private readonly colliderSegments = new Map<number, SegmentId>();
+  private readonly excludedPairs = new Set<string>();
+  private readonly physicsHooks: PhysicsHooks;
+  /** Rapier 0.20 only forwards PhysicsHooks when an EventQueue is supplied. */
+  private readonly eventQueue: EventQueue;
   private poses = restPoseMap();
   private previousPoses = restPoseMap();
   private renderer: RendererMode;
@@ -134,15 +186,12 @@ class EmbodiedCharacter implements CharacterController {
   private readonly balance = new BalanceController();
   private balanceData: BalanceDiagnostics | null = null;
   private kneeFlexion: number = HUMAN_PROPORTIONS.stance.neutralKneeFlexion;
-  private readonly recovery = new DynamicRecovery();
+  private recovery = new DynamicRecovery();
   private readonly floorCollider: Collider;
-  private heading = 0;
+  private heading: number;
   private readonly initialHeading: number;
-  private initialPosition: Vec3 = INITIAL_ROOT;
-  private poseSeed: Map<SegmentId, MutablePose> | null = null;
-  private poseSeedTime = 0;
+  private readonly initialPosition: Vec3;
   private grabControlDiagnostics: GrabControlDiagnostics = emptyGrabDiagnostics();
-  private handoffDiagnostics: HandoffDiagnostics | null = null;
   private paused = false;
   private disposed = false;
   private sequence = 0;
@@ -155,7 +204,12 @@ class EmbodiedCharacter implements CharacterController {
   private appliedGrabForceN = 0;
   private fixedSteps = 0;
   private fallingTime = 0;
+  private unsupportedTime = 0;
   private grounded = true;
+  private uprightBlendTime = Number.POSITIVE_INFINITY;
+  private readonly uprightBlendStart = new Map<SegmentId, Vec3>();
+  private lastMotorResults = new Map<SegmentId, JointMotorResult>();
+  private lastContacts = emptyRecoveryDiagnostics().contacts;
   private readonly runtimeErrors: string[] = [];
 
   constructor(renderer: RendererMode, options: CharacterInitialOptions = {}) {
@@ -165,36 +219,45 @@ class EmbodiedCharacter implements CharacterController {
     this.initialPosition = options.position ?? INITIAL_ROOT;
     this.world = new RAPIER.World({ x: 0, y: -9.81, z: 0 });
     this.world.timestep = 1 / 60;
-    this.world.numSolverIterations = 16;
-    this.world.numInternalPgsIterations = 2;
-    // Resolve fast limb/floor impacts within the tick so CCD does not separate linked anchors.
+    this.world.numSolverIterations = 20;
+    this.world.numInternalPgsIterations = 4;
     this.world.integrationParameters.maxCcdSubsteps = 4;
+    this.eventQueue = new RAPIER.EventQueue(true);
+    this.physicsHooks = {
+      filterContactPair: (collider1, collider2) => {
+        const first = this.colliderSegments.get(collider1);
+        const second = this.colliderSegments.get(collider2);
+        if (first && second && this.excludedPairs.has(pairKey(first, second))) return null;
+        return RAPIER.SolverFlags.COMPUTE_IMPULSE;
+      },
+      filterIntersectionPair: () => true,
+    };
+    for (const definition of SEGMENTS) {
+      for (const excluded of definition.collisionExclusions) {
+        this.excludedPairs.add(pairKey(definition.id, excluded));
+      }
+    }
     const floorBody = this.world.createRigidBody(
       RAPIER.RigidBodyDesc.fixed().setTranslation(0, -0.08, 0),
     );
     this.floorCollider = this.world.createCollider(
       RAPIER.ColliderDesc.cuboid(5, 0.08, 5)
-        .setFriction(0.95)
-        .setRestitution(0.02)
+        .setFriction(4)
+        .setRestitution(0.01)
         .setCollisionGroups(ENVIRONMENT_GROUP),
       floorBody,
     );
-    // Rapier's character controller queries the broad phase before World.step.
-    // Prime the static floor now, while no dynamic bodies exist, so the first
-    // grounded update cannot move through it and create a false velocity spike.
-    this.world.step();
-    this.supportFeet = {
-      leftFoot: { ...this.rest.get("leftFoot")!.position, y: FOOT_CENTER_HEIGHT },
-      rightFoot: { ...this.rest.get("rightFoot")!.position, y: FOOT_CENTER_HEIGHT },
-    };
-    for (const foot of ["leftFoot", "rightFoot"] as const) {
-      const local = sub(this.supportFeet[foot], { ...INITIAL_ROOT, y: 0 });
-      const transformed = add({ ...this.initialPosition, y: 0 }, rotate(quatFromAxisAngle(UP, this.heading), local));
-      this.supportFeet[foot] = transformed;
-    }
-    this.createRootMotor();
-    this.poses = this.composeUprightPose();
+    this.world.step(this.eventQueue, this.physicsHooks);
+    this.poses = this.initialPose();
     this.previousPoses = this.clonePoses(this.poses);
+    this.supportFeet = {
+      leftFoot: { ...this.poses.get("leftFoot")!.position },
+      rightFoot: { ...this.poses.get("rightFoot")!.position },
+    };
+    this.createDynamicAssembly(this.poses, true);
+    this.readPhysicsPoses();
+    this.recovery.observe(this.world, this.floorCollider, this.ragdollColliders, this.ragdollBodies, 1 / 60);
+    this.lastContacts = this.recovery.diagnostics().contacts.map((contact) => ({ ...contact }));
     this.balance.reset(this.poses, this.heading);
   }
 
@@ -202,19 +265,15 @@ class EmbodiedCharacter implements CharacterController {
     if (this.disposed || !Number.isFinite(dt) || dt <= 0) return;
     this.processCommand(command);
     if (this.paused) return;
-
     const stepDt = clamp(dt, 1 / 240, 1 / 20);
     this.world.timestep = stepDt;
     this.sequence += 1;
     this.fixedSteps += 1;
     this.simulationTime += stepDt;
-
+    this.previousPoses = this.clonePoses(this.poses);
     try {
-      if (this.isDynamic()) {
-        this.updateRagdoll(stepDt);
-      } else {
-        this.updateUpright(stepDt);
-      }
+      if (this.isRecoveryState()) this.updateRecovery(stepDt);
+      else this.updateStanding(stepDt);
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
       if (!this.runtimeErrors.includes(message)) this.runtimeErrors.push(message);
@@ -224,12 +283,13 @@ class EmbodiedCharacter implements CharacterController {
 
   getSnapshot(renderer: RendererMode): PoseSnapshot {
     this.renderer = renderer;
+    const pelvis = this.poses.get("pelvis")!;
     return {
       sequence: this.sequence,
       simulationTime: this.simulationTime,
       state: this.state,
-      rootPosition: { ...this.poses.get("pelvis")!.position },
-      rootRotation: { ...this.poses.get("pelvis")!.rotation },
+      rootPosition: { ...pelvis.position },
+      rootRotation: { ...pelvis.rotation },
       segments: SEGMENTS.map((definition) => immutablePose(this.poses.get(definition.id)!)),
       support: this.supportSnapshot(),
       diagnostics: this.diagnostics(),
@@ -242,8 +302,6 @@ class EmbodiedCharacter implements CharacterController {
   }
 
   clearBodyInput(): void { this.clearGrab(); }
-
-  private isDynamic(): boolean { return this.state === "falling" || this.state === "fallen" || this.state === "recovering"; }
 
   pause(): void {
     this.paused = true;
@@ -260,8 +318,8 @@ class EmbodiedCharacter implements CharacterController {
     if (this.disposed) return;
     this.paused = true;
     this.clearGrab();
-    this.clearRagdoll();
-    this.removeRootMotor();
+    this.clearDynamicAssembly();
+    this.eventQueue.free();
     this.world.free();
     this.disposed = true;
   }
@@ -269,11 +327,11 @@ class EmbodiedCharacter implements CharacterController {
   reset(): void {
     if (this.disposed) return;
     this.clearGrab();
-    this.clearRagdoll();
-    this.removeRootMotor();
+    this.clearDynamicAssembly();
     this.state = "upright";
     this.heading = this.initialHeading;
-    this.poseSeed = null; this.poseSeedTime = 0; this.kneeFlexion = HUMAN_PROPORTIONS.stance.neutralKneeFlexion; this.balanceData = null;
+    this.kneeFlexion = HUMAN_PROPORTIONS.stance.neutralKneeFlexion;
+    this.balanceData = null;
     this.paused = false;
     this.sequence = 0;
     this.simulationTime = 0;
@@ -284,40 +342,54 @@ class EmbodiedCharacter implements CharacterController {
     this.appliedGrabForceN = 0;
     this.fixedSteps = 0;
     this.fallingTime = 0;
+    this.unsupportedTime = 0;
     this.grounded = true;
+    this.uprightBlendTime = Number.POSITIVE_INFINITY;
+    this.uprightBlendStart.clear();
+    this.lastMotorResults.clear();
     this.grabControlDiagnostics = emptyGrabDiagnostics();
-    this.handoffDiagnostics = null;
     this.runtimeErrors.length = 0;
-    this.poses = restPoseMap();
-    this.previousPoses = restPoseMap();
-    this.supportFeet = {
-      leftFoot: { ...this.rest.get("leftFoot")!.position, y: FOOT_CENTER_HEIGHT },
-      rightFoot: { ...this.rest.get("rightFoot")!.position, y: FOOT_CENTER_HEIGHT },
-    };
-    for (const foot of ["leftFoot", "rightFoot"] as const) {
-      const local = sub(this.supportFeet[foot], { ...INITIAL_ROOT, y: 0 });
-      const transformed = add({ ...this.initialPosition, y: 0 }, rotate(quatFromAxisAngle(UP, this.heading), local));
-      this.supportFeet[foot] = transformed;
-    }
-    this.createRootMotor();
-    this.poses = this.composeUprightPose();
+    this.recovery = new DynamicRecovery();
+    this.poses = this.initialPose();
     this.previousPoses = this.clonePoses(this.poses);
+    this.supportFeet = {
+      leftFoot: { ...this.poses.get("leftFoot")!.position },
+      rightFoot: { ...this.poses.get("rightFoot")!.position },
+    };
+    this.createDynamicAssembly(this.poses, true);
+    this.readPhysicsPoses();
+    this.recovery.observe(this.world, this.floorCollider, this.ragdollColliders, this.ragdollBodies, 1 / 60);
+    this.lastContacts = this.recovery.diagnostics().contacts.map((contact) => ({ ...contact }));
     this.balance.reset(this.poses, this.heading);
   }
 
   diagnostics(): DiagnosticsSnapshot {
     const root = this.poses.get("pelvis")?.position ?? INITIAL_ROOT;
-    const finite = [...this.poses.values()].every(
-      (pose) => finiteVec(pose.position) && finiteQuat(pose.rotation)
-        && finiteVec(pose.linearVelocity) && finiteVec(pose.angularVelocity),
+    const finite = [...this.poses.values()].every((pose) =>
+      finiteVec(pose.position) && finiteQuat(pose.rotation)
+      && finiteVec(pose.linearVelocity) && finiteVec(pose.angularVelocity)
     );
     const errors = [...this.runtimeErrors];
     if (!finite) errors.push("NONFINITE_CHARACTER_STATE");
+    const jointDiagnostics = this.measureJoints();
+    const loadBearing = this.lastContacts.filter((contact) => contact.loadBearing);
     return {
       balance: this.balanceData ? structuredClone(this.balanceData) : null,
-      bodyInputAvailable: !this.disposed && !this.paused && !this.isDynamic() && !this.poseSeed,
-      recovery: this.isDynamic() ? this.recovery.diagnostics() : emptyRecoveryDiagnostics(),
-      authority: this.isDynamic() ? "ragdoll" : "character-motor",
+      bodyInputAvailable: !this.disposed && !this.paused && !this.isRecoveryState(),
+      recovery: this.isRecoveryState() ? this.recovery.diagnostics() : emptyRecoveryDiagnostics(),
+      grabControl: { ...this.grabControlDiagnostics },
+      physicsOwnership: "rapier-dynamic",
+      jointDiagnostics,
+      contactDiagnostics: {
+        count: this.lastContacts.length,
+        loadBearingCount: loadBearing.length,
+        totalNormalForceN: loadBearing.reduce((sum, contact) => sum + contact.forceN, 0),
+        supportingSegments: [...new Set(loadBearing.map((contact) => contact.segment))],
+      },
+      maxJointLimitErrorRad: jointDiagnostics.reduce((maximum, joint) =>
+        Math.max(maximum, joint.limitErrorMagnitudeRad), 0),
+      maxMotorSaturationRatio: jointDiagnostics.reduce((maximum, joint) =>
+        Math.max(maximum, joint.motorSaturationRatio), 0),
       state: this.state,
       simulationReady: true,
       interactiveViewReady: true,
@@ -325,10 +397,9 @@ class EmbodiedCharacter implements CharacterController {
       activeGrab: this.activeGrab !== null,
       activePointerId: this.activeGrab?.pointerId ?? null,
       selectedRegion: this.activeGrab?.region ?? null,
+      selectedSegment: this.activeGrab?.segment ?? null,
       queuedTarget: false,
       appliedGrabForceN: this.appliedGrabForceN,
-      grabControl: { ...this.grabControlDiagnostics },
-      handoff: this.handoffDiagnostics ? { ...this.handoffDiagnostics } : null,
       leanRadians: this.leanRadians,
       rootDisplacementM: Math.hypot(root.x - this.initialPosition.x, root.z - this.initialPosition.z),
       maxJointSeparationM: this.maximumJointSeparation(),
@@ -342,8 +413,24 @@ class EmbodiedCharacter implements CharacterController {
     };
   }
 
+  /** Test fixture entrypoint: reconstruction is explicitly scoped as fixture initialization/reset. */
+  seedRecoveryFixture(poses: ReadonlyMap<SegmentId, MutablePose>, direction: Vec3): void {
+    if (this.disposed) return;
+    this.clearGrab();
+    this.clearDynamicAssembly();
+    this.poses = this.clonePoses(poses);
+    this.previousPoses = this.clonePoses(poses);
+    this.createDynamicAssembly(this.poses);
+    this.readPhysicsPoses();
+    this.activateRagdoll(direction);
+  }
+
+  private isRecoveryState(): boolean {
+    return this.state === "falling" || this.state === "fallen" || this.state === "recovering";
+  }
+
   private processCommand(command: GrabCommand | null): void {
-    if (this.isDynamic() || this.poseSeed) { this.clearGrab(); return; }
+    if (this.isRecoveryState()) { this.clearGrab(); return; }
     if (!command) {
       if (this.activeGrab) this.activeGrab.targetVelocity = scale(this.activeGrab.targetVelocity, 0.72);
       return;
@@ -354,25 +441,30 @@ class EmbodiedCharacter implements CharacterController {
       if (!segment || !SEGMENT_BY_ID.has(segment)) return;
       const pose = this.poses.get(segment);
       if (!pose) return;
-      const anchor = command.localAnchor ?? ZERO;
-      const anchorWorld = worldPoint(pose.position, pose.rotation, anchor);
+      const localAnchor = command.localAnchor ?? ZERO;
+      const anchorWorld = worldPoint(pose.position, pose.rotation, localAnchor);
       const target = command.worldTarget ?? anchorWorld;
       this.activeGrab = {
         pointerId: command.pointerId,
         region: command.region,
         segment,
-        localAnchor: { ...anchor },
+        localAnchor: { ...localAnchor },
         target: { ...target },
         startTarget: { ...target },
         startSegmentPosition: { ...pose.position },
         targetVelocity: ZERO,
         lastCommandTimestampMs: command.timestampMs,
+        controller: new GrabAnchorController(target),
       };
       return;
     }
     if (!this.activeGrab || command.pointerId !== this.activeGrab.pointerId) return;
     if (command.kind === "move" && command.worldTarget) {
-      const commandDt = clamp((command.timestampMs - this.activeGrab.lastCommandTimestampMs) / 1000, 1 / 240, 0.1);
+      const commandDt = clamp(
+        (command.timestampMs - this.activeGrab.lastCommandTimestampMs) / 1000,
+        1 / 240,
+        0.1,
+      );
       this.activeGrab.targetVelocity = clampLength(
         scale(sub(command.worldTarget, this.activeGrab.target), 1 / commandDt),
         8,
@@ -387,78 +479,57 @@ class EmbodiedCharacter implements CharacterController {
   private clearGrab(): void {
     if (this.balanceData) this.balanceData.externalForce = ZERO;
     this.activeGrab = null;
-    this.grabControlDiagnostics = emptyGrabDiagnostics(this.grabControlDiagnostics.cumulativeInjectedWorkJ);
+    this.grabControlDiagnostics = emptyGrabDiagnostics(
+      this.grabControlDiagnostics.cumulativeInjectedWorkJ,
+    );
     this.appliedGrabForceN = 0;
   }
 
-  private updateUpright(dt: number): void {
-    if (!this.rootBody || !this.rootCollider || !this.motor) return;
-    const result = this.balance.update({ dt, poses: this.poses, rootPosition: this.rootBody.translation(), activeGrab: this.activeGrab, heading: this.heading });
-    const settling = this.poseSeed !== null;
-    if (settling) {
-      this.balanceData = null;
-      this.reactionOffset = ZERO;
-      this.kneeFlexion = HUMAN_PROPORTIONS.stance.neutralKneeFlexion;
-      this.step = null;
-      this.state = "upright";
-      this.appliedGrabForceN = 0;
-    } else {
-      this.balanceData = result.diagnostics;
-      this.reactionOffset = result.reactionOffset; this.kneeFlexion = result.kneeFlexion;
-      this.supportFeet = result.supportFeet; this.step = result.step; this.stepCount = result.stepCount;
-      this.state = result.state; this.appliedGrabForceN = result.appliedGrabForceN;
+  private updateStanding(dt: number): void {
+    // Removing support is an external world change, so a resting island must
+    // wake and enter genuine ballistic motion instead of remaining asleep.
+    if (!this.floorCollider.isEnabled()) {
+      for (const body of this.ragdollBodies.values()) body.wakeUp();
     }
-    const current = this.rootBody.translation();
-    const desired = settling ? ZERO : sub(result.rootTarget, current);
-    // A planted stance already sits at the controller's configured separation.
-    // Repeated downward probes can occasionally tunnel the kinematic capsule
-    // through Rapier's contact offset; probe only after support is actually lost.
-    this.motor.computeColliderMovement(this.rootCollider, { ...desired, y: this.grounded ? 0 : -0.035 });
-    const computedMovement = this.motor.computedMovement();
-    // Snap-to-ground may return a small downward correction even for a zero-Y
-    // request. Anatomical foot support already establishes the flat-floor
-    // height, so retain it until support is genuinely lost.
-    const movement = this.grounded ? { ...computedMovement, y: 0 } : computedMovement;
-    this.grounded = settling || this.motor.computedGrounded() || result.diagnostics.supportingFeet.length > 0;
-    this.rootBody.setNextKinematicTranslation(add(current, movement));
-    this.world.step();
-    this.previousPoses = this.clonePoses(this.poses);
-    const target = this.composeUprightPose();
-    let finishedSettling = false;
-    if (this.poseSeed) {
-      this.poseSeedTime += dt;
-      const amount = clamp(this.poseSeedTime / 0.75, 0, 1);
-      for (const definition of SEGMENTS) {
-        const pose = target.get(definition.id)!, seed = this.poseSeed.get(definition.id)!;
-        pose.rotation = Q.nlerp(seed.rotation, pose.rotation, amount);
-        if (!definition.parent) pose.position = lerp(seed.position, pose.position, amount);
-        if (definition.parent) {
-          const parent = target.get(definition.parent)!;
-          pose.position = sub(poseAnchor(parent, definition.jointAnchorParent!), rotate(pose.rotation, definition.jointAnchorChild!));
-        }
-      }
-      if (amount >= 1) {
-        this.poseSeed = null;
-        finishedSettling = true;
-      }
-    }
-    this.poses = target;
-    this.writePoseVelocities(dt);
-    if (finishedSettling) {
-      for (const pose of this.poses.values()) {
-        pose.linearVelocity = ZERO;
-        pose.angularVelocity = ZERO;
-      }
-      this.previousPoses = this.clonePoses(this.poses);
-      this.balance.reset(this.poses, this.heading);
-      this.balanceData = null;
-    }
-    if (!settling && result.shouldFall) this.activateRagdoll(result.fallDirection);
-  }
+    const pelvis = this.poses.get("pelvis")!;
+    const balanceGrab = this.activeGrab && this.grabControlDiagnostics.active ? {
+      ...this.activeGrab,
+      target: { ...this.grabControlDiagnostics.controlTarget },
+      targetVelocity: { ...this.grabControlDiagnostics.targetVelocity },
+    } : this.activeGrab;
+    const balance = this.balance.update({
+      dt,
+      poses: this.poses,
+      rootPosition: pelvis.position,
+      activeGrab: balanceGrab,
+      heading: this.heading,
+      contacts: this.lastContacts,
+    });
+    this.balanceData = balance.diagnostics;
+    this.reactionOffset = balance.reactionOffset;
+    this.kneeFlexion = balance.kneeFlexion;
+    this.supportFeet = balance.supportFeet;
+    this.step = balance.step;
+    this.stepCount = balance.stepCount;
+    this.state = balance.state;
 
-  private composeUprightPose(): Map<SegmentId, MutablePose> {
-    const composed = composeUprightPose({
-      rootTranslation: this.rootBody?.translation() ?? this.initialPosition,
+    if (this.activeGrab) {
+      const body = this.ragdollBodies.get(this.activeGrab.segment);
+      if (body) {
+        this.grabControlDiagnostics = this.activeGrab.controller.apply(
+          body,
+          this.activeGrab.localAnchor,
+          this.activeGrab.target,
+          dt,
+        );
+        this.appliedGrabForceN = length(this.grabControlDiagnostics.force);
+      }
+    } else {
+      this.appliedGrabForceN = 0;
+    }
+
+    const target = composeUprightPose({
+      rootTranslation: balance.rootTarget,
       heading: this.heading,
       kneeFlexion: this.kneeFlexion,
       reactionOffset: this.reactionOffset,
@@ -467,146 +538,417 @@ class EmbodiedCharacter implements CharacterController {
       supportFeet: this.supportFeet,
       step: this.step,
     });
-    this.leanRadians = composed.leanRadians;
-    return composed.poses;
-  }
+    this.leanRadians = target.leanRadians;
+    this.lastMotorResults = new Map(applyCoupledJointMotors(
+      this.ragdollBodies,
+      this.motorCommands(target.poses),
+      dt,
+      {
+        supports: this.motorSupportConstraints(),
+        passiveResistance: true,
+      },
+    ));
+    this.world.step(this.eventQueue, this.physicsHooks);
+    this.readPhysicsPoses();
+    this.observeContacts(dt);
 
-  private writePoseVelocities(dt: number): void {
-    for (const definition of SEGMENTS) {
-      const current = this.poses.get(definition.id)!;
-      const previous = this.previousPoses.get(definition.id) ?? current;
-      current.linearVelocity = clampLength(scale(sub(current.position, previous.position), 1 / dt), 10);
-      current.angularVelocity = angularVelocity(previous.rotation, current.rotation, dt);
+    const hasFootSupport = this.supportSnapshot().planted.length > 0;
+    this.unsupportedTime = hasFootSupport ? 0 : this.unsupportedTime + dt;
+    const supportLossLimit = this.step ? 0.36 : 0.14;
+    const physicalFall = this.currentTorsoLean() > 1.25
+      || this.poses.get("pelvis")!.position.y < 0.56
+      || this.unsupportedTime > supportLossLimit;
+    if ((this.activeGrab && balance.shouldFall && this.simulationTime > 0.25) || physicalFall) {
+      this.activateRagdoll(balance.fallDirection);
     }
   }
 
-  private activateRagdoll(drag: Vec3): void {
-    if (this.isDynamic()) return;
-    const transferPoses = this.clonePoses(this.poses);
-    const beforeAnchor = this.grabAnchorWorld();
-    const beforeTarget = this.activeGrab ? { ...this.activeGrab.target } : ZERO;
-    const beforeLocalAnchor = this.activeGrab ? { ...this.activeGrab.localAnchor } : ZERO;
-    this.removeRootMotor();
-    const pullVelocity = this.activeGrab?.targetVelocity ?? ZERO;
-    const fallDirection = normalize(add(horizontal(drag), scale(horizontal(pullVelocity), 0.12)), FORWARD);
+  private updateRecovery(dt: number): void {
+    this.clearGrab();
+    applyPassiveJointResistance(this.ragdollBodies, dt);
+    const result = this.recovery.apply(this.ragdollBodies, dt);
+    this.state = result.state;
+    this.world.step(this.eventQueue, this.physicsHooks);
+    this.readPhysicsPoses();
+    this.observeContacts(dt);
+    this.fallingTime += dt;
+    this.leanRadians = this.currentTorsoLean();
+    this.lastMotorResults.clear();
+    if (result.recovered) this.finishRecovery();
+  }
 
-    for (const definition of SEGMENTS) {
-      const pose = transferPoses.get(definition.id)!;
-      const inheritedVelocity = clampLength(pose.linearVelocity, 3.0);
-      const inheritedAngularVelocity = clampLength(pose.angularVelocity, 6.0);
-      const body = this.world.createRigidBody(
-        RAPIER.RigidBodyDesc.dynamic()
-          .setTranslation(pose.position.x, pose.position.y, pose.position.z)
-          .setRotation(pose.rotation)
-          .setLinvel(inheritedVelocity.x, inheritedVelocity.y, inheritedVelocity.z)
-          .setAngvel(inheritedAngularVelocity)
-          .setLinearDamping(0.32)
-          .setAngularDamping(0.42)
-          .setCanSleep(false)
-          .setCcdEnabled(true)
-          .setAdditionalSolverIterations(3),
-      );
-      const collider = this.world.createCollider(
-        segmentCollider(definition)
-          .setMass(definition.massKg)
-          .setFriction(1.15)
-          .setRestitution(0.04)
-          .setContactSkin(0.002)
-          .setCollisionGroups(CHARACTER_GROUP),
-        body,
-      );
-      this.ragdollBodies.set(definition.id, body);
-      this.ragdollColliders.set(definition.id, collider);
-      body.recomputeMassPropertiesFromColliders();
-    }
-    for (const definition of SEGMENTS) {
-      if (!definition.parent || !definition.jointAnchorParent || !definition.jointAnchorChild) continue;
-      const parent = this.ragdollBodies.get(definition.parent)!;
-      const child = this.ragdollBodies.get(definition.id)!;
-      const joint = this.world.createImpulseJoint(
-        RAPIER.JointData.spherical(definition.jointAnchorParent, definition.jointAnchorChild),
-        parent,
-        child,
-        true,
-      );
-      joint.setContactsEnabled(false);
-      this.ragdollJoints.push(joint);
-    }
+  /** State-only transition: bodies, positions, rotations, and velocities are untouched. */
+  private activateRagdoll(direction: Vec3): void {
+    if (this.isRecoveryState()) return;
+    const pelvisVelocity = this.poses.get("pelvis")?.linearVelocity ?? ZERO;
+    const fallDirection = normalize(
+      add(horizontal(direction), scale(horizontal(pelvisVelocity), 0.12)),
+      rotate(quatFromAxisAngle(UP, this.heading), FORWARD),
+    );
     this.state = "falling";
     this.recovery.reset(this.heading, fallDirection);
     this.balanceData = null;
     this.clearGrab();
     this.fallingTime = 0;
-    // Read the actual new Rapier bodies before stepping. This measures the
-    // same instant on both sides of authority transfer, not consecutive frames.
-    this.readRagdollPoses();
-    let maxTranslationErrorM = 0;
-    let maxAngularErrorDegrees = 0;
-    for (const [id, before] of transferPoses) {
-      const after = this.poses.get(id)!;
-      maxTranslationErrorM = Math.max(maxTranslationErrorM, length(sub(after.position, before.position)));
-      const qa = before.rotation;
-      const qb = after.rotation;
-      const rotationDot = Math.abs(qa.x * qb.x + qa.y * qb.y + qa.z * qb.z + qa.w * qb.w)
-        / (Math.hypot(qa.x, qa.y, qa.z, qa.w) * Math.hypot(qb.x, qb.y, qb.z, qb.w));
-      maxAngularErrorDegrees = Math.max(maxAngularErrorDegrees, 2 * Math.acos(clamp(rotationDot, -1, 1)) * 180 / Math.PI);
-    }
-    const afterAnchor = this.grabAnchorWorld();
-    this.handoffDiagnostics = {
-      sequence: this.sequence, maxTranslationErrorM, maxAngularErrorDegrees,
-      selectedAnchorErrorM: beforeAnchor && afterAnchor ? length(sub(beforeAnchor, afterAnchor)) : 0,
-      rawTargetErrorM: this.activeGrab ? length(sub(beforeTarget, this.activeGrab.target)) : 0,
-      localAnchorErrorM: this.activeGrab ? length(sub(beforeLocalAnchor, this.activeGrab.localAnchor)) : 0,
-      jointSeparationM: this.maximumJointSeparation(),
-      targetDerivativeSpeedMps: this.activeGrab ? length(this.activeGrab.targetVelocity) : 0,
+    this.unsupportedTime = 0;
+    this.uprightBlendStart.clear();
+    this.lastMotorResults.clear();
+  }
+
+  /** Recovery changes motor intent only; the continuous Rapier state remains authoritative. */
+  private finishRecovery(): void {
+    const pelvis = this.poses.get("pelvis")!;
+    const forward = horizontal(rotate(pelvis.rotation, FORWARD));
+    if (length(forward) > 1e-5) this.heading = Math.atan2(forward.x, forward.z);
+    this.supportFeet = {
+      leftFoot: { ...this.poses.get("leftFoot")!.position },
+      rightFoot: { ...this.poses.get("rightFoot")!.position },
     };
-    this.previousPoses = this.clonePoses(this.poses);
-    this.appliedGrabForceN = 0;
-    this.grabControlDiagnostics = emptyGrabDiagnostics();
-  }
-
-  private updateRagdoll(dt: number): void {
-    this.previousPoses = this.clonePoses(this.poses);
-    this.clearGrab();
-    // A fixture may remove support between updates. Query current collider state before applying any aid.
-    if (!this.floorCollider.isEnabled()) {
-      this.recovery.observe(this.world, this.floorCollider, new Map(), this.ragdollBodies, dt);
+    this.reactionOffset = ZERO;
+    this.kneeFlexion = HUMAN_PROPORTIONS.stance.neutralKneeFlexion;
+    this.step = null;
+    this.state = "upright";
+    this.grounded = true;
+    this.unsupportedTime = 0;
+    this.uprightBlendTime = 0;
+    this.uprightBlendStart.clear();
+    for (const definition of SEGMENTS) {
+      if (!definition.parent || !definition.jointProfile) continue;
+      const parent = this.ragdollBodies.get(definition.parent)!;
+      const child = this.ragdollBodies.get(definition.id)!;
+      this.uprightBlendStart.set(
+        definition.id,
+        jointCoordinates(parent.rotation(), child.rotation(), definition.jointProfile),
+      );
     }
-    const result = this.recovery.apply(this.ragdollBodies, dt);
-    this.state = result.state;
-    if (result.recovered) { this.restoreUpright(); return; }
-    this.world.step();
-    this.readRagdollPoses();
-    this.recovery.observe(this.world, this.floorCollider, this.ragdollColliders, this.ragdollBodies, dt);
-    this.fallingTime += dt;
-    this.grounded = this.recovery.diagnostics().contacts.length > 0;
-    this.leanRadians = this.currentTorsoLean();
-  }
-
-  private restoreUpright(): void {
-    const before = this.clonePoses(this.poses);
-    const pelvis = before.get("pelvis")!;
-    const forward = rotate(pelvis.rotation, FORWARD);
-    this.heading = Math.atan2(forward.x, forward.z);
-    this.clearGrab(); this.clearRagdoll();
-    this.createRootMotor(pelvis.position);
-    this.supportFeet = { leftFoot: { ...before.get("leftFoot")!.position }, rightFoot: { ...before.get("rightFoot")!.position } };
-    this.reactionOffset = ZERO; this.kneeFlexion = HUMAN_PROPORTIONS.stance.neutralKneeFlexion; this.step = null;
-    this.state = "upright"; this.grounded = true;
-    // The first motor snapshot is the recovered segment pose, at exactly the same simulation instant.
-    this.poses = before; this.previousPoses = this.clonePoses(before);
-    this.poseSeed = this.clonePoses(before); this.poseSeedTime = 0;
     this.balance.reset(this.poses, this.heading);
     this.balanceData = null;
-    this.stepCount = 0;
-    this.handoffDiagnostics = { sequence: this.sequence, maxTranslationErrorM: 0, maxAngularErrorDegrees: 0,
-      selectedAnchorErrorM: 0, rawTargetErrorM: 0, localAnchorErrorM: 0,
-      jointSeparationM: this.maximumJointSeparation(), targetDerivativeSpeedMps: 0 };
   }
 
-  private readRagdollPoses(): void {
+  /** Use only the measured stance soles; a moving swing foot remains unconstrained. */
+  private motorSupportConstraints(): ArticulatedSupportConstraint[] {
+    if (!this.step || this.step.elapsed < 0) return [];
+    const swingSide = this.step.foot === "leftFoot" ? "left" : "right";
+    const supportBySide = new Map<"left" | "right", typeof this.lastContacts[number]>();
+    for (const contact of this.lastContacts) {
+      const definition = SEGMENT_BY_ID.get(contact.segment);
+      if (!contact.loadBearing || !definition?.side || definition.side === swingSide
+        || (definition.role !== "hindfoot" && definition.role !== "forefoot")) {
+        continue;
+      }
+      const existing = supportBySide.get(definition.side);
+      if (!existing || contact.forceN > existing.forceN) {
+        supportBySide.set(definition.side, contact);
+      }
+    }
+    // One sticking point per loaded side captures the translational ground
+    // reaction without pretending that unilateral contacts weld every sole
+    // and toe rotational degree of freedom to the floor.
+    return [...supportBySide.values()].map((contact) => ({
+      segment: contact.segment,
+      points: [{ ...contact.point }],
+      // Tangential sticking supplies the horizontal reaction seen by the
+      // floating-root motor solve. The unilateral normal is deliberately left
+      // to Rapier so prediction cannot turn a sole into a vertical weld.
+      directions: [{ x: 1, y: 0, z: 0 }, { x: 0, y: 0, z: 1 }],
+    }));
+  }
+
+  private motorCommands(targets: ReadonlyMap<SegmentId, MutablePose>): JointMotorCommand[] {
+    const blend = smooth01(clamp(this.uprightBlendTime / 0.55, 0, 1));
+    const strength = this.uprightBlendTime === Number.POSITIVE_INFINITY ? 1 : 0.12 + 0.88 * blend;
+    if (this.uprightBlendTime !== Number.POSITIVE_INFINITY) {
+      this.uprightBlendTime += this.world.timestep;
+      if (this.uprightBlendTime >= 0.55) {
+        this.uprightBlendTime = Number.POSITIVE_INFINITY;
+        this.uprightBlendStart.clear();
+      }
+    }
+    const commands: JointMotorCommand[] = [];
     for (const definition of SEGMENTS) {
-      const body = this.ragdollBodies.get(definition.id)!;
+      if (!definition.parent || !definition.jointProfile) continue;
+      const parentTarget = targets.get(definition.parent);
+      const childTarget = targets.get(definition.id);
+      if (!parentTarget || !childTarget) continue;
+      const relative = quatMultiply(quatInverse(parentTarget.rotation), childTarget.rotation);
+      const desired = clampJointCoordinates(
+        jointCoordinates({ x: 0, y: 0, z: 0, w: 1 }, relative, definition.jointProfile),
+        definition.jointProfile,
+      );
+      const start = this.uprightBlendStart.get(definition.id);
+      const coordinates = start ? {
+        x: start.x + (desired.x - start.x) * blend,
+        y: start.y + (desired.y - start.y) * blend,
+        z: start.z + (desired.z - start.z) * blend,
+      } : desired;
+      const gains = roleGains(definition);
+      commands.push({
+        id: definition.id,
+        targetLocalRotation: jointRotationFromCoordinates(coordinates, definition.jointProfile),
+        stiffness: gains.stiffness,
+        damping: gains.damping,
+        strengthScale: strength,
+        effortScale: roleEffort(definition),
+        feedforwardWorld: this.gravityCompensation(definition),
+      });
+    }
+    return commands;
+  }
+
+  /**
+   * Cancel descendant gravity and route the requested horizontal ground wrench
+   * through the loaded foot chains.  The chosen pressure point is the COM for
+   * static equilibrium and shifts by h/g*a while balance is actively correcting.
+   */
+  private gravityCompensation(jointDefinition: SegmentDefinition): Vec3 {
+    const child = this.ragdollBodies.get(jointDefinition.id);
+    if (!child || !jointDefinition.jointProfile) return ZERO;
+    const jointWorld = worldPoint(
+      child.translation(),
+      child.rotation(),
+      jointDefinition.jointProfile.childFrame.anchor,
+    );
+    let torque: Vec3 = ZERO;
+    for (const candidate of SEGMENTS) {
+      let ancestor: SegmentId | null = candidate.id;
+      let descendant = false;
+      while (ancestor) {
+        if (ancestor === jointDefinition.id) { descendant = true; break; }
+        ancestor = SEGMENT_BY_ID.get(ancestor)?.parent ?? null;
+      }
+      if (!descendant) continue;
+      const body = this.ragdollBodies.get(candidate.id);
+      if (!body) continue;
+      torque = add(torque, cross(
+        sub(body.worldCom(), jointWorld),
+        { x: 0, y: candidate.massKg * 9.81, z: 0 },
+      ));
+    }
+    const left = this.poses.get("leftFoot")?.position ?? ZERO;
+    const rightFoot = this.poses.get("rightFoot")?.position ?? ZERO;
+    const activeCorrection = this.floorCollider.isEnabled()
+      && (this.activeGrab !== null || this.step !== null || this.stepCount > 0);
+    const acceleration = activeCorrection
+      ? this.balanceData?.balanceAcceleration ?? ZERO
+      : ZERO;
+    const com = this.balanceData?.centerOfMass ?? ZERO;
+    const groundForce = {
+      x: TOTAL_MASS_KG * acceleration.x,
+      y: TOTAL_MASS_KG * 9.81,
+      z: TOTAL_MASS_KG * acceleration.z,
+    };
+    const height = Math.max(0.4, com.y);
+    const verticalGroundForce = Math.max(120, groundForce.y);
+    const rawPressure = {
+      x: com.x - height * groundForce.x / verticalGroundForce,
+      y: 0,
+      z: com.z - height * groundForce.z / verticalGroundForce,
+    };
+    const measuredSides = new Set<"left" | "right">();
+    for (const contact of this.lastContacts) {
+      const definition = SEGMENT_BY_ID.get(contact.segment);
+      const swingSide = this.step?.elapsed !== undefined && this.step.elapsed >= 0
+        ? (this.step.foot === "leftFoot" ? "left" : "right") : null;
+      if (contact.loadBearing && definition?.side && definition.side !== swingSide
+        && (definition.role === "hindfoot" || definition.role === "forefoot")) {
+        measuredSides.add(definition.side);
+      }
+    }
+    const fallbackSides: Array<"left" | "right"> = this.step?.foot === "leftFoot" ? ["right"]
+      : this.step?.foot === "rightFoot" ? ["left"] : ["left", "right"];
+    const supportSides = measuredSides.size ? [...measuredSides] : fallbackSides;
+    const supportPoints: Vec3[] = [];
+    for (const side of supportSides) {
+      for (const id of [`${side}Foot`, `${side}Forefoot`] as SegmentId[]) {
+        const pose = this.poses.get(id);
+        const geometry = SEGMENT_BY_ID.get(id)?.geometry;
+        if (!pose || !geometry) continue;
+        for (const local of geometry.supportPatch ?? []) {
+          supportPoints.push(worldPoint(pose.position, pose.rotation, local));
+        }
+      }
+    }
+    const headingRotation = quatFromAxisAngle(UP, this.heading);
+    const headingRight = rotate(headingRotation, { x: 1, y: 0, z: 0 });
+    const headingForward = rotate(headingRotation, { x: 0, y: 0, z: 1 });
+    const center = supportPoints.length
+      ? scale(supportPoints.reduce((sum, point) => add(sum, point), ZERO), 1 / supportPoints.length)
+      : scale(add(left, rightFoot), 0.5);
+    const rightCoordinates = supportPoints.map((point) => dot(sub(point, center), headingRight));
+    const forwardCoordinates = supportPoints.map((point) => dot(sub(point, center), headingForward));
+    const inset = 0.006;
+    const clampInside = (coordinate: number, values: readonly number[]): number => values.length
+      ? clamp(coordinate, Math.min(...values) + inset, Math.max(...values) - inset)
+      : coordinate;
+    const pressure = add(center, add(
+      scale(headingRight, clampInside(dot(sub(rawPressure, center), headingRight), rightCoordinates)),
+      scale(headingForward, clampInside(dot(sub(rawPressure, center), headingForward), forwardCoordinates)),
+    ));
+    const footSpan = sub(rightFoot, left);
+    let rightShare = supportSides.length === 1 ? (supportSides[0] === "right" ? 1 : 0)
+      : clamp(dot(sub(pressure, left), footSpan) / Math.max(dot(footSpan, footSpan), 1e-8), 0, 1);
+    if (!Number.isFinite(rightShare)) rightShare = 0.5;
+    const base = add(scale(left, 1 - rightShare), scale(rightFoot, rightShare));
+    const pressureShift = sub(pressure, base);
+    const supports = [
+      { segment: "leftFoot" as const, point: add(left, pressureShift), share: 1 - rightShare },
+      { segment: "rightFoot" as const, point: add(rightFoot, pressureShift), share: rightShare },
+    ];
+    for (const support of supports) {
+      let ancestor: SegmentId | null = support.segment;
+      let belowJoint = false;
+      while (ancestor) {
+        if (ancestor === jointDefinition.id) { belowJoint = true; break; }
+        ancestor = SEGMENT_BY_ID.get(ancestor)?.parent ?? null;
+      }
+      if (!belowJoint) continue;
+      torque = add(torque, cross(
+        sub(support.point, jointWorld),
+        {
+          x: -groundForce.x * support.share,
+          y: -groundForce.y * support.share,
+          z: -groundForce.z * support.share,
+        },
+      ));
+    }
+    return torque;
+  }
+
+  private createDynamicAssembly(
+    seed: ReadonlyMap<SegmentId, MutablePose>,
+    initiallySleeping = false,
+  ): void {
+    if (this.ragdollBodies.size || this.ragdollJoints.length) {
+      throw new Error("DYNAMIC_ASSEMBLY_ALREADY_EXISTS");
+    }
+    for (const definition of SEGMENTS) {
+      const pose = seed.get(definition.id);
+      if (!pose) throw new Error(`MISSING_SEED_POSE:${definition.id}`);
+      const body = this.world.createRigidBody(
+        RAPIER.RigidBodyDesc.dynamic()
+          .setTranslation(pose.position.x, pose.position.y, pose.position.z)
+          .setRotation(pose.rotation)
+          .setLinvel(pose.linearVelocity.x, pose.linearVelocity.y, pose.linearVelocity.z)
+          .setAngvel(pose.angularVelocity)
+          .setLinearDamping(0.38)
+          .setAngularDamping(0.52)
+          .setCanSleep(true)
+          .setSleeping(initiallySleeping)
+          .setCcdEnabled(true)
+          .setAdditionalSolverIterations(5),
+      );
+      const collider = this.world.createCollider(
+        convexCollider(definition)
+          .setMass(definition.massKg)
+          .setFriction(
+            definition.role === "hindfoot" || definition.role === "forefoot" ? 4 : 1.2,
+          )
+          .setRestitution(0.02)
+          .setContactSkin(0.0015)
+          .setCollisionGroups(CHARACTER_GROUP)
+          .setActiveHooks(RAPIER.ActiveHooks.FILTER_CONTACT_PAIRS),
+        body,
+      );
+      body.recomputeMassPropertiesFromColliders();
+      this.ragdollBodies.set(definition.id, body);
+      this.ragdollColliders.set(definition.id, collider);
+      this.colliderSegments.set(collider.handle, definition.id);
+    }
+    const adapter = createRapierJointLimitAdapter(this.world);
+    for (const definition of SEGMENTS) {
+      const profile = definition.jointProfile;
+      if (!definition.parent || !profile) continue;
+      const parent = this.ragdollBodies.get(definition.parent)!;
+      const child = this.ragdollBodies.get(definition.id)!;
+      const xHinge = profile.kind === "hinge" && profile.axes[0]?.coordinate === "x";
+      const data = xHinge
+        ? RAPIER.JointData.revoluteWithAxes(
+          profile.parentFrame.anchor,
+          profile.childFrame.anchor,
+          localAxis(profile),
+          rotate(profile.childFrame.rotation, { x: 1, y: 0, z: 0 }),
+        )
+        : RAPIER.JointData.spherical(profile.parentFrame.anchor, profile.childFrame.anchor);
+      const joint = this.world.createImpulseJoint(data, parent, child, false);
+      joint.setLocalFrame1(profile.parentFrame.anchor, profile.parentFrame.rotation);
+      joint.setLocalFrame2(profile.childFrame.anchor, profile.childFrame.rotation);
+      joint.setContactsEnabled(false);
+      if (xHinge) {
+        adapter.constrain(joint, profile);
+      } else {
+        for (const coordinate of COORDINATES) {
+          const specified = profile.axes.find((axis) => axis.coordinate === coordinate);
+          adapter.constrainAxis(joint, specified ?? {
+            coordinate,
+            minRadians: 0,
+            maxRadians: 0,
+            passiveStiffnessNmPerRad: 0,
+            dampingNmsPerRad: 0,
+            maxMotorTorqueNm: 0,
+          });
+        }
+      }
+      this.ragdollJoints.push(joint);
+      this.jointsByChild.set(definition.id, joint);
+    }
+    if (initiallySleeping) {
+      // Build floor/contact manifolds at initialization without producing a
+      // visible settling step, then park the solved dynamic island.  The tiny
+      // timestep keeps the initialized pose within replay precision.
+      const timestep = this.world.timestep;
+      this.world.timestep = 1e-6;
+      this.world.step(this.eventQueue, this.physicsHooks);
+      this.world.timestep = timestep;
+      for (const body of this.ragdollBodies.values()) body.sleep();
+    }
+  }
+
+  private clearDynamicAssembly(): void {
+    for (const joint of this.ragdollJoints.splice(0)) {
+      if (joint.isValid()) this.world.removeImpulseJoint(joint, false);
+    }
+    this.jointsByChild.clear();
+    for (const body of this.ragdollBodies.values()) {
+      if (body.isValid()) this.world.removeRigidBody(body);
+    }
+    this.ragdollBodies.clear();
+    this.ragdollColliders.clear();
+    this.colliderSegments.clear();
+  }
+
+  private initialPose(): Map<SegmentId, MutablePose> {
+    const base = restPoseMap();
+    const heading = quatFromAxisAngle(UP, this.initialHeading);
+    const transformed = new Map<SegmentId, MutablePose>();
+    for (const [id, pose] of base) {
+      transformed.set(id, {
+        id,
+        position: add(this.initialPosition, rotate(heading, sub(pose.position, INITIAL_ROOT))),
+        rotation: quatMultiply(heading, pose.rotation),
+        linearVelocity: ZERO,
+        angularVelocity: ZERO,
+      });
+    }
+    const feet = {
+      leftFoot: transformed.get("leftFoot")!.position,
+      rightFoot: transformed.get("rightFoot")!.position,
+    };
+    return composeUprightPose({
+      rootTranslation: this.initialPosition,
+      heading: this.initialHeading,
+      kneeFlexion: HUMAN_PROPORTIONS.stance.neutralKneeFlexion,
+      reactionOffset: ZERO,
+      simulationTime: 0,
+      activeGrab: null,
+      supportFeet: feet,
+      step: null,
+    }).poses;
+  }
+
+  private readPhysicsPoses(): void {
+    for (const definition of SEGMENTS) {
+      const body = this.ragdollBodies.get(definition.id);
+      if (!body) continue;
       const translation = body.translation();
       const rotation = body.rotation();
       this.poses.set(definition.id, {
@@ -619,50 +961,46 @@ class EmbodiedCharacter implements CharacterController {
     }
   }
 
-  private createRootMotor(position: Vec3 = this.initialPosition): void {
-    this.rootBody = this.world.createRigidBody(
-      RAPIER.RigidBodyDesc.kinematicPositionBased().setTranslation(
-        position.x,
-        position.y,
-        position.z,
-      ),
+  private observeContacts(dt: number): void {
+    this.recovery.observe(
+      this.world,
+      this.floorCollider,
+      this.floorCollider.isEnabled() ? this.ragdollColliders : new Map(),
+      this.ragdollBodies,
+      dt,
     );
-    this.rootCollider = this.world.createCollider(
-      RAPIER.ColliderDesc.capsule(ROOT_COLLIDER_HALF_HEIGHT, ROOT_COLLIDER_RADIUS)
-        .setTranslation(0, ROOT_COLLIDER_OFFSET_Y, 0)
-        .setFriction(0.9)
-        .setCollisionGroups(CHARACTER_GROUP),
-      this.rootBody,
-    );
-    this.motor = this.world.createCharacterController(ROOT_COLLIDER_FLOOR_CLEARANCE);
-    this.motor.setUp(UP);
-    this.motor.setSlideEnabled(true);
-    this.motor.enableSnapToGround(0.08);
-    this.motor.setMaxSlopeClimbAngle(Math.PI * 0.25);
-    this.motor.setMinSlopeSlideAngle(Math.PI * 0.32);
-    this.motor.setApplyImpulsesToDynamicBodies(false);
+    this.lastContacts = this.recovery.diagnostics().contacts.map((contact) => ({
+      ...contact,
+      point: { ...contact.point },
+      points: contact.points?.map((point) => ({ ...point })),
+    }));
+    this.grounded = this.lastContacts.some((contact) => contact.loadBearing);
   }
 
-  private removeRootMotor(): void {
-    if (this.motor) this.world.removeCharacterController(this.motor);
-    if (this.rootBody) this.world.removeRigidBody(this.rootBody);
-    this.motor = null;
-    this.rootBody = null;
-    this.rootCollider = null;
-  }
-
-  private clearRagdoll(): void {
-    for (const joint of this.ragdollJoints.splice(0)) {
-      if (joint.isValid()) this.world.removeImpulseJoint(joint, false);
+  private measureJoints(): JointStateDiagnostics[] {
+    const result: JointStateDiagnostics[] = [];
+    for (const definition of SEGMENTS) {
+      if (!definition.parent || !definition.jointProfile) continue;
+      const parent = this.ragdollBodies.get(definition.parent);
+      const child = this.ragdollBodies.get(definition.id);
+      if (!parent || !child) continue;
+      const coordinates = jointCoordinates(parent.rotation(), child.rotation(), definition.jointProfile);
+      const error = jointLimitError(coordinates, definition.jointProfile);
+      const motor = this.lastMotorResults.get(definition.id);
+      result.push({
+        segment: definition.id,
+        coordinates,
+        targetCoordinates: motor?.targetCoordinates ?? coordinates,
+        limitError: error,
+        limitErrorMagnitudeRad: jointLimitErrorMagnitude(coordinates, definition.jointProfile),
+        motorTorqueNm: length(motor?.torqueWorld ?? ZERO),
+        motorSaturationRatio: motor?.saturationRatio ?? 0,
+      });
     }
-    for (const body of this.ragdollBodies.values()) {
-      if (body.isValid()) this.world.removeRigidBody(body);
-    }
-    this.ragdollBodies.clear();
-    this.ragdollColliders.clear();
+    return result;
   }
 
-  private clonePoses(source: Map<SegmentId, MutablePose>): Map<SegmentId, MutablePose> {
+  private clonePoses(source: ReadonlyMap<SegmentId, MutablePose>): Map<SegmentId, MutablePose> {
     return new Map([...source].map(([id, pose]) => [id, {
       id,
       position: { ...pose.position },
@@ -673,19 +1011,36 @@ class EmbodiedCharacter implements CharacterController {
   }
 
   private supportSnapshot(): SupportState {
-    if (this.isDynamic()) {
-      const contacts = this.recovery.diagnostics().contacts;
-      const planted = contacts.filter(c => c.loadBearing && (c.segment === "leftFoot" || c.segment === "rightFoot")).map(c => c.segment as "leftFoot" | "rightFoot");
-      return { planted, swingFoot: null, stepProgress: 0, grounded: this.grounded };
+    if (this.disposed) {
+      return { planted: [], swingFoot: null, stepProgress: 0, grounded: false };
     }
-    return { planted: this.balanceData?.supportingFeet ? [...this.balanceData.supportingFeet] : ["leftFoot", "rightFoot"],
-      swingFoot: this.step?.foot ?? null, stepProgress: this.step ? clamp(this.step.elapsed / this.step.duration, 0, 1) : 0, grounded: this.grounded };
-  }
-
-  private grabAnchorWorld(): Vec3 | null {
-    if (!this.activeGrab) return null;
-    const pose = this.poses.get(this.activeGrab.segment);
-    return pose ? worldPoint(pose.position, pose.rotation, this.activeGrab.localAnchor) : null;
+    const sleepingEquilibrium = this.floorCollider.isEnabled()
+      && [...this.ragdollBodies.values()].every((body) => body.isSleeping());
+    const planted = (["left", "right"] as const).flatMap((side) => {
+      const foot = `${side}Foot` as const;
+      if ((this.step?.foot === foot && this.step.elapsed >= 0) || this.activeGrab?.region === foot) return [];
+      const pose = this.poses.get(foot);
+      const definition = SEGMENT_BY_ID.get(foot);
+      const soleNearFloor = Boolean(pose && definition
+        && lowestWorldPoint(definition.geometry, pose.position, pose.rotation).y <= 0.025
+        && dot(rotate(pose.rotation, UP), UP) > 0.5);
+      const hasContact = this.lastContacts.some((contact) => {
+        const definition = SEGMENT_BY_ID.get(contact.segment);
+        return contact.loadBearing && definition?.side === side
+          && (definition.role === "ankle" || definition.role === "hindfoot" || definition.role === "forefoot");
+      }) && soleNearFloor;
+      const restingOnFloor = sleepingEquilibrium && pose && definition
+        ? lowestWorldPoint(definition.geometry, pose.position, pose.rotation).y <= 0.01
+        : false;
+      return hasContact || restingOnFloor ? [foot] : [];
+    });
+    return {
+      planted,
+      swingFoot: this.isRecoveryState() || !this.step || this.step.elapsed < 0 ? null : this.step.foot,
+      stepProgress: !this.isRecoveryState() && this.step
+        ? clamp(this.step.elapsed / this.step.duration, 0, 1) : 0,
+      grounded: this.grounded || planted.length > 0,
+    };
   }
 
   private maximumJointSeparation(): number {
@@ -695,10 +1050,10 @@ class EmbodiedCharacter implements CharacterController {
       const parent = this.poses.get(definition.parent);
       const child = this.poses.get(definition.id);
       if (!parent || !child) continue;
-      maximum = Math.max(
-        maximum,
-        length(sub(poseAnchor(parent, definition.jointAnchorParent), poseAnchor(child, definition.jointAnchorChild))),
-      );
+      maximum = Math.max(maximum, length(sub(
+        poseAnchor(parent, definition.jointAnchorParent),
+        poseAnchor(child, definition.jointAnchorChild),
+      )));
     }
     return maximum;
   }
@@ -706,12 +1061,8 @@ class EmbodiedCharacter implements CharacterController {
   private maximumFloorPenetration(): number {
     if (this.disposed || !this.floorCollider.isEnabled()) return 0;
     let penetration = 0;
-    for (const definition of SEGMENTS) {
-      const pose = this.poses.get(definition.id);
-      if (!pose) continue;
-      // Query the finite, enabled floor against the actual oriented segment shape.
-      // Negative distance is penetration; positive clearance is never an error.
-      const contact = this.floorCollider.contactShape(segmentCollider(definition).shape, pose.position, pose.rotation, 0);
+    for (const collider of this.ragdollColliders.values()) {
+      const contact = this.floorCollider.contactCollider(collider, 0);
       if (contact) penetration = Math.max(penetration, -contact.distance);
     }
     return penetration;
@@ -724,7 +1075,7 @@ class EmbodiedCharacter implements CharacterController {
   }
 }
 
-export interface CharacterInitialOptions { heading?: number; position?: Vec3; }
+export interface CharacterInitialOptions { heading?: number; position?: Vec3 }
 
 export async function createEmbodiedCharacter(
   initialRenderer: RendererMode = "canvas2d",

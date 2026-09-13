@@ -81,6 +81,8 @@ function fakeCharacter() {
     updates: [],
     paused: false,
     activeGrab: false,
+    selectedRegion: null,
+    selectedSegment: null,
     resets: 0,
     disposals: 0,
     sequence: 0,
@@ -89,8 +91,16 @@ function fakeCharacter() {
     afterUpdate: null,
     fixedUpdate(dt, command) {
       this.updates.push({ dt, command });
-      if (command?.kind === "begin") this.activeGrab = true;
-      if (command?.kind === "end" || command?.kind === "cancel") this.activeGrab = false;
+      if (command?.kind === "begin") {
+        this.activeGrab = true;
+        this.selectedRegion = command.region;
+        this.selectedSegment = command.segment;
+      }
+      if (command?.kind === "end" || command?.kind === "cancel") {
+        this.activeGrab = false;
+        this.selectedRegion = null;
+        this.selectedSegment = null;
+      }
       this.sequence += 1;
       this.afterUpdate?.();
     },
@@ -109,13 +119,31 @@ function fakeCharacter() {
     diagnostics() {
       return {
         simulationReady: true, interactiveViewReady: true, activeGrab: this.activeGrab, paused: this.paused,
+        physicsOwnership: "rapier-dynamic", selectedRegion: this.selectedRegion, selectedSegment: this.selectedSegment,
         state: this.state, bodyInputAvailable: !this.paused && !["falling", "fallen", "recovering"].includes(this.state),
       };
     },
-    clearBodyInput() { this.inputClears += 1; this.activeGrab = false; },
-    pause() { this.paused = true; this.activeGrab = false; },
+    clearBodyInput() {
+      this.inputClears += 1;
+      this.activeGrab = false;
+      this.selectedRegion = null;
+      this.selectedSegment = null;
+    },
+    pause() {
+      this.paused = true;
+      this.activeGrab = false;
+      this.selectedRegion = null;
+      this.selectedSegment = null;
+    },
     resume() { this.paused = false; },
-    reset() { this.resets += 1; this.activeGrab = false; this.paused = false; this.state = "upright"; },
+    reset() {
+      this.resets += 1;
+      this.activeGrab = false;
+      this.selectedRegion = null;
+      this.selectedSegment = null;
+      this.paused = false;
+      this.state = "upright";
+    },
     dispose() { this.disposals += 1; },
   };
 }
@@ -247,6 +275,8 @@ test("renderer replacement retains the simulation and shared camera while cancel
   f.tick(0);
   f.tick(20);
   assert.equal(f.character.activeGrab, true);
+  assert.equal(runtime.current.diagnostics.physicsOwnership, "rapier-dynamic");
+  assert.equal(runtime.current.diagnostics.selectedSegment, "torso");
   pointer(f.host, "pointermove");
   runtime.cameraControls.orbit(25, -10);
   const cameraState = runtime.camera.getState();
@@ -258,6 +288,7 @@ test("renderer replacement retains the simulation and shared camera while cancel
   assert.equal(f.character.inputClears, 1);
   assert.equal(f.character.activeGrab, false);
   assert.equal(runtime.current.diagnostics.activeGrab, false);
+  assert.equal(runtime.current.diagnostics.selectedSegment, null);
   assert.equal(runtime.interaction.consumeCommand(), null);
   assert.equal(f.views[0].disposals, 1);
   assert.equal(runtime.view, f.views[1]);
@@ -329,6 +360,7 @@ test("fall entry cancels queued moves and capture before the next substep of the
   assert.deepEqual(f.character.updates.map(({ command }) => command?.kind ?? null), ["begin", null, null]);
   assert.equal(runtime.interaction.consumeCommand(), null);
   assert.equal(runtime.interaction.getStatus().bodyInputAvailable, false);
+  assert.equal(runtime.current.diagnostics.physicsOwnership, "rapier-dynamic");
   assert.match(runtime.status, /Protecting the fall/);
 });
 
@@ -357,6 +389,7 @@ test("held and lockout-pressed pointers cannot resume a body grab after recovery
     if (state === "recovering") assert.match(runtime.status, /Getting up/);
   }
   assert.equal(runtime.current.diagnostics.bodyInputAvailable, true);
+  assert.equal(runtime.current.diagnostics.physicsOwnership, "rapier-dynamic");
   pointer(f.host, "pointerup", 7);
   pointer(f.host, "pointerup", 8);
   pointer(f.host, "pointerdown", 7);

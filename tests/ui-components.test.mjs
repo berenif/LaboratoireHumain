@@ -143,11 +143,15 @@ test("body lockout status uses availability while preserving all simulation cont
     const html = renderToStaticMarkup(React.createElement(ControlPanel, {
       diagnostics: {
         simulationReady: true, interactiveViewReady: true, state, bodyInputAvailable: false,
-        authority: "ragdoll", activeGrab: false, selectedRegion: null, stepCount: 1, appliedGrabForceN: 0, errors: [],
+        physicsOwnership: "rapier-dynamic", activeGrab: false, selectedRegion: null,
+        selectedSegment: null, stepCount: 1, appliedGrabForceN: 0, errors: [],
       },
       renderer: "canvas2d", paused: false, onRendererChange() {}, onPauseToggle() {}, onReset() {},
     }));
     assert.match(html, /data-testid="body-input-availability">Unavailable/);
+    assert.match(html, /data-testid="physics-ownership">Rapier Dynamic/);
+    assert.match(html, /data-testid="selected-segment">None/);
+    assert.doesNotMatch(html, /data-testid="motion-authority"/);
     assert.doesNotMatch(html, /Drag body/);
     assert.match(html, state === "recovering" ? /Getting up/ : /Protecting the fall/);
     assert.match(html, /data-testid="renderer-picker"/);

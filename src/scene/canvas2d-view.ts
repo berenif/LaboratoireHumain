@@ -1,6 +1,12 @@
 import { V3 } from "../core/math";
-import { PASSIVE_COLOR, REGION_COLORS, SEGMENTS, SEGMENT_BY_ID } from "../core/humanoid";
-import type { PoseSnapshot, PoseView, SegmentDefinition, SegmentPose, Vec3 } from "../core/types";
+import {
+  PASSIVE_COLOR,
+  PRIMARY_SEGMENT_BY_REGION,
+  REGION_COLORS,
+  SEGMENTS,
+  SEGMENT_BY_ID,
+} from "../core/humanoid";
+import type { PoseSnapshot, PoseView, SegmentDefinition, SegmentId, SegmentPose, Vec3 } from "../core/types";
 import { SharedCameraProjection } from "./camera";
 import type { SceneViewOptions } from "./options";
 import { interpolatePoseSnapshot, rotateVector, transformLocalPoint } from "./pose";
@@ -219,7 +225,7 @@ export class Canvas2DView implements PoseView {
       const childPoint = definition.jointAnchorChild
         ? transformLocalPoint(child, definition.jointAnchorChild)
         : child.position;
-      context.lineWidth = parentDefinition?.shape.kind === "box" ? 5 : 4;
+      context.lineWidth = parentDefinition?.role === "pelvis" || parentDefinition?.role === "ribcage" ? 5 : 4;
       this.strokeWorldLine(context, parentPoint, childPoint, "rgba(175, 198, 225, 0.58)");
     }
   }
@@ -243,60 +249,39 @@ export class Canvas2DView implements PoseView {
   ): void {
     const { definition, pose } = drawable;
     const color = definition.region ? REGION_COLORS[definition.region] : PASSIVE_COLOR;
-    const selected = definition.region !== null && definition.region === snapshot.diagnostics.selectedRegion;
+    const exactSelection = snapshot.diagnostics.selectedSegment;
+    const selected = exactSelection
+      ? definition.id === exactSelection
+      : definition.region !== null && definition.region === snapshot.diagnostics.selectedRegion;
     const fill = selected ? color : `${color}df`;
     const outline = selected ? "#ffffff" : "rgba(6, 12, 24, 0.82)";
-    const center = this.projection.project(pose.position);
-    if (definition.shape.kind === "capsule") {
-      const offset = rotateVector(pose.rotation, { x: 0, y: definition.shape.halfHeight, z: 0 });
-      const top = this.projection.project(V3.add(pose.position, offset));
-      const bottom = this.projection.project(V3.sub(pose.position, offset));
-      const radius = this.projection.worldRadiusToPixels(pose.position, definition.shape.radius);
-      context.lineCap = "round";
+    const points = definition.geometry.vertices.map((vertex) => {
+      const world = V3.add(pose.position, rotateVector(pose.rotation, vertex));
+      return this.projection.project(world);
+    });
+    const faces = definition.geometry.triangles.flatMap(([a, b, c]) => {
+      const triangle = [points[a], points[b], points[c]] as const;
+      if (triangle.some((point) => point.depth <= 0)) return [];
+      return [{ triangle, depth: (triangle[0].depth + triangle[1].depth + triangle[2].depth) / 3 }];
+    }).sort((a, b) => b.depth - a.depth);
+    context.fillStyle = fill;
+    for (const { triangle } of faces) {
       context.beginPath();
-      context.moveTo(top.x, top.y);
-      context.lineTo(bottom.x, bottom.y);
-      context.strokeStyle = outline;
-      context.lineWidth = radius * 2 + (selected ? 7 : 3);
-      context.stroke();
-      context.strokeStyle = fill;
-      context.lineWidth = radius * 2;
-      context.stroke();
-      return;
-    }
-    if (definition.shape.kind === "sphere") {
-      const radius = this.projection.worldRadiusToPixels(pose.position, definition.shape.radius);
-      context.beginPath();
-      context.arc(center.x, center.y, radius, 0, Math.PI * 2);
-      context.fillStyle = fill;
-      context.strokeStyle = outline;
-      context.lineWidth = selected ? 4 : 2;
+      context.moveTo(triangle[0].x, triangle[0].y);
+      context.lineTo(triangle[1].x, triangle[1].y);
+      context.lineTo(triangle[2].x, triangle[2].y);
+      context.closePath();
       context.fill();
-      context.stroke();
-      return;
     }
 
-    const { halfExtents } = definition.shape;
-    const points: ProjectedPoint[] = [];
-    for (const x of [-halfExtents.x, halfExtents.x]) {
-      for (const y of [-halfExtents.y, halfExtents.y]) {
-        for (const z of [-halfExtents.z, halfExtents.z]) {
-          const world = V3.add(pose.position, rotateVector(pose.rotation, { x, y, z }));
-          const projected = this.projection.project(world);
-          if (projected.depth > 0) points.push(projected);
-        }
-      }
-    }
-    const hull = convexHull(points);
+    const hull = convexHull(points.filter((point) => point.depth > 0));
     if (hull.length < 3) return;
     context.beginPath();
     context.moveTo(hull[0].x, hull[0].y);
     for (let index = 1; index < hull.length; index += 1) context.lineTo(hull[index].x, hull[index].y);
     context.closePath();
-    context.fillStyle = fill;
     context.strokeStyle = outline;
     context.lineWidth = selected ? 4 : 2;
-    context.fill();
     context.stroke();
   }
 
@@ -329,7 +314,9 @@ export class Canvas2DView implements PoseView {
   private drawSelection(context: CanvasRenderingContext2D, snapshot: PoseSnapshot): void {
     const region = snapshot.diagnostics.selectedRegion;
     if (!region) return;
-    const pose = snapshot.segments.find((candidate) => candidate.id === region);
+    const segment: SegmentId | undefined = snapshot.diagnostics.selectedSegment
+      ?? PRIMARY_SEGMENT_BY_REGION.get(region);
+    const pose = segment ? snapshot.segments.find((candidate) => candidate.id === segment) : undefined;
     if (!pose) return;
     const point = this.projection.project(pose.position);
     if (!point.visible) return;

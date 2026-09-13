@@ -1,6 +1,13 @@
 import * as THREE from "three";
 import { V3 } from "../core/math";
-import { PASSIVE_COLOR, REGION_COLORS, SEGMENTS, SEGMENT_BY_ID } from "../core/humanoid";
+import { flattenGeometryIndices, flattenGeometryVertices } from "../core/geometry";
+import {
+  PASSIVE_COLOR,
+  PRIMARY_SEGMENT_BY_REGION,
+  REGION_COLORS,
+  SEGMENTS,
+  SEGMENT_BY_ID,
+} from "../core/humanoid";
 import type { PoseSnapshot, PoseView, RegionId, SegmentDefinition, SegmentId, SegmentPose, Vec3 } from "../core/types";
 import { SharedCameraProjection } from "./camera";
 import type { SceneViewOptions } from "./options";
@@ -21,19 +28,12 @@ function average(a: Vec3, b: Vec3): Vec3 {
 }
 
 function shapeGeometry(definition: SegmentDefinition): THREE.BufferGeometry {
-  if (definition.shape.kind === "box") {
-    const half = definition.shape.halfExtents;
-    return new THREE.BoxGeometry(half.x * 2, half.y * 2, half.z * 2, 1, 1, 1);
-  }
-  if (definition.shape.kind === "sphere") {
-    return new THREE.SphereGeometry(definition.shape.radius, 18, 12);
-  }
-  return new THREE.CapsuleGeometry(
-    definition.shape.radius,
-    definition.shape.halfHeight * 2,
-    5,
-    12,
-  );
+  const geometry = new THREE.BufferGeometry();
+  geometry.setAttribute("position", new THREE.BufferAttribute(flattenGeometryVertices(definition.geometry), 3));
+  geometry.setIndex(new THREE.BufferAttribute(flattenGeometryIndices(definition.geometry), 1));
+  geometry.computeVertexNormals();
+  geometry.computeBoundingSphere();
+  return geometry;
 }
 
 export class WebGLView implements PoseView {
@@ -294,7 +294,10 @@ export class WebGLView implements PoseView {
       mesh.visible = true;
       mesh.position.set(pose.position.x, pose.position.y, pose.position.z);
       mesh.quaternion.set(pose.rotation.x, pose.rotation.y, pose.rotation.z, pose.rotation.w).normalize();
-      const selected = SEGMENT_BY_ID.get(pose.id)?.region === snapshot.diagnostics.selectedRegion;
+      const exactSelection = snapshot.diagnostics.selectedSegment;
+      const selected = exactSelection
+        ? pose.id === exactSelection
+        : SEGMENT_BY_ID.get(pose.id)?.region === snapshot.diagnostics.selectedRegion;
       mesh.material.emissive.set(selected ? 0x4ae1ff : 0x000000);
       mesh.material.emissiveIntensity = selected ? 0.55 : 0;
       mesh.scale.setScalar(selected ? 1.035 : 1);
@@ -333,7 +336,11 @@ export class WebGLView implements PoseView {
       marker.material.opacity = swinging ? 0.9 : planted ? 0.72 : 0.28;
     }
 
-    const selectedPose = this.findSelectedPose(snapshot.diagnostics.selectedRegion, poses);
+    const selectedPose = this.findSelectedPose(
+      snapshot.diagnostics.selectedSegment ?? null,
+      snapshot.diagnostics.selectedRegion,
+      poses,
+    );
     this.selectionMarker.visible = Boolean(selectedPose);
     if (selectedPose) {
       this.selectionMarker.position.set(selectedPose.position.x, selectedPose.position.y, selectedPose.position.z);
@@ -345,10 +352,15 @@ export class WebGLView implements PoseView {
     }
   }
 
-  private findSelectedPose(region: RegionId | null, poses: ReadonlyMap<SegmentId, SegmentPose>): SegmentPose | null {
+  private findSelectedPose(
+    segment: SegmentId | null,
+    region: RegionId | null,
+    poses: ReadonlyMap<SegmentId, SegmentPose>,
+  ): SegmentPose | null {
+    if (segment) return poses.get(segment) ?? null;
     if (!region) return null;
-    const definition = SEGMENTS.find((candidate) => candidate.region === region);
-    return definition ? poses.get(definition.id) ?? null : null;
+    const primary = PRIMARY_SEGMENT_BY_REGION.get(region);
+    return primary ? poses.get(primary) ?? null : null;
   }
 
   private assertUsable(): void {

@@ -28,10 +28,10 @@ for(const fixture of RECOVERY_POSE_FIXTURES.filter(f=>f.pose==="half-kneel" && f
   const thigh=s.segments.find(p=>p.id===`${fixture.side}Thigh`)!,shin=s.segments.find(p=>p.id===`${fixture.side}Shin`)!;leadBends.push(Math.acos(Math.max(-1,Math.min(1,dot(rotate(thigh.rotation,{x:0,y:1,z:0}),rotate(shin.rotation,{x:0,y:1,z:0}))))));
   if(r.releasedSupports.length)releases.push({time:(frame+1)/60,ids:r.releasedSupports,margin:r.releaseMarginM,contacts:r.contacts.filter(c=>c.loadBearing).map(c=>({id:c.segment,force:c.forceN}))});
   if(`${r.phase}-${r.transferStage}`!==previous){entries.push({time:(frame+1)/60,phase:r.phase,stage:r.transferStage,pelvis:p.position.y,torsoUp:rotate(torso.rotation,{x:0,y:1,z:0}).y,feet:s.segments.filter(p=>p.id.endsWith("Foot")).map(p=>({id:p.id,position:p.position,up:rotate(p.rotation,{x:0,y:1,z:0}).y,force:r.contacts.find(c=>c.segment===p.id)?.forceN??0}))});previous=`${r.phase}-${r.transferStage}`;}
-  if(s.diagnostics.authority==="character-motor" && recoveredS===null)recoveredS=(frame+1)/60;
+  if(s.state==="upright" && s.diagnostics.bodyInputAvailable && recoveredS===null)recoveredS=(frame+1)/60;
   if(recoveredS!==null && (frame+1)/60>recoveredS+1)break;
  }
- const last=snapshots.at(-1)!,summary={fixture,options,recoveredS,maximumHeight,maxUp,maxRollUp,maxRootTorque,maxJointTorque,maxFootDrift,maxJointGap,maxFloorPenetration,maxComDifference,minimumLeadingShare,initialLeadBend:leadBends[0],finalLeadBend:leadBends.at(-1),stableOneSecond:recoveredS!==null&&last.diagnostics.authority==="character-motor",releases,entries};
+ const last=snapshots.at(-1)!,summary={fixture,options,recoveredS,maximumHeight,maxUp,maxRollUp,maxRootTorque,maxJointTorque,maxFootDrift,maxJointGap,maxFloorPenetration,maxComDifference,minimumLeadingShare,initialLeadBend:leadBends[0],finalLeadBend:leadBends.at(-1),stableOneSecond:recoveredS!==null&&last.state==="upright"&&last.diagnostics.bodyInputAvailable,releases,entries};
  results.push(summary);console.log(JSON.stringify(summary));await writeFile(`evidence/recovery-20260908/world-torso-${fixture.id}.json.gz`,gzipSync(JSON.stringify({summary,snapshots})));c.dispose();
 }
 await writeFile("evidence/recovery-20260908/half-kneel-world-torso-results.json",JSON.stringify(results,null,2));

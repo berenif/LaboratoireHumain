@@ -2,6 +2,7 @@ import type { Collider, RigidBody, World } from "@dimforge/rapier3d-compat";
 import { HUMAN_PROPORTIONS, SEGMENT_BY_ID, SEGMENTS, TOTAL_MASS_KG } from "../src/core/humanoid";
 import type { MotionState, Quat, RecoveryDiagnostics, RecoveryPhase, SegmentId, SupportingContact, SegmentPose, Vec3 } from "../src/core/types";
 import { add, angularVelocity, clamp, clampLength, length, lerp, dot, cross, normalize, quatFromTo, smooth01, quatFromAxisAngle, quatInverse, quatMultiply, rotate, scale, sub, worldPoint } from "../src/character/math";
+import { clampJointCoordinates, jointCoordinates, jointRotationFromCoordinates } from "../src/character/joint-coordinates";
 
 const ZERO: Vec3 = { x: 0, y: 0, z: 0 };
 const UP: Vec3 = { x: 0, y: 1, z: 0 };
@@ -522,19 +523,12 @@ export class DynamicRecovery {
     for(const d of SEGMENTS) {
       if(!d.parent) continue;
       const child=bodies.get(d.id)!,parent=bodies.get(d.parent)!;
-      let raw=targets.get(d.id)??{x:0,y:0,z:0,w:1}; if(raw.w<0) raw={x:-raw.x,y:-raw.y,z:-raw.z,w:-raw.w};
-      // YXZ decomposition matches rotation(); limit only motor intent, never a body transform.
-      let x=/Shin|Forearm/.test(d.id) ? 2*Math.atan2(raw.x,raw.w) : Math.asin(clamp(2*(raw.w*raw.x-raw.y*raw.z),-1,1));
-      let y=/Shin|Forearm/.test(d.id)?0:Math.atan2(2*(raw.x*raw.z+raw.w*raw.y),1-2*(raw.x*raw.x+raw.y*raw.y));
-      let z=/Shin|Forearm/.test(d.id)?0:Math.atan2(2*(raw.x*raw.y+raw.w*raw.z),1-2*(raw.x*raw.x+raw.z*raw.z));
-      const limit=d.jointLimitRadians!;
-      if(!/Shin|Forearm/.test(d.id)) {
-        const wrap=(angle:number)=>Math.atan2(Math.sin(angle),Math.cos(angle));
-        const alternate={x:x>=0?Math.PI-x:-Math.PI-x,y:wrap(y+Math.PI),z:wrap(z+Math.PI)};
-        const cost=(a:Vec3)=>Math.max(0,Math.abs(a.x)-limit.x)**2+Math.max(0,Math.abs(a.y)-limit.y)**2+Math.max(0,Math.abs(a.z)-limit.z)**2+.01*(a.y*a.y+a.z*a.z);
-        if(cost(alternate)<cost({x,y,z})) ({x,y,z}=alternate);
-      }
-      const target=rotation(clamp(x,d.id.endsWith("Shin")?.025:-limit.x,d.id.endsWith("Forearm")?-.025:limit.x),clamp(y,-limit.y,limit.y),clamp(z,-limit.z,limit.z));
+      const raw=targets.get(d.id)??{x:0,y:0,z:0,w:1};
+      const profile=d.jointProfile!;
+      const target=jointRotationFromCoordinates(
+        clampJointCoordinates(jointCoordinates({x:0,y:0,z:0,w:1},raw,profile),profile),
+        profile,
+      );
       const entry=this.entry.get(d.id)??target;
       const delta=angularVelocity(entry,target,1);
       const blended=quatMultiply(quatFromAxisAngle(normalize(delta),length(delta)*blend),entry);

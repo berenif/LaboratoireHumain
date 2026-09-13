@@ -48,7 +48,7 @@ async function beginPull() {
   await page.mouse.down();
   await page.waitForTimeout(150);
   const input = (await readEvidence()).input;
-  if (input?.selectedRegion !== "rightHand" || !input.worldTarget) throw new Error(`Right hand was not selected: ${JSON.stringify(input)}`);
+  if (input?.selectedRegion !== "rightHand" || input.selectedSegment !== "rightHand" || !input.worldTarget) throw new Error(`Right hand segment was not selected: ${JSON.stringify(input)}`);
   return input.worldTarget;
 }
 async function targetPoints(start, offsets) {
@@ -80,7 +80,7 @@ try {
     const { SEGMENTS } = await import("/src/core/humanoid.ts");
     const totalMass = SEGMENTS.reduce((sum, segment) => sum + segment.massKg, 0);
     const mass = Object.fromEntries(SEGMENTS.map(segment => [segment.id, segment.massKg]));
-    const trace = window.__VISUAL_FIXED_TRACE__ = { schema: 1, initial: character.getSnapshot(runtime.renderer), resets: [], updates: [], transfers: [], phaseSnapshots: [] };
+    const trace = window.__VISUAL_FIXED_TRACE__ = { schema: 2, initial: character.getSnapshot(runtime.renderer), resets: [], updates: [], motionTransitions: [], phaseSnapshots: [] };
     let resetId = 0;
     const reset = character.reset.bind(character);
     character.reset = () => {
@@ -101,16 +101,20 @@ try {
       const rms = field => Math.sqrt(after.segments.reduce((sum, segment) => sum + mass[segment.id] * squareLength(segment[field]), 0) / totalMass);
       trace.updates.push({ resetId, dt, command: command ? structuredClone(command) : null, sequence: after.sequence, state: after.state,
         phase: recovery.phase, recovery,
-        authority: after.diagnostics.authority, bodyInputAvailable: after.diagnostics.bodyInputAvailable,
+        physicsOwnership: after.diagnostics.physicsOwnership, bodyInputAvailable: after.diagnostics.bodyInputAvailable,
+        selectedSegment: after.diagnostics.selectedSegment,
         activeGrab: after.diagnostics.activeGrab, externalGrabForceN: after.diagnostics.appliedGrabForceN,
         maxJointSeparationM: after.diagnostics.maxJointSeparationM, maxFloorPenetrationM: after.diagnostics.maxFloorPenetrationM,
+        maxJointLimitErrorRad: after.diagnostics.maxJointLimitErrorRad,
+        maxMotorSaturationRatio: after.diagnostics.maxMotorSaturationRatio,
+        loadBearingContacts: after.diagnostics.contactDiagnostics.loadBearingCount,
         finite: after.diagnostics.finite, pelvisHeightM: pelvis.position.y, torsoUp: upDot(torso.rotation), pelvisUp: upDot(pelvis.rotation),
         rmsLinearMps: rms("linearVelocity"), rmsAngularRadps: rms("angularVelocity"), progressError: recovery.progressError,
         noSupportTimeS: recovery.noSupportTimeS, extension: recovery.extension,
         route: recovery.route, leadingSide: recovery.leadingSide, transferStage: recovery.transferStage,
         supportMarginM: recovery.supportMarginM,
       });
-      if (before.diagnostics.authority !== after.diagnostics.authority) trace.transfers.push({ resetId, before, after });
+      if (before.state !== after.state) trace.motionTransitions.push({ resetId, before, after });
       if (before.state !== after.state || before.diagnostics.recovery.phase !== recovery.phase) trace.phaseSnapshots.push({ resetId, snapshot: after });
     };
   });
@@ -147,7 +151,7 @@ try {
     let previousPhase = "";
     const deadline = Date.now() + (mode !== "quick" ? 90000 : 5000);
     const initialDiagnostics = (await readEvidence()).diagnostics;
-    const initialFixedSteps = initialDiagnostics.handoff?.sequence ?? initialDiagnostics.fixedSteps;
+    const initialFixedSteps = initialDiagnostics.fixedSteps;
     let latest;
     while (Date.now() < deadline) {
       latest = await readEvidence();
@@ -158,6 +162,7 @@ try {
         previousPhase = phase;
       }
       if (latest.diagnostics.renderer !== renderer) throw new Error("Source changed during visual acceptance run.");
+      if (latest.diagnostics.physicsOwnership !== "rapier-dynamic") throw new Error("Physics ownership left the continuous dynamic assembly.");
       if (!latest.diagnostics.bodyInputAvailable && latest.diagnostics.appliedGrabForceN !== 0) throw new Error("External force leaked during lockout.");
       if (latest.diagnostics.bodyInputAvailable && latest.diagnostics.state === "upright") break;
       if (latest.diagnostics.fixedSteps - initialFixedSteps >= 25 * 60) break;
@@ -192,6 +197,10 @@ try {
     updates: updates.length,
     maxJointSeparationM: Math.max(...updates.map(update => update.maxJointSeparationM)),
     maxFloorPenetrationM: Math.max(...updates.map(update => update.maxFloorPenetrationM)),
+    maxJointLimitErrorRad: Math.max(...updates.map(update => update.maxJointLimitErrorRad)),
+    maxMotorSaturationRatio: Math.max(...updates.map(update => update.maxMotorSaturationRatio)),
+    maxLoadBearingContacts: Math.max(...updates.map(update => update.loadBearingContacts)),
+    allRapierDynamic: updates.every(update => update.physicsOwnership === "rapier-dynamic"),
     allFinite: updates.every(update => update.finite),
     lockoutSteps: updates.filter(update => !update.bodyInputAvailable).length,
     lockoutExternalForceExactlyZero: updates.every(update => update.bodyInputAvailable || update.externalGrabForceN === 0),
@@ -199,16 +208,18 @@ try {
     recoveryTimesSeconds: [],
   };
   let lastFall = null;
-  for (const transfer of nativeTrace.transfers) {
-    if (transfer.after.diagnostics.authority === "ragdoll") lastFall = transfer.after;
-    else if (lastFall) {
-      perStepSummary.recoveryTimesSeconds.push(transfer.after.simulationTime - lastFall.simulationTime);
+  const recoveryMotion = state => ["falling", "fallen", "recovering"].includes(state);
+  for (const transition of nativeTrace.motionTransitions) {
+    if (recoveryMotion(transition.after.state) && !recoveryMotion(transition.before.state)) lastFall = transition.after;
+    else if (transition.after.state === "upright" && lastFall) {
+      perStepSummary.recoveryTimesSeconds.push(transition.after.simulationTime - lastFall.simulationTime);
       lastFall = null;
     }
   }
   if (perStepSummary.maxJointSeparationM > .08) errors.push(`Native joint separation ${perStepSummary.maxJointSeparationM}m exceeded .08m`);
   if (perStepSummary.maxFloorPenetrationM > .08) errors.push(`Native floor penetration ${perStepSummary.maxFloorPenetrationM}m exceeded .08m`);
   if (!perStepSummary.allFinite) errors.push("Native trace contained a nonfinite pose or velocity.");
+  if (!perStepSummary.allRapierDynamic) errors.push("Native trace left continuous Rapier dynamic ownership.");
   if (!perStepSummary.lockoutExternalForceExactlyZero || !perStepSummary.lockoutGrabInactive) errors.push("Native per-step input lockout failed.");
   if (mode === "full" && (perStepSummary.recoveryTimesSeconds.length !== 4 || perStepSummary.recoveryTimesSeconds.some(time => time > 25))) errors.push("Four native recoveries within25simseconds were not completed.");
   await writeFile(resolve(outputDirectory, "per-step-summary.json"), JSON.stringify(perStepSummary, null, 2));

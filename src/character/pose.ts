@@ -1,14 +1,16 @@
 import { HUMAN_PROPORTIONS, SEGMENT_BY_ID, SEGMENTS } from "../core/humanoid";
-import type { Quat, RegionId, SegmentId, SegmentPose, Vec3 } from "../core/types";
+import type { JointCoordinate, Quat, RegionId, SegmentDefinition, SegmentId, SegmentPose, Vec3 } from "../core/types";
 import {
   add, clamp, clampLength, cross, dot, length, lerp, normalize,
   quatFromAxisAngle, quatFromTo, quatMultiply, rotate, scale, smooth01, sub, worldPoint,
 } from "./math";
+import { jointCoordinates, jointRotationFromCoordinates } from "./joint-coordinates";
 
 const IDENTITY: Quat = { x: 0, y: 0, z: 0, w: 1 };
 const ZERO: Vec3 = { x: 0, y: 0, z: 0 };
 const UP: Vec3 = { x: 0, y: 1, z: 0 };
 const FORWARD: Vec3 = { x: 0, y: 0, z: 1 };
+const RIGHT: Vec3 = { x: 1, y: 0, z: 0 };
 
 export type MutablePose = {
   id: SegmentId;
@@ -87,6 +89,104 @@ function makePose(id: SegmentId, position: Vec3, rotation: Quat = IDENTITY): Mut
   return { id, position, rotation, linearVelocity: ZERO, angularVelocity: ZERO };
 }
 
+function segmentDefinition(id: SegmentId): SegmentDefinition {
+  const definition = SEGMENT_BY_ID.get(id);
+  if (!definition) throw new Error(`Missing humanoid segment definition: ${id}`);
+  return definition;
+}
+
+/** Place a child from the shared parent/child joint anchors without assuming its dimensions. */
+function attachedPose(id: SegmentId, parent: MutablePose, rotation: Quat): MutablePose {
+  const definition = segmentDefinition(id);
+  if (!definition.jointAnchorParent || !definition.jointAnchorChild) {
+    throw new Error(`Connected segment ${id} is missing a joint anchor`);
+  }
+  const joint = poseAnchor(parent, definition.jointAnchorParent);
+  return makePose(id, sub(joint, rotate(rotation, definition.jointAnchorChild)), rotation);
+}
+
+/** Length of a segment between the joint that owns it and the next child joint. */
+function jointSpan(id: SegmentId, childId: SegmentId): number {
+  const definition = segmentDefinition(id);
+  const childDefinition = segmentDefinition(childId);
+  if (!definition.jointAnchorChild || !childDefinition.jointAnchorParent) {
+    throw new Error(`Cannot measure joint span ${id} -> ${childId}`);
+  }
+  return length(sub(definition.jointAnchorChild, childDefinition.jointAnchorParent));
+}
+
+/** Keep generated targets comfortably within the same profile used by the physics joint. */
+function boundedJointTarget(
+  definition: SegmentDefinition,
+  coordinate: JointCoordinate,
+  requested: number,
+  fallbackLimit: number,
+  utilization = 0.78,
+): number {
+  const axis = definition.jointProfile?.axes.find((candidate) => candidate.coordinate === coordinate);
+  const minimum = axis ? axis.minRadians * utilization : -fallbackLimit;
+  const maximum = axis ? axis.maxRadians * utilization : fallbackLimit;
+  return clamp(requested, Math.min(minimum, maximum), Math.max(minimum, maximum));
+}
+
+function jointTargetRotation(
+  parentRotation: Quat,
+  definition: SegmentDefinition,
+  coordinates: Vec3,
+): Quat {
+  if (definition.jointProfile) {
+    return quatMultiply(
+      parentRotation,
+      jointRotationFromCoordinates(coordinates, definition.jointProfile),
+    );
+  }
+  const localTarget = quatMultiply(
+    quatFromAxisAngle(RIGHT, coordinates.x),
+    quatMultiply(
+      quatFromAxisAngle(UP, coordinates.y),
+      quatFromAxisAngle(FORWARD, coordinates.z),
+    ),
+  );
+  return quatMultiply(parentRotation, quatMultiply(definition.restLocalRotation, localTarget));
+}
+
+function boundedWorldJointRotation(
+  parentRotation: Quat,
+  requestedRotation: Quat,
+  definition: SegmentDefinition,
+  utilization = 0.98,
+): Quat {
+  if (!definition.jointProfile) return requestedRotation;
+  const requested = jointCoordinates(parentRotation, requestedRotation, definition.jointProfile);
+  return jointTargetRotation(parentRotation, definition, {
+    x: boundedJointTarget(definition, "x", requested.x, 0, utilization),
+    y: boundedJointTarget(definition, "y", requested.y, 0, utilization),
+    z: boundedJointTarget(definition, "z", requested.z, 0, utilization),
+  });
+}
+
+/** Resolve roll about local +Y so a one-way +X hinge reaches the distal axis. */
+function hingeParentRotation(
+  proximalAxis: Vec3,
+  distalAxis: Vec3,
+  fallbackHingeAxis: Vec3,
+): Quat {
+  const up = normalize(proximalAxis, UP);
+  const hingeAxis = normalize(cross(up, distalAxis), fallbackHingeAxis);
+  const alignUp = quatFromTo(UP, up);
+  const baseHingeAxis = rotate(alignUp, RIGHT);
+  const roll = Math.atan2(
+    dot(cross(baseHingeAxis, hingeAxis), up),
+    dot(baseHingeAxis, hingeAxis),
+  );
+  return quatMultiply(quatFromAxisAngle(up, roll), alignUp);
+}
+
+function maximumFlexion(definition: SegmentDefinition, fallback: number): number {
+  const flexion = definition.jointProfile?.axes.find(({ coordinate }) => coordinate === "x");
+  return flexion ? Math.max(Math.abs(flexion.minRadians), Math.abs(flexion.maxRadians)) : fallback;
+}
+
 export function poseAnchor(pose: MutablePose, anchor: Vec3): Vec3 {
   return worldPoint(pose.position, pose.rotation, anchor);
 }
@@ -97,11 +197,18 @@ export function solveTwoBone(
   firstLength: number,
   secondLength: number,
   preferredBend: Vec3,
+  maximumBendRadians = Math.PI,
 ): Readonly<{ middle: Vec3; end: Vec3 }> {
   const raw = sub(requestedEnd, start);
   const direction = normalize(raw, { x: 0, y: -1, z: 0 });
-  const minimum = Math.abs(firstLength - secondLength) + 0.005;
+  const bendLimit = clamp(maximumBendRadians, 0, Math.PI);
+  const limitedMinimum = Math.sqrt(Math.max(
+    0,
+    firstLength * firstLength + secondLength * secondLength
+      + 2 * firstLength * secondLength * Math.cos(bendLimit),
+  ));
   const maximum = firstLength + secondLength - 0.002;
+  const minimum = Math.min(maximum, Math.max(Math.abs(firstLength - secondLength) + 0.005, limitedMinimum));
   const distance = clamp(length(raw), minimum, maximum);
   const end = add(start, scale(direction, distance));
   const along = (firstLength * firstLength - secondLength * secondLength + distance * distance) / (2 * distance);
@@ -133,21 +240,26 @@ export function composeUprightPose(input: UprightPoseInput): UprightPoseResult {
     y: 1,
     z: horizontalReaction.z * 0.25,
   })), heading);
-  const torsoTilt = quatMultiply(quatFromTo(UP, normalize({
-    x: horizontalReaction.x * 0.38,
-    y: 1,
-    z: horizontalReaction.z * 0.38,
-  })), heading);
 
   const pelvis = makePose("pelvis", root, pelvisTilt);
   output.set("pelvis", pelvis);
-  const torsoDefinition = SEGMENT_BY_ID.get("torso")!;
-  const torsoJoint = poseAnchor(pelvis, torsoDefinition.jointAnchorParent!);
-  const torso = makePose(
-    "torso",
-    sub(torsoJoint, rotate(torsoTilt, torsoDefinition.jointAnchorChild!)),
-    torsoTilt,
-  );
+  const headingRight = rotate(heading, RIGHT);
+  const headingForward = rotate(heading, FORWARD);
+  const localReactionRight = dot(horizontalReaction, headingRight);
+  const localReactionForward = dot(horizontalReaction, headingForward);
+  const lumbarDefinition = segmentDefinition("lumbar");
+  const lumbar = attachedPose("lumbar", pelvis, jointTargetRotation(pelvis.rotation, lumbarDefinition, {
+    x: boundedJointTarget(lumbarDefinition, "x", localReactionForward * 0.065, 0.16),
+    y: 0,
+    z: boundedJointTarget(lumbarDefinition, "z", -localReactionRight * 0.065, 0.14),
+  }));
+  output.set("lumbar", lumbar);
+  const torsoDefinition = segmentDefinition("torso");
+  const torso = attachedPose("torso", lumbar, jointTargetRotation(lumbar.rotation, torsoDefinition, {
+    x: boundedJointTarget(torsoDefinition, "x", localReactionForward * 0.065, 0.16),
+    y: 0,
+    z: boundedJointTarget(torsoDefinition, "z", -localReactionRight * 0.065, 0.14),
+  }));
   output.set("torso", torso);
 
   const headDrag = input.activeGrab?.region === "head" ? clampLength(drag, 0.42) : ZERO;
@@ -156,13 +268,22 @@ export function composeUprightPose(input: UprightPoseInput): UprightPoseResult {
     y: 1 + headDrag.y * 0.2,
     z: horizontalReaction.z * 0.45 + headDrag.z * 1.05,
   })), heading);
-  const neckDefinition = SEGMENT_BY_ID.get("neck")!;
-  const neckJoint = poseAnchor(torso, neckDefinition.jointAnchorParent!);
-  const neck = makePose("neck", sub(neckJoint, rotate(torsoTilt, neckDefinition.jointAnchorChild!)), torsoTilt);
+  const neckDefinition = segmentDefinition("neck");
+  const headDefinition = segmentDefinition("head");
+  const desiredHeadCoordinates = headDefinition.jointProfile
+    ? jointCoordinates(torso.rotation, headTilt, headDefinition.jointProfile)
+    : ZERO;
+  const neck = attachedPose("neck", torso, jointTargetRotation(torso.rotation, neckDefinition, {
+    x: boundedJointTarget(neckDefinition, "x", desiredHeadCoordinates.x * 0.42, 0.25),
+    y: boundedJointTarget(neckDefinition, "y", desiredHeadCoordinates.y * 0.42, 0.30),
+    z: boundedJointTarget(neckDefinition, "z", desiredHeadCoordinates.z * 0.42, 0.22),
+  }));
   output.set("neck", neck);
-  const headDefinition = SEGMENT_BY_ID.get("head")!;
-  const headJoint = poseAnchor(neck, headDefinition.jointAnchorParent!);
-  const head = makePose("head", sub(headJoint, rotate(headTilt, headDefinition.jointAnchorChild!)), headTilt);
+  const head = attachedPose("head", neck, jointTargetRotation(neck.rotation, headDefinition, {
+    x: boundedJointTarget(headDefinition, "x", desiredHeadCoordinates.x * 0.58, 0.35),
+    y: boundedJointTarget(headDefinition, "y", desiredHeadCoordinates.y * 0.58, 0.45),
+    z: boundedJointTarget(headDefinition, "z", desiredHeadCoordinates.z * 0.58, 0.25),
+  }));
   output.set("head", head);
 
   composeArm("left", torso, output, drag, input);
@@ -180,49 +301,177 @@ function composeArm(
   input: UprightPoseInput,
 ): void {
   const sign = side === "left" ? -1 : 1;
+  const girdleId = `${side}ShoulderGirdle` as SegmentId;
   const upperId = `${side}UpperArm` as SegmentId;
   const forearmId = `${side}Forearm` as SegmentId;
-  const handId = `${side}Hand` as RegionId;
-  const upperDefinition = SEGMENT_BY_ID.get(upperId)!;
-  const forearmDefinition = SEGMENT_BY_ID.get(forearmId)!;
-  const handDefinition = SEGMENT_BY_ID.get(handId)!;
-  const shoulder = poseAnchor(torso, upperDefinition.jointAnchorParent!);
-  const upperLength = length(sub(upperDefinition.jointAnchorChild!, forearmDefinition.jointAnchorParent!));
-  const forearmLength = length(sub(forearmDefinition.jointAnchorChild!, handDefinition.jointAnchorParent!));
-  const handCenterOffset = length(handDefinition.jointAnchorChild!);
+  const twistId = `${side}ForearmTwist` as SegmentId;
+  const handId = `${side}Hand` as "leftHand" | "rightHand";
+  const girdleDefinition = segmentDefinition(girdleId);
+  const upperDefinition = segmentDefinition(upperId);
+  const forearmDefinition = segmentDefinition(forearmId);
+  const twistDefinition = segmentDefinition(twistId);
+  const handDefinition = segmentDefinition(handId);
+  const upperLength = jointSpan(upperId, forearmId);
+  const forearmLength = jointSpan(forearmId, twistId) + jointSpan(twistId, handId);
   const idle = Math.sin(input.simulationTime * 1.7 + (side === "left" ? 0 : Math.PI)) * 0.018;
-  let desiredHand: Vec3 = add(shoulder, rotate(torso.rotation, {
-    x: sign * HUMAN_PROPORTIONS.arm.relaxedLateralOffsetM,
-    y: -(upperLength + forearmLength + handCenterOffset - HUMAN_PROPORTIONS.arm.relaxedShorteningM),
-    z: idle,
-  }));
-  if (input.activeGrab?.region === handId) {
-    desiredHand = add(input.activeGrab.startSegmentPosition, clampLength(drag, 0.72));
-  } else {
+  const desiredHandAt = (shoulder: Vec3): Vec3 => {
+    if (input.activeGrab?.region === handId) {
+      return add(input.activeGrab.startSegmentPosition, clampLength(drag, 0.72));
+    }
+    const relaxed = add(shoulder, rotate(torso.rotation, {
+      x: sign * HUMAN_PROPORTIONS.arm.relaxedLateralOffsetM,
+      y: -(upperLength + forearmLength + length(handDefinition.jointAnchorChild!) - HUMAN_PROPORTIONS.arm.relaxedShorteningM),
+      z: idle,
+    }));
     const counterbalance = scale(horizontal(input.reactionOffset), -0.52);
-    desiredHand = add(desiredHand, { ...counterbalance, y: length(counterbalance) * 0.8 });
-  }
+    return add(relaxed, { ...counterbalance, y: length(counterbalance) * 0.8 });
+  };
 
+  // Let the shoulder girdle visibly share demanding reaches while keeping its
+  // target inside the same asymmetric profile enforced by the constraint.
+  const baseGirdleRotation = jointTargetRotation(torso.rotation, girdleDefinition, ZERO);
+  let girdle = attachedPose(girdleId, torso, baseGirdleRotation);
+  let shoulder = poseAnchor(girdle, upperDefinition.jointAnchorParent!);
+  let desiredHand = desiredHandAt(shoulder);
+  const initialReach = sub(desiredHand, shoulder);
+  const initialDirection = normalize(initialReach, rotate(torso.rotation, { x: sign, y: -1, z: 0 }));
+  const torsoUp = rotate(torso.rotation, UP);
+  const torsoForward = rotate(torso.rotation, FORWARD);
+  const reachActivity = input.activeGrab?.region === handId
+    ? clamp(length(drag) / 0.28, 0, 1)
+    : clamp(length(horizontal(input.reactionOffset)) * 1.1, 0, 0.8);
+  const elevationMagnitude = reachActivity * clamp(
+    0.045 + Math.max(0, dot(initialDirection, torsoUp) + 0.45) * 0.11,
+    0,
+    0.18,
+  );
+  const elevation = boundedJointTarget(girdleDefinition, "z", sign * elevationMagnitude, 0.18);
+  const protraction = boundedJointTarget(
+    girdleDefinition,
+    "y",
+    -sign * reachActivity * dot(initialDirection, torsoForward) * 0.14,
+    0.14,
+  );
+  girdle = attachedPose(girdleId, torso, jointTargetRotation(torso.rotation, girdleDefinition, {
+    x: 0,
+    y: protraction,
+    z: elevation,
+  }));
+  output.set(girdleId, girdle);
+  shoulder = poseAnchor(girdle, upperDefinition.jointAnchorParent!);
+  desiredHand = desiredHandAt(shoulder);
+
+  const reach = sub(desiredHand, shoulder);
+  const reachDirection = normalize(reach, rotate(torso.rotation, { x: sign, y: -1, z: 0 }));
+  const forwardReach = clamp(dot(reachDirection, torsoForward), -1, 1);
+  const upwardReach = clamp(dot(reachDirection, torsoUp), -1, 1);
+  const torsoRight = rotate(torso.rotation, { x: 1, y: 0, z: 0 });
+  const acrossBodyReach = Math.max(0, -sign * dot(reachDirection, torsoRight));
+  const twistRadians = boundedJointTarget(
+    twistDefinition,
+    "y",
+    sign * reachActivity * (0.18 + Math.max(0, forwardReach) * 0.48 + acrossBodyReach * 0.14),
+    1.1,
+  );
+  const wristFlexion = boundedJointTarget(
+    handDefinition,
+    "x",
+    reachActivity * clamp(-forwardReach * 0.16 + upwardReach * 0.10, -0.24, 0.24),
+    0.32,
+  );
+  const wristDeviation = boundedJointTarget(
+    handDefinition,
+    "z",
+    sign * reachActivity * clamp(acrossBodyReach * 0.12 - 0.035, -0.10, 0.12),
+    0.18,
+  );
+  const yaw = quatFromAxisAngle(UP, input.heading ?? 0);
+  const preferredBend = rotate(yaw, normalize({ x: sign * 0.22, y: 0, z: 1 }));
   const approximateAxis = normalize(sub(shoulder, desiredHand), UP);
-  const requestedWrist = add(desiredHand, scale(approximateAxis, handCenterOffset));
-  const solved = solveTwoBone(
+  const approximateForearmRotation = quatMultiply(quatFromTo(UP, approximateAxis), yaw);
+  const approximateTwistRotation = jointTargetRotation(approximateForearmRotation, twistDefinition, {
+    x: 0,
+    y: twistRadians,
+    z: 0,
+  });
+  const approximateHandRotation = jointTargetRotation(approximateTwistRotation, handDefinition, {
+    x: wristFlexion,
+    y: 0,
+    z: wristDeviation,
+  });
+  let requestedWrist = worldPoint(
+    desiredHand,
+    approximateHandRotation,
+    handDefinition.jointAnchorChild!,
+  );
+  const elbowMaximum = maximumFlexion(forearmDefinition, Math.PI * 0.8) * 0.98;
+  let solved = solveTwoBone(
     shoulder,
     requestedWrist,
     upperLength,
     forearmLength,
-    rotate(quatFromAxisAngle(UP, input.heading ?? 0), normalize({ x: sign * 0.22, y: 0, z: 1 })),
+    preferredBend,
+    elbowMaximum,
   );
-  const upperAxis = normalize(sub(shoulder, solved.middle), UP);
-  const forearmAxis = normalize(sub(solved.middle, solved.end), UP);
-  const yaw = quatFromAxisAngle(UP, input.heading ?? 0);
-  const upperRotation = quatMultiply(quatFromTo(UP, upperAxis), yaw);
-  const forearmRotation = quatMultiply(quatFromTo(UP, forearmAxis), yaw);
-  const handRotation = forearmRotation;
+  let upperAxis = normalize(sub(shoulder, solved.middle), UP);
+  let forearmAxis = normalize(sub(solved.middle, solved.end), UP);
+  let upperRotation = boundedWorldJointRotation(
+    girdle.rotation,
+    hingeParentRotation(upperAxis, forearmAxis, rotate(yaw, RIGHT)),
+    upperDefinition,
+  );
+  let elbowFlexion = boundedJointTarget(
+    forearmDefinition,
+    "x",
+    Math.acos(clamp(dot(upperAxis, forearmAxis), -1, 1)),
+    elbowMaximum,
+    0.98,
+  );
+  let forearmRotation = jointTargetRotation(upperRotation, forearmDefinition, { x: elbowFlexion, y: 0, z: 0 });
+  let twistRotation = jointTargetRotation(forearmRotation, twistDefinition, { x: 0, y: twistRadians, z: 0 });
+  let handRotation = jointTargetRotation(twistRotation, handDefinition, {
+    x: wristFlexion,
+    y: 0,
+    z: wristDeviation,
+  });
+  // A second pass preserves the requested hand centre after wrist articulation.
+  requestedWrist = worldPoint(desiredHand, handRotation, handDefinition.jointAnchorChild!);
+  solved = solveTwoBone(
+    shoulder,
+    requestedWrist,
+    upperLength,
+    forearmLength,
+    preferredBend,
+    elbowMaximum,
+  );
+  upperAxis = normalize(sub(shoulder, solved.middle), UP);
+  forearmAxis = normalize(sub(solved.middle, solved.end), UP);
+  upperRotation = boundedWorldJointRotation(
+    girdle.rotation,
+    hingeParentRotation(upperAxis, forearmAxis, rotate(yaw, RIGHT)),
+    upperDefinition,
+  );
+  elbowFlexion = boundedJointTarget(
+    forearmDefinition,
+    "x",
+    Math.acos(clamp(dot(upperAxis, forearmAxis), -1, 1)),
+    elbowMaximum,
+    0.98,
+  );
+  forearmRotation = jointTargetRotation(upperRotation, forearmDefinition, { x: elbowFlexion, y: 0, z: 0 });
+  twistRotation = jointTargetRotation(forearmRotation, twistDefinition, { x: 0, y: twistRadians, z: 0 });
+  handRotation = jointTargetRotation(twistRotation, handDefinition, {
+    x: wristFlexion,
+    y: 0,
+    z: wristDeviation,
+  });
   const upper = makePose(upperId, sub(shoulder, rotate(upperRotation, upperDefinition.jointAnchorChild!)), upperRotation);
-  const forearm = makePose(forearmId, sub(solved.middle, rotate(forearmRotation, forearmDefinition.jointAnchorChild!)), forearmRotation);
-  const hand = makePose(handId, sub(solved.end, rotate(handRotation, handDefinition.jointAnchorChild!)), handRotation);
   output.set(upperId, upper);
+  const forearm = attachedPose(forearmId, upper, forearmRotation);
   output.set(forearmId, forearm);
+  const twist = attachedPose(twistId, forearm, twistRotation);
+  output.set(twistId, twist);
+  const hand = attachedPose(handId, twist, handRotation);
   output.set(handId, hand);
 }
 
@@ -235,13 +484,16 @@ function composeLeg(
 ): void {
   const thighId = `${side}Thigh` as SegmentId;
   const shinId = `${side}Shin` as SegmentId;
+  const ankleId = `${side}Ankle` as SegmentId;
   const footId = `${side}Foot` as "leftFoot" | "rightFoot";
-  const thighDefinition = SEGMENT_BY_ID.get(thighId)!;
-  const shinDefinition = SEGMENT_BY_ID.get(shinId)!;
-  const footDefinition = SEGMENT_BY_ID.get(footId)!;
+  const forefootId = `${side}Forefoot` as SegmentId;
+  const thighDefinition = segmentDefinition(thighId);
+  const shinDefinition = segmentDefinition(shinId);
+  const ankleDefinition = segmentDefinition(ankleId);
+  const footDefinition = segmentDefinition(footId);
   const hip = poseAnchor(pelvis, thighDefinition.jointAnchorParent!);
-  const thighLength = length(sub(thighDefinition.jointAnchorChild!, shinDefinition.jointAnchorParent!));
-  const shinLength = length(sub(shinDefinition.jointAnchorChild!, footDefinition.jointAnchorParent!));
+  const thighLength = jointSpan(thighId, shinId);
+  const shinLength = jointSpan(shinId, ankleId);
   let footPosition = input.supportFeet[footId];
 
   if (input.step?.foot === footId) {
@@ -256,22 +508,117 @@ function composeLeg(
     footPosition = { ...base, y: base.y + Math.sin(Math.PI * progress) * clearance };
   } else if (input.activeGrab?.region === footId) {
     footPosition = add(input.activeGrab.startSegmentPosition, clampLength(drag, 0.58));
-    const soleHeight = footDefinition.shape.kind === "box"
-      ? footDefinition.shape.halfExtents.y
-      : HUMAN_PROPORTIONS.foot.halfExtentsM.y;
+    const soleHeight = -footDefinition.geometry.localBounds.min.y;
     footPosition = { ...footPosition, y: Math.max(soleHeight + 0.005, footPosition.y) };
   }
 
-  const footRotation = quatFromAxisAngle(UP, input.heading ?? 0);
-  const ankle = worldPoint(footPosition, footRotation, footDefinition.jointAnchorChild!);
-  const solved = solveTwoBone(hip, ankle, thighLength, shinLength, rotate(footRotation, FORWARD));
+  const headingRotation = quatFromAxisAngle(UP, input.heading ?? 0);
+  const headingForward = rotate(headingRotation, FORWARD);
+  const headingRight = rotate(headingRotation, { x: 1, y: 0, z: 0 });
+  let ankleRotation = headingRotation;
+  let footRotation = headingRotation;
+  const requestedLegEnd = (): Vec3 => {
+    // Work back from the requested hindfoot centre through both new joints to
+    // the distal shin joint used by the two-bone leg solver.
+    const ankleFootJoint = worldPoint(footPosition, footRotation, footDefinition.jointAnchorChild!);
+    const targetAnklePosition = sub(ankleFootJoint, rotate(ankleRotation, footDefinition.jointAnchorParent!));
+    return worldPoint(targetAnklePosition, ankleRotation, ankleDefinition.jointAnchorChild!);
+  };
+  const kneeMaximum = maximumFlexion(shinDefinition, Math.PI * 0.78) * 0.98;
+  const solveLeg = () => solveTwoBone(
+    hip,
+    requestedLegEnd(),
+    thighLength,
+    shinLength,
+    headingForward,
+    kneeMaximum,
+  );
+
+  // Iterate the small ankle/foot offsets twice: ankle X removes sagittal shin
+  // lean, then foot Z levels the residual side tilt. Each target is profile-bounded.
+  let solved = solveLeg();
+  for (let iteration = 0; iteration < 2; iteration += 1) {
+    const thighAxis = normalize(sub(hip, solved.middle), UP);
+    const shinAxis = normalize(sub(solved.middle, solved.end), UP);
+    const thighRotation = boundedWorldJointRotation(
+      pelvis.rotation,
+      hingeParentRotation(thighAxis, shinAxis, headingRight),
+      thighDefinition,
+    );
+    const kneeFlexion = boundedJointTarget(
+      shinDefinition,
+      "x",
+      Math.acos(clamp(dot(thighAxis, shinAxis), -1, 1)),
+      kneeMaximum,
+      0.98,
+    );
+    const shinRotation = jointTargetRotation(thighRotation, shinDefinition, { x: kneeFlexion, y: 0, z: 0 });
+    const ankleFlexion = boundedJointTarget(
+      ankleDefinition,
+      "x",
+      -Math.atan2(dot(shinAxis, headingForward), dot(shinAxis, UP)),
+      0.34,
+      0.9,
+    );
+    ankleRotation = jointTargetRotation(shinRotation, ankleDefinition, { x: ankleFlexion, y: 0, z: 0 });
+    const ankleUp = rotate(ankleRotation, UP);
+    const footTilt = boundedJointTarget(
+      footDefinition,
+      "z",
+      Math.atan2(dot(ankleUp, headingRight), dot(ankleUp, UP)),
+      0.24,
+      0.9,
+    );
+    footRotation = jointTargetRotation(ankleRotation, footDefinition, { x: 0, y: 0, z: footTilt });
+    solved = solveLeg();
+  }
+
   const thighAxis = normalize(sub(hip, solved.middle), UP);
   const shinAxis = normalize(sub(solved.middle, solved.end), UP);
-  const thighRotation = quatMultiply(quatFromTo(UP, thighAxis), footRotation);
-  const shinRotation = quatMultiply(quatFromTo(UP, shinAxis), footRotation);
-  output.set(thighId, makePose(thighId, sub(hip, rotate(thighRotation, thighDefinition.jointAnchorChild!)), thighRotation));
-  output.set(shinId, makePose(shinId, sub(solved.middle, rotate(shinRotation, shinDefinition.jointAnchorChild!)), shinRotation));
-  // Keep the foot attached to the solved ankle when its target exceeds leg reach.
-  const solvedFootPosition = sub(solved.end, rotate(footRotation, footDefinition.jointAnchorChild!));
-  output.set(footId, makePose(footId, solvedFootPosition, footRotation));
+  const thighRotation = boundedWorldJointRotation(
+    pelvis.rotation,
+    hingeParentRotation(thighAxis, shinAxis, headingRight),
+    thighDefinition,
+  );
+  const kneeFlexion = boundedJointTarget(
+    shinDefinition,
+    "x",
+    Math.acos(clamp(dot(thighAxis, shinAxis), -1, 1)),
+    kneeMaximum,
+    0.98,
+  );
+  const shinRotation = jointTargetRotation(thighRotation, shinDefinition, { x: kneeFlexion, y: 0, z: 0 });
+  const ankleFlexion = boundedJointTarget(
+    ankleDefinition,
+    "x",
+    -Math.atan2(dot(shinAxis, headingForward), dot(shinAxis, UP)),
+    0.34,
+    0.9,
+  );
+  ankleRotation = jointTargetRotation(shinRotation, ankleDefinition, { x: ankleFlexion, y: 0, z: 0 });
+  const ankleUp = rotate(ankleRotation, UP);
+  const footTilt = boundedJointTarget(
+    footDefinition,
+    "z",
+    Math.atan2(dot(ankleUp, headingRight), dot(ankleUp, UP)),
+    0.24,
+    0.9,
+  );
+  footRotation = jointTargetRotation(ankleRotation, footDefinition, { x: 0, y: 0, z: footTilt });
+  const thigh = makePose(thighId, sub(hip, rotate(thighRotation, thighDefinition.jointAnchorChild!)), thighRotation);
+  output.set(thighId, thigh);
+  const shin = attachedPose(shinId, thigh, shinRotation);
+  output.set(shinId, shin);
+  // Anchor every distal part to the solved endpoint so unreachable targets can
+  // move the whole chain but can never stretch it.
+  const ankle = attachedPose(ankleId, shin, ankleRotation);
+  output.set(ankleId, ankle);
+  const foot = attachedPose(footId, ankle, footRotation);
+  output.set(footId, foot);
+  const forefootDefinition = segmentDefinition(forefootId);
+  output.set(forefootId, attachedPose(
+    forefootId,
+    foot,
+    jointTargetRotation(foot.rotation, forefootDefinition, ZERO),
+  ));
 }

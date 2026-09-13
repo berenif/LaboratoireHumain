@@ -14,6 +14,7 @@
     "test": "npm run build && node --test tests/*.test.mjs",
     "test:pages": "npm run build:pages && npm run verify:pages",
     "test:physics": "node --import tsx scripts/run-physics-harness.ts",
+    "test:recovery": "node --test tests/character-domain.test.mjs tests/recovery-*.test.mjs",
     "typecheck": "tsc --noEmit --pretty false",
     "lint": "node scripts/run-tool.mjs eslint . --ignore-pattern dist --ignore-pattern .next",
     "verify:pages": "node scripts/verify-pages.mjs",
