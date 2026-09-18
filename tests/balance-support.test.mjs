@@ -39,7 +39,7 @@ function loadedContact(input, segment = "leftFoot", loadBearing = true) {
   const points = patch.map((point) => worldPoint(pose.position, pose.rotation, point));
   return {
     segment, point: points[0] ?? { ...pose.position }, points,
-    normalY: 1, loadN: loadBearing ? 100 : 0, loadBearing,
+    normalY: 1, forceN: loadBearing ? 100 : 0, persistenceS: 0.1, loadBearing,
   };
 }
 

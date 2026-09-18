@@ -47,6 +47,9 @@ export const BALANCE_LIMITS = Object.freeze({
   maxStepReachM: 0.36,
   maxStepTravelM: 0.43,
   stepDurationS: 0.68,
+  unloadWeightFraction: 0.05,
+  retainedWeightFraction: 0.65,
+  minimumContactForceN: 3,
   minStepDurationS: 0.48,
   // Give double support time to settle before starting another correction.
   stepCooldownS: 0.18,
@@ -71,7 +74,10 @@ export interface BalanceDiagnostics {
   centerOfMassVelocity: Vec3;
   capturePoint: Vec3;
   supportCenter: Vec3;
+  /** Feet available to the stance controller (excludes manipulation intent). */
   supportingFeet: Foot[];
+  /** Actual environment-loaded feet, independent of planned swing or grab. */
+  measuredSupportingFeet: Foot[];
   supportMarginM: number;
   instabilitySeconds: number;
   recoveryCapacityM: number;
@@ -87,8 +93,10 @@ export interface BalanceInput {
   activeGrab: BalanceGrab | null;
   floorY?: number;
   heading?: number;
-  /** Measured Rapier contacts; pose-derived support is only the startup fallback. */
+  /** Runtime always supplies Rapier contacts, including an empty set. Omission is for pose-only planning fixtures. */
   contacts?: readonly SupportingContact[];
+  /** Actual bounded grab impulse / dt, supplied by the runtime. */
+  externalForce?: Vec3;
 }
 
 export interface BalanceOutput {
@@ -112,9 +120,10 @@ export function massState(poses: ReadonlyMap<SegmentId, SegmentPose>): { positio
   for (const definition of SEGMENTS) {
     const pose = poses.get(definition.id);
     if (!pose) continue;
-    mass += definition.massKg;
-    position = add(position, scale(pose.position, definition.massKg));
-    velocity = add(velocity, scale(pose.linearVelocity, definition.massKg));
+    const bodyMass = pose.massKg ?? definition.massKg;
+    mass += bodyMass;
+    position = add(position, scale(pose.centerOfMass ?? pose.position, bodyMass));
+    velocity = add(velocity, scale(pose.linearVelocity, bodyMass));
   }
   return { position: scale(position, 1 / Math.max(mass, 1)), velocity: scale(velocity, 1 / Math.max(mass, 1)) };
 }
@@ -194,6 +203,7 @@ export class BalanceController {
   private nextFoot: Foot = "leftFoot";
   private liftedFoot: Foot | null = null;
   private touchdownAge = 0;
+  private stepHasUnloaded = false;
   private disturbanceSeen = false;
   private nominalHeight: number = HUMAN_PROPORTIONS.pelvis.centerHeightM;
   private neutralComOffset = ZERO;
@@ -230,6 +240,7 @@ export class BalanceController {
     this.nextFoot = "leftFoot";
     this.liftedFoot = null;
     this.touchdownAge = 0;
+    this.stepHasUnloaded = false;
     this.disturbanceSeen = false;
   }
 
@@ -249,7 +260,30 @@ export class BalanceController {
     if (this.step) {
       // from/to are immutable WORLD hindfoot centres. Body yaw never rebases a
       // committed landing or changes the meaning of an already-travelled arc.
-      this.step.elapsed += dt;
+      const side = this.step.foot === "leftFoot" ? "left" : "right";
+      const footContacts = (input.contacts ?? []).filter(contact => {
+        const definition = SEGMENT_BY_ID.get(contact.segment);
+        return definition?.side === side && (definition.role === "hindfoot" || definition.role === "forefoot")
+          && contact.normalY >= 0.65;
+      });
+      const movingLoad = footContacts.reduce((sum, contact) => sum + contact.forceN, 0);
+      const retainedLoad = (input.contacts ?? []).filter(contact => {
+        const definition = SEGMENT_BY_ID.get(contact.segment);
+        return definition?.side !== side && (definition?.role === "hindfoot" || definition?.role === "forefoot")
+          && contact.loadBearing && contact.persistenceS >= BALANCE_LIMITS.stancePersistenceS;
+      }).reduce((sum, contact) => sum + contact.forceN, 0);
+      const measured = input.contacts !== undefined;
+      this.stepHasUnloaded ||= measured && movingLoad < BALANCE_LIMITS.minimumContactForceN;
+      if (this.step.elapsed < 0) {
+        const unweighted = !measured || (movingLoad <= TOTAL_MASS_KG * 9.81 * BALANCE_LIMITS.unloadWeightFraction
+          && retainedLoad >= TOTAL_MASS_KG * 9.81 * BALANCE_LIMITS.retainedWeightFraction);
+        // Time alone cannot turn a weight-bearing sole into an airborne support.
+        this.step.elapsed = Math.min(this.step.elapsed + dt, unweighted ? 0 : -dt);
+        this.step.phase = this.step.elapsed < 0 ? "unloading" : "swing";
+      } else {
+        this.step.elapsed += dt;
+        this.step.phase = this.step.elapsed < this.step.duration ? "swing" : "touchdown";
+      }
       if (this.step.elapsed >= this.step.duration) {
         const side = this.step.foot === "leftFoot" ? "left" : "right";
         const loadedTouchdown = input.contacts?.some((contact) => {
@@ -262,9 +296,11 @@ export class BalanceController {
         // Elapsed time finishes the swing interpolation; measured loaded contact
         // finishes the step. Keep commanding the reachable landing pose until
         // the physical foot has arrived instead of declaring an airborne leg planted.
-        this.touchdownAge = loadedTouchdown && targetError < 0.09
+        this.touchdownAge = this.stepHasUnloaded && loadedTouchdown && targetError < 0.09
           ? this.touchdownAge + dt : 0;
+        if (this.touchdownAge > 0) this.step.phase = "loading";
         if (this.touchdownAge >= 0.10) {
+          this.stepCount += 1; // Count a physically completed touchdown, not a planning attempt.
           this.feet[this.step.foot] = { x: solved.x, y: footCenterHeight(this.step.foot, floorY), z: solved.z };
           // The measured COM is already balanced over the old stance foot at
           // touchdown. Preserve that equilibrium inside the new, wider support
@@ -309,7 +345,7 @@ export class BalanceController {
       const clearance = lowestWorldPoint(geometry, pose.position, pose.rotation).y - floorY;
       const activelySwinging = this.step?.foot === foot && this.step.elapsed >= 0;
       const eligible = !activelySwinging && foot !== grabbedFoot && (measured.length > 0
-        || (clearance >= -0.025 && clearance <= BALANCE_LIMITS.floorClearanceM
+        || (input.contacts === undefined && clearance >= -0.025 && clearance <= BALANCE_LIMITS.floorClearanceM
           && up.y > 0.8
           && length(horizontal(sub(pose.position, this.feet[foot]))) < BALANCE_LIMITS.stanceTargetErrorM));
       this.stanceAge[foot] = eligible ? this.stanceAge[foot] + dt : 0;
@@ -339,8 +375,8 @@ export class BalanceController {
       : supportingFeet.length === 1 ? input.poses.get(supportingFeet[0])!.position
       : midpoint(this.feet.leftFoot, this.feet.rightFoot);
     const supportMargin = polygonMargin(capturePoint, supportHull(corners));
-    let force = ZERO;
-    if (grab) {
+    let force = input.externalForce ?? ZERO;
+    if (grab && input.externalForce === undefined) {
       const grabbedPose = input.poses.get(grab.segment ?? grab.region)!;
       const anchor = worldPoint(grabbedPose.position, grabbedPose.rotation, grab.localAnchor ?? ZERO);
       const targetVelocity = grab.targetVelocity ?? ZERO;
@@ -373,7 +409,7 @@ export class BalanceController {
       this.supportTarget = { ...desiredAnkleCenter };
     }
     const desiredCom = add(this.supportTarget, this.neutralComOffset);
-    const balanceAcceleration = clampLength(add(
+    const balanceAcceleration = supportingFeet.length === 0 ? ZERO : clampLength(add(
       scale(sub(desiredCom, horizontal(mass.position)), 34),
       scale(horizontal(this.comVelocity), -8.5),
     ), BALANCE_LIMITS.maxBalanceAccelerationMps2);
@@ -477,6 +513,11 @@ export class BalanceController {
       appliedGrabForceN: length(force),
       diagnostics: {
         centerOfMass: mass.position, centerOfMassVelocity: { ...this.comVelocity }, capturePoint,
+        measuredSupportingFeet: FEET.filter(foot => (input.contacts ?? []).some(contact => {
+          const definition = SEGMENT_BY_ID.get(contact.segment);
+          return contact.loadBearing && definition?.side === (foot === "leftFoot" ? "left" : "right")
+            && (definition.role === "hindfoot" || definition.role === "forefoot");
+        })),
         supportCenter: { ...supportCenter }, supportingFeet: supportingFeet.filter(foot =>
           !(this.step?.foot === foot && this.step.elapsed >= 0)
         ), supportMarginM: supportMargin,
@@ -522,9 +563,9 @@ export class BalanceController {
     );
     // Shift the measured COM over the retained stance anchor before unloading
     // the swing sole. Positions and velocities remain wholly Rapier-owned.
-    this.step = { foot, from: { ...from }, to, requested: { ...requested, y: to.y }, heading: headingRadians, elapsed: -0.50, duration };
+    this.step = { phase: "unloading", foot, from: { ...from }, to, requested: { ...requested, y: to.y }, heading: headingRadians, elapsed: -0.50, duration };
     this.touchdownAge = 0;
+    this.stepHasUnloaded = false;
     this.stanceAge[foot] = 0;
-    this.stepCount += 1;
   }
 }

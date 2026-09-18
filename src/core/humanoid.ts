@@ -1,9 +1,10 @@
-import { createEllipsoidGeometry, createTaperedPrismGeometry } from "./geometry";
+import { clipConvexGeometry, createEllipsoidGeometry, createTaperedPrismGeometry } from "./geometry";
 import {
   REGION_IDS,
   type JointAxisProfile,
   type JointCoordinate,
   type JointProfile,
+  type Quat,
   type RegionId,
   type SegmentDefinition,
   type SegmentId,
@@ -11,6 +12,17 @@ import {
 } from "./types";
 
 const identity = Object.freeze({ x: 0, y: 0, z: 0, w: 1 });
+/** Body +X right, +Y up, +Z forward. Positive anatomical flexion at the
+ * shoulder, elbow and hip rotates a hanging limb toward +Z. A shared 180-degree
+ * Y basis in BOTH joint frames reverses X and Z without changing the rest pose.
+ * Knees keep +X: knee flexion moves the distal leg backward, unlike the elbow.
+ */
+export const BODY_FRAME = Object.freeze({
+  right: Object.freeze({ x: 1, y: 0, z: 0 }),
+  up: Object.freeze({ x: 0, y: 1, z: 0 }),
+  forward: Object.freeze({ x: 0, y: 0, z: 1 }),
+});
+const forwardFlexionFrame: Quat = Object.freeze({ x: 0, y: 1, z: 0, w: 0 });
 const radians = (degrees: number): number => degrees * Math.PI / 180;
 
 /** Adult body dimensions in metres, shared by anatomy, pose targets, and tests. */
@@ -112,13 +124,14 @@ function joint(
   parentAnchor: Vec3,
   childAnchor: Vec3,
   axes: readonly JointAxisProfile[],
+  frameRotation: Quat = identity,
 ): JointProfile {
   const frozenParentAnchor = Object.freeze({ ...parentAnchor });
   const frozenChildAnchor = Object.freeze({ ...childAnchor });
   return Object.freeze({
     kind,
-    parentFrame: Object.freeze({ anchor: frozenParentAnchor, rotation: identity }),
-    childFrame: Object.freeze({ anchor: frozenChildAnchor, rotation: identity }),
+    parentFrame: Object.freeze({ anchor: frozenParentAnchor, rotation: frameRotation }),
+    childFrame: Object.freeze({ anchor: frozenChildAnchor, rotation: frameRotation }),
     axes: Object.freeze([...axes]),
     limitSoftZoneFraction: 0.035,
   });
@@ -284,12 +297,17 @@ const rawSegments: SegmentDefinition[] = [
           "multi-axis",
           { x: sign * P.torso.shoulderInnerAnchorXM, y: P.torso.shoulderAnchorYM, z: 0 },
           { x: -sign * P.shoulderGirdle.halfLengthM, y: 0, z: 0 },
-          [axis("x", -10, 30, 35, 3, 32), axis("y", -15, 20, 30, 2.5, 28), axis("z", -8, 20, 35, 3, 30)],
+          [axis("x", -10, 30, 35, 3, 32),
+            axis("y", side === "left" ? -15 : -20, side === "left" ? 20 : 15, 30, 2.5, 28),
+            axis("z", side === "left" ? -20 : -8, side === "left" ? 8 : 20, 35, 3, 30)],
         ),
       }),
       segment({
         id: upperId, parent: girdleId, region: null, side, role: "upper-arm", massKg: 1.8,
-        geometry: upperArmGeometry,
+        // Flatten the small medial/proximal axillary wedge that previously
+        // overlapped the ribcage by 9 mm. Same closed surface for all consumers;
+        // outer radius, length, joint anchors and segment mass stay unchanged.
+        geometry: clipConvexGeometry(upperArmGeometry, { x: -sign, y: 0.3, z: 0 }, P.arm.upperRadiusM * 0.88),
         localOffset: { x: sign * P.shoulderGirdle.halfLengthM, y: -upperArmHalfLength, z: 0 },
         restLocalRotation: identity,
         jointProfile: joint(
@@ -301,8 +319,8 @@ const rawSegments: SegmentDefinition[] = [
             axis("y", shoulderYaw[0], shoulderYaw[1], 40, 4, 45),
             axis("z", shoulderLateral[0], shoulderLateral[1], 55, 5, 65),
           ],
+          forwardFlexionFrame,
         ),
-        collisionExclusions: ["torso"],
       }),
       segment({
         id: forearmId, parent: upperId, region: null, side, role: "forearm", massKg: 0.9,
@@ -314,6 +332,7 @@ const rawSegments: SegmentDefinition[] = [
           { x: 0, y: -upperArmHalfLength, z: 0 },
           { x: 0, y: proximalForearmHalfLength, z: 0 },
           [axis("x", 0, 145, 80, 5, 55)],
+          forwardFlexionFrame,
         ),
       }),
       segment({
@@ -364,6 +383,7 @@ const rawSegments: SegmentDefinition[] = [
           { x: sign * P.pelvis.hipAnchorXM, y: P.pelvis.hipAnchorYM, z: 0 },
           { x: 0, y: thighHalfLength, z: 0 },
           [axis("x", -20, 110, 160, 12, 150), axis("y", hipYaw[0], hipYaw[1], 100, 9, 100), axis("z", hipLateral[0], hipLateral[1], 140, 10, 125)],
+          forwardFlexionFrame,
         ),
       }),
       segment({
@@ -392,6 +412,7 @@ const rawSegments: SegmentDefinition[] = [
           { x: 0, y: -shinHalfLength, z: 0 },
           { x: 0, y: 0, z: 0 },
           [axis("x", -45, 20, 120, 7, 110)],
+          forwardFlexionFrame,
         ),
       }),
       segment({
@@ -421,6 +442,7 @@ const rawSegments: SegmentDefinition[] = [
           { x: 0, y: -0.015, z: P.foot.forefootJointZM - P.foot.hindfootCenterZM },
           { x: 0, y: -0.015, z: P.foot.forefootJointZM - P.foot.forefootCenterZM },
           [axis("x", -20, 45, 45, 3, 35)],
+          forwardFlexionFrame,
         ),
       }),
     ];
@@ -428,7 +450,8 @@ const rawSegments: SegmentDefinition[] = [
 ];
 
 // Every direct joint pair is excluded, plus the non-adjacent pairs whose
-// simplified joint housings intentionally overlap around shoulders and ankles.
+// simplified joint housings intentionally overlap around ankles. Upper-arm vs
+// ribcage remains enabled: only the arm's direct shoulder-girdle joint is excluded.
 const exclusionSets = new Map<SegmentId, Set<SegmentId>>(
   rawSegments.map(({ id, collisionExclusions }) => [id, new Set(collisionExclusions)]),
 );

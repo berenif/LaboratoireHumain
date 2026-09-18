@@ -16,6 +16,8 @@ const RIGHT: Vec3 = { x: 1, y: 0, z: 0 };
 
 export type MutablePose = {
   id: SegmentId;
+  massKg?: number;
+  centerOfMass?: Vec3;
   position: Vec3;
   rotation: Quat;
   linearVelocity: Vec3;
@@ -23,6 +25,7 @@ export type MutablePose = {
 };
 
 export type StepMotion = {
+  phase?: "unloading" | "swing" | "touchdown" | "loading";
   foot: "leftFoot" | "rightFoot";
   /** Immutable world-frame planning metadata; optional for external pose fixtures. */
   requested?: Vec3;
@@ -62,6 +65,8 @@ export interface UprightPoseResult {
 export function immutablePose(pose: MutablePose): SegmentPose {
   return {
     id: pose.id,
+    massKg: pose.massKg,
+    centerOfMass: pose.centerOfMass ? { ...pose.centerOfMass } : undefined,
     position: { ...pose.position },
     rotation: { ...pose.rotation },
     linearVelocity: { ...pose.linearVelocity },
@@ -170,16 +175,17 @@ function boundedWorldJointRotation(
   });
 }
 
-/** Resolve roll about local +Y so a one-way +X hinge reaches the distal axis. */
+/** Resolve roll about local +Y using the hinge's anatomical frame, not world X. */
 function hingeParentRotation(
   proximalAxis: Vec3,
   distalAxis: Vec3,
   fallbackHingeAxis: Vec3,
+  hingeAxisLocal: Vec3 = RIGHT,
 ): Quat {
   const up = normalize(proximalAxis, UP);
   const hingeAxis = normalize(cross(up, distalAxis), fallbackHingeAxis);
   const alignUp = quatFromTo(UP, up);
-  const baseHingeAxis = rotate(alignUp, RIGHT);
+  const baseHingeAxis = rotate(alignUp, hingeAxisLocal);
   const roll = Math.atan2(
     dot(cross(baseHingeAxis, hingeAxis), up),
     dot(baseHingeAxis, hingeAxis),
@@ -391,7 +397,8 @@ function composeArm(
     0.18,
   );
   const yaw = quatFromAxisAngle(UP, input.heading ?? 0);
-  const preferredBend = rotate(yaw, normalize({ x: sign * 0.22, y: 0, z: 1 }));
+  const preferredBend = rotate(yaw, normalize({ x: sign * 0.22, y: 0, z: -1 }));
+  const elbowAxis = rotate(forearmDefinition.jointProfile!.parentFrame.rotation, RIGHT);
   const approximateAxis = normalize(sub(shoulder, desiredHand), UP);
   const approximateForearmRotation = quatMultiply(quatFromTo(UP, approximateAxis), yaw);
   const approximateTwistRotation = jointTargetRotation(approximateForearmRotation, twistDefinition, {
@@ -422,7 +429,7 @@ function composeArm(
   let forearmAxis = normalize(sub(solved.middle, solved.end), UP);
   let upperRotation = boundedWorldJointRotation(
     girdle.rotation,
-    hingeParentRotation(upperAxis, forearmAxis, rotate(yaw, RIGHT)),
+    hingeParentRotation(upperAxis, forearmAxis, rotate(yaw, elbowAxis), elbowAxis),
     upperDefinition,
   );
   let elbowFlexion = boundedJointTarget(
@@ -453,7 +460,7 @@ function composeArm(
   forearmAxis = normalize(sub(solved.middle, solved.end), UP);
   upperRotation = boundedWorldJointRotation(
     girdle.rotation,
-    hingeParentRotation(upperAxis, forearmAxis, rotate(yaw, RIGHT)),
+    hingeParentRotation(upperAxis, forearmAxis, rotate(yaw, elbowAxis), elbowAxis),
     upperDefinition,
   );
   elbowFlexion = boundedJointTarget(
@@ -555,14 +562,9 @@ function composeLeg(
       0.98,
     );
     const shinRotation = jointTargetRotation(thighRotation, shinDefinition, { x: kneeFlexion, y: 0, z: 0 });
-    const ankleFlexion = boundedJointTarget(
-      ankleDefinition,
-      "x",
-      -Math.atan2(dot(shinAxis, headingForward), dot(shinAxis, UP)),
-      0.34,
-      0.9,
+    ankleRotation = boundedWorldJointRotation(
+      shinRotation, headingRotation, ankleDefinition, 0.9,
     );
-    ankleRotation = jointTargetRotation(shinRotation, ankleDefinition, { x: ankleFlexion, y: 0, z: 0 });
     const ankleUp = rotate(ankleRotation, UP);
     const footTilt = boundedJointTarget(
       footDefinition,
@@ -590,14 +592,9 @@ function composeLeg(
     0.98,
   );
   const shinRotation = jointTargetRotation(thighRotation, shinDefinition, { x: kneeFlexion, y: 0, z: 0 });
-  const ankleFlexion = boundedJointTarget(
-    ankleDefinition,
-    "x",
-    -Math.atan2(dot(shinAxis, headingForward), dot(shinAxis, UP)),
-    0.34,
-    0.9,
+  ankleRotation = boundedWorldJointRotation(
+    shinRotation, headingRotation, ankleDefinition, 0.9,
   );
-  ankleRotation = jointTargetRotation(shinRotation, ankleDefinition, { x: ankleFlexion, y: 0, z: 0 });
   const ankleUp = rotate(ankleRotation, UP);
   const footTilt = boundedJointTarget(
     footDefinition,

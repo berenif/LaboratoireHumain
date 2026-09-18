@@ -138,7 +138,7 @@ export class DynamicRecovery {
   }
 
   private poses(bodies: Map<SegmentId, RigidBody>): Map<SegmentId, SegmentPose> {
-    return new Map([...bodies].map(([id, b]) => [id, { id, position: {...b.translation()}, rotation: {...b.rotation()},
+    return new Map([...bodies].map(([id, b]) => [id, { id, massKg: b.mass(), centerOfMass: {...b.worldCom()}, position: {...b.translation()}, rotation: {...b.rotation()},
       linearVelocity: {...b.linvel()}, angularVelocity: {...b.angvel()} }]));
   }
 

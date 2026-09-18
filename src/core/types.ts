@@ -114,6 +114,9 @@ export interface SegmentDefinition {
 
 export interface SegmentPose {
   id: SegmentId;
+  /** Present on every simulated pose; absent only on geometric target fixtures. */
+  massKg?: number;
+  centerOfMass?: Vec3;
   position: Vec3;
   rotation: Quat;
   linearVelocity: Vec3;
@@ -234,6 +237,8 @@ export interface JointStateDiagnostics {
   targetCoordinates: Vec3;
   limitError: Vec3;
   limitErrorMagnitudeRad: number;
+  /** Native-request is a bounded request, not a delivered solver impulse. */
+  motorTorqueSource?: "applied-impulse" | "native-request";
   motorTorqueWorld: Vec3;
   motorTorqueNm: number;
   motorSaturationRatio: number;

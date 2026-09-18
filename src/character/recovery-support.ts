@@ -93,8 +93,8 @@ export const RECOVERY_PROJECTION_SECONDS = 0.15;
 export function recoveryMassState(poses: Iterable<SegmentPose>): RecoveryMassState {
   let position = ZERO, velocity = ZERO, massKg = 0;
   for (const pose of poses) {
-    const mass = SEGMENT_BY_ID.get(pose.id)?.massKg ?? 0;
-    position = add(position, scale(pose.position, mass));
+    const mass = pose.massKg ?? SEGMENT_BY_ID.get(pose.id)?.massKg ?? 0;
+    position = add(position, scale(pose.centerOfMass ?? pose.position, mass));
     velocity = add(velocity, scale(pose.linearVelocity, mass));
     massKg += mass;
   }
@@ -414,11 +414,12 @@ export function reachableArmBraceTarget(
   const minimumReach = Math.sqrt(firstLength ** 2 + secondLength ** 2 + 2 * firstLength * secondLength * Math.cos(elbowLimit));
   const armFrame = (elbow: Vec3, wrist: Vec3): { upper: Quat; forearm: Quat } => {
     const axisA = normalize(sub(shoulder, elbow)), axisB = normalize(sub(elbow, wrist));
-    const hinge = normalize(cross(axisA, axisB), rotate(yaw, { x: 1, y: 0, z: 0 }));
-    const base = quatFromTo(UP, axisA), baseX = rotate(base, { x: 1, y: 0, z: 0 });
+    const elbowAxis = rotate(SEGMENT_BY_ID.get(forearmId)!.jointProfile!.parentFrame.rotation, { x: 1, y: 0, z: 0 });
+    const hinge = normalize(cross(axisA, axisB), rotate(yaw, elbowAxis));
+    const base = quatFromTo(UP, axisA), baseX = rotate(base, elbowAxis);
     const twist = Math.atan2(dot(axisA, cross(baseX, hinge)), dot(baseX, hinge));
     const upper = quatMultiply(quatFromAxisAngle(axisA, twist), base);
-    return { upper, forearm: quatMultiply(upper, quatFromAxisAngle({ x: 1, y: 0, z: 0 }, Math.acos(clamp(dot(axisA, axisB), -1, 1)))) };
+    return { upper, forearm: quatMultiply(upper, quatFromAxisAngle(elbowAxis, Math.acos(clamp(dot(axisA, axisB), -1, 1)))) };
   };
   let best: RecoveryArmBraceTarget | null = null, bestScore = Infinity;
   for (const lateralOffset of lateralOffsets) for (const forwardOffset of forwardOffsets) for (const wristFlex of [-0.45, 0, 0.45]) {
@@ -542,11 +543,12 @@ export function solveRecoveryArmTarget(
   );
   const axisA = normalize(sub(shoulder, solved.middle)), axisB = normalize(sub(solved.middle, solved.end));
   const yaw = quatFromAxisAngle(UP, heading);
-  const hinge = normalize(cross(axisA, axisB), rotate(yaw, { x: 1, y: 0, z: 0 }));
-  const base = quatFromTo(UP, axisA), baseX = rotate(base, { x: 1, y: 0, z: 0 });
+  const elbowAxis = rotate(SEGMENT_BY_ID.get("leftForearm")!.jointProfile!.parentFrame.rotation, { x: 1, y: 0, z: 0 });
+  const hinge = normalize(cross(axisA, axisB), rotate(yaw, elbowAxis));
+  const base = quatFromTo(UP, axisA), baseX = rotate(base, elbowAxis);
   const twist = Math.atan2(dot(axisA, cross(baseX, hinge)), dot(baseX, hinge));
   const upperRotation = quatMultiply(quatFromAxisAngle(axisA, twist), base);
-  const effectiveRotation = quatMultiply(upperRotation, quatFromAxisAngle({ x: 1, y: 0, z: 0 }, Math.acos(clamp(dot(axisA, axisB), -1, 1))));
+  const effectiveRotation = quatMultiply(upperRotation, quatFromAxisAngle(elbowAxis, Math.acos(clamp(dot(axisA, axisB), -1, 1))));
   const forearmRotation = quatMultiply(effectiveRotation, quatInverse(effectiveOffset));
   const forearmTwistRotation = forearmRotation;
   const handRotation = quatMultiply(forearmRotation, localWrist);
