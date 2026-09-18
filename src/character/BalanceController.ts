@@ -2,6 +2,7 @@ import { HUMAN_PROPORTIONS, SEGMENT_BY_ID, SEGMENTS, TOTAL_MASS_KG } from "../co
 import { geometryHalfExtents, lowestWorldPoint } from "../core/geometry";
 import type { RegionId, SegmentId, SegmentPose, SupportingContact, Vec3 } from "../core/types";
 import { add, clamp, clampLength, dot, length, lerp, normalize, quatFromAxisAngle, rotate, scale, sub, worldPoint } from "./math";
+import { hindfootFromAnkle } from "./leg-target-frame";
 import { composeUprightPose, horizontal, midpoint, restPoseMap, type StepMotion } from "./pose";
 
 const ZERO: Vec3 = { x: 0, y: 0, z: 0 };
@@ -198,7 +199,6 @@ export class BalanceController {
   private neutralComOffset = ZERO;
   private neutralRootFromCom = ZERO;
   private supportTarget = ZERO;
-  private stepHeading = 0;
 
   reset(poses: ReadonlyMap<SegmentId, SegmentPose>, heading = 0): void {
     for (const foot of FEET) this.feet[foot] = { ...poses.get(foot)!.position };
@@ -231,7 +231,6 @@ export class BalanceController {
     this.liftedFoot = null;
     this.touchdownAge = 0;
     this.disturbanceSeen = false;
-    this.stepHeading = heading;
   }
 
   update(input: BalanceInput): BalanceOutput {
@@ -248,22 +247,8 @@ export class BalanceController {
     this.liftedFoot = grabbedFoot;
     this.cooldown = Math.max(0, this.cooldown - dt);
     if (this.step) {
-      // A dynamic single-support body can yaw around the planted sole. Keep
-      // the committed swing arc body-relative by rebasing it around the actual
-      // stance ankle instead of leaving the landing preview frozen in world space.
-      const headingDelta = Math.atan2(
-        Math.sin(headingRadians - this.stepHeading),
-        Math.cos(headingRadians - this.stepHeading),
-      );
-      if (Math.abs(headingDelta) > 1e-8) {
-        const stanceFoot: Foot = this.step.foot === "leftFoot" ? "rightFoot" : "leftFoot";
-        const stancePose = input.poses.get(stanceFoot)!;
-        const pivot = ankleProjection(stancePose.position, stancePose.rotation, stanceFoot);
-        const yawDelta = quatFromAxisAngle({ x: 0, y: 1, z: 0 }, headingDelta);
-        this.step.from = add(pivot, rotate(yawDelta, sub(this.step.from, pivot)));
-        this.step.to = add(pivot, rotate(yawDelta, sub(this.step.to, pivot)));
-      }
-      this.stepHeading = headingRadians;
+      // from/to are immutable WORLD hindfoot centres. Body yaw never rebases a
+      // committed landing or changes the meaning of an already-travelled arc.
       this.step.elapsed += dt;
       if (this.step.elapsed >= this.step.duration) {
         const side = this.step.foot === "leftFoot" ? "left" : "right";
@@ -485,7 +470,8 @@ export class BalanceController {
     return {
       rootTarget, reactionOffset: this.reaction, kneeFlexion,
       supportFeet: { leftFoot: { ...this.feet.leftFoot }, rightFoot: { ...this.feet.rightFoot } },
-      step: this.step ? { ...this.step, from: { ...this.step.from }, to: { ...this.step.to } } : null,
+      step: this.step ? { ...this.step, from: { ...this.step.from }, to: { ...this.step.to },
+        requested: this.step.requested ? { ...this.step.requested } : undefined } : null,
       stepCount: this.stepCount, state, shouldFall,
       fallDirection: normalize(add(horizontal(this.comVelocity), scale(horizontal(force), 0.002)), forward),
       appliedGrabForceN: length(force),
@@ -512,10 +498,10 @@ export class BalanceController {
   ): void {
     const side = foot === "leftFoot" ? -1 : 1;
     const lateral = scale(right, side * 0.15);
-    const reach = clampLength(add(
-      scale(forward, -HUMAN_PROPORTIONS.foot.ankleOffsetZM),
-      add(lateral, correction),
-    ), BALANCE_LIMITS.maxStepReachM);
+    const sideName = foot === "leftFoot" ? "left" : "right";
+    const localOffset = hindfootFromAnkle(sideName, ZERO, { x: 0, y: 0, z: 0, w: 1 });
+    const hindfootOffset = add(scale(right, localOffset.x), scale(forward, localOffset.z));
+    const reach = clampLength(add(hindfootOffset, add(lateral, correction)), BALANCE_LIMITS.maxStepReachM);
     const requested = add(root, reach);
     // Commit to a reachable first correction instead of asking one leg to
     // consume the whole capture-point error.  The alternating controller can
@@ -524,9 +510,9 @@ export class BalanceController {
       clampLength(horizontal(sub(requested, from)), BALANCE_LIMITS.maxStepTravelM),
       0.25,
     );
-    // A small virtual sole preload is a motor target, not a transform. Rapier's
-    // floor constraint supplies the equal reaction and establishes touchdown.
-    const to = { ...add(from, travel), y: footCenterHeight(foot, floorY) - 0.04 };
+    // A landing is the flat hindfoot centre. Subtracting a whole-foot preload
+    // asks IK for an ankle below its reachable floor-contact height.
+    const to = { ...add(from, travel), y: footCenterHeight(foot, floorY) };
     const distance = length(travel);
     const urgency = clamp(length(correction) / BALANCE_LIMITS.maxStepReachM, 0, 1);
     const duration = clamp(
@@ -536,8 +522,7 @@ export class BalanceController {
     );
     // Shift the measured COM over the retained stance anchor before unloading
     // the swing sole. Positions and velocities remain wholly Rapier-owned.
-    this.step = { foot, from: { ...from }, to, elapsed: -0.50, duration };
-    this.stepHeading = headingRadians;
+    this.step = { foot, from: { ...from }, to, requested: { ...requested, y: to.y }, heading: headingRadians, elapsed: -0.50, duration };
     this.touchdownAge = 0;
     this.stanceAge[foot] = 0;
     this.stepCount += 1;

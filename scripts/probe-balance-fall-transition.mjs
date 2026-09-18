@@ -1,3 +1,5 @@
+import { mkdirSync, appendFileSync } from "node:fs";
+import { join } from "node:path";
 import { register } from "tsx/esm/api";
 
 const unregister = register();
@@ -21,25 +23,28 @@ function frame(snapshot) {
   const swingId = snapshot.support.swingFoot;
   const swing = swingId ? snapshot.segments.find((pose) => pose.id === swingId) : null;
   const target = balance?.stepTarget ?? null;
-  const side = swingId?.startsWith("left") ? "left" : swingId?.startsWith("right") ? "right" : null;
-  const recoveryContacts = snapshot.diagnostics.recovery?.contacts ?? [];
+  const recoveryContacts = snapshot.diagnostics.contactDiagnostics?.contacts
+    ?? snapshot.diagnostics.recovery?.contacts ?? [];
   const contacts = recoveryContacts
-    .filter((contact) => !side || contact.segment.startsWith(side))
     .map((contact) => ({
       segment: contact.segment,
       forceN: round(contact.forceN, 1),
       loadBearing: contact.loadBearing,
-      ageS: round(contact.ageS),
+      persistenceS: round(contact.persistenceS),
+      point: point(contact.point),
+      points: contact.points?.map(point),
     }));
-  const legPrefix = side ?? "right";
   const motors = snapshot.diagnostics.jointDiagnostics
-    .filter((joint) => joint.segment.startsWith(legPrefix)
-      && ["Thigh", "Shin", "Ankle", "Foot"].some((suffix) => joint.segment.endsWith(suffix)))
+    .filter((joint) => /^(left|right)(Thigh|Shin|Ankle|Foot|Forefoot)$/.test(joint.segment))
     .map((joint) => ({
       segment: joint.segment,
       errorRad: round(joint.limitErrorMagnitudeRad),
       saturation: round(joint.motorSaturationRatio, 3),
       torqueNm: round(joint.motorTorqueNm, 1),
+      torqueWorld: point(joint.motorTorqueWorld),
+      coordinates: point(joint.coordinates),
+      targetCoordinates: point(joint.targetCoordinates),
+      limitError: point(joint.limitError),
     }));
   return {
     t: round(snapshot.simulationTime, 3),
@@ -59,13 +64,26 @@ function frame(snapshot) {
     supportingFeet: balance?.supportingFeet ?? [],
     supportMarginM: round(balance?.supportMarginM),
     contactSummary: snapshot.diagnostics.contactDiagnostics,
+    chain: snapshot.diagnostics.standingChain ?? null,
+    integrity: {
+      finite: snapshot.diagnostics.finite,
+      errors: snapshot.diagnostics.errors,
+      ownership: snapshot.diagnostics.physicsOwnership,
+      maxJointSeparationM: snapshot.diagnostics.maxJointSeparationM,
+      maxFloorPenetrationM: snapshot.diagnostics.maxFloorPenetrationM,
+    },
     contacts,
     motors,
   };
 }
 
-function pushHistory(history, snapshot) {
-  history.push(frame(snapshot));
+function pushHistory(history, snapshot, scenario) {
+  const sample = frame(snapshot);
+  if (process.env.BALANCE_TRACE_DIR) {
+    mkdirSync(process.env.BALANCE_TRACE_DIR, { recursive: true });
+    appendFileSync(join(process.env.BALANCE_TRACE_DIR, `${scenario}.jsonl`), `${JSON.stringify(sample)}\n`);
+  }
+  history.push(sample);
   if (history.length > 8) history.shift();
 }
 
@@ -101,11 +119,21 @@ async function runSlowPull() {
       }
       character.fixedUpdate(dt, command);
       const snapshot = character.getSnapshot("canvas2d");
-      pushHistory(history, snapshot);
+      pushHistory(history, snapshot, "slow-pull");
+      if (!snapshot.diagnostics.finite || snapshot.diagnostics.errors.length
+        || snapshot.diagnostics.maxJointSeparationM > 0.08
+        || snapshot.diagnostics.maxFloorPenetrationM > 0.08) {
+        reportFailure("PHYSICAL_INTEGRITY_FAILURE", tick, history);
+        return false;
+      }
       if (recoveryStates.has(snapshot.state)) {
         reportFailure("SLOW_PULL_FIRST_RECOVERY", tick, history);
         return false;
       }
+    }
+    if (character.getSnapshot("canvas2d").support.swingFoot !== null) {
+      reportFailure("SLOW_PULL_UNFINISHED_STEP", 510, history);
+      return false;
     }
     console.log("SLOW_PULL_NO_RECOVERY", JSON.stringify(history.at(-1)));
     return true;
@@ -140,11 +168,21 @@ async function runPlantedReversal() {
       }
       character.fixedUpdate(dt, command);
       const snapshot = character.getSnapshot("canvas2d");
-      pushHistory(history, snapshot);
+      pushHistory(history, snapshot, "planted-reversal");
+      if (!snapshot.diagnostics.finite || snapshot.diagnostics.errors.length
+        || snapshot.diagnostics.maxJointSeparationM > 0.08
+        || snapshot.diagnostics.maxFloorPenetrationM > 0.08) {
+        reportFailure("PHYSICAL_INTEGRITY_FAILURE", tick, history);
+        return false;
+      }
       if (recoveryStates.has(snapshot.state)) {
         reportFailure("PLANTED_REVERSAL_FIRST_RECOVERY", tick, history);
         return false;
       }
+    }
+    if (character.getSnapshot("canvas2d").support.swingFoot !== null) {
+      reportFailure("PLANTED_REVERSAL_UNFINISHED_STEP", 510, history);
+      return false;
     }
     console.log("PLANTED_REVERSAL_NO_RECOVERY", JSON.stringify(history.at(-1)));
     return true;
@@ -157,7 +195,7 @@ try {
   const slowPullStable = await runSlowPull();
   const plantedReversalStable = await runPlantedReversal();
   if (!slowPullStable || !plantedReversalStable) {
-    throw new Error("A balance scenario entered the recovery state");
+    throw new Error("A balance scenario failed recovery, integrity, or step completion");
   }
 } finally {
   unregister();

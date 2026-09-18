@@ -69,11 +69,11 @@ test("balance mass estimate includes segment masses and rejects a manipulated ne
   assert.ok(output.appliedGrabForceN <= BALANCE_LIMITS.maxPullForceN);
 });
 
-test("active step arc follows heading changes around the planted ankle", () => {
+test("active step retains its committed world target when the body heading changes", () => {
   const input = poseInput(), poses = composeUprightPose(input).poses;
   const controller = new BalanceController();
   controller.reset(poses, 0);
-  const foot = "rightFoot", stance = "leftFoot";
+  const foot = "rightFoot";
   const from = poses.get(foot).position;
   controller.beginStep(
     foot,
@@ -96,23 +96,11 @@ test("active step arc follows heading changes around the planted ankle", () => {
   }).step;
   assert.ok(after);
 
-  const stancePose = poses.get(stance);
-  const pivot = worldPoint(
-    stancePose.position,
-    stancePose.rotation,
-    SEGMENT_BY_ID.get(stance).jointAnchorChild,
-  );
-  const yaw = quatFromAxisAngle({ x: 0, y: 1, z: 0 }, turn);
-  const expectedFrom = {
-    ...rotate(yaw, sub(before.from, pivot)),
-  };
-  const expectedTo = {
-    ...rotate(yaw, sub(before.to, pivot)),
-  };
-  expectedFrom.x += pivot.x; expectedFrom.y += pivot.y; expectedFrom.z += pivot.z;
-  expectedTo.x += pivot.x; expectedTo.y += pivot.y; expectedTo.z += pivot.z;
-  assert.ok(length(sub(after.from, expectedFrom)) < 1e-8);
-  assert.ok(length(sub(after.to, expectedTo)) < 1e-8);
+  assert.deepEqual(after.from, before.from);
+  assert.deepEqual(after.to, before.to);
+  assert.deepEqual(after.requested, before.requested);
+  assert.equal(after.heading, 0);
+
 });
 
 test("slow pulls stay connected and stepping remains available after release and reversal", async () => {
@@ -136,6 +124,8 @@ test("slow pulls stay connected and stepping remains available after release and
         }
         character.fixedUpdate(dt, command);
         const snapshot = character.getSnapshot("canvas2d");
+      assert.ok(!["falling", "fallen", "recovering"].includes(snapshot.state),
+        `unexpected ${snapshot.state} at tick ${tick}`);
 
         assert.equal(snapshot.diagnostics.physicsOwnership, "rapier-dynamic", `heading ${heading}, tick ${tick}`);
         assert.equal(
@@ -166,7 +156,6 @@ test("slow pulls stay connected and stepping remains available after release and
 test("a planted reversal preserves ownership without a transient unsupported fall", async () => {
   const character = await createEmbodiedCharacter("canvas2d");
   const localAnchor = { x: 0.025, y: 0.015, z: 0.01 };
-  let sawFallLockout = false;
   try {
     const hand = character.getSnapshot("canvas2d").segments.find(p => p.id === "rightHand");
     const start = worldPoint(hand.position, hand.rotation, localAnchor);
@@ -183,23 +172,19 @@ test("a planted reversal preserves ownership without a transient unsupported fal
       }
       character.fixedUpdate(dt, command);
       const snapshot = character.getSnapshot("canvas2d");
+      assert.ok(!["falling", "fallen", "recovering"].includes(snapshot.state),
+        `unexpected ${snapshot.state} at tick ${tick}`);
       assert.equal(snapshot.diagnostics.physicsOwnership, "rapier-dynamic", `tick ${tick}`);
       assert.equal(
         snapshot.diagnostics.bodyInputAvailable,
         !["falling", "fallen", "recovering"].includes(snapshot.state),
         `tick ${tick}`,
       );
-      if (["falling", "fallen", "recovering"].includes(snapshot.state)) {
-        sawFallLockout = true;
-        assert.equal(snapshot.diagnostics.activeGrab, false, `tick ${tick}`);
-        assert.equal(snapshot.diagnostics.appliedGrabForceN, 0, `tick ${tick}`);
-      }
     }
 
     const done = character.getSnapshot("canvas2d");
     assert.ok(done.diagnostics.stepCount >= 2,
       `${done.state}, ${done.diagnostics.stepCount} steps, ${done.diagnostics.rootDisplacementM}m root displacement`);
-    assert.equal(sawFallLockout, false, "the bounded reversal must not enter the motion-state input lockout");
     assert.equal(done.state, "upright");
   } finally { character.dispose(); }
 });
