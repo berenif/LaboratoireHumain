@@ -25,7 +25,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
-      - name: Apply bounded recovery guard
+      - name: Apply measured touchdown support handoff
         run: node scripts/apply-balance-recovery-window.mjs
       - uses: actions/setup-node@v7
         with:
@@ -37,14 +37,14 @@ jobs:
         run: node scripts/probe-balance-fall-transition.mjs
       - run: node --test tests/balance-controller.test.mjs
       - run: npm run test:recovery
-      - name: Persist verified balance fix
+      - name: Persist verified touchdown support fix
         if: success() && github.ref == 'refs/heads/agent/balance-reversal-fall-gate'
         run: |
-          if git diff --quiet -- src/character/BalanceController.ts; then
+          if git diff --quiet -- src/character/BalanceController.ts src/character/EmbodiedCharacter.ts; then
             exit 0
           fi
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add src/character/BalanceController.ts
-          git commit -m "fix: preserve recovery between corrective steps"
+          git add src/character/BalanceController.ts src/character/EmbodiedCharacter.ts
+          git commit -m "fix: accept measured touchdown support"
           git push
