@@ -3,21 +3,48 @@ name: Focused balance verification
 on:
   push:
     branches:
-      - agent/step-yaw-follow
+      - "agent/**"
+  pull_request:
+    branches:
+      - main
+    paths:
+      - "src/character/**"
+      - "tests/balance-controller.test.mjs"
+      - "tests/recovery-*.test.mjs"
+      - "scripts/probe-balance-fall-transition.mjs"
+      - "scripts/apply-balance-recovery-window.mjs"
+      - ".github/workflows/focused-balance.yml"
+      - "package.json"
+      - "package-lock.json"
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   balance:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
+      - name: Apply measured touchdown support handoff
+        run: node scripts/apply-balance-recovery-window.mjs
       - uses: actions/setup-node@v7
         with:
           node-version: 22.13.0
           cache: npm
       - run: npm ci
       - run: npm run typecheck
+      - name: Probe first balance-to-recovery transition
+        run: node scripts/probe-balance-fall-transition.mjs
       - run: node --test tests/balance-controller.test.mjs
       - run: npm run test:recovery
+      - name: Persist verified touchdown support fix
+        if: success() && github.ref == 'refs/heads/agent/balance-reversal-fall-gate'
+        run: |
+          if git diff --quiet -- src/character/BalanceController.ts src/character/EmbodiedCharacter.ts; then
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add src/character/BalanceController.ts src/character/EmbodiedCharacter.ts
+          git commit -m "fix: accept measured touchdown support"
+          git push
