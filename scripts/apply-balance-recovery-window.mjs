@@ -28,6 +28,21 @@ await replaceExact(
 
 await replaceExact(
   balancePath,
+  `    const travel = scale(
+      clampLength(horizontal(sub(requested, from)), BALANCE_LIMITS.maxStepTravelM),
+      0.25,
+    );`,
+  `    // The reach is already bounded by the anatomical step-travel cap. Do not
+    // shrink it again or the pelvis can outrun the committed landing target.
+    const travel = clampLength(
+      horizontal(sub(requested, from)),
+      BALANCE_LIMITS.maxStepTravelM,
+    );`,
+  "full bounded corrective travel",
+);
+
+await replaceExact(
+  balancePath,
   `    const to = { ...add(from, travel), y: footCenterHeight(foot, floorY) - 0.04 };`,
   `    const to = { ...add(from, travel), y: footCenterHeight(foot, floorY) };`,
   "reachable landing center height",
