@@ -9,6 +9,9 @@ on:
       - 'src/core/**'
       - 'src/character/**'
       - 'tests/body-physics*.test.mjs'
+      - 'tests/recovery-support.test.mjs'
+      - 'tests/native-fixed-streams.test.mjs'
+      - 'scripts/fixtures/native-fixed-streams.json'
       - '.github/workflows/body-physics.yml'
 
 permissions:
@@ -27,27 +30,18 @@ jobs:
           node-version: 22.13.0
           cache: npm
       - run: npm ci
-      - name: Package exact source and offline physics runtime for reproducible review
+      - name: Record tested source
         run: |
-          mkdir -p /tmp/body-review evidence/body-physics
-          git archive HEAD | tar -xf - -C /tmp/body-review
-          git rev-parse HEAD > /tmp/body-review/SOURCE_COMMIT
-          tar -cf - node_modules/@dimforge node_modules/three node_modules/tsx node_modules/esbuild node_modules/@esbuild node_modules/get-tsconfig node_modules/resolve-pkg-maps | tar -xf - -C /tmp/body-review
-          tar -czf evidence/body-physics/source-runtime.tgz -C /tmp/body-review .
-      - uses: actions/upload-artifact@v4
-        with:
-          name: body-physics-review-workspace
-          path: evidence/body-physics/source-runtime.tgz
-          retention-days: 3
+          mkdir -p evidence/body-physics
+          git rev-parse HEAD | tee evidence/body-physics/source-commit.txt
       - name: Typecheck
         run: npm run typecheck
-      - name: Body physics regressions
+      - name: Anatomical frames, real self-contact, mass and recovery regressions
         shell: bash
-        run: |
-          shopt -s nullglob
-          tests=(tests/body-physics*.test.mjs)
-          if [ ${#tests[@]} -gt 0 ]; then
-            node --import tsx --test "${tests[@]}"
-          else
-            echo 'Baseline workspace only; body-physics regression tests have not been added yet.'
-          fi
+        run: node --test tests/body-physics.test.mjs tests/recovery-support.test.mjs tests/native-fixed-streams.test.mjs | tee evidence/body-physics/tests.log
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: body-physics-report
+          path: evidence/body-physics/
+          retention-days: 7
