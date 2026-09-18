@@ -262,6 +262,59 @@ export function raycastConvex(
   return Number.isFinite(nearest) ? nearest : null;
 }
 
+/** Clip a convex surface to n·p <= offset and close the cut with an outward cap.
+ * Used to remove only embedded axillary volume, not to add invisible barriers.
+ */
+export function clipConvexGeometry(geometry: ConvexGeometry, normal: Vec3, offset: number): ConvexGeometry {
+  const magnitude = Math.hypot(normal.x, normal.y, normal.z);
+  if (!(magnitude > EPSILON) || !Number.isFinite(offset)) throw new RangeError("Invalid clipping plane");
+  const n = { x: normal.x / magnitude, y: normal.y / magnitude, z: normal.z / magnitude };
+  const d = offset / magnitude;
+  const distance = (p: Vec3): number => n.x * p.x + n.y * p.y + n.z * p.z - d;
+  const vertices: Vec3[] = [];
+  const triangles: [number, number, number][] = [];
+  const byKey = new Map<string, number>();
+  const cap = new Set<number>();
+  const index = (p: Vec3): number => {
+    const key = [p.x, p.y, p.z].map(v => Math.round(v * 1e10)).join(",");
+    const previous = byKey.get(key);
+    if (previous !== undefined) return previous;
+    byKey.set(key, vertices.length);
+    vertices.push(p);
+    return vertices.length - 1;
+  };
+  for (const face of geometry.triangles) {
+    const polygon: Vec3[] = [];
+    for (let edge = 0; edge < 3; edge++) {
+      const a = geometry.vertices[face[edge]], b = geometry.vertices[face[(edge + 1) % 3]];
+      const da = distance(a), db = distance(b);
+      if (da <= EPSILON) polygon.push(a);
+      if ((da < -EPSILON && db > EPSILON) || (da > EPSILON && db < -EPSILON)) {
+        const t = da / (da - db);
+        const point = { x: a.x + (b.x - a.x) * t, y: a.y + (b.y - a.y) * t, z: a.z + (b.z - a.z) * t };
+        polygon.push(point);
+        cap.add(index(point));
+      } else if (Math.abs(da) <= EPSILON) cap.add(index(a));
+    }
+    const ids = polygon.map(index);
+    for (let i = 1; i + 1 < ids.length; i++) triangles.push([ids[0], ids[i], ids[i + 1]]);
+  }
+  if (cap.size >= 3) {
+    const ids = [...cap];
+    const center = ids.reduce((p, i) => ({ x: p.x + vertices[i].x / ids.length, y: p.y + vertices[i].y / ids.length, z: p.z + vertices[i].z / ids.length }), { x: 0, y: 0, z: 0 });
+    const axis = Math.abs(n.y) < 0.9 ? { x: 0, y: 1, z: 0 } : { x: 1, y: 0, z: 0 };
+    const u = { x: axis.y * n.z - axis.z * n.y, y: axis.z * n.x - axis.x * n.z, z: axis.x * n.y - axis.y * n.x };
+    const v = { x: n.y * u.z - n.z * u.y, y: n.z * u.x - n.x * u.z, z: n.x * u.y - n.y * u.x };
+    const angle = (i: number): number => {
+      const p = { x: vertices[i].x - center.x, y: vertices[i].y - center.y, z: vertices[i].z - center.z };
+      return Math.atan2(p.x * v.x + p.y * v.y + p.z * v.z, p.x * u.x + p.y * u.y + p.z * u.z);
+    };
+    ids.sort((a, b) => angle(a) - angle(b));
+    for (let i = 1; i + 1 < ids.length; i++) triangles.push([ids[0], ids[i], ids[i + 1]]);
+  }
+  return createConvexGeometry(vertices, triangles);
+}
+
 /** Uniform-density volume centroid of the same closed convex surface used by Rapier.
  * A vertex average is not a mass centre for tapered body segments. Integrating
  * signed tetrahedra also handles either consistent surface winding correctly.

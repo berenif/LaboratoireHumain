@@ -133,8 +133,8 @@ test("initial dynamic settling remains bounded and creates no velocity spike", a
     assert.equal(character.ragdollBodies.size, SEGMENTS.length);
     assert.equal(character.ragdollColliders.size, SEGMENTS.length);
     assert.ok([...character.ragdollBodies.values()].every((body) => body.isDynamic()));
-    assert.ok([...character.ragdollBodies.values()].every((body) => body.isSleeping()),
-      "the initialized equilibrium may sleep without changing dynamic ownership");
+    assert.ok([...character.ragdollBodies.values()].every((body) => !body.isSleeping()),
+      "quiet-standing acceptance must start awake, not force a sleeping equilibrium");
     assert.equal(character.diagnostics().physicsOwnership, "rapier-dynamic");
     let maximumPelvisDrop = 0;
     let maximumSpeed = 0;
@@ -149,9 +149,8 @@ test("initial dynamic settling remains bounded and creates no velocity spike", a
         linearVelocity.z,
       )));
     }
-    assert.ok([...character.ragdollBodies].every(([, body]) => body.isSleeping()),
-      "woken after idle steps: " + [...character.ragdollBodies]
-        .filter(([, body]) => !body.isSleeping()).map(([id]) => id).join(", "));
+    assert.ok([...character.ragdollBodies.values()].every(body => !body.isSleeping()), "standing remains awake");
+    assert.ok(character.lastContacts.some(contact => contact.loadBearing), "settling establishes real load-bearing contact");
     assert.ok(maximumPelvisDrop < 0.01 && maximumSpeed < 0.5,
       `initial-settling pelvis drop: ${maximumPelvisDrop} m; maximum segment speed: ${maximumSpeed} m/s`);
   } finally {

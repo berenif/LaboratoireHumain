@@ -285,6 +285,11 @@ test("support-conditioned response predicts swing hip and ankle impulses", async
     const driven = await createEmbodiedCharacter("canvas2d");
     const control = await createEmbodiedCharacter("canvas2d");
     try {
+      // Contact must be physically established, not injected by construction.
+      for (const character of [driven, control]) {
+        for (let tick = 0; tick < 120; tick++) character.fixedUpdate(1 / 60, null);
+        character.nativeMotors.disable(character.jointsByChild);
+      }
       const leftContact = driven.lastContacts.find((contact) => contact.segment === "leftFoot");
       assert.ok(leftContact, "standing fixture must expose a measured left sole contact");
       const supports = [{

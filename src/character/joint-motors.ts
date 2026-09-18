@@ -44,6 +44,7 @@ export interface JointMotorCommand {
 }
 
 export interface JointMotorResult {
+  readonly torqueSource?: "applied-impulse" | "native-request";
   readonly coordinates: Vec3;
   readonly targetCoordinates: Vec3;
   readonly coordinateError: Vec3;

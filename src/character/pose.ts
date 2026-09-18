@@ -16,6 +16,8 @@ const RIGHT: Vec3 = { x: 1, y: 0, z: 0 };
 
 export type MutablePose = {
   id: SegmentId;
+  massKg?: number;
+  centerOfMass?: Vec3;
   position: Vec3;
   rotation: Quat;
   linearVelocity: Vec3;
@@ -23,6 +25,7 @@ export type MutablePose = {
 };
 
 export type StepMotion = {
+  phase?: "unloading" | "swing" | "touchdown" | "loading";
   foot: "leftFoot" | "rightFoot";
   /** Immutable world-frame planning metadata; optional for external pose fixtures. */
   requested?: Vec3;
@@ -62,6 +65,8 @@ export interface UprightPoseResult {
 export function immutablePose(pose: MutablePose): SegmentPose {
   return {
     id: pose.id,
+    massKg: pose.massKg,
+    centerOfMass: pose.centerOfMass ? { ...pose.centerOfMass } : undefined,
     position: { ...pose.position },
     rotation: { ...pose.rotation },
     linearVelocity: { ...pose.linearVelocity },
@@ -559,14 +564,9 @@ function composeLeg(
       0.98,
     );
     const shinRotation = jointTargetRotation(thighRotation, shinDefinition, { x: kneeFlexion, y: 0, z: 0 });
-    const ankleFlexion = boundedJointTarget(
-      ankleDefinition,
-      "x",
-      -Math.atan2(dot(shinAxis, headingForward), dot(shinAxis, UP)),
-      0.34,
-      0.9,
+    ankleRotation = boundedWorldJointRotation(
+      shinRotation, headingRotation, ankleDefinition, 0.9,
     );
-    ankleRotation = jointTargetRotation(shinRotation, ankleDefinition, { x: ankleFlexion, y: 0, z: 0 });
     const ankleUp = rotate(ankleRotation, UP);
     const footTilt = boundedJointTarget(
       footDefinition,
@@ -594,14 +594,9 @@ function composeLeg(
     0.98,
   );
   const shinRotation = jointTargetRotation(thighRotation, shinDefinition, { x: kneeFlexion, y: 0, z: 0 });
-  const ankleFlexion = boundedJointTarget(
-    ankleDefinition,
-    "x",
-    -Math.atan2(dot(shinAxis, headingForward), dot(shinAxis, UP)),
-    0.34,
-    0.9,
+  ankleRotation = boundedWorldJointRotation(
+    shinRotation, headingRotation, ankleDefinition, 0.9,
   );
-  ankleRotation = jointTargetRotation(shinRotation, ankleDefinition, { x: ankleFlexion, y: 0, z: 0 });
   const ankleUp = rotate(ankleRotation, UP);
   const footTilt = boundedJointTarget(
     footDefinition,

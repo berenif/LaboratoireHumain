@@ -7,8 +7,8 @@ const { createEmbodiedCharacter } = await import('../src/character/EmbodiedChara
 const { SEGMENTS, SEGMENT_BY_ID, TOTAL_MASS_KG } = await import('../src/core/humanoid.ts');
 const { massState } = await import('../src/character/BalanceController.ts');
 const { recoveryMassState } = await import('../src/character/recovery-support.ts');
-const { jointRotationFromCoordinates } = await import('../src/character/joint-coordinates.ts');
-const { dot, length, rotate, sub, worldPoint } = await import('../src/character/math.ts');
+const { jointCoordinates, jointRotationFromCoordinates } = await import('../src/character/joint-coordinates.ts');
+const { dot, length, quatFromAxisAngle, rotate, sub, worldPoint } = await import('../src/character/math.ts');
 
 const FORWARD = { x: 0, y: 0, z: 1 };
 const DOWN = { x: 0, y: -1, z: 0 };
@@ -217,10 +217,31 @@ test('shoulder abduction opens away from the trunk on both sides', () => {
   for (const side of ['left', 'right']) {
     const sign = side === 'left' ? -1 : 1;
     const profile = SEGMENT_BY_ID.get(`${side}UpperArm`).jointProfile;
-    const angle = sign * Math.PI / 3;
+    // Preserve the same physical 60-degree outward reach when a joint-frame
+    // basis differs. A scalar +Z sign alone is not an anatomical direction.
+    const physicalRotation = quatFromAxisAngle({ x: 0, y: 0, z: 1 }, sign * Math.PI / 3);
+    const angle = jointCoordinates({ x: 0, y: 0, z: 0, w: 1 }, physicalRotation, profile).z;
     const axis = profile.axes.find(a => a.coordinate === 'z');
     assert.ok(angle >= axis.minRadians && angle <= axis.maxRadians, `${side}: outward reach is incorrectly limited`);
     const arm = rotate(jointRotationFromCoordinates({ x: 0, y: 0, z: angle }, profile), DOWN);
     assert.ok(sign * arm.x > .85, `${side}: abduction points into the trunk`);
   }
+});
+
+
+test('shared mass accounting prefers measured state and retains a geometry fallback', async () => {
+  const { measureMassState, segmentWorldMassCenter } = await import('../src/character/mass-state.ts');
+  const character = await createEmbodiedCharacter('canvas2d');
+  try {
+    const snapshot = character.getSnapshot('canvas2d');
+    const measured = measuredMass(character);
+    const planning = snapshot.segments.map(pose => ({ ...pose, massKg: undefined, centerOfMass: undefined }));
+    assert.ok(length(sub(measureMassState(planning).position, measured.position)) < 2e-6);
+    const a = { ...planning[0], massKg: 2, centerOfMass: { x: 2, y: 3, z: 4 } };
+    const b = { ...planning[1], massKg: 3, centerOfMass: { x: -1, y: 1, z: 0 } };
+    assert.deepEqual(segmentWorldMassCenter(a), a.centerOfMass);
+    const result = measureMassState([a, b]);
+    assert.equal(result.massKg, 5);
+    assert.ok(length(sub(result.position, { x: .2, y: 1.8, z: 1.6 })) < 1e-12);
+  } finally { character.dispose(); }
 });
