@@ -1,0 +1,63 @@
+name: Publish reconciled body checkpoint
+on:
+  push:
+    branches: [ops/publish-body-coherence-58f4183]
+    paths:
+      - .github/checkpoints/integrated/**
+      - .github/workflows/publish-integrated-body-checkpoint.yml
+permissions:
+  contents: write
+jobs:
+  publish:
+    if: github.repository == 'berenif/LaboratoireHumain' && github.ref == 'refs/heads/ops/publish-body-coherence-58f4183'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+      - name: Verify exact transport, original ancestry and tested integration tree
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          import hashlib, os
+          prefix = Path('.github/checkpoints/integrated')
+          first = bytearray((prefix/'part-0.bin').read_bytes())
+          assert hashlib.sha1(f'blob {len(first)}\0'.encode()+first).hexdigest() == '7c18d843410be1403d3462cf9ac5811fc88a91f2'
+          # Three transport bytes were detected as corrupted by comparison with
+          # the local Git blob. Restore only those bytes, then require the exact
+          # original part and complete bundle hashes. No source is patched.
+          for offset, received, original in [(585,141,140),(586,115,179),(5371,91,90)]:
+              assert first[offset] == received
+              first[offset] = original
+          assert hashlib.sha1(f'blob {len(first)}\0'.encode()+first).hexdigest() == '20a9b976a25b7dfcf1e2b53c57c681b8b5eee027'
+          bundle = first + (prefix/'part-1.bin').read_bytes()
+          assert hashlib.sha256(bundle).hexdigest() == 'bd59b59edfccfaa86fb1018b6f53fdad82a379c884bb76ac70c7f549dde51a3b'
+          Path(os.environ['RUNNER_TEMP'],'integrated.bundle').write_bytes(bundle)
+          PY
+          main=d670e755303fbaead6112c3e5bf6c93592951212
+          saved=58f4183ad19ea9d010af77cd4cdecde012d4ea73
+          target=e2944adbdabb0bd9263acacfae51d1a22e174e39
+          branch=fix/body-physical-coherence-v3
+          git bundle verify "$RUNNER_TEMP/integrated.bundle"
+          test "$(git bundle list-heads "$RUNNER_TEMP/integrated.bundle")" = "$target HEAD"
+          git fetch "$RUNNER_TEMP/integrated.bundle" HEAD:refs/remotes/saved-integration/body
+          test "$(git rev-parse "$target^{tree}")" = 3a5b2c3d07628be9f889fbf86e53f3759a4511fa
+          test "$(git show -s --format=%P "$target")" = "$saved $main"
+          git merge-base --is-ancestor "$saved" "$target"
+          git merge-base --is-ancestor "$main" "$target"
+          git diff --check "$main" "$target"
+          test "$(git ls-remote origin refs/heads/main | cut -f1)" = "$main"
+          test "$(git ls-remote origin "refs/heads/$branch" | cut -f1)" = "$saved"
+          git push origin "$target:refs/heads/$branch"
+          test "$(git ls-remote origin "refs/heads/$branch" | cut -f1)" = "$target"
+          {
+            echo '# Reconciled WIP checkpoint published'
+            echo "Source: $target"
+            echo "Parents: $saved $main"
+            echo 'Exact tested tree: 3a5b2c3d07628be9f889fbf86e53f3759a4511fa'
+            echo 'Local build/typecheck/lint pass; unit 156/168 and recovery 72/80. Focused body tests 24/24. Physics release acceptance remains failed/unverified.'
+            echo 'This job only transports verified Git objects and advances the feature branch without force. It does not update main, change thresholds or deploy.'
+          } >> "$GITHUB_STEP_SUMMARY"
