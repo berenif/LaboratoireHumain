@@ -33,15 +33,21 @@ jobs:
           printf 'npm-ci %s\n' "$result" > evidence/balance-support-chain/baseline/check-exits.txt
           tail -30 evidence/balance-support-chain/baseline/npm-ci.log
           exit "$result"
-      - name: Package an unmodified workspace for offline execution
+      - name: Package unmodified source and locked physics dependencies
         run: |
           mkdir -p .offline-runtime
           cp "$(command -v node)" .offline-runtime/node
-          tar -czf "$RUNNER_TEMP/support-chain-workspace.tar.gz" .
+          tar --exclude=./node_modules -czf "$RUNNER_TEMP/support-chain-source.tar.gz" .
+          tar -czf "$RUNNER_TEMP/support-chain-dependencies.tar.gz" \
+            node_modules/@dimforge node_modules/three node_modules/tsx \
+            node_modules/esbuild node_modules/@esbuild node_modules/get-tsconfig \
+            node_modules/resolve-pkg-maps node_modules/typescript node_modules/@types
       - uses: actions/upload-artifact@v4
         with:
           name: support-chain-exact-source-workspace
-          path: ${{ runner.temp }}/support-chain-workspace.tar.gz
+          path: |
+            ${{ runner.temp }}/support-chain-source.tar.gz
+            ${{ runner.temp }}/support-chain-dependencies.tar.gz
           retention-days: 3
           compression-level: 0
       - name: Reproduce each baseline check separately
