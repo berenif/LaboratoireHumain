@@ -505,30 +505,8 @@ class EmbodiedCharacter implements CharacterController {
     if (!this.floorCollider.isEnabled()) {
       for (const body of this.ragdollBodies.values()) body.wakeUp();
     }
-    const pelvis = this.poses.get("pelvis")!;
-    // Keep the planning heading explicit. Rapier may rotate the pelvis, but
-    // that motion must not silently rotate an already committed world target.
-    const balanceGrab = this.activeGrab && this.grabControlDiagnostics.active ? {
-      ...this.activeGrab,
-      target: { ...this.grabControlDiagnostics.controlTarget },
-      targetVelocity: { ...this.grabControlDiagnostics.targetVelocity },
-    } : this.activeGrab;
-    const balance = this.balance.update({
-      dt,
-      poses: this.poses,
-      rootPosition: pelvis.position,
-      activeGrab: balanceGrab,
-      heading: this.heading,
-      contacts: this.lastContacts,
-    });
-    this.balanceData = balance.diagnostics;
-    this.reactionOffset = balance.reactionOffset;
-    this.kneeFlexion = balance.kneeFlexion;
-    this.supportFeet = balance.supportFeet;
-    this.step = balance.step;
-    this.stepCount = balance.stepCount;
-    this.state = balance.state;
-
+    // Apply the bounded physical interaction once, then let balance respond to
+    // that same force and control target. Never counteract an un-applied spring.
     if (this.activeGrab) {
       const body = this.ragdollBodies.get(this.activeGrab.segment);
       if (body) {
@@ -543,6 +521,31 @@ class EmbodiedCharacter implements CharacterController {
     } else {
       this.appliedGrabForceN = 0;
     }
+
+    const pelvis = this.poses.get("pelvis")!;
+    // Keep the planning heading explicit. Rapier may rotate the pelvis, but
+    // that motion must not silently rotate an already committed world target.
+    const balanceGrab = this.activeGrab && this.grabControlDiagnostics.active ? {
+      ...this.activeGrab,
+      target: { ...this.grabControlDiagnostics.controlTarget },
+      targetVelocity: { ...this.grabControlDiagnostics.targetVelocity },
+    } : this.activeGrab;
+    const balance = this.balance.update({
+      dt,
+      poses: this.poses,
+      rootPosition: pelvis.position,
+      activeGrab: balanceGrab,
+      appliedGrabForce: this.grabControlDiagnostics.active ? this.grabControlDiagnostics.force : ZERO,
+      heading: this.heading,
+      contacts: this.lastContacts,
+    });
+    this.balanceData = balance.diagnostics;
+    this.reactionOffset = balance.reactionOffset;
+    this.kneeFlexion = balance.kneeFlexion;
+    this.supportFeet = balance.supportFeet;
+    this.step = balance.step;
+    this.stepCount = balance.stepCount;
+    this.state = balance.state;
 
     const target = composeUprightPose({
       rootTranslation: balance.rootTarget,

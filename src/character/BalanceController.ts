@@ -1,8 +1,9 @@
-import { HUMAN_PROPORTIONS, SEGMENT_BY_ID, SEGMENTS, TOTAL_MASS_KG } from "../core/humanoid";
+import { HUMAN_PROPORTIONS, SEGMENT_BY_ID, TOTAL_MASS_KG } from "../core/humanoid";
 import { geometryHalfExtents, lowestWorldPoint } from "../core/geometry";
 import type { RegionId, SegmentId, SegmentPose, SupportingContact, Vec3 } from "../core/types";
 import { add, clamp, clampLength, dot, length, lerp, normalize, quatFromAxisAngle, rotate, scale, sub, worldPoint } from "./math";
 import { hindfootFromAnkle } from "./leg-target-frame";
+import { measureMassState } from "./mass-state";
 import { composeUprightPose, horizontal, midpoint, restPoseMap, type StepMotion } from "./pose";
 
 const ZERO: Vec3 = { x: 0, y: 0, z: 0 };
@@ -85,6 +86,8 @@ export interface BalanceInput {
   poses: ReadonlyMap<SegmentId, SegmentPose>;
   rootPosition: Vec3;
   activeGrab: BalanceGrab | null;
+  /** Applied impulse / dt from the physical grab controller, not a second spring. */
+  appliedGrabForce?: Vec3;
   floorY?: number;
   heading?: number;
   /** Measured Rapier contacts; pose-derived support is only the startup fallback. */
@@ -106,17 +109,8 @@ export interface BalanceOutput {
 }
 
 export function massState(poses: ReadonlyMap<SegmentId, SegmentPose>): { position: Vec3; velocity: Vec3 } {
-  let position = ZERO;
-  let velocity = ZERO;
-  let mass = 0;
-  for (const definition of SEGMENTS) {
-    const pose = poses.get(definition.id);
-    if (!pose) continue;
-    mass += definition.massKg;
-    position = add(position, scale(pose.position, definition.massKg));
-    velocity = add(velocity, scale(pose.linearVelocity, definition.massKg));
-  }
-  return { position: scale(position, 1 / Math.max(mass, 1)), velocity: scale(velocity, 1 / Math.max(mass, 1)) };
+  const { position, velocity } = measureMassState(poses.values());
+  return { position, velocity };
 }
 
 function neutralComOffset(heading: number): Vec3 {
@@ -339,8 +333,10 @@ export class BalanceController {
       : supportingFeet.length === 1 ? input.poses.get(supportingFeet[0])!.position
       : midpoint(this.feet.leftFoot, this.feet.rightFoot);
     const supportMargin = polygonMargin(capturePoint, supportHull(corners));
-    let force = ZERO;
-    if (grab) {
+    let force = input.appliedGrabForce ?? ZERO;
+    // The fallback supports standalone planning fixtures. The runtime always
+    // supplies the actual bounded force from GrabAnchorController.
+    if (grab && input.appliedGrabForce === undefined) {
       const grabbedPose = input.poses.get(grab.segment ?? grab.region)!;
       const anchor = worldPoint(grabbedPose.position, grabbedPose.rotation, grab.localAnchor ?? ZERO);
       const targetVelocity = grab.targetVelocity ?? ZERO;
