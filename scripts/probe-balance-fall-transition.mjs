@@ -22,7 +22,8 @@ function frame(snapshot) {
   const swing = swingId ? snapshot.segments.find((pose) => pose.id === swingId) : null;
   const target = balance?.stepTarget ?? null;
   const side = swingId?.startsWith("left") ? "left" : swingId?.startsWith("right") ? "right" : null;
-  const contacts = snapshot.diagnostics.contactDiagnostics
+  const recoveryContacts = snapshot.diagnostics.recovery?.contacts ?? [];
+  const contacts = recoveryContacts
     .filter((contact) => !side || contact.segment.startsWith(side))
     .map((contact) => ({
       segment: contact.segment,
@@ -57,6 +58,7 @@ function frame(snapshot) {
     verticalErrorM: swing && target ? round(swing.position.y - target.y) : null,
     supportingFeet: balance?.supportingFeet ?? [],
     supportMarginM: round(balance?.supportMarginM),
+    contactSummary: snapshot.diagnostics.contactDiagnostics,
     contacts,
     motors,
   };
