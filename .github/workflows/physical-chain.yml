@@ -1,0 +1,61 @@
+name: Physical chain verification
+
+on:
+  push:
+    branches: [agent/physical-chain-frame-repair]
+  pull_request:
+    branches: [main]
+    paths:
+      - 'src/**'
+      - 'tests/**'
+      - 'scripts/**'
+      - '.github/workflows/physical-chain.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  baseline:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22.13.0
+          cache: npm
+      - run: npm ci
+      - name: Typecheck committed source
+        run: npm run typecheck
+      - name: Export committed source and isolated physics dependencies
+        run: |
+          mkdir -p /tmp/physical-chain-workspace
+          git archive HEAD | tar -x -C /tmp/physical-chain-workspace
+          printf '%s\n' "$(git rev-parse HEAD)" > /tmp/physical-chain-workspace/SOURCE_COMMIT
+          tar -cf - node_modules/three node_modules/@dimforge node_modules/tsx node_modules/esbuild node_modules/@esbuild node_modules/get-tsconfig node_modules/resolve-pkg-maps | tar -x -C /tmp/physical-chain-workspace
+          tar -czf /tmp/physical-chain-workspace.tgz -C /tmp/physical-chain-workspace .
+      - uses: actions/upload-artifact@v4
+        with:
+          name: physical-chain-workspace
+          path: /tmp/physical-chain-workspace.tgz
+          retention-days: 7
+      - name: Reproduce historical candidate in disposable checkout
+        run: node scripts/apply-balance-recovery-window.mjs
+      - name: Typecheck historical candidate
+        run: npm run typecheck
+      - name: Focused transition probe
+        id: probe
+        continue-on-error: true
+        run: node scripts/probe-balance-fall-transition.mjs
+      - name: Balance unit tests
+        id: balance
+        continue-on-error: true
+        run: node --test tests/balance-controller.test.mjs
+      - name: Recovery regression tests
+        id: recovery
+        continue-on-error: true
+        run: npm run test:recovery
+      - name: Preserve failures in check result
+        if: steps.probe.outcome != 'success' || steps.balance.outcome != 'success' || steps.recovery.outcome != 'success'
+        run: exit 1
