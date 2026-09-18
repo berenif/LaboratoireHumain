@@ -3,7 +3,18 @@ name: Focused balance verification
 on:
   push:
     branches:
-      - agent/step-yaw-follow
+      - "agent/**"
+  pull_request:
+    branches:
+      - main
+    paths:
+      - "src/character/**"
+      - "tests/balance-controller.test.mjs"
+      - "tests/recovery-*.test.mjs"
+      - "scripts/probe-balance-fall-transition.mjs"
+      - ".github/workflows/focused-balance.yml"
+      - "package.json"
+      - "package-lock.json"
 
 permissions:
   contents: read
@@ -19,5 +30,7 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npm run typecheck
+      - name: Probe first balance-to-recovery transition
+        run: node scripts/probe-balance-fall-transition.mjs
       - run: node --test tests/balance-controller.test.mjs
       - run: npm run test:recovery
