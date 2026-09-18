@@ -11,6 +11,9 @@ import {
 } from "./types";
 
 const identity = Object.freeze({ x: 0, y: 0, z: 0, w: 1 });
+// Positive elbow flexion uses anatomical -X, opposite to the knee. Rotating
+// both joint frames preserves the neutral body orientation and scalar limits.
+const elbowFrame = Object.freeze({ x: 0, y: 1, z: 0, w: 0 });
 const radians = (degrees: number): number => degrees * Math.PI / 180;
 
 /** Adult body dimensions in metres, shared by anatomy, pose targets, and tests. */
@@ -34,11 +37,13 @@ export const HUMAN_PROPORTIONS = {
     lumbarAnchorYM: -0.15,
     neckAnchorYM: 0.15,
     shoulderInnerAnchorXM: 0.10,
-    shoulderAnchorXM: 0.225,
+    shoulderAnchorXM: 0.25,
     shoulderAnchorYM: 0.10,
   },
   shoulderGirdle: {
-    halfLengthM: 0.0625,
+    // Inner socket at 0.10 m plus two half-lengths puts the humeral head
+    // at 0.25 m, clear of the ribcage without disabling arm/trunk contact.
+    halfLengthM: 0.075,
     radiusYM: 0.045,
     radiusZM: 0.055,
   },
@@ -112,13 +117,14 @@ function joint(
   parentAnchor: Vec3,
   childAnchor: Vec3,
   axes: readonly JointAxisProfile[],
+  frameRotation: JointProfile["parentFrame"]["rotation"] = identity,
 ): JointProfile {
   const frozenParentAnchor = Object.freeze({ ...parentAnchor });
   const frozenChildAnchor = Object.freeze({ ...childAnchor });
   return Object.freeze({
     kind,
-    parentFrame: Object.freeze({ anchor: frozenParentAnchor, rotation: identity }),
-    childFrame: Object.freeze({ anchor: frozenChildAnchor, rotation: identity }),
+    parentFrame: Object.freeze({ anchor: frozenParentAnchor, rotation: frameRotation }),
+    childFrame: Object.freeze({ anchor: frozenChildAnchor, rotation: frameRotation }),
     axes: Object.freeze([...axes]),
     limitSoftZoneFraction: 0.035,
   });
@@ -268,7 +274,7 @@ const rawSegments: SegmentDefinition[] = [
     const handId = `${side}Hand` as SegmentId;
     const handRegion = handId as RegionId;
     const shoulderYaw: [number, number] = side === "left" ? [-55, 65] : [-65, 55];
-    const shoulderLateral: [number, number] = side === "left" ? [-20, 100] : [-100, 20];
+    const shoulderLateral: [number, number] = side === "left" ? [-100, 20] : [-20, 100];
     const wristDeviation: [number, number] = side === "left" ? [-15, 30] : [-30, 15];
     return [
       segment({
@@ -284,7 +290,9 @@ const rawSegments: SegmentDefinition[] = [
           "multi-axis",
           { x: sign * P.torso.shoulderInnerAnchorXM, y: P.torso.shoulderAnchorYM, z: 0 },
           { x: -sign * P.shoulderGirdle.halfLengthM, y: 0, z: 0 },
-          [axis("x", -10, 30, 35, 3, 32), axis("y", -15, 20, 30, 2.5, 28), axis("z", -8, 20, 35, 3, 30)],
+          [axis("x", -10, 30, 35, 3, 32),
+            axis("y", side === "left" ? -15 : -20, side === "left" ? 20 : 15, 30, 2.5, 28),
+            axis("z", side === "left" ? -20 : -8, side === "left" ? 8 : 20, 35, 3, 30)],
         ),
       }),
       segment({
@@ -297,12 +305,11 @@ const rawSegments: SegmentDefinition[] = [
           { x: sign * P.shoulderGirdle.halfLengthM, y: 0, z: 0 },
           { x: 0, y: upperArmHalfLength, z: 0 },
           [
-            axis("x", -35, 120, 60, 5, 70),
+            axis("x", -120, 35, 60, 5, 70),
             axis("y", shoulderYaw[0], shoulderYaw[1], 40, 4, 45),
             axis("z", shoulderLateral[0], shoulderLateral[1], 55, 5, 65),
           ],
         ),
-        collisionExclusions: ["torso"],
       }),
       segment({
         id: forearmId, parent: upperId, region: null, side, role: "forearm", massKg: 0.9,
@@ -314,6 +321,7 @@ const rawSegments: SegmentDefinition[] = [
           { x: 0, y: -upperArmHalfLength, z: 0 },
           { x: 0, y: proximalForearmHalfLength, z: 0 },
           [axis("x", 0, 145, 80, 5, 55)],
+          elbowFrame,
         ),
       }),
       segment({
@@ -428,7 +436,7 @@ const rawSegments: SegmentDefinition[] = [
 ];
 
 // Every direct joint pair is excluded, plus the non-adjacent pairs whose
-// simplified joint housings intentionally overlap around shoulders and ankles.
+// simplified distal joint housings intentionally overlap around the ankles.
 const exclusionSets = new Map<SegmentId, Set<SegmentId>>(
   rawSegments.map(({ id, collisionExclusions }) => [id, new Set(collisionExclusions)]),
 );

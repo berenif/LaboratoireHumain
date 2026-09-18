@@ -1,0 +1,47 @@
+name: Body physics verification
+
+on:
+  push:
+    branches: [agent/body-alignment-self-collision]
+  pull_request:
+    branches: [main]
+    paths:
+      - 'src/core/**'
+      - 'src/character/**'
+      - 'tests/body-physics*.test.mjs'
+      - 'tests/recovery-support.test.mjs'
+      - 'tests/native-fixed-streams.test.mjs'
+      - 'scripts/fixtures/native-fixed-streams.json'
+      - '.github/workflows/body-physics.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  body-physics:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22.13.0
+          cache: npm
+      - run: npm ci
+      - name: Record tested source
+        run: |
+          mkdir -p evidence/body-physics
+          git rev-parse HEAD | tee evidence/body-physics/source-commit.txt
+      - name: Typecheck
+        run: npm run typecheck
+      - name: Anatomical frames, real self-contact, mass and recovery regressions
+        shell: bash
+        run: node --test tests/body-physics.test.mjs tests/recovery-support.test.mjs tests/native-fixed-streams.test.mjs | tee evidence/body-physics/tests.log
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: body-physics-report
+          path: evidence/body-physics/
+          retention-days: 7
