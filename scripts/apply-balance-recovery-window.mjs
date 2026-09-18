@@ -18,6 +18,33 @@ const characterPath = new URL("../src/character/EmbodiedCharacter.ts", import.me
 
 await replaceExact(
   balancePath,
+  `      if (Math.abs(headingDelta) > 1e-8) {`,
+  `      // Rebase only while the foot is travelling. Once the planned arc has
+      // reached the floor, keep the landing target fixed in world space so a
+      // loaded sole is not dragged by later torso yaw during touchdown proof.
+      if (this.step.elapsed < this.step.duration && Math.abs(headingDelta) > 1e-8) {`,
+  "post-arc landing target freeze",
+);
+
+await replaceExact(
+  balancePath,
+  `    const desiredAnkleCenter = this.step && stanceFoot
+      // During swing, translate the COM over the retained stance anchor. The
+      // new two-foot midpoint becomes valid only after measured touchdown.
+      ? plannedAnkle(stanceFoot)
+      : supportingFeet.length > 0`,
+  `    const unloadingSwing = this.step !== null && this.step.elapsed < this.step.duration;
+    const desiredAnkleCenter = unloadingSwing && stanceFoot
+      // During the travelling arc, translate the COM over the retained stance
+      // anchor. After the arc, measured loaded contacts own the support target
+      // while touchdown persistence is being validated.
+      ? plannedAnkle(stanceFoot)
+      : supportingFeet.length > 0`,
+  "measured touchdown COM handoff",
+);
+
+await replaceExact(
+  balancePath,
   `      const activelySwinging = this.step?.foot === foot && this.step.elapsed >= 0;`,
   `      // Once the planned swing has finished, a measured loaded touchdown is
       // real support even while contact persistence is still being validated.
@@ -25,6 +52,18 @@ await replaceExact(
         && this.step.elapsed >= 0
         && this.step.elapsed < this.step.duration;`,
   "touchdown support eligibility",
+);
+
+await replaceExact(
+  balancePath,
+  `        supportCenter: { ...supportCenter }, supportingFeet: supportingFeet.filter(foot =>
+          !(this.step?.foot === foot && this.step.elapsed >= 0)
+        ), supportMarginM: supportMargin,`,
+  `        supportCenter: { ...supportCenter }, supportingFeet: supportingFeet.filter(foot =>
+          !(this.step?.foot === foot && this.step.elapsed >= 0
+            && this.step.elapsed < this.step.duration)
+        ), supportMarginM: supportMargin,`,
+  "touchdown support diagnostics",
 );
 
 await replaceExact(
