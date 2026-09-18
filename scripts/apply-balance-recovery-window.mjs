@@ -13,20 +13,6 @@ async function replaceExact(path, before, after, label) {
   console.log(`applied ${label}`);
 }
 
-async function replacePattern(path, pattern, replacement, label) {
-  const source = await readFile(path, "utf8");
-  if (source.includes(replacement)) {
-    console.log(`${label} already present`);
-    return;
-  }
-  const matches = [...source.matchAll(new RegExp(pattern.source, pattern.flags.includes("g") ? pattern.flags : `${pattern.flags}g`))];
-  if (matches.length !== 1) {
-    throw new Error(`${label} expected one source match, found ${matches.length}`);
-  }
-  await writeFile(path, source.replace(pattern, replacement));
-  console.log(`applied ${label}`);
-}
-
 const balancePath = new URL("../src/character/BalanceController.ts", import.meta.url);
 const characterPath = new URL("../src/character/EmbodiedCharacter.ts", import.meta.url);
 
@@ -40,11 +26,20 @@ await replaceExact(
   "post-arc landing target freeze",
 );
 
-await replacePattern(
+await replaceExact(
   balancePath,
-  /footCenterHeight\(foot, floorY\)\s*-\s*0\.04/,
-  `footCenterHeight(foot, floorY)`,
+  `    const to = { ...add(from, travel), y: footCenterHeight(foot, floorY) - 0.04 };`,
+  `    const to = { ...add(from, travel), y: footCenterHeight(foot, floorY) };`,
   "reachable landing center height",
+);
+
+await replaceExact(
+  balancePath,
+  `    this.step = { foot, from: { ...from }, to, elapsed: -0.50, duration };`,
+  `    // Keep a brief load-transfer phase, but begin the swing before the
+    // pelvis can outrun the bounded landing target under a sustained pull.
+    this.step = { foot, from: { ...from }, to, elapsed: -0.18, duration };`,
+  "bounded pre-swing load transfer",
 );
 
 await replaceExact(
