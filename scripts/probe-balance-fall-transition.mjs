@@ -2,7 +2,7 @@ import { register } from "tsx/esm/api";
 
 const unregister = register();
 const { createEmbodiedCharacter } = await import("../src/character/index.ts");
-const { quatFromAxisAngle, rotate, worldPoint } = await import("../src/character/math.ts");
+const { worldPoint } = await import("../src/character/math.ts");
 
 const dt = 1 / 60;
 const zero = { x: 0, y: 0, z: 0 };
@@ -33,6 +33,11 @@ function compact(snapshot) {
   };
 }
 
+function pushHistory(history, snapshot) {
+  history.push(compact(snapshot));
+  if (history.length > 12) history.shift();
+}
+
 async function runSlowPull() {
   const character = await createEmbodiedCharacter("canvas2d");
   const history = [];
@@ -61,14 +66,14 @@ async function runSlowPull() {
       }
       character.fixedUpdate(dt, command);
       const snapshot = character.getSnapshot("canvas2d");
-      history.push(compact(snapshot));
-      if (history.length > 12) history.shift();
+      pushHistory(history, snapshot);
       if (recoveryStates.has(snapshot.state)) {
-        console.log("SLOW_PULL_FIRST_RECOVERY", JSON.stringify({ tick, history }, null, 2));
-        return;
+        console.error("SLOW_PULL_FIRST_RECOVERY", JSON.stringify({ tick, history }, null, 2));
+        return false;
       }
     }
-    console.log("SLOW_PULL_NO_RECOVERY", JSON.stringify(history, null, 2));
+    console.log("SLOW_PULL_NO_RECOVERY", JSON.stringify(history.at(-1), null, 2));
+    return true;
   } finally {
     character.dispose();
   }
@@ -100,22 +105,25 @@ async function runPlantedReversal() {
       }
       character.fixedUpdate(dt, command);
       const snapshot = character.getSnapshot("canvas2d");
-      history.push(compact(snapshot));
-      if (history.length > 12) history.shift();
+      pushHistory(history, snapshot);
       if (recoveryStates.has(snapshot.state)) {
-        console.log("PLANTED_REVERSAL_FIRST_RECOVERY", JSON.stringify({ tick, history }, null, 2));
-        return;
+        console.error("PLANTED_REVERSAL_FIRST_RECOVERY", JSON.stringify({ tick, history }, null, 2));
+        return false;
       }
     }
-    console.log("PLANTED_REVERSAL_NO_RECOVERY", JSON.stringify(history, null, 2));
+    console.log("PLANTED_REVERSAL_NO_RECOVERY", JSON.stringify(history.at(-1), null, 2));
+    return true;
   } finally {
     character.dispose();
   }
 }
 
 try {
-  await runSlowPull();
-  await runPlantedReversal();
+  const slowPullStable = await runSlowPull();
+  const plantedReversalStable = await runPlantedReversal();
+  if (!slowPullStable || !plantedReversalStable) {
+    throw new Error("A balance scenario entered the recovery state");
+  }
 } finally {
   unregister();
 }
