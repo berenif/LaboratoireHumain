@@ -1,0 +1,59 @@
+name: Publish exact saved body checkpoint
+
+on:
+  push:
+    branches: [ops/publish-body-coherence-58f4183]
+    paths:
+      - .github/checkpoints/58f4183/**
+      - .github/workflows/publish-saved-body-checkpoint.yml
+
+permissions:
+  contents: write
+
+jobs:
+  publish:
+    if: github.repository == 'berenif/LaboratoireHumain' && github.ref == 'refs/heads/ops/publish-body-coherence-58f4183'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+      - name: Validate and publish the unchanged saved Git history
+        shell: bash
+        run: |
+          set -euo pipefail
+          base=06c53a933c637c2425888558ae788f4f99d40f58
+          first=b597df7d86d5f741fa9a75ff5b9c6d76eda2ac9a
+          target=58f4183ad19ea9d010af77cd4cdecde012d4ea73
+          branch=fix/body-physical-coherence-v3
+          bundle="$RUNNER_TEMP/body-physical-coherence.bundle"
+          cat .github/checkpoints/58f4183/part-{0,1,2,3}.bin > "$bundle"
+          printf '%s  %s\n' 8f9e09770be7e86ddcb680a13da5efa8d3d05201c997c4272763490820941b8e "$bundle" | sha256sum -c -
+          git bundle verify "$bundle"
+          test "$(git bundle list-heads "$bundle")" = "$target refs/heads/$branch"
+          git fetch "$bundle" "refs/heads/$branch:refs/remotes/saved-checkpoint/body"
+          test "$(git rev-parse "$target^{tree}")" = 3208bb6878cfb1ef22a877e51f3f902df1e95cda
+          test "$(git show -s --format=%P "$target")" = "$first"
+          test "$(git show -s --format=%P "$first")" = "$base"
+          test "$(git rev-list --count "$base..$target")" = 2
+          git diff --check "$base" "$target"
+          remote_main=$(git ls-remote origin refs/heads/main | cut -f1)
+          test "$remote_main" = "$base"
+          remote_target=$(git ls-remote origin "refs/heads/$branch" | cut -f1)
+          if [ -n "$remote_target" ] && [ "$remote_target" != "$target" ]; then
+            echo 'Target branch already contains other work; refusing to overwrite it.' >&2
+            exit 1
+          fi
+          if [ -z "$remote_target" ]; then
+            git push origin "$target:refs/heads/$branch"
+          fi
+          test "$(git ls-remote origin "refs/heads/$branch" | cut -f1)" = "$target"
+          {
+            echo '# Exact saved checkpoint published'
+            echo "Source: $target"
+            echo "Branch: $branch"
+            echo "Tree: $(git rev-parse "$target^{tree}")"
+            echo 'Both original commit hashes are preserved. No main update, force push, source patch, test-result alteration, or deployment was performed by this job.'
+            echo 'User requested Merge main after the failing results were disclosed. This publication is preparation for that WIP merge, not a passing physics release.'
+          } >> "$GITHUB_STEP_SUMMARY"
