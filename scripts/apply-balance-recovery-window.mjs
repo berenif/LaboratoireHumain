@@ -13,6 +13,20 @@ async function replaceExact(path, before, after, label) {
   console.log(`applied ${label}`);
 }
 
+async function replacePattern(path, pattern, replacement, label) {
+  const source = await readFile(path, "utf8");
+  if (source.includes(replacement)) {
+    console.log(`${label} already present`);
+    return;
+  }
+  const matches = [...source.matchAll(new RegExp(pattern.source, pattern.flags.includes("g") ? pattern.flags : `${pattern.flags}g`))];
+  if (matches.length !== 1) {
+    throw new Error(`${label} expected one source match, found ${matches.length}`);
+  }
+  await writeFile(path, source.replace(pattern, replacement));
+  console.log(`applied ${label}`);
+}
+
 const balancePath = new URL("../src/character/BalanceController.ts", import.meta.url);
 const characterPath = new URL("../src/character/EmbodiedCharacter.ts", import.meta.url);
 
@@ -24,6 +38,13 @@ await replaceExact(
       // loaded sole is not dragged by later torso yaw during touchdown proof.
       if (this.step.elapsed < this.step.duration && Math.abs(headingDelta) > 1e-8) {`,
   "post-arc landing target freeze",
+);
+
+await replacePattern(
+  balancePath,
+  /footCenterHeight\(foot, floorY\)\s*-\s*0\.04/,
+  `footCenterHeight(foot, floorY)`,
+  "reachable landing center height",
 );
 
 await replaceExact(
