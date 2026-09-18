@@ -47,7 +47,7 @@ for(const heading of [0,Math.PI/2,Math.PI]) test(`body orientation, collider pos
  }finally{c.dispose();reference.dispose();}
 });
 
-test('clipped upper-arm surfaces are closed, outward and retain trunk contact',async()=>{
+test('upper-arm surfaces are closed, outward and retain trunk contact',async()=>{
  const c=await createEmbodiedCharacter();try{
   for(const side of ['left','right']) {
    const d=SEGMENT_BY_ID.get(`${side}UpperArm`),edges=new Map();

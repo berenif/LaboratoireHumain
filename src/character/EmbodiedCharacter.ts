@@ -503,6 +503,8 @@ class EmbodiedCharacter implements CharacterController {
     if (!this.floorCollider.isEnabled()) {
       for (const body of this.ragdollBodies.values()) body.wakeUp();
     }
+    // Apply the bounded physical interaction once, then let balance respond to
+    // that same force and control target. Never counteract an un-applied spring.
     if (this.activeGrab) {
       const body = this.ragdollBodies.get(this.activeGrab.segment);
       if (body) {
@@ -531,7 +533,7 @@ class EmbodiedCharacter implements CharacterController {
       poses: this.poses,
       rootPosition: pelvis.position,
       activeGrab: balanceGrab,
-      externalForce: this.activeGrab ? this.grabControlDiagnostics.force : ZERO,
+      appliedGrabForce: this.activeGrab && this.grabControlDiagnostics.active ? this.grabControlDiagnostics.force : ZERO,
       heading: this.heading,
       contacts: this.lastContacts,
     });

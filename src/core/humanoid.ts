@@ -1,4 +1,4 @@
-import { clipConvexGeometry, createEllipsoidGeometry, createTaperedPrismGeometry } from "./geometry";
+import { createEllipsoidGeometry, createTaperedPrismGeometry } from "./geometry";
 import {
   REGION_IDS,
   type JointAxisProfile,
@@ -46,11 +46,13 @@ export const HUMAN_PROPORTIONS = {
     lumbarAnchorYM: -0.15,
     neckAnchorYM: 0.15,
     shoulderInnerAnchorXM: 0.10,
-    shoulderAnchorXM: 0.225,
+    shoulderAnchorXM: 0.25,
     shoulderAnchorYM: 0.10,
   },
   shoulderGirdle: {
-    halfLengthM: 0.0625,
+    // Inner socket at 0.10 m plus two half-lengths puts the humeral head
+    // at 0.25 m, clear of the ribcage without disabling arm/trunk contact.
+    halfLengthM: 0.075,
     radiusYM: 0.045,
     radiusZM: 0.055,
   },
@@ -281,6 +283,9 @@ const rawSegments: SegmentDefinition[] = [
     const handId = `${side}Hand` as SegmentId;
     const handRegion = handId as RegionId;
     const shoulderYaw: [number, number] = side === "left" ? [-55, 65] : [-65, 55];
+    // Canonical forward-flexion frames reverse Z as well as X. These scalar
+    // intervals represent the same physical limits as main's identity-frame
+    // [-100, 20] / [-20, 100], not a second lateral sign correction.
     const shoulderLateral: [number, number] = side === "left" ? [-20, 100] : [-100, 20];
     const wristDeviation: [number, number] = side === "left" ? [-15, 30] : [-30, 15];
     return [
@@ -304,10 +309,9 @@ const rawSegments: SegmentDefinition[] = [
       }),
       segment({
         id: upperId, parent: girdleId, region: null, side, role: "upper-arm", massKg: 1.8,
-        // Flatten the small medial/proximal axillary wedge that previously
-        // overlapped the ribcage by 9 mm. Same closed surface for all consumers;
-        // outer radius, length, joint anchors and segment mass stay unchanged.
-        geometry: clipConvexGeometry(upperArmGeometry, { x: -sign, y: 0.3, z: 0 }, P.arm.upperRadiusM * 0.88),
+        // Main's wider shoulder socket already removes the axillary overlap.
+        // Preserve that shared geometry instead of additionally clipping the arm.
+        geometry: upperArmGeometry,
         localOffset: { x: sign * P.shoulderGirdle.halfLengthM, y: -upperArmHalfLength, z: 0 },
         restLocalRotation: identity,
         jointProfile: joint(

@@ -175,17 +175,17 @@ function boundedWorldJointRotation(
   });
 }
 
-/** Resolve roll about local +Y using the hinge's anatomical frame, not world X. */
-function hingeParentRotation(
+/** Resolve bone roll using the actual anatomical hinge axis, not a knee-only +X assumption. */
+export function hingeParentRotation(
   proximalAxis: Vec3,
   distalAxis: Vec3,
   fallbackHingeAxis: Vec3,
-  hingeAxisLocal: Vec3 = RIGHT,
+  localHingeAxis: Vec3 = RIGHT,
 ): Quat {
   const up = normalize(proximalAxis, UP);
   const hingeAxis = normalize(cross(up, distalAxis), fallbackHingeAxis);
   const alignUp = quatFromTo(UP, up);
-  const baseHingeAxis = rotate(alignUp, hingeAxisLocal);
+  const baseHingeAxis = rotate(alignUp, localHingeAxis);
   const roll = Math.atan2(
     dot(cross(baseHingeAxis, hingeAxis), up),
     dot(baseHingeAxis, hingeAxis),
@@ -397,7 +397,9 @@ function composeArm(
     0.18,
   );
   const yaw = quatFromAxisAngle(UP, input.heading ?? 0);
-  const preferredBend = rotate(yaw, normalize({ x: sign * 0.22, y: 0, z: -1 }));
+  // Elbows sit slightly behind/outside the arm, so flexion brings hands
+  // forward, in the same body frame as the toes. Knees keep their +Z bend.
+  const preferredBend = rotate(torso.rotation, normalize({ x: sign * 0.22, y: 0, z: -1 }));
   const elbowAxis = rotate(forearmDefinition.jointProfile!.parentFrame.rotation, RIGHT);
   const approximateAxis = normalize(sub(shoulder, desiredHand), UP);
   const approximateForearmRotation = quatMultiply(quatFromTo(UP, approximateAxis), yaw);

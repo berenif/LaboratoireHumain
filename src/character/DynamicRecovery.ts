@@ -1121,7 +1121,7 @@ export class DynamicRecovery {
           feedforward=add(feedforward,cross(sub(pose.position,joint),spring));
         }
         for(const descendant of SEGMENTS) if(descends(descendant.id,d.id))
-          feedforward=add(feedforward,cross(sub(poses.get(descendant.id)!.position,joint),{x:0,y:descendant.massKg*9.81,z:0}));
+          feedforward=add(feedforward,cross(sub(bodies.get(descendant.id)!.worldCom(),joint),{x:0,y:descendant.massKg*9.81,z:0}));
       }
 
       motorCommands.push({id:d.id,targetLocalRotation:commands.get(d.id)??d.restLocalRotation,

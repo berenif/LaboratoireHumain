@@ -225,10 +225,14 @@ test("prone brace hand orientation fits the independently reconstructed shoulder
     const target = reachableArmBraceTarget(testedSide, poses, fixture.heading);
     const axisA = normalize(sub(target.shoulder, target.elbow)), axisB = normalize(sub(target.elbow, target.wrist));
     const hinge = normalize(cross(axisA, axisB));
-    const base = quatFromTo(up, axisA), baseX = rotate(base, { x: 1, y: 0, z: 0 });
+    // Independently reconstruct the pole using the declared anatomical hinge,
+    // rather than assuming the old knee-like +X elbow frame.
+    const elbowProfile = SEGMENT_BY_ID.get(`${testedSide}Forearm`).jointProfile;
+    const localHinge = rotate(elbowProfile.parentFrame.rotation, { x: 1, y: 0, z: 0 });
+    const base = quatFromTo(up, axisA), baseX = rotate(base, localHinge);
     const twist = Math.atan2(dot(axisA, cross(baseX, hinge)), dot(baseX, hinge));
     const upper = quatMultiply(quatFromAxisAngle(axisA, twist), base);
-    const lower = quatMultiply(upper, quatFromAxisAngle({ x: 1, y: 0, z: 0 }, Math.acos(clamp(dot(axisA, axisB), -1, 1))));
+    const lower = quatMultiply(upper, quatFromAxisAngle(localHinge, Math.acos(clamp(dot(axisA, axisB), -1, 1))));
     const handId = `${testedSide}Hand`, handDefinition = SEGMENT_BY_ID.get(handId);
     const surface = handDefinition.geometry.vertices.map((vertex) => worldPoint(target.position, target.rotation, vertex));
     const lowest = Math.min(...surface.map(point => point.y));

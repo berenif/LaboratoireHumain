@@ -76,3 +76,17 @@ arbitrary rescaling is used to claim that gate passed.
 
 `stepCount` increments at completed, measured touchdown, not at a planning attempt.
 The phase field exposes unsuccessful unloading attempts without calling them steps.
+
+## Subsequent WIP merge authorization and concurrent-main reconciliation
+
+After the failing saved-checkpoint results were disclosed, the user explicitly
+requested `Merge main`. This authorizes a work-in-progress persistence merge,
+not satisfaction of the acceptance contract above. All thresholds still apply
+before an accepted physics release; known failures remain failing.
+
+During publication, PR #5 independently advanced main to `d670e755303fbaead6112c3e5bf6c93592951212`.
+The integration retains that ancestry and the exact saved commits. Its wider
+shoulder-girdle geometry supersedes the clipping approach described above, so the
+production arm uses the full original surface at the newer shared socket. Applying
+both geometry corrections or reversing an already reversed joint axis is avoided.
+See `body-coherence-integration.md` for the exact resolution and verification.

@@ -1,8 +1,9 @@
-import { HUMAN_PROPORTIONS, SEGMENT_BY_ID, SEGMENTS, TOTAL_MASS_KG } from "../core/humanoid";
+import { HUMAN_PROPORTIONS, SEGMENT_BY_ID, TOTAL_MASS_KG } from "../core/humanoid";
 import { geometryHalfExtents, lowestWorldPoint } from "../core/geometry";
 import type { RegionId, SegmentId, SegmentPose, SupportingContact, Vec3 } from "../core/types";
 import { add, clamp, clampLength, dot, length, lerp, normalize, quatFromAxisAngle, rotate, scale, sub, worldPoint } from "./math";
 import { hindfootFromAnkle } from "./leg-target-frame";
+import { measureMassState } from "./mass-state";
 import { composeUprightPose, horizontal, midpoint, restPoseMap, type StepMotion } from "./pose";
 
 const ZERO: Vec3 = { x: 0, y: 0, z: 0 };
@@ -91,11 +92,13 @@ export interface BalanceInput {
   poses: ReadonlyMap<SegmentId, SegmentPose>;
   rootPosition: Vec3;
   activeGrab: BalanceGrab | null;
+  /** Applied impulse / dt from the physical grab controller, not a second spring. */
+  appliedGrabForce?: Vec3;
   floorY?: number;
   heading?: number;
   /** Runtime always supplies Rapier contacts, including an empty set. Omission is for pose-only planning fixtures. */
   contacts?: readonly SupportingContact[];
-  /** Actual bounded grab impulse / dt, supplied by the runtime. */
+  /** Compatibility alias for saved planning fixtures; appliedGrabForce wins. */
   externalForce?: Vec3;
 }
 
@@ -114,18 +117,8 @@ export interface BalanceOutput {
 }
 
 export function massState(poses: ReadonlyMap<SegmentId, SegmentPose>): { position: Vec3; velocity: Vec3 } {
-  let position = ZERO;
-  let velocity = ZERO;
-  let mass = 0;
-  for (const definition of SEGMENTS) {
-    const pose = poses.get(definition.id);
-    if (!pose) continue;
-    const bodyMass = pose.massKg ?? definition.massKg;
-    mass += bodyMass;
-    position = add(position, scale(pose.centerOfMass ?? pose.position, bodyMass));
-    velocity = add(velocity, scale(pose.linearVelocity, bodyMass));
-  }
-  return { position: scale(position, 1 / Math.max(mass, 1)), velocity: scale(velocity, 1 / Math.max(mass, 1)) };
+  const { position, velocity } = measureMassState(poses.values());
+  return { position, velocity };
 }
 
 function neutralComOffset(heading: number): Vec3 {
@@ -375,8 +368,11 @@ export class BalanceController {
       : supportingFeet.length === 1 ? input.poses.get(supportingFeet[0])!.position
       : midpoint(this.feet.leftFoot, this.feet.rightFoot);
     const supportMargin = polygonMargin(capturePoint, supportHull(corners));
-    let force = input.externalForce ?? ZERO;
-    if (grab && input.externalForce === undefined) {
+    const appliedForce = input.appliedGrabForce ?? input.externalForce;
+    let force = appliedForce ?? ZERO;
+    // Only standalone fixtures may estimate a spring; runtime supplies measured
+    // bounded grab effort through appliedGrabForce, including an explicit zero.
+    if (grab && appliedForce === undefined) {
       const grabbedPose = input.poses.get(grab.segment ?? grab.region)!;
       const anchor = worldPoint(grabbedPose.position, grabbedPose.rotation, grab.localAnchor ?? ZERO);
       const targetVelocity = grab.targetVelocity ?? ZERO;

@@ -314,3 +314,38 @@ export function clipConvexGeometry(geometry: ConvexGeometry, normal: Vec3, offse
   }
   return createConvexGeometry(vertices, triangles);
 }
+
+/** Uniform-density volume centroid of the same closed convex surface used by Rapier.
+ * A vertex average is not a mass centre for tapered body segments. Integrating
+ * signed tetrahedra also handles either consistent surface winding correctly.
+ */
+export function convexVolumeCentroid(geometry: ConvexGeometry): Vec3 {
+  const reference = geometry.vertices.reduce((sum, vertex) => ({
+    x: sum.x + vertex.x / geometry.vertices.length,
+    y: sum.y + vertex.y / geometry.vertices.length,
+    z: sum.z + vertex.z / geometry.vertices.length,
+  }), { x: 0, y: 0, z: 0 });
+  let volume6 = 0;
+  const moment = { x: 0, y: 0, z: 0 };
+  for (const triangle of geometry.triangles) {
+    const [a, b, c] = triangle.map(index => {
+      const vertex = geometry.vertices[index];
+      return { x: vertex.x - reference.x, y: vertex.y - reference.y, z: vertex.z - reference.z };
+    });
+    const weight = a.x * (b.y * c.z - b.z * c.y)
+      + a.y * (b.z * c.x - b.x * c.z)
+      + a.z * (b.x * c.y - b.y * c.x);
+    volume6 += weight;
+    moment.x += (a.x + b.x + c.x) * weight;
+    moment.y += (a.y + b.y + c.y) * weight;
+    moment.z += (a.z + b.z + c.z) * weight;
+  }
+  if (!Number.isFinite(volume6) || Math.abs(volume6) <= EPSILON) {
+    throw new RangeError("Cannot compute the mass centre of a zero-volume convex surface.");
+  }
+  return Object.freeze({
+    x: reference.x + moment.x / (4 * volume6),
+    y: reference.y + moment.y / (4 * volume6),
+    z: reference.z + moment.z / (4 * volume6),
+  });
+}
