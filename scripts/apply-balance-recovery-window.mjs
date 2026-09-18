@@ -1,10 +1,38 @@
 import { readFile, writeFile } from "node:fs/promises";
 
-const path = new URL("../src/character/BalanceController.ts", import.meta.url);
-const before = `    const correctingStep = this.step !== null;
+async function replaceExact(path, before, after, label) {
+  const source = await readFile(path, "utf8");
+  if (source.includes(after)) {
+    console.log(`${label} already present`);
+    return;
+  }
+  if (!source.includes(before)) {
+    throw new Error(`expected source for ${label} was not found`);
+  }
+  await writeFile(path, source.replace(before, after));
+  console.log(`applied ${label}`);
+}
+
+const balancePath = new URL("../src/character/BalanceController.ts", import.meta.url);
+const characterPath = new URL("../src/character/EmbodiedCharacter.ts", import.meta.url);
+
+await replaceExact(
+  balancePath,
+  `      const activelySwinging = this.step?.foot === foot && this.step.elapsed >= 0;`,
+  `      // Once the planned swing has finished, a measured loaded touchdown is
+      // real support even while contact persistence is still being validated.
+      const activelySwinging = this.step?.foot === foot
+        && this.step.elapsed >= 0
+        && this.step.elapsed < this.step.duration;`,
+  "touchdown support eligibility",
+);
+
+await replaceExact(
+  balancePath,
+  `    const correctingStep = this.step !== null;
     const shouldFall = !correctingStep
-      && (immediate || this.instability >= BALANCE_LIMITS.marginalInstabilityS);`;
-const after = `    const correctingStep = this.step !== null;
+      && (immediate || this.instability >= BALANCE_LIMITS.marginalInstabilityS);`,
+  `    const correctingStep = this.step !== null;
     // A measured touchdown deliberately enters a short double-support cooldown
     // before another step may start. Keep that bounded recovery opportunity
     // alive while at least one real support remains; torso lean, pelvis height,
@@ -15,14 +43,45 @@ const after = `    const correctingStep = this.step !== null;
       && supportingFeet.length > 0;
     const shouldFall = !correctingStep
       && !settlingAfterTouchdown
-      && (immediate || this.instability >= BALANCE_LIMITS.marginalInstabilityS);`;
+      && (immediate || this.instability >= BALANCE_LIMITS.marginalInstabilityS);`,
+  "post-touchdown recovery guard",
+);
 
-const source = await readFile(path, "utf8");
-if (source.includes(after)) {
-  console.log("post-touchdown recovery guard already present");
-} else if (!source.includes(before)) {
-  throw new Error("expected BalanceController fall gate was not found");
-} else {
-  await writeFile(path, source.replace(before, after));
-  console.log("applied post-touchdown recovery guard");
-}
+await replaceExact(
+  characterPath,
+  `    const swingSide = this.step.foot === "leftFoot" ? "left" : "right";
+    const supportBySide = new Map<"left" | "right", typeof this.lastContacts[number]>();`,
+  `    const unloadedSwingSide = this.step.elapsed < this.step.duration
+      ? (this.step.foot === "leftFoot" ? "left" : "right") : null;
+    const supportBySide = new Map<"left" | "right", typeof this.lastContacts[number]>();`,
+  "motor touchdown support phase",
+);
+
+await replaceExact(
+  characterPath,
+  `      if (!contact.loadBearing || !definition?.side || definition.side === swingSide
+        || (definition.role !== "hindfoot" && definition.role !== "forefoot")) {`,
+  `      if (!contact.loadBearing || !definition?.side || definition.side === unloadedSwingSide
+        || (definition.role !== "hindfoot" && definition.role !== "forefoot")) {`,
+  "motor touchdown contact acceptance",
+);
+
+await replaceExact(
+  characterPath,
+  `      const swingSide = this.step?.elapsed !== undefined && this.step.elapsed >= 0
+        ? (this.step.foot === "leftFoot" ? "left" : "right") : null;`,
+  `      const swingSide = this.step && this.step.elapsed >= 0
+        && this.step.elapsed < this.step.duration
+        ? (this.step.foot === "leftFoot" ? "left" : "right") : null;`,
+  "gravity-compensation touchdown support",
+);
+
+await replaceExact(
+  characterPath,
+  `      if ((this.step?.foot === foot && this.step.elapsed >= 0) || this.activeGrab?.region === foot) return [];`,
+  `      const activelySwinging = this.step?.foot === foot
+        && this.step.elapsed >= 0
+        && this.step.elapsed < this.step.duration;
+      if (activelySwinging || this.activeGrab?.region === foot) return [];`,
+  "support snapshot touchdown handoff",
+);
