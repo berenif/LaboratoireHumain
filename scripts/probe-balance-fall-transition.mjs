@@ -2,33 +2,69 @@ import { register } from "tsx/esm/api";
 
 const unregister = register();
 const { createEmbodiedCharacter } = await import("../src/character/index.ts");
-const { worldPoint } = await import("../src/character/math.ts");
+const { length, sub, worldPoint } = await import("../src/character/math.ts");
 
 const dt = 1 / 60;
 const zero = { x: 0, y: 0, z: 0 };
 const recoveryStates = new Set(["falling", "fallen", "recovering"]);
 
+function roundedVec(vector, digits = 4) {
+  if (!vector) return null;
+  return Object.fromEntries(Object.entries(vector).map(([key, value]) => [key, Number(value.toFixed(digits))]));
+}
+
 function compact(snapshot) {
   const balance = snapshot.diagnostics.balance;
+  const byId = new Map(snapshot.segments.map((pose) => [pose.id, pose]));
+  const target = balance?.stepTarget ?? null;
+  const swingId = snapshot.support.swingFoot;
+  const swing = swingId ? byId.get(swingId) : null;
+  const horizontalError = swing && target
+    ? Math.hypot(swing.position.x - target.x, swing.position.z - target.z)
+    : null;
+  const trackedSegments = ["leftFoot", "leftForefoot", "rightFoot", "rightForefoot"];
+  const trackedJoints = new Set(["leftThigh", "leftShin", "leftAnkle", "leftFoot", "rightThigh", "rightShin", "rightAnkle", "rightFoot"]);
   return {
     sequence: snapshot.sequence,
     time: Number(snapshot.simulationTime.toFixed(3)),
     state: snapshot.state,
     stepCount: snapshot.diagnostics.stepCount,
-    root: Object.fromEntries(Object.entries(snapshot.rootPosition).map(([key, value]) => [key, Number(value.toFixed(4))])),
+    root: roundedVec(snapshot.rootPosition),
     lean: Number(snapshot.diagnostics.leanRadians.toFixed(4)),
     support: snapshot.support,
     contacts: snapshot.diagnostics.contactDiagnostics,
     activeGrab: snapshot.diagnostics.activeGrab,
     appliedGrabForceN: Number(snapshot.diagnostics.appliedGrabForceN.toFixed(2)),
+    feet: Object.fromEntries(trackedSegments.map((id) => {
+      const pose = byId.get(id);
+      return [id, pose ? { position: roundedVec(pose.position), velocity: roundedVec(pose.linearVelocity) } : null];
+    })),
+    swingTracking: swing && target ? {
+      foot: swingId,
+      target: roundedVec(target),
+      actual: roundedVec(swing.position),
+      errorM: Number(length(sub(swing.position, target)).toFixed(4)),
+      horizontalErrorM: Number(horizontalError.toFixed(4)),
+      verticalErrorM: Number((swing.position.y - target.y).toFixed(4)),
+    } : null,
+    legMotors: snapshot.diagnostics.jointDiagnostics
+      .filter((joint) => trackedJoints.has(joint.segment))
+      .map((joint) => ({
+        segment: joint.segment,
+        target: roundedVec(joint.targetCoordinates),
+        actual: roundedVec(joint.coordinates),
+        limitErrorRad: Number(joint.limitErrorMagnitudeRad.toFixed(4)),
+        saturation: Number(joint.motorSaturationRatio.toFixed(3)),
+        torqueNm: Number(joint.motorTorqueNm.toFixed(2)),
+      })),
     balance: balance ? {
       supportMarginM: Number(balance.supportMarginM.toFixed(4)),
       instabilitySeconds: Number(balance.instabilitySeconds.toFixed(4)),
       recoveryCapacityM: Number(balance.recoveryCapacityM.toFixed(4)),
       supportingFeet: balance.supportingFeet,
-      centerOfMassVelocity: Object.fromEntries(Object.entries(balance.centerOfMassVelocity).map(([key, value]) => [key, Number(value.toFixed(4))])),
-      externalForce: Object.fromEntries(Object.entries(balance.externalForce).map(([key, value]) => [key, Number(value.toFixed(2))])),
-      stepTarget: balance.stepTarget,
+      centerOfMassVelocity: roundedVec(balance.centerOfMassVelocity),
+      externalForce: roundedVec(balance.externalForce, 2),
+      stepTarget: roundedVec(balance.stepTarget),
     } : null,
   };
 }
