@@ -69,6 +69,52 @@ test("balance mass estimate includes segment masses and rejects a manipulated ne
   assert.ok(output.appliedGrabForceN <= BALANCE_LIMITS.maxPullForceN);
 });
 
+test("active step arc follows heading changes around the planted ankle", () => {
+  const input = poseInput(), poses = composeUprightPose(input).poses;
+  const controller = new BalanceController();
+  controller.reset(poses, 0);
+  const foot = "rightFoot", stance = "leftFoot";
+  const from = poses.get(foot).position;
+  controller.beginStep(
+    foot,
+    from,
+    input.rootTranslation,
+    { x: 0, y: 0, z: 1 },
+    { x: 1, y: 0, z: 0 },
+    0,
+    { x: 0.24, y: 0, z: 0.08 },
+    0,
+  );
+  const before = controller.update({
+    dt, poses, rootPosition: input.rootTranslation, activeGrab: null, heading: 0,
+  }).step;
+  assert.ok(before);
+
+  const turn = Math.PI / 3;
+  const after = controller.update({
+    dt, poses, rootPosition: input.rootTranslation, activeGrab: null, heading: turn,
+  }).step;
+  assert.ok(after);
+
+  const stancePose = poses.get(stance);
+  const pivot = worldPoint(
+    stancePose.position,
+    stancePose.rotation,
+    SEGMENT_BY_ID.get(stance).jointAnchorChild,
+  );
+  const yaw = quatFromAxisAngle({ x: 0, y: 1, z: 0 }, turn);
+  const expectedFrom = {
+    ...rotate(yaw, sub(before.from, pivot)),
+  };
+  const expectedTo = {
+    ...rotate(yaw, sub(before.to, pivot)),
+  };
+  expectedFrom.x += pivot.x; expectedFrom.y += pivot.y; expectedFrom.z += pivot.z;
+  expectedTo.x += pivot.x; expectedTo.y += pivot.y; expectedTo.z += pivot.z;
+  assert.ok(length(sub(after.from, expectedFrom)) < 1e-8);
+  assert.ok(length(sub(after.to, expectedTo)) < 1e-8);
+});
+
 test("slow pulls stay connected and stepping remains available after release and reversal", async () => {
   for (const heading of [0, 1.1, -1.7]) {
     const character = await createEmbodiedCharacter("canvas2d", { heading });

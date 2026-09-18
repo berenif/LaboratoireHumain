@@ -492,6 +492,20 @@ class EmbodiedCharacter implements CharacterController {
       for (const body of this.ragdollBodies.values()) body.wakeUp();
     }
     const pelvis = this.poses.get("pelvis")!;
+    if (this.step) {
+      // The pelvis has no parent motor, so single-support contact can rotate
+      // the whole dynamic assembly. Follow that measured yaw while a corrective
+      // step is committed; BalanceController rebases the swing arc around the
+      // stance ankle and Rapier remains the sole owner of the actual motion.
+      const measuredForward = horizontal(rotate(pelvis.rotation, FORWARD));
+      if (length(measuredForward) > 1e-6) {
+        const measuredHeading = Math.atan2(measuredForward.x, measuredForward.z);
+        this.heading += Math.atan2(
+          Math.sin(measuredHeading - this.heading),
+          Math.cos(measuredHeading - this.heading),
+        );
+      }
+    }
     const balanceGrab = this.activeGrab && this.grabControlDiagnostics.active ? {
       ...this.activeGrab,
       target: { ...this.grabControlDiagnostics.controlTarget },

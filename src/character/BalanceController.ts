@@ -198,6 +198,7 @@ export class BalanceController {
   private neutralComOffset = ZERO;
   private neutralRootFromCom = ZERO;
   private supportTarget = ZERO;
+  private stepHeading = 0;
 
   reset(poses: ReadonlyMap<SegmentId, SegmentPose>, heading = 0): void {
     for (const foot of FEET) this.feet[foot] = { ...poses.get(foot)!.position };
@@ -230,12 +231,14 @@ export class BalanceController {
     this.liftedFoot = null;
     this.touchdownAge = 0;
     this.disturbanceSeen = false;
+    this.stepHeading = heading;
   }
 
   update(input: BalanceInput): BalanceOutput {
     const dt = clamp(input.dt, 1 / 240, 1 / 20);
     const floorY = input.floorY ?? 0;
-    const heading = quatFromAxisAngle({ x: 0, y: 1, z: 0 }, input.heading ?? 0);
+    const headingRadians = input.heading ?? 0;
+    const heading = quatFromAxisAngle({ x: 0, y: 1, z: 0 }, headingRadians);
     const forward = rotate(heading, { x: 0, y: 0, z: 1 });
     const right = rotate(heading, { x: 1, y: 0, z: 0 });
     const grab = input.activeGrab;
@@ -245,6 +248,22 @@ export class BalanceController {
     this.liftedFoot = grabbedFoot;
     this.cooldown = Math.max(0, this.cooldown - dt);
     if (this.step) {
+      // A dynamic single-support body can yaw around the planted sole. Keep
+      // the committed swing arc body-relative by rebasing it around the actual
+      // stance ankle instead of leaving the landing preview frozen in world space.
+      const headingDelta = Math.atan2(
+        Math.sin(headingRadians - this.stepHeading),
+        Math.cos(headingRadians - this.stepHeading),
+      );
+      if (Math.abs(headingDelta) > 1e-8) {
+        const stanceFoot: Foot = this.step.foot === "leftFoot" ? "rightFoot" : "leftFoot";
+        const stancePose = input.poses.get(stanceFoot)!;
+        const pivot = ankleProjection(stancePose.position, stancePose.rotation, stanceFoot);
+        const yawDelta = quatFromAxisAngle({ x: 0, y: 1, z: 0 }, headingDelta);
+        this.step.from = add(pivot, rotate(yawDelta, sub(this.step.from, pivot)));
+        this.step.to = add(pivot, rotate(yawDelta, sub(this.step.to, pivot)));
+      }
+      this.stepHeading = headingRadians;
       this.step.elapsed += dt;
       if (this.step.elapsed >= this.step.duration) {
         const side = this.step.foot === "leftFoot" ? "left" : "right";
@@ -280,7 +299,7 @@ export class BalanceController {
     }
     // A released manipulated foot needs its own landing step even if held close to the floor.
     if (!this.step && releasedFoot) {
-      this.beginStep(releasedFoot, input.poses.get(releasedFoot)!.position, input.rootPosition, forward, right, floorY, ZERO);
+      this.beginStep(releasedFoot, input.poses.get(releasedFoot)!.position, input.rootPosition, forward, right, floorY, ZERO, headingRadians);
     }
     if (!this.step && !grabbedFoot && this.cooldown === 0 && this.disturbanceSeen) {
       const airborne = FEET.find((foot) => {
@@ -288,7 +307,7 @@ export class BalanceController {
         return pose.position.y - floorY > footHalfExtents(foot).y + BALANCE_LIMITS.floorClearanceM
           && length(horizontal(sub(pose.position, this.feet[foot]))) > 0.04;
       });
-      if (airborne) this.beginStep(airborne, input.poses.get(airborne)!.position, input.rootPosition, forward, right, floorY, ZERO);
+      if (airborne) this.beginStep(airborne, input.poses.get(airborne)!.position, input.rootPosition, forward, right, floorY, ZERO, headingRadians);
     }
 
     const supportingFeet: Foot[] = [];
@@ -411,7 +430,7 @@ export class BalanceController {
       if (grabbedFoot) foot = grabbedFoot;
       if (!grabbedFoot) {
         this.beginStep(foot, input.poses.get(foot)!.position, input.rootPosition, forward, right, floorY,
-          horizontal(sub(anticipation, horizontal(input.rootPosition))));
+          horizontal(sub(anticipation, horizontal(input.rootPosition))), headingRadians);
         this.nextFoot = foot === "leftFoot" ? "rightFoot" : "leftFoot";
       }
     }
@@ -481,7 +500,16 @@ export class BalanceController {
     };
   }
 
-  private beginStep(foot: Foot, from: Vec3, root: Vec3, forward: Vec3, right: Vec3, floorY: number, correction: Vec3): void {
+  private beginStep(
+    foot: Foot,
+    from: Vec3,
+    root: Vec3,
+    forward: Vec3,
+    right: Vec3,
+    floorY: number,
+    correction: Vec3,
+    headingRadians: number,
+  ): void {
     const side = foot === "leftFoot" ? -1 : 1;
     const lateral = scale(right, side * 0.15);
     const reach = clampLength(add(
@@ -509,6 +537,7 @@ export class BalanceController {
     // Shift the measured COM over the retained stance anchor before unloading
     // the swing sole. Positions and velocities remain wholly Rapier-owned.
     this.step = { foot, from: { ...from }, to, elapsed: -0.50, duration };
+    this.stepHeading = headingRadians;
     this.touchdownAge = 0;
     this.stanceAge[foot] = 0;
     this.stepCount += 1;
