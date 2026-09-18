@@ -1,0 +1,80 @@
+name: Apply verified body repair once
+
+on:
+  push:
+    branches: [agent/body-alignment-self-collision]
+    paths: ['.github/workflows/apply-body-repair.yml']
+
+permissions:
+  contents: write
+
+concurrency:
+  group: apply-body-repair-once
+  cancel-in-progress: false
+
+jobs:
+  apply:
+    if: github.repository == 'berenif/LaboratoireHumain' && github.ref == 'refs/heads/agent/body-alignment-self-collision'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22.13.0
+          cache: npm
+      - name: Verify base and checksum before applying the exact source patch
+        shell: bash
+        run: |
+          git merge-base --is-ancestor ac4ab68a107a0f3f04ac7f8ffc98f66c8a47c850 HEAD
+          test -z "$(git status --porcelain)"
+          python3 - <<'PY'
+          from pathlib import Path
+          import base64, gzip, hashlib
+          encoded = ''.join(Path('.agent/body-repair.patch.gz.b64.part' + str(i)).read_text().strip() for i in (1, 2))
+          packed = base64.b64decode(encoded, validate=True)
+          assert hashlib.sha256(packed).hexdigest() == '590b2fe47ceffca966bdab2e3e4efe30fbd7dcc3582fe96340f72f5399414e1e', 'Compressed patch mismatch'
+          patch = gzip.decompress(packed)
+          assert hashlib.sha256(patch).hexdigest() == '727df90be6672ab1b1678c4c1b5729e76667ee620d82c3963db9684fc619c155', 'Source patch mismatch'
+          Path('/tmp/body-source.patch').write_bytes(patch)
+          print('Exact source patch checksum verified.')
+          PY
+          git apply --check /tmp/body-source.patch
+          git apply --index /tmp/body-source.patch
+      - run: npm ci
+      - name: Reproduce the two initial assembly snapshots without changing recorded inputs
+        shell: bash
+        run: |
+          node --import tsx scripts/refresh-body-initial-snapshots.ts --write
+          actual=$(git hash-object scripts/fixtures/native-fixed-streams.json)
+          echo "Generated fixture blob: $actual"
+          test "$actual" = dab2c08f333fb976401d5dcbd1afe04e2a21a036
+          git add scripts/fixtures/native-fixed-streams.json
+      - name: Typecheck repaired source
+        shell: bash
+        run: npm run typecheck | tee /tmp/body-publish-typecheck.log
+      - name: Verify body, recovery-arm and preserved snapshot regressions
+        shell: bash
+        run: node --test tests/body-physics.test.mjs tests/recovery-support.test.mjs tests/native-fixed-streams.test.mjs | tee /tmp/body-publish-tests.log
+      - name: Commit and non-force push only the authorized feature branch
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          git rm .agent/body-repair.patch.gz.b64.part1 .agent/body-repair.patch.gz.b64.part2
+          git diff --cached --check
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git commit -m 'fix: align anatomical arm frames, enable trunk contacts and use physical mass centres' -m 'Applies checksum-verified locally tested source. Refreshes only initial snapshots, preserving historical commands and transfers. The two pre-existing balance gates still fail; this is not a complete physics release.'
+          auth=$(printf 'x-access-token:%s' "$GH_TOKEN" | base64 -w0)
+          git -c "http.https://github.com/.extraheader=AUTHORIZATION: basic $auth" push origin HEAD:refs/heads/agent/body-alignment-self-collision
+          echo "PUBLISHED_SHA=$(git rev-parse HEAD)"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: body-repair-publish-checks
+          path: /tmp/body-publish-*.log
+          retention-days: 7
