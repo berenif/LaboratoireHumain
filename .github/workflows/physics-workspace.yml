@@ -1,0 +1,30 @@
+name: Physics verification workspace
+on:
+  push:
+    branches: [fix/anatomical-collisions-weight]
+    paths: [.github/workflows/physics-workspace.yml]
+permissions:
+  contents: read
+jobs:
+  workspace:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Prepare source and pinned physics runtime
+        shell: bash
+        run: |
+          mkdir -p "$RUNNER_TEMP/physics-artifact"
+          git archive HEAD | gzip > "$RUNNER_TEMP/physics-artifact/source.tar.gz"
+          npm install --prefix "$RUNNER_TEMP/physics-runtime" --ignore-scripts --no-audit --no-fund @dimforge/rapier3d-compat@0.20.0 three@0.185.1 tsx@4.23.13 typescript@5.9.3 @types/three@0.185.4 @types/node@22.19.19
+          tar -czf "$RUNNER_TEMP/physics-artifact/runtime.tar.gz" -C "$RUNNER_TEMP/physics-runtime" node_modules
+      - uses: actions/upload-artifact@v4
+        with:
+          name: physics-workspace
+          path: ${{ runner.temp }}/physics-artifact/*.tar.gz
+          retention-days: 1
