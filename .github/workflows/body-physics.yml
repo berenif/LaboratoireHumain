@@ -1,0 +1,53 @@
+name: Body physics verification
+
+on:
+  push:
+    branches: [agent/body-alignment-self-collision]
+  pull_request:
+    branches: [main]
+    paths:
+      - 'src/core/**'
+      - 'src/character/**'
+      - 'tests/body-physics*.test.mjs'
+      - '.github/workflows/body-physics.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  body-physics:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22.13.0
+          cache: npm
+      - run: npm ci
+      - name: Package exact source and offline physics runtime for reproducible review
+        run: |
+          mkdir -p /tmp/body-review evidence/body-physics
+          git archive HEAD | tar -xf - -C /tmp/body-review
+          git rev-parse HEAD > /tmp/body-review/SOURCE_COMMIT
+          tar -cf - node_modules/@dimforge node_modules/three node_modules/tsx node_modules/esbuild node_modules/@esbuild node_modules/get-tsconfig node_modules/resolve-pkg-maps | tar -xf - -C /tmp/body-review
+          tar -czf evidence/body-physics/source-runtime.tgz -C /tmp/body-review .
+      - uses: actions/upload-artifact@v4
+        with:
+          name: body-physics-review-workspace
+          path: evidence/body-physics/source-runtime.tgz
+          retention-days: 3
+      - name: Typecheck
+        run: npm run typecheck
+      - name: Body physics regressions
+        shell: bash
+        run: |
+          shopt -s nullglob
+          tests=(tests/body-physics*.test.mjs)
+          if [ ${#tests[@]} -gt 0 ]; then
+            node --import tsx --test "${tests[@]}"
+          else
+            echo 'Baseline workspace only; body-physics regression tests have not been added yet.'
+          fi
