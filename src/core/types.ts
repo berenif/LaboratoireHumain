@@ -234,16 +234,77 @@ export interface JointStateDiagnostics {
   targetCoordinates: Vec3;
   limitError: Vec3;
   limitErrorMagnitudeRad: number;
+  motorTorqueWorld: Vec3;
   motorTorqueNm: number;
   motorSaturationRatio: number;
 }
 export interface ContactStateDiagnostics {
+  /** Copied, measured contacts in standing as well as recovery. */
+  contacts: SupportingContact[];
   count: number;
   loadBearingCount: number;
   totalNormalForceN: number;
   supportingSegments: SegmentId[];
 }
+/** Read-only world-space targets and FK reconstruction, never physics state. */
+export interface StandingChainPose {
+  id: SegmentId;
+  position: Vec3;
+  rotation: Quat;
+  forward: Vec3;
+}
+export interface StandingLegReach {
+  requestedAnkle: Vec3;
+  radiusM: number;
+  distanceM: number;
+  excessM: number;
+  /** Radial reach only; does not certify joint limits or load-bearing contact. */
+  radiallyReachable: boolean;
+}
+export interface StandingChainDiagnostics {
+  frame: "world-hindfoot-center";
+  motorSampleTimeS: number;
+  physicalSampleTimeS: number;
+  reconstruction: "local-commands-on-sampled-physical-pelvis";
+  pelvis: StandingChainPose | null;
+  desiredPelvis: StandingChainPose | null;
+  motorInputPelvis: StandingChainPose | null;
+  /** Actual shin-to-ankle joint, not the hindfoot centre or ankle-to-foot joint. */
+  stanceAnkle: Vec3 | null;
+  supportPoints: Vec3[];
+  supportPolygon: Vec3[];
+  step: {
+    foot: "leftFoot" | "rightFoot";
+    from: Vec3;
+    to: Vec3;
+    requested: Vec3;
+    rebased: Vec3;
+    heading: number;
+    elapsedS: number;
+    durationS: number;
+  } | null;
+  legs: Array<{
+    side: "left" | "right";
+    hip: Vec3;
+    landingReach: StandingLegReach | null;
+    segments: Array<{
+      id: SegmentId;
+      physical: StandingChainPose | null;
+      desired: StandingChainPose | null;
+      commanded: StandingChainPose | null;
+      targetLocalRotation: Quat | null;
+      desiredErrorM: number | null;
+      commandFrameErrorM: number | null;
+    }>;
+  }>;
+  armForward: Array<{
+    id: SegmentId;
+    physical: StandingChainPose | null;
+    desired: StandingChainPose | null;
+  }>;
+}
 export interface DiagnosticsSnapshot {
+  standingChain: StandingChainDiagnostics | null;
   balance: BalanceStateDiagnostics | null;
   bodyInputAvailable: boolean;
   recovery: RecoveryDiagnostics;

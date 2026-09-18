@@ -4,8 +4,9 @@ import { createHash } from "node:crypto";
 import { dirname, resolve } from "node:path";
 
 const runtimeNode = process.env.CODEX_MCP_NODE_PATH;
-if (!runtimeNode) throw new Error("CODEX_MCP_NODE_PATH must identify the bundled Node runtime.");
-const requireRuntime = createRequire(resolve(dirname(runtimeNode), "package.json"));
+// Prefer the original bundled runtime when supplied; ordinary CI uses its local installation.
+const requireRuntime = createRequire(runtimeNode
+  ? resolve(dirname(runtimeNode), "package.json") : import.meta.url);
 const { chromium } = requireRuntime("playwright");
 const mode = process.argv[2] ?? "quick";
 const outputDirectory = resolve("evidence/visual-20260906", process.argv[3] ?? mode);
@@ -13,7 +14,7 @@ await mkdir(outputDirectory, { recursive: true });
 // Keep active ffmpeg files outside Vite's watched project tree on Windows.
 const videoDirectory = resolve(process.env.TEMP ?? process.env.TMP ?? outputDirectory, "codex-visual-replay", process.argv[3] ?? mode);
 await mkdir(videoDirectory, { recursive: true });
-const browser = await chromium.launch({ channel: "msedge", headless: true, args: ["--enable-unsafe-swiftshader"] });
+const browser = await chromium.launch({ channel: process.env.PLAYWRIGHT_CHANNEL ?? (runtimeNode ? "msedge" : "chromium"), headless: true, args: ["--enable-unsafe-swiftshader"] });
 const page = await browser.newPage({ viewport: { width: 1440, height: 1000 }, deviceScaleFactor: 1, recordVideo: { dir: videoDirectory, size: { width: 1440, height: 1000 } } });
 const replayVideo = page.video();
 const errors = [];

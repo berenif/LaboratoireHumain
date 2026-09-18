@@ -6,6 +6,8 @@ import {
 } from "./math";
 import { jointCoordinates, jointRotationFromCoordinates } from "./joint-coordinates";
 
+import { ankleFromHindfoot } from "./leg-target-frame";
+
 const IDENTITY: Quat = { x: 0, y: 0, z: 0, w: 1 };
 const ZERO: Vec3 = { x: 0, y: 0, z: 0 };
 const UP: Vec3 = { x: 0, y: 1, z: 0 };
@@ -22,6 +24,9 @@ export type MutablePose = {
 
 export type StepMotion = {
   foot: "leftFoot" | "rightFoot";
+  /** Immutable world-frame planning metadata; optional for external pose fixtures. */
+  requested?: Vec3;
+  heading?: number;
   from: Vec3;
   to: Vec3;
   elapsed: number;
@@ -512,18 +517,15 @@ function composeLeg(
     footPosition = { ...footPosition, y: Math.max(soleHeight + 0.005, footPosition.y) };
   }
 
-  const headingRotation = quatFromAxisAngle(UP, input.heading ?? 0);
+  const footHeading = input.step?.foot === footId ? input.step.heading ?? input.heading : input.heading;
+  const headingRotation = quatFromAxisAngle(UP, footHeading ?? 0);
   const headingForward = rotate(headingRotation, FORWARD);
   const headingRight = rotate(headingRotation, { x: 1, y: 0, z: 0 });
   let ankleRotation = headingRotation;
   let footRotation = headingRotation;
-  const requestedLegEnd = (): Vec3 => {
-    // Work back from the requested hindfoot centre through both new joints to
-    // the distal shin joint used by the two-bone leg solver.
-    const ankleFootJoint = worldPoint(footPosition, footRotation, footDefinition.jointAnchorChild!);
-    const targetAnklePosition = sub(ankleFootJoint, rotate(ankleRotation, footDefinition.jointAnchorParent!));
-    return worldPoint(targetAnklePosition, ankleRotation, ankleDefinition.jointAnchorChild!);
-  };
+  const requestedLegEnd = (): Vec3 => ankleFromHindfoot(
+    side, footPosition, footRotation, ankleRotation,
+  );
   const kneeMaximum = maximumFlexion(shinDefinition, Math.PI * 0.78) * 0.98;
   const solveLeg = () => solveTwoBone(
     hip,

@@ -33,9 +33,11 @@ import type {
   RendererMode,
   SegmentDefinition,
   SegmentId,
+  SegmentPose,
   SupportState,
   Vec3,
 } from "../core/types";
+import { copyStandingContacts, standingChainDiagnostics } from "./standing-chain-diagnostics";
 import { BalanceController, type BalanceDiagnostics } from "./BalanceController";
 import { DynamicRecovery, emptyRecoveryDiagnostics } from "./DynamicRecovery";
 import { GrabAnchorController, emptyGrabDiagnostics } from "./GrabAnchorController";
@@ -209,6 +211,10 @@ class EmbodiedCharacter implements CharacterController {
   private uprightBlendTime = Number.POSITIVE_INFINITY;
   private readonly uprightBlendStart = new Map<SegmentId, Vec3>();
   private lastMotorResults = new Map<SegmentId, JointMotorResult>();
+  private standingTargets: ReadonlyMap<SegmentId, MutablePose> = new Map();
+  private standingCommands: readonly JointMotorCommand[] = [];
+  private standingMotorSampleTimeS = 0;
+  private standingMotorPelvis: Pick<SegmentPose, "id" | "position" | "rotation"> | null = null;
   private lastContacts = emptyRecoveryDiagnostics().contacts;
   private readonly runtimeErrors: string[] = [];
 
@@ -332,6 +338,10 @@ class EmbodiedCharacter implements CharacterController {
     this.heading = this.initialHeading;
     this.kneeFlexion = HUMAN_PROPORTIONS.stance.neutralKneeFlexion;
     this.balanceData = null;
+    this.standingTargets = new Map();
+    this.standingCommands = [];
+    this.standingMotorSampleTimeS = 0;
+    this.standingMotorPelvis = null;
     this.paused = false;
     this.sequence = 0;
     this.simulationTime = 0;
@@ -379,8 +389,12 @@ class EmbodiedCharacter implements CharacterController {
       recovery: this.isRecoveryState() ? this.recovery.diagnostics() : emptyRecoveryDiagnostics(),
       grabControl: { ...this.grabControlDiagnostics },
       physicsOwnership: "rapier-dynamic",
+      standingChain: this.isRecoveryState() || this.standingTargets.size === 0 ? null
+        : standingChainDiagnostics(this.poses, this.standingTargets, this.standingCommands,
+          this.step, this.heading, this.standingMotorSampleTimeS, this.simulationTime, this.lastContacts, this.standingMotorPelvis),
       jointDiagnostics,
       contactDiagnostics: {
+        contacts: copyStandingContacts(this.lastContacts),
         count: this.lastContacts.length,
         loadBearingCount: loadBearing.length,
         totalNormalForceN: loadBearing.reduce((sum, contact) => sum + contact.forceN, 0),
@@ -492,20 +506,8 @@ class EmbodiedCharacter implements CharacterController {
       for (const body of this.ragdollBodies.values()) body.wakeUp();
     }
     const pelvis = this.poses.get("pelvis")!;
-    if (this.step) {
-      // The pelvis has no parent motor, so single-support contact can rotate
-      // the whole dynamic assembly. Follow that measured yaw while a corrective
-      // step is committed; BalanceController rebases the swing arc around the
-      // stance ankle and Rapier remains the sole owner of the actual motion.
-      const measuredForward = horizontal(rotate(pelvis.rotation, FORWARD));
-      if (length(measuredForward) > 1e-6) {
-        const measuredHeading = Math.atan2(measuredForward.x, measuredForward.z);
-        this.heading += Math.atan2(
-          Math.sin(measuredHeading - this.heading),
-          Math.cos(measuredHeading - this.heading),
-        );
-      }
-    }
+    // Keep the planning heading explicit. Rapier may rotate the pelvis, but
+    // that motion must not silently rotate an already committed world target.
     const balanceGrab = this.activeGrab && this.grabControlDiagnostics.active ? {
       ...this.activeGrab,
       target: { ...this.grabControlDiagnostics.controlTarget },
@@ -553,9 +555,13 @@ class EmbodiedCharacter implements CharacterController {
       step: this.step,
     });
     this.leanRadians = target.leanRadians;
+    this.standingTargets = target.poses;
+    this.standingCommands = this.motorCommands(target.poses);
+    this.standingMotorSampleTimeS = this.simulationTime - dt;
+    this.standingMotorPelvis = { id: "pelvis", position: { ...pelvis.position }, rotation: { ...pelvis.rotation } };
     this.lastMotorResults = new Map(applyCoupledJointMotors(
       this.ragdollBodies,
-      this.motorCommands(target.poses),
+      this.standingCommands,
       dt,
       {
         supports: this.motorSupportConstraints(),
@@ -1007,6 +1013,7 @@ class EmbodiedCharacter implements CharacterController {
         targetCoordinates: motor?.targetCoordinates ?? coordinates,
         limitError: error,
         limitErrorMagnitudeRad: jointLimitErrorMagnitude(coordinates, definition.jointProfile),
+        motorTorqueWorld: { ...(motor?.torqueWorld ?? ZERO) },
         motorTorqueNm: length(motor?.torqueWorld ?? ZERO),
         motorSaturationRatio: motor?.saturationRatio ?? 0,
       });

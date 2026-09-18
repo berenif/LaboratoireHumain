@@ -1,0 +1,96 @@
+name: Physical chain verification
+
+on:
+  push:
+    branches: [agent/physical-chain-frame-repair]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  regression:
+    runs-on: ubuntu-latest
+    timeout-minutes: 18
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - suite: application
+            command: npm test
+          - suite: physics
+            command: npm run test:physics
+          - suite: pages
+            command: npm run test:pages
+          - suite: lint
+            command: npm run lint
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22.13.0
+          cache: npm
+      - run: npm ci
+      - name: Run committed-source regression
+        env:
+          CHECK_COMMAND: ${{ matrix.command }}
+          NEXT_TELEMETRY_DISABLED: 1
+        run: |
+          mkdir -p evidence/physical-chain-regression
+          git rev-parse HEAD > evidence/physical-chain-regression/source-commit.txt
+          set +e
+          timeout 12m bash -o pipefail -c "$CHECK_COMMAND" > evidence/physical-chain-regression/check.log 2>&1
+          result=$?
+          printf '%s\n' "$result" > evidence/physical-chain-regression/exit-code.txt
+          tail -100 evidence/physical-chain-regression/check.log
+          exit "$result"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: physical-chain-${{ matrix.suite }}
+          path: evidence/
+          retention-days: 14
+  browser:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22.13.0
+          cache: npm
+      - run: npm ci
+      - name: Install pinned browser runner without changing project dependencies
+        run: |
+          npm install --no-save --package-lock=false playwright@1.63.0
+          npx playwright install --with-deps chromium
+      - name: Existing mouse and synthetic-touch replay
+        env:
+          PLAYWRIGHT_CHANNEL: chromium
+        run: |
+          mkdir -p evidence/physical-chain-browser
+          git rev-parse HEAD > evidence/physical-chain-browser/source-commit.txt
+          npm run dev -- --host 127.0.0.1 --port 5173 > evidence/physical-chain-browser/server.log 2>&1 &
+          server=$!
+          trap 'kill "$server" 2>/dev/null || true' EXIT
+          for attempt in $(seq 1 90); do
+            if curl --silent --fail http://127.0.0.1:5173/ > /dev/null; then break; fi
+            sleep 1
+          done
+          set +e
+          timeout 6m node scripts/run-visual-replay.mjs quick physical-chain-ci > evidence/physical-chain-browser/replay.log 2>&1
+          result=$?
+          printf '%s\n' "$result" > evidence/physical-chain-browser/exit-code.txt
+          tail -80 evidence/physical-chain-browser/replay.log
+          exit "$result"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: physical-chain-browser
+          path: evidence/
+          retention-days: 14
