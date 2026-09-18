@@ -33,6 +33,7 @@ import type {
   RendererMode,
   SegmentDefinition,
   SegmentId,
+  SegmentPose,
   SupportState,
   Vec3,
 } from "../core/types";
