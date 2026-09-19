@@ -17,6 +17,10 @@ const RIGHT: Vec3 = { x: 1, y: 0, z: 0 };
 const FORWARD: Vec3 = { x: 0, y: 0, z: 1 };
 const SIDES = ["left", "right"] as const;
 const GEOMETRY_EPSILON = 1e-8;
+// A recovery brace needs a bend reserve, not the entire arm plus hand stretched
+// horizontally. Use the same lever limit for observed and planned supports.
+const MAXIMUM_HAND_BRACE_LEVER_M = HUMAN_PROPORTIONS.arm.upperLengthM + HUMAN_PROPORTIONS.arm.forearmLengthM;
+const MAXIMUM_BRACE_ITERATIONS = 128;
 
 export type RecoveryRoute = "none" | "crouch" | "half-kneel" | "prone" | "roll";
 export type RecoverySide = (typeof SIDES)[number];
@@ -357,8 +361,7 @@ export function usableRecoveryArmSupport(
     // The upper arm must remain over the brace rather than pulling on a hand
     // stretched behind the chest. A forearm can support only near its elbow.
     const maximumLever = id.endsWith("Hand")
-      ? HUMAN_PROPORTIONS.arm.upperLengthM + HUMAN_PROPORTIONS.arm.forearmLengthM
-        + HUMAN_PROPORTIONS.arm.handHalfExtentsM.y * 2 + .01
+      ? MAXIMUM_HAND_BRACE_LEVER_M
       : HUMAN_PROPORTIONS.arm.upperLengthM + 0.025;
     const minimumShoulderClearance = HUMAN_PROPORTIONS.arm.upperRadiusM
       + HUMAN_PROPORTIONS.arm.forearmRadiusM + .02;
@@ -421,7 +424,7 @@ export function reachableArmBraceTarget(
     const wristRotation = recoveryJointRotation(handId, { x: wristFlex, y: 0, z: 0 });
     // Hand orientation and floor height depend on the forearm frame. Converge
     // them together instead of imposing an unreachable world wrist rotation.
-    const convergenceIterations = 32;
+    const convergenceIterations = MAXIMUM_BRACE_ITERATIONS;
     for (let iteration = 0; iteration < convergenceIterations; iteration++) {
       const floorExtent = -lowestWorldPoint(handDefinition.geometry, ZERO, rotation).y;
       requestedCenter = { ...horizontalCenter, y: floorY + floorExtent + 0.002 };
@@ -433,6 +436,10 @@ export function reachableArmBraceTarget(
       let next = quatMultiply(armFrame(solved.middle, solved.end).forearm, wristRotation);
       if (rotation.x * next.x + rotation.y * next.y + rotation.z * next.z + rotation.w * next.w < 0)
         next = { x: -next.x, y: -next.y, z: -next.z, w: -next.w };
+      // Stop only once the orientation/floor solve agrees, rather than assuming
+      // a fixed small iteration count converges near a straight elbow.
+      if (Math.hypot(rotation.x - next.x, rotation.y - next.y,
+        rotation.z - next.z, rotation.w - next.w) < 1e-11) break;
       rotation = quatNormalize({ x: rotation.x + next.x, y: rotation.y + next.y, z: rotation.z + next.z, w: rotation.w + next.w });
     }
     const frame = armFrame(solved.middle, solved.end);
@@ -479,10 +486,11 @@ export function reachableArmBraceTarget(
       + HUMAN_PROPORTIONS.arm.forearmRadiusM + .02;
     const floorReachable = geometricallyReachable
       && shoulder.y - pressureCenter.y >= minimumShoulderClearance
+      && contactLever <= MAXIMUM_HAND_BRACE_LEVER_M
       && jointLimitErrorRad <= RECOVERY_ARM_TARGET_TOLERANCE.maximumJointLimitErrorRad;
     // Judge the actual contacting edge, not just the hand centre. Keep a small
     // reserve for the measured contact to settle within the useful brace area.
-    const supportCost = Math.max(0, contactLever - .82) * 20;
+    const supportCost = Math.max(0, contactLever - MAXIMUM_HAND_BRACE_LEVER_M) * 20;
     const score = (floorReachable ? 0 : 10 + reachErrorM) + jointLimitErrorRad * 10 + supportCost + movementM;
     if (score < bestScore - 1e-9) {
       bestScore = score;
