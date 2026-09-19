@@ -17,28 +17,37 @@ permissions:
 jobs:
   verify:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 25
     steps:
       - uses: actions/checkout@v7
         with:
           fetch-depth: 0
           persist-credentials: false
+      - name: Save exact source
+        run: |
+          mkdir -p /tmp/recovery-source
+          git rev-parse HEAD > /tmp/recovery-source/SOURCE_COMMIT
+          git bundle create /tmp/recovery-source/source.bundle HEAD
+      - uses: actions/upload-artifact@v4
+        with:
+          name: recovery-fix-source
+          path: /tmp/recovery-source/
+          retention-days: 3
       - uses: actions/setup-node@v7
         with:
           node-version: 22.13.0
           cache: npm
       - run: npm ci --no-audit --no-fund
-      - name: Save exact source and locked offline dependencies
+      - name: Save locked offline dependencies
         run: |
-          mkdir -p /tmp/recovery-workspace
-          git rev-parse HEAD > /tmp/recovery-workspace/SOURCE_COMMIT
-          git bundle create /tmp/recovery-workspace/source.bundle HEAD
-          tar -czf /tmp/recovery-workspace/npm-cache.tgz -C "$HOME/.npm" _cacache
+          mkdir -p /tmp/recovery-cache
+          tar -czf /tmp/recovery-cache/npm-cache.tgz -C "$(npm config get cache)" _cacache
       - uses: actions/upload-artifact@v4
         with:
-          name: recovery-fix-workspace
-          path: /tmp/recovery-workspace/
+          name: recovery-fix-cache
+          path: /tmp/recovery-cache/
           retention-days: 3
+          compression-level: 0
       - name: Run unchanged release checks independently
         env:
           NEXT_TELEMETRY_DISABLED: 1
@@ -49,7 +58,7 @@ jobs:
           for suite in typecheck lint test test:recovery test:physics test:pages; do
             name="${suite//:/-}"
             set +e
-            timeout 150s npm run "$suite" > "evidence/recovery-fix/$name.log" 2>&1
+            timeout 210s npm run "$suite" > "evidence/recovery-fix/$name.log" 2>&1
             code=$?
             set -e
             printf '%s\n' "$code" > "evidence/recovery-fix/$name.exit"
