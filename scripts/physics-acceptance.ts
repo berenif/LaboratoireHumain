@@ -12,7 +12,7 @@ import { HUMAN_PROPORTIONS, SEGMENT_BY_ID, SEGMENTS, SEGMENTS_BY_REGION, TOTAL_M
 import { REGION_IDS, type CharacterController, type GrabCommand, type JointCoordinate, type MotionState, type PoseSnapshot, type Quat, type RecoveryPhase, type RegionId, type SegmentId, type SegmentPose, type Vec3 } from "../src/core/types";
 import { SharedCameraProjection } from "../src/scene/camera";
 import { RECOVERY_POSE_FIXTURES, seedRecoveryFixture } from "./recovery-fixtures";
-import { measureRecoveryPhysics, measuredProneBraceSupport, newRecoveryPhysicsMeasurements, type RecoveryPhysicsMeasurements } from "./recovery-measurements";
+import { measureRecoveryPhysics, measuredProneBraceSupport, observedMassState as massState, newRecoveryPhysicsMeasurements, type RecoveryPhysicsMeasurements } from "./recovery-measurements";
 import { ACCEPTANCE, PULL_FIXTURES, NATIVE_REGRESSION_FIXTURES, RECOVERY_ACCEPTANCE, type PullFixture } from "./physics-fixtures";
 
 await RAPIER.init();
@@ -170,11 +170,7 @@ function motion(snapshot: PoseSnapshot): { linear: number; angular: number } {
   for (const d of SEGMENTS) { const p = pose(snapshot, d.id); linear += d.massKg * length(p.linearVelocity) ** 2; angular += d.massKg * length(p.angularVelocity) ** 2; }
   return { linear: Math.sqrt(linear / TOTAL_MASS_KG), angular: Math.sqrt(angular / TOTAL_MASS_KG) };
 }
-function massState(snapshot: PoseSnapshot): {position:Vec3;velocity:Vec3} {
-  let position=ZERO,velocity=ZERO;
-  for(const definition of SEGMENTS){const segment=pose(snapshot,definition.id);position=add(position,scale(segment.position,definition.massKg));velocity=add(velocity,scale(segment.linearVelocity,definition.massKg));}
-  return {position:scale(position,1/TOTAL_MASS_KG),velocity:scale(velocity,1/TOTAL_MASS_KG)};
-}
+
 function zeroExternal(snapshot: PoseSnapshot): boolean {
   const d = snapshot.diagnostics, g = d.grabControl;
   return !d.activeGrab && d.activePointerId === null && d.selectedRegion === null && !d.queuedTarget && d.appliedGrabForceN === 0
