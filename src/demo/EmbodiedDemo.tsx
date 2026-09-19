@@ -3,6 +3,7 @@
 import { useRef } from "react";
 import { REGION_IDS } from "../core/types";
 import { ControlPanel } from "../ui/ControlPanel";
+import { PlaygroundPanel } from "../ui/PlaygroundPanel";
 import { BrowserVerification } from "./BrowserVerification";
 import { useDemoRuntime } from "./useDemoRuntime";
 
@@ -10,7 +11,7 @@ export function EmbodiedDemo() {
   const hostRef = useRef<HTMLDivElement>(null);
   const {
     runtime, capabilities, diagnostics, renderer, paused, anchorPoints,
-    frameSummary, status, fatalError, qaMode,
+    frameSummary, status, fatalError, qaMode, playground, trial,
   } = useDemoRuntime(hostRef);
 
   return (
@@ -61,6 +62,15 @@ export function EmbodiedDemo() {
           onRendererChange={(next) => runtime?.switchRenderer(next)}
           onPauseToggle={() => runtime?.togglePause()}
           onReset={() => runtime?.reset()}
+        />
+        <PlaygroundPanel
+          config={playground}
+          trial={trial}
+          supportCount={diagnostics?.support.planted.length ?? 0}
+          ready={Boolean(diagnostics?.interactiveViewReady) && !fatalError}
+          onChange={change => runtime?.setPlayground(change)}
+          onOverview={() => runtime?.showArena()}
+          onFocus={() => runtime?.focusSubject()}
         />
       </section>
       {qaMode && runtime ? <BrowserVerification runtime={runtime} /> : null}

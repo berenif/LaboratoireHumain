@@ -17,6 +17,8 @@ import { RECOVERY_POSE_FIXTURES, seedRecoveryFixture } from "./recovery-fixtures
 
 const outputDirectory = resolve(process.argv[2] ?? "evidence/recovery-20260908/representative");
 const requested = process.argv[3]?.split(",").filter(Boolean);
+const maxReplaySeconds = Number(process.env.RECOVERY_REPLAY_MAX_SECONDS ?? 25);
+if (!Number.isFinite(maxReplaySeconds) || maxReplaySeconds <= 0 || maxReplaySeconds > 25) throw new Error("RECOVERY_REPLAY_MAX_SECONDS must be in (0,25].");
 const baseUrl = process.env.RECOVERY_REPLAY_URL ?? "http://127.0.0.1:5173";
 const runtimeNode = process.env.CODEX_MCP_NODE_PATH;
 if (!runtimeNode) throw new Error("CODEX_MCP_NODE_PATH must identify the bundled Node runtime containing Playwright.");
@@ -24,7 +26,7 @@ const requireRuntime = createRequire(resolve(dirname(runtimeNode), "package.json
 const { chromium } = requireRuntime("playwright");
 const totalMass = SEGMENTS.reduce((sum, segment) => sum + segment.massKg, 0);
 const mass = Object.fromEntries(SEGMENTS.map(segment => [segment.id, segment.massKg]));
-const sourceFiles = ["src/character/EmbodiedCharacter.ts", "src/character/BalanceController.ts", "src/character/DynamicRecovery.ts", "src/character/recovery-support.ts", "src/character/recovery-foot-targets.ts", "src/character/recovery-motors.ts", "src/character/pose.ts", "src/core/humanoid.ts", "src/core/types.ts", "src/scene/canvas2d-view.ts", "src/scene/webgl-view.ts", "scripts/recovery-fixtures.ts", "scripts/run-recovery-visual-replay.mjs"];
+const sourceFiles = ["src/character/EmbodiedCharacter.ts", "src/character/BalanceController.ts", "src/character/DynamicRecovery.ts", "src/character/PhysicsPlayground.ts", "src/character/contact-loads.ts", "src/character/limb-collisions.ts", "src/character/recovery-support.ts", "src/character/recovery-foot-targets.ts", "src/character/recovery-motors.ts", "src/character/pose.ts", "src/core/humanoid.ts", "src/core/playground.ts", "src/core/types.ts", "src/scene/canvas2d-view.ts", "src/scene/playground-view.ts", "src/scene/webgl-view.ts", "scripts/recovery-fixtures.ts", "scripts/run-recovery-visual-replay.mjs"];
 const fingerprint = async () => Object.fromEntries(await Promise.all(sourceFiles.map(async file => [file, createHash("sha256").update(await readFile(file)).digest("hex")])));
 const fixtures = requested
   ? requested.map(id => { const fixture = RECOVERY_POSE_FIXTURES.find(item => item.id === id); if (!fixture) throw new Error(`Unknown recovery fixture: ${id}`); return fixture; })
@@ -85,7 +87,7 @@ async function generateTrace(fixture) {
     seedRecoveryFixture(character, fixture);
     const snapshots = [], measurements = [], phaseEntries = [], supportEpisodes = new Map();
     let previous = null, stableFrame = null;
-    for (let frame = 0; frame <= 25*60; frame++) {
+    for (let frame = 0; frame <= maxReplaySeconds*60; frame++) {
       const snapshot = character.getSnapshot("webgl");
       const metrics = physicalMetrics(snapshot, previous, supportEpisodes);
       snapshots.push(snapshot); measurements.push(metrics);
@@ -98,7 +100,8 @@ async function generateTrace(fixture) {
       character.fixedUpdate(1/60, null);
     }
     const active = snapshots.filter(snapshot => ["falling", "fallen", "recovering"].includes(snapshot.state));
-    const summary = { fixture, frames: snapshots.length, durationS: (snapshots.length-1)/60, recovered: stableFrame !== null,
+    const summary = { fixture, frames: snapshots.length, durationS: (snapshots.length-1)/60,
+      partialReview: maxReplaySeconds < 25, recovered: stableFrame !== null,
       recoveryTimeS: stableFrame === null ? null : stableFrame/60,
       selectedRoutes: [...new Set(snapshots.map(snapshot => snapshot.diagnostics.recovery.route).filter(route => route && route !== "none"))],
       maxJointSeparationM: Math.max(...snapshots.map(snapshot => snapshot.diagnostics.maxJointSeparationM)),
@@ -225,5 +228,5 @@ try {
 }
 if (!evidence.sourcesUnchanged) throw new Error("Controller or presentation source changed while recording; rerun before acceptance.");
 if (evidence.browserErrors.length) throw new Error(`Browser errors: ${evidence.browserErrors.join("; ")}`);
-if (evidence.scenarios.some(scenario => !scenario.recovered || !scenario.noDirectPelvisAssistance || !scenario.allRapierDynamic)) process.exitCode = 1;
+if (evidence.scenarios.some(scenario => (!scenario.partialReview && !scenario.recovered) || !scenario.noDirectPelvisAssistance || !scenario.allRapierDynamic)) process.exitCode = 1;
 

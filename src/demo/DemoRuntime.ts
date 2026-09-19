@@ -1,5 +1,6 @@
 import { createEmbodiedCharacter } from "../character";
 import { FixedStepLoop } from "../core/FixedStepLoop";
+import { DEFAULT_PLAYGROUND, type PlaygroundConfig, type PlaygroundTrial } from "../core/playground";
 import type { CharacterController, PoseSnapshot, PoseView, RegionId, RendererMode } from "../core/types";
 import { PointerInteraction } from "../interaction";
 import { createSharedCamera } from "../scene/camera";
@@ -48,6 +49,8 @@ export class DemoRuntime {
   private lastUiMs = 0;
   private statusValue = "Ready — drag any highlighted body region";
   private disposed = false;
+  private cameraMode: "arena" | "subject" = "arena";
+  private trialValue: PlaygroundTrial = { uprightSeconds: 0, bestSeconds: 0, falls: 0 };
 
   constructor(options: DemoRuntimeOptions) {
     this.host = options.host;
@@ -57,6 +60,7 @@ export class DemoRuntime {
     this.createView = options.createView ?? createPoseView;
     this.snapshot = this.character.getSnapshot(this.renderer);
     this.previous = this.snapshot;
+    if (this.snapshot.playground) this.positionCamera();
     this.syncBodyInput();
     this.loop = new FixedStepLoop(this.fixedUpdate, this.render);
     try {
@@ -85,6 +89,7 @@ export class DemoRuntime {
   get renderer(): RendererMode { return this.rendererValue; }
   get paused(): boolean { return this.pausedValue; }
   get resetVersion(): number { return this.resetCount; }
+  get trial(): PlaygroundTrial { return { ...this.trialValue }; }
   get status(): string {
     if (this.paused) return this.statusValue;
     if (!this.current.diagnostics.bodyInputAvailable) {
@@ -166,12 +171,50 @@ export class DemoRuntime {
     this.clearInteraction("reset");
     this.interaction.reset();
     this.character.reset();
+    this.finishReset();
+  }
+
+  setPlayground(change: Partial<PlaygroundConfig>): void {
+    if (this.disposed) return;
+    this.clearInteraction("reset");
+    this.interaction.reset();
+    this.character.setPlayground({ ...(this.current.playground ?? DEFAULT_PLAYGROUND), ...change });
+    this.cameraMode = "subject";
+    this.finishReset();
+  }
+
+  showArena(): void {
+    this.cameraMode = "arena";
+    this.positionCamera();
+    this.present();
+  }
+
+  focusSubject(): void {
+    this.cameraMode = "subject";
+    this.positionCamera();
+    this.present();
+  }
+
+  private positionCamera(): void {
+    if (!this.current.playground) return;
+    if (this.cameraMode === "arena") {
+      this.camera.setView({ x: 10.5, y: 12.5, z: 17 }, { x: 0, y: 0.2, z: -0.4 });
+    } else {
+      const root = this.current.rootPosition;
+      const target = { x: root.x, y: Math.max(0.7, root.y - 0.1), z: root.z };
+      this.camera.setView({ x: target.x + 2.4, y: target.y + 2.4, z: target.z + 5.4 }, target);
+    }
+  }
+
+  private finishReset(): void {
     if (this.paused) this.character.pause();
     this.cameraControls.reset();
     this.loop.resetTiming();
     this.frames.reset();
     this.resetCount += 1;
+    this.trialValue = { uprightSeconds: 0, bestSeconds: 0, falls: 0 };
     this.refreshSnapshots();
+    this.positionCamera();
     this.present();
     this.statusValue = this.paused ? "Reset — paused" : "Reset — ready to pull";
     this.notify();
@@ -226,6 +269,14 @@ export class DemoRuntime {
     this.character.fixedUpdate(dt, this.interaction.consumeCommand());
     this.previous = this.current;
     this.snapshot = this.character.getSnapshot(this.renderer);
+    if (this.snapshot.playground) {
+      const falling = ["falling", "fallen", "recovering"].includes(this.snapshot.state);
+      const wasFalling = ["falling", "fallen", "recovering"].includes(this.previous.state);
+      if (falling && !wasFalling) this.trialValue.falls++;
+      const supported = this.snapshot.support.planted.length > 0;
+      this.trialValue.uprightSeconds = !falling && supported ? this.trialValue.uprightSeconds + dt : 0;
+      this.trialValue.bestSeconds = Math.max(this.trialValue.bestSeconds, this.trialValue.uprightSeconds);
+    }
     // FixedStepLoop may call us repeatedly in one animation frame. Release
     // capture and discard queued moves before it starts the next substep.
     this.syncBodyInput();
@@ -257,7 +308,7 @@ export async function createDemoRuntime(host: HTMLElement, signal: AbortSignal):
     throw new Error("Neither Canvas2D nor WebGL2 is available.");
   }
   const renderer = capabilities.webgl2 ? "webgl" : "canvas2d";
-  const character = await createEmbodiedCharacter(renderer);
+  const character = await createEmbodiedCharacter(renderer, { playground: { ...DEFAULT_PLAYGROUND } });
   if (signal.aborted) {
     character.dispose();
     signal.throwIfAborted();

@@ -43,6 +43,7 @@ export function interpolatePoseSnapshot(
   });
   return {
     ...current,
+    simulationTime: previous.simulationTime + (current.simulationTime - previous.simulationTime) * t,
     rootPosition: V3.lerp(previous.rootPosition, current.rootPosition, t),
     rootRotation: Q.nlerp(previous.rootRotation, current.rootRotation, t),
     segments,

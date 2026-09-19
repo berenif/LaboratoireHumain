@@ -187,6 +187,42 @@ function start(fixture) {
   return runtime;
 }
 
+test("station trials retain pause and difficulty, count falls once, and survive renderer changes", t => {
+  const f = fixture(t);
+  let config = { station: "flat", difficulty: "challenging" };
+  const snapshot = f.character.getSnapshot.bind(f.character);
+  f.character.getSnapshot = renderer => ({ ...snapshot(renderer), playground: { ...config },
+    rootPosition: { x: config.station === "slope" ? -5 : 0, y: 1, z: 0 },
+    support: { planted: ["leftFoot", "rightFoot"], swingFoot: null, stepProgress: 0, grounded: true } });
+  f.character.setPlayground = next => { config = { ...next }; f.character.reset(); f.character.sequence = 0; };
+  const runtime = start(f);
+  f.tick(0); f.tick(20); f.tick(40);
+  assert.ok(runtime.trial.uprightSeconds > 0);
+  const upright = runtime.trial.bestSeconds;
+  runtime.switchRenderer("webgl");
+  assert.equal(runtime.trial.bestSeconds, upright);
+  f.character.state = "falling";
+  f.tick(60); f.tick(80);
+  f.character.state = "recovering";
+  f.tick(100);
+  assert.equal(runtime.trial.falls, 1);
+  assert.equal(runtime.trial.uprightSeconds, 0);
+  assert.equal(runtime.trial.bestSeconds, upright);
+  runtime.pause();
+  runtime.setPlayground({ station: "slope" });
+  assert.equal(runtime.paused, true);
+  assert.equal(f.character.paused, true);
+  assert.deepEqual(runtime.current.playground, { station: "slope", difficulty: "challenging" });
+  assert.deepEqual(runtime.trial, { uprightSeconds: 0, bestSeconds: 0, falls: 0 });
+  runtime.setPlayground({ difficulty: "extreme" });
+  runtime.reset();
+  assert.deepEqual(runtime.current.playground, { station: "slope", difficulty: "extreme" });
+  assert.equal(runtime.paused, true);
+  const beforeCamera = f.character.sequence;
+  runtime.showArena(); runtime.focusSubject();
+  assert.equal(f.character.sequence, beforeCamera, "camera presets never integrate physics");
+});
+
 function pointer(host, type, pointerId = 7, overrides = {}) {
   const event = new Event(type, { cancelable: true });
   Object.assign(event, { pointerId, pointerType: "mouse", isPrimary: true, button: 0, clientX: 420, clientY: 260, buttons: type === "pointerup" ? 0 : 1, ...overrides });

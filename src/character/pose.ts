@@ -5,6 +5,7 @@ import {
   quatFromAxisAngle, quatFromTo, quatMultiply, rotate, scale, smooth01, sub, worldPoint,
 } from "./math";
 import { jointCoordinates, jointRotationFromCoordinates } from "./joint-coordinates";
+import { collisionAwareLimbTarget } from "./limb-collisions";
 
 const IDENTITY: Quat = { x: 0, y: 0, z: 0, w: 1 };
 const ZERO: Vec3 = { x: 0, y: 0, z: 0 };
@@ -42,9 +43,17 @@ export interface UprightPoseInput {
     startSegmentPosition: Vec3;
   } | null;
   supportFeet: Readonly<Record<"leftFoot" | "rightFoot", Vec3>>;
+  /** Measured plant rotations, retained while the foot stays on that support. */
+  supportFootRotations?: Readonly<Partial<Record<"leftFoot" | "rightFoot", Quat>>>;
+  /** Current Rapier poses used as the start of a collision-aware reach path. */
+  measuredPoses?: ReadonlyMap<SegmentId, MutablePose>;
+  /** Internal: build one clamped preview without recursively planning a route. */
+  collisionPlanning?: false;
   step: StepMotion | null;
   /** World yaw preserved across dynamic recovery and non-default starts. */
   heading?: number;
+  /** Optional bounded ribcage twist for pose composition and anatomy probes. */
+  torsoTwistRadians?: number;
   /** Bounded pelvis lowering; the leg solver supplies the matching knee bend. */
   kneeFlexion?: number;
 }
@@ -170,11 +179,17 @@ function hingeParentRotation(
   proximalAxis: Vec3,
   distalAxis: Vec3,
   fallbackHingeAxis: Vec3,
+  parentJointFrame: Quat = IDENTITY,
 ): Quat {
   const up = normalize(proximalAxis, UP);
-  const hingeAxis = normalize(cross(up, distalAxis), fallbackHingeAxis);
+  // As the hinge straightens, its cross product loses a stable direction.
+  // Blend toward the anatomical frame axis before that singularity.
+  const hingeAxis = normalize(add(
+    cross(up, distalAxis),
+    scale(fallbackHingeAxis, 0.025),
+  ), fallbackHingeAxis);
   const alignUp = quatFromTo(UP, up);
-  const baseHingeAxis = rotate(alignUp, RIGHT);
+  const baseHingeAxis = rotate(alignUp, rotate(parentJointFrame, RIGHT));
   const roll = Math.atan2(
     dot(cross(baseHingeAxis, hingeAxis), up),
     dot(baseHingeAxis, hingeAxis),
@@ -198,6 +213,7 @@ export function solveTwoBone(
   secondLength: number,
   preferredBend: Vec3,
   maximumBendRadians = Math.PI,
+  secondaryAxis: Vec3 = RIGHT,
 ): Readonly<{ middle: Vec3; end: Vec3 }> {
   const raw = sub(requestedEnd, start);
   const direction = normalize(raw, { x: 0, y: -1, z: 0 });
@@ -213,8 +229,11 @@ export function solveTwoBone(
   const end = add(start, scale(direction, distance));
   const along = (firstLength * firstLength - secondLength * secondLength + distance * distance) / (2 * distance);
   const bendHeight = Math.sqrt(Math.max(0, firstLength * firstLength - along * along));
-  let bend = sub(preferredBend, scale(direction, dot(preferredBend, direction)));
-  if (length(bend) < 1e-4) bend = cross(direction, { x: 1, y: 0, z: 0 });
+  const projectedPreference = sub(preferredBend, scale(direction, dot(preferredBend, direction)));
+  const secondary = cross(direction, secondaryAxis);
+  // The small secondary term gives a continuous bend plane when a requested
+  // endpoint lines up with the bend preference near full extension.
+  let bend = add(projectedPreference, scale(secondary, 0.01));
   bend = normalize(bend, FORWARD);
   return { middle: add(add(start, scale(direction, along)), scale(bend, bendHeight)), end };
 }
@@ -228,6 +247,37 @@ export function horizontal(v: Vec3): Vec3 {
 }
 
 export function composeUprightPose(input: UprightPoseInput): UprightPoseResult {
+  const grab = input.activeGrab;
+  if (input.collisionPlanning !== false && grab && input.measuredPoses
+      && ["leftHand", "rightHand", "leftFoot", "rightFoot"].includes(grab.region)) {
+    const side: LegSide = grab.region.startsWith("left") ? "left" : "right";
+    const limb = grab.region.endsWith("Hand") ? "arm" : "leg";
+    const segmentId = grab.region as SegmentId;
+    const measured = input.measuredPoses.get(segmentId);
+    if (measured) {
+      const previewInput: UprightPoseInput = { ...input, collisionPlanning: false };
+      const preview = composeUprightPose(previewInput);
+      const parent = preview.poses.get(limb === "arm" ? "torso" : "pelvis")!;
+      let requested = add(grab.startSegmentPosition, clampLength(
+        sub(grab.target, grab.startTarget), limb === "arm" ? 0.72 : 0.58,
+      ));
+      if (limb === "leg") {
+        const soleHeight = -segmentDefinition(segmentId).geometry.localBounds.min.y;
+        requested = { ...requested, y: Math.max(soleHeight + 0.005, requested.y) };
+      }
+      const solve = (target: Vec3): Map<SegmentId, MutablePose> => composeUprightPose({
+        ...previewInput,
+        activeGrab: {
+          ...grab,
+          target: add(grab.startTarget, sub(target, grab.startSegmentPosition)),
+        },
+      }).poses;
+      const planned = collisionAwareLimbTarget({
+        side, limb, start: measured.position, requested, parent, solve,
+      });
+      return { poses: planned.poses, leanRadians: preview.leanRadians };
+    }
+  }
   const output = new Map<SegmentId, MutablePose>();
   const rootTranslation = input.rootTranslation;
   const root: Vec3 = { x: rootTranslation.x, y: rootTranslation.y - clamp(input.kneeFlexion ?? 0, 0, 1) * 0.10, z: rootTranslation.z };
@@ -257,7 +307,7 @@ export function composeUprightPose(input: UprightPoseInput): UprightPoseResult {
   const torsoDefinition = segmentDefinition("torso");
   const torso = attachedPose("torso", lumbar, jointTargetRotation(lumbar.rotation, torsoDefinition, {
     x: boundedJointTarget(torsoDefinition, "x", localReactionForward * 0.065, 0.16),
-    y: 0,
+    y: boundedJointTarget(torsoDefinition, "y", input.torsoTwistRadians ?? 0, 0.2),
     z: boundedJointTarget(torsoDefinition, "z", -localReactionRight * 0.065, 0.14),
   }));
   output.set("torso", torso);
@@ -385,10 +435,13 @@ function composeArm(
     sign * reachActivity * clamp(acrossBodyReach * 0.12 - 0.035, -0.10, 0.12),
     0.18,
   );
-  const yaw = quatFromAxisAngle(UP, input.heading ?? 0);
-  const preferredBend = rotate(yaw, normalize({ x: sign * 0.22, y: 0, z: 1 }));
+  // The elbow stays slightly behind and outside the shoulder so that positive
+  // anatomical flexion carries the relaxed wrist forward of the elbow.
+  const preferredBend = rotate(torso.rotation, normalize({ x: sign * 0.22, y: 0, z: -1 }));
   const approximateAxis = normalize(sub(shoulder, desiredHand), UP);
-  const approximateForearmRotation = quatMultiply(quatFromTo(UP, approximateAxis), yaw);
+  const approximateForearmRotation = quatMultiply(
+    quatFromTo(rotate(torso.rotation, UP), approximateAxis), torso.rotation,
+  );
   const approximateTwistRotation = jointTargetRotation(approximateForearmRotation, twistDefinition, {
     x: 0,
     y: twistRadians,
@@ -412,12 +465,13 @@ function composeArm(
     forearmLength,
     preferredBend,
     elbowMaximum,
+    rotate(torso.rotation, RIGHT),
   );
   let upperAxis = normalize(sub(shoulder, solved.middle), UP);
   let forearmAxis = normalize(sub(solved.middle, solved.end), UP);
   let upperRotation = boundedWorldJointRotation(
     girdle.rotation,
-    hingeParentRotation(upperAxis, forearmAxis, rotate(yaw, RIGHT)),
+    hingeParentRotation(upperAxis, forearmAxis, rotate(torso.rotation, { x: -1, y: 0, z: 0 }), forearmDefinition.jointProfile!.parentFrame.rotation),
     upperDefinition,
   );
   let elbowFlexion = boundedJointTarget(
@@ -443,12 +497,13 @@ function composeArm(
     forearmLength,
     preferredBend,
     elbowMaximum,
+    rotate(torso.rotation, RIGHT),
   );
   upperAxis = normalize(sub(shoulder, solved.middle), UP);
   forearmAxis = normalize(sub(solved.middle, solved.end), UP);
   upperRotation = boundedWorldJointRotation(
     girdle.rotation,
-    hingeParentRotation(upperAxis, forearmAxis, rotate(yaw, RIGHT)),
+    hingeParentRotation(upperAxis, forearmAxis, rotate(torso.rotation, { x: -1, y: 0, z: 0 }), forearmDefinition.jointProfile!.parentFrame.rotation),
     upperDefinition,
   );
   elbowFlexion = boundedJointTarget(
@@ -513,10 +568,20 @@ function composeLeg(
   }
 
   const headingRotation = quatFromAxisAngle(UP, input.heading ?? 0);
-  const headingForward = rotate(headingRotation, FORWARD);
-  const headingRight = rotate(headingRotation, { x: 1, y: 0, z: 0 });
-  let ankleRotation = headingRotation;
-  let footRotation = headingRotation;
+  const footHeading = input.step?.foot === footId && input.step.elapsed >= 0
+    ? headingRotation
+    : input.supportFootRotations?.[footId] ?? headingRotation;
+  const headingForward = rotate(footHeading, FORWARD);
+  const headingRight = rotate(footHeading, RIGHT);
+  const pelvisForward = rotate(pelvis.rotation, FORWARD);
+  const kneeBendForward = input.supportFootRotations?.[footId]
+    && (input.step?.foot !== footId || input.step.elapsed < 0)
+    ? headingForward : pelvisForward;
+  const kneeHingeRight = input.supportFootRotations?.[footId]
+    && (input.step?.foot !== footId || input.step.elapsed < 0)
+    ? headingRight : rotate(pelvis.rotation, RIGHT);
+  let ankleRotation = footHeading;
+  let footRotation = footHeading;
   const requestedLegEnd = (): Vec3 => {
     // Work back from the requested hindfoot centre through both new joints to
     // the distal shin joint used by the two-bone leg solver.
@@ -530,8 +595,9 @@ function composeLeg(
     requestedLegEnd(),
     thighLength,
     shinLength,
-    headingForward,
+    kneeBendForward,
     kneeMaximum,
+    rotate(pelvis.rotation, RIGHT),
   );
 
   // Iterate the small ankle/foot offsets twice: ankle X removes sagittal shin
@@ -542,7 +608,7 @@ function composeLeg(
     const shinAxis = normalize(sub(solved.middle, solved.end), UP);
     const thighRotation = boundedWorldJointRotation(
       pelvis.rotation,
-      hingeParentRotation(thighAxis, shinAxis, headingRight),
+      hingeParentRotation(thighAxis, shinAxis, kneeHingeRight),
       thighDefinition,
     );
     const kneeFlexion = boundedJointTarget(
@@ -577,7 +643,7 @@ function composeLeg(
   const shinAxis = normalize(sub(solved.middle, solved.end), UP);
   const thighRotation = boundedWorldJointRotation(
     pelvis.rotation,
-    hingeParentRotation(thighAxis, shinAxis, headingRight),
+    hingeParentRotation(thighAxis, shinAxis, kneeHingeRight),
     thighDefinition,
   );
   const kneeFlexion = boundedJointTarget(

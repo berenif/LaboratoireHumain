@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import type { RefObject } from "react";
 import { REGION_IDS } from "../core/types";
 import type { DiagnosticsSnapshot, RegionId, RendererMode } from "../core/types";
+import { DEFAULT_PLAYGROUND, type PlaygroundConfig, type PlaygroundTrial } from "../core/playground";
 import { installBrowserApi } from "./browser-api";
 import { createDemoRuntime } from "./DemoRuntime";
 import type { DemoRuntime } from "./DemoRuntime";
@@ -23,6 +24,8 @@ interface DemoState {
   status: string;
   fatalError: string | null;
   qaMode: boolean;
+  playground: PlaygroundConfig;
+  trial: PlaygroundTrial;
 }
 
 function initialState(): DemoState {
@@ -37,6 +40,8 @@ function initialState(): DemoState {
     status: "Initializing real physics…",
     fatalError: null,
     qaMode: false,
+    playground: { ...DEFAULT_PLAYGROUND },
+    trial: { uprightSeconds: 0, bestSeconds: 0, falls: 0 },
   };
 }
 
@@ -98,6 +103,8 @@ export function useDemoRuntime(hostRef: RefObject<HTMLDivElement | null>): DemoS
           diagnostics: current.current.diagnostics,
           renderer: current.renderer,
           paused: current.paused,
+          playground: current.current.playground ?? { ...DEFAULT_PLAYGROUND },
+          trial: current.trial,
           anchorPoints,
           frameSummary,
           status: current.status,

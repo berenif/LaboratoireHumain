@@ -11,6 +11,7 @@ The harness writes `evidence/physics-results.json` and `evidence/successor-trace
 | Segment count, total mass, standing stature | 25, 72.2 kg, 1.84 m |
 | World-space separation of corresponding joint anchors | At most 0.08 m |
 | Collider depth below the enabled floor | At most 0.08 m |
+| Non-excluded character surface penetration | At most 0.005 m, with offending segment pair recorded |
 | Structural joint-limit error under sustained torque | At most 0.06 rad |
 | Representative automatic recovery | At most 25 simulated seconds from committed fall |
 | Stable standing observation after recovery | At least 1 consecutive second |
@@ -23,7 +24,7 @@ The harness writes `evidence/physics-results.json` and `evidence/successor-trace
 | Paired lockout replay position / velocity difference | At most 0.0000001 m / velocity units |
 | Paired lockout replay rotation difference | At most 0.00001 degrees |
 
-All positions, rotations, velocities, joint coordinates, limit errors, motor loads, saturations, and contact measurements must remain finite. Actual joint torque is checked against each joint profile's permitted-axis actuator budget. Contact diagnostics must report a consistent total count, load-bearing count, normal load, and supporting-segment list.
+All positions, rotations, velocities, joint coordinates, limit errors, motor loads, saturations, and contact measurements must remain finite. Actual joint torque is checked against each joint profile's permitted-axis actuator budget. Contact diagnostics report a consistent total count, load-bearing count, normal load, supporting-segment list, and planned versus measured load for each current patch. Planned vertical load is capped at 1.35 times body weight, and contacts without measured support receive zero planned load.
 
 ## Continuous physics ownership
 
@@ -72,6 +73,8 @@ Eligibility follows anatomical roles. Rolling may use the trunk, limbs, hands, s
 ## Scenario coverage
 
 Deterministic pulls cover both sides, four directions, three headings, reversal, held targets, and release during an actual corrective swing. Gentle pulls must remain recoverable, stronger pulls must provoke stepping, and overpowering pulls must create a physical fall without stretching joint anchors.
+
+Cross-body drag paths take each hand across the chest, abdomen, and opposite shoulder and each foot across the midline at two headings. Every fixed update checks the deepest non-excluded self-contact against the 5 mm limit.
 
 Recovery fixtures cover crouch, half-kneel, prone, supine, and both sides. Each phase advances only from integrated contact, pose, support-margin, and movement evidence. The suite also covers five consecutive cycles without Reset, floor loss and restoration, supported obstruction retries, pause/resume, Reset, lockout trajectory isolation, and the fresh-press requirement after recovery.
 

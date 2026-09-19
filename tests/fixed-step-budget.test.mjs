@@ -1,0 +1,30 @@
+import assert from "node:assert/strict";
+import test, { after } from "node:test";
+import { register } from "tsx/esm/api";
+const unregister = register();
+after(unregister);
+const { FixedStepLoop } = await import("../src/core/FixedStepLoop.ts");
+
+test("expensive physics yields after one fixed step and accounts for dropped catch-up time", t => {
+  let callback;
+  let clock = 0;
+  const timesteps = [];
+  let renders = 0;
+  t.mock.method(performance, "now", () => clock);
+  const oldRaf = globalThis.requestAnimationFrame;
+  const oldCancel = globalThis.cancelAnimationFrame;
+  globalThis.requestAnimationFrame = fn => { callback = fn; return 1; };
+  globalThis.cancelAnimationFrame = () => {};
+  const loop = new FixedStepLoop(dt => { timesteps.push(dt); clock += 30; }, () => renders++);
+  t.after(() => { loop.stop(); globalThis.requestAnimationFrame = oldRaf; globalThis.cancelAnimationFrame = oldCancel; });
+  loop.start();
+  callback(0);
+  callback(100);
+  assert.deepEqual(timesteps, [1 / 60]);
+  assert.equal(renders, 2);
+  assert.ok(loop.stats().droppedTimeMs > 65);
+  loop.pause();
+  callback(200);
+  assert.equal(timesteps.length, 1);
+  assert.equal(renders, 3);
+});

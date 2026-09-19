@@ -47,6 +47,8 @@ type RecordData = {
   physicalRecovery: RecoveryPhysicsMeasurements; states: MotionState[]; phases: RecoveryPhase[]; violations: Set<string>;
   bodyRefs: Map<SegmentId, RigidBody>; colliderRefs: Map<SegmentId, Collider>;
   maxJointM: number; maxFloorM: number; maxLinearMps: number; maxAngularRadps: number; maxStepCount: number;
+  maxSelfPenetrationM: number; selfPenetrationPair: readonly [SegmentId, SegmentId] | null;
+  selfPenetrationTimeS: number; selfPenetrationState: MotionState | null;
   maxJointLimitErrorRad: number; maxMotorSaturationRatio: number; maxMotorTorqueNm: number; maxContactCount: number;
   stateTransitions: StateTransitionMeasurement[];
   lockedFrames: number; supportedFrames: number; assistedFrames: number; firstFallS: number | null; recoveredS: number | null;
@@ -223,6 +225,13 @@ function measure(r: RecordData, snapshot: PoseSnapshot, character: CharacterCont
   if (r.phases.at(-1) !== recovery.phase) r.phases.push(recovery.phase);
   r.maxJointM = Math.max(r.maxJointM, jointError(snapshot));
   if (r.floorPresent) r.maxFloorM = Math.max(r.maxFloorM, floorError(snapshot, character));
+  if (!Number.isFinite(d.maxSelfPenetrationM) || d.maxSelfPenetrationM < 0) r.violations.add("Invalid self-penetration diagnostic");
+  if (d.maxSelfPenetrationM > r.maxSelfPenetrationM) {
+    r.maxSelfPenetrationM = d.maxSelfPenetrationM;
+    r.selfPenetrationPair = d.selfPenetrationPair;
+    r.selfPenetrationTimeS = snapshot.simulationTime;
+    r.selfPenetrationState = snapshot.state;
+  }
   r.maxLinearMps = Math.max(r.maxLinearMps, ...snapshot.segments.map(p => length(p.linearVelocity)));
   r.maxAngularRadps = Math.max(r.maxAngularRadps, ...snapshot.segments.map(p => length(p.angularVelocity)));
   r.maxStepCount = Math.max(r.maxStepCount, d.stepCount);
@@ -251,13 +260,27 @@ function measure(r: RecordData, snapshot: PoseSnapshot, character: CharacterCont
     || contacts.count < contacts.loadBearingCount || contacts.loadBearingCount < 0 || contacts.totalNormalForceN < 0) {
     r.violations.add("Invalid measured contact diagnostics");
   }
+  const plannedTotalN = contacts.supportLoads.reduce((sum, load) => sum + load.plannedForceN, 0);
+  if (!Number.isFinite(plannedTotalN) || plannedTotalN > 1.35 * TOTAL_MASS_KG * 9.81 + 1e-6) {
+    r.violations.add("Planned support load exceeded bounded body weight");
+  }
+  for (const load of contacts.supportLoads) {
+    if (![load.plannedForceN, load.measuredForceN].every(Number.isFinite)
+      || load.plannedForceN < 0 || load.measuredForceN < 0) r.violations.add(`Invalid support load for ${load.segment}`);
+    if (!contacts.supportingSegments.includes(load.segment) && load.plannedForceN > 1e-8) {
+      r.violations.add(`Unsupported ${load.segment} received planned ground reaction`);
+    }
+  }
   if (LOCKED.has(snapshot.state)) {
     r.lockedFrames++; r.firstFallS ??= snapshot.simulationTime;
     if (d.bodyInputAvailable || !zeroExternal(snapshot)) r.violations.add("Body input/grab contribution survived lockout");
   } else if (!d.bodyInputAvailable) r.violations.add("Standing body input unavailable");
   if (r.firstFallS !== null && r.recoveredS === null && snapshot.state === "upright") r.recoveredS = snapshot.simulationTime;
   if (snapshot.support.swingFoot && snapshot.support.planted.includes(snapshot.support.swingFoot)) r.violations.add("Swinging foot counted as supporting");
-  if (snapshot.support.planted.some(foot => pose(snapshot, foot).position.y > 0.10)) r.violations.add("Lifted foot counted as supporting");
+  for (const foot of snapshot.support.planted) {
+    const height = pose(snapshot, foot).position.y;
+    if (height > 0.10) r.violations.add(`Lifted ${foot} counted as supporting at ${height.toFixed(6)} m, ${snapshot.simulationTime.toFixed(3)} s, ${snapshot.state}`);
+  }
   const currentMotion = motion(snapshot);
   const stableStanding = snapshot.state === "upright" && snapshot.support.planted.length === 2
     && currentMotion.linear <= RECOVERY_LIMITS.stableLinearMps && currentMotion.angular <= RECOVERY_LIMITS.stableAngularRadps
@@ -318,7 +341,7 @@ function measure(r: RecordData, snapshot: PoseSnapshot, character: CharacterCont
 async function create(options: { heading?: number; position?: Vec3 } = {}): Promise<CharacterController> {
   const factory = createEmbodiedCharacter as unknown as (renderer: "canvas2d", options: { heading?: number; position?: Vec3 }) => Promise<CharacterController>;
   const character = await factory("canvas2d", options), initial = character.getSnapshot("canvas2d");
-  const r: RecordData = { physicalRecovery: newRecoveryPhysicsMeasurements(), states: [], phases: [], violations: new Set(), bodyRefs: new Map(), colliderRefs: new Map(), maxJointM: 0, maxFloorM: 0, maxLinearMps: 0, maxAngularRadps: 0, maxStepCount: 0,
+  const r: RecordData = { physicalRecovery: newRecoveryPhysicsMeasurements(), states: [], phases: [], violations: new Set(), bodyRefs: new Map(), colliderRefs: new Map(), maxJointM: 0, maxFloorM: 0, maxSelfPenetrationM: 0, selfPenetrationPair: null, selfPenetrationTimeS: 0, selfPenetrationState: null, maxLinearMps: 0, maxAngularRadps: 0, maxStepCount: 0,
     maxJointLimitErrorRad: 0, maxMotorSaturationRatio: 0, maxMotorTorqueNm: 0, maxContactCount: 0,
     stateTransitions: [],
     lockedFrames: 0, supportedFrames: 0, assistedFrames: 0, firstFallS: null, recoveredS: null, final: initial, samples: 0, floorPresent: true,
@@ -368,6 +391,8 @@ function commandAt(f: PullFixture, frame: number, start: Vec3, pointerId: number
 }
 function describe(r: RecordData): Record<string, unknown> {
   return { physicalRecovery: r.physicalRecovery.report, states: r.states, phases: r.phases, samples: r.samples, maxJointSeparationM: r.maxJointM, maxFloorPenetrationM: r.maxFloorM,
+    maxSelfPenetrationM: r.maxSelfPenetrationM, selfPenetrationPair: r.selfPenetrationPair,
+    selfPenetrationTimeS: r.selfPenetrationTimeS, selfPenetrationState: r.selfPenetrationState,
     maxLinearMps: r.maxLinearMps, maxAngularRadps: r.maxAngularRadps, steps: r.maxStepCount, lockedFrames: r.lockedFrames, supportedFrames: r.supportedFrames, assistedFrames: r.assistedFrames,
     physicsOwnership: r.final.diagnostics.physicsOwnership, segmentCount: r.bodyRefs.size,
     maxJointLimitErrorRad: r.maxJointLimitErrorRad, maxMotorSaturationRatio: r.maxMotorSaturationRatio,
@@ -388,6 +413,7 @@ async function scenario(name: string, run: (failures: string[]) => Promise<Recor
     failures.push(...r.violations);
     if (r.maxJointM > ACCEPTANCE.maxJointSeparationM) failures.push("Joint anchors separated " + r.maxJointM.toFixed(6) + " m > 0.08 m");
     if (r.maxFloorM > ACCEPTANCE.maxFloorPenetrationM) failures.push("Collider floor penetration " + r.maxFloorM.toFixed(6) + " m > 0.08 m");
+    if (r.maxSelfPenetrationM > ACCEPTANCE.maxNonExcludedSelfPenetrationM) failures.push(`Non-excluded self-penetration ${r.maxSelfPenetrationM.toFixed(6)} m at ${r.selfPenetrationPair?.join("/") ?? "unknown pair"} > 0.005 m`);
     trajectories.push(describe(r)); character.dispose();
   }
   metrics.trajectories = trajectories;
@@ -559,6 +585,37 @@ await scenario("seven-region-picking", async failures => {
   const forefoot=pose(snapshot,"leftForefoot"),forefootHit=c.pick({origin:add(forefoot.position,{x:0,y:-.5,z:0}),direction:UP});
   if(forefootHit?.segment!=="leftForefoot" || forefootHit.region!=="leftFoot") failures.push("Grouped foot picking did not retain the exact forefoot segment");
   return { picked,forefootHit };
+});
+await scenario("cross-body-limb-collision-paths", async failures => {
+  const attempts: Array<{ limb: "leftHand" | "rightHand" | "leftFoot" | "rightFoot"; route: string; heading: number; maxPenetrationM: number; pair: readonly [SegmentId, SegmentId] | null }> = [];
+  for (const heading of [0, Math.PI / 3]) for (const limb of ["leftHand", "rightHand", "leftFoot", "rightFoot"] as const) {
+    for (const route of limb.endsWith("Hand") ? ["chest", "abdomen", "opposite-shoulder"] : ["midline"]) {
+      const c = await create({ heading });
+      advance(c, 60);
+      const start = begin(c, limb, 701);
+      c.fixedUpdate(DT, start.command);
+      const initial = c.getSnapshot("canvas2d");
+      const side = limb.startsWith("left") ? 1 : -1;
+      const reference = pose(initial, limb.endsWith("Hand") ? "torso" : "pelvis");
+      const localTarget = route === "chest" ? { x: side * 0.18, y: 0, z: 0.14 }
+        : route === "abdomen" ? { x: side * 0.16, y: -0.24, z: 0.13 }
+          : route === "opposite-shoulder" ? { x: side * 0.28, y: 0.12, z: 0.10 }
+            : { x: side * 0.16, y: -0.85, z: 0.13 };
+      const target = worldPoint(reference.position, reference.rotation, localTarget);
+      for (let frame = 1; frame <= 90; frame++) {
+        c.fixedUpdate(DT, {
+          kind: "move", pointerId: 701,
+          worldTarget: lerp(start.start, target, frame / 90),
+          timestampMs: (60 + frame) * DT * 1000,
+        });
+      }
+      c.fixedUpdate(DT, { kind: "end", pointerId: 701, timestampMs: 151 * DT * 1000 });
+      const record = records.get(c)!;
+      attempts.push({ limb, route, heading, maxPenetrationM: record.maxSelfPenetrationM, pair: record.selfPenetrationPair });
+      if (record.maxSelfPenetrationM > ACCEPTANCE.maxNonExcludedSelfPenetrationM) failures.push(`${limb} ${route} at heading ${heading.toFixed(2)} crossed ${record.selfPenetrationPair?.join("/") ?? "unknown pair"}`);
+    }
+  }
+  return { attempts };
 });
 for (const f of [...PULL_FIXTURES,...NATIVE_REGRESSION_FIXTURES]) await scenario(f.id, failures => runPull(f, failures));
 

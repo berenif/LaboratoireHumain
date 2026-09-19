@@ -57,10 +57,10 @@ export function recoveryFixturePoses(fixture: RecoveryPoseFixture): Map<SegmentI
       if (!definition.parent) continue;
       let coordinates = ZERO;
       if (definition.id.endsWith("UpperArm")) coordinates = {
-        x: -0.10, y: 0, z: definition.id.startsWith("left") ? -0.04 : 0.04,
+        x: 0.10, y: 0, z: definition.id.startsWith("left") ? 0.04 : -0.04,
       };
       if (definition.role === "forearm") coordinates = { x: 0.20, y: 0, z: 0 };
-      if (definition.role === "thigh") coordinates = { x: -0.34, y: 0, z: 0 };
+      if (definition.role === "thigh") coordinates = { x: 0.34, y: 0, z: 0 };
       if (definition.role === "shin") coordinates = { x: 1.10, y: 0, z: 0 };
       if (definition.role === "ankle") coordinates = { x: -0.76, y: 0, z: 0 };
       setChild(poses, definition.id, coordinates);
@@ -79,7 +79,7 @@ export function recoveryFixturePoses(fixture: RecoveryPoseFixture): Map<SegmentI
         ? { x: 0.08, y: 0, z: 0 }
         : { x: 0.20, y: 0, z: leading === "left" ? -0.16 : 0.16 };
       if (definition.id.endsWith("UpperArm")) coordinates = {
-        x: -0.10, y: 0, z: definition.id.startsWith("left") ? -0.04 : 0.04,
+        x: 0.10, y: 0, z: definition.id.startsWith("left") ? 0.04 : -0.04,
       };
       if (definition.role === "forearm") coordinates = { x: 0.20, y: 0, z: 0 };
       if (definition.id.endsWith("Thigh")) {
@@ -102,13 +102,13 @@ export function recoveryFixturePoses(fixture: RecoveryPoseFixture): Map<SegmentI
       const near = definition.id.startsWith(fixture.side);
       let coordinates = ZERO;
       if (definition.id.endsWith("UpperArm")) coordinates = {
-        x: fixture.pose === "supine" ? -0.30 : 0.12,
+        x: fixture.pose === "supine" ? 0.30 : -0.12,
         y: 0,
-        z: (definition.id.startsWith("left") ? -1 : 1) * (near ? 0.18 : 0.34),
+        z: (definition.id.startsWith("left") ? 1 : -1) * (near ? 0.18 : 0.34),
       };
       if (definition.role === "forearm") coordinates = { x: near ? 0.40 : 0.72, y: 0, z: 0 };
       if (definition.id.endsWith("Hand")) coordinates = { x: 0.28, y: 0, z: 0 };
-      if (definition.id.endsWith("Thigh")) coordinates = { x: near ? -0.18 : -0.34, y: 0, z: 0 };
+      if (definition.id.endsWith("Thigh")) coordinates = { x: near ? 0.18 : 0.34, y: 0, z: 0 };
       if (definition.id.endsWith("Shin")) coordinates = { x: near ? 0.30 : 0.55, y: 0, z: 0 };
       if (definition.id.endsWith("Ankle")) coordinates = { x: -0.12, y: 0, z: 0 };
       setChild(poses, definition.id, coordinates);

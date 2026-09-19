@@ -77,6 +77,7 @@ export class FixedStepLoop {
     this.accumulator += elapsed;
 
     let steps = 0;
+    const frameStartMs = performance.now();
     while (this.accumulator >= WORLD.fixedDt && steps < WORLD.maxCatchUpSteps) {
       const start = performance.now();
       this.fixedUpdate(WORLD.fixedDt);
@@ -88,6 +89,9 @@ export class FixedStepLoop {
       this.statsValue.meanStepMs += (duration - this.statsValue.meanStepMs) / this.stepSamples;
       this.accumulator -= WORLD.fixedDt;
       steps += 1;
+      // A costly fall/recovery step must yield to rendering and user input.
+      // Keep the fixed timestep; discard overdue catch-up time below.
+      if (performance.now() - frameStartMs >= 12) break;
     }
 
     if (this.accumulator >= WORLD.fixedDt) {

@@ -6,6 +6,7 @@ export const ACCEPTANCE = Object.freeze({
   fixedDtS: 1 / 60,
   maxJointSeparationM: 0.08,
   maxFloorPenetrationM: 0.08,
+  maxNonExcludedSelfPenetrationM: 0.005,
   trajectoryPositionToleranceM: 1e-7,
   trajectoryRotationToleranceDegrees: 1e-5,
   trajectoryVelocityTolerance: 1e-7,

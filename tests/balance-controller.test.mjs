@@ -62,8 +62,14 @@ test("balance mass estimate includes segment masses and rejects a manipulated ne
   assert.ok(length(sub(mass.velocity, { x: 0.4, y: -0.2, z: 0.1 })) < 1e-12);
   const controller = new BalanceController(); controller.reset(poses);
   const start = poses.get("rightFoot").position;
+  const left = poses.get("leftFoot").position;
+  const contacts = [{ segment: "leftFoot", normalY: 1, forceN: 400, persistenceS: 1,
+    point: { x: left.x, y: 0, z: left.z },
+    points: [-1, 1].flatMap(sx => [-1, 1].map(sz => ({ x: left.x + sx * .05, y: 0, z: left.z + sz * .1 }))),
+    loadBearing: true }];
   const output = controller.update({ dt, poses, rootPosition: input.rootTranslation,
     activeGrab: { region: "rightFoot", target: { ...start, x: start.x + 0.1 }, startTarget: start, startSegmentPosition: start },
+    contacts,
   });
   assert.deepEqual(output.diagnostics.supportingFeet, ["leftFoot"]);
   assert.ok(output.appliedGrabForceN <= BALANCE_LIMITS.maxPullForceN);

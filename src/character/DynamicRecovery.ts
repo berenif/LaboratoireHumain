@@ -6,7 +6,9 @@ import { add, angularVelocity, clamp, clampLength, length, lerp, dot, cross, nor
 const ZERO: Vec3 = { x: 0, y: 0, z: 0 };
 const UP: Vec3 = { x: 0, y: 1, z: 0 };
 import { applyCoupledJointMotors, type JointMotorCommand } from "./joint-motors";
+import { minimumSupportTorqueLimit, planContactLoads } from "./contact-loads";
 import { blendRecoveryJointTargets, limitRecoveryJoint, reconstructRecoveryLimb, recoveryJointLimitError, recoveryJointRotation, recoveryLimbIds } from "./recovery-joints";
+import { limbBodyClearance, limbTrunkClearance } from "./limb-collisions";
 import { reachableFootTarget, revalidateRecoveryFootTarget, solveRecoveryLegTarget, type RecoveryFootTarget } from "./recovery-foot-targets";
 import { acceptableRecoveryArmBraceTarget, isRecoveryArmSupportSegment, isRecoveryFootSegment, isRecoveryLegSupportSegment, RECOVERY_ARM_TARGET_TOLERANCE, recoveryMassState, selectRecoveryContacts, selectRecoveryRoute, supportGeometry, reachableArmBraceTarget, solveRecoveryArmTarget, usableRecoveryArmSupport, type RecoveryArmBraceTarget } from "./recovery-support";
 const SIDES = ["left", "right"] as const;
@@ -69,7 +71,7 @@ export function emptyRecoveryDiagnostics(): RecoveryDiagnostics {
     releasedSupports: [], releaseMarginM: null, extension: 0, progressError: null, noSupportTimeS: 0, orientation: "forward", contacts: [], phaseTimeS: 0, settledTimeS: 0,
     stableTimeS: 0, stalledTimeS: 0, retries: 0, assistanceForce: ZERO, assistanceTorque: ZERO,
     assistanceForceCapN: RECOVERY_LIMITS.assistanceForceN, assistanceTorqueCapNm: RECOVERY_LIMITS.assistanceTorqueNm,
-    maxMotorTorqueNm: 0, supporting: [] };
+    maxMotorTorqueNm: 0, supporting: [], supportLoads: [] };
 }
 
 /** Rapier owns every dynamic transform. Plans only become bounded joint impulses. */
@@ -130,6 +132,7 @@ export class DynamicRecovery {
     return { ...this.data, contacts: this.data.contacts.map(c => ({ ...c, point: { ...c.point }, points: c.points?.map(p => ({...p})) })),
       plantedTargets: this.data.plantedTargets.map(p => ({...p,position:{...p.position},rotation:{...p.rotation}})),
       supporting: [...this.data.supporting], releasedSupports: [...this.data.releasedSupports],
+      supportLoads: this.data.supportLoads?.map(load=>({...load})),
       recoveryAxis: this.data.recoveryAxis ? {...this.data.recoveryAxis} : undefined,
       plannedSupportSources: this.data.plannedSupportSources ? [...this.data.plannedSupportSources] : undefined,
       establishedSupportSources: this.data.establishedSupportSources ? [...this.data.establishedSupportSources] : undefined,
@@ -143,12 +146,20 @@ export class DynamicRecovery {
   }
 
   /** Contact points are copied before another WASM query can reuse its scratch storage. */
-  observe(world: World, floor: Collider, colliders: Map<SegmentId, Collider>, bodies: Map<SegmentId, RigidBody>, dt: number): void {
+  observe(world: World, floor: Collider | readonly Collider[], colliders: Map<SegmentId, Collider>, bodies: Map<SegmentId, RigidBody>, dt: number): void {
     const contacts: SupportingContact[] = [];
+    const supportSurfaces = (Array.isArray(floor) ? floor : [floor]).filter(surface => surface.isEnabled());
+    const surfaceHandles = new Set(supportSurfaces.map(surface => surface.handle));
+    const sleepingEquilibrium = supportSurfaces.length > 0 && bodies.size > 0
+      && [...bodies.values()].every(body => body.isSleeping());
     for (const [segment, collider] of colliders) {
       let normalY = 0, impulse = 0;
       const points: Vec3[] = [];
-      if (floor.isEnabled()) world.contactPair(floor, collider, (manifold, flipped) => {
+      const nearbySurfaces: Collider[] = [];
+      if (supportSurfaces.length > 1) world.contactPairsWith(collider, surface => {
+        if (surfaceHandles.has(surface.handle)) nearbySurfaces.push(surface);
+      });
+      for (const surface of supportSurfaces.length > 1 ? nearbySurfaces : supportSurfaces) world.contactPair(surface, collider, (manifold, flipped) => {
         const upward = manifold.normal().y * (flipped ? -1 : 1);
         let touching = false;
         for (let i = 0; i < manifold.numSolverContacts(); i++) {
@@ -164,11 +175,44 @@ export class DynamicRecovery {
       const loaded = points.length > 0 && forceN >= RECOVERY_LIMITS.minimumLoadN;
       const age = loaded ? (this.contactAges.get(segment) ?? 0) + dt : 0;
       this.contactAges.set(segment, age);
-      if (points.length) contacts.push({ segment, normalY, forceN, persistenceS: age, points,
+      if (points.length) contacts.push({ segment, normalY, forceN, measuredForceN: forceN,
+        persistenceS: age, points,
         point: scale(points.reduce(add, ZERO), 1 / points.length), loadBearing: loaded && age + 1e-9 >= RECOVERY_LIMITS.loadPersistenceS });
     }
+    // Sleeping rigid bodies produce no new impulse, but their solver manifolds
+    // remain real floor contacts. Keep those patches available at static
+    // equilibrium; a missing manifold is removed on this same observation.
+    if (sleepingEquilibrium && contacts.length) {
+      const staticShare = WEIGHT_N / contacts.length;
+      for (const contact of contacts) {
+        const prior = this.data.contacts.find(previous => previous.segment === contact.segment
+          && previous.loadBearing && previous.forceN > 0);
+        contact.sleepingEquilibrium = true;
+        contact.forceN = prior?.forceN ?? staticShare;
+        contact.persistenceS = Math.max(contact.persistenceS, prior?.persistenceS ?? 0,
+          RECOVERY_LIMITS.loadPersistenceS);
+        contact.loadBearing = true;
+        this.contactAges.set(contact.segment, contact.persistenceS);
+      }
+    }
     this.data.contacts = contacts;
+    const previousLoads = this.data.supportLoads ?? [];
+    this.data.supportLoads = contacts.map(contact => ({
+      segment: contact.segment,
+      plannedForceN: contact.loadBearing && !this.released.has(contact.segment)
+        ? previousLoads.find(load => load.segment === contact.segment)?.plannedForceN ?? 0 : 0,
+      measuredForceN: contact.measuredForceN ?? contact.forceN,
+    }));
     const poses = this.poses(bodies), motion = this.motion(bodies);
+    const plantSpeed = (contact: SupportingContact): number => {
+      const body = bodies.get(contact.segment)!;
+      const velocity = add(body.linvel(), cross(body.angvel(), sub(contact.point, body.translation())));
+      return Math.hypot(velocity.x, velocity.z);
+    };
+    const canCapturePlant = (contact: SupportingContact): boolean => {
+      const velocity = bodies.get(contact.segment)!.linvel();
+      return plantSpeed(contact) < 0.18 && Math.hypot(velocity.x, velocity.z) < 0.18;
+    };
     const feet = contacts.filter(c => c.loadBearing && isRecoveryFootSegment(c.segment));
     const supportedCrouch = supportingSideCount(feet, isRecoveryFootSegment) === 2
       && rotate(bodies.get("torso")!.rotation(), UP).y > 0.65 && bodies.get("pelvis")!.translation().y < 0.85;
@@ -177,8 +221,12 @@ export class DynamicRecovery {
     const settled = contacts.some(c => c.forceN >= RECOVERY_LIMITS.minimumLoadN) && motion.linear <= RECOVERY_LIMITS.settleLinearMps && motion.angular <= RECOVERY_LIMITS.settleAngularRadps;
     this.data.settledTimeS = settled ? this.data.settledTimeS + dt : 0;
     for (const [id, plant] of this.plants) {
-      plant.absentS = contacts.some(c => c.segment === id && c.forceN >= RECOVERY_LIMITS.minimumLoadN) ? 0 : plant.absentS + dt;
-      if (plant.absentS > 0.10 || !floor.isEnabled()) this.plants.delete(id);
+      const contact = contacts.find(c => c.segment === id && c.forceN >= RECOVERY_LIMITS.minimumLoadN);
+      plant.absentS = contact ? 0 : plant.absentS + dt;
+      // A sliding contact still carries measured load, but its old pose is no
+      // longer a usable anchor for the recovery motors.
+      const slipM = length(sub(poses.get(id)!.position, plant.position));
+      if (plant.absentS > 0.10 || !supportSurfaces.length || slipM > 0.05) this.plants.delete(id);
     }
     for (const id of this.released) {
       const movement=this.footMovements.get(id);
@@ -221,7 +269,7 @@ export class DynamicRecovery {
         || length(sub(hand.position,target.position))>=.14
         || !usableRecoveryArmSupport(side,poses,contactsForSide))continue;
       for(const id of ids) {this.released.delete(id);this.releasedUnloaded.delete(id);}
-      for(const contact of contactsForSide) if(contact.loadBearing) {
+      for(const contact of contactsForSide) if(contact.loadBearing && canCapturePlant(contact)) {
         const pose=poses.get(contact.segment)!;
         this.plants.set(contact.segment,{position:{...pose.position},rotation:{...pose.rotation},absentS:0,contact:{...contact.point}});
       }
@@ -229,6 +277,7 @@ export class DynamicRecovery {
     }
     for (const c of contacts) {
       if (!c.loadBearing || this.plants.has(c.segment) || this.released.has(c.segment)
+        || !canCapturePlant(c)
         || !(isRecoveryArmSupportSegment(c.segment) || isRecoveryLegSupportSegment(c.segment))) continue;
       const pose = poses.get(c.segment)!;
       this.plants.set(c.segment, { position: {...pose.position}, rotation: {...pose.rotation}, absentS: 0, contact:{...c.point} });
@@ -417,7 +466,10 @@ export class DynamicRecovery {
     if([...raw].some(([id,q])=>recoveryJointLimitError(id,q)>RECOVERY_ARM_TARGET_TOLERANCE.maximumJointLimitErrorRad))return null;
     const geometry=reconstructRecoveryLimb(side,true,parent,limited);
     const hand=geometry.poses.find(pose=>pose.id===end)!;
+    const complete=new Map<SegmentId,SegmentPose>(poses);
+    for(const pose of geometry.poses)complete.set(pose.id,pose);
     return geometry.floorClearanceM>=-RECOVERY_ARM_TARGET_TOLERANCE.maximumFloorPenetrationM
+      && limbTrunkClearance(complete,side,"arm").clearanceM>=.004
       && length(sub(hand.position,desired))<.02?limited:null;
   }
   private release(ids: SegmentId[], poses: Map<SegmentId,SegmentPose>): RecoveryReleaseResult {
@@ -426,6 +478,13 @@ export class DynamicRecovery {
     // release or when the requested limb has no current load to remove.
     const geometry = supportGeometry(this.supporting(poses),poses,recoveryMassState(poses.values()),ids);
     if (geometry.marginM < 0 || geometry.polygon.length < 3 || !geometry.supporting.length) return "blocked";
+    const releasedArmLoad = ids.some(isRecoveryArmSupportSegment)
+      ? this.supporting(poses).filter(contact=>ids.includes(contact.segment)
+        && isRecoveryArmSupportSegment(contact.segment)).reduce((sum,contact)=>sum+contact.forceN,0)
+      : 0;
+    // A loaded hand or forearm stays braced until other measured patches have
+    // accepted its share; a target position alone cannot authorize the lift.
+    if(releasedArmLoad>0 && geometry.loadedForceN<releasedArmLoad*1.15)return "blocked";
     this.data.releaseMarginM = geometry.marginM;
     if(ids.every(id=>this.released.has(id))) return "already-released";
     const loaded = ids.filter(id => !this.released.has(id) && this.data.contacts.some(c=>c.segment===id && c.loadBearing));
@@ -1042,19 +1101,30 @@ export class DynamicRecovery {
     const supportsForLoad=active
       ?(pushingBrace?plannedBraceSupports:measuredSupports)
       :loaded.filter(c=>!isRecoveryFootSegment(c.segment) || rotate(poses.get(c.segment)!.rotation,UP).y>.5);
-    const supportingEnds=supportsForLoad;
+    const restingTrunk=this.data.contacts.filter(contact=>contact.loadBearing && contact.forceN>0
+      && contact.normalY>=RECOVERY_LIMITS.normalY && !this.released.has(contact.segment)
+      && (contact.segment==="pelvis" || contact.segment==="lumbar" || contact.segment==="torso"));
+    const supportingEnds=[...new Map([...supportsForLoad,...restingTrunk]
+      .map(contact=>[contact.segment,contact])).values()];
     const massState=recoveryMassState(poses.values());
-    const pressurePoints=supportingEnds.map(contact=>({...contact.point}));
-    const totalContactLoad=supportsForLoad.reduce((sum,c)=>sum+c.forceN,0);
-    let shares=supportingEnds.map(c=>active ? c.forceN/Math.max(1,totalContactLoad) : 1/Math.max(1,supportingEnds.length));
-    const targetMass=add(massState.position,scale(massState.velocity,.15));
-    for(let iteration=0;iteration<(active?8:32) && shares.length>1;iteration++) {
-      const center=pressurePoints.reduce((sum,p,i)=>add(sum,scale(p,shares[i])),ZERO);
-      const error={x:center.x-targetMass.x,y:0,z:center.z-targetMass.z};
-      const average=pressurePoints.reduce(add,ZERO);
-      shares=shares.map((w,i)=>Math.max(0,w-1.5*dot(sub(pressurePoints[i],scale(average,1/shares.length)),error)));
-      const total=shares.reduce((a,b)=>a+b,0); shares=shares.map(w=>w/Math.max(total,1e-9));
-    }
+    const correction=active ? clampLength(sub(scale(sub(this.rootGoal,poses.get("pelvis")!.position),650),
+      scale(massState.velocity,180)),160) : ZERO;
+    const pushLoad=this.data.phase==="roll" && this.data.transferStage==="push-brace"
+      ?clamp((this.rootGoal.y-poses.get("pelvis")!.position.y)*350-massState.velocity.y*90,0,80):0;
+    const verticalLoad=active
+      ?((this.data.phase==="kneel" || (this.data.route==="half-kneel" && this.data.phase==="stand"))
+        ?.8*WEIGHT_N+clamp((this.rootGoal.y-poses.get("pelvis")!.position.y)*250-massState.velocity.y*100,0,30)
+        :WEIGHT_N+pushLoad+(this.data.phase==="roll"?0:Math.max(0,this.rootGoal.y-poses.get("pelvis")!.position.y)*1000))
+      :WEIGHT_N;
+    const plan=planContactLoads(supportingEnds,massState.position,massState.velocity,
+      {x:correction.x,y:verticalLoad,z:correction.z},
+      {frictionCoefficient:1.2,maxHorizontalForceN:160,
+        maxJointTorqueNm:minimumSupportTorqueLimit(supportingEnds)});
+    this.data.supportLoads=this.data.contacts.map(contact=>{
+      const planned=plan.loads.find(load=>load.segment===contact.segment);
+      return {segment:contact.segment,plannedForceN:planned?.plannedForce.y??0,
+        measuredForceN:contact.measuredForceN??contact.forceN};
+    });
     const descends=(id:SegmentId,ancestor:SegmentId):boolean=>{let current:SegmentId|null=id;while(current){if(current===ancestor)return true;current=SEGMENT_BY_ID.get(current)!.parent;}return false;};
     const commands=new Map<SegmentId,Quat>();
     for(const d of SEGMENTS) {
@@ -1070,13 +1140,23 @@ export class DynamicRecovery {
         || (this.movingArms.has(d.side) && armRole));
       commands.set(d.id,moving?target:blended);
     }
-    if(active) for(const side of SIDES) for(const arm of [false,true]) {
+    for(const side of SIDES) for(const arm of [false,true]) {
       const end:SegmentId=arm?`${side}Hand`:`${side}Foot`;
-      if(!this.footMovements.has(end) && !(arm && this.placingProneArms && this.released.has(end)))continue;
+      const moving=active && (this.footMovements.has(end)
+        || arm && this.placingProneArms && this.released.has(end));
+      const protecting=!active && this.data.phase==="protect" && arm;
+      if(!moving && !protecting)continue;
       const parent=poses.get(arm?"torso":"pelvis")!;
       const geometry=reconstructRecoveryLimb(side,arm,parent,commands);
-      if(geometry.floorClearanceM < -.012) {
-        this.data.blockingPredicate="commanded collider clearance after blending and limits";
+      const complete=new Map<SegmentId,SegmentPose>(poses);
+      for(const pose of geometry.poses)complete.set(pose.id,pose);
+      const bodyClearance=protecting
+        ?limbBodyClearance(complete,side,"arm")
+        :limbTrunkClearance(complete,side,arm?"arm":"leg");
+      if(geometry.floorClearanceM < -.012 || bodyClearance.clearanceM < .004) {
+        this.data.blockingPredicate=bodyClearance.clearanceM < .004
+          ? "commanded limb-body clearance after blending and limits"
+          : "commanded collider clearance after blending and limits";
         for(const pose of geometry.poses) {
           const definition=SEGMENT_BY_ID.get(pose.id)!;
           commands.set(pose.id,limitRecoveryJoint(pose.id,quatMultiply(quatInverse(poses.get(definition.parent!)!.rotation),poses.get(pose.id)!.rotation)));
@@ -1098,21 +1178,10 @@ export class DynamicRecovery {
         && ["shoulder-girdle","upper-arm","forearm","forearm-twist","hand"].includes(d.role)
         ?smooth01((this.armTimes.get(d.side)??0)/.22):1;
       let feedforward=ZERO;
-      if((active||holdCrouch) && !this.placingProneArms && supportingEnds.length) {
+      if((active||holdCrouch) && !this.placingProneArms && plan.loads.length) {
         const joint=worldPoint(child.translation(),child.rotation(),d.jointProfile.childFrame.anchor);
-        for(const [contactIndex,contact] of supportingEnds.entries()) if(descends(contact.segment,d.id)) {
-          const point=pressurePoints[contactIndex];
-          const correction=active ? clampLength(sub(scale(sub(this.rootGoal,poses.get("pelvis")!.position),650),scale(massState.velocity,180)),160) : ZERO;
-          const pushLoad=this.data.phase==="roll" && this.data.transferStage==="push-brace"
-            ?clamp((this.rootGoal.y-poses.get("pelvis")!.position.y)*350-massState.velocity.y*90,0,80):0;
-          const verticalLoad=active
-            ?((this.data.phase==="kneel" || (this.data.route==="half-kneel" && this.data.phase==="stand"))
-              ?.8*WEIGHT_N+clamp((this.rootGoal.y-poses.get("pelvis")!.position.y)*250-massState.velocity.y*100,0,30)
-              :WEIGHT_N+pushLoad+(this.data.phase==="roll"?0:Math.max(0,this.rootGoal.y-poses.get("pelvis")!.position.y)*1000))
-            :WEIGHT_N;
-          feedforward=add(feedforward,cross(sub(point,joint),{
-            x:-correction.x*shares[contactIndex],y:-verticalLoad*shares[contactIndex],z:-correction.z*shares[contactIndex],
-          }));
+        for(const load of plan.loads) if(descends(load.segment,d.id)) {
+          feedforward=add(feedforward,cross(sub(load.point,joint),scale(load.plannedForce,-1)));
         }
         for(const [id,plant] of this.plants) if(descends(id,d.id) && !this.released.has(id) && this.data.contacts.some(c=>c.segment===id&&c.loadBearing)) {
           const pose=poses.get(id)!;

@@ -163,6 +163,14 @@ export interface SupportingContact {
   /** Copied world-space solver contact patch. */
   points?: readonly Vec3[];
   loadBearing: boolean;
+  /** Raw Rapier normal impulse divided by the step, before sleep equilibrium. */
+  measuredForceN?: number;
+  sleepingEquilibrium?: boolean;
+}
+export interface SupportLoadDiagnostics {
+  segment: SegmentId;
+  plannedForceN: number;
+  measuredForceN: number;
 }
 export interface RecoveryTransferGuardDiagnostics {
   segment: SegmentId;
@@ -222,6 +230,7 @@ export interface RecoveryDiagnostics {
   assistanceTorqueCapNm: number;
   maxMotorTorqueNm: number;
   supporting: SegmentId[];
+  supportLoads?: SupportLoadDiagnostics[];
 }
 export interface BalanceStateDiagnostics {
   centerOfMass: Vec3; centerOfMassVelocity: Vec3; capturePoint: Vec3; supportCenter: Vec3;
@@ -242,6 +251,7 @@ export interface ContactStateDiagnostics {
   loadBearingCount: number;
   totalNormalForceN: number;
   supportingSegments: SegmentId[];
+  supportLoads: SupportLoadDiagnostics[];
 }
 export interface DiagnosticsSnapshot {
   balance: BalanceStateDiagnostics | null;
@@ -269,6 +279,9 @@ export interface DiagnosticsSnapshot {
   rootDisplacementM: number;
   maxJointSeparationM: number;
   maxFloorPenetrationM: number;
+  /** Greatest overlap of any pair whose physical self-contact is enabled. */
+  maxSelfPenetrationM: number;
+  selfPenetrationPair: readonly [SegmentId, SegmentId] | null;
   stepCount: number;
   support: SupportState;
   fixedSteps: number;
@@ -278,6 +291,7 @@ export interface DiagnosticsSnapshot {
 }
 
 export interface PoseSnapshot {
+  playground?: import("./playground").PlaygroundConfig;
   sequence: number;
   simulationTime: number;
   state: MotionState;
@@ -341,6 +355,7 @@ export interface PoseView {
 }
 
 export interface CharacterController {
+  setPlayground(config: import("./playground").PlaygroundConfig): void;
   clearBodyInput(): void;
   fixedUpdate(dt: number, command: GrabCommand | null): void;
   getSnapshot(renderer: RendererMode): PoseSnapshot;

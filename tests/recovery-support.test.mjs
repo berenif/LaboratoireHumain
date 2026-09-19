@@ -9,7 +9,7 @@ const { RECOVERY_POSE_FIXTURES, recoveryFixturePoses } = await import("../script
 const { restPoseMap } = await import("../src/character/pose.ts");
 const { SEGMENT_BY_ID } = await import("../src/core/humanoid.ts");
 const { quatFromAxisAngle, quatFromTo, quatInverse, quatMultiply, rotate, add, sub, normalize, scale, cross, dot, clamp, worldPoint } = await import("../src/character/math.ts");
-const { jointCoordinates, jointLimitErrorMagnitude } = await import("../src/character/joint-coordinates.ts");
+const { jointCoordinates, jointLimitErrorMagnitude, jointRotationFromCoordinates } = await import("../src/character/joint-coordinates.ts");
 const zero = { x: 0, y: 0, z: 0 }, up = { x: 0, y: 1, z: 0 };
 const identity = { x: 0, y: 0, z: 0, w: 1 };
 
@@ -225,10 +225,13 @@ test("prone brace hand orientation fits the independently reconstructed shoulder
     const target = reachableArmBraceTarget(testedSide, poses, fixture.heading);
     const axisA = normalize(sub(target.shoulder, target.elbow)), axisB = normalize(sub(target.elbow, target.wrist));
     const hinge = normalize(cross(axisA, axisB));
-    const base = quatFromTo(up, axisA), baseX = rotate(base, { x: 1, y: 0, z: 0 });
+    const forearmId = `${testedSide}Forearm`, elbowProfile = SEGMENT_BY_ID.get(forearmId).jointProfile;
+    const base = quatFromTo(up, axisA), baseX = rotate(base, rotate(elbowProfile.parentFrame.rotation, { x: 1, y: 0, z: 0 }));
     const twist = Math.atan2(dot(axisA, cross(baseX, hinge)), dot(baseX, hinge));
     const upper = quatMultiply(quatFromAxisAngle(axisA, twist), base);
-    const lower = quatMultiply(upper, quatFromAxisAngle({ x: 1, y: 0, z: 0 }, Math.acos(clamp(dot(axisA, axisB), -1, 1))));
+    const lower = quatMultiply(upper, jointRotationFromCoordinates({
+      x: Math.acos(clamp(dot(axisA, axisB), -1, 1)), y: 0, z: 0,
+    }, elbowProfile));
     const handId = `${testedSide}Hand`, handDefinition = SEGMENT_BY_ID.get(handId);
     const surface = handDefinition.geometry.vertices.map((vertex) => worldPoint(target.position, target.rotation, vertex));
     const lowest = Math.min(...surface.map(point => point.y));
@@ -237,7 +240,7 @@ test("prone brace hand orientation fits the independently reconstructed shoulder
     assert.equal(usableRecoveryArmSupport(testedSide, poses, [contact(handId, poses, 100, patch)]), target.floorReachable,
       `${fixture.id} height ${heightChange}: only a reachable generated target is usable support`);
     const girdleId = `${testedSide}ShoulderGirdle`, upperId = `${testedSide}UpperArm`;
-    const forearmId = `${testedSide}Forearm`, twistId = `${testedSide}ForearmTwist`;
+    const twistId = `${testedSide}ForearmTwist`;
     const relatives = [
       [girdleId, quatMultiply(quatInverse(poses.get("torso").rotation), poses.get(girdleId).rotation)],
       [upperId, quatMultiply(quatInverse(poses.get(girdleId).rotation), upper)],

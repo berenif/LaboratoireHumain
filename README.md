@@ -19,6 +19,10 @@ A source checkout runs without `.openai/hosting.json`. When that file exists, Vi
 
 Use **View** to select Canvas2D or WebGL2. Drag the colored head, torso, pelvis, hands, or feet. Body dragging pauses during falling and recovery, then requires a fresh press after stable standing. Drag empty space to orbit, use Shift-drag to pan, and scroll to zoom. **Reset body** restores the body and camera and preserves the paused state.
 
+The **Balance playground** has seven selectable stations: a flat base camp, an incline with a neighboring cross-slope, rolling broken ground, a narrow elevated beam, staggered stepping stones, a pitching/rolling deck, and a hurdle/slalom lane. Choose a station to place the subject there and focus the camera. **Gentle**, **Challenging**, and **Extreme** adjust slope angles, terrain roughness, beam width/height, gaps, barriers, and deck motion. Changing stations or difficulty starts a new trial and preserves pause; **Reset** retries the current station. **Arena view** shows the course and **Focus body** brings the subject closer. The trial display measures continuous supported upright time, its best streak, falls, and loaded feet.
+
+Both renderers use the same course geometry as the physical environment. Sloped and elevated support feeds the balance controller, and the moving deck advances on the physics clock, including pause/reset. Falls on difficult terrain can exceed the procedural controller's ability to recover; Reset remains available. The browser yields after a costly physics step to keep camera and trial controls responsive.
+
 ## Deploy to GitHub Pages
 
 The repository includes a GitHub Actions workflow that builds a static Next.js export and deploys `out/` to GitHub Pages. It also applies the repository subpath automatically, so project sites such as `https://berenif.github.io/LaboratoireHumain/` load their scripts, styles, and favicon correctly.

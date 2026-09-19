@@ -16,6 +16,8 @@ import {
 } from "../core/humanoid";
 import { flattenGeometryIndices, flattenGeometryVertices, lowestWorldPoint } from "../core/geometry";
 import { pickRegionProxies } from "../core/picking";
+import { ARENA, playgroundStation, type PlaygroundConfig } from "../core/playground";
+import { PhysicsPlayground } from "./PhysicsPlayground";
 import type {
   CharacterController,
   DiagnosticsSnapshot,
@@ -36,9 +38,16 @@ import type {
   SupportState,
   Vec3,
 } from "../core/types";
-import { BalanceController, type BalanceDiagnostics } from "./BalanceController";
+import { BalanceController, BALANCE_LIMITS, type BalanceDiagnostics } from "./BalanceController";
+import { minimumSupportTorqueLimit, planContactLoads, type ContactLoadPlan } from "./contact-loads";
 import { DynamicRecovery, emptyRecoveryDiagnostics } from "./DynamicRecovery";
 import { GrabAnchorController, emptyGrabDiagnostics } from "./GrabAnchorController";
+import {
+  collisionAwareLimbTarget,
+  initializeLimbCollisionQueries,
+  limbBodyClearance,
+  segmentBodyClearance,
+} from "./limb-collisions";
 import type { ArticulatedSupportConstraint } from "./articulated-inertia";
 import {
   clampJointCoordinates,
@@ -62,6 +71,7 @@ import {
   length,
   normalize,
   quatFromAxisAngle,
+  quatFromTo,
   quatInverse,
   quatMultiply,
   rotate,
@@ -79,6 +89,7 @@ import {
   restPoseMap,
   type MutablePose,
   type StepMotion,
+  type UprightPoseInput,
 } from "./pose";
 
 const ZERO: Vec3 = { x: 0, y: 0, z: 0 };
@@ -90,6 +101,10 @@ const INITIAL_ROOT: Vec3 = { x: 0, y: HUMAN_PROPORTIONS.pelvis.centerHeightM, z:
 const CHARACTER_GROUP = (0x0001 << 16) | 0x0003;
 const ENVIRONMENT_GROUP = (0x0002 << 16) | 0x0001;
 const COORDINATES = ["x", "y", "z"] as const satisfies readonly JointCoordinate[];
+const SEGMENT_BOUNDING_RADII = new Map(SEGMENTS.map((definition) => [
+  definition.id,
+  Math.max(...definition.geometry.vertices.map(({ x, y, z }) => Math.hypot(x, y, z))),
+]));
 
 type ActiveGrab = {
   pointerId: number;
@@ -107,7 +122,7 @@ type ActiveGrab = {
 let rapierInitialization: Promise<void> | null = null;
 
 function ensureRapier(): Promise<void> {
-  rapierInitialization ??= RAPIER.init();
+  rapierInitialization ??= RAPIER.init().then(initializeLimbCollisionQueries);
   return rapierInitialization;
 }
 
@@ -190,7 +205,9 @@ class EmbodiedCharacter implements CharacterController {
   private readonly floorCollider: Collider;
   private heading: number;
   private readonly initialHeading: number;
-  private readonly initialPosition: Vec3;
+  private initialPosition: Vec3;
+  private playgroundConfig?: PlaygroundConfig;
+  private playground: PhysicsPlayground | null = null;
   private grabControlDiagnostics: GrabControlDiagnostics = emptyGrabDiagnostics();
   private paused = false;
   private disposed = false;
@@ -199,6 +216,10 @@ class EmbodiedCharacter implements CharacterController {
   private reactionOffset: Vec3 = ZERO;
   private leanRadians = 0;
   private supportFeet: Record<"leftFoot" | "rightFoot", Vec3>;
+  private supportFootRotations: Record<"leftFoot" | "rightFoot", Quat>;
+  private contactLoadPlan: ContactLoadPlan = {
+    loads: [], requestedForce: ZERO, allocatedForce: ZERO, pressurePoint: ZERO,
+  };
   private step: StepMotion | null = null;
   private stepCount = 0;
   private appliedGrabForceN = 0;
@@ -241,12 +262,14 @@ class EmbodiedCharacter implements CharacterController {
       RAPIER.RigidBodyDesc.fixed().setTranslation(0, -0.08, 0),
     );
     this.floorCollider = this.world.createCollider(
-      RAPIER.ColliderDesc.cuboid(5, 0.08, 5)
+      RAPIER.ColliderDesc.cuboid(options.playground ? ARENA.width / 2 + 2 : 5, 0.08,
+        options.playground ? ARENA.depth / 2 + 2 : 5)
         .setFriction(4)
         .setRestitution(0.01)
         .setCollisionGroups(ENVIRONMENT_GROUP),
       floorBody,
     );
+    if (options.playground) this.buildPlayground(options.playground);
     this.world.step(this.eventQueue, this.physicsHooks);
     this.poses = this.initialPose();
     this.previousPoses = this.clonePoses(this.poses);
@@ -254,11 +277,16 @@ class EmbodiedCharacter implements CharacterController {
       leftFoot: { ...this.poses.get("leftFoot")!.position },
       rightFoot: { ...this.poses.get("rightFoot")!.position },
     };
-    this.createDynamicAssembly(this.poses, true);
+    this.supportFootRotations = {
+      leftFoot: { ...this.poses.get("leftFoot")!.rotation },
+      rightFoot: { ...this.poses.get("rightFoot")!.rotation },
+    };
+    this.createDynamicAssembly(this.poses, !this.playground || this.playgroundConfig?.station === "flat"
+      || this.playgroundConfig?.station === "hurdles");
     this.readPhysicsPoses();
-    this.recovery.observe(this.world, this.floorCollider, this.ragdollColliders, this.ragdollBodies, 1 / 60);
+    this.recovery.observe(this.world, this.environmentColliders(), this.ragdollColliders, this.ragdollBodies, 1 / 60);
     this.lastContacts = this.recovery.diagnostics().contacts.map((contact) => ({ ...contact }));
-    this.balance.reset(this.poses, this.heading);
+    this.balance.reset(this.poses, this.heading, this.supportHeight());
   }
 
   fixedUpdate(dt: number, command: GrabCommand | null): void {
@@ -270,6 +298,7 @@ class EmbodiedCharacter implements CharacterController {
     this.sequence += 1;
     this.fixedSteps += 1;
     this.simulationTime += stepDt;
+    this.playground?.update(this.simulationTime);
     this.previousPoses = this.clonePoses(this.poses);
     try {
       if (this.isRecoveryState()) this.updateRecovery(stepDt);
@@ -285,6 +314,7 @@ class EmbodiedCharacter implements CharacterController {
     this.renderer = renderer;
     const pelvis = this.poses.get("pelvis")!;
     return {
+      ...(this.playgroundConfig ? { playground: { ...this.playgroundConfig } } : {}),
       sequence: this.sequence,
       simulationTime: this.simulationTime,
       state: this.state,
@@ -303,6 +333,38 @@ class EmbodiedCharacter implements CharacterController {
 
   clearBodyInput(): void { this.clearGrab(); }
 
+  setPlayground(config: PlaygroundConfig): void {
+    if (this.disposed) return;
+    this.buildPlayground(config);
+    this.reset();
+  }
+
+  private buildPlayground(config: PlaygroundConfig): void {
+    this.floorCollider.setShape(new RAPIER.Cuboid(ARENA.width / 2 + 2, 0.08, ARENA.depth / 2 + 2));
+    this.playground?.dispose();
+    this.playgroundConfig = { ...config };
+    this.playground = new PhysicsPlayground(this.world, config.difficulty);
+    const { position } = playgroundStation(config.station);
+    // Spawn above the complete sole footprint, including on an incline. Reset
+    // is the only operation that repositions the subject; all trials stay dynamic.
+    let height = 0;
+    for (const x of [-0.28, 0, 0.28]) for (const z of [-0.16, 0.1, 0.28]) {
+      height = Math.max(height, this.playground.heightAt(position.x + x, position.z + z));
+    }
+    this.initialPosition = { x: position.x, y: INITIAL_ROOT.y + height, z: position.z };
+  }
+
+  private environmentColliders(): Collider[] {
+    return [this.floorCollider, ...(this.playground?.colliders ?? [])].filter(collider => collider.isEnabled());
+  }
+
+  private supportHeight(): number {
+    if (!this.playground) return 0;
+    const feet = [this.poses.get("leftFoot"), this.poses.get("rightFoot")];
+    return feet.reduce((sum, foot) => sum + (foot
+      ? this.playground!.heightAt(foot.position.x, foot.position.z, foot.position.y + 0.18) : 0), 0) / 2;
+  }
+
   pause(): void {
     this.paused = true;
     this.clearGrab();
@@ -319,6 +381,7 @@ class EmbodiedCharacter implements CharacterController {
     this.paused = true;
     this.clearGrab();
     this.clearDynamicAssembly();
+    this.playground?.dispose();
     this.eventQueue.free();
     this.world.free();
     this.disposed = true;
@@ -328,6 +391,7 @@ class EmbodiedCharacter implements CharacterController {
     if (this.disposed) return;
     this.clearGrab();
     this.clearDynamicAssembly();
+    this.playground?.reset();
     this.state = "upright";
     this.heading = this.initialHeading;
     this.kneeFlexion = HUMAN_PROPORTIONS.stance.neutralKneeFlexion;
@@ -356,11 +420,17 @@ class EmbodiedCharacter implements CharacterController {
       leftFoot: { ...this.poses.get("leftFoot")!.position },
       rightFoot: { ...this.poses.get("rightFoot")!.position },
     };
-    this.createDynamicAssembly(this.poses, true);
+    this.supportFootRotations = {
+      leftFoot: { ...this.poses.get("leftFoot")!.rotation },
+      rightFoot: { ...this.poses.get("rightFoot")!.rotation },
+    };
+    this.contactLoadPlan = { loads: [], requestedForce: ZERO, allocatedForce: ZERO, pressurePoint: ZERO };
+    this.createDynamicAssembly(this.poses, !this.playground || this.playgroundConfig?.station === "flat"
+      || this.playgroundConfig?.station === "hurdles");
     this.readPhysicsPoses();
-    this.recovery.observe(this.world, this.floorCollider, this.ragdollColliders, this.ragdollBodies, 1 / 60);
+    this.recovery.observe(this.world, this.environmentColliders(), this.ragdollColliders, this.ragdollBodies, 1 / 60);
     this.lastContacts = this.recovery.diagnostics().contacts.map((contact) => ({ ...contact }));
-    this.balance.reset(this.poses, this.heading);
+    this.balance.reset(this.poses, this.heading, this.supportHeight());
   }
 
   diagnostics(): DiagnosticsSnapshot {
@@ -373,6 +443,7 @@ class EmbodiedCharacter implements CharacterController {
     if (!finite) errors.push("NONFINITE_CHARACTER_STATE");
     const jointDiagnostics = this.measureJoints();
     const loadBearing = this.lastContacts.filter((contact) => contact.loadBearing);
+    const selfPenetration = this.maximumSelfPenetration();
     return {
       balance: this.balanceData ? structuredClone(this.balanceData) : null,
       bodyInputAvailable: !this.disposed && !this.paused && !this.isRecoveryState(),
@@ -385,6 +456,14 @@ class EmbodiedCharacter implements CharacterController {
         loadBearingCount: loadBearing.length,
         totalNormalForceN: loadBearing.reduce((sum, contact) => sum + contact.forceN, 0),
         supportingSegments: [...new Set(loadBearing.map((contact) => contact.segment))],
+        supportLoads: this.isRecoveryState()
+          ? this.recovery.diagnostics().supportLoads ?? []
+          : this.lastContacts.map(contact => {
+            const planned = contact.loadBearing
+              ? this.contactLoadPlan.loads.find(load => load.segment === contact.segment) : undefined;
+            return { segment: contact.segment, plannedForceN: planned?.plannedForce.y ?? 0,
+              measuredForceN: contact.measuredForceN ?? contact.forceN };
+          }),
       },
       maxJointLimitErrorRad: jointDiagnostics.reduce((maximum, joint) =>
         Math.max(maximum, joint.limitErrorMagnitudeRad), 0),
@@ -404,6 +483,8 @@ class EmbodiedCharacter implements CharacterController {
       rootDisplacementM: Math.hypot(root.x - this.initialPosition.x, root.z - this.initialPosition.z),
       maxJointSeparationM: this.maximumJointSeparation(),
       maxFloorPenetrationM: this.maximumFloorPenetration(),
+      maxSelfPenetrationM: selfPenetration.depthM,
+      selfPenetrationPair: selfPenetration.pair,
       stepCount: this.stepCount,
       support: this.supportSnapshot(),
       fixedSteps: this.fixedSteps,
@@ -485,6 +566,37 @@ class EmbodiedCharacter implements CharacterController {
     this.appliedGrabForceN = 0;
   }
 
+  private reachableGrabTarget(grab: ActiveGrab, input: UprightPoseInput): Vec3 {
+    if (grab.region !== "leftHand" && grab.region !== "rightHand"
+        && grab.region !== "leftFoot" && grab.region !== "rightFoot") return grab.target;
+    const grabbed = this.poses.get(grab.segment);
+    if (!grabbed) return grab.target;
+    const side = grab.region.startsWith("left") ? "left" : "right";
+    const limb = grab.region.endsWith("Hand") ? "arm" : "leg";
+    const anchor = worldPoint(grabbed.position, grabbed.rotation, grab.localAnchor);
+    const previewInput: UprightPoseInput = { ...input, collisionPlanning: false };
+    const preview = composeUprightPose(previewInput).poses;
+    const parent = preview.get(limb === "arm" ? "torso" : "pelvis")!;
+    const routed = collisionAwareLimbTarget({
+      side, limb, start: anchor, requested: grab.target, parent,
+      solve: (target) => composeUprightPose({
+        ...previewInput,
+        activeGrab: { ...grab, target },
+      }).poses,
+      clearance: (target, candidate) => {
+        const reconstructed = limbBodyClearance(candidate, side, limb);
+        const shifted = new Map<SegmentId, MutablePose>(this.poses);
+        shifted.set(grab.segment, {
+          ...grabbed,
+          position: add(grabbed.position, sub(target, anchor)),
+        });
+        const grabbedPiece = segmentBodyClearance(shifted, grab.segment);
+        return grabbedPiece.clearanceM < reconstructed.clearanceM ? grabbedPiece : reconstructed;
+      },
+    });
+    return routed.target;
+  }
+
   private updateStanding(dt: number): void {
     // Removing support is an external world change, so a resting island must
     // wake and enter genuine ballistic motion instead of remaining asleep.
@@ -503,32 +615,43 @@ class EmbodiedCharacter implements CharacterController {
       rootPosition: pelvis.position,
       activeGrab: balanceGrab,
       heading: this.heading,
-      contacts: this.lastContacts,
+      contacts: this.floorCollider.isEnabled() ? this.lastContacts : [],
+      floorY: this.supportHeight(),
+      ...(this.playground ? { surfaceHeight: (x: number, z: number) =>
+        this.playground!.heightAt(x, z, pelvis.position.y + 0.2) } : {}),
     });
     this.balanceData = balance.diagnostics;
     this.reactionOffset = balance.reactionOffset;
     this.kneeFlexion = balance.kneeFlexion;
     this.supportFeet = balance.supportFeet;
+    this.supportFootRotations = balance.supportFootRotations;
     this.step = balance.step;
     this.stepCount = balance.stepCount;
     this.state = balance.state;
-
-    if (this.activeGrab) {
-      const body = this.ragdollBodies.get(this.activeGrab.segment);
-      if (body) {
-        this.grabControlDiagnostics = this.activeGrab.controller.apply(
-          body,
-          this.activeGrab.localAnchor,
-          this.activeGrab.target,
-          dt,
-        );
-        this.appliedGrabForceN = length(this.grabControlDiagnostics.force);
-      }
-    } else {
-      this.appliedGrabForceN = 0;
+    const excluded = new Set<SegmentId>();
+    const unavailableFoot = this.step?.elapsed !== undefined && this.step.elapsed >= 0
+      ? this.step.foot : this.activeGrab?.region === "leftFoot" || this.activeGrab?.region === "rightFoot"
+        ? this.activeGrab.region : null;
+    if (unavailableFoot) {
+      const side = unavailableFoot === "leftFoot" ? "left" : "right";
+      for (const id of [`${side}Ankle`, `${side}Foot`, `${side}Forefoot`] as SegmentId[]) excluded.add(id);
     }
+    if (this.activeGrab?.region === "leftHand" || this.activeGrab?.region === "rightHand") {
+      const side = this.activeGrab.region === "leftHand" ? "left" : "right";
+      for (const id of [`${side}Forearm`, `${side}ForearmTwist`, `${side}Hand`] as SegmentId[]) excluded.add(id);
+    }
+    const loadContacts = this.floorCollider.isEnabled() ? this.lastContacts : [];
+    const loadAcceleration = this.activeGrab || this.step || this.stepCount > 0
+      ? balance.diagnostics.balanceAcceleration : ZERO;
+    this.contactLoadPlan = planContactLoads(loadContacts, balance.diagnostics.centerOfMass,
+      balance.diagnostics.centerOfMassVelocity,
+      { x: TOTAL_MASS_KG * loadAcceleration.x, y: TOTAL_MASS_KG * 9.81,
+        z: TOTAL_MASS_KG * loadAcceleration.z },
+      { excluded, frictionCoefficient: 1.2,
+        maxHorizontalForceN: TOTAL_MASS_KG * BALANCE_LIMITS.maxBalanceAccelerationMps2,
+        maxJointTorqueNm: minimumSupportTorqueLimit(loadContacts.filter(contact => !excluded.has(contact.segment))) });
 
-    const target = composeUprightPose({
+    const poseInput: UprightPoseInput = {
       rootTranslation: balance.rootTarget,
       heading: this.heading,
       kneeFlexion: this.kneeFlexion,
@@ -536,8 +659,28 @@ class EmbodiedCharacter implements CharacterController {
       simulationTime: this.simulationTime,
       activeGrab: this.activeGrab,
       supportFeet: this.supportFeet,
+      supportFootRotations: this.supportFootRotations,
+      measuredPoses: this.poses,
       step: this.step,
-    });
+    };
+    if (this.activeGrab) {
+      const body = this.ragdollBodies.get(this.activeGrab.segment);
+      if (body) {
+        const reachableTarget = this.reachableGrabTarget(this.activeGrab, poseInput);
+        this.grabControlDiagnostics = this.activeGrab.controller.apply(
+          body,
+          this.activeGrab.localAnchor,
+          this.activeGrab.target,
+          dt,
+          reachableTarget,
+        );
+        this.appliedGrabForceN = length(this.grabControlDiagnostics.force);
+      }
+    } else {
+      this.appliedGrabForceN = 0;
+    }
+
+    const target = composeUprightPose(poseInput);
     this.leanRadians = target.leanRadians;
     this.lastMotorResults = new Map(applyCoupledJointMotors(
       this.ragdollBodies,
@@ -554,7 +697,7 @@ class EmbodiedCharacter implements CharacterController {
 
     const hasFootSupport = this.supportSnapshot().planted.length > 0;
     this.unsupportedTime = hasFootSupport ? 0 : this.unsupportedTime + dt;
-    const supportLossLimit = this.step ? 0.36 : 0.14;
+    const supportLossLimit = this.playground && this.simulationTime < 0.6 ? 0.5 : this.step ? 0.36 : 0.14;
     const physicalFall = this.currentTorsoLean() > 1.25
       || this.poses.get("pelvis")!.position.y < 0.56
       || this.unsupportedTime > supportLossLimit;
@@ -565,6 +708,19 @@ class EmbodiedCharacter implements CharacterController {
 
   private updateRecovery(dt: number): void {
     this.clearGrab();
+    // A falling hand can travel several centimetres in one fixed step before
+    // reaching the head or ribcage. Give Rapier a larger predictive contact
+    // margin only while that hand is moving rapidly; normal brace contacts
+    // retain the small resting skin.
+    for (const side of ["left", "right"] as const) {
+      const id = `${side}Hand` as const;
+      const body = this.ragdollBodies.get(id)!;
+      const collider = this.ragdollColliders.get(id)!;
+      const speed = length(body.linvel()) + 0.09 * length(body.angvel());
+      collider.setContactSkin(speed > 1.5 ? 0.02
+        : this.recovery.diagnostics().phase === "settle" ? 0.01 : 0.004);
+      this.ragdollColliders.get(`${side}UpperArm`)!.setContactSkin(0.006);
+    }
     applyPassiveJointResistance(this.ragdollBodies, dt);
     const result = this.recovery.apply(this.ragdollBodies, dt);
     this.state = result.state;
@@ -604,6 +760,10 @@ class EmbodiedCharacter implements CharacterController {
       leftFoot: { ...this.poses.get("leftFoot")!.position },
       rightFoot: { ...this.poses.get("rightFoot")!.position },
     };
+    this.supportFootRotations = {
+      leftFoot: { ...this.poses.get("leftFoot")!.rotation },
+      rightFoot: { ...this.poses.get("rightFoot")!.rotation },
+    };
     this.reactionOffset = ZERO;
     this.kneeFlexion = HUMAN_PROPORTIONS.stance.neutralKneeFlexion;
     this.step = null;
@@ -621,7 +781,7 @@ class EmbodiedCharacter implements CharacterController {
         jointCoordinates(parent.rotation(), child.rotation(), definition.jointProfile),
       );
     }
-    this.balance.reset(this.poses, this.heading);
+    this.balance.reset(this.poses, this.heading, this.supportHeight());
     this.balanceData = null;
   }
 
@@ -702,7 +862,7 @@ class EmbodiedCharacter implements CharacterController {
    */
   private gravityCompensation(jointDefinition: SegmentDefinition): Vec3 {
     const child = this.ragdollBodies.get(jointDefinition.id);
-    if (!child || !jointDefinition.jointProfile) return ZERO;
+    if (!child || !jointDefinition.jointProfile || !this.contactLoadPlan.loads.length) return ZERO;
     const jointWorld = worldPoint(
       child.translation(),
       child.rotation(),
@@ -724,77 +884,7 @@ class EmbodiedCharacter implements CharacterController {
         { x: 0, y: candidate.massKg * 9.81, z: 0 },
       ));
     }
-    const left = this.poses.get("leftFoot")?.position ?? ZERO;
-    const rightFoot = this.poses.get("rightFoot")?.position ?? ZERO;
-    const activeCorrection = this.floorCollider.isEnabled()
-      && (this.activeGrab !== null || this.step !== null || this.stepCount > 0);
-    const acceleration = activeCorrection
-      ? this.balanceData?.balanceAcceleration ?? ZERO
-      : ZERO;
-    const com = this.balanceData?.centerOfMass ?? ZERO;
-    const groundForce = {
-      x: TOTAL_MASS_KG * acceleration.x,
-      y: TOTAL_MASS_KG * 9.81,
-      z: TOTAL_MASS_KG * acceleration.z,
-    };
-    const height = Math.max(0.4, com.y);
-    const verticalGroundForce = Math.max(120, groundForce.y);
-    const rawPressure = {
-      x: com.x - height * groundForce.x / verticalGroundForce,
-      y: 0,
-      z: com.z - height * groundForce.z / verticalGroundForce,
-    };
-    const measuredSides = new Set<"left" | "right">();
-    for (const contact of this.lastContacts) {
-      const definition = SEGMENT_BY_ID.get(contact.segment);
-      const swingSide = this.step?.elapsed !== undefined && this.step.elapsed >= 0
-        ? (this.step.foot === "leftFoot" ? "left" : "right") : null;
-      if (contact.loadBearing && definition?.side && definition.side !== swingSide
-        && (definition.role === "hindfoot" || definition.role === "forefoot")) {
-        measuredSides.add(definition.side);
-      }
-    }
-    const fallbackSides: Array<"left" | "right"> = this.step?.foot === "leftFoot" ? ["right"]
-      : this.step?.foot === "rightFoot" ? ["left"] : ["left", "right"];
-    const supportSides = measuredSides.size ? [...measuredSides] : fallbackSides;
-    const supportPoints: Vec3[] = [];
-    for (const side of supportSides) {
-      for (const id of [`${side}Foot`, `${side}Forefoot`] as SegmentId[]) {
-        const pose = this.poses.get(id);
-        const geometry = SEGMENT_BY_ID.get(id)?.geometry;
-        if (!pose || !geometry) continue;
-        for (const local of geometry.supportPatch ?? []) {
-          supportPoints.push(worldPoint(pose.position, pose.rotation, local));
-        }
-      }
-    }
-    const headingRotation = quatFromAxisAngle(UP, this.heading);
-    const headingRight = rotate(headingRotation, { x: 1, y: 0, z: 0 });
-    const headingForward = rotate(headingRotation, { x: 0, y: 0, z: 1 });
-    const center = supportPoints.length
-      ? scale(supportPoints.reduce((sum, point) => add(sum, point), ZERO), 1 / supportPoints.length)
-      : scale(add(left, rightFoot), 0.5);
-    const rightCoordinates = supportPoints.map((point) => dot(sub(point, center), headingRight));
-    const forwardCoordinates = supportPoints.map((point) => dot(sub(point, center), headingForward));
-    const inset = 0.006;
-    const clampInside = (coordinate: number, values: readonly number[]): number => values.length
-      ? clamp(coordinate, Math.min(...values) + inset, Math.max(...values) - inset)
-      : coordinate;
-    const pressure = add(center, add(
-      scale(headingRight, clampInside(dot(sub(rawPressure, center), headingRight), rightCoordinates)),
-      scale(headingForward, clampInside(dot(sub(rawPressure, center), headingForward), forwardCoordinates)),
-    ));
-    const footSpan = sub(rightFoot, left);
-    let rightShare = supportSides.length === 1 ? (supportSides[0] === "right" ? 1 : 0)
-      : clamp(dot(sub(pressure, left), footSpan) / Math.max(dot(footSpan, footSpan), 1e-8), 0, 1);
-    if (!Number.isFinite(rightShare)) rightShare = 0.5;
-    const base = add(scale(left, 1 - rightShare), scale(rightFoot, rightShare));
-    const pressureShift = sub(pressure, base);
-    const supports = [
-      { segment: "leftFoot" as const, point: add(left, pressureShift), share: 1 - rightShare },
-      { segment: "rightFoot" as const, point: add(rightFoot, pressureShift), share: rightShare },
-    ];
-    for (const support of supports) {
+    for (const support of this.contactLoadPlan.loads) {
       let ancestor: SegmentId | null = support.segment;
       let belowJoint = false;
       while (ancestor) {
@@ -804,11 +894,7 @@ class EmbodiedCharacter implements CharacterController {
       if (!belowJoint) continue;
       torque = add(torque, cross(
         sub(support.point, jointWorld),
-        {
-          x: -groundForce.x * support.share,
-          y: -groundForce.y * support.share,
-          z: -groundForce.z * support.share,
-        },
+        scale(support.plannedForce, -1),
       ));
     }
     return torque;
@@ -835,6 +921,10 @@ class EmbodiedCharacter implements CharacterController {
           .setCanSleep(true)
           .setSleeping(initiallySleeping)
           .setCcdEnabled(true)
+          .setSoftCcdPrediction(
+            definition.role === "ankle" || definition.role === "hindfoot" || definition.role === "forefoot"
+              ? 0 : 0.12,
+          )
           .setAdditionalSolverIterations(5),
       );
       const collider = this.world.createCollider(
@@ -844,7 +934,7 @@ class EmbodiedCharacter implements CharacterController {
             definition.role === "hindfoot" || definition.role === "forefoot" ? 4 : 1.2,
           )
           .setRestitution(0.02)
-          .setContactSkin(0.0015)
+          .setContactSkin(0.004)
           .setCollisionGroups(CHARACTER_GROUP)
           .setActiveHooks(RAPIER.ActiveHooks.FILTER_CONTACT_PAIRS),
         body,
@@ -933,6 +1023,22 @@ class EmbodiedCharacter implements CharacterController {
       leftFoot: transformed.get("leftFoot")!.position,
       rightFoot: transformed.get("rightFoot")!.position,
     };
+    const footRotations: Partial<Record<"leftFoot" | "rightFoot", Quat>> = {};
+    if (this.playground) for (const foot of ["leftFoot", "rightFoot"] as const) {
+      const center = feet[foot];
+      const surface = this.playground.surfaceAt(center.x, center.z);
+      const rotation = quatMultiply(quatFromTo(UP, surface.normal), heading);
+      const geometry = SEGMENT_BY_ID.get(foot)!.geometry;
+      let height = surface.height;
+      // Seat the sole on the measured slope and clear every corner of rough
+      // ground at reset. Runtime terrain adaptation remains motor-driven.
+      for (const vertex of geometry.vertices) {
+        const offset = rotate(rotation, vertex);
+        height = Math.max(height, this.playground.heightAt(center.x + offset.x, center.z + offset.z) - offset.y);
+      }
+      feet[foot] = { x: center.x, y: height + 0.001, z: center.z };
+      footRotations[foot] = rotation;
+    }
     return composeUprightPose({
       rootTranslation: this.initialPosition,
       heading: this.initialHeading,
@@ -941,6 +1047,7 @@ class EmbodiedCharacter implements CharacterController {
       simulationTime: 0,
       activeGrab: null,
       supportFeet: feet,
+      supportFootRotations: footRotations,
       step: null,
     }).poses;
   }
@@ -964,7 +1071,7 @@ class EmbodiedCharacter implements CharacterController {
   private observeContacts(dt: number): void {
     this.recovery.observe(
       this.world,
-      this.floorCollider,
+      this.environmentColliders(),
       this.floorCollider.isEnabled() ? this.ragdollColliders : new Map(),
       this.ragdollBodies,
       dt,
@@ -1011,28 +1118,26 @@ class EmbodiedCharacter implements CharacterController {
   }
 
   private supportSnapshot(): SupportState {
-    if (this.disposed) {
+    if (this.disposed || !this.floorCollider.isEnabled()) {
       return { planted: [], swingFoot: null, stepProgress: 0, grounded: false };
     }
-    const sleepingEquilibrium = this.floorCollider.isEnabled()
-      && [...this.ragdollBodies.values()].every((body) => body.isSleeping());
     const planted = (["left", "right"] as const).flatMap((side) => {
       const foot = `${side}Foot` as const;
       if ((this.step?.foot === foot && this.step.elapsed >= 0) || this.activeGrab?.region === foot) return [];
       const pose = this.poses.get(foot);
       const definition = SEGMENT_BY_ID.get(foot);
+      const floorY = pose && this.playground
+        ? this.playground.heightAt(pose.position.x, pose.position.z, pose.position.y + 0.18) : 0;
       const soleNearFloor = Boolean(pose && definition
-        && lowestWorldPoint(definition.geometry, pose.position, pose.rotation).y <= 0.025
+        && pose.position.y <= floorY + 0.10
+        && lowestWorldPoint(definition.geometry, pose.position, pose.rotation).y <= floorY + 0.025
         && dot(rotate(pose.rotation, UP), UP) > 0.5);
       const hasContact = this.lastContacts.some((contact) => {
         const definition = SEGMENT_BY_ID.get(contact.segment);
         return contact.loadBearing && definition?.side === side
           && (definition.role === "ankle" || definition.role === "hindfoot" || definition.role === "forefoot");
       }) && soleNearFloor;
-      const restingOnFloor = sleepingEquilibrium && pose && definition
-        ? lowestWorldPoint(definition.geometry, pose.position, pose.rotation).y <= 0.01
-        : false;
-      return hasContact || restingOnFloor ? [foot] : [];
+      return hasContact ? [foot] : [];
     });
     return {
       planted,
@@ -1062,10 +1167,47 @@ class EmbodiedCharacter implements CharacterController {
     if (this.disposed || !this.floorCollider.isEnabled()) return 0;
     let penetration = 0;
     for (const collider of this.ragdollColliders.values()) {
-      const contact = this.floorCollider.contactCollider(collider, 0);
-      if (contact) penetration = Math.max(penetration, -contact.distance);
+      const surfaces: Collider[] = this.playground ? [] : [this.floorCollider];
+      if (this.playground) this.world.contactPairsWith(collider, surface => {
+        if (!this.colliderSegments.has(surface.handle) && surface.isEnabled()) surfaces.push(surface);
+      });
+      for (const surface of surfaces) {
+        const contact = surface.contactCollider(collider, 0);
+        if (contact) penetration = Math.max(penetration, -contact.distance);
+      }
     }
     return penetration;
+  }
+
+  private maximumSelfPenetration(): {
+    depthM: number;
+    pair: readonly [SegmentId, SegmentId] | null;
+  } {
+    if (this.disposed) return { depthM: 0, pair: null };
+    const colliders = [...this.ragdollColliders];
+    let depthM = 0;
+    let pair: readonly [SegmentId, SegmentId] | null = null;
+    for (let first = 0; first < colliders.length; first += 1) {
+      const [firstId, firstCollider] = colliders[first];
+      const firstCenter = firstCollider.translation();
+      for (let second = first + 1; second < colliders.length; second += 1) {
+        const [secondId, secondCollider] = colliders[second];
+        if (this.excludedPairs.has(pairKey(firstId, secondId))) continue;
+        const secondCenter = secondCollider.translation();
+        const radius = SEGMENT_BOUNDING_RADII.get(firstId)! + SEGMENT_BOUNDING_RADII.get(secondId)!;
+        if (Math.hypot(
+          firstCenter.x - secondCenter.x,
+          firstCenter.y - secondCenter.y,
+          firstCenter.z - secondCenter.z,
+        ) > radius) continue;
+        const contact = firstCollider.contactCollider(secondCollider, 0);
+        if (contact && -contact.distance > depthM) {
+          depthM = -contact.distance;
+          pair = [firstId, secondId];
+        }
+      }
+    }
+    return { depthM, pair };
   }
 
   private currentTorsoLean(): number {
@@ -1075,7 +1217,7 @@ class EmbodiedCharacter implements CharacterController {
   }
 }
 
-export interface CharacterInitialOptions { heading?: number; position?: Vec3 }
+export interface CharacterInitialOptions { heading?: number; position?: Vec3; playground?: PlaygroundConfig }
 
 export async function createEmbodiedCharacter(
   initialRenderer: RendererMode = "canvas2d",

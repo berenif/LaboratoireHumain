@@ -4,6 +4,7 @@ import {
   type JointAxisProfile,
   type JointCoordinate,
   type JointProfile,
+  type Quat,
   type RegionId,
   type SegmentDefinition,
   type SegmentId,
@@ -11,6 +12,10 @@ import {
 } from "./types";
 
 const identity = Object.freeze({ x: 0, y: 0, z: 0, w: 1 });
+// The sagittal joint frame faces toward the back. Positive flexion therefore
+// moves an upper arm/thigh forward and folds a forearm toward the front, while
+// the unchanged knee frame folds the shin behind the knee.
+const forwardFlexionFrame = Object.freeze({ x: 0, y: 1, z: 0, w: 0 });
 const radians = (degrees: number): number => degrees * Math.PI / 180;
 
 /** Adult body dimensions in metres, shared by anatomy, pose targets, and tests. */
@@ -112,13 +117,14 @@ function joint(
   parentAnchor: Vec3,
   childAnchor: Vec3,
   axes: readonly JointAxisProfile[],
+  frameRotation: Quat = identity,
 ): JointProfile {
   const frozenParentAnchor = Object.freeze({ ...parentAnchor });
   const frozenChildAnchor = Object.freeze({ ...childAnchor });
   return Object.freeze({
     kind,
-    parentFrame: Object.freeze({ anchor: frozenParentAnchor, rotation: identity }),
-    childFrame: Object.freeze({ anchor: frozenChildAnchor, rotation: identity }),
+    parentFrame: Object.freeze({ anchor: frozenParentAnchor, rotation: frameRotation }),
+    childFrame: Object.freeze({ anchor: frozenChildAnchor, rotation: frameRotation }),
     axes: Object.freeze([...axes]),
     limitSoftZoneFraction: 0.035,
   });
@@ -163,7 +169,9 @@ const shoulderGirdleGeometry = createEllipsoidGeometry(
 );
 const upperArmGeometry = createEllipsoidGeometry(
   { x: P.arm.upperRadiusM, y: upperArmHalfLength, z: P.arm.upperRadiusM },
-  { radialSegments: 10, latitudeSegments: 7, bottomScale: 0.78, topScale: 1.05 },
+  // The proximal end narrows inside the shoulder housing. This is the single
+  // shared surface for Rapier, both renderers, and picking.
+  { radialSegments: 10, latitudeSegments: 7, bottomScale: 0.78, topScale: 0.45 },
 );
 const proximalForearmGeometry = createEllipsoidGeometry(
   { x: P.arm.forearmRadiusM, y: proximalForearmHalfLength, z: P.arm.forearmRadiusM },
@@ -301,8 +309,8 @@ const rawSegments: SegmentDefinition[] = [
             axis("y", shoulderYaw[0], shoulderYaw[1], 40, 4, 45),
             axis("z", shoulderLateral[0], shoulderLateral[1], 55, 5, 65),
           ],
+          forwardFlexionFrame,
         ),
-        collisionExclusions: ["torso"],
       }),
       segment({
         id: forearmId, parent: upperId, region: null, side, role: "forearm", massKg: 0.9,
@@ -314,6 +322,7 @@ const rawSegments: SegmentDefinition[] = [
           { x: 0, y: -upperArmHalfLength, z: 0 },
           { x: 0, y: proximalForearmHalfLength, z: 0 },
           [axis("x", 0, 145, 80, 5, 55)],
+          forwardFlexionFrame,
         ),
       }),
       segment({
@@ -364,6 +373,7 @@ const rawSegments: SegmentDefinition[] = [
           { x: sign * P.pelvis.hipAnchorXM, y: P.pelvis.hipAnchorYM, z: 0 },
           { x: 0, y: thighHalfLength, z: 0 },
           [axis("x", -20, 110, 160, 12, 150), axis("y", hipYaw[0], hipYaw[1], 100, 9, 100), axis("z", hipLateral[0], hipLateral[1], 140, 10, 125)],
+          forwardFlexionFrame,
         ),
       }),
       segment({

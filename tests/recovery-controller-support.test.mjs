@@ -204,7 +204,7 @@ test("releasing an adjacent support preserves a limb's already observed unload",
   for(let i=0;i<3;i++)observeLoads(state,loads);
   assert.ok(state.recovery.releasedUnloaded.has("leftFoot"));
   const center=recoveryMassState(state.poses.values()).position;
-  state.recovery.data.contacts.push(patch("leftForearm",center.x,center.z));
+  state.recovery.data.contacts.push({ ...patch("leftForearm",center.x,center.z), forceN: 100 });
   state.recovery.plants.set("leftForearm",plant(state.poses.get("leftForearm")));
   assert.equal(state.recovery.release(["leftFoot","leftForearm"],state.poses),"newly-released");
   assert.ok(state.recovery.releasedUnloaded.has("leftFoot"),"an adjacent forearm release cannot erase a measured foot unload");
@@ -212,6 +212,17 @@ test("releasing an adjacent support preserves a limb's already observed unload",
   for(let i=0;i<3;i++)observeLoads(state,loads);
   assert.ok(!state.recovery.released.has("leftFoot"));
   assert.ok(state.recovery.plants.has("leftFoot"));
+});
+
+test("a loaded recovery arm waits for measured weight transfer before release", () => {
+  const state = rig(); bothFeetCoverMass(state);
+  assert.equal(state.recovery.release(["leftFoot"], state.poses), "newly-released");
+  const center = recoveryMassState(state.poses.values()).position;
+  state.recovery.data.contacts.push(patch("leftHand", center.x, center.z));
+  assert.equal(state.recovery.release(["leftHand"], state.poses), "blocked",
+    "equal forearm and remaining sole loads do not establish transfer");
+  state.recovery.data.contacts.find(contact => contact.segment === "rightFoot").forceN = 500;
+  assert.equal(state.recovery.release(["leftHand"], state.poses), "newly-released");
 });
 test("recovery exposes zero direct pelvis assistance while joint motors remain active", () => {
   const state = rig(); bothFeetCoverMass(state);

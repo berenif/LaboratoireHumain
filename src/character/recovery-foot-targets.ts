@@ -18,6 +18,7 @@ import {
   worldPoint,
 } from "./math";
 import { solveTwoBone } from "./pose";
+import { limbTrunkClearance } from "./limb-collisions";
 import {
   limitRecoveryJoint,
   reconstructRecoveryLimb,
@@ -162,6 +163,7 @@ export function solveRecoveryLegTarget(
       ankleDefinition.jointProfile!.childFrame.anchor);
     const solved = solveTwoBone(
       hip, requestedAnkle, firstLength, secondLength, bendDirection, maximumBend,
+      rotate(pelvis.rotation, RIGHT),
     );
     const axisA = normalize(sub(hip, solved.middle));
     const axisB = normalize(sub(solved.middle, solved.end));
@@ -258,9 +260,15 @@ export function reachableFootTarget(
     const solved = solveRecoveryLegTarget(side, poses, requestedPosition, yaw, bend);
     if (!solved) continue;
     const floorReachable = solved.reachErrorM < 0.003 && solved.floorClearanceM >= -0.003;
-    const feasible = floorReachable && solved.jointLimitErrorRad < 1e-5;
+    let feasible = floorReachable && solved.jointLimitErrorRad < 1e-5;
     const travelM = length(sub(solved.position, measuredFoot.position));
     const placementCost = preferred ? length(sub(solved.position, preferred)) + 0.01 * travelM : travelM;
+    if (feasible && (!best?.feasible || placementCost < bestScore)) {
+      const rebuilt = reconstructRecoveryLimb(side, false, pelvis, rotationsMap(side, solved.jointRotations));
+      const complete = new Map<SegmentId, SegmentPose>(poses);
+      for (const pose of rebuilt.poses) complete.set(pose.id, pose);
+      feasible = limbTrunkClearance(complete, side, "leg").clearanceM >= 0.004;
+    }
     const score = feasible
       ? placementCost
       : 10 + solved.reachErrorM * 5 + Math.max(0, -solved.floorClearanceM) * 10
@@ -304,7 +312,10 @@ export function revalidateRecoveryFootTarget(
     rotationsMap(side, target.jointRotations),
   );
   const foot = rebuilt.poses.find(({ id }) => id === `${side}Foot`)!;
+  const complete = new Map<SegmentId, SegmentPose>(poses);
+  for (const pose of rebuilt.poses) complete.set(pose.id, pose);
   return rebuilt.floorClearanceM >= -0.003
     && length(sub(foot.position, target.position)) < 0.02
-    && rotationDot(foot.rotation, target.rotation) > Math.cos(0.03 / 2);
+    && rotationDot(foot.rotation, target.rotation) > Math.cos(0.03 / 2)
+    && limbTrunkClearance(complete, side, "leg").clearanceM >= 0.004;
 }

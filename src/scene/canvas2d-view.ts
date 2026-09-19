@@ -1,4 +1,5 @@
 import { V3 } from "../core/math";
+import { ARENA, courseTransform, getPlaygroundCourse, PLAYGROUND_STATIONS } from "../core/playground";
 import {
   PASSIVE_COLOR,
   PRIMARY_SEGMENT_BY_REGION,
@@ -152,10 +153,10 @@ export class Canvas2DView implements PoseView {
 
   private drawFloor(context: CanvasRenderingContext2D): void {
     const corners = [
-      { x: -3, y: 0, z: -2 },
-      { x: 3, y: 0, z: -2 },
-      { x: 3, y: 0, z: 3 },
-      { x: -3, y: 0, z: 3 },
+      { x: -ARENA.width / 2, y: 0, z: -ARENA.depth / 2 },
+      { x: ARENA.width / 2, y: 0, z: -ARENA.depth / 2 },
+      { x: ARENA.width / 2, y: 0, z: ARENA.depth / 2 },
+      { x: -ARENA.width / 2, y: 0, z: ARENA.depth / 2 },
     ].map((point) => this.projection.project(point));
     if (corners.every((point) => point.depth > 0)) {
       context.beginPath();
@@ -167,23 +168,23 @@ export class Canvas2DView implements PoseView {
     }
 
     context.lineWidth = 1;
-    for (let grid = -6; grid <= 6; grid += 1) {
+    for (let grid = -20; grid <= 20; grid += 1) {
       const x = grid * 0.5;
-      this.strokeWorldLine(context, { x, y: 0.002, z: -2 }, { x, y: 0.002, z: 3 },
+      this.strokeWorldLine(context, { x, y: 0.002, z: -8.5 }, { x, y: 0.002, z: 8.5 },
         grid === 0 ? "rgba(98, 213, 255, 0.34)" : "rgba(135, 157, 188, 0.15)");
     }
-    for (let grid = -4; grid <= 6; grid += 1) {
+    for (let grid = -17; grid <= 17; grid += 1) {
       const z = grid * 0.5;
-      this.strokeWorldLine(context, { x: -3, y: 0.002, z }, { x: 3, y: 0.002, z },
+      this.strokeWorldLine(context, { x: -10, y: 0.002, z }, { x: 10, y: 0.002, z },
         grid === 0 ? "rgba(124, 131, 255, 0.32)" : "rgba(135, 157, 188, 0.15)");
     }
 
     context.lineWidth = 2;
     const bounds: ReadonlyArray<readonly [Vec3, Vec3]> = [
-      [{ x: -3, y: 0.008, z: -2 }, { x: 3, y: 0.008, z: -2 }],
-      [{ x: 3, y: 0.008, z: -2 }, { x: 3, y: 0.008, z: 3 }],
-      [{ x: 3, y: 0.008, z: 3 }, { x: -3, y: 0.008, z: 3 }],
-      [{ x: -3, y: 0.008, z: 3 }, { x: -3, y: 0.008, z: -2 }],
+      [{ x: -10, y: 0.008, z: -8.5 }, { x: 10, y: 0.008, z: -8.5 }],
+      [{ x: 10, y: 0.008, z: -8.5 }, { x: 10, y: 0.008, z: 8.5 }],
+      [{ x: 10, y: 0.008, z: 8.5 }, { x: -10, y: 0.008, z: 8.5 }],
+      [{ x: -10, y: 0.008, z: 8.5 }, { x: -10, y: 0.008, z: -8.5 }],
     ];
     for (const [from, to] of bounds) this.strokeWorldLine(context, from, to, "rgba(112, 221, 255, 0.4)");
   }
@@ -193,7 +194,7 @@ export class Canvas2DView implements PoseView {
     for (const foot of ["leftFoot", "rightFoot"] as const) {
       const pose = poses.get(foot);
       if (!pose) continue;
-      const point = this.projection.project({ x: pose.position.x, y: 0.012, z: pose.position.z });
+      const point = this.projection.project({ x: pose.position.x, y: pose.position.y - 0.025, z: pose.position.z });
       if (point.depth <= 0) continue;
       const planted = snapshot.support.planted.includes(foot);
       const swinging = snapshot.support.swingFoot === foot;
@@ -231,15 +232,52 @@ export class Canvas2DView implements PoseView {
   }
 
   private drawSegments(context: CanvasRenderingContext2D, snapshot: PoseSnapshot): void {
-    const drawables: DrawableSegment[] = [];
+    const drawables: { depth: number; draw: () => void }[] = [];
     for (const pose of snapshot.segments) {
       const definition = SEGMENT_BY_ID.get(pose.id);
       if (!definition) continue;
       const projected = this.projection.project(pose.position);
-      if (projected.depth > 0) drawables.push({ definition, pose, depth: projected.depth });
+      if (projected.depth > 0) drawables.push({ depth: projected.depth,
+        draw: () => this.drawSegment(context, { definition, pose, depth: projected.depth }, snapshot) });
+    }
+    if (snapshot.playground) {
+      for (const piece of getPlaygroundCourse(snapshot.playground.difficulty)) {
+        const transform = courseTransform(piece, snapshot.simulationTime);
+        const vertices = piece.geometry.vertices.map(vertex => V3.add(transform.position, rotateVector(transform.rotation, vertex)));
+        const projected = vertices.map(vertex => this.projection.project(vertex));
+        for (const [a, b, c] of piece.geometry.triangles) {
+          const points = [projected[a], projected[b], projected[c]];
+          if (points.some(point => point.depth <= 0)) continue;
+          const normal = V3.normalize(V3.cross(V3.sub(vertices[b], vertices[a]), V3.sub(vertices[c], vertices[a])));
+          const shade = Math.max(0.38, Math.min(1.15, 0.7 + normal.y * 0.3 - normal.x * 0.12 + normal.z * 0.1));
+          const color = [1, 3, 5].map(start => Math.min(255, Math.round(parseInt(piece.color.slice(start, start + 2), 16) * shade)));
+          drawables.push({ depth: points.reduce((sum, point) => sum + point.depth, 0) / 3, draw: () => {
+            context.beginPath();
+            context.moveTo(points[0].x, points[0].y);
+            context.lineTo(points[1].x, points[1].y);
+            context.lineTo(points[2].x, points[2].y);
+            context.closePath();
+            context.fillStyle = `rgb(${color.join(",")})`;
+            context.fill();
+            context.strokeStyle = "rgba(10,20,30,0.16)";
+            context.lineWidth = 0.7;
+            context.stroke();
+          } });
+        }
+      }
     }
     drawables.sort((a, b) => b.depth - a.depth);
-    for (const drawable of drawables) this.drawSegment(context, drawable, snapshot);
+    for (const drawable of drawables) drawable.draw();
+    if (snapshot.playground) for (const [index, station] of PLAYGROUND_STATIONS.entries()) {
+      const point = this.projection.project({ ...station.position, y: 0.025,
+        z: station.id === "flat" ? 4.55 : station.id === "wobble" ? -7.3
+          : station.id === "stones" || station.id === "hurdles" ? 6.7 : 0.28 });
+      if (!point.visible) continue;
+      context.font = `600 ${Math.max(9, Math.min(15, 180 / point.depth))}px system-ui`;
+      context.fillStyle = station.color;
+      context.textAlign = "center";
+      context.fillText(`${String(index + 1).padStart(2, "0")} / ${station.name.toUpperCase()}`, point.x, point.y);
+    }
   }
 
   private drawSegment(

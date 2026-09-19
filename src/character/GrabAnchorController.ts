@@ -38,8 +38,8 @@ export class GrabAnchorController {
     this.controlTarget = { ...unchangedRawTarget };
   }
 
-  apply(body: RigidBody, localAnchor: Vec3, rawTarget: Vec3, dt: number): GrabControlDiagnostics {
-    const remaining = sub(rawTarget, this.controlTarget);
+  apply(body: RigidBody, localAnchor: Vec3, rawTarget: Vec3, dt: number, reachableTarget: Vec3 = rawTarget): GrabControlDiagnostics {
+    const remaining = sub(reachableTarget, this.controlTarget);
     const distance = length(remaining);
     const brakingSpeed = Math.sqrt(2 * GRAB_CONTROL_LIMITS.targetAccelerationMps2 * distance);
     const desiredVelocity = scale(normalize(remaining, ZERO), Math.min(
