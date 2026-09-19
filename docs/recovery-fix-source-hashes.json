@@ -1,0 +1,10 @@
+{
+  "scripts/physics-acceptance.ts": "ad8530ddcb5a4b7fd7af11b881e8ad56f3d64252",
+  "scripts/physics-mass.ts": "2f9043b20fe6dff027653d001f1029740d90cb6e",
+  "scripts/recovery-fixtures.ts": "b5eafb71514ab3680045097e82ff3d04a4266228",
+  "scripts/recovery-measurements.ts": "a6aff1d7979c098a491e96a0cf53dbf6eb0cd0ea",
+  "src/character/BalanceController.ts": "38f34c2f81966da57f2fdf0e41af007ad8cd5ea3",
+  "src/character/recovery-support.ts": "0ccc46fb90b5e8525888a399420ec1df1a4003a8",
+  "tests/active-step-fall-gate.test.mjs": "9d8651668aec7930dd26ed4bcbdf77293ccfefc9",
+  "tests/physics-mass.test.mjs": "920d53b929cf5fc411d17feda7b78cf652cb7687"
+}
