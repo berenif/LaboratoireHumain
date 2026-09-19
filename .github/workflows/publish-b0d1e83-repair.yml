@@ -1,0 +1,45 @@
+name: Publish reviewed recovery repair
+on:
+  push:
+    branches: [agent/fix-b0d1e83-physics]
+    paths: [.github/workflows/publish-b0d1e83-repair.yml]
+permissions:
+  contents: write
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 2
+      - name: Apply byte-exact reviewed patch on the expected parent
+        env:
+          PATCH_BASE64: |
+            H4sIAAAAAAAC/+1963bbtpbwfz8F4tM1I0UkdbHla53WdZ0258SJP9tt50xXvpgSIYsNRaokFVtJvNY8xDzIPMM8yjzJty8ACFAX
+            O2nPzPdjzjqrsUhgA9j3vQFsRvFoJHz/Ji5F2A7gn/Fs0L7N8nejJLst2qP4zh90oq7c2/LxaTENhzKYTxIx+JzWG5FMZCkjMYoT
+            KSZZJEW309nZ3t6I00jeiWG0M9ztRkHQ4f9t+L7/efPZaLVaoh3J9+10liQb334r/K7X2xetjtcR33674afhRB6I07twWAoFQeRy
+            Gsa5MIA2/Cw92PCFmM6KMf0hxCAP0+FYFgfi1/BGpqUzhel4XsTD4gAspfjw9/l48
+            E5tfXfz06tXpxdur07PzdpHN8qH0h9lkEpdBeVdurgagiDLq7Q47o3An3O0MejthuDfshnJthuDfshnJ
+        run: |
+          test "$(git rev-parse HEAD^)" = a715469696ec17db9420eb0bd3d07985f99f93fe
+          python - <<'PY'
+          import base64, gzip, hashlib, os
+          from pathlib import Path
+          patch = gzip.decompress(base64.b64decode(os.environ['PATCH_BASE64']))
+          assert hashlib.sha256(patch).hexdigest() == '1d59dcbbfedfb5951cff5c2a75b462b93cf462f4a1136ba05f67caebe257bb0e'
+          Path(os.environ['RUNNER_TEMP'], 'repair.patch').write_bytes(patch)
+          PY
+          git apply --check "$RUNNER_TEMP/repair.patch"
+          git apply --index "$RUNNER_TEMP/repair.patch"
+          git rm --cached .github/workflows/publish-b0d1e83-repair.yml
+          test "$(git write-tree)" = 8512b13c836fda701e6d01c98383b2f8a957ea53
+          # Leave transport workflows unchanged in the bot commit. The connector
+          # removes them after publication and verifies the exact final tree.
+          git show HEAD:.github/workflows/fix-b0d1e83-workspace.yml > .github/workflows/fix-b0d1e83-workspace.yml
+          git add .github/workflows/fix-b0d1e83-workspace.yml .github/workflows/publish-b0d1e83-repair.yml
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git commit -m 'fix: repair recovery kinematics and measured-mass evidence (WIP)' -m 'Seven existing unit failures corrected, five remain. No passing full physics release, merge or deployment is claimed.'
+          git push origin HEAD:refs/heads/agent/fix-b0d1e83-physics
+          git rev-parse HEAD >> "$GITHUB_STEP_SUMMARY"
