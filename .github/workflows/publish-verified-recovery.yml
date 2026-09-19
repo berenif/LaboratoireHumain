@@ -1,0 +1,54 @@
+name: Publish verified recovery patch once
+on:
+  push:
+    branches: [fix/b0d1e83-physical-recovery]
+    paths: [.github/workflows/publish-verified-recovery.yml]
+permissions:
+  contents: write
+jobs:
+  publish:
+    if: github.repository == 'berenif/LaboratoireHumain' && github.ref == 'refs/heads/fix/b0d1e83-physical-recovery'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+      - name: Apply only the exact tested source bytes
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          git merge-base --is-ancestor b0d1e83f27c0fa6a70b26aa8c1ae7fb112d03185 HEAD
+          git diff --exit-code
+          python3 - <<'PY'
+          import base64, hashlib, json, os, pathlib, subprocess, urllib.request
+          manifest = {
+            'scripts/physics-acceptance.ts': 'ad8530ddcb5a4b7fd7af11b881e8ad56f3d64252',
+            'scripts/physics-mass.ts': '2f9043b20fe6dff027653d001f1029740d90cb6e',
+            'scripts/recovery-fixtures.ts': 'b5eafb71514ab3680045097e82ff3d04a4266228',
+            'scripts/recovery-measurements.ts': 'a6aff1d7979c098a491e96a0cf53dbf6eb0cd0ea',
+            'src/character/BalanceController.ts': '38f34c2f81966da57f2fdf0e41af007ad8cd5ea3',
+            'src/character/recovery-support.ts': '0ccc46fb90b5e8525888a399420ec1df1a4003a8',
+            'tests/active-step-fall-gate.test.mjs': '9d8651668aec7930dd26ed4bcbdf77293ccfefc9',
+            'tests/physics-mass.test.mjs': '920d53b929cf5fc411d17feda7b78cf652cb7687',
+          }
+          request = urllib.request.Request('https://api.github.com/repos/berenif/LaboratoireHumain/git/blobs/c7383078d830840f01ab15f9462711fe958c801a', headers={'Authorization': 'Bearer ' + os.environ['GH_TOKEN'], 'Accept': 'application/vnd.github+json'})
+          with urllib.request.urlopen(request, timeout=30) as response:
+            patch = base64.b64decode(json.load(response)['content'])
+          assert hashlib.sha256(patch).hexdigest() == '668d7bc994a2fe2ef4b2f5ffbc6a6b6c2b9e3a077ac90b729e73748085f0d9f2'
+          pathlib.Path('/tmp/recovery-source.patch').write_bytes(patch)
+          subprocess.run(['git', 'apply', '--unidiff-zero', '--check', '/tmp/recovery-source.patch'], check=True)
+          subprocess.run(['git', 'apply', '--unidiff-zero', '--index', '/tmp/recovery-source.patch'], check=True)
+          changed = subprocess.check_output(['git', 'diff', '--cached', '--name-only'], text=True).splitlines()
+          assert sorted(changed) == sorted(manifest), changed
+          for path, expected in manifest.items():
+            actual = subprocess.check_output(['git', 'hash-object', path], text=True).strip()
+            assert actual == expected, (path, actual, expected)
+          subprocess.run(['git', 'diff', '--cached', '--check'], check=True)
+          print('Verified all eight source/test blob hashes against the local test manifest.')
+          PY
+          git config user.name 'ChatGPT coding agent'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git commit -m 'fix: align recovery braces and seeds with anatomical frames and measured mass' -m 'Fix seven existing unit failures and add four regressions. Unit suite 167/172; recovery 79/80. Balance, strong-pull and historical snapshot gates remain failing. No acceptance thresholds or captured streams were relaxed.'
+          git push origin HEAD:refs/heads/fix/b0d1e83-physical-recovery
