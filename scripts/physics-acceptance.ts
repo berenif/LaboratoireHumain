@@ -1,5 +1,6 @@
 import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { performance } from "node:perf_hooks";
+import { measuredPhysicsMass as massState } from "./physics-mass";
 import RAPIER, { type Collider, type RigidBody, type World } from "@dimforge/rapier3d-compat";
 import { createEmbodiedCharacter } from "../src/character/index";
 import { RECOVERY_LIMITS } from "../src/character/DynamicRecovery";
@@ -169,11 +170,6 @@ function motion(snapshot: PoseSnapshot): { linear: number; angular: number } {
   let linear = 0, angular = 0;
   for (const d of SEGMENTS) { const p = pose(snapshot, d.id); linear += d.massKg * length(p.linearVelocity) ** 2; angular += d.massKg * length(p.angularVelocity) ** 2; }
   return { linear: Math.sqrt(linear / TOTAL_MASS_KG), angular: Math.sqrt(angular / TOTAL_MASS_KG) };
-}
-function massState(snapshot: PoseSnapshot): {position:Vec3;velocity:Vec3} {
-  let position=ZERO,velocity=ZERO;
-  for(const definition of SEGMENTS){const segment=pose(snapshot,definition.id);position=add(position,scale(segment.position,definition.massKg));velocity=add(velocity,scale(segment.linearVelocity,definition.massKg));}
-  return {position:scale(position,1/TOTAL_MASS_KG),velocity:scale(velocity,1/TOTAL_MASS_KG)};
 }
 function zeroExternal(snapshot: PoseSnapshot): boolean {
   const d = snapshot.diagnostics, g = d.grabControl;
@@ -623,18 +619,18 @@ await scenario("lockout-input-identical-trajectories", async failures => {
 
 await scenario("floorless-center-of-mass-free-fall", async failures => {
   const c=await create(),r=records.get(c)!,internal=c as Inspectable;
-  const start=massState(c.getSnapshot("canvas2d"));
+  const start=massState(c.getSnapshot("canvas2d"), internal.ragdollColliders);
   internal.floorCollider.setEnabled(false);r.floorPresent=false;
   let previous=start,maximumUpwardVelocityCorrection=0,maximumHorizontalDrift=0;
   for(let frame=0;frame<60;frame++){
-    c.fixedUpdate(DT,null);const snapshot=c.getSnapshot("canvas2d"),current=massState(snapshot);
+    c.fixedUpdate(DT,null);const snapshot=c.getSnapshot("canvas2d"),current=massState(snapshot,internal.ragdollColliders);
     maximumUpwardVelocityCorrection=Math.max(maximumUpwardVelocityCorrection,current.velocity.y-previous.velocity.y);
     maximumHorizontalDrift=Math.max(maximumHorizontalDrift,Math.hypot(current.position.x-start.position.x,current.position.z-start.position.z));
     if(snapshot.diagnostics.contactDiagnostics.loadBearingCount!==0) failures.push("Floorless assembly reported a load-bearing contact");
     if(length(snapshot.diagnostics.recovery.assistanceForce)>1e-8 || length(snapshot.diagnostics.recovery.assistanceTorque)>1e-8) failures.push("Floorless assembly reported direct pelvis assistance");
     previous=current;
   }
-  const end=massState(c.getSnapshot("canvas2d"));
+  const end=massState(c.getSnapshot("canvas2d"), internal.ragdollColliders);
   const velocityGain=end.velocity.y-start.velocity.y,drop=start.position.y-end.position.y;
   if(velocityGain>-6.5 || drop<3.2) failures.push("Internal motors arrested center-of-mass free fall");
   if(maximumUpwardVelocityCorrection>0.03) failures.push("Center-of-mass gained unsupported upward momentum");

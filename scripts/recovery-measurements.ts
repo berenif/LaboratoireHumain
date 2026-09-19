@@ -1,10 +1,11 @@
 import type { Collider, World } from "@dimforge/rapier3d-compat";
-import { SEGMENT_BY_ID, SEGMENTS, TOTAL_MASS_KG } from "../src/core/humanoid";
+import { SEGMENT_BY_ID } from "../src/core/humanoid";
 import type { PoseSnapshot, SegmentId, Vec3 } from "../src/core/types";
 import { add, length, quatInverse, rotate, scale, sub, worldPoint } from "../src/character/math";
+import { measuredPhysicsMass as massState } from "./physics-mass";
 import { jointCoordinates } from "../src/character/joint-coordinates";
 
-const DT = 1 / 60, ZERO: Vec3 = { x: 0, y: 0, z: 0 };
+const DT = 1 / 60;
 const horizontalDistance = (a: Vec3, b: Vec3) => Math.hypot(a.x - b.x, a.z - b.z);
 const recoveryMotion = (state: PoseSnapshot["state"]): boolean =>
   state === "falling" || state === "fallen" || state === "recovering";
@@ -36,15 +37,6 @@ export function newRecoveryPhysicsMeasurements(): RecoveryPhysicsMeasurements {
     minimumReleaseMarginM: null, releaseCount: 0, loadedFootFrames: 0, asymmetricallyLoadedFrames: 0,
     maxLegExtension: { left: 0, right: 0 }, minLegExtension: { left: 1, right: 1 }, routeEntries: [], releaseEvents: [],
   } };
-}
-function massState(snapshot: PoseSnapshot): { position: Vec3; velocity: Vec3 } {
-  let position = ZERO, velocity = ZERO;
-  for (const d of SEGMENTS) {
-    const p = snapshot.segments.find(p => p.id === d.id)!;
-    position = add(position, scale(p.position, d.massKg / TOTAL_MASS_KG));
-    velocity = add(velocity, scale(p.linearVelocity, d.massKg / TOTAL_MASS_KG));
-  }
-  return { position, velocity };
 }
 /** Independent signed distance to the convex hull of actual solved floor contact points. */
 function margin(points: Vec3[], projection: Vec3): number {
@@ -123,7 +115,7 @@ export function measureRecoveryPhysics(measured: RecoveryPhysicsMeasurements, sn
       violations.add("Crouch rise shortcut lacks independently measured planted soles, entry height, upright torso and projected balance");
     }
   }
-  const currentMass = massState(snapshot);
+  const currentMass = massState(snapshot, internals.ragdollColliders);
   // Dynamic activation itself resets diagnostics without integrating recovery.
   const recoveryIntegrated=integrated && recoveryMotion(previous.state);
   if (recoveryIntegrated && length(sub(d.centerOfMass, currentMass.position)) > 1e-7) violations.add("Recovery COM is not the independent mass-weighted body center");

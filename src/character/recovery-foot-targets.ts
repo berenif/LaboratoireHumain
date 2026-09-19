@@ -242,9 +242,12 @@ export function reachableFootTarget(
   const fromHip = sub(preferred ?? measuredFoot.position, hip);
   const hipWidth = HUMAN_PROPORTIONS.pelvis.hipAnchorXM;
   const nearestWidth = clamp(dot(fromHip, outward) + hipWidth, 0.10, 0.20);
-  const nearestForward = clamp(dot(fromHip, forward), -0.40, 0.10);
+  // Preserve the measured candidate, including forward-flexed half-kneeling.
+  // Anatomical IK below, not the former backward-biased scan, decides reachability.
+  const reach = jointSpan(chain.thigh, chain.shin) + jointSpan(chain.shin, chain.ankle);
+  const nearestForward = clamp(dot(fromHip, forward), -reach, reach);
   const widths = [nearestWidth, 0.10, 0.12, 0.15, 0.18, 0.20];
-  const forwards = [nearestForward, ...Array.from({ length: 51 }, (_, index) => -0.40 + index / 100)];
+  const forwards = [nearestForward, ...Array.from({ length: 81 }, (_, index) => -0.40 + index / 100)];
   const flatFloorOffset = -lowestWorldPoint(foot.geometry, ZERO, yaw).y;
   let best: RecoveryFootTarget | null = null;
   let bestScore = Infinity;

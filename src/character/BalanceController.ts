@@ -473,14 +473,10 @@ export class BalanceController {
         && supportMargin < BALANCE_LIMITS.marginalMarginM && (!this.step || futureMargin < -0.02))
       || (supportMargin < -0.10 && futureMargin < -0.04 && speed > 0.75);
     this.instability = marginal ? this.instability + dt : Math.max(0, this.instability - dt * 2);
-    // Once a correction has committed, intermittent single-point contact
-    // manifolds can make the instantaneous polygon margin jump outside the
-    // sole while the swing is still physically viable.  Let the active step
-    // resolve; EmbodiedCharacter continues to enforce measured support loss,
-    // torso lean, and pelvis height throughout the motion.
-    const correctingStep = this.step !== null;
-    const shouldFall = !correctingStep
-      && (immediate || this.instability >= BALANCE_LIMITS.marginalInstabilityS);
+    // An active step is not an exemption from measured loss of balance.
+    // The conditions above already account for its reachable landing footprint;
+    // suppressing them here left an overloaded step indefinitely invulnerable.
+    const shouldFall = immediate || this.instability >= BALANCE_LIMITS.marginalInstabilityS;
     // Ankle torque handles small errors; the hips counter-lean once momentum grows.
     // Both remain bounded, so an abrupt pull can still overwhelm the recovery step.
     const captureError = horizontal(sub(capturePoint, desiredCom));
