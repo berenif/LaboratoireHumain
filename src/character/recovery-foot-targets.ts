@@ -243,8 +243,12 @@ export function reachableFootTarget(
   const hipWidth = HUMAN_PROPORTIONS.pelvis.hipAnchorXM;
   const nearestWidth = clamp(dot(fromHip, outward) + hipWidth, 0.10, 0.20);
   const nearestForward = clamp(dot(fromHip, forward), -0.40, 0.10);
-  const widths = [nearestWidth, 0.10, 0.12, 0.15, 0.18, 0.20];
-  const forwards = [nearestForward, ...Array.from({ length: 51 }, (_, index) => -0.40 + index / 100)];
+  // The measured/preferred plant is a candidate before the coarse search grid.
+  // Grid bounds are search hints, not anatomical limits: a legal flexed hip
+  // can place a flat sole more than 10 cm forward of its hip. The full joint
+  // chain and floor-clearance checks remain authoritative for every candidate.
+  const widths = [dot(fromHip, outward) + hipWidth, nearestWidth, 0.10, 0.12, 0.15, 0.18, 0.20];
+  const forwards = [dot(fromHip, forward), nearestForward, ...Array.from({ length: 51 }, (_, index) => -0.40 + index / 100)];
   const flatFloorOffset = -lowestWorldPoint(foot.geometry, ZERO, yaw).y;
   let best: RecoveryFootTarget | null = null;
   let bestScore = Infinity;
