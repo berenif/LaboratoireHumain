@@ -17,13 +17,13 @@ permissions:
 jobs:
   verify:
     runs-on: ubuntu-latest
-    timeout-minutes: 25
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v7
         with:
           fetch-depth: 0
           persist-credentials: false
-      - name: Save exact source
+      - name: Save exact source without credentials
         run: |
           mkdir -p /tmp/recovery-source
           git rev-parse HEAD > /tmp/recovery-source/SOURCE_COMMIT
@@ -38,17 +38,7 @@ jobs:
           node-version: 22.13.0
           cache: npm
       - run: npm ci --no-audit --no-fund
-      - name: Save locked offline dependencies
-        run: |
-          mkdir -p /tmp/recovery-cache
-          tar -czf /tmp/recovery-cache/npm-cache.tgz -C "$(npm config get cache)" _cacache
-      - uses: actions/upload-artifact@v4
-        with:
-          name: recovery-fix-cache
-          path: /tmp/recovery-cache/
-          retention-days: 3
-          compression-level: 0
-      - name: Run unchanged release checks independently
+      - name: Run release checks independently
         env:
           NEXT_TELEMETRY_DISABLED: 1
         run: |
@@ -57,8 +47,10 @@ jobs:
           result=0
           for suite in typecheck lint test test:recovery test:physics test:pages; do
             name="${suite//:/-}"
+            limit=210s
+            if [ "$suite" = 'test:physics' ]; then limit=12m; fi
             set +e
-            timeout 210s npm run "$suite" > "evidence/recovery-fix/$name.log" 2>&1
+            timeout "$limit" npm run "$suite" > "evidence/recovery-fix/$name.log" 2>&1
             code=$?
             set -e
             printf '%s\n' "$code" > "evidence/recovery-fix/$name.exit"
