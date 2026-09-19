@@ -1,0 +1,65 @@
+name: Recovery fix verification
+
+on:
+  push:
+    branches: [fix/b0d1e83-physical-recovery]
+  pull_request:
+    branches: [main]
+    paths:
+      - 'src/**'
+      - 'tests/**'
+      - 'scripts/**'
+      - '.github/workflows/recovery-fix.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22.13.0
+          cache: npm
+      - run: npm ci --no-audit --no-fund
+      - name: Save exact source and locked offline dependencies
+        run: |
+          mkdir -p /tmp/recovery-workspace
+          git rev-parse HEAD > /tmp/recovery-workspace/SOURCE_COMMIT
+          git bundle create /tmp/recovery-workspace/source.bundle HEAD
+          tar -czf /tmp/recovery-workspace/npm-cache.tgz -C "$HOME/.npm" _cacache
+      - uses: actions/upload-artifact@v4
+        with:
+          name: recovery-fix-workspace
+          path: /tmp/recovery-workspace/
+          retention-days: 3
+      - name: Run unchanged release checks independently
+        env:
+          NEXT_TELEMETRY_DISABLED: 1
+        run: |
+          mkdir -p evidence/recovery-fix
+          git rev-parse HEAD > evidence/recovery-fix/source-commit.txt
+          result=0
+          for suite in typecheck lint test test:recovery test:physics test:pages; do
+            name="${suite//:/-}"
+            set +e
+            timeout 150s npm run "$suite" > "evidence/recovery-fix/$name.log" 2>&1
+            code=$?
+            set -e
+            printf '%s\n' "$code" > "evidence/recovery-fix/$name.exit"
+            tail -30 "evidence/recovery-fix/$name.log"
+            if [ "$code" -ne 0 ]; then result=1; fi
+          done
+          exit "$result"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: recovery-fix-checks
+          path: evidence/
+          retention-days: 14
