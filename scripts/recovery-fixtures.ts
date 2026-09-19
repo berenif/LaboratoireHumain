@@ -51,23 +51,27 @@ export function recoveryFixturePoses(fixture: RecoveryPoseFixture): Map<SegmentI
   let poses: Map<SegmentId, MutablePose>;
   if (fixture.pose === "crouch") {
     poses = new Map();
-    poses.set("pelvis", { id: "pelvis", position: ZERO, rotation: { x: 0, y: 0, z: 0, w: 1 },
+    poses.set("pelvis", { id: "pelvis", position: ZERO, rotation: pitch(0.20),
       linearVelocity: ZERO, angularVelocity: ZERO });
     for (const definition of SEGMENTS) {
       if (!definition.parent) continue;
       let coordinates = ZERO;
       if (definition.id.endsWith("UpperArm")) coordinates = {
-        x: -0.10, y: 0, z: definition.id.startsWith("left") ? -0.04 : 0.04,
+        x: -0.10, y: 0, z: definition.id.startsWith("left") ? 0.04 : -0.04,
       };
       if (definition.role === "forearm") coordinates = { x: 0.20, y: 0, z: 0 };
-      if (definition.role === "thigh") coordinates = { x: -0.34, y: 0, z: 0 };
+      // Positive anatomical hip/ankle flexion rotates around body -X.
+      // Retain the 1.10 rad bent knee while keeping both soles level.
+      if (definition.id === "lumbar") coordinates = { x: 0.07, y: 0, z: 0 };
+      if (definition.id === "torso") coordinates = { x: 0.08, y: 0, z: 0 };
+      if (definition.role === "thigh") coordinates = { x: 0.96, y: 0, z: 0 };
       if (definition.role === "shin") coordinates = { x: 1.10, y: 0, z: 0 };
-      if (definition.role === "ankle") coordinates = { x: -0.76, y: 0, z: 0 };
+      if (definition.role === "ankle") coordinates = { x: 0.34, y: 0, z: 0 };
       setChild(poses, definition.id, coordinates);
     }
   } else if (fixture.pose === "half-kneel") {
     poses = new Map();
-    poses.set("pelvis", { id: "pelvis", position: { x: 0, y: 0.53, z: 0 }, rotation: pitch(-0.15), linearVelocity: ZERO, angularVelocity: ZERO });
+    poses.set("pelvis", { id: "pelvis", position: { x: 0, y: 0.53, z: 0 }, rotation: pitch(0), linearVelocity: ZERO, angularVelocity: ZERO });
     for (const definition of SEGMENTS) {
       if (!definition.parent) continue;
       const lead = definition.id.startsWith(leading);
@@ -79,18 +83,42 @@ export function recoveryFixturePoses(fixture: RecoveryPoseFixture): Map<SegmentI
         ? { x: 0.08, y: 0, z: 0 }
         : { x: 0.20, y: 0, z: leading === "left" ? -0.16 : 0.16 };
       if (definition.id.endsWith("UpperArm")) coordinates = {
-        x: -0.10, y: 0, z: definition.id.startsWith("left") ? -0.04 : 0.04,
+        x: -0.10, y: 0, z: definition.id.startsWith("left") ? 0.04 : -0.04,
       };
       if (definition.role === "forearm") coordinates = { x: 0.20, y: 0, z: 0 };
       if (definition.id.endsWith("Thigh")) {
-        const mirror = definition.id.startsWith("left") ? 1 : -1;
-        coordinates = { x: lead ? 1.25 : 0.05, y: 0, z: mirror * (lead ? 0.36 : 0.14) };
+        coordinates = { x: lead ? 1.60 : 0, y: 0, z: 0 };
       }
-      if (definition.id.endsWith("Shin")) coordinates = { x: lead ? 0.268 : 2.30, y: 0, z: 0 };
-      if (definition.id.endsWith("Ankle")) coordinates = { x: lead ? -0.785 : 0.315, y: 0, z: 0 };
-      if (definition.id.endsWith("Forefoot")) coordinates = { x: lead ? -0.349 : 0.751, y: 0, z: 0 };
+      if (definition.id.endsWith("Shin")) coordinates = { x: lead ? 1.87 : 2.30, y: 0, z: 0 };
+      if (definition.id.endsWith("Ankle")) coordinates = { x: lead ? 0.27 : 0.315, y: 0, z: 0 };
+      if (definition.id.endsWith("Forefoot")) coordinates = { x: lead ? 0 : 0.751, y: 0, z: 0 };
       setChild(poses, definition.id, coordinates);
     }
+    // Match the leading sole to the trailing shin through legal joint angles,
+    // never by shifting individual bodies or inserting synthetic floor contacts.
+    const trailingShin = `${leading === "left" ? "right" : "left"}Shin` as SegmentId;
+    const trailingPose = poses.get(trailingShin)!;
+    const shinFloor = Math.min(...SEGMENT_BY_ID.get(trailingShin)!.geometry.vertices.map(vertex =>
+      worldPoint(trailingPose.position, trailingPose.rotation, vertex).y));
+    const rebuildLeading = (hip: number): number => {
+      for (const [suffix, angle] of [["Thigh", hip], ["Shin", hip + 0.27], ["Ankle", 0.27],
+        ["Foot", 0], ["Forefoot", 0]] as const) {
+        setChild(poses, `${leading}${suffix}` as SegmentId, { x: angle, y: 0, z: 0 });
+      }
+      return Math.min(...[`${leading}Foot`, `${leading}Forefoot`].flatMap(id => {
+        const pose = poses.get(id as SegmentId)!;
+        return SEGMENT_BY_ID.get(id as SegmentId)!.geometry.vertices.map(vertex =>
+          worldPoint(pose.position, pose.rotation, vertex).y);
+      }));
+    };
+    let low = 1.4, high = 1.8;
+    if (rebuildLeading(low) > shinFloor || rebuildLeading(high) < shinFloor)
+      throw new Error("Half-kneel fixture cannot establish a legal leading sole and trailing shin");
+    for (let iteration = 0; iteration < 48; iteration++) {
+      const middle = (low + high) / 2;
+      if (rebuildLeading(middle) < shinFloor) low = middle; else high = middle;
+    }
+    rebuildLeading((low + high) / 2);
   } else {
     poses = new Map();
     const rootRotation = fixture.pose === "prone" ? pitch(Math.PI / 2)
@@ -104,7 +132,7 @@ export function recoveryFixturePoses(fixture: RecoveryPoseFixture): Map<SegmentI
       if (definition.id.endsWith("UpperArm")) coordinates = {
         x: fixture.pose === "supine" ? -0.30 : 0.12,
         y: 0,
-        z: (definition.id.startsWith("left") ? -1 : 1) * (near ? 0.18 : 0.34),
+        z: (definition.id.startsWith("left") ? 1 : -1) * (near ? 0.18 : 0.34),
       };
       if (definition.role === "forearm") coordinates = { x: near ? 0.40 : 0.72, y: 0, z: 0 };
       if (definition.id.endsWith("Hand")) coordinates = { x: 0.28, y: 0, z: 0 };

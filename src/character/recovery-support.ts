@@ -421,7 +421,7 @@ export function reachableArmBraceTarget(
     const wristRotation = recoveryJointRotation(handId, { x: wristFlex, y: 0, z: 0 });
     // Hand orientation and floor height depend on the forearm frame. Converge
     // them together instead of imposing an unreachable world wrist rotation.
-    const convergenceIterations = 32;
+    const convergenceIterations = 96;
     for (let iteration = 0; iteration < convergenceIterations; iteration++) {
       const floorExtent = -lowestWorldPoint(handDefinition.geometry, ZERO, rotation).y;
       requestedCenter = { ...horizontalCenter, y: floorY + floorExtent + 0.002 };
@@ -433,6 +433,9 @@ export function reachableArmBraceTarget(
       let next = quatMultiply(armFrame(solved.middle, solved.end).forearm, wristRotation);
       if (rotation.x * next.x + rotation.y * next.y + rotation.z * next.z + rotation.w * next.w < 0)
         next = { x: -next.x, y: -next.y, z: -next.z, w: -next.w };
+      const orientationErrorSquared = (rotation.x - next.x) ** 2 + (rotation.y - next.y) ** 2
+        + (rotation.z - next.z) ** 2 + (rotation.w - next.w) ** 2;
+      if (orientationErrorSquared < 1e-24) break;
       rotation = quatNormalize({ x: rotation.x + next.x, y: rotation.y + next.y, z: rotation.z + next.z, w: rotation.w + next.w });
     }
     const frame = armFrame(solved.middle, solved.end);
@@ -466,7 +469,10 @@ export function reachableArmBraceTarget(
       + recoveryJointLimitError(forearmId, rawForearm)
       + recoveryJointLimitError(handId, rawHand);
     const floorClearanceM = rebuilt.floorClearanceM;
-    const geometricallyReachable = reachErrorM <= RECOVERY_ARM_TARGET_TOLERANCE.maximumReachErrorM
+    // A planned floor plant needs a converged solution. The looser runtime
+    // contact tolerance is not permission to label a radius-clamped or
+    // unconverged plan as an exact floor target.
+    const geometricallyReachable = reachErrorM < 1e-8
       && floorClearanceM >= floorY - RECOVERY_ARM_TARGET_TOLERANCE.maximumFloorPenetrationM;
     const movementM = length(sub(position, hand.position));
     const localPatch = handDefinition.geometry.supportPatch ?? handDefinition.geometry.vertices;
