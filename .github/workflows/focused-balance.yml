@@ -44,6 +44,9 @@ jobs:
           exit "$status"
         env:
           BALANCE_TRACE_DIR: evidence/physical-chain/traces
+      - name: Package checked-out source for diagnosis
+        if: always()
+        run: tar --exclude=.git --exclude=node_modules --exclude=evidence -czf evidence/physical-chain/source.tar.gz .
       - uses: actions/upload-artifact@v4
         if: always()
         with:
