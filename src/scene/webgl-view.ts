@@ -2,6 +2,7 @@ import * as THREE from "three";
 import { V3 } from "../core/math";
 import { ARENA } from "../core/playground";
 import { PlaygroundView } from "./playground-view";
+import { PROTOCOL_STRIKER_PIECES, protocolRoomPieces, type ProtocolVisualPiece } from "./protocol-visuals";
 import { flattenGeometryIndices, flattenGeometryVertices } from "../core/geometry";
 import {
   PASSIVE_COLOR,
@@ -46,6 +47,11 @@ export class WebGLView implements PoseView {
   private readonly projection: SharedCameraProjection;
   private readonly scene = new THREE.Scene();
   private readonly playgroundView = new PlaygroundView();
+  private readonly playgroundDecor = new THREE.Group();
+  private readonly protocolRoom = new THREE.Group();
+  private readonly protocolStriker = new THREE.Group();
+  private roomKey = "";
+  private protocolPalette = false;
   private readonly camera = new THREE.PerspectiveCamera();
   private readonly segmentMeshes = new Map<SegmentId, THREE.Mesh<THREE.BufferGeometry, THREE.MeshStandardMaterial>>();
   private readonly jointMarkers = new Map<SegmentId, THREE.Mesh>();
@@ -218,11 +224,11 @@ export class WebGLView implements PoseView {
     floor.rotation.x = -Math.PI * 0.5;
     floor.position.set(0, -0.012, 0);
     floor.receiveShadow = true;
-    this.scene.add(floor);
+    this.playgroundDecor.add(floor);
     const grid = new THREE.GridHelper(20, 40, 0x3d5962, 0x2b3c47);
     grid.position.set(0, 0.002, 0);
     grid.scale.z = ARENA.depth / ARENA.width;
-    this.scene.add(grid);
+    this.playgroundDecor.add(grid);
 
     const boundaryMaterial = new THREE.MeshStandardMaterial({
       color: 0x496c89,
@@ -239,7 +245,7 @@ export class WebGLView implements PoseView {
     for (const [x, y, z, width, depth] of boundaries) {
       const boundary = new THREE.Mesh(new THREE.BoxGeometry(width, 0.05, depth), boundaryMaterial);
       boundary.position.set(x, y, z);
-      this.scene.add(boundary);
+      this.playgroundDecor.add(boundary);
     }
 
     for (const definition of SEGMENTS) {
@@ -283,7 +289,11 @@ export class WebGLView implements PoseView {
       this.scene.add(marker);
     }
     this.scene.add(this.selectionMarker);
+    this.scene.add(this.playgroundDecor);
     this.scene.add(this.playgroundView.group);
+    this.scene.add(this.protocolRoom);
+    this.scene.add(this.protocolStriker);
+    for (const piece of PROTOCOL_STRIKER_PIECES) this.protocolStriker.add(this.protocolMesh(piece));
     this.initialized = true;
     this.syncCamera();
   }
@@ -302,7 +312,26 @@ export class WebGLView implements PoseView {
   }
 
   private applyPose(snapshot: PoseSnapshot): void {
+    const protocol = Boolean(snapshot.room);
+    this.playgroundDecor.visible = !protocol;
+    this.playgroundView.group.visible = !protocol;
+    this.protocolRoom.visible = protocol;
+    this.protocolStriker.visible = protocol && Boolean(snapshot.striker);
     if (snapshot.playground) this.playgroundView.sync(snapshot.playground, snapshot.simulationTime);
+    if (snapshot.room) {
+      this.syncProtocolRoom(snapshot.room);
+      if (snapshot.striker) {
+        this.protocolStriker.position.set(snapshot.striker.position.x, snapshot.striker.position.y, snapshot.striker.position.z);
+        this.protocolStriker.quaternion.set(snapshot.striker.rotation.x, snapshot.striker.rotation.y, snapshot.striker.rotation.z, snapshot.striker.rotation.w);
+      }
+    }
+    if (protocol !== this.protocolPalette) {
+      this.protocolPalette = protocol;
+      const background = protocol ? 0xbec7c0 : 0x101923;
+      this.scene.background = new THREE.Color(background);
+      this.scene.fog = new THREE.Fog(background, protocol ? 16 : 27, protocol ? 35 : 55);
+      this.renderer?.setClearColor(background, 1);
+    }
     const poses = new Map<SegmentId, SegmentPose>();
     for (const mesh of this.segmentMeshes.values()) mesh.visible = false;
     for (const pose of snapshot.segments) {
@@ -310,15 +339,18 @@ export class WebGLView implements PoseView {
       const mesh = this.segmentMeshes.get(pose.id);
       if (!mesh) continue;
       mesh.visible = true;
+      mesh.material.color.set(protocol
+        ? ["lumbar", "neck", "shoulder-girdle", "forearm-twist", "ankle"].includes(SEGMENT_BY_ID.get(pose.id)?.role ?? "") ? 0x303a38 : 0xf1efdf
+        : this.baseColors.get(pose.id) ?? new THREE.Color(PASSIVE_COLOR));
       mesh.position.set(pose.position.x, pose.position.y, pose.position.z);
       mesh.quaternion.set(pose.rotation.x, pose.rotation.y, pose.rotation.z, pose.rotation.w).normalize();
       const exactSelection = snapshot.diagnostics.selectedSegment;
       const selected = exactSelection
         ? pose.id === exactSelection
         : SEGMENT_BY_ID.get(pose.id)?.region === snapshot.diagnostics.selectedRegion;
-      mesh.material.emissive.set(selected ? 0x4ae1ff : 0x000000);
-      mesh.material.emissiveIntensity = selected ? 0.55 : 0;
-      mesh.scale.setScalar(selected ? 1.035 : 1);
+      mesh.material.emissive.set(!protocol && selected ? 0x4ae1ff : 0x000000);
+      mesh.material.emissiveIntensity = !protocol && selected ? 0.55 : 0;
+      mesh.scale.setScalar(!protocol && selected ? 1.035 : 1);
     }
 
     for (const definition of SEGMENTS) {
@@ -338,13 +370,14 @@ export class WebGLView implements PoseView {
         : child.position;
       const point = average(parentPoint, childPoint);
       marker.position.set(point.x, point.y, point.z);
+      (marker.material as THREE.MeshBasicMaterial).color.set(protocol ? 0x303a38 : 0xe1eeff);
       marker.visible = true;
     }
 
     for (const foot of ["leftFoot", "rightFoot"] as const) {
       const marker = this.supportMarkers.get(foot)!;
       const pose = poses.get(foot);
-      marker.visible = Boolean(pose);
+      marker.visible = !protocol && Boolean(pose);
       if (!pose) continue;
       marker.position.x = pose.position.x;
       marker.position.y = pose.position.y - 0.025;
@@ -362,7 +395,7 @@ export class WebGLView implements PoseView {
       snapshot.diagnostics.selectedRegion,
       poses,
     );
-    this.selectionMarker.visible = Boolean(selectedPose);
+    this.selectionMarker.visible = !protocol && Boolean(selectedPose);
     if (selectedPose) {
       this.selectionMarker.position.set(selectedPose.position.x, selectedPose.position.y, selectedPose.position.z);
       const scale = snapshot.diagnostics.activeGrab
@@ -382,6 +415,38 @@ export class WebGLView implements PoseView {
     if (!region) return null;
     const primary = PRIMARY_SEGMENT_BY_REGION.get(region);
     return primary ? poses.get(primary) ?? null : null;
+  }
+
+  private protocolMesh(piece: ProtocolVisualPiece): THREE.Mesh {
+    const geometry = new THREE.BufferGeometry();
+    geometry.setAttribute("position", new THREE.Float32BufferAttribute(piece.geometry.vertices.flatMap(vertex => [vertex.x, vertex.y, vertex.z]), 3));
+    geometry.setIndex(piece.geometry.triangles.flatMap(triangle => [...triangle]));
+    geometry.computeVertexNormals();
+    const mesh = new THREE.Mesh(geometry, new THREE.MeshStandardMaterial({
+      color: piece.color, roughness: piece.id === "head" ? 0.46 : 0.86,
+      metalness: piece.id === "head" ? 0.26 : 0.04,
+      transparent: Boolean(piece.opacity), opacity: piece.opacity ?? 1,
+      depthWrite: !piece.opacity, side: THREE.DoubleSide,
+    }));
+    mesh.position.set(piece.position.x, piece.position.y, piece.position.z);
+    mesh.name = `protocol:${piece.id}`;
+    mesh.castShadow = piece.id !== "front-wall" && piece.id !== "right-wall";
+    mesh.receiveShadow = true;
+    return mesh;
+  }
+
+  private syncProtocolRoom(room: NonNullable<PoseSnapshot["room"]>): void {
+    const key = `${room.width}:${room.depth}:${room.height}`;
+    if (key === this.roomKey) return;
+    this.roomKey = key;
+    for (const child of [...this.protocolRoom.children]) {
+      this.protocolRoom.remove(child);
+      if (child instanceof THREE.Mesh) {
+        child.geometry.dispose();
+        for (const material of Array.isArray(child.material) ? child.material : [child.material]) material.dispose();
+      }
+    }
+    for (const piece of protocolRoomPieces(room)) this.protocolRoom.add(this.protocolMesh(piece));
   }
 
   private assertUsable(): void {

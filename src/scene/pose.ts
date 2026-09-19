@@ -47,5 +47,10 @@ export function interpolatePoseSnapshot(
     rootPosition: V3.lerp(previous.rootPosition, current.rootPosition, t),
     rootRotation: Q.nlerp(previous.rootRotation, current.rootRotation, t),
     segments,
+    striker: current.striker && previous.striker ? {
+      ...current.striker,
+      position: V3.lerp(previous.striker.position, current.striker.position, t),
+      rotation: Q.nlerp(previous.striker.rotation, current.striker.rotation, t),
+    } : current.striker,
   };
 }

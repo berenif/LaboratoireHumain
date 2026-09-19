@@ -1,6 +1,6 @@
 import { SEGMENT_BY_ID, SEGMENTS } from "../src/core/humanoid";
 import type { CharacterController, Quat, SegmentId, Vec3 } from "../src/core/types";
-import { add, quatFromAxisAngle, quatMultiply, rotate, sub, worldPoint } from "../src/character/math";
+import { add, quatFromAxisAngle, quatInverse, quatMultiply, rotate, sub, worldPoint } from "../src/character/math";
 import { clampJointCoordinates, jointRotationFromCoordinates } from "../src/character/joint-coordinates";
 import type { MutablePose } from "../src/character/pose";
 
@@ -39,11 +39,42 @@ function setChild(poses: Map<SegmentId, MutablePose>, id: SegmentId, requested: 
     linearVelocity: ZERO, angularVelocity: ZERO });
 }
 
+function lowestSegmentPoint(poses: Map<SegmentId, MutablePose>, id: SegmentId): number {
+  const definition = SEGMENT_BY_ID.get(id)!, pose = poses.get(id)!;
+  return Math.min(...definition.geometry.vertices.map(vertex => worldPoint(pose.position, pose.rotation, vertex).y));
+}
+
 function lowestPoint(poses: Map<SegmentId, MutablePose>): number {
-  return Math.min(...SEGMENTS.map(definition => {
-    const pose = poses.get(definition.id)!;
-    return Math.min(...definition.geometry.vertices.map(vertex => worldPoint(pose.position, pose.rotation, vertex).y));
-  }));
+  return Math.min(...SEGMENTS.map(definition => lowestSegmentPoint(poses, definition.id)));
+}
+
+/** Seat the leading articulated sole at the opposite shin's exact surface height. */
+function alignHalfKneelSole(poses: Map<SegmentId, MutablePose>, side: "left" | "right"): void {
+  const shin: SegmentId = `${side}Shin`, ankle: SegmentId = `${side}Ankle`;
+  const foot: SegmentId = `${side}Foot`, forefoot: SegmentId = `${side}Forefoot`;
+  const targetHeight = lowestSegmentPoint(poses, `${side === "left" ? "right" : "left"}Shin`);
+  const setKnee = (angle: number): number => {
+    setChild(poses, shin, { x: angle, y: 0, z: 0 });
+    const up = rotate(quatInverse(poses.get(shin)!.rotation), UP);
+    // The ankle's sagittal axis and hindfoot's lateral axis jointly level the
+    // sole; their shared coordinate conversion retains the asymmetric limits.
+    setChild(poses, ankle, { x: Math.atan2(up.z, up.y), y: 0, z: 0 });
+    setChild(poses, foot, { x: 0, y: 0, z: Math.asin(Math.max(-1, Math.min(1, -up.x))) });
+    setChild(poses, forefoot);
+    return Math.min(lowestSegmentPoint(poses, foot), lowestSegmentPoint(poses, forefoot)) - targetHeight;
+  };
+  const profile = SEGMENT_BY_ID.get(shin)!.jointProfile!;
+  const thighUp = rotate(quatInverse(poses.get(`${side}Thigh`)!.rotation), UP);
+  // Begin at the deepest reachable sole with a vertical shin, then fold the
+  // knee until both intended support surfaces share one floor plane.
+  let low = clampJointCoordinates({ x: Math.atan2(thighUp.z, thighUp.y), y: 0, z: 0 }, profile).x;
+  let high = profile.axes.find(axis => axis.coordinate === "x")!.maxRadians;
+  if (setKnee(low) > 0 || setKnee(high) < 0) throw new Error("Half-kneel support surfaces cannot share a legal floor plane");
+  for (let iteration = 0; iteration < 48; iteration++) {
+    const middle = (low + high) / 2;
+    if (setKnee(middle) < 0) low = middle; else high = middle;
+  }
+  setKnee((low + high) / 2);
 }
 
 export function recoveryFixturePoses(fixture: RecoveryPoseFixture): Map<SegmentId, MutablePose> {
@@ -84,13 +115,17 @@ export function recoveryFixturePoses(fixture: RecoveryPoseFixture): Map<SegmentI
       if (definition.role === "forearm") coordinates = { x: 0.20, y: 0, z: 0 };
       if (definition.id.endsWith("Thigh")) {
         const mirror = definition.id.startsWith("left") ? 1 : -1;
-        coordinates = { x: lead ? 1.25 : 0.05, y: 0, z: mirror * (lead ? 0.36 : 0.14) };
+        // Preserve the original forward half-kneel intent in the anatomical
+        // hip frame: the leading thigh flexes forward, the trailing thigh is
+        // nearly vertical. Old expanded seeds left the leading knee straight.
+        coordinates = { x: lead ? 1.35 : -0.15, y: 0, z: lead ? mirror * 0.36 : 0 };
       }
-      if (definition.id.endsWith("Shin")) coordinates = { x: lead ? 0.268 : 2.30, y: 0, z: 0 };
-      if (definition.id.endsWith("Ankle")) coordinates = { x: lead ? -0.785 : 0.315, y: 0, z: 0 };
-      if (definition.id.endsWith("Forefoot")) coordinates = { x: lead ? -0.349 : 0.751, y: 0, z: 0 };
+      if (definition.id.endsWith("Shin")) coordinates = { x: 2.10, y: 0, z: 0 };
+      if (definition.id.endsWith("Ankle")) coordinates = { x: lead ? 0 : 0.315, y: 0, z: 0 };
+      if (definition.id.endsWith("Forefoot")) coordinates = { x: lead ? 0 : 0.751, y: 0, z: 0 };
       setChild(poses, definition.id, coordinates);
     }
+    alignHalfKneelSole(poses, leading);
   } else {
     poses = new Map();
     const rootRotation = fixture.pose === "prone" ? pitch(Math.PI / 2)

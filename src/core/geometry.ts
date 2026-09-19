@@ -208,11 +208,22 @@ export function verticalExtent(geometry: ConvexGeometry, rotation: Quat): number
 
 /** Exact lowest canonical vertex after a rigid transform. */
 export function lowestWorldPoint(geometry: ConvexGeometry, position: Vec3, rotation: Quat): Vec3 {
+  // Every vertex shares the same orientation. Preserve the rotation arithmetic
+  // while normalizing once and calculating x/z only for a new lowest vertex.
+  const magnitude = Math.hypot(rotation.x, rotation.y, rotation.z, rotation.w) || 1;
+  const qx = rotation.x / magnitude, qy = rotation.y / magnitude;
+  const qz = rotation.z / magnitude, qw = rotation.w / magnitude;
   let lowest: Vec3 | null = null;
   for (const vertex of geometry.vertices) {
-    const oriented = rotate(rotation, vertex);
-    const world = { x: position.x + oriented.x, y: position.y + oriented.y, z: position.z + oriented.z };
-    if (!lowest || world.y < lowest.y) lowest = world;
+    const tx = 2 * (qy * vertex.z - qz * vertex.y);
+    const ty = 2 * (qz * vertex.x - qx * vertex.z);
+    const tz = 2 * (qx * vertex.y - qy * vertex.x);
+    const y = position.y + (vertex.y + qw * ty + (qz * tx - qx * tz));
+    if (!lowest || y < lowest.y) lowest = {
+      x: position.x + (vertex.x + qw * tx + (qy * tz - qz * ty)),
+      y,
+      z: position.z + (vertex.z + qw * tz + (qx * ty - qy * tx)),
+    };
   }
   return lowest!;
 }

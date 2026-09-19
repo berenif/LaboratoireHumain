@@ -11,6 +11,7 @@ import type { PoseSnapshot, PoseView, SegmentDefinition, SegmentId, SegmentPose,
 import { SharedCameraProjection } from "./camera";
 import type { SceneViewOptions } from "./options";
 import { interpolatePoseSnapshot, rotateVector, transformLocalPoint } from "./pose";
+import { PROTOCOL_STRIKER_PIECES, protocolRoomPieces, type ProtocolVisualPiece } from "./protocol-visuals";
 
 interface ProjectedPoint {
   x: number;
@@ -98,14 +99,15 @@ export class Canvas2DView implements PoseView {
     if (!context || this.disposed) return;
     context.save();
     context.setTransform(this.pixelRatio, 0, 0, this.pixelRatio, 0, 0);
-    this.drawBackdrop(context);
-    this.drawFloor(context);
+    this.drawBackdrop(context, Boolean(this.snapshot?.room));
+    if (this.snapshot?.room) this.drawProtocolRoom(context, this.snapshot.room);
+    else this.drawFloor(context);
     if (this.snapshot) {
-      this.drawSupport(context, this.snapshot);
+      if (!this.snapshot.room) this.drawSupport(context, this.snapshot);
       this.drawJointLinks(context, this.snapshot);
       this.drawSegments(context, this.snapshot);
       this.drawJointMarkers(context, this.snapshot);
-      this.drawSelection(context, this.snapshot);
+      if (!this.snapshot.room) this.drawSelection(context, this.snapshot);
     }
     context.restore();
   }
@@ -142,13 +144,66 @@ export class Canvas2DView implements PoseView {
     this.container = null;
   }
 
-  private drawBackdrop(context: CanvasRenderingContext2D): void {
+  private drawBackdrop(context: CanvasRenderingContext2D, protocol: boolean): void {
     const gradient = context.createLinearGradient(0, 0, 0, this.cssHeight);
-    gradient.addColorStop(0, "#101a2b");
-    gradient.addColorStop(0.66, "#17233a");
-    gradient.addColorStop(1, "#0a111d");
+    gradient.addColorStop(0, protocol ? "#aebcb5" : "#101a2b");
+    gradient.addColorStop(0.66, protocol ? "#d8ddd2" : "#17233a");
+    gradient.addColorStop(1, protocol ? "#9fae9f" : "#0a111d");
     context.fillStyle = gradient;
     context.fillRect(0, 0, this.cssWidth, this.cssHeight);
+  }
+
+  private drawProtocolRoom(context: CanvasRenderingContext2D, room: NonNullable<PoseSnapshot["room"]>): void {
+    const identity = { x: 0, y: 0, z: 0, w: 1 };
+    const pieces = protocolRoomPieces(room);
+    for (const piece of pieces) this.drawProtocolPiece(context, piece, { x: 0, y: 0, z: 0 }, identity);
+    context.lineWidth = 1;
+    const halfWidth = room.width / 2;
+    const halfDepth = room.depth / 2;
+    for (const inset of [0.3, 0.34]) {
+      const color = inset === 0.3 ? "rgba(73,80,69,0.45)" : "rgba(241,181,27,0.6)";
+      this.strokeWorldLine(context, { x: -halfWidth + inset, y: 0.005, z: -halfDepth + inset }, { x: halfWidth - inset, y: 0.005, z: -halfDepth + inset }, color);
+      this.strokeWorldLine(context, { x: -halfWidth + inset, y: 0.005, z: halfDepth - inset }, { x: halfWidth - inset, y: 0.005, z: halfDepth - inset }, color);
+    }
+  }
+
+  private drawProtocolPiece(context: CanvasRenderingContext2D, piece: ProtocolVisualPiece, parentPosition: Vec3, parentRotation: PoseSnapshot["rootRotation"]): void {
+    const center = V3.add(parentPosition, rotateVector(parentRotation, piece.position));
+    const vertices = piece.geometry.vertices.map(vertex => V3.add(center, rotateVector(parentRotation, vertex)));
+    const projected = vertices.map(vertex => this.projection.project(vertex));
+    const faces = piece.geometry.triangles.flatMap(([a, b, c]) => {
+      const points = [projected[a], projected[b], projected[c]];
+      if (points.some(point => point.depth <= 0)) return [];
+      const normal = V3.normalize(V3.cross(V3.sub(vertices[b], vertices[a]), V3.sub(vertices[c], vertices[a])));
+      const shade = Math.max(0.63, Math.min(1.11, 0.88 + normal.y * 0.13 - normal.x * 0.09 + normal.z * 0.05));
+      return [{ points, depth: points.reduce((sum, point) => sum + point.depth, 0) / 3, shade }];
+    }).sort((a, b) => b.depth - a.depth);
+    const opacity = piece.opacity ?? 1;
+    context.save();
+    context.globalAlpha = opacity;
+    for (const face of faces) {
+      const rgb = [1, 3, 5].map(start => Math.min(255, Math.round(parseInt(piece.color.slice(start, start + 2), 16) * face.shade)));
+      context.beginPath();
+      context.moveTo(face.points[0].x, face.points[0].y);
+      context.lineTo(face.points[1].x, face.points[1].y);
+      context.lineTo(face.points[2].x, face.points[2].y);
+      context.closePath();
+      context.fillStyle = `rgb(${rgb.join(",")})`;
+      context.fill();
+    }
+    if (piece.id === "head" || piece.id === "collar") {
+      const hull = convexHull(projected.filter(point => point.depth > 0));
+      if (hull.length > 2) {
+        context.beginPath();
+        context.moveTo(hull[0].x, hull[0].y);
+        for (let index = 1; index < hull.length; index++) context.lineTo(hull[index].x, hull[index].y);
+        context.closePath();
+        context.strokeStyle = "#28322b";
+        context.lineWidth = 2;
+        context.stroke();
+      }
+    }
+    context.restore();
   }
 
   private drawFloor(context: CanvasRenderingContext2D): void {
@@ -227,7 +282,7 @@ export class Canvas2DView implements PoseView {
         ? transformLocalPoint(child, definition.jointAnchorChild)
         : child.position;
       context.lineWidth = parentDefinition?.role === "pelvis" || parentDefinition?.role === "ribcage" ? 5 : 4;
-      this.strokeWorldLine(context, parentPoint, childPoint, "rgba(175, 198, 225, 0.58)");
+      this.strokeWorldLine(context, parentPoint, childPoint, snapshot.room ? "rgba(48,58,55,0.75)" : "rgba(175, 198, 225, 0.58)");
     }
   }
 
@@ -239,6 +294,14 @@ export class Canvas2DView implements PoseView {
       const projected = this.projection.project(pose.position);
       if (projected.depth > 0) drawables.push({ depth: projected.depth,
         draw: () => this.drawSegment(context, { definition, pose, depth: projected.depth }, snapshot) });
+    }
+    if (snapshot.striker) {
+      for (const piece of PROTOCOL_STRIKER_PIECES) {
+        const center = V3.add(snapshot.striker.position, rotateVector(snapshot.striker.rotation, piece.position));
+        const projected = this.projection.project(center);
+        if (projected.depth > 0) drawables.push({ depth: projected.depth,
+          draw: () => this.drawProtocolPiece(context, piece, snapshot.striker!.position, snapshot.striker!.rotation) });
+      }
     }
     if (snapshot.playground) {
       for (const piece of getPlaygroundCourse(snapshot.playground.difficulty)) {
@@ -286,13 +349,15 @@ export class Canvas2DView implements PoseView {
     snapshot: PoseSnapshot,
   ): void {
     const { definition, pose } = drawable;
-    const color = definition.region ? REGION_COLORS[definition.region] : PASSIVE_COLOR;
+    const color = snapshot.room
+      ? ["lumbar", "neck", "shoulder-girdle", "forearm-twist", "ankle"].includes(definition.role) ? "#303a38" : "#f1efdf"
+      : definition.region ? REGION_COLORS[definition.region] : PASSIVE_COLOR;
     const exactSelection = snapshot.diagnostics.selectedSegment;
     const selected = exactSelection
       ? definition.id === exactSelection
       : definition.region !== null && definition.region === snapshot.diagnostics.selectedRegion;
-    const fill = selected ? color : `${color}df`;
-    const outline = selected ? "#ffffff" : "rgba(6, 12, 24, 0.82)";
+    const fill = snapshot.room ? color : selected ? color : `${color}df`;
+    const outline = snapshot.room ? "rgba(41,51,45,0.78)" : selected ? "#ffffff" : "rgba(6, 12, 24, 0.82)";
     const points = definition.geometry.vertices.map((vertex) => {
       const world = V3.add(pose.position, rotateVector(pose.rotation, vertex));
       return this.projection.project(world);
@@ -319,7 +384,7 @@ export class Canvas2DView implements PoseView {
     for (let index = 1; index < hull.length; index += 1) context.lineTo(hull[index].x, hull[index].y);
     context.closePath();
     context.strokeStyle = outline;
-    context.lineWidth = selected ? 4 : 2;
+    context.lineWidth = snapshot.room ? 1.3 : selected ? 4 : 2;
     context.stroke();
   }
 
@@ -342,7 +407,7 @@ export class Canvas2DView implements PoseView {
       context.beginPath();
       context.arc(projected.x, projected.y, radius, 0, Math.PI * 2);
       context.fillStyle = "rgba(10, 18, 30, 0.88)";
-      context.strokeStyle = "rgba(225, 238, 255, 0.72)";
+      context.strokeStyle = snapshot.room ? "rgba(48,58,55,0.72)" : "rgba(225, 238, 255, 0.72)";
       context.lineWidth = 1.25;
       context.fill();
       context.stroke();

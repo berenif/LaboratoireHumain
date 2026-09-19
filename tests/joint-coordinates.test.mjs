@@ -86,6 +86,16 @@ test("coordinates absent from a hinge profile are structurally locked", () => {
   closeVec(jointLimitError({ x: 2.7, y: 0.2, z: -0.1 }, hinge), { x: 0.3, y: 0.2, z: -0.1 });
 });
 
+test("joint coordinate validation observes mutable axes even inside a frozen profile", () => {
+  const mutableAxis = axis("x", 0, 2.4);
+  const partialFreeze = Object.freeze(profile(Object.freeze([mutableAxis])));
+  close(clampJointCoordinates({ ...zero, x: 2 }, partialFreeze).x, 2);
+  mutableAxis.maxRadians = .4;
+  close(clampJointCoordinates({ ...zero, x: 2 }, partialFreeze).x, .4);
+  mutableAxis.maxRadians = Number.NaN;
+  assert.throws(() => clampJointCoordinates(zero, partialFreeze), /maximum must be finite/);
+});
+
 test("asymmetric limits clamp about their center, including across the pi seam", () => {
   const radians = degrees => degrees * Math.PI / 180;
   const seam = profile([axis("x", radians(170), radians(190))]);

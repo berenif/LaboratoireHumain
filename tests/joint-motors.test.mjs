@@ -337,6 +337,43 @@ test("support-conditioned response predicts swing hip and ankle impulses", async
   }
 });
 
+test("free articulated passive response is independent of an omitted or empty support list", async () => {
+  const omitted = await createEmbodiedCharacter("canvas2d");
+  const explicit = await createEmbodiedCharacter("canvas2d");
+  try {
+    for (const character of [omitted, explicit]) {
+      seedRecoveryFixture(character, {
+        id: "passive-free-articulation-regression", pose: "half-kneel",
+        side: "left", heading: Math.PI / 3,
+      });
+      character.floorCollider.setEnabled(false);
+      character.world.gravity = zero;
+      for (const collider of character.ragdollColliders.values()) collider.setCollisionGroups(0);
+      for (const [index, body] of [...character.ragdollBodies.values()].entries()) {
+        body.setAngvel({ x: .02 * index, y: -.03 * index, z: .01 * index }, true);
+      }
+    }
+    const implicitTorques = applyPassiveJointResistance(omitted.ragdollBodies, 1 / 60);
+    const explicitTorques = applyPassiveJointResistance(explicit.ragdollBodies, 1 / 60, { supports: [] });
+    assert.ok(implicitTorques.size > 0, "fixture must engage passive joint resistance");
+    assert.ok([...explicitTorques.values()].some(torque => Math.hypot(torque.x, torque.y, torque.z) > .01),
+      "fixture must have a nonzero passive impulse");
+    assert.deepEqual([...implicitTorques.keys()], [...explicitTorques.keys()]);
+    for (const [id, expected] of explicitTorques) closeVector(implicitTorques.get(id), expected);
+
+    // Omitting a ground-support list does not remove the body's permanent
+    // joint anchors or locked axes from the physical response.
+    for (const character of [omitted, explicit]) character.world.step(character.eventQueue, character.physicsHooks);
+    for (const [id, body] of omitted.ragdollBodies) {
+      closeVector(body.angvel(), explicit.ragdollBodies.get(id).angvel(), 1e-7);
+      closeVector(body.linvel(), explicit.ragdollBodies.get(id).linvel(), 1e-7);
+    }
+  } finally {
+    omitted.dispose();
+    explicit.dispose();
+  }
+});
+
 test("simultaneous passive resistance does not amplify a seeded recovery chain", async () => {
   const character = await createEmbodiedCharacter("canvas2d");
   try {

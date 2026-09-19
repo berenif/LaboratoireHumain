@@ -84,6 +84,7 @@ export function reconstructRecoveryLimb(
   arm: boolean,
   parent: Pick<SegmentPose, "position" | "rotation">,
   rotations: ReadonlyMap<SegmentId, Quat>,
+  measureFloor = true,
 ): { poses: SegmentPose[]; floorClearanceM: number } {
   const poses: SegmentPose[] = [];
   let current = parent;
@@ -104,7 +105,7 @@ export function reconstructRecoveryLimb(
       linearVelocity: ZERO,
       angularVelocity: ZERO,
     };
-    floorClearanceM = Math.min(
+    if (measureFloor) floorClearanceM = Math.min(
       floorClearanceM,
       lowestWorldPoint(definition.geometry, position, rotation).y,
     );

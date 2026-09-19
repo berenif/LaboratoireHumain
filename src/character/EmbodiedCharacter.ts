@@ -17,7 +17,9 @@ import {
 import { flattenGeometryIndices, flattenGeometryVertices, lowestWorldPoint } from "../core/geometry";
 import { pickRegionProxies } from "../core/picking";
 import { ARENA, playgroundStation, type PlaygroundConfig } from "../core/playground";
+import { PROTOCOL_ROOM } from "../core/protocol";
 import { PhysicsPlayground } from "./PhysicsPlayground";
+import { PhysicsStriker } from "./PhysicsStriker";
 import type {
   CharacterController,
   DiagnosticsSnapshot,
@@ -58,7 +60,6 @@ import {
 } from "./joint-coordinates";
 import {
   applyCoupledJointMotors,
-  applyPassiveJointResistance,
   type JointMotorCommand,
   type JointMotorResult,
 } from "./joint-motors";
@@ -208,6 +209,11 @@ class EmbodiedCharacter implements CharacterController {
   private initialPosition: Vec3;
   private playgroundConfig?: PlaygroundConfig;
   private playground: PhysicsPlayground | null = null;
+  private readonly room: boolean;
+  private readonly striker: PhysicsStriker | null;
+  private protocolStrikes = 0;
+  private protocolRecoveries = 0;
+  private protocolMessage: NonNullable<PoseSnapshot["protocol"]>["message"] = null;
   private grabControlDiagnostics: GrabControlDiagnostics = emptyGrabDiagnostics();
   private paused = false;
   private disposed = false;
@@ -235,12 +241,15 @@ class EmbodiedCharacter implements CharacterController {
 
   constructor(renderer: RendererMode, options: CharacterInitialOptions = {}) {
     this.renderer = renderer;
+    this.room = Boolean(options.room);
     this.initialHeading = options.heading ?? 0;
     this.heading = this.initialHeading;
     this.initialPosition = options.position ?? INITIAL_ROOT;
     this.world = new RAPIER.World({ x: 0, y: -9.81, z: 0 });
     this.world.timestep = 1 / 60;
-    this.world.numSolverIterations = 20;
+    // The room's fixed striker produces a sharp Rapier contact. Extra solver
+    // iterations resolve that impulse across the bounded shoulder joints.
+    this.world.numSolverIterations = this.room ? 80 : 20;
     this.world.numInternalPgsIterations = 4;
     this.world.integrationParameters.maxCcdSubsteps = 4;
     this.eventQueue = new RAPIER.EventQueue(true);
@@ -262,13 +271,14 @@ class EmbodiedCharacter implements CharacterController {
       RAPIER.RigidBodyDesc.fixed().setTranslation(0, -0.08, 0),
     );
     this.floorCollider = this.world.createCollider(
-      RAPIER.ColliderDesc.cuboid(options.playground ? ARENA.width / 2 + 2 : 5, 0.08,
-        options.playground ? ARENA.depth / 2 + 2 : 5)
+      RAPIER.ColliderDesc.cuboid(options.playground ? ARENA.width / 2 + 2 : PROTOCOL_ROOM.width / 2, 0.08,
+        options.playground ? ARENA.depth / 2 + 2 : PROTOCOL_ROOM.depth / 2)
         .setFriction(4)
         .setRestitution(0.01)
         .setCollisionGroups(ENVIRONMENT_GROUP),
       floorBody,
     );
+    this.striker = this.room ? new PhysicsStriker(this.world) : null;
     if (options.playground) this.buildPlayground(options.playground);
     this.world.step(this.eventQueue, this.physicsHooks);
     this.poses = this.initialPose();
@@ -299,6 +309,7 @@ class EmbodiedCharacter implements CharacterController {
     this.fixedSteps += 1;
     this.simulationTime += stepDt;
     this.playground?.update(this.simulationTime);
+    this.striker?.beforeStep(stepDt);
     this.previousPoses = this.clonePoses(this.poses);
     try {
       if (this.isRecoveryState()) this.updateRecovery(stepDt);
@@ -315,6 +326,9 @@ class EmbodiedCharacter implements CharacterController {
     const pelvis = this.poses.get("pelvis")!;
     return {
       ...(this.playgroundConfig ? { playground: { ...this.playgroundConfig } } : {}),
+      ...(this.room ? { room: PROTOCOL_ROOM, striker: this.striker!.snapshot(),
+        protocol: { strikes: this.protocolStrikes, recoveries: this.protocolRecoveries,
+          message: this.protocolMessage } } : {}),
       sequence: this.sequence,
       simulationTime: this.simulationTime,
       state: this.state,
@@ -327,14 +341,22 @@ class EmbodiedCharacter implements CharacterController {
   }
 
   pick(ray: Ray): PickResult | null {
-    if (this.disposed || !this.diagnostics().bodyInputAvailable) return null;
+    if (this.room || this.disposed || !this.diagnostics().bodyInputAvailable) return null;
     return pickRegionProxies(ray, [...this.poses.values()]);
   }
 
   clearBodyInput(): void { this.clearGrab(); }
 
+  requestStrike(): boolean {
+    if (!this.room || this.disposed || this.paused || !this.striker) return false;
+    const torso = this.poses.get("torso");
+    if (!torso || !this.striker.request(torso.position, this.ragdollColliders)) return false;
+    this.protocolMessage = "Essai d’arrêt en cours";
+    return true;
+  }
+
   setPlayground(config: PlaygroundConfig): void {
-    if (this.disposed) return;
+    if (this.disposed || this.room) return;
     this.buildPlayground(config);
     this.reset();
   }
@@ -355,7 +377,8 @@ class EmbodiedCharacter implements CharacterController {
   }
 
   private environmentColliders(): Collider[] {
-    return [this.floorCollider, ...(this.playground?.colliders ?? [])].filter(collider => collider.isEnabled());
+    return [this.floorCollider, ...(this.playground?.colliders ?? []),
+      ...(this.striker?.roomColliders ?? [])].filter(collider => collider.isEnabled());
   }
 
   private supportHeight(): number {
@@ -382,6 +405,7 @@ class EmbodiedCharacter implements CharacterController {
     this.clearGrab();
     this.clearDynamicAssembly();
     this.playground?.dispose();
+    this.striker?.dispose();
     this.eventQueue.free();
     this.world.free();
     this.disposed = true;
@@ -391,6 +415,10 @@ class EmbodiedCharacter implements CharacterController {
     if (this.disposed) return;
     this.clearGrab();
     this.clearDynamicAssembly();
+    this.striker?.reset();
+    this.protocolStrikes = 0;
+    this.protocolRecoveries = 0;
+    this.protocolMessage = null;
     this.playground?.reset();
     this.state = "upright";
     this.heading = this.initialHeading;
@@ -446,7 +474,7 @@ class EmbodiedCharacter implements CharacterController {
     const selfPenetration = this.maximumSelfPenetration();
     return {
       balance: this.balanceData ? structuredClone(this.balanceData) : null,
-      bodyInputAvailable: !this.disposed && !this.paused && !this.isRecoveryState(),
+      bodyInputAvailable: !this.room && !this.disposed && !this.paused && !this.isRecoveryState(),
       recovery: this.isRecoveryState() ? this.recovery.diagnostics() : emptyRecoveryDiagnostics(),
       grabControl: { ...this.grabControlDiagnostics },
       physicsOwnership: "rapier-dynamic",
@@ -503,6 +531,7 @@ class EmbodiedCharacter implements CharacterController {
     this.previousPoses = this.clonePoses(poses);
     this.createDynamicAssembly(this.poses);
     this.readPhysicsPoses();
+    this.lastMotorResults.clear();
     this.activateRagdoll(direction);
   }
 
@@ -511,6 +540,7 @@ class EmbodiedCharacter implements CharacterController {
   }
 
   private processCommand(command: GrabCommand | null): void {
+    if (this.room) { this.clearGrab(); return; }
     if (this.isRecoveryState()) { this.clearGrab(); return; }
     if (!command) {
       if (this.activeGrab) this.activeGrab.targetVelocity = scale(this.activeGrab.targetVelocity, 0.72);
@@ -694,6 +724,13 @@ class EmbodiedCharacter implements CharacterController {
     this.world.step(this.eventQueue, this.physicsHooks);
     this.readPhysicsPoses();
     this.observeContacts(dt);
+    const struck = this.striker?.afterStep(this.ragdollColliders) ?? false;
+    if (struck) {
+      this.protocolStrikes = this.striker!.impactId;
+      this.protocolMessage = "Le sujet insiste";
+      this.activateRagdoll(this.striker!.strikeDirection);
+      return;
+    }
 
     const hasFootSupport = this.supportSnapshot().planted.length > 0;
     this.unsupportedTime = hasFootSupport ? 0 : this.unsupportedTime + dt;
@@ -719,18 +756,44 @@ class EmbodiedCharacter implements CharacterController {
       const speed = length(body.linvel()) + 0.09 * length(body.angvel());
       collider.setContactSkin(speed > 1.5 ? 0.02
         : this.recovery.diagnostics().phase === "settle" ? 0.01 : 0.004);
-      this.ragdollColliders.get(`${side}UpperArm`)!.setContactSkin(0.006);
     }
-    applyPassiveJointResistance(this.ragdollBodies, dt);
     const result = this.recovery.apply(this.ragdollBodies, dt);
+    // Keep the actual recovery actuator evidence. Clearing this map used to
+    // report every target as the measured pose and every recovery torque as
+    // zero, including while protective and rising motors were active.
+    this.lastMotorResults = new Map(this.recovery.motorResults());
+    for (const [id, passive] of this.recovery.passiveTorques()) {
+      const definition = SEGMENT_BY_ID.get(id)!;
+      const profile = definition.jointProfile!;
+      const motor = this.lastMotorResults.get(id);
+      const coordinates = motor?.coordinates ?? jointCoordinates(
+        this.ragdollBodies.get(definition.parent!)!.rotation(),
+        this.ragdollBodies.get(id)!.rotation(), profile,
+      );
+      const torqueWorld = add(motor?.torqueWorld ?? ZERO, passive);
+      const aggregateCap = Math.hypot(...profile.axes.map(axis => axis.maxMotorTorqueNm));
+      this.lastMotorResults.set(id, {
+        coordinates,
+        targetCoordinates: motor?.targetCoordinates ?? coordinates,
+        coordinateError: motor?.coordinateError ?? ZERO,
+        torqueWorld,
+        saturationRatio: Math.max(motor?.saturationRatio ?? 0, length(torqueWorld) / aggregateCap),
+      });
+    }
     this.state = result.state;
     this.world.step(this.eventQueue, this.physicsHooks);
     this.readPhysicsPoses();
     this.observeContacts(dt);
+    const struck = this.striker?.afterStep(this.ragdollColliders) ?? false;
+    if (struck) {
+      this.protocolStrikes = this.striker!.impactId;
+      this.protocolMessage = "Le sujet insiste";
+      this.recovery.interruptForImpact(this.ragdollBodies, this.striker!.strikeDirection);
+    }
     this.fallingTime += dt;
     this.leanRadians = this.currentTorsoLean();
-    this.lastMotorResults.clear();
-    if (result.recovered) this.finishRecovery();
+    if (!struck && this.recovery.confirmPostStep(this.ragdollBodies, dt, this.room ? 1.0 : undefined)) this.finishRecovery();
+    void result;
   }
 
   /** State-only transition: bodies, positions, rotations, and velocities are untouched. */
@@ -748,11 +811,17 @@ class EmbodiedCharacter implements CharacterController {
     this.fallingTime = 0;
     this.unsupportedTime = 0;
     this.uprightBlendStart.clear();
-    this.lastMotorResults.clear();
+    // The standing motors already acted on this integrated step. Preserve
+    // their evidence across the state-only fall transition; the next recovery
+    // decision replaces it with that step's actual actuator results.
   }
 
   /** Recovery changes motor intent only; the continuous Rapier state remains authoritative. */
   private finishRecovery(): void {
+    if (this.room) {
+      this.protocolRecoveries += 1;
+      this.protocolMessage = "Rectification : essai en cours";
+    }
     const pelvis = this.poses.get("pelvis")!;
     const forward = horizontal(rotate(pelvis.rotation, FORWARD));
     if (length(forward) > 1e-5) this.heading = Math.atan2(forward.x, forward.z);
@@ -1217,7 +1286,7 @@ class EmbodiedCharacter implements CharacterController {
   }
 }
 
-export interface CharacterInitialOptions { heading?: number; position?: Vec3; playground?: PlaygroundConfig }
+export interface CharacterInitialOptions { heading?: number; position?: Vec3; playground?: PlaygroundConfig; room?: boolean }
 
 export async function createEmbodiedCharacter(
   initialRenderer: RendererMode = "canvas2d",

@@ -17,6 +17,7 @@ const BASIS: Readonly<Record<JointCoordinate, Vec3>> = {
 
 const ZERO: Vec3 = { x: 0, y: 0, z: 0 };
 const QUATERNION_EPSILON = 1e-12;
+const immutableAxisProfiles = new WeakMap<JointProfile, ReadonlyMap<JointCoordinate, JointAxisProfile>>();
 
 export interface JointCoordinateKinematics {
   /** Time derivatives of the permitted anatomical coordinates. */
@@ -59,6 +60,8 @@ function canonicalQuaternion(input: Quat): Quat {
 }
 
 function axisByCoordinate(profile: JointProfile): ReadonlyMap<JointCoordinate, JointAxisProfile> {
+  const cached = immutableAxisProfiles.get(profile);
+  if (cached) return cached;
   const result = new Map<JointCoordinate, JointAxisProfile>();
   for (const axis of profile.axes) {
     if (result.has(axis.coordinate)) {
@@ -70,6 +73,11 @@ function axisByCoordinate(profile: JointProfile): ReadonlyMap<JointCoordinate, J
       throw new RangeError(`Joint ${axis.coordinate} minimum exceeds its maximum.`);
     }
     result.set(axis.coordinate, axis);
+  }
+  // Canonical anatomy profiles cannot change. Mutable/custom profiles still
+  // undergo fresh validation on every call, including their nested axis data.
+  if (Object.isFrozen(profile) && Object.isFrozen(profile.axes) && profile.axes.every(Object.isFrozen)) {
+    immutableAxisProfiles.set(profile, result);
   }
   return result;
 }

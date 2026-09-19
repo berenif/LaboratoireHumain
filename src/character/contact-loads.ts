@@ -25,6 +25,8 @@ export interface ContactLoadOptions {
   maxHorizontalForceN: number;
   maxJointTorqueNm: number;
   projectionSeconds?: number;
+  /** Retain this fraction of each eligible patch's measured share during transfer. */
+  minimumMeasuredShareFraction?: number;
 }
 
 /** Allocate a bounded wrench only over loaded, measured solver patches. */
@@ -57,17 +59,22 @@ export function planContactLoads(
   });
   const measuredTotal = valid.reduce((sum, contact) => sum + contact.forceN, 0);
   const measuredShare = valid.map(contact => contact.forceN / measuredTotal);
+  const retainedFraction = clamp(options.minimumMeasuredShareFraction ?? 0, 0, 1);
+  const minimumShare = measuredShare.map(share => retainedFraction * share);
   let shares = [...measuredShare];
   // Project the pressure centre toward COM + momentum while retaining the
   // measured load split when several patches can supply the same moment.
   for (let iteration = 0; iteration < 16 && shares.length > 1; iteration += 1) {
     const center = points.reduce((sum, point, index) => add(sum, scale(point, shares[index])), ZERO);
     const error = HORIZONTAL(sub(desiredPressure, center));
-    const updated = shares.map((share, index) => Math.max(0, share
+    const updated = shares.map((share, index) => Math.max(minimumShare[index], share
       + 1.8 * dot(HORIZONTAL(sub(points[index], center)), error)
       + 0.045 * (measuredShare[index] - share)));
-    const total = updated.reduce((sum, share) => sum + share, 0);
-    shares = total > 1e-9 ? updated.map(share => share / total) : [...measuredShare];
+    const excess = updated.map((share, index) => share - minimumShare[index]);
+    const total = excess.reduce((sum, share) => sum + share, 0);
+    shares = total > 1e-9
+      ? excess.map((share, index) => minimumShare[index] + (1 - retainedFraction) * share / total)
+      : [...measuredShare];
   }
   const loads = valid.map((contact, index) => ({
     segment: contact.segment,

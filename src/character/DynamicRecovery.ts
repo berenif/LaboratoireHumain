@@ -5,17 +5,27 @@ import { add, angularVelocity, clamp, clampLength, length, lerp, dot, cross, nor
 
 const ZERO: Vec3 = { x: 0, y: 0, z: 0 };
 const UP: Vec3 = { x: 0, y: 1, z: 0 };
-import { applyCoupledJointMotors, type JointMotorCommand } from "./joint-motors";
+import { applyCoupledJointMotors, applyPassiveJointResistance, type JointMotorCommand, type JointMotorResult } from "./joint-motors";
 import { minimumSupportTorqueLimit, planContactLoads } from "./contact-loads";
+import { jointCoordinates } from "./joint-coordinates";
 import { blendRecoveryJointTargets, limitRecoveryJoint, reconstructRecoveryLimb, recoveryJointLimitError, recoveryJointRotation, recoveryLimbIds } from "./recovery-joints";
 import { limbBodyClearance, limbTrunkClearance } from "./limb-collisions";
 import { reachableFootTarget, revalidateRecoveryFootTarget, solveRecoveryLegTarget, type RecoveryFootTarget } from "./recovery-foot-targets";
+import { solveRecoveryForefootAnchor } from "./recovery-forefoot-anchor";
 import { acceptableRecoveryArmBraceTarget, isRecoveryArmSupportSegment, isRecoveryFootSegment, isRecoveryLegSupportSegment, RECOVERY_ARM_TARGET_TOLERANCE, recoveryMassState, selectRecoveryContacts, selectRecoveryRoute, supportGeometry, reachableArmBraceTarget, solveRecoveryArmTarget, usableRecoveryArmSupport, type RecoveryArmBraceTarget } from "./recovery-support";
 const SIDES = ["left", "right"] as const;
 type Side = typeof SIDES[number];
 type Stage = RecoveryDiagnostics["transferStage"];
 export type RecoveryReleaseResult = "blocked" | "newly-released" | "already-released";
-type Plant = { position: Vec3; rotation: Quat; absentS: number; contact?:Vec3 };
+type Plant = { position: Vec3; rotation: Quat; absentS: number; contact?:Vec3; contactPoints?:Vec3[] };
+const plantSlipM = (plant: Plant, pose: SegmentPose): number => {
+  const points = plant.contactPoints?.length ? plant.contactPoints : [plant.contact ?? plant.position];
+  return Math.max(...points.map(priorPoint => {
+    const materialPoint = add(pose.position,
+      rotate(pose.rotation, rotate(quatInverse(plant.rotation), sub(priorPoint, plant.position))));
+    return Math.hypot(materialPoint.x - priorPoint.x, materialPoint.z - priorPoint.z);
+  }));
+};
 type FootMovement={side:Side;origin:Vec3;originRotation:Quat;target:RecoveryFootTarget;time:number;unloaded:boolean;paused:boolean};
 const WEIGHT_N = TOTAL_MASS_KG * 9.81;
 const FORWARD = { x: 0, y: 0, z: 1 };
@@ -24,6 +34,8 @@ export const RECOVERY_LIMITS = Object.freeze({
   normalY: 0.65, contactDistanceM: 0.012, minimumLoadN: 3,
   loadPersistenceS: 0.05, landingPersistenceS: 0.10, settlePersistenceS: 0.30,
   settleLinearMps: 0.65, settleAngularRadps: 1.8,
+  // Frozen recovery completion contract. A product counter that requires a
+  // full second of standing must observe that separately from this gate.
   stablePersistenceS: 0.55, stableLinearMps: 0.22, stableAngularRadps: 0.65,
   stableUpDot: 0.97, phaseMinimumS: 0.20, stallS: 3.0, supportLossS: 0.20,
   assistanceForceN: 0, assistanceTorqueNm: 0,
@@ -41,6 +53,10 @@ const legSwingSegments = (side: Side): SegmentId[] => [
   `${side}Ankle`, `${side}Foot`, `${side}Forefoot`,
 ];
 const segmentSide = (id: SegmentId): Side | null => SEGMENT_BY_ID.get(id)?.side ?? null;
+const isLandingFootSegment = (id: SegmentId): boolean => {
+  const role = SEGMENT_BY_ID.get(id)?.role;
+  return role === "ankle" || role === "hindfoot" || role === "forefoot";
+};
 const supportingSideCount = (contacts: readonly SupportingContact[], predicate: (id: SegmentId) => boolean): number =>
   new Set(contacts.filter(contact => contact.loadBearing && predicate(contact.segment))
     .map(contact => segmentSide(contact.segment)).filter((side): side is Side => side !== null)).size;
@@ -77,17 +93,23 @@ export function emptyRecoveryDiagnostics(): RecoveryDiagnostics {
 /** Rapier owns every dynamic transform. Plans only become bounded joint impulses. */
 export class DynamicRecovery {
   private data = emptyRecoveryDiagnostics();
+  private lastMotorResults: ReadonlyMap<SegmentId, JointMotorResult> = new Map();
+  private lastPassiveTorques: ReadonlyMap<SegmentId, Vec3> = new Map();
   private heading = 0;
   private contactAges = new Map<SegmentId, number>();
   private landingTime = 0;
+  private landingSupportedRise = false;
   private noSupportTime = 0;
   private bestError = Infinity;
   private bestStableTime = 0;
   private plants = new Map<SegmentId, Plant>();
+  private slippedPlants = new Set<SegmentId>();
   private released = new Set<SegmentId>();
   private releasedUnloaded = new Set<SegmentId>();
   private placements = new Map<SegmentId, Vec3>();
   private footPlans=new Map<Side,RecoveryFootTarget>();
+  private blockedFootSearchAge=new Map<Side,number>();
+  private blockedFootSearchPelvis=new Map<Side,Vec3>();
   private footMovements=new Map<SegmentId,FootMovement>();
   private entry = new Map<SegmentId, Quat>();
   private bend = new Map<SegmentId, Vec3>();
@@ -102,6 +124,8 @@ export class DynamicRecovery {
   private placementTorsoRotation:Quat={x:0,y:0,z:0,w:1};
   private placementClearanceTorsoRotation:Quat={x:0,y:0,z:0,w:1};
   private shoulderClearanceEstablished=false;
+  private lastArmSearchTimeS=-Infinity;
+  private lastArmSearchClearanceM=-Infinity;
   private armBraces=new Map<Side,RecoveryArmBraceTarget>();
   private armStarts=new Map<Side,Vec3>();
   private armTimes=new Map<Side,number>();
@@ -117,15 +141,56 @@ export class DynamicRecovery {
 
   reset(heading: number, direction: Vec3): void {
     this.data = emptyRecoveryDiagnostics(); this.data.phase = "protect";
+    this.lastMotorResults = new Map();
+    this.lastPassiveTorques = new Map();
     this.heading = heading;
     const local = rotate(quatInverse(quatFromAxisAngle(UP, heading)), direction);
     this.data.orientation = Math.abs(local.x) > Math.abs(local.z) ? (local.x < 0 ? "left" : "right") : (local.z < 0 ? "backward" : "forward");
     this.placingProneArms=false; this.armBraces.clear(); this.armStarts.clear(); this.armTimes.clear();this.movingArms.clear();
     this.shoulderClearanceEstablished=false;
-    this.footPlans.clear();
+    this.lastArmSearchTimeS=-Infinity;this.lastArmSearchClearanceM=-Infinity;
+    this.footPlans.clear();this.blockedFootSearchAge.clear();this.blockedFootSearchPelvis.clear();
     this.footMovements.clear();
-    this.contactAges.clear(); this.plants.clear(); this.placements.clear(); this.released.clear(); this.releasedUnloaded.clear(); this.entry.clear(); this.bend.clear();
-    this.landingTime = 0; this.noSupportTime = 0; this.bestError = Infinity; this.bestStableTime = 0; this.stageTime = 0; this.transferBlend = 0; this.prospectiveTime=0;
+    this.contactAges.clear(); this.plants.clear(); this.slippedPlants.clear(); this.placements.clear(); this.released.clear(); this.releasedUnloaded.clear(); this.entry.clear(); this.bend.clear();
+    this.landingTime = 0; this.landingSupportedRise = false; this.noSupportTime = 0; this.bestError = Infinity; this.bestStableTime = 0; this.stageTime = 0; this.transferBlend = 0; this.prospectiveTime=0;
+  }
+
+  /** A new measured blow invalidates captured support before the next motor decision. */
+  interruptForImpact(bodies: Map<SegmentId, RigidBody>, direction: Vec3): void {
+    const contacts = this.data.contacts;
+    const motion = this.motion(bodies);
+    const torso = bodies.get("torso")!;
+    const hadSupport = contacts.some(contact => contact.loadBearing);
+    this.reset(this.heading, direction);
+    // The collision may have left patches in contact, but no pre-impact load or
+    // material anchor is allowed to authorize an immediate weight transfer.
+    this.data.contacts = contacts.map(contact => ({ ...contact, persistenceS: 0, loadBearing: false }));
+    const moving = motion.linear > RECOVERY_LIMITS.settleLinearMps
+      || motion.angular > RECOVERY_LIMITS.settleAngularRadps
+      || length(torso.linvel()) > RECOVERY_LIMITS.settleLinearMps;
+    if (hadSupport && !moving) {
+      this.data.phase = "settle";
+      this.data.transferStage = "none";
+    }
+  }
+
+  /** Called after Rapier integration and contact observation, once per physical step. */
+  confirmPostStep(bodies: Map<SegmentId, RigidBody>, dt: number,
+    requiredStableS: number = RECOVERY_LIMITS.stablePersistenceS): boolean {
+    if (this.data.phase !== "stand") {
+      this.data.stableTimeS = 0;
+      return false;
+    }
+    const poses = this.poses(bodies);
+    const feet = this.data.contacts.filter(contact => contact.loadBearing
+      && !this.released.has(contact.segment) && isRecoveryFootSegment(contact.segment)
+      && rotate(poses.get(contact.segment)!.rotation, UP).y > .85);
+    const geometry = supportGeometry(feet, poses, recoveryMassState(poses.values()));
+    const stable = supportingSideCount(feet, isRecoveryFootSegment) === 2
+      && geometry.marginM >= 0 && recoveryStandingPosture(poses, this.motion(bodies));
+    this.data.stableTimeS = stable ? this.data.stableTimeS + dt : 0;
+    this.data.supportMarginM = geometry.marginM;
+    return this.data.stableTimeS + 1e-9 >= requiredStableS;
   }
 
   diagnostics(): RecoveryDiagnostics {
@@ -139,6 +204,12 @@ export class DynamicRecovery {
       centerOfMass: {...this.data.centerOfMass}, projectedCenterOfMass: {...this.data.projectedCenterOfMass},
       assistanceForce: { ...this.data.assistanceForce }, assistanceTorque: { ...this.data.assistanceTorque } };
   }
+
+  /** Actual posture-motor results for the last decision; empty in passive settling. */
+  motorResults(): ReadonlyMap<SegmentId, JointMotorResult> { return this.lastMotorResults; }
+
+  /** Passive-only settling impulses, without inventing a posture target. */
+  passiveTorques(): ReadonlyMap<SegmentId, Vec3> { return this.lastPassiveTorques; }
 
   private poses(bodies: Map<SegmentId, RigidBody>): Map<SegmentId, SegmentPose> {
     return new Map([...bodies].map(([id, b]) => [id, { id, position: {...b.translation()}, rotation: {...b.rotation()},
@@ -213,20 +284,32 @@ export class DynamicRecovery {
       const velocity = bodies.get(contact.segment)!.linvel();
       return plantSpeed(contact) < 0.18 && Math.hypot(velocity.x, velocity.z) < 0.18;
     };
-    const feet = contacts.filter(c => c.loadBearing && isRecoveryFootSegment(c.segment));
-    const supportedCrouch = supportingSideCount(feet, isRecoveryFootSegment) === 2
+    const feet = contacts.filter(c => c.loadBearing && isLandingFootSegment(c.segment));
+    const supportedCrouch = supportingSideCount(feet, isLandingFootSegment) === 2
       && rotate(bodies.get("torso")!.rotation(), UP).y > 0.65 && bodies.get("pelvis")!.translation().y < 0.85;
-    const landed = contacts.some(c => !isRecoveryFootSegment(c.segment) && c.forceN >= RECOVERY_LIMITS.minimumLoadN) || supportedCrouch;
+    const landed = contacts.some(c => !isLandingFootSegment(c.segment)
+      && c.normalY >= RECOVERY_LIMITS.normalY && c.forceN >= RECOVERY_LIMITS.minimumLoadN)
+      || supportedCrouch;
     this.landingTime = landed ? this.landingTime + dt : 0;
     const settled = contacts.some(c => c.forceN >= RECOVERY_LIMITS.minimumLoadN) && motion.linear <= RECOVERY_LIMITS.settleLinearMps && motion.angular <= RECOVERY_LIMITS.settleAngularRadps;
     this.data.settledTimeS = settled ? this.data.settledTimeS + dt : 0;
+    // Old persistent load cannot requalify an anchor invalidated by slip. It
+    // must first unload; the existing contact-age gate then requires fresh load.
+    for (const id of this.slippedPlants) {
+      if (!contacts.some(c => c.segment === id && c.forceN >= RECOVERY_LIMITS.minimumLoadN)) this.slippedPlants.delete(id);
+    }
     for (const [id, plant] of this.plants) {
       const contact = contacts.find(c => c.segment === id && c.forceN >= RECOVERY_LIMITS.minimumLoadN);
       plant.absentS = contact ? 0 : plant.absentS + dt;
       // A sliding contact still carries measured load, but its old pose is no
       // longer a usable anchor for the recovery motors.
-      const slipM = length(sub(poses.get(id)!.position, plant.position));
-      if (plant.absentS > 0.10 || !supportSurfaces.length || slipM > 0.05) this.plants.delete(id);
+      // Track the entire captured material patch: rotation can slip an edge
+      // while its centroid stays fixed. Keep the original 50 mm reserve.
+      const slipped = plantSlipM(plant, poses.get(id)!) > 0.05;
+      if (plant.absentS > 0.10 || !supportSurfaces.length || slipped) {
+        this.plants.delete(id);
+        if (slipped) this.slippedPlants.add(id);
+      }
     }
     for (const id of this.released) {
       const movement=this.footMovements.get(id);
@@ -269,21 +352,21 @@ export class DynamicRecovery {
         || length(sub(hand.position,target.position))>=.14
         || !usableRecoveryArmSupport(side,poses,contactsForSide))continue;
       for(const id of ids) {this.released.delete(id);this.releasedUnloaded.delete(id);}
-      for(const contact of contactsForSide) if(contact.loadBearing && canCapturePlant(contact)) {
+      for(const contact of contactsForSide) if(contact.loadBearing && !this.slippedPlants.has(contact.segment) && canCapturePlant(contact)) {
         const pose=poses.get(contact.segment)!;
-        this.plants.set(contact.segment,{position:{...pose.position},rotation:{...pose.rotation},absentS:0,contact:{...contact.point}});
+        this.plants.set(contact.segment,{position:{...pose.position},rotation:{...pose.rotation},absentS:0,contact:{...contact.point},contactPoints:contact.points?.map(point=>({...point}))});
       }
       this.movingArms.delete(side);
     }
     for (const c of contacts) {
       if (!c.loadBearing || this.plants.has(c.segment) || this.released.has(c.segment)
-        || !canCapturePlant(c)
+        || this.slippedPlants.has(c.segment) || !canCapturePlant(c)
         || !(isRecoveryArmSupportSegment(c.segment) || isRecoveryLegSupportSegment(c.segment))) continue;
       const pose = poses.get(c.segment)!;
-      this.plants.set(c.segment, { position: {...pose.position}, rotation: {...pose.rotation}, absentS: 0, contact:{...c.point} });
+      this.plants.set(c.segment, { position: {...pose.position}, rotation: {...pose.rotation}, absentS: 0, contact:{...c.point},contactPoints:c.points?.map(point=>({...point})) });
     }
     this.data.plantedTargets = [...this.plants].map(([segment, p]) => ({segment, position:p.position, rotation:p.rotation,
-      driftM: length(sub(poses.get(segment)!.position, p.position))}));
+      driftM: plantSlipM(p, poses.get(segment)!)}));
     const mass = recoveryMassState(poses.values()), geometry = supportGeometry(this.supporting(poses), poses, mass);
     this.data.centerOfMass = mass.position; this.data.projectedCenterOfMass = geometry.projectedCenterOfMass;
     this.data.supportMarginM = geometry.marginM;
@@ -345,11 +428,13 @@ export class DynamicRecovery {
     const forward = rotate(poses.get("torso")!.rotation, FORWARD), right = rotate(poses.get("torso")!.rotation, {x:1,y:0,z:0});
     this.data.orientation = Math.abs(right.y) > Math.abs(forward.y) ? (right.y > 0 ? "left" : "right") : (forward.y > 0 ? "backward" : "forward");
     this.rootGoal = {...pelvis.position}; this.riseOrigin={...pelvis.position}; this.placements.clear(); this.released.clear(); this.rollTurned = false;
-    this.footPlans.clear();
+    this.footPlans.clear();this.blockedFootSearchAge.clear();this.blockedFootSearchPelvis.clear();
     const footTargets:Partial<Record<Side,Vec3>>={};
     for(const side of SIDES) {
       const plan=reachableFootTarget(side,poses,this.heading);
       if(plan) {this.footPlans.set(side,plan);if(plan.feasible)footTargets[side]=plan.position;}
+      this.blockedFootSearchAge.set(side,0);
+      this.blockedFootSearchPelvis.set(side,{...pelvis.position});
     }
     for (const side of SIDES) {
       const foot: SegmentId = `${side}Foot`, hand: SegmentId = `${side}Hand`;
@@ -394,6 +479,7 @@ export class DynamicRecovery {
       side,poses,this.data.contacts.filter(c=>isRecoveryArmSupportSegment(c.segment)),
     ));
     this.shoulderClearanceEstablished=false;
+    this.lastArmSearchTimeS=-Infinity;this.lastArmSearchClearanceM=-Infinity;
     if(selected.route!=="crouch" && selected.route!=="half-kneel" && !this.placingProneArms) for(const side of SIDES) {
       const target=reachableArmBraceTarget(side,poses,this.heading);
       if(target && acceptableRecoveryArmBraceTarget(target)) this.armBraces.set(side,target);
@@ -422,6 +508,7 @@ export class DynamicRecovery {
     this.placementTorsoRotation=quatMultiply(quatInverse(this.placementRootRotation),poses.get("torso")!.rotation);
     this.placementClearanceTorsoRotation=quatMultiply(this.placementTorsoRotation,pitch(-.36));
     this.shoulderClearanceEstablished=false;
+    this.lastArmSearchTimeS=-Infinity;this.lastArmSearchClearanceM=-Infinity;
     this.armBraces.clear();this.armStarts.clear();this.armTimes.clear();this.movingArms.clear();
     this.stage("arm-preparation",bodies);
   }
@@ -436,9 +523,15 @@ export class DynamicRecovery {
 
   private armPlacementReady(side:Side,poses:Map<SegmentId,SegmentPose>):boolean {
     const target=this.armBraces.get(side);
-    return !!target && usableRecoveryArmSupport(side,poses,this.data.contacts.filter(c=>
-      isRecoveryArmSupportSegment(c.segment) && !this.released.has(c.segment)))
-      && length(sub(poses.get(`${side}Hand`)!.position,target.position))<.14;
+    const contacts=this.data.contacts.filter(c=>isRecoveryArmSupportSegment(c.segment)
+      && segmentSide(c.segment)===side && !this.released.has(c.segment));
+    if(!usableRecoveryArmSupport(side,poses,contacts))return false;
+    // A planted, persistently loaded forearm already supplies a physical
+    // brace; there is no reason to demand a floor-safe hand relocation first.
+    if(contacts.some(contact=>contact.loadBearing
+      && contact.persistenceS>=RECOVERY_LIMITS.loadPersistenceS
+      && this.plants.has(contact.segment)))return true;
+    return !!target && length(sub(poses.get(`${side}Hand`)!.position,target.position))<.14;
   }
   private legalArmCommand(side:Side,desired:Vec3,poses:Map<SegmentId,SegmentPose>):Map<SegmentId,Quat>|null {
     const brace=this.armBraces.get(side),parent=poses.get("torso")!;
@@ -505,6 +598,8 @@ export class DynamicRecovery {
 
   /** Decide using last integrated evidence, actuate, then the caller integrates once. */
   apply(bodies: Map<SegmentId, RigidBody>, dt: number): { state: MotionState; recovered: boolean } {
+    this.lastMotorResults = new Map();
+    this.lastPassiveTorques = new Map();
     this.data.phaseTimeS += dt; this.stageTime += dt;
     this.data.assistanceForce = ZERO; this.data.assistanceTorque = ZERO; this.data.maxMotorTorqueNm = 0;
     this.data.releasedSupports = []; this.data.releaseMarginM = null;
@@ -522,13 +617,32 @@ export class DynamicRecovery {
         && contacts.every(contact=>rotate(bodies.get(contact.segment)!.rotation(),UP).y>.97);
     };
     const shins = this.data.contacts.filter(c=>c.loadBearing && !this.released.has(c.segment) && c.segment.endsWith("Shin"));
+    if (this.data.phase === "protect" && up > .65 && pelvis.translation().y > .38
+      && pelvis.translation().y < .85
+      && (footSideCount === 2 || footSideCount === 1 && shins.some(contact =>
+        segmentSide(contact.segment) !== segmentSide(feet[0].segment)))) {
+      this.landingSupportedRise = true;
+    }
+    // Hold a supported low entry during the brief landing observation. A
+    // balanced two-foot crouch takes the direct physical route above as soon
+    // as landing persistence qualifies, before its foot margin drifts away.
+    const supportedEntryStillUpright = this.landingSupportedRise
+      && up > .65 && pelvis.translation().y > .38 && pelvis.translation().y < .85;
+    const readyToSettle = !supportedEntryStillUpright
+      || this.data.settledTimeS + 1e-9 >= RECOVERY_LIMITS.settlePersistenceS;
     const ready = this.data.phaseTimeS >= RECOVERY_LIMITS.phaseMinimumS;
     const prospective=this.prospectiveSupport("brace","tuck-knee",poses);
     this.prospectiveTime=this.data.transferStage==="push-brace" && prospective.ready ? this.prospectiveTime+dt : 0;
-    if (this.data.phase === "protect" && this.landingTime >= RECOVERY_LIMITS.landingPersistenceS) this.enter("settle",bodies);
+    const supportedCrouchNow=footSideCount===2 && up>.88 && pelvis.translation().y>.55
+      && supportGeometry(feet,poses,mass).marginM>=0
+      && this.prospectiveSupport("stand","extend",poses).ready;
+    if (this.data.phase === "protect" && supportedCrouchNow
+      && this.landingTime + 1e-9 >= RECOVERY_LIMITS.landingPersistenceS) this.chooseRoute(bodies);
+    else if (this.data.phase === "protect" && readyToSettle
+      && this.landingTime + 1e-9 >= RECOVERY_LIMITS.landingPersistenceS) this.enter("settle",bodies);
     else if (this.data.phase === "settle" && this.data.settledTimeS >= RECOVERY_LIMITS.settlePersistenceS) this.chooseRoute(bodies);
     else if(this.data.phase==="roll" && this.placingProneArms && ready && this.movingArms.size===0
-      && SIDES.some(side=>this.armPlacementReady(side,poses))) {
+      && SIDES.every(side=>this.armPlacementReady(side,poses))) {
       this.placingProneArms=false;this.stage("push-brace",bodies);
     } else if (this.data.phase === "roll" && this.data.transferStage==="push-brace" && this.prospectiveTime>=RECOVERY_LIMITS.phaseMinimumS) {
       this.enter("brace",bodies); this.stage("tuck-knee",bodies);
@@ -546,10 +660,8 @@ export class DynamicRecovery {
     const geometry = supportGeometry(supports,poses,mass);
     this.data.supportMarginM = geometry.marginM;
     this.data.centerOfMass = mass.position; this.data.projectedCenterOfMass = geometry.projectedCenterOfMass;
-    const stable = this.data.phase === "stand" && footSideCount===2 && geometry.marginM>=0
-      && recoveryStandingPosture(poses, motion);
-    this.data.stableTimeS = stable ? this.data.stableTimeS+dt : 0;
-    if (this.data.stableTimeS>=RECOVERY_LIMITS.stablePersistenceS) return {state:"recovering",recovered:true};
+    // Completion is decided by confirmPostStep using the state Rapier actually
+    // integrated, including newly lost contacts and impact velocity.
     if (active) {
       this.transfer(bodies,poses,dt);
       supports=this.supporting(poses);
@@ -590,7 +702,7 @@ export class DynamicRecovery {
           +Math.max(0,-refreshed.marginM)+Math.max(0,motion.linear-RECOVERY_LIMITS.stableLinearMps)*.1
           +Math.max(0,motion.angular-RECOVERY_LIMITS.stableAngularRadps)*.1;
         this.data.progressMeasure="standing height, orientation, balance and speed deficits";
-        this.data.blockingPredicate=stable?"standing persistence":"standing posture, contact or speed";
+        this.data.blockingPredicate=this.data.stableTimeS>0?"standing persistence":"standing posture, contact or speed";
       } else {
         this.data.blockingPredicate=this.data.transferGuard?.qualified?"safe support release":"limb support and placement qualification";
       }
@@ -624,8 +736,16 @@ export class DynamicRecovery {
     for(const side of SIDES) {
       if(this.plants.has(`${side}Foot`) || this.footMovements.has(`${side}Foot`))continue;
       const plan=this.footPlans.get(side);
+      if(plan?.kind==="blocked") {
+        const age=(this.blockedFootSearchAge.get(side)??0)+dt;
+        this.blockedFootSearchAge.set(side,age);
+        const previous=this.blockedFootSearchPelvis.get(side);
+        if(age<.15 && previous && length(sub(pelvis.position,previous))<.03)continue;
+      }
       if(!plan || !revalidateRecoveryFootTarget(side,poses,plan)) {
         const next=reachableFootTarget(side,poses,this.heading,this.placements.get(`${side}Foot`));
+        this.blockedFootSearchAge.set(side,0);
+        this.blockedFootSearchPelvis.set(side,{...pelvis.position});
         if(next) {this.footPlans.set(side,next);if(next.kind!=="blocked")this.placements.set(`${side}Foot`,{...next.position});}
       }
     }
@@ -665,17 +785,32 @@ export class DynamicRecovery {
     let tilt=.0;
     if(phase==="roll" && this.placingProneArms) {
       this.rootGoal={...pelvis.position};this.rootRotation=this.placementRootRotation;
-      if(!this.shoulderClearanceEstablished) {
-        const grounded=this.supporting(poses).length>0;
-        if(!grounded || this.proneShoulderClearance(poses)<PRONE_SHOULDER_CLEARANCE_M)return;
-        this.shoulderClearanceEstablished=true;
-        this.armBraces.clear();this.armStarts.clear();this.armTimes.clear();
+      const clearance=this.proneShoulderClearance(poses);
+      if(!this.supporting(poses).length)return;
+      // A clearance threshold only authorizes a search. It does not prove a
+      // floor-safe hand target exists. Preserve any legal target through a
+      // transient dip, and keep lifting the torso until a real target is found.
+      const searchDue=this.stageTime-this.lastArmSearchTimeS>=.15
+        || clearance-this.lastArmSearchClearanceM>=.025;
+      if(clearance>=PRONE_SHOULDER_CLEARANCE_M && searchDue) {
+        this.lastArmSearchTimeS=this.stageTime;
+        this.lastArmSearchClearanceM=clearance;
         for(const side of SIDES) {
+          if(this.movingArms.has(side))continue;
+          const captured=this.armBraces.get(side);
+          if(captured && this.legalArmCommand(side,captured.position,poses))continue;
           const target=reachableArmBraceTarget(side,poses,this.heading);
-          if(target && acceptableRecoveryArmBraceTarget(target))this.armBraces.set(side,target);
-          this.armStarts.set(side,{...poses.get(`${side}Hand`)!.position});this.armTimes.set(side,0);
+          if(target && acceptableRecoveryArmBraceTarget(target)) {
+            this.armBraces.set(side,target);
+            if(!captured) {
+              this.armStarts.set(side,{...poses.get(`${side}Hand`)!.position});
+              this.armTimes.set(side,0);
+            }
+          }
         }
       }
+      this.shoulderClearanceEstablished=this.armBraces.size>0;
+      if(!this.shoulderClearanceEstablished)return;
       const first=this.data.rollSide!,second:Side=first==="left"?"right":"left";
       const alreadyMoving=[...this.movingArms][0];
       const placementOrder:Side[]=alreadyMoving?[alreadyMoving]:[first,second].sort((a,b)=>(
@@ -683,11 +818,10 @@ export class DynamicRecovery {
       );
       for(const side of placementOrder) {
         if(this.armPlacementReady(side,poses)) continue;
-        let target=this.armBraces.get(side);
+        const target=this.armBraces.get(side);
         if(!target || !this.legalArmCommand(side,target.position,poses)) {
-          const next=reachableArmBraceTarget(side,poses,this.heading);
-          if(next && acceptableRecoveryArmBraceTarget(next)) {this.armBraces.set(side,next);target=next;}
-          else {this.armBraces.delete(side);this.data.blockingPredicate="legal reachable arm target";continue;}
+          this.data.blockingPredicate="legal reachable arm target";
+          continue;
         }
         const moving=this.movingArms.has(side);
         if(moving || this.release(armSupportSegments(side),poses) !== "blocked") {
@@ -784,7 +918,14 @@ export class DynamicRecovery {
         center=ankle;
       }
       // Shift the virtual root so the whole mass, including the bent torso, moves over support.
-      const riseBlend=phase==="kneel"?smooth01((pelvis.position.y-.65)/.13):1;
+      // Transfer over the measured lower-limb base before asking it to raise
+      // the pelvis. Height alone cannot start this correction from a genuine
+      // half-kneel: its pelvis begins below 0.65 m and the planted sole unloads
+      // while the controller waits for a rise that has not begun.
+      const riseBlend=phase==="kneel"
+        ?Math.max(smooth01((pelvis.position.y-.65)/.13),
+          this.data.transferStage==="shift-weight"?smooth01(this.stageTime/.65):0)
+        :1;
       const initialCorrection=clampLength({x:this.riseOrigin.x-pelvis.position.x,y:0,z:this.riseOrigin.z-pelvis.position.z},.05);
       // During the single-foot transfer, correct against the same 0.15 s COM
       // projection used by the release guard. Correcting only the measured COM
@@ -903,6 +1044,11 @@ export class DynamicRecovery {
       ?? SEGMENT_BY_ID.get(id)!.restLocalRotation);};
     if(arm) {
       const [girdle,upper,forearm,twist,hand]=ids;
+      const setMeasured=()=>{for(const id of ids)
+        targets.set(id,limitRecoveryJoint(id,this.measuredLocalRotation(id,poses)));};
+      const materialPatch=(id:SegmentId,plant:Plant,pose:SegmentPose):Vec3=>
+        worldPoint(pose.position,pose.rotation,
+          rotate(quatInverse(plant.rotation),sub(plant.contact!,plant.position)));
       const lowerPlant=this.plants.get(forearm)??this.plants.get(twist);
       const handPlant=this.plants.get(hand);
       const brace=this.armBraces.get(side);
@@ -940,6 +1086,12 @@ export class DynamicRecovery {
           quatMultiply(quatInverse(upperWorld),forearmPlant.rotation)));
         targets.set(twist,limitRecoveryJoint(twist,this.measuredLocalRotation(twist,poses)));
         targets.set(hand,limitRecoveryJoint(hand,this.measuredLocalRotation(hand,poses)));
+        if(forearmPlant.contact) {
+          const predicted=reconstructRecoveryLimb(side,true,torso,targets);
+          const patch=materialPatch(forearm,forearmPlant,predicted.poses.find(pose=>pose.id===forearm)!);
+          if(length(sub(patch,forearmPlant.contact))>.015 || predicted.floorClearanceM<-.003)
+            setMeasured();
+        }
         return;
       }
       if(!handPlant && twistPlant && !this.released.has(twist)) {
@@ -948,6 +1100,14 @@ export class DynamicRecovery {
         targets.set(twist,limitRecoveryJoint(twist,
           quatMultiply(quatInverse(poses.get(forearm)!.rotation),twistPlant.rotation)));
         targets.set(hand,limitRecoveryJoint(hand,this.measuredLocalRotation(hand,poses)));
+        return;
+      }
+      if(phase==="roll" && this.data.transferStage==="push-brace"
+        && !handPlant && !this.movingArms.has(side)) {
+        // A hand that never established a material patch has no fixed floor
+        // target. Holding its measured joint pose avoids folding an unanchored
+        // wrist into the trunk as the torso moves.
+        setMeasured();
         return;
       }
       const intermediatePlant=!this.released.has(forearm) && forearmPlant
@@ -961,21 +1121,62 @@ export class DynamicRecovery {
         const residue=sub(sub(middle,shoulder),scale(ray,dot(sub(middle,shoulder),ray)));
         if(length(residue)>.01)plantedBend=normalize(residue);
       }
-      const wristLocal=brace?.wristRotation??recoveryJointRotation(hand,ZERO);
+      const wristLocal=handPlant?this.measuredLocalRotation(hand,poses)
+        :brace?.wristRotation??recoveryJointRotation(hand,ZERO);
       const bend=plantedBend??brace?.trajectoryBend??rotate(girdleWorld,this.bend.get(upper)??{x:0,y:0,z:-1});
-      const solved=solveRecoveryArmTarget(shoulder,desired,bend,wristLocal,this.heading);
-      const rawUpper=quatMultiply(quatInverse(girdleWorld),solved.upperRotation);
-      const rawForearm=quatMultiply(quatInverse(solved.upperRotation),solved.forearmRotation);
-      const rawTwist=quatMultiply(quatInverse(solved.forearmRotation),solved.forearmTwistRotation);
-      const rawHand=quatMultiply(quatInverse(solved.forearmTwistRotation),solved.handRotation);
-      targets.set(girdle,girdleLocal);targets.set(upper,limitRecoveryJoint(upper,rawUpper));
-      targets.set(forearm,limitRecoveryJoint(forearm,rawForearm));
-      targets.set(twist,limitRecoveryJoint(twist,rawTwist));targets.set(hand,limitRecoveryJoint(hand,rawHand));
+      const commandFor=(position:Vec3):Map<SegmentId,Quat>=>{
+        const solved=solveRecoveryArmTarget(shoulder,position,bend,wristLocal,this.heading);
+        return new Map<SegmentId,Quat>([
+          [girdle,girdleLocal],
+          [upper,limitRecoveryJoint(upper,quatMultiply(quatInverse(girdleWorld),solved.upperRotation))],
+          [forearm,limitRecoveryJoint(forearm,quatMultiply(quatInverse(solved.upperRotation),solved.forearmRotation))],
+          [twist,limitRecoveryJoint(twist,quatMultiply(quatInverse(solved.forearmRotation),solved.forearmTwistRotation))],
+          [hand,limitRecoveryJoint(hand,quatMultiply(quatInverse(solved.forearmTwistRotation),solved.handRotation))],
+        ]);
+      };
+      if(handPlant?.contact && !this.released.has(hand)) {
+        let requested={...desired};
+        let best:Map<SegmentId,Quat>|null=null,bestError=Infinity;
+        for(let iteration=0;iteration<4;iteration++) {
+          const candidate=commandFor(requested);
+          const geometry=reconstructRecoveryLimb(side,true,torso,candidate);
+          const complete=new Map<SegmentId,SegmentPose>(poses);
+          for(const pose of geometry.poses)complete.set(pose.id,pose);
+          const patch=materialPatch(hand,handPlant,geometry.poses.find(pose=>pose.id===hand)!);
+          const error=length(sub(handPlant.contact,patch));
+          if(geometry.floorClearanceM>=-.003
+            && limbTrunkClearance(complete,side,"arm").clearanceM>=.004 && error<bestError) {
+            best=candidate;bestError=error;
+          }
+          requested=add(requested,clampLength(sub(handPlant.contact,patch),.06));
+        }
+        if(best && bestError<=.015) for(const [id,rotation] of best)targets.set(id,rotation);
+        else setMeasured();
+      } else for(const [id,rotation] of commandFor(desired))targets.set(id,rotation);
       return;
     }
 
     const [thigh,shin,ankle,foot,forefoot]=ids;
     const plan=this.footPlans.get(side),shinPlant=this.plants.get(shin);
+    const forefootPlant=this.plants.get(forefoot);
+    if(phase==="roll" && (this.data.transferStage==="arm-preparation"
+      || this.data.transferStage==="push-brace") && forefootPlant?.contact
+      && !this.released.has(forefoot) && !this.slippedPlants.has(forefoot)) {
+      // A briefly airborne captured toe remains a replant posture target for
+      // the existing 0.10 s plant grace. It contributes no planned support
+      // until a new Rapier load is observed.
+      const anchored=solveRecoveryForefootAnchor(side,poses,{
+        position:forefootPlant.position,rotation:forefootPlant.rotation,
+        contact:forefootPlant.contact,
+      });
+      if(anchored) {
+        const rotations=anchored.jointRotations;
+        targets.set(thigh,rotations.thigh);targets.set(shin,rotations.shin);
+        targets.set(ankle,rotations.ankle);targets.set(foot,rotations.foot);
+        targets.set(forefoot,rotations.forefoot);
+        return;
+      }
+    }
     if(!this.plants.get(foot) && !shinPlant && plan && !plan.feasible) {
       if(plan.kind==="intermediate-fold") {
         const rotations=plan.jointRotations;
@@ -1031,15 +1232,24 @@ export class DynamicRecovery {
   }
 
   private actuate(bodies:Map<SegmentId,RigidBody>,poses:Map<SegmentId,SegmentPose>,active:boolean,dt:number):void {
-    // Settling is an evidence-gathering phase, not a posture target. Continuing
-    // the protective pose motors here pumps energy into floor contacts and can
-    // prevent the measured low-motion window from ever becoming consecutive.
-    // Structural joint limits and passive tissue damping are applied by the
-    // owning character before this call, so the assembly remains constrained.
-    if(this.data.phase==="settle")return;
+    // Unsupported settling has no posture motor. Rapier still enforces every
+    // joint limit while passive resistance damps motion near those limits.
+    if(this.data.phase==="settle") {
+      this.lastPassiveTorques=applyPassiveJointResistance(bodies,dt);
+      for(const torque of this.lastPassiveTorques.values())
+        this.data.maxMotorTorqueNm=Math.max(this.data.maxMotorTorqueNm,length(torque));
+      return;
+    }
     const targets=new Map<SegmentId,Quat>();
     const holdCrouch=!active && poses.get("pelvis")!.position.y>.40 && poses.get("pelvis")!.position.y<.85
       && rotate(poses.get("torso")!.rotation,UP).y>.65 && SIDES.some(side=>poses.get(`${side}Foot`)!.position.y<.13);
+    const freeProneLegs=active && this.data.phase==="roll"
+      && (this.placingProneArms || this.data.transferStage==="push-brace")
+      && SIDES.every(side=>!this.footMovements.has(`${side}Foot`)
+        && recoveryLimbIds(side,false).every(id=>!this.plants.has(id))
+        && !this.data.contacts.some(contact=>contact.loadBearing
+          && segmentSide(contact.segment)===side
+          && isRecoveryLegSupportSegment(contact.segment)));
     if(active) {
       // The pelvis is never actuated directly. Split trunk orientation over
       // both spinal joints so only contact reactions rotate the assembly.
@@ -1057,13 +1267,32 @@ export class DynamicRecovery {
       for(const side of SIDES) {
         const holdingProneBase=this.placingProneArms
           || (this.data.phase==="roll" && this.data.transferStage==="push-brace");
-        if(holdingProneBase) for(const id of recoveryLimbIds(side,false))
+        const anchoredForefoot:SegmentId=`${side}Forefoot`;
+        const anchoredShin:SegmentId=`${side}Shin`;
+        const canAnchorProneForefoot=holdingProneBase
+          && !!this.plants.get(anchoredForefoot)?.contact
+          && !this.released.has(anchoredForefoot)
+          && !this.slippedPlants.has(anchoredForefoot);
+        const canAnchorProneShin=holdingProneBase
+          && !!this.plants.get(anchoredShin)?.contact
+          && !this.released.has(anchoredShin)
+          && !this.slippedPlants.has(anchoredShin);
+        if(holdingProneBase && !canAnchorProneForefoot && !canAnchorProneShin) for(const id of recoveryLimbIds(side,false))
           targets.set(id,this.entry.get(id)??SEGMENT_BY_ID.get(id)!.restLocalRotation);
         else this.limbTargets(side,false,poses,targets);
         if(this.data.route==="half-kneel" && (this.data.phase==="kneel" || (this.data.phase==="stand" && this.data.transferStage!=="relax"))) {
           for(const id of recoveryLimbIds(side,true))
             targets.set(id,this.entry.get(id)??SEGMENT_BY_ID.get(id)!.restLocalRotation);
         } else this.limbTargets(side,true,poses,targets);
+      }
+      if(freeProneLegs) for(const side of SIDES) {
+        const thigh:SegmentId=`${side}Thigh`;
+        const profile=SEGMENT_BY_ID.get(thigh)!.jointProfile!;
+        const current=jointCoordinates({x:0,y:0,z:0,w:1},targets.get(thigh)!,profile);
+        // Only airborne, unplanted legs may open away from the midline.
+        // Their existing joints and bounded motors supply all motion.
+        const outward=side==="left"?Math.min(current.z,-.08):Math.max(current.z,.08);
+        targets.set(thigh,recoveryJointRotation(thigh,{...current,z:outward}));
       }
     } else {
       const backward=this.data.orientation==="backward";
@@ -1095,16 +1324,19 @@ export class DynamicRecovery {
     // create no external lift; only actual floor reactions can raise the mass.
     const measuredSupports=this.supporting(poses);
     const pushingBrace=this.data.phase==="roll" && this.data.transferStage==="push-brace";
-    const plannedBraceSupports=pushingBrace
+    const plannedBraceSupports=pushingBrace || this.placingProneArms
       ?measuredSupports.filter(contact=>isRecoveryArmSupportSegment(contact.segment)
         || isRecoveryLegSupportSegment(contact.segment)):[];
     const supportsForLoad=active
-      ?(pushingBrace?plannedBraceSupports:measuredSupports)
+      ?(pushingBrace || this.placingProneArms ?plannedBraceSupports:measuredSupports)
       :loaded.filter(c=>!isRecoveryFootSegment(c.segment) || rotate(poses.get(c.segment)!.rotation,UP).y>.5);
     const restingTrunk=this.data.contacts.filter(contact=>contact.loadBearing && contact.forceN>0
       && contact.normalY>=RECOVERY_LIMITS.normalY && !this.released.has(contact.segment)
       && (contact.segment==="pelvis" || contact.segment==="lumbar" || contact.segment==="torso"));
-    const supportingEnds=[...new Map([...supportsForLoad,...restingTrunk]
+    // During prone arm preparation the measured distal patches must receive
+    // the planned load so their bounded joint torques can unload the belly.
+    // Rapier keeps every trunk contact; excluding it here changes no body pose.
+    const supportingEnds=[...new Map([...supportsForLoad,...(this.placingProneArms?[]:restingTrunk)]
       .map(contact=>[contact.segment,contact])).values()];
     const massState=recoveryMassState(poses.values());
     const correction=active ? clampLength(sub(scale(sub(this.rootGoal,poses.get("pelvis")!.position),650),
@@ -1113,12 +1345,13 @@ export class DynamicRecovery {
       ?clamp((this.rootGoal.y-poses.get("pelvis")!.position.y)*350-massState.velocity.y*90,0,80):0;
     const verticalLoad=active
       ?((this.data.phase==="kneel" || (this.data.route==="half-kneel" && this.data.phase==="stand"))
-        ?.8*WEIGHT_N+clamp((this.rootGoal.y-poses.get("pelvis")!.position.y)*250-massState.velocity.y*100,0,30)
+        ?WEIGHT_N+clamp((this.rootGoal.y-poses.get("pelvis")!.position.y)*1000-massState.velocity.y*250,0,.30*WEIGHT_N)
         :WEIGHT_N+pushLoad+(this.data.phase==="roll"?0:Math.max(0,this.rootGoal.y-poses.get("pelvis")!.position.y)*1000))
       :WEIGHT_N;
     const plan=planContactLoads(supportingEnds,massState.position,massState.velocity,
       {x:correction.x,y:verticalLoad,z:correction.z},
       {frictionCoefficient:1.2,maxHorizontalForceN:160,
+        minimumMeasuredShareFraction:this.placingProneArms?.5:0,
         maxJointTorqueNm:minimumSupportTorqueLimit(supportingEnds)});
     this.data.supportLoads=this.data.contacts.map(contact=>{
       const planned=plan.loads.find(load=>load.segment===contact.segment);
@@ -1127,6 +1360,18 @@ export class DynamicRecovery {
     });
     const descends=(id:SegmentId,ancestor:SegmentId):boolean=>{let current:SegmentId|null=id;while(current){if(current===ancestor)return true;current=SEGMENT_BY_ID.get(current)!.parent;}return false;};
     const commands=new Map<SegmentId,Quat>();
+    const anchorHoldingSides=new Set<Side>();
+    if(active && this.data.phase==="roll" && (this.placingProneArms || this.data.transferStage==="push-brace"))
+      for(const side of SIDES) {
+        const forefoot:SegmentId=`${side}Forefoot`;
+        const shin:SegmentId=`${side}Shin`;
+        const forefootAnchored=this.plants.get(forefoot)?.contact
+          && !this.released.has(forefoot) && !this.slippedPlants.has(forefoot);
+        const shinAnchored=this.plants.get(shin)?.contact
+          && !this.released.has(shin) && !this.slippedPlants.has(shin);
+        if(forefootAnchored || shinAnchored)
+          anchorHoldingSides.add(side);
+      }
     for(const d of SEGMENTS) {
       if(!d.parent||!d.jointProfile)continue;
       const target=limitRecoveryJoint(d.id,targets.get(d.id)??d.restLocalRotation);
@@ -1137,22 +1382,27 @@ export class DynamicRecovery {
       const blended=blendRecoveryJointTargets(d.id,entry,target,trailingBlend);
       const armRole=["shoulder-girdle","upper-arm","forearm","forearm-twist","hand"].includes(d.role);
       const moving=!!d.side && ((this.footMovements.has(`${d.side}Foot`) && legRole)
+        || (anchorHoldingSides.has(d.side) && legRole)
         || (this.movingArms.has(d.side) && armRole));
       commands.set(d.id,moving?target:blended);
     }
     for(const side of SIDES) for(const arm of [false,true]) {
       const end:SegmentId=arm?`${side}Hand`:`${side}Foot`;
       const moving=active && (this.footMovements.has(end)
+        || !arm && anchorHoldingSides.has(side)
         || arm && this.placingProneArms && this.released.has(end));
       const protecting=!active && this.data.phase==="protect" && arm;
-      if(!moving && !protecting)continue;
+      if(!moving && !protecting && !(active && arm))continue;
       const parent=poses.get(arm?"torso":"pelvis")!;
       const geometry=reconstructRecoveryLimb(side,arm,parent,commands);
       const complete=new Map<SegmentId,SegmentPose>(poses);
       for(const pose of geometry.poses)complete.set(pose.id,pose);
-      const bodyClearance=protecting
+      if(arm && active) for(const otherSide of SIDES) if(otherSide!==side)
+        for(const pose of reconstructRecoveryLimb(otherSide,true,parent,commands).poses)
+          complete.set(pose.id,pose);
+      const bodyClearance=arm
         ?limbBodyClearance(complete,side,"arm")
-        :limbTrunkClearance(complete,side,arm?"arm":"leg");
+        :limbTrunkClearance(complete,side,"leg");
       if(geometry.floorClearanceM < -.012 || bodyClearance.clearanceM < .004) {
         this.data.blockingPredicate=bodyClearance.clearanceM < .004
           ? "commanded limb-body clearance after blending and limits"
@@ -1162,6 +1412,18 @@ export class DynamicRecovery {
           commands.set(pose.id,limitRecoveryJoint(pose.id,quatMultiply(quatInverse(poses.get(definition.parent!)!.rotation),poses.get(pose.id)!.rotation)));
         }
         const movement=this.footMovements.get(end);if(movement)movement.paused=true;
+      }
+    }
+    if(freeProneLegs) {
+      const complete=new Map<SegmentId,SegmentPose>(poses);
+      const pelvis=poses.get("pelvis")!;
+      const legs=SIDES.map(side=>({side,geometry:reconstructRecoveryLimb(side,false,pelvis,commands)}));
+      for(const leg of legs)for(const pose of leg.geometry.poses)complete.set(pose.id,pose);
+      if(legs.some(({side,geometry})=>geometry.floorClearanceM<-.003
+        || limbBodyClearance(complete,side,"leg").clearanceM<.01)) {
+        this.data.blockingPredicate="commanded free-leg clearance after blending and limits";
+        for(const side of SIDES)for(const id of recoveryLimbIds(side,false))
+          commands.set(id,limitRecoveryJoint(id,this.measuredLocalRotation(id,poses)));
       }
     }
     const motorCommands:JointMotorCommand[]=[];
@@ -1178,27 +1440,39 @@ export class DynamicRecovery {
         && ["shoulder-girdle","upper-arm","forearm","forearm-twist","hand"].includes(d.role)
         ?smooth01((this.armTimes.get(d.side)??0)/.22):1;
       let feedforward=ZERO;
-      if((active||holdCrouch) && !this.placingProneArms && plan.loads.length) {
+      if((active||holdCrouch) && plan.loads.length) {
         const joint=worldPoint(child.translation(),child.rotation(),d.jointProfile.childFrame.anchor);
         for(const load of plan.loads) if(descends(load.segment,d.id)) {
-          feedforward=add(feedforward,cross(sub(load.point,joint),scale(load.plannedForce,-1)));
+          let fraction=1;
+          if(this.placingProneArms) {
+            // Only a real, persistent distal patch can receive a planned
+            // brace load. Feet as well as hands can press against the floor
+            // while the belly unloads. Ramp from the measured reaction.
+            const measured=this.data.contacts.find(contact=>contact.segment===load.segment
+              && contact.loadBearing && (isRecoveryArmSupportSegment(contact.segment)
+                || isRecoveryLegSupportSegment(contact.segment)));
+            if(!measured)continue;
+            fraction=Math.min(1,(measured.forceN*1.5+30)/Math.max(1,load.plannedForce.y));
+          }
+          feedforward=add(feedforward,cross(sub(load.point,joint),scale(load.plannedForce,-fraction)));
         }
-        for(const [id,plant] of this.plants) if(descends(id,d.id) && !this.released.has(id) && this.data.contacts.some(c=>c.segment===id&&c.loadBearing)) {
+        if(!this.placingProneArms)for(const [id,plant] of this.plants) if(descends(id,d.id) && !this.released.has(id) && this.data.contacts.some(c=>c.segment===id&&c.loadBearing)) {
           const pose=poses.get(id)!;
           const delta=sub(plant.position,pose.position);
           const spring=clampLength({x:delta.x*120-pose.linearVelocity.x*6,y:0,z:delta.z*120-pose.linearVelocity.z*6},15);
           feedforward=add(feedforward,cross(sub(pose.position,joint),spring));
         }
-        for(const descendant of SEGMENTS) if(descends(descendant.id,d.id))
+        if(!this.placingProneArms)for(const descendant of SEGMENTS) if(descends(descendant.id,d.id))
           feedforward=add(feedforward,cross(sub(poses.get(descendant.id)!.position,joint),{x:0,y:descendant.massKg*9.81,z:0}));
       }
 
       motorCommands.push({id:d.id,targetLocalRotation:commands.get(d.id)??d.restLocalRotation,
         stiffness:kp,damping:kd,strengthScale:(active?1:holdCrouch?.75:.28)*movingArmStrength,
-        effortScale:this.placingProneArms && spine?(this.shoulderClearanceEstablished?1:2.2):1,
+        effortScale:this.placingProneArms && spine?2.2:1,
         feedforwardWorld:feedforward});
     }
-    const results=applyCoupledJointMotors(bodies,motorCommands,dt);
+    const results=applyCoupledJointMotors(bodies,motorCommands,dt,{passiveResistance:true});
+    this.lastMotorResults=results;
     for(const result of results.values())
       this.data.maxMotorTorqueNm=Math.max(this.data.maxMotorTorqueNm,length(result.torqueWorld));
   }

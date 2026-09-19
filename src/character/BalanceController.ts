@@ -442,9 +442,14 @@ export class BalanceController {
     }
     // A swing is temporarily single-supported. Judge its recoverability against
     // the reachable landing footprint and momentum expected before touchdown.
-    if (this.step && input.surfaceHeight) {
-      this.step.to = { ...this.step.to, y: footCenterHeight(this.step.foot,
-        input.surfaceHeight(this.step.to.x, this.step.to.z)) - 0.015 };
+    if (this.step) {
+      const landingFloor = input.surfaceHeight?.(this.step.to.x, this.step.to.z) ?? floorY;
+      // The swing arc clears the ground until its commanded landing time.
+      // Only then ask for a small downward preload while waiting for Rapier's
+      // measured touchdown; driving 40 mm below the floor mid-swing collapses
+      // the knee and spends leg torque on an impossible target.
+      this.step.to = { ...this.step.to, y: footCenterHeight(this.step.foot, landingFloor)
+        - (this.step.elapsed >= this.step.duration ? 0.005 : 0) };
     }
     let futureMargin = supportMargin;
     if (this.step) {
@@ -526,9 +531,8 @@ export class BalanceController {
       clampLength(horizontal(sub(requested, from)), BALANCE_LIMITS.maxStepTravelM),
       0.25,
     );
-    // A small virtual sole preload is a motor target, not a transform. Rapier's
-    // floor constraint supplies the equal reaction and establishes touchdown.
-    const to = { ...add(from, travel), y: footCenterHeight(foot, floorY) - 0.04 };
+    // The sole stays above the floor during swing; contact is solver-owned.
+    const to = { ...add(from, travel), y: footCenterHeight(foot, floorY) };
     const distance = length(travel);
     const urgency = clamp(length(correction) / BALANCE_LIMITS.maxStepReachM, 0, 1);
     const duration = clamp(

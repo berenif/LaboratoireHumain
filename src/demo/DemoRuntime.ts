@@ -7,6 +7,7 @@ import { createSharedCamera } from "../scene/camera";
 import { createCameraControls } from "../scene/camera-controls";
 import { checkGraphicsCapabilities } from "../scene/capabilities";
 import { createPoseView } from "../scene";
+import { PROTOCOL_ARENA_CAMERA } from "../scene/protocol-visuals";
 import type { SceneViewOptions } from "../scene/options";
 import { FrameSampler } from "./telemetry";
 import type { BrowserCapabilities } from "./telemetry";
@@ -60,7 +61,7 @@ export class DemoRuntime {
     this.createView = options.createView ?? createPoseView;
     this.snapshot = this.character.getSnapshot(this.renderer);
     this.previous = this.snapshot;
-    if (this.snapshot.playground) this.positionCamera();
+    if (this.snapshot.playground || this.snapshot.room) this.positionCamera();
     this.syncBodyInput();
     this.loop = new FixedStepLoop(this.fixedUpdate, this.render);
     try {
@@ -92,6 +93,7 @@ export class DemoRuntime {
   get trial(): PlaygroundTrial { return { ...this.trialValue }; }
   get status(): string {
     if (this.paused) return this.statusValue;
+    if (this.current.room) return this.current.protocol?.message ?? "Prêt pour la procédure";
     if (!this.current.diagnostics.bodyInputAvailable) {
       return this.current.state === "recovering"
         ? "Getting up — body control resumes after stable standing"
@@ -113,6 +115,16 @@ export class DemoRuntime {
     const projected = this.camera.project(pose.position);
     const rect = this.host.getBoundingClientRect();
     return { x: rect.left + projected.x, y: rect.top + projected.y, visible: projected.visible };
+  }
+
+  requestStrike(): boolean {
+    if (this.disposed || this.paused) return false;
+    const accepted = this.character.requestStrike();
+    if (accepted) {
+      this.refreshSnapshots();
+      this.notify();
+    }
+    return accepted;
   }
 
   switchRenderer(next: RendererMode): void {
@@ -196,6 +208,16 @@ export class DemoRuntime {
   }
 
   private positionCamera(): void {
+    if (this.current.room) {
+      const root = this.current.rootPosition;
+      const target = this.cameraMode === "subject"
+        ? { x: root.x, y: Math.max(0.7, root.y), z: root.z }
+        : PROTOCOL_ARENA_CAMERA.target;
+      this.camera.setView(this.cameraMode === "subject"
+        ? { x: target.x + 2, y: target.y + 1.8, z: target.z + 3.8 }
+        : PROTOCOL_ARENA_CAMERA.position, target);
+      return;
+    }
     if (!this.current.playground) return;
     if (this.cameraMode === "arena") {
       this.camera.setView({ x: 10.5, y: 12.5, z: 17 }, { x: 0, y: 0.2, z: -0.4 });
@@ -216,7 +238,9 @@ export class DemoRuntime {
     this.refreshSnapshots();
     this.positionCamera();
     this.present();
-    this.statusValue = this.paused ? "Reset — paused" : "Reset — ready to pull";
+    this.statusValue = this.current.room
+      ? this.paused ? "Remise à zéro — pause" : "Prêt pour la procédure"
+      : this.paused ? "Reset — paused" : "Reset — ready to pull";
     this.notify();
   }
 
@@ -308,7 +332,9 @@ export async function createDemoRuntime(host: HTMLElement, signal: AbortSignal):
     throw new Error("Neither Canvas2D nor WebGL2 is available.");
   }
   const renderer = capabilities.webgl2 ? "webgl" : "canvas2d";
-  const character = await createEmbodiedCharacter(renderer, { playground: { ...DEFAULT_PLAYGROUND } });
+  const playgroundMode = new URLSearchParams(window.location.search).get("mode") === "playground";
+  const character = await createEmbodiedCharacter(renderer,
+    playgroundMode ? { playground: { ...DEFAULT_PLAYGROUND } } : { room: true });
   if (signal.aborted) {
     character.dispose();
     signal.throwIfAborted();

@@ -4,6 +4,7 @@ import { useRef } from "react";
 import { REGION_IDS } from "../core/types";
 import { ControlPanel } from "../ui/ControlPanel";
 import { PlaygroundPanel } from "../ui/PlaygroundPanel";
+import { ProtocolPanel } from "../ui/ProtocolPanel";
 import { BrowserVerification } from "./BrowserVerification";
 import { useDemoRuntime } from "./useDemoRuntime";
 
@@ -13,13 +14,18 @@ export function EmbodiedDemo() {
     runtime, capabilities, diagnostics, renderer, paused, anchorPoints,
     frameSummary, status, fatalError, qaMode, playground, trial,
   } = useDemoRuntime(hostRef);
+  const snapshot = runtime?.current;
+  const playgroundMode = Boolean(snapshot?.playground);
+  const striker = snapshot?.striker;
+  const protocol = snapshot?.protocol;
 
   return (
     <main
-      className="demo-shell"
+      className={`demo-shell${playgroundMode ? "" : " protocol-mode"}`}
       data-simulation-ready={diagnostics?.simulationReady ? "true" : "false"}
       data-interactive-view-ready={diagnostics?.interactiveViewReady ? "true" : "false"}
       data-body-input-available={diagnostics?.bodyInputAvailable && !paused ? "true" : "false"}
+      data-strike-available={!paused && striker?.available ? "true" : "false"}
       data-renderer={renderer}
       data-frame-samples={frameSummary.samples}
       data-frame-p50-ms={frameSummary.p50Ms.toFixed(3)}
@@ -30,8 +36,8 @@ export function EmbodiedDemo() {
       data-viewport={capabilities?.viewport ? capabilities.viewport.width + "x" + capabilities.viewport.height : ""}
       data-dpr={capabilities?.devicePixelRatio ?? ""}
     >
-      <h1 className="sr-only">Embodied Character</h1>
-      <section className="sim-workspace" aria-label="Interactive character simulation">
+      <h1 className="sr-only">{playgroundMode ? "Embodied Character" : "Protocole d’arrêt"}</h1>
+      <section className="sim-workspace" aria-label={playgroundMode ? "Interactive character simulation" : "Salle du protocole d’arrêt"}>
         <div ref={hostRef} className="view-host" data-testid="simulation-view" />
         <div className="test-anchors" aria-hidden="true">
           {REGION_IDS.map((region) => {
@@ -49,10 +55,10 @@ export function EmbodiedDemo() {
         </div>
         {fatalError || !diagnostics?.interactiveViewReady ? (
           <div className={"startup-status" + (fatalError ? " error" : "")} role={fatalError ? "alert" : "status"} aria-live="polite">
-            {fatalError ?? status}
+            {fatalError ?? (!runtime && !playgroundMode ? "Initialisation de la physique…" : status)}
           </div>
         ) : null}
-        <ControlPanel
+        {playgroundMode ? <><ControlPanel
           className="control-panel"
           diagnostics={diagnostics}
           renderer={renderer}
@@ -71,7 +77,24 @@ export function EmbodiedDemo() {
           onChange={change => runtime?.setPlayground(change)}
           onOverview={() => runtime?.showArena()}
           onFocus={() => runtime?.focusSubject()}
-        />
+        /></> : <ProtocolPanel
+          renderer={renderer}
+          webglAvailable={Boolean(capabilities?.webgl2)}
+          paused={paused}
+          ready={Boolean(diagnostics?.interactiveViewReady) && !fatalError}
+          strikeAvailable={Boolean(striker?.available)}
+          phase={striker?.phase ?? "idle"}
+          impactId={striker?.impactId ?? 0}
+          strikes={protocol?.strikes ?? 0}
+          recoveries={protocol?.recoveries ?? 0}
+          message={protocol?.message ?? null}
+          onStrike={() => runtime?.requestStrike()}
+          onRendererChange={next => runtime?.switchRenderer(next)}
+          onPauseToggle={() => runtime?.togglePause()}
+          onReset={() => runtime?.reset()}
+          onOverview={() => runtime?.showArena()}
+          onFocus={() => runtime?.focusSubject()}
+        />}
       </section>
       {qaMode && runtime ? <BrowserVerification runtime={runtime} /> : null}
     </main>

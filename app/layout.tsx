@@ -8,9 +8,9 @@ const basePath = configuredBasePath === "/"
 const faviconPath = `${basePath}/favicon.svg`;
 
 export const metadata: Metadata = {
-  title: "Embodied Motion Physics Demo",
+  title: "Protocole d’arrêt — Laboratoire Humain",
   description:
-    "Directly manipulate a connected humanoid, provoke corrective steps, and pull it through a physical fall.",
+    "Une procédure absurde, un mannequin obstiné : appliquez une percussion et observez son retour debout.",
   other: {
     "codex-preview": "development",
   },
@@ -26,7 +26,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="fr">
       <body className="antialiased">{children}</body>
     </html>
   );

@@ -355,7 +355,9 @@ export function applyPassiveJointResistance(
     intents,
     inverseInertias(bodies),
     dt,
-    completeAssembly(bodies) && options.supports !== undefined
+    // Joint anchors and locked axes constrain the full body even without
+    // ground support. An omitted support list means a free articulation.
+    completeAssembly(bodies)
       ? { response: articulatedCoordinateResponse(bodies, options.supports) }
       : {},
   );

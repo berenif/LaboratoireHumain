@@ -151,8 +151,11 @@ export function solveRecoveryLegTarget(
   const maximumBend=Math.max(Math.abs(kneeAxis.minRadians),Math.abs(kneeAxis.maxRadians));
   let ankleWorld=requestedRotation,footWorld=requestedRotation;
   let result: RecoveryLegTargetGeometry | null = null;
+  let finalPoses: SegmentPose[] = [];
+  let finalRaw: Pick<RecoveryLegJointRotations, "thigh" | "shin" | "ankle" | "foot"> | null = null;
 
   for (let iteration = 0; iteration < 20; iteration += 1) {
+    const priorAnkle = ankleWorld, priorFoot = footWorld;
     // Work backward from the requested hindfoot centre through both distal
     // joints to the exact point solved by the thigh/shin chain.
     const footJoint=worldPoint(requestedPosition,footWorld,
@@ -188,7 +191,11 @@ export function solveRecoveryLegTarget(
     footWorld=quatMultiply(ankleWorld,foot);
     const forefoot = recoveryJointRotation(chain.forefoot, ZERO);
     const jointRotations = { thigh, shin, ankle, foot, forefoot };
-    const rebuilt = reconstructRecoveryLimb(side, false, pelvis, rotationsMap(side, jointRotations));
+    // Iteration convergence depends only on the reached foot. Vertex-floor
+    // scans and raw limit-error metrics are needed only for the final result.
+    const rebuilt = reconstructRecoveryLimb(side, false, pelvis, rotationsMap(side, jointRotations), false);
+    finalPoses = rebuilt.poses;
+    finalRaw = { thigh: rawThigh, shin: rawShin, ankle: rawAnkle, foot: rawFoot };
     const thighPose = rebuilt.poses.find(({ id }) => id === chain.thigh)!;
     const shinPose = rebuilt.poses.find(({ id }) => id === chain.shin)!;
     const footPose = rebuilt.poses.find(({ id }) => id === chain.foot)!;
@@ -209,15 +216,26 @@ export function solveRecoveryLegTarget(
       hip,
       knee,
       ankle: anklePoint,
-      floorClearanceM: rebuilt.floorClearanceM,
+      floorClearanceM: 0,
       reachErrorM: length(reachError),
-      jointLimitErrorRad: recoveryJointLimitError(chain.thigh, rawThigh)
-        + recoveryJointLimitError(chain.shin, rawShin)
-        + recoveryJointLimitError(chain.ankle, rawAnkle)
-        + recoveryJointLimitError(chain.foot, rawFoot),
+      jointLimitErrorRad: 0,
       jointRotations,
     };
     if (result.reachErrorM < 1e-10) break;
+    // A clamped target can converge with nonzero reach error. Once the exact
+    // orientation state repeats, another iteration produces the same result.
+    if (priorAnkle.x === ankleWorld.x && priorAnkle.y === ankleWorld.y
+      && priorAnkle.z === ankleWorld.z && priorAnkle.w === ankleWorld.w
+      && priorFoot.x === footWorld.x && priorFoot.y === footWorld.y
+      && priorFoot.z === footWorld.z && priorFoot.w === footWorld.w) break;
+  }
+  if (result && finalRaw) {
+    result.floorClearanceM = finalPoses.reduce((minimum, pose) => Math.min(minimum,
+      lowestWorldPoint(SEGMENT_BY_ID.get(pose.id)!.geometry, pose.position, pose.rotation).y), Infinity);
+    result.jointLimitErrorRad = recoveryJointLimitError(chain.thigh, finalRaw.thigh)
+      + recoveryJointLimitError(chain.shin, finalRaw.shin)
+      + recoveryJointLimitError(chain.ankle, finalRaw.ankle)
+      + recoveryJointLimitError(chain.foot, finalRaw.foot);
   }
   return result;
 }
@@ -245,8 +263,10 @@ export function reachableFootTarget(
   const hipWidth = HUMAN_PROPORTIONS.pelvis.hipAnchorXM;
   const nearestWidth = clamp(dot(fromHip, outward) + hipWidth, 0.10, 0.20);
   const nearestForward = clamp(dot(fromHip, forward), -0.40, 0.10);
-  const widths = [nearestWidth, 0.10, 0.12, 0.15, 0.18, 0.20];
-  const forwards = [nearestForward, ...Array.from({ length: 51 }, (_, index) => -0.40 + index / 100)];
+  // Clamping often puts the nearest candidate on a grid endpoint. Preserve
+  // first-candidate order while avoiding an identical expensive IK solve.
+  const widths = [...new Set([nearestWidth, 0.10, 0.12, 0.15, 0.18, 0.20])];
+  const forwards = [...new Set([nearestForward, ...Array.from({ length: 51 }, (_, index) => -0.40 + index / 100)])];
   const flatFloorOffset = -lowestWorldPoint(foot.geometry, ZERO, yaw).y;
   let best: RecoveryFootTarget | null = null;
   let bestScore = Infinity;

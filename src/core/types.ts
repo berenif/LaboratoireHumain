@@ -292,6 +292,19 @@ export interface DiagnosticsSnapshot {
 
 export interface PoseSnapshot {
   playground?: import("./playground").PlaygroundConfig;
+  room?: Readonly<{ width: number; depth: number; height: number }>;
+  striker?: Readonly<{
+    phase: "idle" | "positioning" | "striking" | "retracting";
+    position: Vec3;
+    rotation: Quat;
+    impactId: number;
+    available: boolean;
+  }>;
+  protocol?: Readonly<{
+    strikes: number;
+    recoveries: number;
+    message: "Essai d’arrêt en cours" | "Le sujet insiste" | "Rectification : essai en cours" | null;
+  }>;
   sequence: number;
   simulationTime: number;
   state: MotionState;
@@ -356,6 +369,7 @@ export interface PoseView {
 
 export interface CharacterController {
   setPlayground(config: import("./playground").PlaygroundConfig): void;
+  requestStrike(): boolean;
   clearBodyInput(): void;
   fixedUpdate(dt: number, command: GrabCommand | null): void;
   getSnapshot(renderer: RendererMode): PoseSnapshot;

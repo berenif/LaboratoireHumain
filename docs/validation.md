@@ -11,7 +11,19 @@ npm run test:physics
 
 Browser acceptance additionally runs the recovery and interaction replays in WebGL and Canvas2D from side and three-quarter cameras, at normal and slow playback.
 
-## Current worktree verification (2026-09-13)
+## Current investigation (2026-09-19)
+
+Physics acceptance remains unachieved. The current balance trace loses measured
+stance support during the first weight transfer, before the second step is
+released. A passive articulated-response correction passes the 16 cross-body
+paths, but other pull and recovery scenarios still fail. Targeted passes do not
+establish full acceptance. The running validation ledger, per-frame evidence,
+rejected experiments and visual artifacts are indexed in
+[the September 19 record](../evidence/limb-20260919/validation-summary.md).
+Concurrent edits in the shared checkout require source-provenance checks before
+any final-source claim; a changed controller or golden threshold invalidates it.
+
+## Historical worktree verification (2026-09-13)
 
 The anatomy and continuous-physics migration is integrated, but the complete
 behavioral acceptance suite is not yet green. The latest verified partition is:
@@ -28,7 +40,7 @@ behavioral acceptance suite is not yet green. The latest verified partition is:
 - joint-motor/recovery-motor regressions: 21/21 pass, including measured
   free-assembly and one-stance Rapier response comparisons.
 
-The remaining balance defect is a single-support global-yaw mode: the physical
+The balance investigation at that checkpoint identified a single-support global-yaw mode: the physical
 root rotates while the landing preview remains world-fixed. Isolated hip-yaw,
 sole-weld, and swing-target counter-rotation experiments all destabilized at
 least one canonical direction and were therefore reverted.

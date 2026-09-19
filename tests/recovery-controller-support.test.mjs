@@ -7,7 +7,7 @@ const { restPoseMap } = await import("../src/character/pose.ts");
 const { RECOVERY_POSE_FIXTURES, recoveryFixturePoses } = await import("../scripts/recovery-fixtures.ts");
 const { recoveryMassState } = await import("../src/character/recovery-support.ts");
 const { SEGMENT_BY_ID } = await import("../src/core/humanoid.ts");
-const { add, angularVelocity, length, sub, quatFromAxisAngle, worldPoint } = await import("../src/character/math.ts");
+const { add, angularVelocity, length, sub, quatFromAxisAngle, quatInverse, quatMultiply, rotate, worldPoint } = await import("../src/character/math.ts");
 const zero = { x: 0, y: 0, z: 0 }, dt = 1 / 60;
 
 function rig(poses = restPoseMap()) {
@@ -50,6 +50,29 @@ function actuatedDifference(a, b, ids) {
   a.recovery.actuate(a.bodies, a.poses, true, dt); b.recovery.actuate(b.bodies, b.poses, true, dt);
   return Math.max(...ids.map(id => length(sub(a.impulses.get(id), b.impulses.get(id)))));
 }
+
+test("standing completion uses one second of post-step measured support", () => {
+  const state = rig(); bothFeetCoverMass(state);
+  state.recovery.data.phase = "stand";
+  for (let step = 0; step < 59; step++) {
+    assert.equal(state.recovery.confirmPostStep(state.bodies, dt, 1), false);
+  }
+  assert.equal(state.recovery.confirmPostStep(state.bodies, dt, 1), true);
+  state.recovery.data.contacts = [];
+  assert.equal(state.recovery.confirmPostStep(state.bodies, dt, 1), false);
+  assert.equal(state.recovery.diagnostics().stableTimeS, 0);
+});
+
+test("a new impact drops old anchors and requalifies support", () => {
+  const state = rig(); bothFeetCoverMass(state);
+  state.recovery.data.phase = "stand";
+  state.recovery.confirmPostStep(state.bodies, dt);
+  state.recovery.interruptForImpact(state.bodies, { x: 0, y: 0, z: 1 });
+  assert.equal(state.recovery.diagnostics().phase, "settle");
+  assert.equal(state.recovery.diagnostics().stableTimeS, 0);
+  assert.equal(state.recovery.plants.size, 0);
+  assert.ok(state.recovery.diagnostics().contacts.every(contact => !contact.loadBearing));
+});
 
 test("a deliberately released foot cannot support a second release before it replants", () => {
   const state = rig(); bothFeetCoverMass(state);
@@ -123,6 +146,89 @@ function observeLoads(state, loads) {
   } };
   state.recovery.observe(world, floor, colliders, state.bodies, dt);
 }
+
+test("landing advances after exactly six consecutive integrated loaded frames", () => {
+  const state = rig();
+  state.recovery.reset(0, { x: 0, y: 0, z: 1 });
+  state.recovery.actuate = () => {};
+  const loads = new Map([["torso", 100]]);
+  for (let frame = 0; frame < 6; frame++) {
+    state.recovery.apply(state.bodies, dt);
+    assert.equal(state.recovery.data.phase, "protect", "decisions use only already integrated evidence");
+    observeLoads(state, loads);
+  }
+  assert.ok(Math.abs(state.recovery.landingTime - 0.10) < 1e-12);
+  state.recovery.apply(state.bodies, dt);
+  assert.equal(state.recovery.data.phase, "settle", "0.10 seconds cannot silently become seven frames");
+});
+
+test("landing persistence resets on one unloaded frame", () => {
+  const state = rig();
+  state.recovery.reset(0, { x: 0, y: 0, z: 1 });
+  state.recovery.actuate = () => {};
+  const loads = new Map([["torso", 100]]);
+  for (let frame = 0; frame < 5; frame++) observeLoads(state, loads);
+  observeLoads(state, new Map());
+  for (let frame = 0; frame < 5; frame++) observeLoads(state, loads);
+  state.recovery.apply(state.bodies, dt);
+  assert.equal(state.recovery.data.phase, "protect");
+  observeLoads(state, loads);
+  state.recovery.apply(state.bodies, dt);
+  assert.equal(state.recovery.data.phase, "settle");
+});
+
+test("ankle contact is foot contact and cannot independently establish landing", () => {
+  const state = rig();
+  state.recovery.reset(0, { x: 0, y: 0, z: 1 });
+  state.recovery.actuate = () => {};
+  for (let frame = 0; frame < 12; frame++) {
+    observeLoads(state, new Map([["leftAnkle", 100]]));
+    state.recovery.apply(state.bodies, dt);
+  }
+  assert.equal(state.recovery.data.phase, "protect");
+  state.poses.get("pelvis").position.y = .8;
+  for (let frame = 0; frame < 8; frame++) observeLoads(state, new Map([["leftAnkle", 100], ["rightFoot", 100]]));
+  state.recovery.apply(state.bodies, dt);
+  assert.equal(state.recovery.data.phase, "settle", "two persistent anatomical foot sides establish a supported crouch");
+});
+
+test("a recovery plant pivots about its captured material contact without false body-center slip", () => {
+  const state = rig(), segment = "rightShin", loads = new Map([[segment, 100]]);
+  for (let frame = 0; frame < 3; frame++) observeLoads(state, loads);
+  const captured = state.recovery.plants.get(segment), pose = state.poses.get(segment);
+  const rotation = quatMultiply(quatFromAxisAngle({ x: 1, y: 0, z: 0 }, .6), captured.rotation);
+  pose.rotation = rotation;
+  pose.position = add(captured.contact, rotate(rotation, rotate(quatInverse(captured.rotation), sub(captured.position, captured.contact))));
+  assert.ok(length(sub(pose.position, captured.position)) > .05);
+  observeLoads(state, loads);
+  assert.equal(state.recovery.plants.get(segment), captured, "rolling around a fixed material contact is not sliding");
+});
+
+test("a slipped recovery plant cannot ratchet onto the same continuously loaded contact", () => {
+  const state = rig(), segment = "rightFoot", loads = new Map([[segment, 100]]);
+  for (let frame = 0; frame < 3; frame++) observeLoads(state, loads);
+  state.poses.get(segment).position.x += .051;
+  observeLoads(state, loads);
+  assert.ok(!state.recovery.plants.has(segment), "retain the 50 mm invalidation reserve below the 80 mm acceptance ceiling");
+  for (let frame = 0; frame < 6; frame++) observeLoads(state, loads);
+  assert.ok(!state.recovery.plants.has(segment), "old persistent load is not a fresh plant");
+  observeLoads(state, new Map());
+  for (let frame = 0; frame < 2; frame++) observeLoads(state, loads);
+  assert.ok(!state.recovery.plants.has(segment));
+  observeLoads(state, loads);
+  assert.deepEqual(state.recovery.plants.get(segment).position, state.poses.get(segment).position);
+});
+
+test("a rotating contact patch cannot hide material edge slip behind its stationary centroid", () => {
+  const state = rig(), segment = "rightFoot", loads = new Map([[segment, 100]]);
+  for (let frame = 0; frame < 3; frame++) observeLoads(state, loads);
+  const captured = state.recovery.plants.get(segment), pose = state.poses.get(segment);
+  const rotation = quatMultiply(quatFromAxisAngle({ x: 0, y: 1, z: 0 }, .6), captured.rotation);
+  pose.rotation = rotation;
+  pose.position = add(captured.contact, rotate(rotation, rotate(quatInverse(captured.rotation), sub(captured.position, captured.contact))));
+  observeLoads(state, loads);
+  assert.ok(!state.recovery.plants.has(segment), "a stationary patch center cannot preserve edges that moved more than 50 mm");
+});
 
 for (const segment of ["rightFoot", "rightShin", "rightForearm"]) {
   test(segment + " keeps its captured point through sliding and reacquires after deliberate release and fresh load", () => {
@@ -240,14 +346,35 @@ test("recovery exposes zero direct pelvis assistance while joint motors remain a
     "bounded joint torque impulses still actuate the recovery target");
 });
 
-test("settling measures passive physics without continuing protective posture motors", () => {
+test("settling measures passive physics without continuing protective posture motors", async () => {
+  const { applyPassiveJointResistance } = await import("../src/character/joint-motors.ts");
   const state = rig();
+  state.recovery.data.phase = "protect";
+  state.recovery.apply(state.bodies, dt);
+  assert.ok(state.recovery.motorResults().size > 0, "actual protective motor targets are available to diagnostics");
+  assert.ok([...state.recovery.motorResults().values()].some(result => length(result.torqueWorld) > 0));
+  state.impulses.clear();
   state.recovery.data.phase = "settle";
   state.recovery.data.settledTimeS = 0;
   state.recovery.apply(state.bodies, dt);
-  assert.equal(state.impulses.size, 0,
-    "the low-motion settle gate must not be kept open by recovery posture impulses");
-  assert.equal(state.recovery.diagnostics().maxMotorTorqueNm, 0);
+  const passiveOnly = rig(), passive = applyPassiveJointResistance(passiveOnly.bodies, dt);
+  assert.deepEqual(state.impulses, passiveOnly.impulses,
+    "the low-motion settle gate receives only the existing passive tissue impulses");
+  assert.equal(state.recovery.diagnostics().maxMotorTorqueNm, Math.max(0, ...[...passive.values()].map(length)));
+  assert.equal(state.recovery.motorResults().size, 0, "settling cannot reuse the prior protective target or torque");
+  assert.deepEqual(state.recovery.passiveTorques(), passive, "passive-only telemetry is kept separate from posture targets");
+});
+
+test("recovery posture and passive resistance share the unchanged knee torque budget", async () => {
+  const { recoveryJointRotation } = await import("../src/character/recovery-joints.ts");
+  const state = rig();
+  state.poses.get("leftShin").rotation = quatMultiply(state.poses.get("leftThigh").rotation,
+    recoveryJointRotation("leftShin", { x: 2.40, y: 0, z: 0 }));
+  state.bodies.get("leftShin").angvel = () => ({ x: 10, y: 0, z: 0 });
+  state.recovery.actuate(state.bodies, state.poses, true, dt);
+  const knee = state.recovery.motorResults().get("leftShin");
+  assert.ok(length(knee.torqueWorld) <= 165 + 1e-9, "a separate passive impulse must not add another 82.5 Nm");
+  assert.equal(state.recovery.passiveTorques().size, 0, "active recovery has one combined motor solve");
 });
 
 test("prone arm preparation raises shoulder clearance with bounded internal spinal torque", () => {
@@ -407,6 +534,33 @@ test("support selector admits a trailing toe only during its explicit transfer s
   assert.deepEqual(select("shift-weight"), ["leftFoot", "rightFoot"]);
   assert.deepEqual(select("bring-trailing"), ["leftFoot"]);
   assert.deepEqual(select("shift-weight", new Set(["rightFoot"])), ["leftFoot"]);
+});
+
+test("kneeling cannot count an incidental forearm patch as phase support", async () => {
+  const { selectRecoveryContacts } = await import("../src/character/recovery-support.ts");
+  const state = rig();
+  state.recovery.data.contacts = [
+    patch("rightForearm", 0, 0), patch("rightForearmTwist", 0, 0),
+    patch("rightHand", 0, 0), patch("leftShin", 0, 0),
+  ];
+  const selected = phase => selectRecoveryContacts(state.recovery.data.contacts,
+    state.poses, phase, "shift-weight", "left").map(contact => contact.segment);
+  assert.deepEqual(selected("brace"), ["rightForearm", "rightForearmTwist", "rightHand", "leftShin"]);
+  assert.deepEqual(selected("kneel"), ["rightHand", "leftShin"]);
+});
+
+test("a loaded prone forefoot can brace despite its horizontal local up axis", async () => {
+  const { selectRecoveryContacts } = await import("../src/character/recovery-support.ts");
+  const state = rig();
+  state.poses.get("rightForefoot").rotation = quatFromAxisAngle({ x: 1, y: 0, z: 0 }, Math.PI / 2);
+  state.recovery.data.contacts = [patch("rightForefoot", 0, -0.9)];
+  const select = (phase, stage) => selectRecoveryContacts(state.recovery.data.contacts,
+    state.poses, phase, stage, "left").map(contact => contact.segment);
+  assert.deepEqual(select("roll", "arm-preparation"), ["rightForefoot"]);
+  assert.deepEqual(select("roll", "push-brace"), ["rightForefoot"]);
+  assert.deepEqual(select("roll", "roll"), []);
+  assert.deepEqual(select("kneel", "plant-lead"), []);
+  assert.deepEqual(select("stand", "extend"), []);
 });
 
 test("prospective brace support excludes torso load and proposed releases before testing balance", () => {

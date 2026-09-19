@@ -45,6 +45,22 @@ test("contact allocation is bounded by friction, torque and actual measured supp
   }
 });
 
+test("prone transfer retains measured load on each eligible distal patch", () => {
+  const contacts = [patch("leftForefoot", -0.3, 20), patch("rightForefoot", -0.2, 25),
+    patch("leftHand", 0.3, 55)];
+  const result = planContactLoads(contacts, { x: 0.3, y: 1, z: 0 }, zero,
+    { x: 0, y: TOTAL_MASS_KG * 9.81, z: 0 },
+    { frictionCoefficient: 0.8, maxHorizontalForceN: 200,
+      maxJointTorqueNm: minimumSupportTorqueLimit(contacts), minimumMeasuredShareFraction: 0.5 });
+  const measuredTotal = contacts.reduce((sum, contact) => sum + contact.forceN, 0);
+  for (const contact of contacts) {
+    const planned = result.loads.find(load => load.segment === contact.segment)?.plannedForce.y;
+    assert.ok(planned >= 0.5 * contact.forceN / measuredTotal * result.allocatedForce.y - 1e-6,
+      `${contact.segment} retains half its measured share`);
+  }
+  assert.ok(Math.abs(result.allocatedForce.y - TOTAL_MASS_KG * 9.81) < 1e-6);
+});
+
 test("hindfoot and forefoot patches count each actuated support joint once", () => {
   const leftFoot = patch("leftFoot", -0.12);
   const leftForefoot = patch("leftForefoot", -0.12, 120);

@@ -6,7 +6,7 @@
 
 The center of mass and velocity include all 25 declared segment masses. Horizontal velocity is filtered with a 14/s response, and the capture point is the horizontal center of mass plus velocity divided by `sqrt(9.81 / COM height)`.
 
-Support is built from loaded Rapier contacts on each side's ankle, hindfoot, and forefoot. Exact solver contact points form the support hull. During initial contact loading only, the canonical hindfoot and forefoot sole patches provide a pose-derived fallback. A manipulated or swinging foot is excluded. Eligibility persists for 0.05 seconds before it becomes stance support.
+Support is built from loaded Rapier contacts on each side's ankle, hindfoot, and forefoot. Exact solver contact points form the support hull; a near-floor sole pose or planned endpoint does not establish support. A manipulated or actively swinging foot is excluded. Eligibility persists for 0.05 seconds before it becomes stance support.
 
 The controller stores a neutral center-of-mass offset relative to the ankles at reset. Its `rootTarget` is a motor/IK goal registered to measured support, not a kinematic translation. Actual pelvis motion always comes from Rapier integration and ground reaction through the support chain.
 
@@ -16,7 +16,7 @@ The controller stores a neutral center-of-mass offset relative to the ankles at 
 
 | Quantity | Value / rule |
 | --- | --- |
-| Pose fallback sole clearance | -0.025 to +0.035 m |
+| Clearance used to identify an airborne foot | More than 0.035 m above its nominal sole height |
 | Planted-target horizontal tolerance | 0.045 m |
 | Manipulated-foot exclusion | Grab displacement over 0.05 m |
 | Virtual pull estimate | 620 N/m plus 12 Ns/m, capped at 620 N |
@@ -24,7 +24,7 @@ The controller stores a neutral center-of-mass offset relative to the ankles at 
 | Internal target-speed state | Capped at 2.5 m/s |
 | Step trigger margin | Half the hindfoot half-width, capped at 0.03 m |
 | Step reach / travel | At most 0.36 m from pelvis reference / 0.43 m from start |
-| Step duration | Adaptive 0.18–0.34 s |
+| Step duration | Adaptive 0.48–0.68 s |
 | Double-support cooldown | 0.18 s |
 | Marginal instability persistence | 0.12 s |
 | Unrecoverable support margin | -0.43 m with no viable landing footprint |
@@ -38,6 +38,8 @@ Small capture-point errors are distributed into ankle, hip, lumbar, ribcage, and
 
 Corrective steps begin only after startup settling or a measured disturbance. The anticipated capture point includes external-force acceleration. The first lateral step widens toward the disturbance; later steps alternate. A released manipulated foot receives its own landing step. Reach and travel are bounded before inverse kinematics, so an unreachable drag cannot lengthen a limb.
 
+Selecting an intentional step starts a weight-transfer interval with both feet still commanded to the floor. The retained side must carry at least 52% of body weight in qualified measured contacts for 0.10 consecutive seconds before swing begins. Elapsed swing duration completes target interpolation, not touchdown: the landing side must establish measured hindfoot or forefoot load within 0.09 m horizontally of its target for 0.10 consecutive seconds before the step completes. The newly measured support then starts the double-support cooldown.
+
 During a swing, fall decisions include the reachable landing footprint and predicted touchdown momentum. A narrow instantaneous single-foot hull therefore does not by itself force a fall. Conversely, excessive speed, lost support, or a capture point beyond both current and reachable support can overwhelm the finite actuators and commit a physical fall.
 
 ## Physical actuation
@@ -46,10 +48,12 @@ During a swing, fall decisions include the reachable landing footprint and predi
 
 - uses parent/child reference frames and only the profile's permitted axes;
 - respects per-axis motor strength and reports saturation;
-- includes independent passive damping and progressively increasing near-limit resistance; and
+- combines active feedback, passive damping, and progressively increasing near-limit resistance within the same coordinate torque budget; and
 - applies equal-and-opposite torque impulses to the connected bodies.
 
 Gravity and balance compensation are expressed through contact-loaded ankle, hip, and trunk chains. They create no net internal force or unpaired torque. With no floor, the center of mass remains in free fall. With support, Rapier friction and normal impulses provide the external reaction.
+
+The load planner applies each contact's allocated force at the centroid of its measured solver patch. It adjusts nonnegative load shares across those centroids toward the requested pressure point while retaining the measured load split when several patches can supply the same moment. Unloaded or excluded contacts receive no planned load. Planned load remains bounded by friction, support-chain torque, and the 1.35-body-weight vertical limit; planned pressure never substitutes for measured weight transfer.
 
 ## Diagnostics and deterministic checks
 

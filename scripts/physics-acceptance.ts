@@ -59,6 +59,8 @@ const results: Array<{ name: string; passed: boolean; durationMs: number; metric
 const trace: unknown[] = [], records = new Map<CharacterController, RecordData>();
 let activeScenario = "";
 const SCENARIO_PATTERN=process.env.PHYSICS_SCENARIO_PATTERN;
+const LIST_ONLY=process.env.PHYSICS_LIST_ONLY === "1", selectedScenarioNames: string[] = [];
+const LOG_PROGRESS=process.env.PHYSICS_PROGRESS === "1";
 interface NativeStreamFixture {id:string;resetId:number;initialSnapshot:PoseSnapshot;updates:Array<{sequence:number;dt:number;command:GrabCommand|null}>;recordedTransfers:Array<{fallSequence:number;restoreSequence:number;recordedRecoverySeconds:number}>}
 const NATIVE_STREAMS=JSON.parse(readFileSync(new URL("./fixtures/native-fixed-streams.json",import.meta.url),"utf8")) as {source:unknown;fixtures:NativeStreamFixture[]};
 
@@ -335,6 +337,8 @@ function measure(r: RecordData, snapshot: PoseSnapshot, character: CharacterCont
       r.lateralBracedContact ||= angleDegrees(fore,identity)>=8 && recovery.contacts.some(c => (c.segment===near+"Hand" || c.segment===near+"Forearm" || c.segment===near+"ForearmTwist") && c.normalY>=RECOVERY_LIMITS.normalY && c.forceN>=RECOVERY_LIMITS.minimumLoadN);
     }
   }
+  if (LOG_PROGRESS && snapshot.sequence > 0 && snapshot.sequence % 300 === 0)
+    console.log(`PROGRESS ${activeScenario} time=${snapshot.simulationTime.toFixed(3)} state=${snapshot.state} phase=${d.recovery.phase}`);
   if (snapshot.sequence % 6 === 0) trace.push({ scenario: activeScenario, time: snapshot.simulationTime, state: snapshot.state, segments: snapshot.segments, diagnostics: d, jointErrorM: jointError(snapshot), floorErrorM: r.floorPresent ? floorError(snapshot, character) : 0 });
 }
 
@@ -405,6 +409,7 @@ function describe(r: RecordData): Record<string, unknown> {
 }
 async function scenario(name: string, run: (failures: string[]) => Promise<Record<string, unknown>>): Promise<void> {
   if(SCENARIO_PATTERN && !new RegExp(SCENARIO_PATTERN).test(name)) return;
+  if(LIST_ONLY) { selectedScenarioNames.push(name); return; }
   activeScenario = name; records.clear(); const start = performance.now(), failures: string[] = [];
   let metrics: Record<string, unknown> = {};
   try { metrics = await run(failures); } catch (error) { failures.push(error instanceof Error ? error.stack ?? error.message : String(error)); }
@@ -775,6 +780,9 @@ for (const targetState of ["falling", "fallen", "recovering"] as const) await sc
   const fresh = begin(c, "leftHand", 72); c.fixedUpdate(DT, fresh.command); if (!c.diagnostics().activeGrab) failures.push("Fresh input rejected after Reset"); c.clearBodyInput(); return { targetState, pausedSequence: paused.sequence, resetState: reset.state };
 });
 
+if (LIST_ONLY) {
+  console.log(JSON.stringify({ scenarios: selectedScenarioNames }));
+} else {
 if (!results.length) throw new Error("No physics scenarios matched " + (SCENARIO_PATTERN ?? "the configured selection"));
 const failed = results.filter(r => !r.passed);
 const report = { schema: 4, objective: "continuous-dynamic-humanoid-balance-fall-and-recovery", generatedAt: new Date().toISOString(), engine: "Rapier " + RAPIER.version(), node: process.version, fixedHz: 60,
@@ -786,3 +794,4 @@ const outputPrefix=process.env.PHYSICS_OUTPUT_PREFIX ?? (SCENARIO_PATTERN?"evide
 writeFileSync(outputPrefix+"-results.json", JSON.stringify(report, null, 2) + "\n");
 writeFileSync(process.env.PHYSICS_OUTPUT_PREFIX ? outputPrefix+"-trace.ndjson" : SCENARIO_PATTERN?"evidence/physics-selected-trace.ndjson":"evidence/successor-trace.ndjson", trace.map(row => JSON.stringify(row)).join("\n") + "\n");
 console.log(JSON.stringify(report.summary)); process.exitCode = failed.length ? 1 : 0;
+}

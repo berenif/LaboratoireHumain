@@ -75,6 +75,27 @@ test("balance mass estimate includes segment masses and rejects a manipulated ne
   assert.ok(output.appliedGrabForceN <= BALANCE_LIMITS.maxPullForceN);
 });
 
+test("the swing target clears the floor until landing and preload cannot substitute for measured touchdown", () => {
+  const poses = restPoseMap(), controller = new BalanceController();
+  controller.reset(poses);
+  const pelvis = poses.get("pelvis").position;
+  controller.beginStep("rightFoot", poses.get("rightFoot").position, pelvis,
+    { x: 0, y: 0, z: 1 }, { x: 1, y: 0, z: 0 }, 0, zero);
+  const left = poses.get("leftFoot").position;
+  const contacts = [{ segment: "leftFoot", normalY: 1, forceN: 600,
+    persistenceS: 1, loadBearing: true, point: { ...left, y: 0 },
+    points: [-1, 1].flatMap(x => [-1, 1].map(z => ({ x: left.x + .05 * x, y: 0, z: left.z + .1 * z }))) }];
+  let landedTargetSeen = false;
+  for (let frame = 0; frame < 70; frame++) {
+    const output = controller.update({ dt, poses, rootPosition: pelvis, activeGrab: null, contacts });
+    assert.ok(output.step, "an unloaded swing foot cannot complete a step");
+    const landing = output.step.elapsed >= output.step.duration;
+    assert.ok(Math.abs(output.step.to.y - (footCenterHeight - (landing ? .005 : 0))) < 1e-12);
+    landedTargetSeen ||= landing;
+  }
+  assert.ok(landedTargetSeen);
+});
+
 test("slow pulls stay connected and stepping remains available after release and reversal", async () => {
   for (const heading of [0, 1.1, -1.7]) {
     const character = await createEmbodiedCharacter("canvas2d", { heading });

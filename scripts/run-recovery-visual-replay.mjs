@@ -1,19 +1,24 @@
 /**
  * Deterministic recovery presentation review.
  * Run with the bundled Node runtime: node --import tsx scripts/run-recovery-visual-replay.mjs [output-directory] [fixture-id,...]
+ * Also accepts pull IDs (slow-hand-forward) and cross-body IDs
+ * (cross-body-leftFoot-midline-rotated). Cross-body replays add one second after
+ * the acceptance endpoint; that observation is labeled separately in evidence.
  * A local Vite server must be available at RECOVERY_REPLAY_URL (default http://127.0.0.1:5173).
  * The Rapier trace runs once at 60 Hz. Both view adapters replay the same immutable snapshots;
  * slow playback changes video timestamps only and cannot affect the physical trajectory.
  */
 import { createRequire } from "node:module";
-import { mkdir, writeFile, readFile, copyFile } from "node:fs/promises";
+import { mkdir, writeFile, readFile, copyFile, readdir } from "node:fs/promises";
 import { createHash } from "node:crypto";
 import { dirname, resolve } from "node:path";
 import { spawn } from "node:child_process";
 import { gzipSync } from "node:zlib";
 import { createEmbodiedCharacter } from "../src/character/EmbodiedCharacter.ts";
+import { quatInverse } from "../src/character/math.ts";
 import { SEGMENTS, HUMAN_PROPORTIONS } from "../src/core/humanoid.ts";
 import { RECOVERY_POSE_FIXTURES, seedRecoveryFixture } from "./recovery-fixtures.ts";
+import { VISUAL_TRAJECTORY_FIXTURES, prepareVisualTrajectory } from "./visual-trajectory-fixtures.mjs";
 
 const outputDirectory = resolve(process.argv[2] ?? "evidence/recovery-20260908/representative");
 const requested = process.argv[3]?.split(",").filter(Boolean);
@@ -26,10 +31,15 @@ const requireRuntime = createRequire(resolve(dirname(runtimeNode), "package.json
 const { chromium } = requireRuntime("playwright");
 const totalMass = SEGMENTS.reduce((sum, segment) => sum + segment.massKg, 0);
 const mass = Object.fromEntries(SEGMENTS.map(segment => [segment.id, segment.massKg]));
-const sourceFiles = ["src/character/EmbodiedCharacter.ts", "src/character/BalanceController.ts", "src/character/DynamicRecovery.ts", "src/character/PhysicsPlayground.ts", "src/character/contact-loads.ts", "src/character/limb-collisions.ts", "src/character/recovery-support.ts", "src/character/recovery-foot-targets.ts", "src/character/recovery-motors.ts", "src/character/pose.ts", "src/core/humanoid.ts", "src/core/playground.ts", "src/core/types.ts", "src/scene/canvas2d-view.ts", "src/scene/playground-view.ts", "src/scene/webgl-view.ts", "scripts/recovery-fixtures.ts", "scripts/run-recovery-visual-replay.mjs"];
+const sourceFiles = [
+  ...(await Promise.all(["src/character", "src/core", "src/scene"].map(async directory =>
+    (await readdir(directory, { recursive: true })).filter(file => /\.tsx?$/.test(file))
+      .map(file => `${directory}/${file.replaceAll("\\", "/")}`)))).flat(),
+  "scripts/recovery-fixtures.ts", "scripts/physics-fixtures.ts", "scripts/visual-trajectory-fixtures.mjs", "scripts/run-recovery-visual-replay.mjs",
+].sort();
 const fingerprint = async () => Object.fromEntries(await Promise.all(sourceFiles.map(async file => [file, createHash("sha256").update(await readFile(file)).digest("hex")])));
 const fixtures = requested
-  ? requested.map(id => { const fixture = RECOVERY_POSE_FIXTURES.find(item => item.id === id); if (!fixture) throw new Error(`Unknown recovery fixture: ${id}`); return fixture; })
+  ? requested.map(id => { const fixture = [...RECOVERY_POSE_FIXTURES, ...VISUAL_TRAJECTORY_FIXTURES].find(item => item.id === id); if (!fixture) throw new Error(`Unknown recovery or trajectory fixture: ${id}`); return fixture; })
   : ["prone", "supine", "side", "half-kneel", "crouch"].map(pose => RECOVERY_POSE_FIXTURES.find(item => item.pose === pose)).filter(Boolean);
 if (!fixtures.length) throw new Error("No recovery fixtures selected.");
 await mkdir(outputDirectory, { recursive: true });
@@ -37,6 +47,7 @@ const sourceBefore = await fingerprint();
 await writeFile(resolve(outputDirectory, "source-before.json"), JSON.stringify(sourceBefore, null, 2));
 const evidence = { schema: 1, fixedHz: 60, normalSpeed: 1, slowSpeed: .25, sourceBefore, scenarios: [], browserErrors: [] };
 const dot = (a, b) => a.x*b.x + a.y*b.y + a.z*b.z;
+const add = (a, b) => ({ x: a.x+b.x, y: a.y+b.y, z: a.z+b.z });
 const sub = (a, b) => ({ x: a.x-b.x, y: a.y-b.y, z: a.z-b.z });
 const magnitude = vector => Math.hypot(vector.x, vector.y, vector.z);
 const distance = (a, b) => magnitude(sub(a, b));
@@ -45,13 +56,12 @@ const rotate = (q, v) => {
   const tx = 2*(q.y*v.z-q.z*v.y), ty = 2*(q.z*v.x-q.x*v.z), tz = 2*(q.x*v.y-q.y*v.x);
   return { x: v.x+q.w*tx+q.y*tz-q.z*ty, y: v.y+q.w*ty+q.z*tx-q.x*tz, z: v.z+q.w*tz+q.x*ty-q.y*tx };
 };
-function physicalMetrics(snapshot, previous, supportEpisodes) {
+function physicalMetrics(snapshot, previous, supportEpisodes, observedContacts) {
   const segments = Object.fromEntries(snapshot.segments.map(segment => [segment.id, segment]));
   const weighted = field => Object.fromEntries(["x", "y", "z"].map(axis => [axis, snapshot.segments.reduce((sum, segment) => sum+mass[segment.id]*segment[field][axis], 0)/totalMass]));
   const com = weighted("position"), comVelocity = weighted("linearVelocity");
   const projectedCom = { x: com.x + .15*comVelocity.x, y: 0, z: com.z + .15*comVelocity.z };
-  const recovery = snapshot.diagnostics.recovery;
-  const loaded = recovery.contacts.filter(contact => contact.loadBearing);
+  const loaded = observedContacts.filter(contact => contact.loadBearing);
   const feet = {};
   for (const side of ["left", "right"]) {
     const foot = segments[`${side}Foot`], thigh = segments[`${side}Thigh`], shin = segments[`${side}Shin`];
@@ -59,7 +69,12 @@ function physicalMetrics(snapshot, previous, supportEpisodes) {
     const contacts = loaded.filter(item => supportIds.includes(item.segment));
     for (const id of supportIds) {
       const pose = segments[id], contact = contacts.find(item => item.segment === id);
-      if (contact && !supportEpisodes.has(id)) supportEpisodes.set(id, { position: pose.position, sequence: snapshot.sequence });
+      if (contact && !supportEpisodes.has(id)) {
+        const points = contact.points?.length ? contact.points : [contact.point];
+        supportEpisodes.set(id, { position: { ...pose.position }, sequence: snapshot.sequence,
+          materialPatch: points.map(point => ({ worldPoint: { ...point },
+            localPoint: rotate(quatInverse(pose.rotation), sub(point, pose.position)) })) });
+      }
       if (!contact) supportEpisodes.delete(id);
     }
     const thighAxis = rotate(thigh.rotation, { x: 0, y: -1, z: 0 });
@@ -68,7 +83,12 @@ function physicalMetrics(snapshot, previous, supportEpisodes) {
     const plantedEpisodes = supportIds.flatMap(id => supportEpisodes.has(id) ? [{ id, ...supportEpisodes.get(id) }] : []);
     const priorFoot = previous?.segments.find(segment => segment.id === foot.id);
     feet[side] = { position: foot.position, forceN: contacts.reduce((sum, contact) => sum + contact.forceN, 0), loaded: contacts.length > 0,
-      continuousPlantDriftM: Math.max(0, ...plantedEpisodes.map(episode => horizontalDistance(segments[episode.id].position, episode.position))),
+      measuredForceN: contacts.reduce((sum, contact) => sum + (contact.measuredForceN ?? contact.forceN), 0),
+      // Follow every captured material patch point; centroid-only drift can
+      // hide rotational slip. Body-center motion is reported separately.
+      continuousPlantDriftM: Math.max(0, ...plantedEpisodes.flatMap(episode => episode.materialPatch.map(point =>
+        horizontalDistance(add(segments[episode.id].position, rotate(segments[episode.id].rotation, point.localPoint)), point.worldPoint)))),
+      bodyCenterDriftM: Math.max(0, ...plantedEpisodes.map(episode => horizontalDistance(segments[episode.id].position, episode.position))),
       continuousPlantTimeS: Math.max(0, ...plantedEpisodes.map(episode => (snapshot.sequence-episode.sequence)/60)),
       speedMps: priorFoot ? distance(foot.position, priorFoot.position)*60 : 0,
       kneeBendRadians: bendRadians,
@@ -76,51 +96,64 @@ function physicalMetrics(snapshot, previous, supportEpisodes) {
     };
   }
   const loadedTotalN = loaded.reduce((sum, contact) => sum+contact.forceN, 0);
-  return { com, comVelocity, projectedCom, feet, loadedSegments: loaded.map(contact => contact.segment), loadedTotalN,
+  return { com, comVelocity, projectedCom, feet, loadedContacts: loaded, loadedSegments: loaded.map(contact => contact.segment), loadedTotalN,
     pelvisHeightM: segments.pelvis.position.y, torsoUp: rotate(segments.torso.rotation, { x: 0, y: 1, z: 0 }).y,
     leftFootLoadShare: loadedTotalN > 0 ? feet.left.forceN/loadedTotalN : 0,
     rightFootLoadShare: loadedTotalN > 0 ? feet.right.forceN/loadedTotalN : 0 };
 }
 async function generateTrace(fixture) {
-  const character = await createEmbodiedCharacter("webgl", { heading: fixture.heading });
+  const character = await createEmbodiedCharacter("webgl", fixture.kind === "pull" ? fixture.fixture.initial : { heading: fixture.heading });
   try {
-    seedRecoveryFixture(character, fixture);
+    const trajectory = fixture.kind ? prepareVisualTrajectory(character, fixture) : null;
+    if (!trajectory) seedRecoveryFixture(character, fixture);
     const snapshots = [], measurements = [], phaseEntries = [], supportEpisodes = new Map();
     let previous = null, stableFrame = null;
-    for (let frame = 0; frame <= maxReplaySeconds*60; frame++) {
+    const lastFrame = Math.min(trajectory?.lastFrame ?? Infinity, maxReplaySeconds*60);
+    for (let frame = 0; frame <= lastFrame; frame++) {
       const snapshot = character.getSnapshot("webgl");
-      const metrics = physicalMetrics(snapshot, previous, supportEpisodes);
+      // The observer runs during standing too, while the public snapshot uses
+      // empty recovery diagnostics outside recovery. Read its real patches.
+      const metrics = physicalMetrics(snapshot, previous, supportEpisodes, character.recovery.diagnostics().contacts);
       snapshots.push(snapshot); measurements.push(metrics);
-      if (!previous || snapshot.diagnostics.recovery.phase !== previous.diagnostics.recovery.phase || snapshot.diagnostics.recovery.transferStage !== previous.diagnostics.recovery.transferStage) {
+      if (!previous || snapshot.state !== previous.state || snapshot.support.swingFoot !== previous.support.swingFoot || snapshot.diagnostics.recovery.phase !== previous.diagnostics.recovery.phase || snapshot.diagnostics.recovery.transferStage !== previous.diagnostics.recovery.transferStage) {
         phaseEntries.push({ frame, timeS: frame/60, state: snapshot.state, recovery: snapshot.diagnostics.recovery, metrics });
       }
       if (snapshot.state === "upright" && snapshot.diagnostics.bodyInputAvailable && frame > 0 && stableFrame === null) stableFrame = frame;
-      if (stableFrame !== null && frame >= stableFrame+60) break;
+      if (!trajectory && stableFrame !== null && frame >= stableFrame+60) break;
       previous = snapshot;
-      character.fixedUpdate(1/60, null);
+      if (frame < lastFrame) character.fixedUpdate(1/60, trajectory?.commandAt(frame+1) ?? null);
     }
     const active = snapshots.filter(snapshot => ["falling", "fallen", "recovering"].includes(snapshot.state));
     const summary = { fixture, frames: snapshots.length, durationS: (snapshots.length-1)/60,
-      partialReview: maxReplaySeconds < 25, recovered: stableFrame !== null,
+      partialReview: trajectory ? lastFrame < trajectory.lastFrame : maxReplaySeconds < 25, recovered: stableFrame !== null,
+      reviewKind: fixture.kind ?? "recovery", acceptanceThroughFrame: trajectory?.acceptanceThroughFrame ?? null,
+      postAcceptanceObservationFrames: trajectory ? Math.max(0, snapshots.length-1-trajectory.acceptanceThroughFrame) : 0,
+      finalState: snapshots.at(-1).state, enteredRecovery: active.length > 0,
       recoveryTimeS: stableFrame === null ? null : stableFrame/60,
       selectedRoutes: [...new Set(snapshots.map(snapshot => snapshot.diagnostics.recovery.route).filter(route => route && route !== "none"))],
       maxJointSeparationM: Math.max(...snapshots.map(snapshot => snapshot.diagnostics.maxJointSeparationM)),
       maxFloorPenetrationM: Math.max(...snapshots.map(snapshot => snapshot.diagnostics.maxFloorPenetrationM)),
       maxJointLimitErrorRad: Math.max(...snapshots.map(snapshot => snapshot.diagnostics.maxJointLimitErrorRad)),
       maxMotorSaturationRatio: Math.max(...snapshots.map(snapshot => snapshot.diagnostics.maxMotorSaturationRatio)),
+      maxSelfPenetrationM: Math.max(...snapshots.map(snapshot => snapshot.diagnostics.maxSelfPenetrationM)),
+      worstCollision: snapshots.map((snapshot, frame) => ({ frame, state: snapshot.state, depthM: snapshot.diagnostics.maxSelfPenetrationM, pair: snapshot.diagnostics.selfPenetrationPair }))
+        .reduce((worst, current) => current.depthM > worst.depthM ? current : worst),
       maxLoadBearingContacts: Math.max(...snapshots.map(snapshot => snapshot.diagnostics.contactDiagnostics.loadBearingCount)),
       maxUpwardAssistanceN: Math.max(0, ...active.map(snapshot => snapshot.diagnostics.recovery.assistanceForce.y)),
       maxRollingUpwardAssistanceN: Math.max(0, ...active.filter(snapshot => snapshot.diagnostics.recovery.phase === "roll").map(snapshot => snapshot.diagnostics.recovery.assistanceForce.y)),
       maxPelvisAssistanceTorqueNm: Math.max(0, ...active.map(snapshot => magnitude(snapshot.diagnostics.recovery.assistanceTorque))),
       maxMotorTorqueNm: Math.max(0, ...active.map(snapshot => snapshot.diagnostics.recovery.maxMotorTorqueNm)),
       maxContinuousFootDriftM: Math.max(0, ...measurements.flatMap(metrics => [metrics.feet.left.continuousPlantDriftM, metrics.feet.right.continuousPlantDriftM])),
+      maxContinuousFootBodyCenterDriftM: Math.max(0, ...measurements.flatMap(metrics => [metrics.feet.left.bodyCenterDriftM, metrics.feet.right.bodyCenterDriftM])),
+      plantDriftMeasurement: "Maximum horizontal displacement of every captured material contact-patch point during a continuous load-bearing episode; body-center displacement is reported separately. An episode ends when the segment loses load-bearing contact.",
       maxCapturedPlantDriftM: Math.max(0, ...active.flatMap(snapshot => snapshot.diagnostics.recovery.plantedTargets.map(plant => plant.driftM))),
       allFinite: snapshots.every(snapshot => snapshot.diagnostics.finite),
       allRapierDynamic: snapshots.every(snapshot => snapshot.diagnostics.physicsOwnership === "rapier-dynamic"),
       noDirectPelvisAssistance: active.every(snapshot => magnitude(snapshot.diagnostics.recovery.assistanceForce) <= 1e-8 && magnitude(snapshot.diagnostics.recovery.assistanceTorque) <= 1e-8),
       phaseEntries,
     };
-    return { schema: 1, fixture, fixedHz: 60, snapshots, measurements, summary };
+    return { schema: 1, fixture, fixedHz: 60, snapshots, measurements, summary,
+      reviewFrames: trajectory?.reviewFrames.filter(frame => frame < snapshots.length) ?? [] };
   } finally { character.dispose(); }
 }
 function runFFmpeg(args) {
@@ -163,12 +196,13 @@ try {
           const view = createPoseView(renderer, { camera }); view.mount(host); view.resize(host.clientWidth, host.clientHeight, 1);
           views.push({ view, camera, renderer, angle });
         }
-        document.querySelector("#title").textContent = `${trace.fixture.id} · 1× normal speed · deterministic recovery`;
+        document.querySelector("#title").textContent = `${trace.fixture.id} · same 60 Hz trajectory · 1× / 0.25× video exports`;
         window.__RECOVERY_REPLAY__ = { trace, views, done: false, frame: 0, timestamps: [], present(frame, alpha = 0) {
           const previous = trace.snapshots[Math.max(0, frame-1)], current = trace.snapshots[frame];
           const r = current.diagnostics.recovery, metrics = trace.measurements[frame];
           for (const { view } of views) { view.setSnapshot(previous, current, alpha); view.render(); }
-          document.querySelector("#status").textContent = `${(frame/60).toFixed(2)} s · ${r.route ?? "none"} · ${r.phase}/${r.transferStage ?? "none"} · lead ${r.leadingSide ?? "—"} · margin ${Number.isFinite(r.supportMarginM) ? r.supportMarginM.toFixed(3) : "—"} m · foot loads L ${Math.round(metrics.feet.left.forceN)} / R ${Math.round(metrics.feet.right.forceN)} N · direct pelvis ${r.assistanceForce.y.toFixed(1)} N`;
+          const margin = current.diagnostics.balance?.supportMarginM ?? r.supportMarginM;
+          document.querySelector("#status").textContent = `f ${frame} · ${(frame/60).toFixed(2)} s · ${current.state} · ${r.phase}/${r.transferStage ?? "none"} · swing ${current.support.swingFoot ?? "—"} · steps ${current.diagnostics.stepCount} · margin ${Number.isFinite(margin) ? margin.toFixed(3) : "—"} m · loads L ${Math.round(metrics.feet.left.forceN)} / R ${Math.round(metrics.feet.right.forceN)} N · overlap ${(current.diagnostics.maxSelfPenetrationM*1000).toFixed(2)} mm`;
           this.frame = frame;
         } };
         window.__RECOVERY_REPLAY__.present(0, 1);
@@ -199,6 +233,13 @@ try {
         await page.evaluate(frame => window.__RECOVERY_REPLAY__.present(frame, 1), entry.frame);
         await page.screenshot({ path: resolve(outputDirectory, `${fixture.id}-entry-${String(index).padStart(2, "0")}-${entry.recovery.phase}-${entry.recovery.transferStage ?? "none"}.png`) });
       }
+      const collisionFrame = trace.summary.worstCollision.frame;
+      const reviewFrames = [...new Set([...trace.reviewFrames, collisionFrame-1, collisionFrame, collisionFrame+1])]
+        .filter(frame => frame >= 0 && frame < trace.snapshots.length).sort((a, b) => a-b);
+      for (const frame of reviewFrames) {
+        await page.evaluate(frame => window.__RECOVERY_REPLAY__.present(frame, 1), frame);
+        await page.screenshot({ path: resolve(outputDirectory, `${fixture.id}-frame-${String(frame).padStart(4, "0")}.png`) });
+      }
       await page.close();
       await context.close();
       const videoSource = await video.path();
@@ -228,5 +269,6 @@ try {
 }
 if (!evidence.sourcesUnchanged) throw new Error("Controller or presentation source changed while recording; rerun before acceptance.");
 if (evidence.browserErrors.length) throw new Error(`Browser errors: ${evidence.browserErrors.join("; ")}`);
-if (evidence.scenarios.some(scenario => (!scenario.partialReview && !scenario.recovered) || !scenario.noDirectPelvisAssistance || !scenario.allRapierDynamic)) process.exitCode = 1;
+if (evidence.scenarios.some(scenario => (scenario.reviewKind === "recovery" && !scenario.partialReview && !scenario.recovered)
+  || !scenario.noDirectPelvisAssistance || !scenario.allRapierDynamic)) process.exitCode = 1;
 
