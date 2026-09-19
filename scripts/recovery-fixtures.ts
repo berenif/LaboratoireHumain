@@ -57,39 +57,58 @@ export function recoveryFixturePoses(fixture: RecoveryPoseFixture): Map<SegmentI
       if (!definition.parent) continue;
       let coordinates = ZERO;
       if (definition.id.endsWith("UpperArm")) coordinates = {
-        x: -0.10, y: 0, z: definition.id.startsWith("left") ? -0.04 : 0.04,
+        x: 0.10, y: 0, z: definition.id.startsWith("left") ? 0.04 : -0.04,
       };
       if (definition.role === "forearm") coordinates = { x: 0.20, y: 0, z: 0 };
-      if (definition.role === "thigh") coordinates = { x: -0.34, y: 0, z: 0 };
-      if (definition.role === "shin") coordinates = { x: 1.10, y: 0, z: 0 };
-      if (definition.role === "ankle") coordinates = { x: -0.76, y: 0, z: 0 };
+      // A flat sole requires knee = hip + dorsiflexion in the shared
+      // forward-flexion frames. Keep dorsiflexion below the anatomical 20°
+      // stop; the former 1.10/-0.76 fixture demanded 43.5° at this ankle.
+      if (definition.role === "thigh") coordinates = { x: 0.34, y: 0, z: 0 };
+      if (definition.role === "shin") coordinates = { x: 0.66, y: 0, z: 0 };
+      if (definition.role === "ankle") coordinates = { x: 0.32, y: 0, z: 0 };
       setChild(poses, definition.id, coordinates);
     }
   } else if (fixture.pose === "half-kneel") {
     poses = new Map();
-    poses.set("pelvis", { id: "pelvis", position: { x: 0, y: 0.53, z: 0 }, rotation: pitch(-0.15), linearVelocity: ZERO, angularVelocity: ZERO });
+    poses.set("pelvis", { id: "pelvis", position: ZERO, rotation: pitch(0), linearVelocity: ZERO, angularVelocity: ZERO });
     for (const definition of SEGMENTS) {
       if (!definition.parent) continue;
       const lead = definition.id.startsWith(leading);
       let coordinates = ZERO;
       if (definition.id === "lumbar") coordinates = fixture.support === "weak"
         ? { x: 0.07, y: 0, z: 0 }
-        : { x: 0.18, y: 0, z: leading === "left" ? -0.14 : 0.14 };
+        : { x: 0.10, y: 0, z: leading === "left" ? -0.14 : 0.14 };
       if (definition.id === "torso") coordinates = fixture.support === "weak"
         ? { x: 0.08, y: 0, z: 0 }
-        : { x: 0.20, y: 0, z: leading === "left" ? -0.16 : 0.16 };
+        : { x: 0.10, y: 0, z: leading === "left" ? -0.16 : 0.16 };
       if (definition.id.endsWith("UpperArm")) coordinates = {
-        x: -0.10, y: 0, z: definition.id.startsWith("left") ? -0.04 : 0.04,
+        x: 0.10, y: 0, z: definition.id.startsWith("left") ? 0.04 : -0.04,
       };
       if (definition.role === "forearm") coordinates = { x: 0.20, y: 0, z: 0 };
-      if (definition.id.endsWith("Thigh")) {
-        const mirror = definition.id.startsWith("left") ? 1 : -1;
-        coordinates = { x: lead ? 1.25 : 0.05, y: 0, z: mirror * (lead ? 0.36 : 0.14) };
-      }
-      if (definition.id.endsWith("Shin")) coordinates = { x: lead ? 0.268 : 2.30, y: 0, z: 0 };
-      if (definition.id.endsWith("Ankle")) coordinates = { x: lead ? -0.785 : 0.315, y: 0, z: 0 };
-      if (definition.id.endsWith("Forefoot")) coordinates = { x: lead ? -0.349 : 0.751, y: 0, z: 0 };
+      if (definition.role === "thigh") coordinates = { x: lead ? Math.PI / 2 : 0, y: 0, z: 0 };
+      if (definition.role === "shin") coordinates = { x: lead ? Math.PI / 2 : 1.85, y: 0, z: 0 };
+      if (definition.role === "ankle") coordinates = { x: lead ? 0 : -0.65, y: 0, z: 0 };
+      if (definition.role === "forefoot") coordinates = { x: lead ? 0 : -0.25, y: 0, z: 0 };
       setChild(poses, definition.id, coordinates);
+    }
+    // Match the leading sole to the actual convex trailing-shin surface. Hip
+    // flexion and knee flexion cancel, so the leading shin and sole stay level.
+    // This is fixture construction before integration, never a runtime body edit.
+    const trailing = leading === "left" ? "right" : "left";
+    const surfaceY = (id: SegmentId): number => Math.min(...SEGMENT_BY_ID.get(id)!.geometry.vertices.map(vertex => {
+      const pose = poses.get(id)!;
+      return worldPoint(pose.position, pose.rotation, vertex).y;
+    }));
+    const shinY = surfaceY(`${trailing}Shin`);
+    let lower = 1.4, upper = 1.8;
+    for (let iteration = 0; iteration < 48; iteration++) {
+      const flexion = (lower + upper) / 2;
+      setChild(poses, `${leading}Thigh`, { x: flexion, y: 0, z: 0 });
+      setChild(poses, `${leading}Shin`, { x: flexion, y: 0, z: 0 });
+      for (const suffix of ["Ankle", "Foot", "Forefoot"] as const) setChild(poses, `${leading}${suffix}`);
+      const soleY = Math.min(surfaceY(`${leading}Foot`), surfaceY(`${leading}Forefoot`));
+      if (soleY < shinY) lower = flexion;
+      else upper = flexion;
     }
   } else {
     poses = new Map();
@@ -101,16 +120,19 @@ export function recoveryFixturePoses(fixture: RecoveryPoseFixture): Map<SegmentI
       if (!definition.parent) continue;
       const near = definition.id.startsWith(fixture.side);
       let coordinates = ZERO;
+      // Shoulder/hip/ankle +X and shoulder +Z reversed in the shared
+      // half-turn frames. Convert the legacy pose signs once; the prone root
+      // remains horizontal, and the elbows keep positive anatomical flexion.
       if (definition.id.endsWith("UpperArm")) coordinates = {
-        x: fixture.pose === "supine" ? -0.30 : 0.12,
+        x: fixture.pose === "supine" ? 0.30 : -0.12,
         y: 0,
-        z: (definition.id.startsWith("left") ? -1 : 1) * (near ? 0.18 : 0.34),
+        z: (definition.id.startsWith("left") ? 1 : -1) * (near ? 0.18 : 0.34),
       };
       if (definition.role === "forearm") coordinates = { x: near ? 0.40 : 0.72, y: 0, z: 0 };
       if (definition.id.endsWith("Hand")) coordinates = { x: 0.28, y: 0, z: 0 };
-      if (definition.id.endsWith("Thigh")) coordinates = { x: near ? -0.18 : -0.34, y: 0, z: 0 };
+      if (definition.id.endsWith("Thigh")) coordinates = { x: near ? 0.18 : 0.34, y: 0, z: 0 };
       if (definition.id.endsWith("Shin")) coordinates = { x: near ? 0.30 : 0.55, y: 0, z: 0 };
-      if (definition.id.endsWith("Ankle")) coordinates = { x: -0.12, y: 0, z: 0 };
+      if (definition.id.endsWith("Ankle")) coordinates = { x: 0.12, y: 0, z: 0 };
       setChild(poses, definition.id, coordinates);
     }
   }
