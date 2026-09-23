@@ -1,3 +1,4 @@
+import { configureHumanoidWorld } from "./physics-settings";
 import RAPIER, {
   type Collider,
   type EventQueue,
@@ -12,7 +13,6 @@ import {
   REGION_TO_SEGMENT,
   SEGMENT_BY_ID,
   SEGMENTS,
-  TOTAL_MASS_KG,
 } from "../core/humanoid";
 import { flattenGeometryIndices, flattenGeometryVertices, lowestWorldPoint } from "../core/geometry";
 import { pickRegionProxies } from "../core/picking";
@@ -25,7 +25,6 @@ import type {
   DiagnosticsSnapshot,
   GrabCommand,
   GrabControlDiagnostics,
-  JointCoordinate,
   JointProfile,
   JointStateDiagnostics,
   MotionState,
@@ -37,6 +36,7 @@ import type {
   RendererMode,
   SegmentDefinition,
   SegmentId,
+  SegmentPose,
   SupportState,
   Vec3,
 } from "../core/types";
@@ -50,21 +50,25 @@ import {
   limbBodyClearance,
   segmentBodyClearance,
 } from "./limb-collisions";
-import type { ArticulatedSupportConstraint } from "./articulated-inertia";
+import { copyStandingContacts, standingChainDiagnostics } from "./standing-chain-diagnostics";
+import { NativeJointMotors } from "./native-joint-motors";
+import { LegTargetDynamics } from "./leg-target-dynamics";
 import {
   clampJointCoordinates,
   jointCoordinates,
+  jointCoordinateTargetError,
+  jointFrameAxesWorld,
   jointLimitError,
   jointLimitErrorMagnitude,
   jointRotationFromCoordinates,
 } from "./joint-coordinates";
 import {
-  applyCoupledJointMotors,
   type JointMotorCommand,
   type JointMotorResult,
 } from "./joint-motors";
 import {
   add,
+  angularVelocity,
   clamp,
   clampLength,
   cross,
@@ -96,12 +100,12 @@ import {
 const ZERO: Vec3 = { x: 0, y: 0, z: 0 };
 const UP: Vec3 = { x: 0, y: 1, z: 0 };
 const FORWARD: Vec3 = { x: 0, y: 0, z: 1 };
+const RIGHT: Vec3 = { x: 1, y: 0, z: 0 };
 const INITIAL_ROOT: Vec3 = { x: 0, y: HUMAN_PROPORTIONS.pelvis.centerHeightM, z: 0 };
 // Character colliders see both character and environment. The hook removes only
 // the explicit anatomical exclusions, leaving nonadjacent self-collision on.
 const CHARACTER_GROUP = (0x0001 << 16) | 0x0003;
 const ENVIRONMENT_GROUP = (0x0002 << 16) | 0x0001;
-const COORDINATES = ["x", "y", "z"] as const satisfies readonly JointCoordinate[];
 const SEGMENT_BOUNDING_RADII = new Map(SEGMENTS.map((definition) => [
   definition.id,
   Math.max(...definition.geometry.vertices.map(({ x, y, z }) => Math.hypot(x, y, z))),
@@ -184,6 +188,7 @@ function roleEffort(definition: SegmentDefinition): number {
 
 class EmbodiedCharacter implements CharacterController {
   private readonly world: World;
+  private readonly nativeMotors: NativeJointMotors;
   /** Kept under the historical name so existing QA probes can inspect handles. */
   private readonly ragdollBodies = new Map<SegmentId, RigidBody>();
   private readonly ragdollColliders = new Map<SegmentId, Collider>();
@@ -203,6 +208,7 @@ class EmbodiedCharacter implements CharacterController {
   private balanceData: BalanceDiagnostics | null = null;
   private kneeFlexion: number = HUMAN_PROPORTIONS.stance.neutralKneeFlexion;
   private recovery = new DynamicRecovery();
+  private recoveryRollArmMotorsActive = false;
   private readonly floorCollider: Collider;
   private heading: number;
   private readonly initialHeading: number;
@@ -232,10 +238,18 @@ class EmbodiedCharacter implements CharacterController {
   private fixedSteps = 0;
   private fallingTime = 0;
   private unsupportedTime = 0;
-  private grounded = true;
+  private balanceFall: DiagnosticsSnapshot["balanceFall"] = null;
+  private grounded = false;
   private uprightBlendTime = Number.POSITIVE_INFINITY;
   private readonly uprightBlendStart = new Map<SegmentId, Vec3>();
   private lastMotorResults = new Map<SegmentId, JointMotorResult>();
+  private standingTargets: ReadonlyMap<SegmentId, MutablePose> = new Map();
+  private standingCommands: readonly JointMotorCommand[] = [];
+  private swingCommandFoot: SegmentId | null = null;
+  private readonly swingCommandCoordinates = new Map<SegmentId, Vec3>();
+  private readonly legTargetDynamics = new LegTargetDynamics();
+  private standingMotorSampleTimeS = 0;
+  private standingMotorPelvis: Pick<SegmentPose, "id" | "position" | "rotation"> | null = null;
   private lastContacts = emptyRecoveryDiagnostics().contacts;
   private readonly runtimeErrors: string[] = [];
 
@@ -246,12 +260,11 @@ class EmbodiedCharacter implements CharacterController {
     this.heading = this.initialHeading;
     this.initialPosition = options.position ?? INITIAL_ROOT;
     this.world = new RAPIER.World({ x: 0, y: -9.81, z: 0 });
-    this.world.timestep = 1 / 60;
+    configureHumanoidWorld(this.world);
     // The room's fixed striker produces a sharp Rapier contact. Extra solver
     // iterations resolve that impulse across the bounded shoulder joints.
-    this.world.numSolverIterations = this.room ? 80 : 20;
-    this.world.numInternalPgsIterations = 4;
-    this.world.integrationParameters.maxCcdSubsteps = 4;
+    if (this.room) this.world.numSolverIterations = 80;
+    this.nativeMotors = new NativeJointMotors(this.world);
     this.eventQueue = new RAPIER.EventQueue(true);
     this.physicsHooks = {
       filterContactPair: (collider1, collider2) => {
@@ -291,8 +304,7 @@ class EmbodiedCharacter implements CharacterController {
       leftFoot: { ...this.poses.get("leftFoot")!.rotation },
       rightFoot: { ...this.poses.get("rightFoot")!.rotation },
     };
-    this.createDynamicAssembly(this.poses, !this.playground || this.playgroundConfig?.station === "flat"
-      || this.playgroundConfig?.station === "hurdles");
+    this.createDynamicAssembly(this.poses);
     this.readPhysicsPoses();
     this.recovery.observe(this.world, this.environmentColliders(), this.ragdollColliders, this.ragdollBodies, 1 / 60);
     this.lastContacts = this.recovery.diagnostics().contacts.map((contact) => ({ ...contact }));
@@ -424,6 +436,13 @@ class EmbodiedCharacter implements CharacterController {
     this.heading = this.initialHeading;
     this.kneeFlexion = HUMAN_PROPORTIONS.stance.neutralKneeFlexion;
     this.balanceData = null;
+    this.standingTargets = new Map();
+    this.standingCommands = [];
+    this.swingCommandFoot = null;
+    this.swingCommandCoordinates.clear();
+    this.legTargetDynamics.reset();
+    this.standingMotorSampleTimeS = 0;
+    this.standingMotorPelvis = null;
     this.paused = false;
     this.sequence = 0;
     this.simulationTime = 0;
@@ -435,13 +454,16 @@ class EmbodiedCharacter implements CharacterController {
     this.fixedSteps = 0;
     this.fallingTime = 0;
     this.unsupportedTime = 0;
-    this.grounded = true;
+    this.balanceFall = null;
+    this.grounded = false;
+    this.lastContacts = [];
     this.uprightBlendTime = Number.POSITIVE_INFINITY;
     this.uprightBlendStart.clear();
     this.lastMotorResults.clear();
     this.grabControlDiagnostics = emptyGrabDiagnostics();
     this.runtimeErrors.length = 0;
     this.recovery = new DynamicRecovery();
+    this.recoveryRollArmMotorsActive = false;
     this.poses = this.initialPose();
     this.previousPoses = this.clonePoses(this.poses);
     this.supportFeet = {
@@ -453,8 +475,7 @@ class EmbodiedCharacter implements CharacterController {
       rightFoot: { ...this.poses.get("rightFoot")!.rotation },
     };
     this.contactLoadPlan = { loads: [], requestedForce: ZERO, allocatedForce: ZERO, pressurePoint: ZERO };
-    this.createDynamicAssembly(this.poses, !this.playground || this.playgroundConfig?.station === "flat"
-      || this.playgroundConfig?.station === "hurdles");
+    this.createDynamicAssembly(this.poses);
     this.readPhysicsPoses();
     this.recovery.observe(this.world, this.environmentColliders(), this.ragdollColliders, this.ragdollBodies, 1 / 60);
     this.lastContacts = this.recovery.diagnostics().contacts.map((contact) => ({ ...contact }));
@@ -478,8 +499,19 @@ class EmbodiedCharacter implements CharacterController {
       recovery: this.isRecoveryState() ? this.recovery.diagnostics() : emptyRecoveryDiagnostics(),
       grabControl: { ...this.grabControlDiagnostics },
       physicsOwnership: "rapier-dynamic",
+      standingChain: this.isRecoveryState() || this.standingTargets.size === 0 ? null
+        : standingChainDiagnostics(this.poses, this.standingTargets, this.standingCommands,
+          this.step, this.heading, this.standingMotorSampleTimeS, this.simulationTime, this.lastContacts, this.standingMotorPelvis),
       jointDiagnostics,
       contactDiagnostics: {
+        standingPlan: this.isRecoveryState() ? undefined : {
+          requestedForce: { ...this.contactLoadPlan.requestedForce },
+          allocatedForce: { ...this.contactLoadPlan.allocatedForce },
+          pressurePoint: { ...this.contactLoadPlan.pressurePoint },
+          pressureFeasible: this.contactLoadPlan.pressureFeasible,
+          pressureForceResidualNm: this.contactLoadPlan.pressureForceResidualNm,
+        },
+        contacts: copyStandingContacts(this.lastContacts),
         count: this.lastContacts.length,
         loadBearingCount: loadBearing.length,
         totalNormalForceN: loadBearing.reduce((sum, contact) => sum + contact.forceN, 0),
@@ -514,6 +546,7 @@ class EmbodiedCharacter implements CharacterController {
       maxSelfPenetrationM: selfPenetration.depthM,
       selfPenetrationPair: selfPenetration.pair,
       stepCount: this.stepCount,
+      balanceFall: this.balanceFall ? { ...this.balanceFall, reasons: [...this.balanceFall.reasons] } : null,
       support: this.supportSnapshot(),
       fixedSteps: this.fixedSteps,
       droppedTimeMs: 0,
@@ -634,69 +667,34 @@ class EmbodiedCharacter implements CharacterController {
       for (const body of this.ragdollBodies.values()) body.wakeUp();
     }
     const pelvis = this.poses.get("pelvis")!;
-    const balanceGrab = this.activeGrab && this.grabControlDiagnostics.active ? {
-      ...this.activeGrab,
-      target: { ...this.grabControlDiagnostics.controlTarget },
-      targetVelocity: { ...this.grabControlDiagnostics.targetVelocity },
-    } : this.activeGrab;
-    const balance = this.balance.update({
-      dt,
-      poses: this.poses,
-      rootPosition: pelvis.position,
-      activeGrab: balanceGrab,
-      heading: this.heading,
-      contacts: this.floorCollider.isEnabled() ? this.lastContacts : [],
-      floorY: this.supportHeight(),
-      ...(this.playground ? { surfaceHeight: (x: number, z: number) =>
-        this.playground!.heightAt(x, z, pelvis.position.y + 0.2) } : {}),
-    });
-    this.balanceData = balance.diagnostics;
-    this.reactionOffset = balance.reactionOffset;
-    this.kneeFlexion = balance.kneeFlexion;
-    this.supportFeet = balance.supportFeet;
-    this.supportFootRotations = balance.supportFootRotations;
-    this.step = balance.step;
-    this.stepCount = balance.stepCount;
-    this.state = balance.state;
-    const excluded = new Set<SegmentId>();
-    const unavailableFoot = this.step?.elapsed !== undefined && this.step.elapsed >= 0
-      ? this.step.foot : this.activeGrab?.region === "leftFoot" || this.activeGrab?.region === "rightFoot"
-        ? this.activeGrab.region : null;
-    if (unavailableFoot) {
-      const side = unavailableFoot === "leftFoot" ? "left" : "right";
-      for (const id of [`${side}Ankle`, `${side}Foot`, `${side}Forefoot`] as SegmentId[]) excluded.add(id);
-    }
-    if (this.activeGrab?.region === "leftHand" || this.activeGrab?.region === "rightHand") {
-      const side = this.activeGrab.region === "leftHand" ? "left" : "right";
-      for (const id of [`${side}Forearm`, `${side}ForearmTwist`, `${side}Hand`] as SegmentId[]) excluded.add(id);
-    }
-    const loadContacts = this.floorCollider.isEnabled() ? this.lastContacts : [];
-    const loadAcceleration = this.activeGrab || this.step || this.stepCount > 0
-      ? balance.diagnostics.balanceAcceleration : ZERO;
-    this.contactLoadPlan = planContactLoads(loadContacts, balance.diagnostics.centerOfMass,
-      balance.diagnostics.centerOfMassVelocity,
-      { x: TOTAL_MASS_KG * loadAcceleration.x, y: TOTAL_MASS_KG * 9.81,
-        z: TOTAL_MASS_KG * loadAcceleration.z },
-      { excluded, frictionCoefficient: 1.2,
-        maxHorizontalForceN: TOTAL_MASS_KG * BALANCE_LIMITS.maxBalanceAccelerationMps2,
-        maxJointTorqueNm: minimumSupportTorqueLimit(loadContacts.filter(contact => !excluded.has(contact.segment))) });
-
-    const poseInput: UprightPoseInput = {
-      rootTranslation: balance.rootTarget,
-      heading: this.heading,
-      kneeFlexion: this.kneeFlexion,
-      reactionOffset: this.reactionOffset,
-      simulationTime: this.simulationTime,
-      activeGrab: this.activeGrab,
-      supportFeet: this.supportFeet,
-      supportFootRotations: this.supportFootRotations,
-      measuredPoses: this.poses,
-      step: this.step,
-    };
+    // Apply the bounded physical interaction once, then let balance respond to
+    // that same force and control target. Collision routing uses the current
+    // measured body before that impulse is applied; it never reconstructs or
+    // teleports the live assembly.
     if (this.activeGrab) {
       const body = this.ragdollBodies.get(this.activeGrab.segment);
       if (body) {
-        const reachableTarget = this.reachableGrabTarget(this.activeGrab, poseInput);
+        const previewInput: UprightPoseInput = {
+          rootTranslation: pelvis.position,
+          heading: this.heading,
+          kneeFlexion: this.kneeFlexion,
+          reactionOffset: this.reactionOffset,
+          simulationTime: this.simulationTime,
+          activeGrab: this.activeGrab,
+          supportFeet: this.supportFeet,
+          supportFootRotations: this.supportFootRotations,
+          measuredPoses: this.poses,
+          step: this.step,
+        };
+        // Hands are intentionally allowed to load the trunk through Rapier's
+        // real self-contact manifold. Routing them around the chest here made
+        // the grab spring and the motor target evade the very contact the
+        // physical interaction is meant to exercise. Feet retain the bounded
+        // collision-aware route used by playground manipulation.
+        const reachableTarget = this.activeGrab.region === "leftFoot"
+          || this.activeGrab.region === "rightFoot"
+          ? this.reachableGrabTarget(this.activeGrab, previewInput)
+          : this.activeGrab.target;
         this.grabControlDiagnostics = this.activeGrab.controller.apply(
           body,
           this.activeGrab.localAnchor,
@@ -710,17 +708,108 @@ class EmbodiedCharacter implements CharacterController {
       this.appliedGrabForceN = 0;
     }
 
-    const target = composeUprightPose(poseInput);
-    this.leanRadians = target.leanRadians;
-    this.lastMotorResults = new Map(applyCoupledJointMotors(
-      this.ragdollBodies,
-      this.motorCommands(target.poses),
+    // Keep the planning heading explicit. Rapier may rotate the pelvis, but
+    // that motion must not silently rotate an already committed world target.
+    const balanceGrab = this.activeGrab && this.grabControlDiagnostics.active ? {
+      ...this.activeGrab,
+      target: { ...this.grabControlDiagnostics.controlTarget },
+      targetVelocity: { ...this.grabControlDiagnostics.targetVelocity },
+    } : this.activeGrab;
+    const measuredContacts = this.floorCollider.isEnabled() ? this.lastContacts : [];
+    const balance = this.balance.update({
       dt,
-      {
-        supports: this.motorSupportConstraints(),
-        passiveResistance: true,
-      },
-    ));
+      poses: this.poses,
+      rootPosition: pelvis.position,
+      activeGrab: balanceGrab,
+      appliedGrabForce: this.activeGrab && this.grabControlDiagnostics.active
+        ? this.grabControlDiagnostics.force : ZERO,
+      heading: this.heading,
+      contacts: measuredContacts,
+      floorY: this.supportHeight(),
+      ...(this.playground ? { surfaceHeight: (x: number, z: number) =>
+        this.playground!.heightAt(x, z, pelvis.position.y + 0.2) } : {}),
+    });
+    this.balanceData = balance.diagnostics;
+    this.reactionOffset = balance.reactionOffset;
+    this.kneeFlexion = balance.kneeFlexion;
+    this.supportFeet = balance.supportFeet;
+    this.supportFootRotations = balance.supportFootRotations;
+    this.step = balance.step;
+    this.stepCount = balance.stepCount;
+    this.state = balance.state;
+
+    // Ground-reaction feedforward is authorized only by current measured sole
+    // contacts. The measured report retains every real patch, while the motor
+    // plan omits the actively travelling swing side so it can unload. Once the
+    // arc ends, measured touchdown is eligible again. This is bounded motor
+    // intent; actual measured loads alone authorize lift and touchdown.
+    const activeSwingSide = this.step && this.step.elapsed < this.step.duration
+      && this.step.elapsed >= 0
+      ? (this.step.foot === "leftFoot" ? "left" : "right") : null;
+    const loadContacts = measuredContacts.filter((contact) => {
+      const definition = SEGMENT_BY_ID.get(contact.segment);
+      const role = definition?.role;
+      return contact.loadBearing
+        && contact.forceN >= BALANCE_LIMITS.minimumContactForceN
+        && contact.normalY >= 0.65
+        && definition?.side !== activeSwingSide
+        && (role === "hindfoot" || role === "forefoot");
+    });
+    const poseInput: UprightPoseInput = {
+      rootTranslation: balance.rootTarget,
+      heading: this.heading,
+      kneeFlexion: this.kneeFlexion,
+      reactionOffset: this.reactionOffset,
+      simulationTime: this.simulationTime,
+      activeGrab: this.activeGrab,
+      supportFeet: this.supportFeet,
+      supportFootRotations: this.supportFootRotations,
+      measuredPoses: this.poses,
+      measuredLegFrame: true,
+      ...(this.activeGrab?.region === "leftHand" || this.activeGrab?.region === "rightHand"
+        ? { collisionPlanning: false as const } : {}),
+      step: this.step,
+    };
+    const target = composeUprightPose(poseInput);
+    const totalMassKg = [...this.ragdollBodies.values()]
+      .reduce((sum, body) => sum + body.mass(), 0);
+    const bodyWeightN = totalMassKg * 9.81;
+    const measuredLoadN = loadContacts.reduce((sum, contact) =>
+      sum + contact.forceN * contact.normalY, 0);
+    const supportedLoadN = Math.min(measuredLoadN, bodyWeightN);
+    const supportedFraction = bodyWeightN > 0 ? supportedLoadN / bodyWeightN : 0;
+    // Measured-frame legs keep the soles fixed; this bounded task supplies
+    // horizontal restoration even after release or an abandoned transfer.
+    const loadAcceleration = balance.diagnostics.balanceAcceleration;
+    const heightTarget = target.poses.get("pelvis")!.position.y;
+    const heightOmega = Math.sqrt(9.81 / Math.max(0.4,
+      balance.diagnostics.centerOfMass.y - this.supportHeight()));
+    // Critically damped height intent at the body's pendulum frequency. This
+    // is a contact-wrench request, realized solely by the existing capped joint
+    // motors on qualified measured contacts. The present reaction is feedback,
+    // not a capacity limit: scaling by a falling reaction would suppress the
+    // restoring request precisely when the body needs to regain support.
+    const verticalAcceleration = heightOmega * heightOmega * (heightTarget - pelvis.position.y)
+      - 2 * heightOmega * pelvis.linearVelocity.y;
+    const verticalIntent = clamp(totalMassKg * (9.81 + verticalAcceleration),
+      0, bodyWeightN * 1.35);
+    this.contactLoadPlan = planContactLoads(loadContacts, balance.diagnostics.centerOfMass,
+      balance.diagnostics.centerOfMassVelocity,
+      { x: totalMassKg * loadAcceleration.x * supportedFraction, y: verticalIntent,
+        z: totalMassKg * loadAcceleration.z * supportedFraction },
+      { frictionCoefficient: 1.2,
+        projectMeasuredPressure: true,
+        maxHorizontalForceN: totalMassKg * BALANCE_LIMITS.maxBalanceAccelerationMps2 * supportedFraction,
+        maxJointTorqueNm: minimumSupportTorqueLimit(loadContacts) });
+
+    this.leanRadians = target.leanRadians;
+    this.standingTargets = target.poses;
+    this.standingCommands = this.motorCommands(target.poses);
+    this.standingMotorSampleTimeS = this.simulationTime - dt;
+    this.standingMotorPelvis = { id: "pelvis", position: { ...pelvis.position }, rotation: { ...pelvis.rotation } };
+    this.lastMotorResults = this.nativeMotors.apply(
+      this.ragdollBodies, this.jointsByChild, this.standingCommands,
+    );
     this.world.step(this.eventQueue, this.physicsHooks);
     this.readPhysicsPoses();
     this.observeContacts(dt);
@@ -739,6 +828,15 @@ class EmbodiedCharacter implements CharacterController {
       || this.poses.get("pelvis")!.position.y < 0.56
       || this.unsupportedTime > supportLossLimit;
     if ((this.activeGrab && balance.shouldFall && this.simulationTime > 0.25) || physicalFall) {
+      this.balanceFall = { timeS: this.simulationTime,
+        reasons: [
+          ...(this.currentTorsoLean() > 1.25 ? ["torso-lean"] : []),
+          ...(this.poses.get("pelvis")!.position.y < 0.56 ? ["pelvis-height"] : []),
+          ...(this.unsupportedTime > supportLossLimit ? ["support-loss"] : []),
+          ...(this.activeGrab && balance.shouldFall && this.simulationTime > 0.25 ? ["capture-instability"] : []),
+        ], pelvisHeightM: this.poses.get("pelvis")!.position.y,
+        torsoLeanRadians: this.currentTorsoLean(), unsupportedTimeS: this.unsupportedTime,
+        supportLossLimitS: supportLossLimit };
       this.activateRagdoll(balance.fallDirection);
     }
   }
@@ -758,9 +856,20 @@ class EmbodiedCharacter implements CharacterController {
         : this.recovery.diagnostics().phase === "settle" ? 0.01 : 0.004);
     }
     const result = this.recovery.apply(this.ragdollBodies, dt);
-    // Keep the actual recovery actuator evidence. Clearing this map used to
-    // report every target as the measured pose and every recovery torque as
-    // zero, including while protective and rising motors were active.
+    const rollArmCommands = this.recovery.rollArmMotorCommands();
+    if (rollArmCommands.length) {
+      const nativeResults = this.nativeMotors.apply(
+        this.ragdollBodies, this.jointsByChild, rollArmCommands,
+      );
+      this.recovery.recordNativeRollArmResults(nativeResults);
+      this.recoveryRollArmMotorsActive = true;
+    } else if (this.recoveryRollArmMotorsActive) {
+      this.nativeMotors.disable(this.jointsByChild);
+      this.recoveryRollArmMotorsActive = false;
+    }
+    // Keep recovery actuator evidence; native results identify themselves as
+    // requests because Rapier does not expose the delivered motor impulse.
+    // Clearing this map would report measured poses and zero recovery torque.
     this.lastMotorResults = new Map(this.recovery.motorResults());
     for (const [id, passive] of this.recovery.passiveTorques()) {
       const definition = SEGMENT_BY_ID.get(id)!;
@@ -781,7 +890,17 @@ class EmbodiedCharacter implements CharacterController {
       });
     }
     this.state = result.state;
-    this.world.step(this.eventQueue, this.physicsHooks);
+    // Recovery can couple a fast protective-arm reversal to the full trunk in
+    // one 60 Hz step. Extra internal passes keep the native joint anchors
+    // coherent for that high-gain step; restore standing's configured budget
+    // immediately afterward so ordinary balance cost and motion are unchanged.
+    const standingPgsIterations = this.world.numInternalPgsIterations;
+    this.world.numInternalPgsIterations = Math.max(standingPgsIterations, 32);
+    try {
+      this.world.step(this.eventQueue, this.physicsHooks);
+    } finally {
+      this.world.numInternalPgsIterations = standingPgsIterations;
+    }
     this.readPhysicsPoses();
     this.observeContacts(dt);
     const struck = this.striker?.afterStep(this.ragdollColliders) ?? false;
@@ -804,6 +923,8 @@ class EmbodiedCharacter implements CharacterController {
       add(horizontal(direction), scale(horizontal(pelvisVelocity), 0.12)),
       rotate(quatFromAxisAngle(UP, this.heading), FORWARD),
     );
+    this.nativeMotors.disable(this.jointsByChild);
+    this.recoveryRollArmMotorsActive = false;
     this.state = "falling";
     this.recovery.reset(this.heading, fallDirection);
     this.balanceData = null;
@@ -818,6 +939,10 @@ class EmbodiedCharacter implements CharacterController {
 
   /** Recovery changes motor intent only; the continuous Rapier state remains authoritative. */
   private finishRecovery(): void {
+    if (this.recoveryRollArmMotorsActive) {
+      this.nativeMotors.disable(this.jointsByChild);
+      this.recoveryRollArmMotorsActive = false;
+    }
     if (this.room) {
       this.protocolRecoveries += 1;
       this.protocolMessage = "Rectification : essai en cours";
@@ -837,7 +962,7 @@ class EmbodiedCharacter implements CharacterController {
     this.kneeFlexion = HUMAN_PROPORTIONS.stance.neutralKneeFlexion;
     this.step = null;
     this.state = "upright";
-    this.grounded = true;
+    this.grounded = this.lastContacts.some(contact => contact.loadBearing);
     this.unsupportedTime = 0;
     this.uprightBlendTime = 0;
     this.uprightBlendStart.clear();
@@ -854,36 +979,11 @@ class EmbodiedCharacter implements CharacterController {
     this.balanceData = null;
   }
 
-  /** Use only the measured stance soles; a moving swing foot remains unconstrained. */
-  private motorSupportConstraints(): ArticulatedSupportConstraint[] {
-    if (!this.step || this.step.elapsed < 0) return [];
-    const swingSide = this.step.foot === "leftFoot" ? "left" : "right";
-    const supportBySide = new Map<"left" | "right", typeof this.lastContacts[number]>();
-    for (const contact of this.lastContacts) {
-      const definition = SEGMENT_BY_ID.get(contact.segment);
-      if (!contact.loadBearing || !definition?.side || definition.side === swingSide
-        || (definition.role !== "hindfoot" && definition.role !== "forefoot")) {
-        continue;
-      }
-      const existing = supportBySide.get(definition.side);
-      if (!existing || contact.forceN > existing.forceN) {
-        supportBySide.set(definition.side, contact);
-      }
-    }
-    // One sticking point per loaded side captures the translational ground
-    // reaction without pretending that unilateral contacts weld every sole
-    // and toe rotational degree of freedom to the floor.
-    return [...supportBySide.values()].map((contact) => ({
-      segment: contact.segment,
-      points: [{ ...contact.point }],
-      // Tangential sticking supplies the horizontal reaction seen by the
-      // floating-root motor solve. The unilateral normal is deliberately left
-      // to Rapier so prediction cannot turn a sole into a vertical weld.
-      directions: [{ x: 1, y: 0, z: 0 }, { x: 0, y: 0, z: 1 }],
-    }));
-  }
-
   private motorCommands(targets: ReadonlyMap<SegmentId, MutablePose>): JointMotorCommand[] {
+    const swingFoot = this.step && this.step.elapsed >= 0 ? this.step.foot : null;
+    const movingSide = swingFoot ? swingFoot === "leftFoot" ? "left" : "right" : null;
+    if (swingFoot !== this.swingCommandFoot) this.swingCommandCoordinates.clear();
+    this.swingCommandFoot = swingFoot;
     const blend = smooth01(clamp(this.uprightBlendTime / 0.55, 0, 1));
     const strength = this.uprightBlendTime === Number.POSITIVE_INFINITY ? 1 : 0.12 + 0.88 * blend;
     if (this.uprightBlendTime !== Number.POSITIVE_INFINITY) {
@@ -899,11 +999,22 @@ class EmbodiedCharacter implements CharacterController {
       const parentTarget = targets.get(definition.parent);
       const childTarget = targets.get(definition.id);
       if (!parentTarget || !childTarget) continue;
-      const relative = quatMultiply(quatInverse(parentTarget.rotation), childTarget.rotation);
-      const desired = clampJointCoordinates(
-        jointCoordinates({ x: 0, y: 0, z: 0, w: 1 }, relative, definition.jointProfile),
-        definition.jointProfile,
-      );
+      // Every dynamic parent can lag the commanded world pose. Express the
+      // child target against its measured parent so local motor coordinates
+      // still aim for the solved world orientation instead of compounding the
+      // ancestor's current tracking error down the chain.
+      const legJoint = ["thigh", "shin", "ankle", "hindfoot", "forefoot"].includes(definition.role);
+      // A solved leg is one kinematic chain. Re-expressing every distal target
+      // against a different measured parent changes its FK endpoint. Only the
+      // hip uses the measured pelvis that was supplied to the leg solver.
+      const parentRotation = legJoint
+        ? definition.parent === "pelvis"
+          ? this.poses.get("pelvis")!.rotation : parentTarget.rotation
+        : this.poses.get(definition.parent)?.rotation ?? parentTarget.rotation;
+      const relative = quatMultiply(quatInverse(parentRotation), childTarget.rotation);
+      const rawDesired = { ...jointCoordinates({ x: 0, y: 0, z: 0, w: 1 }, relative,
+        definition.jointProfile) };
+      const desired = clampJointCoordinates(rawDesired, definition.jointProfile);
       const start = this.uprightBlendStart.get(definition.id);
       const coordinates = start ? {
         x: start.x + (desired.x - start.x) * blend,
@@ -911,6 +1022,38 @@ class EmbodiedCharacter implements CharacterController {
         z: start.z + (desired.z - start.z) * blend,
       } : desired;
       const gains = roleGains(definition);
+      let feedforwardWorld = this.gravityCompensation(definition);
+      if (legJoint && definition.side === movingSide) {
+        const previous = this.swingCommandCoordinates.get(definition.id);
+        if (previous) {
+          // Damping tracks the moving trajectory's velocity instead of
+          // opposing it. This intent shares the same native torque ceiling
+          // with posture and gravity; it adds no force or actuator capacity.
+          const delta = jointCoordinateTargetError(previous, coordinates, definition.jointProfile);
+          const basis = jointFrameAxesWorld(this.poses.get(definition.parent)!.rotation, definition.jointProfile);
+          for (const axis of definition.jointProfile.axes) {
+            const motionTorque = clamp(gains.damping * delta[axis.coordinate] / this.world.timestep,
+              -axis.maxMotorTorqueNm, axis.maxMotorTorqueNm);
+            feedforwardWorld = add(feedforwardWorld, scale(basis[axis.coordinate], motionTorque));
+          }
+        }
+        this.swingCommandCoordinates.set(definition.id, { ...coordinates });
+      }
+      if (definition.role === "thigh" && this.contactLoadPlan.loads.length) {
+        const pelvis = this.poses.get("pelvis")!;
+        const measuredTotal = this.contactLoadPlan.loads.reduce((sum, load) => sum + load.measuredForceN, 0);
+        const measuredSide = this.contactLoadPlan.loads.reduce((sum, load) => sum
+          + (SEGMENT_BY_ID.get(load.segment)?.side === definition.side ? load.measuredForceN : 0), 0);
+        // Restore the virtual pelvis posture through the loaded hips, while
+        // measured-frame leg IK keeps each sole's world constraint intact.
+        // The equal/opposite parent reaction supplies the restoring moment;
+        // this is still native joint actuation under the same torque ceilings.
+        const postureError = angularVelocity(pelvis.rotation, targets.get("pelvis")!.rotation, 1);
+        const parentTorque = clampLength(add(scale(postureError, 250),
+          scale(pelvis.angularVelocity, -30)), 100);
+        const share = measuredTotal > 0 ? measuredSide / measuredTotal : 0;
+        feedforwardWorld = add(feedforwardWorld, scale(parentTorque, -share));
+      }
       commands.push({
         id: definition.id,
         targetLocalRotation: jointRotationFromCoordinates(coordinates, definition.jointProfile),
@@ -918,10 +1061,19 @@ class EmbodiedCharacter implements CharacterController {
         damping: gains.damping,
         strengthScale: strength,
         effortScale: roleEffort(definition),
-        feedforwardWorld: this.gravityCompensation(definition),
+        feedforwardWorld,
       });
     }
-    return commands;
+    // Differentiate the final, joint-limited command chain in the same measured
+    // pelvis frame used by actuation. Native motors combine this inertial intent
+    // with posture/gravity and retain their existing per-axis torque ceilings.
+    const inertialTorques = this.legTargetDynamics.sample(
+      this.poses.get("pelvis")!, commands, this.ragdollBodies, movingSide, this.world.timestep,
+    );
+    return commands.map((command) => {
+      const inertia = inertialTorques.get(command.id);
+      return inertia ? { ...command, feedforwardWorld: add(command.feedforwardWorld ?? ZERO, inertia) } : command;
+    });
   }
 
   /**
@@ -950,9 +1102,12 @@ class EmbodiedCharacter implements CharacterController {
       if (!body) continue;
       torque = add(torque, cross(
         sub(body.worldCom(), jointWorld),
-        { x: 0, y: candidate.massKg * 9.81, z: 0 },
+        { x: 0, y: body.mass() * 9.81, z: 0 },
       ));
     }
+    const loadFeedback = this.step !== null && this.step.elapsed < 0
+      && ["thigh", "shin", "ankle", "hindfoot", "forefoot"].includes(jointDefinition.role);
+    const measuredTotal = this.contactLoadPlan.loads.reduce((sum, support) => sum + support.measuredForceN, 0);
     for (const support of this.contactLoadPlan.loads) {
       let ancestor: SegmentId | null = support.segment;
       let belowJoint = false;
@@ -965,13 +1120,22 @@ class EmbodiedCharacter implements CharacterController {
         sub(support.point, jointWorld),
         scale(support.plannedForce, -1),
       ));
+      if (loadFeedback && measuredTotal > 0) {
+        // Force-error feedback changes joint intent, never a body's force.
+        // Normalize only this redistribution request to the allocated normal
+        // budget. The absolute measured readiness gate is unchanged. Errors
+        // sum to zero: shorten an overloaded chain, extend an underloaded one.
+        const normalError = support.measuredForceN / measuredTotal
+          * this.contactLoadPlan.allocatedForce.y - support.plannedForce.y;
+        torque = add(torque, cross(sub(support.point, jointWorld),
+          { x: 0, y: normalError, z: 0 }));
+      }
     }
     return torque;
   }
 
   private createDynamicAssembly(
     seed: ReadonlyMap<SegmentId, MutablePose>,
-    initiallySleeping = false,
   ): void {
     if (this.ragdollBodies.size || this.ragdollJoints.length) {
       throw new Error("DYNAMIC_ASSEMBLY_ALREADY_EXISTS");
@@ -985,10 +1149,9 @@ class EmbodiedCharacter implements CharacterController {
           .setRotation(pose.rotation)
           .setLinvel(pose.linearVelocity.x, pose.linearVelocity.y, pose.linearVelocity.z)
           .setAngvel(pose.angularVelocity)
-          .setLinearDamping(0.38)
+          .setLinearDamping(0)
           .setAngularDamping(0.52)
-          .setCanSleep(true)
-          .setSleeping(initiallySleeping)
+          .setCanSleep(false)
           .setCcdEnabled(true)
           .setSoftCcdPrediction(
             definition.role === "ankle" || definition.role === "hindfoot" || definition.role === "forefoot"
@@ -1000,8 +1163,9 @@ class EmbodiedCharacter implements CharacterController {
         convexCollider(definition)
           .setMass(definition.massKg)
           .setFriction(
-            definition.role === "hindfoot" || definition.role === "forefoot" ? 4 : 1.2,
+            definition.role === "hindfoot" || definition.role === "forefoot" ? 4 : 0.45,
           )
+          .setFrictionCombineRule(RAPIER.CoefficientCombineRule.Min)
           .setRestitution(0.02)
           .setContactSkin(0.004)
           .setCollisionGroups(CHARACTER_GROUP)
@@ -1020,6 +1184,14 @@ class EmbodiedCharacter implements CharacterController {
       const parent = this.ragdollBodies.get(definition.parent)!;
       const child = this.ragdollBodies.get(definition.id)!;
       const xHinge = profile.kind === "hinge" && profile.axes[0]?.coordinate === "x";
+      // Absent coordinates are bilateral structural locks, not zero-width
+      // unilateral limit rows. Under the full body's load a [0, 0] limit on
+      // a spherical joint can creep; the subtalar foot then gains a false
+      // sagittal hinge that bypasses the ankle motor entirely.
+      const lockedMask = RAPIER.JointAxesMask.LinX | RAPIER.JointAxesMask.LinY | RAPIER.JointAxesMask.LinZ
+        | (profile.axes.some(axis => axis.coordinate === "x") ? 0 : RAPIER.JointAxesMask.AngX)
+        | (profile.axes.some(axis => axis.coordinate === "y") ? 0 : RAPIER.JointAxesMask.AngY)
+        | (profile.axes.some(axis => axis.coordinate === "z") ? 0 : RAPIER.JointAxesMask.AngZ);
       const data = xHinge
         ? RAPIER.JointData.revoluteWithAxes(
           profile.parentFrame.anchor,
@@ -1027,38 +1199,17 @@ class EmbodiedCharacter implements CharacterController {
           localAxis(profile),
           rotate(profile.childFrame.rotation, { x: 1, y: 0, z: 0 }),
         )
-        : RAPIER.JointData.spherical(profile.parentFrame.anchor, profile.childFrame.anchor);
+         : RAPIER.JointData.generic(
+          profile.parentFrame.anchor, profile.childFrame.anchor,
+          localAxis(profile), lockedMask,
+        );
       const joint = this.world.createImpulseJoint(data, parent, child, false);
       joint.setLocalFrame1(profile.parentFrame.anchor, profile.parentFrame.rotation);
       joint.setLocalFrame2(profile.childFrame.anchor, profile.childFrame.rotation);
       joint.setContactsEnabled(false);
-      if (xHinge) {
-        adapter.constrain(joint, profile);
-      } else {
-        for (const coordinate of COORDINATES) {
-          const specified = profile.axes.find((axis) => axis.coordinate === coordinate);
-          adapter.constrainAxis(joint, specified ?? {
-            coordinate,
-            minRadians: 0,
-            maxRadians: 0,
-            passiveStiffnessNmPerRad: 0,
-            dampingNmsPerRad: 0,
-            maxMotorTorqueNm: 0,
-          });
-        }
-      }
+      adapter.constrain(joint, profile);
       this.ragdollJoints.push(joint);
       this.jointsByChild.set(definition.id, joint);
-    }
-    if (initiallySleeping) {
-      // Build floor/contact manifolds at initialization without producing a
-      // visible settling step, then park the solved dynamic island.  The tiny
-      // timestep keeps the initialized pose within replay precision.
-      const timestep = this.world.timestep;
-      this.world.timestep = 1e-6;
-      this.world.step(this.eventQueue, this.physicsHooks);
-      this.world.timestep = timestep;
-      for (const body of this.ragdollBodies.values()) body.sleep();
     }
   }
 
@@ -1129,6 +1280,8 @@ class EmbodiedCharacter implements CharacterController {
       const rotation = body.rotation();
       this.poses.set(definition.id, {
         id: definition.id,
+        massKg: body.mass(),
+        centerOfMass: { ...body.worldCom() },
         position: { x: translation.x, y: translation.y, z: translation.z },
         rotation: { x: rotation.x, y: rotation.y, z: rotation.z, w: rotation.w },
         linearVelocity: { ...body.linvel() },
@@ -1169,6 +1322,8 @@ class EmbodiedCharacter implements CharacterController {
         targetCoordinates: motor?.targetCoordinates ?? coordinates,
         limitError: error,
         limitErrorMagnitudeRad: jointLimitErrorMagnitude(coordinates, definition.jointProfile),
+        motorTorqueWorld: { ...(motor?.torqueWorld ?? ZERO) },
+        motorTorqueSource: motor?.torqueSource ?? "applied-impulse",
         motorTorqueNm: length(motor?.torqueWorld ?? ZERO),
         motorSaturationRatio: motor?.saturationRatio ?? 0,
       });
@@ -1179,6 +1334,8 @@ class EmbodiedCharacter implements CharacterController {
   private clonePoses(source: ReadonlyMap<SegmentId, MutablePose>): Map<SegmentId, MutablePose> {
     return new Map([...source].map(([id, pose]) => [id, {
       id,
+      massKg: pose.massKg,
+      centerOfMass: pose.centerOfMass ? { ...pose.centerOfMass } : undefined,
       position: { ...pose.position },
       rotation: { ...pose.rotation },
       linearVelocity: { ...pose.linearVelocity },
@@ -1192,7 +1349,7 @@ class EmbodiedCharacter implements CharacterController {
     }
     const planted = (["left", "right"] as const).flatMap((side) => {
       const foot = `${side}Foot` as const;
-      if ((this.step?.foot === foot && this.step.elapsed >= 0) || this.activeGrab?.region === foot) return [];
+      // A requested swing/grab is intent, not evidence that a real contact unloaded.
       const pose = this.poses.get(foot);
       const definition = SEGMENT_BY_ID.get(foot);
       const floorY = pose && this.playground

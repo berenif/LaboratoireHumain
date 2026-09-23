@@ -12,10 +12,17 @@ import {
 } from "./types";
 
 const identity = Object.freeze({ x: 0, y: 0, z: 0, w: 1 });
-// The sagittal joint frame faces toward the back. Positive flexion therefore
-// moves an upper arm/thigh forward and folds a forearm toward the front, while
-// the unchanged knee frame folds the shin behind the knee.
-const forwardFlexionFrame = Object.freeze({ x: 0, y: 1, z: 0, w: 0 });
+/** Body +X right, +Y up, +Z forward. Positive anatomical flexion at the
+ * shoulder, elbow and hip rotates a hanging limb toward +Z. A shared 180-degree
+ * Y basis in BOTH joint frames reverses X and Z without changing the rest pose.
+ * Knees keep +X: knee flexion moves the distal leg backward, unlike the elbow.
+ */
+export const BODY_FRAME = Object.freeze({
+  right: Object.freeze({ x: 1, y: 0, z: 0 }),
+  up: Object.freeze({ x: 0, y: 1, z: 0 }),
+  forward: Object.freeze({ x: 0, y: 0, z: 1 }),
+});
+const forwardFlexionFrame: Quat = Object.freeze({ x: 0, y: 1, z: 0, w: 0 });
 const radians = (degrees: number): number => degrees * Math.PI / 180;
 
 /** Adult body dimensions in metres, shared by anatomy, pose targets, and tests. */
@@ -39,11 +46,13 @@ export const HUMAN_PROPORTIONS = {
     lumbarAnchorYM: -0.15,
     neckAnchorYM: 0.15,
     shoulderInnerAnchorXM: 0.10,
-    shoulderAnchorXM: 0.225,
+    shoulderAnchorXM: 0.25,
     shoulderAnchorYM: 0.10,
   },
   shoulderGirdle: {
-    halfLengthM: 0.0625,
+    // Inner socket at 0.10 m plus two half-lengths puts the humeral head
+    // at 0.25 m, clear of the ribcage without disabling arm/trunk contact.
+    halfLengthM: 0.075,
     radiusYM: 0.045,
     radiusZM: 0.055,
   },
@@ -169,9 +178,7 @@ const shoulderGirdleGeometry = createEllipsoidGeometry(
 );
 const upperArmGeometry = createEllipsoidGeometry(
   { x: P.arm.upperRadiusM, y: upperArmHalfLength, z: P.arm.upperRadiusM },
-  // The proximal end narrows inside the shoulder housing. This is the single
-  // shared surface for Rapier, both renderers, and picking.
-  { radialSegments: 10, latitudeSegments: 7, bottomScale: 0.78, topScale: 0.45 },
+  { radialSegments: 10, latitudeSegments: 7, bottomScale: 0.78, topScale: 1.05 },
 );
 const proximalForearmGeometry = createEllipsoidGeometry(
   { x: P.arm.forearmRadiusM, y: proximalForearmHalfLength, z: P.arm.forearmRadiusM },
@@ -276,6 +283,9 @@ const rawSegments: SegmentDefinition[] = [
     const handId = `${side}Hand` as SegmentId;
     const handRegion = handId as RegionId;
     const shoulderYaw: [number, number] = side === "left" ? [-55, 65] : [-65, 55];
+    // Canonical forward-flexion frames reverse Z as well as X. These scalar
+    // intervals represent the same physical limits as main's identity-frame
+    // [-100, 20] / [-20, 100], not a second lateral sign correction.
     const shoulderLateral: [number, number] = side === "left" ? [-20, 100] : [-100, 20];
     const wristDeviation: [number, number] = side === "left" ? [-15, 30] : [-30, 15];
     return [
@@ -292,11 +302,15 @@ const rawSegments: SegmentDefinition[] = [
           "multi-axis",
           { x: sign * P.torso.shoulderInnerAnchorXM, y: P.torso.shoulderAnchorYM, z: 0 },
           { x: -sign * P.shoulderGirdle.halfLengthM, y: 0, z: 0 },
-          [axis("x", -10, 30, 35, 3, 32), axis("y", -15, 20, 30, 2.5, 28), axis("z", -8, 20, 35, 3, 30)],
+          [axis("x", -10, 30, 35, 3, 32),
+            axis("y", side === "left" ? -15 : -20, side === "left" ? 20 : 15, 30, 2.5, 28),
+            axis("z", side === "left" ? -20 : -8, side === "left" ? 8 : 20, 35, 3, 30)],
         ),
       }),
       segment({
         id: upperId, parent: girdleId, region: null, side, role: "upper-arm", massKg: 1.8,
+        // Main's wider shoulder socket already removes the axillary overlap.
+        // Preserve that shared geometry instead of additionally clipping the arm.
         geometry: upperArmGeometry,
         localOffset: { x: sign * P.shoulderGirdle.halfLengthM, y: -upperArmHalfLength, z: 0 },
         restLocalRotation: identity,
@@ -402,6 +416,7 @@ const rawSegments: SegmentDefinition[] = [
           { x: 0, y: -shinHalfLength, z: 0 },
           { x: 0, y: 0, z: 0 },
           [axis("x", -45, 20, 120, 7, 110)],
+          forwardFlexionFrame,
         ),
       }),
       segment({
@@ -431,6 +446,7 @@ const rawSegments: SegmentDefinition[] = [
           { x: 0, y: -0.015, z: P.foot.forefootJointZM - P.foot.hindfootCenterZM },
           { x: 0, y: -0.015, z: P.foot.forefootJointZM - P.foot.forefootCenterZM },
           [axis("x", -20, 45, 45, 3, 35)],
+          forwardFlexionFrame,
         ),
       }),
     ];
@@ -438,7 +454,8 @@ const rawSegments: SegmentDefinition[] = [
 ];
 
 // Every direct joint pair is excluded, plus the non-adjacent pairs whose
-// simplified joint housings intentionally overlap around shoulders and ankles.
+// simplified joint housings intentionally overlap around ankles. Upper-arm vs
+// ribcage remains enabled: only the arm's direct shoulder-girdle joint is excluded.
 const exclusionSets = new Map<SegmentId, Set<SegmentId>>(
   rawSegments.map(({ id, collisionExclusions }) => [id, new Set(collisionExclusions)]),
 );

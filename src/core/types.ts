@@ -114,6 +114,9 @@ export interface SegmentDefinition {
 
 export interface SegmentPose {
   id: SegmentId;
+  /** Present on every simulated pose; absent only on geometric target fixtures. */
+  massKg?: number;
+  centerOfMass?: Vec3;
   position: Vec3;
   rotation: Quat;
   linearVelocity: Vec3;
@@ -165,6 +168,8 @@ export interface SupportingContact {
   loadBearing: boolean;
   /** Raw Rapier normal impulse divided by the step, before sleep equilibrium. */
   measuredForceN?: number;
+  /** World-space normal-impulse weighted pressure from measured contacts. */
+  measuredPressurePoint?: Vec3;
   sleepingEquilibrium?: boolean;
 }
 export interface SupportLoadDiagnostics {
@@ -236,6 +241,11 @@ export interface BalanceStateDiagnostics {
   centerOfMass: Vec3; centerOfMassVelocity: Vec3; capturePoint: Vec3; supportCenter: Vec3;
   supportingFeet: ("leftFoot" | "rightFoot")[]; supportMarginM: number; instabilitySeconds: number;
   recoveryCapacityM: number; externalForce: Vec3; balanceAcceleration: Vec3; stepTarget: Vec3 | null;
+  candidateValidity?: { valid: boolean; reason: string | null; transferForecastReason?: string | null;
+    forecast?: { capturePoint: Vec3; horizonS: number; pressureFeasible: boolean } };
+  transferAgeS?: number;
+  transferReadyAgeS?: number;
+  transferCaptureMarginM?: number | null;
 }
 export interface JointStateDiagnostics {
   segment: SegmentId;
@@ -243,17 +253,85 @@ export interface JointStateDiagnostics {
   targetCoordinates: Vec3;
   limitError: Vec3;
   limitErrorMagnitudeRad: number;
+  /** Native-request is a bounded request, not a delivered solver impulse. */
+  motorTorqueSource?: "applied-impulse" | "native-request";
+  motorTorqueWorld: Vec3;
   motorTorqueNm: number;
   motorSaturationRatio: number;
 }
 export interface ContactStateDiagnostics {
+  standingPlan?: { requestedForce: Vec3; allocatedForce: Vec3; pressurePoint: Vec3;
+    pressureFeasible?: boolean; pressureForceResidualNm?: number };
+  /** Copied, measured contacts in standing as well as recovery. */
+  contacts: SupportingContact[];
   count: number;
   loadBearingCount: number;
   totalNormalForceN: number;
   supportingSegments: SegmentId[];
   supportLoads: SupportLoadDiagnostics[];
 }
+/** Read-only world-space targets and FK reconstruction, never physics state. */
+export interface StandingChainPose {
+  id: SegmentId;
+  position: Vec3;
+  rotation: Quat;
+  forward: Vec3;
+}
+export interface StandingLegReach {
+  requestedAnkle: Vec3;
+  radiusM: number;
+  distanceM: number;
+  excessM: number;
+  /** Radial reach only; does not certify joint limits or load-bearing contact. */
+  radiallyReachable: boolean;
+}
+export interface StandingChainDiagnostics {
+  frame: "world-hindfoot-center";
+  motorSampleTimeS: number;
+  physicalSampleTimeS: number;
+  reconstruction: "local-commands-on-sampled-physical-pelvis";
+  pelvis: StandingChainPose | null;
+  desiredPelvis: StandingChainPose | null;
+  motorInputPelvis: StandingChainPose | null;
+  /** Actual shin-to-ankle joint, not the hindfoot centre or ankle-to-foot joint. */
+  stanceAnkle: Vec3 | null;
+  supportPoints: Vec3[];
+  supportPolygon: Vec3[];
+  step: {
+    phase?: "unloading" | "swing" | "touchdown" | "loading";
+    foot: "leftFoot" | "rightFoot";
+    from: Vec3;
+    to: Vec3;
+    requested: Vec3;
+    rebased: Vec3;
+    heading: number;
+    elapsedS: number;
+    durationS: number;
+  } | null;
+  legs: Array<{
+    side: "left" | "right";
+    hip: Vec3;
+    landingReach: StandingLegReach | null;
+    segments: Array<{
+      id: SegmentId;
+      physical: StandingChainPose | null;
+      desired: StandingChainPose | null;
+      commanded: StandingChainPose | null;
+      targetLocalRotation: Quat | null;
+      desiredErrorM: number | null;
+      commandFrameErrorM: number | null;
+    }>;
+  }>;
+  armForward: Array<{
+    id: SegmentId;
+    physical: StandingChainPose | null;
+    desired: StandingChainPose | null;
+  }>;
+}
 export interface DiagnosticsSnapshot {
+  balanceFall?: { timeS: number; reasons: string[]; pelvisHeightM: number;
+    torsoLeanRadians: number; unsupportedTimeS: number; supportLossLimitS: number } | null;
+  standingChain: StandingChainDiagnostics | null;
   balance: BalanceStateDiagnostics | null;
   bodyInputAvailable: boolean;
   recovery: RecoveryDiagnostics;

@@ -4,7 +4,7 @@ import { dirname, resolve } from "node:path";
 
 const requireRuntime = createRequire(resolve(dirname(process.env.CODEX_MCP_NODE_PATH), "package.json"));
 const { chromium } = requireRuntime("playwright");
-const output = resolve("evidence/playground");
+const output = resolve(process.argv[2] ?? `evidence/playground/run-${new Date().toISOString().replaceAll(/[:.]/g, "-")}`);
 await mkdir(output, { recursive: true });
 const browser = await chromium.launch({ channel: "msedge", headless: true, args: ["--enable-unsafe-swiftshader"] });
 const page = await browser.newPage({ viewport: { width: 1440, height: 1000 }, deviceScaleFactor: 1 });
@@ -18,7 +18,7 @@ const sample = async label => {
   console.log(JSON.stringify(samples.at(-1)));
 };
 try {
-  await page.goto(process.env.PLAYGROUND_URL ?? "http://127.0.0.1:5173/", { waitUntil: "domcontentloaded", timeout: 120000 });
+  await page.goto(process.env.PLAYGROUND_URL ?? "http://127.0.0.1:5173/?mode=playground", { waitUntil: "domcontentloaded", timeout: 120000 });
   await page.waitForFunction(() => window.__EMBODIED_DEMO__?.ready(), null, { timeout: 120000 });
   await page.waitForTimeout(1800);
   await sample("arena");

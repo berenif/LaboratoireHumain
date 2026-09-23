@@ -285,13 +285,11 @@ test("support-conditioned response predicts swing hip and ankle impulses", async
     const driven = await createEmbodiedCharacter("canvas2d");
     const control = await createEmbodiedCharacter("canvas2d");
     try {
-      const leftContact = driven.lastContacts.find((contact) => contact.segment === "leftFoot");
-      assert.ok(leftContact, "standing fixture must expose a measured left sole contact");
-      const supports = [{
-        segment: "leftFoot",
-        points: [leftContact.point],
-        directions: [{ x: 1, y: 0, z: 0 }, { x: 0, y: 0, z: 1 }],
-      }];
+      // Contact must be physically established, not injected by construction.
+      for (const character of [driven, control]) {
+        for (let tick = 0; tick < 120; tick++) character.fixedUpdate(1 / 60, null);
+        character.nativeMotors.disable(character.jointsByChild);
+      }
       for (const character of [driven, control]) {
         character.ragdollColliders.get("rightFoot").setCollisionGroups(0);
         character.ragdollColliders.get("rightForefoot").setCollisionGroups(0);
@@ -301,6 +299,35 @@ test("support-conditioned response predicts swing hip and ankle impulses", async
       }
 
       const definition = SEGMENT_BY_ID.get(sourceId);
+      if (sourceId === "rightThigh") {
+        // Standing leaves hip flexion on its native unilateral lower limit.
+        // Move both physical assemblies into the joint interior before probing
+        // the smooth articulated response; retain Rapier contact and ownership.
+        for (const character of [driven, control]) {
+          const parent = character.ragdollBodies.get(definition.parent);
+          const child = character.ragdollBodies.get(sourceId);
+          const coordinates = jointCoordinates(parent.rotation(), child.rotation(), definition.jointProfile);
+          const axis = jointCoordinateKinematics(
+            parent.angvel(), child.angvel(), parent.rotation(), coordinates, definition.jointProfile,
+          ).torqueAxesWorld.x;
+          child.applyTorqueImpulse(scale(axis, 0.05), true);
+          parent.applyTorqueImpulse(scale(axis, -0.05), true);
+          for (let tick = 0; tick < 3; tick++) character.world.step(character.eventQueue, character.physicsHooks);
+        }
+        const parent = driven.ragdollBodies.get(definition.parent);
+        const child = driven.ragdollBodies.get(sourceId);
+        const flexion = jointCoordinates(parent.rotation(), child.rotation(), definition.jointProfile).x;
+        const lowerLimit = definition.jointProfile.axes.find((axis) => axis.coordinate === "x").minRadians;
+        assert.ok(flexion > lowerLimit + 0.02, "hip probe must clear the native lower limit");
+      }
+      driven.observeContacts(1 / 60);
+      const leftContact = driven.lastContacts.find((contact) => contact.segment === "leftFoot" && contact.loadBearing);
+      assert.ok(leftContact, "probe must retain a measured loaded left sole contact");
+      const supports = [{
+        segment: "leftFoot",
+        points: [leftContact.point],
+        directions: [{ x: 1, y: 0, z: 0 }, { x: 0, y: 0, z: 1 }],
+      }];
       const parent = driven.ragdollBodies.get(definition.parent);
       const child = driven.ragdollBodies.get(sourceId);
       const coordinates = jointCoordinates(parent.rotation(), child.rotation(), definition.jointProfile);

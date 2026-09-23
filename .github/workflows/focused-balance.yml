@@ -1,0 +1,52 @@
+name: Focused balance verification
+
+on:
+  push:
+    branches: ['agent/**']
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  focused-balance:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22.13.0
+          cache: npm
+      - run: npm ci
+      - name: Verify committed source without a runtime patch
+        run: |
+          mkdir -p evidence/physical-chain
+          git rev-parse HEAD | tee evidence/physical-chain/source-commit.txt
+          status=0
+          run_check() {
+            local name="$1"; shift
+            "$@" > "evidence/physical-chain/${name}.log" 2>&1
+            local result=$?
+            printf '%s %s\n' "$name" "$result" | tee -a evidence/physical-chain/check-exits.txt
+            tail -25 "evidence/physical-chain/${name}.log"
+            if [ "$result" -ne 0 ]; then status=1; fi
+          }
+          set +e
+          run_check typecheck timeout 120s npm run typecheck
+          run_check target-frame timeout 90s node --test tests/leg-target-frame.test.mjs tests/physical-chain-integrity.test.mjs
+          run_check probe timeout 90s node scripts/probe-balance-fall-transition.mjs
+          run_check balance timeout 120s node --test tests/balance-controller.test.mjs
+          run_check recovery timeout 240s npm run test:recovery
+          exit "$status"
+        env:
+          BALANCE_TRACE_DIR: evidence/physical-chain/traces
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: physical-chain-focused
+          path: evidence/physical-chain
+          retention-days: 14

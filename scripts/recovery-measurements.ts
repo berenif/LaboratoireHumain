@@ -1,5 +1,5 @@
 import type { Collider, World } from "@dimforge/rapier3d-compat";
-import { SEGMENT_BY_ID, SEGMENTS, TOTAL_MASS_KG } from "../src/core/humanoid";
+import { SEGMENT_BY_ID, SEGMENTS } from "../src/core/humanoid";
 import type { PoseSnapshot, SegmentId, Vec3 } from "../src/core/types";
 import { add, length, quatInverse, rotate, scale, sub, worldPoint } from "../src/character/math";
 import { jointCoordinates } from "../src/character/joint-coordinates";
@@ -37,14 +37,21 @@ export function newRecoveryPhysicsMeasurements(): RecoveryPhysicsMeasurements {
     maxLegExtension: { left: 0, right: 0 }, minLegExtension: { left: 1, right: 1 }, routeEntries: [], releaseEvents: [],
   } };
 }
-function massState(snapshot: PoseSnapshot): { position: Vec3; velocity: Vec3 } {
-  let position = ZERO, velocity = ZERO;
-  for (const d of SEGMENTS) {
-    const p = snapshot.segments.find(p => p.id === d.id)!;
-    position = add(position, scale(p.position, d.massKg / TOTAL_MASS_KG));
-    velocity = add(velocity, scale(p.linearVelocity, d.massKg / TOTAL_MASS_KG));
+/** Independent observer: use recorded Rapier mass centres, not transform origins.
+ * Older pose-only fixtures retain their legacy nominal-mass/origin meaning.
+ * Do not call the controller's mass helper here: a shared implementation would
+ * make the evidence unable to detect an incorrect aggregate diagnostic.
+ */
+export function observedMassState(snapshot: PoseSnapshot): { position: Vec3; velocity: Vec3 } {
+  let position = ZERO, velocity = ZERO, massKg = 0;
+  for (const definition of SEGMENTS) {
+    const pose = snapshot.segments.find(pose => pose.id === definition.id)!;
+    const mass = pose.massKg ?? definition.massKg;
+    position = add(position, scale(pose.centerOfMass ?? pose.position, mass));
+    velocity = add(velocity, scale(pose.linearVelocity, mass));
+    massKg += mass;
   }
-  return { position, velocity };
+  return { position: scale(position, 1 / massKg), velocity: scale(velocity, 1 / massKg) };
 }
 /** Independent signed distance to the convex hull of actual solved floor contact points. */
 function margin(points: Vec3[], projection: Vec3): number {
@@ -71,7 +78,7 @@ export function measuredProneBraceSupport(snapshot: PoseSnapshot, contacts: Meas
     const shoulder=worldPoint(parent.position,parent.rotation,upper.jointAnchorParent!);
     return contact.points.some(point=>shoulder.y>point.y+.035 && horizontalDistance(point,shoulder)<=(contact.segment.endsWith("Hand")?.36:.335));
   });
-  const mass=massState(snapshot), projected=add(mass.position,scale(mass.velocity,.15));
+  const mass=observedMassState(snapshot), projected=add(mass.position,scale(mass.velocity,.15));
   return supportedArm && contacts.some(c=>/torso|pelvis|Thigh|Shin/.test(c.segment) || isFootSupport(c.segment))
     && margin(contacts.flatMap(c=>c.points),projected)>=-1e-5;
 }
@@ -104,7 +111,7 @@ export function measureRecoveryPhysics(measured: RecoveryPhysicsMeasurements, sn
     if (loaded && age + 1e-8 >= 0.05) contacts.push({ segment, forceN, points });
   }
   if (before.phase === "settle" && d.phase === "brace" && d.route === "prone") {
-    const entryMass = massState(previous), projection = add(entryMass.position, scale(entryMass.velocity, 0.15));
+    const entryMass = observedMassState(previous), projection = add(entryMass.position, scale(entryMass.velocity, 0.15));
     const loaded = measured.previousContacts;
     const torso = previous.segments.find(p => p.id === "torso")!;
     if (!loaded.some(c => /Hand|Forearm/.test(c.segment)) || !loaded.some(c => /torso|Thigh|Shin|Foot/.test(c.segment))
@@ -113,7 +120,7 @@ export function measureRecoveryPhysics(measured: RecoveryPhysicsMeasurements, sn
     }
   }
   if (before.phase === "settle" && d.phase === "stand") {
-    const entryMass = massState(previous), projection = add(entryMass.position, scale(entryMass.velocity, 0.15));
+    const entryMass = observedMassState(previous), projection = add(entryMass.position, scale(entryMass.velocity, 0.15));
     const loadedFeet = measured.previousContacts.filter(c => isFootSupport(c.segment));
     const loadedSides = new Set(loadedFeet.map(c => c.segment.startsWith("left") ? "left" : "right"));
     const torso = previous.segments.find(p => p.id === "torso")!, pelvis = previous.segments.find(p => p.id === "pelvis")!;
@@ -123,7 +130,7 @@ export function measureRecoveryPhysics(measured: RecoveryPhysicsMeasurements, sn
       violations.add("Crouch rise shortcut lacks independently measured planted soles, entry height, upright torso and projected balance");
     }
   }
-  const currentMass = massState(snapshot);
+  const currentMass = observedMassState(snapshot);
   // Dynamic activation itself resets diagnostics without integrating recovery.
   const recoveryIntegrated=integrated && recoveryMotion(previous.state);
   if (recoveryIntegrated && length(sub(d.centerOfMass, currentMass.position)) > 1e-7) violations.add("Recovery COM is not the independent mass-weighted body center");
@@ -198,7 +205,7 @@ export function measureRecoveryPhysics(measured: RecoveryPhysicsMeasurements, sn
     if (!d.plantedTargets.some(p => p.segment === segment) || !contacts.some(c => c.segment === segment) || d.releasedSupports.includes(segment) || d.retries !== before.retries) measured.planted.delete(segment);
   }
   if (d.releasedSupports.length) {
-    const mass = massState(previous), projection = add(mass.position, scale(mass.velocity, 0.15));
+    const mass = observedMassState(previous), projection = add(mass.position, scale(mass.velocity, 0.15));
     const remaining = measured.previousContacts.filter(c => !d.releasedSupports.includes(c.segment) && !measured.deliberatelyReleased.has(c.segment));
     const measuredMargin = margin(remaining.flatMap(c => c.points), projection);
     report.releaseCount++;

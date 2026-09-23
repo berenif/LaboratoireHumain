@@ -218,6 +218,23 @@ test("brace support rejects distant forearms and target reports an unreachable f
   assert.equal(reachableArmBraceTarget("left", new Map(), 0), null);
 });
 
+test("a measured arm brace remains usable on a raised support surface", () => {
+  const floorY = 0.35;
+  const fixture = { id: "raised-brace", pose: "prone", side: "left", heading: 0.73 };
+  const poses = recoveryFixturePoses(fixture);
+  for (const pose of poses.values()) pose.position.y += floorY;
+  const target = reachableArmBraceTarget("left", poses, fixture.heading, floorY);
+  assert.ok(target?.floorReachable);
+  poses.set("leftHand", {
+    ...poses.get("leftHand"),
+    position: target.position,
+    rotation: target.rotation,
+  });
+  const raisedContact = contact("leftHand", poses);
+  assert.ok(raisedContact.point.y > 0.3);
+  assert.equal(usableRecoveryArmSupport("left", poses, [raisedContact]), true);
+});
+
 test("prone brace hand orientation fits the independently reconstructed shoulder and wrist frames", () => {
   for (const fixture of RECOVERY_POSE_FIXTURES.filter(item => item.pose === "prone")) for (const testedSide of ["left", "right"]) for (const heightChange of [0, -0.17]) {
     const poses = recoveryFixturePoses(fixture);
@@ -288,5 +305,4 @@ test("unplanted arm clearance follows local wrist flex and returns to the captur
     }
   }
 });
-
 

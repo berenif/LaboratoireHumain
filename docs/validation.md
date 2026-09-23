@@ -1,5 +1,60 @@
 # Validation record
 
+## 2026-09-23 publication checkpoint: work in progress
+
+After the failed balance gate was disclosed, the user explicitly requested
+"Commit push and merge to main". This later instruction authorizes preservation
+and publication of the current merge; it does not establish physics acceptance.
+The merge preserves both 60b9e010773560968fad3a18ddb27a8cb9a768e6 and
+3ca4cc86bec4c33ab928c44f1c71692ab1ce56ae. Remote main was fetched and still
+pointed to the latter commit before publication.
+
+The final focused command runs balance-controller, landing-plan and
+leg-target-dynamics tests: **34/36 pass, exit 1**. Balance is **12/14**;
+slow pull falls at tick 169 and planted reversal at tick 130. Landing planning
+is 13/13 and inertial leg-target mechanics 9/9. Both probe scenarios complete
+two measured steps but subsequently fall; the probe exits 1. These failures
+remain enabled. TypeScript passes after a type-only correction to a mutable
+local pose-composition vector; the physical failures reproduce unchanged.
+
+Current changes include explicit infeasible landing results, a bounded
+two-dimensional joint-limited search, measured-pelvis planning/actuation
+agreement, candidate-specific support/capture prediction, load diagnostics,
+and swing-target inertial feedforward under the existing motor caps.
+Retained-pressure delivery and second-swing height loss remain unresolved.
+Experimental stance-height springs and alternate actuator/solver configurations
+were confined to ignored diagnostics and were not adopted. No acceptance
+assertion, absolute 52% retained-load gate, physical fall threshold or torque
+budget was weakened; direct pelvis assistance remains zero by design.
+
+The prescribed final fixture refresh, full automated suite, all 63 physics
+scenarios, five-cycle protocol, two Pages configurations and complete browser
+coverage have **not** been verified on this source. Publication is a WIP
+checkpoint, not an accepted release. Older results below describe historical
+sources and must not be read as current passing evidence.
+
+Commands, native exit codes, source fingerprints, traces and preserved patches
+are in ignored evidence/merge-execution-20260923-160052/, including
+publication-balance.json, publication-typecheck-fixed.json,
+publication-review.json and publication-probe.json.
+
+## Historical records and acceptance contract
+
+## 2026-09-23 merge execution: mandatory balance gate failed
+
+Current evidence is in `evidence/merge-execution-20260923-160052/` and is not a
+release acceptance. The exact balance test command passes 8/10 (exit 1), with
+slow-pull/reversal failures at ticks 122/139. The balance probe exits 1; direct
+transition diagnostics identify capture instability in both cases. The six
+new landing, frame, and load-diagnostic regressions pass (exit 0).
+
+The controller correction remains unaccepted and regresses the preserved
+physical baseline. Broader automated checks, fixture refresh, browser coverage,
+and publication were withheld at the failed prerequisite gate. HEAD and
+MERGE_HEAD are unchanged, no unmerged index entries exist, and the saved staged
+patch hash matches the current index exactly. See [merge acceptance](merge-acceptance.md)
+and the run's `causal-account.md` for the unresolved transfer behavior.
+
 Generated evidence is the authority for a particular working tree. Run the commands below after controller changes; do not treat historical scenario counts or trajectories as current results.
 
 ```bash

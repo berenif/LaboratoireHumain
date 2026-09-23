@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
+import { createHash } from "node:crypto";
 import test, { after } from "node:test";
 import { register } from "tsx/esm/api";
 
@@ -30,7 +31,7 @@ const diagnosticsKeys = [
   "interactiveViewReady", "jointDiagnostics", "leanRadians", "maxFloorPenetrationM",
   "maxJointLimitErrorRad", "maxJointSeparationM", "maxMotorSaturationRatio", "physicsOwnership",
   "queuedTarget", "recovery", "renderer", "rootDisplacementM", "selectedRegion",
-  "selectedSegment", "simulationReady", "state", "stepCount", "support",
+  "selectedSegment", "simulationReady", "standingChain", "state", "stepCount", "support",
 ].sort();
 const streamSummary = new Map([
   ["native-webgl-two-cycles", { updates: 1235, commands: 16, lastSequence: 1235 }],
@@ -53,6 +54,10 @@ test("native fixed streams retain their captured commands under the migrated sch
   assert.equal(capture.migration.anatomy, "25-segment");
   assert.equal(capture.migration.physicsOwnership, "rapier-dynamic");
   assert.equal(capture.fixtures.length, 2);
+  const historicalInputs = JSON.stringify(capture.fixtures.map(({ updates, recordedTransfers }) => ({ updates, recordedTransfers })));
+  assert.equal(createHash("sha256").update(historicalInputs).digest("hex"),
+    "56236d783618a932b5a2777b450a6697e83992065866aa7edd56bfd488c2ccbd",
+    "the assembly refresh must not alter captured commands or historical transfers");
 
   for (const fixture of capture.fixtures) {
     const expected = streamSummary.get(fixture.id);

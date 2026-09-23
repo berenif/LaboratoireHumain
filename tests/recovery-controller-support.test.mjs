@@ -135,14 +135,18 @@ test("a sole near its new target is not recaptured from the old contact without 
 
 
 function observeLoads(state, loads) {
-  const colliders = new Map([...state.poses.keys()].map(segment => [segment, { segment }]));
-  const floor = { isEnabled: () => true };
+  const frame = { translation: () => ({ x: 0, y: 0, z: 0 }),
+    rotation: () => ({ x: 0, y: 0, z: 0, w: 1 }), contactSkin: () => 0 };
+  const colliders = new Map([...state.poses.keys()].map(segment => [segment, { segment, ...frame }]));
+  const floor = { isEnabled: () => true, ...frame };
   const world = { contactPair: (_floor, collider, callback) => {
     const force = loads.get(collider.segment) ?? 0;
     if (!force) return;
     const pose = state.poses.get(collider.segment), points = patch(collider.segment, pose.position.x, pose.position.z).points;
     callback({ normal: () => ({ x: 0, y: 1, z: 0 }), numSolverContacts: () => points.length,
-      solverContactDist: () => 0, solverContactPoint: index => points[index], numContacts: () => 1, contactImpulse: () => force * dt }, false);
+      solverContactDist: () => 0, solverContactPoint: index => points[index], numContacts: () => points.length,
+      localContactPoint1: index => points[index], localContactPoint2: index => points[index],
+      contactDist: () => 0, contactImpulse: () => force * dt / points.length }, false);
   } };
   state.recovery.observe(world, floor, colliders, state.bodies, dt);
 }

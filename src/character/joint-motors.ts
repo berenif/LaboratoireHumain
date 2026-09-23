@@ -44,6 +44,7 @@ export interface JointMotorCommand {
 }
 
 export interface JointMotorResult {
+  readonly torqueSource?: "applied-impulse" | "native-request";
   readonly coordinates: Vec3;
   readonly targetCoordinates: Vec3;
   readonly coordinateError: Vec3;
@@ -56,6 +57,8 @@ export interface JointMotorSolveOptions {
   readonly supports?: readonly ArticulatedSupportConstraint[];
   /** Add profile damping and soft-limit resistance independently of posture strength. */
   readonly passiveResistance?: boolean;
+  /** Keep these joints in the coupled solve, but let Rapier apply their motors. */
+  readonly deferredIds?: ReadonlySet<SegmentId>;
 }
 
 function coordinateValue(vector: Vec3, coordinate: JointCoordinate): number {
@@ -289,7 +292,7 @@ export function applyCoupledJointMotors(
     // A sleeping dynamic assembly is already at equilibrium. Rapier wakes an
     // island even for a nominally non-waking impulse on some joint paths, so
     // omit the no-op actuation entirely until contact or a grab wakes it.
-    if (!child.isSleeping() || !parent.isSleeping()) {
+    if (!options.deferredIds?.has(intent.id) && (!child.isSleeping() || !parent.isSleeping())) {
       child.applyTorqueImpulse(scale(torqueWorld, dt), false);
       parent.applyTorqueImpulse(scale(torqueWorld, -dt), false);
     }

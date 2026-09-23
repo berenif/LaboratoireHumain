@@ -7,6 +7,7 @@ const ZERO: Vec3 = { x: 0, y: 0, z: 0 };
 const UP: Vec3 = { x: 0, y: 1, z: 0 };
 import { applyCoupledJointMotors, applyPassiveJointResistance, type JointMotorCommand, type JointMotorResult } from "./joint-motors";
 import { minimumSupportTorqueLimit, planContactLoads } from "./contact-loads";
+import { observeActiveContactManifold } from "./contact-observation";
 import { jointCoordinates } from "./joint-coordinates";
 import { blendRecoveryJointTargets, limitRecoveryJoint, reconstructRecoveryLimb, recoveryJointLimitError, recoveryJointRotation, recoveryLimbIds } from "./recovery-joints";
 import { limbBodyClearance, limbTrunkClearance } from "./limb-collisions";
@@ -90,10 +91,11 @@ export function emptyRecoveryDiagnostics(): RecoveryDiagnostics {
     maxMotorTorqueNm: 0, supporting: [], supportLoads: [] };
 }
 
-/** Rapier owns every dynamic transform. Plans only become bounded joint impulses. */
+/** Rapier owns every dynamic transform. Plans become bounded joint actuation. */
 export class DynamicRecovery {
   private data = emptyRecoveryDiagnostics();
   private lastMotorResults: ReadonlyMap<SegmentId, JointMotorResult> = new Map();
+  private nativeRollArmCommands: readonly JointMotorCommand[] = [];
   private lastPassiveTorques: ReadonlyMap<SegmentId, Vec3> = new Map();
   private heading = 0;
   private contactAges = new Map<SegmentId, number>();
@@ -142,6 +144,7 @@ export class DynamicRecovery {
   reset(heading: number, direction: Vec3): void {
     this.data = emptyRecoveryDiagnostics(); this.data.phase = "protect";
     this.lastMotorResults = new Map();
+    this.nativeRollArmCommands = [];
     this.lastPassiveTorques = new Map();
     this.heading = heading;
     const local = rotate(quatInverse(quatFromAxisAngle(UP, heading)), direction);
@@ -208,12 +211,29 @@ export class DynamicRecovery {
   /** Actual posture-motor results for the last decision; empty in passive settling. */
   motorResults(): ReadonlyMap<SegmentId, JointMotorResult> { return this.lastMotorResults; }
 
+  /** Roll arm motors are solved with their native joint and contact rows. */
+  rollArmMotorCommands(): readonly JointMotorCommand[] { return this.nativeRollArmCommands; }
+
+  recordNativeRollArmResults(results: ReadonlyMap<SegmentId, JointMotorResult>): void {
+    this.lastMotorResults = new Map([...this.lastMotorResults, ...results]);
+    for (const result of results.values())
+      this.data.maxMotorTorqueNm = Math.max(this.data.maxMotorTorqueNm, length(result.torqueWorld));
+  }
+
   /** Passive-only settling impulses, without inventing a posture target. */
   passiveTorques(): ReadonlyMap<SegmentId, Vec3> { return this.lastPassiveTorques; }
 
   private poses(bodies: Map<SegmentId, RigidBody>): Map<SegmentId, SegmentPose> {
-    return new Map([...bodies].map(([id, b]) => [id, { id, position: {...b.translation()}, rotation: {...b.rotation()},
-      linearVelocity: {...b.linvel()}, angularVelocity: {...b.angvel()} }]));
+    return new Map([...bodies].map(([id, b]) => {
+      // Lightweight planning/test bodies predate Rapier's measured-mass API.
+      // Leave these fields absent so the shared mass-state helper uses its
+      // geometry fallback; real Rapier bodies always supply both measurements.
+      const massKg = typeof (b as { mass?: unknown }).mass === "function" ? b.mass() : undefined;
+      const centerOfMass = typeof (b as { worldCom?: unknown }).worldCom === "function"
+        ? { ...b.worldCom() } : undefined;
+      return [id, { id, massKg, centerOfMass, position: { ...b.translation() }, rotation: { ...b.rotation() },
+        linearVelocity: { ...b.linvel() }, angularVelocity: { ...b.angvel() } }];
+    }));
   }
 
   /** Contact points are copied before another WASM query can reuse its scratch storage. */
@@ -225,22 +245,23 @@ export class DynamicRecovery {
       && [...bodies.values()].every(body => body.isSleeping());
     for (const [segment, collider] of colliders) {
       let normalY = 0, impulse = 0;
+      let pressureWeightedPoint = ZERO;
       const points: Vec3[] = [];
       const nearbySurfaces: Collider[] = [];
       if (supportSurfaces.length > 1) world.contactPairsWith(collider, surface => {
         if (surfaceHandles.has(surface.handle)) nearbySurfaces.push(surface);
       });
       for (const surface of supportSurfaces.length > 1 ? nearbySurfaces : supportSurfaces) world.contactPair(surface, collider, (manifold, flipped) => {
-        const upward = manifold.normal().y * (flipped ? -1 : 1);
-        let touching = false;
-        for (let i = 0; i < manifold.numSolverContacts(); i++) {
-          if (manifold.solverContactDist(i) <= RECOVERY_LIMITS.contactDistanceM && upward >= RECOVERY_LIMITS.normalY) {
-            touching = true; normalY = Math.max(normalY, upward);
-            const point = manifold.solverContactPoint(i);
-            if (point) points.push({...point});
+        const observed = observeActiveContactManifold(manifold, surface, collider, flipped);
+        const upward = observed.normal.y;
+        for (const contact of observed.contacts) {
+          if (contact.distanceM <= RECOVERY_LIMITS.contactDistanceM && upward >= RECOVERY_LIMITS.normalY) {
+            normalY = Math.max(normalY, upward);
+            points.push(contact.point);
+            impulse += contact.impulseNs;
+            pressureWeightedPoint = add(pressureWeightedPoint, scale(contact.point, contact.impulseNs));
           }
         }
-        if (touching) for (let i = 0; i < manifold.numContacts(); i++) impulse += Math.max(0, manifold.contactImpulse(i));
       });
       const forceN = impulse / dt;
       const loaded = points.length > 0 && forceN >= RECOVERY_LIMITS.minimumLoadN;
@@ -248,6 +269,7 @@ export class DynamicRecovery {
       this.contactAges.set(segment, age);
       if (points.length) contacts.push({ segment, normalY, forceN, measuredForceN: forceN,
         persistenceS: age, points,
+        ...(impulse > 0 ? { measuredPressurePoint: scale(pressureWeightedPoint, 1 / impulse) } : {}),
         point: scale(points.reduce(add, ZERO), 1 / points.length), loadBearing: loaded && age + 1e-9 >= RECOVERY_LIMITS.loadPersistenceS });
     }
     // Sleeping rigid bodies produce no new impulse, but their solver manifolds
@@ -642,7 +664,7 @@ export class DynamicRecovery {
       && this.landingTime + 1e-9 >= RECOVERY_LIMITS.landingPersistenceS) this.enter("settle",bodies);
     else if (this.data.phase === "settle" && this.data.settledTimeS >= RECOVERY_LIMITS.settlePersistenceS) this.chooseRoute(bodies);
     else if(this.data.phase==="roll" && this.placingProneArms && ready && this.movingArms.size===0
-      && SIDES.every(side=>this.armPlacementReady(side,poses))) {
+      && SIDES.some(side=>this.armPlacementReady(side,poses))) {
       this.placingProneArms=false;this.stage("push-brace",bodies);
     } else if (this.data.phase === "roll" && this.data.transferStage==="push-brace" && this.prospectiveTime>=RECOVERY_LIMITS.phaseMinimumS) {
       this.enter("brace",bodies); this.stage("tuck-knee",bodies);
@@ -1232,6 +1254,7 @@ export class DynamicRecovery {
   }
 
   private actuate(bodies:Map<SegmentId,RigidBody>,poses:Map<SegmentId,SegmentPose>,active:boolean,dt:number):void {
+    this.nativeRollArmCommands = [];
     // Unsupported settling has no posture motor. Rapier still enforces every
     // joint limit while passive resistance damps motion near those limits.
     if(this.data.phase==="settle") {
@@ -1463,7 +1486,7 @@ export class DynamicRecovery {
           feedforward=add(feedforward,cross(sub(pose.position,joint),spring));
         }
         if(!this.placingProneArms)for(const descendant of SEGMENTS) if(descends(descendant.id,d.id))
-          feedforward=add(feedforward,cross(sub(poses.get(descendant.id)!.position,joint),{x:0,y:descendant.massKg*9.81,z:0}));
+          feedforward=add(feedforward,cross(sub(bodies.get(descendant.id)!.worldCom(),joint),{x:0,y:descendant.massKg*9.81,z:0}));
       }
 
       motorCommands.push({id:d.id,targetLocalRotation:commands.get(d.id)??d.restLocalRotation,
@@ -1471,9 +1494,19 @@ export class DynamicRecovery {
         effortScale:this.placingProneArms && spine?2.2:1,
         feedforwardWorld:feedforward});
     }
-    const results=applyCoupledJointMotors(bodies,motorCommands,dt,{passiveResistance:true});
+    if(active && this.data.phase==="roll" && this.data.transferStage==="roll") {
+      // A rolling arm has no captured brace. Native joint rows solve its
+      // target and damping with contact; support feedforward resumes when
+      // deliberate arm placement begins.
+      this.nativeRollArmCommands=motorCommands.filter(command=>{
+        const definition=SEGMENT_BY_ID.get(command.id)!;
+        return !!definition.side && ["shoulder-girdle","upper-arm","forearm","forearm-twist","hand"].includes(definition.role);
+      }).map(command=>({...command,feedforwardWorld:ZERO}));
+    }
+    const deferredIds = new Set(this.nativeRollArmCommands.map(command=>command.id));
+    const results=applyCoupledJointMotors(bodies,motorCommands,dt,{passiveResistance:true,deferredIds});
     this.lastMotorResults=results;
-    for(const result of results.values())
+    for(const [id,result] of results) if(!deferredIds.has(id))
       this.data.maxMotorTorqueNm=Math.max(this.data.maxMotorTorqueNm,length(result.torqueWorld));
   }
 }

@@ -6,7 +6,8 @@ const unregister = register(); after(unregister);
 const { planContactLoads, minimumSupportTorqueLimit, supportChainTorqueLimit } = await import("../src/character/contact-loads.ts");
 const { BalanceController } = await import("../src/character/BalanceController.ts");
 const { DynamicRecovery } = await import("../src/character/DynamicRecovery.ts");
-const { restPoseMap } = await import("../src/character/pose.ts");
+const { createEmbodiedCharacter } = await import("../src/character/index.ts");
+const { composeUprightPose, restPoseMap } = await import("../src/character/pose.ts");
 const { TOTAL_MASS_KG } = await import("../src/core/humanoid.ts");
 const zero = { x: 0, y: 0, z: 0 };
 const dt = 1 / 60;
@@ -43,6 +44,58 @@ test("contact allocation is bounded by friction, torque and actual measured supp
       <= 0.8 * result.allocatedForce.y + 1e-6);
     assert.ok(result.loads.every(load => load.measuredForceN === 350));
   }
+});
+
+test("weak qualified support keeps restoring intent after release without granting support in flight", async () => {
+  const character = await createEmbodiedCharacter("canvas2d");
+  try {
+    const originalUpdate = character.balance.update.bind(character.balance);
+    // Isolate wrench composition from planning: the balance task asks for
+    // braking after release, before any step has completed.
+    character.balance.update = input => {
+      const output = originalUpdate(input);
+      return { ...output, diagnostics: { ...output.diagnostics,
+        balanceAcceleration: { x: 0.5, y: 0, z: 0 } } };
+    };
+    character.lastContacts = [patch("leftFoot", -0.09, 200), patch("rightFoot", 0.09, 200)];
+    for (const pose of character.poses.values()) pose.linearVelocity = { x: 0, y: -0.2, z: 0 };
+    character.fixedUpdate(dt, null);
+    const weight = TOTAL_MASS_KG * 9.81;
+    assert.equal(character.activeGrab, null);
+    assert.equal(character.stepCount, 0);
+    assert.ok(character.contactLoadPlan.requestedForce.x > 0,
+      "braking must survive release even without a completed step");
+    assert.ok(character.contactLoadPlan.requestedForce.y > weight,
+      "falling height needs a restoring normal request above bodyweight");
+    assert.ok(character.contactLoadPlan.allocatedForce.y <= 1.35 * weight + 1e-6);
+    character.lastContacts = [];
+    character.fixedUpdate(dt, null);
+    assert.deepEqual(character.contactLoadPlan.loads, []);
+    assert.deepEqual(character.contactLoadPlan.allocatedForce, zero);
+    assert.deepEqual(character.getSnapshot("canvas2d").diagnostics.errors, []);
+  } finally { character.dispose(); }
+});
+
+test("a loaded hindfoot can shift planned pressure to its measured heel points", () => {
+  const foot = {
+    ...patch("leftFoot", -0.1, 500),
+    point: { x: -0.1, y: 0, z: 0.035 },
+    points: [-0.04, 0.11].flatMap(z => [-0.14, -0.06].map(x => ({ x, y: 0, z }))),
+  };
+  const result = planContactLoads([foot], { x: -0.1, y: 1, z: 0 }, zero,
+    { x: 0, y: 500, z: 100 },
+    { frictionCoefficient: 0.8, maxHorizontalForceN: 200, maxJointTorqueNm: 200 });
+  assert.equal(result.loads.length, 1, "one measured patch remains one support-chain owner");
+  assert.equal(result.loads[0].segment, "leftFoot");
+  assert.equal(result.loads[0].measuredForceN, 500);
+  assert.ok(result.pressurePoint.z < -0.01,
+    `forward recovery should use real heel pressure, got z=${result.pressurePoint.z}`);
+  assert.ok(result.pressurePoint.z >= -0.04 - 1e-9);
+  assert.ok(result.loads[0].point.z >= -0.04 - 1e-9);
+  assert.ok(result.loads[0].point.z <= 0.11 + 1e-9);
+  assert.ok(Math.abs(result.loads[0].point.z - result.pressurePoint.z) < 1e-9);
+  assert.ok(Math.abs(result.allocatedForce.y - 500) < 1e-9);
+  assert.ok(Math.abs(result.allocatedForce.z - 100) < 1e-9);
 });
 
 test("prone transfer retains measured load on each eligible distal patch", () => {
@@ -98,21 +151,38 @@ test("balance reports support only from loaded solver contacts", () => {
 });
 
 test("an intentional step waits for the retained sole to accept body weight", () => {
-  const poses = restPoseMap(), controller = new BalanceController(); controller.reset(poses);
+  // Use the composed standing assembly, as runtime does. The raw construction
+  // map is fully extended and cannot supply a validated floor landing. Keep
+  // COM over the retained sole so this fixture isolates load persistence from
+  // the separate rejection of an unreachable dynamic touchdown capture.
+  const rest = restPoseMap();
+  const poses = composeUprightPose({ rootTranslation: { ...rest.get("pelvis").position,
+    x: rest.get("leftFoot").position.x, y: 0.96 },
+    reactionOffset: zero, kneeFlexion: 0.12, simulationTime: 0, activeGrab: null,
+    supportFeet: { leftFoot: rest.get("leftFoot").position, rightFoot: rest.get("rightFoot").position },
+    step: null }).poses;
+  const controller = new BalanceController(); controller.reset(poses);
   const pelvis = poses.get("pelvis").position;
   controller.beginStep("rightFoot", poses.get("rightFoot").position, pelvis,
     { x: 0, y: 0, z: 1 }, { x: 1, y: 0, z: 0 }, 0, zero);
   const weight = TOTAL_MASS_KG * 9.81;
+  const contactAtFoot = (foot, forceN) => {
+    const position = poses.get(foot).position, contact = patch(foot, position.x, forceN);
+    return { ...contact, point: { ...contact.point, z: position.z },
+      points: contact.points.map(point => ({ ...point, z: point.z + position.z })) };
+  };
   const stepWith = force => controller.update({ dt, poses, rootPosition: pelvis, activeGrab: null,
-    contacts: [patch("leftFoot", -0.12, force), patch("rightFoot", 0.12, weight - force)] });
+    contacts: [contactAtFoot("leftFoot", force), contactAtFoot("rightFoot", weight - force)] });
   let output;
   for (let i = 0; i < 40; i++) output = stepWith(weight * 0.4);
   assert.ok(output.step.elapsed < 0, "the swing sole remains planted while retained load is insufficient");
-  for (let i = 0; i < 5; i++) output = stepWith(weight * 0.6);
-  assert.ok(output.step.elapsed < 0, "a brief load spike must not release the swing sole");
+  for (let i = 0; i < 7; i++) output = stepWith(weight * 0.6);
+  assert.ok(output.step.elapsed < 0, "52% retained load alone cannot lift a still-loaded moving sole");
+  for (let i = 0; i < 5; i++) output = stepWith(weight * 0.8);
+  assert.ok(output.step.elapsed < 0, "a brief qualified transfer must not release the swing sole");
   output = stepWith(weight * 0.4);
   assert.ok(output.step.elapsed < 0, "losing the retained patch resets transfer readiness");
-  for (let i = 0; i < 7; i++) output = stepWith(weight * 0.6);
+  for (let i = 0; i < 7; i++) output = stepWith(weight * 0.8);
   assert.ok(output.step.elapsed >= 0, "measured transfer releases the swing target");
   assert.deepEqual(output.diagnostics.supportingFeet, ["leftFoot"]);
 });
@@ -123,15 +193,17 @@ test("a sleeping island retains measured patches and drops them as soon as the f
     translation: () => pose.position, rotation: () => pose.rotation,
     linvel: () => zero, angvel: () => zero, isSleeping: () => true,
   }]));
-  const colliders = new Map(["leftFoot", "rightFoot"].map(segment => [segment, { segment }]));
-  const floor = { isEnabled: () => true };
+  const frame = { translation: () => zero, rotation: () => ({ x: 0, y: 0, z: 0, w: 1 }), contactSkin: () => 0 };
+  const colliders = new Map(["leftFoot", "rightFoot"].map(segment => [segment, { segment, ...frame }]));
+  const floor = { isEnabled: () => true, ...frame };
   let touching = true;
   const world = { contactPair: (_floor, collider, callback) => {
     if (!touching) return;
     const x = poses.get(collider.segment).position.x;
     callback({ normal: () => ({ x: 0, y: 1, z: 0 }), numSolverContacts: () => 1,
       solverContactDist: () => 0, solverContactPoint: () => ({ x, y: 0, z: 0 }),
-      numContacts: () => 0, contactImpulse: () => 0 }, false);
+      numContacts: () => 1, contactImpulse: () => 0, contactDist: () => 0,
+      localContactPoint1: () => ({ x, y: 0, z: 0 }), localContactPoint2: () => ({ x, y: 0, z: 0 }) }, false);
   } };
   recovery.observe(world, floor, colliders, bodies, dt);
   const contacts = recovery.diagnostics().contacts;
