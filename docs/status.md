@@ -1,6 +1,10 @@
 # Current status
 
-Updated 2026-09-27 through H69 continuous diagnostics; H66's long evaluation is running. **The unchanged focused selection passes 69/69 tests; physics acceptance remains open.** H66 passes all three short standing screens with 2,160 exact live predictions. The original 2+30-second evaluation, interactive implementation and production acceptance remain unverified. This page is the entry point for status; dated reports retain their historical results without establishing a new release gate.
+Updated 2026-09-27 through H73's first attempt. **Quiet standing remains the first unfinished TODO.** The goal is to stand still without drifting, wobbling, or falling before moving on to reliable weight shifting and stepping. The unchanged focused selection has a recorded 69/69 pass, but the standing experiments do not yet satisfy the full physical acceptance criteria.
+
+One confirmed mistake was rejecting a helpful correction because it missed a preferred extra margin, then keeping an old command that caused much more wobbling. The [plain-language explanation and replay evidence](standing-h71-contract.md#plain-language-explanation) describe why. The experimental repair retains a tested correction within the actual speed limits when the preferred margin is unreachable; it does not establish lasting balance.
+
+Some short tests improved, but H66's longer test has a recorded speed failure. H73's first three concurrent simulations exhausted memory without final reports. The next attempt must preserve their partial results and run **one simulation at a time**, following the [H73 restart procedure](standing-h73-contract.md#first-attempt--memory-failures-no-complete-screen). These remain experimental fixes. Weight transfer, stepping, recovery, interactive performance, and full application verification remain open. Dated reports retain their own evidence and limitations.
 
 ## Source and evidence scope
 
@@ -46,7 +50,7 @@ queries and earlier comparator failures are archived. [H66](standing-h66-contrac
 reproduces all 947 local queries through its extracted helper and passes all
 three short standing screens. Its 489,616 queries produce 2,160 exact live matches
 with bounded speeds, drift, support and state. The unchanged 2+30-second
-diagnostic is now running. Preview cost remains 1.72–1.88 seconds per step;
+diagnostic was launched and later recorded a speed failure at tick 978. Preview cost remains 1.72–1.88 seconds per step;
 interactive performance and production adoption remain unresolved.
 [H67](standing-h67-contract.md) finds physically bounded previous-command seeds
 at three saved states. [H68](standing-h68-contract.md)'s cached response matrices
@@ -56,11 +60,19 @@ heading; neither local comparison establishes continuous performance.
 but fails speeds at −π/4 and falls at +π/3. Its 2,147 exact live predictions and
 thirteen guarded skips are preserved in a complete verified recursive archive.
 Reduced query counts do not establish an acceptable replacement.
-[H70](standing-h70-contract.md) is testing adaptive cache refresh at −π/4.
-The ongoing H66 long history now has a known heading-0 speed failure at tick 978;
+[H70](standing-h70-contract.md) passes its completed −π/4 short screen; the
+other two headings remain pending while H73 tests the separate fallback repair.
+The H66 long history has a known heading-0 speed failure at tick 978;
 [H71](standing-h71-contract.md) confirms that physically admissible commands were
 discarded because they missed an internal search margin. Complete long results
-remain pending, and the running histories are unchanged.
+remain unreported in that checkpoint; this known failure already prevents a pass.
+[H72](standing-h72-contract.md) finds corrections within the actual speed limits
+at all three saved failure states by extending the copied search and retaining
+valid fallbacks. This is local evidence, not continuous standing success.
+[H73](standing-h73-contract.md) verifies local replay and disabled compatibility,
+but its first concurrent enabled runs end in memory errors without final reports.
+Repeat one simulation at a time under the documented runtime bound, preserving
+all partial results. No completed serial screen is established by this update.
 All 67 production/package files remain unchanged. No standing or production
 gate closes before complete independent acceptance results.
 

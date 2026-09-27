@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import test, { after } from 'node:test';
 import { execFileSync, spawnSync } from 'node:child_process';
-import { readFileSync, writeFileSync, mkdtempSync, mkdirSync, rmSync } from 'node:fs';
+import { existsSync, readFileSync, writeFileSync, mkdtempSync, mkdirSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { gunzipSync } from 'node:zlib';
@@ -14,11 +14,20 @@ const unregister = register(); after(unregister);
 const { distributeSupportLoad } = await import('../src/character/support-loads.ts');
 const { recoverySupportHull, recoverySupportMargin } = await import('../src/character/recovery-support.ts');
 const archive = 'docs/checkpoints/2026-09-26/h8-evaluation';
-const rows = gunzipSync(readFileSync(`${archive}/standing-regenerated-20260926-02/1-observe.jsonl.gz`))
-  .toString('utf8').trim().split('\n').map(JSON.parse);
-const before = rows.find(row => row.tick === 175).contactPlan;
-const afterRow = rows.find(row => row.tick === 176), plan = afterRow.contactPlan;
-const contacts = afterRow.input.contacts.filter(contact => plan.loads.some(load => load.segment === contact.segment));
+// Diagnostic checkpoints are intentionally local and are not published in Git.
+// Keep their replay assertions enabled whenever the local archive is present.
+const archiveAvailable = existsSync(archive);
+const archivedTest = (name, fn) => test(name,
+  { skip: archiveAvailable ? false : 'Local diagnostic checkpoint is not present' }, fn);
+const rows = archiveAvailable
+  ? gunzipSync(readFileSync(`${archive}/standing-regenerated-20260926-02/1-observe.jsonl.gz`))
+    .toString('utf8').trim().split('\n').map(JSON.parse)
+  : [];
+const before = archiveAvailable ? rows.find(row => row.tick === 175).contactPlan : null;
+const afterRow = rows.find(row => row.tick === 176), plan = archiveAvailable ? afterRow.contactPlan : null;
+const contacts = archiveAvailable
+  ? afterRow.input.contacts.filter(contact => plan.loads.some(load => load.segment === contact.segment))
+  : [];
 
 function checkPhysicalConstraints(result) {
   for (const axis of ['x', 'y', 'z']) assert.ok(Math.abs(result.loads.reduce((sum, load) => sum + load.plannedForce[axis], 0) - plan.allocatedForce[axis]) < 1e-8);
@@ -42,7 +51,7 @@ function checkPhysicalConstraints(result) {
   }
 }
 
-test('H8 uses current measured manifolds and preserves force/moment on the regenerated discontinuity', () => {
+archivedTest('H8 uses current measured manifolds and preserves force/moment on the regenerated discontinuity', () => {
   const result = holdPatchStandingLoads(plan, contacts, distributeSupportLoad, before);
   assert.equal(result.reason, 'held-patch-references-feasible');
   checkPhysicalConstraints(result.plan);
@@ -50,7 +59,7 @@ test('H8 uses current measured manifolds and preserves force/moment on the regen
   assert.ok(jump <= 20);
 });
 
-test('H8 explicitly reports missing references, changed support, and infeasible pressure', () => {
+archivedTest('H8 explicitly reports missing references, changed support, and infeasible pressure', () => {
   const initialize = holdPatchStandingLoads(plan, contacts, distributeSupportLoad, undefined);
   assert.equal(initialize.reason, 'initialize'); assert.equal(initialize.plan, plan);
   const changed = holdPatchStandingLoads(plan, contacts.slice(1), distributeSupportLoad, before);
@@ -60,13 +69,13 @@ test('H8 explicitly reports missing references, changed support, and infeasible 
   assert.equal(result.reason, 'pressure-infeasible'); assert.equal(result.plan, infeasible);
 });
 
-test('H9 allows patch shares to move without inventing force, pressure, or contacts', () => {
+archivedTest('H9 allows patch shares to move without inventing force, pressure, or contacts', () => {
   const result = projectStandingLoads(plan, contacts, distributeSupportLoad, before);
   assert.equal(result.reason, 'projected-current-measured-points');
   checkPhysicalConstraints(result.plan);
 });
 
-test('current contour projections retain measured owners and force/moment constraints', () => {
+archivedTest('current contour projections retain measured owners and force/moment constraints', () => {
   for (const solve of [projectHindfootHullStandingLoads, projectEqualContourStandingLoads, projectMeasuredPressureStandingLoads]) {
     const result = solve(plan, contacts, distributeSupportLoad, null, recoverySupportHull);
     assert.match(result.reason, /^projected-current-/);
@@ -98,7 +107,7 @@ test('measured-pressure projection retains a feasible measured patch wrench', ()
   }
 });
 
-test('portable standing archive verifies compressed and decompressed digests', () => {
+archivedTest('portable standing archive verifies compressed and decompressed digests', () => {
   const output = execFileSync(process.execPath, ['scripts/archive-standing-evidence.mjs', 'verify', `${archive}/manifest.json`], { encoding: 'utf8' });
   assert.equal(JSON.parse(output).verified, 29);
 });
@@ -144,7 +153,7 @@ test('staged evaluator rejects a changed trace before writing a result', () => {
   } finally { rmSync(directory, { recursive: true, force: true }); }
 });
 
-test('evidence archive refuses to overwrite a completed run', () => {
+archivedTest('evidence archive refuses to overwrite a completed run', () => {
   const result = spawnSync(process.execPath, ['scripts/archive-standing-evidence.mjs', 'create', archive, 'evidence/unused'], { encoding: 'utf8' });
   assert.notEqual(result.status, 0);
   assert.match(result.stderr, /Usage/);

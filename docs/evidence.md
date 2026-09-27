@@ -1,5 +1,12 @@
 # Evidence availability and preservation
 
+Publication policy (2026-09-27): diagnostic files under `docs/checkpoints/` and
+`docs/checkpoint-*.json` remain local and are excluded from Git at the user's
+request. Checkpoint links below and in investigation reports refer to that local
+archive; they are not downloadable from a fresh clone. Archive-dependent tests
+report an explicit skip when the local archive is absent, while independent
+tests continue to run.
+
 Checked during the 2026-09-26 documentation repair. The original review found 31 broken evidence-link occurrences. Their paths remain recorded in the [documentation checkpoint inventory](checkpoint-2026-09-26.json), including when a surviving copy was recovered. Missing files are explicitly labeled in the historical reports. A path or a reported test count alone does not establish acceptance.
 
 ## Recovered portable artifacts

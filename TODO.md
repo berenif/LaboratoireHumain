@@ -4,6 +4,20 @@ Reviewed 2026-09-26 against the local working tree at `44fc25437d841151c704895c1
 
 The protocol room, seven-station playground, both renderers, continuous 25-body physics, and diagnostic/test infrastructure already exist. The missing milestone is repeatable, accepted physical behavior with reproducible evidence. Work through the dependencies below; independent evidence/tooling work can proceed while physics remains open.
 
+**2026-09-27 update: the first unfinished task is still standing still without
+drifting, wobbling, or falling.** The experimental search sometimes threw away
+a helpful move because it missed a preferred extra margin, then kept an old
+move that caused much more wobbling. [H71](docs/standing-h71-contract.md#plain-language-explanation)
+confirms this selection error. Keeping a tested correction within the actual
+speed limits is an experimental repair, not proof that standing is solved.
+
+Next, preserve the partial results from [H73's memory failures](docs/standing-h73-contract.md#first-attempt--memory-failures-no-complete-screen)
+and repeat with **one simulation at a time** under its documented runtime bound.
+Recheck disabled compatibility, then complete all three short screens; proceed
+to the unchanged longer standing tests only if every short screen passes.
+Keep the standing checkbox open until the full criteria below pass. Weight
+shifting, stepping, recovery, and full application checks remain afterward.
+
 ## P0 — Restore reproducibility and establish quiet standing
 
 - [x] **Make a fresh baseline possible without lost historical reports.** Added explicit `--fresh` capture in [capture-physics-baseline.mjs](scripts/capture-physics-baseline.mjs). The [new baseline](docs/checkpoints/2026-09-26/fresh-baseline.json) captures 252 source/configuration hashes, installed direct dependency versions, the Node executable digest, staged/unstaged/untracked work, planned scenario inputs, and four missing historical artifacts. It inherits no 140/142 result and runs no physics. Five CLI regression tests cover missing/empty/changed history, dirty worktrees, and immutable output; see [verification](docs/checkpoints/2026-09-26/fresh-baseline-validation.json) and [reproduction instructions](docs/evidence.md#fresh-baseline-capture). Original artifacts remain unchanged and missing originals remain unavailable.
@@ -108,7 +122,8 @@ search remains insufficient. [H65](docs/standing-h65-contract.md) reaches all
 three local speed reserves by expanding improving motor-probe directions.
 [H66](docs/standing-h66-contract.md) passes all three 2+10-second diagnostic
 screens, with 2,160 exact live predictions and unchanged speed/drift limits.
-Its original 2+30-second evaluation is now running under the same source.
+Its original 2+30-second evaluation records a heading-0 speed failure at tick
+978; a complete long result remains unreported in that checkpoint.
 Production adoption and interactive performance remain unresolved; no
 acceptance box closes.
 
@@ -116,10 +131,21 @@ acceptance box closes.
 investigate the remaining runtime cost on saved H66 states. Previous commands
 and cached response columns give bounded seeds and some improvements, but miss
 the complete local task and do not establish continuous performance. Their
-complete result archives verify; the running H66 histories remain unchanged.
+complete result archives verify; the original H66 histories remain unchanged.
 
 [H69](docs/standing-h69-contract.md)'s continuous warm-cache candidate fails two
 short screens, including a fall at +π/3; only heading 0 passes. All 2,147 selected
 live states match their predictions exactly, with thirteen guarded skips after
 the fall. Complete nested data and injected source are archived and verified.
 No physical acceptance box closes and no long H69 run follows.
+
+[H70](docs/standing-h70-contract.md) passes the −π/4 short screen; its other
+headings remain pending. [H71](docs/standing-h71-contract.md) confirms that the
+search discarded corrections within the actual speed limits in two saved
+states because they missed its stricter foot margin. [H72](docs/standing-h72-contract.md)
+extends the search and retains valid fallbacks, finding admissible corrections
+at all three examined states. These are local results only.
+[H73](docs/standing-h73-contract.md) reproduces the local queries and disabled
+baseline, but all three concurrent enabled attempts exhaust memory without
+final reports. Preserve their partial outputs and repeat serially as specified
+above. No completed serial screen or standing acceptance is claimed.

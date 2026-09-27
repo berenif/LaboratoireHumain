@@ -2,6 +2,26 @@
 
 For the latest recorded checkpoint, use [current status](status.md). Results below belong to the dated source scopes stated in each section; the gate tables are historical, not a current pass ledger. [Evidence availability](evidence.md) identifies recovered originals and missing artifacts. Paths marked unavailable are retained for provenance and cannot be used as live verification links.
 
+## 2026-09-27 publication: current work and older open PRs
+
+The user explicitly requested committing, pushing, and merging all pending work
+to `main`, then excluded diagnostic checkpoints from upload. The local source
+commit `493d887` and PRs #4, #7, and #8 are integrated. Conflicts retain the newer
+anatomical fixtures, bounded balance behavior, collision checks, and recorded
+mass observer; measured foot candidates, numerical arm geometry corrections,
+independent native-mass verification, documentation, and regression tests are
+preserved from the older branches.
+
+Post-merge TypeScript passes. The focused eleven-file selection reports
+**45/49 passing**: two older active-step tests, the near-extended recovery-arm
+test, and the older forward-crouch fixture test fail. These assertions remain
+enabled. Archive tests pass **9/9** with local evidence; without the unpublished
+archive, three independent tests pass and six archive-dependent tests explicitly
+skip. No full physics acceptance or successful deployment is claimed.
+
+`docs/checkpoints/` and `docs/checkpoint-*.json` remain local, ignored, and absent
+from the published commits. Historical evidence links refer to those local files.
+
 ## 2026-09-23 repair checkpoint: still not accepted
 
 [The repair report](physics-repair-2026-09-23.md) records a continuous measured

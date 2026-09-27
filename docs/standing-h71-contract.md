@@ -1,5 +1,25 @@
 # H71 — retain a physically admissible fallback
 
+## Plain-language explanation
+
+Imagine a little robot trying to stand still. It finds a move that would help,
+but rejects it because it would still wobble a little more than it wants.
+Then it keeps its old move, which makes it wobble much more. The mistake is
+refusing a useful improvement because it misses a preferred target.
+
+Here, the search wanted foot rotation below 0.4 rad/s, while the actual test
+allowed up to 0.5 rad/s for every body part. It discarded corrections within
+the actual speed limits because they missed that extra margin, then returned
+a baseline that exceeded the actual limits. These limits measure speed;
+meeting them for one step does not prove lasting balance or prevent drift.
+
+The experimental repair keeps the best tested correction within all actual
+speed limits when the preferred margin cannot be reached. [H72](standing-h72-contract.md)
+also extends the search when needed; [H73](standing-h73-contract.md) evaluates
+the combined change over time. Quiet standing remains unfinished.
+
+## Recorded failure and replay plan
+
 The first failed H66 long step, heading 0 at tick 978, contains 58 copied
 candidates within the original 0.1 m/s and 0.5 rad/s physical bounds. None
 meets the search's stricter 0.4 rad/s foot guard, so the current helper returns
