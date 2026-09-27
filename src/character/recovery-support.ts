@@ -240,10 +240,20 @@ function solveCapturedTwoBone(
   ));
   const distance = clamp(length(raw), minimum, maximum);
   const end = add(start, scale(direction, distance));
+  if (maximum - distance <= 1e-12) {
+    return { middle: add(start, scale(direction, firstLength)), end };
+  }
   const along = distance > GEOMETRY_EPSILON
     ? (firstLength ** 2 - secondLength ** 2 + distance ** 2) / (2 * distance)
     : firstLength;
-  const bendHeight = Math.sqrt(Math.max(0, firstLength ** 2 - along ** 2));
+  // The factored triangle area reaches exact zero at full extension. The
+  // difference of near-equal squares previously introduced heading-dependent
+  // nanometre bends, amplified by acos near a straight elbow.
+  const bendHeight = distance > GEOMETRY_EPSILON ? Math.sqrt(Math.max(0,
+    (maximum - distance) * (maximum + distance)
+      * (distance - Math.abs(firstLength - secondLength))
+      * (distance + Math.abs(firstLength - secondLength)),
+  )) / (2 * distance) : 0;
   let bend = sub(preferredBend, scale(direction, dot(preferredBend, direction)));
   if (length(bend) < 1e-4) bend = cross(direction, RIGHT);
   bend = normalize(bend, FORWARD);
@@ -595,6 +605,5 @@ export function solveRecoveryArmTarget(
   return { handPosition, handRotation, upperRotation, forearmRotation, forearmTwistRotation, elbow: solved.middle, wrist,
     reachErrorM: length(sub(handPosition, requestedHandCenter)) };
 }
-
 
 

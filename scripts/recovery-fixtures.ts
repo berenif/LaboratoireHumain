@@ -75,6 +75,8 @@ export function recoveryFixturePoses(fixture: RecoveryPoseFixture): Map<SegmentI
       if (!definition.parent) continue;
       const lead = definition.id.startsWith(leading);
       let coordinates = ZERO;
+      // Lean forward and toward the trailing shin to put projected mass inside
+      // the two real support patches. The weak fixture deliberately omits this.
       if (definition.id === "lumbar") coordinates = fixture.support === "weak"
         ? { x: 0.07, y: 0, z: 0 }
         : { x: 0.10, y: 0, z: leading === "left" ? -0.14 : 0.14 };
