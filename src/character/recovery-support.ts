@@ -486,7 +486,10 @@ export function reachableArmBraceTarget(
       + recoveryJointLimitError(forearmId, rawForearm)
       + recoveryJointLimitError(handId, rawHand);
     const floorClearanceM = rebuilt.floorClearanceM;
-    const geometricallyReachable = reachErrorM <= RECOVERY_ARM_TARGET_TOLERANCE.maximumReachErrorM
+    // A planned floor plant needs a converged solution. The looser runtime
+    // contact tolerance is not permission to label a radius-clamped or
+    // unconverged plan as an exact floor target.
+    const geometricallyReachable = reachErrorM < 1e-8
       && floorClearanceM >= floorY - RECOVERY_ARM_TARGET_TOLERANCE.maximumFloorPenetrationM;
     const movementM = length(sub(position, hand.position));
     const worldPatch = localPatch.map(point => worldPoint(position, handPose.rotation, point));

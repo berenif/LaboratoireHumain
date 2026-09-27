@@ -263,10 +263,11 @@ export function reachableFootTarget(
   const hipWidth = HUMAN_PROPORTIONS.pelvis.hipAnchorXM;
   const nearestWidth = clamp(dot(fromHip, outward) + hipWidth, 0.10, 0.20);
   const nearestForward = clamp(dot(fromHip, forward), -0.40, 0.10);
-  // Clamping often puts the nearest candidate on a grid endpoint. Preserve
-  // first-candidate order while avoiding an identical expensive IK solve.
-  const widths = [...new Set([nearestWidth, 0.10, 0.12, 0.15, 0.18, 0.20])];
-  const forwards = [...new Set([nearestForward, ...Array.from({ length: 51 }, (_, index) => -0.40 + index / 100)])];
+  // Keep the measured/preferred plant before the coarse search grid. Grid
+  // bounds are search hints; anatomical and clearance checks decide feasibility.
+  // Deduplicate candidates to avoid repeating expensive IK solves.
+  const widths = [...new Set([dot(fromHip, outward) + hipWidth, nearestWidth, 0.10, 0.12, 0.15, 0.18, 0.20])];
+  const forwards = [...new Set([dot(fromHip, forward), nearestForward, ...Array.from({ length: 51 }, (_, index) => -0.40 + index / 100)])];
   const flatFloorOffset = -lowestWorldPoint(foot.geometry, ZERO, yaw).y;
   let best: RecoveryFootTarget | null = null;
   let bestScore = Infinity;

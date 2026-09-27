@@ -53,7 +53,7 @@ export function recoveryFixturePoses(fixture: RecoveryPoseFixture): Map<SegmentI
   let poses: Map<SegmentId, MutablePose>;
   if (fixture.pose === "crouch") {
     poses = new Map();
-    poses.set("pelvis", { id: "pelvis", position: ZERO, rotation: { x: 0, y: 0, z: 0, w: 1 },
+    poses.set("pelvis", { id: "pelvis", position: ZERO, rotation: pitch(0.20),
       linearVelocity: ZERO, angularVelocity: ZERO });
     for (const definition of SEGMENTS) {
       if (!definition.parent) continue;
