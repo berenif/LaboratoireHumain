@@ -1,0 +1,78 @@
+name: Support-chain exact-source workspace
+
+on:
+  push:
+    branches: [agent/balance-support-chain-v2]
+    paths: [.github/workflows/support-chain-workspace.yml]
+
+permissions:
+  contents: read
+
+jobs:
+  workspace:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22.13.0
+          cache: npm
+      - name: Install locked dependencies and record identity
+        run: |
+          mkdir -p evidence/balance-support-chain/baseline
+          git rev-parse HEAD > evidence/balance-support-chain/baseline/source-commit.txt
+          git rev-parse HEAD^{tree} > evidence/balance-support-chain/baseline/source-tree.txt
+          node --version > evidence/balance-support-chain/baseline/node-version.txt
+          set +e
+          npm ci > evidence/balance-support-chain/baseline/npm-ci.log 2>&1
+          result=$?
+          printf 'npm-ci %s\n' "$result" > evidence/balance-support-chain/baseline/check-exits.txt
+          tail -30 evidence/balance-support-chain/baseline/npm-ci.log
+          exit "$result"
+      - name: Package unmodified source and locked physics dependencies
+        run: |
+          mkdir -p .offline-runtime
+          cp "$(command -v node)" .offline-runtime/node
+          tar --exclude=./node_modules -czf "$RUNNER_TEMP/support-chain-source.tar.gz" .
+          tar -czf "$RUNNER_TEMP/support-chain-dependencies.tar.gz" \
+            node_modules/@dimforge node_modules/three node_modules/tsx \
+            node_modules/esbuild node_modules/@esbuild node_modules/get-tsconfig \
+            node_modules/resolve-pkg-maps node_modules/typescript node_modules/@types
+      - uses: actions/upload-artifact@v4
+        with:
+          name: support-chain-exact-source-workspace
+          path: |
+            ${{ runner.temp }}/support-chain-source.tar.gz
+            ${{ runner.temp }}/support-chain-dependencies.tar.gz
+          retention-days: 3
+          compression-level: 0
+      - name: Reproduce each baseline check separately
+        run: |
+          status=0
+          run_check() {
+            local name="$1"; shift
+            "$@" > "evidence/balance-support-chain/baseline/${name}.log" 2>&1
+            local result=$?
+            printf '%s %s\n' "$name" "$result" | tee -a evidence/balance-support-chain/baseline/check-exits.txt
+            tail -30 "evidence/balance-support-chain/baseline/${name}.log"
+            if [ "$result" -ne 0 ]; then status=1; fi
+          }
+          set +e
+          run_check typecheck timeout 120s npm run typecheck
+          run_check probe timeout 120s node scripts/probe-balance-fall-transition.mjs
+          run_check balance timeout 150s node --test tests/balance-controller.test.mjs
+          run_check frame-integrity timeout 120s node --test tests/leg-target-frame.test.mjs tests/physical-chain-integrity.test.mjs
+          run_check recovery timeout 300s npm run test:recovery
+          exit "$status"
+        env:
+          BALANCE_TRACE_DIR: evidence/balance-support-chain/baseline/traces
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: support-chain-baseline
+          path: evidence/balance-support-chain/baseline
+          retention-days: 14
