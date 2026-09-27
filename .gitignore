@@ -42,3 +42,7 @@ next-env.d.ts
 /outputs/
 /work/
 /evidence/
+
+# Local diagnostic checkpoints (do not publish)
+/docs/checkpoints/
+/docs/checkpoint-*.json

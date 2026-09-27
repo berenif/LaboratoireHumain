@@ -1,8 +1,26 @@
 # Deterministic physical-humanoid verification
 
-Run `npm run test:physics` with Node 22.13 or newer. The entry point is `scripts/physics-acceptance.ts`; immutable scenario inputs and numerical thresholds live in `scripts/physics-fixtures.ts`. Every scenario uses Rapier 0.20.0 at exactly 1/60 second per update.
+This document defines required behavior, not a claim that the implementation passes. See [current status](status.md), [evidence availability](evidence.md), and the separate [browser verification setup](browser-verification.md).
+
+Run `npm run test:physics` with Node 22.13 or newer. The entry point is `scripts/run-physics-harness.ts`, which executes the scenarios in `scripts/physics-acceptance.ts`; immutable scenario inputs and numerical thresholds live in `scripts/physics-fixtures.ts`. Every scenario uses Rapier 0.20.0 at exactly 1/60 second per update.
 
 The harness writes `evidence/physics-results.json` and `evidence/successor-trace.ndjson`. Report schema 4 records all 25 segment trajectories, joint-coordinate and contact diagnostics, motion-state changes, body-input gating, and the Rapier backend version. The trace samples every sixth update, while assertions inspect every update.
+
+The default run is sequential and prints a result after each scenario. Recovery
+scenarios can take several minutes of wall time. Set `PHYSICS_PROGRESS=1` to show
+progress every five simulated seconds, and `PHYSICS_WORKERS=2` to run scenarios
+in two separate Node processes. The worker runner discovers the complete
+scenario list, verifies coverage and consistent metadata, and records source
+fingerprints in `evidence/physics-execution.json`. Completed scenario reports,
+traces, and console logs are retained under `evidence/physics-workers/` before
+the aggregate report is written. Clear `PHYSICS_SCENARIO_PATTERN` and
+`PHYSICS_LIST_ONLY` for a full acceptance run.
+
+The Pages workflow checks focused balance regressions before the full physics
+suite. It enables two workers and progress output, limits the physics step to
+45 minutes and the build job to 60 minutes, and uploads the test logs and
+completed scenario reports even when a gate fails. Failed or timed-out checks
+block publication of the Pages artifact and deployment.
 
 ## Fixed acceptance contract
 
@@ -24,7 +42,7 @@ The harness writes `evidence/physics-results.json` and `evidence/successor-trace
 | Paired lockout replay position / velocity difference | At most 0.0000001 m / velocity units |
 | Paired lockout replay rotation difference | At most 0.00001 degrees |
 
-All positions, rotations, velocities, joint coordinates, limit errors, motor loads, saturations, and contact measurements must remain finite. Actual joint torque is checked against each joint profile's permitted-axis actuator budget. Contact diagnostics report a consistent total count, load-bearing count, normal load, supporting-segment list, and planned versus measured load for each current patch. Planned vertical load is capped at 1.35 times body weight, and contacts without measured support receive zero planned load.
+All positions, rotations, velocities, joint coordinates, limit errors, motor loads, saturations, and contact measurements must remain finite. The harness checks the reported torque magnitude against the profile's aggregate vector cap. Native motors enforce per-axis effort ceilings inside Rapier, while their `motorTorqueSource: "native-request"` diagnostic reports a bounded request; it is not delivered motor-impulse readback. The explicit recovery impulse path reports `applied-impulse`. Do not interpret either diagnostic as the complete measured body response. Contact diagnostics report a consistent total count, load-bearing count, normal load, supporting-segment list, and planned versus measured load for each current patch. Planned vertical load is capped at 1.35 times body weight, and contacts without measured support receive zero planned load.
 
 ## Continuous physics ownership
 

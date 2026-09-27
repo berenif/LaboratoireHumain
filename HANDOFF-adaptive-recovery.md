@@ -1,5 +1,7 @@
 # Adaptive natural recovery — continuation handoff
 
+Historical September 9 handoff. Start new work from [current status](docs/status.md) and the [documentation index](docs/README.md). Instructions, controller details, and local evidence paths below describe that checkpoint; consult [evidence availability](docs/evidence.md) before reusing results.
+
 Prepared 2026-09-09 for the next chat. Workspace: `O:\LaboratoireHumain`. Branch: `main`. Baseline HEAD: `8ee2b7573ebd2af44a2df58988eeb51db82eed5c`. All changes are local and uncommitted. No deployment, publishing, PR, or new Codex task was created.
 
 ## Read this first

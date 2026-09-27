@@ -1,4 +1,53 @@
-# Merge acceptance ledger
+# Merge acceptance history and gate map
+
+For the latest recorded checkpoint, use [current status](status.md). Results below belong to the dated source scopes stated in each section; the gate tables are historical, not a current pass ledger. [Evidence availability](evidence.md) identifies recovered originals and missing artifacts. Paths marked unavailable are retained for provenance and cannot be used as live verification links.
+
+## 2026-09-23 repair checkpoint: still not accepted
+
+[The repair report](physics-repair-2026-09-23.md) records a continuous measured
+contact-load allocator and increased internal solver convergence on top of
+`44fc25437d841151c704895c1fb92de4c2e468d0`. Final focused checks pass **107/110**
+(exit 1); balance remains **12/14**, with capture-instability falls at ticks
+**177/229**. The balance probe and all three headings of the selected neutral
+scenario still fail acceptance. TypeScript and lint pass. Full physics,
+protocol, fixture refresh and publication remain gated. Prepared CI changes
+and the original verification evidence are preserved. These uncommitted
+results supersede earlier results only for the gates actually rerun.
+
+## 2026-09-24 continuation: diagnosis only, still not accepted
+
+The retained source was rechecked after a transfer/landing diagnosis. Focused
+tests remain **107/110**, exit 1; the balance probe exits 1 with the same
+capture-instability falls at ticks **177/229**. Runtime instrumentation found
+repeated `capture-support` rejection of the active candidate while the
+alternate is feasible only under the opposite measured sole load. The
+candidate resets were therefore not removed: a rejected general debounce had
+expired-transfer and balance regressions, and a temporary crossover landing
+candidate failed two existing landing regressions while slow-pull remained at
+tick 177 and reversal fell at tick 250.
+
+Neutral evidence shows measured foot positions feeding the flat-floor support
+target while the feet drift under loaded contacts. Fixed and fractional anchor
+experiments did not meet drift acceptance. No production physics change was
+retained; the landing planner was restored to its prior SHA-256. Detailed
+commands, exits, source fingerprints, and traces are appended to
+[the repair report](physics-repair-2026-09-23.md). Full physics, protocol,
+browser gates, and native fixture refresh remain gated because focused
+acceptance did not improve. No threshold, assertion, actuator ceiling, or
+fixture was changed.
+
+## 2026-09-23 post-merge verification: failed
+
+The latest verification of `44fc25437d841151c704895c1fb92de4c2e468d0` is
+documented in [the post-merge report](physics-verification-2026-09-23.md).
+CI completed all 63 physics scenarios in 47 minutes 53 seconds: **6 pass,
+57 fail, exit 1**. All 63 local worker results agree. Build and TypeScript
+pass; the application suite passes **273/280**, focused checks **35/37**, and
+the independent five-cycle protocol fails its first cycle. The balance failures
+are at ticks **169/130**, superseding the earlier tick and test counts below.
+Pages deployment was skipped. The report also records recovery of the local
+trace aggregation after a disk-space error and the pending local CI workflow
+improvements. Earlier checkpoint details below remain historical evidence.
 
 ## 2026-09-23 publication checkpoint: work in progress
 
@@ -128,7 +177,7 @@ The observed transitions are physical pelvis-height falls, not broken contact
 or joint integrity. Step timing, reachable placement, and motor response need a
 production correction before the remaining gates can run.
 
-## Contract and source map
+## Historical contract and source map
 
 | ID | Required behavior and fixed limit | Production path | Automated evidence | Browser evidence | Result |
 | --- | --- | --- | --- | --- | --- |
@@ -143,7 +192,7 @@ production correction before the remaining gates can run.
 | B2 | Gentle pulls at tested headings, held targets, reversal, and release during swing remain upright; stronger pulls make completed corrective steps. | `src/character/BalanceController.ts`, `src/character/pose.ts`, `src/character/leg-target-frame.ts` | `balance-controller`, `balance-support`; all `PULL_FIXTURES`, native regression fixtures, and fall-transition probe | Full interaction replay, including pull, step, release, and fresh press. | **Fail:** balance 8/10; slow tick 362 and reversal tick 236 |
 | B3 | Step side and target use measured support, COM/velocity, and reachable terrain. Swing needs ≥ 52% of **whole-body weight** on the retained measured sole for 0.10 consecutive seconds; a completed step needs actual moving-side unloading followed by ≥ 0.10 s loaded touchdown within 0.09 m of target. A timer or planned load cannot complete it. | `src/character/BalanceController.ts`, `src/character/support-loads.ts`, `src/character/pose.ts` | `balance-controller`, `balance-support`, `leg-target-frame`; fall-transition probe with contact/COM/motor trace | Confirm actual lift, landing load, and no unfinished swing at probe endpoint. | Open with B2 |
 | B4 | Overpowering pulls cause a physical protective fall under the existing support-margin, speed, posture, and pelvis-height guards; no masking or threshold relaxation. | `src/character/BalanceController.ts`, `src/character/EmbodiedCharacter.ts` | `balance-controller`, `physical-chain-integrity`; fast/sustained pull harness scenarios | Full fall and recovery replay. | Pending |
-| R1 | Landing, settling, brace, kneel, and standing transitions use persistent measured solver contacts (normal Y ≥ 0.65, distance ≤ 0.012 m, load ≥ 3 N for 0.05 s), anatomical eligibility, pose, and speed. Head/neck cannot authorize progression; initial sprawled prone hand is rejected while valid raised support is allowed. | `src/character/DynamicRecovery.ts`, `src/character/recovery-support.ts`, `src/character/recovery-measurements.ts` | `recovery-support`, `recovery-controller-support`, `recovery-measurements`, `recovery-arm-kinematics`; full harness | Inspect phase and contact traces from side and three-quarter views. | Targeted 14/14 pass on current source; full harness pending |
+| R1 | Landing, settling, brace, kneel, and standing transitions use persistent measured solver contacts (normal Y ≥ 0.65, distance ≤ 0.012 m, load ≥ 3 N for 0.05 s), anatomical eligibility, pose, and speed. Head/neck cannot authorize progression; initial sprawled prone hand is rejected while valid raised support is allowed. | `src/character/DynamicRecovery.ts`, `src/character/recovery-support.ts`, `scripts/recovery-measurements.ts` | `recovery-support`, `recovery-controller-support`, `recovery-measurements`, `recovery-arm-kinematics`; full harness | Inspect phase and contact traces from side and three-quarter views. | Targeted 14/14 pass on current source; full harness pending |
 | R2 | Deliberate hand/foot placement respects reach, joint limits, terrain, collision clearance, and actual support. A release requires COM projected 0.15 s forward inside the remaining loaded patch hull; material-patch drift > 0.05 m invalidates an anchor until unload/replant. Unsupported > 0.20 s or stalled > 3 s retries without pose replacement. | `src/character/DynamicRecovery.ts`, `src/character/recovery-support.ts`, `src/character/recovery-joints.ts` | `recovery-controller-support`, `recovery-foot-targets`, `recovery-forefoot-anchor`, `recovery-motors`; obstruction and floor-loss harness scenarios | Inspect foot slip, lift source, retries, and continuity in full recovery videos. | Pending |
 | R3 | Crouch, half-kneel, prone, supine, and both sides, including mirrors/rotations and natural falls, recover on unobstructed floor within 25 simulated seconds and hold one second of stable bilateral standing (pelvis > 0.93 m; pelvis/ribcage up Y ≥ 0.97; low RMS motion). | `src/character/DynamicRecovery.ts`, `scripts/recovery-fixtures.ts` | `recovery-fixtures`, full harness pose/native-stream/natural-fall scenarios | `run-recovery-visual-replay.mjs` in both renderers, side/three-quarter, normal/slow. | Pending |
 | R4 | Five consecutive fall/recovery cycles without Reset; floor removal/restoration, obstruction retries, pause/Reset, lockout trajectory isolation, and fresh press after recovery. | `src/character/EmbodiedCharacter.ts`, `src/demo/DemoRuntime.ts`, `src/interaction/` | harness five-cycle/lifecycle scenarios; `character-domain`, `demo-runtime`, `recovery-controller-support` | Full interaction replay; full recovery replay. | Pending |
@@ -163,7 +212,7 @@ Recovery on every Extreme obstacle, native-touch
 certification, and GPU-performance certification are outside this acceptance
 contract.
 
-## Final-source gate ledger
+## Historical final-source gate ledger
 
 Use `C:\Users\flori\.cache\codex-runtimes\codex-primary-runtime\dependencies\node\bin\node.exe`
 for every Node entrypoint and child process. Capture each native command's exit
@@ -189,3 +238,31 @@ Store browser evidence in an ignored run-specific directory. Record source
 fingerprints before and after each run, command arguments, scenario counts,
 exit codes, and visual findings in that directory and link them here. Any source
 change invalidates affected results; rerun those gates before publication.
+
+## 2026-09-24 focused physics repair — final retained-source ledger
+
+| Gate | Result | Evidence |
+| --- | --- | --- |
+| Focused 110-test selection plus landing-capture, transfer-prediction, joint-coordinate suites | **Fail: 140/142, exit 1.** Slow-pull/release/reversal falls at tick 216; planted reversal falls at tick 343. All other selected tests pass, including the existing impulse assertion. Source fingerprints match before and after, including after candidate rollback. | `focused-restored-retained-source.json` (`evidence/physics-repair-20260924-completion/focused-restored-retained-source.json`; unavailable), log (`evidence/physics-repair-20260924-completion/focused-restored-retained-source.log`; unavailable) |
+| Balance probe | **Fail: exit 1.** Slow-pull has an infeasible candidate and opposite requested/allocated horizontal force at its failure frame, with left thigh saturation 3.074×; planted reversal ends at the unchanged pelvis-height guard. Both runs retain finite connected Rapier-owned bodies. | Final check manifest (`evidence/physics-repair-20260924-completion/final-restored-source-checks.json`; unavailable), log (`evidence/physics-repair-20260924-completion/balance-probe-restored-final-source.log`; unavailable); raw traces are named in the manifest. |
+| Official idle scenario | **Fail: exit 1, 0/1 scenarios accepted.** Required 2 s settling plus 30 s observation was run at 0, +π/3 and −π/4. All runs stayed upright with zero steps, but pelvis drift, foot drift, linear speed, and angular speed exceed limits at every heading. | `official-idle-final-source-rerun.json` (`evidence/physics-repair-20260924-completion/official-idle-final-source-rerun.json`; unavailable), log (`evidence/physics-repair-20260924-completion/official-idle-final-source-rerun.log`; unavailable) |
+| Articulated impulse response | **Focused hip/ankle assertion passes with its original tolerance.** A 36-case paired heading/sign/magnitude sweep has one 15.23% right-thigh mismatch at the smallest 0.0005 Nm·s impulse; it remains recorded as an unresolved low-impulse diagnostic outlier. | `joint-response-paired-static-probe.json` (`evidence/physics-repair-20260924-completion/joint-response-paired-static-probe.json`; unavailable), trace (`evidence/physics-repair-20260924-completion/joint-response-paired-static-probe.jsonl`; unavailable) |
+| Combined stance posture/reference candidate | **Rejected and reverted.** Focused balance/controller + body coherence was 27/30; it delayed the two falls but caused a 0.03035 m joint separation in left-hand chest drag. The diagnostic idle attempt failed all headings and recorded 0.074518 m self-penetration; output JSON was not saved because its temporary output directory was absent. | `stance-reference-transition-candidate.json` (`evidence/physics-repair-20260924-completion/stance-reference-transition-candidate.json`; unavailable), log (`evidence/physics-repair-20260924-completion/stance-reference-transition-candidate.log`; unavailable) |
+| TypeScript | **Pass, exit 0.** | `typecheck-restored-final-source.log` (`evidence/physics-repair-20260924-completion/typecheck-restored-final-source.log`; unavailable) |
+| ESLint | **Pass, exit 0; 0 errors and 6 warnings.** | `eslint-restored-final-source.log` (`evidence/physics-repair-20260924-completion/eslint-restored-final-source.log`; unavailable) |
+| `git diff --check` | **Pass, exit 0.** The two appended reports also passed a trailing-whitespace scan. | Final check after both report edits. |
+
+The source remained stable within each focused test, probe, and official idle
+run. Focused-run SHA-256 fingerprints include `BalanceController.ts`
+`329d2f40cfde8329cc0fbef42aa867ed8fe8b36170b687df1d2bc0377b3bad0a`,
+`EmbodiedCharacter.ts`
+`e76e52091d901e561936e27393532ea06d53c5328623f20385cca45126826f02`, and
+`support-loads.ts`
+`9637a126ffa827f8523cec06013552635f5e154ecf40927783ace4bc0f2d1a2a`; full
+before/after maps are in the linked manifests. No stance-reference/transfer
+controller correction passed the required regressions, so none was retained.
+The focus repair is **not accepted**. Full application, physics, protocol,
+build/browser, and Pages gates remain a separate phase. Existing continuous
+allocator, solver settings, thresholds, actuator ceilings, fall guards,
+Rapier ownership, and native fixtures were preserved. No commit, push, or
+deployment was made.

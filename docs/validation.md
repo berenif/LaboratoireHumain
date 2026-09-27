@@ -1,42 +1,13 @@
-# Validation record
+# Historical validation record
 
-## 2026-09-23 publication checkpoint: work in progress
+[Current status](status.md) is the authoritative entry point for the latest recorded checkpoint. This file preserves earlier results and implementation history. Consult [evidence availability](evidence.md) before relying on local artifact references; paths marked unavailable are historical retrieval leads.
 
-After the failed balance gate was disclosed, the user explicitly requested
-"Commit push and merge to main". This later instruction authorizes preservation
-and publication of the current merge; it does not establish physics acceptance.
-The merge preserves both 60b9e010773560968fad3a18ddb27a8cb9a768e6 and
-3ca4cc86bec4c33ab928c44f1c71692ab1ce56ae. Remote main was fetched and still
-pointed to the latter commit before publication.
+## Historical publication checkpoint
 
-The final focused command runs balance-controller, landing-plan and
-leg-target-dynamics tests: **34/36 pass, exit 1**. Balance is **12/14**;
-slow pull falls at tick 169 and planted reversal at tick 130. Landing planning
-is 13/13 and inertial leg-target mechanics 9/9. Both probe scenarios complete
-two measured steps but subsequently fall; the probe exits 1. These failures
-remain enabled. TypeScript passes after a type-only correction to a mutable
-local pose-composition vector; the physical failures reproduce unchanged.
-
-Current changes include explicit infeasible landing results, a bounded
-two-dimensional joint-limited search, measured-pelvis planning/actuation
-agreement, candidate-specific support/capture prediction, load diagnostics,
-and swing-target inertial feedforward under the existing motor caps.
-Retained-pressure delivery and second-swing height loss remain unresolved.
-Experimental stance-height springs and alternate actuator/solver configurations
-were confined to ignored diagnostics and were not adopted. No acceptance
-assertion, absolute 52% retained-load gate, physical fall threshold or torque
-budget was weakened; direct pelvis assistance remains zero by design.
-
-The prescribed final fixture refresh, full automated suite, all 63 physics
-scenarios, five-cycle protocol, two Pages configurations and complete browser
-coverage have **not** been verified on this source. Publication is a WIP
-checkpoint, not an accepted release. Older results below describe historical
-sources and must not be read as current passing evidence.
-
-Commands, native exit codes, source fingerprints, traces and preserved patches
-are in ignored evidence/merge-execution-20260923-160052/, including
-publication-balance.json, publication-typecheck-fixed.json,
-publication-review.json and publication-probe.json.
+The September 23 WIP publication and its 34/36 focused result are preserved in
+[the merge history](merge-acceptance.md#2026-09-23-publication-checkpoint-work-in-progress).
+Publication did not establish acceptance. See [current status](status.md) for
+subsequent checkpoints and [evidence availability](evidence.md) for artifact scope.
 
 ## Historical records and acceptance contract
 
@@ -66,7 +37,7 @@ npm run test:physics
 
 Browser acceptance additionally runs the recovery and interaction replays in WebGL and Canvas2D from side and three-quarter cameras, at normal and slow playback.
 
-## Current investigation (2026-09-19)
+## Historical investigation (2026-09-19)
 
 Physics acceptance remains unachieved. The current balance trace loses measured
 stance support during the first weight transfer, before the second step is
@@ -74,7 +45,7 @@ released. A passive articulated-response correction passes the 16 cross-body
 paths, but other pull and recovery scenarios still fail. Targeted passes do not
 establish full acceptance. The running validation ledger, per-frame evidence,
 rejected experiments and visual artifacts are indexed in
-[the September 19 record](../evidence/limb-20260919/validation-summary.md).
+the September 19 record (`evidence/limb-20260919/validation-summary.md`; unavailable).
 Concurrent edits in the shared checkout require source-provenance checks before
 any final-source claim; a changed controller or golden threshold invalidates it.
 
@@ -110,7 +81,7 @@ incomplete recovery and is not visual-acceptance evidence.
 
 ## Migration baseline
 
-The pre-upgrade working tree, HEAD, dirty-file inventory, and existing failures were recorded before the 25-segment migration in [physical-humanoid-baseline-20260913.md](../evidence/physical-humanoid-baseline-20260913.md). Existing local recovery changes were retained.
+The pre-upgrade working tree, HEAD, dirty-file inventory, and existing failures were recorded before the 25-segment migration in physical-humanoid-baseline-20260913.md (`evidence/physical-humanoid-baseline-20260913.md`; unavailable). Existing local recovery changes were retained.
 
 At that checkpoint, the focused application suite had 67 passes and one known character-domain recovery failure after 30 simulated seconds. The earlier physics probes could stand and accept picks and gentle pulls, while several fast-pull and prone/supine/side/half-kneel recoveries remained failing. Those observations are a baseline, not acceptance of the new implementation.
 
@@ -129,7 +100,7 @@ The report schema is now version 4. Its scenarios and per-update measurements co
 - no direct pelvis assistance; and
 - mass-weighted center-of-mass free fall when the floor is disabled.
 
-The focused anatomy, structural-limit, convex-floor, renderer-pose, continuous-ownership, and free-fall smoke gates passed during the migration. Their local report is [physics-migration-smoke-results.json](../evidence/physics-migration-smoke-results.json). Full behavioral acceptance still depends on the complete generated `physics-results.json` from the final working tree.
+The focused anatomy, structural-limit, convex-floor, renderer-pose, continuous-ownership, and free-fall smoke gates passed during the migration. Their local report is physics-migration-smoke-results.json (`evidence/physics-migration-smoke-results.json`; unavailable). Full behavioral acceptance still depends on the complete generated `physics-results.json` from the final working tree.
 
 ## Behavioral and lifecycle coverage
 

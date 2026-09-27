@@ -4,10 +4,17 @@ Ce contrôle produit une seule trajectoire Rapier de **3 secondes simulées à 6
 
 ## Exécution
 
-Démarrer le serveur Vite local, puis lancer le script avec le même environnement Node que les autres rejeux visuels :
+Suivre d’abord la [configuration des contrôles navigateur](browser-verification.md) : Playwright, Microsoft Edge, `CODEX_MCP_NODE_PATH` et FFmpeg sont requis. `npm ci` seul n’installe pas ces outils. Les résultats historiques et les fichiers absents sont distingués dans [l’état courant](status.md) et [l’inventaire des preuves](evidence.md).
+
+Dans un premier terminal, démarrer le serveur Vite local :
 
 ```text
 node scripts/run-tool.mjs vite --host 127.0.0.1 --port 4182 --strictPort
+```
+
+Dans un second terminal configuré selon le guide, lancer :
+
+```text
 node --import tsx scripts/run-protocol-visual-replay.mjs evidence/protocol-visual-replay http://127.0.0.1:4182
 ```
 

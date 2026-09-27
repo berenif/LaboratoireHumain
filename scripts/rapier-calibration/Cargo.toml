@@ -1,0 +1,18 @@
+[package]
+name = "rapier-calibration"
+version = "0.1.0"
+edition = "2024"
+publish = false
+
+[features]
+f64 = ["dep:rapier_f64", "dep:parry_f64"]
+block-solver = ["rapier3d/block-solver"]
+
+[dependencies]
+rapier3d = { version = "=0.35.0", features = ["serde-serialize"] }
+parry3d = "=0.30.2"
+rapier_f64 = { package = "rapier3d-f64", version = "=0.35.0", default-features = false, features = ["dim3", "f64", "std", "serde-serialize"], optional = true }
+parry_f64 = { package = "parry3d-f64", version = "=0.30.2", optional = true }
+bincode = "1.3.3"
+serde = { version = "1", features = ["derive"] }
+serde_json = { version = "1", features = ["arbitrary_precision", "float_roundtrip"] }

@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import test, { after } from "node:test";
 import { register } from "tsx/esm/api";
+import RAPIER from "@dimforge/rapier3d-compat";
 
 const unregister = register();
 after(unregister);
@@ -212,9 +213,10 @@ test("passive soft-limit resistance remains active with posture strength disable
   closeVector(parent.impulse(), scale(resisting.torqueWorld, -1 / 60));
 });
 
-test("articulated inertia predicts Rapier's post-constraint ankle response", async () => {
-  for (const heading of [0, Math.PI / 3, -Math.PI / 4]) {
+test("articulated inertia predicts Rapier's incremental post-constraint ankle response", async () => {
+  for (const heading of [0, Math.PI / 3, -Math.PI / 4]) for (const impulse of [0.001, -0.001]) {
     const character = await createEmbodiedCharacter("canvas2d", { heading });
+    let control, controlQueue;
     try {
       character.floorCollider.setEnabled(false);
       character.world.gravity = zero;
@@ -230,7 +232,19 @@ test("articulated inertia predicts Rapier's post-constraint ankle response", asy
       ).torqueAxesWorld.x;
       const predicted = articulatedCoordinateResponse(character.ragdollBodies);
 
-      const impulse = 0.001;
+      // Constraint stabilization has a small, nonzero response even without an
+      // impulse. Compare the causal increment to the analytical response matrix,
+      // using an exact copy of this same fixture and the unchanged tolerance.
+      control = RAPIER.World.restoreSnapshot(character.world.takeSnapshot());
+      controlQueue = new RAPIER.EventQueue(true);
+      for (const body of character.ragdollBodies.values()) {
+        const copy = control.getRigidBody(body.handle);
+        for (const field of ["translation", "rotation", "linvel", "angvel", "localCom",
+          "principalInertia", "principalInertiaLocalFrame", "mass"]) {
+          assert.deepEqual(copy[field](), body[field](), `Control changed ${field}`);
+        }
+      }
+      control.step(controlQueue, character.physicsHooks);
       child.applyTorqueImpulse(scale(axis, impulse), true);
       parent.applyTorqueImpulse(scale(axis, -impulse), true);
       character.world.step(character.eventQueue, character.physicsHooks);
@@ -248,10 +262,20 @@ test("articulated inertia predicts Rapier's post-constraint ankle response", asy
         const targetCoordinates = jointCoordinates(
           targetParent.rotation(), targetChild.rotation(), targetDefinition.jointProfile,
         );
-        const actual = jointCoordinateKinematics(
+        const drivenRate = jointCoordinateKinematics(
           targetParent.angvel(), targetChild.angvel(), targetParent.rotation(),
           targetCoordinates, targetDefinition.jointProfile,
-        ).rates[coordinate] / impulse;
+        ).rates[coordinate];
+        const controlParent = control.getRigidBody(targetParent.handle);
+        const controlChild = control.getRigidBody(targetChild.handle);
+        const controlCoordinates = jointCoordinates(
+          controlParent.rotation(), controlChild.rotation(), targetDefinition.jointProfile,
+        );
+        const controlRate = jointCoordinateKinematics(
+          controlParent.angvel(), controlChild.angvel(), controlParent.rotation(),
+          controlCoordinates, targetDefinition.jointProfile,
+        ).rates[coordinate];
+        const actual = (drivenRate - controlRate) / impulse;
         const expected = predicted.get(id, coordinate, "rightAnkle", "x");
         const tolerance = Math.max(0.15, Math.abs(actual) * 0.15);
         close(expected, actual, tolerance);
@@ -275,6 +299,8 @@ test("articulated inertia predicts Rapier's post-constraint ankle response", asy
         "the regression fixture must distinguish free-body from constrained articulated inertia",
       );
     } finally {
+      controlQueue?.free();
+      control?.free();
       character.dispose();
     }
   }
@@ -319,15 +345,25 @@ test("support-conditioned response predicts swing hip and ankle impulses", async
         const flexion = jointCoordinates(parent.rotation(), child.rotation(), definition.jointProfile).x;
         const lowerLimit = definition.jointProfile.axes.find((axis) => axis.coordinate === "x").minRadians;
         assert.ok(flexion > lowerLimit + 0.02, "hip probe must clear the native lower limit");
+        // The pose-setting impulse leaves nearly 2 rad/s of background joint
+        // motion. Clear fixture velocity so the small paired probe measures
+        // local response without changing its support or coordinate frame.
+        for (const character of [driven, control]) for (const body of character.ragdollBodies.values()) {
+          body.setLinvel(zero, true);
+          body.setAngvel(zero, true);
+        }
       }
       driven.observeContacts(1 / 60);
-      const leftContact = driven.lastContacts.find((contact) => contact.segment === "leftFoot" && contact.loadBearing);
-      assert.ok(leftContact, "probe must retain a measured loaded left sole contact");
-      const supports = [{
-        segment: "leftFoot",
-        points: [leftContact.point],
-        directions: [{ x: 1, y: 0, z: 0 }, { x: 0, y: 0, z: 1 }],
-      }];
+      const supports = driven.lastContacts.filter(contact => {
+        const support = SEGMENT_BY_ID.get(contact.segment);
+        return contact.loadBearing && support.side === "left"
+          && ["hindfoot", "forefoot"].includes(support.role);
+      }).map(contact => ({
+        segment: contact.segment,
+        points: contact.points?.length ? contact.points : [contact.point],
+        directions: [{ x: 1, y: 0, z: 0 }, { x: 0, y: 1, z: 0 }, { x: 0, y: 0, z: 1 }],
+      }));
+      assert.ok(supports.length, "probe must retain measured loaded left sole contact patches");
       const parent = driven.ragdollBodies.get(definition.parent);
       const child = driven.ragdollBodies.get(sourceId);
       const coordinates = jointCoordinates(parent.rotation(), child.rotation(), definition.jointProfile);
@@ -356,6 +392,26 @@ test("support-conditioned response predicts swing hip and ankle impulses", async
         ).rates.x;
       };
       const actual = (rate(driven) - rate(control)) / impulse;
+      if (Math.abs(predicted - actual) >= Math.abs(actual) * 0.1) {
+        console.error("support-conditioned response mismatch", JSON.stringify({
+          sourceId, direction, impulseNmS: impulse,
+          predictedResponseRadPerNmS: predicted, measuredResponseRadPerNmS: actual,
+          measuredSupports: supports,
+          afterSupports: driven.lastContacts.filter(contact => contact.loadBearing
+            && SEGMENT_BY_ID.get(contact.segment).side === "left"),
+          supportWorldAxis: axis, jointCoordinatesRad: coordinates,
+          rightLegJoints: ["rightThigh", "rightShin", "rightAnkle", "rightFoot", "rightForefoot"].map(id => {
+            const joint = SEGMENT_BY_ID.get(id);
+            const jointParent = driven.ragdollBodies.get(joint.parent);
+            const jointChild = driven.ragdollBodies.get(id);
+            const values = jointCoordinates(jointParent.rotation(), jointChild.rotation(), joint.jointProfile);
+            return { id, coordinates: values, limits: joint.jointProfile.axes.map(limit => ({
+              coordinate: limit.coordinate, minRadians: limit.minRadians, maxRadians: limit.maxRadians,
+            })) };
+          }),
+          postImpulseRates: { driven: rate(driven), control: rate(control) },
+        }));
+      }
       close(predicted, actual, Math.abs(actual) * 0.1);
     } finally {
       driven.dispose();

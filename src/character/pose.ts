@@ -6,6 +6,7 @@ import {
 } from "./math";
 import { jointCoordinates, jointRotationFromCoordinates } from "./joint-coordinates";
 import { collisionAwareLimbTarget } from "./limb-collisions";
+import { refineBoundedReach } from "./bounded-reach";
 
 import { ankleFromHindfoot, transferPelvisHeight } from "./leg-target-frame";
 
@@ -231,6 +232,7 @@ export function solveTwoBone(
   preferredBend: Vec3,
   maximumBendRadians = Math.PI,
   secondaryAxis: Vec3 = RIGHT,
+  middleClearance?: Readonly<{ direction: Vec3; minimumOffset: number }>,
 ): Readonly<{ middle: Vec3; end: Vec3 }> {
   const raw = sub(requestedEnd, start);
   const direction = normalize(raw, { x: 0, y: -1, z: 0 });
@@ -252,7 +254,26 @@ export function solveTwoBone(
   // endpoint lines up with the bend preference near full extension.
   let bend = add(projectedPreference, scale(secondary, 0.01));
   bend = normalize(bend, FORWARD);
-  return { middle: add(add(start, scale(direction, along)), scale(bend, bendHeight)), end };
+  const center = add(start, scale(direction, along));
+  if (middleClearance && bendHeight > 1e-10) {
+    // The elbow can move around this circle without moving the wrist or
+    // changing either bone length. Choose the nearest bend that keeps a
+    // relaxed arm outside the torso, including during counterbalance.
+    const outward = normalize(middleClearance.direction);
+    const projected = sub(outward, scale(direction, dot(outward, direction)));
+    const projectionLength = length(projected);
+    if (projectionLength > 1e-10) {
+      const outwardBend = scale(projected, 1 / projectionLength);
+      const current = dot(bend, outwardBend);
+      const minimum = clamp((middleClearance.minimumOffset - along * dot(direction, outward))
+        / (bendHeight * projectionLength), -1, 1);
+      if (current < minimum) {
+        const tangent = normalize(sub(bend, scale(outwardBend, current)), cross(direction, outwardBend));
+        bend = add(scale(outwardBend, minimum), scale(tangent, Math.sqrt(Math.max(0, 1 - minimum * minimum))));
+      }
+    }
+  }
+  return { middle: add(center, scale(bend, bendHeight)), end };
 }
 
 export function midpoint(a: Vec3, b: Vec3): Vec3 {
@@ -468,6 +489,10 @@ function composeArm(
   // Elbows sit slightly behind/outside the arm, so flexion brings hands
   // forward, in the same body frame as the toes. Knees keep their +Z bend.
   const preferredBend = rotate(torso.rotation, normalize({ x: sign * 0.22, y: 0, z: -1 }));
+  const elbowClearance = input.activeGrab?.region === handId ? undefined : {
+    direction: rotate(torso.rotation, { x: sign, y: 0, z: 0 }),
+    minimumOffset: HUMAN_PROPORTIONS.arm.relaxedLateralOffsetM,
+  };
   const elbowAxis = rotate(forearmDefinition.jointProfile!.parentFrame.rotation, RIGHT);
   const approximateAxis = normalize(sub(shoulder, desiredHand), UP);
   const approximateForearmRotation = quatMultiply(
@@ -497,6 +522,7 @@ function composeArm(
     preferredBend,
     elbowMaximum,
     rotate(torso.rotation, RIGHT),
+    elbowClearance,
   );
   let upperAxis = normalize(sub(shoulder, solved.middle), UP);
   let forearmAxis = normalize(sub(solved.middle, solved.end), UP);
@@ -529,6 +555,7 @@ function composeArm(
     preferredBend,
     elbowMaximum,
     rotate(torso.rotation, RIGHT),
+    elbowClearance,
   );
   upperAxis = normalize(sub(shoulder, solved.middle), UP);
   forearmAxis = normalize(sub(solved.middle, solved.end), UP);
@@ -559,6 +586,42 @@ function composeArm(
   output.set(twistId, twist);
   const hand = attachedPose(handId, twist, handRotation);
   output.set(handId, hand);
+
+  if (input.activeGrab?.region === handId) {
+    // Clamping the unconstrained shoulder solution can displace the hand far
+    // below its requested point. Solve the remaining position error within the
+    // same limits instead of letting the posture motors oppose the grab spring.
+    const measuredGirdle = input.measuredPoses?.get(girdleId);
+    const measuredUpper = input.measuredPoses?.get(upperId);
+    const measuredForearm = input.measuredPoses?.get(forearmId);
+    // The measured configuration gives successive live solves a continuous
+    // branch, including when the unconstrained elbow pole crosses a limit.
+    const shoulderCoordinates = measuredGirdle && measuredUpper
+      ? jointCoordinates(measuredGirdle.rotation, measuredUpper.rotation, upperDefinition.jointProfile!)
+      : jointCoordinates(girdle.rotation, upperRotation, upperDefinition.jointProfile!);
+    const initialElbow = measuredUpper && measuredForearm
+      ? jointCoordinates(measuredUpper.rotation, measuredForearm.rotation, forearmDefinition.jointProfile!).x : elbowFlexion;
+    const axes = ["x", "y", "z"] as const;
+    const bounds = [...axes.map(coordinate => {
+      const axis = upperDefinition.jointProfile!.axes.find(a => a.coordinate === coordinate)!;
+      return [axis.minRadians * 0.98, axis.maxRadians * 0.98] as const;
+    }), [0, elbowMaximum] as const];
+    const chainAt = (coordinates: readonly number[]): MutablePose[] => {
+      const nextUpper = attachedPose(upperId, girdle, jointTargetRotation(girdle.rotation, upperDefinition,
+        { x: coordinates[0], y: coordinates[1], z: coordinates[2] }));
+      const nextForearm = attachedPose(forearmId, nextUpper, jointTargetRotation(nextUpper.rotation, forearmDefinition,
+        { x: coordinates[3], y: 0, z: 0 }));
+      const nextTwist = attachedPose(twistId, nextForearm, jointTargetRotation(nextForearm.rotation, twistDefinition,
+        { x: 0, y: twistRadians, z: 0 }));
+      const nextHand = attachedPose(handId, nextTwist, jointTargetRotation(nextTwist.rotation, handDefinition,
+        { x: wristFlexion, y: 0, z: wristDeviation }));
+      return [nextUpper, nextForearm, nextTwist, nextHand];
+    };
+    const endpoint = (coordinates: readonly number[]) => chainAt(coordinates)[3].position;
+    const refined = refineBoundedReach([shoulderCoordinates.x, shoulderCoordinates.y, shoulderCoordinates.z, initialElbow],
+      bounds, desiredHand, endpoint);
+    for (const pose of chainAt(refined)) output.set(pose.id, pose);
+  }
 }
 
 function composeLeg(
@@ -581,6 +644,7 @@ function composeLeg(
   const thighLength = jointSpan(thighId, shinId);
   const shinLength = jointSpan(shinId, ankleId);
   let footPosition = input.supportFeet[footId];
+  let ankleUtilization = 0.9;
 
   if (input.step?.foot === footId && input.step.elapsed >= 0) {
     const progress = clamp(input.step.elapsed / input.step.duration, 0, 1);
@@ -619,6 +683,9 @@ function composeLeg(
         : (1 - smooth01((progress - 0.75) / 0.25)) * clearance;
     const base = lerp(input.step.from, input.step.to, travelProgress);
     footPosition = { ...base, y: base.y + lift };
+    // A raised swing can use the full anatomical ankle range to level its sole.
+    // Restore the planted target reserve continuously as the foot lowers.
+    ankleUtilization += 0.1 * lift / clearance;
   } else if (input.activeGrab?.region === footId) {
     footPosition = add(input.activeGrab.startSegmentPosition, clampLength(drag, 0.58));
     const soleHeight = -footDefinition.geometry.localBounds.min.y;
@@ -677,7 +744,7 @@ function composeLeg(
     );
     const shinRotation = jointTargetRotation(thighRotation, shinDefinition, { x: kneeFlexion, y: 0, z: 0 });
     ankleRotation = boundedWorldJointRotation(
-      shinRotation, headingRotation, ankleDefinition, 0.9,
+      shinRotation, headingRotation, ankleDefinition, ankleUtilization,
     );
     const ankleUp = rotate(ankleRotation, UP);
     const footTilt = boundedJointTarget(
@@ -707,7 +774,7 @@ function composeLeg(
   );
   const shinRotation = jointTargetRotation(thighRotation, shinDefinition, { x: kneeFlexion, y: 0, z: 0 });
   ankleRotation = boundedWorldJointRotation(
-    shinRotation, headingRotation, ankleDefinition, 0.9,
+    shinRotation, headingRotation, ankleDefinition, ankleUtilization,
   );
   const ankleUp = rotate(ankleRotation, UP);
   const footTilt = boundedJointTarget(

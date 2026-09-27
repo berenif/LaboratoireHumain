@@ -55,27 +55,30 @@ export function distributeSupportLoad(contacts: readonly SupportingContact[], re
     return [load(hull[0], 1 - share), load(hull[1], share)];
   }
   if (options.rotationInvariant) {
-    // Every valid triangle represents the same pressure. Averaging their
-    // nonnegative representations removes arbitrary ownership by the first
-    // world-X-sorted fan triangle, without changing the wrench or its hull.
-    const shares = hull.map(() => 0);
-    let representations = 0;
-    for (let i = 0; i < hull.length - 2; i++) for (let j = i + 1; j < hull.length - 1; j++)
-      for (let k = j + 1; k < hull.length; k++) {
-        const a = hull[i], b = hull[j], c = hull[k];
-        const denominator = (b.z - c.z) * (a.x - c.x) + (c.x - b.x) * (a.z - c.z);
-        if (Math.abs(denominator) < 1e-12) continue;
-        const wa = ((b.z - c.z) * (pressure.x - c.x) + (c.x - b.x) * (pressure.z - c.z)) / denominator;
-        const wb = ((c.z - a.z) * (pressure.x - c.x) + (a.x - c.x) * (pressure.z - c.z)) / denominator;
-        const weights = [wa, wb, 1 - wa - wb];
-        if (Math.min(...weights) < -1e-7) continue;
-        const nonnegative = weights.map(weight => Math.max(0, weight));
-        const sum = nonnegative.reduce((total, weight) => total + weight, 0);
-        for (const [index, vertex] of [i, j, k].entries()) shares[vertex] += nonnegative[index] / sum;
-        representations++;
-      }
-    if (representations > 0) return hull.map((point, index) => load(point, shares[index] / representations));
-    throw new Error("Measured support hull cannot represent its projected pressure");
+    // Mean-value coordinates reproduce pressure continuously on a convex
+    // polygon. Averaging the triangles containing pressure is discontinuous
+    // whenever that set changes, injecting load/torque jumps at diagonals.
+    const rays = hull.map(point => horizontal(sub(point, pressure)));
+    const distances = rays.map(ray => Math.hypot(ray.x, ray.z));
+    const vertex = distances.findIndex(distance => distance < 1e-10);
+    if (vertex >= 0) return [load(hull[vertex], 1)];
+    const halfTangents = rays.map((ray, index) => {
+      const next = (index + 1) % hull.length;
+      const other = rays[next];
+      return Math.atan2(Math.abs(ray.x * other.z - ray.z * other.x), dot(ray, other)) / 2;
+    });
+    // At a hull edge the limiting coordinates are its linear interpolation.
+    const edge = halfTangents.findIndex(angle => Math.PI / 2 - angle < 1e-9);
+    if (edge >= 0) {
+      const next = (edge + 1) % hull.length;
+      const total = distances[edge] + distances[next];
+      return [load(hull[edge], distances[next] / total), load(hull[next], distances[edge] / total)];
+    }
+    const tangents = halfTangents.map(angle => Math.tan(angle));
+    const weights = distances.map((distance, index) =>
+      (tangents[(index + hull.length - 1) % hull.length] + tangents[index]) / distance);
+    const total = weights.reduce((sum, weight) => sum + weight, 0);
+    return hull.map((point, index) => load(point, weights[index] / total));
   }
   // A convex hull's triangle fan covers its complete interior.
   const a = hull[0];

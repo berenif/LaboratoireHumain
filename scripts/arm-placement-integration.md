@@ -1,5 +1,7 @@
 # Minimal arm-placement integration
 
+Historical integration proposal, not a patch to apply to the current controller. `DynamicRecovery.ts` already contains arm-placement logic that has evolved since this note. Compare with [current recovery implementation](../docs/dynamic-recovery.md) and [current status](../docs/status.md) before reusing these snippets.
+
 The reusable geometry is in `src/character/recovery-support.ts`: `usableRecoveryArmSupport`, `reachableArmBraceTarget`, and `RecoveryArmBraceTarget`. The placement below reached two loaded hands at 1.87 s in the prone-left fixture, with 6–11 mm foot drift and zero upward assistance during roll. The later press remains unsuccessful; do not copy the experimental controller's press or gain tuning.
 
 Add these fields:

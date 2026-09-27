@@ -147,7 +147,7 @@ for(const side of ['right','left'])test(`actual ${side} hand drag across chest t
  const c=await createEmbodiedCharacter();try {
   for(let tick=0;tick<120;tick++)c.fixedUpdate(DT,null);
   const id=`${side}Hand`,start={...c.ragdollBodies.get(id).translation()},root={...c.ragdollBodies.get('pelvis').translation()},torso={...c.ragdollBodies.get('torso').translation()};
-  const target={x:side==='right'?-.25:.25,y:torso.y,z:torso.z+.01};let peak=0,sustained=0,joints=0,touched=false;const depths=[],states=new Set(),phases=new Set();
+  const target={x:side==='right'?-.25:.25,y:torso.y,z:torso.z+.01};let peak=0,sustained=0,joints=0,touched=false,firstContactState=null;const depths=[],states=new Set(),phases=new Set();
   c.fixedUpdate(DT,{kind:'begin',pointerId:301,region:id,segment:id,localAnchor:ZERO,worldTarget:start,timestampMs:0});
   for(let tick=1;tick<=240;tick++) {
    const amount=Math.min(tick/120,1),position=add(start,scale(sub(target,start),amount));
@@ -155,13 +155,14 @@ for(const side of ['right','left'])test(`actual ${side} hand drag across chest t
    states.add(c.state);phases.add(c.step?.phase??'none');joints=Math.max(joints,c.maximumJointSeparation());
    let depth=0;
    for(const segment of [id,`${side}Forearm`,`${side}UpperArm`]) {
-    const a=c.ragdollColliders.get(segment),b=c.ragdollColliders.get('torso');c.world.contactPair(a,b,m=>{if(m.numContacts())touched=true;});
+    const a=c.ragdollColliders.get(segment),b=c.ragdollColliders.get('torso');c.world.contactPair(a,b,m=>{if(m.numContacts()){touched=true;firstContactState??=c.state;}});
     const contact=a.contactCollider(b,0);depth=Math.max(depth,contact?Math.max(0,-contact.distance):0);
    }
    peak=Math.max(peak,depth);depths.push(depth);if(depths.length>12)depths.shift();if(depths.length===12)sustained=Math.max(sustained,Math.min(...depths));
   }
-  report('articulated-chest-drag',{side,contact:touched,peakPenetrationM:peak,sustainedPenetrationM:sustained,maxJointSeparationM:joints,rootTravelM:length(sub(c.ragdollBodies.get('pelvis').translation(),root)),states:[...states],phases:[...phases]});
+  report('articulated-chest-drag',{side,contact:touched,firstContactState,peakPenetrationM:peak,sustainedPenetrationM:sustained,maxJointSeparationM:joints,rootTravelM:length(sub(c.ragdollBodies.get('pelvis').translation(),root)),states:[...states],phases:[...phases]});
   assert.ok(touched);assert.ok(peak<=.015);assert.ok(sustained<=.005);assert.ok(joints<=.01);
+  if(side==='left')assert.ok(['upright','reacting','stepping'].includes(firstContactState),'hand reaches the torso before recovery; a later fall contact is insufficient');
  }finally{c.dispose();}
 });
 

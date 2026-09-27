@@ -15,6 +15,7 @@ import {
   SEGMENTS,
 } from "../core/humanoid";
 import { flattenGeometryIndices, flattenGeometryVertices, lowestWorldPoint } from "../core/geometry";
+import { integrateConvexMass } from "../core/geometry-mass";
 import { pickRegionProxies } from "../core/picking";
 import { ARENA, playgroundStation, type PlaygroundConfig } from "../core/playground";
 import { PROTOCOL_ROOM } from "../core/protocol";
@@ -132,12 +133,15 @@ function ensureRapier(): Promise<void> {
 }
 
 function convexCollider(definition: SegmentDefinition): RAPIER.ColliderDesc {
+  const vertices = flattenGeometryVertices(definition.geometry);
+  const indices = flattenGeometryIndices(definition.geometry);
   const descriptor = RAPIER.ColliderDesc.convexMesh(
-    flattenGeometryVertices(definition.geometry),
-    flattenGeometryIndices(definition.geometry),
+    vertices,
+    indices,
   );
   if (!descriptor) throw new Error(`INVALID_CONVEX_GEOMETRY:${definition.id}`);
-  return descriptor;
+  const mass = integrateConvexMass(Array.from(vertices), Array.from(indices), definition.massKg);
+  return descriptor.setMassProperties(mass.mass, mass.centerOfMass, mass.principalInertia, mass.principalFrame);
 }
 
 function finiteVec(value: Vec3): boolean {
@@ -487,6 +491,8 @@ class EmbodiedCharacter implements CharacterController {
     const finite = [...this.poses.values()].every((pose) =>
       finiteVec(pose.position) && finiteQuat(pose.rotation)
       && finiteVec(pose.linearVelocity) && finiteVec(pose.angularVelocity)
+      && (pose.massKg === undefined || Number.isFinite(pose.massKg))
+      && (pose.centerOfMass === undefined || finiteVec(pose.centerOfMass))
     );
     const errors = [...this.runtimeErrors];
     if (!finite) errors.push("NONFINITE_CHARACTER_STATE");
@@ -1105,9 +1111,6 @@ class EmbodiedCharacter implements CharacterController {
         { x: 0, y: body.mass() * 9.81, z: 0 },
       ));
     }
-    const loadFeedback = this.step !== null && this.step.elapsed < 0
-      && ["thigh", "shin", "ankle", "hindfoot", "forefoot"].includes(jointDefinition.role);
-    const measuredTotal = this.contactLoadPlan.loads.reduce((sum, support) => sum + support.measuredForceN, 0);
     for (const support of this.contactLoadPlan.loads) {
       let ancestor: SegmentId | null = support.segment;
       let belowJoint = false;
@@ -1120,16 +1123,6 @@ class EmbodiedCharacter implements CharacterController {
         sub(support.point, jointWorld),
         scale(support.plannedForce, -1),
       ));
-      if (loadFeedback && measuredTotal > 0) {
-        // Force-error feedback changes joint intent, never a body's force.
-        // Normalize only this redistribution request to the allocated normal
-        // budget. The absolute measured readiness gate is unchanged. Errors
-        // sum to zero: shorten an overloaded chain, extend an underloaded one.
-        const normalError = support.measuredForceN / measuredTotal
-          * this.contactLoadPlan.allocatedForce.y - support.plannedForce.y;
-        torque = add(torque, cross(sub(support.point, jointWorld),
-          { x: 0, y: normalError, z: 0 }));
-      }
     }
     return torque;
   }
@@ -1161,7 +1154,6 @@ class EmbodiedCharacter implements CharacterController {
       );
       const collider = this.world.createCollider(
         convexCollider(definition)
-          .setMass(definition.massKg)
           .setFriction(
             definition.role === "hindfoot" || definition.role === "forefoot" ? 4 : 0.45,
           )

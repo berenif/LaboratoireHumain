@@ -1,0 +1,62 @@
+import assert from 'node:assert/strict';
+import { createHash } from 'node:crypto';
+import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { dirname, join } from 'node:path';
+import { gunzipSync } from 'node:zlib';
+import { fingerprints, sha256 } from './capture-physics-baseline.mjs';
+
+const output = process.argv[2];
+assert.ok(output, 'Usage: node scripts/analyze-standing-h27-h29.mjs fresh-output-directory');
+mkdirSync(output);
+const read = path => JSON.parse(readFileSync(path, 'utf8'));
+const receipts = [];
+function report(name) {
+  const path = `evidence/${name}/report.json`, bytes = readFileSync(path);
+  receipts.push({ path, sha256: sha256(bytes) });
+  const value = JSON.parse(bytes);
+  assert.deepEqual(value.sourceBefore, value.sourceAfter, `${name}: source changed during run`);
+  return value;
+}
+const h27 = report('standing-h27-screen-20260927-01');
+const h28Old = report('standing-h28-0.20.0-screen-20260927-01');
+const h28New = report('standing-h28-0.21.0-screen-20260927-01');
+const h29 = report('standing-h29-screen-20260927-01');
+const oldManifestPath = 'docs/checkpoints/2026-09-27/h22-h24-evaluation/manifest.json';
+const oldManifest = read(oldManifestPath);
+const oldFile = oldManifest.files.find(file => file.archive === 'standing-h22-screen-20260926-01/report.json.gz');
+const packed = readFileSync(join(dirname(oldManifestPath), oldFile.archive));
+assert.equal(sha256(packed), oldFile.archiveSha256);
+const unpacked = gunzipSync(packed);
+assert.equal(sha256(unpacked), oldFile.sha256);
+const oldH22 = JSON.parse(unpacked);
+const replays = [];
+for (const run of h29.runs.filter(run => run.mode === 'quiet-held-pressure-contour-world-damping')) {
+  const old = oldH22.runs.find(old => old.mode === run.mode && old.heading === run.heading);
+  assert.ok(old);
+  assert.equal(run.initialHash, old.initialHash);
+  assert.equal(run.trajectoryHash, old.trajectoryHash);
+  assert.deepEqual(run.response, old.response);
+  replays.push({ mode: run.mode, heading: run.heading, trajectoryHash: run.trajectoryHash, frames: run.response.length });
+}
+assert.equal(h28Old.runs[0].trajectoryHash, h27.runs[0].trajectoryHash);
+assert.deepEqual(h28Old.runs[0].response, h27.runs[0].response);
+const baseline = read('docs/checkpoints/2026-09-26/h8-evaluation/manifest.json').source;
+const current = fingerprints();
+const production = Object.keys(baseline).filter(path => path.startsWith('src/') || ['package.json', 'package-lock.json'].includes(path));
+assert.equal(production.length, 65);
+for (const path of production) assert.equal(current[path], baseline[path], path);
+const abi = report('rapier-021-abi-20260927-01');
+const pinned = report('rapier-020-loader-validation-20260927-01');
+assert.equal(abi.exitCode, 1);
+assert.equal(pinned.exitCode, 0);
+const abiLog = readFileSync('evidence/rapier-021-abi-20260927-01/tests.log');
+assert.equal(sha256(abiLog), abi.logSha256);
+writeFileSync('evidence/rapier-021-abi-20260927-01/tests-output.json', JSON.stringify({ original: 'tests.log', sha256: sha256(abiLog), output: abiLog.toString('utf8') }, null, 2) + '\n', { flag: 'wx' });
+const metadata = read('evidence/rapier-021-runtime/metadata.json');
+const tarball = readFileSync('evidence/rapier-021-runtime/package.tgz');
+const integrity = `sha512-${createHash('sha512').update(tarball).digest('base64')}`;
+assert.equal(integrity, metadata.dist.integrity);
+writeFileSync('evidence/rapier-021-runtime/integrity.json', JSON.stringify({ checkedAt: new Date().toISOString(), registry: metadata.dist.tarball, expected: metadata.dist.integrity, actual: integrity, tarballSha256: sha256(tarball), bytes: tarball.length, qualification: 'Package bytes match the captured official registry metadata; no provenance-signature verification is claimed.' }, null, 2) + '\n', { flag: 'wx' });
+const metrics = report => report.runs.map(({ heading, mode, trajectoryHash, peaks, endpointFootDriftM, endpointPelvisDriftM, maxFootExcursionM, firstSupportLossTick, firstNonUprightTick, finalState, steps, projectionReasons }) => ({ heading, mode, trajectoryHash, peaks, endpointFootDriftM, endpointPelvisDriftM, maxFootExcursionM, firstSupportLossTick, firstNonUprightTick, finalState, steps, projectionReasons }));
+writeFileSync(join(output, 'analysis.json'), JSON.stringify({ generatedAt: new Date().toISOString(), qualification: 'H27, runtime-only H28 and H29 are rejected diagnostic candidates. No production physics repair or official acceptance.', receipts, productionHashesUnchanged: production.length, h22Replays: replays, pinnedLoaderReplay: { trajectoryHash: h28Old.runs[0].trajectoryHash, frames: h28Old.runs[0].response.length }, h27: metrics(h27), h28Pinned: metrics(h28Old), h28New: metrics(h28New), h29: metrics(h29), abiExitCodes: { pinned: pinned.exitCode, newRuntime: abi.exitCode }, source: current }, null, 2) + '\n', { flag: 'wx' });
+console.log(JSON.stringify({ output, h22ExactReplays: replays.length, pinnedLoaderExactReplay: true, productionHashesUnchanged: production.length, packageIntegrityVerified: true }));

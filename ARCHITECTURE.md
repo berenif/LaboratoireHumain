@@ -1,5 +1,7 @@
 # Architecture
 
+This is an implementation reference for the working tree. Acceptance results and their source scope are maintained in [current status](docs/status.md); historical test passes do not certify these ownership rules across every scenario.
+
 ## Module ownership
 
 | Module | Responsibility | Allowed project dependencies |
@@ -44,7 +46,9 @@ The shared humanoid defines 25 segments grouped into seven selectable regions. E
 
 `BalanceController` reads measured segment mass state and loaded contact patches to estimate center of mass, momentum, available support, and reachable corrective steps. Support-chain compensation is expressed as bounded joint torques. `DynamicRecovery` observes actual contacts and advances only from physical support and movement evidence. `GrabAnchorController` applies its force-, torque-, and power-limited command at the exact picked surface anchor.
 
-Every actuator produces equal-and-opposite parent/child torque impulses projected onto the joint profile's permitted world axes. Rapier enforces the structural limits independently of active posture control. There is no direct pelvis force or torque assistance. Nonadjacent character parts self-collide; connected parts and intentionally overlapping joint housings are explicitly excluded.
+Standing uses `NativeJointMotors`: finite force-based joint motors participate in Rapier's constraint solve. Most recovery actuation uses `applyCoupledJointMotors`, which applies equal-and-opposite parent/child torque impulses along permitted axes. Rolling arms can be deferred to native motors; settling uses passive joint resistance. These paths retain the joint-profile effort ceilings and structural constraints. There is no direct pelvis force or torque assistance. Nonadjacent character parts self-collide; connected parts and intentionally overlapping joint housings are explicitly excluded.
+
+Joint diagnostics identify their torque source: `native-request` is a bounded requested wrench, while `applied-impulse` describes the explicit torque impulse divided by the timestep. Rapier's delivered native motor impulse is not exposed by the pinned API. Neither value is a measurement of the complete contact-coupled body response. See the [balance actuation and load planner](docs/balance-controller.md#physical-actuation) and [recovery configuration](docs/dynamic-recovery.md#ownership-and-state).
 
 A fall clears the grab immediately but does not rebuild the body. Recovery completes only after persistent bilateral loaded support, low body motion, and upright posture; the standing controller then blends from the measured joint coordinates on the same bodies. See [balance controller](docs/balance-controller.md) and [dynamic recovery](docs/dynamic-recovery.md) for the controller and phase rules.
 

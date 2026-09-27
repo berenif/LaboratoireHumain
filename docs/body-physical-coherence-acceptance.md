@@ -1,42 +1,11 @@
 # Physical coherence acceptance contract
 
-## 2026-09-23 publication checkpoint: work in progress
+## Historical publication checkpoint
 
-After the failed balance gate was disclosed, the user explicitly requested
-"Commit push and merge to main". This later instruction authorizes preservation
-and publication of the current merge; it does not establish physics acceptance.
-The merge preserves both 60b9e010773560968fad3a18ddb27a8cb9a768e6 and
-3ca4cc86bec4c33ab928c44f1c71692ab1ce56ae. Remote main was fetched and still
-pointed to the latter commit before publication.
-
-The final focused command runs balance-controller, landing-plan and
-leg-target-dynamics tests: **34/36 pass, exit 1**. Balance is **12/14**;
-slow pull falls at tick 169 and planted reversal at tick 130. Landing planning
-is 13/13 and inertial leg-target mechanics 9/9. Both probe scenarios complete
-two measured steps but subsequently fall; the probe exits 1. These failures
-remain enabled. TypeScript passes after a type-only correction to a mutable
-local pose-composition vector; the physical failures reproduce unchanged.
-
-Current changes include explicit infeasible landing results, a bounded
-two-dimensional joint-limited search, measured-pelvis planning/actuation
-agreement, candidate-specific support/capture prediction, load diagnostics,
-and swing-target inertial feedforward under the existing motor caps.
-Retained-pressure delivery and second-swing height loss remain unresolved.
-Experimental stance-height springs and alternate actuator/solver configurations
-were confined to ignored diagnostics and were not adopted. No acceptance
-assertion, absolute 52% retained-load gate, physical fall threshold or torque
-budget was weakened; direct pelvis assistance remains zero by design.
-
-The prescribed final fixture refresh, full automated suite, all 63 physics
-scenarios, five-cycle protocol, two Pages configurations and complete browser
-coverage have **not** been verified on this source. Publication is a WIP
-checkpoint, not an accepted release. Older results below describe historical
-sources and must not be read as current passing evidence.
-
-Commands, native exit codes, source fingerprints, traces and preserved patches
-are in ignored evidence/merge-execution-20260923-160052/, including
-publication-balance.json, publication-typecheck-fixed.json,
-publication-review.json and publication-probe.json.
+The September 23 WIP publication and its 34/36 focused result are preserved in
+[the merge history](merge-acceptance.md#2026-09-23-publication-checkpoint-work-in-progress).
+Publication did not establish acceptance. See [current status](status.md) for
+subsequent checkpoints and [evidence availability](evidence.md) for artifact scope.
 
 ## Historical records and acceptance contract
 
