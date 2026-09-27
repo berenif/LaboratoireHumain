@@ -4,6 +4,8 @@ Start with [current status](status.md) for the latest recorded checkpoint, unres
 
 Use the [prioritized TODO](../TODO.md) for remaining work, dependencies, and completion criteria.
 
+The [coordinated stabilization plan](standing-stabilization-plan.md) and its [implementation prompt](standing-stabilization-prompt.md) define the investigation gates. [H74-v1](standing-h74-contract.md) records the shared implementation, acceptance command, frozen manifest and bounded negative feasibility result. [H75-v1](standing-h75-contract.md) records 342 executed copied motor probes and incomplete native row inspection after three failed builds. Quiet standing remains open.
+
 ## Run and understand the application
 
 - [Project quick start and both browser modes](../README.md)
@@ -14,6 +16,8 @@ Use the [prioritized TODO](../TODO.md) for remaining work, dependencies, and com
 - [Asset and software credits](../ASSET_CREDITS.md)
 
 ## Verify behavior
+
+- [Strike/recovery timing, planning optimization and rejected responsiveness trials](recovery-responsiveness-profile.md)
 
 - [Independent physics acceptance contract](physics-acceptance.md)
 - [Browser verification setup and commands](browser-verification.md)

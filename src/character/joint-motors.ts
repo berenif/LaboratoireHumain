@@ -139,7 +139,7 @@ type PassiveAxisFeedback = Readonly<{
   active: boolean;
 }>;
 
-function passiveAxisFeedback(
+export function passiveAxisFeedback(
   value: number,
   velocity: number,
   axis: JointAxisProfile,

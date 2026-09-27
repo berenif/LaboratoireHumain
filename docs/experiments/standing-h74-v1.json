@@ -1,0 +1,246 @@
+{
+  "schema": 1,
+  "id": "standing-h74-v1",
+  "frozenBeforeTrials": "2026-09-27",
+  "hypothesis": "A fixed anatomical reference with a single virtual-work feedback objective can be maintained by the existing force-based native motors. This is an unvalidated local feedback baseline, not MPC.",
+  "physical": {
+    "dtS": 0.016666666666666666,
+    "settlingS": 2,
+    "bodies": 25,
+    "solverIterations": 20,
+    "internalPgsIterations": 20,
+    "maxCcdSubsteps": 4,
+    "allowedLinearErrorM": 0.001,
+    "predictionDistanceM": 0.002,
+    "startup": "Unmodified createEmbodiedCharacter initialization; reference changes never change body state."
+  },
+  "budget": {
+    "referenceTrials": 3,
+    "localTrials": 4,
+    "referenceStepsPerTrial": 360,
+    "localStepsPerTrial": 480,
+    "representationTrials": 6,
+    "representationStepsPerTrial": 720,
+    "maximumFeasibilitySteps": 7320,
+    "maximumFeasibilityWallS": 900,
+    "maximumAcceptanceWallS": 3600,
+    "childTimeoutS": 300,
+    "rationale": "Three small fore-aft references, four signed local perturbations and the six existing H42 controls; finite scope before prediction."
+  },
+  "reference": {
+    "headingsRad": [
+      0
+    ],
+    "forwardOffsetsM": [
+      0,
+      -0.005,
+      0.005
+    ],
+    "selection": "First passing reference in this order; no retuning within this version.",
+    "holdS": 4,
+    "maximumFootErrorM": 0.005,
+    "maximumPelvisErrorM": 0.015,
+    "maximumPelvisRotationErrorRad": 0.05,
+    "maximumLinearMps": 0.08,
+    "maximumAngularRadps": 0.4,
+    "minimumRequestedMotorHeadroom": 0.1,
+    "rationale": "Half the official foot drift and 20% speed reserves permit a small return neighborhood. Headroom is a bounded native-request proxy; delivered torque is unavailable and no delivered-effort claim follows."
+  },
+  "controller": {
+    "id": "h74-v1",
+    "footStiffnessNpm": 1200,
+    "footDampingNspm": 80,
+    "pelvisStiffnessNmprad": 250,
+    "pelvisDampingNmsprad": 30,
+    "bodyLinearDampingPerS": 1,
+    "bodyAngularDamping": 0.15,
+    "effortRegularization": 0.02,
+    "deadlineMs": 8,
+    "maximumWork": 1600,
+    "maximumPelvisDeviationM": 0.1,
+    "maximumFootDeviationM": 0.03,
+    "maximumPelvisRotationRad": 0.3,
+    "contactRequiredAfterTick": 120,
+    "rationale": "Retain production posture gains and gravity/load feedforward. Sum fixed-foot virtual work, parent pelvis reaction, every segment's motion damping and torque regularization once, with the original anatomical axis caps. No copied-world search at runtime.",
+    "pelvisPositionKpPerS2": 10,
+    "pelvisPositionKdPerS": 6
+  },
+  "local": {
+    "state": "All 25 measured poses and velocities, native joint coordinates, bilateral measured sole contacts; fixed reference and latched failure state.",
+    "control": "Existing anatomical motor axes only; finite force-based native commands.",
+    "neighborhood": {
+      "pelvisM": 0.015,
+      "feetM": 0.005,
+      "pelvisRad": 0.03,
+      "linearMps": 0.1,
+      "angularRadps": 0.5
+    },
+    "inputs": [
+      {
+        "tick": 180,
+        "segment": "torso",
+        "impulseNs": [
+          0.2,
+          0,
+          0
+        ]
+      },
+      {
+        "tick": 180,
+        "segment": "torso",
+        "impulseNs": [
+          -0.2,
+          0,
+          0
+        ]
+      },
+      {
+        "tick": 180,
+        "segment": "torso",
+        "impulseNs": [
+          0,
+          0,
+          0.2
+        ]
+      },
+      {
+        "tick": 180,
+        "segment": "torso",
+        "impulseNs": [
+          0,
+          0,
+          -0.2
+        ]
+      }
+    ],
+    "returnDeadlineS": 1,
+    "holdAfterReturnS": 2,
+    "contact": {
+      "normalY": 0.65,
+      "minimumForceN": 3,
+      "bilateral": true
+    },
+    "predictionHorizonSteps": 0,
+    "predictionHorizonS": 0,
+    "model": "None. Prediction evaluation is blocked until reference and local return pass.",
+    "replayErrorBounds": {
+      "positionM": 1e-7,
+      "rotationComponent": 1e-7,
+      "velocity": 1e-7
+    },
+    "backupRegion": null,
+    "rationale": "Four physical impulses test a small signed neighborhood without setters. No validated backup region is assumed."
+  },
+  "official": {
+    "headingsRad": [
+      0,
+      1.0471975511965976,
+      -0.7853981633974483
+    ],
+    "screenObservationS": 10,
+    "observationS": 30,
+    "pelvisEndpointM": 0.03,
+    "eachFootEndpointM": 0.01,
+    "allSegmentLinearMps": 0.1,
+    "allSegmentAngularRadps": 0.5,
+    "additionalSteps": 0,
+    "plantedFeet": 2,
+    "states": [
+      "upright",
+      "reacting"
+    ],
+    "excursionsAndVerticalRanges": true
+  },
+  "sustained": {
+    "observationS": 120,
+    "repetitions": 2,
+    "headingsRad": [
+      0,
+      1.0471975511965976,
+      -0.7853981633974483
+    ],
+    "referenceReset": false,
+    "rationale": "Four times the official window, independently repeated, with the same limits throughout."
+  },
+  "heldOut": {
+    "headingsRad": [
+      0.39269908169872414,
+      -1.5707963267948966
+    ],
+    "seeds": [
+      7401,
+      7402
+    ],
+    "repetitions": 2,
+    "observationS": 10,
+    "inputs": [
+      {
+        "tick": 240,
+        "segment": "torso",
+        "forceN": [
+          1.5,
+          0,
+          0
+        ],
+        "durationTicks": 6
+      },
+      {
+        "tick": 360,
+        "segment": "leftHand",
+        "forceN": [
+          0,
+          0,
+          -1.5
+        ],
+        "durationTicks": 6
+      }
+    ],
+    "applicationPoint": "Measured segment center of mass; force implemented as force * 1/60 impulse each tick.",
+    "recovery": {
+      "pelvisExcursionM": 0.03,
+      "footExcursionM": 0.01,
+      "linearMps": 0.2,
+      "angularRadps": 1,
+      "returnDeadlineS": 2,
+      "holdS": 1,
+      "steps": 0
+    },
+    "rationale": "Separate uncalibrated headings and physical body/hand disturbances. These never count as undisturbed acceptance."
+  },
+  "runtime": {
+    "cpu": "Intel(R) Core(TM) i7-8750H CPU @ 2.20GHz",
+    "os": "Windows_NT 10.0.26200 x64",
+    "node": "v24.19.0",
+    "rapier": "0.20.0",
+    "browser": "Installed browser version must be captured before application gate; unavailable version blocks that gate.",
+    "nodeOldSpaceMiB": 384,
+    "controllerDeadlineMs": 8,
+    "fullUpdateBudgetMs": 16.666666666666668,
+    "allowedDeadlineMisses": 0,
+    "warmupSteps": 120,
+    "instrumentation": "performance.now around controller and complete fixedUpdate; artifact I/O measured separately; p50/p95/p99/max; application requires actual browser path."
+  },
+  "memory": {
+    "maximumProcessRssMiB": 768,
+    "maximumPostWarmupGrowthMiB": 64,
+    "warmupS": 2,
+    "soakS": 120,
+    "sampleEveryTicks": 60,
+    "measurement": "Node process.memoryUsage RSS/heapUsed/external/arrayBuffers separately; WASM linear buffer byteLength separately, never sum overlapping totals. Browser gate requires a total-process measurement, not JS heap alone."
+  },
+  "failurePolicy": {
+    "timeout": "Latch failure and hand motor authority to the existing balance/fall/recovery path in the same update.",
+    "infeasible": "Same bounded transition; never silently reuse an unvalidated command.",
+    "invalidContactOrState": "Same transition; no reentry without explicit Reset.",
+    "backup": "No validated backup in v1. Reuse and backup requests are rejected and cause the same transition. Existing balance is a transition policy, not an accepted standing backup.",
+    "reserve": "Reserves only assess reference quality; missing a preferred reserve cannot exclude a mandatory-valid command.",
+    "injections": [
+      "timeout",
+      "infeasible",
+      "invalid-contact",
+      "invalid-model",
+      "backup-invalid",
+      "backup-region-exit"
+    ]
+  }
+}

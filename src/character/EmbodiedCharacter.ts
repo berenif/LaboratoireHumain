@@ -53,6 +53,7 @@ import {
 } from "./limb-collisions";
 import { copyStandingContacts, standingChainDiagnostics } from "./standing-chain-diagnostics";
 import { NativeJointMotors } from "./native-joint-motors";
+import { COORDINATED_STANDING, CoordinatedStandingController } from "./CoordinatedStandingController";
 import { LegTargetDynamics } from "./leg-target-dynamics";
 import {
   clampJointCoordinates,
@@ -193,6 +194,8 @@ function roleEffort(definition: SegmentDefinition): number {
 class EmbodiedCharacter implements CharacterController {
   private readonly world: World;
   private readonly nativeMotors: NativeJointMotors;
+  private coordinatedStanding: CoordinatedStandingController | null = null;
+  private readonly standingCandidateOptions: CharacterInitialOptions["standingCandidate"];
   /** Kept under the historical name so existing QA probes can inspect handles. */
   private readonly ragdollBodies = new Map<SegmentId, RigidBody>();
   private readonly ragdollColliders = new Map<SegmentId, Collider>();
@@ -211,7 +214,7 @@ class EmbodiedCharacter implements CharacterController {
   private readonly balance = new BalanceController();
   private balanceData: BalanceDiagnostics | null = null;
   private kneeFlexion: number = HUMAN_PROPORTIONS.stance.neutralKneeFlexion;
-  private recovery = new DynamicRecovery();
+  private recovery = this.createRecoveryController();
   private recoveryRollArmMotorsActive = false;
   private readonly floorCollider: Collider;
   private heading: number;
@@ -258,6 +261,8 @@ class EmbodiedCharacter implements CharacterController {
   private readonly runtimeErrors: string[] = [];
 
   constructor(renderer: RendererMode, options: CharacterInitialOptions = {}) {
+    if (options.standingCandidate && (options.room || options.playground)) throw new Error("H74 requires the declared flat-floor solver configuration");
+    this.standingCandidateOptions = options.standingCandidate;
     this.renderer = renderer;
     this.room = Boolean(options.room);
     this.initialHeading = options.heading ?? 0;
@@ -313,6 +318,18 @@ class EmbodiedCharacter implements CharacterController {
     this.recovery.observe(this.world, this.environmentColliders(), this.ragdollColliders, this.ragdollBodies, 1 / 60);
     this.lastContacts = this.recovery.diagnostics().contacts.map((contact) => ({ ...contact }));
     this.balance.reset(this.poses, this.heading, this.supportHeight());
+    this.initializeStandingCandidate();
+  }
+
+  private initializeStandingCandidate(): void {
+    this.coordinatedStanding = this.standingCandidateOptions
+      ? new CoordinatedStandingController(this.poses, this.heading, this.standingCandidateOptions.forwardOffsetM ?? 0) : null;
+  }
+
+  private createRecoveryController(): DynamicRecovery {
+    return new DynamicRecovery(commands => this.nativeMotors.apply(
+      this.ragdollBodies, this.jointsByChild, commands, { passiveResistance: true },
+    ));
   }
 
   fixedUpdate(dt: number, command: GrabCommand | null): void {
@@ -466,7 +483,7 @@ class EmbodiedCharacter implements CharacterController {
     this.lastMotorResults.clear();
     this.grabControlDiagnostics = emptyGrabDiagnostics();
     this.runtimeErrors.length = 0;
-    this.recovery = new DynamicRecovery();
+    this.recovery = this.createRecoveryController();
     this.recoveryRollArmMotorsActive = false;
     this.poses = this.initialPose();
     this.previousPoses = this.clonePoses(this.poses);
@@ -484,6 +501,7 @@ class EmbodiedCharacter implements CharacterController {
     this.recovery.observe(this.world, this.environmentColliders(), this.ragdollColliders, this.ragdollBodies, 1 / 60);
     this.lastContacts = this.recovery.diagnostics().contacts.map((contact) => ({ ...contact }));
     this.balance.reset(this.poses, this.heading, this.supportHeight());
+    this.initializeStandingCandidate();
   }
 
   diagnostics(): DiagnosticsSnapshot {
@@ -505,6 +523,7 @@ class EmbodiedCharacter implements CharacterController {
       recovery: this.isRecoveryState() ? this.recovery.diagnostics() : emptyRecoveryDiagnostics(),
       grabControl: { ...this.grabControlDiagnostics },
       physicsOwnership: "rapier-dynamic",
+      ...(this.coordinatedStanding ? { coordinatedStanding: this.coordinatedStanding.diagnostics() } : {}),
       standingChain: this.isRecoveryState() || this.standingTargets.size === 0 ? null
         : standingChainDiagnostics(this.poses, this.standingTargets, this.standingCommands,
           this.step, this.heading, this.standingMotorSampleTimeS, this.simulationTime, this.lastContacts, this.standingMotorPelvis),
@@ -786,8 +805,12 @@ class EmbodiedCharacter implements CharacterController {
     const supportedFraction = bodyWeightN > 0 ? supportedLoadN / bodyWeightN : 0;
     // Measured-frame legs keep the soles fixed; this bounded task supplies
     // horizontal restoration even after release or an abandoned transfer.
-    const loadAcceleration = balance.diagnostics.balanceAcceleration;
-    const heightTarget = target.poses.get("pelvis")!.position.y;
+    const referencePelvis = this.coordinatedStanding?.active ? this.coordinatedStanding.reference.get("pelvis") : null;
+    const loadAcceleration = referencePelvis ? clampLength(add(
+      scale(sub(referencePelvis.position, pelvis.position), COORDINATED_STANDING.pelvisPositionKpPerS2),
+      scale(pelvis.linearVelocity, -COORDINATED_STANDING.pelvisPositionKdPerS)), BALANCE_LIMITS.maxBalanceAccelerationMps2)
+      : balance.diagnostics.balanceAcceleration;
+    const heightTarget = referencePelvis?.position.y ?? target.poses.get("pelvis")!.position.y;
     const heightOmega = Math.sqrt(9.81 / Math.max(0.4,
       balance.diagnostics.centerOfMass.y - this.supportHeight()));
     // Critically damped height intent at the body's pendulum frequency. This
@@ -811,6 +834,18 @@ class EmbodiedCharacter implements CharacterController {
     this.leanRadians = target.leanRadians;
     this.standingTargets = target.poses;
     this.standingCommands = this.motorCommands(target.poses);
+    if (this.coordinatedStanding) {
+      const commands = this.coordinatedStanding.update({ poses: this.poses, nominal: this.standingCommands,
+        gravity: new Map(SEGMENTS.filter(d => d.jointProfile).map(d => [d.id, this.gravityCompensation(d)])),
+        contacts: measuredContacts, tick: this.fixedSteps, dt,
+        quiet: !this.activeGrab && !this.step && this.stepCount === 0 && ["upright", "reacting"].includes(this.state) });
+      if (commands) {
+        this.standingCommands = commands;
+        this.standingTargets = this.coordinatedStanding.reference;
+      }
+      // null means a latched, same-update handoff to existing bounded balance
+      // commands and the original fall/recovery guards, never a standing pass.
+    }
     this.standingMotorSampleTimeS = this.simulationTime - dt;
     this.standingMotorPelvis = { id: "pelvis", position: { ...pelvis.position }, rotation: { ...pelvis.rotation } };
     this.lastMotorResults = this.nativeMotors.apply(
@@ -924,6 +959,7 @@ class EmbodiedCharacter implements CharacterController {
   /** State-only transition: bodies, positions, rotations, and velocities are untouched. */
   private activateRagdoll(direction: Vec3): void {
     if (this.isRecoveryState()) return;
+    this.coordinatedStanding?.handoff("invalid-state");
     const pelvisVelocity = this.poses.get("pelvis")?.linearVelocity ?? ZERO;
     const fallDirection = normalize(
       add(horizontal(direction), scale(horizontal(pelvisVelocity), 0.12)),
@@ -1155,7 +1191,13 @@ class EmbodiedCharacter implements CharacterController {
       const collider = this.world.createCollider(
         convexCollider(definition)
           .setFriction(
-            definition.role === "hindfoot" || definition.role === "forefoot" ? 4 : 0.45,
+            definition.role === "hindfoot" || definition.role === "forefoot" ? 4
+              // Min combining makes the body material the limiting grip on
+              // the floor. Give get-up supports the recovery planner's 1.2
+              // coefficient so planted limbs can push without skating.
+              : definition.role === "hand" || definition.role === "forearm"
+                || definition.role === "forearm-twist" || definition.role === "shin"
+                || definition.role === "ankle" ? 1.2 : 0.45,
           )
           .setFrictionCombineRule(RAPIER.CoefficientCombineRule.Min)
           .setRestitution(0.02)
@@ -1435,7 +1477,8 @@ class EmbodiedCharacter implements CharacterController {
   }
 }
 
-export interface CharacterInitialOptions { heading?: number; position?: Vec3; playground?: PlaygroundConfig; room?: boolean }
+export interface CharacterInitialOptions { heading?: number; position?: Vec3; playground?: PlaygroundConfig; room?: boolean;
+  standingCandidate?: { forwardOffsetM?: number } }
 
 export async function createEmbodiedCharacter(
   initialRenderer: RendererMode = "canvas2d",

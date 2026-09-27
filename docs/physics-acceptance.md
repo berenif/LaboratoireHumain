@@ -2,6 +2,8 @@
 
 This document defines required behavior, not a claim that the implementation passes. See [current status](status.md), [evidence availability](evidence.md), and the separate [browser verification setup](browser-verification.md).
 
+The [coordinated standing plan](standing-stabilization-plan.md#one-reproducible-acceptance-operation) is implemented experimentally by `node scripts/standing-acceptance.mjs`, with a [frozen H74-v1 manifest](experiments/standing-h74-v1.json). It runs physical simulations serially, preserves failures and returns non-success for failed or incomplete required stages. [H74's recorded attempt](standing-h74-contract.md) fails reference feasibility; no screens, official standing, sustained/disturbance, browser-performance or memory-soak pass is claimed. This additional operation preserves the contracts below and does not replace full release acceptance.
+
 Run `npm run test:physics` with Node 22.13 or newer. The entry point is `scripts/run-physics-harness.ts`, which executes the scenarios in `scripts/physics-acceptance.ts`; immutable scenario inputs and numerical thresholds live in `scripts/physics-fixtures.ts`. Every scenario uses Rapier 0.20.0 at exactly 1/60 second per update.
 
 The harness writes `evidence/physics-results.json` and `evidence/successor-trace.ndjson`. Report schema 4 records all 25 segment trajectories, joint-coordinate and contact diagnostics, motion-state changes, body-input gating, and the Rapier backend version. The trace samples every sixth update, while assertions inspect every update.

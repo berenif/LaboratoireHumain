@@ -1,4 +1,6 @@
 import { createEmbodiedCharacter } from "../character";
+import { coordinatedStandingOptions } from "../character/standing-selection";
+import { characterFrame } from "../character/character-frame";
 import { FixedStepLoop } from "../core/FixedStepLoop";
 import { DEFAULT_PLAYGROUND, type PlaygroundConfig, type PlaygroundTrial } from "../core/playground";
 import type { CharacterController, PoseSnapshot, PoseView, RegionId, RendererMode } from "../core/types";
@@ -91,6 +93,7 @@ export class DemoRuntime {
   get paused(): boolean { return this.pausedValue; }
   get resetVersion(): number { return this.resetCount; }
   get trial(): PlaygroundTrial { return { ...this.trialValue }; }
+  get timing() { return { ...this.loop.stats() }; }
   get status(): string {
     if (this.paused) return this.statusValue;
     if (this.current.room) return this.current.protocol?.message ?? "Prêt pour la procédure";
@@ -290,9 +293,8 @@ export class DemoRuntime {
 
   private fixedUpdate = (dt: number): void => {
     this.syncBodyInput();
-    this.character.fixedUpdate(dt, this.interaction.consumeCommand());
     this.previous = this.current;
-    this.snapshot = this.character.getSnapshot(this.renderer);
+    this.snapshot = characterFrame(this.character, dt, this.interaction.consumeCommand(), this.renderer);
     if (this.snapshot.playground) {
       const falling = ["falling", "fallen", "recovering"].includes(this.snapshot.state);
       const wasFalling = ["falling", "fallen", "recovering"].includes(this.previous.state);
@@ -333,8 +335,10 @@ export async function createDemoRuntime(host: HTMLElement, signal: AbortSignal):
   }
   const renderer = capabilities.webgl2 ? "webgl" : "canvas2d";
   const playgroundMode = new URLSearchParams(window.location.search).get("mode") === "playground";
+  const standingCandidate = new URLSearchParams(window.location.search).get("standingCandidate");
   const character = await createEmbodiedCharacter(renderer,
-    playgroundMode ? { playground: { ...DEFAULT_PLAYGROUND } } : { room: true });
+    standingCandidate ? coordinatedStandingOptions(standingCandidate)
+      : playgroundMode ? { playground: { ...DEFAULT_PLAYGROUND } } : { room: true });
   if (signal.aborted) {
     character.dispose();
     signal.throwIfAborted();

@@ -1,6 +1,9 @@
 import { WORLD } from "./types";
 
 export interface LoopStats {
+  activeWallTimeS: number;
+  simulatedTimeS: number;
+  realtimeRatio: number;
   fixedSteps: number;
   droppedTimeMs: number;
   lastStepMs: number;
@@ -15,6 +18,9 @@ export class FixedStepLoop {
   private paused = false;
   private stepSamples = 0;
   private statsValue: LoopStats = {
+    activeWallTimeS: 0,
+    simulatedTimeS: 0,
+    realtimeRatio: 0,
     fixedSteps: 0,
     droppedTimeMs: 0,
     lastStepMs: 0,
@@ -56,7 +62,8 @@ export class FixedStepLoop {
     this.previousTimeMs = null;
     this.accumulator = 0;
     this.stepSamples = 0;
-    this.statsValue = { fixedSteps: 0, droppedTimeMs: 0, lastStepMs: 0, meanStepMs: 0, maxStepMs: 0 };
+    this.statsValue = { activeWallTimeS: 0, simulatedTimeS: 0, realtimeRatio: 0,
+      fixedSteps: 0, droppedTimeMs: 0, lastStepMs: 0, meanStepMs: 0, maxStepMs: 0 };
   }
 
   stats(): Readonly<LoopStats> {
@@ -72,7 +79,10 @@ export class FixedStepLoop {
     }
 
     if (this.previousTimeMs === null) this.previousTimeMs = nowMs;
-    const elapsed = Math.min(0.25, Math.max(0, (nowMs - this.previousTimeMs) / 1000));
+    const wallElapsed = Math.max(0, (nowMs - this.previousTimeMs) / 1000);
+    const elapsed = Math.min(0.25, wallElapsed);
+    this.statsValue.activeWallTimeS += wallElapsed;
+    this.statsValue.droppedTimeMs += (wallElapsed - elapsed) * 1000;
     this.previousTimeMs = nowMs;
     this.accumulator += elapsed;
 
@@ -84,6 +94,7 @@ export class FixedStepLoop {
       const duration = performance.now() - start;
       this.stepSamples += 1;
       this.statsValue.fixedSteps += 1;
+      this.statsValue.simulatedTimeS += WORLD.fixedDt;
       this.statsValue.lastStepMs = duration;
       this.statsValue.maxStepMs = Math.max(this.statsValue.maxStepMs, duration);
       this.statsValue.meanStepMs += (duration - this.statsValue.meanStepMs) / this.stepSamples;
@@ -100,6 +111,8 @@ export class FixedStepLoop {
       this.accumulator %= WORLD.fixedDt;
     }
 
+    this.statsValue.realtimeRatio = this.statsValue.activeWallTimeS > 0
+      ? this.statsValue.simulatedTimeS / this.statsValue.activeWallTimeS : 0;
     this.render(this.accumulator / WORLD.fixedDt, nowMs);
   };
 }

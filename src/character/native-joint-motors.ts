@@ -5,6 +5,7 @@ import { clampJointCoordinates, jointCoordinates, jointCoordinateTargetError, jo
 import { add, clamp, dot, scale, sub } from "./math";
 import { assertRapierJointLimitCompatibility } from "./rapier-joint-adapter";
 import type { JointMotorCommand, JointMotorResult } from "./joint-motors";
+import { passiveAxisFeedback } from "./joint-motors";
 
 const ZERO: Vec3 = { x: 0, y: 0, z: 0 };
 const IDENTITY = { ...ZERO, w: 1 };
@@ -30,7 +31,7 @@ export class NativeJointMotors {
     this.raw = raw as RawMotorApi020;
   }
 
-  apply(bodies: ReadonlyMap<SegmentId, RigidBody>, joints: ReadonlyMap<SegmentId, ImpulseJoint>, commands: readonly JointMotorCommand[]): Map<SegmentId, JointMotorResult> {
+  apply(bodies: ReadonlyMap<SegmentId, RigidBody>, joints: ReadonlyMap<SegmentId, ImpulseJoint>, commands: readonly JointMotorCommand[], options: { passiveResistance?: boolean } = {}): Map<SegmentId, JointMotorResult> {
     const results = new Map<SegmentId, JointMotorResult>();
     for (const command of commands) {
       const definition = SEGMENT_BY_ID.get(command.id);
@@ -50,15 +51,26 @@ export class NativeJointMotors {
       let torqueWorld = ZERO, saturationRatio = 0;
       for (const axis of profile.axes) {
         const coordinate = axis.coordinate, abiAxis = AXIS[coordinate];
-        const cap = axis.maxMotorTorqueNm * strength;
-        const feedforward = dot(command.feedforwardWorld ?? ZERO, basis[coordinate]) * strength;
+        const rate = dot(relativeVelocity, basis[coordinate]);
+        const passive = options.passiveResistance
+          ? passiveAxisFeedback(coordinates[coordinate], rate, axis, profile) : null;
+        const effort = options.passiveResistance ? Math.max(0, command.effortScale ?? 1) : 1;
+        const axisKp = kp * effort + (passive?.kp ?? 0);
+        const axisKd = kd * effort + (passive?.kd ?? 0);
+        const axisTarget = passive && axisKp > 0 ? clamp(
+          (kp * effort * target[coordinate] + passive.kp * (coordinates[coordinate] + passive.error)) / axisKp,
+          axis.minRadians, axis.maxRadians,
+        ) : target[coordinate];
+        const cap = Math.max(axis.maxMotorTorqueNm * strength, passive?.cap ?? 0);
+        const feedforward = dot(command.feedforwardWorld ?? ZERO, basis[coordinate]) * strength * effort;
         // A velocity bias encodes finite gravity/load compensation inside the
         // same force ceiling. No extra uncapped feedforward impulse is applied.
-        const velocity = kd > 0 ? feedforward / kd : 0;
+        const velocity = axisKd > 0 ? feedforward / axisKd : 0;
         this.raw.jointConfigureMotorModel(joint.handle, abiAxis, MotorModel.ForceBased);
         this.raw.jointSetMotorMaxForce(joint.handle, abiAxis, cap);
-        this.raw.jointConfigureMotor(joint.handle, abiAxis, target[coordinate], velocity, kp, kd);
-        const requested = kp * error[coordinate] + kd * (velocity - dot(relativeVelocity, basis[coordinate]));
+        this.raw.jointConfigureMotor(joint.handle, abiAxis, axisTarget, velocity, axisKp, axisKd);
+        const requested = kp * effort * error[coordinate] + (passive?.kp ?? 0) * (passive?.error ?? 0)
+          + axisKd * (velocity - rate);
         torqueWorld = add(torqueWorld, scale(basis[coordinate], clamp(requested, -cap, cap)));
         if (cap > 0) saturationRatio = Math.max(saturationRatio, Math.abs(requested) / cap);
       }

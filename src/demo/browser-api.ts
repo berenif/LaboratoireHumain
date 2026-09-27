@@ -1,5 +1,6 @@
 import type { CameraState, DiagnosticsSnapshot, RegionId, RendererMode } from "../core/types";
 import type { DemoRuntime } from "./DemoRuntime";
+import type { LoopStats } from "../core/FixedStepLoop";
 import { summarizeFrames } from "./telemetry";
 import type { BrowserCapabilities, FrameSummary } from "./telemetry";
 
@@ -9,6 +10,7 @@ export interface DemoBrowserApi {
   capabilities: () => BrowserCapabilities | null;
   renderer: () => RendererMode;
   frameSummary: () => FrameSummary;
+  timing: () => Readonly<LoopStats> | null;
   camera: () => CameraState | null;
   regionPoint: (region: RegionId) => { x: number; y: number; visible: boolean } | null;
 }
@@ -30,6 +32,7 @@ export function installBrowserApi(
     capabilities: getCapabilities,
     renderer: () => getRuntime()?.renderer ?? "canvas2d",
     frameSummary: () => getRuntime()?.frameSummary() ?? summarizeFrames([]),
+    timing: () => getRuntime()?.timing ?? null,
     camera: () => getRuntime()?.camera.getState() ?? null,
     regionPoint: (region) => getRuntime()?.regionPoint(region) ?? null,
   };

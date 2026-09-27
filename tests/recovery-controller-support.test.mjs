@@ -631,6 +631,24 @@ test("a moving foot owns its target until an unloaded, intended fresh plant qual
   assert.ok(state.recovery.plants.has("rightFoot"));
 });
 
+test("rolling retains its captured foot plan and replans when bracing begins", () => {
+  const state = rig(recoveryFixturePoses({ id: "roll-search", pose: "supine", side: "left", heading: 0 }));
+  state.recovery.plants.clear();
+  state.recovery.data.phase = "roll";
+  state.recovery.data.transferStage = "roll";
+  state.recovery.data.route = "roll";
+  const stale = { kind: "blocked" };
+  state.recovery.footPlans.set("left", stale);
+  state.recovery.footPlans.set("right", stale);
+  state.recovery.transfer(state.bodies, state.poses, dt);
+  assert.equal(state.recovery.footPlans.get("left"), stale);
+  assert.equal(state.recovery.footPlans.get("right"), stale);
+  state.recovery.data.transferStage = "push-brace";
+  state.recovery.transfer(state.bodies, state.poses, dt);
+  assert.notEqual(state.recovery.footPlans.get("left"), stale, "bracing must resume current-geometry searches");
+  assert.notEqual(state.recovery.footPlans.get("right"), stale);
+});
+
 test("a transient command-clearance pause resumes after current geometry is feasible", () => {
   const state = rig(); bothFeetCoverMass(state);
   assert.equal(state.recovery.beginFootMovement("right", state.poses, ["rightFoot"]), true);

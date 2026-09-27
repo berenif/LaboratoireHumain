@@ -10,6 +10,8 @@ const sourcePaths = [
   "../src/character/contact-loads.ts",
   "../src/character/joint-coordinates.ts",
   "../src/character/joint-motors.ts",
+  "../src/character/native-joint-motors.ts",
+  "../src/character/physics-settings.ts",
   "../src/character/recovery-forefoot-anchor.ts",
   "../src/character/recovery-foot-targets.ts",
   "../src/character/recovery-joints.ts",
@@ -18,6 +20,7 @@ const sourcePaths = [
   "../src/core/humanoid.ts",
   "../src/core/geometry.ts",
   "../src/core/types.ts",
+  "./probe-protocol-one-strike.mjs",
 ];
 const sourceHashes = () => Object.fromEntries(sourcePaths.map((path) => [path,
   createHash("sha256").update(readFileSync(new URL(path, import.meta.url))).digest("hex")]));
@@ -36,16 +39,47 @@ if (probeSeconds !== null && (!Number.isFinite(probeSeconds) || probeSeconds <= 
   throw new Error("PROTOCOL_PROBE_SECONDS must be a positive number of simulated seconds");
 }
 const character = await createEmbodiedCharacter("canvas2d", { room: true });
+const trialSolverIterations = process.env.PROTOCOL_RECOVERY_SOLVER_ITERATIONS === undefined
+  ? null : Number(process.env.PROTOCOL_RECOVERY_SOLVER_ITERATIONS);
+if (trialSolverIterations !== null && (!Number.isInteger(trialSolverIterations) || trialSolverIterations < 1)) throw new Error("Invalid solver trial count");
+const softRollTrial = process.env.PROTOCOL_SOFT_ROLL === "1";
+if (softRollTrial) {
+  const apply = character.recovery.motorBackend;
+  character.recovery.motorBackend = commands => apply(commands.map(command => {
+    if (character.recovery.diagnostics().transferStage !== "roll") return command;
+    return { ...command, stiffness: command.stiffness * .08, damping: command.damping * .3 };
+  }));
+}
+// Nested buckets intentionally overlap; world integration is disjoint from planning.
+const sections = {};
+for (const [object, methods] of [[character.world, ["step"]],
+  [character.recovery, ["chooseRoute", "transfer", "actuate", "limbTargets", "legalArmCommand"]]]) {
+  for (const method of methods) {
+    const original = object[method].bind(object);
+    object[method] = (...args) => {
+      const start = performance.now();
+      try { return original(...args); }
+      finally {
+        const bucket = sections[method] ??= { calls: 0, totalMs: 0, maxMs: 0 };
+        const elapsed = performance.now() - start;
+        bucket.calls++;
+        bucket.totalMs += elapsed;
+        bucket.maxMs = Math.max(bucket.maxMs, elapsed);
+      }
+    };
+  }
+}
 const bodyRefs = new Map(character.ragdollBodies);
 const sampledMax = { jointGapM: 0, floorDepthM: 0, selfDepthM: 0, limitErrorRad: 0 };
+const everyTickMax = { ...sampledMax };
+const trajectoryHash = createHash("sha256");
 
 function upDot(rotation) {
   // Y component of q * (0, 1, 0) * q^-1.
   return 1 - 2 * (rotation.x ** 2 + rotation.z ** 2);
 }
 
-function physicalStanding() {
-  const frame = character.getSnapshot("canvas2d");
+function physicalStanding(frame) {
   const recovery = frame.diagnostics.recovery;
   if (recovery.phase !== "stand") return false;
   const poses = new Map(frame.segments.map(segment => [segment.id, segment]));
@@ -93,6 +127,8 @@ function report(frame, tick, label, stableTicks) {
     blockingPredicate: recovery.blockingPredicate,
     retryReason: recovery.retryReason,
     recoveryRetries: recovery.retries,
+    stalledTimeS: recovery.stalledTimeS,
+    progressError: recovery.progressError,
     contacts: d.contactDiagnostics.count,
     loadBearingContacts: d.contactDiagnostics.loadBearingCount,
     supporting: d.contactDiagnostics.supportingSegments,
@@ -121,13 +157,30 @@ let lastPhase = character.striker.phase;
 let lastImpactId = character.striker.impactId;
 let lastReturns = character.protocolRecoveries;
 let endReason = "time-limit";
+const stepDurations = [];
+const phaseTimings = {};
+const replayStart = performance.now();
 try {
   const initial = character.getSnapshot("canvas2d");
   report(initial, 0, "initial", stableTicks);
   if (!character.requestStrike()) throw new Error("Initial strike request was rejected");
   for (let tick = 1; tick <= (probeSeconds === null ? 1800 : Math.ceil(probeSeconds / dt)); tick++) {
+    const phaseBefore = character.getSnapshot("canvas2d").diagnostics.recovery.phase;
+    if (tick > 56 && trialSolverIterations !== null) character.world.numSolverIterations = trialSolverIterations;
+    const stepStart = performance.now();
     character.fixedUpdate(dt, null);
-    if (physicalStanding() && impactTime !== null) {
+    const stepMs = performance.now() - stepStart;
+    stepDurations.push(stepMs);
+    const timing = phaseTimings[phaseBefore] ??= { steps: 0, totalMs: 0, maxMs: 0 };
+    timing.steps++;
+    timing.totalMs += stepMs;
+    timing.maxMs = Math.max(timing.maxMs, stepMs);
+    const frame = character.getSnapshot("canvas2d");
+    trajectoryHash.update(JSON.stringify(frame.segments));
+    for (const [key, value] of Object.entries({ jointGapM: frame.diagnostics.maxJointSeparationM,
+      floorDepthM: frame.diagnostics.maxFloorPenetrationM, selfDepthM: frame.diagnostics.maxSelfPenetrationM,
+      limitErrorRad: frame.diagnostics.maxJointLimitErrorRad })) everyTickMax[key] = Math.max(everyTickMax[key], value);
+    if (physicalStanding(frame) && impactTime !== null) {
       if (stableTicks === 0) stableStartTime = character.simulationTime;
       stableTicks++;
       if (stableTicks === 60 && stableCompletionTime === null) stableCompletionTime = character.simulationTime;
@@ -173,6 +226,17 @@ try {
   report(final, final.sequence, `final:${endReason}`, stableTicks);
   process.stdout.write(`${JSON.stringify({
     summary: true,
+    performance: {
+      wallSeconds: (performance.now() - replayStart) / 1000,
+      simulatedSeconds: final.simulationTime,
+      physicsSeconds: stepDurations.reduce((sum, ms) => sum + ms, 0) / 1000,
+      physicsRealtimeRatio: final.simulationTime / (stepDurations.reduce((sum, ms) => sum + ms, 0) / 1000),
+      p95StepMs: [...stepDurations].sort((a, b) => a - b)[Math.ceil(stepDurations.length * .95) - 1],
+      phaseTimings,
+      sections,
+      trialSolverIterations,
+      softRollTrial,
+    },
     startedAt,
     finishedAt,
     changedSources,
@@ -189,6 +253,8 @@ try {
     bodiesRetained,
     bodyCount: character.ragdollBodies.size,
     sampledMax,
+    everyTickMax,
+    trajectorySha256: trajectoryHash.digest("hex"),
     probeValid: bodiesRetained && final.protocol.strikes === 1,
     recoveryPassed: endReason === "stable-return" && bodiesRetained && final.protocol.strikes === 1,
   })}\n`);

@@ -1,16 +1,48 @@
 # Current status
 
-Updated 2026-09-27 through H73's first attempt. **Quiet standing remains the first unfinished TODO.** The goal is to stand still without drifting, wobbling, or falling before moving on to reliable weight shifting and stepping. The unchanged focused selection has a recorded 69/69 pass, but the standing experiments do not yet satisfy the full physical acceptance criteria.
+**Recovery performance investigation, 2026-09-27:** repeated foot-placement searches during rolling are skipped until a placement phase needs them. A 10-second strike replay fell from 146 seconds to 20–27 seconds on this host; it still does not run in real time or complete get-up. Lower solver counts and rolling motor trials were rejected. Per-tick diagnostics expose a transient joint-limit violation missed by coarse sampling. See the [measurement, retained changes and limitations](recovery-responsiveness-profile.md).
+
+**Recovery launch correction, 2026-09-27:** the application now integrates recovery motors with native contact/joint constraints instead of applying frame-sized torque impulses first. A real strike reproduced the old floor-to-ceiling launch; the corrected 10-second replay remains near the floor (maximum pelvis height after landing 0.1222 m). The character still stalls while rolling toward a brace, so get-up acceptance remains open. See [cause, comparison and validation](recovery-native-actuation-fix.md). The standing investigations below retain their recorded source scope; this correction does not establish quiet standing.
+
+Updated 2026-09-27 through H75-v1. **Quiet standing remains the first unfinished TODO.** H74's three references remain rejected. [H75](standing-h75-contract.md) executes all 342 frozen copied motor probes with exact controls/repeats, but full native row inspection remains incomplete after three failed builds. The central best probe lowers 0.501134 to 0.464467 rad/s, still above the reference reserve; no controller repair is justified. H74's 81 regressions, five candidate tests and typecheck retain their unchanged source scope. No physical acceptance checkbox closes.
 
 One confirmed mistake was rejecting a helpful correction because it missed a preferred extra margin, then keeping an old command that caused much more wobbling. The [plain-language explanation and replay evidence](standing-h71-contract.md#plain-language-explanation) describe why. The experimental repair retains a tested correction within the actual speed limits when the preferred margin is unreachable; it does not establish lasting balance.
 
-Some short tests improved, but H66's longer test has a recorded speed failure. H73's first three concurrent simulations exhausted memory without final reports. The next attempt must preserve their partial results and run **one simulation at a time**, following the [H73 restart procedure](standing-h73-contract.md#first-attempt--memory-failures-no-complete-screen). These remain experimental fixes. Weight transfer, stepping, recovery, interactive performance, and full application verification remain open. Dated reports retain their own evidence and limitations.
+Some short tests improved, but H66's longer test has a recorded speed failure. H73's first three concurrent simulations exhausted memory without final reports. Any H73 retry must preserve their partial results and run **one simulation at a time**, following the [H73 restart procedure](standing-h73-contract.md#first-attempt--memory-failures-no-complete-screen). These remain experimental fixes. Weight transfer, stepping, recovery, interactive performance, and full application verification remain open. Dated reports retain their own evidence and limitations.
+
+## Coordinated investigation — bounded negative result
+
+The [coordinated stabilization plan](standing-stabilization-plan.md) now has an
+explicit shared experimental controller and serial acceptance operation:
+`node scripts/standing-acceptance.mjs`. [H74-v1](standing-h74-contract.md) freezes
+numeric limits, preserves nine exactly replayed failure captures, exercises six
+failure transitions and verifies unchanged default behavior against archived
+source for thirty steps. The three reference trials fail at ticks 133, 120 and
+123. Later physical stages are incomplete; the command exits 1. No validated
+operating/backup region, MPC result or interactive-performance claim follows.
+The H42 rigid comparison reproduces its representation difference. H75's new
+frozen diagnostic verifies all 176 listed H74 artifacts and 315 retained source
+hashes, then completes six exact controls and 168 independently repeated signed
+motor commands. Zero native position stiffness excludes direct excitation by
+the motor's arcsine position-coordinate formula in these states. Substantial
+relative forefoot motion in locked directions remains unexplained; unchanged
+contact counts do not isolate contact or constraint effects. Compiled raw/finalized
+row reconstruction is incomplete after the three-build budget is exhausted.
+Next freeze the [six-snapshot build-and-read diagnostic](standing-h75-contract.md#concrete-next-diagnostic),
+using zero new physical steps. All failures and sources are retained.
+
+H73 remains a **pending comparison candidate**, not an accepted baseline or a
+prerequisite for this investigation. Its documented serial restart remains the
+procedure for evaluating H73. H66's 1.72–1.88 s timing is average preview time
+under concurrent diagnostic runs, not an isolated application measurement.
+H74 changes neither physical thresholds nor historical results. It remains
+opt-in; standing, transfer, stepping, recovery and release gates stay open.
 
 ## Source and evidence scope
 
 The reviewed working tree starts at `44fc25437d841151c704895c1fb92de4c2e468d0` and includes uncommitted physics, test, and workflow changes. The [documentation checkpoint manifest](checkpoint-2026-09-26.json) records a partial source fingerprint and missing artifact inventory. It is not a physics test report or a complete dependency fingerprint.
 
-The latest production correction and validation are in [H51](standing-h51-contract.md). [H44](standing-h44-contract.md), [H41](standing-h41-contract.md), [H40](standing-h40-contract.md) and the earlier [geometric-inertia report](inertia-correction-2026-09-27.md) retain their source-scoped results. Earlier results below retain their dated source scope. The [September 26 investigation](physics-standing-contract-2026-09-26.md) still has missing original reports; recovered artifacts and limitations are listed in [evidence availability](evidence.md). Missing reports cannot be treated as independently verified results merely because their counts appear below.
+The default physical controller retains [H51](standing-h51-contract.md); H74 adds an opt-in candidate and shared application/harness frame function. Its tests and thirty-step disabled comparison do not refresh H51's longer physical histories. [H44](standing-h44-contract.md), [H41](standing-h41-contract.md), [H40](standing-h40-contract.md) and the earlier [geometric-inertia report](inertia-correction-2026-09-27.md) retain their source-scoped results. Earlier results below retain their dated source scope. The [September 26 investigation](physics-standing-contract-2026-09-26.md) still has missing original reports; recovered artifacts and limitations are listed in [evidence availability](evidence.md). Missing reports cannot be treated as independently verified results merely because their counts appear below.
 
 ## Recorded gates
 

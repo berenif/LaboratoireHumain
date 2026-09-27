@@ -93,6 +93,9 @@ export function emptyRecoveryDiagnostics(): RecoveryDiagnostics {
 
 /** Rapier owns every dynamic transform. Plans become bounded joint actuation. */
 export class DynamicRecovery {
+  /** The runtime supplies native motors; isolated motor-model probes may use the impulse backend. */
+  constructor(private readonly motorBackend?: (commands: readonly JointMotorCommand[]) => Map<SegmentId, JointMotorResult>) {}
+
   private data = emptyRecoveryDiagnostics();
   private lastMotorResults: ReadonlyMap<SegmentId, JointMotorResult> = new Map();
   private nativeRollArmCommands: readonly JointMotorCommand[] = [];
@@ -756,6 +759,9 @@ export class DynamicRecovery {
       : !this.released.has(id) && this.data.contacts.some(c=>c.segment===id && c.loadBearing);
     const pelvis=poses.get("pelvis")!, yaw=quatFromAxisAngle(UP,this.heading), mass=recoveryMassState(poses.values());
     for(const side of SIDES) {
+      // Rolling has no requested foot swing. Keep its captured fold until
+      // brace/kneel needs a plant instead of searching the floor every tick.
+      if(phase==="roll" && this.data.transferStage==="roll" && !this.footMovements.has(`${side}Foot`))continue;
       if(this.plants.has(`${side}Foot`) || this.footMovements.has(`${side}Foot`))continue;
       const plan=this.footPlans.get(side);
       if(plan?.kind==="blocked") {
@@ -1258,6 +1264,16 @@ export class DynamicRecovery {
     // Unsupported settling has no posture motor. Rapier still enforces every
     // joint limit while passive resistance damps motion near those limits.
     if(this.data.phase==="settle") {
+      if(this.motorBackend) {
+        // Replace every active command with passive resistance. The native
+        // solver integrates damping with contacts instead of receiving a
+        // frame-sized angular impulse before its first contact solve.
+        this.lastPassiveTorques=new Map();
+        this.lastMotorResults=this.motorBackend(SEGMENTS.filter(d=>d.parent&&d.jointProfile).map(d=>({
+          id:d.id,targetLocalRotation:d.restLocalRotation,stiffness:0,damping:0,strengthScale:0,
+        })));
+        return;
+      }
       this.lastPassiveTorques=applyPassiveJointResistance(bodies,dt);
       for(const torque of this.lastPassiveTorques.values())
         this.data.maxMotorTorqueNm=Math.max(this.data.maxMotorTorqueNm,length(torque));
@@ -1493,6 +1509,17 @@ export class DynamicRecovery {
         stiffness:kp,damping:kd,strengthScale:(active?1:holdCrouch?.75:.28)*movingArmStrength,
         effortScale:this.placingProneArms && spine?2.2:1,
         feedforwardWorld:feedforward});
+    }
+    this.executeMotorCommands(bodies,motorCommands,active,dt);
+  }
+
+  private executeMotorCommands(bodies:Map<SegmentId,RigidBody>,motorCommands:JointMotorCommand[],active:boolean,dt:number):void {
+    if(this.motorBackend) {
+      this.lastPassiveTorques=new Map();
+      this.lastMotorResults=this.motorBackend(motorCommands);
+      for(const result of this.lastMotorResults.values())
+        this.data.maxMotorTorqueNm=Math.max(this.data.maxMotorTorqueNm,length(result.torqueWorld));
+      return;
     }
     if(active && this.data.phase==="roll" && this.data.transferStage==="roll") {
       // A rolling arm has no captured brace. Native joint rows solve its

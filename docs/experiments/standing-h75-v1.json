@@ -1,0 +1,72 @@
+{
+  "schema": 1,
+  "id": "standing-h75-v1",
+  "frozenBeforeTrials": "2026-09-27",
+  "kind": "Copied-state angular representation diagnostic; no new standing reference trial",
+  "inputs": {
+    "h74Root": "evidence/standing-h74-v1",
+    "attempt": "attempt-01",
+    "states": ["reference-0", "reference-1", "reference-2"],
+    "ticks": [133, 120, 123],
+    "phase": "After native motor configuration, before world.step",
+    "requiredInventories": ["attempt-01", "analysis-01", "validation-01"]
+  },
+  "hypotheses": [
+    "A material mismatch between native motor position coordinates/Jacobians and application quaternion coordinates contributes to the retained failure.",
+    "A bounded signed motor bias produces a repeatable first-step response; a spike confined to constrained angular directions or contact-coupled response requires deeper solver instrumentation, not gain tuning."
+  ],
+  "physical": {
+    "dtS": 0.016666666666666666,
+    "solverIterations": 20,
+    "internalPgsIterations": 20,
+    "maxCcdSubsteps": 4,
+    "bodies": 25,
+    "startup": "No startup replacement. Restore copies solely for offline diagnostics; original H74 histories remain authoritative.",
+    "invariants": "Preserve all body/collider identities within each copy, dynamic types, mass, timestep, solver settings, joint frames/DOFs/limits, collision hooks, motor caps, stiffness/damping and original commands except the declared single-axis velocity bias. No body-state setters. No live controller or fall-guard changes."
+  },
+  "budget": {
+    "states": 3,
+    "axesPerState": 14,
+    "signedPerturbationsPerAxis": 4,
+    "repetitionsPerCommand": 2,
+    "controlsPerState": 2,
+    "trialsPerState": 114,
+    "stepsPerTrial": 1,
+    "maximumPhysicalSteps": 342,
+    "maximumExperimentWallS": 600,
+    "maximumBuildWallS": 300,
+    "maximumBuildAttempts": 3,
+    "maximumProcessRssMiB": 768,
+    "nodeOldSpaceMiB": 384,
+    "nativeInspectorTimeoutS": 60,
+    "parallelPhysicalSimulations": 1,
+    "onExhaustion": "Preserve all partial outputs; failed/incomplete result, no automatic retry or budget extension."
+  },
+  "perturbations": {
+    "segments": ["leftThigh", "leftShin", "leftAnkle", "leftFoot", "leftForefoot", "rightThigh", "rightShin", "rightAnkle", "rightFoot", "rightForefoot"],
+    "axes": "All declared anatomical axes of these ten segments: fourteen total",
+    "biasNm": [-0.5, -0.25, 0.25, 0.5],
+    "implementation": "Change only native targetVelocity by biasNm / native damping, rounded by the existing f32 ABI. Keep native maxForce unchanged. Reject any pre-step requested-effort cap crossing; do not clip or substitute another magnitude.",
+    "independentMagnitude": "0.25 Nm characterizes sign; 0.5 Nm checks the same mechanism without adaptive selection.",
+    "controls": "Two untouched restores of each saved state, bit-exact against all 25 recorded bodies; each of 56 signed commands also repeats independently."
+  },
+  "measurements": {
+    "native": "Read-only pinned-source reconstruction of all 24 joints at each saved pre-step pose: motor/limit coordinates, raw and finalized constraint Jacobians, RHS, inverse effective row mass, CFM, impulse bounds, masks and stored previous-step impulses. Native rows are frozen-pose reconstructions, not an instrumented trace of WASM internal substeps. No delivered whole-step motor-torque claim.",
+    "application": "Quaternion joint coordinates, analytic coordinate Jacobians and finite-difference validation with 1e-6 rad algebraic rotations; projected native relative rates, locked-direction rates and pose-derived rates.",
+    "response": "All 25 complete output body states and native snapshots; motor command delta/readback; per-joint/forefoot angular vectors; actual contact manifolds, solver contacts and normal impulses; linear/angular peaks; requested motor bounds; anchor and limit errors; per-trial RSS/heap/external/arrayBuffers and wall time.",
+    "provenance": "Verify prior inventories, all source snapshot members, src and lockfile parity, installed runtime/dependency hashes, Node executable, native source archive parity and Rust build/toolchain/features. Preserve working-tree diff/status and exact diagnostic sources/commands. Recheck at completion."
+  },
+  "criteria": {
+    "controlBodyTolerance": 0,
+    "repeatBodyTolerance": 0,
+    "nativeVsApplicationLimitRad": 0.000002,
+    "analyticJacobianFiniteDifferenceTolerance": 0.000002,
+    "materialMotorCoordinateDifferenceRad": 0.001,
+    "materialMotorRequestDifferenceNm": 0.05,
+    "materialAngularResponseRadps": 0.001,
+    "signedResponse": "Compare relative rate along the perturbed native motor axis against the control. Both magnitudes must produce opposite signed changes exceeding 0.001 rad/s to support simple signed local authority; otherwise label unresolved/coupled, including cap/limit/contact evidence.",
+    "repairGate": "No repair from representation differences alone. Require a material discrepancy at the failing joint, consistent signed evidence at both magnitudes, and a localized source-backed correction preserving physical constraints. Otherwise report diagnostic complete but feasibility failed/incomplete and freeze a separate next experiment before testing a repair.",
+    "abort": "Integrity/runtime/source mismatch, nonfinite data, changed physical settings, ownership/setter violation, cap violation, replay mismatch or budget violation invalidates dependent diagnostics. Keep all failed evidence.",
+    "acceptance": "No standing, local-return, backup-region, H73 or browser acceptance checkbox may close from these copied one-step probes. Official limits remain 0.1 m/s and 0.5 rad/s; H74 reference reserves remain separate."
+  }
+}

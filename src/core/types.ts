@@ -329,6 +329,7 @@ export interface StandingChainDiagnostics {
   }>;
 }
 export interface DiagnosticsSnapshot {
+  coordinatedStanding?: import("../character/CoordinatedStandingController").StandingTelemetry;
   balanceFall?: { timeS: number; reasons: string[]; pelvisHeightM: number;
     torsoLeanRadians: number; unsupportedTimeS: number; supportLossLimitS: number } | null;
   standingChain: StandingChainDiagnostics | null;

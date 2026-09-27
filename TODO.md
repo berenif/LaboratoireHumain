@@ -11,14 +11,51 @@ move that caused much more wobbling. [H71](docs/standing-h71-contract.md#plain-l
 confirms this selection error. Keeping a tested correction within the actual
 speed limits is an experimental repair, not proof that standing is solved.
 
-Next, preserve the partial results from [H73's memory failures](docs/standing-h73-contract.md#first-attempt--memory-failures-no-complete-screen)
-and repeat with **one simulation at a time** under its documented runtime bound.
-Recheck disabled compatibility, then complete all three short screens; proceed
-to the unchanged longer standing tests only if every short screen passes.
-Keep the standing checkbox open until the full criteria below pass. Weight
-shifting, stepping, recovery, and full application checks remain afterward.
+The [coordinated standing stabilization plan](docs/standing-stabilization-plan.md)
+has now been investigated as [H74-v1](docs/standing-h74-contract.md). A shared
+opt-in controller, frozen numeric manifest, serial acceptance command and exact
+first-failure replays exist. All three declared references fail; the central
+trial exceeds 0.5 rad/s at tick 133. No local-return or operating envelope is
+validated, so MPC and all dependent standing stages remain blocked. The follow-up
+diagnostic, [H75-v1](docs/standing-h75-contract.md), has now executed all 342
+frozen copied steps. Six controls and all 168 perturbed repeats are exact.
+Native position stiffness is zero; signed motor authority and substantial
+locked-direction forefoot rates are measured, without isolating the cause.
+Three failed builds leave compiled raw/finalized row inspection incomplete.
+No repair is adopted. Next freeze the six-snapshot, zero-physical-step
+[build-and-read diagnostic](docs/standing-h75-contract.md#concrete-next-diagnostic).
+The reproduced H42 rigid comparison still does not prove the articulated cause.
+
+Keep [H73](docs/standing-h73-contract.md#first-attempt--memory-failures-no-complete-screen)
+as a pending comparison candidate. Preserve its partial memory-failure outputs;
+when evaluating it, repeat with **one simulation at a time** under its documented
+runtime bound. Recheck disabled compatibility, then complete all three short
+screens before any unchanged longer standing tests. H73 success is not a
+prerequisite for the coordinated-controller investigation. Keep the standing
+checkbox open until the full criteria below pass. Weight shifting, stepping,
+recovery, and full application checks remain afterward.
 
 ## P0 — Restore reproducibility and establish quiet standing
+
+- [ ] **Establish the coordinated controller's operating point and experiment contract.** Follow the [decision gates](docs/standing-stabilization-plan.md#decision-gates-for-the-controller): freeze numeric investigation, model, sustained-test, held-out, runtime and memory limits before tuning; demonstrate physical entry from original startup and local feedback return with actuator headroom. Preserve a bounded negative result and investigate its mechanism if feasibility is not established. MPC remains conditional; no accepted operating envelope is claimed yet.
+
+  H74-v1 freezes the contract and exhausts its three reference trials with a
+  preserved negative result. All first failures replay exactly; native motor
+  ceilings and the independent H42 comparison are checked. Physical feasibility
+  and local return remain unestablished, so this item stays open.
+
+  H75-v1 exhausts 342 copied steps and three native build attempts. All retained
+  H74 artifacts/source match; controls and signed perturbations replay exactly.
+  The best central/+5 mm probes still miss the reference speed reserve. Full
+  native row evidence remains incomplete; preserve the build failures and use
+  the next separately frozen read-only diagnostic before a candidate repair.
+
+- [ ] **Implement the shared standing candidate and one acceptance operation.** Coordinate the complete objective, retain fixed stance references, and define validated backup behavior for timeout, infeasibility and model/contact invalidation. Run [saved regressions → serial short screens → unchanged official standing → structural/integration regressions → sustained, held-out and runtime gates](docs/standing-stabilization-plan.md#one-reproducible-acceptance-operation). Save complete first-failure replay inputs automatically, measure application latency and total memory including WASM, and report failed/incomplete stages explicitly. A shared module or local prediction success alone cannot close standing acceptance.
+
+  Shared module and `node scripts/standing-acceptance.mjs` are implemented.
+  Five candidate tests, six injected transitions and 81 focused/application
+  regressions pass. The operation returns failure at feasibility; later stages,
+  the browser process-memory gate and any validated backup remain incomplete.
 
 - [x] **Make a fresh baseline possible without lost historical reports.** Added explicit `--fresh` capture in [capture-physics-baseline.mjs](scripts/capture-physics-baseline.mjs). The [new baseline](docs/checkpoints/2026-09-26/fresh-baseline.json) captures 252 source/configuration hashes, installed direct dependency versions, the Node executable digest, staged/unstaged/untracked work, planned scenario inputs, and four missing historical artifacts. It inherits no 140/142 result and runs no physics. Five CLI regression tests cover missing/empty/changed history, dirty worktrees, and immutable output; see [verification](docs/checkpoints/2026-09-26/fresh-baseline-validation.json) and [reproduction instructions](docs/evidence.md#fresh-baseline-capture). Original artifacts remain unchanged and missing originals remain unavailable.
 

@@ -2,6 +2,8 @@
 
 This guide describes the current implementation. Its controller parameters are separate from the independent [acceptance contract](physics-acceptance.md). See [current status](status.md) for recorded failures and verification scope.
 
+The [coordinated standing stabilization plan](standing-stabilization-plan.md) now has an opt-in [H74-v1 implementation](standing-h74-contract.md), separate from the default controller described here. `CoordinatedStandingController` fixes its reference at startup, combines posture/foot/motion/effort feedback, and supplies the existing capped native motors. Select it with `?standingCandidate=h74-v1` on the flat-floor application path; configuration and transition reason appear in `diagnostics.coordinatedStanding`. Both the application and serial harness use `characterFrame` and the same candidate module. All three H74 reference trials fail; its latched transition to existing balance/recovery is not a validated standing backup. The diagnostic preview helpers remain separate and H73 remains pending.
+
 `BalanceController.update` runs at 60 Hz and reads the current Rapier segment poses, mass-weighted momentum, exact grab anchor, and measured loaded foot contacts. It produces stance, step, trunk/arm reaction, and fall intent. Those outputs become bounded joint-motor targets; the controller never owns a body transform and never applies a root force.
 
 ## Measured state and support
