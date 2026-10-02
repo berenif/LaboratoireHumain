@@ -1,10 +1,13 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import type { RendererMode } from "../core/types";
+import type { RendererMode, RenderQuality } from "../core/types";
+import { QualityPicker } from "./QualityPicker";
 
 interface ProtocolPanelProps {
   renderer: RendererMode;
+  quality: RenderQuality;
+  onQualityChange: (quality: RenderQuality) => void;
   webglAvailable: boolean;
   paused: boolean;
   ready: boolean;
@@ -45,7 +48,7 @@ function playMechanicalImpact(context: AudioContext): void {
 }
 
 export function ProtocolPanel({
-  renderer, webglAvailable, paused, ready, strikeAvailable, phase, impactId,
+  renderer, quality, onQualityChange, webglAvailable, paused, ready, strikeAvailable, phase, impactId,
   strikes, recoveries, message, onStrike, onRendererChange, onPauseToggle,
   onReset, onOverview, onFocus,
 }: ProtocolPanelProps) {
@@ -102,6 +105,7 @@ export function ProtocolPanel({
           <option value="canvas2d">Canvas 2D</option>
         </select>
       </label>
+      <QualityPicker quality={quality} onChange={onQualityChange} french />
       <button type="button" onClick={onPauseToggle} aria-pressed={paused} data-testid="pause-toggle">{paused ? "Reprendre" : "Pause"}</button>
       <button type="button" onClick={() => setSoundEnabled(value => !value)} aria-pressed={soundEnabled} data-testid="sound-toggle">Son {soundEnabled ? "activé" : "coupé"}</button>
       <button type="button" onClick={onReset} data-testid="reset-button">Nouvelle session</button>

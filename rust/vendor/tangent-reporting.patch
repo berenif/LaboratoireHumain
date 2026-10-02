@@ -1,0 +1,125 @@
+diff --git a/src/geometry/contact_pair.rs b/src/geometry/contact_pair.rs
+index 6879a80..85002f1 100644
+--- a/src/geometry/contact_pair.rs
++++ b/src/geometry/contact_pair.rs
+@@ -579,6 +579,13 @@ pub struct ContactManifoldData {
+     /// The effective restitution coefficient of this manifold's contacts.
+     #[cfg_attr(feature = "serde-serialize", serde(default))]
+     pub restitution: Real,
++    /// World-space tangential impulse applied to the first body's side during
++    /// the latest solver step. This is reporting data only, never a warm start.
++    /// Simplified friction reports its patch total; Coulomb sums solved points.
++    /// Read it only for an active manifold with solved contacts.
++    #[cfg(feature = "dim3")]
++    #[cfg_attr(feature = "serde-serialize", serde(default))]
++    pub reported_tangent_impulse: Vector,
+ }
+ 
+ /// A single solver contact.
+@@ -803,6 +810,8 @@ impl ContactManifoldData {
+             user_data: 0,
+             friction: 0.0,
+             restitution: 0.0,
++            #[cfg(feature = "dim3")]
++            reported_tangent_impulse: Vector::ZERO,
+         }
+     }
+ 
+diff --git a/src/dynamics/solver/contact_constraint/contact_with_coulomb_friction.rs b/src/dynamics/solver/contact_constraint/contact_with_coulomb_friction.rs
+index f7642b6..160ddc9 100644
+--- a/src/dynamics/solver/contact_constraint/contact_with_coulomb_friction.rs
++++ b/src/dynamics/solver/contact_constraint/contact_with_coulomb_friction.rs
+@@ -706,6 +706,20 @@ impl ContactWithCoulombFriction<SimdReal> {
+             let impulses: [_; SIMD_WIDTH] =
+                 utils::canonicalize_zero(self.normal_part[k].total_impulse()).into();
+             let tangent_impulses = utils::canonicalize_zero(self.tangent_part[k].total_impulse());
++            #[cfg(feature = "dim3")]
++            let reported_world = utils::canonicalize_zero(
++                self.tangent1 * tangent_impulses.x + tangent2 * tangent_impulses.y,
++            );
++            #[cfg(feature = "dim3")]
++            let (tx, ty, tz): (
++                [Real; SIMD_WIDTH],
++                [Real; SIMD_WIDTH],
++                [Real; SIMD_WIDTH],
++            ) = (
++                reported_world.x.into(),
++                reported_world.y.into(),
++                reported_world.z.into(),
++            );
+ 
+             for ii in 0..SIMD_WIDTH {
+                 let contact_id = self.manifold_contact_id[k][ii];
+@@ -726,6 +740,14 @@ impl ContactWithCoulombFriction<SimdReal> {
+                     }
+                     active_contact.data.impulse = impulses[ii];
+                     active_contact.data.tangent_impulse = tangent_impulses.extract(ii);
++                    #[cfg(feature = "dim3")]
++                    {
++                        if k == 0 {
++                            manifold.data.reported_tangent_impulse = crate::math::Vector::ZERO;
++                        }
++                        manifold.data.reported_tangent_impulse +=
++                            crate::math::Vector::new(tx[ii], ty[ii], tz[ii]);
++                    }
+                 }
+             }
+         }
+diff --git a/src/dynamics/solver/contact_constraint/contact_with_twist_friction.rs b/src/dynamics/solver/contact_constraint/contact_with_twist_friction.rs
+index fe4bdce..f1257c2 100644
+--- a/src/dynamics/solver/contact_constraint/contact_with_twist_friction.rs
++++ b/src/dynamics/solver/contact_constraint/contact_with_twist_friction.rs
+@@ -794,6 +794,14 @@ impl ContactWithTwistFriction<SimdReal> {
+         );
+         let warmstart_twist_impulses: [_; SIMD_WIDTH] =
+             utils::canonicalize_zero(self.twist_part.impulse).into();
++        let total_tangent = self.tangent_part.impulse_accumulator + self.tangent_part.impulse;
++        let reported_world =
++            utils::canonicalize_zero(self.tangent1 * total_tangent.x + tangent2 * total_tangent.y);
++        let (tx, ty, tz): ([Real; SIMD_WIDTH], [Real; SIMD_WIDTH], [Real; SIMD_WIDTH]) = (
++            reported_world.x.into(),
++            reported_world.y.into(),
++            reported_world.z.into(),
++        );
+ 
+         for k in 0..self.num_contacts as usize {
+             let warmstart_impulses: [_; SIMD_WIDTH] =
+@@ -821,6 +829,10 @@ impl ContactWithTwistFriction<SimdReal> {
+                     {
+                         active_contact.data.warmstart_twist_impulse = warmstart_twist_impulses[ii];
+                     }
++                    if k == 0 {
++                        manifold.data.reported_tangent_impulse =
++                            crate::math::Vector::new(tx[ii], ty[ii], tz[ii]);
++                    }
+                 }
+             }
+         }
+diff --git a/src/dynamics/solver/contact_constraint/generic_contact_constraint.rs b/src/dynamics/solver/contact_constraint/generic_contact_constraint.rs
+index 09534d1..bd7907b 100644
+--- a/src/dynamics/solver/contact_constraint/generic_contact_constraint.rs
++++ b/src/dynamics/solver/contact_constraint/generic_contact_constraint.rs
+@@ -706,6 +706,10 @@ impl GenericContactConstraint {
+ 
+         #[cfg(feature = "dim3")]
+         let tangent2 = self.dir1.gcross(self.tangent1);
++        #[cfg(feature = "dim3")]
++        {
++            manifold.data.reported_tangent_impulse = Vector::ZERO;
++        }
+         for k in 0..self.num_contacts as usize {
+             let contact_id = self.manifold_contact_id[k];
+             let active_contact = &mut manifold.points[contact_id as usize];
+@@ -725,6 +729,12 @@ impl GenericContactConstraint {
+                 utils::canonicalize_zero(self.normal_part[k].total_impulse());
+             active_contact.data.tangent_impulse =
+                 utils::canonicalize_zero(self.tangent_part[k].total_impulse());
++            #[cfg(feature = "dim3")]
++            {
++                let imp = active_contact.data.tangent_impulse;
++                manifold.data.reported_tangent_impulse +=
++                    utils::canonicalize_zero(self.tangent1 * imp.x + tangent2 * imp.y);
++            }
+         }
+     }
+ 

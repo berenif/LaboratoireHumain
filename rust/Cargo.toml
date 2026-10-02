@@ -1,0 +1,33 @@
+[workspace]
+resolver = "3"
+members = ["crates/model", "crates/contracts", "crates/sim", "crates/acceptance", "crates/worker", "crates/renderer", "crates/browser"]
+exclude = ["vendor/rapier3d"]
+
+[workspace.package]
+version = "0.1.0"
+edition = "2024"
+rust-version = "1.89"
+publish = false
+
+[workspace.dependencies]
+serde = { version = "=1.0.229", features = ["derive"] }
+serde_json = { version = "=1.0.151", features = ["float_roundtrip"] }
+nalgebra = "=0.35.0"
+rapier3d = { path = "vendor/rapier3d", version = "=0.35.0", default-features = false, features = ["dim3", "f32", "std", "serde-serialize"] }
+lh-model = { path = "crates/model" }
+lh-contracts = { path = "crates/contracts" }
+lh-sim = { path = "crates/sim" }
+wasm-bindgen = "=0.2.108"
+wasm-bindgen-futures = "=0.4.58"
+js-sys = "=0.3.85"
+web-sys = "=0.3.85"
+glam = "=0.30.10"
+bytemuck = { version = "=1.25.2", features = ["derive"] }
+wgpu = { version = "=27.0.1", default-features = false, features = ["std", "wgsl", "webgpu", "webgl"] }
+leptos = { version = "=0.8.20", default-features = false, features = ["csr"] }
+console_error_panic_hook = "=0.1.7"
+lh-renderer = { path = "crates/renderer" }
+
+[profile.release]
+codegen-units = 1
+lto = "thin"

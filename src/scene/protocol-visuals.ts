@@ -19,5 +19,11 @@ export function protocolRoomPieces(room: { width: number; depth: number; height:
     { id: "left-wall", geometry: boxGeometry(wall, height, depth), position: { x: -width / 2 - wall / 2, y: height / 2, z: 0 }, color: "#e0e1d7" },
     { id: "right-wall", geometry: boxGeometry(wall, height, depth), position: { x: width / 2 + wall / 2, y: height / 2, z: 0 }, color: "#d4d7ce", opacity: 0.13 },
     { id: "front-wall", geometry: boxGeometry(width + wall * 2, height, wall), position: { x: 0, y: height / 2, z: depth / 2 + wall / 2 }, color: "#d4d7ce", opacity: 0.09 },
+    ...[-1, 1].flatMap(sign => [
+      { id: `boundary-x-${sign}`, geometry: boxGeometry(width - 0.5, 0.008, 0.025),
+        position: { x: 0, y: 0.006, z: sign * (depth / 2 - 0.25) }, color: "#7a9990" },
+      { id: `boundary-z-${sign}`, geometry: boxGeometry(0.025, 0.008, depth - 0.5),
+        position: { x: sign * (width / 2 - 0.25), y: 0.006, z: 0 }, color: "#7a9990" },
+    ]),
   ];
 }

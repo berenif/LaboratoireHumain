@@ -1,0 +1,2 @@
+# Preserve the audited upstream source and exact patch context lines.
+rust/vendor/** -text -whitespace

@@ -11,11 +11,15 @@ const zero = { x: 0, y: 0, z: 0 };
 
 function activeStep(velocity) {
   const rest = restPoseMap();
-  const root = { x: 0, y: HUMAN_PROPORTIONS.pelvis.centerHeightM, z: 0 };
-  const poses = composeUprightPose({ rootTranslation: root, reactionOffset: zero,
+  const rootTranslation = { x: 0, y: HUMAN_PROPORTIONS.pelvis.centerHeightM, z: 0 };
+  const poses = composeUprightPose({ rootTranslation, reactionOffset: zero,
     simulationTime: 0, activeGrab: null, step: null, kneeFlexion: HUMAN_PROPORTIONS.stance.neutralKneeFlexion,
     supportFeet: { leftFoot: rest.get("leftFoot").position, rightFoot: rest.get("rightFoot").position },
   }).poses;
+  // Landing reach is rooted in the measured pelvis, not the pre-flexion
+  // compose input. The latter is 12 mm higher and makes every candidate
+  // radially infeasible before these fall-gate assertions can execute.
+  const root = { ...poses.get("pelvis").position };
   for (const pose of poses.values()) pose.linearVelocity = { ...velocity };
   const controller = new BalanceController();
   controller.reset(poses);

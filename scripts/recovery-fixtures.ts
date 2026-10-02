@@ -79,10 +79,10 @@ export function recoveryFixturePoses(fixture: RecoveryPoseFixture): Map<SegmentI
       // the two real support patches. The weak fixture deliberately omits this.
       if (definition.id === "lumbar") coordinates = fixture.support === "weak"
         ? { x: 0.07, y: 0, z: 0 }
-        : { x: 0.10, y: 0, z: leading === "left" ? -0.14 : 0.14 };
+        : { x: 0.10, y: 0, z: leading === "left" ? -0.20 : 0.20 };
       if (definition.id === "torso") coordinates = fixture.support === "weak"
         ? { x: 0.08, y: 0, z: 0 }
-        : { x: 0.10, y: 0, z: leading === "left" ? -0.16 : 0.16 };
+        : { x: 0.10, y: 0, z: leading === "left" ? -0.20 : 0.20 };
       if (definition.id.endsWith("UpperArm")) coordinates = {
         x: 0.10, y: 0, z: definition.id.startsWith("left") ? 0.04 : -0.04,
       };

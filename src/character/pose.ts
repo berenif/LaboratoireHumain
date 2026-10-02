@@ -98,19 +98,15 @@ export function restPoseMap(): Map<SegmentId, MutablePose> {
     const position = parent && definition.jointAnchorParent && definition.jointAnchorChild
       ? sub(poseAnchor(parent, definition.jointAnchorParent), rotate(rotation, definition.jointAnchorChild))
       : definition.localOffset;
-    poses.set(definition.id, {
-      id: definition.id,
-      position,
-      rotation,
-      linearVelocity: ZERO,
-      angularVelocity: ZERO,
-    });
+    poses.set(definition.id, makePose(definition.id, position, rotation));
   }
   return poses;
 }
 
 function makePose(id: SegmentId, position: Vec3, rotation: Quat = IDENTITY): MutablePose {
-  return { id, position, rotation, linearVelocity: ZERO, angularVelocity: ZERO };
+  // Mutable simulation/fixture poses must never alias anatomy or another pose.
+  return { id, position: { ...position }, rotation: { ...rotation },
+    linearVelocity: { ...ZERO }, angularVelocity: { ...ZERO } };
 }
 
 function segmentDefinition(id: SegmentId): SegmentDefinition {

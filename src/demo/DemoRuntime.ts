@@ -3,7 +3,8 @@ import { coordinatedStandingOptions } from "../character/standing-selection";
 import { characterFrame } from "../character/character-frame";
 import { FixedStepLoop } from "../core/FixedStepLoop";
 import { DEFAULT_PLAYGROUND, type PlaygroundConfig, type PlaygroundTrial } from "../core/playground";
-import type { CharacterController, PoseSnapshot, PoseView, RegionId, RendererMode } from "../core/types";
+import type { CharacterController, PoseSnapshot, PoseView, RegionId, RendererMode, RenderQuality } from "../core/types";
+import { AutoQuality } from "../scene/quality";
 import { PointerInteraction } from "../interaction";
 import { createSharedCamera } from "../scene/camera";
 import { createCameraControls } from "../scene/camera-controls";
@@ -40,6 +41,9 @@ export class DemoRuntime {
 
   private readonly createView: ViewFactory;
   private readonly frames = new FrameSampler();
+  private readonly autoQuality = new AutoQuality();
+  private qualityValue: RenderQuality = "auto";
+  private unsubscribeCamera: (() => void) | null = null;
   private readonly listeners = new Set<RuntimeListener>();
   private readonly loop: FixedStepLoop;
   private resizeObserver: ResizeObserver | null = null;
@@ -68,14 +72,21 @@ export class DemoRuntime {
     this.loop = new FixedStepLoop(this.fixedUpdate, this.render);
     try {
       this.activeView = this.createView(this.renderer, { camera: this.camera });
+      this.activeView.setQuality(this.qualityValue, this.autoQuality.ratio);
       this.activeView.mount(this.host);
       this.resizeView(this.activeView);
       this.interaction.attach(this.host, this.camera, (ray) => this.character.pick(ray));
       this.cameraControls.attach(this.host);
       this.present();
-      this.resizeObserver = new ResizeObserver(() => this.resizeView(this.view));
+      this.unsubscribeCamera = this.camera.subscribe(() => this.loop.requestRender());
+      this.resizeObserver = new ResizeObserver(() => {
+        this.resizeView(this.view);
+        this.excludeTiming();
+        this.loop.requestRender();
+      });
       this.resizeObserver.observe(this.host);
       this.frames.reset();
+      this.autoQuality.exclude(performance.now());
       this.loop.start();
     } catch (error) {
       this.dispose();
@@ -90,6 +101,22 @@ export class DemoRuntime {
 
   get current(): PoseSnapshot { return this.snapshot; }
   get renderer(): RendererMode { return this.rendererValue; }
+  get quality(): RenderQuality { return this.qualityValue; }
+  get renderMetrics() { return this.view.getMetrics(); }
+
+  setQuality(quality: RenderQuality): void {
+    if (this.disposed || quality === this.qualityValue) return;
+    this.qualityValue = quality;
+    this.view.setQuality(quality, this.autoQuality.ratio);
+    this.excludeTiming();
+    this.loop.requestRender();
+    this.notify();
+  }
+
+  private excludeTiming(): void {
+    this.autoQuality.exclude(performance.now());
+    this.frames.reset();
+  }
   get paused(): boolean { return this.pausedValue; }
   get resetVersion(): number { return this.resetCount; }
   get trial(): PlaygroundTrial { return { ...this.trialValue }; }
@@ -136,6 +163,7 @@ export class DemoRuntime {
     // Prepare the replacement before releasing the working view.
     const nextView = this.createView(next, { camera: this.camera });
     try {
+      nextView.setQuality(this.qualityValue, this.autoQuality.ratio);
       nextView.mount(this.host);
       this.resizeView(nextView);
     } catch (error) {
@@ -150,7 +178,7 @@ export class DemoRuntime {
     this.refreshSnapshots();
     this.present();
     this.interaction.attach(this.host, this.camera, (ray) => this.character.pick(ray));
-    this.frames.reset();
+    this.excludeTiming();
     this.statusValue = (next === "webgl" ? "WebGL2" : "Canvas2D") + " view active";
     this.notify();
   }
@@ -161,6 +189,7 @@ export class DemoRuntime {
     this.character.pause();
     this.loop.pause();
     this.pausedValue = true;
+    this.excludeTiming();
     this.refreshSnapshots();
     this.statusValue = reason === "blur" ? "Paused after focus loss" : "Paused";
     this.notify();
@@ -176,6 +205,7 @@ export class DemoRuntime {
     this.character.resume();
     this.loop.resume();
     this.pausedValue = false;
+    this.excludeTiming();
     this.refreshSnapshots();
     this.statusValue = "Ready — drag any highlighted body region";
     this.notify();
@@ -236,6 +266,7 @@ export class DemoRuntime {
     this.cameraControls.reset();
     this.loop.resetTiming();
     this.frames.reset();
+    this.autoQuality.exclude(performance.now());
     this.resetCount += 1;
     this.trialValue = { uprightSeconds: 0, bestSeconds: 0, falls: 0 };
     this.refreshSnapshots();
@@ -254,6 +285,7 @@ export class DemoRuntime {
     this.disposed = true;
     this.loop.stop();
     this.resizeObserver?.disconnect();
+    this.unsubscribeCamera?.();
     this.cameraControls.dispose();
     this.interaction.detach();
     this.activeView?.dispose();
@@ -265,7 +297,7 @@ export class DemoRuntime {
   private resizeView(view: PoseView): void {
     const rect = this.host.getBoundingClientRect();
     const dpr = this.host.ownerDocument.defaultView?.devicePixelRatio || 1;
-    view.resize(Math.max(1, rect.width), Math.max(1, rect.height), Math.min(2, dpr));
+    view.resize(Math.max(1, rect.width), Math.max(1, rect.height), dpr);
   }
 
   private clearInteraction(reason: Parameters<PointerInteraction["clear"]>[0]): void {
@@ -309,8 +341,13 @@ export class DemoRuntime {
   };
 
   private render = (alpha: number, nowMs: number): void => {
+    const active = !this.paused && !this.host.ownerDocument.hidden;
+    if (active && this.qualityValue === "auto" && this.autoQuality.sample(nowMs)) {
+      this.view.setQuality("auto", this.autoQuality.ratio);
+    }
     this.present(alpha);
-    this.frames.sample(nowMs);
+    if (active) this.frames.sample(nowMs);
+    else this.autoQuality.exclude(nowMs);
     if (nowMs - this.lastUiMs > 100) {
       this.lastUiMs = nowMs;
       this.notify(nowMs);

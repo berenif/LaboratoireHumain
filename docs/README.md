@@ -4,7 +4,7 @@ Start with [current status](status.md) for the latest recorded checkpoint, unres
 
 Use the [prioritized TODO](../TODO.md) for remaining work, dependencies, and completion criteria.
 
-The [coordinated stabilization plan](standing-stabilization-plan.md) and its [implementation prompt](standing-stabilization-prompt.md) define the investigation gates. [H74-v1](standing-h74-contract.md) records the shared implementation, acceptance command, frozen manifest and bounded negative feasibility result. [H75-v1](standing-h75-contract.md) records 342 executed copied motor probes and incomplete native row inspection after three failed builds. Quiet standing remains open.
+The [coordinated stabilization plan](standing-stabilization-plan.md) and its [implementation prompt](standing-stabilization-prompt.md) define the investigation gates. [H76](standing-h76-contract.md) completes native row inspection; [H77](standing-h77-contract.md) and [H78–H80](standing-h78-h80-contract.md) record failed opt-in standing candidates. Legacy browser standing remains unaccepted. The separate [Rust rework](rust-rework.md) passes implemented native gates A–C, eight selected pull probes and the six-case WASM standing matrix with its v22 profile. Full disturbance/stepping coverage, physical public modes and migration acceptance remain incomplete.
 
 ## Run and understand the application
 
@@ -13,6 +13,8 @@ The [coordinated stabilization plan](standing-stabilization-plan.md) and its [im
 - [Standing, stepping, native actuation, and contact-load allocation](balance-controller.md)
 - [Falling, recovery, and solver configuration](dynamic-recovery.md)
 - [Balance playground](playground.md)
+- [Rendering quality, metrics, and browser performance](rendering.md)
+- [Rust prototype, requirement map, and reproduction](rust-rework.md)
 - [Asset and software credits](../ASSET_CREDITS.md)
 
 ## Verify behavior
@@ -37,6 +39,11 @@ Results in these documents apply only to their recorded source and scenario sele
 | [H12–H21 continuation](standing-h12-contract.md) | Current-contour and measured-moment diagnostics; rejected short screens and contact-readback qualification |
 | [H22–H24 continuation](standing-h22-contract.md) | Idle arm forcing and stance tasks rejected; standing/recovery trace boundary repaired |
 | [H25–H26 continuation](standing-h25-contract.md) | Displacement feedback and fixed leg targets rejected; six exact control replays |
+| [H74 coordinated standing](standing-h74-contract.md) | Shared opt-in controller, frozen acceptance contract, failed feasibility |
+| [H75 motor probes](standing-h75-contract.md) | Exact copied probes; native row inspection incomplete at this checkpoint |
+| [H76 native row inspection](standing-h76-contract.md) | Successful six-snapshot diagnostic with zero physical steps |
+| [H77 implicit posture](standing-h77-contract.md) | Equivalent native requests; failed reference entries and substep traces |
+| [H78–H80 contact-force candidates](standing-h78-h80-contract.md) | Exhausted bounded attempts, deadline/hold failures, frozen source and exact replays |
 | [Native constraint calibration](rapier-constraint-calibration.md) | Position/velocity readback, rigid-versus-compound fixtures, native snapshot replay and rejected solver interventions |
 | [Small-impulse diagnosis](small-impulse-diagnostic.md) | Exact reproduction of the 15.23% outlier, origin/resolution checks, unchanged original assertion |
 | [September 23–24 repair history](physics-repair-2026-09-23.md) | Retained allocator/solver work and the recorded 140/142 focused checkpoint |

@@ -1,5 +1,6 @@
 /** Explicit fixture migration: preserve historical inputs, refresh only assembly snapshots. */
 import { createHash } from "node:crypto";
+import { execFileSync } from "node:child_process";
 import { readFileSync, writeFileSync } from "node:fs";
 import { createEmbodiedCharacter } from "../src/character/EmbodiedCharacter";
 
@@ -17,9 +18,9 @@ for (const fixture of capture.fixtures) {
   finally { character.dispose(); }
 }
 if (historicalData() !== historicalBefore) throw new Error("Historical input stream changed");
-capture.migration.bodyAlignmentRefresh = {
-  date: "2026-09-18",
-  baselineCommit: "06c53a933c637c2425888558ae788f4f99d40f58",
+capture.migration.initialAssemblyRefresh = {
+  date: new Date().toISOString().slice(0, 10),
+  baselineCommit: execFileSync("git", ["rev-parse", "HEAD"], { encoding: "utf8", windowsHide: true }).trim(),
   historicalInputSha256: createHash("sha256").update(historicalBefore).digest("hex"),
   scope: "Initial assembly snapshots only. Commands and recorded transfers are unchanged. Not a new browser capture or acceptance result.",
 };

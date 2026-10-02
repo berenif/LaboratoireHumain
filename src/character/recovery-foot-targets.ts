@@ -266,7 +266,9 @@ export function reachableFootTarget(
   // Keep the measured/preferred plant before the coarse search grid. Grid
   // bounds are search hints; anatomical and clearance checks decide feasibility.
   // Deduplicate candidates to avoid repeating expensive IK solves.
-  const widths = [...new Set([dot(fromHip, outward) + hipWidth, nearestWidth, 0.10, 0.12, 0.15, 0.18, 0.20])];
+  // Include the anatomical hip line: the coarse widths otherwise omit a
+  // sagittal, exactly flat sole when the measured foot is crossed inward.
+  const widths = [...new Set([dot(fromHip, outward) + hipWidth, hipWidth, nearestWidth, 0.10, 0.12, 0.15, 0.18, 0.20])];
   const forwards = [...new Set([dot(fromHip, forward), nearestForward, ...Array.from({ length: 51 }, (_, index) => -0.40 + index / 100)])];
   const flatFloorOffset = -lowestWorldPoint(foot.geometry, ZERO, yaw).y;
   let best: RecoveryFootTarget | null = null;
@@ -280,7 +282,10 @@ export function reachableFootTarget(
     const requestedPosition = { ...horizontal, y: flatFloorOffset };
     const solved = solveRecoveryLegTarget(side, poses, requestedPosition, yaw, bend);
     if (!solved) continue;
-    const floorReachable = solved.reachErrorM < 0.003 && solved.floorClearanceM >= -0.003;
+    // Contact slop is a runtime tolerance, not a reachable planned plant.
+    // Otherwise a nearer, overextended leg can beat an exact floor solution.
+    const floorReachable = solved.reachErrorM < 1e-8 && solved.floorClearanceM >= -1e-8
+      && rotationDot(solved.rotation, yaw) > 1 - 1e-10;
     let feasible = floorReachable && solved.jointLimitErrorRad < 1e-5;
     const travelM = length(sub(solved.position, measuredFoot.position));
     const placementCost = preferred ? length(sub(solved.position, preferred)) + 0.01 * travelM : travelM;

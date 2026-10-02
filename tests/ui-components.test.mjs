@@ -22,6 +22,23 @@ after(async () => {
   await vite.close();
 });
 
+test("quality choices are accessible in both languages and the station tray exposes expansion state", async () => {
+  const { QualityPicker } = await vite.ssrLoadModule("/src/ui/QualityPicker.tsx");
+  for (const french of [false, true]) {
+    const html = renderToStaticMarkup(React.createElement(QualityPicker, { quality: "auto", french, onChange() {} }));
+    assert.match(html, /data-testid="quality-picker"/);
+    assert.match(html, french ? /aria-label="Qualité du rendu"/ : /aria-label="Render quality"/);
+    for (const choice of ["auto", "low", "high"]) assert.ok(html.includes(`value="${choice}"`));
+  }
+  const { PlaygroundPanel } = await vite.ssrLoadModule("/src/ui/PlaygroundPanel.tsx");
+  const html = renderToStaticMarkup(React.createElement(PlaygroundPanel, {
+    config: { station: "flat", difficulty: "gentle" }, trial: { uprightSeconds: 0, bestSeconds: 0, falls: 0 },
+    ready: true, supportCount: 2, onChange() {}, onOverview() {}, onFocus() {},
+  }));
+  assert.match(html, /aria-expanded="false" aria-controls="station-tray"/);
+  assert.match(html, /id="station-tray"/);
+});
+
 async function readCssTree(directory) {
   const entries = await readdir(directory, { withFileTypes: true });
   const contents = await Promise.all(

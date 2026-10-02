@@ -6,6 +6,7 @@ import { hindfootFromAnkle } from "./leg-target-frame";
 import { measureMassState } from "./mass-state";
 import { findLandingPlan, validateLanding, type LandingForecast, type LandingInput, type LandingPlan } from "./landing-plan";
 import { predictControlledLandingCapture } from "./landing-capture";
+import { createSupportState, forecastSupport, updateSupportState } from "./support-state";
 import { composeUprightPose, horizontal, midpoint, restPoseMap, type StepMotion } from "./pose";
 
 const ZERO: Vec3 = { x: 0, y: 0, z: 0 };
@@ -96,6 +97,8 @@ export interface BalanceDiagnostics {
   transferAgeS: number;
   transferReadyAgeS: number;
   transferCaptureMarginM: number | null;
+  triggerReason: "capture" | "airborne-foot" | "external" | null;
+  touchdownQualified: boolean;
 }
 
 export interface BalanceInput {
@@ -194,6 +197,12 @@ function polygonMargin(point: Vec3, polygon: Vec3[]): number {
 
 /** Procedural balance owns stance intent and finite actuator capacity, never Rapier. */
 export class BalanceController {
+  useCoordinatedSupport = false;
+  forecastValidated = false;
+  supportState = createSupportState(ZERO);
+
+  serialize() { return structuredClone({ ...this }); }
+  restore(state: ReturnType<BalanceController["serialize"]>): void { Object.assign(this, structuredClone(state)); }
   private feet: Record<Foot, Vec3> = {
     leftFoot: { x: 0, y: footCenterHeight("leftFoot", 0), z: 0 },
     rightFoot: { x: 0, y: footCenterHeight("rightFoot", 0), z: 0 },
@@ -217,10 +226,13 @@ export class BalanceController {
   private touchdownAge = 0;
   private stepTransferAge = 0;
   private transferReadyAge = 0;
+  private retainedSupportLostAge = 0;
   private unloadReadyAge = 0;
   private stepHasUnloaded = false;
+  private stepLaunchAuthorized = false;
   private touchdownTargetAdjusted = false;
-  private disturbanceSeen = false;
+  private triggerReason: "capture" | "airborne-foot" | "external" | null = null;
+  private touchdownQualified = false;
   private nominalHeight: number = HUMAN_PROPORTIONS.pelvis.centerHeightM;
   private neutralComOffset = ZERO;
   private neutralRootFromCom = ZERO;
@@ -249,6 +261,7 @@ export class BalanceController {
       ankleProjection(poses.get("leftFoot")!.position, poses.get("leftFoot")!.rotation, "leftFoot"),
       ankleProjection(poses.get("rightFoot")!.position, poses.get("rightFoot")!.rotation, "rightFoot"),
     );
+    this.supportState = createSupportState(this.supportTarget);
     this.step = null;
     this.stepCount = 0;
     // Let measured floor contacts persist through two stance-validation
@@ -264,10 +277,13 @@ export class BalanceController {
     this.touchdownAge = 0;
     this.stepTransferAge = 0;
     this.transferReadyAge = 0;
+    this.retainedSupportLostAge = 0;
     this.unloadReadyAge = 0;
     this.stepHasUnloaded = false;
+    this.stepLaunchAuthorized = false;
     this.touchdownTargetAdjusted = false;
-    this.disturbanceSeen = false;
+    this.triggerReason = null;
+    this.touchdownQualified = false;
   }
 
   update(input: BalanceInput): BalanceOutput {
@@ -300,6 +316,19 @@ export class BalanceController {
     const releasedFoot = this.liftedFoot && this.liftedFoot !== grabbedFoot ? this.liftedFoot : null;
     this.liftedFoot = grabbedFoot;
     this.cooldown = Math.max(0, this.cooldown - dt);
+    if (this.useCoordinatedSupport) {
+      const retained = this.step ? (this.step.foot === "leftFoot" ? "rightFoot" : "leftFoot") : null;
+      const transferring = Boolean(this.step && this.step.elapsed < 0);
+      const goal = retained ? ankleProjection(this.feet[retained], this.footRotations[retained], retained) : this.supportTarget;
+      this.supportState = updateSupportState(this.supportState, {
+        contacts: input.contacts ?? [], target: goal,
+        retainedSide: retained === "leftFoot" ? "left" : retained ? "right" : null,
+        transferring, dt, speedMps: BALANCE_LIMITS.supportTransferSpeedMps, weightN: TOTAL_MASS_KG * 9.81,
+      });
+      this.supportTarget = { ...this.supportState.supportTarget };
+      this.transferReadyAge = this.supportState.measuredReadiness.ageS;
+      this.stepTransferAge = this.supportState.transferAgeS;
+    }
     let transferLoadsReady = false;
     let transferCaptureMarginM: number | null = null;
     if (this.step) {
@@ -321,7 +350,7 @@ export class BalanceController {
         ? this.unloadReadyAge + dt : 0;
       this.stepHasUnloaded ||= !measured || this.unloadReadyAge >= 0.05;
       if (this.step.elapsed < 0) {
-        this.stepTransferAge += dt;
+        if (!this.useCoordinatedSupport) this.stepTransferAge += dt;
         const retainedThresholdN = TOTAL_MASS_KG * 9.81 * BALANCE_LIMITS.retainedWeightFraction;
         transferLoadsReady = retainedLoad >= retainedThresholdN
           && movingLoad <= TOTAL_MASS_KG * 9.81 * 0.25;
@@ -392,6 +421,7 @@ export class BalanceController {
         if (this.touchdownAge > 0) this.step.phase = "loading";
         if (this.touchdownAge + 1e-9 >= 0.10) {
           this.stepCount += 1; // Count a physically completed touchdown.
+          this.touchdownQualified = true;
           this.feet[this.step.foot] = { x: solved.x,
             y: footCenterHeight(this.step.foot, input.surfaceHeight?.(solved.x, solved.z) ?? floorY), z: solved.z };
           this.footRotations[this.step.foot] = input.surfaceHeight
@@ -402,8 +432,15 @@ export class BalanceController {
           // polygon; snapping immediately to the soles' midpoint creates an
           // artificial whole-body lunge and can unload both contacts.
           this.supportTarget = horizontal(sub(massState(input.poses).position, this.neutralComOffset));
+          if (this.useCoordinatedSupport) this.supportState = updateSupportState(this.supportState, {
+            contacts: input.contacts ?? [], target: this.supportTarget, retainedSide: null, transferring: false,
+            dt: 0, speedMps: BALANCE_LIMITS.supportTransferSpeedMps, weightN: TOTAL_MASS_KG * 9.81,
+            stanceRevision: this.supportState.stanceRevision + 1,
+          });
           this.stanceAge[this.step.foot] = BALANCE_LIMITS.stancePersistenceS;
           this.step = null;
+          this.stepLaunchAuthorized = false;
+          this.retainedSupportLostAge = 0;
           this.candidateValidity = { valid: false, reason: "idle" };
           this.touchdownTargetAdjusted = false;
                 this.cooldown = BALANCE_LIMITS.stepCooldownS;
@@ -419,13 +456,14 @@ export class BalanceController {
     if (!this.step && releasedFoot) {
       this.beginStep(releasedFoot, input.poses.get(releasedFoot)!.position, input.rootPosition, forward, right, floorY, ZERO, headingRadians);
     }
-    if (!this.step && !grabbedFoot && this.cooldown === 0 && this.disturbanceSeen) {
+    if (!this.step && !grabbedFoot && this.cooldown === 0) {
       const airborne = FEET.find((foot) => {
         const pose = input.poses.get(foot)!;
         return pose.position.y - (input.surfaceHeight?.(pose.position.x, pose.position.z) ?? floorY) > footHalfExtents(foot).y + BALANCE_LIMITS.floorClearanceM
           && length(horizontal(sub(pose.position, this.feet[foot]))) > 0.04;
       });
-      if (airborne) this.beginStep(airborne, input.poses.get(airborne)!.position, input.rootPosition, forward, right, floorY, ZERO, headingRadians);
+      if (airborne) this.beginStep(airborne, input.poses.get(airborne)!.position, input.rootPosition,
+        forward, right, floorY, ZERO, headingRadians, undefined, undefined, "airborne-foot");
     }
 
     const supportingFeet: Foot[] = [];
@@ -498,7 +536,6 @@ export class BalanceController {
         scale(sub(clampLength(targetVelocity, 8), grabbedPose.linearVelocity), BALANCE_LIMITS.pullDampingNsPm),
       ), BALANCE_LIMITS.maxPullForceN);
     }
-    if (grab || length(force) > 5) this.disturbanceSeen = true;
     // The stance motor has a finite horizontal acceleration budget. Large forces
     // therefore accumulate real COM momentum instead of becoming larger pose offsets.
     // Preview a bounded portion of the requested reach. The grab controller is
@@ -517,38 +554,53 @@ export class BalanceController {
     // Refresh feasibility on current measurements until lift; never move a
     // committed world destination after swing has started.
     if (this.step && this.step.elapsed < 0) {
-      this.transferReadyAge = transferLoadsReady ? this.transferReadyAge + dt : 0;
+      if (!this.useCoordinatedSupport) this.transferReadyAge = transferLoadsReady ? this.transferReadyAge + dt : 0;
       const currentPlan = this.planStep(this.step.foot, input.poses.get(this.step.foot)!.position,
         input.rootPosition, forward, right, floorY, landingCorrection, headingRadians,
         input.poses.get("pelvis")?.rotation, 0, 0.12, input, capturePoint);
-      const selected = !currentPlan.feasible && supportingFeet.length === 2
+      // A selected foot and world-space landing are a commitment. Changing
+      // sides or chasing a fresh target while unloading discards the measured
+      // transfer that is supposed to make the original foot safe to lift.
+      // Only an explicitly expired transfer may start a new candidate with
+      // fresh age/readiness history.
+      const expired = !currentPlan.feasible && currentPlan.reason === "transfer:measured-timeout";
+      // A transfer cannot continue after its intended retained sole has lost
+      // every qualified contact while the nominal moving sole is now the real
+      // support. Reassign ownership immediately to a newly validated candidate
+      // that retains the measured support; waiting for the timeout strands the
+      // only planted foot in an impossible unloading phase.
+      const retainedSupportMissing = !currentPlan.feasible
+        && currentPlan.reason === "capture:no-retained-support";
+      this.retainedSupportLostAge = retainedSupportMissing
+        ? this.retainedSupportLostAge + dt : 0;
+      const lostRetainedSupport = this.retainedSupportLostAge + 1e-9 >= 0.10;
+      const needsReplacement = expired || lostRetainedSupport;
+      const selected = needsReplacement && supportingFeet.length > 0
         ? this.selectStep(input, supportingFeet, forward, right, floorY,
           landingCorrection, headingRadians, capturePoint) : null;
-      // Replan placement continuously, but let a valid selected transfer
-      // finish. Reversing its side changes the motion being predicted and
-      // discards measured readiness before the load can settle.
-      const switchSide = selected && selected.foot !== this.step.foot
-        && !currentPlan.feasible;
+      const switchSide = selected && selected.foot !== this.step.foot;
       if (switchSide) {
         this.beginStep(selected.foot, input.poses.get(selected.foot)!.position,
           input.rootPosition, forward, right, floorY, landingCorrection,
-          headingRadians, input.poses.get("pelvis")?.rotation, selected.plan);
+          headingRadians, input.poses.get("pelvis")?.rotation, selected.plan, this.triggerReason ?? "capture");
         transferLoadsReady = false;
       }
       const plan = switchSide ? selected.plan : currentPlan;
       this.candidateValidity = { valid: plan.feasible, reason: plan.feasible ? null : plan.reason,
         ...(plan.forecast ? { forecast: plan.forecast } : {}),
         ...(plan.feasible ? { transferForecastReason: plan.transferForecastReason ?? null } : {}) };
-      if (!plan.feasible) {
+      if (needsReplacement && !switchSide) {
         this.step = null;
+        this.stepLaunchAuthorized = false;
+        this.retainedSupportLostAge = 0;
         this.transferReadyAge = 0;
         this.supportTarget = horizontal(sub(mass.position, this.neutralComOffset));
+        if (this.useCoordinatedSupport) this.supportState = updateSupportState(this.supportState, {
+          contacts: input.contacts ?? [], target: this.supportTarget, retainedSide: null, transferring: false,
+          dt: 0, speedMps: BALANCE_LIMITS.supportTransferSpeedMps, weightN: TOTAL_MASS_KG * 9.81,
+        });
         this.cooldown = BALANCE_LIMITS.stancePersistenceS;
       } else {
-        this.step.from = { ...input.poses.get(this.step.foot)!.position };
-        this.step.to = plan.to;
-        this.step.requested = plan.requested;
-        this.step.duration = plan.duration;
         const retainedSide = this.step.foot === "leftFoot" ? "right" : "left";
         const retainedPatch = (input.contacts ?? []).filter(contact => contact.loadBearing
           && contact.normalY >= 0.65 && SEGMENT_BY_ID.get(contact.segment)?.side === retainedSide
@@ -558,7 +610,14 @@ export class BalanceController {
         // momentum outside this sole if its validated touchdown can support it.
         transferCaptureMarginM = input.contacts
           ? polygonMargin(capturePoint, supportHull(retainedPatch)) : null;
-        if (this.transferReadyAge + 1e-9 >= 0.10) {
+        // `selectStep` admitted a concrete touchdown against the measured
+        // support/contact forecast.  Once that candidate is committed, later
+        // state deterioration must not strand the controller in unloading:
+        // the worsening forecast is exactly what the accepted step must catch.
+        // Direct/manual steps without that forecast still need a currently
+        // feasible plan, preserving the unreachable-touchdown guard.
+        if ((this.stepLaunchAuthorized || plan.feasible)
+          && this.transferReadyAge + 1e-9 >= 0.10) {
           this.step.elapsed = 0;
           this.step.phase = "swing";
         }
@@ -568,7 +627,7 @@ export class BalanceController {
     const outwardCapture = speed > 0.07
       && supportMargin < 0.08
       && dot(horizontal(sub(capturePoint, supportCenter)), horizontal(this.comVelocity)) > 0.005;
-    if (!this.step && this.cooldown === 0 && this.disturbanceSeen && supportingFeet.length > 0
+    if (!this.step && this.cooldown === 0 && supportingFeet.length > 0
       && (grabbedFoot || length(force) > 3 || speed > 0.2 || demandedReach > 0.08 || outwardCapture)
       && (polygonMargin(anticipation, supportHull(corners)) < BALANCE_LIMITS.stepTriggerMarginM
         || demandedReach > 0.08 || grabbedFoot)) {
@@ -577,7 +636,8 @@ export class BalanceController {
           landingCorrection, headingRadians, capturePoint);
         if (selected) this.beginStep(selected.foot, input.poses.get(selected.foot)!.position,
           input.rootPosition, forward, right, floorY, landingCorrection, headingRadians,
-          input.poses.get("pelvis")?.rotation, selected.plan);
+          input.poses.get("pelvis")?.rotation, selected.plan,
+          grab || length(force) > 3 || demandedReach > 0.08 ? "external" : "capture");
       }
     }
 
@@ -604,7 +664,9 @@ export class BalanceController {
       : supportingFeet.length > 0
         ? scale(supportingFeet.reduce((sum, foot) => add(sum, plannedAnkle(foot)), ZERO), 1 / supportingFeet.length)
         : horizontal(supportCenter);
-    if (this.step) {
+    if (this.useCoordinatedSupport) {
+      this.supportTarget = { ...this.supportState.supportTarget };
+    } else if (this.step) {
       this.supportTarget = this.step.elapsed < 0
         ? add(this.supportTarget, clampLength(
           sub(desiredAnkleCenter, this.supportTarget), dt * BALANCE_LIMITS.supportTransferSpeedMps,
@@ -648,7 +710,8 @@ export class BalanceController {
     // sole while the swing is still physically viable.  Let the active step
     // resolve; EmbodiedCharacter continues to enforce measured support loss,
     // torso lean, and pelvis height throughout the motion.
-    const correctingStep = this.step !== null && (this.step.elapsed >= 0 || this.stepTransferAge < 1.2);
+    const correctingStep = this.step !== null && futureMargin >= -0.02
+      && (this.step.elapsed >= 0 || this.stepTransferAge < 1.2);
     // A measured touchdown deliberately enters a short double-support cooldown
     // before another step may start. Keep that bounded recovery opportunity
     // alive while at least one real support remains; torso lean, pelvis height,
@@ -717,7 +780,8 @@ export class BalanceController {
         balanceAcceleration, stepTarget: this.step ? { ...this.step.to } : null,
         candidateValidity: { ...this.candidateValidity }, transferAgeS: this.stepTransferAge,
         transferReadyAgeS: this.transferReadyAge,
-        transferCaptureMarginM,
+        transferCaptureMarginM, triggerReason: this.triggerReason,
+        touchdownQualified: this.touchdownQualified,
       },
     };
   }
@@ -726,6 +790,7 @@ export class BalanceController {
     foot: Foot, from: Vec3, root: Vec3, forward: Vec3, right: Vec3,
     floorY: number, correction: Vec3, headingRadians = 0, pelvisRotation?: Quat,
     selected?: Extract<LandingPlan, { feasible: true }>,
+    triggerReason: "capture" | "airborne-foot" | "external" = "external",
   ): void {
     const plan = selected ?? this.planStep(foot, from, root, forward, right, floorY,
       correction, headingRadians, pelvisRotation);
@@ -733,15 +798,33 @@ export class BalanceController {
       ...(plan.forecast ? { forecast: plan.forecast } : {}),
       ...(plan.feasible ? { transferForecastReason: plan.transferForecastReason ?? null } : {}) };
     if (!plan.feasible) return;
+    this.triggerReason = triggerReason;
+    this.touchdownQualified = false;
     this.step = { phase: "unloading", foot, from: { ...from }, to: plan.to,
       requested: plan.requested, heading: headingRadians, elapsed: -0.18, duration: plan.duration };
+    this.stepLaunchAuthorized = selected?.forecast !== undefined;
     this.nextFoot = foot === "leftFoot" ? "rightFoot" : "leftFoot";
     this.stepTransferAge = 0;
     this.transferReadyAge = 0;
+    if (this.useCoordinatedSupport) {
+      this.supportState = { ...this.supportState, retainedSide: foot === "leftFoot" ? "right" : "left",
+        transferAgeS: 0, measuredReadiness: { ageS: 0, retainedN: 0, movingN: 0, ready: false },
+        transitionReason: "transfer-start" };
+    }
+    this.retainedSupportLostAge = 0;
     this.unloadReadyAge = 0;
     this.touchdownAge = 0;
     this.stepHasUnloaded = false;
     this.touchdownTargetAdjusted = false;
+    if (triggerReason === "airborne-foot") {
+      // The physical unload predicate has already happened. Requiring another
+      // planted load-transfer interval leaves an airborne sole suspended while
+      // momentum grows; begin its bounded landing arc immediately.
+      this.step.elapsed = 0;
+      this.step.phase = "swing";
+      this.stepHasUnloaded = true;
+      this.stepLaunchAuthorized = true;
+    }
   }
 
   private landingInput(foot: Foot, from: Vec3, root: Vec3, requested: Vec3,
@@ -780,7 +863,8 @@ export class BalanceController {
       const rampDistance = length(sub(retainedAnkle, this.supportTarget));
       const ownsTransfer = this.step?.foot === foot && this.step.elapsed < 0;
       const currentDesiredCenterOfMass = add(this.supportTarget, this.neutralComOffset);
-      const common = predictControlledLandingCapture({
+      const common = this.useCoordinatedSupport ? this.predictSharedTransfer(input, retainedSide, retainedAnkle,
+        floorY, ownsTransfer) : predictControlledLandingCapture({
         centerOfMass: massState(input.poses).position,
         centerOfMassVelocity: this.comVelocity,
         currentDesiredCenterOfMass,
@@ -807,6 +891,24 @@ export class BalanceController {
     if (landing.feasible && context.capturePoint && landing.captureMarginM < -1e-8)
       return { feasible: false, reason: "capture-support", forecast };
     return landing.feasible ? { ...landing, transferForecastReason, forecast } : { ...landing, forecast };
+  }
+
+  private predictSharedTransfer(input: BalanceInput, retainedSide: "left" | "right", retainedAnkle: Vec3,
+    floorY: number, ownsTransfer: boolean) {
+    if (!this.forecastValidated) return { valid: false as const, reason: "prediction-unvalidated" };
+    const mass = massState(input.poses);
+    const allocatedForce = this.supportState.previousAllocation.reduce((sum, a) => add(sum, a.force), ZERO);
+    const horizonS = Math.max(0, 1.2 - (ownsTransfer ? this.supportState.transferAgeS : 0)) + BALANCE_LIMITS.minStepDurationS;
+    const prediction = forecastSupport(this.supportState, { contacts: input.contacts ?? [],
+      target: retainedAnkle, retainedSide, transferring: true, dt: 1 / 60,
+      speedMps: BALANCE_LIMITS.supportTransferSpeedMps, weightN: TOTAL_MASS_KG * 9.81,
+      position: mass.position, velocity: this.comVelocity, externalForce: input.appliedGrabForce ?? input.externalForce ?? ZERO,
+      massKg: TOTAL_MASS_KG, allocatedForce,
+      allocationFeasible: this.supportState.previousAllocation.length > 0, horizonS });
+    if (!prediction.valid) return { valid: false as const, reason: prediction.reason ?? "infeasible-request" };
+    const omega = Math.sqrt(9.81 / Math.max(0.4, mass.position.y - floorY));
+    return { valid: true as const, capturePoint: add(horizontal(prediction.position), scale(horizontal(prediction.velocity), 1 / omega)),
+      horizonS, pressureFeasible: prediction.readinessTimeS !== null };
   }
 
   private selectStep(input: BalanceInput, supporting: Foot[], forward: Vec3, right: Vec3,

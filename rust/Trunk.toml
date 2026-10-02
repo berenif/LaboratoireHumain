@@ -1,0 +1,7 @@
+[build]
+target = "browser/index.html"
+dist = "dist/app"
+filehash = true
+
+[tools]
+wasm_bindgen = "0.2.108"

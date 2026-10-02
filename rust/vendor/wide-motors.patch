@@ -1,0 +1,687 @@
+diff --git a/rust/vendor/rapier3d/Cargo.toml b/rust/vendor/rapier3d/Cargo.toml
+index 5610a45..daa0a84 100644
+--- a/rust/vendor/rapier3d/Cargo.toml
++++ b/rust/vendor/rapier3d/Cargo.toml
+@@ -89,6 +89,7 @@ serde-serialize = [
+     "std",
+ ]
+ simd8 = ["parry3d/simd8"]
++experimental-wide-3d-motors = []
+ solver-bounds-checks = []
+ std = [
+     "alloc",
+diff --git a/rust/vendor/rapier3d/src/dynamics/joint/generic_joint.rs b/rust/vendor/rapier3d/src/dynamics/joint/generic_joint.rs
+index e814f0c..c63f593 100644
+--- a/rust/vendor/rapier3d/src/dynamics/joint/generic_joint.rs
++++ b/rust/vendor/rapier3d/src/dynamics/joint/generic_joint.rs
+@@ -334,17 +334,22 @@ impl GenericJoint {
+     /// Can this joint use SIMD-accelerated constraint formulations?
+     ///
+     /// Locked axes and uncoupled limits have wide row formulations, as does the
+-    /// 2D angular motor (the workhorse of ragdoll joints); linear motors, 3D
+-    /// motors and coupled limit rows don't (yet) and fall back to the scalar
+-    /// path.
++    /// 2D angular motor (the workhorse of ragdoll joints). The opt-in 3D motor
++    /// experiment packs scalar angular-motor rows. Linear motors and coupled
++    /// limit/motor rows retain the scalar path.
+     #[cfg(feature = "alloc")]
+     pub(crate) fn supports_simd_constraints(&self) -> bool {
+         #[cfg(feature = "dim2")]
+         let motors_ok =
+             (self.motor_axes.bits() & !self.locked_axes.bits() & JointAxesMask::LIN_AXES.bits())
+                 == 0;
+-        #[cfg(feature = "dim3")]
++        #[cfg(all(feature = "dim3", not(feature = "experimental-wide-3d-motors")))]
+         let motors_ok = (self.motor_axes.bits() & !self.locked_axes.bits()) == 0;
++        #[cfg(all(feature = "dim3", feature = "experimental-wide-3d-motors"))]
++        let motors_ok = {
++            let active = self.motor_axes & !self.locked_axes;
++            (active & JointAxesMask::LIN_AXES).is_empty() && (active & self.coupled_axes).is_empty()
++        };
+         motors_ok && (self.limit_axes & self.coupled_axes).is_empty()
+     }
+ 
+@@ -366,7 +371,23 @@ impl GenericJoint {
+         }
+         #[cfg(feature = "dim3")]
+         {
+-            locked | (limits << 8)
++            #[cfg(feature = "experimental-wide-3d-motors")]
++            {
++                let motors = (self.motor_axes.bits() & !self.locked_axes.bits()) as u32;
++                let mut models = 0;
++                for axis in crate::math::DIM..crate::math::SPATIAL_DIM {
++                    if motors & (1 << axis) != 0
++                        && self.motors[axis].model == crate::dynamics::MotorModel::ForceBased
++                    {
++                        models |= 1 << (axis - crate::math::DIM);
++                    }
++                }
++                locked | (limits << 8) | (motors << 16) | (models << 24)
++            }
++            #[cfg(not(feature = "experimental-wide-3d-motors"))]
++            {
++                locked | (limits << 8)
++            }
+         }
+     }
+ 
+diff --git a/rust/vendor/rapier3d/src/dynamics/solver/joint_constraint/mod.rs b/rust/vendor/rapier3d/src/dynamics/solver/joint_constraint/mod.rs
+index 1da2352..217acdf 100644
+--- a/rust/vendor/rapier3d/src/dynamics/solver/joint_constraint/mod.rs
++++ b/rust/vendor/rapier3d/src/dynamics/solver/joint_constraint/mod.rs
+@@ -18,3 +18,5 @@ mod joint_constraint_builder;
+ mod joint_constraint_helper;
+ mod joint_constraints_set;
+ mod joint_velocity_constraint;
++#[cfg(all(feature = "dim3", feature = "experimental-wide-3d-motors"))]
++mod motor_joint_group;
+diff --git a/rust/vendor/rapier3d/src/dynamics/solver/joint_constraint/joint_constraint_builder.rs b/rust/vendor/rapier3d/src/dynamics/solver/joint_constraint/joint_constraint_builder.rs
+index 72dbdff..93f2ab6 100644
+--- a/rust/vendor/rapier3d/src/dynamics/solver/joint_constraint/joint_constraint_builder.rs
++++ b/rust/vendor/rapier3d/src/dynamics/solver/joint_constraint/joint_constraint_builder.rs
+@@ -38,12 +38,22 @@ impl JointConstraintBuilder {
+         out_builder: &mut Self,
+         out_constraint_id: &mut usize,
+     ) {
++        *out_builder = Self::from_joint(joint, bodies, joint_id, *out_constraint_id);
++        *out_constraint_id += joint_num_constraints(joint);
++    }
++
++    pub(super) fn from_joint(
++        joint: &ImpulseJoint,
++        bodies: &RigidBodySet,
++        joint_id: JointIndex,
++        constraint_id: usize,
++    ) -> Self {
+         let rb1 = &bodies[joint.body1];
+         let rb2 = &bodies[joint.body2];
+         // Stamped by `select_active_interactions` (`u32::MAX` = world-attached).
+         let [solver_body1, solver_body2] = joint.solver_body_ids;
+ 
+-        *out_builder = Self {
++        let mut out_builder = Self {
+             body1: solver_body1,
+             body2: solver_body2,
+             joint_id,
+@@ -52,14 +62,14 @@ impl JointConstraintBuilder {
+                 let limits = &joint.data.limits[crate::math::DIM + ang_axis];
+                 AngularLimitParams::new(limits.min, limits.max)
+             }),
+-            constraint_id: *out_constraint_id,
++            constraint_id,
+             prev_dof_impulses: joint.impulses,
+         };
+         // Since solver body poses are given in center-of-mass space,
+         // we need to transform the anchors to that space.
+         out_builder.joint.transform_to_solver_body_space(rb1, rb2);
+ 
+-        *out_constraint_id += joint_num_constraints(joint);
++        out_builder
+     }
+ 
+     /// Refreshes the warm-start seeds (the impulses written back at the end of
+@@ -153,6 +163,8 @@ impl JointConstraintBuilder {
+ }
+ 
+ pub struct JointConstraintBuilderSimd {
++    #[cfg(all(feature = "dim3", feature = "experimental-wide-3d-motors"))]
++    angular_motor_group: Option<super::motor_joint_group::MotorJointGroup>,
+     body1: [u32; SIMD_WIDTH],
+     body2: [u32; SIMD_WIDTH],
+     joint_id: [JointIndex; SIMD_WIDTH],
+@@ -257,6 +269,14 @@ impl JointConstraintBuilderSimd {
+ 
+         let zero2 = [SimdReal::splat(0.0); 2];
+         *out_builder = Self {
++            #[cfg(all(feature = "dim3", feature = "experimental-wide-3d-motors"))]
++            angular_motor_group: {
++                use crate::dynamics::JointAxesMask;
++                let active = joint[0].data.motor_axes & !joint[0].data.locked_axes;
++                (!(active & JointAxesMask::ANG_AXES).is_empty()).then(|| {
++                    super::motor_joint_group::MotorJointGroup::new(&joint, bodies, joint_id)
++                })
++            },
+             body1,
+             body2,
+             joint_id,
+@@ -332,6 +352,10 @@ impl JointConstraintBuilderSimd {
+     /// the previous step) of a builder recycled across steps by the persistent
+     /// joint assembly.
+     pub fn refresh_warmstart_seeds(&mut self, joints_all: &[crate::dynamics::JointGraphEdge]) {
++        #[cfg(all(feature = "dim3", feature = "experimental-wide-3d-motors"))]
++        if let Some(group) = &mut self.angular_motor_group {
++            group.refresh_warmstart_seeds(joints_all);
++        }
+         let joint = array![|ii| &joints_all[self.joint_id[ii]].weight];
+         self.prev_dof_impulses =
+             core::array::from_fn(|axis| array![|ii| joint[ii].impulses[axis]].into());
+@@ -359,6 +383,17 @@ impl JointConstraintBuilderSimd {
+         bodies: &SolverBodies,
+         out: &mut [JointConstraint<SimdReal, SIMD_WIDTH>],
+     ) {
++        #[cfg(all(feature = "dim3", feature = "experimental-wide-3d-motors"))]
++        if let Some(group) = &mut self.angular_motor_group {
++            group.update(
++                params,
++                substep_id,
++                warmstart,
++                bodies,
++                &mut out[self.constraint_id..],
++            );
++            return;
++        }
+         // NOTE: right now, the "update", is basically reconstructing all the
+         //       constraints. Could we make this more incremental?
+ 
+diff --git a/rust/vendor/rapier3d/src/dynamics/solver/joint_constraint/motor_joint_group.rs b/rust/vendor/rapier3d/src/dynamics/solver/joint_constraint/motor_joint_group.rs
+new file mode 100644
+--- /dev/null
++++ b/rust/vendor/rapier3d/src/dynamics/solver/joint_constraint/motor_joint_group.rs
+@@ -0,0 +1,323 @@
++//! Experimental SIMD solving with the admitted scalar 3D row assembly.
++//! Scalar assembly preserves coordinate Jacobians, row order, per-axis motor
++//! models/caps and warm-start seeds. Only body-disjoint row solves are widened.
++use super::joint_constraint_builder::JointConstraintBuilder;
++use super::joint_velocity_constraint::{JointConstraint, WritebackId};
++use crate::dynamics::solver::joint_num_constraints;
++use crate::dynamics::solver::solver_body::SolverBodies;
++use crate::dynamics::{
++    ImpulseJoint, IntegrationParameters, JointGraphEdge, JointIndex, RigidBodySet,
++};
++use crate::math::{ANG_DIM, Real, SIMD_WIDTH, SPATIAL_DIM, SimdReal, Vector};
++use crate::na::SimdValue;
++use crate::utils::ScalarType;
++
++const MAX_ROWS: usize = SPATIAL_DIM + ANG_DIM;
++
++pub(super) struct MotorJointGroup {
++    builders: [JointConstraintBuilder; SIMD_WIDTH],
++    rows: usize,
++    live_lanes: usize,
++}
++impl MotorJointGroup {
++    pub fn new(
++        joints: &[&ImpulseJoint; SIMD_WIDTH],
++        bodies: &RigidBodySet,
++        ids: [JointIndex; SIMD_WIDTH],
++    ) -> Self {
++        let rows = joint_num_constraints(joints[0]);
++        assert!(rows <= MAX_ROWS);
++        Self {
++            builders: core::array::from_fn(|lane| {
++                JointConstraintBuilder::from_joint(joints[lane], bodies, ids[lane], 0)
++            }),
++            rows,
++            // Short groups repeat lane zero in their padding. Assemble it
++            // once; splat_row already fills all of those identical lanes.
++            live_lanes: ids
++                .iter()
++                .enumerate()
++                .skip(1)
++                .find_map(|(lane, id)| (*id == ids[0]).then_some(lane))
++                .unwrap_or(SIMD_WIDTH),
++        }
++    }
++    pub fn refresh_warmstart_seeds(&mut self, joints: &[JointGraphEdge]) {
++        for builder in &mut self.builders {
++            builder.refresh_warmstart_seeds(joints);
++        }
++    }
++    pub fn update(
++        &mut self,
++        params: &IntegrationParameters,
++        substep: usize,
++        warmstart: Option<Real>,
++        bodies: &SolverBodies,
++        out: &mut [JointConstraint<SimdReal, SIMD_WIDTH>],
++    ) {
++        // Preserve the solved impulses before lane 0 overwrites the output.
++        let mut previous = [SimdReal::splat(0.0); MAX_ROWS];
++        if warmstart.is_some() && substep > 0 {
++            for (value, row) in previous[..self.rows].iter_mut().zip(out.iter()) {
++                *value = row.impulse;
++            }
++        }
++        let mut scalar = [empty_row(); MAX_ROWS];
++        for (lane, builder) in self.builders[..self.live_lanes].iter().enumerate() {
++            if warmstart.is_some() && substep > 0 {
++                for (row, value) in scalar[..self.rows].iter_mut().zip(previous.iter()) {
++                    row.impulse = value.extract(lane);
++                }
++            }
++            builder.update(params, substep, warmstart, bodies, &mut scalar);
++            for (wide, row) in out[..self.rows].iter_mut().zip(scalar.iter()) {
++                if lane == 0 {
++                    *wide = splat_row(row);
++                } else {
++                    replace_lane(wide, lane, row);
++                }
++            }
++        }
++    }
++}
++
++fn empty_row() -> JointConstraint<Real, 1> {
++    JointConstraint {
++        joint_id: [0],
++        solver_vel1: [0],
++        solver_vel2: [0],
++        impulse: 0.0,
++        impulse_bounds: [0.0; 2],
++        lin_jac: Default::default(),
++        ang_jac1: Default::default(),
++        ang_jac2: Default::default(),
++        ii_ang_jac1: Default::default(),
++        ii_ang_jac2: Default::default(),
++        inv_lhs: 0.0,
++        rhs: 0.0,
++        rhs_wo_bias: 0.0,
++        cfm_gain: 0.0,
++        cfm_coeff: 0.0,
++        im1: Default::default(),
++        im2: Default::default(),
++        writeback_id: WritebackId::Dof(0),
++    }
++}
++fn splat_vector(value: Vector) -> <SimdReal as ScalarType>::Vector {
++    let scalar: crate::na::Vector3<Real> = value.into();
++    let lanes = [scalar; SIMD_WIDTH];
++    lanes.into()
++}
++fn splat_row(row: &JointConstraint<Real, 1>) -> JointConstraint<SimdReal, SIMD_WIDTH> {
++    JointConstraint {
++        joint_id: [row.joint_id[0]; SIMD_WIDTH],
++        solver_vel1: [row.solver_vel1[0]; SIMD_WIDTH],
++        solver_vel2: [row.solver_vel2[0]; SIMD_WIDTH],
++        impulse: SimdReal::splat(row.impulse),
++        impulse_bounds: row.impulse_bounds.map(SimdReal::splat),
++        lin_jac: splat_vector(row.lin_jac),
++        ang_jac1: splat_vector(row.ang_jac1),
++        ang_jac2: splat_vector(row.ang_jac2),
++        ii_ang_jac1: splat_vector(row.ii_ang_jac1),
++        ii_ang_jac2: splat_vector(row.ii_ang_jac2),
++        inv_lhs: SimdReal::splat(row.inv_lhs),
++        rhs: SimdReal::splat(row.rhs),
++        rhs_wo_bias: SimdReal::splat(row.rhs_wo_bias),
++        cfm_gain: SimdReal::splat(row.cfm_gain),
++        cfm_coeff: SimdReal::splat(row.cfm_coeff),
++        im1: splat_vector(row.im1),
++        im2: splat_vector(row.im2),
++        writeback_id: row.writeback_id,
++    }
++}
++fn replace_lane(
++    wide: &mut JointConstraint<SimdReal, SIMD_WIDTH>,
++    lane: usize,
++    row: &JointConstraint<Real, 1>,
++) {
++    debug_assert_eq!(wide.writeback_id, row.writeback_id);
++    wide.joint_id[lane] = row.joint_id[0];
++    wide.solver_vel1[lane] = row.solver_vel1[0];
++    wide.solver_vel2[lane] = row.solver_vel2[0];
++    wide.impulse.replace(lane, row.impulse);
++    for i in 0..2 {
++        wide.impulse_bounds[i].replace(lane, row.impulse_bounds[i]);
++    }
++    wide.lin_jac.replace(lane, row.lin_jac.into());
++    wide.ang_jac1.replace(lane, row.ang_jac1.into());
++    wide.ang_jac2.replace(lane, row.ang_jac2.into());
++    wide.ii_ang_jac1.replace(lane, row.ii_ang_jac1.into());
++    wide.ii_ang_jac2.replace(lane, row.ii_ang_jac2.into());
++    wide.inv_lhs.replace(lane, row.inv_lhs);
++    wide.rhs.replace(lane, row.rhs);
++    wide.rhs_wo_bias.replace(lane, row.rhs_wo_bias);
++    wide.cfm_gain.replace(lane, row.cfm_gain);
++    wide.cfm_coeff.replace(lane, row.cfm_coeff);
++    wide.im1.replace(lane, row.im1.into());
++    wide.im2.replace(lane, row.im2.into());
++}
++
++#[cfg(test)]
++mod tests {
++    use super::*;
++    use crate::dynamics::solver::solver_body::SolverVel;
++    use crate::dynamics::{GenericJoint, JointAxesMask, JointAxis, MotorModel};
++
++    #[test]
++    fn wide_motor_signature_preserves_axis_and_model_groups_and_rejects_coupling() {
++        let mut joint = GenericJoint::new(JointAxesMask::LIN_AXES);
++        joint.set_motor_position(JointAxis::AngX, 0.2, 20.0, 40.0);
++        assert!(joint.supports_simd_constraints());
++        let signature = joint.simd_row_signature();
++        let mut other = joint;
++        other.set_motor_position(JointAxis::AngY, 0.3, 20.0, 40.0);
++        assert_ne!(signature, other.simd_row_signature());
++        other = joint;
++        other.set_motor_model(JointAxis::AngX, MotorModel::ForceBased);
++        assert_ne!(signature, other.simd_row_signature());
++        other = joint;
++        other.set_motor_model(JointAxis::AngZ, MotorModel::ForceBased);
++        assert_eq!(signature, other.simd_row_signature());
++        other = joint;
++        other.coupled_axes = JointAxesMask::ANG_X | JointAxesMask::ANG_Y;
++        assert!(!other.supports_simd_constraints());
++        other = joint;
++        other.locked_axes.remove(JointAxesMask::LIN_X);
++        other.set_motor_position(JointAxis::LinX, 0.1, 10.0, 20.0);
++        assert!(!other.supports_simd_constraints());
++    }
++
++    fn row(lane: usize, kind: usize) -> JointConstraint<Real, 1> {
++        let mut result = empty_row();
++        let sign = if lane % 2 == 0 { 1.0 } else { -1.0 };
++        result.joint_id = [lane];
++        result.solver_vel1 = [2 * lane as u32];
++        result.solver_vel2 = [2 * lane as u32 + 1];
++        result.im1 = if lane == 0 {
++            Vector::ZERO
++        } else {
++            Vector::splat(0.8)
++        };
++        result.im2 = Vector::splat(0.6);
++        result.lin_jac = if kind == 0 {
++            Vector::ZERO
++        } else {
++            Vector::new(0.8, -0.2, 0.1)
++        };
++        result.ang_jac1 = Vector::new(0.3, 0.9, -0.1);
++        result.ang_jac2 = Vector::new(0.2, 0.7, 0.3);
++        result.ii_ang_jac1 = if lane == 0 {
++            Vector::ZERO
++        } else {
++            result.ang_jac1 * 0.5
++        };
++        result.ii_ang_jac2 = result.ang_jac2 * 0.4;
++        result.inv_lhs = 0.15;
++        result.rhs = sign * (0.7 + lane as Real * 0.08);
++        result.rhs_wo_bias = result.rhs * 0.5;
++        result.impulse = sign * 0.02;
++        match kind {
++            0 => {
++                result.writeback_id = WritebackId::Motor(4);
++                result.impulse_bounds = [-0.12, 0.12];
++                result.cfm_gain = 0.1 + lane as Real * 0.01;
++            }
++            1 => {
++                result.writeback_id = WritebackId::Dof(0);
++                result.impulse_bounds = [-Real::INFINITY, Real::INFINITY];
++            }
++            _ => {
++                result.writeback_id = WritebackId::Limit(5);
++                result.impulse_bounds = if sign > 0.0 {
++                    [0.0, Real::INFINITY]
++                } else {
++                    [-Real::INFINITY, 0.0]
++                };
++            }
++        }
++        result
++    }
++    fn wide_velocity(values: &[SolverVel<Real>; SIMD_WIDTH]) -> SolverVel<SimdReal> {
++        let mut result: SolverVel<SimdReal> = SolverVel::zero();
++        result.linear = splat_vector(values[0].linear);
++        result.angular = splat_vector(values[0].angular);
++        for (lane, value) in values.iter().enumerate().skip(1) {
++            result.linear.replace(lane, value.linear.into());
++            result.angular.replace(lane, value.angular.into());
++        }
++        result
++    }
++    fn assert_velocity(actual: &SolverVel<SimdReal>, expected: &[SolverVel<Real>; SIMD_WIDTH]) {
++        for (lane, value) in expected.iter().enumerate() {
++            for axis in 0..3 {
++                assert_eq!(
++                    actual.linear.extract(lane)[axis].to_bits(),
++                    value.linear[axis].to_bits()
++                );
++                assert_eq!(
++                    actual.angular.extract(lane)[axis].to_bits(),
++                    value.angular[axis].to_bits()
++                );
++            }
++        }
++    }
++    #[test]
++    fn packed_motor_lock_and_limit_solves_preserve_exact_scalar_velocities_and_caps() {
++        let mut scalar: [[JointConstraint<Real, 1>; 3]; SIMD_WIDTH] =
++            core::array::from_fn(|lane| core::array::from_fn(|kind| row(lane, kind)));
++        let mut wide: [JointConstraint<SimdReal, SIMD_WIDTH>; 3] = core::array::from_fn(|kind| {
++            let mut result = splat_row(&scalar[0][kind]);
++            for (lane, rows) in scalar.iter().enumerate().skip(1) {
++                replace_lane(&mut result, lane, &rows[kind]);
++            }
++            result
++        });
++        let mut first: [SolverVel<Real>; SIMD_WIDTH] = core::array::from_fn(|lane| {
++            let mut value = SolverVel::zero();
++            if lane > 0 {
++                value.linear = Vector::new(0.1, 0.2, -0.1);
++                value.angular = Vector::new(-0.2, 0.3, 0.1);
++            }
++            value
++        });
++        let mut second: [SolverVel<Real>; SIMD_WIDTH] = core::array::from_fn(|lane| {
++            let mut value = SolverVel::zero();
++            value.linear = Vector::new(-0.1, lane as Real * 0.1, 0.2);
++            value.angular = Vector::new(0.2, -0.1, lane as Real * 0.05);
++            value
++        });
++        let mut wide_first = wide_velocity(&first);
++        let mut wide_second = wide_velocity(&second);
++        for kind in 0..3 {
++            for lane in 0..SIMD_WIDTH {
++                scalar[lane][kind].warmstart_generic(&mut first[lane], &mut second[lane]);
++            }
++            wide[kind].warmstart_generic(&mut wide_first, &mut wide_second);
++        }
++        assert_velocity(&wide_first, &first);
++        assert_velocity(&wide_second, &second);
++        for pass in 0..20 {
++            for kind in 0..3 {
++                if pass == 10 {
++                    wide[kind].remove_bias_from_rhs();
++                    for rows in &mut scalar {
++                        rows[kind].remove_bias_from_rhs();
++                    }
++                }
++                for lane in 0..SIMD_WIDTH {
++                    scalar[lane][kind].solve_generic(&mut first[lane], &mut second[lane]);
++                }
++                wide[kind].solve_generic(&mut wide_first, &mut wide_second);
++                for (lane, rows) in scalar.iter().enumerate() {
++                    assert_eq!(
++                        wide[kind].impulse.extract(lane).to_bits(),
++                        rows[kind].impulse.to_bits()
++                    );
++                    assert!(rows[0].impulse.abs() <= 0.12);
++                }
++                assert_velocity(&wide_first, &first);
++                assert_velocity(&wide_second, &second);
++            }
++        }
++    }
++}
+diff --git a/rust/vendor/rapier3d/src/dynamics/solver/staged_island_solver/joints.rs b/rust/vendor/rapier3d/src/dynamics/solver/staged_island_solver/joints.rs
+index 0ce11e6..7638dde 100644
+--- a/rust/vendor/rapier3d/src/dynamics/solver/staged_island_solver/joints.rs
++++ b/rust/vendor/rapier3d/src/dynamics/solver/staged_island_solver/joints.rs
+@@ -120,7 +120,7 @@ impl StagedIslandSolver {
+             self.staged_group_joint_layout.clear();
+ 
+             // Calibrated for LAYOUT_REF_WORKERS, NOT the pool size (see that constant's docs).
+-            let min_color_joints = JOINT_BATCH * LAYOUT_REF_WORKERS / 2;
++            let min_color_joints = min_color_joints();
+             let num_groups = self.groups.len();
+ 
+             // Slot -> group-index table; a joint's group is the max group index over its awake
+@@ -337,7 +337,7 @@ impl StagedIslandSolver {
+         self.joint_overflow_scratch.clear();
+ 
+         // Calibrated for LAYOUT_REF_WORKERS, NOT the pool size (see that constant's docs).
+-        let min_color_joints = JOINT_BATCH * LAYOUT_REF_WORKERS / 2;
++        let min_color_joints = min_color_joints();
+ 
+         // Pass 1 (SIMD): parallel colors -> SIMD chunk lanes, cut at row-signature boundaries
+         // (stable sort keeps in-color order deterministic); ineligible joints fall back to the
+@@ -539,6 +539,20 @@ impl StagedIslandSolver {
+     }
+ }
+ 
++fn min_color_joints() -> usize {
++    // The experimental path also targets one articulated body in a WASM
++    // worker. Keep the decision scene-dependent, with the existing coloring
++    // and row-signature checks still enforcing independent lanes.
++    if cfg!(all(
++        feature = "dim3",
++        feature = "experimental-wide-3d-motors"
++    )) {
++        2
++    } else {
++        JOINT_BATCH * LAYOUT_REF_WORKERS / 2
++    }
++}
++
+ /// The persistent-contact-color mask of a rigid-body (empty for bodies out of
+ /// the mask table's range).
+ fn body_contact_color_mask(contact_color_masks: &[u128], h: RigidBodyHandle) -> u128 {
+diff --git a/rust/vendor/rapier3d/src/pipeline/physics_pipeline/test_staged.rs b/rust/vendor/rapier3d/src/pipeline/physics_pipeline/test_staged.rs
+index 7f462b2..1316916 100644
+--- a/rust/vendor/rapier3d/src/pipeline/physics_pipeline/test_staged.rs
++++ b/rust/vendor/rapier3d/src/pipeline/physics_pipeline/test_staged.rs
+@@ -5,6 +5,70 @@ use crate::geometry::ColliderBuilder;
+ use crate::math::Vector;
+ use crate::prelude::RevoluteJointBuilder;
+ 
++#[test]
++#[cfg(all(feature = "dim3", feature = "experimental-wide-3d-motors"))]
++fn small_motor_scene_uses_wide_rows_with_caps_and_recycled_warmstarts() {
++    use crate::dynamics::solver::WritebackId;
++    use crate::na::SimdValue;
++    use crate::pipeline::PhysicsWorld;
++    use crate::prelude::{GenericJointBuilder, JointAxesMask, JointAxis};
++
++    let mut world = PhysicsWorld::new();
++    world.gravity = Vector::ZERO;
++    world.integration_parameters.warmstart_joints = true;
++    world.integration_parameters.warmstart_coefficient = 0.8;
++    for lane in 0..4 {
++        let body = |x| {
++            RigidBodyBuilder::dynamic()
++                .translation(Vector::X * x)
++                .can_sleep(false)
++                .additional_solver_iterations(if lane < 2 { 5 } else { 0 })
++        };
++        let x = lane as f32 * 4.0;
++        let (a, _) = world.insert(body(x), ColliderBuilder::ball(0.1));
++        let (b, _) = world.insert(body(x + 1.0), ColliderBuilder::ball(0.1));
++        let mut joint = GenericJointBuilder::new(JointAxesMask::LIN_AXES)
++            .local_anchor1(Vector::X * 0.5)
++            .local_anchor2(-Vector::X * 0.5)
++            .build();
++        joint.set_limits(JointAxis::AngX, [-0.4, 0.4]);
++        joint.set_motor_position(JointAxis::AngX, 0.2, 20.0, 40.0);
++        joint.set_motor_max_force(JointAxis::AngX, 0.6);
++        world.insert_impulse_joint(a, b, joint);
++    }
++    for _ in 0..6 {
++        world.step();
++        let rows = &world
++            .physics_pipeline
++            .staged_solver
++            .joint_constraints
++            .simd_velocity_constraints;
++        assert!(
++            !rows.is_empty(),
++            "small motor scene silently used scalar overflow"
++        );
++        let mut motors = 0;
++        for row in rows {
++            if matches!(row.writeback_id, WritebackId::Motor(_)) {
++                motors += 1;
++                for lane in 0..crate::math::SIMD_WIDTH {
++                    let impulse = row.impulse.extract(lane);
++                    assert!(impulse.is_finite());
++                    assert!(impulse >= row.impulse_bounds[0].extract(lane));
++                    assert!(impulse <= row.impulse_bounds[1].extract(lane));
++                }
++            }
++        }
++        assert!(motors > 0);
++        for (_, body) in world.bodies.iter() {
++            assert!(body.translation().is_finite() && body.angvel().is_finite());
++        }
++    }
++    assert!(!core::mem::needs_drop::<
++        crate::dynamics::solver::JointConstraintBuilderSimd,
++    >());
++}
++
+ /// Regression: overflow-color SIMD chunking. Same-pair manifolds (compound colliders)
+ /// land in the overflow color; packing two into one SIMD lane group makes the wide
+ /// gather/scatter (last-writer-wins) silently drop an impulse. Compares 2 workers vs 1.
+diff --git a/rust/vendor/rapier3d/src/dynamics/joint/multibody_joint/multibody_ik.rs b/rust/vendor/rapier3d/src/dynamics/joint/multibody_joint/multibody_ik.rs
+index 429ccf4..45088e7 100644
+--- a/rust/vendor/rapier3d/src/dynamics/joint/multibody_joint/multibody_ik.rs
++++ b/rust/vendor/rapier3d/src/dynamics/joint/multibody_joint/multibody_ik.rs
+@@ -210,8 +210,8 @@ mod test {
+             #[cfg(feature = "dim3")]
+             let builder = RevoluteJointBuilder::new(Vector::Z);
+             let link_ab = builder
+-                .local_anchor1((Vector::Y * (0.5 / num_segments as Real)).into())
+-                .local_anchor2((Vector::Y * (-0.5 / num_segments as Real)).into());
++                .local_anchor1(Vector::Y * (0.5 / num_segments as Real))
++                .local_anchor2(Vector::Y * (-0.5 / num_segments as Real));
+             last_link = multibodies
+                 .insert(last_body, new_body, link_ab, true)
+                 .unwrap();
+diff --git a/rust/vendor/rapier3d/src/dynamics/solver/joint_constraint/joint_constraint_helper.rs b/rust/vendor/rapier3d/src/dynamics/solver/joint_constraint/joint_constraint_helper.rs
+index 4c8edb1..6de1d82 100644
+--- a/rust/vendor/rapier3d/src/dynamics/solver/joint_constraint/joint_constraint_helper.rs
++++ b/rust/vendor/rapier3d/src/dynamics/solver/joint_constraint/joint_constraint_helper.rs
+@@ -897,8 +897,9 @@ mod test {
+             assert!(at_center.abs() < 1.0e-5, "center {center_deg}: {at_center}");
+             let at_max =
+                 helper_at((center_deg as Real + 45.0).to_radians()).recentered_angle(0, &limit);
++            let half_range_degrees: Real = 45.0;
+             assert!(
+-                (at_max - (45.0 as Real).to_radians()).abs() < 1.0e-4,
++                (at_max - half_range_degrees.to_radians()).abs() < 1.0e-4,
+                 "center {center_deg}: at_max {at_max}"
+             );
+ 
+diff --git a/rust/vendor/rapier3d/tests/issue_836_physics_world.rs b/rust/vendor/rapier3d/tests/issue_836_physics_world.rs
+index acf031e..eac0be3 100644
+--- a/rust/vendor/rapier3d/tests/issue_836_physics_world.rs
++++ b/rust/vendor/rapier3d/tests/issue_836_physics_world.rs
+@@ -34,10 +34,7 @@ fn physics_world_builds_steps_and_queries_a_scene() {
+     );
+ 
+     // Queries work directly through the world.
+-    let ray = Ray::new(
+-        Vector::new(0.0, 20.0, 0.0).into(),
+-        Vector::new(0.0, -1.0, 0.0),
+-    );
++    let ray = Ray::new(Vector::new(0.0, 20.0, 0.0), Vector::new(0.0, -1.0, 0.0));
+     let hit = world.cast_ray(&ray, 100.0, true, QueryFilter::default());
+     assert!(hit.is_some(), "raycast through PhysicsWorld found no hit");
+ }
+diff --git a/rust/vendor/rapier3d/tests/issue_372_trimesh_sleep.rs b/rust/vendor/rapier3d/tests/issue_372_trimesh_sleep.rs
+index 517e7bf..6de82bd 100644
+--- a/rust/vendor/rapier3d/tests/issue_372_trimesh_sleep.rs
++++ b/rust/vendor/rapier3d/tests/issue_372_trimesh_sleep.rs
+@@ -116,10 +116,13 @@ fn capsule_on_trimesh_falls_asleep() {
+     h.insert_trimesh_ground();
+ 
+     // Lying on its side (axis along z after the x-rotation), free to roll.
++    let quarter_turn = std::f32::consts::FRAC_PI_2;
++    #[cfg(feature = "f64")]
++    let quarter_turn = f64::from(quarter_turn);
+     let capsule = h.bodies.insert(
+         RigidBodyBuilder::dynamic()
+             .translation(Vector::new(-5.0, 1.0, 5.0))
+-            .rotation(Vector::new(std::f32::consts::FRAC_PI_2 as Real, 0.0, 0.0))
++            .rotation(Vector::new(quarter_turn, 0.0, 0.0))
+             .linvel(Vector::new(0.012, 0.0, 0.0)),
+     );
+     h.colliders

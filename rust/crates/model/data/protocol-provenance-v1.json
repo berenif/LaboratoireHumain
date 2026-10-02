@@ -1,0 +1,10 @@
+{
+  "generatedAt": "2026-10-02T13:16:56.860Z",
+  "command": "node --import tsx scripts/export-rust-protocol.ts",
+  "sha256": "d1eeb9932b9b9946ebc6e735b43fc3d4045722d8927a593528c77e139e97c390",
+  "sources": {
+    "src/core/protocol.ts": "9f8c057eb3e80dcdacad39f75c894a009f20158f4e47d306cbe260ce14da102a",
+    "src/core/playground.ts": "929275e93c421f43aa28961dbfaa05489e7450da282da8a0b3f8ad846ab7f94e",
+    "scripts/export-rust-protocol.ts": "140db1c749951ff0cbb326b0ca6fb64dfcf85f8c263138744232ac67b1cf8f66"
+  }
+}

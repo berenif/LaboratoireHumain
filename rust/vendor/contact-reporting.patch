@@ -1,0 +1,125 @@
+diff --git a/src/dynamics/solver/contact_constraint/contact_constraint_element.rs b/src/dynamics/solver/contact_constraint/contact_constraint_element.rs
+index 6930aa8ba..1a4fa4658 100644
+--- a/src/dynamics/solver/contact_constraint/contact_constraint_element.rs
++++ b/src/dynamics/solver/contact_constraint/contact_constraint_element.rs
+@@ -53,7 +53,8 @@ impl<N: ScalarType> ContactConstraintTangentPart<N> {
+         }
+     }
+ 
+-    /// Total impulse applied across all the solver substeps.
++    /// Total impulse applied during the step: the sum, over every solver substep, of the
++    /// impulse that substep ended on (the warm-start impulse it re-applied included).
+     #[inline]
+     pub fn total_impulse(&self) -> TangentImpulse<N> {
+         self.impulse_accumulator + self.impulse
+@@ -214,7 +215,8 @@ impl<N: ScalarType> ContactConstraintNormalPart<N> {
+         }
+     }
+ 
+-    /// Total impulse applied across all the solver substeps.
++    /// Total impulse applied during the step: the sum, over every solver substep, of the
++    /// impulse that substep ended on (the warm-start impulse it re-applied included).
+     #[inline]
+     pub fn total_impulse(&self) -> N {
+         self.impulse_accumulator + self.impulse
+@@ -452,7 +454,8 @@ impl<N: ScalarType> ContactConstraintNormalPartSlim<N>
+ where
+     N::Vector: CrossProduct<N::Vector, Result = N::AngVector>,
+ {
+-    /// Total impulse applied across all the solver substeps.
++    /// Total impulse applied during the step: the sum, over every solver substep, of the
++    /// impulse that substep ended on (the warm-start impulse it re-applied included).
+     #[inline]
+     pub fn total_impulse(&self) -> N {
+         self.impulse_accumulator + self.impulse
+diff --git a/src/dynamics/solver/contact_constraint/contact_with_coulomb_friction.rs b/src/dynamics/solver/contact_constraint/contact_with_coulomb_friction.rs
+index c3bcb4df4..21f41afec 100644
+--- a/src/dynamics/solver/contact_constraint/contact_with_coulomb_friction.rs
++++ b/src/dynamics/solver/contact_constraint/contact_with_coulomb_friction.rs
+@@ -243,10 +243,12 @@ impl ContactWithCoulombFrictionBuilder {
+                 out_constraint.normal_part[k].ii_torque_dir1 = ii_torque_dir1;
+                 out_constraint.normal_part[k].ii_torque_dir2 = ii_torque_dir2;
+                 out_constraint.normal_part[k].impulse = warmstart_impulse;
+-                // The accumulator must start at zero every step: the constraint buffers are
++                // The accumulator is written explicitly every step: the constraint buffers are
+                 // reused without zeroing (`reset_buffer_reusing`), so stale bytes survive in
+-                // fields `generate` doesn't write.
+-                out_constraint.normal_part[k].impulse_accumulator = SimdReal::zero();
++                // fields `generate` doesn't write. It starts at minus the warm-start impulse so
++                // that the first substep's `update` (which folds in whatever `impulse` holds)
++                // cancels it out: that value was applied by the previous step, not this one.
++                out_constraint.normal_part[k].impulse_accumulator = -warmstart_impulse;
+                 // Zero effective mass on inactive slots: the scalar normal solve
+                 // is then an exact no-op (impulse stays at its zeroed warm-start).
+                 out_constraint.normal_part[k].r = projected_mass.select(active, SimdReal::zero());
+@@ -254,8 +256,8 @@ impl ContactWithCoulombFrictionBuilder {
+ 
+             // tangent parts.
+             out_constraint.tangent_part[k].impulse = warmstart_tangent_impulse;
+-            // See the normal part: explicit zero, the buffers are not zeroed.
+-            out_constraint.tangent_part[k].impulse_accumulator = na::zero();
++            // See the normal part: explicit write, the buffers are not zeroed.
++            out_constraint.tangent_part[k].impulse_accumulator = -warmstart_tangent_impulse;
+ 
+             for j in 0..DIM - 1 {
+                 let torque_dir1 = dp1.gcross(tangents1[j]);
+diff --git a/src/dynamics/solver/contact_constraint/contact_with_twist_friction.rs b/src/dynamics/solver/contact_constraint/contact_with_twist_friction.rs
+index d1f0376b0..35196ecf4 100644
+--- a/src/dynamics/solver/contact_constraint/contact_with_twist_friction.rs
++++ b/src/dynamics/solver/contact_constraint/contact_with_twist_friction.rs
+@@ -281,7 +281,11 @@ impl ContactWithTwistFrictionBuilder<SimdReal> {
+                 // the scalar normal solve is an exact no-op.
+                 out_constraint.normal_part[k].impulse =
+                     warmstart_impulse.select(active, SimdReal::zero());
+-                out_constraint.normal_part[k].impulse_accumulator = SimdReal::zero();
++                // Minus the warm-start impulse, so the first substep's `update` cancels it when
++                // it folds `impulse` in: that value belongs to the previous step (see the
++                // coulomb-friction `generate`).
++                out_constraint.normal_part[k].impulse_accumulator =
++                    -out_constraint.normal_part[k].impulse;
+                 out_constraint.normal_part[k].r = projected_mass.select(active, SimdReal::zero());
+             }
+ 
+@@ -298,13 +302,13 @@ impl ContactWithTwistFrictionBuilder<SimdReal> {
+          * Tangent/twist part
+          */
+         out_constraint.tangent_part.impulse = tangent_warmstart;
+-        out_constraint.tangent_part.impulse_accumulator = na::zero();
++        out_constraint.tangent_part.impulse_accumulator = -tangent_warmstart;
+         // The twist part only acts on lanes with more than one point (a single point offers no
+         // lever arm): zero the warm-start of single-point lanes so a lane whose count just
+         // dropped to one can't kick with its stale stored twist impulse.
+         out_constraint.twist_part.impulse =
+             twist_warmstart.select(counts_simd.simd_gt(SimdReal::splat(1.0)), SimdReal::zero());
+-        out_constraint.twist_part.impulse_accumulator = SimdReal::zero();
++        out_constraint.twist_part.impulse_accumulator = -out_constraint.twist_part.impulse;
+ 
+         out_builder.local_friction_center1 = poses1.inverse_transform_point(friction_center);
+         out_builder.local_friction_center2 = poses2.inverse_transform_point(friction_center2);
+diff --git a/src/dynamics/solver/contact_constraint/generic_contact_constraint.rs b/src/dynamics/solver/contact_constraint/generic_contact_constraint.rs
+index 5e55fe33f..cb2e19335 100644
+--- a/src/dynamics/solver/contact_constraint/generic_contact_constraint.rs
++++ b/src/dynamics/solver/contact_constraint/generic_contact_constraint.rs
+@@ -236,7 +236,10 @@ impl GenericContactConstraintBuilder {
+                     rhs: Default::default(),
+                     rhs_wo_bias: Default::default(),
+                     cfm_factor: Default::default(),
+-                    impulse_accumulator: Default::default(),
++                    // Minus the warm-start impulse, so the first substep's `update` cancels it
++                    // when it folds `impulse` in: that value belongs to the previous step (see
++                    // the coulomb-friction `generate`).
++                    impulse_accumulator: -pt_data.warmstart_impulse,
+                     impulse: pt_data.warmstart_impulse,
+                     r,
+                     #[cfg(feature = "block-solver")]
+@@ -259,6 +262,10 @@ impl GenericContactConstraintBuilder {
+                     out_constraint.tangent_part[k].impulse = pt_data.warmstart_tangent_impulse;
+                 }
+ 
++                // See the normal part.
++                out_constraint.tangent_part[k].impulse_accumulator =
++                    -out_constraint.tangent_part[k].impulse;
++
+                 for j in 0..DIM - 1 {
+                     let torque_dir1 = dp1.gcross(tangents1[j]);
+                     let ii_torque_dir1 = if type1.is_dynamic_or_kinematic() {

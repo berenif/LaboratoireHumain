@@ -1,0 +1,14 @@
+{
+  "schema": 1,
+  "command": "node --import tsx scripts/export-rust-recovery.ts",
+  "sources": {
+    "scripts/recovery-fixtures.ts": "f0b8cac2db78f9bb349ff6cacc4647d0129b68fc79160d62d23411e8cfcf720d",
+    "src/core/humanoid.ts": "36eadcf9787b041a829e2bc056791c17f9c6466378ce8168ceb4eb0aa3be49d2",
+    "src/character/joint-coordinates.ts": "548c8ba29c985362870b78b7418519b0b9bca1b66dd24180414044b563c2ca95",
+    "src/character/math.ts": "dae610a500925900bd0cb81fb45476e636af2e25128100da6b61de51799321f9"
+  },
+  "output": {
+    "path": "rust/crates/sim/data/recovery-v1.json",
+    "sha256": "a11f9877f274c574c3e1a9ff6de7b70d4f4589f2fea34146866eba92b97f7216"
+  }
+}

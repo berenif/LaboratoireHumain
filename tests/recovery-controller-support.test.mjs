@@ -10,6 +10,21 @@ const { SEGMENT_BY_ID } = await import("../src/core/humanoid.ts");
 const { add, angularVelocity, length, sub, quatFromAxisAngle, quatInverse, quatMultiply, rotate, worldPoint } = await import("../src/character/math.ts");
 const zero = { x: 0, y: 0, z: 0 }, dt = 1 / 60;
 
+test("mutable rest poses cannot change canonical anatomy or another pose", () => {
+  const expected = restPoseMap(), changed = restPoseMap(), sibling = restPoseMap();
+  const definition = SEGMENT_BY_ID.get("pelvis");
+  const anatomy = structuredClone(definition);
+  changed.get("pelvis").position.y = .54;
+  changed.get("pelvis").rotation.x = .5;
+  changed.get("pelvis").linearVelocity.x = 2;
+  changed.get("pelvis").angularVelocity.z = 3;
+  assert.deepEqual(restPoseMap(), expected);
+  assert.deepEqual(sibling, expected);
+  assert.deepEqual(changed.get("torso").linearVelocity, zero);
+  assert.deepEqual(changed.get("torso").angularVelocity, zero);
+  assert.deepEqual(definition, anatomy);
+});
+
 function rig(poses = restPoseMap()) {
   const impulses = new Map();
   const bodies = new Map([...poses].map(([id, p]) => [id, {
@@ -610,7 +625,10 @@ test("one measured arm brace can begin a persistent push without discarding tors
 });
 
 test("a moving foot owns its target until an unloaded, intended fresh plant qualifies", () => {
-  const state = rig(); bothFeetCoverMass(state);
+  // The full-height rest rig has no extension reserve for an exact floor
+  // target. Use a connected crouch before testing movement ownership.
+  const state = rig(recoveryFixturePoses({ id: "moving-plant", pose: "crouch", side: "left", heading: 0 }));
+  bothFeetCoverMass(state);
   assert.equal(state.recovery.beginFootMovement("right", state.poses, ["rightFoot"]), true);
   const movement = state.recovery.footMovements.get("rightFoot");
   observeLoads(state, new Map([["leftFoot", 500]]));
@@ -650,7 +668,8 @@ test("rolling retains its captured foot plan and replans when bracing begins", (
 });
 
 test("a transient command-clearance pause resumes after current geometry is feasible", () => {
-  const state = rig(); bothFeetCoverMass(state);
+  const state = rig(recoveryFixturePoses({ id: "resuming-plant", pose: "crouch", side: "left", heading: 0 }));
+  bothFeetCoverMass(state);
   assert.equal(state.recovery.beginFootMovement("right", state.poses, ["rightFoot"]), true);
   const movement = state.recovery.footMovements.get("rightFoot");
   movement.unloaded = true; movement.paused = true; movement.time = .1;
@@ -660,4 +679,12 @@ test("a transient command-clearance pause resumes after current geometry is feas
   assert.equal(movement.paused, false);
   assert.ok(movement.time > .1, "current valid evidence restarts trajectory progress");
   assert.ok(state.recovery.released.has("rightFoot"), "resuming does not qualify a replant");
+});
+
+test("a floor target beyond extension reserve cannot release an existing recovery plant", () => {
+  const state = rig(); bothFeetCoverMass(state);
+  assert.equal(state.recovery.beginFootMovement("right", state.poses, ["rightFoot"]), false);
+  assert.equal(state.recovery.footMovements.size, 0);
+  assert.equal(state.recovery.released.has("rightFoot"), false);
+  assert.ok(state.recovery.plants.has("rightFoot"));
 });

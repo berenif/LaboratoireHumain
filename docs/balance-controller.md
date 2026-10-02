@@ -2,7 +2,39 @@
 
 This guide describes the current implementation. Its controller parameters are separate from the independent [acceptance contract](physics-acceptance.md). See [current status](status.md) for recorded failures and verification scope.
 
-The [coordinated standing stabilization plan](standing-stabilization-plan.md) now has an opt-in [H74-v1 implementation](standing-h74-contract.md), separate from the default controller described here. `CoordinatedStandingController` fixes its reference at startup, combines posture/foot/motion/effort feedback, and supplies the existing capped native motors. Select it with `?standingCandidate=h74-v1` on the flat-floor application path; configuration and transition reason appear in `diagnostics.coordinatedStanding`. Both the application and serial harness use `characterFrame` and the same candidate module. All three H74 reference trials fail; its latched transition to existing balance/recovery is not a validated standing backup. The diagnostic preview helpers remain separate and H73 remains pending.
+The [coordinated standing stabilization plan](standing-stabilization-plan.md) has opt-in H74 and H77–H80 implementations, separate from the default controller described here. All failed their recorded feasibility gates. See [current status](status.md) before interpreting their diagnostics or historical results.
+
+## Experimental standing selection
+
+`standing-selection.ts` validates a shared controller selection for the browser
+and serial harness. Normal startup uses `legacy`. On the browser path,
+`?standingCandidate=h80-v1` selects a flat-floor experiment instead of the room
+or playground environment. Other accepted selectors are `legacy`, `h74-v1`,
+`h77-v1`, `h78-v1`, and `h79-v1`. The browser uses the default zero forward
+offset; the harness also evaluates the frozen ±5 mm references.
+
+- [H74](standing-h74-contract.md): `CoordinatedStandingController` fixes a
+  startup reference, combines posture/foot/motion/effort feedback, and requests
+  bounded native actuation. All three references fail.
+- [H77](standing-h77-contract.md): `ImplicitStandingController` adds implicit
+  native posture feedback. Current-state requests/readback are equivalent, but
+  all three formal reference entries fail.
+- [H78–H80](standing-h78-h80-contract.md): versioned contact-force controllers
+  constrain allocations under the motor ceilings and share serializable support
+  state with a non-mutating forecast. Forecast admission stays disabled. H78/H79
+  fail controller deadlines; H80 fails two deadlines and the remaining hold.
+
+Candidate configuration, state and transition reasons appear in
+`diagnostics.coordinatedStanding`. The browser and harness use `characterFrame`
+and the same candidate modules. Run
+`npm run test:standing -- --controller=h80-v1 <fresh-output-directory>` from
+the matching frozen workspace. H78–H80 locks reject later source changes;
+see [preserved source and evidence](evidence.md#h78h80-local-evidence).
+Omitting `--controller` runs H74. Their fallback transitions are not validated
+standing backups, and these experiments establish no transfer operating range.
+H76 remains a read-only native-row diagnostic; H73 remains a pending comparison.
+
+## Default balance controller
 
 `BalanceController.update` runs at 60 Hz and reads the current Rapier segment poses, mass-weighted momentum, exact grab anchor, and measured loaded foot contacts. It produces stance, step, trunk/arm reaction, and fall intent. Those outputs become bounded joint-motor targets; the controller never owns a body transform and never applies a root force.
 

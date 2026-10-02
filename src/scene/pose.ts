@@ -54,3 +54,75 @@ export function interpolatePoseSnapshot(
     } : current.striker,
   };
 }
+
+type MutableVector = { x: number; y: number; z: number };
+type MutableQuaternion = MutableVector & { w: number };
+function lerpInto(out: MutableVector, a: Vec3, b: Vec3, t: number): void {
+  out.x = a.x + (b.x - a.x) * t;
+  out.y = a.y + (b.y - a.y) * t;
+  out.z = a.z + (b.z - a.z) * t;
+}
+function nlerpInto(out: MutableQuaternion, a: Quat, b: Quat, t: number): void {
+  const sign = a.x * b.x + a.y * b.y + a.z * b.z + a.w * b.w < 0 ? -1 : 1;
+  out.x = a.x + (b.x * sign - a.x) * t;
+  out.y = a.y + (b.y * sign - a.y) * t;
+  out.z = a.z + (b.z * sign - a.z) * t;
+  out.w = a.w + (b.w * sign - a.w) * t;
+  const length = Math.hypot(out.x, out.y, out.z, out.w) || 1;
+  out.x /= length; out.y /= length; out.z /= length; out.w /= length;
+}
+
+/** Adapter-owned scratch state. Never publish this as a simulation snapshot. */
+export class PresentationBuffer {
+  readonly byId = new Map<SegmentId, SegmentPose>();
+  private readonly before = new Map<SegmentId, SegmentPose>();
+  private previous: PoseSnapshot | null = null;
+  private readonly segments: SegmentPose[] = [];
+  private readonly rootPosition = { x: 0, y: 0, z: 0 };
+  private readonly rootRotation = { x: 0, y: 0, z: 0, w: 1 };
+  private striker: NonNullable<PoseSnapshot["striker"]> | null = null;
+  private display: PoseSnapshot | null = null;
+
+  update(previous: PoseSnapshot, current: PoseSnapshot, alpha: number): PoseSnapshot {
+    const t = clampInterpolationAlpha(alpha);
+    if (this.previous !== previous) {
+      this.before.clear();
+      for (const pose of previous.segments) this.before.set(pose.id, pose);
+      this.previous = previous;
+    }
+    this.segments.length = current.segments.length;
+    for (let i = 0; i < current.segments.length; i++) {
+      const pose = current.segments[i];
+      let out = this.byId.get(pose.id);
+      if (!out) {
+        out = { id: pose.id, position: { ...pose.position }, rotation: { ...pose.rotation },
+          linearVelocity: { ...pose.linearVelocity }, angularVelocity: { ...pose.angularVelocity } };
+        this.byId.set(pose.id, out);
+      }
+      const before = this.before.get(pose.id) ?? pose;
+      lerpInto(out.position, before.position, pose.position, t);
+      nlerpInto(out.rotation, before.rotation, pose.rotation, t);
+      lerpInto(out.linearVelocity, before.linearVelocity, pose.linearVelocity, t);
+      lerpInto(out.angularVelocity, before.angularVelocity, pose.angularVelocity, t);
+      this.segments[i] = out;
+    }
+    // Handle reduced/reordered snapshots without retaining stale joints.
+    if (this.byId.size !== this.segments.length) {
+      for (const id of this.byId.keys()) if (!current.segments.some(pose => pose.id === id)) this.byId.delete(id);
+    }
+    lerpInto(this.rootPosition, previous.rootPosition, current.rootPosition, t);
+    nlerpInto(this.rootRotation, previous.rootRotation, current.rootRotation, t);
+    if (current.striker) {
+      this.striker ??= { ...current.striker, position: { ...current.striker.position }, rotation: { ...current.striker.rotation } };
+      const { position, rotation } = this.striker;
+      Object.assign(this.striker, current.striker, { position, rotation });
+      lerpInto(position, previous.striker?.position ?? current.striker.position, current.striker.position, t);
+      nlerpInto(rotation, previous.striker?.rotation ?? current.striker.rotation, current.striker.rotation, t);
+    }
+    this.display ??= { ...current };
+    Object.assign(this.display, current, { segments: this.segments, rootPosition: this.rootPosition,
+      rootRotation: this.rootRotation, striker: current.striker ? this.striker : current.striker,
+      simulationTime: previous.simulationTime + (current.simulationTime - previous.simulationTime) * t });
+    return this.display;
+  }
+}

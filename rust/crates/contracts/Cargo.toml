@@ -1,0 +1,9 @@
+[package]
+name = "lh-contracts"
+version.workspace = true
+edition.workspace = true
+publish.workspace = true
+
+[dependencies]
+serde.workspace = true
+lh-model.workspace = true

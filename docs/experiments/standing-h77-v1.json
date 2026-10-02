@@ -1,0 +1,47 @@
+{
+  "schema": 1,
+  "id": "standing-h77-v1",
+  "extends": "standing-h74-v1.json",
+  "frozenBeforeTrials": "2026-09-27",
+  "hypothesis": "H74's bounded current-state torque request can be retained while nonzero native stiffness and damping make Rapier respond implicitly to coordinate and velocity changes during every solver substep.",
+  "physical": {
+    "startup": "Opt-in h77-v1 selection on the unmodified 25-body dynamic assembly; normal room and playground startup remain legacy until every acceptance stage passes."
+  },
+  "controller": {
+    "id": "h77-v1",
+    "nativeRequestRoundingToleranceNm": 0.00000190735,
+    "reacquirePersistenceS": 0.1,
+    "rationale": "Retain H74's coordinated bounded request and anatomical axis caps. Configure Rapier with the real reference, nonzero kp, and existing kd; encode only request minus kp times error plus kd times rate as residual feedforward."
+  },
+  "heldOut": {
+    "recovery": {
+      "steps": 2,
+      "maximumStepPelvisExcursionM": 0.35,
+      "maximumStepFootExcursionM": 0.45
+    },
+    "rationale": "Separate uncalibrated headings and physical body/hand disturbances may invoke bounded rescue steps. Acceptance still requires qualified double-support touchdown, a new stance revision, and return to standing."
+  },
+  "fallbackDiagnostic": {
+    "id": "native-substep-trace-v1",
+    "outputsChanged": false,
+    "requiredRows": [
+      "motor",
+      "limit",
+      "lock",
+      "warm-start",
+      "solved-impulse",
+      "sole-normal",
+      "sole-friction",
+      "pre-post-body-velocity"
+    ],
+    "branch": "correct-joint-rows/contact-wrench"
+  },
+  "rollout": {
+    "default": false,
+    "promotionRule": "Promote only after every acceptance stage, including actual-browser runtime and process-memory gates, passes.",
+    "rollback": [
+      "h74-v1",
+      "legacy"
+    ]
+  }
+}

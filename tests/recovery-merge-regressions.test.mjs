@@ -19,8 +19,13 @@ test("near-extended recovery arm endpoints remain covariant without a spurious e
   const anchor = SEGMENT_BY_ID.get("leftHand").jointProfile.childFrame.anchor;
   for (const flexion of [-0.45, 0, 0.45]) {
     const wrist = quatFromAxisAngle({ x: 1, y: 0, z: 0 }, flexion);
-    const effectiveLength = length(add({ x: 0, y: HUMAN_PROPORTIONS.arm.forearmLengthM, z: 0 }, rotate(wrist, anchor)));
-    const reach = HUMAN_PROPORTIONS.arm.upperLengthM + effectiveLength;
+    const effectiveAxis = add({ x: 0, y: HUMAN_PROPORTIONS.arm.forearmLengthM, z: 0 }, rotate(wrist, anchor));
+    // A negative wrist flex would need elbow hyperextension to align the
+    // effective distal bone. Forward-construct the longest legal arm instead.
+    const elbowLimit = SEGMENT_BY_ID.get("leftForearm").jointProfile.axes.find(axis => axis.coordinate === "x").maxRadians;
+    const elbow = Math.max(0, Math.min(elbowLimit, Math.atan2(effectiveAxis.z, effectiveAxis.y)));
+    const reach = length(add({ x: 0, y: HUMAN_PROPORTIONS.arm.upperLengthM, z: 0 },
+      rotate(quatFromAxisAngle({ x: 1, y: 0, z: 0 }, -elbow), effectiveAxis)));
     for (const fraction of [1, 1 - 1e-14, 1 - 1e-9, 1.1]) {
       const requested = add(shoulder, scale(direction, reach * fraction));
       const reference = solveRecoveryArmTarget(shoulder, requested, bend, wrist);

@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import { appendFileSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { sha256 } from './capture-physics-baseline.mjs';
+import { captureControllerState } from './standing-controller-state.mjs';
 import { captureBodies, collisionContext, distance, inventory, json, makeInvariantMonitor, norm, percentiles, replayFailure, verifyInventory } from './coordinated-standing-evidence.mjs';
 
 const directory = process.argv[2], spec = JSON.parse(readFileSync(join(directory, 'scenario.json')));
@@ -17,16 +18,28 @@ const { createEmbodiedCharacter } = await import('../src/character/index.ts');
 const { characterFrame } = await import('../src/character/character-frame.ts');
 const { coordinatedStandingOptions } = await import('../src/character/standing-selection.ts');
 const { COORDINATED_STANDING, STANDING_FEET } = await import('../src/character/CoordinatedStandingController.ts');
+const { IMPLICIT_STANDING } = await import('../src/character/ImplicitStandingController.ts');
+const { CONTACT_STANDING } = await import('../src/character/ContactStandingController.ts');
+const { CONTACT_STANDING_H79 } = await import('../src/character/ContactStandingControllerH79.ts');
+const { CONTACT_STANDING_H80 } = await import('../src/character/ContactStandingControllerH80.ts');
+const { CONTACT_SOLVE } = await import('../src/character/coordinated-contact-solve.ts');
 const { angularVelocity } = await import('../src/character/math.ts');
-for (const [key, value] of Object.entries(COORDINATED_STANDING)) assert.equal(manifest.controller[key], value, `Frozen configuration differs: ${key}`);
+const controllerId=manifest.controller.id;
+const expectedConfiguration=controllerId==='h80-v1'?CONTACT_STANDING_H80:controllerId==='h79-v1'?CONTACT_STANDING_H79:controllerId==='h78-v1'?CONTACT_STANDING:controllerId==='h77-v1'?IMPLICIT_STANDING:COORDINATED_STANDING;
+assert.ok(['h74-v1','h77-v1','h78-v1','h79-v1','h80-v1'].includes(controllerId),'Unknown standing controller manifest');
+for (const [key, value] of Object.entries(expectedConfiguration)) assert.equal(manifest.controller[key], value, `Versioned configuration differs: ${key}`);
+if(['h78-v1','h79-v1','h80-v1'].includes(controllerId))assert.deepEqual(manifest.allocation.solver,CONTACT_SOLVE,'Frozen solver differs');
 const handlesOf = c => [...c.ragdollBodies].map(([id,b]) => [id,b.handle]);
-const c = await createEmbodiedCharacter('canvas2d', { heading: spec.heading, ...coordinatedStandingOptions('h74-v1', spec.offset) });
+const c = await createEmbodiedCharacter('canvas2d', { heading: spec.heading, ...coordinatedStandingOptions(controllerId, spec.offset) });
 const initial = c.getSnapshot('canvas2d'), handles = handlesOf(c), collision = collisionContext(c);
 const monitor = await makeInvariantMonitor(c, RAPIER);
 const controller = c.coordinatedStanding;
-const reference = Object.fromEntries(controller.reference), referenceHash = sha256(JSON.stringify(reference));
+let reference = Object.fromEntries(controller.reference), referenceHash = sha256(JSON.stringify(reference));
+let observedStanceRevision = 0;
+const triggerReasons = new Set();
 let controllerInput, controllerBefore, nativeBefore, nativeBytes, nativeAfter, commands, nativeMotorCallsPreStep,
   appliedNative = [], firstFailure = null, actualFailure = false, referenceMeasurement = null;
+let completeControllerPreStep;
 const originalControllerUpdate = controller.update.bind(controller);
 controller.update = input => {
   controllerBefore = controller.serialize();
@@ -42,6 +55,7 @@ for (const method of ['jointConfigureMotorModel','jointSetMotorMaxForce','jointC
 const originalStep = c.world.step.bind(c.world);
 c.world.step = (...args) => {
   nativeBytes = c.world.takeSnapshot();
+  completeControllerPreStep = captureControllerState(c);
   nativeBefore = captureBodies(c.world, handles);
   commands = structuredClone(c.standingCommands);
   nativeMotorCallsPreStep = structuredClone(appliedNative);
@@ -65,7 +79,7 @@ const recordFailure = (tick, violations, snapshot, inputs) => {
   firstFailure = { tick, violations, nativeSnapshotSha256: sha256(nativeBytes), handles,
     capturePhase: 'After all motor configuration and external impulses; immediately before the live world.step. Snapshot carries the current native motor settings.',
     preBodies: nativeBefore, postBodies: nativeAfter, commands, nativeMotorCallsPreStep, allTickMotorCalls: appliedNative,
-    controllerBefore, controllerInput, controllerAfter: controller.serialize(), contacts: controllerInput?.contacts,
+    controllerBefore, controllerInput, controllerAfter: controller.serialize(), completeControllerPreStep, contacts: controllerInput?.contacts,
     collision, inputs, scenario: spec, seed: spec.seed ?? 0,
     history: 'trace.ndjson reconstructs original startup, each external input and native command; no reset or state setter.',
     provenance: '../run-manifest.json', snapshot, referenceMeasurement,
@@ -88,12 +102,19 @@ try {
     const start = performance.now();
     const snapshot = characterFrame(c,1/60,null,'canvas2d'), fullMs = performance.now()-start;
     const telemetry = snapshot.diagnostics.coordinatedStanding;
+    if (telemetry.triggerReason) triggerReasons.add(telemetry.triggerReason);
     completedTicks = tick;
     const violations = monitor.check(snapshot);
     if (!nativeBytes) throw new Error('No pre-step capture: fixedUpdate did not integrate');
     costs.push(fullMs); controllerCosts.push(telemetry.solveMs);
     if (tick > 120) { observedCosts.push(fullMs); observedControllerCosts.push(telemetry.solveMs); }
-    if (sha256(JSON.stringify(Object.fromEntries(controller.reference))) !== referenceHash) violations.push('reference-changed');
+    const currentReference=Object.fromEntries(controller.reference), currentReferenceHash=sha256(JSON.stringify(currentReference));
+    const rescueAllowed=controllerId==='h77-v1' && ['saved-regression','disturbance'].includes(spec.kind);
+    if (currentReferenceHash !== referenceHash) {
+      if(rescueAllowed && telemetry.authority==='standing' && telemetry.stanceRevision===observedStanceRevision+1) {
+        reference=currentReference;referenceHash=currentReferenceHash;observedStanceRevision=telemetry.stanceRevision;
+      }else violations.push('reference-changed-without-qualified-revision');
+    }else if(telemetry.stanceRevision!==observedStanceRevision)violations.push('stance-revision-without-reference');
     if (telemetry.mode === 'transition' && !spec.fault) violations.push(`controller:${telemetry.reason}`);
     const state = Object.fromEntries(snapshot.segments.map(p => [p.id,p]));
     const linear = Math.max(...snapshot.segments.map(p => norm(p.linearVelocity)));
@@ -129,15 +150,20 @@ try {
           r.maximumExcursionM = Math.max(r.maximumExcursionM,r.endpointM);
           r.minimumY = Math.min(r.minimumY,p.y); r.maximumY = Math.max(r.maximumY,p.y);
         }
-        if (spec.kind !== 'disturbance' && (linear > 0.1 || angular > 0.5)) violations.push('official-speed');
+        if (!rescueAllowed && (linear > 0.1 || angular > 0.5)) violations.push('official-speed');
         if (spec.kind === 'disturbance') {
           const r = manifest.heldOut.recovery;
-          if (linear > r.linearMps || angular > r.angularRadps || ranges.pelvis.maximumExcursionM > r.pelvisExcursionM
-            || STANDING_FEET.some(id => ranges[id].maximumExcursionM > r.footExcursionM)) violations.push('disturbance-envelope');
+          const pelvisLimit=c.stepCount>0?r.maximumStepPelvisExcursionM:r.pelvisExcursionM;
+          const footLimit=c.stepCount>0?r.maximumStepFootExcursionM:r.footExcursionM;
+          if (linear > r.linearMps || angular > r.angularRadps || ranges.pelvis.maximumExcursionM > pelvisLimit
+            || STANDING_FEET.some(id => ranges[id].maximumExcursionM > footLimit)) violations.push('disturbance-envelope');
           const lastEnd = Math.max(...spec.inputs.map(i => i.tick+i.durationTicks-1));
-          if (tick >= lastEnd+r.returnDeadlineS*60 && (linear > 0.1 || angular > 0.5)) violations.push('disturbance-return');
+          if (tick >= lastEnd+r.returnDeadlineS*60 && (linear > 0.1 || angular > 0.5 || !referenceOK
+            || snapshot.support.planted.length!==2 || (controllerId==='h77-v1' && telemetry.authority!=='standing'))) violations.push('disturbance-return');
         }
-        if (!['upright','reacting'].includes(snapshot.state) || snapshot.support.planted.length !== 2 || c.stepCount !== 0) violations.push('standing-state-support-steps');
+        if (!rescueAllowed && (!['upright','reacting'].includes(snapshot.state) || snapshot.support.planted.length !== 2 || c.stepCount !== 0))
+          violations.push('standing-state-support-steps');
+        if (rescueAllowed && c.stepCount>manifest.heldOut.recovery.steps) violations.push('rescue-step-limit');
       }
     }
     if (tick % manifest.memory.sampleEveryTicks === 0) {
@@ -157,7 +183,19 @@ try {
     recordFailure(completedTicks,['local-return-hold'],final,[]);
   if (!firstFailure && observationStart && spec.kind !== 'fault'
     && (ranges.pelvis.endpointM > 0.03 || STANDING_FEET.some(id => ranges[id].endpointM > 0.01)))
-    recordFailure(completedTicks,['official-endpoint-drift'],final,[]);
+    if(!(controllerId==='h77-v1' && ['saved-regression','disturbance'].includes(spec.kind) && observedStanceRevision>0))
+      recordFailure(completedTicks,['official-endpoint-drift'],final,[]);
+  if (!firstFailure && controllerId==='h77-v1' && ['saved-regression','disturbance'].includes(spec.kind)) {
+    const finalTelemetry=final.diagnostics.coordinatedStanding;
+    const violations=[];
+    if(!['upright','reacting'].includes(final.state) || final.support.planted.length!==2 || finalTelemetry.authority!=='standing')
+      violations.push('rescue-did-not-return-to-standing');
+    if(c.stepCount>0 && observedStanceRevision<1)violations.push('rescue-missing-qualified-stance-revision');
+    if(spec.kind==='saved-regression' && c.stepCount<1)violations.push('saved-failure-did-not-trigger-rescue-step');
+    if(spec.kind==='saved-regression' && ![...triggerReasons].some(reason=>reason==='capture'||reason==='airborne-foot'))
+      violations.push('saved-failure-missing-disturbance-independent-trigger');
+    if(violations.length)recordFailure(completedTicks,violations,final,[]);
+  }
   if (spec.fault) {
     assert.equal(final.diagnostics.coordinatedStanding.mode,'transition');
     assert.equal(final.diagnostics.coordinatedStanding.reason,spec.fault);
@@ -169,7 +207,8 @@ try {
   const report = { status:firstFailure&&(!spec.fault||actualFailure)?'fail':'pass', kind:spec.kind, scenario:spec, completedTicks,
     firstFailure:firstFailure?{tick:firstFailure.tick,violations:firstFailure.violations}:null,
     observationCompleted:completedTicks===spec.steps, state:final.state, planted:final.support.planted, steps:c.stepCount,
-    referenceMeasurement,
+    referenceMeasurement, authority:final.diagnostics.coordinatedStanding.authority??null,
+    stanceRevision:final.diagnostics.coordinatedStanding.stanceRevision??0, triggerReasons:[...triggerReasons],
     maximumLinearMps:maximumLinear, maximumAngularRadps:maximumAngular, minimumRequestedHeadroom:Number.isFinite(minHeadroom)?minHeadroom:null,
     excursions:Object.fromEntries(Object.entries(ranges).map(([id,r])=>[id,{...r,verticalRangeM:r.maximumY-r.minimumY}])),
     invariants:monitor.maxima, replay, returnTick, returnHoldTicks,

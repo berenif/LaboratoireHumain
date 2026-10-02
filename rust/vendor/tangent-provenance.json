@@ -1,0 +1,31 @@
+{
+  "schema": 1,
+  "package": "rapier3d 0.35.0",
+  "base": "evidence/rust-worker-quiet-checkpoint-01",
+  "plan": "evidence/rust-tangent-reporting-plan-01.json",
+  "before": {
+    "src/geometry/contact_pair.rs": "c513c5617a65f7ad39e5256bba0bd2fd26d1f9910c4940335c192f7d752860af",
+    "src/dynamics/solver/contact_constraint/contact_with_coulomb_friction.rs": "734b142779145050481499244c0423484eb60c0c76b3dcf9cdc503b00926b4c0",
+    "src/dynamics/solver/contact_constraint/contact_with_twist_friction.rs": "71cc71a46cf03d8841c552a5c8fa4a8b5f041e3413479e544e6c7ddb2ff0ed10",
+    "src/dynamics/solver/contact_constraint/generic_contact_constraint.rs": "86a18448d1776c4cb8a881a82bd26dce11b306a20fd57d3f3c607971ff8aa21b"
+  },
+  "after": {
+    "src/geometry/contact_pair.rs": "3acab3ab974ac68f52dc9cfe70f4b54315ee0f5ecd6d85ac431d16544f13e06e",
+    "src/dynamics/solver/contact_constraint/contact_with_coulomb_friction.rs": "b8ccbc7d8aea58a4c73ed94a6de9d86e575eb7c39b8475c9e59b8dabcee7eca9",
+    "src/dynamics/solver/contact_constraint/contact_with_twist_friction.rs": "0c8b4d9d106c4197ba24ce6d69a42ca01c0fef72a4336c41c1ed660014525e84",
+    "src/dynamics/solver/contact_constraint/generic_contact_constraint.rs": "a849829eda28926feeb24cb41f0a23826086f0edb8779695591c542ba69c302c"
+  },
+  "patchSha256": "672c01eb232b33b66e4c1329dcfb439f4730a5bc35721f0dc1ad6b85fb6c6259",
+  "scope": "Report-only world-space tangent totals. No warm-start/impulse/constraint/integration/default settings changed. Simplified patch total and summed Coulomb points are reported on side one; ordered floor adapter chooses the sign.",
+  "validation": "Report-only Simplified default retains exact native A-C/eight existing physical pull results and three-heading 80-tick WASM physics replies. Original native/WASM stress matrix retains 16/216 failures and matches at f32 precision. Separate predeclared bounded linear-box matrix passes 216/216 on both architectures, maximum tangent error 0.00019844424 N s. Six of 36 floor-disabled causal controls fail; largest contact error is incompletely explained. Angular, canonical-foot and generic multibody tangent paths remain unqualified; signal is not used for character control. Vendor serde-enabled tests: 292 passed, zero failed.",
+  "releaseAccepted": false,
+  "evidence": [
+    "evidence/rust-tangent-default-native-comparison-01.json",
+    "evidence/rust-tangent-worker-paired-01/report.json",
+    "evidence/rust-tangent-calibration-comparison-01.json",
+    "evidence/rust-contact-roundoff-native-01/native/contact-roundoff.json",
+    "evidence/rust-tangent-bounded-plan-01.json",
+    "evidence/rust-tangent-bounded-comparison-01.json",
+    "evidence/rust-tangent-vendor-tests-01.log"
+  ]
+}

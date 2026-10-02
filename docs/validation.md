@@ -2,6 +2,58 @@
 
 [Current status](status.md) is the authoritative entry point for the latest recorded checkpoint. This file preserves earlier results and implementation history. Consult [evidence availability](evidence.md) before relying on local artifact references; paths marked unavailable are historical retrieval leads.
 
+## 2026-09-30 H78–H80 bounded contact-force investigation
+
+All three candidates are frozen and failed; see the
+[implementation, outcomes and reproduction commands](standing-h78-h80-contract.md).
+Completed operations are H78 `acceptance-03`, H79 `acceptance-01`, and H80
+`acceptance-01` under their respective `evidence/standing-h*-v1` roots. Each
+reports unchanged source, passed fault/policy checks, three failed references,
+exact native first-failure replay, and explicit incomplete downstream gates.
+H78's earlier two infrastructure-incomplete attempts remain preserved.
+
+H78 fails at ticks 4/4/4; H79 at 4/8/8. H80 fails at 4/120/8: the outer runs
+miss the controller deadline, while the -5 mm run loses standing entry/hold.
+At the latter run's first allocation, horizontal force differs in sign from the
+request; native motor readback remains equivalent. Measured response and the
+unvalidated held-load forecast do not establish a causal explanation. No fourth
+candidate was created. No local-return, prediction, transfer, official standing,
+sustained or browser acceptance is claimed.
+
+`evidence/standing-h80-v1/frozen-checks-01/report.json` records typecheck, lint and
+build exit 0, and regression exit 1 (80 pass, one failure, one skip). The legacy
+five-tick strong-pull assertion also fails using 243 restored pre-change files,
+each verified against the initial baseline; its comparison is preserved at
+`baseline-physical-chain-01`. The standalone archive compatibility skip passes
+inside acceptance when supplied its historical archive. The complete suite was
+not rerun: the applicable selection and candidate fault/policy suites are the
+scope of this checkpoint. Normal startup and physical constants remain unchanged
+by this experiment. Renderer/runtime changes after the checks are outside this
+source scope; all 354 frozen files are reconstructed and hash-verified under
+`evidence/standing-h80-v1/frozen-workspace` without reverting shared-workspace edits.
+
+## 2026-09-28 H77 candidate gate
+
+The versioned H77 operation at
+`evidence/standing-h77-v1/acceptance-03/` exits 1 with unchanged source
+fingerprints. Its eight policy/controller checks and six injected transitions
+pass. Reference feasibility fails at ticks 132, 120, and 120; all dependent
+physical, structural, sustained, held-out, runtime, memory, and browser stages
+remain incomplete. The final independent focused selection reports 25/28
+passing, two failures, and one archive-dependent skip. Both active-step
+commitment assertions pass without relaxed checks; the separate slow-pull and
+planted-reversal trials still fall at ticks 304 and 228. TypeScript passes. See
+the exact measurements and native trace qualification in [the H77
+contract](standing-h77-contract.md).
+
+The final broad checks do not alter that result: lint exits 0 with six warnings,
+the production build passes, the complete unit suite reports 325/339 pass with
+13 failures and one skip, and the full physics harness reports 6/63 pass and
+57 fail. The normal browser gate is not reached. Full-suite concurrency also
+causes the H77 no-step selector check to enter its deadline transition; the
+serial acceptance policy suite remains 8/8. These are reported differences,
+not relaxed assertions.
+
 ## Historical publication checkpoint
 
 The September 23 WIP publication and its 34/36 focused result are preserved in

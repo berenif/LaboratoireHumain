@@ -1,0 +1,18 @@
+[package]
+name = "lh-worker"
+version.workspace = true
+edition.workspace = true
+publish.workspace = true
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+
+[dependencies]
+lh-model.workspace = true
+lh-contracts.workspace = true
+lh-sim.workspace = true
+serde_json.workspace = true
+serde.workspace = true
+
+[target.'cfg(target_arch = "wasm32")'.dependencies]
+wasm-bindgen.workspace = true

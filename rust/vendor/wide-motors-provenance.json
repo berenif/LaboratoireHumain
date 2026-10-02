@@ -1,0 +1,89 @@
+{
+  "schema": 1,
+  "scope": "Unpromoted optional SIMD solve experiment; scalar 3D motor row assembly retained",
+  "baseline": "evidence/rust-simd8-checkpoint-01/source/",
+  "feature": "rapier3d/experimental-wide-3d-motors",
+  "enabledByDefault": false,
+  "changes": [
+    "Scalar builder factory preserves the original assembly; fixed arrays pack body-disjoint angular motor rows",
+    "Active motor axes/models participate in row signatures; coupled/linear motors keep scalar fallback",
+    "Feature-only small-color threshold is two; default remains 64",
+    "Padded lane-zero copies are assembled once; fixed row scratch is reused; no new heap ownership or unsafe operations",
+    "Four existing test conversion warnings repaired with identical numeric values"
+  ],
+  "files": [
+    {
+      "path": "rust/vendor/rapier3d/Cargo.toml",
+      "beforeSha256": "0d690cb267cf0f9dec10abd90fc3cdc6c141111483306aae8552dddfd7fb3135",
+      "afterSha256": "7cb055fe174ac00eec8019de705498c2bae1991befb70065f6fc57f1de34b598"
+    },
+    {
+      "path": "rust/vendor/rapier3d/src/dynamics/joint/generic_joint.rs",
+      "beforeSha256": "3118190fadd2c157435d361a551a269120df699b3e84e7fcc667f1d781b93198",
+      "afterSha256": "900ea3ff5ba55251228efec169940442901b071621800e53ee8d013c2bddd688"
+    },
+    {
+      "path": "rust/vendor/rapier3d/src/dynamics/solver/joint_constraint/mod.rs",
+      "beforeSha256": "a4042704f1a1f1756eccc09fad2652a169a63b5b858f0446a29cee2606905fa4",
+      "afterSha256": "0263d126730a0ba1b088d594b8fc12fa6c85f65792dde4da679d976788530308"
+    },
+    {
+      "path": "rust/vendor/rapier3d/src/dynamics/solver/joint_constraint/joint_constraint_builder.rs",
+      "beforeSha256": "d360961c201e2f1d2f8670b3d45a50a2c3412b24a647a701294664b72c33debb",
+      "afterSha256": "c77b1c57fe107b541afb95b2e42ab70cee1c74e9e87e8debe733fbbcd309b02c"
+    },
+    {
+      "path": "rust/vendor/rapier3d/src/dynamics/solver/joint_constraint/motor_joint_group.rs",
+      "beforeSha256": null,
+      "afterSha256": "6269c5e840fe599ff677c8ab7f13fb87a9a580444a670c4f250ed783a5935236"
+    },
+    {
+      "path": "rust/vendor/rapier3d/src/dynamics/solver/staged_island_solver/joints.rs",
+      "beforeSha256": "c91bb891cd22abf5bda757e8ee91abffdc5bcf2430548e2f1f83da1b9573e44c",
+      "afterSha256": "d1e6853dfd159c581f9c46175c422b7b67458c96611302a93bdd42dee611c162"
+    },
+    {
+      "path": "rust/vendor/rapier3d/src/pipeline/physics_pipeline/test_staged.rs",
+      "beforeSha256": "88aaf0290c276c3e35cdbcc1620d44b56d56fd0706b0bbc08174ff4c4b4773ea",
+      "afterSha256": "dcabb32b2b6e19bf3a1c8799b8861ff2fbdee330445e595326d50207baf4906f"
+    },
+    {
+      "path": "rust/vendor/rapier3d/src/dynamics/joint/multibody_joint/multibody_ik.rs",
+      "beforeSha256": "e5e597d688bfd3804bb6fca4a1bc6082ae1af472492010224b2edcf3d4b7ead5",
+      "afterSha256": "b68c7d79c22f0118c5424896604a3c87598a245556e6dc441f221a9327eda933"
+    },
+    {
+      "path": "rust/vendor/rapier3d/src/dynamics/solver/joint_constraint/joint_constraint_helper.rs",
+      "beforeSha256": "7a49e1aeda41a509ebc71e87563ca8dd308d526b7f4970c2a20bf66b651ad78f",
+      "afterSha256": "5f8306790d366e6da0d88b45b87d2d945a828c7e65c6b845ea08cef52a4a1f6b"
+    },
+    {
+      "path": "rust/vendor/rapier3d/tests/issue_836_physics_world.rs",
+      "beforeSha256": "fd62493cd2340a141bdad9c62406842c03a582b0e764ae8a1a27fbe1e9ff8657",
+      "afterSha256": "0313883a3d33e20cc090080f272754d460baccb0ab1c321fdf5cd656ba337871"
+    },
+    {
+      "path": "rust/vendor/rapier3d/tests/issue_372_trimesh_sleep.rs",
+      "beforeSha256": "aac38ffce2ab52290d1340dbc61ab6f087747971c32c42f23c5a37596f162b25",
+      "afterSha256": "2139d4442a1d43b297542de0e424bddbb2d5e358c40c2b067aa38f7016bb506c"
+    }
+  ],
+  "patchSha256": "b65ee6d344a30172c6fead57c348d76503b5af3b168cd21c75e39ab876304ce1",
+  "qualification": {
+    "native": "evidence/rust-wide-motors-native-03/comparison.json",
+    "nativeDefaultTests": "evidence/rust-wide-motors-default-tests-01.log",
+    "engineTests": "evidence/rust-wide-motors-vendor-tests-01.log",
+    "nativeClippy": "evidence/rust-wide-motors-native-clippy-01.log",
+    "wasmClippy": "evidence/rust-wide-motors-wasm-clippy-01.log",
+    "vendorClippy": "evidence/rust-wide-motors-vendor-clippy-04.log",
+    "wasmMatchedFlagsParity": "evidence/rust-wide-motors-worker-profiling-04/report.json",
+    "wasmDefaultComparison": "evidence/rust-wide-motors-worker-profiling-03/report.json",
+    "workerLifecycle": "evidence/rust-wide-motors-worker-02/report.json",
+    "ui": "evidence/rust-wide-motors-ui-01/report.json",
+    "performance": "evidence/rust-wide-motors-performance-02/report.json"
+  },
+  "dependencyNote": "Standalone vendored tests use their own locked graph; native acceptance and actual WASM checks use the workspace locked graph.",
+  "sourceNote": "Current audited source includes comment and test-only lint edits after the measured worker build. Measured artifact bytes are frozen independently; full final-artifact qualification remains open.",
+  "releaseAccepted": false,
+  "goalComplete": false
+}

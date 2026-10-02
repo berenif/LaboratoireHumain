@@ -8,6 +8,8 @@ const { composeUprightPose, restPoseMap, poseAnchor } = await import("../src/cha
 const { HUMAN_PROPORTIONS, SEGMENT_BY_ID, SEGMENTS } = await import("../src/core/humanoid.ts");
 const { legTargetReach } = await import("../src/character/leg-target-frame.ts");
 const { createEmbodiedCharacter } = await import("../src/character/index.ts");
+const { coordinatedStandingOptions } = await import("../src/character/standing-selection.ts");
+const candidateOptions = () => process.env.STANDING_CANDIDATE ? coordinatedStandingOptions(process.env.STANDING_CANDIDATE) : {};
 const { quatFromAxisAngle, quatMultiply, rotate, sub, length, worldPoint } = await import("../src/character/math.ts");
 const zero = { x: 0, y: 0, z: 0 }, dt = 1 / 60;
 const footCenterHeight = -SEGMENT_BY_ID.get("leftFoot").geometry.localBounds.min.y;
@@ -37,6 +39,43 @@ test("transfer persistence accepts six qualified 60Hz frames and never five", ()
   assert.equal(output.step.elapsed, 0);
   assert.equal(output.step.phase, "swing");
 });
+
+for (const movingFoot of ["leftFoot", "rightFoot"]) {
+  test(`a dynamically accepted ${movingFoot} step keeps its foot and world target through launch`, () => {
+    const poses = restPoseMap();
+    const controller = new BalanceController();
+    controller.reset(poses);
+    const from = poses.get(movingFoot).position;
+    const to = { ...from, z: from.z - 0.08 };
+    const committed = { feasible: true, to, requested: { ...to }, duration: 0.48,
+      captureMarginM: 0.02, travelM: 0.08, targetErrorM: 0,
+      forecast: { capturePoint: { ...to }, horizonS: 0.5, pressureFeasible: true } };
+    controller.beginStep(movingFoot, from, poses.get("pelvis").position,
+      { x: 0, y: 0, z: 1 }, { x: 1, y: 0, z: 0 }, 0, zero, 0, undefined,
+      committed, "capture");
+    // The post-admission state has worsened. It remains useful telemetry, but
+    // must not revoke the already validated touchdown while load transfer is
+    // completing.
+    controller.planStep = () => ({ feasible: false, reason: "capture-support" });
+    const retainedFoot = movingFoot === "leftFoot" ? "rightFoot" : "leftFoot";
+    const weight = 72.2 * 9.81;
+    const contacts = [retainedFoot, movingFoot].map((segment, index) => ({
+      segment, point: { ...poses.get(segment).position }, normalY: 1,
+      forceN: weight * (index ? 0.2 : 0.8), persistenceS: 1, loadBearing: true,
+    }));
+    let output;
+    for (let frame = 1; frame <= 6; frame++) {
+      output = controller.update({ dt, poses, rootPosition: poses.get("pelvis").position,
+        activeGrab: null, contacts });
+      assert.equal(output.step?.foot, movingFoot);
+      assert.deepEqual(output.step?.to, { ...to, y: footCenterHeight });
+      if (frame < 6) assert.ok(output.step.elapsed < 0);
+    }
+    assert.equal(output.step.elapsed, 0);
+    assert.equal(output.step.phase, "swing");
+    assert.equal(output.diagnostics.candidateValidity.reason, "capture-support");
+  });
+}
 
 test("an expired transfer replacement starts its own age and readiness history", () => {
   for (const expiredFoot of ["leftFoot", "rightFoot"]) {
@@ -72,6 +111,35 @@ test("an expired transfer replacement starts its own age and readiness history",
     assert.equal(controller.stepTransferAge, dt);
     assert.equal(controller.transferReadyAge, 0, "the replacement is still loaded on its moving foot");
   }
+});
+
+test("a transfer follows the measured support when its intended retained sole disappears", () => {
+  const poses = restPoseMap(), controller = new BalanceController();
+  controller.reset(poses);
+  const plan = foot => {
+    const from = poses.get(foot).position;
+    return { feasible: true, to: { ...from }, requested: { ...from }, duration: 0.48,
+      captureMarginM: 0.02, landingCaptureMarginM: 0.02, travelM: 0, targetErrorM: 0,
+      forecast: { capturePoint: { ...from }, horizonS: 0.5, pressureFeasible: true } };
+  };
+  controller.beginStep("leftFoot", poses.get("leftFoot").position, poses.get("pelvis").position,
+    { x: 0, y: 0, z: 1 }, { x: 1, y: 0, z: 0 }, 0, zero, 0, undefined,
+    plan("leftFoot"), "capture");
+  controller.planStep = foot => foot === "leftFoot"
+    ? { feasible: false, reason: "capture:no-retained-support" } : plan(foot);
+  const left = poses.get("leftFoot").position;
+  const input = { dt, poses, rootPosition: poses.get("pelvis").position,
+    activeGrab: null, contacts: [{ segment: "leftFoot", point: { ...left }, normalY: 1,
+      forceN: 72.2 * 9.81, persistenceS: 1, loadBearing: true }] };
+  for (let frame = 1; frame < 6; frame++) {
+    const waiting = controller.update(input);
+    assert.equal(waiting.step?.foot, "leftFoot", `frame ${frame}: transient contact loss cannot switch ownership`);
+  }
+  const output = controller.update(input);
+  assert.equal(output.step?.foot, "rightFoot", "the newly moving foot must preserve the loaded left sole");
+  assert.ok(output.step.elapsed < 0);
+  assert.equal(output.diagnostics.transferAgeS, 0);
+  assert.equal(output.diagnostics.transferReadyAgeS, 0);
 });
 
 function poseInput(heading = 0) {
@@ -137,6 +205,23 @@ test("balance mass estimate includes segment masses and rejects a manipulated ne
   });
   assert.deepEqual(output.diagnostics.supportingFeet, ["leftFoot"]);
   assert.ok(output.appliedGrabForceN <= BALANCE_LIMITS.maxPullForceN);
+});
+
+test("a measured airborne foot starts its landing arc without a second unload gate", () => {
+  const poses = composeUprightPose(poseInput()).poses, controller = new BalanceController();
+  controller.reset(poses);
+  controller.cooldown = 0;
+  const right = poses.get("rightFoot");
+  right.position = { ...right.position, x: right.position.x - 0.05, y: right.position.y + 0.09 };
+  const left = poses.get("leftFoot").position;
+  const output = controller.update({ dt, poses, rootPosition: poses.get("pelvis").position,
+    activeGrab: null, contacts: [{ segment: "leftFoot", point: { ...left }, normalY: 1,
+      forceN: 72.2 * 9.81, persistenceS: 1, loadBearing: true }] });
+  assert.equal(output.diagnostics.triggerReason, "airborne-foot");
+  assert.equal(output.step?.foot, "rightFoot");
+  assert.equal(output.step?.elapsed, 0);
+  assert.equal(output.step?.phase, "swing");
+  assert.equal(output.step?.unloaded, true);
 });
 
 test("the swing target clears the floor until landing and preload cannot substitute for measured touchdown", () => {
@@ -286,7 +371,6 @@ test("outward momentum can request correction after release regardless of comple
     const controller = new BalanceController();
     controller.reset(poses);
     controller.stepCount = completed;
-    controller.disturbanceSeen = true;
     controller.cooldown = 0;
     // Isolate the trigger from landing search; its measured speed is below
     // the later .2m/s trigger, and there is no active grab or reach command.
@@ -302,12 +386,14 @@ test("outward momentum can request correction after release regardless of comple
       activeGrab: null, contacts });
     assert.ok(output.step, `completed ${completed}: outward capture must request a correction`);
     assert.ok(output.step.elapsed < 0, "requesting correction must still wait for measured transfer");
+    assert.equal(output.diagnostics.triggerReason, "capture");
   }
 });
 
 test("slow pulls stay connected and stepping remains available after release and reversal", async () => {
   for (const heading of [0, 1.1, -1.7]) {
-    const character = await createEmbodiedCharacter("canvas2d", { heading });
+    const character = await createEmbodiedCharacter("canvas2d", { heading, ...candidateOptions() });
+    if(process.env.STANDING_PREDICTION_VALIDATED === '1')character.balance.forecastValidated = true;
     const yaw = quatFromAxisAngle({ x: 0, y: 1, z: 0 }, heading);
     try {
       const start = character.getSnapshot("canvas2d").segments.find(p => p.id === "rightHand").position;
@@ -356,7 +442,8 @@ test("slow pulls stay connected and stepping remains available after release and
 });
 
 test("a planted reversal preserves ownership without a transient unsupported fall", async () => {
-  const character = await createEmbodiedCharacter("canvas2d");
+  const character = await createEmbodiedCharacter("canvas2d", candidateOptions());
+  if(process.env.STANDING_PREDICTION_VALIDATED === '1')character.balance.forecastValidated = true;
   const localAnchor = { x: 0.025, y: 0.015, z: 0.01 };
   try {
     const hand = character.getSnapshot("canvas2d").segments.find(p => p.id === "rightHand");

@@ -164,6 +164,8 @@ function fixture(t, options = {}) {
         camera.setViewport(width, height);
       },
       setSnapshot(previous, current, alpha) { this.snapshots.push({ previous, current, alpha }); },
+      setQuality(quality, autoPixelRatio) { this.quality = quality; this.autoPixelRatio = autoPixelRatio; },
+      getMetrics() { return { presentationCpuMs: 1, effectivePixelRatio: 1.25, shadowResolution: 0, drawCalls: 0, geometries: 0, textures: 0 }; },
       render() { this.renders += 1; },
       getProjection() { return camera; },
       dispose() { this.disposals += 1; },
@@ -229,12 +231,52 @@ function pointer(host, type, pointerId = 7, overrides = {}) {
   host.dispatchEvent(event);
 }
 
+test("paused views redraw once for invalidations and preserve quality across replacement", t => {
+  const f = fixture(t);
+  const runtime = start(f);
+  runtime.pause(); f.tick(0);
+  const steps = f.character.updates.length;
+  let rendered = runtime.view.renders;
+  assert.equal(f.frames.size, 0);
+  f.tick(5000);
+  assert.equal(runtime.view.renders, rendered);
+  runtime.cameraControls.orbit(20, 0);
+  runtime.cameraControls.pan(10, 0);
+  runtime.cameraControls.zoom(0.9);
+  assert.equal(f.frames.size, 1, "camera invalidations coalesce");
+  f.tick(5016);
+  assert.equal(runtime.view.renders, ++rendered);
+  assert.equal(f.frames.size, 0);
+  for (const quality of ["low", "high", "auto"]) {
+    runtime.setQuality(quality);
+    assert.equal(f.frames.size, 1);
+    f.tick(5032);
+    assert.equal(runtime.view.quality, quality);
+    assert.equal(f.frames.size, 0);
+  }
+  runtime.setQuality("low"); f.tick(5048);
+  runtime.switchRenderer("webgl");
+  assert.equal(runtime.quality, "low");
+  assert.equal(runtime.view.quality, "low");
+  assert.equal(f.views[0].disposals, 1);
+  assert.equal(f.frames.size, 0);
+  f.host.rect.width = 700; f.observers[0].callback();
+  assert.equal(f.frames.size, 1);
+  f.tick(5064);
+  runtime.reset(); f.tick(5080);
+  assert.equal(f.frames.size, 0);
+  assert.equal(f.character.updates.length, steps, "invalidations never integrate physics");
+  runtime.togglePause(); f.tick(10000); f.tick(10020);
+  assert.equal(f.frames.size, 1);
+  assert.equal(f.character.updates.length, steps + 1, "resume excludes paused wall time");
+});
+
 test("runtime mounts, resizes, notifies subscribers, and releases every owned resource", (t) => {
   const f = fixture(t);
   const runtime = start(f);
   const view = f.views[0];
   assert.equal(view.host, f.host);
-  assert.deepEqual(view.sizes, [{ width: 800, height: 600, dpr: 2 }]);
+  assert.deepEqual(view.sizes, [{ width: 800, height: 600, dpr: 3 }]);
   assert.equal(view.renders, 1);
   assert.equal(f.observers[0].host, f.host);
   assert.equal(f.frames.size, 1);
@@ -243,7 +285,7 @@ test("runtime mounts, resizes, notifies subscribers, and releases every owned re
 
   f.host.rect = { ...f.host.rect, width: 1024, height: 768 };
   f.observers[0].callback();
-  assert.deepEqual(view.sizes.at(-1), { width: 1024, height: 768, dpr: 2 });
+  assert.deepEqual(view.sizes.at(-1), { width: 1024, height: 768, dpr: 3 });
   const notifications = [];
   const unsubscribe = runtime.subscribe((current, nowMs) => notifications.push({ current, nowMs }));
   f.tick(200);

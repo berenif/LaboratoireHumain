@@ -1,6 +1,6 @@
 "use client";
 
-import type { CSSProperties } from "react";
+import { useState, type CSSProperties } from "react";
 import { DIFFICULTY_LABELS, PLAYGROUND_STATIONS, playgroundStation,
   type PlaygroundConfig, type PlaygroundDifficulty, type PlaygroundStation, type PlaygroundTrial } from "../core/playground";
 
@@ -30,6 +30,7 @@ interface PlaygroundPanelProps {
 
 export function PlaygroundPanel({ config, trial, supportCount, ready, onChange, onOverview, onFocus }: PlaygroundPanelProps) {
   const active = playgroundStation(config.station);
+  const [trayOpen, setTrayOpen] = useState(false);
   return <>
     <div className="playground-brand">
       <span className="playground-eyebrow"><span className="lab-light" /> LABORATOIRE HUMAIN <span className="lab-version">/ 02</span></span>
@@ -49,11 +50,13 @@ export function PlaygroundPanel({ config, trial, supportCount, ready, onChange, 
           </select>
         </label>
       </div>
-      <div className="playground-stations" role="group" aria-label="Choose a balance station">
+      <button type="button" className="station-tray-toggle" aria-expanded={trayOpen} aria-controls="station-tray"
+        onClick={() => setTrayOpen(open => !open)}>Stations <span>{trayOpen ? "−" : "+"}</span></button>
+      <div id="station-tray" className="playground-stations" data-expanded={trayOpen} role="group" aria-label="Choose a balance station">
         {PLAYGROUND_STATIONS.map((station, index) => <button type="button" key={station.id}
           className="station-button" style={{ "--station-color": station.color } as CSSProperties}
           aria-pressed={config.station === station.id} disabled={!ready}
-          onClick={() => onChange({ station: station.id })} data-testid={`station-${station.id}`}>
+          onClick={() => { onChange({ station: station.id }); setTrayOpen(false); }} data-testid={`station-${station.id}`}>
           <span className="station-topline"><StationGlyph station={station.id} /><span>{String(index + 1).padStart(2, "0")}</span></span>
           <strong>{station.name}</strong><small>{station.subtitle}</small>
         </button>)}

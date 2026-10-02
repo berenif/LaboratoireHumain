@@ -41,6 +41,23 @@ export interface JointMotorCommand {
   /** Calibrates muscle recruitment after the coupled response solve. */
   readonly effortScale?: number;
   readonly feedforwardWorld?: Vec3;
+  /** Diagnostic-only H77 values. NativeJointMotors ignores these when
+   * configuring Rapier and returns them beside the f32 ABI readback. */
+  readonly standingRequestByAxis?: Partial<Record<JointCoordinate, number>>;
+  readonly standingUnboundedByAxis?: Partial<Record<JointCoordinate, number>>;
+  readonly standingResidualByAxis?: Partial<Record<JointCoordinate, number>>;
+}
+
+export interface NativeMotorAxisReadback {
+  readonly coordinate: JointCoordinate;
+  readonly targetPosition: number;
+  readonly targetVelocity: number;
+  readonly stiffness: number;
+  readonly damping: number;
+  readonly maxForce: number;
+  readonly currentStateRequestNm: number;
+  readonly intendedRequestNm?: number;
+  readonly residualFeedforwardNm?: number;
 }
 
 export interface JointMotorResult {
@@ -50,6 +67,7 @@ export interface JointMotorResult {
   readonly coordinateError: Vec3;
   readonly torqueWorld: Vec3;
   readonly saturationRatio: number;
+  readonly nativeMotorAxes?: readonly NativeMotorAxisReadback[];
 }
 
 export interface JointMotorSolveOptions {

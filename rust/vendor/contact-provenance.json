@@ -1,0 +1,21 @@
+{
+  "schema": 1,
+  "upstream": "https://github.com/dimforge/rapier/commit/37eeac7dec6addd6a94a237b4874ca0b676d70da",
+  "package": "rapier3d 0.35.0",
+  "crateSha256": "c56bf7b5596ef716abcf578636db53b3780162043fada35717d46f79d4022fa4",
+  "upstreamPatchSha256": "37fd6d4f47ef5bceb12b1054d93766907215a1ede371b58dfb73636b5300d04f",
+  "patchSha256": "00bdc23db6b1c3205c78400996f1316ce6d5937c361922d437709cb0b467affa",
+  "before": {
+    "src/dynamics/solver/contact_constraint/contact_constraint_element.rs": "e59639da860d23c51dacea4ea8fbd187d442b3bece86b798e9af00ab55e41ea1",
+    "src/dynamics/solver/contact_constraint/contact_with_coulomb_friction.rs": "9e466609fb7725cb441c1a72cc34ba83a336500e3de23e10f3c5bbaa41f3a104",
+    "src/dynamics/solver/contact_constraint/contact_with_twist_friction.rs": "d2145897fa00711959378ea419b363ca6378bf4842d5f84dbf71165cd61b537a",
+    "src/dynamics/solver/contact_constraint/generic_contact_constraint.rs": "3dbf4f8d6b9574fc126e7d3bbdd3e23ddf8219e223f48c7e5f7ea5264ad4a9e1"
+  },
+  "after": {
+    "src/dynamics/solver/contact_constraint/contact_constraint_element.rs": "03cfb931090ee2d4334dcf9c378e99dd853807969df0e6b12fef013568086e75",
+    "src/dynamics/solver/contact_constraint/contact_with_coulomb_friction.rs": "734b142779145050481499244c0423484eb60c0c76b3dcf9cdc503b00926b4c0",
+    "src/dynamics/solver/contact_constraint/contact_with_twist_friction.rs": "71cc71a46cf03d8841c552a5c8fa4a8b5f041e3413479e544e6c7ddb2ff0ed10",
+    "src/dynamics/solver/contact_constraint/generic_contact_constraint.rs": "86a18448d1776c4cb8a881a82bd26dce11b306a20fd57d3f3c607971ff8aa21b"
+  },
+  "scope": "Reporting accumulators only. 0.35.0 already banks before warm-start scaling; omitted upstream ordering hunks checked against source. No solver actuation or constraints changed. Calibration required before admission."
+}

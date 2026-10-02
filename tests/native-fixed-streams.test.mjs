@@ -26,12 +26,12 @@ const addedSegments = [
   "rightForefoot",
 ];
 const diagnosticsKeys = [
-  "activeGrab", "activePointerId", "appliedGrabForceN", "balance", "bodyInputAvailable",
+  "activeGrab", "activePointerId", "appliedGrabForceN", "balance", "balanceFall", "bodyInputAvailable",
   "contactDiagnostics", "droppedTimeMs", "errors", "finite", "fixedSteps", "grabControl",
   "interactiveViewReady", "jointDiagnostics", "leanRadians", "maxFloorPenetrationM",
-  "maxJointLimitErrorRad", "maxJointSeparationM", "maxMotorSaturationRatio", "physicsOwnership",
+  "maxJointLimitErrorRad", "maxJointSeparationM", "maxMotorSaturationRatio", "maxSelfPenetrationM", "physicsOwnership",
   "queuedTarget", "recovery", "renderer", "rootDisplacementM", "selectedRegion",
-  "selectedSegment", "simulationReady", "standingChain", "state", "stepCount", "support",
+  "selectedSegment", "selfPenetrationPair", "simulationReady", "standingChain", "state", "stepCount", "support",
 ].sort();
 const streamSummary = new Map([
   ["native-webgl-two-cycles", { updates: 1235, commands: 16, lastSequence: 1235 }],

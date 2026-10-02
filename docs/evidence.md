@@ -1,13 +1,120 @@
 # Evidence availability and preservation
 
+## Rust and renderer local evidence
+
+Inspected 2026-10-02. These ignored directories are local-only and do not travel
+with a fresh clone:
+
+- `evidence/rust-migration-verification-02`: preserved v22 source, all tool logs,
+  43 passing Rust tests and two byte-identical native A–C/selected-pull runs.
+  Source is unchanged; complete migration/release acceptance is false.
+- `evidence/rust-migration-quiet-default-02`: six passing actual-worker default
+  standing trials without a profile override; source and assets unchanged.
+- `evidence/rust-migration-ui-root-02`, `rust-migration-ui-subpath-02`,
+  `rust-migration-faults-root-02` and `rust-migration-worker-02`: 74 scoped UI,
+  12 browser fault and 35 worker lifecycle checks. These do not establish
+  public physical modes, recovery or performance acceptance.
+- `evidence/rust-migration-coulomb-steps-01`: all nine strict opt-in step
+  fixtures fail on v22. `rust-migration-coulomb-step-profile.json` records the
+  tested profile; it is not the default.
+- `evidence/migration-npm-test.log`: retained application build passes; full
+  regressions record 359 passes, 12 failures and 7 skips. Final typecheck/lint
+  and all-crate Rust lint logs use the `migration-*` prefix.
+- `evidence/rust-migration-final-artifacts.json`: every file emitted by the
+  final `build:rust` command is byte-identical to the tested root artifact.
+- `evidence/rust-migration-performance-02`: current default browser idle timing
+  fails the frozen partial timing checks in WebGL2 and WebGPU; source unchanged,
+  no console errors. This is not performance/release admission.
+- `evidence/rust-rework-20261001/baseline`: preserved original dirty source,
+  manifest, fingerprints, and tracked/index patches.
+- `evidence/rust-rework-20261001/frozen-07`: captured Rust source, execution
+  manifest, tool logs, and two identical native result sets. The manifest records
+  unchanged source and repeatability, but `complete` and `releaseAccepted` are
+  false. Both native reports pass A–C, fail D, and leave E–I incomplete. The
+  [Rust record](rust-rework.md#source-and-evidence) gives source/profile/executable
+  hashes and the remaining requirements.
+- `evidence/sandbox-acceptance/report.json`: final combined renderer report,
+  with recorded poses, screenshots, 16 replay combinations, four UI checks and
+  four live trials. No errors are reported; its 18 scene/runtime/core hashes
+  match the reviewed tree. This fingerprint excludes UI/style and other app
+  files, and the headless run does not qualify GPU or reference-hardware limits.
+- `evidence/sandbox-replay-final/report.json`: earlier replay-only report with
+  `sourceUnchanged: false`; retain it as partial evidence. The UI-only report at
+  `evidence/sandbox-ui-final/report.json` records four checks with unchanged
+  fingerprinted source. Use the combined report for the documented results.
+
+See [renderer reproduction and measured limits](rendering.md). Preserve source
+copies, baseline scenery, poses, logs and reports together; a successful replay
+cannot substitute for the unresolved physical and release gates.
+
+## H78–H80 local evidence
+
+Verified 2026-09-30. The [bounded experiment report](standing-h78-h80-contract.md)
+describes three failed opt-in candidates and their preserved source locks.
+These are local artifacts, not fresh-clone downloads:
+
+- `evidence/standing-h78-v1/baseline-01`: pre-change fingerprints, dependency
+  versions/hashes, dirty-tree patches and preserved modified/untracked files.
+- `evidence/standing-h78-v1/h77-reference-verification` and
+  `h77-complete-state-verification-02`: reproduced H77 failures; the latter adds
+  complete controller state. `retained-h77-transfer-evidence.json` hashes the
+  existing slow-pull/reversal evidence. Earlier incomplete verification is kept.
+- `evidence/standing-h78-v1/acceptance-03`,
+  `evidence/standing-h79-v1/acceptance-01`, and
+  `evidence/standing-h80-v1/acceptance-01`: completed failed operations with
+  source/dependency/manifest fingerprints, source archives, child exits/logs,
+  native snapshots, serialized controller state, traces and first-failure replay.
+  Each has `contact-failure-analysis.json`; H80 also has
+  `earliest-force-divergence.json`. H78 `acceptance-01`/`acceptance-02` remain
+  infrastructure-incomplete, without overwritten artifacts.
+- `evidence/standing-h80-v1/frozen-checks-01`: final toolchain and applicable
+  regression logs/hashes; `baseline-physical-chain-01` reproduces the sole
+  regression failure using the verified initial source.
+- `evidence/standing-h80-v1/completion-report.json`: bounded-attempt accounting,
+  final source/physical-constant verification and explicit remaining gates.
+- `evidence/standing-h80-v1/frozen-workspace` and `frozen-workspace-record.json`:
+  all 354 source/config files reconstructed and verified against H80's lock after
+  unrelated shared-workspace renderer/runtime edits began. Those live edits are
+  preserved. This copy also references the original dependency/checkpoint trees
+  through junctions; it introduces no fourth candidate or new acceptance result.
+
+During H78 capture the workspace volume exhausted its free space. All 515
+then-existing files created by this task were copied and individually SHA256
+verified before relocation. The workspace evidence roots are junctions to
+`C:/Users/flori/.codex/visualizations/2026/09/30/01a0f41d-4e3d-7c02-924f-c28ead55b9e4/standing-h78-evidence`,
+`standing-h79-evidence`, and `standing-h80-evidence`. A parent `node_modules`
+junction resolves archived-source dependencies to the unchanged repository
+installation. Preserve those targets when backing up or moving the workspace.
+Earlier historical experiment directories were not relocated or deleted.
+
 Publication policy (2026-09-27): diagnostic files under `docs/checkpoints/` and
-`docs/checkpoint-*.json` remain local and are excluded from Git at the user's
-request. Checkpoint links below and in investigation reports refer to that local
-archive; they are not downloadable from a fresh clone. Archive-dependent tests
-report an explicit skip when the local archive is absent, while independent
-tests continue to run.
+`docs/checkpoint-*.json` are excluded from Git at the user's request. During
+repository cleanup on 2026-09-30, the user requested deletion of the historical
+`docs/checkpoints/` archive (5.50 GB). The `evidence/` directory, its external
+junction targets, and the checkpoint inventory files were retained. Checkpoint
+links below and in investigation reports remain historical references; their
+targets are now unavailable locally and are not downloadable from a fresh
+clone. Archive-dependent tests report an explicit skip when the local archive
+is absent, while independent tests continue to run.
 
 Checked during the 2026-09-26 documentation repair. The original review found 31 broken evidence-link occurrences. Their paths remain recorded in the [documentation checkpoint inventory](checkpoint-2026-09-26.json), including when a surviving copy was recovered. Missing files are explicitly labeled in the historical reports. A path or a reported test count alone does not establish acceptance.
+
+## H76/H77 local evidence
+
+The H76 and H77 manifests and contracts are versioned under `docs/`; bulk native
+traces remain local under `evidence/standing-h76-v1/` and
+`evidence/standing-h77-v1/`. H76 retains its standalone executable, source,
+lockfile, build report/log, and six read results. H77 retains the H74/H77
+comparison, saved-state and live output-neutral substep reports, snapshots, and
+the final-source formal `acceptance-03` bundle with artifact inventory. Its
+post-gate `balance-contact-branch-01` report hashes the retained slow-pull and
+reversal traces and records four rejected, reverted allocator/landing variants.
+Completed Cargo
+`target` caches were removed after verifying the standalone executable hashes;
+they are reproducible build caches, not evidence inputs. The result scope and
+exact limitations are recorded in [H76](standing-h76-contract.md) and
+[H77](standing-h77-contract.md). These ignored local directories require
+separate preservation before another checkout can reproduce their claims.
 
 ## Recovered portable artifacts
 
