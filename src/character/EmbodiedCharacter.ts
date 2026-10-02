@@ -1,4 +1,8 @@
 import { configureHumanoidWorld } from "./physics-settings";
+import { ContactStandingController } from "./ContactStandingController";
+import { ContactStandingControllerH79 } from "./ContactStandingControllerH79";
+import { ContactStandingControllerH80 } from "./ContactStandingControllerH80";
+import { contactJointTorque } from "./contact-joint-torque";
 import RAPIER, {
   type Collider,
   type EventQueue,
@@ -54,6 +58,7 @@ import {
 import { copyStandingContacts, standingChainDiagnostics } from "./standing-chain-diagnostics";
 import { NativeJointMotors } from "./native-joint-motors";
 import { COORDINATED_STANDING, CoordinatedStandingController } from "./CoordinatedStandingController";
+import { ImplicitStandingController } from "./ImplicitStandingController";
 import { LegTargetDynamics } from "./leg-target-dynamics";
 import {
   clampJointCoordinates,
@@ -194,7 +199,7 @@ function roleEffort(definition: SegmentDefinition): number {
 class EmbodiedCharacter implements CharacterController {
   private readonly world: World;
   private readonly nativeMotors: NativeJointMotors;
-  private coordinatedStanding: CoordinatedStandingController | null = null;
+  private coordinatedStanding: CoordinatedStandingController | ImplicitStandingController | null = null;
   private readonly standingCandidateOptions: CharacterInitialOptions["standingCandidate"];
   /** Kept under the historical name so existing QA probes can inspect handles. */
   private readonly ragdollBodies = new Map<SegmentId, RigidBody>();
@@ -261,7 +266,7 @@ class EmbodiedCharacter implements CharacterController {
   private readonly runtimeErrors: string[] = [];
 
   constructor(renderer: RendererMode, options: CharacterInitialOptions = {}) {
-    if (options.standingCandidate && (options.room || options.playground)) throw new Error("H74 requires the declared flat-floor solver configuration");
+    if (options.standingCandidate && (options.room || options.playground)) throw new Error("Standing candidates require the declared flat-floor solver configuration");
     this.standingCandidateOptions = options.standingCandidate;
     this.renderer = renderer;
     this.room = Boolean(options.room);
@@ -322,8 +327,18 @@ class EmbodiedCharacter implements CharacterController {
   }
 
   private initializeStandingCandidate(): void {
-    this.coordinatedStanding = this.standingCandidateOptions
-      ? new CoordinatedStandingController(this.poses, this.heading, this.standingCandidateOptions.forwardOffsetM ?? 0) : null;
+    const options = this.standingCandidateOptions;
+    this.balance.useCoordinatedSupport = ["h78-v1", "h79-v1", "h80-v1"].includes(options?.controllerId ?? "legacy");
+    this.coordinatedStanding = !options || options.controllerId === "legacy" ? null
+      : options.controllerId === "h74-v1"
+        ? new CoordinatedStandingController(this.poses, this.heading, options.forwardOffsetM ?? 0)
+        : options.controllerId === "h78-v1"
+          ? new ContactStandingController(this.poses, this.heading, options.forwardOffsetM ?? 0)
+        : options.controllerId === "h79-v1"
+          ? new ContactStandingControllerH79(this.poses, this.heading, options.forwardOffsetM ?? 0)
+        : options.controllerId === "h80-v1"
+          ? new ContactStandingControllerH80(this.poses, this.heading, options.forwardOffsetM ?? 0)
+        : new ImplicitStandingController(this.poses, this.heading, options.forwardOffsetM ?? 0);
   }
 
   private createRecoveryController(): DynamicRecovery {
@@ -805,7 +820,8 @@ class EmbodiedCharacter implements CharacterController {
     const supportedFraction = bodyWeightN > 0 ? supportedLoadN / bodyWeightN : 0;
     // Measured-frame legs keep the soles fixed; this bounded task supplies
     // horizontal restoration even after release or an abandoned transfer.
-    const referencePelvis = this.coordinatedStanding?.active ? this.coordinatedStanding.reference.get("pelvis") : null;
+    const referencePelvis = this.coordinatedStanding?.active && !this.activeGrab && !this.step
+      ? this.coordinatedStanding.reference.get("pelvis") : null;
     const loadAcceleration = referencePelvis ? clampLength(add(
       scale(sub(referencePelvis.position, pelvis.position), COORDINATED_STANDING.pelvisPositionKpPerS2),
       scale(pelvis.linearVelocity, -COORDINATED_STANDING.pelvisPositionKdPerS)), BALANCE_LIMITS.maxBalanceAccelerationMps2)
@@ -822,12 +838,31 @@ class EmbodiedCharacter implements CharacterController {
       - 2 * heightOmega * pelvis.linearVelocity.y;
     const verticalIntent = clamp(totalMassKg * (9.81 + verticalAcceleration),
       0, bodyWeightN * 1.35);
+    const frozenH74 = this.standingCandidateOptions?.controllerId === "h74-v1";
+    const coordinatedH77 = this.coordinatedStanding instanceof ImplicitStandingController
+      && this.coordinatedStanding.active && !this.activeGrab && !this.step;
     this.contactLoadPlan = planContactLoads(loadContacts, balance.diagnostics.centerOfMass,
       balance.diagnostics.centerOfMassVelocity,
       { x: totalMassKg * loadAcceleration.x * supportedFraction, y: verticalIntent,
         z: totalMassKg * loadAcceleration.z * supportedFraction },
       { frictionCoefficient: 1.2,
         projectMeasuredPressure: true,
+        // During touchdown qualification, the solver has already established
+        // the only admissible real load split. Re-projecting that first landing
+        // frame entirely onto the old sole unloads and rebounds the new contact
+        // before it can earn the required 0.10 s persistence. Retain half of
+        // those measured shares for this bounded loading phase; eligibility,
+        // total force, friction, joint torque and motor ceilings remain unchanged.
+        minimumMeasuredShareFraction:
+          this.step && this.step.elapsed >= this.step.duration ? 0.5 : 0,
+        // The loaded hip/torso motors already provide a bounded support
+        // moment under their unchanged axis caps. Preserve the requested
+        // braking direction instead of replacing it with the opposite force
+        // when the instantaneous COM lies outside the measured pressure hull.
+        // H74 retains its frozen pressure-feasible allocator. H77 follows that
+        // constraint; the legacy rescue path may use its bounded joint moment
+        // while a step is active.
+        allowSupportMoment: Boolean(this.step) && !frozenH74 && !coordinatedH77,
         maxHorizontalForceN: totalMassKg * BALANCE_LIMITS.maxBalanceAccelerationMps2 * supportedFraction,
         maxJointTorqueNm: minimumSupportTorqueLimit(loadContacts) });
 
@@ -835,13 +870,49 @@ class EmbodiedCharacter implements CharacterController {
     this.standingTargets = target.poses;
     this.standingCommands = this.motorCommands(target.poses);
     if (this.coordinatedStanding) {
+      const contactAuthority = this.coordinatedStanding instanceof ContactStandingController
+        && !this.coordinatedStanding.transitioning;
+      const isFrozenH74 = this.standingCandidateOptions?.controllerId === "h74-v1";
       const commands = this.coordinatedStanding.update({ poses: this.poses, nominal: this.standingCommands,
         gravity: new Map(SEGMENTS.filter(d => d.jointProfile).map(d => [d.id, this.gravityCompensation(d)])),
         contacts: measuredContacts, tick: this.fixedSteps, dt,
-        quiet: !this.activeGrab && !this.step && this.stepCount === 0 && ["upright", "reacting"].includes(this.state) });
+        quiet: !this.activeGrab && !this.step && (!isFrozenH74 || this.stepCount === 0)
+          && ["upright", "reacting"].includes(this.state),
+        grabActive: Boolean(this.activeGrab), stepActive: Boolean(this.step),
+        touchdownQualified: balance.diagnostics.touchdownQualified,
+        supportMarginM: balance.diagnostics.supportMarginM,
+        triggerReason: balance.diagnostics.triggerReason,
+        ...(this.coordinatedStanding instanceof ContactStandingController ? { allocation: {
+          contacts: measuredContacts, centerOfMass: balance.diagnostics.centerOfMass,
+          requestedForce: { x: totalMassKg * loadAcceleration.x * supportedFraction,
+            y: verticalIntent, z: totalMassKg * loadAcceleration.z * supportedFraction },
+          requestedMoment: ZERO, weightN: bodyWeightN,
+          momentLengthM: Math.max(0.4, balance.diagnostics.centerOfMass.y - this.supportHeight()),
+          maxHorizontalForceN: Math.min(totalMassKg * BALANCE_LIMITS.maxBalanceAccelerationMps2 * supportedFraction,
+            minimumSupportTorqueLimit(loadContacts) / Math.max(0.3, balance.diagnostics.centerOfMass.y - this.supportHeight())),
+          supportState: this.balance.supportState,
+        } } : {}) });
       if (commands) {
         this.standingCommands = commands;
-        this.standingTargets = this.coordinatedStanding.reference;
+        if (this.coordinatedStanding.active) this.standingTargets = this.coordinatedStanding.reference;
+      }
+      if (!commands && contactAuthority && this.coordinatedStanding instanceof ContactStandingController && this.coordinatedStanding.transitioning) {
+        // Complete the original bounded fallback in this same update.
+        this.standingCommands = this.standingCommands.map(command => {
+          const definition = SEGMENT_BY_ID.get(command.id)!, child = this.ragdollBodies.get(command.id)!;
+          const anchor = worldPoint(child.translation(), child.rotation(), definition.jointProfile!.childFrame.anchor);
+          const contactTorque = this.contactLoadPlan.loads.reduce((sum, load) => add(sum,
+            contactJointTorque(command.id, anchor, load.segment, load.point, load.plannedForce)), ZERO);
+          return { ...command, feedforwardWorld: add(command.feedforwardWorld ?? ZERO, contactTorque) };
+        });
+      }
+      if (commands && this.coordinatedStanding instanceof ContactStandingController) {
+        this.balance.supportState = structuredClone(this.coordinatedStanding.supportState);
+        const allocation = this.coordinatedStanding.diagnostics().allocation;
+        if (allocation?.status === "allocated") this.contactLoadPlan = {
+          ...this.contactLoadPlan, loads: allocation.loads, allocatedForce: allocation.allocatedForce,
+          pressureForceResidualNm: length(allocation.momentResidual),
+        };
       }
       // null means a latched, same-update handoff to existing bounded balance
       // commands and the original fall/recovery guards, never a standing pass.
@@ -851,6 +922,9 @@ class EmbodiedCharacter implements CharacterController {
     this.lastMotorResults = this.nativeMotors.apply(
       this.ragdollBodies, this.jointsByChild, this.standingCommands,
     );
+    if (this.coordinatedStanding instanceof ImplicitStandingController) {
+      this.coordinatedStanding.observeNativeResults(this.lastMotorResults);
+    }
     this.world.step(this.eventQueue, this.physicsHooks);
     this.readPhysicsPoses();
     this.observeContacts(dt);
@@ -931,12 +1005,12 @@ class EmbodiedCharacter implements CharacterController {
       });
     }
     this.state = result.state;
-    // Recovery can couple a fast protective-arm reversal to the full trunk in
-    // one 60 Hz step. Extra internal passes keep the native joint anchors
-    // coherent for that high-gain step; restore standing's configured budget
+    // A protective-arm reversal and floor impact can couple the elbow to the
+    // full trunk in one 60 Hz step. Sixty-four internal passes keep that
+    // contact/joint solve within the 10 mm anchor bound; restore standing's budget
     // immediately afterward so ordinary balance cost and motion are unchanged.
     const standingPgsIterations = this.world.numInternalPgsIterations;
-    this.world.numInternalPgsIterations = Math.max(standingPgsIterations, 32);
+    this.world.numInternalPgsIterations = Math.max(standingPgsIterations, 64);
     try {
       this.world.step(this.eventQueue, this.physicsHooks);
     } finally {
@@ -1124,8 +1198,11 @@ class EmbodiedCharacter implements CharacterController {
    * static equilibrium and shifts by h/g*a while balance is actively correcting.
    */
   private gravityCompensation(jointDefinition: SegmentDefinition): Vec3 {
+    const coordinatedContact = this.coordinatedStanding instanceof ContactStandingController
+      && !this.coordinatedStanding.transitioning;
     const child = this.ragdollBodies.get(jointDefinition.id);
-    if (!child || !jointDefinition.jointProfile || !this.contactLoadPlan.loads.length) return ZERO;
+    if (!child || !jointDefinition.jointProfile
+      || (!this.contactLoadPlan.loads.length && !coordinatedContact)) return ZERO;
     const jointWorld = worldPoint(
       child.translation(),
       child.rotation(),
@@ -1147,18 +1224,9 @@ class EmbodiedCharacter implements CharacterController {
         { x: 0, y: body.mass() * 9.81, z: 0 },
       ));
     }
-    for (const support of this.contactLoadPlan.loads) {
-      let ancestor: SegmentId | null = support.segment;
-      let belowJoint = false;
-      while (ancestor) {
-        if (ancestor === jointDefinition.id) { belowJoint = true; break; }
-        ancestor = SEGMENT_BY_ID.get(ancestor)?.parent ?? null;
-      }
-      if (!belowJoint) continue;
-      torque = add(torque, cross(
-        sub(support.point, jointWorld),
-        scale(support.plannedForce, -1),
-      ));
+    if (!coordinatedContact) for (const support of this.contactLoadPlan.loads) {
+      torque = add(torque, contactJointTorque(jointDefinition.id, jointWorld,
+        support.segment, support.point, support.plannedForce));
     }
     return torque;
   }
@@ -1477,8 +1545,9 @@ class EmbodiedCharacter implements CharacterController {
   }
 }
 
+export type StandingControllerId = "legacy" | "h74-v1" | "h77-v1" | "h78-v1" | "h79-v1" | "h80-v1";
 export interface CharacterInitialOptions { heading?: number; position?: Vec3; playground?: PlaygroundConfig; room?: boolean;
-  standingCandidate?: { forwardOffsetM?: number } }
+  standingCandidate?: { controllerId: StandingControllerId; forwardOffsetM?: number } }
 
 export async function createEmbodiedCharacter(
   initialRenderer: RendererMode = "canvas2d",

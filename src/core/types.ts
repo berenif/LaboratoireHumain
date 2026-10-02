@@ -41,6 +41,17 @@ export type SegmentId = (typeof SEGMENT_IDS)[number];
 
 export type MotionState = "upright" | "reacting" | "stepping" | "falling" | "fallen" | "recovering";
 export type RendererMode = "webgl" | "canvas2d";
+export type RenderQuality = "auto" | "low" | "high";
+
+/** CPU submission time is not GPU execution time. Counts include shadow passes. */
+export interface RenderMetrics {
+  readonly presentationCpuMs: number;
+  readonly effectivePixelRatio: number;
+  readonly shadowResolution: number;
+  readonly drawCalls: number;
+  readonly geometries: number;
+  readonly textures: number;
+}
 export type Vec3 = Readonly<{ x: number; y: number; z: number }>;
 export type Quat = Readonly<{ x: number; y: number; z: number; w: number }>;
 
@@ -246,6 +257,8 @@ export interface BalanceStateDiagnostics {
   transferAgeS?: number;
   transferReadyAgeS?: number;
   transferCaptureMarginM?: number | null;
+  triggerReason?: "capture" | "airborne-foot" | "external" | null;
+  touchdownQualified?: boolean;
 }
 export interface JointStateDiagnostics {
   segment: SegmentId;
@@ -329,7 +342,8 @@ export interface StandingChainDiagnostics {
   }>;
 }
 export interface DiagnosticsSnapshot {
-  coordinatedStanding?: import("../character/CoordinatedStandingController").StandingTelemetry;
+  coordinatedStanding?: import("../character/CoordinatedStandingController").StandingTelemetry
+    | import("../character/ImplicitStandingController").ImplicitStandingTelemetry;
   balanceFall?: { timeS: number; reasons: string[]; pelvisHeightM: number;
     torsoLeanRadians: number; unsupportedTimeS: number; supportLossLimitS: number } | null;
   standingChain: StandingChainDiagnostics | null;
@@ -438,6 +452,8 @@ export interface CameraProjection {
 
 export interface PoseView {
   readonly mode: RendererMode;
+  setQuality(quality: RenderQuality, autoPixelRatio?: number): void;
+  getMetrics(): RenderMetrics;
   mount(container: HTMLElement): void;
   setSnapshot(previous: PoseSnapshot, current: PoseSnapshot, alpha: number): void;
   render(): void;

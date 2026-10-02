@@ -13,6 +13,7 @@ export interface LoopStats {
 
 export class FixedStepLoop {
   private frame = 0;
+  private running = false;
   private previousTimeMs: number | null = null;
   private accumulator = 0;
   private paused = false;
@@ -34,12 +35,19 @@ export class FixedStepLoop {
   ) {}
 
   start(): void {
-    if (this.frame) return;
+    if (this.running) return;
+    this.running = true;
     this.previousTimeMs = null;
-    this.frame = requestAnimationFrame(this.tick);
+    this.requestRender();
+  }
+
+  /** Coalesce invalidations; paused scenes schedule only a single redraw. */
+  requestRender(): void {
+    if (this.running && !this.frame) this.frame = requestAnimationFrame(this.tick);
   }
 
   stop(): void {
+    this.running = false;
     if (this.frame) cancelAnimationFrame(this.frame);
     this.frame = 0;
     this.previousTimeMs = null;
@@ -50,12 +58,14 @@ export class FixedStepLoop {
     this.paused = true;
     this.previousTimeMs = null;
     this.accumulator = 0;
+    this.requestRender();
   }
 
   resume(): void {
     this.paused = false;
     this.previousTimeMs = null;
     this.accumulator = 0;
+    this.requestRender();
   }
 
   resetTiming(): void {
@@ -71,12 +81,14 @@ export class FixedStepLoop {
   }
 
   private tick = (nowMs: number): void => {
-    this.frame = requestAnimationFrame(this.tick);
+    this.frame = 0;
+    if (!this.running) return;
     if (this.paused) {
       this.previousTimeMs = null;
       this.render(0, nowMs);
       return;
     }
+    this.requestRender();
 
     if (this.previousTimeMs === null) this.previousTimeMs = nowMs;
     const wallElapsed = Math.max(0, (nowMs - this.previousTimeMs) / 1000);

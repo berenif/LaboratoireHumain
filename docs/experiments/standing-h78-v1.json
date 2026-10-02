@@ -1,0 +1,37 @@
+{
+  "schema": 1,
+  "id": "standing-h78-v1",
+  "extends": "standing-h77-v1.json",
+  "frozenBeforeTrials": "2026-09-30",
+  "hypothesis": "H77 native posture with bounded measured-contact force allocation under the combined individual motor ceilings may reconcile requested wrench and achievable command. A copied shared support state replaces assumed future support in candidate forecasts.",
+  "controller": { "id": "h78-v1" },
+  "allocation": {
+    "solver": {
+      "iterations": 64, "projectionSweeps": 24,
+      "constraintTolerance": 0.00001, "convergenceTolerance": 0.000001,
+      "changeRegularization": 0.02, "effortRegularization": 0.02,
+      "frictionCoefficient": 1.2, "maximumVerticalWeight": 1.35, "deadlineMs": 8
+    },
+    "variables": "Three components per qualified measured sole resultant at its measured centroid; canonical segment ordering; no new-contact minimum share.",
+    "objective": "Squared force error / bodyweight^2 + squared moment error / (bodyweight * COM-height)^2 + 0.02 squared change from surviving admissible forces / bodyweight^2 + 0.02 squared combined motor utilization. H77 posture request keeps its existing division by 1.02.",
+    "normalization": "Force/bodyweight, moment/(bodyweight * max(0.4m, COM-height)), motor/individual existing axis ceiling.",
+    "projection": "At most 64 gradient iterations, each at most 24 cyclic convex projection sweeps. Report convergence and residual; reject constraint violations above 1e-5 normalized units. Final motor command clamps only tolerance-sized residual to the unchanged ceiling.",
+    "limits": "Existing total normal 1.35 BW, friction1.2, measured-support horizontal acceleration cap, and every combined posture/contact motor ceiling. No changed physical settings."
+  },
+  "prediction": {
+    "enabledForAdmissionBeforeValidation": false,
+    "horizonS": 0.5,
+    "heldOutCommandFactors": [-1.25, -0.75, 0.75, 1.25],
+    "maximumFootLoadChangeErrorWeightFraction": 0.1,
+    "maximumHorizontalComErrorM": 0.02,
+    "maximumReadinessTimeErrorS": 0.05,
+    "model": "Copy the serializable support state; shared deterministic target/readiness/contact update; hold latest admissible force and measured loads. Do not invent future retained-support growth. Conservative unvalidated model; no readiness prediction for infeasible requests.",
+    "measuredLaunch": "Retained >=52% BW, moving <=25% BW for 0.10s continuously. Retained contacts also keep existing 0.05s persistence. Prediction never authorizes launch."
+  },
+  "budget": { "maximumCandidates": 3, "nodeOldSpaceMiB": 384 },
+  "failurePolicy": {
+    "injections": ["timeout", "infeasible", "invalid-contact", "invalid-state", "invalid-model", "backup-invalid", "backup-region-exit", "work-limit"],
+    "successor": "Preserve first complete failure; H79/H80 permitted only for the earliest demonstrated defective stage. No tuning in acceptance or fourth candidate."
+  },
+  "rollout": { "default": false, "rollback": ["h77-v1", "h74-v1", "legacy"] }
+}

@@ -1,0 +1,18 @@
+{
+  "schema": 1,
+  "id": "standing-h79-v1",
+  "extends": "standing-h78-v1.json",
+  "frozenBeforeTrials": "2026-09-30",
+  "hypothesis": "The first complete H78 reference failures all occur at tick4 before any admissible force command, due to the combined8ms deadline. A certified direct minimizer can avoid repeated iterations for inactive constraints without changing H78's objective, constraints, gains, physical thresholds or runtime limits.",
+  "controller": { "id": "h79-v1" },
+  "allocation": {
+    "implementation": "Solve the unchanged strictly convex quadratic directly, certify all existing contact/motor constraints, otherwise call the original bounded H78 solve with the same absolute deadline. No deadline reset or iteration increase.",
+    "analyticCertification": { "linearSolver": "Cholesky", "maximumVariables": 12,
+      "pivotTolerance": "Number.EPSILON * variableCount * maximumDiagonal",
+      "backwardErrorTolerance": "64 * Number.EPSILON * variableCount * numericalScale",
+      "constraintTolerance": 0.00001 },
+    "predecessorEvidence": "evidence/standing-h78-v1/acceptance-03/contact-failure-analysis.json",
+    "changedStage": "controller-deadline: numerical allocation implementation only"
+  },
+  "rollout": { "default": false, "rollback": ["h78-v1", "h77-v1", "h74-v1", "legacy"] }
+}

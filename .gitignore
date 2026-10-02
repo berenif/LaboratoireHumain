@@ -43,6 +43,9 @@ next-env.d.ts
 /work/
 /evidence/
 
+# Cargo builds from the workspace and the independently tested vendored engine
+/rust/**/target/
+
 # Local diagnostic checkpoints (do not publish)
 /docs/checkpoints/
 /docs/checkpoint-*.json

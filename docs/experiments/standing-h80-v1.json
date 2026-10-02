@@ -1,0 +1,16 @@
+{
+  "schema": 1,
+  "id": "standing-h80-v1",
+  "extends": "standing-h79-v1.json",
+  "frozenBeforeTrials": "2026-09-30",
+  "hypothesis": "H79 still times out in contact allocation at ticks4/8/8, including the unchanged constrained fallback. Reduce repeated geometry-column construction and numerical-loop work without changing the quadratic, constraints, thresholds, iteration limits or absolute deadline.",
+  "controller": { "id": "h80-v1" },
+  "physical": { "startup": "Opt-in h80-v1 on the unchanged original25-body flat-floor assembly. Ordinary room/playground startup remains legacy." },
+  "allocation": {
+    "implementation": "Reuse one shared contactJointTorque world column per joint/contact/component across native axes. Keep H79's certified analytic path, and use the equivalent optimized constrained loops for fallback within the same deadline.",
+    "predecessorEvidence": "evidence/standing-h79-v1/acceptance-01/contact-failure-analysis.json",
+    "changedStage": "controller-deadline: repeated mapping and numerical allocation work only"
+  },
+  "failurePolicy": { "successor": "Final authorized candidate. Preserve first failure and stop; no fourth attempt or automatic tuning." },
+  "rollout": { "default": false, "rollback": ["h79-v1", "h78-v1", "h77-v1", "h74-v1", "legacy"] }
+}

@@ -1,0 +1,31 @@
+{
+  "schema": 1,
+  "id": "standing-h76-v1",
+  "frozenBeforeReads": "2026-09-27",
+  "kind": "Six-snapshot scalar native build/read diagnostic; zero physical steps",
+  "inputs": {
+    "source": "H75 reference 0/1/2 control 00-0 pre.bin and post.bin",
+    "snapshots": 6,
+    "physicalSteps": 0,
+    "rapier": "0.35.0 source matching the pinned Rapier 0.20.0 WASM package",
+    "compiler": "rustc 1.89.0 x86_64-pc-windows-gnu"
+  },
+  "inspection": [
+    "native motor configuration and stored impulse",
+    "angular limits and stored DOF impulses",
+    "lock, limit and motor rows",
+    "raw and finalized Jacobians",
+    "inverse effective row mass",
+    "RHS with and without bias",
+    "CFM coefficient and gain"
+  ],
+  "acceptance": {
+    "exactDeserialization": true,
+    "jointsPerSnapshot": 24,
+    "motorRowsPerSnapshot": 46,
+    "finiteRows": true,
+    "sourceFilesVerified": 146,
+    "maximumProcessRssMiB": 768
+  },
+  "limits": "This is static frozen-pose reconstruction, not instrumentation inside the original WASM solve. It cannot identify the cause of within-step forefoot motion and closes no standing gate."
+}

@@ -1,10 +1,346 @@
 # Current status
 
+**2026-10-02 migration integration:** this source checkpoint includes the Rust
+preview, audited engine, native/WASM tooling, renderer, UI, terrain and striker.
+Production remains on the existing application while
+physics and performance acceptance are open. Cargo output from the standalone
+vendor build is now ignored along with workspace builds and local evidence.
+
+The native acceptance CLI rejects unknown/misplaced diagnostics, duplicate or
+missing options and nonfinite headings before creating evidence. Four new
+argument tests bring the passing Rust suite to **71 tests**. An executable-level
+typo check confirms exit 2 without an evidence directory. Native/WASM Clippy,
+formatting, TypeScript, the application build, Pages export/asset verification
+and four JavaScript tooling tests pass; JavaScript lint has no errors and eight
+existing warnings. The full app
+suite reports **374 pass, four fail, seven skip**: slow pull falls at tick 304,
+planted reversal at tick 228, and two strong-pull/fall assertions fail. Evidence:
+`evidence/migration-final/` and `evidence/migration-final-native/`.
+
+The final native runner passes all 13 stages. Both foundation runs pass gates
+A–C and all eight selected pulls; both 21-case terrain runs and both three-case
+striker runs pass. Every repeated report is byte-identical, and source hashes
+remain unchanged (`implementedChecksPassed: true`, `repeatable: true`,
+`releaseAccepted: false`). Gate D and full release admission remain incomplete.
+
+Fresh v23 WASM standing passes **five of six cases**. The +60° playground case
+fails left-forefoot drift at tick 1902, substep 3: 0.010000321 m against the
+unchanged 0.010 m limit. All three protocol headings and the other two playground
+headings pass the full two-second warmup plus 30-second observation. Source and
+artifact hashes remain unchanged. This supersedes the older all-six passing
+v22 result for the current source. Evidence:
+`evidence/migration-final-browser/quiet/report.json`.
+
+The combined browser verifier completes all ten stages: **nine pass**, with
+quiet standing the sole failed stage. Root/subpath builds, 39 UI checks at each
+origin, both fault suites, worker lifecycle, all 42 terrain cases and all six
+striker cases pass. Desktop and mobile screenshots were inspected. See
+`evidence/migration-final-browser/execution.json` and its per-stage reports.
+
+Native foundation verification now repeats terrain and striker cases as well
+as gates A–C and selected pulls. Browser verification includes the existing
+42 terrain cases and physical striker checks against the freshly built root
+artifact, plus root/subpath UI, faults, worker lifecycle and quiet standing.
+Neither command claims recovery, terrain traversal or hardware-performance
+admission. The browser standing failure, strict stepping, automatic
+recovery/cycles, contact stress coverage,
+the four retained-app regressions and performance remain release blockers.
+
+**2026-10-02 articulation feasibility and further motion diagnostics:** a new
+native-only diagnostic preserves all 25 canonical bodies, colliders and joint
+definitions while testing reduced-coordinate articulation. Full conversion
+cannot integrate: Rapier's two-axis wrist branches are unimplemented, and its
+spherical coordinates do not match the anatomical motor/limit coordinates.
+A hinge-only hybrid keeps all anatomy and integrates. Read-only final
+generalized velocities expose stale rigid-body velocity reporting at the last
+solver substep: the floorless hybrid passes the unchanged momentum threshold
+over 240 substeps when measured from those generalized velocities. This is
+diagnostic evidence, not permission to ignore the ordinary body-state failure.
+With real floor contact, the hybrid exceeds the unchanged right-thigh angular
+limit tolerance. The new vector contact-momentum diagnostic also fails for
+the impulse baseline, so that comparison is not a qualified contact gate.
+No controller migration, vendor change or performance promotion follows.
+See the detailed results in [the Rust record](rust-rework.md).
+
+Further capture, contact-moment and stance-frame trials do not fix the four
+application failures. The stance-frame variant passes the two overload/input
+tests but makes the two gentle-pull falls earlier; it was rejected. Recovery
+trials using a virtual upright pelvis, canonical resting targets or measured
+gravity/support feedforward each still produce zero recoveries and stall in
+bracing. All these runtime experiments were restored byte-for-byte to the
+previous checkpoint. The app's 374 pass / four fail / seven skip result and
+disabled recovery default remain current. Commit, push and merge are pending.
+
+**2026-10-02 recovery and solver diagnostics:** Rust now has an opt-in,
+contact-gated recovery prototype and 24 exported landed-pose seeds, constructed
+before integration. Recovery changes bounded joint motor intent; it never moves
+dynamic bodies directly. The default `recovery_enabled` is false. No dynamic
+recovery trial has passed, so this is unfinished implementation, not admission.
+Repeated crouch trials still tip forward; the foot-reserve trial
+also trips the unchanged 5 mm self-contact limit at 5.113 mm
+(`evidence/finish-rust-recovery-crouch-21`). A subsequent trial returns a failed
+rise to passive falling and resumes bracing after settling, without a structural
+failure, but remains in bracing at 25 seconds (`finish-rust-recovery-crouch-22`).
+The full Rust suite passes 64 tests (`finish-rust-tests-26.log`), including six
+recovery checks for seed validation, read-only planning, coupled interpolation,
+absent support, torque ceilings, input lockout, impact interruption and passive
+fallback after a failed rise. Native/WASM Clippy passes on the retained source
+(`finish-rust-lint-29.log`), as do TypeScript and the changed scripts' lint
+(`finish-recovery-typecheck-28.log`, `finish-recovery-scripts-lint-28.log`).
+An arm-extension experiment did not advance beyond bracing and was reverted.
+The final replay (`finish-rust-recovery-crouch-24`) preserves the earlier
+initial/final snapshots and every sampled physical snapshot exactly, still with
+zero recoveries and no structural failure.
+The diagnostic now requires a further second of measured standing after motor
+handoff, in addition to the second required before completion. Actual repeated
+strike/recovery cycles and browser recovery remain unqualified.
+
+The 10 outer/32 internal/64 falling-pass diagnostic passes all three native
+quiet-standing cases, all three impacts, 21 terrain checks and eight selected
+pulls. Reports are `evidence/finish-rust-{quiet,impact,terrain,pulls}-outer10-pgs32-21`.
+It still fails actual browser timing: 278/1,819 charged update misses on WebGL2
+and 192/1,804 on WebGPU, with maxima 50.7/27.5 ms against 16.667 ms. Round-trip
+p99 is 130.1/48.5 ms against 20 ms. The run uses the frozen `rust/dist/striker-10`
+artifact with an explicit worker profile override; served/local asset hashes,
+the profile and observed source hashes remain unchanged. See
+`evidence/finish-rust-performance-outer10-pgs32-21/report.json`. This candidate
+is not promoted. The performance probe now records optional profile/asset
+provenance; its targeted lint passes (`finish-profile-probe-lint-24.log`).
+
+The four retained-app motion failures, automatic recovery, strict stepping,
+terrain traversal and performance remain release blockers. The default physics
+profile and production entrypoint remain unchanged. No commit, push or merge
+has occurred.
+
+**2026-10-02 retained-app impact repair:** the left-hand chest-drag regression
+is fixed by increasing internal solver passes during recovery from 32 to 64.
+Standing keeps its configured budget, restored immediately after each recovery
+integration. The measured peak joint-anchor separation falls from 27.4 mm to
+8.4 mm under the unchanged 10 mm assertion; both chest-drag cases retain their
+contact, penetration and ownership checks. The contact/motor selection passes
+28/28 (`evidence/finish-chest-regressions-11.log`). No test deadline, body pose,
+motor ceiling or contact threshold was changed.
+
+The complete build/test run in `evidence/finish-npm-test-11.log` confirms the
+contact repair but reports 372 pass, five fail and seven skip. Four failures are
+the existing slow-pull, planted-reversal and two physical-overload/lockout
+cases. The fifth is a concurrent-test timing failure in the H77 selector test.
+That selector now uses a controlled clock; a separate boundary regression
+admits exactly 8 ms and requires a timeout transition at 8.001 ms. All four H77
+tests pass in `evidence/finish-implicit-clock-12.log`. The final complete
+application test replay reports **374/385 passing, four failures and seven
+skips** in `evidence/finish-node-test-12.log`; only the four existing motion
+failures remain. Real runtime/browser timing limits remain intact. Typecheck
+passes; lint has no errors and eight unchanged warnings
+(`finish-typecheck-11.log`, `finish-lint-11.log`); the final test edit also passes
+targeted lint (`finish-implicit-lint-12.log`).
+
+Two native solver-budget diagnostics remain unpromoted. Four outer/32 internal
+passes fail all three quiet-standing cases; eight outer/32 internal passes
+pass the three 30-second quiet cases and all three impacts, but fail gentle
+rubble at 5.188 mm pelvis/hand overlap (5 mm limit) and the rotated right-hand
+pull at 0.55958 m pelvis height (0.56 m limit). Evidence is in
+`evidence/finish-rust-{quiet,impact,terrain,pulls}-outer8-pgs32-12` and
+`evidence/finish-rust-quiet-outer4-pgs32-12`. The v23 source/default profile and
+browser artifact remain unchanged; these diagnostics do not qualify timing.
+
+The balance geometry, trigger-margin, recentering and pelvis-gain experiments
+did not repair the motion failures and were reverted; their failing logs remain
+under `evidence/finish-balance-*-11.*`. `BalanceController.ts` and the balance
+diagnostic script retain their pre-experiment hashes. Automatic Rust recovery,
+strict steps, terrain traversal and performance remain open; no commit, push,
+merge or deployment has occurred.
+
+**2026-10-02 physical striker integration:** Rust now owns the protocol room
+and its kinematic impact head. Positioning checks the complete machine against
+current and predicted body geometry; retraction checks clearance and refuses
+new/deeper overlap. Only a measured solver impulse increments the strike count.
+The button and P shortcut reject paused/busy requests, snapshots expose the
+integrated apparatus, and falls cancel body input without replacing bodies.
+The separate protocol geometry export preserves the frozen anatomy/course data.
+
+The current candidate is `rust-physics-v23-passive-fall`. Falling uses canonical
+passive damping and cubic resistance near joint limits, under the existing
+individual/aggregate torque ceilings. Standing retains 20 internal solver
+passes; falling uses 32, explicitly recorded in the profile. The three native
+heading/impact cases and all 21 native terrain cases pass with unchanged
+structural thresholds. All 58 Rust tests and native/WASM Clippy pass. Evidence:
+`evidence/finish-rust-striker-passive-impact-10`,
+`evidence/finish-rust-striker-passive-terrain-10`,
+`evidence/finish-rust-striker-tests-10.log`, and
+`evidence/finish-rust-striker-lint-10.log`.
+The frozen final browser artifact passes six impact cases and a second strike
+in each backend, 42 terrain cases, and 39 existing interaction checks across
+WebGPU/WebGL2. The mobile machine framing is corrected and visually checked.
+See the reports in `finish-rust-striker-browser-10`,
+`finish-rust-striker-terrain-10`, and `finish-rust-striker-ui-10` under `evidence/`;
+`finish-rust-striker-frozen-10` preserves the source and verification index.
+
+The earlier `finish-rust-striker-foundation-06` passes the complete scoped
+foundation twice with identical reports, but predates v23 passive fall changes;
+it is not full v23 admission. The five retained-app failures, automatic recovery,
+strict stepping, terrain traversal and performance remain open. No commit,
+push, merge or production entrypoint change has been made.
+
+**2026-10-02 terrain integration:** the Rust playground now creates the canonical
+course solids, spawns the connected anatomy at the selected station, measures
+upward support from actual terrain contacts, and integrates the wobble decks.
+Station/difficulty controls create a fresh generation while preserving pause;
+the renderer uses the same canonical triangles and integrated environment poses.
+All 21 native two-second structural/contact cases and all 42 actual WASM cases
+(21 each on WebGL2/WebGPU) pass. Browser checks also verify deck pause/resume,
+station changes while paused, and removal of course geometry on returning to
+the protocol. Evidence: `evidence/finish-rust-terrain-native-04/terrain.json`
+and `evidence/finish-rust-terrain-browser-06/report.json`.
+All 50 Rust tests pass; the native foundation and eight selected pulls repeat
+with byte-identical output. Native/WASM formatting and Clippy pass after a
+test-module ordering repair, whose unchanged implementation and test content
+are checked in `evidence/finish-rust-terrain-checkpoint-06.json`. The existing
+browser interaction matrix also passes 39 checks across both backends
+(`evidence/finish-rust-terrain-ui-06/report.json`).
+
+This is scoped terrain integration evidence. Five slope/rubble setups fall
+within the two-second native observation; successful balance, terrain traversal
+and recovery are not qualified. Flat and hurdles start on the base floor, so
+their idle cases do not claim obstacle impact coverage. The five retained-app
+failures below remain open. A longer unchanged-input diagnostic observes the
+two strong-pull falls at ticks 193 and 250, after their existing 180-tick test
+deadline (`evidence/finish-overload-observation-03.log`); the tests and thresholds
+have not been relaxed. Striker, recovery, strict stepping and performance still
+block release, commit/push/merge remain pending, and production is unchanged.
+
+**2026-10-02 regression repair in progress:** six of the eleven recorded
+retained-app failures have been repaired in focused checks. Recovery foot
+planning now requires an exact, level floor plant and includes the anatomical
+hip line in its candidate search. Full-extension arm reconstruction is stable
+across headings, mutable rest poses no longer alias canonical anatomy, and the
+balanced half-kneel fixture carries its projected mass inside actual loaded
+contacts. Native stream initial snapshots were refreshed without changing
+historical input commands or recorded transfers. The forward-plant and arm
+tests now use the actual fixture geometry and legal elbow reach.
+
+The current focused recovery/geometry matrix passes 63/63. The dynamic matrix
+still fails five tests: slow pull/reversal, planted reversal, left-hand chest
+drag joint separation, and the two overpowering-pull fall/lockout cases.
+Two experimental step changes were rejected and removed after broader checks
+exposed transfer regressions. The final full suite records **372 passes,
+5 failures, 7 skips** (384 tests, including two added regressions) in
+`evidence/finish-npm-test-02.log`. Build and typecheck pass; lint reports no
+errors and the same eight warnings. Focused results are preserved in
+`evidence/finish-recovery-geometry-05.log` and
+`evidence/finish-dynamic-independent-poses.log`. The previous full run's two
+additional controller-support failures are resolved: exact foot search now
+includes the anatomical hip line, and movement fixtures supply a reachable
+crouch instead of relying on shared rest-pose mutation.
+Rust striker/terrain, automatic recovery, strict stepping and performance
+qualification remain open. Work is on `codex/finish-rust-rework`; no commit,
+push, merge or deployment has been performed in this continuation.
+
+**2026-10-02 migration continuation:** Rust now observes physical falls,
+updates the fall counter and cancels active/future body input. Reset opens a
+fresh trial; automatic recovery is still absent. Pinned tool bootstrap and
+root/subpath browser verification are reproducible package commands.
+The unchanged v22 Coulomb-contact profile passes native gates A–C and eight
+selected pull probes twice with byte-identical results. All 46 Rust tests and
+all six WASM standing trials pass. Root/subpath browser checks pass 78 assertions
+across WebGPU/WebGL2, plus 35 worker lifecycle checks and 24 fault checks.
+The final preview matches the tested root artifact byte for byte.
+The last nine-fixture step diagnostic had zero passes and was not rerun in this
+continuation. Physical
+striker/stations, recovery and full performance/release qualification remain
+incomplete; production stays on TypeScript.
+The current browser performance probe also fails update/IPC timing in both
+backends (worker round-trip p99 73.8/94.1 ms; required maximum 20 ms).
+
+The full retained application suite records **364 passes, 11 failures,
+7 skips**. These 11 failures also occurred in the preceding run; its H77 selector
+failure did not reproduce. Build and typecheck pass; lint has eight existing
+warnings and no errors. These failures remain release blockers.
+See the [current verification record](rust-rework.md#migration-continuation--2026-10-02)
+for scope, commands and local evidence. Earlier checkpoints below are historical.
+
+**2026-10-01 Rust checkpoint:** the isolated [Rust rework](rust-rework.md)
+passes its implemented native gates A–C (geometry/contact/joints, loaded feet and
+chains, and 2 s settle + 30 s quiet standing at three headings).
+`rust-migration-frozen-01` records two identical native executions on preserved
+source and passes all eight selected pull probes, repairing the three v13
+failures. Native lifecycle controls are tested. Gate D remains incomplete because
+corrective-step counts, swing-release and full coverage are not qualified;
+E–I and full browser/release qualification remain incomplete. Production still
+uses the legacy TypeScript entrypoint. Native quiet-standing success does not
+resolve the browser candidates' failures below.
+
+The opt-in corrective-step follow-up records measured liftoff and touchdown in
+four fixtures, but none of the nine strict recoverable fixtures pass. Post-step
+falls, final foot orientation, lateral transfer, reversal and swing-release
+remain unresolved. The candidate stays disabled; the narrower native pull
+passes above do not admit completed steps. See the [step evidence](rust-rework.md#corrective-step-follow-up).
+
+**2026-10-01 renderer checkpoint:** both browser modes now expose Auto/Low/High
+quality, shared presentation metrics, and redraws on demand while paused.
+The local `evidence/sandbox-acceptance/report.json` records 16 before/after replay
+combinations, four UI combinations, and four 60 s live trials without reported
+errors. Its 18 recorded scene/runtime/core hashes still match the reviewed tree;
+this is a partial source fingerprint. Live simulation/wall-time ratios are
+0.416–0.746, so these trials do not establish real-time physics performance.
+The report does not qualify reference hardware or GPU execution. See
+[rendering results and reproduction](rendering.md) and [local evidence](evidence.md#rust-and-renderer-local-evidence).
+
+**H78–H80 bounded result, 2026-09-30:** the [coordinated contact-force
+investigation](standing-h78-h80-contract.md) has exhausted all three frozen,
+opt-in candidates. H78 and H79 fail the 8 ms controller deadline. H80 fails two
+references on that deadline (8.0155/8.468 ms); the -5 mm reference reaches tick
+120 but fails entry/hold with 74.49 cm pelvis error, 11.96 cm foot error,
+2.972 m/s linear speed and 2.774 rad/s angular speed. At its first admissible
+allocation, requested horizontal restoration already changes direction; native
+command readback remains within tolerance. This identifies the earliest observed
+discrepancy, not the complete physical cause. All native first-failure replays
+match 25 bodies exactly. No standing or transfer operating range is validated.
+
+The implementation includes constrained allocation under combined motor ceilings,
+one serializable support state shared with a non-mutating forecast, complete
+controller-state snapshots, explicit H78–H80 selectors, and the previously
+unfinished two-renderer browser performance stage. Forecast admission stays
+disabled. Local-return, prediction validation, slow-pull/reversal acceptance,
+short screens, official standing, sustained/held-out and actual browser gates
+remain incomplete because feasibility failed. There is no fourth attempt.
+
+Frozen checks: typecheck, lint and build exit 0 (lint: seven warnings); regressions are
+80/82 pass, one failure and one skip. The strong-pull physical-fall failure is
+reproduced on the exact saved pre-change source. Archive compatibility passes
+inside acceptance (and skips without its archive in the standalone suite).
+Source and manifest fingerprints remain unchanged during each completed run.
+Subsequent shared-workspace renderer/runtime edits are preserved and are outside
+this result's source scope. A verified `evidence/standing-h80-v1/frozen-workspace`
+matches all 354 frozen source/config fingerprints for reproduction.
+The dirty starting tree and historical evidence are preserved; normal startup
+stays legacy. See [evidence storage and run paths](evidence.md#h78h80-local-evidence)
+before copying the workspace: these new evidence directories use verified
+junctions to available storage. Recovery, terrain and release acceptance remain
+open.
+
+**H76/H77 standing result, final verification 2026-09-28:** [H76](standing-h76-contract.md) now
+freezes a successful six-snapshot scalar native build/read diagnostic with zero
+physics steps; its rows appear coherent but do not explain within-step forefoot
+motion. [H77](standing-h77-contract.md) implements opt-in implicit native posture
+feedback and passes current-state torque/readback equivalence, but improves only
+one of three preserved references. The official acceptance operation fails all
+three reference entries (ticks 132/120/120), before local return or later gates.
+Output-neutral actual-substep traces show responsive, uncapped joint rows and
+select the contact-wrench/load-distribution evidence branch. H77 is not promoted;
+normal startup remains legacy, and H74/H75 remain immutable failed experiments.
+Final checks: typecheck and production build pass; lint exits 0 with 6 warnings;
+the complete unit run is 325/339 pass with 13 failures and 1 skip; the focused
+balance/controller run is 25/28 pass, with both active-step commitment tests now
+passing and the separate slow-pull/reversal tests still failing at ticks 304 and
+228. The full physics harness is 6/63 pass. The H77 standing operation itself
+fails feasibility and leaves every later acceptance stage incomplete.
+
 **Recovery performance investigation, 2026-09-27:** repeated foot-placement searches during rolling are skipped until a placement phase needs them. A 10-second strike replay fell from 146 seconds to 20–27 seconds on this host; it still does not run in real time or complete get-up. Lower solver counts and rolling motor trials were rejected. Per-tick diagnostics expose a transient joint-limit violation missed by coarse sampling. See the [measurement, retained changes and limitations](recovery-responsiveness-profile.md).
 
 **Recovery launch correction, 2026-09-27:** the application now integrates recovery motors with native contact/joint constraints instead of applying frame-sized torque impulses first. A real strike reproduced the old floor-to-ceiling launch; the corrected 10-second replay remains near the floor (maximum pelvis height after landing 0.1222 m). The character still stalls while rolling toward a brace, so get-up acceptance remains open. See [cause, comparison and validation](recovery-native-actuation-fix.md). The standing investigations below retain their recorded source scope; this correction does not establish quiet standing.
 
-Updated 2026-09-27 through H75-v1. **Quiet standing remains the first unfinished TODO.** H74's three references remain rejected. [H75](standing-h75-contract.md) executes all 342 frozen copied motor probes with exact controls/repeats, but full native row inspection remains incomplete after three failed builds. The central best probe lowers 0.501134 to 0.464467 rad/s, still above the reference reserve; no controller repair is justified. H74's 81 regressions, five candidate tests and typecheck retain their unchanged source scope. No physical acceptance checkbox closes.
+Updated 2026-09-27 through H77-v1. **Quiet standing remains the first unfinished TODO.** H74/H75 remain rejected and frozen. H76 closes only the static native build/read gap. H77's native-PD request identity passes, but its reference feasibility and promotion gates fail. No physical acceptance checkbox closes.
 
 One confirmed mistake was rejecting a helpful correction because it missed a preferred extra margin, then keeping an old command that caused much more wobbling. The [plain-language explanation and replay evidence](standing-h71-contract.md#plain-language-explanation) describe why. The experimental repair retains a tested correction within the actual speed limits when the preferred margin is unreachable; it does not establish lasting balance.
 
@@ -152,7 +488,7 @@ an opportunity to reduce calculation cost, not a measured online speedup.
 | Balance probes | Both fail | Recorded capture/force feasibility and pelvis-height failures remain unresolved. |
 | Small-impulse diagnostic | Precision-sensitive residual identified | [Matched native f32/f64 comparison](small-impulse-diagnostic.md#result--numerical-precision-sensitivity-isolated): all twelve f64 cases are smooth and within 1.71%; f32 remains irregular. Exact state transfer, matching solver features, unchanged contact/limit regimes and exact hooked WASM replay are verified. The application outlier still exists; no tolerance or runtime changed. |
 | Historical diagnostic validation | 25 tests pass; lint passes without warnings | [Post-H26 verification](checkpoints/2026-09-27/h25-h26-validation-complete/manifest.json) covers original motor/continuity assertions, baseline capture and corruption detection for binary snapshot archives. The native calibration executable builds successfully. Full typecheck last passed in [prior validation](checkpoints/2026-09-26/standing-tooling-validation.json); no TypeScript production file had changed at that checkpoint. These checks do not establish a complete application/physics gate. |
-| Complete application and physics suites | Unverified after the retained repairs | The older September 23 checkpoint recorded 273/280 application tests and 6/63 physics scenarios passing. Those counts do not describe a new run on this working tree. |
+| Complete application and physics suites | Failed on the final H77 source | The complete unit suite is 325/339 pass (13 fail, 1 skip); all 63 physics scenarios ran, with 6 pass and 57 fail. Typecheck/build pass and lint has 0 errors/6 warnings. These checks do not override failed H77 feasibility. |
 | Five-cycle protocol, recovery, browser review, both Pages configurations | Acceptance open | No later complete integration result establishes acceptance. |
 
 The [physics acceptance contract](physics-acceptance.md) retains independent numerical limits. The [merge ledger](merge-acceptance.md) maps requirements to tests, but its older table results are historical. The local Pages workflow keeps required verification failures blocking deployment; this document does not establish remote CI or deployment status.
@@ -229,6 +565,14 @@ is 0.02550–0.03240 m and all speed bounds fail. H30 and H31 preserve six furth
 exact H22 control replays; no production change follows.
 
 ## Documentation verification
+
+The 2026-10-01 refresh aligns the overview, architecture, index, standing
+selection, browser/rendering guides, TODO and evidence summary with the existing
+working tree and local reports. Link/anchor checks cover 374 local references in
+ten updated documents; 123 historical checkpoint links remain unavailable as
+documented in the evidence guide. All other checked references resolve, and the
+documentation diff has no whitespace errors. No physics or browser scenarios
+were rerun for this documentation-only refresh.
 
 The documentation review checked local links, implementation settings, and harness discovery, which returned 63 scenarios. Discovery executes no physical scenarios. The repair also verified all six recovered artifact digests and the Playwright module-resolution recipe with the installed 1.62.1 runtime; the documented tooling install uses the 1.63.0 version pinned in CI and was not installed during this repair. Documentation repairs do not change controller behavior, refresh fixtures, or establish physics/browser acceptance.
 

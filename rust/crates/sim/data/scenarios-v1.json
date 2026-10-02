@@ -1,0 +1,663 @@
+{
+  "schema": 1,
+  "commandTickHz": 60,
+  "sourceFingerprints": {
+    "scripts/physics-fixtures.ts": "c10087383e8119f2747ee3ec4e5eeeb5689f47c395a61595baabc8a0bd048725",
+    "src/character/GrabAnchorController.ts": "2cc1f29e0fd21c8d9a93e6c0c16c02716bff26c999b08ad103f5c796fc8e9574"
+  },
+  "contract": {
+    "fixedDtS": 0.016666666666666666,
+    "maxJointSeparationM": 0.08,
+    "maxFloorPenetrationM": 0.08,
+    "maxNonExcludedSelfPenetrationM": 0.005,
+    "trajectoryPositionToleranceM": 1e-7,
+    "trajectoryRotationToleranceDegrees": 0.00001,
+    "trajectoryVelocityTolerance": 1e-7,
+    "recoveryLimitS": 25,
+    "stableObservationS": 1,
+    "idleSettlingS": 2,
+    "idleDurationS": 30,
+    "idleRootDriftM": 0.03,
+    "idlePlantedFootDriftM": 0.01,
+    "idleMaxLinearMps": 0.1,
+    "idleMaxAngularRadps": 0.5,
+    "maximumStructuralLimitErrorRad": 0.06,
+    "repeatedCycles": 5
+  },
+  "recoveryContract": {
+    "normalY": 0.65,
+    "contactDistanceM": 0.012,
+    "minimumLoadN": 3,
+    "loadPersistenceS": 0.05,
+    "landingPersistenceS": 0.1,
+    "settlePersistenceS": 0.3,
+    "settleLinearMps": 0.65,
+    "settleAngularRadps": 1.8,
+    "stablePersistenceS": 0.55,
+    "stableLinearMps": 0.22,
+    "stableAngularRadps": 0.65,
+    "stableUpDot": 0.97,
+    "phaseMinimumS": 0.2,
+    "stallS": 3,
+    "supportLossS": 0.2,
+    "assistanceForceN": 0,
+    "assistanceTorqueNm": 0
+  },
+  "pulls": [
+    {
+      "id": "slow-hand-forward",
+      "initial": {
+        "pose": "upright-rest",
+        "position": {
+          "x": 0,
+          "y": 0.99,
+          "z": 0
+        },
+        "heading": 0
+      },
+      "region": "rightHand",
+      "localAnchor": {
+        "x": 0.025,
+        "y": 0.015,
+        "z": 0.01
+      },
+      "targets": [
+        {
+          "frame": 0,
+          "offset": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          }
+        },
+        {
+          "frame": 90,
+          "offset": {
+            "x": 0,
+            "y": 0.03,
+            "z": 0.7
+          }
+        }
+      ],
+      "releaseFrame": 150,
+      "outcome": "recoverable",
+      "minimumSteps": 1,
+      "observeUntilFrame": 420
+    },
+    {
+      "id": "slow-hand-backward",
+      "initial": {
+        "pose": "upright-rest",
+        "position": {
+          "x": 0,
+          "y": 0.99,
+          "z": 0
+        },
+        "heading": 0
+      },
+      "region": "leftHand",
+      "localAnchor": {
+        "x": 0.025,
+        "y": 0.015,
+        "z": 0.01
+      },
+      "targets": [
+        {
+          "frame": 0,
+          "offset": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          }
+        },
+        {
+          "frame": 90,
+          "offset": {
+            "x": 0,
+            "y": 0.03,
+            "z": -0.6
+          }
+        }
+      ],
+      "releaseFrame": 150,
+      "outcome": "recoverable",
+      "minimumSteps": 1,
+      "observeUntilFrame": 420
+    },
+    {
+      "id": "slow-hand-left",
+      "initial": {
+        "pose": "upright-rest",
+        "position": {
+          "x": 0,
+          "y": 0.99,
+          "z": 0
+        },
+        "heading": 0
+      },
+      "region": "leftHand",
+      "localAnchor": {
+        "x": 0.025,
+        "y": 0.015,
+        "z": 0.01
+      },
+      "targets": [
+        {
+          "frame": 0,
+          "offset": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          }
+        },
+        {
+          "frame": 90,
+          "offset": {
+            "x": -0.6,
+            "y": 0.03,
+            "z": 0
+          }
+        }
+      ],
+      "releaseFrame": 150,
+      "outcome": "recoverable",
+      "minimumSteps": 1,
+      "observeUntilFrame": 420
+    },
+    {
+      "id": "slow-hand-right-heading",
+      "initial": {
+        "pose": "upright-rest",
+        "position": {
+          "x": 0,
+          "y": 0.99,
+          "z": 0
+        },
+        "heading": 1.0471975511965976
+      },
+      "region": "rightHand",
+      "localAnchor": {
+        "x": 0.025,
+        "y": 0.015,
+        "z": 0.01
+      },
+      "targets": [
+        {
+          "frame": 0,
+          "offset": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          }
+        },
+        {
+          "frame": 90,
+          "offset": {
+            "x": 0.6,
+            "y": 0.03,
+            "z": 0
+          }
+        }
+      ],
+      "releaseFrame": 150,
+      "outcome": "recoverable",
+      "minimumSteps": 1,
+      "observeUntilFrame": 420
+    },
+    {
+      "id": "slow-left-foot",
+      "initial": {
+        "pose": "upright-rest",
+        "position": {
+          "x": 0,
+          "y": 0.99,
+          "z": 0
+        },
+        "heading": 0
+      },
+      "region": "leftFoot",
+      "localAnchor": {
+        "x": 0.025,
+        "y": 0.015,
+        "z": 0.01
+      },
+      "targets": [
+        {
+          "frame": 0,
+          "offset": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          }
+        },
+        {
+          "frame": 90,
+          "offset": {
+            "x": -0.22,
+            "y": 0.03,
+            "z": 0.02
+          }
+        }
+      ],
+      "releaseFrame": 150,
+      "outcome": "recoverable",
+      "minimumSteps": 1,
+      "observeUntilFrame": 420
+    },
+    {
+      "id": "slow-right-foot-heading",
+      "initial": {
+        "pose": "upright-rest",
+        "position": {
+          "x": 0,
+          "y": 0.99,
+          "z": 0
+        },
+        "heading": -0.7853981633974483
+      },
+      "region": "rightFoot",
+      "localAnchor": {
+        "x": 0.025,
+        "y": 0.015,
+        "z": 0.01
+      },
+      "targets": [
+        {
+          "frame": 0,
+          "offset": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          }
+        },
+        {
+          "frame": 90,
+          "offset": {
+            "x": 0.22,
+            "y": 0.03,
+            "z": -0.02
+          }
+        }
+      ],
+      "releaseFrame": 150,
+      "outcome": "recoverable",
+      "minimumSteps": 1,
+      "observeUntilFrame": 420
+    },
+    {
+      "id": "direction-reversal",
+      "initial": {
+        "pose": "upright-rest",
+        "position": {
+          "x": 0,
+          "y": 0.99,
+          "z": 0
+        },
+        "heading": 0
+      },
+      "region": "rightHand",
+      "localAnchor": {
+        "x": 0.025,
+        "y": 0.015,
+        "z": 0.01
+      },
+      "targets": [
+        {
+          "frame": 0,
+          "offset": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          }
+        },
+        {
+          "frame": 90,
+          "offset": {
+            "x": 0.75,
+            "y": 0.02,
+            "z": 0
+          }
+        },
+        {
+          "frame": 180,
+          "offset": {
+            "x": -0.75,
+            "y": 0.02,
+            "z": 0
+          }
+        }
+      ],
+      "releaseFrame": 300,
+      "outcome": "recoverable",
+      "minimumSteps": 2,
+      "observeUntilFrame": 510
+    },
+    {
+      "id": "held-target",
+      "initial": {
+        "pose": "upright-rest",
+        "position": {
+          "x": 0,
+          "y": 0.99,
+          "z": 0
+        },
+        "heading": 0
+      },
+      "region": "leftHand",
+      "localAnchor": {
+        "x": 0.025,
+        "y": 0.015,
+        "z": 0.01
+      },
+      "targets": [
+        {
+          "frame": 0,
+          "offset": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          }
+        },
+        {
+          "frame": 90,
+          "offset": {
+            "x": -0.6,
+            "y": 0.02,
+            "z": 0.1
+          }
+        }
+      ],
+      "releaseFrame": 420,
+      "outcome": "recoverable",
+      "minimumSteps": 1,
+      "observeUntilFrame": 600
+    },
+    {
+      "id": "release-during-corrective-step",
+      "initial": {
+        "pose": "upright-rest",
+        "position": {
+          "x": 0,
+          "y": 0.99,
+          "z": 0
+        },
+        "heading": 0
+      },
+      "region": "rightHand",
+      "localAnchor": {
+        "x": 0.025,
+        "y": 0.015,
+        "z": 0.01
+      },
+      "targets": [
+        {
+          "frame": 0,
+          "offset": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          }
+        },
+        {
+          "frame": 90,
+          "offset": {
+            "x": 0.6,
+            "y": 0.02,
+            "z": 0.08
+          }
+        }
+      ],
+      "releaseFrame": 150,
+      "outcome": "recoverable",
+      "minimumSteps": 1,
+      "observeUntilFrame": 420,
+      "releaseAtFirstSwing": true
+    },
+    {
+      "id": "fast-forward",
+      "initial": {
+        "pose": "upright-rest",
+        "position": {
+          "x": 0,
+          "y": 0.99,
+          "z": 0
+        },
+        "heading": 0
+      },
+      "region": "rightHand",
+      "localAnchor": {
+        "x": 0.025,
+        "y": 0.015,
+        "z": 0.01
+      },
+      "targets": [
+        {
+          "frame": 0,
+          "offset": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          }
+        },
+        {
+          "frame": 5,
+          "offset": {
+            "x": 0,
+            "y": 0.12,
+            "z": 1.25
+          }
+        }
+      ],
+      "releaseFrame": 50,
+      "outcome": "overpower",
+      "minimumSteps": 0,
+      "observeUntilFrame": 1610,
+      "direction": "forward"
+    },
+    {
+      "id": "fast-backward",
+      "initial": {
+        "pose": "upright-rest",
+        "position": {
+          "x": 0,
+          "y": 0.99,
+          "z": 0
+        },
+        "heading": 0
+      },
+      "region": "rightHand",
+      "localAnchor": {
+        "x": 0.025,
+        "y": 0.015,
+        "z": 0.01
+      },
+      "targets": [
+        {
+          "frame": 0,
+          "offset": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          }
+        },
+        {
+          "frame": 5,
+          "offset": {
+            "x": 0,
+            "y": 0.12,
+            "z": -1.25
+          }
+        }
+      ],
+      "releaseFrame": 50,
+      "outcome": "overpower",
+      "minimumSteps": 0,
+      "observeUntilFrame": 1610,
+      "direction": "backward"
+    },
+    {
+      "id": "fast-left",
+      "initial": {
+        "pose": "upright-rest",
+        "position": {
+          "x": 0,
+          "y": 0.99,
+          "z": 0
+        },
+        "heading": 0
+      },
+      "region": "rightHand",
+      "localAnchor": {
+        "x": 0.025,
+        "y": 0.015,
+        "z": 0.01
+      },
+      "targets": [
+        {
+          "frame": 0,
+          "offset": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          }
+        },
+        {
+          "frame": 5,
+          "offset": {
+            "x": -1.25,
+            "y": 0.12,
+            "z": 0
+          }
+        }
+      ],
+      "releaseFrame": 50,
+      "outcome": "overpower",
+      "minimumSteps": 0,
+      "observeUntilFrame": 1610,
+      "direction": "left"
+    },
+    {
+      "id": "fast-right-heading",
+      "initial": {
+        "pose": "upright-rest",
+        "position": {
+          "x": 0,
+          "y": 0.99,
+          "z": 0
+        },
+        "heading": 1.0471975511965976
+      },
+      "region": "rightHand",
+      "localAnchor": {
+        "x": 0.025,
+        "y": 0.015,
+        "z": 0.01
+      },
+      "targets": [
+        {
+          "frame": 0,
+          "offset": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          }
+        },
+        {
+          "frame": 5,
+          "offset": {
+            "x": 1.25,
+            "y": 0.12,
+            "z": 0
+          }
+        }
+      ],
+      "releaseFrame": 50,
+      "outcome": "overpower",
+      "minimumSteps": 0,
+      "observeUntilFrame": 1610,
+      "direction": "right"
+    },
+    {
+      "id": "sustained-forward",
+      "initial": {
+        "pose": "upright-rest",
+        "position": {
+          "x": 0,
+          "y": 0.99,
+          "z": 0
+        },
+        "heading": 0
+      },
+      "region": "rightHand",
+      "localAnchor": {
+        "x": 0.025,
+        "y": 0.015,
+        "z": 0.01
+      },
+      "targets": [
+        {
+          "frame": 0,
+          "offset": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          }
+        },
+        {
+          "frame": 180,
+          "offset": {
+            "x": 0,
+            "y": 0.1,
+            "z": 1.5
+          }
+        }
+      ],
+      "releaseFrame": 225,
+      "outcome": "overpower",
+      "minimumSteps": 0,
+      "observeUntilFrame": 1785,
+      "direction": "forward"
+    },
+    {
+      "id": "sustained-backward-heading",
+      "initial": {
+        "pose": "upright-rest",
+        "position": {
+          "x": 0,
+          "y": 0.99,
+          "z": 0
+        },
+        "heading": -0.7853981633974483
+      },
+      "region": "rightHand",
+      "localAnchor": {
+        "x": 0.025,
+        "y": 0.015,
+        "z": 0.01
+      },
+      "targets": [
+        {
+          "frame": 0,
+          "offset": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          }
+        },
+        {
+          "frame": 180,
+          "offset": {
+            "x": 0,
+            "y": 0.1,
+            "z": -1.5
+          }
+        }
+      ],
+      "releaseFrame": 225,
+      "outcome": "overpower",
+      "minimumSteps": 0,
+      "observeUntilFrame": 1785,
+      "direction": "backward"
+    }
+  ]
+}

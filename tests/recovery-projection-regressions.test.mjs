@@ -20,7 +20,7 @@ function floor(poses, ids) {
 
 test("a legal measured plant ahead of the search grid is retained, not displaced backward", () => {
   for (const side of ["left", "right"]) for (const heading of [0, 0.73, Math.PI / 2]) {
-    const poses = recoveryFixturePoses({ id: "forward-plant", pose: "crouch", side, heading });
+    const poses = recoveryFixturePoses({ id: "forward-plant", pose: "half-kneel", side, heading });
     const pelvis = poses.get("pelvis"), measuredFoot = poses.get(`${side}Foot`);
     const hip = worldPoint(pelvis.position, pelvis.rotation,
       SEGMENT_BY_ID.get(`${side}Thigh`).jointAnchorParent);

@@ -10,11 +10,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import type { DiagnosticsSnapshot, RegionId, RendererMode } from "../core/types";
+import type { DiagnosticsSnapshot, RegionId, RendererMode, RenderQuality } from "../core/types";
+import { QualityPicker } from "./QualityPicker";
 
 export interface ControlPanelProps {
   diagnostics: Readonly<DiagnosticsSnapshot> | null;
   renderer: RendererMode;
+  quality?: RenderQuality;
+  onQualityChange?: (quality: RenderQuality) => void;
   paused: boolean;
   webglAvailable?: boolean | null;
   canvas2dAvailable?: boolean | null;
@@ -46,6 +49,8 @@ const labelToken = (value: string): string =>
 export function ControlPanel({
   diagnostics,
   renderer,
+  quality = "auto",
+  onQualityChange = () => {},
   paused,
   webglAvailable = null,
   canvas2dAvailable = true,
@@ -66,7 +71,7 @@ export function ControlPanel({
 
   return (
     <aside
-      className={`rounded-2xl border border-white/10 bg-slate-950/88 p-3 text-slate-100 shadow-2xl shadow-black/30 backdrop-blur-md ${className}`}
+      className={`sandbox-controls ${className}`}
       aria-label="Character controls"
       data-testid="control-panel"
       data-compact={compact ? "true" : "false"}
@@ -97,6 +102,7 @@ export function ControlPanel({
             </SelectItem>
           </SelectContent>
         </Select>
+        <QualityPicker quality={quality} onChange={onQualityChange} />
 
         <Button
           type="button"

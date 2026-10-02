@@ -49,6 +49,7 @@ export class NativeJointMotors {
       const kd = Math.max(0, command.damping) * strength;
       const relativeVelocity = sub(child.angvel(), parent.angvel());
       let torqueWorld = ZERO, saturationRatio = 0;
+      const nativeMotorAxes = [];
       for (const axis of profile.axes) {
         const coordinate = axis.coordinate, abiAxis = AXIS[coordinate];
         const rate = dot(relativeVelocity, basis[coordinate]);
@@ -66,18 +67,35 @@ export class NativeJointMotors {
         // A velocity bias encodes finite gravity/load compensation inside the
         // same force ceiling. No extra uncapped feedforward impulse is applied.
         const velocity = axisKd > 0 ? feedforward / axisKd : 0;
+        // wasm-bindgen lowers these scalar arguments to f32. Retain that exact
+        // configuration as read-only evidence; the values sent to Rapier stay
+        // unchanged so frozen H74 behavior is unaffected.
+        const rawTarget = Math.fround(axisTarget);
+        const rawVelocity = Math.fround(velocity);
+        const rawKp = Math.fround(axisKp);
+        const rawKd = Math.fround(axisKd);
+        const rawCap = Math.fround(cap);
         this.raw.jointConfigureMotorModel(joint.handle, abiAxis, MotorModel.ForceBased);
         this.raw.jointSetMotorMaxForce(joint.handle, abiAxis, cap);
         this.raw.jointConfigureMotor(joint.handle, abiAxis, axisTarget, velocity, axisKp, axisKd);
         const requested = kp * effort * error[coordinate] + (passive?.kp ?? 0) * (passive?.error ?? 0)
           + axisKd * (velocity - rate);
+        const rawTargetCoordinates = { ...target, [coordinate]: rawTarget };
+        const rawError = jointCoordinateTargetError(coordinates, rawTargetCoordinates, profile)[coordinate];
+        nativeMotorAxes.push({ coordinate, targetPosition: rawTarget, targetVelocity: rawVelocity,
+          stiffness: rawKp, damping: rawKd, maxForce: rawCap,
+          currentStateRequestNm: rawKp * rawError + rawKd * (rawVelocity - rate),
+          ...(command.standingRequestByAxis?.[coordinate] === undefined ? {}
+            : { intendedRequestNm: command.standingRequestByAxis[coordinate] }),
+          ...(command.standingResidualByAxis?.[coordinate] === undefined ? {}
+            : { residualFeedforwardNm: command.standingResidualByAxis[coordinate] }) });
         torqueWorld = add(torqueWorld, scale(basis[coordinate], clamp(requested, -cap, cap)));
         if (cap > 0) saturationRatio = Math.max(saturationRatio, Math.abs(requested) / cap);
       }
       // This is the bounded requested wrench, NOT the solver's delivered motor
       // impulse: the pinned JS API does not expose that impulse readback.
       results.set(command.id, { coordinates, targetCoordinates: target, coordinateError: error,
-        torqueWorld, saturationRatio, torqueSource: "native-request" });
+        torqueWorld, saturationRatio, torqueSource: "native-request", nativeMotorAxes });
     }
     return results;
   }

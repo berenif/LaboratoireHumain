@@ -1,0 +1,7 @@
+{
+  "git": {
+    "sha1": "5de07a423f3a7a476c455e5b93e8cf5b8cf4ad06",
+    "dirty": true
+  },
+  "path_in_vcs": "crates/rapier3d"
+}

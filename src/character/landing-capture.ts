@@ -167,7 +167,7 @@ export function predictControlledLandingCapture(input: ControlledLandingCaptureI
       const requested = clampLength(add(scale(sub(desired, controlPoint), 34), scale(velocity, -8.5)), maxAcceleration);
       const plan = planContactLoads(phase.contacts, position, velocity,
         { x: input.massKg * requested.x * fraction, y: weight, z: input.massKg * requested.z * fraction },
-        { projectMeasuredPressure: true, frictionCoefficient,
+        { projectMeasuredPressure: true, allowSupportMoment: phase.transferring, frictionCoefficient,
           maxHorizontalForceN: input.massKg * maxAcceleration * fraction, maxJointTorqueNm: torqueLimit });
       pressureFeasible &&= plan.pressureFeasible !== false;
       maxPressureForceResidualNm = Math.max(maxPressureForceResidualNm, plan.pressureForceResidualNm ?? 0);

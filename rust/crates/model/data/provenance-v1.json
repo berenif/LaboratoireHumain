@@ -1,0 +1,15 @@
+{
+  "schema": 1,
+  "generatedAt": "2026-09-30T22:30:56.150Z",
+  "command": "node --import tsx scripts/export-rust-canonical.ts",
+  "canonicalSha256": "083c13b2cce2d6033a4fc05cba8da7e78bd89634fb306629f4b7a9cd4a177a65",
+  "sources": {
+    "src/core/humanoid.ts": "36eadcf9787b041a829e2bc056791c17f9c6466378ce8168ceb4eb0aa3be49d2",
+    "src/core/geometry.ts": "94c3432588311cf3bd7374bf6f874d0eb244634884d223c2ea71b6b891d93ce7",
+    "src/core/geometry-mass.ts": "50302f5f3a94f7c2cda16e2d51135c123c9fbef8e61205056ae8c5822460fbde",
+    "src/core/playground.ts": "929275e93c421f43aa28961dbfaa05489e7450da282da8a0b3f8ad846ab7f94e",
+    "src/core/protocol.ts": "9f8c057eb3e80dcdacad39f75c894a009f20158f4e47d306cbe260ce14da102a",
+    "src/character/EmbodiedCharacter.ts": "7ae483e4f5c4b21d56e13e2a4a12ee1e89578e44f428adbe8b102fdfaf866d10"
+  },
+  "note": "Exact canonical f32 collider vertices and indices; prescribed masses; unstepped actual legacy initialization. Golden mass tensor used only for independent port verification."
+}

@@ -36,6 +36,20 @@ function copyVec3(value: Vec3): Vec3 {
 export class SharedCameraProjection implements CameraProjection {
   private readonly defaults: CameraState;
   private state: CameraState;
+  private basis: CameraBasis | null = null;
+  private readonly listeners = new Set<() => void>();
+  private revision = 0;
+
+  get version(): number { return this.revision; }
+  subscribe(listener: () => void): () => void {
+    this.listeners.add(listener);
+    return () => { this.listeners.delete(listener); };
+  }
+  private changed(): void {
+    this.basis = null;
+    this.revision++;
+    for (const listener of this.listeners) listener();
+  }
 
   constructor(initial: Partial<CameraState> = {}) {
     const defaults = this.makeState({ ...DEFAULT_CAMERA, ...initial });
@@ -53,6 +67,7 @@ export class SharedCameraProjection implements CameraProjection {
   }
 
   getBasis(): CameraBasis {
+    if (this.basis) return this.basis;
     const forward = V3.normalize(V3.sub(this.state.target, this.state.position));
     let right = V3.cross(forward, V3.normalize(this.state.up));
     if (V3.length(right) < 1e-7) {
@@ -60,24 +75,28 @@ export class SharedCameraProjection implements CameraProjection {
     }
     right = V3.normalize(right);
     const up = V3.normalize(V3.cross(right, forward));
-    return { forward, right, up };
+    return this.basis = { forward, right, up };
   }
 
   setViewport(width: number, height: number): void {
+    if (width === this.state.viewportWidth && height === this.state.viewportHeight) return;
     this.state = this.makeState({
       ...this.state,
       viewportWidth: finitePositive(width, 1),
       viewportHeight: finitePositive(height, 1),
     });
+    this.changed();
   }
 
   setView(position: Vec3, target: Vec3, up: Vec3 = this.state.up): void {
     this.state = this.makeState({ ...this.state, position, target, up });
+    this.changed();
   }
 
   reset(): void {
     const { viewportWidth, viewportHeight } = this.state;
     this.state = this.makeState({ ...this.defaults, viewportWidth, viewportHeight });
+    this.changed();
   }
 
   screenToRay(clientX: number, clientY: number, rect: DOMRectReadOnly): Ray {

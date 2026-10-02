@@ -2,6 +2,56 @@
 
 For the latest recorded checkpoint, use [current status](status.md). Results below belong to the dated source scopes stated in each section; the gate tables are historical, not a current pass ledger. [Evidence availability](evidence.md) identifies recovered originals and missing artifacts. Paths marked unavailable are retained for provenance and cannot be used as live verification links.
 
+## 2026-10-02 Rust source integration: release remains unaccepted
+
+The user requested committing, pushing and merging the migration work to
+`main`. This source checkpoint keeps Rust as an opt-in preview and retains
+the existing production entrypoint and deployment gates. Generated Cargo
+output, local evidence and diagnostic checkpoints are excluded from Git.
+
+All 71 Rust tests, native/WASM Clippy, formatting, TypeScript, application build,
+Pages export/asset verification and tooling checks pass. JavaScript lint has
+eight warnings and no errors. All 13 native verification stages pass; the
+foundation, terrain and striker reports repeat byte-for-byte on unchanged
+source. The retained app suite remains **374 pass, four
+fail, seven skip**. The combined browser verifier completes all ten stages;
+nine pass. The remaining standing failure is +60° playground left-forefoot
+drift at tick 1902 (0.010000321 m, unchanged 0.010 m limit). Both browser origins,
+UI/fault/lifecycle checks, 42 terrain cases and six striker cases pass.
+
+These results qualify the stated source and integration checks only. Full
+standing, strict stepping, recovery/cycles, terrain traversal, contact stress
+coverage and hardware performance remain open. The complete local execution
+records are under `evidence/migration-final*`; source integration does not
+establish successful production deployment.
+
+## 2026-09-30 H78–H80: bounded attempts exhausted, not accepted
+
+The [three frozen contact-force candidates](standing-h78-h80-contract.md) all
+fail feasibility. Typecheck/build pass; lint exits 0 with seven warnings; the
+applicable regression selection is 80 pass, one pre-existing physical-fall
+failure, one archive-dependent skip. No operating range, support-transfer,
+prediction, actual-browser, recovery or release acceptance is established.
+All new candidates remain opt-in; the legacy default is retained. There is no
+automatic fourth candidate, promotion, merge or deployment from this result.
+
+## 2026-09-28 H77 standing candidate: not accepted
+
+[H77-v1](standing-h77-contract.md) remains opt-in. Current-state torque and raw
+native readback equivalence pass, and output-neutral actual-substep traces select
+the contact-wrench/load-distribution branch. The formal operation nevertheless
+fails all three frozen reference entries, so saved-failure, official standing,
+structural, sustained, held-out, runtime, memory, and browser gates are
+incomplete. Both active-step commitment assertions pass, but the independent
+slow-pull and planted-reversal trials remain red. H77 is not the normal room or
+playground controller; H74 and legacy remain explicit replay and rollback
+selections.
+
+Final check results are: typecheck pass, lint exit 0 with six warnings,
+production build pass, complete unit suite 325/339 pass (13 fail, 1 skip), and
+full physics 6/63 pass. The normal-browser-path gate remains incomplete. None of
+these results authorizes promotion past the failed H77 feasibility gate.
+
 ## 2026-09-27 publication: current work and older open PRs
 
 The user explicitly requested committing, pushing, and merging all pending work

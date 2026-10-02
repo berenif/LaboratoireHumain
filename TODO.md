@@ -1,5 +1,92 @@
 # TODO
 
+**2026-10-02 merge preparation:** the Rust preview now includes the physical
+striker and all seven terrain stations. Native verification repeats the
+foundation, terrain and striker checks, and the combined browser verifier
+includes their existing WebGPU/WebGL2 checks. Diagnostic arguments are validated
+before evidence creation. The current retained-app suite is **374 pass, four
+fail, seven skip**; the remaining failures are slow pull, planted reversal and
+two strong-pull/fall checks. Corrective stepping, automatic recovery, contact
+stress qualification and hardware performance still block release acceptance.
+The fresh v23 WASM standing matrix passes five of six cases; the +60° playground
+case exceeds the unchanged 10 mm left-forefoot drift limit at tick 1902.
+Production continues to use the existing entrypoint. See [current status](docs/status.md).
+
+**Earlier 2026-10-02 integration update:** the isolated [Rust rework](docs/rust-rework.md)
+passes implemented native gates A–C and all eight selected pull probes on
+`migration-finish-native-02`, including quiet standing at three headings.
+The v22 Coulomb-contact profile passes the full six-case WASM quiet-standing
+matrix. Full disturbance acceptance still needs corrective steps and complete
+coverage: all nine strict v22 step fixtures fail. The retained application suite
+has 11 reproduced failures in the continuation (12 in the preceding run).
+The existing production browser stays on TypeScript.
+
+- [x] Preserve the dirty baseline and repeatable native Rust results; document
+  the audited engine changes, failures, and non-publishing CI.
+- [x] Repair the three failing native pull probes without changing thresholds,
+  and port/test native pause, reset, visibility, floor and teardown ownership.
+- [x] Build a real WASM worker and pass Edge lifecycle/buffer smoke checks.
+- [x] Instrument contact-gated transfer, measured liftoff/touchdown and strict
+  recoverable-fixture step counts; preserve failed native step experiments.
+- [x] Build the wgpu/WebGPU/WebGL2 renderer and Leptos UI; pass scoped Edge
+  pointer/keyboard/emulated-touch/lifecycle checks at root and Pages subpath.
+- [x] Add actual per-tick/controller/solver telemetry, preserve exact physics
+  under timing, cache observer bounds and test delayed bootstrap/worker faults.
+  SIMD remains experimental: its idle trials still miss update deadlines.
+- [x] Test SIMD8 and an opt-in vectorized angular-motor solver; retain native
+  results, matched-flag WASM comparisons, scoped UI checks and failed timing
+  trials. The motor path remains disabled; full browser physics is still open.
+- [x] Observe the full 2+30-second quiet window in the actual WASM worker at
+  every required heading and both mode tags; preserve exact failures, frozen
+  terminal state and valid-command rejection. Add a bounded read-only drift
+  trace and fix failure cancellation of future pointer intent.
+- [x] Repair the measured +60-degree browser foot drift using the v22 Coulomb
+  contact profile and pass native A–C, selected pulls and six WASM standing cases.
+- [ ] Finish tangential/angular contact qualification beyond the passing
+  216-case bounded box calibration; stress cases remain failing.
+- [x] Expose Rust build/test/lint/preview commands, check all WASM crates, and
+  exclude generated Rust artifacts from JavaScript lint and typechecking.
+- [x] Add pinned tool bootstrap, repository-owned browser-test dependencies,
+  automatic evidence directories and root/subpath browser verification.
+- [x] Observe Rust falls and cancel active/future body input; show the physical
+  state and fall counter while retaining camera control and Reset.
+- [ ] Repair the four remaining failures in the retained application regression
+  suite; the earlier 11-failure count above is historical.
+- [ ] Qualify full Rust browser physics, every interaction/region, device loss,
+  physical touch and actual hardware performance/memory/soak.
+- [ ] Complete Rust disturbance coverage and pass D before transfer/stepping,
+  recovery/cycles, terrain, browser integration, and release qualification.
+- [x] Add renderer quality controls, metrics, paused redraws, and recorded
+  replay/UI/live browser checks in both modes and renderers.
+- [ ] Establish real-time physics and full hardware/browser performance gates.
+  The [local renderer trials](docs/rendering.md#recorded-browser-checkpoint)
+  advance simulation at only 0.416–0.746 of wall time.
+
+**2026-09-30 bounded experiment update:** [H78–H80](docs/standing-h78-h80-contract.md)
+are implemented, frozen and opt-in; all three fail feasibility. H80 still misses
+the 8 ms deadline in two references, while its -5 mm reference loses standing
+entry/hold by tick 120. The first admissible allocation already reverses requested
+horizontal restoration despite equivalent native commands. This is an observed
+allocation discrepancy, not a complete causal diagnosis. No operating range is
+validated, and the authorized three-candidate sequence is finished.
+
+- [x] Preserve the dirty baseline, H77 reference/transfer evidence, manifests,
+  complete controller state and exact native first-failure replays.
+- [x] Implement shared constrained contact allocation, support-state/forecast
+  plumbing, explicit H78–H80 identities, diagnostics and browser-stage tooling.
+- [x] Complete the three bounded candidates without in-acceptance tuning; retain
+  failed/incomplete attempts and final checks (typecheck/lint/build pass;
+  regressions 80 pass, one pre-existing failure, one archive-dependent skip).
+- [ ] Establish quiet-standing feasibility and signed local return. Any further
+  candidate requires a new authorized investigation; do not create H81 here.
+- [ ] After feasibility, validate prediction against production trajectories,
+  then pass unchanged slow-pull/reversal, screens, official standing,
+  sustained/held-out and real two-renderer runtime/memory gates. All are currently
+  incomplete; leave standing and recovery milestones open.
+
+The dated entries below remain historical context; their proposed next-candidate
+work has now been attempted by H78–H80. See [current status](docs/status.md).
+
 Reviewed 2026-09-26 against the local working tree at `44fc25437d841151c704895c1fb92de4c2e468d0`, including existing uncommitted changes. This is a work plan, not a fresh physics result. See [current status](docs/status.md) for recorded failures and evidence qualifications.
 
 The protocol room, seven-station playground, both renderers, continuous 25-body physics, and diagnostic/test infrastructure already exist. The missing milestone is repeatable, accepted physical behavior with reproducible evidence. Work through the dependencies below; independent evidence/tooling work can proceed while physics remains open.
@@ -22,9 +109,14 @@ frozen copied steps. Six controls and all 168 perturbed repeats are exact.
 Native position stiffness is zero; signed motor authority and substantial
 locked-direction forefoot rates are measured, without isolating the cause.
 Three failed builds leave compiled raw/finalized row inspection incomplete.
-No repair is adopted. Next freeze the six-snapshot, zero-physical-step
-[build-and-read diagnostic](docs/standing-h75-contract.md#concrete-next-diagnostic).
-The reproduced H42 rigid comparison still does not prove the articulated cause.
+No H74 repair is adopted. The six-snapshot, zero-physical-step [H76
+build-and-read diagnostic](docs/standing-h76-contract.md) now succeeds and is
+frozen; its static rows appear coherent but do not explain within-step motion.
+[H77](docs/standing-h77-contract.md) adds implicit native posture feedback with
+equivalent current-state requests. It improves only one of three references and
+fails formal feasibility at ticks 132/120/120. Actual output-neutral substep
+traces select the coordinated contact-wrench/load-distribution branch. H77 stays
+opt-in and unpromoted; the next standing candidate must be separately versioned.
 
 Keep [H73](docs/standing-h73-contract.md#first-attempt--memory-failures-no-complete-screen)
 as a pending comparison candidate. Preserve its partial memory-failure outputs;
@@ -46,16 +138,23 @@ recovery, and full application checks remain afterward.
 
   H75-v1 exhausts 342 copied steps and three native build attempts. All retained
   H74 artifacts/source match; controls and signed perturbations replay exactly.
-  The best central/+5 mm probes still miss the reference speed reserve. Full
-  native row evidence remains incomplete; preserve the build failures and use
-  the next separately frozen read-only diagnostic before a candidate repair.
+  The best central/+5 mm probes still miss the reference speed reserve. Native
+  row evidence was incomplete at H75; preserve those build failures as the
+  reason H76 was separately frozen rather than rewriting H75.
+
+  H76-v1 completes that read-only diagnostic with zero physical steps. H77-v1
+  passes request/readback equivalence and native substep response but fails all
+  three formal reference entries. Continue only with a separately versioned
+  contact-wrench/load-distribution repair; do not retune H74/H75 or reuse the
+  rejected H27/H28/H43 changes.
 
 - [ ] **Implement the shared standing candidate and one acceptance operation.** Coordinate the complete objective, retain fixed stance references, and define validated backup behavior for timeout, infeasibility and model/contact invalidation. Run [saved regressions → serial short screens → unchanged official standing → structural/integration regressions → sustained, held-out and runtime gates](docs/standing-stabilization-plan.md#one-reproducible-acceptance-operation). Save complete first-failure replay inputs automatically, measure application latency and total memory including WASM, and report failed/incomplete stages explicitly. A shared module or local prediction success alone cannot close standing acceptance.
 
   Shared module and `node scripts/standing-acceptance.mjs` are implemented.
-  Five candidate tests, six injected transitions and 81 focused/application
-  regressions pass. The operation returns failure at feasibility; later stages,
-  the browser process-memory gate and any validated backup remain incomplete.
+  Eight serial policy/controller tests and six injected transitions pass. The
+  final-source operation returns failure at all three reference entries; later
+  stages, the browser process-memory gate and any validated backup remain
+  incomplete. The broader unit suite is 325/339 and full physics is 6/63.
 
 - [x] **Make a fresh baseline possible without lost historical reports.** Added explicit `--fresh` capture in [capture-physics-baseline.mjs](scripts/capture-physics-baseline.mjs). The [new baseline](docs/checkpoints/2026-09-26/fresh-baseline.json) captures 252 source/configuration hashes, installed direct dependency versions, the Node executable digest, staged/unstaged/untracked work, planned scenario inputs, and four missing historical artifacts. It inherits no 140/142 result and runs no physics. Five CLI regression tests cover missing/empty/changed history, dirty worktrees, and immutable output; see [verification](docs/checkpoints/2026-09-26/fresh-baseline-validation.json) and [reproduction instructions](docs/evidence.md#fresh-baseline-capture). Original artifacts remain unchanged and missing originals remain unavailable.
 
@@ -73,13 +172,13 @@ These milestones depend on accepted quiet standing. Existing controller and pred
 
 - [ ] **Validate prediction against the production simulation.** Compare matched 0.5 s trajectories at held-out signed command magnitudes of 75% and 125% of calibration, within existing caps, plus infeasible requests. Done when each foot-load-change error is ≤10% of body weight, horizontal COM-displacement error ≤0.02 m, and readiness-time error ≤0.05 s; record maxima and RMS errors. Infeasible requests must be labeled and cannot predict readiness. The recorded short hip-pulse check does not establish this transfer-prediction gate.
 
-- [ ] **Complete individual steps, then sequences, release, and reversal.** Require qualified transfer, measured swing unloading <3 N for 0.05 s, touchdown within 0.09 m for 0.10 s, completed cooldown, and ≥1 s stable double support. Prove each direction at each heading before subsequent steps and release/reversal cases. Resolve the recorded slow-pull fall at tick 216 and planted-reversal fall at tick 343 in [balance-controller.test.mjs](tests/balance-controller.test.mjs), plus both balance probes. Done when the complete focused selection and new physical regressions pass on the same source; recover or explicitly re-enumerate the historical 142-test selection before comparing counts.
+- [ ] **Complete individual steps, then sequences, release, and reversal.** Require qualified transfer, measured swing unloading <3 N for 0.05 s, touchdown within 0.09 m for 0.10 s, completed cooldown, and ≥1 s stable double support. Prove each direction at each heading before subsequent steps and release/reversal cases. The two active-step commitment regressions now pass unchanged, but the current final-source slow-pull and planted-reversal trials still fall at ticks 304 and 228 in [balance-controller.test.mjs](tests/balance-controller.test.mjs). Done when the complete focused selection and new physical regressions pass on the same source; recover or explicitly re-enumerate the historical 142-test selection before comparing counts.
 
 - [x] **Resolve the separate small-impulse diagnostic outlier.** [Controlled native precision comparison](docs/small-impulse-diagnostic.md#result--numerical-precision-sensitivity-isolated) identifies a precision-sensitive numerical residual in the tiny paired-impulse measurement. With matching solver features, identical engine source and exact serialized physical-state transfer, all twelve f64 cases are smooth and within 1.71% error; native f32 remains irregular (up to 15.35%). Correctly hooked WASM snapshots replay all 24 post-step body states exactly. Contacts and joint-limit regimes are unchanged. The application still reproduces its 15.23% diagnostic outlier; the original assertion and tolerance remain unchanged, with [nine original tests passing](docs/checkpoints/2026-09-27/impulse-precision-validation/manifest.json). [Evidence and failed attempts are archived](docs/checkpoints/2026-09-27/impulse-precision/manifest.json). The fixed-assembly fixture still collapses in f64, so this is not a standing repair.
 
 ## P2 — Complete integration and release evidence
 
-- [ ] **Run the complete application and physics gates on one candidate.** After the earlier milestones pass, record `npm run typecheck`, `npm run lint`, `npm test`, `npm run test:recovery`, and the unfiltered `npm run test:physics`, including exits, scenario counts, settings, dependency versions, and before/after fingerprints. The harness currently discovers 63 physics scenarios; discovery is not execution. Done when all required assertions pass and warnings are documented. The older 273/280 application and 6/63 physics counts are historical failures, not current verification.
+- [ ] **Run the complete application and physics gates on one candidate.** After the earlier milestones pass, record `npm run typecheck`, `npm run lint`, `npm test`, `npm run test:recovery`, and the unfiltered `npm run test:physics`, including exits, scenario counts, settings, dependency versions, and before/after fingerprints. The final H77 source completes all 63 physics scenarios with 6 pass and 57 fail; its complete unit run is 325/339 with 13 fail and 1 skip. Typecheck/build pass and lint has 0 errors/6 warnings. Done only when all required assertions pass and warnings are documented; this failed run is current verification, not acceptance.
 
 - [ ] **Establish end-to-end recovery and five-cycle protocol acceptance.** Run the required recovery fixtures and [protocol-five-cycle-acceptance.mjs](scripts/protocol-five-cycle-acceptance.mjs). Done when five uninterrupted cycles complete with the existing 25 s post-impact recovery limit, measured stable returns, continuous body ownership, and no automatic reset, while all structural/contact criteria hold. Capture the required visuals; a three-second protocol replay cannot close this task. See [physics acceptance](docs/physics-acceptance.md) and [browser setup](docs/browser-verification.md).
 

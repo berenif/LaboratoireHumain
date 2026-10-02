@@ -62,6 +62,8 @@ export function EmbodiedDemo() {
           className="control-panel"
           diagnostics={diagnostics}
           renderer={renderer}
+          quality={runtime?.quality ?? "auto"}
+          onQualityChange={next => runtime?.setQuality(next)}
           webglAvailable={Boolean(capabilities?.webgl2)}
           canvas2dAvailable={Boolean(capabilities?.canvas2d)}
           paused={paused}
@@ -79,6 +81,8 @@ export function EmbodiedDemo() {
           onFocus={() => runtime?.focusSubject()}
         /></> : <ProtocolPanel
           renderer={renderer}
+          quality={runtime?.quality ?? "auto"}
+          onQualityChange={next => runtime?.setQuality(next)}
           webglAvailable={Boolean(capabilities?.webgl2)}
           paused={paused}
           ready={Boolean(diagnostics?.interactiveViewReady) && !fatalError}

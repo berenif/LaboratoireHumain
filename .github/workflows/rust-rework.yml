@@ -1,0 +1,66 @@
+name: Rust rework physics gates
+
+on:
+  push:
+    branches: [main]
+    paths: ['rust/**', 'scripts/*rust*.mjs', 'tests/rust-tooling.test.mjs', 'package.json', 'package-lock.json', 'docs/rust-rework*', '.github/workflows/rust-rework.yml']
+  pull_request:
+    paths: ['rust/**', 'scripts/*rust*.mjs', 'tests/rust-tooling.test.mjs', 'package.json', 'package-lock.json', 'docs/rust-rework*', '.github/workflows/rust-rework.yml']
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  native-foundation:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: 22.13.0
+      - name: Install pinned Rust components
+        run: |
+          rustup toolchain install 1.89.0 --profile minimal --component clippy,rustfmt --target wasm32-unknown-unknown
+          cargo +1.89.0 fetch --locked --manifest-path rust/Cargo.toml
+          cargo +1.89.0 fetch --locked --manifest-path rust/vendor/rapier3d/Cargo.toml
+      - name: Verify tooling contracts
+        run: node --test tests/rust-tooling.test.mjs
+      - name: Verify native foundation, terrain and striker twice and preserve failures
+        run: node scripts/run-rust-gates.mjs --foundation evidence/rust-rework-ci
+      - name: Upload evidence even on failure, incompleteness or timeout
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: rust-rework-${{ github.run_attempt }}
+          path: evidence/rust-rework-ci
+          if-no-files-found: error
+          retention-days: 14
+      # No publication step. Full browser/physics/performance acceptance is still
+      # incomplete. --foundation only admits implemented native checks;
+      # the default release gate continues to exit nonzero until admission exists.
+
+  browser-builds:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: 22.13.0
+      - name: Bootstrap pinned compiler and browser tools from a clean checkout
+        run: node scripts/setup-rust.mjs
+      - name: Build root and Pages subpath artifacts
+        run: |
+          node scripts/build-rust-browser.mjs rust/dist/root /
+          node scripts/build-rust-browser.mjs rust/dist/subpath /LaboratoireHumain/
+      - name: Preserve browser build artifacts for inspection
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: rust-browser-builds-${{ github.run_attempt }}
+          path: |
+            rust/dist/root
+            rust/dist/subpath
+          if-no-files-found: error
+          retention-days: 14

@@ -33,19 +33,27 @@ mkdirSync(join(output, 'src'));
 copyFileSync('scripts/standing-angular-native.rs', join(output, 'src/main.rs'));
 copyFileSync('scripts/rapier-calibration/Cargo.lock', join(output, 'Cargo.lock'));
 writeFileSync(join(output, 'Cargo.toml'), `[package]\nname = "standing-angular-native"\nversion = "0.1.0"\nedition = "2024"\n\n[dependencies]\nrapier3d = { path = "rapier3d", features = ["serde-serialize"] }\nbincode = "1.3.3"\nserde_json = { version = "1", features = ["arbitrary_precision", "float_roundtrip"] }\n`);
-const toolchain = resolve(process.env.H75_TOOLCHAIN_BIN ?? 'evidence/standing-h75-v1/toolchain/toolchains/1.89.0-x86_64-pc-windows-gnu/bin');
+const retainedToolchain = resolve('evidence/standing-h75-v1/toolchain/toolchains/1.89.0-x86_64-pc-windows-gnu/bin');
+const installedToolchain = resolve(process.env.USERPROFILE ?? '', '.rustup/toolchains/1.89.0-x86_64-pc-windows-gnu/bin');
+const toolchain = resolve(process.env.H75_TOOLCHAIN_BIN
+  ?? (existsSync(join(retainedToolchain, 'cargo.exe')) ? retainedToolchain : installedToolchain));
+const rustTarget = process.env.H75_RUST_TARGET
+  ?? (toolchain === retainedToolchain ? null : 'x86_64-pc-windows-gnu');
 const environment = { CARGO_HOME: resolve('evidence/rapier-calibration-cache'), RUSTC: join(toolchain, 'rustc.exe'), CARGO_TARGET_DIR: resolve(process.env.H75_NATIVE_TARGET ?? join(output, 'target')) };
-const command = [join(toolchain, 'cargo.exe'), 'build', '--offline', '--release', '--manifest-path', join(output, 'Cargo.toml')];
+const command = [join(toolchain, 'cargo.exe'), 'build', '--offline', '--release',
+  ...(rustTarget ? ['--target', rustTarget] : []), '--manifest-path', join(output, 'Cargo.toml')];
 const start = performance.now();
 const result = spawnSync(command[0], command.slice(1), { env: { ...process.env, ...environment }, encoding: 'utf8', windowsHide: true, timeout: manifest.budget.maximumBuildWallS * 1000 });
-writeFileSync(join(output, 'build.log'), result.stdout + result.stderr, { flag: 'wx' });
+writeFileSync(join(output, 'build.log'), `${result.stdout ?? ''}${result.stderr ?? ''}${result.error ? `\nspawn error: ${result.error.message}\n` : ''}`, { flag: 'wx' });
 const metadata = spawnSync(command[0], ['metadata', '--offline', '--format-version', '1', '--manifest-path', join(output, 'Cargo.toml')],
   { env: { ...process.env, ...environment }, encoding: 'utf8', windowsHide: true, timeout: 30000, maxBuffer: 16 * 2**20 });
 if (metadata.status === 0) json(join(output, 'metadata.json'), JSON.parse(metadata.stdout));
 const executable = join(output, 'standing-angular-native.exe');
-if (result.status === 0) copyFileSync(join(environment.CARGO_TARGET_DIR, 'release/standing-angular-native.exe'), executable);
+if (result.status === 0) copyFileSync(join(environment.CARGO_TARGET_DIR,
+  ...(rustTarget ? [rustTarget] : []), 'release/standing-angular-native.exe'), executable);
 const sources = inventory(join(output, 'src')), nativeSources = inventory(join(native, 'src'));
 json(join(output, 'build-report.json'), { status: result.status === 0 ? 'pass' : 'fail', command, environment,
+  rustTarget,
   exit: result.status, error: result.error?.message ?? null, wallMs: performance.now() - start,
   toolchain: { rustc: spawnSync(environment.RUSTC, ['--version', '--verbose'], { encoding: 'utf8', windowsHide: true }).stdout,
     cargoSha256: sha256(readFileSync(command[0])), rustcSha256: sha256(readFileSync(environment.RUSTC)) },

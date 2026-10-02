@@ -5,18 +5,20 @@ import { PlaygroundView } from "./playground-view";
 import { PROTOCOL_STRIKER_PIECES, protocolRoomPieces, type ProtocolVisualPiece } from "./protocol-visuals";
 import { flattenGeometryIndices, flattenGeometryVertices } from "../core/geometry";
 import {
-  PASSIVE_COLOR,
   PRIMARY_SEGMENT_BY_REGION,
-  REGION_COLORS,
   SEGMENTS,
   SEGMENT_BY_ID,
 } from "../core/humanoid";
-import type { PoseSnapshot, PoseView, RegionId, SegmentDefinition, SegmentId, SegmentPose, Vec3 } from "../core/types";
+import type { PoseSnapshot, PoseView, RegionId, SegmentDefinition, SegmentId, SegmentPose, Vec3, RenderQuality, RenderMetrics } from "../core/types";
 import { SharedCameraProjection } from "./camera";
 import type { SceneViewOptions } from "./options";
-import { interpolatePoseSnapshot, transformLocalPoint } from "./pose";
+import { PresentationBuffer, transformLocalPoint } from "./pose";
 
-export interface WebGLRenderMetrics {
+import { qualitySettings } from "./quality";
+import { BACKGROUND, BODY_COLORS, JOINT_COLOR, SELECTION } from "./palette";
+import { batchOpaque, disposeSceneGroup } from "./resources";
+
+export interface WebGLRenderMetrics extends RenderMetrics {
   readonly drawCalls: number;
   readonly triangles: number;
   readonly points: number;
@@ -51,12 +53,25 @@ export class WebGLView implements PoseView {
   private readonly protocolRoom = new THREE.Group();
   private readonly protocolStriker = new THREE.Group();
   private roomKey = "";
-  private protocolPalette = false;
   private readonly camera = new THREE.PerspectiveCamera();
-  private readonly segmentMeshes = new Map<SegmentId, THREE.Mesh<THREE.BufferGeometry, THREE.MeshStandardMaterial>>();
-  private readonly jointMarkers = new Map<SegmentId, THREE.Mesh>();
+  private readonly segmentMeshes = new Map<SegmentId, THREE.Mesh<THREE.BufferGeometry, THREE.MeshLambertMaterial>>();
+  private readonly jointMarkers = new THREE.InstancedMesh(new THREE.SphereGeometry(0.037, 8, 6),
+    new THREE.MeshLambertMaterial({ color: JOINT_COLOR }), SEGMENTS.length - 1);
+  private readonly jointTransform = new THREE.Object3D();
+  private readonly presentation = new PresentationBuffer();
+  private presentationStart = 0;
+  private presentationCpuMs = 0;
+  private quality: RenderQuality = "auto";
+  private autoRatio = 1.25;
+  private deviceRatio = 1;
+  private readonly keyLight = new THREE.DirectionalLight(0xffffff, 2);
+  private readonly casterBounds = new THREE.Box3();
+  private readonly lightBounds = new THREE.Box3();
+  private readonly corner = new THREE.Vector3();
+  private readonly center = new THREE.Vector3();
   private readonly supportMarkers = new Map<"leftFoot" | "rightFoot", THREE.Mesh<THREE.RingGeometry, THREE.MeshBasicMaterial>>();
-  private readonly baseColors = new Map<SegmentId, THREE.Color>();
+  private readonly bodyMaterials = new Map<string, THREE.MeshLambertMaterial>();
+  private readonly selectedMaterial = new THREE.MeshLambertMaterial({ color: SELECTION });
   private readonly selectionMarker: THREE.Mesh<THREE.SphereGeometry, THREE.MeshBasicMaterial>;
   private renderer: THREE.WebGLRenderer | null = null;
   private context: WebGL2RenderingContext | null = null;
@@ -64,6 +79,7 @@ export class WebGLView implements PoseView {
   private snapshot: PoseSnapshot | null = null;
   private cssWidth = 1;
   private cssHeight = 1;
+  private sized = false;
   private pixelRatio = 1;
   private initialized = false;
   private disposed = false;
@@ -84,7 +100,7 @@ export class WebGLView implements PoseView {
 
     this.selectionMarker = new THREE.Mesh(
       new THREE.SphereGeometry(0.19, 16, 10),
-      new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.46, wireframe: true }),
+      new THREE.MeshBasicMaterial({ color: SELECTION, transparent: true, opacity: 0.46, wireframe: true }),
     );
     this.selectionMarker.visible = false;
     this.selectionMarker.renderOrder = 10;
@@ -101,21 +117,30 @@ export class WebGLView implements PoseView {
   }
 
   setSnapshot(previous: PoseSnapshot, current: PoseSnapshot, alpha: number): void {
-    this.snapshot = interpolatePoseSnapshot(previous, current, alpha);
+    const start = performance.now();
+    this.snapshot = this.presentation.update(previous, current, alpha);
+    this.presentationStart = performance.now() - start;
   }
 
   render(): void {
     if (!this.renderer || this.disposed) return;
+    const start = performance.now();
     this.syncCamera();
     if (this.snapshot) this.applyPose(this.snapshot);
+    this.fitShadowCamera();
+    this.renderer.info.reset();
     this.renderer.render(this.scene, this.camera);
+    this.presentationCpuMs = performance.now() - start + this.presentationStart;
+    this.presentationStart = 0;
   }
 
   resize(width: number, height: number, devicePixelRatio: number): void {
     this.assertUsable();
+    this.sized = true;
     this.cssWidth = Math.max(1, Math.round(width));
     this.cssHeight = Math.max(1, Math.round(height));
-    this.pixelRatio = Math.max(1, Math.min(3, Number.isFinite(devicePixelRatio) ? devicePixelRatio : 1));
+    this.deviceRatio = devicePixelRatio;
+    this.pixelRatio = qualitySettings(this.quality, devicePixelRatio, this.autoRatio).pixelRatio;
     this.projection.setViewport(this.cssWidth, this.cssHeight);
     if (this.renderer) {
       this.renderer.setPixelRatio(this.pixelRatio);
@@ -127,6 +152,21 @@ export class WebGLView implements PoseView {
     this.canvas.style.width = `${this.cssWidth}px`;
     this.canvas.style.height = `${this.cssHeight}px`;
     this.syncCamera();
+  }
+
+  setQuality(quality: RenderQuality, autoPixelRatio = 1.25): void {
+    this.quality = quality;
+    this.autoRatio = autoPixelRatio;
+    const settings = qualitySettings(quality, this.deviceRatio, autoPixelRatio);
+    const shadow = this.keyLight.shadow;
+    if (shadow.mapSize.x !== settings.shadowResolution) {
+      shadow.dispose();
+      shadow.map = null;
+      shadow.mapPass = null;
+      shadow.mapSize.setScalar(settings.shadowResolution);
+      shadow.needsUpdate = true;
+    }
+    if (this.sized) this.resize(this.cssWidth, this.cssHeight, this.deviceRatio);
   }
 
   getProjection(): SharedCameraProjection {
@@ -141,6 +181,11 @@ export class WebGLView implements PoseView {
     const info = this.renderer?.info.render;
     return {
       drawCalls: info?.calls ?? 0,
+      presentationCpuMs: this.presentationCpuMs,
+      effectivePixelRatio: this.pixelRatio,
+      shadowResolution: this.keyLight.shadow.mapSize.x,
+      geometries: this.renderer?.info.memory.geometries ?? 0,
+      textures: this.renderer?.info.memory.textures ?? 0,
       triangles: info?.triangles ?? 0,
       points: info?.points ?? 0,
       lines: info?.lines ?? 0,
@@ -154,26 +199,17 @@ export class WebGLView implements PoseView {
     if (this.disposed) return;
     this.disposed = true;
     this.playgroundView.dispose();
-    const geometries = new Set<THREE.BufferGeometry>();
-    const materials = new Set<THREE.Material>();
-    geometries.add(this.selectionMarker.geometry);
-    materials.add(this.selectionMarker.material);
-    this.scene.traverse((object) => {
-      if (!(object instanceof THREE.Mesh) && !(object instanceof THREE.Line) && !(object instanceof THREE.Points)) return;
-      const renderable = object as THREE.Mesh;
-      if (renderable.geometry) geometries.add(renderable.geometry);
-      const objectMaterials = Array.isArray(renderable.material) ? renderable.material : [renderable.material];
-      for (const material of objectMaterials) if (material) materials.add(material);
-    });
-    for (const geometry of geometries) geometry.dispose();
-    for (const material of materials) material.dispose();
+    // Playground owns and clears its subtree first; the scene owns the rest.
+    if (!this.initialized) {
+      this.scene.add(this.selectionMarker, this.jointMarkers, this.keyLight);
+    }
+    disposeSceneGroup(this.scene, [...this.bodyMaterials.values(), this.selectedMaterial]);
     this.renderer?.dispose();
     this.renderer = null;
     this.context = null;
     this.segmentMeshes.clear();
-    this.jointMarkers.clear();
     this.supportMarkers.clear();
-    this.baseColors.clear();
+    this.bodyMaterials.clear();
     this.snapshot = null;
     if (this.ownsCanvas) this.canvas.remove();
     this.container = null;
@@ -198,43 +234,37 @@ export class WebGLView implements PoseView {
       powerPreference: "high-performance",
     });
     this.renderer.outputColorSpace = THREE.SRGBColorSpace;
-    this.renderer.setClearColor(0x101923, 1);
+    this.renderer.setClearColor(BACKGROUND, 1);
     this.renderer.shadowMap.enabled = true;
-    this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+    this.renderer.shadowMap.type = THREE.PCFShadowMap;
+    this.renderer.info.autoReset = false;
 
-    this.scene.background = new THREE.Color(0x101923);
-    this.scene.fog = new THREE.Fog(0x101923, 27, 55);
-    this.scene.add(new THREE.HemisphereLight(0xc6e6ff, 0x243047, 2.15));
-    const key = new THREE.DirectionalLight(0xffffff, 2.35);
-    key.position.set(2.6, 5.2, 3.7);
-    key.position.set(-7, 14, 9);
+    this.scene.background = new THREE.Color(BACKGROUND);
+    this.scene.add(new THREE.HemisphereLight(0xffffff, 0xb8bbb0, 2.1));
+    const key = this.keyLight;
+    key.position.set(-6, 10, 6);
     key.castShadow = true;
-    key.shadow.mapSize.set(2048, 2048);
-    Object.assign(key.shadow.camera, { left: -13, right: 13, top: 13, bottom: -13, near: 0.5, far: 40 });
-    key.shadow.normalBias = 0.025;
-    this.scene.add(key);
-    const rim = new THREE.DirectionalLight(0x7888ff, 1.1);
-    rim.position.set(-3.1, 2.6, -2.4);
-    this.scene.add(rim);
+    const resolution = qualitySettings(this.quality, this.deviceRatio, this.autoRatio).shadowResolution;
+    key.shadow.mapSize.set(resolution, resolution);
+    key.shadow.normalBias = 0.012;
+    key.shadow.bias = -0.0001;
+    this.scene.add(key, key.target);
 
     const floor = new THREE.Mesh(
       new THREE.PlaneGeometry(ARENA.width, ARENA.depth),
-      new THREE.MeshStandardMaterial({ color: 0x1b2932, roughness: 0.96, metalness: 0 }),
+      new THREE.MeshLambertMaterial({ color: 0xe9e9e2 }),
     );
     floor.rotation.x = -Math.PI * 0.5;
     floor.position.set(0, -0.012, 0);
     floor.receiveShadow = true;
     this.playgroundDecor.add(floor);
-    const grid = new THREE.GridHelper(20, 40, 0x3d5962, 0x2b3c47);
+    const grid = new THREE.GridHelper(20, 40, 0xb9c3bf, 0xd5dad5);
     grid.position.set(0, 0.002, 0);
     grid.scale.z = ARENA.depth / ARENA.width;
     this.playgroundDecor.add(grid);
 
-    const boundaryMaterial = new THREE.MeshStandardMaterial({
-      color: 0x496c89,
-      emissive: 0x163548,
-      emissiveIntensity: 0.5,
-      roughness: 0.72,
+    const boundaryMaterial = new THREE.MeshLambertMaterial({
+      color: 0x8ba39b,
     });
     const boundaries: ReadonlyArray<readonly [number, number, number, number, number]> = [
       [0, -0.025, -8.5, 20, 0.05],
@@ -248,33 +278,24 @@ export class WebGLView implements PoseView {
       this.playgroundDecor.add(boundary);
     }
 
+    batchOpaque(this.playgroundDecor);
     for (const definition of SEGMENTS) {
-      const baseColor = new THREE.Color(definition.region ? REGION_COLORS[definition.region] : PASSIVE_COLOR);
-      const material = new THREE.MeshStandardMaterial({
-        color: baseColor,
-        emissive: 0x000000,
-        roughness: 0.62,
-        metalness: 0.02,
-      });
+      const color = definition.region ? BODY_COLORS[definition.region] : "#a5b1ad";
+      let material = this.bodyMaterials.get(color);
+      if (!material) {
+        material = new THREE.MeshLambertMaterial({ color });
+        this.bodyMaterials.set(color, material);
+      }
       const mesh = new THREE.Mesh(shapeGeometry(definition), material);
       mesh.name = `segment:${definition.id}`;
-      mesh.castShadow = true;
-      mesh.receiveShadow = true;
-      mesh.userData.segmentId = definition.id;
-      mesh.userData.regionId = definition.region;
+      mesh.castShadow = mesh.receiveShadow = true;
+      mesh.userData.baseMaterial = material;
       this.segmentMeshes.set(definition.id, mesh);
-      this.baseColors.set(definition.id, baseColor);
       this.scene.add(mesh);
-      if (definition.parent) {
-        const joint = new THREE.Mesh(
-          new THREE.SphereGeometry(0.037, 10, 7),
-          new THREE.MeshBasicMaterial({ color: 0xe1eeff, transparent: true, opacity: 0.82 }),
-        );
-        joint.name = `joint:${definition.parent}:${definition.id}`;
-        this.jointMarkers.set(definition.id, joint);
-        this.scene.add(joint);
-      }
     }
+    this.jointMarkers.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
+    this.jointMarkers.frustumCulled = false;
+    this.scene.add(this.jointMarkers);
 
     for (const foot of ["leftFoot", "rightFoot"] as const) {
       const marker = new THREE.Mesh(
@@ -294,6 +315,8 @@ export class WebGLView implements PoseView {
     this.scene.add(this.protocolRoom);
     this.scene.add(this.protocolStriker);
     for (const piece of PROTOCOL_STRIKER_PIECES) this.protocolStriker.add(this.protocolMesh(piece));
+    batchOpaque(this.protocolStriker);
+    for (const child of this.protocolStriker.children) child.castShadow = true;
     this.initialized = true;
     this.syncCamera();
   }
@@ -325,43 +348,28 @@ export class WebGLView implements PoseView {
         this.protocolStriker.quaternion.set(snapshot.striker.rotation.x, snapshot.striker.rotation.y, snapshot.striker.rotation.z, snapshot.striker.rotation.w);
       }
     }
-    if (protocol !== this.protocolPalette) {
-      this.protocolPalette = protocol;
-      const background = protocol ? 0xbec7c0 : 0x101923;
-      this.scene.background = new THREE.Color(background);
-      this.scene.fog = new THREE.Fog(background, protocol ? 16 : 27, protocol ? 35 : 55);
-      this.renderer?.setClearColor(background, 1);
-    }
-    const poses = new Map<SegmentId, SegmentPose>();
+    const poses = this.presentation.byId;
     for (const mesh of this.segmentMeshes.values()) mesh.visible = false;
     for (const pose of snapshot.segments) {
-      poses.set(pose.id, pose);
       const mesh = this.segmentMeshes.get(pose.id);
       if (!mesh) continue;
       mesh.visible = true;
-      mesh.material.color.set(protocol
-        ? ["lumbar", "neck", "shoulder-girdle", "forearm-twist", "ankle"].includes(SEGMENT_BY_ID.get(pose.id)?.role ?? "") ? 0x303a38 : 0xf1efdf
-        : this.baseColors.get(pose.id) ?? new THREE.Color(PASSIVE_COLOR));
       mesh.position.set(pose.position.x, pose.position.y, pose.position.z);
       mesh.quaternion.set(pose.rotation.x, pose.rotation.y, pose.rotation.z, pose.rotation.w).normalize();
       const exactSelection = snapshot.diagnostics.selectedSegment;
       const selected = exactSelection
         ? pose.id === exactSelection
-        : SEGMENT_BY_ID.get(pose.id)?.region === snapshot.diagnostics.selectedRegion;
-      mesh.material.emissive.set(!protocol && selected ? 0x4ae1ff : 0x000000);
-      mesh.material.emissiveIntensity = !protocol && selected ? 0.55 : 0;
-      mesh.scale.setScalar(!protocol && selected ? 1.035 : 1);
+        : Boolean(snapshot.diagnostics.selectedRegion) && SEGMENT_BY_ID.get(pose.id)?.region === snapshot.diagnostics.selectedRegion;
+      mesh.material = selected ? this.selectedMaterial : mesh.userData.baseMaterial;
     }
 
+    let markerCount = 0;
     for (const definition of SEGMENTS) {
       if (!definition.parent) continue;
-      const marker = this.jointMarkers.get(definition.id);
+      const marker = this.jointTransform;
       const child = poses.get(definition.id);
       const parent = poses.get(definition.parent);
-      if (!marker || !child || !parent) {
-        if (marker) marker.visible = false;
-        continue;
-      }
+      if (!child || !parent) continue;
       const parentPoint = definition.jointAnchorParent
         ? transformLocalPoint(parent, definition.jointAnchorParent)
         : parent.position;
@@ -370,9 +378,12 @@ export class WebGLView implements PoseView {
         : child.position;
       const point = average(parentPoint, childPoint);
       marker.position.set(point.x, point.y, point.z);
-      (marker.material as THREE.MeshBasicMaterial).color.set(protocol ? 0x303a38 : 0xe1eeff);
-      marker.visible = true;
+      marker.updateMatrix();
+      this.jointMarkers.setMatrixAt(markerCount++, marker.matrix);
     }
+
+    this.jointMarkers.count = markerCount;
+    this.jointMarkers.instanceMatrix.needsUpdate = true;
 
     for (const foot of ["leftFoot", "rightFoot"] as const) {
       const marker = this.supportMarkers.get(foot)!;
@@ -395,7 +406,7 @@ export class WebGLView implements PoseView {
       snapshot.diagnostics.selectedRegion,
       poses,
     );
-    this.selectionMarker.visible = !protocol && Boolean(selectedPose);
+    this.selectionMarker.visible = Boolean(selectedPose);
     if (selectedPose) {
       this.selectionMarker.position.set(selectedPose.position.x, selectedPose.position.y, selectedPose.position.z);
       const scale = snapshot.diagnostics.activeGrab
@@ -422,15 +433,14 @@ export class WebGLView implements PoseView {
     geometry.setAttribute("position", new THREE.Float32BufferAttribute(piece.geometry.vertices.flatMap(vertex => [vertex.x, vertex.y, vertex.z]), 3));
     geometry.setIndex(piece.geometry.triangles.flatMap(triangle => [...triangle]));
     geometry.computeVertexNormals();
-    const mesh = new THREE.Mesh(geometry, new THREE.MeshStandardMaterial({
-      color: piece.color, roughness: piece.id === "head" ? 0.46 : 0.86,
-      metalness: piece.id === "head" ? 0.26 : 0.04,
+    const mesh = new THREE.Mesh(geometry, new THREE.MeshLambertMaterial({
+      color: piece.color,
       transparent: Boolean(piece.opacity), opacity: piece.opacity ?? 1,
       depthWrite: !piece.opacity, side: THREE.DoubleSide,
     }));
     mesh.position.set(piece.position.x, piece.position.y, piece.position.z);
     mesh.name = `protocol:${piece.id}`;
-    mesh.castShadow = piece.id !== "front-wall" && piece.id !== "right-wall";
+    mesh.castShadow = false;
     mesh.receiveShadow = true;
     return mesh;
   }
@@ -439,14 +449,48 @@ export class WebGLView implements PoseView {
     const key = `${room.width}:${room.depth}:${room.height}`;
     if (key === this.roomKey) return;
     this.roomKey = key;
-    for (const child of [...this.protocolRoom.children]) {
-      this.protocolRoom.remove(child);
-      if (child instanceof THREE.Mesh) {
-        child.geometry.dispose();
-        for (const material of Array.isArray(child.material) ? child.material : [child.material]) material.dispose();
-      }
-    }
+    disposeSceneGroup(this.protocolRoom);
     for (const piece of protocolRoomPieces(room)) this.protocolRoom.add(this.protocolMesh(piece));
+    batchOpaque(this.protocolRoom);
+    const grid = new THREE.GridHelper(room.width, Math.max(1, Math.round(room.width * 2)), 0xb9c3bf, 0xcbd2cb);
+    grid.position.y = 0.004;
+    grid.scale.z = room.depth / room.width;
+    this.protocolRoom.add(grid);
+  }
+
+  private fitShadowCamera(): void {
+    const bounds = this.casterBounds.makeEmpty();
+    this.scene.updateMatrixWorld(true);
+    for (const mesh of this.segmentMeshes.values()) if (mesh.visible) bounds.expandByObject(mesh);
+    if (this.protocolStriker.visible) bounds.expandByObject(this.protocolStriker);
+    if (this.playgroundView.group.visible) bounds.expandByObject(this.playgroundView.movingGroup);
+    if (bounds.isEmpty()) return;
+    // Include receiver space in the direction of the light rays. This retains
+    // floor and wall shadows without covering the whole 20m arena at all times.
+    const height = Math.max(0, bounds.max.y);
+    bounds.max.x += height * 0.6;
+    bounds.min.z -= height * 0.6;
+    bounds.min.y = Math.min(-0.1, bounds.min.y);
+    bounds.expandByScalar(0.35);
+    bounds.getCenter(this.center);
+    const light = this.keyLight;
+    light.target.position.copy(this.center);
+    light.position.copy(this.center).add(this.corner.set(-6, 10, 6));
+    light.updateMatrixWorld();
+    light.target.updateMatrixWorld();
+    light.shadow.updateMatrices(light);
+    const camera = light.shadow.camera;
+    const fit = this.lightBounds.makeEmpty();
+    for (let i = 0; i < 8; i++) {
+      this.corner.set(i & 1 ? bounds.max.x : bounds.min.x,
+        i & 2 ? bounds.max.y : bounds.min.y, i & 4 ? bounds.max.z : bounds.min.z);
+      fit.expandByPoint(this.corner.applyMatrix4(camera.matrixWorldInverse));
+    }
+    camera.left = fit.min.x; camera.right = fit.max.x;
+    camera.bottom = fit.min.y; camera.top = fit.max.y;
+    camera.near = Math.max(0.1, -fit.max.z - 1);
+    camera.far = Math.max(camera.near + 1, -fit.min.z + 1);
+    camera.updateProjectionMatrix();
   }
 
   private assertUsable(): void {

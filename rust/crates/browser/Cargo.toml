@@ -1,0 +1,16 @@
+[package]
+name = "lh-browser"
+version.workspace = true
+edition.workspace = true
+publish.workspace = true
+
+[target.'cfg(target_arch = "wasm32")'.dependencies]
+leptos.workspace = true
+lh-renderer.workspace = true
+wasm-bindgen.workspace = true
+wasm-bindgen-futures.workspace = true
+console_error_panic_hook.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+web-sys = { workspace = true, features = ["Window", "Document", "Element", "HtmlElement", "HtmlCanvasElement", "Event", "EventTarget", "CustomEvent", "CustomEventInit", "MessageEvent", "Worker", "WorkerOptions", "WorkerType", "DomRect", "Performance", "console"] }
+

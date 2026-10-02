@@ -75,6 +75,28 @@ PROTOCOL_VISUAL_URL=http://127.0.0.1:5173/ node scripts/verify-protocol-visual.m
 
 Other overrides are `PLAYGROUND_URL` (retain `?mode=playground`), `RECOVERY_REPLAY_URL`, and `PROTOCOL_REPLAY_URL`. The protocol replay's URL argument takes precedence over its environment variable. The full interaction runner has no URL override. Its output is under `evidence/visual-20260906/<run-name>` despite that historical parent name. Recovery fixture IDs can be supplied as a comma-separated second argument after the output directory; any filtered or shortened run must be labeled partial.
 
+## Renderer replay, UI, and live checks
+
+The renderer runner uses the same Playwright resolution and Edge prerequisites
+above, but starts its own temporary Vite server. It does not require the separate
+port-5173 server or FFmpeg. Use a fresh output directory from repository root:
+
+```sh
+node --import tsx scripts/rendering-browser-check.mjs evidence/browser/rendering-review-01
+```
+
+By default it runs `replay,ui,live`: identical recorded poses in both renderers,
+controls in both public modes, and four 60 s live trials. An optional second
+argument names a preserved baseline tree containing `src/scene` and `src/core`
+for before/after replay. `SANDBOX_STAGES` selects stages;
+`SANDBOX_LIVE_SECONDS` controls live duration (zero disables it), and
+`SANDBOX_POSES` names a directory with `protocol-poses.json` and
+`playground-poses.json`. Label any reduced run partial.
+
+Inspect `report.json`, screenshots and the before/after fingerprints. An empty
+error list does not establish physical acceptance or GPU/reference-hardware performance.
+See [rendering settings and recorded measurements](rendering.md).
+
 ## Inspect and preserve results
 
 Record command, exit code, source/configuration fingerprint, Node/Playwright/browser versions, selected fixtures, and output paths. Inspect the generated PNGs and videos in both renderers; verify that the requested renderer actually ran. A responsive page or a successful video encode does not demonstrate the 25-second recovery criterion or five completed cycles.

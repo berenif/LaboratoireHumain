@@ -578,21 +578,28 @@ export function solveRecoveryArmTarget(
   const distanceAtCosine = (cosine: number): number => Math.sqrt(Math.max(0,
     firstLength ** 2 + effectiveLength ** 2 + 2 * firstLength * sagittalLength * cosine));
   const delta = sub(requestedHandCenter, shoulder);
-  const distance = clamp(length(delta), distanceAtCosine(minimumCosine), distanceAtCosine(maximumCosine));
+  const maximumDistance = distanceAtCosine(maximumCosine);
+  const boundedDistance = clamp(length(delta), distanceAtCosine(minimumCosine), maximumDistance);
+  // Match the captured-chain solver's straight-arm snap. An acos roundoff
+  // bend here otherwise survives after that solver has made the bones collinear.
+  const distance = maximumDistance - boundedDistance <= 1e-12 ? maximumDistance : boundedDistance;
   const boundedCenter = add(shoulder, scale(normalize(delta), distance));
-  const phase = Math.acos(clamp((distance ** 2 - firstLength ** 2 - effectiveLength ** 2)
-    / (2 * firstLength * sagittalLength), -1, 1));
+  const phase = distance === maximumDistance && maximumCosine === 1 ? 0
+    : Math.acos(clamp((distance ** 2 - firstLength ** 2 - effectiveLength ** 2)
+      / (2 * firstLength * sagittalLength), -1, 1));
   const candidates = [offset + phase, offset - phase].filter(angle => angle >= -1e-8 && angle <= maximumBend + 1e-8);
   const elbowAngle = clamp(candidates[0] ?? offset + phase, 0, maximumBend);
   const elbowRotation = recoveryJointRotation("leftForearm", { x: elbowAngle, y: 0, z: 0 });
   const solved = solveCapturedTwoBone(shoulder, boundedCenter, firstLength, effectiveLength, bend, Math.PI);
   const axisA = normalize(sub(shoulder, solved.middle)), axisB = normalize(sub(solved.middle, solved.end));
   const localDistal = rotate(elbowRotation, normalize(effectiveAxis));
-  const initial = quatFromTo(UP, axisA);
+  const yaw = quatFromAxisAngle(UP, heading);
+  // At extension the bend plane is undefined; resolve its free twist in the
+  // character frame so rotating the whole fixture also rotates its wrist.
+  const initial = quatMultiply(yaw, quatFromTo(UP, rotate(quatInverse(yaw), axisA)));
   const mapped = rotate(initial, localDistal);
   const first = sub(mapped, scale(axisA, dot(mapped, axisA)));
   const second = sub(axisB, scale(axisA, dot(axisB, axisA)));
-  const yaw = quatFromAxisAngle(UP, heading);
   const fallback = rotate(yaw, RIGHT);
   const a = normalize(first, fallback), b = normalize(second, fallback);
   const twist = Math.atan2(dot(axisA, cross(a, b)), clamp(dot(a, b), -1, 1));
@@ -605,5 +612,4 @@ export function solveRecoveryArmTarget(
   return { handPosition, handRotation, upperRotation, forearmRotation, forearmTwistRotation, elbow: solved.middle, wrist,
     reachErrorM: length(sub(handPosition, requestedHandCenter)) };
 }
-
 
