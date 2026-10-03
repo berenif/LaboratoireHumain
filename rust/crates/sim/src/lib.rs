@@ -127,7 +127,7 @@ pub struct Profile {
 impl Default for Profile {
     fn default() -> Self {
         Self {
-            id: "rust-physics-v23-passive-fall".into(),
+            id: "rust-physics-v24-com-restoration".into(),
             dt_s: SUBSTEP_S,
             tick_substeps: 4,
             contact_friction_model: ContactFriction::Coulomb,
@@ -146,7 +146,7 @@ impl Default for Profile {
             posture_stiffness_multiplier: 20.0,
             posture_damping_multiplier: 40.0,
             supported_tilt_gain: 2.0,
-            supported_com_gain_rad_per_m: 3.0,
+            supported_com_gain_rad_per_m: 5.0,
             supported_com_velocity_gain_s_rad_per_m: 4.0,
             supported_angular_velocity_gain_s: 2.0,
             grab_limits: grab::Limits::default(),

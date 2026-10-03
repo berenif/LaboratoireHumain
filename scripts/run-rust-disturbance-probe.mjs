@@ -67,6 +67,9 @@ try {
 } finally {
   receipt.finished = new Date().toISOString();
   receipt.sourceUnchanged = Object.entries(sources).every(([name, hash]) => fs.existsSync(name) && sha(fs.readFileSync(name)) === hash);
+  receipt.implementedChecksPassed = receipt.runs.length === 2
+    && receipt.runs.every(run => run.exit === 0 && !run.error && !run.signal)
+    && receipt.sourceUnchanged;
   fs.writeFileSync(path.join(output, 'execution.json'), JSON.stringify(receipt, null, 2) + '\n', { flag: 'wx' });
 }
-process.exitCode = 1;
+process.exitCode = receipt.implementedChecksPassed ? 0 : 1;

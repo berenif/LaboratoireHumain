@@ -12,7 +12,6 @@ fn run() -> Result<bool, Box<dyn std::error::Error>> {
     if std::path::Path::new(out).exists() {
         return Err("Refuse existing evidence directory".into());
     }
-    fs::create_dir_all(out)?;
     let profile = if let Some(index) = args.iter().position(|a| a == "--profile") {
         serde_json::from_slice(&fs::read(
             args.get(index + 1).ok_or("Missing profile path")?,
@@ -21,6 +20,7 @@ fn run() -> Result<bool, Box<dyn std::error::Error>> {
         Profile::default()
     };
     profile.validate()?;
+    fs::create_dir_all(out)?;
     fs::write(
         format!("{out}/profile.json"),
         serde_json::to_vec_pretty(&profile)?,
@@ -176,13 +176,21 @@ fn run() -> Result<bool, Box<dyn std::error::Error>> {
         } else {
             vec![0.0, std::f32::consts::PI / 3.0, -std::f32::consts::PI / 4.0]
         };
+        let selected_mode = args
+            .iter()
+            .position(|a| a == "--mode")
+            .map_or("protocol", |index| args[index + 1].as_str());
+        let modes = match selected_mode {
+            "playground" => vec![lh_contracts::Mode::Playground],
+            "all" => vec![lh_contracts::Mode::Protocol, lh_contracts::Mode::Playground],
+            _ => vec![lh_contracts::Mode::Protocol],
+        };
         let mut reports = Vec::new();
-        for heading in headings {
-            let mut runtime = lh_sim::runtime::Runtime::new(
-                lh_contracts::Mode::Protocol,
-                heading,
-                profile.clone(),
-            )?;
+        for (mode, heading) in modes
+            .into_iter()
+            .flat_map(|mode| headings.iter().copied().map(move |heading| (mode, heading)))
+        {
+            let mut runtime = lh_sim::runtime::Runtime::new(mode, heading, profile.clone())?;
             runtime
                 .enable_quiet_measurement()
                 .map_err(|reject| format!("{reject:?}"))?;
@@ -229,13 +237,14 @@ fn run() -> Result<bool, Box<dyn std::error::Error>> {
             format!("{out}/disturbances.json"),
             serde_json::to_vec_pretty(&reports)?,
         )?;
+        let passed = !reports.is_empty() && reports.iter().all(|r| r["passed"] == true);
         println!(
             "{}",
             serde_json::to_string(
-                &json!({"scope":"Selected disturbance diagnostic only; no gate promotion", "out":out, "failed": reports.iter().filter(|r| r["passed"] != true).count()})
+                &json!({"scope":"Selected disturbance diagnostic only; no gate promotion", "out":out, "cases":reports.len(), "passed":passed, "failed": reports.iter().filter(|r| r["passed"] != true).count(), "releaseAccepted":false})
             )?
         );
-        return Ok(false);
+        return Ok(passed);
     }
     if args.get(1).is_some_and(|a| a == "--diagnose-foot-load") {
         let enabled = lh_sim::calibration::individual_feet_with_ccd(true)?;

@@ -4,7 +4,7 @@ Start with [current status](status.md) for the latest recorded checkpoint, unres
 
 Use the [prioritized TODO](../TODO.md) for remaining work, dependencies, and completion criteria.
 
-The [coordinated stabilization plan](standing-stabilization-plan.md) and its [implementation prompt](standing-stabilization-prompt.md) define the investigation gates. [H76](standing-h76-contract.md) completes native row inspection; [H77](standing-h77-contract.md) and [H78–H80](standing-h78-h80-contract.md) record failed opt-in standing candidates. Legacy browser standing remains unaccepted. The separate [Rust rework](rust-rework.md) passes implemented native gates A–C, eight selected pull probes and the six-case WASM standing matrix with its v22 profile. Full disturbance/stepping coverage, physical public modes and migration acceptance remain incomplete.
+The [coordinated stabilization plan](standing-stabilization-plan.md) and its [implementation prompt](standing-stabilization-prompt.md) define the investigation gates. [H76](standing-h76-contract.md) completes native row inspection; [H77](standing-h77-contract.md) and [H78–H80](standing-h78-h80-contract.md) record failed opt-in standing candidates. Legacy browser standing remains unaccepted. The separate [Rust rework](rust-rework.md) includes both physical public modes and a v24 standing repair; [current status](status.md) distinguishes passing checks from incomplete release acceptance. Full disturbance/stepping coverage, recovery/cycles and performance remain open.
 
 ## Run and understand the application
 

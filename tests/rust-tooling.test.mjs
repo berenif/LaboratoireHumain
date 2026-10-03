@@ -41,3 +41,16 @@ test('verification rejects misspelled scope flags and reused evidence before run
     assert.match(result.stderr, /Usage:|fresh workspace output/);
   }
 });
+
+test('browser builds preserve inherited tool paths with Windows environment casing', () => {
+  const executable = resolve('build/custom-bindgen/wasm-bindgen');
+  const inherited = ['cargo-bin', 'node-bin'].join(delimiter);
+  for (const key of ['Path', 'PATH', 'path']) {
+    const original = { [key]: inherited, KEEP: 'value' };
+    const env = browserEnvironment(executable, original);
+    assert.deepEqual(Object.keys(env).filter(key => key.toLowerCase() === 'path'), ['PATH']);
+    assert.equal(env.PATH, dirname(executable) + delimiter + inherited);
+    assert.equal(env.KEEP, 'value');
+    assert.equal(original[key], inherited);
+  }
+});

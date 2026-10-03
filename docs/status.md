@@ -1,5 +1,42 @@
 # Current status
 
+**2026-10-03 migration continuation:** the v24 standing candidate increases
+supported COM restoration from 3 to 5 rad/m without changing acceptance limits
+or motor ceilings. Preliminary native standing passes all six public-mode
+cases; the freshly built WASM artifact now passes all six with unchanged source
+and artifact hashes. Selected pulls, terrain and striker checks also pass
+natively. The
+gain-4 trial is rejected for native drift and a terrain structural failure.
+Fresh verification passes all **73 Rust tests**, native/WASM Clippy and
+formatting. All **15 native stages pass**, with byte-identical repeated
+foundation, six-case public-mode standing, terrain and striker reports and
+unchanged source hashes. All **10 final browser stages pass**, including six standing
+cases, 42 terrain cases, physical striker, worker lifecycle and both renderers
+at root/subpath origins. The normal preview build is byte-identical to the
+verified root artifact. Final evidence is under
+`evidence/migration-remaining-final-{native,browser}`.
+
+Native quiet diagnostics now select protocol, playground or both modes, and
+foundation verification repeats the six-case public-mode matrix. The old v23
+native playground +60° trial fails foot drift at tick 1871, exposing the gap
+in the previous protocol-only native diagnostic. Scoped disturbance exit
+codes now reflect their actual results while release admission stays false;
+invalid profiles leave no evidence directory. Windows browser builds preserve
+the inherited Cargo/Node paths even when the environment spells `Path`.
+
+Fresh v24 strict stepping is **0/9**, crouch-left recovery records zero
+recoveries in 25 seconds, and isolated-box contact stress passes **200/216**.
+The full retained-app suite reports **375 pass, four fail, seven skip**: the
+same slow-pull, planted-reversal and two strong-pull/fall failures remain.
+Fresh idle browser timing fails on both renderers: WebGL2/WebGPU record
+197/483 core tick deadline misses at simulation/wall ratios 1.000/0.986.
+Source and artifact hashes remain unchanged; full performance admission stays
+open (`evidence/migration-remaining-performance/report.json`).
+Strict stepping, automatic recovery/cycles, contact stress, full disturbance
+and terrain traversal coverage, the retained-app failures and hardware timing
+still block full migration and production promotion. See [the continuation
+record](rust-rework.md#migration-continuation--2026-10-03).
+
 **2026-10-02 migration integration:** this source checkpoint includes the Rust
 preview, audited engine, native/WASM tooling, renderer, UI, terrain and striker.
 Production remains on the existing application while
