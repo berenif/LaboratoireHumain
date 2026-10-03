@@ -69,6 +69,8 @@ npm run verify:rust
 `test:rust` runs the native workspace tests. `lint:rust` checks formatting and
 all native and WASM crates. `verify:rust:foundation` preserves source and two
 identical runs of the native foundation, terrain-contact and striker checks.
+It also repeats the full two-second settle plus 30-second native worker
+standing matrix in protocol and playground modes at all three headings.
 `verify:rust:browser` builds root and Pages-subpath artifacts, then tests
 WebGPU/WebGL2, fault handling, worker lifecycle, all six flat-floor standing
 trials, 42 terrain cases and the physical striker. Browser checks use

@@ -1,16 +1,69 @@
 # Rust rework implementation and verification record
 
 **Incomplete. Production remains on the legacy entrypoint.** The current Rust
-candidate is `rust-physics-v23-passive-fall`. Its predecessor
-`rust-physics-v22-coulomb-contacts` passed native gates A–C and eight selected
-pull probes twice with byte-identical results. Its six-case WASM standing
-matrix passed, but the fresh v23 matrix passes five of six: +60° playground
-standing exceeds the unchanged 10 mm left-forefoot drift limit at tick 1902.
-The earlier simplified-contact failure is preserved as historical evidence. Scoped Edge UI checks pass
-on forced WebGPU and WebGL2 at root and Pages-style subpath origins.
+candidate is `rust-physics-v24-com-restoration`. Its freshly built WASM worker
+passes all six standing cases, superseding the v23 +60° playground drift
+failure. All 15 native foundation stages pass with byte-identical repeated
+reports, including the six-case public-mode matrix. All ten browser integration
+stages also pass. Earlier simplified-contact, v22 and v23 results remain historical.
 All nine strict stepping fixtures still fail. Recovery, repeated strike/recovery cycles,
 terrain balance/traversal, full actuator/input qualification and performance remain open.
 Builds and UI checks do not establish complete physical or release acceptance.
+
+## Migration continuation — 2026-10-03
+
+The supported center-of-mass restoration gain changes from 3 to 5 rad/m.
+Motor ceilings, anatomy, contact settings, fixed stepping and acceptance limits
+are unchanged. A gain-4 trial passed the six preliminary WASM cases but failed
+native +60° playground standing and the gentle rubble structural check, and
+was rejected. Gain 5 passes the preliminary six-case native/WASM matrices,
+eight selected native pulls, 21 terrain checks and three striker cases.
+The preliminary browser receipts are not final verification: their source
+snapshot changed while independent CLI tests were being edited. Final checks
+use freshly built default artifacts and frozen runtime sources. The final
+six-case WASM standing run passes with `sourceUnchanged: true` and
+`artifactsUnchanged: true` in
+`evidence/migration-remaining-final-browser/quiet/report.json`.
+All ten stages of `evidence/migration-remaining-final-browser/execution.json`
+pass, including root/subpath builds, UI/fault checks, worker lifecycle,
+42 terrain cases and physical striker checks. Formatting, native/WASM Clippy,
+all 73 Rust tests, five JavaScript tooling tests, TypeScript and the application
+build pass. JavaScript lint has no errors and eight existing warnings.
+The final native runner passes all 15 stages, with byte-identical repeated
+foundation, public-mode standing, terrain and striker reports and unchanged
+source hashes (`evidence/migration-remaining-final-native/execution.json`).
+The normal `rust/dist/app` output is byte-identical to the verified root
+artifact (`evidence/migration-remaining-default-artifact.json`).
+
+The native quiet CLI now accepts `--mode protocol|playground|all`; omitting it
+preserves the earlier protocol-only diagnostic. Foundation verification
+repeats `--mode all` so it observes both actual public-mode assemblies at all
+three headings. This reproduces a previously missed v23 native playground
+drift failure at tick 1871 rather than reporting protocol success as coverage
+of both modes. Invalid profiles are rejected before evidence creation.
+
+Selected disturbance diagnostics and their wrapper now return success when
+their requested checks pass, while retaining `releaseAccepted: false` and the
+explicit partial scope. Executable-level regressions distinguish a passing
+physical pull from a failed strict-step request and reject invalid input
+without creating evidence. Browser build environments also preserve inherited
+Windows tool paths when the variable is spelled `Path`, avoiding a duplicate
+`PATH` that hid Cargo from child processes.
+
+Fresh v24 strict stepping remains 0/9, and the crouch-left recovery trial remains
+in bracing after 25 seconds with zero recoveries. Full isolated-box contact
+stress passes 200/216. Those diagnostics do not qualify the new default for
+stepping, recovery or full contact stress. Full
+disturbance and input coverage, recovery/cycles, terrain traversal and actual
+hardware performance remain open. Production is not switched to Rust.
+The retained-app suite reports 375 passes, four failures and seven skips;
+the same slow-pull/reversal and two strong-pull/fall assertions remain failed.
+Fresh idle timing against the exact default preview also fails on WebGL2 and
+WebGPU, with 197/483 core tick deadline misses despite simulation/wall ratios
+of 1.000/0.986. Source and artifact hashes remain unchanged. This is an idle
+diagnostic, not full hardware, input latency, process memory or soak admission
+(`evidence/migration-remaining-performance/report.json`).
+Local trial reports and logs are under `evidence/migration-remaining-*`.
 
 ## Migration integration — 2026-10-02
 

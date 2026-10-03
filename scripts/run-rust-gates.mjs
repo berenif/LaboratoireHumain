@@ -33,6 +33,7 @@ const env=rustEnvironment();
 const records=[];
 const nativeChecks = [
   { name: 'native', args: [], report: 'report.json' },
+  { name: 'worker-quiet', args: ['--diagnose-worker-quiet', '--mode', 'all'], report: 'worker-quiet.json' },
   { name: 'terrain', args: ['--diagnose-terrain'], report: 'terrain.json' },
   { name: 'striker', args: ['--diagnose-striker'], report: 'striker.json' },
 ];

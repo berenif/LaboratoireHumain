@@ -43,11 +43,16 @@ export function browserTool(name) {
   return name;
 }
 
-export function browserEnvironment(bindgen = browserTool('wasm-bindgen')) {
-  const env = { ...rustEnvironment(), NO_COLOR: 'true', CARGO_NET_OFFLINE: 'true', RUSTUP_TOOLCHAIN: rustToolchain };
+export function browserEnvironment(bindgen = browserTool('wasm-bindgen'), baseEnvironment = rustEnvironment()) {
+  const env = { ...baseEnvironment, NO_COLOR: 'true', CARGO_NET_OFFLINE: 'true', RUSTUP_TOOLCHAIN: rustToolchain };
   // Trunk locates the bindgen CLI on PATH, including when an explicit override is used.
   if (isAbsolute(bindgen) || /[\\/]/.test(bindgen)) {
-    env.PATH = dirname(resolve(bindgen)) + delimiter + (env.PATH ?? '');
+    // Node passes only the first sorted spelling of Windows' case-insensitive
+    // PATH. Keeping both Path and PATH can silently discard Cargo's directory.
+    const pathKeys = Object.keys(env).filter(key => key.toLowerCase() === 'path');
+    const inheritedPath = env.PATH ?? env[pathKeys[0]] ?? '';
+    for (const key of pathKeys) delete env[key];
+    env.PATH = dirname(resolve(bindgen)) + delimiter + inheritedPath;
   }
   return env;
 }

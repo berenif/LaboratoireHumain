@@ -58,6 +58,11 @@ pub fn validate(args: &[String]) -> Result<(), String> {
                     mode,
                     Some("--diagnose-worker-quiet" | "--diagnose-worker-quiet-drift")
                 ) => {}
+            "--mode"
+                if matches!(
+                    mode,
+                    Some("--diagnose-worker-quiet" | "--diagnose-worker-quiet-drift")
+                ) => {}
             "--require-steps" if mode == Some("--diagnose-disturbances") => {
                 index += 1;
                 continue;
@@ -70,6 +75,9 @@ pub fn validate(args: &[String]) -> Result<(), String> {
             .ok_or_else(|| format!("Missing value for {flag}"))?;
         if flag == "--heading" && !value.parse::<f32>().is_ok_and(f32::is_finite) {
             return Err("Heading must be a finite number".into());
+        }
+        if flag == "--mode" && !matches!(value.as_str(), "protocol" | "playground" | "all") {
+            return Err("Mode must be protocol, playground or all".into());
         }
         index += 2;
     }
@@ -104,6 +112,10 @@ mod tests {
         );
         assert!(check(&["out", "--diagnose-recovery", "--fixture", "crouch"]).is_ok());
         assert!(check(&["out", "--diagnose-worker-quiet-drift", "--heading", "-1.2"]).is_ok());
+        for mode in ["protocol", "playground", "all"] {
+            assert!(check(&["out", "--diagnose-worker-quiet", "--mode", mode]).is_ok());
+            assert!(check(&["out", "--diagnose-worker-quiet-drift", "--mode", mode]).is_ok());
+        }
     }
 
     #[test]
@@ -117,6 +129,7 @@ mod tests {
             vec!["out", "--profile", "p.json", "--diagnose-terrain"],
             vec!["out", "--diagnose-terrain", "--diagnose-striker"],
             vec!["out", "--diagnose-striker", "--heading", "0"],
+            vec!["out", "--diagnose-terrain", "--mode", "all"],
             vec!["out", "unexpected"],
         ] {
             assert!(check(&args).is_err(), "{args:?}");
@@ -136,6 +149,16 @@ mod tests {
                 "--require-steps",
             ],
             vec!["out", "--diagnose-recovery", "--fixture", ""],
+            vec!["out", "--diagnose-worker-quiet", "--mode"],
+            vec!["out", "--diagnose-worker-quiet", "--mode", "unknown"],
+            vec![
+                "out",
+                "--diagnose-worker-quiet",
+                "--mode",
+                "all",
+                "--mode",
+                "all",
+            ],
         ] {
             assert!(check(&args).is_err(), "{args:?}");
         }

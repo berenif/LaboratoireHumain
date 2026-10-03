@@ -1,5 +1,13 @@
 # TODO
 
+**2026-10-03 migration continuation:** native quiet verification now covers
+both actual public-mode assemblies, and the v24 COM-restoration candidate passes
+all six native/WASM standing cases. All 15 repeated native stages and ten final
+browser stages pass. Scoped diagnostic exit codes, invalid-profile
+handling and Windows browser-build tool paths are repaired. Strict stepping,
+recovery/cycles, contact stress and performance remain open; production retains
+the existing entrypoint. See [current status](docs/status.md).
+
 **2026-10-02 merge preparation:** the Rust preview now includes the physical
 striker and all seven terrain stations. Native verification repeats the
 foundation, terrain and striker checks, and the combined browser verifier
