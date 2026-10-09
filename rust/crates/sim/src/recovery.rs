@@ -138,6 +138,12 @@ pub struct Status {
     pub qualified_time_s: f32,
     pub stable_time_s: f32,
     pub loaded_feet: [bool; 2],
+    pub elapsed_s: f32,
+    pub stalled_s: f32,
+    pub unsupported_s: f32,
+    pub retries: u32,
+    pub last_retry: Option<&'static str>,
+    pub progress: f32,
 }
 pub(crate) struct Controller {
     pub status: Status,
@@ -146,6 +152,7 @@ pub(crate) struct Controller {
     lead: usize,
     stand_feet: Option<[Vector; 2]>,
     stand_root: Option<Pose>,
+    best_progress: f32,
 }
 impl Controller {
     pub fn new(s: &Simulation) -> Result<Self, String> {
@@ -196,12 +203,19 @@ impl Controller {
                 qualified_time_s: 0.0,
                 stable_time_s: 0.0,
                 loaded_feet: feet,
+                elapsed_s: 0.0,
+                stalled_s: 0.0,
+                unsupported_s: 0.0,
+                retries: 0,
+                last_retry: None,
+                progress: 0.0,
             },
             targets,
             hands,
             lead: usize::from(feet[1] && !feet[0]),
             stand_feet: None,
             stand_root: None,
+            best_progress: f32::NEG_INFINITY,
         })
     }
     pub fn standing(&self) -> bool {
@@ -286,15 +300,49 @@ impl Controller {
         self.status.phase = phase;
         self.status.phase_time_s = 0.0;
         self.status.qualified_time_s = 0.0;
+        self.status.stalled_s = 0.0;
+        self.status.stable_time_s = 0.0;
+        self.best_progress = f32::NEG_INFINITY;
+        self.stand_feet = None;
+        self.stand_root = None;
     }
     pub fn update(&mut self, s: &Simulation) -> Result<Vec<[f32; 3]>, String> {
         let dt = s.profile.dt_s;
         self.status.phase_time_s += dt;
+        self.status.elapsed_s += dt;
+        self.status.unsupported_s = if has_persistent_support(s) {
+            0.0
+        } else {
+            self.status.unsupported_s + dt
+        };
         let feet = [foot(s, "left"), foot(s, "right")];
         self.status.loaded_feet = feet;
         let shins = [load(s, "leftShin") >= 3.0, load(s, "rightShin") >= 3.0];
         let height = body(s, "pelvis").translation().y - s.support_height();
         let torso_up = up(s, "torso");
+        let progress = match self.status.phase {
+            Phase::Roll => -(*body(s, "torso").rotation() * Vector::Z).y,
+            Phase::Brace | Phase::Kneel => height + torso_up,
+            Phase::PlantLead => height + u8::from(feet[self.lead]) as f32,
+            Phase::PlantTrailing => height + feet.iter().filter(|f| **f).count() as f32,
+            Phase::Stand => height + torso_up,
+        };
+        self.status.progress = progress;
+        if progress > self.best_progress + 0.005 {
+            self.best_progress = progress;
+            self.status.stalled_s = 0.0;
+        } else {
+            self.status.stalled_s += dt;
+        }
+        if self.status.stalled_s >= 2.0 && self.status.unsupported_s < 0.2 {
+            self.status.retries += 1;
+            self.status.last_retry = Some("stalled-phase");
+            self.lead = 1 - self.lead;
+            let measured = Self::new(s)?;
+            self.targets = measured.targets;
+            self.hands = measured.hands;
+            self.enter(measured.status.phase);
+        }
         let qualified = match self.status.phase {
             Phase::Roll => {
                 (*body(s, "torso").rotation() * Vector::Z).y < -0.6 && has_persistent_support(s)
@@ -451,9 +499,13 @@ impl Simulation {
         self.recovery.as_ref().map(|r| &r.status)
     }
     pub(crate) fn observe_recovery(&mut self) {
-        if self.recovery.as_ref().is_some_and(|r| r.standing())
-            && (body(self, "pelvis").translation().y - self.support_height() < 0.56
-                || up(self, "torso") < 1.25_f32.cos())
+        if self
+            .recovery
+            .as_ref()
+            .is_some_and(|r| r.status.unsupported_s >= 0.2)
+            || self.recovery.as_ref().is_some_and(|r| r.standing())
+                && (body(self, "pelvis").translation().y - self.support_height() < 0.56
+                    || up(self, "torso") < 1.25_f32.cos())
         {
             // A failed rise hands back to the existing passive fall observer.
             // The next attempt must earn settled, persistent support again.

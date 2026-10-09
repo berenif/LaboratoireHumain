@@ -2027,6 +2027,13 @@ pub(crate) fn gyroscopic_corrected_angvel(
     inv_principal_inertia: AngVector,
     dt: Real,
 ) -> AngVector {
+    // Spherical inertia makes w × Iw exactly zero in every frame. Repeated
+    // f32 rotations into and out of the principal frame otherwise introduce
+    // angular momentum drift even though there is no gyroscopic torque.
+    if principal_inertia.x == principal_inertia.y && principal_inertia.y == principal_inertia.z {
+        return angvel;
+    }
+
     // NOTE: integrating the gyroscopic forces implicitly are both slower and
     //       very dissipative. Instead, we only keep the explicit term and
     //       ensure angular momentum is preserved (similar to Jolt).

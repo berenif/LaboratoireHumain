@@ -29,6 +29,7 @@ function publish(requestId, reply, started, timing) {
     workerTimeOriginMs: performance.timeOrigin,
     timing,
     wasmLinearBytes: wasm.memory?.buffer.byteLength ?? null,
+    transferBuffersAllocated: buffers.length,
     ...(quietQualification ? { quietProgress: JSON.parse(runtime.quiet_progress()) } : {}) }, [slot.buffer]);
 }
 
@@ -49,7 +50,7 @@ self.onmessage = event => {
     lastRequest = message.requestId;
     if (message.type === 'calibrateFoundation') {
       if (runtime) throw new Error('Calibration requires an uninitialized worker');
-      if (!['primitive', 'canonical', 'joints', 'feet', 'chains'].includes(message.kind)
+      if (!['primitive', 'canonical', 'joints', 'feet', 'chains', 'stress', 'controls', 'actuators', 'disturbances', 'steps', 'legacy', 'recovery', 'cycles', 'terrain'].includes(message.kind)
         || !message.profile || typeof message.profile !== 'object' || Array.isArray(message.profile)) throw new Error('Invalid foundation fixture');
       const profile = JSON.stringify(message.profile);
       if (profile.length > 65536) throw new Error('Foundation profile exceeds bound');

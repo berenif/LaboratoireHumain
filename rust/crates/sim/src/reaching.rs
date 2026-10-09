@@ -12,7 +12,7 @@ fn coordinate_index(coordinate: char) -> Result<usize, String> {
     }
 }
 
-fn endpoint(
+pub(crate) fn endpoint(
     s: &Simulation,
     chain: &[usize],
     root: Pose,

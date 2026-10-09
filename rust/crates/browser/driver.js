@@ -14,7 +14,8 @@ export async function start_bridge() {
   const host = document.getElementById('viewport');
   const bindings = window.lhBindings;
   let worker = null;
-  let initialization = { mode: 'protocol', heading: 0, generation: 1, floorEnabled: true };
+  const initialMode = new URL(location.href).searchParams.get('mode') === 'playground' ? 'playground' : 'protocol';
+  let initialization = { mode: initialMode, heading: 0, generation: 1, floorEnabled: true };
   const state = {
     disposed: false, renderer: null, canvas: null, changing: false, graphicsFault: false, graphicsError: '',
     backendRequested: new URL(location.href).searchParams.get('renderer') || 'auto',
@@ -27,6 +28,8 @@ export async function start_bridge() {
     manual: false, manualRequests: [], rendererChanges: 0, listeners: [], lastPick: null,
     touches: new Map(), gesture: null,
     packets: [], frames: [], droppedPackets: 0, droppedFrames: 0, previousFrameMs: null,
+    snapshotSources: [], inputSamples: [], visualInputs: [], droppedInputs: 0,
+    maximumQueueDepth: 0, maximumOutstandingAdvances: 0, maximumAdvanceTicks: 0, maximumTransferBuffers: 0,
   };
   function listen(target, type, callback, options) {
     target.addEventListener(type, callback, options);
@@ -39,7 +42,7 @@ export async function start_bridge() {
       ready: Boolean(state.last && state.renderer && !state.changing && !state.graphicsFault && !state.failed),
       canReset: Boolean(state.last || state.workerFault), heading: state.heading,
       halted: state.failed || state.graphicsFault,
-      paused: state.desiredPaused, mode: state.last?.reply.mode || 'protocol',
+      paused: state.desiredPaused, mode: state.last?.reply.mode || initialization.mode,
       station: state.playground.station, difficulty: state.playground.difficulty,
       backend: graphics.backend || '', requestedRenderer: state.backendRequested, quality: state.quality, selected: state.selected,
       tick: snapshot?.stamp.tick || 0, generation: snapshot?.stamp.generation || 0,
@@ -94,6 +97,10 @@ export async function start_bridge() {
   function send(message, manualResolve = null) {
     if (state.outstanding || state.disposed) throw new Error('Worker request already outstanding');
     message.requestId = ++state.requestId;
+    if (message.type === 'advance') {
+      state.maximumOutstandingAdvances = Math.max(state.maximumOutstandingAdvances, 1);
+      state.maximumAdvanceTicks = Math.max(state.maximumAdvanceTicks, message.ticks);
+    }
     state.outstanding = { id: message.requestId, type: message.type, sent: performance.now(), manualResolve,
       strike: message.commands?.some(command => command.action === 'Strike') || false,
       commandSequences: message.commands?.map(command => command.stamp.sequence) || [] };
@@ -110,17 +117,20 @@ export async function start_bridge() {
     if (clearTouches) { state.touches.clear(); state.gesture = null; }
     state.pending = state.pending.filter(entry => typeof entry.action !== 'object' || !('GrabMove' in entry.action || 'GrabBegin' in entry.action || 'GrabEnd' in entry.action));
   }
-  function queue(action, effect = null) {
+  function queue(action, effect = null, input = null) {
     if (state.disposed || state.workerFault || !state.last) return;
     if (changesTrial(action)) {
       cancelPointer(false); state.pending = []; state.manualRequests.splice(0).forEach(request => request.reject(new Error('Reset cancelled queued advance')));
     }
     const press = action?.GrabMove?.press;
     if (press !== undefined && state.pending.at(-1)?.action?.GrabMove?.press === press) {
-      state.pending[state.pending.length - 1] = { action, effect }; return;
+      const previous = state.pending[state.pending.length - 1].input;
+      if (previous) retain(state.inputSamples, { ...previous, coalesced: true, visibleAtMs: null }, 'droppedInputs');
+      state.pending[state.pending.length - 1] = { action, effect, input }; return;
     }
     if (state.pending.length >= 128) { fail('Input queue is full'); return; }
-    state.pending.push({ action, effect });
+    state.pending.push({ action, effect, input });
+    state.maximumQueueDepth = Math.max(state.maximumQueueDepth, state.pending.length);
     pump();
   }
   function pump() {
@@ -135,6 +145,10 @@ export async function start_bridge() {
         const reset = changesTrial(entry.action);
         if (reset && commands.length) { state.pending.unshift(entry); break; }
         const sequence = ++state.sequence;
+        if (entry.input) {
+          if(state.visualInputs.length>=128) { state.droppedInputs++; }
+          else state.visualInputs.push({ ...entry.input, sequence, tick: state.last.reply.snapshot.stamp.tick });
+        }
         commands.push({ stamp: { schema: 4, generation: state.last.reply.snapshot.stamp.generation, sequence, tick: state.last.reply.snapshot.stamp.tick }, action: entry.action });
         if (entry.effect) state.acknowledgements.set(sequence, entry.effect);
         if (reset) break;
@@ -183,6 +197,13 @@ export async function start_bridge() {
       const oldGeneration = state.last?.reply.snapshot.stamp.generation;
       const receivedAtMs = performance.now();
       state.last = { reply: message.reply, poses: new Float32Array(message.poseBuffer).slice(), timing: message.timing };
+      state.maximumTransferBuffers = Math.max(state.maximumTransferBuffers, message.transferBuffersAllocated ?? 0);
+      if (message.reply.completed_ticks > 0 || !state.snapshotSources.length || oldGeneration !== message.reply.snapshot.stamp.generation) {
+        if (oldGeneration !== message.reply.snapshot.stamp.generation) state.snapshotSources = [];
+        state.snapshotSources.push({ timeS: message.reply.snapshot.simulation_time_s,
+          atMs: message.workerTimeOriginMs + message.workerAtMs - performance.timeOrigin });
+        if (state.snapshotSources.length > 512) state.snapshotSources.shift();
+      }
       retain(state.packets, { requestId: message.requestId, type: outstanding.type, receivedAtMs,
         generation: message.reply.snapshot.stamp.generation, tick: message.reply.snapshot.stamp.tick,
         simulationTimeS: message.reply.snapshot.simulation_time_s, completedTicks: message.reply.completed_ticks,
@@ -311,7 +332,10 @@ export async function start_bridge() {
     } else {
       const rect = state.canvas.getBoundingClientRect();
       const target = state.renderer.drag_target(event.clientX - rect.left, event.clientY - rect.top, rect.width, rect.height, pointer.point, pointer.normal);
-      queue({ GrabMove: { press: pointer.press, target: xyz(target) } });
+      const segment = state.lastPick?.segment;
+      queue({ GrabMove: { press: pointer.press, target: xyz(target) } }, null,
+        Number.isInteger(segment) ? { inputAtMs: event.timeStamp, segment,
+          before: Array.from(state.renderer.presentation_position(segment)), coalesced: false } : null);
     }
   });
   listen(host, 'pointerup', event => {
@@ -365,7 +389,28 @@ export async function start_bridge() {
           state.renderer.resize(rect.width, rect.height, ratio);
           if (state.renderer.draw(now)) {
             state.frameCount++;
+            const displayedTimeS = state.renderer.presentation_time_s();
+            const sources = state.snapshotSources;
+            const upperIndex = sources.findIndex(source => source.timeS >= displayedTimeS);
+            let sourceAtMs = null;
+            if (upperIndex >= 0) {
+              const b = sources[upperIndex], a = sources[Math.max(0, upperIndex - 1)];
+              const fraction = b.timeS === a.timeS ? 1 : (displayedTimeS - a.timeS) / (b.timeS - a.timeS);
+              sourceAtMs = a.atMs + (b.atMs - a.atMs) * fraction;
+            }
+            state.visualInputs = state.visualInputs.filter(input => {
+              const position = state.renderer.presentation_position(input.segment);
+              const moved = position.some((value, i) => Math.abs(value - input.before[i]) > 1e-7);
+              const acknowledged = state.last?.reply.snapshot.acknowledged_sequence >= input.sequence
+                && state.last.reply.snapshot.stamp.tick > input.tick;
+              if (moved && acknowledged || now - input.inputAtMs > 1000) {
+                retain(state.inputSamples, { ...input, visibleAtMs: moved && acknowledged ? performance.now() : null }, 'droppedInputs');
+                return false;
+              }
+              return true;
+            });
             retain(state.frames, { atMs: frameStarted, cpuMs: performance.now() - frameStarted,
+              displayedSimulationTimeS: displayedTimeS, snapshotAgeMs: sourceAtMs === null ? null : performance.now() - sourceAtMs,
               intervalMs: state.previousFrameMs === null ? null : frameStarted - state.previousFrameMs,
               observationTick: state.last?.reply.snapshot.stamp.tick, generation: state.last?.reply.snapshot.stamp.generation,
               paused: state.desiredPaused, visible: state.visible, backlogSeconds: state.accumulator }, 'droppedFrames');
@@ -396,6 +441,9 @@ export async function start_bridge() {
       rendererChanges: state.rendererChanges, backlogSeconds: state.accumulator, lastPick: state.lastPick,
       activePointer: state.pointer?.kind || null, failure: state.last?.reply.failure }; },
     drainTelemetry() { return { packets: state.packets.splice(0), frames: state.frames.splice(0),
+      inputs: state.inputSamples.splice(0), droppedInputs: state.droppedInputs, pendingVisualInputs: state.visualInputs.length,
+      bounds: { maximumQueueDepth: state.maximumQueueDepth, maximumOutstandingAdvances: state.maximumOutstandingAdvances,
+        maximumAdvanceTicks: state.maximumAdvanceTicks, maximumTransferBuffers: state.maximumTransferBuffers },
       droppedPackets: state.droppedPackets, droppedFrames: state.droppedFrames,
       mainWasmLinearBytes: bindings.linear_memory_bytes() }; },
     setManual(value) { state.manual = Boolean(value); state.accumulator = 0; state.lastClock = performance.now(); },

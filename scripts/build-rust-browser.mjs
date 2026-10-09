@@ -1,6 +1,7 @@
 import { spawnSync } from 'node:child_process';
 import { resolve } from 'node:path';
 import { browserEnvironment, checkBrowserTool, publicPath, workspaceOutput } from './rust-browser-tools.mjs';
+import { prepareRustBuild } from './rust-toolchain.mjs';
 
 const root = process.cwd();
 const output = workspaceOutput(process.argv[2] ?? 'rust/dist/app');
@@ -9,6 +10,7 @@ const env = browserEnvironment();
 const trunk = checkBrowserTool('trunk', undefined, env);
 checkBrowserTool('wasm-bindgen', undefined, env);
 function run(executable, args, cwd = root) {
+  if (executable === trunk) prepareRustBuild();
   const result = spawnSync(executable, args, { cwd, env, stdio: 'inherit', windowsHide: true });
   if (result.status !== 0) throw new Error(executable + ' failed: ' + (result.error?.message ?? result.status));
 }

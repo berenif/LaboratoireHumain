@@ -3,6 +3,7 @@
 //! writeback stages.
 
 use core::sync::atomic::Ordering;
+use na::SimdValue;
 
 #[cfg(feature = "dim3")]
 use crate::dynamics::rigid_body::gyroscopic_corrected_angvel;
@@ -37,6 +38,19 @@ pub(super) unsafe fn run_worker(ctx: &SharedCtx, worker_id: usize) {
     // The caller's stage ordinal; every worker passes the same sequence of
     // stage sites, so ordinals agree by construction. See `StageSync`.
     let mut stage = 0;
+
+    // Only worker zero writes the observational motor totals. These fields are
+    // not warmstart seeds and are never read by constraint generation or solve.
+    if worker_id == 0 {
+        let joints = unsafe { core::slice::from_raw_parts_mut(ctx.joints, ctx.num_joints) };
+        for joint in joints {
+            for motor in &mut joint.weight.data.motors {
+                motor.reset_delivery();
+            }
+        }
+        sync.complete(stage, 1, 1);
+    }
+    stage = sync.sync(stage, 1);
 
     /*
      * Stage: initialize solver bodies and their velocity increments (parallel over
@@ -243,8 +257,8 @@ pub(super) unsafe fn run_worker(ctx: &SharedCtx, worker_id: usize) {
                         let incr = vs.solver_vels_increment[i];
                         {
                             let vels = &mut vs.solver_bodies.vels[i];
-                            vels.linear += incr.linear;
-                            vels.angular += incr.angular;
+                            vels.add_linear(incr.linear);
+                            vels.add_angular(incr.angular);
                         }
 
                         // Per-substep gyroscopic correction (applied every substep
@@ -647,6 +661,62 @@ pub(super) unsafe fn run_worker(ctx: &SharedCtx, worker_id: usize) {
                     )
                 };
             }
+            // Record each solved motor row exactly once per internal substep,
+            // including its re-applied warmstart impulse. Never infer delivery
+            // from the requested force or reconstruct it from contact loads.
+            if worker_id == 0 {
+                use crate::dynamics::solver::joint_constraint::WritebackId;
+                let joints = unsafe { core::slice::from_raw_parts_mut(ctx.joints, ctx.num_joints) };
+                let constraints = unsafe { &*ctx.joint_constraints };
+                for builder in group.joint_builders.clone() {
+                    for row in &constraints.velocity_constraints[ctx.joint_rows[builder].clone()] {
+                        if let WritebackId::Motor(axis) = row.writeback_id {
+                            let motor = &mut joints[row.joint_id[0]].weight.data.motors[axis];
+                            motor.record_delivery(
+                                row.impulse,
+                                row.ang_jac1 * row.impulse,
+                                -row.ang_jac2 * row.impulse,
+                            );
+                        }
+                    }
+                }
+                for chunk in group.joint_chunks.clone() {
+                    for row in
+                        &constraints.simd_velocity_constraints[ctx.joint_chunk_rows[chunk].clone()]
+                    {
+                        if let WritebackId::Motor(axis) = row.writeback_id {
+                            let impulses: [Real; SIMD_WIDTH] = row.impulse.into();
+                            for lane in 0..SIMD_WIDTH {
+                                if row.joint_id[..lane].contains(&row.joint_id[lane]) {
+                                    continue;
+                                }
+                                let motor =
+                                    &mut joints[row.joint_id[lane]].weight.data.motors[axis];
+                                #[cfg(feature = "dim3")]
+                                {
+                                    let a = row.ang_jac1.extract(lane);
+                                    let b = row.ang_jac2.extract(lane);
+                                    motor.record_delivery(
+                                        impulses[lane],
+                                        crate::math::Vector::new(a.x, a.y, a.z) * impulses[lane],
+                                        -crate::math::Vector::new(b.x, b.y, b.z) * impulses[lane],
+                                    );
+                                }
+                                #[cfg(feature = "dim2")]
+                                {
+                                    motor.record_delivery(
+                                        impulses[lane],
+                                        row.ang_jac1.extract(lane) * impulses[lane],
+                                        -row.ang_jac2.extract(lane) * impulses[lane],
+                                    );
+                                }
+                            }
+                        }
+                    }
+                }
+                sync.complete(stage, 1, 1);
+            }
+            stage = sync.sync(stage, 1);
         }
 
         /*

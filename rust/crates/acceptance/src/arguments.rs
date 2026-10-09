@@ -2,6 +2,9 @@
 use std::collections::BTreeSet;
 
 const DIAGNOSTICS: &[&str] = &[
+    "--diagnose-actuators",
+    "--diagnose-legacy",
+    "--diagnose-cycles",
     "--diagnose-articulation",
     "--diagnose-hybrid-articulation",
     "--diagnose-recovery",

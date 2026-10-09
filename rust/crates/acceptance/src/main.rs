@@ -25,6 +25,43 @@ fn run() -> Result<bool, Box<dyn std::error::Error>> {
         format!("{out}/profile.json"),
         serde_json::to_vec_pretty(&profile)?,
     )?;
+    if args.get(1).is_some_and(|a| a == "--diagnose-actuators") {
+        let reports = lh_sim::actuators::trials(&profile)?;
+        let passed = reports.len() == lh_sim::actuators::CASES
+            && reports.iter().all(|r| r["passed"] == true);
+        fs::write(
+            format!("{out}/actuators.json"),
+            serde_json::to_vec_pretty(&reports)?,
+        )?;
+        println!(
+            "{}",
+            json!({"cases":reports.len(),"passed":passed,"releaseAccepted":false})
+        );
+        return Ok(passed);
+    }
+    if args.get(1).is_some_and(|a| a == "--diagnose-legacy") {
+        let reports = lh_sim::legacy::trials(&profile)?;
+        let passed = reports.len() == 4 && reports.iter().all(|r| r["passed"] == true);
+        fs::write(
+            format!("{out}/legacy.json"),
+            serde_json::to_vec_pretty(&reports)?,
+        )?;
+        println!(
+            "{}",
+            json!({"cases":4,"passed":passed,"releaseAccepted":false})
+        );
+        return Ok(passed);
+    }
+    if args.get(1).is_some_and(|a| a == "--diagnose-cycles") {
+        let report = lh_sim::cycles::trial(&profile)?;
+        let passed = report["passed"] == true;
+        fs::write(
+            format!("{out}/cycles.json"),
+            serde_json::to_vec_pretty(&report)?,
+        )?;
+        println!("{}", json!({"passed":passed,"releaseAccepted":false}));
+        return Ok(passed);
+    }
     #[cfg(not(target_arch = "wasm32"))]
     if args.get(1).is_some_and(|a| {
         matches!(
@@ -97,7 +134,7 @@ fn run() -> Result<bool, Box<dyn std::error::Error>> {
         )?;
         println!(
             "{}",
-            json!({"scope":"Two-second structural/contact checks across seven stations and three difficulties",
+            json!({"scope":"30-second balance and measured traversal across seven stations and three difficulties",
             "cases":reports.len(),"passed":passed,"releaseAccepted":false})
         );
         return Ok(passed);
@@ -134,7 +171,9 @@ fn run() -> Result<bool, Box<dyn std::error::Error>> {
             "{}",
             json!({"scope":"Contact roundoff causal diagnostic only", "contactFailures":contact.iter().filter(|r| !r.passed).count(),"forceOnlyFailures":force_only.iter().filter(|r| !r.passed).count(),"releaseAccepted":false})
         );
-        return Ok(false);
+        return Ok(contact.len() == 216
+            && force_only.len() == 36
+            && contact.iter().chain(&force_only).all(|r| r.passed));
     }
     if args.get(1).is_some_and(|a| {
         matches!(

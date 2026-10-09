@@ -113,10 +113,10 @@ impl<N: ScalarType, const LANES: usize> JointConstraint<N, LANES> {
         let ii_ang_impulse1 = self.ii_ang_jac1 * delta_impulse;
         let ii_ang_impulse2 = self.ii_ang_jac2 * delta_impulse;
 
-        solver_vel1.linear += lin_impulse.component_mul(&self.im1);
-        solver_vel1.angular += ii_ang_impulse1;
-        solver_vel2.linear -= lin_impulse.component_mul(&self.im2);
-        solver_vel2.angular -= ii_ang_impulse2;
+        solver_vel1.add_linear(lin_impulse.component_mul(&self.im1));
+        solver_vel1.add_angular(ii_ang_impulse1);
+        solver_vel2.add_linear(-(lin_impulse.component_mul(&self.im2)));
+        solver_vel2.sub_angular(ii_ang_impulse2);
     }
 
     pub fn remove_bias_from_rhs(&mut self) {
@@ -135,10 +135,10 @@ impl<N: ScalarType, const LANES: usize> JointConstraint<N, LANES> {
         let ii_ang_impulse1 = self.ii_ang_jac1 * self.impulse;
         let ii_ang_impulse2 = self.ii_ang_jac2 * self.impulse;
 
-        solver_vel1.linear += lin_impulse.component_mul(&self.im1);
-        solver_vel1.angular += ii_ang_impulse1;
-        solver_vel2.linear -= lin_impulse.component_mul(&self.im2);
-        solver_vel2.angular -= ii_ang_impulse2;
+        solver_vel1.add_linear(lin_impulse.component_mul(&self.im1));
+        solver_vel1.add_angular(ii_ang_impulse1);
+        solver_vel2.add_linear(-(lin_impulse.component_mul(&self.im2)));
+        solver_vel2.sub_angular(ii_ang_impulse2);
     }
 }
 
@@ -248,6 +248,46 @@ impl JointConstraint<Real, 1> {
             len += 1;
         }
 
+        #[cfg(feature = "dim3")]
+        if joint.enforce_motor_vector_limit {
+            // The extreme vectors of this three-coordinate impulse box occur
+            // at its eight corners. Admit a common factor only when their norm
+            // exceeds the existing sqrt(sum(axis_ceiling^2)) vector bound.
+            // This leaves declared forces, gains, row order and Jacobians intact.
+            let mut angular =
+                [(0.0, crate::math::Vector::ZERO, crate::math::Vector::ZERO); ANG_DIM];
+            let mut count = 0;
+            let mut bound_sq = 0.0;
+            for row in &out[start..len] {
+                if matches!(row.writeback_id, WritebackId::Motor(axis) if axis >= DIM) {
+                    angular[count] = (row.impulse_bounds[1], row.ang_jac1, row.ang_jac2);
+                    count += 1;
+                    bound_sq += row.impulse_bounds[1].powi(2);
+                }
+            }
+            let mut worst_sq = bound_sq;
+            for signs in 0..(1usize << count) {
+                let mut impulse1 = crate::math::Vector::ZERO;
+                let mut impulse2 = crate::math::Vector::ZERO;
+                for (k, &(bound, a, b)) in angular[..count].iter().enumerate() {
+                    let signed = if signs & (1 << k) == 0 { -bound } else { bound };
+                    impulse1 += a * signed;
+                    impulse2 += b * signed;
+                }
+                worst_sq = worst_sq
+                    .max(impulse1.length_squared())
+                    .max(impulse2.length_squared());
+            }
+            if worst_sq > bound_sq && worst_sq.is_finite() {
+                let factor = (bound_sq / worst_sq).sqrt() * (1.0 - 8.0 * Real::EPSILON);
+                for row in &mut out[start..len] {
+                    if matches!(row.writeback_id, WritebackId::Motor(axis) if axis >= DIM) {
+                        row.impulse_bounds[0] *= factor;
+                        row.impulse_bounds[1] *= factor;
+                    }
+                }
+            }
+        }
         JointConstraintHelper::finalize_constraints(&mut out[start..len]);
 
         let start = len;

@@ -1,0 +1,50 @@
+name: Qualify immutable Rust Pages candidate
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: rust-frozen-device
+  cancel-in-progress: false
+
+jobs:
+  qualify:
+    runs-on: [self-hosted, Windows, X64, lh-frozen-hardware]
+    timeout-minutes: 240
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22.13.0
+          cache: npm
+      - run: npm ci
+      - name: Full frozen-source native and browser acceptance
+        run: node scripts/run-rust-gates.mjs evidence/qualification
+        env:
+          RUST_BROWSER_CHANNEL: msedge
+      - name: Upload exact accepted bundle
+        uses: actions/upload-artifact@v4
+        with:
+          name: accepted-rust-pages
+          path: evidence/qualification/accepted-rust-pages
+          if-no-files-found: error
+          retention-days: 90
+      - name: Preserve acceptance and failed evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: rust-qualification-receipts
+          path: |
+            evidence/qualification/execution.json
+            evidence/qualification/*.log
+            evidence/qualification/*-1/*.json
+            evidence/qualification/*-2/*.json
+            evidence/qualification/candidate/qualification.json
+            evidence/qualification/candidate/hardware-performance/report.json
+          if-no-files-found: error
+          retention-days: 90

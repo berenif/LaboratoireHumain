@@ -1,6 +1,6 @@
 //! Tick-indexed inputs exported from the repository fixtures; no wall clock.
 use crate::{Profile, Simulation, measurement};
-use lh_contracts::{Action, Command, Stamp, Timeline};
+use lh_contracts::{Action, Command, Motion, Stamp, Timeline};
 use lh_model::Vec3;
 use serde::Deserialize;
 use serde_json::json;
@@ -83,7 +83,10 @@ fn run_disturbances(
     for p in inputs
         .pulls
         .iter()
-        .filter(|p| p.outcome == "recoverable" && (require_steps || !p.release_at_first_swing))
+        .filter(|p| {
+            (!require_steps || p.outcome == "recoverable")
+                && (require_steps || !p.release_at_first_swing)
+        })
         .filter(|p| selected.is_none_or(|id| p.id == id))
     {
         let mut s = Simulation::new(p.initial.heading, profile.clone(), true)?;
@@ -101,10 +104,14 @@ fn run_disturbances(
         let mut timeline = Timeline::new(s.generation);
         let mut replay = Vec::new();
         let mut failure = None;
+        let mut command_rejections = Vec::new();
         let mut trace = Vec::new();
+        let swing_trace = std::cell::RefCell::new(Vec::<serde_json::Value>::new());
+        let mut swing_diagnostic_errors = Vec::new();
         let mut release_tick = None;
         let mut step_events = Vec::new();
         let mut last_step_event = ("idle", false, 0);
+        let mut minimum_pelvis_y = f32::INFINITY;
         for tick in 0..=p.observe_until_frame {
             let release = release_tick.is_none()
                 && if p.release_at_first_swing {
@@ -143,10 +150,71 @@ fn run_disturbances(
                 replay.push(command);
             }
             for command in timeline.boundary() {
-                s.apply_grab_command(&command)
-                    .map_err(|e| format!("Fixture apply: {e:?}"))?;
+                if let Err(rejected) = s.apply_grab_command(&command) {
+                    command_rejections.push(json!({"command":command,"rejected":rejected}));
+                    // A physical fall cancels the press. Its remaining exported
+                    // moves still arrive and must never resurrect that grab.
+                    let cancelled_move = p.outcome != "recoverable"
+                        && matches!(
+                            s.motion,
+                            Motion::Falling | Motion::Fallen | Motion::Recovering
+                        )
+                        && s.grab.is_none()
+                        && matches!(
+                            command.action,
+                            Action::GrabMove { .. } | Action::GrabEnd { .. }
+                        );
+                    if !cancelled_move {
+                        failure = Some(measurement::Failure::new(
+                            s.tick,
+                            0,
+                            "fixture-command-rejection",
+                            format!("{rejected:?}"),
+                            1.0,
+                            0.0,
+                        ));
+                    }
+                }
             }
-            if let Err(f) = s.advance_tick_observed(|s, substep| {
+            if failure.is_some() {
+                break;
+            }
+            if let Err(f) = s.advance_tick_traced(|s, substep| {
+                if let Some(sample) = swing_trace.borrow_mut().last_mut()
+                    && sample["tick"] == s.tick && sample["substep"] == substep
+                {
+                    let side = sample["side"].as_u64().expect("diagnostic side") as usize;
+                    let mut loads = [0.0_f32; 2];
+                    let mut motors = Vec::new();
+                    for (i, part) in s.model.segments.iter().enumerate() {
+                        let part_side = usize::from(part.id.starts_with("right"));
+                        if matches!(part.role.as_str(), "hindfoot" | "forefoot") {
+                            loads[part_side] += s.support_normal_impulse(s.colliders[i])
+                                .expect("owned diagnostic collider") / s.profile.dt_s;
+                        }
+                        if part_side != side || !matches!(part.role.as_str(), "thigh" | "shin" | "ankle" | "hindfoot") {
+                            continue;
+                        }
+                        let profile = part.joint_profile.as_ref().expect("leg profile");
+                        let joint = s.world.impulse_joints.get(s.joints[i].expect("leg handle")).expect("leg joint");
+                        let measured = measurement::coordinates(
+                            *s.world.bodies[joint.body1()].rotation(),
+                            *s.world.bodies[joint.body2()].rotation(), profile);
+                        for axis in &profile.axes {
+                            let k = ['x', 'y', 'z'].iter().position(|c| *c == axis.coordinate).expect("leg coordinate");
+                            let motor = &joint.data.motors[3 + k];
+                            motors.push(json!({"segment":i,"coordinate":axis.coordinate,
+                                "measuredRad":measured[k],"deliveredAbsImpulseNmS":motor.delivered_abs_impulse,
+                                "capImpulseNmS":motor.max_force * s.profile.dt_s}));
+                        }
+                        if part.role == "hindfoot" {
+                            sample["footAfter"] = json!(crate::vec3(s.world.bodies[s.bodies[i]].translation()));
+                        }
+                    }
+                    sample["loadsAfterN"] = json!(loads);
+                    sample["pelvisAfter"] = json!(s.snapshot().segments[0]);
+                    sample["axesAfter"] = json!(motors);
+                }
                 if let Some(controller) = &s.stepping {
                     let key = (controller.status.phase, controller.status.verified_liftoff, s.counters.steps);
                     if key != last_step_event {
@@ -159,7 +227,8 @@ fn run_disturbances(
                     }
                 }
                 let pelvis = &s.world.bodies[s.bodies[0]];
-                if pelvis.translation().y < 0.56 {
+                minimum_pelvis_y = minimum_pelvis_y.min(pelvis.translation().y);
+                if p.outcome == "recoverable" && pelvis.translation().y < 0.56 {
                     return Err(measurement::Failure::new(
                         s.tick,
                         substep,
@@ -169,10 +238,24 @@ fn run_disturbances(
                         0.56,
                     ));
                 }
-                if s.tick >= p.observe_until_frame.saturating_sub(60) {
+                if p.outcome == "recoverable" && s.tick >= p.observe_until_frame.saturating_sub(60) {
                     measurement::standing_support(s, substep)?;
                 }
                 Ok(())
+            }, |s, event| {
+                if event.phase == crate::profiling::Phase::Controller && !event.begin
+                    && let Some(controller) = &s.stepping
+                {
+                    match controller.diagnose_swing(s) {
+                        Ok(Some(mut sample)) => {
+                            sample["tick"] = json!(event.tick);
+                            sample["substep"] = json!(event.substep);
+                            swing_trace.borrow_mut().push(sample);
+                        }
+                        Ok(None) => {}
+                        Err(error) => swing_diagnostic_errors.push(error),
+                    }
+                }
             }) {
                 failure = Some(f);
                 s.cancel_grab();
@@ -180,12 +263,51 @@ fn run_disturbances(
             }
             timeline.tick = s.tick;
             if tick % 15 == 0 {
+                let limb_motors: Vec<_> = s
+                    .model
+                    .segments
+                    .iter()
+                    .enumerate()
+                    .filter(|(_, segment)| {
+                        matches!(
+                            segment.role.as_str(),
+                            "thigh" | "shin" | "ankle" | "hindfoot"
+                        )
+                    })
+                    .filter_map(|(i, segment)| {
+                        let profile = segment.joint_profile.as_ref()?;
+                        let joint = s.world.impulse_joints.get(s.joints[i]?)?;
+                        let coordinates = measurement::coordinates(
+                            *s.world.bodies[joint.body1()].rotation(),
+                            *s.world.bodies[joint.body2()].rotation(),
+                            profile,
+                        );
+                        let caps: [f32; 3] = std::array::from_fn(|k| {
+                            if profile
+                                .axes
+                                .iter()
+                                .any(|axis| axis.coordinate == ['x', 'y', 'z'][k])
+                            {
+                                joint.data.motors[3 + k].max_force
+                            } else {
+                                0.0
+                            }
+                        });
+                        Some(json!({"segment":i,"coordinates":coordinates,"axisCapsNm":caps}))
+                    })
+                    .collect();
                 trace.push(json!({"tick":s.tick,"com":crate::vec3(s.center_of_mass()),
                     "pelvis":s.snapshot().segments[0],"contacts":s.contacts,"targets":s.targets,
+                    "limbMotors":limb_motors,"deliveredMotors":s.diagnostics.delivered_motors,
                     "step":s.stepping.as_ref().map(|controller| &controller.status)}));
             }
         }
-        let physical_passed = failure.is_none() && s.tick == p.observe_until_frame + 1;
+        if !swing_diagnostic_errors.is_empty() {
+            return Err(format!("Swing diagnostic: {swing_diagnostic_errors:?}"));
+        }
+        let physical_passed = failure.is_none()
+            && s.tick == p.observe_until_frame + 1
+            && (p.outcome == "recoverable" || s.counters.falls > 0 && minimum_pelvis_y < 0.55);
         let steps_passed = s.counters.steps >= p.minimum_steps
             && (!p.release_at_first_swing || release_tick.is_some());
         let passed = physical_passed && (!require_steps || steps_passed);
@@ -206,8 +328,8 @@ fn run_disturbances(
         reports.push(json!({"id":p.id,"scope":scope,
             "passed":passed,"physicalPassed":physical_passed,"requiresSteps":require_steps,"stepsPassed":steps_passed,
             "minimumSteps":p.minimum_steps,"releaseAtFirstSwing":p.release_at_first_swing,"releasedAtTick":release_tick,
-            "behaviorFailures":behavior_failures,"stepEvents":step_events,
-            "completedTicks":s.tick,"firstFailure":failure,"commands":replay,"trace":trace,"final":s.snapshot()}));
+            "behaviorFailures":behavior_failures,"stepEvents":step_events,"swingTrace":swing_trace.into_inner(),
+            "completedTicks":s.tick,"firstFailure":failure,"commands":replay,"commandRejections":command_rejections,"trace":trace,"minimumPelvisY":minimum_pelvis_y,"final":s.snapshot()}));
     }
     if reports.is_empty() {
         return Err("No disturbance fixtures selected".into());

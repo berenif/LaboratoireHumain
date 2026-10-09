@@ -3,9 +3,9 @@ name: Rust rework physics gates
 on:
   push:
     branches: [main]
-    paths: ['rust/**', 'scripts/*rust*.mjs', 'tests/rust-tooling.test.mjs', 'package.json', 'package-lock.json', 'docs/rust-rework*', '.github/workflows/rust-rework.yml']
+    paths: ['rust/**', 'scripts/*rust*.mjs', 'tests/rust-*.mjs', 'package.json', 'package-lock.json', 'docs/rust-rework*', '.github/workflows/rust-rework.yml']
   pull_request:
-    paths: ['rust/**', 'scripts/*rust*.mjs', 'tests/rust-tooling.test.mjs', 'package.json', 'package-lock.json', 'docs/rust-rework*', '.github/workflows/rust-rework.yml']
+    paths: ['rust/**', 'scripts/*rust*.mjs', 'tests/rust-*.mjs', 'package.json', 'package-lock.json', 'docs/rust-rework*', '.github/workflows/rust-rework.yml']
   workflow_dispatch:
 
 permissions:
@@ -26,7 +26,7 @@ jobs:
           cargo +1.89.0 fetch --locked --manifest-path rust/Cargo.toml
           cargo +1.89.0 fetch --locked --manifest-path rust/vendor/rapier3d/Cargo.toml
       - name: Verify tooling contracts
-        run: node --test tests/rust-tooling.test.mjs
+        run: node --test tests/rust-tooling.test.mjs tests/rust-build-freshness.integration.mjs
       - name: Verify native foundation, terrain and striker twice and preserve failures
         run: node scripts/run-rust-gates.mjs --foundation evidence/rust-rework-ci
       - name: Upload evidence even on failure, incompleteness or timeout

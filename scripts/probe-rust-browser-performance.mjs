@@ -5,6 +5,8 @@ import { chromium, browserLaunchOptions } from './rust-browser-test.mjs';
 import { createHash } from 'node:crypto';
 import { existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from 'node:fs';
 import { resolve, join, relative } from 'node:path';
+import { memorySampler } from './rust-browser-memory.mjs';
+import { sourceHashes, fingerprint } from './rust-release-tools.mjs';
 
 const output = resolve(process.argv[2] ?? '');
 assert.ok(process.argv[2] && !existsSync(output), 'Use a fresh evidence directory');
@@ -18,7 +20,8 @@ assert.ok(!profilePath || artifact, 'Profile diagnostics require the exact serve
 const contract = JSON.parse(readFileSync('docs/rust-rework-performance-v1.json'));
 mkdirSync(output, { recursive: true });
 const report = { started: new Date().toISOString(), scope: 'Every worker core tick/controller phase and render interval in the real browser, protocol idle. Diagnostic, not release admission.',
-  contract, cases: [], releaseAccepted: false, missing: ['Other physics/mode fixtures', 'Actual displayed snapshot age', 'Input-visible latency', 'OS process memory', 'Soak', 'Independent hardware admission'] };
+  contract, cases: [], releaseAccepted: false, missing: [] };
+const frozenSources = sourceHashes();
 const hash = bytes => createHash('sha256').update(bytes).digest('hex');
 function files(directory) {
   return readdirSync(directory, { withFileTypes: true }).flatMap(entry => {
@@ -53,13 +56,18 @@ function stats(values, deadline = null) {
     misses: deadline === null ? null : values.filter(value => value > deadline).length, deadline };
 }
 const browser = await chromium.launch(browserLaunchOptions(true));
+const memoryProbe = await memorySampler();
+const memoryTimers = new Set();
 report.browser = browser.version();
+report.hardware = memoryProbe.hardware;
+report.hardwareAdmitted = report.hardware !== null && ['cpu','logicalCores','os','ramMiB'].every(key=>report.hardware[key]===contract.device[key])
+  && `Microsoft Edge ${report.browser}`===contract.device.browser && (process.env.RUST_BROWSER_CHANNEL ?? 'msedge') === 'msedge';
 try {
   const cdp = await browser.newBrowserCDPSession();
   try { report.systemGpu = (await cdp.send('SystemInfo.getInfo')).gpu; }
   catch (error) { report.systemGpuUnavailable = String(error); }
-  for (const backend of backends) {
-    const trial = { backend, errors: [] }; report.cases.push(trial);
+  for (const mode of ['protocol','playground']) for (const backend of backends) {
+    const trial = { mode, backend, errors: [], processMemory:[] }; report.cases.push(trial);
     const context = await browser.newContext({ viewport: { width: 1280, height: 900 } });
     if (profile) await context.addInitScript(profile => {
       const post = Worker.prototype.postMessage;
@@ -78,6 +86,19 @@ try {
     const url = new URL(origin); url.searchParams.set('renderer', backend);
     await page.goto(url.href);
     await page.waitForFunction(() => window.__lhRust?.diagnostics.ready && window.__lhRust.drainTelemetry, {}, { timeout: 45000 });
+    if(mode==='playground') {
+      await page.locator('#mode').selectOption('playground');
+      await page.waitForFunction(()=>window.__lhRust.diagnostics.mode==='playground'&&!window.__lhRust.diagnostics.outstanding);
+    }
+    const sampleProcessMemory = async () => {
+      const began=performance.now();
+      try {
+        const inventory=(await cdp.send('SystemInfo.getProcessInfo')).processInfo;
+        const ids=inventory.map(process=>process.id).filter(Number.isSafeInteger);
+        trial.processMemory.push({atMs:performance.now(),...await memoryProbe.sample(ids),queryMs:performance.now()-began});
+      } catch(error) { trial.processMemory.push({atMs:performance.now(),rssMiB:null,error:String(error)}); }
+    };
+    await sampleProcessMemory();
     if (report.assets) {
       trial.loadedAssets = await page.evaluate(async names => Object.fromEntries(await Promise.all(names.map(async name => {
         const response = await fetch(new URL(name, document.baseURI));
@@ -87,26 +108,43 @@ try {
       }))), Object.keys(report.assets));
       assert.deepEqual(trial.loadedAssets, report.assets);
     }
-    trial.samples = await page.evaluate(async ({ warmupS, measurementS }) => {
-      await new Promise(resolve => setTimeout(resolve, warmupS * 1000));
+    const memoryBegan=performance.now();
+    let memoryBusy=false;
+    const memoryTimer=setInterval(async()=>{if(memoryBusy)return;memoryBusy=true;try{await sampleProcessMemory();}finally{memoryBusy=false;}},1000);
+    memoryTimers.add(memoryTimer);
+    await page.waitForTimeout(contract.timing.warmupS*1000);
+    const point=await page.evaluate(()=>window.__lhRust.projectSegment(window.__lhRust.diagnostics.snapshot.segments.findIndex(segment=>segment.id==='rightHand')));
+    await page.mouse.move(point.x,point.y);await page.mouse.down();
+    await page.waitForFunction(()=>window.__lhRust.diagnostics.activePointer==='grab');
+    const collection = page.evaluate(async ({ measurementS, soakS }) => {
       window.__lhRust.drainTelemetry();
       const initial = window.__lhRust.diagnostics, beganAtMs = performance.now();
-      const packets = [], frames = [], memory = [];
-      let droppedPackets = 0, droppedFrames = 0;
+      const packets = [], frames = [], memory = [], inputs = [];
+      let droppedPackets = 0, droppedFrames = 0, droppedInputs = 0, bounds, pendingVisualInputs=0;
       const drain = () => {
         const data = window.__lhRust.drainTelemetry();
         packets.push(...data.packets); frames.push(...data.frames);
-        droppedPackets = data.droppedPackets; droppedFrames = data.droppedFrames;
+        inputs.push(...data.inputs); bounds=data.bounds;pendingVisualInputs=data.pendingVisualInputs;
+        droppedPackets = data.droppedPackets; droppedFrames = data.droppedFrames; droppedInputs=data.droppedInputs;
         memory.push({ atMs: performance.now(), mainWasmLinearBytes: data.mainWasmLinearBytes,
           jsHeap: performance.memory ? { used: performance.memory.usedJSHeapSize, total: performance.memory.totalJSHeapSize } : null });
       };
-      while (performance.now() - beganAtMs < measurementS * 1000) {
-        await new Promise(resolve => setTimeout(resolve, 200)); drain();
+      while (performance.now() - beganAtMs < (measurementS + soakS) * 1000) {
+        await new Promise(resolve => setTimeout(resolve, 100));
+        drain();
       }
       const endedAtMs = performance.now(); window.__lhRust.setManual(true); drain();
       return { beganAtMs, endedAtMs, timeOriginMs: performance.timeOrigin, initial,
-        final: window.__lhRust.diagnostics, packets, frames, memory, droppedPackets, droppedFrames };
+        final: window.__lhRust.diagnostics, packets, frames, memory, inputs, droppedPackets, droppedFrames, droppedInputs, bounds, pendingVisualInputs, inputEventsRequested:20 };
     }, contract.timing);
+    const inputTrial=(async()=>{
+      for(let index=0;index<20;index++) {await page.waitForTimeout(500);await page.mouse.move(point.x+(index%2?8:-8),point.y);}
+      await page.mouse.up();
+    })();
+    [trial.samples]=await Promise.all([collection,inputTrial]);
+    clearInterval(memoryTimer); while(memoryBusy)await new Promise(resolve=>setTimeout(resolve,20));
+    memoryTimers.delete(memoryTimer);
+    trial.memoryWarmupEndsAtMs=memoryBegan+contract.timing.warmupS*1000;
     await page.waitForFunction(() => !window.__lhRust.diagnostics.outstanding);
     trial.finalAfterInFlight = await page.evaluate(() => window.__lhRust.diagnostics);
     if (profile) {
@@ -143,26 +181,45 @@ try {
       maxBacklogS: Math.max(...data.frames.map(frame => frame.backlogSeconds)),
       mainWasmMaximumBytes: Math.max(...data.memory.map(sample => sample.mainWasmLinearBytes)),
       workerWasmMaximumBytes: Math.max(...activePackets.map(packet => packet.wasmLinearBytes)),
+      snapshotAge:stats(data.frames.filter(frame=>frame.atMs>=data.beganAtMs).map(frame=>frame.snapshotAgeMs),contract.timing.snapshotAgeMaximumMs),
+      inputVisible:stats(data.inputs.filter(input=>!input.coalesced).map(input=>input.visibleAtMs===null?Infinity:input.visibleAtMs-input.inputAtMs),contract.timing.inputVisibleMaximumMs),
     };
     const m = trial.metrics;
-    trial.partialTimingChecksPass = m.chargedCompleteTick.misses === 0 && m.controllerFourSubsteps.misses === 0
+    const rss=trial.processMemory.filter(sample=>sample.atMs>=trial.memoryWarmupEndsAtMs).map(sample=>sample.rssMiB);
+    m.processRssMaximumMiB=rss.every(Number.isFinite)?Math.max(...rss):null;
+    m.processRssGrowthMiB=rss.length&&rss.every(Number.isFinite)?Math.max(0,...rss.map(value=>value-rss[0])):null;
+    trial.performancePassed = report.hardwareAdmitted && m.chargedCompleteTick.misses === 0 && m.coreTick.misses === 0 && m.controllerFourSubsteps.misses === 0
       && m.simulationWallRatio >= contract.timing.minimumSimulationWallTimeRatio
       && m.workerRoundTrip.p99 <= contract.timing.workerRoundTripP99Ms && m.workerRoundTrip.misses === 0
       && m.frameIntervals.p95 <= contract.timing.frameIntervalP95Ms && m.frameIntervals.p99 <= contract.timing.frameIntervalP99Ms
-      && m.frameIntervals.misses === 0;
-    await page.screenshot({ path: join(output, backend + '-end.png'), fullPage: true });
+      && m.frameIntervals.misses === 0 && m.snapshotAge.p99<=contract.timing.snapshotAgeP99Ms && m.snapshotAge.misses===0
+      && m.inputVisible.p95<=contract.timing.inputVisibleP95Ms && m.inputVisible.misses===0
+      && data.inputs.length===data.inputEventsRequested && data.pendingVisualInputs===0 && data.droppedInputs===0
+      && m.processRssMaximumMiB!==null && m.processRssMaximumMiB<=contract.memory.maximumProcessRssMiB
+      && m.processRssGrowthMiB!==null && m.processRssGrowthMiB<=contract.memory.maximumPostWarmupGrowthMiB
+      && m.mainWasmMaximumBytes<=contract.memory.maximumWasmLinearMiB*1024*1024 && m.workerWasmMaximumBytes<=contract.memory.maximumWasmLinearMiB*1024*1024
+      && data.bounds.maximumTransferBuffers>0 && data.bounds.maximumTransferBuffers<=contract.memory.maximumTransferBuffers
+      && data.bounds.maximumOutstandingAdvances<=contract.memory.maximumOutstandingAdvances
+      && data.bounds.maximumAdvanceTicks<=contract.memory.maximumAdvanceTicks && data.bounds.maximumQueueDepth<=contract.memory.maximumQueuedCommands
+      && (data.endedAtMs-data.beganAtMs)/1000>=contract.timing.measurementS+contract.timing.soakS;
+    await page.screenshot({ path: join(output, mode + '-' + backend + '-end.png'), fullPage: true });
     console.log(JSON.stringify({ backend, ratio: m.simulationWallRatio, tickMaximum: m.chargedCompleteTick.maximum,
       tickMisses: m.chargedCompleteTick.misses, phases: Object.fromEntries(Object.entries(m.phases).map(([name, metric]) => [name, metric.mean])),
-      frameP95: m.frameIntervals.p95, partialTimingChecksPass: trial.partialTimingChecksPass }));
+      mode, frameP95: m.frameIntervals.p95, performancePassed: trial.performancePassed }));
     await context.close();
   }
 } catch (error) { report.failure = String(error); process.exitCode = 1; }
 finally {
+  for(const timer of memoryTimers)clearInterval(timer);
   report.finished = new Date().toISOString();
   report.sourceUnchanged = sourceFiles.every(file => hash(readFileSync(file)) === report.sourceBefore[file]);
+  report.sourceUnchanged &&= fingerprint(sourceHashes())===fingerprint(frozenSources);
   report.assetsUnchanged = JSON.stringify(assetHashes()) === JSON.stringify(report.assets);
   report.profileUnchanged = !profilePath || hash(readFileSync(profilePath)) === report.profileOverride.sha256;
+  report.performancePassed=report.cases.length===4 && report.cases.every(trial=>trial.performancePassed===true)
+    && report.sourceUnchanged && report.assetsUnchanged && report.profileUnchanged && !report.failure;
   writeFileSync(join(output, 'report.json'), JSON.stringify(report, null, 2) + '\n');
   await browser.close();
+  memoryProbe.close();
 }
-if (!report.sourceUnchanged || !report.assetsUnchanged || !report.profileUnchanged) process.exitCode = 1;
+if (!report.performancePassed) process.exitCode = 1;

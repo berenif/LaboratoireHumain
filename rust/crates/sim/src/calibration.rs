@@ -102,6 +102,45 @@ pub fn contact_load_with_profile(
 mod tests {
     use super::*;
     #[test]
+    fn delivered_motor_impulse_matches_independent_opposite_body_momentum() {
+        let mut world = PhysicsWorld::new();
+        configure(&mut world, &Profile::default());
+        world.gravity = Vector::ZERO;
+        let build = || {
+            RigidBodyBuilder::dynamic()
+                .can_sleep(false)
+                .additional_mass_properties(MassProperties::new(Vector::ZERO, 2.0, Vector::ONE))
+        };
+        let parent = world.insert_body(build());
+        let child = world.insert_body(build());
+        let mut joint = GenericJointBuilder::new(JointAxesMask::LOCKED_REVOLUTE_AXES).build();
+        joint
+            .set_motor_model(JointAxis::AngX, MotorModel::ForceBased)
+            .set_motor_velocity(JointAxis::AngX, 10.0, 100.0)
+            .set_motor_max_force(JointAxis::AngX, 4.0);
+        let handle = world.insert_impulse_joint(parent, child, joint);
+        {
+            let before = [world.bodies[parent].angvel(), world.bodies[child].angvel()];
+            world.step();
+            let motor = world.impulse_joints.get(handle).unwrap().data.motors[3];
+            let change = [
+                world.bodies[parent].angvel() - before[0],
+                world.bodies[child].angvel() - before[1],
+            ];
+            assert!(motor.delivered_abs_impulse > 0.0);
+            assert!(motor.delivered_abs_impulse <= 4.0 * world.integration_parameters.dt + 1e-6);
+            assert!((change[0] + change[1]).length() <= 1e-6);
+            assert!(
+                (change[0].length() - motor.delivered_abs_impulse).abs() <= 1e-6,
+                "actual={:?}, delivered={motor:?}",
+                change
+            );
+            assert!((change[1].length() - motor.delivered_abs_impulse).abs() <= 1e-6);
+            assert!((change[0] - motor.delivered_angular_impulse_1).length() <= 1e-6);
+            assert!((change[1] - motor.delivered_angular_impulse_2).length() <= 1e-6);
+        }
+    }
+    #[test]
     fn contact_load_matches_momentum_for_rest_change_unloading_and_loss() {
         for warm in [0.0, 0.5, 1.0] {
             for scenario in ["rest", "changing", "unloading", "contact-loss"] {

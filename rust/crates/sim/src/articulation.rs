@@ -634,11 +634,13 @@ mod tests {
         assert_eq!(passive[1]["firstFailure"]["check"], "linear-momentum");
         assert_eq!(passive[3]["passed"], false);
         assert_eq!(passive[3]["generalizedChecksPassed"], false);
-        assert_eq!(passive[3]["firstIntegrityFailure"]["check"], "joint-limit");
-        assert_eq!(passive[3]["firstIntegrityFailure"]["segment"], "rightThigh");
+        // Compensated velocity accumulation removed this historical limit
+        // violation. The unchanged independent momentum checks still reject
+        // the experimental hybrid; historical failed receipts stay in Git.
+        assert!(passive[3]["firstIntegrityFailure"].is_null());
         assert!(
             passive[3]["maxLimitErrorRadians"].as_f64().unwrap()
-                > f64::from(measurement::MAX_LIMIT_RAD)
+                <= f64::from(measurement::MAX_LIMIT_RAD)
         );
         for probe in report["velocityWritebackAttribution"].as_array().unwrap() {
             assert_eq!(probe["integrationCompleted"], true);
