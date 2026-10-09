@@ -7,7 +7,7 @@ use crate::dynamics::integration_parameters::SpringCoefficients;
 #[cfg(feature = "alloc")]
 use crate::dynamics::solver::MotorParameters;
 use crate::dynamics::{FixedJoint, MotorModel, PrismaticJoint, RevoluteJoint, RopeJoint};
-use crate::math::{Pose, Real, Rotation, SPATIAL_DIM, Vector};
+use crate::math::{AngVector, Pose, Real, Rotation, SPATIAL_DIM, Vector};
 #[cfg(feature = "dim2")]
 use crate::utils::OrthonormalBasis;
 use crate::utils::SimdRealCopy;
@@ -213,6 +213,20 @@ pub struct JointMotor {
     pub max_force: Real,
     /// Internal: current impulse being applied.
     pub impulse: Real,
+    /// Delivered motor impulse across every internal substep of the last step.
+    /// Kept separately from the warmstart seed and requested force.
+    pub delivered_impulse: Real,
+    /// Sum of the absolute solved motor impulses over the internal substeps.
+    pub delivered_abs_impulse: Real,
+    /// Actual world angular impulses applied to the two bodies, summed from
+    /// the solved row Jacobians at each internal substep (not inferred effort).
+    pub delivered_angular_impulse_1: AngVector,
+    /// Actual world angular impulse applied to the second body by this motor.
+    pub delivered_angular_impulse_2: AngVector,
+    delivered_error: Real,
+    delivered_abs_error: Real,
+    delivered_angular_error_1: AngVector,
+    delivered_angular_error_2: AngVector,
     /// Force-based or acceleration-based motor model.
     pub model: MotorModel,
 }
@@ -226,6 +240,14 @@ impl Default for JointMotor {
             damping: 0.0,
             max_force: Real::MAX,
             impulse: 0.0,
+            delivered_impulse: 0.0,
+            delivered_abs_impulse: 0.0,
+            delivered_angular_impulse_1: AngVector::default(),
+            delivered_angular_impulse_2: AngVector::default(),
+            delivered_error: 0.0,
+            delivered_abs_error: 0.0,
+            delivered_angular_error_1: AngVector::default(),
+            delivered_angular_error_2: AngVector::default(),
             model: MotorModel::AccelerationBased,
         }
     }
@@ -233,6 +255,34 @@ impl Default for JointMotor {
 
 #[cfg(feature = "alloc")]
 impl JointMotor {
+    pub(crate) fn reset_delivery(&mut self) {
+        self.delivered_impulse = 0.0;
+        self.delivered_abs_impulse = 0.0;
+        self.delivered_angular_impulse_1 = Default::default();
+        self.delivered_angular_impulse_2 = Default::default();
+        self.delivered_error = 0.0;
+        self.delivered_abs_error = 0.0;
+        self.delivered_angular_error_1 = Default::default();
+        self.delivered_angular_error_2 = Default::default();
+    }
+    pub(crate) fn record_delivery(&mut self, impulse: Real, body1: AngVector, body2: AngVector) {
+        let y = impulse - self.delivered_error;
+        let sum = self.delivered_impulse + y;
+        self.delivered_error = (sum - self.delivered_impulse) - y;
+        self.delivered_impulse = sum;
+        let y = impulse.abs() - self.delivered_abs_error;
+        let sum = self.delivered_abs_impulse + y;
+        self.delivered_abs_error = (sum - self.delivered_abs_impulse) - y;
+        self.delivered_abs_impulse = sum;
+        let y = body1 - self.delivered_angular_error_1;
+        let sum = self.delivered_angular_impulse_1 + y;
+        self.delivered_angular_error_1 = (sum - self.delivered_angular_impulse_1) - y;
+        self.delivered_angular_impulse_1 = sum;
+        let y = body2 - self.delivered_angular_error_2;
+        let sum = self.delivered_angular_impulse_2 + y;
+        self.delivered_angular_error_2 = (sum - self.delivered_angular_impulse_2) - y;
+        self.delivered_angular_impulse_2 = sum;
+    }
     pub(crate) fn motor_params(&self, dt: Real) -> MotorParameters<Real> {
         let (erp_inv_dt, cfm_coeff, cfm_gain) =
             self.model
@@ -295,6 +345,10 @@ pub struct GenericJoint {
     /// For coupled degrees of freedoms (DoF), only the first linear (resp. angular) coupled DoF motor and `motor_axes`
     /// bitmask is applied to the coupled linear (resp. angular) axes.
     pub motors: [JointMotor; SPATIAL_DIM],
+    /// Bound angular motor delivery by the Euclidean norm of the configured
+    /// axis ceilings, including oblique anatomical coordinate Jacobians.
+    #[cfg_attr(feature = "serde-serialize", serde(default))]
+    pub enforce_motor_vector_limit: bool,
     /// The coefficients controlling the joint constraints’ softness.
     pub softness: SpringCoefficients<Real>,
     /// Are contacts between the attached rigid-bodies enabled?
@@ -316,6 +370,7 @@ impl Default for GenericJoint {
             coupled_axes: JointAxesMask::empty(),
             limits: [JointLimits::default(); SPATIAL_DIM],
             motors: [JointMotor::default(); SPATIAL_DIM],
+            enforce_motor_vector_limit: false,
             softness: SpringCoefficients::joint_defaults(),
             contacts_enabled: true,
             enabled: JointEnabled::Enabled,

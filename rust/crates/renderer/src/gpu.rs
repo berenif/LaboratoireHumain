@@ -103,6 +103,8 @@ pub struct BrowserRenderer {
     snapshot: Option<Snapshot>,
     arrival_ms: f64,
     interval_s: f64,
+    previous_time_s: f64,
+    displayed_time_s: f64,
     selected: String,
     frames: u64,
     floor_enabled: bool,
@@ -316,6 +318,8 @@ impl BrowserRenderer {
             snapshot: None,
             arrival_ms: 0.0,
             interval_s: 0.0,
+            previous_time_s: 0.0,
+            displayed_time_s: 0.0,
             selected: String::new(),
             frames: 0,
             floor_enabled: true,
@@ -417,11 +421,18 @@ impl BrowserRenderer {
                 || snapshot.stamp.generation != old.stamp.generation
                 || self.interval_s == 0.0;
             self.previous = if snap { poses } else { self.displayed };
+            self.previous_time_s = if snap {
+                snapshot.simulation_time_s
+            } else {
+                self.displayed_time_s
+            };
         } else {
             self.previous = poses;
+            self.previous_time_s = snapshot.simulation_time_s;
         }
         self.current = poses;
         self.displayed = self.previous;
+        self.displayed_time_s = self.previous_time_s;
         self.arrival_ms = now_ms;
         self.snapshot = Some(snapshot);
         Ok(())
@@ -471,6 +482,9 @@ impl BrowserRenderer {
         };
         self.displayed =
             std::array::from_fn(|i| self.previous[i].interpolate(self.current[i], alpha));
+        self.displayed_time_s = self.previous_time_s
+            + (self.snapshot.as_ref().unwrap().simulation_time_s - self.previous_time_s)
+                * f64::from(alpha);
         let mut uniforms = Uniforms {
             view_projection: self
                 .camera
@@ -695,6 +709,17 @@ impl BrowserRenderer {
             "width":self.gpu.as_ref().map(|g|g.config.width),"height":self.gpu.as_ref().map(|g|g.config.height),
             "renderFormat":self.gpu.as_ref().map(|g|format!("{:?}",g.render_format)),
             "adapter":self.gpu.as_ref().map(|g|&g.adapter)})).map_err(error)
+    }
+    /// Simulation time interpolated by the most recently submitted GPU frame.
+    pub fn presentation_time_s(&self) -> f64 {
+        self.displayed_time_s
+    }
+    /// Actual submitted position, used to qualify input-to-visible movement.
+    pub fn presentation_position(&self, segment: usize) -> Vec<f32> {
+        self.displayed
+            .get(segment)
+            .map(|p| p.position.to_array().to_vec())
+            .unwrap_or_default()
     }
     pub fn dispose(&mut self) {
         if let Some(gpu) = self.gpu.take() {

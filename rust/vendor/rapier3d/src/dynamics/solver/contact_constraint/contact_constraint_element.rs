@@ -73,26 +73,30 @@ impl<N: ScalarType> ContactConstraintTangentPart<N> {
     {
         #[cfg(feature = "dim2")]
         {
-            solver_vel1.linear += tangents1[0].component_mul(im1) * self.impulse[0];
-            solver_vel1.angular += self.ii_torque_dir1[0] * self.impulse[0];
+            solver_vel1.add_linear(tangents1[0].component_mul(im1) * self.impulse[0]);
+            solver_vel1.add_angular(self.ii_torque_dir1[0] * self.impulse[0]);
 
-            solver_vel2.linear += tangents1[0].component_mul(im2) * -self.impulse[0];
-            solver_vel2.angular += self.ii_torque_dir2[0] * self.impulse[0];
+            solver_vel2.add_linear(tangents1[0].component_mul(im2) * -self.impulse[0]);
+            solver_vel2.add_angular(self.ii_torque_dir2[0] * self.impulse[0]);
         }
 
         #[cfg(feature = "dim3")]
         {
-            solver_vel1.linear += (*tangents1[0] * self.impulse[0]
-                + *tangents1[1] * self.impulse[1])
-                .component_mul(im1);
-            solver_vel1.angular +=
-                self.ii_torque_dir1[0] * self.impulse[0] + self.ii_torque_dir1[1] * self.impulse[1];
+            solver_vel1.add_linear(
+                (*tangents1[0] * self.impulse[0] + *tangents1[1] * self.impulse[1])
+                    .component_mul(im1),
+            );
+            solver_vel1.add_angular(
+                self.ii_torque_dir1[0] * self.impulse[0] + self.ii_torque_dir1[1] * self.impulse[1],
+            );
 
-            solver_vel2.linear += (*tangents1[0] * -self.impulse[0]
-                + *tangents1[1] * -self.impulse[1])
-                .component_mul(im2);
-            solver_vel2.angular +=
-                self.ii_torque_dir2[0] * self.impulse[0] + self.ii_torque_dir2[1] * self.impulse[1];
+            solver_vel2.add_linear(
+                (*tangents1[0] * -self.impulse[0] + *tangents1[1] * -self.impulse[1])
+                    .component_mul(im2),
+            );
+            solver_vel2.add_angular(
+                self.ii_torque_dir2[0] * self.impulse[0] + self.ii_torque_dir2[1] * self.impulse[1],
+            );
         }
     }
 
@@ -119,11 +123,11 @@ impl<N: ScalarType> ContactConstraintTangentPart<N> {
             let dlambda = new_impulse - self.impulse[0];
             self.impulse[0] = new_impulse;
 
-            solver_vel1.linear += tangents1[0].component_mul(im1) * dlambda;
-            solver_vel1.angular += self.ii_torque_dir1[0] * dlambda;
+            solver_vel1.add_linear(tangents1[0].component_mul(im1) * dlambda);
+            solver_vel1.add_angular(self.ii_torque_dir1[0] * dlambda);
 
-            solver_vel2.linear += tangents1[0].component_mul(im2) * -dlambda;
-            solver_vel2.angular += self.ii_torque_dir2[0] * dlambda;
+            solver_vel2.add_linear(tangents1[0].component_mul(im2) * -dlambda);
+            solver_vel2.add_angular(self.ii_torque_dir2[0] * dlambda);
         }
 
         #[cfg(feature = "dim3")]
@@ -162,15 +166,19 @@ impl<N: ScalarType> ContactConstraintTangentPart<N> {
             let dlambda = new_impulse - self.impulse;
             self.impulse = new_impulse;
 
-            solver_vel1.linear +=
-                (*tangents1[0] * dlambda[0] + *tangents1[1] * dlambda[1]).component_mul(im1);
-            solver_vel1.angular +=
-                self.ii_torque_dir1[0] * dlambda[0] + self.ii_torque_dir1[1] * dlambda[1];
+            solver_vel1.add_linear(
+                (*tangents1[0] * dlambda[0] + *tangents1[1] * dlambda[1]).component_mul(im1),
+            );
+            solver_vel1.add_angular(
+                self.ii_torque_dir1[0] * dlambda[0] + self.ii_torque_dir1[1] * dlambda[1],
+            );
 
-            solver_vel2.linear +=
-                (*tangents1[0] * -dlambda[0] + *tangents1[1] * -dlambda[1]).component_mul(im2);
-            solver_vel2.angular +=
-                self.ii_torque_dir2[0] * dlambda[0] + self.ii_torque_dir2[1] * dlambda[1];
+            solver_vel2.add_linear(
+                (*tangents1[0] * -dlambda[0] + *tangents1[1] * -dlambda[1]).component_mul(im2),
+            );
+            solver_vel2.add_angular(
+                self.ii_torque_dir2[0] * dlambda[0] + self.ii_torque_dir2[1] * dlambda[1],
+            );
         }
     }
 }
@@ -231,11 +239,11 @@ impl<N: ScalarType> ContactConstraintNormalPart<N> {
         solver_vel1: &mut SolverVel<N>,
         solver_vel2: &mut SolverVel<N>,
     ) {
-        solver_vel1.linear += dir1.component_mul(im1) * self.impulse;
-        solver_vel1.angular += self.ii_torque_dir1 * self.impulse;
+        solver_vel1.add_linear(dir1.component_mul(im1) * self.impulse);
+        solver_vel1.add_angular(self.ii_torque_dir1 * self.impulse);
 
-        solver_vel2.linear += dir1.component_mul(im2) * -self.impulse;
-        solver_vel2.angular += self.ii_torque_dir2 * self.impulse;
+        solver_vel2.add_linear(dir1.component_mul(im2) * -self.impulse);
+        solver_vel2.add_angular(self.ii_torque_dir2 * self.impulse);
     }
 
     #[inline]
@@ -257,11 +265,11 @@ impl<N: ScalarType> ContactConstraintNormalPart<N> {
         let dlambda = new_impulse - self.impulse;
         self.impulse = new_impulse;
 
-        solver_vel1.linear += dir1.component_mul(im1) * dlambda;
-        solver_vel1.angular += self.ii_torque_dir1 * dlambda;
+        solver_vel1.add_linear(dir1.component_mul(im1) * dlambda);
+        solver_vel1.add_angular(self.ii_torque_dir1 * dlambda);
 
-        solver_vel2.linear += dir1.component_mul(im2) * -dlambda;
-        solver_vel2.angular += self.ii_torque_dir2 * dlambda;
+        solver_vel2.add_linear(dir1.component_mul(im2) * -dlambda);
+        solver_vel2.add_angular(self.ii_torque_dir2 * dlambda);
     }
 
     /// End-of-step restitution (box2d-style): drives the relative normal velocity toward
@@ -291,11 +299,11 @@ impl<N: ScalarType> ContactConstraintNormalPart<N> {
         let dlambda = new_impulse - self.impulse;
         self.impulse = new_impulse;
 
-        solver_vel1.linear += dir1.component_mul(im1) * dlambda;
-        solver_vel1.angular += self.ii_torque_dir1 * dlambda;
+        solver_vel1.add_linear(dir1.component_mul(im1) * dlambda);
+        solver_vel1.add_angular(self.ii_torque_dir1 * dlambda);
 
-        solver_vel2.linear += dir1.component_mul(im2) * -dlambda;
-        solver_vel2.angular += self.ii_torque_dir2 * dlambda;
+        solver_vel2.add_linear(dir1.component_mul(im2) * -dlambda);
+        solver_vel2.add_angular(self.ii_torque_dir2 * dlambda);
     }
 
     #[cfg(feature = "block-solver")]
@@ -411,12 +419,14 @@ impl<N: ScalarType> ContactConstraintNormalPart<N> {
         constraint_a.impulse = new_impulse.x;
         constraint_b.impulse = new_impulse.y;
 
-        solver_vel1.linear += dir1.component_mul(im1) * (dlambda.x + dlambda.y);
-        solver_vel1.angular +=
-            constraint_a.ii_torque_dir1 * dlambda.x + constraint_b.ii_torque_dir1 * dlambda.y;
-        solver_vel2.linear += dir1.component_mul(im2) * (-dlambda.x - dlambda.y);
-        solver_vel2.angular +=
-            constraint_a.ii_torque_dir2 * dlambda.x + constraint_b.ii_torque_dir2 * dlambda.y;
+        solver_vel1.add_linear(dir1.component_mul(im1) * (dlambda.x + dlambda.y));
+        solver_vel1.add_angular(
+            constraint_a.ii_torque_dir1 * dlambda.x + constraint_b.ii_torque_dir1 * dlambda.y,
+        );
+        solver_vel2.add_linear(dir1.component_mul(im2) * (-dlambda.x - dlambda.y));
+        solver_vel2.add_angular(
+            constraint_a.ii_torque_dir2 * dlambda.x + constraint_b.ii_torque_dir2 * dlambda.y,
+        );
     }
 }
 
@@ -470,11 +480,11 @@ where
         solver_vel1: &mut SolverVel<N>,
         solver_vel2: &mut SolverVel<N>,
     ) {
-        solver_vel1.linear += dir1.component_mul(im1) * self.impulse;
-        solver_vel1.angular += self.ii_torque_dir1 * self.impulse;
+        solver_vel1.add_linear(dir1.component_mul(im1) * self.impulse);
+        solver_vel1.add_angular(self.ii_torque_dir1 * self.impulse);
 
-        solver_vel2.linear += dir1.component_mul(im2) * -self.impulse;
-        solver_vel2.angular += self.ii_torque_dir2 * self.impulse;
+        solver_vel2.add_linear(dir1.component_mul(im2) * -self.impulse);
+        solver_vel2.add_angular(self.ii_torque_dir2 * self.impulse);
     }
 
     #[inline]
@@ -496,11 +506,11 @@ where
         let dlambda = new_impulse - self.impulse;
         self.impulse = new_impulse;
 
-        solver_vel1.linear += dir1.component_mul(im1) * dlambda;
-        solver_vel1.angular += self.ii_torque_dir1 * dlambda;
+        solver_vel1.add_linear(dir1.component_mul(im1) * dlambda);
+        solver_vel1.add_angular(self.ii_torque_dir1 * dlambda);
 
-        solver_vel2.linear += dir1.component_mul(im2) * -dlambda;
-        solver_vel2.angular += self.ii_torque_dir2 * dlambda;
+        solver_vel2.add_linear(dir1.component_mul(im2) * -dlambda);
+        solver_vel2.add_angular(self.ii_torque_dir2 * dlambda);
     }
 
     /// See [`ContactConstraintNormalPart::solve_restitution`].
@@ -526,11 +536,11 @@ where
         let dlambda = new_impulse - self.impulse;
         self.impulse = new_impulse;
 
-        solver_vel1.linear += dir1.component_mul(im1) * dlambda;
-        solver_vel1.angular += self.ii_torque_dir1 * dlambda;
+        solver_vel1.add_linear(dir1.component_mul(im1) * dlambda);
+        solver_vel1.add_angular(self.ii_torque_dir1 * dlambda);
 
-        solver_vel2.linear += dir1.component_mul(im2) * -dlambda;
-        solver_vel2.angular += self.ii_torque_dir2 * dlambda;
+        solver_vel2.add_linear(dir1.component_mul(im2) * -dlambda);
+        solver_vel2.add_angular(self.ii_torque_dir2 * dlambda);
     }
 
     /// See [`ContactConstraintNormalPart::solve_pair`]: solves two coupled
@@ -589,10 +599,10 @@ where
         constraint_a.impulse = new_impulse.x;
         constraint_b.impulse = new_impulse.y;
 
-        solver_vel1.linear += dir1.component_mul(im1) * (dlambda.x + dlambda.y);
-        solver_vel1.angular += ii_torque_dir1_a * dlambda.x + ii_torque_dir1_b * dlambda.y;
-        solver_vel2.linear += dir1.component_mul(im2) * (-dlambda.x - dlambda.y);
-        solver_vel2.angular += ii_torque_dir2_a * dlambda.x + ii_torque_dir2_b * dlambda.y;
+        solver_vel1.add_linear(dir1.component_mul(im1) * (dlambda.x + dlambda.y));
+        solver_vel1.add_angular(ii_torque_dir1_a * dlambda.x + ii_torque_dir1_b * dlambda.y);
+        solver_vel2.add_linear(dir1.component_mul(im2) * (-dlambda.x - dlambda.y));
+        solver_vel2.add_angular(ii_torque_dir2_a * dlambda.x + ii_torque_dir2_b * dlambda.y);
     }
 }
 
@@ -635,15 +645,18 @@ where
         let (ii_torque_dir1_0, ii_torque_dir1_1) = (self.ii_torque_dir1[0], self.ii_torque_dir1[1]);
         let (ii_torque_dir2_0, ii_torque_dir2_1) = (self.ii_torque_dir2[0], self.ii_torque_dir2[1]);
 
-        solver_vel1.linear +=
-            (*tangents1[0] * self.impulse[0] + *tangents1[1] * self.impulse[1]).component_mul(im1);
-        solver_vel1.angular +=
-            ii_torque_dir1_0 * self.impulse[0] + ii_torque_dir1_1 * self.impulse[1];
+        solver_vel1.add_linear(
+            (*tangents1[0] * self.impulse[0] + *tangents1[1] * self.impulse[1]).component_mul(im1),
+        );
+        solver_vel1
+            .add_angular(ii_torque_dir1_0 * self.impulse[0] + ii_torque_dir1_1 * self.impulse[1]);
 
-        solver_vel2.linear += (*tangents1[0] * -self.impulse[0] + *tangents1[1] * -self.impulse[1])
-            .component_mul(im2);
-        solver_vel2.angular +=
-            ii_torque_dir2_0 * self.impulse[0] + ii_torque_dir2_1 * self.impulse[1];
+        solver_vel2.add_linear(
+            (*tangents1[0] * -self.impulse[0] + *tangents1[1] * -self.impulse[1])
+                .component_mul(im2),
+        );
+        solver_vel2
+            .add_angular(ii_torque_dir2_0 * self.impulse[0] + ii_torque_dir2_1 * self.impulse[1]);
     }
 
     #[inline]
@@ -695,13 +708,15 @@ where
         let dlambda = new_impulse - self.impulse;
         self.impulse = new_impulse;
 
-        solver_vel1.linear +=
-            (*tangents1[0] * dlambda[0] + *tangents1[1] * dlambda[1]).component_mul(im1);
-        solver_vel1.angular += ii_torque_dir1_0 * dlambda[0] + ii_torque_dir1_1 * dlambda[1];
+        solver_vel1.add_linear(
+            (*tangents1[0] * dlambda[0] + *tangents1[1] * dlambda[1]).component_mul(im1),
+        );
+        solver_vel1.add_angular(ii_torque_dir1_0 * dlambda[0] + ii_torque_dir1_1 * dlambda[1]);
 
-        solver_vel2.linear +=
-            (*tangents1[0] * -dlambda[0] + *tangents1[1] * -dlambda[1]).component_mul(im2);
-        solver_vel2.angular += ii_torque_dir2_0 * dlambda[0] + ii_torque_dir2_1 * dlambda[1];
+        solver_vel2.add_linear(
+            (*tangents1[0] * -dlambda[0] + *tangents1[1] * -dlambda[1]).component_mul(im2),
+        );
+        solver_vel2.add_angular(ii_torque_dir2_0 * dlambda[0] + ii_torque_dir2_1 * dlambda[1]);
     }
 }
 
@@ -727,8 +742,8 @@ impl<N: ScalarType> ContactConstraintTwistPartSlim<N> {
     ) {
         let ii_twist_dir1 = ii1.transform_vector(*twist_dir1);
         let ii_twist_dir2 = ii2.transform_vector(*twist_dir1);
-        solver_vel1.angular += ii_twist_dir1 * self.impulse;
-        solver_vel2.angular -= ii_twist_dir2 * self.impulse;
+        solver_vel1.add_angular(ii_twist_dir1 * self.impulse);
+        solver_vel2.sub_angular(ii_twist_dir2 * self.impulse);
     }
 
     #[inline]
@@ -750,8 +765,8 @@ impl<N: ScalarType> ContactConstraintTwistPartSlim<N> {
         let new_impulse = (self.impulse - self.r * dvel).simd_clamp(-limit, limit);
         let dlambda = new_impulse - self.impulse;
         self.impulse = new_impulse;
-        solver_vel1.angular += ii_twist_dir1 * dlambda;
-        solver_vel2.angular -= ii_twist_dir2 * dlambda;
+        solver_vel1.add_angular(ii_twist_dir1 * dlambda);
+        solver_vel2.sub_angular(ii_twist_dir2 * dlambda);
     }
 }
 

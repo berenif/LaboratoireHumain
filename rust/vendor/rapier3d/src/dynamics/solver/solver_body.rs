@@ -175,6 +175,37 @@ pub struct SolverVel<T: ScalarType> {
     padding: [T; 1],
     #[cfg(feature = "dim3")]
     padding: [T; 2],
+    // Kahan residuals travel with each scalar/SIMD lane, including cached rows.
+    // Neither constraint impulses nor the f32 dynamics are reconstructed.
+    linear_error: T::Vector,
+    angular_error: T::AngVector,
+    #[cfg(feature = "dim2")]
+    error_padding: [T; 1],
+    #[cfg(feature = "dim3")]
+    error_padding: [T; 2],
+}
+
+impl<T: ScalarType> SolverVel<T> {
+    #[inline]
+    pub fn add_linear(&mut self, delta: T::Vector) {
+        let corrected = delta - self.linear_error;
+        let sum = self.linear + corrected;
+        self.linear_error = (sum - self.linear) - corrected;
+        self.linear = sum;
+    }
+
+    #[inline]
+    pub fn add_angular(&mut self, delta: T::AngVector) {
+        let corrected = delta - self.angular_error;
+        let sum = self.angular + corrected;
+        self.angular_error = (sum - self.angular) - corrected;
+        self.angular = sum;
+    }
+
+    #[inline]
+    pub fn sub_angular(&mut self, delta: T::AngVector) {
+        self.add_angular(T::AngVector::default() - delta);
+    }
 }
 
 #[repr(C)]
@@ -182,6 +213,9 @@ struct SolverVelRepr {
     data0: SolverBlock,
     #[cfg(feature = "dim3")]
     data1: SolverBlock,
+    error0: SolverBlock,
+    #[cfg(feature = "dim3")]
+    error1: SolverBlock,
 }
 
 impl SolverVelRepr {
@@ -190,6 +224,9 @@ impl SolverVelRepr {
             data0: na::zero(),
             #[cfg(feature = "dim3")]
             data1: na::zero(),
+            error0: na::zero(),
+            #[cfg(feature = "dim3")]
+            error1: na::zero(),
         }
     }
 }
@@ -207,7 +244,8 @@ impl SolverVel<SimdReal> {
         {
             let aos = aos!(data_repr[idx].data0, zero);
             let soa = transpose_wide(aos);
-            unsafe { core::mem::transmute(soa) }
+            let errors = transpose_wide(aos!(data_repr[idx].error0, zero));
+            unsafe { core::mem::transmute((soa, errors)) }
         }
 
         #[cfg(feature = "dim3")]
@@ -216,7 +254,9 @@ impl SolverVel<SimdReal> {
             let soa0 = transpose_wide(aos0);
             let aos1 = aos!(data_repr[idx].data1, zero);
             let soa1 = transpose_wide(aos1);
-            unsafe { core::mem::transmute((soa0, soa1)) }
+            let error0 = transpose_wide(aos!(data_repr[idx].error0, zero));
+            let error1 = transpose_wide(aos!(data_repr[idx].error1, zero));
+            unsafe { core::mem::transmute((soa0, soa1, error0, error1)) }
         }
     }
 
@@ -224,22 +264,25 @@ impl SolverVel<SimdReal> {
     #[cfg(feature = "dim2")]
     pub fn scatter(self, data: &mut [SolverVel<Real>], idx: [u32; SIMD_WIDTH]) {
         // TODO: double-check that the compiler is using simd loads and no useless copies.
-        let soa: [SimdReal; 4] = unsafe { core::mem::transmute(self) };
-        let aos = transpose_wide_inv(soa);
+        let soa: [[SimdReal; 4]; 2] = unsafe { core::mem::transmute(self) };
+        let aos = transpose_wide_inv(soa[0]);
+        let errors = transpose_wide_inv(soa[1]);
         for i in 0..SIMD_WIDTH {
-            scatter!(data[idx[i]] = [aos]);
+            scatter!(data[idx[i]] = [aos, errors]);
         }
     }
 
     #[inline]
     #[cfg(feature = "dim3")]
     pub fn scatter(self, data: &mut [SolverVel<Real>], idx: [u32; SIMD_WIDTH]) {
-        let soa: [[SimdReal; 4]; 2] = unsafe { core::mem::transmute(self) };
+        let soa: [[SimdReal; 4]; 4] = unsafe { core::mem::transmute(self) };
         // TODO: double-check that the compiler is using simd loads and no useless copies.
         let aos0 = transpose_wide_inv(soa[0]);
         let aos1 = transpose_wide_inv(soa[1]);
+        let errors0 = transpose_wide_inv(soa[2]);
+        let errors1 = transpose_wide_inv(soa[3]);
         for i in 0..SIMD_WIDTH {
-            scatter!(data[idx[i]] = [aos0, aos1]);
+            scatter!(data[idx[i]] = [aos0, aos1, errors0, errors1]);
         }
     }
 }
@@ -427,21 +470,27 @@ impl<N: ScalarType> SolverVel<N> {
             padding: [na::zero(); 1],
             #[cfg(feature = "dim3")]
             padding: [na::zero(); 2],
+            linear_error: Default::default(),
+            angular_error: Default::default(),
+            #[cfg(feature = "dim2")]
+            error_padding: [na::zero(); 1],
+            #[cfg(feature = "dim3")]
+            error_padding: [na::zero(); 2],
         }
     }
 }
 
 impl<N: ScalarType> AddAssign for SolverVel<N> {
     fn add_assign(&mut self, rhs: Self) {
-        self.linear += rhs.linear;
-        self.angular += rhs.angular;
+        self.add_linear(rhs.linear);
+        self.add_angular(rhs.angular);
     }
 }
 
 impl<N: ScalarType> SubAssign for SolverVel<N> {
     fn sub_assign(&mut self, rhs: Self) {
-        self.linear -= rhs.linear;
-        self.angular -= rhs.angular;
+        self.add_linear(-rhs.linear);
+        self.sub_angular(rhs.angular);
     }
 }
 
@@ -453,6 +502,9 @@ impl<N: ScalarType> Sub for SolverVel<N> {
             linear: self.linear - rhs.linear,
             angular: self.angular - rhs.angular,
             padding: self.padding,
+            linear_error: Default::default(),
+            angular_error: Default::default(),
+            error_padding: self.error_padding,
         }
     }
 }

@@ -1,5 +1,89 @@
 # TODO
 
+**2026-10-09 strict stepping repaired:** the frozen native matrix now passes
+**9/9**, with two verified reversal steps and stable finishes for every fixture.
+Two final full reports are byte-identical. All 88 workspace tests, formatting
+and native/WASM lint pass; tooling and engine checks retain passing results
+with unchanged inputs. Anatomy, scenarios, measurement criteria and the input
+profile are preserved. See the
+[repair report](docs/rust-strict-stepping-2026-10-09.md). Broader recovery,
+cycles, terrain, browser and hardware release gates remain open.
+
+**2026-10-05 swing diagnosis:** substep traces expose a 132.56 mm takeoff-anchor
+discontinuity and a second right-foot landing outside the current IK reach.
+The moving foot remains loaded through the nominal trajectory; hip roll reaches
+its allocated cap on all 109 trajectory substeps. All 86 workspace tests,
+formatting and native/WASM lint pass. Two strict replays are byte-identical and
+every earlier report field matches the retained baseline; strict stepping is
+still 1/9. Plan from measured takeoff state and qualify landing reach together
+with retained stance before changing unloading dynamics. See the
+[swing diagnosis](docs/rust-swing-diagnosis-2026-10-05.md).
+
+**2026-10-05 later-transfer continuation:** persistent sole-load sharing can
+redistribute the existing motor reserve during transfers after verified landing.
+The right-foot-heading case admits a second swing, but late liftoff is followed
+by a fall before landing. Held-target and the other upright cases are preserved;
+strict stepping remains 1/9. All 85 tests, formatting and native/WASM lint pass;
+two fresh dedicated replays are identical. Direct stance/reference coordination
+regressed held-target and was removed. Continue requested-versus-reachable swing
+path diagnosis and transfer/stance dynamics. See [current status](docs/status.md).
+
+**2026-10-05 post-landing continuation:** the complete stance blend now supplies
+native target rates, and the previous support-leg motor allocation fades over
+0.6 seconds after verified landing. Held-target passes its full strict replay
+with one step and no fall: strict stepping is now 1/9. Five fixtures still land;
+the other four subsequently fall. The three prior upright fixtures are unchanged.
+All 84 workspace tests, formatting and native/WASM lint pass; two full replays
+are identical. Continue coordinated post-landing transfer references and feasible
+lateral unloading. Production stepping/recovery remains disabled. See
+[current status](docs/status.md).
+
+**2026-10-05 swing tracking continuation:** native motors now receive the
+admitted swing's anatomical target rates as well as positions. All 82 workspace
+tests, formatting and native/WASM lint pass; two full replays are identical.
+Five fixtures complete a verified step versus three before, but all five still
+fall; the three upright fixtures are preserved and strict stepping remains 0/9.
+Continue post-landing stance tracking and feasible lateral unloading. See
+[current status](docs/status.md).
+
+**2026-10-05 landing continuation:** measured landing targets now honor every
+anatomical bound and zero locked axes. All 81 workspace tests, formatting and
+native/WASM lint pass; repeated strict replay is identical and remains 0/9.
+Physical results match the previous verified source. Two abort handoff trials
+regressed upright fixtures and were removed. Continue feasible unloading and
+abort posture continuity. See [current status](docs/status.md).
+
+**2026-10-05 phase continuation:** repaired premature abortion of a late
+admitted swing by retaining a separate bounded phase clock. All 79 workspace
+tests, formatting and native/WASM lint pass; two strict replays are identical
+but remain 0/9. New transfer policies failed physical admission and were
+removed. Continue with feasible unloading and posture continuity across an
+aborted transfer, preserving the unchanged physical step requirements. See
+[current status](docs/status.md).
+
+**2026-10-05 build continuation:** native/browser repository compilation now
+guards content changes and timestamp-preserving restores, including vendored
+inputs. All 13 tooling/release checks pass; an actual Cargo executable regression
+reproduces and repairs the stale-build failure. A guarded lateral-step replay
+matches the previous physical report exactly. Strict stepping and full release
+qualification remain open. See [current status](docs/status.md).
+
+**2026-10-05 stepping continuation:** corrected constrained virtual foot
+positioning and added read-only leg motor traces. All 36 new geometry cases,
+78 workspace tests, formatting and native/WASM lint pass. Strict stepping
+remains 0/9; failed transfer/unloading experiments were removed. The subsequent
+build continuation above guards qualification after source restoration.
+The fresh verified receipt and remaining physical failures are recorded in
+[current status](docs/status.md).
+
+**2026-10-05 actuator continuation:** repaired torque-free spherical spin
+drift in the engine's gyroscopic frame transforms. All 432 native anatomical
+motor probes now pass the original 1e-6 N m s threshold in byte-identical
+repeated runs; all 77 workspace tests, gyroscopic/cached-row regressions,
+native/WASM lint, contact stress and striker checks pass. Full native/WASM
+equivalence and the migration's standing, stepping, recovery, terrain and
+hardware release gates remain open. See [current status](docs/status.md).
+
 **2026-10-03 migration continuation:** native quiet verification now covers
 both actual public-mode assemblies, and the v24 COM-restoration candidate passes
 all six native/WASM standing cases. All 15 repeated native stages and ten final
@@ -36,6 +120,9 @@ The existing production browser stays on TypeScript.
 - [x] Build a real WASM worker and pass Edge lifecycle/buffer smoke checks.
 - [x] Instrument contact-gated transfer, measured liftoff/touchdown and strict
   recoverable-fixture step counts; preserve failed native step experiments.
+- [x] Pass all nine frozen native strict stepping fixtures, including two
+  measured reversal steps and stable release; preserve physical criteria,
+  canonical inputs, motor ceilings and deterministic replay parity.
 - [x] Build the wgpu/WebGPU/WebGL2 renderer and Leptos UI; pass scoped Edge
   pointer/keyboard/emulated-touch/lifecycle checks at root and Pages subpath.
 - [x] Add actual per-tick/controller/solver telemetry, preserve exact physics

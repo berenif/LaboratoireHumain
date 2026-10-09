@@ -53,6 +53,15 @@ impl Grab {
     pub fn control_target(&self) -> Vector {
         self.control_target
     }
+    pub fn target_velocity(&self) -> Vector {
+        self.target_velocity
+    }
+    pub(crate) fn reverses(&self, demand: Vector) -> bool {
+        // The acceleration-limited filter can briefly overshoot a held target.
+        // Changing the planned mover requires a substantial raw pointer change.
+        self.target_velocity.dot(demand) < -0.01
+            && (self.raw_target - self.control_target).dot(demand) < -0.05 * demand.length()
+    }
     pub fn new(
         segment: usize,
         press: u64,
@@ -147,6 +156,39 @@ impl Grab {
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[test]
+    fn held_target_overshoot_is_distinct_from_a_real_pointer_reversal() {
+        for direction in [Vector::X, -Vector::X] {
+            let mut body = RigidBodyBuilder::dynamic()
+                .additional_mass_properties(MassProperties::new(
+                    Vector::ZERO,
+                    5.0,
+                    Vector::splat(1.0),
+                ))
+                .build();
+            body.recompute_mass_properties_from_colliders(&ColliderSet::new());
+            let mut grab = Grab::new(0, 1, Vector::ZERO, Vector::ZERO).expect("fixture");
+            let limits = Limits::default();
+            let dt = 1.0 / 240.0;
+            let mut saw_overshoot = false;
+            for tick in 0..180 {
+                grab.raw_target = direction * (0.6 * (tick as f32 / 90.0).min(1.0));
+                for _ in 0..4 {
+                    grab.apply(&mut body, dt, &limits).expect("held target");
+                    saw_overshoot |= grab.target_velocity().dot(direction) < -0.01;
+                    assert!(!grab.reverses(direction));
+                }
+            }
+            assert!(saw_overshoot);
+            grab.raw_target = -direction * 0.6;
+            let mut reversed = false;
+            for _ in 0..60 {
+                grab.apply(&mut body, dt, &limits).expect("reversed target");
+                reversed |= grab.reverses(direction);
+            }
+            assert!(reversed);
+        }
+    }
     #[test]
     fn point_impulse_obeys_force_torque_and_independent_kinetic_energy_caps() {
         for velocity in [Vector::ZERO, Vector::new(5.0, -2.0, 3.0)] {

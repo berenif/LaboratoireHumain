@@ -282,25 +282,19 @@ mod tests {
         }
     }
     #[test]
-    fn stress_diagnostics_preserve_failed_cases_and_never_admit_release() {
+    fn unchanged_stress_matrix_and_floor_disabled_controls_pass() {
         let results = matrix().unwrap();
         assert_eq!(results.len(), 216);
-        assert!(
-            results.iter().any(|r| !r.passed),
-            "the high-speed experiment remains unqualified"
-        );
         for r in results {
+            assert!(r.passed, "{}", serde_json::to_string(&r).unwrap());
             assert!(!r.release_accepted);
             assert_eq!(r.excitation, "stress");
-            if !r.passed {
-                assert_eq!(r.scenario, "sliding");
-                assert!(r.max_tangent_momentum_error_ns > 0.002);
-                assert!(r.worst_tangent_sample.float64_momentum_error_ns > 0.002);
-            }
         }
         let controls = force_only_controls().unwrap();
         assert_eq!(controls.len(), 36);
-        assert!(controls.iter().any(|r| !r.passed));
+        for r in &controls {
+            assert!(r.passed, "{}", serde_json::to_string(r).unwrap());
+        }
         assert!(controls.iter().all(|r| r.zero_signal_when_contact_absent
             && r.worst_tangent_sample.reported_tangent_impulse_ns == Vec3::default()
             && !r.release_accepted));

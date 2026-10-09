@@ -1,0 +1,57 @@
+name: Qualify deployed TypeScript rollback artifact
+
+on:
+  workflow_dispatch:
+    inputs:
+      deployed_run_id:
+        description: Successful TypeScript Pages run retaining its original github-pages artifact
+        required: true
+        type: string
+
+permissions:
+  contents: read
+  actions: read
+
+concurrency:
+  group: rust-frozen-device
+  cancel-in-progress: false
+
+jobs:
+  qualify:
+    runs-on: [self-hosted, Windows, X64, lh-frozen-hardware]
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22.13.0
+          cache: npm
+      - run: npm ci
+      - uses: actions/download-artifact@v6
+        with:
+          name: github-pages
+          run-id: ${{ inputs.deployed_run_id }}
+          github-token: ${{ github.token }}
+          path: evidence/typescript-original
+      - name: Import original Pages bytes without rebuilding
+        run: node scripts/import-typescript-pages.mjs evidence/typescript-original/artifact.tar evidence/typescript-export
+      - name: Verify exact deployed bytes and both existing modes and renderers
+        run: node scripts/qualify-typescript-rollback.mjs evidence/typescript-export https://berenif.github.io/LaboratoireHumain/ evidence/qualified-typescript-rollback
+        env:
+          RUST_BROWSER_CHANNEL: msedge
+      - uses: actions/upload-artifact@v4
+        with:
+          name: qualified-typescript-rollback
+          path: evidence/qualified-typescript-rollback
+          if-no-files-found: error
+          retention-days: 90
+      - name: Preserve failed qualification receipt
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: typescript-rollback-receipt
+          path: evidence/qualified-typescript-rollback/receipt.json
+          if-no-files-found: warn
+          retention-days: 90

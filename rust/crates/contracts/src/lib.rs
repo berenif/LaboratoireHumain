@@ -187,13 +187,50 @@ pub struct Diagnostics {
     pub queue_depth: u32,
     /// Sum of absolute bounded generalized native requests. Not delivered torque.
     pub requested_motor_effort_nm: f32,
+    /// Sum of rectified solved angular motor impulses over the four substeps.
+    /// None before an actual integration has supplied a measurement.
     pub delivered_motor_impulse_nm_s: Option<f32>,
+    /// Actual world motor delivery for each anatomical joint. None until
+    /// integration; totals cover the completed substeps of the current tick.
+    #[serde(default)]
+    pub delivered_motors: Option<Vec<MotorDelivery>>,
+    #[serde(default)]
+    pub recovery: Option<RecoveryObservation>,
+    #[serde(default)]
+    pub terrain: Option<TerrainObservation>,
     pub direct_pelvis_force_n: f32,
     pub direct_pelvis_torque_nm: f32,
     pub max_anchor_separation_m: f32,
     pub max_floor_penetration_m: f32,
     pub max_self_penetration_m: f32,
     pub max_limit_error_rad: f32,
+}
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct MotorDelivery {
+    pub segment: u8,
+    pub axis_abs_impulse_nm_s: [f32; 3],
+    pub parent_angular_impulse_nm_s: Vec3,
+    pub child_angular_impulse_nm_s: Vec3,
+}
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct RecoveryObservation {
+    pub phase: String,
+    pub elapsed_s: f32,
+    pub phase_time_s: f32,
+    pub qualified_time_s: f32,
+    pub stable_time_s: f32,
+    pub stalled_s: f32,
+    pub unsupported_s: f32,
+    pub retries: u32,
+    pub last_retry: Option<String>,
+    pub progress: f32,
+}
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct TerrainObservation {
+    pub support_height_m: f32,
+    pub center_of_mass: Vec3,
+    pub loaded_feet: [bool; 2],
+    pub persistent_support_load_n: f32,
 }
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
 pub struct Counters {

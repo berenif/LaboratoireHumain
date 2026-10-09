@@ -1,5 +1,6 @@
 import { existsSync } from 'node:fs';
 import { resolve } from 'node:path';
+export { prepareRustBuild } from './rust-build-freshness.mjs';
 
 export const rustToolchain = process.platform === 'win32'
   ? '1.89.0-x86_64-pc-windows-gnu'

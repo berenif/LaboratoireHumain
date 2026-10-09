@@ -3,6 +3,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import crypto from 'node:crypto';
 import { spawnSync } from 'node:child_process';
+import { prepareRustBuild, rustEnvironment, rustToolchain } from './rust-toolchain.mjs';
 
 const root = process.cwd();
 const output = path.resolve(process.argv[2] ?? '');
@@ -29,14 +30,14 @@ function capture(directory) {
 }
 fs.mkdirSync(output, { recursive: false });
 capture(path.join(root, 'rust'));
-const probeFile = 'scripts/run-rust-disturbance-probe.mjs';
-const probeBytes = fs.readFileSync(probeFile);
-sources[probeFile] = sha(probeBytes);
 fs.mkdirSync(path.join(output, 'source', 'scripts'), { recursive: true });
-fs.writeFileSync(path.join(output, 'source', probeFile), probeBytes, { flag: 'wx' });
-const env = { ...process.env, CARGO_TARGET_DIR: path.resolve('rust/target') };
-if (fs.existsSync('evidence/rapier-calibration-cache')) env.CARGO_HOME = path.resolve('evidence/rapier-calibration-cache');
-const toolchain = process.platform === 'win32' ? '+1.89.0-x86_64-pc-windows-gnu' : '+1.89.0';
+for (const probeFile of ['scripts/run-rust-disturbance-probe.mjs', 'scripts/rust-toolchain.mjs', 'scripts/rust-build-freshness.mjs']) {
+  const probeBytes = fs.readFileSync(probeFile);
+  sources[probeFile] = sha(probeBytes);
+  fs.writeFileSync(path.join(output, 'source', probeFile), probeBytes, { flag: 'wx' });
+}
+const env = rustEnvironment();
+const toolchain = `+${rustToolchain}`;
 const receipt = {
   schema: 1, partial: true, releaseAccepted: false, command: [process.execPath, ...process.argv.slice(1)],
   started: new Date().toISOString(), sourceBefore: sources,
@@ -52,6 +53,7 @@ function run(name, executable, args) {
   return result.status === 0;
 }
 try {
+  receipt.buildFreshness = prepareRustBuild();
   if (run('build', 'cargo', [toolchain, 'build', '--offline', '--locked', '--release', '--manifest-path', 'rust/Cargo.toml', '-p', 'lh-acceptance'])) {
     const executable = path.resolve(`rust/target/release/lh-acceptance${process.platform === 'win32' ? '.exe' : ''}`);
     receipt.executableSha256 = sha(fs.readFileSync(executable));

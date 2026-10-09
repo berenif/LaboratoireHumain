@@ -1,5 +1,268 @@
 # Current status
 
+**2026-10-09 strict corrective stepping repaired:** all **9/9** frozen strict
+fixtures now pass and finish physically stable, preserving the four previously
+stable fixtures. Direction reversal completes two verified steps at ticks 237
+and 339 and remains stable through tick 510. Each other fixture completes one
+verified step. Two final full replays are byte-identical.
+
+All **88 workspace tests**, formatting and native/WASM Clippy pass. The 13
+tooling/release checks and four engine tests pass with unchanged inputs.
+Measured takeoff rebasing, native effort allocation, loaded-sole preparation,
+measured-pelvis foot anchoring and coordinated touchdown/stance handoff repair
+the physical failures. A raw-pointer displacement guard prevents held-target
+filter overshoot from selecting a reversed transfer.
+
+Canonical anatomy, scenarios, measurements, the frozen v24 input profile and
+every physical step criterion are unchanged. Final source snapshots and
+receipts are in `evidence/strict-stepping-2026-10-09/code-checks/`, `verified-a/`
+and `verified-b/`; `comparison.json` confirms parity and preserved inputs.
+See the [repair and fixture results](rust-strict-stepping-2026-10-09.md).
+Production stepping/recovery remains disabled by default. Broader recovery,
+cycles, terrain, browser and hardware release qualification remains open;
+Pages promotion is still gated.
+
+**2026-10-05 swing reach diagnosis:** read-only substep traces identify an
+outdated takeoff anchor and an infeasible second right-foot path. At admission,
+the foot has moved 132.56 mm from its saved anchor; the landing target exceeds
+the current two-link IK reach by 76.06 mm. At the requested lift peak, measured
+raise is 9.55 mm and the foot still carries 144.90 N. Hip roll uses at least 99%
+of its allocated impulse cap during all 109 nominal-trajectory substeps.
+First unloading occurs at 0.721 s; verified liftoff follows at 0.829 s, beyond
+the unchanged 0.45-second trajectory. Installed and intended FK endpoints agree
+within numerical precision. The fixture still falls at tick 260.
+
+All **86 workspace tests**, formatting and native/WASM Clippy pass. Two full
+strict replays are byte-identical; every pre-existing report field matches the
+retained later-transfer baseline exactly. Strict stepping remains **1/9**,
+with **4/9** physically upright. All 1,473 live-swing substep records, source
+snapshots, executable and receipts are retained under
+`evidence/migration-swing-diagnosis-2026-10-05/final/`. The initial disk-full
+linking attempt is preserved. See the [diagnosis and plotted paths](rust-swing-diagnosis-2026-10-05.md).
+Next is planning from measured takeoff state and qualifying landing reach with
+the retained stance, then resolving unloading and posture dynamics. Production
+stepping/recovery stays disabled; release admission remains false.
+
+**2026-10-05 later-transfer reserve:** after a verified landing, an uncommitted
+transfer can gradually redistribute the existing motor budget toward legs
+carrying persistent measured sole loads. The leg priority is
+`0.55 + 0.45 * load_share`; upper-body priority approaches 0.12 over the
+0.6-second transfer clock. Native gains, anatomical ceilings, the 760 N m
+aggregate ceiling and all physical step criteria are unchanged. First transfers
+receive no new allocation; support loss clears it and committed swing uses its
+original allocation immediately.
+
+The right-foot-heading fixture now admits a second swing at tick 180 after the
+unchanged 0.10-second readiness proof, then verifies liftoff at 229. It still
+falls at tick 260 before a second landing. This late liftoff follows the nominal
+0.45-second trajectory endpoint, so it does not establish a stable second step.
+Held-target remains strictly qualified through tick 601; the other previously
+upright fixtures and direction-reversal report are unchanged. Five fixtures
+still land once. Strict stepping remains **1/9**, with **4/9** physically upright.
+
+All **85 workspace tests**, formatting and native/WASM Clippy pass. A regression
+checks landing/phase prerequisites, persistent versus transient load, empty
+support, swing precedence and immutable body state; the native allocation test
+also exercises the full later-transfer reserve with unchanged gains and caps.
+Two fresh dedicated native replays are identical and match the retained probe.
+Source stayed fixed and matches the tested snapshots. The final receipt and
+comparison are in `evidence/migration-transfer-stance-2026-10-05/final-qualified/`;
+it references the same-source code checks in `final-verified/`. A test-only borrow
+error and a rejected attempt to reuse a rebuilt binary remain recorded. The
+final physical reports were rerun on the dedicated acceptance build.
+
+Directly coordinating stance IK with the final transfer reference, both alone
+and with this reserve, regressed held-target and was removed. Sources, receipts
+and losslessly compressed reports are preserved in the same evidence root.
+Next work is measuring requested versus reachable swing paths and the delayed
+physical lift, then resolving transfer/stance dynamics. Continuous stepping,
+recovery and release during an admitted step remain unqualified. Production
+stepping/recovery stays disabled; release admission remains false.
+
+**2026-10-05 post-landing stability:** held-target now passes its strict
+corrective-step fixture: one verified landing at tick 201, no fall through
+tick 601 (10.02 seconds), and minimum pelvis height 0.942 m. Strict stepping
+improves from **0/9 to 1/9**, with four physically upright fixtures versus three.
+Five fixtures still complete a verified step. The other four landings still
+lead to falls; direction reversal completes no step, and the three previously
+upright fixtures still complete none. Their full reports are unchanged.
+
+The stance blend now supplies anatomical position and velocity targets from
+the complete trajectory, including its moving virtual pelvis reference. After
+verified landing, the prior support leg's motor allocation fades to the ordinary
+allocation over the same 0.6-second blend. This removes the abrupt loaded-hip
+capacity drop while preserving native gains, every anatomical ceiling, the
+760 N m aggregate ceiling, and the original full-swing allocation. Support loss
+clears the reserve; a new committed swing takes priority immediately. Physical
+readiness, liftoff, touchdown and step-count requirements remain unchanged.
+
+Two regressions cover complete blend rates at two headings, native distal rate
+installation, bounded targets, allocation handoff and opposite-side swing
+precedence, unchanged gains/caps, support-loss clearing, one counted landing
+and unchanged body snapshots. All **84 workspace tests**, formatting and
+native/WASM Clippy pass. Two full strict replays are identical; sources stayed
+fixed during verification and match the tested snapshots. Receipts, comparisons
+and intermediate experiments are in
+`evidence/migration-stance-tracking-2026-10-05/final/` and its parent directory.
+
+Next work is coordinating post-landing stance goals with subsequent transfer
+references and achieving feasible lateral unloading. The release-during-step
+fixture still never admits a swing, so its requested release remains unexercised.
+Production defaults still disable stepping/recovery and release admission
+remains false. Earlier checkpoints below retain their recorded source scope.
+
+**2026-10-05 swing tracking:** admitted swing now supplies anatomical velocity
+targets alongside its position targets. Both IK samples use the same measured
+pelvis pose; their coordinate difference over one substep feeds the native
+motor's canonical angular-rate row. Existing pelvis-torque feedforward remains
+additive, and requested-effort accounting includes the desired rate. This lets
+damping follow the requested lift instead of always opposing its motion.
+The original 4 cm sinusoidal lift, 0.45-second trajectory, gains, effort ceilings
+and physical readiness/liftoff/touchdown requirements are retained.
+
+The regression checks velocity-predicted forward kinematics at two headings
+through start, mid-swing and completion, native distal motor rate installation,
+hard ceilings, zero rates after support loss and unchanged body snapshots.
+All **82 workspace tests**, formatting and native/WASM Clippy pass. Two full
+strict reports repeat identically and match the retained candidate; sources
+stayed unchanged throughout verification and match the tested snapshots.
+
+Five fixtures now complete a verified step, including backward and held-target
+which previously completed none. All five subsequently fall: backward at tick
+208 versus 227 before, held-target at 474 versus 540. The three upright fixtures
+match the prior physical reports exactly and still complete no step. Strict
+stepping remains **0/9**. This advances swing tracking, without qualifying stable
+stepping or recovery.
+
+Five transfer/coordination policies failed physical admission and were removed.
+A squared-sine lift envelope reduced verified-step fixtures from five to three
+and was also removed. Their source, receipts and decisions are under
+`evidence/migration-support-reserve-2026-10-05/`; five rejected reports are
+losslessly compressed with verified hashes in `compressed-rejected.json`.
+The final receipt and comparisons are in `swing-final/`. Next work is measured
+post-landing stance tracking and feasible lateral unloading. Production defaults
+still disable stepping/recovery, and release admission remains false.
+
+**2026-10-05 landing target bounds:** landing now clips measured leg coordinates
+to their declared anatomical limits before storing the posture blend's starting
+targets, and zeros locked axes. Solver compliance permits small measured joint
+overshoot; that allowance must not expand the controller's target limits.
+The regression covers both boundaries on all eight leg joints at two headings,
+checks capture through the landing path and confirms unchanged body snapshots.
+A second regression preserves abort anchors, stance policy and step counts.
+
+All **81 workspace tests**, formatting and native/WASM Clippy pass. Two fresh
+strict replays are identical and remain **0/9**: three upright fixtures and
+three one-step-then-fall fixtures. Every measured body, contact, motor and failure
+result matches the prior verified source. The only requested-target differences
+are 49 locked-axis values becoming zero. Sources stayed unchanged throughout
+verification, and the final core files match the saved tested snapshots.
+
+Two measured-posture abort handoff trials regressed upright fixtures from three
+to zero and one respectively; both were removed. The existing abort policy
+remains. Evidence and decisions are retained in
+`evidence/migration-handoff-2026-10-05/decisions.json`; the verified receipt and
+comparison are under `clamp-final/`. Feasible unloading, abort posture continuity
+and full physical stepping remain unresolved. Production defaults still disable
+stepping/recovery, and release admission remains false.
+
+**2026-10-05 swing clock repair:** an admitted swing now has its own bounded
+two-second phase clock. Previously, a late admission consumed the transfer's
+remaining time and could abort before the 0.45-second trajectory finished.
+In the preserved central-reference diagnostic, right-foot swing started at
+tick 133 and aborted at 151; the repaired clock allowed verified liftoff and
+loaded landing at tick 169. That fixture still fell later, so this is timing
+evidence rather than step qualification.
+
+The regression proves a late swing survives the old request deadline, still
+rejects a continuously loaded slide, times out its own phase and leaves live
+body snapshots unchanged. All **79 workspace tests**, formatting and native/WASM
+Clippy pass. Two fresh strict replays are identical, remain **0/9**, preserve
+three upright fixtures and three one-step-then-fall fixtures, and retain all
+frozen readiness/liftoff/touchdown limits. Backward/reversal/held-target traces
+change when a late swing is allowed to continue; reversal now falls at tick 224
+instead of 233. Full stepping is still unqualified.
+
+Central-reference, coordinated-stance, load-feedback and damping trials were
+rejected and removed. Their receipts and decisions remain in
+`evidence/migration-step-coordination-2026-10-05/phase-decisions.json`.
+The restored controller retains the constrained IK repair and this clock fix;
+`lib.rs` matches its prior baseline byte for byte. The build guard refreshed
+both restored inputs, while subsequent compilation reused unchanged sources.
+The verification receipt is
+`evidence/migration-step-coordination-2026-10-05/phase-final/execution.json`.
+Sources stayed unchanged throughout verification; release admission is false.
+Next physical work needs a feasible unloading trajectory and a smooth posture
+handoff when transfer aborts, without counting that handoff as a step.
+
+**2026-10-05 build freshness repair:** repository native checks, disturbance
+probes, worker builds and Trunk builds now compare local Rust input contents
+with a ledger under the build cache before compiling. Changed/restored inputs
+receive fresh timestamps; unchanged inputs preserve their cache. Missing or
+invalid history refreshes all local inputs. The guard includes vendored files
+and records its input fingerprint in native evidence.
+
+All **13 tooling/release checks** pass, including a real pinned-Cargo regression:
+A builds, B builds, timestamp-preserved A incorrectly runs B without the guard,
+and guarded restored A rebuilds and runs A. A fresh repository disturbance build
+refreshed 277 inputs and reproduced the verified lateral fixture byte for byte
+(upright, zero completed steps). Sources stayed unchanged during that replay.
+Evidence is under `evidence/migration-build-freshness-2026-10-05/`; the executable
+regression preserves its separate `rust-freshness-integration-*` receipts.
+JavaScript lint reports no errors and one existing native-runner warning.
+This repairs the restored-source gap described below; direct Cargo invocations
+must also call the guard when restoring checkpoints.
+
+**2026-10-05 stepping continuation:** constrained leg inverse kinematics now
+refines the virtual foot endpoint after anatomical angle clamping. An
+independent forward-kinematics regression covers 36 shifted stance/swing goals
+at three headings, requires less than 0.1 mm endpoint error and every anatomical
+bound, and confirms that solving does not change live physics. The former
+analytic-only solution missed the first tested swing goal by 1.28 mm.
+
+Disturbance traces now include measured leg coordinates, configured axis
+ceilings and delivered motor impulses. These observations leave the physical
+reports unchanged. All **78 workspace tests**, formatting and native/WASM
+Clippy pass. The fresh strict stepping replay remains **0/9**: three fixtures
+stay upright without completing a step; three others complete one step and
+subsequently fall. Transfer/stance/unloading experiments did not qualify and
+were removed, retaining the existing controller policy and default disabled
+stepping/recovery flags. No acceptance limit or motor ceiling was relaxed.
+
+The authoritative receipt is
+`evidence/migration-step-coordination-2026-10-05/final-fresh/execution.json`.
+Its sources stayed unchanged, and all nine physical reports match the earlier
+constrained-IK replay after removing the added observation fields. The earlier
+`final/` receipt is rejected: restoring checkpoint files preserved older
+timestamps, allowing Cargo to reuse an experimental executable. Updating those
+timestamps and rebuilding produced the verified receipt. The subsequent build
+freshness repair above now guards repository compilation commands.
+Full migration and production promotion remain unaccepted.
+
+**2026-10-05 native actuator momentum repair:** all **432/432** anatomical
+motor probes now pass, covering 1,728 physical substeps at the unchanged
+1e-6 N m s tolerance. Two standalone acceptance runs produce byte-identical
+reports. Maximum delivered/body readback error is 1.2158e-7 N m s, down from
+3.7956e-6; maximum paired body momentum residual is 9.0641e-8 N m s, and
+reported opposite motor rows cancel exactly.
+
+The isolated regression reproduced torque-free spherical spin drift in the
+gyroscopic principal-frame round trip. Rapier now preserves angular velocity
+exactly when all three principal inertias are equal, where gyroscopic torque
+is identically zero. Unequal-inertia behavior retains its existing calculation.
+The anatomical matrix test now requires physical delivery passes as well as
+complete coverage. All **77 workspace tests**, three gyroscopic regressions,
+three cached-row equivalence tests, native/WASM Clippy and formatting pass.
+The 216-case contact stress matrix, 36 floor-disabled controls and three
+striker cases also pass. Evidence and tested source hashes are retained in
+`evidence/migration-actuator-gyro-2026-10-04/verification.json`; sources stayed
+unchanged throughout verification.
+
+This qualifies the native actuator probes. Full native/WASM equivalence,
+strict stepping, physical recovery/cycles, terrain traversal, production
+worker/browser qualification, hardware timing/touch and rollback qualification
+remain open. Production promotion remains unaccepted.
+
 **2026-10-03 migration continuation:** the v24 standing candidate increases
 supported COM restoration from 3 to 5 rad/m without changing acceptance limits
 or motor ceilings. Preliminary native standing passes all six public-mode

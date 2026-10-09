@@ -60,6 +60,38 @@ mod browser {
         let profile: Profile = serde_json::from_str(profile_json).map_err(error)?;
         profile.validate().map_err(error)?;
         let cases = match kind {
+            "actuators" => {
+                serde_json::to_value(lh_sim::actuators::trials(&profile).map_err(error)?)
+                    .map_err(error)?
+            }
+            "stress" => {
+                serde_json::to_value(lh_sim::calibration::tangent::matrix().map_err(error)?)
+                    .map_err(error)?
+            }
+            "controls" => serde_json::to_value(
+                lh_sim::calibration::tangent::force_only_controls().map_err(error)?,
+            )
+            .map_err(error)?,
+            "disturbances" => serde_json::to_value(
+                lh_sim::scenarios::disturbances_with_profile(&profile, None).map_err(error)?,
+            )
+            .map_err(error)?,
+            "steps" => serde_json::to_value(
+                lh_sim::scenarios::steps_with_profile(&profile, None).map_err(error)?,
+            )
+            .map_err(error)?,
+            "legacy" => serde_json::to_value(lh_sim::legacy::trials(&profile).map_err(error)?)
+                .map_err(error)?,
+            "recovery" => serde_json::to_value(
+                lh_sim::recovery::fixture_trials(&profile, None).map_err(error)?,
+            )
+            .map_err(error)?,
+            "cycles" => serde_json::to_value(vec![lh_sim::cycles::trial(&profile).map_err(error)?])
+                .map_err(error)?,
+            "terrain" => {
+                serde_json::to_value(lh_sim::environment::trials(&profile).map_err(error)?)
+                    .map_err(error)?
+            }
             "primitive" => {
                 let mut reports = Vec::new();
                 for warmstart in [0.0, 0.5, 1.0] {

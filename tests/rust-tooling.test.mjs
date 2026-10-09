@@ -1,9 +1,30 @@
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
-import { delimiter, dirname, resolve } from 'node:path';
+import { mkdirSync, mkdtempSync, readFileSync, statSync, unlinkSync, utimesSync, writeFileSync } from 'node:fs';
+import { delimiter, dirname, join, resolve } from 'node:path';
 import test from 'node:test';
 import { browserEnvironment, browserToolVersions, publicPath, workspaceOutput } from '../scripts/rust-browser-tools.mjs';
-import { rustCheckCommands, rustToolchain } from '../scripts/rust-toolchain.mjs';
+import { prepareRustBuild, rustCheckCommands, rustToolchain } from '../scripts/rust-toolchain.mjs';
+
+test('Rust freshness recovers invalid history, old timestamps and deleted inputs without changing bytes', () => {
+  mkdirSync('evidence', { recursive: true });
+  const root = mkdtempSync(resolve('evidence/rust-freshness-inputs-'));
+  mkdirSync(join(root, 'rust/src'), { recursive: true });
+  const first = join(root, 'rust/src/first.rs'), second = join(root, 'rust/src/second.rs');
+  writeFileSync(first, 'first'); writeFileSync(second, 'second');
+  prepareRustBuild(root);
+  const before = statSync(first).mtimeMs;
+  utimesSync(first, new Date(0), new Date(0));
+  assert.deepEqual(prepareRustBuild(root).refreshedInputs, ['rust/src/first.rs']);
+  assert.ok(statSync(first).mtimeMs > before);
+  unlinkSync(second);
+  const removed = prepareRustBuild(root);
+  assert.deepEqual(removed.removedInputs, ['rust/src/second.rs']);
+  assert.deepEqual(removed.refreshedInputs, ['rust/src/first.rs']);
+  writeFileSync(join(root, 'rust/target/source-freshness.json'), '{bad history');
+  assert.deepEqual(prepareRustBuild(root).refreshedInputs, ['rust/src/first.rs']);
+  assert.equal(readFileSync(first, 'utf8'), 'first');
+});
 
 test('Rust builders reject outputs that could replace source or escape the workspace', () => {
   for (const path of ['.', '..', '../external-build', 'rust', 'rust/dist', 'rust/crates/sim', 'scripts', '.git']) {

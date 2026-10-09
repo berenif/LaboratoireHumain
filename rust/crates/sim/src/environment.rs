@@ -20,8 +20,8 @@ pub const DIFFICULTIES: [Difficulty; 3] = [
     Difficulty::Extreme,
 ];
 
-/// Structural and measured-contact evidence for every authored station. This
-/// short diagnostic is not stepping, get-up, performance or release admission.
+/// Balance and traversal observations across every station/difficulty. A fall
+/// or missing traversal prevents passage even when the chain remains intact.
 pub fn trials(profile: &crate::Profile) -> Result<Vec<serde_json::Value>, String> {
     let mut reports = Vec::new();
     for difficulty in DIFFICULTIES {
@@ -35,8 +35,95 @@ pub fn trials(profile: &crate::Profile) -> Result<Vec<serde_json::Value>, String
             let handles = s.bodies.clone();
             let mut terrain_load_n = 0.0_f32;
             let mut failure = None;
-            for _ in 0..120 {
-                if let Err(error) = s.advance_tick() {
+            let mut upright_substeps = 0_u32;
+            let mut persistent_support_substeps = 0_u32;
+            let mut min_pelvis_height = f32::INFINITY;
+            let mut maximum_speed = 0.0_f32;
+            let mut balance_passed = false;
+            let mut traversal_start = None;
+            let mut traversal_distance = 0.0_f32;
+            let mut traversal_steps = 0;
+            let hand = s
+                .model
+                .segments
+                .iter()
+                .position(|p| p.id == "rightHand")
+                .ok_or("Terrain hand")?;
+            let mut hand_start = Vector::ZERO;
+            // Two seconds settle, 30 seconds balance, ten seconds requested
+            // forward traversal, release, then two seconds of standing handoff.
+            for tick in 0..2640 {
+                if tick == 1920 {
+                    balance_passed = s.counters.falls == 0
+                        && upright_substeps >= 7200
+                        && persistent_support_substeps >= 7200;
+                    traversal_start = Some(s.world.bodies[s.bodies[0]].translation());
+                    hand_start = s.world.bodies[s.bodies[hand]].translation();
+                    s.begin_grab(hand, 1, lh_model::Vec3::default(), vec3(hand_start))?;
+                }
+                if (1920..2520).contains(&tick) {
+                    s.move_grab(
+                        1,
+                        vec3(hand_start + Vector::Z * ((tick - 1920) as f32 / 600.0)),
+                    )?;
+                } else if tick == 2520 {
+                    s.cancel_grab();
+                }
+                if let Err(error) =
+                    s.advance_tick_observed(|state, substep| {
+                        let relative_height = state.world.bodies[state.bodies[0]].translation().y
+                            - state.support_height();
+                        min_pelvis_height = min_pelvis_height.min(relative_height);
+                        maximum_speed = maximum_speed.max(
+                            state
+                                .bodies
+                                .iter()
+                                .map(|h| state.world.bodies[*h].linvel().length())
+                                .fold(0.0_f32, f32::max),
+                        );
+                        if state.counters.falls > 0 {
+                            return Err(crate::measurement::Failure::new(
+                                state.tick,
+                                substep,
+                                "terrain-fall",
+                                "measured support/motion".into(),
+                                state.counters.falls as f32,
+                                0.0,
+                            ));
+                        }
+                        if state.tick >= 120 && state.tick < 1920 {
+                            for id in ["pelvis", "torso"] {
+                                let i = state
+                                    .model
+                                    .segments
+                                    .iter()
+                                    .position(|p| p.id == id)
+                                    .unwrap();
+                                let up =
+                                    (*state.world.bodies[state.bodies[i]].rotation() * Vector::Y).y;
+                                if up < 0.97 {
+                                    return Err(crate::measurement::Failure::new(
+                                        state.tick,
+                                        substep,
+                                        "terrain-standing-up",
+                                        id.into(),
+                                        up,
+                                        0.97,
+                                    ));
+                                }
+                            }
+                            upright_substeps += u32::from(matches!(
+                                state.motion,
+                                lh_contracts::Motion::Upright | lh_contracts::Motion::Reacting
+                            ));
+                            persistent_support_substeps +=
+                                u32::from(state.contacts.iter().any(|c| {
+                                    c.normal_load_n >= 3.0 && c.persistence_s + 1e-6 >= 0.05
+                                }));
+                        }
+                        Ok(())
+                    })
+                {
                     failure = Some(error);
                     break;
                 }
@@ -59,10 +146,19 @@ pub fn trials(profile: &crate::Profile) -> Result<Vec<serde_json::Value>, String
             let ownership =
                 handles == s.bodies && s.bodies.iter().all(|h| s.world.bodies[*h].is_dynamic());
             let starts_on_terrain = !matches!(station, Station::Flat | Station::Hurdles);
+            if let Some(start) = traversal_start {
+                traversal_distance =
+                    (s.world.bodies[s.bodies[0]].translation() - start).dot(Vector::Z);
+                traversal_steps = s.counters.steps;
+            }
+            let traversal_passed = traversal_distance >= 0.04
+                && traversal_steps > 0
+                && s.motion == lh_contracts::Motion::Upright;
             reports.push(serde_json::json!({"settings":settings,"initial":initial,"final":s.snapshot(),
             "failure":failure,"peakTerrainLoadN":terrain_load_n,"dynamicOwnership":ownership,
-            "startsOnTerrain":starts_on_terrain,
-            "passed":failure.is_none() && ownership && (!starts_on_terrain || terrain_load_n >= 3.0)}));
+            "startsOnTerrain":starts_on_terrain,"balancePassed":balance_passed,"traversalPassed":traversal_passed,
+            "metrics":{"uprightSubsteps":upright_substeps,"persistentSupportSubsteps":persistent_support_substeps,"minimumPelvisHeightM":min_pelvis_height,"maximumLinearSpeedMps":maximum_speed,"traversalDistanceM":traversal_distance,"traversalSteps":traversal_steps},
+            "completedTicks":s.tick,"passed":failure.is_none() && s.tick == 2640 && ownership && balance_passed && traversal_passed && (!starts_on_terrain || terrain_load_n >= 3.0)}));
         }
     }
     Ok(reports)

@@ -1,9 +1,12 @@
 //! Dynamic f32 simulation with read-only substep inspection and no DOM/GPU dependencies.
+pub mod actuators;
 #[cfg(not(target_arch = "wasm32"))]
 pub mod articulation;
 pub mod calibration;
+pub mod cycles;
 pub mod environment;
 pub mod grab;
+pub mod legacy;
 pub mod measurement;
 mod motion;
 mod passive;
@@ -72,6 +75,7 @@ pub fn anatomical_joint(p: &lh_model::Joint) -> Result<GenericJoint, String> {
         ))
         .contacts_enabled(false)
         .build();
+    joint.enforce_motor_vector_limit = true;
     for a in &p.axes {
         joint.set_limits(axis(a.coordinate)?, [a.min_radians, a.max_radians]);
     }
@@ -526,10 +530,14 @@ impl Simulation {
         }
         let mut reference = self.rest_com;
         let mut step_targets = Vec::new();
+        let mut step_velocities = [[0.0; 3]; 25];
         if let Some(mut controller) = self.stepping.take() {
             let intent = controller.update(self)?;
             reference = intent.reference;
             step_targets = intent.targets;
+            for (index, velocity) in intent.velocities {
+                step_velocities[index] = velocity;
+            }
             if intent.landed {
                 self.counters.steps += 1;
             }
@@ -560,6 +568,15 @@ impl Simulation {
         }
         if recovering && self.recovery.as_ref().is_some_and(|r| r.standing()) {
             reference = recovery::standing_reference(self);
+        }
+        if let Some(retained) = self
+            .stepping
+            .as_ref()
+            .and_then(|controller| controller.retained_side())
+        {
+            // Residual swing-sole contact must not receive standing ankle intent
+            // that fights the committed lift and reachable landing trajectory.
+            supported[1 - retained] = false;
         }
         if !falling
             && (!recovering || self.recovery.as_ref().is_some_and(|r| r.standing()))
@@ -623,6 +640,28 @@ impl Simulation {
                         * rotation(joint_profile.parent_frame.rotation)
                         * basis;
                     let direction = world_axis.dot(self.heading * basis);
+                    if segment.role == "hindfoot"
+                        && self
+                            .stepping
+                            .as_ref()
+                            .and_then(|controller| controller.preparing_loaded_sole())
+                            == Some(usize::from(segment.id.starts_with("right")))
+                    {
+                        let parent_rotation = *self.world.bodies[parent].rotation();
+                        let desired =
+                            measurement::coordinates(parent_rotation, self.heading, joint_profile);
+                        let measured = measurement::coordinates(
+                            parent_rotation,
+                            *self.world.bodies[self.bodies[i]].rotation(),
+                            joint_profile,
+                        );
+                        self.targets[i][index] =
+                            desired[index].clamp(axis.min_radians, axis.max_radians);
+                        step_velocities[i][index] =
+                            ((self.targets[i][index] - measured[index]) / 0.20).clamp(-1.0, 1.0)
+                                - self.world.bodies[parent].angvel().dot(world_axis);
+                        continue;
+                    }
                     let angle = if recovering {
                         angle.clamp(-0.12, 0.12)
                     } else {
@@ -634,16 +673,20 @@ impl Simulation {
             }
         }
         // A swing reserves more of the existing aggregate ceiling for the loaded
-        // leg. Every axis retains a nonzero reserve; a zero pre-solve PD request
-        // cannot remove the implicit motor response needed to oppose gravity.
-        let retained = self
+        // leg, then fades back during the stance blend after verified landing.
+        // Every axis retains a nonzero reserve for implicit gravity response.
+        let reserve = self
             .stepping
             .as_ref()
-            .and_then(|controller| controller.retained_side());
+            .and_then(|controller| controller.support_reserve());
+        let transfer_load = self
+            .stepping
+            .as_ref()
+            .and_then(|controller| controller.transfer_load_share(self));
         let mut weights = [1.0; 25];
-        if let Some(side) = retained {
+        if let Some((side, strength)) = reserve {
             for (i, segment) in self.model.segments.iter().enumerate() {
-                weights[i] = if matches!(
+                let priority = if matches!(
                     segment.role.as_str(),
                     "thigh" | "shin" | "ankle" | "hindfoot" | "forefoot"
                 ) {
@@ -655,9 +698,26 @@ impl Simulation {
                 } else {
                     0.12
                 };
+                weights[i] = priority * strength + (1.0 - strength);
             }
         }
-        let weighted_ceiling: f32 = if retained.is_some() || recovering {
+        if let Some((shares, strength)) = transfer_load {
+            // Later transfers need braking authority at the soles currently
+            // carrying load, even before the intended retained foot qualifies.
+            // Blend inside the same aggregate budget and keep native gains.
+            for (i, segment) in self.model.segments.iter().enumerate() {
+                let priority = if matches!(
+                    segment.role.as_str(),
+                    "thigh" | "shin" | "ankle" | "hindfoot" | "forefoot"
+                ) {
+                    0.55 + 0.45 * shares[usize::from(segment.id.starts_with("right"))]
+                } else {
+                    0.12
+                };
+                weights[i] = weights[i] * (1.0 - strength) + priority * strength;
+            }
+        }
+        let weighted_ceiling: f32 = if reserve.is_some() || transfer_load.is_some() || recovering {
             self.model
                 .segments
                 .iter()
@@ -692,6 +752,8 @@ impl Simulation {
             .motor_scale
             .min(self.profile.aggregate_motor_cap_nm / self.motor_ceiling_sum);
         let mut requested_effort = 0.0_f32;
+        let mut motor_requests = [[0.0_f32; 3]; 25];
+        let mut anatomical_caps = [[0.0_f32; 3]; 25];
         for (i, h) in self.joints.iter().enumerate() {
             if let (Some(h), Some(p)) = (h, &self.model.segments[i].joint_profile) {
                 let parent_handle = self
@@ -710,6 +772,9 @@ impl Simulation {
                 let omega = parent_frame.inverse() * (child.angvel() - parent.angvel());
                 let recovery_torque = self.recovery.as_ref().map_or(Vector::ZERO, |r| {
                     parent_frame.inverse() * r.root_torque(self, &self.model.segments[i])
+                });
+                let step_torque = self.stepping.as_ref().map_or(Vector::ZERO, |controller| {
+                    parent_frame.inverse() * controller.root_torque(self, &self.model.segments[i])
                 });
                 let joint = self
                     .world
@@ -754,14 +819,18 @@ impl Simulation {
                     // Passive tissue gains retain their canonical values;
                     // the shared torque budget still caps every native motor.
                     let gain_scale = if falling { 1.0 } else { scale };
-                    let feedforward = recovery_torque.dot(e);
+                    let feedforward = (recovery_torque + step_torque).dot(e);
                     let target_velocity = if damping * gain_scale > 0.0 {
-                        feedforward / (damping * gain_scale)
+                        step_velocities[i][index] + feedforward / (damping * gain_scale)
                     } else {
                         0.0
                     };
-                    let request =
-                        (stiffness * error - damping * jac.dot(omega)) * gain_scale + feedforward;
+                    let request = (stiffness * error
+                        + damping * (step_velocities[i][index] - jac.dot(omega)))
+                        * gain_scale
+                        + feedforward;
+                    motor_requests[i][index] = request;
+                    anatomical_caps[i][index] = max_force * self.profile.motor_scale.min(1.0);
                     let ceiling = max_force
                         * effort_scale
                         * weights[i]
@@ -781,6 +850,47 @@ impl Simulation {
                             damping * gain_scale,
                         )
                         .set_motor_max_force(axis(a.coordinate)?, ceiling);
+                }
+            }
+        }
+        if !falling
+            && !recovering
+            && self
+                .stepping
+                .as_ref()
+                .is_some_and(|controller| controller.owns_stance())
+        {
+            // Idle coordinates need a reserve, but cannot monopolize torque
+            // while a loaded sole or torso is already tracking a large error.
+            // Share the same aggregate ceiling using measured native requests.
+            let mut caps = std::array::from_fn::<_, 25, _>(|i| {
+                std::array::from_fn::<_, 3, _>(|k| {
+                    (0.10 * anatomical_caps[i][k] + 1.25 * motor_requests[i][k].abs())
+                        .min(anatomical_caps[i][k])
+                })
+            });
+            let total: f32 = caps.iter().flatten().sum();
+            let budget_scale = (self.profile.aggregate_motor_cap_nm / total.max(1e-6)).min(1.0);
+            requested_effort = 0.0;
+            for (i, h) in self.joints.iter().enumerate() {
+                if let (Some(h), Some(profile)) = (h, &self.model.segments[i].joint_profile) {
+                    let joint = self
+                        .world
+                        .impulse_joints
+                        .get_mut(*h, true)
+                        .ok_or("Lost allocated joint")?;
+                    for a in &profile.axes {
+                        let k = match a.coordinate {
+                            'x' => 0,
+                            'y' => 1,
+                            _ => 2,
+                        };
+                        caps[i][k] *= budget_scale;
+                        joint
+                            .data
+                            .set_motor_max_force(axis(a.coordinate)?, caps[i][k]);
+                        requested_effort += motor_requests[i][k].abs().min(caps[i][k]);
+                    }
                 }
             }
         }
@@ -970,6 +1080,43 @@ impl Simulation {
             .sum()
     }
     pub fn snapshot(&self) -> Snapshot {
+        let mut diagnostics = self.diagnostics.clone();
+        diagnostics.recovery =
+            self.recovery_status()
+                .map(|status| lh_contracts::RecoveryObservation {
+                    phase: format!("{:?}", status.phase),
+                    elapsed_s: status.elapsed_s,
+                    phase_time_s: status.phase_time_s,
+                    qualified_time_s: status.qualified_time_s,
+                    stable_time_s: status.stable_time_s,
+                    stalled_s: status.stalled_s,
+                    unsupported_s: status.unsupported_s,
+                    retries: status.retries,
+                    last_retry: status.last_retry.map(str::to_owned),
+                    progress: status.progress,
+                });
+        diagnostics.terrain = self.environment.as_ref().map(|_| {
+            let mut loaded_feet = [false; 2];
+            let mut persistent_support_load_n = 0.0;
+            for contact in &self.contacts {
+                if contact.persistence_s + 1e-6 < 0.05 {
+                    continue;
+                }
+                persistent_support_load_n += contact.normal_load_n;
+                let segment = &self.model.segments[contact.segment as usize];
+                if matches!(segment.role.as_str(), "hindfoot" | "forefoot")
+                    && contact.normal_load_n >= 3.0
+                {
+                    loaded_feet[usize::from(segment.id.starts_with("right"))] = true;
+                }
+            }
+            lh_contracts::TerrainObservation {
+                support_height_m: self.support_height(),
+                center_of_mass: vec3(self.center_of_mass()),
+                loaded_feet,
+                persistent_support_load_n,
+            }
+        });
         Snapshot {
             stamp: Stamp::new(self.generation, self.substeps_completed + 1, self.tick),
             simulation_time_s: self.substeps_completed as f64 / 240.0,
@@ -995,7 +1142,7 @@ impl Simulation {
             motion: self.motion,
             contacts: self.contacts.clone(),
             counters: self.counters.clone(),
-            diagnostics: self.diagnostics.clone(),
+            diagnostics,
             acknowledged_sequence: self.applied_sequence,
         }
     }
@@ -1017,6 +1164,9 @@ impl Simulation {
             return Err(f.clone());
         }
         let mut impulses = [0.0_f32; 25];
+        let mut motor_delivery = [([0.0_f32; 3], Vector::ZERO, Vector::ZERO); 25];
+        let mut prior_delivery = self.diagnostics.delivered_motors.take();
+        self.diagnostics.delivered_motor_impulse_nm_s = None;
         for substep in 0..4 {
             let event = |s: &Self, phase, begin| profiling::Event {
                 generation: s.generation,
@@ -1107,6 +1257,55 @@ impl Simulation {
                 self.profile.internal_pgs_iterations
             };
             self.world.step_with_events(&self.filter, &());
+            let delivered: f32 = self
+                .joints
+                .iter()
+                .flatten()
+                .filter_map(|handle| self.world.impulse_joints.get(*handle))
+                .flat_map(|joint| joint.data.motors[3..].iter())
+                .map(|motor| motor.delivered_abs_impulse)
+                .sum();
+            *self
+                .diagnostics
+                .delivered_motor_impulse_nm_s
+                .get_or_insert(0.0) += delivered;
+            for (i, handle) in self.joints.iter().enumerate() {
+                if let Some(joint) = handle.and_then(|handle| self.world.impulse_joints.get(handle))
+                {
+                    for (k, motor) in joint.data.motors[3..].iter().enumerate() {
+                        motor_delivery[i].0[k] += motor.delivered_abs_impulse;
+                        motor_delivery[i].1 += motor.delivered_angular_impulse_1;
+                        motor_delivery[i].2 += motor.delivered_angular_impulse_2;
+                    }
+                }
+            }
+            if self.diagnostics.delivered_motors.is_none() {
+                self.diagnostics.delivered_motors =
+                    Some(prior_delivery.take().unwrap_or_else(|| {
+                        self.joints
+                            .iter()
+                            .enumerate()
+                            .filter(|(_, handle)| handle.is_some())
+                            .map(|(i, _)| lh_contracts::MotorDelivery {
+                                segment: i as u8,
+                                axis_abs_impulse_nm_s: [0.0; 3],
+                                parent_angular_impulse_nm_s: Vec3::default(),
+                                child_angular_impulse_nm_s: Vec3::default(),
+                            })
+                            .collect()
+                    }));
+            }
+            for delivery in self
+                .diagnostics
+                .delivered_motors
+                .as_mut()
+                .expect("integrated motor observations")
+            {
+                let i = usize::from(delivery.segment);
+                delivery.axis_abs_impulse_nm_s = motor_delivery[i].0;
+                delivery.parent_angular_impulse_nm_s = vec3(motor_delivery[i].1);
+                delivery.child_angular_impulse_nm_s = vec3(motor_delivery[i].2);
+            }
             self.substeps_completed += 1;
             trace(self, event(self, profiling::Phase::Physics, false));
             trace(self, event(self, profiling::Phase::Contacts, true));
@@ -1285,6 +1484,8 @@ mod tests {
         assert_eq!(s.motion, Motion::Halted);
         assert!(s.grab.is_none());
         assert_eq!(s.substeps_completed, 0);
+        assert!(s.diagnostics.delivered_motor_impulse_nm_s.is_none());
+        assert!(s.diagnostics.delivered_motors.is_none());
         assert_eq!(
             s.advance_tick().expect_err("halt persists").check,
             failure.check
