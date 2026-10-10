@@ -531,7 +531,7 @@ impl Simulation {
                 self.motion = Motion::Upright;
                 self.counters.recoveries += 1;
                 self.recovery = None;
-                self.rest_com = self.center_of_mass();
+                self.capture_rest_com();
                 self.motion_observation = crate::motion::Observation::default();
                 if self.profile.corrective_steps_enabled {
                     self.stepping = crate::stepping::StepController::new(self).ok();

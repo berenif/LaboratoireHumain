@@ -680,7 +680,7 @@ pub fn loaded_leg_chains_with_profile(profile: &Profile) -> Result<Vec<serde_jso
         s.joints = retained.iter().map(|i| s.joints[*i]).collect();
         s.targets = retained.iter().map(|i| s.targets[*i]).collect();
         s.rest_targets = retained.iter().map(|i| s.rest_targets[*i]).collect();
-        s.rest_com = s.center_of_mass();
+        s.capture_rest_com();
         let ballast = (72.2 - s.total_mass()) * 9.81;
         let mut failure = None;
         for _ in 0..720 {
