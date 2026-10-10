@@ -128,6 +128,46 @@ mod browser {
         serde_json::to_string(&serde_json::json!({"kind":kind,"profile":profile,"cases":cases,"releaseAccepted":false})).map_err(error)
     }
 
+    // Additive diagnostic selection; the ordinary foundation export is unchanged.
+    #[wasm_bindgen]
+    pub fn calibrate_recovery_fixture(
+        fixture_id: &str,
+        profile_json: &str,
+    ) -> Result<String, JsValue> {
+        if fixture_id.is_empty()
+            || fixture_id.len() > 128
+            || !fixture_id
+                .bytes()
+                .all(|byte| byte.is_ascii_lowercase() || byte.is_ascii_digit() || byte == b'-')
+        {
+            return Err(error("Recovery fixture ID exceeds bound or is invalid"));
+        }
+        if profile_json.len() > 65536 {
+            return Err(error("Recovery fixture profile exceeds bound"));
+        }
+        let input: serde_json::Value = serde_json::from_str(profile_json).map_err(error)?;
+        let pinned: serde_json::Value =
+            serde_json::from_str(lh_sim::recovery_contract::PINNED_PROFILE_JSON).map_err(error)?;
+        if input != pinned {
+            return Err(error(
+                "Recovery fixture requires the complete pinned v24 profile",
+            ));
+        }
+        let profile: Profile = serde_json::from_value(input).map_err(error)?;
+        profile.validate().map_err(error)?;
+        // Selection is enforced by the existing immutable fixture loader before integration.
+        let cases = lh_sim::recovery::fixture_trials(&profile, Some(fixture_id)).map_err(error)?;
+        if cases.len() != 1 || cases[0]["id"].as_str() != Some(fixture_id) {
+            return Err(error("Recovery fixture selection identity mismatch"));
+        }
+        let heading = cases[0]["heading"].clone();
+        serde_json::to_string(&serde_json::json!({
+            "kind":"recovery", "fixtureId":fixture_id, "fixtureHeading":heading,
+            "profile":profile, "cases":cases, "releaseAccepted":false,
+        }))
+        .map_err(error)
+    }
+
     #[wasm_bindgen]
     pub struct WorkerRuntime {
         runtime: Runtime,
@@ -209,6 +249,14 @@ mod browser {
         }
         pub fn quiet_report(&self) -> Result<String, JsValue> {
             serde_json::to_string(&self.runtime.quiet_report()).map_err(error)
+        }
+        pub fn enable_recovery_measurement(&mut self) -> Result<(), JsValue> {
+            self.runtime
+                .enable_recovery_measurement()
+                .map_err(|reject| error(format!("{reject:?}")))
+        }
+        pub fn recovery_progress(&self) -> Result<String, JsValue> {
+            serde_json::to_string(&self.runtime.recovery_progress()).map_err(error)
         }
         pub fn advance_profiled(&mut self, ticks: u32) -> Result<String, JsValue> {
             let mut recorder = Recorder::new(clock_ms);

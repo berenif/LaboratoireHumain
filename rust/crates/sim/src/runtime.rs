@@ -20,6 +20,7 @@ pub struct Reply {
 pub struct Runtime {
     simulation: Simulation,
     quiet: Option<crate::quiet::QuietObservation>,
+    recovery_measurement: Option<crate::cycles::QualificationObservation>,
     timeline: Timeline,
     heading: f32,
     mode: Mode,
@@ -43,6 +44,10 @@ fn acknowledgement(
     }
 }
 impl Runtime {
+    /// Read-only qualification evidence, including ownership before integration.
+    pub(crate) fn simulation(&self) -> &Simulation {
+        &self.simulation
+    }
     pub fn new(mode: Mode, heading: f32, profile: Profile) -> Result<Self, String> {
         Self::new_trial(mode, heading, profile, 1, true)
     }
@@ -86,6 +91,7 @@ impl Runtime {
             timeline: Timeline::new(simulation.generation),
             simulation,
             quiet: None,
+            recovery_measurement: None,
             heading,
             mode,
             paused: false,
@@ -320,6 +326,9 @@ impl Runtime {
             self.timeline.last_applied = self.timeline.last_applied.max(command.stamp.sequence);
             self.simulation.applied_sequence = self.timeline.last_applied;
         }
+        if let Some(observer) = self.recovery_measurement.as_mut() {
+            observer.applied(&self.simulation, &command.action);
+        }
         Ok(())
     }
     fn boundary(&mut self) {
@@ -335,6 +344,35 @@ impl Runtime {
     }
     pub fn advance(&mut self, ticks: u32) -> Result<Reply, Reject> {
         self.advance_traced(ticks, |_, _| {})
+    }
+    /// Enable independent ownership/contact/posture evidence before integration.
+    /// The normal public command path and physical controllers are preserved.
+    pub fn enable_recovery_measurement(&mut self) -> Result<(), Reject> {
+        if self.disposed
+            || self.recovery_measurement.is_some()
+            || self.quiet.is_some()
+            || self.paused
+            || !self.visible
+            || self.mode != Mode::Protocol
+            || !self.simulation.profile.recovery_enabled
+            || !crate::recovery_contract::profile_matches_pinned(&self.simulation.profile)
+            || self.simulation.substeps_completed != 0
+            || self.timeline.depth() != 0
+            || self.timeline.last_applied != 0
+            || self.simulation.first_failure.is_some()
+            || !self.simulation.world.colliders[self.simulation.floor].is_enabled()
+        {
+            return Err(Reject::Invalid);
+        }
+        self.recovery_measurement = Some(crate::cycles::QualificationObservation::new(
+            &self.simulation,
+        ));
+        Ok(())
+    }
+    pub fn recovery_progress(&self) -> Option<serde_json::Value> {
+        self.recovery_measurement
+            .as_ref()
+            .map(|observer| observer.report(&self.simulation))
     }
     /// Only an untouched, visible trial on the flat floor can be measured.
     /// No body state or controller setting is changed by this observer.
@@ -432,12 +470,16 @@ impl Runtime {
                 break;
             }
             let quiet = &mut self.quiet;
+            let recovery_measurement = &mut self.recovery_measurement;
             if self
                 .simulation
                 .advance_tick_traced(
                     |simulation, substep| {
                         if let Some(quiet) = quiet.as_mut() {
                             quiet.observe(simulation, substep)?;
+                        }
+                        if let Some(observer) = recovery_measurement.as_mut() {
+                            observer.observe(simulation, substep)?;
                         }
                         observer(simulation, substep)
                     },
