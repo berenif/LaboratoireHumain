@@ -1,0 +1,43 @@
+{
+  "version": 1,
+  "source": "scripts/physics-fixtures.ts",
+  "sourceSha256": "c10087383e8119f2747ee3ec4e5eeeb5689f47c395a61595baabc8a0bd048725",
+  "acceptance": {
+    "fixedDtS": 0.016666666666666666,
+    "maxJointSeparationM": 0.08,
+    "maxFloorPenetrationM": 0.08,
+    "maxNonExcludedSelfPenetrationM": 0.005,
+    "trajectoryPositionToleranceM": 1e-7,
+    "trajectoryRotationToleranceDegrees": 1e-5,
+    "trajectoryVelocityTolerance": 1e-7,
+    "recoveryLimitS": 25,
+    "stableObservationS": 1,
+    "idleSettlingS": 2,
+    "idleDurationS": 30,
+    "idleRootDriftM": 0.03,
+    "idlePlantedFootDriftM": 0.01,
+    "idleMaxLinearMps": 0.1,
+    "idleMaxAngularRadps": 0.5,
+    "maximumStructuralLimitErrorRad": 0.06,
+    "repeatedCycles": 5
+  },
+  "recoveryAcceptance": {
+    "normalY": 0.65,
+    "contactDistanceM": 0.012,
+    "minimumLoadN": 3,
+    "loadPersistenceS": 0.05,
+    "landingPersistenceS": 0.10,
+    "settlePersistenceS": 0.30,
+    "settleLinearMps": 0.65,
+    "settleAngularRadps": 1.8,
+    "stablePersistenceS": 0.55,
+    "stableLinearMps": 0.22,
+    "stableAngularRadps": 0.65,
+    "stableUpDot": 0.97,
+    "phaseMinimumS": 0.20,
+    "stallS": 3.0,
+    "supportLossS": 0.20,
+    "assistanceForceN": 0,
+    "assistanceTorqueNm": 0
+  }
+}

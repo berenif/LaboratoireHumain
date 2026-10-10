@@ -14,6 +14,7 @@ pub mod profiling;
 mod quiet;
 mod reaching;
 pub mod recovery;
+pub mod recovery_contract;
 pub mod runtime;
 pub mod scenarios;
 mod stepping;
@@ -258,6 +259,8 @@ pub struct Simulation {
     applied_sequence: u64,
     contacts: Vec<Contact>,
     persistence: Vec<f32>,
+    integrated_support_substeps: [u64; 25],
+    integrated_support_loads_n: [f32; 25],
     pub diagnostics: Diagnostics,
     pub first_failure: Option<measurement::Failure>,
     motor_ceiling_sum: f32,
@@ -487,6 +490,8 @@ impl Simulation {
             applied_sequence: 0,
             contacts: Vec::new(),
             persistence: vec![0.0; 25],
+            integrated_support_substeps: [0; 25],
+            integrated_support_loads_n: [0.0; 25],
             diagnostics: Diagnostics::default(),
             first_failure: None,
             motor_ceiling_sum,
@@ -515,22 +520,26 @@ impl Simulation {
         {
             self.recovery = Some(recovery::Controller::new(self)?);
             self.motion = Motion::Recovering;
+            self.stepping = None;
         }
         let falling = matches!(self.motion, Motion::Falling | Motion::Fallen);
-        let recovering = self.motion == Motion::Recovering;
+        let recovering = self.motion == Motion::Recovering
+            && self.recovery.as_ref().is_some_and(|r| !r.handed_off());
         if falling {
             self.stepping = None;
         }
         // This intent changes bounded native motor targets only. Unsupported
         // bodies receive no balance correction, and physics owns every pose.
         self.targets.clone_from(&self.rest_targets);
+        let mut recovery_velocities = [[0.0; 3]; 25];
         if let Some(mut controller) = self.recovery.take() {
             self.targets = controller.update(self)?;
+            recovery_velocities.copy_from_slice(controller.velocities());
             self.recovery = Some(controller);
         }
         let mut reference = self.rest_com;
         let mut step_targets = Vec::new();
-        let mut step_velocities = [[0.0; 3]; 25];
+        let mut step_velocities = recovery_velocities;
         if let Some(mut controller) = self.stepping.take() {
             let intent = controller.update(self)?;
             reference = intent.reference;
@@ -578,10 +587,7 @@ impl Simulation {
             // that fights the committed lift and reachable landing trajectory.
             supported[1 - retained] = false;
         }
-        if !falling
-            && (!recovering || self.recovery.as_ref().is_some_and(|r| r.standing()))
-            && supported.iter().any(|s| *s)
-        {
+        if !falling && !recovering && supported.iter().any(|s| *s) {
             let pelvis = self.world.bodies.get(self.bodies[0]).ok_or("Lost pelvis")?;
             let mut q = self.heading.inverse() * (*pelvis.rotation());
             if q.w < 0.0 {
@@ -667,8 +673,18 @@ impl Simulation {
                     } else {
                         angle
                     };
-                    self.targets[i][index] = (self.targets[i][index] + angle * direction)
+                    let (authority, previous) = self
+                        .recovery
+                        .as_ref()
+                        .filter(|r| r.handed_off())
+                        .map_or((1.0, 1.0), |r| r.standing_authority());
+                    let base = self.targets[i][index];
+                    let corrected = (base + angle * direction * authority)
                         .clamp(axis.min_radians, axis.max_radians);
+                    let prior = (base + angle * direction * previous)
+                        .clamp(axis.min_radians, axis.max_radians);
+                    self.targets[i][index] = corrected;
+                    step_velocities[i][index] += (corrected - prior) / self.profile.dt_s;
                 }
             }
         }
@@ -773,8 +789,19 @@ impl Simulation {
                 let recovery_torque = self.recovery.as_ref().map_or(Vector::ZERO, |r| {
                     parent_frame.inverse() * r.root_torque(self, &self.model.segments[i])
                 });
+                let recovery_root_authority = self
+                    .recovery
+                    .as_ref()
+                    .is_some_and(|r| r.native_root_authority(self, &self.model.segments[i]));
                 let step_torque = self.stepping.as_ref().map_or(Vector::ZERO, |controller| {
-                    parent_frame.inverse() * controller.root_torque(self, &self.model.segments[i])
+                    let authority = self
+                        .recovery
+                        .as_ref()
+                        .filter(|r| r.handed_off())
+                        .map_or(1.0, |r| r.standing_authority().0);
+                    parent_frame.inverse()
+                        * controller.root_torque(self, &self.model.segments[i])
+                        * authority
                 });
                 let joint = self
                     .world
@@ -820,13 +847,29 @@ impl Simulation {
                     // the shared torque budget still caps every native motor.
                     let gain_scale = if falling { 1.0 } else { scale };
                     let feedforward = (recovery_torque + step_torque).dot(e);
+                    // The loaded recovery hip installs a world-pelvis effort,
+                    // already damped by measured pelvis angular velocity. Its
+                    // native relative motion must not cancel that effort while
+                    // the planted leg moves. Other joints retain local damping.
+                    let frame_velocity = if recovery_root_authority {
+                        let authority = self
+                            .recovery
+                            .as_ref()
+                            .filter(|r| r.handed_off())
+                            .map_or(1.0, |r| 1.0 - r.standing_authority().0);
+                        jac.dot(omega) * authority
+                    } else {
+                        0.0
+                    };
                     let target_velocity = if damping * gain_scale > 0.0 {
-                        step_velocities[i][index] + feedforward / (damping * gain_scale)
+                        step_velocities[i][index]
+                            + frame_velocity
+                            + feedforward / (damping * gain_scale)
                     } else {
                         0.0
                     };
                     let request = (stiffness * error
-                        + damping * (step_velocities[i][index] - jac.dot(omega)))
+                        + damping * (step_velocities[i][index] + frame_velocity - jac.dot(omega)))
                         * gain_scale
                         + feedforward;
                     motor_requests[i][index] = request;
@@ -854,19 +897,21 @@ impl Simulation {
             }
         }
         if !falling
-            && !recovering
-            && self
-                .stepping
-                .as_ref()
-                .is_some_and(|controller| controller.owns_stance())
+            && (recovering
+                || self
+                    .stepping
+                    .as_ref()
+                    .is_some_and(|controller| controller.owns_stance()))
         {
             // Idle coordinates need a reserve, but cannot monopolize torque
             // while a loaded sole or torso is already tracking a large error.
             // Share the same aggregate ceiling using measured native requests.
+            let support_reserves = recovery::support_effort_reserves(self);
             let mut caps = std::array::from_fn::<_, 25, _>(|i| {
                 std::array::from_fn::<_, 3, _>(|k| {
-                    (0.10 * anatomical_caps[i][k] + 1.25 * motor_requests[i][k].abs())
-                        .min(anatomical_caps[i][k])
+                    (0.10 * anatomical_caps[i][k]
+                        + 1.25 * motor_requests[i][k].abs().max(support_reserves[i][k]))
+                    .min(anatomical_caps[i][k])
                 })
             });
             let total: f32 = caps.iter().flatten().sum();
@@ -966,6 +1011,8 @@ impl Simulation {
         if !enabled {
             self.contacts.clear();
             self.persistence.fill(0.0);
+            self.integrated_support_substeps.fill(0);
+            self.integrated_support_loads_n.fill(0.0);
         }
         Ok(())
     }
@@ -1246,16 +1293,17 @@ impl Simulation {
             // with 32 internal passes. Keep quiet-standing's budget unchanged.
             self.world
                 .integration_parameters
-                .num_internal_pgs_iterations = if matches!(
-                self.motion,
-                Motion::Falling | Motion::Fallen | Motion::Recovering
-            ) {
-                self.profile
-                    .fall_internal_pgs_iterations
-                    .max(self.profile.internal_pgs_iterations)
-            } else {
-                self.profile.internal_pgs_iterations
-            };
+                .num_internal_pgs_iterations =
+                if matches!(self.motion, Motion::Falling | Motion::Fallen)
+                    || self.motion == Motion::Recovering
+                        && self.recovery.as_ref().is_some_and(|r| !r.handed_off())
+                {
+                    self.profile
+                        .fall_internal_pgs_iterations
+                        .max(self.profile.internal_pgs_iterations)
+                } else {
+                    self.profile.internal_pgs_iterations
+                };
             self.world.step_with_events(&self.filter, &());
             let delivered: f32 = self
                 .joints
@@ -1368,6 +1416,18 @@ impl Simulation {
                 return Err(f);
             }
             trace(self, event(self, profiling::Phase::Observer, true));
+            for (i, load) in loads_n.iter().enumerate() {
+                self.integrated_support_loads_n[i] = *load;
+                self.integrated_support_substeps[i] = if *load
+                    >= recovery_contract::contract()
+                        .recovery_acceptance
+                        .minimum_load_n
+                {
+                    self.integrated_support_substeps[i] + 1
+                } else {
+                    0
+                };
+            }
             self.observe_motion(&loads_n);
             let observation = observer(self, substep);
             trace(self, event(self, profiling::Phase::Observer, false));

@@ -20,6 +20,8 @@
     "lint:rust": "node scripts/run-rust-checks.mjs lint",
     "verify:rust": "node scripts/run-rust-gates.mjs",
     "verify:rust:foundation": "node scripts/run-rust-gates.mjs --foundation",
+    "verify:rust:recovery": "node scripts/run-rust-recovery-gates.mjs",
+    "verify:rust:recovery:review": "node scripts/finalize-rust-recovery-qualification.mjs",
     "verify:rust:browser": "node scripts/verify-rust-app.mjs",
     "test:physics": "node --import tsx scripts/run-physics-harness.ts",
     "test:standing": "node scripts/standing-acceptance.mjs",

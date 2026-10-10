@@ -16,6 +16,14 @@ export async function start_bridge() {
   let worker = null;
   const initialMode = new URL(location.href).searchParams.get('mode') === 'playground' ? 'playground' : 'protocol';
   let initialization = { mode: initialMode, heading: 0, generation: 1, floorEnabled: true };
+  // Only an explicit automation preload enables the recovery observer. Ordinary
+  // pages continue to initialize their existing public mode and default profile.
+  const qualification = window.__lhQualification;
+  if (qualification !== undefined) {
+    if (qualification?.kind !== 'recovery' || initialMode !== 'protocol' || !qualification.profile
+      || qualification.profile.recovery_enabled !== true) throw new Error('Invalid recovery qualification preload');
+    initialization = { ...initialization, qualification: 'recovery', profile: qualification.profile };
+  }
   const state = {
     disposed: false, renderer: null, canvas: null, changing: false, graphicsFault: false, graphicsError: '',
     backendRequested: new URL(location.href).searchParams.get('renderer') || 'auto',
@@ -30,6 +38,7 @@ export async function start_bridge() {
     packets: [], frames: [], droppedPackets: 0, droppedFrames: 0, previousFrameMs: null,
     snapshotSources: [], inputSamples: [], visualInputs: [], droppedInputs: 0,
     maximumQueueDepth: 0, maximumOutstandingAdvances: 0, maximumAdvanceTicks: 0, maximumTransferBuffers: 0,
+    recoveryContinuity: { packets: 0, initial: null, latest: null, violations: [] },
   };
   function listen(target, type, callback, options) {
     target.addEventListener(type, callback, options);
@@ -69,6 +78,8 @@ export async function start_bridge() {
     const failure = new Error(String(error));
     state.outstanding?.manualResolve?.reject(failure); state.outstanding = null;
     state.manualRequests.splice(0).forEach(request => request.reject(failure));
+    state.pending.forEach(entry => entry.effect?.reject?.(failure));
+    state.acknowledgements.forEach(effect => effect?.reject?.(failure));
     state.pending = []; state.acknowledgements.clear(); cancelPointer(false);
     state.failed = true; state.workerFault = true; state.desiredPaused = true; state.accumulator = 0;
     worker?.terminate(); worker = null;
@@ -117,7 +128,7 @@ export async function start_bridge() {
     if (clearTouches) { state.touches.clear(); state.gesture = null; }
     state.pending = state.pending.filter(entry => typeof entry.action !== 'object' || !('GrabMove' in entry.action || 'GrabBegin' in entry.action || 'GrabEnd' in entry.action));
   }
-  function queue(action, effect = null, input = null) {
+  function queue(action, effect = null, input = null, prepare = null) {
     if (state.disposed || state.workerFault || !state.last) return;
     if (changesTrial(action)) {
       cancelPointer(false); state.pending = []; state.manualRequests.splice(0).forEach(request => request.reject(new Error('Reset cancelled queued advance')));
@@ -129,7 +140,7 @@ export async function start_bridge() {
       state.pending[state.pending.length - 1] = { action, effect, input }; return;
     }
     if (state.pending.length >= 128) { fail('Input queue is full'); return; }
-    state.pending.push({ action, effect, input });
+    state.pending.push({ action, effect, input, prepare });
     state.maximumQueueDepth = Math.max(state.maximumQueueDepth, state.pending.length);
     pump();
   }
@@ -142,18 +153,23 @@ export async function start_bridge() {
       const commands = [];
       while (state.pending.length && commands.length < 32) {
         const entry = state.pending.shift();
-        const reset = changesTrial(entry.action);
+        let action = entry.action;
+        if (entry.prepare) {
+          try { action = entry.prepare(state.last.reply.snapshot); }
+          catch (error) { entry.effect?.reject?.(error); continue; }
+        }
+        const reset = changesTrial(action);
         if (reset && commands.length) { state.pending.unshift(entry); break; }
         const sequence = ++state.sequence;
         if (entry.input) {
           if(state.visualInputs.length>=128) { state.droppedInputs++; }
           else state.visualInputs.push({ ...entry.input, sequence, tick: state.last.reply.snapshot.stamp.tick });
         }
-        commands.push({ stamp: { schema: 4, generation: state.last.reply.snapshot.stamp.generation, sequence, tick: state.last.reply.snapshot.stamp.tick }, action: entry.action });
+        commands.push({ stamp: { schema: 4, generation: state.last.reply.snapshot.stamp.generation, sequence, tick: state.last.reply.snapshot.stamp.tick }, action });
         if (entry.effect) state.acknowledgements.set(sequence, entry.effect);
         if (reset) break;
       }
-      send({ type: 'commands', commands }); return;
+      if (commands.length) { send({ type: 'commands', commands }); return; }
     }
     if (state.manualRequests.length) {
       const request = state.manualRequests.shift();
@@ -187,7 +203,10 @@ export async function start_bridge() {
       const outstanding = state.outstanding;
       state.outstanding = null;
       if (message.type === 'error') {
-        outstanding.commandSequences.forEach(sequence => state.acknowledgements.delete(sequence));
+        outstanding.commandSequences.forEach(sequence => {
+          state.acknowledgements.get(sequence)?.reject?.(new Error(message.message));
+          state.acknowledgements.delete(sequence);
+        });
         outstanding.manualResolve?.reject(new Error(message.message));
         if (outstanding.type === 'initialize') workerFailed(message.message);
         else { fail(message.message); pump(); }
@@ -196,7 +215,22 @@ export async function start_bridge() {
       if (message.type !== 'snapshot' || !(message.poseBuffer instanceof ArrayBuffer) || message.poseBuffer.byteLength !== 1300) throw new Error('Invalid worker packet');
       const oldGeneration = state.last?.reply.snapshot.stamp.generation;
       const receivedAtMs = performance.now();
-      state.last = { reply: message.reply, poses: new Float32Array(message.poseBuffer).slice(), timing: message.timing };
+      state.last = { reply: message.reply, poses: new Float32Array(message.poseBuffer).slice(), timing: message.timing,
+        recoveryProgress: message.recoveryProgress, workerIdentity: message.workerIdentity };
+      if (qualification) {
+        const evidence = message.recoveryProgress;
+        const identity = evidence ? { workerIdentity: message.workerIdentity, workerInstances: state.workerInstances,
+          generation: message.reply.snapshot.stamp.generation, bodyHandles: evidence.bodyHandles,
+          jointHandles: evidence.jointHandles, profile: evidence.profile } : null;
+        const continuity = state.recoveryContinuity;
+        continuity.packets++;
+        if (!continuity.initial) continuity.initial = structuredClone(identity);
+        if (!identity || !identity.workerIdentity || !Array.isArray(identity.bodyHandles) || !Array.isArray(identity.jointHandles)
+          || evidence.ownershipUnchanged !== true || JSON.stringify(identity) !== JSON.stringify(continuity.initial)) {
+          if (continuity.violations.length < 16) continuity.violations.push({ requestId: message.requestId, tick: message.reply.snapshot.stamp.tick, identity });
+        }
+        continuity.latest = identity;
+      }
       state.maximumTransferBuffers = Math.max(state.maximumTransferBuffers, message.transferBuffersAllocated ?? 0);
       if (message.reply.completed_ticks > 0 || !state.snapshotSources.length || oldGeneration !== message.reply.snapshot.stamp.generation) {
         if (oldGeneration !== message.reply.snapshot.stamp.generation) state.snapshotSources = [];
@@ -216,8 +250,8 @@ export async function start_bridge() {
       for (const acknowledgement of message.reply.acknowledgements) {
         const effect = state.acknowledgements.get(acknowledgement.stamp.sequence);
         state.acknowledgements.delete(acknowledgement.stamp.sequence);
-        if (acknowledgement.rejected) fail('Command rejected: ' + acknowledgement.rejected);
-        else effect?.();
+        if (acknowledgement.rejected) { effect?.reject?.(new Error('Command rejected: ' + acknowledgement.rejected)); fail('Command rejected: ' + acknowledgement.rejected); }
+        else effect?.(structuredClone(acknowledgement));
       }
       if (oldGeneration !== undefined && oldGeneration !== message.reply.snapshot.stamp.generation) {
         state.accumulator = 0; state.activeWall = 0; state.lastClock = performance.now(); state.failed = false; state.error = '';
@@ -439,7 +473,9 @@ export async function start_bridge() {
       disposed: state.disposed, confirmedPaused: state.last?.reply.paused, outstanding: Boolean(state.outstanding), queueDepth: state.pending.length, workerInstances: state.workerInstances,
       workerFault: state.workerFault, manualRequests: state.manualRequests.length,
       rendererChanges: state.rendererChanges, backlogSeconds: state.accumulator, lastPick: state.lastPick,
-      activePointer: state.pointer?.kind || null, failure: state.last?.reply.failure }; },
+      activePointer: state.pointer?.kind || null, failure: state.last?.reply.failure,
+      ...(qualification ? { recoveryProgress: state.last?.recoveryProgress, workerIdentity: state.last?.workerIdentity,
+        recoveryContinuity: structuredClone(state.recoveryContinuity) } : {}) }; },
     drainTelemetry() { return { packets: state.packets.splice(0), frames: state.frames.splice(0),
       inputs: state.inputSamples.splice(0), droppedInputs: state.droppedInputs, pendingVisualInputs: state.visualInputs.length,
       bounds: { maximumQueueDepth: state.maximumQueueDepth, maximumOutstandingAdvances: state.maximumOutstandingAdvances,
@@ -454,6 +490,42 @@ export async function start_bridge() {
       return new Promise((resolve, reject) => { state.manualRequests.push({ ticks, resolve, reject }); pump(); });
     },
     action, dispose,
+    ...(qualification ? { qualificationCommand(action) {
+      if (changesTrial(action) || !['Strike', 'GrabBegin', 'GrabMove', 'GrabEnd'].includes(
+        typeof action === 'string' ? action : Object.keys(action ?? {})[0])) return Promise.reject(new Error('Qualification command changes trial or is unsupported'));
+      if (state.disposed || state.workerFault || state.failed || !state.last) return Promise.reject(new Error('Physical worker is unavailable'));
+      return new Promise((resolve, reject) => {
+        const timer = setTimeout(() => reject(new Error('Qualification command acknowledgement timed out')), 5000);
+        const accepted = acknowledgement => { clearTimeout(timer); resolve(acknowledgement); };
+        accepted.reject = error => { clearTimeout(timer); reject(error); };
+        queue(action, accepted);
+      });
+    }, qualificationGrabBegin({ press, segment }) {
+      if (!Number.isSafeInteger(press) || press < 1 || !Number.isInteger(segment) || segment < 0 || segment >= 25)
+        return Promise.reject(new Error('Invalid qualification hand press'));
+      if (state.disposed || state.workerFault || state.failed || !state.last)
+        return Promise.reject(new Error('Physical worker is unavailable'));
+      return new Promise((resolve, reject) => {
+        const timer = setTimeout(() => reject(new Error('Qualification hand press acknowledgement timed out')), 5000);
+        let preparedOrigin, preparedStamp;
+        const accepted = acknowledgement => {
+          clearTimeout(timer); resolve({ ...acknowledgement, preparedOrigin, preparedStamp });
+        };
+        accepted.reject = error => { clearTimeout(timer); reject(error); };
+        const localAnchor = { x: 0, y: 0, z: 0 };
+        // Derive this physical center anchor only after any outstanding advance
+        // replies. Pending commands are sent before the next automatic tick.
+        const prepare = snapshot => {
+          const pose = snapshot.segments[segment];
+          if (!pose || !['leftHand', 'rightHand'].includes(pose.id) || !Object.values(pose.position).every(Number.isFinite))
+            throw new Error('Qualification press requires a physical hand snapshot');
+          preparedOrigin = { ...pose.position };
+          preparedStamp = { generation: snapshot.stamp.generation, tick: snapshot.stamp.tick };
+          return { GrabBegin: { press, segment, local_anchor: localAnchor, target: preparedOrigin } };
+        };
+        queue({ GrabBegin: { press, segment, local_anchor: localAnchor, target: localAnchor } }, accepted, null, prepare);
+      });
+    } } : {}),
     projectSegment(segment) { const rect = state.canvas.getBoundingClientRect(); const point = state.renderer.project_segment(segment, rect.width, rect.height); return { x: rect.left + point[0], y: rect.top + point[1] }; },
   };
   spawnWorker(); state.raf = requestAnimationFrame(frame); notify(); await changeRenderer(state.backendRequested);

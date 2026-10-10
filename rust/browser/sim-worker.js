@@ -1,5 +1,5 @@
 // This module owns the only simulation instance in the browser.
-import init, { WorkerRuntime, wire_schema, calibrate_tangent_contact, calibrate_foundation } from './lh_worker.js';
+import init, { WorkerRuntime, wire_schema, calibrate_tangent_contact, calibrate_foundation, calibrate_recovery_fixture } from './lh_worker.js';
 
 const wasm = await init();
 const poseBytes = 25 * 13 * Float32Array.BYTES_PER_ELEMENT;
@@ -8,6 +8,8 @@ let runtime = null;
 let lastRequest = 0;
 let profiling = true;
 let quietQualification = false;
+let recoveryQualification = false;
+const workerIdentity = globalThis.crypto?.randomUUID?.() ?? `${performance.timeOrigin}:${Math.random()}`;
 
 function publish(requestId, reply, started, timing) {
   const slot = buffers.find(slot => !slot.inFlight);
@@ -30,7 +32,8 @@ function publish(requestId, reply, started, timing) {
     timing,
     wasmLinearBytes: wasm.memory?.buffer.byteLength ?? null,
     transferBuffersAllocated: buffers.length,
-    ...(quietQualification ? { quietProgress: JSON.parse(runtime.quiet_progress()) } : {}) }, [slot.buffer]);
+    ...(quietQualification ? { quietProgress: JSON.parse(runtime.quiet_progress()) } : {}),
+    ...(recoveryQualification ? { recoveryProgress: JSON.parse(runtime.recovery_progress()), workerIdentity } : {}) }, [slot.buffer]);
 }
 
 self.onmessage = event => {
@@ -54,7 +57,11 @@ self.onmessage = event => {
         || !message.profile || typeof message.profile !== 'object' || Array.isArray(message.profile)) throw new Error('Invalid foundation fixture');
       const profile = JSON.stringify(message.profile);
       if (profile.length > 65536) throw new Error('Foundation profile exceeds bound');
-      self.postMessage({ type: 'foundation', requestId: message.requestId, report: JSON.parse(calibrate_foundation(message.kind, profile)) });
+      if (message.fixtureId !== undefined && (message.kind !== 'recovery' || typeof message.fixtureId !== 'string'
+        || !/^[a-z0-9-]{1,128}$/.test(message.fixtureId))) throw new Error('Invalid selected recovery fixture');
+      const report = message.fixtureId === undefined ? calibrate_foundation(message.kind, profile)
+        : calibrate_recovery_fixture(message.fixtureId, profile);
+      self.postMessage({ type: 'foundation', requestId: message.requestId, workerIdentity, report: JSON.parse(report) });
       return;
     }
     if (message.type === 'calibrateTangent') {
@@ -85,20 +92,24 @@ self.onmessage = event => {
       if (runtime) throw new Error('Already initialized; use a stamped Initialize command');
       if (message.generation !== undefined && (!Number.isSafeInteger(message.generation) || message.generation < 1)) throw new Error('Invalid initial generation');
       if (message.floorEnabled !== undefined && typeof message.floorEnabled !== 'boolean') throw new Error('Invalid initial floor');
-      if (message.qualification !== undefined && !['quiet', 'quiet-drift'].includes(message.qualification)) throw new Error('Unknown qualification');
+      if (message.qualification !== undefined && !['quiet', 'quiet-drift', 'recovery'].includes(message.qualification)) throw new Error('Unknown qualification');
       if (message.profile !== undefined && (typeof message.profile !== 'object' || message.profile === null || Array.isArray(message.profile))) throw new Error('Invalid initial profile');
       const profile = message.profile === undefined ? undefined : JSON.stringify(message.profile);
       if (profile !== undefined && profile.length > 65536) throw new Error('Initial profile exceeds bound');
+      if (message.qualification === 'recovery' && (message.mode !== 'protocol' || message.floorEnabled === false
+        || !message.profile || message.profile.recovery_enabled !== true)) throw new Error('Recovery qualification requires an explicit recovery profile and protocol floor');
       const playground = message.playground === undefined ? undefined : JSON.stringify(message.playground);
       if (playground && playground.length > 256) throw new Error('Playground settings exceed bound');
       const next = new WorkerRuntime(message.mode, message.heading, String(message.generation ?? 1), message.floorEnabled, profile, playground);
       try {
-        if (message.qualification !== undefined) next.enable_quiet_measurement();
+        if (['quiet', 'quiet-drift'].includes(message.qualification)) next.enable_quiet_measurement();
         if (message.qualification === 'quiet-drift') next.enable_quiet_drift_trace();
+        if (message.qualification === 'recovery') next.enable_recovery_measurement();
       } catch (error) { next.free(); throw error; }
       runtime = next;
       profiling = message.profiling !== false;
-      quietQualification = message.qualification !== undefined;
+      quietQualification = ['quiet', 'quiet-drift'].includes(message.qualification);
+      recoveryQualification = message.qualification === 'recovery';
     } else {
       if (!runtime) throw new Error('Worker is not initialized');
       if (message.type === 'commands') {
@@ -122,7 +133,7 @@ self.onmessage = event => {
         nativeOutputMs: runtime.native_output_ms(), jsonParseMs: parseMs });
     } else publish(message.requestId, JSON.parse(runtime.advance(ticks)), started, null);
   } catch (error) {
-    self.postMessage({ type: 'error', requestId: message?.requestId ?? null, message: String(error) });
+    self.postMessage({ type: 'error', requestId: message?.requestId ?? null, workerIdentity, message: String(error) });
   }
 };
-self.postMessage({ type: 'ready', schema: wire_schema(), maximumBuffers: 3, maximumAdvanceTicks: 4 });
+self.postMessage({ type: 'ready', schema: wire_schema(), maximumBuffers: 3, maximumAdvanceTicks: 4, workerIdentity });

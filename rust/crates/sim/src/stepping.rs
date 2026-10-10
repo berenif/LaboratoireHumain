@@ -285,6 +285,23 @@ impl StepController {
             },
         })
     }
+    pub(crate) fn planted_feet(&self) -> [Vector; 2] {
+        self.planted
+    }
+    /// The ordinary stance controller receives measured support and coordinates.
+    /// Recovery earns no completion while this 0.6 second blend is in progress.
+    pub(crate) fn recovered_stance(s: &Simulation, planted: [Vector; 2]) -> Result<Self, String> {
+        let mut result = Self::new(s)?;
+        result.planted = planted;
+        result.repositioned = true;
+        result.settle_s = 0.0;
+        result.settle_reference = s.center_of_mass();
+        result.pelvis_com_offset = s.center_of_mass() - s.world.bodies[s.bodies[0]].translation();
+        for (i, angles) in measured_leg_targets(s)? {
+            result.settle_from[i] = angles;
+        }
+        Ok(result)
+    }
     pub fn update(&mut self, s: &Simulation) -> Result<Intent, String> {
         let dt = s.profile.dt_s;
         self.cooldown_s = (self.cooldown_s - dt).max(0.0);
@@ -974,13 +991,23 @@ fn measured_leg_targets(s: &Simulation) -> Result<Vec<(usize, [f32; 3])>, String
 
 /// Lower a requested upright stance enough for both measured soles to remain
 /// within the actual two-link reach. This is an IK intent, never a body write.
-fn reachable_stance_root(
+pub(crate) fn reachable_stance_root(
+    s: &Simulation,
+    feet: [usize; 2],
+    goals: [Vector; 2],
+    root: Pose,
+) -> Result<Pose, String> {
+    reachable_stance_root_at_pitch(s, feet, goals, root, None)
+}
+
+pub(crate) fn reachable_stance_root_at_pitch(
     s: &Simulation,
     feet: [usize; 2],
     goals: [Vector; 2],
     mut root: Pose,
+    pitches: Option<[f32; 2]>,
 ) -> Result<Pose, String> {
-    for (foot, goal) in feet.into_iter().zip(goals) {
+    for (side, (foot, goal)) in feet.into_iter().zip(goals).enumerate() {
         let parent = |i: usize| {
             s.model
                 .segments
@@ -1002,8 +1029,11 @@ fn reachable_stance_root(
         let lower = vector(joint(shin)?.child_frame.anchor)
             .distance(vector(joint(ankle)?.parent_frame.anchor));
         let hip_offset = root.rotation * vector(joint(thigh)?.parent_frame.anchor);
+        let sole = pitches.map_or(s.heading, |pitch| {
+            s.heading * Rotation::from_rotation_x(pitch[side])
+        });
         let pivot = goal
-            + s.heading
+            + sole
                 * (vector(joint(foot)?.child_frame.anchor)
                     - vector(joint(foot)?.parent_frame.anchor));
         let horizontal = Vector::new(
@@ -1054,7 +1084,7 @@ fn support_hull(mut points: Vec<[f32; 2]>) -> Vec<[f32; 2]> {
     hull.pop();
     hull
 }
-fn inside_support(points: Vec<[f32; 2]>, point: [f32; 2], margin: f32) -> bool {
+pub(crate) fn inside_support(points: Vec<[f32; 2]>, point: [f32; 2], margin: f32) -> bool {
     inside_hull(&support_hull(points), point, margin)
 }
 fn inside_hull(hull: &[[f32; 2]], point: [f32; 2], margin: f32) -> bool {
@@ -1069,7 +1099,11 @@ fn inside_hull(hull: &[[f32; 2]], point: [f32; 2], margin: f32) -> bool {
         length > 0.0 && cross(*a, *b, point) >= margin * length
     })
 }
-fn project_support(points: &[[f32; 2]], desired: [f32; 2], margin: f32) -> Option<[f32; 2]> {
+pub(crate) fn project_support(
+    points: &[[f32; 2]],
+    desired: [f32; 2],
+    margin: f32,
+) -> Option<[f32; 2]> {
     let hull = support_hull(points.to_vec());
     if hull.is_empty() {
         return None;
@@ -1117,7 +1151,7 @@ fn leg_targets_at(
     goal: Vector,
     pelvis_height: Option<f32>,
 ) -> Result<Vec<(usize, [f32; 3])>, String> {
-    leg_targets_in_frame(s, foot, goal, pelvis_height, None)
+    leg_targets_in_frame(s, foot, goal, pelvis_height, None, None)
 }
 
 pub(crate) fn leg_targets_with_root(
@@ -1126,7 +1160,17 @@ pub(crate) fn leg_targets_with_root(
     goal: Vector,
     pelvis: Pose,
 ) -> Result<Vec<(usize, [f32; 3])>, String> {
-    leg_targets_in_frame(s, foot, goal, None, Some(pelvis))
+    leg_targets_in_frame(s, foot, goal, None, Some(pelvis), None)
+}
+
+pub(crate) fn leg_targets_with_root_and_pitch(
+    s: &Simulation,
+    foot: usize,
+    goal: Vector,
+    pelvis: Pose,
+    pitch: f32,
+) -> Result<Vec<(usize, [f32; 3])>, String> {
+    leg_targets_in_frame(s, foot, goal, None, Some(pelvis), Some(pitch))
 }
 
 fn leg_targets_in_frame(
@@ -1135,6 +1179,7 @@ fn leg_targets_in_frame(
     goal: Vector,
     pelvis_height: Option<f32>,
     root: Option<Pose>,
+    sole_pitch: Option<f32>,
 ) -> Result<Vec<(usize, [f32; 3])>, String> {
     let parent_index = |index: usize| -> Result<usize, String> {
         let id = s.model.segments[index]
@@ -1170,8 +1215,11 @@ fn leg_targets_in_frame(
         vector(joint(thigh)?.child_frame.anchor).distance(vector(joint(shin)?.parent_frame.anchor));
     let lower =
         vector(joint(shin)?.child_frame.anchor).distance(vector(joint(ankle)?.parent_frame.anchor));
+    let sole = sole_pitch.map_or(s.heading, |pitch| {
+        s.heading * Rotation::from_rotation_x(pitch)
+    });
     let pivot = goal
-        + s.heading
+        + sole
             * (vector(joint(foot)?.child_frame.anchor) - vector(joint(foot)?.parent_frame.anchor));
     let local = s.heading.inverse() * (pivot - hip);
     if !local.is_finite() || upper <= 0.0 || lower <= 0.0 {
@@ -1194,8 +1242,10 @@ fn leg_targets_in_frame(
     let orientations = [
         plane_rotation * Rotation::from_rotation_x(pitch - proximal),
         plane_rotation * Rotation::from_rotation_x(pitch + distal),
-        plane_rotation,
-        s.heading,
+        sole_pitch.map_or(plane_rotation, |pitch| {
+            plane_rotation * Rotation::from_rotation_x(pitch)
+        }),
+        sole,
     ];
     let mut parent = pelvis_pose.rotation;
     let mut result = Vec::new();

@@ -19,6 +19,22 @@ pub(crate) fn endpoint(
     angles: &[[f32; 3]],
     anchor: Vector,
 ) -> Result<Vector, String> {
+    let pose = endpoint_pose(s, chain, root, angles)?;
+    let point = pose.transform_point(anchor);
+    if !point.is_finite() {
+        return Err("Non-finite reaching endpoint".into());
+    }
+    Ok(point)
+}
+
+/// Anatomical forward kinematics for validating both contact position and
+/// orientation. The calculated pose is never installed on a rigid body.
+pub(crate) fn endpoint_pose(
+    s: &Simulation,
+    chain: &[usize],
+    root: Pose,
+    angles: &[[f32; 3]],
+) -> Result<Pose, String> {
     let mut pose = root;
     for (&index, angle) in chain.iter().zip(angles) {
         let joint = s.model.segments[index]
@@ -49,11 +65,10 @@ pub(crate) fn endpoint(
             orientation,
         );
     }
-    let point = pose.transform_point(anchor);
-    if !point.is_finite() {
+    if !pose.translation.is_finite() || !pose.rotation.is_finite() {
         return Err("Non-finite reaching endpoint".into());
     }
-    Ok(point)
+    Ok(pose)
 }
 
 pub(crate) fn arm_targets(
@@ -107,8 +122,20 @@ pub(crate) fn arm_targets(
         .get(s.bodies[root_index])
         .ok_or("Lost arm root")?
         .position();
+    limb_targets(s, &chain, root, anchor, target)
+}
+
+/// Bounded measured-coordinate IK for a supported limb. Root and endpoint
+/// candidates remain outside the physical world, including planted knees.
+pub(crate) fn limb_targets(
+    s: &Simulation,
+    chain: &[usize],
+    root: Pose,
+    anchor: Vector,
+    target: Vector,
+) -> Result<Vec<(usize, [f32; 3])>, String> {
     let mut angles = Vec::with_capacity(chain.len());
-    for &index in &chain {
+    for &index in chain {
         let joint = s.model.segments[index]
             .joint_profile
             .as_ref()
@@ -141,10 +168,10 @@ pub(crate) fn arm_targets(
                 .ok_or("Missing arm joint")?;
             for axis in &joint.axes {
                 let c = coordinate_index(axis.coordinate)?;
-                let position = endpoint(s, &chain, root, &angles, anchor)?;
+                let position = endpoint(s, chain, root, &angles, anchor)?;
                 let saved = angles[k][c];
                 angles[k][c] += 0.001;
-                let derivative = (endpoint(s, &chain, root, &angles, anchor)? - position) / 0.001;
+                let derivative = (endpoint(s, chain, root, &angles, anchor)? - position) / 0.001;
                 let delta = (derivative.dot(target - position)
                     / (derivative.length_squared() + s.profile.reaching_damping_m2))
                     .clamp(
@@ -155,7 +182,7 @@ pub(crate) fn arm_targets(
             }
         }
     }
-    Ok(chain.into_iter().zip(angles).collect())
+    Ok(chain.iter().copied().zip(angles).collect())
 }
 
 #[cfg(test)]

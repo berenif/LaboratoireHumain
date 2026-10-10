@@ -1,2 +1,5 @@
 # Preserve the audited upstream source and exact patch context lines.
 rust/vendor/** -text -whitespace
+# Qualification pins are hashed as exact bytes on every platform.
+rust/crates/sim/data/recovery-profile-v24.json -text
+rust/crates/sim/data/recovery-contract-v1.json -text
