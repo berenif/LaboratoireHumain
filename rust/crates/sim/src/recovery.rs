@@ -1383,6 +1383,7 @@ impl Simulation {
                 Err(_) => return,
             };
             self.rest_com = standing_reference_at_feet(self, ordinary.planted_feet());
+            self.rest_com_roundoff = Vector::ZERO;
             self.stepping = Some(ordinary);
             let controller = self.recovery.as_mut().expect("active recovery");
             controller.enter(Phase::Handoff);
@@ -1404,6 +1405,8 @@ impl Simulation {
                 self.motion = Motion::Upright;
                 self.counters.recoveries += 1;
                 self.recovery = None;
+                // Keep the independently supplied planted stance reference;
+                // completing the hold must not rebase it to the current COM.
                 self.motion_observation = crate::motion::Observation::default();
             }
         }

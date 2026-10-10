@@ -60,7 +60,12 @@ pub fn disturbances_with_profile(
     profile: &Profile,
     selected: Option<&str>,
 ) -> Result<Vec<serde_json::Value>, String> {
-    run_disturbances(profile, selected, false)
+    run_disturbances(profile, selected, Scope::Disturbances)
+}
+/// The existing eight recoverable pull probes used by the native foundation.
+/// Overpower and verified-swing fixtures remain required by the release gates.
+pub fn foundation_with_profile(profile: &Profile) -> Result<Vec<serde_json::Value>, String> {
+    run_disturbances(profile, None, Scope::Foundation)
 }
 /// Behavioral diagnostic that preserves the fixture's minimum completed steps
 /// and releases the pointer only after measured liftoff in the swing phase.
@@ -68,13 +73,24 @@ pub fn steps_with_profile(
     profile: &Profile,
     selected: Option<&str>,
 ) -> Result<Vec<serde_json::Value>, String> {
-    run_disturbances(profile, selected, true)
+    run_disturbances(profile, selected, Scope::Steps)
+}
+#[derive(Clone, Copy, PartialEq)]
+enum Scope {
+    Foundation,
+    Disturbances,
+    Steps,
+}
+fn includes_fixture(scope: Scope, fixture: &Pull) -> bool {
+    (scope == Scope::Disturbances || fixture.outcome == "recoverable")
+        && (scope == Scope::Steps || !fixture.release_at_first_swing)
 }
 fn run_disturbances(
     profile: &Profile,
     selected: Option<&str>,
-    require_steps: bool,
+    scope: Scope,
 ) -> Result<Vec<serde_json::Value>, String> {
+    let require_steps = scope == Scope::Steps;
     let inputs: Inputs = serde_json::from_str(INPUTS).map_err(|e| e.to_string())?;
     if inputs.schema != 1 || inputs.command_tick_hz != 60 {
         return Err("Fixture schema/rate".into());
@@ -83,10 +99,7 @@ fn run_disturbances(
     for p in inputs
         .pulls
         .iter()
-        .filter(|p| {
-            (!require_steps || p.outcome == "recoverable")
-                && (require_steps || !p.release_at_first_swing)
-        })
+        .filter(|p| includes_fixture(scope, p))
         .filter(|p| selected.is_none_or(|id| p.id == id))
     {
         let mut s = Simulation::new(p.initial.heading, profile.clone(), true)?;
@@ -322,8 +335,10 @@ fn run_disturbances(
         }
         let scope = if require_steps {
             "Recoverable fixture diagnostic with unchanged minimum completed steps, measured liftoff/touchdown, no-fall and final standing. Release after verified swing when required. Other Gate D and E requirements remain untested."
-        } else {
+        } else if scope == Scope::Foundation {
             "Existing recoverable pull inputs, physical integrity/no fall and final standing evidence. Corrective-step counts and release-during-swing are not admitted by this disturbance probe."
+        } else {
+            "Full disturbance physical matrix: recoverable standing and overpower falls with physical integrity. Corrective-step counts and release-during-swing require the separate strict-step gate."
         };
         reports.push(json!({"id":p.id,"scope":scope,
             "passed":passed,"physicalPassed":physical_passed,"requiresSteps":require_steps,"stepsPassed":steps_passed,
@@ -335,4 +350,39 @@ fn run_disturbances(
         return Err("No disturbance fixtures selected".into());
     }
     Ok(reports)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn foundation_scope_preserves_recoverable_probes_and_full_release_coverage() {
+        let inputs: Inputs = serde_json::from_str(INPUTS).unwrap();
+        let selected = |scope| {
+            inputs
+                .pulls
+                .iter()
+                .filter(|fixture| includes_fixture(scope, fixture))
+                .map(|fixture| fixture.id.as_str())
+                .collect::<Vec<_>>()
+        };
+        let foundation = selected(Scope::Foundation);
+        assert_eq!(foundation.len(), 8);
+        assert!(
+            foundation
+                .iter()
+                .all(|id| !id.starts_with("fast-") && !id.starts_with("sustained-"))
+        );
+        let disturbances = selected(Scope::Disturbances);
+        assert_eq!(disturbances.len(), 14);
+        assert!(disturbances.contains(&"fast-right-heading"));
+        assert!(disturbances.contains(&"sustained-backward-heading"));
+        assert!(foundation.iter().all(|id| disturbances.contains(id)));
+        let steps = selected(Scope::Steps);
+        assert_eq!(steps.len(), 9);
+        assert!(steps.contains(&"release-during-corrective-step"));
+        assert!(!foundation.contains(&"release-during-corrective-step"));
+        assert!(foundation.iter().all(|id| steps.contains(id)));
+    }
 }

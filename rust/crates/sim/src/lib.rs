@@ -132,7 +132,7 @@ pub struct Profile {
 impl Default for Profile {
     fn default() -> Self {
         Self {
-            id: "rust-physics-v24-com-restoration".into(),
+            id: "rust-physics-v25-relative-com-feedback".into(),
             dt_s: SUBSTEP_S,
             tick_substeps: 4,
             contact_friction_model: ContactFriction::Coulomb,
@@ -152,7 +152,7 @@ impl Default for Profile {
             posture_damping_multiplier: 40.0,
             supported_tilt_gain: 2.0,
             supported_com_gain_rad_per_m: 5.0,
-            supported_com_velocity_gain_s_rad_per_m: 4.0,
+            supported_com_velocity_gain_s_rad_per_m: 5.0,
             supported_angular_velocity_gain_s: 2.0,
             grab_limits: grab::Limits::default(),
             reaching_iterations: 6,
@@ -253,6 +253,7 @@ pub struct Simulation {
     targets: Vec<[f32; 3]>,
     rest_targets: Vec<[f32; 3]>,
     rest_com: Vector,
+    rest_com_roundoff: Vector,
     heading: Rotation,
     grab: Option<grab::Grab>,
     last_press: u64,
@@ -484,6 +485,7 @@ impl Simulation {
             rest_targets: targets.clone(),
             targets,
             rest_com: Vector::ZERO,
+            rest_com_roundoff: Vector::ZERO,
             heading: heading_rotation,
             grab: None,
             last_press: 0,
@@ -502,7 +504,7 @@ impl Simulation {
             striker: None,
             recovery: None,
         };
-        result.rest_com = result.center_of_mass();
+        result.capture_rest_com();
         if seed.is_some() {
             result.motion = Motion::Fallen;
         }
@@ -538,11 +540,13 @@ impl Simulation {
             self.recovery = Some(controller);
         }
         let mut reference = self.rest_com;
+        let mut reference_roundoff = self.rest_com_roundoff;
         let mut step_targets = Vec::new();
         let mut step_velocities = recovery_velocities;
         if let Some(mut controller) = self.stepping.take() {
             let intent = controller.update(self)?;
             reference = intent.reference;
+            reference_roundoff = Vector::ZERO;
             step_targets = intent.targets;
             for (index, velocity) in intent.velocities {
                 step_velocities[index] = velocity;
@@ -577,6 +581,7 @@ impl Simulation {
         }
         if recovering && self.recovery.as_ref().is_some_and(|r| r.standing()) {
             reference = recovery::standing_reference(self);
+            reference_roundoff = Vector::ZERO;
         }
         if let Some(retained) = self
             .stepping
@@ -596,7 +601,8 @@ impl Simulation {
             let tilt = 2.0 * q.x.atan2(q.w);
             let roll = 2.0 * q.z.atan2(q.w);
             let angular_velocity = self.heading.inverse() * pelvis.angvel();
-            let displacement = self.heading.inverse() * (self.center_of_mass() - reference);
+            let displacement =
+                self.heading.inverse() * self.com_displacement_from(reference, reference_roundoff);
             let mut velocity = Vector::ZERO;
             for h in &self.bodies {
                 let b = self.world.bodies.get(*h).ok_or("Lost body")?;
@@ -1120,6 +1126,36 @@ impl Simulation {
         }
         sum / mass
     }
+    fn capture_rest_com(&mut self) {
+        self.rest_com = self.center_of_mass();
+        self.rest_com_roundoff = self.relative_center_of_mass(self.rest_com);
+    }
+    fn relative_center_of_mass(&self, reference: Vector) -> Vector {
+        // Absolute f32 mass sums lose small COM changes at translated spawns.
+        // Subtract the reference before accumulating, and round only once.
+        let mut sum = [0.0_f64; 3];
+        let mut mass = 0.0_f64;
+        for handle in &self.bodies {
+            let body = &self.world.bodies[*handle];
+            let weight = f64::from(body.mass());
+            let center = body.center_of_mass();
+            for (axis, total) in sum.iter_mut().enumerate() {
+                *total += (f64::from(center[axis]) - f64::from(reference[axis])) * weight;
+            }
+            mass += weight;
+        }
+        Vector::new(
+            (sum[0] / mass) as f32,
+            (sum[1] / mass) as f32,
+            (sum[2] / mass) as f32,
+        )
+    }
+    fn com_displacement_from(&self, reference: Vector, reference_roundoff: Vector) -> Vector {
+        // Captured COM targets include their sub-ULP residual. Independent
+        // world-space stepping and recovery targets have no such residual.
+        // The observer never resets this reference at the settling boundary.
+        self.relative_center_of_mass(reference) - reference_roundoff
+    }
     pub fn total_mass(&self) -> f32 {
         self.bodies
             .iter()
@@ -1489,6 +1525,60 @@ mod tests {
             serde_json::from_value::<Profile>(json).is_err(),
             "typos cannot silently tune the wrong profile"
         );
+    }
+    #[test]
+    fn com_feedback_preserves_the_initial_reference_at_translated_spawns() {
+        for heading in [0.0, std::f32::consts::PI / 3.0, -std::f32::consts::PI / 4.0] {
+            let mut s = Simulation::new_playground(
+                heading,
+                Profile::default(),
+                true,
+                lh_contracts::PlaygroundSettings::default(),
+            )
+            .expect("translated flat fixture");
+            let reference = s.rest_com;
+            let reference_roundoff = s.rest_com_roundoff;
+            assert_eq!(
+                s.com_displacement_from(reference, reference_roundoff),
+                Vector::ZERO
+            );
+            let displacement = Vector::new(0.001, 0.002, -0.003);
+            for handle in &s.bodies {
+                let body = &mut s.world.bodies[*handle];
+                body.set_translation(body.translation() + displacement, false);
+            }
+            assert!(
+                (s.com_displacement_from(reference, reference_roundoff) - displacement).length()
+                    < 0.0000003
+            );
+            // A separately supplied absolute target must retain its literal
+            // world position rather than inheriting the captured COM residual.
+            let absolute_target = Vector::new(0.25, 0.75, 3.0);
+            let actual = s.com_displacement_from(absolute_target, Vector::ZERO);
+            let mut centroid = [0.0_f64; 3];
+            let mut mass = 0.0_f64;
+            for handle in &s.bodies {
+                let body = &s.world.bodies[*handle];
+                let weight = f64::from(body.mass());
+                for (axis, coordinate) in centroid.iter_mut().enumerate() {
+                    *coordinate += f64::from(body.center_of_mass()[axis]) * weight;
+                }
+                mass += weight;
+            }
+            for axis in 0..3 {
+                let expected = (centroid[axis] / mass - f64::from(absolute_target[axis])) as f32;
+                assert!((actual[axis] - expected).abs() < 0.0000001);
+            }
+            assert_eq!(
+                s.rest_com, reference,
+                "actual displacement must not rebase the target"
+            );
+            s.capture_rest_com();
+            assert_eq!(
+                s.com_displacement_from(s.rest_com, s.rest_com_roundoff),
+                Vector::ZERO
+            );
+        }
     }
     #[test]
     fn mass_accounting_and_ballistic_com_are_independent_of_heading() {
