@@ -2,6 +2,7 @@
 use std::collections::BTreeSet;
 
 const DIAGNOSTICS: &[&str] = &[
+    "--foundation",
     "--diagnose-actuators",
     "--diagnose-legacy",
     "--diagnose-cycles",
@@ -98,6 +99,15 @@ mod tests {
     fn admits_existing_diagnostics_and_scoped_options() {
         assert!(check(&["evidence/fresh"]).is_ok());
         assert!(check(&["evidence/fresh", "--profile", "profile.json"]).is_ok());
+        assert!(
+            check(&[
+                "evidence/fresh",
+                "--foundation",
+                "--profile",
+                "profile.json"
+            ])
+            .is_ok()
+        );
         for mode in DIAGNOSTICS {
             assert!(check(&["evidence/fresh", mode]).is_ok(), "{mode}");
         }
@@ -128,6 +138,9 @@ mod tests {
             vec!["--diagnose-terrain"],
             vec!["out", "--diagnose-terain"],
             vec!["out", "--require-steps"],
+            vec!["out", "--foundation", "--require-steps"],
+            vec!["out", "--foundation", "--fixture", "fast-forward"],
+            vec!["out", "--foundation", "--diagnose-worker-quiet"],
             vec!["out", "--fixture", "pull"],
             vec!["out", "--profile", "p.json", "--diagnose-terrain"],
             vec!["out", "--diagnose-terrain", "--diagnose-striker"],

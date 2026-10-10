@@ -23,7 +23,7 @@ for(const path of Object.keys(before)) {const target=join(out,'source',path);mkd
 const env=rustEnvironment();
 const records=[];
 const nativeChecks = [
-  { name: 'native', args: [], report: 'report.json' },
+  { name: 'native', args: ['--foundation'], report: 'report.json' },
   { name: 'worker-quiet', args: ['--diagnose-worker-quiet', '--mode', 'all'], report: 'worker-quiet.json' },
   { name: 'striker', args: ['--diagnose-striker'], report: 'striker.json' },
 ];
@@ -91,7 +91,9 @@ try {
         const args=[destination,...check.args,...(check.candidate?['--profile',profilePath]:[])];
         const r=spawnSync(executable,args,{env,encoding:'utf8',windowsHide:true,timeout:1800000,maxBuffer:16*1024*1024});
         writeFileSync(join(out,`${name}.log`),(r.stdout??'')+(r.stderr??''));
-        records.push({name,command:[executable,...args],exit:r.status,signal:r.signal,error:r.error?.message??null,wallMs:performance.now()-started});save();
+        let summary;
+        try { summary = JSON.parse(r.stdout); } catch { /* Raw output remains in the log. */ }
+        records.push({name,command:[executable,...args],exit:r.status,signal:r.signal,error:r.error?.message??null,wallMs:performance.now()-started,...(summary?{summary}:{})});save();
         console.log(JSON.stringify(records.at(-1)));
         // Repeat even a failed gate to establish within-build reproducibility.
       }
@@ -152,7 +154,7 @@ try {
       }
     }
   }
-  manifest.completedRequestedChecks=fmt&&lint&&wasmLint&&tests&&build&&wasm&&jacobian
+  manifest.completedRequestedChecks=fmt&&lint&&wasmLint&&tests&&build&&wasm&&jacobian&&cached&&tooling
     &&checks.every(check=>[1,2].every(index=>records.some(r=>r.name===`${check.name}-${index}`&&r.exit===0&&!r.error&&!r.signal)));
   manifest.requiredReleaseStages=requiredReleaseStages;
 } finally {

@@ -6,6 +6,7 @@ mod arguments;
 fn run() -> Result<bool, Box<dyn std::error::Error>> {
     let args: Vec<_> = std::env::args().skip(1).collect();
     arguments::validate(&args)?;
+    let foundation_only = args.get(1).is_some_and(|arg| arg == "--foundation");
     let out = args
         .first()
         .ok_or("Usage: lh-acceptance fresh-output-directory")?;
@@ -253,7 +254,9 @@ fn run() -> Result<bool, Box<dyn std::error::Error>> {
         )?;
         println!(
             "{}",
-            json!({"scope": "Worker-runtime quiet standing only", "passed": passed, "releaseAccepted": false})
+            json!({"scope": "Worker-runtime quiet standing only", "passed": passed, "releaseAccepted": false,
+                "failures": reports.iter().filter(|report| report["progress"]["passed"] != true).map(|report|
+                    json!({"mode": report["mode"], "heading": report["heading"], "firstFailure": report["progress"]["firstFailure"]})).collect::<Vec<_>>()})
         );
         return Ok(passed);
     }
@@ -387,7 +390,11 @@ fn run() -> Result<bool, Box<dyn std::error::Error>> {
     }
     let passed = gate_b && !runs.is_empty() && runs.iter().all(|r| r["passed"] == true);
     let disturbances = if passed {
-        lh_sim::scenarios::disturbances_with_profile(&profile, None)?
+        if foundation_only {
+            lh_sim::scenarios::foundation_with_profile(&profile)?
+        } else {
+            lh_sim::scenarios::disturbances_with_profile(&profile, None)?
+        }
     } else {
         Vec::new()
     };
@@ -397,20 +404,31 @@ fn run() -> Result<bool, Box<dyn std::error::Error>> {
     )?;
     let disturbed_failure = disturbances.iter().any(|r| r["passed"] != true);
     let report = json!({"schema":2,"status":if passed&&!disturbed_failure {"partial-gates-pass"} else {"fail"},"releaseAccepted":false,
-        "engine":"Rapier 0.35.0 + experimental contact reporting and angular-coordinate patches", "profile":profile,"primitiveContactCalibrationPassed":calibration_pass,
-        "canonicalContactCalibrationPassed":canonical_load_pass,
-        "isolatedJointsPassed":isolated_pass,"contactMeasurementAdmitted":feet_pass,"standingDiagnostic":runs,
-        "gateA":if gate_a {"pass"} else {"fail"}, "gateB":if gate_b {"pass"} else if gate_a {"fail"} else {"incomplete"},
-        "gateC":if passed {"pass"} else if gate_b {"fail"} else {"incomplete"},
-        "gateD":if disturbed_failure {"fail"}else{"incomplete"},"gatesEThroughI":"incomplete",
-        "scope":"Gate A calibration and isolated joints; Gate B individual feet and loaded chains; Gate C quiet standing; Gate D existing recoverable pull probes. Every physical check observes 240 Hz integrations. Gate D remains incomplete even if selected probes pass; later scenarios, browser physics and release acceptance are not established."});
+    "engine":"Rapier 0.35.0 + experimental contact reporting and angular-coordinate patches", "profile":profile,"foundationOnly":foundation_only,"primitiveContactCalibrationPassed":calibration_pass,
+    "canonicalContactCalibrationPassed":canonical_load_pass,
+    "isolatedJointsPassed":isolated_pass,"contactMeasurementAdmitted":feet_pass,"standingDiagnostic":runs,
+    "gateA":if gate_a {"pass"} else {"fail"}, "gateB":if gate_b {"pass"} else if gate_a {"fail"} else {"incomplete"},
+    "gateC":if passed {"pass"} else if gate_b {"fail"} else {"incomplete"},
+    "gateD":if disturbed_failure {"fail"}else{"incomplete"},"gatesEThroughI":"incomplete",
+    "scope":if foundation_only {
+        "Gates A-C and the eight existing recoverable pull probes at 240 Hz. Overpower, verified stepping and full release acceptance require the separate release gates."
+    } else {
+        "Gates A-C and the full disturbance physical matrix at 240 Hz. Verified stepping, later scenarios, browser physics and release acceptance require separate release gates."
+    }});
     fs::write(
         format!("{out}/report.json"),
         serde_json::to_vec_pretty(&report)?,
     )?;
     println!(
         "{}",
-        serde_json::to_string(&json!({"out":out,"passed":passed,"releaseAccepted":false}))?
+        serde_json::to_string(
+            &json!({"out":out,"passed":passed&&!disturbed_failure,"releaseAccepted":false,
+            "foundationOnly":foundation_only,"gateA":gate_a,"gateB":gate_b,"gateC":passed,
+            "standingFailures":runs.iter().filter(|report| report["passed"] != true).map(|report|
+                json!({"heading":report["heading"],"firstFailure":report["firstFailure"]})).collect::<Vec<_>>(),
+            "disturbanceFailures":disturbances.iter().filter(|report| report["passed"] != true).map(|report|
+                json!({"id":report["id"],"firstFailure":report["firstFailure"],"minimumPelvisY":report["minimumPelvisY"],"completedTicks":report["completedTicks"]})).collect::<Vec<_>>() })
+        )?
     );
     Ok(passed && !disturbed_failure)
 }
