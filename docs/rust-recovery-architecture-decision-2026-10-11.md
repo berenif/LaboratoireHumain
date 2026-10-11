@@ -24,6 +24,10 @@ l’observation native. Le cadrage ci-dessus décrit le tour documentaire histor
 Le [jalon de frontière CCD](rust-recovery-impulse-boundary-2026-10-11.md) isole un
 défaut de lecture, sans fermer P1 ni lancer la recherche. Le nouveau registre
 `native-hybrid-v1` compte ses vérifications ; l’ancien registre reste clos.
+**Clôture P1 :** le budget technique a expiré le 11 octobre à 22:05:43 UTC,
+après huit histoires ; aucune recherche lancée. Le [rapport de clôture](rust-recovery-p1-closure-2026-10-11.md)
+distingue le diagnostic angulaire, la neutralité acquise et le certificat manquant.
+Ce registre ne peut pas être repris ou remis à zéro.
 
 ## Ce que les preuves imposent au nouveau plan
 

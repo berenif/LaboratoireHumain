@@ -2,6 +2,7 @@
 //! not a support certificate: angular delivery and a roundoff bound remain open.
 use crate::measurement;
 use rapier3d::prelude::*;
+use rapier3d::utils::OrthonormalBasis;
 use serde::Serialize;
 use std::cell::RefCell;
 
@@ -24,6 +25,14 @@ pub(crate) struct SolveRecord {
     pub floors: Vec<FloorImpulse>,
     pub observation_error: Option<String>,
     pub angular_balance_verified: bool,
+    pub angular_before_fixed_ns: [f64; 3],
+    pub angular_after_fixed_ns: [f64; 3],
+    pub external_angular_ns: [f64; 3],
+    pub floor_angular_ns: [f64; 3],
+    pub inverse_damping_estimate_ns: [f64; 3],
+    pub unresolved_angular_ns: [f64; 3],
+    pub angular_after_positions_ns: Option<[f64; 3]>,
+    pub geometry_transport_ns: Option<[f64; 3]>,
 }
 struct Journal {
     bodies: Vec<RigidBodyHandle>,
@@ -35,6 +44,8 @@ struct Journal {
     before: [f64; 3],
     external: [f64; 3],
     records: Vec<SolveRecord>,
+    angular_before: [f64; 3],
+    external_angular: [f64; 3],
 }
 thread_local! {static ACTIVE: RefCell<Option<Journal>> = const {RefCell::new(None)};}
 pub(crate) fn activate(s: &crate::Simulation) {
@@ -43,6 +54,13 @@ pub(crate) fn activate(s: &crate::Simulation) {
         "This diagnostic excludes interaction and moving environment forces"
     );
     assert_eq!(s.bodies.len(), 25);
+    assert!(
+        matches!(
+            s.world.integration_parameters.friction_model,
+            FrictionModel::Coulomb
+        ),
+        "Only Coulomb angular reporting is admitted"
+    );
     assert_eq!(
         s.world.colliders.len(),
         26,
@@ -86,6 +104,8 @@ pub(crate) fn activate(s: &crate::Simulation) {
             before: [0.0; 3],
             external: [0.0; 3],
             records: Vec::new(),
+            angular_before: [0.0; 3],
+            external_angular: [0.0; 3],
         });
     });
 }
@@ -115,6 +135,8 @@ pub(crate) fn before_solve(dt: Real, bodies: &RigidBodySet) {
         let mut slot = slot.borrow_mut();
         let Some(j) = slot.as_mut() else { return };
         j.before = momentum(&j.bodies, bodies);
+        j.angular_before = angular(&j.bodies, bodies);
+        j.external_angular = [0.0; 3];
         j.external = [0.0; 3];
         for h in &j.bodies {
             let b = &bodies[*h];
@@ -127,6 +149,18 @@ pub(crate) fn before_solve(dt: Real, bodies: &RigidBodySet) {
                     f64::from(dt) * f64::from(b.mass()) * f64::from(b.gravity_scale()),
                 );
                 add_scaled(&mut j.external, b.user_force(), f64::from(dt));
+                let mut impulse = [0.0; 3];
+                add_scaled(
+                    &mut impulse,
+                    j.gravity,
+                    f64::from(dt) * f64::from(b.mass()) * f64::from(b.gravity_scale()),
+                );
+                add_scaled(&mut impulse, b.user_force(), f64::from(dt));
+                add(
+                    &mut j.external_angular,
+                    cross(b.center_of_mass().to_array().map(f64::from), impulse),
+                );
+                add_scaled(&mut j.external_angular, b.user_torque(), f64::from(dt));
             }
         }
     });
@@ -137,6 +171,7 @@ pub(crate) fn after_solve(dt: Real, bodies: &RigidBodySet, phase: &NarrowPhase) 
         let Some(j) = slot.as_mut() else { return };
         let mut floors = Vec::new();
         let mut total = [0.0; 3];
+        let mut floor_angular = [0.0; 3];
         let mut error = None;
         for collider in &j.colliders {
             let Some(pair) = phase.contact_pair(j.floor, *collider) else {
@@ -144,6 +179,42 @@ pub(crate) fn after_solve(dt: Real, bodies: &RigidBodySet, phase: &NarrowPhase) 
             };
             let result = (|| -> Result<FloorImpulse, String> {
                 let normal = measurement::solver_normal_impulse(pair)?;
+                let first = pair.collider1 == *collider;
+                let body =
+                    &bodies[j.bodies[j.colliders.iter().position(|c| c == collider).unwrap()]];
+                for m in pair.solver_manifolds() {
+                    if !m.data.solver_flags.contains(SolverFlags::COMPUTE_IMPULSES) {
+                        continue;
+                    }
+                    let dir = -m.data.normal;
+                    let t1 = dir.orthonormal_vector();
+                    let t2 = dir.cross(t1);
+                    for contact in &m.data.solver_contacts {
+                        let point = &m.points[contact.contact_indices()[0] as usize];
+                        let data = &point.data;
+                        let impulse = dir * data.impulse
+                            + t1 * data.tangent_impulse.x
+                            + t2 * data.tangent_impulse.y;
+                        let arm = if first {
+                            data.solver_dp1
+                        } else {
+                            data.solver_dp2
+                        };
+                        let position = std::array::from_fn(|k| {
+                            f64::from(body.center_of_mass().to_array()[k])
+                                + f64::from(arm.to_array()[k])
+                        });
+                        add(
+                            &mut floor_angular,
+                            cross(
+                                position,
+                                impulse
+                                    .to_array()
+                                    .map(|v| f64::from(v) * if first { 1.0 } else { -1.0 }),
+                            ),
+                        );
+                    }
+                }
                 let normal_sign = if pair.collider2 == *collider {
                     1.0
                 } else {
@@ -179,6 +250,25 @@ pub(crate) fn after_solve(dt: Real, bodies: &RigidBodySet, phase: &NarrowPhase) 
         }
         let after = momentum(&j.bodies, bodies);
         let residual = std::array::from_fn(|k| after[k] - j.before[k] - j.external[k] - total[k]);
+        // At this boundary the pose/inertia cache still belongs to the start
+        // of the interval. Internal joint rows and numerical operations are
+        // intentionally not imputed from this momentum difference.
+        let angular_after = angular(&j.bodies, bodies);
+        // Algebraic inverse-damping estimate only: native pre/post-damping
+        // operands must be journaled before this can enter a certificate.
+        let mut inverse_damping = [0.0; 3];
+        for handle in &j.bodies {
+            let b = &bodies[*handle];
+            add(
+                &mut inverse_damping,
+                spin(b).map(|v| v * f64::from(dt) * f64::from(b.angular_damping())),
+            );
+        }
+        let angular_residual = std::array::from_fn(|k| {
+            angular_after[k] - j.angular_before[k] + inverse_damping[k]
+                - j.external_angular[k]
+                - floor_angular[k]
+        });
         j.records.push(SolveRecord {
             native_substep: j.substep,
             ccd_interval: j.interval,
@@ -191,6 +281,14 @@ pub(crate) fn after_solve(dt: Real, bodies: &RigidBodySet, phase: &NarrowPhase) 
             floors,
             observation_error: error,
             angular_balance_verified: false,
+            angular_before_fixed_ns: j.angular_before,
+            angular_after_fixed_ns: angular_after,
+            external_angular_ns: j.external_angular,
+            floor_angular_ns: floor_angular,
+            inverse_damping_estimate_ns: inverse_damping,
+            unresolved_angular_ns: angular_residual,
+            angular_after_positions_ns: None,
+            geometry_transport_ns: None,
         });
         j.interval += 1;
     });
@@ -205,5 +303,59 @@ pub(crate) fn take_records() -> Vec<SolveRecord> {
 pub(crate) fn finish() {
     ACTIVE.with(|slot| {
         *slot.borrow_mut() = None;
+    });
+}
+
+fn add(out: &mut [f64; 3], value: [f64; 3]) {
+    for k in 0..3 {
+        out[k] += value[k];
+    }
+}
+fn cross(a: [f64; 3], b: [f64; 3]) -> [f64; 3] {
+    [
+        a[1] * b[2] - a[2] * b[1],
+        a[2] * b[0] - a[0] * b[2],
+        a[0] * b[1] - a[1] * b[0],
+    ]
+}
+fn spin(b: &RigidBody) -> [f64; 3] {
+    let i = b
+        .mass_properties()
+        .effective_world_inv_inertia
+        .inverse_unchecked();
+    let w = b.angvel().to_array().map(f64::from);
+    [
+        f64::from(i.m11) * w[0] + f64::from(i.m12) * w[1] + f64::from(i.m13) * w[2],
+        f64::from(i.m12) * w[0] + f64::from(i.m22) * w[1] + f64::from(i.m23) * w[2],
+        f64::from(i.m13) * w[0] + f64::from(i.m23) * w[1] + f64::from(i.m33) * w[2],
+    ]
+}
+fn angular(handles: &[RigidBodyHandle], bodies: &RigidBodySet) -> [f64; 3] {
+    let mut result = [0.0; 3];
+    for handle in handles {
+        let b = &bodies[*handle];
+        add(&mut result, spin(b));
+        add(
+            &mut result,
+            cross(
+                b.center_of_mass().to_array().map(f64::from),
+                b.linvel()
+                    .to_array()
+                    .map(|v| f64::from(v) * f64::from(b.mass())),
+            ),
+        );
+    }
+    result
+}
+pub(crate) fn after_positions(bodies: &RigidBodySet) {
+    ACTIVE.with(|slot| {
+        let mut slot = slot.borrow_mut();
+        let Some(j) = slot.as_mut() else { return };
+        let after = angular(&j.bodies, bodies);
+        let record = j.records.last_mut().unwrap();
+        record.angular_after_positions_ns = Some(after);
+        record.geometry_transport_ns = Some(std::array::from_fn(|k| {
+            after[k] - record.angular_after_fixed_ns[k]
+        }));
     });
 }

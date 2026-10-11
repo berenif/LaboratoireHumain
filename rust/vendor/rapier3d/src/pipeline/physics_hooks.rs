@@ -193,6 +193,10 @@ pub trait PhysicsHooks: crate::utils::MaybeSync {
     ) {
     }
 
+    /// Read-only CCD interval boundary after pose/clamp and world mass refresh.
+    #[cfg(feature = "solver-step-observation")]
+    fn after_solver_positions(&self, _bodies: &RigidBodySet) {}
+
     /// Applies the contact pair filter.
     ///
     /// Note that this method will only be called if at least one of the colliders

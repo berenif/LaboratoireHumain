@@ -12,10 +12,10 @@ index a66e03d..474edfb 100644
      "nalgebra/alloc",
      "parry3d/alloc",
 diff --git a/rust/vendor/rapier3d/src/pipeline/physics_hooks.rs b/rust/vendor/rapier3d/src/pipeline/physics_hooks.rs
-index 4fdb40b..67726d5 100644
+index 4fdb40b..72715a2 100644
 --- a/rust/vendor/rapier3d/src/pipeline/physics_hooks.rs
 +++ b/rust/vendor/rapier3d/src/pipeline/physics_hooks.rs
-@@ -176,6 +176,23 @@ impl Default for ActiveHooks {
+@@ -176,6 +176,27 @@ impl Default for ActiveHooks {
  
  /// User-defined functions called by the physics engines during one timestep in order to customize its behavior.
  pub trait PhysicsHooks: crate::utils::MaybeSync {
@@ -36,11 +36,15 @@ index 4fdb40b..67726d5 100644
 +    ) {
 +    }
 +
++    /// Read-only CCD interval boundary after pose/clamp and world mass refresh.
++    #[cfg(feature = "solver-step-observation")]
++    fn after_solver_positions(&self, _bodies: &RigidBodySet) {}
++
      /// Applies the contact pair filter.
      ///
      /// Note that this method will only be called if at least one of the colliders
 diff --git a/rust/vendor/rapier3d/src/pipeline/physics_pipeline/substep.rs b/rust/vendor/rapier3d/src/pipeline/physics_pipeline/substep.rs
-index 75b86d0..bfe1113 100644
+index 75b86d0..48cf4cc 100644
 --- a/rust/vendor/rapier3d/src/pipeline/physics_pipeline/substep.rs
 +++ b/rust/vendor/rapier3d/src/pipeline/physics_pipeline/substep.rs
 @@ -476,6 +476,8 @@ impl PhysicsPipeline {
@@ -62,3 +66,12 @@ index 75b86d0..bfe1113 100644
              // If CCD is enabled, execute the CCD motion clamping.
              if ccd_is_enabled {
                  // The staged solver's body writeback already computed the post-solve CCD flags;
+@@ -524,6 +529,8 @@ impl PhysicsPipeline {
+             // Neutralize bodies whose integrated pose went non-finite before the remaining
+             // CCD substeps can spread their velocities.
+             self.quarantine.apply_end_step(bodies, colliders);
++            #[cfg(feature = "solver-step-observation")]
++            hooks.after_solver_positions(bodies);
+             self.counters.stages.update_time.pause();
+ 
+             if remaining_substeps > 0 {

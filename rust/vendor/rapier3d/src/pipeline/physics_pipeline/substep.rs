@@ -529,6 +529,8 @@ impl PhysicsPipeline {
             // Neutralize bodies whose integrated pose went non-finite before the remaining
             // CCD substeps can spread their velocities.
             self.quarantine.apply_end_step(bodies, colliders);
+            #[cfg(feature = "solver-step-observation")]
+            hooks.after_solver_positions(bodies);
             self.counters.stages.update_time.pause();
 
             if remaining_substeps > 0 {

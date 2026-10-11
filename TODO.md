@@ -1,6 +1,18 @@
 # TODO
 
-**2026-10-11 prérequis du planificateur natif — défaut de lecture CCD isolé :**
+**2026-10-11 P1 close à l’échéance — bilan linéaire expliqué, certificat manquant :**
+
+- [x] Conserver les compteurs : huit histoires, 19 512 pas ; dernier processus
+  terminé à 22:05:40,406 UTC avant la limite 22:05:43,210. Aucun renouvellement.
+- [x] Observer les termes angulaires et le transport de pose ; neutralité exacte
+  à chaque pas, mais résidu incomplet 0,19016 N·m·s, aucune certification.
+- [x] Vérifier le handoff 143/144 par l’unitaire original sans intégration ;
+  documenter stagnation, timers f32 et preuves terminales physiques manquantes.
+- [ ] Décider séparément du journal indépendant et de sa borne avant tout
+  nouveau calcul. Recherche bloquée, récupération désactivée/non qualifiée.
+  [Clôture, preuves acquises et prochaine décision](docs/rust-recovery-p1-closure-2026-10-11.md).
+
+**Checkpoint précédent — défaut de lecture CCD isolé :**
 
 - [x] Définir une architecture unique : contacts/placements/charges recherchés,
   46 coordonnées libres et retour d’état, avec preuve du parcours complet.

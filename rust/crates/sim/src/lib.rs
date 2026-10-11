@@ -237,6 +237,11 @@ impl PhysicsHooks for Filter {
         recovery::planner::contact_observation::after_solve(dt, bodies, phase);
     }
 
+    #[cfg(all(test, feature = "experimental-solver-step-observation"))]
+    fn after_solver_positions(&self, bodies: &RigidBodySet) {
+        recovery::planner::contact_observation::after_positions(bodies);
+    }
+
     fn filter_contact_pair(&self, c: &PairFilterContext) -> Option<SolverFlags> {
         let (a, b) = (handle_key(c.collider1), handle_key(c.collider2));
         if self.exclusions.contains(&(a.min(b), a.max(b))) {
