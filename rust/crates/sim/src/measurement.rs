@@ -167,14 +167,25 @@ fn depth(a: &Collider, b: &Collider, aabb_a: &Aabb, aabb_b: &Aabb) -> Result<f32
         .map_err(|e| format!("Unsupported shape measurement: {e:?}"))
 }
 pub fn inspect(s: &mut Simulation, substep: u32) -> Result<(), Failure> {
+    let mut diagnostics = s.diagnostics.clone();
+    let result = inspect_world(s, &s.world, &mut diagnostics, substep);
+    s.diagnostics = diagnostics;
+    result
+}
+
+pub(crate) fn inspect_world(
+    s: &Simulation,
+    world: &PhysicsWorld,
+    diagnostics: &mut lh_contracts::Diagnostics,
+    substep: u32,
+) -> Result<(), Failure> {
     let fail = |check: &str, offending: String, measured: f32, threshold: f32| {
         Failure::new(s.tick, substep, check, offending, measured, threshold)
     };
     let environment = s
         .environment_colliders()
         .map(|handle| {
-            let collider = s
-                .world
+            let collider = world
                 .colliders
                 .get(handle)
                 .ok_or_else(|| fail("ownership", "environment".into(), 0.0, 0.0))?;
@@ -186,13 +197,11 @@ pub fn inspect(s: &mut Simulation, substep: u32) -> Result<(), Failure> {
     // performs the same rejection and the same penetrating-shape query.
     let mut bounds = [None; 25];
     for (i, h) in s.bodies.iter().enumerate() {
-        let body = s
-            .world
+        let body = world
             .bodies
             .get(*h)
             .ok_or_else(|| fail("ownership", s.model.segments[i].id.clone(), 0.0, 0.0))?;
-        let c = s
-            .world
+        let c = world
             .colliders
             .get(s.colliders[i])
             .ok_or_else(|| fail("ownership", s.model.segments[i].id.clone(), 0.0, 0.0))?;
@@ -213,7 +222,7 @@ pub fn inspect(s: &mut Simulation, substep: u32) -> Result<(), Failure> {
             }
             let d = depth(surface, c, surface_bounds, &body_bounds)
                 .map_err(|e| fail("measurement", e, 0.0, 0.0))?;
-            s.diagnostics.max_floor_penetration_m = s.diagnostics.max_floor_penetration_m.max(d);
+            diagnostics.max_floor_penetration_m = diagnostics.max_floor_penetration_m.max(d);
             if d > MAX_FLOOR_M {
                 return Err(fail(
                     "floor",
@@ -238,15 +247,14 @@ pub fn inspect(s: &mut Simulation, substep: u32) -> Result<(), Failure> {
             {
                 continue;
             }
-            let other = s
-                .world
+            let other = world
                 .colliders
                 .get(s.colliders[j])
                 .ok_or_else(|| fail("ownership", s.model.segments[j].id.clone(), 0.0, 0.0))?;
             let other_bounds = *bound_j.get_or_insert_with(|| other.compute_aabb());
             let d = depth(c, other, &body_bounds, &other_bounds)
                 .map_err(|e| fail("measurement", e, 0.0, 0.0))?;
-            s.diagnostics.max_self_penetration_m = s.diagnostics.max_self_penetration_m.max(d);
+            diagnostics.max_self_penetration_m = diagnostics.max_self_penetration_m.max(d);
             if d > MAX_SELF_M {
                 return Err(fail(
                     "self-contact",
@@ -259,13 +267,11 @@ pub fn inspect(s: &mut Simulation, substep: u32) -> Result<(), Failure> {
         if let Some(p) = &s.model.segments[i].joint_profile {
             let h = s.joints[i]
                 .ok_or_else(|| fail("ownership", s.model.segments[i].id.clone(), 0.0, 0.0))?;
-            let joint = s
-                .world
+            let joint = world
                 .impulse_joints
                 .get(h)
                 .ok_or_else(|| fail("ownership", s.model.segments[i].id.clone(), 0.0, 0.0))?;
-            let parent = s
-                .world
+            let parent = world
                 .bodies
                 .get(joint.body1())
                 .ok_or_else(|| fail("ownership", s.model.segments[i].id.clone(), 0.0, 0.0))?;
@@ -276,8 +282,8 @@ pub fn inspect(s: &mut Simulation, substep: u32) -> Result<(), Failure> {
                 .position()
                 .transform_point(crate::vector(p.child_frame.anchor));
             let separation = pa.distance(pb);
-            s.diagnostics.max_anchor_separation_m =
-                s.diagnostics.max_anchor_separation_m.max(separation);
+            diagnostics.max_anchor_separation_m =
+                diagnostics.max_anchor_separation_m.max(separation);
             if separation > MAX_ANCHOR_M {
                 return Err(fail(
                     "joint-anchor",
@@ -297,7 +303,7 @@ pub fn inspect(s: &mut Simulation, substep: u32) -> Result<(), Failure> {
                 error_sq += e * e;
             }
             let error = error_sq.sqrt();
-            s.diagnostics.max_limit_error_rad = s.diagnostics.max_limit_error_rad.max(error);
+            diagnostics.max_limit_error_rad = diagnostics.max_limit_error_rad.max(error);
             if error > MAX_LIMIT_RAD {
                 return Err(fail(
                     "joint-limit",

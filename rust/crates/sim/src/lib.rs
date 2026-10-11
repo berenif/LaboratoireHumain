@@ -1340,6 +1340,12 @@ impl Simulation {
                 } else {
                     self.profile.internal_pgs_iterations
                 };
+            #[cfg(test)]
+            if let Err(failure) = recovery::offline_trajectory_before_step(self, substep) {
+                self.first_failure = Some(failure.clone());
+                self.motion = Motion::Halted;
+                return Err(failure);
+            }
             self.world.step_with_events(&self.filter, &());
             let delivered: f32 = self
                 .joints

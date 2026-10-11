@@ -6,6 +6,25 @@ use lh_model::{Model, Pose as BodyPose, Segment};
 use rapier3d::prelude::*;
 use serde::{Deserialize, Serialize};
 
+#[cfg(test)]
+pub(crate) mod native_predictor;
+#[cfg(test)]
+pub(crate) mod reference_mapping;
+#[cfg(test)]
+mod trajectory_geometry;
+#[cfg(test)]
+pub(crate) mod trajectory_program;
+
+#[cfg(test)]
+pub(crate) fn offline_trajectory_before_step(
+    s: &mut Simulation,
+    substep: u32,
+) -> Result<(), measurement::Failure> {
+    support_probe::full_trajectory::before_step(s, substep)?;
+    support_probe::hand_support_experiment::before_step(s, substep)?;
+    support_probe::offline_trajectory::before_step(s, substep)
+}
+
 pub const FIXTURES: &str = include_str!("../data/recovery-v1.json");
 const RATE: f32 = 1.0;
 const STAND_RATE: f32 = RATE;
@@ -421,32 +440,29 @@ fn stance_plan_at_pitch(
     Ok(Some((upper, legs)))
 }
 
-/// The same loaded anatomical footprint and capture model used by stepping.
+/// Balance against persistent, currently loaded solver points. Near-floor
+/// vertices cannot supply a reaction moment until contact resolves there.
 /// A braking orientation is an IK/motor request, never a body pose write.
 fn standing_balance(s: &Simulation) -> Result<Option<(Rotation, bool)>, String> {
-    let mut points = Vec::new();
-    for (i, part) in s.model.segments.iter().enumerate() {
-        if !matches!(part.role.as_str(), "hindfoot" | "forefoot")
-            || load(s, &part.id) < 3.0
-            || s.support_normal_impulse(s.colliders[i])? / s.profile.dt_s < 3.0
-        {
-            continue;
-        }
-        for vertex in part.geometry.vertices.chunks_exact(3) {
-            let world = s.world.bodies[s.bodies[i]]
-                .position()
-                .transform_point(Vector::new(vertex[0], vertex[1], vertex[2]));
-            if world.y - s.surface_height(world.x, world.z, world.y + 0.02)
-                <= s.profile.contact_skin_m
-                    + crate::recovery_contract::contract()
-                        .recovery_acceptance
-                        .contact_distance_m
-            {
-                let local = s.heading.inverse() * world;
-                points.push([local.x, local.z]);
-            }
-        }
-    }
+    let soles = s
+        .model
+        .segments
+        .iter()
+        .enumerate()
+        .filter(|(i, part)| {
+            matches!(part.role.as_str(), "hindfoot" | "forefoot")
+                && load(s, &part.id) >= 3.0
+                && s.integrated_support_loads_n[*i] >= 3.0
+        })
+        .map(|(i, _)| i)
+        .collect::<Vec<_>>();
+    let points = planted_contacts(s, &soles)?
+        .into_iter()
+        .map(|(anchor, _)| {
+            let local = s.heading.inverse() * anchor.world_point;
+            [local.x, local.z]
+        })
+        .collect::<Vec<_>>();
     let com = s.center_of_mass();
     let velocity = s
         .bodies
@@ -462,8 +478,32 @@ fn standing_balance(s: &Simulation) -> Result<Option<(Rotation, bool)>, String> 
     }
     let height = (com.y - s.support_height()).max(0.2);
     let capture = s.heading.inverse() * (com + velocity * (height / 9.81).sqrt());
-    let Some(safe) = crate::stepping::project_support(&points, [capture.x, capture.z], 0.003)
-    else {
+    let capture_point = [capture.x, capture.z];
+    // A point/line contact cannot certify the inset support polygon. It can
+    // still define a bounded braking request toward the measured support.
+    let safe = crate::stepping::project_support(&points, capture_point, 0.003).or_else(|| {
+        points
+            .iter()
+            .flat_map(|a| points.iter().map(move |b| (a, b)))
+            .map(|(a, b)| {
+                let d = [b[0] - a[0], b[1] - a[1]];
+                let norm = d[0] * d[0] + d[1] * d[1];
+                let t = if norm > 1e-12 {
+                    ((capture_point[0] - a[0]) * d[0] + (capture_point[1] - a[1]) * d[1]) / norm
+                } else {
+                    0.0
+                }
+                .clamp(0.0, 1.0);
+                [a[0] + t * d[0], a[1] + t * d[1]]
+            })
+            .min_by(|a, b| {
+                let distance = |p: &[f32; 2]| {
+                    (p[0] - capture_point[0]).powi(2) + (p[1] - capture_point[1]).powi(2)
+                };
+                distance(a).total_cmp(&distance(b))
+            })
+    });
+    let Some(safe) = safe else {
         return Ok(None);
     };
     let local_com = s.heading.inverse() * com;
@@ -1682,6 +1722,37 @@ mod tests {
     }
 
     #[test]
+    fn toe_only_support_cannot_certify_geometric_sole_balance() {
+        let fixtures: FixtureSet = serde_json::from_str(FIXTURES).unwrap();
+        for fixture in fixtures
+            .cases
+            .into_iter()
+            .filter(|f| f.id.starts_with("landed-crouch-left"))
+        {
+            let mut s = Simulation::build(
+                fixture.heading,
+                crate::recovery_contract::pinned_profile(),
+                true,
+                None,
+                Some(&fixture.poses),
+            )
+            .unwrap();
+            for _ in 0..3 {
+                s.advance_tick().unwrap();
+            }
+            let before = serde_json::to_value(s.snapshot()).unwrap();
+            let (_, inside) = standing_balance(&s)
+                .unwrap()
+                .expect("persistent toe support");
+            assert!(
+                !inside,
+                "toe line cannot supply the rearward balance moment"
+            );
+            assert_eq!(serde_json::to_value(s.snapshot()).unwrap(), before);
+        }
+    }
+
+    #[test]
     fn measured_capture_brakes_toward_loaded_support_without_body_writes() {
         for heading in [0.0, 0.6] {
             let mut s =
@@ -2518,3 +2589,6 @@ mod tests {
         }
     }
 }
+
+#[cfg(test)]
+mod support_probe;
