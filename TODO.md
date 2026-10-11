@@ -1,10 +1,14 @@
 # TODO
 
-**2026-10-11 cadrage du planificateur natif — proposition, lancement en attente :**
+**2026-10-11 prérequis du planificateur natif — défaut de lecture CCD isolé :**
 
 - [x] Définir une architecture unique : contacts/placements/charges recherchés,
   46 coordonnées libres et retour d’état, avec preuve du parcours complet.
-- [ ] Valider le cadrage avant implémentation et calcul ; les 96 histoires restent closes.
+- [x] Reprendre l’implémentation autorisée à 21:18 UTC ; les 96 histoires restent closes.
+- [x] Isoler la perte des impulsions des résolutions CCD antérieures ; observation
+  en lecture seule et rejeux identiques au témoin, sans changement de physique.
+- [ ] Certifier le bilan angulaire et une borne d’arrondi indépendante ; P1 non franchie.
+  [Cause mesurée, traces et limites](docs/rust-recovery-impulse-boundary-2026-10-11.md).
 - [ ] Fiabiliser les impulsions d’impact et conserver le terminal original indépendant.
 - [ ] Construire graphe, compilateur, commande corps entier et recherche native bornée.
 - [ ] Appliquer le budget proposé : 32 vérifications + 192 candidats + 8 validations,

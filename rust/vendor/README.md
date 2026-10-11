@@ -45,6 +45,17 @@ acceptance.
    multibody tangent reporting remain unqualified and the signal does not feed
    character control. The engine passes 292 standalone tests with serde enabled.
 
+5. `solver-step-observation.patch` and its provenance add optional read-only
+   callbacks around each CCD interval solve, before contact refresh. The feature
+   stays disabled by default; neither constraints nor serialized physics state
+   change. A test-only journal explains an impact reporting gap: reading the
+   final interval omitted impulses already applied by earlier intervals. Six
+   bounded replays preserve the archived body/motor/contact histories exactly;
+   the final pair also preserves complete hashes at the rejected step. This
+   verifies observation neutrality and isolates the large linear discrepancy.
+   It does not certify angular momentum, roundoff bounds or recovery. See
+   [the measured result](../../docs/rust-recovery-impulse-boundary-2026-10-11.md).
+
 The Rust rework's v22 default explicitly selects Coulomb friction after native
 and WASM foundation checks and all six worker quiet-standing cases pass. Legacy
 profile JSON without the new field preserves the previous Simplified model.

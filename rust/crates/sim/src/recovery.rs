@@ -25,6 +25,9 @@ pub(crate) fn offline_trajectory_before_step(
     support_probe::offline_trajectory::before_step(s, substep)
 }
 
+#[cfg(all(test, feature = "experimental-solver-step-observation"))]
+pub(crate) mod planner;
+
 pub const FIXTURES: &str = include_str!("../data/recovery-v1.json");
 const RATE: f32 = 1.0;
 const STAND_RATE: f32 = RATE;

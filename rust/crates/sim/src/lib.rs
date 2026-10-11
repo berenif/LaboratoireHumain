@@ -228,6 +228,15 @@ fn handle_key(h: ColliderHandle) -> u128 {
     ((g as u128) << 32) | i as u128
 }
 impl PhysicsHooks for Filter {
+    #[cfg(all(test, feature = "experimental-solver-step-observation"))]
+    fn before_solver_step(&self, dt: Real, bodies: &RigidBodySet) {
+        recovery::planner::contact_observation::before_solve(dt, bodies);
+    }
+    #[cfg(all(test, feature = "experimental-solver-step-observation"))]
+    fn after_solver_step(&self, dt: Real, bodies: &RigidBodySet, phase: &NarrowPhase) {
+        recovery::planner::contact_observation::after_solve(dt, bodies, phase);
+    }
+
     fn filter_contact_pair(&self, c: &PairFilterContext) -> Option<SolverFlags> {
         let (a, b) = (handle_key(c.collider1), handle_key(c.collider2));
         if self.exclusions.contains(&(a.min(b), a.max(b))) {
@@ -1346,6 +1355,8 @@ impl Simulation {
                 self.motion = Motion::Halted;
                 return Err(failure);
             }
+            #[cfg(all(test, feature = "experimental-solver-step-observation"))]
+            recovery::planner::contact_observation::begin_step(self.substeps_completed + 1);
             self.world.step_with_events(&self.filter, &());
             let delivered: f32 = self
                 .joints

@@ -10,10 +10,12 @@ pub const MAX_FLOOR_M: f32 = 0.08;
 pub const MAX_SELF_M: f32 = 0.005;
 pub const MAX_LIMIT_RAD: f32 = 0.06;
 
-/// Current solver contacts, excluding cached points not solved this step.
+/// Contacts selected by the latest CCD interval, excluding unselected cached points.
 /// Rapier retains reporting impulses on those unselected manifold points;
 /// `ContactPair::total_impulse` sums them as well. This path does not rescale
-/// impulses or change warm-start state. Momentum fixtures validate it separately.
+/// impulses or change warm-start state. Earlier CCD intervals can have applied
+/// impulses that are no longer present here; this is not an enclosing-step total.
+/// Bounded momentum fixtures validate the single-interval case separately.
 pub fn solver_normal_impulse(pair: &ContactPair) -> Result<Vector, String> {
     filtered_normal_impulse(pair, |_| true)
 }

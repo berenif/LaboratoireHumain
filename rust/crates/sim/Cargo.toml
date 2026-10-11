@@ -5,6 +5,7 @@ edition.workspace = true
 publish.workspace = true
 
 [features]
+experimental-solver-step-observation = ["rapier3d/solver-step-observation"]
 experimental-joint-velocity-cache = ["rapier3d/experimental-joint-velocity-cache"]
 experimental-simd8 = ["rapier3d/simd8"]
 

@@ -19,6 +19,12 @@ conservée dans [le checkpoint précédent](https://github.com/berenif/Laboratoi
 Le [rapport de clôture](rust-recovery-coordinated-retarget-2026-10-11.md) et tous
 les essais rejetés restent inchangés. Leur budget de 96 histoires reste fermé.
 
+**Reprise autorisée à 21:18 UTC :** le premier lot d’implémentation commence par
+l’observation native. Le cadrage ci-dessus décrit le tour documentaire historique.
+Le [jalon de frontière CCD](rust-recovery-impulse-boundary-2026-10-11.md) isole un
+défaut de lecture, sans fermer P1 ni lancer la recherche. Le nouveau registre
+`native-hybrid-v1` compte ses vérifications ; l’ancien registre reste clos.
+
 ## Ce que les preuves imposent au nouveau plan
 
 - Les 96 histoires du registre `native-campaign/ledger.json`, identifiants

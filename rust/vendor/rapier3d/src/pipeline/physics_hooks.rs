@@ -176,6 +176,23 @@ impl Default for ActiveHooks {
 
 /// User-defined functions called by the physics engines during one timestep in order to customize its behavior.
 pub trait PhysicsHooks: crate::utils::MaybeSync {
+    /// Read-only boundary before each CCD interval's native constraint solve.
+    /// No mutable world state is exposed. Not called without the optional feature.
+    #[cfg(feature = "solver-step-observation")]
+    fn before_solver_step(&self, _dt: Real, _bodies: &RigidBodySet) {}
+
+    /// Read-only boundary after impulse/body writeback and before CCD clamping,
+    /// pose advancement or contact refresh. Reporting fields describe this solve
+    /// only, not every CCD interval in the enclosing pipeline step.
+    #[cfg(feature = "solver-step-observation")]
+    fn after_solver_step(
+        &self,
+        _dt: Real,
+        _bodies: &RigidBodySet,
+        _narrow_phase: &crate::geometry::NarrowPhase,
+    ) {
+    }
+
     /// Applies the contact pair filter.
     ///
     /// Note that this method will only be called if at least one of the colliders

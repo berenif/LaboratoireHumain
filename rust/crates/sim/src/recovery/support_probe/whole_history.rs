@@ -77,6 +77,15 @@ fn run_whole_reference_native_history() {
     std::fs::create_dir_all(&output).unwrap();
     let mut numeric = BufWriter::new(std::fs::File::create(output.join("substeps.jsonl")).unwrap());
     let mut frames = BufWriter::new(std::fs::File::create(output.join("frames.jsonl")).unwrap());
+    #[cfg(feature = "experimental-solver-step-observation")]
+    let mut boundary_trace = if std::env::var("LH_WHOLE_SOLVER_TRACE").is_ok_and(|v| v == "1") {
+        recovery::planner::contact_observation::activate(&s);
+        Some(BufWriter::new(
+            std::fs::File::create(output.join("solver-boundaries.jsonl")).unwrap(),
+        ))
+    } else {
+        None
+    };
     let started = std::time::Instant::now();
     let wall_limit = std::env::var("LH_WHOLE_WALL_S")
         .ok()
@@ -108,6 +117,13 @@ fn run_whole_reference_native_history() {
             {
                 return Err(measurement::Failure::new(state.tick, substep, "whole-history-ownership",
                     "native assembly changed".into(), 1.0, 0.0));
+            }
+            #[cfg(feature = "experimental-solver-step-observation")]
+            if let Some(trace) = &mut boundary_trace {
+                for record in recovery::planner::contact_observation::take_records() {
+                    serde_json::to_writer(&mut *trace, &record).unwrap();
+                    trace.write_all(b"\n").unwrap();
+                }
             }
             observer_steps += 1;
             let time = state.substeps_completed as f64 / 240.0;
@@ -175,6 +191,16 @@ fn run_whole_reference_native_history() {
         if hold >= required_hold {
             break;
         }
+    }
+    #[cfg(feature = "experimental-solver-step-observation")]
+    if let Some(trace) = &mut boundary_trace {
+        // Integrity refusal can precede the public observer. Keep its measurements.
+        for record in recovery::planner::contact_observation::take_records() {
+            serde_json::to_writer(&mut *trace, &record).unwrap();
+            trace.write_all(b"\n").unwrap();
+        }
+        trace.flush().unwrap();
+        recovery::planner::contact_observation::finish();
     }
     let (released, cap, ratio) = full_trajectory::finish_history();
     numeric.flush().unwrap();
@@ -272,6 +298,8 @@ fn run_whole_reference_native_history() {
         "maximumComAccelerationMps2":maximum_acceleration,"maximumLoadsN":maximum_loads,
         "nativeHandlesAndGenerationPreserved":true,"noBodyCommandsOrWorldReset":true,
         "initial":initial,"final":s.snapshot(),"originalRecoveries":s.counters.recoveries,
+        "finalWorldHashes":{"bodies":hash(&s.world.bodies),"motors":hash(&s.world.impulse_joints),
+            "contacts":hash(&s.world.narrow_phase),"counters":hash(&s.counters)},
         "qualification":"Four independent final validations still required after frozen success"});
     std::fs::write(
         output.join("report.json"),

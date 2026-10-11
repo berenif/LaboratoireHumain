@@ -1,0 +1,18 @@
+{
+  "schema": 1,
+  "baseCommit": "9d68ab2aa2c324ba7ed6262d1de66b30e274e40f",
+  "feature": "solver-step-observation",
+  "defaultEnabled": false,
+  "scope": "Read-only callbacks before and after each CCD interval constraint solve; after impulse/body writeback, before motion clamping/pose advancement/contact refresh. No solver arithmetic, mutable world access or serialized-state fields added.",
+  "patchSha256": "eae9bab1c321b7e95c15ce0a849048ebb6d6fda4ca7c503372e358ea7a978392",
+  "before": {
+    "rust/vendor/rapier3d/Cargo.toml": "7ffc7969de9570ce1b36356d290d028f49fb7c69eaff93b6810116606e869f15",
+    "rust/vendor/rapier3d/src/pipeline/physics_hooks.rs": "eed197b5f0360cc173f6e6147a2c43545d94436746a4164e4e37899abf9f051d",
+    "rust/vendor/rapier3d/src/pipeline/physics_pipeline/substep.rs": "7dd83fedf174927afd7078d20820a1113a27509fceebb78dae5ce4b6347cc7c3"
+  },
+  "after": {
+    "rust/vendor/rapier3d/Cargo.toml": "bab5724cb002e71e96f7fb7bad7c468e5ae0a158391fae0524a96a3c409be4ff",
+    "rust/vendor/rapier3d/src/pipeline/physics_hooks.rs": "ded484d50b28c7c7588e815b3bf3097413e2bc1556acd1f55807484e2fc4fd26",
+    "rust/vendor/rapier3d/src/pipeline/physics_pipeline/substep.rs": "672bf78b7f29368b82e86ec20d70cf46ec6aafb03b405aeaf19cfada7c263283"
+  }
+}
