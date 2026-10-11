@@ -1,5 +1,18 @@
 # TODO
 
+**2026-10-11 cadrage du planificateur natif — proposition, lancement en attente :**
+
+- [x] Définir une architecture unique : contacts/placements/charges recherchés,
+  46 coordonnées libres et retour d’état, avec preuve du parcours complet.
+- [ ] Valider le cadrage avant implémentation et calcul ; les 96 histoires restent closes.
+- [ ] Fiabiliser les impulsions d’impact et conserver le terminal original indépendant.
+- [ ] Construire graphe, compilateur, commande corps entier et recherche native bornée.
+- [ ] Appliquer le budget proposé : 32 vérifications + 192 candidats + 8 validations,
+  6 h maximum ; abandon à 64 sans parcours entier admissible, sans prolongation locale.
+- [ ] Distinguer première faisabilité et qualification : 24 poses, cinq cycles,
+  frappes aux différentes étapes et navigateurs ; récupération toujours non qualifiée.
+  [Architecture, interfaces, coûts et portes d’arrêt](docs/rust-recovery-architecture-decision-2026-10-11.md).
+
 **2026-10-11 campagne native close — géométrie admissible, zéro relevage sur 96 :**
 
 - [x] Vérifier la référence entière de 20,883 s : commandes C1, limites conservées,
@@ -39,7 +52,7 @@ Les sections suivantes conservent les états des jalons antérieurs.
 - [ ] Geler le premier succès et vérifier quatre histoires complètes à 0°/60°,
   handoff, maintien et 30 s de contrôle ordinaire. Aucun sous-jalon ne prolonge
   le budget ; qualification des 24 fixtures/cycles/navigateur toujours distincte.
-  [Décision, implémentation et abandon](docs/rust-recovery-architecture-decision-2026-10-11.md).
+  [Décision historique, désormais remplacée](https://github.com/berenif/LaboratoireHumain/blob/dcbcdfabaace5f3fbe91c944cb99efe5687276ac/docs/rust-recovery-architecture-decision-2026-10-11.md).
 
 
 **2026-10-11 horizon natif — cause corrigée, transfert toujours non acquis :**
