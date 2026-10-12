@@ -1,5 +1,15 @@
 # TODO
 
+**2026-10-12 coordination du pied autorisée — préparation bornée :**
+
+- [x] Vérifier et pousser le diagnostic `0a0db45`, distant confirmé ; anciens registres clos.
+- [x] Ouvrir le seul registre de coordination : 8 h de préparation, 2 histoires,
+  12 480 pas natifs et 300 s murales, aucune friction/anatomie nouvelle.
+- [x] Vérifier la coordination, télémétrie par point/moteur et terminal indépendant ; figer.
+- [ ] Reproduire B puis comparer C sans retouche ; fermer quel que soit le résultat.
+- [ ] Produire preuve et vidéo fidèle depuis les états enregistrés, sans nouveau calcul physique.
+  [Plan et arrêts](docs/foot-coordination-decision-2026-10-12.md).
+
 **2026-10-12 investigation pied et friction — documentation uniquement :**
 
 - [x] Vérifier `e8205c8` local/distant et les trois registres clos inchangés.

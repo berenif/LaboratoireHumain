@@ -11,6 +11,21 @@ pub(crate) struct FloorImpulse {
     pub collider: ColliderHandle,
     pub normal_ns: [f64; 3],
     pub tangent_ns: [f64; 3],
+    pub points: Vec<FloorPoint>,
+}
+#[derive(Clone, Debug, Serialize)]
+pub(crate) struct FloorPoint {
+    pub manifold_index: usize,
+    pub selected_contact_index: u32,
+    pub friction: f32,
+    pub normal_impulse_ns: f32,
+    pub tangent_impulse_world_ns: [f32; 3],
+    pub frozen_world_point: [f32; 3],
+    pub body_local_point: [f32; 3],
+    pub point_velocity_before_solve_mps: [f32; 3],
+    pub point_velocity_after_solve_mps: [f32; 3],
+    pub tangent_speed_before_solve_mps: f32,
+    pub tangent_speed_after_solve_mps: f32,
 }
 #[derive(Clone, Debug, Serialize)]
 pub(crate) struct SolveRecord {
@@ -46,6 +61,7 @@ struct Journal {
     records: Vec<SolveRecord>,
     angular_before: [f64; 3],
     external_angular: [f64; 3],
+    before_velocities: Vec<(Vector, Vector)>,
 }
 thread_local! {static ACTIVE: RefCell<Option<Journal>> = const {RefCell::new(None)};}
 pub(crate) fn activate(s: &crate::Simulation) {
@@ -106,6 +122,7 @@ pub(crate) fn activate(s: &crate::Simulation) {
             records: Vec::new(),
             angular_before: [0.0; 3],
             external_angular: [0.0; 3],
+            before_velocities: vec![(Vector::ZERO, Vector::ZERO); 25],
         });
     });
 }
@@ -138,8 +155,9 @@ pub(crate) fn before_solve(dt: Real, bodies: &RigidBodySet) {
         j.angular_before = angular(&j.bodies, bodies);
         j.external_angular = [0.0; 3];
         j.external = [0.0; 3];
-        for h in &j.bodies {
+        for (i, h) in j.bodies.iter().enumerate() {
             let b = &bodies[*h];
+            j.before_velocities[i] = (b.linvel(), b.angvel());
             // This first worker has no moving environment, grab or striker.
             // Sleep/damping/locked translation require separate admission.
             if !b.is_sleeping() {
@@ -180,9 +198,10 @@ pub(crate) fn after_solve(dt: Real, bodies: &RigidBodySet, phase: &NarrowPhase) 
             let result = (|| -> Result<FloorImpulse, String> {
                 let normal = measurement::solver_normal_impulse(pair)?;
                 let first = pair.collider1 == *collider;
-                let body =
-                    &bodies[j.bodies[j.colliders.iter().position(|c| c == collider).unwrap()]];
-                for m in pair.solver_manifolds() {
+                let body_index = j.colliders.iter().position(|c| c == collider).unwrap();
+                let body = &bodies[j.bodies[body_index]];
+                let mut point_records = Vec::new();
+                for (manifold_index, m) in pair.solver_manifolds().iter().enumerate() {
                     if !m.data.solver_flags.contains(SolverFlags::COMPUTE_IMPULSES) {
                         continue;
                     }
@@ -203,6 +222,31 @@ pub(crate) fn after_solve(dt: Real, bodies: &RigidBodySet, phase: &NarrowPhase) 
                         let position = std::array::from_fn(|k| {
                             f64::from(body.center_of_mass().to_array()[k])
                                 + f64::from(arm.to_array()[k])
+                        });
+                        let world_point = body.center_of_mass() + arm;
+                        let local_point = body.position().inverse_transform_point(world_point);
+                        let (v, w) = j.before_velocities[body_index];
+                        let before_velocity = v + w.cross(arm);
+                        let after_velocity = body.linvel() + body.angvel().cross(arm);
+                        let normal_on_body = dir * if first { 1.0 } else { -1.0 };
+                        let tangent_on_body = (t1 * data.tangent_impulse.x
+                            + t2 * data.tangent_impulse.y)
+                            * if first { 1.0 } else { -1.0 };
+                        let speed = |velocity: Vector| {
+                            (velocity - normal_on_body * velocity.dot(normal_on_body)).length()
+                        };
+                        point_records.push(FloorPoint {
+                            manifold_index,
+                            selected_contact_index: contact.contact_indices()[0],
+                            friction: m.data.friction,
+                            normal_impulse_ns: data.impulse,
+                            tangent_impulse_world_ns: tangent_on_body.to_array(),
+                            frozen_world_point: world_point.to_array(),
+                            body_local_point: local_point.to_array(),
+                            point_velocity_before_solve_mps: before_velocity.to_array(),
+                            point_velocity_after_solve_mps: after_velocity.to_array(),
+                            tangent_speed_before_solve_mps: speed(before_velocity),
+                            tangent_speed_after_solve_mps: speed(after_velocity),
                         });
                         add(
                             &mut floor_angular,
@@ -236,6 +280,7 @@ pub(crate) fn after_solve(dt: Real, bodies: &RigidBodySet, phase: &NarrowPhase) 
                     collider: *collider,
                     normal_ns: normal.to_array().map(|v| f64::from(v) * normal_sign),
                     tangent_ns: tangent,
+                    points: point_records,
                 })
             })();
             match result {
