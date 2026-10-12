@@ -1,0 +1,2007 @@
+{
+  "000-witness-B": {
+    "physicalSubsteps": 5013,
+    "validRows": 5013,
+    "physicalSeconds": 20.8875,
+    "firstRefusal": {
+      "check": "ownership",
+      "measured": 0.0,
+      "offending": "Original recovery observer refused A/B; no restart",
+      "substep": 1,
+      "threshold": 0.0,
+      "tick": 1253
+    },
+    "fullRecoverySuccess": false,
+    "originalRecoveries": 0,
+    "maximumActualAnatomicalRatio": 1.0,
+    "maximumComAccelerationMps2": 117.18080139160156,
+    "floor": {
+      "leftFoot": {
+        "positiveSteps": {
+          "firstS": 0.1,
+          "lastS": 0.9958,
+          "stepCount": 216,
+          "longestContinuousSteps": 216,
+          "intervals": [
+            [
+              0.1,
+              0.9958,
+              216
+            ]
+          ]
+        },
+        "persistentThreeNewtonSteps": {
+          "firstS": 0.1,
+          "lastS": 0.9958,
+          "stepCount": 214,
+          "longestContinuousSteps": 183,
+          "intervals": [
+            [
+              0.1,
+              0.8583,
+              183
+            ],
+            [
+              0.8667,
+              0.9708,
+              26
+            ],
+            [
+              0.9792,
+              0.9958,
+              5
+            ]
+          ]
+        },
+        "posteriorSteps": {
+          "firstS": null,
+          "lastS": null,
+          "stepCount": 0,
+          "longestContinuousSteps": 0,
+          "intervals": []
+        },
+        "posteriorThreeNewtonSteps": {
+          "firstS": null,
+          "lastS": null,
+          "stepCount": 0,
+          "longestContinuousSteps": 0,
+          "intervals": []
+        },
+        "posteriorImpulseNms": 0.0,
+        "positiveImpulseNms": 95.45670172842155,
+        "minFriction": 4.0,
+        "maxFriction": 4.0,
+        "maxTangentSpeedAfterMps": 0.08334705,
+        "maxCoulombUsage": 1.0000000953500061
+      },
+      "leftForefoot": {
+        "positiveSteps": {
+          "firstS": 0.0042,
+          "lastS": 20.8875,
+          "stepCount": 4209,
+          "longestContinuousSteps": 1024,
+          "intervals": [
+            [
+              0.0042,
+              1.4,
+              336
+            ],
+            [
+              1.4083,
+              1.4083,
+              1
+            ],
+            [
+              1.4208,
+              1.4208,
+              1
+            ],
+            [
+              1.4292,
+              1.4292,
+              1
+            ],
+            [
+              1.4375,
+              1.4375,
+              1
+            ],
+            [
+              1.4458,
+              1.4458,
+              1
+            ],
+            [
+              1.4542,
+              4.4125,
+              711
+            ],
+            [
+              4.425,
+              4.4292,
+              2
+            ],
+            [
+              4.4375,
+              4.4417,
+              2
+            ],
+            [
+              4.45,
+              4.4542,
+              2
+            ],
+            [
+              4.4625,
+              4.4667,
+              2
+            ],
+            [
+              4.475,
+              4.4875,
+              4
+            ]
+          ]
+        },
+        "persistentThreeNewtonSteps": {
+          "firstS": 0.0042,
+          "lastS": 20.8875,
+          "stepCount": 4195,
+          "longestContinuousSteps": 1024,
+          "intervals": [
+            [
+              0.0042,
+              1.4,
+              336
+            ],
+            [
+              1.4083,
+              1.4083,
+              1
+            ],
+            [
+              1.4208,
+              1.4208,
+              1
+            ],
+            [
+              1.4292,
+              1.4292,
+              1
+            ],
+            [
+              1.4375,
+              1.4375,
+              1
+            ],
+            [
+              1.4458,
+              1.4458,
+              1
+            ],
+            [
+              1.4542,
+              4.4125,
+              711
+            ],
+            [
+              4.425,
+              4.4292,
+              2
+            ],
+            [
+              4.4375,
+              4.4417,
+              2
+            ],
+            [
+              4.4542,
+              4.4542,
+              1
+            ],
+            [
+              4.4667,
+              4.4667,
+              1
+            ],
+            [
+              4.475,
+              4.4875,
+              4
+            ]
+          ]
+        },
+        "posteriorSteps": {
+          "firstS": null,
+          "lastS": null,
+          "stepCount": 0,
+          "longestContinuousSteps": 0,
+          "intervals": []
+        },
+        "posteriorThreeNewtonSteps": {
+          "firstS": null,
+          "lastS": null,
+          "stepCount": 0,
+          "longestContinuousSteps": 0,
+          "intervals": []
+        },
+        "posteriorImpulseNms": 0.0,
+        "positiveImpulseNms": 1790.2935751998896,
+        "minFriction": 4.0,
+        "maxFriction": 4.0,
+        "maxTangentSpeedAfterMps": 0.8507228,
+        "maxCoulombUsage": 1.0000000547576464
+      },
+      "rightFoot": {
+        "positiveSteps": {
+          "firstS": 0.1,
+          "lastS": 13.4125,
+          "stepCount": 448,
+          "longestContinuousSteps": 195,
+          "intervals": [
+            [
+              0.1,
+              0.9083,
+              195
+            ],
+            [
+              12.2,
+              12.8875,
+              166
+            ],
+            [
+              12.8958,
+              12.8958,
+              1
+            ],
+            [
+              12.9208,
+              12.9208,
+              1
+            ],
+            [
+              12.9292,
+              12.9292,
+              1
+            ],
+            [
+              12.9375,
+              12.9375,
+              1
+            ],
+            [
+              12.9458,
+              12.9458,
+              1
+            ],
+            [
+              12.9542,
+              12.9667,
+              4
+            ],
+            [
+              12.975,
+              13.1458,
+              42
+            ],
+            [
+              13.1583,
+              13.1708,
+              4
+            ],
+            [
+              13.275,
+              13.3833,
+              27
+            ],
+            [
+              13.3917,
+              13.3917,
+              1
+            ]
+          ]
+        },
+        "persistentThreeNewtonSteps": {
+          "firstS": 0.1,
+          "lastS": 13.3917,
+          "stepCount": 420,
+          "longestContinuousSteps": 193,
+          "intervals": [
+            [
+              0.1,
+              0.9,
+              193
+            ],
+            [
+              12.2,
+              12.8875,
+              166
+            ],
+            [
+              12.9292,
+              12.9292,
+              1
+            ],
+            [
+              12.975,
+              12.975,
+              1
+            ],
+            [
+              12.9833,
+              12.9833,
+              1
+            ],
+            [
+              12.9917,
+              12.9917,
+              1
+            ],
+            [
+              13.0083,
+              13.0083,
+              1
+            ],
+            [
+              13.0167,
+              13.0167,
+              1
+            ],
+            [
+              13.025,
+              13.0667,
+              11
+            ],
+            [
+              13.075,
+              13.075,
+              1
+            ],
+            [
+              13.0833,
+              13.1,
+              5
+            ],
+            [
+              13.1083,
+              13.1083,
+              1
+            ]
+          ]
+        },
+        "posteriorSteps": {
+          "firstS": null,
+          "lastS": null,
+          "stepCount": 0,
+          "longestContinuousSteps": 0,
+          "intervals": []
+        },
+        "posteriorThreeNewtonSteps": {
+          "firstS": null,
+          "lastS": null,
+          "stepCount": 0,
+          "longestContinuousSteps": 0,
+          "intervals": []
+        },
+        "posteriorImpulseNms": 0.0,
+        "positiveImpulseNms": 106.49970605031004,
+        "minFriction": 4.0,
+        "maxFriction": 4.0,
+        "maxTangentSpeedAfterMps": 0.09399579,
+        "maxCoulombUsage": 1.0000000726773366
+      },
+      "rightForefoot": {
+        "positiveSteps": {
+          "firstS": 0.0042,
+          "lastS": 20.8875,
+          "stepCount": 4805,
+          "longestContinuousSteps": 1476,
+          "intervals": [
+            [
+              0.0042,
+              6.025,
+              1446
+            ],
+            [
+              6.0417,
+              6.0833,
+              11
+            ],
+            [
+              6.0917,
+              6.1083,
+              5
+            ],
+            [
+              6.1167,
+              6.2583,
+              35
+            ],
+            [
+              6.2667,
+              10.6833,
+              1061
+            ],
+            [
+              10.6917,
+              10.6917,
+              1
+            ],
+            [
+              10.7083,
+              10.7125,
+              2
+            ],
+            [
+              10.725,
+              10.7458,
+              6
+            ],
+            [
+              10.7583,
+              10.7792,
+              6
+            ],
+            [
+              10.7875,
+              10.8125,
+              7
+            ],
+            [
+              10.825,
+              10.8708,
+              12
+            ],
+            [
+              10.8917,
+              10.9708,
+              20
+            ]
+          ]
+        },
+        "persistentThreeNewtonSteps": {
+          "firstS": 0.0042,
+          "lastS": 20.8875,
+          "stepCount": 4780,
+          "longestContinuousSteps": 1390,
+          "intervals": [
+            [
+              0.0042,
+              1.4083,
+              338
+            ],
+            [
+              1.4167,
+              6.025,
+              1107
+            ],
+            [
+              6.0417,
+              6.0542,
+              4
+            ],
+            [
+              6.0625,
+              6.0792,
+              5
+            ],
+            [
+              6.0917,
+              6.1042,
+              4
+            ],
+            [
+              6.1167,
+              6.2542,
+              34
+            ],
+            [
+              6.2667,
+              10.6833,
+              1061
+            ],
+            [
+              10.6917,
+              10.6917,
+              1
+            ],
+            [
+              10.7083,
+              10.7125,
+              2
+            ],
+            [
+              10.725,
+              10.7458,
+              6
+            ],
+            [
+              10.7583,
+              10.7792,
+              6
+            ],
+            [
+              10.7875,
+              10.8125,
+              7
+            ]
+          ]
+        },
+        "posteriorSteps": {
+          "firstS": null,
+          "lastS": null,
+          "stepCount": 0,
+          "longestContinuousSteps": 0,
+          "intervals": []
+        },
+        "posteriorThreeNewtonSteps": {
+          "firstS": null,
+          "lastS": null,
+          "stepCount": 0,
+          "longestContinuousSteps": 0,
+          "intervals": []
+        },
+        "posteriorImpulseNms": 0.0,
+        "positiveImpulseNms": 2013.9602779156403,
+        "minFriction": 4.0,
+        "maxFriction": 4.0,
+        "maxTangentSpeedAfterMps": 1.2708421,
+        "maxCoulombUsage": 1.0000001281929405
+      },
+      "leftHand": {
+        "positiveSteps": {
+          "firstS": 1.4083,
+          "lastS": 20.8875,
+          "stepCount": 4675,
+          "longestContinuousSteps": 3829,
+          "intervals": [
+            [
+              1.4083,
+              4.9292,
+              846
+            ],
+            [
+              4.9375,
+              20.8875,
+              3829
+            ]
+          ]
+        },
+        "persistentThreeNewtonSteps": {
+          "firstS": 1.4083,
+          "lastS": 20.8875,
+          "stepCount": 4674,
+          "longestContinuousSteps": 3271,
+          "intervals": [
+            [
+              1.4083,
+              4.9292,
+              846
+            ],
+            [
+              4.9375,
+              18.5625,
+              3271
+            ],
+            [
+              18.5708,
+              20.8875,
+              557
+            ]
+          ]
+        },
+        "posteriorSteps": {
+          "firstS": null,
+          "lastS": null,
+          "stepCount": 0,
+          "longestContinuousSteps": 0,
+          "intervals": []
+        },
+        "posteriorThreeNewtonSteps": {
+          "firstS": null,
+          "lastS": null,
+          "stepCount": 0,
+          "longestContinuousSteps": 0,
+          "intervals": []
+        },
+        "posteriorImpulseNms": 0.0,
+        "positiveImpulseNms": 2221.1681039272307,
+        "minFriction": 1.2,
+        "maxFriction": 1.2,
+        "maxTangentSpeedAfterMps": 1.5334096,
+        "maxCoulombUsage": 1.0395197361604775
+      },
+      "rightHand": {
+        "positiveSteps": {
+          "firstS": 1.4833,
+          "lastS": 20.8875,
+          "stepCount": 4319,
+          "longestContinuousSteps": 2345,
+          "intervals": [
+            [
+              1.4833,
+              1.4833,
+              1
+            ],
+            [
+              1.4917,
+              1.5167,
+              7
+            ],
+            [
+              1.525,
+              1.525,
+              1
+            ],
+            [
+              1.5333,
+              3.0167,
+              357
+            ],
+            [
+              3.025,
+              3.1458,
+              30
+            ],
+            [
+              3.1542,
+              3.3292,
+              43
+            ],
+            [
+              3.3375,
+              13.1042,
+              2345
+            ],
+            [
+              13.1167,
+              13.1167,
+              1
+            ],
+            [
+              14.3375,
+              14.3625,
+              7
+            ],
+            [
+              14.3833,
+              14.3875,
+              2
+            ],
+            [
+              14.4042,
+              14.4125,
+              3
+            ],
+            [
+              14.4292,
+              14.4292,
+              1
+            ]
+          ]
+        },
+        "persistentThreeNewtonSteps": {
+          "firstS": 1.4833,
+          "lastS": 20.8875,
+          "stepCount": 4307,
+          "longestContinuousSteps": 2345,
+          "intervals": [
+            [
+              1.4833,
+              1.4833,
+              1
+            ],
+            [
+              1.4917,
+              1.5167,
+              7
+            ],
+            [
+              1.525,
+              1.525,
+              1
+            ],
+            [
+              1.5333,
+              2.7708,
+              298
+            ],
+            [
+              2.7792,
+              3.0167,
+              58
+            ],
+            [
+              3.025,
+              3.1458,
+              30
+            ],
+            [
+              3.1542,
+              3.3292,
+              43
+            ],
+            [
+              3.3375,
+              13.1042,
+              2345
+            ],
+            [
+              13.1167,
+              13.1167,
+              1
+            ],
+            [
+              14.3375,
+              14.35,
+              4
+            ],
+            [
+              14.3583,
+              14.3583,
+              1
+            ],
+            [
+              14.3833,
+              14.3833,
+              1
+            ]
+          ]
+        },
+        "posteriorSteps": {
+          "firstS": null,
+          "lastS": null,
+          "stepCount": 0,
+          "longestContinuousSteps": 0,
+          "intervals": []
+        },
+        "posteriorThreeNewtonSteps": {
+          "firstS": null,
+          "lastS": null,
+          "stepCount": 0,
+          "longestContinuousSteps": 0,
+          "intervals": []
+        },
+        "posteriorImpulseNms": 0.0,
+        "positiveImpulseNms": 1954.464055529452,
+        "minFriction": 1.2,
+        "maxFriction": 1.2,
+        "maxTangentSpeedAfterMps": 1.9818634,
+        "maxCoulombUsage": 1.000000123148713
+      }
+    },
+    "motors": {
+      "leftThigh x": {
+        "maxRequestNm": 1891.8258056640625,
+        "maxDeliveredAbsoluteNm": 75.98685264587402,
+        "maxNativeScalarCapRatio": 0.997209370136261,
+        "stepsAt95PercentNativeScalarCap": 604,
+        "maxInstalledCapNm": 85.36370849609375
+      },
+      "leftShin x": {
+        "maxRequestNm": 888.4418334960938,
+        "maxDeliveredAbsoluteNm": 79.42055940628052,
+        "maxNativeScalarCapRatio": 1.0000001192092896,
+        "stepsAt95PercentNativeScalarCap": 1668,
+        "maxInstalledCapNm": 89.07986450195312
+      },
+      "leftAnkle x": {
+        "maxRequestNm": 298.67529296875,
+        "maxDeliveredAbsoluteNm": 71.04168891906738,
+        "maxNativeScalarCapRatio": 0.9999995827674866,
+        "stepsAt95PercentNativeScalarCap": 434,
+        "maxInstalledCapNm": 95.3055648803711
+      },
+      "leftForefoot x": {
+        "maxRequestNm": 173.3342742919922,
+        "maxDeliveredAbsoluteNm": 34.91338849067688,
+        "maxNativeScalarCapRatio": 0.9999995827674866,
+        "stepsAt95PercentNativeScalarCap": 1271,
+        "maxInstalledCapNm": 35.0
+      },
+      "rightThigh x": {
+        "maxRequestNm": 1932.865478515625,
+        "maxDeliveredAbsoluteNm": 89.51330423355103,
+        "maxNativeScalarCapRatio": 0.9996097087860107,
+        "stepsAt95PercentNativeScalarCap": 2076,
+        "maxInstalledCapNm": 91.46145629882812
+      },
+      "rightShin x": {
+        "maxRequestNm": 917.1077880859375,
+        "maxDeliveredAbsoluteNm": 79.42055940628052,
+        "maxNativeScalarCapRatio": 1.0000001192092896,
+        "stepsAt95PercentNativeScalarCap": 1937,
+        "maxInstalledCapNm": 100.02236938476562
+      },
+      "rightAnkle x": {
+        "maxRequestNm": 265.7655334472656,
+        "maxDeliveredAbsoluteNm": 69.19281005859375,
+        "maxNativeScalarCapRatio": 0.9999996423721313,
+        "stepsAt95PercentNativeScalarCap": 588,
+        "maxInstalledCapNm": 108.05177307128906
+      },
+      "rightForefoot x": {
+        "maxRequestNm": 229.7136993408203,
+        "maxDeliveredAbsoluteNm": 34.9999737739563,
+        "maxNativeScalarCapRatio": 0.9999996423721313,
+        "stepsAt95PercentNativeScalarCap": 1555,
+        "maxInstalledCapNm": 35.0
+      }
+    },
+    "windows": {
+      "0-0.100s": {
+        "n": 23,
+        "meanForwardAccelerationMps2": -0.49890721492145373,
+        "firstComZM": 0.0368681475520134,
+        "lastComZM": 0.034069161862134933,
+        "firstComForwardVelocityMps": -0.0014290097169578075,
+        "lastComForwardVelocityMps": -0.04781194403767586,
+        "meanRearFootLoadN": 0.0,
+        "meanForefootLoadN": 447.5055269158405
+      },
+      "0.1-1.000s": {
+        "n": 216,
+        "meanForwardAccelerationMps2": 1.004698161587671,
+        "firstComZM": 0.033905044198036194,
+        "lastComZM": 0.32819539308547974,
+        "firstComForwardVelocityMps": -0.022789467126131058,
+        "lastComForwardVelocityMps": 0.8564164638519287,
+        "meanRearFootLoadN": 177.39195447018008,
+        "meanForefootLoadN": 524.5542263057497
+      },
+      "1-3.000s": {
+        "n": 480,
+        "meanForwardAccelerationMps2": -0.4247604751667192,
+        "firstComZM": 0.33178219199180603,
+        "lastComZM": 1.1451257467269897,
+        "firstComForwardVelocityMps": 0.865031361579895,
+        "lastComForwardVelocityMps": 0.006895453669130802,
+        "meanRearFootLoadN": 0.0,
+        "meanForefootLoadN": 214.56287248361963
+      },
+      "3-5.000s": {
+        "n": 480,
+        "meanForwardAccelerationMps2": 0.006980990692197034,
+        "firstComZM": 1.145167589187622,
+        "lastComZM": 1.1500203609466553,
+        "firstComForwardVelocityMps": 0.012757598422467709,
+        "lastComForwardVelocityMps": 0.0208574328571558,
+        "meanRearFootLoadN": 0.0,
+        "meanForefootLoadN": 184.06096347660448
+      },
+      "5-20.887s": {
+        "n": 3813,
+        "meanForwardAccelerationMps2": -0.0013816755504224404,
+        "firstComZM": 1.15010404586792,
+        "lastComZM": 1.1102759838104248,
+        "firstComForwardVelocityMps": 0.020186154171824455,
+        "lastComForwardVelocityMps": -0.0010939377825707197,
+        "meanRearFootLoadN": 2.6626950484047622,
+        "meanForefootLoadN": 156.79524817742072
+      }
+    },
+    "milestones": {
+      "0.0500": {
+        "recordedAtS": 0.05,
+        "pelvisHeightM": 0.9682167172431946,
+        "comZ": 0.03607579320669174,
+        "comVZ": -0.03350804001092911,
+        "comAZ": -0.6578327417373657,
+        "rearFootLoadN": 0.0,
+        "forefootLoadN": 460.03221893310547,
+        "heel": {
+          "leftFoot": {
+            "posteriorHeightM": 0.04608600586652756,
+            "pitchRad": 0.18614211678504944
+          },
+          "rightFoot": {
+            "posteriorHeightM": 0.04609324038028717,
+            "pitchRad": 0.18660464882850647
+          },
+          "leftForefoot": {
+            "posteriorHeightM": 0.018199589103460312,
+            "pitchRad": 0.1630929410457611
+          },
+          "rightForefoot": {
+            "posteriorHeightM": 0.018135398626327515,
+            "pitchRad": 0.16319209337234497
+          }
+        },
+        "phase": "brace"
+      },
+      "0.1000": {
+        "recordedAtS": 0.1,
+        "pelvisHeightM": 0.952649712562561,
+        "comZ": 0.033905044198036194,
+        "comVZ": -0.022789467126131058,
+        "comAZ": 6.005393981933594,
+        "rearFootLoadN": 1755.3544006347656,
+        "forefootLoadN": 759.9615421295166,
+        "heel": {
+          "leftFoot": {
+            "posteriorHeightM": 0.02865557000041008,
+            "pitchRad": 0.17043033242225647
+          },
+          "rightFoot": {
+            "posteriorHeightM": 0.028768185526132584,
+            "pitchRad": 0.17113235592842102
+          },
+          "leftForefoot": {
+            "posteriorHeightM": 0.0027816519141197205,
+            "pitchRad": 0.06674791872501373
+          },
+          "rightForefoot": {
+            "posteriorHeightM": 0.002831198275089264,
+            "pitchRad": 0.07227946072816849
+          }
+        },
+        "phase": "brace"
+      },
+      "0.5000": {
+        "recordedAtS": 0.5,
+        "pelvisHeightM": 0.9564605355262756,
+        "comZ": 0.08126432448625565,
+        "comVZ": 0.2554094195365906,
+        "comAZ": 0.6432580351829529,
+        "rearFootLoadN": 144.0197925567627,
+        "forefootLoadN": 537.8082876205444,
+        "heel": {
+          "leftFoot": {
+            "posteriorHeightM": 0.014470402151346207,
+            "pitchRad": 0.09990748018026352
+          },
+          "rightFoot": {
+            "posteriorHeightM": 0.01878279075026512,
+            "pitchRad": 0.11674951761960983
+          },
+          "leftForefoot": {
+            "posteriorHeightM": -0.0006186515092849731,
+            "pitchRad": 0.05564918741583824
+          },
+          "rightForefoot": {
+            "posteriorHeightM": 0.0011545978486537933,
+            "pitchRad": 0.07786911725997925
+          }
+        },
+        "phase": "brace"
+      },
+      "1.0000": {
+        "recordedAtS": 1.0,
+        "pelvisHeightM": 0.9048481583595276,
+        "comZ": 0.33178219199180603,
+        "comVZ": 0.865031361579895,
+        "comAZ": 2.067575454711914,
+        "rearFootLoadN": 0.0,
+        "forefootLoadN": 572.3205490112305,
+        "heel": {
+          "leftFoot": {
+            "posteriorHeightM": 0.047508567571640015,
+            "pitchRad": 0.29639241099357605
+          },
+          "rightFoot": {
+            "posteriorHeightM": 0.054684869945049286,
+            "pitchRad": 0.34292542934417725
+          },
+          "leftForefoot": {
+            "posteriorHeightM": 0.002486232668161392,
+            "pitchRad": 0.10093273967504501
+          },
+          "rightForefoot": {
+            "posteriorHeightM": 0.0026436708867549896,
+            "pitchRad": 0.09695664048194885
+          }
+        },
+        "phase": "brace"
+      },
+      "2.0000": {
+        "recordedAtS": 2.0,
+        "pelvisHeightM": 0.15958905220031738,
+        "comZ": 1.14772367477417,
+        "comVZ": -0.04655871167778969,
+        "comAZ": -0.06351113319396973,
+        "rearFootLoadN": 0.0,
+        "forefootLoadN": 137.2168846130371,
+        "heel": {
+          "leftFoot": {
+            "posteriorHeightM": 0.2785272002220154,
+            "pitchRad": 1.5907182693481445
+          },
+          "rightFoot": {
+            "posteriorHeightM": 0.2691649794578552,
+            "pitchRad": 1.7229758501052856
+          },
+          "leftForefoot": {
+            "posteriorHeightM": 0.11810675263404846,
+            "pitchRad": 1.8022444248199463
+          },
+          "rightForefoot": {
+            "posteriorHeightM": 0.11368149518966675,
+            "pitchRad": 1.9027765989303589
+          }
+        },
+        "phase": "brace"
+      },
+      "3.0000": {
+        "recordedAtS": 3.0,
+        "pelvisHeightM": 0.20274868607521057,
+        "comZ": 1.145167589187622,
+        "comVZ": 0.012757598422467709,
+        "comAZ": 1.4069147109985352,
+        "rearFootLoadN": 0.0,
+        "forefootLoadN": 134.0438346862793,
+        "heel": {
+          "leftFoot": {
+            "posteriorHeightM": 0.22717884182929993,
+            "pitchRad": 1.8896700143814087
+          },
+          "rightFoot": {
+            "posteriorHeightM": 0.24937519431114197,
+            "pitchRad": 1.9329631328582764
+          },
+          "leftForefoot": {
+            "posteriorHeightM": 0.1003110334277153,
+            "pitchRad": 1.8225908279418945
+          },
+          "rightForefoot": {
+            "posteriorHeightM": 0.11275497823953629,
+            "pitchRad": 1.9295270442962646
+          }
+        },
+        "phase": "brace"
+      },
+      "5.0000": {
+        "recordedAtS": 5.0,
+        "pelvisHeightM": 0.1460624486207962,
+        "comZ": 1.15010404586792,
+        "comVZ": 0.020186154171824455,
+        "comAZ": -0.1611068695783615,
+        "rearFootLoadN": 0.0,
+        "forefootLoadN": 177.37136840820312,
+        "heel": {
+          "leftFoot": {
+            "posteriorHeightM": 0.17105266451835632,
+            "pitchRad": 2.3743953704833984
+          },
+          "rightFoot": {
+            "posteriorHeightM": 0.2430156022310257,
+            "pitchRad": 1.9080339670181274
+          },
+          "leftForefoot": {
+            "posteriorHeightM": 0.06913848221302032,
+            "pitchRad": 2.49893856048584
+          },
+          "rightForefoot": {
+            "posteriorHeightM": 0.1193087249994278,
+            "pitchRad": 1.453512191772461
+          }
+        },
+        "phase": "brace"
+      },
+      "20.8875": {
+        "recordedAtS": 20.8875,
+        "pelvisHeightM": 0.10813021659851074,
+        "comZ": 1.110275387763977,
+        "comVZ": 0.0003933687985409051,
+        "comAZ": 0.35695356130599976,
+        "rearFootLoadN": 0.0,
+        "forefootLoadN": 153.81649017333984,
+        "heel": {
+          "leftFoot": {
+            "posteriorHeightM": 0.2640506327152252,
+            "pitchRad": 1.6667224168777466
+          },
+          "rightFoot": {
+            "posteriorHeightM": 0.2731388807296753,
+            "pitchRad": 1.5233509540557861
+          },
+          "leftForefoot": {
+            "posteriorHeightM": 0.12167461216449738,
+            "pitchRad": 1.5874676704406738
+          },
+          "rightForefoot": {
+            "posteriorHeightM": 0.11806078255176544,
+            "pitchRad": 1.3862910270690918
+          }
+        },
+        "phase": null
+      }
+    }
+  },
+  "001-coordinated-C": {
+    "physicalSubsteps": 1222,
+    "validRows": 1221,
+    "physicalSeconds": 5.091666666666667,
+    "firstRefusal": {
+      "check": "self-contact",
+      "measured": 0.005071029532700777,
+      "offending": "leftForefoot/rightFoot",
+      "substep": 1,
+      "threshold": 0.004999999888241291,
+      "tick": 305
+    },
+    "fullRecoverySuccess": false,
+    "originalRecoveries": 0,
+    "maximumActualAnatomicalRatio": 1.0,
+    "maximumComAccelerationMps2": 110.81402587890625,
+    "floor": {
+      "leftFoot": {
+        "positiveSteps": {
+          "firstS": 0.1,
+          "lastS": 0.9625,
+          "stepCount": 208,
+          "longestContinuousSteps": 208,
+          "intervals": [
+            [
+              0.1,
+              0.9625,
+              208
+            ]
+          ]
+        },
+        "persistentThreeNewtonSteps": {
+          "firstS": 0.1,
+          "lastS": 0.9625,
+          "stepCount": 208,
+          "longestContinuousSteps": 208,
+          "intervals": [
+            [
+              0.1,
+              0.9625,
+              208
+            ]
+          ]
+        },
+        "posteriorSteps": {
+          "firstS": null,
+          "lastS": null,
+          "stepCount": 0,
+          "longestContinuousSteps": 0,
+          "intervals": []
+        },
+        "posteriorThreeNewtonSteps": {
+          "firstS": null,
+          "lastS": null,
+          "stepCount": 0,
+          "longestContinuousSteps": 0,
+          "intervals": []
+        },
+        "posteriorImpulseNms": 0.0,
+        "positiveImpulseNms": 101.54572123599999,
+        "minFriction": 4.0,
+        "maxFriction": 4.0,
+        "maxTangentSpeedAfterMps": 0.103657335,
+        "maxCoulombUsage": 0.9485859127026138
+      },
+      "leftForefoot": {
+        "positiveSteps": {
+          "firstS": 0.0042,
+          "lastS": 5.0917,
+          "stepCount": 1201,
+          "longestContinuousSteps": 405,
+          "intervals": [
+            [
+              0.0042,
+              1.5333,
+              368
+            ],
+            [
+              1.5417,
+              3.225,
+              405
+            ],
+            [
+              3.2333,
+              4.4083,
+              283
+            ],
+            [
+              4.4542,
+              4.4583,
+              2
+            ],
+            [
+              4.4708,
+              4.4708,
+              1
+            ],
+            [
+              4.4792,
+              4.4875,
+              3
+            ],
+            [
+              4.4958,
+              4.4958,
+              1
+            ],
+            [
+              4.5042,
+              4.5042,
+              1
+            ],
+            [
+              4.5125,
+              4.5208,
+              3
+            ],
+            [
+              4.5292,
+              4.6292,
+              25
+            ],
+            [
+              4.6375,
+              4.6708,
+              9
+            ],
+            [
+              4.6792,
+              5.0917,
+              100
+            ]
+          ]
+        },
+        "persistentThreeNewtonSteps": {
+          "firstS": 0.0042,
+          "lastS": 5.0917,
+          "stepCount": 1192,
+          "longestContinuousSteps": 368,
+          "intervals": [
+            [
+              0.0042,
+              1.5333,
+              368
+            ],
+            [
+              1.5417,
+              2.7375,
+              288
+            ],
+            [
+              2.7458,
+              2.7625,
+              5
+            ],
+            [
+              2.7708,
+              2.8125,
+              11
+            ],
+            [
+              2.8208,
+              3.225,
+              98
+            ],
+            [
+              3.2333,
+              4.4083,
+              283
+            ],
+            [
+              4.4542,
+              4.4583,
+              2
+            ],
+            [
+              4.4708,
+              4.4708,
+              1
+            ],
+            [
+              4.4792,
+              4.4792,
+              1
+            ],
+            [
+              4.4875,
+              4.4875,
+              1
+            ],
+            [
+              4.4958,
+              4.4958,
+              1
+            ],
+            [
+              4.5042,
+              4.5042,
+              1
+            ]
+          ]
+        },
+        "posteriorSteps": {
+          "firstS": null,
+          "lastS": null,
+          "stepCount": 0,
+          "longestContinuousSteps": 0,
+          "intervals": []
+        },
+        "posteriorThreeNewtonSteps": {
+          "firstS": null,
+          "lastS": null,
+          "stepCount": 0,
+          "longestContinuousSteps": 0,
+          "intervals": []
+        },
+        "posteriorImpulseNms": 0.0,
+        "positiveImpulseNms": 587.8944929808314,
+        "minFriction": 4.0,
+        "maxFriction": 4.0,
+        "maxTangentSpeedAfterMps": 0.9227048,
+        "maxCoulombUsage": 1.0000000359457568
+      },
+      "rightFoot": {
+        "positiveSteps": {
+          "firstS": 0.1,
+          "lastS": 0.8042,
+          "stepCount": 170,
+          "longestContinuousSteps": 170,
+          "intervals": [
+            [
+              0.1,
+              0.8042,
+              170
+            ]
+          ]
+        },
+        "persistentThreeNewtonSteps": {
+          "firstS": 0.1,
+          "lastS": 0.8,
+          "stepCount": 169,
+          "longestContinuousSteps": 169,
+          "intervals": [
+            [
+              0.1,
+              0.8,
+              169
+            ]
+          ]
+        },
+        "posteriorSteps": {
+          "firstS": null,
+          "lastS": null,
+          "stepCount": 0,
+          "longestContinuousSteps": 0,
+          "intervals": []
+        },
+        "posteriorThreeNewtonSteps": {
+          "firstS": null,
+          "lastS": null,
+          "stepCount": 0,
+          "longestContinuousSteps": 0,
+          "intervals": []
+        },
+        "posteriorImpulseNms": 0.0,
+        "positiveImpulseNms": 62.76568838699998,
+        "minFriction": 4.0,
+        "maxFriction": 4.0,
+        "maxTangentSpeedAfterMps": 0.10695226,
+        "maxCoulombUsage": 0.9132313810626794
+      },
+      "rightForefoot": {
+        "positiveSteps": {
+          "firstS": 0.0042,
+          "lastS": 5.0083,
+          "stepCount": 1188,
+          "longestContinuousSteps": 860,
+          "intervals": [
+            [
+              0.0042,
+              1.3667,
+              328
+            ],
+            [
+              1.4292,
+              5.0083,
+              860
+            ]
+          ]
+        },
+        "persistentThreeNewtonSteps": {
+          "firstS": 0.0042,
+          "lastS": 5.0042,
+          "stepCount": 1177,
+          "longestContinuousSteps": 844,
+          "intervals": [
+            [
+              0.0042,
+              1.3625,
+              327
+            ],
+            [
+              1.4542,
+              4.9667,
+              844
+            ],
+            [
+              4.975,
+              4.975,
+              1
+            ],
+            [
+              4.9833,
+              4.9958,
+              4
+            ],
+            [
+              5.0042,
+              5.0042,
+              1
+            ]
+          ]
+        },
+        "posteriorSteps": {
+          "firstS": null,
+          "lastS": null,
+          "stepCount": 0,
+          "longestContinuousSteps": 0,
+          "intervals": []
+        },
+        "posteriorThreeNewtonSteps": {
+          "firstS": null,
+          "lastS": null,
+          "stepCount": 0,
+          "longestContinuousSteps": 0,
+          "intervals": []
+        },
+        "posteriorImpulseNms": 0.0,
+        "positiveImpulseNms": 746.4263865837519,
+        "minFriction": 4.0,
+        "maxFriction": 4.0,
+        "maxTangentSpeedAfterMps": 1.2626469,
+        "maxCoulombUsage": 1.0000001197849577
+      },
+      "leftHand": {
+        "positiveSteps": {
+          "firstS": 1.4417,
+          "lastS": 5.0917,
+          "stepCount": 877,
+          "longestContinuousSteps": 877,
+          "intervals": [
+            [
+              1.4417,
+              5.0917,
+              877
+            ]
+          ]
+        },
+        "persistentThreeNewtonSteps": {
+          "firstS": 1.4417,
+          "lastS": 5.0917,
+          "stepCount": 877,
+          "longestContinuousSteps": 877,
+          "intervals": [
+            [
+              1.4417,
+              5.0917,
+              877
+            ]
+          ]
+        },
+        "posteriorSteps": {
+          "firstS": null,
+          "lastS": null,
+          "stepCount": 0,
+          "longestContinuousSteps": 0,
+          "intervals": []
+        },
+        "posteriorThreeNewtonSteps": {
+          "firstS": null,
+          "lastS": null,
+          "stepCount": 0,
+          "longestContinuousSteps": 0,
+          "intervals": []
+        },
+        "posteriorImpulseNms": 0.0,
+        "positiveImpulseNms": 318.62874182474167,
+        "minFriction": 1.2,
+        "maxFriction": 1.2,
+        "maxTangentSpeedAfterMps": 1.3832403,
+        "maxCoulombUsage": 1.0060126956891948
+      },
+      "rightHand": {
+        "positiveSteps": {
+          "firstS": 1.5375,
+          "lastS": 5.0917,
+          "stepCount": 843,
+          "longestContinuousSteps": 196,
+          "intervals": [
+            [
+              1.5375,
+              1.5417,
+              2
+            ],
+            [
+              1.55,
+              1.6125,
+              16
+            ],
+            [
+              1.6208,
+              1.7042,
+              21
+            ],
+            [
+              1.7125,
+              2.4958,
+              189
+            ],
+            [
+              2.5042,
+              3.0,
+              120
+            ],
+            [
+              3.0083,
+              3.0417,
+              9
+            ],
+            [
+              3.05,
+              3.1542,
+              26
+            ],
+            [
+              3.1625,
+              3.2833,
+              30
+            ],
+            [
+              3.2917,
+              3.4167,
+              31
+            ],
+            [
+              3.425,
+              3.6083,
+              45
+            ],
+            [
+              3.6167,
+              4.4292,
+              196
+            ],
+            [
+              4.4375,
+              5.0917,
+              158
+            ]
+          ]
+        },
+        "persistentThreeNewtonSteps": {
+          "firstS": 1.5375,
+          "lastS": 5.0917,
+          "stepCount": 842,
+          "longestContinuousSteps": 196,
+          "intervals": [
+            [
+              1.5375,
+              1.5417,
+              2
+            ],
+            [
+              1.55,
+              1.6125,
+              16
+            ],
+            [
+              1.6208,
+              1.7042,
+              21
+            ],
+            [
+              1.7125,
+              2.4958,
+              189
+            ],
+            [
+              2.5042,
+              3.0,
+              120
+            ],
+            [
+              3.0083,
+              3.0417,
+              9
+            ],
+            [
+              3.05,
+              3.1542,
+              26
+            ],
+            [
+              3.1625,
+              3.2333,
+              18
+            ],
+            [
+              3.2417,
+              3.2833,
+              11
+            ],
+            [
+              3.2917,
+              3.4167,
+              31
+            ],
+            [
+              3.425,
+              3.6083,
+              45
+            ],
+            [
+              3.6167,
+              4.4292,
+              196
+            ]
+          ]
+        },
+        "posteriorSteps": {
+          "firstS": null,
+          "lastS": null,
+          "stepCount": 0,
+          "longestContinuousSteps": 0,
+          "intervals": []
+        },
+        "posteriorThreeNewtonSteps": {
+          "firstS": null,
+          "lastS": null,
+          "stepCount": 0,
+          "longestContinuousSteps": 0,
+          "intervals": []
+        },
+        "posteriorImpulseNms": 0.0,
+        "positiveImpulseNms": 148.87917412196566,
+        "minFriction": 1.2,
+        "maxFriction": 1.2,
+        "maxTangentSpeedAfterMps": 2.1621041,
+        "maxCoulombUsage": 1.0577677509345904
+      }
+    },
+    "motors": {
+      "leftThigh x": {
+        "maxRequestNm": 1495.483154296875,
+        "maxDeliveredAbsoluteNm": 67.46988773345947,
+        "maxNativeScalarCapRatio": 0.9969398975372314,
+        "stepsAt95PercentNativeScalarCap": 279,
+        "maxInstalledCapNm": 82.88758850097656
+      },
+      "leftShin x": {
+        "maxRequestNm": 578.3847045898438,
+        "maxDeliveredAbsoluteNm": 77.68378257751465,
+        "maxNativeScalarCapRatio": 1.0,
+        "stepsAt95PercentNativeScalarCap": 330,
+        "maxInstalledCapNm": 86.54621124267578
+      },
+      "leftAnkle x": {
+        "maxRequestNm": 260.8823547363281,
+        "maxDeliveredAbsoluteNm": 64.42982912063599,
+        "maxNativeScalarCapRatio": 0.999999463558197,
+        "stepsAt95PercentNativeScalarCap": 51,
+        "maxInstalledCapNm": 110.0
+      },
+      "leftForefoot x": {
+        "maxRequestNm": 259.33795166015625,
+        "maxDeliveredAbsoluteNm": 34.99998092651367,
+        "maxNativeScalarCapRatio": 0.9999995827674866,
+        "stepsAt95PercentNativeScalarCap": 590,
+        "maxInstalledCapNm": 35.0
+      },
+      "rightThigh x": {
+        "maxRequestNm": 1774.4560546875,
+        "maxDeliveredAbsoluteNm": 92.57011413574219,
+        "maxNativeScalarCapRatio": 0.9992821216583252,
+        "stepsAt95PercentNativeScalarCap": 712,
+        "maxInstalledCapNm": 94.31568145751953
+      },
+      "rightShin x": {
+        "maxRequestNm": 876.4212646484375,
+        "maxDeliveredAbsoluteNm": 83.88238191604614,
+        "maxNativeScalarCapRatio": 1.0,
+        "stepsAt95PercentNativeScalarCap": 495,
+        "maxInstalledCapNm": 94.41522979736328
+      },
+      "rightAnkle x": {
+        "maxRequestNm": 291.6290283203125,
+        "maxDeliveredAbsoluteNm": 59.47959065437317,
+        "maxNativeScalarCapRatio": 0.9999995827674866,
+        "stepsAt95PercentNativeScalarCap": 333,
+        "maxInstalledCapNm": 110.0
+      },
+      "rightForefoot x": {
+        "maxRequestNm": 241.55255126953125,
+        "maxDeliveredAbsoluteNm": 34.999977350234985,
+        "maxNativeScalarCapRatio": 0.999999463558197,
+        "stepsAt95PercentNativeScalarCap": 385,
+        "maxInstalledCapNm": 35.0
+      }
+    },
+    "windows": {
+      "0-0.100s": {
+        "n": 23,
+        "meanForwardAccelerationMps2": -0.5981772830304892,
+        "firstComZM": 0.0368681475520134,
+        "lastComZM": 0.033660639077425,
+        "firstComForwardVelocityMps": -0.0014290097169578075,
+        "lastComForwardVelocityMps": -0.0573253259062767,
+        "meanRearFootLoadN": 0.0,
+        "meanForefootLoadN": 461.01913211656654
+      },
+      "0.1-1.000s": {
+        "n": 216,
+        "meanForwardAccelerationMps2": 1.0028758531229363,
+        "firstComZM": 0.03348258137702942,
+        "lastComZM": 0.32716497778892517,
+        "firstComForwardVelocityMps": -0.02136142924427986,
+        "lastComForwardVelocityMps": 0.8452630043029785,
+        "meanRearFootLoadN": 182.56821726759276,
+        "meanForefootLoadN": 521.908315240259
+      },
+      "1-3.000s": {
+        "n": 480,
+        "meanForwardAccelerationMps2": -0.4057098971490632,
+        "firstComZM": 0.3307044804096222,
+        "lastComZM": 1.094218134880066,
+        "firstComForwardVelocityMps": 0.8527976870536804,
+        "lastComForwardVelocityMps": 0.03384316340088844,
+        "meanRearFootLoadN": 0.0,
+        "meanForefootLoadN": 218.50405287235432
+      },
+      "3-5.000s": {
+        "n": 480,
+        "meanForwardAccelerationMps2": -0.017049217639820806,
+        "firstComZM": 1.0943480730056763,
+        "lastComZM": 1.0974200963974,
+        "firstComForwardVelocityMps": 0.02878640592098236,
+        "lastComForwardVelocityMps": -0.00025527208345010877,
+        "meanRearFootLoadN": 0.0,
+        "meanForefootLoadN": 184.2129370816673
+      },
+      "5-5.092s": {
+        "n": 22,
+        "meanForwardAccelerationMps2": 0.02780669758265669,
+        "firstComZM": 1.097414493560791,
+        "lastComZM": 1.0972415208816528,
+        "firstComForwardVelocityMps": 0.00013411437976174057,
+        "lastComForwardVelocityMps": 0.0022936747409403324,
+        "meanRearFootLoadN": 0.0,
+        "meanForefootLoadN": 156.4563841985708
+      }
+    },
+    "milestones": {
+      "0.0500": {
+        "recordedAtS": 0.05,
+        "pelvisHeightM": 0.9682167172431946,
+        "comZ": 0.03607579320669174,
+        "comVZ": -0.03350804001092911,
+        "comAZ": -0.6578327417373657,
+        "rearFootLoadN": 0.0,
+        "forefootLoadN": 460.03221893310547,
+        "heel": {
+          "leftFoot": {
+            "posteriorHeightM": 0.04608600586652756,
+            "pitchRad": 0.18614211678504944
+          },
+          "rightFoot": {
+            "posteriorHeightM": 0.04609324038028717,
+            "pitchRad": 0.18660464882850647
+          },
+          "leftForefoot": {
+            "posteriorHeightM": 0.018199589103460312,
+            "pitchRad": 0.1630929410457611
+          },
+          "rightForefoot": {
+            "posteriorHeightM": 0.018135398626327515,
+            "pitchRad": 0.16319209337234497
+          }
+        },
+        "phase": "brace"
+      },
+      "0.1000": {
+        "recordedAtS": 0.1,
+        "pelvisHeightM": 0.9535123705863953,
+        "comZ": 0.03348258137702942,
+        "comVZ": -0.02136142924427986,
+        "comAZ": 8.63133430480957,
+        "rearFootLoadN": 2707.55078125,
+        "forefootLoadN": 662.2563486099243,
+        "heel": {
+          "leftFoot": {
+            "posteriorHeightM": 0.02766159176826477,
+            "pitchRad": 0.16308844089508057
+          },
+          "rightFoot": {
+            "posteriorHeightM": 0.02799057587981224,
+            "pitchRad": 0.16436386108398438
+          },
+          "leftForefoot": {
+            "posteriorHeightM": 0.002912089228630066,
+            "pitchRad": 0.06453890353441238
+          },
+          "rightForefoot": {
+            "posteriorHeightM": 0.0030626095831394196,
+            "pitchRad": 0.06653324514627457
+          }
+        },
+        "phase": "brace"
+      },
+      "0.5000": {
+        "recordedAtS": 0.5,
+        "pelvisHeightM": 0.95545893907547,
+        "comZ": 0.08106783777475357,
+        "comVZ": 0.25345689058303833,
+        "comAZ": 0.7813023924827576,
+        "rearFootLoadN": 162.18438720703125,
+        "forefootLoadN": 542.2694721221924,
+        "heel": {
+          "leftFoot": {
+            "posteriorHeightM": 0.018280353397130966,
+            "pitchRad": 0.12318935245275497
+          },
+          "rightFoot": {
+            "posteriorHeightM": 0.01959158107638359,
+            "pitchRad": 0.12234394252300262
+          },
+          "leftForefoot": {
+            "posteriorHeightM": -0.0003489591181278229,
+            "pitchRad": 0.07101526856422424
+          },
+          "rightForefoot": {
+            "posteriorHeightM": 0.0010412074625492096,
+            "pitchRad": 0.07319313287734985
+          }
+        },
+        "phase": "brace"
+      },
+      "1.0000": {
+        "recordedAtS": 1.0,
+        "pelvisHeightM": 0.9031510949134827,
+        "comZ": 0.3307044804096222,
+        "comVZ": 0.8527976870536804,
+        "comAZ": 1.8083237409591675,
+        "rearFootLoadN": 0.0,
+        "forefootLoadN": 466.20274353027344,
+        "heel": {
+          "leftFoot": {
+            "posteriorHeightM": 0.05373239144682884,
+            "pitchRad": 0.3263079822063446
+          },
+          "rightFoot": {
+            "posteriorHeightM": 0.058622028678655624,
+            "pitchRad": 0.3344403803348541
+          },
+          "leftForefoot": {
+            "posteriorHeightM": 0.0042372532188892365,
+            "pitchRad": 0.12558041512966156
+          },
+          "rightForefoot": {
+            "posteriorHeightM": 0.00800769031047821,
+            "pitchRad": 0.1526615172624588
+          }
+        },
+        "phase": "brace"
+      },
+      "2.0000": {
+        "recordedAtS": 2.0,
+        "pelvisHeightM": 0.16774258017539978,
+        "comZ": 1.0921286344528198,
+        "comVZ": -0.04408537223935127,
+        "comAZ": 2.105423927307129,
+        "rearFootLoadN": 0.0,
+        "forefootLoadN": 192.38786506652832,
+        "heel": {
+          "leftFoot": {
+            "posteriorHeightM": 0.2646217346191406,
+            "pitchRad": 1.51089346408844
+          },
+          "rightFoot": {
+            "posteriorHeightM": 0.26202258467674255,
+            "pitchRad": 1.5734803676605225
+          },
+          "leftForefoot": {
+            "posteriorHeightM": 0.116375632584095,
+            "pitchRad": 1.6378180980682373
+          },
+          "rightForefoot": {
+            "posteriorHeightM": 0.1158389002084732,
+            "pitchRad": 1.5503331422805786
+          }
+        },
+        "phase": "brace"
+      },
+      "3.0000": {
+        "recordedAtS": 3.0,
+        "pelvisHeightM": 0.18981625139713287,
+        "comZ": 1.0943480730056763,
+        "comVZ": 0.02878640592098236,
+        "comAZ": -1.213621735572815,
+        "rearFootLoadN": 0.0,
+        "forefootLoadN": 258.80821228027344,
+        "heel": {
+          "leftFoot": {
+            "posteriorHeightM": 0.21187971532344818,
+            "pitchRad": 1.8659591674804688
+          },
+          "rightFoot": {
+            "posteriorHeightM": 0.2561899423599243,
+            "pitchRad": 1.7930493354797363
+          },
+          "leftForefoot": {
+            "posteriorHeightM": 0.0929332822561264,
+            "pitchRad": 1.7561867237091064
+          },
+          "rightForefoot": {
+            "posteriorHeightM": 0.11800388991832733,
+            "pitchRad": 1.6604501008987427
+          }
+        },
+        "phase": "brace"
+      },
+      "5.0000": {
+        "recordedAtS": 5.0,
+        "pelvisHeightM": 0.1683349758386612,
+        "comZ": 1.097414493560791,
+        "comVZ": 0.00013411437976174057,
+        "comAZ": 0.09345274418592453,
+        "rearFootLoadN": 0.0,
+        "forefootLoadN": 197.35825324058533,
+        "heel": {
+          "leftFoot": {
+            "posteriorHeightM": 0.1376369744539261,
+            "pitchRad": 2.431199789047241
+          },
+          "rightFoot": {
+            "posteriorHeightM": 0.22805413603782654,
+            "pitchRad": 2.0120677947998047
+          },
+          "leftForefoot": {
+            "posteriorHeightM": 0.05134231224656105,
+            "pitchRad": 2.5850353240966797
+          },
+          "rightForefoot": {
+            "posteriorHeightM": 0.10300320386886597,
+            "pitchRad": 1.409863829612732
+          }
+        },
+        "phase": "brace"
+      },
+      "5.0917": {
+        "recordedAtS": 5.0875,
+        "pelvisHeightM": 0.16581080853939056,
+        "comZ": 1.0972415208816528,
+        "comVZ": 0.0022936747409403324,
+        "comAZ": 1.5377827882766724,
+        "rearFootLoadN": 0.0,
+        "forefootLoadN": 196.0121841430664,
+        "heel": {
+          "leftFoot": {
+            "posteriorHeightM": 0.1432880312204361,
+            "pitchRad": 2.404832363128662
+          },
+          "rightFoot": {
+            "posteriorHeightM": 0.21559147536754608,
+            "pitchRad": 2.1149935722351074
+          },
+          "leftForefoot": {
+            "posteriorHeightM": 0.052606891840696335,
+            "pitchRad": 2.578801393508911
+          },
+          "rightForefoot": {
+            "posteriorHeightM": 0.10741084069013596,
+            "pitchRad": 1.7940878868103027
+          }
+        },
+        "phase": "brace"
+      }
+    }
+  },
+  "comparison": {
+    "firstPhysicalHashDivergenceS": 0.05416666666666667,
+    "bothFullRecovery": [
+      false,
+      false
+    ],
+    "nativeHistoriesExecuted": 2,
+    "additionalPhysicsIntegrationsForAnalysis": 0
+  }
+}

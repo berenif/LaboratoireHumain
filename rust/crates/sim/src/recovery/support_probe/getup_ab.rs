@@ -11,12 +11,10 @@ use serde_json::{Value, json};
 use std::cell::RefCell;
 
 pub(crate) const PARAMETERS: &str = r#"{"version":"getup-ab-v1","captureGainPerS":4.0,"maximumRelativeComVelocityMps":0.15,"maximumCorrectionRateRadps":0.25,"maximumOffsetRad":0.12,"leastSquaresRegularization":0.001,"contactWeight":4.0,"coordinateSweeps":24,"minimumPersistentLoadN":3.0,"terminalRequest":"nominal program end","progress":"measured nearest point on complete nominal joint path","stallIncrement":0.005}"#;
-pub(crate) const COORDINATION_PARAMETERS: &str = r#"{"version":"foot-coordination-v1","witness":"archived B feedback","activeWindows":"unchanged nominal contact annotations; final intent retained during settle","physicalContacts":"all remain enabled; command tasks use only observed intended surfaces","axes":"left/right Thigh Shin Ankle Forefoot x","goals":"hindfoot/forefoot world sagittal pitch zero, shank pitch in ankle range, posterior sole to floor","gainRule":"min native ankle/forefoot posture stiffness divided by damping","maximumTaskAngularRateRadps":0.25,"angularWeightRule":"4 * native half segment length squared","maximumHeelSpeedRule":"measured heel-to-support horizontal lever * 0.25","maximumOffsetRad":0.12,"anatomicalBoundsInsideCoordinateSolve":true,"preferredCorrectionRateRadps":0.25,"forcedCancellation":"minimum nominal cancellation at anatomical/slew boundary; final velocity <=1","floatingRoot":"not commanded; kinematic approximation only"}"#;
 
 struct Runtime {
     program: CompiledProgram,
     enabled: bool,
-    coordination: bool,
     start: u64,
     previous_step: Option<u64>,
     previous: Coordinates,
@@ -38,7 +36,6 @@ pub(super) fn activate(program: CompiledProgram, s: &Simulation, enabled: bool) 
             previous: program.command(0).positions,
             program,
             enabled,
-            coordination: false,
             start: s.substeps_completed,
             previous_step: None,
             offsets: [[0.0; 3]; 25],
@@ -51,10 +48,6 @@ pub(super) fn activate(program: CompiledProgram, s: &Simulation, enabled: bool) 
             maximum_ratio: 0.0,
         });
     });
-}
-pub(super) fn activate_coordination(program: CompiledProgram, s: &Simulation, enabled: bool) {
-    activate(program, s, true);
-    ACTIVE.with(|slot| slot.borrow_mut().as_mut().unwrap().coordination = enabled);
 }
 pub(super) fn finish() -> (bool, f64, f32) {
     ACTIVE.with(|slot| {
@@ -141,211 +134,6 @@ fn point_columns(s: &Simulation, axes: &[Axis], segment: usize, point: Vector) -
         .collect()
 }
 
-fn intended(r: &Runtime, name: &str, step: u64) -> bool {
-    let lookup_step = step.min(u64::from(r.program.duration_substeps().saturating_sub(1)));
-    r.program.source().contacts.iter().any(|c| {
-        c.segment == name
-            && u64::from(c.start_substep) <= lookup_step
-            && lookup_step < u64::from(c.end_substep)
-    })
-}
-fn sagittal_axis(s: &Simulation, a: &Axis) -> bool {
-    a.coordinate == 0
-        && matches!(
-            s.model.segments[a.segment].role.as_str(),
-            "thigh" | "shin" | "ankle" | "forefoot"
-        )
-}
-type TaskRow = (Vec<f32>, f32, f32);
-fn coordination_rows(
-    s: &Simulation,
-    r: &Runtime,
-    axes: &[Axis],
-    nominal: &Command,
-    contacts: &[Value],
-    step: u64,
-) -> Result<Vec<TaskRow>, String> {
-    let mut rows = Vec::new();
-    for side in ["left", "right"] {
-        let rear = recovery::index(s, &format!("{side}Foot"));
-        let front = recovery::index(s, &format!("{side}Forefoot"));
-        let shin = recovery::index(s, &format!("{side}Shin"));
-        let ankle = recovery::index(s, &format!("{side}Ankle"));
-        if !(intended(r, &s.model.segments[rear].id, step)
-            || intended(r, &s.model.segments[front].id, step))
-        {
-            continue;
-        }
-        let support = contacts
-            .iter()
-            .filter(|c| {
-                c["segment"]
-                    .as_u64()
-                    .is_some_and(|i| i as usize == rear || i as usize == front)
-            })
-            .collect::<Vec<_>>();
-        if support.is_empty() {
-            continue;
-        }
-        let gain = [ankle, front]
-            .into_iter()
-            .map(|i| {
-                let a = &s.model.segments[i].joint_profile.as_ref().unwrap().axes[0];
-                a.passive_stiffness_nm_per_rad * s.profile.posture_stiffness_multiplier
-                    / (a.damping_nms_per_rad * s.profile.posture_damping_multiplier)
-            })
-            .fold(f32::INFINITY, f32::min);
-        for segment in [rear, front, shin] {
-            let b = &s.world.bodies[s.bodies[segment]];
-            let forward = s.heading.inverse() * (*b.rotation() * Vector::Z);
-            let denominator = forward.y * forward.y + forward.z * forward.z;
-            if denominator < 1e-8 {
-                return Err("Singular sagittal foot coordination chart".into());
-            }
-            let pitch = (-forward.y).atan2(forward.z);
-            let target = if segment == shin {
-                let bounds = &s.model.segments[ankle].joint_profile.as_ref().unwrap().axes[0];
-                pitch.clamp(bounds.min_radians, bounds.max_radians)
-            } else {
-                0.0
-            };
-            let desired = (-gain * (pitch - target)).clamp(-0.25, 0.25);
-            let j = axes
-                .iter()
-                .map(|a| {
-                    if sagittal_axis(s, a) && descendant(s, segment, a.segment) {
-                        let df = (s.heading.inverse() * a.angular).cross(forward);
-                        (-forward.z * df.y + forward.y * df.z) / denominator
-                    } else {
-                        0.0
-                    }
-                })
-                .collect::<Vec<_>>();
-            let rate = j
-                .iter()
-                .zip(axes)
-                .map(|(a, b)| a * nominal.velocities[b.segment][b.coordinate])
-                .sum::<f32>();
-            let vertices = &s.model.segments[segment].geometry.vertices;
-            let (low, high) = vertices
-                .chunks_exact(3)
-                .map(|p| p[if segment == shin { 1 } else { 2 }])
-                .fold((f32::INFINITY, f32::NEG_INFINITY), |(lo, hi), x| {
-                    (lo.min(x), hi.max(x))
-                });
-            let lever = (high - low) * 0.5;
-            rows.push((j, desired - rate, 4.0 * lever * lever));
-        }
-        let geometry = &s.model.segments[rear].geometry.vertices;
-        let z = geometry
-            .chunks_exact(3)
-            .map(|p| p[2])
-            .fold(f32::INFINITY, f32::min);
-        let y = geometry
-            .chunks_exact(3)
-            .map(|p| p[1])
-            .fold(f32::INFINITY, f32::min);
-        let heel = s.world.bodies[s.bodies[rear]]
-            .position()
-            .transform_point(Vector::new(0.0, y, z));
-        let mut average = vec![Vector::ZERO; axes.len()];
-        let mut support_point = Vector::ZERO;
-        for c in &support {
-            let point = crate::vector(serde_json::from_value(c["worldPoint"].clone()).unwrap());
-            support_point += point / support.len() as f32;
-            let columns = point_columns(s, axes, c["segment"].as_u64().unwrap() as usize, point);
-            for (a, b) in average.iter_mut().zip(columns) {
-                *a += b / support.len() as f32;
-            }
-        }
-        let heel_columns = point_columns(s, axes, rear, heel);
-        let j = heel_columns
-            .iter()
-            .zip(&average)
-            .zip(axes)
-            .map(|((a, b), axis)| {
-                if sagittal_axis(s, axis) {
-                    (a - b).y
-                } else {
-                    0.0
-                }
-            })
-            .collect::<Vec<_>>();
-        let mut lever = heel - support_point;
-        lever.y = 0.0;
-        let max_speed = lever.length() * 0.25;
-        let desired = (-gain * (heel.y - s.support_height())).clamp(-max_speed, max_speed);
-        let rate = j
-            .iter()
-            .zip(axes)
-            .map(|(a, b)| a * nominal.velocities[b.segment][b.coordinate])
-            .sum::<f32>();
-        rows.push((j, desired - rate, 4.0));
-    }
-    Ok(rows)
-}
-
-fn correction_bounds(s: &Simulation, r: &Runtime, nominal: &Command, axis: &Axis) -> (f32, f32) {
-    let i = axis.segment;
-    let k = axis.coordinate;
-    let velocity = nominal.velocities[i][k];
-    let mut low = (-1.0 - velocity).max(-0.25);
-    let mut high = (1.0 - velocity).min(0.25);
-    if r.coordination {
-        let bound = s.model.segments[i]
-            .joint_profile
-            .as_ref()
-            .unwrap()
-            .axes
-            .iter()
-            .find(|a| a.coordinate == ['x', 'y', 'z'][k])
-            .unwrap();
-        let q = nominal.positions[i][k] + r.offsets[i][k];
-        let dt = s.profile.dt_s;
-        let physical_low = (-1.0 - velocity)
-            .max((bound.min_radians - q) / dt)
-            .max((-0.12 - r.offsets[i][k]) / dt)
-            .max((r.previous[i][k] - dt - q) / dt);
-        let physical_high = (1.0 - velocity)
-            .min((bound.max_radians - q) / dt)
-            .min((0.12 - r.offsets[i][k]) / dt)
-            .min((r.previous[i][k] + dt - q) / dt);
-        low = physical_low.max(-0.25);
-        high = physical_high.min(0.25);
-        if physical_low <= physical_high && low > high {
-            // Minimum cancellation of nominal motion at an anatomical/slew
-            // boundary. Final target and total velocity limits stay native.
-            let required = 0.0_f32.clamp(physical_low, physical_high);
-            low = required;
-            high = required;
-        }
-    }
-    (low, high)
-}
-
-pub(super) fn foot_geometry(s: &Simulation) -> Vec<Value> {
-    ["leftFoot","rightFoot","leftForefoot","rightForefoot"].into_iter().map(|name| {
-        let i=recovery::index(s,name);let b=&s.world.bodies[s.bodies[i]];let forward=s.heading.inverse()*(*b.rotation()*Vector::Z);
-        let vertices=s.model.segments[i].geometry.vertices.chunks_exact(3).filter(|p|p[2] < -0.02).map(|p|b.position().transform_point(Vector::new(p[0],p[1],p[2])).y-s.support_height()).collect::<Vec<_>>();
-        json!({"id":name,"nativeSubstep":s.substeps_completed,"worldPitchRad":(-forward.y).atan2(forward.z),"posteriorMinimumHeightM":vertices.into_iter().reduce(f32::min)})
-    }).collect()
-}
-
-pub(super) fn motor_delivery(s: &Simulation) -> Vec<Value> {
-    s.model.segments.iter().enumerate().filter_map(|(i,part)| {
-        let profile=part.joint_profile.as_ref()?;let joint=s.world.impulse_joints.get(s.joints[i]?)?;
-        Some(json!({"id":part.id,"nativeSubstep":s.substeps_completed,"axes":profile.axes.iter().map(|a| {
-            let k=match a.coordinate {'x'=>0,'y'=>1,_=>2};let motor=&joint.data.motors[k+3];
-            json!({"coordinate":a.coordinate,"installedCapNm":motor.max_force,
-                "nativeScalarImpulseNms":motor.delivered_impulse,"nativeScalarConvention":"constraint row; not generalized child torque",
-                "absoluteImpulseNms":motor.delivered_abs_impulse,
-                "parentAngularImpulseWorldNms":crate::vec3(motor.delivered_angular_impulse_1),
-                "childAngularImpulseWorldNms":crate::vec3(motor.delivered_angular_impulse_2),
-                "nativeScalarCapRatio":motor.delivered_impulse.abs()/(motor.max_force*s.profile.dt_s).max(1e-12)})
-        }).collect::<Vec<_>>()}))
-    }).collect()
-}
-
 pub(super) fn persistent_contacts(s: &Simulation) -> Result<Vec<Value>, String> {
     let mut result = Vec::new();
     for (i, part) in s.model.segments.iter().enumerate() {
@@ -377,16 +165,6 @@ fn feedback(
 ) -> Result<Command, String> {
     let axes = axes(s, measured);
     let n = axes.len();
-    let control_contacts = if r.coordination {
-        contacts
-            .iter()
-            .filter(|c| intended(r, c["id"].as_str().unwrap(), step))
-            .cloned()
-            .collect::<Vec<_>>()
-    } else {
-        contacts.to_vec()
-    };
-    let contacts = control_contacts.as_slice();
     let mut rows: Vec<(Vec<f32>, f32, f32)> = Vec::new();
     if !contacts.is_empty() {
         let mut contact_columns = Vec::new();
@@ -459,9 +237,6 @@ fn feedback(
             }
         }
     }
-    if r.coordination {
-        rows.extend(coordination_rows(s, r, &axes, nominal, contacts, step)?);
-    }
     let mut delta = vec![0.0_f32; n];
     let mut residual = rows.iter().map(|(_, b, _)| -b).collect::<Vec<_>>();
     for _ in 0..24 {
@@ -472,11 +247,11 @@ fn feedback(
                 gradient += weight * j[a] * error;
                 diagonal += weight * j[a] * j[a];
             }
-            let (low, high) = correction_bounds(s, r, nominal, &axes[a]);
-            if low > high {
-                return Err("Empty anticipated foot command intersection".into());
-            }
-            let next = (delta[a] - gradient / diagonal).clamp(low, high);
+            let nominal_rate = nominal.velocities[axes[a].segment][axes[a].coordinate];
+            let next = (delta[a] - gradient / diagonal).clamp(
+                (-1.0 - nominal_rate).max(-0.25),
+                (1.0 - nominal_rate).min(0.25),
+            );
             let change = next - delta[a];
             delta[a] = next;
             for ((j, _, _), error) in rows.iter().zip(&mut residual) {
@@ -626,18 +401,18 @@ pub(crate) fn configure(s: &mut Simulation) -> Result<bool, String> {
         controller.status.progress=progress;controller.foot_anchors=anchors;
         controller.targets=command.positions.to_vec();controller.velocities=command.velocities.to_vec();
         s.targets=command.positions.to_vec();
-        let (cap,ratio,requests)=offline_trajectory::install_targets(s,&command.positions,&command.velocities,offline_trajectory::Allocation::OwnedRequests)?;
+        let (cap,ratio,_)=offline_trajectory::install_targets(s,&command.positions,&command.velocities,offline_trajectory::Allocation::OwnedRequests)?;
         r.maximum_cap=r.maximum_cap.max(cap);r.maximum_ratio=r.maximum_ratio.max(ratio);
         let mut max_error=0.0_f32;
         for (i,part) in s.model.segments.iter().enumerate().skip(1) {for a in &part.joint_profile.as_ref().unwrap().axes {
             let k=match a.coordinate {'x'=>0,'y'=>1,_=>2};max_error=max_error.max((nominal.positions[i][k]-measured[i][k]).abs());
         }}
         r.last=json!({"commandSubstep":step,"measuredAtNativeSubstep":s.substeps_completed,
-            "feedbackEnabled":r.enabled,"footCoordinationEnabled":r.coordination,"nominalPositions":nominal.positions,"nominalVelocities":nominal.velocities,
+            "feedbackEnabled":r.enabled,"nominalPositions":nominal.positions,"nominalVelocities":nominal.velocities,
             "positions":command.positions,"velocities":command.velocities,"measuredPositions":measured,
             "maximumNominalTrackingErrorRad":max_error,"contacts":contacts,"measuredPathProgress":progress,
             "stalledS":r.stalled_s,"unsupportedS":r.unsupported_s,"terminalRequested":terminal,
-            "capSumNm":cap,"anatomicalCapRatio":ratio,"ownerMotorRequests":requests,"motorOwner":"getup-ab"});
+            "capSumNm":cap,"anatomicalCapRatio":ratio,"motorOwner":"getup-ab"});
         r.previous=command.positions;r.previous_step=Some(step);
         Ok(true)
     })
@@ -721,108 +496,6 @@ fn zero_feedback_preserves_analytic_nominal_commands_without_integration() {
             }
             r.previous = command.positions;
         }
-    });
-    finish();
-    assert_eq!(serde_json::to_value(&s.world.bodies).unwrap(), before);
-}
-
-#[test]
-fn coordinated_foot_rows_include_upstream_chain_without_body_mutation() {
-    let fixtures: recovery::FixtureSet = serde_json::from_str(recovery::FIXTURES).unwrap();
-    let seed = fixtures
-        .cases
-        .iter()
-        .find(|c| c.id == "landed-crouch-left")
-        .unwrap();
-    let s = Simulation::build(
-        0.0,
-        crate::recovery_contract::pinned_profile(),
-        true,
-        None,
-        Some(&seed.poses),
-    )
-    .unwrap();
-    let before = serde_json::to_value(&s.world.bodies).unwrap();
-    let mut source = recovery::trajectory_program::neutral_program(&s.model);
-    source
-        .contacts
-        .push(recovery::trajectory_program::ContactSurface {
-            segment: "leftForefoot".into(),
-            triangle: 9,
-            barycentric: [1.0, 0.0, 0.0],
-            start_substep: 0,
-            end_substep: 1920,
-        });
-    let program = source.compile(&s.model).unwrap();
-    activate_coordination(program.clone(), &s, true);
-    let front = recovery::index(&s, "leftForefoot");
-    let point = s.world.bodies[s.bodies[front]]
-        .position()
-        .transform_point(Vector::new(0.0, -0.045, 0.06));
-    // Algebra-only support fixture, never a claimed resolved physical contact.
-    let contacts =
-        vec![json!({"id":"leftForefoot","segment":front,"worldPoint":crate::vec3(point)})];
-    ACTIVE.with(|slot| {
-        let slot = slot.borrow();
-        let r = slot.as_ref().unwrap();
-        let axes = axes(&s, &offline_trajectory::coordinates(&s).unwrap());
-        let rows = coordination_rows(&s, r, &axes, &program.command(0), &contacts, 0).unwrap();
-        assert_eq!(rows.len(), 4);
-        assert!(rows.iter().all(|(_, b, _)| *b < 0.0));
-        for name in ["leftThigh", "leftShin", "leftAnkle"] {
-            let column = axes
-                .iter()
-                .position(|a| s.model.segments[a.segment].id == name && a.coordinate == 0)
-                .unwrap();
-            assert!(rows[0].0[column].abs() > 0.1);
-        }
-        assert!(
-            coordination_rows(&s, r, &axes, &program.command(0), &[], 0)
-                .unwrap()
-                .is_empty()
-        );
-    });
-    finish();
-    assert_eq!(s.counters.recoveries, 0);
-    assert_eq!(serde_json::to_value(&s.world.bodies).unwrap(), before);
-}
-
-#[test]
-fn anticipated_limit_cancels_nominal_motion_with_native_envelope() {
-    let s = Simulation::new(0.0, crate::recovery_contract::pinned_profile(), true).unwrap();
-    let before = serde_json::to_value(&s.world.bodies).unwrap();
-    let program = recovery::trajectory_program::neutral_program(&s.model)
-        .compile(&s.model)
-        .unwrap();
-    activate_coordination(program.clone(), &s, true);
-    let measured = offline_trajectory::coordinates(&s).unwrap();
-    let axes = axes(&s, &measured);
-    let axis = axes
-        .iter()
-        .find(|a| s.model.segments[a.segment].id == "leftAnkle" && a.coordinate == 0)
-        .unwrap();
-    ACTIVE.with(|slot| {
-        let mut slot = slot.borrow_mut();
-        let r = slot.as_mut().unwrap();
-        let bound = s.model.segments[axis.segment]
-            .joint_profile
-            .as_ref()
-            .unwrap()
-            .axes[0]
-            .max_radians;
-        let mut nominal = program.command(0);
-        nominal.positions[axis.segment][0] = bound - 0.004;
-        nominal.velocities[axis.segment][0] = 0.5;
-        r.previous[axis.segment][0] = bound;
-        r.offsets[axis.segment][0] = 0.006;
-        let (low, high) = correction_bounds(&s, r, &nominal, axis);
-        assert_eq!(low, high);
-        assert!(high < -0.25);
-        let q =
-            nominal.positions[axis.segment][0] + r.offsets[axis.segment][0] + high * s.profile.dt_s;
-        assert!(q <= bound);
-        assert!((q - r.previous[axis.segment][0]).abs() <= s.profile.dt_s);
-        assert!((nominal.velocities[axis.segment][0] + high).abs() <= 1.0);
     });
     finish();
     assert_eq!(serde_json::to_value(&s.world.bodies).unwrap(), before);

@@ -6,9 +6,10 @@
 - [x] Ouvrir le seul registre de coordination : 8 h de préparation, 2 histoires,
   12 480 pas natifs et 300 s murales, aucune friction/anatomie nouvelle.
 - [x] Vérifier la coordination, télémétrie par point/moteur et terminal indépendant ; figer.
-- [ ] Reproduire B puis comparer C sans retouche ; fermer quel que soit le résultat.
-- [ ] Produire preuve et vidéo fidèle depuis les états enregistrés, sans nouveau calcul physique.
+- [x] Reproduire B puis comparer C sans retouche ; registre fermé sans récupération.
+- [x] Produire preuve et vidéo fidèle depuis les états enregistrés, sans nouveau calcul physique.
   [Plan et arrêts](docs/foot-coordination-decision-2026-10-12.md).
+  [Résultat et limites](docs/foot-coordination-results-2026-10-12.md).
 
 **2026-10-12 investigation pied et friction — documentation uniquement :**
 

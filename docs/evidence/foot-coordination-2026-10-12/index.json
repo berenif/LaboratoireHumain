@@ -1,0 +1,131 @@
+{
+  "schema": 1,
+  "campaign": "foot-coordination-2026-10-12",
+  "sourceCommit": "67211c7091939b9c029e99a2f489c28bf4cf8e78",
+  "finalSource": "experiment removed after closed failed trial",
+  "rawLocalFiles": {
+    "evidence/foot-coordination-2026-10-12/000-witness-B/frames.jsonl": {
+      "sha256": "b70028afd2a2ac19557dcc193f0576d6a87129c0bb3d6901d463dac8d23c93f1",
+      "bytes": 25813193
+    },
+    "evidence/foot-coordination-2026-10-12/000-witness-B/report.json": {
+      "sha256": "16404954dbea0dc76bd5ac039496ca2ba136f490c2e7dd58b5c707662d759c28",
+      "bytes": 49314
+    },
+    "evidence/foot-coordination-2026-10-12/000-witness-B/solver-boundaries.jsonl": {
+      "sha256": "3369257ca98ca1b03b08aa0d373fe17edc10f82dc55891adc18c3d02d75c2bf7",
+      "bytes": 39496364
+    },
+    "evidence/foot-coordination-2026-10-12/000-witness-B/substeps.jsonl": {
+      "sha256": "10bc965635de58545887f8ac06f3966770d2334eb21245a6160022e51a25d621",
+      "bytes": 227008210
+    },
+    "evidence/foot-coordination-2026-10-12/000.log": {
+      "sha256": "16a537f8ede6db68232f0a68feb2296f5e9ff1a82a8e6eaadcb0756a59432192",
+      "bytes": 29973
+    },
+    "evidence/foot-coordination-2026-10-12/001-coordinated-C/frames.jsonl": {
+      "sha256": "30d8c7a911bfdd99a44eb99734bc65ace7a367ae9139c9c53908386764c35399",
+      "bytes": 6293208
+    },
+    "evidence/foot-coordination-2026-10-12/001-coordinated-C/report.json": {
+      "sha256": "fa907def9873160d20c89efd3675af71365b7904765b109ebb83a2754428751a",
+      "bytes": 49229
+    },
+    "evidence/foot-coordination-2026-10-12/001-coordinated-C/solver-boundaries.jsonl": {
+      "sha256": "442beef4ecd59d1646cb5658fa35a1cd5db8adeed91195c0e60e5535070497f8",
+      "bytes": 9257752
+    },
+    "evidence/foot-coordination-2026-10-12/001-coordinated-C/substeps.jsonl": {
+      "sha256": "979891902d8ac9a06115d81f987cfc761fafb98afb98c6724856df6046a452d4",
+      "bytes": 54911852
+    },
+    "evidence/foot-coordination-2026-10-12/001.log": {
+      "sha256": "0e0d96005b866c115d34cbcfd4af133c1195b78707441aa44b7f57e89b4fc77e",
+      "bytes": 29824
+    },
+    "evidence/foot-coordination-2026-10-12/analysis.json": {
+      "sha256": "55a9261dd37fc779352339a9736c1bf10039a2444d8cf8765412d3db0060a07e",
+      "bytes": 51389
+    },
+    "evidence/foot-coordination-2026-10-12/frozen-manifest.json": {
+      "sha256": "81542f3d1ac98d19443c20743f694dbed5947a531eb1c4854e4821cb76af3ef4",
+      "bytes": 3076
+    },
+    "evidence/foot-coordination-2026-10-12/frozen-sources/docs/foot-coordination-decision-2026-10-12.md": {
+      "sha256": "0cf1576ef712a62a54504c6c7f8dfa6673fad591a2d864431b1b07ba260780d1",
+      "bytes": 6379
+    },
+    "evidence/foot-coordination-2026-10-12/frozen-sources/rust/crates/sim/src/recovery/planner/contact_observation.rs": {
+      "sha256": "5df6cae5c9f7320cd00258a5c35216d1b9ecde2d51788722207457a1ebf057f3",
+      "bytes": 16026
+    },
+    "evidence/foot-coordination-2026-10-12/frozen-sources/rust/crates/sim/src/recovery/support_probe/getup_ab.rs": {
+      "sha256": "a55280a98d642d82d14ee963fb1d9c452dda0dc382acfec66d337515fb2e3a21",
+      "bytes": 35501
+    },
+    "evidence/foot-coordination-2026-10-12/frozen-sources/rust/crates/sim/src/recovery/support_probe/whole_history.rs": {
+      "sha256": "32c633e446fd8361ca2cc1ebf8cbd23cb5de5ec8921f0753d6edf5a61e0c76ba",
+      "bytes": 17889
+    },
+    "evidence/foot-coordination-2026-10-12/frozen-sources/scripts/run-foot-coordination-test.py": {
+      "sha256": "fba26d30fed13a07699b63a2f61bd616db5d6cd0c219b24ef9b66a143d593b9c",
+      "bytes": 2712
+    },
+    "evidence/foot-coordination-2026-10-12/frozen-sources/scripts/run-foot-coordination.py": {
+      "sha256": "5a34ff6375797b0c4f52651ccdd5522b676efc7832bc738c9b32144b9b7e05df",
+      "bytes": 8311
+    },
+    "evidence/foot-coordination-2026-10-12/kernel-native": {
+      "sha256": "36afdb6560a99236737e590538b76d999d4f0a699bc2006823604e3d5d7048d3",
+      "bytes": 10061176
+    },
+    "evidence/foot-coordination-2026-10-12/ledger.json": {
+      "sha256": "85f63dbc0a78ed9db0bafc4a63d91e95ff4f34349725854c906ba5332c40f6fa",
+      "bytes": 4037
+    },
+    "evidence/foot-coordination-2026-10-12/preflight-build.log": {
+      "sha256": "f392f39864f3067608a66baffa229d4241cbcba4bb6235c3e7388cf669add979",
+      "bytes": 142
+    },
+    "evidence/foot-coordination-2026-10-12/preflight-clippy.log": {
+      "sha256": "fecede7c2157efe2f16c8c8b9dce94b0fb4dd384dca8207046c8bf7636eb0ffe",
+      "bytes": 72
+    },
+    "evidence/foot-coordination-2026-10-12/preflight-getup.log": {
+      "sha256": "6e1364c7acab2d83256531ae1501066b34dd47cfcc2bbbf4a7e4364c8160d920",
+      "bytes": 696
+    },
+    "evidence/foot-coordination-2026-10-12/preflight-handoff.log": {
+      "sha256": "6b58ee9b7aa52c4fd41a29ff8c2c59ae6d5955d08f87c7fe99c54d37ad4f5c4c",
+      "bytes": 216
+    },
+    "evidence/foot-coordination-2026-10-12/preflight-runner.log": {
+      "sha256": "698d16d7b93c4bd9707d3cfacda6fb1e0fea99ed0cda6e69bedc42772940540a",
+      "bytes": 106
+    }
+  },
+  "media": {
+    "docs/media/foot-coordination-2026-10-12/foot-coordination-comparison.png": {
+      "sha256": "9a51d2cc9aa6c4e808a39994e02bdfadca2ce70aefe93a5a8c8cbc22b11cee14",
+      "bytes": 166874
+    },
+    "docs/media/foot-coordination-2026-10-12/foot-coordination-milestones.png": {
+      "sha256": "1605cd63ac4a3974fe2f6667ea2375c04a833ca14c8a1cbe2908b3c001693170",
+      "bytes": 335492
+    },
+    "docs/media/foot-coordination-2026-10-12/foot-coordination-recorded.mp4": {
+      "sha256": "6cabebf88e35a1a6821f5e3f553f80609ac4257593a2f8aa834125ea8a211598",
+      "bytes": 134510
+    },
+    "docs/media/foot-coordination-2026-10-12/foot-coordination-support.png": {
+      "sha256": "8c7139345694d00452888113c16429ebc404bab75a50a78aaa0c6bc8b42fd583",
+      "bytes": 148705
+    },
+    "docs/media/foot-coordination-2026-10-12/visuals.json": {
+      "sha256": "174cf2b4cb5329ba39f118048baca0e749eaed82317eb2c41aee2267354f5cc4",
+      "bytes": 511
+    }
+  },
+  "newPhysicsIntegrationsAfterClosure": 0
+}

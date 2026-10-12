@@ -1,0 +1,108 @@
+{
+  "schema": 1,
+  "campaign": "foot-coordination-2026-10-12",
+  "status": "closed-no-complete-recovery",
+  "authorizedUtc": "2026-10-12T11:39:00+00:00",
+  "preparationStartedUtc": "2026-10-12T11:46:56.545186+00:00",
+  "preparationDeadlineUtc": "2026-10-12T19:39:00+00:00",
+  "baseCommit": "0a0db455aaff02c005d3affb350eb3f93dc10a1e",
+  "limits": {
+    "histories": 2,
+    "nativeStepsPerHistory": 6240,
+    "totalReservedNativeSteps": 12480,
+    "simulationWallSeconds": 300,
+    "processes": 1,
+    "threads": 1
+  },
+  "historiesStarted": 2,
+  "reservedNativeSteps": 12480,
+  "actualNativeStepsKnown": 6235,
+  "entries": [
+    {
+      "index": 0,
+      "mode": "witness",
+      "startedUtc": "2026-10-12T12:22:04.482930+00:00",
+      "status": "process-completed",
+      "reservedNativeSteps": 6240,
+      "manifestSha256": "81542f3d1ac98d19443c20743f694dbed5947a531eb1c4854e4821cb76af3ef4",
+      "output": "/workspace/LaboratoireHumain/evidence/foot-coordination-2026-10-12/000-witness-B",
+      "processExitCode": 0,
+      "endedUtc": "2026-10-12T12:22:32.069552+00:00",
+      "wallSeconds": 27.584559607999836,
+      "actualNativeSteps": 5013,
+      "reportSha256": "16404954dbea0dc76bd5ac039496ca2ba136f490c2e7dd58b5c707662d759c28",
+      "fullRecoverySuccess": false,
+      "firstRefusal": {
+        "check": "ownership",
+        "measured": 0.0,
+        "offending": "Original recovery observer refused A/B; no restart",
+        "substep": 1,
+        "threshold": 0.0,
+        "tick": 1253
+      },
+      "witnessEquivalence": {
+        "equal": true,
+        "observedSteps": 5013,
+        "physicalSteps": 5013,
+        "fullNativeWorldHashesEqual": true,
+        "comparedKeys": [
+          "substep",
+          "timeS",
+          "heightM",
+          "com",
+          "velocity",
+          "acceleration",
+          "loadsN",
+          "capSumNm",
+          "deliveredAbsoluteNm",
+          "standing",
+          "routeStanding",
+          "quietHoldSubsteps",
+          "recoveries",
+          "motion",
+          "bodiesHash",
+          "motorsHash",
+          "contactsHash"
+        ]
+      }
+    },
+    {
+      "index": 1,
+      "mode": "coordination",
+      "startedUtc": "2026-10-12T12:22:44.018516+00:00",
+      "status": "process-completed",
+      "reservedNativeSteps": 6240,
+      "manifestSha256": "81542f3d1ac98d19443c20743f694dbed5947a531eb1c4854e4821cb76af3ef4",
+      "output": "/workspace/LaboratoireHumain/evidence/foot-coordination-2026-10-12/001-coordinated-C",
+      "processExitCode": 0,
+      "endedUtc": "2026-10-12T12:22:50.702834+00:00",
+      "wallSeconds": 6.681880748998083,
+      "actualNativeSteps": 1222,
+      "reportSha256": "fa907def9873160d20c89efd3675af71365b7904765b109ebb83a2754428751a",
+      "fullRecoverySuccess": false,
+      "firstRefusal": {
+        "check": "self-contact",
+        "measured": 0.005071029532700777,
+        "offending": "leftForefoot/rightFoot",
+        "substep": 1,
+        "threshold": 0.004999999888241291,
+        "tick": 305
+      }
+    }
+  ],
+  "previousLedgers": {
+    "evidence/getup-ab-2026-10-12/ledger.json": "d09418ad7ec02d22bdbb682eed9cf17f1f6d2e05a9f120e3a39c06c3ead222cb",
+    "evidence/native-hybrid-v1-2026-10-11/ledger.json": "ec66ac4cd2b8b0d699ff98a5c6c84f7bcad5665e0faf84fa7bff84c1a4ac8650",
+    "evidence/recovery-coordinated-retarget-2026-10-11/native-campaign/ledger.json": "b61f17b180afece7db1e3a7d541edeaf24094f358edd2bb7e1362797d8b600e4"
+  },
+  "programSha256": "fef70abf3d016cecf6658b0bc5e7a6361d989eb265840acdc1a4fbc497a70c7d",
+  "recoveryQualified": false,
+  "newFrictionOrSegmentsAllowed": false,
+  "manifestSha256": "81542f3d1ac98d19443c20743f694dbed5947a531eb1c4854e4821cb76af3ef4",
+  "sourceCommit": "67211c7091939b9c029e99a2f489c28bf4cf8e78",
+  "preparationFinishedUtc": "2026-10-12T12:21:57.544258+00:00",
+  "preparationElapsedSeconds": 2577.544258,
+  "simulationStartedUtc": "2026-10-12T12:22:04.482906+00:00",
+  "simulationDeadlineUtc": "2026-10-12T12:27:04.482906+00:00",
+  "closedUtc": "2026-10-12T12:22:50.703565+00:00"
+}

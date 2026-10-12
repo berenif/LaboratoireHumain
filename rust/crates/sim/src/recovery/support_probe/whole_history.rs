@@ -56,13 +56,6 @@ fn run_whole_reference_native_history() {
     let ab_mode = std::env::var("LH_GETUP_AB_MODE").ok();
     assert!(ab_mode.as_deref().is_none_or(|v| v == "A" || v == "B"));
     assert!(ab_mode.is_none() || (!idle_validation && !controller_control));
-    let coordination_mode = std::env::var("LH_FOOT_COORD_MODE").ok();
-    assert!(
-        coordination_mode
-            .as_deref()
-            .is_none_or(|v| v == "witness" || v == "coordination")
-    );
-    assert!(coordination_mode.is_none() || ab_mode.as_deref() == Some("B"));
     let mut poses = fixture.poses.clone();
     // Optional qualification perturbation is part of the initial fixture only.
     if heading != fixture.heading || perturb != 0.0 {
@@ -117,9 +110,7 @@ fn run_whole_reference_native_history() {
     let limit = contract.acceptance.recovery_limit_s + contract.acceptance.stable_observation_s;
     let required_hold =
         crate::recovery_contract::substeps(contract.acceptance.stable_observation_s);
-    if let Some(mode) = &coordination_mode {
-        getup_ab::activate_coordination(program, &s, mode == "coordination");
-    } else if let Some(mode) = &ab_mode {
+    if let Some(mode) = &ab_mode {
         getup_ab::activate(program, &s, mode == "B");
     } else if !controller_control {
         full_trajectory::activate_history(program, s.substeps_completed);
@@ -191,10 +182,6 @@ fn run_whole_reference_native_history() {
                 row["command"] = getup_ab::last_command();
                 row["persistentAnatomicalContacts"] = json!(getup_ab::persistent_contacts(state).unwrap());
                 row["terminalStatus"] = json!(state.recovery_status());
-                if coordination_mode.is_some() {
-                    row["footGeometry"] = json!(getup_ab::foot_geometry(state));
-                    row["nativeMotorDelivery"] = json!(getup_ab::motor_delivery(state));
-                }
             }
             serde_json::to_writer(&mut numeric,&row).unwrap();numeric.write_all(b"\n").unwrap();
             if state.substeps_completed == 1 || state.substeps_completed % 12 == 0 {
@@ -311,7 +298,7 @@ fn run_whole_reference_native_history() {
     }
     numeric.flush().unwrap();
     frames.flush().unwrap();
-    let mut report: Value = json!({"scope":"Whole actual native history, same common command interpreter",
+    let report: Value = json!({"scope":"Whole actual native history, same common command interpreter",
         "physicalSubsteps":s.substeps_completed,"observedValidSubsteps":observer_steps,
         "physicalSeconds":s.substeps_completed as f64/240.0,"wallSeconds":started.elapsed().as_secs_f64(),
         "firstRefusal":failure,"fullRecoverySuccess":success,"firstNativeRecoveryS":first_recovery,
@@ -330,9 +317,6 @@ fn run_whole_reference_native_history() {
         "finalWorldHashes":{"bodies":hash(&s.world.bodies),"motors":hash(&s.world.impulse_joints),
             "contacts":hash(&s.world.narrow_phase),"counters":hash(&s.counters)},
         "qualification":"Four independent final validations still required after frozen success"});
-    report["footCoordinationMode"] = json!(coordination_mode);
-    report["footCoordinationParameters"] =
-        serde_json::from_str(getup_ab::COORDINATION_PARAMETERS).unwrap();
     std::fs::write(
         output.join("report.json"),
         serde_json::to_vec_pretty(&report).unwrap(),
