@@ -37,8 +37,8 @@
     },
     {
       "path": "docs/evidence/coordination-numeric-correction-2026-10-12/frozen-solver-replay.rs",
-      "bytes": 8573,
-      "sha256": "73d33bf404c03218915da1c5593b04d4860c1d4ef1ace14a4dc0511b138c35cd"
+      "bytes": 8572,
+      "sha256": "1f13d1e63a20e1038206f6ff7a28d0ebf4d0d363a9aeb31934ebe896da09ccf6"
     },
     {
       "path": "docs/evidence/coordination-numeric-correction-2026-10-12/frozen-solver.rs",

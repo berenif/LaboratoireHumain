@@ -235,4 +235,3 @@ impl Problem {
         Err(format!("Common task solve did not converge within fixed iteration budget: iterations={SOLVE_ITERATIONS}, projected_gradient_residual={last_residual:.17e}, lipschitz={lipschitz:.17e}"))
     }
 }
-
