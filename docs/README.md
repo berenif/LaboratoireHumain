@@ -31,6 +31,9 @@ The [coordinated stabilization plan](standing-stabilization-plan.md) and its [im
 
 Results in these documents apply only to their recorded source and scenario selection. Read [current status](status.md) before using them to guide new work.
 
+- [Revue de coordination du 12 octobre](coordination-architecture-review-2026-10-12.md) : contrôleur SLOW réel, contre-revue indépendante, architecture et prototype proposés ; aucune nouvelle simulation.
+- [Dernier programme de transfert numérique rejeté](intermediate-transfer-numeric-audit-2026-10-12.md) : géométrie et LP seulement, aucun relevage physique.
+
 | Record | Scope |
 | --- | --- |
 | [September 26 standing investigation](physics-standing-contract-2026-09-26.md) | Historical H1–H7 outcomes and frozen contracts |

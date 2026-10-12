@@ -1,0 +1,262 @@
+{
+  "schema": "coordination-architecture-review-v1",
+  "createdUtc": "2026-10-12T19:54:10.833748+00:00",
+  "status": "review-complete-prototype-proposed-not-authorized",
+  "reviewedCommit": "527b26bd0281ecae21b5f3c342d2f4db986e97d7",
+  "branch": "investigate/physical-support",
+  "verifiedRemoteBranchCommit": "527b26bd0281ecae21b5f3c342d2f4db986e97d7",
+  "verifiedRemoteMainCommit": "c597959f46f37715035349c8cd0a699b6822111a",
+  "thirdPartyReviewedCommit": "5ad52fbe1b5b7c56522a1aa10ccf17fb81c0d79e",
+  "accessEvidence": {
+    "utc": "2026-10-12T19:41:34Z",
+    "localHeadRead": true,
+    "sourceEnvPyRead": true,
+    "officialWebSourceRead": true,
+    "parentConnectionRestoredClaimed": false
+  },
+  "independentReviews": [
+    {
+      "kind": "source-controller",
+      "model": "gpt-6-astra",
+      "reasoningEffort": "ultra"
+    },
+    {
+      "kind": "counterreview",
+      "model": "gpt-6-astra",
+      "reasoningEffort": "ultra"
+    }
+  ],
+  "workPerformed": {
+    "nativeIntegrationSteps": 0,
+    "predictorIntegrationSteps": 0,
+    "newStaticWorldInspections": 0,
+    "policyExecutions": 0,
+    "thirdPartyCodeExecutions": 0,
+    "trainingRuns": 0,
+    "physicalTests": 0,
+    "fullSuitesRun": false,
+    "controllerChanged": false,
+    "newBudgetsOpened": 0
+  },
+  "physicalStatus": {
+    "recoveryDefaultEnabled": false,
+    "recoveryQualified": false,
+    "completeGetUpEstablished": false,
+    "feetOnlyGlobalImpossibilityEstablished": false,
+    "intermediateSupportNecessityEstablished": false,
+    "angularSolverCertificate": false
+  },
+  "proposedPrototype": {
+    "authorized": false,
+    "fixture": "landed-crouch-left",
+    "question": "Acquire posterior bilateral foot support and hold a recentered crouch with whole-body native feedback",
+    "preparation": {
+      "maximumActiveHours": 40,
+      "maximumCalendarDays": 5,
+      "maximumStaticInspections": 20000
+    },
+    "historyMaxCount": 4,
+    "historyMaxSeconds": 4,
+    "nativeHz": 240,
+    "historyStepsReserved": 3840,
+    "wholeBodyControlHz": 60,
+    "plannerMaxHz": 10,
+    "plannerCallsPerBHistoryMax": 40,
+    "BHistoryMaxCount": 3,
+    "longPreviewsPerPlannerCallMax": 4,
+    "longPreviewStepsMax": 480,
+    "longPreviewStepsReserved": 230400,
+    "identificationProbesPerPlannerCallMax": 93,
+    "identificationProbeStepsMax": 4,
+    "identificationStepsReserved": 44640,
+    "technicalVerificationStepsReserved": 21120,
+    "allNativeStepsMaximum": 300000,
+    "wallTimeSecondsMaximum": 7200,
+    "threadCount": 1,
+    "oldLedgerReopened": false,
+    "automaticRenewal": false,
+    "fullRecoveryQualification": false,
+    "diagnostic": {
+      "acquireBySeconds": 2,
+      "minimumLoadN": 3,
+      "loadPersistenceS": 0.05,
+      "stablePersistenceS": 0.55,
+      "stableLinearMps": 0.22,
+      "stableAngularRadps": 0.65,
+      "supportWeightFraction": 0.8,
+      "supportInteriorMarginM": 0.003,
+      "posteriorHindfootLocalZLessThanM": -0.02,
+      "nonFootPersistentLoadMaximumExclusiveN": 3,
+      "originalRecoveryCounter": "read-only-no-forced-value"
+    }
+  },
+  "documentaryCorrection": {
+    "file": "docs/intermediate-transfer-numeric-audit-2026-10-12.md",
+    "oldReportedAggregateTorqueNm": 196.88,
+    "versionedReceiptAggregateTorqueNm": 151.4735205884249,
+    "newLPSolvePerformed": false,
+    "receiptModified": false
+  },
+  "sources": [
+    {
+      "path": "rust/crates/sim/src/lib.rs",
+      "sha256": "659c7c097ecb49b81b309bb7c076f7c19b1a9c14c40910ad6884eee564502624",
+      "matchesReviewedHead": true
+    },
+    {
+      "path": "rust/crates/sim/src/recovery.rs",
+      "sha256": "6ffda41203f49bd322aa44c8ee1a177e94f0eac7649b8fa083fcbd4e458efd78",
+      "matchesReviewedHead": true
+    },
+    {
+      "path": "rust/crates/sim/src/stepping.rs",
+      "sha256": "60a8deb2cfb567b86d62a8976931f28ba19a221e2e15a2f15181bf005f8687d2",
+      "matchesReviewedHead": true
+    },
+    {
+      "path": "rust/crates/sim/src/reaching.rs",
+      "sha256": "f7965eaca0cc26fb58c16430719e890d33aa658ac3166a7039a511099361c174",
+      "matchesReviewedHead": true
+    },
+    {
+      "path": "rust/crates/sim/src/actuators.rs",
+      "sha256": "3291389ac25ac563cc635a629b404e93c0a503b9df66ec20153138e36d6d66f9",
+      "matchesReviewedHead": true
+    },
+    {
+      "path": "rust/crates/sim/src/recovery/native_predictor.rs",
+      "sha256": "f1ec58f22b98145a71d1232317de5760b833438d97ca5a409bccfcc037569488",
+      "matchesReviewedHead": true
+    },
+    {
+      "path": "rust/crates/sim/src/recovery/planner/mod.rs",
+      "sha256": "a7b37478cf166b424571ba6af25e313988f188d3d53c2e73c121d87736eb1111",
+      "matchesReviewedHead": true
+    },
+    {
+      "path": "rust/crates/sim/src/recovery/planner/contact_observation.rs",
+      "sha256": "20a09786f5278e8442782eb3b9fff7c32de62ffad3424de133d6be51d8522be8",
+      "matchesReviewedHead": true
+    },
+    {
+      "path": "rust/crates/sim/src/recovery/support_probe/full_trajectory.rs",
+      "sha256": "0cabdb3a4a9eb317b2c32e8d4f72b57172768f7d2fd24bdb56d252b4fae5a817",
+      "matchesReviewedHead": true
+    },
+    {
+      "path": "rust/crates/sim/src/recovery/support_probe/offline_trajectory.rs",
+      "sha256": "8581707d26eff2d94276b78260a151ff769b75bc3f94cca109f8b6fe4bc49501",
+      "matchesReviewedHead": true
+    },
+    {
+      "path": "rust/crates/sim/src/recovery/support_probe/getup_ab.rs",
+      "sha256": "f3c3119ef755f395317c196d31eba2cadb60ea27c99850dbe14525c95ac9d6c8",
+      "matchesReviewedHead": true
+    },
+    {
+      "path": "rust/crates/sim/data/recovery-contract-v1.json",
+      "sha256": "57ffc6e4705759dac795e7c1b274edc9016a5e194a8fe4fa175a230c62f595ba",
+      "matchesReviewedHead": true
+    },
+    {
+      "path": "rust/crates/sim/Cargo.toml",
+      "sha256": "84930e2d97c42577c3c3cbfa754c0a1805cb22b9291b5547f6b5b04c5a79f325",
+      "matchesReviewedHead": true
+    },
+    {
+      "path": "docs/rust-native-actuation-audit-2026-10-11.md",
+      "sha256": "04f01c13ae5c4b5b4334096f0bd82a8d91769c4c2cd0e8df592896f66f8bffd5",
+      "matchesReviewedHead": true
+    },
+    {
+      "path": "docs/rust-recovery-p1-closure-2026-10-11.md",
+      "sha256": "cef4ed3ed273c005d3749122cd3f9a8f7d1676f3b4b9251ed3b95e0043b58e67",
+      "matchesReviewedHead": true
+    },
+    {
+      "path": "docs/rust-getup-ab-results-2026-10-12.md",
+      "sha256": "0f3c1727d7c742357e17a57d740659abbde47af9ef523bb8f4c0a7c3d1c8c500",
+      "matchesReviewedHead": true
+    },
+    {
+      "path": "docs/foot-coordination-results-2026-10-12.md",
+      "sha256": "3ceb0a6a609ff4aab80dc279c78e7fbd4fae80c493e88dda6f116dc3ad54a9c3",
+      "matchesReviewedHead": true
+    },
+    {
+      "path": "docs/evidence/intermediate-transfer-numeric-2026-10-12/rejected-target-audit.json",
+      "sha256": "2a6429e69b1a41281083a0c20ce853fd672e032a3276117d6fc21ca0acb85a84",
+      "matchesReviewedHead": true
+    }
+  ],
+  "historicalLedgers": [
+    {
+      "path": "evidence/recovery-coordinated-retarget-2026-10-11/native-campaign/ledger.json",
+      "sha256": "b61f17b180afece7db1e3a7d541edeaf24094f358edd2bb7e1362797d8b600e4",
+      "status": "abandoned-at96-without-route-standing",
+      "reviewWrites": 0
+    },
+    {
+      "path": "evidence/native-hybrid-v1-2026-10-11/ledger.json",
+      "sha256": "ec66ac4cd2b8b0d699ff98a5c6c84f7bcad5665e0faf84fa7bff84c1a4ac8650",
+      "status": "closed-at-wall-deadline-P1-not-certified",
+      "reviewWrites": 0
+    },
+    {
+      "path": "evidence/getup-ab-2026-10-12/ledger.json",
+      "sha256": "d09418ad7ec02d22bdbb682eed9cf17f1f6d2e05a9f120e3a39c06c3ead222cb",
+      "status": "closed-no-complete-recovery",
+      "reviewWrites": 0
+    },
+    {
+      "path": "evidence/foot-coordination-2026-10-12/ledger.json",
+      "sha256": "85f63dbc0a78ed9db0bafc4a63d91e95ff4f34349725854c906ba5332c40f6fa",
+      "status": "closed-no-complete-recovery",
+      "reviewWrites": 0
+    },
+    {
+      "path": "evidence/intermediate-transfer-prep-2026-10-12/ledger.json",
+      "sha256": "7c5861ab8b6c9e2ac3731cc4cc7453254d6d69571f240d8d0a5d679bd5978610",
+      "status": "closed-numeric-trajectory-missing",
+      "reviewWrites": 0
+    }
+  ],
+  "artifacts": [
+    {
+      "path": "docs/coordination-architecture-review-2026-10-12.md",
+      "bytes": 26871,
+      "sha256": "4ea9881bd3d06a969fed4b016026922c6a213425bcd075d150fed9a1fbfb6ee1"
+    },
+    {
+      "path": "docs/evidence/coordination-architecture-2026-10-12/getup-audit.md",
+      "bytes": 21332,
+      "sha256": "feb2dd9dc5229c2d82ae70fc3779388c627fb39ef3cf0f588abe58b1d9d6c1b7"
+    },
+    {
+      "path": "docs/evidence/coordination-architecture-2026-10-12/counterreview.md",
+      "bytes": 24757,
+      "sha256": "48c2e6258a336c1b4ea45b51e1392b5e7b0dbb1de3e4a6c05fc772d52d9da3b9"
+    }
+  ],
+  "verification": {
+    "sourceBytesMatchReviewedHead": true,
+    "jsonParsed": true,
+    "gitDiffCheck": "passed",
+    "relativeLinks": {
+      "status": "passed",
+      "linksChecked": 23,
+      "missing": 0,
+      "localEvidenceLinksNotPublished": 5
+    },
+    "noPhysicalTestInvoked": true,
+    "historicalLedgersHashesRechecked": true,
+    "proposedBudgetArithmetic": "passed"
+  },
+  "remainingBlockers": [
+    "Prototype not implemented; no admissible new numerical plan frozen",
+    "Native long-horizon controller/memory copy contract not implemented",
+    "Prototype integration budget not authorized",
+    "Full physical recovery, handoff, robustness and qualification remain open",
+    "One hybrid-articulation and four TypeScript historical failures not resolved"
+  ]
+}

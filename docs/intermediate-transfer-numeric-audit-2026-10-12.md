@@ -48,7 +48,7 @@ transitoire moteur ni d'un appui réel résolu.
 
 À la pose de recouvrement t=19,208 s, mains et deux pieds sont proches du sol.
 Un équilibre force/moment **virtuel** avec mains et pieds respecte le plafond
-global original de 760 Nm : 196,88 Nm de somme et 36,71 % d'utilisation
+global original de 760 Nm : 151,47 Nm de somme dans le reçu versionné et 36,71 % d'utilisation
 anatomique maximale. Sans les mains, le même calcul échoue ; un diagnostic
 hors limites demanderait 104,32 Nm au lombaire, pour un maximum réel de
 100 Nm. Une pose ultérieure avec bras relevés possède un équilibre statique
@@ -60,6 +60,15 @@ Il n'existe donc pas de marge démontrée pour le retrait proposé. Le lombaire
 est déjà à 0,31415 rad, presque sa limite de 0,314159 rad : une variante
 tentant 0,060 rad de flexion de plus a été refusée par le validateur natif
 dès son premier incrément. Elle ne figure pas dans le code livré.
+
+Correction documentaire lors de la revue de coordination du 12 octobre : le
+texte initial annonçait 196,88 Nm, tandis que
+`lpSamples[0].originalCaps.aggregateTorqueNm` du reçu versionné vaut
+151,4735205884249 Nm. Le reçu est conservé sans modification ; l'origine de
+l'autre solution n'est pas établie par cette revue. Aucun LP n'a été relancé.
+Ces calculs utilisent des points de contact virtuels et un diamant de friction
+conservateur, pas les contacts résolus de Rapier. Leurs refus numériques ne
+constituent pas des certificats d'impossibilité du cône de Coulomb natif.
 
 Le support sur **un pied seul**, à cette pose précise, est également impossible
 dans le modèle statique utilisé, même lors d'un diagnostic volontairement

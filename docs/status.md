@@ -1,5 +1,21 @@
 # Current status
 
+**2026-10-12 revue de coordination : aucun nouveau relevage ni essai physique.**
+
+L'audit du vrai contrôleur SLOW distingue la trajectoire exportée de son retour
+global appris. L'A/B local suivait presque tout le chemin articulaire sans
+redresser la racine ; le dernier programme numérique présente encore une rupture
+de support. Une revue contradictoire recommande une décision commune sur les
+membres et les changements d'appui, avec anticipation et validation native des
+commandes. Un prototype court d'acquisition des talons depuis l'accroupi est
+proposé, sans lancement ni ouverture de budget. Aucun code moteur changé ;
+récupération inactive par défaut et non qualifiée, critères conservés.
+[Recommandation, sources, objections, interfaces et budget proposé](coordination-architecture-review-2026-10-12.md).
+
+Le résultat du 11 octobre ci-dessous est historique ; les essais A/B et pieds B/C
+du 12 octobre restent eux aussi en échec. Le dernier candidat est
+[rejeté avant intégration](intermediate-transfer-numeric-audit-2026-10-12.md).
+
 **2026-10-11 verdict actuel : géométrie admissible, zéro relevage sur 96 histoires.**
 
 Le support utilise les points persistants réellement chargés. Le programme entier
