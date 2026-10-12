@@ -12,7 +12,7 @@ const MAX_CASES: usize = 48;
 const MAX_WALL_S: f64 = 600.0;
 const TRACE_STRIDE: u64 = 4;
 const SEARCH_VERSION: &str = "offline-trajectory-v1";
-pub(super) type Coordinates = [[f32; 3]; 25];
+pub(in crate::recovery) type Coordinates = [[f32; 3]; 25];
 
 #[derive(Clone, Copy, Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -74,7 +74,7 @@ impl Parameters {
 
 #[derive(Clone, Copy, Debug, Serialize, Deserialize, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
-pub(super) enum Allocation {
+pub(in crate::recovery) enum Allocation {
     Inherited,
     OwnedRequests,
 }
@@ -159,7 +159,7 @@ fn smooth(from: f32, to: f32, elapsed: f32, duration: f32) -> (f32, f32) {
     };
     (from + (to - from) * blend, velocity)
 }
-pub(super) fn coordinates(s: &Simulation) -> Result<Coordinates, String> {
+pub(in crate::recovery) fn coordinates(s: &Simulation) -> Result<Coordinates, String> {
     let mut q = [[0.0; 3]; 25];
     for (i, part) in s.model.segments.iter().enumerate().skip(1) {
         let p = part.joint_profile.as_ref().ok_or("missing joint profile")?;
@@ -326,7 +326,7 @@ pub(crate) fn before_step(s: &mut Simulation, substep: u32) -> Result<(), measur
     })
 }
 
-pub(super) fn install_targets(
+pub(in crate::recovery) fn install_targets(
     s: &mut Simulation,
     q: &Coordinates,
     dq: &Coordinates,

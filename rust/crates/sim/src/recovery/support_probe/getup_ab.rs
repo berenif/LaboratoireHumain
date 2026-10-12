@@ -305,7 +305,7 @@ fn feedback(
     Ok(command)
 }
 
-fn path_progress(s: &Simulation, program: &CompiledProgram, q: &Coordinates) -> f32 {
+pub(in crate::recovery) fn path_progress(s: &Simulation, program: &CompiledProgram, q: &Coordinates) -> f32 {
     let keys = &program.source().keyframes;
     let mut best_distance = f32::INFINITY;
     let mut best = 0.0;

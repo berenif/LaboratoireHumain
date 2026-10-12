@@ -1,0 +1,9 @@
+
+running 4 tests
+test recovery::planner::coordinated_runtime::tests::common_decision_uses_native_output_map_and_rejects_nan_without_integration ... ok
+test recovery::planner::coordinated_runtime::tests::one_sided_response_and_mode_expiry_without_integration ... ok
+test recovery::planner::coordinated_runtime::tests::saturated_reference_has_no_extra_rate_budget_without_integration ... ok
+test recovery::planner::coordinated_runtime::tests::total_rate_produces_coherent_q_dq_for_all_axes_without_integration ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 163 filtered out; finished in 0.19s
+

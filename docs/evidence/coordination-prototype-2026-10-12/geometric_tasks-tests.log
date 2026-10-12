@@ -1,0 +1,9 @@
+
+running 4 tests
+test recovery::planner::geometric_tasks::tests::analytic_columns_keep_root_motion_as_observed_state_without_integration ... ok
+test recovery::planner::geometric_tasks::tests::native_chart_at_neutral_is_cartesian_without_integration ... ok
+test recovery::planner::geometric_tasks::tests::retained_translation_is_a_hard_constraint_not_a_posture_weight_without_integration ... ok
+test recovery::planner::geometric_tasks::tests::uncontrollable_root_translation_refuses_retained_task_without_integration ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 172 filtered out; finished in 0.00s
+

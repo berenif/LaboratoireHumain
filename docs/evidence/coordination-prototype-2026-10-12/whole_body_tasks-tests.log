@@ -1,0 +1,9 @@
+
+running 4 tests
+test recovery::planner::whole_body_tasks::tests::all_46_axes_share_one_coupled_task_without_integration ... ok
+test recovery::planner::whole_body_tasks::tests::command_bounds_and_nonfinite_data_are_rejected_without_integration ... ok
+test recovery::planner::whole_body_tasks::tests::contradictory_support_returns_no_command_without_integration ... ok
+test recovery::planner::whole_body_tasks::tests::hard_support_cannot_be_bought_by_posture_without_integration ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 163 filtered out; finished in 0.01s
+

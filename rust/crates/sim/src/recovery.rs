@@ -20,6 +20,8 @@ pub(crate) fn offline_trajectory_before_step(
     s: &mut Simulation,
     substep: u32,
 ) -> Result<(), measurement::Failure> {
+    #[cfg(feature = "experimental-solver-step-observation")]
+    if s.coordination.is_some() { return Ok(()); }
     if support_probe::getup_ab::active() {
         return Ok(());
     }
@@ -720,6 +722,7 @@ pub struct Status {
     pub last_retry: Option<&'static str>,
     pub progress: f32,
 }
+#[derive(Clone)]
 pub(crate) struct Controller {
     pub status: Status,
     targets: Vec<[f32; 3]>,

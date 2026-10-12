@@ -1,0 +1,24 @@
+{
+  "scope": "native f32 program compilation and complete static geometry grid",
+  "headingDegrees": 60,
+  "binarySha256": "3e3ecfb80fe494a1313030b5764986a4ab1539cb847a6a79f2c36af74495d70e",
+  "programSha256": "f14de3871ef9aba18083b36d10eeb56c8587c66a73b1ab2ec54e01830e06e59d",
+  "compressedTraceSha256": "a168f3e14ec3c8c4682211cbc4c587366f267af4a6744ea286b4bfbc54c70246",
+  "parentReservationId": "d9649c8e-c891-4b5c-8045-8171437911ac",
+  "nativeGeometryQueries": 1921,
+  "physicalIntegrations": 0,
+  "nativeCommandCompilerPassed": true,
+  "nativeGeometryRefusals": [],
+  "minimumNativeFloorBoundM": [
+    0.0009996742010116577,
+    700
+  ],
+  "maximumNativeMaterialPivotDriftM": 3.4329550178893474e-07,
+  "maximumNativeRetainedHeelDriftAfterAcquisitionM": 3.3663386347228726e-07,
+  "newNativeHistoryAllowed": false,
+  "limitations": [
+    "static roots are inspection states, not actions",
+    "virtual points do not prove loaded contacts or static force/torque feasibility",
+    "native execution and original recovery terminal remain unproven"
+  ]
+}

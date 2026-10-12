@@ -1,0 +1,108 @@
+{
+  "payload": {
+    "schema": "laboratoirehumain.coordination-prototype-budget.v1",
+    "id": "564df601-9e40-4dd2-973d-7f43b36d4fb4",
+    "limits": {
+      "preparationActiveSeconds": 144000,
+      "preparationCalendarSeconds": 432000,
+      "staticInspections": 20000,
+      "histories": 4,
+      "nativeHz": 240,
+      "historyNativeSteps": 960,
+      "totalNativeSteps": 300000,
+      "predictionAndVerificationSteps": 296160,
+      "verificationSteps": 21120,
+      "physicsWallSeconds": 7200,
+      "planningCallsPerBHistory": 40,
+      "planningSpacingNativeSteps": 24,
+      "longRolloutsPerCall": 4,
+      "longStepsPerRollout": 480,
+      "shortProbesPerCall": 93,
+      "shortStepsPerProbe": 4,
+      "processes": 1,
+      "threads": 1
+    },
+    "status": "preparing",
+    "createdUtc": "2026-10-12T20:23:49.905313+00:00",
+    "lastClock": {
+      "wall": 1791838351.7999122,
+      "monotonic": 2289.599143582,
+      "boot": "e21fcf07-9587-43f5-ba6e-03b010b6f945"
+    },
+    "preparation": {
+      "startedUtc": "2026-10-12T20:14:00+00:00",
+      "deadlineUtc": "2026-10-17T20:14:00+00:00",
+      "deadlineMonotonic": 431977.7992396294,
+      "initialActiveSeconds": 589,
+      "initialInspections": 2
+    },
+    "reservations": [
+      {
+        "id": "d9649c8e-c891-4b5c-8045-8171437911ac",
+        "kind": "preparation",
+        "status": "completed",
+        "startedUtc": "2026-10-12T20:23:49.907685+00:00",
+        "startedMonotonic": 567.706915663,
+        "activeSeconds": 7200,
+        "inspections": 6921,
+        "actualInspections": 5766,
+        "elapsedSeconds": 1721.892227919,
+        "endedUtc": "2026-10-12T20:52:31.799912+00:00"
+      }
+    ],
+    "events": [
+      {
+        "sequence": 0,
+        "action": "init-preparation",
+        "utc": "2026-10-12T20:23:49.905313+00:00"
+      },
+      {
+        "sequence": 1,
+        "action": "reserve",
+        "utc": "2026-10-12T20:23:49.907685+00:00",
+        "reservationId": "d9649c8e-c891-4b5c-8045-8171437911ac",
+        "counters": {
+          "preparationActiveSeconds": 7789,
+          "staticInspections": 5002,
+          "reservedNativeSteps": 0,
+          "reservedPredictionAndVerificationSteps": 0,
+          "reservedVerificationSteps": 0,
+          "actualNativeStepsKnown": 0
+        }
+      },
+      {
+        "sequence": 2,
+        "action": "extend-preparation",
+        "utc": "2026-10-12T20:32:20.720885+00:00",
+        "reservationId": "d9649c8e-c891-4b5c-8045-8171437911ac",
+        "additionalInspections": 1921,
+        "additionalActiveSeconds": 0,
+        "counters": {
+          "preparationActiveSeconds": 7789,
+          "staticInspections": 6923,
+          "reservedNativeSteps": 0,
+          "reservedPredictionAndVerificationSteps": 0,
+          "reservedVerificationSteps": 0,
+          "actualNativeStepsKnown": 0
+        }
+      },
+      {
+        "sequence": 3,
+        "action": "complete",
+        "utc": "2026-10-12T20:52:31.799912+00:00",
+        "reservationId": "d9649c8e-c891-4b5c-8045-8171437911ac",
+        "counters": {
+          "preparationActiveSeconds": 7789,
+          "staticInspections": 6923,
+          "reservedNativeSteps": 0,
+          "reservedPredictionAndVerificationSteps": 0,
+          "reservedVerificationSteps": 0,
+          "actualNativeStepsKnown": 0
+        }
+      }
+    ],
+    "worker": null,
+    "physics": null
+  },
+  "sha256": "50d4053efee9defd93ef99de97632361972dcf11cf4d7289959ac6155b70e85d"
+}

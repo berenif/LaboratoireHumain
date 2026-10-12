@@ -1,2 +1,12 @@
-//! Experimental planner prerequisites. No controller or search is activated.
+//! Experimental coordination preparation. No production controller is activated.
 pub(crate) mod contact_observation;
+pub(crate) mod continuation;
+pub(crate) mod coordinated_runtime;
+pub(crate) mod native_plan_preview;
+pub(crate) mod native_observation;
+pub(crate) mod geometric_tasks;
+pub(crate) mod whole_body_controller;
+pub(crate) mod support_state;
+pub(crate) mod whole_body_tasks;
+#[cfg(feature = "coordination-worker")]
+pub(crate) mod transition_worker;

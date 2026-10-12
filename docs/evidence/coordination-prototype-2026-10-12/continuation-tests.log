@@ -1,0 +1,10 @@
+
+running 5 tests
+test recovery::planner::continuation::tests::continuation_command_validation_does_not_admit_support ... ok
+test recovery::planner::continuation::tests::continuation_derives_real_fixture_without_world_or_steps ... ok
+test recovery::planner::continuation::tests::continuation_new_six_key_candidate_has_native_command_continuity ... ok
+test recovery::planner::continuation::tests::continuation_refuses_deadline_and_short_persistence ... ok
+test recovery::planner::continuation::tests::continuation_refuses_motion_during_extra_second ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 171 filtered out; finished in 0.38s
+

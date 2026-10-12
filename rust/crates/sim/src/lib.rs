@@ -220,6 +220,7 @@ pub fn configure(world: &mut PhysicsWorld, p: &Profile) {
         400.0
     };
 }
+#[derive(Clone)]
 struct Filter {
     exclusions: BTreeSet<(u128, u128)>,
 }
@@ -252,6 +253,8 @@ impl PhysicsHooks for Filter {
     }
 }
 pub struct Simulation {
+    #[cfg(all(test, feature = "experimental-solver-step-observation"))]
+    coordination: Option<recovery::planner::whole_body_controller::Controller>,
     pub(crate) world: PhysicsWorld,
     pub(crate) model: Model,
     pub(crate) bodies: Vec<RigidBodyHandle>,
@@ -484,6 +487,8 @@ impl Simulation {
             .map(|a| a.max_motor_torque_nm)
             .sum();
         let mut result = Self {
+            #[cfg(all(test, feature = "experimental-solver-step-observation"))]
+            coordination: None,
             world,
             model,
             bodies,
@@ -529,6 +534,14 @@ impl Simulation {
         Ok(result)
     }
     fn configure_motors(&mut self) -> Result<(), String> {
+        #[cfg(all(test, feature = "experimental-solver-step-observation"))]
+        if let Some(mut owner) = self.coordination.take() {
+            if !self.recovery.as_ref().is_some_and(|c| c.handed_off()) && self.counters.recoveries == 0 {
+                let result = owner.configure(self);
+                self.coordination = Some(owner);
+                return result;
+            }
+        }
         #[cfg(test)]
         if recovery::getup_ab_configure(self)? {
             return Ok(());
@@ -1713,3 +1726,5 @@ mod tests {
         assert_eq!(s.snapshot().simulation_time_s, halted.simulation_time_s);
     }
 }
+#[cfg(all(test, feature = "coordination-worker"))]
+fn main() { recovery::planner::transition_worker::main(); }

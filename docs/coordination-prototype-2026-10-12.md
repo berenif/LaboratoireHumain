@@ -67,11 +67,11 @@ budget : ils conservent leurs anciennes durées. Aucun renouvellement automatiqu
 
 - [x] Lire rapport et deux revues, vérifier branche/base et absence d'instructions locales.
 - [x] Ouvrir uniquement la préparation ; zéro intégration physique.
-- [ ] Implémenter observation des patches, preuve de retrait et diagnostic local.
-- [ ] Implémenter solveur commun borné, compilation q/dq et refus explicites.
-- [ ] Implémenter registre durable et tester ses plafonds sans physique.
-- [ ] Préparer et vérifier la continuation numérique complète.
-- [ ] Compiler et tester les propriétés pures avant toute admission physique.
+- [x] Implémenter observation des patches, preuve de retrait et diagnostic local.
+- [x] Implémenter solveur commun borné, compilation q/dq et refus explicites.
+- [x] Implémenter registre durable et tester ses plafonds sans physique.
+- [x] Préparer et vérifier la continuation numérique complète.
+- [x] Compiler et tester les propriétés pures avant toute admission physique.
 - [ ] Admettre ou refuser les prérequis ; clôturer avec preuves, SHA et Library.
 
 Le checkout neuf ne contient pas le répertoire historique non versionné
@@ -87,3 +87,66 @@ des 24 poses/cycles/impacts. Récupération et pas correctifs restent désactiv�
 défaut. Une réussite locale n'autorise pas une histoire complète hors budget.
 La comparaison SLOW reste une étude de port/réentraînement, sans exécution de
 son logiciel ou de sa politique ni ouverture d'un service externe.
+
+## Architecture exécutable corrigée avant le gel
+
+La carte de réponse native proposée expire après 24 sous-pas, alors qu'une
+prévision dure jusqu'à 480 sous-pas. La réidentifier récursivement dans chaque
+branche rendrait le coût annoncé faux. Le prototype reconstruit donc les tâches
+géométriques communes à 60 Hz, avec la vitesse observée de la racine flottante,
+et évalue à au plus 10 Hz quatre facteurs de retour globaux figés : 0, 0,5, 1 et
+1,5. Il n'emploie aucune sonde courte : les 93 sondes étaient un plafond, pas une
+obligation. L'infrastructure d'identification reste testée séparément et ne sert
+pas de carte supposée valide pendant deux secondes.
+
+Les 46 références q/dq restent l'unique commande. Le solveur borne l'anatomie,
+la vitesse et l'écart à la référence (0,12 rad), puis impose les contraintes des
+points matériels observés. La bande de vitesse de tâche de 0,005 m/s est une
+contrainte du contrôleur, pas un assouplissement des critères physiques. Les
+patches acquis ne changent jamais d'identité ou d'ancre pour masquer un glissement.
+A et B partagent exactement les commandes initiales avant acquisition des patches,
+le programme, les caps et l'allocation ForceBased existante. Les gardes originales
+de stagnation, perte d'appui et handoff mesuré sont conservées.
+
+La prévision copie état physique et mémoire explicite du contrôleur et appelle
+le même noyau natif. L'admission physique exige d'abord une comparaison complète
+de quatre sous-pas réels et quatre copiés pour A puis B (16 sous-pas réservés).
+Ce reçu doit confirmer états, compteurs, cibles et sémantique des moteurs.
+Les réservations du registre précèdent toute intégration ; après une prévision,
+le worker attend l'accusé du registre avant de reprendre l'histoire réelle.
+
+La nouvelle continuation contient six clés et dure huit secondes. Les 1 921
+états à 240 Hz ont été inspectés statiquement dans le modèle natif, à 0° et 60°.
+Tous passent les bornes de coordonnées ; la dérive des points retenus reste
+inférieure à 0,4 micromètre dans cette construction géométrique. Ceci prouve
+une cible cohérente, aucunement la faisabilité des charges, des couples ou du
+transfert en dynamique. Les images et la vidéo portent cette distinction.
+
+## Comparaison SLOW
+
+La source épinglée contient une politique résiduelle entraînée utilisant l'état
+global et la référence, pas seulement une succession d'angles
+([environnement](https://github.com/tianxintao/get_up_control/blob/5ad52fbe1b5b7c56522a1aa10ccf17fb81c0d79e/env.py),
+[apprentissage SAC](https://github.com/tianxintao/get_up_control/blob/5ad52fbe1b5b7c56522a1aa10ccf17fb81c0d79e/SAC.py)).
+Ses 21 axes, son état d'entrée et son actionnement ne correspondent pas aux 46
+coordonnées et moteurs ForceBased de ce dépôt. Réutiliser le principe du retour
+global est faisable ; porter directement les poids n'est pas établi. Un
+réentraînement demanderait un environnement natif fidèle, le contrat d'action,
+une distribution d'impacts et une évaluation distincte. Aucun logiciel tiers,
+entraînement ou service externe n'a été exécuté pour cette comparaison.
+
+## Vérifications et frontière des preuves
+
+40 tests Rust ciblés passent (solveur, compilation q/dq, appuis, continuation,
+observations natives sans intégration, tâches géométriques, copie de mémoire et
+propriétaire). Le chemin de production passe `cargo check --lib --locked`.
+La suite globale Rust/TypeScript, avec ses échecs historiques, n'a pas été
+relancée ni déclarée réparée. Le binaire autonome est compilé sans exécuter
+les tests physiques historiques.
+
+Les journaux CCD sont collectés dans l'exécution réelle, isolés des prévisions.
+La parité vérifie néanmoins les contacts, états et moteurs natifs complets.
+Un succès local mémorise un intervalle de 132 pas admissible débutant avant 2 s ;
+il ne certifie pas que la posture terminale de l'histoire reste stable. Le
+raccord physique à la continuation, le handoff et le relevage entier demeurent
+des preuves distinctes à produire, jamais déduites du rendu géométrique.

@@ -1,0 +1,16 @@
+
+running 11 tests
+test recovery::planner::support_state::tests::ccd_impulses_alone_never_prove_support ... ok
+test recovery::planner::support_state::tests::diagnostic_rejects_missing_body_skipped_step_and_nonfoot_dependency ... ok
+test recovery::planner::support_state::tests::failed_material_measurement_keeps_last_observation_unchanged ... ok
+test recovery::planner::support_state::tests::finite_inputs_cannot_hide_overflow_in_support_evidence ... ok
+test recovery::planner::support_state::tests::heel_has_own_persistence_and_full_stable_interval ... ok
+test recovery::planner::support_state::tests::hull_uses_inset_polygon_not_bounding_rectangle ... ok
+test recovery::planner::support_state::tests::interrupted_early_interval_cannot_authorize_late_success ... ok
+test recovery::planner::support_state::tests::new_contact_never_reanchors_old_material_point ... ok
+test recovery::planner::support_state::tests::posterior_segment_label_and_old_segment_persistence_are_insufficient ... ok
+test recovery::planner::support_state::tests::successful_release_removes_task_only_after_remaining_support_proof ... ok
+test recovery::planner::support_state::tests::withdrawn_hand_cannot_supply_hull_or_load_and_remains_a_task ... ok
+
+test result: ok. 11 passed; 0 failed; 0 ignored; 0 measured; 156 filtered out; finished in 0.02s
+

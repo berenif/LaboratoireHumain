@@ -48,6 +48,20 @@ struct Journal {
     external_angular: [f64; 3],
 }
 thread_local! {static ACTIVE: RefCell<Option<Journal>> = const {RefCell::new(None)};}
+/// A copied world must not write into the real history's thread-local journal.
+/// Native preview currently refuses this context instead of silently suspending it.
+pub(crate) fn require_inactive() -> Result<(), String> {
+    ACTIVE.with(|slot| {
+        let active = slot
+            .try_borrow()
+            .map_err(|_| "Solver observation journal is already borrowed".to_string())?;
+        if active.is_some() {
+            Err("Native preview cannot share an active solver observation journal".into())
+        } else {
+            Ok(())
+        }
+    })
+}
 pub(crate) fn activate(s: &crate::Simulation) {
     assert!(
         s.grab.is_none() && s.striker.is_none() && s.environment.is_none(),

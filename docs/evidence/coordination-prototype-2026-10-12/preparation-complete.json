@@ -1,0 +1,12 @@
+{
+  "id": "d9649c8e-c891-4b5c-8045-8171437911ac",
+  "kind": "preparation",
+  "status": "completed",
+  "startedUtc": "2026-10-12T20:23:49.907685+00:00",
+  "startedMonotonic": 567.706915663,
+  "activeSeconds": 7200,
+  "inspections": 6921,
+  "actualInspections": 5766,
+  "elapsedSeconds": 1721.892227919,
+  "endedUtc": "2026-10-12T20:52:31.799912+00:00"
+}
