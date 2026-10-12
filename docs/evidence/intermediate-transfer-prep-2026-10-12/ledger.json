@@ -1,0 +1,87 @@
+{
+  "schema": 1,
+  "campaign": "intermediate-transfer-preparation-2026-10-12",
+  "status": "closed-numeric-trajectory-missing",
+  "authorizedUtc": "2026-10-12T15:01:00+00:00",
+  "preparationDeadlineUtc": "2026-10-12T17:01:00+00:00",
+  "baseCommit": "c9f07eaf005be5cb952e494c70b052426bafa57c",
+  "newPhysicalHistories": 0,
+  "newNativeSteps": 0,
+  "staticWorldInspections": 0,
+  "inspectionBatches": [
+    {
+      "id": 1,
+      "purpose": "checkout/instructions/budgets",
+      "sources": [
+        "git checkout and remote",
+        "AGENTS/SKILL search",
+        "TODO.md",
+        "prior foot ledger"
+      ]
+    },
+    {
+      "id": 2,
+      "purpose": "source-to-native contact chronology",
+      "sources": [
+        "tao source contact intervals",
+        "reference-ready program",
+        "rust-recovery-reference-preparation",
+        "rust-recovery-coordinated-retarget"
+      ]
+    },
+    {
+      "id": 3,
+      "purpose": "causal intermediate support failures",
+      "sources": [
+        "rust-hand-support-experiment",
+        "rust-controlled-descent",
+        "rust-prone-chain-gravity",
+        "selected prior reports"
+      ]
+    },
+    {
+      "id": 4,
+      "purpose": "current command and qualification interfaces",
+      "sources": [
+        "trajectory_program.rs",
+        "prone_recovery_experiment.rs",
+        "hand_support_experiment.rs",
+        "recovery.rs",
+        "recovery-contract-v1.json"
+      ]
+    },
+    {
+      "id": 5,
+      "purpose": "static splice and old LP feasibility",
+      "sources": [
+        "hand-support corridor-evaluated",
+        "ready-geometry",
+        "terminal-statics",
+        "source/native contact intervals"
+      ]
+    },
+    {
+      "id": 6,
+      "purpose": "phase contract and no-world admission",
+      "sources": [
+        "intermediate-transfer-plan",
+        "preflight-admission",
+        "five pure Python tests",
+        "timing-gap figure"
+      ]
+    }
+  ],
+  "previousClosedLedgers": {
+    "evidence/foot-coordination-2026-10-12/ledger.json": "85f63dbc0a78ed9db0bafc4a63d91e95ff4f34349725854c906ba5332c40f6fa",
+    "evidence/getup-ab-2026-10-12/ledger.json": "d09418ad7ec02d22bdbb682eed9cf17f1f6d2e05a9f120e3a39c06c3ead222cb",
+    "evidence/native-hybrid-v1-2026-10-11/ledger.json": "ec66ac4cd2b8b0d699ff98a5c6c84f7bcad5665e0faf84fa7bff84c1a4ac8650",
+    "evidence/recovery-coordinated-retarget-2026-10-11/native-campaign/ledger.json": "b61f17b180afece7db1e3a7d541edeaf24094f358edd2bb7e1362797d8b600e4"
+  },
+  "candidateNumericalTrajectoryReady": false,
+  "nextNativeRunAuthorized": false,
+  "closedUtc": "2026-10-12T15:17:27.557414+00:00",
+  "elapsedSinceAuthorizationSeconds": 987.557414,
+  "prescreenInputFiles": 9,
+  "physicalBudgetOpened": false,
+  "preflightSha256": "dec05fe176f857aaa762cd24f679c300aecf093441d653677491884b921a9f53"
+}

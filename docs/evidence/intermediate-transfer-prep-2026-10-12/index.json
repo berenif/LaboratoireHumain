@@ -1,0 +1,10 @@
+{
+  "schema": 1,
+  "scope": "read-only preparation; zero native integrations",
+  "files": {
+    "docs/evidence/intermediate-transfer-prep-2026-10-12/ledger.json": "7c5861ab8b6c9e2ac3731cc4cc7453254d6d69571f240d8d0a5d679bd5978610",
+    "docs/evidence/intermediate-transfer-prep-2026-10-12/preflight.json": "dec05fe176f857aaa762cd24f679c300aecf093441d653677491884b921a9f53",
+    "docs/evidence/intermediate-transfer-prep-2026-10-12/preflight-tests.log": "c4b1fc5b17ccc12075c5cfe1cc38df743d7f72b116ba6ff9fafc161c1a40de72",
+    "docs/media/intermediate-transfer-prep-2026-10-12/timing-gap.png": "77242976a7fdd2b7b8d8156165f39ad2b78176432da269bcf6f5768b217519b2"
+  }
+}

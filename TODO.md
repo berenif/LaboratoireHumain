@@ -1,5 +1,20 @@
 # TODO
 
+**2026-10-12 transfert intermédiaire — préparation close sans nouveau pas physique :**
+
+- [x] Vérifier `c9f07ea` local/distant, les anciens registres clos et les sources
+  get_up_control, mains/tibias et l'observateur original.
+- [x] Définir le parcours mains+tibias → pied avancé → deux pieds → retrait des
+  mains → debout/handoff, ses preuves de transfert et ses échéances globales.
+- [x] Mesurer les écarts de chronologie et de raccord ; refus d'admission
+  numérique, zéro intégration et zéro inspection d'un nouveau monde statique.
+- [ ] Construire un nouveau chemin numérique continu depuis la fixture exacte,
+  avec géométrie 0°/60°, efforts de transfert et freinage avant impact ; aucun
+  raccord direct des deux références archivées n'est admissible à ce stade.
+- [ ] Soumettre puis ouvrir **un budget de simulation distinct** seulement après
+  toutes les portes statiques ; ne pas réutiliser les campagnes closes.
+  [Diagnostic, contrat et budget proposé](docs/intermediate-transfer-preparation-2026-10-12.md).
+
 **2026-10-12 coordination du pied autorisée — préparation bornée :**
 
 - [x] Vérifier et pousser le diagnostic `0a0db45`, distant confirmé ; anciens registres clos.
