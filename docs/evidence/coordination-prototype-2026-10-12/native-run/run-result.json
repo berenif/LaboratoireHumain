@@ -1,0 +1,60 @@
+{
+  "schema": 1,
+  "status": "failed-closed",
+  "error": "Native diagnostic failed: integrity_ok",
+  "histories": [
+    {
+      "history": "A",
+      "localSuccess": false,
+      "evidence": {
+        "path": "/workspace/LaboratoireHumain/docs/evidence/coordination-prototype-2026-10-12/native-run/001-A.json",
+        "sha256": "b73678e59c6421a0f169d92d48e24e2b83bfe4a3198d2579595457da4b99d67b"
+      }
+    }
+  ],
+  "budget": {
+    "schema": "laboratoirehumain.coordination-prototype-budget.v1",
+    "id": "564df601-9e40-4dd2-973d-7f43b36d4fb4",
+    "status": "closed-native-failure",
+    "closureReason": "Native diagnostic failed: integrity_ok",
+    "counters": {
+      "preparationActiveSeconds": 7789,
+      "staticInspections": 6923,
+      "reservedNativeSteps": 3856,
+      "reservedPredictionAndVerificationSteps": 1936,
+      "reservedVerificationSteps": 16,
+      "actualNativeStepsKnown": 1024
+    },
+    "preparation": {
+      "startedUtc": "2026-10-12T20:14:00+00:00",
+      "deadlineUtc": "2026-10-17T20:14:00+00:00",
+      "deadlineMonotonic": 431977.7992396294,
+      "initialActiveSeconds": 589,
+      "initialInspections": 2
+    },
+    "physics": {
+      "startedUtc": "2026-10-12T20:53:12.695276+00:00",
+      "deadlineWall": 1791845592.6952758,
+      "deadlineMonotonic": 9530.494505931
+    },
+    "lastEvent": {
+      "sequence": 12,
+      "action": "record-native-failure",
+      "utc": "2026-10-12T20:53:20.625705+00:00",
+      "reservationId": "77df06b5-af37-4d5d-b8fc-e57ef9572405",
+      "reason": "Native diagnostic failed: integrity_ok",
+      "counters": {
+        "preparationActiveSeconds": 7789,
+        "staticInspections": 6923,
+        "reservedNativeSteps": 3856,
+        "reservedPredictionAndVerificationSteps": 1936,
+        "reservedVerificationSteps": 16,
+        "actualNativeStepsKnown": 1024
+      },
+      "authorizesIntegration": false
+    },
+    "authorizesIntegration": false
+  },
+  "fullRecoveryQualified": false,
+  "fullHistoryAuthorized": false
+}

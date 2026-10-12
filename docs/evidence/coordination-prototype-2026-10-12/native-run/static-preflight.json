@@ -1,0 +1,24 @@
+{
+  "schema": 1,
+  "scope": "static runner preflight; no worker started",
+  "executeRequested": true,
+  "physicalIntegrations": 0,
+  "binary": "/workspace/LaboratoireHumain/rust/target/release/deps/coordination_worker-60f2b83fe348a1d3",
+  "binarySha256": "1bb4b91ac8ebfbe382d9525e524b85040ca9890bc90a0ef0467f1ef2b64c8b57",
+  "manifestPath": "/workspace/LaboratoireHumain/docs/evidence/coordination-prototype-2026-10-12/frozen-manifest.json",
+  "manifestSha256": "4a37d4afbfe3ecd51997208bf5fa7599106fd9c43650cb55f6bcf6400d4e1d29",
+  "inputs": {
+    "programPath": "/workspace/LaboratoireHumain/docs/evidence/coordination-prototype-2026-10-12/continuation-candidate-program.json",
+    "tasksPath": "/workspace/LaboratoireHumain/docs/evidence/coordination-prototype-2026-10-12/continuation-tasks.json"
+  },
+  "budgetId": "564df601-9e40-4dd2-973d-7f43b36d4fb4",
+  "budgetStatus": "preparing",
+  "budgetCounters": {
+    "preparationActiveSeconds": 7789,
+    "staticInspections": 6923,
+    "reservedNativeSteps": 0,
+    "reservedPredictionAndVerificationSteps": 0,
+    "reservedVerificationSteps": 0,
+    "actualNativeStepsKnown": 0
+  }
+}

@@ -1,5 +1,7 @@
 # Prototype de coordination : préparation et décision
 
+**Protocole clos : prototype implémenté, refus numérique de B.** Voir le [rapport de résultat](coordination-prototype-result-2026-10-12.md). Total exécuté : 1 024 sous-pas ; aucune récupération qualifiée.
+
 Base inspectée : `e3b4ed3b2ddaac5450c2846ec12c736a1287082e` sur
 `investigate/physical-support`. `main` reste à `c597959`.
 Autorisation : « Yes, review, corrige implement dans un contexte neuf ».
@@ -72,7 +74,8 @@ budget : ils conservent leurs anciennes durées. Aucun renouvellement automatiqu
 - [x] Implémenter registre durable et tester ses plafonds sans physique.
 - [x] Préparer et vérifier la continuation numérique complète.
 - [x] Compiler et tester les propriétés pures avant toute admission physique.
-- [ ] Admettre ou refuser les prérequis ; clôturer avec preuves, SHA et Library.
+- [x] Vérifier la parité native puis clôturer au refus prévu, avec preuves et publication.
+- [x] Décider sur la continuation entière sans la lancer hors budget.
 
 Le checkout neuf ne contient pas le répertoire historique non versionné
 `evidence/`. Les rapports et les reçus versionnés sont lisibles, mais ne fournissent

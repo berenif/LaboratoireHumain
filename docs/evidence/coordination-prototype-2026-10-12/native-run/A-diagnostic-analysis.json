@@ -1,0 +1,91 @@
+{
+  "scope": "read-only analysis of archived actual A; no geometry or integration",
+  "nativeFrames": 960,
+  "firstStep": 1,
+  "lastStep": 960,
+  "maximumHeelLoadsN": [
+    -0.0,
+    -0.0
+  ],
+  "maximumOwnHeelPersistenceSteps": [
+    0,
+    0
+  ],
+  "maximumStableSteps": 0,
+  "framesComInside": 57,
+  "framesCaptureInside": 21,
+  "maximumFootSupportFraction": 1.225413578711886,
+  "minimumFootSupportFraction": 0.0,
+  "maximumCapSumNm": 760.0,
+  "finalComM": [
+    -0.03365103527903557,
+    0.11624597012996674,
+    1.1237939596176147
+  ],
+  "finalComVelocityMps": [
+    -0.010058863088488579,
+    0.003345353063195944,
+    -0.001437799772247672
+  ],
+  "firstLocalDiagnostic": {
+    "all_conditions_now": false,
+    "capture_inside": false,
+    "com_inside": false,
+    "consecutive_stable_substeps": 0,
+    "first_local_conditions_s": null,
+    "heel_loaded_substeps": [
+      0,
+      0
+    ],
+    "heel_loads_n": [
+      -0.0,
+      -0.0
+    ],
+    "heel_persistent": [
+      false,
+      false
+    ],
+    "maximum_angular_radps": 0.203663296156538,
+    "maximum_linear_mps": 0.03884880098228979,
+    "native_substep": 1,
+    "nonfoot_current_load_n": -0.0,
+    "nonfoot_persistent_segments": [],
+    "passed": false,
+    "support_fraction": 0.0,
+    "support_load_n": 0.0
+  },
+  "finalLocalDiagnostic": {
+    "all_conditions_now": false,
+    "capture_inside": false,
+    "com_inside": false,
+    "consecutive_stable_substeps": 0,
+    "first_local_conditions_s": null,
+    "heel_loaded_substeps": [
+      0,
+      0
+    ],
+    "heel_loads_n": [
+      -0.0,
+      -0.0
+    ],
+    "heel_persistent": [
+      false,
+      false
+    ],
+    "maximum_angular_radps": 0.14633257541301442,
+    "maximum_linear_mps": 0.025182587676542918,
+    "native_substep": 960,
+    "nonfoot_current_load_n": 489.0802961600498,
+    "nonfoot_persistent_segments": [
+      2,
+      4
+    ],
+    "passed": false,
+    "support_fraction": 0.30902006054525094,
+    "support_load_n": 218.87334109111816
+  },
+  "source": {
+    "path": "001-A.states.jsonl",
+    "sha256": "7f54902833151216576aae7b16ca1a51efb23eff8cd0f5c7939a39044913b074"
+  }
+}

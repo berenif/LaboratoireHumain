@@ -1,0 +1,44 @@
+{
+  "scope": "rendering of archived actual A and rejected B preview states only",
+  "sourceSha256": {
+    "rust/crates/model/data/canonical-v1.json": "083c13b2cce2d6033a4fc05cba8da7e78bd89634fb306629f4b7a9cd4a177a65",
+    "docs/evidence/coordination-prototype-2026-10-12/native-run/001-A.json": "b73678e59c6421a0f169d92d48e24e2b83bfe4a3198d2579595457da4b99d67b",
+    "docs/evidence/coordination-prototype-2026-10-12/native-run/001-A.states.jsonl": "7f54902833151216576aae7b16ca1a51efb23eff8cd0f5c7939a39044913b074",
+    "docs/evidence/coordination-prototype-2026-10-12/native-run/002-B.json": "4312ead48bc75bcc9316e36facf44083afa397efad2c21e5b546d393c3a80108",
+    "docs/evidence/coordination-prototype-2026-10-12/native-run/002-B.states.jsonl": "38ca7d07d85917df8e282dafc4b3d4d3e3e497a3a22467b4fc7bb6a052bc2492"
+  },
+  "compactStatesSha256": "ad6128d98ff257711ff2890b31fbd0a6baa5c023237ec5b09d74f43e1904cd7d",
+  "pngSha256": "78f72f363ef61378659e63a8dfcdc17dcc84cfc872cda0725817065bca939753",
+  "mp4Sha256": "045f46b0f47d2234b62c9b04ad60bdec5de19eb9bb75a217bb83f8bfd1bd5f6a",
+  "scriptSha256": "0b3c9c36a9fb2097a368a05d5209fd645073b716b5d8c772726e7d794a4b3338",
+  "AActualHistorySubsteps": 960,
+  "ARenderedArchivedFrames": 81,
+  "AImageSubsteps": [
+    0,
+    240,
+    480,
+    720,
+    960
+  ],
+  "BImagePreviewKind": "preview-0-3",
+  "BImagePreviewSubstep": 12,
+  "BActualHistorySubsteps": 0,
+  "BPreviewGroups": {
+    "preview-0-0": 12,
+    "preview-0-1": 12,
+    "preview-0-2": 12,
+    "preview-0-3": 12
+  },
+  "AOutcome": {
+    "diagnostic_present": true,
+    "integrity_ok": true,
+    "local_success": false,
+    "predictions_usable": true,
+    "support_feasible": true
+  },
+  "BRefusal": "All four native predictions refused; no substitute proposal",
+  "videoFps": 20,
+  "newNativeSubsteps": 0,
+  "newFkInspections": 0,
+  "newGeometryQueries": 0
+}
