@@ -123,6 +123,7 @@ def draw(ax,frame):
 
 if __name__=='__main__':
     segments=json.loads(MODEL.read_text())['segments'];data=extract()
+    assert sha(MODEL)==data['sourceSha256'][str(MODEL.relative_to(ROOT))], 'Canonical mesh changed since extraction'
     assert data['segmentIds']==[s['id'] for s in segments]
     a={r['nativeSubstep']:r for r in data['A']};last_b=data['BLastPreview']
     assert list(a)==list(range(0,961,12))
