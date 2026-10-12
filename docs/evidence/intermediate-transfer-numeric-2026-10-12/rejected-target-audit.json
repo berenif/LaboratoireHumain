@@ -1,0 +1,746 @@
+{
+  "status": "rejected-before-physical-run",
+  "scope": "offline target program, native static geometry, FK and force/moment LP; never a physically resolved support history",
+  "programSha256": "31c9827d181ede61a494fdc09c40acfcd71738f22c04c25c322ad4be83ee0dca",
+  "nativeGeometryBinarySha256": "36afdb6560a99236737e590538b76d999d4f0a699bc2006823604e3d5d7048d3",
+  "canonicalModelSha256": "083c13b2cce2d6033a4fc05cba8da7e78bd89634fb306629f4b7a9cd4a177a65",
+  "fixtureSha256": "0156d5b006c80e8f21261545f55554a43250fd7b616cfd39c4ec04020e257bfd",
+  "continuousClockSubsteps": 6000,
+  "keyframeCount": 53,
+  "maximumAnalyticTargetRateRadPerS": 0.9411764705882414,
+  "nativeCommandCompiledOnGrid": true,
+  "nativeStaticGeometry": {
+    "staticWorldInspections": 194,
+    "physicalIntegrations": 0,
+    "worstFloorM": -0.04161698371171951,
+    "worstSelfM": 0.008995871059596539,
+    "refusalCount": 0
+  },
+  "pureMeshGeometry": {
+    "positions": 530,
+    "minimumRawFloorM": -0.04236068576489947,
+    "minimumSupportAnchoredFloorM": -0.0008224158446372299,
+    "maximumActiveHeightAfterAnchorM": 0.027944236232598417,
+    "maximumAbsoluteRootShiftM": 0.044360685764899474,
+    "physicalIntegrations": 0
+  },
+  "lpSamples": [
+    {
+      "substep": 4610,
+      "timeS": 19.208333333333332,
+      "eligibleContacts": [
+        "leftHand",
+        "rightHand",
+        "leftFoot",
+        "leftForefoot",
+        "rightFoot",
+        "rightForefoot"
+      ],
+      "originalCaps": {
+        "timeS": 19.208333333333332,
+        "success": true,
+        "status": "Optimization terminated successfully. (HiGHS Status 7: Optimal)",
+        "virtualRootYShiftM": 7.54650893312666e-05,
+        "contactPointCount": 14,
+        "contactSegments": [
+          "leftFoot",
+          "leftForefoot",
+          "leftHand",
+          "rightFoot",
+          "rightForefoot",
+          "rightHand"
+        ],
+        "com": {
+          "x": 0.0007384051129021976,
+          "y": 0.6551734112965245,
+          "z": 0.3873424401516579
+        },
+        "aggregateCapNm": 760,
+        "anatomicalFactorLimit": 1,
+        "modelMassKg": 72.2,
+        "physicalIntegrations": 0,
+        "peakAnatomicalUtilization": 0.36707321488049854,
+        "aggregateTorqueNm": 151.4735205884249,
+        "largestSolvedJointRatio": {
+          "ratio": 0.3670732148804986,
+          "id": "leftShoulderGirdle",
+          "coordinate": "y",
+          "requestNm": 10.27805001665396,
+          "capNm": 28
+        },
+        "maxForceResidualN": 1.1368683772161603e-13,
+        "maxInequalityResidual": 7.105427357601002e-15
+      },
+      "feetOnlyOriginalCaps": {
+        "timeS": 19.208333333333332,
+        "success": false,
+        "status": "The problem is infeasible. (HiGHS Status 8: model_status is Infeasible; primal_status is None)",
+        "virtualRootYShiftM": 7.54650893312666e-05,
+        "contactPointCount": 12,
+        "contactSegments": [
+          "leftFoot",
+          "leftForefoot",
+          "rightFoot",
+          "rightForefoot"
+        ],
+        "com": {
+          "x": 0.0007384051129021976,
+          "y": 0.6551734112965245,
+          "z": 0.3873424401516579
+        },
+        "aggregateCapNm": 760,
+        "anatomicalFactorLimit": 1,
+        "modelMassKg": 72.2,
+        "physicalIntegrations": 0
+      },
+      "feetOnlyDiagnosticCapFactor1p3": {
+        "timeS": 19.208333333333332,
+        "success": true,
+        "status": "Optimization terminated successfully. (HiGHS Status 7: Optimal)",
+        "virtualRootYShiftM": 7.54650893312666e-05,
+        "contactPointCount": 12,
+        "contactSegments": [
+          "leftFoot",
+          "leftForefoot",
+          "rightFoot",
+          "rightForefoot"
+        ],
+        "com": {
+          "x": 0.0007384051129021976,
+          "y": 0.6551734112965245,
+          "z": 0.3873424401516579
+        },
+        "aggregateCapNm": 760,
+        "anatomicalFactorLimit": 1.3,
+        "modelMassKg": 72.2,
+        "physicalIntegrations": 0,
+        "peakAnatomicalUtilization": 1.0431873630640496,
+        "aggregateTorqueNm": 674.0177986801074,
+        "largestSolvedJointRatio": {
+          "ratio": 1.0431873630640496,
+          "id": "lumbar",
+          "coordinate": "x",
+          "requestNm": -104.31873630640496,
+          "capNm": 100
+        },
+        "maxForceResidualN": 8.526512829121202e-14,
+        "maxInequalityResidual": 5.174071630229145e-08
+      }
+    },
+    {
+      "substep": 4632,
+      "timeS": 19.3,
+      "eligibleContacts": [
+        "leftHand",
+        "rightHand",
+        "leftFoot",
+        "leftForefoot",
+        "rightFoot",
+        "rightForefoot"
+      ],
+      "originalCaps": {
+        "timeS": 19.3,
+        "success": true,
+        "status": "Optimization terminated successfully. (HiGHS Status 7: Optimal)",
+        "virtualRootYShiftM": 7.539134840780885e-05,
+        "contactPointCount": 14,
+        "contactSegments": [
+          "leftFoot",
+          "leftForefoot",
+          "leftHand",
+          "rightFoot",
+          "rightForefoot",
+          "rightHand"
+        ],
+        "com": {
+          "x": 0.0007384051120573307,
+          "y": 0.6552950053769402,
+          "z": 0.3862133130867243
+        },
+        "aggregateCapNm": 760,
+        "anatomicalFactorLimit": 1,
+        "modelMassKg": 72.2,
+        "physicalIntegrations": 0,
+        "peakAnatomicalUtilization": 0.36707321045476937,
+        "aggregateTorqueNm": 152.31206574017517,
+        "largestSolvedJointRatio": {
+          "ratio": 0.36707321045476937,
+          "id": "neck",
+          "coordinate": "x",
+          "requestNm": -8.809757050914465,
+          "capNm": 24
+        },
+        "maxForceResidualN": 1.1368683772161603e-13,
+        "maxInequalityResidual": 2.1316282072803006e-14
+      }
+    },
+    {
+      "substep": 4644,
+      "timeS": 19.35,
+      "eligibleContacts": [
+        "leftHand",
+        "rightHand",
+        "leftFoot",
+        "leftForefoot",
+        "rightFoot",
+        "rightForefoot"
+      ],
+      "originalCaps": {
+        "timeS": 19.35,
+        "success": false,
+        "status": "The problem is infeasible. (HiGHS Status 8: model_status is Infeasible; primal_status is None)",
+        "virtualRootYShiftM": 7.530567182582708e-05,
+        "contactPointCount": 12,
+        "contactSegments": [
+          "leftFoot",
+          "leftForefoot",
+          "rightFoot",
+          "rightForefoot"
+        ],
+        "com": {
+          "x": 0.0007384051111455787,
+          "y": 0.655480934414887,
+          "z": 0.3849070390462962
+        },
+        "aggregateCapNm": 760,
+        "anatomicalFactorLimit": 1,
+        "modelMassKg": 72.2,
+        "physicalIntegrations": 0
+      }
+    },
+    {
+      "substep": 4656,
+      "timeS": 19.4,
+      "eligibleContacts": [
+        "leftHand",
+        "rightHand",
+        "leftFoot",
+        "leftForefoot",
+        "rightFoot",
+        "rightForefoot"
+      ],
+      "originalCaps": {
+        "timeS": 19.4,
+        "success": false,
+        "status": "The problem is infeasible. (HiGHS Status 8: model_status is Infeasible; primal_status is None)",
+        "virtualRootYShiftM": 7.520386584613202e-05,
+        "contactPointCount": 12,
+        "contactSegments": [
+          "leftFoot",
+          "leftForefoot",
+          "rightFoot",
+          "rightForefoot"
+        ],
+        "com": {
+          "x": 0.0007384051101614075,
+          "y": 0.6557639292919748,
+          "z": 0.3833650085879869
+        },
+        "aggregateCapNm": 760,
+        "anatomicalFactorLimit": 1,
+        "modelMassKg": 72.2,
+        "physicalIntegrations": 0
+      }
+    },
+    {
+      "substep": 4668,
+      "timeS": 19.45,
+      "eligibleContacts": [
+        "leftHand",
+        "rightHand",
+        "leftFoot",
+        "leftForefoot",
+        "rightFoot",
+        "rightForefoot"
+      ],
+      "originalCaps": {
+        "timeS": 19.45,
+        "success": false,
+        "status": "The problem is infeasible. (HiGHS Status 8: model_status is Infeasible; primal_status is None)",
+        "virtualRootYShiftM": 7.509841774309793e-05,
+        "contactPointCount": 12,
+        "contactSegments": [
+          "leftFoot",
+          "leftForefoot",
+          "rightFoot",
+          "rightForefoot"
+        ],
+        "com": {
+          "x": 0.0007384051092575359,
+          "y": 0.6561275599421922,
+          "z": 0.3817824035374812
+        },
+        "aggregateCapNm": 760,
+        "anatomicalFactorLimit": 1,
+        "modelMassKg": 72.2,
+        "physicalIntegrations": 0
+      }
+    },
+    {
+      "substep": 4680,
+      "timeS": 19.5,
+      "eligibleContacts": [
+        "leftHand",
+        "rightHand",
+        "leftFoot",
+        "leftForefoot",
+        "rightFoot",
+        "rightForefoot"
+      ],
+      "originalCaps": {
+        "timeS": 19.5,
+        "success": true,
+        "status": "Optimization terminated successfully. (HiGHS Status 7: Optimal)",
+        "virtualRootYShiftM": 7.500181479211908e-05,
+        "contactPointCount": 12,
+        "contactSegments": [
+          "leftFoot",
+          "leftForefoot",
+          "rightFoot",
+          "rightForefoot"
+        ],
+        "com": {
+          "x": 0.0007384051085341896,
+          "y": 0.6565230399422897,
+          "z": 0.3803482974613471
+        },
+        "aggregateCapNm": 760,
+        "anatomicalFactorLimit": 1,
+        "modelMassKg": 72.2,
+        "physicalIntegrations": 0,
+        "peakAnatomicalUtilization": 0.9936492470392921,
+        "aggregateTorqueNm": 760.0000001234024,
+        "largestSolvedJointRatio": {
+          "ratio": 0.9936492470392921,
+          "id": "lumbar",
+          "coordinate": "x",
+          "requestNm": -99.36492470392922,
+          "capNm": 100
+        },
+        "maxForceResidualN": 6.252776074688882e-13,
+        "maxInequalityResidual": 5.4796117034207694e-08
+      }
+    },
+    {
+      "substep": 4692,
+      "timeS": 19.55,
+      "eligibleContacts": [
+        "leftHand",
+        "rightHand",
+        "leftFoot",
+        "leftForefoot",
+        "rightFoot",
+        "rightForefoot"
+      ],
+      "originalCaps": {
+        "timeS": 19.55,
+        "success": true,
+        "status": "Optimization terminated successfully. (HiGHS Status 7: Optimal)",
+        "virtualRootYShiftM": 7.492654426907545e-05,
+        "contactPointCount": 12,
+        "contactSegments": [
+          "leftFoot",
+          "leftForefoot",
+          "rightFoot",
+          "rightForefoot"
+        ],
+        "com": {
+          "x": 0.0007384051080408046,
+          "y": 0.6568720703434873,
+          "z": 0.37924294249967233
+        },
+        "aggregateCapNm": 760,
+        "anatomicalFactorLimit": 1,
+        "modelMassKg": 72.2,
+        "physicalIntegrations": 0,
+        "peakAnatomicalUtilization": 0.9858202391832667,
+        "aggregateTorqueNm": 721.7572133448447,
+        "largestSolvedJointRatio": {
+          "ratio": 0.9858202391832669,
+          "id": "rightThigh",
+          "coordinate": "x",
+          "requestNm": -147.87303587749003,
+          "capNm": 150
+        },
+        "maxForceResidualN": 1.1368683772161603e-13,
+        "maxInequalityResidual": 5.514123786343776e-08
+      }
+    },
+    {
+      "substep": 4709,
+      "timeS": 19.620833333333334,
+      "eligibleContacts": [
+        "leftHand",
+        "rightHand",
+        "leftFoot",
+        "leftForefoot",
+        "rightFoot",
+        "rightForefoot"
+      ],
+      "originalCaps": {
+        "timeS": 19.620833333333334,
+        "success": true,
+        "status": "Optimization terminated successfully. (HiGHS Status 7: Optimal)",
+        "virtualRootYShiftM": 7.488277995958657e-05,
+        "contactPointCount": 12,
+        "contactSegments": [
+          "leftFoot",
+          "leftForefoot",
+          "rightFoot",
+          "rightForefoot"
+        ],
+        "com": {
+          "x": 0.0007384051077711035,
+          "y": 0.6571016560533187,
+          "z": 0.37857648896002666
+        },
+        "aggregateCapNm": 760,
+        "anatomicalFactorLimit": 1,
+        "modelMassKg": 72.2,
+        "physicalIntegrations": 0,
+        "peakAnatomicalUtilization": 0.9810998823288785,
+        "aggregateTorqueNm": 629.6986206496246,
+        "largestSolvedJointRatio": {
+          "ratio": 0.9810998823288785,
+          "id": "lumbar",
+          "coordinate": "x",
+          "requestNm": -98.10998823288784,
+          "capNm": 100
+        },
+        "maxForceResidualN": 2.2737367544323206e-13,
+        "maxInequalityResidual": 5.5329889880747314e-08
+      }
+    },
+    {
+      "substep": 4800,
+      "timeS": 20.0,
+      "eligibleContacts": [
+        "leftHand",
+        "rightHand",
+        "leftFoot",
+        "leftForefoot",
+        "rightFoot",
+        "rightForefoot"
+      ],
+      "originalCaps": {
+        "timeS": 20.0,
+        "success": false,
+        "status": "The problem is infeasible. (HiGHS Status 8: model_status is Infeasible; primal_status is None)",
+        "virtualRootYShiftM": 0.0070694901970647425,
+        "contactPointCount": 12,
+        "contactSegments": [
+          "leftFoot",
+          "leftForefoot",
+          "rightFoot",
+          "rightForefoot"
+        ],
+        "com": {
+          "x": 0.0007047640949356906,
+          "y": 0.6842755045049278,
+          "z": 0.3734940200965369
+        },
+        "aggregateCapNm": 760,
+        "anatomicalFactorLimit": 1,
+        "modelMassKg": 72.2,
+        "physicalIntegrations": 0
+      }
+    },
+    {
+      "substep": 5040,
+      "timeS": 21.0,
+      "eligibleContacts": [
+        "leftHand",
+        "rightHand",
+        "leftFoot",
+        "leftForefoot",
+        "rightFoot",
+        "rightForefoot"
+      ],
+      "originalCaps": {
+        "timeS": 21.0,
+        "success": false,
+        "status": "The problem is infeasible. (HiGHS Status 8: model_status is Infeasible; primal_status is None)",
+        "virtualRootYShiftM": 0.043616739101218785,
+        "contactPointCount": 4,
+        "contactSegments": [
+          "rightFoot",
+          "rightForefoot"
+        ],
+        "com": {
+          "x": 0.00040367236861266106,
+          "y": 0.9023614893373816,
+          "z": 0.2705144166499272
+        },
+        "aggregateCapNm": 760,
+        "anatomicalFactorLimit": 1,
+        "modelMassKg": 72.2,
+        "physicalIntegrations": 0
+      }
+    },
+    {
+      "substep": 5280,
+      "timeS": 22.0,
+      "eligibleContacts": [
+        "leftHand",
+        "rightHand",
+        "leftFoot",
+        "leftForefoot",
+        "rightFoot",
+        "rightForefoot"
+      ],
+      "originalCaps": {
+        "timeS": 22.0,
+        "success": false,
+        "status": "The HiGHS status code was not recognized. (HiGHS Status 15: model_status is Unknown; primal_status is Infeasible)",
+        "virtualRootYShiftM": 0.016084547847749403,
+        "contactPointCount": 6,
+        "contactSegments": [
+          "rightFoot",
+          "rightForefoot"
+        ],
+        "com": {
+          "x": 7.067236788284631e-05,
+          "y": 1.0161584474522127,
+          "z": 0.05905731402244104
+        },
+        "aggregateCapNm": 760,
+        "anatomicalFactorLimit": 1,
+        "modelMassKg": 72.2,
+        "physicalIntegrations": 0
+      }
+    },
+    {
+      "substep": 5415,
+      "timeS": 22.5625,
+      "eligibleContacts": [
+        "leftHand",
+        "rightHand",
+        "leftFoot",
+        "leftForefoot",
+        "rightFoot",
+        "rightForefoot"
+      ],
+      "originalCaps": {
+        "timeS": 22.5625,
+        "success": true,
+        "status": "Optimization terminated successfully. (HiGHS Status 7: Optimal)",
+        "virtualRootYShiftM": 2.1976576860399666e-09,
+        "contactPointCount": 24,
+        "contactSegments": [
+          "leftFoot",
+          "leftForefoot",
+          "rightFoot",
+          "rightForefoot"
+        ],
+        "com": {
+          "x": -1.8260247115545337e-18,
+          "y": 1.0157269202941548,
+          "z": 0.007872216502072456
+        },
+        "aggregateCapNm": 760,
+        "anatomicalFactorLimit": 1,
+        "modelMassKg": 72.2,
+        "physicalIntegrations": 0,
+        "peakAnatomicalUtilization": 0.22804789103919212,
+        "aggregateTorqueNm": 136.92369364704166,
+        "largestSolvedJointRatio": {
+          "ratio": 0.22804789103919212,
+          "id": "rightShoulderGirdle",
+          "coordinate": "z",
+          "requestNm": 6.841436731175763,
+          "capNm": 30
+        },
+        "maxForceResidualN": 1.1368683772161603e-13,
+        "maxInequalityResidual": 2.1094237467877974e-15
+      }
+    }
+  ],
+  "overlapProjectedComZM": 0.387342396751865,
+  "singleFootSupportAtOverlap": {
+    "left": {
+      "nearFloorPointCount": 8,
+      "supportSagittalRangeZM": [
+        0.42689110386175094,
+        0.5798732721354086
+      ],
+      "projectedComMarginM": -0.03954870710988595,
+      "originalCaps": {
+        "timeS": 19.208333333333332,
+        "success": false,
+        "status": "The problem is infeasible. (HiGHS Status 8: model_status is Infeasible; primal_status is None)",
+        "virtualRootYShiftM": 7.54650893312666e-05,
+        "contactPointCount": 8,
+        "contactSegments": [
+          "leftFoot",
+          "leftForefoot"
+        ],
+        "com": {
+          "x": 0.0007384051129021976,
+          "y": 0.6551734112965245,
+          "z": 0.3873424401516579
+        },
+        "aggregateCapNm": 760,
+        "anatomicalFactorLimit": 1,
+        "modelMassKg": 72.2,
+        "physicalIntegrations": 0
+      },
+      "diagnosticCapsFactor10Aggregate3000Nm": {
+        "timeS": 19.208333333333332,
+        "success": false,
+        "status": "The problem is infeasible. (HiGHS Status 8: model_status is Infeasible; primal_status is None)",
+        "virtualRootYShiftM": 7.54650893312666e-05,
+        "contactPointCount": 8,
+        "contactSegments": [
+          "leftFoot",
+          "leftForefoot"
+        ],
+        "com": {
+          "x": 0.0007384051129021976,
+          "y": 0.6551734112965245,
+          "z": 0.3873424401516579
+        },
+        "aggregateCapNm": 3000,
+        "anatomicalFactorLimit": 10,
+        "modelMassKg": 72.2,
+        "physicalIntegrations": 0
+      }
+    },
+    "right": {
+      "nearFloorPointCount": 4,
+      "supportSagittalRangeZM": [
+        -0.2030257598465814,
+        -0.18423416860387315
+      ],
+      "projectedComMarginM": -0.5715765653557381,
+      "originalCaps": {
+        "timeS": 19.208333333333332,
+        "success": false,
+        "status": "The problem is infeasible. (HiGHS Status 8: model_status is Infeasible; primal_status is None)",
+        "virtualRootYShiftM": 1.3415377942468248e-06,
+        "contactPointCount": 4,
+        "contactSegments": [
+          "rightFoot",
+          "rightForefoot"
+        ],
+        "com": {
+          "x": 0.0007384051129021976,
+          "y": 0.6550992877449875,
+          "z": 0.3873424401516579
+        },
+        "aggregateCapNm": 760,
+        "anatomicalFactorLimit": 1,
+        "modelMassKg": 72.2,
+        "physicalIntegrations": 0
+      },
+      "diagnosticCapsFactor10Aggregate3000Nm": {
+        "timeS": 19.208333333333332,
+        "success": false,
+        "status": "The problem is infeasible. (HiGHS Status 8: model_status is Infeasible; primal_status is None)",
+        "virtualRootYShiftM": 1.3415377942468248e-06,
+        "contactPointCount": 4,
+        "contactSegments": [
+          "rightFoot",
+          "rightForefoot"
+        ],
+        "com": {
+          "x": 0.0007384051129021976,
+          "y": 0.6550992877449875,
+          "z": 0.3873424401516579
+        },
+        "aggregateCapNm": 3000,
+        "anatomicalFactorLimit": 10,
+        "modelMassKg": 72.2,
+        "physicalIntegrations": 0
+      }
+    }
+  },
+  "declaredSoleContactMaterialPointDrift": {
+    "rightFoot": {
+      "declaredContactStartSubstep": 2520,
+      "declaredContactEndSubstep": 6000,
+      "materialPointByStep": [
+        {
+          "substep": 2520,
+          "worldXYZM": [
+            0.03802839912661139,
+            0.005338036008294911,
+            -0.37786261637642554
+          ]
+        },
+        {
+          "substep": 4610,
+          "worldXYZM": [
+            0.03873840411398727,
+            0.0020000000000000295,
+            -0.2030255708877009
+          ]
+        },
+        {
+          "substep": 5040,
+          "worldXYZM": [
+            0.038403671523849645,
+            -0.041616332436917224,
+            -0.07843352698663866
+          ]
+        },
+        {
+          "substep": 5415,
+          "worldXYZM": [
+            0.03799999892711639,
+            0.001999997802342328,
+            0.11000000525401656
+          ]
+        }
+      ],
+      "startToStandingPlaneDisplacementM": 0.48786262245707984
+    },
+    "leftFoot": {
+      "declaredContactStartSubstep": 4610,
+      "declaredContactEndSubstep": 6000,
+      "materialPointByStep": [
+        {
+          "substep": 4610,
+          "worldXYZM": [
+            -0.13326159457471054,
+            0.0019245349106687334,
+            0.4268912928374663
+          ]
+        },
+        {
+          "substep": 4610,
+          "worldXYZM": [
+            -0.13326159457471054,
+            0.0019245349106687334,
+            0.4268912928374663
+          ]
+        },
+        {
+          "substep": 5040,
+          "worldXYZM": [
+            -0.13359632716484815,
+            -0.03280286918209835,
+            0.20636539403356913
+          ]
+        },
+        {
+          "substep": 5415,
+          "worldXYZM": [
+            -0.13399999976158142,
+            0.001999997802342314,
+            -0.04000000070644792
+          ]
+        }
+      ],
+      "startToStandingPlaneDisplacementM": 0.4668918774505822
+    }
+  },
+  "rejectedLumbarCounterfactual": {
+    "startingQRad": 0.31414902003867007,
+    "anatomicalMaximumRad": 0.3141592653589793,
+    "attemptedExtraRad": 0.06,
+    "nativeValidationError": "Anatomical command limit lumbar[0] measured q=0.32014903",
+    "diagnosticOnly": true
+  },
+  "physicalIntegrations": 0,
+  "dynamicOutcome": "not-run; admission rejected"
+}
