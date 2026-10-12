@@ -4,6 +4,7 @@ use super::*;
 use serde_json::{Value, json};
 
 pub(crate) mod full_trajectory;
+pub(crate) mod getup_ab;
 pub(crate) mod hand_support_experiment;
 pub(crate) mod offline_trajectory;
 mod whole_history;

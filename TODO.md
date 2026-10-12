@@ -5,7 +5,7 @@
 - [x] Vérifier `42fccd3`, checkout propre, programme get_up_control exact ; anciens budgets clos.
 - [x] Différer explicitement la certification exhaustive P1 pour ce seul jalon,
   sans modifier les critères physiques ni prétendre le solveur certifié.
-- [ ] Préparer propriétaire unique, retour coordonné borné, observations anatomiques
+- [x] Préparer propriétaire unique, retour coordonné borné, observations anatomiques
   horodatées et terminal original ; figer avant témoin puis candidat.
 - [ ] Appliquer 3 histoires/18 720 pas/600 s, répétition seulement après succès complet.
 - [ ] Clôturer sans renouvellement ; vidéo issue des états enregistrés et verdict fidèle.

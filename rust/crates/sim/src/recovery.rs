@@ -20,9 +20,17 @@ pub(crate) fn offline_trajectory_before_step(
     s: &mut Simulation,
     substep: u32,
 ) -> Result<(), measurement::Failure> {
+    if support_probe::getup_ab::active() {
+        return Ok(());
+    }
     support_probe::full_trajectory::before_step(s, substep)?;
     support_probe::hand_support_experiment::before_step(s, substep)?;
     support_probe::offline_trajectory::before_step(s, substep)
+}
+
+#[cfg(test)]
+pub(crate) fn getup_ab_configure(s: &mut Simulation) -> Result<bool, String> {
+    support_probe::getup_ab::configure(s)
 }
 
 #[cfg(all(test, feature = "experimental-solver-step-observation"))]

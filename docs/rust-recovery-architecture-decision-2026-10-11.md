@@ -29,6 +29,13 @@ après huit histoires ; aucune recherche lancée. Le [rapport de clôture](rust-
 distingue le diagnostic angulaire, la neutralité acquise et le certificat manquant.
 Ce registre ne peut pas être repris ou remis à zéro.
 
+**Décision du 12 octobre :** le propriétaire autorise une comparaison A/B limitée
+sur le programme get_up_control existant. La certification exhaustive P1 est
+différée pour ce seul jalon ; le solveur reste non certifié, les critères
+physiques inchangés, les anciens registres fermés. Cette exception explicite
+remplace la dépendance P1 ci-dessous pour A/B seulement, sans autoriser la
+recherche hybride : [décision, prérequis ciblés et plafonds](rust-getup-ab-decision-2026-10-12.md).
+
 ## Ce que les preuves imposent au nouveau plan
 
 - Les 96 histoires du registre `native-campaign/ledger.json`, identifiants

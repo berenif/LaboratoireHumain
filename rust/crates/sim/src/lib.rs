@@ -529,6 +529,10 @@ impl Simulation {
         Ok(result)
     }
     fn configure_motors(&mut self) -> Result<(), String> {
+        #[cfg(test)]
+        if recovery::getup_ab_configure(self)? {
+            return Ok(());
+        }
         if self.profile.recovery_enabled
             && self.motion == Motion::Fallen
             && self.recovery.is_none()

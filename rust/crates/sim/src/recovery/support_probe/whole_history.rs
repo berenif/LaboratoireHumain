@@ -1,5 +1,5 @@
 //! Explicit whole-history worker. Never runs through production or normal tests.
-use super::{contacts, full_trajectory, observe, velocity};
+use super::{contacts, full_trajectory, getup_ab, observe, velocity};
 use crate::{Simulation, measurement, recovery};
 use lh_contracts::Motion;
 use rapier3d::prelude::Rotation;
@@ -53,6 +53,9 @@ fn run_whole_reference_native_history() {
     assert!(perturb == 0.0 || (perturb - 2.0_f32.to_radians()).abs() < 1e-6);
     let idle_validation = std::env::var("LH_WHOLE_IDLE_VALIDATION").is_ok_and(|s| s == "1");
     let controller_control = std::env::var("LH_WHOLE_CONTROLLER_CONTROL").is_ok_and(|s| s == "1");
+    let ab_mode = std::env::var("LH_GETUP_AB_MODE").ok();
+    assert!(ab_mode.as_deref().is_none_or(|v| v == "A" || v == "B"));
+    assert!(ab_mode.is_none() || (!idle_validation && !controller_control));
     let mut poses = fixture.poses.clone();
     // Optional qualification perturbation is part of the initial fixture only.
     if heading != fixture.heading || perturb != 0.0 {
@@ -107,7 +110,9 @@ fn run_whole_reference_native_history() {
     let limit = contract.acceptance.recovery_limit_s + contract.acceptance.stable_observation_s;
     let required_hold =
         crate::recovery_contract::substeps(contract.acceptance.stable_observation_s);
-    if !controller_control {
+    if let Some(mode) = &ab_mode {
+        getup_ab::activate(program, &s, mode == "B");
+    } else if !controller_control {
         full_trajectory::activate_history(program, s.substeps_completed);
     }
     for _ in 0..(limit * 60.0).ceil() as usize {
@@ -154,7 +159,7 @@ fn run_whole_reference_native_history() {
             maximum_delivered = maximum_delivered.max(delivered);
             let standing = height > 0.93 && measurement::standing_support(state,substep).is_ok();
             // A standing start in the crouch cannot substitute for the full reference route.
-            let route_standing = standing && minimum_height < 0.60;
+            let route_standing = standing && (ab_mode.is_some() || minimum_height < 0.60);
             if route_standing && first_standing.is_none() {first_standing = Some(time);}
             if state.counters.recoveries > 0 && first_recovery.is_none() {first_recovery = Some(time);}
             let still = state.bodies.iter().all(|h| {
@@ -172,6 +177,12 @@ fn run_whole_reference_native_history() {
                 "quietHoldSubsteps":hold,"recoveries":state.counters.recoveries,"motion":state.motion,
                 "bodiesHash":hash(&state.world.bodies),"motorsHash":hash(&state.world.impulse_joints),
                 "contactsHash":hash(&state.world.narrow_phase)});
+            let mut row = row;
+            if ab_mode.is_some() {
+                row["command"] = getup_ab::last_command();
+                row["persistentAnatomicalContacts"] = json!(getup_ab::persistent_contacts(state).unwrap());
+                row["terminalStatus"] = json!(state.recovery_status());
+            }
             serde_json::to_writer(&mut numeric,&row).unwrap();numeric.write_all(b"\n").unwrap();
             if state.substeps_completed == 1 || state.substeps_completed % 12 == 0 {
                 let record = json!({"physical":observe(state,prior),"resolvedLoadsN":loads});
@@ -202,7 +213,11 @@ fn run_whole_reference_native_history() {
         trace.flush().unwrap();
         recovery::planner::contact_observation::finish();
     }
-    let (released, cap, ratio) = full_trajectory::finish_history();
+    let (released, cap, ratio) = if ab_mode.is_some() {
+        getup_ab::finish()
+    } else {
+        full_trajectory::finish_history()
+    };
     numeric.flush().unwrap();
     frames.flush().unwrap();
     let success = failure.is_none()
@@ -289,6 +304,7 @@ fn run_whole_reference_native_history() {
         "firstRefusal":failure,"fullRecoverySuccess":success,"firstNativeRecoveryS":first_recovery,
         "headingRadians":heading,"initialPerturbationDegrees":perturb.to_degrees(),
         "originalControllerControl":controller_control,
+        "getupAbMode":ab_mode,"getupAbParameters":serde_json::from_str::<Value>(getup_ab::PARAMETERS).unwrap(),
         "idleValidationRequested":idle_validation,"idleFailure":idle_failure,"idleObservedSubsteps":idle_steps,
         "idleMetrics":quiet,"validationPassed":success&&(!idle_validation || idle_failure.is_none()&&idle_steps>=crate::recovery_contract::substeps(contract.acceptance.idle_duration_s)),
         "firstRouteStandingS":first_standing,"minimumPelvisHeightM":minimum_height,

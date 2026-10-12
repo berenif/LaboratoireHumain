@@ -54,3 +54,54 @@ par SHA. Les preuves porteront sur les contacts anatomiques persistants et leur
 horodatage, le suivi articulaire, l'accélération CoM, les couples/caps, les
 horloges et le verdict terminal. Vidéo depuis états archivés, légendée selon le
 résultat, sans nouvelle simulation de rendu.
+
+## Exécuteur expérimental préparé
+
+`getup_ab.rs` court-circuite la production de commandes historique pendant son
+autorité ; les autres hooks expérimentaux sont également exclus. Les moteurs
+sont installés une fois par sous-pas avec l'installateur natif commun et sa règle
+d'allocation. Dès Handoff, la propriété retourne définitivement au contrôle
+natif. Le banc A est donc un témoin du **nouvel exécuteur sans correction**,
+distinct du témoin historique qui mettait à jour puis écrasait ses commandes.
+
+B utilise les Jacobiennes instantanées des points et des centres de masse
+réellement mesurés, avec les générateurs du chart quaternion natif couplé.
+Il demande le freinage du point de capture vers les appuis présents, tout en
+réduisant les mouvements relatifs de leurs surfaces ; les 46 coordonnées
+participent au même problème borné. Le modèle cinématique suppose que ces
+variations de forme peuvent s'effectuer autour du support. La rotation libre
+de la racine, le suivi dynamique et les charges produites restent des inconnues
+mesurées dans Rapier, sans certificat de faisabilité.
+
+Paramètres fixes : gain capture 4/s, vitesse relative CoM 0,15 m/s, correction
+algébrique de vitesse 0,25 rad/s, offset maximal 0,12 rad, régularisation 0,001,
+poids relatif contact 4, 24 balayages de coordonnées. Le nominal, ses vitesses
+analytiques et son horloge ne changent pas. Une correction nulle conserve les
+bits nominaux ; l'intersection anatomie/slew et la vitesse totale ≤1 rad/s sont
+vérifiées à chaque commande. Aucune consigne globale du bassin n'est installée.
+
+Les contacts portent le sous-pas natif, le segment, le point local/world et la
+persistance segmentaire intégrée originale. La région postérieure du Foot est
+un diagnostic anatomique, pas un nouveau seuil de réussite. Une impulsion
+sélectionnée du dernier intervalle CCD n'est pas une force totale du sous-pas.
+
+Le progrès anti-stagnation provient de la projection des coordonnées **mesurées**
+sur le parcours nominal complet, jamais du temps ou d'un index de phase. Le
+timer f32 original de 3 s reste continu ; le dépassement arrête le banc plutôt
+que de relancer un contrôleur. Celui de perte de support de 0,20 s est également
+continu. Les phases d'intention Brace/Stand ne réinitialisent aucun timer du
+runtime. La demande Stand commence à la fin nominale du programme ; le settle,
+le handoff et le compteur restent attribués par `observe_recovery` original.
+Un refus de cet observateur interdit de recréer la récupération pendant l'essai.
+
+Les tests de convention, neutralité et transfert de propriété sont sans
+intégration. Ils ne remplacent pas la preuve physique d'un terminal chargé ;
+seule une histoire complète peut fournir cette preuve. Aucune réussite complète
+ni qualification n'est acquise au stade de préparation.
+
+Vérifications de préparation : build release et Clippy strict tous targets avec
+et sans fonctionnalité passent ; trois tests Rust nouveaux et le handoff
+original 143/144 passent, chacun sans intégration ; six tests Python du registre
+passent. Format/diff vérifiés. Aucune suite complète, aucune résolution des
+échecs hybrides/TypeScript historiques revendiquée. Ces vérifications autorisent
+le banc expérimental borné ; elles ne certifient pas un handoff physique positif.
