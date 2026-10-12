@@ -36,7 +36,7 @@ pub(crate) struct FootTarget {
     pub forefoot_rotation_xyzw: [f64; 4],
 }
 
-pub(crate) const PARAMETERS: &str = r#"{"version":"coordinated-transition-v1","controlHz":60,"previewHz":10,"previewSteps":480,"candidates":[0.0,0.5,1.0,1.5],"comPositionGainPerS":2.0,"comSpeedLimitMps":0.15,"footRotationGainPerS":2.0,"posturePositionGainPerS":2.0,"postureWeight":0.25,"regularization":0.05,"hardMaterialVelocityToleranceMps":0.005,"materialMatchToleranceM":0.012,"maximumTargetOffsetRad":0.12,"iterations":512,"supportProof":"original thresholds unchanged"}"#;
+pub(crate) const PARAMETERS: &str = r#"{"version":"coordinated-transition-v2-numeric","solver":"feasible-active-set-newton","commandCompilation":"direct-exact-then-one-ulp-interior","maximumSolvesPerTick":2,"controlHz":60,"previewHz":10,"previewSteps":480,"candidates":[0.0,0.5,1.0,1.5],"comPositionGainPerS":2.0,"comSpeedLimitMps":0.15,"footRotationGainPerS":2.0,"posturePositionGainPerS":2.0,"postureWeight":0.25,"regularization":0.05,"hardMaterialVelocityToleranceMps":0.005,"materialMatchToleranceM":0.012,"maximumTargetOffsetRad":0.12,"iterations":512,"supportProof":"original thresholds unchanged"}"#;
 
 /// Initial fixture construction only. No settling, integration, or later reset.
 pub(crate) fn scene(
@@ -90,6 +90,7 @@ pub(crate) struct Controller {
     unsupported_s: f32,
     maximum_cap: f64,
     last: Value,
+    last_attempt: Value,
 }
 
 impl Controller {
@@ -174,13 +175,98 @@ impl Controller {
             unsupported_s: 0.,
             maximum_cap: 0.,
             last: Value::Null,
+            last_attempt: Value::Null,
         })
     }
     pub(crate) fn evidence(&self) -> Value {
         json!({"enabled":self.enabled,"feedbackScale":self.feedback_scale,"start":self.start,"previousStep":self.previous_step,
             "q":self.memory.previous,"nextSubstep":self.memory.next_substep,"rates":self.memory.rates.to_vec(),
-            "patches":self.patches,"bestProgress":self.best_progress,"stalledS":self.stalled_s,"unsupportedS":self.unsupported_s,"maximumCapNm":self.maximum_cap,"last":self.last})
+            "patches":self.patches,"bestProgress":self.best_progress,"stalledS":self.stalled_s,"unsupportedS":self.unsupported_s,"maximumCapNm":self.maximum_cap,"last":self.last,"numericAttempt":self.last_attempt})
     }
+    /// Rebuild the same numeric task from observed body states and retained patches.
+    /// This only reads geometry; it never integrates or changes a body.
+    fn problem_observed(
+        &self,
+        model: &lh_model::Model,
+        heading: Rotation,
+        observed: &tasks::ObservedState,
+        step: u64,
+    ) -> Result<super::whole_body_tasks::Problem, String> {
+        let nominal = self.program.command(step as u32);
+        let reference =
+            &self.reference.rows[(step / 4).min(self.reference.rows.len() as u64 - 1) as usize];
+        let rotated = |a: [f64; 3]| heading * Vector::from_array(a.map(|v| v as f32));
+        let com_ref = rotated(reference.com_position_m);
+        let v_ref = rotated(reference.com_velocity_mps);
+        let error = com_ref - observed.center_of_mass();
+        let mut com_goal = v_ref + error * (2. * self.feedback_scale as f32);
+        // CoM vertical speed is a task too; this bound is intent, not a relaxed diagnostic.
+        com_goal = com_goal.clamp_length_max(0.15);
+        let mut posture = nominal.clone();
+        for i in 0..25 {
+            for k in 0..3 {
+                posture.velocities[i][k] = (nominal.velocities[i][k]
+                    + 2. * (nominal.positions[i][k] - self.memory.previous[i][k]))
+                    .clamp(-1., 1.);
+            }
+        }
+        let mut goals = tasks::TaskGoals {
+            nominal: posture,
+            com_velocity_mps: com_goal.to_array().map(f64::from),
+            com_weight: self.feedback_scale,
+            point_tasks: vec![],
+            orientation_tasks: vec![],
+            posture_weight: 0.25,
+            regularization: 0.05,
+            retained_velocity_tolerance_mps: 0.005,
+        };
+        for foot in &reference.feet {
+            for (suffix, target) in [
+                ("Foot", foot.hindfoot_rotation_xyzw),
+                ("Forefoot", foot.forefoot_rotation_xyzw),
+            ] {
+                let segment = model
+                    .segments
+                    .iter()
+                    .position(|part| part.id == format!("{}{suffix}", foot.side))
+                    .ok_or("Missing reference foot body")?;
+                let desired = heading * Rotation::from_array(target.map(|v| v as f32));
+                let actual = observed.bodies[segment].rotation();
+                let mut delta = desired * actual.inverse();
+                if delta.w < 0. {
+                    delta = -delta;
+                }
+                let velocity = delta.to_scaled_axis() * (2. * self.feedback_scale as f32);
+                goals.orientation_tasks.push(tasks::OrientationGoal {
+                    segment,
+                    world_angular_velocity_radps: velocity.to_array().map(f64::from),
+                    weight: self.feedback_scale,
+                });
+            }
+        }
+        let layout = runtime::axes(model)?;
+        let mut problem = tasks::assemble_observed(model, observed, &self.patches.active, &goals)?;
+        for (i, a) in layout.iter().enumerate() {
+            let previous = self.memory.previous[a.segment][a.coordinate] as f64;
+            let target = nominal.positions[a.segment][a.coordinate] as f64;
+            let dt = 4. * lh_contracts::SUBSTEP_S as f64;
+            problem.lower[i] =
+                problem.lower[i].max(((target - 0.12).max(a.minimum as f64) - previous) / dt);
+            problem.upper[i] =
+                problem.upper[i].min(((target + 0.12).min(a.maximum as f64) - previous) / dt);
+        }
+        Ok(problem)
+    }
+
+    fn problem(
+        &self,
+        sim: &Simulation,
+        step: u64,
+    ) -> Result<super::whole_body_tasks::Problem, String> {
+        let observed = tasks::ObservedState::from_simulation(sim)?;
+        self.problem_observed(&sim.model, sim.heading, &observed, step)
+    }
+
     pub(crate) fn configure(&mut self, sim: &mut Simulation) -> Result<(), String> {
         if ![0., 0.5, 1., 1.5].contains(&self.feedback_scale) {
             return Err("Unfrozen coordination proposal".into());
@@ -279,53 +365,6 @@ impl Controller {
                     "Retained material support vanished; this route has no replacement".into(),
                 );
             }
-            let reference =
-                &self.reference.rows[(step / 4).min(self.reference.rows.len() as u64 - 1) as usize];
-            let rotated = |a: [f64; 3]| sim.heading * Vector::from_array(a.map(|v| v as f32));
-            let com_ref = rotated(reference.com_position_m);
-            let v_ref = rotated(reference.com_velocity_mps);
-            let error = com_ref - sim.center_of_mass();
-            let mut com_goal = v_ref + error * (2. * self.feedback_scale as f32);
-            // CoM vertical speed is a task too; this bound is intent, not a relaxed diagnostic.
-            com_goal = com_goal.clamp_length_max(0.15);
-            let mut posture = nominal.clone();
-            for i in 0..25 {
-                for k in 0..3 {
-                    posture.velocities[i][k] = (nominal.velocities[i][k]
-                        + 2. * (nominal.positions[i][k] - self.memory.previous[i][k]))
-                        .clamp(-1., 1.);
-                }
-            }
-            let mut goals = tasks::TaskGoals {
-                nominal: posture,
-                com_velocity_mps: com_goal.to_array().map(f64::from),
-                com_weight: self.feedback_scale,
-                point_tasks: vec![],
-                orientation_tasks: vec![],
-                posture_weight: 0.25,
-                regularization: 0.05,
-                retained_velocity_tolerance_mps: 0.005,
-            };
-            for foot in &reference.feet {
-                for (suffix, target) in [
-                    ("Foot", foot.hindfoot_rotation_xyzw),
-                    ("Forefoot", foot.forefoot_rotation_xyzw),
-                ] {
-                    let segment = recovery::index(sim, &format!("{}{suffix}", foot.side));
-                    let desired = sim.heading * Rotation::from_array(target.map(|v| v as f32));
-                    let actual = *sim.world.bodies[sim.bodies[segment]].rotation();
-                    let mut delta = desired * actual.inverse();
-                    if delta.w < 0. {
-                        delta = -delta;
-                    }
-                    let velocity = delta.to_scaled_axis() * (2. * self.feedback_scale as f32);
-                    goals.orientation_tasks.push(tasks::OrientationGoal {
-                        segment,
-                        world_angular_velocity_radps: velocity.to_array().map(f64::from),
-                        weight: self.feedback_scale,
-                    });
-                }
-            }
             let layout = runtime::axes(&sim.model)?;
             if self.patches.active.is_empty() {
                 // The initial fixture is 1 mm above the floor. This acquisition
@@ -352,33 +391,25 @@ impl Controller {
                 solve_report =
                     json!({"phase":"unloaded acquisition prefix","supportCertified":false});
             } else {
-                let mut problem = tasks::assemble(sim, &self.patches.active, &goals)?;
-                for (i, a) in layout.iter().enumerate() {
-                    let previous = self.memory.previous[a.segment][a.coordinate] as f64;
-                    let target = nominal.positions[a.segment][a.coordinate] as f64;
-                    let dt = 4. * sim.profile.dt_s as f64;
-                    problem.lower[i] = problem.lower[i]
-                        .max(((target - 0.12).max(a.minimum as f64) - previous) / dt);
-                    problem.upper[i] = problem.upper[i]
-                        .min(((target + 0.12).min(a.maximum as f64) - previous) / dt);
+                let problem = self.problem(sim, step)?;
+                let mut trace = Value::Null;
+                self.last_attempt = json!({"nativeSubstep":step,"problem":problem_json(&problem),"status":"pending"});
+                let compiled = runtime::compile_problem_traced(
+                    &sim.model,
+                    &self.memory,
+                    sim.substeps_completed,
+                    &problem,
+                    &mut trace,
+                );
+                self.last_attempt["compilation"] = trace;
+                if compiled.is_err() {
+                    self.last_attempt["status"] = json!("refused before installation");
                 }
-                let solution = problem.solve()?;
-                self.memory.rates = solution.rates;
-                let mut check = self.memory.clone();
-                let end = sim
-                    .substeps_completed
-                    .checked_add(4)
-                    .ok_or("Owner command clock overflow")?;
-                for native in sim.substeps_completed..end {
-                    let (emitted, next) = runtime::command(&sim.model, &check, native)?;
-                    let mut rates = [0.; 46];
-                    for (i, a) in layout.iter().enumerate() {
-                        rates[i] = emitted.velocities[a.segment][a.coordinate] as f64;
-                    }
-                    problem.verify_rates(&rates)?;
-                    check = next;
-                }
-                solve_report = json!({"iterations":solution.iterations,"hardError":solution.maximum_constraint_error,"projectedGradientResidual":solution.projected_gradient_residual});
+                let (next, solution, certificate) = compiled?;
+                self.memory = next;
+                self.last_attempt["status"] = json!("certified before installation");
+                solve_report = json!({"iterations":solution.iterations,"hardError":solution.maximum_constraint_error,"projectedGradientResidual":solution.projected_gradient_residual,
+                    "maximumRateRepresentationError":certificate.maximum_observed_rate_error,"rateErrorBounds":certificate.rate_error_bounds.to_vec(),"certifiedCommands":certificate.commands.len()});
             }
         }
         let command = if self.enabled && !self.patches.active.is_empty() {
@@ -450,6 +481,12 @@ impl Controller {
     }
 }
 
+fn problem_json(problem: &super::whole_body_tasks::Problem) -> Value {
+    json!({"lower":problem.lower.to_vec(),"upper":problem.upper.to_vec(),"regularization":problem.regularization,
+        "hard":problem.hard.iter().map(|t|json!({"name":t.name,"row":t.row.to_vec(),"lower":t.lower,"upper":t.upper})).collect::<Vec<_>>(),
+        "soft":problem.soft.iter().map(|t|json!({"row":t.row.to_vec(),"target":t.target,"weight":t.weight})).collect::<Vec<_>>()})
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -506,5 +543,244 @@ mod tests {
         );
         assert!(sim.coordination.is_none());
         assert_eq!(sim.substeps_completed, 0);
+    }
+    fn archived_problems() -> (
+        lh_model::Model,
+        runtime::Memory,
+        Vec<(f64, super::super::whole_body_tasks::Problem)>,
+        Value,
+    ) {
+        // Read-only reconstruction: no Simulation or PhysicsWorld is constructed.
+        let root = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("../../../docs/evidence");
+        let fixture: Value = serde_json::from_slice(
+            &std::fs::read(
+                root.join("coordination-numeric-correction-2026-10-12/archived-step12.json"),
+            )
+            .unwrap(),
+        )
+        .unwrap();
+        let model: lh_model::Model = serde_json::from_str(lh_model::CANONICAL_JSON).unwrap();
+        let poses: Vec<lh_model::Pose> =
+            serde_json::from_value(fixture["physical"]["snapshot"]["segments"].clone()).unwrap();
+        let bodies = poses
+            .iter()
+            .enumerate()
+            .map(|(i, p)| {
+                let properties: MassProperties = serde_json::from_value(
+                    fixture["archivedLocalMassProperties"][i]["localMassProperties"].clone(),
+                )
+                .unwrap();
+                let pose = Pose::from_parts(crate::vector(p.position), crate::rotation(p.rotation));
+                tasks::ObservedBody {
+                    position_m: crate::vector(p.position).to_array(),
+                    rotation_xyzw: crate::rotation(p.rotation).to_array(),
+                    linear_velocity_mps: crate::vector(p.linear_velocity).to_array(),
+                    angular_velocity_radps: crate::vector(p.angular_velocity).to_array(),
+                    world_center_of_mass_m: properties.world_com(&pose).to_array(),
+                    mass_kg: properties.mass(),
+                }
+            })
+            .collect();
+        let observed = tasks::ObservedState {
+            native_substep: 12,
+            bodies,
+        };
+        let archived_com: [f64; 3] =
+            serde_json::from_value(fixture["physical"]["support"]["center_of_mass_m"].clone())
+                .unwrap();
+        assert_eq!(
+            observed.center_of_mass().to_array().map(f32::to_bits),
+            archived_com.map(|v| (v as f32).to_bits()),
+            "Native f32 CoM reconstruction must be bit exact"
+        );
+        let previous =
+            serde_json::from_value(fixture["ownerBeforeConfigure"]["q"].clone()).unwrap();
+        let memory = runtime::initialize(&model, previous, 12, 0).unwrap();
+        let program: recovery::trajectory_program::Program =
+            serde_json::from_value(fixture["commandProgram"].clone()).unwrap();
+        let reference: ReferenceTasks = serde_json::from_slice(
+            &std::fs::read(root.join("coordination-prototype-2026-10-12/continuation-tasks.json"))
+                .unwrap(),
+        )
+        .unwrap();
+        let mut problems = Vec::new();
+        for case in fixture["cases"].as_array().unwrap() {
+            let owner = Controller {
+                program: program.clone().compile(&model).unwrap(),
+                reference: reference.clone(),
+                enabled: true,
+                feedback_scale: case["feedbackScale"].as_f64().unwrap(),
+                memory: memory.clone(),
+                patches: serde_json::from_value(case["terminalOwner"]["patches"].clone()).unwrap(),
+                start: 0,
+                previous_step: Some(11),
+                best_progress: 0.,
+                stalled_s: 0.,
+                unsupported_s: 0.,
+                maximum_cap: 0.,
+                last: Value::Null,
+                last_attempt: Value::Null,
+            };
+            problems.push((
+                owner.feedback_scale,
+                owner
+                    .problem_observed(&model, Rotation::IDENTITY, &observed, 12)
+                    .unwrap(),
+            ));
+        }
+        (model, memory, problems, fixture)
+    }
+    #[test]
+    fn archived_step12_problem_reconstruction_without_integration() {
+        let (_, memory, problems, fixture) = archived_problems();
+        assert_eq!(problems.len(), 4);
+        let hard = problem_json(&problems[0].1)["hard"].clone();
+        for (_, problem) in &problems {
+            assert_eq!(problem_json(problem)["hard"], hard);
+        }
+        let output = json!({"scope":"pure archived-state numeric reconstruction; no Simulation, world, FK or native integration",
+            "sourceArchivedFixtureSha256":"79c0feb2d4bf3ea4b336b8d23782bf897cecadda826d081a83d2d880209d873d",
+            "nativeSubstep":12,"previousQ":memory.previous,"nativeF32ComMatchesArchiveBitwise":true,
+            "cases":problems.iter().enumerate().map(|(i,(scale,p))|json!({"feedbackScale":scale,"problem":problem_json(p),"frozenRejectedF64Rates":fixture["cases"][i]["rejectedF64Rates"]})).collect::<Vec<_>>()});
+        if let Ok(path) = std::env::var("LH_NUMERIC_REPLAY_EXPORT") {
+            std::fs::write(path, serde_json::to_vec_pretty(&output).unwrap()).unwrap();
+        }
+    }
+    mod frozen_solver {
+        include!(concat!(
+            env!("CARGO_MANIFEST_DIR"),
+            "/../../../docs/evidence/coordination-numeric-correction-2026-10-12/frozen-solver-replay.rs"
+        ));
+    }
+    #[test]
+    fn archived_step12_reproduces_all_four_frozen_refusals_without_integration() {
+        let (model, memory, problems, fixture) = archived_problems();
+        let mut cases = Vec::new();
+        let layout = runtime::axes(&model).unwrap();
+        for (case_index, (scale, p)) in problems.iter().enumerate() {
+            let old = frozen_solver::Problem {
+                lower: p.lower,
+                upper: p.upper,
+                regularization: p.regularization,
+                hard: p
+                    .hard
+                    .iter()
+                    .map(|t| frozen_solver::HardTask {
+                        name: t.name.clone(),
+                        row: t.row,
+                        lower: t.lower,
+                        upper: t.upper,
+                    })
+                    .collect(),
+                soft: p
+                    .soft
+                    .iter()
+                    .map(|t| frozen_solver::Task {
+                        row: t.row,
+                        target: t.target,
+                        weight: t.weight,
+                    })
+                    .collect(),
+            };
+            match old.solve() {
+                Ok(solution) => {
+                    assert_eq!(case_index, 0);
+                    let archived: Vec<f64> =
+                        serde_json::from_value(fixture["cases"][0]["rejectedF64Rates"].clone())
+                            .unwrap();
+                    assert_eq!(
+                        solution.rates.map(f64::to_bits).to_vec(),
+                        archived.iter().map(|v| v.to_bits()).collect::<Vec<_>>(),
+                        "Frozen f64 solution must be reproduced bitwise"
+                    );
+                    let mut trial = memory.clone();
+                    trial.rates = solution.rates;
+                    let mut emitted = Vec::new();
+                    for step in 12..16 {
+                        let (command, next) = runtime::command(&model, &trial, step).unwrap();
+                        let rates: [f64; 46] = std::array::from_fn(|i| {
+                            f64::from(command.velocities[layout[i].segment][layout[i].coordinate])
+                        });
+                        let mut violations = Vec::new();
+                        for (i, rate) in rates.iter().enumerate() {
+                            if *rate < p.lower[i] - 1e-8 || *rate > p.upper[i] + 1e-8 {
+                                violations.push(json!({"kind":"bound","axis":i,"value":rate,"lower":p.lower[i],"upper":p.upper[i]}));
+                            }
+                        }
+                        for task in &p.hard {
+                            let value = task.row.iter().zip(rates).map(|(a, x)| a * x).sum::<f64>();
+                            let error = (task.lower - value).max(value - task.upper).max(0.);
+                            if error > 1e-8 {
+                                violations.push(json!({"kind":"hard","name":task.name,"value":value,"lower":task.lower,"upper":task.upper,"excess":error,"tolerance":1e-8}));
+                            }
+                        }
+                        emitted.push(json!({"nativeSubstep":step,"positions":command.positions,"velocities":command.velocities,"violations":violations}));
+                        trial = next;
+                    }
+                    assert!(
+                        !emitted[0]["violations"].as_array().unwrap().is_empty(),
+                        "The first rejected compiled command must be identified"
+                    );
+                    cases.push(json!({"feedbackScale":scale,"frozenSolutionMatchesArchiveBitwise":true,"continuousRates":solution.rates.to_vec(),"continuousIterations":solution.iterations,"continuousProjectedGradientResidual":solution.projected_gradient_residual,"commands":emitted}));
+                }
+                Err(error) => {
+                    assert!(case_index > 0);
+                    assert!(error.contains("did not converge"));
+                    cases.push(json!({"feedbackScale":scale,"refusal":error}));
+                }
+            }
+        }
+        if let Ok(path) = std::env::var("LH_NUMERIC_REFUSAL_EXPORT") {
+            std::fs::write(
+                path,
+                serde_json::to_vec_pretty(&json!({"nativeIntegrations":0,"cases":cases})).unwrap(),
+            )
+            .unwrap();
+        }
+    }
+    #[test]
+    fn archived_step12_all_scales_emit_certified_predictable_f32_commands_without_integration() {
+        let (model, memory, problems, _) = archived_problems();
+        let mut cases = Vec::new();
+        let layout = runtime::axes(&model).unwrap();
+        for (scale, problem) in problems {
+            let mut audit = Value::Null;
+            let (decision, solution, certificate) =
+                runtime::compile_problem_traced(&model, &memory, 12, &problem, &mut audit)
+                    .unwrap_or_else(|e| panic!("scale {scale}: {e}; audit {audit}"));
+            assert_eq!(certificate.commands.len(), 4);
+            assert_eq!(memory.next_substep, 12);
+            let mut real = decision.clone();
+            let mut preview = decision.clone();
+            for (index, expected) in certificate.commands.iter().enumerate() {
+                let step = 12 + index as u64;
+                let (a, anext) = runtime::command(&model, &real, step).unwrap();
+                let (b, bnext) = runtime::command(&model, &preview, step).unwrap();
+                let bits = |q: [[f32; 3]; 25]| q.map(|row| row.map(f32::to_bits));
+                assert_eq!(bits(a.positions), bits(b.positions));
+                assert_eq!(bits(a.velocities), bits(b.velocities));
+                assert_eq!(bits(a.positions), bits(expected.positions));
+                assert_eq!(bits(a.velocities), bits(expected.velocities));
+                let rates: [f64; 46] = std::array::from_fn(|i| {
+                    f64::from(a.velocities[layout[i].segment][layout[i].coordinate])
+                });
+                problem.verify_rates(&rates).unwrap();
+                for axis in &layout {
+                    assert_eq!(
+                        a.velocities[axis.segment][axis.coordinate],
+                        (a.positions[axis.segment][axis.coordinate]
+                            - real.previous[axis.segment][axis.coordinate])
+                            / lh_contracts::SUBSTEP_S
+                    );
+                }
+                real = anext;
+                preview = bnext;
+            }
+            assert_eq!(real.next_substep, 16);
+            cases.push(json!({"feedbackScale":scale,"iterations":solution.iterations,"hardError":solution.maximum_constraint_error,"projectedGradientResidual":solution.projected_gradient_residual,"maximumObservedRateRepresentationError":certificate.maximum_observed_rate_error,"actualF32CommandsCertified":4,"replayedCommandBitsEqual":true,"audit":audit}));
+        }
+        if let Ok(path) = std::env::var("LH_NUMERIC_CORRECTION_EXPORT") {
+            std::fs::write(path,serde_json::to_vec_pretty(&json!({"scope":"pure command replay, no native dynamics qualification","nativeIntegrations":0,"cases":cases})).unwrap()).unwrap();
+        }
     }
 }

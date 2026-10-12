@@ -1,0 +1,27 @@
+{
+  "artifact": "archived-step12.json",
+  "sha256": "79c0feb2d4bf3ea4b336b8d23782bf897cecadda826d081a83d2d880209d873d",
+  "bytes": 224368,
+  "scriptSha256": "9abbac33bfde937e4012c934baef5a9881efe5a7f1c8326735ae44cb9fa2b37f",
+  "sourceSha256": {
+    "docs/evidence/coordination-prototype-2026-10-12/native-run/002-B-planning-000.json": "b08f6dda06ae902156da7dce2a770cde2aa460974405ab9386e60c249e8d7314",
+    "docs/evidence/coordination-prototype-2026-10-12/native-run/002-B.states.jsonl": "38ca7d07d85917df8e282dafc4b3d4d3e3e497a3a22467b4fc7bb6a052bc2492",
+    "docs/evidence/coordination-prototype-2026-10-12/native-run/002-B.json": "4312ead48bc75bcc9316e36facf44083afa397efad2c21e5b546d393c3a80108",
+    "rust/crates/model/data/canonical-v1.json": "083c13b2cce2d6033a4fc05cba8da7e78bd89634fb306629f4b7a9cd4a177a65",
+    "docs/evidence/coordination-prototype-2026-10-12/continuation-candidate-program.json": "f14de3871ef9aba18083b36d10eeb56c8587c66a73b1ab2ec54e01830e06e59d",
+    "docs/evidence/coordination-prototype-2026-10-12/continuation-tasks.json": "a96d03d736ca185a0457ae29c33846b69af28ecd5eb81609f60d281463756dd6"
+  },
+  "checks": {
+    "allFourCompletePhysicalRecordsIdentical": true,
+    "allFourMotorRecordsIdentical": true,
+    "allFourOwnerPrefixesIdenticalExceptFeedbackScale": true,
+    "allFourTerminalPoseRecordsEqualTheirStep12Archive": true,
+    "all16ArchivedLocalMassPropertyRecordsIdentical": true,
+    "archivedInertialBodiesMatchedByExactF32PoseAndVelocityBits": true,
+    "ownerCoordinatesUnchangedAtRefusal": true,
+    "onlyCase0StoredNewF64CandidateRatesBeforeRefusal": true,
+    "noNewSimulationSteps": 0,
+    "noNewFkInspections": 0,
+    "noNewGeometryQueries": 0
+  }
+}

@@ -1,5 +1,7 @@
 # Coordination : prototype implémenté, essai clos sur un refus numérique
 
+Mise à jour après clôture : [correction numérique testée des quatre refus](coordination-numeric-correction-2026-10-12.md), sans nouveau sous-pas physique. Les résultats physiques ci-dessous restent ceux du lot initial.
+
 Le prototype commun est construit et testé. **Il ne démontre pas l'acquisition
 des talons ni un relevage.** La parité native fonctionne ; l'histoire témoin A
 échoue physiquement au diagnostic local ; les quatre prévisions coordonnées B

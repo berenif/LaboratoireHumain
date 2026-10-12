@@ -8,7 +8,120 @@ use super::support_state::{BODY_COUNT, ContactMode, MaterialPatch};
 use super::whole_body_tasks::{AXES, HardTask, Problem, Task};
 use crate::recovery::trajectory_program::{Command, Coordinates, validate_command};
 use crate::{Simulation, measurement};
+use lh_model::Model;
 use rapier3d::prelude::*;
+use serde::{Deserialize, Serialize};
+
+/// Explicit measured values in canonical segment order. Replay needs neither a
+/// PhysicsWorld nor a constructed Simulation. Do not normalize rotations or
+/// recompute a cached world CoM while adapting a live native state.
+#[derive(Clone, Debug, Serialize, Deserialize)]
+pub(crate) struct ObservedBody {
+    pub position_m: [f32; 3],
+    pub rotation_xyzw: [f32; 4],
+    pub linear_velocity_mps: [f32; 3],
+    pub angular_velocity_radps: [f32; 3],
+    pub world_center_of_mass_m: [f32; 3],
+    pub mass_kg: f32,
+}
+
+impl ObservedBody {
+    pub(crate) fn rotation(&self) -> Rotation {
+        Rotation::from_array(self.rotation_xyzw)
+    }
+
+    pub(crate) fn pose(&self) -> Pose {
+        Pose::from_parts(Vector::from_array(self.position_m), self.rotation())
+    }
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize)]
+pub(crate) struct ObservedState {
+    pub native_substep: u64,
+    pub bodies: Vec<ObservedBody>,
+}
+
+impl ObservedState {
+    /// Pure field copies; no pose writes, geometry query, or native step.
+    pub(crate) fn from_simulation(s: &Simulation) -> Result<Self, String> {
+        if s.bodies.len() != BODY_COUNT
+            || s.joints.len() != BODY_COUNT
+            || s.profile.dt_s != lh_contracts::SUBSTEP_S
+            || s.profile.tick_substeps != 4
+        {
+            return Err(
+                "Geometric observation requires 25 bodies and the original 240 Hz clock".into(),
+            );
+        }
+        let bodies = s
+            .bodies
+            .iter()
+            .map(|handle| {
+                let body = s
+                    .world
+                    .bodies
+                    .get(*handle)
+                    .ok_or("Missing observed task body")?;
+                Ok(ObservedBody {
+                    position_m: body.translation().to_array(),
+                    rotation_xyzw: body.rotation().to_array(),
+                    linear_velocity_mps: body.linvel().to_array(),
+                    angular_velocity_radps: body.angvel().to_array(),
+                    world_center_of_mass_m: body.center_of_mass().to_array(),
+                    mass_kg: body.mass(),
+                })
+            })
+            .collect::<Result<Vec<_>, String>>()?;
+        let result = Self {
+            native_substep: s.substeps_completed,
+            bodies,
+        };
+        result.validate()?;
+        Ok(result)
+    }
+
+    pub(crate) fn validate(&self) -> Result<(), String> {
+        if self.bodies.len() != BODY_COUNT {
+            return Err("Explicit geometric state requires exactly 25 measured bodies".into());
+        }
+        for body in &self.bodies {
+            if body
+                .position_m
+                .iter()
+                .chain(&body.rotation_xyzw)
+                .chain(&body.linear_velocity_mps)
+                .chain(&body.angular_velocity_radps)
+                .chain(&body.world_center_of_mass_m)
+                .any(|v| !v.is_finite())
+                || !body.mass_kg.is_finite()
+                || body.mass_kg <= 0.0
+            {
+                return Err("Nonfinite or massless observed task body".into());
+            }
+        }
+        if !self.total_mass().is_finite() || !self.center_of_mass().is_finite() {
+            return Err("Nonfinite aggregated geometric observation".into());
+        }
+        Ok(())
+    }
+
+    /// Keep the exact f32 iterator sum used by Simulation::total_mass.
+    pub(crate) fn total_mass(&self) -> f32 {
+        self.bodies.iter().map(|body| body.mass_kg).sum()
+    }
+
+    /// Keep the exact f32 Vector sum, scalar sum, order, and division used by
+    /// Simulation::center_of_mass. An f64/reassociated sum changes the frozen QP.
+    pub(crate) fn center_of_mass(&self) -> Vector {
+        let mut sum = Vector::ZERO;
+        let mut mass = 0.0;
+        for body in &self.bodies {
+            sum += Vector::from_array(body.world_center_of_mass_m) * body.mass_kg;
+            mass += body.mass_kg;
+        }
+        sum / mass
+    }
+}
 
 #[derive(Clone, Debug)]
 pub(crate) struct PointGoal {
@@ -63,22 +176,29 @@ pub(crate) fn assemble(
     retained: &[MaterialPatch],
     goals: &TaskGoals,
 ) -> Result<Problem, String> {
-    let layout = coordinated_runtime::axes(&s.model)?;
-    validate_command(&s.model, &goals.nominal)?;
+    let observed = ObservedState::from_simulation(s)?;
+    assemble_observed(&s.model, &observed, retained, goals)
+}
+
+/// Same algebra as the live adapter, operating only on archived body values.
+/// Local point transforms are f64 -> f32 -> native Pose -> f64 exactly as before.
+pub(crate) fn assemble_observed(
+    model: &Model,
+    observed: &ObservedState,
+    retained: &[MaterialPatch],
+    goals: &TaskGoals,
+) -> Result<Problem, String> {
+    let layout = coordinated_runtime::axes(model)?;
+    observed.validate()?;
+    validate_command(model, &goals.nominal)?;
     validate_goals(goals)?;
-    if s.bodies.len() != BODY_COUNT
-        || s.joints.len() != BODY_COUNT
-        || retained.len() > 64
-        || retained.is_empty()
-        || s.profile.dt_s != lh_contracts::SUBSTEP_S
-        || s.profile.tick_substeps != 4
-    {
+    if retained.len() > 64 || retained.is_empty() {
         return Err(
             "Geometric tasks require the complete native model, retained contacts and 240 Hz clock"
                 .into(),
         );
     }
-    let geometry = measured_geometry(s, &layout)?;
+    let geometry = measured_geometry(model, observed, &layout)?;
     let mut problem = Problem {
         lower: [-1.0; AXES],
         upper: [1.0; AXES],
@@ -93,7 +213,7 @@ pub(crate) fn assemble(
         }
         if patch.segment >= BODY_COUNT
             || !patch.current_contact_present
-            || patch.last_observed_substep != s.substeps_completed
+            || patch.last_observed_substep != observed.native_substep
             || !finite(patch.local_point_m)
             || !finite(patch.world_anchor_m)
             || retained[..index].iter().any(|p| p.id == patch.id)
@@ -102,7 +222,7 @@ pub(crate) fn assemble(
                 "Retained task lacks a current material contact or unique patch identity".into(),
             );
         }
-        let point = point_world(s, patch.segment, patch.local_point_m)?;
+        let point = point_world_observed(observed, patch.segment, patch.local_point_m)?;
         let columns = geometry.point_columns(patch.segment, point)?;
         let root_velocity = geometry.root_velocity_at(point);
         // A first-order endpoint condition retains the ORIGINAL world anchor.
@@ -120,22 +240,21 @@ pub(crate) fn assemble(
     if problem.hard.is_empty() {
         return Err("No retained material task in the proposed support family".into());
     }
-    let mass = f64::from(s.total_mass());
+    let mass = f64::from(observed.total_mass());
     if !mass.is_finite() || mass <= 0.0 {
         return Err("Invalid mass in CoM task".into());
     }
     let mut com_columns = [[0.0; 3]; AXES];
-    for (i, handle) in s.bodies.iter().enumerate() {
-        let body = s.world.bodies.get(*handle).ok_or("Missing CoM body")?;
-        let fraction = f64::from(body.mass()) / mass;
-        let columns = geometry.point_columns(i, body.center_of_mass().to_array().map(f64::from))?;
+    for (i, body) in observed.bodies.iter().enumerate() {
+        let fraction = f64::from(body.mass_kg) / mass;
+        let columns = geometry.point_columns(i, body.world_center_of_mass_m.map(f64::from))?;
         for (total, column) in com_columns.iter_mut().zip(columns) {
             for k in 0..3 {
                 total[k] += column[k] * fraction;
             }
         }
     }
-    let com = s.center_of_mass().to_array().map(f64::from);
+    let com = observed.center_of_mass().to_array().map(f64::from);
     append_soft_vector(
         &mut problem,
         &com_columns,
@@ -144,7 +263,7 @@ pub(crate) fn assemble(
         goals.com_weight,
     )?;
     for goal in &goals.point_tasks {
-        let point = point_world(s, goal.segment, goal.local_point_m)?;
+        let point = point_world_observed(observed, goal.segment, goal.local_point_m)?;
         let columns = geometry.point_columns(goal.segment, point)?;
         append_soft_vector(
             &mut problem,
@@ -188,7 +307,15 @@ pub(crate) fn point_world(
     segment: usize,
     local_point_m: [f64; 3],
 ) -> Result<[f64; 3], String> {
-    if segment >= s.bodies.len() || !finite(local_point_m) {
+    point_world_observed(&ObservedState::from_simulation(s)?, segment, local_point_m)
+}
+
+pub(crate) fn point_world_observed(
+    observed: &ObservedState,
+    segment: usize,
+    local_point_m: [f64; 3],
+) -> Result<[f64; 3], String> {
+    if segment >= observed.bodies.len() || !finite(local_point_m) {
         return Err("Invalid anatomical material point".into());
     }
     let local = Vector::new(
@@ -196,12 +323,7 @@ pub(crate) fn point_world(
         local_point_m[1] as f32,
         local_point_m[2] as f32,
     );
-    let body = s
-        .world
-        .bodies
-        .get(s.bodies[segment])
-        .ok_or("Missing material point body")?;
-    let point = body.position().transform_point(local);
+    let point = observed.bodies[segment].pose().transform_point(local);
     if !local.is_finite() || !point.is_finite() {
         return Err("Nonfinite transformed material point".into());
     }
@@ -246,56 +368,45 @@ fn validate_goals(goals: &TaskGoals) -> Result<(), String> {
 }
 
 fn measured_geometry(
-    s: &Simulation,
+    model: &Model,
+    observed: &ObservedState,
     layout: &[coordinated_runtime::Axis],
 ) -> Result<Geometry, String> {
-    let root = s
-        .world
-        .bodies
-        .get(s.bodies[0])
-        .ok_or("Missing observed floating base")?;
+    let root = &observed.bodies[0];
     let mut geometry = Geometry {
         axes: Vec::with_capacity(AXES),
         parents: [None; BODY_COUNT],
-        root_com_m: root.center_of_mass().to_array().map(f64::from),
-        root_linear_mps: root.linvel().to_array().map(f64::from),
-        root_angular_radps: root.angvel().to_array().map(f64::from),
+        root_com_m: root.world_center_of_mass_m.map(f64::from),
+        root_linear_mps: root.linear_velocity_mps.map(f64::from),
+        root_angular_radps: root.angular_velocity_radps.map(f64::from),
     };
     let mut measured: Coordinates = [[0.0; 3]; BODY_COUNT];
-    for (i, part) in s.model.segments.iter().enumerate().skip(1) {
+    for (i, part) in model.segments.iter().enumerate().skip(1) {
         let parent = part
             .parent
             .as_ref()
-            .and_then(|id| s.model.segments.iter().position(|p| &p.id == id))
+            .and_then(|id| model.segments.iter().position(|p| &p.id == id))
             .ok_or("Missing anatomical parent for geometric task")?;
         geometry.parents[i] = Some(parent);
         let profile = part
             .joint_profile
             .as_ref()
             .ok_or("Missing native joint chart")?;
-        let parent_body = s
-            .world
-            .bodies
-            .get(s.bodies[parent])
-            .ok_or("Missing parent body")?;
-        let body = s
-            .world
-            .bodies
-            .get(s.bodies[i])
-            .ok_or("Missing child body")?;
-        measured[i] = measurement::coordinates(*parent_body.rotation(), *body.rotation(), profile);
+        let parent_body = &observed.bodies[parent];
+        let body = &observed.bodies[i];
+        measured[i] = measurement::coordinates(parent_body.rotation(), body.rotation(), profile);
     }
     for axis in layout {
-        let profile = s.model.segments[axis.segment]
+        let profile = model.segments[axis.segment]
             .joint_profile
             .as_ref()
             .ok_or("Missing chart profile")?;
         let parent = geometry.parents[axis.segment].ok_or("Root cannot be a command axis")?;
-        let body = &s.world.bodies[s.bodies[parent]];
+        let body = &observed.bodies[parent];
         let pivot = body
-            .position()
+            .pose()
             .transform_point(crate::vector(profile.parent_frame.anchor));
-        let frame = *body.rotation() * crate::rotation(profile.parent_frame.rotation);
+        let frame = body.rotation() * crate::rotation(profile.parent_frame.rotation);
         let angular = frame * chart_axis(measured[axis.segment], axis.coordinate)?;
         if !pivot.is_finite() || !angular.is_finite() {
             return Err("Nonfinite native chart generator".into());
@@ -440,6 +551,57 @@ fn cross(a: [f64; 3], b: [f64; 3]) -> [f64; 3] {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    fn observed_state() -> ObservedState {
+        ObservedState {
+            native_substep: 12,
+            bodies: vec![
+                ObservedBody {
+                    position_m: [0.0; 3],
+                    rotation_xyzw: [0.0, 0.0, 0.0, 1.0],
+                    linear_velocity_mps: [0.0; 3],
+                    angular_velocity_radps: [0.0; 3],
+                    world_center_of_mass_m: [1.0, 0.0, 0.0],
+                    mass_kg: 1.0,
+                };
+                BODY_COUNT
+            ],
+        }
+    }
+
+    #[test]
+    fn archived_aggregation_keeps_native_f32_order_without_a_world() {
+        let mut observed = observed_state();
+        observed.bodies[0].mass_kg = 16_777_216.0;
+        observed.bodies[0].world_center_of_mass_m = [0.0; 3];
+        observed.validate().unwrap();
+        // The native f32 sequence loses each following +1. Replacing it by a
+        // more accurate f64 sum would alter the already frozen problem.
+        assert_eq!(observed.total_mass().to_bits(), 16_777_216.0_f32.to_bits());
+        let native = 24.0_f32 / 16_777_216.0_f32;
+        let reassociated = (24.0_f64 / (16_777_216.0_f64 + 24.0)) as f32;
+        assert_eq!(observed.center_of_mass().x.to_bits(), native.to_bits());
+        assert_ne!(native.to_bits(), reassociated.to_bits());
+    }
+
+    #[test]
+    fn explicit_observation_roundtrips_without_normalizing_body_rotation() {
+        let mut observed = observed_state();
+        observed.bodies[3].rotation_xyzw = [0.0, 0.0, 0.0, f32::from_bits(1.0_f32.to_bits() - 1)];
+        let bytes = serde_json::to_vec(&observed).unwrap();
+        let decoded: ObservedState = serde_json::from_slice(&bytes).unwrap();
+        assert_eq!(
+            decoded.bodies[3].rotation().to_array().map(f32::to_bits),
+            observed.bodies[3].rotation_xyzw.map(f32::to_bits)
+        );
+        assert_eq!(decoded.native_substep, 12);
+        assert_eq!(
+            decoded.total_mass().to_bits(),
+            observed.total_mass().to_bits()
+        );
+        observed.bodies.pop();
+        assert!(observed.validate().is_err());
+    }
 
     fn geometry() -> Geometry {
         let mut parents = [None; BODY_COUNT];

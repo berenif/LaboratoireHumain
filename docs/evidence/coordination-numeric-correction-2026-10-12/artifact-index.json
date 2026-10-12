@@ -1,0 +1,129 @@
+{
+  "schema": 1,
+  "nativeSubstepsInCorrection": 0,
+  "physicalLedgerSha256": "2afa69b3ae9c8ab8343f7dabdf46b955c8ac7b88aa259404958e25d49a72ef07",
+  "frozenReleaseWorkerSha256": "1bb4b91ac8ebfbe382d9525e524b85040ca9890bc90a0ef0467f1ef2b64c8b57",
+  "mainRemoteShaVerified": "c597959f46f37715035349c8cd0a699b6822111a",
+  "files": [
+    {
+      "path": "docs/evidence/coordination-numeric-correction-2026-10-12/archived-step12-extraction-receipt.json",
+      "bytes": 1699,
+      "sha256": "65b68388488692f106a234620598bf276e7a419423ff711286107d127747f880"
+    },
+    {
+      "path": "docs/evidence/coordination-numeric-correction-2026-10-12/archived-step12-interface.md",
+      "bytes": 5908,
+      "sha256": "694408c3f244519b322643f6ec14ab93b8c3ff1c79e32cb2e853570b7fd23f23"
+    },
+    {
+      "path": "docs/evidence/coordination-numeric-correction-2026-10-12/archived-step12.json",
+      "bytes": 224368,
+      "sha256": "79c0feb2d4bf3ea4b336b8d23782bf897cecadda826d081a83d2d880209d873d"
+    },
+    {
+      "path": "docs/evidence/coordination-numeric-correction-2026-10-12/certified-commands.json",
+      "bytes": 183089,
+      "sha256": "3711c32ccffb3130e6b6715208c8ba46ee7d797ddf977f16ecec3931f251d1a1"
+    },
+    {
+      "path": "docs/evidence/coordination-numeric-correction-2026-10-12/extract_archived_step12.py",
+      "bytes": 8731,
+      "sha256": "9abbac33bfde937e4012c934baef5a9881efe5a7f1c8326735ae44cb9fa2b37f"
+    },
+    {
+      "path": "docs/evidence/coordination-numeric-correction-2026-10-12/f32-checkpoint-review.md",
+      "bytes": 8061,
+      "sha256": "d7371e4fee21b037acd64802ae04738feb6406d8a32f681c0d228dfe105523ad"
+    },
+    {
+      "path": "docs/evidence/coordination-numeric-correction-2026-10-12/frozen-solver-replay.rs",
+      "bytes": 8573,
+      "sha256": "73d33bf404c03218915da1c5593b04d4860c1d4ef1ace14a4dc0511b138c35cd"
+    },
+    {
+      "path": "docs/evidence/coordination-numeric-correction-2026-10-12/frozen-solver.rs",
+      "bytes": 10766,
+      "sha256": "e1657cb8c211523b3fe34407a86de2cdf0ce8c8d0da81b1d6770aeca39340084"
+    },
+    {
+      "path": "docs/evidence/coordination-numeric-correction-2026-10-12/numerical-independent-review.md",
+      "bytes": 5449,
+      "sha256": "bdc960dc059155d3f4ae45b8dbe5544a40f9f457848779b408078b2e4f64bbcd"
+    },
+    {
+      "path": "docs/evidence/coordination-numeric-correction-2026-10-12/preparation-correction-budget.json",
+      "bytes": 2639,
+      "sha256": "8d5d2db35031fadb76062899cb9c98465cb58337327b468412aba190a1881c80"
+    },
+    {
+      "path": "docs/evidence/coordination-numeric-correction-2026-10-12/reconstructed-problems.json",
+      "bytes": 295305,
+      "sha256": "a39ad520eb77bc36bc97de071c917870ec9889d03a1a86bdf7d5518cda84f584"
+    },
+    {
+      "path": "docs/evidence/coordination-numeric-correction-2026-10-12/reproduced-refusals.json",
+      "bytes": 24780,
+      "sha256": "e8476ae86b56fadde9dcf6022230e387461646bdb3d53cd9376437b79e4e7f46"
+    },
+    {
+      "path": "docs/evidence/coordination-numeric-correction-2026-10-12/static-boundary-and-native-parity-budget-review.md",
+      "bytes": 8338,
+      "sha256": "e7dad2da33661503e204871a0560b752c53d35f4075f7c908162a356025d220d"
+    },
+    {
+      "path": "docs/evidence/coordination-numeric-correction-2026-10-12/validation/certified-commands.json",
+      "bytes": 183089,
+      "sha256": "3711c32ccffb3130e6b6715208c8ba46ee7d797ddf977f16ecec3931f251d1a1"
+    },
+    {
+      "path": "docs/evidence/coordination-numeric-correction-2026-10-12/validation/coordinated_runtime.log",
+      "bytes": 4819,
+      "sha256": "b97dc16af49c01952e33be2be078659fcefb744b25d14efb5f3ea9419e0a4413"
+    },
+    {
+      "path": "docs/evidence/coordination-numeric-correction-2026-10-12/validation/geometric_tasks.log",
+      "bytes": 4671,
+      "sha256": "aa28d0e14a41371e0a167e99bced0f0088bb3ec5e3d4a12c88ecfb40b3d7ead9"
+    },
+    {
+      "path": "docs/evidence/coordination-numeric-correction-2026-10-12/validation/intent.json",
+      "bytes": 431,
+      "sha256": "dbee500a198badd6d290295ea414779e50317c58ad84e7ce0d4bf7b1f8d71aa4"
+    },
+    {
+      "path": "docs/evidence/coordination-numeric-correction-2026-10-12/validation/production-check.log",
+      "bytes": 326,
+      "sha256": "6898e48cafdbf89127c258a16e9f4948642cf093104330f5cda1d08b9de0c8ad"
+    },
+    {
+      "path": "docs/evidence/coordination-numeric-correction-2026-10-12/validation/receipt.json",
+      "bytes": 3468,
+      "sha256": "8372182ffa339810dfd8d72df9d329e27fcd3a122fe58c47d0b25911b3ac9b06"
+    },
+    {
+      "path": "docs/evidence/coordination-numeric-correction-2026-10-12/validation/reconstructed-problems.json",
+      "bytes": 295305,
+      "sha256": "a39ad520eb77bc36bc97de071c917870ec9889d03a1a86bdf7d5518cda84f584"
+    },
+    {
+      "path": "docs/evidence/coordination-numeric-correction-2026-10-12/validation/reproduced-refusals.json",
+      "bytes": 24780,
+      "sha256": "e8476ae86b56fadde9dcf6022230e387461646bdb3d53cd9376437b79e4e7f46"
+    },
+    {
+      "path": "docs/evidence/coordination-numeric-correction-2026-10-12/validation/whole_body_controller.log",
+      "bytes": 4719,
+      "sha256": "64dc54027d3a627396351be62f452ff760c4c3452b923b71ac65e077307bf97e"
+    },
+    {
+      "path": "docs/evidence/coordination-numeric-correction-2026-10-12/validation/whole_body_tasks.log",
+      "bytes": 5370,
+      "sha256": "fac67ade55f02db982bd8332fda5f726e152a3c58a3182c695dfce80a3c80217"
+    },
+    {
+      "path": "docs/evidence/coordination-numeric-correction-2026-10-12/verify-numeric-preparation.py",
+      "bytes": 4097,
+      "sha256": "e9472ab245ed6e699ae1e24643802b16c19e1a329faf316af8b2435b2cdc2e40"
+    }
+  ]
+}

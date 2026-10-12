@@ -1,0 +1,13 @@
+{
+  "startedUtc": "2026-10-12T21:22:38.916287+00:00",
+  "scope": "reviewed pure/static modules only, no Rapier substeps",
+  "nativeSubstepsAuthorized": 0,
+  "closedLedgerSha256": "2afa69b3ae9c8ab8343f7dabdf46b955c8ac7b88aa259404958e25d49a72ef07",
+  "moduleExpectedTests": {
+    "whole_body_tasks": 11,
+    "coordinated_runtime": 7,
+    "geometric_tasks": 6,
+    "whole_body_controller": 6
+  },
+  "releaseWorkerBuiltOrRun": false
+}

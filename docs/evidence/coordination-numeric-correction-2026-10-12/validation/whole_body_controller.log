@@ -1,0 +1,104 @@
+warning: /workspace/LaboratoireHumain/rust/crates/sim/Cargo.toml: file `/workspace/LaboratoireHumain/rust/crates/sim/src/lib.rs` found to be present in multiple build targets:
+  * `lib` target `lh_sim`
+  * `integration-test` target `coordination-worker`
+warning: method `record` is never used
+   --> crates/sim/src/recovery/planner/native_plan_preview.rs:132:19
+    |
+119 | impl NativeParityTrace {
+    | ---------------------- method in this implementation
+...
+132 |     pub(crate) fn record(
+    |                   ^^^^^^
+    |
+    = note: `#[warn(dead_code)]` on by default
+
+warning: methods `set_feedback_scale`, `preview`, `verify_tick`, and `preview_ticks` are never used
+   --> crates/sim/src/recovery/planner/native_plan_preview.rs:309:19
+    |
+294 | impl<M: Clone> StaticPreviewBranch<M> {
+    | ------------------------------------- methods in this implementation
+...
+309 |     pub(crate) fn set_feedback_scale(&mut self, scale: f64) -> Result<(), PreviewError> {
+    |                   ^^^^^^^^^^^^^^^^^^
+...
+328 |     pub(crate) fn preview<O>(
+    |                   ^^^^^^^
+...
+345 |     pub(crate) fn verify_tick<O>(
+    |                   ^^^^^^^^^^^
+...
+360 |     fn preview_ticks<O>(
+    |        ^^^^^^^^^^^^^
+
+warning: variant `Candidate` is never constructed
+   --> crates/sim/src/recovery/planner/native_plan_preview.rs:445:5
+    |
+443 | pub(crate) enum PreviewPurpose {
+    |                 -------------- variant in this enum
+444 |     ParityVerification,
+445 |     Candidate,
+    |     ^^^^^^^^^
+    |
+    = note: `PreviewPurpose` has derived impls for the traits `Clone` and `Debug`, but these are intentionally ignored during dead code analysis
+
+warning: method `admit_preview` is never used
+   --> crates/sim/src/recovery/planner/native_plan_preview.rs:464:8
+    |
+460 | pub(crate) trait PreviewBudget {
+    |                  ------------- method in this trait
+...
+464 |     fn admit_preview(&mut self, purpose: PreviewPurpose, steps: u32) -> Result<(), String>;
+    |        ^^^^^^^^^^^^^
+
+warning: function `assemble` is never used
+   --> crates/sim/src/recovery/planner/geometric_tasks.rs:174:15
+    |
+174 | pub(crate) fn assemble(
+    |               ^^^^^^^^
+
+warning: function `point_world` is never used
+   --> crates/sim/src/recovery/planner/geometric_tasks.rs:305:15
+    |
+305 | pub(crate) fn point_world(
+    |               ^^^^^^^^^^^
+
+warning: constant `PARAMETERS` is never used
+  --> crates/sim/src/recovery/planner/whole_body_controller.rs:39:18
+   |
+39 | pub(crate) const PARAMETERS: &str = r#"{"version":"coordinated-transition-v2-numeric","solver":"feasible-active-set-newton","commandCompi...
+   |                  ^^^^^^^^^^
+
+warning: field `maximum_constraint_error` is never read
+  --> /workspace/LaboratoireHumain/rust/crates/sim/../../../docs/evidence/coordination-numeric-correction-2026-10-12/frozen-solver-replay.rs:38:9
+   |
+36 | pub(crate) struct Solution {
+   |                   -------- field in this struct
+37 |     pub rates: Rates,
+38 |     pub maximum_constraint_error: f64,
+   |         ^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+   = note: `Solution` has a derived impl for the trait `Debug`, but this is intentionally ignored during dead code analysis
+
+warning: method `verify_rates` is never used
+   --> /workspace/LaboratoireHumain/rust/crates/sim/../../../docs/evidence/coordination-numeric-correction-2026-10-12/frozen-solver-replay.rs:106:19
+    |
+53  | impl Problem {
+    | ------------ method in this implementation
+...
+106 |     pub(crate) fn verify_rates(&self, rates: &Rates) -> Result<(), String> {
+    |                   ^^^^^^^^^^^^
+
+warning: `lh-sim` (lib test) generated 9 warnings
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.08s
+     Running unittests src/lib.rs (rust/target/debug/deps/lh_sim-68e67b1c237792f1)
+
+running 6 tests
+test recovery::planner::whole_body_controller::tests::archived_step12_problem_reconstruction_without_integration ... ok
+test recovery::planner::whole_body_controller::tests::handoff_releases_owner_and_preserves_original_measured_gate_without_integration ... ok
+test recovery::planner::whole_body_controller::tests::malformed_reference_is_refused_before_any_step ... ok
+test recovery::planner::whole_body_controller::tests::shared_acquisition_prefix_installs_identical_native_motors_without_integration ... ok
+test recovery::planner::whole_body_controller::tests::archived_step12_all_scales_emit_certified_predictable_f32_commands_without_integration ... ok
+test recovery::planner::whole_body_controller::tests::archived_step12_reproduces_all_four_frozen_refusals_without_integration ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 188 filtered out; finished in 2.81s
+

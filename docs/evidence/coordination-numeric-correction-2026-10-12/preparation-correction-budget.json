@@ -1,0 +1,58 @@
+{
+  "schema": 1,
+  "scope": "supplement to original preparation only; closed physical protocol remains immutable",
+  "authorizedUtc": "2026-10-12T21:05:30.294021+00:00",
+  "authorization": "Parent: continue correction within initial40h, no new Rapier substeps, no reopening physical ledger",
+  "originalPreparationStartedUtc": "2026-10-12T20:14:00+00:00",
+  "originalPreparationDeadlineUtc": "2026-10-17T20:14:00+00:00",
+  "originalBudgetId": "564df601-9e40-4dd2-973d-7f43b36d4fb4",
+  "closedPhysicalLedgerSha256": "2afa69b3ae9c8ab8343f7dabdf46b955c8ac7b88aa259404958e25d49a72ef07",
+  "alreadyChargedActiveSeconds": 7789,
+  "additionalPreparationReservedSeconds": 7200,
+  "totalChargedPreparationSeconds": 14989,
+  "preparationCeilingSeconds": 144000,
+  "alreadyReservedStaticInspections": 6923,
+  "additionalStaticInspectionsReserved": 1000,
+  "totalStaticInspectionsReserved": 7923,
+  "staticInspectionsCeiling": 20000,
+  "nativeSubstepsAuthorized": 0,
+  "nativeSubstepsPerformed": 0,
+  "newPhysicalTrialAuthorized": false,
+  "events": [
+    {
+      "atUtc": "2026-10-12T21:05:30.294021+00:00",
+      "event": "preparation-only-reservation",
+      "reservedSeconds": 7200,
+      "reservedStaticInspections": 1000,
+      "nativeSubsteps": 0
+    },
+    {
+      "event": "archived-reconstruction-and-numerical-correction",
+      "nativeSubsteps": 0,
+      "scope": "Read archived values; pure algebra; targeted static tests. Prior compile errors and conservative stationary-command regression corrected before final verification."
+    },
+    {
+      "event": "final-static-validation",
+      "receipt": "validation/receipt.json",
+      "passedTests": 30,
+      "productionCheckPassed": true,
+      "archivedQpAssembliesInFinalValidation": 12,
+      "runtimeCanonicalModelConstructionsInFinalValidation": 6,
+      "controllerStaticScenesInFinalValidation": 4,
+      "nativeSubsteps": 0
+    },
+    {
+      "atUtc": "2026-10-12T21:24:43.968485+00:00",
+      "event": "close-preparation-milestone",
+      "reservationRefunded": false,
+      "totalActualStaticInspectionsClaimed": null,
+      "countingNote": "All 1000 reserved static inspections remain charged conservatively; measured final-pass counts are reported separately, not misrepresented as cumulative execution counts. No FK grid or integration worker ran.",
+      "nativeSubsteps": 0,
+      "closedPhysicalLedgerUnchanged": true
+    }
+  ],
+  "status": "preparation-numeric-correction-completed; native-protocol-still-closed",
+  "endedUtc": "2026-10-12T21:24:43.968485+00:00",
+  "elapsedWallSecondsObserved": 1153.674464,
+  "additionalStaticInspectionsChargedConservatively": 1000
+}

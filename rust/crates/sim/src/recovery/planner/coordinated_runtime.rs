@@ -238,6 +238,194 @@ pub(crate) fn initialize(
     })
 }
 
+/// Certificate for the four actual f32 commands, not only the continuous QP.
+#[derive(Clone, Debug)]
+pub(crate) struct RepresentationCertificate {
+    pub rate_error_bounds: Rates,
+    pub maximum_observed_rate_error: f64,
+    pub commands: Vec<Command>,
+}
+
+/// First certify the direct optimum; if needed reserve a rounding enclosure.
+/// In either case verify the exact emitted
+/// sequence against the ORIGINAL problem. No physical or numerical acceptance
+/// tolerance is increased. The enclosure only tightens the optimization set.
+pub(crate) fn compile_problem(
+    model: &Model,
+    memory: &Memory,
+    native_substep: u64,
+    problem: &Problem,
+) -> Result<(Memory, Solution, RepresentationCertificate), String> {
+    compile_problem_traced(
+        model,
+        memory,
+        native_substep,
+        problem,
+        &mut serde_json::Value::Null,
+    )
+}
+
+pub(crate) fn compile_problem_traced(
+    model: &Model,
+    memory: &Memory,
+    native_substep: u64,
+    problem: &Problem,
+    audit: &mut serde_json::Value,
+) -> Result<(Memory, Solution, RepresentationCertificate), String> {
+    *audit = serde_json::json!({"stage":"representation enclosure","nativeSubstep":native_substep,"previousQ":memory.previous});
+    let result = (|| {
+        if native_substep != memory.next_substep || native_substep % TICK_STEPS != 0 {
+            return Err("Representable decision requires the unique 60 Hz clock".into());
+        }
+        problem.validate()?;
+        let end = native_substep
+            .checked_add(TICK_STEPS)
+            .ok_or("Command decision clock overflow")?;
+        let layout = axes(model)?;
+        let dt = f64::from(lh_contracts::SUBSTEP_S);
+        let ulp_above = |value: f64| -> Result<f64, String> {
+            let value = value as f32;
+            if !value.is_finite() || value < 0. {
+                return Err("Nonfinite rounding enclosure".into());
+            }
+            let next = f32::from_bits(
+                value
+                    .to_bits()
+                    .checked_add(1)
+                    .ok_or("Rounding enclosure overflow")?,
+            );
+            let ulp = f64::from(next) - f64::from(value);
+            if !ulp.is_finite() || ulp <= 0. {
+                return Err("Invalid rounding enclosure".into());
+            }
+            Ok(ulp)
+        };
+        let mut guard = [0.; AXES];
+        for (i, a) in layout.iter().enumerate() {
+            let q = f64::from(memory.previous[a.segment][a.coordinate]).abs();
+            // Four bounded steps plus an outward f32 enclosure. The compiler may
+            // move one ULP toward the previous value at the exact slew boundary.
+            let range = q + 4. * dt;
+            let outward = range + 8. * f64::from(f32::EPSILON) * range.max(1.);
+            let position_error = 2. * ulp_above(outward)?;
+            let difference_error = ulp_above(dt + position_error)?;
+            let division_error = ulp_above((dt + position_error + difference_error) / dt)?;
+            guard[i] = (position_error + difference_error) / dt + division_error;
+        }
+        let certify = |solution: &Solution,
+                       trace: &mut serde_json::Value|
+         -> Result<(Memory, RepresentationCertificate), String> {
+            trace["continuousRates"] = serde_json::json!(solution.rates.to_vec());
+            trace["continuousCertificate"] = serde_json::json!({"iterations":solution.iterations,"hardError":solution.maximum_constraint_error,"projectedGradientResidual":solution.projected_gradient_residual});
+            trace["attemptedCommands"] = serde_json::json!([]);
+            let mut next = memory.clone();
+            next.rates = solution.rates;
+            let mut trial = next.clone();
+            let mut commands = Vec::new();
+            let mut maximum_error: f64 = 0.;
+            for step in native_substep..end {
+                let (emitted, after) = command(model, &trial, step)?;
+                trace["attemptedCommands"].as_array_mut().unwrap().push(serde_json::json!({"nativeSubstep":step,"positions":emitted.positions,"velocities":emitted.velocities}));
+                let rates = std::array::from_fn(|i| {
+                    f64::from(emitted.velocities[layout[i].segment][layout[i].coordinate])
+                });
+                for i in 0..AXES {
+                    let error = (rates[i] - solution.rates[i]).abs();
+                    maximum_error = maximum_error.max(error);
+                    if error > guard[i] {
+                        return Err(format!(
+                            "Rounding enclosure failed at substep {step} axis {i}: error={error:.17e}, bound={:.17e}",
+                            guard[i]
+                        ));
+                    }
+                }
+                problem
+                    .verify_rates(&rates)
+                    .map_err(|e| format!("Exact f32 command at substep {step}: {e}"))?;
+                commands.push(emitted);
+                trial = after;
+            }
+            Ok((
+                next,
+                RepresentationCertificate {
+                    rate_error_bounds: guard,
+                    maximum_observed_rate_error: maximum_error,
+                    commands,
+                },
+            ))
+        };
+        audit["rateErrorBounds"] = serde_json::json!(guard.to_vec());
+        audit["stage"] = serde_json::json!("direct continuous solve");
+        let direct = problem
+            .solve()
+            .map_err(|e| format!("Direct common solve: {e}"))?;
+        let mut direct_trace = serde_json::json!({});
+        match certify(&direct, &mut direct_trace) {
+            Ok((next, certificate)) => {
+                audit["directAttempt"] = direct_trace;
+                audit["stage"] = serde_json::json!("certified direct exact f32 commands");
+                return Ok((next, direct, certificate));
+            }
+            Err(error) => {
+                direct_trace["refusal"] = serde_json::json!(error);
+                audit["directAttempt"] = direct_trace;
+                // An invalid enclosure is an implementation/integrity failure,
+                // never a reason to try a different numerical candidate.
+                if error.starts_with("Rounding enclosure failed") {
+                    return Err(error);
+                }
+            }
+        }
+        // Exactly one interior repair after an unrepresentable direct optimum.
+        // This preserves stationary commands and representable equalities.
+        let mut tightened = problem.clone();
+        for i in 0..AXES {
+            tightened.lower[i] += guard[i];
+            tightened.upper[i] -= guard[i];
+        }
+        for task in &mut tightened.hard {
+            let margin = task
+                .row
+                .iter()
+                .zip(guard)
+                .map(|(a, e)| a.abs() * e)
+                .sum::<f64>();
+            task.lower += margin;
+            task.upper -= margin;
+        }
+        audit["rateErrorBounds"] = serde_json::json!(guard.to_vec());
+        audit["guardedLower"] = serde_json::json!(tightened.lower.to_vec());
+        audit["guardedUpper"] = serde_json::json!(tightened.upper.to_vec());
+        audit["guardedHardBounds"] = serde_json::json!(
+            tightened
+                .hard
+                .iter()
+                .map(|t| serde_json::json!({"name":t.name,"lower":t.lower,"upper":t.upper}))
+                .collect::<Vec<_>>()
+        );
+        tightened.validate().map_err(|e| {
+            format!("Rounding enclosure has no interior (representability not disproven): {e}")
+        })?;
+        audit["stage"] = serde_json::json!("guarded continuous solve");
+        let solution = tightened
+            .solve()
+            .map_err(|e| format!("Representable common solve: {e}"))?;
+        let mut guarded_trace = serde_json::json!({});
+        let compiled = certify(&solution, &mut guarded_trace);
+        if let Err(error) = &compiled {
+            guarded_trace["refusal"] = serde_json::json!(error);
+        }
+        audit["guardedAttempt"] = guarded_trace;
+        let (next, certificate) = compiled?;
+        audit["stage"] = serde_json::json!("certified guarded exact f32 commands");
+        Ok((next, solution, certificate))
+    })();
+    if let Err(error) = &result {
+        audit["refusal"] = serde_json::json!(error);
+    }
+    result
+}
+
 /// Pure: input memory and problem are not mutated on failure. Caller assembles
 /// native-output tasks in the same physical units as the response map.
 pub(crate) fn decide(
@@ -255,9 +443,6 @@ pub(crate) fn decide(
         return Err("Common decision requires the unique 60 Hz clock".into());
     }
     map.require_current(native_substep, mode)?;
-    let end = native_substep
-        .checked_add(TICK_STEPS)
-        .ok_or("Command decision clock overflow")?;
     let mut problem = map.problem(soft, hard, lower, upper)?;
     let layout = axes(model)?;
     let tick_dt = lh_contracts::SUBSTEP_S as f64 * TICK_STEPS as f64;
@@ -270,22 +455,8 @@ pub(crate) fn decide(
             .min(1.)
             .min((a.maximum as f64 - q) / tick_dt);
     }
-    let solution = problem.solve()?;
-    let mut next = memory.clone();
-    next.rates = solution.rates;
+    let (mut next, solution, _) = compile_problem(model, memory, native_substep, &problem)?;
     next.mode_signature = mode;
-    // Check all four f32 commands, not merely the f64 optimizer result.
-    let mut check = next.clone();
-    for step in native_substep..end {
-        let (emitted, after) = command(model, &check, step)?;
-        let mut rates = [0.; AXES];
-        for (i, a) in layout.iter().enumerate() {
-            rates[i] = emitted.velocities[a.segment][a.coordinate] as f64;
-        }
-        // A f64 solution is not a certificate for rounded f32 commands.
-        problem.verify_rates(&rates)?;
-        check = after;
-    }
     Ok((next, solution))
 }
 
@@ -444,5 +615,196 @@ mod tests {
             positive: Some((f64::MAX, vec![1.])),
         };
         assert!(ResponseMap::from_samples(0, 7, vec![1.], [0.; AXES], &vec![bad; AXES]).is_err());
+    }
+
+    fn assert_same_memory(actual: &Memory, expected: &Memory) {
+        assert_eq!(
+            actual.previous.map(|q| q.map(f32::to_bits)),
+            expected.previous.map(|q| q.map(f32::to_bits))
+        );
+        assert_eq!(
+            actual.rates.map(f64::to_bits),
+            expected.rates.map(f64::to_bits)
+        );
+        assert_eq!(actual.next_substep, expected.next_substep);
+        assert_eq!(actual.mode_signature, expected.mode_signature);
+    }
+
+    fn unconstrained_rates() -> Problem {
+        Problem {
+            lower: [-1.; AXES],
+            upper: [1.; AXES],
+            hard: vec![],
+            soft: vec![],
+            regularization: 0.01,
+        }
+    }
+
+    #[test]
+    fn exact_stationary_equalities_preserve_four_commands_without_integration() {
+        let model = model();
+        let memory = initialize(&model, [[0.; 3]; 25], 8, 19).unwrap();
+        let before = memory.clone();
+        let mut problem = unconstrained_rates();
+        // Exercise a fixed box bound and a hard equality: neither has an
+        // interior to tighten, but zero is exactly representable in f32.
+        problem.lower[0] = 0.;
+        problem.upper[0] = 0.;
+        let mut row = [0.; AXES];
+        row[1] = 1.;
+        problem.hard.push(HardTask {
+            name: "stationary material point".into(),
+            row,
+            lower: 0.,
+            upper: 0.,
+        });
+        let mut audit = serde_json::Value::Null;
+        let (compiled, solution, certificate) =
+            compile_problem_traced(&model, &memory, 8, &problem, &mut audit).unwrap();
+        assert_same_memory(&memory, &before);
+        assert_same_memory(&compiled, &before);
+        assert_eq!(solution.rates, [0.; AXES]);
+        assert_eq!(certificate.maximum_observed_rate_error, 0.);
+        assert_eq!(certificate.commands.len(), 4);
+        for command in &certificate.commands {
+            assert_eq!(command.positions, before.previous);
+            assert_eq!(command.velocities, [[0.; 3]; 25]);
+        }
+        assert_eq!(audit["stage"], "certified direct exact f32 commands");
+        assert_eq!(
+            audit["directAttempt"]["attemptedCommands"]
+                .as_array()
+                .unwrap()
+                .len(),
+            4
+        );
+        assert!(audit.get("guardedHardBounds").is_none());
+        assert!(audit.get("guardedAttempt").is_none());
+    }
+
+    #[test]
+    fn unrepresentable_equality_refuses_with_guard_diagnostics_without_integration() {
+        let model = model();
+        let layout = axes(&model).unwrap();
+        let (index, axis) = layout
+            .iter()
+            .enumerate()
+            .find(|(_, a)| a.minimum <= -0.5 && a.maximum >= 0.5)
+            .unwrap();
+        let mut q = [[0.; 3]; 25];
+        q[axis.segment][axis.coordinate] = 0.25;
+        let mut memory = initialize(&model, q, 12, 23).unwrap();
+        memory.rates[index] = -0.25;
+        let before = memory.clone();
+        let mut problem = unconstrained_rates();
+        let mut row = [0.; AXES];
+        row[index] = 1.;
+        problem.hard.push(HardTask {
+            name: "nonrepresentable rate equality".into(),
+            row,
+            lower: 0.1,
+            upper: 0.1,
+        });
+        let mut audit = serde_json::Value::Null;
+        let error = compile_problem_traced(&model, &memory, 12, &problem, &mut audit).unwrap_err();
+        assert_same_memory(&memory, &before);
+        assert!(
+            error.starts_with("Rounding enclosure has no interior"),
+            "{error}"
+        );
+        assert_eq!(audit["refusal"], error);
+        assert!(
+            audit["directAttempt"]["refusal"]
+                .as_str()
+                .unwrap()
+                .starts_with("Exact f32 command at substep 12:")
+        );
+        assert_eq!(
+            audit["directAttempt"]["attemptedCommands"]
+                .as_array()
+                .unwrap()
+                .len(),
+            1
+        );
+        // These diagnostics must survive the failed tightened.validate().
+        assert_eq!(audit["rateErrorBounds"].as_array().unwrap().len(), AXES);
+        assert_eq!(audit["guardedLower"].as_array().unwrap().len(), AXES);
+        assert_eq!(audit["guardedUpper"].as_array().unwrap().len(), AXES);
+        let guard = audit["rateErrorBounds"][index].as_f64().unwrap();
+        assert!(guard > 0.);
+        let guarded = &audit["guardedHardBounds"][0];
+        assert_eq!(guarded["name"], "nonrepresentable rate equality");
+        assert_eq!(guarded["lower"].as_f64().unwrap(), 0.1 + guard);
+        assert_eq!(guarded["upper"].as_f64().unwrap(), 0.1 - guard);
+        assert!(guarded["lower"].as_f64().unwrap() > guarded["upper"].as_f64().unwrap());
+        assert!(audit.get("guardedAttempt").is_none());
+    }
+
+    #[test]
+    fn negative_zero_and_binade_commands_have_exact_dq_without_integration() {
+        let model = model();
+        let layout = axes(&model).unwrap();
+        let (index, axis) = layout
+            .iter()
+            .enumerate()
+            .find(|(_, a)| a.minimum <= -0.5 && a.maximum >= 0.5)
+            .unwrap();
+        let below_binade = f32::from_bits(0.25_f32.to_bits() - 1);
+        let cases = [
+            (-0.25, -1.),
+            (0., -1.),
+            (-0.25 * lh_contracts::SUBSTEP_S, 0.5),
+            (below_binade, 1.),
+            (-below_binade, -1.),
+        ];
+        for (initial_q, desired_rate) in cases {
+            let mut q = [[0.; 3]; 25];
+            q[axis.segment][axis.coordinate] = initial_q;
+            let memory = initialize(&model, q, 20, 31).unwrap();
+            let before = memory.clone();
+            let mut problem = unconstrained_rates();
+            let mut row = [0.; AXES];
+            row[index] = 1.;
+            problem.soft.push(Task {
+                row,
+                target: desired_rate * (1. + problem.regularization),
+                weight: 1.,
+            });
+            let (compiled, solution, certificate) =
+                compile_problem(&model, &memory, 20, &problem).unwrap();
+            assert_same_memory(&memory, &before);
+            assert_eq!(certificate.commands.len(), 4);
+            let mut replay = compiled;
+            for (offset, emitted) in certificate.commands.iter().enumerate() {
+                let rates = std::array::from_fn(|i| {
+                    f64::from(emitted.velocities[layout[i].segment][layout[i].coordinate])
+                });
+                problem.verify_rates(&rates).unwrap();
+                for (i, a) in layout.iter().enumerate() {
+                    let actual_dq = emitted.velocities[a.segment][a.coordinate];
+                    let expected_dq = (emitted.positions[a.segment][a.coordinate]
+                        - replay.previous[a.segment][a.coordinate])
+                        / lh_contracts::SUBSTEP_S;
+                    assert_eq!(actual_dq.to_bits(), expected_dq.to_bits());
+                    assert!(
+                        (rates[i] - solution.rates[i]).abs() <= certificate.rate_error_bounds[i]
+                    );
+                }
+                let (replayed, next) = command(&model, &replay, 20 + offset as u64).unwrap();
+                assert_eq!(replayed.positions, emitted.positions);
+                assert_eq!(replayed.velocities, emitted.velocities);
+                replay = next;
+            }
+            let final_q = replay.previous[axis.segment][axis.coordinate];
+            assert_eq!(replay.next_substep, 24);
+            assert!((final_q - initial_q) * desired_rate as f32 > 0.);
+            if initial_q == below_binade {
+                assert!(final_q > 0.25);
+            } else if initial_q == -below_binade {
+                assert!(final_q < -0.25);
+            } else if desired_rate > 0. {
+                assert!(initial_q < 0. && final_q > 0.);
+            }
+        }
     }
 }

@@ -1,5 +1,7 @@
 # Prototype de coordination : préparation et décision
 
+Mise à jour après clôture : [correction numérique testée des quatre refus](coordination-numeric-correction-2026-10-12.md), sans nouveau sous-pas physique. Les résultats physiques ci-dessous restent ceux du lot initial.
+
 **Protocole clos : prototype implémenté, refus numérique de B.** Voir le [rapport de résultat](coordination-prototype-result-2026-10-12.md). Total exécuté : 1 024 sous-pas ; aucune récupération qualifiée.
 
 Base inspectée : `e3b4ed3b2ddaac5450c2846ec12c736a1287082e` sur
