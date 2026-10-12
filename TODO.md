@@ -1,5 +1,16 @@
 # TODO
 
+**2026-10-12 investigation pied et friction — documentation uniquement :**
+
+- [x] Vérifier `e8205c8` local/distant et les trois registres clos inchangés.
+- [x] Identifier les trois axes existants par pied, semelles/talons, repères et exclusions.
+- [x] Vérifier Coulomb et le coefficient effectif pied-sol 4 ; distinguer rotation,
+  glissement résiduel et talon en l'air dans les traces A/B.
+- [x] Documenter les options et le petit protocole futur ; zéro intégration supplémentaire.
+- [ ] Décider séparément d'une comparaison de commande ou friction ; segmentation
+  non justifiée à ce stade, aucune migration anatomique ni simulation autorisée.
+  [Diagnostic, valeurs et protocoles](docs/recovery-foot-support-investigation-2026-10-12.md).
+
 **2026-10-12 comparaison A/B close — zéro relevage sur deux histoires :**
 
 - [x] Vérifier `42fccd3`, checkout propre, programme get_up_control exact ; anciens budgets clos.
@@ -12,7 +23,7 @@
 - [x] Clôturer sans renouvellement ; vidéo issue des états enregistrés et verdict fidèle.
 - [ ] Résoudre transfert d'appui, libération des contacts passifs et orientation
   de racine ; aucune nouvelle campagne autorisée implicitement.
-- [ ] Push des sauvegardes locales bloqué par revue automatique : confirmation directe demandée.
+- [x] Push des trois sauvegardes confirmé après autorisation directe : distant `e8205c8`.
   [Décision et bornes](docs/rust-getup-ab-decision-2026-10-12.md).
   [Résultats physiques, vidéo et limites](docs/rust-getup-ab-results-2026-10-12.md).
 

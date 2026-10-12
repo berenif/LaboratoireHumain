@@ -1,0 +1,1060 @@
+{
+  "schema": 1,
+  "createdUtc": "2026-10-12T10:08:48.942159+00:00",
+  "sourceCommit": "e8205c8665fec3eaab8dc6a71c554b8fdc6defd1",
+  "scope": "Static analysis of existing A/B journals and meshes; zero native integrations; no physical changes",
+  "newNativeIntegrations": 0,
+  "anatomy": {
+    "leftAnkle": {
+      "parent": "leftShin",
+      "role": "ankle",
+      "massKg": 0.2,
+      "axes": [
+        {
+          "coordinate": "x",
+          "minDegrees": -45.0,
+          "maxDegrees": 20.0,
+          "maxMotorTorqueNm": 110
+        }
+      ],
+      "parentFrame": {
+        "anchor": {
+          "x": 0,
+          "y": -0.2,
+          "z": 0
+        },
+        "rotation": {
+          "x": 0,
+          "y": 1,
+          "z": 0,
+          "w": 0
+        }
+      },
+      "childFrame": {
+        "anchor": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "rotation": {
+          "x": 0,
+          "y": 1,
+          "z": 0,
+          "w": 0
+        }
+      },
+      "boundsM": {
+        "min": [
+          -0.059300828725099564,
+          -0.03500000014901161,
+          -0.04772175848484039
+        ],
+        "max": [
+          0.059300828725099564,
+          0.03500000014901161,
+          0.04772175848484039
+        ]
+      },
+      "collisionExclusions": [
+        "leftShin",
+        "leftFoot"
+      ]
+    },
+    "leftFoot": {
+      "parent": "leftAnkle",
+      "role": "hindfoot",
+      "massKg": 0.55,
+      "axes": [
+        {
+          "coordinate": "z",
+          "minDegrees": -10.0,
+          "maxDegrees": 25.0,
+          "maxMotorTorqueNm": 50
+        }
+      ],
+      "parentFrame": {
+        "anchor": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "rotation": {
+          "x": 0,
+          "y": 0,
+          "z": 0,
+          "w": 1
+        }
+      },
+      "childFrame": {
+        "anchor": {
+          "x": 0,
+          "y": 0.045,
+          "z": -0.035
+        },
+        "rotation": {
+          "x": 0,
+          "y": 0,
+          "z": 0,
+          "w": 1
+        }
+      },
+      "boundsM": {
+        "min": [
+          -0.05299999937415123,
+          -0.04500000178813934,
+          -0.07500000298023224
+        ],
+        "max": [
+          0.05299999937415123,
+          0.04500000178813934,
+          0.07500000298023224
+        ]
+      },
+      "collisionExclusions": [
+        "leftShin",
+        "leftAnkle",
+        "leftForefoot"
+      ]
+    },
+    "leftForefoot": {
+      "parent": "leftFoot",
+      "role": "forefoot",
+      "massKg": 0.25,
+      "axes": [
+        {
+          "coordinate": "x",
+          "minDegrees": -20.0,
+          "maxDegrees": 45.0,
+          "maxMotorTorqueNm": 35
+        }
+      ],
+      "parentFrame": {
+        "anchor": {
+          "x": 0,
+          "y": -0.015,
+          "z": 0.075
+        },
+        "rotation": {
+          "x": 0,
+          "y": 1,
+          "z": 0,
+          "w": 0
+        }
+      },
+      "childFrame": {
+        "anchor": {
+          "x": 0,
+          "y": -0.015,
+          "z": -0.06000000000000001
+        },
+        "rotation": {
+          "x": 0,
+          "y": 1,
+          "z": 0,
+          "w": 0
+        }
+      },
+      "boundsM": {
+        "min": [
+          -0.05400000140070915,
+          -0.04500000178813934,
+          -0.05999999865889549
+        ],
+        "max": [
+          0.05400000140070915,
+          0.035100001841783524,
+          0.05999999865889549
+        ]
+      },
+      "collisionExclusions": [
+        "leftFoot"
+      ]
+    },
+    "rightAnkle": {
+      "parent": "rightShin",
+      "role": "ankle",
+      "massKg": 0.2,
+      "axes": [
+        {
+          "coordinate": "x",
+          "minDegrees": -45.0,
+          "maxDegrees": 20.0,
+          "maxMotorTorqueNm": 110
+        }
+      ],
+      "parentFrame": {
+        "anchor": {
+          "x": 0,
+          "y": -0.2,
+          "z": 0
+        },
+        "rotation": {
+          "x": 0,
+          "y": 1,
+          "z": 0,
+          "w": 0
+        }
+      },
+      "childFrame": {
+        "anchor": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "rotation": {
+          "x": 0,
+          "y": 1,
+          "z": 0,
+          "w": 0
+        }
+      },
+      "boundsM": {
+        "min": [
+          -0.059300828725099564,
+          -0.03500000014901161,
+          -0.04772175848484039
+        ],
+        "max": [
+          0.059300828725099564,
+          0.03500000014901161,
+          0.04772175848484039
+        ]
+      },
+      "collisionExclusions": [
+        "rightShin",
+        "rightFoot"
+      ]
+    },
+    "rightFoot": {
+      "parent": "rightAnkle",
+      "role": "hindfoot",
+      "massKg": 0.55,
+      "axes": [
+        {
+          "coordinate": "z",
+          "minDegrees": -25.0,
+          "maxDegrees": 10.0,
+          "maxMotorTorqueNm": 50
+        }
+      ],
+      "parentFrame": {
+        "anchor": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "rotation": {
+          "x": 0,
+          "y": 0,
+          "z": 0,
+          "w": 1
+        }
+      },
+      "childFrame": {
+        "anchor": {
+          "x": 0,
+          "y": 0.045,
+          "z": -0.035
+        },
+        "rotation": {
+          "x": 0,
+          "y": 0,
+          "z": 0,
+          "w": 1
+        }
+      },
+      "boundsM": {
+        "min": [
+          -0.05299999937415123,
+          -0.04500000178813934,
+          -0.07500000298023224
+        ],
+        "max": [
+          0.05299999937415123,
+          0.04500000178813934,
+          0.07500000298023224
+        ]
+      },
+      "collisionExclusions": [
+        "rightShin",
+        "rightAnkle",
+        "rightForefoot"
+      ]
+    },
+    "rightForefoot": {
+      "parent": "rightFoot",
+      "role": "forefoot",
+      "massKg": 0.25,
+      "axes": [
+        {
+          "coordinate": "x",
+          "minDegrees": -20.0,
+          "maxDegrees": 45.0,
+          "maxMotorTorqueNm": 35
+        }
+      ],
+      "parentFrame": {
+        "anchor": {
+          "x": 0,
+          "y": -0.015,
+          "z": 0.075
+        },
+        "rotation": {
+          "x": 0,
+          "y": 1,
+          "z": 0,
+          "w": 0
+        }
+      },
+      "childFrame": {
+        "anchor": {
+          "x": 0,
+          "y": -0.015,
+          "z": -0.06000000000000001
+        },
+        "rotation": {
+          "x": 0,
+          "y": 1,
+          "z": 0,
+          "w": 0
+        }
+      },
+      "boundsM": {
+        "min": [
+          -0.05400000140070915,
+          -0.04500000178813934,
+          -0.05999999865889549
+        ],
+        "max": [
+          0.05400000140070915,
+          0.035100001841783524,
+          0.05999999865889549
+        ]
+      },
+      "collisionExclusions": [
+        "rightFoot"
+      ]
+    }
+  },
+  "effectiveFriction": {
+    "floorFoot": 4.0,
+    "floorHandForearmShinAnkle": 1.2,
+    "floorOtherBody": 0.45,
+    "footFoot": 4.0,
+    "rule": "Min dominates ground/environment Average; positive minimum",
+    "law": "Coulomb, per-point tangent disk radius mu * normal impulse",
+    "skinM": 0.004,
+    "predictionDistanceM": 0.002
+  },
+  "sourceHashes": {
+    "rust/crates/model/data/canonical-v1.json": "083c13b2cce2d6033a4fc05cba8da7e78bd89634fb306629f4b7a9cd4a177a65",
+    "rust/crates/sim/src/lib.rs": "659c7c097ecb49b81b309bb7c076f7c19b1a9c14c40910ad6884eee564502624",
+    "rust/crates/sim/src/environment.rs": "6976912d2a988bca3b61960bc7037a927673bf8780edf9fb22ff1e9e6bdbf143",
+    "rust/crates/sim/data/recovery-profile-v24.json": "971661c88ae7258f157669d8e8a873161de40990274a9f2fd7d159f50006e00e",
+    "rust/vendor/rapier3d/src/dynamics/coefficient_combine_rule.rs": "758dbf91ef1538cd925f33b755c3ffe66859be43027c28409050c7532dc09416",
+    "rust/vendor/rapier3d/src/geometry/narrow_phase/pair_update.rs": "4d92ea490e509cfe850801d2799b6e06b0f24fcde51441f42ec148d6507d3de1",
+    "rust/vendor/rapier3d/src/dynamics/solver/contact_constraint/contact_with_coulomb_friction.rs": "b8ccbc7d8aea58a4c73ed94a6de9d86e575eb7c39b8475c9e59b8dabcee7eca9",
+    "rust/vendor/rapier3d/src/dynamics/solver/contact_constraint/contact_constraint_element.rs": "72974cbf17940db9acdf2d5c816af46e83f5a82ed8fa6dda93afb8fcafb5a941",
+    "evidence/getup-ab-2026-10-12/000-witness-A/frames.jsonl": "abea78f6d6e6515f11b8785129cc88d66e3e0f48b4ce35684d057c656f06eac8",
+    "evidence/getup-ab-2026-10-12/000-witness-A/solver-boundaries.jsonl": "421dc7ff02ccf7c01f921a8317c319da82d690bcf1e72b033e771b3e858ddff5",
+    "evidence/getup-ab-2026-10-12/000-witness-A/report.json": "2be3e350a788413353871832f6f905cdb81fb4875b66fd3ade723fcd4b286f7b",
+    "evidence/getup-ab-2026-10-12/000-witness-A/substeps.jsonl": "c418ccf31f361eed207aed0579f69a9062464361e35fce78e66ecb0d687cae09",
+    "evidence/getup-ab-2026-10-12/001-feedback-B/frames.jsonl": "b70028afd2a2ac19557dcc193f0576d6a87129c0bb3d6901d463dac8d23c93f1",
+    "evidence/getup-ab-2026-10-12/001-feedback-B/solver-boundaries.jsonl": "232fcf3c100207ee4e1ba1636d54cd308c6b4fa6dfbd0ea91460371ec87f471a",
+    "evidence/getup-ab-2026-10-12/001-feedback-B/report.json": "bbf4c9e57c09707322a288bf1d3c1587f1d927a4e51c3eef9c9a051fd40ede0f",
+    "evidence/getup-ab-2026-10-12/001-feedback-B/substeps.jsonl": "c3f30e8fb2b4384cd9576387b2e2d282133629c67968591784e94aefc7aad3fe"
+  },
+  "closedLedgers": {
+    "evidence/getup-ab-2026-10-12/ledger.json": {
+      "sha256": "d09418ad7ec02d22bdbb682eed9cf17f1f6d2e05a9f120e3a39c06c3ead222cb",
+      "status": "closed-no-complete-recovery",
+      "historiesStarted": 2,
+      "actualNativeStepsKnown": 6089
+    },
+    "evidence/native-hybrid-v1-2026-10-11/ledger.json": {
+      "sha256": "ec66ac4cd2b8b0d699ff98a5c6c84f7bcad5665e0faf84fa7bff84c1a4ac8650",
+      "status": "closed-at-wall-deadline-P1-not-certified",
+      "historiesStarted": 8,
+      "actualNativeStepsKnown": 19512
+    },
+    "evidence/recovery-coordinated-retarget-2026-10-11/native-campaign/ledger.json": {
+      "sha256": "b61f17b180afece7db1e3a7d541edeaf24094f358edd2bb7e1362797d8b600e4",
+      "status": "abandoned-at96-without-route-standing",
+      "historiesStarted": 96,
+      "actualNativeStepsKnown": null
+    }
+  },
+  "histories": {
+    "000-witness-A": {
+      "physicsStepsAlreadyRecorded": 1076,
+      "completeRecovery": false,
+      "firstRefusal": {
+        "check": "ownership",
+        "measured": 0.0,
+        "offending": "A/B measured path stagnation duration",
+        "substep": 0,
+        "threshold": 0.0,
+        "tick": 269
+      },
+      "maximumSelfDepthM": 0.0,
+      "frictionAggregateFirst600ms": {
+        "leftFoot": {
+          "intervals": 121,
+          "maximum": 0.7685251142126573,
+          "p95": 0.6421922924504657
+        },
+        "leftForefoot": {
+          "intervals": 144,
+          "maximum": 0.8021859911500793,
+          "p95": 0.6696629059943046
+        },
+        "rightFoot": {
+          "intervals": 121,
+          "maximum": 0.7931848176333574,
+          "p95": 0.49953025796540534
+        },
+        "rightForefoot": {
+          "intervals": 144,
+          "maximum": 0.8989892842962189,
+          "p95": 0.6344995917825612
+        }
+      },
+      "samples": [
+        {
+          "timeS": 0.05,
+          "ccdIntervals": 1,
+          "segments": {
+            "leftFoot": {
+              "worldSagittalPitchDeg": 10.665158072210945,
+              "comHorizontalSpeedMps": 0.1274580932552162,
+              "contactHorizontalSpeedRangeMps": null,
+              "persistentPointCount": 0,
+              "aggregateFrictionUtilisation": null,
+              "posteriorMinimumHeightM": 0.04608601053850449,
+              "ankleMeasuredDeg": 19.254931647669586,
+              "ankleTargetDeg": 18.366928508392473
+            },
+            "leftForefoot": {
+              "worldSagittalPitchDeg": 9.344537444534087,
+              "comHorizontalSpeedMps": 0.11326992279808729,
+              "contactHorizontalSpeedRangeMps": [
+                0.0049268813196337675,
+                0.005133704701426956
+              ],
+              "persistentPointCount": 2,
+              "aggregateFrictionUtilisation": 0.023892808771118573
+            },
+            "rightFoot": {
+              "worldSagittalPitchDeg": 10.69165777157627,
+              "comHorizontalSpeedMps": 0.12764296727833122,
+              "contactHorizontalSpeedRangeMps": null,
+              "persistentPointCount": 0,
+              "aggregateFrictionUtilisation": null,
+              "posteriorMinimumHeightM": 0.04609324456593459,
+              "ankleMeasuredDeg": 19.26766312028249,
+              "ankleTargetDeg": 18.366928508392473
+            },
+            "rightForefoot": {
+              "worldSagittalPitchDeg": 9.350217336292523,
+              "comHorizontalSpeedMps": 0.11400943491336375,
+              "contactHorizontalSpeedRangeMps": [
+                0.005027475046892375,
+                0.005051438075272965
+              ],
+              "persistentPointCount": 2,
+              "aggregateFrictionUtilisation": 0.02770337451101988
+            }
+          }
+        },
+        {
+          "timeS": 0.1,
+          "ccdIntervals": 1,
+          "segments": {
+            "leftFoot": {
+              "worldSagittalPitchDeg": 9.573276456201338,
+              "comHorizontalSpeedMps": 0.12769759277192697,
+              "contactHorizontalSpeedRangeMps": null,
+              "persistentPointCount": 0,
+              "aggregateFrictionUtilisation": 0.08309469614037675,
+              "posteriorMinimumHeightM": 0.028700791336133444,
+              "ankleMeasuredDeg": 19.99999600309126,
+              "ankleTargetDeg": 18.466789289152644
+            },
+            "leftForefoot": {
+              "worldSagittalPitchDeg": 4.087717466530671,
+              "comHorizontalSpeedMps": 0.09326545440180506,
+              "contactHorizontalSpeedRangeMps": [
+                0.005823196236375839,
+                0.024054853963640408
+              ],
+              "persistentPointCount": 3,
+              "aggregateFrictionUtilisation": 0.11191953017604576
+            },
+            "rightFoot": {
+              "worldSagittalPitchDeg": 9.83436065443048,
+              "comHorizontalSpeedMps": 0.2853280444969991,
+              "contactHorizontalSpeedRangeMps": null,
+              "persistentPointCount": 0,
+              "aggregateFrictionUtilisation": 0.12621989898755007,
+              "posteriorMinimumHeightM": 0.028917002140263014,
+              "ankleMeasuredDeg": 19.99999600309126,
+              "ankleTargetDeg": 18.466789289152644
+            },
+            "rightForefoot": {
+              "worldSagittalPitchDeg": 3.8336331708404248,
+              "comHorizontalSpeedMps": 0.10320000499714399,
+              "contactHorizontalSpeedRangeMps": [
+                0.007645073661243019,
+                0.04154637658771805
+              ],
+              "persistentPointCount": 3,
+              "aggregateFrictionUtilisation": 0.11754540878368244
+            }
+          }
+        },
+        {
+          "timeS": 0.15,
+          "ccdIntervals": 1,
+          "segments": {
+            "leftFoot": {
+              "worldSagittalPitchDeg": 9.021497215265365,
+              "comHorizontalSpeedMps": 0.01800196486155292,
+              "contactHorizontalSpeedRangeMps": [
+                0.0005698577410327537,
+                0.005122550120215615
+              ],
+              "persistentPointCount": 2,
+              "aggregateFrictionUtilisation": 0.3141860500518953,
+              "posteriorMinimumHeightM": 0.02392811696177167,
+              "ankleMeasuredDeg": 20.000036984226277,
+              "ankleTargetDeg": 18.619838460527
+            },
+            "leftForefoot": {
+              "worldSagittalPitchDeg": 1.6901293395146786,
+              "comHorizontalSpeedMps": 0.00733736827195764,
+              "contactHorizontalSpeedRangeMps": [
+                0.00039798214949848283,
+                0.0016284238672517727
+              ],
+              "persistentPointCount": 4,
+              "aggregateFrictionUtilisation": 0.2983356611392802
+            },
+            "rightFoot": {
+              "worldSagittalPitchDeg": 9.373650911982594,
+              "comHorizontalSpeedMps": 0.01513800839033613,
+              "contactHorizontalSpeedRangeMps": [
+                0.0002496072827547195,
+                0.0004485883686460238
+              ],
+              "persistentPointCount": 2,
+              "aggregateFrictionUtilisation": 0.3758027639166433,
+              "posteriorMinimumHeightM": 0.02440139432025227,
+              "ankleMeasuredDeg": 19.99999600309126,
+              "ankleTargetDeg": 18.619838460527
+            },
+            "rightForefoot": {
+              "worldSagittalPitchDeg": 1.9166401963952162,
+              "comHorizontalSpeedMps": 0.0032230823633631195,
+              "contactHorizontalSpeedRangeMps": [
+                0.00015712449970693154,
+                0.0005150436164196455
+              ],
+              "persistentPointCount": 4,
+              "aggregateFrictionUtilisation": 0.44879440793465086
+            }
+          }
+        },
+        {
+          "timeS": 0.3,
+          "ccdIntervals": 1,
+          "segments": {
+            "leftFoot": {
+              "worldSagittalPitchDeg": 6.577966241886881,
+              "comHorizontalSpeedMps": 0.014681188232216662,
+              "contactHorizontalSpeedRangeMps": [
+                0.000502927331351473,
+                0.000502927331351473
+              ],
+              "persistentPointCount": 2,
+              "aggregateFrictionUtilisation": 0.22407235736918282,
+              "posteriorMinimumHeightM": 0.016787390096396182,
+              "ankleMeasuredDeg": 19.99999600309126,
+              "ankleTargetDeg": 19.25140043986869
+            },
+            "leftForefoot": {
+              "worldSagittalPitchDeg": 0.5792391831827008,
+              "comHorizontalSpeedMps": 0.005501389782694469,
+              "contactHorizontalSpeedRangeMps": [
+                0.00033372677232406815,
+                0.000929176034084301
+              ],
+              "persistentPointCount": 4,
+              "aggregateFrictionUtilisation": 0.22531542266377882
+            },
+            "rightFoot": {
+              "worldSagittalPitchDeg": 7.629616332246196,
+              "comHorizontalSpeedMps": 0.01375100465708781,
+              "contactHorizontalSpeedRangeMps": [
+                0.000658688340385558,
+                0.0006586898037316997
+              ],
+              "persistentPointCount": 2,
+              "aggregateFrictionUtilisation": 0.36323882006234437,
+              "posteriorMinimumHeightM": 0.017431085066283374,
+              "ankleMeasuredDeg": 19.99999600309126,
+              "ankleTargetDeg": 19.25140043986869
+            },
+            "rightForefoot": {
+              "worldSagittalPitchDeg": 0.019256161784122403,
+              "comHorizontalSpeedMps": 0.007847603466494723,
+              "contactHorizontalSpeedRangeMps": [
+                0.0004905882144221403,
+                0.0007242189033289463
+              ],
+              "persistentPointCount": 4,
+              "aggregateFrictionUtilisation": 0.3073406322365822
+            }
+          }
+        },
+        {
+          "timeS": 0.55,
+          "ccdIntervals": 1,
+          "segments": {
+            "leftFoot": {
+              "worldSagittalPitchDeg": 4.568108515627109,
+              "comHorizontalSpeedMps": 0.0022883832312808046,
+              "contactHorizontalSpeedRangeMps": [
+                0.00016137617522983303,
+                0.00016137662089597333
+              ],
+              "persistentPointCount": 2,
+              "aggregateFrictionUtilisation": 0.3880743634738515,
+              "posteriorMinimumHeightM": 0.011975679194433264,
+              "ankleMeasuredDeg": 20.000009663469598,
+              "ankleTargetDeg": 19.998310653913556
+            },
+            "leftForefoot": {
+              "worldSagittalPitchDeg": 0.9272076766461197,
+              "comHorizontalSpeedMps": 0.001070755511227325,
+              "contactHorizontalSpeedRangeMps": [
+                4.3365432751095154e-05,
+                9.114945638731648e-05
+              ],
+              "persistentPointCount": 4,
+              "aggregateFrictionUtilisation": 0.17770032035473077
+            },
+            "rightFoot": {
+              "worldSagittalPitchDeg": 6.982873494425321,
+              "comHorizontalSpeedMps": 0.003502119186739222,
+              "contactHorizontalSpeedRangeMps": [
+                0.0004276916852240843,
+                0.007056922381528654
+              ],
+              "persistentPointCount": 2,
+              "aggregateFrictionUtilisation": 0.25432285910044783,
+              "posteriorMinimumHeightM": 0.015883724179569153,
+              "ankleMeasuredDeg": 20.000009663469598,
+              "ankleTargetDeg": 19.998310653913556
+            },
+            "rightForefoot": {
+              "worldSagittalPitchDeg": 1.710735250309554,
+              "comHorizontalSpeedMps": 0.01007503367063524,
+              "contactHorizontalSpeedRangeMps": [
+                0.0007647003848497575,
+                0.002581874258089105
+              ],
+              "persistentPointCount": 4,
+              "aggregateFrictionUtilisation": 0.14732484293145162
+            }
+          }
+        }
+      ]
+    },
+    "001-feedback-B": {
+      "physicsStepsAlreadyRecorded": 5013,
+      "completeRecovery": false,
+      "firstRefusal": {
+        "check": "ownership",
+        "measured": 0.0,
+        "offending": "Original recovery observer refused A/B; no restart",
+        "substep": 1,
+        "threshold": 0.0,
+        "tick": 1253
+      },
+      "maximumSelfDepthM": 0.0042856791988015175,
+      "frictionAggregateFirst600ms": {
+        "leftFoot": {
+          "intervals": 121,
+          "maximum": 0.9502941379796055,
+          "p95": 0.9479792398682757
+        },
+        "leftForefoot": {
+          "intervals": 144,
+          "maximum": 0.9326362521787732,
+          "p95": 0.9270787421399498
+        },
+        "rightFoot": {
+          "intervals": 121,
+          "maximum": 0.9923778493356794,
+          "p95": 0.9814174421578594
+        },
+        "rightForefoot": {
+          "intervals": 144,
+          "maximum": 0.8973416455577139,
+          "p95": 0.860831598280698
+        }
+      },
+      "samples": [
+        {
+          "timeS": 0.05,
+          "ccdIntervals": 1,
+          "segments": {
+            "leftFoot": {
+              "worldSagittalPitchDeg": 10.665158072210945,
+              "comHorizontalSpeedMps": 0.1274580932552162,
+              "contactHorizontalSpeedRangeMps": null,
+              "persistentPointCount": 0,
+              "aggregateFrictionUtilisation": null,
+              "posteriorMinimumHeightM": 0.04608601053850449,
+              "ankleMeasuredDeg": 19.254931647669586,
+              "ankleTargetDeg": 18.366928508392473
+            },
+            "leftForefoot": {
+              "worldSagittalPitchDeg": 9.344537444534087,
+              "comHorizontalSpeedMps": 0.11326992279808729,
+              "contactHorizontalSpeedRangeMps": [
+                0.0049268813196337675,
+                0.005133704701426956
+              ],
+              "persistentPointCount": 2,
+              "aggregateFrictionUtilisation": 0.023892808771118573
+            },
+            "rightFoot": {
+              "worldSagittalPitchDeg": 10.69165777157627,
+              "comHorizontalSpeedMps": 0.12764296727833122,
+              "contactHorizontalSpeedRangeMps": null,
+              "persistentPointCount": 0,
+              "aggregateFrictionUtilisation": null,
+              "posteriorMinimumHeightM": 0.04609324456593459,
+              "ankleMeasuredDeg": 19.26766312028249,
+              "ankleTargetDeg": 18.366928508392473
+            },
+            "rightForefoot": {
+              "worldSagittalPitchDeg": 9.350217336292523,
+              "comHorizontalSpeedMps": 0.11400943491336375,
+              "contactHorizontalSpeedRangeMps": [
+                0.005027475046892375,
+                0.005051438075272965
+              ],
+              "persistentPointCount": 2,
+              "aggregateFrictionUtilisation": 0.02770337451101988
+            }
+          },
+          "fixedMeasuredShinAtAnkle20Degrees": {
+            "left": {
+              "optimisticUnrestrictedRollHeightM": 0.035380905942411,
+              "legalRollSamplesHeightM": {
+                "-10.0": 0.03923835755646707,
+                "0.0": 0.045393268299531206,
+                "25.0": 0.035396968196310566
+              }
+            },
+            "right": {
+              "optimisticUnrestrictedRollHeightM": 0.03540768975383847,
+              "legalRollSamplesHeightM": {
+                "-25.0": 0.03542504973541878,
+                "0.0": 0.045417616920243056,
+                "10.0": 0.039245144663366566
+              }
+            }
+          }
+        },
+        {
+          "timeS": 0.1,
+          "ccdIntervals": 1,
+          "segments": {
+            "leftFoot": {
+              "worldSagittalPitchDeg": 9.764939200525525,
+              "comHorizontalSpeedMps": 0.31568346687628646,
+              "contactHorizontalSpeedRangeMps": null,
+              "persistentPointCount": 0,
+              "aggregateFrictionUtilisation": 0.12323521602221509,
+              "posteriorMinimumHeightM": 0.028655570794235377,
+              "ankleMeasuredDeg": 19.99999600309126,
+              "ankleTargetDeg": 18.464000864423987
+            },
+            "leftForefoot": {
+              "worldSagittalPitchDeg": 3.824374006663607,
+              "comHorizontalSpeedMps": 0.06311424639873432,
+              "contactHorizontalSpeedRangeMps": [
+                0.003931650090981545,
+                0.05470815250476269
+              ],
+              "persistentPointCount": 3,
+              "aggregateFrictionUtilisation": 0.13915923238515868
+            },
+            "rightFoot": {
+              "worldSagittalPitchDeg": 9.805161108408218,
+              "comHorizontalSpeedMps": 0.20044266403260388,
+              "contactHorizontalSpeedRangeMps": null,
+              "persistentPointCount": 0,
+              "aggregateFrictionUtilisation": 0.32854322395697483,
+              "posteriorMinimumHeightM": 0.028768185703011047,
+              "ankleMeasuredDeg": 19.99999600309126,
+              "ankleTargetDeg": 18.467989694899273
+            },
+            "rightForefoot": {
+              "worldSagittalPitchDeg": 4.141307952698801,
+              "comHorizontalSpeedMps": 0.13031153980330018,
+              "contactHorizontalSpeedRangeMps": [
+                0.0056487835313418335,
+                0.046067412690876
+              ],
+              "persistentPointCount": 3,
+              "aggregateFrictionUtilisation": 0.211807233985629
+            }
+          }
+        },
+        {
+          "timeS": 0.15,
+          "ccdIntervals": 1,
+          "segments": {
+            "leftFoot": {
+              "worldSagittalPitchDeg": 9.24880763322268,
+              "comHorizontalSpeedMps": 0.018854339700756152,
+              "contactHorizontalSpeedRangeMps": [
+                0.0005742849697800594,
+                0.0018827309351977775
+              ],
+              "persistentPointCount": 2,
+              "aggregateFrictionUtilisation": 0.7636883368596005,
+              "posteriorMinimumHeightM": 0.023946436430250573,
+              "ankleMeasuredDeg": 19.99999600309126,
+              "ankleTargetDeg": 18.356058262328396
+            },
+            "leftForefoot": {
+              "worldSagittalPitchDeg": 1.7244008809585036,
+              "comHorizontalSpeedMps": 0.004672087426240244,
+              "contactHorizontalSpeedRangeMps": [
+                0.0002757357934038988,
+                0.0007871664897564096
+              ],
+              "persistentPointCount": 4,
+              "aggregateFrictionUtilisation": 0.7075839318608341
+            },
+            "rightFoot": {
+              "worldSagittalPitchDeg": 9.348999981386228,
+              "comHorizontalSpeedMps": 0.004129681376517418,
+              "contactHorizontalSpeedRangeMps": [
+                0.016790462032117634,
+                0.019579553697327653
+              ],
+              "persistentPointCount": 2,
+              "aggregateFrictionUtilisation": 0.9079281398057671,
+              "posteriorMinimumHeightM": 0.024228072838967073,
+              "ankleMeasuredDeg": 20.01726272131305,
+              "ankleTargetDeg": 18.317069834998673
+            },
+            "rightForefoot": {
+              "worldSagittalPitchDeg": 1.1006188280028375,
+              "comHorizontalSpeedMps": 0.001048973709832431,
+              "contactHorizontalSpeedRangeMps": [
+                6.466652410703102e-05,
+                0.0002487297429277886
+              ],
+              "persistentPointCount": 4,
+              "aggregateFrictionUtilisation": 0.8380106804493657
+            }
+          },
+          "fixedMeasuredShinAtAnkle20Degrees": {
+            "left": {
+              "optimisticUnrestrictedRollHeightM": 0.013979672407305355,
+              "legalRollSamplesHeightM": {
+                "-10.0": 0.017936364552712677,
+                "0.0": 0.023867751881465435,
+                "25.0": 0.01399037549559913
+              }
+            },
+            "right": {
+              "optimisticUnrestrictedRollHeightM": 0.014201130231717152,
+              "legalRollSamplesHeightM": {
+                "-25.0": 0.014227530492881335,
+                "0.0": 0.024041094127304458,
+                "10.0": 0.017927559214830538
+              }
+            }
+          }
+        },
+        {
+          "timeS": 0.3,
+          "ccdIntervals": 1,
+          "segments": {
+            "leftFoot": {
+              "worldSagittalPitchDeg": 7.133412127098048,
+              "comHorizontalSpeedMps": 0.015046960452596464,
+              "contactHorizontalSpeedRangeMps": [
+                0.0007383255573342991,
+                0.0017812892598848096
+              ],
+              "persistentPointCount": 2,
+              "aggregateFrictionUtilisation": 0.9145487634912653,
+              "posteriorMinimumHeightM": 0.0173167869096263,
+              "ankleMeasuredDeg": 19.99999600309126,
+              "ankleTargetDeg": 17.508146625931968
+            },
+            "leftForefoot": {
+              "worldSagittalPitchDeg": 0.8032092874247286,
+              "comHorizontalSpeedMps": 0.005373730912593895,
+              "contactHorizontalSpeedRangeMps": [
+                0.0003976089530279313,
+                0.0010222578519680377
+              ],
+              "persistentPointCount": 4,
+              "aggregateFrictionUtilisation": 0.9218274028620302
+            },
+            "rightFoot": {
+              "worldSagittalPitchDeg": 7.420902939386732,
+              "comHorizontalSpeedMps": 0.006565427063052661,
+              "contactHorizontalSpeedRangeMps": [
+                0.00017256874305498644,
+                0.0021696310567227797
+              ],
+              "persistentPointCount": 2,
+              "aggregateFrictionUtilisation": 0.9818771528688581,
+              "posteriorMinimumHeightM": 0.018811680247218916,
+              "ankleMeasuredDeg": 19.99999600309126,
+              "ankleTargetDeg": 17.259169155212078
+            },
+            "rightForefoot": {
+              "worldSagittalPitchDeg": 1.4076624660000738,
+              "comHorizontalSpeedMps": 0.001386377366605284,
+              "contactHorizontalSpeedRangeMps": [
+                7.714995817023482e-05,
+                0.0002483705973330082
+              ],
+              "persistentPointCount": 4,
+              "aggregateFrictionUtilisation": 0.7889673377683554
+            }
+          }
+        },
+        {
+          "timeS": 0.55,
+          "ccdIntervals": 1,
+          "segments": {
+            "leftFoot": {
+              "worldSagittalPitchDeg": 5.846112477872228,
+              "comHorizontalSpeedMps": 0.018305390778149026,
+              "contactHorizontalSpeedRangeMps": [
+                0.042949866824798885,
+                0.05178617046780689
+              ],
+              "persistentPointCount": 2,
+              "aggregateFrictionUtilisation": 0.8941893175318363,
+              "posteriorMinimumHeightM": 0.015433014346102364,
+              "ankleMeasuredDeg": 19.99999600309126,
+              "ankleTargetDeg": 15.538656456116913
+            },
+            "leftForefoot": {
+              "worldSagittalPitchDeg": 4.512411621357808,
+              "comHorizontalSpeedMps": 0.000981577108446805,
+              "contactHorizontalSpeedRangeMps": [
+                3.3905786834411036e-05,
+                0.0002737119830852311
+              ],
+              "persistentPointCount": 4,
+              "aggregateFrictionUtilisation": 0.22291758268407302
+            },
+            "rightFoot": {
+              "worldSagittalPitchDeg": 7.076838859944564,
+              "comHorizontalSpeedMps": 0.011414310537842549,
+              "contactHorizontalSpeedRangeMps": [
+                0.00020888253725994153,
+                0.00020888253725994153
+              ],
+              "persistentPointCount": 1,
+              "aggregateFrictionUtilisation": 0.6910301901324305,
+              "posteriorMinimumHeightM": 0.02032434757706303,
+              "ankleMeasuredDeg": 19.70769122737139,
+              "ankleTargetDeg": 15.046268118850694
+            },
+            "rightForefoot": {
+              "worldSagittalPitchDeg": 5.088851738927062,
+              "comHorizontalSpeedMps": 0.00380401177898439,
+              "contactHorizontalSpeedRangeMps": [
+                0.00030010914268817693,
+                0.0016188809705350038
+              ],
+              "persistentPointCount": 4,
+              "aggregateFrictionUtilisation": 0.051522173589853434
+            }
+          },
+          "fixedMeasuredShinAtAnkle20Degrees": {
+            "left": {
+              "optimisticUnrestrictedRollHeightM": 0.005478484130349515,
+              "legalRollSamplesHeightM": {
+                "-10.0": 0.010662525603558126,
+                "0.0": 0.013775146480762418,
+                "25.0": 0.005510612616226637
+              }
+            },
+            "right": {
+              "optimisticUnrestrictedRollHeightM": 0.010167326320444509,
+              "legalRollSamplesHeightM": {
+                "-25.0": 0.010361958050165848,
+                "0.0": 0.018433158637685937,
+                "10.0": 0.012924842831514766
+              }
+            }
+          }
+        }
+      ]
+    }
+  },
+  "methods": {
+    "posteriorRegion": "Existing anatomical diagnostic z < -0.020 m in hindfoot body coordinates, not a qualification threshold",
+    "contactVelocity": "v_COM + omega cross (current solved geometric point - transformed goldenMass local COM); post-step diagnostic, not material-point tracking before/after solver",
+    "frictionRatio": "norm(sum tangent impulse) / (4 * norm(sum normal impulse)), per body per CCD interval; cancellation prevents individual-point saturation claims",
+    "staticFixedShin": "Measured shank pose, ankle +20deg, native FK parent/child frames. Optimistic posterior height minimizes roll over unrestricted angles, compared to legal roll endpoints/zero. No geometry installed into a world."
+  },
+  "hypotheses": [
+    {
+      "rank": 1,
+      "hypothesis": "Existing foot pose and coordinated shank/ankle/forefoot command prevent rear support",
+      "evidence": "High: airborne posterior vertices, shank-fixed FK bounds, anatomical ankle at its limit, no posterior loaded points"
+    },
+    {
+      "rank": 2,
+      "hypothesis": "Friction affects acquisition or release through traction saturation or excessive sticking",
+      "evidence": "Conditional: mu already 4; aggregate utilisation near 1 in B later, few contact points show measurable residual slip; no pointwise pre/post solve journal"
+    },
+    {
+      "rank": 3,
+      "hypothesis": "Additional physical foot segment enables a necessary support configuration",
+      "evidence": "Low: existing rear surface and articulated forefoot; no required anatomical deformation demonstrated; extra DOF would change model contract"
+    }
+  ],
+  "futureProtocol": {
+    "authorized": false,
+    "optionsAreAlternativesNotAdditiveBudgets": true,
+    "maxSelectedComparisonHistories": 2,
+    "maxNativeStepsPerHistory": 6240,
+    "maxTotalNativeSteps": 12480,
+    "maxSimulationWallSeconds": 300,
+    "processes": 1,
+    "threads": 1,
+    "repeatOrTuneAfterFailure": false,
+    "originalTerminalMandatory": true,
+    "segmentationStaticPreflightMaximumInspections": 500,
+    "segmentationNativeLaunchAllowedBeforeAnatomyDecision": false,
+    "frictionOption": "Effective foot-floor mu 4 vs 3, chosen before launch; preserve foot-foot and all other pair coefficients. No increase proposed without material/pointwise-slip evidence.",
+    "maxPreparationWorkHours": 8,
+    "segmentationStaticWallSeconds": 1800
+  },
+  "figure": {
+    "path": "docs/media/foot-support-investigation-2026-10-12/recorded-foot-side-views.png",
+    "sha256": "f43ec42a561ab5501c9a18a7a74bfc355eba6ae0d09b15e6ff26ddda57bf021d",
+    "usesOnlyArchivedNativeBodyPoses": true,
+    "additionalNativeIntegrations": 0,
+    "staticProjectionNotBrowserScreenshot": true
+  }
+}
