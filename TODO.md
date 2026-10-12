@@ -1,15 +1,20 @@
 # TODO
 
-**2026-10-12 comparaison A/B autorisée — préparation, aucune intégration :**
+**2026-10-12 comparaison A/B close — zéro relevage sur deux histoires :**
 
 - [x] Vérifier `42fccd3`, checkout propre, programme get_up_control exact ; anciens budgets clos.
 - [x] Différer explicitement la certification exhaustive P1 pour ce seul jalon,
   sans modifier les critères physiques ni prétendre le solveur certifié.
 - [x] Préparer propriétaire unique, retour coordonné borné, observations anatomiques
   horodatées et terminal original ; figer avant témoin puis candidat.
-- [ ] Appliquer 3 histoires/18 720 pas/600 s, répétition seulement après succès complet.
-- [ ] Clôturer sans renouvellement ; vidéo issue des états enregistrés et verdict fidèle.
+- [x] Appliquer le plafond : 2 histoires, 6 089 pas, 48,202 s ; aucun troisième
+  essai faute de succès complet. Paramètres et nominal inchangés entre A/B.
+- [x] Clôturer sans renouvellement ; vidéo issue des états enregistrés et verdict fidèle.
+- [ ] Résoudre transfert d'appui, libération des contacts passifs et orientation
+  de racine ; aucune nouvelle campagne autorisée implicitement.
+- [ ] Push des sauvegardes locales bloqué par revue automatique : confirmation directe demandée.
   [Décision et bornes](docs/rust-getup-ab-decision-2026-10-12.md).
+  [Résultats physiques, vidéo et limites](docs/rust-getup-ab-results-2026-10-12.md).
 
 **2026-10-11 P1 close à l’échéance — bilan linéaire expliqué, certificat manquant :**
 

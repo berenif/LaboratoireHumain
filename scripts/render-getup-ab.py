@@ -41,25 +41,32 @@ def draw(ax, history, time):
         rot = Rotation.from_quat([pose['rotation'][k] for k in 'xyzw'])
         vertices = (rot.apply(v)+np.array([pose['position'][k] for k in 'xyz']))[:, [0, 2, 1]]
         ax.add_collection3d(Poly3DCollection(vertices[indices], facecolor='#bd4a36' if part['id'] in loaded else '#6f88a4', edgecolor='none', alpha=.9))
-    ax.add_collection3d(Poly3DCollection([[[-.9,-.7,0],[.9,-.7,0],[.9,1.15,0],[-.9,1.15,0]]], facecolor='#d8dee5', alpha=.4))
+    ax.add_collection3d(Poly3DCollection([[[-1.05,-.4,0],[.85,-.4,0],[.85,2.1,0],[-1.05,2.1,0]]], facecolor='#d8dee5', alpha=.4))
     if 'com' in f:
         ax.scatter(f['com']['x'], f['com']['z'], f['com']['y'], color='#daa520', s=16)
-    ax.set(xlim=(-.85,.85), ylim=(-.65,1.15), zlim=(-.05,1.95))
-    ax.set_box_aspect([1,1,1.5])
+    ax.set(xlim=(-1.05,.85), ylim=(-.4,2.1), zlim=(-.05,1.95))
+    ax.set_box_aspect([1.9,2.5,2.0])
     ax.view_init(elev=13, azim=-60)
     ax.tick_params(labelsize=6)
     ended = time >= report['physicalSeconds']
     refusal = report['firstRefusal']
-    verdict = 'relevage complet' if report['fullRecoverySuccess'] else ('arrêt : '+refusal['check'] if refusal else 'aucun relevage')
+    if report['fullRecoverySuccess']:
+        verdict = 'relevage physique complet'
+    elif refusal and 'stagnation' in refusal['offending']:
+        verdict = 'arrêt : stagnation physique (3 s)'
+    elif refusal and 'recovery observer refused' in refusal['offending']:
+        verdict = 'terminal debout refusé'
+    else:
+        verdict = 'aucun relevage'
     ax.set_title(label+'\n'+f"état enregistré à {f['timeS']:.3f} s"+('\n'+verdict if ended else ''), fontsize=9)
 
 
 last = max(h[1]['physicalSeconds'] for h in histories)
 fig = plt.figure(figsize=(12,6))
 axes = [fig.add_subplot(1,2,i+1,projection='3d') for i in range(2)]
-fig.text(.5,.025,'États arrêtés fixes, sans extrapolation · rouge : contacts persistants chargés · zéro simulation de rendu',ha='center',fontsize=8)
+fig.text(.5,.025,'Lecture environ 4× · temps physique affiché · états arrêtés fixes · rouge : contacts persistants chargés',ha='center',fontsize=8)
 writer = FFMpegWriter(fps=20, codec='libx264', extra_args=['-pix_fmt','yuv420p'])
-times = np.append(np.arange(0,last,.05),last)
+times = np.append(np.arange(0,last,.2),last)
 with writer.saving(fig, str(args.output/'getup-ab-recorded.mp4'), 110):
     for t in times:
         for ax, history in zip(axes, histories):
@@ -89,6 +96,6 @@ axes[3].set_ylabel('Couples Σ absolue\n(Nm)'); axes[3].set_xlabel('Temps physiq
 fig.suptitle('Résultats natifs A/B · diagnostic de suivi distinct du terminal physique')
 fig.tight_layout();fig.savefig(args.output/'getup-ab-comparison.png',dpi=140);plt.close(fig)
 (args.output/'visuals.json').write_text(json.dumps({'usesRecordedNativePoses':True,'additionalPhysicsIntegrations':0,
-    'engineScreenshot':False,'videoFrames':len(times),'videoFps':20,
+    'engineScreenshot':False,'videoFrames':len(times),'videoFps':20,'approximatePlaybackSpeed':4,
     'afterRefusal':'last archived state held with explicit stop label; no extrapolation',
     'outcomes':{h[0]:{'physicalSeconds':h[1]['physicalSeconds'],'completeRecovery':h[1]['fullRecoverySuccess']} for h in histories}},indent=2)+'\n')

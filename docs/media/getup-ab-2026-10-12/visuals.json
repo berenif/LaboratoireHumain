@@ -1,0 +1,19 @@
+{
+  "usesRecordedNativePoses": true,
+  "additionalPhysicsIntegrations": 0,
+  "engineScreenshot": false,
+  "videoFrames": 106,
+  "videoFps": 20,
+  "approximatePlaybackSpeed": 4,
+  "afterRefusal": "last archived state held with explicit stop label; no extrapolation",
+  "outcomes": {
+    "A \u00b7 t\u00e9moin sans correction": {
+      "physicalSeconds": 4.483333333333333,
+      "completeRecovery": false
+    },
+    "B \u00b7 correction coordonn\u00e9e": {
+      "physicalSeconds": 20.8875,
+      "completeRecovery": false
+    }
+  }
+}
