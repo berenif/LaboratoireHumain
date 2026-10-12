@@ -1,0 +1,26 @@
+{
+  "commit": "3fe8396c5250f7a9bb5d0bd773043ff0e10059fe",
+  "archiveEntriesVerified": 89,
+  "deliverables": [
+    {
+      "path": "/workspace/lh-deliverables/LaboratoireHumain-coordination-prototype-rapport-complet-2026-10-12.md",
+      "bytes": 165138,
+      "sha256": "b211a61ede8687dfa739ef3bbe23c5efb220fbd69dec4fd754c38262b3c20393"
+    },
+    {
+      "path": "/workspace/lh-deliverables/LaboratoireHumain-coordination-resultats-2026-10-12.png",
+      "bytes": 218575,
+      "sha256": "78f72f363ef61378659e63a8dfcdc17dcc84cfc872cda0725817065bca939753"
+    },
+    {
+      "path": "/workspace/lh-deliverables/LaboratoireHumain-coordination-A-4s-2026-10-12.mp4",
+      "bytes": 329591,
+      "sha256": "045f46b0f47d2234b62c9b04ad60bdec5de19eb9bb75a217bb83f8bfd1bd5f6a"
+    },
+    {
+      "path": "/workspace/lh-deliverables/LaboratoireHumain-coordination-preuves-2026-10-12.zip",
+      "bytes": 41723919,
+      "sha256": "e2bfe17382b73642c49baee571ee25d4432a38e803231cb65e8610ca342f0f4f"
+    }
+  ]
+}
