@@ -1,0 +1,11 @@
+{
+  "sourceSha256": "88802a9348cc7e8ff074b3396d6261e71e43026018168f972f748b3b5f891766",
+  "usesArchivedNativePoses": true,
+  "meshTransformsOnly": true,
+  "additionalPhysicsIntegrations": 0,
+  "fkQueries": 0,
+  "collisionQueries": 0,
+  "poses": 3,
+  "fullRecoveryQualified": false,
+  "outputSha256": "6bcc44f67a39735b034cefe7e441edcb9194236f505278b97632534856723521"
+}
