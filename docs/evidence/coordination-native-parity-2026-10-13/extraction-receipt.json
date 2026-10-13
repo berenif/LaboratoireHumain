@@ -1,0 +1,86 @@
+{
+  "schema": 1,
+  "scope": "Archived expected prefix 1..12 and previously certified commands 12..15; no new native execution",
+  "expectedSha256": "afcd7278f05b1d08e9434507042f77c5e0a24a1d5c235ba68b84d8ec0ae05ab8",
+  "expectedBytes": 1633929,
+  "scriptSha256": "9fc197491fd0f58a1afa12ed486c05040b706a867e1c734fd889b602d08b6405",
+  "sourceSha256": {
+    "docs/evidence/coordination-prototype-2026-10-12/native-run/002-B.states.jsonl.gz": "e8e9e178beea95396ea31d646ef6a0be3cc1ded3d0a68726a574b1ff064f1433",
+    "docs/evidence/coordination-prototype-2026-10-12/native-run/002-B.json": "4312ead48bc75bcc9316e36facf44083afa397efad2c21e5b546d393c3a80108",
+    "docs/evidence/coordination-prototype-2026-10-12/native-run/archive-index.json": "95b54b12c97b990c164f78c32d46152c67d5a568d32a1dc7a267d50a19c2727c",
+    "docs/evidence/coordination-numeric-correction-2026-10-12/certified-commands.json": "3711c32ccffb3130e6b6715208c8ba46ee7d797ddf977f16ecec3931f251d1a1"
+  },
+  "decompressedStateSha256": "38ca7d07d85917df8e282dafc4b3d4d3e3e497a3a22467b4fc7bb6a052bc2492",
+  "prefixFrames": 12,
+  "prefixPhysicalCasesVerified": 4,
+  "certifiedCases": 4,
+  "commandsPerCase": 4,
+  "allCasePrefixEquivalence": [
+    {
+      "nativeSubstep": 1,
+      "fourCasesEqual": true,
+      "normalizedFrameSha256": "7c1dfeed64cf1fd3fe3015b4bc3327a2167f5ff94991d9aa3f71f655f67c34bb"
+    },
+    {
+      "nativeSubstep": 2,
+      "fourCasesEqual": true,
+      "normalizedFrameSha256": "a51e1fe89e82604be3b543f67667518636ba16db0f8a9fcc4f8411c51b31502f"
+    },
+    {
+      "nativeSubstep": 3,
+      "fourCasesEqual": true,
+      "normalizedFrameSha256": "7f41ad3ea148c2834b5e202a401e0b1ff214082216bcd2a143f7e66a66fbce3c"
+    },
+    {
+      "nativeSubstep": 4,
+      "fourCasesEqual": true,
+      "normalizedFrameSha256": "b3b31c9d04f8dbcf432562ddb8189ec514d260bd482ef45a1822b3385de866e6"
+    },
+    {
+      "nativeSubstep": 5,
+      "fourCasesEqual": true,
+      "normalizedFrameSha256": "c49e386a4ed14925cb547b1848d0e1cb35462a88a6d61061fa2d904f2fcccd01"
+    },
+    {
+      "nativeSubstep": 6,
+      "fourCasesEqual": true,
+      "normalizedFrameSha256": "68456bb0611733e388cf61ff6a9dc698ad19607652b40a1c51a82c19e06ca873"
+    },
+    {
+      "nativeSubstep": 7,
+      "fourCasesEqual": true,
+      "normalizedFrameSha256": "9c6a790fbaf87a13773e4bf418c31cdffba90287113786ea9bf01d0f681a7f55"
+    },
+    {
+      "nativeSubstep": 8,
+      "fourCasesEqual": true,
+      "normalizedFrameSha256": "b9a325155ed1c492fae6233282adf94d57dc82cecf30a3aac184432ab1e5b8f2"
+    },
+    {
+      "nativeSubstep": 9,
+      "fourCasesEqual": true,
+      "normalizedFrameSha256": "0a0b5d96e1e5a7eda4f6c2a6b346ac53f88f95a8057e9b82c82a34c064cb78d9"
+    },
+    {
+      "nativeSubstep": 10,
+      "fourCasesEqual": true,
+      "normalizedFrameSha256": "667071c9d6399531cce7bbcbb3b0022ac3fca4f36cc3b7d30867793a9e87e5b7"
+    },
+    {
+      "nativeSubstep": 11,
+      "fourCasesEqual": true,
+      "normalizedFrameSha256": "10061cbc661c3dbd50180b37313f48b6ca66615fdf9072b779322100c032adf6"
+    },
+    {
+      "nativeSubstep": 12,
+      "fourCasesEqual": true,
+      "normalizedFrameSha256": "848529795ffa5366fa03f2f8565167adc2825fe0338b0420b1fce9f7e81f6d63"
+    }
+  ],
+  "extractionCounters": {
+    "nativeIntegrations": 0,
+    "worldConstructions": 0,
+    "fkInspections": 0,
+    "geometryQueries": 0
+  }
+}

@@ -1379,6 +1379,13 @@ impl Simulation {
             }
             #[cfg(all(test, feature = "experimental-solver-step-observation"))]
             recovery::planner::contact_observation::begin_step(self.substeps_completed + 1);
+            #[cfg(all(test, feature = "numeric-parity-worker"))]
+            if let Err(reason) = recovery::planner::numeric_parity_worker::before_integration(self) {
+                let failure = measurement::Failure::new(self.tick, substep, "numeric-parity-admission", reason, 1., 0.);
+                self.first_failure = Some(failure.clone());
+                self.motion = Motion::Halted;
+                return Err(failure);
+            }
             self.world.step_with_events(&self.filter, &());
             let delivered: f32 = self
                 .joints
@@ -1726,5 +1733,9 @@ mod tests {
         assert_eq!(s.snapshot().simulation_time_s, halted.simulation_time_s);
     }
 }
-#[cfg(all(test, feature = "coordination-worker"))]
+#[cfg(all(test, feature = "coordination-worker", feature = "numeric-parity-worker"))]
+compile_error!("Native workers require separate executables and permits");
+#[cfg(all(test, feature = "coordination-worker", not(feature = "numeric-parity-worker")))]
 fn main() { recovery::planner::transition_worker::main(); }
+#[cfg(all(test, feature = "numeric-parity-worker", not(feature = "coordination-worker")))]
+fn main() { recovery::planner::numeric_parity_worker::main(); }
