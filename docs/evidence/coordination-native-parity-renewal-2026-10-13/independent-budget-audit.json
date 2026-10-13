@@ -1,0 +1,17 @@
+{
+  "schema": 1,
+  "audit": "Independent budget agent, source and archived evidence only",
+  "reservedNativeSteps": 44,
+  "refundNativeSteps": 0,
+  "elapsedSeconds": 0.193373985001017,
+  "actualNativeStepsKnown": null,
+  "inferredKernelCallLowerBound": 0,
+  "inferredKernelCallUpperBound": 1,
+  "boundBasis": "Only initial trace; callback/post-tick common_state panic before any prefix line and before next permitted integration",
+  "exactOneIsInferenceNotArchivedMeasurement": true,
+  "frozenFilesVerifiedAtClosure": 308,
+  "protectedArtifactsVerified": 7,
+  "previousClosedBatchUnchanged": true,
+  "parityQualified": false,
+  "nativeIntegrationsDuringAudit": 0
+}

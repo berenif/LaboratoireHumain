@@ -12,6 +12,12 @@ coordination-worker = ["experimental-solver-step-observation"]
 numeric-parity-worker = ["experimental-solver-step-observation"]
 
 [[test]]
+name = "numeric-parity-worker-serialization"
+path = "src/lib.rs"
+harness = false
+required-features = ["numeric-parity-worker"]
+
+[[test]]
 name = "numeric-parity-worker"
 path = "src/lib.rs"
 harness = false

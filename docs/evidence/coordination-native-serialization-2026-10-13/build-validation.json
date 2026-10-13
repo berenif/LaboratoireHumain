@@ -1,0 +1,11 @@
+{
+  "schema": 1,
+  "pureTestsPassed": 8,
+  "nativeIntegrationsDuringTests": 0,
+  "productionCheck": "passed",
+  "releaseBuild": "passed --no-run",
+  "newBinaryPath": "/workspace/LaboratoireHumain/rust/target/release/deps/numeric_parity_worker_serialization-360529b9ad4cba37",
+  "newBinarySha256": "83bddf95897acc6015de7d2947b04ee2f5aaf2eb49b4dcb85ba0a67764f95e1b",
+  "previousBinaryPreserved": true,
+  "independentReview": "Support-contract review confirms exact u128, no global serde/physics/threshold change, durable count before rich snapshot, unknown count remains bounded on in-kernel panic"
+}

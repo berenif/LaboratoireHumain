@@ -12,13 +12,14 @@ use super::{
 };
 use crate::{Simulation, measurement, recovery::trajectory_program::Program};
 use rapier3d::prelude::MotorModel;
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 use serde_json::{Value, json};
 use std::{
     cell::RefCell,
     fs::{File, OpenOptions},
     io::{BufRead, BufWriter, Read, Write},
     path::Path,
+    panic::{AssertUnwindSafe, catch_unwind},
     rc::Rc,
     time::{Duration, Instant, SystemTime, UNIX_EPOCH},
 };
@@ -404,14 +405,30 @@ fn memory(s: &Simulation) -> Value {
     });
     json!({"recovery":recovery,"modeSignature":s.coordination.as_ref().map(|o|o.memory.mode_signature)})
 }
-fn common_state(s: &Simulation) -> Value {
-    json!({"world":s.world,"snapshot":s.snapshot(),"nativeSubstep":s.substeps_completed,
+/// Value's integer storage stops at u64. Rapier retains u128 solver masks.
+/// Keep the directly serialized JSON text opaque: parsing it through Value
+/// would either fail or lose integer bits. Parity compares this exact string.
+fn exact_json_text(value: &impl Serialize) -> Result<Value, String> {
+    let text = serde_json::to_string(value).map_err(|e| format!("Exact state serialization: {e}"))?;
+    Ok(json!({"encoding":"serde-json-text-preserving-u128-v1","text":text}))
+}
+fn common_state(s: &Simulation) -> Result<Value, String> {
+    let world = exact_json_text(&s.world)?;
+    Ok(json!({"world":world,"snapshot":s.snapshot(),"nativeSubstep":s.substeps_completed,
         "tick":s.tick,"owner":s.coordination.as_ref().map(|o|o.evidence()),"memory":memory(s),
         "bodyAndMotorBits":body_motor_bits(s),"targetsBits":coordinates_bits(&s.targets),
         "restTargetsBits":coordinates_bits(&s.rest_targets),"persistence":s.persistence,
         "contacts":s.contacts,"integratedSupportSubsteps":s.integrated_support_substeps,
         "integratedSupportLoadsN":s.integrated_support_loads_n,
-        "firstFailure":s.first_failure})
+        "firstFailure":s.first_failure}))
+}
+
+fn catch_failure<T>(f: impl FnOnce() -> Result<T, String>) -> Result<T, String> {
+    catch_unwind(AssertUnwindSafe(f)).unwrap_or_else(|panic| {
+        let message = panic.downcast_ref::<String>().map(String::as_str)
+            .or_else(|| panic.downcast_ref::<&str>().copied()).unwrap_or("non-string panic");
+        Err(format!("Unwound worker failure; no further integration: {message}"))
+    })
 }
 fn native_frame(
     s: &Simulation,
@@ -531,6 +548,23 @@ struct Evidence {
     last: Value,
     observed: u64,
 }
+/// Record only the native completed clock. Admission before Rapier is a
+/// separate upper bound if Rapier itself unwinds before advancing that clock.
+fn checkpoint_completed(
+    trace: &mut BufWriter<File>, evidence: &mut Evidence, base_total: u64,
+    before_clock: u64, completed_clock: u64,
+) -> Result<(), String> {
+    let delta = completed_clock.checked_sub(before_clock).ok_or("Native clock reversed")?;
+    if delta > 4 || base_total + delta > 44 { return Err("Invalid completed native count".into()); }
+    evidence.actual = base_total + delta;
+    // This minimal fallback never serializes the world that may have failed.
+    evidence.last = json!({"nativeSubstep":completed_clock,"completedNativeSteps":evidence.actual,
+        "fullStateAvailable":false});
+    line(trace, &json!({"kind":"native-accounting","completedNativeSteps":evidence.actual,
+        "nativeSubstep":completed_clock}))?;
+    trace.flush().map_err(|e|e.to_string())?;
+    trace.get_ref().sync_data().map_err(|e|e.to_string())
+}
 fn fail(s: &Simulation, substep: u32, reason: String) -> measurement::Failure {
     measurement::Failure::new(s.tick, substep, "numeric-parity-observer", reason, 1., 0.)
 }
@@ -538,7 +572,7 @@ fn real_tick(
     s: &mut Simulation,
     budget: &mut Budget,
     diagnostic: &mut support_state::LocalSupportDiagnostic,
-    trace: &mut impl Write,
+    trace: &mut BufWriter<File>,
     kind: &str,
     fixture: Option<&Fixture>,
     mut parity: Option<&mut NativeParityTrace>,
@@ -553,18 +587,21 @@ fn real_tick(
         purpose: PreviewPurpose::ParityVerification,
     })?;
     let before = s.substeps_completed;
+    let base_total = evidence.actual;
     journal::activate(s);
     let mut pending = Vec::new();
-    let result = s.advance_tick_observed(|s, substep| {
+    let result = catch_failure(|| s.advance_tick_observed(|s, substep| {
+        checkpoint_completed(trace,evidence,base_total,before,s.substeps_completed)
+            .map_err(|e|fail(s,substep,e))?;
         pending = journal::take_records();
         let observed =
             native_observation::observe(s, 0, &pending).map_err(|e| fail(s, substep, e))?;
         let sample = diagnostic
             .observe(&observed)
             .map_err(|e| fail(s, substep, e))?;
-        let frame = native_frame(s, &observed, &sample, &pending, kind, true);
-        evidence.last = common_state(s);
         evidence.observed += 1;
+        let frame = native_frame(s, &observed, &sample, &pending, kind, true);
+        evidence.last = common_state(s).map_err(|e|fail(s,substep,e))?;
         line(
             trace,
             &json!({"kind":kind,"frame":frame,"state":evidence.last}),
@@ -589,17 +626,21 @@ fn real_tick(
             .check_wall_deadline()
             .map_err(|e| fail(s, substep, e))?;
         Ok(())
-    });
-    evidence.actual += s.substeps_completed - before;
+    }).map_err(|e|format!("{e:?}")));
+    // Count and close the journal before attempting another rich snapshot.
+    evidence.actual = base_total + s.substeps_completed - before;
     pending.extend(journal::take_records());
     journal::finish();
-    evidence.last = common_state(s);
+    checkpoint_completed(trace,evidence,base_total,before,s.substeps_completed)?;
+    let state_result = catch_failure(||common_state(s));
+    if let Ok(state)=&state_result { evidence.last=state.clone(); }
     line(
         trace,
         &json!({"kind":"post-tick","source":kind,"state":evidence.last,
-        "unobservedCcd":pending,"failure":result.as_ref().err()}),
+        "unobservedCcd":pending,"failure":result.as_ref().err(),"stateSerializationFailure":state_result.as_ref().err()}),
     )?;
-    result.map_err(|e| format!("{e:?}"))
+    result?;
+    state_result.map(|_|())
 }
 
 fn validate_fixture(f: &Fixture) -> Result<(), String> {
@@ -632,7 +673,7 @@ fn validate_fixture(f: &Fixture) -> Result<(), String> {
 fn execute(
     input: &Inputs,
     budget: &mut Budget,
-    trace: &mut impl Write,
+    trace: &mut BufWriter<File>,
     evidence: &mut Evidence,
 ) -> Result<Value, String> {
     let fixture: Fixture = read_json(&input.fixture_path)?;
@@ -649,7 +690,7 @@ fn execute(
         .previous;
     line(
         trace,
-        &json!({"kind":"initial","state":common_state(&prefix)}),
+        &json!({"kind":"initial","state":common_state(&prefix)?}),
     )?;
     for _ in 0..3 {
         real_tick(
@@ -695,27 +736,34 @@ fn execute(
             gate.phase = format!("case-{i}-copy");
         }
         let before = copy.simulation().substeps_completed;
+        let base_total = evidence.actual;
         let mut predicted_states = Vec::new();
-        let run = copy.verify_tick(i as u64+1,budget,|s,_,_| {
+        let run = catch_failure(|| Ok(copy.verify_tick(i as u64+1,budget,|s,_,_| {
+            checkpoint_completed(trace,evidence,base_total,before,s.substeps_completed)?;
             let observed = native_observation::observe(s,0,&[])?;
             let sample = copy_diag.observe(&observed)?;
-            predicted.record(s,&memory(s)).map_err(|e|format!("{e:?}"))?;
             evidence.observed += 1;
-            evidence.last = common_state(s);
+            predicted.record(s,&memory(s)).map_err(|e|format!("{e:?}"))?;
+            evidence.last = common_state(s)?;
             predicted_states.push(evidence.last.clone());
             line(trace,&json!({"kind":"predicted","case":i,"frame":native_frame(s,&observed,&sample,&[],"predicted",false),"state":evidence.last}))?;
             Ok(())
-        });
-        evidence.actual += copy.simulation().substeps_completed - before;
-        evidence.last = common_state(copy.simulation());
+        })));
+        evidence.actual = base_total + copy.simulation().substeps_completed - before;
+        checkpoint_completed(trace,evidence,base_total,before,copy.simulation().substeps_completed)?;
+        let state_result=catch_failure(||common_state(copy.simulation()));
+        if let Ok(state)=&state_result { evidence.last=state.clone(); }
         line(
             trace,
             &json!({"kind":"post-tick","source":"predicted","case":i,"state":evidence.last,
-            "refusal":run.refusal.as_ref().map(|e|format!("{e:?}"))}),
+            "panic":run.as_ref().err(),"stateSerializationFailure":state_result.as_ref().err(),
+            "refusal":run.as_ref().ok().and_then(|r|r.refusal.as_ref()).map(|e|format!("{e:?}"))}),
         )?;
+        let run=run?;
         if let Some(error) = run.refusal {
             return Err(format!("Case {i} predicted: {error:?}"));
         }
+        state_result?;
         let final_predicted = evidence.last.clone();
         {
             let mut gate = budget.0.borrow_mut();
@@ -823,7 +871,7 @@ fn run() -> Result<(), String> {
     let mut trace = new_file(trace_path)?;
     let mut evidence = Evidence::default();
     let mut gate_saved = None;
-    let result = (|| {
+    let result = catch_failure(|| {
         let inputs: Inputs =
             serde_json::from_value(request["inputs"].clone()).map_err(|e| e.to_string())?;
         let permit: Permit =
@@ -832,7 +880,14 @@ fn run() -> Result<(), String> {
         gate_saved = Some(gate.clone());
         let _scope = ActiveScope::enter(gate.clone())?;
         execute(&inputs, &mut Budget(gate), &mut trace, &mut evidence)
-    })();
+    });
+    journal::finish();
+    let admitted=gate_saved.as_ref().map_or(0,|g|g.borrow().started);
+    let count_exact=admitted==evidence.actual;
+    // A panic inside Rapier may leave an admitted but uncompleted step. Never
+    // relabel an admission as a completed step. The unchanged supervisor will
+    // reject null, preserving its full reservation and this bounded report.
+    let reported_count=if count_exact { json!(evidence.actual) } else { Value::Null };
     let ok = result.is_ok();
     let outcome = json!({"integrity_ok":ok,"prefix_matches_archive":evidence.prefix,
         "parity_verified":ok && evidence.cases.len()==4,"diagnostic_present":evidence.observed>0});
@@ -841,7 +896,9 @@ fn run() -> Result<(), String> {
         json!({"reservedSteps":44,"locallyReservedSteps":g.reserved,"admittedIntegrations":g.started,
             "pendingReservedSteps":g.pending,"installations":g.installed})
     });
-    let document = json!({"schema":1,"op":"numeric-parity","actualNativeSteps":evidence.actual,"outcome":outcome,
+    let document = json!({"schema":1,"op":"numeric-parity","actualNativeSteps":reported_count,"outcome":outcome,
+        "nativeAccounting":{"exact":count_exact,"completedClockSteps":evidence.actual,"admittedSteps":admitted,
+            "minimumSteps":evidence.actual,"maximumSteps":admitted},
         "reason":result.as_ref().err(),"sourceSha256":result.as_ref().ok(),"tracePath":trace_path,
         "cases":evidence.cases,"lastState":evidence.last,"budget":budget_evidence,
         "scope":"Twelve archived prefix states plus four independent four-step native actual/copy comparisons. No recovery or continuation qualification.",
@@ -855,7 +912,7 @@ fn run() -> Result<(), String> {
     report.get_ref().sync_all().map_err(|e| e.to_string())?;
     send(
         &mut stdout,
-        &json!({"event":"result","op":"numeric-parity","actualNativeSteps":evidence.actual,
+        &json!({"event":"result","op":"numeric-parity","actualNativeSteps":reported_count,
         "outcome":outcome,"evidencePath":output}),
     )?;
     // Keep the single-thread process alive for the parent's final PID/executable
@@ -874,6 +931,53 @@ pub(crate) fn main() {
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[test]
+    fn exact_world_text_preserves_u128_and_adjacent_bits_without_value_conversion() {
+        #[derive(Serialize,Deserialize,Debug,PartialEq)]
+        struct SyntheticWorld { masks: Vec<u128>, negative_zero: f32, fraction: f32 }
+        let value=SyntheticWorld {masks:vec![u128::from(u64::MAX)+1,1_u128<<127,u128::MAX],
+            negative_zero:-0.,fraction:0.1};
+        assert!(serde_json::to_value(&value).unwrap_err().to_string().contains("number out of range"));
+        let exact=exact_json_text(&value).unwrap();
+        let text=exact["text"].as_str().unwrap();
+        assert!(text.contains("340282366920938463463374607431768211455"));
+        let restored:SyntheticWorld=serde_json::from_str(text).unwrap();
+        assert_eq!(restored.masks,value.masks);
+        assert_eq!(restored.negative_zero.to_bits(),value.negative_zero.to_bits());
+        assert_eq!(restored.fraction.to_bits(),value.fraction.to_bits());
+        let adjacent=SyntheticWorld {masks:vec![u128::from(u64::MAX)+1,1_u128<<127,u128::MAX-1],..value};
+        assert!(compare_json(&exact,&exact_json_text(&adjacent).unwrap(),"opaque-world").is_err());
+    }
+    #[test]
+    fn archived_initial_world_encodes_without_constructing_simulation() {
+        let archived:Value=serde_json::from_str(include_str!(concat!(env!("CARGO_MANIFEST_DIR"),
+            "/../../../docs/evidence/coordination-native-serialization-2026-10-13/archived-initial-world.json"))).unwrap();
+        let encoded=exact_json_text(&archived).unwrap();
+        // This particular initial fixture is known to fit Value; later worlds
+        // must remain opaque and are tested above with exact typed u128 values.
+        let restored:Value=serde_json::from_str(encoded["text"].as_str().unwrap()).unwrap();
+        compare_json(&archived,&restored,"archived-initial-world").unwrap();
+    }
+    #[test]
+    fn completed_clock_is_durable_before_a_caught_serialization_panic() {
+        let path=std::env::temp_dir().join(format!("lh-numeric-accounting-pure-{}-{}.jsonl",
+            std::process::id(),SystemTime::now().duration_since(UNIX_EPOCH).unwrap().as_nanos()));
+        let mut trace=new_file(path.to_str().unwrap()).unwrap();
+        let mut evidence=Evidence::default();
+        let result=catch_failure(|| {
+            checkpoint_completed(&mut trace,&mut evidence,0,0,1)?;
+            // The former world->Value failure, reproduced without a world.
+            let _=json!({"mask":u128::MAX});
+            Ok(())
+        });
+        assert!(result.is_err());
+        assert_eq!(evidence.actual,1);
+        let stored:Value=serde_json::from_str(&std::fs::read_to_string(&path).unwrap()).unwrap();
+        assert_eq!(stored["completedNativeSteps"],1);
+        assert_eq!(evidence.last["fullStateAvailable"],false);
+        drop(trace);
+        std::fs::remove_file(path).unwrap();
+    }
     #[test]
     fn numeric_archive_comparison_preserves_signed_zero() {
         assert!(compare_json(&json!(-0.0), &json!(0.0), "zero").is_err());
