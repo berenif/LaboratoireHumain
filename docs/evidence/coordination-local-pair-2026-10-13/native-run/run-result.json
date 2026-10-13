@@ -1,0 +1,90 @@
+{
+  "schema": 1,
+  "status": "failed-closed",
+  "protocolMode": "local-pair",
+  "error": "Native diagnostic failed: integrity_ok",
+  "histories": [
+    {
+      "history": "A",
+      "localSuccess": false,
+      "evidence": {
+        "path": "/workspace/LaboratoireHumain/docs/evidence/coordination-local-pair-2026-10-13/native-run/001-A.json",
+        "sha256": "e10a1cdd539bdec5e0d445a63ef27ace3fa42143b43f22c26a194f080b13538c"
+      }
+    }
+  ],
+  "budget": {
+    "schema": "laboratoirehumain.coordination-prototype-budget.v1",
+    "id": "33c9dd5f-73f2-472a-a2eb-b866ae7c9f2b",
+    "status": "closed-native-failure",
+    "protocolMode": "local-pair",
+    "limits": {
+      "preparationActiveSeconds": 144000,
+      "preparationCalendarSeconds": 432000,
+      "staticInspections": 20000,
+      "histories": 2,
+      "nativeHz": 240,
+      "historyNativeSteps": 960,
+      "totalNativeSteps": 78736,
+      "predictionAndVerificationSteps": 76816,
+      "verificationSteps": 16,
+      "physicsWallSeconds": 7100,
+      "planningCallsPerBHistory": 40,
+      "planningSpacingNativeSteps": 24,
+      "longRolloutsPerCall": 4,
+      "longStepsPerRollout": 480,
+      "shortProbesPerCall": 0,
+      "shortStepsPerProbe": 4,
+      "processes": 1,
+      "threads": 1
+    },
+    "closureReason": "Native diagnostic failed: integrity_ok",
+    "counters": {
+      "preparationActiveSeconds": 28489,
+      "staticInspections": 9173,
+      "reservedNativeSteps": 3856,
+      "reservedPredictionAndVerificationSteps": 1936,
+      "reservedVerificationSteps": 16,
+      "actualNativeStepsKnown": 1040,
+      "actualNativeStepsExact": false,
+      "unreportedReservedNativeSteps": 960,
+      "actualNativeStepsLowerBound": 1040,
+      "actualNativeStepsUpperBound": 2000
+    },
+    "preparation": {
+      "startedUtc": "2026-10-12T20:14:00+00:00",
+      "deadlineUtc": "2026-10-17T20:14:00+00:00",
+      "deadlineMonotonic": 394136.09510599484,
+      "initialActiveSeconds": 28489,
+      "initialInspections": 9173
+    },
+    "physics": {
+      "startedUtc": "2026-10-13T11:10:50.135208+00:00",
+      "deadlineWall": 1791896950.1352081,
+      "deadlineMonotonic": 23046.230312276
+    },
+    "lastEvent": {
+      "sequence": 9,
+      "action": "record-native-failure",
+      "utc": "2026-10-13T11:11:02.456529+00:00",
+      "reservationId": "1897716e-64ad-466a-869f-02b76d22d1d2",
+      "reason": "Native diagnostic failed: integrity_ok",
+      "counters": {
+        "preparationActiveSeconds": 28489,
+        "staticInspections": 9173,
+        "reservedNativeSteps": 3856,
+        "reservedPredictionAndVerificationSteps": 1936,
+        "reservedVerificationSteps": 16,
+        "actualNativeStepsKnown": 1040,
+        "actualNativeStepsExact": false,
+        "unreportedReservedNativeSteps": 960,
+        "actualNativeStepsLowerBound": 1040,
+        "actualNativeStepsUpperBound": 2000
+      },
+      "authorizesIntegration": false
+    },
+    "authorizesIntegration": false
+  },
+  "fullRecoveryQualified": false,
+  "fullHistoryAuthorized": false
+}

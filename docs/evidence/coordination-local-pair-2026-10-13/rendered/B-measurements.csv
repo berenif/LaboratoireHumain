@@ -1,0 +1,2 @@
+history,native_substep,time_s,pose_source,left_heel_load_n,right_heel_load_n,com_x_m,com_y_m,com_z_m,local_passed,consecutive_stable_substeps,support_fraction
+B,0,0.0,report-initial,,,,,,,,

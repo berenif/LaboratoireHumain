@@ -1,0 +1,59 @@
+{
+  "utc": "2026-10-13T11:18:46.647347+00:00",
+  "nativeSubsteps": 0,
+  "archives": [
+    {
+      "rawPath": "native-run/000-native-verification.json",
+      "bytes": 86879665,
+      "decompressionVerified": true
+    },
+    {
+      "rawPath": "native-run/000-native-verification.json.accounting.jsonl",
+      "bytes": 7714,
+      "decompressionVerified": true
+    },
+    {
+      "rawPath": "native-run/000-native-verification.states.jsonl",
+      "bytes": 1922402,
+      "decompressionVerified": true
+    },
+    {
+      "rawPath": "native-run/001-A.json.accounting.jsonl",
+      "bytes": 458459,
+      "decompressionVerified": true
+    },
+    {
+      "rawPath": "native-run/001-A.states.jsonl",
+      "bytes": 120408477,
+      "decompressionVerified": true
+    },
+    {
+      "rawPath": "native-run/002-B-planning-000.json",
+      "bytes": 87084693,
+      "decompressionVerified": true
+    },
+    {
+      "rawPath": "native-run/002-B-planning-000.json.accounting.jsonl",
+      "bytes": 31392,
+      "decompressionVerified": true
+    },
+    {
+      "rawPath": "native-run/002-B.json.accounting.jsonl",
+      "bytes": 231,
+      "decompressionVerified": true
+    },
+    {
+      "rawPath": "native-run/002-B.states.jsonl",
+      "bytes": 8330816,
+      "decompressionVerified": true
+    }
+  ],
+  "renderOutputHashesVerified": true,
+  "renderedMilestonesVisuallyInspected": true,
+  "videoProbeExpected": {
+    "width": 960,
+    "height": 600,
+    "nb_frames": 960,
+    "duration": 4.0
+  }
+}

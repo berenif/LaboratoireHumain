@@ -1,0 +1,15 @@
+test_chunk_boundaries_preserve_bytes_without_line_alignment (__main__.ArchiveTests.test_chunk_boundaries_preserve_bytes_without_line_alignment) ... ok
+test_closed_evidence_hash_mismatch_refused (__main__.ArchiveTests.test_closed_evidence_hash_mismatch_refused) ... ok
+test_existing_index_not_overwritten (__main__.ArchiveTests.test_existing_index_not_overwritten) ... ok
+test_existing_later_archive_refused_before_any_output (__main__.ArchiveTests.test_existing_later_archive_refused_before_any_output) ... ok
+test_final_run_receipt_must_match_closed_ledger (__main__.ArchiveTests.test_final_run_receipt_must_match_closed_ledger) ... ok
+test_ledger_digest_mismatch_refused (__main__.ArchiveTests.test_ledger_digest_mismatch_refused) ... ok
+test_open_ledger_refused_without_any_output (__main__.ArchiveTests.test_open_ledger_refused_without_any_output) ... ok
+test_pending_ledger_write_refused (__main__.ArchiveTests.test_pending_ledger_write_refused) ... ok
+test_small_and_empty_files_roundtrip_raw_files_remain (__main__.ArchiveTests.test_small_and_empty_files_roundtrip_raw_files_remain) ... ok
+test_symlink_raw_file_refused (__main__.ArchiveTests.test_symlink_raw_file_refused) ... ok
+
+----------------------------------------------------------------------
+Ran 10 tests in 0.010s
+
+OK

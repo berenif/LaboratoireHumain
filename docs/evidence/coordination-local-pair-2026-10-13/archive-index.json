@@ -1,0 +1,268 @@
+{
+  "schema": 1,
+  "scope": "post-closure lossless compression; no worker, FK or physics",
+  "nativeIntegrations": 0,
+  "budgetId": "33c9dd5f-73f2-472a-a2eb-b866ae7c9f2b",
+  "closedBudgetStatus": "closed-native-failure",
+  "closedReceipts": [
+    {
+      "path": "budget/ledger.json",
+      "sha256": "e7c6831159ac1ae913a05f2af545a0521181d7142dbabd967908dfe7958fba97",
+      "bytes": 90279
+    },
+    {
+      "path": "native-run/run-result.json",
+      "sha256": "ade23ba9efb1462f96780b86ecd66d910385a341952ab78535b5d8d00033b846",
+      "bytes": 3032
+    }
+  ],
+  "compressionLevel": 3,
+  "maximumRawChunkBytes": 33554432,
+  "maximumGzipBytes": 52428800,
+  "rawFilesPreserved": true,
+  "restore": "Concatenate gzip decompressions in parts.order, without separators; verify rawBytes/rawSha256.",
+  "elapsedSeconds": 3.643047073001071,
+  "files": [
+    {
+      "rawPath": "native-run/000-native-verification.json",
+      "rawBytes": 86879665,
+      "rawSha256": "66d4e802e3b474d9065fe32fc49f6915cae64713eb34476227d2f20ffda2d02e",
+      "closedReceiptHashAvailable": true,
+      "parts": [
+        {
+          "order": 0,
+          "rawOffset": 0,
+          "rawBytes": 33554432,
+          "rawSha256": "aea0a284b4ba0ffd39f0f93d17c28a1a459fa4b8826d6317364c3cce43735717",
+          "gzipPath": "native-run/000-native-verification.json.part00000.gz",
+          "gzipBytes": 3002240,
+          "gzipSha256": "f8ef1f020f796847db884b8998323bfa3bf350f69334ba09931b2e808d290d09",
+          "decompressedBytesAndHashVerified": true
+        },
+        {
+          "order": 1,
+          "rawOffset": 33554432,
+          "rawBytes": 33554432,
+          "rawSha256": "350474533353db928cea9b7dbf5d2dd59b6e15f3969322a3b5b410ac5f9cf22d",
+          "gzipPath": "native-run/000-native-verification.json.part00001.gz",
+          "gzipBytes": 2985753,
+          "gzipSha256": "3a9ec4b5b679b1e6ac15e7cbedb82a0d36973bf1e62dc2a3328e1b52d4391af0",
+          "decompressedBytesAndHashVerified": true
+        },
+        {
+          "order": 2,
+          "rawOffset": 67108864,
+          "rawBytes": 19770801,
+          "rawSha256": "fd353cf86ef25f865347594276952883ddbcc860dbdb080de3bd8596c31cdb54",
+          "gzipPath": "native-run/000-native-verification.json.part00002.gz",
+          "gzipBytes": 1748070,
+          "gzipSha256": "a71c2731ef3988091e0a4220dbddde5112bd130b39960a343fe557fa01250e37",
+          "decompressedBytesAndHashVerified": true
+        }
+      ],
+      "concatenatedDecompressionVerified": true
+    },
+    {
+      "rawPath": "native-run/000-native-verification.json.accounting.jsonl",
+      "rawBytes": 7714,
+      "rawSha256": "fcde8d9825d21d5892fb7a31adf382adb40225f0d0fd7d0e01bff5a2477ee8fa",
+      "closedReceiptHashAvailable": false,
+      "parts": [
+        {
+          "order": 0,
+          "rawOffset": 0,
+          "rawBytes": 7714,
+          "rawSha256": "fcde8d9825d21d5892fb7a31adf382adb40225f0d0fd7d0e01bff5a2477ee8fa",
+          "gzipPath": "native-run/000-native-verification.json.accounting.jsonl.gz",
+          "gzipBytes": 535,
+          "gzipSha256": "0157dbba51f8d7cd1272b1def557f3e43e57d2a838d60eea03d1a4bd46defaf2",
+          "decompressedBytesAndHashVerified": true
+        }
+      ],
+      "concatenatedDecompressionVerified": true
+    },
+    {
+      "rawPath": "native-run/000-native-verification.states.jsonl",
+      "rawBytes": 1922402,
+      "rawSha256": "17c6a2990c7bb9064ecd8603db515e18cd4f0b06b416cb06debaaef5891ab469",
+      "closedReceiptHashAvailable": false,
+      "parts": [
+        {
+          "order": 0,
+          "rawOffset": 0,
+          "rawBytes": 1922402,
+          "rawSha256": "17c6a2990c7bb9064ecd8603db515e18cd4f0b06b416cb06debaaef5891ab469",
+          "gzipPath": "native-run/000-native-verification.states.jsonl.gz",
+          "gzipBytes": 333328,
+          "gzipSha256": "674b0f3641c979c31dad86ba1014f978085434674bd7af82b0c5ec155405e135",
+          "decompressedBytesAndHashVerified": true
+        }
+      ],
+      "concatenatedDecompressionVerified": true
+    },
+    {
+      "rawPath": "native-run/001-A.json.accounting.jsonl",
+      "rawBytes": 458459,
+      "rawSha256": "a66c893eb4d89d7a127ad04b999e4deb0fa9239e74485d0a42b385517156d406",
+      "closedReceiptHashAvailable": false,
+      "parts": [
+        {
+          "order": 0,
+          "rawOffset": 0,
+          "rawBytes": 458459,
+          "rawSha256": "a66c893eb4d89d7a127ad04b999e4deb0fa9239e74485d0a42b385517156d406",
+          "gzipPath": "native-run/001-A.json.accounting.jsonl.gz",
+          "gzipBytes": 17867,
+          "gzipSha256": "705e8d0856a35fa151dc7bceee5bd005c813215fe45c3102fbeb03047817c241",
+          "decompressedBytesAndHashVerified": true
+        }
+      ],
+      "concatenatedDecompressionVerified": true
+    },
+    {
+      "rawPath": "native-run/001-A.states.jsonl",
+      "rawBytes": 120408477,
+      "rawSha256": "8338425db8c92038b98b89ae22c4e6f366a6ebd71b000aa615700acbd530bdd8",
+      "closedReceiptHashAvailable": false,
+      "parts": [
+        {
+          "order": 0,
+          "rawOffset": 0,
+          "rawBytes": 33554432,
+          "rawSha256": "d9b1cc1ad688ed413e9acbb10ac9cdb61eaa8244f4f0efd87777dc7ad784547c",
+          "gzipPath": "native-run/001-A.states.jsonl.part00000.gz",
+          "gzipBytes": 6078448,
+          "gzipSha256": "3aa05745e67cd1070cb2dbc33dc7471f1a3a5782b29d3eef797d153529be4700",
+          "decompressedBytesAndHashVerified": true
+        },
+        {
+          "order": 1,
+          "rawOffset": 33554432,
+          "rawBytes": 33554432,
+          "rawSha256": "83c314a64be91a4ce328dd2cc27800ed429c12abad7cfc8458ae5b1f28c40a1d",
+          "gzipPath": "native-run/001-A.states.jsonl.part00001.gz",
+          "gzipBytes": 5989740,
+          "gzipSha256": "a52ae2d4c6805bd858b89ad0421f500dbba9bf0ddc8167259f52ff9bd931a218",
+          "decompressedBytesAndHashVerified": true
+        },
+        {
+          "order": 2,
+          "rawOffset": 67108864,
+          "rawBytes": 33554432,
+          "rawSha256": "0f6400f5d391fd509e9b2ea444888629c60b5fc04175978931267ec448426bd4",
+          "gzipPath": "native-run/001-A.states.jsonl.part00002.gz",
+          "gzipBytes": 6059344,
+          "gzipSha256": "552e8ee309807d1d05373fc5195bf532590002e95486f3b88c9df1fd46ee40f5",
+          "decompressedBytesAndHashVerified": true
+        },
+        {
+          "order": 3,
+          "rawOffset": 100663296,
+          "rawBytes": 19745181,
+          "rawSha256": "648f9db194c9545bbd880b9626d44f344ed4b0b484045fdc694c399bc8a61b47",
+          "gzipPath": "native-run/001-A.states.jsonl.part00003.gz",
+          "gzipBytes": 3567704,
+          "gzipSha256": "e76b0ff3f3e795c9513b07735eeab429694769470ee4d48b7b4283728102463c",
+          "decompressedBytesAndHashVerified": true
+        }
+      ],
+      "concatenatedDecompressionVerified": true
+    },
+    {
+      "rawPath": "native-run/002-B-planning-000.json",
+      "rawBytes": 87084693,
+      "rawSha256": "5ed160d4c9c7d4361ec5d285268a9aa694bc797a419768cfaac0370d46313711",
+      "closedReceiptHashAvailable": true,
+      "parts": [
+        {
+          "order": 0,
+          "rawOffset": 0,
+          "rawBytes": 33554432,
+          "rawSha256": "ca1b33fe166c5e973bd9ccd9718eb6faed6ea68a73d49ae832ad68740b6b2f26",
+          "gzipPath": "native-run/002-B-planning-000.json.part00000.gz",
+          "gzipBytes": 3010269,
+          "gzipSha256": "7ba4a36ee2e6d3e32f116df633907484d094488869cb1046f1e263f02371e947",
+          "decompressedBytesAndHashVerified": true
+        },
+        {
+          "order": 1,
+          "rawOffset": 33554432,
+          "rawBytes": 33554432,
+          "rawSha256": "b9ffb211ed52f30fff4266ebc929591b137b755786baec4c554b59aed0249d06",
+          "gzipPath": "native-run/002-B-planning-000.json.part00001.gz",
+          "gzipBytes": 3005060,
+          "gzipSha256": "74edf1692d0982b86aee029daa5976da812b0e051db1a83f1e5a786614542578",
+          "decompressedBytesAndHashVerified": true
+        },
+        {
+          "order": 2,
+          "rawOffset": 67108864,
+          "rawBytes": 19975829,
+          "rawSha256": "d62c3a460488cd49028256f45577e395e304a50315db0f04bc91eaa8859b18c9",
+          "gzipPath": "native-run/002-B-planning-000.json.part00002.gz",
+          "gzipBytes": 1778310,
+          "gzipSha256": "e2102054c47f1aac77e96ef203927c6d117989bc950da086f1bae7d32f8ae313",
+          "decompressedBytesAndHashVerified": true
+        }
+      ],
+      "concatenatedDecompressionVerified": true
+    },
+    {
+      "rawPath": "native-run/002-B-planning-000.json.accounting.jsonl",
+      "rawBytes": 31392,
+      "rawSha256": "8f277ded9d8a2c0226698e30561d78420d4438f9b59c21da5e4f6e82f97536c9",
+      "closedReceiptHashAvailable": false,
+      "parts": [
+        {
+          "order": 0,
+          "rawOffset": 0,
+          "rawBytes": 31392,
+          "rawSha256": "8f277ded9d8a2c0226698e30561d78420d4438f9b59c21da5e4f6e82f97536c9",
+          "gzipPath": "native-run/002-B-planning-000.json.accounting.jsonl.gz",
+          "gzipBytes": 1650,
+          "gzipSha256": "28860bab80b57a47af53c20aeadb5029a994b772ba3c1017acb96967f6b32ee2",
+          "decompressedBytesAndHashVerified": true
+        }
+      ],
+      "concatenatedDecompressionVerified": true
+    },
+    {
+      "rawPath": "native-run/002-B.json.accounting.jsonl",
+      "rawBytes": 231,
+      "rawSha256": "d0449e433e8a0ac8eb05fff998e45c93fc2f95ddfa4f95839a58a4cd425a8965",
+      "closedReceiptHashAvailable": false,
+      "parts": [
+        {
+          "order": 0,
+          "rawOffset": 0,
+          "rawBytes": 231,
+          "rawSha256": "d0449e433e8a0ac8eb05fff998e45c93fc2f95ddfa4f95839a58a4cd425a8965",
+          "gzipPath": "native-run/002-B.json.accounting.jsonl.gz",
+          "gzipBytes": 175,
+          "gzipSha256": "eb68ce1145090c6df0793c8a95a799d53acffdc9ba0fe321656fe4673dad8b13",
+          "decompressedBytesAndHashVerified": true
+        }
+      ],
+      "concatenatedDecompressionVerified": true
+    },
+    {
+      "rawPath": "native-run/002-B.states.jsonl",
+      "rawBytes": 8330816,
+      "rawSha256": "9f152e6402331eda7edfa97a76cf7b352064ed26f632af91b4ed1dcd46d6d667",
+      "closedReceiptHashAvailable": false,
+      "parts": [
+        {
+          "order": 0,
+          "rawOffset": 0,
+          "rawBytes": 8330816,
+          "rawSha256": "9f152e6402331eda7edfa97a76cf7b352064ed26f632af91b4ed1dcd46d6d667",
+          "gzipPath": "native-run/002-B.states.jsonl.gz",
+          "gzipBytes": 1489805,
+          "gzipSha256": "23b1173616494d9468a69cca2b02e6db03436e1f09bd2f51cca0f56ca1383b31",
+          "decompressedBytesAndHashVerified": true
+        }
+      ],
+      "concatenatedDecompressionVerified": true
+    }
+  ]
+}
