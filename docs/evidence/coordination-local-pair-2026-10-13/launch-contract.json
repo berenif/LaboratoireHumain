@@ -1,0 +1,62 @@
+{
+  "schema": 1,
+  "scope": "Final two history slots of the original coordination prototype family",
+  "authorization": "Explicit parent follow-up after successful44-step parity: finish reconstruction/freezing then execute one bounded A/B pair; owner ordinary technical autonomy persists",
+  "sourceThreadId": "01a12799-cefe-7764-8aa3-db5db4c1d0f3",
+  "hypothesis": "With identical frozen fixture/reference/model/gains/caps, whole-body feedback and predictive factor selection acquire heel loading and local recentering where reference-only A does not. A/B tests the combined controller, not its individual subcomponents.",
+  "historySlots": [
+    {
+      "familySlot": 3,
+      "name": "A",
+      "coordination": false,
+      "headingDegrees": 0,
+      "maximumNativeSteps": 960
+    },
+    {
+      "familySlot": 4,
+      "name": "B",
+      "coordination": true,
+      "headingDegrees": 0,
+      "maximumNativeSteps": 960
+    }
+  ],
+  "verificationNativeSteps": 16,
+  "maximumPreviewNativeSteps": 76800,
+  "maximumNewNativeSteps": 78736,
+  "maximumCalls": 40,
+  "previewStepsPerCandidate": 480,
+  "candidatesPerCall": 4,
+  "feedbackScales": [
+    0,
+    0.5,
+    1,
+    1.5
+  ],
+  "shortProbes": 0,
+  "priorReservedNativeSteps": 3988,
+  "maximumFamilyReservedNativeSteps": 82724,
+  "originalFamilyCapNativeSteps": 300000,
+  "nativeDeadlineSeconds": 7100,
+  "startupSeconds": 30,
+  "shutdownSeconds": 7,
+  "externalProcessEnvelopeSeconds": 7137,
+  "priorMeasuredPhysicalSeconds": 9.630035994,
+  "priorUnmeasuredStartupShutdownConservativeSeconds": 37,
+  "maximumCumulativeBoundedPhasesSeconds": 7183.630035994,
+  "familyWallCapSeconds": 7200,
+  "physicalInputsAndSuccessThresholdsUnchanged": true,
+  "continuationReferenceSeconds": 8,
+  "realContinuationBeyondFourSecondsAuthorized": false,
+  "fullRecoveryQualified": false,
+  "qualification24CasesAuthorized": false,
+  "recoveryDefaultEnabled": false,
+  "executionRequiresFrozenPreflight": true,
+  "stopConditions": [
+    "unusable prediction set",
+    "real support or integrity refusal",
+    "required diagnostic missing",
+    "step or time ceiling",
+    "evidence or file integrity failure"
+  ],
+  "terminalPolicy": "Close after B success or failure, or first applicable refusal. No automatic renewal, fifth history, B-repeat, B60, local retuning or continuation."
+}

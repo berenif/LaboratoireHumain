@@ -27,6 +27,30 @@ class FakeClock:
 
 
 class BudgetTests(unittest.TestCase):
+    def test_unreported_native_reservation_is_never_an_exact_zero(self):
+        self.manifest['protocolMode'] = budget.LOCAL_PAIR_MODE
+        self.manifest['prerequisites'].pop('four_histories_frozen')
+        self.manifest['prerequisites']['local_pair_frozen'] = True
+        self.ledger.freeze(self.manifest)
+        check = self.ledger.reserve('verification', native_steps=16, worker_pid=42)
+        self.ledger.close('Synthetic disconnect; no native process was started')
+        counts = self.ledger.status()['counters']
+        self.assertEqual(counts['actualNativeStepsKnown'], 0)
+        self.assertFalse(counts['actualNativeStepsExact'])
+        self.assertEqual(counts['unreportedReservedNativeSteps'], 16)
+        self.assertEqual(counts['actualNativeStepsLowerBound'], 0)
+        self.assertEqual(counts['actualNativeStepsUpperBound'], 16)
+        self.assertEqual(self.state()['reservations'][0]['id'], check['id'])
+
+    def test_completed_receipt_restores_exact_native_count_without_refund(self):
+        self.local_pair_ready()
+        counts = self.ledger.status()['counters']
+        self.assertTrue(counts['actualNativeStepsExact'])
+        self.assertEqual(counts['unreportedReservedNativeSteps'], 0)
+        self.assertEqual(counts['actualNativeStepsLowerBound'], 16)
+        self.assertEqual(counts['actualNativeStepsUpperBound'], 16)
+        self.assertEqual(counts['reservedNativeSteps'], 16)
+
     def local_pair_manifest(self):
         self.manifest['protocolMode'] = budget.LOCAL_PAIR_MODE
         self.manifest['prerequisites'].pop('four_histories_frozen')
@@ -42,6 +66,8 @@ class BudgetTests(unittest.TestCase):
     def test_local_pair_full_allocation_closes_after_successful_b(self):
         self.local_pair_ready()
         initial_deadline = dict(self.state()['physics'])
+        self.assertEqual(initial_deadline['deadlineMonotonic'] - self.clock.value['monotonic'], 7100)
+        self.assertEqual(budget.LIMITS['physicsWallSeconds'], 7200)
         self.clock.advance(5)
         self.finish(self.history('A'), local=False)
         b = self.history('B')

@@ -115,7 +115,8 @@ HISTORY_ORDER = ['A', 'B', 'B-repeat', 'B60']
 DEFAULT_PROTOCOL_MODE = 'four-histories'
 LOCAL_PAIR_MODE = 'local-pair'
 LOCAL_PAIR_LIMITS = dict(LIMITS, histories=2, totalNativeSteps=78736,
-    predictionAndVerificationSteps=76816, verificationSteps=16, shortProbesPerCall=0)
+    predictionAndVerificationSteps=76816, verificationSteps=16, shortProbesPerCall=0,
+    physicsWallSeconds=7100)
 REQUIRED_ROLES = ('model', 'profile', 'fixture', 'reference', 'code', 'binary',
                   'criteria', 'continuation', 'preflight_evidence')
 PREREQUISITES = ('unit_and_static_tests_passed', 'complete_numeric_reference',
@@ -325,6 +326,9 @@ class Budget:
     @staticmethod
     def counters(state):
         entries = state['reservations']
+        known = sum(e.get('actualNativeSteps', 0) for e in entries)
+        unreported = sum(e.get('nativeSteps', 0) for e in entries
+                         if 'actualNativeSteps' not in e)
         return {
             'preparationActiveSeconds': state['preparation']['initialActiveSeconds'] +
                 sum(e.get('activeSeconds', 0) for e in entries),
@@ -335,7 +339,11 @@ class Budget:
                                                          if e['kind'] != 'history'),
             'reservedVerificationSteps': sum(e.get('nativeSteps', 0) for e in entries
                                              if e['kind'] == 'verification'),
-            'actualNativeStepsKnown': sum(e.get('actualNativeSteps', 0) for e in entries),
+            'actualNativeStepsKnown': known,
+            'actualNativeStepsExact': unreported == 0,
+            'unreportedReservedNativeSteps': unreported,
+            'actualNativeStepsLowerBound': known,
+            'actualNativeStepsUpperBound': known + unreported,
         }
 
     @staticmethod
