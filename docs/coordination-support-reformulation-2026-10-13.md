@@ -185,7 +185,17 @@ sont livrées par les fichiers Git de la branche de progrès.
 - [x] Terminer la machine de transfert, avec exclusions du membre entier et nouvelle acquisition mesurée.
 - [x] Tester les quatre fixtures, la compilation f32 et les contre-exemples sans physique.
 - [x] Contre-revoir le correctif et préciser les limites d'intégration native.
-- [ ] Publier le jalon et sa vérification distante.
+- [x] Publier le jalon et sa vérification distante.
+
+Le correctif et les reçus sont publiés dans le commit
+`9a12f84bb0b934bbcae3dfc2b96bc50cacbaf81e`, SHA distant vérifié sur
+`investigate/physical-support`. `main` distant reste
+`c597959f46f37715035349c8cd0a699b6822111a`. La [clôture statique](evidence/coordination-support-reformulation-2026-10-13/preparation-result.json)
+conserve le débit de 35 689/144 000 s, sans remboursement ni renouvellement,
+et l'[audit](evidence/coordination-support-reformulation-2026-10-13/preparation-closure-audit.md)
+confirme 14 pièces historiques inchangées et 1 157 versions sources gelées.
+Les journaux bruts conservent leurs lignes vides finales émises par Cargo ;
+les contrôles de whitespace des sources, Markdown et JSON passent.
 
 La [continuation complète et les protocoles proposés](evidence/coordination-support-reformulation-2026-10-13/continuation-and-protocol.md)
 distinguent la référence géométrique de huit secondes, l'entrée réellement
