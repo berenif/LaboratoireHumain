@@ -47,29 +47,36 @@ evidence before permitting histories. Planning diagnostics are technical, not
 the local heel/support success criterion. Unknown protocol fields are refused.
 
 After final result, stdin EOF requests a normal worker exit. On any error,
-parent sends {op:"abort",reason}, closes stdin, and terminates/kills a worker
-which does not exit promptly. Reservations remain charged. No shell is used,
+parent kills the native process group, closes stdin and reaps the worker.
+SIGALRM/SIGINT/SIGTERM do the same, even during process construction. A separate
+hard deadline includes startup, native calculations and bounded shutdown.
+Single-thread/child-process and identity checks run during every protocol wait.
+Reservations remain charged. No shell is used,
 no compilation is started, and stdout/stderr plus permits are archived.
 """
 
 import argparse
+from contextlib import contextmanager
 import importlib.util
 import json
 import os
 from pathlib import Path
-import selectors
 import subprocess
 import time
 
 
-REPO = Path(__file__).resolve().parents[1]
 spec = importlib.util.spec_from_file_location('coordination_prototype_budget',
     Path(__file__).with_name('coordination-prototype-budget.py'))
 budgetlib = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(budgetlib)
+supervision_spec = importlib.util.spec_from_file_location('coordination_numeric_supervision',
+    Path(__file__).with_name('run-coordination-numeric-parity.py'))
+supervision = importlib.util.module_from_spec(supervision_spec)
+supervision_spec.loader.exec_module(supervision)
 COMMON_OUTCOME = ('integrity_ok', 'support_feasible', 'predictions_usable', 'diagnostic_present')
 VERIFY_STEPS = 16
-MAX_MESSAGE_BYTES = 1024 * 1024
+STARTUP_WALL_SECONDS = 30
+SHUTDOWN_WALL_SECONDS = 7
 
 
 class RunnerError(RuntimeError):
@@ -89,98 +96,79 @@ def write_new_json(path, value):
         os.fsync(stream.fileno())
 
 
-class NativeWorker:
-    """Single subprocess; selector timeout also handles a silent/hung worker."""
+@contextmanager
+def hard_deadline(deadline, worker_getter):
+    """Reuse the proved signal/process cleanup, with this protocol's deadline."""
+    try:
+        with supervision.hard_deadline(deadline, worker_getter):
+            yield
+    except supervision.Refusal as exc:
+        # The historical helper's alarm text names its original 120-second lot;
+        # its actual timer already accepts the absolute deadline supplied here.
+        raise RunnerError(str(exc).replace('Hard120s deadline', 'Hard protocol deadline')) from exc
+
+
+class NativeWorker(supervision.NativeWorker):
+    """Same process-group transport as parity, with continuous process census."""
 
     def __init__(self, binary, output):
-        self.stderr = (output / 'worker.stderr.log').open('xb')
-        environment = dict(os.environ, OMP_NUM_THREADS='1', OPENBLAS_NUM_THREADS='1',
-                           MKL_NUM_THREADS='1', RAYON_NUM_THREADS='1')
-        try:
-            self.process = subprocess.Popen([str(binary)], cwd=REPO, env=environment,
-                                            stdin=subprocess.PIPE, stdout=subprocess.PIPE,
-                                            stderr=self.stderr, bufsize=0)
-        except BaseException:
-            self.stderr.close()
-            raise
-        self.pid = self.process.pid
-        os.set_blocking(self.process.stdin.fileno(), False)
-        self.selector = selectors.DefaultSelector()
-        self.selector.register(self.process.stdout, selectors.EVENT_READ)
-        self.buffer = bytearray()
+        self.binary = Path(binary).resolve(strict=True)
+        self.binary_sha256 = budgetlib.sha(self.binary)
+        self.identity = None
+        super().__init__(self.binary, output)
+
+    def guard(self):
+        current = supervision.inspect_process(self.pid)
+        if (current['pid'] != self.pid or current['threads'] != 1 or current['children'] or
+                current['binaryPath'] != str(self.binary) or
+                current['binarySha256'] != self.binary_sha256 or os.getpgid(self.pid) != self.pid):
+            raise RunnerError('Native process identity, thread, child or binary contract violated')
+        if self.identity is not None and current != self.identity:
+            raise RunnerError('Native worker identity changed')
+        self.identity = current
 
     def send(self, value):
-        encoded = budgetlib.canonical(value) + b'\n'
-        if len(encoded) > MAX_MESSAGE_BYTES:
-            raise RunnerError('Parent message exceeds protocol size cap')
         limit = 0.25 if value.get('op') == 'abort' else 2.0
         deadline = min(time.monotonic() + limit,
                        value.get('permit', {}).get('deadlineMonotonic', float('inf')))
-        offset = 0
-        with selectors.DefaultSelector() as selector:
-            selector.register(self.process.stdin, selectors.EVENT_WRITE)
-            while offset < len(encoded):
-                remaining = deadline - time.monotonic()
-                if remaining <= 0:
-                    raise RunnerError('Worker stdin timed out at its bounded send deadline')
-                if not selector.select(min(0.1, remaining)):
-                    continue
-                try:
-                    written = os.write(self.process.stdin.fileno(), encoded[offset:])
-                except BlockingIOError:
-                    continue
-                if not written:
-                    raise RunnerError('Worker stdin closed during its permit')
-                offset += written
+        try:
+            super().send(value, deadline, self.guard)
+        except supervision.Refusal as exc:
+            raise RunnerError('Worker stdin timed out or refused: ' + str(exc)) from exc
 
     def receive(self, deadline_monotonic):
-        while True:
-            if time.monotonic() >= deadline_monotonic:
-                raise RunnerError('Worker response timed out at the existing deadline')
-            if b'\n' in self.buffer:
-                line, _, remainder = self.buffer.partition(b'\n')
-                self.buffer = bytearray(remainder)
-                if len(line) > MAX_MESSAGE_BYTES:
-                    raise RunnerError('Worker protocol line too large')
-                try:
-                    value = json.loads(line)
-                except (ValueError, UnicodeDecodeError) as exc:
-                    raise RunnerError('Worker stdout is not NDJSON') from exc
-                if not isinstance(value, dict):
-                    raise RunnerError('Worker protocol message must be an object')
-                return value
-            if len(self.buffer) > MAX_MESSAGE_BYTES:
-                raise RunnerError('Worker protocol line too large')
-            if not self.selector.select(min(1.0, max(0, deadline_monotonic - time.monotonic()))):
-                continue
-            data = os.read(self.process.stdout.fileno(), 65536)
-            if not data:
-                raise RunnerError('Worker exited without its required result')
-            self.buffer.extend(data)
+        try:
+            return super().receive(deadline_monotonic, self.guard)
+        except supervision.Refusal as exc:
+            raise RunnerError(str(exc)) from exc
 
     def stop(self, reason=None):
-        if reason is not None and self.process.poll() is None:
-            try:
-                self.send({'op': 'abort', 'reason': reason[:2000]})
-            except (RunnerError, BrokenPipeError, OSError, ValueError):
-                pass
+        # Error, malformed receipt, process violation or deadline: stop the whole
+        # group immediately. No additional permit or graceful physics is sent.
+        if reason is not None:
+            self.kill()
         try:
             self.process.stdin.close()
-        except (BrokenPipeError, OSError):
-            pass
-        try:
-            code = self.process.wait(timeout=2)
-        except subprocess.TimeoutExpired:
-            self.process.terminate()
-            try:
-                code = self.process.wait(timeout=2)
-            except subprocess.TimeoutExpired:
-                self.process.kill()
-                code = self.process.wait(timeout=2)
-        self.selector.close()
-        self.process.stdout.close()
-        self.stderr.close()
-        return code
+            stop_deadline = time.monotonic() + 2.0
+            while self.process.poll() is None:
+                if time.monotonic() >= stop_deadline:
+                    self.kill()
+                    raise RunnerError('Worker did not exit within its bounded shutdown')
+                if reason is None:
+                    try:
+                        self.guard()
+                    except (FileNotFoundError, ProcessLookupError):
+                        if self.process.poll() is None:
+                            raise
+                try:
+                    self.process.wait(timeout=min(0.05, max(0.001, stop_deadline - time.monotonic())))
+                except subprocess.TimeoutExpired:
+                    pass
+            return self.process.returncode
+        finally:
+            # Also kills surviving group members if the leader already exited.
+            # dispose() reaps for at most one second after SIGKILL, then closes IO.
+            self.dispose()
 
 
 class Session:
@@ -236,6 +224,11 @@ class Session:
             raise RunnerError('Worker evidence path differs from its assigned outputPath')
         if not expected_output.is_file():
             raise RunnerError('Worker did not archive its diagnostic evidence')
+        report = supervision.read_json(expected_output)
+        if (not isinstance(report, dict) or type(report.get('actualNativeSteps')) is not int or
+                report['actualNativeSteps'] != actual or
+                budgetlib.canonical(report.get('outcome')) != budgetlib.canonical(outcome)):
+            raise RunnerError('Evidence contradicts native result receipt')
         outcome = dict(outcome, evidence={'path': str(expected_output), 'sha256': budgetlib.sha(expected_output)})
 
         def refuse_with_receipt(reason):
@@ -334,7 +327,7 @@ def prepare(binary, manifest_path, budget_root, program=None, tasks=None, ledger
 
 
 def run(binary, manifest_path, output, budget_root, *, execute=False, program=None, tasks=None,
-        ledger=None, worker_factory=NativeWorker):
+        ledger=None, worker_factory=NativeWorker, alarm_factory=hard_deadline):
     binary, manifest, inputs, ledger, initial = prepare(binary, manifest_path, budget_root, program, tasks, ledger)
     protocol_mode = manifest.get('protocolMode', budgetlib.DEFAULT_PROTOCOL_MODE)
     limits, history_order, _ = budgetlib.protocol_contract(protocol_mode)
@@ -357,32 +350,47 @@ def run(binary, manifest_path, output, budget_root, *, execute=False, program=No
     session = None
     outcomes = []
     error = None
+    started = time.monotonic()
+    external_wall_seconds = STARTUP_WALL_SECONDS + limits['physicsWallSeconds'] + SHUTDOWN_WALL_SECONDS
+    deadline = started + external_wall_seconds
+    write_new_json(output / 'process-supervision.json', {
+        'schema': 1, 'startupWallSeconds': STARTUP_WALL_SECONDS,
+        'nativeWallSeconds': limits['physicsWallSeconds'], 'shutdownWallSeconds': SHUTDOWN_WALL_SECONDS,
+        'maximumTotalWallSeconds': external_wall_seconds, 'startedMonotonic': started,
+        'deadlineMonotonic': deadline, 'deadlineUtc': budgetlib.utc(time.time() + external_wall_seconds),
+        'singleProcess': True, 'singleThread': True, 'descendantsForbidden': True,
+        'signals': ['SIGALRM', 'SIGINT', 'SIGTERM'], 'killProcessGroupOnFailure': True})
     try:
-        ledger.freeze(manifest, Path(manifest_path).resolve().parent)
-        worker = worker_factory(binary, output)
-        session = Session(ledger, worker, output)
-        ready = session.receive(time.monotonic() + 30)
-        exact_fields(ready, ('event', 'pid'))
-        if ready['event'] != 'ready' or type(ready['pid']) is not int or ready['pid'] != worker.pid:
-            raise RunnerError('Worker ready PID does not match its single native process')
-        session.verify(inputs)
-        for index, name in enumerate(history_order, start=1):
-            outcome = session.history(name, index, inputs)
-            outcomes.append({'history': name, 'localSuccess': outcome['local_success'], 'evidence': outcome['evidence']})
-            if name != 'A' and not outcome['local_success']:
-                break
-    except (Exception, KeyboardInterrupt) as exc:
-        error = str(exc) or type(exc).__name__
-    finally:
-        if worker is not None:
+        supervision.environment_preflight()
+        with alarm_factory(deadline, lambda: worker):
             try:
-                code = worker.stop(error)
-                if code != 0 and error is None:
-                    error = 'Worker did not exit cleanly after its final result: ' + str(code)
-            except (Exception, KeyboardInterrupt) as exc:
-                error = (error + '; ' if error else '') + 'Worker shutdown failed: ' + str(exc)
-        if session is not None:
-            session.transcript.close()
+                ledger.freeze(manifest, Path(manifest_path).resolve().parent)
+                worker = worker_factory(binary, output)
+                session = Session(ledger, worker, output)
+                ready = session.receive(started + STARTUP_WALL_SECONDS)
+                exact_fields(ready, ('event', 'pid'))
+                if ready['event'] != 'ready' or type(ready['pid']) is not int or ready['pid'] != worker.pid:
+                    raise RunnerError('Worker ready PID does not match its single native process')
+                session.verify(inputs)
+                for index, name in enumerate(history_order, start=1):
+                    outcome = session.history(name, index, inputs)
+                    outcomes.append({'history': name, 'localSuccess': outcome['local_success'], 'evidence': outcome['evidence']})
+                    if name != 'A' and not outcome['local_success']:
+                        break
+            except BaseException as exc:
+                error = str(exc) or type(exc).__name__
+            finally:
+                if worker is not None:
+                    try:
+                        code = worker.stop(error)
+                        if code != 0 and error is None:
+                            error = 'Worker did not exit cleanly after its final result: ' + str(code)
+                    except BaseException as exc:
+                        error = (error + '; ' if error else '') + 'Worker shutdown failed: ' + str(exc)
+                if session is not None:
+                    session.transcript.close()
+    except BaseException as exc:
+        error = (error + '; ' if error else '') + (str(exc) or type(exc).__name__)
     if error is not None:
         try:
             if not ledger.status()['status'].startswith('closed'):

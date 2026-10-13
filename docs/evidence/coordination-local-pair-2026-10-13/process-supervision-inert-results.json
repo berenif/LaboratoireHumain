@@ -1,0 +1,56 @@
+{
+  "schema": 1,
+  "scope": "OS-only inert C fixture; no simulation, FK or physics",
+  "physicalIntegrations": 0,
+  "elapsedSeconds": 0.6768914989988843,
+  "cases": [
+    {
+      "case": "normal",
+      "passed": true,
+      "elapsedSeconds": 0.005094215001008706,
+      "error": null,
+      "descendantsRemaining": 0,
+      "physicalIntegrations": 0
+    },
+    {
+      "case": "alarm",
+      "passed": true,
+      "elapsedSeconds": 0.30349637400104257,
+      "error": "Hard protocol deadline: native process group killed",
+      "descendantsRemaining": 0,
+      "physicalIntegrations": 0
+    },
+    {
+      "case": "sigterm",
+      "passed": true,
+      "elapsedSeconds": 0.006542659999468015,
+      "error": "Cancelled by SIGTERM: native process group killed",
+      "descendantsRemaining": 0,
+      "physicalIntegrations": 0
+    },
+    {
+      "case": "constructor-alarm",
+      "passed": true,
+      "elapsedSeconds": 0.3023698389988567,
+      "error": "Hard protocol deadline: native process group killed",
+      "descendantsRemaining": 0,
+      "physicalIntegrations": 0
+    },
+    {
+      "case": "thread",
+      "passed": true,
+      "elapsedSeconds": 0.00469396199878247,
+      "error": "Native process identity, thread, child or binary contract violated",
+      "descendantsRemaining": 0,
+      "physicalIntegrations": 0
+    },
+    {
+      "case": "child",
+      "passed": true,
+      "elapsedSeconds": 0.004515442000410985,
+      "error": "Native process identity, thread, child or binary contract violated",
+      "descendantsRemaining": 0,
+      "physicalIntegrations": 0
+    }
+  ]
+}

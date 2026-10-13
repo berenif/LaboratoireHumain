@@ -41,6 +41,43 @@ struct ParityFrame {
     body_and_motor_bits: Vec<u32>,
 }
 
+fn coordinates_bits(values: &[[f32; 3]]) -> Vec<[u32; 3]> {
+    values.iter().map(|value| value.map(f32::to_bits)).collect()
+}
+
+/// Persistent recovery state is part of parity even when the caller has no
+/// separate memory. Exhaustive destructuring makes new fields a compile error.
+fn native_memory(s: &Simulation) -> serde_json::Value {
+    let recovery = s.recovery.as_ref().map(|r| {
+        let crate::recovery::Controller {
+            status, targets, hands, lead, stand_feet, stand_root, stand_goal,
+            best_progress, velocities, foot_anchors, hand_anchors, knee_anchors,
+            handoff_from, stable_substeps, handoff_substeps, settle_substeps,
+        } = r;
+        let anchors = |values: &[Option<crate::recovery::PlantedAnchor>; 2]| {
+            values.map(|a| a.map(|a| serde_json::json!({
+                "segment":a.segment,
+                "localBits":a.local_point.to_array().map(f32::to_bits),
+                "worldBits":a.world_point.to_array().map(f32::to_bits)
+            })))
+        };
+        serde_json::json!({
+            "status":status,"targetsBits":coordinates_bits(targets),
+            "velocityBits":coordinates_bits(velocities),
+            "handsBits":hands.map(|v|v.to_array().map(f32::to_bits)),
+            "lead":lead,"standFeetBits":stand_feet.map(|v|v.map(|x|x.to_array().map(f32::to_bits))),
+            "standRoot":stand_root,"standGoalBits":stand_goal.map(|q|q.to_array().map(f32::to_bits)),
+            "bestProgressBits":best_progress.to_bits(),"footAnchors":anchors(foot_anchors),
+            "handAnchors":anchors(hand_anchors),"kneeAnchors":anchors(knee_anchors),
+            "handoffFromBits":handoff_from.as_ref().map(|q|coordinates_bits(q)),
+            "stableSubsteps":stable_substeps,"handoffSubsteps":handoff_substeps,
+            "settleSubsteps":settle_substeps
+        })
+    });
+    serde_json::json!({"recovery":recovery,
+        "modeSignature":s.coordination.as_ref().map(|o|o.memory.mode_signature)})
+}
+
 fn parity_frame(s: &Simulation, memory: &impl Serialize) -> Result<ParityFrame, PreviewError> {
     let serial = |v| {
         serde_json::to_vec(v)
@@ -71,6 +108,7 @@ fn parity_frame(s: &Simulation, memory: &impl Serialize) -> Result<ParityFrame, 
                     motor.max_force,
                     motor.impulse,
                     motor.delivered_abs_impulse,
+                    motor.delivered_impulse,
                 ]
                 .map(f32::to_bits),
             );
@@ -89,8 +127,11 @@ fn parity_frame(s: &Simulation, memory: &impl Serialize) -> Result<ParityFrame, 
         }
     }
     let state = serde_json::json!({
-        "snapshot": s.snapshot(), "substeps": s.substeps_completed,
+        "snapshot": s.snapshot(), "substeps": s.substeps_completed, "tick": s.tick,
         "targets": s.targets, "restTargets": s.rest_targets,
+        "targetsBits":coordinates_bits(&s.targets),
+        "restTargetsBits":coordinates_bits(&s.rest_targets),
+        "contacts": s.contacts, "nativeMemory": native_memory(s),
         "persistence": s.persistence,
         "integratedSupportSubsteps": s.integrated_support_substeps,
         "integratedSupportLoadsN": s.integrated_support_loads_n,
@@ -115,6 +156,7 @@ pub(crate) struct NativeParityTrace {
     simulation_identity: usize,
     initial: ParityFrame,
     frames: Vec<ParityFrame>,
+    post_tick: Option<ParityFrame>,
 }
 impl NativeParityTrace {
     pub(crate) fn begin(s: &Simulation, memory: &impl Serialize) -> Result<Self, PreviewError> {
@@ -127,6 +169,7 @@ impl NativeParityTrace {
             simulation_identity: std::ptr::from_ref(s) as usize,
             initial: parity_frame(s, memory)?,
             frames: Vec::new(),
+            post_tick: None,
         })
     }
     pub(crate) fn record(
@@ -153,6 +196,50 @@ impl NativeParityTrace {
         self.frames.push(parity_frame(s, memory)?);
         Ok(())
     }
+
+    /// Must run after advance_tick_observed returns successfully, since its
+    /// fourth callback precedes final persistence/recovery/tick bookkeeping.
+    pub(crate) fn record_post_tick(
+        &mut self,
+        s: &Simulation,
+        memory: &impl Serialize,
+    ) -> Result<(), PreviewError> {
+        if self.simulation_identity != std::ptr::from_ref(s) as usize
+            || self.frames.len() != 4
+            || self.post_tick.is_some()
+            || self.initial.native_substep.checked_add(4) != Some(s.substeps_completed)
+            || s.tick.checked_mul(4) != Some(s.substeps_completed)
+        {
+            return Err(PreviewError::ParityMismatch(
+                "Post-tick parity requires the same completed four-step instance".into(),
+            ));
+        }
+        self.post_tick = Some(parity_frame(s, memory)?);
+        Ok(())
+    }
+}
+
+/// Compare every available actual frame immediately. The predicted trace may
+/// already contain four frames, but the real run must stop on its first mismatch.
+pub(crate) fn compare_prefix(
+    predicted: &NativeParityTrace,
+    actual: &NativeParityTrace,
+) -> Result<(), PreviewError> {
+    if predicted.simulation_identity == actual.simulation_identity {
+        return Err(PreviewError::ParityMismatch(
+            "Parity requires two distinct Simulation instances".into(),
+        ));
+    }
+    if actual.frames.len() > predicted.frames.len()
+        || predicted.initial != actual.initial
+        || predicted.frames[..actual.frames.len()] != actual.frames
+        || actual.post_tick.is_some() && predicted.post_tick != actual.post_tick
+    {
+        return Err(PreviewError::ParityMismatch(
+            "Native state or memory differs at the current real prefix".into(),
+        ));
+    }
+    Ok(())
 }
 
 pub(crate) fn native_kernel_admission(
@@ -162,20 +249,28 @@ pub(crate) fn native_kernel_admission(
     if predicted.frames.len() != 4 || actual.frames.len() != 4 {
         return Err(PreviewError::NativeKernelParityUnavailable);
     }
-    if predicted.simulation_identity == actual.simulation_identity {
+    compare_prefix(predicted, actual)?;
+    if predicted.post_tick != actual.post_tick {
         return Err(PreviewError::ParityMismatch(
-            "Parity requires two distinct Simulation instances".into(),
-        ));
-    }
-    if predicted.initial != actual.initial || predicted.frames != actual.frames {
-        return Err(PreviewError::ParityMismatch(
-            "Native world, commands, deliveries, contacts, owner memory or clocks differ".into(),
+            "Post-tick parity boundary differs".into(),
         ));
     }
     Ok(NativeKernelAdmission {
         initial_substep: actual.initial.native_substep,
         verified_substeps: 4,
     })
+}
+
+/// Long-run admission requires the final tick bookkeeping on both instances.
+/// The old four-callback API remains available to archived numeric-worker code.
+pub(crate) fn native_kernel_admission_complete(
+    predicted: &NativeParityTrace,
+    actual: &NativeParityTrace,
+) -> Result<NativeKernelAdmission, PreviewError> {
+    if predicted.post_tick.is_none() || actual.post_tick.is_none() {
+        return Err(PreviewError::NativeKernelParityUnavailable);
+    }
+    native_kernel_admission(predicted, actual)
 }
 
 /// Every field of Simulation is copied explicitly. New fields require a compile
@@ -336,7 +431,36 @@ impl<M: Clone> StaticPreviewBranch<M> {
         if !(120..=480).contains(&steps) || steps % 4 != 0 {
             return PreviewRun::refused(PreviewError::InvalidHorizon);
         }
-        self.preview_ticks(PreviewPurpose::Candidate, branch_id, steps, budget, observe)
+        self.preview_ticks(
+            PreviewPurpose::Candidate,
+            branch_id,
+            steps,
+            budget,
+            observe,
+            |_, _| Ok(()),
+        )
+    }
+
+    pub(crate) fn preview_with_post_tick<O>(
+        &mut self,
+        _admission: &NativeKernelAdmission,
+        branch_id: u64,
+        steps: u32,
+        budget: &mut impl PreviewBudget,
+        observe: impl FnMut(&Simulation, u32, &mut M) -> Result<O, String>,
+        after_tick: impl FnMut(&Simulation, &mut M) -> Result<(), String>,
+    ) -> PreviewRun<O> {
+        if !(120..=480).contains(&steps) || steps % 4 != 0 {
+            return PreviewRun::refused(PreviewError::InvalidHorizon);
+        }
+        self.preview_ticks(
+            PreviewPurpose::Candidate,
+            branch_id,
+            steps,
+            budget,
+            observe,
+            after_tick,
+        )
     }
 
     /// Only the ledger's frozen verification phase may use this entrypoint.
@@ -354,6 +478,24 @@ impl<M: Clone> StaticPreviewBranch<M> {
             4,
             budget,
             observe,
+            |_, _| Ok(()),
+        )
+    }
+
+    pub(crate) fn verify_tick_with_post_tick<O>(
+        &mut self,
+        branch_id: u64,
+        budget: &mut impl PreviewBudget,
+        observe: impl FnMut(&Simulation, u32, &mut M) -> Result<O, String>,
+        after_tick: impl FnMut(&Simulation, &mut M) -> Result<(), String>,
+    ) -> PreviewRun<O> {
+        self.preview_ticks(
+            PreviewPurpose::ParityVerification,
+            branch_id,
+            4,
+            budget,
+            observe,
+            after_tick,
         )
     }
 
@@ -364,6 +506,7 @@ impl<M: Clone> StaticPreviewBranch<M> {
         steps: u32,
         budget: &mut impl PreviewBudget,
         mut observe: impl FnMut(&Simulation, u32, &mut M) -> Result<O, String>,
+        mut after_tick: impl FnMut(&Simulation, &mut M) -> Result<(), String>,
     ) -> PreviewRun<O> {
         if let Err(error) = budget.admit_preview(purpose, steps) {
             return PreviewRun::refused(PreviewError::Reservation(error));
@@ -432,6 +575,14 @@ impl<M: Clone> StaticPreviewBranch<M> {
                     expected,
                     actual: self.simulation.substeps_completed,
                 });
+                break;
+            }
+            if let Err(error) = after_tick(&self.simulation, &mut self.memory) {
+                run.refusal = Some(PreviewError::Kernel(format!("Post-tick observer: {error}")));
+                break;
+            }
+            if let Err(error) = budget.check_wall_deadline() {
+                run.refusal = Some(PreviewError::Reservation(error));
                 break;
             }
         }
@@ -587,6 +738,109 @@ fn run_guarded_steps<S: NativeStepClock, M, O>(
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    fn synthetic_parity(identity: usize, count: usize, post_tick: bool) -> NativeParityTrace {
+        let frame = |step| ParityFrame {
+            native_substep: step,
+            world: serde_json::to_vec(&u128::MAX).unwrap(),
+            state: vec![step as u8],
+            owner_memory: vec![42],
+            body_and_motor_bits: vec![(-0.0_f32).to_bits()],
+        };
+        NativeParityTrace {
+            simulation_identity: identity,
+            initial: frame(0),
+            frames: (1..=count).map(|step| frame(step as u64)).collect(),
+            post_tick: post_tick.then(|| frame(4)),
+        }
+    }
+
+    #[test]
+    fn pure_parity_prefix_refuses_first_differing_frame() {
+        let predicted = synthetic_parity(1, 4, true);
+        let mut actual = synthetic_parity(2, 1, false);
+        compare_prefix(&predicted, &actual).unwrap();
+        actual.frames[0].owner_memory[0] ^= 1;
+        assert!(compare_prefix(&predicted, &actual).is_err());
+        assert_eq!(actual.frames.len(), 1);
+    }
+
+    #[test]
+    fn pure_complete_admission_requires_and_compares_post_tick() {
+        let predicted = synthetic_parity(1, 4, true);
+        let mut actual = synthetic_parity(2, 4, false);
+        assert!(native_kernel_admission_complete(&predicted, &actual).is_err());
+        actual.post_tick = predicted.post_tick.clone();
+        native_kernel_admission_complete(&predicted, &actual).unwrap();
+        actual.post_tick.as_mut().unwrap().owner_memory[0] ^= 1;
+        assert!(native_kernel_admission_complete(&predicted, &actual).is_err());
+    }
+
+    #[test]
+    fn pure_parity_preserves_u128_and_signed_motor_zero() {
+        let predicted = synthetic_parity(1, 4, true);
+        assert_eq!(
+            std::str::from_utf8(&predicted.initial.world).unwrap(),
+            u128::MAX.to_string()
+        );
+        let mut actual = synthetic_parity(2, 1, false);
+        actual.frames[0].body_and_motor_bits[0] = 0.0_f32.to_bits();
+        assert!(compare_prefix(&predicted, &actual).is_err());
+        let mut actual = synthetic_parity(2, 1, false);
+        actual.frames[0].world = serde_json::to_vec(&(u128::MAX - 1)).unwrap();
+        assert!(compare_prefix(&predicted, &actual).is_err());
+    }
+
+    #[test]
+    fn pure_parity_rejects_same_instance_and_longer_actual_prefix() {
+        let predicted = synthetic_parity(1, 1, false);
+        assert!(compare_prefix(&predicted, &synthetic_parity(1, 1, false)).is_err());
+        assert!(compare_prefix(&predicted, &synthetic_parity(2, 2, false)).is_err());
+        let old_predicted = synthetic_parity(1, 4, false);
+        let old_actual = synthetic_parity(2, 4, false);
+        native_kernel_admission(&old_predicted, &old_actual).unwrap();
+        assert!(native_kernel_admission_complete(&old_predicted, &old_actual).is_err());
+    }
+
+    #[test]
+    fn pure_parity_rejects_diagnostic_sample_or_score_memory_divergence() {
+        let memory = serde_json::json!({
+            "diagnostic":{"heel_loaded_substeps":[12,12],"consecutive_stable_substeps":1,"passed":false},
+            "sample":{"heel_loads_n":[3.0,4.0],"com_inside":true,"passed":false},
+            "center_of_mass_speed_mps":0.01
+        });
+        let baseline = serde_json::to_vec(&memory).unwrap();
+        let install = |trace: &mut NativeParityTrace| {
+            trace.initial.owner_memory = baseline.clone();
+            for frame in &mut trace.frames {
+                frame.owner_memory = baseline.clone();
+            }
+            trace.post_tick.as_mut().unwrap().owner_memory = baseline.clone();
+        };
+        let mut predicted = synthetic_parity(1, 4, true);
+        install(&mut predicted);
+        let mut changed_diagnostic = memory.clone();
+        changed_diagnostic["diagnostic"]["consecutive_stable_substeps"] = 2.into();
+        let mut changed_sample = memory.clone();
+        changed_sample["sample"]["heel_loads_n"][0] = 3.5.into();
+        let mut changed_speed = memory.clone();
+        changed_speed["center_of_mass_speed_mps"] = 0.02.into();
+        for changed in [changed_diagnostic, changed_sample, changed_speed] {
+            let mut actual = synthetic_parity(2, 4, true);
+            install(&mut actual);
+            native_kernel_admission_complete(&predicted, &actual).unwrap();
+            actual.frames[0].owner_memory = serde_json::to_vec(&changed).unwrap();
+            assert_eq!(predicted.frames[0].world, actual.frames[0].world);
+            assert_eq!(
+                predicted.frames[0].body_and_motor_bits,
+                actual.frames[0].body_and_motor_bits
+            );
+            assert!(compare_prefix(&predicted, &actual).is_err());
+            actual.frames[0].owner_memory = baseline.clone();
+            actual.post_tick.as_mut().unwrap().owner_memory = serde_json::to_vec(&changed).unwrap();
+            assert!(native_kernel_admission_complete(&predicted, &actual).is_err());
+        }
+    }
 
     struct FakeClock(u64);
     impl NativeStepClock for FakeClock {

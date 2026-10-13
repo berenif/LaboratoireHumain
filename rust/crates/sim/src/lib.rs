@@ -1386,7 +1386,21 @@ impl Simulation {
                 self.motion = Motion::Halted;
                 return Err(failure);
             }
+            #[cfg(all(test, feature = "coordination-worker"))]
+            if let Err(reason) = recovery::planner::transition_worker::before_integration(self) {
+                let failure = measurement::Failure::new(self.tick, substep, "coordination-admission", reason, 1., 0.);
+                self.first_failure = Some(failure.clone());
+                self.motion = Motion::Halted;
+                return Err(failure);
+            }
             self.world.step_with_events(&self.filter, &());
+            #[cfg(all(test, feature = "coordination-worker"))]
+            if let Err(reason) = recovery::planner::transition_worker::after_integration(self) {
+                let failure = measurement::Failure::new(self.tick, substep, "coordination-accounting", reason, 1., 0.);
+                self.first_failure = Some(failure.clone());
+                self.motion = Motion::Halted;
+                return Err(failure);
+            }
             let delivered: f32 = self
                 .joints
                 .iter()

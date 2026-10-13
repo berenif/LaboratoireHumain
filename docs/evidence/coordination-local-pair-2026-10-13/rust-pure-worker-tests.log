@@ -1,0 +1,75 @@
+warning: /workspace/LaboratoireHumain/rust/crates/sim/Cargo.toml: file `/workspace/LaboratoireHumain/rust/crates/sim/src/lib.rs` found to be present in multiple build targets:
+  * `lib` target `lh_sim`
+  * `integration-test` target `coordination-local-pair-worker`
+  * `integration-test` target `coordination-worker`
+  * `integration-test` target `numeric-parity-worker`
+  * `integration-test` target `numeric-parity-worker-serialization`
+warning: methods `preview` and `verify_tick` are never used
+   --> crates/sim/src/recovery/planner/native_plan_preview.rs:423:19
+    |
+389 | impl<M: Clone> StaticPreviewBranch<M> {
+    | ------------------------------------- methods in this implementation
+...
+423 |     pub(crate) fn preview<O>(
+    |                   ^^^^^^^
+...
+469 |     pub(crate) fn verify_tick<O>(
+    |                   ^^^^^^^^^^^
+    |
+    = note: `#[warn(dead_code)]` on by default
+
+warning: function `assemble` is never used
+   --> crates/sim/src/recovery/planner/geometric_tasks.rs:174:15
+    |
+174 | pub(crate) fn assemble(
+    |               ^^^^^^^^
+
+warning: function `point_world` is never used
+   --> crates/sim/src/recovery/planner/geometric_tasks.rs:305:15
+    |
+305 | pub(crate) fn point_world(
+    |               ^^^^^^^^^^^
+
+warning: constant `PARAMETERS` is never used
+  --> crates/sim/src/recovery/planner/whole_body_controller.rs:39:18
+   |
+39 | pub(crate) const PARAMETERS: &str = r#"{"version":"coordinated-transition-v2-numeric","solver":"feasible-active-set-newton","commandCompi...
+   |                  ^^^^^^^^^^
+
+warning: field `maximum_constraint_error` is never read
+  --> /workspace/LaboratoireHumain/rust/crates/sim/../../../docs/evidence/coordination-numeric-correction-2026-10-12/frozen-solver-replay.rs:38:9
+   |
+36 | pub(crate) struct Solution {
+   |                   -------- field in this struct
+37 |     pub rates: Rates,
+38 |     pub maximum_constraint_error: f64,
+   |         ^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+   = note: `Solution` has a derived impl for the trait `Debug`, but this is intentionally ignored during dead code analysis
+
+warning: method `verify_rates` is never used
+   --> /workspace/LaboratoireHumain/rust/crates/sim/../../../docs/evidence/coordination-numeric-correction-2026-10-12/frozen-solver-replay.rs:106:19
+    |
+53  | impl Problem {
+    | ------------ method in this implementation
+...
+106 |     pub(crate) fn verify_rates(&self, rates: &Rates) -> Result<(), String> {
+    |                   ^^^^^^^^^^^^
+
+warning: `lh-sim` (lib test) generated 6 warnings
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.08s
+     Running unittests src/lib.rs (rust/target/debug/deps/lh_sim-27bd4ed8a0f5eca3)
+
+running 9 tests
+test recovery::planner::transition_worker::pure_tests::direct_world_bytes_preserve_u128_signed_zero_and_adjacent_values ... ok
+test recovery::planner::transition_worker::pure_tests::expired_gate_denies_before_any_admission ... ok
+test recovery::planner::transition_worker::pure_tests::interrupted_admission_is_unknown_and_stops_reuse ... ok
+test recovery::planner::transition_worker::pure_tests::local_deadline_keeps_interval_started_before_two_seconds ... ok
+test recovery::planner::transition_worker::pure_tests::completion_checkpoint_survives_later_serialization_panic ... ok
+test recovery::planner::transition_worker::pure_tests::gate_requires_exact_clock_and_complete_tick_reservation ... ok
+test recovery::planner::transition_worker::pure_tests::permit_replay_purpose_and_global_count_are_bounded ... ok
+test recovery::planner::transition_worker::pure_tests::refused_branch_discards_slots_without_refunding_tick_debit ... ok
+test recovery::planner::transition_worker::pure_tests::archived_initial_json_roundtrip_without_world_construction ... ok
+
+test result: ok. 9 passed; 0 failed; 0 ignored; 0 measured; 199 filtered out; finished in 0.29s
+

@@ -1,0 +1,51 @@
+{
+  "payload": {
+    "schema": "laboratoirehumain.coordination-prototype-budget.v1",
+    "id": "33c9dd5f-73f2-472a-a2eb-b866ae7c9f2b",
+    "limits": {
+      "preparationActiveSeconds": 144000,
+      "preparationCalendarSeconds": 432000,
+      "staticInspections": 20000,
+      "histories": 4,
+      "nativeHz": 240,
+      "historyNativeSteps": 960,
+      "totalNativeSteps": 300000,
+      "predictionAndVerificationSteps": 296160,
+      "verificationSteps": 21120,
+      "physicsWallSeconds": 7200,
+      "planningCallsPerBHistory": 40,
+      "planningSpacingNativeSteps": 24,
+      "longRolloutsPerCall": 4,
+      "longStepsPerRollout": 480,
+      "shortProbesPerCall": 93,
+      "shortStepsPerProbe": 4,
+      "processes": 1,
+      "threads": 1
+    },
+    "status": "preparing",
+    "createdUtc": "2026-10-13T11:08:02.472481+00:00",
+    "lastClock": {
+      "wall": 1791889682.4724815,
+      "monotonic": 15778.567587484,
+      "boot": "33973706-5b3c-4eba-980a-4f06ef049368"
+    },
+    "preparation": {
+      "startedUtc": "2026-10-12T20:14:00+00:00",
+      "deadlineUtc": "2026-10-17T20:14:00+00:00",
+      "deadlineMonotonic": 394136.09510599484,
+      "initialActiveSeconds": 28489,
+      "initialInspections": 9173
+    },
+    "reservations": [],
+    "events": [
+      {
+        "sequence": 0,
+        "action": "init-preparation",
+        "utc": "2026-10-13T11:08:02.472481+00:00"
+      }
+    ],
+    "worker": null,
+    "physics": null
+  },
+  "sha256": "b466c626bcfafab2ef447eaf54f2ae034ad31677fbfa4bd0445db1fef3895fbd"
+}

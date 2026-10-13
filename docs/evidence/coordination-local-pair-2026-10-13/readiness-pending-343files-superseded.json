@@ -1,0 +1,1419 @@
+{
+  "schema": 1,
+  "protocolMode": "local-pair",
+  "physicalIntegrations": 0,
+  "staticInspections": 0,
+  "nativeExecutionAuthorized": false,
+  "checkedFiles": [
+    {
+      "path": "/workspace/LaboratoireHumain/docs/evidence/coordination-local-pair-2026-10-13/budget-tests.log",
+      "sha256": "0d85f09ccfb451dcc76f38d0c820df969443741d6b2f0cd5a364f7632ff58060"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/docs/evidence/coordination-local-pair-2026-10-13/build-validation.json",
+      "sha256": "15243280bd626c6072d34a5c2ac1f4b89f231e33ff1e50cc90415993b94d31aa"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/docs/evidence/coordination-local-pair-2026-10-13/check-process-supervision-inert.py",
+      "sha256": "3f9009d8251cdfb7f0dfde9055d59fef53ab6d7a2c990b7cf12278bec0041279"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/docs/evidence/coordination-local-pair-2026-10-13/check_continuation_archive.py",
+      "sha256": "beb1a3c9cc789632a52a93d6494ff2b4332941d2c82f06b32691214ec53cdb5f"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/docs/evidence/coordination-local-pair-2026-10-13/continuation-archive-check.json",
+      "sha256": "c6ccddacb15641a53561b675e66524fb3b59535316195d8582f4292af3bfa3ba"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/docs/evidence/coordination-local-pair-2026-10-13/continuation-preflight.md",
+      "sha256": "9cc993d7e2561799e237ff9ed4835542a886ae435a0de5505dcd4f717a9868c4"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/docs/evidence/coordination-local-pair-2026-10-13/cumulative-budget-audit.md",
+      "sha256": "4b281d8514afec31c1a5dd63c1be61f3ca59f8b199bda74e4158905a48871987"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/docs/evidence/coordination-local-pair-2026-10-13/historical-supervisor-tests.log",
+      "sha256": "a93418fb95449a2b676445205ab3bac0b3253908c3ea5b3161f2d686bcabb6e4"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/docs/evidence/coordination-local-pair-2026-10-13/launch-contract.json",
+      "sha256": "21b729d763b5af87ccee521f0ce726a9896ae4a64ce63bd3a2de99658dad605f"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/docs/evidence/coordination-local-pair-2026-10-13/local-pair-criteria.json",
+      "sha256": "628319208d0803775a984329e3b8d4d1e276cddf45da9020e77187e64bd90d37"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/docs/evidence/coordination-local-pair-2026-10-13/manifest-wrapper-tests.log",
+      "sha256": "16a61ef29e6639bc5f29be38e1b6e44f76c0980a1d30113d77f45474b2bba96b"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/docs/evidence/coordination-local-pair-2026-10-13/preparation-reservation.json",
+      "sha256": "971e85ade9ba0eb322ad0151866eee6d43110f4b8152a946be65e477ddf7c0c8"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/docs/evidence/coordination-local-pair-2026-10-13/prepare_manifest.py",
+      "sha256": "e6dbebac53402a6501bad2eb1ee9e7d4bcc686c7df8e025a6bc32cdcee8bcf55"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/docs/evidence/coordination-local-pair-2026-10-13/prepare_manifest_test.py",
+      "sha256": "a3a2f20a816ec8c81a253518b3e98eacc42d4a8d7eb39aaf49e72ad20dff38cf"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/docs/evidence/coordination-local-pair-2026-10-13/process-supervision-inert-results.json",
+      "sha256": "be21e98187a8754ae09591d35e14d25da363ea29e9fd4dfed79366cc1e41be8e"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/docs/evidence/coordination-local-pair-2026-10-13/process-supervision-inert.c",
+      "sha256": "85e85f74696a6c8eab896603a491194fe941af532284239ea8100376a89baa8a"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/docs/evidence/coordination-local-pair-2026-10-13/process-supervision-review.md",
+      "sha256": "207fb2a397d85c958d87f2fc333d7b9b9c80889a184ffac60c97bdf9280cefd0"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/docs/evidence/coordination-local-pair-2026-10-13/process-supervision-tests.log",
+      "sha256": "a1de8e6faca59c9d690ccdf2ba7d5a56bad06bc824825fee2ec5ba506ac6aa10"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/docs/evidence/coordination-local-pair-2026-10-13/process-supervision-validation.json",
+      "sha256": "222aaf39a96343c4c551bb41f6cc31a8d2dc4fad94e55d7debde5d86e5c1c457"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/docs/evidence/coordination-local-pair-2026-10-13/rust-production-check.log",
+      "sha256": "9abfb09dbb14ea8231720dc6c3c951fb421d49ff882f49039c37ab0953850f10"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/docs/evidence/coordination-local-pair-2026-10-13/rust-pure-parity-tests.log",
+      "sha256": "8458a692dc22f7dee476fb4f4105c95d668d18f9d953429a230e55c22fa8f00a"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/docs/evidence/coordination-local-pair-2026-10-13/rust-pure-worker-tests.log",
+      "sha256": "fe22f0ffa14c93672d2c45a4bfab6d038c42d4e8b4bc488dd7f0d43d54876508"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/docs/evidence/coordination-local-pair-2026-10-13/rust-release-build.log",
+      "sha256": "55f8153cbb0beaf13d6ee1015ff6f34eda28a71c304e10c0ba3325ce8914c2a1"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/docs/evidence/coordination-local-pair-2026-10-13/support-contract-review.md",
+      "sha256": "96ac35bd0db8db8152811dc352271bbf69e17290b8c9306cdd5394270581f93a"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/docs/evidence/coordination-native-serialization-2026-10-13/archive-index.json",
+      "sha256": "5c54cc13a69968e370072bea8db607dfda03e95a6052de05cb7f6f312c88c294"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/docs/evidence/coordination-native-serialization-2026-10-13/native-run/native-result.json.gz",
+      "sha256": "fe8733db9c54ef9a19f46dd68e5064bcfce94966fa40f5496a467badc58d5558"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/docs/evidence/coordination-native-serialization-2026-10-13/native-run/run-result.json",
+      "sha256": "87c88f9d00e80d4d68c8218e3451c7fed243e674ffaf2baa1bec8ed78d8b6fed"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/docs/evidence/coordination-native-serialization-2026-10-13/prepare_local_pair_manifest.py",
+      "sha256": "af5feb6ccc2d943efd300978ab7ee33cf197370b585dbff8f9f1d2fb48a2eee8"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/docs/evidence/coordination-native-serialization-2026-10-13/prepare_local_pair_manifest_test.py",
+      "sha256": "646b433a28f574161a49a30f9194d0af714154d4df462857d81fe6a3508e3140"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/docs/evidence/coordination-prototype-2026-10-12/continuation-candidate-program.json",
+      "sha256": "f14de3871ef9aba18083b36d10eeb56c8587c66a73b1ab2ec54e01830e06e59d"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/docs/evidence/coordination-prototype-2026-10-12/continuation-native-audit-60deg.json",
+      "sha256": "9ba54012fae3e1f3e7e4cb925947f1bdee51754b29f176cae705045a3ba5d3d6"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/docs/evidence/coordination-prototype-2026-10-12/continuation-native-audit.json",
+      "sha256": "3920dff2c10363d1f40c7b0e0c960519ba03cbcf96e0a71bbb3104ee52059ee5"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/docs/evidence/coordination-prototype-2026-10-12/continuation-native-geometry-60deg.jsonl.gz",
+      "sha256": "a168f3e14ec3c8c4682211cbc4c587366f267af4a6744ea286b4bfbc54c70246"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/docs/evidence/coordination-prototype-2026-10-12/continuation-native-geometry.jsonl.gz",
+      "sha256": "8892cc692cb921306a3d338c6f5b421d263752cae0d7bcd91f0458dc77ae7520"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/docs/evidence/coordination-prototype-2026-10-12/continuation-route-audit.json",
+      "sha256": "3fa816514f49ed17ff7239effa642b4a05a5d5790a7858bddd82aae29db8b48a"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/docs/evidence/coordination-prototype-2026-10-12/continuation-tasks.json",
+      "sha256": "a96d03d736ca185a0457ae29c33846b69af28ecd5eb81609f60d281463756dd6"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/rust/Cargo.lock",
+      "sha256": "57f8ef29219379d35953076b6e468e5b641d08f40f1be4a24fcecdfce546ec94"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/rust/Cargo.toml",
+      "sha256": "505ba36834476c5ff12d9b08ad9634ccb8c1b91633406a7cf13c1fe02124ba51"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/rust/crates/acceptance/Cargo.toml",
+      "sha256": "2370cebcca6deb41c8893dc1d1b880ba86383add12ecf5b2450dcce87f4ee500"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/rust/crates/acceptance/src/arguments.rs",
+      "sha256": "3d53195afe032512f389a6a2b1361d1aa2264227a21287239c3cdbe7bbe71f4b"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/rust/crates/acceptance/src/main.rs",
+      "sha256": "b5d0bbe4cd4694b00cbf643f828ce13ca42dcf0baa4c15950f6cb96d1bd3f610"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/rust/crates/acceptance/tests/cli.rs",
+      "sha256": "b4bd49dbb83d09174f8061411ec2edb2f049e21e1c49d8ffe35a57ef0213d21f"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/rust/crates/browser/Cargo.toml",
+      "sha256": "e69dcc9c94d1b01512fd0c1a161df3b37c21c240733902b66c3a8c5456b970c0"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/rust/crates/browser/src/main.rs",
+      "sha256": "e1327229db724c9423b0383ab8253420524a41029a04e3092ce35ab5be25e794"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/rust/crates/contracts/Cargo.toml",
+      "sha256": "d9ba3fcb466b51141f866aa5802d4db2b34cd242372ee29e4cee593565b5cbdb"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/rust/crates/contracts/src/lib.rs",
+      "sha256": "0b35530cdd3261530051fd32a4cbb8bb5c4a4c38543a9d8dd636ffff8a620ae5"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/rust/crates/model/Cargo.toml",
+      "sha256": "3d3d73f0dc4b2f1670fd10909604073a49d010cb64ab8f93fbeb5905ebfbbb13"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/rust/crates/model/data/canonical-v1.json",
+      "sha256": "083c13b2cce2d6033a4fc05cba8da7e78bd89634fb306629f4b7a9cd4a177a65"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/rust/crates/model/data/protocol-provenance-v1.json",
+      "sha256": "9aa7e577f7888d0e18fe3f86fdc2ee7bef10f31ef59ac225e22bbbf9605e66af"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/rust/crates/model/data/protocol-v1.json",
+      "sha256": "d1eeb9932b9b9946ebc6e735b43fc3d4045722d8927a593528c77e139e97c390"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/rust/crates/model/data/provenance-v1.json",
+      "sha256": "c69f4c95deb2a80cc21b1f1cc916b7873364751b180afd8b70b6028f31f9e6c6"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/rust/crates/model/src/lib.rs",
+      "sha256": "211bcee0cf48dc7f3490bef2fa413eb2edff00aa0c2ea117616f5f7e77620f67"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/rust/crates/renderer/Cargo.toml",
+      "sha256": "c4a19b9d56df366277b399163a9923a73a8971d849a72f113fb8153074066d3b"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/rust/crates/renderer/src/gpu.rs",
+      "sha256": "ab92d203a4f0922fa2e8be6835aa7f13013dd556965ab4fd1de1d9607a0995a2"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/rust/crates/renderer/src/lib.rs",
+      "sha256": "a58fd32dfafd1355d837f14ecfa89f19d229a649031e4c13b6a981f8ac12c71e"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/rust/crates/sim/Cargo.toml",
+      "sha256": "807e790be2426b8705d020227cc67ec105191407032ff5787eca78b4be4cfa1c"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/rust/crates/sim/data/recovery-contract-v1.json",
+      "sha256": "57ffc6e4705759dac795e7c1b274edc9016a5e194a8fe4fa175a230c62f595ba"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/rust/crates/sim/data/recovery-profile-v24.json",
+      "sha256": "971661c88ae7258f157669d8e8a873161de40990274a9f2fd7d159f50006e00e"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/rust/crates/sim/data/recovery-v1.json",
+      "sha256": "a11f9877f274c574c3e1a9ff6de7b70d4f4589f2fea34146866eba92b97f7216"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/rust/crates/sim/src/actuators.rs",
+      "sha256": "3291389ac25ac563cc635a629b404e93c0a503b9df66ec20153138e36d6d66f9"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/rust/crates/sim/src/articulation.rs",
+      "sha256": "b895c1a401d2c3630ddda55d580eef15fc728bebcb0281463a4b4fb25e8e247f"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/rust/crates/sim/src/calibration.rs",
+      "sha256": "546ce3dbc6be704ee29e43c4e17e175ef81bd83bb42eb4a175d73379bcd9b20c"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/rust/crates/sim/src/calibration/tangent.rs",
+      "sha256": "2c06b14065fc2a5ce9d9763b54938e86ef096eb9ad7a1880b50a8fcdaf4ee503"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/rust/crates/sim/src/cycles.rs",
+      "sha256": "151d1aca09e6fc0862cab042dfcf6ca4ea978ca4e54cb548e5d8c3aafe69b3af"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/rust/crates/sim/src/environment.rs",
+      "sha256": "6976912d2a988bca3b61960bc7037a927673bf8780edf9fb22ff1e9e6bdbf143"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/rust/crates/sim/src/grab.rs",
+      "sha256": "792c196d595ba1f10944cdb05887c9e596aaebfe3306b45b49de3446c0e55b1e"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/rust/crates/sim/src/legacy.rs",
+      "sha256": "edf52ad5128c45f074a39cf97031a35eadac6a0c16beff0bc3e688c4ea371a10"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/rust/crates/sim/src/lib.rs",
+      "sha256": "0ed52eb71a9df3e8803222800f713619d4f3ea2f0e6229147ac30f2f25f08ea7"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/rust/crates/sim/src/measurement.rs",
+      "sha256": "ccda934b97262270d3beedcc969224e3d2d6e0766f68fbe2f0ed68e26c370e02"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/rust/crates/sim/src/motion.rs",
+      "sha256": "8487fb46b32a708be85e18eb5d213450beb1602965da64394959fb7a7221157e"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/rust/crates/sim/src/passive.rs",
+      "sha256": "d3137395214fb6f20c1ddfe1ae0e8d6fbba049ab77fea537368cdfa1ab79544f"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/rust/crates/sim/src/profiling.rs",
+      "sha256": "13846c39e2e6fc838720134bf4289469c1dc4021ff1ee7fa2878be4b98968ee0"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/rust/crates/sim/src/quiet.rs",
+      "sha256": "98a2c4f0862cb6dd28d1caddb8ed91a7a10ce82fa366990f3cb6141d1035ae54"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/rust/crates/sim/src/reaching.rs",
+      "sha256": "f7965eaca0cc26fb58c16430719e890d33aa658ac3166a7039a511099361c174"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/rust/crates/sim/src/recovery.rs",
+      "sha256": "b1d6c696b753306cd5257039f6dc52ce141da1e4cf26d598b635ad863a3b8053"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/rust/crates/sim/src/recovery/native_predictor.rs",
+      "sha256": "f1ec58f22b98145a71d1232317de5760b833438d97ca5a409bccfcc037569488"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/rust/crates/sim/src/recovery/planner/contact_observation.rs",
+      "sha256": "94366ed69861241b360756a440cda1ef7697594cd32b852e1b0a39bf2a9335c2"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/rust/crates/sim/src/recovery/planner/continuation.rs",
+      "sha256": "74020cce0959251e6ac166acbc61b91a97f92218ca7cc7b4117f0e6ec5d76ff6"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/rust/crates/sim/src/recovery/planner/coordinated_runtime.rs",
+      "sha256": "bdd872f4cf592309d40825148aab4776ec3038104bbe591bf1b3a54471dd7298"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/rust/crates/sim/src/recovery/planner/geometric_tasks.rs",
+      "sha256": "1c018f4d20ff09921e640aa2c45b2ec04dfc860452a18e816a05e2b9ebf2ee68"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/rust/crates/sim/src/recovery/planner/mod.rs",
+      "sha256": "b4e34fe13e5baecd20e2b3750bf83ca9ba938933782bc6d8df41c27bb8ddccdf"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/rust/crates/sim/src/recovery/planner/native_observation.rs",
+      "sha256": "6b8008b50fe9614af1406eb361a9b4e377ecb03c6cf84b3ccddef0619c3edd74"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/rust/crates/sim/src/recovery/planner/native_plan_preview.rs",
+      "sha256": "4763af26a86eb131ec83d1ff5122964b1636cd874d5ad6c1803718ebab0ff64b"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/rust/crates/sim/src/recovery/planner/numeric_parity_worker.rs",
+      "sha256": "ac89b99890d1842205bb1071967697a221c7fa2b929fd253d54e08035ccd04e0"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/rust/crates/sim/src/recovery/planner/support_state.rs",
+      "sha256": "19607d6e8d19ca66579e1c9a830ee8e711bac3e7ce17d907f1e071a7b89b872f"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/rust/crates/sim/src/recovery/planner/transition_worker.rs",
+      "sha256": "eeae2179d46dd42b9ef30d70806fce6a01ab3e316199779e2ee88cbb3decb4d1"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/rust/crates/sim/src/recovery/planner/whole_body_controller.rs",
+      "sha256": "286498411e8fd3dde6e8de3f094c03c8289ab3b2608e7cc9c6610231820cebe3"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/rust/crates/sim/src/recovery/planner/whole_body_tasks.rs",
+      "sha256": "83a733ffbf9f7a15cb802f4202586cde2858e5686ff6487cc3eaacd9e975a049"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/rust/crates/sim/src/recovery/reference_mapping.rs",
+      "sha256": "b9bfa5022c7abc7de15ff016955975d451fe3293d99869e0478208e1e5cc2512"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/rust/crates/sim/src/recovery/support_probe.rs",
+      "sha256": "da64ec868aa9c3130fb195f95792b26872b413dd587f6b46963aa1390a222f7e"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/rust/crates/sim/src/recovery/support_probe/bounded_arm_clearance.rs",
+      "sha256": "32db8922e6b62c0841a343dfe215fe96493e76b03a178c9d887a0d01d5872e35"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/rust/crates/sim/src/recovery/support_probe/full_trajectory.rs",
+      "sha256": "0cabdb3a4a9eb317b2c32e8d4f72b57172768f7d2fd24bdb56d252b4fae5a817"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/rust/crates/sim/src/recovery/support_probe/getup_ab.rs",
+      "sha256": "fb023c0afe36e6da69ab7125df4c4bf0fc9fc11a9455586a1c2ff66cab2c875d"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/rust/crates/sim/src/recovery/support_probe/hand_support_experiment.rs",
+      "sha256": "b24acedb41bb75bd5bf54d374886b46a1c95803455ccd7c3d8800fcde6055a74"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/rust/crates/sim/src/recovery/support_probe/land_arm_tracking.rs",
+      "sha256": "496a77e4d8f0b604953d6b692dc83ec2937f59f0dcbf9dea175db014fbc6d2f6"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/rust/crates/sim/src/recovery/support_probe/left_hand_command_audit.rs",
+      "sha256": "1ce8dfde29e4dc36751f06d42500028b02268f405226a8805e0be804835347b2"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/rust/crates/sim/src/recovery/support_probe/offline_trajectory.rs",
+      "sha256": "5ddfae5ff2f67f4c7423df77b264ee1b93ecd17ea898e249012c693a2117ef3e"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/rust/crates/sim/src/recovery/support_probe/prone_chain_execution.rs",
+      "sha256": "9b028e8663da3d22c8c7596776b50bcae7ccdbeff8d84d52d7045d1961750646"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/rust/crates/sim/src/recovery/support_probe/prone_recovery_experiment.rs",
+      "sha256": "5c277ff8c75ceb40afafafc03963ce80204193e0e169d8534705c182d85411ba"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/rust/crates/sim/src/recovery/support_probe/whole_history.rs",
+      "sha256": "55772764262b40d6b0bcaed90081285fbf3aa98a36a41c687b97144ceb7c654c"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/rust/crates/sim/src/recovery/trajectory_geometry.rs",
+      "sha256": "5a1421578e77f8c92c3938ca99ab6faa7e0208b922c8fa24d1b852dda12f6382"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/rust/crates/sim/src/recovery/trajectory_program.rs",
+      "sha256": "b7307684d66a1f29553827f9b99d44db3bb0cddf28df8fbb56d11da369674ccb"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/rust/crates/sim/src/recovery_contract.rs",
+      "sha256": "cbc443794eee87244758e9be13a5c6ae2d241c3cf64eeb2e125a1295402356fb"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/rust/crates/sim/src/runtime.rs",
+      "sha256": "6d9abb59c4554e0e384aee2536254bc760b1fdd4255659dc70e913f92f83f62b"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/rust/crates/sim/src/scenarios.rs",
+      "sha256": "5a90efab469f4dae7dcf7aa7e69219d0dbd4b16d7b66ab3b8018d3b5b4b42810"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/rust/crates/sim/src/stepping.rs",
+      "sha256": "60a8deb2cfb567b86d62a8976931f28ba19a221e2e15a2f15181bf005f8687d2"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/rust/crates/sim/src/striker.rs",
+      "sha256": "187c9de81239fe8a6026449838dd45f93fbbd9fb9961cd9c0b12f1fb80338985"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/rust/crates/worker/Cargo.toml",
+      "sha256": "97eb11f47a9ede259d037f98893978262f1f0599a92b226469d3badaa571ebb0"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/rust/crates/worker/src/lib.rs",
+      "sha256": "77a52db2db64f75f011c53c648c1d646451b67bbada1ebce8ca116f8e1114ced"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/rust/rust-toolchain.toml",
+      "sha256": "56c85bcfe85649e54e2bfd35ee168407f81ef164481796f3d690bdc9f2a4ac85"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/rust/target/release/deps/coordination_local_pair_worker-bf2c98f759d9dc34",
+      "sha256": "24a428a182526de8b221c553c3b412d4795b9be94424eccbc986053d260b0c40"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/rust/vendor/README.md",
+      "sha256": "2e26dff0697363d95a1e38e394dab5bd903dddbe307e14841eef46d980800e9d"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/rust/vendor/contact-provenance.json",
+      "sha256": "158ece924019b38a641ad4fb88a5212cb71073691e69bb015eaa23a08e0bfa29"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/rust/vendor/contact-reporting.patch",
+      "sha256": "00bdc23db6b1c3205c78400996f1316ce6d5937c361922d437709cb0b467affa"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/rust/vendor/rapier3d/.cargo_vcs_info.json",
+      "sha256": "b0c0f6be6797d49326009acaa366ad9b59adf1c61ec7309b42bbd80106d80bc4"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/rust/vendor/rapier3d/Cargo.lock",
+      "sha256": "f9e7c6d3a82e14e897c8a9efdd6d3bb505e310103df074370b1d6c9f7f67838f"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/rust/vendor/rapier3d/Cargo.toml",
+      "sha256": "bab5724cb002e71e96f7fb7bad7c468e5ae0a158391fae0524a96a3c409be4ff"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/rust/vendor/rapier3d/Cargo.toml.orig",
+      "sha256": "83a2285bf00b1f85235d2e3d92fd9c5d4a4ca13023dd69b6edad5059d6f8b1d7"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/rust/vendor/rapier3d/README.md",
+      "sha256": "aef6dfb71341e870cf29f034de69ff7e1984423eb764dcae4f5aa3943996625e"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/rust/vendor/rapier3d/src/control/character_controller.rs",
+      "sha256": "92232e4b6d0ff9e383156c95052ff798b6dd19367eea7e0150eab90720254e3f"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/rust/vendor/rapier3d/src/control/mod.rs",
+      "sha256": "38cc4db8c8538fb6bb34021e582e42fb02acc815d5ddf2af6950b5f7ad5b3ba3"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/rust/vendor/rapier3d/src/control/pid_controller.rs",
+      "sha256": "76cebb3e1a443a2c102d516ce02ccf7e6afc68efa44609c831919a5cd348eb19"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/rust/vendor/rapier3d/src/control/ray_cast_vehicle_controller.rs",
+      "sha256": "d36f2abcfed9055c1ad4bdd95b737dfa09a4a894c4c386804280cfae3f0902d3"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/rust/vendor/rapier3d/src/counters/ccd_counters.rs",
+      "sha256": "232803aa4418465eb10f6ea55adf6d7cba62f37e8b311ce1723004d25d7df0dc"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/rust/vendor/rapier3d/src/counters/collision_detection_counters.rs",
+      "sha256": "83f3a3e0f4e0d5caf091e116957ae9827630ecfbf37a9621e3ddbe75db09eae6"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/rust/vendor/rapier3d/src/counters/mod.rs",
+      "sha256": "03a5fb9fec1fd223c6f0d85e2c20f71337c8d7213281227fc8aad6dfa9100379"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/rust/vendor/rapier3d/src/counters/solver_counters.rs",
+      "sha256": "7f88328880ea8a1b97a31a63aa48a229300d4c723c3343931d64cea9262db468"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/rust/vendor/rapier3d/src/counters/stages_counters.rs",
+      "sha256": "0a0b7ec07a54c0ca0aa798376d288fdca5fde91f9ba29c2b27010c419f8bf0d6"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/rust/vendor/rapier3d/src/counters/timer.rs",
+      "sha256": "51331fcd3d6721c89c4717968bcdaf7ce04d9df690e904e0f4e2b434adfd73da"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/rust/vendor/rapier3d/src/data/arena.rs",
+      "sha256": "895b4a352c977df4ef8e7b064780e679b015a14a2d650ebb9fc88caadfe31915"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/rust/vendor/rapier3d/src/data/coarena.rs",
+      "sha256": "ceef7e1a827be657c520c023a5d19259fe277ab3ac4885151c13aacd69642d61"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/rust/vendor/rapier3d/src/data/graph.rs",
+      "sha256": "2a08bdffaac1dcf9ef516b6c8cf6a34ab282b2fd29d7774d88790a1b0d1d41fb"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/rust/vendor/rapier3d/src/data/mod.rs",
+      "sha256": "7e47814f3a04d19a3890281f52eb6ea11a13a9e6d7b2d1051a4339e7e6526f05"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/rust/vendor/rapier3d/src/data/modified_objects.rs",
+      "sha256": "eed707ef3b77739b02f637a30c69ef9066acaff905bbdc242b563fd8a5bd9758"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/rust/vendor/rapier3d/src/data/pubsub.rs",
+      "sha256": "89c5a12b55b69242969d86430ab37ee8594447b5a7a97df2740dc79882ac626d"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/rust/vendor/rapier3d/src/data/union_find.rs",
+      "sha256": "18861b7ea3e926d808235ac36f61e95d6dc6a36793812ac06dea2bdbcd500e18"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/rust/vendor/rapier3d/src/dynamics/ccd/ccd_solver.rs",
+      "sha256": "181fbbbdac622c5f0cb1efee246ad916db06d28445b03bb9884a674cda838ea4"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/rust/vendor/rapier3d/src/dynamics/ccd/mod.rs",
+      "sha256": "703e09bcf4e3fa5cdfe9d1c7a10dfee956af4b36c3af5e6b2d67dd58e755b3a1"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/rust/vendor/rapier3d/src/dynamics/ccd/sweeps.rs",
+      "sha256": "1523b56e9c9cd7fe95918be84e721f12977abfbc6f8f3d4ccb1ce154263c2ab9"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/rust/vendor/rapier3d/src/dynamics/coefficient_combine_rule.rs",
+      "sha256": "758dbf91ef1538cd925f33b755c3ffe66859be43027c28409050c7532dc09416"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/rust/vendor/rapier3d/src/dynamics/integration_parameters.rs",
+      "sha256": "7c4fb56ad1e7e87dfdb240823d2d5695aa51c7953ada9e5881ffd4df88eec282"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/rust/vendor/rapier3d/src/dynamics/island_manager/global_split.rs",
+      "sha256": "b29f78e61f0dcfb7d0ae679f228275e4ceb063066657b02aed81f744f6e1b056"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/rust/vendor/rapier3d/src/dynamics/island_manager/island.rs",
+      "sha256": "67fa3567bc0c6821a14278921b5ca97672aa3ee59c2196759a63d73200b080f7"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/rust/vendor/rapier3d/src/dynamics/island_manager/local_split.rs",
+      "sha256": "d67b25a7c1d39b4b3017a119ccf652416573246f08d7a0840f1601fd86473e11"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/rust/vendor/rapier3d/src/dynamics/island_manager/manager.rs",
+      "sha256": "4bd7c8b08ef5892a9b32c78715ddc9955c282383b4d011308e52ff308fce1d1b"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/rust/vendor/rapier3d/src/dynamics/island_manager/mod.rs",
+      "sha256": "7ea26d30c184af199a2b777448fc0ffcad6defb748a7206c4ace8e98d3565c72"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/rust/vendor/rapier3d/src/dynamics/island_manager/persistent.rs",
+      "sha256": "d532f9a1c2e050dd5494fa7b8e7acef53cadc9265f808f8e2de28fe0b8a85670"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/rust/vendor/rapier3d/src/dynamics/island_manager/sleep.rs",
+      "sha256": "de773aafb5ce538a2f08129821df9e1dccc975a846979c38ce42c9393a556f5d"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/rust/vendor/rapier3d/src/dynamics/island_manager/substep_groups.rs",
+      "sha256": "4a683e36e0e9f8645b41086d94e1b161626849de8c90a317ff6b873b8adb923a"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/rust/vendor/rapier3d/src/dynamics/joint/fixed_joint.rs",
+      "sha256": "fc3a1e4ccad6a1a53f1624546d0c7116d62a36a7b7f55f8a1a8d6ef5bb4f11ac"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/rust/vendor/rapier3d/src/dynamics/joint/generic_joint.rs",
+      "sha256": "3eed67934e036da8c2cd4a6236924f437035c4a57d81e60f45704dedcd179d2d"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/rust/vendor/rapier3d/src/dynamics/joint/impulse_joint/impulse_joint.rs",
+      "sha256": "d822b7c482daaa2e6e48061c89423929c75c60d6ccfb251687165062fa19656a"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/rust/vendor/rapier3d/src/dynamics/joint/impulse_joint/impulse_joint_handle.rs",
+      "sha256": "3d696600556c5482f6db5d9b6307805e8800744c69f1dc6f4a85f8cd015ea5d8"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/rust/vendor/rapier3d/src/dynamics/joint/impulse_joint/impulse_joint_set.rs",
+      "sha256": "2aec79b52895cefbb3d640194a40c577833d98ac26722d5905b43bb9c544d5c5"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/rust/vendor/rapier3d/src/dynamics/joint/impulse_joint/mod.rs",
+      "sha256": "e758881ffcade833a510d7ff1281537f36c45316cfeb69e0d1edea162edb924b"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/rust/vendor/rapier3d/src/dynamics/joint/mod.rs",
+      "sha256": "23dbf7c6994f9dd1a9a4cf9a0745d44f4866a6c6f1ad4f079d048f59a7586de9"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/rust/vendor/rapier3d/src/dynamics/joint/motor_model.rs",
+      "sha256": "474478e4cdf7b91d78037ae404bdb973e225f324d512d635fed01a03e23f8648"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/rust/vendor/rapier3d/src/dynamics/joint/multibody_joint/mod.rs",
+      "sha256": "d493d4a96e1c331948ba504b466686c3c3078b98de8ffe1e09e32f74b4cd303f"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/rust/vendor/rapier3d/src/dynamics/joint/multibody_joint/multibody.rs",
+      "sha256": "7b1c4309fbc9533e4f8b676180c7ad8f3e6c5ada92308d6b52a97e6c0ba30337"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/rust/vendor/rapier3d/src/dynamics/joint/multibody_joint/multibody_ik.rs",
+      "sha256": "b68c7d79c22f0118c5424896604a3c87598a245556e6dc441f221a9327eda933"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/rust/vendor/rapier3d/src/dynamics/joint/multibody_joint/multibody_joint.rs",
+      "sha256": "34d66c2f7a9c4f31b17f6d0657b812c2ce1504d8acb59cb4270131211f8a5256"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/rust/vendor/rapier3d/src/dynamics/joint/multibody_joint/multibody_joint_handle.rs",
+      "sha256": "ed8afd20402922f3503664d6e0038b10204227ebb168ada7d484d9bfcbe08b52"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/rust/vendor/rapier3d/src/dynamics/joint/multibody_joint/multibody_joint_set.rs",
+      "sha256": "36bf2379c36ddf43a9df1b2ef88dd2fa8aa79a4de10facbb69594fca5d798948"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/rust/vendor/rapier3d/src/dynamics/joint/multibody_joint/multibody_link.rs",
+      "sha256": "ee9769a678db38f76dffc68a914b8a7c379d3a320ebe39a123026723ec208d42"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/rust/vendor/rapier3d/src/dynamics/joint/multibody_joint/multibody_regression_tests.rs",
+      "sha256": "82eff7432a1910e9bed16404a292d94da990db76e9dc9f7e6ce3e46fb8449aad"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/rust/vendor/rapier3d/src/dynamics/joint/multibody_joint/multibody_workspace.rs",
+      "sha256": "d3529b441ad473a01436b4a9d5b7f14c8bd8a60c9bed7ebf3d83999abb99987c"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/rust/vendor/rapier3d/src/dynamics/joint/multibody_joint/unit_multibody_joint.rs",
+      "sha256": "8a19d4e62f0955688fcca7c4506ef8e368098509d4a8de7818be22717a646516"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/rust/vendor/rapier3d/src/dynamics/joint/pin_slot_joint.rs",
+      "sha256": "f0c8fecfe25685476c4d235449d10ea2e88bb89c261798f82f8e21d8a30c8b06"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/rust/vendor/rapier3d/src/dynamics/joint/prismatic_joint.rs",
+      "sha256": "6305a02bd367f127c011aec9ca08ccaec4d95d8ff43227521ca0561f1c218eb7"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/rust/vendor/rapier3d/src/dynamics/joint/revolute_joint.rs",
+      "sha256": "16aedd41674ab90798c09636e3ccc5838b957a0ef1845d180d43ea305b395d08"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/rust/vendor/rapier3d/src/dynamics/joint/rope_joint.rs",
+      "sha256": "43e52e7f13e2a2e2500beac4befaf7c67b8d9f94a7cdf46f75c86a0d80d29e78"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/rust/vendor/rapier3d/src/dynamics/joint/spherical_joint.rs",
+      "sha256": "19c06c7da435d9d4ef83f880df97cb26ef166a4e2231a5aaa8cfc5c79e92d279"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/rust/vendor/rapier3d/src/dynamics/joint/spring_joint.rs",
+      "sha256": "bed8a7d8318fe8fa7841978e711cc02cb56545653d6f906b7abf7f325f3f6412"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/rust/vendor/rapier3d/src/dynamics/mod.rs",
+      "sha256": "cb1a5080e0c1d4de22ed9b79cc39988e92219f0cb447ce7f6439df68819f99ca"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/rust/vendor/rapier3d/src/dynamics/rigid_body.rs",
+      "sha256": "8bd9dff9fc811c354f1b10c397c347ffc063fc7294552c0dde3d7c25f59cb2b0"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/rust/vendor/rapier3d/src/dynamics/rigid_body_components.rs",
+      "sha256": "08a85779b3634c7bea93e3c80178c2c1747dd67b26a929dbb17f2e65c8e1a7ec"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/rust/vendor/rapier3d/src/dynamics/rigid_body_handle.rs",
+      "sha256": "07cfd5520ae1d2a5e27b3a54312de18bce822692da191c401bb3232b381798be"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/rust/vendor/rapier3d/src/dynamics/rigid_body_set.rs",
+      "sha256": "b7a553d3357d622bb2b42e1625978fff35de9aca678dae7721db8a6a568e61f9"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/rust/vendor/rapier3d/src/dynamics/solver/categorization.rs",
+      "sha256": "a5e0ce4ce0ff7007196bec51abfa44a415331c8cec9d275ce76b4fa967394898"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/rust/vendor/rapier3d/src/dynamics/solver/contact_constraint/contact_constraint_element.rs",
+      "sha256": "72974cbf17940db9acdf2d5c816af46e83f5a82ed8fa6dda93afb8fcafb5a941"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/rust/vendor/rapier3d/src/dynamics/solver/contact_constraint/contact_constraints_set.rs",
+      "sha256": "8946c7ac90c7ef1ddada45015992839ae9fd01e611572774e3940e3ceee63cea"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/rust/vendor/rapier3d/src/dynamics/solver/contact_constraint/contact_with_coulomb_friction.rs",
+      "sha256": "b8ccbc7d8aea58a4c73ed94a6de9d86e575eb7c39b8475c9e59b8dabcee7eca9"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/rust/vendor/rapier3d/src/dynamics/solver/contact_constraint/contact_with_twist_friction.rs",
+      "sha256": "0c8b4d9d106c4197ba24ce6d69a42ca01c0fef72a4336c41c1ed660014525e84"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/rust/vendor/rapier3d/src/dynamics/solver/contact_constraint/generic_contact_constraint.rs",
+      "sha256": "a849829eda28926feeb24cb41f0a23826086f0edb8779695591c542ba69c302c"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/rust/vendor/rapier3d/src/dynamics/solver/contact_constraint/generic_contact_constraint_element.rs",
+      "sha256": "093b2869091465e34c74b73944a395a47bdbf95e765ff6e39c1eb2b4a98882d5"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/rust/vendor/rapier3d/src/dynamics/solver/contact_constraint/mod.rs",
+      "sha256": "4ed00d472278920000156aa7d99fe9fcc6fddabc8db3a3eae6e3c0393c007e52"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/rust/vendor/rapier3d/src/dynamics/solver/interaction_groups.rs",
+      "sha256": "d9e114e3e88d8a79f417ff392a0f285b754c4436d2005217e000d70c12c5ccfb"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/rust/vendor/rapier3d/src/dynamics/solver/joint_constraint/any_joint_constraint.rs",
+      "sha256": "d27a22543487c1496cf9c999f4dfb2e23bf089b3c5840e553265115777b1e9ce"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/rust/vendor/rapier3d/src/dynamics/solver/joint_constraint/generic_joint_constraint.rs",
+      "sha256": "8e2f361a3dad326d46aaf460ff5d5fcb0912becfef1dd9919dd3b96adaf83352"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/rust/vendor/rapier3d/src/dynamics/solver/joint_constraint/generic_joint_constraint_builder.rs",
+      "sha256": "3f7a8b566ea40443e84043b0ce265f10b9a8b4ef9cb422f9c2951c0e4f3a1965"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/rust/vendor/rapier3d/src/dynamics/solver/joint_constraint/joint_constraint_builder.rs",
+      "sha256": "c77b1c57fe107b541afb95b2e42ab70cee1c74e9e87e8debe733fbbcd309b02c"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/rust/vendor/rapier3d/src/dynamics/solver/joint_constraint/joint_constraint_helper.rs",
+      "sha256": "5f8306790d366e6da0d88b45b87d2d945a828c7e65c6b845ea08cef52a4a1f6b"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/rust/vendor/rapier3d/src/dynamics/solver/joint_constraint/joint_constraints_set.rs",
+      "sha256": "80d87709a16984f0a382da71e2fdd64015f37225df564f0617de0d1210a285b6"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/rust/vendor/rapier3d/src/dynamics/solver/joint_constraint/joint_velocity_constraint.rs",
+      "sha256": "6e512db8d507f8ab31be39aacc6c520db53f0f0d028c32584f46f6b83992ba39"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/rust/vendor/rapier3d/src/dynamics/solver/joint_constraint/mod.rs",
+      "sha256": "d4305c7831fc4d1d62ce29fac417ebaa389f4ff45e0416662df9c187e6993319"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/rust/vendor/rapier3d/src/dynamics/solver/joint_constraint/motor_joint_group.rs",
+      "sha256": "6269c5e840fe599ff677c8ab7f13fb87a9a580444a670c4f250ed783a5935236"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/rust/vendor/rapier3d/src/dynamics/solver/manifold_store.rs",
+      "sha256": "2613bc98128c83f5aaf366c49c3f2a3bc713c0f6d21e9932df50ca47c72937cf"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/rust/vendor/rapier3d/src/dynamics/solver/mod.rs",
+      "sha256": "4758374ade701e91b48b35e88ba8425e23dfcb0e5da6ac23bce6ddbda158719e"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/rust/vendor/rapier3d/src/dynamics/solver/solver_body.rs",
+      "sha256": "6a85231c0d93024e9cd3dd63ec2866a1f0a45965ca0ee072ff059da7094cf177"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/rust/vendor/rapier3d/src/dynamics/solver/solver_contact_graph.rs",
+      "sha256": "11f0849330fdfe0c83fdc137fb515d6f21688a7ba4d81de18b755158fc8e188b"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/rust/vendor/rapier3d/src/dynamics/solver/staged_island_solver/helpers.rs",
+      "sha256": "7db47533b9688c3a4bd75fe9de908420988e1e60a960babb9ed957d120752926"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/rust/vendor/rapier3d/src/dynamics/solver/staged_island_solver/init.rs",
+      "sha256": "4c4f3b7d95145b6cd7eede151e8c79570937e311c647cab19a65ac59b757e11a"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/rust/vendor/rapier3d/src/dynamics/solver/staged_island_solver/joints.rs",
+      "sha256": "d1e6853dfd159c581f9c46175c422b7b67458c96611302a93bdd42dee611c162"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/rust/vendor/rapier3d/src/dynamics/solver/staged_island_solver/mod.rs",
+      "sha256": "0aa6f42e94b24a661c6a50a1bb9947c517d1655a10555e3e2593125b807e1048"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/rust/vendor/rapier3d/src/dynamics/solver/staged_island_solver/solve.rs",
+      "sha256": "a06c1e64cca32204738a7aa17684d126e6a4de02d8d1f20a22cac2ced21d89b8"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/rust/vendor/rapier3d/src/dynamics/solver/staged_island_solver/sync.rs",
+      "sha256": "c8c2b7551e11051f8cdc04dad0ab810695403c9ff99259e8158b2329780fe7cf"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/rust/vendor/rapier3d/src/dynamics/solver/staged_island_solver/worker.rs",
+      "sha256": "a70edd5c4e71919f9801cbb529d598a74322f362267b7feecea280745972b284"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/rust/vendor/rapier3d/src/dynamics/solver/velocity_solver.rs",
+      "sha256": "d95803cafe7f6a9ea063f0c5918e952eebeab2c7fdc31d5f65716d0c5ca13bb4"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/rust/vendor/rapier3d/src/geometry/broad_phase_bvh/mod.rs",
+      "sha256": "f59b6ab6eae8df58fa2f7fbee59ae7b6283153729fbba2ac2872b56808a8b24c"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/rust/vendor/rapier3d/src/geometry/broad_phase_bvh/update.rs",
+      "sha256": "cde18b117927a562b43ada926811b8d699fa2c34539a33cbbcd60e4e641fd3dc"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/rust/vendor/rapier3d/src/geometry/broad_phase_pair_event.rs",
+      "sha256": "108f8d1fc653f8e07591dd772761abf68a652dcc2f6cd6ba0d722c4ac4ce693b"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/rust/vendor/rapier3d/src/geometry/collider.rs",
+      "sha256": "7118e443bce797882f698c138f220be2f76b8392f7b0dec7a57ce4f74bb982a2"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/rust/vendor/rapier3d/src/geometry/collider_components.rs",
+      "sha256": "fd75f7dafbe90659ec980d5526010ad813dd469e55bd26c0ab663e4eb6e3c47d"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/rust/vendor/rapier3d/src/geometry/collider_handle.rs",
+      "sha256": "be7b623f4e75227ad9f1e209bd53e849dd5cd241095345001c4a0980f76874ac"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/rust/vendor/rapier3d/src/geometry/collider_set.rs",
+      "sha256": "1b35fb513e4455128e8293306198d1618390bb0a5498a1342f7baf2375c9a4c5"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/rust/vendor/rapier3d/src/geometry/contact_clustering.rs",
+      "sha256": "416b593a67581ac2b24d090bd49311cfdfff1aa552fb8a5e28c17eaf3090636a"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/rust/vendor/rapier3d/src/geometry/contact_pair.rs",
+      "sha256": "3acab3ab974ac68f52dc9cfe70f4b54315ee0f5ecd6d85ac431d16544f13e06e"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/rust/vendor/rapier3d/src/geometry/interaction_graph.rs",
+      "sha256": "072aacd0e3aef9fa10098e31f32ad3b29be7133c175ee780c2a8cdf3aa35fc8b"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/rust/vendor/rapier3d/src/geometry/interaction_groups.rs",
+      "sha256": "107245a01190a9eee3f6c4b4e288d94ce809e237dbcdc8cda368ef551d189804"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/rust/vendor/rapier3d/src/geometry/manifold_reduction.rs",
+      "sha256": "896b5641a72a5ca0554859e37a8993c7262f8f877186e4ae6bdc700651a5e0ba"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/rust/vendor/rapier3d/src/geometry/mesh_converter.rs",
+      "sha256": "7c0100a78ffe3aea0304f5c45ed30d581ccb35cf38bc539fc405dd8eccab1cb1"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/rust/vendor/rapier3d/src/geometry/mod.rs",
+      "sha256": "c0a001583794ab8c3b68d731777146ef7f697725506701882279bab3858766ac"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/rust/vendor/rapier3d/src/geometry/narrow_phase/contacts.rs",
+      "sha256": "7443d2466d97e74dfb4788c2cd034c3b07cbdaf94066a816a56a7a48dadaf9d6"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/rust/vendor/rapier3d/src/geometry/narrow_phase/intersections.rs",
+      "sha256": "03a361126df13ba0a42dbab94b94c420286fd3f3e581f6110e59e63d8473d029"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/rust/vendor/rapier3d/src/geometry/narrow_phase/mod.rs",
+      "sha256": "6f0fab3fd7c9dd5b96c283553e8acc2fdcdd09b8a399b7c7dca2b4e7c421bad6"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/rust/vendor/rapier3d/src/geometry/narrow_phase/pair_management.rs",
+      "sha256": "b85af771d06169e3e846452ad59b1cd8aaed227dd21b0b28e65ee7c08149e55b"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/rust/vendor/rapier3d/src/geometry/narrow_phase/pair_update.rs",
+      "sha256": "4d92ea490e509cfe850801d2799b6e06b0f24fcde51441f42ec148d6507d3de1"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/rust/vendor/rapier3d/src/geometry/narrow_phase/queries.rs",
+      "sha256": "1d94f18548fa47e7ff25ba2e96d4a0bb398cd89890b21d2ee46334c4ac11dde9"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/rust/vendor/rapier3d/src/geometry/narrow_phase/solver_graph.rs",
+      "sha256": "fa3f2ec3ec644d2803a12763bbbefad4750b95784e8f1a7c46ec47c22f749f72"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/rust/vendor/rapier3d/src/geometry/narrow_phase/test.rs",
+      "sha256": "119b735c70fa18229a9203f9835d2717ccb5f2e7c456731115f998cc11c0da30"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/rust/vendor/rapier3d/src/lib.rs",
+      "sha256": "d038e95444f8ceca2c6722b744214db520764296f02ff217ff6ae409d8fbebdf"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/rust/vendor/rapier3d/src/pipeline/collision_pipeline.rs",
+      "sha256": "d24f52b066a03712ef779eadfba6e02582ff57ac780ba6d7bcec88e616157264"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/rust/vendor/rapier3d/src/pipeline/debug_render_pipeline/debug_render_backend.rs",
+      "sha256": "a28a96f511e79be93b0126c581b7289f08b8c5b75cd5d88eda81bfd0c56e8deb"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/rust/vendor/rapier3d/src/pipeline/debug_render_pipeline/debug_render_pipeline.rs",
+      "sha256": "0a25769adbb780db148de66947cfd9bd2c8052e399a73ea2845132057dd04c64"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/rust/vendor/rapier3d/src/pipeline/debug_render_pipeline/debug_render_style.rs",
+      "sha256": "0d29becca0517bbf600d7d7f477f96093cbd942c69ed699cbbddf84ee6e06b0c"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/rust/vendor/rapier3d/src/pipeline/debug_render_pipeline/mod.rs",
+      "sha256": "2a9883fefd6cc74e357e0985532d881bd856f65a9739e9b457846a42c0b80ac8"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/rust/vendor/rapier3d/src/pipeline/debug_render_pipeline/outlines.rs",
+      "sha256": "472766729956c1f7bbe09a5ea10d9505d69060d55f3435f0e7885ac0e8c4866d"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/rust/vendor/rapier3d/src/pipeline/event_handler.rs",
+      "sha256": "439c7b317d91ef93cc806d97d182ad52cef658728b683a489beed12abf239591"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/rust/vendor/rapier3d/src/pipeline/mod.rs",
+      "sha256": "64778922bb4ce21d917cf23b2ef872cf7520fcbfb9076e3a7787da3661cb8153"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/rust/vendor/rapier3d/src/pipeline/physics_hooks.rs",
+      "sha256": "3cc24002866d0fcef59337f46184549364a22559293c583eefbe45a9cb77e070"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/rust/vendor/rapier3d/src/pipeline/physics_pipeline/mod.rs",
+      "sha256": "b5fffdf4bd0c8e359d1aa52d9ddc95b04e21c11a8438b2ac8c31bebc57c32963"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/rust/vendor/rapier3d/src/pipeline/physics_pipeline/quarantine.rs",
+      "sha256": "a2aec1b0c409696b55f8e950130add39f3bb7f0886eb0332943021315c91b779"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/rust/vendor/rapier3d/src/pipeline/physics_pipeline/solve.rs",
+      "sha256": "283b008051eefc382b4475101bed48615cd7c3c71ffaf40a6f4ad8a8d11927e7"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/rust/vendor/rapier3d/src/pipeline/physics_pipeline/substep.rs",
+      "sha256": "91ef1ecf8b1bbcd668ff90ac3e1adf60e75245e5476f521a935566cb441a7574"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/rust/vendor/rapier3d/src/pipeline/physics_pipeline/test.rs",
+      "sha256": "b46891d37f8465270db140f42c3c0e170c345db0149cb2169a914890f8724cc8"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/rust/vendor/rapier3d/src/pipeline/physics_pipeline/test_staged.rs",
+      "sha256": "dcabb32b2b6e19bf3a1c8799b8861ff2fbdee330445e595326d50207baf4906f"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/rust/vendor/rapier3d/src/pipeline/physics_world.rs",
+      "sha256": "3fd7603beb55b73a760cb2a8175e2eb9d2b465db22177f56187997ea2e45ba26"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/rust/vendor/rapier3d/src/pipeline/query_pipeline.rs",
+      "sha256": "e89f051cddaf2dec608b7e58ff1b879f69f9699176ce2a82627613d7391a68c0"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/rust/vendor/rapier3d/src/pipeline/user_changes.rs",
+      "sha256": "18b9c3ef0541094c7f2b82abdc702e54220d6f48764e20d3628a03e8230390a0"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/rust/vendor/rapier3d/src/utils/angular_inertia_ops.rs",
+      "sha256": "aec6acaa037dd5dace14d32da9eb7283ac2985d9a777bc58af7d7e192bb388c0"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/rust/vendor/rapier3d/src/utils/component_mul.rs",
+      "sha256": "90817288a91e92a65c8f3fb3031fac6cd73a77f1265f8c7fb23419f0337b7783"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/rust/vendor/rapier3d/src/utils/copysign.rs",
+      "sha256": "64756716004c9b12bac62886a3ddd3caf01cdb2154c0d3fb10f6da4daeb9bc92"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/rust/vendor/rapier3d/src/utils/cross_product.rs",
+      "sha256": "ddc856069b82c8c318addee1f98d650aebc22cca87d5cc411e3d01a4bf78c245"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/rust/vendor/rapier3d/src/utils/cross_product_matrix.rs",
+      "sha256": "8685d343d2fa0681a8bde7e36017d618d666c9a9c631ba3aedcb1969f514010d"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/rust/vendor/rapier3d/src/utils/dot_product.rs",
+      "sha256": "33161cb4372bc87d3557bbd611a336c01ffe5d400eeb216bbcbd51a80f2668f8"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/rust/vendor/rapier3d/src/utils/fp_flags.rs",
+      "sha256": "0150c3cdaf0a2444799e6e132cff725de741537749b5e9a4f280d898ab088a86"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/rust/vendor/rapier3d/src/utils/index_mut2.rs",
+      "sha256": "ee9f98700e7192db5246d097f03c18b08e957850b7f0f2afa8fc8a0b5f377dbd"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/rust/vendor/rapier3d/src/utils/matrix_column.rs",
+      "sha256": "046af3222c1907cfeeba60d9ae82b6b7b3da617fe38998b132ca813240be457b"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/rust/vendor/rapier3d/src/utils/mod.rs",
+      "sha256": "84b32e2b8e9ec47b0b1995a614407811370ce44d3f292a834f4fcdbc9fbf0ec0"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/rust/vendor/rapier3d/src/utils/orthonormal_basis.rs",
+      "sha256": "27b46809a29865f53e27ac830fdd882a0c592bee722011efcc3f6fda00a9b956"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/rust/vendor/rapier3d/src/utils/pos_ops.rs",
+      "sha256": "929efc227c48671f205733ce4245c32235e6fefa3bf407bd514ac3d9a4468cfe"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/rust/vendor/rapier3d/src/utils/prefetch.rs",
+      "sha256": "3630eb3874b37f7c16316c6ac5fa050dc9912387a7e4381fa0aec8a6c70949d8"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/rust/vendor/rapier3d/src/utils/rotation_ops.rs",
+      "sha256": "9ab0d9116a26adcfa9d330fa80b338af05ca2914ef8f1492a5253724ffb99b1a"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/rust/vendor/rapier3d/src/utils/scalar_type.rs",
+      "sha256": "6619b98926bde0fdc6aed3ebc451ce5f857b23238bc4e6bc627d3c8a3d698ca3"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/rust/vendor/rapier3d/src/utils/simd_real_copy.rs",
+      "sha256": "878ac66bed08121563094084739da52fa3e7bcda03fd3309585f7e60d98a8031"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/rust/vendor/rapier3d/src/utils/simd_select.rs",
+      "sha256": "d27aefbf851c2f52be55384552e3cf99292497ab52714498dee0b3d61d05a104"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/rust/vendor/rapier3d/tests/additional_solver_iterations.rs",
+      "sha256": "51462acdfd4cbf12713d7c1c71bbabf1b582ebeb14b473b0fffa04542a017270"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/rust/vendor/rapier3d/tests/broad_phase_pair_filter.rs",
+      "sha256": "2c6c78eab7f36201ab029a805b825f6e3f5992d2abd92efec3e63d8f41646438"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/rust/vendor/rapier3d/tests/ccd_default_vs_fixed.rs",
+      "sha256": "19805e4b2ef03e70c0056ce4af08e674028b4fecc278416204eaebe17b2884c6"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/rust/vendor/rapier3d/tests/contact_clustering.rs",
+      "sha256": "25460d8eac75a4d0c1e2982a79093857761f7a7b85d23b4f3fc6dae1d754520f"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/rust/vendor/rapier3d/tests/contact_force_event_clustering.rs",
+      "sha256": "80605795d6aa834c1c25c0ac28788808d3fb42f5b6da9a7ce9e4dbca5fde4722"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/rust/vendor/rapier3d/tests/contact_force_event_first_tick.rs",
+      "sha256": "86b130db6bcae8e5d2fa86741e73c3e853a720cfdcc375d319b8a10567244a31"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/rust/vendor/rapier3d/tests/gyroscopic.rs",
+      "sha256": "006af090cb587b3d1bf001d84468716857b8326f99e82b066eecda7e304cebf0"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/rust/vendor/rapier3d/tests/heightfield_solver_graph.rs",
+      "sha256": "2062932b12ea654a554155ca935677a3a735d14ccdd5dd54c3cef7a6e2540f1a"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/rust/vendor/rapier3d/tests/issue_182_heightfield_seam.rs",
+      "sha256": "cd957b1af9ec2852e7d03cfca5a4a34339da7e60cfaf01904051a6ce661f5583"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/rust/vendor/rapier3d/tests/issue_217_ccd_large_dt_hitch.rs",
+      "sha256": "47eb5320b0e49ac698726882bf4dd23ac7d03c03636c4d62a1fd9641a80d1a51"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/rust/vendor/rapier3d/tests/issue_253_unsync_callbacks.rs",
+      "sha256": "19821422873bc9ae67e21e5333204de34e7a3c669b5e52d20020a1a886242c04"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/rust/vendor/rapier3d/tests/issue_287_kinematic_wakes_jointed_dynamic.rs",
+      "sha256": "a9eec03f0c0bf16999ad4eef4a3b67c446fc97a9278ad033f475c6584f87f31a"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/rust/vendor/rapier3d/tests/issue_309_locked_rotations_offset_com.rs",
+      "sha256": "ac6c349ffd0cff39453bc65d97c4ca4ee998977d8e103f6f4e49061f4e4ce80d"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/rust/vendor/rapier3d/tests/issue_372_trimesh_sleep.rs",
+      "sha256": "2139d4442a1d43b297542de0e424bddbb2d5e358c40c2b067aa38f7016bb506c"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/rust/vendor/rapier3d/tests/issue_485_kcc_depenetration.rs",
+      "sha256": "74a0f4832535fb39f7042ffc1c5acc91a493ed0f05990a0c5666647944b0522f"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/rust/vendor/rapier3d/tests/issue_499_angular_limits.rs",
+      "sha256": "e763e52139228d9e53d9a2831994ed34fac51834b35afc8508402f13c303ff4c"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/rust/vendor/rapier3d/tests/issue_524_thin_slab_trimesh_tunnel.rs",
+      "sha256": "6f503b24a5fc2e6815c9c90512258d1a6a085c95e43d4b97739bff55f076d109"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/rust/vendor/rapier3d/tests/issue_617_broad_phase_memory_growth.rs",
+      "sha256": "b1d07232b548cd5d1aebf56e26cffa0975a18b49df3da87d851e8e9e88923880"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/rust/vendor/rapier3d/tests/issue_634_round_triangle_debug_render.rs",
+      "sha256": "04044872ba7c303f1795bfdf3c13261b7511e54e26d17de77ca844b578c3e3c3"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/rust/vendor/rapier3d/tests/issue_666_additional_mass_inertia.rs",
+      "sha256": "8ebee17cd785d724856a4c6f601881ebe6ec9c55619998fd1e58528beff9eb0d"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/rust/vendor/rapier3d/tests/issue_692_joint_get_mut_wakes_bodies.rs",
+      "sha256": "527786674c2d2d0f2f12449a5d3da9b3d3e9e83a986a3df774543f970dfb365c"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/rust/vendor/rapier3d/tests/issue_717_trimesh_result.rs",
+      "sha256": "53639f2a026bcb537b5f2d3f4d0162c74259e6870f3b4a91e6bc84742876a4d6"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/rust/vendor/rapier3d/tests/issue_730_many_separate_colliders_perf.rs",
+      "sha256": "f67873e1718ef46bdd668b9e7254fae1da30328e0eca87ee4fc0a0747a7acc65"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/rust/vendor/rapier3d/tests/issue_734_collider_reparenting.rs",
+      "sha256": "dc8960a70e9400defac36e19facdc35fe51441774dc0169c108a514d578c62c7"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/rust/vendor/rapier3d/tests/issue_746_prismatic_axis_frames.rs",
+      "sha256": "c4893e7e76425fc67dab53673b140b9f05998776a99e00ba0d5f0290cdf47c8b"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/rust/vendor/rapier3d/tests/issue_749_query_after_collider_removal.rs",
+      "sha256": "e34884b1caeed50bbe04eac5bcc1b11763934339d280ef113d25a4e8e4e81df6"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/rust/vendor/rapier3d/tests/issue_78_additional_mass_rest.rs",
+      "sha256": "933a471bf9dfabe808043f321ee61b1646a6e19d810210fe233764a27f0f5d7a"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/rust/vendor/rapier3d/tests/issue_792_coupled_angular_spring.rs",
+      "sha256": "6180845fd60cce534392558eab26f643a42d42dbb496988f710777dad15401c3"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/rust/vendor/rapier3d/tests/issue_810_cubes_thin_cylinder_tunnel.rs",
+      "sha256": "423a77416c71025ebbf5eb55d4f5591014b638434cb68efbd16508174405153d"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/rust/vendor/rapier3d/tests/issue_836_physics_world.rs",
+      "sha256": "0313883a3d33e20cc090080f272754d460baccb0ab1c321fdf5cd656ba337871"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/rust/vendor/rapier3d/tests/issue_856_motor_position_rotating_base.rs",
+      "sha256": "f331b8aeed28806059565c0fb439e54a10caa84de52dbcbf6214f12a682589e0"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/rust/vendor/rapier3d/tests/issue_862_kcc_impulse_point.rs",
+      "sha256": "e17c03f2f961f056ea35c1b31fd2fd0f23790add6031d4b459829874240a6eb8"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/rust/vendor/rapier3d/tests/issue_868_same_machine_determinism.rs",
+      "sha256": "67fc689ad234913cadcf9f5fc0ffe756069b78a1f234336ab1be5d84137da036"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/rust/vendor/rapier3d/tests/issue_925_wheel_rotation.rs",
+      "sha256": "eec5e1b8ed971ce15fa066e517c38f60d3ef92e9c1910e56ae226c0455364ead"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/rust/vendor/rapier3d/tests/issue_932_low_ccd_substeps_stutter.rs",
+      "sha256": "65b3345ffb3fb99ea3e190fa1f4a45651cc6fec9b27cb2a727bc97abdd8bea9c"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/rust/vendor/rapier3d/tests/issue_946_vehicle_braking_friction.rs",
+      "sha256": "d32368426764bbc4b5e0939425fd2ba2556505c2bec5cf8fe1e79627e09636e0"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/rust/vendor/rapier3d/tests/issue_952_simd_joint_offset_com.rs",
+      "sha256": "a18cdffb622e57e78a0ce0a5c56b721e90b658583a6bc0c19a36c6c4bb72c2ec"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/rust/vendor/rapier3d/tests/issue_954_multibody_parallel_contact.rs",
+      "sha256": "9c19abf22e1096c3788fb283f3b3d965f1a3fe3d304204eb5810a572a18e0bab"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/rust/vendor/rapier3d/tests/issue_968_multibody_weld_settle.rs",
+      "sha256": "5976922bff34c5b6d82895eee118f0556f4619be01589a369533a3afe1b33f44"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/rust/vendor/rapier3d/tests/issue_970_multi_collider_body_perf.rs",
+      "sha256": "e9695e09b504addd1bc9f1ee7bdfa16124e5a9bb078adf95daff43c6173e9459"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/rust/vendor/rapier3d/tests/issue_974_restitution.rs",
+      "sha256": "9154a30336b56537671b5b49b45ff49ae3d3775f69a955b0640e6de604743313"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/rust/vendor/rapier3d/tests/joint_assembly_persistence.rs",
+      "sha256": "1e6db2a8f7a368be4ff05d67e65c05e04b178aa42e1f274a4c34feb69ee56ea7"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/rust/vendor/rapier3d/tests/joint_contact_solve_order.rs",
+      "sha256": "bd024a00174cbc36b4d5a0f8f84554a93ac6aa6cc893d379d429f0bbb6b6e1c6"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/rust/vendor/rapier3d/tests/joint_stability.rs",
+      "sha256": "599fa4bd6b030de83e30ad056eddccaf006c340a7e17ec0e007623f859e601c5"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/rust/vendor/rapier3d/tests/loop_closure_com_repro.rs",
+      "sha256": "88966e5fad65685ae1698d6e73d90ba521cf8b9ae0d5ec46d6b6a7f5a01305d6"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/rust/vendor/rapier3d/tests/miri_scenes.rs",
+      "sha256": "a8a468f884680276da7c9f90ac1de8d0066506fefc48ee29885afbb75609f673"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/rust/vendor/rapier3d/tests/multibody_armature.rs",
+      "sha256": "66bc615f4b3cbf64efa7ba6d82baeeac096c2541287fa874e473a1a4c129fab6"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/rust/vendor/rapier3d/tests/multibody_coupling.rs",
+      "sha256": "0fa689977d94c5cc8c7e0488148c876e873f1a787410312112b2c40f3f317711"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/rust/vendor/rapier3d/tests/multibody_dof_inertia.rs",
+      "sha256": "33105cc4ccebcee3eacc5bcb2ed308a04324f8941777c83e1f4bd06e5b7017ff"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/rust/vendor/rapier3d/tests/multibody_spring.rs",
+      "sha256": "968dd9b99aa6e57ad22b98a1d6f68b347a63346cbe291a020f77e941ffaa5757"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/rust/vendor/rapier3d/tests/parallel_external_caller_livelock.rs",
+      "sha256": "d606cbb125af87a2399fc20f7bcfe43efb76328bd644abaf4c5cbe3ebfc37993"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/rust/vendor/rapier3d/tests/parallel_path_parity.rs",
+      "sha256": "fba4e33aeb3c2f7d89a1a0473066ed509ce05ddfd291ad9269c19077fff167e3"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/rust/vendor/rapier3d/tests/persistent_islands.rs",
+      "sha256": "cbf1451ae0222c8a4c16755d83e8a4d5e27cc91277c26f60883ab65ea2e7bb1f"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/rust/vendor/rapier3d/tests/simd_backend_determinism.rs",
+      "sha256": "a9f027e4da7ef95b37360e5ffa6b3ce49ff7fe74b3eda2273d895e38592943dd"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/rust/vendor/rapier3d/tests/simd_backend_parity.rs",
+      "sha256": "fb8586912013b394903dc90243eeb42a364058e41a69157e0613a00a2c37afef"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/rust/vendor/rapier3d/tests/single_worker_deferred_bvh.rs",
+      "sha256": "d14b6d20c5e08ae0f793bd4ea6178d5ff341b5e9922b1da7155196f71f729481"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/rust/vendor/rapier3d/tests/sleep_wake.rs",
+      "sha256": "446303dc4ec0698356b1e08b7e4821849e328da73cf952e66e1be59e762f7dbf"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/rust/vendor/rapier3d/tests/sleep_wide_bodies.rs",
+      "sha256": "4134b4c62f68dd2fb78d77e37c8b00b11d32cf67378867da26af0670947b180d"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/rust/vendor/rapier3d/tests/snapshot_portability.rs",
+      "sha256": "d507018236783c61dfbd859b879c12fb2877fbe4dc096594c9b16831099e5536"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/rust/vendor/rapier3d/tests/snapshot_roundtrip.rs",
+      "sha256": "8f0612a9ccfd7affea7a09170f931cb363ac46f7bce67b1d66cae7b68de81f69"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/rust/vendor/rapier3d/tests/solver_graph_stale_refs.rs",
+      "sha256": "99a6a129d057d7b87bbff29ae92b2a03efd5fb595eea6ff58d95023e76bade8b"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/rust/vendor/rapier3d/tests/speed_cap.rs",
+      "sha256": "5f9103366322e4ffa0dd201c01463ca9c9cd75750888cedf93f8b64872ca4536"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/rust/vendor/rapier3d/tests/substep_chain_high_mass_ratio.rs",
+      "sha256": "dd8825e472311cdd6e48a32faf8e5406ba32b87f94c9360ccad685af60df5ca3"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/rust/vendor/rapier3d/tests/thread_count_determinism.rs",
+      "sha256": "8b15983dbcf0ce5563f05ade3cfd82b9f734a905ce67f46af2c8dc18e5acf582"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/rust/vendor/rapier3d/tests/unsync_callbacks.rs",
+      "sha256": "949da9cbcea8d33ad7deed4bd1bcfcd4850f80793b25e8453d837b73b8f93bf2"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/rust/vendor/rapier3d/tests/whole_island_sleep.rs",
+      "sha256": "9ab06fe9a1efbd833324cb441440768e647654417e2fc3354719754c64281917"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/rust/vendor/solver-step-observation-provenance.json",
+      "sha256": "268c046bd8c603f55be66c42c6f26ff7e91f564c77e6357849f0d65e39199f15"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/rust/vendor/solver-step-observation.patch",
+      "sha256": "04136de38a3ab5d0147360882e5f77287757ac49a6786d6460ae5e51485be103"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/rust/vendor/tangent-provenance.json",
+      "sha256": "3ee09b9d61e0f51d38157d35d07b63f88183263266c2fe305037c11f70efa60e"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/rust/vendor/tangent-reporting.patch",
+      "sha256": "672c01eb232b33b66e4c1329dcfb439f4730a5bc35721f0dc1ad6b85fb6c6259"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/rust/vendor/wide-motors-provenance.json",
+      "sha256": "cc2f84261c2d39b54a944ab1c569aefd41574c5473ca70b286e2e73cbcc80a9d"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/rust/vendor/wide-motors.patch",
+      "sha256": "b65ee6d344a30172c6fead57c348d76503b5af3b168cd21c75e39ab876304ce1"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/scripts/coordination-prototype-budget-test.py",
+      "sha256": "2124b18052f116a26d9dd0159ea058bd19ff324c33b19214a6cdd4fccec0acb0"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/scripts/coordination-prototype-budget.py",
+      "sha256": "f1ada5b4b93507eec38758cb2c5d315777657f1f8e0a225461d1110b6c5d0068"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/scripts/run-coordination-numeric-parity.py",
+      "sha256": "e5af00efb904bc203704bc88514a8e8a803dad36b3bca669a017c90ca24f97da"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/scripts/run-coordination-prototype-test.py",
+      "sha256": "338b0c1c7ed8b76451d0165d927f7ef886fd851d7d145335ba2bbadf8bb1359e"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/scripts/run-coordination-prototype.py",
+      "sha256": "0ab2aec36acfe34c716d110a8ff6164332f6e63627cd5082e749578014e5fc55"
+    }
+  ],
+  "checks": {
+    "unit_and_static_tests_passed": {
+      "status": "pending",
+      "evidence": []
+    },
+    "complete_numeric_reference": {
+      "status": "pending",
+      "evidence": []
+    },
+    "continuation_to_standing_defined_and_verified": {
+      "status": "pending",
+      "evidence": []
+    },
+    "unchanged_physical_contract": {
+      "status": "pending",
+      "evidence": []
+    },
+    "native_accounting_statically_tested": {
+      "status": "pending",
+      "evidence": []
+    },
+    "single_process_single_thread_no_concurrent_compilation": {
+      "status": "pending",
+      "evidence": []
+    },
+    "prediction_copy_and_motor_paths_statically_checked": {
+      "status": "pending",
+      "evidence": []
+    },
+    "local_diagnostic_implemented": {
+      "status": "pending",
+      "evidence": []
+    },
+    "local_pair_frozen": {
+      "status": "pending",
+      "evidence": []
+    }
+  }
+}

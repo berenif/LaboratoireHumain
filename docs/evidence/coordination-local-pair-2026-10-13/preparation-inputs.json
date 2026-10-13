@@ -1,0 +1,257 @@
+{
+  "schema": 1,
+  "scope": "pure pending receipt after diagnostic-memory instrumentation; no manifest, worker, world or ledger",
+  "baseArguments": [
+    "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+    "/workspace/LaboratoireHumain/docs/evidence/coordination-local-pair-2026-10-13/prepare_manifest.py",
+    "--binary",
+    "/workspace/LaboratoireHumain/rust/target/release/deps/coordination_local_pair_worker-bf2c98f759d9dc34",
+    "--preflight-file",
+    "/workspace/LaboratoireHumain/docs/evidence/coordination-local-pair-2026-10-13/support-contract-review.md",
+    "--preflight-file",
+    "/workspace/LaboratoireHumain/docs/evidence/coordination-local-pair-2026-10-13/process-supervision-review.md",
+    "--preflight-file",
+    "/workspace/LaboratoireHumain/docs/evidence/coordination-local-pair-2026-10-13/process-supervision-validation.json",
+    "--preflight-file",
+    "/workspace/LaboratoireHumain/docs/evidence/coordination-local-pair-2026-10-13/process-supervision-inert-results.json",
+    "--preflight-file",
+    "/workspace/LaboratoireHumain/docs/evidence/coordination-local-pair-2026-10-13/process-supervision-tests.log",
+    "--preflight-file",
+    "/workspace/LaboratoireHumain/docs/evidence/coordination-local-pair-2026-10-13/historical-supervisor-tests.log",
+    "--preflight-file",
+    "/workspace/LaboratoireHumain/docs/evidence/coordination-local-pair-2026-10-13/budget-tests.log",
+    "--preflight-file",
+    "/workspace/LaboratoireHumain/docs/evidence/coordination-local-pair-2026-10-13/cumulative-budget-audit.md",
+    "--preflight-file",
+    "/workspace/LaboratoireHumain/docs/evidence/coordination-local-pair-2026-10-13/preparation-reservation.json",
+    "--preflight-file",
+    "/workspace/LaboratoireHumain/docs/evidence/coordination-local-pair-2026-10-13/launch-contract.json",
+    "--preflight-file",
+    "/workspace/LaboratoireHumain/docs/evidence/coordination-local-pair-2026-10-13/rust-pure-worker-tests.log",
+    "--preflight-file",
+    "/workspace/LaboratoireHumain/docs/evidence/coordination-local-pair-2026-10-13/rust-pure-parity-tests.log",
+    "--preflight-file",
+    "/workspace/LaboratoireHumain/docs/evidence/coordination-local-pair-2026-10-13/rust-production-check.log",
+    "--preflight-file",
+    "/workspace/LaboratoireHumain/docs/evidence/coordination-local-pair-2026-10-13/rust-release-build.log",
+    "--preflight-file",
+    "/workspace/LaboratoireHumain/docs/evidence/coordination-local-pair-2026-10-13/build-validation.json",
+    "--preflight-file",
+    "/workspace/LaboratoireHumain/docs/evidence/coordination-local-pair-2026-10-13/worker-preparation-review.md",
+    "--preflight-file",
+    "/workspace/LaboratoireHumain/docs/evidence/coordination-local-pair-2026-10-13/manifest-wrapper-tests.log",
+    "--preflight-file",
+    "/workspace/LaboratoireHumain/docs/evidence/coordination-local-pair-2026-10-13/process-supervision-inert.c",
+    "--preflight-file",
+    "/workspace/LaboratoireHumain/docs/evidence/coordination-local-pair-2026-10-13/check-process-supervision-inert.py"
+  ],
+  "templateCommand": [
+    "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+    "/workspace/LaboratoireHumain/docs/evidence/coordination-local-pair-2026-10-13/prepare_manifest.py",
+    "--binary",
+    "/workspace/LaboratoireHumain/rust/target/release/deps/coordination_local_pair_worker-bf2c98f759d9dc34",
+    "--preflight-file",
+    "/workspace/LaboratoireHumain/docs/evidence/coordination-local-pair-2026-10-13/support-contract-review.md",
+    "--preflight-file",
+    "/workspace/LaboratoireHumain/docs/evidence/coordination-local-pair-2026-10-13/process-supervision-review.md",
+    "--preflight-file",
+    "/workspace/LaboratoireHumain/docs/evidence/coordination-local-pair-2026-10-13/process-supervision-validation.json",
+    "--preflight-file",
+    "/workspace/LaboratoireHumain/docs/evidence/coordination-local-pair-2026-10-13/process-supervision-inert-results.json",
+    "--preflight-file",
+    "/workspace/LaboratoireHumain/docs/evidence/coordination-local-pair-2026-10-13/process-supervision-tests.log",
+    "--preflight-file",
+    "/workspace/LaboratoireHumain/docs/evidence/coordination-local-pair-2026-10-13/historical-supervisor-tests.log",
+    "--preflight-file",
+    "/workspace/LaboratoireHumain/docs/evidence/coordination-local-pair-2026-10-13/budget-tests.log",
+    "--preflight-file",
+    "/workspace/LaboratoireHumain/docs/evidence/coordination-local-pair-2026-10-13/cumulative-budget-audit.md",
+    "--preflight-file",
+    "/workspace/LaboratoireHumain/docs/evidence/coordination-local-pair-2026-10-13/preparation-reservation.json",
+    "--preflight-file",
+    "/workspace/LaboratoireHumain/docs/evidence/coordination-local-pair-2026-10-13/launch-contract.json",
+    "--preflight-file",
+    "/workspace/LaboratoireHumain/docs/evidence/coordination-local-pair-2026-10-13/rust-pure-worker-tests.log",
+    "--preflight-file",
+    "/workspace/LaboratoireHumain/docs/evidence/coordination-local-pair-2026-10-13/rust-pure-parity-tests.log",
+    "--preflight-file",
+    "/workspace/LaboratoireHumain/docs/evidence/coordination-local-pair-2026-10-13/rust-production-check.log",
+    "--preflight-file",
+    "/workspace/LaboratoireHumain/docs/evidence/coordination-local-pair-2026-10-13/rust-release-build.log",
+    "--preflight-file",
+    "/workspace/LaboratoireHumain/docs/evidence/coordination-local-pair-2026-10-13/build-validation.json",
+    "--preflight-file",
+    "/workspace/LaboratoireHumain/docs/evidence/coordination-local-pair-2026-10-13/worker-preparation-review.md",
+    "--preflight-file",
+    "/workspace/LaboratoireHumain/docs/evidence/coordination-local-pair-2026-10-13/manifest-wrapper-tests.log",
+    "--preflight-file",
+    "/workspace/LaboratoireHumain/docs/evidence/coordination-local-pair-2026-10-13/process-supervision-inert.c",
+    "--preflight-file",
+    "/workspace/LaboratoireHumain/docs/evidence/coordination-local-pair-2026-10-13/check-process-supervision-inert.py",
+    "--template",
+    "/workspace/LaboratoireHumain/docs/evidence/coordination-local-pair-2026-10-13/readiness-pending.json"
+  ],
+  "manifestCommandAfterReview": [
+    "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+    "/workspace/LaboratoireHumain/docs/evidence/coordination-local-pair-2026-10-13/prepare_manifest.py",
+    "--binary",
+    "/workspace/LaboratoireHumain/rust/target/release/deps/coordination_local_pair_worker-bf2c98f759d9dc34",
+    "--preflight-file",
+    "/workspace/LaboratoireHumain/docs/evidence/coordination-local-pair-2026-10-13/support-contract-review.md",
+    "--preflight-file",
+    "/workspace/LaboratoireHumain/docs/evidence/coordination-local-pair-2026-10-13/process-supervision-review.md",
+    "--preflight-file",
+    "/workspace/LaboratoireHumain/docs/evidence/coordination-local-pair-2026-10-13/process-supervision-validation.json",
+    "--preflight-file",
+    "/workspace/LaboratoireHumain/docs/evidence/coordination-local-pair-2026-10-13/process-supervision-inert-results.json",
+    "--preflight-file",
+    "/workspace/LaboratoireHumain/docs/evidence/coordination-local-pair-2026-10-13/process-supervision-tests.log",
+    "--preflight-file",
+    "/workspace/LaboratoireHumain/docs/evidence/coordination-local-pair-2026-10-13/historical-supervisor-tests.log",
+    "--preflight-file",
+    "/workspace/LaboratoireHumain/docs/evidence/coordination-local-pair-2026-10-13/budget-tests.log",
+    "--preflight-file",
+    "/workspace/LaboratoireHumain/docs/evidence/coordination-local-pair-2026-10-13/cumulative-budget-audit.md",
+    "--preflight-file",
+    "/workspace/LaboratoireHumain/docs/evidence/coordination-local-pair-2026-10-13/preparation-reservation.json",
+    "--preflight-file",
+    "/workspace/LaboratoireHumain/docs/evidence/coordination-local-pair-2026-10-13/launch-contract.json",
+    "--preflight-file",
+    "/workspace/LaboratoireHumain/docs/evidence/coordination-local-pair-2026-10-13/rust-pure-worker-tests.log",
+    "--preflight-file",
+    "/workspace/LaboratoireHumain/docs/evidence/coordination-local-pair-2026-10-13/rust-pure-parity-tests.log",
+    "--preflight-file",
+    "/workspace/LaboratoireHumain/docs/evidence/coordination-local-pair-2026-10-13/rust-production-check.log",
+    "--preflight-file",
+    "/workspace/LaboratoireHumain/docs/evidence/coordination-local-pair-2026-10-13/rust-release-build.log",
+    "--preflight-file",
+    "/workspace/LaboratoireHumain/docs/evidence/coordination-local-pair-2026-10-13/build-validation.json",
+    "--preflight-file",
+    "/workspace/LaboratoireHumain/docs/evidence/coordination-local-pair-2026-10-13/worker-preparation-review.md",
+    "--preflight-file",
+    "/workspace/LaboratoireHumain/docs/evidence/coordination-local-pair-2026-10-13/manifest-wrapper-tests.log",
+    "--preflight-file",
+    "/workspace/LaboratoireHumain/docs/evidence/coordination-local-pair-2026-10-13/process-supervision-inert.c",
+    "--preflight-file",
+    "/workspace/LaboratoireHumain/docs/evidence/coordination-local-pair-2026-10-13/check-process-supervision-inert.py",
+    "--readiness",
+    "/workspace/LaboratoireHumain/docs/evidence/coordination-local-pair-2026-10-13/readiness-reviewed.json",
+    "--output",
+    "/workspace/LaboratoireHumain/docs/evidence/coordination-local-pair-2026-10-13/manifest.json"
+  ],
+  "binary": {
+    "path": "/workspace/LaboratoireHumain/rust/target/release/deps/coordination_local_pair_worker-bf2c98f759d9dc34",
+    "sha256": "c1c8a12825428758643a7f6e2fafb0a2710f7dca787c1daee07c27ec59849e9c"
+  },
+  "builder": {
+    "path": "/workspace/LaboratoireHumain/docs/evidence/coordination-local-pair-2026-10-13/prepare_manifest.py",
+    "sha256": "e6dbebac53402a6501bad2eb1ee9e7d4bcc686c7df8e025a6bc32cdcee8bcf55"
+  },
+  "preflightFiles": [
+    {
+      "path": "/workspace/LaboratoireHumain/docs/evidence/coordination-local-pair-2026-10-13/support-contract-review.md",
+      "sha256": "9eb17f64d47a64e4e0403a3fef79ebee0d4787fe34401e2f8d479aea7d04925f"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/docs/evidence/coordination-local-pair-2026-10-13/process-supervision-review.md",
+      "sha256": "207fb2a397d85c958d87f2fc333d7b9b9c80889a184ffac60c97bdf9280cefd0"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/docs/evidence/coordination-local-pair-2026-10-13/process-supervision-validation.json",
+      "sha256": "222aaf39a96343c4c551bb41f6cc31a8d2dc4fad94e55d7debde5d86e5c1c457"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/docs/evidence/coordination-local-pair-2026-10-13/process-supervision-inert-results.json",
+      "sha256": "be21e98187a8754ae09591d35e14d25da363ea29e9fd4dfed79366cc1e41be8e"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/docs/evidence/coordination-local-pair-2026-10-13/process-supervision-tests.log",
+      "sha256": "a1de8e6faca59c9d690ccdf2ba7d5a56bad06bc824825fee2ec5ba506ac6aa10"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/docs/evidence/coordination-local-pair-2026-10-13/historical-supervisor-tests.log",
+      "sha256": "a93418fb95449a2b676445205ab3bac0b3253908c3ea5b3161f2d686bcabb6e4"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/docs/evidence/coordination-local-pair-2026-10-13/budget-tests.log",
+      "sha256": "0d85f09ccfb451dcc76f38d0c820df969443741d6b2f0cd5a364f7632ff58060"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/docs/evidence/coordination-local-pair-2026-10-13/cumulative-budget-audit.md",
+      "sha256": "4b281d8514afec31c1a5dd63c1be61f3ca59f8b199bda74e4158905a48871987"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/docs/evidence/coordination-local-pair-2026-10-13/preparation-reservation.json",
+      "sha256": "971e85ade9ba0eb322ad0151866eee6d43110f4b8152a946be65e477ddf7c0c8"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/docs/evidence/coordination-local-pair-2026-10-13/launch-contract.json",
+      "sha256": "21b729d763b5af87ccee521f0ce726a9896ae4a64ce63bd3a2de99658dad605f"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/docs/evidence/coordination-local-pair-2026-10-13/rust-pure-worker-tests.log",
+      "sha256": "f9ab822f9bd1f4b700b1b46bc68355788ee1cd12366243e3b266a19110cf10f1"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/docs/evidence/coordination-local-pair-2026-10-13/rust-pure-parity-tests.log",
+      "sha256": "78e778d438d77b6f2cfcec49af100d25a84ca8e7df09028ac8005c2ba4663ffa"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/docs/evidence/coordination-local-pair-2026-10-13/rust-production-check.log",
+      "sha256": "6d44fadac9c1ee7c41f02d665176255177c934f121fd546d9139567db3348714"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/docs/evidence/coordination-local-pair-2026-10-13/rust-release-build.log",
+      "sha256": "09b906706bb0a6de731519109d552d374d0f5754c35bb2d42962e4d0a94ad1c5"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/docs/evidence/coordination-local-pair-2026-10-13/build-validation.json",
+      "sha256": "eb9cd6b576ccc88f4df74e20e05520b2d3dcb111a9b784a5101507e606d85ec3"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/docs/evidence/coordination-local-pair-2026-10-13/worker-preparation-review.md",
+      "sha256": "8af3cd207347e386c26d6925c60285676762380d3f9967161396c1e6a828a44a"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/docs/evidence/coordination-local-pair-2026-10-13/manifest-wrapper-tests.log",
+      "sha256": "16a61ef29e6639bc5f29be38e1b6e44f76c0980a1d30113d77f45474b2bba96b"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/docs/evidence/coordination-local-pair-2026-10-13/process-supervision-inert.c",
+      "sha256": "85e85f74696a6c8eab896603a491194fe941af532284239ea8100376a89baa8a"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/docs/evidence/coordination-local-pair-2026-10-13/check-process-supervision-inert.py",
+      "sha256": "3f9009d8251cdfb7f0dfde9055d59fef53ab6d7a2c990b7cf12278bec0041279"
+    }
+  ],
+  "pendingReceipt": {
+    "path": "/workspace/LaboratoireHumain/docs/evidence/coordination-local-pair-2026-10-13/readiness-pending.json",
+    "sha256": "be4142268a22978250c1008cef3ad801ee8002fff4dd615f7350fb15930a67e6"
+  },
+  "builderReturn": {
+    "pendingReceipt": {
+      "path": "/workspace/LaboratoireHumain/docs/evidence/coordination-local-pair-2026-10-13/readiness-pending.json",
+      "sha256": "be4142268a22978250c1008cef3ad801ee8002fff4dd615f7350fb15930a67e6"
+    },
+    "physicalIntegrations": 0,
+    "staticInspections": 0,
+    "nativeExecutionAuthorized": false
+  },
+  "checkedFiles": 344,
+  "prerequisitesPending": 9,
+  "bindingsRecheckedAfterCreation": true,
+  "supersededUnfrozenDraft": {
+    "path": "/workspace/LaboratoireHumain/docs/evidence/coordination-local-pair-2026-10-13/readiness-pending-before-diagnostic-memory.json",
+    "sha256": "1230d23f7c788018be8aac4e46e7cfc6f541a0e19d57db5b1470bf560491de53"
+  },
+  "supersededPreparationInputs": {
+    "path": "/workspace/LaboratoireHumain/docs/evidence/coordination-local-pair-2026-10-13/preparation-inputs-before-diagnostic-memory.json",
+    "sha256": "be749390b4fc2fde7b2fd321ebf07ca33457fd010a8820840a3633e6b1319663"
+  },
+  "reasonForReplacement": "Diagnostic memory and observed support samples now compared between native copy and actual path; dedicated never-run worker rebuilt before any freeze or attestation",
+  "physicalIntegrations": 0,
+  "staticInspections": 0,
+  "nativeWorldsConstructed": 0,
+  "nativeExecutionAuthorized": false
+}

@@ -24,6 +24,12 @@ harness = false
 required-features = ["numeric-parity-worker"]
 
 [[test]]
+name = "coordination-local-pair-worker"
+path = "src/lib.rs"
+harness = false
+required-features = ["coordination-worker"]
+
+[[test]]
 name = "coordination-worker"
 path = "src/lib.rs"
 harness = false
