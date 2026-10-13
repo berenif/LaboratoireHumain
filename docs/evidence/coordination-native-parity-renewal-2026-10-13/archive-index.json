@@ -1,0 +1,29 @@
+{
+  "schema": 1,
+  "scope": "post-run lossless compression only",
+  "nativeIntegrations": 0,
+  "closedLedgerSha256": "1411bfcc1a17caa681359cfb39d7c0429f2188375925c22ba4b037df96d44bc2",
+  "elapsedSeconds": 0.030867468998621916,
+  "files": [
+    {
+      "rawPath": "/workspace/LaboratoireHumain/docs/evidence/coordination-native-parity-renewal-2026-10-13/native-run/native-result.json",
+      "rawBytes": 0,
+      "rawSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "gzipPath": "/workspace/LaboratoireHumain/docs/evidence/coordination-native-parity-renewal-2026-10-13/native-run/native-result.json.gz",
+      "gzipBytes": 20,
+      "gzipSha256": "ac73670af3abed54ac6fb4695131f4099be9fbe39d6076c5d0264a6bbdae9d83",
+      "decompressedBytesAndHashVerified": true,
+      "closedReceiptHashAvailable": false
+    },
+    {
+      "rawPath": "/workspace/LaboratoireHumain/docs/evidence/coordination-native-parity-renewal-2026-10-13/native-run/native-trace.jsonl",
+      "rawBytes": 1213059,
+      "rawSha256": "abc2960e5959d8dc584aeb82eda99f1f50fa6806256e8f5552c9d487af335d06",
+      "gzipPath": "/workspace/LaboratoireHumain/docs/evidence/coordination-native-parity-renewal-2026-10-13/native-run/native-trace.jsonl.gz",
+      "gzipBytes": 193977,
+      "gzipSha256": "c58dcaf5eba324511f3d1d13038d82c443b2bd409f4a927b61646dfe4366359b",
+      "decompressedBytesAndHashVerified": true,
+      "closedReceiptHashAvailable": false
+    }
+  ]
+}
