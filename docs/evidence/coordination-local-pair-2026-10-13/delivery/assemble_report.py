@@ -27,13 +27,15 @@ body=["# LaboratoireHumain — coordination, prototype et résultat décisif\n\n
 "`c597959f46f37715035349c8cd0a699b6822111a`.\n\n"
 "Les sections historiques décrivent la préparation et ses hypothèses. "
 "Le résultat et les décisions après clôture ci-dessous font autorité pour la suite. "
-"La vidéo et les mesures sont livrées séparément dans Library. "
+"Le rapport, la vidéo et les mesures sont disponibles dans le dépôt. "
+"**Publication Library bloquée : erreur réseau du flux officiel avant toute création confirmée ; aucun nouvel identifiant ni version ne sont disponibles.** "
 "Les liens vers des traces volumineuses renvoient à leur archive compressée "
 "ou à son index de restitution sans perte.\n"]
 for title,rel in parts:
  p=root/rel
- text=p.read_text()
- records.append({"path":rel,"sha256":hashlib.sha256(p.read_bytes()).hexdigest()})
+ source_bytes=subprocess.check_output(["git","show",a.commit+":"+rel],cwd=root)
+ text=source_bytes.decode()
+ records.append({"path":rel,"sha256":hashlib.sha256(source_bytes).hexdigest()})
  text=re.sub(r"^- \[ \] Rapport Library.*\n", "", text, flags=re.M)
  def link(m):
   target=m.group(2)

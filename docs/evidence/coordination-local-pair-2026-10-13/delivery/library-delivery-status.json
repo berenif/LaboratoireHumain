@@ -1,0 +1,50 @@
+{
+  "schema": 1,
+  "utc": "2026-10-13T11:27:37.503236+00:00",
+  "status": "blocked-network-no-create-confirmed",
+  "route": "current Library prepared-upload helper, ordered report/video/measurements batch",
+  "writeAttempts": 1,
+  "readOnlyDiagnosticAttempts": 1,
+  "failure": "hosted apps tools/list request failed: network",
+  "diagnosticExceptionTypes": [
+    "HostedAppsError",
+    "URLError",
+    "OSError"
+  ],
+  "libraryFileIds": [],
+  "versions": [],
+  "retryOrFallbackPerformed": false,
+  "helperHashes": {
+    "library_file_transfer.py": "5c81478cd94a59d721a1677d0bd36f7cec23c18a21b48740b1c9ff94d27fb26f",
+    "library_hosted_apps.py": "b7961301f7ca6f76b2f2f30e4e5673a303532680a790e545c3207a2bf5e63de4",
+    "library_upload.py": "b11e4929596e321366c2f7291890fbb6d6bf8b413ae6d24593e9548f9bf50f23"
+  },
+  "nativeIntegrations": 0,
+  "resultCommitVerified": "cba6b74a74234ee1da4d4e0a6863dce9b1e9ef9c",
+  "mainVerified": "c597959f46f37715035349c8cd0a699b6822111a",
+  "deliverables": [
+    {
+      "path": "/workspace/LaboratoireHumain/docs/evidence/coordination-local-pair-2026-10-13/delivery/LaboratoireHumain-coordination-paire-finale-rapport-complet-2026-10-13.md",
+      "bytes": 70371,
+      "sha256": "d4e690e8eb07750d7f1638e0cc33a07e7e8bf9197f3d8ba8878a9be00698050f",
+      "libraryFileId": null,
+      "version": null
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/docs/evidence/coordination-local-pair-2026-10-13/rendered/A-actual-history.mp4",
+      "bytes": 124868,
+      "sha256": "3ddd215ff8da5796c0036a0a943d442f8f5bfd8ba61dcd810ee3086038a1c0f6",
+      "libraryFileId": null,
+      "version": null
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/docs/evidence/coordination-local-pair-2026-10-13/rendered/A-measurements.csv",
+      "bytes": 128308,
+      "sha256": "0143e05118bf9376c91aa201eca852930c1a6a367b093e2a9d7338549f7a6e73",
+      "libraryFileId": null,
+      "version": null
+    }
+  ],
+  "attemptedReportSha256": "39055d72abf05096f10760dce91f19655462f570568eed723628148b56c8582b",
+  "finalReportUpdate": "Only delivery status/header changed after failed Library discovery; no second upload attempted."
+}

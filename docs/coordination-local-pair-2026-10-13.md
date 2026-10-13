@@ -43,7 +43,8 @@ précisent les consommations, limites et critères de décision.
 - [x] Gel publié et SHA distant vérifié, puis unique lancement du registre distinct.
 - [x] Registre clos ; décision causale A/B, premier refus et consommations archivés.
 - [x] Mesures et vidéo issues exclusivement des états enregistrés.
-- [ ] Rapport Library, validation et dernier push vérifié.
+- [x] Rapport complet, vidéo et mesures produits et validés ; résultat publié et SHA distant vérifié.
+- [ ] Publication Library bloquée par le réseau du flux officiel ; aucune création confirmée.
 
 Les modifications de ce jalon portent sur l’admission, la mémoire comparée,
 le comptage durable et l’arrêt des processus. Elles ne changent pas les actions
@@ -168,3 +169,25 @@ non démontrés. Récupération et pas correctifs restent désactivés par défa
 - [Réconciliation des budgets sans réécriture](evidence/coordination-local-pair-2026-10-13/postrun-budget-audit.md).
 - [Décision sur la continuation complète](evidence/coordination-local-pair-2026-10-13/postrun-continuation-decision.md).
 - [Validation indépendante des fichiers livrables](evidence/coordination-local-pair-2026-10-13/postrun-artifact-validation.json).
+
+
+## Livraison et blocage Library
+
+Le résultat et toutes ses preuves sont publiés au commit
+`cba6b74a74234ee1da4d4e0a6863dce9b1e9ef9c`, SHA distant vérifié sur
+`investigate/physical-support`. `main` reste à
+`c597959f46f37715035349c8cd0a699b6822111a`.
+
+Le rapport complet, la vidéo de quatre secondes et le CSV ont été proposés en
+un lot ordonné via la [compétence Library courante](skill://plugin_connector_1p_1b8ff8edfc1481918b252c8277e23125/library/SKILL.md).
+L’opération échoue sur une erreur réseau dès la découverte des outils du flux
+officiel ; le contrôle suivant, strictement en lecture seule, retrouve le même
+blocage. **Aucun nouvel identifiant Library, fichier ou version n’est confirmé.**
+Aucun autre mode de transfert ni seconde écriture n’a été tenté. Le parent peut
+transmettre les fichiers présents dans le dépôt et reprendre la publication
+lorsque cette voie officielle est accessible.
+
+Le [rapport consolidé](evidence/coordination-local-pair-2026-10-13/delivery/LaboratoireHumain-coordination-paire-finale-rapport-complet-2026-10-13.md)
+et le [reçu de blocage](evidence/coordination-local-pair-2026-10-13/delivery/library-delivery-status.json)
+sont conservés avec leurs empreintes. Ce blocage de livraison ne modifie pas la
+clôture physique ni les résultats.
