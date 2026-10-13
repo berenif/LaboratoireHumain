@@ -6,6 +6,11 @@ Aucun nouveau sous-pas Rapier n'a été exécuté. Le protocole physique initial
 reste clos : B n'a toujours pas été appliqué à une histoire réelle, les talons
 ne sont pas acquis et aucun relevage n'est qualifié.
 
+Le [lot natif distinct du 13 octobre](coordination-native-parity-2026-10-13.md)
+a été clos avant tout démarrage du worker, sur une interface `/proc` absente.
+Il n’ajoute aucune validation physique : 0 pas exécuté, 44 réservés sans
+remboursement, aucune relance.
+
 Cette correction poursuit la préparation de 40 h autorisée par le propriétaire
 et par le message du parent après le premier résultat. Elle traite un défaut
 logiciel réparable ; elle ne transforme pas ce refus en preuve d'infaisabilité

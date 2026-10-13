@@ -54,22 +54,65 @@ preuve universelle de tous les caches internes non exposés.
 - [x] Extraire les attentes depuis les archives, sans intégration.
 - [x] Implémenter puis tester statiquement le worker et le superviseur bornés.
 - [x] Revue contradictoire du budget et des preuves d'application/parité.
-- [ ] Compiler, geler manifeste et autorisation ; publier le jalon préparatoire.
-- [ ] Exécuter exactement une admission sous 44 pas / 120 s.
-- [ ] Examiner les preuves, fermer et publier le verdict.
+- [x] Compiler, geler manifeste et autorisation ; publier le jalon préparatoire.
+- [x] Soumettre l’unique lancement borné : refus de supervision avant tout worker.
+- [x] Examiner et fermer le registre ; archiver les preuves du refus.
 
 Le fichier [de préparation](evidence/coordination-native-parity-2026-10-13/preparation.json)
 distingue les réservations de préparation du futur compteur physique. Les
 anciennes vérifications de compilation restent des preuves historiques ; les
 contrôles propres au nouveau worker seront archivés dans ce dossier distinct.
 
-## Verdict
+## Verdict : blocage de supervision, aucune nouvelle physique
 
-Préparation terminée : 5 tests Rust purs, 41 tests synthétiques du superviseur,
-compilation de production et compilation release dédiée réussis. Le manifeste
-fige les sources, entrées et le binaire. Aucun sous-pas de ce nouveau lot n'est
-encore exécuté.
-Un succès éventuel signifiera uniquement « commandes corrigées appliquées et
-prévisibles sur les quatre pas vérifiés depuis cet état ». L'acquisition des
-talons, la stabilité, la continuation de huit secondes, le relevage en moins
-de 25 secondes, la seconde stable et les 24 qualifications restent inconnus.
+L’unique lancement a eu lieu le **13 octobre 2026 à 07:15:05,374 UTC**, après
+publication et vérification distante du jalon
+`08aa8684911a87e0c3d6565855a0bb2c84340024`. Le registre est fermé en
+`closed-failure` après **0,02845 s**. Les **44 sous-pas sont réservés et non
+remboursés** ; l’autorisation est close, sans nouvelle tentative.
+
+**Zéro worker créé, zéro permis envoyé, zéro intégration native exécutée.**
+À l’entrée de la garde de délai, `child_pids()` ne trouve pas
+`/proc/3658/task/3658/children`. Cette lecture précède le `yield` de la garde
+et l’appel à `worker_factory`. Le protocole est vide, le champ worker est nul
+et aucun fichier stderr du worker n’a été créé. Le registre conserve
+`actualNativeStepsKnown: null`, puisqu’aucun reçu natif n’existe ; l’absence
+d’intégration est établie séparément par ce chemin de contrôle et l’
+[audit de clôture](evidence/coordination-native-parity-2026-10-13/post-run-root-audit.json).
+Aucun compteur ni registre antérieur n’a été réécrit pour changer ce constat.
+
+Ce défaut vient d’un préalable système omis : les 41 tests synthétiques
+couvraient les gardes avec une inspection de processus simulée, et le contrôle
+préliminaire vérifiait les fichiers sans tester cette interface `/proc` réelle.
+Les cinq tests Rust purs, la compilation de production et le build release
+réussis ne prouvaient donc pas que le superviseur pouvait démarrer ici.
+Le défaut est dans la préparation du test, avant l’évaluation du contrôleur.
+
+Les 294 fichiers figés, les six anciens registres et l’ancien binaire ont été
+vérifiés inchangés après l’arrêt. Le [manifeste](evidence/coordination-native-parity-2026-10-13/manifest.json)
+porte SHA-256 `40e492a29d723118cb26990b9dd2866d498d9a1a5d5ae815d7aae1d9d92a407a` ;
+le binaire dédié porte `9e125785fad85b0befc9373c3116d66aa32e8050a998ce08974b0da29d2760cc`.
+Les [tests et compilations](evidence/coordination-native-parity-2026-10-13/build-validation.json),
+la [réclamation unique](evidence/coordination-native-parity-2026-10-13/authorization-claim.json),
+le [registre clos](evidence/coordination-native-parity-2026-10-13/native-run/physical-ledger.json)
+et le [résultat du superviseur](evidence/coordination-native-parity-2026-10-13/native-run/run-result.json)
+constituent les preuves de ce lot. Il n’existe aucun nouvel état physique à
+rendre en vidéo ; l’index d’archive indique explicitement zéro trace native.
+
+## Décision et suite nécessaire
+
+La correction numérique conserve ses certificats statiques ; **son application
+native et la parité prévision/exécution restent non vérifiées**. Ce refus ne
+permet aucune conclusion sur les talons, la stabilité ou la faisabilité
+anatomique. La continuation de huit secondes, le relevage en moins de
+25 secondes, la seconde stable et les 24 qualifications restent inconnus.
+Récupération et pas correctifs restent désactivés par défaut.
+
+Avant toute proposition d’un nouveau lot, le contrôle préliminaire devra
+vérifier en lecture seule les interfaces de processus réellement disponibles
+*avant* de réclamer l’autorisation. Une supervision compatible devra ensuite
+être revue et testée avec des processus inertes, sans moteur physique : identité,
+thread unique, descendance, interruption pendant le démarrage et arrêt au délai.
+Il ne suffit pas d’ignorer l’exception ou de retirer le contrôle de descendance.
+Les fichiers figés de ce lot restent intacts. Une nouvelle exécution native
+nécessite une autorisation distincte via le parent ; rien n’est relancé ici.

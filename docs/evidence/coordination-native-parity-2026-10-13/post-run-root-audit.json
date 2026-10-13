@@ -1,0 +1,37 @@
+{
+  "schema": 1,
+  "result": "environment-preflight-failure-before-native-spawn",
+  "newNativeSubsteps": 0,
+  "nativeStepCountBasis": "hard_deadline enters child_pids before yield and before worker_factory; no worker, no permit, empty protocol",
+  "ledgerActualNativeStepsKnown": null,
+  "reservedSteps": 44,
+  "refundSteps": 0,
+  "authorizationClosed": true,
+  "retryPerformed": false,
+  "frozenFilesVerified": 294,
+  "protectedOldArtifactsVerified": 7,
+  "activeNativeWorkers": [],
+  "procReadOnlyObservations": {
+    "/proc/self/status": {
+      "exists": true,
+      "isFile": true,
+      "isDir": false
+    },
+    "/proc/self/stat": {
+      "exists": true,
+      "isFile": true,
+      "isDir": false
+    },
+    "/proc/self/task": {
+      "exists": true,
+      "isFile": false,
+      "isDir": true
+    },
+    "/proc/self/task/3756/children": {
+      "exists": false,
+      "isFile": false,
+      "isDir": false
+    }
+  },
+  "limitations": "No native command/motor/parity/heel/stability/recovery validation obtained"
+}
