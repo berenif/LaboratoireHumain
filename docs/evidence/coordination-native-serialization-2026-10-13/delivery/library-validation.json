@@ -1,0 +1,20 @@
+{
+  "schema": 1,
+  "validatedUtc": "2026-10-13T10:40:17.476999+00:00",
+  "libraryFileId": "libfile_a3342baf3be481919473956d53a2929f",
+  "fileId": "file_00000000952081f5a0de3bb6f455cf9a",
+  "version": 0,
+  "libraryStatus": "succeeded",
+  "localPath": "/workspace/LaboratoireHumain/docs/evidence/coordination-native-serialization-2026-10-13/delivery/LaboratoireHumain-parite-native-rapport-complet-2026-10-13.md",
+  "localBytes": 37547,
+  "localSha256": "75db95445aa63e8b9aaa294edb39a6cb052cd42cf3b18d16a9e0b8d629f0b874",
+  "libraryIdentityPersisted": {
+    "user.library-file-version": "0",
+    "user.library-file-id": "libfile_a3342baf3be481919473956d53a2929f"
+  },
+  "helperExitCode": 0,
+  "activeNativeWorkers": [],
+  "nativeStepsAfterSuccessful44StepLot": 0,
+  "physicalPairBudgetOpened": false,
+  "physicalPairExecuted": false
+}

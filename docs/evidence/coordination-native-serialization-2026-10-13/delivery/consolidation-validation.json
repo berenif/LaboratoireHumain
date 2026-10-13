@@ -1,0 +1,30 @@
+{
+  "schema": 1,
+  "createdUtc": "2026-10-13T10:39:25.596973+00:00",
+  "sourceCommit": "83b8447285333ec2feb765781c3d84aac3d2e4dd",
+  "remoteShaVerified": true,
+  "sourceFiles": [
+    {
+      "path": "docs/coordination-native-parity-result-2026-10-13.md",
+      "sha256": "10c9dcb35e1b289da3507c2a7782b79d3d8d6e60fec879e0a23c1f7689e6d42f"
+    },
+    {
+      "path": "docs/evidence/coordination-native-serialization-2026-10-13/post-run-budget-audit.md",
+      "sha256": "284018dc5112c9186e548c40d40d1fd3c1c7ea357bcf4e88934c9dd9b2d22d27"
+    },
+    {
+      "path": "docs/evidence/coordination-native-serialization-2026-10-13/post-run-physical-parity-audit.md",
+      "sha256": "ed432bdaf0fd6f12293b474e4a6f2db5431431a077ec79a5c411138bf6ed1fac"
+    },
+    {
+      "path": "docs/evidence/coordination-native-serialization-2026-10-13/next-local-pair-preparation.md",
+      "sha256": "ea162a9ca54ead9d69e9dfa029308319d46c6634d6dea47748b462de7f66578e"
+    }
+  ],
+  "reportPath": "/workspace/LaboratoireHumain/docs/evidence/coordination-native-serialization-2026-10-13/delivery/LaboratoireHumain-parite-native-rapport-complet-2026-10-13.md",
+  "reportSha256": "75db95445aa63e8b9aaa294edb39a6cb052cd42cf3b18d16a9e0b8d629f0b874",
+  "reportBytes": 37547,
+  "frozenManifestFilesVerified": 326,
+  "protectedFilesVerified": 7,
+  "nativeSubstepsDuringConsolidation": 0
+}
