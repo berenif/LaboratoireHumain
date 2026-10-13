@@ -267,6 +267,27 @@ impl Controller {
         self.problem_observed(&sim.model, sim.heading, &observed, step)
     }
 
+    /// Static entry point for the reformulated command generator. It shares
+    /// this owner's reference, q/dq memory, observed geometry and patch ids,
+    /// but does not install commands or replace the closed family's executor.
+    /// The returned type explicitly requires a new native preview admission.
+    pub(crate) fn prepare_command_proposal_observed(
+        &self,
+        model: &lh_model::Model,
+        heading: Rotation,
+        observed: &tasks::ObservedState,
+    ) -> Result<super::command_proposal::CommandProposal, String> {
+        let step = observed.native_substep.checked_sub(self.start)
+            .ok_or("Proposal observation precedes owner start")?;
+        if !self.enabled || observed.native_substep != self.memory.next_substep {
+            return Err("Proposal requires the enabled owner's current command clock".into());
+        }
+        let original = self.problem_observed(model, heading, observed, step)?;
+        super::command_proposal::prepare(
+            model, &self.memory, &original, &self.patches.active, observed.native_substep,
+        )
+    }
+
     pub(crate) fn configure(&mut self, sim: &mut Simulation) -> Result<(), String> {
         if ![0., 0.5, 1., 1.5].contains(&self.feedback_scale) {
             return Err("Unfrozen coordination proposal".into());
