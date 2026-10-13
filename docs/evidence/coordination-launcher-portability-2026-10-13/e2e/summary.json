@@ -1,0 +1,47 @@
+{
+  "caseReceipts": [
+    "read-only-preflight/receipt.json",
+    "unavailable-proc-preflight/receipt.json",
+    "existing-alarm-preflight/receipt.json",
+    "success-and-duplicate-claim/receipt.json",
+    "partial-refusal/receipt.json",
+    "crash-before-ready/receipt.json",
+    "crash-after-permit/receipt.json",
+    "timeout-before-ready/receipt.json",
+    "timeout-after-permit/receipt.json",
+    "timeout-after-result/receipt.json",
+    "sigterm-after-permit/receipt.json",
+    "sigint-after-permit/receipt.json",
+    "sigterm-during-construction/receipt.json",
+    "child-process-refused/receipt.json",
+    "second-thread-refused/receipt.json",
+    "unrelated-child-preserved/receipt.json"
+  ],
+  "harnessSha256": "7a3c03d81aa4106793cad3d2ec6db472b91c2217ef0689d925026fbb55082936",
+  "host": {
+    "nativeRustWorkerExecuted": false,
+    "physicalIntegrations": 0,
+    "platform": "linux",
+    "procChildrenInterfaceExists": false,
+    "procStatExists": true,
+    "processInspection": {
+      "binaryPath": "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3.12",
+      "binarySha256": "fa67443527ed9647f760d807e2a38f26340757123e643c4639cf273ed15d5ea7",
+      "children": "",
+      "pid": 4328,
+      "startTicks": "276718",
+      "threads": 1
+    },
+    "protocolCountsAreSynthetic": true
+  },
+  "nativeRustWorkerExecuted": false,
+  "passed": true,
+  "passedTests": 16,
+  "physicalIntegrations": 0,
+  "protocolCountsAreSynthetic": true,
+  "runnerSha256": "e5af00efb904bc203704bc88514a8e8a803dad36b3bca669a017c90ca24f97da",
+  "runnerUnchangedThroughout": true,
+  "scope": "Real Linux processes, pipes, /proc, alarms and signals; fabricated C protocol only. No native physical qualification.",
+  "sourceSha256": "a53320000f19718588eddba858332c67f29bc7ee49ddcd76418604742e583784",
+  "tests": 16
+}

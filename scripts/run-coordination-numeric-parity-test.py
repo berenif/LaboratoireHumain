@@ -222,6 +222,22 @@ class RunnerTests(unittest.TestCase):
             self.run_batch()
         self.assertEqual(self.workers, [])
 
+    def test_unavailable_process_interface_refuses_before_claim(self):
+        with mock.patch.object(runner, 'PROC', self.root / 'missing-proc'):
+            with self.assertRaises(FileNotFoundError):
+                self.run_batch()
+        self.assertFalse((self.root / 'authorization-claim.json').exists())
+        self.assertFalse((self.root / 'native-run').exists())
+        self.assertEqual(self.workers, [])
+
+    def test_denied_process_interface_refuses_before_claim(self):
+        with mock.patch.object(runner, 'process_stat', side_effect=PermissionError('access denied')):
+            with self.assertRaises(PermissionError):
+                self.run_batch()
+        self.assertFalse((self.root / 'authorization-claim.json').exists())
+        self.assertFalse((self.root / 'native-run').exists())
+        self.assertEqual(self.workers, [])
+
     def test_input_hash_mutation_blocks_before_spawn(self):
         self.fixture.write_text('{}')
         with self.assertRaisesRegex(runner.Refusal, 'hash mismatch'):
@@ -364,6 +380,46 @@ class RunnerTests(unittest.TestCase):
     def test_nonzero_exit_is_failure_after_full_receipt(self):
         self.options['exit'] = 2
         self.assertEqual(self.failure('exit')['actualNativeStepsKnown'], 44)
+
+
+class ProcessMetadataTests(unittest.TestCase):
+    def setUp(self):
+        directory = tempfile.TemporaryDirectory(prefix='inert-proc-metadata-')
+        self.addCleanup(directory.cleanup)
+        self.root = Path(directory.name)
+        patch = mock.patch.object(runner, 'PROC', self.root)
+        patch.start()
+        self.addCleanup(patch.stop)
+
+    def stat(self, pid, parent, comm='has spaces ) and parentheses'):
+        directory = self.root / str(pid)
+        directory.mkdir()
+        fields = ['S', str(parent)] + ['0'] * 17 + ['123456']
+        (directory / 'stat').write_text(f'{pid} ({comm}) ' + ' '.join(fields))
+
+    def test_ppid_census_needs_no_children_interface(self):
+        self.stat(10, 1)
+        self.stat(11, 10)
+        self.stat(12, 10)
+        self.stat(13, 11)
+        self.assertEqual(runner.child_pids(10), {11, 12})
+        self.assertEqual(runner.process_stat(10)[19], '123456')
+
+    def test_disappearing_pid_is_skipped(self):
+        self.stat(10, 1)
+        (self.root / '11').mkdir()
+        self.assertEqual(runner.child_pids(10), set())
+
+    def test_missing_parent_is_not_an_empty_successful_census(self):
+        self.stat(11, 1)
+        with self.assertRaisesRegex(runner.Refusal, 'required parent PID'):
+            runner.child_pids(10)
+
+    def test_permission_error_is_never_ignored(self):
+        self.stat(10, 1)
+        with mock.patch.object(runner, 'process_stat', side_effect=PermissionError('denied')):
+            with self.assertRaises(PermissionError):
+                runner.child_pids(10)
 
 
 class PipeTests(unittest.TestCase):

@@ -1,0 +1,35 @@
+{
+  "activeSurvivors": [],
+  "case": "child-process-refused",
+  "duplicateClaimRefusal": null,
+  "elapsedSeconds": 0.06363602300007187,
+  "failures": [],
+  "fixtureMode": "child",
+  "fixturePids": [
+    4371,
+    4372
+  ],
+  "helperExitCode": 0,
+  "helperReceipt": {
+    "alarmRestored": true,
+    "error": "Refusal: Refusal: Native process identity, thread, child or binary contract violated",
+    "nativeRustWorkerExecuted": false,
+    "physicalIntegrations": 0,
+    "protocolCountsAreSynthetic": true,
+    "result": null,
+    "signalHandlersRestored": true,
+    "unrelatedSurvivedCleanup": null
+  },
+  "nativeRustWorkerExecuted": false,
+  "oldNativeRegistersTouched": false,
+  "passed": true,
+  "physicalIntegrations": 0,
+  "protocolCountsAreSynthetic": true,
+  "sentSignal": null,
+  "statesAfterLauncher": {
+    "4371": null,
+    "4372": "Z"
+  },
+  "temporaryManifestPathsAreHistorical": true,
+  "testWallSeconds": 2
+}

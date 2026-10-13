@@ -1,0 +1,33 @@
+{
+  "activeSurvivors": [],
+  "case": "crash-after-permit",
+  "duplicateClaimRefusal": null,
+  "elapsedSeconds": 0.0637087469999642,
+  "failures": [],
+  "fixtureMode": "crash-permit",
+  "fixturePids": [
+    4346
+  ],
+  "helperExitCode": 0,
+  "helperReceipt": {
+    "alarmRestored": true,
+    "error": "Refusal: FileNotFoundError: [Errno 2] No such file or directory: '/proc/4346/exe'",
+    "nativeRustWorkerExecuted": false,
+    "physicalIntegrations": 0,
+    "protocolCountsAreSynthetic": true,
+    "result": null,
+    "signalHandlersRestored": true,
+    "unrelatedSurvivedCleanup": null
+  },
+  "nativeRustWorkerExecuted": false,
+  "oldNativeRegistersTouched": false,
+  "passed": true,
+  "physicalIntegrations": 0,
+  "protocolCountsAreSynthetic": true,
+  "sentSignal": null,
+  "statesAfterLauncher": {
+    "4346": null
+  },
+  "temporaryManifestPathsAreHistorical": true,
+  "testWallSeconds": 2
+}

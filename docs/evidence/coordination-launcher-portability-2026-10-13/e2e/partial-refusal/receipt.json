@@ -1,0 +1,33 @@
+{
+  "activeSurvivors": [],
+  "case": "partial-refusal",
+  "duplicateClaimRefusal": null,
+  "elapsedSeconds": 0.07076988900007564,
+  "failures": [],
+  "fixtureMode": "refusal",
+  "fixturePids": [
+    4342
+  ],
+  "helperExitCode": 0,
+  "helperReceipt": {
+    "alarmRestored": true,
+    "error": "Refusal: Refusal: Partial batch or native diagnostic refused; no retry",
+    "nativeRustWorkerExecuted": false,
+    "physicalIntegrations": 0,
+    "protocolCountsAreSynthetic": true,
+    "result": null,
+    "signalHandlersRestored": true,
+    "unrelatedSurvivedCleanup": null
+  },
+  "nativeRustWorkerExecuted": false,
+  "oldNativeRegistersTouched": false,
+  "passed": true,
+  "physicalIntegrations": 0,
+  "protocolCountsAreSynthetic": true,
+  "sentSignal": null,
+  "statesAfterLauncher": {
+    "4342": null
+  },
+  "temporaryManifestPathsAreHistorical": true,
+  "testWallSeconds": 2
+}

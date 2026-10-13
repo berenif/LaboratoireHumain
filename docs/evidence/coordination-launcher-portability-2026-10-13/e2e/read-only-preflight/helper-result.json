@@ -1,0 +1,15 @@
+{
+  "alarmRestored": true,
+  "error": null,
+  "nativeRustWorkerExecuted": false,
+  "physicalIntegrations": 0,
+  "protocolCountsAreSynthetic": true,
+  "result": {
+    "executeRequested": false,
+    "manifestSha256": "35b55fdbbb03cf1413f91c7ab8aa866fe7f340662bbffb70f22a6eab7777b628",
+    "physicalIntegrations": 0,
+    "status": "static-preflight-passed"
+  },
+  "signalHandlersRestored": true,
+  "unrelatedSurvivedCleanup": null
+}

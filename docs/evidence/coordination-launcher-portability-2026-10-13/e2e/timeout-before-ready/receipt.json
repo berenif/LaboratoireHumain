@@ -1,0 +1,33 @@
+{
+  "activeSurvivors": [],
+  "case": "timeout-before-ready",
+  "duplicateClaimRefusal": null,
+  "elapsedSeconds": 2.0624507659999836,
+  "failures": [],
+  "fixtureMode": "hang-ready",
+  "fixturePids": [
+    4348
+  ],
+  "helperExitCode": 0,
+  "helperReceipt": {
+    "alarmRestored": true,
+    "error": "Refusal: Refusal: Hard120s deadline: native process group killed",
+    "nativeRustWorkerExecuted": false,
+    "physicalIntegrations": 0,
+    "protocolCountsAreSynthetic": true,
+    "result": null,
+    "signalHandlersRestored": true,
+    "unrelatedSurvivedCleanup": null
+  },
+  "nativeRustWorkerExecuted": false,
+  "oldNativeRegistersTouched": false,
+  "passed": true,
+  "physicalIntegrations": 0,
+  "protocolCountsAreSynthetic": true,
+  "sentSignal": null,
+  "statesAfterLauncher": {
+    "4348": null
+  },
+  "temporaryManifestPathsAreHistorical": true,
+  "testWallSeconds": 2
+}

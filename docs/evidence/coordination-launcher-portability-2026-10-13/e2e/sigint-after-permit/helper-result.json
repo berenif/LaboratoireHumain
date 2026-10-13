@@ -1,0 +1,10 @@
+{
+  "alarmRestored": true,
+  "error": "Refusal: Refusal: Cancelled by SIGINT: native process group killed",
+  "nativeRustWorkerExecuted": false,
+  "physicalIntegrations": 0,
+  "protocolCountsAreSynthetic": true,
+  "result": null,
+  "signalHandlersRestored": true,
+  "unrelatedSurvivedCleanup": null
+}

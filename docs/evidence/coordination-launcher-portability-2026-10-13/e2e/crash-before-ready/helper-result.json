@@ -1,0 +1,10 @@
+{
+  "alarmRestored": true,
+  "error": "Refusal: Refusal: Worker exited without a complete result",
+  "nativeRustWorkerExecuted": false,
+  "physicalIntegrations": 0,
+  "protocolCountsAreSynthetic": true,
+  "result": null,
+  "signalHandlersRestored": true,
+  "unrelatedSurvivedCleanup": null
+}

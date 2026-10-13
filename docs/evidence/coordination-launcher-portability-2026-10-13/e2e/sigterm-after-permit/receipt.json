@@ -1,0 +1,33 @@
+{
+  "activeSurvivors": [],
+  "case": "sigterm-after-permit",
+  "duplicateClaimRefusal": null,
+  "elapsedSeconds": 0.06967187899999772,
+  "failures": [],
+  "fixtureMode": "hang",
+  "fixturePids": [
+    4365
+  ],
+  "helperExitCode": 0,
+  "helperReceipt": {
+    "alarmRestored": true,
+    "error": "Refusal: Refusal: Cancelled by SIGTERM: native process group killed",
+    "nativeRustWorkerExecuted": false,
+    "physicalIntegrations": 0,
+    "protocolCountsAreSynthetic": true,
+    "result": null,
+    "signalHandlersRestored": true,
+    "unrelatedSurvivedCleanup": null
+  },
+  "nativeRustWorkerExecuted": false,
+  "oldNativeRegistersTouched": false,
+  "passed": true,
+  "physicalIntegrations": 0,
+  "protocolCountsAreSynthetic": true,
+  "sentSignal": 15,
+  "statesAfterLauncher": {
+    "4365": null
+  },
+  "temporaryManifestPathsAreHistorical": true,
+  "testWallSeconds": 2
+}

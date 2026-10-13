@@ -1,0 +1,58 @@
+{
+  "schema": 1,
+  "startedUtc": "2026-10-13T07:24:54.855063+00:00",
+  "authority": "Parent delegation: repair launcher; real inert-worker tests only, zero physical integration, no new budget",
+  "baseCommit": "d4be351ed4aa0012f59416352af6beb776586a40",
+  "nativeIntegrationsAllowed": 0,
+  "openNewNativeBudget": false,
+  "protected": [
+    {
+      "path": "docs/evidence/coordination-native-parity-2026-10-13/authorization-claim.json",
+      "sha256": "475daae5e690f18cc6624cc280ff97a118374319a0d20687c01197e19b2d2078"
+    },
+    {
+      "path": "docs/evidence/coordination-native-parity-2026-10-13/manifest.json",
+      "sha256": "40e492a29d723118cb26990b9dd2866d498d9a1a5d5ae815d7aae1d9d92a407a"
+    },
+    {
+      "path": "docs/evidence/coordination-native-parity-2026-10-13/preparation.json",
+      "sha256": "a3676cf32afcf3380e357413fd6dc468392663f1cca7ed6f81ddb1c3f55de5a1"
+    },
+    {
+      "path": "docs/evidence/coordination-native-parity-2026-10-13/native-run/physical-ledger.json",
+      "sha256": "73b2e3bff52aadf0414be2f7a4a96fa4cd5da7b02de0945434e4f136bbf476a6"
+    },
+    {
+      "path": "docs/evidence/coordination-native-parity-2026-10-13/native-run/run-result.json",
+      "sha256": "18773eabaa5b2a7d5cc78a8b1a59e1e84370c600f2d78ad8f5735d7f5a461183"
+    },
+    {
+      "path": "docs/evidence/foot-coordination-2026-10-12/ledger.json",
+      "sha256": "85f63dbc0a78ed9db0bafc4a63d91e95ff4f34349725854c906ba5332c40f6fa"
+    },
+    {
+      "path": "docs/evidence/coordination-prototype-2026-10-12/continuation-geometry-ledger.json",
+      "sha256": "f4f11215e504c4837030c35a5daf793f141134ec936c53bce4bc0c2496ee8ad5"
+    },
+    {
+      "path": "docs/evidence/coordination-prototype-2026-10-12/budget/ledger.json",
+      "sha256": "2afa69b3ae9c8ab8343f7dabdf46b955c8ac7b88aa259404958e25d49a72ef07"
+    },
+    {
+      "path": "docs/evidence/coordination-prototype-2026-10-12/continuation-ledger.json",
+      "sha256": "64b7bb8f38de84cc4123d7c5ea2809e162f8138585aff2ebd5a8c55921efb13e"
+    },
+    {
+      "path": "docs/evidence/coordination-numeric-correction-2026-10-12/preparation-correction-budget.json",
+      "sha256": "8d5d2db35031fadb76062899cb9c98465cb58337327b468412aba190a1881c80"
+    },
+    {
+      "path": "docs/evidence/intermediate-transfer-prep-2026-10-12/ledger.json",
+      "sha256": "7c5861ab8b6c9e2ac3731cc4cc7453254d6d69571f240d8d0a5d679bd5978610"
+    },
+    {
+      "path": "rust/target/release/deps/coordination_worker-60f2b83fe348a1d3",
+      "sha256": "1bb4b91ac8ebfbe382d9525e524b85040ca9890bc90a0ef0467f1ef2b64c8b57"
+    }
+  ]
+}

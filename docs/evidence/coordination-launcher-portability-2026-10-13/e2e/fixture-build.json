@@ -1,0 +1,22 @@
+{
+  "binarySha256": "6a2df2ba5945e8b4624019cc856370e53c70e9018c464a567ee0f23ff2e8deeb",
+  "command": [
+    "cc",
+    "-std=c11",
+    "-O2",
+    "-Wall",
+    "-Wextra",
+    "-Werror",
+    "-pthread",
+    "/workspace/LaboratoireHumain/scripts/fixtures/coordination-fake-worker.c",
+    "-o",
+    "/tmp/lh-launcher-C-only-khdid5tx/fake-worker"
+  ],
+  "exitCode": 0,
+  "nativeRustWorkerExecuted": false,
+  "physicalIntegrations": 0,
+  "protocolCountsAreSynthetic": true,
+  "sourceSha256": "a53320000f19718588eddba858332c67f29bc7ee49ddcd76418604742e583784",
+  "stderr": "",
+  "stdout": ""
+}

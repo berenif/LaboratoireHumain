@@ -43,6 +43,7 @@ from pathlib import Path
 import selectors
 import signal
 import subprocess
+import threading
 import time
 
 REPO = Path(__file__).resolve().parents[1]
@@ -50,6 +51,7 @@ BATCH_ROOT = REPO / 'docs/evidence/coordination-native-parity-2026-10-13'
 SCHEMA = 'laboratoirehumain.coordination-numeric-parity-manifest.v1'
 AUTHORIZATION_ID = 'coordination-numeric-parity-2026-10-13T06:44Z'
 STEPS, WALL_SECONDS, MAX_LINE = 44, 120, 1024 * 1024
+PROC = Path('/proc')
 GATES = ('integrity_ok', 'prefix_matches_archive', 'parity_verified', 'diagnostic_present')
 PREREQUISITES = ('static_tests_passed', 'compiled_release_before_run',
     'unchanged_physical_contract', 'archived_prefix_12_available',
@@ -192,6 +194,7 @@ def preflight(manifest_path, *, batch_root=BATCH_ROOT):
         protected.append(checked_record(record))
     if len({r['path'] for r in protected}) != 7 or str(binary) in {r['path'] for r in protected}:
         raise Refusal('Old registers and binary must be distinct and preserved')
+    environment_preflight()  # Read-only; fail before reserving/claiming the batch.
     return {'manifest': manifest, 'manifestPath': str(path), 'manifestSha256': sha(path),
             'records': list(records.values()), 'protected': protected,
             'binary': binary, 'output': output, 'batchRoot': batch_root}
@@ -249,17 +252,53 @@ class Journal:
 
 
 def inspect_process(pid):
-    status = Path(f'/proc/{pid}/status').read_text().splitlines()
+    status = (PROC / str(pid) / 'status').read_text().splitlines()
     threads = int(next(line.split(':', 1)[1] for line in status if line.startswith('Threads:')))
-    children = Path(f'/proc/{pid}/task/{pid}/children').read_text().strip()
-    stat = Path(f'/proc/{pid}/stat').read_text().rsplit(')', 1)[1].split()
-    binary = Path(os.readlink(f'/proc/{pid}/exe'))
+    children = ' '.join(map(str, sorted(child_pids(pid))))
+    stat = process_stat(pid)
+    executable = PROC / str(pid) / 'exe'
+    binary = Path(os.readlink(executable))
     return {'pid': pid, 'threads': threads, 'children': children, 'startTicks': stat[19],
-            'binaryPath': str(binary), 'binarySha256': sha(f'/proc/{pid}/exe')}
+            'binaryPath': str(binary), 'binarySha256': sha(executable)}
 
 
-def child_pids():
-    return set(map(int, Path(f'/proc/{os.getpid()}/task/{os.getpid()}/children').read_text().split()))
+def process_stat(pid):
+    # comm may contain spaces and ')'; PPid is field 4, starttime field 22.
+    raw = (PROC / str(pid) / 'stat').read_text()
+    fields = raw.rsplit(')', 1)[1].split()
+    if int(raw.split('(', 1)[0]) != pid or len(fields) < 20:
+        raise Refusal('Invalid process identity/stat fields')
+    return fields
+
+
+def child_pids(parent_pid=None):
+    # Standard Linux PPid metadata does not require CONFIG_CHECKPOINT_RESTORE.
+    # Only disappearing PIDs are benign; denied access is never treated as empty.
+    parent_pid = os.getpid() if parent_pid is None else parent_pid
+    children, parent_seen = set(), False
+    for entry in PROC.iterdir():
+        if not entry.name.isdecimal():
+            continue
+        pid = int(entry.name)
+        try:
+            stat = process_stat(pid)
+        except FileNotFoundError:
+            continue
+        parent_seen |= pid == parent_pid
+        if int(stat[1]) == parent_pid:
+            children.add(pid)
+    if not parent_seen:
+        raise Refusal('Process census cannot observe its required parent PID')
+    return children
+
+
+def environment_preflight():
+    if threading.current_thread() is not threading.main_thread():
+        raise Refusal('Signal supervision requires the main thread')
+    if signal.getitimer(signal.ITIMER_REAL) != (0.0, 0.0):
+        raise Refusal('Cannot replace an existing process alarm')
+    inspect_process(os.getpid())
+    os.getpgid(os.getpid())
 
 
 def kill_pid_group(pid):
@@ -358,31 +397,54 @@ class NativeWorker:
 
 @contextmanager
 def hard_deadline(deadline, worker_getter):
-    previous = signal.getsignal(signal.SIGALRM)
+    signals = (signal.SIGALRM, signal.SIGINT, signal.SIGTERM)
+    previous = {sig: signal.getsignal(sig) for sig in signals}
     if signal.getitimer(signal.ITIMER_REAL) != (0.0, 0.0):
         raise Refusal('Cannot replace an existing process alarm')
     original_children = child_pids()
     def kill_new_children():
         for pid in child_pids() - original_children:
             kill_pid_group(pid)
-    def expire(_signal, _frame):
+    def interrupt(signum, _frame):
+        reason = 'Hard120s deadline' if signum == signal.SIGALRM else f'Cancelled by {signal.Signals(signum).name}'
+        cleanup_errors = []
         worker = worker_getter()
         if worker is not None:
-            worker.kill()
+            try:
+                worker.kill()
+            except BaseException as exc:
+                cleanup_errors.append(str(exc))
         # Cover SIGALRM during Popen/NativeWorker construction, before the
         # returned worker is assigned. Only this context's new direct children
         # are eligible; pre-existing unrelated children are never signalled.
-        kill_new_children()
-        raise Refusal('Hard120s deadline: native process group killed')
-    signal.signal(signal.SIGALRM, expire)
-    signal.setitimer(signal.ITIMER_REAL, max(0.000001, deadline - time.monotonic()))
+        try:
+            kill_new_children()
+        except BaseException as exc:
+            cleanup_errors.append(str(exc))
+        if cleanup_errors:
+            raise Refusal(reason + '; process cleanup failed: ' + '; '.join(cleanup_errors))
+        raise Refusal(reason + ': native process group killed')
+    failure = None
     try:
+        for sig in signals:
+            signal.signal(sig, interrupt)
+        signal.setitimer(signal.ITIMER_REAL, max(0.000001, deadline - time.monotonic()))
         yield
+    except BaseException as exc:
+        failure = exc
+        raise
     finally:
         # Also covers any constructor exception after spawning, not only alarm.
-        kill_new_children()
-        signal.setitimer(signal.ITIMER_REAL, 0)
-        signal.signal(signal.SIGALRM, previous)
+        try:
+            kill_new_children()
+        except BaseException as exc:
+            if failure is not None:
+                raise Refusal(f'{type(failure).__name__}: {failure}; process cleanup failed: {exc}') from failure
+            raise
+        finally:
+            signal.setitimer(signal.ITIMER_REAL, 0)
+            for sig, handler in previous.items():
+                signal.signal(sig, handler)
 
 
 def run(manifest_path, *, execute=False, batch_root=BATCH_ROOT, clock=None,
