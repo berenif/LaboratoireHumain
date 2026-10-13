@@ -1,0 +1,12 @@
+test_corrupt_witness_is_refused (__main__.MinimalConflictTests.test_corrupt_witness_is_refused) ... ok
+test_eight_positive_dual_certificates_and_64_exact_removal_witnesses (__main__.MinimalConflictTests.test_eight_positive_dual_certificates_and_64_exact_removal_witnesses) ... ok
+test_nonpositive_dual_weight_is_refused (__main__.MinimalConflictTests.test_nonpositive_dual_weight_is_refused) ... ok
+test_original_tolerance_is_included_in_selected_bounds (__main__.MinimalConflictTests.test_original_tolerance_is_included_in_selected_bounds) ... ok
+test_report_reproduces_from_archived_coefficients (__main__.MinimalConflictTests.test_report_reproduces_from_archived_coefficients) ... ok
+test_two_components_already_conflict_for_three_feedback_scales (__main__.MinimalConflictTests.test_two_components_already_conflict_for_three_feedback_scales) ... ok
+test_witness_scope_does_not_claim_whole_qp_becomes_feasible (__main__.MinimalConflictTests.test_witness_scope_does_not_claim_whole_qp_becomes_feasible) ... ok
+
+----------------------------------------------------------------------
+Ran 7 tests in 0.074s
+
+OK

@@ -1,0 +1,138 @@
+{
+  "scope": "pure arithmetic auxiliary check, not exhaustive",
+  "sourceRawSha256": "5ed160d4c9c7d4361ec5d285268a9aa694bc797a419768cfaac0370d46313711",
+  "nativeSteps": 0,
+  "fkEvaluations": 0,
+  "lpSolverCalls": 0,
+  "negativeGapDoesNotProveFeasibility": true,
+  "checks": [
+    {
+      "feedbackScale": 0.0,
+      "patch": 0,
+      "combination": "world-y lower minus lambda * world-z upper; all coordinate bounds retained",
+      "lambda": {
+        "numerator": "2474544320066941",
+        "denominator": "31932002319240888",
+        "approximate": 0.07749417951707602
+      },
+      "gapAfterOriginalTolerances": {
+        "numerator": "-11632580027760426836590520583846688803083434874503078069",
+        "denominator": "2472595303473194289782698839759918090221453800649435119616",
+        "approximate": -0.004704603301405784
+      },
+      "contradictionProved": false
+    },
+    {
+      "feedbackScale": 0.0,
+      "patch": 1,
+      "combination": "world-y lower minus lambda * world-z upper; all coordinate bounds retained",
+      "lambda": {
+        "numerator": "618008945532391",
+        "denominator": "7983277691581484",
+        "approximate": 0.0774129335603712
+      },
+      "gapAfterOriginalTolerances": {
+        "numerator": "-93830926126918966349285006460465550833680555420344217427",
+        "denominator": "11127065103067026014198301002032967218903079873602685763584",
+        "approximate": -0.00843267521649134
+      },
+      "contradictionProved": false
+    },
+    {
+      "feedbackScale": 0.5,
+      "patch": 0,
+      "combination": "world-y lower minus lambda * world-z upper; all coordinate bounds retained",
+      "lambda": {
+        "numerator": "2496043296948393",
+        "denominator": "31924018448299636",
+        "approximate": 0.07818700208404808
+      },
+      "gapAfterOriginalTolerances": {
+        "numerator": "93215412031613950214856746041815678650163464261102343139",
+        "denominator": "11123896892636267839869201671603034109597423861858129936384",
+        "approximate": 0.00837974434061144
+      },
+      "contradictionProved": true
+    },
+    {
+      "feedbackScale": 0.5,
+      "patch": 1,
+      "combination": "world-y lower minus lambda * world-z upper; all coordinate bounds retained",
+      "lambda": {
+        "numerator": "4980947114296929",
+        "denominator": "63851379340882120",
+        "approximate": 0.07800844971108993
+      },
+      "gapAfterOriginalTolerances": {
+        "numerator": "15329058441358928445818501848115217849064840827886074163",
+        "denominator": "2781119807140106176115834943109085087403276939997384540160",
+        "approximate": 0.00551182958821259
+      },
+      "contradictionProved": true
+    },
+    {
+      "feedbackScale": 1.0,
+      "patch": 0,
+      "combination": "world-y lower minus lambda * world-z upper; all coordinate bounds retained",
+      "lambda": {
+        "numerator": "453724621257047",
+        "denominator": "5804396041296800",
+        "approximate": 0.0781691356049642
+      },
+      "gapAfterOriginalTolerances": {
+        "numerator": "11670245399249276832548678486507552793798359368328232343",
+        "denominator": "1011268415221248196522787458986400853857590298038344089600",
+        "approximate": 0.011540205571135165
+      },
+      "contradictionProved": true
+    },
+    {
+      "feedbackScale": 1.0,
+      "patch": 1,
+      "combination": "world-y lower minus lambda * world-z upper; all coordinate bounds retained",
+      "lambda": {
+        "numerator": "830033361447813",
+        "denominator": "10641882281135228",
+        "approximate": 0.0779968561500822
+      },
+      "gapAfterOriginalTolerances": {
+        "numerator": "38512682954294747009869999652983566610194304902952948369",
+        "denominator": "3708154768505539856523506476882626833824205581142806495232",
+        "approximate": 0.0103859427015815
+      },
+      "contradictionProved": true
+    },
+    {
+      "feedbackScale": 1.5,
+      "patch": 0,
+      "combination": "world-y lower minus lambda * world-z upper; all coordinate bounds retained",
+      "lambda": {
+        "numerator": "831574306248993",
+        "denominator": "10641615854980124",
+        "approximate": 0.07814361254732081
+      },
+      "gapAfterOriginalTolerances": {
+        "numerator": "89147536444256058109790430587528142231138047491718047483",
+        "denominator": "7416123865079854759825950436045839147044553543493837914112",
+        "approximate": 0.012020772315309238
+      },
+      "contradictionProved": true
+    },
+    {
+      "feedbackScale": 1.5,
+      "patch": 1,
+      "combination": "world-y lower minus lambda * world-z upper; all coordinate bounds retained",
+      "lambda": {
+        "numerator": "1244660435742345",
+        "denominator": "15962906650987226",
+        "approximate": 0.07797204249549182
+      },
+      "gapAfterOriginalTolerances": {
+        "numerator": "95677749710281065017996443179709547678655844337132483831",
+        "denominator": "11124522307862372807938406293390962000089135896008419442688",
+        "approximate": 0.008600616463563547
+      },
+      "contradictionProved": true
+    }
+  ]
+}

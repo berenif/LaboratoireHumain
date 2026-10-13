@@ -1,0 +1,165 @@
+{
+  "schema": 1,
+  "id": "coordination-support-reformulation-static-2026-10-13T11:32:52Z",
+  "status": "reserved-static-only",
+  "authority": "Parent delegation: architecturally reformulate support strictly statically within the original 40-hour preparation envelope. Archived-coefficient feasibility calculations, q/dq compilation and pure numerical tests are authorized. No native physical integration, FK, world construction or geometric inspection is authorized. Physical family remains closed after four charged history slots.",
+  "scope": "Finite preparation reservation only. LP/QP arithmetic on archived coefficients and pure q/dq compilation or numerical tests on archived fixtures are admitted, including execution of pure compiled numerical tests. Native physical replay, simulation rollout and Rapier integration remain forbidden.",
+  "startedUtc": "2026-10-13T11:32:52+00:00",
+  "preparationReservationDeadlineUtc": "2026-10-13T13:32:52+00:00",
+  "originalPreparationStartedUtc": "2026-10-12T20:14:00+00:00",
+  "originalPreparationDeadlineUtc": "2026-10-17T20:14:00+00:00",
+  "baseCommit": "e6e48f18b3f9c5045971e13c8605763584944c34",
+  "branch": "investigate/physical-support",
+  "priorPreparation": {
+    "path": "docs/evidence/coordination-local-pair-2026-10-13/preparation-reservation.json",
+    "sha256": "971e85ade9ba0eb322ad0151866eee6d43110f4b8152a946be65e477ddf7c0c8"
+  },
+  "priorPreparationChargedSeconds": 28489,
+  "additionalPreparationReservedSeconds": 7200,
+  "totalPreparationChargedSeconds": 35689,
+  "preparationCapSeconds": 144000,
+  "overlapChargedConservatively": true,
+  "refundSeconds": 0,
+  "automaticRenewalAllowed": false,
+  "priorStaticInspectionsCharged": 9173,
+  "additionalStaticInspectionsReserved": 0,
+  "totalStaticInspectionsCharged": 9173,
+  "staticInspectionsCap": 20000,
+  "newFkInspectionsAuthorized": 0,
+  "newGeometricInspectionsAuthorized": 0,
+  "nativeSubstepsAuthorized": 0,
+  "nativeSubstepsReserved": 0,
+  "nativeSubstepsPerformed": 0,
+  "nativeSubstepsExact": true,
+  "newPhysicalHistoriesAuthorized": 0,
+  "physicalBudgetOpened": false,
+  "nativeExecutionStarted": false,
+  "reopenClosedPhysicalLedgersAllowed": false,
+  "familyNativeSubstepsReservedWithoutRefund": 7844,
+  "familyNativeHistorySlotsCharged": 4,
+  "familyNativeHistorySlotsMaximum": 4,
+  "familyStatus": "closed-no-native-continuation-authorized",
+  "protectedClosedLedgers": [
+    {
+      "path": "docs/evidence/coordination-prototype-2026-10-12/budget/ledger.json",
+      "sha256": "2afa69b3ae9c8ab8343f7dabdf46b955c8ac7b88aa259404958e25d49a72ef07",
+      "status": "closed-native-failure"
+    },
+    {
+      "path": "docs/evidence/coordination-native-parity-2026-10-13/native-run/physical-ledger.json",
+      "sha256": "73b2e3bff52aadf0414be2f7a4a96fa4cd5da7b02de0945434e4f136bbf476a6",
+      "status": "closed-failure"
+    },
+    {
+      "path": "docs/evidence/coordination-native-parity-renewal-2026-10-13/native-run/physical-ledger.json",
+      "sha256": "1411bfcc1a17caa681359cfb39d7c0429f2188375925c22ba4b037df96d44bc2",
+      "status": "closed-failure"
+    },
+    {
+      "path": "docs/evidence/coordination-native-serialization-2026-10-13/native-run/physical-ledger.json",
+      "sha256": "191d3216953bfb4aca5b7abcea277454d7d97ad5b4ca72e28ffbc260399af250",
+      "status": "closed-success"
+    },
+    {
+      "path": "docs/evidence/coordination-local-pair-2026-10-13/budget/ledger.json",
+      "sha256": "e7c6831159ac1ae913a05f2af545a0521181d7142dbabd967908dfe7958fba97",
+      "status": "closed-native-failure"
+    }
+  ],
+  "protectedBinaries": [
+    {
+      "path": "rust/target/release/deps/coordination_worker-60f2b83fe348a1d3",
+      "sha256": "1bb4b91ac8ebfbe382d9525e524b85040ca9890bc90a0ef0467f1ef2b64c8b57"
+    },
+    {
+      "path": "rust/target/release/deps/numeric_parity_worker-b68c9e5f8e8cfa37",
+      "sha256": "9e125785fad85b0befc9373c3116d66aa32e8050a998ce08974b0da29d2760cc"
+    },
+    {
+      "path": "rust/target/release/deps/numeric_parity_worker_serialization-360529b9ad4cba37",
+      "sha256": "83bddf95897acc6015de7d2947b04ee2f5aaf2eb49b4dcb85ba0a67764f95e1b"
+    },
+    {
+      "path": "rust/target/release/deps/coordination_local_pair_worker-bf2c98f759d9dc34",
+      "sha256": "c1c8a12825428758643a7f6e2fafb0a2710f7dca787c1daee07c27ec59849e9c"
+    }
+  ],
+  "protectedManifests": [
+    {
+      "path": "docs/evidence/coordination-prototype-2026-10-12/frozen-manifest.json",
+      "sha256": "4a37d4afbfe3ecd51997208bf5fa7599106fd9c43650cb55f6bcf6400d4e1d29",
+      "frozenGitCommit": "b6e711d3dc58909979295df81437e6a5579c41db",
+      "committedManifestBytesVerified": true
+    },
+    {
+      "path": "docs/evidence/coordination-native-parity-2026-10-13/manifest.json",
+      "sha256": "40e492a29d723118cb26990b9dd2866d498d9a1a5d5ae815d7aae1d9d92a407a",
+      "frozenGitCommit": "08aa8684911a87e0c3d6565855a0bb2c84340024",
+      "committedManifestBytesVerified": true
+    },
+    {
+      "path": "docs/evidence/coordination-native-parity-renewal-2026-10-13/manifest.json",
+      "sha256": "7235b6916b2d669710b0339e474fc245b48cc4311dd893557f4c03164f3326a6",
+      "frozenGitCommit": "334441445a9f5d97f18aa5d2956658685daf9e9a",
+      "committedManifestBytesVerified": true
+    },
+    {
+      "path": "docs/evidence/coordination-native-serialization-2026-10-13/manifest.json",
+      "sha256": "179bfe3cb58819cd2ba1b73642969c0eb2a343a052dee83ae89e2850e0830356",
+      "frozenGitCommit": "b37eb9a566e1c819a7077c067ded5696f425ca8b",
+      "committedManifestBytesVerified": true
+    },
+    {
+      "path": "docs/evidence/coordination-local-pair-2026-10-13/manifest.json",
+      "sha256": "2fbcb3db0cd1bccf14082e772b1efba63e567fe7fce35ed8cccbbbf2ac2cdde9",
+      "frozenGitCommit": "65925ef032197639f6ebd6c8e897084a5735cacf",
+      "committedManifestBytesVerified": true
+    }
+  ],
+  "sourcePreservation": {
+    "frozenVersionsRetainedInGit": true,
+    "frozenRevisionReferences": "protectedManifests[].frozenGitCommit",
+    "currentWorktreeSourceHashesMustMatchOldManifests": false,
+    "policy": "Static source changes may differ from old freezes; preserve old manifests, closed ledgers and binaries exactly. Their frozen source versions remain addressable through the recorded Git commits. No source edit reopens physical admission."
+  },
+  "events": [
+    {
+      "event": "reserve-static-preparation-before-prolonged-work",
+      "atUtc": "2026-10-13T11:32:52+00:00",
+      "reservedSeconds": 7200,
+      "reservedNativeSubsteps": 0,
+      "reservedFkInspections": 0,
+      "reservedGeometricInspections": 0,
+      "reservationRefundable": false
+    },
+    {
+      "event": "clarify-authorized-static-arithmetic-scope",
+      "atUtc": "2026-10-13T11:42:05.149812+00:00",
+      "authority": "Explicit parent clarification: archived LP/QP feasibility, q/dq compilation and pure numerical tests are authorized without Model::canonical, FK or world construction; frozen Model metadata may be deserialized as plain data.",
+      "previousReservationSha256": "253ab4781c87ca5d8fe6dc4c62f75452dd484e81b50a4bd957f1b5b8459a8d5d",
+      "clarification": "The replay/optimization-rollout prohibition concerns native physical simulations. It does not prohibit arithmetic over archived coefficients or fixtures, including pure compiled numerical tests.",
+      "budgetChangeSeconds": 0,
+      "budgetChangeNativeSubsteps": 0,
+      "budgetChangeFkInspections": 0,
+      "budgetChangeGeometricInspections": 0,
+      "deadlineChanged": false,
+      "closedPhysicalFamilyReopened": false
+    }
+  ],
+  "staticComputationPolicy": {
+    "allowed": [
+      "LP/QP feasibility arithmetic on archived coefficients",
+      "q/dq compilation and pure numerical tests on archived fixtures",
+      "Compilation and execution of tests that perform arithmetic only, without physical integration or geometry reconstruction",
+      "Plain JSON or serde deserialization of frozen Model metadata for runtime layout and command validation, without invoking geometry-producing validation"
+    ],
+    "forbidden": [
+      "Rapier or any other native physical integration",
+      "Native physical replay or simulation/optimization rollout",
+      "Model::canonical, FK, world construction, or geometry and mass-property recomputation",
+      "Model validation paths that reconstruct geometry or mass properties",
+      "Reopening or modifying a closed physical ledger or authorizing a fifth physical history"
+    ],
+    "nativeExecutionStartedMeaning": "Native physical simulation execution only; pure compiled arithmetic tests do not open a physical budget."
+  }
+}
