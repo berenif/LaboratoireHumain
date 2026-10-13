@@ -109,6 +109,57 @@ class FakeWorker:
 
 
 class RunnerTests(unittest.TestCase):
+    def use_local_pair(self):
+        self.manifest_value['protocolMode'] = budget.LOCAL_PAIR_MODE
+        self.manifest_value['prerequisites'].pop('four_histories_frozen')
+        self.manifest_value['prerequisites']['local_pair_frozen'] = True
+        self.save_manifest()
+
+    def test_local_pair_success_stops_after_b_at_exact_maximum(self):
+        self.use_local_pair()
+        self.settings.update(planning_calls=40, local_success={'A': False, 'B': True})
+        result = self.run_protocol()
+        self.assertEqual(result['protocolMode'], 'local-pair')
+        self.assertEqual([h['history'] for h in result['histories']], ['A', 'B'])
+        self.assertEqual(result['budget']['status'], 'closed-completed')
+        self.assertEqual(result['budget']['counters']['reservedNativeSteps'], 78736)
+        self.assertEqual(result['budget']['counters']['actualNativeStepsKnown'], 78736)
+        self.assertEqual(len(self.workers), 1)
+        messages = self.workers[0].sent
+        self.assertEqual(sum(m['op'] == 'verify' for m in messages), 1)
+        self.assertEqual([m['id'] for m in messages if m['op'] == 'history'], ['A', 'B'])
+        self.assertEqual(sum(m['op'] == 'planning-permit' for m in messages), 40)
+        self.assertEqual(sum(m['op'] == 'continue-history' for m in messages), 40)
+        self.assertFalse(result['fullHistoryAuthorized'])
+        self.assertFalse(result['fullRecoveryQualified'])
+
+    def test_local_pair_failed_b_still_closes_after_b(self):
+        self.use_local_pair()
+        self.settings['local_success'] = {'A': False, 'B': False}
+        result = self.run_protocol()
+        self.assertEqual([h['history'] for h in result['histories']], ['A', 'B'])
+        self.assertFalse(result['histories'][-1]['localSuccess'])
+        self.assertEqual(result['budget']['status'], 'closed-completed')
+
+    def test_local_pair_static_preflight_has_no_budget_mutation(self):
+        self.use_local_pair()
+        before = (self.budget_root / 'ledger.json').read_bytes()
+        result = self.run_protocol(execute=False)
+        self.assertEqual(result['maximumNativeSteps'], 78736)
+        self.assertEqual(result['historyOrder'], ['A', 'B'])
+        self.assertEqual(result['physicalIntegrations'], 0)
+        self.assertEqual((self.budget_root / 'ledger.json').read_bytes(), before)
+        self.assertEqual(self.workers, [])
+
+    def test_unknown_protocol_mode_refused_before_worker(self):
+        self.manifest_value['protocolMode'] = 'repeat-until-success'
+        self.save_manifest()
+        before = (self.budget_root / 'ledger.json').read_bytes()
+        with self.assertRaisesRegex(budget.BudgetError, 'Unknown frozen protocolMode'):
+            self.run_protocol()
+        self.assertEqual((self.budget_root / 'ledger.json').read_bytes(), before)
+        self.assertEqual(self.workers, [])
+
     def setUp(self):
         self.temporary = tempfile.TemporaryDirectory(prefix='coordination-runner-test-')
         self.addCleanup(self.temporary.cleanup)

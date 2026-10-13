@@ -33,6 +33,10 @@ evidence in the frozen files; this ledger cannot establish their truth.
 not assume the native parity/accounting tests have already integrated physics.
 Its continuation gate means a defined and checked numerical/geometrical/static
 route to standing; it is not a prerequisite of demonstrated physical recovery.
+Optional protocolMode='local-pair' replaces four_histories_frozen with
+local_pair_frozen and closes after A/B, including successful B. Its cap is
+16 same-process verification + 2*960 histories + 40*4*480 previews = 78736;
+short probes are forbidden. An absent mode preserves the original contract.
 Native evidence schema 1: `gates` maps NATIVE_GATES to true; `verifications` is
 a nonempty list of {"reservation_id": ..., "path": ..., "sha256": ...} matching
 completed verification outcomes' evidence files. At least one charged native
@@ -108,6 +112,10 @@ LIMITS = {
     'threads': 1,
 }
 HISTORY_ORDER = ['A', 'B', 'B-repeat', 'B60']
+DEFAULT_PROTOCOL_MODE = 'four-histories'
+LOCAL_PAIR_MODE = 'local-pair'
+LOCAL_PAIR_LIMITS = dict(LIMITS, histories=2, totalNativeSteps=78736,
+    predictionAndVerificationSteps=76816, verificationSteps=16, shortProbesPerCall=0)
 REQUIRED_ROLES = ('model', 'profile', 'fixture', 'reference', 'code', 'binary',
                   'criteria', 'continuation', 'preflight_evidence')
 PREREQUISITES = ('unit_and_static_tests_passed', 'complete_numeric_reference',
@@ -121,6 +129,15 @@ NATIVE_GATES = ('native_accounting_verified', 'prediction_state_and_motor_semant
 
 class BudgetError(RuntimeError):
     """Admission refused; never interpret this as permission to integrate."""
+
+
+def protocol_contract(mode=DEFAULT_PROTOCOL_MODE):
+    """Closed choices only; mode selection never creates or renews a ledger."""
+    if mode == DEFAULT_PROTOCOL_MODE:
+        return LIMITS, HISTORY_ORDER, PREREQUISITES
+    if mode == LOCAL_PAIR_MODE:
+        return LOCAL_PAIR_LIMITS, ['A', 'B'], PREREQUISITES[:-1] + ('local_pair_frozen',)
+    raise BudgetError('Unknown frozen protocolMode')
 
 
 def canonical(value):
@@ -207,7 +224,8 @@ class Budget:
             state = envelope['payload']
             if envelope['sha256'] != hashlib.sha256(canonical(state)).hexdigest():
                 raise BudgetError('Ledger integrity digest mismatch')
-            if state['schema'] != SCHEMA or state['limits'] != LIMITS:
+            expected_limits, _, _ = protocol_contract(state.get('protocolMode', DEFAULT_PROTOCOL_MODE))
+            if state['schema'] != SCHEMA or state['limits'] != expected_limits:
                 raise BudgetError('Ledger schema or budget contract changed')
             return state
         except (KeyError, ValueError, TypeError) as exc:
@@ -222,6 +240,7 @@ class Budget:
                 raise BudgetError('Another coordinator owns the ledger') from exc
             state = self._read_verified()
             return {'schema': state['schema'], 'id': state['id'], 'status': state['status'],
+                    'protocolMode': state.get('protocolMode', DEFAULT_PROTOCOL_MODE), 'limits': state['limits'],
                     'closureReason': state.get('closureReason'), 'counters': self.counters(state),
                     'preparation': state['preparation'], 'physics': state['physics'],
                     'lastEvent': state['events'][-1], 'authorizesIntegration': False}
@@ -323,8 +342,9 @@ class Budget:
     def _manifest(manifest, base):
         if manifest.get('schema') != 1:
             raise BudgetError('Manifest schema must be 1')
-        if any(manifest.get('prerequisites', {}).get(p) is not True for p in PREREQUISITES):
-            missing = [p for p in PREREQUISITES if manifest.get('prerequisites', {}).get(p) is not True]
+        _, _, prerequisites = protocol_contract(manifest.get('protocolMode', DEFAULT_PROTOCOL_MODE))
+        if any(manifest.get('prerequisites', {}).get(p) is not True for p in prerequisites):
+            missing = [p for p in prerequisites if manifest.get('prerequisites', {}).get(p) is not True]
             raise BudgetError('Missing preparation prerequisites: ' + ', '.join(missing))
         files = {}
         for role in REQUIRED_ROLES:
@@ -339,13 +359,18 @@ class Budget:
                 if not isinstance(digest, str) or len(digest) != 64 or sha(path) != digest:
                     raise BudgetError('Frozen input hash mismatch: ' + str(path))
                 files[role].append({'path': str(path), 'sha256': digest})
-        return {'schema': 1, 'files': files, 'prerequisites': dict(manifest['prerequisites'])}
+        normalized = {'schema': 1, 'files': files, 'prerequisites': dict(manifest['prerequisites'])}
+        if 'protocolMode' in manifest:
+            normalized['protocolMode'] = manifest['protocolMode']
+        return normalized
 
     @staticmethod
     def _verify_frozen(state, allow_verification=False):
         allowed = ('frozen-verification', 'frozen-ready') if allow_verification else ('frozen-ready',)
         if state['status'] not in allowed:
             raise BudgetError('History/planning requires frozen-ready; verification requires frozen-verification')
+        if state.get('protocolMode', DEFAULT_PROTOCOL_MODE) != state['manifest'].get('protocolMode', DEFAULT_PROTOCOL_MODE):
+            raise BudgetError('Frozen protocolMode changed')
         if hashlib.sha256(canonical(state['manifest'])).hexdigest() != state['manifestSha256']:
             raise BudgetError('Frozen manifest changed')
         for records in state['manifest']['files'].values():
@@ -366,6 +391,8 @@ class Budget:
             if any(e['status'] == 'reserved' for e in state['reservations']):
                 raise BudgetError('Unfinished preparation reservation')
             state['manifest'] = self._manifest(manifest, Path(base or Path.cwd()))
+            state['protocolMode'] = state['manifest'].get('protocolMode', DEFAULT_PROTOCOL_MODE)
+            state['limits'] = dict(protocol_contract(state['protocolMode'])[0])
             state['manifestSha256'] = hashlib.sha256(canonical(state['manifest'])).hexdigest()
             state['status'] = 'frozen-verification'
             state['frozenUtc'] = utc(now['wall'])
@@ -451,6 +478,7 @@ class Budget:
 
     def reserve(self, kind, **request):
         with self._transaction() as (state, now):
+            limits, history_order, _ = protocol_contract(state.get('protocolMode', DEFAULT_PROTOCOL_MODE))
             entry = {'id': str(uuid.uuid4()), 'kind': kind, 'status': 'reserved',
                      'startedUtc': utc(now['wall']), 'startedMonotonic': now['monotonic']}
             pending = [e for e in state['reservations'] if e['status'] == 'reserved']
@@ -473,52 +501,56 @@ class Budget:
                         raise BudgetError('Uncertain previous native reservation; no new history')
                     histories = [e for e in state['reservations'] if e['kind'] == 'history']
                     index = len(histories)
-                    if index >= LIMITS['histories']:
-                        raise BudgetError('Four-history cap reached')
+                    if index >= limits['histories']:
+                        raise BudgetError('Frozen history-count cap reached')
                     name = request.pop('history')
-                    if name != HISTORY_ORDER[index]:
-                        raise BudgetError('Frozen history order is A, B, B-repeat, B60')
+                    if name != history_order[index]:
+                        raise BudgetError('Frozen history order is ' + ', '.join(history_order))
                     if index >= 2 and any(not e['outcome']['local_success'] for e in histories[1:]):
                         raise BudgetError('B repetitions require the preceding local diagnostic')
                     entry.update(history=name, headingDegrees=60 if name == 'B60' else 0,
-                                 nativeSteps=LIMITS['historyNativeSteps'])
+                                 nativeSteps=limits['historyNativeSteps'])
                 elif kind == 'planning':
                     history_id = request.pop('history_id')
                     history = next((e for e in pending if e['id'] == history_id and e['kind'] == 'history'), None)
                     if history is None or history['history'] == 'A' or len(pending) != 1:
                         raise BudgetError('Planning requires one active B history and no uncertain call')
                     calls = [e for e in state['reservations'] if e.get('historyId') == history_id]
-                    if len(calls) >= LIMITS['planningCallsPerBHistory']:
+                    if len(calls) >= limits['planningCallsPerBHistory']:
                         raise BudgetError('Forty planning-call cap reached')
                     step = integer(request.pop('history_step'), 'history_step', 0, 959)
                     if step % 24 or (calls and step < calls[-1]['historyStep'] + 24):
                         raise BudgetError('Planning cadence exceeds 10 Hz or repeats a call')
                     longs = request.pop('long_steps', [])
-                    if not isinstance(longs, list) or len(longs) > LIMITS['longRolloutsPerCall']:
+                    if not isinstance(longs, list) or len(longs) > limits['longRolloutsPerCall']:
                         raise BudgetError('At most four long rollouts per planning call')
                     for steps in longs:
-                        integer(steps, 'long rollout steps', 1, LIMITS['longStepsPerRollout'])
-                    probes = integer(request.pop('short_probes', 0), 'short_probes', 0, LIMITS['shortProbesPerCall'])
+                        integer(steps, 'long rollout steps', 1, limits['longStepsPerRollout'])
+                    probes = integer(request.pop('short_probes', 0), 'short_probes', 0, limits['shortProbesPerCall'])
+                    if state.get('protocolMode') == LOCAL_PAIR_MODE and longs != [480] * 4:
+                        raise BudgetError('Local pair requires the frozen four 480-step previews')
                     entry.update(historyId=history_id, historyStep=step, longSteps=longs,
                                  shortProbes=probes, nativeSteps=sum(longs) + 4 * probes)
                 elif kind == 'verification':
                     if pending:
                         raise BudgetError('Verification requires no outstanding native reservation')
                     steps = integer(request.pop('native_steps'), 'native_steps', 1)
-                    if counts['reservedVerificationSteps'] + steps > LIMITS['verificationSteps']:
+                    if state.get('protocolMode') == LOCAL_PAIR_MODE and steps != 16:
+                        raise BudgetError('Local pair requires exactly 16 same-process verification steps')
+                    if counts['reservedVerificationSteps'] + steps > limits['verificationSteps']:
                         raise BudgetError('Technical-verification step cap reached')
                     entry['nativeSteps'] = steps
                 else:
                     raise BudgetError('Unknown reservation kind')
-                if counts['reservedNativeSteps'] + entry['nativeSteps'] > LIMITS['totalNativeSteps']:
-                    raise BudgetError('Total 300000 native-step cap reached')
+                if counts['reservedNativeSteps'] + entry['nativeSteps'] > limits['totalNativeSteps']:
+                    raise BudgetError('Total ' + str(limits['totalNativeSteps']) + ' native-step cap reached')
                 if kind != 'history' and (counts['reservedPredictionAndVerificationSteps'] + entry['nativeSteps'] >
-                                          LIMITS['predictionAndVerificationSteps']):
+                                          limits['predictionAndVerificationSteps']):
                     raise BudgetError('Prediction/verification allocation exhausted')
                 if state['physics'] is None:
                     state['physics'] = {'startedUtc': utc(now['wall']),
-                                        'deadlineWall': now['wall'] + LIMITS['physicsWallSeconds'],
-                                        'deadlineMonotonic': now['monotonic'] + LIMITS['physicsWallSeconds']}
+                                        'deadlineWall': now['wall'] + limits['physicsWallSeconds'],
+                                        'deadlineMonotonic': now['monotonic'] + limits['physicsWallSeconds']}
                 entry['deadlineUtc'] = utc(state['physics']['deadlineWall'])
                 entry['deadlineMonotonic'] = state['physics']['deadlineMonotonic']
             if request:
@@ -572,6 +604,9 @@ class Budget:
                 self._verify_frozen(state, allow_verification=entry['kind'] == 'verification')
                 self._worker(state)
                 integer(actual_native_steps, 'actual_native_steps', 0, entry['nativeSteps'])
+                if (state.get('protocolMode') == LOCAL_PAIR_MODE and entry['kind'] == 'verification'
+                        and actual_native_steps != 16):
+                    raise BudgetError('Local pair verification must complete exactly 16 native steps')
                 if actual_inspections is not None:
                     raise BudgetError('Native completion cannot credit preparation inspections')
                 if not isinstance(outcome, dict) or any(outcome.get(k) is not True for k in
@@ -593,10 +628,12 @@ class Budget:
             entry.update(status='completed', endedUtc=utc(now['wall']))
             self._event(state, 'complete', now, reservationId=entry['id'], counters=self.counters(state))
             if entry['kind'] == 'history' and entry['history'] != 'A':
-                if not outcome['local_success'] or entry['history'] == 'B60':
+                local_pair = state.get('protocolMode') == LOCAL_PAIR_MODE
+                if local_pair or not outcome['local_success'] or entry['history'] == 'B60':
                     state['status'] = 'closed-completed'
-                    state['closureReason'] = ('four frozen histories completed; no full-history authorization'
-                                              if outcome['local_success'] else 'B local diagnostic failed')
+                    state['closureReason'] = ('local pair A/B completed; no replay or continuation authorization'
+                        if local_pair else 'four frozen histories completed; no full-history authorization'
+                        if outcome['local_success'] else 'B local diagnostic failed')
                     self._event(state, 'close', now, reason=state['closureReason'])
         return entry
 

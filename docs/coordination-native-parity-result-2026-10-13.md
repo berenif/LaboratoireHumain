@@ -76,6 +76,7 @@ Les 326 fichiers gelés et sept pièces protégées ont été vérifiés après 
 - [Trace de tous les états compressée](evidence/coordination-native-serialization-2026-10-13/native-run/native-trace.jsonl.gz).
 - [Empreintes et validation sans perte](evidence/coordination-native-serialization-2026-10-13/archive-index.json).
 - [Audit indépendant de budget](evidence/coordination-native-serialization-2026-10-13/post-run-budget-audit.md).
+- [Audit indépendant des commandes et états physiques](evidence/coordination-native-serialization-2026-10-13/post-run-physical-parity-audit.md).
 - [Capture des poses enregistrées](evidence/coordination-native-serialization-2026-10-13/recorded-poses.png).
 
 La capture transforme seulement les maillages selon les 25 poses archivées :
@@ -84,7 +85,7 @@ compteur final distingue 44 admissions et 44 pas terminés, zéro réservation
 locale pendante. La trace contient aussi 11 répétitions de comptage en fin de
 tick : ses 55 lignes de compteurs ne sont pas 55 intégrations.
 
-## Prochain jalon causal, préparation en cours
+## Prochain jalon causal, protocole implémenté
 
 Préparer **une paire A/B de quatre secondes chacune**, mêmes référence, fixture,
 profil, gains, caps et critères. A désactive la coordination ; B utilise les
@@ -97,10 +98,19 @@ réglage après lecture du premier résultat. Le coût plafonné inclut :
 - total **78 736 pas**, zéro sonde supplémentaire, plafond mural **2 h**.
 
 Les 16 pas sont payés explicitement : le reçu du lot court n’est pas transformé
-en admission fictive pour un autre processus. Le protocole doit fermer après B,
-que son critère local réussisse ou échoue, sans lancer B-repeat ou B60. Cette
-préparation et ses tests purs se poursuivent dans l’enveloppe de préparation
-existante ; aucun nouveau lot A/B n’a encore été ouvert ou lancé.
+en admission fictive pour un autre processus. Le nouveau mode `local-pair` du registre et du lanceur ferme après B,
+que son critère local réussisse ou échoue, sans lancer B-repeat ou B60.
+**128 tests purs passent** (87 du registre, 29 du lanceur, 12 du builder),
+sans worker natif ni mutation des anciens registres. Le mode historique reste disponible.
+Cette préparation entre dans l’enveloppe de préparation existante ;
+aucun nouveau lot A/B n’a été ouvert ou lancé.
+
+Avant exécution, il reste à reconstruire le worker de transition dans une
+entrée dédiée, exécuter ses contrôles purs actuels, établir les preuves de
+préparation puis geler les empreintes dans un nouveau manifeste. La parité
+courte ne remplace pas cette préparation liée au binaire qui exécutera A/B.
+Le lanceur impose ensuite la vérification native de 16 pas dans ce même
+processus et ce même registre ; un échec ferme le lot avant les histoires.
 
 La continuation vers debout reste une décision distincte, avec les commandes,
 appuis courants, passage de propriétaire, terminal original et stabilité à
@@ -108,3 +118,18 @@ vérifier avant une histoire complète. Le succès local ne peut pas devenir un
 succès de relevage. La [proposition chiffrée de continuation](evidence/coordination-native-parity-renewal-2026-10-13/next-causal-milestone.md)
 expose les coûts ; une histoire de 26 s dépasse le périmètre des histoires
 locales de quatre secondes et n’est pas exécutée ici.
+
+La [préparation détaillée et ses prérequis restants](evidence/coordination-native-serialization-2026-10-13/next-local-pair-preparation.md)
+décrit le builder, les critères et la décision de continuation. Elle est
+implémentée au niveau du protocole ; son manifeste exécutable reste à geler.
+
+## Vérification et état de livraison
+
+La vérification Rust de ce lot est ciblée : huit tests purs, compilation
+de production et compilation release sans exécution, puis les 44 pas natifs
+autorisés. La suite globale Rust/TypeScript n’a pas été relancée ; ses échecs
+historiques ne sont ni attribués à cette correction ni présentés comme résolus.
+Les preuves du succès sont publiées au commit
+`18005749aa2dc45fb38e6973846a844187d49660`, SHA distant vérifié.
+Les ajouts de protocole A/B font l’objet d’un jalon distinct sur la même
+branche ; aucun merge ni changement de `main`.

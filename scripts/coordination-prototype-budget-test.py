@@ -27,6 +27,96 @@ class FakeClock:
 
 
 class BudgetTests(unittest.TestCase):
+    def local_pair_manifest(self):
+        self.manifest['protocolMode'] = budget.LOCAL_PAIR_MODE
+        self.manifest['prerequisites'].pop('four_histories_frozen')
+        self.manifest['prerequisites']['local_pair_frozen'] = True
+
+    def local_pair_ready(self):
+        self.local_pair_manifest()
+        self.ledger.freeze(self.manifest)
+        check = self.ledger.reserve('verification', native_steps=16, worker_pid=42)
+        self.finish(check)
+        self.ledger.admit_native_evidence(self.native_evidence(check))
+
+    def test_local_pair_full_allocation_closes_after_successful_b(self):
+        self.local_pair_ready()
+        initial_deadline = dict(self.state()['physics'])
+        self.clock.advance(5)
+        self.finish(self.history('A'), local=False)
+        b = self.history('B')
+        for i in range(40):
+            plan = self.ledger.reserve('planning', history_id=b['id'], history_step=i * 24,
+                                       long_steps=[480] * 4, short_probes=0)
+            self.finish(plan)
+        self.finish(b, local=True)
+        state = self.state()
+        self.assertEqual(state['status'], 'closed-completed')
+        self.assertEqual(state['limits'], budget.LOCAL_PAIR_LIMITS)
+        self.assertEqual(state['physics'], initial_deadline)
+        self.assertEqual(budget.Budget.counters(state)['reservedNativeSteps'], 78736)
+        self.assertEqual(budget.Budget.counters(state)['actualNativeStepsKnown'], 78736)
+        self.assertEqual(budget.Budget.counters(state)['reservedPredictionAndVerificationSteps'], 76816)
+        self.assertEqual(budget.LIMITS['totalNativeSteps'], 300000)
+        before = (self.root / 'ledger.json').read_bytes()
+        self.refused('Protocol is closed', lambda: self.history('B-repeat'), closed=False)
+        self.assertEqual((self.root / 'ledger.json').read_bytes(), before)
+
+    def test_local_pair_failed_b_closes_without_refund(self):
+        self.local_pair_ready()
+        self.finish(self.history('A'), local=False)
+        self.finish(self.history('B'), local=False, actual=12)
+        self.assertEqual(self.state()['status'], 'closed-completed')
+        self.assertEqual(self.ledger.status()['counters']['reservedNativeSteps'], 1936)
+        self.assertEqual(self.ledger.status()['counters']['actualNativeStepsKnown'], 988)
+
+    def test_local_pair_requires_its_frozen_prerequisite(self):
+        self.manifest['protocolMode'] = budget.LOCAL_PAIR_MODE
+        self.refused('local_pair_frozen', lambda: self.ledger.freeze(self.manifest))
+        self.assertIsNone(self.state()['physics'])
+
+    def test_local_pair_mode_cannot_drift_from_frozen_manifest(self):
+        self.local_pair_ready()
+        state = self.state()
+        state['protocolMode'] = budget.DEFAULT_PROTOCOL_MODE
+        state['limits'] = dict(budget.LIMITS)
+        budget.durable_save(self.root / 'ledger.json', state)
+        self.refused('Frozen protocolMode changed', lambda: self.history('A'))
+
+    def test_local_pair_refuses_imported_or_44_step_verification(self):
+        self.local_pair_manifest()
+        self.ledger.freeze(self.manifest)
+        self.refused('exactly 16', lambda: self.ledger.reserve('verification', native_steps=44, worker_pid=42))
+        self.assertEqual(self.ledger.status()['counters']['reservedNativeSteps'], 0)
+
+    def test_local_pair_verification_must_complete_all_16(self):
+        self.local_pair_manifest()
+        self.ledger.freeze(self.manifest)
+        check = self.ledger.reserve('verification', native_steps=16, worker_pid=42)
+        self.refused('complete exactly 16', lambda: self.finish(check, actual=15))
+        self.assertEqual(self.ledger.status()['counters']['reservedNativeSteps'], 16)
+
+    def test_local_pair_requires_its_own_same_ledger_verification(self):
+        self.local_pair_manifest()
+        self.ledger.freeze(self.manifest)
+        imported = {'id': 'foreign-44-step-receipt'}
+        self.refused('unique completed charged', lambda: self.ledger.admit_native_evidence(self.native_evidence(imported)))
+        self.assertIsNone(self.state()['physics'])
+
+    def test_local_pair_refuses_short_probes(self):
+        self.local_pair_ready()
+        self.finish(self.history('A'))
+        b = self.history('B')
+        self.refused('short_probes', lambda: self.ledger.reserve('planning', history_id=b['id'],
+                     history_step=0, long_steps=[480] * 4, short_probes=1))
+
+    def test_local_pair_refuses_different_preview_count(self):
+        self.local_pair_ready()
+        self.finish(self.history('A'))
+        b = self.history('B')
+        self.refused('four 480-step', lambda: self.ledger.reserve('planning', history_id=b['id'],
+                     history_step=0, long_steps=[480] * 3, short_probes=0))
+
     def setUp(self):
         self.temporary = tempfile.TemporaryDirectory(prefix='coordination-budget-test-')
         self.addCleanup(self.temporary.cleanup)

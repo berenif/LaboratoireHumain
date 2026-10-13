@@ -1,0 +1,24 @@
+{
+  "schema": 1,
+  "scope": "Finite final preparation and delivery reservation; no native execution",
+  "startedUtc": "2026-10-13T10:36:56.332668+00:00",
+  "reservationDeadlineUtc": "2026-10-13T10:51:56.332668+00:00",
+  "authority": "Original 40-hour preparation budget; owner ordinary technical corrections authorized 2026-10-13T10:06Z",
+  "priorPreparation": {
+    "path": "docs/evidence/coordination-native-serialization-2026-10-13/preparation.json",
+    "sha256": "a10204b7ce36fb89f76b9d95f43f375687dd703f57ee1171eb2ebf9ef4fd15cf"
+  },
+  "priorPreparationChargedSeconds": 23989,
+  "additionalPreparationReservedSeconds": 900,
+  "totalPreparationChargedSeconds": 24889,
+  "preparationCapSeconds": 144000,
+  "overlapChargedConservatively": true,
+  "refundSeconds": 0,
+  "priorStaticInspectionsCharged": 9173,
+  "additionalStaticInspectionsReserved": 0,
+  "nativeSubstepsAuthorized": 0,
+  "nativeSubstepsExecuted": 0,
+  "physicalLedgerOpened": false,
+  "oldLedgersModified": false,
+  "purpose": "Review final pure local-pair scripts, archive test receipts, publish report to Library and verify normal branch pushes"
+}

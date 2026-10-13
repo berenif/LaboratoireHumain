@@ -11,6 +11,9 @@ Manifest: coordination-prototype-budget.py schema 1, plus optional workerInputs
 paths and --binary must occur in the manifest's frozen files; --binary must be
 in its binary role. The continuation prerequisite is static, not prior physical
 success. Code and executable must already be compiled and frozen.
+Optional protocolMode='local-pair' freezes A/B only and closes after B even on
+local success, with exactly 16 verification steps and a total cap of 78736.
+No mode field retains the original four-history protocol.
 
 NDJSON worker protocol (one JSON object per line; no other stdout):
   worker -> {event:"ready",pid:<its OS PID>}
@@ -298,7 +301,7 @@ class Session:
 def prepare(binary, manifest_path, budget_root, program=None, tasks=None, ledger=None):
     manifest_path = Path(manifest_path).resolve(strict=True)
     manifest = json.loads(manifest_path.read_text())
-    exact_fields(manifest, ('schema', 'files', 'prerequisites'), ('workerInputs',))
+    exact_fields(manifest, ('schema', 'files', 'prerequisites'), ('workerInputs', 'protocolMode'))
     frozen = budgetlib.Budget._manifest(manifest, manifest_path.parent)
     binary = Path(binary).resolve(strict=True)
     if not os.access(binary, os.X_OK):
@@ -333,6 +336,8 @@ def prepare(binary, manifest_path, budget_root, program=None, tasks=None, ledger
 def run(binary, manifest_path, output, budget_root, *, execute=False, program=None, tasks=None,
         ledger=None, worker_factory=NativeWorker):
     binary, manifest, inputs, ledger, initial = prepare(binary, manifest_path, budget_root, program, tasks, ledger)
+    protocol_mode = manifest.get('protocolMode', budgetlib.DEFAULT_PROTOCOL_MODE)
+    limits, history_order, _ = budgetlib.protocol_contract(protocol_mode)
     output = Path(output).absolute()
     output.mkdir(mode=0o700, parents=False, exist_ok=False)
     output = output.resolve(strict=True)
@@ -342,6 +347,8 @@ def run(binary, manifest_path, output, budget_root, *, execute=False, program=No
                'manifestPath': str(Path(manifest_path).resolve(strict=True)),
                'manifestSha256': budgetlib.sha(manifest_path), 'inputs': inputs,
                'budgetId': initial['id'], 'budgetStatus': initial['status'],
+               'protocolMode': protocol_mode, 'historyOrder': history_order,
+               'maximumNativeSteps': limits['totalNativeSteps'],
                'budgetCounters': initial['counters']}
     write_new_json(output / 'static-preflight.json', receipt)
     if not execute:
@@ -359,7 +366,7 @@ def run(binary, manifest_path, output, budget_root, *, execute=False, program=No
         if ready['event'] != 'ready' or type(ready['pid']) is not int or ready['pid'] != worker.pid:
             raise RunnerError('Worker ready PID does not match its single native process')
         session.verify(inputs)
-        for index, name in enumerate(budgetlib.HISTORY_ORDER, start=1):
+        for index, name in enumerate(history_order, start=1):
             outcome = session.history(name, index, inputs)
             outcomes.append({'history': name, 'localSuccess': outcome['local_success'], 'evidence': outcome['evidence']})
             if name != 'A' and not outcome['local_success']:
@@ -389,6 +396,7 @@ def run(binary, manifest_path, output, budget_root, *, execute=False, program=No
         final_budget = {'status': 'unreadable-fail-closed', 'error': str(exc),
                         'authorizesIntegration': False}
     result = {'schema': 1, 'status': 'failed-closed' if error else 'protocol-completed',
+              'protocolMode': protocol_mode,
               'error': error, 'histories': outcomes, 'budget': final_budget,
               'fullRecoveryQualified': False, 'fullHistoryAuthorized': False}
     write_new_json(output / 'run-result.json', result)
