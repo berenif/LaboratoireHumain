@@ -1,0 +1,151 @@
+{
+  "schema": 1,
+  "id": "coordination-transfer-candidate-archived-a36-assembly-2026-10-13T12:25:17Z",
+  "status": "reserved-before-execution",
+  "authority": "Explicit parent instruction: reserve at most 12 assemble_observed calls conservatively charged as 12 geometric inspections, at most 30 minutes, using only the fixed archived A36 entry. No FK, native integration or world construction. The time window is a suballocation of the already charged 10800-second preparation reservation.",
+  "question": "Using the single archived A36 observation and algebraically reconstructed mass/CoM metadata from its linked archives, do observed-Jacobian assembly, the load policy and the existing q/dq compiler produce four common 46-axis commands within command bounds while preserving explicit material-anchor obligations? A numeric pass is not physical support admission.",
+  "allowedComparisons": "Consistency checks on the same fixed archive, including the nominal/zero variant and a coherent rigid-frame rotation of the same supplied data. Every assemble_observed invocation, including failed and repeated test invocations, counts toward the same 12-call ceiling.",
+  "startedUtc": "2026-10-13T12:25:17.675660+00:00",
+  "deadlineUtc": "2026-10-13T12:55:17.675660+00:00",
+  "startedMonotonic": 20413.77077761,
+  "deadlineMonotonic": 22213.77077761,
+  "wallSecondsMaximum": 1800,
+  "wallClockSource": "UTC plus monotonic clock of the same execution environment; stop at the earliest deadline.",
+  "parentPreparation": {
+    "path": "docs/evidence/coordination-transfer-candidate-2026-10-13/preparation-reservation.json",
+    "sha256": "d7940da3ff7f3d29898eb25f1c09a2487158b6ff34820dad8ce3491766e33f0b",
+    "id": "coordination-transfer-candidate-preparation-2026-10-13T12:01:54Z",
+    "deadlineUtc": "2026-10-13T15:01:54+00:00"
+  },
+  "timeAccounting": "1800-second maximum subwindow within the existing 10800-second debit. No additional preparation debit, refund, extension or renewal.",
+  "additionalPreparationChargedSeconds": 0,
+  "totalPreparationChargedSeconds": 46489,
+  "preparationCapSeconds": 144000,
+  "originalPreparationDeadlineUtc": "2026-10-17T20:14:00+00:00",
+  "globalPreparationClosed": false,
+  "fixture": {
+    "path": "docs/evidence/coordination-transfer-candidate-2026-10-13/observed-entry-step36.json",
+    "sha256": "3bd00408a5fdb3df9f17feda430f5a1aad8334b17c244d3b119a09325891c433",
+    "nativeSubstep": 36,
+    "headingDegrees": 0,
+    "sourceCanonicalRowSha256": "d64ce39d6320a373fdc39a879b73bcd004323ee955c5027c4b943daf8c5753a9"
+  },
+  "priorStaticInspectionsCharged": 9173,
+  "additionalStaticInspectionsReserved": 12,
+  "totalStaticInspectionsCharged": 9185,
+  "staticInspectionsCap": 20000,
+  "assembleObservedCallsMaximum": 12,
+  "assembleObservedCallsReservedBeforeExecution": 12,
+  "assembleObservedCallsCompletedAtReservation": 0,
+  "reservationRefundable": false,
+  "refundInspections": 0,
+  "automaticRenewalAllowed": false,
+  "newFkEvaluationsAuthorized": 0,
+  "newFkEvaluationsPerformedAtReservation": 0,
+  "nativeSubstepsAuthorized": 0,
+  "nativeSubstepsReserved": 0,
+  "nativeSubstepsPerformedAtReservation": 0,
+  "newWorldsAuthorized": 0,
+  "newPhysicalHistoriesAuthorized": 0,
+  "closedPhysicalFamilyReopened": false,
+  "familyNativeSubstepsReservedWithoutRefund": 7844,
+  "familyNativeHistorySlotsCharged": 4,
+  "familyNativeHistorySlotsMaximum": 4,
+  "forbidden": [
+    "Model::canonical or Model::validate and any mass-property/anatomy reconstruction",
+    "Forward kinematics or solving a new physical pose",
+    "Simulation or Rapier world construction, stepping, replay or rollout",
+    "Moving archived physical bodies, changing masses/friction/collisions/anatomy, installing motors, or using a reset",
+    "A thirteenth assemble_observed call, work beyond the deadline, automatic renewal or refund"
+  ],
+  "allowedInputs": "Frozen archived body poses, command memory, material patches and previously archived mass/CoM quantities. Plain Model metadata deserialization and algebraic rigid-frame transforms are permitted; no integrator or FK may supply missing values.",
+  "completionEvidenceRequired": "Record exact assemble_observed invocation count, outcomes, input/code/output hashes and completion time in a new result receipt. Preserve this reservation and all previous ledgers; charge all 12 inspections even if fewer calls occur.",
+  "protectedClosedLedgers": [
+    {
+      "path": "docs/evidence/coordination-prototype-2026-10-12/budget/ledger.json",
+      "sha256": "2afa69b3ae9c8ab8343f7dabdf46b955c8ac7b88aa259404958e25d49a72ef07",
+      "status": "closed-native-failure"
+    },
+    {
+      "path": "docs/evidence/coordination-native-parity-2026-10-13/native-run/physical-ledger.json",
+      "sha256": "73b2e3bff52aadf0414be2f7a4a96fa4cd5da7b02de0945434e4f136bbf476a6",
+      "status": "closed-failure"
+    },
+    {
+      "path": "docs/evidence/coordination-native-parity-renewal-2026-10-13/native-run/physical-ledger.json",
+      "sha256": "1411bfcc1a17caa681359cfb39d7c0429f2188375925c22ba4b037df96d44bc2",
+      "status": "closed-failure"
+    },
+    {
+      "path": "docs/evidence/coordination-native-serialization-2026-10-13/native-run/physical-ledger.json",
+      "sha256": "191d3216953bfb4aca5b7abcea277454d7d97ad5b4ca72e28ffbc260399af250",
+      "status": "closed-success"
+    },
+    {
+      "path": "docs/evidence/coordination-local-pair-2026-10-13/budget/ledger.json",
+      "sha256": "e7c6831159ac1ae913a05f2af545a0521181d7142dbabd967908dfe7958fba97",
+      "status": "closed-native-failure"
+    }
+  ],
+  "protectedBinaries": [
+    {
+      "path": "rust/target/release/deps/coordination_worker-60f2b83fe348a1d3",
+      "sha256": "1bb4b91ac8ebfbe382d9525e524b85040ca9890bc90a0ef0467f1ef2b64c8b57"
+    },
+    {
+      "path": "rust/target/release/deps/numeric_parity_worker-b68c9e5f8e8cfa37",
+      "sha256": "9e125785fad85b0befc9373c3116d66aa32e8050a998ce08974b0da29d2760cc"
+    },
+    {
+      "path": "rust/target/release/deps/numeric_parity_worker_serialization-360529b9ad4cba37",
+      "sha256": "83bddf95897acc6015de7d2947b04ee2f5aaf2eb49b4dcb85ba0a67764f95e1b"
+    },
+    {
+      "path": "rust/target/release/deps/coordination_local_pair_worker-bf2c98f759d9dc34",
+      "sha256": "c1c8a12825428758643a7f6e2fafb0a2710f7dca787c1daee07c27ec59849e9c"
+    }
+  ],
+  "protectedManifests": [
+    {
+      "path": "docs/evidence/coordination-prototype-2026-10-12/frozen-manifest.json",
+      "sha256": "4a37d4afbfe3ecd51997208bf5fa7599106fd9c43650cb55f6bcf6400d4e1d29",
+      "frozenGitCommit": "b6e711d3dc58909979295df81437e6a5579c41db",
+      "committedManifestBytesVerified": true
+    },
+    {
+      "path": "docs/evidence/coordination-native-parity-2026-10-13/manifest.json",
+      "sha256": "40e492a29d723118cb26990b9dd2866d498d9a1a5d5ae815d7aae1d9d92a407a",
+      "frozenGitCommit": "08aa8684911a87e0c3d6565855a0bb2c84340024",
+      "committedManifestBytesVerified": true
+    },
+    {
+      "path": "docs/evidence/coordination-native-parity-renewal-2026-10-13/manifest.json",
+      "sha256": "7235b6916b2d669710b0339e474fc245b48cc4311dd893557f4c03164f3326a6",
+      "frozenGitCommit": "334441445a9f5d97f18aa5d2956658685daf9e9a",
+      "committedManifestBytesVerified": true
+    },
+    {
+      "path": "docs/evidence/coordination-native-serialization-2026-10-13/manifest.json",
+      "sha256": "179bfe3cb58819cd2ba1b73642969c0eb2a343a052dee83ae89e2850e0830356",
+      "frozenGitCommit": "b37eb9a566e1c819a7077c067ded5696f425ca8b",
+      "committedManifestBytesVerified": true
+    },
+    {
+      "path": "docs/evidence/coordination-local-pair-2026-10-13/manifest.json",
+      "sha256": "2fbcb3db0cd1bccf14082e772b1efba63e567fe7fce35ed8cccbbbf2ac2cdde9",
+      "frozenGitCommit": "65925ef032197639f6ebd6c8e897084a5735cacf",
+      "committedManifestBytesVerified": true
+    }
+  ],
+  "events": [
+    {
+      "event": "reserve-all-twelve-assembly-inspections-before-execution",
+      "atUtc": "2026-10-13T12:25:17.675660+00:00",
+      "staticInspectionsCharged": 12,
+      "nativeSubstepsCharged": 0,
+      "fkEvaluationsCharged": 0,
+      "additionalPreparationSecondsCharged": 0,
+      "deadlineUtc": "2026-10-13T12:55:17.675660+00:00"
+    }
+  ]
+}

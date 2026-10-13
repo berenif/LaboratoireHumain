@@ -1,0 +1,213 @@
+{
+  "schema": 1,
+  "id": "coordination-transfer-candidate-preparation-2026-10-13T12:01:54Z",
+  "status": "reserved-static-only",
+  "authority": "Explicit parent instruction dated 2026-10-13: continue the globally open original 40-hour preparation with a distinct transfer-candidate submilestone, reserving 10800 seconds from 12:01:54 UTC; no native physics or FK initially. A possible FK subtask requires a later specific durable reservation bounded by 500 poses and 1800 seconds before any evaluation.",
+  "scope": "Prepare and statically audit the transfer candidate/adapter, using archived or synthetic data and pure numerical tests. This is a new finite preparation submilestone, not a renewal or reopening of any closed physical protocol.",
+  "startedUtc": "2026-10-13T12:01:54+00:00",
+  "preparationReservationDeadlineUtc": "2026-10-13T15:01:54+00:00",
+  "originalPreparationStartedUtc": "2026-10-12T20:14:00+00:00",
+  "originalPreparationDeadlineUtc": "2026-10-17T20:14:00+00:00",
+  "baseCommit": "b9809dfdc2db1a5317379e7914c220d4e856fdbc",
+  "branch": "investigate/physical-support",
+  "priorPreparation": {
+    "path": "docs/evidence/coordination-support-reformulation-2026-10-13/preparation-reservation.json",
+    "sha256": "122f7e019d7384b639535f784aa35d89d15e298b704641a1efff697de05e3695"
+  },
+  "priorPreparationChargedSeconds": 35689,
+  "additionalPreparationReservedSeconds": 10800,
+  "totalPreparationChargedSeconds": 46489,
+  "preparationCapSeconds": 144000,
+  "overlapChargedConservatively": true,
+  "refundSeconds": 0,
+  "automaticRenewalAllowed": false,
+  "priorStaticInspectionsCharged": 9173,
+  "additionalStaticInspectionsReserved": 0,
+  "totalStaticInspectionsCharged": 9173,
+  "staticInspectionsCap": 20000,
+  "newFkInspectionsAuthorized": 0,
+  "newGeometricInspectionsAuthorized": 0,
+  "nativeSubstepsAuthorized": 0,
+  "nativeSubstepsReserved": 0,
+  "nativeSubstepsPerformed": 0,
+  "nativeSubstepsExact": true,
+  "newPhysicalHistoriesAuthorized": 0,
+  "physicalBudgetOpened": false,
+  "nativeExecutionStarted": false,
+  "reopenClosedPhysicalLedgersAllowed": false,
+  "familyNativeSubstepsReservedWithoutRefund": 7844,
+  "familyNativeHistorySlotsCharged": 4,
+  "familyNativeHistorySlotsMaximum": 4,
+  "familyStatus": "closed-no-native-continuation-authorized",
+  "protectedClosedLedgers": [
+    {
+      "path": "docs/evidence/coordination-prototype-2026-10-12/budget/ledger.json",
+      "sha256": "2afa69b3ae9c8ab8343f7dabdf46b955c8ac7b88aa259404958e25d49a72ef07",
+      "status": "closed-native-failure"
+    },
+    {
+      "path": "docs/evidence/coordination-native-parity-2026-10-13/native-run/physical-ledger.json",
+      "sha256": "73b2e3bff52aadf0414be2f7a4a96fa4cd5da7b02de0945434e4f136bbf476a6",
+      "status": "closed-failure"
+    },
+    {
+      "path": "docs/evidence/coordination-native-parity-renewal-2026-10-13/native-run/physical-ledger.json",
+      "sha256": "1411bfcc1a17caa681359cfb39d7c0429f2188375925c22ba4b037df96d44bc2",
+      "status": "closed-failure"
+    },
+    {
+      "path": "docs/evidence/coordination-native-serialization-2026-10-13/native-run/physical-ledger.json",
+      "sha256": "191d3216953bfb4aca5b7abcea277454d7d97ad5b4ca72e28ffbc260399af250",
+      "status": "closed-success"
+    },
+    {
+      "path": "docs/evidence/coordination-local-pair-2026-10-13/budget/ledger.json",
+      "sha256": "e7c6831159ac1ae913a05f2af545a0521181d7142dbabd967908dfe7958fba97",
+      "status": "closed-native-failure"
+    }
+  ],
+  "protectedBinaries": [
+    {
+      "path": "rust/target/release/deps/coordination_worker-60f2b83fe348a1d3",
+      "sha256": "1bb4b91ac8ebfbe382d9525e524b85040ca9890bc90a0ef0467f1ef2b64c8b57"
+    },
+    {
+      "path": "rust/target/release/deps/numeric_parity_worker-b68c9e5f8e8cfa37",
+      "sha256": "9e125785fad85b0befc9373c3116d66aa32e8050a998ce08974b0da29d2760cc"
+    },
+    {
+      "path": "rust/target/release/deps/numeric_parity_worker_serialization-360529b9ad4cba37",
+      "sha256": "83bddf95897acc6015de7d2947b04ee2f5aaf2eb49b4dcb85ba0a67764f95e1b"
+    },
+    {
+      "path": "rust/target/release/deps/coordination_local_pair_worker-bf2c98f759d9dc34",
+      "sha256": "c1c8a12825428758643a7f6e2fafb0a2710f7dca787c1daee07c27ec59849e9c"
+    }
+  ],
+  "protectedManifests": [
+    {
+      "path": "docs/evidence/coordination-prototype-2026-10-12/frozen-manifest.json",
+      "sha256": "4a37d4afbfe3ecd51997208bf5fa7599106fd9c43650cb55f6bcf6400d4e1d29",
+      "frozenGitCommit": "b6e711d3dc58909979295df81437e6a5579c41db",
+      "committedManifestBytesVerified": true
+    },
+    {
+      "path": "docs/evidence/coordination-native-parity-2026-10-13/manifest.json",
+      "sha256": "40e492a29d723118cb26990b9dd2866d498d9a1a5d5ae815d7aae1d9d92a407a",
+      "frozenGitCommit": "08aa8684911a87e0c3d6565855a0bb2c84340024",
+      "committedManifestBytesVerified": true
+    },
+    {
+      "path": "docs/evidence/coordination-native-parity-renewal-2026-10-13/manifest.json",
+      "sha256": "7235b6916b2d669710b0339e474fc245b48cc4311dd893557f4c03164f3326a6",
+      "frozenGitCommit": "334441445a9f5d97f18aa5d2956658685daf9e9a",
+      "committedManifestBytesVerified": true
+    },
+    {
+      "path": "docs/evidence/coordination-native-serialization-2026-10-13/manifest.json",
+      "sha256": "179bfe3cb58819cd2ba1b73642969c0eb2a343a052dee83ae89e2850e0830356",
+      "frozenGitCommit": "b37eb9a566e1c819a7077c067ded5696f425ca8b",
+      "committedManifestBytesVerified": true
+    },
+    {
+      "path": "docs/evidence/coordination-local-pair-2026-10-13/manifest.json",
+      "sha256": "2fbcb3db0cd1bccf14082e772b1efba63e567fe7fce35ed8cccbbbf2ac2cdde9",
+      "frozenGitCommit": "65925ef032197639f6ebd6c8e897084a5735cacf",
+      "committedManifestBytesVerified": true
+    }
+  ],
+  "sourcePreservation": {
+    "frozenVersionsRetainedInGit": true,
+    "frozenRevisionReferences": "protectedManifests[].frozenGitCommit",
+    "currentWorktreeSourceHashesMustMatchOldManifests": false,
+    "policy": "Static source changes may differ from old freezes; preserve old manifests, closed ledgers and binaries exactly. Their frozen source versions remain addressable through the recorded Git commits. No source edit reopens physical admission."
+  },
+  "events": [
+    {
+      "event": "reserve-transfer-candidate-preparation-before-prolonged-work",
+      "atUtc": "2026-10-13T12:04:03.245418+00:00",
+      "accountingStartsUtc": "2026-10-13T12:01:54+00:00",
+      "reservedSeconds": 10800,
+      "priorChargedSeconds": 35689,
+      "totalChargedSeconds": 46489,
+      "reservedNativeSubsteps": 0,
+      "reservedFkInspections": 0,
+      "reservedGeometricInspections": 0,
+      "reservationRefundable": false,
+      "globalPreparationRemainsOpen": true,
+      "closedPhysicalFamilyReopened": false
+    }
+  ],
+  "staticComputationPolicy": {
+    "allowed": [
+      "LP/QP feasibility arithmetic on archived coefficients",
+      "q/dq compilation and pure numerical tests on archived fixtures",
+      "Compilation and execution of tests that perform arithmetic only, without physical integration or geometry reconstruction",
+      "Plain JSON or serde deserialization of frozen Model metadata for runtime layout and command validation, without invoking geometry-producing validation",
+      "Support predicates, quaternion point transforms and hull/capture arithmetic over supplied archived or synthetic observations, without anatomy reconstruction or trajectory/FK evaluation"
+    ],
+    "forbidden": [
+      "Rapier or any other native physical integration",
+      "Native physical replay or simulation/optimization rollout",
+      "Model::canonical, FK, world construction, or geometry and mass-property recomputation",
+      "Model validation paths that reconstruct geometry or mass properties",
+      "Reopening or modifying a closed physical ledger or authorizing a fifth physical history"
+    ],
+    "nativeExecutionStartedMeaning": "Native physical simulation execution only; pure compiled arithmetic tests do not open a physical budget."
+  },
+  "recordCreatedUtc": "2026-10-13T12:04:03.245418+00:00",
+  "globalPreparationStatus": "open-within-original-cap-and-calendar-deadline",
+  "globalPreparationClosed": false,
+  "priorClosureScope": "Only the preceding support-reformulation submilestone closed; the original 40-hour preparation remains open.",
+  "submilestoneClosureClosesGlobalPreparation": false,
+  "priorSubmilestoneResult": {
+    "path": "docs/evidence/coordination-support-reformulation-2026-10-13/preparation-result.json",
+    "sha256": "99e913dd200a68dbcc7d1d72ba994c4fabe3d802b98b064f12b96aedf3dccf59",
+    "status": "closed-static-corrective-pass-native-blocked",
+    "closedUtc": "2026-10-13T11:59:15.634980+00:00"
+  },
+  "remainingPreparationSecondsAfterReservation": 97511,
+  "futureFkSubreservation": {
+    "status": "not-reserved-not-started",
+    "activationRequires": "A later distinct, specific durable reservation recorded before the first FK evaluation, with its own deadlines, pose counter and preparation accounting.",
+    "maximumPoses": 500,
+    "maximumWallSeconds": 1800,
+    "currentlyReservedPoses": 0,
+    "currentlyReservedWallSeconds": 0,
+    "automaticActivationAllowed": false,
+    "nativePhysicsAuthorized": false,
+    "originalPreparationCapAndCalendarDeadlineRemainBinding": true
+  },
+  "historicalSourceVerification": {
+    "checkedUtc": "2026-10-13T12:04:03.245418+00:00",
+    "sourceVersionsVerified": 1157,
+    "method": "SHA256 of Git blob bytes at each frozen manifest commit; current corrected worktree sources need not match old freezes.",
+    "manifests": [
+      {
+        "manifest": "docs/evidence/coordination-prototype-2026-10-12/frozen-manifest.json",
+        "frozenGitCommit": "b6e711d3dc58909979295df81437e6a5579c41db",
+        "sourceVersionsVerified": 54
+      },
+      {
+        "manifest": "docs/evidence/coordination-native-parity-2026-10-13/manifest.json",
+        "frozenGitCommit": "08aa8684911a87e0c3d6565855a0bb2c84340024",
+        "sourceVersionsVerified": 271
+      },
+      {
+        "manifest": "docs/evidence/coordination-native-parity-renewal-2026-10-13/manifest.json",
+        "frozenGitCommit": "334441445a9f5d97f18aa5d2956658685daf9e9a",
+        "sourceVersionsVerified": 272
+      },
+      {
+        "manifest": "docs/evidence/coordination-native-serialization-2026-10-13/manifest.json",
+        "frozenGitCommit": "b37eb9a566e1c819a7077c067ded5696f425ca8b",
+        "sourceVersionsVerified": 273
+      },
+      {
+        "manifest": "docs/evidence/coordination-local-pair-2026-10-13/manifest.json",
+        "frozenGitCommit": "65925ef032197639f6ebd6c8e897084a5735cacf",
+        "sourceVersionsVerified": 287
+      }
+    ]
+  }
+}

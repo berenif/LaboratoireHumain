@@ -1,0 +1,56 @@
+{
+  "schema": 1,
+  "scope": "Pure extraction and archived-data algebra validation",
+  "status": "passed",
+  "extractorReplayedDeterministically": true,
+  "taskDerivationReplayedDeterministically": true,
+  "allArchiveHashesVerified": true,
+  "all25BodyAssociationsChecked": true,
+  "derivedAggregateComMatchesArchiveExactly": true,
+  "individualStep36WorldComCacheClaimed": false,
+  "selectionFirstEligibleControlBoundary": 36,
+  "archivedNativeRowsRead": 2064,
+  "commandEntryCopyChecksPassed": true,
+  "localLinksExist": true,
+  "files": [
+    {
+      "path": "docs/evidence/coordination-transfer-candidate-2026-10-13/observed-entry-extract.py",
+      "bytes": 14293,
+      "sha256": "59ca4ecbe330c069f102eeb1a9b0f2cf7fff7767887b27937dd22cda38695e6b"
+    },
+    {
+      "path": "docs/evidence/coordination-transfer-candidate-2026-10-13/observed-entry-derive-tasks.py",
+      "bytes": 7502,
+      "sha256": "c2fefb8ae117a332fee19b4325726c120fcb9859a71e0d24c5144baa600b4640"
+    },
+    {
+      "path": "docs/evidence/coordination-transfer-candidate-2026-10-13/observed-entry-step36.json",
+      "bytes": 402669,
+      "sha256": "3bd00408a5fdb3df9f17feda430f5a1aad8334b17c244d3b119a09325891c433"
+    },
+    {
+      "path": "docs/evidence/coordination-transfer-candidate-2026-10-13/observed-entry-task-state.json",
+      "bytes": 20718,
+      "sha256": "6c9a2385c9c436b8f8d9d5059ce3b254ae44184ede699992eaab7ceb5ab57a42"
+    },
+    {
+      "path": "docs/evidence/coordination-transfer-candidate-2026-10-13/observed-entry-scan.json",
+      "bytes": 39190,
+      "sha256": "98e16e975084891970fd3ee0420797eadbd00dbee6d62901eab75d4266a98405"
+    },
+    {
+      "path": "docs/evidence/coordination-transfer-candidate-2026-10-13/observed-entry-receipt.json",
+      "bytes": 621,
+      "sha256": "4410c743d8211dc372e367097a5c0f33804977b3446d79a37748719ccab26653"
+    },
+    {
+      "path": "docs/evidence/coordination-transfer-candidate-2026-10-13/observed-entry-review.md",
+      "bytes": 12186,
+      "sha256": "155621ba4035a37100c7387fa510820691245481090134876382a843d5a3d51e"
+    }
+  ],
+  "nativeSteps": 0,
+  "fkEvaluations": 0,
+  "worldConstructions": 0,
+  "physicalProtocolOpened": false
+}
