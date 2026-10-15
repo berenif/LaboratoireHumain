@@ -188,11 +188,28 @@ pub(crate) fn assemble_observed(
     retained: &[MaterialPatch],
     goals: &TaskGoals,
 ) -> Result<Problem, String> {
+    assemble_with_contact_requirement(model, observed, retained, goals, true)
+}
+
+/// Experimental command guidance from current contacts, with flight allowed.
+/// No contact persistence or physical admission is asserted by this function.
+#[cfg(feature = "coordination-transfer-worker")]
+pub(crate) fn assemble_exploratory_observed(model: &Model, observed: &ObservedState,
+    current: &[MaterialPatch], goals: &TaskGoals) -> Result<Problem, String> {
+    let mut problem = assemble_with_contact_requirement(model, observed, current, goals, false)?;
+    for guide in std::mem::take(&mut problem.hard) {
+        problem.soft.push(Task {row:guide.row, target:0.5*(guide.lower+guide.upper), weight:1.});
+    }
+    Ok(problem)
+}
+
+fn assemble_with_contact_requirement(model: &Model, observed: &ObservedState,
+    retained: &[MaterialPatch], goals: &TaskGoals, require_contact: bool) -> Result<Problem, String> {
     let layout = coordinated_runtime::axes(model)?;
     observed.validate()?;
     validate_command(model, &goals.nominal)?;
     validate_goals(goals)?;
-    if retained.len() > 64 || retained.is_empty() {
+    if retained.len() > 64 || (require_contact && retained.is_empty()) {
         return Err(
             "Geometric tasks require the complete native model, retained contacts and 240 Hz clock"
                 .into(),
@@ -237,7 +254,7 @@ pub(crate) fn assemble_observed(
             goals.retained_velocity_tolerance_mps,
         )?;
     }
-    if problem.hard.is_empty() {
+    if require_contact && problem.hard.is_empty() {
         return Err("No retained material task in the proposed support family".into());
     }
     let mass = f64::from(observed.total_mass());

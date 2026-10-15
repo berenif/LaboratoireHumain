@@ -753,7 +753,9 @@ fn execute_exploration(request: &Value, stdout: &mut impl Write) -> Result<(), S
     let mut endpoint = 0;
     let result = catch_failure(|| -> Result<(), String> {
         let (mut sim, mut memory) = replay_prefix(&inputs, &mut budget, &mut audit, &mut trace, false)?;
-        sim.coordination.as_mut().ok_or("Missing A36 owner")?.enable_exploratory_sequence(PREFIX)?;
+        let owner=sim.coordination.as_mut().ok_or("Missing A36 owner")?;
+        if request["op"] == "feedback-run" { owner.enable_exploratory_feedback(PREFIX)?; }
+        else { owner.enable_exploratory_sequence(PREFIX)?; }
         let observation = native_observation::observe(&sim, 0, &[])?;
         let mut tracker = super::super::support_schedule::SupportSchedule::bootstrap_observed(&observation, &[19,24])?.tracker().clone();
         while sim.substeps_completed < 6240 {
@@ -773,7 +775,8 @@ fn execute_exploration(request: &Value, stdout: &mut impl Write) -> Result<(), S
                     line(&mut trace, &json!({"kind":"exploration-step","nativeSubstep":s.substeps_completed,
                         "snapshot":snapshot,"localDiagnostic":sample,"retainedPointsDiagnostic":retained,
                         "pelvisHeightM":observed.bodies[pelvis].position_m[1]-observed.support_height_m,
-                        "com":observed.center_of_mass_m,"segmentContacts":observed.segments,
+                        "com":observed.center_of_mass_m,"comVelocityMps":observed.center_of_mass_velocity_mps,
+                        "pelvisVelocityMps":observed.bodies[pelvis].linear_velocity_mps,"segmentContacts":observed.segments,
                         "standingPoseDiagnostic":measurement::standing_support(s, substep).is_ok(),
                         "commands": if s.substeps_completed % 4 == 0 { s.coordination.as_ref().map(|o|o.evidence()["last"].clone()) } else {None},
                         "physicalAdmission":false,"impactRecoveryQualified":false}))?;
@@ -792,7 +795,7 @@ fn execute_exploration(request: &Value, stdout: &mut impl Write) -> Result<(), S
         Ok(())
     }).and_then(|r|r);
     let endpoint = budget.completed();
-    let evidence = json!({"event":"result","op":"exploration-run","operationId":request["operationId"],
+    let evidence = json!({"event":"result","op":request["op"],"operationId":request["operationId"],
         "status":if result.is_ok(){"closed-completed"}else{"closed-stopped"},"refusal":result.err(),
         "reservedNativeSteps":7000,"actualNativeSteps":budget.actual_json(budget.completed()),
         "accounting":budget.accounting(),"endpointNativeSubstep":endpoint,"simulatedSeconds":endpoint as f64/240.,
@@ -804,7 +807,7 @@ fn execute_exploration(request: &Value, stdout: &mut impl Write) -> Result<(), S
 }
 
 fn execute(request: &Value, stdout: &mut impl Write) -> Result<(), String> {
-    if request["op"] == "exploration-run" { return execute_exploration(request, stdout); }
+    if request["op"] == "exploration-run" || request["op"] == "feedback-run" { return execute_exploration(request, stdout); }
     let mode = OperationMode::parse(request)?;
     let operation = required_string(request, "operationId")?;
     if operation.is_empty() {

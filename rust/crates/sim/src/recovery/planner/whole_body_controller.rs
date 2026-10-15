@@ -1,5 +1,8 @@
-//! Opt-in command owner for the frozen transition, shared by real and copied worlds.
-//! Native prediction selection lives outside this controller, so previews cannot recurse.
+#[cfg(feature = "coordination-transfer-worker")]
+#[path = "exploration_feedback.rs"]
+mod exploration_feedback;
+// Opt-in command owner for the frozen transition, shared by real and copied worlds.
+// Native prediction selection lives outside this controller, so previews cannot recurse.
 use super::{
     coordinated_runtime as runtime, geometric_tasks as tasks, native_observation, support_state,
 };
@@ -96,6 +99,8 @@ pub(crate) struct Controller {
     pub(crate) transfer: Option<super::transfer_adapter::Adapter>,
     #[cfg(feature = "coordination-transfer-worker")]
     exploratory_sequence: bool,
+    #[cfg(feature = "coordination-transfer-worker")]
+    exploratory_feedback: Option<exploration_feedback::Feedback>,
 }
 
 impl Controller {
@@ -184,6 +189,8 @@ impl Controller {
             transfer: None,
             #[cfg(feature = "coordination-transfer-worker")]
             exploratory_sequence: false,
+            #[cfg(feature = "coordination-transfer-worker")]
+            exploratory_feedback: None,
         })
     }
     pub(crate) fn evidence(&self) -> Value {
@@ -487,6 +494,13 @@ impl Controller {
         Ok(())
     }
 
+    #[cfg(feature = "coordination-transfer-worker")]
+    pub(crate) fn enable_exploratory_feedback(&mut self, at: u64) -> Result<(), String> {
+        self.enable_exploratory_sequence(at)?;
+        self.exploratory_feedback = Some(exploration_feedback::Feedback::default());
+        Ok(())
+    }
+
     /// Follow the existing complete reference, including its final hold. Contact
     /// continuity, local readiness and prediction admission are not asserted.
     /// Body poses, recovery state, physical inspections and motor budgets stay owned
@@ -498,7 +512,9 @@ impl Controller {
             || !(36..6240).contains(&at) || self.transfer.is_some() {
             return Err("Experimental sequence clock/ownership violation".into());
         }
-        let command = exploratory_command(&sim.model, &self.program, &self.memory.previous, at)?;
+        let command = if let Some(feedback) = &mut self.exploratory_feedback {
+            feedback.command(sim, &self.program, &self.reference, &self.memory, at)?
+        } else { exploratory_command(&sim.model, &self.program, &self.memory.previous, at)? };
         let (cap, ratio, requests) = recovery::support_probe::offline_trajectory::install_targets(
             sim, &command.positions, &command.velocities,
             recovery::support_probe::offline_trajectory::Allocation::OwnedRequests)?;
@@ -508,9 +524,10 @@ impl Controller {
         self.previous_step = Some(at);
         self.maximum_cap = self.maximum_cap.max(cap);
         self.last = json!({"experimentalSequence":true,"physicalAdmission":false,
-            "commandSubstep":at,"sourceSubstep":at.min(u64::from(self.program.duration_substeps())),
+            "commandSubstep":at,"sourceSubstep":self.exploratory_feedback.as_ref().map(|f|f.evidence["referenceSubstep"].clone()).unwrap_or_else(||json!(at.min(u64::from(self.program.duration_substeps())))),
             "positions":command.positions,"velocities":command.velocities,
-            "capSumNm":cap,"anatomicalCapRatio":ratio,"requests":requests});
+            "capSumNm":cap,"anatomicalCapRatio":ratio,"requests":requests,
+            "feedback":self.exploratory_feedback.as_ref().map(|f|f.evidence.clone())});
         Ok(())
     }
 
@@ -875,6 +892,8 @@ mod tests {
                 transfer: None,
             #[cfg(feature = "coordination-transfer-worker")]
             exploratory_sequence: false,
+            #[cfg(feature = "coordination-transfer-worker")]
+            exploratory_feedback: None,
             };
             problems.push((
                 owner.feedback_scale,
@@ -1077,7 +1096,8 @@ mod transfer_archive_tests {
             previous_step:Some(o["previousStep"].as_u64().unwrap()),best_progress:o["bestProgress"].as_f64().unwrap() as f32,
             stalled_s:o["stalledS"].as_f64().unwrap() as f32,unsupported_s:o["unsupportedS"].as_f64().unwrap() as f32,
             maximum_cap:o["maximumCapNm"].as_f64().unwrap(),last:o["last"].clone(),last_attempt:o["numericAttempt"].clone(),transfer:None,
-            #[cfg(feature = "coordination-transfer-worker")] exploratory_sequence:false };
+            #[cfg(feature = "coordination-transfer-worker")] exploratory_sequence:false,
+            #[cfg(feature = "coordination-transfer-worker")] exploratory_feedback:None };
         owner.enable_observed_transfer(&model,&observation,entry).unwrap();
         let mut adapter=owner.transfer.take().unwrap();
         let proposal=adapter.observe(&observation).unwrap();

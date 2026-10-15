@@ -1,0 +1,22 @@
+{
+  "authorization": "Parent Continue: one state-feedback weight-transfer candidate then continuation; one history, no parameter search, unchanged production and physical limits",
+  "preparationStartUtc": "2026-10-15T20:38:36Z",
+  "preparationDeadlineUtc": "2026-10-15T21:08:36Z",
+  "preparationReservationSeconds": 1800,
+  "preparationChargedBefore": 69889,
+  "preparationChargedAfter": 71689,
+  "nativeChargedBefore": 146508,
+  "nativeReservationOnLaunch": 7000,
+  "nativeChargedAfterLaunch": 153508,
+  "wallChargedBeforeSeconds": 346.3282942940032,
+  "wallReservationOnLaunchSeconds": 120,
+  "wallChargedAfterLaunchSeconds": 466.3282942940032,
+  "previousClosedRunSha256": "057f5de537cdd65a38489af8f9d390677af2998f583432b581761665b38f1f5e",
+  "previousReservationRetainedWithoutRefund": true,
+  "attributionWorkExcludedFromBuild": true,
+  "buildWorktree": "/workspace/lh-feedback-build",
+  "maximumHistories": 1,
+  "maximumSimulatedSeconds": 26,
+  "maximumPreviews": 0,
+  "automaticRenewal": false
+}
