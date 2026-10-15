@@ -1,15 +1,11 @@
-# Documentation
+# Historical documentation
 
-Start with [current status](status.md) for the latest recorded checkpoint, unresolved gates, and evidence availability. The guides below describe the working tree; dated reports preserve the source and conclusions of their own investigation.
+Current build, run commands and limitations are in the [project README](../README.md). The reports and guides below preserve earlier implementations and experiments; their TypeScript commands are no longer maintained. Evidence and budget records remain unchanged.
 
-Use the [prioritized TODO](../TODO.md) for remaining work, dependencies, and completion criteria.
-
-The [coordinated stabilization plan](standing-stabilization-plan.md) and its [implementation prompt](standing-stabilization-prompt.md) define the investigation gates. [H76](standing-h76-contract.md) completes native row inspection; [H77](standing-h77-contract.md) and [H78–H80](standing-h78-h80-contract.md) record failed opt-in standing candidates. Legacy browser standing remains unaccepted. The separate [Rust rework](rust-rework.md) includes both physical public modes and a v24 standing repair; [current status](status.md) distinguishes passing checks from incomplete release acceptance. Full disturbance/stepping coverage, recovery/cycles and performance remain open.
-
-## Run and understand the application
+## Earlier implementation guides
 
 - [Project quick start and both browser modes](../README.md)
-- [Architecture and ownership](../ARCHITECTURE.md)
+- [Architecture and ownership](https://github.com/berenif/LaboratoireHumain/blob/f8d1fbef3d28e7e5f4c0ca56d4437a19950fe07c/ARCHITECTURE.md)
 - [Standing, stepping, native actuation, and contact-load allocation](balance-controller.md)
 - [Falling, recovery, and solver configuration](dynamic-recovery.md)
 - [Balance playground](playground.md)
@@ -57,5 +53,5 @@ Results in these documents apply only to their recorded source and scenario sele
 | [Body coherence integration](body-coherence-integration.md) | Concurrent-branch resolution and its failures |
 | [Body alignment and self-collision](body-alignment-self-collision.md) | Anatomical frames, collision coverage, and measured mass |
 | [September 18 physical-chain investigation](physical-chain-verification.md) | Landing frames and incomplete transfer behavior |
-| [September 9 recovery handoff](../HANDOFF-adaptive-recovery.md) | Historical controller and experimental recovery handoff |
-| [Historical arm-placement integration note](../scripts/arm-placement-integration.md) | Earlier integration proposal; compare with current `DynamicRecovery` before reusing |
+| [September 9 recovery handoff](https://github.com/berenif/LaboratoireHumain/blob/f8d1fbef3d28e7e5f4c0ca56d4437a19950fe07c/HANDOFF-adaptive-recovery.md) | Historical controller and experimental recovery handoff |
+| [Historical arm-placement integration note](https://github.com/berenif/LaboratoireHumain/blob/f8d1fbef3d28e7e5f4c0ca56d4437a19950fe07c/scripts/arm-placement-integration.md) | Earlier integration proposal; compare with current `DynamicRecovery` before reusing |

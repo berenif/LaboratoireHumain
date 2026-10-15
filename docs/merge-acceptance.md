@@ -205,7 +205,7 @@ source file, historical pass, or generated artifact is not itself an acceptance
 result. Record the executed scenario count, exit code, source fingerprint, and
 visual finding before changing any row to **Pass**.
 
-Sources: [README](../README.md), [architecture](../ARCHITECTURE.md),
+Sources: [README](../README.md), [architecture](https://github.com/berenif/LaboratoireHumain/blob/f8d1fbef3d28e7e5f4c0ca56d4437a19950fe07c/ARCHITECTURE.md),
 [physics acceptance](physics-acceptance.md),
 [physical coherence](body-physical-coherence-acceptance.md),
 [balance](balance-controller.md), [recovery](dynamic-recovery.md),

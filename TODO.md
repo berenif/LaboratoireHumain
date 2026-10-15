@@ -1,3 +1,5 @@
+> Historical record. Current application setup and limitations: [README](README.md). Rust/WASM is now the maintained runtime; recovery is disabled and unqualified.
+
 # TODO
 
 **2026-10-15 retour d’état du transfert — candidat essayé et rejeté :**

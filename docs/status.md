@@ -1,3 +1,5 @@
+> Historical record. Current application setup and limitations: [README](../README.md). Rust/WASM is now the maintained runtime; recovery is disabled and unqualified.
+
 # Current status
 
 **2026-10-12 revue de coordination : aucun nouveau relevage ni essai physique.**

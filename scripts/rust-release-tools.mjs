@@ -26,10 +26,10 @@ export function treeHashes(directory, source = false) {
 }
 export function sourceHashes() {
   const result = {};
-  for (const directory of ['rust', 'scripts', 'tests', 'src', 'app', 'public', 'docs', '.github']) {
+  for (const directory of ['rust', 'scripts', 'tests', 'docs', '.github']) {
     if (existsSync(directory)) for (const [name, hash] of Object.entries(treeHashes(directory, true))) result[`${directory}/${name}`] = hash;
   }
-  for (const file of ['package.json', 'package-lock.json', 'tsconfig.json', 'next.config.ts', 'vite.config.ts']) {
+  for (const file of ['package.json', 'package-lock.json']) {
     if (existsSync(file)) result[file] = sha256(readFileSync(file));
   }
   return Object.fromEntries(Object.entries(result).sort(([a], [b]) => a.localeCompare(b)));
@@ -51,7 +51,7 @@ export const requiredReleaseStages = ['format', 'native-clippy', 'wasm-clippy', 
   'scalar-cached-equivalence', 'native-repeat', 'contact-stress', 'force-controls', 'anatomy-structure-collision-ownership',
   'actuators', 'disturbances', 'strict-steps', 'legacy-four', 'recovery', 'cycles-five', 'terrain-21',
   'production-profile', 'root-browser', 'subpath-browser', 'wasm-physics-equivalence', 'WebGPU-performance',
-  'WebGL2-performance', 'soak-120', 'physical-touchscreen', 'retained-application', 'source-unchanged', 'asset-unchanged'];
+  'WebGL2-performance', 'soak-120', 'physical-touchscreen', 'application-build-and-tests', 'source-unchanged', 'asset-unchanged'];
 export function releaseDecision(stages) {
   const missing = requiredReleaseStages.filter(name => !stages.some(stage => stage.name === name));
   const failed = stages.filter(stage => stage.passed !== true).map(stage => stage.name);

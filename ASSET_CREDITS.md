@@ -1,12 +1,7 @@
-# Asset and software credits
+# Software and source credits
 
-No external character, texture, image, animation, audio, or environment asset is used. All humanoid geometry, floor graphics, colors, and motion are original procedural work in this repository.
+The maintained runtime uses Leptos, wgpu and Rapier in Rust/WASM. Exact dependency versions are recorded in `rust/Cargo.lock`; vendored Rapier notices are retained under `rust/vendor/rapier3d/`. Browser test tooling is pinned in `package-lock.json`.
 
-Software dependencies are recorded at exact versions in `package-lock.json`. Core runtime licenses:
+The humanoid and environment geometry are procedural. Experimental recovery references and their source attribution are preserved in the dated reports under `docs/` and the provenance records alongside the Rust data. They do not establish physical qualification.
 
-- Three.js 0.185.1, MIT License
-- Rapier JavaScript compatibility package 0.20.0, Apache-2.0 License
-- React 19.2.6, MIT License
-- Vinext 0.0.50 and Vite 8.0.13, licenses distributed with their packages
-
-Full transitive package notices remain available in each installed package and the lockfile.
+Former React, Three.js, Vinext and JavaScript Rapier dependencies are available with the retired application in Git history.
