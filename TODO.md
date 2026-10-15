@@ -1,5 +1,14 @@
 # TODO
 
+**2026-10-15 retour d’état du transfert — candidat essayé et rejeté :**
+
+- [x] Analyser les archives : CoM/vitesse, polygone chargé et mouvement articulaire ; garder la cause dynamique comme hypothèse.
+- [x] Implémenter un seul candidat avec recentrage, freinage du tronc et pieds horizontaux ; deux tests purs ciblés passent.
+- [x] Exécuter une fois : 828 sous-pas, 3,45 s simulées, 5,055 s murales ; arrêt sur collision physique, aucune relance.
+- [x] Livrer vidéo et comparaison : chute 0,233 s plus tôt, aucun talon acquis, aucune station debout. [Résultat](docs/evidence/coordination-feedback-transfer-2026-10-15/RESULT.md).
+- [ ] Toute nouvelle stratégie exige une réorientation ; aucune continuation automatique.
+
+
 **2026-10-15 20:27 UTC — exploration complète A36, protocole clos :**
 
 - [x] Ajouter un chemin expérimental isolé, sans reçu de prévision ni stabilité préalable ; préserver la production et la correction d’attribution inachevée.

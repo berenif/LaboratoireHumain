@@ -1,0 +1,217 @@
+{
+  "commonFinalSnapshot": {
+    "reference": {
+      "t": 3.433333333333333,
+      "step": 824,
+      "pelvisH": 0.13521410524845123,
+      "comH": 0.11426550894975662,
+      "comZ": 1.1245347261428833,
+      "comVx": -0.008223519664292642,
+      "comVy": 0.0032994283731661647,
+      "comVz": -0.0016010401441562962,
+      "comSpeed": 0.009004211947853166,
+      "pelvisVx": -0.01142970658838749,
+      "pelvisVy": -0.002622943604364991,
+      "pelvisVz": -6.914835830684751e-05,
+      "pelvisSpeed": 0.011727011867639775
+    },
+    "feedback": {
+      "t": 3.433333333333333,
+      "step": 824,
+      "pelvisH": 0.2303006649017334,
+      "comH": 0.23249191045761108,
+      "comZ": 0.6879749298095703,
+      "comVx": -0.009266715496778488,
+      "comVy": -0.008173911832273006,
+      "comVz": 0.0032832331489771605,
+      "comSpeed": 0.012785322469556633,
+      "pelvisVx": -0.0054901703260838985,
+      "pelvisVy": 0.004211473744362593,
+      "pelvisVz": 0.004395353142172098,
+      "pelvisSpeed": 0.00819741487014472
+    }
+  },
+  "reference": {
+    "firstEvents": {
+      "captureOutsideInsetS": 0.17916666666666667,
+      "comOutsideInsetS": 0.32916666666666666,
+      "headTorsoPelvisLoadedS": 1.5875,
+      "nonfootLoadedS": 1.5875
+    },
+    "lastNativeSubstep": 6240,
+    "pelvisLastM": 0.11254525184631348,
+    "pelvisMinimumM": 0.10490351170301437,
+    "pelvisMaximumM": 0.9479480981826782,
+    "comLastM": [
+      -0.03369510918855667,
+      0.11939021199941635,
+      1.1403204202651978
+    ],
+    "heelMaximumReportedN": [
+      0.0,
+      0.0
+    ],
+    "firstHeel12LoadedSubstepsS": [
+      null,
+      null
+    ],
+    "longestStandingWithSpeedCriteriaS": 0.0,
+    "lastCommand": {
+      "commandSubstep": 6239,
+      "sourceSubstep": 1920,
+      "feedback": null
+    },
+    "lastVelocities": {
+      "t": 26.0,
+      "step": 6240,
+      "pelvisH": 0.11254525184631348,
+      "comH": 0.11939021199941635,
+      "comZ": 1.1403204202651978,
+      "comVx": 3.3913538192534774e-05,
+      "comVy": -2.8742156361296523e-06,
+      "comVz": 0.0006251571106774748,
+      "comSpeed": 0.0006260829036308753,
+      "pelvisVx": 5.6781544117257e-05,
+      "pelvisVy": 1.7247937648789957e-05,
+      "pelvisVz": 0.0007692280923947692,
+      "pelvisSpeed": 0.0007715137673656719
+    },
+    "lastLoadedSegments": [
+      "torso",
+      "head",
+      "leftHand",
+      "rightHand",
+      "leftForefoot",
+      "rightForefoot"
+    ]
+  },
+  "feedback": {
+    "firstEvents": {
+      "captureOutsideInsetS": 0.16666666666666666,
+      "comOutsideInsetS": 0.29583333333333334,
+      "headTorsoPelvisLoadedS": 1.3541666666666667,
+      "nonfootLoadedS": 1.3541666666666667
+    },
+    "lastNativeSubstep": 827,
+    "pelvisLastM": 0.2303818017244339,
+    "pelvisMinimumM": 0.22330188751220703,
+    "pelvisMaximumM": 0.9495791792869568,
+    "comLastM": [
+      -0.42286261916160583,
+      0.23238450288772583,
+      0.6880524158477783
+    ],
+    "heelMaximumReportedN": [
+      0.0,
+      0.0
+    ],
+    "firstHeel12LoadedSubstepsS": [
+      null,
+      null
+    ],
+    "longestStandingWithSpeedCriteriaS": 0.0,
+    "lastCommand": {
+      "commandSubstep": 823,
+      "sourceSubstep": 340,
+      "feedback": {
+        "candidate": "loaded-hull-capture-and-trunk-feedback-v1",
+        "com": [
+          -0.42252352833747864,
+          0.23261116445064545,
+          0.6879211068153381
+        ],
+        "comVelocityMps": [
+          -0.004354327917098999,
+          -0.0042459191754460335,
+          0.004699965938925743
+        ],
+        "constraintError": 0.0,
+        "currentContactGuides": 2,
+        "decisionSubstep": 820,
+        "desiredComVelocityMps": [
+          0.048681659473761546,
+          0.04300867266776411,
+          -0.13520484498063612
+        ],
+        "forceBasedResponseIdentified": false,
+        "loadedHullCenterXZ": [
+          -0.1597969134648641,
+          -0.042894868490596615
+        ],
+        "phase": "reference-recentering",
+        "physicalAdmission": false,
+        "referenceSubstep": 340,
+        "solverIterations": 16
+      }
+    },
+    "lastVelocities": {
+      "t": 3.433333333333333,
+      "step": 824,
+      "pelvisH": 0.2303006649017334,
+      "comH": 0.23249191045761108,
+      "comZ": 0.6879749298095703,
+      "comVx": -0.009266715496778488,
+      "comVy": -0.008173911832273006,
+      "comVz": 0.0032832331489771605,
+      "comSpeed": 0.012785322469556633,
+      "pelvisVx": -0.0054901703260838985,
+      "pelvisVy": 0.004211473744362593,
+      "pelvisVz": 0.004395353142172098,
+      "pelvisSpeed": 0.00819741487014472
+    },
+    "lastLoadedSegments": [
+      "leftUpperArm",
+      "leftForearm",
+      "leftHand",
+      "leftFoot",
+      "leftForefoot"
+    ]
+  },
+  "nativeOutcome": {
+    "operationId": "1cdf6255-9e3b-402b-89a6-9f0abdf09b3f",
+    "status": "closed",
+    "elapsedSeconds": 5.054940906004049,
+    "error": null,
+    "workerResult": {
+      "accounting": {
+        "abandonedNativeSlots": 0,
+        "actualNativeStepsExact": true,
+        "admittedNativeSteps": 828,
+        "completedNativeSteps": 828
+      },
+      "actualNativeSteps": 828,
+      "endpointNativeSubstep": 828,
+      "event": "result",
+      "forecasts": 0,
+      "histories": 1,
+      "noRefund": true,
+      "op": "feedback-run",
+      "operationId": "1cdf6255-9e3b-402b-89a6-9f0abdf09b3f",
+      "qualified": false,
+      "refusal": "Failure { tick: 206, substep: 3, check: \"self-contact\", offending: \"leftForefoot/rightFoot\", measured: 0.005039768, threshold: 0.005 }",
+      "reservedNativeSteps": 7000,
+      "simulatedSeconds": 3.45,
+      "status": "closed-stopped"
+    },
+    "lastAccounting": {
+      "abandonedNativeSlots": 0,
+      "actualNativeStepsExact": true,
+      "admittedNativeSteps": 828,
+      "completedNativeSteps": 828,
+      "event": "after-integration",
+      "nextNativeClock": 828,
+      "pendingNativeSlots": 0,
+      "reservationId": "1cdf6255-9e3b-402b-89a6-9f0abdf09b3f"
+    },
+    "maximumNativeStepsCharged": 7000,
+    "wallSecondsCharged": 120,
+    "retries": 0,
+    "pid": 18653,
+    "returncode": 0,
+    "priorLedgerUnchanged": true
+  },
+  "scope": "Same A36 prefix; reference tracking versus one coherent feedback candidate, not isolated parameter attribution. No impact/24-case qualification.",
+  "velocityMethod": "Baseline mass-weighted archived native body velocities at snapshot boundaries; feedback explicit native CoM velocity; pelvis native body velocity.",
+  "standingMethod": "standing_support diagnostic plus pelvis>0.93m and original speeds<=0.22m/s,0.65rad/s; no recovery counter certification",
+  "additionalNativeSteps": 0
+}

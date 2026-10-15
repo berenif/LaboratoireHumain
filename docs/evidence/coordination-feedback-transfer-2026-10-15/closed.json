@@ -1,0 +1,43 @@
+{
+  "operationId": "1cdf6255-9e3b-402b-89a6-9f0abdf09b3f",
+  "status": "closed",
+  "elapsedSeconds": 5.054940906004049,
+  "error": null,
+  "workerResult": {
+    "accounting": {
+      "abandonedNativeSlots": 0,
+      "actualNativeStepsExact": true,
+      "admittedNativeSteps": 828,
+      "completedNativeSteps": 828
+    },
+    "actualNativeSteps": 828,
+    "endpointNativeSubstep": 828,
+    "event": "result",
+    "forecasts": 0,
+    "histories": 1,
+    "noRefund": true,
+    "op": "feedback-run",
+    "operationId": "1cdf6255-9e3b-402b-89a6-9f0abdf09b3f",
+    "qualified": false,
+    "refusal": "Failure { tick: 206, substep: 3, check: \"self-contact\", offending: \"leftForefoot/rightFoot\", measured: 0.005039768, threshold: 0.005 }",
+    "reservedNativeSteps": 7000,
+    "simulatedSeconds": 3.45,
+    "status": "closed-stopped"
+  },
+  "lastAccounting": {
+    "abandonedNativeSlots": 0,
+    "actualNativeStepsExact": true,
+    "admittedNativeSteps": 828,
+    "completedNativeSteps": 828,
+    "event": "after-integration",
+    "nextNativeClock": 828,
+    "pendingNativeSlots": 0,
+    "reservationId": "1cdf6255-9e3b-402b-89a6-9f0abdf09b3f"
+  },
+  "maximumNativeStepsCharged": 7000,
+  "wallSecondsCharged": 120,
+  "retries": 0,
+  "pid": 18653,
+  "returncode": 0,
+  "priorLedgerUnchanged": true
+}

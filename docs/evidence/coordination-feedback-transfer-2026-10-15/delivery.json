@@ -1,0 +1,45 @@
+{
+  "closedUtc": "2026-10-15T20:58:08.020063+00:00",
+  "preparationStartUtc": "2026-10-15T20:38:36Z",
+  "preparationElapsedEnvelopeSeconds": 1172.020063,
+  "preparationMaximumSeconds": 1800,
+  "nativeActualSteps": 828,
+  "nativeChargedSteps": 7000,
+  "wallActualSeconds": 5.054940906004049,
+  "wallChargedSeconds": 120,
+  "globalNativeChargedSteps": 153508,
+  "globalWallChargedSeconds": "466.328294294003192",
+  "globalPreparationChargedSeconds": 71689,
+  "nativeTraceSha256": "7aeba44a297016b90dbe4007589215ec755397f612a61caf36e67f07b112a561",
+  "compressedArchiveVerified": true,
+  "videoSha256": "37c3584c8089ece6b39f092757175d30a373c46c6bf6c229f47d2ea7b94dadcb",
+  "videoProbe": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_name": "h264",
+        "width": 960,
+        "height": 600,
+        "avg_frame_rate": "240/1"
+      }
+    ],
+    "format": {
+      "duration": "3.445833",
+      "size": "142506"
+    }
+  },
+  "frameInspectedAtSeconds": 1.4,
+  "failure": {
+    "check": "self-contact",
+    "measured": 0.005039767827838659,
+    "offending": "leftForefoot/rightFoot",
+    "substep": 3,
+    "threshold": 0.004999999888241291,
+    "tick": 206
+  },
+  "endpointPelvisHeightM": 0.2303852140903473,
+  "physicsDuringRenderingOrComparison": 0,
+  "qualification": false,
+  "retry": false
+}

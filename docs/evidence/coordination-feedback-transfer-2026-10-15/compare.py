@@ -25,14 +25,15 @@ def load(path):
   rows.append({'step':step,'t':step/240,'pelvisH':h,'com':com,'loaded':loaded,'heelLoads':d['heel_loads_n'],'standing':upright})
   if snap:
    poses=snap['segments'];v=r.get('comVelocityMps') or [sum(s['massKg']*p['linearVelocity'][a] for s,p in zip(model,poses))/mass for a in 'xyz'];pv=r.get('pelvisVelocityMps') or [poses[0]['linearVelocity'][a] for a in 'xyz']
-   samples.append({'t':step/240,'step':step,'pelvisH':h,'comH':com[1],'comZ':com[2],'comVy':v[1],'comVz':v[2],'pelvisVy':pv[1],'pelvisVz':pv[2]})
+   samples.append({'t':step/240,'step':step,'pelvisH':h,'comH':com[1],'comZ':com[2],'comVx':v[0],'comVy':v[1],'comVz':v[2],'comSpeed':math.sqrt(sum(x*x for x in v)),'pelvisVx':pv[0],'pelvisVy':pv[1],'pelvisVz':pv[2],'pelvisSpeed':math.sqrt(sum(x*x for x in pv))})
  summary={'firstEvents':first,'lastNativeSubstep':rows[-1]['step'] if rows else 36,'pelvisLastM':rows[-1]['pelvisH'] if rows else None,'pelvisMinimumM':min((r['pelvisH'] for r in rows),default=None),'pelvisMaximumM':max((r['pelvisH'] for r in rows),default=None),'comLastM':rows[-1]['com'] if rows else None,'heelMaximumReportedN':heelmax,'firstHeel12LoadedSubstepsS':heelpersist,'longestStandingWithSpeedCriteriaS':longest/240,'lastCommand':{k:lastcommand.get(k) for k in ('commandSubstep','sourceSubstep','feedback')} if lastcommand else None,'lastVelocities':samples[-1] if samples else None,'lastLoadedSegments':rows[-1]['loaded'] if rows else None}
  return rows,samples,summary
 baseline=ROOT/'docs/evidence/coordination-exploration-execution-2026-10-15/native-trace.jsonl'
 brows,bs,b=load(baseline);crows,cs,c=load(HERE/'native-trace.jsonl')
-out={'reference':b,'feedback':c,'nativeOutcome':json.loads((HERE/'closed.json').read_text()),'scope':'Same A36 prefix; reference tracking versus one coherent feedback candidate, not isolated parameter attribution. No impact/24-case qualification.','velocityMethod':'Baseline mass-weighted archived native body velocities at snapshot boundaries; feedback explicit native CoM velocity; pelvis native body velocity.','standingMethod':'standing_support diagnostic plus pelvis>0.93m and original speeds<=0.22m/s,0.65rad/s; no recovery counter certification','additionalNativeSteps':0}
+common={r['step']:r for r in bs};matched=[{'reference':common[r['step']],'feedback':r} for r in cs if r['step'] in common]
+out={'commonFinalSnapshot':matched[-1] if matched else None,'reference':b,'feedback':c,'nativeOutcome':json.loads((HERE/'closed.json').read_text()),'scope':'Same A36 prefix; reference tracking versus one coherent feedback candidate, not isolated parameter attribution. No impact/24-case qualification.','velocityMethod':'Baseline mass-weighted archived native body velocities at snapshot boundaries; feedback explicit native CoM velocity; pelvis native body velocity.','standingMethod':'standing_support diagnostic plus pelvis>0.93m and original speeds<=0.22m/s,0.65rad/s; no recovery counter certification','additionalNativeSteps':0}
 (HERE/'comparison.json').write_text(json.dumps(out,indent=2,ensure_ascii=False)+'\n')
-fields=['case','t','step','pelvisH','comH','comZ','comVy','comVz','pelvisVy','pelvisVz']
+fields=['case','t','step','pelvisH','comH','comZ','comVx','comVy','comVz','comSpeed','pelvisVx','pelvisVy','pelvisVz','pelvisSpeed']
 with (HERE/'comparison.csv').open('w') as f:
  w=csv.DictWriter(f,fieldnames=fields);w.writeheader()
  for name,rows in [('reference',bs),('feedback',cs)]:
@@ -41,7 +42,7 @@ import matplotlib;matplotlib.use('Agg');import matplotlib.pyplot as plt
 fig,axes=plt.subplots(2,2,figsize=(11,7))
 for label,rows in [('Référence',bs),('Retour d’état',cs)]:
  t=[r['t'] for r in rows]
- for ax,key,title in zip(axes.flat,['pelvisH','comH','pelvisVz','comVz'],['Hauteur bassin (m)','Hauteur CoM (m)','Vitesse bassin avant/arrière (m/s)','Vitesse CoM avant/arrière (m/s)']):
-  ax.plot(t,[r[key] for r in rows],label=label);ax.set_title(title);ax.set_xlabel('Temps natif (s)');ax.legend()
+ for ax,key,title in zip(axes.flat,['pelvisH','comH','pelvisSpeed','comSpeed'],['Hauteur bassin (m)','Hauteur CoM (m)','Norme vitesse bassin (m/s)','Norme vitesse CoM (m/s)']):
+  ax.plot(t,[r[key] for r in rows],label=label);ax.set_title(title);ax.set_xlabel('Temps natif (s)');ax.set_xlim(0,min(bs[-1]['t'],cs[-1]['t']) if bs and cs else 4);ax.legend()
 fig.suptitle('Deux histoires réellement exécutées — les variations ne qualifient pas un relevage');fig.tight_layout();fig.savefig(HERE/'comparison.png');plt.close(fig)
 print(json.dumps({'reference':b,'feedback':c},ensure_ascii=False))
