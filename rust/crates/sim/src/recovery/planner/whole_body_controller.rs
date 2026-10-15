@@ -94,6 +94,8 @@ pub(crate) struct Controller {
     last: Value,
     last_attempt: Value,
     pub(crate) transfer: Option<super::transfer_adapter::Adapter>,
+    #[cfg(feature = "coordination-transfer-worker")]
+    exploratory_sequence: bool,
 }
 
 impl Controller {
@@ -180,6 +182,8 @@ impl Controller {
             last: Value::Null,
             last_attempt: Value::Null,
             transfer: None,
+            #[cfg(feature = "coordination-transfer-worker")]
+            exploratory_sequence: false,
         })
     }
     pub(crate) fn evidence(&self) -> Value {
@@ -472,7 +476,47 @@ impl Controller {
         self.transfer.as_mut().unwrap().continue_validated_window(sim.substeps_completed,&identity)
     }
 
+    /// Explicit experimental worker only. No support certificate is created.
+    #[cfg(feature = "coordination-transfer-worker")]
+    pub(crate) fn enable_exploratory_sequence(&mut self, at: u64) -> Result<(), String> {
+        if at != 36 || self.memory.next_substep != at || self.previous_step != Some(35)
+            || self.transfer.is_some() || self.enabled || self.exploratory_sequence {
+            return Err("Exploration must attach once to the unchanged A36 reference prefix".into());
+        }
+        self.exploratory_sequence = true;
+        Ok(())
+    }
+
+    /// Follow the existing complete reference, including its final hold. Contact
+    /// continuity, local readiness and prediction admission are not asserted.
+    /// Body poses, recovery state, physical inspections and motor budgets stay owned
+    /// by the existing native kernel; only joint targets are installed here.
+    #[cfg(feature = "coordination-transfer-worker")]
+    fn configure_exploratory_sequence(&mut self, sim: &mut Simulation) -> Result<(), String> {
+        let at = sim.substeps_completed;
+        if self.memory.next_substep != at || self.previous_step.and_then(|s| s.checked_add(1)) != Some(at)
+            || !(36..6240).contains(&at) || self.transfer.is_some() {
+            return Err("Experimental sequence clock/ownership violation".into());
+        }
+        let command = exploratory_command(&sim.model, &self.program, &self.memory.previous, at)?;
+        let (cap, ratio, requests) = recovery::support_probe::offline_trajectory::install_targets(
+            sim, &command.positions, &command.velocities,
+            recovery::support_probe::offline_trajectory::Allocation::OwnedRequests)?;
+        sim.targets = command.positions.to_vec();
+        self.memory.previous = command.positions;
+        self.memory.next_substep = at + 1;
+        self.previous_step = Some(at);
+        self.maximum_cap = self.maximum_cap.max(cap);
+        self.last = json!({"experimentalSequence":true,"physicalAdmission":false,
+            "commandSubstep":at,"sourceSubstep":at.min(u64::from(self.program.duration_substeps())),
+            "positions":command.positions,"velocities":command.velocities,
+            "capSumNm":cap,"anatomicalCapRatio":ratio,"requests":requests});
+        Ok(())
+    }
+
     pub(crate) fn configure(&mut self, sim: &mut Simulation) -> Result<(), String> {
+        #[cfg(feature = "coordination-transfer-worker")]
+        if self.exploratory_sequence { return self.configure_exploratory_sequence(sim); }
         if self.transfer.is_some() {
             return self.configure_transfer(sim);
         }
@@ -829,6 +873,8 @@ mod tests {
                 last: Value::Null,
                 last_attempt: Value::Null,
                 transfer: None,
+            #[cfg(feature = "coordination-transfer-worker")]
+            exploratory_sequence: false,
             };
             problems.push((
                 owner.feedback_scale,
@@ -1030,7 +1076,8 @@ mod transfer_archive_tests {
             patches:serde_json::from_value(o["patches"].clone()).unwrap(),start:o["start"].as_u64().unwrap(),
             previous_step:Some(o["previousStep"].as_u64().unwrap()),best_progress:o["bestProgress"].as_f64().unwrap() as f32,
             stalled_s:o["stalledS"].as_f64().unwrap() as f32,unsupported_s:o["unsupportedS"].as_f64().unwrap() as f32,
-            maximum_cap:o["maximumCapNm"].as_f64().unwrap(),last:o["last"].clone(),last_attempt:o["numericAttempt"].clone(),transfer:None };
+            maximum_cap:o["maximumCapNm"].as_f64().unwrap(),last:o["last"].clone(),last_attempt:o["numericAttempt"].clone(),transfer:None,
+            #[cfg(feature = "coordination-transfer-worker")] exploratory_sequence:false };
         owner.enable_observed_transfer(&model,&observation,entry).unwrap();
         let mut adapter=owner.transfer.take().unwrap();
         let proposal=adapter.observe(&observation).unwrap();
@@ -1059,5 +1106,49 @@ mod transfer_archive_tests {
         assert!(compilation.is_ok(),"Frozen candidate rejected: {:?}",compilation.err());
         assert_eq!(commands.len(),4);
         assert_eq!(adapter.tracker().active.iter().map(|p|p.segment).collect::<Vec<_>>(),[19,24]);
+    }
+}
+
+#[cfg(feature = "coordination-transfer-worker")]
+fn exploratory_command(model: &lh_model::Model, program: &CompiledProgram,
+    previous: &recovery::trajectory_program::Coordinates, at: u64)
+    -> Result<recovery::trajectory_program::Command, String> {
+    if !(36..6240).contains(&at) { return Err("Experimental native clock outside finite history".into()); }
+    let mut command = program.command(at as u32);
+    for i in 0..25 { for k in 0..3 {
+        command.velocities[i][k] = (command.positions[i][k] - previous[i][k]) / lh_contracts::SUBSTEP_S;
+    }}
+    recovery::trajectory_program::validate_command(model, &command)?;
+    Ok(command)
+}
+
+#[cfg(all(test, feature = "coordination-transfer-worker"))]
+mod exploration_pure_tests {
+    use super::*;
+    #[test]
+    fn pure_exploration_full_sequence_preserves_reference_and_exact_velocity() {
+        let model: lh_model::Model = serde_json::from_str(include_str!(concat!(env!("CARGO_MANIFEST_DIR"),
+            "/../model/data/canonical-v1.json"))).unwrap();
+        let program: recovery::trajectory_program::Program = serde_json::from_str(include_str!(concat!(env!("CARGO_MANIFEST_DIR"),
+            "/../../../docs/evidence/coordination-prototype-2026-10-12/continuation-candidate-program.json"))).unwrap();
+        let program = program.compile(&model).unwrap();
+        let archived: Value = serde_json::from_str(include_str!(concat!(env!("CARGO_MANIFEST_DIR"),
+            "/../../../docs/evidence/coordination-transfer-candidate-2026-10-13/observed-entry-step36.json"))).unwrap();
+        let entry: super::super::observed_raccord::ObservedCommandEntry =
+            serde_json::from_value(archived["commandEntry"].clone()).unwrap();
+        assert_eq!(entry.previous_q, program.command(35).positions);
+        let mut previous = entry.previous_q;
+        for at in 36..6240 {
+            let c = exploratory_command(&model, &program, &previous, at).unwrap();
+            assert_eq!(c.positions, program.command(at as u32).positions);
+            for i in 0..25 { for k in 0..3 {
+                assert_eq!(c.velocities[i][k].to_bits(), ((c.positions[i][k]-previous[i][k])/lh_contracts::SUBSTEP_S).to_bits());
+            }}
+            previous = c.positions;
+        }
+        assert!(exploratory_command(&model, &program, &previous, 6240).is_err());
+        assert!(exploratory_command(&model, &program, &previous, 35).is_err());
+        previous[0][0] = f32::NAN;
+        assert!(exploratory_command(&model, &program, &previous, 36).is_err());
     }
 }

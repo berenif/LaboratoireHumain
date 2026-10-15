@@ -1,0 +1,19 @@
+{
+  "parentSourceThread": "01a12799-cefe-7764-8aa3-db5db4c1d0f3",
+  "authorization": "Continue: targeted experimental controller, one full existing sequence, contact conditions diagnostic only; unchanged physical limits; no production change",
+  "startedUtc": "2026-10-15T20:18:09Z",
+  "preparationDeadlineUtc": "2026-10-15T20:48:09Z",
+  "preparationReservationSeconds": 1800,
+  "priorPreparationChargedSeconds": 68089,
+  "preparationChargedAfterSeconds": 69889,
+  "priorNativeCharged": 139508,
+  "priorWallChargedSeconds": 226.328294294003192,
+  "nativeReservationOnLaunch": 7000,
+  "wallReservationOnLaunchSeconds": 120,
+  "previousAttempt": "e5b59e51cd33468a92006c4b24f4ab39ca323518: blocked before launch, no native reservation or execution",
+  "priorClosedLedger": "../coordination-contact-diagnostic-2026-10-15/native-run-once/physical-ledger.json",
+  "priorClosedLedgerSha256": "6a390a45557e0afa2ce096ec40377b986cf06b312337481f000c1e1d9b546c35",
+  "unvalidatedAttributionExcludedFromBuild": true,
+  "isolatedBuildWorktree": "/workspace/lh-explore-build",
+  "noRetry": true
+}

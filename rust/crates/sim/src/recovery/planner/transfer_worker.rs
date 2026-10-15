@@ -737,7 +737,74 @@ fn history(
     }
 }
 
+
+/// One actual history, no copies or forecasts. Reuses the same integration gate
+/// and exact A36 prefix. Experimental contacts are observations, not admission.
+fn execute_exploration(request: &Value, stdout: &mut impl Write) -> Result<(), String> {
+    let output = required_string(request, "outputPath")?;
+    let mut worker = Worker::new();
+    let inputs = prepare_inputs(&mut worker, &request["inputs"])?;
+    let mut budget = worker.accept_permit(&request["permit"], 7000, PreviewPurpose::Candidate)?;
+    if budget.permit.remaining_wall_seconds > 113. { return Err("Exploration exceeds parent wall envelope".into()); }
+    let mut trace = new_file(required_string(request, "tracePath")?)?;
+    let mut report = new_file(output)?;
+    let mut audit = Audit::default();
+    let _scope = budget.activate(output)?;
+    let mut endpoint = 0;
+    let result = catch_failure(|| -> Result<(), String> {
+        let (mut sim, mut memory) = replay_prefix(&inputs, &mut budget, &mut audit, &mut trace, false)?;
+        sim.coordination.as_mut().ok_or("Missing A36 owner")?.enable_exploratory_sequence(PREFIX)?;
+        let observation = native_observation::observe(&sim, 0, &[])?;
+        let mut tracker = super::super::support_schedule::SupportSchedule::bootstrap_observed(&observation, &[19,24])?.tracker().clone();
+        while sim.substeps_completed < 6240 {
+            budget.reserve_four_before_tick(StepReservation { branch_id:0, before_substep:sim.substeps_completed,
+                preview_index:0, purpose:budget.purpose })?;
+            let tick = sim.advance_tick_observed(|s, substep| {
+                let checked = (|| -> Result<(), String> {
+                    let observed = native_observation::observe(s, 0, &[])?;
+                    let sample = memory.observe(&observed)?;
+                    let mut retained = vec![];
+                    for patch in &mut tracker.active {
+                        patch.observe(&observed, 0.012)?;
+                        retained.push(patch.material_continuity(&observed, 0.012)?);
+                    }
+                    let pelvis = observed.segments.iter().position(|x| x.id == "pelvis").ok_or("Missing pelvis")?;
+                    let snapshot = if s.substeps_completed % 4 == 0 { json!(s.snapshot()) } else { Value::Null };
+                    line(&mut trace, &json!({"kind":"exploration-step","nativeSubstep":s.substeps_completed,
+                        "snapshot":snapshot,"localDiagnostic":sample,"retainedPointsDiagnostic":retained,
+                        "pelvisHeightM":observed.bodies[pelvis].position_m[1]-observed.support_height_m,
+                        "com":observed.center_of_mass_m,"segmentContacts":observed.segments,
+                        "standingPoseDiagnostic":measurement::standing_support(s, substep).is_ok(),
+                        "commands": if s.substeps_completed % 4 == 0 { s.coordination.as_ref().map(|o|o.evidence()["last"].clone()) } else {None},
+                        "physicalAdmission":false,"impactRecoveryQualified":false}))?;
+                    budget.check_wall_deadline()
+                })();
+                checked.map_err(|e| failure(s, substep, e))
+            });
+            endpoint = sim.substeps_completed;
+            if let Err(error) = tick {
+                line(&mut trace, &json!({"kind":"exploration-failure","nativeSubstep":endpoint,
+                    "snapshot":sim.snapshot(),"failure":error,"qualified":false}))?;
+                return Err(format!("{error:?}"));
+            }
+            budget.finish_branch()?;
+        }
+        Ok(())
+    }).and_then(|r|r);
+    let endpoint = budget.completed();
+    let evidence = json!({"event":"result","op":"exploration-run","operationId":request["operationId"],
+        "status":if result.is_ok(){"closed-completed"}else{"closed-stopped"},"refusal":result.err(),
+        "reservedNativeSteps":7000,"actualNativeSteps":budget.actual_json(budget.completed()),
+        "accounting":budget.accounting(),"endpointNativeSubstep":endpoint,"simulatedSeconds":endpoint as f64/240.,
+        "forecasts":0,"histories":1,"qualified":false,"noRefund":true});
+    line(&mut report,&evidence)?;
+    trace.flush().map_err(|e|e.to_string())?;
+    trace.get_ref().sync_data().map_err(|e|e.to_string())?;
+    send(stdout,&evidence)
+}
+
 fn execute(request: &Value, stdout: &mut impl Write) -> Result<(), String> {
+    if request["op"] == "exploration-run" { return execute_exploration(request, stdout); }
     let mode = OperationMode::parse(request)?;
     let operation = required_string(request, "operationId")?;
     if operation.is_empty() {
