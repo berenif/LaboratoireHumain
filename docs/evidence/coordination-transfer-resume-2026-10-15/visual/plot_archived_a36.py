@@ -3,8 +3,13 @@
 
 import hashlib
 import json
+import os
+import tempfile
 from datetime import datetime, timezone
 from pathlib import Path
+
+os.environ.setdefault("MPLCONFIGDIR", str(Path(tempfile.gettempdir()) / "lh-a36-matplotlib"))
+os.environ.setdefault("XDG_CACHE_HOME", str(Path(tempfile.gettempdir()) / "lh-a36-cache"))
 
 import matplotlib
 
@@ -75,7 +80,7 @@ def main():
                          "svg.fonttype": "none", "svg.hashsalt": "archived-a36"})
     fig = plt.figure(figsize=(15, 10), facecolor="white")
     grid = fig.add_gridspec(2, 2, width_ratios=(1.12, 1), height_ratios=(1, 1),
-                           left=0.07, right=0.97, top=0.82, bottom=0.18,
+                           left=0.07, right=0.97, top=0.82, bottom=0.22,
                            hspace=0.48, wspace=0.28)
     ax = fig.add_subplot(grid[:, 0])
     loads_ax = fig.add_subplot(grid[0, 1])
@@ -84,7 +89,7 @@ def main():
     fig.text(0.07, 0.907, "Archive à 0,150 s — état dynamique ; diagnostic local non satisfait",
              fontsize=13, color="#566672")
     fig.text(0.07, 0.866,
-             "Contacts porteurs présents · Talons sans charge · Recentrage et abaissement demandés, non réalisés",
+             "Contacts porteurs présents · Talons sans charge · Recentrage et abaissement demandés, non validés",
              fontsize=12, color=ink)
 
     # Coordinates below are copied from JSON and converted from m to cm.
@@ -117,8 +122,8 @@ def main():
         point = heel["observed_point_world_m"]
         ax.scatter(point[0]*100, point[2]*100, marker="D", s=85,
                    facecolors="white", edgecolors=intent, linewidth=1.5, zorder=5)
-        ax.annotate(f"Talon {side}\n0 N", xy=(point[0]*100, point[2]*100),
-                    xytext=(point[0]*100+offset, point[2]*100-3.3), ha="center",
+        ax.annotate(f"Talon {side} · 0 N", xy=(point[0]*100, point[2]*100),
+                    xytext=(point[0]*100+offset, point[2]*100+1.5), ha="center",
                     fontsize=10, color=intent)
     ax.set(title="A. Projection au sol des valeurs archivées", xlabel="x (cm)", ylabel="z (cm)")
     ax.set_xlim(-18, 18)
@@ -142,7 +147,7 @@ def main():
     loads_ax.set_title("B. Quatre segments portent déjà une charge", loc="left")
     loads_ax.grid(axis="y", color="#e6eaed", linewidth=0.7)
     loads_ax.set_axisbelow(True)
-    loads_ax.text(0, 1.03, "Contacts avant des arrière-pieds 18/23 ; charge des talons : 0 N.",
+    loads_ax.text(0.02, 0.95, "Contacts avant des arrière-pieds 18/23 ; talons : 0 N.",
                   transform=loads_ax.transAxes, fontsize=9, color="#566672")
 
     heights = [h["height_above_observed_support_m"]*1000 for h in heels]

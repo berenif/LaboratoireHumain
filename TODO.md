@@ -1,5 +1,25 @@
 # TODO
 
+**2026-10-15 candidat figé depuis l'accroupi observé — préparation globale ouverte :**
+
+- [x] Archiver A36, commandes réellement installées et provenance massique ;
+  aucun checkpoint natif inventé, reprise future par préfixe36 vérifié.
+- [x] Auditer le seuil80 % : garde conservatrice conservée, pas loi universelle.
+- [x] Produire la politique talons/recentrage, raccord q/dq fini et adaptateur
+  natif expérimental avec surveillance du relais original.
+- [x] Tester un assemblage commun sur A36 : quatre commandes, erreurQP nulle,
+  une inspection, zéroFK/monde/sous-pas natif ; appui physique non prouvé.
+- [x] Corriger la couverture des mémoires privées et le checkpoint terminal ;
+  contre-revue, tests purs et compilation release sans exécution terminés.
+- [x] Figer pilote, superviseur et manifeste : 345 fichiers et 14 preuves
+  historiques vérifiés ; inspection sans autorisation ni processus natif.
+- [ ] Obtenir via parent le budget physique distinct : une histoire complète,
+  131 096 pas tous usages et 7 200 s murales ; anciens registres clos.
+- [ ] Mesurer acquisition des talons puis continuation complète ; conserver la
+  récupération désactivée jusqu'à qualification24poses/cycles/impacts distincte.
+  [Candidat](docs/coordination-transfer-candidate-2026-10-13.md) et
+  [gel, preuves et décision restante](docs/coordination-transfer-freeze-2026-10-15.md).
+
 **2026-10-12 transfert intermédiaire — préparation close sans nouveau pas physique :**
 
 - [x] Vérifier `c9f07ea` local/distant, les anciens registres clos et les sources

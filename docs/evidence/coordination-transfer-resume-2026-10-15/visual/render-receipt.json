@@ -1,6 +1,6 @@
 {
   "schema": 1,
-  "createdUtc": "2026-10-15T09:45:15.595554+00:00",
+  "createdUtc": "2026-10-15T09:46:06.577769+00:00",
   "scope": "Plot saved A36 observation and saved command intention; no physical or geometric solver execution.",
   "inputs": {
     "entry": {
@@ -16,19 +16,19 @@
   },
   "script": {
     "path": "docs/evidence/coordination-transfer-resume-2026-10-15/visual/plot_archived_a36.py",
-    "bytes": 13205,
-    "sha256": "ce19cceaaf7ee3325f49206e48633100211d4156f6e74a5084a68de0219fceb3"
+    "bytes": 13409,
+    "sha256": "8e892086b5ef35c9eaf927493ea2366cf9650fc4c3d12ceaabd99a3fbaf25ac7"
   },
   "outputs": [
     {
       "path": "docs/evidence/coordination-transfer-resume-2026-10-15/visual/a36-support-and-intent.png",
-      "bytes": 394096,
-      "sha256": "b22e60e543b451ccd52560f710903b823f72ec672056455ea17c45121f3c5e60"
+      "bytes": 395966,
+      "sha256": "22f8a9c2109c527021576d65310bbe0d7c3eaf41edeef9c4dd572e35037e3dd6"
     },
     {
       "path": "docs/evidence/coordination-transfer-resume-2026-10-15/visual/a36-support-and-intent.svg",
-      "bytes": 45779,
-      "sha256": "e0bc7103693787ab7a32087bca3b8524ce8e7c18f5ffca033771890b53cbee13"
+      "bytes": 45655,
+      "sha256": "25a67868774628e19bfa8de0b1608c6811d6e270f583c2ae333800257997a5d8"
     },
     {
       "path": "docs/evidence/coordination-transfer-resume-2026-10-15/visual/plotted-archived-values.json",

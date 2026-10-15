@@ -1,0 +1,61 @@
+{
+  "schema": 1,
+  "scope": "Pure supervision and explicitly inert process tests only; no physical permission",
+  "recordedUtc": "2026-10-15T09:45:39.876350+00:00",
+  "source": [
+    {
+      "path": "docs/evidence/coordination-transfer-native-proposal-2026-10-13/run_transfer.py",
+      "sha256": "714f96ed06a94c1c45603b1415cbec4c7c1145780f863d2b1ec97b02bb9a20c8",
+      "bytes": 35770
+    },
+    {
+      "path": "docs/evidence/coordination-transfer-native-proposal-2026-10-13/test_run_transfer.py",
+      "sha256": "3de0af5f6ce8d2c7bd847ad2dc7e8c00ad0894295d4421ec8d1b7ce21a1fbc32",
+      "bytes": 28928
+    },
+    {
+      "path": "docs/evidence/coordination-transfer-native-proposal-2026-10-13/supervisor-readme.md",
+      "sha256": "1d70b12a7485948b2e18dae5273c84db39e0873594eef5e2bc99002436d8f5ba",
+      "bytes": 7281
+    }
+  ],
+  "testEvidence": [
+    {
+      "path": "docs/evidence/coordination-transfer-native-proposal-2026-10-13/supervisor-pure-tests-initial.log",
+      "sha256": "ae9f8ff7ff5da578d63591af723a882441c4515d298dcbc7cd2cc29f7246cce8",
+      "bytes": 4675,
+      "passed": 37
+    },
+    {
+      "path": "docs/evidence/coordination-transfer-native-proposal-2026-10-13/supervisor-pure-tests-final.log",
+      "sha256": "570bf47f9d8e375620d48b21ddf18081774bc3bd15a78434eebd65bd2fa11805",
+      "bytes": 5511,
+      "passed": 43
+    },
+    {
+      "path": "docs/evidence/coordination-transfer-native-proposal-2026-10-13/supervisor-inspection-tests.log",
+      "sha256": "f8563bc5752911cba0f48cf4711a62441048248ae6f3afe82a276b38a57d9a35",
+      "bytes": 5819,
+      "passed": 45
+    }
+  ],
+  "uniqueTestsLatest": 45,
+  "caseExecutionsAcrossRetainedLogs": 125,
+  "latestPureTests": 42,
+  "latestInertProcessTests": 3,
+  "nativeWorkerExecutions": 0,
+  "nativeSubsteps": 0,
+  "fkPoses": 0,
+  "physicalBudgetOpened": false,
+  "historicalFamilyReopened": false,
+  "realAuthorizationCreated": false,
+  "realClaimExists": false,
+  "inspectionWithoutAuthorizationSupported": true,
+  "executionStillRequiresDistinctAuthorization": true,
+  "approvalInTests": "Only synthetic temporary fixtures, removed after each test; never production authorization",
+  "remainingLimits": [
+    "No native worker has been executed in this preparation",
+    "No physical success or native runtime parity is established by these tests",
+    "Final binary and manifest must be supplied and inspected by root before a distinct authorization can bind them"
+  ]
+}

@@ -1,7 +1,7 @@
 {
   "schema": 1,
   "protocolId": "observed-a36-single-transfer-and-continuation-proposal-2026-10-13",
-  "status": "proposal-not-authorized-not-frozen",
+  "status": "frozen-awaiting-distinct-native-authorization",
   "scope": "One future fixed native history from the observed A36 entry, with complete continuation and a causal local stop; no execution by this document",
   "nativeExecutionAuthorized": false,
   "nativeStepsAuthorized": 0,
@@ -46,10 +46,11 @@
     "referenceProgramSha256": "f14de3871ef9aba18083b36d10eeb56c8587c66a73b1ab2ec54e01830e06e59d",
     "referenceTasksPath": "docs/evidence/coordination-prototype-2026-10-12/continuation-tasks.json",
     "referenceTasksSha256": "a96d03d736ca185a0457ae29c33846b69af28ecd5eb81609f60d281463756dd6",
-    "finalNativeBinaryPath": null,
-    "finalNativeBinarySha256": null,
-    "finalManifestSha256": null,
-    "oldNativeAdmissionReceiptsValidForNewCode": false
+    "finalNativeBinaryPath": "/workspace/LaboratoireHumain/rust/target/release/deps/coordination_transfer_worker-8daed3b7e6b04b70",
+    "finalNativeBinarySha256": "63e0e035d38d02f762c69b9dacb65d61e179c72ced50f5facd0bc29c64b9e8b5",
+    "oldNativeAdmissionReceiptsValidForNewCode": false,
+    "finalManifestPath": "/workspace/LaboratoireHumain/docs/evidence/coordination-transfer-native-proposal-2026-10-13/manifest.json",
+    "manifestDigestReceipt": "freeze-receipt.json; kept outside manifest inputs to avoid a self-referential digest"
   },
   "clocks": {
     "nativeHz": 240,
@@ -108,7 +109,13 @@
       "LocalSupportDiagnostic, its sample and other state influencing decisions"
     ],
     "frozenExplicitExclusionsOnly": true,
-    "failureClosesProtocol": true
+    "failureClosesProtocol": true,
+    "explicitExclusions": [
+      "transfer.authorization and transfer.nativeRecords: proof bookkeeping, never decision state",
+      "Prefix only: kind label and absent/null owner.transfer; no active adapter accepted",
+      "Active grab/environment/striker rejected, not projected incompletely",
+      "PhysicsPipeline recomputable scratch only; persistent native world state is serialized"
+    ]
   },
   "mainPrefix": {
     "newInstance": true,
@@ -125,7 +132,10 @@
   "previewAndRealAdmission": {
     "firstRequestedHorizonSubsteps": 480,
     "subsequentRequestedHorizonSubsteps": 480,
-    "receiptAdmissibleActualHorizonRangeInclusive": [120, 480],
+    "receiptAdmissibleActualHorizonRangeInclusive": [
+      120,
+      480
+    ],
     "actualHorizonMustBeMultipleOf": 4,
     "earlyStopAllowedOnlyAtCompletedOriginalTerminalStabilityTick": true,
     "actualHorizonBelow120AlwaysRefused": true,
@@ -179,20 +189,28 @@
     "localPassTerminalRefusal": "Local transfer observed, complete continuation not achieved",
     "terminalPass": "One observed-entry native continuation completed with original terminal and additional stability; no general recovery qualification"
   },
-  "pendingBeforeFreeze": [
-    "Distinct explicit parent authorization for this closed-family successor and its new budget",
-    "Final dedicated worker, manifest, binary and runner with all inputs hashed",
-    "Final pure tests for whole-horizon receipts, per-step identity, checkpoints, terminal early stop and short terminal leases",
-    "Explicit parity exclusions and complete changed-decision-memory coverage",
-    "Native budget and process supervisor enforcing all prefixes, four technical branches, previews, real history and shutdown",
-    "Single fixed candidate and deterministic horizon/tail policy; no variant search",
-    "Review that new bridge geometry is unqualified and all unchanged native integrity guards remain active"
-  ],
+  "pendingBeforeFreeze": [],
   "geometryScope": {
     "additionalFkProposedByThisDocument": 0,
     "oldEightSecondReferenceGeometryProvesNewBridge": false,
     "fourPreparedA36CommandsProvePhysicalSupport": false,
     "nativePreviewMustRejectAnyOriginalIntegrityFailure": true,
     "noConstructionOrCollisionStepOutsideNativeBudget": true
+  },
+  "pendingBeforeExecution": [
+    "Distinct explicit parent authorization tied to the frozen manifest and exact separate budget",
+    "Read-only revalidation of all frozen files and preserved historical records",
+    "Exclusive new durable physical claim and reservations before spawning the sole worker",
+    "Fresh 52-step technical native admission inside this budget; any refusal closes the protocol"
+  ],
+  "frozenImplementation": {
+    "rustSourceCommit": "0a38435b1cfa4283d08b06624980104163969461",
+    "dedicatedTarget": "coordination-transfer-worker",
+    "buildExecutedNativeWorker": false,
+    "supervisor": "run_transfer.py",
+    "inspectionRequiresApproval": false,
+    "inspectionGrantsNativePermission": false,
+    "entrypoint": "transfer-run-v1",
+    "authorizationTemplateApproved": false
   }
 }

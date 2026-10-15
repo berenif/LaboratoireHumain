@@ -1,0 +1,50 @@
+test_hard_alarm_during_constructor_cleans_unassigned_inert_child (__main__.InertProcessTests.test_hard_alarm_during_constructor_cleans_unassigned_inert_child) ... ok
+test_hard_alarm_kills_new_inert_process_group_not_existing_child (__main__.InertProcessTests.test_hard_alarm_kills_new_inert_process_group_not_existing_child) ... ok
+test_inert_pipe_ready_single_message_result_and_eof (__main__.InertProcessTests.test_inert_pipe_ready_single_message_result_and_eof) ... ok
+test_bool_counter_is_not_an_integer_native_count (__main__.RunnerTests.test_bool_counter_is_not_an_integer_native_count) ... ok
+test_changed_budget_is_not_authorization (__main__.RunnerTests.test_changed_budget_is_not_authorization) ... ok
+test_child_process_contract_refuses_before_operation (__main__.RunnerTests.test_child_process_contract_refuses_before_operation) ... ok
+test_claim_prevents_retry_even_with_new_output (__main__.RunnerTests.test_claim_prevents_retry_even_with_new_output) ... ok
+test_complete_fake_run_binds_both_reservations_and_preserves_old_files (__main__.RunnerTests.test_complete_fake_run_binds_both_reservations_and_preserves_old_files) ... ok
+test_corrupt_checkpoint_never_erases_uncertainty (__main__.RunnerTests.test_corrupt_checkpoint_never_erases_uncertainty) ... ok
+test_crash_recovers_exact_completed_native_checkpoint_counts (__main__.RunnerTests.test_crash_recovers_exact_completed_native_checkpoint_counts) ... ok
+test_crash_retains_one_uncertain_in_flight_native_call (__main__.RunnerTests.test_crash_retains_one_uncertain_in_flight_native_call) ... ok
+test_default_is_read_only_and_never_claims_or_spawns (__main__.RunnerTests.test_default_is_read_only_and_never_claims_or_spawns) ... ok
+test_execution_without_authorization_refuses_before_claim (__main__.RunnerTests.test_execution_without_authorization_refuses_before_claim) ... ok
+test_extra_manifest_field_refused (__main__.RunnerTests.test_extra_manifest_field_refused) ... ok
+test_forecast_cadence_arithmetic_is_checked (__main__.RunnerTests.test_forecast_cadence_arithmetic_is_checked) ... ok
+test_frozen_files_are_rechecked_after_result (__main__.RunnerTests.test_frozen_files_are_rechecked_after_result) ... ok
+test_frozen_hash_mismatch_no_claim (__main__.RunnerTests.test_frozen_hash_mismatch_no_claim) ... ok
+test_frozen_source_inventory_includes_both_supervisors_and_worker (__main__.RunnerTests.test_frozen_source_inventory_includes_both_supervisors_and_worker) ... ok
+test_identity_change_after_send_retains_uncertainty (__main__.RunnerTests.test_identity_change_after_send_retains_uncertainty) ... ok
+test_in_flight_receipt_preserves_completed_to_admitted_interval (__main__.RunnerTests.test_in_flight_receipt_preserves_completed_to_admitted_interval) ... ok
+test_incomplete_code_inventory_refuses_before_claim (__main__.RunnerTests.test_incomplete_code_inventory_refuses_before_claim) ... ok
+test_input_mutation_during_startup_refuses_before_send (__main__.RunnerTests.test_input_mutation_during_startup_refuses_before_send) ... ok
+test_inspection_without_authorization_checks_frozen_manifest_only (__main__.RunnerTests.test_inspection_without_authorization_checks_frozen_manifest_only) ... ok
+test_known_partial_native_failure_is_preserved_before_gate (__main__.RunnerTests.test_known_partial_native_failure_is_preserved_before_gate) ... ok
+test_manifest_cannot_change_during_run (__main__.RunnerTests.test_manifest_cannot_change_during_run) ... ok
+test_missing_trace_cannot_pass (__main__.RunnerTests.test_missing_trace_cannot_pass) ... ok
+test_native_deadline_keeps_seven_seconds_for_shutdown (__main__.RunnerTests.test_native_deadline_keeps_seven_seconds_for_shutdown) ... ok
+test_no_approval_no_claim (__main__.RunnerTests.test_no_approval_no_claim) ... ok
+test_partial_final_checkpoint_does_not_become_exact_zero (__main__.RunnerTests.test_partial_final_checkpoint_does_not_become_exact_zero) ... ok
+test_partial_send_cannot_report_zero (__main__.RunnerTests.test_partial_send_cannot_report_zero) ... ok
+test_ready_pid_mismatch_is_known_zero (__main__.RunnerTests.test_ready_pid_mismatch_is_known_zero) ... ok
+test_ready_protocol_mismatch_refused_before_send (__main__.RunnerTests.test_ready_protocol_mismatch_refused_before_send) ... ok
+test_result_evidence_disagreement_refuses (__main__.RunnerTests.test_result_evidence_disagreement_refuses) ... ok
+test_shutdown_cannot_renew_original_deadline (__main__.RunnerTests.test_shutdown_cannot_renew_original_deadline) ... ok
+test_spawn_failure_is_known_zero_with_full_reserve_burned (__main__.RunnerTests.test_spawn_failure_is_known_zero_with_full_reserve_burned) ... ok
+test_startup_monotonic_cap_is_within_original_clock (__main__.RunnerTests.test_startup_monotonic_cap_is_within_original_clock) ... ok
+test_startup_utc_cap_also_applies (__main__.RunnerTests.test_startup_utc_cap_also_applies) ... ok
+test_symlink_evidence_cannot_pass (__main__.RunnerTests.test_symlink_evidence_cannot_pass) ... ok
+test_thread_contract_refuses_before_operation (__main__.RunnerTests.test_thread_contract_refuses_before_operation) ... ok
+test_unactivated_gates_report_known_zero_even_on_refusal (__main__.RunnerTests.test_unactivated_gates_report_known_zero_even_on_refusal) ... ok
+test_unknown_counter_may_not_claim_exact_gate (__main__.RunnerTests.test_unknown_counter_may_not_claim_exact_gate) ... ok
+test_unknown_result_fields_refuse (__main__.RunnerTests.test_unknown_result_fields_refuse) ... ok
+test_utc_reversal_refuses_without_native_steps (__main__.RunnerTests.test_utc_reversal_refuses_without_native_steps) ... ok
+test_wrong_reservation_id_refuses (__main__.RunnerTests.test_wrong_reservation_id_refuses) ... ok
+test_wrong_total_refuses (__main__.RunnerTests.test_wrong_total_refuses) ... ok
+
+----------------------------------------------------------------------
+Ran 45 tests in 0.897s
+
+OK

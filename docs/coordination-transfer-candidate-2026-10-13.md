@@ -186,10 +186,12 @@ Le [protocole futur distinct](evidence/coordination-transfer-native-proposal-202
 prévoit une seule histoire complète, avec une porte locale et un arrêt causal,
 une admission du nouveau code, tous les préfixes et toutes les prévisions
 comptés. Le pilote dédié est compilé en release avec `--no-run` ; ses sept
-tests purs passent. Le gel du superviseur et du manifeste termine cette
-préparation. Ce document n'ouvre pas le budget : le budget distinct doit être
-autorisé par le parent avant toute exécution. Aucun succès local ne vaudra
-relevage ni qualification générale.
+tests purs passent. Le superviseur a passé 45 tests purs/inertes. Le
+[gel du 15 octobre](coordination-transfer-freeze-2026-10-15.md) est terminé :
+345 fichiers et 14 preuves historiques ont passé l'inspection sans exécution.
+Ce document n'ouvre pas le budget : le budget distinct doit être autorisé par
+le parent avant toute exécution. Aucun succès local ne vaudra relevage ni
+qualification générale.
 
 Le blocage Library déjà constaté reste signalé : aucune nouvelle version
 Library n'est revendiquée. Les fichiers suivis et les SHA Git constituent

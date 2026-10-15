@@ -1,0 +1,128 @@
+{
+  "schema": 1,
+  "scope": "Justification of frozen implementation prerequisites, not physical admission",
+  "nativeSteps": 0,
+  "newWorlds": 0,
+  "fkEvaluations": 0,
+  "approvedPhysicalAuthorization": false,
+  "preparationTotalChargedSeconds": 57289,
+  "preparationLimitSeconds": 144000,
+  "prerequisites": {
+    "static_tests_passed": {
+      "meaning": "Targeted pure/inert checks only; historical full-suite failures not resolved",
+      "files": [
+        {
+          "path": "docs/evidence/coordination-transfer-resume-2026-10-15/transfer-worker-pure-tests.log",
+          "sha256": "61e8e5c8a9a824d034e8c8044722f32dd7723abe2358e81b54872914deab16e3"
+        },
+        {
+          "path": "docs/evidence/coordination-transfer-resume-2026-10-15/parity-memory-pure-tests.log",
+          "sha256": "d5e3cf48442fcf8285716c3f231dea18edf644457ee7a14ed0cd60ca644d125f"
+        },
+        {
+          "path": "docs/evidence/coordination-transfer-resume-2026-10-15/stepping-memory-pure-tests.log",
+          "sha256": "b4fdae14eb86e311e56b14674be459cbf2aa7a14f688de18d5615d8a96bd961c"
+        },
+        {
+          "path": "docs/evidence/coordination-transfer-resume-2026-10-15/motion-memory-pure-tests.log",
+          "sha256": "18cffd6126b0b9e40c17412b38578a0a8198764f098706dd9cf51f8530bd751e"
+        },
+        {
+          "path": "docs/evidence/coordination-transfer-native-proposal-2026-10-13/supervisor-inspection-tests.log",
+          "sha256": "f8563bc5752911cba0f48cf4711a62441048248ae6f3afe82a276b38a57d9a35"
+        }
+      ]
+    },
+    "dedicated_release_built_without_execution": {
+      "meaning": "Separate release target compiled with --no-run, never started",
+      "files": [
+        {
+          "path": "docs/evidence/coordination-transfer-resume-2026-10-15/release-binary.json",
+          "sha256": "900212b2f97ea640de3edfff7e0e134d644762b203a3d11ea3b44825808d62c4"
+        },
+        {
+          "path": "docs/evidence/coordination-transfer-resume-2026-10-15/transfer-release-build.log",
+          "sha256": "d80d95ccaccf8a341767624ce247eb40d9e8a467cba3e444cbb603e70a9657ea"
+        },
+        {
+          "path": "docs/evidence/coordination-transfer-resume-2026-10-15/production-check-final.log",
+          "sha256": "ededfb61dfb3016e6f1372ab01e756d6b6f5f54faf011249f948b37cad4c841a"
+        }
+      ]
+    },
+    "unchanged_physical_contract": {
+      "meaning": "Experimental command path; unchanged anatomy, mass, friction, collisions, torque caps and default recovery",
+      "files": [
+        {
+          "path": "docs/evidence/coordination-transfer-resume-2026-10-15/review.md",
+          "sha256": "75edab4e3e0298d8574d56be6e09ecf585477c088753ce3380b58b19fe80f6d6"
+        },
+        {
+          "path": "docs/evidence/coordination-transfer-resume-2026-10-15/integrity-audit.json",
+          "sha256": "d22c56789630ab1506ff648043ab3c06a0181dff889e85d1f1e2ad11d5fb91e5"
+        }
+      ]
+    },
+    "archived_a36_prefix_available": {
+      "meaning": "36 archived per-substep native frames; future physical replay must match",
+      "files": [
+        {
+          "path": "docs/evidence/coordination-transfer-native-proposal-2026-10-13/worker-prefix-receipt.json",
+          "sha256": "df7c61692aef97ded588321e75c00e6f2a723d0cad808a0ea1933ba08fae65c8"
+        }
+      ]
+    },
+    "complete_decision_state_parity_reviewed": {
+      "meaning": "Read-only code review and pure mutation tests; native equivalence not yet measured",
+      "files": [
+        {
+          "path": "docs/evidence/coordination-transfer-resume-2026-10-15/review-evidence.json",
+          "sha256": "3b731247864a98a34b6955bc98537d509cad0286050c422266da380c9f2e2e37"
+        },
+        {
+          "path": "docs/evidence/coordination-transfer-resume-2026-10-15/review.md",
+          "sha256": "75edab4e3e0298d8574d56be6e09ecf585477c088753ce3380b58b19fe80f6d6"
+        }
+      ]
+    },
+    "single_process_single_thread": {
+      "meaning": "Future supervisor enforcement tested with inert processes; native worker not started",
+      "files": [
+        {
+          "path": "docs/evidence/coordination-transfer-native-proposal-2026-10-13/supervisor-validation.json",
+          "sha256": "743ae555e44e26a02daaf93ce375ee22a79c41c0dee7604a29a7f487ee5a3676"
+        },
+        {
+          "path": "docs/evidence/coordination-transfer-native-proposal-2026-10-13/supervisor-readme.md",
+          "sha256": "1d70b12a7485948b2e18dae5273c84db39e0873594eef5e2bc99002436d8f5ba"
+        }
+      ]
+    },
+    "full_continuation_and_stop_rules_frozen": {
+      "meaning": "One bridge plus finite standing continuation; local result never certifies get-up",
+      "files": [
+        {
+          "path": "docs/evidence/coordination-transfer-native-proposal-2026-10-13/future-native-protocol.json",
+          "sha256": "47479c0ecb7ae273a506cb76194ee9b404b0875c5c36a37a8a10cbec18af8f75"
+        },
+        {
+          "path": "docs/evidence/coordination-transfer-native-proposal-2026-10-13/future-native-protocol.md",
+          "sha256": "510acccfa2b96450bd353d5d40720f708bc46674ebd0489bfcaadac84bccf7ef"
+        }
+      ]
+    },
+    "distinct_native_authorization_required": {
+      "meaning": "Old physical family remains closed; no approved authorization supplied",
+      "files": [
+        {
+          "path": "docs/evidence/coordination-transfer-native-proposal-2026-10-13/supervisor-readme.md",
+          "sha256": "1d70b12a7485948b2e18dae5273c84db39e0873594eef5e2bc99002436d8f5ba"
+        },
+        {
+          "path": "docs/evidence/coordination-transfer-resume-2026-10-15/preparation-reservation.json",
+          "sha256": "c49f243654d69e00804045eaac409aa54cb8839f8ef3b0db28a8c2b86d8ea8e5"
+        }
+      ]
+    }
+  }
+}
