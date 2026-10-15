@@ -1,0 +1,73 @@
+{
+  "schema": 1,
+  "recordedUtc": "2026-10-15T15:35:49.761658+00:00",
+  "scope": "Pure and explicitly inert supervisor tests only; native worker not executed",
+  "uniqueTestsLatest": 54,
+  "pureTests": 51,
+  "inertProcessTests": 3,
+  "caseExecutionsAcrossRetainedLogs": 108,
+  "source": [
+    {
+      "path": "docs/evidence/coordination-contact-diagnostic-2026-10-15/run_diagnostic.py",
+      "sha256": "c3b6a2101d0d4840e4f8b20097c044c7f18fe88261e119ac615af5f4623dd560",
+      "bytes": 36240
+    },
+    {
+      "path": "docs/evidence/coordination-contact-diagnostic-2026-10-15/test_run_diagnostic.py",
+      "sha256": "251bf0af8008afd46685843a62998e85c765774ebd00182ba3042285071a16ee",
+      "bytes": 32363
+    },
+    {
+      "path": "docs/evidence/coordination-contact-diagnostic-2026-10-15/supervisor-readme.md",
+      "sha256": "65b30c0447c7110f24924ed66769034457f2a07dfa595015216e294e3049a23f",
+      "bytes": 7259
+    },
+    {
+      "path": "docs/evidence/coordination-contact-diagnostic-2026-10-15/supervisor-contract.json",
+      "sha256": "6f52e65e0c0b7cf67607d54d079a313d89ba098a747d17ffedc3d35b582b55c7",
+      "bytes": 2326
+    }
+  ],
+  "workerSourceReviewedForSeparateRootBuild": {
+    "path": "rust/crates/sim/src/recovery/planner/transfer_worker.rs",
+    "sha256": "811df09bae544476e03026a9d832f7ea306ff774fe85e42929f974efd2c3f89c",
+    "bytes": 45457
+  },
+  "testEvidence": [
+    {
+      "path": "docs/evidence/coordination-contact-diagnostic-2026-10-15/supervisor-tests-initial.log",
+      "sha256": "02fd45611c84d0cdb231270a48dcf6d456772feec37fdac844ad74112729c4ba",
+      "bytes": 7097
+    },
+    {
+      "path": "docs/evidence/coordination-contact-diagnostic-2026-10-15/supervisor-tests-final.log",
+      "sha256": "ed718fb4e11bf94051c5c2034657c124e9b62852c57d67e9dfd00f9954dd10cc",
+      "bytes": 7097,
+      "passed": 54,
+      "durationSeconds": 0.904,
+      "exitCode": 0
+    }
+  ],
+  "historicalSupervisorPreserved": [
+    {
+      "path": "docs/evidence/coordination-transfer-native-7100-2026-10-15/run_transfer.py",
+      "sha256": "7ccada025fb9766c87f10c7679c3f01c242c6d12fbadd687de16a5e601e1c2e7",
+      "bytes": 35766
+    },
+    {
+      "path": "docs/evidence/coordination-transfer-native-7100-2026-10-15/test_run_transfer.py",
+      "sha256": "f3b22f07a6bdccd43755183f17d134385f8698970c2660588a6600a7dc84f612",
+      "bytes": 31006
+    }
+  ],
+  "testScopeCounters": {
+    "nativeWorkerExecutions": 0,
+    "nativeSubsteps": 0,
+    "worlds": 0,
+    "fkPoses": 0,
+    "realClaimsCreated": 0,
+    "realAuthorizationsCreated": 0
+  },
+  "buildAndExecutionAuthority": "Root only after source freeze, reviewed separate binary, immutable manifest, parent authorization, global reconciliation and duplicate absence",
+  "physicalSuccessEstablished": false
+}

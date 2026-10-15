@@ -1,0 +1,43 @@
+{
+  "command": [
+    "/workspace/lh-rustup/toolchains/1.89.0-x86_64-unknown-linux-gnu/bin/cargo",
+    "test",
+    "--manifest-path",
+    "/workspace/LaboratoireHumain/rust/Cargo.toml",
+    "-p",
+    "lh-sim",
+    "--locked",
+    "--offline",
+    "--lib",
+    "--features",
+    "coordination-transfer-worker",
+    "--no-run",
+    "--message-format=json"
+  ],
+  "wallSeconds": 20.014311844002805,
+  "exitCode": 0,
+  "workerSourceBefore": "fb5d5e4589306d19e76c8c1eddbef7e456f343b1243fe024b86889baa1f96cef",
+  "workerSourceAfter": "fb5d5e4589306d19e76c8c1eddbef7e456f343b1243fe024b86889baa1f96cef",
+  "nativeSteps": 0,
+  "execution": "compile-only",
+  "executables": [
+    {
+      "path": "/workspace/LaboratoireHumain/rust/target/debug/deps/lh_sim-5c8b831f4d644d8a",
+      "sha256": "2eaf5f988b34402e53753b0b4bda3aa4567991219f854e279d131715c8e85239",
+      "target": {
+        "kind": [
+          "lib"
+        ],
+        "crate_types": [
+          "lib"
+        ],
+        "name": "lh_sim",
+        "src_path": "/workspace/LaboratoireHumain/rust/crates/sim/src/lib.rs",
+        "edition": "2024",
+        "doc": true,
+        "doctest": true,
+        "test": true
+      }
+    }
+  ]
+}

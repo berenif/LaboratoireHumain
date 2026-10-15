@@ -1,0 +1,55 @@
+{
+  "command": [
+    "/workspace/lh-rustup/toolchains/1.89.0-x86_64-unknown-linux-gnu/bin/cargo",
+    "test",
+    "--manifest-path",
+    "/workspace/LaboratoireHumain/rust/Cargo.toml",
+    "-p",
+    "lh-sim",
+    "--locked",
+    "--offline",
+    "--test",
+    "coordination-transfer-worker",
+    "--features",
+    "coordination-transfer-worker",
+    "--release",
+    "--no-run",
+    "--message-format=json"
+  ],
+  "startedUtc": "2026-10-15T15:35:13.097076+00:00",
+  "wallSeconds": 50.29077681199851,
+  "exitCode": 0,
+  "workerSourceBefore": "811df09bae544476e03026a9d832f7ea306ff774fe85e42929f974efd2c3f89c",
+  "workerSourceAfter": "811df09bae544476e03026a9d832f7ea306ff774fe85e42929f974efd2c3f89c",
+  "historicalReleaseBefore": "63e0e035d38d02f762c69b9dacb65d61e179c72ced50f5facd0bc29c64b9e8b5",
+  "historicalReleaseAfter": "63e0e035d38d02f762c69b9dacb65d61e179c72ced50f5facd0bc29c64b9e8b5",
+  "executables": [
+    {
+      "path": "/workspace/lh-contact-diagnostic-target/release/deps/coordination_transfer_worker-8daed3b7e6b04b70",
+      "sha256": "2540f1aa1fdcda885dde9e6fde38727d441c554da50cb316becdc92c1b2c3f5b",
+      "target": {
+        "kind": [
+          "test"
+        ],
+        "crate_types": [
+          "bin"
+        ],
+        "name": "coordination-transfer-worker",
+        "src_path": "/workspace/LaboratoireHumain/rust/crates/sim/src/lib.rs",
+        "edition": "2024",
+        "required-features": [
+          "coordination-transfer-worker"
+        ],
+        "doc": false,
+        "doctest": false,
+        "test": true
+      }
+    }
+  ],
+  "workerExecuted": false,
+  "nativeSteps": 0,
+  "stdoutSha256": "b3c98c243b43826b35c781179bb8614a43b0726c8e269ac89266b9683106d379",
+  "stderrSha256": "8efca052830d7c534f1b09af15fafdeeff1c5ebd95d01c9c0b854ceca12a90d8",
+  "candidateSourceStable": true,
+  "historicalReleasePreserved": true
+}

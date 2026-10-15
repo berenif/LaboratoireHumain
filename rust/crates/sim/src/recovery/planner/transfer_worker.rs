@@ -13,6 +13,54 @@ const REAL_WINDOW: u64 = 24;
 const HISTORY: u64 = REAL_CAP + FORECAST_CAP * HORIZON as u64;
 const TOTAL: u64 = TECHNICAL + HISTORY;
 const LOCAL_DEADLINE: u64 = PREFIX + 480;
+const DIAGNOSTIC_HISTORY: u64 = PREFIX + HORIZON as u64;
+const DIAGNOSTIC_TOTAL: u64 = TECHNICAL + DIAGNOSTIC_HISTORY;
+const PREFIX_EXCLUSIONS: [&str; 3] = [
+    "kind label only",
+    "owner.transfer absent or null only",
+    "support.native_contact_boundary additive telemetry only; live presence and clock checked",
+];
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+enum OperationMode {
+    Transfer,
+    ContactDiagnostic,
+}
+impl OperationMode {
+    fn parse(request: &Value) -> Result<Self, String> {
+        match request["op"].as_str() {
+            Some("transfer-run") => Ok(Self::Transfer),
+            Some("contact-diagnostic") => Ok(Self::ContactDiagnostic),
+            _ => Err("Only transfer-run or explicit contact-diagnostic is supported".into()),
+        }
+    }
+    fn history_steps(self) -> u64 {
+        if self == Self::ContactDiagnostic {
+            DIAGNOSTIC_HISTORY
+        } else {
+            HISTORY
+        }
+    }
+    fn total_steps(self) -> u64 {
+        TECHNICAL + self.history_steps()
+    }
+    fn finish_after_forecast(self, audit: &Audit) -> Result<bool, String> {
+        if self == Self::Transfer {
+            return Ok(false);
+        }
+        if audit.real_history_native_steps != PREFIX
+            || audit.forecast_calls != 1
+            || audit.forecast_requested_steps != u64::from(HORIZON)
+            || audit.forecast_actual_steps > u64::from(HORIZON)
+            || !audit.technical_parity_passed
+        {
+            return Err(
+                "Diagnostic must contain only52 technical +36 prefix +one480 forecast".into(),
+            );
+        }
+        Ok(true)
+    }
+}
 
 #[derive(Deserialize)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
@@ -36,6 +84,11 @@ fn archived_projection(mut value: Value) -> Result<Value, String> {
         .as_object_mut()
         .ok_or("Native archive row is not an object")?;
     object.remove("kind");
+    // One exact additive telemetry path; never remove material state, impulses,
+    // motor commands, old support fields or similarly named nested keys.
+    if let Some(support) = object.get_mut("support").and_then(Value::as_object_mut) {
+        support.remove("native_contact_boundary");
+    }
     let owner = object
         .get_mut("owner")
         .and_then(Value::as_object_mut)
@@ -86,6 +139,25 @@ fn compare_archived(expected: &Value, actual: &Value) -> Result<(), String> {
     )
 }
 
+fn compare_live_prefix(expected: &Value, actual: &Value) -> Result<(), String> {
+    let boundary: super::super::native_contact_diagnostics::ContactBoundary =
+        serde_json::from_value(actual["support"]["native_contact_boundary"].clone())
+            .map_err(|e| format!("Missing/invalid live contact telemetry: {e}"))?;
+    if boundary.schema_version != 1
+        || actual["nativeSubstep"].as_u64() != Some(boundary.native_substep)
+        || actual["support"]["native_substep"].as_u64() != Some(boundary.native_substep)
+        || boundary.pairs.len() != 25
+        || boundary
+            .pairs
+            .iter()
+            .enumerate()
+            .any(|(i, p)| p.segment != i)
+    {
+        return Err("Live additive contact telemetry clock/schema/segment order mismatch".into());
+    }
+    compare_archived(expected, actual)
+}
+
 fn prepare_inputs(worker: &mut Worker, raw: &Value) -> Result<PreparedInputs, String> {
     let input: TransferInputs = serde_json::from_value(raw.clone()).map_err(|e| e.to_string())?;
     let frozen =
@@ -123,11 +195,24 @@ fn prepare_inputs(worker: &mut Worker, raw: &Value) -> Result<PreparedInputs, St
     })
 }
 
+#[cfg(test)]
 fn accept_both(worker: &mut Worker, request: &Value) -> Result<(LocalBudget, LocalBudget), String> {
+    accept_both_mode(worker, request, OperationMode::Transfer)
+}
+fn accept_both_mode(
+    worker: &mut Worker,
+    request: &Value,
+    mode: OperationMode,
+) -> Result<(LocalBudget, LocalBudget), String> {
     let a: Permit =
         serde_json::from_value(request["technicalPermit"].clone()).map_err(|e| e.to_string())?;
     let b: Permit =
         serde_json::from_value(request["historyPermit"].clone()).map_err(|e| e.to_string())?;
+    if mode == OperationMode::ContactDiagnostic
+        && (a.remaining_wall_seconds > 113.0 || b.remaining_wall_seconds > 113.0)
+    {
+        return Err("Diagnostic native permits must fit within113 seconds of120 total".into());
+    }
     if a.reservation_id == b.reservation_id
         || a.deadline_unix_s.to_bits() != b.deadline_unix_s.to_bits()
         || a.worker_pid != b.worker_pid
@@ -144,10 +229,10 @@ fn accept_both(worker: &mut Worker, request: &Value) -> Result<(LocalBudget, Loc
     )?;
     let history = worker.accept_permit(
         &request["historyPermit"],
-        HISTORY,
+        mode.history_steps(),
         PreviewPurpose::Candidate,
     )?;
-    if worker.reserved_total != TOTAL {
+    if worker.reserved_total != mode.total_steps() {
         return Err("Wrong transfer reservation total".into());
     }
     // The second acceptance may shorten the monotonic deadline, never extend it.
@@ -168,6 +253,7 @@ struct Audit {
     local_success: bool,
     original_terminal_passed: bool,
     history_completed: bool,
+    diagnostic_completed: bool,
     first_local_ready_substep: Option<u64>,
     forecast_summaries: Vec<Value>,
     technical_pairs: Vec<Value>,
@@ -232,7 +318,7 @@ fn prefix_tick(
                 let expected = expected
                     .get((s.substeps_completed - 1) as usize)
                     .ok_or("Prefix exceeded archive")?;
-                compare_archived(expected, &frame)?;
+                compare_live_prefix(expected, &frame)?;
                 budget.check_wall_deadline()
             })();
             checked.map_err(|e| failure(s, substep, e))
@@ -435,7 +521,37 @@ fn observe_local_endpoint(sim: &Simulation, audit: &mut Audit) -> Result<(), Str
     Ok(())
 }
 
+fn require_diagnostic_endpoint(
+    observed: &support_state::SupportObservation,
+    expected_substep: u64,
+    sample_substep: Option<u64>,
+) -> Result<(), String> {
+    observed.validate()?;
+    let boundary = observed
+        .native_contact_boundary
+        .as_ref()
+        .ok_or("Diagnostic endpoint lacks contact-boundary telemetry")?;
+    if sample_substep != Some(expected_substep)
+        || observed.native_substep != expected_substep
+        || boundary.schema_version != 1
+        || boundary.native_substep != expected_substep
+        || boundary.pairs.len() != 25
+        || boundary
+            .pairs
+            .iter()
+            .enumerate()
+            .any(|(i, p)| p.segment != i)
+    {
+        return Err(
+            "Diagnostic endpoint lacks current sample or complete telemetry at the endpoint clock"
+                .into(),
+        );
+    }
+    Ok(())
+}
+
 fn history(
+    mode: OperationMode,
     inputs: &PreparedInputs,
     kernel: &NativeKernelAdmission,
     budget: &mut LocalBudget,
@@ -479,28 +595,72 @@ fn history(
         budget.finish_branch()?;
         // Full endpoint persists even when the copied branch refuses.
         let endpoint_observed = native_observation::observe(copy.simulation(), 0, &[]);
-        if let Ok(observed) = endpoint_observed {
-            if let Some(sample) = &copy.memory().sample {
-                line(
-                    trace,
-                    &native_frame(
-                        copy.simulation(),
+        let endpoint_error = match endpoint_observed {
+            Ok(observed) => {
+                let validation = if mode == OperationMode::ContactDiagnostic {
+                    require_diagnostic_endpoint(
                         &observed,
-                        sample,
-                        &[],
-                        "preview-transfer-end",
-                    ),
-                )?;
+                        copy.simulation().substeps_completed,
+                        copy.memory().sample.as_ref().map(|s| s.native_substep),
+                    )
+                } else {
+                    Ok(())
+                };
+                if let Some(sample) = &copy.memory().sample {
+                    line(
+                        trace,
+                        &native_frame(
+                            copy.simulation(),
+                            &observed,
+                            sample,
+                            &[],
+                            "preview-transfer-end",
+                        ),
+                    )?;
+                } else if mode == OperationMode::ContactDiagnostic {
+                    line(
+                        trace,
+                        &json!({"kind":"diagnostic-endpoint-incomplete",
+                        "nativeSubstep":copy.simulation().substeps_completed,"support":observed,
+                        "endpointRefusal":validation.as_ref().err()}),
+                    )?;
+                }
+                validation.err()
             }
-        }
+            Err(error) => Some(error),
+        };
         let summary = copy.transfer_horizon_evidence();
         audit.forecast_summaries.push(summary.clone());
         line(
             trace,
             &json!({"event":"forecast-end","forecast":audit.forecast_calls,"horizon":summary}),
         )?;
+        if mode == OperationMode::ContactDiagnostic {
+            if let Some(error) = endpoint_error {
+                let original_forecast = match &preview {
+                    Ok(value) => format!("{:?}", value.refusal),
+                    Err(error) => format!("execution error: {error}"),
+                };
+                line(
+                    trace,
+                    &json!({"kind":"diagnostic-endpoint-refused",
+                    "nativeSubstep":copy.simulation().substeps_completed,
+                    "endpointRefusal":error,"originalForecastOutcome":original_forecast}),
+                )?;
+                return Err(format!(
+                    "Diagnostic endpoint refused: {error}; original forecast outcome: {original_forecast}"
+                ));
+            }
+        }
         if let Some(error) = preview?.refusal {
             return Err(format!("Fixed forecast refused: {error:?}"));
+        }
+        // A diagnostic never certifies/adopts a real transfer window. Returning
+        // here is structural, before the only real-step loop below.
+        if mode.finish_after_forecast(audit)? {
+            audit.diagnostic_completed = true;
+            audit.phase = "closed-contact-diagnostic".into();
+            return Ok(());
         }
         let terminal_tail = terminal_complete(copy.simulation())?;
         let certified_end = copy.simulation().substeps_completed;
@@ -578,9 +738,7 @@ fn history(
 }
 
 fn execute(request: &Value, stdout: &mut impl Write) -> Result<(), String> {
-    if request["op"] != "transfer-run" {
-        return Err("Only transfer-run is supported".into());
-    }
+    let mode = OperationMode::parse(request)?;
     let operation = required_string(request, "operationId")?;
     if operation.is_empty() {
         return Err("Missing durable operation identity".into());
@@ -589,7 +747,7 @@ fn execute(request: &Value, stdout: &mut impl Write) -> Result<(), String> {
     let trace_path = required_string(request, "tracePath")?;
     let mut worker = Worker::new();
     let inputs = prepare_inputs(&mut worker, &request["inputs"])?;
-    let (mut technical_budget, mut history_budget) = accept_both(&mut worker, request)?;
+    let (mut technical_budget, mut history_budget) = accept_both_mode(&mut worker, request, mode)?;
     let mut report = new_file(output)?;
     let mut trace = new_file(trace_path)?;
     let mut audit = Audit::default();
@@ -600,6 +758,7 @@ fn execute(request: &Value, stdout: &mut impl Write) -> Result<(), String> {
         };
         let _scope = history_budget.activate(&format!("{output}.history"))?;
         history(
+            mode,
             &inputs,
             &kernel,
             &mut history_budget,
@@ -628,18 +787,26 @@ fn execute(request: &Value, stdout: &mut impl Write) -> Result<(), String> {
         == audit.technical_prefix_native_steps + audit.technical_parity_native_steps
         && history_budget.completed()
             == audit.real_history_native_steps + audit.forecast_actual_steps;
-    let outcome = json!({"integrity_ok":result.is_ok() && exact && reconciled,
+    let outcome = if mode == OperationMode::ContactDiagnostic {
+        json!({"integrity_ok":result.is_ok() && exact && reconciled,
+            "technical_parity_passed":audit.technical_parity_passed,
+            "diagnostic_completed":audit.diagnostic_completed,
+            "no_real_transfer":audit.real_history_native_steps<=PREFIX
+                && !audit.history_completed && !audit.original_terminal_passed && !audit.local_success})
+    } else {
+        json!({"integrity_ok":result.is_ok() && exact && reconciled,
         "technical_parity_passed":audit.technical_parity_passed,
         "history_completed":audit.history_completed,"local_success":audit.local_success,
-        "original_terminal_passed":audit.original_terminal_passed});
-    let evidence = json!({"schema":1,"event":"result","op":"transfer-run","pid":std::process::id(),
+        "original_terminal_passed":audit.original_terminal_passed})
+    };
+    let evidence = json!({"schema":1,"event":"result","op":request["op"],"pid":std::process::id(),
         "operationId":operation,"technicalReservationId":technical_budget.permit.reservation_id,
         "historyReservationId":history_budget.permit.reservation_id,
-        "reservedNativeSteps":TOTAL,"technicalReservedNativeSteps":TECHNICAL,"historyReservedNativeSteps":HISTORY,
+        "reservedNativeSteps":mode.total_steps(),"technicalReservedNativeSteps":TECHNICAL,"historyReservedNativeSteps":mode.history_steps(),
         "technicalActualNativeSteps":technical_actual,"historyActualNativeSteps":history_actual,"actualNativeSteps":actual,
         "outcome":outcome,"evidencePath":output,"refusal":result.err(),"countsReconciled":reconciled,
         "audit":audit,"technicalAccounting":technical_budget.accounting(),"historyAccounting":history_budget.accounting(),
-        "prefixExclusions":["kind label only","owner.transfer absent or null only"],
+        "prefixExclusions":PREFIX_EXCLUSIONS,
         "noRefund":true,"automaticRenewalAllowed":false});
     line(&mut report, &evidence)?;
     trace.flush().map_err(|e| e.to_string())?;
@@ -686,6 +853,151 @@ mod pure_tests {
             "remainingWallSeconds":60.,"workerPid":std::process::id()})
         };
         json!({"technicalPermit":p("technical",TECHNICAL),"historyPermit":p("history",HISTORY)})
+    }
+    #[test]
+    fn pure_contact_diagnostic_has_exact_nonrenewable_568_step_budget() {
+        assert_eq!(
+            (TECHNICAL, DIAGNOSTIC_HISTORY, DIAGNOSTIC_TOTAL),
+            (52, 516, 568)
+        );
+        let mut request = permits();
+        request["op"] = json!("contact-diagnostic");
+        request["historyPermit"]["reservedSteps"] = json!(DIAGNOSTIC_HISTORY);
+        let mode = OperationMode::parse(&request).unwrap();
+        assert_eq!(mode, OperationMode::ContactDiagnostic);
+        let mut worker = Worker::new();
+        let (a, b) = accept_both_mode(&mut worker, &request, mode).unwrap();
+        assert_eq!(a.deadline, b.deadline);
+        assert_eq!(worker.reserved_total, 568);
+        assert!(accept_both_mode(&mut worker, &request, mode).is_err());
+        assert!(accept_both_mode(&mut Worker::new(), &permits(), mode).is_err());
+        assert!(accept_both_mode(&mut Worker::new(), &request, OperationMode::Transfer).is_err());
+    }
+    #[test]
+    fn pure_contact_diagnostic_never_inherits_transfer_mode_or_longer_deadline() {
+        for value in [json!({}), json!({"op":"diagnostic"}), json!({"op":null})] {
+            assert!(OperationMode::parse(&value).is_err());
+        }
+        let mut request = permits();
+        request["historyPermit"]["reservedSteps"] = json!(DIAGNOSTIC_HISTORY);
+        request["technicalPermit"]["remainingWallSeconds"] = json!(113.001);
+        assert!(
+            accept_both_mode(
+                &mut Worker::new(),
+                &request,
+                OperationMode::ContactDiagnostic
+            )
+            .is_err()
+        );
+    }
+    #[test]
+    fn pure_contact_diagnostic_stops_after_one_forecast_before_any_real_window() {
+        let audit = Audit {
+            technical_parity_passed: true,
+            real_history_native_steps: 36,
+            forecast_calls: 1,
+            forecast_requested_steps: 480,
+            forecast_actual_steps: 480,
+            ..Default::default()
+        };
+        assert!(
+            OperationMode::ContactDiagnostic
+                .finish_after_forecast(&audit)
+                .unwrap()
+        );
+        assert!(
+            !OperationMode::Transfer
+                .finish_after_forecast(&audit)
+                .unwrap()
+        );
+        for bad in [
+            Audit {
+                forecast_calls: 2,
+                ..Audit::default()
+            },
+            Audit {
+                real_history_native_steps: 40,
+                ..Audit::default()
+            },
+            Audit {
+                forecast_actual_steps: 481,
+                ..Audit::default()
+            },
+        ] {
+            assert!(
+                OperationMode::ContactDiagnostic
+                    .finish_after_forecast(&bad)
+                    .is_err()
+            );
+        }
+    }
+    fn telemetry_for_step(step: u64) -> Value {
+        json!({"schema_version":1,"native_substep":step,"enclosing_native_dt_s":1.0/240.0,
+            "floor_collider":{"index":0,"generation":0},
+            "pairs":(0..25).map(|i|json!({"segment":i,"segment_collider":{"index":i+1,"generation":0},
+                "pair_present":false,"pair_colliders":null,"collider_poses":[null,null],
+                "segment_is_collider1":null,"solver_uses_clusters":false,
+                "raw_manifolds":[],"solver_clusters":[]})).collect::<Vec<_>>()})
+    }
+    #[test]
+    fn pure_contact_diagnostic_prefix_migration_is_one_additive_path_only() {
+        let old = json!({"nativeSubstep":36,"support":{"native_substep":36,"old_load":-0.0},
+            "owner":{"q":[0.5],"patches":{"active":[],"archived":[],"next_id":0}}});
+        let mut actual = old.clone();
+        assert!(compare_live_prefix(&old, &actual).is_err());
+        actual["support"]["native_contact_boundary"] = telemetry_for_step(36);
+        compare_live_prefix(&old, &actual).unwrap();
+        actual["support"]["native_contact_boundary"]["native_substep"] = json!(35);
+        assert!(compare_live_prefix(&old, &actual).is_err());
+        actual["support"]["native_contact_boundary"] = telemetry_for_step(36);
+        actual["support"]["old_load"] = json!(0.0);
+        assert!(compare_live_prefix(&old, &actual).is_err());
+        actual["support"]["old_load"] = json!(-0.0);
+        actual["owner"]["q"] = json!([0.6]);
+        assert!(compare_live_prefix(&old, &actual).is_err());
+        actual["owner"]["q"] = json!([0.5]);
+        actual["owner"]["native_contact_boundary"] = json!({"unexpected":true});
+        assert!(compare_live_prefix(&old, &actual).is_err());
+        actual["owner"]
+            .as_object_mut()
+            .unwrap()
+            .remove("native_contact_boundary");
+        actual["owner"]["patches"]["active"] =
+            json!([{"reference_surface":null,"continuity_evidence":null}]);
+        assert!(compare_live_prefix(&old, &actual).is_err());
+    }
+    #[test]
+    fn pure_contact_diagnostic_requires_complete_current_endpoint_telemetry() {
+        let root = Path::new(env!("CARGO_MANIFEST_DIR")).join("../../..");
+        let bytes=std::fs::read(root.join("docs/evidence/coordination-contact-continuity-2026-10-15/continuity-archive-36-78.json")).unwrap();
+        let fixture: Value = serde_json::from_slice(&bytes).unwrap();
+        let mut observed: support_state::SupportObservation =
+            serde_json::from_value(fixture["acquisition"].clone()).unwrap();
+        assert!(require_diagnostic_endpoint(&observed, 36, Some(36)).is_err());
+        observed.native_contact_boundary =
+            Some(serde_json::from_value(telemetry_for_step(36)).unwrap());
+        require_diagnostic_endpoint(&observed, 36, Some(36)).unwrap();
+        assert!(require_diagnostic_endpoint(&observed, 36, None).is_err());
+        assert!(require_diagnostic_endpoint(&observed, 36, Some(35)).is_err());
+        assert!(require_diagnostic_endpoint(&observed, 37, Some(36)).is_err());
+        observed
+            .native_contact_boundary
+            .as_mut()
+            .unwrap()
+            .native_substep = 35;
+        assert!(require_diagnostic_endpoint(&observed, 36, Some(36)).is_err());
+        observed
+            .native_contact_boundary
+            .as_mut()
+            .unwrap()
+            .native_substep = 36;
+        observed
+            .native_contact_boundary
+            .as_mut()
+            .unwrap()
+            .pairs
+            .pop();
+        assert!(require_diagnostic_endpoint(&observed, 36, Some(36)).is_err());
     }
     #[test]
     fn pure_transfer_budget_formula_and_dual_permits() {

@@ -1,0 +1,17 @@
+
+running 12 tests
+test recovery::planner::transition_worker::transfer_worker::pure_tests::pure_contact_diagnostic_has_exact_nonrenewable_568_step_budget ... ok
+test recovery::planner::transition_worker::transfer_worker::pure_tests::pure_contact_diagnostic_never_inherits_transfer_mode_or_longer_deadline ... ok
+test recovery::planner::transition_worker::transfer_worker::pure_tests::pure_contact_diagnostic_prefix_migration_is_one_additive_path_only ... ok
+test recovery::planner::transition_worker::transfer_worker::pure_tests::pure_contact_diagnostic_requires_complete_current_endpoint_telemetry ... ok
+test recovery::planner::transition_worker::transfer_worker::pure_tests::pure_contact_diagnostic_stops_after_one_forecast_before_any_real_window ... ok
+test recovery::planner::transition_worker::transfer_worker::pure_tests::pure_transfer_budget_formula_and_dual_permits ... ok
+test recovery::planner::transition_worker::transfer_worker::pure_tests::pure_transfer_forecast_cadence_and_nonrenewable_cap ... ok
+test recovery::planner::transition_worker::transfer_worker::pure_tests::pure_transfer_global_real_cap_includes_prefix ... ok
+test recovery::planner::transition_worker::transfer_worker::pure_tests::pure_transfer_inputs_archive_shapes_and_binding ... ok
+test recovery::planner::transition_worker::transfer_worker::pure_tests::pure_transfer_prefix_preserves_signed_zero_and_unknown_fields ... ok
+test recovery::planner::transition_worker::transfer_worker::pure_tests::pure_transfer_waits_for_eof_but_refuses_any_second_request ... ok
+test recovery::planner::transition_worker::transfer_worker::pure_tests::pure_transfer_wrong_ids_deadlines_pid_or_size_refuse ... ok
+
+test result: ok. 12 passed; 0 failed; 0 ignored; 0 measured; 289 filtered out; finished in 0.35s
+

@@ -1,0 +1,34 @@
+{
+  "schema": 1,
+  "command": [
+    "/workspace/LaboratoireHumain/rust/target/debug/deps/lh_sim-5c8b831f4d644d8a",
+    "recovery::planner::transition_worker::transfer_worker::pure_tests::",
+    "--test-threads=1",
+    "--nocapture"
+  ],
+  "selectedNames": [
+    "recovery::planner::transition_worker::transfer_worker::pure_tests::pure_contact_diagnostic_has_exact_nonrenewable_568_step_budget",
+    "recovery::planner::transition_worker::transfer_worker::pure_tests::pure_contact_diagnostic_never_inherits_transfer_mode_or_longer_deadline",
+    "recovery::planner::transition_worker::transfer_worker::pure_tests::pure_contact_diagnostic_prefix_migration_is_one_additive_path_only",
+    "recovery::planner::transition_worker::transfer_worker::pure_tests::pure_contact_diagnostic_requires_complete_current_endpoint_telemetry",
+    "recovery::planner::transition_worker::transfer_worker::pure_tests::pure_contact_diagnostic_stops_after_one_forecast_before_any_real_window",
+    "recovery::planner::transition_worker::transfer_worker::pure_tests::pure_transfer_budget_formula_and_dual_permits",
+    "recovery::planner::transition_worker::transfer_worker::pure_tests::pure_transfer_forecast_cadence_and_nonrenewable_cap",
+    "recovery::planner::transition_worker::transfer_worker::pure_tests::pure_transfer_global_real_cap_includes_prefix",
+    "recovery::planner::transition_worker::transfer_worker::pure_tests::pure_transfer_inputs_archive_shapes_and_binding",
+    "recovery::planner::transition_worker::transfer_worker::pure_tests::pure_transfer_prefix_preserves_signed_zero_and_unknown_fields",
+    "recovery::planner::transition_worker::transfer_worker::pure_tests::pure_transfer_waits_for_eof_but_refuses_any_second_request",
+    "recovery::planner::transition_worker::transfer_worker::pure_tests::pure_transfer_wrong_ids_deadlines_pid_or_size_refuse"
+  ],
+  "testCount": 12,
+  "exitCode": 0,
+  "wallSeconds": 0.3624433719996887,
+  "binarySha256": "19e3e1ecfeaf89acf2e5657b4a462abf0ab8f1860e3260552f168fca84c619ec",
+  "sourceSha256": "811df09bae544476e03026a9d832f7ea306ff774fe85e42929f974efd2c3f89c",
+  "allPassed": true,
+  "logSha256": "2cf2a9f93db96cdabf2e12d178d9905c6d11881958bbfd88ef00761aa9731e62",
+  "nativeSteps": 0,
+  "worldsCreated": 0,
+  "fkInspections": 0,
+  "scope": "Only transfer_worker::pure_tests JSON/scalar/archive checks; ordinary unit harness, never the native worker executable"
+}

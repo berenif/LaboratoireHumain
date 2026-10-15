@@ -1,0 +1,74 @@
+{
+  "schema": 1,
+  "basePhysicalCorrectionCommit": "a5c8ff36af4dfbe784277aebc91021040b947a52",
+  "protocolId": "contact-diagnostic-a36-568-120s-2026-10-15",
+  "manifestSchema": "laboratoirehumain.contact-diagnostic-manifest.v1",
+  "authorizationSchema": "laboratoirehumain.contact-diagnostic-authorization.v1",
+  "authorizationIdPrefix": "contact-diagnostic-distinct-",
+  "limits": {
+    "technicalNativeSteps": 52,
+    "historyAndPredictionNativeSteps": 516,
+    "totalNativeSteps": 568,
+    "maximumWallSeconds": 120,
+    "maximumRealHistorySteps": 36,
+    "maximumPreviewCalls": 1,
+    "maximumStepsPerPreview": 480,
+    "maximumHistories": 0,
+    "maximumDiagnosticRuns": 1
+  },
+  "prerequisites": [
+    "static_tests_passed",
+    "dedicated_release_built_without_execution",
+    "unchanged_physical_contract",
+    "archived_a36_prefix_available",
+    "complete_decision_state_parity_reviewed",
+    "single_process_single_thread",
+    "diagnostic_and_stop_rules_frozen",
+    "distinct_native_authorization_required"
+  ],
+  "roles": [
+    "binary",
+    "code",
+    "criteria",
+    "entry",
+    "model",
+    "prefix",
+    "preparation",
+    "profile",
+    "program",
+    "protocol",
+    "tasks",
+    "validation"
+  ],
+  "operation": "contact-diagnostic",
+  "readyProtocol": "transfer-run-v1",
+  "outcomeGates": [
+    "integrity_ok",
+    "technical_parity_passed",
+    "diagnostic_completed",
+    "no_real_transfer"
+  ],
+  "prefixExclusions": [
+    "kind label only",
+    "owner.transfer absent or null only",
+    "support.native_contact_boundary additive telemetry only; live presence and clock checked"
+  ],
+  "source": [
+    {
+      "path": "docs/evidence/coordination-contact-diagnostic-2026-10-15/run_diagnostic.py",
+      "sha256": "c3b6a2101d0d4840e4f8b20097c044c7f18fe88261e119ac615af5f4623dd560",
+      "bytes": 36240
+    },
+    {
+      "path": "rust/crates/sim/src/recovery/planner/transfer_worker.rs",
+      "sha256": "811df09bae544476e03026a9d832f7ea306ff774fe85e42929f974efd2c3f89c",
+      "bytes": 45457
+    }
+  ],
+  "nativeDeadlineOffsetSeconds": 113,
+  "startupSeconds": 30,
+  "shutdownReserveSeconds": 7,
+  "globalReservationRelationship": "52 technical +516 history/prediction subdivide one global568 debit; never a second debit",
+  "nativeExecutionByThisPreparation": false,
+  "rootAloneMayLaunch": true
+}

@@ -1,5 +1,21 @@
 # TODO
 
+**2026-10-15 diagnostic causal distinct — autorisation parent, une seule exécution :**
+
+- [x] Figer le candidat issu de `a5c8ff36`, avec un mode diagnostic limité à
+  52 pas de parité, 36 de préfixe et une prévision de 480 pas au maximum ;
+  aucune fenêtre réelle de transfert après A36.
+- [x] Vérifier les preuves historiques, la réservation distincte de 568 pas /
+  120 secondes, l'absence de doublon, les tests statiques et le manifeste.
+  Gel : 429 fichiers ; 12 tests purs du worker et 54 tests du superviseur
+  passent ; audit indépendant favorable avant toute exécution.
+- [ ] Exécuter une seule fois puis fermer le registre sans remboursement ni
+  renouvellement, même en cas de refus précoce ou d'échec technique.
+- [ ] Déterminer le mécanisme de disparition du point retenu ; implémenter
+  uniquement une correction démontrée, vérifiée statiquement sans nouvel essai.
+- [ ] Publier les preuves, budgets et implications pour le transfert complet ;
+  conserver la récupération désactivée et vérifier le SHA distant.
+
 **2026-10-15 continuité matérielle — correction statique, protocole physique clos :**
 
 - [x] Examiner les 130 pas archivés et les lacunes de télémétrie : une absence
