@@ -74,6 +74,130 @@ fn adapter(input: &Inputs) -> Adapter {
     .unwrap()
 }
 
+/// Synthetic contact geometry only; the archived q/dq supply the compiler
+/// contract, not a claim that this support arrangement was physically reached.
+fn surface_continuity_inputs() -> Inputs {
+    let mut input = inputs();
+    // These synthetic observations do not inherit the archived step-36 CCD
+    // impulses; carrying them forward would correctly fail the clock guard.
+    input.observation.ccd_impulses.clear();
+    for (segment, x) in [(19, -0.15), (24, 0.15)] {
+        input.observation.bodies[segment].position_m = [x, 0.045, 0.0];
+        input.observation.bodies[segment].rotation_xyzw = [0.0, 0.0, 0.0, 1.0];
+        let support = &mut input.observation.segments[segment];
+        support.persistent_load_n = 160.0;
+        support.loaded_substeps = 36;
+        support.contacts = [
+            (0.0, 0.0, 100.0),
+            (-0.04, -0.03, 20.0),
+            (0.04, -0.03, 20.0),
+            (0.0, 0.04, 20.0),
+        ]
+        .into_iter()
+        .map(|(dx, z, load)| CurrentContact {
+            local_point_m: [dx, -0.045, z],
+            world_point_m: [x + dx, 0.0, z],
+            upward_normal: 1.0,
+            current_upward_load_n: load,
+        })
+        .collect();
+    }
+    input
+}
+
+#[test]
+fn pure_equivalent_surface_keeps_original_anchor_and_still_requires_native_admission() {
+    let input = surface_continuity_inputs();
+    let mut adapter = adapter(&input);
+    let initial = adapter.tracker.active[0].clone();
+    assert!(initial.reference_surface.is_some());
+    let mut next = input.observation.clone();
+    next.native_substep += 1;
+    next.time_s += 1.0 / 240.0;
+    next.segments[19].contacts.remove(0);
+    let proposal = adapter.observe(&next).unwrap();
+    let retained = &adapter.tracker.active[0];
+    assert!(!retained.current_contact_present);
+    assert!(retained.has_current_support());
+    assert!(retained.verify_current_support(&next, MATERIAL_MATCH_M).unwrap());
+    assert_eq!(retained.local_point_m, initial.local_point_m);
+    assert_eq!(retained.world_anchor_m, initial.world_anchor_m);
+    assert_eq!(retained.reference_surface, initial.reference_surface);
+    assert_eq!(retained.id, initial.id);
+    assert!(proposal.material_obligations[0].has_current_support());
+    assert_eq!(adapter.evidence()["authorization"]["kind"], "unarmed");
+    assert!(adapter.require_native_command(17, 37, vec![1, 2, 3], &input.entry.command()).is_err());
+}
+
+#[test]
+fn pure_equivalent_surface_cannot_hide_cumulative_slip_or_refresh_an_anchor() {
+    let input = surface_continuity_inputs();
+    let mut adapter = adapter(&input);
+    let anchor = adapter.tracker.active[0].world_anchor_m;
+    let mut next = input.observation.clone();
+    next.segments[19].contacts.remove(0);
+    // Each new observation moves only 1 mm; the old world anchor must still
+    // expose the accumulated 11 mm instead of accepting pairwise small motion.
+    for offset in 1..=11 {
+        next.native_substep += 1;
+        next.time_s = next.native_substep as f64 / 240.0;
+        next.bodies[19].position_m[0] = -0.15 + offset as f64 * 0.001;
+        for contact in &mut next.segments[19].contacts {
+            contact.world_point_m[0] = next.bodies[19].position_m[0] + contact.local_point_m[0];
+        }
+        let before = adapter.evidence();
+        let result = adapter.observe(&next);
+        if offset < 10 {
+            result.unwrap();
+        } else if let Err(reason) = result {
+            // The contract is stored as f32: its exact 0.01 representation may
+            // reject the mathematical 10 mm boundary. Never enlarge it here.
+            assert!(reason.contains("drift envelope"), "{reason}");
+            assert_eq!(adapter.evidence(), before);
+            assert_eq!(adapter.tracker.active[0].world_anchor_m, anchor);
+            return;
+        }
+        assert_eq!(adapter.tracker.active[0].world_anchor_m, anchor);
+    }
+    panic!("Cumulative drift above the original limit was accepted");
+}
+
+#[test]
+fn pure_surface_reference_mutation_or_lost_current_load_is_refused_atomically() {
+    let input = surface_continuity_inputs();
+    let mut original = adapter(&input);
+    let mut next = input.observation.clone();
+    next.native_substep += 1;
+    next.time_s += 1.0 / 240.0;
+    next.segments[19].contacts.remove(0);
+    original.observe(&next).unwrap();
+    next.native_substep += 1;
+    next.time_s += 1.0 / 240.0;
+    for variant in 0..3 {
+        let mut changed = original.clone();
+        let mut observation = next.clone();
+        match variant {
+            0 => changed.tracker.active[0].world_anchor_m[0] += 0.001,
+            1 => changed.tracker.active[0].reference_surface.as_mut().unwrap()
+                .unit_normal_local = [1.0, 0.0, 0.0],
+            _ => {
+                observation.segments[19].contacts.clear();
+                observation.ccd_impulses.push(super::super::support_state::CcdImpulse {
+                    native_substep: observation.native_substep,
+                    ccd_interval: 0,
+                    segment: 19,
+                    interval_s: 1.0 / 240.0,
+                    normal_ns: [0.0, 100.0, 0.0],
+                    tangent_ns: [0.0; 3],
+                });
+            }
+        }
+        let before = changed.evidence();
+        assert!(changed.observe(&observation).is_err());
+        assert_eq!(changed.evidence(), before);
+    }
+}
+
 fn memory(input: &Inputs) -> runtime::Memory {
     runtime::initialize(
         &input.model,

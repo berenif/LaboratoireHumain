@@ -1,0 +1,120 @@
+{
+  "schema": 1,
+  "sourcesSha256": {
+    "/workspace/LaboratoireHumain/docs/evidence/coordination-contact-continuity-2026-10-15/render_continuity_proof.py": "f9bdcfa4661cb09ee13c9f162bca6d75e8e85f9e7012b3b6322f6ff63d34f7c7",
+    "/workspace/LaboratoireHumain/docs/evidence/coordination-contact-continuity-2026-10-15/continuity-archive-36-78.json": "1e5b2a1841922798fa51aa6646eed3bfbc5e56c5d3865ef8d27ba6eaa48e9300",
+    "/workspace/LaboratoireHumain/docs/evidence/coordination-contact-continuity-2026-10-15/forensics.json": "9b478ac3f24f4339262f19f2c6b1c91dfb650a53a1fe8b48259bcdca47dd2c64",
+    "/workspace/LaboratoireHumain/rust/crates/sim/src/recovery/planner/material_continuity_tests.rs": "87a5f4ddaab922053d15ff6b7bef4ac44d9303d197e7ad110e318d3b0a3b5bc2",
+    "/workspace/LaboratoireHumain/docs/evidence/coordination-contact-continuity-2026-10-15/first-pure-tests/support_state-material_continuity-tests.log": "0f77b5e829449a248221e35694bfd4dfb7e55983466e913536b387aa022ceb5a"
+  },
+  "synthetic": {
+    "localXZPointsM": [
+      [
+        -0.03,
+        -0.03
+      ],
+      [
+        0.03,
+        -0.03
+      ],
+      [
+        0.0,
+        0.04
+      ]
+    ],
+    "loadsN": [
+      5,
+      5,
+      5
+    ],
+    "immutablePointLocalM": [
+      0,
+      0,
+      0
+    ],
+    "claim": "EquivalentLoadedSurface in the named passing pure test; no physical outcome",
+    "test": "original_interior_point_has_loaded_surface_certificate_without_reanchoring"
+  },
+  "archive": {
+    "nativeSubstep": 78,
+    "segment": 19,
+    "contacts": [
+      {
+        "current_upward_load_n": 47.452341227483835,
+        "local_point_m": [
+          -0.052000027149915695,
+          -0.04500001668930054,
+          -0.06000003218650818
+        ],
+        "upward_normal": 1.0,
+        "world_point_m": [
+          -0.1420830339193344,
+          -0.000979892909526825,
+          -0.07152873277664185
+        ]
+      },
+      {
+        "current_upward_load_n": 0.9898881842999362,
+        "local_point_m": [
+          0.04500001668930054,
+          -0.04500000178813934,
+          0.06000002101063728
+        ],
+        "upward_normal": 1.0,
+        "world_point_m": [
+          -0.04590063542127609,
+          -0.003751356154680252,
+          0.04909583181142807
+        ]
+      },
+      {
+        "current_upward_load_n": 37.110702248104545,
+        "local_point_m": [
+          0.0520000196993351,
+          -0.04500001668930054,
+          -0.060000017285346985
+        ],
+        "upward_normal": 1.0,
+        "world_point_m": [
+          -0.038085632026195526,
+          -0.0007736757397651672,
+          -0.07081691920757294
+        ]
+      }
+    ],
+    "immutablePointLocalM": [
+      -0.04500000923871994,
+      -0.04500000923871994,
+      0.060000013560056686
+    ],
+    "immutableWorldAnchorM": [
+      -0.1358211636543274,
+      -0.005277503281831741,
+      0.04830962046980858
+    ],
+    "allObservedContactsHullLocalXZ": [
+      [
+        -0.052000027149915695,
+        -0.06000003218650818
+      ],
+      [
+        0.0520000196993351,
+        -0.060000017285346985
+      ],
+      [
+        0.04500001668930054,
+        0.06000002101063728
+      ]
+    ],
+    "outsideHullDistanceM": 0.06999278470891931,
+    "eligibleWitnessCountAtLeast3N": 2,
+    "result": "Refused"
+  },
+  "outputsSha256": {
+    "continuity-proof.png": "c592e68106376db23e39901bf2d0b37451ed4f0c7081874626337843cc2f3a0c"
+  },
+  "additionalNativeSubsteps": 0,
+  "newWorlds": 0,
+  "newFkInspections": 0,
+  "coordinatePolicy": "Local XZ positions only; no body pose reconstruction or anchor relocation"
+}

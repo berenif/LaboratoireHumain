@@ -567,7 +567,7 @@ impl Controller {
                 .patches
                 .active
                 .iter()
-                .any(|p| !p.current_contact_present)
+                .any(|p| !p.has_current_support())
             {
                 return Err(
                     "Retained material support vanished; this route has no replacement".into(),

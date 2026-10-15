@@ -469,6 +469,7 @@ fn history(
                 "nativeSubstep":s.substeps_completed,"installedCommand":evidence["last"],
                 "numericAttempt":evidence["numericAttempt"],"localDiagnostic":sample,
                 "centerOfMassM":observed.center_of_mass_m,
+                "support":observed,
                 "transferProposal":evidence["transfer"]["decision"]["lastProposal"]}),
                     )
                 },

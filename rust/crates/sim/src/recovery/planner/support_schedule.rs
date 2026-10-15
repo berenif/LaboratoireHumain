@@ -112,10 +112,10 @@ impl SupportSchedule {
                     .any(|p| p.segment == patch.segment)
                 || patch.acquired_substep > patch.last_observed_substep
                 || patch.last_observed_substep != observation.native_substep
-                || !patch.current_contact_present
+                || !patch.has_current_support()
                 || !patch_finite(patch)
                 || !persistent_segment(observation, patch.segment)
-                || !has_matching_load(observation, patch.segment, patch.local_point_m)
+                || !has_matching_material_support(observation, patch)?
             {
                 return Err(
                     "Invalid/stale retained foot patch; history cannot be reanchored".into(),
@@ -255,16 +255,14 @@ impl SupportSchedule {
         }
         let group = self.group.ok_or("Missing release group")?;
         let evidence = supported_transfer(&self.latest, &group.segments())?;
-        let retained_material_present = self
-            .tracker
-            .active
-            .iter()
+        let mut retained_material_present = true;
+        for patch in self.tracker.active.iter()
             .filter(|p| !group.segments().contains(&p.segment))
-            .all(|p| {
-                p.current_contact_present
-                    && p.last_observed_substep == self.latest.native_substep
-                    && has_matching_load(&self.latest, p.segment, p.local_point_m)
-            });
+        {
+            retained_material_present &= patch.has_current_support()
+                && patch.last_observed_substep == self.latest.native_substep
+                && has_matching_material_support(&self.latest, patch)?;
+        }
         // This first implementation schedules feet only. It cannot silently
         // take credit for an untracked hand/shin/new segment in the load/hull.
         let all_support_tracked = evidence
@@ -467,6 +465,21 @@ fn loaded(contact: &CurrentContact) -> bool {
 fn has_matching_load(observation: &SupportObservation, segment: usize, local: [f64; 3]) -> bool {
     select_contact(observation, segment, Some(local), None).is_some()
 }
+fn has_matching_material_support(
+    observation: &SupportObservation,
+    patch: &MaterialPatch,
+) -> Result<bool, String> {
+    // Keep the original 3 N direct acquisition/retention requirement. The
+    // equivalent-surface certificate independently requires three 3 N witnesses.
+    use super::support_state::MaterialContinuityKind;
+    let evidence = patch.material_continuity(observation, MATERIAL_MATCH_M)?;
+    Ok(match evidence.kind {
+        MaterialContinuityKind::DirectLoadedPoint =>
+            has_matching_load(observation, patch.segment, patch.local_point_m),
+        MaterialContinuityKind::EquivalentLoadedSurface => true,
+        MaterialContinuityKind::Refused => false,
+    })
+}
 fn select_contact(
     observation: &SupportObservation,
     segment: usize,
@@ -509,7 +522,8 @@ fn patch_finite(patch: &MaterialPatch) -> bool {
         && patch.tangential_drift_m >= 0.0
         && patch
             .nearest_current_local_distance_m
-            .is_some_and(|v| v.is_finite() && v >= 0.0 && v <= MATERIAL_MATCH_M)
+            .is_some_and(|v| v.is_finite() && v >= 0.0
+                && (!patch.current_contact_present || v <= MATERIAL_MATCH_M))
 }
 
 #[cfg(test)]
@@ -547,6 +561,7 @@ mod tests {
             segments[segment].role = role;
         }
         let mut state = SupportObservation {
+            native_contact_boundary: None,
             native_substep: 12,
             time_s: 12.0 / 240.0,
             weight_n: 100.0,
@@ -586,6 +601,34 @@ mod tests {
     }
     fn json(value: &impl Serialize) -> serde_json::Value {
         serde_json::to_value(value).unwrap()
+    }
+    #[test]
+    fn pure_surface_cache_cannot_bypass_recomputed_direct_load_requirement() {
+        let mut state = observation();
+        state.segments[19].contacts.insert(0, CurrentContact {
+            local_point_m: [0.0; 3],
+            world_point_m: [0.0; 3],
+            upward_normal: 1.0,
+            current_upward_load_n: 10.0,
+        });
+        let mut schedule = SupportSchedule::bootstrap_observed(&state, &[19, 24]).unwrap();
+        state.segments[19].contacts.remove(0);
+        tick(&mut state);
+        schedule.observe(&state).unwrap();
+        let retained = schedule.tracker();
+        assert!(!retained.active[0].current_contact_present);
+        assert!(retained.active[0].has_current_support());
+        assert!(has_matching_material_support(&state, &retained.active[0]).unwrap());
+        // A different same-clock import must not use the old surface cache to
+        // evade the schedule's original 3 N direct-retention requirement.
+        state.segments[19].contacts.insert(0, CurrentContact {
+            local_point_m: [0.0; 3],
+            world_point_m: [0.0; 3],
+            upward_normal: 1.0,
+            current_upward_load_n: 0.01,
+        });
+        assert!(!has_matching_material_support(&state, &retained.active[0]).unwrap());
+        assert!(SupportSchedule::from_retained(&state, retained).is_err());
     }
     fn acquiring() -> (SupportObservation, SupportSchedule) {
         let mut state = observation();

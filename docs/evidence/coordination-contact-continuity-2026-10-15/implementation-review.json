@@ -1,0 +1,188 @@
+{
+  "schema": "independent-static-implementation-review-v1",
+  "createdAtUtc": "2026-10-15T15:05:01.823703+00:00",
+  "reviewer": "/root/continuity_design_review",
+  "baseHead": "da4575170c6ae9b0858c0851a6f1ed15fe1ce858",
+  "verdict": "No blocking defect identified in the reviewed static correction after CR-01 and CR-02 were resolved; this is not native qualification.",
+  "activity": {
+    "nativeSubsteps": 0,
+    "simulationWorldsCreated": 0,
+    "fkInspections": 0,
+    "testsExecutedByReviewer": 0,
+    "sourceEditsByReviewer": 0,
+    "reviewArtifactsWritten": 2
+  },
+  "findings": [
+    {
+      "id": "CR-01",
+      "severity": "medium",
+      "status": "resolved",
+      "scope": "MaterialPatch::has_current_support",
+      "finding": "The surface cache originally tested only its classification, allowing a stale or misidentified cache to appear current to internal consumers without observations.",
+      "resolution": "EquivalentLoadedSurface now requires Hold and exact agreement of evidence native_substep, patch_id and segment with the patch. The diagnostic cache is excluded from deserialization.",
+      "validation": "Independent source inspection after the change; tests inspected but not executed by this reviewer."
+    },
+    {
+      "id": "CR-02",
+      "severity": "medium",
+      "status": "resolved",
+      "scope": "SupportSchedule::has_matching_material_support",
+      "finding": "The helper originally branched on the cached current_contact_present flag after boolean recomputation. A cached surface result could therefore bypass the existing 3 N direct-retention requirement when a different same-clock observation supplied a weak direct point.",
+      "resolution": "The helper now branches on the recomputed MaterialContinuityKind. DirectLoadedPoint separately requires has_matching_load; EquivalentLoadedSurface carries its own three witnesses of at least 3 N; Refused is false.",
+      "validation": "Independent source inspection and inspection of the dedicated same-clock cache regression test; no execution by this reviewer."
+    }
+  ],
+  "checkedGuarantees": [
+    "Original local point, world anchor and acquisition clock remain unchanged by observation; acquired local plane is not manufactured after loss.",
+    "Fallback is restricted to Hold on hindfoot or forefoot; Pivot, Unload, Free and other roles do not obtain a surface certificate.",
+    "Three individually current loaded witnesses of at least 3 N, non-collinearity, acquired-plane coherence, local/world consistency and convex coverage of the original material point are required.",
+    "The 1 micrometre numerical surface tolerance does not expand the hull by the existing 12 mm contact correspondence tolerance.",
+    "The drift measurement remains relative to the original anchor; Adapter separately rejects the existing planted-foot drift limit and commits observation atomically.",
+    "LoadTransfer compares the complete acquired reference against its initial obligations; consumers with a SupportObservation recompute material evidence.",
+    "Imported continuity_evidence is discarded; restored material metadata cannot mint a native window receipt.",
+    "Adapter observation precedes the existing require_native_command gate; native admission and terminal continuation/stability clocks remain distinct.",
+    "Telemetry reads active and inactive contact collections without integration or narrow-phase mutation. The active support list still uses selected contacts and the unchanged admission classification.",
+    "Vendored Rapier solver_manifolds uses solver_clusters when nonempty; the telemetry records this same collection choice and labels raw or unselected cached impulses.",
+    "Archive 78 is refused with two witnesses at least 3 N; a separate synthetic strengthening of the weak vertex still fails original-point hull coverage.",
+    "Each transfer-preview-step now archives the already computed current SupportObservation, including native_contact_boundary; no new observation or physical call is introduced by the one-line worker change."
+  ],
+  "limits": [
+    "No new physical parity, force-response, forecast cost, local success, standing continuation or stability is established.",
+    "The exact internal reason for the missing point at 78 is not recoverable from the filtered archive; raw contact telemetry added now cannot repair past evidence.",
+    "This certificate describes conservative loaded-surface coverage of one immutable point. It does not certify a contact wrench, force at that point, full sole support, dynamic feasibility or anatomical impossibility.",
+    "The old direct loaded-point rule remains unchanged; the additional surface path is more restrictive and does not grant a drift waiver.",
+    "Private owner state and native receipts remain the execution boundary. Public serialized patch metadata is evidence to validate, not native authorization.",
+    "New reference/certificate and contact-boundary fields change serialized owner observations and identities; old binary parity does not qualify the new binary, and a future physical experiment needs its own frozen identity and authorization.",
+    "Additional telemetry volume and native overhead have not been measured in this static task; future bounded execution must retain accounting, wall-clock and early-stop guards.",
+    "No global Rust or TypeScript suite result is claimed by this review."
+  ],
+  "sources": [
+    {
+      "path": "rust/crates/sim/src/recovery/planner/support_state.rs",
+      "sha256": "1056ca06337d4312f61e396e97d8f110229f00a846a17eb83f8ec64f82fefdcb",
+      "bytes": 35883
+    },
+    {
+      "path": "rust/crates/sim/src/recovery/planner/material_continuity.rs",
+      "sha256": "323bb017ead27dded0ffcef258040e3aff4683d2c3141db74f2c6f103f57514c",
+      "bytes": 15889
+    },
+    {
+      "path": "rust/crates/sim/src/recovery/planner/material_continuity_tests.rs",
+      "sha256": "87a5f4ddaab922053d15ff6b7bef4ac44d9303d197e7ad110e318d3b0a3b5bc2",
+      "bytes": 15534
+    },
+    {
+      "path": "rust/crates/sim/src/recovery/planner/support_schedule.rs",
+      "sha256": "723d946abe45186f8cb1fea793726f33c62ef4e770bb001bcaa94a6d662761c6",
+      "bytes": 37155
+    },
+    {
+      "path": "rust/crates/sim/src/recovery/planner/load_transfer.rs",
+      "sha256": "876d8e2fb0878227b6b70ad2f5b553e1db9985719d0b828aaa686d0767523294",
+      "bytes": 43491
+    },
+    {
+      "path": "rust/crates/sim/src/recovery/planner/transfer_adapter.rs",
+      "sha256": "95415005944a40ec6da5541fdf702a52a91763422b328c161f8aa36544ff0085",
+      "bytes": 36152
+    },
+    {
+      "path": "rust/crates/sim/src/recovery/planner/transfer_adapter_tests.rs",
+      "sha256": "72eef3f44b081905aefbc3b2a154809e8d8e8458e7b593049cb211794b715c14",
+      "bytes": 41271
+    },
+    {
+      "path": "rust/crates/sim/src/recovery/planner/command_proposal.rs",
+      "sha256": "3688e7a1ff824b5a016d0d8ad8da44cbcd00c041d096a2d338b6fb33e41326b9",
+      "bytes": 16836
+    },
+    {
+      "path": "rust/crates/sim/src/recovery/planner/geometric_tasks.rs",
+      "sha256": "65af9a336111cc1604b35bd1244bad83fd0c518a6d30bc1e8a37fc4bbf4bdadb",
+      "bytes": 24437
+    },
+    {
+      "path": "rust/crates/sim/src/recovery/planner/whole_body_controller.rs",
+      "sha256": "2476ba571b443274ae35eff43fefb0a6968bab5b6c26fc7f42bcf0d31839a309",
+      "bytes": 57592
+    },
+    {
+      "path": "rust/crates/sim/src/recovery/planner/native_observation.rs",
+      "sha256": "db49427e09240dec0c0e0049e25eca916b0fe5e8b754a641c156363cd0887afc",
+      "bytes": 22007
+    },
+    {
+      "path": "rust/crates/sim/src/recovery/planner/native_contact_diagnostics.rs",
+      "sha256": "57d71b0a99fa6a02506cec50f6a9aba0125c625fac2c8c270eb74f1bfbb01604",
+      "bytes": 12458
+    },
+    {
+      "path": "rust/vendor/rapier3d/src/geometry/contact_pair.rs",
+      "sha256": "3acab3ab974ac68f52dc9cfe70f4b54315ee0f5ecd6d85ac431d16544f13e06e",
+      "bytes": 38306
+    },
+    {
+      "path": "docs/evidence/coordination-contact-continuity-2026-10-15/continuity-archive-36-78.json",
+      "sha256": "1e5b2a1841922798fa51aa6646eed3bfbc5e56c5d3865ef8d27ba6eaa48e9300",
+      "bytes": 52931
+    },
+    {
+      "path": "docs/evidence/coordination-contact-continuity-2026-10-15/continuity-implementation.md",
+      "sha256": "aacba43dd3be75aef092b6cafd821dbbd4576840b56b244f0746284384892a12",
+      "bytes": 6406
+    },
+    {
+      "path": "docs/evidence/coordination-contact-continuity-2026-10-15/forensics.json",
+      "sha256": "9b478ac3f24f4339262f19f2c6b1c91dfb650a53a1fe8b48259bcdca47dd2c64",
+      "bytes": 2652965
+    },
+    {
+      "path": "docs/evidence/coordination-transfer-native-7100-2026-10-15/native-run-once/native-trace.jsonl.gz",
+      "sha256": "5daf337c1cf4e07938b1996e2febf752a706415873f2efd5e55454ec4a0a76fc",
+      "bytes": 2747042
+    },
+    {
+      "path": "rust/crates/sim/src/recovery/planner/transfer_worker.rs",
+      "sha256": "7bb18f8698d5eda1e7f016f3e9d38c5d16286d63f957d368ed680a64806c7a94",
+      "bytes": 32283
+    }
+  ],
+  "updatedAtUtc": "2026-10-15T15:19:04.976484+00:00",
+  "additionalReview": {
+    "scope": "transfer_worker.rs:472, transfer-preview-step JSON payload",
+    "change": "The existing observed SupportObservation is now serialized under support at each predicted substep.",
+    "finding": "No defect detected. The diff adds one JSON field; no additional observe call, model, integration, collision query or FK is introduced.",
+    "purpose": "Preserves native_contact_boundary at each predicted state rather than retaining only support summaries and the previous proposal. The existing full endpoint recording remains available on a copied-branch refusal.",
+    "limit": "Trace and serialization volume increase. No native cost or new-binary parity is measured by this static review."
+  },
+  "forensicProvenanceReview": {
+    "reviewedAtUtc": "2026-10-15T15:19:04.976484+00:00",
+    "sourceCodeCommit": "da4575170c6ae9b0858c0851a6f1ed15fe1ce858",
+    "repositorySourceBlobsVerified": 7,
+    "externalPinnedReferenceVerified": 1,
+    "closedInputHashesVerified": 4,
+    "diagnosticScriptHashVerified": true,
+    "changedReviewSource": {
+      "path": "docs/evidence/coordination-contact-continuity-2026-10-15/forensics.json",
+      "previousSha256": "0eea5798c35a9c0fd70f479aa000db6ca24af6e44ea67dc59eeeb4857e816952",
+      "currentSha256": "9b478ac3f24f4339262f19f2c6b1c91dfb650a53a1fe8b48259bcdca47dd2c64"
+    },
+    "canonicalResultSha256": "a6e14bb58ebd690805af903552dbe485d502ddbfa787b231ddf839751b3a0772",
+    "canonicalResultDefinition": {
+      "excludedTopLevelFields": [
+        "script_sha256",
+        "source_sha256",
+        "sourceCodeCommit",
+        "source_retrieval"
+      ],
+      "serialization": "json.dumps ensure_ascii=False, sort_keys=True, separators=(comma,colon); UTF-8; no trailing newline"
+    },
+    "additionalArtifactHashes": {
+      "forensics.py": "98566e3dabf63617b61e4b619edfbd03a7d5e5159c277a3fbcaf4465e8c415c4",
+      "forensics.md": "2cbbed3f1aa2671cc51dc43901fc5054c54be2c7b705c8911c27722ffc829a5d"
+    },
+    "conclusion": "Pinned forensic sources match their Git blobs at da457517; the external reference and four closed inputs match their required hashes. The canonical result digest matches the supplied unchanged-results digest. No inconsistency found.",
+    "scope": "The forensic code provenance describes the closed run. Other Rust source hashes in this implementation review describe the new static correction in the worktree; they are not attributed retroactively to that physical run. No diagnostic script, native binary, tests or FK were executed during this provenance review."
+  }
+}

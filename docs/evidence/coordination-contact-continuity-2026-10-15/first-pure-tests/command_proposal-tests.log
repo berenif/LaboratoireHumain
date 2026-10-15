@@ -1,0 +1,10 @@
+
+running 5 tests
+test recovery::planner::command_proposal::tests::command_boxes_and_unknown_hard_constraints_are_never_relaxed ... ok
+test recovery::planner::command_proposal::tests::even_zero_geometric_residual_cannot_authorize_a_native_transfer ... ok
+test recovery::planner::command_proposal::tests::four_archived_states_compile_command_feasible_but_never_support_admitted ... ok
+test recovery::planner::command_proposal::tests::material_row_omissions_or_renaming_do_not_hide_obligations ... ok
+test recovery::planner::command_proposal::tests::stale_missing_free_duplicate_or_nonfinite_obligations_are_refused ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 275 filtered out; finished in 0.16s
+

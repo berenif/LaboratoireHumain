@@ -1,0 +1,9 @@
+
+running 4 tests
+test recovery::planner::native_contact_diagnostics::tests::absent_pair_and_handle_generations_round_trip_without_native_integration ... ok
+test recovery::planner::native_contact_diagnostics::tests::classification_preserves_boundary_and_rejects_invalid_measurements_without_native_integration ... ok
+test recovery::planner::native_contact_diagnostics::tests::classification_reports_each_filter_without_native_integration ... ok
+test recovery::planner::native_contact_diagnostics::tests::classifier_matches_original_selection_table_without_native_integration ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 276 filtered out; finished in 0.00s
+

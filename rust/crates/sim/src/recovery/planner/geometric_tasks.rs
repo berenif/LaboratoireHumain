@@ -212,7 +212,7 @@ pub(crate) fn assemble_observed(
             continue;
         }
         if patch.segment >= BODY_COUNT
-            || !patch.current_contact_present
+            || !patch.has_current_support()
             || patch.last_observed_substep != observed.native_substep
             || !finite(patch.local_point_m)
             || !finite(patch.world_anchor_m)

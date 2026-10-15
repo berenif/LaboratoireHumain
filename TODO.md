@@ -1,5 +1,23 @@
 # TODO
 
+**2026-10-15 continuité matérielle — correction statique, protocole physique clos :**
+
+- [x] Examiner les 130 pas archivés et les lacunes de télémétrie : une absence
+  transitoire existe à 28/29 ; à 78, le coin retenu reste 69,993 mm hors du
+  triangle chargé. Renouvellement interne Rapier non démontrable à cette horloge.
+- [x] Définir une preuve de surface chargée équivalente, avec face et ancre
+  immuables ; conserver le refus de 78 et les seuils physiques existants.
+- [x] Implémenter le certificat, ses consommateurs et la télémétrie des causes
+  d'exclusion ; 82 tests purs distincts passent après correction de trois
+  fixtures CCD, compilation du pilote sans exécution réussie.
+- [x] Contre-revoir la correction et vérifier les 42 pièces immuables ; aucun
+  nouveau pas natif, remboursement ou renouvellement de budget.
+- [x] Préparer le jalon publiable : correction, diagnostic, figure statique,
+  preuves de tests et audit des budgets ; vérifier le SHA distant à la publication.
+  [Correction, preuves et prochaine décision](docs/coordination-contact-continuity-2026-10-15.md).
+  [Analyse des traces](docs/evidence/coordination-contact-continuity-2026-10-15/forensics.md),
+  [périmètre et budgets](docs/evidence/coordination-contact-continuity-2026-10-15/static-scope-and-budget.md).
+
 **2026-10-15 continuation unique à 7 100 s — essai clos sur refus :**
 
 - [x] Préserver le binaire physique et les gels historiques ; réduire uniquement

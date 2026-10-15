@@ -1,0 +1,49 @@
+{
+  "schema": 1,
+  "startedUtc": "2026-10-15T15:06:03.175415+00:00",
+  "scope": "Whitelisted pure unit tests only; no scene, world, FK or native integration",
+  "testBinary": "/workspace/LaboratoireHumain/rust/target/debug/deps/lh_sim-68e67b1c237792f1",
+  "testBinarySha256": "cd124cc85f0ee584291233932a2413d4f87953994ea386af3409c3e5d5da1b75",
+  "physicalBinarySha256Before": "63e0e035d38d02f762c69b9dacb65d61e179c72ced50f5facd0bc29c64b9e8b5",
+  "selectedTestNames": [
+    "recovery::planner::transfer_adapter::tests::pure_equivalent_surface_cannot_hide_cumulative_slip_or_refresh_an_anchor",
+    "recovery::planner::transfer_adapter::tests::pure_equivalent_surface_keeps_original_anchor_and_still_requires_native_admission",
+    "recovery::planner::transfer_adapter::tests::pure_surface_reference_mutation_or_lost_current_load_is_refused_atomically"
+  ],
+  "runs": [
+    {
+      "filter": "recovery::planner::transfer_adapter::tests::pure_equivalent_surface_",
+      "command": [
+        "/workspace/LaboratoireHumain/rust/target/debug/deps/lh_sim-68e67b1c237792f1",
+        "recovery::planner::transfer_adapter::tests::pure_equivalent_surface_",
+        "--test-threads=1",
+        "--nocapture"
+      ],
+      "expectedTests": 2,
+      "exitCode": 0,
+      "wallSeconds": 0.4395510619979177,
+      "log": "docs/evidence/coordination-contact-continuity-2026-10-15/fixture-fix-pure-tests/transfer_adapter-tests-pure_equivalent_surface_.log",
+      "logSha256": "3e8c5dc237590dd36faff4a66e8b1bed3f3866b7cba51a5a6d2980c5fbae50fd"
+    },
+    {
+      "filter": "recovery::planner::transfer_adapter::tests::pure_surface_reference_",
+      "command": [
+        "/workspace/LaboratoireHumain/rust/target/debug/deps/lh_sim-68e67b1c237792f1",
+        "recovery::planner::transfer_adapter::tests::pure_surface_reference_",
+        "--test-threads=1",
+        "--nocapture"
+      ],
+      "expectedTests": 1,
+      "exitCode": 0,
+      "wallSeconds": 0.20126579600037076,
+      "log": "docs/evidence/coordination-contact-continuity-2026-10-15/fixture-fix-pure-tests/transfer_adapter-tests-pure_surface_reference_.log",
+      "logSha256": "63ce7b1f3521231db3357c9d9611dda4512f73c603ebe4478ec84fbb092b3bd4"
+    }
+  ],
+  "newNativeSteps": 0,
+  "newFkOrWorldInspections": 0,
+  "physicalBinarySha256After": "63e0e035d38d02f762c69b9dacb65d61e179c72ced50f5facd0bc29c64b9e8b5",
+  "allPassed": true,
+  "selectedTestCount": 3,
+  "finishedUtc": "2026-10-15T15:06:03.983079+00:00"
+}

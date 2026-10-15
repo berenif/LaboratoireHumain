@@ -362,13 +362,20 @@ impl Adapter {
                 .acceptance
                 .idle_planted_foot_drift_m,
         );
-        if next
-            .tracker
-            .active
-            .iter()
-            .any(|p| !p.current_contact_present || p.tangential_drift_m > drift_limit)
-        {
-            return Err("Retained material contact lost or candidate's original planted-foot drift envelope exceeded".into());
+        for patch in &next.tracker.active {
+            let continuity = patch.material_continuity(observation, MATERIAL_MATCH_M)?;
+            if !patch.has_current_support() || !continuity.supported() {
+                return Err(format!(
+                    "Retained material support unproved for patch {} on segment {}: {:?}",
+                    patch.id, patch.segment, continuity
+                ));
+            }
+            if patch.tangential_drift_m > drift_limit {
+                return Err(format!(
+                    "Retained material patch {} exceeded the original planted-foot drift envelope: {} > {} m",
+                    patch.id, patch.tangential_drift_m, drift_limit
+                ));
+            }
         }
         let proposed = next.policy.propose(&next.tracker)?;
         if !proposed

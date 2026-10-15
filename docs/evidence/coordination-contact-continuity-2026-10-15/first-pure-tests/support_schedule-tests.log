@@ -1,0 +1,15 @@
+
+running 10 tests
+test recovery::planner::support_schedule::tests::pure_archived_b16_rejects_both_whole_foot_withdrawals_without_mutation ... ok
+test recovery::planner::support_schedule::tests::pure_clock_and_nonfinite_rejections_are_atomic ... ok
+test recovery::planner::support_schedule::tests::pure_measured_transition_keeps_history_and_requires_preview ... ok
+test recovery::planner::support_schedule::tests::pure_missing_remaining_patch_or_untracked_hand_cannot_authorize_release ... ok
+test recovery::planner::support_schedule::tests::pure_new_contact_cannot_inherit_segment_persistence_or_goal_proximity ... ok
+test recovery::planner::support_schedule::tests::pure_phase_round_trip_cannot_reanchor_a_foot_that_never_left_support ... ok
+test recovery::planner::support_schedule::tests::pure_pivot_preserves_48cm_drift_instead_of_reanchoring ... ok
+test recovery::planner::support_schedule::tests::pure_reposition_goal_is_explicit_and_deadline_cannot_create_contact ... ok
+test recovery::planner::support_schedule::tests::pure_surface_cache_cannot_bypass_recomputed_direct_load_requirement ... ok
+test recovery::planner::support_schedule::tests::pure_whole_foot_cannot_count_its_own_hindfoot_as_remaining_support ... ok
+
+test result: ok. 10 passed; 0 failed; 0 ignored; 0 measured; 270 filtered out; finished in 0.06s
+

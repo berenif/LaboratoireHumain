@@ -5,6 +5,12 @@
 //! retained support. These diagnostics do not replace the recovery observer.
 use serde::{Deserialize, Serialize};
 
+#[path = "material_continuity.rs"]
+pub mod material_continuity;
+pub use material_continuity::{
+    AcquiredMaterialSurface, MaterialContinuityEvidence, MaterialContinuityKind,
+};
+
 pub const BODY_COUNT: usize = 25;
 pub const NATIVE_HZ: u64 = 240;
 pub const MIN_LOAD_N: f64 = 3.0;
@@ -102,6 +108,9 @@ pub struct SupportObservation {
     pub bodies: Vec<BodyMotion>,
     pub segments: Vec<SegmentContactState>,
     pub ccd_impulses: Vec<CcdImpulse>,
+    /// Read-only native contact-boundary telemetry, never support authorization.
+    #[serde(default)]
+    pub native_contact_boundary: Option<super::native_contact_diagnostics::ContactBoundary>,
 }
 
 impl SupportObservation {
@@ -204,6 +213,12 @@ pub struct MaterialPatch {
     pub tangential_drift_m: f64,
     pub nearest_current_local_distance_m: Option<f64>,
     pub current_contact_present: bool,
+    /// Fixed at acquisition; old archives without it cannot use surface fallback.
+    #[serde(default)]
+    pub reference_surface: Option<AcquiredMaterialSurface>,
+    /// Observation-derived diagnostics, never accepted from imported JSON.
+    #[serde(default, skip_deserializing)]
+    pub continuity_evidence: Option<MaterialContinuityEvidence>,
 }
 
 impl MaterialPatch {
@@ -240,6 +255,8 @@ impl MaterialPatch {
         if nearest_current_local_distance_m.is_some_and(|distance| !distance.is_finite()) {
             return Err("Nonfinite material-patch correspondence".into());
         }
+        let continuity_evidence =
+            self.material_continuity(observation, material_match_tolerance_m)?;
         self.last_world_point_m = last_world_point_m;
         self.displacement_from_anchor_m = displacement_from_anchor_m;
         self.tangential_drift_m = tangential_drift_m;
@@ -247,6 +264,7 @@ impl MaterialPatch {
         self.current_contact_present = nearest_current_local_distance_m
             .is_some_and(|distance| distance <= material_match_tolerance_m);
         self.last_observed_substep = observation.native_substep;
+        self.continuity_evidence = Some(continuity_evidence);
         Ok(())
     }
 }
@@ -291,6 +309,13 @@ impl MaterialTracker {
             tangential_drift_m: 0.0,
             nearest_current_local_distance_m: Some(0.0),
             current_contact_present: true,
+            reference_surface: material_continuity::acquire_surface(
+                observation,
+                segment,
+                contact_index,
+                mode,
+            ),
+            continuity_evidence: None,
         });
         Ok(id)
     }
@@ -715,6 +740,7 @@ mod tests {
             bodies,
             segments,
             ccd_impulses: Vec::new(),
+            native_contact_boundary: None,
         }
     }
 

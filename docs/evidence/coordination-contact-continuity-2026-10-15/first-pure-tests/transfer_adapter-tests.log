@@ -1,0 +1,42 @@
+
+running 20 tests
+test recovery::planner::transfer_adapter::tests::pure_adapter_clone_does_not_share_mutable_command_or_observation_state ... ok
+test recovery::planner::transfer_adapter::tests::pure_archived_a36_coefficients_reproduce_all_four_original_command_bits ... ok
+test recovery::planner::transfer_adapter::tests::pure_archived_four_command_queue_keeps_exact_q_dq_and_consumes_once ... ok
+test recovery::planner::transfer_adapter::tests::pure_duplicate_observation_is_idempotent_but_changed_or_skipped_clock_is_atomic ... ok
+test recovery::planner::transfer_adapter::tests::pure_equivalent_surface_cannot_hide_cumulative_slip_or_refresh_an_anchor ... FAILED
+test recovery::planner::transfer_adapter::tests::pure_equivalent_surface_keeps_original_anchor_and_still_requires_native_admission ... FAILED
+test recovery::planner::transfer_adapter::tests::pure_foreign_queue_command_or_changed_command_history_is_refused_atomically ... ok
+test recovery::planner::transfer_adapter::tests::pure_long_payload_cannot_replace_a_partly_consumed_window ... ok
+test recovery::planner::transfer_adapter::tests::pure_long_payload_requires_each_checkpoint_and_consumes_exactly_once_to_its_endpoint ... ok
+test recovery::planner::transfer_adapter::tests::pure_malformed_long_payload_is_refused_without_arming_the_adapter ... ok
+test recovery::planner::transfer_adapter::tests::pure_persistent_nonfoot_after_latched_local_event_is_refused_without_erasing_history ... ok
+test recovery::planner::transfer_adapter::tests::pure_reference_clock_uses_source_433_only_after_the_last_bridge_command ... ok
+test recovery::planner::transfer_adapter::tests::pure_surface_reference_mutation_or_lost_current_load_is_refused_atomically ... FAILED
+test recovery::planner::transfer_adapter::tests::pure_technical_admission_refuses_foreign_scope_instance_clock_or_payload_atomically ... ok
+test recovery::planner::transfer_adapter::tests::pure_technical_four_steps_are_exact_bound_nonrenewable_and_require_the_endpoint ... ok
+test recovery::planner::transfer_adapter::tests::pure_terminal_clock_overflow_is_refused_before_any_state_change ... ok
+test recovery::planner::transfer_adapter::tests::pure_terminal_deadline_accepts_success_at_25_seconds_and_binds_one_extra_second ... ok
+test recovery::planner::transfer_adapter::tests::pure_terminal_monitoring_rounds_up_to_the_first_complete_tick_only ... ok
+test recovery::planner::transfer_adapter::tests::pure_terminal_success_cannot_be_late_rewound_lost_or_used_at_a_stale_clock ... ok
+test recovery::planner::transfer_adapter::tests::pure_unarmed_native_command_and_passive_handoff_are_both_refused_atomically ... ok
+
+failures:
+
+failures:
+    recovery::planner::transfer_adapter::tests::pure_equivalent_surface_cannot_hide_cumulative_slip_or_refresh_an_anchor
+    recovery::planner::transfer_adapter::tests::pure_equivalent_surface_keeps_original_anchor_and_still_requires_native_admission
+    recovery::planner::transfer_adapter::tests::pure_surface_reference_mutation_or_lost_current_load_is_refused_atomically
+
+test result: FAILED. 17 passed; 3 failed; 0 ignored; 0 measured; 260 filtered out; finished in 32.86s
+
+
+thread 'recovery::planner::transfer_adapter::tests::pure_equivalent_surface_cannot_hide_cumulative_slip_or_refresh_an_anchor' panicked at crates/sim/src/recovery/planner/transfer_adapter_tests.rs:148:20:
+called `Result::unwrap()` on an `Err` value: "Invalid or stale CCD impulse journal"
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+thread 'recovery::planner::transfer_adapter::tests::pure_equivalent_surface_keeps_original_anchor_and_still_requires_native_admission' panicked at crates/sim/src/recovery/planner/transfer_adapter_tests.rs:115:43:
+called `Result::unwrap()` on an `Err` value: "Invalid or stale CCD impulse journal"
+
+thread 'recovery::planner::transfer_adapter::tests::pure_surface_reference_mutation_or_lost_current_load_is_refused_atomically' panicked at crates/sim/src/recovery/planner/transfer_adapter_tests.rs:170:29:
+called `Result::unwrap()` on an `Err` value: "Invalid or stale CCD impulse journal"

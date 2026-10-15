@@ -307,6 +307,7 @@ impl Policy {
                     && current.local_point_m == initial.local_point_m
                     && current.world_anchor_m == initial.world_anchor_m
                     && current.acquired_substep == initial.acquired_substep
+                    && current.reference_surface == initial.reference_surface
             }) {
                 return Err(
                     "An original load-transfer obligation was removed or reanchored".into(),
@@ -422,14 +423,10 @@ impl Policy {
             }
         }
         for patch in &retained.active {
-            if !patch.current_contact_present
-                || !observation.segments[patch.segment]
-                    .contacts
-                    .iter()
-                    .any(|c| {
-                        current(c)
-                            && distance(c.local_point_m, patch.local_point_m) <= MATERIAL_MATCH_M
-                    })
+            // Recompute from this observation. Neither a cached flag nor a
+            // segment-level load can substitute for material support.
+            if !patch.has_current_support()
+                || !patch.verify_current_support(observation, MATERIAL_MATCH_M)?
             {
                 obstacles.push(Obstacle::RetainedMaterialContactMissing { patch_id: patch.id });
             }

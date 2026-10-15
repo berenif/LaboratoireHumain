@@ -85,7 +85,7 @@ fn separate_command_and_support_domains(
             || p.segment >= support_state::BODY_COUNT
             || p.last_observed_substep != at
             || p.acquired_substep > at
-            || !p.current_contact_present
+            || !p.has_current_support()
             || p.local_point_m
                 .iter()
                 .chain(&p.world_anchor_m)
