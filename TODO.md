@@ -1,5 +1,14 @@
 # TODO
 
+**2026-10-15 20:27 UTC — exploration complète A36, protocole clos :**
+
+- [x] Ajouter un chemin expérimental isolé, sans reçu de prévision ni stabilité préalable ; préserver la production et la correction d’attribution inachevée.
+- [x] Vérifier la séquence par un test pur, puis exécuter une histoire : 6 240 sous-pas / 26 s, zéro prévision, 30,709 s murales.
+- [x] Archiver vidéo réelle, appuis et hauteur du bassin : chute à environ 1,6 s, maintien au sol jusqu’à 26 s ; aucun relevage.
+- [x] Fermer sans remboursement ni relance. [Résultat et preuves](docs/evidence/coordination-exploration-execution-2026-10-15/RESULT.md).
+- [ ] Toute nouvelle stratégie ou exécution nécessite une réorientation explicite ; aucune continuation automatique.
+
+
 **2026-10-15 diagnostic causal distinct — autorisation parent, une seule exécution :**
 
 - [x] Figer le candidat issu de `a5c8ff36`, avec un mode diagnostic limité à

@@ -1,0 +1,77 @@
+{
+  "firstCaptureOutside": {
+    "nativeSubstep": 43,
+    "seconds": 0.17916666666666667
+  },
+  "firstComOutside": {
+    "nativeSubstep": 79,
+    "seconds": 0.32916666666666666
+  },
+  "firstRetainedPointRefusal": {
+    "nativeSubstep": 366,
+    "seconds": 1.525,
+    "points": [
+      {
+        "eligible_contact_indices": [],
+        "kind": "Refused",
+        "native_substep": 366,
+        "nearest_loaded_contact_index": 0,
+        "nearest_loaded_local_distance_m": 0.09000002965331177,
+        "original_point_ground_distance_m": 0.00227747596250219,
+        "patch_id": 0,
+        "refusal_reason": "AcquiredFaceNormalNotUpward",
+        "rejected_contacts": [],
+        "segment": 19,
+        "total_current_surface_load_n": 0.0,
+        "witness_contact_indices": []
+      },
+      {
+        "eligible_contact_indices": [],
+        "kind": "Refused",
+        "native_substep": 366,
+        "nearest_loaded_contact_index": 0,
+        "nearest_loaded_local_distance_m": 0.09000000357629134,
+        "original_point_ground_distance_m": 0.00240843954342352,
+        "patch_id": 1,
+        "refusal_reason": "AcquiredFaceNormalNotUpward",
+        "rejected_contacts": [],
+        "segment": 24,
+        "total_current_surface_load_n": 0.0,
+        "witness_contact_indices": []
+      }
+    ]
+  },
+  "firstNonfootLoaded": {
+    "nativeSubstep": 381,
+    "seconds": 1.5875,
+    "segments": [
+      "head"
+    ]
+  },
+  "maxCapSumNm": 760.0,
+  "maxAnatomicalCapRatio": 1.0,
+  "standingPosePassedSubsteps": 0,
+  "maximumPelvisHeightM": 0.9479480981826782,
+  "minimumPelvisHeightM": 0.10490351170301437,
+  "heelMaxReportedN": [
+    0,
+    0
+  ],
+  "a36PelvisHeightM": 0.9477012157440186,
+  "endpointPelvisHeightM": 0.11254525184631348,
+  "endpointLoadedSegments": [
+    "torso",
+    "head",
+    "leftHand",
+    "rightHand",
+    "leftForefoot",
+    "rightForefoot"
+  ],
+  "endpointMaximumLinearMps": 0.0013452868303472402,
+  "endpointMaximumAngularRadps": 0.012656563814407407,
+  "decision": "Existing reference sequence rejected for recovery: falls before extension and stays down through complete commands and final hold. No anatomical impossibility inferred.",
+  "firstFailureMeaning": "Capture-point diagnostic is an early imbalance indicator, not a demonstrated dynamic cause. No kernel physical-integrity refusal occurred.",
+  "lastCommandPhase": "complete standing reference and final hold emitted, standing never observed",
+  "additionalNativeStepsForAnalysis": 0,
+  "impactRecoveryQualified": false
+}
