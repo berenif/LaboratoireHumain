@@ -1,5 +1,16 @@
 # TODO
 
+**2026-10-15 continuation unique à 7 100 s — autorisation parent reçue :**
+
+- [x] Préserver le binaire physique et les gels historiques ; réduire uniquement
+  le superviseur, 49 tests purs/inertes réussis et contre-revue indépendante.
+- [x] Figer manifeste et autorisation actualisée ; 358 fichiers et 14 pièces
+  historiques vérifiés, budget global compatible sans remboursement.
+- [ ] Contrôler immédiatement les doublons puis lancer une seule fois ; fermer
+  sur refus de parité/prévision ou après la continuation et stabilité originale.
+- [ ] Archiver vidéo/mesures des seuls états calculés et pousser le verdict.
+  [Protocole autorisé](docs/evidence/coordination-transfer-native-7100-2026-10-15/protocol.md).
+
 **2026-10-15 admission physique conditionnelle — aucun lancement :**
 
 - [x] Vérifier le candidat `29df604`, 345 fichiers, 14 preuves protégées et
