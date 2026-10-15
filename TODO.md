@@ -1,5 +1,17 @@
 # TODO
 
+**2026-10-15 admission physique conditionnelle — aucun lancement :**
+
+- [x] Vérifier le candidat `29df604`, 345 fichiers, 14 preuves protégées et
+  l'absence de claim/sortie/processus physique détecté.
+- [x] Réconcilier le plafond global : 7 844 pas débités, 292 156 disponibles ;
+  délai planifiable prudent 7 104,048643 s, inférieur aux 7 200 s du gel.
+- [x] Arrêter avant toute réservation ou exécution, conformément à la condition
+  du parent ; familles closes et critères inchangés.
+- [ ] Décider d'un nouveau gel temporel compatible et de son autorisation liée
+  au SHA, puis seulement effectuer la continuation physique unique.
+  [Chiffres, preuves et blocage](docs/coordination-transfer-budget-decision-2026-10-15.md).
+
 **2026-10-15 candidat figé depuis l'accroupi observé — préparation globale ouverte :**
 
 - [x] Archiver A36, commandes réellement installées et provenance massique ;
