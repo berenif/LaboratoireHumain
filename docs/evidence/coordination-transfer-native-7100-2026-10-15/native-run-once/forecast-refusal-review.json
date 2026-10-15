@@ -1,0 +1,704 @@
+{
+  "schema": "laboratoirehumain.closed-forecast-refusal-review.v1",
+  "created_utc": "2026-10-15T14:28:37.333792+00:00",
+  "scope": "Read-only causal diagnosis of the already closed sole native trial. No candidate edits, tests, simulation, FK, assembly, or retry. Only the two review deliverables were written.",
+  "source_files": [
+    {
+      "path": "docs/evidence/coordination-transfer-native-7100-2026-10-15/native-run-once/native-trace.jsonl",
+      "sha256": "7561d3dd93743f37e07c99d91adad1a9ef7cf41b746a98d5e71f93e3f4092c96"
+    },
+    {
+      "path": "docs/evidence/coordination-transfer-native-7100-2026-10-15/native-run-once/native-result.json",
+      "sha256": "7da774742c4ef54420efbbbb4991de4afbe640a203463ebe6841e507e00bb19e"
+    },
+    {
+      "path": "rust/crates/sim/src/recovery/planner/transfer_adapter.rs",
+      "sha256": "70fb9feedf19784a4e9e076768695ae9f29f7c88a6306a51e71da16bafe15e90"
+    },
+    {
+      "path": "rust/crates/sim/src/recovery/planner/support_state.rs",
+      "sha256": "19607d6e8d19ca66579e1c9a830ee8e711bac3e7ce17d907f1e071a7b89b872f"
+    },
+    {
+      "path": "rust/crates/sim/src/recovery/planner/native_observation.rs",
+      "sha256": "6b8008b50fe9614af1406eb361a9b4e377ecb03c6cf84b3ccddef0619c3edd74"
+    },
+    {
+      "path": "rust/crates/sim/src/recovery/planner/load_transfer.rs",
+      "sha256": "555c93dae299b029cf8e78f5e048833de2bb8f989e3fadf366bfa3705582fcee"
+    },
+    {
+      "path": "rust/crates/sim/src/recovery/planner/transfer_worker.rs",
+      "sha256": "44e215fc69a5218a42120c74c5175c9be2281d0d500cecf1e227fad498258b99"
+    },
+    {
+      "path": "rust/crates/sim/src/lib.rs",
+      "sha256": "d87e6ab2dc4b868443e319ea2eaa882cbe14e05934cba6f7b6e29b94e664e46e"
+    }
+  ],
+  "native_accounting": {
+    "total": 130,
+    "technical_prefix": 36,
+    "technical_parity": 16,
+    "technical_predicted": 8,
+    "technical_actual_counterparts": 8,
+    "main_prefix": 36,
+    "main_forecast": 42,
+    "main_actual_transfer_after_A36": 0,
+    "requested_forecast": 480,
+    "successful_completed_horizon": null,
+    "technical_pairs_passed": [
+      true,
+      true
+    ],
+    "counts_reconciled": true
+  },
+  "refusal": {
+    "native_clock": 78,
+    "time_since_origin_s": 0.325,
+    "time_after_A36_s": 0.175,
+    "next_command_rejected_before_integration": 78,
+    "last_command_installed": 77,
+    "branch": "native copied forecast 1",
+    "reported": "Fixed forecast refused: Kernel(\"Failure { tick: 19, substep: 2, check: \\\"ownership\\\", offending: \\\"Retained material contact lost or candidate's original planted-foot drift envelope exceeded\\\", measured: 0.0, threshold: 0.0 }\")",
+    "specific_predicate": "current_contact_present == false for retained patch 0 on leftForefoot segment 19",
+    "drift_predicate_triggered": false,
+    "match_tolerance_m": 0.012,
+    "drift_limit_m": 0.01,
+    "policy_stop_satisfied": true,
+    "trial_closed_without_retry": true
+  },
+  "clocks": {
+    "support_observation": 78,
+    "endpoint_outer_native_substep": 78,
+    "owner_decision_last_observed": 77,
+    "owner_last_command": 77,
+    "snapshot_simulation_time_s": 0.325,
+    "snapshot_contact_time_s": 0.31666666666666665,
+    "snapshot_stamp": {
+      "generation": 1,
+      "schema": 4,
+      "sequence": 79,
+      "tick": 19
+    },
+    "explanation": "observe clones decision state and commits only on acceptance. At failed observation 78 the saved owner policy/tracker remain at77. snapshot reads body poses and velocities directly from world.bodies and simulation_time_s=.325, both current at78. Its contact_time_s=.316666667 and contacts cache correspond to the last completed outer tick76. Distinguish these fields instead of assigning one clock to the entire snapshot; cloned cached diagnostic fields may also lag while recovery status is refreshed."
+  },
+  "patches": [
+    {
+      "patch_id": 0,
+      "segment": 19,
+      "segment_name": "leftForefoot",
+      "retained_local_point_m": [
+        -0.04500000923871994,
+        -0.04500000923871994,
+        0.060000013560056686
+      ],
+      "original_world_anchor_m": [
+        -0.1358211636543274,
+        -0.005277503281831741,
+        0.04830962046980858
+      ],
+      "derived_world_point_at_78_m": [
+        -0.1358983763718787,
+        -0.00392981892578571,
+        0.048479845192078465
+      ],
+      "derived_displacement_at_78_m": [
+        -7.721271755131709e-05,
+        0.0013476843560460312,
+        0.00017022472226988633
+      ],
+      "derived_tangential_drift_at_78_m": 0.0001869177889434802,
+      "exceeds_10mm_drift_limit": false,
+      "observations": [
+        {
+          "native_substep": 77,
+          "nearest_current_local_distance_m": 7.450580596923828e-09,
+          "current_contact_present_at_12mm": true,
+          "loaded_current_contacts": [
+            {
+              "distance_from_retained_local_m": 7.450580596923828e-09,
+              "current_upward_load_n": 65.34145491279524,
+              "local_point_m": [
+                -0.04500000923871994,
+                -0.04500001668930054,
+                0.060000013560056686
+              ],
+              "upward_normal": 1.0,
+              "world_point_m": [
+                -0.13592493534088135,
+                -0.0043950155377388,
+                0.04837341979146004
+              ]
+            },
+            {
+              "distance_from_retained_local_m": 0.09000001847744027,
+              "current_upward_load_n": 65.28257506357114,
+              "local_point_m": [
+                0.04500000923871994,
+                -0.04500001668930054,
+                0.06000000983476639
+              ],
+              "upward_normal": 1.0,
+              "world_point_m": [
+                -0.04592727869749069,
+                -0.004213571548461914,
+                0.048998743295669556
+              ]
+            },
+            {
+              "distance_from_retained_local_m": 0.12020403627110338,
+              "current_upward_load_n": 37.341694076419934,
+              "local_point_m": [
+                -0.052000027149915695,
+                -0.04500001296401024,
+                -0.06000002846121788
+              ],
+              "upward_normal": 1.0,
+              "world_point_m": [
+                -0.14209841191768646,
+                -0.0009065046906471252,
+                -0.07162126898765564
+              ]
+            },
+            {
+              "distance_from_retained_local_m": 0.15430168777029604,
+              "current_upward_load_n": 36.65604638612029,
+              "local_point_m": [
+                0.0520000085234642,
+                -0.04500001668930054,
+                -0.060000017285346985
+              ],
+              "upward_normal": 1.0,
+              "world_point_m": [
+                -0.038101110607385635,
+                -0.0006968379020690918,
+                -0.07089865952730179
+              ]
+            }
+          ],
+          "persistent_load_n": 204.6217803955078,
+          "loaded_substeps": 77
+        },
+        {
+          "native_substep": 78,
+          "nearest_current_local_distance_m": 0.09000002592802109,
+          "current_contact_present_at_12mm": false,
+          "loaded_current_contacts": [
+            {
+              "distance_from_retained_local_m": 0.09000002592802109,
+              "current_upward_load_n": 0.9898881842999362,
+              "local_point_m": [
+                0.04500001668930054,
+                -0.04500000178813934,
+                0.06000002101063728
+              ],
+              "upward_normal": 1.0,
+              "world_point_m": [
+                -0.04590063542127609,
+                -0.003751356154680252,
+                0.04909583181142807
+              ]
+            },
+            {
+              "distance_from_retained_local_m": 0.12020403999007179,
+              "current_upward_load_n": 47.452341227483835,
+              "local_point_m": [
+                -0.052000027149915695,
+                -0.04500001668930054,
+                -0.06000003218650818
+              ],
+              "upward_normal": 1.0,
+              "world_point_m": [
+                -0.1420830339193344,
+                -0.000979892909526825,
+                -0.07152873277664185
+              ]
+            },
+            {
+              "distance_from_retained_local_m": 0.15430169479588163,
+              "current_upward_load_n": 37.110702248104545,
+              "local_point_m": [
+                0.0520000196993351,
+                -0.04500001668930054,
+                -0.060000017285346985
+              ],
+              "upward_normal": 1.0,
+              "world_point_m": [
+                -0.038085632026195526,
+                -0.0007736757397651672,
+                -0.07081691920757294
+              ]
+            }
+          ],
+          "persistent_load_n": 85.55293273925781,
+          "loaded_substeps": 78
+        }
+      ]
+    },
+    {
+      "patch_id": 1,
+      "segment": 24,
+      "segment_name": "rightForefoot",
+      "retained_local_point_m": [
+        -0.04500001296401024,
+        -0.045000024139881134,
+        0.06000002473592758
+      ],
+      "original_world_anchor_m": [
+        0.044462330639362335,
+        -0.004912633448839188,
+        0.04783875495195389
+      ],
+      "derived_world_point_at_78_m": [
+        0.04454288198288696,
+        -0.0037429167062479093,
+        0.04802471100514389
+      ],
+      "derived_displacement_at_78_m": [
+        8.055134352462356e-05,
+        0.0011697167425912783,
+        0.00018595605319000202
+      ],
+      "derived_tangential_drift_at_78_m": 0.00020265283778330068,
+      "exceeds_10mm_drift_limit": false,
+      "observations": [
+        {
+          "native_substep": 77,
+          "nearest_current_local_distance_m": 9.125060374972142e-09,
+          "current_contact_present_at_12mm": true,
+          "loaded_current_contacts": [
+            {
+              "distance_from_retained_local_m": 9.125060374972142e-09,
+              "current_upward_load_n": 10.121563741185172,
+              "local_point_m": [
+                -0.04500001668930054,
+                -0.04500001668930054,
+                0.06000002101063728
+              ],
+              "upward_normal": 1.0,
+              "world_point_m": [
+                0.04453377425670624,
+                -0.003974802792072296,
+                0.0479838065803051
+              ]
+            },
+            {
+              "distance_from_retained_local_m": 0.09000004827976235,
+              "current_upward_load_n": 19.92371395628156,
+              "local_point_m": [
+                0.04500003531575203,
+                -0.045000024139881134,
+                0.06000002101063728
+              ],
+              "upward_normal": 1.0,
+              "world_point_m": [
+                0.13453030586242676,
+                -0.003459647297859192,
+                0.048590224236249924
+              ]
+            },
+            {
+              "distance_from_retained_local_m": 0.12020403955619173,
+              "current_upward_load_n": 41.66595122470216,
+              "local_point_m": [
+                -0.0520000234246254,
+                -0.04500001296401024,
+                -0.06000002101063728
+              ],
+              "upward_normal": 1.0,
+              "world_point_m": [
+                0.03832383453845978,
+                -0.000785239040851593,
+                -0.07201732695102692
+              ]
+            },
+            {
+              "distance_from_retained_local_m": 0.15430170459790304,
+              "current_upward_load_n": 26.644685666912796,
+              "local_point_m": [
+                0.0520000085234642,
+                -0.04500000551342964,
+                -0.06000002473592758
+              ],
+              "upward_normal": 1.0,
+              "world_point_m": [
+                0.14231979846954346,
+                -0.00018993765115737915,
+                -0.07131658494472504
+              ]
+            }
+          ],
+          "persistent_load_n": 98.35591125488281,
+          "loaded_substeps": 77
+        },
+        {
+          "native_substep": 78,
+          "nearest_current_local_distance_m": 1.3938759963117321e-08,
+          "current_contact_present_at_12mm": true,
+          "loaded_current_contacts": [
+            {
+              "distance_from_retained_local_m": 1.3938759963117321e-08,
+              "current_upward_load_n": 19.137428000852495,
+              "local_point_m": [
+                -0.04500001668930054,
+                -0.04500001296401024,
+                0.06000003218650818
+              ],
+              "upward_normal": 1.0,
+              "world_point_m": [
+                0.04454288259148598,
+                -0.003742903470993042,
+                0.04802471026778221
+              ]
+            },
+            {
+              "distance_from_retained_local_m": 0.09000003337860116,
+              "current_upward_load_n": 26.528699802600602,
+              "local_point_m": [
+                0.045000020414590836,
+                -0.045000020414590836,
+                0.06000002473592758
+              ],
+              "upward_normal": 1.0,
+              "world_point_m": [
+                0.13453949987888336,
+                -0.0032383501529693604,
+                0.04862453043460846
+              ]
+            },
+            {
+              "distance_from_retained_local_m": 0.12020404721106803,
+              "current_upward_load_n": 40.789712924301696,
+              "local_point_m": [
+                -0.052000027149915695,
+                -0.04500001668930054,
+                -0.06000002846121788
+              ],
+              "upward_normal": 1.0,
+              "world_point_m": [
+                0.03832608833909035,
+                -0.0008238703012466431,
+                -0.0719829648733139
+              ]
+            },
+            {
+              "distance_from_retained_local_m": 0.15430172099093498,
+              "current_upward_load_n": 28.113402450130753,
+              "local_point_m": [
+                0.05200003460049629,
+                -0.04500001296401024,
+                -0.06000002473592758
+              ],
+              "upward_normal": 1.0,
+              "world_point_m": [
+                0.14232219755649567,
+                -0.0002408139407634735,
+                -0.07128982990980148
+              ]
+            }
+          ],
+          "persistent_load_n": 114.56924438476562,
+          "loaded_substeps": 78
+        }
+      ]
+    }
+  ],
+  "heel_goal_points": [
+    {
+      "segment": 18,
+      "local_point_m": [
+        -0.04399999976158142,
+        -0.04500000178813934,
+        -0.07500000298023224
+      ],
+      "derived_world_point_at_78_m": [
+        -0.13308622015273358,
+        0.020944878320184483,
+        -0.22348655368806974
+      ],
+      "height_above_support_at_78_m": 0.020944878320184483,
+      "current_heel_region_load_n": 0.0,
+      "loaded_heel_substeps": 0
+    },
+    {
+      "segment": 23,
+      "local_point_m": [
+        -0.04399999976158142,
+        -0.04500000178813934,
+        -0.07500000298023224
+      ],
+      "derived_world_point_at_78_m": [
+        0.047214541846351134,
+        0.02143472684961708,
+        -0.22396011173772998
+      ],
+      "height_above_support_at_78_m": 0.02143472684961708,
+      "current_heel_region_load_n": 0.0,
+      "loaded_heel_substeps": 0
+    }
+  ],
+  "endpoint_support": {
+    "center_of_mass_m": [
+      -0.0020006422419101,
+      0.9756494164466858,
+      0.04435629025101662
+    ],
+    "center_of_mass_velocity_mps": [
+      -0.007241427898406982,
+      -0.047013577073812485,
+      0.10678425431251526
+    ],
+    "derived_capture_point_m": [
+      -0.0042843293579163605,
+      0.9608230173238759,
+      0.07803222118439972
+    ],
+    "weight_n": 708.281982421875,
+    "local_diagnostic": {
+      "all_conditions_now": false,
+      "capture_inside": false,
+      "com_inside": true,
+      "consecutive_stable_substeps": 0,
+      "first_local_conditions_s": null,
+      "heel_loaded_substeps": [
+        0,
+        0
+      ],
+      "heel_loads_n": [
+        -0.0,
+        -0.0
+      ],
+      "heel_persistent": [
+        false,
+        false
+      ],
+      "maximum_angular_radps": 0.8976440832762818,
+      "maximum_linear_mps": 0.46772642615883503,
+      "native_substep": 78,
+      "nonfoot_current_load_n": -0.0,
+      "nonfoot_persistent_segments": [],
+      "passed": false,
+      "support_fraction": 0.8430020843354887,
+      "support_load_n": 597.0831874789126
+    },
+    "foot_segments": [
+      {
+        "segment": 18,
+        "id": "leftFoot",
+        "persistent_load_n": 214.53286743164062,
+        "loaded_substeps": 55,
+        "current_contacts": 2
+      },
+      {
+        "segment": 19,
+        "id": "leftForefoot",
+        "persistent_load_n": 85.55293273925781,
+        "loaded_substeps": 78,
+        "current_contacts": 3
+      },
+      {
+        "segment": 23,
+        "id": "rightFoot",
+        "persistent_load_n": 182.4281463623047,
+        "loaded_substeps": 55,
+        "current_contacts": 2
+      },
+      {
+        "segment": 24,
+        "id": "rightForefoot",
+        "persistent_load_n": 114.56924438476562,
+        "loaded_substeps": 78,
+        "current_contacts": 4
+      }
+    ]
+  },
+  "preview_history_summary": {
+    "first_observed_capture_outside_substep": 45,
+    "com_inside_every_preview_sample": true,
+    "heel_regions_loaded_at_any_sample": false,
+    "support_fraction_min": 0.8153509162763032,
+    "support_fraction_max": 1.088125908824177,
+    "maximum_recorded_installed_anatomical_cap_ratio": 1.0,
+    "local_success": false,
+    "continuation_event_substep": null,
+    "original_terminal_passed": false
+  },
+  "last_observations": [
+    {
+      "observation_substep": 72,
+      "post_step_trace_substep": 73,
+      "foot_support_load_n": 649.0482958530032,
+      "foot_support_fraction": 0.9163699091055089,
+      "capture_inside": false,
+      "capture_xz_m": [
+        -0.004412317835430316,
+        0.07010271690670646
+      ],
+      "retained_patch_present": [
+        true,
+        true
+      ],
+      "retained_patch_tangential_drift_m": [
+        0.00013555144584956056,
+        8.04465697822889e-05
+      ],
+      "heel_height_above_support_m": [
+        0.02172796539554859,
+        0.022167696840062034
+      ]
+    },
+    {
+      "observation_substep": 73,
+      "post_step_trace_substep": 74,
+      "foot_support_load_n": 722.0780949700871,
+      "foot_support_fraction": 1.0194782768595048,
+      "capture_inside": false,
+      "capture_xz_m": [
+        -0.004482883121188472,
+        0.07126247463695967
+      ],
+      "retained_patch_present": [
+        true,
+        true
+      ],
+      "retained_patch_tangential_drift_m": [
+        0.00012507914758326738,
+        6.989016959727113e-05
+      ],
+      "heel_height_above_support_m": [
+        0.021575544677696623,
+        0.02204053983858749
+      ]
+    },
+    {
+      "observation_substep": 74,
+      "post_step_trace_substep": 75,
+      "foot_support_load_n": 577.4983633496722,
+      "foot_support_fraction": 0.8153509162763032,
+      "capture_inside": false,
+      "capture_xz_m": [
+        -0.004348583822348605,
+        0.07271997196521025
+      ],
+      "retained_patch_present": [
+        true,
+        true
+      ],
+      "retained_patch_tangential_drift_m": [
+        0.00011703966791091652,
+        0.00011714834014818032
+      ],
+      "heel_height_above_support_m": [
+        0.021459856862948497,
+        0.021933824766214235
+      ]
+    },
+    {
+      "observation_substep": 75,
+      "post_step_trace_substep": 76,
+      "foot_support_load_n": 768.7800936292064,
+      "foot_support_fraction": 1.0854152903910759,
+      "capture_inside": false,
+      "capture_xz_m": [
+        -0.004452007593370098,
+        0.07400121977781414
+      ],
+      "retained_patch_present": [
+        true,
+        true
+      ],
+      "retained_patch_tangential_drift_m": [
+        0.00010355165864079862,
+        0.00011744675926793796
+      ],
+      "heel_height_above_support_m": [
+        0.021305933066277455,
+        0.021787073390328142
+      ]
+    },
+    {
+      "observation_substep": 76,
+      "post_step_trace_substep": 77,
+      "foot_support_load_n": 765.4292279630556,
+      "foot_support_fraction": 1.080684313535371,
+      "capture_inside": false,
+      "capture_xz_m": [
+        -0.004427572464582941,
+        0.07525073587271636
+      ],
+      "retained_patch_present": [
+        true,
+        true
+      ],
+      "retained_patch_tangential_drift_m": [
+        0.00011146306102537577,
+        0.00011310225731528752
+      ],
+      "heel_height_above_support_m": [
+        0.02118007283856639,
+        0.021661285523197495
+      ]
+    },
+    {
+      "observation_substep": 77,
+      "post_step_trace_substep": 78,
+      "foot_support_load_n": 664.079052742173,
+      "foot_support_fraction": 0.9375913396405255,
+      "capture_inside": false,
+      "capture_xz_m": [
+        -0.004397947708733852,
+        0.07649587320216732
+      ],
+      "retained_patch_present": [
+        true,
+        true
+      ],
+      "retained_patch_tangential_drift_m": [
+        0.00012182121862883484,
+        0.0001616993750946301
+      ],
+      "heel_height_above_support_m": [
+        0.021054730748819514,
+        0.021559729618564526
+      ]
+    },
+    {
+      "observation_substep": 78,
+      "source": "preview-transfer-end.support; direct arithmetic over archived pose for material drift and heel height",
+      "foot_support_load_n": 597.0831874789126,
+      "foot_support_fraction": 0.8430020843354887,
+      "capture_inside": false,
+      "capture_xz_m": [
+        -0.0042843293579163605,
+        0.07803222118439972
+      ],
+      "retained_patch_present": [
+        false,
+        true
+      ],
+      "retained_patch_tangential_drift_m": [
+        0.0001869177889434802,
+        0.00020265283778330068
+      ],
+      "heel_height_above_support_m": [
+        0.020944878320184483,
+        0.02143472684961708
+      ]
+    }
+  ],
+  "interpretation": {
+    "guard": "The intended conservative retained material point guard fired. The missing left point was loaded at77 but has no matching selected and positively loaded contact at78. Three other points still support the left forefoot. Tangential anchor drift is far below10mm for both retained points.",
+    "physical_limits": "This evidence establishes loss of the required material-point correspondence, not complete foot separation or global support impossibility. The stored filtered contacts do not identify whether the omitted point became zero-impulse, was deselected by the manifold, or was excluded by another observation filter. Its pose-transformed location remains below the floor, so do not call it a geometrically lifted foot.",
+    "integrity_flag": "outcome.integrity_ok is defined as result.is_ok() && exact && reconciled; a controlled policy refusal therefore makes it false even when technical parity and exact counters passed. This flag alone is not evidence of corrupted files, dynamics mismatch, or uncounted integration.",
+    "no_success": "All42 native preview samples have zero heel-region load and no local stable milestone; capture leaves the support region at45. No complete forecast receipt is issued and no transfer command is admitted to the main actual branch.",
+    "nonconclusions": "No inference of anatomical impossibility, universal hand/knee necessity, or need for greater friction/strength follows from this one refused candidate."
+  },
+  "derivation": {
+    "material_point": "Use the stored body position/rotation only: p_world = translation + p_local + 2*(w*cross(q_xyz,p_local) + cross(q_xyz,cross(q_xyz,p_local))). This is a rigid transform over an already archived measured pose, not a kinematic tree, FK call, or physical step.",
+    "matching": "Minimum Euclidean local-point distance over archived contacts with upward_normal >=0.65 and current_upward_load_n >0; compare with0.012m.",
+    "drift": "hypot(world_x-anchor_x, world_z-anchor_z); compare with0.01m.",
+    "capture": "CoM + CoM_velocity * sqrt(max(CoM_y-support_height,0.2)/9.81), directly from archived support values.",
+    "endpoint_no_replay": "No Rust code, physical binary, simulation constructor, FK routine, or candidate was executed."
+  }
+}

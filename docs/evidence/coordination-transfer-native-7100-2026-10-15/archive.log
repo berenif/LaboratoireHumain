@@ -1,0 +1,30 @@
+{
+  "schema": 1,
+  "createdUtc": "2026-10-15T14:24:15.498602+00:00",
+  "scope": "Lossless compression of existing closed-run bytes only",
+  "nativeStepsDuringArchiving": 0,
+  "newWorlds": 0,
+  "fkEvaluations": 0,
+  "files": [
+    {
+      "originalPath": "/workspace/LaboratoireHumain/docs/evidence/coordination-transfer-native-7100-2026-10-15/native-run-once/native-result.json",
+      "originalBytes": 135076766,
+      "originalSha256": "7da774742c4ef54420efbbbb4991de4afbe640a203463ebe6841e507e00bb19e",
+      "archivePath": "/workspace/LaboratoireHumain/docs/evidence/coordination-transfer-native-7100-2026-10-15/native-run-once/native-result.json.gz",
+      "archiveBytes": 9046007,
+      "archiveSha256": "89c4f37c7182f1c600dbfdae8ad4b0d0414d703205fbc2d91061764d69d6faa0",
+      "roundTripBytesVerified": true,
+      "originalRetainedLocally": true
+    },
+    {
+      "originalPath": "/workspace/LaboratoireHumain/docs/evidence/coordination-transfer-native-7100-2026-10-15/native-run-once/native-trace.jsonl",
+      "originalBytes": 17505466,
+      "originalSha256": "7561d3dd93743f37e07c99d91adad1a9ef7cf41b746a98d5e71f93e3f4092c96",
+      "archivePath": "/workspace/LaboratoireHumain/docs/evidence/coordination-transfer-native-7100-2026-10-15/native-run-once/native-trace.jsonl.gz",
+      "archiveBytes": 2747042,
+      "archiveSha256": "5daf337c1cf4e07938b1996e2febf752a706415873f2efd5e55454ec4a0a76fc",
+      "roundTripBytesVerified": true,
+      "originalRetainedLocally": true
+    }
+  ]
+}

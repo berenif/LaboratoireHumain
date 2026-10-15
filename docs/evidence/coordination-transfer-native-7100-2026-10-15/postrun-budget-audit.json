@@ -1,0 +1,366 @@
+{
+  "schema": "laboratoirehumain.transfer-7100-postrun-budget-audit.v1",
+  "auditedUtc": "2026-10-15T14:26:44.913470+00:00",
+  "scope": "Independent read-only examination of completed physical run. Writes only these two postrun audit documents; no new worker, test, build, FK, world or integration.",
+  "decision": "CLOSED_REFUSED_CORRECTLY_WITHOUT_RETRY_OR_REFUND",
+  "status": "closed-refused",
+  "operationId": "ca12a39c-2e8e-423b-ae8f-61babcb55686",
+  "authorizationId": "transfer-a36-distinct-2026-10-15-7100-single-history",
+  "manifestSha256": "80b41aaf7d2f2aa72e91891f97e7ea40d6cf6f3e8538f3f62d0afcba352342b9",
+  "authorizationSha256": "217b8d849369ad084cf7da22c94c820b9472c6d97b6b0e96cd12b674517fd203",
+  "physicalBinarySha256": "63e0e035d38d02f762c69b9dacb65d61e179c72ced50f5facd0bc29c64b9e8b5",
+  "execution": {
+    "workerPid": 5506,
+    "workerPidAbsentAtAudit": true,
+    "supervisorStartedUtc": "2026-10-15T14:21:07.491954+00:00",
+    "closedUtc": "2026-10-15T14:21:17.868896+00:00",
+    "elapsedWallSeconds": "10.376937300003192",
+    "maximumWallSeconds": 7100,
+    "countedNativeStepsExact": 130,
+    "technicalSteps": 52,
+    "technicalPrefixSteps": 36,
+    "technicalParitySteps": 16,
+    "historyPermitSteps": 78,
+    "realHistoryPrefixSteps": 36,
+    "realHistoryStepsBeyondA36": 0,
+    "forecastRequestedSteps": 480,
+    "forecastActualSteps": 42,
+    "forecastCalls": 1,
+    "forecastLastNativeClock": 78,
+    "forecastPhysicalDurationSeconds": "0.175",
+    "firstLocalReadySubstep": null,
+    "nativeRefusal": "Fixed forecast refused: Kernel(\"Failure { tick: 19, substep: 2, check: \\\"ownership\\\", offending: \\\"Retained material contact lost or candidate's original planted-foot drift envelope exceeded\\\", measured: 0.0, threshold: 0.0 }\")",
+    "outcome": {
+      "history_completed": false,
+      "integrity_ok": false,
+      "local_success": false,
+      "original_terminal_passed": false,
+      "technical_parity_passed": true
+    }
+  },
+  "journalValidation": {
+    "ledgerPayloadSha256Verified": true,
+    "eventHashChainVerified": true,
+    "events": [
+      {
+        "sequence": 0,
+        "event": "reserve-two-budgets-before-spawn",
+        "utc": "2026-10-15T14:21:07.497348+00:00"
+      },
+      {
+        "sequence": 1,
+        "event": "bind-both-reservations-to-single-worker-before-operation",
+        "utc": "2026-10-15T14:21:07.566953+00:00"
+      },
+      {
+        "sequence": 2,
+        "event": "record-single-transfer-operation-durably-before-send",
+        "utc": "2026-10-15T14:21:07.625455+00:00"
+      },
+      {
+        "sequence": 3,
+        "event": "archive-bounded-receipt-before-outcome-gates",
+        "utc": "2026-10-15T14:21:17.796226+00:00"
+      },
+      {
+        "sequence": 4,
+        "event": "recover-durable-native-checkpoints-after-worker-stop",
+        "utc": "2026-10-15T14:21:17.809822+00:00"
+      },
+      {
+        "sequence": 5,
+        "event": "close-without-refund-or-renewal",
+        "utc": "2026-10-15T14:21:17.868896+00:00"
+      }
+    ],
+    "oneOperationSent": true,
+    "protocolRows": 3,
+    "nativeAccounting": [
+      {
+        "name": "technical",
+        "path": "docs/evidence/coordination-transfer-native-7100-2026-10-15/native-run-once/native-result.json.technical.accounting.jsonl",
+        "sha256": "f5771e4f6966ad3d44d9e0b32fb2675346bb60f61c566e8638a6a2cfb8c55609",
+        "rows": 105,
+        "events": {
+          "permit-activated": 1,
+          "before-integration": 52,
+          "after-integration": 52
+        },
+        "completedNativeSteps": 52,
+        "admittedNativeSteps": 52,
+        "exact": true,
+        "abandonedNativeSlots": 0,
+        "nextNativeClock": 40
+      },
+      {
+        "name": "history",
+        "path": "docs/evidence/coordination-transfer-native-7100-2026-10-15/native-run-once/native-result.json.history.accounting.jsonl",
+        "sha256": "1b90ac9ebbc3d0be0fe709d79575494962a1eda153c7db99d3c6dd4155c00371",
+        "rows": 158,
+        "events": {
+          "permit-activated": 1,
+          "before-integration": 78,
+          "after-integration": 78,
+          "abandon-unused-tick-slots-without-refund": 1
+        },
+        "completedNativeSteps": 78,
+        "admittedNativeSteps": 78,
+        "exact": true,
+        "abandonedNativeSlots": 2,
+        "nextNativeClock": 78
+      }
+    ],
+    "technicalParityArchives": [
+      {
+        "pair": 0,
+        "reportedPassed": true,
+        "archivedActualAndPredictedExactStructuredEquality": true,
+        "framesCompared": 4,
+        "initialCompared": true,
+        "postTickCompared": true,
+        "transferScopeCompared": true
+      },
+      {
+        "pair": 1,
+        "reportedPassed": true,
+        "archivedActualAndPredictedExactStructuredEquality": true,
+        "framesCompared": 4,
+        "initialCompared": true,
+        "postTickCompared": true,
+        "transferScopeCompared": true
+      }
+    ],
+    "traceRows": 134,
+    "traceKinds": {
+      "prefix-start": 2,
+      "actual-history": 72,
+      "transfer-verify-copy": 8,
+      "transfer-verify-actual": 8,
+      "transfer-preview-step": 42,
+      "preview-transfer-end": 1,
+      "forecast-end": 1
+    },
+    "traceStates": 131,
+    "traceDuplicateEndpointAddsNativeSteps": false,
+    "traceEndpointExplanation": "130 after-integration states plus one repeated endpoint at clock78; event and accounting journals establish130 integrations, not131.",
+    "snapshotEqualsLastEventAndRunResult": true
+  },
+  "budget": {
+    "historicalChargedSteps": 7844,
+    "newChargedSteps": 131096,
+    "refundSteps": 0,
+    "newExecutedStepsExact": 130,
+    "unusedButStillChargedSteps": 130966,
+    "cumulativeChargedSteps": 138940,
+    "globalNativeLimit": 300000,
+    "arithmeticRemainingNativeSteps": 161060,
+    "remainingStepsGrantAnotherRun": false,
+    "historicalKnownExecutedSteps": 2108,
+    "cumulativeKnownExecutedSteps": 2238,
+    "historicalExecutedExact": false,
+    "historicalHistorySlotsRemainClosed": true,
+    "distinctSuccessorHistoriesConsumed": 1,
+    "renewalAuthorized": false,
+    "historicalDocumentedWindowsSeconds": "21.951356994",
+    "newElapsedWallSeconds": "10.376937300003192",
+    "cumulativeDocumentedWindowsSeconds": "32.328294294003192",
+    "historicalConservativeAllowanceSeconds": 74,
+    "cumulativeConservativeWallAccountingSeconds": "106.328294294003192",
+    "authorizedNewCapPreservedSeconds": 7100,
+    "priorAdmissionProjectedMaximumFamilySeconds": "7195.951356994",
+    "wallNote": "Measured new supervisor duration includes startup and stopped-worker archival closure. The prior74s conservative allowance remains; no budget reset, no native refund, and no unused time or steps authorizes another launch."
+  },
+  "integrity": {
+    "manifests": [
+      {
+        "manifest": "docs/evidence/coordination-transfer-native-proposal-2026-10-13/manifest.json",
+        "sha256": "4f3708fd50cd4dabf473b7a6bff528ee11ad798cf25dfbeaf0f6141c156818f7",
+        "filesVerified": 345,
+        "mismatches": []
+      },
+      {
+        "manifest": "docs/evidence/coordination-transfer-native-7100-2026-10-15/manifest.json",
+        "sha256": "80b41aaf7d2f2aa72e91891f97e7ea40d6cf6f3e8538f3f62d0afcba352342b9",
+        "filesVerified": 358,
+        "mismatches": []
+      }
+    ],
+    "protectedHistoricalArtifacts": [
+      {
+        "path": "docs/evidence/coordination-prototype-2026-10-12/budget/ledger.json",
+        "sha256": "2afa69b3ae9c8ab8343f7dabdf46b955c8ac7b88aa259404958e25d49a72ef07",
+        "unchanged": true
+      },
+      {
+        "path": "docs/evidence/coordination-native-parity-2026-10-13/native-run/physical-ledger.json",
+        "sha256": "73b2e3bff52aadf0414be2f7a4a96fa4cd5da7b02de0945434e4f136bbf476a6",
+        "unchanged": true
+      },
+      {
+        "path": "docs/evidence/coordination-native-parity-renewal-2026-10-13/native-run/physical-ledger.json",
+        "sha256": "1411bfcc1a17caa681359cfb39d7c0429f2188375925c22ba4b037df96d44bc2",
+        "unchanged": true
+      },
+      {
+        "path": "docs/evidence/coordination-native-serialization-2026-10-13/native-run/physical-ledger.json",
+        "sha256": "191d3216953bfb4aca5b7abcea277454d7d97ad5b4ca72e28ffbc260399af250",
+        "unchanged": true
+      },
+      {
+        "path": "docs/evidence/coordination-local-pair-2026-10-13/budget/ledger.json",
+        "sha256": "e7c6831159ac1ae913a05f2af545a0521181d7142dbabd967908dfe7958fba97",
+        "unchanged": true
+      },
+      {
+        "path": "rust/target/release/deps/coordination_worker-60f2b83fe348a1d3",
+        "sha256": "1bb4b91ac8ebfbe382d9525e524b85040ca9890bc90a0ef0467f1ef2b64c8b57",
+        "unchanged": true
+      },
+      {
+        "path": "rust/target/release/deps/numeric_parity_worker-b68c9e5f8e8cfa37",
+        "sha256": "9e125785fad85b0befc9373c3116d66aa32e8050a998ce08974b0da29d2760cc",
+        "unchanged": true
+      },
+      {
+        "path": "rust/target/release/deps/numeric_parity_worker_serialization-360529b9ad4cba37",
+        "sha256": "83bddf95897acc6015de7d2947b04ee2f5aaf2eb49b4dcb85ba0a67764f95e1b",
+        "unchanged": true
+      },
+      {
+        "path": "rust/target/release/deps/coordination_local_pair_worker-bf2c98f759d9dc34",
+        "sha256": "c1c8a12825428758643a7f6e2fafb0a2710f7dca787c1daee07c27ec59849e9c",
+        "unchanged": true
+      },
+      {
+        "path": "docs/evidence/coordination-prototype-2026-10-12/frozen-manifest.json",
+        "sha256": "4a37d4afbfe3ecd51997208bf5fa7599106fd9c43650cb55f6bcf6400d4e1d29",
+        "unchanged": true
+      },
+      {
+        "path": "docs/evidence/coordination-native-parity-2026-10-13/manifest.json",
+        "sha256": "40e492a29d723118cb26990b9dd2866d498d9a1a5d5ae815d7aae1d9d92a407a",
+        "unchanged": true
+      },
+      {
+        "path": "docs/evidence/coordination-native-parity-renewal-2026-10-13/manifest.json",
+        "sha256": "7235b6916b2d669710b0339e474fc245b48cc4311dd893557f4c03164f3326a6",
+        "unchanged": true
+      },
+      {
+        "path": "docs/evidence/coordination-native-serialization-2026-10-13/manifest.json",
+        "sha256": "179bfe3cb58819cd2ba1b73642969c0eb2a343a052dee83ae89e2850e0830356",
+        "unchanged": true
+      },
+      {
+        "path": "docs/evidence/coordination-local-pair-2026-10-13/manifest.json",
+        "sha256": "2fbcb3db0cd1bccf14082e772b1efba63e567fe7fce35ed8cccbbbf2ac2cdde9",
+        "unchanged": true
+      }
+    ],
+    "ledgerTerminalFrozenFilesVerified": true,
+    "auditFrozenFilesAgainVerified": true
+  },
+  "noRetryEvidence": {
+    "candidateClaims": [
+      "docs/evidence/coordination-transfer-native-7100-2026-10-15/authorization-claim.json"
+    ],
+    "singleClaimSha256": "485b3827851402bc657bcb351ef9593d0ed79b2b93383f2fe64f90f88d9258e5",
+    "oldProposalClaimExists": false,
+    "oldProposalOutputExists": false,
+    "nativeOrCompilerProcessesDetected": [],
+    "workerPidExists": false,
+    "unreadableOtherExeLinks": [
+      {
+        "pid": 1,
+        "comm": "tail"
+      },
+      {
+        "pid": 2,
+        "comm": "cloud-agent-log"
+      },
+      {
+        "pid": 3,
+        "comm": "caas-prefix-tra"
+      },
+      {
+        "pid": 118,
+        "comm": "dockerd"
+      },
+      {
+        "pid": 171,
+        "comm": "containerd"
+      },
+      {
+        "pid": 441,
+        "comm": "codex"
+      },
+      {
+        "pid": 3953,
+        "comm": "git"
+      },
+      {
+        "pid": 4240,
+        "comm": "git"
+      },
+      {
+        "pid": 4780,
+        "comm": "git"
+      },
+      {
+        "pid": 5466,
+        "comm": "git"
+      },
+      {
+        "pid": 5983,
+        "comm": "codex-linux-san"
+      },
+      {
+        "pid": 5985,
+        "comm": "bwrap"
+      }
+    ],
+    "inspectionLimit": "Some unrelated service/sandbox/oldGit exe links denied; worker5506 path is absent and no visible candidate process name or execute invocation found. No denied link bypassed."
+  },
+  "evidence": [
+    {
+      "path": "docs/evidence/coordination-transfer-native-7100-2026-10-15/native-run-once/physical-ledger.json",
+      "sha256": "eec8dfa53045dcd38c593ec72d459e757ee3c8b6d3315be0707e263bd3eb2595"
+    },
+    {
+      "path": "docs/evidence/coordination-transfer-native-7100-2026-10-15/native-run-once/ledger-events.ndjson",
+      "sha256": "842de4a49ac6ede1e8cc5e54e898f7b7085bef57aa9bf7dc73a1551f73f0afc4"
+    },
+    {
+      "path": "docs/evidence/coordination-transfer-native-7100-2026-10-15/native-run-once/protocol.ndjson",
+      "sha256": "f3dbf872d26606a475d3f9e81dc3d62a812f219ac0debfb41ecb69573dfe14fb"
+    },
+    {
+      "path": "docs/evidence/coordination-transfer-native-7100-2026-10-15/native-run-once/native-result.json",
+      "sha256": "7da774742c4ef54420efbbbb4991de4afbe640a203463ebe6841e507e00bb19e"
+    },
+    {
+      "path": "docs/evidence/coordination-transfer-native-7100-2026-10-15/native-run-once/native-trace.jsonl",
+      "sha256": "7561d3dd93743f37e07c99d91adad1a9ef7cf41b746a98d5e71f93e3f4092c96"
+    },
+    {
+      "path": "docs/evidence/coordination-transfer-native-7100-2026-10-15/native-run-once/run-result.json",
+      "sha256": "03ce370f490418953dcb074fe4c1f1f3b170ea947818dec9b5224e8b4bdafd49"
+    },
+    {
+      "path": "docs/evidence/coordination-transfer-native-7100-2026-10-15/native-run-once/worker.stderr.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  ],
+  "interpretation": {
+    "technicalParityProvedForTwoFourStepPairs": true,
+    "firstPredictionAccepted": false,
+    "candidateActualTransferExecuted": false,
+    "localSuccessProved": false,
+    "fullStandProved": false,
+    "stabilityOneSecondProved": false,
+    "qualification24CasesProved": false,
+    "aggregateIntegrityFalseMeaning": "Receipt gate reports no accepted complete forecast/history; archival hashes and accounting remain valid. The native ownership refusal combines retained-contact loss or drift-envelope breach; zero measured/threshold are generic placeholders, not a measured zero physical violation."
+  },
+  "newNativeIntegrationsDuringAudit": 0,
+  "historicalFilesModified": false
+}

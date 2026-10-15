@@ -1,0 +1,308 @@
+{
+  "schema": 1,
+  "scope": "Closed native run; actual tracks separately labelled",
+  "sourcesSha256": {
+    "/workspace/LaboratoireHumain/docs/evidence/coordination-transfer-native-7100-2026-10-15/render_actual.py": "4d821b0789e7511f298fec5c10ae5418fdc283604d85569145e50d09fd14d0ba",
+    "/workspace/LaboratoireHumain/docs/evidence/coordination-local-pair-2026-10-13/render_archived.py": "4e3ba052685deb23b66bfe1383217b203fbd32f80be2b12eb88a6afb6dadc638",
+    "/workspace/LaboratoireHumain/docs/evidence/coordination-transfer-native-7100-2026-10-15/native-run-once/run-result.json": "03ce370f490418953dcb074fe4c1f1f3b170ea947818dec9b5224e8b4bdafd49",
+    "/workspace/LaboratoireHumain/docs/evidence/coordination-transfer-native-7100-2026-10-15/manifest.json": "80b41aaf7d2f2aa72e91891f97e7ea40d6cf6f3e8538f3f62d0afcba352342b9",
+    "/workspace/LaboratoireHumain/rust/crates/model/data/canonical-v1.json": "083c13b2cce2d6033a4fc05cba8da7e78bd89634fb306629f4b7a9cd4a177a65",
+    "/workspace/LaboratoireHumain/docs/evidence/coordination-transfer-native-7100-2026-10-15/native-run-once/native-result.json": "7da774742c4ef54420efbbbb4991de4afbe640a203463ebe6841e507e00bb19e",
+    "/workspace/LaboratoireHumain/docs/evidence/coordination-transfer-native-7100-2026-10-15/native-run-once/native-trace.jsonl": "7561d3dd93743f37e07c99d91adad1a9ef7cf41b746a98d5e71f93e3f4092c96",
+    "/usr/bin/ffmpeg": "e8a8d46f5225f3062cec7c07fb145d58ae73c603cb740dcd5bad34bfb54e455a"
+  },
+  "traceKindCounts": {
+    "event:prefix-start": 2,
+    "actual-history": 72,
+    "transfer-verify-copy": 8,
+    "transfer-verify-actual": 8,
+    "transfer-preview-step": 42,
+    "preview-transfer-end": 1,
+    "event:forecast-end": 1
+  },
+  "excludedPredictionRows": {
+    "copyRows": 8,
+    "forecastRows": 42,
+    "forecastEndpointRows": 1
+  },
+  "tracks": [
+    {
+      "name": "technical-prefix",
+      "label": "Préfixe technique rejoué — candidat pas encore appliqué",
+      "actualArchivedPoses": 36,
+      "firstNativeSubstep": 1,
+      "lastNativeSubstep": 36,
+      "sourceKinds": [
+        "actual-history"
+      ],
+      "refusals": []
+    },
+    {
+      "name": "technical-actual-1",
+      "label": "Contrepartie technique réelle 1 — aucun relevage qualifié",
+      "actualArchivedPoses": 4,
+      "firstNativeSubstep": 37,
+      "lastNativeSubstep": 40,
+      "sourceKinds": [
+        "transfer-verify-actual"
+      ],
+      "refusals": []
+    },
+    {
+      "name": "technical-actual-2",
+      "label": "Contrepartie technique réelle 2 — aucun relevage qualifié",
+      "actualArchivedPoses": 4,
+      "firstNativeSubstep": 37,
+      "lastNativeSubstep": 40,
+      "sourceKinds": [
+        "transfer-verify-actual"
+      ],
+      "refusals": []
+    },
+    {
+      "name": "main-history",
+      "label": "Histoire principale réellement exécutée",
+      "actualArchivedPoses": 36,
+      "firstNativeSubstep": 1,
+      "lastNativeSubstep": 36,
+      "sourceKinds": [
+        "actual-history"
+      ],
+      "refusals": []
+    }
+  ],
+  "nativeOutcome": {
+    "history_completed": false,
+    "integrity_ok": false,
+    "local_success": false,
+    "original_terminal_passed": false,
+    "technical_parity_passed": true
+  },
+  "nativeRefusal": "Fixed forecast refused: Kernel(\"Failure { tick: 19, substep: 2, check: \\\"ownership\\\", offending: \\\"Retained material contact lost or candidate's original planted-foot drift envelope exceeded\\\", measured: 0.0, threshold: 0.0 }\")",
+  "supervisorStatus": "closed-refused",
+  "supervisorError": "Refusal: Partial, unknown or refused native outcome; no continuation or retry",
+  "mainHistoryPresent": true,
+  "mainCandidateRows": 0,
+  "predictionCapturePolicy": "Only the last archived copied endpoint, clearly labelled; excluded from all actual videos and CSV",
+  "recipe": {
+    "milestones": {
+      "technical-prefix": [
+        1,
+        19,
+        36
+      ],
+      "technical-actual-1": [
+        37,
+        39,
+        40
+      ],
+      "technical-actual-2": [
+        37,
+        39,
+        40
+      ],
+      "main-history": [
+        1,
+        19,
+        36
+      ]
+    },
+    "videos": {
+      "technical-prefix": {
+        "created": true,
+        "sampledSubsteps": [
+          1,
+          13,
+          25,
+          36
+        ],
+        "encodedFrames": 35,
+        "encodedFps": 240,
+        "durationSeconds": 0.14583333333333334,
+        "startSubstep": 1,
+        "endSubstep": 36,
+        "endpointHeldPastEnd": false,
+        "command": [
+          "/usr/bin/ffmpeg",
+          "-nostdin",
+          "-v",
+          "error",
+          "-n",
+          "-f",
+          "rawvideo",
+          "-pixel_format",
+          "rgba",
+          "-video_size",
+          "960x600",
+          "-framerate",
+          "240",
+          "-i",
+          "pipe:0",
+          "-an",
+          "-c:v",
+          "libx264",
+          "-preset",
+          "veryfast",
+          "-crf",
+          "25",
+          "-pix_fmt",
+          "yuv420p",
+          "-video_track_timescale",
+          "240000",
+          "/workspace/LaboratoireHumain/docs/evidence/coordination-transfer-native-7100-2026-10-15/rendered/technical-prefix.mp4"
+        ]
+      },
+      "technical-actual-1": {
+        "created": true,
+        "sampledSubsteps": [
+          37,
+          40
+        ],
+        "encodedFrames": 3,
+        "encodedFps": 240,
+        "durationSeconds": 0.0125,
+        "startSubstep": 37,
+        "endSubstep": 40,
+        "endpointHeldPastEnd": false,
+        "command": [
+          "/usr/bin/ffmpeg",
+          "-nostdin",
+          "-v",
+          "error",
+          "-n",
+          "-f",
+          "rawvideo",
+          "-pixel_format",
+          "rgba",
+          "-video_size",
+          "960x600",
+          "-framerate",
+          "240",
+          "-i",
+          "pipe:0",
+          "-an",
+          "-c:v",
+          "libx264",
+          "-preset",
+          "veryfast",
+          "-crf",
+          "25",
+          "-pix_fmt",
+          "yuv420p",
+          "-video_track_timescale",
+          "240000",
+          "/workspace/LaboratoireHumain/docs/evidence/coordination-transfer-native-7100-2026-10-15/rendered/technical-actual-1.mp4"
+        ]
+      },
+      "technical-actual-2": {
+        "created": true,
+        "sampledSubsteps": [
+          37,
+          40
+        ],
+        "encodedFrames": 3,
+        "encodedFps": 240,
+        "durationSeconds": 0.0125,
+        "startSubstep": 37,
+        "endSubstep": 40,
+        "endpointHeldPastEnd": false,
+        "command": [
+          "/usr/bin/ffmpeg",
+          "-nostdin",
+          "-v",
+          "error",
+          "-n",
+          "-f",
+          "rawvideo",
+          "-pixel_format",
+          "rgba",
+          "-video_size",
+          "960x600",
+          "-framerate",
+          "240",
+          "-i",
+          "pipe:0",
+          "-an",
+          "-c:v",
+          "libx264",
+          "-preset",
+          "veryfast",
+          "-crf",
+          "25",
+          "-pix_fmt",
+          "yuv420p",
+          "-video_track_timescale",
+          "240000",
+          "/workspace/LaboratoireHumain/docs/evidence/coordination-transfer-native-7100-2026-10-15/rendered/technical-actual-2.mp4"
+        ]
+      },
+      "main-history": {
+        "created": true,
+        "sampledSubsteps": [
+          1,
+          13,
+          25,
+          36
+        ],
+        "encodedFrames": 35,
+        "encodedFps": 240,
+        "durationSeconds": 0.14583333333333334,
+        "startSubstep": 1,
+        "endSubstep": 36,
+        "endpointHeldPastEnd": false,
+        "command": [
+          "/usr/bin/ffmpeg",
+          "-nostdin",
+          "-v",
+          "error",
+          "-n",
+          "-f",
+          "rawvideo",
+          "-pixel_format",
+          "rgba",
+          "-video_size",
+          "960x600",
+          "-framerate",
+          "240",
+          "-i",
+          "pipe:0",
+          "-an",
+          "-c:v",
+          "libx264",
+          "-preset",
+          "veryfast",
+          "-crf",
+          "25",
+          "-pix_fmt",
+          "yuv420p",
+          "-video_track_timescale",
+          "240000",
+          "/workspace/LaboratoireHumain/docs/evidence/coordination-transfer-native-7100-2026-10-15/rendered/main-history.mp4"
+        ]
+      }
+    },
+    "separatePredictionEndpointSubstep": 78,
+    "numpyVersion": "2.3.5",
+    "matplotlibVersion": "3.10.8"
+  },
+  "outputsSha256": {
+    "actual-entry-a36.png": "e5175cb08e57c20c241cf7c3ac937c710bc475f1c4e57b28e0fa7c27182dbee8",
+    "actual-measurements.csv": "3deb7b6b21d4e473ab4b5bbfc2c35ffd1a46b82f9761e5e933cf598597bf2b97",
+    "actual-milestones.png": "e5dd040ba289efb75c0a2421f5d2ca31fa09b2a73538f09f4db259f96b50b78f",
+    "main-history-ffmpeg.stderr.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "main-history.mp4": "4d80bb496d9bf8f5873734c951c836d6ed2e750ac07739c16f34fa6849a01ae4",
+    "prediction-endpoint.png": "7baa0b5e45fe41f7c8f43d4d03569c9623331a8af2883d5201f5a8f12e46d889",
+    "technical-actual-1-ffmpeg.stderr.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "technical-actual-1.mp4": "b8babc80f458d028e4f9ead5dcffd1910c6a928bce4a1d89109822935f97ba9e",
+    "technical-actual-2-ffmpeg.stderr.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "technical-actual-2.mp4": "0b4b72092c5fe74500f4c42922ceab4f54dac349b04d5c062d89507d264422ee",
+    "technical-prefix-ffmpeg.stderr.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "technical-prefix.mp4": "2e7ec93be9f62160382d9772b7d4d0dd2fd4ed511dd37954befa7080092a8785"
+  },
+  "additionalNativeSubsteps": 0,
+  "newFkInspections": 0,
+  "collisionQueries": 0,
+  "measurementPolicy": "Only archived actual diagnostics; unmeasured values remain blank",
+  "videoPolicy": "Exact stored body poses held for native intervals, no interpolation or post-end hold",
+  "fullRecoveryQualified": false
+}

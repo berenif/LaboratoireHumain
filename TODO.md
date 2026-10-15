@@ -1,15 +1,23 @@
 # TODO
 
-**2026-10-15 continuation unique à 7 100 s — autorisation parent reçue :**
+**2026-10-15 continuation unique à 7 100 s — essai clos sur refus :**
 
 - [x] Préserver le binaire physique et les gels historiques ; réduire uniquement
   le superviseur, 49 tests purs/inertes réussis et contre-revue indépendante.
 - [x] Figer manifeste et autorisation actualisée ; 358 fichiers et 14 pièces
   historiques vérifiés, budget global compatible sans remboursement.
-- [ ] Contrôler immédiatement les doublons puis lancer une seule fois ; fermer
-  sur refus de parité/prévision ou après la continuation et stabilité originale.
-- [ ] Archiver vidéo/mesures des seuls états calculés et pousser le verdict.
+- [x] Contrôler les doublons puis lancer une seule fois : parité réussie,
+  première prévision refusée après 42 pas ; 130 pas natifs exacts au total.
+- [x] Fermer le registre sans relance/remboursement : perte du point retenu de
+  l'avant-pied gauche, autres contacts porteurs ; zéro transfert réel après A36.
+- [x] Archiver mesures, vidéo du préfixe réel et diagnostic de la prévision,
+  sans calcul physique supplémentaire ; préparer la publication du verdict.
+  [Résultats et preuves](docs/coordination-transfer-native-results-2026-10-15.md).
   [Protocole autorisé](docs/evidence/coordination-transfer-native-7100-2026-10-15/protocol.md).
+
+Les états ci-dessous sont historiques. L'autorisation à 7 100 s a remplacé la
+proposition à 7 200 s et est désormais close ; aucun solde ne vaut autorisation
+de nouvel essai. Aucun succès local, relevage ou qualification n'est établi.
 
 **2026-10-15 admission physique conditionnelle — aucun lancement :**
 

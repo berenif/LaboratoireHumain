@@ -9,7 +9,6 @@ from __future__ import annotations
 
 import argparse
 import csv
-import hashlib
 import importlib.util
 import json
 import os
@@ -28,7 +27,7 @@ require, sha, decode, open_text = helpers.require, helpers.sha, helpers.decode, 
 HZ = 240
 
 
-def load_tracks(inputs, trace_path, ids):
+def load_tracks(inputs, trace_path, ids, prediction_endpoints=None):
     """Read only native rows; stream large forecasts without retaining them."""
     tracks, counts, phase, pair, last_kind = {}, {}, None, 0, None
     excluded = {'copyRows': 0, 'forecastRows': 0, 'forecastEndpointRows': 0}
@@ -40,8 +39,7 @@ def load_tracks(inputs, trace_path, ids):
         track = tracks.setdefault(name, {'name': name, 'label': label, 'frames': {}, 'refusals': []})
         frame = {'step': step, 'snapshot': row['snapshot'], 'source': row['kind'],
                  'diagnostic': row.get('localDiagnostic'),
-                 'com': row.get('support', {}).get('center_of_mass_m'),
-                 'owner': row.get('owner')}
+                 'com': row.get('support', {}).get('center_of_mass_m')}
         if step in track['frames']:
             require(track['frames'][step]['snapshot']['segments'] == row['snapshot']['segments'],
                     'Conflicting actual body poses at the same native clock')
@@ -99,6 +97,11 @@ def load_tracks(inputs, trace_path, ids):
                 excluded['forecastRows'] += 1
             elif kind == 'preview-transfer-end':
                 excluded['forecastEndpointRows'] += 1
+                helpers.validate_snapshot(row['snapshot'], row['nativeSubstep'], ids)
+                if prediction_endpoints is not None:
+                    prediction_endpoints.append({'step': row['nativeSubstep'], 'snapshot': row['snapshot'],
+                        'source': kind, 'com': row.get('support', {}).get('center_of_mass_m'),
+                        'diagnostic': row.get('localDiagnostic')})
             elif event != 'forecast-end':
                 raise ValueError('Unknown native trace record: ' + str(key))
             last_kind = kind
@@ -131,7 +134,7 @@ def write_metrics(tracks, output):
                 writer.writerow(row)
 
 
-def render(tracks, segments, output, stride, video):
+def render(tracks, segments, output, stride, video, prediction_endpoints=()):
     os.environ.setdefault('MPLCONFIGDIR', '/tmp/lh-transfer-archive-mpl')
     import numpy as np
     import matplotlib
@@ -141,8 +144,9 @@ def render(tracks, segments, output, stride, video):
 
     meshes = [(np.asarray(s['geometry']['vertices']).reshape(-1, 3),
                np.asarray(s['geometry']['indices']).reshape(-1, 3)) for s in segments]
-    cloud = np.asarray([[p['position'][a] for a in 'xzy'] for t in tracks
-                        for f in t['frames'] for p in f['snapshot']['segments']])
+    all_frames = [f for t in tracks for f in t['frames']] + list(prediction_endpoints)
+    cloud = np.asarray([[p['position'][a] for a in 'xzy'] for f in all_frames
+                        for p in f['snapshot']['segments']])
     radius = max(float(np.linalg.norm(v, axis=1).max()) for v, _ in meshes)
     low, high = cloud.min(axis=0)-radius, cloud.max(axis=0)+radius
     low[2], high[2] = min(0, low[2]), max(1.8, high[2])
@@ -182,6 +186,29 @@ def render(tracks, segments, output, stride, video):
     fig.tight_layout(rect=(0, 0, 1, .95))
     fig.savefig(output/'actual-milestones.png')
     plt.close(fig)
+
+    entry = next((f for t in tracks if t['name'] == 'main-history' for f in t['frames'] if f['step'] == 36), None)
+    if entry is not None:
+        fig = plt.figure(figsize=(9.6, 6), dpi=120)
+        ax = fig.add_subplot(projection='3d')
+        draw(ax, entry, 'ÉTAT RÉEL A36 — préfixe principal rejoué\n'
+             't=0,150000 s · candidat de transfert pas encore appliqué')
+        fig.text(.5, .03, '25 poses natives archivées ; aucun mouvement ni soutien ajouté', ha='center', fontsize=9)
+        fig.tight_layout(rect=(0, .05, 1, .97))
+        fig.savefig(output/'actual-entry-a36.png')
+        plt.close(fig)
+
+    if prediction_endpoints:
+        fig = plt.figure(figsize=(9.6, 6), dpi=120)
+        ax = fig.add_subplot(projection='3d')
+        endpoint = prediction_endpoints[-1]
+        draw(ax, endpoint, 'PRÉVISION — branche copiée, pas de transfert principal exécuté\n'
+             f"État prédit archivé au pas {endpoint['step']} · t={endpoint['step']/HZ:.6f} s")
+        fig.text(.5, .03, 'Capture isolée de la prévision refusée ; aucune animation prédite ajoutée',
+                 ha='center', fontsize=9)
+        fig.tight_layout(rect=(0, .05, 1, .97))
+        fig.savefig(output/'prediction-endpoint.png')
+        plt.close(fig)
 
     for track in tracks:
         frames = track['frames']
@@ -223,6 +250,7 @@ def render(tracks, segments, output, stride, video):
             'startSubstep': frames[0]['step'], 'endSubstep': frames[-1]['step'],
             'endpointHeldPastEnd': False, 'command': command}
     return {'milestones': milestones, 'videos': videos,
+            'separatePredictionEndpointSubstep': prediction_endpoints[-1]['step'] if prediction_endpoints else None,
             'numpyVersion': np.__version__, 'matplotlibVersion': matplotlib.__version__}
 
 
@@ -231,7 +259,7 @@ def main():
     parser.add_argument('--run-dir', type=Path, required=True)
     parser.add_argument('--manifest', type=Path, default=HERE/'manifest.json')
     parser.add_argument('--output-dir', type=Path, default=HERE/'rendered')
-    parser.add_argument('--stride', type=int, default=4)
+    parser.add_argument('--stride', type=int, default=12)
     parser.add_argument('--no-video', action='store_true')
     args = parser.parse_args()
     require(1 <= args.stride <= HZ, 'Stride must be 1..240')
@@ -250,8 +278,15 @@ def main():
     frozen_model = next((r for r in manifest['files'] if Path(r['path']) == model and r['role'] == 'model'), None)
     require(frozen_model is not None and frozen_model['sha256'] == sha(model), 'Canonical display mesh changed')
     segments = inputs.read(model)['segments']
-    native_result = inputs.read(run/'native-result.json') if (run/'native-result.json').is_file() else None
-    tracks, counts, excluded = load_tracks(inputs, run/'native-trace.jsonl', [s['id'] for s in segments])
+    native_result_path = run/'native-result.json'
+    native_result = None
+    if native_result_path.is_file():
+        inputs.record(native_result_path)
+        if native_result_path.stat().st_size:
+            native_result = inputs.read(native_result_path)
+            native_result = {k: native_result.get(k) for k in ('outcome', 'refusal')}
+    prediction_endpoints = []
+    tracks, counts, excluded = load_tracks(inputs, run/'native-trace.jsonl', [s['id'] for s in segments], prediction_endpoints)
     if not args.no_video:
         require(shutil.which('ffmpeg') is not None, 'ffmpeg unavailable; use --no-video')
         inputs.record(Path(shutil.which('ffmpeg')))
@@ -259,7 +294,7 @@ def main():
     require(output == HERE/'rendered', 'Only the assigned new rendered/ output is allowed')
     output.mkdir(parents=False, exist_ok=False)
     write_metrics(tracks, output)
-    recipe = render(tracks, segments, output, args.stride, not args.no_video) if tracks else {'reason': 'No actual archived poses'}
+    recipe = render(tracks, segments, output, args.stride, not args.no_video, prediction_endpoints) if tracks else {'reason': 'No actual archived poses'}
     inputs.verify()
     receipt = {'schema': 1, 'scope': 'Closed native run; actual tracks separately labelled',
         'sourcesSha256': inputs.hashes, 'traceKindCounts': counts, 'excludedPredictionRows': excluded,
@@ -272,6 +307,7 @@ def main():
         'supervisorStatus': closed['status'], 'supervisorError': closed.get('error'),
         'mainHistoryPresent': any(t['name'] == 'main-history' for t in tracks),
         'mainCandidateRows': counts.get('transfer-actual-history', 0),
+        'predictionCapturePolicy': 'Only the last archived copied endpoint, clearly labelled; excluded from all actual videos and CSV',
         'recipe': recipe, 'outputsSha256': {p.name: sha(p) for p in sorted(output.iterdir()) if p.is_file()},
         'additionalNativeSubsteps': 0, 'newFkInspections': 0, 'collisionQueries': 0,
         'measurementPolicy': 'Only archived actual diagnostics; unmeasured values remain blank',
