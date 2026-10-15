@@ -1,0 +1,238 @@
+# Captured focused pure-test output
+# Command: PATH=/workspace/lh-rustup/toolchains/1.89.0-x86_64-unknown-linux-gnu/bin:$PATH CARGO_HOME=/workspace/lh-cargo RUSTUP_HOME=/workspace/lh-rustup cargo test -p lh-sim --lib --features experimental-solver-step-observation recovery::planner::transfer_adapter::tests -- --test-threads=1
+# Working directory: /workspace/LaboratoireHumain/rust
+# Exit code: 0
+# Capture starts after Cargo's initial target-list warning and compilation announcement.
+warning: field `native_substep` is never read
+  --> crates/sim/src/recovery/planner/command_proposal.rs:43:9
+   |
+41 | pub(crate) struct CommandProposal {
+   |                   --------------- field in this struct
+42 |     commands: Vec<Command>,
+43 |     pub native_substep: u64,
+   |         ^^^^^^^^^^^^^^
+   |
+   = note: `#[warn(dead_code)]` on by default
+
+warning: method `observation` is never used
+   --> crates/sim/src/recovery/planner/support_schedule.rs:171:12
+    |
+96  | impl SupportSchedule {
+    | -------------------- method in this implementation
+...
+171 |     pub fn observation(&self) -> &SupportObservation {
+    |            ^^^^^^^^^^^
+
+warning: variant `Preview` is never constructed
+   --> crates/sim/src/recovery/planner/transfer_adapter.rs:147:5
+    |
+145 | enum Authorization {
+    |      ------------- variant in this enum
+146 |     None,
+147 |     Preview {
+    |     ^^^^^^^
+    |
+    = note: `Authorization` has a derived impl for the trait `Clone`, but this is intentionally ignored during dead code analysis
+
+warning: fields `native_checkpoints` and `preview_entry_identity` are never read
+   --> crates/sim/src/recovery/planner/transfer_adapter.rs:176:5
+    |
+160 | pub(crate) struct Adapter {
+    |                   ------- fields in this struct
+...
+176 |     native_checkpoints: Vec<NativeCheckpoint>,
+    |     ^^^^^^^^^^^^^^^^^^
+...
+180 |     preview_entry_identity: Option<std::sync::Arc<[u8]>>,
+    |     ^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = note: `Adapter` has a derived impl for the trait `Clone`, but this is intentionally ignored during dead code analysis
+
+warning: methods `terminal_monitoring_complete`, `begin_native_preview`, `record_preview_post_tick`, `preview_window`, `admit_real_window`, and `complete_native_preview` are never used
+   --> crates/sim/src/recovery/planner/transfer_adapter.rs:284:19
+    |
+185 | impl Adapter {
+    | ------------ methods in this implementation
+...
+284 |     pub(crate) fn terminal_monitoring_complete(
+    |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+...
+533 |     pub(super) fn begin_native_preview(&mut self, start: u64, outer_identity: Vec<u8>) {
+    |                   ^^^^^^^^^^^^^^^^^^^^
+...
+542 |     pub(super) fn record_preview_post_tick(
+    |                   ^^^^^^^^^^^^^^^^^^^^^^^^
+...
+569 |     pub(super) fn preview_window(&mut self, instance: usize, start: u64) -> Result<(), String> {
+    |                   ^^^^^^^^^^^^^^
+...
+713 |     pub(crate) fn admit_real_window(
+    |                   ^^^^^^^^^^^^^^^^^
+...
+766 |     pub(super) fn complete_native_preview(
+    |                   ^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: struct `NativeWindowReceipt` is never constructed
+  --> crates/sim/src/recovery/planner/native_plan_preview.rs:36:19
+   |
+36 | pub(crate) struct NativeWindowReceipt {
+   |                   ^^^^^^^^^^^^^^^^^^^
+
+warning: method `into_data` is never used
+  --> crates/sim/src/recovery/planner/native_plan_preview.rs:40:19
+   |
+39 | impl NativeWindowReceipt {
+   | ------------------------ method in this implementation
+40 |     pub(super) fn into_data(self) -> super::transfer_adapter::NativeWindowData {
+   |                   ^^^^^^^^^
+
+warning: methods `record` and `record_post_tick` are never used
+   --> crates/sim/src/recovery/planner/native_plan_preview.rs:221:19
+    |
+207 | impl NativeParityTrace {
+    | ---------------------- methods in this implementation
+...
+221 |     pub(crate) fn record(
+    |                   ^^^^^^
+...
+248 |     pub(crate) fn record_post_tick(
+    |                   ^^^^^^^^^^^^^^^^
+
+warning: fields `completed_preview` and `requested_preview` are never read
+   --> crates/sim/src/recovery/planner/native_plan_preview.rs:433:5
+    |
+430 | pub(crate) struct StaticPreviewBranch<M> {
+    |                   ------------------- fields in this struct
+...
+433 |     completed_preview: Option<(u64, u32)>,
+    |     ^^^^^^^^^^^^^^^^^
+434 |     requested_preview: Option<(u64, u32)>,
+    |     ^^^^^^^^^^^^^^^^^
+
+warning: multiple methods are never used
+   --> crates/sim/src/recovery/planner/native_plan_preview.rs:471:19
+    |
+437 | impl<M: Clone> StaticPreviewBranch<M> {
+    | ------------------------------------- methods in this implementation
+...
+471 |     pub(crate) fn certify_transfer_horizon(
+    |                   ^^^^^^^^^^^^^^^^^^^^^^^^
+...
+520 |     pub(crate) fn transfer_horizon_evidence(&self) -> serde_json::Value {
+    |                   ^^^^^^^^^^^^^^^^^^^^^^^^^
+...
+526 |     pub(crate) fn set_feedback_scale(&mut self, scale: f64) -> Result<(), PreviewError> {
+    |                   ^^^^^^^^^^^^^^^^^^
+...
+545 |     pub(crate) fn preview<O>(
+    |                   ^^^^^^^
+...
+566 |     pub(crate) fn preview_with_post_tick<O>(
+    |                   ^^^^^^^^^^^^^^^^^^^^^^
+...
+591 |     pub(crate) fn verify_tick<O>(
+    |                   ^^^^^^^^^^^
+...
+607 |     pub(crate) fn verify_tick_with_post_tick<O>(
+    |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^
+...
+624 |     fn preview_ticks<O>(
+    |        ^^^^^^^^^^^^^
+
+warning: variant `Candidate` is never constructed
+   --> crates/sim/src/recovery/planner/native_plan_preview.rs:796:5
+    |
+794 | pub(crate) enum PreviewPurpose {
+    |                 -------------- variant in this enum
+795 |     ParityVerification,
+796 |     Candidate,
+    |     ^^^^^^^^^
+    |
+    = note: `PreviewPurpose` has derived impls for the traits `Clone` and `Debug`, but these are intentionally ignored during dead code analysis
+
+warning: method `admit_preview` is never used
+   --> crates/sim/src/recovery/planner/native_plan_preview.rs:815:8
+    |
+811 | pub(crate) trait PreviewBudget {
+    |                  ------------- method in this trait
+...
+815 |     fn admit_preview(&mut self, purpose: PreviewPurpose, steps: u32) -> Result<(), String>;
+    |        ^^^^^^^^^^^^^
+
+warning: function `assemble` is never used
+   --> crates/sim/src/recovery/planner/geometric_tasks.rs:174:15
+    |
+174 | pub(crate) fn assemble(
+    |               ^^^^^^^^
+
+warning: function `point_world` is never used
+   --> crates/sim/src/recovery/planner/geometric_tasks.rs:305:15
+    |
+305 | pub(crate) fn point_world(
+    |               ^^^^^^^^^^^
+
+warning: constant `PARAMETERS` is never used
+  --> crates/sim/src/recovery/planner/whole_body_controller.rs:39:18
+   |
+39 | pub(crate) const PARAMETERS: &str = r#"{"version":"coordinated-transition-v2-numeric","solver":"feasible-active-set-newton","commandCompi...
+   |                  ^^^^^^^^^^
+
+warning: methods `prepare_command_proposal_observed`, `admit_transfer_window`, and `continue_transfer_window` are never used
+   --> crates/sim/src/recovery/planner/whole_body_controller.rs:277:19
+    |
+97  | impl Controller {
+    | --------------- methods in this implementation
+...
+277 |     pub(crate) fn prepare_command_proposal_observed(
+    |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+...
+437 |     pub(crate) fn admit_transfer_window(&mut self,sim:&Simulation,receipt:super::native_plan_preview::NativeWindowReceipt)->Result<(),Str...
+    |                   ^^^^^^^^^^^^^^^^^^^^^
+...
+448 |     pub(crate) fn continue_transfer_window(&mut self,sim:&Simulation)->Result<(),String> {
+    |                   ^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: field `maximum_constraint_error` is never read
+  --> /workspace/LaboratoireHumain/rust/crates/sim/../../../docs/evidence/coordination-numeric-correction-2026-10-12/frozen-solver-replay.rs:38:9
+   |
+36 | pub(crate) struct Solution {
+   |                   -------- field in this struct
+37 |     pub rates: Rates,
+38 |     pub maximum_constraint_error: f64,
+   |         ^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+   = note: `Solution` has a derived impl for the trait `Debug`, but this is intentionally ignored during dead code analysis
+
+warning: method `verify_rates` is never used
+   --> /workspace/LaboratoireHumain/rust/crates/sim/../../../docs/evidence/coordination-numeric-correction-2026-10-12/frozen-solver-replay.rs:106:19
+    |
+53  | impl Problem {
+    | ------------ method in this implementation
+...
+106 |     pub(crate) fn verify_rates(&self, rates: &Rates) -> Result<(), String> {
+    |                   ^^^^^^^^^^^^
+
+warning: `lh-sim` (lib test) generated 18 warnings
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 6.52s
+     Running unittests src/lib.rs (target/debug/deps/lh_sim-68e67b1c237792f1)
+
+running 15 tests
+test recovery::planner::transfer_adapter::tests::pure_adapter_clone_does_not_share_mutable_command_or_observation_state ... ok
+test recovery::planner::transfer_adapter::tests::pure_archived_a36_coefficients_reproduce_all_four_original_command_bits ... ok
+test recovery::planner::transfer_adapter::tests::pure_archived_four_command_queue_keeps_exact_q_dq_and_consumes_once ... ok
+test recovery::planner::transfer_adapter::tests::pure_duplicate_observation_is_idempotent_but_changed_or_skipped_clock_is_atomic ... ok
+test recovery::planner::transfer_adapter::tests::pure_foreign_queue_command_or_changed_command_history_is_refused_atomically ... ok
+test recovery::planner::transfer_adapter::tests::pure_long_payload_cannot_replace_a_partly_consumed_window ... ok
+test recovery::planner::transfer_adapter::tests::pure_long_payload_requires_each_checkpoint_and_consumes_exactly_once_to_its_endpoint ... ok
+test recovery::planner::transfer_adapter::tests::pure_malformed_long_payload_is_refused_without_arming_the_adapter ... ok
+test recovery::planner::transfer_adapter::tests::pure_persistent_nonfoot_after_latched_local_event_is_refused_without_erasing_history ... ok
+test recovery::planner::transfer_adapter::tests::pure_reference_clock_uses_source_433_only_after_the_last_bridge_command ... ok
+test recovery::planner::transfer_adapter::tests::pure_terminal_clock_overflow_is_refused_before_any_state_change ... ok
+test recovery::planner::transfer_adapter::tests::pure_terminal_deadline_accepts_success_at_25_seconds_and_binds_one_extra_second ... ok
+test recovery::planner::transfer_adapter::tests::pure_terminal_monitoring_rounds_up_to_the_first_complete_tick_only ... ok
+test recovery::planner::transfer_adapter::tests::pure_terminal_success_cannot_be_late_rewound_lost_or_used_at_a_stale_clock ... ok
+test recovery::planner::transfer_adapter::tests::pure_unarmed_native_command_and_passive_handoff_are_both_refused_atomically ... ok
+
+test result: ok. 15 passed; 0 failed; 0 ignored; 0 measured; 226 filtered out; finished in 31.20s
+
+

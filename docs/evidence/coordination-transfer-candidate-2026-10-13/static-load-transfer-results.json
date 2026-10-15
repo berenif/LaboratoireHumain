@@ -1,0 +1,1053 @@
+{
+  "forwardKinematics": 0,
+  "modelConstructions": 0,
+  "nativeSteps": 0,
+  "proposals": [
+    {
+      "feedbackScale": 0.0,
+      "proposal": {
+        "com_capture_target_xz_m": [
+          0.00017167627811431885,
+          0.049835314974188805
+        ],
+        "com_velocity_mps": [
+          -0.0007776432714787342,
+          0.0,
+          0.052472290868162796
+        ],
+        "continuation_event_substep": null,
+        "continue_bilateral": false,
+        "first_stable_substep": null,
+        "heel_intents": [
+          {
+            "height_above_observed_support_m": 0.04089313785615747,
+            "observed_point_world_m": [
+              -0.13374424685867117,
+              0.04089313785615747,
+              -0.21794425140897608
+            ],
+            "provenance": {
+              "local_point_m": [
+                -0.04399999976158142,
+                -0.04500000178813934,
+                -0.07500000298023224
+              ],
+              "segment": 18,
+              "source_path": "docs/evidence/coordination-prototype-2026-10-12/continuation-tasks.json",
+              "source_sha256": "a96d03d736ca185a0457ae29c33846b69af28ecd5eb81609f60d281463756dd6"
+            },
+            "world_angular_velocity_radps": [
+              -0.35405695395959275,
+              0.0003376313454169513,
+              -0.00006067425061531347
+            ],
+            "world_velocity_mps": [
+              0.0,
+              -0.08178627571231493,
+              0.0
+            ]
+          },
+          {
+            "height_above_observed_support_m": 0.04093227416141107,
+            "observed_point_world_m": [
+              0.04626244043107137,
+              0.04093227416141107,
+              -0.21793074020272632
+            ],
+            "provenance": {
+              "local_point_m": [
+                -0.04399999976158142,
+                -0.04500000178813934,
+                -0.07500000298023224
+              ],
+              "segment": 23,
+              "source_path": "docs/evidence/coordination-prototype-2026-10-12/continuation-tasks.json",
+              "source_sha256": "a96d03d736ca185a0457ae29c33846b69af28ecd5eb81609f60d281463756dd6"
+            },
+            "world_angular_velocity_radps": [
+              -0.35403476541820417,
+              0.000337342179686771,
+              -0.00006239849806604592
+            ],
+            "world_velocity_mps": [
+              0.0,
+              -0.08186454832282214,
+              0.0
+            ]
+          }
+        ],
+        "heel_observations": [
+          {
+            "first_material_local_point_m": null,
+            "goal_matching_contact_index": null,
+            "goal_matching_loaded_substeps": 0,
+            "region_load_n": -0.0,
+            "region_loaded_substeps": 0,
+            "segment": 18
+          },
+          {
+            "first_material_local_point_m": null,
+            "goal_matching_contact_index": null,
+            "goal_matching_loaded_substeps": 0,
+            "region_load_n": -0.0,
+            "region_loaded_substeps": 0,
+            "segment": 23
+          }
+        ],
+        "material_intents": [
+          {
+            "patch_id": 0,
+            "requested_mode": "Pivot"
+          },
+          {
+            "patch_id": 1,
+            "requested_mode": "Pivot"
+          }
+        ],
+        "material_obligations": [
+          {
+            "acquired_substep": 12,
+            "current_contact_present": true,
+            "displacement_from_anchor_m": [
+              -0.000017148850948639494,
+              -0.0005742069265643442,
+              -0.0003469981705549116
+            ],
+            "id": 0,
+            "last_observed_substep": 16,
+            "last_world_point_m": [
+              -0.13483099400857193,
+              -0.001958085217217573,
+              0.04982903744226667
+            ],
+            "local_point_m": [
+              -0.044999998062849045,
+              -0.04500001668930054,
+              0.06000000983476639
+            ],
+            "mode": "Hold",
+            "nearest_current_local_distance_m": 2.26600562419676e-8,
+            "segment": 19,
+            "tangential_drift_m": 0.00034742166521003576,
+            "world_anchor_m": [
+              -0.1348138451576233,
+              -0.0013838782906532288,
+              0.05017603561282158
+            ]
+          },
+          {
+            "acquired_substep": 12,
+            "current_contact_present": true,
+            "displacement_from_anchor_m": [
+              -0.000015774495934831045,
+              -0.0005795429831839784,
+              -0.0003498419330137184
+            ],
+            "id": 1,
+            "last_observed_substep": 16,
+            "last_world_point_m": [
+              0.04517435865845741,
+              -0.0019587125068999513,
+              0.049825914283035476
+            ],
+            "local_point_m": [
+              -0.045000024139881134,
+              -0.04500002786517143,
+              0.06000003218650818
+            ],
+            "mode": "Hold",
+            "nearest_current_local_distance_m": 3.494632065164618e-8,
+            "segment": 24,
+            "tangential_drift_m": 0.0003501973912192566,
+            "world_anchor_m": [
+              0.04519013315439224,
+              -0.001379169523715973,
+              0.050175756216049194
+            ]
+          }
+        ],
+        "measured_capture_xz_m": [
+          0.0005604979138536859,
+          0.023599169540107406
+        ],
+        "measured_local_diagnostic": {
+          "all_conditions_now": false,
+          "capture_inside": false,
+          "com_inside": false,
+          "consecutive_stable_substeps": 0,
+          "first_local_conditions_s": null,
+          "heel_loaded_substeps": [
+            0,
+            0
+          ],
+          "heel_loads_n": [
+            -0.0,
+            -0.0
+          ],
+          "heel_persistent": [
+            false,
+            false
+          ],
+          "maximum_angular_radps": 3.9663983281132955,
+          "maximum_linear_mps": 0.4358146113684995,
+          "native_substep": 16,
+          "nonfoot_current_load_n": -0.0,
+          "nonfoot_persistent_segments": [],
+          "passed": false,
+          "support_fraction": 0.8567237055911161,
+          "support_load_n": 606.8019645838905
+        },
+        "native_substep": 16,
+        "obstacles": [
+          "InteriorTargetUnavailable",
+          {
+            "HeelNotPersistentlyObserved": {
+              "segment": 18
+            }
+          },
+          {
+            "HeelNotPersistentlyObserved": {
+              "segment": 23
+            }
+          }
+        ],
+        "original_transfer_gate": {
+          "allowed": false,
+          "capture_inside": false,
+          "com_inside": false,
+          "released_load_n": 302.865478515625,
+          "releasing": [
+            18,
+            19
+          ],
+          "remaining_current_load_n": 303.93650853965016,
+          "retained_segments": [
+            24
+          ],
+          "support_points_xz_m": [
+            [
+              0.04517434164881706,
+              0.04982592910528183
+            ],
+            [
+              0.13517437875270844,
+              0.04984179139137268
+            ]
+          ]
+        },
+        "released_load_excess_n": 125.79498291015625,
+        "remaining_load_deficit_n": 262.6890773978498,
+        "required_validation": "PreviewRequired",
+        "stage": "AcquireBilateralHeels",
+        "target_inside_original_margin": false,
+        "target_support_points_xz_m": [
+          [
+            -0.1348309963941574,
+            0.04982905834913254
+          ],
+          [
+            -0.04483101889491081,
+            0.04984448105096817
+          ],
+          [
+            0.04517434164881706,
+            0.04982592910528183
+          ],
+          [
+            0.13517437875270844,
+            0.04984179139137268
+          ]
+        ],
+        "target_support_segments": [
+          19,
+          24
+        ]
+      }
+    },
+    {
+      "feedbackScale": 0.5,
+      "proposal": {
+        "com_capture_target_xz_m": [
+          0.00019355770200490952,
+          0.04977309983223677
+        ],
+        "com_velocity_mps": [
+          -0.0006403392853300081,
+          0.0,
+          0.04121500974087411
+        ],
+        "continuation_event_substep": null,
+        "continue_bilateral": false,
+        "first_stable_substep": null,
+        "heel_intents": [
+          {
+            "height_above_observed_support_m": 0.0425817428588054,
+            "observed_point_world_m": [
+              -0.13363902502267094,
+              0.0425817428588054,
+              -0.2177087026753155
+            ],
+            "provenance": {
+              "local_point_m": [
+                -0.04399999976158142,
+                -0.04500000178813934,
+                -0.07500000298023224
+              ],
+              "segment": 18,
+              "source_path": "docs/evidence/coordination-prototype-2026-10-12/continuation-tasks.json",
+              "source_sha256": "a96d03d736ca185a0457ae29c33846b69af28ecd5eb81609f60d281463756dd6"
+            },
+            "world_angular_velocity_radps": [
+              -0.3652448272215963,
+              0.00012072562197183781,
+              -0.0002125956902134023
+            ],
+            "world_velocity_mps": [
+              0.0,
+              -0.0851634857176108,
+              0.0
+            ]
+          },
+          {
+            "height_above_observed_support_m": 0.042631822908262354,
+            "observed_point_world_m": [
+              0.04636855576354867,
+              0.042631822908262354,
+              -0.21769691709141012
+            ],
+            "provenance": {
+              "local_point_m": [
+                -0.04399999976158142,
+                -0.04500000178813934,
+                -0.07500000298023224
+              ],
+              "segment": 23,
+              "source_path": "docs/evidence/coordination-prototype-2026-10-12/continuation-tasks.json",
+              "source_sha256": "a96d03d736ca185a0457ae29c33846b69af28ecd5eb81609f60d281463756dd6"
+            },
+            "world_angular_velocity_radps": [
+              -0.36539986188029316,
+              0.00012079164804513821,
+              -0.0002148855471102321
+            ],
+            "world_velocity_mps": [
+              0.0,
+              -0.08526364581652471,
+              0.0
+            ]
+          }
+        ],
+        "heel_observations": [
+          {
+            "first_material_local_point_m": null,
+            "goal_matching_contact_index": null,
+            "goal_matching_loaded_substeps": 0,
+            "region_load_n": -0.0,
+            "region_loaded_substeps": 0,
+            "segment": 18
+          },
+          {
+            "first_material_local_point_m": null,
+            "goal_matching_contact_index": null,
+            "goal_matching_loaded_substeps": 0,
+            "region_load_n": -0.0,
+            "region_loaded_substeps": 0,
+            "segment": 23
+          }
+        ],
+        "material_intents": [
+          {
+            "patch_id": 0,
+            "requested_mode": "Pivot"
+          },
+          {
+            "patch_id": 1,
+            "requested_mode": "Pivot"
+          }
+        ],
+        "material_obligations": [
+          {
+            "acquired_substep": 12,
+            "current_contact_present": true,
+            "displacement_from_anchor_m": [
+              4.42519970292321e-6,
+              -0.0005536067459681517,
+              -0.00042517426581364925
+            ],
+            "id": 0,
+            "last_observed_substep": 16,
+            "last_world_point_m": [
+              -0.13480941995792037,
+              -0.0019374850366213805,
+              0.04975086134700793
+            ],
+            "local_point_m": [
+              -0.044999998062849045,
+              -0.04500001668930054,
+              0.06000000983476639
+            ],
+            "mode": "Hold",
+            "nearest_current_local_distance_m": 4.012260442327338e-8,
+            "segment": 19,
+            "tangential_drift_m": 0.00042519729385614204,
+            "world_anchor_m": [
+              -0.1348138451576233,
+              -0.0013838782906532288,
+              0.05017603561282158
+            ]
+          },
+          {
+            "acquired_substep": 12,
+            "current_contact_present": true,
+            "displacement_from_anchor_m": [
+              6.390145651596901e-6,
+              -0.0005694295213994564,
+              -0.0004330938119052677
+            ],
+            "id": 1,
+            "last_observed_substep": 16,
+            "last_world_point_m": [
+              0.04519652330004384,
+              -0.0019485990451154293,
+              0.04974266240414393
+            ],
+            "local_point_m": [
+              -0.045000024139881134,
+              -0.04500002786517143,
+              0.06000003218650818
+            ],
+            "mode": "Hold",
+            "nearest_current_local_distance_m": 6.452392069879463e-9,
+            "segment": 24,
+            "tangential_drift_m": 0.00043314095150664755,
+            "world_anchor_m": [
+              0.04519013315439224,
+              -0.001379169523715973,
+              0.050175756216049194
+            ]
+          }
+        ],
+        "measured_capture_xz_m": [
+          0.0005137273446699136,
+          0.029165594961799712
+        ],
+        "measured_local_diagnostic": {
+          "all_conditions_now": false,
+          "capture_inside": false,
+          "com_inside": false,
+          "consecutive_stable_substeps": 0,
+          "first_local_conditions_s": null,
+          "heel_loaded_substeps": [
+            0,
+            0
+          ],
+          "heel_loads_n": [
+            -0.0,
+            -0.0
+          ],
+          "heel_persistent": [
+            false,
+            false
+          ],
+          "maximum_angular_radps": 3.5207384066926166,
+          "maximum_linear_mps": 0.4538208947224892,
+          "native_substep": 16,
+          "nonfoot_current_load_n": -0.0,
+          "nonfoot_persistent_segments": [],
+          "passed": false,
+          "support_fraction": 0.8547990805657227,
+          "support_load_n": 605.4387873554862
+        },
+        "native_substep": 16,
+        "obstacles": [
+          "InteriorTargetUnavailable",
+          {
+            "HeelNotPersistentlyObserved": {
+              "segment": 18
+            }
+          },
+          {
+            "HeelNotPersistentlyObserved": {
+              "segment": 23
+            }
+          }
+        ],
+        "original_transfer_gate": {
+          "allowed": false,
+          "capture_inside": false,
+          "com_inside": false,
+          "released_load_n": 303.9322814941406,
+          "releasing": [
+            18,
+            19
+          ],
+          "remaining_current_load_n": 301.50651312958007,
+          "retained_segments": [
+            24
+          ],
+          "support_points_xz_m": [
+            [
+              0.04519651457667351,
+              0.04974265769124031
+            ],
+            [
+              0.13519658148288727,
+              0.049795594066381454
+            ]
+          ]
+        },
+        "released_load_excess_n": 126.86178588867188,
+        "remaining_load_deficit_n": 265.1190728079199,
+        "required_validation": "PreviewRequired",
+        "stage": "AcquireBilateralHeels",
+        "target_inside_original_margin": false,
+        "target_support_points_xz_m": [
+          [
+            -0.1348094344139099,
+            0.049750883132219315
+          ],
+          [
+            -0.044809430837631226,
+            0.04980326443910599
+          ],
+          [
+            0.04519651457667351,
+            0.04974265769124031
+          ],
+          [
+            0.13519658148288727,
+            0.049795594066381454
+          ]
+        ],
+        "target_support_segments": [
+          19,
+          24
+        ]
+      }
+    },
+    {
+      "feedbackScale": 1.0,
+      "proposal": {
+        "com_capture_target_xz_m": [
+          0.00019082427024841309,
+          0.049764291383326054
+        ],
+        "com_velocity_mps": [
+          -0.0006611175186905396,
+          0.0,
+          0.04080647299097996
+        ],
+        "continuation_event_substep": null,
+        "continue_bilateral": false,
+        "first_stable_substep": null,
+        "heel_intents": [
+          {
+            "height_above_observed_support_m": 0.04259631378631691,
+            "observed_point_world_m": [
+              -0.13363824596898718,
+              0.04259631378631691,
+              -0.2177119111874105
+            ],
+            "provenance": {
+              "local_point_m": [
+                -0.04399999976158142,
+                -0.04500000178813934,
+                -0.07500000298023224
+              ],
+              "segment": 18,
+              "source_path": "docs/evidence/coordination-prototype-2026-10-12/continuation-tasks.json",
+              "source_sha256": "a96d03d736ca185a0457ae29c33846b69af28ecd5eb81609f60d281463756dd6"
+            },
+            "world_angular_velocity_radps": [
+              -0.3653215067657257,
+              0.00016774544040969836,
+              -0.0002105757928579812
+            ],
+            "world_velocity_mps": [
+              0.0,
+              -0.08519262757263382,
+              0.0
+            ]
+          },
+          {
+            "height_above_observed_support_m": 0.042659276773165056,
+            "observed_point_world_m": [
+              0.04636879110966726,
+              0.042659276773165056,
+              -0.21769792235466298
+            ],
+            "provenance": {
+              "local_point_m": [
+                -0.04399999976158142,
+                -0.04500000178813934,
+                -0.07500000298023224
+              ],
+              "segment": 23,
+              "source_path": "docs/evidence/coordination-prototype-2026-10-12/continuation-tasks.json",
+              "source_sha256": "a96d03d736ca185a0457ae29c33846b69af28ecd5eb81609f60d281463756dd6"
+            },
+            "world_angular_velocity_radps": [
+              -0.36554395592568983,
+              0.00015397197702634655,
+              -0.00021252577099382003
+            ],
+            "world_velocity_mps": [
+              0.0,
+              -0.08531855354633011,
+              0.0
+            ]
+          }
+        ],
+        "heel_observations": [
+          {
+            "first_material_local_point_m": null,
+            "goal_matching_contact_index": null,
+            "goal_matching_loaded_substeps": 0,
+            "region_load_n": -0.0,
+            "region_loaded_substeps": 0,
+            "segment": 18
+          },
+          {
+            "first_material_local_point_m": null,
+            "goal_matching_contact_index": null,
+            "goal_matching_loaded_substeps": 0,
+            "region_load_n": -0.0,
+            "region_loaded_substeps": 0,
+            "segment": 23
+          }
+        ],
+        "material_intents": [
+          {
+            "patch_id": 0,
+            "requested_mode": "Pivot"
+          },
+          {
+            "patch_id": 1,
+            "requested_mode": "Pivot"
+          }
+        ],
+        "material_obligations": [
+          {
+            "acquired_substep": 12,
+            "current_contact_present": true,
+            "displacement_from_anchor_m": [
+              9.836728822321117e-7,
+              -0.0005595086858285886,
+              -0.0004343087656382416
+            ],
+            "id": 0,
+            "last_observed_substep": 16,
+            "last_world_point_m": [
+              -0.13481286148474106,
+              -0.0019433869764818174,
+              0.04974172684718334
+            ],
+            "local_point_m": [
+              -0.044999998062849045,
+              -0.04500001668930054,
+              0.06000000983476639
+            ],
+            "mode": "Hold",
+            "nearest_current_local_distance_m": 5.094257865539694e-8,
+            "segment": 19,
+            "tangential_drift_m": 0.0004343098796050492,
+            "world_anchor_m": [
+              -0.1348138451576233,
+              -0.0013838782906532288,
+              0.05017603561282158
+            ]
+          },
+          {
+            "acquired_substep": 12,
+            "current_contact_present": true,
+            "displacement_from_anchor_m": [
+              4.36558625868666e-6,
+              -0.0005704694367503673,
+              -0.00044102103318033326
+            ],
+            "id": 1,
+            "last_observed_substep": 16,
+            "last_world_point_m": [
+              0.04519449874065093,
+              -0.0019496389604663402,
+              0.04973473518286886
+            ],
+            "local_point_m": [
+              -0.045000024139881134,
+              -0.04500002786517143,
+              0.06000003218650818
+            ],
+            "mode": "Hold",
+            "nearest_current_local_distance_m": 1.2355390155149252e-8,
+            "segment": 24,
+            "tangential_drift_m": 0.00044104263971959744,
+            "world_anchor_m": [
+              0.04519013315439224,
+              -0.001379169523715973,
+              0.050175756216049194
+            ]
+          }
+        ],
+        "measured_capture_xz_m": [
+          0.0005213830295936829,
+          0.029361054887836073
+        ],
+        "measured_local_diagnostic": {
+          "all_conditions_now": false,
+          "capture_inside": false,
+          "com_inside": false,
+          "consecutive_stable_substeps": 0,
+          "first_local_conditions_s": null,
+          "heel_loaded_substeps": [
+            0,
+            0
+          ],
+          "heel_loads_n": [
+            -0.0,
+            -0.0
+          ],
+          "heel_persistent": [
+            false,
+            false
+          ],
+          "maximum_angular_radps": 3.4274215132837766,
+          "maximum_linear_mps": 0.45210240820899633,
+          "native_substep": 16,
+          "nonfoot_current_load_n": -0.0,
+          "nonfoot_persistent_segments": [],
+          "passed": false,
+          "support_fraction": 0.8549354299675302,
+          "support_load_n": 605.5353611801004
+        },
+        "native_substep": 16,
+        "obstacles": [
+          "InteriorTargetUnavailable",
+          {
+            "HeelNotPersistentlyObserved": {
+              "segment": 18
+            }
+          },
+          {
+            "HeelNotPersistentlyObserved": {
+              "segment": 23
+            }
+          }
+        ],
+        "original_transfer_gate": {
+          "allowed": false,
+          "capture_inside": false,
+          "com_inside": false,
+          "released_load_n": 301.26239013671875,
+          "releasing": [
+            18,
+            19
+          ],
+          "remaining_current_load_n": 304.2729648209307,
+          "retained_segments": [
+            24
+          ],
+          "support_points_xz_m": [
+            [
+              0.04519450664520264,
+              0.04973473772406578
+            ],
+            [
+              0.13519452512264252,
+              0.04978704825043678
+            ]
+          ]
+        },
+        "released_load_excess_n": 124.19189453125,
+        "remaining_load_deficit_n": 262.35262111656925,
+        "required_validation": "PreviewRequired",
+        "stage": "AcquireBilateralHeels",
+        "target_inside_original_margin": false,
+        "target_support_points_xz_m": [
+          [
+            -0.13481289148330688,
+            0.049741752445697784
+          ],
+          [
+            -0.04481284320354462,
+            0.04979362711310387
+          ],
+          [
+            0.04519450664520264,
+            0.04973473772406578
+          ],
+          [
+            0.13519452512264252,
+            0.04978704825043678
+          ]
+        ],
+        "target_support_segments": [
+          19,
+          24
+        ]
+      }
+    },
+    {
+      "feedbackScale": 1.5,
+      "proposal": {
+        "com_capture_target_xz_m": [
+          0.0001862039789557457,
+          0.049754783511161804
+        ],
+        "com_velocity_mps": [
+          -0.0006925721591756061,
+          0.0,
+          0.04055756591001071
+        ],
+        "continuation_event_substep": null,
+        "continue_bilateral": false,
+        "first_stable_substep": null,
+        "heel_intents": [
+          {
+            "height_above_observed_support_m": 0.04260284695502464,
+            "observed_point_world_m": [
+              -0.13362456324298694,
+              0.04260284695502464,
+              -0.21771841998384409
+            ],
+            "provenance": {
+              "local_point_m": [
+                -0.04399999976158142,
+                -0.04500000178813934,
+                -0.07500000298023224
+              ],
+              "segment": 18,
+              "source_path": "docs/evidence/coordination-prototype-2026-10-12/continuation-tasks.json",
+              "source_sha256": "a96d03d736ca185a0457ae29c33846b69af28ecd5eb81609f60d281463756dd6"
+            },
+            "world_angular_velocity_radps": [
+              -0.36533843026367563,
+              0.0002204080195926897,
+              -0.00022571151031506489
+            ],
+            "world_velocity_mps": [
+              0.0,
+              -0.08520569391004928,
+              0.0
+            ]
+          },
+          {
+            "height_above_observed_support_m": 0.04267015383369806,
+            "observed_point_world_m": [
+              0.04637841513818167,
+              0.04267015383369806,
+              -0.21770656343976214
+            ],
+            "provenance": {
+              "local_point_m": [
+                -0.04399999976158142,
+                -0.04500000178813934,
+                -0.07500000298023224
+              ],
+              "segment": 23,
+              "source_path": "docs/evidence/coordination-prototype-2026-10-12/continuation-tasks.json",
+              "source_sha256": "a96d03d736ca185a0457ae29c33846b69af28ecd5eb81609f60d281463756dd6"
+            },
+            "world_angular_velocity_radps": [
+              -0.36571673593937115,
+              0.00020639119725030278,
+              -0.00022442110438249376
+            ],
+            "world_velocity_mps": [
+              0.0,
+              -0.08534030766739611,
+              0.0
+            ]
+          }
+        ],
+        "heel_observations": [
+          {
+            "first_material_local_point_m": null,
+            "goal_matching_contact_index": null,
+            "goal_matching_loaded_substeps": 0,
+            "region_load_n": -0.0,
+            "region_loaded_substeps": 0,
+            "segment": 18
+          },
+          {
+            "first_material_local_point_m": null,
+            "goal_matching_contact_index": null,
+            "goal_matching_loaded_substeps": 0,
+            "region_load_n": -0.0,
+            "region_loaded_substeps": 0,
+            "segment": 23
+          }
+        ],
+        "material_intents": [
+          {
+            "patch_id": 0,
+            "requested_mode": "Pivot"
+          },
+          {
+            "patch_id": 1,
+            "requested_mode": "Pivot"
+          }
+        ],
+        "material_obligations": [
+          {
+            "acquired_substep": 12,
+            "current_contact_present": true,
+            "displacement_from_anchor_m": [
+              -2.8301974277500364e-6,
+              -0.0005728432899668491,
+              -0.00044850108094465074
+            ],
+            "id": 0,
+            "last_observed_substep": 16,
+            "last_world_point_m": [
+              -0.13481667535505104,
+              -0.001956721580620078,
+              0.04972753453187693
+            ],
+            "local_point_m": [
+              -0.044999998062849045,
+              -0.04500001668930054,
+              0.06000000983476639
+            ],
+            "mode": "Hold",
+            "nearest_current_local_distance_m": 4.029517556127894e-8,
+            "segment": 19,
+            "tangential_drift_m": 0.00044851001061960724,
+            "world_anchor_m": [
+              -0.1348138451576233,
+              -0.0013838782906532288,
+              0.05017603561282158
+            ]
+          },
+          {
+            "acquired_substep": 12,
+            "current_contact_present": true,
+            "displacement_from_anchor_m": [
+              -1.0371792290297943e-6,
+              -0.0005715383737926669,
+              -0.0004491405755103692
+            ],
+            "id": 1,
+            "last_observed_substep": 16,
+            "last_world_point_m": [
+              0.04518909597516321,
+              -0.0019507078975086398,
+              0.049726615640538825
+            ],
+            "local_point_m": [
+              -0.045000024139881134,
+              -0.04500002786517143,
+              0.06000003218650818
+            ],
+            "mode": "Hold",
+            "nearest_current_local_distance_m": 1.8995327925655188e-8,
+            "segment": 24,
+            "tangential_drift_m": 0.00044914177306340454,
+            "world_anchor_m": [
+              0.04519013315439224,
+              -0.001379169523715973,
+              0.050175756216049194
+            ]
+          }
+        ],
+        "measured_capture_xz_m": [
+          0.0005324900585435487,
+          0.02947600055615645
+        ],
+        "measured_local_diagnostic": {
+          "all_conditions_now": false,
+          "capture_inside": false,
+          "com_inside": false,
+          "consecutive_stable_substeps": 0,
+          "first_local_conditions_s": null,
+          "heel_loaded_substeps": [
+            0,
+            0
+          ],
+          "heel_loads_n": [
+            -0.0,
+            -0.0
+          ],
+          "heel_persistent": [
+            false,
+            false
+          ],
+          "maximum_angular_radps": 3.619262182406039,
+          "maximum_linear_mps": 0.44998840904945075,
+          "native_substep": 16,
+          "nonfoot_current_load_n": -0.0,
+          "nonfoot_persistent_segments": [],
+          "passed": false,
+          "support_fraction": 0.8588597317702227,
+          "support_load_n": 608.3148734405331
+        },
+        "native_substep": 16,
+        "obstacles": [
+          "InteriorTargetUnavailable",
+          {
+            "HeelNotPersistentlyObserved": {
+              "segment": 18
+            }
+          },
+          {
+            "HeelNotPersistentlyObserved": {
+              "segment": 23
+            }
+          }
+        ],
+        "original_transfer_gate": {
+          "allowed": false,
+          "capture_inside": false,
+          "com_inside": false,
+          "released_load_n": 302.6399841308594,
+          "releasing": [
+            18,
+            19
+          ],
+          "remaining_current_load_n": 305.674880298047,
+          "retained_segments": [
+            24
+          ],
+          "support_points_xz_m": [
+            [
+              0.04518910497426987,
+              0.04972660169005394
+            ],
+            [
+              0.13518911600112915,
+              0.04978182539343834
+            ]
+          ]
+        },
+        "released_load_excess_n": 125.56948852539062,
+        "remaining_load_deficit_n": 260.95070563945296,
+        "required_validation": "PreviewRequired",
+        "stage": "AcquireBilateralHeels",
+        "target_inside_original_margin": false,
+        "target_support_points_xz_m": [
+          [
+            -0.1348167061805725,
+            0.049727555364370346
+          ],
+          [
+            -0.044816698879003525,
+            0.04978315159678459
+          ],
+          [
+            0.04518910497426987,
+            0.04972660169005394
+          ],
+          [
+            0.13518911600112915,
+            0.04978182539343834
+          ]
+        ],
+        "target_support_segments": [
+          19,
+          24
+        ]
+      }
+    }
+  ],
+  "schema": "load-transfer-static-proposals-v1",
+  "scope": "Archived observations, no native admission"
+}

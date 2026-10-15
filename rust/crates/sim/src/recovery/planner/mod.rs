@@ -4,6 +4,9 @@ pub(crate) mod continuation;
 pub(crate) mod coordinated_runtime;
 pub(crate) mod command_proposal;
 pub(crate) mod support_schedule;
+pub(crate) mod load_transfer;
+pub(crate) mod observed_raccord;
+pub(crate) mod transfer_adapter;
 pub(crate) mod native_plan_preview;
 #[cfg(feature = "numeric-parity-worker")]
 pub(crate) mod numeric_parity_worker;

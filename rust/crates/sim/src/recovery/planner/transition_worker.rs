@@ -1,5 +1,18 @@
 //! Explicit NDJSON worker. No test or production entrypoint invokes it.
 //! Every integration requires a parent reservation and a local four-step debit.
+#[cfg(feature = "coordination-transfer-worker")]
+#[path = "transfer_worker.rs"]
+mod transfer_worker;
+
+/// Dedicated future protocol; linking or compiling never executes it.
+#[cfg(feature = "coordination-transfer-worker")]
+pub(crate) fn transfer_main() {
+    if let Err(error) = transfer_worker::run() {
+        eprintln!("transfer worker refused: {error}");
+        std::process::exit(1);
+    }
+}
+
 use super::native_plan_preview::{
     NativeKernelAdmission, NativeParityTrace, PreviewBudget, PreviewPurpose, StaticPreviewBranch,
     StepReservation, compare_prefix, native_kernel_admission_complete,

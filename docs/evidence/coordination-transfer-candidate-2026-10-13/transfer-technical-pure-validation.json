@@ -1,0 +1,49 @@
+{
+  "scope": "Additional pure Technical4 payload and transfer-kernel parity checks; no native integration, FK, geometry assembly, or native receipt construction",
+  "initialCompilation": {
+    "exitCode": 101,
+    "testsExecuted": 0,
+    "reason": "E0277: initial native scope attempted to serialize Model, which does not implement Serialize",
+    "log": "transfer-technical-four-pure-tests.log",
+    "correction": "Production owner introduced an exhaustive metadata projection without model reconstruction"
+  },
+  "successfulRuns": [
+    {
+      "filter": "recovery::planner::transfer_adapter::tests::pure_technical",
+      "passed": 2,
+      "failed": 0,
+      "filteredOut": 243,
+      "durationSeconds": 1.26,
+      "exitCode": 0,
+      "log": "transfer-technical-four-pure-tests-retry.log"
+    },
+    {
+      "filter": "recovery::planner::native_plan_preview::tests::pure_",
+      "passed": 7,
+      "failed": 0,
+      "filteredOut": 238,
+      "durationSeconds": 0.00,
+      "exitCode": 0,
+      "log": "transfer-kernel-parity-pure-tests.log"
+    }
+  ],
+  "cargoArguments": ["test", "-p", "lh-sim", "--lib", "--features", "experimental-solver-step-observation", "--locked", "FILTER", "--", "--test-threads=1"],
+  "sourceHashesRecordedAfterRuns": {
+    "rust/crates/sim/src/recovery/planner/transfer_adapter_tests.rs": "a5c2b8378641184da98e774ca1ac2af0bee489d7671873ff0b701c448ef5e7d1",
+    "rust/crates/sim/src/recovery/planner/transfer_adapter.rs": "70fb9feedf19784a4e9e076768695ae9f29f7c88a6306a51e71da16bafe15e90",
+    "rust/crates/sim/src/recovery/planner/native_plan_preview.rs": "95a5999b53b778c694596cad815dc75683d4f2e6c61d60bf5c762396be8769d7",
+    "rust/crates/sim/src/recovery/planner/whole_body_controller.rs": "a4597646248f80817a2079d0a53da52e408263f344abcffa40399780297c27a9"
+  },
+  "technicalCoverage": [
+    "Foreign scope, instance, entry identity and nonconsecutive or non-four-step payload rejected atomically",
+    "Per-action instance, clock, identity and exact command bits required",
+    "Every technical action consumed once, including predicted passive action",
+    "Exact completed fourth-step checkpoint required",
+    "Fifth native action, real-window continuation and technical rearm rejected after consumption",
+    "Partial technical windows cannot rearm"
+  ],
+  "previous15TestRun": "transfer-adapter-pure-validation.json",
+  "previous15TestRunWasNotRepeatedHere": true,
+  "physicalAdmissionClaimed": false,
+  "globalSuiteClaimed": false
+}

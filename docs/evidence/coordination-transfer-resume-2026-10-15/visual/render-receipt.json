@@ -1,0 +1,57 @@
+{
+  "schema": 1,
+  "createdUtc": "2026-10-15T09:45:15.595554+00:00",
+  "scope": "Plot saved A36 observation and saved command intention; no physical or geometric solver execution.",
+  "inputs": {
+    "entry": {
+      "path": "docs/evidence/coordination-transfer-candidate-2026-10-13/observed-entry-step36.json",
+      "bytes": 402669,
+      "sha256": "3bd00408a5fdb3df9f17feda430f5a1aad8334b17c244d3b119a09325891c433"
+    },
+    "commands": {
+      "path": "docs/evidence/coordination-transfer-candidate-2026-10-13/archived-a36-command-result.json",
+      "bytes": 1513164,
+      "sha256": "9ee5613ece4177588f4acfdd07c4adf9d77c6c380830b4f79690afa1af4ce521"
+    }
+  },
+  "script": {
+    "path": "docs/evidence/coordination-transfer-resume-2026-10-15/visual/plot_archived_a36.py",
+    "bytes": 13205,
+    "sha256": "ce19cceaaf7ee3325f49206e48633100211d4156f6e74a5084a68de0219fceb3"
+  },
+  "outputs": [
+    {
+      "path": "docs/evidence/coordination-transfer-resume-2026-10-15/visual/a36-support-and-intent.png",
+      "bytes": 394096,
+      "sha256": "b22e60e543b451ccd52560f710903b823f72ec672056455ea17c45121f3c5e60"
+    },
+    {
+      "path": "docs/evidence/coordination-transfer-resume-2026-10-15/visual/a36-support-and-intent.svg",
+      "bytes": 45779,
+      "sha256": "e0bc7103693787ab7a32087bca3b8524ce8e7c18f5ffca033771890b53cbee13"
+    },
+    {
+      "path": "docs/evidence/coordination-transfer-resume-2026-10-15/visual/plotted-archived-values.json",
+      "bytes": 9646,
+      "sha256": "20dbfbacbf7a222fe34acd1e0d64cbd4559f4b56a070bc11a4ebf3a7fe187e6d"
+    }
+  ],
+  "validation": {
+    "inputHashesMatchExpected": true,
+    "entryAndProposalAtA36": true,
+    "proposalSupportPointsExactlyEqualObservedContactProjections": true,
+    "observedSupportContacts": 12,
+    "heelsLoaded": false,
+    "newNativeSubsteps": 0,
+    "newWorlds": 0,
+    "newFk": 0,
+    "newAssembleObservedCalls": 0,
+    "testsExecuted": 0
+  },
+  "limitations": [
+    "The heel world points and heights are copied from the saved proposal; their old algebraic derivation is not rerun.",
+    "No foot outlines or support hull are reconstructed. Only saved contact points are displayed.",
+    "Dashed arrows show intended targets or direction, not a predicted or observed path; vertical arrows do not encode duration or speed by length.",
+    "The archived command result belongs to its historical source state and does not validate current code or physics."
+  ]
+}

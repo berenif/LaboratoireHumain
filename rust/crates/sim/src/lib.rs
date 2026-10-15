@@ -541,6 +541,13 @@ impl Simulation {
                 self.coordination = Some(owner);
                 return result;
             }
+            if owner.transfer.is_some() {
+                // Preserve only the experimental proof monitor after the
+                // original Handoff. Ordinary/native control below owns motors.
+                let result=owner.observe_transfer_handoff(self);
+                self.coordination=Some(owner);
+                result?;
+            }
         }
         #[cfg(test)]
         if recovery::getup_ab_configure(self)? {
@@ -1749,7 +1756,9 @@ mod tests {
 }
 #[cfg(all(test, feature = "coordination-worker", feature = "numeric-parity-worker"))]
 compile_error!("Native workers require separate executables and permits");
-#[cfg(all(test, feature = "coordination-worker", not(feature = "numeric-parity-worker")))]
+#[cfg(all(test, feature = "coordination-worker", not(feature = "coordination-transfer-worker"), not(feature = "numeric-parity-worker")))]
 fn main() { recovery::planner::transition_worker::main(); }
+#[cfg(all(test, feature = "coordination-transfer-worker", not(feature = "numeric-parity-worker")))]
+fn main() { recovery::planner::transition_worker::transfer_main(); }
 #[cfg(all(test, feature = "numeric-parity-worker", not(feature = "coordination-worker")))]
 fn main() { recovery::planner::numeric_parity_worker::main(); }

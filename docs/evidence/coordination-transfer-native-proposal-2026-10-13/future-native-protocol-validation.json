@@ -1,0 +1,42 @@
+{
+  "schema": 1,
+  "scope": "Protocol JSON, source SHA, links and integer-budget arithmetic only",
+  "status": "passed",
+  "maximumAllNativeSubsteps": 131096,
+  "localReadyDeadlineInclusive": 516,
+  "terminalTickArithmeticCasesChecked": 6001,
+  "inputs": [
+    {
+      "path": "docs/evidence/coordination-transfer-candidate-2026-10-13/observed-entry-step36.json",
+      "sha256": "3bd00408a5fdb3df9f17feda430f5a1aad8334b17c244d3b119a09325891c433"
+    },
+    {
+      "path": "docs/evidence/coordination-transfer-candidate-2026-10-13/observed-entry-task-state.json",
+      "sha256": "6c9a2385c9c436b8f8d9d5059ce3b254ae44184ede699992eaab7ceb5ab57a42"
+    },
+    {
+      "path": "docs/evidence/coordination-prototype-2026-10-12/continuation-candidate-program.json",
+      "sha256": "f14de3871ef9aba18083b36d10eeb56c8587c66a73b1ab2ec54e01830e06e59d"
+    },
+    {
+      "path": "docs/evidence/coordination-prototype-2026-10-12/continuation-tasks.json",
+      "sha256": "a96d03d736ca185a0457ae29c33846b69af28ecd5eb81609f60d281463756dd6"
+    }
+  ],
+  "outputs": [
+    {
+      "path": "docs/evidence/coordination-transfer-native-proposal-2026-10-13/future-native-protocol.json",
+      "sha256": "40053a9a6538f1a5cd8ad19683fe5979a3034f94ab275b266c42c3cf648de512",
+      "bytes": 10174
+    },
+    {
+      "path": "docs/evidence/coordination-transfer-native-proposal-2026-10-13/future-native-protocol.md",
+      "sha256": "7bb6144b5b8e436e51b3693a1ad436752a634cc472747ddf50084d6069419b13",
+      "bytes": 13497
+    }
+  ],
+  "nativeSteps": 0,
+  "fkEvaluations": 0,
+  "worlds": 0,
+  "physicalBudgetOpened": false
+}

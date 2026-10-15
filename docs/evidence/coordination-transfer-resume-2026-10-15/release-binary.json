@@ -1,0 +1,9 @@
+{
+  "binaryPath": "/workspace/LaboratoireHumain/rust/target/release/deps/coordination_transfer_worker-8daed3b7e6b04b70",
+  "binarySha256": "63e0e035d38d02f762c69b9dacb65d61e179c72ced50f5facd0bc29c64b9e8b5",
+  "bytes": 4664920,
+  "buildOnly": true,
+  "executions": 0,
+  "nativeSteps": 0,
+  "artifactFresh": false
+}

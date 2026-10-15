@@ -1,0 +1,321 @@
+{
+  "schema": 1,
+  "status": "closed-geometry-window-budget-and-historical-integrity-pass",
+  "auditedUtc": "2026-10-13T12:52:02.653691+00:00",
+  "authority": "Parent confirmed the sole geometry invocation completed and this inspection window closed, with no further calls. This audit does not close the global preparation or rewrite any previous reservation/result.",
+  "scope": "Read-only evidence reconciliation, hashes and Git blob checks. No assembly, test, compilation, FK, simulator or native integration executed by this auditor.",
+  "geometryWindow": {
+    "closed": true,
+    "reservedCallsWithoutRefund": 12,
+    "individualTickets": 1,
+    "usedTickets": 1,
+    "actualAssembleObservedCallsKnown": 1,
+    "actualAssembleObservedCallsExact": true,
+    "unusedButChargedCalls": 11,
+    "refundCalls": 0,
+    "additionalCallsAllowed": 0,
+    "startedUtc": "2026-10-13T12:25:17.675660+00:00",
+    "deadlineUtc": "2026-10-13T12:55:17.675660+00:00",
+    "usedReceiptStartedUtc": "2026-10-13T12:44:48.911000+00:00",
+    "resultCompletedUtc": "2026-10-13T12:44:48.924000+00:00",
+    "intervalFromUsedReceiptToResultMilliseconds": 13,
+    "receiptIntervalIsWholeTestOrCompilationDuration": false,
+    "completedBeforeDeadline": true
+  },
+  "result": {
+    "commands": 4,
+    "activeAxesPerCommand": 46,
+    "commandSubsteps": [
+      36,
+      37,
+      38,
+      39
+    ],
+    "compilationError": null,
+    "materialAnchorObligationsPreservedInNumericBatch": true,
+    "nativeAdmission": "unarmed",
+    "nativeRecords": 0,
+    "localDiagnosticPassed": false,
+    "heelAcquisitionProved": false,
+    "completeStandingProved": false,
+    "rotationAssemblyTestExecuted": false,
+    "zeroVariantAssemblyTestExecuted": false
+  },
+  "compilationHistory": {
+    "initialAttemptsFailedBeforeTestExecution": 2,
+    "initialLog": "geometry-command-tests.log",
+    "rerunLog": "geometry-command-tests-rerun.log",
+    "finalLog": "geometry-command-tests-final.log",
+    "finalTestsPassed": 1,
+    "initialFailedCompilationsAddAssembleCalls": 0,
+    "sourceAmendmentPredatesUsedReceipt": true,
+    "sourceHashesBeforeAfterMatch": true,
+    "testedSourceHashes": {
+      "rust/crates/sim/src/recovery/planner/whole_body_controller.rs": "e54ad15e77e8c795305f6907ac243ce250550c652d6b323aefa58dd821080397",
+      "rust/crates/sim/src/recovery/planner/whole_body_tasks.rs": "83a733ffbf9f7a15cb802f4202586cde2858e5686ff6487cc3eaacd9e975a049",
+      "rust/crates/sim/src/recovery/planner/continuation.rs": "74020cce0959251e6ac166acbc61b91a97f92218ca7cc7b4117f0e6ec5d76ff6",
+      "rust/crates/sim/src/recovery/planner/coordinated_runtime.rs": "bdd872f4cf592309d40825148aab4776ec3038104bbe591bf1b3a54471dd7298",
+      "rust/crates/sim/src/recovery/planner/support_state.rs": "19607d6e8d19ca66579e1c9a830ee8e711bac3e7ce17d907f1e071a7b89b872f",
+      "rust/crates/sim/src/recovery/planner/contact_observation.rs": "94366ed69861241b360756a440cda1ef7697594cd32b852e1b0a39bf2a9335c2",
+      "rust/crates/sim/src/recovery/planner/mod.rs": "ad159b7097f5d4c5ce72b65c2efd0457a53f66d8886c59f8612c126e58f0c839",
+      "rust/crates/sim/src/recovery/planner/transfer_adapter.rs": "2e40c8cde9182506a3d13b1c1396551f1fe4a959b068a2c01ca5d693ac3a594c",
+      "rust/crates/sim/src/recovery/planner/native_observation.rs": "6b8008b50fe9614af1406eb361a9b4e377ecb03c6cf84b3ccddef0619c3edd74",
+      "rust/crates/sim/src/recovery/planner/native_plan_preview.rs": "d7f1d6cc077733690fc74e54970f66268c356d43abe3804d6e80331b1d8c1181",
+      "rust/crates/sim/src/recovery/planner/numeric_parity_worker.rs": "ac89b99890d1842205bb1071967697a221c7fa2b929fd253d54e08035ccd04e0",
+      "rust/crates/sim/src/recovery/planner/transfer_adapter_tests.rs": "a9cf2779ca0714e6f1e564c26ea51d577aa0f0fd2641de9d93dc6a2f049b8cc8",
+      "rust/crates/sim/src/recovery/planner/geometric_tasks.rs": "1c018f4d20ff09921e640aa2c45b2ec04dfc860452a18e816a05e2b9ebf2ee68",
+      "rust/crates/sim/src/recovery/planner/transition_worker.rs": "5b39459b5513f3478573b8d1672fd1003267ae1efd3b323e883954350c7ef385",
+      "rust/crates/sim/src/recovery/planner/observed_raccord.rs": "1a9af58e0d0ed39a806f23a61ef2c772e6841242e98aec391b86c9ab23bf9e66",
+      "rust/crates/sim/src/recovery/planner/support_schedule.rs": "243e1b712a6a0f02d59480b78205b7bb8d3f6a913b30589d526f06842826997c",
+      "rust/crates/sim/src/recovery/planner/command_proposal.rs": "d09cf9cfbeb650eddbcf2008fa214136f1bb774f2a5bebf44298c77a50c87d5b",
+      "rust/crates/sim/src/recovery/planner/load_transfer.rs": "555c93dae299b029cf8e78f5e048833de2bb8f989e3fadf366bfa3705582fcee"
+    },
+    "currentSourceDifferencesAfterInspection": [
+      {
+        "path": "rust/crates/sim/src/recovery/planner/whole_body_controller.rs",
+        "duringInspectionSha256": "e54ad15e77e8c795305f6907ac243ce250550c652d6b323aefa58dd821080397",
+        "currentSha256": "15ab0b9a5707c92eb71c30a2e3678cd1b252ace75d284c99398d7e7f597fd90c"
+      },
+      {
+        "path": "rust/crates/sim/src/recovery/planner/transfer_adapter.rs",
+        "duringInspectionSha256": "2e40c8cde9182506a3d13b1c1396551f1fe4a959b068a2c01ca5d693ac3a594c",
+        "currentSha256": "2764affc6776dc5d94e00fd2e35019234af7792a733f2078e93d9eff0434b665"
+      },
+      {
+        "path": "rust/crates/sim/src/recovery/planner/native_plan_preview.rs",
+        "duringInspectionSha256": "d7f1d6cc077733690fc74e54970f66268c356d43abe3804d6e80331b1d8c1181",
+        "currentSha256": "54cbaf1a9f374a5226e64a4e0f167daf409aa73bff6ce12113cb321f1f66a53b"
+      },
+      {
+        "path": "rust/crates/sim/src/recovery/planner/transfer_adapter_tests.rs",
+        "duringInspectionSha256": "a9cf2779ca0714e6f1e564c26ea51d577aa0f0fd2641de9d93dc6a2f049b8cc8",
+        "currentSha256": "45cb7f3f7acd32784041c23f1974d334f0a21f9cc0ca8a4533c22d1885c7956b"
+      },
+      {
+        "path": "rust/crates/sim/src/recovery/planner/observed_raccord.rs",
+        "duringInspectionSha256": "1a9af58e0d0ed39a806f23a61ef2c772e6841242e98aec391b86c9ab23bf9e66",
+        "currentSha256": "68aa9a55dff33b201cbe8052eef8bdd0255f7982d2baa3fe6bae534b2295fea7"
+      }
+    ],
+    "parentExplanation": "Semantic changes after the geometry result concern native admission, terminal/full receipts/checkpoints, configure/passive progression and command comparisons; parent states nominal task assembly and solver were not changed. Pure test code also changed.",
+    "testedSourceBytesSeparatelyArchivedBeforeLaterEdits": false,
+    "currentWorktreeAssemblyExecutionCertified": false,
+    "scopeLimit": "Only the source hashes in the before/after receipt identify the executed assembly. Current source hashes differ. Archived input problem/output commands may support a separately reported pure compiler replay; none is inferred here."
+  },
+  "budget": {
+    "priorStaticInspectionsCharged": 9173,
+    "additionalStaticInspectionsChargedWithoutRefund": 12,
+    "totalStaticInspectionsCharged": 9185,
+    "staticInspectionsCap": 20000,
+    "additionalPreparationSecondsChargedByThisSubwindow": 0,
+    "totalPreparationChargedSeconds": 46489,
+    "preparationCapSeconds": 144000,
+    "globalPreparationClosed": false,
+    "parentPreparationDeadlineUtc": "2026-10-13T15:01:54+00:00",
+    "originalPreparationDeadlineUtc": "2026-10-17T20:14:00+00:00",
+    "newNativeSteps": 0,
+    "newFkEvaluations": 0,
+    "newWorlds": 0,
+    "familyNativeSubstepsChargedWithoutRefund": 7844,
+    "familyHistorySlotsCharged": 4,
+    "familyHistorySlotsMaximum": 4,
+    "closedPhysicalFamilyReopened": false
+  },
+  "protectedArtifacts": [
+    {
+      "kind": "protectedClosedLedgers",
+      "path": "docs/evidence/coordination-prototype-2026-10-12/budget/ledger.json",
+      "sha256": "2afa69b3ae9c8ab8343f7dabdf46b955c8ac7b88aa259404958e25d49a72ef07",
+      "status": "closed-native-failure",
+      "unchanged": true
+    },
+    {
+      "kind": "protectedClosedLedgers",
+      "path": "docs/evidence/coordination-native-parity-2026-10-13/native-run/physical-ledger.json",
+      "sha256": "73b2e3bff52aadf0414be2f7a4a96fa4cd5da7b02de0945434e4f136bbf476a6",
+      "status": "closed-failure",
+      "unchanged": true
+    },
+    {
+      "kind": "protectedClosedLedgers",
+      "path": "docs/evidence/coordination-native-parity-renewal-2026-10-13/native-run/physical-ledger.json",
+      "sha256": "1411bfcc1a17caa681359cfb39d7c0429f2188375925c22ba4b037df96d44bc2",
+      "status": "closed-failure",
+      "unchanged": true
+    },
+    {
+      "kind": "protectedClosedLedgers",
+      "path": "docs/evidence/coordination-native-serialization-2026-10-13/native-run/physical-ledger.json",
+      "sha256": "191d3216953bfb4aca5b7abcea277454d7d97ad5b4ca72e28ffbc260399af250",
+      "status": "closed-success",
+      "unchanged": true
+    },
+    {
+      "kind": "protectedClosedLedgers",
+      "path": "docs/evidence/coordination-local-pair-2026-10-13/budget/ledger.json",
+      "sha256": "e7c6831159ac1ae913a05f2af545a0521181d7142dbabd967908dfe7958fba97",
+      "status": "closed-native-failure",
+      "unchanged": true
+    },
+    {
+      "kind": "protectedBinaries",
+      "path": "rust/target/release/deps/coordination_worker-60f2b83fe348a1d3",
+      "sha256": "1bb4b91ac8ebfbe382d9525e524b85040ca9890bc90a0ef0467f1ef2b64c8b57",
+      "unchanged": true
+    },
+    {
+      "kind": "protectedBinaries",
+      "path": "rust/target/release/deps/numeric_parity_worker-b68c9e5f8e8cfa37",
+      "sha256": "9e125785fad85b0befc9373c3116d66aa32e8050a998ce08974b0da29d2760cc",
+      "unchanged": true
+    },
+    {
+      "kind": "protectedBinaries",
+      "path": "rust/target/release/deps/numeric_parity_worker_serialization-360529b9ad4cba37",
+      "sha256": "83bddf95897acc6015de7d2947b04ee2f5aaf2eb49b4dcb85ba0a67764f95e1b",
+      "unchanged": true
+    },
+    {
+      "kind": "protectedBinaries",
+      "path": "rust/target/release/deps/coordination_local_pair_worker-bf2c98f759d9dc34",
+      "sha256": "c1c8a12825428758643a7f6e2fafb0a2710f7dca787c1daee07c27ec59849e9c",
+      "unchanged": true
+    },
+    {
+      "kind": "protectedManifests",
+      "path": "docs/evidence/coordination-prototype-2026-10-12/frozen-manifest.json",
+      "sha256": "4a37d4afbfe3ecd51997208bf5fa7599106fd9c43650cb55f6bcf6400d4e1d29",
+      "frozenGitCommit": "b6e711d3dc58909979295df81437e6a5579c41db",
+      "committedManifestBytesVerified": true,
+      "unchanged": true
+    },
+    {
+      "kind": "protectedManifests",
+      "path": "docs/evidence/coordination-native-parity-2026-10-13/manifest.json",
+      "sha256": "40e492a29d723118cb26990b9dd2866d498d9a1a5d5ae815d7aae1d9d92a407a",
+      "frozenGitCommit": "08aa8684911a87e0c3d6565855a0bb2c84340024",
+      "committedManifestBytesVerified": true,
+      "unchanged": true
+    },
+    {
+      "kind": "protectedManifests",
+      "path": "docs/evidence/coordination-native-parity-renewal-2026-10-13/manifest.json",
+      "sha256": "7235b6916b2d669710b0339e474fc245b48cc4311dd893557f4c03164f3326a6",
+      "frozenGitCommit": "334441445a9f5d97f18aa5d2956658685daf9e9a",
+      "committedManifestBytesVerified": true,
+      "unchanged": true
+    },
+    {
+      "kind": "protectedManifests",
+      "path": "docs/evidence/coordination-native-serialization-2026-10-13/manifest.json",
+      "sha256": "179bfe3cb58819cd2ba1b73642969c0eb2a343a052dee83ae89e2850e0830356",
+      "frozenGitCommit": "b37eb9a566e1c819a7077c067ded5696f425ca8b",
+      "committedManifestBytesVerified": true,
+      "unchanged": true
+    },
+    {
+      "kind": "protectedManifests",
+      "path": "docs/evidence/coordination-local-pair-2026-10-13/manifest.json",
+      "sha256": "2fbcb3db0cd1bccf14082e772b1efba63e567fe7fce35ed8cccbbbf2ac2cdde9",
+      "frozenGitCommit": "65925ef032197639f6ebd6c8e897084a5735cacf",
+      "committedManifestBytesVerified": true,
+      "unchanged": true
+    }
+  ],
+  "historicalSourceVerification": [
+    {
+      "manifest": "docs/evidence/coordination-prototype-2026-10-12/frozen-manifest.json",
+      "frozenGitCommit": "b6e711d3dc58909979295df81437e6a5579c41db",
+      "sourceVersionsVerified": 54
+    },
+    {
+      "manifest": "docs/evidence/coordination-native-parity-2026-10-13/manifest.json",
+      "frozenGitCommit": "08aa8684911a87e0c3d6565855a0bb2c84340024",
+      "sourceVersionsVerified": 271
+    },
+    {
+      "manifest": "docs/evidence/coordination-native-parity-renewal-2026-10-13/manifest.json",
+      "frozenGitCommit": "334441445a9f5d97f18aa5d2956658685daf9e9a",
+      "sourceVersionsVerified": 272
+    },
+    {
+      "manifest": "docs/evidence/coordination-native-serialization-2026-10-13/manifest.json",
+      "frozenGitCommit": "b37eb9a566e1c819a7077c067ded5696f425ca8b",
+      "sourceVersionsVerified": 273
+    },
+    {
+      "manifest": "docs/evidence/coordination-local-pair-2026-10-13/manifest.json",
+      "frozenGitCommit": "65925ef032197639f6ebd6c8e897084a5735cacf",
+      "sourceVersionsVerified": 287
+    }
+  ],
+  "historicalSourceVersionsVerified": 1157,
+  "artifacts": [
+    {
+      "path": "docs/evidence/coordination-transfer-candidate-2026-10-13/preparation-reservation.json",
+      "sizeBytes": 10669,
+      "sha256": "d7940da3ff7f3d29898eb25f1c09a2487158b6ff34820dad8ce3491766e33f0b"
+    },
+    {
+      "path": "docs/evidence/coordination-transfer-candidate-2026-10-13/geometry-reservation.json",
+      "sizeBytes": 8209,
+      "sha256": "44173fcea44dc328813e43981cc91227b921e6b6d6309b153a533991de9990b7"
+    },
+    {
+      "path": "docs/evidence/coordination-transfer-candidate-2026-10-13/geometry-tickets/ticket-01.json",
+      "sizeBytes": 2469,
+      "sha256": "f2778b252ce700e2e95622bd18d2e4da4367eb58492fbbe673444af7c9461220"
+    },
+    {
+      "path": "docs/evidence/coordination-transfer-candidate-2026-10-13/geometry-tickets/ticket-01.used.json",
+      "sizeBytes": 153,
+      "sha256": "d277528909c63fa7893888dc2d568a4ef3dba64683f091a88e057e26d767f5b0"
+    },
+    {
+      "path": "docs/evidence/coordination-transfer-candidate-2026-10-13/geometry-tickets/ticket-01-source-amendment.json",
+      "sizeBytes": 2598,
+      "sha256": "69357a310c6dd9046f752e76c46d4d634f916ebfcddd289998dd6c43e061a02d"
+    },
+    {
+      "path": "docs/evidence/coordination-transfer-candidate-2026-10-13/geometry-source-validation.json",
+      "sizeBytes": 2688,
+      "sha256": "ecfea8d9c6875a38167ba0d9d675d095531f892d2f9222f0125f2388a67df87e"
+    },
+    {
+      "path": "docs/evidence/coordination-transfer-candidate-2026-10-13/archived-a36-command-result.json",
+      "sizeBytes": 1513164,
+      "sha256": "9ee5613ece4177588f4acfdd07c4adf9d77c6c380830b4f79690afa1af4ce521"
+    },
+    {
+      "path": "docs/evidence/coordination-transfer-candidate-2026-10-13/observed-entry-step36.json",
+      "sizeBytes": 402669,
+      "sha256": "3bd00408a5fdb3df9f17feda430f5a1aad8334b17c244d3b119a09325891c433"
+    },
+    {
+      "path": "docs/evidence/coordination-transfer-candidate-2026-10-13/observed-entry-task-state.json",
+      "sizeBytes": 20718,
+      "sha256": "6c9a2385c9c436b8f8d9d5059ce3b254ae44184ede699992eaab7ceb5ab57a42"
+    },
+    {
+      "path": "docs/evidence/coordination-transfer-candidate-2026-10-13/geometry-command-tests.log",
+      "sizeBytes": 3557,
+      "sha256": "14888074c1927c58087ceaf49783f899691d850a00d14af829370a177e3ee8b7"
+    },
+    {
+      "path": "docs/evidence/coordination-transfer-candidate-2026-10-13/geometry-command-tests-rerun.log",
+      "sizeBytes": 809,
+      "sha256": "1324742b407f6c86d583a86f76fe00d336462faa3180d3a31c26a38272d58794"
+    },
+    {
+      "path": "docs/evidence/coordination-transfer-candidate-2026-10-13/geometry-command-tests-final.log",
+      "sizeBytes": 9407,
+      "sha256": "b9262c5118c6378ef73de8b3fb075dc7d0884e2ef291553715e9b74d39ef0c99"
+    }
+  ],
+  "limitations": [
+    "One A36 nominal assembly only; optional zero/rotation assembly comparisons were not executed.",
+    "Numeric command feasibility does not establish material support, native response, heel acquisition, standing or qualification.",
+    "The final source tree changed semantically after this test; it must not be described as having executed the recorded assembly. Tested source bytes were not separately archived before those later edits.",
+    "The 12 reserved inspections remain charged; closing this window provides no permission for another geometry invocation or native run."
+  ]
+}

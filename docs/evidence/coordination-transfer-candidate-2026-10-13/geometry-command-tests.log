@@ -1,0 +1,54 @@
+warning: /workspace/LaboratoireHumain/rust/crates/sim/Cargo.toml: file `/workspace/LaboratoireHumain/rust/crates/sim/src/lib.rs` found to be present in multiple build targets:
+  * `lib` target `lh_sim`
+  * `integration-test` target `coordination-local-pair-worker`
+  * `integration-test` target `coordination-worker`
+  * `integration-test` target `numeric-parity-worker`
+  * `integration-test` target `numeric-parity-worker-serialization`
+   Compiling lh-sim v0.1.0 (/workspace/LaboratoireHumain/rust/crates/sim)
+warning: unused import: `self`
+ --> crates/sim/src/recovery/planner/transfer_adapter.rs:9:21
+  |
+9 |     load_transfer::{self, Policy, TransferIntent, TransferProposal},
+  |                     ^^^^
+  |
+  = note: `#[warn(unused_imports)]` on by default
+
+error[E0277]: the trait bound `whole_body_tasks::Problem: serde::Serialize` is not satisfied
+    --> crates/sim/src/recovery/planner/whole_body_controller.rs:1016:22
+     |
+1016 |           let evidence=json!({"status":if compilation.is_ok(){"pure-command-pass-native-admission-required"}else{"pure-command-rejection"},
+     |  ______________________^
+1017 | |             "nativeSubsteps":0,"newWorlds":0,"fkEvaluations":0,"assembleObservedCalls":1,
+1018 | |             "completedUnixMs":now(),"proposal":proposal,"nominal":{"positions":nominal.positions,"velocities":nominal.velocities},
+1019 | |             "problem":problem,"compilationError":compilation.as_ref().err(),"commands":commands,"adapter":adapter.evidence()});
+     | |                                                                                                                              ^
+     | |                                                                                                                              |
+     | |______________________________________________________________________________________________________________________________the trait `_::_serde::Serialize` is not implemented for `whole_body_tasks::Problem`
+     |                                                                                                                                required by a bound introduced by this call
+     |
+     = note: for local types consider adding `#[derive(serde::Serialize)]` to your `whole_body_tasks::Problem` type
+     = note: for types from other crates check whether the crate offers a `serde` feature flag
+     = help: the following other types implement trait `_::_serde::Serialize`:
+               &'a T
+               &'a mut T
+               ()
+               (T,)
+               (T0, T1)
+               (T0, T1, T2)
+               (T0, T1, T2, T3)
+               (T0, T1, T2, T3, T4)
+             and 527 others
+     = note: required for `&whole_body_tasks::Problem` to implement `_::_serde::Serialize`
+note: required by a bound in `to_value`
+    --> /workspace/lh-cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde_json-1.0.151/src/value/mod.rs:997:8
+     |
+995  | pub fn to_value<T>(value: T) -> Result<Value, Error>
+     |        -------- required by a bound in this function
+996  | where
+997  |     T: Serialize,
+     |        ^^^^^^^^^ required by this bound in `to_value`
+     = note: this error originates in the macro `$crate::json_internal` which comes from the expansion of the macro `json` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+For more information about this error, try `rustc --explain E0277`.
+warning: `lh-sim` (lib test) generated 1 warning
+error: could not compile `lh-sim` (lib test) due to 1 previous error; 1 warning emitted

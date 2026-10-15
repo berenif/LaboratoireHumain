@@ -1,0 +1,381 @@
+{
+  "nativeSubstep": 36,
+  "timeS": 0.15,
+  "centerOfMassM": [
+    -0.00037677420186810195,
+    0.9796620607376099,
+    0.034044403582811356
+  ],
+  "capturePointXZ_M": [
+    -0.002873007034473913,
+    0.040698861886092515
+  ],
+  "recenterIntentXZ_M": [
+    0.005459729582071304,
+    -0.028035180643200874
+  ],
+  "observedContacts": [
+    {
+      "segment": 18,
+      "contacts": [
+        {
+          "current_upward_load_n": 79.33789316292665,
+          "local_point_m": [
+            -0.0520000196993351,
+            -0.04500000551342964,
+            0.07500001788139343
+          ],
+          "upward_normal": 1.0,
+          "world_point_m": [
+            -0.14192518591880798,
+            -0.0004816614091396332,
+            -0.07571139931678772
+          ]
+        },
+        {
+          "current_upward_load_n": 71.35877237087931,
+          "local_point_m": [
+            0.052000004798173904,
+            -0.04500000923871994,
+            0.07500002533197403
+          ],
+          "upward_normal": 1.0,
+          "world_point_m": [
+            -0.037930022925138474,
+            0.00015715882182121277,
+            -0.07493511587381363
+          ]
+        }
+      ]
+    },
+    {
+      "segment": 19,
+      "contacts": [
+        {
+          "current_upward_load_n": 33.769302991143455,
+          "local_point_m": [
+            -0.0520000234246254,
+            -0.045000020414590836,
+            -0.06000000983476639
+          ],
+          "upward_normal": 1.0,
+          "world_point_m": [
+            -0.14195282757282257,
+            -0.00090804323554039,
+            -0.07165835797786713
+          ]
+        },
+        {
+          "current_upward_load_n": 81.15442091166268,
+          "local_point_m": [
+            -0.04500000923871994,
+            -0.04500000923871994,
+            0.060000013560056686
+          ],
+          "upward_normal": 1.0,
+          "world_point_m": [
+            -0.1358211636543274,
+            -0.005277503281831741,
+            0.04830962046980858
+          ]
+        },
+        {
+          "current_upward_load_n": 76.03972753675212,
+          "local_point_m": [
+            0.04500001296401024,
+            -0.04500001296401024,
+            0.060000013560056686
+          ],
+          "upward_normal": 1.0,
+          "world_point_m": [
+            -0.04582534730434418,
+            -0.004724673926830292,
+            0.048981402069330215
+          ]
+        },
+        {
+          "current_upward_load_n": 33.14221328500291,
+          "local_point_m": [
+            0.0520000159740448,
+            -0.04500001296401024,
+            -0.060000017285346985
+          ],
+          "upward_normal": 1.0,
+          "world_point_m": [
+            -0.037957653403282166,
+            -0.0002692081034183502,
+            -0.07088208198547363
+          ]
+        }
+      ]
+    },
+    {
+      "segment": 23,
+      "contacts": [
+        {
+          "current_upward_load_n": 115.91076246369379,
+          "local_point_m": [
+            -0.0003891008091159165,
+            -0.045000020414590836,
+            0.07500004023313522
+          ],
+          "upward_normal": 1.0,
+          "world_point_m": [
+            0.08999989926815033,
+            4.556402564048767e-05,
+            -0.07589814066886902
+          ]
+        },
+        {
+          "current_upward_load_n": 59.911448215096165,
+          "local_point_m": [
+            0.052000027149915695,
+            -0.045000024139881134,
+            0.07500005513429642
+          ],
+          "upward_normal": 1.0,
+          "world_point_m": [
+            0.14238685369491577,
+            0.00030104443430900574,
+            -0.07549639791250229
+          ]
+        }
+      ]
+    },
+    {
+      "segment": 24,
+      "contacts": [
+        {
+          "current_upward_load_n": 34.1515570948951,
+          "local_point_m": [
+            -0.0520000234246254,
+            -0.04500000923871994,
+            -0.06000000610947609
+          ],
+          "upward_normal": 1.0,
+          "world_point_m": [
+            0.038361236453056335,
+            -0.0006472431123256683,
+            -0.07213451713323593
+          ]
+        },
+        {
+          "current_upward_load_n": 71.12512694391691,
+          "local_point_m": [
+            -0.04500001296401024,
+            -0.045000024139881134,
+            0.06000002473592758
+          ],
+          "upward_normal": 1.0,
+          "world_point_m": [
+            0.044462330639362335,
+            -0.004912633448839188,
+            0.04783875495195389
+          ]
+        },
+        {
+          "current_upward_load_n": 63.39360621753899,
+          "local_point_m": [
+            0.045000020414590836,
+            -0.04500001668930054,
+            0.06000002473592758
+          ],
+          "upward_normal": 1.0,
+          "world_point_m": [
+            0.13445863127708435,
+            -0.0044739507138729095,
+            0.04852887988090515
+          ]
+        },
+        {
+          "current_upward_load_n": 26.803635152984814,
+          "local_point_m": [
+            0.0520000234246254,
+            -0.04500002786517143,
+            -0.060000013560056686
+          ],
+          "upward_normal": 1.0,
+          "world_point_m": [
+            0.1423569768667221,
+            -0.00014033913612365723,
+            -0.07133705168962479
+          ]
+        }
+      ]
+    }
+  ],
+  "segmentLoadsN": [
+    {
+      "segment": 18,
+      "loadN": 150.69667053222656,
+      "consecutiveSubsteps": 13
+    },
+    {
+      "segment": 19,
+      "loadN": 224.10568237304688,
+      "consecutiveSubsteps": 36
+    },
+    {
+      "segment": 23,
+      "loadN": 175.82220458984375,
+      "consecutiveSubsteps": 13
+    },
+    {
+      "segment": 24,
+      "loadN": 195.4739227294922,
+      "consecutiveSubsteps": 36
+    }
+  ],
+  "heelPoints": [
+    {
+      "height_above_observed_support_m": 0.02534886003852116,
+      "observed_point_world_m": [
+        -0.1329809079109013,
+        0.02534886003852116,
+        -0.22341648064937192
+      ],
+      "provenance": {
+        "local_point_m": [
+          -0.04399999976158142,
+          -0.04500000178813934,
+          -0.07500000298023224
+        ],
+        "segment": 18,
+        "source_path": "docs/evidence/coordination-prototype-2026-10-12/continuation-tasks.json",
+        "source_sha256": "a96d03d736ca185a0457ae29c33846b69af28ecd5eb81609f60d281463756dd6"
+      },
+      "world_angular_velocity_radps": [
+        -0.34545092278510003,
+        -0.0021220432386739947,
+        -0.002578651621534607
+      ],
+      "world_velocity_mps": [
+        0.0,
+        -0.05069772007704232,
+        0.0
+      ]
+    },
+    {
+      "height_above_observed_support_m": 0.02600504280063716,
+      "observed_point_world_m": [
+        0.047395764309921685,
+        0.02600504280063716,
+        -0.2239282474847557
+      ],
+      "provenance": {
+        "local_point_m": [
+          -0.04399999976158142,
+          -0.04500000178813934,
+          -0.07500000298023224
+        ],
+        "segment": 23,
+        "source_path": "docs/evidence/coordination-prototype-2026-10-12/continuation-tasks.json",
+        "source_sha256": "a96d03d736ca185a0457ae29c33846b69af28ecd5eb81609f60d281463756dd6"
+      },
+      "world_angular_velocity_radps": [
+        -0.3507427902687886,
+        -0.0017105529212255496,
+        -0.002689668874289705
+      ],
+      "world_velocity_mps": [
+        0.0,
+        -0.05201008560127432,
+        0.0
+      ]
+    }
+  ],
+  "heelLoadsN": [
+    0.0,
+    0.0
+  ],
+  "materialObligations": [
+    {
+      "acquired_substep": 36,
+      "current_contact_present": true,
+      "displacement_from_anchor_m": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "id": 0,
+      "last_observed_substep": 36,
+      "last_world_point_m": [
+        -0.1358211636543274,
+        -0.005277503281831741,
+        0.04830962046980858
+      ],
+      "local_point_m": [
+        -0.04500000923871994,
+        -0.04500000923871994,
+        0.060000013560056686
+      ],
+      "mode": "Hold",
+      "nearest_current_local_distance_m": 0.0,
+      "segment": 19,
+      "tangential_drift_m": 0.0,
+      "world_anchor_m": [
+        -0.1358211636543274,
+        -0.005277503281831741,
+        0.04830962046980858
+      ]
+    },
+    {
+      "acquired_substep": 36,
+      "current_contact_present": true,
+      "displacement_from_anchor_m": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "id": 1,
+      "last_observed_substep": 36,
+      "last_world_point_m": [
+        0.044462330639362335,
+        -0.004912633448839188,
+        0.04783875495195389
+      ],
+      "local_point_m": [
+        -0.04500001296401024,
+        -0.045000024139881134,
+        0.06000002473592758
+      ],
+      "mode": "Hold",
+      "nearest_current_local_distance_m": 0.0,
+      "segment": 24,
+      "tangential_drift_m": 0.0,
+      "world_anchor_m": [
+        0.044462330639362335,
+        -0.004912633448839188,
+        0.04783875495195389
+      ]
+    }
+  ],
+  "localDiagnostic": {
+    "all_conditions_now": false,
+    "capture_inside": true,
+    "com_inside": true,
+    "consecutive_stable_substeps": 0,
+    "first_local_conditions_s": null,
+    "heel_loaded_substeps": [
+      0,
+      0
+    ],
+    "heel_loads_n": [
+      -0.0,
+      -0.0
+    ],
+    "heel_persistent": [
+      false,
+      false
+    ],
+    "maximum_angular_radps": 0.997766118877696,
+    "maximum_linear_mps": 0.4087597746456213,
+    "native_substep": 36,
+    "nonfoot_current_load_n": -0.0,
+    "nonfoot_persistent_segments": [],
+    "passed": false,
+    "support_fraction": 1.0533918479689537,
+    "support_load_n": 746.098466346493
+  },
+  "meaning": "Copied saved observations and intentions; unit conversion for display only. No physical result computed."
+}

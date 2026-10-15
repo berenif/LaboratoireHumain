@@ -28,6 +28,40 @@ pub(crate) enum PreviewError {
 pub(crate) struct NativeKernelAdmission {
     initial_substep: u64,
     verified_substeps: u32,
+    transfer_scope: Option<Vec<u8>>,
+}
+impl NativeKernelAdmission {
+    fn require_scope(&self, scope: Option<&[u8]>) -> Result<(), PreviewError> {
+        if self.transfer_scope.as_deref() != scope {
+            return Err(PreviewError::ParityMismatch(
+                "Native kernel certificate belongs to a different candidate scope".into(),
+            ));
+        }
+        Ok(())
+    }
+}
+
+/// Non-deserializable native admission capability. Its only constructor is
+/// StaticPreviewBranch::certify_transfer_horizon below; a pure adapter payload
+/// cannot be passed directly to the real command owner.
+pub(crate) struct NativeWindowReceipt {
+    data: super::transfer_adapter::NativeWindowData,
+}
+impl NativeWindowReceipt {
+    pub(super) fn into_data(self) -> super::transfer_adapter::NativeWindowData {
+        self.data
+    }
+}
+
+/// Four-step verification capability, never a material/history admission.
+/// Only a completed ParityVerification branch can construct it below.
+pub(crate) struct NativeTechnicalReceipt {
+    data: super::transfer_adapter::NativeTechnicalData,
+}
+impl NativeTechnicalReceipt {
+    pub(super) fn into_data(self) -> super::transfer_adapter::NativeTechnicalData {
+        self.data
+    }
 }
 
 #[derive(Clone, Debug, PartialEq, Eq, Serialize)]
@@ -48,7 +82,46 @@ fn coordinates_bits(values: &[[f32; 3]]) -> Vec<[u32; 3]> {
 /// Persistent recovery state is part of parity even when the caller has no
 /// separate memory. Exhaustive destructuring makes new fields a compile error.
 fn native_memory(s: &Simulation) -> serde_json::Value {
-    let recovery = s.recovery.as_ref().map(|r| {
+    // Every Simulation field is named. Added persistent state must be assigned
+    // to the world, snapshot, explicit decision memory, or refused static scope.
+    let Simulation {
+        world: _,
+        model,
+        bodies,
+        colliders,
+        joints,
+        floor,
+        filter,
+        profile,
+        tick,
+        generation,
+        motion,
+        counters,
+        targets,
+        rest_targets,
+        rest_com,
+        rest_com_roundoff,
+        heading,
+        grab,
+        last_press,
+        applied_sequence,
+        contacts,
+        persistence,
+        integrated_support_substeps,
+        integrated_support_loads_n,
+        diagnostics,
+        first_failure,
+        motor_ceiling_sum,
+        substeps_completed,
+        stepping,
+        motion_observation,
+        environment,
+        striker,
+        recovery,
+        coordination,
+    } = s;
+    let crate::Filter { exclusions } = filter;
+    let recovery = recovery.as_ref().map(|r| {
         let crate::recovery::Controller {
             status, targets, hands, lead, stand_feet, stand_root, stand_goal,
             best_progress, velocities, foot_anchors, hand_anchors, knee_anchors,
@@ -61,12 +134,19 @@ fn native_memory(s: &Simulation) -> serde_json::Value {
                 "worldBits":a.world_point.to_array().map(f32::to_bits)
             })))
         };
+        let crate::recovery::Status {phase,phase_time_s,qualified_time_s,stable_time_s,
+            loaded_feet,elapsed_s,stalled_s,unsupported_s,retries,last_retry,progress}=status;
+        let status=serde_json::json!({"phase":phase,"phaseTimeBits":phase_time_s.to_bits(),
+            "qualifiedTimeBits":qualified_time_s.to_bits(),"stableTimeBits":stable_time_s.to_bits(),
+            "loadedFeet":loaded_feet,"elapsedBits":elapsed_s.to_bits(),"stalledBits":stalled_s.to_bits(),
+            "unsupportedBits":unsupported_s.to_bits(),"retries":retries,"lastRetry":last_retry,
+            "progressBits":progress.to_bits()});
         serde_json::json!({
             "status":status,"targetsBits":coordinates_bits(targets),
             "velocityBits":coordinates_bits(velocities),
             "handsBits":hands.map(|v|v.to_array().map(f32::to_bits)),
             "lead":lead,"standFeetBits":stand_feet.map(|v|v.map(|x|x.to_array().map(f32::to_bits))),
-            "standRoot":stand_root,"standGoalBits":stand_goal.map(|q|q.to_array().map(f32::to_bits)),
+            "standRootBits":stand_root.map(pose_bits),"standGoalBits":stand_goal.map(|q|q.to_array().map(f32::to_bits)),
             "bestProgressBits":best_progress.to_bits(),"footAnchors":anchors(foot_anchors),
             "handAnchors":anchors(hand_anchors),"kneeAnchors":anchors(knee_anchors),
             "handoffFromBits":handoff_from.as_ref().map(|q|coordinates_bits(q)),
@@ -75,10 +155,52 @@ fn native_memory(s: &Simulation) -> serde_json::Value {
         })
     });
     serde_json::json!({"recovery":recovery,
-        "modeSignature":s.coordination.as_ref().map(|o|o.memory.mode_signature)})
+        "modeSignature":coordination.as_ref().map(|o|o.memory.mode_signature),
+        "stepping":stepping.as_ref().map(|step|step.parity_memory()),
+        "motionObservationBits":motion_observation.parity_memory(),
+        "restComBits":rest_com.to_array().map(f32::to_bits),
+        "restComRoundoffBits":rest_com_roundoff.to_array().map(f32::to_bits),
+        "headingBits":heading.to_array().map(f32::to_bits),
+        "motorCeilingBits":motor_ceiling_sum.to_bits(),
+        "bodies":bodies.iter().map(|h|h.into_raw_parts()).collect::<Vec<_>>(),
+        "colliders":colliders.iter().map(|h|h.into_raw_parts()).collect::<Vec<_>>(),
+        "joints":joints.iter().map(|h|h.map(|h|h.into_raw_parts())).collect::<Vec<_>>(),
+        "floor":floor.into_raw_parts(),"filter":exclusions.iter().map(|(a,b)|(a.to_string(),b.to_string())).collect::<Vec<_>>(),
+        "model":model_scope(model),"profile":profile_scope(profile),
+        "tick":tick,"generation":generation,"motion":motion,"counters":counters,
+        "targetsBits":coordinates_bits(targets),"restTargetsBits":coordinates_bits(rest_targets),
+        "lastPress":last_press,"appliedSequence":applied_sequence,
+        "contacts":contacts.iter().map(|c| {let lh_contracts::Contact {segment,normal_load_n,persistence_s}=c;
+            (segment,normal_load_n.to_bits(),persistence_s.to_bits())}).collect::<Vec<_>>(),
+        "persistenceBits":persistence.iter().map(|v|v.to_bits()).collect::<Vec<_>>(),
+        "integratedSupportSubsteps":integrated_support_substeps,
+        "integratedSupportLoadBits":integrated_support_loads_n.map(f32::to_bits),
+        "diagnostics":diagnostics,"firstFailure":first_failure,"substeps":substeps_completed,
+        "staticScope":{"grabPresent":grab.is_some(),"environmentPresent":environment.is_some(),"strikerPresent":striker.is_some()}})
+}
+
+/// Proof bookkeeping differs between a copied forecast and its real lease.
+/// Remove exactly those two fields, preserving every other owner/adapter field
+/// (including future additions) in both the kernel parity and lease identities.
+fn coordination_decision_evidence(mut evidence: serde_json::Value) -> serde_json::Value {
+    if let Some(transfer) = evidence
+        .get_mut("transfer")
+        .and_then(serde_json::Value::as_object_mut)
+    {
+        transfer.remove("authorization");
+        transfer.remove("nativeRecords");
+    }
+    evidence
 }
 
 fn parity_frame(s: &Simulation, memory: &impl Serialize) -> Result<ParityFrame, PreviewError> {
+    // Dynamic interactions have private owners outside this static protocol.
+    // Refuse them instead of projecting only a presence flag as full memory.
+    if s.grab.is_some() || s.environment.is_some() || s.striker.is_some() {
+        return Err(PreviewError::Snapshot(
+            "Native static parity excludes active interaction owners".into(),
+        ));
+    }
     let serial = |v| {
         serde_json::to_vec(v)
             .map_err(|e| PreviewError::Snapshot(format!("Parity serialization: {e}")))
@@ -136,7 +258,7 @@ fn parity_frame(s: &Simulation, memory: &impl Serialize) -> Result<ParityFrame, 
         "integratedSupportSubsteps": s.integrated_support_substeps,
         "integratedSupportLoadsN": s.integrated_support_loads_n,
         "recovery": s.recovery_status(),
-        "coordination": s.coordination.as_ref().map(|owner| owner.evidence()),
+        "coordination": s.coordination.as_ref().map(|owner| coordination_decision_evidence(owner.evidence())),
     });
     Ok(ParityFrame {
         native_substep: s.substeps_completed,
@@ -148,6 +270,189 @@ fn parity_frame(s: &Simulation, memory: &impl Serialize) -> Result<ParityFrame, 
     })
 }
 
+/// Exact before-state for the transfer's short real lease. The owner is passed
+/// explicitly because configure_motors temporarily takes it out of Simulation.
+/// Only authorization/history bookkeeping is excluded; all decision memory,
+/// native caches, recovery observer, targets and numeric body/motor bits remain.
+pub(super) fn transfer_identity(
+    s: &Simulation,
+    owner: &super::whole_body_controller::Controller,
+) -> Result<Vec<u8>, String> {
+    let mut frame = parity_frame(s, &()).map_err(|e| format!("Transfer identity: {e:?}"))?;
+    let mut state: serde_json::Value =
+        serde_json::from_slice(&frame.state).map_err(|e| e.to_string())?;
+    state["coordination"] = coordination_decision_evidence(owner.evidence());
+    state["nativeMemory"]["modeSignature"] = serde_json::json!(owner.memory.mode_signature);
+    frame.state = serde_json::to_vec(&state).map_err(|e| e.to_string())?;
+    Ok(frame.exact_identity())
+}
+
+impl ParityFrame {
+    /// Canonical tagged length-delimited bytes, not decimal JSON arrays of
+    /// bytes. All compared contents remain exact; no hash collisions or decoder
+    /// ambiguity are introduced by concatenation.
+    fn exact_identity(&self) -> Vec<u8> {
+        let mut out = b"LH-native-transfer-identity-v2\0".to_vec();
+        out.extend_from_slice(&self.native_substep.to_le_bytes());
+        for part in [&self.world, &self.state, &self.owner_memory] {
+            out.extend_from_slice(&(part.len() as u64).to_le_bytes());
+            out.extend_from_slice(part);
+        }
+        out.extend_from_slice(&(self.body_and_motor_bits.len() as u64).to_le_bytes());
+        for bits in &self.body_and_motor_bits {
+            out.extend_from_slice(&bits.to_le_bytes());
+        }
+        out
+    }
+}
+
+fn pose_bits(p: rapier3d::prelude::Pose) -> serde_json::Value {
+    serde_json::json!({"translationBits":p.translation.to_array().map(f32::to_bits),
+        "rotationBits":p.rotation.to_array().map(f32::to_bits)})
+}
+
+fn profile_scope(profile: &crate::Profile) -> serde_json::Value {
+    let crate::Profile {
+        id,
+        dt_s,
+        tick_substeps,
+        contact_friction_model,
+        solver_iterations,
+        internal_pgs_iterations,
+        fall_internal_pgs_iterations,
+        additional_body_iterations,
+        allowed_linear_error_m,
+        prediction_distance_m,
+        motor_scale,
+        aggregate_motor_cap_nm,
+        angular_damping,
+        contact_skin_m,
+        max_ccd_substeps,
+        disable_solver_speed_cap,
+        posture_stiffness_multiplier,
+        posture_damping_multiplier,
+        supported_tilt_gain,
+        supported_com_gain_rad_per_m,
+        supported_com_velocity_gain_s_rad_per_m,
+        supported_angular_velocity_gain_s,
+        grab_limits,
+        reaching_iterations,
+        reaching_coordinate_increment_rad,
+        reaching_damping_m2,
+        corrective_steps_enabled,
+        recovery_enabled,
+    } = profile;
+    let crate::grab::Limits {
+        angular_frequency_rad_s,
+        target_speed_m_s,
+        target_acceleration_m_s2,
+        force_n,
+        torque_nm,
+        positive_power_w,
+    } = grab_limits;
+    serde_json::json!({"id":id,"dtBits":dt_s.to_bits(),"tickSubsteps":tick_substeps,
+        "contactFrictionModel":contact_friction_model,"solverIterations":solver_iterations,
+        "internalPgsIterations":internal_pgs_iterations,"fallInternalPgsIterations":fall_internal_pgs_iterations,
+        "additionalBodyIterations":additional_body_iterations,"allowedLinearErrorBits":allowed_linear_error_m.to_bits(),
+        "predictionDistanceBits":prediction_distance_m.to_bits(),"motorScaleBits":motor_scale.to_bits(),
+        "aggregateMotorCapBits":aggregate_motor_cap_nm.to_bits(),"angularDampingBits":angular_damping.to_bits(),
+        "contactSkinBits":contact_skin_m.to_bits(),"maxCcdSubsteps":max_ccd_substeps,
+        "disableSolverSpeedCap":disable_solver_speed_cap,"postureStiffnessBits":posture_stiffness_multiplier.to_bits(),
+        "postureDampingBits":posture_damping_multiplier.to_bits(),"supportedTiltBits":supported_tilt_gain.to_bits(),
+        "supportedComGainBits":supported_com_gain_rad_per_m.to_bits(),
+        "supportedComVelocityGainBits":supported_com_velocity_gain_s_rad_per_m.to_bits(),
+        "supportedAngularVelocityGainBits":supported_angular_velocity_gain_s.to_bits(),
+        "grabLimitsBits":[angular_frequency_rad_s.to_bits(),target_speed_m_s.to_bits(),target_acceleration_m_s2.to_bits(),
+            force_n.to_bits(),torque_nm.to_bits(),positive_power_w.to_bits()],
+        "reachingIterations":reaching_iterations,"reachingCoordinateIncrementBits":reaching_coordinate_increment_rad.to_bits(),
+        "reachingDampingBits":reaching_damping_m2.to_bits(),"correctiveStepsEnabled":corrective_steps_enabled,
+        "recoveryEnabled":recovery_enabled})
+}
+
+/// Metadata projection only; no canonical construction, mass integration or
+/// geometry query. Exhaustive patterns make added model fields a compile error.
+fn model_scope(model: &lh_model::Model) -> serde_json::Value {
+    let lh_model::Model {
+        schema_version,
+        total_mass_kg,
+        stature_m,
+        segments,
+        playground,
+        protocol,
+    } = model;
+    let vector = |v: lh_model::Vec3| {
+        let lh_model::Vec3 { x, y, z } = v;
+        [x.to_bits(), y.to_bits(), z.to_bits()]
+    };
+    let rotation = |q: lh_model::Quat| {
+        let lh_model::Quat { x, y, z, w } = q;
+        [x.to_bits(), y.to_bits(), z.to_bits(), w.to_bits()]
+    };
+    let frame = |f: &lh_model::Frame| {
+        let lh_model::Frame {
+            anchor,
+            rotation: q,
+        } = f;
+        serde_json::json!({"anchorBits":vector(*anchor),"rotationBits":rotation(*q)})
+    };
+    let segments:Vec<_>=segments.iter().map(|segment| {
+        let lh_model::Segment {id,region,parent,role,side,mass_kg,geometry,joint_profile,collision_exclusions,initial,golden_mass}=segment;
+        let lh_model::GoldenMass {volume,center_of_mass,inertia}=golden_mass;
+        let lh_model::Geometry {vertices,indices}=geometry;
+        let lh_model::Pose{id:pose_id,position,rotation:q,linear_velocity,angular_velocity}=initial;
+        let joint=joint_profile.as_ref().map(|j|{
+            let lh_model::Joint{parent_frame,child_frame,axes,limit_soft_zone_fraction}=j;
+            let axes:Vec<_>=axes.iter().map(|a|{
+                let lh_model::Axis{coordinate,min_radians,max_radians,passive_stiffness_nm_per_rad,damping_nms_per_rad,max_motor_torque_nm}=a;
+                serde_json::json!({"coordinate":coordinate,"minBits":min_radians.to_bits(),"maxBits":max_radians.to_bits(),
+                    "passiveStiffnessBits":passive_stiffness_nm_per_rad.to_bits(),"dampingBits":damping_nms_per_rad.to_bits(),
+                    "maxMotorTorqueBits":max_motor_torque_nm.to_bits()})
+            }).collect();
+            serde_json::json!({"parentFrame":frame(parent_frame),"childFrame":frame(child_frame),"axes":axes,
+                "limitSoftZoneFractionBits":limit_soft_zone_fraction.to_bits()})
+        });
+        serde_json::json!({"id":id,"region":region,"parent":parent,"role":role,"side":side,
+            "massBits":mass_kg.to_bits(),"geometry":{"vertexBits":vertices.iter().map(|v|v.to_bits()).collect::<Vec<_>>(),"indices":indices},
+            "jointProfile":joint,"collisionExclusions":collision_exclusions,
+            "initial":{"id":pose_id,"positionBits":vector(*position),"rotationBits":rotation(*q),
+                "linearVelocityBits":vector(*linear_velocity),"angularVelocityBits":vector(*angular_velocity)},
+            "goldenMass":{"volumeBits":volume.to_bits(),"centerOfMassBits":vector(*center_of_mass),
+                "inertiaBits":inertia.map(|row|row.map(f64::to_bits))}})
+    }).collect();
+    serde_json::json!({"schemaVersion":schema_version,"totalMassBits":total_mass_kg.to_bits(),"statureBits":stature_m.to_bits(),
+        "segments":segments,"playground":playground,"protocol":protocol})
+}
+
+pub(super) fn transfer_scope(
+    s: &Simulation,
+    owner: &super::whole_body_controller::Controller,
+) -> Result<Vec<u8>, String> {
+    serde_json::to_vec(&serde_json::json!({"schema":"transfer-native-kernel-v1",
+        "candidate":owner.immutable_transfer_scope(),"model":model_scope(&s.model),"profile":profile_scope(&s.profile),
+        "headingBits":s.heading.to_array().map(f32::to_bits)}))
+    .map_err(|e| e.to_string())
+}
+fn simulation_transfer_scope(s: &Simulation) -> Result<Option<Vec<u8>>, PreviewError> {
+    s.coordination
+        .as_ref()
+        .filter(|o| o.transfer.is_some())
+        .map(|o| transfer_scope(s, o).map_err(PreviewError::Snapshot))
+        .transpose()
+}
+
+pub(super) fn require_transfer_native_state(s: &Simulation) -> Result<(), String> {
+    let active = s.motion == lh_contracts::Motion::Recovering
+        && s.recovery.is_some()
+        && s.counters.recoveries == 0;
+    let complete = s.motion == lh_contracts::Motion::Upright
+        && s.counters.recoveries == 1
+        && s.recovery.is_none();
+    if s.first_failure.is_some() || (!active && !complete) {
+        return Err("Original native recovery observer failed or terminal state is invalid".into());
+    }
+    Ok(())
+}
+
 /// Frames can only be appended from actual Simulation states at consecutive
 /// integrated substeps. The caller archives both traces with the frozen receipt.
 #[derive(Debug, Serialize)]
@@ -157,6 +462,7 @@ pub(crate) struct NativeParityTrace {
     initial: ParityFrame,
     frames: Vec<ParityFrame>,
     post_tick: Option<ParityFrame>,
+    transfer_scope: Option<Vec<u8>>,
 }
 impl NativeParityTrace {
     pub(crate) fn begin(s: &Simulation, memory: &impl Serialize) -> Result<Self, PreviewError> {
@@ -170,6 +476,7 @@ impl NativeParityTrace {
             initial: parity_frame(s, memory)?,
             frames: Vec::new(),
             post_tick: None,
+            transfer_scope: simulation_transfer_scope(s)?,
         })
     }
     pub(crate) fn record(
@@ -193,6 +500,11 @@ impl NativeParityTrace {
                 actual: s.substeps_completed,
             });
         }
+        if self.transfer_scope != simulation_transfer_scope(s)? {
+            return Err(PreviewError::ParityMismatch(
+                "Candidate scope changed during native parity".into(),
+            ));
+        }
         self.frames.push(parity_frame(s, memory)?);
         Ok(())
     }
@@ -214,6 +526,11 @@ impl NativeParityTrace {
                 "Post-tick parity requires the same completed four-step instance".into(),
             ));
         }
+        if self.transfer_scope != simulation_transfer_scope(s)? {
+            return Err(PreviewError::ParityMismatch(
+                "Candidate scope changed at native parity endpoint".into(),
+            ));
+        }
         self.post_tick = Some(parity_frame(s, memory)?);
         Ok(())
     }
@@ -230,7 +547,8 @@ pub(crate) fn compare_prefix(
             "Parity requires two distinct Simulation instances".into(),
         ));
     }
-    if actual.frames.len() > predicted.frames.len()
+    if predicted.transfer_scope != actual.transfer_scope
+        || actual.frames.len() > predicted.frames.len()
         || predicted.initial != actual.initial
         || predicted.frames[..actual.frames.len()] != actual.frames
         || actual.post_tick.is_some() && predicted.post_tick != actual.post_tick
@@ -250,7 +568,9 @@ pub(crate) fn native_kernel_admission(
         return Err(PreviewError::NativeKernelParityUnavailable);
     }
     compare_prefix(predicted, actual)?;
-    if predicted.post_tick != actual.post_tick {
+    if predicted.post_tick != actual.post_tick
+        || (actual.transfer_scope.is_some() && actual.post_tick.is_none())
+    {
         return Err(PreviewError::ParityMismatch(
             "Post-tick parity boundary differs".into(),
         ));
@@ -258,6 +578,7 @@ pub(crate) fn native_kernel_admission(
     Ok(NativeKernelAdmission {
         initial_substep: actual.initial.native_substep,
         verified_substeps: 4,
+        transfer_scope: actual.transfer_scope.clone(),
     })
 }
 
@@ -384,13 +705,34 @@ pub(crate) fn copy_static_snapshot(source: &Simulation) -> Result<Simulation, Pr
 pub(crate) struct StaticPreviewBranch<M> {
     simulation: Simulation,
     memory: M,
+    completed_preview: Option<(u64, u32)>,
+    requested_preview: Option<(u64, u32)>,
+    preview_purpose: Option<PreviewPurpose>,
 }
 
 impl<M: Clone> StaticPreviewBranch<M> {
     pub(crate) fn capture(source: &Simulation, memory: &M) -> Result<Self, PreviewError> {
+        if let Some(owner) = &source.coordination {
+            if let Some(adapter) = &owner.transfer {
+                require_transfer_native_state(source).map_err(PreviewError::Snapshot)?;
+                adapter
+                    .check_native_terminal(
+                        source.substeps_completed,
+                        source.counters.recoveries == 1,
+                    )
+                    .map_err(PreviewError::Snapshot)?;
+                let identity = transfer_identity(source, owner).map_err(PreviewError::Snapshot)?;
+                adapter
+                    .require_window_checkpoint(source.substeps_completed, &identity)
+                    .map_err(PreviewError::Snapshot)?;
+            }
+        }
         Ok(Self {
             simulation: copy_static_snapshot(source)?,
             memory: memory.clone(),
+            completed_preview: None,
+            requested_preview: None,
+            preview_purpose: None,
         })
     }
 
@@ -399,6 +741,109 @@ impl<M: Clone> StaticPreviewBranch<M> {
     }
     pub(crate) fn memory(&self) -> &M {
         &self.memory
+    }
+
+    /// A receipt can only be made from this branch's completed native state,
+    /// never from JSON fixtures or a caller-supplied success boolean.
+    pub(crate) fn certify_transfer_horizon(
+        &self,
+        kernel: &NativeKernelAdmission,
+        start: u64,
+        steps: u32,
+    ) -> Result<NativeWindowReceipt, PreviewError> {
+        kernel.require_scope(simulation_transfer_scope(&self.simulation)?.as_deref())?;
+        if self.preview_purpose != Some(PreviewPurpose::Candidate)
+            || self.requested_preview != Some((start, steps))
+        {
+            return Err(PreviewError::Snapshot(
+                "Native receipt request differs from its reserved horizon".into(),
+            ));
+        }
+        let (completed_start, completed_steps) = self.completed_preview.ok_or_else(|| {
+            PreviewError::Snapshot("No successful complete native horizon for this receipt".into())
+        })?;
+        if completed_start != start || completed_steps > steps {
+            return Err(PreviewError::Snapshot(
+                "Native completed horizon differs from request".into(),
+            ));
+        }
+        require_transfer_native_state(&self.simulation).map_err(PreviewError::Snapshot)?;
+        if self.simulation.first_failure.is_some()
+            || self.simulation.tick.checked_mul(4) != Some(self.simulation.substeps_completed)
+        {
+            return Err(PreviewError::Snapshot(
+                "Transfer horizon did not complete cleanly".into(),
+            ));
+        }
+        let owner = self.simulation.coordination.as_ref().ok_or_else(|| {
+            PreviewError::Snapshot("Transfer owner absent at forecast end".into())
+        })?;
+        let observed = super::native_observation::observe(&self.simulation, owner.start, &[])
+            .map_err(PreviewError::Snapshot)?;
+        let adapter = owner.transfer.as_ref().ok_or_else(|| {
+            PreviewError::Snapshot("No transfer adapter in native forecast".into())
+        })?;
+        adapter
+            .check_native_terminal(
+                self.simulation.substeps_completed,
+                self.simulation.counters.recoveries == 1,
+            )
+            .map_err(PreviewError::Snapshot)?;
+        let data = adapter
+            .complete_native_preview(start, completed_steps, &observed)
+            .map_err(PreviewError::Snapshot)?;
+        Ok(NativeWindowReceipt { data })
+    }
+
+    /// Bind a completed copied verification tick to one real counterpart.
+    /// Its durable four-step reserve is enforced separately by the native Gate;
+    /// creating this receipt neither integrates nor grants budget credit.
+    pub(crate) fn certify_technical_transfer_tick(
+        &self,
+        actual: &Simulation,
+    ) -> Result<NativeTechnicalReceipt, PreviewError> {
+        let (start, steps) = self
+            .completed_preview
+            .ok_or(PreviewError::NativeKernelParityUnavailable)?;
+        if steps != 4
+            || self.preview_purpose != Some(PreviewPurpose::ParityVerification)
+            || self.requested_preview != Some((start, 4))
+            || actual.substeps_completed != start
+            || actual.tick.checked_mul(4) != Some(start)
+            || std::ptr::from_ref(actual) == std::ptr::from_ref(&self.simulation)
+        {
+            return Err(PreviewError::NativeKernelParityUnavailable);
+        }
+        require_transfer_native_state(actual).map_err(PreviewError::Snapshot)?;
+        require_transfer_native_state(&self.simulation).map_err(PreviewError::Snapshot)?;
+        let predicted_scope = simulation_transfer_scope(&self.simulation)?
+            .ok_or(PreviewError::NativeKernelParityUnavailable)?;
+        if simulation_transfer_scope(actual)?.as_ref() != Some(&predicted_scope) {
+            return Err(PreviewError::ParityMismatch(
+                "Technical counterpart candidate scope differs".into(),
+            ));
+        }
+        let owner = self
+            .simulation
+            .coordination
+            .as_ref()
+            .ok_or(PreviewError::NativeKernelParityUnavailable)?;
+        let data = owner
+            .transfer
+            .as_ref()
+            .ok_or(PreviewError::NativeKernelParityUnavailable)?
+            .technical_data(start, std::ptr::from_ref(actual) as usize, predicted_scope)
+            .map_err(PreviewError::Snapshot)?;
+        // The adapter also checks this immutable external entry during admission.
+        Ok(NativeTechnicalReceipt { data })
+    }
+
+    /// Requested reservation and actual integration remain distinct when a
+    /// terminal tick ends the forecast early. No unused reservation is refunded.
+    pub(crate) fn transfer_horizon_evidence(&self) -> serde_json::Value {
+        serde_json::json!({"requested":self.requested_preview,
+            "successfulCompletedHorizon":self.completed_preview,
+            "actualNativeSteps":self.requested_preview.and_then(|(start,_)|self.simulation.substeps_completed.checked_sub(start))})
     }
 
     pub(crate) fn set_feedback_scale(&mut self, scale: f64) -> Result<(), PreviewError> {
@@ -422,12 +867,19 @@ impl<M: Clone> StaticPreviewBranch<M> {
     /// This method remains inaccessible without measured native admission.
     pub(crate) fn preview<O>(
         &mut self,
-        _admission: &NativeKernelAdmission,
+        admission: &NativeKernelAdmission,
         branch_id: u64,
         steps: u32,
         budget: &mut impl PreviewBudget,
         observe: impl FnMut(&Simulation, u32, &mut M) -> Result<O, String>,
     ) -> PreviewRun<O> {
+        let scope = match simulation_transfer_scope(&self.simulation) {
+            Ok(scope) => scope,
+            Err(error) => return PreviewRun::refused(error),
+        };
+        if let Err(error) = admission.require_scope(scope.as_deref()) {
+            return PreviewRun::refused(error);
+        }
         if !(120..=480).contains(&steps) || steps % 4 != 0 {
             return PreviewRun::refused(PreviewError::InvalidHorizon);
         }
@@ -443,13 +895,20 @@ impl<M: Clone> StaticPreviewBranch<M> {
 
     pub(crate) fn preview_with_post_tick<O>(
         &mut self,
-        _admission: &NativeKernelAdmission,
+        admission: &NativeKernelAdmission,
         branch_id: u64,
         steps: u32,
         budget: &mut impl PreviewBudget,
         observe: impl FnMut(&Simulation, u32, &mut M) -> Result<O, String>,
         after_tick: impl FnMut(&Simulation, &mut M) -> Result<(), String>,
     ) -> PreviewRun<O> {
+        let scope = match simulation_transfer_scope(&self.simulation) {
+            Ok(scope) => scope,
+            Err(error) => return PreviewRun::refused(error),
+        };
+        if let Err(error) = admission.require_scope(scope.as_deref()) {
+            return PreviewRun::refused(error);
+        }
         if !(120..=480).contains(&steps) || steps % 4 != 0 {
             return PreviewRun::refused(PreviewError::InvalidHorizon);
         }
@@ -511,6 +970,26 @@ impl<M: Clone> StaticPreviewBranch<M> {
         if let Err(error) = budget.admit_preview(purpose, steps) {
             return PreviewRun::refused(PreviewError::Reservation(error));
         }
+        self.completed_preview = None;
+        let run_start = self.simulation.substeps_completed;
+        self.requested_preview = Some((run_start, steps));
+        self.preview_purpose = Some(purpose);
+        if let Some(owner) = &self.simulation.coordination {
+            if owner.transfer.is_some() {
+                let identity = match transfer_identity(&self.simulation, owner) {
+                    Ok(identity) => identity,
+                    Err(error) => return PreviewRun::refused(PreviewError::Snapshot(error)),
+                };
+                self.simulation
+                    .coordination
+                    .as_mut()
+                    .unwrap()
+                    .transfer
+                    .as_mut()
+                    .unwrap()
+                    .begin_native_preview(run_start, identity);
+            }
+        }
         let mut run = PreviewRun {
             records: Vec::new(),
             refusal: None,
@@ -539,6 +1018,20 @@ impl<M: Clone> StaticPreviewBranch<M> {
             }) {
                 run.refusal = Some(PreviewError::Reservation(error));
                 break;
+            }
+            // The common adapter executes only after the durable reservation.
+            // Bind to THIS private copied instance, never the source history.
+            let instance = std::ptr::from_ref(&self.simulation) as usize;
+            if let Some(adapter) = self
+                .simulation
+                .coordination
+                .as_mut()
+                .and_then(|o| o.transfer.as_mut())
+            {
+                if let Err(error) = adapter.preview_window(instance, before_substep) {
+                    run.refusal = Some(PreviewError::Snapshot(error));
+                    break;
+                }
             }
             let memory = &mut self.memory;
             let result = self.simulation.advance_tick_observed(|state, substep| {
@@ -577,6 +1070,45 @@ impl<M: Clone> StaticPreviewBranch<M> {
                 });
                 break;
             }
+            let mut terminal_complete = false;
+            if let Some(owner) = &self.simulation.coordination {
+                if let Some(adapter) = &owner.transfer {
+                    terminal_complete = match adapter.terminal_monitoring_complete(
+                        expected,
+                        self.simulation.counters.recoveries == 1,
+                    ) {
+                        Ok(complete) => complete,
+                        Err(error) => {
+                            run.refusal = Some(PreviewError::Snapshot(error));
+                            break;
+                        }
+                    };
+                    let identity = match transfer_identity(&self.simulation, owner) {
+                        Ok(identity) => identity,
+                        Err(error) => {
+                            run.refusal = Some(PreviewError::Snapshot(error));
+                            break;
+                        }
+                    };
+                    if let Err(error) = self
+                        .simulation
+                        .coordination
+                        .as_mut()
+                        .unwrap()
+                        .transfer
+                        .as_mut()
+                        .unwrap()
+                        .record_preview_post_tick(
+                            expected,
+                            identity,
+                            terminal_complete || preview_index + 4 == steps,
+                        )
+                    {
+                        run.refusal = Some(PreviewError::Snapshot(error));
+                        break;
+                    }
+                }
+            }
             if let Err(error) = after_tick(&self.simulation, &mut self.memory) {
                 run.refusal = Some(PreviewError::Kernel(format!("Post-tick observer: {error}")));
                 break;
@@ -585,6 +1117,12 @@ impl<M: Clone> StaticPreviewBranch<M> {
                 run.refusal = Some(PreviewError::Reservation(error));
                 break;
             }
+            if terminal_complete {
+                break;
+            }
+        }
+        if run.refusal.is_none() && !run.records.is_empty() && run.records.len() % 4 == 0 {
+            self.completed_preview = Some((run_start, run.records.len() as u32));
         }
         run
     }
@@ -739,6 +1277,232 @@ fn run_guarded_steps<S: NativeStepClock, M, O>(
 mod tests {
     use super::*;
 
+    #[test]
+    fn pure_compact_identity_is_length_delimited_and_bit_exact() {
+        let frame = ParityFrame {
+            native_substep: 36,
+            world: b"a".to_vec(),
+            state: b"bc".to_vec(),
+            owner_memory: vec![],
+            body_and_motor_bits: vec![(-0.0_f32).to_bits(), 0x7fc00001],
+        };
+        let before = frame.exact_identity();
+        assert_eq!(
+            before.len(),
+            b"LH-native-transfer-identity-v2\0".len() + 8 + 4 * 8 + 3 + 2 * 4
+        );
+        let mut changed = frame.clone();
+        changed.world = b"ab".to_vec();
+        changed.state = b"c".to_vec();
+        assert_ne!(
+            before,
+            changed.exact_identity(),
+            "Concatenation boundaries must be bound"
+        );
+        let mut changed = frame.clone();
+        changed.native_substep += 1;
+        assert_ne!(before, changed.exact_identity());
+        let mut changed = frame.clone();
+        changed.owner_memory.push(0);
+        assert_ne!(before, changed.exact_identity());
+        let mut changed = frame.clone();
+        changed.body_and_motor_bits[0] = 0.0_f32.to_bits();
+        assert_ne!(before, changed.exact_identity());
+        let mut changed = frame.clone();
+        changed.body_and_motor_bits[1] = 0x7fc00002;
+        assert_ne!(before, changed.exact_identity());
+        let mut changed = frame.clone();
+        changed.world[0] ^= 1;
+        assert_ne!(before, changed.exact_identity());
+        let mut changed = frame.clone();
+        changed.state[0] ^= 1;
+        assert_ne!(before, changed.exact_identity());
+        assert_eq!(before, frame.clone().exact_identity());
+    }
+
+    #[test]
+    fn pure_profile_projection_is_exhaustive_and_preserves_float_bits() {
+        let original = crate::Profile::default();
+        let before = profile_scope(&original);
+        macro_rules! changed {
+            ($c:ident,$edit:expr) => {{
+                let mut $c = original.clone();
+                $edit;
+                assert_ne!(before, profile_scope(&$c), stringify!($edit));
+            }};
+        }
+        changed!(c, c.id.push('x'));
+        changed!(c, c.dt_s = 0.);
+        changed!(c, c.tick_substeps += 1);
+        changed!(
+            c,
+            c.contact_friction_model = crate::ContactFriction::Simplified
+        );
+        changed!(c, c.solver_iterations += 1);
+        changed!(c, c.internal_pgs_iterations += 1);
+        changed!(c, c.fall_internal_pgs_iterations += 1);
+        changed!(c, c.additional_body_iterations += 1);
+        changed!(c, c.allowed_linear_error_m = 0.);
+        changed!(c, c.prediction_distance_m = 0.);
+        changed!(c, c.motor_scale = 0.);
+        changed!(c, c.aggregate_motor_cap_nm = 0.);
+        changed!(c, c.angular_damping = 0.);
+        changed!(c, c.contact_skin_m = 0.);
+        changed!(c, c.max_ccd_substeps += 1);
+        changed!(c, c.disable_solver_speed_cap = false);
+        changed!(c, c.posture_stiffness_multiplier = 0.);
+        changed!(c, c.posture_damping_multiplier = 0.);
+        changed!(c, c.supported_tilt_gain = 0.);
+        changed!(c, c.supported_com_gain_rad_per_m = 0.);
+        changed!(c, c.supported_com_velocity_gain_s_rad_per_m = 0.);
+        changed!(c, c.supported_angular_velocity_gain_s = 0.);
+        changed!(c, c.grab_limits.force_n = 0.);
+        changed!(c, c.grab_limits.torque_nm = 0.);
+        changed!(c, c.grab_limits.positive_power_w = 0.);
+        changed!(c, c.grab_limits.angular_frequency_rad_s = 0.);
+        changed!(c, c.grab_limits.target_speed_m_s = 0.);
+        changed!(c, c.grab_limits.target_acceleration_m_s2 = 0.);
+        changed!(c, c.reaching_iterations += 1);
+        changed!(c, c.reaching_coordinate_increment_rad = 0.);
+        changed!(c, c.reaching_damping_m2 = 0.);
+        changed!(c, c.corrective_steps_enabled = true);
+        changed!(c, c.recovery_enabled = true);
+        let mut zero = original.clone();
+        zero.motor_scale = 0.;
+        let mut negative = zero.clone();
+        negative.motor_scale = -0.;
+        assert_ne!(profile_scope(&zero), profile_scope(&negative));
+        for bits in [0x7fc00001, 0x7fc00002] {
+            let mut c = original.clone();
+            c.motor_scale = f32::from_bits(bits);
+            assert_eq!(profile_scope(&c)["motorScaleBits"], bits);
+        }
+    }
+
+    #[test]
+    fn pure_model_projection_binds_all_metadata_without_constructing_a_world() {
+        // Metadata deserialization only: canonical()/validate() would integrate
+        // mass properties and are deliberately not called by this test.
+        let original: lh_model::Model = serde_json::from_str(lh_model::CANONICAL_JSON).unwrap();
+        let before = model_scope(&original);
+        macro_rules! changed {
+            ($c:ident,$edit:expr) => {{
+                let mut $c = original.clone();
+                $edit;
+                assert_ne!(before, model_scope(&$c), stringify!($edit));
+            }};
+        }
+        changed!(c, c.schema_version += 1);
+        changed!(c, c.total_mass_kg += 1.);
+        changed!(c, c.stature_m += 1.);
+        changed!(c, c.playground = serde_json::Value::Null);
+        changed!(c, c.protocol = serde_json::Value::Null);
+        changed!(c, c.segments[1].id.push('x'));
+        changed!(c, c.segments[1].region = Some("changed".into()));
+        changed!(c, c.segments[1].parent = None);
+        changed!(c, c.segments[1].role.push('x'));
+        changed!(c, c.segments[1].side = Some("changed".into()));
+        changed!(c, c.segments[1].mass_kg += 1.);
+        changed!(c, c.segments[1].geometry.vertices[0] += 1.);
+        changed!(c, c.segments[1].geometry.indices[0] += 1);
+        changed!(c, c.segments[1].collision_exclusions.push("changed".into()));
+        changed!(c, c.segments[1].initial.id.push('x'));
+        changed!(c, c.segments[1].initial.position.x += 1.);
+        changed!(c, c.segments[1].initial.rotation.w += 1.);
+        changed!(c, c.segments[1].initial.linear_velocity.x += 1.);
+        changed!(c, c.segments[1].initial.angular_velocity.x += 1.);
+        changed!(c, c.segments[1].golden_mass.volume += 1.);
+        changed!(c, c.segments[1].golden_mass.center_of_mass.x += 1.);
+        changed!(c, c.segments[1].golden_mass.inertia[0][0] += 1.);
+        changed!(c, c.segments[1].joint_profile = None);
+        changed!(
+            c,
+            c.segments[1]
+                .joint_profile
+                .as_mut()
+                .unwrap()
+                .parent_frame
+                .anchor
+                .x += 1.
+        );
+        changed!(
+            c,
+            c.segments[1]
+                .joint_profile
+                .as_mut()
+                .unwrap()
+                .parent_frame
+                .rotation
+                .w += 1.
+        );
+        changed!(
+            c,
+            c.segments[1]
+                .joint_profile
+                .as_mut()
+                .unwrap()
+                .child_frame
+                .anchor
+                .x += 1.
+        );
+        changed!(
+            c,
+            c.segments[1]
+                .joint_profile
+                .as_mut()
+                .unwrap()
+                .child_frame
+                .rotation
+                .w += 1.
+        );
+        changed!(
+            c,
+            c.segments[1]
+                .joint_profile
+                .as_mut()
+                .unwrap()
+                .limit_soft_zone_fraction += 1.
+        );
+        changed!(
+            c,
+            c.segments[1].joint_profile.as_mut().unwrap().axes[0].coordinate = 'z'
+        );
+        changed!(
+            c,
+            c.segments[1].joint_profile.as_mut().unwrap().axes[0].min_radians += 1.
+        );
+        changed!(
+            c,
+            c.segments[1].joint_profile.as_mut().unwrap().axes[0].max_radians += 1.
+        );
+        changed!(
+            c,
+            c.segments[1].joint_profile.as_mut().unwrap().axes[0].passive_stiffness_nm_per_rad +=
+                1.
+        );
+        changed!(
+            c,
+            c.segments[1].joint_profile.as_mut().unwrap().axes[0].damping_nms_per_rad += 1.
+        );
+        changed!(
+            c,
+            c.segments[1].joint_profile.as_mut().unwrap().axes[0].max_motor_torque_nm += 1.
+        );
+        let mut c = original.clone();
+        c.segments[1].golden_mass.volume = f64::from_bits(0x7ff8000000000001);
+        assert_eq!(
+            model_scope(&c)["segments"][1]["goldenMass"]["volumeBits"],
+            0x7ff8000000000001_u64
+        );
+        let mut d = c.clone();
+        d.segments[1].golden_mass.volume = f64::from_bits(0x7ff8000000000002);
+        assert_ne!(model_scope(&c), model_scope(&d));
+        c.segments[1].mass_kg = 0.;
+        d = c.clone();
+        d.segments[1].mass_kg = -0.;
+        assert_ne!(model_scope(&c), model_scope(&d));
+    }
+
     fn synthetic_parity(identity: usize, count: usize, post_tick: bool) -> NativeParityTrace {
         let frame = |step| ParityFrame {
             native_substep: step,
@@ -752,7 +1516,42 @@ mod tests {
             initial: frame(0),
             frames: (1..=count).map(|step| frame(step as u64)).collect(),
             post_tick: post_tick.then(|| frame(4)),
+            transfer_scope: None,
         }
+    }
+
+    #[test]
+    fn pure_transfer_kernel_scope_requires_new_complete_matching_candidate_parity() {
+        let legacy = native_kernel_admission_complete(
+            &synthetic_parity(1, 4, true),
+            &synthetic_parity(2, 4, true),
+        )
+        .unwrap();
+        assert!(
+            legacy
+                .require_scope(Some(b"candidate-entry-source-A"))
+                .is_err()
+        );
+        legacy.require_scope(None).unwrap();
+        let mut predicted = synthetic_parity(1, 4, true);
+        let mut actual = synthetic_parity(2, 4, true);
+        predicted.transfer_scope = Some(b"candidate-entry-source-A".to_vec());
+        actual.transfer_scope = Some(b"candidate-entry-source-B".to_vec());
+        assert!(native_kernel_admission_complete(&predicted, &actual).is_err());
+        actual.transfer_scope = predicted.transfer_scope.clone();
+        let token = native_kernel_admission_complete(&predicted, &actual).unwrap();
+        token
+            .require_scope(Some(b"candidate-entry-source-A"))
+            .unwrap();
+        assert!(
+            token
+                .require_scope(Some(b"candidate-entry-source-B"))
+                .is_err()
+        );
+        assert!(token.require_scope(None).is_err());
+        predicted.post_tick = None;
+        actual.post_tick = None;
+        assert!(native_kernel_admission(&predicted, &actual).is_err());
     }
 
     #[test]
@@ -800,6 +1599,66 @@ mod tests {
         let old_actual = synthetic_parity(2, 4, false);
         native_kernel_admission(&old_predicted, &old_actual).unwrap();
         assert!(native_kernel_admission_complete(&old_predicted, &old_actual).is_err());
+    }
+
+    #[test]
+    fn pure_parity_excludes_only_transfer_authorization_and_record_history() {
+        let owner = serde_json::json!({
+            "rates":[0.125,-0.0],"nextSubstep":40,
+            "transfer": {
+                "decision":{"terminalClock":{"first_success_at":null},"lastObserved":39,"queue":[1,2,3,4]},
+                "authorization":{"kind":"preview","instance":123,"end":40},
+                "nativeRecords":[{"at":36}],
+                "futureDecisionField":17
+            }
+        });
+        let encoded = |value| serde_json::to_vec(&coordination_decision_evidence(value)).unwrap();
+        let expected = encoded(owner.clone());
+        let mut actual_owner = owner.clone();
+        actual_owner["transfer"]["authorization"] =
+            serde_json::json!({"kind":"native-window","next":4});
+        actual_owner["transfer"]["nativeRecords"] = serde_json::json!([]);
+        assert_eq!(expected, encoded(actual_owner.clone()));
+        let mut predicted = synthetic_parity(1, 4, true);
+        let install = |trace: &mut NativeParityTrace, state: &[u8]| {
+            trace.initial.state = state.to_vec();
+            for frame in &mut trace.frames {
+                frame.state = state.to_vec();
+            }
+            trace.post_tick.as_mut().unwrap().state = state.to_vec();
+        };
+        install(&mut predicted, &expected);
+        let mut actual = synthetic_parity(2, 4, true);
+        install(&mut actual, &encoded(actual_owner.clone()));
+        native_kernel_admission_complete(&predicted, &actual).unwrap();
+        for changed in [
+            {
+                let mut v = actual_owner.clone();
+                v["transfer"]["decision"]["lastObserved"] = 38.into();
+                v
+            },
+            {
+                let mut v = actual_owner.clone();
+                v["transfer"]["futureDecisionField"] = 18.into();
+                v
+            },
+            {
+                let mut v = actual_owner.clone();
+                v["rates"][0] = 0.25.into();
+                v
+            },
+        ] {
+            let changed = encoded(changed);
+            assert_ne!(expected, changed);
+            actual.frames[0].state = changed;
+            assert!(compare_prefix(&predicted, &actual).is_err());
+        }
+        let no_transfer =
+            serde_json::json!({"rates":[0.125],"transfer":null,"authorization":"unrelated"});
+        assert_eq!(
+            coordination_decision_evidence(no_transfer.clone()),
+            no_transfer
+        );
     }
 
     #[test]

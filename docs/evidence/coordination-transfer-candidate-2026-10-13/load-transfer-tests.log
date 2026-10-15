@@ -1,0 +1,34 @@
+warning: /workspace/LaboratoireHumain/rust/crates/sim/Cargo.toml: file `/workspace/LaboratoireHumain/rust/crates/sim/src/lib.rs` found to be present in multiple build targets:
+  * `lib` target `lh_sim`
+  * `integration-test` target `coordination-local-pair-worker`
+  * `integration-test` target `coordination-worker`
+  * `integration-test` target `numeric-parity-worker`
+  * `integration-test` target `numeric-parity-worker-serialization`
+   Compiling lh-sim v0.1.0 (/workspace/LaboratoireHumain/rust/crates/sim)
+error[E0433]: failed to resolve: could not find `transfer_adapter` in `super`
+  --> crates/sim/src/recovery/planner/whole_body_controller.rs:94:40
+   |
+94 |     pub(super) transfer: Option<super::transfer_adapter::Adapter>,
+   |                                        ^^^^^^^^^^^^^^^^ could not find `transfer_adapter` in `super`
+
+error[E0599]: no method named `configure_transfer` found for mutable reference `&mut whole_body_controller::Controller` in the current scope
+   --> crates/sim/src/recovery/planner/whole_body_controller.rs:296:25
+    |
+296 |             return self.configure_transfer(sim);
+    |                         ^^^^^^^^^^^^^^^^^^
+    |
+help: there is a method `configure` with a similar name
+    |
+296 -             return self.configure_transfer(sim);
+296 +             return self.configure(sim);
+    |
+
+error[E0063]: missing field `transfer` in initializer of `whole_body_controller::Controller`
+   --> crates/sim/src/recovery/planner/whole_body_controller.rs:635:25
+    |
+635 |             let owner = Controller {
+    |                         ^^^^^^^^^^ missing `transfer`
+
+Some errors have detailed explanations: E0063, E0433, E0599.
+For more information about an error, try `rustc --explain E0063`.
+error: could not compile `lh-sim` (lib test) due to 3 previous errors

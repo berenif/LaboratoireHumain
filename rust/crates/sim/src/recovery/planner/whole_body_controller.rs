@@ -8,19 +8,19 @@ use rapier3d::prelude::*;
 use serde::Deserialize;
 use serde_json::{Value, json};
 
-#[derive(Clone, Deserialize)]
+#[derive(Clone, Deserialize, serde::Serialize)]
 #[serde(rename_all = "camelCase")]
 pub(crate) struct ReferenceTasks {
     pub rows: Vec<ReferenceRow>,
     pub material_targets: Vec<MaterialTarget>,
 }
-#[derive(Clone, Deserialize)]
+#[derive(Clone, Deserialize, serde::Serialize)]
 #[serde(rename_all = "camelCase")]
 pub(crate) struct MaterialTarget {
     pub segment_index: usize,
     pub local_point_m: [f64; 3],
 }
-#[derive(Clone, Deserialize)]
+#[derive(Clone, Deserialize, serde::Serialize)]
 #[serde(rename_all = "camelCase")]
 pub(crate) struct ReferenceRow {
     pub substep: u64,
@@ -28,7 +28,7 @@ pub(crate) struct ReferenceRow {
     pub com_velocity_mps: [f64; 3],
     pub feet: Vec<FootTarget>,
 }
-#[derive(Clone, Deserialize)]
+#[derive(Clone, Deserialize, serde::Serialize)]
 #[serde(rename_all = "camelCase")]
 pub(crate) struct FootTarget {
     pub side: String,
@@ -37,6 +37,8 @@ pub(crate) struct FootTarget {
 }
 
 pub(crate) const PARAMETERS: &str = r#"{"version":"coordinated-transition-v2-numeric","solver":"feasible-active-set-newton","commandCompilation":"direct-exact-then-one-ulp-interior","maximumSolvesPerTick":2,"controlHz":60,"previewHz":10,"previewSteps":480,"candidates":[0.0,0.5,1.0,1.5],"comPositionGainPerS":2.0,"comSpeedLimitMps":0.15,"footRotationGainPerS":2.0,"posturePositionGainPerS":2.0,"postureWeight":0.25,"regularization":0.05,"hardMaterialVelocityToleranceMps":0.005,"materialMatchToleranceM":0.012,"maximumTargetOffsetRad":0.12,"iterations":512,"supportProof":"original thresholds unchanged"}"#;
+
+pub(crate) const TRANSFER_PARAMETERS: &str = r#"{"version":"observed-bilateral-transfer-v1","solver":"feasible-active-set-newton","commandCompilation":"direct-exact-then-one-ulp-interior","maximumSolvesPerTick":2,"iterations":512,"controlHz":60,"previewMaximumHz":10,"previewMinimumSteps":120,"previewMaximumSteps":480,"realWindowMaximumSteps":24,"feedbackScale":1.0,"supportPolicy":"ContinueBilateral","localMilestoneDeadlineAfterEntrySteps":480,"originalTerminalDeadlineSteps":6000,"additionalTerminalMinimumSteps":240,"additionalTerminalMaximumSteps":243,"terminalStop":"first-complete-tick-after-minimum","materialRows":"unvalidated-command-guides","materialGuideWeight":1.0,"originalMaterialBandMps":0.005,"comPositionGainPerS":2.0,"comSpeedLimitMps":0.15,"footRotationGainPerS":2.0,"posturePositionGainPerS":2.0,"postureWeight":0.25,"regularization":0.05,"materialMatchToleranceM":0.012,"maximumTargetOffsetRad":0.12,"candidateDriftLimit":"original-contract-idle-planted-foot-drift","supportProof":"native-material-observations-original-diagnostic"}"#;
 
 /// Initial fixture construction only. No settling, integration, or later reset.
 pub(crate) fn scene(
@@ -91,6 +93,7 @@ pub(crate) struct Controller {
     maximum_cap: f64,
     last: Value,
     last_attempt: Value,
+    pub(crate) transfer: Option<super::transfer_adapter::Adapter>,
 }
 
 impl Controller {
@@ -176,13 +179,22 @@ impl Controller {
             maximum_cap: 0.,
             last: Value::Null,
             last_attempt: Value::Null,
+            transfer: None,
         })
     }
     pub(crate) fn evidence(&self) -> Value {
         json!({"enabled":self.enabled,"feedbackScale":self.feedback_scale,"start":self.start,"previousStep":self.previous_step,
             "q":self.memory.previous,"nextSubstep":self.memory.next_substep,"rates":self.memory.rates.to_vec(),
-            "patches":self.patches,"bestProgress":self.best_progress,"stalledS":self.stalled_s,"unsupportedS":self.unsupported_s,"maximumCapNm":self.maximum_cap,"last":self.last,"numericAttempt":self.last_attempt})
+            "patches":self.patches,"bestProgress":self.best_progress,"stalledS":self.stalled_s,"unsupportedS":self.unsupported_s,"maximumCapNm":self.maximum_cap,"last":self.last,"numericAttempt":self.last_attempt,
+            "transfer":self.transfer.as_ref().map(|a|a.evidence())})
     }
+    pub(super) fn immutable_transfer_scope(&self)->Value {
+        json!({"controllerSchema":"observed-transfer-v1","parameters":TRANSFER_PARAMETERS,
+            "candidateDriftLimitM":crate::recovery_contract::contract().acceptance.idle_planted_foot_drift_m,
+            "reference":self.reference,"enabled":self.enabled,"feedbackScale":self.feedback_scale,
+            "adapter":self.transfer.as_ref().map(|a|a.immutable_scope())})
+    }
+
     /// Rebuild the same numeric task from observed body states and retained patches.
     /// This only reads geometry; it never integrates or changes a body.
     fn problem_observed(
@@ -288,7 +300,182 @@ impl Controller {
         )
     }
 
+    /// Attach at a completed, already integrated observation. Neither bodies,
+    /// targets, recovery clocks nor the existing observer are reset here.
+    pub(crate) fn enable_observed_transfer(
+        &mut self,
+        model: &lh_model::Model,
+        observation: &support_state::SupportObservation,
+        entry: super::observed_raccord::ObservedCommandEntry,
+    ) -> Result<(), String> {
+        if self.transfer.is_some() || self.feedback_scale!=1.0 || self.memory.next_substep != observation.native_substep
+            || entry.native_substep != observation.native_substep
+            || entry.previous_q.iter().flatten().zip(self.memory.previous.iter().flatten()).any(|(a,b)|a.to_bits()!=b.to_bits())
+            || self.previous_step.and_then(|s|s.checked_add(self.start+1)) != Some(observation.native_substep)
+            || self.program.duration_substeps()!=1920
+        { return Err("Transfer attachment differs from existing observed owner history".into()); }
+        let previous_dq: crate::recovery::trajectory_program::Coordinates =
+            serde_json::from_value(self.last["velocities"].clone()).map_err(|_|"Missing last installed command velocities")?;
+        if previous_dq.iter().flatten().zip(entry.previous_dq.iter().flatten()).any(|(a,b)|a.to_bits()!=b.to_bits()) {
+            return Err("Transfer entry dq is not the existing owner's last installed dq".into());
+        }
+        let tracker = if self.patches.active.is_empty() {
+            super::support_schedule::SupportSchedule::bootstrap_observed(observation,&[19,24])?.tracker().clone()
+        } else { self.patches.clone() };
+        let timing = super::continuation::Timing { heels_acquired:168,recentered_hold_started:300,
+            recentered_hold_completed:432,standing_reference:1680,hold_completed:1920 };
+        let deadline = observation.native_substep.checked_add(480).ok_or("Transfer deadline overflow")?;
+        let adapter=super::transfer_adapter::Adapter::new(model,observation,tracker,entry,
+            self.program.clone(),timing,
+            super::load_transfer::TransferIntent::from_archived_heel_reference(super::load_transfer::AfterHeels::ContinueBilateral,deadline),self.start)?;
+        self.transfer=Some(adapter);
+        self.enabled=true;
+        Ok(())
+    }
+
+    fn transfer_problem_observed(
+        &self, model:&lh_model::Model, heading:Rotation, observed:&tasks::ObservedState,
+        adapter:&super::transfer_adapter::Adapter, nominal:recovery::trajectory_program::Command,
+        proposal:&super::load_transfer::TransferProposal,
+    ) -> Result<super::whole_body_tasks::Problem,String> {
+        let at=adapter.reference_substep(observed.native_substep);
+        let row=&self.reference.rows[(at/4).min(self.reference.rows.len() as u64-1) as usize];
+        let rotate=|p:[f64;3]|heading*Vector::from_array(p.map(|v|v as f32));
+        let velocity=(rotate(row.com_velocity_mps)+(rotate(row.com_position_m)-observed.center_of_mass())*2.).clamp_length_max(0.15);
+        let mut posture=nominal.clone();
+        for i in 0..25 { for k in 0..3 {
+            posture.velocities[i][k]=(nominal.velocities[i][k]+2.*(nominal.positions[i][k]-self.memory.previous[i][k])).clamp(-1.,1.);
+        }}
+        let mut goals=tasks::TaskGoals {nominal:posture,com_velocity_mps:velocity.to_array().map(f64::from),
+            com_weight:1.,point_tasks:vec![],orientation_tasks:vec![],posture_weight:0.25,
+            regularization:0.05,retained_velocity_tolerance_mps:0.005};
+        for foot in &row.feet { for (suffix,target) in [("Foot",foot.hindfoot_rotation_xyzw),("Forefoot",foot.forefoot_rotation_xyzw)] {
+            let segment=model.segments.iter().position(|p|p.id==format!("{}{suffix}",foot.side)).ok_or("Missing reference foot")?;
+            let mut delta=heading*Rotation::from_array(target.map(|v|v as f32))*observed.bodies[segment].rotation().inverse();
+            if delta.w<0. {delta=-delta;}
+            goals.orientation_tasks.push(tasks::OrientationGoal {segment,world_angular_velocity_radps:(delta.to_scaled_axis()*2.).to_array().map(f64::from),weight:1.});
+        }}
+        proposal.apply_to_goals(&mut goals)?;
+        let mut problem=tasks::assemble_observed(model,observed,&adapter.tracker().active,&goals)?;
+        for (i,a) in runtime::axes(model)?.iter().enumerate() {
+            let old=f64::from(self.memory.previous[a.segment][a.coordinate]);
+            let target=f64::from(nominal.positions[a.segment][a.coordinate]);
+            let dt=4.*f64::from(lh_contracts::SUBSTEP_S);
+            problem.lower[i]=problem.lower[i].max(((target-0.12).max(f64::from(a.minimum))-old)/dt);
+            problem.upper[i]=problem.upper[i].min(((target+0.12).min(f64::from(a.maximum))-old)/dt);
+        }
+        Ok(problem)
+    }
+
+    fn configure_transfer(&mut self, sim:&mut Simulation) -> Result<(),String> {
+        super::native_plan_preview::require_transfer_native_state(sim)?;
+        self.transfer.as_mut().ok_or("Missing transfer adapter")?
+            .observe_native_terminal(sim.substeps_completed,sim.counters.recoveries==1)?;
+        // Record the current original terminal clock, then capture before the
+        // remaining decision changes. Both native branches follow this order.
+        let identity=super::native_plan_preview::transfer_identity(sim,self)?;
+        let mut adapter=self.transfer.take().ok_or("Missing transfer adapter")?;
+        let result=(|| {
+            let at=sim.substeps_completed;
+            let step=at.checked_sub(self.start).ok_or("Transfer owner clock rewind")?;
+            if !self.enabled || self.previous_step.and_then(|p|p.checked_add(1))!=Some(step) || step>=6000
+                || sim.recovery.is_none() || sim.recovery.as_ref().is_some_and(|r|r.handed_off()) {
+                return Err("Transfer owner discontinuity, deadline, or original observer lost; no restart".into());
+            }
+            let observation=native_observation::observe(sim,self.start,&[])?;
+            let proposal=adapter.observe(&observation)?;
+            if at%4==0 {
+                let nominal=adapter.nominal(&sim.model,&self.memory,at)?;
+                let observed=tasks::ObservedState::from_simulation(sim)?;
+                let problem=self.transfer_problem_observed(&sim.model,sim.heading,&observed,&adapter,nominal,&proposal)?;
+                adapter.compile_batch(&sim.model,&self.memory,&problem,at)?;
+            }
+            let command=adapter.proposed_command(&sim.model,&self.memory,at)?;
+            adapter.require_native_command(std::ptr::from_ref(sim) as usize,at,identity,&command)?;
+            let measured=recovery::support_probe::offline_trajectory::coordinates(sim)?;
+            let progress=recovery::support_probe::getup_ab::path_progress(sim,&self.program,&measured);
+            if progress>self.best_progress+0.005 { self.best_progress=progress;self.stalled_s=0.; }
+            else {self.stalled_s+=sim.profile.dt_s;}
+            self.unsupported_s=if recovery::has_persistent_support(sim) {0.} else {self.unsupported_s+sim.profile.dt_s};
+            let limits=&crate::recovery_contract::contract().recovery_acceptance;
+            if f64::from(self.stalled_s)>=limits.stall_s || f64::from(self.unsupported_s)>=limits.support_loss_s {
+                return Err("Original progress/support duration refused transfer".into());
+            }
+            let anchors=["left","right"].map(|side|recovery::planted_contact(sim,&[
+                recovery::index(sim,&format!("{side}Foot")),recovery::index(sim,&format!("{side}Forefoot"))]));
+            let controller=sim.recovery.as_mut().ok_or("Original recovery observer vanished")?;
+            // Request Stand once; never re-enter or reset settle/handoff counters.
+            if adapter.terminal_requested(at) && !controller.standing() {controller.status.phase=recovery::Phase::Stand;}
+            controller.status.elapsed_s=step as f32*sim.profile.dt_s;
+            controller.status.unsupported_s=self.unsupported_s;
+            controller.status.stalled_s=self.stalled_s;
+            controller.status.progress=progress;
+            controller.foot_anchors=[anchors[0].clone()?,anchors[1].clone()?];
+            controller.targets=command.positions.to_vec();controller.velocities=command.velocities.to_vec();
+            sim.targets=command.positions.to_vec();
+            let (cap,ratio,requests)=recovery::support_probe::offline_trajectory::install_targets(sim,&command.positions,&command.velocities,
+                recovery::support_probe::offline_trajectory::Allocation::OwnedRequests)?;
+            adapter.commit_command(&mut self.memory,&command,at)?;
+            self.maximum_cap=self.maximum_cap.max(cap);self.previous_step=Some(step);
+            self.patches=adapter.tracker().clone();
+            self.last=json!({"commandSubstep":step,"positions":command.positions,"velocities":command.velocities,
+                "capSumNm":cap,"anatomicalCapRatio":ratio,"requests":requests,"transfer":true,"terminalRequested":adapter.terminal_requested(at)});
+            Ok(())
+        })();
+        self.transfer=Some(adapter);
+        result
+    }
+
+    /// After the original observer grants Handoff, this is a passive admission
+    /// monitor only. It does not install targets or modify the recovery state.
+    pub(crate) fn observe_transfer_handoff(&mut self,sim:&Simulation)->Result<(),String> {
+        super::native_plan_preview::require_transfer_native_state(sim)?;
+        let observation=native_observation::observe(sim,self.start,&[])?;
+        if observation.segments.iter().any(|s|!matches!(s.role,support_state::SegmentRole::Hindfoot|support_state::SegmentRole::Forefoot)
+            &&s.loaded_substeps>=12&&s.persistent_load_n>=3.) {
+            return Err("Bilateral continuation gained nonfoot support after handoff".into());
+        }
+        self.transfer.as_mut().ok_or("Missing passive transfer monitor")?
+            .observe_native_terminal(sim.substeps_completed,sim.counters.recoveries==1)?;
+        let identity=super::native_plan_preview::transfer_identity(sim,self)?;
+        let adapter=self.transfer.as_mut().ok_or("Missing passive transfer monitor")?;
+        adapter.observe(&observation)?;
+        adapter.require_native_passive(std::ptr::from_ref(sim) as usize,sim.substeps_completed,identity)
+    }
+
+    /// Technical verification only: four already reserved native steps, bound
+    /// to this instance and immutable candidate. This grants no history lease.
+    pub(crate) fn admit_technical_transfer_tick(&mut self,sim:&Simulation,receipt:super::native_plan_preview::NativeTechnicalReceipt)->Result<(),String> {
+        super::native_plan_preview::require_transfer_native_state(sim)?;
+        let scope=super::native_plan_preview::transfer_scope(sim,self)?;
+        let identity=super::native_plan_preview::transfer_identity(sim,self)?;
+        self.transfer.as_mut().ok_or("No transfer candidate for technical verification")?
+            .admit_technical_tick(receipt,std::ptr::from_ref(sim) as usize,sim.substeps_completed,&identity,&scope)
+    }
+
+    pub(crate) fn admit_transfer_window(&mut self,sim:&Simulation,receipt:super::native_plan_preview::NativeWindowReceipt)->Result<(),String> {
+        super::native_plan_preview::require_transfer_native_state(sim)?;
+        self.transfer.as_ref().ok_or("No transfer candidate to admit")?
+            .check_native_terminal(sim.substeps_completed,sim.counters.recoveries==1)?;
+        let identity=super::native_plan_preview::transfer_identity(sim,self)?;
+        self.transfer.as_mut().ok_or("No transfer candidate to admit")?
+            .admit_real_window(receipt,sim.substeps_completed,&identity)
+    }
+
+    /// Explicit completed-tick checkpoint for the next 24 already forecast
+    /// states, including the tail of the original terminal monitoring second.
+    pub(crate) fn continue_transfer_window(&mut self,sim:&Simulation)->Result<(),String> {
+        super::native_plan_preview::require_transfer_native_state(sim)?;
+        self.transfer.as_ref().ok_or("No transfer candidate to continue")?
+            .check_native_terminal(sim.substeps_completed,sim.counters.recoveries==1)?;
+        let identity=super::native_plan_preview::transfer_identity(sim,self)?;
+        self.transfer.as_mut().unwrap().continue_validated_window(sim.substeps_completed,&identity)
+    }
+
     pub(crate) fn configure(&mut self, sim: &mut Simulation) -> Result<(), String> {
+        if self.transfer.is_some() {
+            return self.configure_transfer(sim);
+        }
         if ![0., 0.5, 1., 1.5].contains(&self.feedback_scale) {
             return Err("Unfrozen coordination proposal".into());
         }
@@ -641,6 +828,7 @@ mod tests {
                 maximum_cap: 0.,
                 last: Value::Null,
                 last_attempt: Value::Null,
+                transfer: None,
             };
             problems.push((
                 owner.feedback_scale,
@@ -803,5 +991,73 @@ mod tests {
         if let Ok(path) = std::env::var("LH_NUMERIC_CORRECTION_EXPORT") {
             std::fs::write(path,serde_json::to_vec_pretty(&json!({"scope":"pure command replay, no native dynamics qualification","nativeIntegrations":0,"cases":cases})).unwrap()).unwrap();
         }
+    }
+}
+
+
+#[cfg(test)]
+mod transfer_archive_tests {
+    use super::*;
+    use std::{fs::{self,OpenOptions},io::Write,time::{SystemTime,UNIX_EPOCH}};
+
+    /// Ignored by ordinary test runs: each invocation needs its own durable,
+    /// single-use inspection ticket and must finish within the frozen window.
+    #[test]
+    #[ignore = "requires an unexpired separately charged geometry ticket"]
+    fn archived_a36_common_command_proposal() {
+        let root=std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("../../..");
+        let dir=root.join("docs/evidence/coordination-transfer-candidate-2026-10-13");
+        let ticket=std::env::var("LH_TRANSFER_GEOMETRY_TICKET").expect("No geometry authority");
+        let ticket_path=std::path::Path::new(&ticket);
+        let authorization:Value=serde_json::from_slice(&fs::read(ticket_path).unwrap()).unwrap();
+        let deadline=authorization["deadlineUnixMs"].as_u64().unwrap();
+        let now=||SystemTime::now().duration_since(UNIX_EPOCH).unwrap().as_millis() as u64;
+        assert!(now()<deadline,"Inspection deadline expired");
+        assert_eq!(authorization["fixtureNativeSubstep"],36);
+        let model:lh_model::Model=serde_json::from_slice(&fs::read(root.join("rust/crates/model/data/canonical-v1.json")).unwrap()).unwrap();
+        let input:Value=serde_json::from_slice(&fs::read(dir.join("observed-entry-step36.json")).unwrap()).unwrap();
+        let observed:Value=serde_json::from_slice(&fs::read(dir.join("observed-entry-task-state.json")).unwrap()).unwrap();
+        let observed:tasks::ObservedState=serde_json::from_value(observed["observed_task_state"].clone()).unwrap();
+        let observation:support_state::SupportObservation=serde_json::from_value(input["archivedNativeRow"]["support"].clone()).unwrap();
+        let entry=serde_json::from_value(input["commandEntry"].clone()).unwrap();
+        let source:recovery::trajectory_program::Program=serde_json::from_slice(&fs::read(root.join("docs/evidence/coordination-prototype-2026-10-12/continuation-candidate-program.json")).unwrap()).unwrap();
+        let reference=serde_json::from_slice(&fs::read(root.join("docs/evidence/coordination-prototype-2026-10-12/continuation-tasks.json")).unwrap()).unwrap();
+        let o=&input["ownerBeforeConfigure36"];
+        let rates:Vec<f64>=serde_json::from_value(o["rates"].clone()).unwrap();
+        let mut owner=Controller { program:source.compile(&model).unwrap(),reference,
+            enabled:o["enabled"].as_bool().unwrap(),feedback_scale:o["feedbackScale"].as_f64().unwrap(),
+            memory:runtime::Memory {previous:serde_json::from_value(o["q"].clone()).unwrap(),next_substep:36,rates:rates.try_into().unwrap(),mode_signature:0},
+            patches:serde_json::from_value(o["patches"].clone()).unwrap(),start:o["start"].as_u64().unwrap(),
+            previous_step:Some(o["previousStep"].as_u64().unwrap()),best_progress:o["bestProgress"].as_f64().unwrap() as f32,
+            stalled_s:o["stalledS"].as_f64().unwrap() as f32,unsupported_s:o["unsupportedS"].as_f64().unwrap() as f32,
+            maximum_cap:o["maximumCapNm"].as_f64().unwrap(),last:o["last"].clone(),last_attempt:o["numericAttempt"].clone(),transfer:None };
+        owner.enable_observed_transfer(&model,&observation,entry).unwrap();
+        let mut adapter=owner.transfer.take().unwrap();
+        let proposal=adapter.observe(&observation).unwrap();
+        let nominal=adapter.nominal(&model,&owner.memory,36).unwrap();
+        // Consume durably immediately BEFORE the sole geometry assembly call.
+        let mut used=OpenOptions::new().create_new(true).write(true).open(ticket_path.with_extension("used.json")).unwrap();
+        let receipt=json!({"nativeSubsteps":0,"fkEvaluations":0,"assembleObservedCallsCharged":1,"startedUnixMs":now(),"deadlineUnixMs":deadline});
+        used.write_all(serde_json::to_string_pretty(&receipt).unwrap().as_bytes()).unwrap();used.sync_all().unwrap();
+        assert!(now()<deadline);
+        let problem=owner.transfer_problem_observed(&model,Rotation::IDENTITY,&observed,&adapter,nominal.clone(),&proposal).unwrap();
+        let compilation=adapter.compile_batch(&model,&owner.memory,&problem,36);
+        let mut commands=vec![];
+        if compilation.is_ok() { for at in 36..40 {
+            let command=adapter.proposed_command(&model,&owner.memory,at).unwrap();
+            commands.push(json!({"at":at,"positions":command.positions,"velocities":command.velocities}));
+            adapter.commit_command(&mut owner.memory,&command,at).unwrap();
+        }}
+        let evidence=json!({"status":if compilation.is_ok(){"pure-command-pass-native-admission-required"}else{"pure-command-rejection"},
+            "nativeSubsteps":0,"newWorlds":0,"fkEvaluations":0,"assembleObservedCalls":1,
+            "completedUnixMs":now(),"proposal":proposal,"nominal":{"positions":nominal.positions,"velocities":nominal.velocities},
+            "problem":{"lower":problem.lower.to_vec(),"upper":problem.upper.to_vec(),"regularization":problem.regularization,
+                "hard":problem.hard.iter().map(|h|json!({"name":h.name,"row":h.row.to_vec(),"lower":h.lower,"upper":h.upper})).collect::<Vec<_>>(),
+                "soft":problem.soft.iter().map(|t|json!({"row":t.row.to_vec(),"target":t.target,"weight":t.weight})).collect::<Vec<_>>()},"compilationError":compilation.as_ref().err(),"commands":commands,"adapter":adapter.evidence()});
+        fs::write(dir.join("archived-a36-command-result.json"),serde_json::to_vec_pretty(&evidence).unwrap()).unwrap();
+        assert!(now()<deadline,"Inspection completed outside window");
+        assert!(compilation.is_ok(),"Frozen candidate rejected: {:?}",compilation.err());
+        assert_eq!(commands.len(),4);
+        assert_eq!(adapter.tracker().active.iter().map(|p|p.segment).collect::<Vec<_>>(),[19,24]);
     }
 }

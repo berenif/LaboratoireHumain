@@ -1,0 +1,25 @@
+{
+  "purpose": "Preserve original ticket; identify corrected compilation sources before sole geometry invocation",
+  "atUtc": "2026-10-13T12:44:34.955771+00:00",
+  "additionalCallsReserved": 0,
+  "sourceHashes": {
+    "rust/crates/sim/src/recovery/planner/whole_body_controller.rs": "e54ad15e77e8c795305f6907ac243ce250550c652d6b323aefa58dd821080397",
+    "rust/crates/sim/src/recovery/planner/whole_body_tasks.rs": "83a733ffbf9f7a15cb802f4202586cde2858e5686ff6487cc3eaacd9e975a049",
+    "rust/crates/sim/src/recovery/planner/continuation.rs": "74020cce0959251e6ac166acbc61b91a97f92218ca7cc7b4117f0e6ec5d76ff6",
+    "rust/crates/sim/src/recovery/planner/coordinated_runtime.rs": "bdd872f4cf592309d40825148aab4776ec3038104bbe591bf1b3a54471dd7298",
+    "rust/crates/sim/src/recovery/planner/support_state.rs": "19607d6e8d19ca66579e1c9a830ee8e711bac3e7ce17d907f1e071a7b89b872f",
+    "rust/crates/sim/src/recovery/planner/contact_observation.rs": "94366ed69861241b360756a440cda1ef7697594cd32b852e1b0a39bf2a9335c2",
+    "rust/crates/sim/src/recovery/planner/mod.rs": "ad159b7097f5d4c5ce72b65c2efd0457a53f66d8886c59f8612c126e58f0c839",
+    "rust/crates/sim/src/recovery/planner/transfer_adapter.rs": "2e40c8cde9182506a3d13b1c1396551f1fe4a959b068a2c01ca5d693ac3a594c",
+    "rust/crates/sim/src/recovery/planner/native_observation.rs": "6b8008b50fe9614af1406eb361a9b4e377ecb03c6cf84b3ccddef0619c3edd74",
+    "rust/crates/sim/src/recovery/planner/native_plan_preview.rs": "d7f1d6cc077733690fc74e54970f66268c356d43abe3804d6e80331b1d8c1181",
+    "rust/crates/sim/src/recovery/planner/numeric_parity_worker.rs": "ac89b99890d1842205bb1071967697a221c7fa2b929fd253d54e08035ccd04e0",
+    "rust/crates/sim/src/recovery/planner/transfer_adapter_tests.rs": "a9cf2779ca0714e6f1e564c26ea51d577aa0f0fd2641de9d93dc6a2f049b8cc8",
+    "rust/crates/sim/src/recovery/planner/geometric_tasks.rs": "1c018f4d20ff09921e640aa2c45b2ec04dfc860452a18e816a05e2b9ebf2ee68",
+    "rust/crates/sim/src/recovery/planner/transition_worker.rs": "5b39459b5513f3478573b8d1672fd1003267ae1efd3b323e883954350c7ef385",
+    "rust/crates/sim/src/recovery/planner/observed_raccord.rs": "1a9af58e0d0ed39a806f23a61ef2c772e6841242e98aec391b86c9ab23bf9e66",
+    "rust/crates/sim/src/recovery/planner/support_schedule.rs": "243e1b712a6a0f02d59480b78205b7bb8d3f6a913b30589d526f06842826997c",
+    "rust/crates/sim/src/recovery/planner/command_proposal.rs": "d09cf9cfbeb650eddbcf2008fa214136f1bb774f2a5bebf44298c77a50c87d5b",
+    "rust/crates/sim/src/recovery/planner/load_transfer.rs": "555c93dae299b029cf8e78f5e048833de2bb8f989e3fadf366bfa3705582fcee"
+  }
+}

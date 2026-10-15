@@ -9,7 +9,14 @@ experimental-solver-step-observation = ["rapier3d/solver-step-observation"]
 experimental-joint-velocity-cache = ["rapier3d/experimental-joint-velocity-cache"]
 experimental-simd8 = ["rapier3d/simd8"]
 coordination-worker = ["experimental-solver-step-observation"]
+coordination-transfer-worker = ["coordination-worker"]
 numeric-parity-worker = ["experimental-solver-step-observation"]
+
+[[test]]
+name = "coordination-transfer-worker"
+path = "src/lib.rs"
+harness = false
+required-features = ["coordination-transfer-worker"]
 
 [[test]]
 name = "numeric-parity-worker-serialization"

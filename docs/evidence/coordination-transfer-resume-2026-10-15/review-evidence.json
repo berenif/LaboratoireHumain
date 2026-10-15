@@ -1,0 +1,63 @@
+{
+  "schema": 1,
+  "recordedUtc": "2026-10-15T09:43:33.331278+00:00",
+  "scope": "Independent static review then explicitly delegated read-only parity corrections; no new physical evidence",
+  "nativeSubsteps": 0,
+  "worldsConstructed": 0,
+  "fkCalls": 0,
+  "geometricAssemblerCalls": 0,
+  "tests": [
+    {
+      "path": "docs/evidence/coordination-transfer-resume-2026-10-15/parity-memory-pure-tests.log",
+      "passed": 10,
+      "sha256": "d5e3cf48442fcf8285716c3f231dea18edf644457ee7a14ed0cd60ca644d125f"
+    },
+    {
+      "path": "docs/evidence/coordination-transfer-resume-2026-10-15/stepping-memory-pure-tests.log",
+      "passed": 2,
+      "sha256": "b4fdae14eb86e311e56b14674be459cbf2aa7a14f688de18d5615d8a96bd961c"
+    },
+    {
+      "path": "docs/evidence/coordination-transfer-resume-2026-10-15/motion-memory-pure-tests.log",
+      "passed": 1,
+      "sha256": "18cffd6126b0b9e40c17412b38578a0a8198764f098706dd9cf51f8530bd751e"
+    }
+  ],
+  "files": [
+    {
+      "path": "rust/crates/sim/src/recovery/planner/native_plan_preview.rs",
+      "sha256": "4c86adb033950492f4dc9b758a953bed30959280cca7206412b93bb54ddb4df0"
+    },
+    {
+      "path": "rust/crates/sim/src/recovery/planner/transfer_adapter.rs",
+      "sha256": "70fb9feedf19784a4e9e076768695ae9f29f7c88a6306a51e71da16bafe15e90"
+    },
+    {
+      "path": "rust/crates/sim/src/recovery/planner/whole_body_controller.rs",
+      "sha256": "a4597646248f80817a2079d0a53da52e408263f344abcffa40399780297c27a9"
+    },
+    {
+      "path": "rust/crates/sim/src/recovery/planner/transfer_worker.rs",
+      "sha256": "44e215fc69a5218a42120c74c5175c9be2281d0d500cecf1e227fad498258b99"
+    },
+    {
+      "path": "rust/crates/sim/src/stepping.rs",
+      "sha256": "10575419d0b4463c7088831904bea7690b6d419d689d62acdb6c051d3f44df21"
+    },
+    {
+      "path": "rust/crates/sim/src/motion.rs",
+      "sha256": "3fcb3cef3d455ec64edbca5db928bd91a238b38d6236664b3c20e404d5bc9304"
+    }
+  ],
+  "serializationEstimate": {
+    "scope": "Only archived command arrays reserialized in Python, not runtime allocation measurement or exact forecast memory bound",
+    "source": "docs/evidence/coordination-transfer-candidate-2026-10-13/observed-raccord-pure-validation/observed-raccord-export.json",
+    "sourceSha256": "52d25c09a3c13ccb586420c759662724ff4887ce94cc9ae948cfcd2451a5108f",
+    "commands": 1728,
+    "rawUtf8Bytes": 1602946,
+    "priorDecimalByteArrayEncodingBytes": 4843503,
+    "rawBytesTimes480": 769414080,
+    "decimalBytesTimes480": 2324881440,
+    "compactIdentityChange": "Version tag, native clock, little-endian u64 lengths, exact raw sections, little-endian u32 body/motor bits; no hash"
+  }
+}
