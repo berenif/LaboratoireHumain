@@ -101,7 +101,7 @@ mod browser {
         view! {
             <header class="topbar">
                 <a class="brand" href="./"><span class="brand-mark">"◎"</span><span>"LABORATOIRE"<b>"HUMAIN"</b></span></a>
-                <span class="preview-tag">"Rust preview · acceptance in progress"</span>
+                <span class="preview-tag">"Experimental · Rust/WASM"</span>
             </header>
             <main class="workspace">
                 <aside class="panel">
@@ -161,7 +161,7 @@ mod browser {
                     <div><span>"SIMULATION / WALL"</span><strong>{move||format!("{:.2}×",status.get().realtime_ratio)}</strong></div>
                 </section>
             </main>
-            <footer>"Physical acceptance remains open. An upright picture alone does not establish balance or recovery."</footer>
+            <footer>"Experimental simulation. Recovery is disabled; full physical qualification remains open."</footer>
         }
     }
     pub fn run() {

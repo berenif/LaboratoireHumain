@@ -4,6 +4,7 @@ export { chromium } from 'playwright';
 export function browserLaunchOptions(graphics = false) {
   const channel = process.env.RUST_BROWSER_CHANNEL ?? (process.platform === 'win32' ? 'msedge' : 'chromium');
   return {
+    ...(process.env.RUST_BROWSER_EXECUTABLE ? { executablePath: process.env.RUST_BROWSER_EXECUTABLE } : {}),
     ...(channel === 'chromium' ? {} : { channel }),
     headless: true,
     ...(graphics ? { args: ['--enable-unsafe-webgpu'] } : {}),
