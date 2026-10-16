@@ -192,6 +192,15 @@ mod browser {
     }
     #[wasm_bindgen]
     impl WorkerRuntime {
+        pub fn getup_checkpoint(&self) -> Result<Vec<u8>, JsValue> {
+            self.runtime.getup_checkpoint().map_err(error)
+        }
+        pub fn verify_getup_checkpoint(&self, bytes: &[u8]) -> Result<String, JsValue> {
+            self.runtime.verify_getup_checkpoint(bytes).map_err(error)
+        }
+        pub fn from_getup_checkpoint(bytes: &[u8]) -> Result<WorkerRuntime, JsValue> {
+            Ok(Self { runtime: Runtime::from_getup_checkpoint(bytes).map_err(error)?, native_output_ms: 0.0 })
+        }
         pub fn getup_report(&self) -> Result<String, JsValue> { self.runtime.getup_report().map_err(error) }
         #[wasm_bindgen(constructor)]
         pub fn new(

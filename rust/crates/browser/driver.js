@@ -214,6 +214,8 @@ export async function start_bridge() {
       const outstanding = state.outstanding;
       state.outstanding = null;
       if (message.type === 'getupReport') { outstanding.manualResolve?.resolve(message.report); pump(); return; }
+      if (message.type === 'getupCheckpoint') { outstanding.manualResolve?.resolve({
+        checkpoint: message.checkpoint, verification: message.verification }); pump(); return; }
       if (message.type === 'error') {
         outstanding.commandSequences.forEach(sequence => {
           state.acknowledgements.get(sequence)?.reject?.(new Error(message.message));
@@ -498,6 +500,10 @@ export async function start_bridge() {
     getupReport() {
       if (!getupTrial || state.outstanding || !state.manual) return Promise.reject(new Error('GetUp report requires an idle manual prototype'));
       return new Promise((resolve, reject) => send({ type: 'getupReport' }, { resolve, reject }));
+    },
+    getupCheckpoint() {
+      if (!getupTrial || state.outstanding || !state.manual) return Promise.reject(new Error('GetUp checkpoint requires an idle manual prototype'));
+      return new Promise((resolve, reject) => send({ type: 'getupCheckpoint' }, { resolve, reject }));
     },
     advance(ticks) {
       if (!Number.isInteger(ticks) || ticks < 0 || ticks > 4 || !state.manual) return Promise.reject(new Error('Manual advance requires 0–4 ticks and manual mode'));

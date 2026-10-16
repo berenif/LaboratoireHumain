@@ -48,3 +48,4 @@ lh-model.workspace = true
 lh-contracts.workspace = true
 serde.workspace = true
 serde_json.workspace = true
+bincode = "=1.3.3"

@@ -232,7 +232,7 @@ pub fn configure(world: &mut PhysicsWorld, p: &Profile) {
         400.0
     };
 }
-#[derive(Clone)]
+#[derive(Clone, Serialize, Deserialize)]
 struct Filter {
     exclusions: BTreeSet<(u128, u128)>,
 }
@@ -270,10 +270,14 @@ impl PhysicsHooks for Filter {
         }
     }
 }
+#[derive(Serialize, Deserialize)]
 pub struct Simulation {
     #[cfg(all(test, feature = "experimental-solver-step-observation"))]
+    #[serde(skip)]
     coordination: Option<recovery::planner::whole_body_controller::Controller>,
+    #[serde(skip)]
     pub(crate) world: PhysicsWorld,
+    #[serde(skip, default = "checkpoint_model")]
     pub(crate) model: Model,
     pub(crate) bodies: Vec<RigidBodyHandle>,
     pub(crate) colliders: Vec<ColliderHandle>,
@@ -290,6 +294,7 @@ pub struct Simulation {
     rest_com: Vector,
     rest_com_roundoff: Vector,
     heading: Rotation,
+    #[serde(skip)]
     grab: Option<grab::Grab>,
     last_press: u64,
     applied_sequence: u64,
@@ -301,12 +306,18 @@ pub struct Simulation {
     pub first_failure: Option<measurement::Failure>,
     motor_ceiling_sum: f32,
     substeps_completed: u64,
+    #[serde(skip)]
     stepping: Option<stepping::StepController>,
     motion_observation: motion::Observation,
+    #[serde(skip)]
     environment: Option<environment::Environment>,
     striker: Option<striker::Striker>,
+    #[serde(skip)]
     recovery: Option<recovery::Controller>,
     getup_controller: Option<getup::controller::Controller>,
+}
+fn checkpoint_model() -> Model {
+    Model::canonical().expect("pinned GetUp model")
 }
 impl Simulation {
     pub fn new(heading: f32, profile: Profile, floor_enabled: bool) -> Result<Self, String> {

@@ -334,7 +334,7 @@ pub struct Snapshot {
 /// A received high sequence closes all lower sequences. Duplicates never replay.
 /// Paused/hidden time has no simulation tick; lifecycle commands use the current
 /// boundary. Resets increment generation, clear pending intent, and restart tick 0.
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Timeline {
     pub generation: u64,
     pub tick: u64,

@@ -4,7 +4,7 @@ use crate::Simulation;
 use lh_contracts::Motion;
 use rapier3d::prelude::Vector;
 
-#[derive(Clone, Default)]
+#[derive(Clone, Default, serde::Serialize, serde::Deserialize)]
 pub(crate) struct Observation {
     unsupported_s: f32,
     settled_s: f32,

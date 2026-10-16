@@ -20,7 +20,7 @@ fn policy_substeps(native_dt: f32) -> Result<u32, String> {
     Ok(count as u32)
 }
 
-#[derive(Serialize)]
+#[derive(Serialize, Deserialize)]
 pub struct TeacherFrame {
     time_s: f64,
     observation: Vec<f32>,
@@ -29,7 +29,7 @@ pub struct TeacherFrame {
     snapshot: Snapshot,
     before: Vec<lh_model::Pose>,
 }
-#[derive(Serialize)]
+#[derive(Serialize, Deserialize)]
 pub struct StudentDecision {
     native_substep: u64,
     observation: Vec<f32>,
@@ -38,7 +38,7 @@ pub struct StudentDecision {
     holding: bool,
     before: Vec<lh_model::Pose>,
 }
-#[derive(Serialize)]
+#[derive(Serialize, Deserialize)]
 pub struct Controller {
     pub status: lh_contracts::GetUpPolicyObservation,
     pub started_substep: Option<u64>,

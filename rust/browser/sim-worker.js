@@ -92,6 +92,14 @@ self.onmessage = event => {
       self.postMessage({ type: 'getupReport', requestId: message.requestId, report: JSON.parse(runtime.getup_report()) });
       return;
     }
+    if (message.type === 'getupCheckpoint') {
+      if (!runtime) throw new Error('GetUp trial is not initialized');
+      const checkpoint = runtime.getup_checkpoint();
+      const verification = JSON.parse(runtime.verify_getup_checkpoint(checkpoint));
+      self.postMessage({ type: 'getupCheckpoint', requestId: message.requestId,
+        checkpoint, verification }, [checkpoint.buffer]);
+      return;
+    }
     if (!buffers.some(slot => !slot.inFlight)) throw new Error('No recycled pose buffer');
     if (message.type === 'initialize') {
       if (runtime) throw new Error('Already initialized; use a stamped Initialize command');
