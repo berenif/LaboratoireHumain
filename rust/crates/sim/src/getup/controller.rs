@@ -6,7 +6,19 @@ use crate::*;
 pub const TEACHER_POWER: f32 = 0.663420431;
 pub const REFERENCE_SPEED: f64 = 0.5;
 pub const MAX_TEACHER_TICKS: usize = 250;
-pub const TEACHER_DT: f32 = 0.005;
+const POLICY_DT: f32 = 0.025;
+
+fn policy_substeps(native_dt: f32) -> Result<u32, String> {
+    let count = (POLICY_DT / native_dt).round();
+    if !native_dt.is_finite()
+        || native_dt <= 0.0
+        || !(1.0..=20.0).contains(&count)
+        || (count * native_dt - POLICY_DT).abs() > 1.0e-7
+    {
+        return Err("Native step must divide the 40 Hz GetUp policy period within 20 substeps".into());
+    }
+    Ok(count as u32)
+}
 
 #[derive(Serialize)]
 pub struct TeacherFrame {
@@ -34,6 +46,7 @@ pub struct Controller {
     reference: Vec<[f32; 25]>,
     teacher_frames: Vec<TeacherFrame>,
     teacher_initial: Option<Snapshot>,
+    teacher_native_dt_s: Option<f32>,
     teacher_failure: Option<measurement::Failure>,
     decision_observation: Vec<f32>,
     student_decisions: Vec<StudentDecision>,
@@ -57,6 +70,7 @@ impl Controller {
             reference: Vec::new(),
             teacher_frames: Vec::new(),
             teacher_initial: None,
+            teacher_native_dt_s: None,
             teacher_failure: None,
             decision_observation: Vec::new(),
             student_decisions: Vec::new(),
@@ -167,12 +181,15 @@ impl Controller {
         if !self.status.reference_seed_matches_real {
             return Err("GetUp branch changed its initial state".into());
         }
-        shadow.world.integration_parameters.dt = TEACHER_DT;
-        shadow.profile.dt_s = TEACHER_DT;
-        shadow
-            .world
-            .integration_parameters
-            .num_internal_pgs_iterations = real.profile.fall_internal_pgs_iterations;
+        // Predict the actual native world. Changing its timestep to the source
+        // MuJoCo teacher's 5 ms changed Rapier's contact/CCD behavior and broke a
+        // welded link in the retained forecast. Keep every cloned parameter;
+        // only the actor cadence is inherited from the source (40 Hz).
+        if shadow.world.integration_parameters.dt != shadow.profile.dt_s {
+            return Err("GetUp branch native clock differs from its profile".into());
+        }
+        let native_per_policy = policy_substeps(shadow.profile.dt_s)?;
+        self.teacher_native_dt_s = Some(shadow.profile.dt_s);
         let mut finish_after_step = false;
         let mut usable = false;
         let mut knots = Vec::new();
@@ -183,7 +200,7 @@ impl Controller {
             input[..67].copy_from_slice(&physical);
             input[67] = TEACHER_POWER;
             let action = actor::teacher().infer(&input)?.action;
-            for substep in 0..5 {
+            for substep in 0..native_per_policy {
                 for h in &shadow.bodies {
                     shadow.world.bodies[*h].reset_forces(false);
                     shadow.world.bodies[*h].reset_torques(false);
@@ -234,7 +251,7 @@ impl Controller {
         target[..21].copy_from_slice(&physical[..21]);
         target[21] = s.center_of_mass().y;
         target[22..25].copy_from_slice(&physical[34..37]);
-        let time = self.status.forecast_substeps as f64 * 0.005;
+        let time = self.status.forecast_substeps as f64 * s.profile.dt_s as f64;
         let mut snapshot = s.snapshot();
         snapshot.simulation_time_s = time;
         self.status.teacher_max_head_height_m =
@@ -399,6 +416,16 @@ fn fork(real: &Simulation) -> Result<Simulation, String> {
 
 #[cfg(test)]
 mod tests {
+    #[test]
+    fn teacher_keeps_native_clock_and_bounded_policy_cadence() {
+        assert_eq!(super::policy_substeps(0.00125).unwrap(), 20);
+        assert_eq!(super::policy_substeps(0.005).unwrap(), 5);
+        assert!(super::policy_substeps(0.003).is_err());
+        assert!(super::policy_substeps(0.0001).is_err());
+        assert!(super::policy_substeps(f32::NAN).is_err());
+        assert!(super::policy_substeps(0.0).is_err());
+    }
+
     #[test]
     fn exact_state_branch_is_independent_and_never_steps_during_construction() {
         let real = crate::Simulation::new_protocol(0.3, crate::Profile::default(), true).unwrap();

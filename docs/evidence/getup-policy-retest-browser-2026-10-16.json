@@ -1,5 +1,5 @@
 {
-  "status": "reserved",
+  "status": "closed",
   "preparedUtc": "2026-10-16T15:10:36.429632+00:00",
   "reservedUtc": "2026-10-16T15:10:36.429638+00:00",
   "authorization": "Parent explicitly admits bounded physical retest of corrected be04ad4 within existing cumulative budget; causal integration fixes only, no tuning or engine migration.",
@@ -59,9 +59,9 @@
     }
   },
   "TODO": [
-    "Admitted: one physical retest after zero-step browser/report preflight.",
-    "Retain full teacher report; analyze valid reference, physical SLOW decisions and actual standing.",
-    "Close cumulative record and archive recorded frames without more physics."
+    "Completed: full report retained and 4 teacher inputs/actions audited without physics.",
+    "Completed: identify individual hand motion clamp, forecast 5 ms diverging from actual 1.25 ms native clock.",
+    "Next separate bounded admission: keep the cloned world clock and integration parameters; no physics tuning."
   ],
   "inputs": {
     "rust/Cargo.lock": "57f8ef29219379d35953076b6e468e5b641d08f40f1be4a24fcecdfce546ec94",
@@ -102,5 +102,136 @@
     "tests/rust-qualification-driver.test.mjs": "2cb001f52e4cca32245aa4502d5336cc6f56b03a6a6128380c956f98a7dae0f6",
     "scripts/rust-browser-test.mjs": "84a0700af7e5702de4554c4b40d912ca442289b9149931f78f3ba1f96986aaa5"
   },
-  "browserExecutable": "/usr/bin/chromium"
+  "browserExecutable": "/usr/bin/chromium",
+  "closedUtc": "2026-10-16T15:16:55.195987+00:00",
+  "admissionCommit": "0fa86431a14a8deb2db6d4cee9fcb73529c490cb",
+  "nativeActualSteps": 2897,
+  "mainNativeActualSteps": 2881,
+  "forecastNativeActualSteps": 16,
+  "wallActualSeconds": 42.644284177,
+  "harnessCompleted": true,
+  "physicalRefusal": {
+    "tick": 144,
+    "substep": 1,
+    "check": "getup-policy",
+    "offending": "Teacher Rapier integrity failure: joint-limit right_hand measured=0.06354662 limit=0.06",
+    "measured": 0,
+    "threshold": 0
+  },
+  "nativeTeacherFailure": {
+    "tick": 3,
+    "substep": 0,
+    "check": "joint-limit",
+    "offending": "right_hand",
+    "measured": 0.06354662,
+    "threshold": 0.06
+  },
+  "lastPolicyState": {
+    "phase": "reference-rejected",
+    "started_at_s": 3.60125,
+    "since_impact_s": null,
+    "forecast_substeps": 16,
+    "teacher_decisions": 3,
+    "teacher_max_head_height_m": 0.09305175,
+    "teacher_terminal_reached": false,
+    "reference_seed_matches_real": true,
+    "reference_frames": 0,
+    "reference_index": 0,
+    "policy_decisions": 0,
+    "reference_tracking_error_rad": 0,
+    "reference_com_error_m": 0,
+    "actual_head_height_m": 0,
+    "stable_standing_s": 0,
+    "prototype_standing_passed": false,
+    "refusal": "Teacher Rapier integrity failure: joint-limit right_hand measured=0.06354662 limit=0.06"
+  },
+  "referenceReport": {
+    "sha256": "56bd0bc64bdc1b6d9be260b50606e708f2eb0480eaa40a2184ee4ae7f67da4e8",
+    "bytes": 80597,
+    "forecastSteps": 16,
+    "teacherFrames": 4,
+    "studentDecisions": 0
+  },
+  "fullGetUpQualified": false,
+  "additionalPhysicsForAudit": 0,
+  "outcome": "Corrected observation adapter ran, full forecast report retained. Reference refused after 16 teacher substeps at right_hand fixed-joint drift; no SLOW decisions or standing.",
+  "causalAudit": {
+    "physicsIntegrations": 0,
+    "teacherFramesAudited": 4,
+    "rows": [
+      {
+        "timeSeconds": 0.025,
+        "maximumActorActionError": 3.961620407111344e-06,
+        "maximumPoseObservationError": 1.1582738915216773e-07,
+        "headHeightM": 0.0900956
+      },
+      {
+        "timeSeconds": 0.05,
+        "maximumActorActionError": 2.963196086884501e-06,
+        "maximumPoseObservationError": 2.554210812577562e-07,
+        "headHeightM": 0.09305175
+      },
+      {
+        "timeSeconds": 0.075,
+        "maximumActorActionError": 3.994747924784825e-06,
+        "maximumPoseObservationError": 2.7446708267264697e-07,
+        "headHeightM": 0.0927736
+      },
+      {
+        "timeSeconds": 0.08,
+        "maximumActorActionError": 1.5379138183502228e-06,
+        "maximumPoseObservationError": 2.2430614537993776e-07,
+        "headHeightM": 0.091650434
+      }
+    ],
+    "maximumActorActionError": 3.994747924784825e-06,
+    "maximumPoseObservationError": 2.7446708267264697e-07,
+    "finalFixedLinks": [
+      {
+        "body": "head",
+        "angleRad": 0.0,
+        "anchorSeparationM": 3.664577683082158e-06
+      },
+      {
+        "body": "right_hand",
+        "angleRad": 0.06353837964709289,
+        "anchorSeparationM": 0.02098640284282983
+      },
+      {
+        "body": "left_hand",
+        "angleRad": 0.0,
+        "anchorSeparationM": 6.0350318538275724e-06
+      }
+    ],
+    "nativeFailure": {
+      "tick": 3,
+      "substep": 0,
+      "check": "joint-limit",
+      "offending": "right_hand",
+      "measured": 0.06354662,
+      "threshold": 0.06
+    },
+    "referenceFrames": 0,
+    "studentDecisions": 0,
+    "standingPassed": false,
+    "individualMotionClampEvidence": {
+      "translationFraction": 0.5000001810685127,
+      "translationResidualM": 3.0922316866091765e-06,
+      "rotationFraction": 0.4999998983324589,
+      "rotationResidualRad": 1.0874953033380887e-08,
+      "actualHandBottomM": -0.0009444499999999995,
+      "articulatedHandBottomM": -0.0039958008338702375,
+      "interpretation": "Retained hand pose matches a half-motion clamp while its fixed parent continues. Native CCD source performs per-body pose clamps after solve. Actual CCD event fraction was not separately instrumented."
+    }
+  },
+  "evidence": {
+    "outputs/getup-policy-retest-browser-2026-10-16/retained-audit.log": "870ead72d70eb5cef0baa273944d0b64d2238b275449cf2f86786f452dee4a87",
+    "outputs/getup-policy-retest-browser-2026-10-16/result.json": "485774cab698b59067fb2627aaef84f16e194d3bc4ea7b8ef99db5eda144c0e4",
+    "outputs/getup-policy-retest-browser-2026-10-16/retained-audit.json": "870ead72d70eb5cef0baa273944d0b64d2238b275449cf2f86786f452dee4a87",
+    "outputs/getup-policy-retest-browser-2026-10-16/reference-report.json": "56bd0bc64bdc1b6d9be260b50606e708f2eb0480eaa40a2184ee4ae7f67da4e8",
+    "outputs/getup-policy-retest-browser-2026-10-16/started-once": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "outputs/getup-policy-retest-browser-2026-10-16/trace.ndjson": "b02c8ff19febae37411bbfe0cd1eb0c14f58c915f82203c8a1093db39d4dfa84",
+    "outputs/getup-policy-retest-browser-2026-10-16/physical-run.log": "72c262b953288d462a5319cbc6efea555826d1be1580de6867470875cb4a4a4a",
+    "outputs/getup-policy-retest-browser-2026-10-16/audit-retained.py": "87b9b380743262de408bba1ea6f8fb6565e53a053de6734d5d4d00aabb893b43"
+  }
 }

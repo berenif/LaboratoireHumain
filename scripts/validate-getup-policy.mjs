@@ -8,7 +8,9 @@ const ledgerPath=process.argv[2]??'docs/evidence/getup-policy-2026-10-16.json';
 const ledger=JSON.parse(readFileSync(ledgerPath));
 const output=ledger.outputDirectory??'outputs/getup-policy-2026-10-16';
 assert.equal(ledger.status,'reserved');
-assert.equal(ledger.nativeReservation,23650);
+assert.ok([1250,5000].includes(ledger.maximumTeacherNativeSteps));
+assert.equal(ledger.maximumMainNativeSteps,22400);
+assert.equal(ledger.nativeReservation,22400+ledger.maximumTeacherNativeSteps);
 assert.equal(ledger.wallReservationSeconds,900);
 assert.equal(ledger.nativeChargedAfter,ledger.nativeChargedBefore+ledger.nativeReservation);
 assert.equal(ledger.wallChargedAfterSeconds,ledger.wallChargedBeforeSeconds+ledger.wallReservationSeconds);
@@ -24,7 +26,7 @@ const launchOptions={...browserLaunchOptions(true),...(ledger.browserExecutable?
 assert.ok(existsSync(launchOptions.executablePath??chromium.executablePath()),'Browser executable must exist before admission starts');
 openSync(`${output}/started-once`,'wx');mkdirSync(`${output}/frames`);
 const started=performance.now();
-const result={startedUtc:new Date().toISOString(),deadlineUtc:new Date(Date.now()+900000).toISOString(),maximumMainNativeSteps:22400,maximumForecastSteps:1250,maximumWallSeconds:900,frames:0,qualification:false};
+const result={startedUtc:new Date().toISOString(),deadlineUtc:new Date(Date.now()+900000).toISOString(),maximumMainNativeSteps:22400,maximumForecastSteps:ledger.maximumTeacherNativeSteps,maximumWallSeconds:900,frames:0,qualification:false};
 let browser,page,value,lastNative=0,lastForecast=0;
 const server=spawn(process.execPath,['scripts/serve-rust-preview.mjs','rust/dist/app','0'],{stdio:['ignore','pipe','inherit']});
 const timer=setTimeout(()=>{browser?.close();server.kill();},900000);
@@ -56,7 +58,7 @@ try{
   assert.ok(g&&p);assert.equal(g.learned_policy_loaded,true);assert.equal(g.source_bodies,16);assert.equal(g.active_hinges,21);
   assert.equal(value.workerInstances,1);assert.equal(value.generation,1);assert.equal(snapshot.segments.length,25);
   assert.ok(result.mainNativeSteps>=lastNative&&result.mainNativeSteps<=22400);
-  assert.ok(result.forecastSteps>=lastForecast&&result.forecastSteps<=1250);assert.ok(result.totalNativeSteps<=23650);
+  assert.ok(result.forecastSteps>=lastForecast&&result.forecastSteps<=ledger.maximumTeacherNativeSteps);assert.ok(result.totalNativeSteps<=ledger.nativeReservation);
   assert.equal(value.time,result.mainNativeSteps/800);assert.ok(snapshot.counters.strikes<=1);
   assert.equal(snapshot.diagnostics.direct_pelvis_force_n,0);assert.equal(snapshot.diagnostics.direct_pelvis_torque_nm,0);
   if(!value.failure){assert.equal(g.motor_controls.length,21);assert.ok(g.motor_controls.every(x=>Number.isFinite(x)&&Math.abs(x)<=1));}
