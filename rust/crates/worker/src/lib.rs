@@ -192,6 +192,15 @@ mod browser {
     }
     #[wasm_bindgen]
     impl WorkerRuntime {
+        pub fn getup_fixture(kind:&str) -> Result<WorkerRuntime,JsValue> {
+            Ok(Self { runtime:Runtime::new_getup_fixture(kind).map_err(error)?,native_output_ms:0.0 })
+        }
+        pub fn getup_fixture_report(&self) -> Result<String,JsValue> {
+            self.runtime.getup_fixture_report().map_err(error)
+        }
+        pub fn trigger_getup_fixture(&mut self) -> Result<(),JsValue> {
+            self.runtime.trigger_getup_fixture().map_err(error)
+        }
         pub fn getup_checkpoint(&self) -> Result<Vec<u8>, JsValue> {
             self.runtime.getup_checkpoint().map_err(error)
         }

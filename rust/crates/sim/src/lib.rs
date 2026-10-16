@@ -315,6 +315,8 @@ pub struct Simulation {
     #[serde(skip)]
     recovery: Option<recovery::Controller>,
     getup_controller: Option<getup::controller::Controller>,
+    #[serde(default)]
+    getup_fixture: Option<getup::fixtures::State>,
 }
 fn checkpoint_model() -> Model {
     Model::canonical().expect("pinned GetUp model")
@@ -483,6 +485,7 @@ impl Simulation {
             striker: None,
             recovery: None,
             getup_controller: None,
+            getup_fixture: None,
         };
         getup::assemble(&mut result)?;
         result.capture_rest_com();
@@ -1000,6 +1003,7 @@ impl Simulation {
                 };
             }
             self.observe_motion(&loads_n);
+            getup::fixtures::observe(self, &loads_n);
             if let Some(mut controller) = self.getup_controller.take() {
                 controller.observe(self, &loads_n);
                 if let Some(observation) = self.diagnostics.getup.as_mut() { observation.policy = Some(controller.status.clone()); }

@@ -87,6 +87,14 @@ impl Controller {
             self.impact_substep = Some(substep);
         }
     }
+    /// Fixture epoch for the unchanged25s/1s criterion. No impact is fabricated.
+    pub fn fixture_trigger(&mut self, substep:u64) -> Result<(),String> {
+        if self.started_substep.is_some() || self.impact_substep.is_some() {
+            return Err("GetUp controller already triggered".into());
+        }
+        self.impact_substep=Some(substep);
+        Ok(())
+    }
     pub fn command(&mut self, s: &Simulation, physical: &[f32; 67]) -> Result<[f32; 21], String> {
         if self
             .impact_substep

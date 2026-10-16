@@ -48,6 +48,19 @@ fn acknowledgement(
     }
 }
 impl Runtime {
+    pub fn new_getup_fixture(kind:&str) -> Result<Self,String> {
+        let mut profile=Profile::default();profile.getup_policy_enabled=true;
+        let mut runtime=Self::new(Mode::Protocol,0.0,profile)?;
+        crate::getup::fixtures::initialize(&mut runtime.simulation,kind)?;
+        Ok(runtime)
+    }
+    pub fn getup_fixture_report(&self) -> Result<String,String> {
+        serde_json::to_string(&serde_json::json!({"state":self.simulation.getup_fixture,
+            "nativeSubsteps":self.simulation.substeps_completed})).map_err(|e|e.to_string())
+    }
+    pub fn trigger_getup_fixture(&mut self) -> Result<(),String> {
+        crate::getup::fixtures::trigger(&mut self.simulation)
+    }
     fn checkpoint_compatible(&self) -> Result<(), String> {
         let s = &self.simulation;
         if self.mode != Mode::Protocol || self.timeline.depth() != 0 || self.quiet.is_some()

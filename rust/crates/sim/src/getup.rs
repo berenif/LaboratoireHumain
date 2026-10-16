@@ -3,6 +3,7 @@
 use crate::*;
 pub mod actor;
 pub mod controller;
+pub mod fixtures;
 pub mod reference;
 
 pub fn source_vector(v: Vector) -> [f32; 3] {
@@ -179,7 +180,9 @@ pub(crate) fn configure(s: &mut Simulation) -> Result<(), String> {
     let physical = physical_observation(s)?;
     let q: &[f32; 21] = physical[..21].try_into().unwrap();
     let dq: &[f32; 21] = physical[46..67].try_into().unwrap();
-    let controls = if let Some(mut controller) = s.getup_controller.take() {
+    let controls = if s.getup_fixture.as_ref().is_some_and(|f|f.preparing) {
+        Ok([0.0;21])
+    } else if let Some(mut controller) = s.getup_controller.take() {
         let result = controller.command(s, &physical);
         s.getup_controller = Some(controller);
         result
@@ -190,7 +193,9 @@ pub(crate) fn configure(s: &mut Simulation) -> Result<(), String> {
         slow_controls(&s.model, &reference, &[0.0; 21], q, dq, true)
     };
     s.diagnostics.getup = Some(lh_contracts::GetUpObservation {
-        controller: if s.getup_controller.is_some() {
+        controller: if s.getup_fixture.as_ref().is_some_and(|f|f.preparing) {
+            "fixture-zero-control-preparation"
+        } else if s.getup_controller.is_some() {
             "pretrained-WEAK-SLOW"
         } else {
             "source-standing-pd-zero-residual"
