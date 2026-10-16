@@ -43,6 +43,9 @@ const RATE: f32 = 1.0;
 const STAND_RATE: f32 = RATE;
 const HANDOFF_S: f64 = 0.6;
 
+mod roll_arm;
+use roll_arm::{RollArm, RollArmStage};
+
 fn rolling_orientation(torso: Rotation, lead: usize) -> Rotation {
     let forward_y = (torso * Vector::Z).y;
     let lateral_y = (torso * Vector::X).y;
@@ -283,6 +286,14 @@ fn planted_contact(s: &Simulation, segments: &[usize]) -> Result<Option<PlantedA
 // For knee-to-sole transfer only that shin is removed; a swing removes the
 // whole leg, so its shin and both sole segments cannot prove its own release.
 fn supported_transfer(s: &Simulation, released: &[usize]) -> Result<bool, String> {
+    supported_transfer_with(s, released, false)
+}
+
+fn supported_transfer_with(
+    s: &Simulation,
+    released: &[usize],
+    rolling: bool,
+) -> Result<bool, String> {
     let weight = s.total_mass() * 9.81;
     let released_load: f32 = released
         .iter()
@@ -298,10 +309,10 @@ fn supported_transfer(s: &Simulation, released: &[usize]) -> Result<bool, String
         .enumerate()
         .filter(|(i, part)| {
             !released.contains(i)
-                && matches!(
+                && (matches!(
                     part.role.as_str(),
                     "shin" | "hand" | "hindfoot" | "forefoot"
-                )
+                ) || (rolling && !matches!(part.role.as_str(), "head" | "neck")))
                 && load(s, &part.id) >= 3.0
         })
         .map(|(i, _)| i)
@@ -756,6 +767,7 @@ pub(crate) struct Controller {
     stable_substeps: u64,
     handoff_substeps: u64,
     settle_substeps: u64,
+    roll_arm: Option<RollArm>,
 }
 impl Controller {
     pub fn new(s: &Simulation) -> Result<Self, String> {
@@ -817,6 +829,7 @@ impl Controller {
             stable_substeps: 0,
             handoff_substeps: 0,
             settle_substeps: 0,
+            roll_arm: None,
         })
     }
     pub fn standing(&self) -> bool {
@@ -841,6 +854,11 @@ impl Controller {
     }
     pub fn velocities(&self) -> &[[f32; 3]] {
         &self.velocities
+    }
+    pub fn arm_transfer_stage(&self) -> Option<String> {
+        self.roll_arm.as_ref().map(|arm| {
+            format!("{}:{:?}", if arm.side == 0 { "left" } else { "right" }, arm.stage)
+        })
     }
     pub fn native_root_authority(&self, s: &Simulation, part: &Segment) -> bool {
         if self.status.phase == Phase::Ordinary
@@ -957,6 +975,9 @@ impl Controller {
         self.stable_substeps = 0;
         self.handoff_substeps = 0;
         self.settle_substeps = 0;
+        if phase != Phase::Roll {
+            self.roll_arm = None;
+        }
     }
     fn retained_leg_anchor(&self, side: usize) -> Option<PlantedAnchor> {
         self.knee_anchors[side].or(self.foot_anchors[side])
@@ -1084,10 +1105,18 @@ impl Controller {
             self.status.retries += 1;
             self.status.last_retry = Some("stalled-phase");
             self.lead = 1 - self.lead;
-            let measured = Self::new(s)?;
-            self.targets = measured.targets;
-            self.hands = measured.hands;
-            self.enter(measured.status.phase);
+            if self.roll_arm.as_ref().is_some_and(|arm| arm.stage != RollArmStage::Roll) {
+                // A failed release proof cannot trigger a new roll while the
+                // arm is being unloaded. Keep the same measured maneuver.
+                self.lead = 1 - self.lead;
+                self.status.last_retry = Some("arm-support-not-ready");
+                self.status.stalled_s = 0.0;
+            } else {
+                let measured = Self::new(s)?;
+                self.targets = measured.targets;
+                self.hands = measured.hands;
+                self.enter(measured.status.phase);
+            }
         }
         let qualified = match self.status.phase {
             Phase::Roll => {
@@ -1323,6 +1352,9 @@ impl Controller {
                     }
                 }
             }
+        }
+        if self.status.phase == Phase::Roll {
+            self.update_roll_arm(s, &mut desired)?;
         }
         // Entering Stand does not itself transfer a planted hand's load.
         // Keep its actual surface point until the same bilateral-sole gate

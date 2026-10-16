@@ -125,7 +125,7 @@ fn native_memory(s: &Simulation) -> serde_json::Value {
         let crate::recovery::Controller {
             status, targets, hands, lead, stand_feet, stand_root, stand_goal,
             best_progress, velocities, foot_anchors, hand_anchors, knee_anchors,
-            handoff_from, stable_substeps, handoff_substeps, settle_substeps,
+            handoff_from, stable_substeps, handoff_substeps, settle_substeps, roll_arm,
         } = r;
         let anchors = |values: &[Option<crate::recovery::PlantedAnchor>; 2]| {
             values.map(|a| a.map(|a| serde_json::json!({
@@ -142,7 +142,7 @@ fn native_memory(s: &Simulation) -> serde_json::Value {
             "unsupportedBits":unsupported_s.to_bits(),"retries":retries,"lastRetry":last_retry,
             "progressBits":progress.to_bits()});
         serde_json::json!({
-            "status":status,"targetsBits":coordinates_bits(targets),
+            "status":status,"rollArm":roll_arm,"targetsBits":coordinates_bits(targets),
             "velocityBits":coordinates_bits(velocities),
             "handsBits":hands.map(|v|v.to_array().map(f32::to_bits)),
             "lead":lead,"standFeetBits":stand_feet.map(|v|v.map(|x|x.to_array().map(f32::to_bits))),

@@ -1206,6 +1206,7 @@ impl Simulation {
             self.recovery_status()
                 .map(|status| lh_contracts::RecoveryObservation {
                     phase: format!("{:?}", status.phase),
+                    arm_transfer: self.recovery.as_ref().and_then(|r| r.arm_transfer_stage()),
                     elapsed_s: status.elapsed_s,
                     phase_time_s: status.phase_time_s,
                     qualified_time_s: status.qualified_time_s,

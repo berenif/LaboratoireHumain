@@ -215,6 +215,8 @@ pub struct MotorDelivery {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct RecoveryObservation {
     pub phase: String,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub arm_transfer: Option<String>,
     pub elapsed_s: f32,
     pub phase_time_s: f32,
     pub qualified_time_s: f32,

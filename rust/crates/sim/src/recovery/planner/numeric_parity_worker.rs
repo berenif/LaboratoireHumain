@@ -390,11 +390,11 @@ fn memory(s: &Simulation) -> Value {
         // Exhaustive destructuring makes added persistent fields a build error.
         let crate::recovery::Controller { status, targets, hands, lead, stand_feet, stand_root,
             stand_goal, best_progress, velocities, foot_anchors, hand_anchors, knee_anchors,
-            handoff_from, stable_substeps, handoff_substeps, settle_substeps } = r;
+            handoff_from, stable_substeps, handoff_substeps, settle_substeps, roll_arm } = r;
         let anchors = |values: &[Option<crate::recovery::PlantedAnchor>; 2]| values.map(|a| a.map(|a|
             json!({"segment":a.segment,"localBits":a.local_point.to_array().map(f32::to_bits),
                 "worldBits":a.world_point.to_array().map(f32::to_bits)})));
-        json!({"status":status,"targetsBits":coordinates_bits(targets),
+        json!({"status":status,"rollArm":roll_arm,"targetsBits":coordinates_bits(targets),
             "velocityBits":coordinates_bits(velocities),"handsBits":hands.map(|v|v.to_array().map(f32::to_bits)),
             "lead":lead,"standFeetBits":stand_feet.map(|v|v.map(|x|x.to_array().map(f32::to_bits))),
             "standRoot":stand_root,"standGoalBits":stand_goal.map(|q|q.to_array().map(f32::to_bits)),
