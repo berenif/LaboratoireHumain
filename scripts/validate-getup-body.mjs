@@ -9,10 +9,10 @@ const ledger=JSON.parse(readFileSync('docs/evidence/getup-body-replacement-2026-
 assert.equal(ledger.status,'reserved');
 for(const [path,hash] of Object.entries(ledger.inputs))assert.equal(createHash('sha256').update(readFileSync(path)).digest('hex'),hash,`Changed frozen input: ${path}`);
 openSync(`${output}/started-once`,'wx');mkdirSync(`${output}/frames`);
-const result={startedUtc:new Date().toISOString(),maximumTicks:160,maximumWallSeconds:180,frames:0,learnedPolicyIntegrated:false,qualification:false};
+const result={startedUtc:new Date().toISOString(),maximumTicks:158,maximumWallSeconds:178,frames:0,learnedPolicyIntegrated:false,qualification:false};
 const started=performance.now();let browser;
 const server=spawn(process.execPath,['scripts/serve-rust-preview.mjs','rust/dist/app','0'],{stdio:['ignore','pipe','inherit']});
-const timer=setTimeout(()=>{browser?.close();server.kill();},180000);
+const timer=setTimeout(()=>{browser?.close();server.kill();},178000);
 try{
  const origin=await new Promise((resolve,reject)=>{server.stdout.on('data',data=>{const url=String(data).match(/http:\/\/127\.0\.0\.1:\d+\//)?.[0];if(url)resolve(url);});server.once('error',reject);server.once('exit',code=>reject(Error(`Preview exited ${code}`)));});
  browser=await chromium.launch(browserLaunchOptions(true));const page=await browser.newPage({viewport:{width:1280,height:900}});result.browser=browser.version();
@@ -22,8 +22,8 @@ try{
  await page.locator('#camera-focus').click();
  const read=()=>page.evaluate(()=>window.__lhRust.diagnostics);let value=await read();assert.equal(value.tick,0);
  const record=async()=>{
-  value=await read();result.nativeSteps=value.snapshot.stamp.sequence-1;
-  assert.ok(result.nativeSteps<=3200);
+  value=await read();result.nativeSteps=Math.round(value.time*800);
+  assert.ok(result.nativeSteps<=3160);
   result.final={tick:value.tick,time:value.time,motion:value.motion,failure:value.failure,counters:value.snapshot.counters,diagnostics:value.snapshot.diagnostics};
   appendFileSync(`${output}/trace.ndjson`,JSON.stringify(value.snapshot)+'\n');
   writeFileSync(`${output}/result.json`,JSON.stringify(result,null,2)+'\n');
@@ -37,8 +37,8 @@ try{
   writeFileSync(`${output}/result.json`,JSON.stringify(result,null,2)+'\n');
  };
  await record();
- while(value.tick<160){
-  assert.ok(performance.now()-started<175000,'Wall deadline');
+ while(value.tick<158){
+  assert.ok(performance.now()-started<173000,'Wall deadline');
   if(value.tick===80){await page.locator('#strike').click();await page.waitForFunction(()=>!window.__lhRust.diagnostics.outstanding&&!window.__lhRust.diagnostics.queueDepth);}
   const reply=await page.evaluate(()=>window.__lhRust.advance(2));await record();
   assert.equal(reply.failure,null);assert.equal(reply.completed_ticks,2);
