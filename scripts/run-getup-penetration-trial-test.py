@@ -2,6 +2,7 @@
 """Admission checks only: no browser, reset, or native integration."""
 import copy
 import importlib.util
+import json
 import unittest
 from pathlib import Path
 import tempfile
@@ -52,6 +53,29 @@ class AdmissionTests(unittest.TestCase):
             with self.subTest(name=name), self.assertRaises(AssertionError):
                 self.admit(self.ledger)
             p.write_bytes(before)
+
+    def amendment(self):
+        first = dict(status='closed', outcome='closed-harness-counter-failure-before-impact',
+                     actualConsumedNativeSteps=20, actualWallSeconds=1.6250632350056549)
+        p = self.root/'first.json'; p.write_text(json.dumps(first))
+        ledger = copy.deepcopy(self.ledger)
+        ledger.update(amendment='recoverable-launcher-counter-retry', retry=True,
+                      firstAttemptRecord='first.json', firstAttemptRecordSha256=trial.sha(p),
+                      actualNativeConsumedBefore=20, actualWallConsumedBeforeSeconds=first['actualWallSeconds'],
+                      remainingNativeSteps=8180, remainingWallSeconds=180-first['actualWallSeconds'])
+        return ledger
+
+    def test_explicit_amendment_reuses_only_verified_unused_actual_allowance(self):
+        self.admit(self.amendment())
+
+    def test_amendment_cannot_refund_first_attempt_or_expand_total_allowance(self):
+        original = self.amendment()
+        for key, value in [('actualNativeConsumedBefore',0), ('remainingNativeSteps',8200),
+                           ('actualWallConsumedBeforeSeconds',0), ('remainingWallSeconds',180),
+                           ('firstAttemptRecordSha256','changed')]:
+            ledger = copy.deepcopy(original); ledger[key]=value
+            with self.subTest(key=key), self.assertRaises(AssertionError):
+                self.admit(ledger)
 
 
 if __name__ == '__main__':

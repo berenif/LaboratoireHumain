@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { checkCounters } from '../scripts/validate-getup-bounded.mjs';
+import { checkCounters, nextTickFits } from '../scripts/validate-getup-bounded.mjs';
 
 const snapshot = (real, forecast) => ({ stamp: { sequence: real + 1 },
   simulation_time_s: real / 800, diagnostics: { getup: {
@@ -29,4 +29,13 @@ test('transport observation sequence is independent of the physical native count
   assert.deepEqual(checkCounters(retained), { real: 20, forecast: 0, total: 20 });
   retained.stamp.sequence = 999;
   assert.deepEqual(checkCounters(retained), { real: 20, forecast: 0, total: 20 });
+});
+
+test('retry admits the complete possible forecast before a tick and preserves the cumulative cap', () => {
+  assert.equal(nextTickFits({ real: 0, forecast: 0, total: 0 }, 8180), true);
+  assert.equal(nextTickFits({ real: 3160, forecast: 0, total: 3160 }, 8180), true);
+  assert.equal(nextTickFits({ real: 3180, forecast: 0, total: 3180 }, 8180), false);
+  assert.equal(nextTickFits({ real: 3180, forecast: 4980, total: 8160 }, 8180), true);
+  assert.equal(nextTickFits({ real: 3180, forecast: 5000, total: 8180 }, 8180), false);
+  assert.equal(nextTickFits({ real: 3200, forecast: 20, total: 3220 }, 8180), false);
 });

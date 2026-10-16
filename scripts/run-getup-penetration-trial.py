@@ -35,7 +35,20 @@ def admit(ledger):
     assert ledger['maximumTeacherNativeSteps'] == 5000
     assert ledger['incrementalWallAllowanceSeconds'] == 180
     assert ledger['maximumPhysicalHistories'] == ledger['maximumForecastHistories'] == 1
-    assert ledger['retry'] is False and ledger['refund'] is False
+    assert ledger['refund'] is False
+    if ledger.get('amendment') == 'recoverable-launcher-counter-retry':
+        first_path = REPO / ledger['firstAttemptRecord']
+        assert sha(first_path) == ledger['firstAttemptRecordSha256']
+        first = json.loads(first_path.read_text())
+        assert first['status'] == 'closed'
+        assert first['outcome'] == 'closed-harness-counter-failure-before-impact'
+        assert first['actualConsumedNativeSteps'] == ledger['actualNativeConsumedBefore'] == 20
+        assert first['actualWallSeconds'] == ledger['actualWallConsumedBeforeSeconds']
+        assert ledger['remainingNativeSteps'] == 8200 - first['actualConsumedNativeSteps']
+        assert ledger['remainingWallSeconds'] == 180 - first['actualWallSeconds']
+        assert ledger['retry'] is True
+    else:
+        assert ledger['retry'] is False
     prior = REPO / ledger['priorClosedRecord']
     assert sha(prior) == ledger['priorClosedRecordSha256']
     previous = json.loads(prior.read_text())
@@ -58,13 +71,15 @@ def run(path):
         (output / 'started-once').open('x').close()
         started = time.monotonic()
         now = dt.datetime.now(dt.timezone.utc)
+        native_budget = ledger.get('remainingNativeSteps', 8200)
+        wall_budget = ledger.get('remainingWallSeconds', 180)
         ledger.update(status='running-reservation-retained', startedUtc=now.isoformat(),
-                      deadlineUtc=(now + dt.timedelta(seconds=180)).isoformat(),
-                      nativeReservation=8200, wallReservationSeconds=180,
+                      deadlineUtc=(now + dt.timedelta(seconds=wall_budget)).isoformat(),
+                      nativeReservation=native_budget, wallReservationSeconds=wall_budget,
                       cumulativeReservedNativeSteps=299998 + 8200)
         save(path, ledger)
         command = ['node', 'scripts/validate-getup-bounded.mjs', str(path)]
-        remaining = max(0, 180 - (time.monotonic() - started))
+        remaining = max(0, wall_budget - (time.monotonic() - started))
         with (output / 'physical-run.log').open('w') as log:
             child = subprocess.Popen(command, cwd=REPO, stdout=log, stderr=subprocess.STDOUT,
                                      start_new_session=True)
@@ -93,17 +108,21 @@ def run(path):
             if result.get('harnessCompleted') and code == 0:
                 assert 0 <= counters['real'] <= 3200
                 assert 0 <= counters['forecast'] <= 5000
-                assert counters['total'] == counters['real'] + counters['forecast'] <= 8200
+                assert counters['total'] == counters['real'] + counters['forecast'] <= native_budget
                 ledger['actualConsumedNativeSteps'] = counters['total']
                 ledger['actualMainNativeSteps'] = counters['real']
                 ledger['actualForecastNativeSteps'] = counters['forecast']
                 ledger['outcome'] = result['outcome']
             else:
                 ledger['outcome'] = 'closed-uncertain-harness-or-timeout'
-                ledger['unobservedStepsChargedConservatively'] = 8200
+                ledger['unobservedStepsChargedConservatively'] = native_budget
         else:
             ledger['outcome'] = 'closed-no-final-diagnostics'
-            ledger['unobservedStepsChargedConservatively'] = 8200
+            ledger['unobservedStepsChargedConservatively'] = native_budget
+        ledger['cumulativeIncrementalActualWallSeconds'] = ledger.get('actualWallConsumedBeforeSeconds', 0) + ledger['actualWallSeconds']
+        if 'actualConsumedNativeSteps' in ledger:
+            ledger['cumulativeIncrementalActualNativeSteps'] = ledger.get('actualNativeConsumedBefore', 0) + ledger['actualConsumedNativeSteps']
+            assert ledger['cumulativeIncrementalActualNativeSteps'] <= 8200
         assert sha(REPO / ledger['priorClosedRecord']) == ledger['priorClosedRecordSha256']
         save(path, ledger)
         print(json.dumps(ledger, indent=2))

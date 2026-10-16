@@ -1,4 +1,4 @@
-// One incremental admission; manual browser transport, no reset or retry.
+// Manual browser transport under one incremental allowance and explicit amendments.
 import assert from 'node:assert/strict';
 import { spawn } from 'node:child_process';
 import { createHash } from 'node:crypto';
@@ -20,17 +20,30 @@ export function checkCounters(snapshot, previous = { real: 0, forecast: 0 }) {
   return { real, forecast, total: real + forecast };
 }
 
+export function nextTickFits(counters, maximumTotalNativeSteps) {
+  // A not-yet-started forecast can consume its complete fixed 5,000-step cap
+  // synchronously inside this tick. A completed branch never runs twice.
+  const possibleNewForecast = counters.forecast === 0 ? 5000 : 0;
+  return counters.real + 20 <= 3200
+    && counters.total + 20 + possibleNewForecast <= maximumTotalNativeSteps;
+}
+
 export async function run(ledgerPath) {
   const ledger = JSON.parse(readFileSync(ledgerPath));
   assert.equal(ledger.status, 'running-reservation-retained');
-  assert.equal(ledger.nativeReservation, 8200);
-  assert.equal(ledger.wallReservationSeconds, 180);
+  const nativeBudget = ledger.remainingNativeSteps ?? 8200;
+  const wallBudget = ledger.remainingWallSeconds ?? 180;
+  assert.equal(ledger.nativeReservation, nativeBudget);
+  assert.equal(ledger.wallReservationSeconds, wallBudget);
+  assert.ok(nativeBudget > 0 && nativeBudget <= 8200);
+  assert.ok(wallBudget > 0 && wallBudget <= 180);
   const output = ledger.outputDirectory;
   openSync(`${output}/browser-started-once`, 'wx');
   const deadline = Date.parse(ledger.deadlineUtc);
   const result = { startedUtc: new Date().toISOString(), deadlineUtc: ledger.deadlineUtc,
     qualification: false, snapshots: 0, maximumMainNativeSteps: 3200,
-    maximumForecastSteps: 5000, maximumWallSeconds: 180, counters: { real: 0, forecast: 0, total: 0 } };
+    maximumForecastSteps: 5000, maximumTotalNativeSteps: nativeBudget,
+    maximumWallSeconds: wallBudget, counters: { real: 0, forecast: 0, total: 0 } };
   const save = () => writeFileSync(`${output}/result.json`, JSON.stringify(result, null, 2) + '\n');
   let browser, page, value;
   const server = spawn(process.execPath, ['scripts/serve-rust-preview.mjs', 'rust/dist/app', '0'],
@@ -83,6 +96,7 @@ export async function run(ledgerPath) {
       result.lastReportedCounters = raw;
       save();
       const counters = checkCounters(snapshot, result.counters);
+      assert.ok(counters.total <= nativeBudget, 'Remaining incremental native allowance exceeded');
       result.counters = counters;
       save();
       const g = snapshot.diagnostics.getup;
@@ -115,9 +129,10 @@ export async function run(ledgerPath) {
           && !window.__lhRust.diagnostics.queueDepth);
         result.strikeQueuedAtS = 2;
       }
-      // Even if the full teacher branch is triggered by this tick, its fixed
-      // 5,000-step maximum plus the entire 3,200-step history fits admission.
-      assert.ok(result.counters.real + 20 <= 3200);
+      if (!nextTickFits(result.counters, nativeBudget)) {
+        result.budgetStop = 'Next tick including a possible complete forecast exceeds remaining allowance';
+        break;
+      }
       const reply = await page.evaluate(() => window.__lhRust.advance(1));
       const priorForecast = result.counters.forecast;
       await record();
@@ -137,7 +152,8 @@ export async function run(ledgerPath) {
     result.harnessCompleted = true;
     result.standingPassed ??= false;
     result.outcome = result.standingPassed ? 'prototype-stable-standing'
-      : result.physicalRefusal ? 'stopped-at-refusal' : 'four-second-cap-without-stable-standing';
+      : result.physicalRefusal ? 'stopped-at-refusal'
+        : result.budgetStop ? 'stopped-at-remaining-budget' : 'four-second-cap-without-stable-standing';
   } catch (error) {
     result.harnessCompleted = false;
     result.harnessError = String(error);
