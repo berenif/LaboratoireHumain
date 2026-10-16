@@ -1,0 +1,272 @@
+{
+  "status": "reserved",
+  "preparedUtc": "2026-10-16T16:02:14.552973+00:00",
+  "authorization": "Owner explicitly authorizes diagnostic identical-generalized-state MuJoCo versus archived Rapier comparison, official pinned engine only, no migration/training/tuning.",
+  "sourceBase": "459426d687fd62300ed6c2a9f30ff8d743fb88a8",
+  "priorClosedRecord": "docs/evidence/getup-policy-native-clock-2026-10-16.json",
+  "priorClosedRecordSha256": "fefcd889397a1e136dd5bc4d9ef4db54accf46fc792785ad1c6c04a6a0d350be",
+  "nativeChargedBefore": 289698,
+  "wallChargedBeforeSeconds": 5626.328294294003,
+  "nativeCeiling": 300000,
+  "wallCeilingSeconds": 7200,
+  "nativeReservation": 540,
+  "wallReservationSeconds": 120,
+  "plannedNativeChargedAfter": 290238,
+  "plannedWallChargedAfterSeconds": 5746.328294294003,
+  "histories": [
+    {
+      "id": "matched800-closed",
+      "model": "humanoid_high_freq.xml",
+      "nativeStepS": 0.00125,
+      "maximumSteps": 240,
+      "policyHz": 40,
+      "mode": "closed-loop-pinned-WEAK"
+    },
+    {
+      "id": "source200-closed",
+      "model": "humanoid_static.xml",
+      "nativeStepS": 0.005,
+      "maximumSteps": 60,
+      "policyHz": 40,
+      "mode": "closed-loop-pinned-WEAK"
+    },
+    {
+      "id": "matched800-replay",
+      "model": "humanoid_high_freq.xml",
+      "nativeStepS": 0.00125,
+      "maximumSteps": 240,
+      "policyHz": 40,
+      "mode": "exact-archived-Rapier-controls"
+    }
+  ],
+  "physicalHorizonSeconds": 0.3,
+  "newRapierSteps": 0,
+  "qualification": false,
+  "qualificationSelfContactLimitM": 0.005,
+  "sourceDiagnosticBeyondGate": "Record first 5mm crossing and continue only to the fixed 0.30s diagnostic horizon; no qualification or gate relaxation.",
+  "sourceStateInstallation": "Diagnostic source models only: install archived free-root pose and source q/qdot. Actual app world is never reset or modified. No random initial states.",
+  "hypothesis": "Equal generalized-state observation/action parity plus divergence under replayed identical controls identifies dynamics/contact transfer effects; preflight state or actor mismatch blocks integration.",
+  "preflight": {
+    "passed": true,
+    "engineVersion": 213,
+    "physicsIntegrations": 0,
+    "staticForwardCalls": 14,
+    "massMaximumErrorKg": 1.7763568394002505e-15,
+    "inertiaMaximumTensorErrorKgM2": 5.551115123125783e-17,
+    "sourceMassKg": 40.84402122162133,
+    "rows": [
+      {
+        "archivedTimeS": 0.024999999441206455,
+        "maximumBodyPositionErrorM": 3.1399030151221474e-05,
+        "maximumBodyAngleErrorRad": 2.9731017017146174e-07,
+        "observationBlockErrorsQGeometryComVelocityGeneralizedVelocity": [
+          0.0,
+          3.109529670042299e-05,
+          4.065431226499315e-09,
+          0.0
+        ],
+        "maximumActionErrorFromMatchedMujocoState": 5.0423441009528336e-05,
+        "maximumActionErrorOnExactArchivedObservation": 3.961620407111344e-06,
+        "leftThighFootSourceDepthAtArchivedRapierPoseM": 0.0
+      },
+      {
+        "archivedTimeS": 0.04999999888241291,
+        "maximumBodyPositionErrorM": 2.6040203554046558e-05,
+        "maximumBodyAngleErrorRad": 2.972149006607921e-07,
+        "observationBlockErrorsQGeometryComVelocityGeneralizedVelocity": [
+          0.0,
+          2.578444644596445e-05,
+          2.473521899681863e-05,
+          0.0
+        ],
+        "maximumActionErrorFromMatchedMujocoState": 2.3584330406195564e-05,
+        "maximumActionErrorOnExactArchivedObservation": 8.386727905207447e-07,
+        "leftThighFootSourceDepthAtArchivedRapierPoseM": 0.0
+      },
+      {
+        "archivedTimeS": 0.07499999832361937,
+        "maximumBodyPositionErrorM": 1.8861489473709727e-05,
+        "maximumBodyAngleErrorRad": 5.902608250980638e-07,
+        "observationBlockErrorsQGeometryComVelocityGeneralizedVelocity": [
+          0.0,
+          1.890459037312553e-05,
+          1.8446965392993064e-06,
+          0.0
+        ],
+        "maximumActionErrorFromMatchedMujocoState": 6.129197804069508e-05,
+        "maximumActionErrorOnExactArchivedObservation": 1.698234884259242e-06,
+        "leftThighFootSourceDepthAtArchivedRapierPoseM": 0.0
+      },
+      {
+        "archivedTimeS": 0.09999999776482582,
+        "maximumBodyPositionErrorM": 8.6593313056426e-06,
+        "maximumBodyAngleErrorRad": 2.3641352757758438e-07,
+        "observationBlockErrorsQGeometryComVelocityGeneralizedVelocity": [
+          0.0,
+          8.283598493585842e-06,
+          1.4433761885424001e-06,
+          0.0
+        ],
+        "maximumActionErrorFromMatchedMujocoState": 1.2457871627818973e-05,
+        "maximumActionErrorOnExactArchivedObservation": 2.481738662712951e-06,
+        "leftThighFootSourceDepthAtArchivedRapierPoseM": 0.0
+      },
+      {
+        "archivedTimeS": 0.12499999720603228,
+        "maximumBodyPositionErrorM": 1.5843116751949854e-06,
+        "maximumBodyAngleErrorRad": 2.7173558890289806e-07,
+        "observationBlockErrorsQGeometryComVelocityGeneralizedVelocity": [
+          0.0,
+          1.5327890292571311e-06,
+          3.398424638367814e-07,
+          0.0
+        ],
+        "maximumActionErrorFromMatchedMujocoState": 1.994218673695425e-06,
+        "maximumActionErrorOnExactArchivedObservation": 8.371231079440378e-07,
+        "leftThighFootSourceDepthAtArchivedRapierPoseM": 0.0
+      },
+      {
+        "archivedTimeS": 0.14999999664723873,
+        "maximumBodyPositionErrorM": 1.963019687636664e-06,
+        "maximumBodyAngleErrorRad": 3.151319004778854e-07,
+        "observationBlockErrorsQGeometryComVelocityGeneralizedVelocity": [
+          0.0,
+          1.7708184680831351e-06,
+          5.226141038261467e-07,
+          0.0
+        ],
+        "maximumActionErrorFromMatchedMujocoState": 2.022606506335567e-06,
+        "maximumActionErrorOnExactArchivedObservation": 8.384181594822682e-07,
+        "leftThighFootSourceDepthAtArchivedRapierPoseM": 0.0
+      },
+      {
+        "archivedTimeS": 0.1749999960884452,
+        "maximumBodyPositionErrorM": 2.1202958018217234e-06,
+        "maximumBodyAngleErrorRad": 4.008485389113428e-07,
+        "observationBlockErrorsQGeometryComVelocityGeneralizedVelocity": [
+          0.0,
+          1.9751662101441525e-06,
+          6.390497217234614e-07,
+          0.0
+        ],
+        "maximumActionErrorFromMatchedMujocoState": 2.6971400642339383e-06,
+        "maximumActionErrorOnExactArchivedObservation": 7.802825927605284e-07,
+        "leftThighFootSourceDepthAtArchivedRapierPoseM": 0.0
+      },
+      {
+        "archivedTimeS": 0.19999999552965164,
+        "maximumBodyPositionErrorM": 1.5286427653570565e-05,
+        "maximumBodyAngleErrorRad": 2.1570629707067651e-07,
+        "observationBlockErrorsQGeometryComVelocityGeneralizedVelocity": [
+          0.0,
+          1.4320494418296192e-05,
+          7.3190618827684295e-06,
+          0.0
+        ],
+        "maximumActionErrorFromMatchedMujocoState": 1.836088935852631e-05,
+        "maximumActionErrorOnExactArchivedObservation": 1.4331702423153736e-06,
+        "leftThighFootSourceDepthAtArchivedRapierPoseM": 0.0
+      },
+      {
+        "archivedTimeS": 0.2249999949708581,
+        "maximumBodyPositionErrorM": 3.5621121184073095e-05,
+        "maximumBodyAngleErrorRad": 2.6245188663124827e-07,
+        "observationBlockErrorsQGeometryComVelocityGeneralizedVelocity": [
+          0.0,
+          3.2931631934962624e-05,
+          3.7437902210640805e-05,
+          0.0
+        ],
+        "maximumActionErrorFromMatchedMujocoState": 3.1611912536644304e-05,
+        "maximumActionErrorOnExactArchivedObservation": 1.7984771727430626e-07,
+        "leftThighFootSourceDepthAtArchivedRapierPoseM": 0.0
+      },
+      {
+        "archivedTimeS": 0.24999999441206455,
+        "maximumBodyPositionErrorM": 4.427625283551662e-05,
+        "maximumBodyAngleErrorRad": 3.7118319768405017e-07,
+        "observationBlockErrorsQGeometryComVelocityGeneralizedVelocity": [
+          0.0,
+          4.197033059605282e-05,
+          3.4627007890808414e-05,
+          0.0
+        ],
+        "maximumActionErrorFromMatchedMujocoState": 8.613241317750875e-05,
+        "maximumActionErrorOnExactArchivedObservation": 4.845314025558878e-07,
+        "leftThighFootSourceDepthAtArchivedRapierPoseM": 0.0
+      },
+      {
+        "archivedTimeS": 0.274999993853271,
+        "maximumBodyPositionErrorM": 6.0062216818066995e-05,
+        "maximumBodyAngleErrorRad": 3.534168903168533e-07,
+        "observationBlockErrorsQGeometryComVelocityGeneralizedVelocity": [
+          0.0,
+          5.877188693315105e-05,
+          7.242932527651291e-05,
+          0.0
+        ],
+        "maximumActionErrorFromMatchedMujocoState": 7.274303741455768e-05,
+        "maximumActionErrorOnExactArchivedObservation": 1.6943008422920514e-06,
+        "leftThighFootSourceDepthAtArchivedRapierPoseM": 0.0
+      },
+      {
+        "archivedTimeS": 0.2899999935179949,
+        "maximumBodyPositionErrorM": 6.999478601239148e-05,
+        "maximumBodyAngleErrorRad": 3.134334925934961e-07,
+        "observationBlockErrorsQGeometryComVelocityGeneralizedVelocity": [
+          0.0,
+          6.862684742914293e-05,
+          6.7037618231236e-05,
+          0.0
+        ],
+        "maximumActionErrorFromMatchedMujocoState": 3.552222259517457e-05,
+        "maximumActionErrorOnExactArchivedObservation": 6.577967834875409e-07,
+        "leftThighFootSourceDepthAtArchivedRapierPoseM": 0.0
+      }
+    ],
+    "sourceDepthAtFinalArchivedRapierConfigurationM": 0.006352268224997532,
+    "nativeReportedDepthM": 0.0062771253,
+    "stateMatchingLimit": "Normalized free-root quaternion and generalized q/qdot match; native per-body quaternion drift yields <=0.2mm FK tolerance. Solver/contact warm-start state cannot be transferred across engines.",
+    "weightsOnly": true,
+    "zeroBudgetStepRejectedWithoutIntegration": true,
+    "source200ClockVerifiedWithoutIntegration": true
+  },
+  "budgetAccounting": "Every mj_step2 followed by mj_step1 counts once. All three histories included. Static forward/collision calls separately counted, zero time integration. No refund, retry, additional histories or automatic renewal.",
+  "stop": "540 total integration steps, any state nonfinite/MuJoCo warning, missing counter or archive, or 120s wall deadline. Parent-required causal analysis only.",
+  "defaultRecoveryEnabled": false,
+  "TODO": [
+    "Prepare official engine ABI and no-integration preflight.",
+    "Freeze inputs and publish reservation before source integration.",
+    "Run the three fixed short diagnostics once, compare with archived Rapier and close ledger."
+  ],
+  "reservedUtc": "2026-10-16T16:05:50.280685+00:00",
+  "nativeChargedAfter": 290238,
+  "wallChargedAfterSeconds": 5746.328294294003,
+  "dependency": {
+    "engine": "MuJoCo 2.1.3 official PyPI release",
+    "wheel": "mujoco-2.1.3-cp310-cp310-manylinux_2_17_x86_64.manylinux2014_x86_64.whl",
+    "wheelSha256": "92ffe7156d03720d04476bd44022919050f34425f9ad6ad9ed5cc348ff19cb74",
+    "library": "/tmp/lh-mujoco-2.1.3-official/mujoco/libmujoco_nogl.so.2.1.3",
+    "librarySha256": "a8d51e013c6435c2a58ddc1a98f19cefd2990199c2f125eda930ff10d5f58520",
+    "interface": "Own small C ABI adapter compiled against official exact-version headers; no Python MuJoCo extension, dm_control package, training code or new credential executed.",
+    "dmControlEngineSourceOnly": "dm_control 1.0.1 official wheel source; confirms mj_step2/mj_step1 ordering.",
+    "safeCheckpointLoading": "torch2.9.1+cpu weights_only=True, tensors only, exact teacher SHA verified."
+  },
+  "matchingLimit": "Normalized free-root quaternion and generalized q/qdot match; native per-body quaternion drift yields <=0.2mm FK tolerance. Solver/contact warm-start state cannot be transferred across engines.",
+  "inputs": {
+    "scripts/getup-diagnostic/mujoco_bridge.c": "9564d7b4508500505ad7434e5760a6be20fd4a202f347a585011544507ebc643",
+    "scripts/getup-diagnostic/compare_mujoco.py": "42cc239bde1351dfeb2a1141e54c26ac53368df680b001ab5b10a876226384c2",
+    "rust/crates/model/data/getup-v1.json": "1611ec8c988c1006b0a819ab21e2b7c410adaaf512080be425d6d6e235a8926a",
+    "rust/crates/sim/data/getup-policy/metadata.json": "6253bcf48d5b6cc32a386a1734ec8343a2f9f3720384e06bd8ad47c89e775da9",
+    "outputs/getup-policy-native-clock-2026-10-16/reference-report.json": "9b274f10673b6d866fcad5d3ac77784ff0ca17590b91e53874d305812b69b1b6",
+    "outputs/getup-policy-2026-10-16/source/teacher.pt": "9935efee1b1d46e796bb241dc1240f1905ad40e0d20284909cc063575606b244",
+    "outputs/getup-mujoco-comparison-2026-10-16/source-model/materials.xml": "5f1279351cd6e7f83fa4a2e733558ffb297ad19f9bd4e757bdaec6e7d36a777c",
+    "outputs/getup-mujoco-comparison-2026-10-16/source-model/humanoid_high_freq.xml": "69a7e87fed168e1f4ad7dee43dfdd8df6bd74b3d4af06d99c991b46b941106db",
+    "outputs/getup-mujoco-comparison-2026-10-16/source-model/skybox.xml": "52f3687ca30329b4077b0a26feaad9b73d201e183cbde0ffbd6cd52de51907bd",
+    "outputs/getup-mujoco-comparison-2026-10-16/source-model/humanoid_static.xml": "d49ff2ba18fd46bad06047addddb77dc0dfbbf4e9e70d30934d344353b9015ed",
+    "outputs/getup-mujoco-comparison-2026-10-16/source-model/visual.xml": "ec1d274ab70d95604133dafa92c0d1194de51bba997bd53b70bc67eb95d823fc",
+    "outputs/getup-mujoco-comparison-2026-10-16/mujoco_bridge.so": "d8ce305c77bdd77b37c157ac5b5447ed00d1752f762d4380227bc89540c4a633",
+    "outputs/getup-mujoco-comparison-2026-10-16/preflight.json": "8472913a33788b02e0d2c623a8c124916fc149b3e65a526d3742983231be9024",
+    "/tmp/lh-mujoco-2.1.3-official/mujoco/libmujoco_nogl.so.2.1.3": "a8d51e013c6435c2a58ddc1a98f19cefd2990199c2f125eda930ff10d5f58520"
+  }
+}
