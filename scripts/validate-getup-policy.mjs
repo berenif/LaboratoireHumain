@@ -2,7 +2,7 @@
 import assert from 'node:assert/strict';
 import { spawn } from 'node:child_process';
 import { createHash } from 'node:crypto';
-import { appendFileSync, mkdirSync, openSync, readFileSync, writeFileSync } from 'node:fs';
+import { appendFileSync, existsSync, mkdirSync, openSync, readFileSync, writeFileSync } from 'node:fs';
 import { chromium, browserLaunchOptions } from './rust-browser-test.mjs';
 const ledgerPath=process.argv[2]??'docs/evidence/getup-policy-2026-10-16.json';
 const ledger=JSON.parse(readFileSync(ledgerPath));
@@ -20,6 +20,8 @@ const prior=JSON.parse(readFileSync(ledger.priorClosedRecord));
 assert.equal(prior.status,'closed');
 assert.equal(ledger.nativeChargedBefore,prior.nativeChargedAfter);
 assert.equal(ledger.wallChargedBeforeSeconds,prior.wallChargedAfterSeconds);
+const launchOptions={...browserLaunchOptions(true),...(ledger.browserExecutable?{executablePath:ledger.browserExecutable}:{})};
+assert.ok(existsSync(launchOptions.executablePath??chromium.executablePath()),'Browser executable must exist before admission starts');
 openSync(`${output}/started-once`,'wx');mkdirSync(`${output}/frames`);
 const started=performance.now();
 const result={startedUtc:new Date().toISOString(),deadlineUtc:new Date(Date.now()+900000).toISOString(),maximumMainNativeSteps:22400,maximumForecastSteps:1250,maximumWallSeconds:900,frames:0,qualification:false};
@@ -36,7 +38,7 @@ const retainReport=async()=>{
 };
 try{
  const origin=await new Promise((resolve,reject)=>{server.stdout.on('data',data=>{const url=String(data).match(/http:\/\/127\.0\.0\.1:\d+\//)?.[0];if(url)resolve(url);});server.once('error',reject);server.once('exit',code=>reject(Error(`Preview exited ${code}`)));});
- browser=await chromium.launch(browserLaunchOptions(true));page=await browser.newPage({viewport:{width:1280,height:900}});result.browser=browser.version();
+ browser=await chromium.launch(launchOptions);page=await browser.newPage({viewport:{width:1280,height:900}});result.browser=browser.version();
  const errors=[];page.on('pageerror',e=>errors.push(String(e)));
  await page.addInitScript(()=>{window.__lhGetUpTrial=true;let api;Object.defineProperty(window,'__lhRust',{get:()=>api,set:value=>{api=value;api.setManual(true);}});});
  await page.goto(`${origin}?renderer=webgl2`);await page.waitForFunction(()=>window.__lhRust?.diagnostics.ready,null,{timeout:45000});

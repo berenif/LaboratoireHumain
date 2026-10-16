@@ -1,5 +1,5 @@
 {
-  "status": "reserved",
+  "status": "closed",
   "preparedUtc": "2026-10-16T15:08:55.201360+00:00",
   "reservedUtc": "2026-10-16T15:08:55.201360+00:00",
   "authorization": "Parent explicitly admits bounded physical retest of corrected be04ad4 within existing cumulative budget; causal integration fixes only, no tuning or engine migration.",
@@ -51,9 +51,8 @@
     "physicsIntegrations": 0
   },
   "TODO": [
-    "Admitted: one bounded physical retest with report retention.",
-    "Analyze retained teacher/SLOW decisions and actual standing outcome; stop on first refusal.",
-    "Close cumulative record, validate clip from recorded frames, commit/push and use official Library helper."
+    "Closed without physics: browser executable absent.",
+    "Follow-up admission will name the installed Chromium executable and retain this record unchanged."
   ],
   "inputs": {
     "rust/Cargo.lock": "57f8ef29219379d35953076b6e468e5b641d08f40f1be4a24fcecdfce546ec94",
@@ -92,5 +91,30 @@
     "scripts/validate-getup-policy.mjs": "2ce1be5bfafd80404bee61a0ddce258f6610d4ad7511c634f0a5b40b1ba85011",
     "scripts/verify-getup-policy-parity.mjs": "ec12c70c08c4c9245611d35dfa970a04191ce5b7de1cc9a843c328222d47291c",
     "tests/rust-qualification-driver.test.mjs": "2cb001f52e4cca32245aa4502d5336cc6f56b03a6a6128380c956f98a7dae0f6"
+  },
+  "closedUtc": "2026-10-16T15:10:36.428710+00:00",
+  "admissionCommit": "40c3dad90e8abaf923a0f552b2485ff8fa1f2cd4",
+  "nativeActualSteps": 0,
+  "mainNativeActualSteps": 0,
+  "forecastNativeActualSteps": 0,
+  "wallActualSeconds": 0.09875835000000001,
+  "harnessCompleted": false,
+  "harnessError": "Error: browserType.launch: Executable doesn't exist at /home/agent/.cache/ms-playwright/chromium_headless_shell-1200/chrome-headless-shell-linux64/chrome-headless-shell\n\u2554\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2557\n\u2551 Looks like Playwright Test or Playwright was just installed or updated. \u2551\n\u2551 Please run the following command to download new browsers:              \u2551\n\u2551                                                                         \u2551\n\u2551     npx playwright install                                              \u2551\n\u2551                                                                         \u2551\n\u2551 <3 Playwright Team                                                      \u2551\n\u255a\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u255d",
+  "outcome": "Browser executable absent before browser/page/world construction; zero physical integration. Reservation retained without refund.",
+  "fullGetUpQualified": false,
+  "browserZeroStepPreflight": {
+    "passed": true,
+    "browser": "154.0.8037.57",
+    "nativeSteps": 0,
+    "forecastSteps": 0,
+    "reportRetained": true,
+    "phase": "awaiting-physical-fall"
+  },
+  "evidence": {
+    "outputs/getup-policy-retest-2026-10-16/wasm-parity.log": "8629620ac58612c83774543ce7dd82be319a0ae566ba31ae528444dc114e2cb2",
+    "outputs/getup-policy-retest-2026-10-16/physical-run.log": "9feaf228f086841935c3dc26bf66dc5428e00c342e76752fddc2ba2989b7ef6c",
+    "outputs/getup-policy-retest-2026-10-16/browser-zero-step-preflight.log": "3254099c3e143f41f5370c63d333bfaa34d4f3f998cc60e3dcaa6bcbcf30d92b",
+    "outputs/getup-policy-retest-2026-10-16/tooling-tests.log": "c558980fc6c5a403fd7d0dcc3a88c2e809d1fff03d096c616ba16ec4abc4ef7b",
+    "outputs/getup-policy-retest-2026-10-16/result.json": "256d0527011f2787380f86ec2becd5bac13acd04596f5a0515a0c51fb3389de4"
   }
 }
