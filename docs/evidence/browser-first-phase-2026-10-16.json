@@ -1,0 +1,523 @@
+{
+  "status": "closed",
+  "authorization": "Owner explicitly approved a first-phase whole-body coordinator MVP using existing actuators, measured transitions, sustained support/clearance, a bounded repeat if budget permits, clip and scoped commit/push. Later get-up work is paused.",
+  "scopeChangeBeforeAnyNewPhysics": true,
+  "startedUtc": "2026-10-16T12:54:51.431883+00:00",
+  "priorClosedRecord": "docs/evidence/browser-getup-pelvis-roll-2026-10-16.json",
+  "priorClosedRecordSha256": "a9c5d1fbe8177179cc4a6f9b97b6bf6d1b7b486b972f2ed716f975951be246f6",
+  "sourceBase": "dd56495bd62bd962f923e647c565723370538267",
+  "candidateCommit": "d97f4e4dd48d62abbd81c4a886451866fe3c6ce3",
+  "nativeChargedBefore": 181428,
+  "nativeReservation": 6720,
+  "nativeChargedAfter": 188148,
+  "nativeCeiling": 300000,
+  "wallChargedBeforeSeconds": 1486.3282942940032,
+  "wallReservationSeconds": 360,
+  "wallChargedAfterSeconds": 1846.3282942940032,
+  "wallCeilingSeconds": 7200,
+  "maximumHistories": 2,
+  "maximumSimulatedSecondsPerHistory": 14,
+  "maximumWallSecondsPerHistory": 180,
+  "perHistoryWatchdogSeconds": 180,
+  "forecasts": 0,
+  "launchRetries": 0,
+  "refund": false,
+  "repeatCondition": "Same frozen candidate, landing and inputs; only after primary pass. A repeat demonstrates reproducibility of one case, not perturbation robustness.",
+  "inputs": {
+    "rust/crates/sim/src/recovery.rs": "bd24ae551f5e84780061b8fd735efb959f9c51b1dbe0ae40ce88e58ff4dd7e29",
+    "rust/crates/sim/src/recovery/roll_arm.rs": "1d43e0fd7728e9c89c3a11cacb0b3254d05880f96a0bc2b0ad17202e2cf1223b",
+    "rust/crates/sim/src/lib.rs": "897cc828e38d0211ac1345674eefbd48b89a56374ac218d1c37939e45e350499",
+    "rust/crates/contracts/src/lib.rs": "94188ec4b9f26592b19d2e79705b9c8d48f32e149aded4da6c95e526fdb60720",
+    "rust/crates/worker/src/lib.rs": "0787c7d28c9dcd450d79bb38027a59546841da59a5762d7aa34cee9b54f9f5d4",
+    "rust/crates/browser/driver.js": "d00d18602ba8a5a8cbbc210761b6a649d1d16d26ab9ad44643b4303b1f787623",
+    "rust/crates/browser/src/main.rs": "9b3ff27ba8a3dc35cc9ccffb278bab63933b3581b738069f45edd421762792d5",
+    "rust/crates/sim/data/roll-landed-v1.json": "e5dd8f488e48c82786360f39261ffbe2216a121e8c2c1ce57d6da8e68e216991",
+    "rust/crates/model/data/canonical-v1.json": "083c13b2cce2d6033a4fc05cba8da7e78bd89634fb306629f4b7a9cd4a177a65",
+    "rust/crates/sim/data/recovery-contract-v1.json": "57ffc6e4705759dac795e7c1b274edc9016a5e194a8fe4fa175a230c62f595ba",
+    "rust/dist/app/lh_worker_bg.wasm": "fad0ed400ddcfa17b788772cad6ce0aedead75951e5a690d2136d38c5cad2a42",
+    "scripts/validate-first-phase.mjs": "534ebd629a9780241e708c603bd1c9db395e59468a777a00c947106589fcd9a0"
+  },
+  "checksBeforeLaunch": {
+    "pureSimulatorTestsPassed": 12,
+    "contractTestsPassed": 2,
+    "workerTestsPassed": 1,
+    "toolingTestsPassed": 55,
+    "browserBuildPassed": true,
+    "experimentalCheckIsolatedTrackedSources": true,
+    "originalExperimentalCheckLimitation": "Preserved pre-existing attribution work references missing tests; isolated tracked-source copy plus current scoped changes checks successfully."
+  },
+  "hypothesis": "The existing native pelvis/leg, trunk and arm controller can execute one ordered support-unload-fold-hold sequence from the actual settled strike landing, with measured completion and no later phase.",
+  "criteria": {
+    "support": "At least 80% body weight through actual solved upward material contacts excluding the released arm and head/neck; CoM and capture point inside retained hull by 3 mm. Released-arm load <=25% weight before swing; proof persists 0.20 s.",
+    "completion": "Whole released arm summed persistent load <3 N, all five colliders floor clearance >15 mm, every fold coordinate error <0.15 rad, whole-body CoM speed <=0.22 m/s, pelvis/torso/released-arm maximum speeds <=0.22 m/s and <=0.65 rad/s, for 0.55 continuous seconds.",
+    "hold": "Same complete-pose references under continuing physics, complete conditions for at least one further continuous second. No Brace, no later Roll swing, no standing qualification, one worker and one strike."
+  },
+  "stop": "Integrity failure, absent diagnostics, impossible bounded history, 14 simulated seconds or 180 wall seconds. If primary fails, omit repeat. No variants, renewal or extra physics for video.",
+  "finishedUtc": "2026-10-16T12:56:03.543Z",
+  "closedUtc": "2026-10-16T12:58:19.577770+00:00",
+  "historiesExecuted": 1,
+  "repeatExecuted": false,
+  "repeatOmissionReason": "Primary physical acceptance failed; conditional repeat was not authorized by this frozen protocol. Reservation is not refunded.",
+  "nativeActualSteps": 3360,
+  "wallActualSeconds": 68.629873844,
+  "allFrozenInputsVerifiedAfterRun": true,
+  "priorClosedRecordUnchanged": true,
+  "firstPhasePassed": false,
+  "fullRecovery": false,
+  "qualification": false,
+  "final": {
+    "tick": 840,
+    "time": 14,
+    "motion": "Recovering",
+    "counters": {
+      "strikes": 1,
+      "falls": 1,
+      "recoveries": 0,
+      "steps": 0,
+      "upright_ticks": 136
+    },
+    "recovery": {
+      "phase": "Roll",
+      "arm_transfer": "right:BackSupport",
+      "roll_coordination": {
+        "pelvis_target": {
+          "x": -0.6828669,
+          "y": 0.274998,
+          "z": 0.094643384,
+          "w": 0.670158
+        },
+        "support_legs": [
+          false,
+          true
+        ],
+        "released_legs": [
+          true,
+          false
+        ],
+        "max_contact_error_m": 1.7432065e-05
+      },
+      "first_phase": {
+        "complete": false,
+        "release_ready": true,
+        "blocked_reason": "Confirming alternate support for 0.20 s",
+        "retained_load_n": 655.81537,
+        "required_retained_load_n": 566.6256,
+        "center_of_mass_inside_support": true,
+        "capture_inside_support": true,
+        "arm_load_n": 40.117126,
+        "arm_clearance_m": 0.0032958314,
+        "fold_error_rad": 0.04635811,
+        "center_of_mass_speed_mps": 0.016576042,
+        "max_body_and_arm_linear_mps": 0.03986189,
+        "max_body_and_arm_angular_radps": 0.23253646,
+        "eligible": false,
+        "qualified_s": 0,
+        "hold_valid_s": 0
+      },
+      "elapsed_s": 9.3374,
+      "phase_time_s": 9.3374,
+      "qualified_time_s": 0,
+      "stable_time_s": 0,
+      "stalled_s": 2.5208378,
+      "unsupported_s": 0,
+      "retries": 2,
+      "last_retry": "arm-support-not-ready",
+      "progress": -0.9610143
+    },
+    "failure": null,
+    "workerInstances": 1
+  },
+  "functionalTestError": "AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:\n+ actual - expected\n\n  [\n    'right:BackSupport',\n    'right:Fold',\n+   'right:BackSupport',\n+   'right:Fold',\n+   'right:BackSupport',\n+   'right:Fold',\n+   'right:BackSupport',\n+   'right:Fold',\n+   'right:BackSupport'\n-   'right:Complete'\n  ]\n",
+  "analysis": {
+    "scope": "First-phase MVP only; repeat is identical-case reproducibility, not perturbation robustness. Diagnostic persistence is accumulated at native 240 Hz; snapshots and video are recorded every 16 native substeps.",
+    "primary": {
+      "passed": false,
+      "nativeSteps": 3360,
+      "wallSeconds": 68.629873844,
+      "milestones": [
+        {
+          "observedAtSeconds": 4.666666666666667,
+          "stage": "right:BackSupport",
+          "diagnostic": {
+            "complete": false,
+            "release_ready": true,
+            "blocked_reason": "Confirming alternate support for 0.20 s",
+            "retained_load_n": 582.38226,
+            "required_retained_load_n": 566.6256,
+            "center_of_mass_inside_support": true,
+            "capture_inside_support": true,
+            "arm_load_n": 81.53257,
+            "arm_clearance_m": 0.003649857,
+            "fold_error_rad": 1.7538393,
+            "center_of_mass_speed_mps": 0.0056434777,
+            "max_body_and_arm_linear_mps": 0.009540366,
+            "max_body_and_arm_angular_radps": 0.07047155,
+            "eligible": false,
+            "qualified_s": 0,
+            "hold_valid_s": 0
+          },
+          "persistentLoadsN": {
+            "lumbar": 96.13298,
+            "torso": 213.44106,
+            "head": 59.439636,
+            "leftForearmTwist": 15.907101,
+            "rightUpperArm": 42.722244,
+            "rightForearm": 21.890718,
+            "rightHand": 4.3681645,
+            "rightAnkle": 109.39135,
+            "rightForefoot": 153.32204
+          }
+        },
+        {
+          "observedAtSeconds": 8.133333333333333,
+          "stage": "right:Fold",
+          "diagnostic": {
+            "complete": false,
+            "release_ready": true,
+            "blocked_reason": "Arm has not reached its folded pose",
+            "retained_load_n": 652.88995,
+            "required_retained_load_n": 566.6256,
+            "center_of_mass_inside_support": true,
+            "capture_inside_support": true,
+            "arm_load_n": 0,
+            "arm_clearance_m": 0.036924,
+            "fold_error_rad": 1.6933868,
+            "center_of_mass_speed_mps": 0.033116717,
+            "max_body_and_arm_linear_mps": 0.5920874,
+            "max_body_and_arm_angular_radps": 1.6322172,
+            "eligible": false,
+            "qualified_s": 0,
+            "hold_valid_s": 0
+          },
+          "persistentLoadsN": {
+            "pelvis": 467.23328,
+            "torso": 104.05992,
+            "head": 68.39475,
+            "leftForearmTwist": 26.386084,
+            "rightFoot": 54.859436
+          }
+        },
+        {
+          "observedAtSeconds": 10.2,
+          "stage": "right:BackSupport",
+          "diagnostic": {
+            "complete": false,
+            "release_ready": false,
+            "blocked_reason": "Alternate support carries less than 80% of body weight",
+            "retained_load_n": 557.6366,
+            "required_retained_load_n": 566.6256,
+            "center_of_mass_inside_support": true,
+            "capture_inside_support": false,
+            "arm_load_n": 0,
+            "arm_clearance_m": 0.029705562,
+            "fold_error_rad": 0.04066968,
+            "center_of_mass_speed_mps": 0.09688294,
+            "max_body_and_arm_linear_mps": 0.26646516,
+            "max_body_and_arm_angular_radps": 0.6057288,
+            "eligible": false,
+            "qualified_s": 0,
+            "hold_valid_s": 0
+          },
+          "persistentLoadsN": {
+            "pelvis": 454.10275,
+            "torso": 97.71304,
+            "head": 88.64407,
+            "leftHand": 10.741799,
+            "rightFoot": 42.92799
+          }
+        },
+        {
+          "observedAtSeconds": 10.933333333333334,
+          "stage": "right:Fold",
+          "diagnostic": {
+            "complete": false,
+            "release_ready": true,
+            "blocked_reason": "Confirming stable clearance for 0.55 s",
+            "retained_load_n": 621.6521,
+            "required_retained_load_n": 566.6256,
+            "center_of_mass_inside_support": true,
+            "capture_inside_support": true,
+            "arm_load_n": 0,
+            "arm_clearance_m": 0.024042286,
+            "fold_error_rad": 0.052870035,
+            "center_of_mass_speed_mps": 0.024766129,
+            "max_body_and_arm_linear_mps": 0.053215347,
+            "max_body_and_arm_angular_radps": 0.18020907,
+            "eligible": true,
+            "qualified_s": 0.012500001,
+            "hold_valid_s": 0
+          },
+          "persistentLoadsN": {
+            "pelvis": 426.40436,
+            "torso": 122.94771,
+            "head": 84.36129,
+            "leftHand": 24.208755,
+            "rightFoot": 49.987133
+          }
+        },
+        {
+          "observedAtSeconds": 11.066666666666666,
+          "stage": "right:BackSupport",
+          "diagnostic": {
+            "complete": false,
+            "release_ready": true,
+            "blocked_reason": "Confirming alternate support for 0.20 s",
+            "retained_load_n": 626.6791,
+            "required_retained_load_n": 566.6256,
+            "center_of_mass_inside_support": true,
+            "capture_inside_support": true,
+            "arm_load_n": 0,
+            "arm_clearance_m": 0.025155894,
+            "fold_error_rad": 0.049842358,
+            "center_of_mass_speed_mps": 0.004678695,
+            "max_body_and_arm_linear_mps": 0.018898193,
+            "max_body_and_arm_angular_radps": 0.049914252,
+            "eligible": true,
+            "qualified_s": 0,
+            "hold_valid_s": 0
+          },
+          "persistentLoadsN": {
+            "pelvis": 326.35995,
+            "torso": 197.05125,
+            "head": 64.68751,
+            "leftHand": 22.026897,
+            "rightFoot": 101.328964
+          }
+        },
+        {
+          "observedAtSeconds": 11.8,
+          "stage": "right:Fold",
+          "diagnostic": {
+            "complete": false,
+            "release_ready": true,
+            "blocked_reason": "Confirming stable clearance for 0.55 s",
+            "retained_load_n": 650.3315,
+            "required_retained_load_n": 566.6256,
+            "center_of_mass_inside_support": true,
+            "capture_inside_support": true,
+            "arm_load_n": 0,
+            "arm_clearance_m": 0.023567755,
+            "fold_error_rad": 0.04988885,
+            "center_of_mass_speed_mps": 0.045188356,
+            "max_body_and_arm_linear_mps": 0.07632573,
+            "max_body_and_arm_angular_radps": 0.2731596,
+            "eligible": true,
+            "qualified_s": 0.05416667,
+            "hold_valid_s": 0
+          },
+          "persistentLoadsN": {
+            "pelvis": 384.51776,
+            "torso": 173.9937,
+            "head": 47.995766,
+            "leftForearmTwist": 31.162676,
+            "rightFoot": 68.59042
+          }
+        },
+        {
+          "observedAtSeconds": 12,
+          "stage": "right:BackSupport",
+          "diagnostic": {
+            "complete": false,
+            "release_ready": false,
+            "blocked_reason": "Alternate support carries less than 80% of body weight",
+            "retained_load_n": 564.13745,
+            "required_retained_load_n": 566.6256,
+            "center_of_mass_inside_support": true,
+            "capture_inside_support": true,
+            "arm_load_n": 0,
+            "arm_clearance_m": 0.019560259,
+            "fold_error_rad": 0.04970002,
+            "center_of_mass_speed_mps": 0.04111943,
+            "max_body_and_arm_linear_mps": 0.10939938,
+            "max_body_and_arm_angular_radps": 0.2672318,
+            "eligible": false,
+            "qualified_s": 0,
+            "hold_valid_s": 0
+          },
+          "persistentLoadsN": {
+            "pelvis": 381.0904,
+            "torso": 180.85591,
+            "head": 42.677307,
+            "leftForearmTwist": 3.707916,
+            "leftHand": 15.699203,
+            "rightFoot": 57.87799
+          }
+        },
+        {
+          "observedAtSeconds": 12.2,
+          "stage": "right:Fold",
+          "diagnostic": {
+            "complete": false,
+            "release_ready": true,
+            "blocked_reason": "Arm clearance below 15 mm",
+            "retained_load_n": 623.54,
+            "required_retained_load_n": 566.6256,
+            "center_of_mass_inside_support": true,
+            "capture_inside_support": true,
+            "arm_load_n": 0,
+            "arm_clearance_m": 0.011421774,
+            "fold_error_rad": 0.051553726,
+            "center_of_mass_speed_mps": 0.035142913,
+            "max_body_and_arm_linear_mps": 0.17097783,
+            "max_body_and_arm_angular_radps": 0.40148953,
+            "eligible": false,
+            "qualified_s": 0,
+            "hold_valid_s": 0
+          },
+          "persistentLoadsN": {
+            "pelvis": 414.68082,
+            "torso": 194.23846,
+            "head": 29.238749,
+            "leftHand": 15.114082,
+            "rightFoot": 50.34619
+          }
+        },
+        {
+          "observedAtSeconds": 12.333333333333334,
+          "stage": "right:BackSupport",
+          "diagnostic": {
+            "complete": false,
+            "release_ready": false,
+            "blocked_reason": "Capture point outside retained support margin",
+            "retained_load_n": 583.40497,
+            "required_retained_load_n": 566.6256,
+            "center_of_mass_inside_support": true,
+            "capture_inside_support": false,
+            "arm_load_n": 0,
+            "arm_clearance_m": 0.0058082305,
+            "fold_error_rad": 0.05556059,
+            "center_of_mass_speed_mps": 0.040153466,
+            "max_body_and_arm_linear_mps": 0.13417394,
+            "max_body_and_arm_angular_radps": 0.32843825,
+            "eligible": false,
+            "qualified_s": 0,
+            "hold_valid_s": 0
+          },
+          "persistentLoadsN": {
+            "pelvis": 367.374,
+            "torso": 209.28966,
+            "head": 27.4255,
+            "leftHand": 11.399002,
+            "rightFoot": 96.34551
+          }
+        }
+      ],
+      "completeSampleCount": 0,
+      "completeRanges": null,
+      "holdValidityInterrupted": false,
+      "blockingSamples": {
+        "Confirming alternate support for 0.20 s": 60,
+        "Center of mass outside retained support margin": 10,
+        "Alternate support carries less than 80% of body weight": 32,
+        "Arm has not reached its folded pose": 23,
+        "Trunk or released arm still moving": 3,
+        "Confirming stable clearance for 0.55 s": 10,
+        "Arm clearance below 15 mm": 2,
+        "Capture point outside retained support margin": 1
+      },
+      "maximumRecordedDiagnostics": {
+        "direct_pelvis_force_n": 0,
+        "direct_pelvis_torque_nm": 0,
+        "max_anchor_separation_m": 4.1271025e-05,
+        "max_floor_penetration_m": 0.034814026,
+        "max_self_penetration_m": 0.0011277233,
+        "max_limit_error_rad": 0.0042297244,
+        "requested_motor_effort_nm": 704.1533
+      },
+      "baselineComparison": {
+        "identicalSampleCount": 144,
+        "lastIdenticalTime": 9.6
+      },
+      "headNeckMaximumLoadAfterCompletionN": null,
+      "endReason": "AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:\n+ actual - expected\n\n  [\n    'right:BackSupport',\n    'right:Fold',\n+   'right:BackSupport',\n+   'right:Fold',\n+   'right:BackSupport',\n+   'right:Fold',\n+   'right:BackSupport',\n+   'right:Fold',\n+   'right:BackSupport'\n-   'right:Complete'\n  ]\n",
+      "largestSampledCompletionPersistenceSeconds": 0.30416667,
+      "firstSupportInterruptionAfterFold": {
+        "observedAtSeconds": 10.2,
+        "diagnostic": {
+          "complete": false,
+          "release_ready": false,
+          "blocked_reason": "Alternate support carries less than 80% of body weight",
+          "retained_load_n": 557.6366,
+          "required_retained_load_n": 566.6256,
+          "center_of_mass_inside_support": true,
+          "capture_inside_support": false,
+          "arm_load_n": 0,
+          "arm_clearance_m": 0.029705562,
+          "fold_error_rad": 0.04066968,
+          "center_of_mass_speed_mps": 0.09688294,
+          "max_body_and_arm_linear_mps": 0.26646516,
+          "max_body_and_arm_angular_radps": 0.6057288,
+          "eligible": false,
+          "qualified_s": 0,
+          "hold_valid_s": 0
+        }
+      },
+      "finalDiagnostic": {
+        "complete": false,
+        "release_ready": true,
+        "blocked_reason": "Confirming alternate support for 0.20 s",
+        "retained_load_n": 655.81537,
+        "required_retained_load_n": 566.6256,
+        "center_of_mass_inside_support": true,
+        "capture_inside_support": true,
+        "arm_load_n": 40.117126,
+        "arm_clearance_m": 0.0032958314,
+        "fold_error_rad": 0.04635811,
+        "center_of_mass_speed_mps": 0.016576042,
+        "max_body_and_arm_linear_mps": 0.03986189,
+        "max_body_and_arm_angular_radps": 0.23253646,
+        "eligible": false,
+        "qualified_s": 0,
+        "hold_valid_s": 0
+      },
+      "physicalAcceptancePassed": false,
+      "physicalFailureIndependentOfSequenceAssertion": "Complete is never reached, the one-second hold is never entered, and final clearance/load both fail. The observer also rejects the repeated BackSupport/Fold sequence; that assertion is not the sole reason for physical failure."
+    }
+  },
+  "checks": {
+    "pureSimulatorTestsPassed": 12,
+    "contractTestsPassed": 2,
+    "workerTestsPassed": 1,
+    "toolingTestsPassed": 55,
+    "browserBuildPassed": true,
+    "experimentalCheckPassedInIsolatedTrackedSourceCopy": true,
+    "firstPhasePhysicalAcceptancePassed": false,
+    "videoDecoded": true,
+    "videoSeconds": 14,
+    "videoFrames": 210
+  },
+  "decision": "Close as a failed sustained first-phase transfer. The ordered coordinator correctly withheld completion, but did not stabilize a released-arm pose. No repeat, perturbation, later get-up stage, threshold adjustment or further physical calculation is launched.",
+  "remainingScope": "The next causal issue is persistent alternate support during and after arm swing. This result establishes neither anatomical impossibility nor robustness.",
+  "libraryVideo": {
+    "libraryFileId": "libfile_2376bcca30c88191b9a8ae9a052eb4c6",
+    "fileId": "file_00000000203081f5a2447e5280203a37",
+    "version": 0,
+    "bytes": 365368,
+    "localPath": "/workspace/lh-deliverables/LaboratoireHumain-first-phase-MVP-2026-10-16.mp4"
+  },
+  "artifacts": {
+    "outputs/browser-first-phase-2026-10-16/primary/result.json": "89555adbc5bd43044f4f91d5a26176f99781a73a4a11eac74824e30e5b68f986",
+    "outputs/browser-first-phase-2026-10-16/primary/trace.ndjson": "2d2c8adec909b9716ded9d824edea04a84954c3fcdf711090140f06513eb09e8",
+    "outputs/browser-first-phase-2026-10-16/analysis.json": "681bba3cb50d3b51ce1ad3494e7c73e239e48fe7b298e7f9e2e22958d0393586",
+    "outputs/browser-first-phase-2026-10-16/analyze.py": "8dc7a180145591fb5dce3f607061caf6cefd629a4aef4d68c0c4e26ff2aa01c1",
+    "outputs/browser-first-phase-2026-10-16/unit.log": "72a6f626acc2602fcb8d5a5af224130e1c605c0624a0065abdda6845a7146fa0",
+    "outputs/browser-first-phase-2026-10-16/orientation-tests.log": "3dfd37ae1e86189ce9742b729669cfa49cb6fd01b3a66072a654115b5c2c372e",
+    "outputs/browser-first-phase-2026-10-16/planning-tests.log": "3297197794c1497f12e6ad78d69bb9a879e8c6827caec50d12e533a7d8f3e599",
+    "outputs/browser-first-phase-2026-10-16/contract-worker-tests.log": "bb1e1a846b2191501a3c215eb688e9e0730fa9b81daf22e160249f84848cf56a",
+    "outputs/browser-first-phase-2026-10-16/feature-check-isolated.log": "4e75f86d85faae4a753c50f39401cd684b40c7e89fdb6ae745a1950641ef8d5e",
+    "outputs/browser-first-phase-2026-10-16/build.log": "b1174631ab72167015f4b2e9bacd3769397aad77d3ec6626263e91fc4312c13b",
+    "outputs/browser-first-phase-2026-10-16/tooling-tests.log": "9e6fd6a4a7532c3311d716ce3bd8350a390eb4c815b306f59fe313b7a32d6b0b",
+    "/workspace/lh-deliverables/LaboratoireHumain-first-phase-MVP-2026-10-16.mp4": "bcda95a94145e00e911eead9725ccb3ebb7e5e85d61e13ed17e854da30d99295"
+  },
+  "libraryEvidence": {
+    "libraryFileId": "libfile_fbb4eadfa2088191be95eacbd92c1ac6",
+    "fileId": "file_000000009b7081f582ef252a830bb335",
+    "version": 0,
+    "bytes": 10949384,
+    "sha256": "1bf0cbbddfc4cf48f0a822c766f59470d7d0de7428c2b7238295968800b3b420",
+    "localPath": "/workspace/lh-deliverables/LaboratoireHumain-first-phase-MVP-evidence-2026-10-16.zip",
+    "zipIntegrityPassed": true,
+    "entries": 234,
+    "contents": "Frozen inputs including WASM and validation script, full recorded trace, original 210 frames, test/build logs, analysis, and closed receipt before this archive self-reference."
+  }
+}
