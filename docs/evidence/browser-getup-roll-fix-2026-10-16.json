@@ -85,7 +85,6 @@
     "pelvisHeightM": 0.1588857
   },
   "functionalTestError": "AssertionError [ERR_ASSERTION]: Full strike-to-standing recovery did not complete within the unchanged deadline",
-  "identicalPhysicalPrefixNativeSteps": 1104,
   "comparison26to27Seconds": {
     "baseline": {
       "headAndNeckMeanN": 71.77776525,
@@ -120,5 +119,12 @@
     "version": 0,
     "bytes": 398634
   },
-  "decision": "Retain the verified longitudinal-axis/retry correction and its regression tests. Full get-up remains failed; no further controller variants or physical runs."
+  "decision": "Retain the verified longitudinal-axis/retry correction and its regression tests. Full get-up remains failed; no further controller variants or physical runs.",
+  "baselineComparison": {
+    "identicalRecordedSnapshots": 69,
+    "lastIdenticalSnapshotTick": 276,
+    "lastIdenticalSnapshotSeconds": 4.6,
+    "nativeStepsBetweenSnapshots": 16,
+    "scope": "Recorded poses, contacts and counters match; intermediate native substeps were not individually compared."
+  }
 }
