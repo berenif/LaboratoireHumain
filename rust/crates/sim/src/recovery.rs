@@ -861,11 +861,12 @@ impl Controller {
         })
     }
     pub fn native_root_authority(&self, s: &Simulation, part: &Segment) -> bool {
-        if self.status.phase == Phase::Ordinary
-            || part.role != "thigh"
-            || self.status.phase == Phase::Roll
-        {
+        if self.status.phase == Phase::Ordinary || part.role != "thigh" {
             return false;
+        }
+        if self.status.phase == Phase::Roll {
+            return self.roll_root_goal().is_some()
+                && self.roll_root_legs()[usize::from(part.id.starts_with("right"))];
         }
         let side = if part.id.starts_with("right") {
             "right"
@@ -879,13 +880,16 @@ impl Controller {
             return Vector::ZERO;
         }
         let side = usize::from(part.id.starts_with("right"));
-        let loaded =
-            ["left", "right"].map(|side| foot(s, side) || load(s, &format!("{side}Shin")) >= 3.0);
+        let loaded = if self.status.phase == Phase::Roll { self.roll_root_legs() } else {
+            ["left", "right"].map(|side| foot(s, side) || load(s, &format!("{side}Shin")) >= 3.0)
+        };
         if !loaded[side] {
             return Vector::ZERO;
         }
         let pelvis = body(s, "pelvis");
-        let reference = if self.standing() || self.status.phase == Phase::Handoff {
+        let reference = if self.status.phase == Phase::Roll {
+            self.roll_root_goal().unwrap_or(*pelvis.rotation())
+        } else if self.standing() || self.status.phase == Phase::Handoff {
             self.stand_goal.unwrap_or(s.heading)
         } else {
             s.heading
@@ -1331,24 +1335,9 @@ impl Controller {
                 }
             }
             if self.status.phase == Phase::Roll {
-                // Measured torso orientation chooses a deterministic lateral
-                // rolling route. Retry is the only place the lead can change.
-                let torso = *body(s, "torso").rotation();
-                let route = rolling_orientation(torso, self.lead);
                 for (i, part) in s.model.segments.iter().enumerate() {
                     if matches!(part.role.as_str(), "lumbar" | "ribcage") {
-                        let joint = s
-                            .world
-                            .impulse_joints
-                            .get(s.joints[i].ok_or("Missing rolling joint")?)
-                            .ok_or("Lost rolling joint")?;
-                        desired[i] = measurement::coordinates(
-                            *s.world.bodies[joint.body1()].rotation(),
-                            route,
-                            part.joint_profile
-                                .as_ref()
-                                .ok_or("Missing rolling profile")?,
-                        );
+                        desired[i] = s.rest_targets[i];
                     }
                 }
             }

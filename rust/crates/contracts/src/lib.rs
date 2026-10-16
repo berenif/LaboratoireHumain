@@ -1,5 +1,5 @@
 //! Tick-indexed, generation-isolated commands and immutable observations.
-use lh_model::{Pose, Vec3};
+use lh_model::{Pose, Quat, Vec3};
 use serde::{Deserialize, Serialize};
 use std::collections::BTreeMap;
 
@@ -217,6 +217,8 @@ pub struct RecoveryObservation {
     pub phase: String,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub arm_transfer: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub roll_coordination: Option<RollCoordinationObservation>,
     pub elapsed_s: f32,
     pub phase_time_s: f32,
     pub qualified_time_s: f32,
@@ -226,6 +228,13 @@ pub struct RecoveryObservation {
     pub retries: u32,
     pub last_retry: Option<String>,
     pub progress: f32,
+}
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct RollCoordinationObservation {
+    pub pelvis_target: Option<Quat>,
+    pub support_legs: [bool; 2],
+    pub released_legs: [bool; 2],
+    pub max_contact_error_m: Option<f32>,
 }
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct TerrainObservation {
