@@ -1,0 +1,10 @@
+✔ incremental trial counts actual native integrations including its entire forecast (1.809342ms)
+✔ incremental trial refuses excess, missing, invalid or decreasing counters without physics (5.598922ms)
+ℹ tests 2
+ℹ suites 0
+ℹ pass 2
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 292.749469
