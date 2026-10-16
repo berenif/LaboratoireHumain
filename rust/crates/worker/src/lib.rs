@@ -1,4 +1,13 @@
 //! WASM worker boundary. The renderer never owns or imports this simulation.
+#[cfg(any(target_arch = "wasm32", test))]
+fn default_browser_profile() -> lh_sim::Profile {
+    lh_sim::Profile {
+        id: "rust-physics-v25-browser-getup".into(),
+        recovery_enabled: true,
+        ..Default::default()
+    }
+}
+
 #[cfg(target_arch = "wasm32")]
 mod browser {
     use lh_contracts::{Command, Mode, SCHEMA_VERSION};
@@ -201,7 +210,7 @@ mod browser {
                     serde_json::from_str::<Profile>(&json).map_err(error)
                 })
                 .transpose()?
-                .unwrap_or_default();
+                .unwrap_or_else(super::default_browser_profile);
             Ok(Self {
                 runtime: Runtime::new_trial_with_settings(
                     mode,
@@ -311,3 +320,19 @@ mod browser {
 }
 #[cfg(target_arch = "wasm32")]
 pub use browser::*;
+
+#[cfg(test)]
+mod tests {
+    #[test]
+    fn browser_getup_preserves_the_physical_profile() {
+        let profile = super::default_browser_profile();
+        profile.validate().unwrap();
+        assert!(profile.recovery_enabled);
+        assert!(!profile.corrective_steps_enabled);
+        let mut browser = serde_json::to_value(profile).unwrap();
+        let baseline = serde_json::to_value(lh_sim::Profile::default()).unwrap();
+        browser["id"] = baseline["id"].clone();
+        browser["recovery_enabled"] = baseline["recovery_enabled"].clone();
+        assert_eq!(browser, baseline, "Only recovery opt-in may change physics");
+    }
+}

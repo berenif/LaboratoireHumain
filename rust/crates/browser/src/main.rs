@@ -161,7 +161,7 @@ mod browser {
                     <div><span>"SIMULATION / WALL"</span><strong>{move||format!("{:.2}×",status.get().realtime_ratio)}</strong></div>
                 </section>
             </main>
-            <footer>"Experimental simulation. Recovery is disabled; full physical qualification remains open."</footer>
+            <footer>"Experimental simulation. Automatic get-up is enabled; successful recovery is not qualified."</footer>
         }
     }
     pub fn run() {
