@@ -19,6 +19,32 @@ pub struct State {
     pub head_height_m: f32,
 }
 
+// Frozen initial posture, selected by geometry only; no physical tuning runs.
+// Posterior lower arm and flexed legs are intended to widen the passive base of the
+// straight standing posture rotated onto its side. The same 21 hinges are used.
+pub const SIDE_SUPPORTED_Q: [(usize,f32);7] = [(5,-0.65),(6,-1.1),(11,-0.9),(12,-1.45),
+    (15,0.8663113),(16,-1.0686804),(17,0.2665224)];
+fn set_supported_side_joints(s: &mut Simulation) -> Result<(),String> {
+    let (q,_) = getup::joint_state(s)?;
+    let id = *s.world.multibody_joints.rigid_body_link(s.bodies[0]).ok_or("Missing free root")?;
+    let mb = s.world.multibody_joints.get_multibody_mut(id.multibody).ok_or("Missing articulation")?;
+    let mut displacement = vec![0.0;mb.ndofs()];
+    for (i,part) in s.model.segments.iter().enumerate() {
+        if let Some(h) = part.reference.as_ref().and_then(|r|r.hinge.as_ref()) {
+            if let Some((_,target)) = SIDE_SUPPORTED_Q.iter().find(|(j,_)|*j==h.qpos_index) {
+                let axis = &part.joint_profile.as_ref().unwrap().axes[0];
+                if *target<axis.min_radians || *target>axis.max_radians {return Err("Invalid fixed side joint".into());}
+                let link = mb.links().find(|l|l.rigid_body_handle()==s.bodies[i]).ok_or("Missing hinge")?;
+                displacement[link.assembly_id()]=*target-q[h.qpos_index];
+            }
+        }
+    }
+    mb.apply_displacements(&displacement);mb.forward_kinematics(&s.world.bodies,false);
+    mb.update_rigid_bodies(&mut s.world.bodies,true);
+    s.world.bodies.propagate_modified_body_positions_to_colliders(&mut s.world.colliders);
+    Ok(())
+}
+
 fn displace_root(s: &mut Simulation, translation: Vector, angular: Vector) -> Result<(), String> {
     let id = *s.world.multibody_joints.rigid_body_link(s.bodies[0]).ok_or("Missing free root")?;
     let mb = s.world.multibody_joints.get_multibody_mut(id.multibody).ok_or("Missing articulation")?;
@@ -40,10 +66,11 @@ pub fn initialize(s: &mut Simulation, kind: &str) -> Result<(), String> {
     let angular = match kind {
         "back" => Vector::X * -std::f32::consts::FRAC_PI_2,
         "belly" => Vector::X * std::f32::consts::FRAC_PI_2,
-        "side" => Vector::Z * std::f32::consts::FRAC_PI_2,
+        "side" | "side-supported" => Vector::Z * std::f32::consts::FRAC_PI_2,
         _ => return Err("Unknown fixed GetUp fixture".into()),
     };
-    // All three cases retain the exact same21 joint coordinates. Only the free
+    if kind=="side-supported" {set_supported_side_joints(s)?;}
+    // The original three cases retain the exact same21 joint coordinates. Only the free
     // root orientation and initial ground clearance differ by fixture definition.
     displace_root(s, Vector::ZERO, angular)?;
     let bottom = s.colliders.iter().filter(|h| s.world.colliders[**h].is_enabled())
@@ -79,7 +106,7 @@ pub fn observe(s: &mut Simulation, loads: &[f32;25]) {
     let orientation = long.abs()<=0.35 && match kind.as_str() {
         "back" => face>=0.8,
         "belly" => face<=-0.8,
-        "side" => face.abs()<=0.35 && side>=0.8,
+        "side" | "side-supported" => face.abs()<=0.35 && side>=0.8,
         _ => false,
     };
     let settled = orientation && head_y<=0.5 && load>=0.8*s.total_mass()*9.81
@@ -105,19 +132,26 @@ mod tests {
     use super::*;
     #[test]
     fn fixed_orientations_preserve_joint_coordinates_mass_and_integrity_without_stepping() {
-        for kind in ["back","belly","side"] {
+        for kind in ["back","belly","side","side-supported"] {
             let mut profile=crate::Profile::default();profile.getup_policy_enabled=true;
             let mut s=Simulation::new_protocol(0.0,profile,true).unwrap();
             let (q,dq)=getup::joint_state(&s).unwrap();let mass=s.total_mass();
             initialize(&mut s,kind).unwrap();let (after,velocity)=getup::joint_state(&s).unwrap();
-            for i in 0..21 { assert!((q[i]-after[i]).abs()<1e-5);assert_eq!(dq[i],velocity[i]); }
+            for i in 0..21 {
+                let expected = if kind=="side-supported" {SIDE_SUPPORTED_Q.iter().find(|(j,_)|*j==i).map(|(_,v)|*v).unwrap_or(q[i])} else {q[i]};
+                assert!((expected-after[i]).abs()<1e-5);assert_eq!(dq[i],velocity[i]);
+            }
+            let before = serde_json::to_value(s.snapshot()).unwrap();
+            let diagnostic=getup::controller::standing_diagnostic(&s,None).unwrap();
+            assert_eq!(diagnostic["physicsIntegrations"],0);
+            assert_eq!(before,serde_json::to_value(s.snapshot()).unwrap());
             assert_eq!(mass,s.total_mass());assert_eq!(s.bodies.len(),25);assert_eq!(s.substeps_completed,0);
             assert!(s.diagnostics.getup.as_ref().unwrap().motor_controls.iter().all(|x|*x==0.0));
             let f=s.getup_fixture.as_ref().unwrap();assert!(!f.ready);
             assert!(f.torso_long_axis_up.abs()<1e-5);
             if kind=="back" { assert!(f.torso_face_up>0.99); }
             if kind=="belly" { assert!(f.torso_face_up< -0.99); }
-            if kind=="side" { assert!(f.torso_side_up>0.99); }
+            if kind.starts_with("side") { assert!(f.torso_side_up>0.99); }
             assert!(trigger(&mut s).is_err());assert!(initialize(&mut s,kind).is_err());
             let runtime=crate::runtime::Runtime::new_getup_fixture(kind).unwrap();
             let bytes=runtime.getup_checkpoint().unwrap();

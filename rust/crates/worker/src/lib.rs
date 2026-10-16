@@ -198,6 +198,9 @@ mod browser {
         pub fn getup_fixture_report(&self) -> Result<String,JsValue> {
             self.runtime.getup_fixture_report().map_err(error)
         }
+        pub fn getup_standing_diagnostic(&self, anchors_json:&str) -> Result<String,JsValue> {
+            self.runtime.getup_standing_diagnostic(anchors_json).map_err(error)
+        }
         pub fn trigger_getup_fixture(&mut self) -> Result<(),JsValue> {
             self.runtime.trigger_getup_fixture().map_err(error)
         }

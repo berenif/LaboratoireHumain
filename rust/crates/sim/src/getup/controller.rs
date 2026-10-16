@@ -371,6 +371,60 @@ impl Controller {
     }
 }
 
+
+/// Read-only reconstruction of the exact standing predicates from a checkpoint.
+/// Optional anchors belong to an earlier checkpoint in the same stable interval.
+pub fn standing_diagnostic(s: &Simulation, anchors: Option<[Vec3; 2]>) -> Result<serde_json::Value, String> {
+    let physical = super::physical_observation(s)?;
+    let contract = &recovery_contract::contract().recovery_acceptance;
+    let ids = ["left_foot", "right_foot"].map(|id| s.model.segments.iter().position(|p| p.id == id).unwrap());
+    let feet = ids.map(|i| vec3(s.world.bodies[s.bodies[i]].translation()));
+    let mut points = Vec::new();
+    for i in ids {
+        if let Some(pair) = s.world.narrow_phase.contact_pair(s.floor, s.colliders[i]) {
+            for manifold in pair.solver_manifolds() {
+                let sign = if pair.collider2 == s.colliders[i] { 1.0 } else { -1.0 };
+                if manifold.data.normal.y * sign < 0.65 { continue; }
+                for contact in &manifold.data.solver_contacts {
+                    let point = &manifold.points[contact.contact_indices()[0] as usize];
+                    if point.data.impulse > 0.0 {
+                        let (a,b) = manifold.data.solver_contact_world_points(contact, &s.world.bodies);
+                        let p = if pair.collider2 == s.colliders[i] { b } else { a };
+                        points.push([p.x,p.z]);
+                    }
+                }
+            }
+        }
+    }
+    let loads = s.integrated_support_loads_n;
+    let com = s.center_of_mass();
+    let velocity = Vector::new(physical[38],physical[39],physical[37]);
+    let capture = com + velocity * (com.y.max(0.0)/9.81).sqrt();
+    let twists = super::current_twists(s)?;
+    let motion: Vec<_> = twists.iter().enumerate().map(|(i,(v,w))| serde_json::json!({
+        "body":s.model.segments[i].id,"linearMps":v.length(),"angularRadps":w.length(),
+        "linearPassed":v.length()<=contract.stable_linear_mps,"angularPassed":w.length()<=contract.stable_angular_radps
+    })).collect();
+    let drift = anchors.map(|a| [vector(a[0]).distance(vector(feet[0])),vector(a[1]).distance(vector(feet[1]))]);
+    let predicates = serde_json::json!({
+        "head":physical[21]>1.4,"torso":physical[36]>=contract.stable_up_dot,
+        "bothFeetLoadedAndPersistent":ids.iter().all(|i| loads[*i]>=contract.minimum_load_n && s.integrated_support_substeps[*i]>=40),
+        "footLoadFraction":ids.iter().map(|i|loads[*i]).sum::<f32>()>=0.8*s.total_mass()*9.81,
+        "onlyFeet":loads.iter().enumerate().all(|(i,l)|ids.contains(&i)||*l<3.0),
+        "comInSupport":stepping::inside_support(points.clone(),[com.x,com.z],0.003),
+        "captureInSupport":stepping::inside_support(points.clone(),[capture.x,capture.z],0.003),
+        "linearMotion":twists.iter().all(|(v,_)|v.length()<=contract.stable_linear_mps),
+        "angularMotion":twists.iter().all(|(_,w)|w.length()<=contract.stable_angular_radps),
+        "footDriftFromSuppliedAnchors":drift.map(|d|d.iter().all(|v|*v<=0.01))
+    });
+    Ok(serde_json::json!({"physicsIntegrations":0,"nativeSubsteps":s.substeps_completed,
+        "predicates":predicates,"headM":physical[21],"torsoUp":physical[36],"com":vec3(com),
+        "comVelocity":vec3(velocity),"capture":vec3(capture),"footIds":ids,"feet":feet,
+        "loadsN":loads,"supportPersistence":s.integrated_support_substeps,"solverSupportPoints":points,
+        "motion":motion,"footDriftM":drift,"thresholds":{"linearMps":contract.stable_linear_mps,
+        "angularRadps":contract.stable_angular_radps,"torsoUp":contract.stable_up_dot,"footDriftM":0.01}}))
+}
+
 pub fn standing_target(model: &Model) -> [f32; 25] {
     let mut out = [0.0; 25];
     for (i, q) in out[..21].iter_mut().enumerate() {

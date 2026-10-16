@@ -6,7 +6,7 @@ import { initSync, WorkerRuntime, getup_trial_profile } from '../rust/dist/app/l
 const sha=x=>createHash('sha256').update(x).digest('hex');
 const save=(path,value)=>writeFileSync(path,JSON.stringify(value,null,2)+'\n');
 initSync({module:readFileSync('rust/dist/app/lh_worker_bg.wasm')});
-const cases=['back','belly','side'];
+const cases=['back','belly','side','side-supported'];
 if(process.argv[2]==='--preflight') {
   const out=process.argv[3];mkdirSync(out,{recursive:true});const results=[];
   for(const kind of cases) {
@@ -60,6 +60,7 @@ if(process.argv[2]==='--preflight') {
     assert.ok(s.diagnostics.requested_motor_effort_nm<=920.001);
     if(result.phase==='preparation')assert.equal(forecast,0);
   };
+  const preparationLimit=kind==='side-supported'?3200:1600;
   let nextCheckpoint=1600;
   try {
     record();checkpoint('initial');
@@ -80,12 +81,12 @@ if(process.argv[2]==='--preflight') {
           assert.deepEqual(reply.snapshot.segments,before);
           result.triggerNative=fixture().state.trigger_substep;result.phase='recovery';
           record();checkpoint('trigger');
-        } else if(result.counters.real>=1600) {result.outcome='invalid-fixture-not-settled-or-orientation';break;}
+        } else if(result.counters.real>=preparationLimit) {result.outcome='invalid-fixture-not-settled-or-orientation';break;}
       } else {
         if(p.prototype_standing_passed) {result.standingPassed=true;result.outcome='success';break;}
         if(result.counters.real-result.triggerNative>=20000) {result.outcome='controller-deadline-without-standing';break;}
       }
-      const realLimit=result.phase==='preparation'?1600:result.triggerNative+20000;
+      const realLimit=result.phase==='preparation'?preparationLimit:result.triggerNative+20000;
       const ticks=Math.min(4,Math.floor((realLimit-result.counters.real)/20),Math.floor((nextCheckpoint-result.counters.real)/20));
       assert.ok(ticks>0);
       reply=JSON.parse(runtime.advance(ticks));record();

@@ -55,11 +55,21 @@ impl Runtime {
         Ok(runtime)
     }
     pub fn getup_fixture_report(&self) -> Result<String,String> {
-        serde_json::to_string(&serde_json::json!({"state":self.simulation.getup_fixture,
-            "nativeSubsteps":self.simulation.substeps_completed})).map_err(|e|e.to_string())
+        let s=&self.simulation;
+        let bounds:Vec<_>=s.colliders.iter().enumerate().filter(|(_,h)|s.world.colliders[**h].is_enabled()).map(|(i,h)|{
+            let a=s.world.colliders[*h].compute_aabb();serde_json::json!({"body":s.model.segments[i].id,
+                "min":[a.mins.x,a.mins.y,a.mins.z],"max":[a.maxs.x,a.maxs.y,a.maxs.z]})
+        }).collect();
+        let (q,dq)=crate::getup::joint_state(s)?;
+        serde_json::to_string(&serde_json::json!({"state":s.getup_fixture,"nativeSubsteps":s.substeps_completed,
+            "jointQ":q,"jointDq":dq,"colliderBounds":bounds,"massKg":s.total_mass()})).map_err(|e|e.to_string())
     }
     pub fn trigger_getup_fixture(&mut self) -> Result<(),String> {
         crate::getup::fixtures::trigger(&mut self.simulation)
+    }
+    pub fn getup_standing_diagnostic(&self, anchors_json: &str) -> Result<String,String> {
+        let anchors: Option<[lh_model::Vec3;2]> = serde_json::from_str(anchors_json).map_err(|e|e.to_string())?;
+        crate::getup::controller::standing_diagnostic(&self.simulation,anchors).map(|v|v.to_string())
     }
     fn checkpoint_compatible(&self) -> Result<(), String> {
         let s = &self.simulation;
