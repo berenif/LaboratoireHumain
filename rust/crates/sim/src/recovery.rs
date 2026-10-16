@@ -43,6 +43,22 @@ const RATE: f32 = 1.0;
 const STAND_RATE: f32 = RATE;
 const HANDOFF_S: f64 = 0.6;
 
+fn rolling_orientation(torso: Rotation, lead: usize) -> Rotation {
+    let forward_y = (torso * Vector::Z).y;
+    let lateral_y = (torso * Vector::X).y;
+    if forward_y * forward_y + lateral_y * lateral_y < 1e-8 {
+        return torso;
+    }
+    // Roll around the measured head-to-pelvis axis. Slerping to a fixed
+    // world-prone pose instead asks a supine body to bend its spine in pitch.
+    let mut angle = (-lateral_y).atan2(-forward_y);
+    let direction = if lead == 0 { 1.0 } else { -1.0 };
+    if forward_y > 0.0 && angle * direction < 0.0 {
+        angle += direction * std::f32::consts::TAU;
+    }
+    torso * Rotation::from_rotation_y(angle * 0.18)
+}
+
 fn blend_targets(current: &mut [[f32; 3]], desired: &[[f32; 3]], maximum_delta: f32) {
     let maximum = current
         .iter()
@@ -784,7 +800,11 @@ impl Controller {
             },
             targets,
             hands,
-            lead: usize::from(feet[1] && !feet[0]),
+            lead: if phase == Phase::Roll {
+                usize::from((*body(s, "torso").rotation() * Vector::X).y > 0.0)
+            } else {
+                usize::from(feet[1] && !feet[0])
+            },
             stand_feet: None,
             stand_root: None,
             stand_goal: None,
@@ -1285,8 +1305,7 @@ impl Controller {
                 // Measured torso orientation chooses a deterministic lateral
                 // rolling route. Retry is the only place the lead can change.
                 let torso = *body(s, "torso").rotation();
-                let prone = s.heading * Rotation::from_rotation_x(std::f32::consts::FRAC_PI_2);
-                let route = torso.slerp(prone, 0.18);
+                let route = rolling_orientation(torso, self.lead);
                 for (i, part) in s.model.segments.iter().enumerate() {
                     if matches!(part.role.as_str(), "lumbar" | "ribcage") {
                         let joint = s
@@ -1620,6 +1639,35 @@ fn diagnostic_actuation(s: &Simulation) -> Vec<serde_json::Value> {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn rolling_orientation_preserves_long_axis_on_recorded_browser_states() {
+        // Actual torso rotations at recovery entry and at the subsequent stall.
+        for torso in [
+            Rotation::from_xyzw(-0.68539315, 0.325458, 0.10550473, 0.6427924),
+            Rotation::from_xyzw(-0.79252297, 0.3768578, 0.07043452, 0.4742621),
+        ] {
+            let lead = usize::from((torso * Vector::X).y > 0.0);
+            let route = rolling_orientation(torso, lead);
+            assert!((route * Vector::Y - torso * Vector::Y).length() < 1e-6);
+            assert!((route * Vector::Z).y < (torso * Vector::Z).y - 0.1);
+            let yaw = Rotation::from_rotation_y(1.0471976);
+            let rotated = rolling_orientation(yaw * torso, lead);
+            assert!(rotated.dot(yaw * route).abs() > 1.0 - 1e-6);
+        }
+    }
+
+    #[test]
+    fn rolling_orientation_retry_changes_the_supine_route() {
+        let torso = Rotation::from_rotation_x(-std::f32::consts::FRAC_PI_2);
+        let left = rolling_orientation(torso, 0);
+        let right = rolling_orientation(torso, 1);
+        assert!((left * Vector::Z).y < 0.9);
+        assert!((right * Vector::Z).y < 0.9);
+        assert!((left * Vector::Z).x * (right * Vector::Z).x < 0.0);
+        assert!((left * Vector::Y - torso * Vector::Y).length() < 1e-6);
+        assert!((right * Vector::Y - torso * Vector::Y).length() < 1e-6);
+    }
 
     #[test]
     fn measured_toe_pivot_keeps_both_contact_points_inside_native_bounds() {
