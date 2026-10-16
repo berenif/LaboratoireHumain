@@ -1,0 +1,148 @@
+{
+  "passed": true,
+  "physicsIntegrations": 0,
+  "cases": [
+    {
+      "kind": "back",
+      "report": {
+        "nativeSubsteps": 0,
+        "state": {
+          "ground_load_n": 0,
+          "head_height_m": 0.15897774696350098,
+          "kind": "back",
+          "maximum_angular_radps": 0,
+          "maximum_body_com_speed_mps": 0,
+          "preparing": true,
+          "ready": false,
+          "settled_substeps": 0,
+          "torso_face_up": 1.0000001192092896,
+          "torso_long_axis_up": 0,
+          "torso_side_up": 0,
+          "trigger_substep": null
+        }
+      },
+      "checkpoint": {
+        "binaryWorldDeserialized": true,
+        "bytes": 584689,
+        "controllerEqual": true,
+        "forecastSubsteps": 0,
+        "handlesEqual": true,
+        "jointStateEqual": true,
+        "nativeSubsteps": 0,
+        "passed": true,
+        "physicsIntegrations": 0,
+        "snapshotEqual": true
+      },
+      "checkpointSha256": "ef27d8b9986fd635b871010e780e74df96dceec6e48d64d75b7cb754332e031a",
+      "initialHeadM": 0.15897775
+    },
+    {
+      "kind": "belly",
+      "report": {
+        "nativeSubsteps": 0,
+        "state": {
+          "ground_load_n": 0,
+          "head_height_m": 0.3062792420387268,
+          "kind": "belly",
+          "maximum_angular_radps": 0,
+          "maximum_body_com_speed_mps": 0,
+          "preparing": true,
+          "ready": false,
+          "settled_substeps": 0,
+          "torso_face_up": -1.0000001192092896,
+          "torso_long_axis_up": 0,
+          "torso_side_up": 0,
+          "trigger_substep": null
+        }
+      },
+      "checkpoint": {
+        "binaryWorldDeserialized": true,
+        "bytes": 584692,
+        "controllerEqual": true,
+        "forecastSubsteps": 0,
+        "handlesEqual": true,
+        "jointStateEqual": true,
+        "nativeSubsteps": 0,
+        "passed": true,
+        "physicsIntegrations": 0,
+        "snapshotEqual": true
+      },
+      "checkpointSha256": "bac7b73b5a9e2182c472f472df6cfb6e50d57a12dc204bd8b5958276a80546de",
+      "initialHeadM": 0.30627924
+    },
+    {
+      "kind": "side",
+      "report": {
+        "nativeSubsteps": 0,
+        "state": {
+          "ground_load_n": 0,
+          "head_height_m": 0.5297902226448059,
+          "kind": "side",
+          "maximum_angular_radps": 0,
+          "maximum_body_com_speed_mps": 0,
+          "preparing": true,
+          "ready": false,
+          "settled_substeps": 0,
+          "torso_face_up": 0,
+          "torso_long_axis_up": 0,
+          "torso_side_up": 1.0000001192092896,
+          "trigger_substep": null
+        }
+      },
+      "checkpoint": {
+        "binaryWorldDeserialized": true,
+        "bytes": 584682,
+        "controllerEqual": true,
+        "forecastSubsteps": 0,
+        "handlesEqual": true,
+        "jointStateEqual": true,
+        "nativeSubsteps": 0,
+        "passed": true,
+        "physicsIntegrations": 0,
+        "snapshotEqual": true
+      },
+      "checkpointSha256": "69bb6945ee992bc0e6bc45c0b69d6cf91e36c719f6b19dd30de594275ce9a68c",
+      "initialHeadM": 0.5297902
+    }
+  ],
+  "profile": {
+    "id": "getup-reference-5ad52fbe",
+    "dt_s": 0.00125,
+    "tick_substeps": 20,
+    "contact_friction_model": "coulomb",
+    "solver_iterations": 20,
+    "internal_pgs_iterations": 20,
+    "fall_internal_pgs_iterations": 32,
+    "additional_body_iterations": 5,
+    "allowed_linear_error_m": 0.001,
+    "prediction_distance_m": 0.002,
+    "motor_scale": 1,
+    "aggregate_motor_cap_nm": 920,
+    "angular_damping": 0,
+    "contact_skin_m": 0,
+    "max_ccd_substeps": 4,
+    "disable_solver_speed_cap": true,
+    "posture_stiffness_multiplier": 1,
+    "posture_damping_multiplier": 1,
+    "supported_tilt_gain": 2,
+    "supported_com_gain_rad_per_m": 5,
+    "supported_com_velocity_gain_s_rad_per_m": 5,
+    "supported_angular_velocity_gain_s": 2,
+    "grab_limits": {
+      "angular_frequency_rad_s": 16,
+      "target_speed_m_s": 1.5,
+      "target_acceleration_m_s2": 8,
+      "force_n": 180,
+      "torque_nm": 12,
+      "positive_power_w": 36
+    },
+    "reaching_iterations": 6,
+    "reaching_coordinate_increment_rad": 0.15,
+    "reaching_damping_m2": 0.01,
+    "corrective_steps_enabled": false,
+    "recovery_enabled": false,
+    "getup_policy_enabled": true
+  },
+  "previousHistoryNativePerSecond": 192.58711841277812,
+  "estimatedSettlingAndTypicalRecoveryWallSecondsPerCase": 42.26658598501525
+}

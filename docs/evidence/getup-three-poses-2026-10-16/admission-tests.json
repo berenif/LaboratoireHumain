@@ -1,0 +1,15 @@
+{
+  "passed": true,
+  "physicsIntegrations": 0,
+  "validAdmissionChecked": true,
+  "invalidChangesRejected": [
+    "maximumActualPhysicalWallSeconds",
+    "cases",
+    "maximumPreparationNativeStepsPerCase",
+    "maximumRecoveryNativeStepsPerCase",
+    "maximumTeacherNativeStepsPerCase",
+    "maximumAttemptsPerCase",
+    "chargeUnusedReservationsAsActual",
+    "sourceBase"
+  ]
+}

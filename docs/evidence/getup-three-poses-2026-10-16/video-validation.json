@@ -1,0 +1,38 @@
+{
+  "file": "LaboratoireHumain-GetUp-dos-ventre-cote-2026-10-16.mp4",
+  "sha256": "26dd3b49630d7f11e35c133999b01d8cf95e89b90fd4741beef2af18e08b2732",
+  "sizeBytes": 521122,
+  "ffprobe": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_name": "h264",
+        "width": 1600,
+        "height": 900,
+        "pix_fmt": "yuv420p",
+        "r_frame_rate": "20/1",
+        "nb_frames": "312"
+      }
+    ],
+    "format": {
+      "duration": "15.600000",
+      "size": "521122"
+    }
+  },
+  "fullDecodePassed": true,
+  "lastFrameVisuallyInspected": true,
+  "archivedStatesOnly": true,
+  "additionalPhysicsIntegrations": 0,
+  "frozenImagesAfterEachCaseEndExplicitlyLabeled": true,
+  "nativeCriterionCrossingsAndFinalStabilityLossExplicitlyLabeled": true,
+  "sideFixtureNonAdmissionExplicitlyLabeled": true,
+  "library": {
+    "library_file_id": "libfile_09f085ea95e48191b319d79a47294435",
+    "file_id": "file_0000000086bc81f6aa6b632aa170bdc3",
+    "current_version_number": 0,
+    "file_name": "LaboratoireHumain-GetUp-dos-ventre-cote-2026-10-16.mp4",
+    "status": "succeeded",
+    "local_metadata_applied": true
+  }
+}

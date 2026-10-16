@@ -1,0 +1,73 @@
+{
+  "passed": true,
+  "physicsIntegrations": 0,
+  "cases": [
+    {
+      "case": "back",
+      "passed": true,
+      "physicsIntegrations": 0,
+      "nativeSubsteps": 9840,
+      "fixtureStateExact": true,
+      "controllerAndReferencesExact": true,
+      "snapshotSegmentsExact": true,
+      "previousCheckpoint": {
+        "native": 9600,
+        "stableSubsteps": 582,
+        "stableFeet": [
+          {
+            "x": -0.9015561,
+            "y": 0.026643563,
+            "z": 0.06020473
+          },
+          {
+            "x": -0.71962637,
+            "y": 0.033147085,
+            "z": 0.3506094
+          }
+        ],
+        "phase": "slow-holding"
+      }
+    },
+    {
+      "case": "belly",
+      "passed": true,
+      "physicsIntegrations": 0,
+      "nativeSubsteps": 11680,
+      "fixtureStateExact": true,
+      "controllerAndReferencesExact": true,
+      "snapshotSegmentsExact": true,
+      "previousCheckpoint": {
+        "native": 11200,
+        "stableSubsteps": 359,
+        "stableFeet": [
+          {
+            "x": -0.5835342,
+            "y": 0.04203207,
+            "z": -0.7577232
+          },
+          {
+            "x": -0.5727263,
+            "y": 0.032884054,
+            "z": -0.60048336
+          }
+        ],
+        "phase": "slow-holding"
+      }
+    },
+    {
+      "case": "side",
+      "passed": true,
+      "physicsIntegrations": 0,
+      "nativeSubsteps": 1600,
+      "fixtureStateExact": true,
+      "controllerAndReferencesExact": true,
+      "snapshotSegmentsExact": true,
+      "previousCheckpoint": {
+        "native": 1600,
+        "stableSubsteps": 0,
+        "stableFeet": null,
+        "phase": "awaiting-physical-fall"
+      }
+    }
+  ]
+}
