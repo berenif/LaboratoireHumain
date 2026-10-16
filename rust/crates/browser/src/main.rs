@@ -61,6 +61,7 @@ mod browser {
         can_strike: bool,
         striker_phase: String,
         motion: String,
+        recovery_step: String,
         falls: u32,
         contacts: u32,
         floor_enabled: bool,
@@ -147,7 +148,7 @@ mod browser {
                     <div class="body-spec"><span><b>"25"</b>" segments"</span><span><b>"72.2"</b>" kg"</span><span><b>"1.84"</b>" m"</span></div>
                 </aside>
                 <section class="scene" aria-label="Physical experiment" data-tick=move||status.get().tick.to_string() data-generation=move||status.get().generation.to_string()>
-                    <div class="scene-top"><span class="live-dot"></span><span>{move||if status.get().halted {"Trial stopped".to_string()}else if !status.get().ready {"Starting experiment".to_string()}else if status.get().paused {"Trial paused".to_string()}else{"Trial running".to_string()}}</span><span class="backend">{move||status.get().backend}</span></div>
+                    <div class="scene-top"><span class="live-dot"></span><span id="recovery-step">{move||if status.get().halted {"Trial stopped".to_string()}else if !status.get().ready {"Starting experiment".to_string()}else if status.get().paused {"Trial paused".to_string()}else if !status.get().recovery_step.is_empty() {status.get().recovery_step}else{"Trial running".to_string()}}</span><span class="backend">{move||status.get().backend}</span></div>
                     <div id="viewport"></div>
                     <div class="scene-help"><span>"Drag body · pull"</span><span>"Drag empty space · orbit"</span><span>"Scroll · zoom"</span></div>
                     <div class="error-banner" hidden=move||status.get().error.is_empty()><p>{move||status.get().error}</p><button id="graphics-retry" on:click=move|_|emit(serde_json::json!({"type":"retry"}))>"Retry graphics"</button></div>
@@ -161,7 +162,7 @@ mod browser {
                     <div><span>"SIMULATION / WALL"</span><strong>{move||format!("{:.2}×",status.get().realtime_ratio)}</strong></div>
                 </section>
             </main>
-            <footer>"Experimental simulation. Automatic get-up is enabled; successful recovery is not qualified."</footer>
+            <footer>"Recovery study: stable support and arm release. Full get-up is not qualified."</footer>
         }
     }
     pub fn run() {

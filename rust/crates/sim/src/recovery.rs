@@ -294,14 +294,43 @@ fn supported_transfer_with(
     released: &[usize],
     rolling: bool,
 ) -> Result<bool, String> {
+    Ok(transfer_evidence(s, released, rolling)?.ready())
+}
+
+struct TransferEvidence {
+    released_load_n: f32,
+    remaining_load_n: f32,
+    weight_n: f32,
+    com_inside: bool,
+    capture_inside: bool,
+}
+impl TransferEvidence {
+    fn blocked_reason(&self) -> Option<&'static str> {
+        if self.released_load_n > 0.25 * self.weight_n {
+            Some("Arm still carries too much load")
+        } else if self.remaining_load_n < 0.8 * self.weight_n {
+            Some("Alternate support carries less than 80% of body weight")
+        } else if !self.com_inside {
+            Some("Center of mass outside retained support margin")
+        } else if !self.capture_inside {
+            Some("Capture point outside retained support margin")
+        } else {
+            None
+        }
+    }
+    fn ready(&self) -> bool { self.blocked_reason().is_none() }
+}
+
+fn transfer_evidence(
+    s: &Simulation,
+    released: &[usize],
+    rolling: bool,
+) -> Result<TransferEvidence, String> {
     let weight = s.total_mass() * 9.81;
     let released_load: f32 = released
         .iter()
         .map(|&i| load(s, &s.model.segments[i].id))
         .sum();
-    if released_load > 0.25 * weight {
-        return Ok(false);
-    }
     let remaining: Vec<usize> = s
         .model
         .segments
@@ -321,9 +350,6 @@ fn supported_transfer_with(
     let remaining_load = contacts.iter().map(|(_, impulse)| *impulse).sum::<f32>() / s.profile.dt_s;
     if !remaining_load.is_finite() {
         return Err("Non-finite remaining recovery support".into());
-    }
-    if remaining_load < 0.8 * weight {
-        return Ok(false);
     }
     let points = contacts
         .iter()
@@ -348,10 +374,13 @@ fn supported_transfer_with(
     let capture = s.heading.inverse()
         * (com + velocity * ((com.y - s.support_height()).max(0.2) / 9.81).sqrt());
     let local_com = s.heading.inverse() * com;
-    Ok(
-        crate::stepping::inside_support(points.clone(), [local_com.x, local_com.z], 0.003)
-            && crate::stepping::inside_support(points, [capture.x, capture.z], 0.003),
-    )
+    Ok(TransferEvidence {
+        released_load_n: released_load,
+        remaining_load_n: remaining_load,
+        weight_n: weight,
+        com_inside: crate::stepping::inside_support(points.clone(), [local_com.x, local_com.z], 0.003),
+        capture_inside: crate::stepping::inside_support(points, [capture.x, capture.z], 0.003),
+    })
 }
 
 fn planted_leg_targets(
@@ -776,7 +805,9 @@ impl Controller {
         }
         let feet = [foot(s, "left"), foot(s, "right")];
         let height = body(s, "pelvis").translation().y - s.support_height();
-        let phase = if feet.iter().all(|x| *x) && up(s, "torso") > 0.65 && height > 0.5 {
+        let phase = if s.profile.recovery_first_phase_only {
+            Phase::Roll
+        } else if feet.iter().all(|x| *x) && up(s, "torso") > 0.65 && height > 0.5 {
             Phase::Stand
         } else if up(s, "torso") > 0.65 && height > 0.30 {
             Phase::PlantLead
@@ -1026,6 +1057,11 @@ impl Controller {
         let dt = s.profile.dt_s;
         self.status.phase_time_s += dt;
         self.status.elapsed_s += dt;
+        if s.profile.recovery_first_phase_only && self.first_phase_complete() {
+            self.hold_first_phase(s)?;
+            self.velocities.fill([0.0; 3]);
+            return Ok(self.targets.clone());
+        }
         if self.handed_off() {
             self.handoff_substeps += 1;
             self.status.phase_time_s = self.handoff_substeps as f32 * dt;
@@ -1141,7 +1177,7 @@ impl Controller {
         } else {
             0.0
         };
-        if f64::from(self.status.qualified_time_s) + 1e-6
+        if !s.profile.recovery_first_phase_only && f64::from(self.status.qualified_time_s) + 1e-6
             >= crate::recovery_contract::contract()
                 .recovery_acceptance
                 .phase_minimum_s
@@ -1344,6 +1380,11 @@ impl Controller {
         }
         if self.status.phase == Phase::Roll {
             self.update_roll_arm(s, &mut desired)?;
+            if s.profile.recovery_first_phase_only && self.first_phase_complete() {
+                self.hold_first_phase(s)?;
+                self.velocities.fill([0.0; 3]);
+                return Ok(self.targets.clone());
+            }
         }
         // Entering Stand does not itself transfer a planted hand's load.
         // Keep its actual surface point until the same bilateral-sole gate
@@ -1433,6 +1474,8 @@ impl Simulation {
             self.motion_observation = crate::motion::Observation::default();
             return;
         }
+        // A first-phase inspection is never a standing recovery qualification.
+        if self.profile.recovery_first_phase_only { return; }
         let balance_ready =
             standing_balance(self).is_ok_and(|balance| balance.is_some_and(|(_, inside)| inside));
         let settled = upright_pose

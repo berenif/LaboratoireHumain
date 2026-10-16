@@ -7,6 +7,7 @@ pub(super) enum RollArmStage {
     BackSupport,
     Fold,
     Roll,
+    Complete,
 }
 
 #[derive(Clone, Serialize)]
@@ -20,6 +21,127 @@ pub(super) struct RollArm {
     root_legs: [bool; 2],
     released_legs: [bool; 2],
     contact_error_m: Option<f32>,
+    completion_substeps: u64,
+    hold_substeps: u64,
+    first_phase: Option<lh_contracts::FirstPhaseObservation>,
+}
+
+fn first_phase_metrics(
+    s: &Simulation,
+    arm: &RollArm,
+    release_ready: bool,
+) -> Result<lh_contracts::FirstPhaseObservation, String> {
+    let measured = measured_coordinates(s)?;
+    let fold = fold_targets(arm.side);
+    let fold_error_rad = arm
+        .chain
+        .iter()
+        .zip(fold)
+        .flat_map(|(&i, q)| measured[i].into_iter().zip(q).map(|(a, b)| (a - b).abs()))
+        .fold(0.0_f32, f32::max);
+    let arm_clearance_m = arm
+        .chain
+        .iter()
+        .map(|&i| {
+            let aabb = s.world.colliders[s.colliders[i]].compute_aabb();
+            aabb.mins.y - s.surface_height(aabb.center().x, aabb.center().z, aabb.maxs.y)
+        })
+        .fold(f32::INFINITY, f32::min);
+    let arm_load_n = arm
+        .chain
+        .iter()
+        .map(|&i| load(s, &s.model.segments[i].id))
+        .sum();
+    // Stabilize the trunk and released arm. Other limbs may keep balancing;
+    // the whole-body CoM/capture proof still includes their measured motion.
+    let monitored: Vec<_> = [index(s, "pelvis"), index(s, "torso")]
+        .into_iter()
+        .chain(arm.chain)
+        .map(|i| &s.world.bodies[s.bodies[i]])
+        .collect();
+    let linear = monitored
+        .iter()
+        .map(|b| b.linvel().length())
+        .fold(0.0_f32, f32::max);
+    let angular = monitored
+        .iter()
+        .map(|b| b.angvel().length())
+        .fold(0.0_f32, f32::max);
+    let velocity = s
+        .bodies
+        .iter()
+        .map(|h| {
+            let b = &s.world.bodies[*h];
+            b.linvel() * b.mass()
+        })
+        .sum::<Vector>()
+        / s.total_mass();
+    let acceptance = &crate::recovery_contract::contract().recovery_acceptance;
+    let support = transfer_evidence(s, &arm.chain, true)?;
+    let eligible = release_ready
+        && arm_load_n < 3.0
+        && arm_clearance_m > 0.015
+        && fold_error_rad < 0.15
+        && velocity.length() <= acceptance.stable_linear_mps
+        && linear <= acceptance.stable_linear_mps
+        && angular <= acceptance.stable_angular_radps;
+    let blocked_reason = support.blocked_reason().or_else(|| {
+        if arm.stage == RollArmStage::BackSupport {
+            Some("Confirming alternate support for 0.20 s")
+        } else if arm_load_n >= 3.0 {
+            Some("Released arm still loaded")
+        } else if arm_clearance_m <= 0.015 {
+            Some("Arm clearance below 15 mm")
+        } else if fold_error_rad >= 0.15 {
+            Some("Arm has not reached its folded pose")
+        } else if velocity.length() > acceptance.stable_linear_mps {
+            Some("Center of mass still moving")
+        } else if linear > acceptance.stable_linear_mps || angular > acceptance.stable_angular_radps
+        {
+            Some("Trunk or released arm still moving")
+        } else if arm.stage != RollArmStage::Complete {
+            Some("Confirming stable clearance for 0.55 s")
+        } else {
+            None
+        }
+    });
+    Ok(lh_contracts::FirstPhaseObservation {
+        complete: arm.stage == RollArmStage::Complete,
+        release_ready,
+        blocked_reason: blocked_reason.map(str::to_string),
+        retained_load_n: support.remaining_load_n,
+        required_retained_load_n: 0.8 * support.weight_n,
+        center_of_mass_inside_support: support.com_inside,
+        capture_inside_support: support.capture_inside,
+        arm_load_n,
+        arm_clearance_m,
+        fold_error_rad,
+        center_of_mass_speed_mps: velocity.length(),
+        max_body_and_arm_linear_mps: linear,
+        max_body_and_arm_angular_radps: angular,
+        eligible,
+        qualified_s: arm.completion_substeps as f32 * s.profile.dt_s,
+        hold_valid_s: arm.hold_substeps as f32 * s.profile.dt_s,
+    })
+}
+
+impl RollArm {
+    fn qualify_completion(&mut self, eligible: bool) {
+        self.completion_substeps = if eligible {
+            self.completion_substeps + 1
+        } else {
+            0
+        };
+        if self.completion_substeps
+            >= crate::recovery_contract::substeps(
+                crate::recovery_contract::contract()
+                    .recovery_acceptance
+                    .stable_persistence_s,
+            )
+        {
+            self.stage = RollArmStage::Complete;
+        }
+    }
 }
 
 fn back_orientation(torso: Rotation) -> Rotation {
@@ -160,6 +282,9 @@ impl Controller {
                 root_legs: [false; 2],
                 released_legs: [false; 2],
                 contact_error_m: None,
+                completion_substeps: 0,
+                hold_substeps: 0,
+                first_phase: None,
             });
         }
         let arm = self.roll_arm.as_mut().ok_or("Missing roll arm")?;
@@ -192,6 +317,7 @@ impl Controller {
                     arm.held = arm.chain.map(|i| self.targets[i]);
                     arm.stage = RollArmStage::BackSupport;
                     arm.qualified_substeps = 0;
+                    arm.completion_substeps = 0;
                 } else {
                     let measured = measured_coordinates(s)?;
                     let reached = arm.chain.iter().zip(fold).all(|(&i, target)| {
@@ -208,11 +334,25 @@ impl Controller {
                             && load(s, &s.model.segments[i].id) < 3.0
                     });
                     if reached && clear {
-                        arm.stage = RollArmStage::Roll;
+                        if s.profile.recovery_first_phase_only {
+                            let metrics = first_phase_metrics(s, arm, release)?;
+                            arm.qualify_completion(metrics.eligible);
+                        } else {
+                            arm.stage = RollArmStage::Roll;
+                        }
+                    } else {
+                        arm.completion_substeps = 0;
                     }
                 }
             }
             RollArmStage::Roll => {}
+            RollArmStage::Complete => {}
+        }
+        if s.profile.recovery_first_phase_only {
+            arm.first_phase = Some(first_phase_metrics(s, arm, release)?);
+            if arm.stage == RollArmStage::Complete {
+                return Ok(());
+            }
         }
         let arm_targets = if arm.stage == RollArmStage::BackSupport {
             arm.held
@@ -320,6 +460,39 @@ impl Controller {
     pub(super) fn roll_root_goal(&self) -> Option<Rotation> {
         self.roll_arm.as_ref().and_then(|arm| arm.root_goal)
     }
+    pub(super) fn first_phase_complete(&self) -> bool {
+        self.roll_arm
+            .as_ref()
+            .is_some_and(|a| a.stage == RollArmStage::Complete)
+    }
+    pub(super) fn hold_first_phase(&mut self, s: &Simulation) -> Result<(), String> {
+        let arm = self.roll_arm.as_mut().ok_or("Missing first-phase hold")?;
+        // Stop advancing references, not physics. Existing native motors hold
+        // their last references; root authority still needs real leg contact.
+        for side in 0..2 {
+            arm.root_legs[side] =
+                arm.root_goal.is_some() && !planted_contacts(s, &leg_chain(s, side))?.is_empty();
+        }
+        let release = supported_transfer_with(s, &arm.chain, true)?;
+        let mut metrics = first_phase_metrics(s, arm, release)?;
+        arm.hold_substeps = if metrics.eligible {
+            arm.hold_substeps + 1
+        } else {
+            0
+        };
+        metrics.hold_valid_s = arm.hold_substeps as f32 * s.profile.dt_s;
+        arm.first_phase = Some(metrics);
+        self.status.unsupported_s = if has_persistent_support(s) {
+            0.0
+        } else {
+            self.status.unsupported_s + s.profile.dt_s
+        };
+        self.status.stalled_s = 0.0;
+        Ok(())
+    }
+    pub fn first_phase_observation(&self) -> Option<lh_contracts::FirstPhaseObservation> {
+        self.roll_arm.as_ref().and_then(|a| a.first_phase.clone())
+    }
     pub(super) fn roll_root_legs(&self) -> [bool; 2] {
         self.roll_arm
             .as_ref()
@@ -340,6 +513,89 @@ impl Controller {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    fn first_phase_controller() -> (Simulation, Controller) {
+        let mut s = landed();
+        s.profile.recovery_first_phase_only = true;
+        let i = index(&s, "rightUpperArm");
+        s.integrated_support_substeps[i] = 240;
+        s.integrated_support_loads_n[i] = 250.0;
+        let mut c = Controller::new(&s).unwrap();
+        c.update_roll_arm(&s, &mut s.rest_targets.clone()).unwrap();
+        (s, c)
+    }
+
+    #[test]
+    fn first_phase_support_reason_preserves_release_gates() {
+        let mut proof = TransferEvidence {
+            released_load_n: 25.0,
+            remaining_load_n: 80.0,
+            weight_n: 100.0,
+            com_inside: true,
+            capture_inside: true,
+        };
+        assert!(proof.ready());
+        proof.released_load_n = 25.01;
+        assert_eq!(
+            proof.blocked_reason(),
+            Some("Arm still carries too much load")
+        );
+        proof.released_load_n = 0.0;
+        proof.remaining_load_n = 79.99;
+        assert!(!proof.ready());
+        proof.remaining_load_n = 80.0;
+        proof.com_inside = false;
+        assert!(!proof.ready());
+        proof.com_inside = true;
+        proof.capture_inside = false;
+        assert!(!proof.ready());
+    }
+
+    #[test]
+    fn first_phase_completion_requires_consecutive_evidence() {
+        let (_, mut c) = first_phase_controller();
+        let arm = c.roll_arm.as_mut().unwrap();
+        arm.stage = RollArmStage::Fold;
+        let required = crate::recovery_contract::substeps(
+            crate::recovery_contract::contract()
+                .recovery_acceptance
+                .stable_persistence_s,
+        );
+        for _ in 0..required - 1 {
+            arm.qualify_completion(true);
+        }
+        assert_eq!(arm.stage, RollArmStage::Fold);
+        arm.qualify_completion(false);
+        assert_eq!(arm.completion_substeps, 0);
+        for _ in 0..required {
+            arm.qualify_completion(true);
+        }
+        assert_eq!(arm.stage, RollArmStage::Complete);
+    }
+
+    #[test]
+    fn first_phase_hold_preserves_targets_and_physics_without_counting_recovery() {
+        let (s, mut c) = first_phase_controller();
+        // Exercise the terminal branch, not a fabricated physical success.
+        // No solved contacts exist here: the hold must report invalid evidence.
+        c.roll_arm.as_mut().unwrap().stage = RollArmStage::Complete;
+        c.status.stalled_s = 999.0;
+        c.velocities.fill([1.0; 3]);
+        let targets = c.targets.clone();
+        let before = serde_json::to_value(s.snapshot()).unwrap();
+        for _ in 0..100 {
+            assert_eq!(c.update(&s).unwrap(), targets);
+            assert_eq!(c.status.phase, Phase::Roll);
+            assert!(c.velocities.iter().flatten().all(|v| *v == 0.0));
+        }
+        let observation = c.first_phase_observation().unwrap();
+        assert!(observation.complete);
+        assert!(!observation.eligible);
+        assert_eq!(observation.hold_valid_s, 0.0);
+        assert!(!c.handed_off());
+        assert_eq!(s.counters.recoveries, 0);
+        assert_eq!(before, serde_json::to_value(s.snapshot()).unwrap());
+    }
 
     fn landed() -> Simulation {
         // Archived browser strike at 4.6667 s. Velocities are zeroed only for
@@ -496,14 +752,12 @@ mod tests {
             let angles = fold_targets(side);
             for (k, &i) in chain.iter().enumerate() {
                 for axis in &s.model.segments[i].joint_profile.as_ref().unwrap().axes {
-                    assert!(
-                        (axis.min_radians..=axis.max_radians).contains(
-                            &angles[k][['x', 'y', 'z']
-                                .iter()
-                                .position(|c| *c == axis.coordinate)
-                                .unwrap()]
-                        )
-                    );
+                    assert!((axis.min_radians..=axis.max_radians).contains(
+                        &angles[k][['x', 'y', 'z']
+                            .iter()
+                            .position(|c| *c == axis.coordinate)
+                            .unwrap()]
+                    ));
                 }
                 let pose =
                     crate::reaching::endpoint_pose(&s, &chain[..=k], root, &angles[..=k]).unwrap();

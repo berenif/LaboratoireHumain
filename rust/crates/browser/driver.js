@@ -46,6 +46,8 @@ export async function start_bridge() {
   }
   function status() {
     const snapshot = state.last?.reply.snapshot;
+    const firstPhase = snapshot?.diagnostics.recovery?.first_phase;
+    const folding = snapshot?.diagnostics.recovery?.arm_transfer?.endsWith(':Fold');
     const graphics = state.renderer ? JSON.parse(state.renderer.diagnostics()) : {};
     return {
       ready: Boolean(state.last && state.renderer && !state.changing && !state.graphicsFault && !state.failed),
@@ -61,6 +63,7 @@ export async function start_bridge() {
       strikes: snapshot?.counters.strikes || 0, strikerPhase: snapshot?.striker?.phase || '',
       canStrike: Boolean(snapshot?.striker?.available && state.renderer && !state.changing && !state.graphicsFault && !state.desiredPaused && state.visible && !state.failed && !state.workerFault && !state.outstanding?.strike && !state.pending.some(entry => entry.action === 'Strike')),
       motion: snapshot?.motion || 'Starting', falls: snapshot?.counters.falls || 0,
+      recoveryStep: !firstPhase ? '' : `${firstPhase.complete ? '3 · Hold for inspection' : folding ? '2 · Fold and clear the unloaded arm' : '1 · Stabilize support and unload the arm'} · ${firstPhase.blocked_reason || 'Supported arm clearance confirmed'}`,
       floorEnabled: state.floorEnabled, desiredFloorEnabled: state.desiredFloorEnabled, error: state.error || state.graphicsError, workerMs: state.workerMs,
     };
   }

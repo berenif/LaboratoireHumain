@@ -128,7 +128,10 @@ pub struct Profile {
     pub corrective_steps_enabled: bool,
     #[serde(default)]
     pub recovery_enabled: bool,
+    #[serde(default, skip_serializing_if = "is_false")]
+    pub recovery_first_phase_only: bool,
 }
+fn is_false(value: &bool) -> bool { !*value }
 impl Default for Profile {
     fn default() -> Self {
         Self {
@@ -160,6 +163,7 @@ impl Default for Profile {
             reaching_damping_m2: 0.01,
             corrective_steps_enabled: false,
             recovery_enabled: false,
+            recovery_first_phase_only: false,
         }
     }
 }
@@ -1208,6 +1212,7 @@ impl Simulation {
                     phase: format!("{:?}", status.phase),
                     arm_transfer: self.recovery.as_ref().and_then(|r| r.arm_transfer_stage()),
                     roll_coordination: self.recovery.as_ref().and_then(|r| r.roll_coordination()),
+                    first_phase: self.recovery.as_ref().and_then(|r| r.first_phase_observation()),
                     elapsed_s: status.elapsed_s,
                     phase_time_s: status.phase_time_s,
                     qualified_time_s: status.qualified_time_s,

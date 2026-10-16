@@ -219,6 +219,8 @@ pub struct RecoveryObservation {
     pub arm_transfer: Option<String>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub roll_coordination: Option<RollCoordinationObservation>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub first_phase: Option<FirstPhaseObservation>,
     pub elapsed_s: f32,
     pub phase_time_s: f32,
     pub qualified_time_s: f32,
@@ -228,6 +230,25 @@ pub struct RecoveryObservation {
     pub retries: u32,
     pub last_retry: Option<String>,
     pub progress: f32,
+}
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct FirstPhaseObservation {
+    pub complete: bool,
+    pub release_ready: bool,
+    pub blocked_reason: Option<String>,
+    pub retained_load_n: f32,
+    pub required_retained_load_n: f32,
+    pub center_of_mass_inside_support: bool,
+    pub capture_inside_support: bool,
+    pub arm_load_n: f32,
+    pub arm_clearance_m: f32,
+    pub fold_error_rad: f32,
+    pub center_of_mass_speed_mps: f32,
+    pub max_body_and_arm_linear_mps: f32,
+    pub max_body_and_arm_angular_radps: f32,
+    pub eligible: bool,
+    pub qualified_s: f32,
+    pub hold_valid_s: f32,
 }
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct RollCoordinationObservation {

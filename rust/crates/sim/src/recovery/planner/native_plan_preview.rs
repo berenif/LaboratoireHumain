@@ -341,6 +341,7 @@ fn profile_scope(profile: &crate::Profile) -> serde_json::Value {
         reaching_damping_m2,
         corrective_steps_enabled,
         recovery_enabled,
+        recovery_first_phase_only,
     } = profile;
     let crate::grab::Limits {
         angular_frequency_rad_s,
@@ -366,7 +367,7 @@ fn profile_scope(profile: &crate::Profile) -> serde_json::Value {
             force_n.to_bits(),torque_nm.to_bits(),positive_power_w.to_bits()],
         "reachingIterations":reaching_iterations,"reachingCoordinateIncrementBits":reaching_coordinate_increment_rad.to_bits(),
         "reachingDampingBits":reaching_damping_m2.to_bits(),"correctiveStepsEnabled":corrective_steps_enabled,
-        "recoveryEnabled":recovery_enabled})
+        "recoveryEnabled":recovery_enabled,"recoveryFirstPhaseOnly":recovery_first_phase_only})
 }
 
 /// Metadata projection only; no canonical construction, mass integration or
