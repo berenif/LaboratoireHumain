@@ -64,6 +64,8 @@ mod browser {
         recovery_step: String,
         falls: u32,
         contacts: u32,
+        max_self_penetration_m: f64,
+        max_floor_penetration_m: f64,
         floor_enabled: bool,
         desired_floor_enabled: bool,
         error: String,
@@ -156,7 +158,7 @@ mod browser {
                 <section class="metrics" aria-label="Live trial measurements">
                     <div><span>"BODY STATE"</span><strong id="motion">{move||status.get().motion}</strong><small>{move||format!("{} falls",status.get().falls)}</small></div>
                     <div><span>"PHYSICS TIME"</span><strong>{move||format!("{:.2}",status.get().time)}<small>" s"</small></strong></div>
-                    <div><span>"MEASURED SUPPORT"</span><strong>{move||status.get().contacts}<small>" segments"</small></strong></div>
+                    <div><span>"MEASURED SUPPORT"</span><strong>{move||status.get().contacts}<small>" segments"</small></strong><small id="penetration-diagnostic">{move||format!("Max overlap: body {:.2} mm · ground {:.2} mm",status.get().max_self_penetration_m*1000.0,status.get().max_floor_penetration_m*1000.0)}</small></div>
                     <div><span>"COMPLETED STEPS"</span><strong>{move||status.get().steps}</strong></div>
                     <div><span>"PRESENTATION"</span><strong>{move||format!("{:.0}",status.get().fps)}<small>" fps"</small></strong></div>
                     <div><span>"SIMULATION / WALL"</span><strong>{move||format!("{:.2}×",status.get().realtime_ratio)}</strong></div>

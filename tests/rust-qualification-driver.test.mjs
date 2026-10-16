@@ -5,7 +5,7 @@ import vm from 'node:vm';
 
 // Runs the actual bridge against a deterministic browser/worker scheduler.
 // It checks transport ordering; physical acceptance remains in real WASM.
-async function driverHarness(qualified = true, getup = false) {
+async function driverHarness(qualified = true, getup = false, diagnostics = {}) {
   const messages = [], workers = [], timers = new Map();
   let clock = 0, timerId = 0, raf;
   const listenable = () => ({ addEventListener() {}, removeEventListener() {} });
@@ -47,7 +47,7 @@ async function driverHarness(qualified = true, getup = false) {
       transferBuffersAllocated: 3, workerAtMs: clock, workerTimeOriginMs: 1000, workerIdentity: 'same-physical-worker',
       reply: { mode: 'protocol', failure: null, paused: false, visible: true, completed_ticks: request.type === 'advance' ? 1 : 0,
         acknowledgements, snapshot: { stamp, simulation_time_s: tick / 40, segments, contacts: [],
-          motion: 'Upright', counters: { strikes: 0, falls: 0, recoveries: 1, steps: 0 }, diagnostics: {},
+          motion: 'Upright', counters: { strikes: 0, falls: 0, recoveries: 1, steps: 0 }, diagnostics,
           striker: { available: true, phase: 'idle', impact_id: 0, last_impact_impulse_ns: 0 } } },
       ...(qualified ? { recoveryProgress: { profile, generation: 1, bodyHandles: Array.from({ length: 25 }, (_, i) => [i, 0]),
         jointHandles: [null, ...Array.from({ length: 24 }, (_, i) => [i, 0])], ownershipUnchanged: true, releaseAccepted: false,
@@ -61,6 +61,17 @@ async function driverHarness(qualified = true, getup = false) {
     request.commands.map(command => ({ stamp: command.stamp, applied_tick: tick, rejected: null })));
   return { bridge, worker, workers, messages, timers, snapshot, frame, latest, acknowledge, handIndex, close: () => bridge.dispose() };
 }
+
+test('overlap diagnostics remain visible without clamping or halting the bridge', async () => {
+  const h = await driverHarness(false, false, { max_self_penetration_m: 0.047, max_floor_penetration_m: 0.12 });
+  try {
+    assert.equal(h.bridge.diagnostics.maxSelfPenetrationM, 0.047);
+    assert.equal(h.bridge.diagnostics.maxFloorPenetrationM, 0.12);
+    assert.equal(h.bridge.diagnostics.halted, false);
+    assert.equal(h.bridge.diagnostics.tick, 0);
+    assert.equal(h.messages.filter(value => value.type === 'advance').length, 0);
+  } finally { h.close(); }
+});
 
 test('qualification press waits for an outstanding advance and prepares the current physical anchor before the next tick', async () => {
   const h = await driverHarness();

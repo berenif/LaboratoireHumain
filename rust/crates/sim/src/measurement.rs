@@ -6,8 +6,6 @@ use rapier3d::prelude::*;
 use serde::{Deserialize, Serialize};
 
 pub const MAX_ANCHOR_M: f32 = 0.08;
-pub const MAX_FLOOR_M: f32 = 0.08;
-pub const MAX_SELF_M: f32 = 0.005;
 pub const MAX_LIMIT_RAD: f32 = 0.06;
 
 /// Contacts selected by the latest CCD interval, excluding unselected cached points.
@@ -164,9 +162,14 @@ fn depth(a: &Collider, b: &Collider, aabb_a: &Aabb, aabb_b: &Aabb) -> Result<f32
     if !aabb_a.intersects(aabb_b) {
         return Ok(0.0);
     }
-    rapier3d::parry::query::contact(a.position(), a.shape(), b.position(), b.shape(), 0.0)
-        .map(|c| c.map_or(0.0, |c| (-c.dist).max(0.0)))
-        .map_err(|e| format!("Unsupported shape measurement: {e:?}"))
+    let contact = rapier3d::parry::query::contact(a.position(), a.shape(), b.position(), b.shape(), 0.0)
+        .map_err(|e| format!("Unsupported shape measurement: {e:?}"))?;
+    contact.map_or(Ok(0.0), |c| {
+        if !c.dist.is_finite() {
+            return Err("Non-finite contact distance".into());
+        }
+        Ok((-c.dist).max(0.0))
+    })
 }
 pub fn inspect(s: &mut Simulation, substep: u32) -> Result<(), Failure> {
     let mut diagnostics = s.diagnostics.clone();
@@ -226,14 +229,6 @@ pub(crate) fn inspect_world(
             let d = depth(surface, c, surface_bounds, &body_bounds)
                 .map_err(|e| fail("measurement", e, 0.0, 0.0))?;
             diagnostics.max_floor_penetration_m = diagnostics.max_floor_penetration_m.max(d);
-            if d > MAX_FLOOR_M {
-                return Err(fail(
-                    "floor",
-                    s.model.segments[i].id.clone(),
-                    d,
-                    MAX_FLOOR_M,
-                ));
-            }
         }
         for (j, bound_j) in bounds
             .iter_mut()
@@ -258,14 +253,8 @@ pub(crate) fn inspect_world(
             let d = depth(c, other, &body_bounds, &other_bounds)
                 .map_err(|e| fail("measurement", e, 0.0, 0.0))?;
             diagnostics.max_self_penetration_m = diagnostics.max_self_penetration_m.max(d);
-            if d > MAX_SELF_M {
-                return Err(fail(
-                    "self-contact",
-                    format!("{}/{}", s.model.segments[i].id, s.model.segments[j].id),
-                    d,
-                    MAX_SELF_M,
-                ));
-            }
+            // Depth remains measured. It is not an integrity rejection or a
+            // collision-response setting; native contacts remain enabled.
         }
         }
         if let Some(p) = &s.model.segments[i].joint_profile {
@@ -506,32 +495,31 @@ mod tests {
         assert!(failure.measured < 0.97);
     }
     #[test]
-    fn deliberate_floor_limit_ownership_and_nonfinite_violations_fail() {
-        for kind in ["floor", "joint-limit", "ownership", "finite"] {
+    fn deliberate_anchor_limit_ownership_and_nonfinite_violations_fail_without_stepping() {
+        for kind in ["joint-anchor", "joint-limit", "ownership", "finite"] {
             let mut s = Simulation::new(0.0, Profile::default(), true).expect("fixture");
             match kind {
-                "floor" => {
-                    s.world.bodies[s.bodies[0]].set_translation(Vector::new(0.0, -0.2, 0.0), true)
+                "joint-anchor" => {
+                    let head = s.model.segments.iter().position(|p| p.id == "head").unwrap();
+                    let pose = s.world.bodies[s.bodies[head]].translation();
+                    s.world.bodies[s.bodies[head]].set_translation(pose + Vector::X * 0.12, true);
                 }
                 "joint-limit" => {
                     let i = s
                         .model
                         .segments
                         .iter()
-                        .position(|s| s.id == "leftShin")
-                        .expect("shin");
-                    let j = s
-                        .world
-                        .impulse_joints
-                        .get(s.joints[i].expect("joint"))
-                        .expect("joint alive")
-                        .body1();
+                        .position(|s| s.id == "head")
+                        .expect("head");
+                    let j = s.bodies[0];
                     let p = s.model.segments[i].joint_profile.as_ref().expect("profile");
                     let anchor = s.world.bodies[j]
                         .position()
                         .transform_point(crate::vector(p.parent_frame.anchor));
-                    let r =
-                        *s.world.bodies[s.bodies[i]].rotation() * Rotation::from_rotation_x(-0.8);
+                    let r = *s.world.bodies[j].rotation()
+                        * crate::rotation(p.parent_frame.rotation)
+                        * Rotation::from_rotation_x(0.2)
+                        * crate::rotation(p.child_frame.rotation).inverse();
                     s.world.bodies[s.bodies[i]].set_rotation(r, true);
                     s.world.bodies[s.bodies[i]]
                         .set_translation(anchor - r * crate::vector(p.child_frame.anchor), true);
@@ -547,10 +535,11 @@ mod tests {
                 .propagate_modified_body_positions_to_colliders(&mut s.world.colliders);
             let f = inspect(&mut s, 0).expect_err("known violation must fail");
             assert_eq!(f.check, kind);
+            assert_eq!(s.substeps_completed, 0);
         }
     }
     #[test]
-    fn deliberate_nonexcluded_overlap_fails() {
+    fn penetration_is_measured_without_rejecting_or_mutating_physics() {
         let mut s = Simulation::new(0.0, Profile::default(), false).expect("fixture");
         let head = s
             .model
@@ -558,14 +547,30 @@ mod tests {
             .iter()
             .position(|s| s.id == "head")
             .expect("head");
-        let pelvis = s.world.bodies[s.bodies[0]].translation();
-        s.world.bodies[s.bodies[head]].set_translation(pelvis, true);
-        s.world
-            .bodies
-            .propagate_modified_body_positions_to_colliders(&mut s.world.colliders);
-        assert_eq!(
-            inspect(&mut s, 0).expect_err("overlap").check,
-            "self-contact"
-        );
+        // Synthetic geometry exercises deep overlap while keeping every joint
+        // frame valid. This fixture never integrates or changes the model.
+        s.world.colliders[s.colliders[head]].set_shape(SharedShape::ball(2.0));
+        let before = serde_json::to_value(&s.world).unwrap();
+        inspect(&mut s, 0).expect("finite overlap is diagnostic only");
+        assert!(s.diagnostics.max_self_penetration_m > 0.08);
+        assert_eq!(serde_json::to_value(&s.world).unwrap(), before);
+        let id = s.world.multibody_joints.rigid_body_link(s.bodies[0]).unwrap();
+        assert!(s.world.multibody_joints.get_multibody(id.multibody).unwrap().self_contacts_enabled());
+        assert_eq!(s.substeps_completed, 0);
+        assert_eq!(s.tick, 0);
+    }
+
+    #[test]
+    fn floor_penetration_is_measured_without_a_depth_cutoff_or_step() {
+        let mut s = Simulation::new(0.0, Profile::default(), true).unwrap();
+        // A synthetic thick ground block isolates the depth policy without
+        // moving joints, changing the production floor, or integrating.
+        s.world.colliders[s.floor].set_shape(SharedShape::cuboid(20.0, 2.0, 20.0));
+        let before = serde_json::to_value(&s.world).unwrap();
+        inspect(&mut s, 0).expect("finite ground overlap is diagnostic only");
+        assert!(s.diagnostics.max_floor_penetration_m > 0.08);
+        assert_eq!(serde_json::to_value(&s.world).unwrap(), before);
+        assert_eq!(s.substeps_completed, 0);
+        assert_eq!(s.tick, 0);
     }
 }

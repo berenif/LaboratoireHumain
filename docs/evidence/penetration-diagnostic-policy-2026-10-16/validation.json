@@ -1,0 +1,85 @@
+{
+  "schema": 1,
+  "scope": "finite penetration diagnostic-only policy; non-stepping validation",
+  "recordedUtc": "2026-10-16T18:58:14.552636+00:00",
+  "sourceBase": "e7fc600d2159f5536974c2f48b8fe8a1d3f18b9a",
+  "ownerInstruction": "Remove penetration-depth alone as a rejection; retain measurement, visible diagnostics and other integrity checks.",
+  "acceptance": {
+    "contractVersion": 2,
+    "selfDepthRejectionM": null,
+    "floorDepthRejectionM": null,
+    "replacementDepthCutoff": null,
+    "collisionsAndDynamicsUnchanged": true,
+    "recoveryEnabledByDefault": false,
+    "qualification": false
+  },
+  "physicsIntegrations": 0,
+  "newReservation": false,
+  "automaticRenewal": false,
+  "priorClosedLedger": "docs/evidence/getup-source-baseline-2026-10-16.json",
+  "priorClosedLedgerSha256": "a76975d7a81b4910e8e13d907617dab0897671eff8a90bdbba90314a53ceb968",
+  "priorClosedLedgerUnchanged": true,
+  "nativeChargedAfter": 299998,
+  "nativeRemaining": 2,
+  "wallChargedAfterSeconds": 5926.328294294003,
+  "wallRemainingSeconds": 1273.6717057059968,
+  "tests": {
+    "rustMeasurement": 5,
+    "rustContract": 1,
+    "rustGetUp": 8,
+    "javascriptTooling": 57,
+    "allTargetedPassed": true,
+    "globalRustSuiteRun": false,
+    "browserWorkerBuildPassed": true,
+    "javascriptSyntaxPassed": true
+  },
+  "browserUi": {
+    "passed": true,
+    "physicsIntegrations": 0,
+    "initialTick": 0,
+    "finalTick": 0,
+    "syntheticUiOnly": true,
+    "rendered": "Max overlap: body 47.00 mm \u00b7 ground 120.00 mm",
+    "browserErrors": []
+  },
+  "protectedUnrelatedFilesSha256": {
+    "rust/crates/sim/src/recovery/planner/material_continuity.rs": "eb862d585f252251101b2707d174f5a3c2336cb7eca706403fe67f8e02c0389c",
+    "rust/crates/sim/src/recovery/planner/material_contact_attribution.rs": "8ff2ea9d5f28b4f22a734db75ebec973147a1febdf8a1cac9e0a464e52350473"
+  },
+  "sourceFilesSha256": {
+    "rust/crates/sim/src/measurement.rs": "581c4db05da7f7fee65f3ba3d2c9b1597d0e16ff3831957f76f69baedc266019",
+    "rust/crates/sim/src/recovery_contract.rs": "f072409aec435a2c0d6df3a0bb6dba2c8bdb54cca912c1e7a39dfee1b3ed06d8",
+    "rust/crates/sim/src/recovery/trajectory_geometry.rs": "f07d6e5d5946b4486e92c14a81fadad273856c8cfa0e2f7fcf72037234a9963a",
+    "rust/crates/sim/data/recovery-contract-v2.json": "4f4e8d640dc14fc39f95031ce2cf4b9199d5436c98d713b8def1b90ef616bd67",
+    "rust/crates/browser/driver.js": "256f4f15b3a1017b9c2efd82a042f2886fa4aab3d9017dd976ca52db5b55962a",
+    "rust/crates/browser/src/main.rs": "f9593f817906dbef8104e03cd339692c40b0c04c9caebc3a416abcaa40dbef0e",
+    "scripts/rust-recovery-browser-limits.mjs": "32ff1ee6a435ccf6564d1dee97160aa57a4f5d98ac19f8c1b71186c9fdfda5b6",
+    "scripts/qualify-rust-recovery-browser.mjs": "c9afb45c25f6f2d4ba35e9df0fc7d05d453eb9e5aba8b765630b80c01e652b97",
+    "scripts/verify-rust-penetration-ui.mjs": "da37edbced37aa8f539242386e4ac75e9b1a939fb917ebaedabf16342ebb8d1a",
+    "tests/rust-qualification-driver.test.mjs": "53e083dc05b0cf3e9d3b91e7e05c6aaeb2da400eff28f45793cb177e22f3f684",
+    "tests/rust-wasm-recovery-tools.test.mjs": "3f2964acfe2667c98603fdc65631088f71c0471232cf9b6e2dd7094c213d5324"
+  },
+  "validationLogsSha256": {
+    "measurement-tests.log": "c438b2ff8771eeff5ad070a003de96beb5d2574de48cc2de469d2919e59a32d6",
+    "contract-tests.log": "d394516511642e22dfb19986a78152076cce2695727111f0c5b1fa176a115ed7",
+    "getup-tests.log": "186ab655ab5f10d40b80976a7dc8ac5bed92f0188aa90c9e838a75078025c6d2",
+    "tooling-all-tests.log": "b6d02f28cbcb59d15d433ed033e08995bb98a868d6a635525f8c7cbeb41627d1",
+    "build-final.log": "b0b42e6ba1651ecba1aab811af8129f9e90ba9b4ed939af33e56790a2233f3b4",
+    "ui-zero-step.json": "f0d9f76278a884209a957bf04c872876fa0ee647a1bc8ff0a58202e09f2cf51d",
+    "ui-zero-step.stderr.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "physicalVerificationBlocked": "Closed ledger has only 2 native steps; no real/forecast integrations were executed.",
+  "nextExperimentProposal": {
+    "admitted": false,
+    "histories": 1,
+    "realDurationS": 4,
+    "nativeHz": 800,
+    "realMaximumSubsteps": 3200,
+    "forecastMaximumSubsteps": 5000,
+    "totalMaximumNativeSubsteps": 8200,
+    "maximumWallSeconds": 180,
+    "variantsOrRetries": 0,
+    "goal": "WEAK terminal, usable reference, first actual SLOW decisions; no complete get-up claim"
+  },
+  "validationLogsNormalization": "Trailing empty lines removed from Rust test logs only; content and results unchanged."
+}

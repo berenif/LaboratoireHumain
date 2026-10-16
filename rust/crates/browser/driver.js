@@ -64,6 +64,8 @@ export async function start_bridge() {
       time: snapshot?.simulation_time_s || 0, fps: state.fps,
       realtimeRatio: state.activeWall > 0 ? (snapshot?.simulation_time_s || 0) / state.activeWall : 0,
       steps: snapshot?.counters.steps || 0, contacts: snapshot?.contacts.filter(c => c.normal_load_n >= 3).length || 0,
+      maxSelfPenetrationM: snapshot?.diagnostics.max_self_penetration_m ?? 0,
+      maxFloorPenetrationM: snapshot?.diagnostics.max_floor_penetration_m ?? 0,
       strikes: snapshot?.counters.strikes || 0, strikerPhase: snapshot?.striker?.phase || '',
       canStrike: Boolean(snapshot?.striker?.available && state.renderer && !state.changing && !state.graphicsFault && !state.desiredPaused && state.visible && !state.failed && !state.workerFault && !state.outstanding?.strike && !state.pending.some(entry => entry.action === 'Strike')),
       motion: snapshot?.motion || 'Starting', falls: snapshot?.counters.falls || 0,

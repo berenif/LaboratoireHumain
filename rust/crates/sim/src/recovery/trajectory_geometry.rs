@@ -133,7 +133,7 @@ fn query(
         json!({"poses":poses.iter().enumerate().map(|(i,p)|json!({"id":s.model.segments[i].id,
         "position":crate::vec3(p.translation),"rotation":quat(p.rotation)})).collect::<Vec<_>>(),
         "constraints":constraints,"pairBounds":pair_bounds,"floorBounds":floor_bounds,
-        "thresholds":{"floor":crate::measurement::MAX_FLOOR_M,"self":crate::measurement::MAX_SELF_M},
+        "thresholds":{"floor":null,"self":null},"penetrationPolicy":"diagnostic-only",
         "nativeRefusal":refusal,"physicalIntegrations":0}),
     )
 }

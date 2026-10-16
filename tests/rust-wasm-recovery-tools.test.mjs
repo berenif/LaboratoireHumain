@@ -4,14 +4,14 @@ import { join, resolve } from 'node:path';
 import test from 'node:test';
 import { gzipSync } from 'node:zlib';
 import { collectWasmRecoveryCases, verifyWasmRecoveryCases } from '../scripts/rust-wasm-recovery-tools.mjs';
-import { deriveRecoveryBrowserLimits, recoveryBrowserLimits, recoveryContractSha256 } from '../scripts/rust-recovery-browser-limits.mjs';
+import { deriveRecoveryBrowserLimits, recoveryBrowserLimits, recoveryContractSha256, recoveryContractFile } from '../scripts/rust-recovery-browser-limits.mjs';
 import { physicalReportEvidence, readPhysicalJson } from '../scripts/rust-physical-archive-tools.mjs';
 import { recoveryCasePlan } from '../scripts/rust-recovery-case-tools.mjs';
 import { sha256 } from '../scripts/rust-release-tools.mjs';
 
 const fixtures = JSON.parse(readFileSync('rust/crates/sim/data/recovery-v1.json')).cases;
 const profile = JSON.parse(readFileSync('rust/crates/sim/data/recovery-profile-v24.json'));
-const contract = JSON.parse(readFileSync('rust/crates/sim/data/recovery-contract-v1.json'));
+const contract = JSON.parse(readFileSync(recoveryContractFile));
 const workerIdentity = 'one-uninitialized-diagnostic-worker';
 const identity = { sourceFingerprint: 'fixture-frozen-source', inputProfileSha256: sha256(readFileSync('rust/crates/sim/data/recovery-profile-v24.json')),
   contractSha256: recoveryContractSha256 };
@@ -44,6 +44,10 @@ function receiptToExecution(receipt) {
 }
 
 test('frozen browser limits derive exact integrated deadlines, held drag and repeated cycles', () => {
+  assert.equal(contract.version, 2);
+  assert.equal(contract.acceptance.maxFloorPenetrationM, null);
+  assert.equal(contract.acceptance.maxNonExcludedSelfPenetrationM, null);
+  assert.equal(recoveryContractSha256, sha256(readFileSync(recoveryContractFile)));
   assert.deepEqual(recoveryBrowserLimits, { substepHz: 240, substepsPerTick: 4, tickHz: 60,
     recoveryLimitSubsteps: 6000, stableSubsteps: 240, stableTicks: 60, stableActualMs: 1000,
     repeatedCycles: 5, dragMetres: 0.02, dragActualMs: 250, dragSubsteps: 60 });

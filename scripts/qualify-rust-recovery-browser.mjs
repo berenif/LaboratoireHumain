@@ -3,7 +3,7 @@
 import assert from 'node:assert/strict';
 import { archiveGeneratedReport } from './rust-physical-archive-tools.mjs';
 import { collectWasmRecoveryCases } from './rust-wasm-recovery-tools.mjs';
-import { recoveryBrowserLimits, recoveryContractSha256 } from './rust-recovery-browser-limits.mjs';
+import { recoveryBrowserLimits, recoveryContractSha256, recoveryContractFile } from './rust-recovery-browser-limits.mjs';
 export { recoveryBrowserLimits, recoveryContractSha256 };
 import { spawn } from 'node:child_process';
 import { createWriteStream, existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
@@ -345,7 +345,7 @@ export async function qualifyRecoveryBrowser(args) {
   assert.equal(execution.inputProfileSha256, inputProfileSha256, 'Native evidence used another profile');
   assert.equal(sha256(readFileSync(execution.profileFile)), inputProfileSha256, 'Native frozen profile bytes changed');
   const sourceBefore = sourceHashes();
-  assert.equal(sourceBefore['rust/crates/sim/data/recovery-contract-v1.json'], recoveryContractSha256, 'Frozen browser contract bytes changed');
+  assert.equal(sourceBefore[recoveryContractFile], recoveryContractSha256, 'Frozen browser contract bytes changed');
   assert.deepEqual(sourceBefore, execution.sourceBefore, 'Native and browser source inputs differ');
   assert.equal(fingerprint(sourceBefore), execution.sourceFingerprint, 'Native source identity mismatch');
   mkdirSync(output, { recursive: true });

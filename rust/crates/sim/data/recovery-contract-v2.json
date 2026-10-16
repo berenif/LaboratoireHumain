@@ -1,0 +1,43 @@
+{
+  "version": 2,
+  "source": "rust/crates/sim/data/recovery-contract-v1.json",
+  "sourceSha256": "57ffc6e4705759dac795e7c1b274edc9016a5e194a8fe4fa175a230c62f595ba",
+  "acceptance": {
+    "fixedDtS": 0.016666666666666666,
+    "maxJointSeparationM": 0.08,
+    "maxFloorPenetrationM": null,
+    "maxNonExcludedSelfPenetrationM": null,
+    "trajectoryPositionToleranceM": 1e-07,
+    "trajectoryRotationToleranceDegrees": 1e-05,
+    "trajectoryVelocityTolerance": 1e-07,
+    "recoveryLimitS": 25,
+    "stableObservationS": 1,
+    "idleSettlingS": 2,
+    "idleDurationS": 30,
+    "idleRootDriftM": 0.03,
+    "idlePlantedFootDriftM": 0.01,
+    "idleMaxLinearMps": 0.1,
+    "idleMaxAngularRadps": 0.5,
+    "maximumStructuralLimitErrorRad": 0.06,
+    "repeatedCycles": 5
+  },
+  "recoveryAcceptance": {
+    "normalY": 0.65,
+    "contactDistanceM": 0.012,
+    "minimumLoadN": 3,
+    "loadPersistenceS": 0.05,
+    "landingPersistenceS": 0.1,
+    "settlePersistenceS": 0.3,
+    "settleLinearMps": 0.65,
+    "settleAngularRadps": 1.8,
+    "stablePersistenceS": 0.55,
+    "stableLinearMps": 0.22,
+    "stableAngularRadps": 0.65,
+    "stableUpDot": 0.97,
+    "phaseMinimumS": 0.2,
+    "stallS": 3.0,
+    "supportLossS": 0.2,
+    "assistanceForceN": 0,
+    "assistanceTorqueNm": 0
+  }
+}
