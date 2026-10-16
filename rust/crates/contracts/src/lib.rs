@@ -220,6 +220,28 @@ pub struct GetUpObservation {
     pub physics_step_s: f32,
     pub policy_step_s: f32,
     pub observation: Vec<f32>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub policy: Option<GetUpPolicyObservation>,
+}
+#[derive(Debug, Clone, Default, Serialize, Deserialize)]
+pub struct GetUpPolicyObservation {
+    pub phase: String,
+    pub started_at_s: Option<f64>,
+    pub since_impact_s: Option<f64>,
+    pub forecast_substeps: u32,
+    pub teacher_decisions: u32,
+    pub teacher_max_head_height_m: f32,
+    pub teacher_terminal_reached: bool,
+    pub reference_seed_matches_real: bool,
+    pub reference_frames: u32,
+    pub reference_index: u32,
+    pub policy_decisions: u32,
+    pub reference_tracking_error_rad: f32,
+    pub reference_com_error_m: f32,
+    pub actual_head_height_m: f32,
+    pub stable_standing_s: f64,
+    pub prototype_standing_passed: bool,
+    pub refusal: Option<String>,
 }
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct MotorDelivery {

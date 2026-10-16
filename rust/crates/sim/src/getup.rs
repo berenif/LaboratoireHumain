@@ -1,6 +1,9 @@
-//! Pinned GetUp body and actuator contract. No learned policy is loaded here.
+//! Pinned GetUp body, actuator contract and opt-in pretrained controller.
 //! Serial reduced-coordinate hinges retain oblique axes and offset ankle pivots.
 use crate::*;
+pub mod actor;
+pub mod reference;
+pub mod controller;
 
 pub fn source_vector(v: Vector) -> [f32; 3] {
     [v.z, v.x, v.y]
@@ -173,46 +176,43 @@ pub fn slow_controls(
 }
 
 pub(crate) fn configure(s: &mut Simulation) -> Result<(), String> {
-    let (q, dq) = joint_state(s)?;
-    let reference = std::array::from_fn(|i| {
-        s.model.reference_metadata["standingPose"][i]
-            .as_f64()
-            .unwrap() as f32
+    let physical = physical_observation(s)?;
+    let q: &[f32;21] = physical[..21].try_into().unwrap();
+    let dq: &[f32;21] = physical[46..67].try_into().unwrap();
+    let controls = if let Some(mut controller) = s.getup_controller.take() {
+        let result = controller.command(s, &physical);
+        s.getup_controller = Some(controller);
+        result
+    } else {
+        let reference: [f32;21] = controller::standing_target(&s.model)[..21].try_into().unwrap();
+        slow_controls(&s.model, &reference, &[0.0;21], q, dq, true)
+    };
+    s.diagnostics.getup = Some(lh_contracts::GetUpObservation {
+        controller: if s.getup_controller.is_some() { "pretrained-WEAK-SLOW" } else { "source-standing-pd-zero-residual" }.into(),
+        learned_policy_loaded: s.getup_controller.is_some(), source_bodies: 16, coordinate_frames: 9, active_hinges: 21,
+        joint_angles_rad: q.to_vec(), joint_velocities_radps: dq.to_vec(),
+        motor_controls: controls.as_ref().map(|c| c.to_vec()).unwrap_or_default(),
+        physics_step_s: s.profile.dt_s, policy_step_s: 0.025, observation: physical.to_vec(),
+        policy: s.getup_controller.as_ref().map(|c| c.status.clone()),
     });
-    let controls = slow_controls(&s.model, &reference, &[0.0; 21], &q, &dq, true)?;
+    apply_controls(s, &controls?)
+}
+
+pub(crate) fn apply_controls(s: &mut Simulation, controls: &[f32;21]) -> Result<(),String> {
+    if controls.iter().any(|x| !x.is_finite() || x.abs()>1.0) { return Err("Invalid normalized motor control".into()); }
     let mut effort = 0.0;
-    for (i, p) in s.model.segments.iter().enumerate() {
+    for (i,p) in s.model.segments.iter().enumerate() {
         if let Some(h) = p.reference.as_ref().and_then(|r| r.hinge.as_ref()) {
-            let parent = s
-                .model
-                .segments
-                .iter()
-                .position(|n| Some(&n.id) == p.parent.as_ref())
-                .ok_or("Missing actuator parent")?;
+            let parent = s.model.segments.iter().position(|n| Some(&n.id)==p.parent.as_ref()).ok_or("Missing actuator parent")?;
             let jp = p.joint_profile.as_ref().unwrap();
-            let axis = *s.world.bodies[s.bodies[parent]].rotation()
-                * rotation(jp.parent_frame.rotation)
-                * Vector::X;
+            let axis = *s.world.bodies[s.bodies[parent]].rotation()*rotation(jp.parent_frame.rotation)*Vector::X;
             let tau = h.gear * controls[h.actuator_index];
-            s.world.bodies[s.bodies[i]].add_torque(axis * tau, true);
-            s.world.bodies[s.bodies[parent]].add_torque(-axis * tau, true);
+            s.world.bodies[s.bodies[i]].add_torque(axis*tau,true);
+            s.world.bodies[s.bodies[parent]].add_torque(-axis*tau,true);
             effort += tau.abs();
         }
     }
     s.diagnostics.requested_motor_effort_nm = effort;
-    s.diagnostics.getup = Some(lh_contracts::GetUpObservation {
-        controller: "source-standing-pd-zero-residual".into(),
-        learned_policy_loaded: false,
-        source_bodies: 16,
-        coordinate_frames: 9,
-        active_hinges: 21,
-        joint_angles_rad: q.to_vec(),
-        joint_velocities_radps: dq.to_vec(),
-        motor_controls: controls.to_vec(),
-        physics_step_s: s.profile.dt_s,
-        policy_step_s: 0.025,
-        observation: physical_observation(s)?.to_vec(),
-    });
     Ok(())
 }
 

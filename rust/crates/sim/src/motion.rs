@@ -50,6 +50,7 @@ mod parity_tests {
 
 impl Simulation {
     pub(crate) fn observe_impact(&mut self) {
+        if let Some(controller) = &mut self.getup_controller { controller.impact(self.substeps_completed); }
         if matches!(self.motion, Motion::Upright | Motion::Reacting) {
             self.counters.falls += 1;
         }
@@ -63,6 +64,7 @@ impl Simulation {
         if self.motion == Motion::Halted {
             return;
         }
+        if self.getup_controller.as_ref().is_some_and(|c| c.started_substep.is_some()) { return; }
         if self.motion == Motion::Recovering {
             self.observe_recovery();
             return;

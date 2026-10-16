@@ -36,6 +36,18 @@ mod browser {
     pub fn wire_schema() -> u16 {
         SCHEMA_VERSION
     }
+    /// Fixed-observation validation boundary; no Simulation is constructed.
+    #[wasm_bindgen]
+    pub fn getup_actor(actor: &str, observation: &str) -> Result<String, JsValue> {
+        if observation.len() > 16384 { return Err(error("Actor input exceeds bound")); }
+        let input: Vec<f32> = serde_json::from_str(observation).map_err(error)?;
+        serde_json::to_string(&lh_sim::getup::actor::infer(actor, &input).map_err(error)?).map_err(error)
+    }
+    #[wasm_bindgen]
+    pub fn getup_trial_profile() -> String {
+        let mut profile = Profile::default(); profile.getup_policy_enabled = true;
+        serde_json::to_string(&profile).expect("GetUp profile")
+    }
     #[wasm_bindgen]
     pub fn calibrate_tangent_contact(
         model: &str,
@@ -180,6 +192,7 @@ mod browser {
     }
     #[wasm_bindgen]
     impl WorkerRuntime {
+        pub fn getup_report(&self) -> Result<String, JsValue> { self.runtime.getup_report().map_err(error) }
         #[wasm_bindgen(constructor)]
         pub fn new(
             mode: &str,
@@ -325,6 +338,7 @@ mod tests {
         profile.validate().unwrap();
         assert!(!profile.recovery_enabled && !profile.recovery_first_phase_only);
         assert!(!profile.corrective_steps_enabled);
+        assert!(!profile.getup_policy_enabled);
         assert_eq!(profile.dt_s, 0.00125);
         assert_eq!(profile.tick_substeps, 20);
         assert_eq!(serde_json::to_value(profile).unwrap(), serde_json::to_value(lh_sim::Profile::default()).unwrap());

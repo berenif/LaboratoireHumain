@@ -19,6 +19,11 @@ export async function start_bridge() {
   // Only an explicit automation preload enables the recovery observer. Ordinary
   // pages continue to initialize their existing public mode and default profile.
   const qualification = window.__lhQualification;
+  const getupTrial = window.__lhGetUpTrial;
+  if (getupTrial !== undefined) {
+    if (getupTrial !== true || initialMode !== 'protocol' || qualification !== undefined) throw new Error('Invalid GetUp prototype preload');
+    initialization = { ...initialization, getupTrial: true };
+  }
   if (qualification !== undefined) {
     if (qualification?.kind !== 'recovery' || initialMode !== 'protocol' || !qualification.profile
       || qualification.profile.recovery_enabled !== true) throw new Error('Invalid recovery qualification preload');
@@ -62,7 +67,9 @@ export async function start_bridge() {
       strikes: snapshot?.counters.strikes || 0, strikerPhase: snapshot?.striker?.phase || '',
       canStrike: Boolean(snapshot?.striker?.available && state.renderer && !state.changing && !state.graphicsFault && !state.desiredPaused && state.visible && !state.failed && !state.workerFault && !state.outstanding?.strike && !state.pending.some(entry => entry.action === 'Strike')),
       motion: snapshot?.motion || 'Starting', falls: snapshot?.counters.falls || 0,
-      recoveryStep: getup ? 'GetUp body · Reference PD · Learned policy not loaded' : '',
+      recoveryStep: getup ? getup.learned_policy_loaded
+        ? `GetUp pretrained · ${getup.policy?.phase || 'initializing'} · Experimental`
+        : 'GetUp body · Reference PD · Learned recovery disabled' : '',
       floorEnabled: state.floorEnabled, desiredFloorEnabled: state.desiredFloorEnabled, error: state.error || state.graphicsError, workerMs: state.workerMs,
     };
   }
@@ -121,7 +128,7 @@ export async function start_bridge() {
     clearWatchdog();
     state.watchdog = setTimeout(() => {
       if (worker === current && state.outstanding?.id === message.requestId) workerFailed('Worker request timed out');
-    }, message.type === 'initialize' ? 10000 : 5000);
+    }, message.type === 'initialize' ? 10000 : getupTrial ? 90000 : 5000);
     try { current.postMessage(message); } catch (error) { workerFailed(error); }
   }
   function cancelPointer(sendCancellation = true, clearTouches = true) {
@@ -204,6 +211,7 @@ export async function start_bridge() {
       clearWatchdog();
       const outstanding = state.outstanding;
       state.outstanding = null;
+      if (message.type === 'getupReport') { outstanding.manualResolve?.resolve(message.report); pump(); return; }
       if (message.type === 'error') {
         outstanding.commandSequences.forEach(sequence => {
           state.acknowledgements.get(sequence)?.reject?.(new Error(message.message));
@@ -485,6 +493,10 @@ export async function start_bridge() {
       droppedPackets: state.droppedPackets, droppedFrames: state.droppedFrames,
       mainWasmLinearBytes: bindings.linear_memory_bytes() }; },
     setManual(value) { state.manual = Boolean(value); state.accumulator = 0; state.lastClock = performance.now(); },
+    getupReport() {
+      if (!getupTrial || state.outstanding || !state.manual) return Promise.reject(new Error('GetUp report requires an idle manual prototype'));
+      return new Promise((resolve, reject) => { const done = resolve; done.reject = reject; send({ type: 'getupReport' }, done); });
+    },
     advance(ticks) {
       if (!Number.isInteger(ticks) || ticks < 0 || ticks > 4 || !state.manual) return Promise.reject(new Error('Manual advance requires 0–4 ticks and manual mode'));
       if (state.disposed || state.workerFault || !state.last) return Promise.reject(new Error('Physical worker is unavailable'));

@@ -68,6 +68,7 @@ pub fn trials(profile: &crate::Profile) -> Result<Vec<serde_json::Value>, String
     Ok(reports)
 }
 
+#[derive(Clone)]
 pub(crate) struct Striker {
     definition: Protocol,
     body: RigidBodyHandle,

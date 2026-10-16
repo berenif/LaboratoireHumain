@@ -162,7 +162,7 @@ mod browser {
                     <div><span>"SIMULATION / WALL"</span><strong>{move||format!("{:.2}×",status.get().realtime_ratio)}</strong></div>
                 </section>
             </main>
-            <footer>"GetUp reference body. The learned recovery policy is not integrated."</footer>
+            <footer>"GetUp reference body. Pretrained recovery is experimental and disabled by default."</footer>
         }
     }
     pub fn run() {

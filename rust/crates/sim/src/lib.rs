@@ -131,6 +131,9 @@ pub struct Profile {
     pub recovery_enabled: bool,
     #[serde(default, skip_serializing_if = "is_false")]
     pub recovery_first_phase_only: bool,
+    /// Experimental pretrained policy; remains off until multi-case qualification.
+    #[serde(default)]
+    pub getup_policy_enabled: bool,
 }
 fn is_false(value: &bool) -> bool { !*value }
 impl Default for Profile {
@@ -165,6 +168,7 @@ impl Default for Profile {
             corrective_steps_enabled: false,
             recovery_enabled: false,
             recovery_first_phase_only: false,
+            getup_policy_enabled: false,
         }
     }
 }
@@ -302,6 +306,7 @@ pub struct Simulation {
     environment: Option<environment::Environment>,
     striker: Option<striker::Striker>,
     recovery: Option<recovery::Controller>,
+    getup_controller: Option<getup::controller::Controller>,
 }
 impl Simulation {
     pub fn new(heading: f32, profile: Profile, floor_enabled: bool) -> Result<Self, String> {
@@ -466,9 +471,13 @@ impl Simulation {
             environment,
             striker: None,
             recovery: None,
+            getup_controller: None,
         };
         getup::assemble(&mut result)?;
         result.capture_rest_com();
+        if result.profile.getup_policy_enabled {
+            result.getup_controller = Some(getup::controller::Controller::new(&result.model));
+        }
         if seed.is_some() { return Err("Legacy anatomical seed is not a GetUp initial state".into()); }
         result.configure_motors()?;
         Ok(result)
@@ -979,6 +988,11 @@ impl Simulation {
                 };
             }
             self.observe_motion(&loads_n);
+            if let Some(mut controller) = self.getup_controller.take() {
+                controller.observe(self, &loads_n);
+                if let Some(observation) = self.diagnostics.getup.as_mut() { observation.policy = Some(controller.status.clone()); }
+                self.getup_controller = Some(controller);
+            }
             let observation = observer(self, substep);
             trace(self, event(self, profiling::Phase::Observer, false));
             if let Err(f) = observation {

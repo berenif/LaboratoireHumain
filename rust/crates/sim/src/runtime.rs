@@ -44,6 +44,10 @@ fn acknowledgement(
     }
 }
 impl Runtime {
+    /// Recorded teacher branch/reference only; this never advances either world.
+    pub fn getup_report(&self) -> Result<String, String> {
+        serde_json::to_string(&self.simulation.getup_controller).map_err(|e| e.to_string())
+    }
     /// Read-only qualification evidence, including ownership before integration.
     pub(crate) fn simulation(&self) -> &Simulation {
         &self.simulation
