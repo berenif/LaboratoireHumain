@@ -29,8 +29,18 @@ def admit(record):
     assert sha(prior_path) == record['priorAttemptRecordSha256']
     prior = json.loads(prior_path.read_text())
     assert prior['status'] == 'closed'
-    assert record['actualNativeConsumedBefore'] == prior['cumulativeIncrementalActualNativeSteps'] == 3760
-    assert record['actualWallConsumedBeforeSeconds'] == prior['cumulativeIncrementalActualWallSeconds']
+    assert prior['cumulativeIncrementalActualNativeSteps'] == 3760
+    if record.get('recoverableCheckpointRetry'):
+        failed_path = REPO/record['failedReplayRecord']
+        assert sha(failed_path) == record['failedReplayRecordSha256']
+        failed = json.loads(failed_path.read_text())
+        assert failed['status'] == 'closed' and failed['lastCounters']['total'] == 1600
+        assert record['actualNativeConsumedBefore'] == 3760+1600
+        assert record['actualWallConsumedBeforeSeconds'] == failed['cumulativeActualWallSeconds']
+        assert record['remainingNativeForCorrectedLaunch'] == 10000-1600
+    else:
+        assert record['actualNativeConsumedBefore'] == 3760
+        assert record['actualWallConsumedBeforeSeconds'] == prior['cumulativeIncrementalActualWallSeconds']
     assert record['remainingWallSeconds'] == 180-record['actualWallConsumedBeforeSeconds']
     assert record['amendedPlanningCumulativeNativeCeiling'] == 3760+10000
     assert record['maximumRealDurationS'] == 10 and record['maximumCandidateReplays'] == 1
@@ -73,9 +83,9 @@ def run(path):
         result=json.loads(result_path.read_text()); record['resultSha256']=sha(result_path)
         record['lastCounters']=result['counters']
         if result.get('harnessCompleted') and not record.get('timedOut'):
-            count=result['counters']['total']; assert count<=10000
+            count=result['counters']['total']; assert count<=record.get('remainingNativeForCorrectedLaunch',10000)
             record['actualAdditionalNativeSteps']=count
-            record['cumulativeActualNativeSteps']=3760+count
+            record['cumulativeActualNativeSteps']=record['actualNativeConsumedBefore']+count
             record['outcome']=result['outcome']
         else:
             record['outcome']='closed-incomplete-diagnostics-retained'

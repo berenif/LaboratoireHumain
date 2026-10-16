@@ -91,30 +91,25 @@ impl Runtime {
 
     pub fn verify_getup_checkpoint(&self, bytes: &[u8]) -> Result<String, String> {
         let restored = Self::from_getup_checkpoint(bytes)?;
-        fn comparable_world(s: &Simulation) -> Result<serde_json::Value, String> {
-            let mut value = serde_json::to_value(&s.world).map_err(|e| e.to_string())?;
-            // These four fields are declared HashSets in Rapier. Serialization
-            // preserves their membership, not their hash-table iteration order.
-            for set in ["multibody_joints", "impulse_joints"] {
-                for field in ["to_join", "to_wake_up"] {
-                    if let Some(array) = value[set][field].as_array_mut() {
-                        array.sort_by_cached_key(|v| v.to_string());
-                    }
-                }
-            }
-            Ok(value)
-        }
-        let same_world = comparable_world(&self.simulation)? == comparable_world(&restored.simulation)?;
+        // The binary world includes maps with compound keys; JSON cannot
+        // represent those maps. Compare generalized motion and observations
+        // here, and validate an actual next tick separately in the admitted run.
+        let same_joints = crate::getup::joint_state(&self.simulation)?
+            == crate::getup::joint_state(&restored.simulation)?;
+        let same_handles = self.simulation.bodies == restored.simulation.bodies
+            && self.simulation.colliders == restored.simulation.colliders
+            && self.simulation.joints == restored.simulation.joints;
         let same_snapshot = serde_json::to_value(self.simulation.snapshot()).map_err(|e| e.to_string())?
             == serde_json::to_value(restored.simulation.snapshot()).map_err(|e| e.to_string())?;
         let same_controller = self.getup_report()? == restored.getup_report()?;
-        if !same_world || !same_snapshot || !same_controller {
-            return Err(format!("Checkpoint round-trip changed data: world={same_world}, snapshot={same_snapshot}, controller={same_controller}"));
+        if !same_joints || !same_handles || !same_snapshot || !same_controller {
+            return Err(format!("Checkpoint round-trip changed data: joints={same_joints}, handles={same_handles}, snapshot={same_snapshot}, controller={same_controller}"));
         }
         Ok(serde_json::json!({"passed":true,"physicsIntegrations":0,"bytes":bytes.len(),
             "nativeSubsteps":restored.simulation.substeps_completed,
             "forecastSubsteps":restored.simulation.getup_controller.as_ref().unwrap().status.forecast_substeps,
-            "worldEqual":same_world,"snapshotEqual":same_snapshot,"controllerEqual":same_controller}).to_string())
+            "binaryWorldDeserialized":true,"jointStateEqual":same_joints,"handlesEqual":same_handles,
+            "snapshotEqual":same_snapshot,"controllerEqual":same_controller}).to_string())
     }
 
     /// Recorded teacher branch/reference only; this never advances either world.

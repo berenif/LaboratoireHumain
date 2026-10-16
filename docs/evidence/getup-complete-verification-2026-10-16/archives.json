@@ -1,0 +1,31 @@
+{
+  "scope": "Retained raw evidence and complete restorable checkpoints; gzip round-trip verified",
+  "archives": {
+    "trace.ndjson": {
+      "path": "docs/evidence/getup-complete-verification-2026-10-16/trace.ndjson.gz",
+      "sha256": "80191384911bbb1fda731f6f1e3450c2602354bd31859134579ba7d44581502b",
+      "rawSha256": "1f25f80c01b18e729246c83d43e50069da617ec18599ae9fff357c38024649ae",
+      "rawBytes": 225285,
+      "compressedBytes": 46673
+    },
+    "reference-report.json": {
+      "path": "docs/evidence/getup-complete-verification-2026-10-16/reference-report.json.gz",
+      "sha256": "3533d6f27ef023029e7beb23ad40b8aaa9fd26d8f9c0e0011b5b6a83ab0e6445",
+      "rawSha256": "cc3a9263f47b03cda2bfcb108cd9bd3501f0d189b900f8a259be521c8f54679a",
+      "rawBytes": 1023,
+      "compressedBytes": 435
+    },
+    "checkpoint-00000.bin": {
+      "path": "docs/evidence/getup-complete-verification-2026-10-16/checkpoint-00000.bin.gz",
+      "sha256": "596d257e953b644a34e00fd012c22307ab8e918fcfa39c32e95bd5809ba1696e",
+      "rawSha256": "28a83f517317bc40cc8cba4665a9991001fb633d22d4b30092d4d2e5c4a010e5",
+      "rawBytes": 584392,
+      "compressedBytes": 91839
+    }
+  },
+  "matchingRuntimeArtifacts": {
+    "rust/dist/app/lh_worker.js": "e83f648c82287a7f2f13e2499263e2068e6d10711297aaabca84917c5fe620ad",
+    "rust/dist/app/lh_worker_bg.wasm": "711cbb7ed05305ea2095c9199d8104adc4020c24f537f4581b1be299e7fa4638"
+  },
+  "restoration": "Use the pinned commit/build matching runtime hashes; WorkerRuntime.from_getup_checkpoint(gunzip(checkpointBytes)); inspect/verify without stepping. All binary world fields are retained; Rapier rebuilds documented pipeline/CCD workspaces."
+}

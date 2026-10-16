@@ -37,6 +37,7 @@ if (process.argv[2] === '--preflight') {
   const ledger = JSON.parse(readFileSync(process.argv[2]));
   assert.equal(ledger.status, 'running');
   assert.equal(ledger.maximumAdditionalNativeSteps, 10000);
+  const remainingNative = ledger.remainingNativeForCorrectedLaunch ?? 10000;
   const deadline = Date.parse(ledger.deadlineUtc);
   openSync(`${output}/started-once`, 'wx');
   const runtime = makeRuntime();
@@ -46,9 +47,9 @@ if (process.argv[2] === '--preflight') {
   let reply = JSON.parse(runtime.advance(0));
   const checkpoint = label => {
     const bytes = runtime.getup_checkpoint();
-    const verification = JSON.parse(runtime.verify_getup_checkpoint(bytes));
     const path = `${output}/checkpoint-${label}.bin`;
     writeFileSync(path, bytes);
+    const verification = JSON.parse(runtime.verify_getup_checkpoint(bytes));
     result.checkpoints.push({ path, sha256: sha(bytes), ...verification });
     save('result.json', result);
     writeFileSync(`${output}/reference-report.json`, runtime.getup_report()+'\n');
@@ -64,7 +65,7 @@ if (process.argv[2] === '--preflight') {
     result.final = reply;
     appendFileSync(`${output}/trace.ndjson`, JSON.stringify(snapshot)+'\n');
     save('result.json', result);
-    assert.ok(result.counters.total <= 10000 && real <= 8000 && teacher <= 5000);
+    assert.ok(result.counters.total <= remainingNative && real <= 8000 && teacher <= 5000);
     assert.equal(snapshot.stamp.generation, 1);
     assert.equal(snapshot.diagnostics.direct_pelvis_force_n, 0);
     assert.equal(snapshot.diagnostics.direct_pelvis_torque_nm, 0);
@@ -87,7 +88,7 @@ if (process.argv[2] === '--preflight') {
       }
       const ticks = Math.min(4, 400-tick, nextCheckpoint-tick);
       const possibleTeacher = result.counters.teacher === 0 ? 5000 : 0;
-      if (result.counters.total+ticks*20+possibleTeacher > 10000) { result.budgetStop = true; break; }
+      if (result.counters.total+ticks*20+possibleTeacher > remainingNative) { result.budgetStop = true; break; }
       reply = JSON.parse(runtime.advance(ticks));
       record();
       if (reply.failure) { result.physicalFailure = reply.failure; break; }
@@ -98,7 +99,7 @@ if (process.argv[2] === '--preflight') {
         // One planned20-step prediction validates the saved4s world's next tick.
         // It is counted in the same additional-native and walltime allowance.
         if (reply.snapshot.stamp.tick === 160 && result.counters.teacher > 0) {
-          assert.ok(result.counters.total+40 <= 10000);
+          assert.ok(result.counters.total+40 <= remainingNative);
           const restored = WorkerRuntime.from_getup_checkpoint(bytes);
           const predicted = JSON.parse(restored.advance(1));
           const predictedReal = Math.round(predicted.snapshot.simulation_time_s*800)-result.counters.real;
