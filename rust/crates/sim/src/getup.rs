@@ -2,8 +2,8 @@
 //! Serial reduced-coordinate hinges retain oblique axes and offset ankle pivots.
 use crate::*;
 pub mod actor;
-pub mod reference;
 pub mod controller;
+pub mod reference;
 
 pub fn source_vector(v: Vector) -> [f32; 3] {
     [v.z, v.x, v.y]
@@ -177,43 +177,131 @@ pub fn slow_controls(
 
 pub(crate) fn configure(s: &mut Simulation) -> Result<(), String> {
     let physical = physical_observation(s)?;
-    let q: &[f32;21] = physical[..21].try_into().unwrap();
-    let dq: &[f32;21] = physical[46..67].try_into().unwrap();
+    let q: &[f32; 21] = physical[..21].try_into().unwrap();
+    let dq: &[f32; 21] = physical[46..67].try_into().unwrap();
     let controls = if let Some(mut controller) = s.getup_controller.take() {
         let result = controller.command(s, &physical);
         s.getup_controller = Some(controller);
         result
     } else {
-        let reference: [f32;21] = controller::standing_target(&s.model)[..21].try_into().unwrap();
-        slow_controls(&s.model, &reference, &[0.0;21], q, dq, true)
+        let reference: [f32; 21] = controller::standing_target(&s.model)[..21]
+            .try_into()
+            .unwrap();
+        slow_controls(&s.model, &reference, &[0.0; 21], q, dq, true)
     };
     s.diagnostics.getup = Some(lh_contracts::GetUpObservation {
-        controller: if s.getup_controller.is_some() { "pretrained-WEAK-SLOW" } else { "source-standing-pd-zero-residual" }.into(),
-        learned_policy_loaded: s.getup_controller.is_some(), source_bodies: 16, coordinate_frames: 9, active_hinges: 21,
-        joint_angles_rad: q.to_vec(), joint_velocities_radps: dq.to_vec(),
+        controller: if s.getup_controller.is_some() {
+            "pretrained-WEAK-SLOW"
+        } else {
+            "source-standing-pd-zero-residual"
+        }
+        .into(),
+        learned_policy_loaded: s.getup_controller.is_some(),
+        source_bodies: 16,
+        coordinate_frames: 9,
+        active_hinges: 21,
+        joint_angles_rad: q.to_vec(),
+        joint_velocities_radps: dq.to_vec(),
         motor_controls: controls.as_ref().map(|c| c.to_vec()).unwrap_or_default(),
-        physics_step_s: s.profile.dt_s, policy_step_s: 0.025, observation: physical.to_vec(),
+        physics_step_s: s.profile.dt_s,
+        policy_step_s: 0.025,
+        observation: physical.to_vec(),
         policy: s.getup_controller.as_ref().map(|c| c.status.clone()),
     });
     apply_controls(s, &controls?)
 }
 
-pub(crate) fn apply_controls(s: &mut Simulation, controls: &[f32;21]) -> Result<(),String> {
-    if controls.iter().any(|x| !x.is_finite() || x.abs()>1.0) { return Err("Invalid normalized motor control".into()); }
+pub(crate) fn apply_controls(s: &mut Simulation, controls: &[f32; 21]) -> Result<(), String> {
+    if controls.iter().any(|x| !x.is_finite() || x.abs() > 1.0) {
+        return Err("Invalid normalized motor control".into());
+    }
     let mut effort = 0.0;
-    for (i,p) in s.model.segments.iter().enumerate() {
+    for (i, p) in s.model.segments.iter().enumerate() {
         if let Some(h) = p.reference.as_ref().and_then(|r| r.hinge.as_ref()) {
-            let parent = s.model.segments.iter().position(|n| Some(&n.id)==p.parent.as_ref()).ok_or("Missing actuator parent")?;
+            let parent = s
+                .model
+                .segments
+                .iter()
+                .position(|n| Some(&n.id) == p.parent.as_ref())
+                .ok_or("Missing actuator parent")?;
             let jp = p.joint_profile.as_ref().unwrap();
-            let axis = *s.world.bodies[s.bodies[parent]].rotation()*rotation(jp.parent_frame.rotation)*Vector::X;
+            let axis = (*s.world.bodies[s.bodies[parent]].rotation()
+                * rotation(jp.parent_frame.rotation)
+                * Vector::X)
+                .normalize();
             let tau = h.gear * controls[h.actuator_index];
-            s.world.bodies[s.bodies[i]].add_torque(axis*tau,true);
-            s.world.bodies[s.bodies[parent]].add_torque(-axis*tau,true);
+            s.world.bodies[s.bodies[i]].add_torque(axis * tau, true);
+            s.world.bodies[s.bodies[parent]].add_torque(-axis * tau, true);
             effort += tau.abs();
         }
     }
     s.diagnostics.requested_motor_effort_nm = effort;
     Ok(())
+}
+
+/// Current twists from the articulation's generalized velocities, never stale
+/// RigidBody velocity caches. Returned linear velocities are at each body's CoM.
+/// Root generalized translation is the derivative of its free-joint origin.
+pub(crate) fn current_twists(s: &Simulation) -> Result<Vec<(Vector, Vector)>, String> {
+    let (_, dq) = joint_state(s)?;
+    let id = s
+        .world
+        .multibody_joints
+        .rigid_body_link(s.bodies[0])
+        .ok_or("Missing root")?;
+    let mb = s
+        .world
+        .multibody_joints
+        .get_multibody(id.multibody)
+        .ok_or("Missing articulation")?;
+    let root = mb.joint_velocity(mb.link(id.id).ok_or("Missing root link")?);
+    if root.len() != 6 {
+        return Err("GetUp root must be free".into());
+    }
+    let mut origin = vec![(Vector::ZERO, Vector::ZERO); s.bodies.len()];
+    origin[0] = (
+        Vector::new(root[0], root[1], root[2]),
+        Vector::new(root[3], root[4], root[5]),
+    );
+    for (i, p) in s.model.segments.iter().enumerate().skip(1) {
+        let parent = s
+            .model
+            .segments
+            .iter()
+            .position(|n| Some(&n.id) == p.parent.as_ref())
+            .ok_or("Missing parent")?;
+        if parent >= i {
+            return Err("GetUp tree is not topological".into());
+        }
+        let jp = p.joint_profile.as_ref().ok_or("Missing joint frame")?;
+        let rb = &s.world.bodies[s.bodies[i]];
+        let prb = &s.world.bodies[s.bodies[parent]];
+        let rotation = prb.rotation().normalize();
+        let anchor = prb.translation() + rotation * vector(jp.parent_frame.anchor);
+        let axis = (rotation * crate::rotation(jp.parent_frame.rotation) * Vector::X).normalize();
+        let rate = p
+            .reference
+            .as_ref()
+            .and_then(|r| r.hinge.as_ref())
+            .map_or(0.0, |h| dq[h.qpos_index]);
+        let (v, w) = origin[parent];
+        let angular = w + axis * rate;
+        origin[i] = (
+            v + w.cross(anchor - prb.translation()) + angular.cross(rb.translation() - anchor),
+            angular,
+        );
+    }
+    Ok(origin
+        .into_iter()
+        .enumerate()
+        .map(|(i, (v, w))| {
+            let body = &s.world.bodies[s.bodies[i]];
+            (
+                v + w.cross(body.rotation().normalize() * body.local_center_of_mass()),
+                w,
+            )
+        })
+        .collect())
 }
 
 pub fn physical_observation(s: &Simulation) -> Result<[f32; 67], String> {
@@ -230,25 +318,41 @@ pub fn physical_observation(s: &Simulation) -> Result<[f32; 67], String> {
         Ok(&s.world.bodies[s.bodies[i]])
     };
     let torso = body("torso")?;
+    let frame = torso.rotation().normalize();
     out[21] = body("head")?.translation().y;
     for (k, name) in ["left_hand", "left_foot", "right_hand", "right_foot"]
         .into_iter()
         .enumerate()
     {
         out[22 + k * 3..25 + k * 3].copy_from_slice(&source_vector(
-            torso.rotation().inverse() * (body(name)?.translation() - torso.translation()),
+            frame.inverse() * (body(name)?.translation() - torso.translation()),
         ));
     }
-    out[34..37].copy_from_slice(&source_vector(torso.rotation().inverse() * Vector::Y));
-    let v = s
+    out[34..37].copy_from_slice(&source_vector(frame.inverse() * Vector::Y));
+    let twists = current_twists(s)?;
+    let com_velocity = s
         .bodies
         .iter()
-        .map(|h| s.world.bodies[*h].linvel() * s.world.bodies[*h].mass())
+        .zip(&twists)
+        .map(|(h, (v, _))| *v * s.world.bodies[*h].mass())
         .sum::<Vector>()
         / s.total_mass();
-    out[37..40].copy_from_slice(&source_vector(v));
-    out[40..43].copy_from_slice(&source_vector(torso.velocity_at_point(torso.translation())));
-    out[43..46].copy_from_slice(&source_vector(torso.rotation().inverse() * torso.angvel()));
+    out[37..40].copy_from_slice(&source_vector(com_velocity));
+    let id = s
+        .world
+        .multibody_joints
+        .rigid_body_link(s.bodies[0])
+        .ok_or("Missing root")?;
+    let mb = s
+        .world
+        .multibody_joints
+        .get_multibody(id.multibody)
+        .ok_or("Missing articulation")?;
+    let root = mb.joint_velocity(mb.link(id.id).ok_or("Missing root link")?);
+    out[40..43].copy_from_slice(&source_vector(Vector::new(root[0], root[1], root[2])));
+    out[43..46].copy_from_slice(&source_vector(
+        frame.inverse() * Vector::new(root[3], root[4], root[5]),
+    ));
     out[46..67].copy_from_slice(&dq);
     if out.iter().any(|x| !x.is_finite()) {
         return Err("Non-finite GetUp observation".into());
@@ -268,6 +372,76 @@ pub fn slow_observation(physical: &[f32; 67], now: &[f32; 25], ahead: &[f32; 25]
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[test]
+    fn observation_uses_current_generalized_motion_and_unit_frames_without_integration() {
+        let mut s = Simulation::new(0.3, Profile::default(), true).unwrap();
+        let id = *s
+            .world
+            .multibody_joints
+            .rigid_body_link(s.bodies[0])
+            .unwrap();
+        let rates: Vec<f32> = (0..27).map(|i| (i as f32 * 0.37).sin() * 0.3).collect();
+        s.world
+            .multibody_joints
+            .get_multibody_mut(id.multibody)
+            .unwrap()
+            .generalized_velocity_mut()
+            .copy_from_slice(&rates);
+        assert!(
+            s.bodies
+                .iter()
+                .all(|h| s.world.bodies[*h].linvel() == Vector::ZERO)
+        );
+        let before = serde_json::to_value(s.snapshot()).unwrap();
+        let twists = current_twists(&s).unwrap();
+        let observation = physical_observation(&s).unwrap();
+        assert_eq!(&observation[40..43], &[rates[2], rates[0], rates[1]]);
+        let mb = s
+            .world
+            .multibody_joints
+            .get_multibody(id.multibody)
+            .unwrap();
+        let epsilon = 0.001;
+        let forward: Vec<_> = rates.iter().map(|v| v * epsilon).collect();
+        let backward: Vec<_> = rates.iter().map(|v| -v * epsilon).collect();
+        let mut maximum_fd_error = 0.0_f32;
+        for (i, h) in s.bodies.iter().enumerate() {
+            let link = s.world.multibody_joints.rigid_body_link(*h).unwrap().id;
+            let plus =
+                mb.forward_kinematics_single_link(&s.world.bodies, link, Some(&forward), None);
+            let minus =
+                mb.forward_kinematics_single_link(&s.world.bodies, link, Some(&backward), None);
+            let center = s.world.bodies[*h].local_center_of_mass();
+            let derivative = (plus * center - minus * center) / (2.0 * epsilon);
+            maximum_fd_error = maximum_fd_error.max(derivative.distance(twists[i].0));
+            assert!(
+                derivative.distance(twists[i].0) < 0.0003,
+                "{} {:?} {:?}",
+                s.model.segments[i].id,
+                derivative,
+                twists[i].0
+            );
+        }
+        assert_eq!(serde_json::to_value(s.snapshot()).unwrap(), before);
+        assert_eq!(s.substeps_completed, 0);
+        println!(
+            "Current-velocity observer: max CoM velocity error against geometric finite differences {maximum_fd_error} m/s; zero physics"
+        );
+        let root = s.bodies[0];
+        let rotation = *s.world.bodies[root].rotation();
+        s.world.bodies[root].set_rotation(
+            Rotation::from_xyzw(
+                rotation.x * 0.9999,
+                rotation.y * 0.9999,
+                rotation.z * 0.9999,
+                rotation.w * 0.9999,
+            ),
+            false,
+        );
+        let observed = physical_observation(&s).unwrap();
+        let norm = observed[34..37].iter().map(|x| x * x).sum::<f32>();
+        assert!((norm - 1.0).abs() < 1e-6);
+    }
     #[test]
     fn source_assembly_preserves_mass_hinges_and_valid_initial_pose_without_integration() {
         let mut s = Simulation::new(0.0, Profile::default(), true).unwrap();

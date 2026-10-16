@@ -835,7 +835,8 @@ impl Simulation {
                 }
             }
             if let Err(error) = self.configure_motors() {
-                let f = measurement::Failure::new(self.tick, substep, "ownership", error, 0.0, 0.0);
+                let check = if self.getup_controller.is_some() { "getup-policy" } else { "ownership" };
+                let f = measurement::Failure::new(self.tick, substep, check, error, 0.0, 0.0);
                 self.first_failure = Some(f.clone());
                 self.motion = Motion::Halted;
                 self.cancel_grab();

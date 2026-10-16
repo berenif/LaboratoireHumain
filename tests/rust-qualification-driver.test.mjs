@@ -5,7 +5,7 @@ import vm from 'node:vm';
 
 // Runs the actual bridge against a deterministic browser/worker scheduler.
 // It checks transport ordering; physical acceptance remains in real WASM.
-async function driverHarness(qualified = true) {
+async function driverHarness(qualified = true, getup = false) {
   const messages = [], workers = [], timers = new Map();
   let clock = 0, timerId = 0, raf;
   const listenable = () => ({ addEventListener() {}, removeEventListener() {} });
@@ -23,6 +23,7 @@ async function driverHarness(qualified = true) {
   const profile = { recovery_enabled: true };
   const window = { ...listenable(), dispatchEvent() {}, lhBindings: { make_renderer: async () => renderer } };
   if (qualified) window.__lhQualification = { kind: 'recovery', profile };
+  if (getup) window.__lhGetUpTrial = true;
   const context = vm.createContext({ window, Worker, ArrayBuffer, Float32Array, URL, structuredClone,
     location: { href: 'http://localhost/?renderer=webgl2' }, navigator: {}, devicePixelRatio: 1,
     document: { ...listenable(), hidden: false, baseURI: 'http://localhost/', getElementById: () => host, createElement: canvas },
@@ -124,5 +125,26 @@ test('qualification hand preparation rejects an invalid or nonhand segment witho
     await assert.rejects(h.bridge.qualificationGrabBegin({ press: 1, segment: 3 }), /physical hand snapshot/);
     assert.equal(h.messages.filter(value => value.type === 'commands').length, 0);
     assert.equal(h.workers.length, 1); assert.equal(h.bridge.diagnostics.workerFault, false);
+  } finally { h.close(); }
+});
+
+test('GetUp report resolves or rejects without advancing or resetting the physical worker', async () => {
+  const h = await driverHarness(false, true);
+  try {
+    h.bridge.setManual(true);
+    assert.equal(h.latest('initialize').getupTrial, true);
+    const pending = h.bridge.getupReport();
+    const request = h.latest('getupReport');
+    const report = { status: { forecast_substeps: 20, refusal: 'recorded-integrity-refusal' }, teacher_frames: [{ time_s: 0.1 }] };
+    h.worker.onmessage({ data: { type: 'getupReport', requestId: request.requestId, report } });
+    assert.deepEqual(await pending, report);
+    assert.equal(h.bridge.diagnostics.outstanding, false);
+    const rejected = h.bridge.getupReport();
+    const next = h.latest('getupReport');
+    h.worker.onmessage({ data: { type: 'error', requestId: next.requestId, message: 'report-unavailable' } });
+    await assert.rejects(rejected, /report-unavailable/);
+    assert.equal(h.messages.filter(m => m.type === 'advance' || m.type === 'commands').length, 0);
+    assert.equal(h.workers.length, 1);
+    assert.equal(h.bridge.diagnostics.tick, 0);
   } finally { h.close(); }
 });

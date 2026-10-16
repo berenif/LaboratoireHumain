@@ -495,7 +495,7 @@ export async function start_bridge() {
     setManual(value) { state.manual = Boolean(value); state.accumulator = 0; state.lastClock = performance.now(); },
     getupReport() {
       if (!getupTrial || state.outstanding || !state.manual) return Promise.reject(new Error('GetUp report requires an idle manual prototype'));
-      return new Promise((resolve, reject) => { const done = resolve; done.reject = reject; send({ type: 'getupReport' }, done); });
+      return new Promise((resolve, reject) => send({ type: 'getupReport' }, { resolve, reject }));
     },
     advance(ticks) {
       if (!Number.isInteger(ticks) || ticks < 0 || ticks > 4 || !state.manual) return Promise.reject(new Error('Manual advance requires 0–4 ticks and manual mode'));
