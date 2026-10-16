@@ -18,7 +18,7 @@
   "reportRetention": "Read and write full native controller report before assertions/screenshots at every snapshot; require exact seed, teacher frames and native refusal when teacher integrity stops. First report request at zero physical steps verifies transport before advance.",
   "defaultRecoveryEnabled": false,
   "noPhysicalIntegrationsBeforeAdmission": true,
-  "status": "reserved",
+  "status": "closed",
   "preparedUtc": "2026-10-16T15:18:37.904429+00:00",
   "reservedUtc": "2026-10-16T15:18:37.904429+00:00",
   "sourceBase": "0fa86431a14a8deb2db6d4cee9fcb73529c490cb",
@@ -60,9 +60,10 @@
     "physicsIntegrations": 0
   },
   "TODO": [
-    "Admitted: final bounded native-clock history.",
-    "Audit full retained teacher/SLOW report and close ledger at first stopping condition.",
-    "Create clip from recorded frames, archive evidence and publish scoped commits; no further physical run."
+    "Completed: frozen native-clock history stopped at first integrity refusal; no retry.",
+    "Completed: full teacher report, parity of all 12 teacher actions and same initial seed/action across clock comparison.",
+    "Completed: independent final capsule penetration audit, archived-frame clip and forecast comparison image.",
+    "Not achieved: valid reference, physical SLOW command, stable standing or 24-case qualification."
   ],
   "inputs": {
     "rust/Cargo.lock": "57f8ef29219379d35953076b6e468e5b641d08f40f1be4a24fcecdfce546ec94",
@@ -102,5 +103,272 @@
     "scripts/validate-getup-policy.mjs": "0a102974f5a8c7be852eac642c7e67973e1fac8c771207b0745d4ce1b2304f28",
     "scripts/verify-getup-policy-parity.mjs": "ec12c70c08c4c9245611d35dfa970a04191ce5b7de1cc9a843c328222d47291c",
     "tests/rust-qualification-driver.test.mjs": "2cb001f52e4cca32245aa4502d5336cc6f56b03a6a6128380c956f98a7dae0f6"
+  },
+  "closedUtc": "2026-10-16T15:22:35.460020+00:00",
+  "candidateCommit": "ea15d2845e30e857579862fc751bdebd28dff038",
+  "nativeActualSteps": 3113,
+  "mainNativeActualSteps": 2881,
+  "forecastNativeActualSteps": 232,
+  "wallActualSeconds": 43.27140304300001,
+  "harnessCompleted": true,
+  "physicalRefusal": {
+    "tick": 144,
+    "substep": 1,
+    "check": "getup-policy",
+    "offending": "Teacher Rapier integrity failure: self-contact left_thigh/left_foot measured=0.0062771253 limit=0.005",
+    "measured": 0,
+    "threshold": 0
+  },
+  "nativeTeacherFailure": {
+    "tick": 11,
+    "substep": 11,
+    "check": "self-contact",
+    "offending": "left_thigh/left_foot",
+    "measured": 0.0062771253,
+    "threshold": 0.005
+  },
+  "lastPolicyState": {
+    "phase": "reference-rejected",
+    "started_at_s": 3.60125,
+    "since_impact_s": null,
+    "forecast_substeps": 232,
+    "teacher_decisions": 11,
+    "teacher_max_head_height_m": 0.31917518,
+    "teacher_terminal_reached": false,
+    "reference_seed_matches_real": true,
+    "reference_frames": 0,
+    "reference_index": 0,
+    "policy_decisions": 0,
+    "reference_tracking_error_rad": 0,
+    "reference_com_error_m": 0,
+    "actual_head_height_m": 0,
+    "stable_standing_s": 0,
+    "prototype_standing_passed": false,
+    "refusal": "Teacher Rapier integrity failure: self-contact left_thigh/left_foot measured=0.0062771253 limit=0.005"
+  },
+  "referenceReport": {
+    "sha256": "9b274f10673b6d866fcad5d3ac77784ff0ca17590b91e53874d305812b69b1b6",
+    "bytes": 215328,
+    "forecastSteps": 232,
+    "teacherFrames": 12,
+    "studentDecisions": 0
+  },
+  "fullGetUpQualified": false,
+  "additionalPhysicsForAudit": 0,
+  "additionalPhysicsForVisuals": 0,
+  "outcome": "Reference refused at 0.29s forecast by unchanged 5mm self-contact threshold: left_thigh/left_foot 6.277mm. No usable reference, zero SLOW physical decisions, no standing.",
+  "retainedAudit": {
+    "physicsIntegrations": 0,
+    "teacherFramesAudited": 12,
+    "rows": [
+      {
+        "timeSeconds": 0.024999999441206455,
+        "maximumActorActionError": 3.961620407111344e-06,
+        "maximumPoseObservationError": 1.1582738915216773e-07,
+        "headHeightM": 0.09000703
+      },
+      {
+        "timeSeconds": 0.04999999888241291,
+        "maximumActorActionError": 8.386727905207447e-07,
+        "maximumPoseObservationError": 2.6242090034322985e-07,
+        "headHeightM": 0.09041182
+      },
+      {
+        "timeSeconds": 0.07499999832361937,
+        "maximumActorActionError": 1.698234884259242e-06,
+        "maximumPoseObservationError": 2.0575142426967896e-07,
+        "headHeightM": 0.09002353
+      },
+      {
+        "timeSeconds": 0.09999999776482582,
+        "maximumActorActionError": 2.481738662712951e-06,
+        "maximumPoseObservationError": 1.929174952564061e-07,
+        "headHeightM": 0.089926705
+      },
+      {
+        "timeSeconds": 0.12499999720603228,
+        "maximumActorActionError": 8.371231079440378e-07,
+        "maximumPoseObservationError": 1.9827068592492836e-07,
+        "headHeightM": 0.090456106
+      },
+      {
+        "timeSeconds": 0.14999999664723873,
+        "maximumActorActionError": 8.384181594822682e-07,
+        "maximumPoseObservationError": 1.8486669250972199e-07,
+        "headHeightM": 0.09602019
+      },
+      {
+        "timeSeconds": 0.1749999960884452,
+        "maximumActorActionError": 7.802825927605284e-07,
+        "maximumPoseObservationError": 1.417651265822606e-07,
+        "headHeightM": 0.116423994
+      },
+      {
+        "timeSeconds": 0.19999999552965164,
+        "maximumActorActionError": 1.4331702423153736e-06,
+        "maximumPoseObservationError": 1.2793558226698032e-07,
+        "headHeightM": 0.15309288
+      },
+      {
+        "timeSeconds": 0.2249999949708581,
+        "maximumActorActionError": 1.7984771727430626e-07,
+        "maximumPoseObservationError": 3.1856614790548576e-07,
+        "headHeightM": 0.1930363
+      },
+      {
+        "timeSeconds": 0.24999999441206455,
+        "maximumActorActionError": 4.845314025558878e-07,
+        "maximumPoseObservationError": 1.5773794537210506e-07,
+        "headHeightM": 0.23756656
+      },
+      {
+        "timeSeconds": 0.274999993853271,
+        "maximumActorActionError": 1.6943008422920514e-06,
+        "maximumPoseObservationError": 1.2674213822894131e-07,
+        "headHeightM": 0.28474575
+      },
+      {
+        "timeSeconds": 0.2899999935179949,
+        "maximumActorActionError": 6.577967834875409e-07,
+        "maximumPoseObservationError": 1.8396953604948862e-07,
+        "headHeightM": 0.31917518
+      }
+    ],
+    "maximumActorActionError": 3.961620407111344e-06,
+    "maximumPoseObservationError": 3.1856614790548576e-07,
+    "finalFixedLinks": [
+      {
+        "body": "head",
+        "angleRad": 0.0,
+        "anchorSeparationM": 1.4449924045888817e-05
+      },
+      {
+        "body": "right_hand",
+        "angleRad": 0.0,
+        "anchorSeparationM": 2.3815200159911762e-05
+      },
+      {
+        "body": "left_hand",
+        "angleRad": 0.0,
+        "anchorSeparationM": 2.3833918117522733e-05
+      }
+    ],
+    "nativeFailure": {
+      "tick": 11,
+      "substep": 11,
+      "check": "self-contact",
+      "offending": "left_thigh/left_foot",
+      "measured": 0.0062771253,
+      "threshold": 0.005
+    },
+    "referenceFrames": 0,
+    "studentDecisions": 0,
+    "standingPassed": false
+  },
+  "clockComparison": {
+    "physicsIntegrations": 0,
+    "realSeedSegmentsExactlyEqual": true,
+    "firstTeacherObservationExactlyEqual": true,
+    "firstTeacherActionExactlyEqual": true,
+    "sameRealTimeS": true,
+    "coarseForecastEndS": 0.08,
+    "nativeForecastEndS": 0.2899999935179949,
+    "nativeReportedDtS": 0.00125,
+    "coarseFailure": {
+      "tick": 3,
+      "substep": 0,
+      "check": "joint-limit",
+      "offending": "right_hand",
+      "measured": 0.06354662,
+      "threshold": 0.06
+    },
+    "nativeFailure": {
+      "tick": 11,
+      "substep": 11,
+      "check": "self-contact",
+      "offending": "left_thigh/left_foot",
+      "measured": 0.0062771253,
+      "threshold": 0.005
+    }
+  },
+  "contactGeometryAudit": {
+    "physicsIntegrations": 0,
+    "method": "Independent analytic closest capsule axes from archived poses, normalized read-only quaternions and original primitive radii",
+    "pairs": [
+      {
+        "primitive1": "left_thigh",
+        "primitive2": "left_left_foot",
+        "axisDistanceM": 0.08065788579739232,
+        "radiusSumM": 0.087,
+        "penetrationM": 0.0063421142026076766
+      },
+      {
+        "primitive1": "left_thigh",
+        "primitive2": "right_left_foot",
+        "axisDistanceM": 0.09530895077185082,
+        "radiusSumM": 0.087,
+        "penetrationM": 0.0
+      }
+    ],
+    "maximumPenetrationM": 0.0063421142026076766,
+    "nativePenetrationM": 0.0062771253,
+    "thresholdM": 0.005,
+    "differenceM": 6.49889026076763e-05
+  },
+  "remainingBudget": {
+    "nativeSteps": 10302,
+    "wallSeconds": 1573.6717057059968,
+    "automaticRenewal": false
+  },
+  "nextDecision": "Stop physical work. Native-clock defect is corrected and verified on a matched seed, but pinned WEAK still produces an inadmissible trajectory. Further work requires a concrete causal hypothesis and a new bounded protocol; this result proves neither anatomical impossibility nor successful policy transfer.",
+  "validationScope": "8 pure targeted GetUp Rust tests, 56 JS tooling tests, native/WASM fixed-observation parity, build, zero-step report read and postrun retained-input audits. Historical global Rust/TypeScript suite not claimed.",
+  "visualValidation": {
+    "file": "LaboratoireHumain-GetUp-retest-800Hz-2026-10-16.mp4",
+    "ffprobe": {
+      "programs": [],
+      "stream_groups": [],
+      "streams": [
+        {
+          "codec_name": "h264",
+          "width": 1280,
+          "height": 900,
+          "pix_fmt": "yuv420p",
+          "r_frame_rate": "20/1",
+          "nb_frames": "74",
+          "side_data_list": [
+            {}
+          ]
+        }
+      ],
+      "format": {
+        "duration": "3.700000",
+        "size": "142875"
+      }
+    },
+    "fullDecodePassed": true,
+    "lastRecordedFrameVisuallyInspected": true,
+    "comparisonImageVisuallyInspected": true,
+    "archivedStatesOnly": true,
+    "physicsIntegrations": 0
+  },
+  "evidence": {
+    "outputs/getup-policy-native-clock-2026-10-16/retained-audit.log": "e1ad8a47c0ea255f455e3a9e07169b5083860560c05e5a7852ab5d9d008080df",
+    "outputs/getup-policy-native-clock-2026-10-16/render-comparison.py": "b29ee398e601a741cb5ec2ffb585c657f6da022c29c82b6438fd03e7a9de8e72",
+    "outputs/getup-policy-native-clock-2026-10-16/build.log": "7028c00d8df614087094a0ea386fc2bb87ff8fc8f0ccf85dba457fac65f7e673",
+    "outputs/getup-policy-native-clock-2026-10-16/result.json": "8f01238110db1010105f3f2f72f04ed7a0e688235116b1665affa88adde01176",
+    "outputs/getup-policy-native-clock-2026-10-16/wasm-parity.log": "8629620ac58612c83774543ce7dd82be319a0ae566ba31ae528444dc114e2cb2",
+    "outputs/getup-policy-native-clock-2026-10-16/retained-audit.json": "e1ad8a47c0ea255f455e3a9e07169b5083860560c05e5a7852ab5d9d008080df",
+    "outputs/getup-policy-native-clock-2026-10-16/native-tests.log": "7a56ed171e864a44dd9ac620484a4f62e6265a33b1cd98bb47d9d19cbeaea291",
+    "outputs/getup-policy-native-clock-2026-10-16/clock-comparison.json": "eda657307fcd408875b4b2648a7cd80b71af60cab303949dc4c4c7dc4a35cdb5",
+    "outputs/getup-policy-native-clock-2026-10-16/reference-report.json": "9b274f10673b6d866fcad5d3ac77784ff0ca17590b91e53874d305812b69b1b6",
+    "outputs/getup-policy-native-clock-2026-10-16/wasm-zero-step.log": "acd5ffd462103499a4f536f282a1977838083d66fbe2c9e3835e94c2fe764ebe",
+    "outputs/getup-policy-native-clock-2026-10-16/video-validation.json": "9e2ac283b41663248b84a6f41758c04efaafc57ed33d3544af5b2dd3185c2830",
+    "outputs/getup-policy-native-clock-2026-10-16/started-once": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "outputs/getup-policy-native-clock-2026-10-16/trace.ndjson": "0529850a45e151be1eec9f5a622e2a0fdc7707d75fcb729f8a86b32b8307ea92",
+    "outputs/getup-policy-native-clock-2026-10-16/contact-geometry-audit.json": "5caefd8a6639051d7dd2426411e3ce68793870b6e7981c9db00323a576318a2b",
+    "outputs/getup-policy-native-clock-2026-10-16/wasm-zero-step-check-assumption.log": "4a3f7889c6f99c73fe49a40ebc311bb7e32d6bf8329ce2862cf6004a4a163ee3",
+    "outputs/getup-policy-native-clock-2026-10-16/physical-run.log": "f58cf1f29ff93a377a541331ae3781f361ec93b606fbbe8eafbea220a7d06133",
+    "outputs/getup-policy-native-clock-2026-10-16/tooling-tests.log": "d2f64f152eafd20f6d5a5972035b30ce19af1f9a5a7b578b9b28187659757d90",
+    "outputs/getup-policy-native-clock-2026-10-16/audit-retained.py": "87b9b380743262de408bba1ea6f8fb6565e53a053de6734d5d4d00aabb893b43"
   }
 }
