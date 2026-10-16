@@ -61,6 +61,7 @@ class Stable:
    except QhullError:pass
   positions=w.arr(3,(17,3))[feet].copy();lin=float(np.linalg.norm(vel[:,3:],axis=1).max());ang=float(np.linalg.norm(vel[:,:3],axis=1).max());other=max(loads[i] for i in range(1,17) if i not in feet)
   conditions={'head':row['headHeightM']>=1.4,'upright':row['observation'][36]>=.97,'bothFeet':bool(np.all(loads[feet]>=3)),'footWeight':float(loads[feet].sum())>=.8*mass*9.81,'onlyFeet':other<3,'linearSpeed':lin<=.22,'angularSpeed':ang<=.65,'balance':margin is not None and margin>=-1e-6}
+  conditions={name:bool(value) for name,value in conditions.items()}
   stable=all(conditions.values());drift=None
   if stable:
    if self.anchors is None:self.anchors=positions
@@ -95,7 +96,8 @@ def prepare(teacher,student,spline):
   sample={k:np.random.RandomState(i).normal(size=(5,n)) for i,(k,n) in enumerate([('qpos',28),('qvel',27),('com',3),('com_ori',3)])};result=spline(sample,.5,False);assert all(v.shape[0]==10 and np.allclose(v[0],sample[k][0]*(.5 if k=='qvel' else 1)) for k,v in result.items())
   w.install(base,np.zeros(27));assert w.lib.lh_step(w.h,0)==-1 and w.dim(6)==0
   row=w.snapshot(0,np.zeros(21));observed=Stable(.005).update(w,row,0);assert observed['stableSeconds']==0 and sum(observed['footLoadsN'])==0
-  result={'passed':True,'physicsIntegrations':0,'randomizerFixtures':32,'actorFixtures':32,'pdFixtures':32,'maximumActorError':maxerror,'sourceInterpolationEndpointsAndSpeedPassed':True,'zeroBudgetStepRejected':True,'standingCannotPassBeforeSolvedLoads':True,'staticForwards':SourceWorld.forwards,'versions':{'mujoco':213,'torch':torch.__version__,'numpy':np.__version__,'scipy':scipy.__version__}}
+  json.dumps(observed,allow_nan=False)  # Regression: NumPy predicates must serialize.
+  result={'passed':True,'physicsIntegrations':0,'randomizerFixtures':32,'actorFixtures':32,'pdFixtures':32,'maximumActorError':maxerror,'sourceInterpolationEndpointsAndSpeedPassed':True,'zeroBudgetStepRejected':True,'standingCannotPassBeforeSolvedLoads':True,'standingPredicatesSerialize':True,'staticForwards':SourceWorld.forwards,'versions':{'mujoco':213,'torch':torch.__version__,'numpy':np.__version__,'scipy':scipy.__version__}}
   write(OUT/'preflight.json',result);print(json.dumps(result,indent=2))
  finally:w.close()
 def run(teacher,student,spline):

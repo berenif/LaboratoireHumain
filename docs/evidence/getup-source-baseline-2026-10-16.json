@@ -37,7 +37,7 @@
   "appSelfContactGateM": 0.005,
   "sourceBaselineDoesNotAbortAt5mm": true,
   "newRapierSteps": 0,
-  "retryOutsideOriginalTeacherLoop": false,
+  "retryOutsideOriginalTeacherLoop": "One explicit harness-only continuation after serialization failure. No further restart, seed or speed variant.",
   "refund": false,
   "automaticRenewal": false,
   "stop": "9760 total integrations,180s wall, nonfinite state, engine warning, missing counters; no renewed run or seed/speed variant.",
@@ -97,5 +97,56 @@
     "scripts/getup-diagnostic/compare_mujoco.py": "0173722caec508da85b253ed1e3b2b768ec1b3a2faa0d7f5f606e9522830afef",
     "scripts/getup-diagnostic/mujoco_bridge.c": "2ff4ce256d4c4667371abccc7d84d435c31d254d04c88240285e272264bf7196",
     "scripts/getup-diagnostic/source_baseline.py": "e8cb03d9e5aa1768fa9dcdec5651f5b03fee787ebea04ff795fd6c0217543319"
+  },
+  "harnessContinuation": {
+    "status": "admitted",
+    "admittedUtc": "2026-10-16T17:10:32.609733+00:00",
+    "cause": "NumPy boolean in standing predicate failed JSON serialization after first student integration; no native physics failure.",
+    "maximumContinuations": 1,
+    "countedStepsBeforeContinuation": 966,
+    "interruptedStudentCountedSteps": 1,
+    "interruptedStudentUnarchivedSteps": 1,
+    "teacherReplayed": false,
+    "sourcePreparationReplayed": false,
+    "sourceReferenceRecomputed": false,
+    "studentInitialState": "Exact archived initial qpos/qvel and first residual verified before advancing; restart of same source student baseline, not continuous carry-over of engine state.",
+    "completeStudentSteps": 4320,
+    "plannedTotalActualSteps": 5286,
+    "nativeReservationUnchanged": 9760,
+    "wallReservationUnchangedSeconds": 180,
+    "wallAccounting": "Sum active diagnostic process runtimes; preparation/repair interval performs no physics. Prior2.169660153s deducted from the unchanged180s compute-wall cap. New one-shot continuation deadline is logged before source integration.",
+    "wallUsedBeforeContinuationSeconds": 2.1696601530020416,
+    "maximumContinuationComputeSeconds": 177.83033984699796,
+    "physicsCriteriaChanged": false
+  },
+  "continuationPreflight": {
+    "passed": true,
+    "physicsIntegrations": 0,
+    "randomizerFixtures": 32,
+    "actorFixtures": 32,
+    "pdFixtures": 32,
+    "maximumActorError": 0.0,
+    "sourceInterpolationEndpointsAndSpeedPassed": true,
+    "zeroBudgetStepRejected": true,
+    "standingCannotPassBeforeSolvedLoads": true,
+    "standingPredicatesSerialize": true,
+    "staticForwards": 1,
+    "versions": {
+      "mujoco": 213,
+      "torch": "2.9.1+cpu",
+      "numpy": "2.3.5",
+      "scipy": "1.17.0"
+    }
+  },
+  "continuationInputs": {
+    "scripts/getup-diagnostic/source_baseline.py": "cdc3ad8d7e1b3d730839f796e876c3d912a7c7f977a1506de3a0e1f8856fdeb9",
+    "scripts/getup-diagnostic/resume_source_student.py": "f561070efef2fa621d62baeef12055124391cbcc0f7d0e09b4a49e8e954a9b50",
+    "scripts/getup-diagnostic/compare_mujoco.py": "0173722caec508da85b253ed1e3b2b768ec1b3a2faa0d7f5f606e9522830afef",
+    "outputs/getup-source-baseline-2026-10-16/source-reference.npz": "7938f595d6a28ad88f633c94329e733dcf5e170d7e1489da0c3b8d27dc1b26fc",
+    "outputs/getup-source-baseline-2026-10-16/student-initial.json": "441235f859b72d48a723fc1022ed4e7578749cd8ba5cdcb73cbbb1fa79f2d5db",
+    "outputs/getup-source-baseline-2026-10-16/interrupted-segment/result.json": "fa70ee72f055660da3aef00e8d58a6ac76b1583b59bb0adf04c7791642cb8087",
+    "outputs/getup-source-baseline-2026-10-16/decisions.ndjson": "423541adb1ae29679f751b52d8c06b8e8c3647445ca400718dfe74139136fa52",
+    "outputs/getup-source-baseline-2026-10-16/mujoco_bridge.so": "6a595231e3396e0efdc1ee18152cde1ddeb136c882f78d4830b1843928c8d418",
+    "outputs/getup-source-baseline-2026-10-16/preflight.json": "870e5b2b2e0be93892271d474f08b90e3ec25d7218adb7ed6db40cde7af8d0d8"
   }
 }
