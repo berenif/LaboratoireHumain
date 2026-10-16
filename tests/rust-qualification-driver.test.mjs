@@ -37,7 +37,7 @@ async function driverHarness(qualified = true) {
   const handIndex = 24;
   const snapshot = (request, tick, handX, acknowledgements = []) => {
     const zero = { x: 0, y: 0, z: 0 };
-    const segments = Array.from({ length: 25 }, (_, index) => ({ id: index === handIndex ? 'rightHand' : `body${index}`,
+    const segments = Array.from({ length: 25 }, (_, index) => ({ id: index === handIndex ? 'right_hand' : `body${index}`,
       position: { x: index === handIndex ? handX : 0, y: 1, z: 0 }, rotation: { ...zero, w: 1 },
       linearVelocity: zero, angularVelocity: zero }));
     const poses = new Float32Array(25 * 13);
@@ -45,12 +45,12 @@ async function driverHarness(qualified = true) {
     worker.onmessage({ data: { type: 'snapshot', requestId: request.requestId, bufferId: 0, poseBuffer: poses.buffer,
       transferBuffersAllocated: 3, workerAtMs: clock, workerTimeOriginMs: 1000, workerIdentity: 'same-physical-worker',
       reply: { mode: 'protocol', failure: null, paused: false, visible: true, completed_ticks: request.type === 'advance' ? 1 : 0,
-        acknowledgements, snapshot: { stamp, simulation_time_s: tick / 60, segments, contacts: [],
+        acknowledgements, snapshot: { stamp, simulation_time_s: tick / 40, segments, contacts: [],
           motion: 'Upright', counters: { strikes: 0, falls: 0, recoveries: 1, steps: 0 }, diagnostics: {},
           striker: { available: true, phase: 'idle', impact_id: 0, last_impact_impulse_ns: 0 } } },
       ...(qualified ? { recoveryProgress: { profile, generation: 1, bodyHandles: Array.from({ length: 25 }, (_, i) => [i, 0]),
         jointHandles: [null, ...Array.from({ length: 24 }, (_, i) => [i, 0])], ownershipUnchanged: true, releaseAccepted: false,
-        firstFailure: null, substepsCompleted: tick * 4, stableSubsteps: 240 } } : {}) } });
+        firstFailure: null, substepsCompleted: tick * 20, stableSubsteps: 800 } } : {}) } });
   };
   worker.onmessage({ data: { type: 'ready', schema: 4, maximumBuffers: 3, maximumAdvanceTicks: 4 } });
   snapshot(messages.find(value => value.type === 'initialize'), 0, 0);
@@ -64,14 +64,14 @@ async function driverHarness(qualified = true) {
 test('qualification press waits for an outstanding advance and prepares the current physical anchor before the next tick', async () => {
   const h = await driverHarness();
   try {
-    h.frame(20);
+    h.frame(30);
     const inFlight = h.latest('advance');
     assert.equal(inFlight.ticks, 1); assert.equal(h.bridge.diagnostics.outstanding, true);
     const oldOrigin = structuredClone(h.bridge.diagnostics.snapshot.segments[h.handIndex].position);
     const pressed = h.bridge.qualificationGrabBegin({ press: 1, segment: h.handIndex });
     assert.equal(h.bridge.diagnostics.queueDepth, 1);
     assert.equal(h.messages.filter(value => value.type === 'commands').length, 0, 'Cannot bypass the outstanding request');
-    h.frame(40); // Accumulate another tick while the original advance is pending.
+    h.frame(60); // Accumulate another tick while the original advance is pending.
     h.snapshot(inFlight, 1, 0.001);
     const press = h.latest('commands'), command = press.commands[0];
     assert.equal(command.stamp.tick, 1); assert.equal(command.stamp.generation, 1);

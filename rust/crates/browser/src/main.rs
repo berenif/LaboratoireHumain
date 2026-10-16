@@ -123,7 +123,7 @@ mod browser {
                         <label>"Starting heading"<select id="heading" disabled=move||!status.get().ready prop:value=move||status.get().heading.to_string() on:change=move|e|emit(serde_json::json!({"type":"heading","value":event_target_value(&e)}))><option value="0">"Front · 0°"</option><option value="1.0471975512">"Turn · +60°"</option><option value="-0.7853981634">"Turn · −45°"</option></select></label>
                         <label>"Select a region"<select id="region" prop:value=move||status.get().selected on:change=move|e|emit(serde_json::json!({"type":"region","value":event_target_value(&e)}))>
                             <option value="">"All surfaces"</option><option value="head">"Head"</option><option value="torso">"Torso"</option><option value="pelvis">"Pelvis"</option>
-                            <option value="leftHand">"Left hand"</option><option value="rightHand">"Right hand"</option><option value="leftFoot">"Left foot"</option><option value="rightFoot">"Right foot"</option>
+                            <option value="left_hand">"Left hand"</option><option value="right_hand">"Right hand"</option><option value="left_foot">"Left foot"</option><option value="right_foot">"Right foot"</option>
                         </select></label>
                         <Show when=move||status.get().mode=="playground">
                             <label>"Station"<select id="station" disabled=move||!status.get().ready prop:value=move||status.get().station on:change=move|e|emit(serde_json::json!({"type":"station","value":event_target_value(&e)}))>
@@ -145,7 +145,7 @@ mod browser {
                         <div class="select-row"><label>"Renderer"<select id="renderer" prop:value=move||status.get().requested_renderer on:change=move|e|emit(serde_json::json!({"type":"renderer","value":event_target_value(&e)}))><option value="auto">"Auto"</option><option value="webgpu">"WebGPU"</option><option value="webgl2">"WebGL2"</option></select></label>
                         <label>"Quality"<select id="quality" prop:value=move||status.get().quality on:change=move|e|emit(serde_json::json!({"type":"quality","value":event_target_value(&e)}))><option value="auto">"Auto"</option><option value="low">"Low"</option><option value="high">"High"</option></select></label></div>
                     </div>
-                    <div class="body-spec"><span><b>"25"</b>" segments"</span><span><b>"72.2"</b>" kg"</span><span><b>"1.84"</b>" m"</span></div>
+                    <div class="body-spec"><span><b>"16"</b>" bodies · 21 joints"</span><span><b>"40.84"</b>" kg"</span><span><b>"1.57"</b>" m"</span></div>
                 </aside>
                 <section class="scene" aria-label="Physical experiment" data-tick=move||status.get().tick.to_string() data-generation=move||status.get().generation.to_string()>
                     <div class="scene-top"><span class="live-dot"></span><span id="recovery-step">{move||if status.get().halted {"Trial stopped".to_string()}else if !status.get().ready {"Starting experiment".to_string()}else if status.get().paused {"Trial paused".to_string()}else if !status.get().recovery_step.is_empty() {status.get().recovery_step}else{"Trial running".to_string()}}</span><span class="backend">{move||status.get().backend}</span></div>
@@ -162,7 +162,7 @@ mod browser {
                     <div><span>"SIMULATION / WALL"</span><strong>{move||format!("{:.2}×",status.get().realtime_ratio)}</strong></div>
                 </section>
             </main>
-            <footer>"Recovery study: stable support and arm release. Full get-up is not qualified."</footer>
+            <footer>"GetUp reference body. The learned recovery policy is not integrated."</footer>
         }
     }
     pub fn run() {

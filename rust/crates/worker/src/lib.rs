@@ -1,12 +1,7 @@
 //! WASM worker boundary. The renderer never owns or imports this simulation.
 #[cfg(any(target_arch = "wasm32", test))]
 fn default_browser_profile() -> lh_sim::Profile {
-    lh_sim::Profile {
-        id: "rust-physics-v25-browser-first-phase".into(),
-        recovery_enabled: true,
-        recovery_first_phase_only: true,
-        ..Default::default()
-    }
+    lh_sim::Profile::default()
 }
 
 #[cfg(target_arch = "wasm32")]
@@ -325,17 +320,13 @@ pub use browser::*;
 #[cfg(test)]
 mod tests {
     #[test]
-    fn browser_getup_preserves_the_physical_profile() {
+    fn browser_uses_the_single_reference_body_profile() {
         let profile = super::default_browser_profile();
         profile.validate().unwrap();
-        assert!(profile.recovery_enabled);
-        assert!(profile.recovery_first_phase_only);
+        assert!(!profile.recovery_enabled && !profile.recovery_first_phase_only);
         assert!(!profile.corrective_steps_enabled);
-        let mut browser = serde_json::to_value(profile).unwrap();
-        let baseline = serde_json::to_value(lh_sim::Profile::default()).unwrap();
-        browser["id"] = baseline["id"].clone();
-        browser["recovery_enabled"] = baseline["recovery_enabled"].clone();
-        browser.as_object_mut().unwrap().remove("recovery_first_phase_only");
-        assert_eq!(browser, baseline, "Only recovery scope may change");
+        assert_eq!(profile.dt_s, 0.00125);
+        assert_eq!(profile.tick_substeps, 20);
+        assert_eq!(serde_json::to_value(profile).unwrap(), serde_json::to_value(lh_sim::Profile::default()).unwrap());
     }
 }

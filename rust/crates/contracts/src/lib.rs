@@ -4,9 +4,9 @@ use serde::{Deserialize, Serialize};
 use std::collections::BTreeMap;
 
 pub const SCHEMA_VERSION: u16 = 4;
-pub const TICK_HZ: u32 = 60;
-pub const SUBSTEPS: u32 = 4;
-pub const SUBSTEP_S: f32 = 1.0 / 240.0;
+pub const TICK_HZ: u32 = 40;
+pub const SUBSTEPS: u32 = 20;
+pub const SUBSTEP_S: f32 = 1.0 / 800.0;
 pub const MAX_QUEUED_COMMANDS: usize = 128;
 pub const MAX_FUTURE_TICKS: u64 = 120;
 pub const MAX_ADVANCE_TICKS: u32 = 4;
@@ -180,6 +180,8 @@ pub struct Contact {
 }
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
 pub struct Diagnostics {
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub getup: Option<GetUpObservation>,
     /// None until the actual runtime path supplies a timing measurement.
     pub controller_ms: Option<f64>,
     pub update_ms: Option<f64>,
@@ -204,6 +206,20 @@ pub struct Diagnostics {
     pub max_floor_penetration_m: f32,
     pub max_self_penetration_m: f32,
     pub max_limit_error_rad: f32,
+}
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct GetUpObservation {
+    pub controller: String,
+    pub learned_policy_loaded: bool,
+    pub source_bodies: u32,
+    pub coordinate_frames: u32,
+    pub active_hinges: u32,
+    pub joint_angles_rad: Vec<f32>,
+    pub joint_velocities_radps: Vec<f32>,
+    pub motor_controls: Vec<f32>,
+    pub physics_step_s: f32,
+    pub policy_step_s: f32,
+    pub observation: Vec<f32>,
 }
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct MotorDelivery {

@@ -86,7 +86,8 @@ impl Simulation {
             self.motion_observation.unsupported_s + self.profile.dt_s
         };
         if matches!(self.motion, Motion::Upright | Motion::Reacting) {
-            let pelvis = &self.world.bodies[self.bodies[0]];
+            let pelvis_index=self.model.segments.iter().position(|p|p.id=="pelvis").unwrap_or(0);
+            let pelvis = &self.world.bodies[self.bodies[pelvis_index]];
             let torso_up = (*self.world.bodies[self.bodies[torso]].rotation() * Vector::Y).y;
             let support_loss_limit = if self.environment.is_some()
                 && self.world.colliders[self.floor].is_enabled()

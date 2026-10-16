@@ -217,6 +217,7 @@ pub(crate) fn inspect_world(
         {
             return Err(fail("finite", s.model.segments[i].id.clone(), 0.0, 0.0));
         }
+        if c.is_enabled() {
         let body_bounds = *bounds[i].get_or_insert_with(|| c.compute_aabb());
         for (surface, surface_bounds) in &environment {
             if !surface.is_enabled() {
@@ -266,16 +267,18 @@ pub(crate) fn inspect_world(
                 ));
             }
         }
+        }
         if let Some(p) = &s.model.segments[i].joint_profile {
-            let h = s.joints[i]
-                .ok_or_else(|| fail("ownership", s.model.segments[i].id.clone(), 0.0, 0.0))?;
-            let joint = world
-                .impulse_joints
-                .get(h)
-                .ok_or_else(|| fail("ownership", s.model.segments[i].id.clone(), 0.0, 0.0))?;
+            let parent_handle = if let Some(h) = s.joints[i] {
+                world.impulse_joints.get(h).ok_or_else(|| fail("ownership", s.model.segments[i].id.clone(),0.0,0.0))?.body1()
+            } else {
+                let parent = s.model.segments.iter().position(|x|Some(&x.id)==s.model.segments[i].parent.as_ref())
+                    .ok_or_else(||fail("ownership",s.model.segments[i].id.clone(),0.0,0.0))?;
+                s.bodies[parent]
+            };
             let parent = world
                 .bodies
-                .get(joint.body1())
+                .get(parent_handle)
                 .ok_or_else(|| fail("ownership", s.model.segments[i].id.clone(), 0.0, 0.0))?;
             let pa = parent
                 .position()

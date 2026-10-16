@@ -46,8 +46,7 @@ export async function start_bridge() {
   }
   function status() {
     const snapshot = state.last?.reply.snapshot;
-    const firstPhase = snapshot?.diagnostics.recovery?.first_phase;
-    const folding = snapshot?.diagnostics.recovery?.arm_transfer?.endsWith(':Fold');
+    const getup = snapshot?.diagnostics.getup;
     const graphics = state.renderer ? JSON.parse(state.renderer.diagnostics()) : {};
     return {
       ready: Boolean(state.last && state.renderer && !state.changing && !state.graphicsFault && !state.failed),
@@ -63,7 +62,7 @@ export async function start_bridge() {
       strikes: snapshot?.counters.strikes || 0, strikerPhase: snapshot?.striker?.phase || '',
       canStrike: Boolean(snapshot?.striker?.available && state.renderer && !state.changing && !state.graphicsFault && !state.desiredPaused && state.visible && !state.failed && !state.workerFault && !state.outstanding?.strike && !state.pending.some(entry => entry.action === 'Strike')),
       motion: snapshot?.motion || 'Starting', falls: snapshot?.counters.falls || 0,
-      recoveryStep: !firstPhase ? '' : `${firstPhase.complete ? '3 · Hold for inspection' : folding ? '2 · Fold and clear the unloaded arm' : '1 · Stabilize support and unload the arm'} · ${firstPhase.blocked_reason || 'Supported arm clearance confirmed'}`,
+      recoveryStep: getup ? 'GetUp body · Reference PD · Learned policy not loaded' : '',
       floorEnabled: state.floorEnabled, desiredFloorEnabled: state.desiredFloorEnabled, error: state.error || state.graphicsError, workerMs: state.workerMs,
     };
   }
@@ -181,8 +180,8 @@ export async function start_bridge() {
     if (state.manual || !state.visible || state.desiredPaused || state.failed || !state.renderer || state.changing || state.graphicsFault) return;
     // Publish each automatic tick so input and presentation can run between
     // catch-up ticks. The reply pump drains the remaining accumulated time.
-    const ticks = Math.min(1, Math.floor(state.accumulator * 60 + 1e-8));
-    if (ticks) { state.accumulator -= ticks / 60; send({ type: 'advance', ticks }); }
+    const ticks = Math.min(1, Math.floor(state.accumulator * 40 + 1e-8));
+    if (ticks) { state.accumulator -= ticks / 40; send({ type: 'advance', ticks }); }
   }
   function acceptPresentation() {
     if (state.renderer && state.last) {
@@ -520,7 +519,7 @@ export async function start_bridge() {
         // replies. Pending commands are sent before the next automatic tick.
         const prepare = snapshot => {
           const pose = snapshot.segments[segment];
-          if (!pose || !['leftHand', 'rightHand'].includes(pose.id) || !Object.values(pose.position).every(Number.isFinite))
+          if (!pose || !['left_hand', 'right_hand'].includes(pose.id) || !Object.values(pose.position).every(Number.isFinite))
             throw new Error('Qualification press requires a physical hand snapshot');
           preparedOrigin = { ...pose.position };
           preparedStamp = { generation: snapshot.stamp.generation, tick: snapshot.stamp.tick };
