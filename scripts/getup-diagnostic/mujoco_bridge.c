@@ -5,14 +5,22 @@
 #include <stdlib.h>
 #include <string.h>
 
-typedef struct { mjModel *m; mjData *d; int steps; } LH;
+typedef struct {
+    mjModel *m; mjData *d; int steps;
+    double solved_loads[17];
+    double support_points[128]; int support_count;
+    int feet[2];
+} LH;
 int lh_version(void) { return mj_version(); }
 void *lh_open(const char *xml, char *error, int length) {
     mjModel *m = mj_loadXML(xml, NULL, error, length);
     if (!m) return NULL;
     mjData *d = mj_makeData(m);
     if (!d) { mj_deleteModel(m); return NULL; }
-    LH *h = calloc(1, sizeof(LH)); h->m = m; h->d = d; return h;
+    LH *h = calloc(1, sizeof(LH)); h->m = m; h->d = d;
+    h->feet[0]=mj_name2id(m,mjOBJ_BODY,"left_foot");
+    h->feet[1]=mj_name2id(m,mjOBJ_BODY,"right_foot");
+    return h;
 }
 void lh_close(LH *h) { if(h) { mj_deleteData(h->d); mj_deleteModel(h->m); free(h); } }
 int lh_dim(LH *h, int k) {
@@ -41,19 +49,55 @@ double *lh_array(LH *h, int k) {
     case 14:return h->m->actuator_gear; case 15:return h->d->qacc;
     case 16:return h->m->jnt_range; case 17:return h->m->dof_damping;
     case 18:return h->m->dof_armature; case 19:return h->m->jnt_stiffness;
+    case 20:return h->solved_loads; case 21:return h->support_points;
     default:return NULL; }
+}
+static void forward_without_actuation(LH *h) {
+    int flags=h->m->opt.disableflags;
+    h->m->opt.disableflags|=mjDSBL_ACTUATION;
+    mj_forward(h->m,h->d);
+    h->m->opt.disableflags=flags;
+}
+void lh_reset_data(LH *h) {
+    mj_resetData(h->m,h->d);
+    memset(h->solved_loads,0,sizeof(h->solved_loads)); h->support_count=0;
+    forward_without_actuation(h);
+}
+void lh_assign_state(LH *h, const double *qpos, const double *qvel) {
+    memcpy(h->d->qpos,qpos,h->m->nq*sizeof(double));
+    memcpy(h->d->qvel,qvel,h->m->nv*sizeof(double));
+    forward_without_actuation(h);
 }
 void lh_set_state(LH *h, const double *qpos, const double *qvel) {
     mj_resetData(h->m,h->d);
-    memcpy(h->d->qpos,qpos,h->m->nq*sizeof(double));
-    memcpy(h->d->qvel,qvel,h->m->nv*sizeof(double));
-    mj_forward(h->m,h->d);
+    memset(h->solved_loads,0,sizeof(h->solved_loads)); h->support_count=0;
+    lh_assign_state(h,qpos,qvel);
 }
 void lh_forward(LH *h) { mj_forward(h->m,h->d); }
+int lh_support_count(LH *h) { return h->support_count; }
+void lh_body_velocity(LH *h, int body, double *out) {
+    mj_objectVelocity(h->m,h->d,mjOBJ_BODY,body,out,0);
+}
 int lh_step(LH *h, int maximum) {
     if(h->steps>=maximum) return -1;
     h->steps++;
     mj_step2(h->m,h->d);
+    /* Retain solved floor loads before step1 rebuilds the contact list. */
+    memset(h->solved_loads,0,sizeof(h->solved_loads)); h->support_count=0;
+    for(int i=0;i<h->d->ncon;i++) {
+        mjContact *c=&h->d->contact[i];
+        int a=h->m->geom_bodyid[c->geom1],b=h->m->geom_bodyid[c->geom2];
+        if((a==0)==(b==0)) continue;
+        double force[6]; mj_contactForce(h->m,h->d,i,force);
+        int body=a==0?b:a; double up=(a==0?1:-1)*c->frame[2];
+        if(body>=17 || up<0.65 || force[0]<=0) continue;
+        h->solved_loads[body]+=force[0]*up;
+        if((body==h->feet[0] || body==h->feet[1]) && h->support_count<64) {
+            h->support_points[2*h->support_count]=c->pos[0];
+            h->support_points[2*h->support_count+1]=c->pos[1];
+            h->support_count++;
+        }
+    }
     mj_step1(h->m,h->d);
     return h->steps;
 }

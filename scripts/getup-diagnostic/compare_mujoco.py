@@ -39,8 +39,8 @@ def actor():
 
 class World:
     forwards=0
-    def __init__(self,xml):
-        self.lib=ct.CDLL(str(OUT/'mujoco_bridge.so'));l=self.lib
+    def __init__(self,xml,bridge=None):
+        self.lib=ct.CDLL(str(bridge or OUT/'mujoco_bridge.so'));l=self.lib
         for name,args,ret in [('lh_version',[],ct.c_int),('lh_open',[ct.c_char_p,ct.c_char_p,ct.c_int],ct.c_void_p),('lh_close',[ct.c_void_p],None),('lh_dim',[ct.c_void_p,ct.c_int],ct.c_int),('lh_dt',[ct.c_void_p],ct.c_double),('lh_time',[ct.c_void_p],ct.c_double),('lh_warnings',[ct.c_void_p],ct.c_int),('lh_id',[ct.c_void_p,ct.c_int,ct.c_char_p],ct.c_int),('lh_name',[ct.c_void_p,ct.c_int,ct.c_int],ct.c_char_p),('lh_array',[ct.c_void_p,ct.c_int],ct.POINTER(ct.c_double)),('lh_set_state',[ct.c_void_p,ct.POINTER(ct.c_double),ct.POINTER(ct.c_double)],None),('lh_forward',[ct.c_void_p],None),('lh_step',[ct.c_void_p,ct.c_int],ct.c_int),('lh_contact',[ct.c_void_p,ct.c_int,ct.POINTER(ct.c_double)],ct.c_int)]:
             f=getattr(l,name);f.argtypes=args;f.restype=ret
         assert l.lh_version()==213
