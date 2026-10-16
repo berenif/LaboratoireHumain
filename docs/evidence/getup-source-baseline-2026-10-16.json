@@ -1,5 +1,5 @@
 {
-  "status": "reserved",
+  "status": "closed",
   "preparedUtc": "2026-10-16T16:59:29.192818+00:00",
   "authorization": "Owner explicitly approves pinned original-conditions GetUp positive control, including source reset/preparation, bounded teacher reference generation and complete SLOW if it fits. Diagnostic only; no app migration/training/gate change.",
   "sourceBase": "095afb9f5cfe4a2a9b529ce48c0bd1f8f2346b3c",
@@ -42,9 +42,11 @@
   "automaticRenewal": false,
   "stop": "9760 total integrations,180s wall, nonfinite state, engine warning, missing counters; no renewed run or seed/speed variant.",
   "TODO": [
-    "Implement original reset/teacher/spline/student and standing observer; no physical steps during preparation.",
-    "Freeze code/inputs and publish reservation.",
-    "Execute fixed baseline once, measure real source standing and penetration, close ledger and render archive-only clip."
+    "Completed: original source reset/preparation, WEAK, source spline and full SLOW.",
+    "Completed: independent1s physical standing audit and phase-specific penetration measurements.",
+    "Completed:5286 source steps counted including1 interrupted unarchived step, no refund.",
+    "Completed: validated archive-only clip; Library save confirmed separately.",
+    "Not qualified: unchanged app5mm gate exceeded; recovery remains disabled by default."
   ],
   "reservedUtc": "2026-10-16T17:06:08.058028+00:00",
   "nativeChargedAfter": 299998,
@@ -99,7 +101,7 @@
     "scripts/getup-diagnostic/source_baseline.py": "e8cb03d9e5aa1768fa9dcdec5651f5b03fee787ebea04ff795fd6c0217543319"
   },
   "harnessContinuation": {
-    "status": "admitted",
+    "status": "completed-with-counted-interruption",
     "admittedUtc": "2026-10-16T17:10:32.609733+00:00",
     "cause": "NumPy boolean in standing predicate failed JSON serialization after first student integration; no native physics failure.",
     "maximumContinuations": 1,
@@ -117,7 +119,10 @@
     "wallAccounting": "Sum active diagnostic process runtimes; preparation/repair interval performs no physics. Prior2.169660153s deducted from the unchanged180s compute-wall cap. New one-shot continuation deadline is logged before source integration.",
     "wallUsedBeforeContinuationSeconds": 2.1696601530020416,
     "maximumContinuationComputeSeconds": 177.83033984699796,
-    "physicsCriteriaChanged": false
+    "physicsCriteriaChanged": false,
+    "actualContinuationSteps": 4320,
+    "aggregateActiveComputeWallSeconds": 8.984897723003087,
+    "originalInterruptedStepRemainsCountedAndUnarchived": true
   },
   "continuationPreflight": {
     "passed": true,
@@ -148,5 +153,208 @@
     "outputs/getup-source-baseline-2026-10-16/decisions.ndjson": "423541adb1ae29679f751b52d8c06b8e8c3647445ca400718dfe74139136fa52",
     "outputs/getup-source-baseline-2026-10-16/mujoco_bridge.so": "6a595231e3396e0efdc1ee18152cde1ddeb136c882f78d4830b1843928c8d418",
     "outputs/getup-source-baseline-2026-10-16/preflight.json": "870e5b2b2e0be93892271d474f08b90e3ec25d7218adb7ed6db40cde7af8d0d8"
+  },
+  "closedUtc": "2026-10-16T17:16:02.427480+00:00",
+  "initialExecutionCommit": "9ae0a32ec022bebdedc3ca1f4f2249581e25cd68",
+  "continuationExecutionCommit": "835471c836b09e1579678385a45c135eb052f977",
+  "nativeActualSteps": 5286,
+  "newRapierNativeSteps": 0,
+  "wallActualSeconds": 8.984897723003087,
+  "phaseNativeSteps": {
+    "constructor-preparation-discarded": 400,
+    "teacher-1-preparation": 400,
+    "teacher-1": 165,
+    "student": 1,
+    "student-continuation": 4320
+  },
+  "sourceTeacherTerminalReached": true,
+  "completeSourceSlowEpisode": true,
+  "sourceActualStableStanding": true,
+  "fullGetUpQualified": false,
+  "standingAudit": {
+    "additionalPhysicsIntegrations": 0,
+    "completeSlowNativeSteps": 4320,
+    "sourceReferenceNativeTeacherSteps": 165,
+    "sourceReferenceFrames": 66,
+    "sourceSlowControlDecisions": 216,
+    "sourceSlowDurationS": 5.4,
+    "actualSourceStableStanding": true,
+    "firstOneSecondStableProofAtSourceTimeS": 3.4775,
+    "continuousStableDurationAtEndS": 2.9225,
+    "lastOneSecond": {
+      "minimumHeadHeightM": 1.452500000602644,
+      "minimumTorsoUp": 0.9994514006453814,
+      "minimumFeetLoadN": 400.554766570162,
+      "bodyWeightN": 400.6798481841053,
+      "maximumOtherFloorLoadN": 0.0,
+      "maximumBodyLinearSpeedMps": 0.006618065116461323,
+      "maximumBodyAngularSpeedRadps": 0.017230508529730758,
+      "maximumAnchorFootDriftM": 0.008570927677599443,
+      "minimumComCaptureHullMarginM": 0.05726002924398277
+    },
+    "completeSlowMaximumSelfPenetrationM": 0.008068479256249983,
+    "completeSlowMaximumSelfPenetrationAtS": 1.3274999999999773,
+    "completeSlowNativeStepsAbove5mm": 20,
+    "completeSlowTimeAbove5mmS": 0.025,
+    "maximumOverallSelfPenetrationM": 0.04717245782006818,
+    "qualification": false,
+    "nativeActualStepsIncludingInterruptedStudent": 5286,
+    "archivedStateRows": 5285,
+    "unarchivedInterruptedStepCount": 1,
+    "harnessContinuation": {
+      "reason": "TypeError('Object of type bool is not JSON serializable')",
+      "previousCountedSteps": 966,
+      "previousWallSeconds": 2.1696601530020416,
+      "unarchivedInterruptedStudentSteps": 1,
+      "referenceRegenerated": false,
+      "preparationOrTeacherReplayed": false,
+      "initialStudentStateReinstalled": true,
+      "sourceStudentRestartCount": 1,
+      "initialObservationAndResidualExactlyMatched": true
+    },
+    "interpretation": "Complete original-conditions SLOW reaches physically verified stable standing, while violating app5mm guard during movement. WEAK reaches source terminal but peaks47mm self penetration; the application cannot accept this as qualified recovery unchanged."
+  },
+  "phasePenetration": {
+    "constructor-preparation-discarded": {
+      "archivedNativeSteps": 400,
+      "maximumSelfPenetrationM": 0.010324990782052415,
+      "peakAtSourceTimeS": 0.5450000000000004,
+      "peakPair": {
+        "geom1": 4,
+        "geom2": 15,
+        "body1": "lower_waist",
+        "body2": "right_lower_arm",
+        "distanceM": -0.010324990782052415,
+        "positionSource": [
+          -0.025058287253377724,
+          -0.3006002565765203,
+          0.16735176051191428
+        ]
+      },
+      "maximumFloorPenetrationM": 0.02207008471534236,
+      "stepsAbove5mm": 5,
+      "headFinalM": 0.20248822779822154
+    },
+    "teacher-1-preparation": {
+      "archivedNativeSteps": 400,
+      "maximumSelfPenetrationM": 0.013177537890433001,
+      "peakAtSourceTimeS": 0.5600000000000004,
+      "peakPair": {
+        "geom1": 4,
+        "geom2": 14,
+        "body1": "lower_waist",
+        "body2": "right_upper_arm",
+        "distanceM": -0.013177537890433001,
+        "positionSource": [
+          -0.04915409827277938,
+          -0.2048145179548743,
+          0.13739000186492456
+        ]
+      },
+      "maximumFloorPenetrationM": 0.02930240544708409,
+      "stepsAbove5mm": 7,
+      "headFinalM": 0.18446741321599067
+    },
+    "teacher-1": {
+      "archivedNativeSteps": 165,
+      "maximumSelfPenetrationM": 0.04717245782006818,
+      "peakAtSourceTimeS": 2.4199999999999706,
+      "peakPair": {
+        "geom1": 10,
+        "geom2": 12,
+        "body1": "left_thigh",
+        "body2": "left_foot",
+        "distanceM": -0.04717245782006818,
+        "positionSource": [
+          -0.16089704026100266,
+          0.16699034807046242,
+          0.4080705272862404
+        ]
+      },
+      "maximumFloorPenetrationM": 0.020199800167688367,
+      "stepsAbove5mm": 34,
+      "headFinalM": 1.5413724847600871
+    },
+    "student-continuation": {
+      "archivedNativeSteps": 4320,
+      "maximumSelfPenetrationM": 0.008068479256249983,
+      "peakAtSourceTimeS": 1.3274999999999773,
+      "peakPair": {
+        "geom1": 7,
+        "geom2": 15,
+        "body1": "right_shin",
+        "body2": "right_lower_arm",
+        "distanceM": -0.008068479256249983,
+        "positionSource": [
+          -0.068328167549369,
+          0.017761048255237187,
+          0.34967083199755544
+        ]
+      },
+      "maximumFloorPenetrationM": 0.016929080852433612,
+      "stepsAbove5mm": 20,
+      "headFinalM": 1.452500000602644
+    }
+  },
+  "additionalPhysicsForAnalysis": 0,
+  "additionalPhysicsForRendering": 0,
+  "outcome": "Original-conditions pinned source baseline succeeds: WEAK33 decisions, complete SLOW216 decisions/5.4s, final continuous stable standing2.9225s, first1s proof3.4775s. WEAK self penetration47.172mm and complete SLOW8.068mm exceed unchanged app5mm gate; no project qualification.",
+  "remainingBudget": {
+    "nativeSteps": 2,
+    "wallSeconds": 1273.6717057059968,
+    "refund": false,
+    "automaticRenewal": false
+  },
+  "evidence": {
+    "outputs/getup-source-baseline-2026-10-16/student-initial.json": "441235f859b72d48a723fc1022ed4e7578749cd8ba5cdcb73cbbb1fa79f2d5db",
+    "outputs/getup-source-baseline-2026-10-16/student-constructor-reset.json": "74063c4c16d6bb2b48784d9a12e9634e9d9a320cd548b3668e9239627cdfc533",
+    "outputs/getup-source-baseline-2026-10-16/render.log": "d0b593d8cbed748d02ccabf6961d5a77e3e49520bd1d314011d65fc364d15540",
+    "outputs/getup-source-baseline-2026-10-16/student-discarded-reset.json": "98e04cd5a019fc744d6eee26111cf66f244a8d148e2b1b4698b3fee771409a6c",
+    "outputs/getup-source-baseline-2026-10-16/continuation-started-once": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "outputs/getup-source-baseline-2026-10-16/result.json": "a329208aa087b956b05af4992c9534c7b491f910773ced1efc7d6d8f36323e3b",
+    "outputs/getup-source-baseline-2026-10-16/teacher-reset-1.json": "fbdb427ccaac2314d3332bfdec8a903dd15ed81c3e0e3634537329de6017ad2a",
+    "outputs/getup-source-baseline-2026-10-16/student-continuation-decisions.ndjson": "bf7eeb9d12ece832ba921f8a65c50b29fb5c6cd89dee92f890310e4160e58e74",
+    "outputs/getup-source-baseline-2026-10-16/phase-penetration-summary.json": "e7f2ff224d23959ebea796104799a5a52edf2ebcdce129948e8d727ee9d5dcdd",
+    "outputs/getup-source-baseline-2026-10-16/source-reference.npz": "7938f595d6a28ad88f633c94329e733dcf5e170d7e1489da0c3b8d27dc1b26fc",
+    "outputs/getup-source-baseline-2026-10-16/preflight.json": "870e5b2b2e0be93892271d474f08b90e3ec25d7218adb7ed6db40cde7af8d0d8",
+    "outputs/getup-source-baseline-2026-10-16/continuation-launch.json": "4e3d1d423f2e883821585d1d15be189da990a2b13290f6c252def173b560891a",
+    "outputs/getup-source-baseline-2026-10-16/mujoco_bridge.so": "6a595231e3396e0efdc1ee18152cde1ddeb136c882f78d4830b1843928c8d418",
+    "outputs/getup-source-baseline-2026-10-16/started-once": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "outputs/getup-source-baseline-2026-10-16/constructor-reset.json": "922597d57f9e8f14f8efb84fa9e3ff26b9a9a1baba99ec320285b69e6cedb3cf",
+    "outputs/getup-source-baseline-2026-10-16/standing-audit.json": "13b6afed4f2efa127f5841350b7d5b72bf241703d8c74ffe08328f7715bd8b94",
+    "outputs/getup-source-baseline-2026-10-16/preflight.log": "870e5b2b2e0be93892271d474f08b90e3ec25d7218adb7ed6db40cde7af8d0d8",
+    "outputs/getup-source-baseline-2026-10-16/student-continuation-states.ndjson": "c0ab27de739c5f2632cd9437e62d492f471d40610ac357e859da40c7f1c436bd",
+    "outputs/getup-source-baseline-2026-10-16/standing-audit.log": "13b6afed4f2efa127f5841350b7d5b72bf241703d8c74ffe08328f7715bd8b94",
+    "outputs/getup-source-baseline-2026-10-16/frames.ndjson": "4a810ad108f455d12d314bb222f986a81c51c109be350faa13b9e5aba1aea5c7",
+    "outputs/getup-source-baseline-2026-10-16/decisions.ndjson": "423541adb1ae29679f751b52d8c06b8e8c3647445ca400718dfe74139136fa52",
+    "outputs/getup-source-baseline-2026-10-16/physical-run.log": "e4d72fe2c7ac60af02a42398982d24b1cebd9c5b34ddacae5acf954cc73c931e",
+    "outputs/getup-source-baseline-2026-10-16/states.ndjson": "81109c07195b432d8059cafed87eb185b3829d35334e53424410bfc844a31717",
+    "outputs/getup-source-baseline-2026-10-16/continuation-run.log": "5b224265be7d40e209c8585898e0478339a22e0e999c42c0fa8829adc2a1d405",
+    "outputs/getup-source-baseline-2026-10-16/video-validation.json": "088737cf0220d853e0664b07151632d4f3b047ab0412d48e4d46f1b4db6f8443"
+  },
+  "visualValidation": {
+    "file": "LaboratoireHumain-GetUp-source-positif-2026-10-16.mp4",
+    "ffprobe": {
+      "programs": [],
+      "stream_groups": [],
+      "streams": [
+        {
+          "codec_name": "h264",
+          "width": 1280,
+          "height": 720,
+          "pix_fmt": "yuv420p",
+          "r_frame_rate": "20/1",
+          "nb_frames": "124"
+        }
+      ],
+      "format": {
+        "duration": "6.200000",
+        "size": "155587"
+      }
+    },
+    "fullDecodePassed": true,
+    "finalFrameVisuallyInspected": true,
+    "archivedStatesOnly": true,
+    "physicsIntegrations": 0
   }
 }
