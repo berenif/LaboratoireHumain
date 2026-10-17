@@ -14,6 +14,13 @@ class ContactDynamicsTests(unittest.TestCase):
   floor=.015;height=floor+55e-6;velocity=-.01;acc=d.capsule_clearance_acceleration_lower(height,velocity);self.assertGreater(acc,.8)
   times=np.linspace(0.,.025,1001);self.assertGreaterEqual(min(height+velocity*times+.5*acc*times**2),floor-1e-10)
   with self.assertRaises(ValueError):d.capsule_clearance_acceleration_lower(floor-1e-6,.01)
+ def test_capsule_future_buffer_does_not_relax_current_physical_clearance(self):
+  for height,velocity in [(.0164,-.05),(.01534,-.031),(.01505,.001)]:
+   current=height-max(-velocity,0.)**2/4.-.015;self.assertGreater(current,0.);a=d.capsule_clearance_acceleration_lower(height,velocity,future_reserve=.00025);v=velocity+.025*a;h=height+.025*velocity+.5*.025**2*a
+   self.assertGreaterEqual(h-max(-v,0.)**2/4.-.015,min(.00025,current)-1e-10);times=np.linspace(0.,.025,1001);self.assertGreaterEqual(min(height+velocity*times+.5*a*times**2),.015-1e-10)
+   self.assertGreaterEqual(a,d.capsule_clearance_acceleration_lower(height,velocity)-1e-10)
+  with self.assertRaises(ValueError):d.capsule_clearance_acceleration_lower(.01499,.1,future_reserve=.00025)
+  with self.assertRaises(ValueError):d.capsule_clearance_acceleration_lower(.01501,-.01,future_reserve=.00025)
  def test_impact_speed_recovery_preserves_height_and_acceleration_bounds(self):
   for sign in [-1.,1.]:
    v=sign*.08474382;old=d.vertical_speed_acceleration_bounds(-.3,.3,v);self.assertGreater(old[0],old[1]);lo,hi=d.vertical_speed_acceleration_bounds(-.3,.3,v,True);self.assertLessEqual(lo,hi);self.assertGreaterEqual(lo,-.3);self.assertLessEqual(hi,.3)

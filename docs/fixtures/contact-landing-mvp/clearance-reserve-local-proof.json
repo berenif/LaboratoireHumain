@@ -1,0 +1,381 @@
+{
+  "status": "local-clearance-continuation-only-no-placement-landing-or-standing-proof",
+  "protocol": "4recordedprefixcommands then100ms feedback; no fullstep/landing qualification",
+  "physicalGates": {
+    "wholeCapsuleClearanceM": 0.015,
+    "unloadLandDisplacementM": 0.05,
+    "maximumLoadedSlipM": 0.01,
+    "postLandingStandingS": 5
+  },
+  "futureReserveM": 0.00025,
+  "futureReserveRule": "Future stopping reserve>=min(requested,current positive reserve); current physical15mm/continuous dip/current negative-reserve rejection unchanged. Empirical engineering margin, not native worst-case bound.",
+  "errorAudit": {
+    "sourceSHA256": {
+      "protocol": "1366aa90d67c72aa4590b744db6f5ed6887af91ee245b75fe1dca1fe7b74f490",
+      "hybrid": "0e3bb1474bc3502b85f11a324aa2c1b9655b00b3090677b2e904c45135d08b78",
+      "dynamicsHelper": "2aa4efe036224dfc4e70068957a08e435e0bae69fc8713f17c89839a0a7de102",
+      "model": "1611ec8c988c1006b0a819ab21e2b7c410adaaf512080be425d6d6e235a8926a"
+    },
+    "statisticColumns": [
+      "minimum",
+      "p05",
+      "median",
+      "p95",
+      "maximum",
+      "RMS"
+    ],
+    "groups": {
+      "all": {
+        "count": 124,
+        "metrics": {
+          "heightPredictionErrorM": [
+            -0.0006328745527291544,
+            -7.574852237289195e-05,
+            -2.560288058990265e-05,
+            3.2614995614804396e-05,
+            0.0015432838058320845,
+            0.00021529225916294586
+          ],
+          "poseTransportResidualM": [
+            -0.0021547500534024955,
+            -4.0578024885551475e-05,
+            -7.748485266690242e-06,
+            2.8446591748031867e-05,
+            0.001010706237642663,
+            0.00029673581250013446
+          ],
+          "accelerationHeightErrorComponentM": [
+            -0.001644157061849507,
+            -7.814843254521248e-05,
+            -1.3752519467405734e-05,
+            6.445524637670108e-05,
+            0.0036974616140017626,
+            0.0005087305462095303
+          ],
+          "parityHeightErrorComponentM": [
+            4.8718164320782355e-08,
+            9.709539614723786e-08,
+            3.365463179532454e-07,
+            6.147801543177241e-07,
+            8.065452485416566e-07,
+            4.2339534927050935e-07
+          ],
+          "modelAccelerationMps2": [
+            -12.773425597726012,
+            -2.8512645874811446,
+            0.09221453338259596,
+            2.905723558620165,
+            10.062472882105295,
+            2.4891522588961252
+          ],
+          "actualFinalVelocityAccelerationMps2": [
+            -4.3830517632712525,
+            -2.6034478441956814,
+            0.04228367297512163,
+            2.865015957152739,
+            4.947321569948496,
+            1.7332088863540878
+          ]
+        },
+        "largestAdverseHeightError": {
+          "timeS": 9.375,
+          "phase": "lift",
+          "endpoint": "right_left_foot:a",
+          "height0M": 0.003443896917750166,
+          "height1M": 0.007242269385904509,
+          "modelHeight0M": 0.003443322386366323,
+          "velocity0Mps": 0.059273573079476345,
+          "velocity1Mps": 0.16373972536145803,
+          "modelAccelerationMps2": 9.439948689197688,
+          "actualFinalVelocityAccelerationMps2": 4.178646091279267,
+          "predictedHeightM": 0.007875143938633663,
+          "heightPredictionErrorM": -0.0006328745527291544,
+          "poseTransportResidualM": 0.001010706237642663,
+          "accelerationHeightErrorComponentM": -0.001644157061849507,
+          "parityHeightErrorComponentM": 5.762714776898561e-07,
+          "algebraicClosureErrorM": -3.902704304474189e-19
+        }
+      },
+      "lift": {
+        "count": 100,
+        "metrics": {
+          "heightPredictionErrorM": [
+            -0.0006328745527291544,
+            -7.498273321297419e-05,
+            -2.7559425331405592e-05,
+            3.554911600556134e-05,
+            0.0015432838058320845,
+            0.00023902600461363582
+          ],
+          "poseTransportResidualM": [
+            -0.0021547500534024955,
+            -4.182228288560331e-05,
+            -7.915949946620871e-06,
+            2.958945395318278e-05,
+            0.001010706237642663,
+            0.00033035554796699736
+          ],
+          "accelerationHeightErrorComponentM": [
+            -0.001644157061849507,
+            -9.169636801887057e-05,
+            -1.7420354916188808e-05,
+            6.789007857325598e-05,
+            0.0036974616140017626,
+            0.0005661549146324216
+          ],
+          "parityHeightErrorComponentM": [
+            4.8718164320782355e-08,
+            9.788948040647019e-08,
+            3.9812573391969505e-07,
+            6.33058519257405e-07,
+            8.065452485416566e-07,
+            4.456525559376915e-07
+          ],
+          "modelAccelerationMps2": [
+            -12.773425597726012,
+            -2.558988389723153,
+            0.11196473058766879,
+            2.165175113789037,
+            10.062472882105295,
+            2.5682089684869185
+          ],
+          "actualFinalVelocityAccelerationMps2": [
+            -4.3830517632712525,
+            -2.595518203924991,
+            0.0755191924267002,
+            2.165324585261743,
+            4.947321569948496,
+            1.6113564135374334
+          ]
+        },
+        "largestAdverseHeightError": {
+          "timeS": 9.375,
+          "phase": "lift",
+          "endpoint": "right_left_foot:a",
+          "height0M": 0.003443896917750166,
+          "height1M": 0.007242269385904509,
+          "modelHeight0M": 0.003443322386366323,
+          "velocity0Mps": 0.059273573079476345,
+          "velocity1Mps": 0.16373972536145803,
+          "modelAccelerationMps2": 9.439948689197688,
+          "actualFinalVelocityAccelerationMps2": 4.178646091279267,
+          "predictedHeightM": 0.007875143938633663,
+          "heightPredictionErrorM": -0.0006328745527291544,
+          "poseTransportResidualM": 0.001010706237642663,
+          "accelerationHeightErrorComponentM": -0.001644157061849507,
+          "parityHeightErrorComponentM": 5.762714776898561e-07,
+          "algebraicClosureErrorM": -3.902704304474189e-19
+        }
+      },
+      "translate": {
+        "count": 24,
+        "metrics": {
+          "heightPredictionErrorM": [
+            -7.715958769448361e-05,
+            -7.468772767590808e-05,
+            -1.9363707290595555e-05,
+            1.9116827771525374e-05,
+            2.7524605466273597e-05,
+            3.7721988461837724e-05
+          ],
+          "poseTransportResidualM": [
+            -3.1390242975176284e-05,
+            -2.9312997241461687e-05,
+            -6.492833915676074e-06,
+            4.937514211912771e-06,
+            5.472259236356683e-06,
+            1.4414767943480572e-05
+          ],
+          "accelerationHeightErrorComponentM": [
+            -7.228202957388826e-05,
+            -7.123825300071956e-05,
+            -1.0144070022766438e-05,
+            4.63295197751953e-05,
+            5.778759776269589e-05,
+            4.0259872464068766e-05
+          ],
+          "parityHeightErrorComponentM": [
+            8.895669044769322e-08,
+            9.690138326549566e-08,
+            2.735391932322771e-07,
+            5.473951097494752e-07,
+            5.517187053953078e-07,
+            3.1411708537737554e-07
+          ],
+          "modelAccelerationMps2": [
+            -3.9559327604013106,
+            -3.4781736746518925,
+            -0.2820640374760926,
+            4.0197465066813844,
+            4.219468504773908,
+            2.1283724361423113
+          ],
+          "actualFinalVelocityAccelerationMps2": [
+            -4.186858071560715,
+            -3.676541658224685,
+            -0.23498580204802394,
+            3.918936823628174,
+            4.1198846564951905,
+            2.1684351911626116
+          ]
+        },
+        "largestAdverseHeightError": {
+          "timeS": 10.0,
+          "phase": "translate",
+          "endpoint": "left_left_foot:a",
+          "height0M": 0.03411958904070585,
+          "height1M": 0.035767821971798036,
+          "modelHeight0M": 0.03411930210931058,
+          "velocity0Mps": 0.11572286450642327,
+          "velocity1Mps": 0.016548680403663852,
+          "modelAccelerationMps2": -3.7356648694739345,
+          "actualFinalVelocityAccelerationMps2": -3.966967364110377,
+          "predictedHeightM": 0.03584498155949252,
+          "heightPredictionErrorM": -7.715958769448361e-05,
+          "poseTransportResidualM": -5.161380283900344e-06,
+          "accelerationHeightErrorComponentM": -7.228202957388826e-05,
+          "parityHeightErrorComponentM": 2.838221633043314e-07,
+          "algebraicClosureErrorM": 6.586739956086253e-19
+        }
+      }
+    },
+    "criticalEndpointInterval": {
+      "timeS": 10.0,
+      "phase": "translate",
+      "endpoint": "left_left_foot:b",
+      "height0M": 0.015342011992515777,
+      "height1M": 0.014980841084096915,
+      "modelHeight0M": 0.015341723594390223,
+      "velocity0Mps": -0.03084461689182752,
+      "velocity1Mps": 0.0016916557417001165,
+      "modelAccelerationMps2": 1.3920420991805693,
+      "actualFinalVelocityAccelerationMps2": 1.3014509053411054,
+      "predictedHeightM": 0.01500562259730789,
+      "heightPredictionErrorM": -2.4781513210975215e-05,
+      "poseTransportResidualM": 3.241105957730618e-06,
+      "accelerationHeightErrorComponentM": -2.8309748074832473e-05,
+      "parityHeightErrorComponentM": 2.8712890612573453e-07,
+      "algebraicClosureErrorM": 9.06007616206881e-19
+    },
+    "maximumAlgebraicClosureErrorM": 6.376781664285593e-18,
+    "conclusion": "Final15mm miss is predominantly adverse acceleration prediction, with positive transport contribution. A lagged observed transport correction is not validated. An80micrometre prospective height tightening covers the six observed placement intervals, but is not a certified future error bound. A subsequently approved0.25mm prospective reserve is separate from this read-only measurement; current15mm physical clearance remains unchanged."
+  },
+  "localContinuation": {
+    "checkpointSHA256": "f16d274065f9626df0a11ef27548a9743ff9936441387522c3081b35d7ea583f",
+    "matchedContinuationResponses": 16,
+    "prefixNativeFrames": 80,
+    "feedbackNativeFrames": 80,
+    "cases": [
+      {
+        "timeS": 9.975,
+        "nativeMinimumClearanceM": 0.01544889621436596,
+        "nextStoppingReserveM": 0.0003220365691508683,
+        "signedCaptureMarginBeforeM": -0.004231995713235653,
+        "swingJointVelocitiesAfterRadps": [
+          -0.5251180529594421,
+          -0.5359698534011841,
+          -0.4201880097389221,
+          -0.2955157458782196,
+          0.8882200717926025,
+          -0.7480974197387695
+        ],
+        "maximumMotorFraction": 0.8999999999995344,
+        "equalityError": 4.0421485603125973e-13,
+        "loadedSlipAfterM": [
+          0.007275772280991077,
+          0.0076934341341257095
+        ]
+      },
+      {
+        "timeS": 10.0,
+        "nativeMinimumClearanceM": 0.015220126137137413,
+        "nextStoppingReserveM": 0.00022582556507963134,
+        "signedCaptureMarginBeforeM": 0.015780673633164988,
+        "swingJointVelocitiesAfterRadps": [
+          -0.44371530413627625,
+          -0.4876934289932251,
+          -0.06844152510166168,
+          0.4989185631275177,
+          0.7170245051383972,
+          -0.5013803839683533
+        ],
+        "maximumMotorFraction": 0.8999999999991595,
+        "equalityError": 1.1657341758564144e-15,
+        "loadedSlipAfterM": [
+          0.007275772280991077,
+          0.007730686571449041
+        ]
+      },
+      {
+        "timeS": 10.025,
+        "nativeMinimumClearanceM": 0.01522919349372387,
+        "nextStoppingReserveM": 0.0003219287563018848,
+        "signedCaptureMarginBeforeM": -0.004823563434457861,
+        "swingJointVelocitiesAfterRadps": [
+          -0.2923487722873688,
+          0.26032641530036926,
+          -0.43421339988708496,
+          0.2674967348575592,
+          1.1251431703567505,
+          -0.28734418749809265
+        ],
+        "maximumMotorFraction": 0.900000000000394,
+        "equalityError": 2.821371608563439e-13,
+        "loadedSlipAfterM": [
+          0.007275772280991077,
+          0.007783003617078066
+        ]
+      },
+      {
+        "timeS": 10.049999999999999,
+        "nativeMinimumClearanceM": 0.015309842303395271,
+        "nextStoppingReserveM": 0.0002987937365721057,
+        "signedCaptureMarginBeforeM": 0.01555387351975901,
+        "swingJointVelocitiesAfterRadps": [
+          -0.276967853307724,
+          0.15112969279289246,
+          -0.138902485370636,
+          0.8561896681785583,
+          1.2002805471420288,
+          -0.29569417238235474
+        ],
+        "maximumMotorFraction": 0.899999999999223,
+        "equalityError": 3.0531133177191805e-16,
+        "loadedSlipAfterM": [
+          0.007275772280991077,
+          0.007841828279197216
+        ]
+      }
+    ],
+    "metrics": {
+      "unloadedRepositionEvents": [],
+      "maximumContinuousNativeStandingWithoutFootAnchorS": 0.0,
+      "maximumContinuousNativeStandingWithFootAnchorS": 0.0,
+      "loadedContactSlipIntegralM": [
+        0.0,
+        0.00018360967107582834
+      ],
+      "nonfootSupportObserved": false,
+      "flightNativeSamples": 0
+    },
+    "physicsWallSeconds": 0.5080818890000001,
+    "nativeSubsteps": 160
+  },
+  "B27": {
+    "physicsWallSeconds": 27.14219475400002,
+    "nativeSubsteps": 8160,
+    "outcome": "Actual14.98084mm clearance at10.025 fails15mm; final10.2 hardcapture conflicts with fastswingjointbraking, no qualifiedplacement/landing."
+  },
+  "aggregateLedger": {
+    "physicsWallSeconds": 587.5669310970001,
+    "physicsBudgetChargedSeconds": 592.5669310970001,
+    "nativeSubsteps": 172680,
+    "nativeSubstepsUpperBound": 172700
+  },
+  "rawArtifactSHA256": {
+    "batch28-future-clearance-reserve-audit/summary.json": "0a1b8b0243c0dc2cc2e9f47764fcd92021273ce4baaba9c0376ffc2feb0f544c",
+    "batch27-clearance-error-summary.json": "4b039894c6d761a5e4b178382b323f818af9b08cc6f80d3a1e4d4615bc4aad33",
+    "reduce-batch27-clearance-errors.py": "f892a719aaebed82bb851633782406f9c813aa504cc0d1e9aa2c82fb7302ac29",
+    "run-future-clearance-reserve-audit.py": "3ee985b7e335e2092a7d77cf13124a7afbf650bd7760ee46ff402a7a0e8dfd57"
+  }
+}

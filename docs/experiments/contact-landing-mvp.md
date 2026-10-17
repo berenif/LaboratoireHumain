@@ -452,3 +452,28 @@ Precision caveat for the earlier B24 governor-entry fork: the equivalent exact
 zero-slack certificate also removed tiny numerical slack, changing ungoverned
 reference torques by at most 0.000508 Nm and acceleration by 0.000982 rad/s².
 The observed knee-reference difference was 35.9 rad/s²; raw branches are retained.
+
+
+### B27–B28: quantified future clearance reserve
+
+B27 fails the unchanged 15 mm physical placement gate at 10.025 s: actual
+lowest endpoint is 14.980840 mm versus 15.005623 mm predicted. The −24.782 µm
+error is chiefly acceleration underdelivery (−28.310 µm), while pose transport
+contributes +3.241 µm. Across all four endpoints and six translation intervals,
+worst adverse prediction is −77.160 µm. A lagged transport predictor is not
+supported. The later 10.200 s rejection is independently a capture-rate versus
+fast swing-joint braking conflict, not an impact-speed/solver-status issue.
+
+The next opt-in adds a prospective 0.25 mm future stopping reserve, 3.2 times
+that observed translation error. It is an engineering margin, not a certified
+native bound. Current physical 15 mm clearance, current stopping viability and
+continuous within-decision clearance remain unchanged. If an already-positive
+reserve is inside the buffer, the prediction may not decrease it. Default zero
+retains the earlier model. No reserve applies during intended lowering.
+
+B28 replays four exact recorded commands to 9.975 s and runs 100 ms of feedback
+with the reserve. All four intervals stay above 15 mm (minimum 15.220 mm); final
+physical stopping reserve is +0.299 mm. No flight/non-foot support; local stance
+slip is 0.184 mm. Total 160 native frames / 0.50808 s physics. The actual capture
+margin alternates with changing contact triangles, so this is local clearance
+evidence only. Placement, landing and final standing remain unqualified.

@@ -107,11 +107,14 @@ def vertical_speed_acceleration_bounds(lower,upper,velocity,recovery=False,dt=.0
     return lower,upper
 
 
-def capsule_clearance_acceleration_lower(height,velocity,minimum=.015,brake=2.,dt=.025):
-    assert brake>0. and dt>0.
-    gap=height-minimum
-    if gap-max(-velocity,0.)**2/(2*brake)<-1e-9:raise ValueError('Already outside capsule clearance stopping reserve')
-    def future(a):return gap+dt*velocity+.5*dt*dt*a-max(-velocity-dt*a,0.)**2/(2*brake)
+def capsule_clearance_acceleration_lower(height,velocity,minimum=.015,brake=2.,dt=.025,future_reserve=0.):
+    assert brake>0. and dt>0. and 0.<=future_reserve<=.002
+    gap=height-minimum;current_reserve=gap-max(-velocity,0.)**2/(2*brake)
+    if current_reserve<-1e-9:raise ValueError('Already outside capsule clearance stopping reserve')
+    # Engineering future buffer only. Already-inside positive reserves must not
+    # decrease; neither current physical clearance nor continuous dip is waived.
+    required_reserve=min(future_reserve,max(current_reserve,0.))
+    def future(a):return gap-required_reserve+dt*velocity+.5*dt*dt*a-max(-velocity-dt*a,0.)**2/(2*brake)
     lower=-brake;upper=brake
     for _ in range(64):
         if future(lower)<=0.:break
@@ -204,15 +207,15 @@ class ContactDynamics:
             if low-1e-4<=q[i]<=low and v[6+i]<=0.:active.append((i,1.,low))
             elif high<=q[i]<=high+1e-4 and v[6+i]>=0.:active.append((i,-1.,high))
         return active
-    def swing_clearance_points(self,state,body='left_foot',minimum=.015,brake=2.):
+    def swing_clearance_points(self,state,body='left_foot',minimum=.015,brake=2.,future_reserve=0.):
         """True capsule endpoint lower-clearance/braking rows, model only."""
         pose=state['geometry'][0][body];pose2=state['geometryNext'][0][body];rows=[]
         for capsule in self.by_id[body]['reference']['primitives']:
             for end in ['a','b']:
                 local=np.r_[reference.xyz(capsule[end]),1.];point=(pose@local)[:3];point2=(pose2@local)[:3]
                 j=self.point_jacobian(state['geometry'],body,point)[0];j2=self.point_jacobian(state['geometryNext'],body,point2)[0];bias=(j2-j)@state['v']/state['directionalEpsilon'];velocity=j@state['v'];height=point[1]-capsule['radius'];reserve=height-max(-velocity[1],0.)**2/(2*brake)-minimum
-                lower=capsule_clearance_acceleration_lower(height,velocity[1],minimum,brake)
-                rows.append(dict(name=capsule['name']+':'+end,J=j[1],bias=float(bias[1]),height=float(height),velocity=float(velocity[1]),currentStoppingReserveM=float(reserve),lowerAcceleration=float(lower)))
+                lower=capsule_clearance_acceleration_lower(height,velocity[1],minimum,brake,future_reserve=future_reserve)
+                rows.append(dict(name=capsule['name']+':'+end,J=j[1],bias=float(bias[1]),height=float(height),velocity=float(velocity[1]),currentStoppingReserveM=float(reserve),futureRequestedReserveM=float(future_reserve),futureRequiredReserveM=float(min(future_reserve,max(reserve,0.))),lowerAcceleration=float(lower)))
         return rows
     def solve(self,state,target_com,target_rotation,posture,unload_left=False,swing=None,_inactive=None,left_force_ceiling_n=None,tracking=None,_released_stops=None,balance=None):
         if self.joint_stop_mode=='native-bound-release' and _released_stops is None:
@@ -390,7 +393,7 @@ class ContactDynamics:
             inequalities.extend([row,-row]);upper.extend([vertical_hi-state['comBias'][1],state['comBias'][1]-vertical_lo])
             balance_info.update(verticalHeightBoundsM=list(balance['heightBounds']),verticalAccelerationIntervalMps2=[float(vertical_lo),float(vertical_hi)],verticalModelBrakingMps2=.3,verticalSpeedRecoveryActive=speed_recovery)
             if balance.get('swingClearance'):
-                clear=balance['swingClearance'];clearance_points=self.swing_clearance_points(state,clear.get('body','left_foot'),clear.get('minimumM',.015),clear.get('modelBrakingMps2',2.))
+                clear=balance['swingClearance'];clearance_points=self.swing_clearance_points(state,clear.get('body','left_foot'),clear.get('minimumM',.015),clear.get('modelBrakingMps2',2.),clear.get('futureReserveM',0.))
                 for point in clearance_points:
                     row=np.zeros(n);row[:27]=-point['J'];inequalities.append(row);upper.append(point['bias']-point['lowerAcceleration'])
                 balance_info['swingClearance']=[{k:v for k,v in point.items()if k!='J'}for point in clearance_points]
