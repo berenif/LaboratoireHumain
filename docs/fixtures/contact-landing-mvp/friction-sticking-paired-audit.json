@@ -1,0 +1,480 @@
+{
+  "physicsIntegrations": 0,
+  "sourceSummary": "summary.json",
+  "interpretation": "Saved B20 two independent25ms forks from exact same6.1s checkpoint; only restricted active-contact tangential endpoint condition differs. Common j7 tracking relaxation is diagnostic, all native limits/caps/braking constraints retained. No step or long-hold qualification.",
+  "frozenBiasDefinition": "At each directional evaluation keep rho in WORLD coordinates fixed; forcePoint_next=bodyCOM_next+rho, Jforce_bias=(Jforce_next-Jforce_now)*v/epsilon. This differs from a material-point centripetal derivative.",
+  "frictionInterpretation": "QP uses conservative rectangular per-component bound |ft_i|<=0.7 fn; native surface friction coefficient is1. Interior planned forces with nonzero predicted tangent velocity are inconsistent with an ideal sticking branch. Native tiny residual velocities do not constitute certified exact sticking.",
+  "cases": [
+    {
+      "mode": "soft-tangent",
+      "rawArtifact": "soft-tangent.json",
+      "predictedAnkle7AccelerationRadps2": 1.2995397520133207,
+      "actualAnkle7AccelerationRadps2": 0.6045407429337502,
+      "maximumMotorFraction": 0.39010300383454116,
+      "hardConstraintResiduals": {
+        "equalityError": 6.38378239159465e-16,
+        "boundsError": 5.318346408631439e-17,
+        "frictionError": -1.0382456171345602e-17,
+        "contactGapViolationM": -4.206501141336416e-16
+      },
+      "motorFirstTorqueFeedforwardErrorMaximumNm": 1.950715841303463e-06,
+      "motorMeanTorqueFeedforwardDifferenceMaximumNm": 0.044249002936069814,
+      "contacts": [
+        {
+          "index": 0,
+          "body": "left_foot",
+          "inactive": true,
+          "plannedNormalForceN": 2.1309542316009273e-14,
+          "plannedTangentForceBasisN": [
+            2.248586104193639e-16,
+            -1.116066431108499e-16
+          ],
+          "plannedRectangularFrictionFraction": null,
+          "currentSolverTangentVelocityBasisMps": [
+            -7.260070053638585e-05,
+            0.00010349708029560178
+          ],
+          "predictedSolverTangentAccelerationBasisMps2": [
+            0.03663768131725391,
+            0.049558797603699085
+          ],
+          "predictedEndpointSolverTangentVelocityBasisMps": [
+            0.0008433413323949619,
+            0.001342467020388079
+          ],
+          "predictedEndpointSolverTangentSpeedMps": 0.0015853839609871662,
+          "measuredCurrentNormalN": 1.3179662637412548,
+          "liveGapM": 7.262156577780843e-05
+        },
+        {
+          "index": 1,
+          "body": "left_foot",
+          "inactive": false,
+          "plannedNormalForceN": 86.9158330671775,
+          "plannedTangentForceBasisN": [
+            -19.99912674879569,
+            15.431637740931702
+          ],
+          "plannedRectangularFrictionFraction": 0.3287108926129277,
+          "currentSolverTangentVelocityBasisMps": [
+            -7.287512119660837e-05,
+            0.00010294667053871109
+          ],
+          "predictedSolverTangentAccelerationBasisMps2": [
+            0.01205007243002671,
+            -0.015065319842837077
+          ],
+          "predictedEndpointSolverTangentVelocityBasisMps": [
+            0.00022837668955405938,
+            -0.00027368632553221586
+          ],
+          "predictedEndpointSolverTangentSpeedMps": 0.00035645492999115226,
+          "measuredCurrentNormalN": 86.59560680389404,
+          "liveGapM": -0.0005476028309203684
+        },
+        {
+          "index": 2,
+          "body": "left_foot",
+          "inactive": true,
+          "plannedNormalForceN": 6.2353080346053734e-15,
+          "plannedTangentForceBasisN": [
+            2.04674661710877e-16,
+            -1.0862200934470085e-16
+          ],
+          "plannedRectangularFrictionFraction": null,
+          "currentSolverTangentVelocityBasisMps": [
+            -7.264107931611657e-05,
+            0.00010299650599491603
+          ],
+          "predictedSolverTangentAccelerationBasisMps2": [
+            0.031007326205128846,
+            -0.02017388437860605
+          ],
+          "predictedEndpointSolverTangentVelocityBasisMps": [
+            0.0007025420758121047,
+            -0.00040135060347023523
+          ],
+          "predictedEndpointSolverTangentSpeedMps": 0.0008091030065401456,
+          "measuredCurrentNormalN": 1.2556320987641811,
+          "liveGapM": 7.38227172405459e-05
+        },
+        {
+          "index": 3,
+          "body": "right_foot",
+          "inactive": false,
+          "plannedNormalForceN": 187.42810462388334,
+          "plannedTangentForceBasisN": [
+            14.0653739048657,
+            14.393866727807808
+          ],
+          "plannedRectangularFrictionFraction": 0.10970962329942338,
+          "currentSolverTangentVelocityBasisMps": [
+            -0.00010285642236410802,
+            -6.421862454991129e-06
+          ],
+          "predictedSolverTangentAccelerationBasisMps2": [
+            0.025086876324996763,
+            -0.09697097898735697
+          ],
+          "predictedEndpointSolverTangentVelocityBasisMps": [
+            0.0005243154857608112,
+            -0.0024306963371389157
+          ],
+          "predictedEndpointSolverTangentSpeedMps": 0.0024866023831704854,
+          "measuredCurrentNormalN": 186.02102994918823,
+          "liveGapM": -0.00025290658231824636
+        },
+        {
+          "index": 4,
+          "body": "right_foot",
+          "inactive": false,
+          "plannedNormalForceN": 126.8328825391591,
+          "plannedTangentForceBasisN": [
+            6.112015008020862,
+            -29.610894713852854
+          ],
+          "plannedRectangularFrictionFraction": 0.3335198042951251,
+          "currentSolverTangentVelocityBasisMps": [
+            -0.0001025399667499318,
+            -6.486001931740184e-06
+          ],
+          "predictedSolverTangentAccelerationBasisMps2": [
+            0.06036977436243702,
+            0.09868557117500935
+          ],
+          "predictedEndpointSolverTangentVelocityBasisMps": [
+            0.0014067043923109937,
+            0.0024606532774434937
+          ],
+          "predictedEndpointSolverTangentSpeedMps": 0.0028343662076627378,
+          "measuredCurrentNormalN": 125.75520277023315,
+          "liveGapM": -0.0005492562777362764
+        }
+      ],
+      "feet": [
+        {
+          "body": "left_foot",
+          "plannedTotalContactForceWorldN": [
+            -19.999508008382186,
+            86.91614616918547,
+            -15.429379973370738
+          ],
+          "actualMeanNormalForceWorldN": [
+            -0.0003834525411439207,
+            87.4161204462871,
+            0.0022707580313726205
+          ],
+          "actualMeanTangentForceWorldN": [
+            -20.021208927573753,
+            0.0003056412316826407,
+            -15.140473719293368
+          ],
+          "actualMeanTotalContactForceWorldN": [
+            -20.021592380114896,
+            87.41642608751877,
+            -15.138202961261994
+          ],
+          "aggregateForcePredictionErrorNormN": 0.5792683044522483,
+          "plannedFrozenLeverContactMomentWorldNm": [
+            -4.500472269725734,
+            0.3377762902196282,
+            7.736243764759611
+          ],
+          "actualMeanFrozenLeverContactMomentWorldNm": [
+            -4.455941371646688,
+            0.35381292837819633,
+            7.696831235885675
+          ],
+          "actualPointFrictionNormRatioMaximum": 0.9999450234074896,
+          "actualSolverPointTangentSpeedRMSMps": 0.00020937460859957264
+        },
+        {
+          "body": "right_foot",
+          "plannedTotalContactForceWorldN": [
+            20.175940850348653,
+            314.2611471086217,
+            15.215644762426924
+          ],
+          "actualMeanNormalForceWorldN": [
+            -0.001438819110342235,
+            312.2550755739212,
+            -0.0013743944270422723
+          ],
+          "actualMeanTangentForceWorldN": [
+            19.521536827087402,
+            0.00015619173836967093,
+            15.017898119986057
+          ],
+          "actualMeanTotalContactForceWorldN": [
+            19.520098007977058,
+            312.2552317656596,
+            15.016523725559013
+          ],
+          "aggregateForcePredictionErrorNormN": 2.1197819190530454,
+          "plannedFrozenLeverContactMomentWorldNm": [
+            6.7929240321663835,
+            -5.226513690745518,
+            -3.5790564648410843
+          ],
+          "actualMeanFrozenLeverContactMomentWorldNm": [
+            6.735418462355695,
+            -5.277222318434685,
+            -3.5013014244436245
+          ],
+          "actualPointFrictionNormRatioMaximum": 0.8316182211902606,
+          "actualSolverPointTangentSpeedRMSMps": 0.00018224936920688663
+        }
+      ],
+      "directCOMLinearMomentumClosure": {
+        "definition": "mass*deltaCOMVelocity -sum_all20_contact_impulses -gravityImpulse; finite remaining residual is not attributed solely to friction",
+        "residualNs": [
+          -0.006037901234216266,
+          0.000372241135554674,
+          -0.0045069646382036865
+        ],
+        "forceEquivalentN": [
+          -0.24151604936865065,
+          0.014889645422186959,
+          -0.18027858552814746
+        ]
+      }
+    },
+    {
+      "mode": "active-sticking",
+      "rawArtifact": "active-sticking.json",
+      "predictedAnkle7AccelerationRadps2": 1.2995397520074083,
+      "actualAnkle7AccelerationRadps2": 1.106120739132166,
+      "maximumMotorFraction": 0.38338802455506954,
+      "hardConstraintResiduals": {
+        "equalityError": 3.3306690738754696e-16,
+        "boundsError": 5.728775894844247e-16,
+        "frictionError": -3.25008902233473e-16,
+        "contactGapViolationM": -1.0554030522788582e-16
+      },
+      "motorFirstTorqueFeedforwardErrorMaximumNm": 7.794305423303172e-07,
+      "motorMeanTorqueFeedforwardDifferenceMaximumNm": 0.0485904033465927,
+      "contacts": [
+        {
+          "index": 0,
+          "body": "left_foot",
+          "inactive": true,
+          "plannedNormalForceN": 2.2954050558269546e-13,
+          "plannedTangentForceBasisN": [
+            7.670769085677609e-16,
+            -7.31126530754289e-16
+          ],
+          "plannedRectangularFrictionFraction": null,
+          "currentSolverTangentVelocityBasisMps": [
+            -7.260070053638585e-05,
+            0.00010349708029560178
+          ],
+          "predictedSolverTangentAccelerationBasisMps2": [
+            0.06433902992465208,
+            0.1573751131153365
+          ],
+          "predictedEndpointSolverTangentVelocityBasisMps": [
+            0.0015358750475799165,
+            0.004037874908179015
+          ],
+          "predictedEndpointSolverTangentSpeedMps": 0.004320109481932176,
+          "measuredCurrentNormalN": 1.3179662637412548,
+          "liveGapM": 7.262156577780843e-05
+        },
+        {
+          "index": 1,
+          "body": "left_foot",
+          "inactive": false,
+          "plannedNormalForceN": 84.48806976784417,
+          "plannedTangentForceBasisN": [
+            -17.9688460706796,
+            15.322576315980173
+          ],
+          "plannedRectangularFrictionFraction": 0.30382727610544463,
+          "currentSolverTangentVelocityBasisMps": [
+            -7.287512119660837e-05,
+            0.00010294667053871109
+          ],
+          "predictedSolverTangentAccelerationBasisMps2": [
+            0.0029150048478643804,
+            -0.004117866821548775
+          ],
+          "predictedEndpointSolverTangentVelocityBasisMps": [
+            1.1384122811097797e-18,
+            -8.28059409235804e-18
+          ],
+          "predictedEndpointSolverTangentSpeedMps": 8.358481982045332e-18,
+          "measuredCurrentNormalN": 86.59560680389404,
+          "liveGapM": -0.0005476028309203684
+        },
+        {
+          "index": 2,
+          "body": "left_foot",
+          "inactive": true,
+          "plannedNormalForceN": 1.8706931715575668e-13,
+          "plannedTangentForceBasisN": [
+            7.2400440363897525e-16,
+            -2.583837666290361e-16
+          ],
+          "plannedRectangularFrictionFraction": null,
+          "currentSolverTangentVelocityBasisMps": [
+            -7.264107931611657e-05,
+            0.00010299650599491603
+          ],
+          "predictedSolverTangentAccelerationBasisMps2": [
+            0.050247844680515054,
+            -0.01714556927128591
+          ],
+          "predictedEndpointSolverTangentVelocityBasisMps": [
+            0.0011835550376967598,
+            -0.00032564272578723176
+          ],
+          "predictedEndpointSolverTangentSpeedMps": 0.0012275364402393586,
+          "measuredCurrentNormalN": 1.2556320987641811,
+          "liveGapM": 7.38227172405459e-05
+        },
+        {
+          "index": 3,
+          "body": "right_foot",
+          "inactive": false,
+          "plannedNormalForceN": 184.6692567159024,
+          "plannedTangentForceBasisN": [
+            12.880159822750784,
+            13.6571635795592
+          ],
+          "plannedRectangularFrictionFraction": 0.10564960314482323,
+          "currentSolverTangentVelocityBasisMps": [
+            -0.00010285642236410802,
+            -6.421862454991129e-06
+          ],
+          "predictedSolverTangentAccelerationBasisMps2": [
+            0.004114256894564125,
+            0.0002568744981994877
+          ],
+          "predictedEndpointSolverTangentVelocityBasisMps": [
+            -4.892462303340839e-18,
+            -3.936162105890734e-18
+          ],
+          "predictedEndpointSolverTangentSpeedMps": 6.2792961001581476e-18,
+          "measuredCurrentNormalN": 186.02102994918823,
+          "liveGapM": -0.00025290658231824636
+        },
+        {
+          "index": 4,
+          "body": "right_foot",
+          "inactive": false,
+          "plannedNormalForceN": 132.07090178554094,
+          "plannedTangentForceBasisN": [
+            5.220894754243898,
+            -28.75192760549432
+          ],
+          "plannedRectangularFrictionFraction": 0.311000998238509,
+          "currentSolverTangentVelocityBasisMps": [
+            -0.0001025399667499318,
+            -6.486001931740184e-06
+          ],
+          "predictedSolverTangentAccelerationBasisMps2": [
+            0.0041015986699975285,
+            0.0002594400772694674
+          ],
+          "predictedEndpointSolverTangentVelocityBasisMps": [
+            6.410345344820545e-18,
+            -3.4982460721602604e-18
+          ],
+          "predictedEndpointSolverTangentSpeedMps": 7.302756535805307e-18,
+          "measuredCurrentNormalN": 125.75520277023315,
+          "liveGapM": -0.0005492562777362764
+        }
+      ],
+      "feet": [
+        {
+          "body": "left_foot",
+          "plannedTotalContactForceWorldN": [
+            -17.96921668084148,
+            84.48838894353574,
+            -15.320381613059881
+          ],
+          "actualMeanNormalForceWorldN": [
+            -0.0003728139415828381,
+            84.9908265681006,
+            0.002207757574200481
+          ],
+          "actualMeanTangentForceWorldN": [
+            -17.946989212359767,
+            0.0003117008270137056,
+            -15.023532820468972
+          ],
+          "actualMeanTotalContactForceWorldN": [
+            -17.94736202630135,
+            84.99113826892761,
+            -15.021325062894771
+          ],
+          "aggregateForcePredictionErrorNormN": 0.5853796463011939,
+          "plannedFrozenLeverContactMomentWorldNm": [
+            -4.365951192707852,
+            0.4423807229745156,
+            7.560435536723221
+          ],
+          "actualMeanFrozenLeverContactMomentWorldNm": [
+            -4.349370158918941,
+            0.4955071640474605,
+            7.497491213993457
+          ],
+          "actualPointFrictionNormRatioMaximum": 0.9999771147741905,
+          "actualSolverPointTangentSpeedRMSMps": 0.00021360592291348144
+        },
+        {
+          "body": "right_foot",
+          "plannedTotalContactForceWorldN": [
+            18.09959509087483,
+            316.7403083414249,
+            15.093369890216065
+          ],
+          "actualMeanNormalForceWorldN": [
+            -0.001454412070600557,
+            315.63908746873494,
+            -0.001389289195624427
+          ],
+          "actualMeanTangentForceWorldN": [
+            17.968566750168975,
+            0.00014913839826435904,
+            15.041131479665637
+          ],
+          "actualMeanTotalContactForceWorldN": [
+            17.967112338098374,
+            315.63923660713317,
+            15.039742190470013
+          ],
+          "aggregateForcePredictionErrorNormN": 1.110309224504368,
+          "plannedFrozenLeverContactMomentWorldNm": [
+            6.693782535493951,
+            -5.0138896917345726,
+            -2.7857785106651782
+          ],
+          "actualMeanFrozenLeverContactMomentWorldNm": [
+            6.667123974037558,
+            -4.998816382854909,
+            -2.8037054548520945
+          ],
+          "actualPointFrictionNormRatioMaximum": 0.9997212735222399,
+          "actualSolverPointTangentSpeedRMSMps": 0.0002544781935080338
+        }
+      ],
+      "directCOMLinearMomentumClosure": {
+        "definition": "mass*deltaCOMVelocity -sum_all20_contact_impulses -gravityImpulse; finite remaining residual is not attributed solely to friction",
+        "residualNs": [
+          -0.009664266108990233,
+          -7.769862459028332e-05,
+          -8.962441703177159e-05
+        ],
+        "forceEquivalentN": [
+          -0.3865706443596093,
+          -0.0031079449836113326,
+          -0.0035849766812708636
+        ]
+      }
+    }
+  ],
+  "conclusion": "Restricted sticking is a feasible, same-normal-mode isolated diagnostic. It reduces ankle acceleration undertracking from0.6950 to0.1934rad/s2 (72.2% reduction) while commanded ankle acceleration is unchanged. Remaining mismatch and pose/final-velocity split persist; no full native dynamic equivalence or stepping success is claimed.",
+  "aggregateClosureArtifact": "impulse-model-reduction.json",
+  "aggregateClosureCaveat": "Continuous M/b trapezoidal residual uses final velocities against biased-pass evolving poses; values are quadrature diagnostics, not exact conservation tests. Frozen force levers reduce moment-arm error, but finite residual cannot be attributed solely to friction."
+}

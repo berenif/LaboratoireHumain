@@ -1,0 +1,615 @@
+{
+  "physicsIntegrations": 0,
+  "interpretation": "Read-only exact-state fixed-contact-mode objective decomposition. The qdd5<=-5 bound is a diagnostic comparison, not an executed recovery. Original and constrained solutions retain all contact, joint, represented-action and motor constraints. Task costs sum to the original objective including regularization.",
+  "rawDirectory": "outputs/contact-landing-mvp/session-20261017T164129Z/batch17-no-stop-posture-step",
+  "stateComparisons": [
+    {
+      "elapsedS": 5.5,
+      "rawState": "state-5.500.json",
+      "rawStateSHA256": "45ae7df5ebb6fbd0cad9d76d82a4489166f30a95dc1c941f71a3dd8d3f91f657",
+      "solutions": [
+        {
+          "diagnosticQdd5UpperBoundRadps2": null,
+          "success": true,
+          "objectiveCost": 0.43734347705281706,
+          "taskCosts": {
+            "flat_left_foot": 0.002845024666138794,
+            "flat_right_foot": 0.01966164376079292,
+            "contact_normal": 0.03371098905879334,
+            "contact_tangent": 0.018741062331998102,
+            "COM": 0.011346192554886158,
+            "root_R": 0.0409646390554294,
+            "posture": 0.30777251318720805,
+            "unload": 0.0,
+            "motor_regularizer": 0.003440068141360684,
+            "contact_regularizer": -0.0011498880473106003,
+            "all_regularizer": 1.1232343573691199e-05
+          },
+          "costClosureError": 5.345723863570129e-14,
+          "joint5": {
+            "qRad": 0.19960825145244598,
+            "velocityRadps": 0.07044056057929993,
+            "referenceRad": 0.21766338677836172,
+            "postureDesiredAccelerationRadps2": -0.2746423194197476,
+            "plannedAccelerationRadps2": 1.5300407709199344,
+            "nativeLimitsRad": [
+              -1.919862151145935,
+              0.3490658402442932
+            ],
+            "viabilityAccelerationBoundsRadps2": [
+              -50.0,
+              50.0
+            ]
+          },
+          "hardConstraintChecks": {
+            "equalityError": 1.8839096949108125e-15,
+            "boundsError": 9.130961803267908e-17,
+            "frictionError": 6.417639311206466e-17,
+            "contactGapViolationM": -6.072636419293915e-06,
+            "maximumMotorFraction": 0.6161598398808501,
+            "minimumPredictedJointStoppingMarginRad": 0.07157508754617237,
+            "inactiveContacts": [
+              1
+            ],
+            "activeStops": [
+              {
+                "qpos": 7,
+                "sign": 1.0,
+                "reactionNm": 29.363180493506633
+              },
+              {
+                "qpos": 17,
+                "sign": 1.0,
+                "reactionNm": 0.8889713227422312
+              },
+              {
+                "qpos": 20,
+                "sign": 1.0,
+                "reactionNm": 0.9335377741980464
+              }
+            ]
+          }
+        },
+        {
+          "diagnosticQdd5UpperBoundRadps2": -5.0,
+          "success": true,
+          "objectiveCost": 3.0193274962783327,
+          "taskCosts": {
+            "flat_left_foot": 0.00972895275796999,
+            "flat_right_foot": 0.32122505262698475,
+            "contact_normal": 0.057366229998085674,
+            "contact_tangent": 0.26326167223649544,
+            "COM": 0.11374210990269158,
+            "root_R": 0.3429318688150561,
+            "posture": 1.908632863659883,
+            "unload": 0.0,
+            "motor_regularizer": 0.0034991359829368066,
+            "contact_regularizer": -0.0011487325120866014,
+            "all_regularizer": 8.83428104699989e-05
+          },
+          "costClosureError": 1.5409895581797173e-13,
+          "joint5": {
+            "qRad": 0.19960825145244598,
+            "velocityRadps": 0.07044056057929993,
+            "referenceRad": 0.21766338677836172,
+            "postureDesiredAccelerationRadps2": -0.2746423194197476,
+            "plannedAccelerationRadps2": -5.000000000149798,
+            "nativeLimitsRad": [
+              -1.919862151145935,
+              0.3490658402442932
+            ],
+            "viabilityAccelerationBoundsRadps2": [
+              -50.0,
+              50.0
+            ]
+          },
+          "hardConstraintChecks": {
+            "equalityError": 1.915134717478395e-15,
+            "boundsError": 2.6958443867769036e-17,
+            "frictionError": -1.8820792539290785e-17,
+            "contactGapViolationM": -6.645779304474686e-13,
+            "maximumMotorFraction": 0.6132424280330209,
+            "minimumPredictedJointStoppingMarginRad": 0.07111342008348326,
+            "inactiveContacts": [
+              1
+            ],
+            "activeStops": [
+              {
+                "qpos": 7,
+                "sign": 1.0,
+                "reactionNm": 28.636141958201012
+              },
+              {
+                "qpos": 17,
+                "sign": 1.0,
+                "reactionNm": 1.1033694985332807
+              },
+              {
+                "qpos": 20,
+                "sign": 1.0,
+                "reactionNm": 1.4134808721877077
+              }
+            ]
+          }
+        }
+      ],
+      "constrainedMinusOriginalTaskCosts": {
+        "flat_left_foot": 0.0068839280918311955,
+        "flat_right_foot": 0.3015634088661918,
+        "contact_normal": 0.023655240939292332,
+        "contact_tangent": 0.24452060990449734,
+        "COM": 0.10239591734780543,
+        "root_R": 0.3019672297596267,
+        "posture": 1.600860350472675,
+        "unload": 0.0,
+        "motor_regularizer": 5.906784157612248e-05,
+        "contact_regularizer": 1.1555352239988811e-06,
+        "all_regularizer": 7.711046689630769e-05
+      }
+    },
+    {
+      "elapsedS": 5.85,
+      "rawState": "state-5.850.json",
+      "rawStateSHA256": "068bf5a197bd225c6caab17e26bf32e2412c1c22edcf1adc97b7ecf3535dbaff",
+      "solutions": [
+        {
+          "diagnosticQdd5UpperBoundRadps2": null,
+          "success": true,
+          "objectiveCost": 5.296838103403559,
+          "taskCosts": {
+            "flat_left_foot": 0.017052611464267623,
+            "flat_right_foot": 0.1869325222312892,
+            "contact_normal": 0.09383853249288701,
+            "contact_tangent": 0.20927948300618915,
+            "COM": 0.10988840114211579,
+            "root_R": 0.439128210341847,
+            "posture": 4.237471749937293,
+            "unload": 0.0,
+            "motor_regularizer": 0.004256168552457302,
+            "contact_regularizer": -0.0011088813363610834,
+            "all_regularizer": 9.930557008019786e-05
+          },
+          "costClosureError": -1.4939161019356106e-12,
+          "joint5": {
+            "qRad": 0.31858646869659424,
+            "velocityRadps": 0.5393311381340027,
+            "referenceRad": 0.2295453682807725,
+            "postureDesiredAccelerationRadps2": -5.0,
+            "plannedAccelerationRadps2": 3.7219272814634756,
+            "nativeLimitsRad": [
+              -1.919862151145935,
+              0.3490658402442932
+            ],
+            "viabilityAccelerationBoundsRadps2": [
+              -50.0,
+              19.812273764345225
+            ]
+          },
+          "hardConstraintChecks": {
+            "equalityError": 4.163336342344337e-16,
+            "boundsError": 2.0208335569380022e-16,
+            "frictionError": -1.0359262021564797e-16,
+            "contactGapViolationM": -1.9971382048271954e-05,
+            "maximumMotorFraction": 0.5859659454006164,
+            "minimumPredictedJointStoppingMarginRad": 0.011833954773097385,
+            "inactiveContacts": [
+              1,
+              3
+            ],
+            "activeStops": [
+              {
+                "qpos": 7,
+                "sign": 1.0,
+                "reactionNm": 32.40182448243315
+              },
+              {
+                "qpos": 17,
+                "sign": 1.0,
+                "reactionNm": 1.8192601103384798
+              },
+              {
+                "qpos": 20,
+                "sign": 1.0,
+                "reactionNm": 1.376912876477184
+              }
+            ]
+          },
+          "keyPostureJointCosts": [
+            {
+              "qpos": 1,
+              "body": "lower_waist",
+              "desiredAccelerationRadps2": 3.8116296779365317,
+              "plannedAccelerationRadps2": -3.1730013197602056,
+              "cost": 0.5488320394573437
+            },
+            {
+              "qpos": 5,
+              "body": "right_thigh",
+              "desiredAccelerationRadps2": -5.0,
+              "plannedAccelerationRadps2": 3.7219272814634756,
+              "cost": 0.8558101744102896
+            },
+            {
+              "qpos": 11,
+              "body": "left_thigh",
+              "desiredAccelerationRadps2": -4.419570140813658,
+              "plannedAccelerationRadps2": 1.3014546108702443,
+              "cost": 0.3682138973555234
+            },
+            {
+              "qpos": 12,
+              "body": "left_shin",
+              "desiredAccelerationRadps2": -1.0202023824161568,
+              "plannedAccelerationRadps2": -5.881988926444451,
+              "cost": 0.26591589449656405
+            },
+            {
+              "qpos": 13,
+              "body": "@left_ankle_y",
+              "desiredAccelerationRadps2": -0.2963595106611967,
+              "plannedAccelerationRadps2": -3.196538584513094,
+              "cost": 0.09462418492959503
+            },
+            {
+              "qpos": 15,
+              "body": "@right_shoulder1",
+              "desiredAccelerationRadps2": -5.0,
+              "plannedAccelerationRadps2": -2.8347864973637167,
+              "cost": 0.05274168200998293
+            },
+            {
+              "qpos": 16,
+              "body": "right_upper_arm",
+              "desiredAccelerationRadps2": 5.0,
+              "plannedAccelerationRadps2": 7.845079941980161,
+              "cost": 0.09106289860790064
+            },
+            {
+              "qpos": 18,
+              "body": "@left_shoulder1",
+              "desiredAccelerationRadps2": -5.0,
+              "plannedAccelerationRadps2": 5.121896153162869,
+              "cost": 1.1525937945233993
+            },
+            {
+              "qpos": 19,
+              "body": "left_upper_arm",
+              "desiredAccelerationRadps2": 5.0,
+              "plannedAccelerationRadps2": -2.153412529918242,
+              "cost": 0.5756772467609022
+            }
+          ]
+        },
+        {
+          "diagnosticQdd5UpperBoundRadps2": -5.0,
+          "success": true,
+          "objectiveCost": 10.335593322106092,
+          "taskCosts": {
+            "flat_left_foot": 0.04523748824938292,
+            "flat_right_foot": 0.957383518993931,
+            "contact_normal": 0.24853734334475575,
+            "contact_tangent": 0.8230666065241837,
+            "COM": 0.34723965432323256,
+            "root_R": 1.1592585486800417,
+            "posture": 6.751252551286343,
+            "unload": 0.0,
+            "motor_regularizer": 0.004406829929425865,
+            "contact_regularizer": -0.0011108824217290949,
+            "all_regularizer": 0.0003216631956285526
+          },
+          "costClosureError": -8.970602038971265e-13,
+          "joint5": {
+            "qRad": 0.31858646869659424,
+            "velocityRadps": 0.5393311381340027,
+            "referenceRad": 0.2295453682807725,
+            "postureDesiredAccelerationRadps2": -5.0,
+            "plannedAccelerationRadps2": -5.000000142760089,
+            "nativeLimitsRad": [
+              -1.919862151145935,
+              0.3490658402442932
+            ],
+            "viabilityAccelerationBoundsRadps2": [
+              -50.0,
+              19.812273764345225
+            ]
+          },
+          "hardConstraintChecks": {
+            "equalityError": 6.661338147750939e-16,
+            "boundsError": 8.890143315373286e-16,
+            "frictionError": -4.626774565499276e-16,
+            "contactGapViolationM": -9.73499087760009e-06,
+            "maximumMotorFraction": 0.5725269783446725,
+            "minimumPredictedJointStoppingMarginRad": 0.016841890248262204,
+            "inactiveContacts": [
+              1,
+              3
+            ],
+            "activeStops": [
+              {
+                "qpos": 7,
+                "sign": 1.0,
+                "reactionNm": 31.879305165369324
+              },
+              {
+                "qpos": 17,
+                "sign": 1.0,
+                "reactionNm": 2.186956556291209
+              },
+              {
+                "qpos": 20,
+                "sign": 1.0,
+                "reactionNm": 1.9001972358798367
+              }
+            ]
+          },
+          "keyPostureJointCosts": [
+            {
+              "qpos": 1,
+              "body": "lower_waist",
+              "desiredAccelerationRadps2": 3.8116296779365317,
+              "plannedAccelerationRadps2": 1.634907711256806,
+              "cost": 0.0533038333525431
+            },
+            {
+              "qpos": 5,
+              "body": "right_thigh",
+              "desiredAccelerationRadps2": -5.0,
+              "plannedAccelerationRadps2": -5.000000142760089,
+              "cost": 2.292799841453213e-16
+            },
+            {
+              "qpos": 11,
+              "body": "left_thigh",
+              "desiredAccelerationRadps2": -4.419570140813658,
+              "plannedAccelerationRadps2": -7.910746355084107,
+              "cost": 0.1371185027897371
+            },
+            {
+              "qpos": 12,
+              "body": "left_shin",
+              "desiredAccelerationRadps2": -1.0202023824161568,
+              "plannedAccelerationRadps2": -13.262145598884146,
+              "cost": 1.6859832042962994
+            },
+            {
+              "qpos": 13,
+              "body": "@left_ankle_y",
+              "desiredAccelerationRadps2": -0.2963595106611967,
+              "plannedAccelerationRadps2": -6.140763953723107,
+              "cost": 0.38426696205842026
+            },
+            {
+              "qpos": 15,
+              "body": "@right_shoulder1",
+              "desiredAccelerationRadps2": -5.0,
+              "plannedAccelerationRadps2": 2.658185915389136,
+              "cost": 0.6597878795399761
+            },
+            {
+              "qpos": 16,
+              "body": "right_upper_arm",
+              "desiredAccelerationRadps2": 5.0,
+              "plannedAccelerationRadps2": 10.249785626245872,
+              "cost": 0.31005280261729984
+            },
+            {
+              "qpos": 18,
+              "body": "@left_shoulder1",
+              "desiredAccelerationRadps2": -5.0,
+              "plannedAccelerationRadps2": 7.4726520382489205,
+              "cost": 1.750129299756393
+            },
+            {
+              "qpos": 19,
+              "body": "left_upper_arm",
+              "desiredAccelerationRadps2": 5.0,
+              "plannedAccelerationRadps2": -5.809141755279815,
+              "cost": 1.3144223867145028
+            }
+          ]
+        }
+      ],
+      "constrainedMinusOriginalTaskCosts": {
+        "flat_left_foot": 0.0281848767851153,
+        "flat_right_foot": 0.7704509967626418,
+        "contact_normal": 0.15469881085186873,
+        "contact_tangent": 0.6137871235179946,
+        "COM": 0.23735125318111677,
+        "root_R": 0.7201303383381947,
+        "posture": 2.51378080134905,
+        "unload": 0.0,
+        "motor_regularizer": 0.00015066137696856299,
+        "contact_regularizer": -2.001085368011444e-06,
+        "all_regularizer": 0.00022235762554835475
+      },
+      "keyPostureJointCostDeltas": [
+        {
+          "qpos": 1,
+          "body": "lower_waist",
+          "delta": -0.49552820610480064
+        },
+        {
+          "qpos": 5,
+          "body": "right_thigh",
+          "delta": -0.8558101744102894
+        },
+        {
+          "qpos": 11,
+          "body": "left_thigh",
+          "delta": -0.2310953945657863
+        },
+        {
+          "qpos": 12,
+          "body": "left_shin",
+          "delta": 1.4200673097997354
+        },
+        {
+          "qpos": 13,
+          "body": "@left_ankle_y",
+          "delta": 0.28964277712882525
+        },
+        {
+          "qpos": 15,
+          "body": "@right_shoulder1",
+          "delta": 0.6070461975299931
+        },
+        {
+          "qpos": 16,
+          "body": "right_upper_arm",
+          "delta": 0.21898990400939922
+        },
+        {
+          "qpos": 18,
+          "body": "@left_shoulder1",
+          "delta": 0.5975355052329938
+        },
+        {
+          "qpos": 19,
+          "body": "left_upper_arm",
+          "delta": 0.7387451399536007
+        }
+      ]
+    },
+    {
+      "elapsedS": 5.875,
+      "rawState": "state-5.875.json",
+      "rawStateSHA256": "744d063d488b47f55e4547a759180c78f06fe82915ba087f83629a3c0a4a9739",
+      "solutions": [
+        {
+          "diagnosticQdd5UpperBoundRadps2": null,
+          "success": true,
+          "objectiveCost": 12.721413887750032,
+          "taskCosts": {
+            "flat_left_foot": 0.058538389040769315,
+            "flat_right_foot": 1.1584596073683293,
+            "contact_normal": 0.020390955852401246,
+            "contact_tangent": 0.9612124147102593,
+            "COM": 0.3858732124341022,
+            "root_R": 1.2765166018782514,
+            "posture": 8.856710066451726,
+            "unload": 0.0,
+            "motor_regularizer": 0.004601859548145596,
+            "contact_regularizer": -0.001310920776587576,
+            "all_regularizer": 0.00042170124433029804
+          },
+          "costClosureError": 1.694644424787839e-12,
+          "joint5": {
+            "qRad": 0.33322083950042725,
+            "velocityRadps": 0.6255244016647339,
+            "referenceRad": 0.23031979911837855,
+            "postureDesiredAccelerationRadps2": -5.0,
+            "plannedAccelerationRadps2": -6.510617352553266,
+            "nativeLimitsRad": [
+              -1.919862151145935,
+              0.3490658402442932
+            ],
+            "viabilityAccelerationBoundsRadps2": [
+              -50.0,
+              -6.510617349508063
+            ]
+          },
+          "hardConstraintChecks": {
+            "equalityError": 7.216449660063518e-16,
+            "boundsError": -3.0452023125349115e-09,
+            "frictionError": -0.2253849789452872,
+            "contactGapViolationM": -3.7901353876126226e-13,
+            "maximumMotorFraction": 0.5823445830303604,
+            "minimumPredictedJointStoppingMarginRad": 0.00010000000165615464,
+            "inactiveContacts": [],
+            "activeStops": [
+              {
+                "qpos": 7,
+                "sign": 1.0,
+                "reactionNm": 32.01716187197668
+              },
+              {
+                "qpos": 17,
+                "sign": 1.0,
+                "reactionNm": 2.3006059128644054
+              },
+              {
+                "qpos": 20,
+                "sign": 1.0,
+                "reactionNm": 1.9909710003037464
+              }
+            ]
+          }
+        },
+        {
+          "diagnosticQdd5UpperBoundRadps2": -5.0,
+          "success": true,
+          "objectiveCost": 12.721413887750032,
+          "taskCosts": {
+            "flat_left_foot": 0.058538389040769315,
+            "flat_right_foot": 1.1584596073683293,
+            "contact_normal": 0.020390955852401246,
+            "contact_tangent": 0.9612124147102593,
+            "COM": 0.3858732124341022,
+            "root_R": 1.2765166018782514,
+            "posture": 8.856710066451726,
+            "unload": 0.0,
+            "motor_regularizer": 0.004601859548145596,
+            "contact_regularizer": -0.001310920776587576,
+            "all_regularizer": 0.00042170124433029804
+          },
+          "costClosureError": 1.694644424787839e-12,
+          "joint5": {
+            "qRad": 0.33322083950042725,
+            "velocityRadps": 0.6255244016647339,
+            "referenceRad": 0.23031979911837855,
+            "postureDesiredAccelerationRadps2": -5.0,
+            "plannedAccelerationRadps2": -6.510617352553266,
+            "nativeLimitsRad": [
+              -1.919862151145935,
+              0.3490658402442932
+            ],
+            "viabilityAccelerationBoundsRadps2": [
+              -50.0,
+              -6.510617349508063
+            ]
+          },
+          "hardConstraintChecks": {
+            "equalityError": 7.216449660063518e-16,
+            "boundsError": -3.0452023125349115e-09,
+            "frictionError": -0.2253849789452872,
+            "contactGapViolationM": -3.7901353876126226e-13,
+            "maximumMotorFraction": 0.5823445830303604,
+            "minimumPredictedJointStoppingMarginRad": 0.00010000000165615464,
+            "inactiveContacts": [],
+            "activeStops": [
+              {
+                "qpos": 7,
+                "sign": 1.0,
+                "reactionNm": 32.01716187197668
+              },
+              {
+                "qpos": 17,
+                "sign": 1.0,
+                "reactionNm": 2.3006059128644054
+              },
+              {
+                "qpos": 20,
+                "sign": 1.0,
+                "reactionNm": 1.9909710003037464
+              }
+            ]
+          }
+        }
+      ],
+      "constrainedMinusOriginalTaskCosts": {
+        "flat_left_foot": 0.0,
+        "flat_right_foot": 0.0,
+        "contact_normal": 0.0,
+        "contact_tangent": 0.0,
+        "COM": 0.0,
+        "root_R": 0.0,
+        "posture": 0.0,
+        "unload": 0.0,
+        "motor_regularizer": 0.0,
+        "contact_regularizer": 0.0,
+        "all_regularizer": 0.0
+      }
+    }
+  ],
+  "conclusion": "At5.85 outward hip5 acceleration is objective-selected: the viability upper acceleration is+19.8123 while the QP chooses+3.72193. Hip5 braking saves0.85581 in its own posture cost but raises other-joint posture3.36959 and flat/root/contact/COM costs. Unloading weight and cost are zero. At5.875 the hard viability upper bound becomes-6.51061735 and forces the late brake. This supports a preventive priority/tracking constraint, not a gain search or a claim that the already-deviated state is recovered."
+}

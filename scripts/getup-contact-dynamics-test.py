@@ -22,6 +22,15 @@ class ContactDynamicsTests(unittest.TestCase):
   np.testing.assert_array_equal(states[0]['M'],states[1]['M']);np.testing.assert_array_equal(states[0]['bias'],states[1]['bias'])
   self.assertTrue(any(np.max(abs(a['Jforce']-b['Jforce']))>1e-5 for a,b in zip(states[0]['contacts'],states[1]['contacts'])))
   for a,b in zip(states[0]['contacts'],states[1]['contacts']):np.testing.assert_array_equal(a['J'],b['J']);np.testing.assert_array_equal(a['velocity'],b['velocity']);self.assertEqual(a['gap'],b['gap'])
+ def test_native_force_bias_differentiates_world_fixed_solver_lever(self):
+  x=json.loads((ROOT/'docs/fixtures/getup-contact-modes.json').read_text())['failed'];c=d.ContactDynamics(self.c.kin.model,force_jacobian='native-frozen');st=c.state(x['observation'],x['snapshot'],x['diagnostic'])
+  for con in st['contacts']:
+   body=con['body'];pose=st['geometry'][0][body];pose2=st['geometryNext'][0][body];local=d.reference.xyz(c.by_id[body]['goldenMass']['centerOfMass']);com=pose[:3,3]+d.normalized_rotation(pose[:3,:3])@local;com2=pose2[:3,3]+d.normalized_rotation(pose2[:3,:3])@local;rho=con['forcePoint']-com;future=c.point_jacobian(st['geometryNext'],body,com2+rho)[0];np.testing.assert_allclose(con['forceBias'],(future-con['Jforce'])@st['v']/st['directionalEpsilon'],atol=1e-11);np.testing.assert_allclose(con['forceVelocity'],con['Jforce']@st['v'],atol=1e-12)
+ def test_restricted_sticking_endpoint_velocity_is_zero_at_active_contacts(self):
+  x=json.loads((ROOT/'docs/fixtures/contact-landing-mvp/joint-stop-tracking-state.json').read_text());c=d.ContactDynamics(self.c.kin.model,contact_mode='unilateral-soft',flat_soles=True,joint_viability=True,qp_solver='clarabel',joint_reserve_margin=1e-4,force_jacobian='native-frozen',joint_stop_mode='native-bound-release',joint_reserve_recovery=True,friction_mode='active-sticking');c.flat_targets={k:np.array(v)for k,v in x['flatTargets'].items()};st=c.state(x['observation'],x['snapshot'],x['diagnostic']);_,info=c.solve(st,np.array(x['targetCOM']),np.array(x['targetRotation']),np.array(x['posture']),tracking=x['tracking']);self.assertTrue(info['success']);qdd=np.array(info['qdd'])
+  for i,con in enumerate(st['contacts']):
+   if i not in info['inactiveContacts']:np.testing.assert_allclose(con['basis'][:,:2].T@(con['forceVelocity']+.025*(con['Jforce']@qdd+con['forceBias'])),0.,atol=1e-8)
+  self.assertLess(info['equalityError'],1e-4);self.assertLessEqual(info['maximumMotorFraction'],.900001)
  def test_all_joint_limits_match_native_f32_and_json_round_trip(self):
   expected=np.zeros((21,2))
   for part in self.c.parts:
@@ -109,6 +118,20 @@ class JointStopModeTests(unittest.TestCase):
 
  def test_positive_buffer_recovery_and_actual_bound_release_solve_stopped_state(self):
   x=json.loads((ROOT/'docs/fixtures/contact-landing-mvp/joint-stop-tracking-state.json').read_text());c=d.ContactDynamics(self.model,contact_mode='unilateral-soft',flat_soles=True,joint_viability=True,qp_solver='clarabel',joint_reserve_margin=1e-4,force_jacobian='native-frozen',joint_stop_mode='native-bound-release',joint_reserve_recovery=True);c.flat_targets={k:np.array(v)for k,v in x['flatTargets'].items()};state=c.state(x['observation'],x['snapshot'],x['diagnostic']);self.assertNotIn(7,[r[0]for r in c.bound_stop_candidates(state)]);_,info=c.solve(state,np.array(x['targetCOM']),np.array(x['targetRotation']),np.array(x['posture']),tracking=x['tracking']);self.assertTrue(info['success']);self.assertNotIn(7,[r['qpos']for r in info['activeStops']]);a=info['qdd'][13];q=state['q'][7];v=state['v'][13];low=c.kin.limits[7,0];current=q-min(v,0.)**2/100.-low;future=q+.025*v+.5*.025**2*a-min(v+.025*a,0.)**2/100.-low;self.assertGreaterEqual(future,current-1e-9);self.assertLess(info['equalityError'],1e-4)
+
+class TrackingPriorityTests(unittest.TestCase):
+ def test_scalar_minimum_slack_preserves_physics_and_mirrors_signs(self):
+  np.testing.assert_allclose(d.intersect_tracking_acceleration(1.3,50.,.26,.42,True),(1.3,1.3,.88));np.testing.assert_allclose(d.intersect_tracking_acceleration(-50.,-1.3,-.42,-.26,True),(-1.3,-1.3,.88));self.assertEqual(d.intersect_tracking_acceleration(-2.,3.,-1.,2.,True),(-1.,2.,0.));self.assertEqual(d.intersect_tracking_acceleration(-2.,3.,-4.,4.,True),(-2.,3.,0.));self.assertEqual(d.intersect_tracking_acceleration(1.3,50.,.26,.42),(1.3,.42,0.))
+  with self.assertRaisesRegex(ValueError,'Empty physical'):d.intersect_tracking_acceleration(2.,1.,0.,3.,True)
+ def test_exact_braking_conflict_relaxes_only_necessary_tracking_joint(self):
+  x=json.loads((ROOT/'docs/fixtures/contact-landing-mvp/tracking-braking-conflict-state.json').read_text());model=json.loads((ROOT/'rust/crates/model/data/getup-v1.json').read_text())
+  for priority,expected in [('hard-band',False),('physical-first',True)]:
+   c=d.ContactDynamics(model,contact_mode='unilateral-soft',flat_soles=True,joint_viability=True,qp_solver='clarabel',joint_reserve_margin=1e-4,force_jacobian='native-frozen',joint_stop_mode='native-bound-release',joint_reserve_recovery=True,friction_mode='active-sticking',tracking_priority=priority);c.flat_targets={k:np.array(v)for k,v in x['flatTargets'].items()};st=c.state(x['observation'],x['snapshot'],x['diagnostic']);_,info=c.solve(st,np.array(x['targetCOM']),np.array(x['targetRotation']),np.array(x['posture']),tracking=x['tracking']);self.assertEqual(info['success'],expected)
+   if expected:self.assertEqual([r['qpos']for r in info['trackingConstraint']['physicalPriorityRelaxations']],[7]);self.assertAlmostEqual(info['qdd'][13],1.299539752,places=7);self.assertLess(info['equalityError'],1e-4);self.assertLessEqual(info['maximumMotorFraction'],.900001)
+ def test_legitimate_active_stop_equality_also_outranks_tracking(self):
+  model=json.loads((ROOT/'rust/crates/model/data/getup-v1.json').read_text());x=json.loads((ROOT/'docs/fixtures/getup-contact-modes.json').read_text())['quiet'];c=d.ContactDynamics(model,joint_stop_mode='native-bound-release',joint_viability=True,joint_reserve_margin=1e-4,tracking_priority='physical-first',qp_solver='clarabel');st=c.state(x['observation'],x['snapshot'],x['diagnostic']);position=st['q'].copy();position[13]+=.02;tracking=dict(indices=[13],position=position,velocity=np.zeros(21),acceleration=np.zeros(21),radius=np.full(21,.005));_,info=c.solve(st,st['com'],d.normalized_rotation(st['root'][:3,:3]),st['q'],tracking=tracking);self.assertTrue(info['success']);self.assertIn(13,[r['qpos']for r in info['activeStops']]);self.assertEqual([r['qpos']for r in info['trackingConstraint']['physicalPriorityRelaxations']],[13]);self.assertLess(info['equalityError'],1e-4)
+ def test_physical_first_does_not_waive_negative_current_reserve(self):
+  with self.assertRaisesRegex(ValueError,'Already outside'):d.braking_acceleration_bounds(-1.+30.235e-6,-.06391884,-1.,1.,reserve=1e-4,reserve_recovery=True)
 
 class BrakingBoundsTests(unittest.TestCase):
  def test_recovery_buffer_is_mirrored_nondecreasing_and_keeps_negative_reserve_rejection(self):

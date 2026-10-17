@@ -202,6 +202,32 @@
       "lateQPOutwardAccelerationRadps2": 3.7219272814634756,
       "lateNativeOutwardAccelerationRadps2": 3.447730541229248,
       "heightHandoffReached": false
+    },
+    "batch18-posture-tracking-step": {
+      "physicsWallSeconds": 18.09281536100001,
+      "nativeSubsteps": 5420,
+      "stopped": "inverse-dynamics-step-trial-stopped",
+      "standingS": 2.555,
+      "flightNativeSamples": 0,
+      "loadedSlipM": [
+        0.0019229951711514572,
+        0.001711202027844363
+      ],
+      "stepEvents": [],
+      "summarySHA256": "77cf70cc70bdb08b0f11d7f3d096ab950081e1c2119aa7298dc1acc1b3d89b75"
+    },
+    "batch19-bound-release-reserve-step": {
+      "physicsWallSeconds": 16.450595145000005,
+      "nativeSubsteps": 4880,
+      "stopped": "inverse-dynamics-step-trial-stopped",
+      "standingS": 2.01125,
+      "flightNativeSamples": 0,
+      "loadedSlipM": [
+        0.001787346299913108,
+        0.0016746276245328288
+      ],
+      "stepEvents": [],
+      "summarySHA256": "98568f64e8640881cfb4059771d688a358962ec2f327f7c782e598e6fdc10129"
     }
   },
   "ledger": {

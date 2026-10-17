@@ -12,7 +12,7 @@ class ProbeCLITests(unittest.TestCase):
    def reference(self,progress):return None,None,np.array([.1,.80006124,.2])
   goal=cli.stance_com_target([0.,.81,0.],[1.,0.,0.],.1,Refs());np.testing.assert_array_equal(goal,[.1,.80006124,.2]);np.testing.assert_array_equal(cli.stance_com_target([0.,.81,0.],[1.,0.,0.],.1),[.1,.81,0.])
  def test_optional_future_reserve_reaches_native_boundary_without_attribute_error(self):
-  for extra in [[],['--joint-stop-mode','native-bound-release'],['--joint-reserve-recovery','--joint-viability','--joint-reserve-margin-rad','.0001'],['--joint-viability','--joint-reserve-margin-rad','.0001'],['--force-jacobian','native-frozen'],['--terminal-unload','--stage-unload-after-readiness','--recovery-step','--unload-left','--motion-profile']]:
+  for extra in [[],['--joint-stop-mode','native-bound-release'],['--tracking-priority','physical-first','--friction-mode','active-sticking','--contact-mode','unilateral-soft'],['--joint-reserve-recovery','--joint-viability','--joint-reserve-margin-rad','.0001'],['--joint-viability','--joint-reserve-margin-rad','.0001'],['--force-jacobian','native-frozen'],['--terminal-unload','--stage-unload-after-readiness','--recovery-step','--unload-left','--motion-profile']]:
    with self.subTest(options=extra),tempfile.TemporaryDirectory() as tmp:
     deadline=(datetime.datetime.now(datetime.timezone.utc)+datetime.timedelta(minutes=1)).isoformat()
     args=['probe','--binary','unused-binary','--checkpoint','unused-checkpoint','--output',str(Path(tmp)/'probe'),'--physics-budget','0','--deadline',deadline,'--flat-soles','--retain-balance','--seconds','8']+extra

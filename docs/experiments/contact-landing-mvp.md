@@ -314,3 +314,36 @@ future buffer. These changes preserve the original motor/physical joint limits,
 tracking gains and all measured success gates. Pure exact-state replay solves
 B18 with ankle reaction zero, while its strict-buffer control remains rejected.
 No physical success is inferred from that replay.
+
+
+B19 stops at 6.100 s before unloading. Its current ankle stopping reserve is
+positive (274.9 µrad), so the buffer-recovery option is inactive. The physical
+braking lower bound +1.29954 rad/s² conflicts with the new tracking upper bound
++0.42319. Removing only this tracking row makes all physical constraints feasible.
+No flight/non-foot support occurred; slip is 1.79/1.67 mm. This rejects the full
+protocol and motivates subordinating tracking to physical braking, rather than
+changing joint limits, the buffer or motor caps.
+
+B20 comprises two independent 25 ms forks of the exact B19 endpoint including
+contact caches, with the same diagnostic ankle tracking-row removal. The soft
+tangent QP uses interior friction forces yet predicts opposing tangent drift
+at loaded stance contacts. The restricted sticking alternative instead imposes
+zero predicted endpoint tangential velocity at active native frozen solver
+points; inactive forces remain zero and live geometric gaps are unchanged.
+WORLD-frozen lever differentiation is distinct from material-point bias. Both
+branches select the same contact subset and ankle acceleration +1.29954 rad/s².
+Native delivers +0.60454 versus +1.10612, reducing ankle acceleration error 72%
+and full generalized acceleration error 43%. No flight/non-foot support occurs;
+total measured physics is 0.1370 s for 40 frames. Residual position-transport,
+friction/self-stress and impulse-closure discrepancies remain. This conservative
+sticking subset may reject actual sliding and is not exact native complementarity.
+
+The next protocol keeps physical acceleration/stop/contact/torque constraints
+hard. If a joint's tracking band is disjoint from its physical acceleration
+interval, it takes the nearest physical endpoint and explicitly records the
+minimum scalar tracking slack. Other joints retain their original bands, and
+coupled-QP infeasibility still stops. This is not a global hierarchical-QP or
+native invariant-containment guarantee. A prospective 8 s fixed initial-reference
+hold must first pass final-five-second anchored standing, no flight/non-foot
+support, total slip at most 10 mm, and actual right-only two-track/noncollinear
+support of at least 1 cm² with tilt at most 2° over the final second.
