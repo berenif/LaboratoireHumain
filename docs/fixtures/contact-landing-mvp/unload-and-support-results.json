@@ -88,13 +88,58 @@
         "ledgerPhysicsWallSeconds": 252.02515492
       },
       "summarySHA256": "7606fff6d7ca1c5b2082b5d640d490d4f85fc972ead662aef0ec20a2ace3ac21"
+    },
+    "batch11-one-sided-unilateral-step": {
+      "physicsWallSeconds": 26.990233881,
+      "nativeSubsteps": 7620,
+      "stopped": "terminal-unload-support-not-qualified-at-lift",
+      "flightNativeSamples": 0,
+      "loadedSlipM": [
+        0.0017694473715522516,
+        0.0010869747679208806
+      ],
+      "commandedLiftIntegrated": false,
+      "capacityFirstQualifiedAtS": 9.5,
+      "capacityFirstQualifiedMotorFraction": 0.8213876464281276,
+      "capacityReadinessAtStopS": 0.025,
+      "summarySHA256": "40bd84f84d24f524793b2c01e36d37aa6d32261008535a1b6896c3c4ab72bc0b"
+    },
+    "batch12-readiness-conjunction-step": {
+      "physicsWallSeconds": 27.679317372999996,
+      "nativeSubsteps": 8040,
+      "stopped": "inverse-dynamics-step-trial-stopped",
+      "stepMechanismPassed": false,
+      "maximumWholeCapsuleClearanceM": 0.0304879043251276,
+      "flightNativeSamples": 0,
+      "nonfootSupport": false,
+      "loadedSlipM": [
+        0.0017694473715522516,
+        0.0018632879002399268
+      ],
+      "stepEvents": [
+        {
+          "event": "measured-unload-foot-hold",
+          "timeS": 9.425
+        },
+        {
+          "event": "lift",
+          "timeS": 9.575000000000001,
+          "targetDisplacementM": 0.06,
+          "captureDirected": true
+        },
+        {
+          "event": "translate",
+          "timeS": 9.950000000000001
+        }
+      ],
+      "cause": "Elbow17 current model stopping reserve short by10.62microrad; near-stop speed cutoff excludes it; no placement or landing"
     }
   },
   "ledger": {
     "sessionStartUTC": "2026-10-17T16:41:29Z",
     "firstWorkingBatchDeadlineUTC": "2026-10-17T17:41:29Z",
-    "physicsWallSeconds": 252.02515492,
-    "nativeSubsteps": 73280,
+    "physicsWallSeconds": 306.69470617400003,
+    "nativeSubsteps": 88940,
     "batches": [
       {
         "physicsWallSeconds": 32.729043346,
@@ -195,6 +240,26 @@
         "name": "batch10-clarabel-unilateral-zero",
         "capSeconds": 40,
         "outcome": "all8s native anchored, no flight/nonfoot; BOTH-flat geometry failed; right-only geometry 1.35s"
+      },
+      {
+        "physicsWallSeconds": 26.990233881,
+        "nativeSubsteps": 7620,
+        "totalProcessWallSeconds": 167.74406049800018,
+        "solverWallSeconds": 134.36112858996057,
+        "stateComputationWallSeconds": 2.999121868968359,
+        "name": "batch11-one-sided-unilateral-step",
+        "capSeconds": 90,
+        "outcome": "right hull retained and measured unload achieved; actual-pose capacity prerequisite unqualified; safe stop before commanded lift"
+      },
+      {
+        "physicsWallSeconds": 27.679317372999996,
+        "nativeSubsteps": 8040,
+        "totalProcessWallSeconds": 169.27167386200017,
+        "solverWallSeconds": 134.9952864399529,
+        "stateComputationWallSeconds": 3.1200013760462753,
+        "name": "batch12-readiness-conjunction-step",
+        "capSeconds": 90,
+        "outcome": "true30.49mm lift; stop during early translation on elbow model braking reserve; no flight/nonfoot, no placement/landing"
       }
     ],
     "oldAllowanceCarried": false

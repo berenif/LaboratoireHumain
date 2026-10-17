@@ -18,7 +18,7 @@ class RecoveryStep:
         return dict(body='left_foot',position=np.asarray(position),rotation=self.rotation,velocity=np.zeros(3) if velocity is None else velocity,acceleration=np.zeros(3) if acceleration is None else acceleration)
     def change(self,phase,elapsed,**details):
         self.log.append(dict(event=phase,timeS=elapsed,**details));self.phase=phase;self.phase_start=elapsed
-    def update(self,elapsed,state,model,diagnostic,last_samples,right_distance):
+    def update(self,elapsed,state,model,diagnostic,last_samples,right_distance,lift_ready=True):
         pose=model['geometry'][0]['left_foot'];position=pose[:3,3];loads=state['metrics']['foot_loads_n'];clearance=state['metrics']['foot_clearance_m'][0]
         for sample in last_samples:
             self.unloaded=self.unloaded+1 if sample['loads_n'][0]<3. and sample['loads_n'][1]>=.8*self.kin.model['totalMassKg']*9.81 else 0
@@ -29,7 +29,7 @@ class RecoveryStep:
             if loads[0]<3. and self.origin is None:
                 self.origin=position.copy();self.rotation=pose[:3,:3]/np.cbrt(np.linalg.det(pose[:3,:3]));self.log.append(dict(event='measured-unload-foot-hold',timeS=elapsed))
             if self.origin is not None:swing=self.foot_task(self.origin)
-            if self.unloaded>=80 and self.capture_run>=.1:
+            if self.unloaded>=80 and self.capture_run>=.1 and lift_ready:
                 self.origin=position.copy();self.rotation=pose[:3,:3]/np.cbrt(np.linalg.det(pose[:3,:3]));capture=np.array([diagnostic['capture'][k] for k in 'xyz']);delta=capture-self.origin;delta[1]=0.;distance=np.linalg.norm(delta);self.delta=delta/max(distance,1e-12)*min(.06,distance)
                 self.bottom=self.kin.bottom('left_foot',pose);self.high=self.origin+np.array([0.,.035,0.]);self.landing=self.origin+self.delta;self.landing[1]-=self.bottom+.001
                 self.change('lift',elapsed,targetDisplacementM=float(np.linalg.norm(self.delta)),captureDirected=True);com=self.stance_com.copy();swing=self.foot_task(self.origin)

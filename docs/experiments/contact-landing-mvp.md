@@ -167,3 +167,38 @@ process-wall seconds. Cumulative physics after B10 is 252.0252 seconds.
 The optional research backend is reproducible with
 `python -m pip install -r scripts/requirements-balance-mvp.txt` (Clarabel 0.11.1).
 The production runtime and default GetUp do not require Python or this package.
+
+B11's one-sided replay retained the right four-point hull and reached sustained
+actual left unloading. It stopped before applying a lift command because two
+independent readiness timers were out of order: actual-pose motor capacity first
+fell below 0.9 at 9.500 s (0.8214), after the real stance hip reached its eligible
+upper stop, but only 25 ms of its required 100 ms had accumulated when the older
+unload timer requested lift. No flight/non-foot support occurred; loaded slip
+was 1.77/1.09 mm. This does not qualify a step.
+
+B12 changes only phase sequencing: transfer continues with the existing measured
+unloaded-foot hold until both the original unload gate and the full current
+support/capacity readiness gate have qualified. The bounded timeout and every
+physical acceptance threshold remain unchanged. Eleven pure phase tests cover
+waiting and timeout behavior. Six native balance pure tests pass, including the
+bounded diagnostic horizon and checkpoint-compatible default.
+
+B12 synchronized readiness and physically cleared the left foot by 30.49 mm,
+with no flight/non-foot support and 1.77/1.86 mm loaded slip. It entered early
+translation but stopped at 10.050 s before placement or landing. Elbow 17 was
+30.24 microradians above its lower stop and closing at 0.0639 rad/s, outside
+the old low-speed stop approximation. The preceding QP had planned only
+2.8e-10 rad future stopping reserve; a 10.65 microradian native position error
+exhausted it. Native internal joint-limit impulses have no state writeback,
+and the native limit law activates only after crossing the bound. No existing
+zero-valued impulse field is claimed to measure this impact.
+
+The next one-variable robustness test adds an opt-in 100 microradian buffer to
+FUTURE free-joint stopping positions only. Current actual-state checks, original
+limits, the model's 50 rad/s² bound, near-stop eligibility and all motor/contact
+constraints remain unchanged. The default buffer is zero. At the exact prior
+elbow decision, the buffered original-cap QP is feasible and changes elbow
+braking acceleration from 0.4909 to 0.7827 rad/s², leaving at least 100 microradians
+predicted reserve. The buffer is an engineering margin, not a certified bound
+on all native prediction error. The already-unviable stopped state remains
+rejected; there is no retroactive state correction or pose reset.

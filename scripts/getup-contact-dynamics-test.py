@@ -63,6 +63,19 @@ class ContactDynamicsTests(unittest.TestCase):
    self.assertTrue(info['success']);self.assertLessEqual(info['plannedLeftNormalForceN'],ceiling+1e-4);self.assertLess(info['leftNormalForceCeilingViolationN'],1e-4);self.assertLessEqual(info['maximumMotorFraction'],.900001);self.assertLess(max(abs(np.array(info['qdd']))),10.)
   np.testing.assert_allclose(info['plannedContactForcesWorldN'][0],[0.,0.,0.],atol=1e-5)
 class BrakingBoundsTests(unittest.TestCase):
+ def test_future_buffer_tightens_both_sides_without_changing_current_bounds(self):
+  for q,v in [(.9,1.),(-.9,-1.)]:
+   oldlo,oldhi=d.braking_acceleration_bounds(q,v,-1.,1.);lo,hi=d.braking_acceleration_bounds(q,v,-1.,1.,reserve=1e-4)
+   self.assertGreaterEqual(lo,oldlo);self.assertLessEqual(hi,oldhi)
+   for a in [lo,hi]:
+    p=q+.025*v+.5*.025**2*a;w=v+.025*a;self.assertLessEqual(p+max(w,0.)**2/100.,1.-1e-4+1e-9);self.assertGreaterEqual(p-min(w,0.)**2/100.,-1.+1e-4-1e-9)
+ def test_current_state_inside_buffer_can_move_away_without_retroactive_rejection(self):
+  lo,hi=d.braking_acceleration_bounds(-1.+1e-6,.02,-1.,1.,reserve=1e-4);self.assertLessEqual(lo,hi)
+  for reserve in [0.,1e-4]:
+   with self.assertRaisesRegex(ValueError,'Already outside'):d.braking_acceleration_bounds(-1.+3.0235e-5,-.06391884,-1.,1.,reserve=reserve)
+ def test_buffer_retains_mirrored_signs_and_handles_zero_distance(self):
+  lo,hi=d.braking_acceleration_bounds(.99,.2,-1.,1.,reserve=1e-4);a,b=d.braking_acceleration_bounds(-.99,-.2,-1.,1.,reserve=1e-4);self.assertAlmostEqual(lo,-b);self.assertAlmostEqual(hi,-a)
+  lo,_=d.braking_acceleration_bounds(-1.,0.,-1.,1.,reserve=1e-4);self.assertGreater(lo,0.)
  def test_measured_knee_case_reserves_braking_distance(self):
   lo,hi=d.braking_acceleration_bounds(-.07425740361213684,2.7617790699005127,-2.792526803190927,.03490658503988659);self.assertAlmostEqual(hi,-23.3655,places=3);self.assertEqual(lo,-50.)
  def test_mirrored_signs_have_mirrored_bounds(self):

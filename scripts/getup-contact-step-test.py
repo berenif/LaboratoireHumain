@@ -17,6 +17,14 @@ class StepTests(unittest.TestCase):
   for i in range(3):
    _,task,_=self.update(8.+i*.025);self.assertEqual(self.step.phase,'transfer');self.assertAlmostEqual(task['position'][1],.03)
   self.update(8.075);self.assertEqual(self.step.phase,'lift')
+ def test_actual_unload_waits_for_independent_capacity_readiness(self):
+  for i in range(8):
+   _,task,_=self.step.update(8.+i*.025,self.state,self.model,self.diag,self.last,0.,lift_ready=False)
+   self.assertEqual(self.step.phase,'transfer');np.testing.assert_allclose(task['position'],self.model['geometry'][0]['left_foot'][:3,3])
+  self.step.update(8.2,self.state,self.model,self.diag,self.last,0.,lift_ready=True);self.assertEqual(self.step.phase,'lift')
+ def test_waiting_for_capacity_never_bypasses_bounded_timeout(self):
+  self.step.unloaded=100;self.step.capture_run=.2
+  self.step.update(9.5,self.state,self.model,self.diag,self.last,0.,lift_ready=False);self.assertEqual(self.step.phase,'stop');self.assertEqual(self.step.failed,'no-qualified-unload')
  def test_horizontal_progress_requires_actual_whole_clearance(self):
   self.ready();self.update(8.5);self.assertEqual(self.step.phase,'lift')
   self.last=[dict(loads_n=[0.,400.],clearance_m=[.02,0.])]*20;self.state['metrics']['foot_clearance_m'][0]=.02;self.update(8.525);self.assertEqual(self.step.phase,'translate')
