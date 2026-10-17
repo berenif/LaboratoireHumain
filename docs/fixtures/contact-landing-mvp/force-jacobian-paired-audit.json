@@ -1,0 +1,59 @@
+{
+  "summary": {
+    "status": "completed-paired25ms-audit-not-step-proof",
+    "physicsCapSeconds": 3.0,
+    "maximumAdmittedNativeSubsteps": 40,
+    "sourceCheckpointSHA256": "d60578c77989823313d20aed5dc8f28ad68028a939fb97919f084afb63d0e847",
+    "binarySHA256": "5073618b162b62f85168606e5f7b3f418bd2f98f3561862cca1931beec879139",
+    "onlyControlChange": "forceJacobian live current point versus native frozen solver lever; gap/velocity/task Jacobians unchanged",
+    "forkInterpretation": "Two independent25ms native trials from exact same full saved physical state/caches/clock; not a continuous trajectory, not stepping qualification",
+    "cases": [
+      {
+        "mode": "live-geometric",
+        "artifact": "live-geometric.json",
+        "maximumMotorFraction": 0.4990006987784418,
+        "maximumTangentReportingDifferenceNs": 0.0,
+        "flightSamples": 0,
+        "nonfoot": false
+      },
+      {
+        "mode": "native-frozen",
+        "artifact": "native-frozen.json",
+        "maximumMotorFraction": 0.49172819832249426,
+        "maximumTangentReportingDifferenceNs": 5.820766091346741e-10,
+        "flightSamples": 0,
+        "nonfoot": false
+      }
+    ],
+    "physicsWallSeconds": 0.151675173,
+    "nativeSubsteps": 40,
+    "uncertainOutstandingRequests": [],
+    "totalProcessWallSeconds": 0.5310526200046297
+  },
+  "rawArtifacts": {
+    "live-geometric.json": "959b588af6ef1bcd1bf400c152cad1b96aca723678fd0318508046df1f954969",
+    "native-frozen.json": "51d05883a5f3a09ba3ed2d11eb6011199b4271ab23ba60d95cdc59fd653ea8ab"
+  },
+  "independentReadOnlyReduction": {
+    "modelRightAngularAccelerationWorldXZRadps2": [
+      -0.77439,
+      -0.3013
+    ],
+    "liveActualRightAngularAccelerationWorldXZRadps2": [
+      -0.03154,
+      -0.01372
+    ],
+    "frozenActualRightAngularAccelerationWorldXZRadps2": [
+      -0.87553,
+      -0.33863
+    ],
+    "generalizedAccelerationErrorNormLive": 1.4464,
+    "generalizedAccelerationErrorNormFrozen": 0.746,
+    "actualRightTiltDegrees": {
+      "initial": 1.21472,
+      "liveFinal": 1.207,
+      "frozenFinal": 1.18095
+    },
+    "caveat": "Full yaw parity remains unproven: planned+.887 vsactual+.002rad/s2. Pose transport still differs from final relaxed generalized velocities by roughly+.005rad/s on worldX. No full step claim."
+  }
+}

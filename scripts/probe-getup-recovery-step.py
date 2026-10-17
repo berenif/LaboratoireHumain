@@ -42,7 +42,7 @@ class Native:
             self.proc.stdin.write(json.dumps(request)+'\n');self.proc.stdin.flush()
             row = json.loads(self.proc.stdout.readline())
         except Exception:
-            if request['op'] in ['step','stepMotionProfile']:
+            if request['op'] in ['step','stepMotionProfile','stepMotionProfileAudit']:
                 charged = time.perf_counter()-started;self.wall += charged
                 self.uncertain.append({'chargedWallSeconds':charged,'nativeSubstepsUpperBound':20})
             self.proc.kill();self.ledger();raise

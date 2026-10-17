@@ -12,6 +12,16 @@ class ContactDynamicsTests(unittest.TestCase):
   for p in snapshot['segments']:p['linearVelocity']={'x':999,'y':999,'z':999};p['angularVelocity']={'x':999,'y':999,'z':999}
   state=self.c.state(self.x['initial']['observation'],snapshot,self.x['diagnostic']);np.testing.assert_array_equal(state['v'],self.state['v'])
   self.assertLess(state['comParityErrorM'],1e-5);self.assertLess(state['comVelocityParityErrorMps'],2e-5);self.assertLess(state['contactVelocityParityErrorMps'],2e-5)
+ def test_native_force_lever_map_does_not_change_material_point_kinematics(self):
+  x=json.loads((ROOT/'docs/fixtures/getup-contact-modes.json').read_text())['quiet'];states=[]
+  for mode in ['live-geometric','native-frozen']:
+   c=d.ContactDynamics(self.c.kin.model,force_jacobian=mode);st=c.state(x['observation'],x['snapshot'],x['diagnostic']);states.append(st)
+   for con in st['contacts']:
+    if mode=='native-frozen':
+     pose=st['geometry'][0][con['body']];com=pose[:3,3]+d.normalized_rotation(pose[:3,:3])@d.reference.xyz(c.by_id[con['body']]['goldenMass']['centerOfMass']);jcom,jw=c.point_jacobian(st['geometry'],con['body'],com);np.testing.assert_allclose(con['Jforce'],jcom-d.skew(con['forcePoint']-com)@jw,atol=1e-12)
+  np.testing.assert_array_equal(states[0]['M'],states[1]['M']);np.testing.assert_array_equal(states[0]['bias'],states[1]['bias'])
+  self.assertTrue(any(np.max(abs(a['Jforce']-b['Jforce']))>1e-5 for a,b in zip(states[0]['contacts'],states[1]['contacts'])))
+  for a,b in zip(states[0]['contacts'],states[1]['contacts']):np.testing.assert_array_equal(a['J'],b['J']);np.testing.assert_array_equal(a['velocity'],b['velocity']);self.assertEqual(a['gap'],b['gap'])
  def test_all_joint_limits_match_native_f32_and_json_round_trip(self):
   expected=np.zeros((21,2))
   for part in self.c.parts:

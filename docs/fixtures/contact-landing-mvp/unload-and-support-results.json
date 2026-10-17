@@ -149,13 +149,27 @@
       "observedQ": -0.3490658700466156,
       "observedVelocityRadps": 0.010843181051313877,
       "stepMechanismPassed": false
+    },
+    "batch14-native-bound-step": {
+      "stopped": "no-qualified-unload-step-trial-stopped",
+      "stepMechanismPassed": false,
+      "simulatedSeconds": 10.725,
+      "physicsWallSeconds": 28.384244170999985,
+      "nativeSubsteps": 8580,
+      "flightNativeSamples": 0,
+      "nonfootSupport": false,
+      "loadedSlipM": [
+        0.0014060254329607469,
+        0.0010781875026303579
+      ],
+      "cause": "Support-corner loss puts current COM/capture23mm outside right hull; no capacity gate/force ceiling/lift"
     }
   },
   "ledger": {
     "sessionStartUTC": "2026-10-17T16:41:29Z",
     "firstWorkingBatchDeadlineUTC": "2026-10-17T17:41:29Z",
-    "physicsWallSeconds": 323.429494609,
-    "nativeSubsteps": 94060,
+    "physicsWallSeconds": 351.81373878,
+    "nativeSubsteps": 102640,
     "batches": [
       {
         "physicsWallSeconds": 32.729043346,
@@ -298,11 +312,21 @@
         "name": "batch13c-future-reserve-step",
         "capSeconds": 80.692474543,
         "outcome": "safe early stop on one-f32-neighbor separating ankle representation; no lift/flight/nonfoot"
+      },
+      {
+        "physicsWallSeconds": 28.384244170999985,
+        "nativeSubsteps": 8580,
+        "totalProcessWallSeconds": 100.27420671300206,
+        "solverWallSeconds": 65.71453904808732,
+        "stateComputationWallSeconds": 2.897513078954944,
+        "name": "batch14-native-bound-step",
+        "capSeconds": 68.265211565,
+        "outcome": "numeric state rejection resolved; stance support-corner loss, no qualified unload; no flight/nonfoot"
       }
     ],
     "oldAllowanceCarried": false,
-    "physicsBudgetChargedSeconds": 328.429494609,
-    "nativeSubstepsUpperBound": 94080,
+    "physicsBudgetChargedSeconds": 356.81373878,
+    "nativeSubstepsUpperBound": 102660,
     "nonPhysicalLaunchFailures": [
       {
         "name": "batch13-future-reserve-step",

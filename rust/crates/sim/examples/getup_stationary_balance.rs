@@ -31,6 +31,7 @@ enum Command {
     StepMotionProfile {
         action: [f32; 21], torques_nm: [f32; 21], qdd: [f32; 21],
     },
+    StepMotionProfileAudit { action: [f32;21], torques_nm: [f32;21], qdd: [f32;21] },
     Checkpoint {
         path: String,
     },
@@ -86,6 +87,9 @@ fn main() -> Result<(), String> {
                 .unwrap()),
                 Command::StepMotionProfile { action, torques_nm, qdd } => Ok(serde_json::to_value(
                     experiment.step_motion_profile(action, torques_nm, qdd, &mut budget)?
+                ).unwrap()),
+                Command::StepMotionProfileAudit { action, torques_nm, qdd } => Ok(serde_json::to_value(
+                    experiment.step_motion_profile_audited(action, torques_nm, qdd, &mut budget)?
                 ).unwrap()),
                 Command::Checkpoint { path } => {
                     let bytes = experiment.checkpoint()?;

@@ -204,6 +204,8 @@ pub struct Transition {
     pub budget_physics_wall_s: f64,
     /// Actual observed native samples, not interpolated 40 Hz visual evidence.
     pub native_foot_samples: Vec<NativeFootSample>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub native_dynamics_audit: Option<Vec<serde_json::Value>>,
 }
 
 /// Shared across resets and checkpoint loads. Serialization never resets budget.
@@ -320,6 +322,19 @@ fn metrics(s: &Simulation, anchor: [f32; 2]) -> Result<Metrics, String> {
             .filter(|(k, _)| k.as_str() != "footDriftFromSuppliedAnchors")
             .all(|(_, v)| v == true),
     })
+}
+
+fn dynamics_audit_frame(s: &Simulation, m: &Metrics, stage: &str) -> Result<serde_json::Value, String> {
+    let mut tangents = Vec::new();
+    for name in ["left_foot", "right_foot"] {
+        let i = s.model.segments.iter().position(|p| p.id == name).ok_or("Missing audit foot")?;
+        tangents.push(vec3(measurement::floor_tangent_impulse(&s.world, s.floor, s.colliders[i])?));
+    }
+    Ok(serde_json::json!({"stage":stage,"nativeSubstep":s.substeps_completed,
+        "physicalObservation":getup::physical_observation(s)?.to_vec(),"snapshot":s.snapshot(),
+        "contactMotion":getup::standing::contact_diagnostic(s)?,
+        "footTangentImpulsesWorldNs":tangents,"motorTorquesNmActuatorOrder":m.torques_nm,
+        "interpretation":"after: final post-solve state; motor torque applied before this native integration; impulses N.s over latest native1/800s frame, after all internal solver substeps; normal points and tangent vectors act on foot; no CCD bodies"}))
 }
 
 fn capsule_bottom(a: Vector, b: Vector, radius: f32) -> f32 {
@@ -534,7 +549,7 @@ impl Experiment {
         torso_force_n: [f32; 2],
         budget: &mut ComputeBudget,
     ) -> Result<Transition, String> {
-        self.step_with_profile(action, torso_force_n, None, budget)
+        self.step_with_profile(action, torso_force_n, None, false, budget)
     }
     /// Acceleration-predicted inner-impedance reference for one 25ms decision.
     /// All arrays qpos order; original gears, passive elements, and torque caps.
@@ -542,6 +557,13 @@ impl Experiment {
         &mut self, action: [f32; 21], torques_nm: [f32; 21],
         qdd: [f32; 21], budget: &mut ComputeBudget,
     ) -> Result<Transition, String> {
+        self.step_motion_profile_with_audit(action, torques_nm, qdd, false, budget)
+    }
+    /// Same ordinary command, with an opt-in read-only per-native audit.
+    pub fn step_motion_profile_audited(&mut self, action: [f32;21], torques_nm: [f32;21], qdd: [f32;21], budget: &mut ComputeBudget) -> Result<Transition,String> {
+        self.step_motion_profile_with_audit(action, torques_nm, qdd, true, budget)
+    }
+    fn step_motion_profile_with_audit(&mut self, action: [f32;21], torques_nm: [f32;21], qdd: [f32;21], audit: bool, budget: &mut ComputeBudget) -> Result<Transition,String> {
         if qdd.iter().any(|v| !v.is_finite() || v.abs() > 50.001)
             || torques_nm.iter().any(|v| !v.is_finite()) {
             return Err("Motion profile requires finite torques and |qdd|<=50 rad/s2".into());
@@ -559,11 +581,11 @@ impl Experiment {
             q: physical[..21].try_into().unwrap(), dq: physical[46..67].try_into().unwrap(),
             qdd, torques_nm,
         };
-        self.step_with_profile(action, [0.0; 2], Some(profile), budget)
+        self.step_with_profile(action, [0.0; 2], Some(profile), audit, budget)
     }
     fn step_with_profile(
         &mut self, action: [f32; 21], torso_force_n: [f32; 2],
-        profile: Option<MotionProfile>, budget: &mut ComputeBudget,
+        profile: Option<MotionProfile>, audit: bool, budget: &mut ComputeBudget,
     ) -> Result<Transition, String> {
         if action.iter().any(|v| !v.is_finite() || v.abs() > 1.0) {
             return Err("Action must be 21 finite qpos-order residuals in [-1,1]".into());
@@ -590,6 +612,7 @@ impl Experiment {
                 failure: Some("physics-budget-exhausted-before-step".into()),
                 budget_physics_wall_s: budget.used_s,
                 native_foot_samples: Vec::new(),
+                native_dynamics_audit: None,
             });
         }
         self.runtime.balance_simulation_mut().balance_residual = Some(action);
@@ -597,6 +620,7 @@ impl Experiment {
         self.runtime.balance_simulation_mut().balance_torso_force_n = torso_force_n;
         self.memory.last_residual = action;
         let started = Instant::now();
+        let mut native_dynamics_audit = if audit { Some(vec![dynamics_audit_frame(self.runtime.simulation(), &current.metrics, "before")?]) } else { None };
         let native_before = self.runtime.simulation().substeps_completed;
         let mut aggregate_reward = Reward::default();
         let mut native_foot_samples = Vec::with_capacity(20);
@@ -608,6 +632,9 @@ impl Experiment {
             let m = metrics(s, memory.anchor).map_err(|e| {
                 measurement::Failure::new(s.tick, substep, "balance-observation", e, 1., 0.)
             })?;
+            if let Some(frames) = &mut native_dynamics_audit {
+                frames.push(dynamics_audit_frame(s, &m, "after").map_err(|e| measurement::Failure::new(s.tick, substep, "balance-dynamics-audit", e, 1., 0.))?);
+            }
             memory.max_anchor_drift_m = memory.max_anchor_drift_m.max(m.anchor_drift_m);
             native_foot_samples.push(NativeFootSample {
                 native_substep: s.substeps_completed,
@@ -717,6 +744,7 @@ impl Experiment {
             failure,
             budget_physics_wall_s: budget.used_s,
             native_foot_samples,
+            native_dynamics_audit,
         })
     }
 }

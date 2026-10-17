@@ -218,3 +218,26 @@ violations remain rejected. Predicted motion and its future braking reserve
 still use the unchanged native range. No physical bound, actual pose or velocity
 is modified. Pure native assembly verifies every installed bound and its JSON
 round-trip; frozen replay verifies the separating ankle has no stop reaction.
+
+B14 resolved the numeric ankle rejection but stopped at 10.725 s without
+qualified unload. The right support hull lost a corner, leaving measured COM
+and capture approximately 23 mm outside the remaining hull. The capacity gate
+and terminal force ceiling never activated. No flight/non-foot support occurred;
+loaded slip was 1.41/1.08 mm. The earlier favorable unilateral trajectory is
+therefore sensitive to small numerical changes and is not a robust step MVP.
+The next investigation compares actual native state/torque/contact evolution to
+the controller prediction; no additional target or gain change is admitted by
+this result.
+
+B15 compares two independent 25 ms forks of the exact saved B14 physical state,
+including native contact caches. Only the mathematical contact-force Jacobian
+changes: current geometric contact points versus native frozen solver levers.
+Live material-point Jacobians still drive gaps, velocities and motion tasks.
+Measured right-foot angular acceleration X/Z changes from −0.0315/−0.0137 to
+−0.8755/−0.3386 rad/s², versus planned −0.7744/−0.3013. Tilt falls from 1.2147°
+to 1.1810° rather than 1.2070°. Neither fork has flight/non-foot support; total
+physics wall time is 0.1517 s for 40 native frames. Per-point tangent impulses
+sum to the native aggregate within 5.9e−10 N·s. Yaw and pose-transport versus
+final relaxed velocity discrepancies remain unresolved. This is a causal
+local-model correction, not a completed step. B16 therefore changes only this
+force map in the same-seed full trial, retaining all physical success gates.

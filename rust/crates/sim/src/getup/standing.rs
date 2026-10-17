@@ -1,6 +1,7 @@
 //! Read-only solved-foot contact motion. Foot origins alone cannot distinguish
 //! loaded sliding, rolling about a contact, and an unloaded repositioning.
 use crate::*;
+use rapier3d::utils::OrthonormalBasis;
 
 pub(crate) struct FootContact {
     pub body: usize,
@@ -12,6 +13,7 @@ pub(crate) struct FootContact {
     pub solver_point_velocity: Vector,
     pub normal: Vector,
     pub impulse: f32,
+    pub tangent_impulse_world: Vector,
     pub velocity: Vector,
 }
 
@@ -64,7 +66,13 @@ pub(crate) fn contacts(s: &Simulation) -> Result<Vec<FootContact>, String> {
                 } else {
                     point_data.solver_dp1
                 };
+                let force_dir1 = -manifold.data.normal;
+                let tangent1 = force_dir1.orthonormal_vector();
+                let tangent2 = force_dir1.cross(tangent1);
+                let tangent_sign = if pair.collider1 == s.colliders[i] { 1.0 } else { -1.0 };
+                let tangent_impulse_world = tangent_sign * (tangent1 * point_data.tangent_impulse.x + tangent2 * point_data.tangent_impulse.y);
                 out.push(FootContact {
+                    tangent_impulse_world,
                     body: i,
                     point,
                     floor_point,
@@ -117,7 +125,7 @@ pub fn contact_diagnostic(s: &Simulation) -> Result<serde_json::Value, String> {
                 "floorPoint":vec3(c.floor_point),"signedGapM":c.signed_gap_m,
                 "cachedSolverDistanceM":c.cached_distance_m,"normalVelocityMps":c.velocity.dot(c.normal),
                 "solverLeverFromCom":vec3(c.solver_lever_from_com),"solverPointVelocityMps":vec3(c.solver_point_velocity),
-                "normalImpulseNs":c.impulse,"velocityMps":vec3(c.velocity),
+                "normalImpulseNs":c.impulse,"tangentImpulseWorldNs":vec3(c.tangent_impulse_world),"velocityMps":vec3(c.velocity),
                 "tangentVelocityMps":vec3(tangent),"tangentSpeedMps":tangent.length()})
             })
             .collect();
