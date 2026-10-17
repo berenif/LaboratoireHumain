@@ -1,0 +1,50 @@
+{
+  "schema": 1,
+  "utc": "2026-10-15T09:54:03.998656+00:00",
+  "status": "prepared-frozen-awaiting-distinct-native-authorization",
+  "previousDraftProtocolValidationCommit": "0a38435b1cfa4283d08b06624980104163969461",
+  "frozenArtifacts": [
+    {
+      "path": "docs/evidence/coordination-transfer-native-proposal-2026-10-13/future-native-protocol.json",
+      "sha256": "47479c0ecb7ae273a506cb76194ee9b404b0875c5c36a37a8a10cbec18af8f75"
+    },
+    {
+      "path": "docs/evidence/coordination-transfer-native-proposal-2026-10-13/future-native-protocol.md",
+      "sha256": "510acccfa2b96450bd353d5d40720f708bc46674ebd0489bfcaadac84bccf7ef"
+    },
+    {
+      "path": "docs/evidence/coordination-transfer-native-proposal-2026-10-13/manifest.json",
+      "sha256": "4f3708fd50cd4dabf473b7a6bff528ee11ad798cf25dfbeaf0f6141c156818f7"
+    },
+    {
+      "path": "docs/evidence/coordination-transfer-native-proposal-2026-10-13/freeze-receipt.json",
+      "sha256": "c1178689c22f3ce500ea8efbc7eea351042c7fc7f0dbb5c28275646af87aa14d"
+    },
+    {
+      "path": "docs/evidence/coordination-transfer-native-proposal-2026-10-13/authorization-template.json",
+      "sha256": "e1ce394b7c1b048a2a2c80ee48275d056a698cf37f96bac1754ebb448d635808"
+    },
+    {
+      "path": "docs/evidence/coordination-transfer-resume-2026-10-15/frozen-manifest-inspection.json",
+      "sha256": "f3477e88753c40e7c5985fe0992dcb05bb2cca9824c4ac3b13aefb350dbbc95e"
+    }
+  ],
+  "terminalArithmeticCases": 6001,
+  "totalNativeLimitProposed": 131096,
+  "physicalAuthorizationApproved": false,
+  "physicalClaimCreated": false,
+  "nativeProcessStarted": false,
+  "newNativeSteps": 0,
+  "newFk": 0,
+  "newWorlds": 0,
+  "newGeometryAssembliesOnResume": 0,
+  "geometryAssembliesInCandidatePreparation": 1,
+  "globalPreparationStatus": "open",
+  "chargedPreparationSeconds": 57289,
+  "maximumPreparationSeconds": 144000,
+  "reservationDeadlineUtc": "2026-10-15T12:27:54+00:00",
+  "rustPassesOnResume": 20,
+  "pythonFinalUniquePasses": 45,
+  "physicalResult": "not-measured; observed heels remain unloaded",
+  "libraryPublished": false
+}

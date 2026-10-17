@@ -1,0 +1,121 @@
+{
+  "startedUtc": "2026-10-12T21:22:38.916287+00:00",
+  "scope": "reviewed pure/static modules only, no Rapier substeps",
+  "nativeSubstepsAuthorized": 0,
+  "closedLedgerSha256": "2afa69b3ae9c8ab8343f7dabdf46b955c8ac7b88aa259404958e25d49a72ef07",
+  "moduleExpectedTests": {
+    "whole_body_tasks": 11,
+    "coordinated_runtime": 7,
+    "geometric_tasks": 6,
+    "whole_body_controller": 6
+  },
+  "releaseWorkerBuiltOrRun": false,
+  "endedUtc": "2026-10-12T21:22:42.754746+00:00",
+  "elapsedSeconds": 3.8384794900002817,
+  "results": [
+    {
+      "module": "whole_body_tasks",
+      "command": [
+        "/workspace/lh-cargo/bin/cargo",
+        "+1.89.0",
+        "test",
+        "--manifest-path",
+        "/workspace/LaboratoireHumain/rust/Cargo.toml",
+        "-p",
+        "lh-sim",
+        "--lib",
+        "--locked",
+        "--features",
+        "experimental-solver-step-observation",
+        "recovery::planner::whole_body_tasks::tests"
+      ],
+      "returncode": 0,
+      "expectedTests": 11,
+      "passed": true,
+      "logSha256": "fac67ade55f02db982bd8332fda5f726e152a3c58a3182c695dfce80a3c80217"
+    },
+    {
+      "module": "coordinated_runtime",
+      "command": [
+        "/workspace/lh-cargo/bin/cargo",
+        "+1.89.0",
+        "test",
+        "--manifest-path",
+        "/workspace/LaboratoireHumain/rust/Cargo.toml",
+        "-p",
+        "lh-sim",
+        "--lib",
+        "--locked",
+        "--features",
+        "experimental-solver-step-observation",
+        "recovery::planner::coordinated_runtime::tests"
+      ],
+      "returncode": 0,
+      "expectedTests": 7,
+      "passed": true,
+      "logSha256": "b97dc16af49c01952e33be2be078659fcefb744b25d14efb5f3ea9419e0a4413"
+    },
+    {
+      "module": "geometric_tasks",
+      "command": [
+        "/workspace/lh-cargo/bin/cargo",
+        "+1.89.0",
+        "test",
+        "--manifest-path",
+        "/workspace/LaboratoireHumain/rust/Cargo.toml",
+        "-p",
+        "lh-sim",
+        "--lib",
+        "--locked",
+        "--features",
+        "experimental-solver-step-observation",
+        "recovery::planner::geometric_tasks::tests"
+      ],
+      "returncode": 0,
+      "expectedTests": 6,
+      "passed": true,
+      "logSha256": "aa28d0e14a41371e0a167e99bced0f0088bb3ec5e3d4a12c88ecfb40b3d7ead9"
+    },
+    {
+      "module": "whole_body_controller",
+      "command": [
+        "/workspace/lh-cargo/bin/cargo",
+        "+1.89.0",
+        "test",
+        "--manifest-path",
+        "/workspace/LaboratoireHumain/rust/Cargo.toml",
+        "-p",
+        "lh-sim",
+        "--lib",
+        "--locked",
+        "--features",
+        "experimental-solver-step-observation",
+        "recovery::planner::whole_body_controller::tests"
+      ],
+      "returncode": 0,
+      "expectedTests": 6,
+      "passed": true,
+      "logSha256": "64dc54027d3a627396351be62f452ff760c4c3452b923b71ac65e077307bf97e"
+    },
+    {
+      "module": "production-check",
+      "command": [
+        "/workspace/lh-cargo/bin/cargo",
+        "+1.89.0",
+        "check",
+        "--manifest-path",
+        "/workspace/LaboratoireHumain/rust/Cargo.toml",
+        "-p",
+        "lh-sim",
+        "--lib",
+        "--locked"
+      ],
+      "returncode": 0,
+      "passed": true,
+      "logSha256": "6898e48cafdbf89127c258a16e9f4948642cf093104330f5cda1d08b9de0c8ad"
+    }
+  ],
+  "ledgerUnchanged": true,
+  "nativeSubstepsPerformed": 0,
+  "statementBasis": "reviewed fixed call paths, not runtime instrumentation"
+}

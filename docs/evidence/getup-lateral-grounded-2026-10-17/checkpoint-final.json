@@ -1,0 +1,12 @@
+{
+  "binaryWorldDeserialized": true,
+  "bytes": 5775790,
+  "controllerEqual": true,
+  "forecastSubsteps": 680,
+  "handlesEqual": true,
+  "jointStateEqual": true,
+  "nativeSubsteps": 10420,
+  "passed": true,
+  "physicsIntegrations": 0,
+  "snapshotEqual": true
+}

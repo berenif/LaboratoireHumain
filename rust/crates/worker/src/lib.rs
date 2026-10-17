@@ -1,4 +1,9 @@
 //! WASM worker boundary. The renderer never owns or imports this simulation.
+#[cfg(any(target_arch = "wasm32", test))]
+fn default_browser_profile() -> lh_sim::Profile {
+    lh_sim::Profile::default()
+}
+
 #[cfg(target_arch = "wasm32")]
 mod browser {
     use lh_contracts::{Command, Mode, SCHEMA_VERSION};
@@ -30,6 +35,18 @@ mod browser {
     #[wasm_bindgen]
     pub fn wire_schema() -> u16 {
         SCHEMA_VERSION
+    }
+    /// Fixed-observation validation boundary; no Simulation is constructed.
+    #[wasm_bindgen]
+    pub fn getup_actor(actor: &str, observation: &str) -> Result<String, JsValue> {
+        if observation.len() > 16384 { return Err(error("Actor input exceeds bound")); }
+        let input: Vec<f32> = serde_json::from_str(observation).map_err(error)?;
+        serde_json::to_string(&lh_sim::getup::actor::infer(actor, &input).map_err(error)?).map_err(error)
+    }
+    #[wasm_bindgen]
+    pub fn getup_trial_profile() -> String {
+        let mut profile = Profile::default(); profile.getup_policy_enabled = true;
+        serde_json::to_string(&profile).expect("GetUp profile")
     }
     #[wasm_bindgen]
     pub fn calibrate_tangent_contact(
@@ -175,6 +192,28 @@ mod browser {
     }
     #[wasm_bindgen]
     impl WorkerRuntime {
+        pub fn getup_fixture(kind:&str) -> Result<WorkerRuntime,JsValue> {
+            Ok(Self { runtime:Runtime::new_getup_fixture(kind).map_err(error)?,native_output_ms:0.0 })
+        }
+        pub fn getup_fixture_report(&self) -> Result<String,JsValue> {
+            self.runtime.getup_fixture_report().map_err(error)
+        }
+        pub fn getup_standing_diagnostic(&self, anchors_json:&str) -> Result<String,JsValue> {
+            self.runtime.getup_standing_diagnostic(anchors_json).map_err(error)
+        }
+        pub fn trigger_getup_fixture(&mut self) -> Result<(),JsValue> {
+            self.runtime.trigger_getup_fixture().map_err(error)
+        }
+        pub fn getup_checkpoint(&self) -> Result<Vec<u8>, JsValue> {
+            self.runtime.getup_checkpoint().map_err(error)
+        }
+        pub fn verify_getup_checkpoint(&self, bytes: &[u8]) -> Result<String, JsValue> {
+            self.runtime.verify_getup_checkpoint(bytes).map_err(error)
+        }
+        pub fn from_getup_checkpoint(bytes: &[u8]) -> Result<WorkerRuntime, JsValue> {
+            Ok(Self { runtime: Runtime::from_getup_checkpoint(bytes).map_err(error)?, native_output_ms: 0.0 })
+        }
+        pub fn getup_report(&self) -> Result<String, JsValue> { self.runtime.getup_report().map_err(error) }
         #[wasm_bindgen(constructor)]
         pub fn new(
             mode: &str,
@@ -201,7 +240,7 @@ mod browser {
                     serde_json::from_str::<Profile>(&json).map_err(error)
                 })
                 .transpose()?
-                .unwrap_or_default();
+                .unwrap_or_else(super::default_browser_profile);
             Ok(Self {
                 runtime: Runtime::new_trial_with_settings(
                     mode,
@@ -311,3 +350,18 @@ mod browser {
 }
 #[cfg(target_arch = "wasm32")]
 pub use browser::*;
+
+#[cfg(test)]
+mod tests {
+    #[test]
+    fn browser_uses_the_single_reference_body_profile() {
+        let profile = super::default_browser_profile();
+        profile.validate().unwrap();
+        assert!(!profile.recovery_enabled && !profile.recovery_first_phase_only);
+        assert!(!profile.corrective_steps_enabled);
+        assert!(!profile.getup_policy_enabled);
+        assert_eq!(profile.dt_s, 0.00125);
+        assert_eq!(profile.tick_substeps, 20);
+        assert_eq!(serde_json::to_value(profile).unwrap(), serde_json::to_value(lh_sim::Profile::default()).unwrap());
+    }
+}

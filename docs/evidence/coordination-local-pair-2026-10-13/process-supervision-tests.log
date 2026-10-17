@@ -1,0 +1,48 @@
+test_send_handles_partial_os_writes (__main__.PipeTransportTests.test_send_handles_partial_os_writes) ... ok
+test_send_to_nonreading_full_pipe_times_out (__main__.PipeTransportTests.test_send_to_nonreading_full_pipe_times_out) ... ok
+test_alarm_kills_assigned_worker_and_has_current_protocol_message (__main__.ProcessSupervisionTests.test_alarm_kills_assigned_worker_and_has_current_protocol_message) ... ok
+test_changed_binary_refused (__main__.ProcessSupervisionTests.test_changed_binary_refused) ... ok
+test_child_process_refused (__main__.ProcessSupervisionTests.test_child_process_refused) ... ok
+test_error_stop_kills_before_wait_and_disposes_even_after_exit (__main__.ProcessSupervisionTests.test_error_stop_kills_before_wait_and_disposes_even_after_exit) ... ok
+test_extra_thread_refused (__main__.ProcessSupervisionTests.test_extra_thread_refused) ... ok
+test_kill_reuses_whole_process_group_cleanup (__main__.ProcessSupervisionTests.test_kill_reuses_whole_process_group_cleanup) ... ok
+test_missing_private_process_group_refused (__main__.ProcessSupervisionTests.test_missing_private_process_group_refused) ... ok
+test_one_thread_no_descendant_and_stable_identity_are_required (__main__.ProcessSupervisionTests.test_one_thread_no_descendant_and_stable_identity_are_required) ... ok
+test_sigterm_during_constructor_kills_new_group_and_restores_handlers (__main__.ProcessSupervisionTests.test_sigterm_during_constructor_kills_new_group_and_restores_handlers) ... ok
+test_A_cannot_request_planning (__main__.RunnerTests.test_A_cannot_request_planning) ... ok
+test_changed_frozen_input_blocks_before_worker (__main__.RunnerTests.test_changed_frozen_input_blocks_before_worker) ... ok
+test_contradictory_evidence_outcome_stays_unknown (__main__.RunnerTests.test_contradictory_evidence_outcome_stays_unknown) ... ok
+test_contradictory_evidence_step_count_stays_unknown (__main__.RunnerTests.test_contradictory_evidence_step_count_stays_unknown) ... ok
+test_corrupted_budget_stops_and_still_archives_failure_receipt (__main__.RunnerTests.test_corrupted_budget_stops_and_still_archives_failure_receipt) ... ok
+test_default_accepts_active_preparation_without_completing_it (__main__.RunnerTests.test_default_accepts_active_preparation_without_completing_it) ... ok
+test_default_performs_no_worker_launch_or_budget_mutation (__main__.RunnerTests.test_default_performs_no_worker_launch_or_budget_mutation) ... ok
+test_evidence_float_cannot_impersonate_integer_count (__main__.RunnerTests.test_evidence_float_cannot_impersonate_integer_count) ... ok
+test_evidence_integer_cannot_impersonate_boolean_diagnostic (__main__.RunnerTests.test_evidence_integer_cannot_impersonate_boolean_diagnostic) ... ok
+test_failed_A_local_diagnostic_still_compares_B (__main__.RunnerTests.test_failed_A_local_diagnostic_still_compares_B) ... ok
+test_failed_B_local_diagnostic_closes_without_repeats (__main__.RunnerTests.test_failed_B_local_diagnostic_closes_without_repeats) ... ok
+test_failed_planning_never_receives_history_continuation_ack (__main__.RunnerTests.test_failed_planning_never_receives_history_continuation_ack) ... ok
+test_full_synthetic_protocol_one_worker_and_separate_copy_accounting (__main__.RunnerTests.test_full_synthetic_protocol_one_worker_and_separate_copy_accounting) ... ok
+test_local_pair_failed_b_still_closes_after_b (__main__.RunnerTests.test_local_pair_failed_b_still_closes_after_b) ... ok
+test_local_pair_static_preflight_has_no_budget_mutation (__main__.RunnerTests.test_local_pair_static_preflight_has_no_budget_mutation) ... ok
+test_local_pair_success_stops_after_b_at_exact_maximum (__main__.RunnerTests.test_local_pair_success_stops_after_b_at_exact_maximum) ... ok
+test_local_pair_supervisor_external_wall_includes_start_and_stop (__main__.RunnerTests.test_local_pair_supervisor_external_wall_includes_start_and_stop) ... ok
+test_malformed_failed_result_is_not_accepted_as_known_actual (__main__.RunnerTests.test_malformed_failed_result_is_not_accepted_as_known_actual) ... ok
+test_missing_frozen_prerequisite_blocks_before_worker (__main__.RunnerTests.test_missing_frozen_prerequisite_blocks_before_worker) ... ok
+test_missing_parity_gate_stops_before_histories (__main__.RunnerTests.test_missing_parity_gate_stops_before_histories) ... ok
+test_native_input_mutation_retains_reserved_verification (__main__.RunnerTests.test_native_input_mutation_retains_reserved_verification) ... ok
+test_output_directory_never_overwritten (__main__.RunnerTests.test_output_directory_never_overwritten) ... ok
+test_partial_failed_history_archives_actual_and_refuses_next_history (__main__.RunnerTests.test_partial_failed_history_archives_actual_and_refuses_next_history) ... ok
+test_shutdown_failure_is_archived_and_not_reported_success (__main__.RunnerTests.test_shutdown_failure_is_archived_and_not_reported_success) ... ok
+test_unknown_manifest_field_refused_without_execution (__main__.RunnerTests.test_unknown_manifest_field_refused_without_execution) ... ok
+test_unknown_protocol_mode_refused_before_worker (__main__.RunnerTests.test_unknown_protocol_mode_refused_before_worker) ... ok
+test_unknown_result_fields_refused (__main__.RunnerTests.test_unknown_result_fields_refused) ... ok
+test_worker_cannot_change_candidate_count (__main__.RunnerTests.test_worker_cannot_change_candidate_count) ... ok
+test_worker_cannot_request_41st_planning_call (__main__.RunnerTests.test_worker_cannot_request_41st_planning_call) ... ok
+test_worker_evidence_cannot_escape_assigned_output (__main__.RunnerTests.test_worker_evidence_cannot_escape_assigned_output) ... ok
+test_wrong_verification_step_count_keeps_reservation (__main__.RunnerTests.test_wrong_verification_step_count_keeps_reservation) ... ok
+test_wrong_worker_pid_blocks_before_native_reservation (__main__.RunnerTests.test_wrong_worker_pid_blocks_before_native_reservation) ... ok
+
+----------------------------------------------------------------------
+Ran 43 tests in 1.630s
+
+OK

@@ -1,0 +1,7 @@
+
+running 2 tests
+test recovery::planner::native_observation::tests::selected_contact_needs_current_geometry_and_upward_load_without_integration ... ok
+test recovery::planner::native_observation::tests::selected_heel_does_not_wait_for_segment_persistence_without_integration ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 174 filtered out; finished in 0.00s
+

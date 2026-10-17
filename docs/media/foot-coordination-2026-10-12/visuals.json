@@ -1,0 +1,19 @@
+{
+  "usesRecordedNativePoses": true,
+  "additionalPhysicsIntegrations": 0,
+  "engineScreenshot": false,
+  "videoFrames": 106,
+  "videoFps": 20,
+  "approximatePlaybackSpeed": 4,
+  "afterRefusal": "last archived state held with explicit stop label; no extrapolation",
+  "outcomes": {
+    "B \u00b7 t\u00e9moin": {
+      "physicalSeconds": 20.8875,
+      "completeRecovery": false
+    },
+    "C \u00b7 pied coordonn\u00e9": {
+      "physicalSeconds": 5.091666666666667,
+      "completeRecovery": false
+    }
+  }
+}

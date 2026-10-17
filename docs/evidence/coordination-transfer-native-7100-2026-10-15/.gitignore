@@ -1,0 +1,3 @@
+# Exact raw bytes are retained locally and losslessly stored as verified gzip.
+/native-run-once/native-result.json
+/native-run-once/native-trace.jsonl

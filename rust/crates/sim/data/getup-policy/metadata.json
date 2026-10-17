@@ -1,0 +1,36 @@
+{
+  "sourceCommit": "5ad52fbe1b5b7c56522a1aa10ccf17fb81c0d79e",
+  "sourceSha256": {
+    "student.pt": "8b6be27ad1395cee3ddcd953907dad151cdfe1bd75b98a6bf02bfed30623fa0d",
+    "teacher.pt": "9935efee1b1d46e796bb241dc1240f1905ad40e0d20284909cc063575606b244",
+    "SAC.py": "64b1abe69edaac1e3c3f9064f11bcb3d1168eb1d829117dd415eaa204dee0420",
+    "env.py": "62af08523865cef28f71df70d3852da3cbda8ff06f4296fafc7f759ce756bcc5"
+  },
+  "torchVersion": "2.9.1+cpu",
+  "weightsOnly": true,
+  "extraSafeGlobals": [],
+  "physicsIntegrations": 0,
+  "deterministicAction": "tanh(mu) * observation[-1]",
+  "actors": {
+    "teacher": {
+      "dimensions": [
+        68,
+        1024,
+        1024,
+        42
+      ],
+      "bytes": 4653248,
+      "sha256": "f8d8d6ea787366a67aa46352cf5243ed2962dd277b5ca6b6f98a85fc3a67ab4f"
+    },
+    "student": {
+      "dimensions": [
+        118,
+        1024,
+        1024,
+        42
+      ],
+      "bytes": 4858048,
+      "sha256": "c489faed55bdab1669c51dab71a102db91ff2a55143789f682e45cd8169d6dbb"
+    }
+  }
+}

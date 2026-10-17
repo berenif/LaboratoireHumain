@@ -1,0 +1,28 @@
+{
+  "allFixtureProcessesReaped": true,
+  "checkedAtUtc": "2026-10-13T07:32:54.335525+00:00",
+  "fixturePids": [
+    4340,
+    4342,
+    4344,
+    4346,
+    4348,
+    4361,
+    4363,
+    4365,
+    4367,
+    4369,
+    4371,
+    4372,
+    4374,
+    4377,
+    4378
+  ],
+  "nativeRustWorkerExecuted": false,
+  "note": "The child-refusal case first observed a terminated zombie; the harness subreaper reaped it. This final read-only census finds no remaining fixture PID.",
+  "physicalIntegrations": 0,
+  "protocolCountsAreSynthetic": true,
+  "recordedProcessCount": 15,
+  "remainingProcEntries": [],
+  "sumCaseWallSeconds": 9.002100392001012
+}

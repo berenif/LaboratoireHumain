@@ -24,7 +24,8 @@ export function deriveRecoveryBrowserLimits(contract, profile) {
     repeatedCycles: contract.acceptance.repeatedCycles,
     dragMetres: 0.02, dragActualMs: 250, dragSubsteps: integrated(0.25) });
 }
-const contractBytes = readFileSync('rust/crates/sim/data/recovery-contract-v1.json');
+export const recoveryContractFile = 'rust/crates/sim/data/recovery-contract-v2.json';
+const contractBytes = readFileSync(recoveryContractFile);
 export const recoveryContractSha256 = createHash('sha256').update(contractBytes).digest('hex');
 export const recoveryBrowserLimits = deriveRecoveryBrowserLimits(JSON.parse(contractBytes),
   JSON.parse(readFileSync('rust/crates/sim/data/recovery-profile-v24.json')));

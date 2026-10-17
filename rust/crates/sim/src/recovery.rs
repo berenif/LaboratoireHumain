@@ -6,10 +6,61 @@ use lh_model::{Model, Pose as BodyPose, Segment};
 use rapier3d::prelude::*;
 use serde::{Deserialize, Serialize};
 
+#[cfg(test)]
+pub(crate) mod native_predictor;
+#[cfg(test)]
+pub(crate) mod reference_mapping;
+#[cfg(test)]
+mod trajectory_geometry;
+#[cfg(test)]
+pub(crate) mod trajectory_program;
+
+#[cfg(test)]
+pub(crate) fn offline_trajectory_before_step(
+    s: &mut Simulation,
+    substep: u32,
+) -> Result<(), measurement::Failure> {
+    #[cfg(feature = "experimental-solver-step-observation")]
+    if s.coordination.is_some() { return Ok(()); }
+    if support_probe::getup_ab::active() {
+        return Ok(());
+    }
+    support_probe::full_trajectory::before_step(s, substep)?;
+    support_probe::hand_support_experiment::before_step(s, substep)?;
+    support_probe::offline_trajectory::before_step(s, substep)
+}
+
+#[cfg(test)]
+pub(crate) fn getup_ab_configure(s: &mut Simulation) -> Result<bool, String> {
+    support_probe::getup_ab::configure(s)
+}
+
+#[cfg(all(test, feature = "experimental-solver-step-observation"))]
+pub(crate) mod planner;
+
 pub const FIXTURES: &str = include_str!("../data/recovery-v1.json");
 const RATE: f32 = 1.0;
 const STAND_RATE: f32 = RATE;
 const HANDOFF_S: f64 = 0.6;
+
+mod roll_arm;
+use roll_arm::{RollArm, RollArmStage};
+
+fn rolling_orientation(torso: Rotation, lead: usize) -> Rotation {
+    let forward_y = (torso * Vector::Z).y;
+    let lateral_y = (torso * Vector::X).y;
+    if forward_y * forward_y + lateral_y * lateral_y < 1e-8 {
+        return torso;
+    }
+    // Roll around the measured head-to-pelvis axis. Slerping to a fixed
+    // world-prone pose instead asks a supine body to bend its spine in pitch.
+    let mut angle = (-lateral_y).atan2(-forward_y);
+    let direction = if lead == 0 { 1.0 } else { -1.0 };
+    if forward_y > 0.0 && angle * direction < 0.0 {
+        angle += direction * std::f32::consts::TAU;
+    }
+    torso * Rotation::from_rotation_y(angle * 0.18)
+}
 
 fn blend_targets(current: &mut [[f32; 3]], desired: &[[f32; 3]], maximum_delta: f32) {
     let maximum = current
@@ -235,14 +286,51 @@ fn planted_contact(s: &Simulation, segments: &[usize]) -> Result<Option<PlantedA
 // For knee-to-sole transfer only that shin is removed; a swing removes the
 // whole leg, so its shin and both sole segments cannot prove its own release.
 fn supported_transfer(s: &Simulation, released: &[usize]) -> Result<bool, String> {
+    supported_transfer_with(s, released, false)
+}
+
+fn supported_transfer_with(
+    s: &Simulation,
+    released: &[usize],
+    rolling: bool,
+) -> Result<bool, String> {
+    Ok(transfer_evidence(s, released, rolling)?.ready())
+}
+
+struct TransferEvidence {
+    released_load_n: f32,
+    remaining_load_n: f32,
+    weight_n: f32,
+    com_inside: bool,
+    capture_inside: bool,
+}
+impl TransferEvidence {
+    fn blocked_reason(&self) -> Option<&'static str> {
+        if self.released_load_n > 0.25 * self.weight_n {
+            Some("Arm still carries too much load")
+        } else if self.remaining_load_n < 0.8 * self.weight_n {
+            Some("Alternate support carries less than 80% of body weight")
+        } else if !self.com_inside {
+            Some("Center of mass outside retained support margin")
+        } else if !self.capture_inside {
+            Some("Capture point outside retained support margin")
+        } else {
+            None
+        }
+    }
+    fn ready(&self) -> bool { self.blocked_reason().is_none() }
+}
+
+fn transfer_evidence(
+    s: &Simulation,
+    released: &[usize],
+    rolling: bool,
+) -> Result<TransferEvidence, String> {
     let weight = s.total_mass() * 9.81;
     let released_load: f32 = released
         .iter()
         .map(|&i| load(s, &s.model.segments[i].id))
         .sum();
-    if released_load > 0.25 * weight {
-        return Ok(false);
-    }
     let remaining: Vec<usize> = s
         .model
         .segments
@@ -250,10 +338,10 @@ fn supported_transfer(s: &Simulation, released: &[usize]) -> Result<bool, String
         .enumerate()
         .filter(|(i, part)| {
             !released.contains(i)
-                && matches!(
+                && (matches!(
                     part.role.as_str(),
                     "shin" | "hand" | "hindfoot" | "forefoot"
-                )
+                ) || (rolling && !matches!(part.role.as_str(), "head" | "neck")))
                 && load(s, &part.id) >= 3.0
         })
         .map(|(i, _)| i)
@@ -262,9 +350,6 @@ fn supported_transfer(s: &Simulation, released: &[usize]) -> Result<bool, String
     let remaining_load = contacts.iter().map(|(_, impulse)| *impulse).sum::<f32>() / s.profile.dt_s;
     if !remaining_load.is_finite() {
         return Err("Non-finite remaining recovery support".into());
-    }
-    if remaining_load < 0.8 * weight {
-        return Ok(false);
     }
     let points = contacts
         .iter()
@@ -289,10 +374,13 @@ fn supported_transfer(s: &Simulation, released: &[usize]) -> Result<bool, String
     let capture = s.heading.inverse()
         * (com + velocity * ((com.y - s.support_height()).max(0.2) / 9.81).sqrt());
     let local_com = s.heading.inverse() * com;
-    Ok(
-        crate::stepping::inside_support(points.clone(), [local_com.x, local_com.z], 0.003)
-            && crate::stepping::inside_support(points, [capture.x, capture.z], 0.003),
-    )
+    Ok(TransferEvidence {
+        released_load_n: released_load,
+        remaining_load_n: remaining_load,
+        weight_n: weight,
+        com_inside: crate::stepping::inside_support(points.clone(), [local_com.x, local_com.z], 0.003),
+        capture_inside: crate::stepping::inside_support(points, [capture.x, capture.z], 0.003),
+    })
 }
 
 fn planted_leg_targets(
@@ -421,32 +509,29 @@ fn stance_plan_at_pitch(
     Ok(Some((upper, legs)))
 }
 
-/// The same loaded anatomical footprint and capture model used by stepping.
+/// Balance against persistent, currently loaded solver points. Near-floor
+/// vertices cannot supply a reaction moment until contact resolves there.
 /// A braking orientation is an IK/motor request, never a body pose write.
 fn standing_balance(s: &Simulation) -> Result<Option<(Rotation, bool)>, String> {
-    let mut points = Vec::new();
-    for (i, part) in s.model.segments.iter().enumerate() {
-        if !matches!(part.role.as_str(), "hindfoot" | "forefoot")
-            || load(s, &part.id) < 3.0
-            || s.support_normal_impulse(s.colliders[i])? / s.profile.dt_s < 3.0
-        {
-            continue;
-        }
-        for vertex in part.geometry.vertices.chunks_exact(3) {
-            let world = s.world.bodies[s.bodies[i]]
-                .position()
-                .transform_point(Vector::new(vertex[0], vertex[1], vertex[2]));
-            if world.y - s.surface_height(world.x, world.z, world.y + 0.02)
-                <= s.profile.contact_skin_m
-                    + crate::recovery_contract::contract()
-                        .recovery_acceptance
-                        .contact_distance_m
-            {
-                let local = s.heading.inverse() * world;
-                points.push([local.x, local.z]);
-            }
-        }
-    }
+    let soles = s
+        .model
+        .segments
+        .iter()
+        .enumerate()
+        .filter(|(i, part)| {
+            matches!(part.role.as_str(), "hindfoot" | "forefoot")
+                && load(s, &part.id) >= 3.0
+                && s.integrated_support_loads_n[*i] >= 3.0
+        })
+        .map(|(i, _)| i)
+        .collect::<Vec<_>>();
+    let points = planted_contacts(s, &soles)?
+        .into_iter()
+        .map(|(anchor, _)| {
+            let local = s.heading.inverse() * anchor.world_point;
+            [local.x, local.z]
+        })
+        .collect::<Vec<_>>();
     let com = s.center_of_mass();
     let velocity = s
         .bodies
@@ -462,8 +547,32 @@ fn standing_balance(s: &Simulation) -> Result<Option<(Rotation, bool)>, String> 
     }
     let height = (com.y - s.support_height()).max(0.2);
     let capture = s.heading.inverse() * (com + velocity * (height / 9.81).sqrt());
-    let Some(safe) = crate::stepping::project_support(&points, [capture.x, capture.z], 0.003)
-    else {
+    let capture_point = [capture.x, capture.z];
+    // A point/line contact cannot certify the inset support polygon. It can
+    // still define a bounded braking request toward the measured support.
+    let safe = crate::stepping::project_support(&points, capture_point, 0.003).or_else(|| {
+        points
+            .iter()
+            .flat_map(|a| points.iter().map(move |b| (a, b)))
+            .map(|(a, b)| {
+                let d = [b[0] - a[0], b[1] - a[1]];
+                let norm = d[0] * d[0] + d[1] * d[1];
+                let t = if norm > 1e-12 {
+                    ((capture_point[0] - a[0]) * d[0] + (capture_point[1] - a[1]) * d[1]) / norm
+                } else {
+                    0.0
+                }
+                .clamp(0.0, 1.0);
+                [a[0] + t * d[0], a[1] + t * d[1]]
+            })
+            .min_by(|a, b| {
+                let distance = |p: &[f32; 2]| {
+                    (p[0] - capture_point[0]).powi(2) + (p[1] - capture_point[1]).powi(2)
+                };
+                distance(a).total_cmp(&distance(b))
+            })
+    });
+    let Some(safe) = safe else {
         return Ok(None);
     };
     let local_com = s.heading.inverse() * com;
@@ -669,6 +778,7 @@ pub struct Status {
     pub last_retry: Option<&'static str>,
     pub progress: f32,
 }
+#[derive(Clone)]
 pub(crate) struct Controller {
     pub status: Status,
     targets: Vec<[f32; 3]>,
@@ -686,6 +796,7 @@ pub(crate) struct Controller {
     stable_substeps: u64,
     handoff_substeps: u64,
     settle_substeps: u64,
+    roll_arm: Option<RollArm>,
 }
 impl Controller {
     pub fn new(s: &Simulation) -> Result<Self, String> {
@@ -694,7 +805,9 @@ impl Controller {
         }
         let feet = [foot(s, "left"), foot(s, "right")];
         let height = body(s, "pelvis").translation().y - s.support_height();
-        let phase = if feet.iter().all(|x| *x) && up(s, "torso") > 0.65 && height > 0.5 {
+        let phase = if s.profile.recovery_first_phase_only {
+            Phase::Roll
+        } else if feet.iter().all(|x| *x) && up(s, "torso") > 0.65 && height > 0.5 {
             Phase::Stand
         } else if up(s, "torso") > 0.65 && height > 0.30 {
             Phase::PlantLead
@@ -730,7 +843,11 @@ impl Controller {
             },
             targets,
             hands,
-            lead: usize::from(feet[1] && !feet[0]),
+            lead: if phase == Phase::Roll {
+                usize::from((*body(s, "torso").rotation() * Vector::X).y > 0.0)
+            } else {
+                usize::from(feet[1] && !feet[0])
+            },
             stand_feet: None,
             stand_root: None,
             stand_goal: None,
@@ -743,6 +860,7 @@ impl Controller {
             stable_substeps: 0,
             handoff_substeps: 0,
             settle_substeps: 0,
+            roll_arm: None,
         })
     }
     pub fn standing(&self) -> bool {
@@ -768,12 +886,18 @@ impl Controller {
     pub fn velocities(&self) -> &[[f32; 3]] {
         &self.velocities
     }
+    pub fn arm_transfer_stage(&self) -> Option<String> {
+        self.roll_arm.as_ref().map(|arm| {
+            format!("{}:{:?}", if arm.side == 0 { "left" } else { "right" }, arm.stage)
+        })
+    }
     pub fn native_root_authority(&self, s: &Simulation, part: &Segment) -> bool {
-        if self.status.phase == Phase::Ordinary
-            || part.role != "thigh"
-            || self.status.phase == Phase::Roll
-        {
+        if self.status.phase == Phase::Ordinary || part.role != "thigh" {
             return false;
+        }
+        if self.status.phase == Phase::Roll {
+            return self.roll_root_goal().is_some()
+                && self.roll_root_legs()[usize::from(part.id.starts_with("right"))];
         }
         let side = if part.id.starts_with("right") {
             "right"
@@ -787,13 +911,16 @@ impl Controller {
             return Vector::ZERO;
         }
         let side = usize::from(part.id.starts_with("right"));
-        let loaded =
-            ["left", "right"].map(|side| foot(s, side) || load(s, &format!("{side}Shin")) >= 3.0);
+        let loaded = if self.status.phase == Phase::Roll { self.roll_root_legs() } else {
+            ["left", "right"].map(|side| foot(s, side) || load(s, &format!("{side}Shin")) >= 3.0)
+        };
         if !loaded[side] {
             return Vector::ZERO;
         }
         let pelvis = body(s, "pelvis");
-        let reference = if self.standing() || self.status.phase == Phase::Handoff {
+        let reference = if self.status.phase == Phase::Roll {
+            self.roll_root_goal().unwrap_or(*pelvis.rotation())
+        } else if self.standing() || self.status.phase == Phase::Handoff {
             self.stand_goal.unwrap_or(s.heading)
         } else {
             s.heading
@@ -883,6 +1010,9 @@ impl Controller {
         self.stable_substeps = 0;
         self.handoff_substeps = 0;
         self.settle_substeps = 0;
+        if phase != Phase::Roll {
+            self.roll_arm = None;
+        }
     }
     fn retained_leg_anchor(&self, side: usize) -> Option<PlantedAnchor> {
         self.knee_anchors[side].or(self.foot_anchors[side])
@@ -927,6 +1057,11 @@ impl Controller {
         let dt = s.profile.dt_s;
         self.status.phase_time_s += dt;
         self.status.elapsed_s += dt;
+        if s.profile.recovery_first_phase_only && self.first_phase_complete() {
+            self.hold_first_phase(s)?;
+            self.velocities.fill([0.0; 3]);
+            return Ok(self.targets.clone());
+        }
         if self.handed_off() {
             self.handoff_substeps += 1;
             self.status.phase_time_s = self.handoff_substeps as f32 * dt;
@@ -1010,10 +1145,18 @@ impl Controller {
             self.status.retries += 1;
             self.status.last_retry = Some("stalled-phase");
             self.lead = 1 - self.lead;
-            let measured = Self::new(s)?;
-            self.targets = measured.targets;
-            self.hands = measured.hands;
-            self.enter(measured.status.phase);
+            if self.roll_arm.as_ref().is_some_and(|arm| arm.stage != RollArmStage::Roll) {
+                // A failed release proof cannot trigger a new roll while the
+                // arm is being unloaded. Keep the same measured maneuver.
+                self.lead = 1 - self.lead;
+                self.status.last_retry = Some("arm-support-not-ready");
+                self.status.stalled_s = 0.0;
+            } else {
+                let measured = Self::new(s)?;
+                self.targets = measured.targets;
+                self.hands = measured.hands;
+                self.enter(measured.status.phase);
+            }
         }
         let qualified = match self.status.phase {
             Phase::Roll => {
@@ -1034,7 +1177,7 @@ impl Controller {
         } else {
             0.0
         };
-        if f64::from(self.status.qualified_time_s) + 1e-6
+        if !s.profile.recovery_first_phase_only && f64::from(self.status.qualified_time_s) + 1e-6
             >= crate::recovery_contract::contract()
                 .recovery_acceptance
                 .phase_minimum_s
@@ -1228,27 +1371,19 @@ impl Controller {
                 }
             }
             if self.status.phase == Phase::Roll {
-                // Measured torso orientation chooses a deterministic lateral
-                // rolling route. Retry is the only place the lead can change.
-                let torso = *body(s, "torso").rotation();
-                let prone = s.heading * Rotation::from_rotation_x(std::f32::consts::FRAC_PI_2);
-                let route = torso.slerp(prone, 0.18);
                 for (i, part) in s.model.segments.iter().enumerate() {
                     if matches!(part.role.as_str(), "lumbar" | "ribcage") {
-                        let joint = s
-                            .world
-                            .impulse_joints
-                            .get(s.joints[i].ok_or("Missing rolling joint")?)
-                            .ok_or("Lost rolling joint")?;
-                        desired[i] = measurement::coordinates(
-                            *s.world.bodies[joint.body1()].rotation(),
-                            route,
-                            part.joint_profile
-                                .as_ref()
-                                .ok_or("Missing rolling profile")?,
-                        );
+                        desired[i] = s.rest_targets[i];
                     }
                 }
+            }
+        }
+        if self.status.phase == Phase::Roll {
+            self.update_roll_arm(s, &mut desired)?;
+            if s.profile.recovery_first_phase_only && self.first_phase_complete() {
+                self.hold_first_phase(s)?;
+                self.velocities.fill([0.0; 3]);
+                return Ok(self.targets.clone());
             }
         }
         // Entering Stand does not itself transfer a planted hand's load.
@@ -1339,6 +1474,8 @@ impl Simulation {
             self.motion_observation = crate::motion::Observation::default();
             return;
         }
+        // A first-phase inspection is never a standing recovery qualification.
+        if self.profile.recovery_first_phase_only { return; }
         let balance_ready =
             standing_balance(self).is_ok_and(|balance| balance.is_some_and(|(_, inside)| inside));
         let settled = upright_pose
@@ -1568,6 +1705,35 @@ mod tests {
     use super::*;
 
     #[test]
+    fn rolling_orientation_preserves_long_axis_on_recorded_browser_states() {
+        // Actual torso rotations at recovery entry and at the subsequent stall.
+        for torso in [
+            Rotation::from_xyzw(-0.68539315, 0.325458, 0.10550473, 0.6427924),
+            Rotation::from_xyzw(-0.79252297, 0.3768578, 0.07043452, 0.4742621),
+        ] {
+            let lead = usize::from((torso * Vector::X).y > 0.0);
+            let route = rolling_orientation(torso, lead);
+            assert!((route * Vector::Y - torso * Vector::Y).length() < 1e-6);
+            assert!((route * Vector::Z).y < (torso * Vector::Z).y - 0.1);
+            let yaw = Rotation::from_rotation_y(1.0471976);
+            let rotated = rolling_orientation(yaw * torso, lead);
+            assert!(rotated.dot(yaw * route).abs() > 1.0 - 1e-6);
+        }
+    }
+
+    #[test]
+    fn rolling_orientation_retry_changes_the_supine_route() {
+        let torso = Rotation::from_rotation_x(-std::f32::consts::FRAC_PI_2);
+        let left = rolling_orientation(torso, 0);
+        let right = rolling_orientation(torso, 1);
+        assert!((left * Vector::Z).y < 0.9);
+        assert!((right * Vector::Z).y < 0.9);
+        assert!((left * Vector::Z).x * (right * Vector::Z).x < 0.0);
+        assert!((left * Vector::Y - torso * Vector::Y).length() < 1e-6);
+        assert!((right * Vector::Y - torso * Vector::Y).length() < 1e-6);
+    }
+
+    #[test]
     fn measured_toe_pivot_keeps_both_contact_points_inside_native_bounds() {
         for id in ["landed-crouch-left", "landed-crouch-left-heading"] {
             let fixtures: FixtureSet = serde_json::from_str(FIXTURES).unwrap();
@@ -1679,6 +1845,37 @@ mod tests {
         let stance = crate::stepping::StepController::recovered_stance(&s, planted).unwrap();
         assert_eq!(stance.planted_feet(), planted);
         assert_eq!(serde_json::to_value(s.snapshot()).unwrap(), before);
+    }
+
+    #[test]
+    fn toe_only_support_cannot_certify_geometric_sole_balance() {
+        let fixtures: FixtureSet = serde_json::from_str(FIXTURES).unwrap();
+        for fixture in fixtures
+            .cases
+            .into_iter()
+            .filter(|f| f.id.starts_with("landed-crouch-left"))
+        {
+            let mut s = Simulation::build(
+                fixture.heading,
+                crate::recovery_contract::pinned_profile(),
+                true,
+                None,
+                Some(&fixture.poses),
+            )
+            .unwrap();
+            for _ in 0..3 {
+                s.advance_tick().unwrap();
+            }
+            let before = serde_json::to_value(s.snapshot()).unwrap();
+            let (_, inside) = standing_balance(&s)
+                .unwrap()
+                .expect("persistent toe support");
+            assert!(
+                !inside,
+                "toe line cannot supply the rearward balance moment"
+            );
+            assert_eq!(serde_json::to_value(s.snapshot()).unwrap(), before);
+        }
     }
 
     #[test]
@@ -2518,3 +2715,6 @@ mod tests {
         }
     }
 }
+
+#[cfg(test)]
+mod support_probe;

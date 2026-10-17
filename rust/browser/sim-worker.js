@@ -1,5 +1,5 @@
 // This module owns the only simulation instance in the browser.
-import init, { WorkerRuntime, wire_schema, calibrate_tangent_contact, calibrate_foundation, calibrate_recovery_fixture } from './lh_worker.js';
+import init, { WorkerRuntime, wire_schema, calibrate_tangent_contact, calibrate_foundation, calibrate_recovery_fixture, getup_trial_profile } from './lh_worker.js';
 
 const wasm = await init();
 const poseBytes = 25 * 13 * Float32Array.BYTES_PER_ELEMENT;
@@ -87,6 +87,19 @@ self.onmessage = event => {
       self.postMessage({ type: 'qualification', requestId: message.requestId, report: JSON.parse(runtime.quiet_report()) });
       return;
     }
+    if (message.type === 'getupReport') {
+      if (!runtime) throw new Error('GetUp trial is not initialized');
+      self.postMessage({ type: 'getupReport', requestId: message.requestId, report: JSON.parse(runtime.getup_report()) });
+      return;
+    }
+    if (message.type === 'getupCheckpoint') {
+      if (!runtime) throw new Error('GetUp trial is not initialized');
+      const checkpoint = runtime.getup_checkpoint();
+      const verification = JSON.parse(runtime.verify_getup_checkpoint(checkpoint));
+      self.postMessage({ type: 'getupCheckpoint', requestId: message.requestId,
+        checkpoint, verification }, [checkpoint.buffer]);
+      return;
+    }
     if (!buffers.some(slot => !slot.inFlight)) throw new Error('No recycled pose buffer');
     if (message.type === 'initialize') {
       if (runtime) throw new Error('Already initialized; use a stamped Initialize command');
@@ -94,7 +107,9 @@ self.onmessage = event => {
       if (message.floorEnabled !== undefined && typeof message.floorEnabled !== 'boolean') throw new Error('Invalid initial floor');
       if (message.qualification !== undefined && !['quiet', 'quiet-drift', 'recovery'].includes(message.qualification)) throw new Error('Unknown qualification');
       if (message.profile !== undefined && (typeof message.profile !== 'object' || message.profile === null || Array.isArray(message.profile))) throw new Error('Invalid initial profile');
-      const profile = message.profile === undefined ? undefined : JSON.stringify(message.profile);
+      if (message.getupTrial !== undefined && (message.getupTrial !== true || message.mode !== 'protocol'
+        || message.floorEnabled === false || message.profile !== undefined || message.qualification !== undefined)) throw new Error('Invalid GetUp prototype preload');
+      const profile = message.getupTrial ? getup_trial_profile() : message.profile === undefined ? undefined : JSON.stringify(message.profile);
       if (profile !== undefined && profile.length > 65536) throw new Error('Initial profile exceeds bound');
       if (message.qualification === 'recovery' && (message.mode !== 'protocol' || message.floorEnabled === false
         || !message.profile || message.profile.recovery_enabled !== true)) throw new Error('Recovery qualification requires an explicit recovery profile and protocol floor');

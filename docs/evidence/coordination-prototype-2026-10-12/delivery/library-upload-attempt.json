@@ -1,0 +1,11 @@
+{
+  "timeUtc": "2026-10-12T21:02:39.115281+00:00",
+  "route": "current Library skill prepared-upload helper; one ordered batch of four new files",
+  "status": "blocked-before-confirmed-create",
+  "error": "library upload failed: hosted apps tools/list request failed: network",
+  "confirmedLibraryFiles": [],
+  "libraryIdsAndVersionsAvailable": false,
+  "retryOrAlternateWriteAttempted": false,
+  "localValidation": "validation.json",
+  "preservedDeliverablesDirectory": "/workspace/lh-deliverables"
+}

@@ -1,0 +1,459 @@
+{
+  "schema": "laboratoirehumain.contact-diagnostic-prelaunch-budget-review.v1",
+  "auditedUtc": "2026-10-15T15:29:03.533322+00:00",
+  "decision": "BUDGET_RESERVATION_FITS_AND_HISTORICAL_INTEGRITY_PASS; FINAL_MANIFEST_AND_LAUNCH_ADMISSION_PENDING",
+  "scope": "Read-only direct ledger/source/hash/process checks; writes only new diagnostic reservation/provenance/review. No physics, FK, world, geometric assembly, test or compiler execution.",
+  "baseCommit": "a5c8ff36af4dfbe784277aebc91021040b947a52",
+  "reservation": {
+    "path": "docs/evidence/coordination-contact-diagnostic-2026-10-15/budget-reservation.json",
+    "sha256": "be1a9bb8a01485629944a6f0e52419cf6741e44961d89fc0222793b278ad65a1",
+    "bytes": 7541
+  },
+  "authority": {
+    "path": "docs/evidence/coordination-contact-diagnostic-2026-10-15/parent-authorization-provenance.json",
+    "sha256": "87c25d2e01c678d639441ab68115afed29e2632a7366df9319019a12e6c85547",
+    "bytes": 2175
+  },
+  "sourceRecordsVerifiedAgainstBaseGit": [
+    {
+      "path": "docs/evidence/coordination-contact-continuity-2026-10-15/final-budget-and-integrity.json",
+      "sha256": "208fad161c2851f171485e8aca577af6e0b0c61879d0be520c16f54ccdff069e",
+      "bytes": 30382,
+      "baseCommit": "a5c8ff36af4dfbe784277aebc91021040b947a52",
+      "gitBlobSha256": "208fad161c2851f171485e8aca577af6e0b0c61879d0be520c16f54ccdff069e",
+      "matchesBaseCommit": true
+    },
+    {
+      "path": "docs/evidence/coordination-transfer-budget-decision-2026-10-15/budget-independent-review.json",
+      "sha256": "d41a3e77794cb70b02d03e6a21bb8bd7ff2c6d3e02688135c4fee30d6b1e631a",
+      "bytes": 6111,
+      "baseCommit": "a5c8ff36af4dfbe784277aebc91021040b947a52",
+      "gitBlobSha256": "d41a3e77794cb70b02d03e6a21bb8bd7ff2c6d3e02688135c4fee30d6b1e631a",
+      "matchesBaseCommit": true
+    },
+    {
+      "path": "docs/evidence/coordination-transfer-native-7100-2026-10-15/preparation-reservation.json",
+      "sha256": "12f845c0d085ef9433bd7aca4836e66221db9a711a0772c2b8b62aa5555e6851",
+      "bytes": 1579,
+      "baseCommit": "a5c8ff36af4dfbe784277aebc91021040b947a52",
+      "gitBlobSha256": "12f845c0d085ef9433bd7aca4836e66221db9a711a0772c2b8b62aa5555e6851",
+      "matchesBaseCommit": true
+    },
+    {
+      "path": "docs/evidence/coordination-transfer-native-7100-2026-10-15/native-run-once/physical-ledger.json",
+      "sha256": "eec8dfa53045dcd38c593ec72d459e757ee3c8b6d3315be0707e263bd3eb2595",
+      "bytes": 2516,
+      "baseCommit": "a5c8ff36af4dfbe784277aebc91021040b947a52",
+      "gitBlobSha256": "eec8dfa53045dcd38c593ec72d459e757ee3c8b6d3315be0707e263bd3eb2595",
+      "matchesBaseCommit": true
+    }
+  ],
+  "protectedArtifacts": [
+    {
+      "path": "docs/evidence/coordination-prototype-2026-10-12/budget/ledger.json",
+      "expectedSha256": "2afa69b3ae9c8ab8343f7dabdf46b955c8ac7b88aa259404958e25d49a72ef07",
+      "actualSha256": "2afa69b3ae9c8ab8343f7dabdf46b955c8ac7b88aa259404958e25d49a72ef07",
+      "unchanged": true
+    },
+    {
+      "path": "docs/evidence/coordination-native-parity-2026-10-13/native-run/physical-ledger.json",
+      "expectedSha256": "73b2e3bff52aadf0414be2f7a4a96fa4cd5da7b02de0945434e4f136bbf476a6",
+      "actualSha256": "73b2e3bff52aadf0414be2f7a4a96fa4cd5da7b02de0945434e4f136bbf476a6",
+      "unchanged": true
+    },
+    {
+      "path": "docs/evidence/coordination-native-parity-renewal-2026-10-13/native-run/physical-ledger.json",
+      "expectedSha256": "1411bfcc1a17caa681359cfb39d7c0429f2188375925c22ba4b037df96d44bc2",
+      "actualSha256": "1411bfcc1a17caa681359cfb39d7c0429f2188375925c22ba4b037df96d44bc2",
+      "unchanged": true
+    },
+    {
+      "path": "docs/evidence/coordination-native-serialization-2026-10-13/native-run/physical-ledger.json",
+      "expectedSha256": "191d3216953bfb4aca5b7abcea277454d7d97ad5b4ca72e28ffbc260399af250",
+      "actualSha256": "191d3216953bfb4aca5b7abcea277454d7d97ad5b4ca72e28ffbc260399af250",
+      "unchanged": true
+    },
+    {
+      "path": "docs/evidence/coordination-local-pair-2026-10-13/budget/ledger.json",
+      "expectedSha256": "e7c6831159ac1ae913a05f2af545a0521181d7142dbabd967908dfe7958fba97",
+      "actualSha256": "e7c6831159ac1ae913a05f2af545a0521181d7142dbabd967908dfe7958fba97",
+      "unchanged": true
+    },
+    {
+      "path": "rust/target/release/deps/coordination_worker-60f2b83fe348a1d3",
+      "expectedSha256": "1bb4b91ac8ebfbe382d9525e524b85040ca9890bc90a0ef0467f1ef2b64c8b57",
+      "actualSha256": "1bb4b91ac8ebfbe382d9525e524b85040ca9890bc90a0ef0467f1ef2b64c8b57",
+      "unchanged": true
+    },
+    {
+      "path": "rust/target/release/deps/numeric_parity_worker-b68c9e5f8e8cfa37",
+      "expectedSha256": "9e125785fad85b0befc9373c3116d66aa32e8050a998ce08974b0da29d2760cc",
+      "actualSha256": "9e125785fad85b0befc9373c3116d66aa32e8050a998ce08974b0da29d2760cc",
+      "unchanged": true
+    },
+    {
+      "path": "rust/target/release/deps/numeric_parity_worker_serialization-360529b9ad4cba37",
+      "expectedSha256": "83bddf95897acc6015de7d2947b04ee2f5aaf2eb49b4dcb85ba0a67764f95e1b",
+      "actualSha256": "83bddf95897acc6015de7d2947b04ee2f5aaf2eb49b4dcb85ba0a67764f95e1b",
+      "unchanged": true
+    },
+    {
+      "path": "rust/target/release/deps/coordination_local_pair_worker-bf2c98f759d9dc34",
+      "expectedSha256": "c1c8a12825428758643a7f6e2fafb0a2710f7dca787c1daee07c27ec59849e9c",
+      "actualSha256": "c1c8a12825428758643a7f6e2fafb0a2710f7dca787c1daee07c27ec59849e9c",
+      "unchanged": true
+    },
+    {
+      "path": "docs/evidence/coordination-prototype-2026-10-12/frozen-manifest.json",
+      "expectedSha256": "4a37d4afbfe3ecd51997208bf5fa7599106fd9c43650cb55f6bcf6400d4e1d29",
+      "actualSha256": "4a37d4afbfe3ecd51997208bf5fa7599106fd9c43650cb55f6bcf6400d4e1d29",
+      "unchanged": true
+    },
+    {
+      "path": "docs/evidence/coordination-native-parity-2026-10-13/manifest.json",
+      "expectedSha256": "40e492a29d723118cb26990b9dd2866d498d9a1a5d5ae815d7aae1d9d92a407a",
+      "actualSha256": "40e492a29d723118cb26990b9dd2866d498d9a1a5d5ae815d7aae1d9d92a407a",
+      "unchanged": true
+    },
+    {
+      "path": "docs/evidence/coordination-native-parity-renewal-2026-10-13/manifest.json",
+      "expectedSha256": "7235b6916b2d669710b0339e474fc245b48cc4311dd893557f4c03164f3326a6",
+      "actualSha256": "7235b6916b2d669710b0339e474fc245b48cc4311dd893557f4c03164f3326a6",
+      "unchanged": true
+    },
+    {
+      "path": "docs/evidence/coordination-native-serialization-2026-10-13/manifest.json",
+      "expectedSha256": "179bfe3cb58819cd2ba1b73642969c0eb2a343a052dee83ae89e2850e0830356",
+      "actualSha256": "179bfe3cb58819cd2ba1b73642969c0eb2a343a052dee83ae89e2850e0830356",
+      "unchanged": true
+    },
+    {
+      "path": "docs/evidence/coordination-local-pair-2026-10-13/manifest.json",
+      "expectedSha256": "2fbcb3db0cd1bccf14082e772b1efba63e567fe7fce35ed8cccbbbf2ac2cdde9",
+      "actualSha256": "2fbcb3db0cd1bccf14082e772b1efba63e567fe7fce35ed8cccbbbf2ac2cdde9",
+      "unchanged": true
+    },
+    {
+      "path": "rust/target/release/deps/coordination_transfer_worker-8daed3b7e6b04b70",
+      "expectedSha256": "63e0e035d38d02f762c69b9dacb65d61e179c72ced50f5facd0bc29c64b9e8b5",
+      "actualSha256": "63e0e035d38d02f762c69b9dacb65d61e179c72ced50f5facd0bc29c64b9e8b5",
+      "unchanged": true
+    },
+    {
+      "path": "docs/evidence/coordination-transfer-native-7100-2026-10-15/native-run-once/forecast-refusal-review.json",
+      "expectedSha256": "cfa7b05dd663327eb408bf7e7703ff52ed98b4b1f235e87d164f15785cdeb8e0",
+      "actualSha256": "cfa7b05dd663327eb408bf7e7703ff52ed98b4b1f235e87d164f15785cdeb8e0",
+      "unchanged": true
+    },
+    {
+      "path": "docs/evidence/coordination-transfer-native-7100-2026-10-15/native-run-once/forecast-refusal-review.md",
+      "expectedSha256": "b4c2448cf5105981c2d38fc4c4f09d91dbaf268d6d65bb95ec5841c693e007c2",
+      "actualSha256": "b4c2448cf5105981c2d38fc4c4f09d91dbaf268d6d65bb95ec5841c693e007c2",
+      "unchanged": true
+    },
+    {
+      "path": "docs/evidence/coordination-transfer-native-7100-2026-10-15/native-run-once/ledger-events.ndjson",
+      "expectedSha256": "842de4a49ac6ede1e8cc5e54e898f7b7085bef57aa9bf7dc73a1551f73f0afc4",
+      "actualSha256": "842de4a49ac6ede1e8cc5e54e898f7b7085bef57aa9bf7dc73a1551f73f0afc4",
+      "unchanged": true
+    },
+    {
+      "path": "docs/evidence/coordination-transfer-native-7100-2026-10-15/native-run-once/native-result.json",
+      "expectedSha256": "7da774742c4ef54420efbbbb4991de4afbe640a203463ebe6841e507e00bb19e",
+      "actualSha256": "7da774742c4ef54420efbbbb4991de4afbe640a203463ebe6841e507e00bb19e",
+      "unchanged": true
+    },
+    {
+      "path": "docs/evidence/coordination-transfer-native-7100-2026-10-15/native-run-once/native-result.json.gz",
+      "expectedSha256": "89c4f37c7182f1c600dbfdae8ad4b0d0414d703205fbc2d91061764d69d6faa0",
+      "actualSha256": "89c4f37c7182f1c600dbfdae8ad4b0d0414d703205fbc2d91061764d69d6faa0",
+      "unchanged": true
+    },
+    {
+      "path": "docs/evidence/coordination-transfer-native-7100-2026-10-15/native-run-once/native-result.json.history.accounting.jsonl",
+      "expectedSha256": "1b90ac9ebbc3d0be0fe709d79575494962a1eda153c7db99d3c6dd4155c00371",
+      "actualSha256": "1b90ac9ebbc3d0be0fe709d79575494962a1eda153c7db99d3c6dd4155c00371",
+      "unchanged": true
+    },
+    {
+      "path": "docs/evidence/coordination-transfer-native-7100-2026-10-15/native-run-once/native-result.json.technical.accounting.jsonl",
+      "expectedSha256": "f5771e4f6966ad3d44d9e0b32fb2675346bb60f61c566e8638a6a2cfb8c55609",
+      "actualSha256": "f5771e4f6966ad3d44d9e0b32fb2675346bb60f61c566e8638a6a2cfb8c55609",
+      "unchanged": true
+    },
+    {
+      "path": "docs/evidence/coordination-transfer-native-7100-2026-10-15/native-run-once/native-trace.jsonl",
+      "expectedSha256": "7561d3dd93743f37e07c99d91adad1a9ef7cf41b746a98d5e71f93e3f4092c96",
+      "actualSha256": "7561d3dd93743f37e07c99d91adad1a9ef7cf41b746a98d5e71f93e3f4092c96",
+      "unchanged": true
+    },
+    {
+      "path": "docs/evidence/coordination-transfer-native-7100-2026-10-15/native-run-once/native-trace.jsonl.gz",
+      "expectedSha256": "5daf337c1cf4e07938b1996e2febf752a706415873f2efd5e55454ec4a0a76fc",
+      "actualSha256": "5daf337c1cf4e07938b1996e2febf752a706415873f2efd5e55454ec4a0a76fc",
+      "unchanged": true
+    },
+    {
+      "path": "docs/evidence/coordination-transfer-native-7100-2026-10-15/native-run-once/physical-ledger.json",
+      "expectedSha256": "eec8dfa53045dcd38c593ec72d459e757ee3c8b6d3315be0707e263bd3eb2595",
+      "actualSha256": "eec8dfa53045dcd38c593ec72d459e757ee3c8b6d3315be0707e263bd3eb2595",
+      "unchanged": true
+    },
+    {
+      "path": "docs/evidence/coordination-transfer-native-7100-2026-10-15/native-run-once/protocol.ndjson",
+      "expectedSha256": "f3dbf872d26606a475d3f9e81dc3d62a812f219ac0debfb41ecb69573dfe14fb",
+      "actualSha256": "f3dbf872d26606a475d3f9e81dc3d62a812f219ac0debfb41ecb69573dfe14fb",
+      "unchanged": true
+    },
+    {
+      "path": "docs/evidence/coordination-transfer-native-7100-2026-10-15/native-run-once/run-result.json",
+      "expectedSha256": "03ce370f490418953dcb074fe4c1f1f3b170ea947818dec9b5224e8b4bdafd49",
+      "actualSha256": "03ce370f490418953dcb074fe4c1f1f3b170ea947818dec9b5224e8b4bdafd49",
+      "unchanged": true
+    },
+    {
+      "path": "docs/evidence/coordination-transfer-native-7100-2026-10-15/native-run-once/worker.stderr.log",
+      "expectedSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "actualSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "unchanged": true
+    },
+    {
+      "path": "docs/evidence/coordination-transfer-native-7100-2026-10-15/authorization-claim.json",
+      "expectedSha256": "485b3827851402bc657bcb351ef9593d0ed79b2b93383f2fe64f90f88d9258e5",
+      "actualSha256": "485b3827851402bc657bcb351ef9593d0ed79b2b93383f2fe64f90f88d9258e5",
+      "unchanged": true
+    },
+    {
+      "path": "docs/evidence/coordination-transfer-native-7100-2026-10-15/authorization.json",
+      "expectedSha256": "217b8d849369ad084cf7da22c94c820b9472c6d97b6b0e96cd12b674517fd203",
+      "actualSha256": "217b8d849369ad084cf7da22c94c820b9472c6d97b6b0e96cd12b674517fd203",
+      "unchanged": true
+    },
+    {
+      "path": "docs/evidence/coordination-transfer-native-7100-2026-10-15/manifest.json",
+      "expectedSha256": "80b41aaf7d2f2aa72e91891f97e7ea40d6cf6f3e8538f3f62d0afcba352342b9",
+      "actualSha256": "80b41aaf7d2f2aa72e91891f97e7ea40d6cf6f3e8538f3f62d0afcba352342b9",
+      "unchanged": true
+    },
+    {
+      "path": "docs/evidence/coordination-transfer-native-7100-2026-10-15/parent-authorization-provenance.json",
+      "expectedSha256": "d02bce158ab4854507fa0b11bbbda345102bab2832b2e047e1dcbb55b729faa5",
+      "actualSha256": "d02bce158ab4854507fa0b11bbbda345102bab2832b2e047e1dcbb55b729faa5",
+      "unchanged": true
+    },
+    {
+      "path": "docs/evidence/coordination-transfer-native-7100-2026-10-15/protocol.json",
+      "expectedSha256": "484ca77042ad48ecaf3a9b884a5e9f005a9e8f06f9e406710ea9530dbdbad6c9",
+      "actualSha256": "484ca77042ad48ecaf3a9b884a5e9f005a9e8f06f9e406710ea9530dbdbad6c9",
+      "unchanged": true
+    },
+    {
+      "path": "docs/evidence/coordination-transfer-native-7100-2026-10-15/protocol.md",
+      "expectedSha256": "c4f6a0f2c6ab81a226d6ba23a6e2d04a0159bd4190d3d9c74d5906b28bfd0a8d",
+      "actualSha256": "c4f6a0f2c6ab81a226d6ba23a6e2d04a0159bd4190d3d9c74d5906b28bfd0a8d",
+      "unchanged": true
+    },
+    {
+      "path": "docs/evidence/coordination-transfer-native-7100-2026-10-15/preparation-reservation.json",
+      "expectedSha256": "12f845c0d085ef9433bd7aca4836e66221db9a711a0772c2b8b62aa5555e6851",
+      "actualSha256": "12f845c0d085ef9433bd7aca4836e66221db9a711a0772c2b8b62aa5555e6851",
+      "unchanged": true
+    },
+    {
+      "path": "docs/evidence/coordination-transfer-native-7100-2026-10-15/postrun-budget-audit.json",
+      "expectedSha256": "e15e2cd15e35880f04774dff5bdcee70141f807d7ea4ebc4db5724c293f0fb22",
+      "actualSha256": "e15e2cd15e35880f04774dff5bdcee70141f807d7ea4ebc4db5724c293f0fb22",
+      "unchanged": true
+    },
+    {
+      "path": "docs/evidence/coordination-transfer-native-7100-2026-10-15/postrun-budget-audit.md",
+      "expectedSha256": "5e584121f3ced322c2ce046867ab9fccc8c5633d78d2eb597d9f517a3fdb4f63",
+      "actualSha256": "5e584121f3ced322c2ce046867ab9fccc8c5633d78d2eb597d9f517a3fdb4f63",
+      "unchanged": true
+    },
+    {
+      "path": "docs/evidence/coordination-transfer-native-7100-2026-10-15/archive-index.json",
+      "expectedSha256": "cbc82f6c3d68a5050af84662341a4dfaf82e87036b412e4bab6912a330a44b50",
+      "actualSha256": "cbc82f6c3d68a5050af84662341a4dfaf82e87036b412e4bab6912a330a44b50",
+      "unchanged": true
+    },
+    {
+      "path": "docs/evidence/coordination-transfer-native-7100-2026-10-15/launch-invocation.json",
+      "expectedSha256": "9ff9ee9ab8dc2c5f27503f8d6b285159c465bd9a28a77516434962187c5ca561",
+      "actualSha256": "9ff9ee9ab8dc2c5f27503f8d6b285159c465bd9a28a77516434962187c5ca561",
+      "unchanged": true
+    },
+    {
+      "path": "docs/evidence/coordination-transfer-native-7100-2026-10-15/launcher.stderr.log",
+      "expectedSha256": "77e943a08875b8cdeb474047fc167a578cf67ba7331dd6786673ad125af43bc6",
+      "actualSha256": "77e943a08875b8cdeb474047fc167a578cf67ba7331dd6786673ad125af43bc6",
+      "unchanged": true
+    },
+    {
+      "path": "docs/evidence/coordination-transfer-native-7100-2026-10-15/launcher.stdout.log",
+      "expectedSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "actualSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "unchanged": true
+    },
+    {
+      "path": "docs/evidence/coordination-transfer-native-proposal-2026-10-13/manifest.json",
+      "expectedSha256": "4f3708fd50cd4dabf473b7a6bff528ee11ad798cf25dfbeaf0f6141c156818f7",
+      "actualSha256": "4f3708fd50cd4dabf473b7a6bff528ee11ad798cf25dfbeaf0f6141c156818f7",
+      "unchanged": true
+    }
+  ],
+  "protectedArtifactsVerified": 42,
+  "closedLedgersVerified": [
+    {
+      "path": "docs/evidence/coordination-prototype-2026-10-12/budget/ledger.json",
+      "sha256": "2afa69b3ae9c8ab8343f7dabdf46b955c8ac7b88aa259404958e25d49a72ef07",
+      "bytes": 31235,
+      "status": "closed-native-failure",
+      "chargedNativeSteps": 3856,
+      "knownExecutedNativeSteps": 1024,
+      "chargedField": "payload.reservations[*].nativeSteps",
+      "knownField": "payload.reservations[*].actualNativeSteps"
+    },
+    {
+      "path": "docs/evidence/coordination-native-parity-2026-10-13/native-run/physical-ledger.json",
+      "sha256": "73b2e3bff52aadf0414be2f7a4a96fa4cd5da7b02de0945434e4f136bbf476a6",
+      "bytes": 933,
+      "status": "closed-failure",
+      "chargedNativeSteps": 44,
+      "knownExecutedNativeSteps": null,
+      "chargedField": "payload.reservedNativeSteps",
+      "knownField": "payload.actualNativeStepsKnown"
+    },
+    {
+      "path": "docs/evidence/coordination-native-parity-renewal-2026-10-13/native-run/physical-ledger.json",
+      "sha256": "1411bfcc1a17caa681359cfb39d7c0429f2188375925c22ba4b037df96d44bc2",
+      "bytes": 1311,
+      "status": "closed-failure",
+      "chargedNativeSteps": 44,
+      "knownExecutedNativeSteps": null,
+      "chargedField": "payload.reservedNativeSteps",
+      "knownField": "payload.actualNativeStepsKnown"
+    },
+    {
+      "path": "docs/evidence/coordination-native-serialization-2026-10-13/native-run/physical-ledger.json",
+      "sha256": "191d3216953bfb4aca5b7abcea277454d7d97ad5b4ca72e28ffbc260399af250",
+      "bytes": 1931,
+      "status": "closed-success",
+      "chargedNativeSteps": 44,
+      "knownExecutedNativeSteps": 44,
+      "chargedField": "payload.reservedNativeSteps",
+      "knownField": "payload.actualNativeStepsKnown"
+    },
+    {
+      "path": "docs/evidence/coordination-local-pair-2026-10-13/budget/ledger.json",
+      "sha256": "e7c6831159ac1ae913a05f2af545a0521181d7142dbabd967908dfe7958fba97",
+      "bytes": 90279,
+      "status": "closed-native-failure",
+      "chargedNativeSteps": 3856,
+      "knownExecutedNativeSteps": 1040,
+      "chargedField": "payload.reservations[*].nativeSteps",
+      "knownField": "payload.reservations[*].actualNativeSteps"
+    },
+    {
+      "path": "docs/evidence/coordination-transfer-native-7100-2026-10-15/native-run-once/physical-ledger.json",
+      "sha256": "eec8dfa53045dcd38c593ec72d459e757ee3c8b6d3315be0707e263bd3eb2595",
+      "bytes": 2516,
+      "status": "closed-refused",
+      "chargedNativeSteps": 131096,
+      "knownExecutedNativeSteps": 130,
+      "actualNativeStepsExact": true,
+      "chargedField": "payload.reservedNativeSteps",
+      "knownField": "payload.actualNativeStepsKnown"
+    }
+  ],
+  "budget": {
+    "maximumGlobalNativeSteps": 300000,
+    "chargedBeforeReservation": 138940,
+    "newSingleReservationSteps": 568,
+    "chargedAfterReservation": 139508,
+    "remainingUnchargedSteps": 160492,
+    "newExecutedStepsAtReservation": 0,
+    "refundSteps": 0,
+    "allocations": [
+      {
+        "name": "technical",
+        "steps": 52,
+        "meaning": "36-step technical prefix plus16parity integrations including actual and copied branches"
+      },
+      {
+        "name": "diagnostic",
+        "steps": 516,
+        "meaning": "36-step diagnostic prefix plus at most480forecast integrations; zero real transfer steps beyond A36"
+      }
+    ],
+    "allocationSum": 568,
+    "maximumRealTransferStepsBeyondA36": 0,
+    "countAllIntegrations": true,
+    "doubleCountingGuard": "This is the one parent budget debit of568. The supervisor claim and its52+516runtime ledger allocations reference this same authorizationId and reservation; they are not another568-step global debit. Reservations remain charged after refusal or partial execution.",
+    "globalActualStepsBefore": {
+      "knownSum": 2238,
+      "exact": false,
+      "archiveInferredLowerBound": 2238,
+      "archiveInferredUpperBound": 2239,
+      "meaning": "Separate historical archival inference; no unknown old actual count is rewritten."
+    }
+  },
+  "wallBudget": {
+    "maximumGlobalPhysicalWallSeconds": 7200,
+    "documentedHistoricalElapsedSeconds": "32.328294294003192",
+    "historicalStartupShutdownAllowanceSeconds": 74,
+    "prudentChargedBeforeSeconds": "106.328294294003192",
+    "newProvisionSeconds": 120,
+    "prudentChargedAfterProvisionSeconds": "226.328294294003192",
+    "remainingAfterProvisionSeconds": "6973.671705705996808",
+    "newMeasuredElapsedAtReservationSeconds": 0,
+    "refundSeconds": 0,
+    "provisionIsMeasuredExecutedTime": false,
+    "maximumRunWallSecondsAllInclusive": 120,
+    "startupMaximumSeconds": 30,
+    "shutdownReserveSeconds": 7,
+    "latestNativeDeadlineOffsetSeconds": 113,
+    "deadlineBasis": "Supervisor records UTC and monotonic start before spawning; total120s includes startup, physical work, shutdown and terminal archival closure. Thirty-second startup is inside120, not added; native work stops bystart+113 and reap/closure bystart+120.",
+    "unusedProvisionAuthorizesAnotherRun": false
+  },
+  "preparation": {
+    "reservation": {
+      "path": "docs/evidence/coordination-transfer-native-7100-2026-10-15/preparation-reservation.json",
+      "sha256": "12f845c0d085ef9433bd7aca4836e66221db9a711a0772c2b8b62aa5555e6851",
+      "bytes": 1579
+    },
+    "chargedSecondsUnchanged": 68089,
+    "maximumSeconds": 144000,
+    "remainingUnengagedSeconds": 75911,
+    "activeWindowStartUtc": "2026-10-15T14:12:53+00:00",
+    "activeWindowDeadlineUtc": "2026-10-15T17:12:53+00:00",
+    "originalCalendarDeadlineUtc": "2026-10-17T20:14:00+00:00",
+    "newPreparationReservationSeconds": 0,
+    "noRefundOrDeadlineReset": true
+  },
+  "duplicateCheck": {
+    "candidateClaimFiles": [],
+    "candidatePhysicalLedgers": [],
+    "visibleNativeCandidateProcesses": [],
+    "procMetadataUnreadablePids": [],
+    "previousClosedClaim": {
+      "path": "docs/evidence/coordination-transfer-native-7100-2026-10-15/authorization-claim.json",
+      "sha256": "485b3827851402bc657bcb351ef9593d0ed79b2b93383f2fe64f90f88d9258e5",
+      "bytes": 845
+    },
+    "checkIsPointInTime": true,
+    "mandatoryFinalCheckAfterFreeze": true,
+    "processVisibilityLimit": "Only accessible/proc command metadata checked; no denial bypass and no unrestricted complete process census claimed."
+  },
+  "remainingTechnicalBlockers": [
+    "A newly frozen manifest and binary linked to correction commit a5c8ff36af4dfbe784277aebc91021040b947a52 and diagnostic-only telemetry changes",
+    "Final integrity and absence-of-duplicate check immediately before launch",
+    "Formal authorization referencing the frozen manifest and this reservation",
+    "Durable exclusive single-use claim before supervisor permits any physical work",
+    "Per-allocation accounting before every integration and total120s deadline",
+    "Do not resume or retry after refusal, timeout, crash, lost accounting or completed diagnostic"
+  ],
+  "inconsistenciesFound": [],
+  "auditNewNativeSteps": 0,
+  "historicalFilesModified": false
+}

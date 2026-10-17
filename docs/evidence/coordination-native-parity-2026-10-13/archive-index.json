@@ -1,0 +1,8 @@
+{
+  "schema": 1,
+  "scope": "post-run lossless compression only",
+  "nativeIntegrations": 0,
+  "closedLedgerSha256": "73b2e3bff52aadf0414be2f7a4a96fa4cd5da7b02de0945434e4f136bbf476a6",
+  "elapsedSeconds": 0.0001901969999380526,
+  "files": []
+}

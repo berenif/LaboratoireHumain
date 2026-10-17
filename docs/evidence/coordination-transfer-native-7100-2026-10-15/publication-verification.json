@@ -1,0 +1,270 @@
+{
+  "schema": 1,
+  "verifiedUtc": "2026-10-15T14:37:05.340457+00:00",
+  "scope": "Read-only byte/link verification before publication; does not execute candidate code or renew any reservation",
+  "runStatus": "closed-refused",
+  "frozenManifests": [
+    {
+      "manifest": "docs/evidence/coordination-transfer-native-proposal-2026-10-13/manifest.json",
+      "sha256": "4f3708fd50cd4dabf473b7a6bff528ee11ad798cf25dfbeaf0f6141c156818f7",
+      "filesVerified": 345
+    },
+    {
+      "manifest": "docs/evidence/coordination-transfer-native-7100-2026-10-15/manifest.json",
+      "sha256": "80b41aaf7d2f2aa72e91891f97e7ea40d6cf6f3e8538f3f62d0afcba352342b9",
+      "filesVerified": 358
+    }
+  ],
+  "protectedHistoricalArtifactsVerified": 14,
+  "archivesRoundTripVerified": 2,
+  "localReportLinksVerified": 17,
+  "workerPid5506Absent": true,
+  "nativeStepsDuringPublicationChecks": 0,
+  "newFkOrGeometryInspections": 0,
+  "newPhysicalPermission": false,
+  "chargedNativeStepsThisRun": 131096,
+  "executedNativeStepsThisRun": 130,
+  "preparationChargedSeconds": 68089,
+  "preparationMaximumSeconds": 144000,
+  "unusedReservationRefund": 0,
+  "libraryStatus": "Previously blocked official route; no new ID/version claimed",
+  "artifacts": {
+    "docs/evidence/coordination-transfer-native-7100-2026-10-15/.gitignore": {
+      "sha256": "fc0c535b10c137dcc58b1adde9036390cc63a7bd0f5711af99931e1894ccfe1e",
+      "bytes": 151
+    },
+    "docs/evidence/coordination-transfer-native-7100-2026-10-15/archive-index.json": {
+      "sha256": "cbc82f6c3d68a5050af84662341a4dfaf82e87036b412e4bab6912a330a44b50",
+      "bytes": 1500
+    },
+    "docs/evidence/coordination-transfer-native-7100-2026-10-15/archive.log": {
+      "sha256": "cbc82f6c3d68a5050af84662341a4dfaf82e87036b412e4bab6912a330a44b50",
+      "bytes": 1500
+    },
+    "docs/evidence/coordination-transfer-native-7100-2026-10-15/archive_run.py": {
+      "sha256": "ae8a4513625496da6fd4de3a8f56b4e0e1a42bc4087dfa12d7a313c8ab110e10",
+      "bytes": 2366
+    },
+    "docs/evidence/coordination-transfer-native-7100-2026-10-15/authorization-claim.json": {
+      "sha256": "485b3827851402bc657bcb351ef9593d0ed79b2b93383f2fe64f90f88d9258e5",
+      "bytes": 845
+    },
+    "docs/evidence/coordination-transfer-native-7100-2026-10-15/authorization.json": {
+      "sha256": "217b8d849369ad084cf7da22c94c820b9472c6d97b6b0e96cd12b674517fd203",
+      "bytes": 950
+    },
+    "docs/evidence/coordination-transfer-native-7100-2026-10-15/budget-admission-review.json": {
+      "sha256": "a0f443942a9dff777edcfecfaca03f05d156115c7c591249adc3e0df4f0f2e2f",
+      "bytes": 16170
+    },
+    "docs/evidence/coordination-transfer-native-7100-2026-10-15/budget-admission-review.md": {
+      "sha256": "c80a0f0c0dc94e7ecec7ea71a2e132b7c7fe545caab0c5f50bcf6184a016e785",
+      "bytes": 3218
+    },
+    "docs/evidence/coordination-transfer-native-7100-2026-10-15/deadline-validation.json": {
+      "sha256": "0f81544545f2e53ceaaf826dd1ef98076515f0ab8ab928b2cdc591aaf2f070af",
+      "bytes": 3950
+    },
+    "docs/evidence/coordination-transfer-native-7100-2026-10-15/deadline-validation.log": {
+      "sha256": "c7beb3a7d9583aab36bca27c59e98301abe06fd6018de04056ca6baf86da16e8",
+      "bytes": 6411
+    },
+    "docs/evidence/coordination-transfer-native-7100-2026-10-15/freeze-receipt.json": {
+      "sha256": "2a7d152e5707b56b2cc19d3526aca0970637280ad5a096041ca893c6b02fd261",
+      "bytes": 1002
+    },
+    "docs/evidence/coordination-transfer-native-7100-2026-10-15/launch-invocation.json": {
+      "sha256": "9ff9ee9ab8dc2c5f27503f8d6b285159c465bd9a28a77516434962187c5ca561",
+      "bytes": 933
+    },
+    "docs/evidence/coordination-transfer-native-7100-2026-10-15/launcher.stderr.log": {
+      "sha256": "77e943a08875b8cdeb474047fc167a578cf67ba7331dd6786673ad125af43bc6",
+      "bytes": 87
+    },
+    "docs/evidence/coordination-transfer-native-7100-2026-10-15/launcher.stdout.log": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    "docs/evidence/coordination-transfer-native-7100-2026-10-15/manifest.json": {
+      "sha256": "80b41aaf7d2f2aa72e91891f97e7ea40d6cf6f3e8538f3f62d0afcba352342b9",
+      "bytes": 69734
+    },
+    "docs/evidence/coordination-transfer-native-7100-2026-10-15/native-run-once/forecast-refusal-review.json": {
+      "sha256": "cfa7b05dd663327eb408bf7e7703ff52ed98b4b1f235e87d164f15785cdeb8e0",
+      "bytes": 24159
+    },
+    "docs/evidence/coordination-transfer-native-7100-2026-10-15/native-run-once/forecast-refusal-review.md": {
+      "sha256": "b4c2448cf5105981c2d38fc4c4f09d91dbaf268d6d65bb95ec5841c693e007c2",
+      "bytes": 6982
+    },
+    "docs/evidence/coordination-transfer-native-7100-2026-10-15/native-run-once/ledger-events.ndjson": {
+      "sha256": "842de4a49ac6ede1e8cc5e54e898f7b7085bef57aa9bf7dc73a1551f73f0afc4",
+      "bytes": 14015
+    },
+    "docs/evidence/coordination-transfer-native-7100-2026-10-15/native-run-once/native-result.json": {
+      "sha256": "7da774742c4ef54420efbbbb4991de4afbe640a203463ebe6841e507e00bb19e",
+      "bytes": 135076766
+    },
+    "docs/evidence/coordination-transfer-native-7100-2026-10-15/native-run-once/native-result.json.gz": {
+      "sha256": "89c4f37c7182f1c600dbfdae8ad4b0d0414d703205fbc2d91061764d69d6faa0",
+      "bytes": 9046007
+    },
+    "docs/evidence/coordination-transfer-native-7100-2026-10-15/native-run-once/native-result.json.history.accounting.jsonl": {
+      "sha256": "1b90ac9ebbc3d0be0fe709d79575494962a1eda153c7db99d3c6dd4155c00371",
+      "bytes": 37249
+    },
+    "docs/evidence/coordination-transfer-native-7100-2026-10-15/native-run-once/native-result.json.technical.accounting.jsonl": {
+      "sha256": "f5771e4f6966ad3d44d9e0b32fb2675346bb60f61c566e8638a6a2cfb8c55609",
+      "bytes": 24719
+    },
+    "docs/evidence/coordination-transfer-native-7100-2026-10-15/native-run-once/native-trace.jsonl": {
+      "sha256": "7561d3dd93743f37e07c99d91adad1a9ef7cf41b746a98d5e71f93e3f4092c96",
+      "bytes": 17505466
+    },
+    "docs/evidence/coordination-transfer-native-7100-2026-10-15/native-run-once/native-trace.jsonl.gz": {
+      "sha256": "5daf337c1cf4e07938b1996e2febf752a706415873f2efd5e55454ec4a0a76fc",
+      "bytes": 2747042
+    },
+    "docs/evidence/coordination-transfer-native-7100-2026-10-15/native-run-once/physical-ledger.json": {
+      "sha256": "eec8dfa53045dcd38c593ec72d459e757ee3c8b6d3315be0707e263bd3eb2595",
+      "bytes": 2516
+    },
+    "docs/evidence/coordination-transfer-native-7100-2026-10-15/native-run-once/protocol.ndjson": {
+      "sha256": "f3dbf872d26606a475d3f9e81dc3d62a812f219ac0debfb41ecb69573dfe14fb",
+      "bytes": 2995
+    },
+    "docs/evidence/coordination-transfer-native-7100-2026-10-15/native-run-once/run-result.json": {
+      "sha256": "03ce370f490418953dcb074fe4c1f1f3b170ea947818dec9b5224e8b4bdafd49",
+      "bytes": 2521
+    },
+    "docs/evidence/coordination-transfer-native-7100-2026-10-15/native-run-once/worker.stderr.log": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    "docs/evidence/coordination-transfer-native-7100-2026-10-15/parent-authorization-provenance.json": {
+      "sha256": "d02bce158ab4854507fa0b11bbbda345102bab2832b2e047e1dcbb55b729faa5",
+      "bytes": 1747
+    },
+    "docs/evidence/coordination-transfer-native-7100-2026-10-15/postrun-budget-audit.json": {
+      "sha256": "e15e2cd15e35880f04774dff5bdcee70141f807d7ea4ebc4db5724c293f0fb22",
+      "bytes": 14077
+    },
+    "docs/evidence/coordination-transfer-native-7100-2026-10-15/postrun-budget-audit.md": {
+      "sha256": "5e584121f3ced322c2ce046867ab9fccc8c5633d78d2eb597d9f517a3fdb4f63",
+      "bytes": 3813
+    },
+    "docs/evidence/coordination-transfer-native-7100-2026-10-15/preparation-reservation.json": {
+      "sha256": "12f845c0d085ef9433bd7aca4836e66221db9a711a0772c2b8b62aa5555e6851",
+      "bytes": 1579
+    },
+    "docs/evidence/coordination-transfer-native-7100-2026-10-15/prepare_freeze.py": {
+      "sha256": "7849bde8d6f27c486b16c5efb3ef7b2860c7cd8e1fe28050730ed1d519d9bf6b",
+      "bytes": 4874
+    },
+    "docs/evidence/coordination-transfer-native-7100-2026-10-15/protocol.json": {
+      "sha256": "484ca77042ad48ecaf3a9b884a5e9f005a9e8f06f9e406710ea9530dbdbad6c9",
+      "bytes": 12033
+    },
+    "docs/evidence/coordination-transfer-native-7100-2026-10-15/protocol.md": {
+      "sha256": "c4f6a0f2c6ab81a226d6ba23a6e2d04a0159bd4190d3d9c74d5906b28bfd0a8d",
+      "bytes": 2710
+    },
+    "docs/evidence/coordination-transfer-native-7100-2026-10-15/render_actual.py": {
+      "sha256": "4d821b0789e7511f298fec5c10ae5418fdc283604d85569145e50d09fd14d0ba",
+      "bytes": 19138
+    },
+    "docs/evidence/coordination-transfer-native-7100-2026-10-15/render_contact_loss.py": {
+      "sha256": "6a9ba856b8495b68c33180c92b8ae4cc9ab4b7939edb06affe01698791abf57c",
+      "bytes": 7862
+    },
+    "docs/evidence/coordination-transfer-native-7100-2026-10-15/rendered/actual-entry-a36.png": {
+      "sha256": "e5175cb08e57c20c241cf7c3ac937c710bc475f1c4e57b28e0fa7c27182dbee8",
+      "bytes": 106484
+    },
+    "docs/evidence/coordination-transfer-native-7100-2026-10-15/rendered/actual-measurements.csv": {
+      "sha256": "3deb7b6b21d4e473ab4b5bbfc2c35ffd1a46b82f9761e5e933cf598597bf2b97",
+      "bytes": 20092
+    },
+    "docs/evidence/coordination-transfer-native-7100-2026-10-15/rendered/actual-milestones.png": {
+      "sha256": "e5dd040ba289efb75c0a2421f5d2ca31fa09b2a73538f09f4db259f96b50b78f",
+      "bytes": 598809
+    },
+    "docs/evidence/coordination-transfer-native-7100-2026-10-15/rendered/contact-point-loss-receipt.json": {
+      "sha256": "28782602ae99d1b02dba397ecdee1ebdcd94e6f4c4b7a556c2a0d993866bd704",
+      "bytes": 5420
+    },
+    "docs/evidence/coordination-transfer-native-7100-2026-10-15/rendered/contact-point-loss.png": {
+      "sha256": "70f132096573b5384d6f30d064d7b549462008d4a9b31ef05e1ba1bb9c237f9c",
+      "bytes": 125859
+    },
+    "docs/evidence/coordination-transfer-native-7100-2026-10-15/rendered/contact-point-loss.svg": {
+      "sha256": "93d6b3cce272b803c5b3ba4a6c460ec3f8e1631a7763750487c0e1905ebc6f3b",
+      "bytes": 105841
+    },
+    "docs/evidence/coordination-transfer-native-7100-2026-10-15/rendered/main-history-ffmpeg.stderr.log": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    "docs/evidence/coordination-transfer-native-7100-2026-10-15/rendered/main-history.mp4": {
+      "sha256": "4d80bb496d9bf8f5873734c951c836d6ed2e750ac07739c16f34fa6849a01ae4",
+      "bytes": 17977
+    },
+    "docs/evidence/coordination-transfer-native-7100-2026-10-15/rendered/prediction-endpoint.png": {
+      "sha256": "7baa0b5e45fe41f7c8f43d4d03569c9623331a8af2883d5201f5a8f12e46d889",
+      "bytes": 109639
+    },
+    "docs/evidence/coordination-transfer-native-7100-2026-10-15/rendered/render-receipt.json": {
+      "sha256": "0309374a95adbdecb30b9e88858360c4f9d6f25a0d8fca74218296e73fc05aa9",
+      "bytes": 9945
+    },
+    "docs/evidence/coordination-transfer-native-7100-2026-10-15/rendered/technical-actual-1-ffmpeg.stderr.log": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    "docs/evidence/coordination-transfer-native-7100-2026-10-15/rendered/technical-actual-1.mp4": {
+      "sha256": "b8babc80f458d028e4f9ead5dcffd1910c6a928bce4a1d89109822935f97ba9e",
+      "bytes": 12121
+    },
+    "docs/evidence/coordination-transfer-native-7100-2026-10-15/rendered/technical-actual-2-ffmpeg.stderr.log": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    "docs/evidence/coordination-transfer-native-7100-2026-10-15/rendered/technical-actual-2.mp4": {
+      "sha256": "0b4b72092c5fe74500f4c42922ceab4f54dac349b04d5c062d89507d264422ee",
+      "bytes": 12132
+    },
+    "docs/evidence/coordination-transfer-native-7100-2026-10-15/rendered/technical-prefix-ffmpeg.stderr.log": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    "docs/evidence/coordination-transfer-native-7100-2026-10-15/rendered/technical-prefix.mp4": {
+      "sha256": "2e7ec93be9f62160382d9772b7d4d0dd2fd4ed511dd37954befa7080092a8785",
+      "bytes": 18332
+    },
+    "docs/evidence/coordination-transfer-native-7100-2026-10-15/run_transfer.py": {
+      "sha256": "7ccada025fb9766c87f10c7679c3f01c242c6d12fbadd687de16a5e601e1c2e7",
+      "bytes": 35766
+    },
+    "docs/evidence/coordination-transfer-native-7100-2026-10-15/supervisor-readme.md": {
+      "sha256": "4a1846f946165777b8e199a037fea1d2a04da347f1574abb8c11921b02ae2897",
+      "bytes": 8316
+    },
+    "docs/evidence/coordination-transfer-native-7100-2026-10-15/test_run_transfer.py": {
+      "sha256": "f3b22f07a6bdccd43755183f17d134385f8698970c2660588a6600a7dc84f612",
+      "bytes": 31006
+    },
+    "docs/coordination-transfer-native-results-2026-10-15.md": {
+      "sha256": "f454c4226590a739f91a8de71478e922aec3d81557f4f972e98f36859f92f385",
+      "bytes": 10947
+    }
+  },
+  "gitWhitespaceCheck": {
+    "authoredFilesPassed": true,
+    "fullCheckPassed": false,
+    "generatedArtifactsPreservedByteForByte": {
+      "docs/evidence/coordination-transfer-native-7100-2026-10-15/rendered/actual-measurements.csv": 81,
+      "docs/evidence/coordination-transfer-native-7100-2026-10-15/rendered/contact-point-loss.svg": 1192
+    },
+    "reason": "CSV standard CRLF endings and Matplotlib SVG trailing spaces preserved to match render receipts; no native evidence or generated bytes rewritten."
+  }
+}

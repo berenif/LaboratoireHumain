@@ -1,0 +1,476 @@
+{
+  "schema": "laboratoirehumain.contact-diagnostic-independent-prelaunch-integrity.v1",
+  "auditedUtc": "2026-10-15T15:43:02.721324+00:00",
+  "verdict": "ADMITTED_FOR_EXACTLY_ONE_AUTHORIZED_DIAGNOSTIC;ROOT_SOLE_LAUNCHER_AFTER_COMMIT_PUSH_AND_IMMEDIATE_DUPLICATE_RECHECK",
+  "auditorActivity": {
+    "readOnlyAsideFromTheseTwoNewAuditFiles": true,
+    "nativeSteps": 0,
+    "tests": 0,
+    "builds": 0,
+    "worlds": 0,
+    "fk": 0,
+    "newReservations": 0,
+    "claimsCreated": 0,
+    "frozenFilesModified": false
+  },
+  "freeze": {
+    "manifestPath": "docs/evidence/coordination-contact-diagnostic-2026-10-15/manifest.json",
+    "manifestSha256": "11b4281b9e0427e96215a648c9b989b7becee2380869a6ae4fdb3fd143255f6a",
+    "authorizationPath": "docs/evidence/coordination-contact-diagnostic-2026-10-15/authorization.json",
+    "authorizationSha256": "bf51cec711c73222b9bc0bfe57f0952d1dba14a399c7eee4e60cdfc0bb0eb10a",
+    "binaryPath": "/workspace/lh-contact-diagnostic-target/release/deps/coordination_transfer_worker-8daed3b7e6b04b70",
+    "binarySha256": "2540f1aa1fdcda885dde9e6fde38727d441c554da50cb316becdc92c1b2c3f5b",
+    "workerSourceSha256": "811df09bae544476e03026a9d832f7ea306ff774fe85e42929f974efd2c3f89c",
+    "frozenFilesVerified": 429,
+    "roles": {
+      "binary": 1,
+      "code": 304,
+      "criteria": 1,
+      "entry": 2,
+      "model": 4,
+      "prefix": 1,
+      "preparation": 4,
+      "profile": 1,
+      "program": 1,
+      "protocol": 11,
+      "tasks": 1,
+      "validation": 98
+    },
+    "requiredRustAndSupervisorCodePathsVerified": 293,
+    "immutableHistoricalPiecesVerified": 42,
+    "historicalPieces": [
+      {
+        "path": "docs/evidence/coordination-prototype-2026-10-12/budget/ledger.json",
+        "sha256": "2afa69b3ae9c8ab8343f7dabdf46b955c8ac7b88aa259404958e25d49a72ef07",
+        "unchanged": true
+      },
+      {
+        "path": "docs/evidence/coordination-native-parity-2026-10-13/native-run/physical-ledger.json",
+        "sha256": "73b2e3bff52aadf0414be2f7a4a96fa4cd5da7b02de0945434e4f136bbf476a6",
+        "unchanged": true
+      },
+      {
+        "path": "docs/evidence/coordination-native-parity-renewal-2026-10-13/native-run/physical-ledger.json",
+        "sha256": "1411bfcc1a17caa681359cfb39d7c0429f2188375925c22ba4b037df96d44bc2",
+        "unchanged": true
+      },
+      {
+        "path": "docs/evidence/coordination-native-serialization-2026-10-13/native-run/physical-ledger.json",
+        "sha256": "191d3216953bfb4aca5b7abcea277454d7d97ad5b4ca72e28ffbc260399af250",
+        "unchanged": true
+      },
+      {
+        "path": "docs/evidence/coordination-local-pair-2026-10-13/budget/ledger.json",
+        "sha256": "e7c6831159ac1ae913a05f2af545a0521181d7142dbabd967908dfe7958fba97",
+        "unchanged": true
+      },
+      {
+        "path": "rust/target/release/deps/coordination_worker-60f2b83fe348a1d3",
+        "sha256": "1bb4b91ac8ebfbe382d9525e524b85040ca9890bc90a0ef0467f1ef2b64c8b57",
+        "unchanged": true
+      },
+      {
+        "path": "rust/target/release/deps/numeric_parity_worker-b68c9e5f8e8cfa37",
+        "sha256": "9e125785fad85b0befc9373c3116d66aa32e8050a998ce08974b0da29d2760cc",
+        "unchanged": true
+      },
+      {
+        "path": "rust/target/release/deps/numeric_parity_worker_serialization-360529b9ad4cba37",
+        "sha256": "83bddf95897acc6015de7d2947b04ee2f5aaf2eb49b4dcb85ba0a67764f95e1b",
+        "unchanged": true
+      },
+      {
+        "path": "rust/target/release/deps/coordination_local_pair_worker-bf2c98f759d9dc34",
+        "sha256": "c1c8a12825428758643a7f6e2fafb0a2710f7dca787c1daee07c27ec59849e9c",
+        "unchanged": true
+      },
+      {
+        "path": "docs/evidence/coordination-prototype-2026-10-12/frozen-manifest.json",
+        "sha256": "4a37d4afbfe3ecd51997208bf5fa7599106fd9c43650cb55f6bcf6400d4e1d29",
+        "unchanged": true
+      },
+      {
+        "path": "docs/evidence/coordination-native-parity-2026-10-13/manifest.json",
+        "sha256": "40e492a29d723118cb26990b9dd2866d498d9a1a5d5ae815d7aae1d9d92a407a",
+        "unchanged": true
+      },
+      {
+        "path": "docs/evidence/coordination-native-parity-renewal-2026-10-13/manifest.json",
+        "sha256": "7235b6916b2d669710b0339e474fc245b48cc4311dd893557f4c03164f3326a6",
+        "unchanged": true
+      },
+      {
+        "path": "docs/evidence/coordination-native-serialization-2026-10-13/manifest.json",
+        "sha256": "179bfe3cb58819cd2ba1b73642969c0eb2a343a052dee83ae89e2850e0830356",
+        "unchanged": true
+      },
+      {
+        "path": "docs/evidence/coordination-local-pair-2026-10-13/manifest.json",
+        "sha256": "2fbcb3db0cd1bccf14082e772b1efba63e567fe7fce35ed8cccbbbf2ac2cdde9",
+        "unchanged": true
+      },
+      {
+        "path": "rust/target/release/deps/coordination_transfer_worker-8daed3b7e6b04b70",
+        "sha256": "63e0e035d38d02f762c69b9dacb65d61e179c72ced50f5facd0bc29c64b9e8b5",
+        "unchanged": true
+      },
+      {
+        "path": "docs/evidence/coordination-transfer-native-7100-2026-10-15/native-run-once/forecast-refusal-review.json",
+        "sha256": "cfa7b05dd663327eb408bf7e7703ff52ed98b4b1f235e87d164f15785cdeb8e0",
+        "unchanged": true
+      },
+      {
+        "path": "docs/evidence/coordination-transfer-native-7100-2026-10-15/native-run-once/forecast-refusal-review.md",
+        "sha256": "b4c2448cf5105981c2d38fc4c4f09d91dbaf268d6d65bb95ec5841c693e007c2",
+        "unchanged": true
+      },
+      {
+        "path": "docs/evidence/coordination-transfer-native-7100-2026-10-15/native-run-once/ledger-events.ndjson",
+        "sha256": "842de4a49ac6ede1e8cc5e54e898f7b7085bef57aa9bf7dc73a1551f73f0afc4",
+        "unchanged": true
+      },
+      {
+        "path": "docs/evidence/coordination-transfer-native-7100-2026-10-15/native-run-once/native-result.json",
+        "sha256": "7da774742c4ef54420efbbbb4991de4afbe640a203463ebe6841e507e00bb19e",
+        "unchanged": true
+      },
+      {
+        "path": "docs/evidence/coordination-transfer-native-7100-2026-10-15/native-run-once/native-result.json.gz",
+        "sha256": "89c4f37c7182f1c600dbfdae8ad4b0d0414d703205fbc2d91061764d69d6faa0",
+        "unchanged": true
+      },
+      {
+        "path": "docs/evidence/coordination-transfer-native-7100-2026-10-15/native-run-once/native-result.json.history.accounting.jsonl",
+        "sha256": "1b90ac9ebbc3d0be0fe709d79575494962a1eda153c7db99d3c6dd4155c00371",
+        "unchanged": true
+      },
+      {
+        "path": "docs/evidence/coordination-transfer-native-7100-2026-10-15/native-run-once/native-result.json.technical.accounting.jsonl",
+        "sha256": "f5771e4f6966ad3d44d9e0b32fb2675346bb60f61c566e8638a6a2cfb8c55609",
+        "unchanged": true
+      },
+      {
+        "path": "docs/evidence/coordination-transfer-native-7100-2026-10-15/native-run-once/native-trace.jsonl",
+        "sha256": "7561d3dd93743f37e07c99d91adad1a9ef7cf41b746a98d5e71f93e3f4092c96",
+        "unchanged": true
+      },
+      {
+        "path": "docs/evidence/coordination-transfer-native-7100-2026-10-15/native-run-once/native-trace.jsonl.gz",
+        "sha256": "5daf337c1cf4e07938b1996e2febf752a706415873f2efd5e55454ec4a0a76fc",
+        "unchanged": true
+      },
+      {
+        "path": "docs/evidence/coordination-transfer-native-7100-2026-10-15/native-run-once/physical-ledger.json",
+        "sha256": "eec8dfa53045dcd38c593ec72d459e757ee3c8b6d3315be0707e263bd3eb2595",
+        "unchanged": true
+      },
+      {
+        "path": "docs/evidence/coordination-transfer-native-7100-2026-10-15/native-run-once/protocol.ndjson",
+        "sha256": "f3dbf872d26606a475d3f9e81dc3d62a812f219ac0debfb41ecb69573dfe14fb",
+        "unchanged": true
+      },
+      {
+        "path": "docs/evidence/coordination-transfer-native-7100-2026-10-15/native-run-once/run-result.json",
+        "sha256": "03ce370f490418953dcb074fe4c1f1f3b170ea947818dec9b5224e8b4bdafd49",
+        "unchanged": true
+      },
+      {
+        "path": "docs/evidence/coordination-transfer-native-7100-2026-10-15/native-run-once/worker.stderr.log",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "unchanged": true
+      },
+      {
+        "path": "docs/evidence/coordination-transfer-native-7100-2026-10-15/authorization-claim.json",
+        "sha256": "485b3827851402bc657bcb351ef9593d0ed79b2b93383f2fe64f90f88d9258e5",
+        "unchanged": true
+      },
+      {
+        "path": "docs/evidence/coordination-transfer-native-7100-2026-10-15/authorization.json",
+        "sha256": "217b8d849369ad084cf7da22c94c820b9472c6d97b6b0e96cd12b674517fd203",
+        "unchanged": true
+      },
+      {
+        "path": "docs/evidence/coordination-transfer-native-7100-2026-10-15/manifest.json",
+        "sha256": "80b41aaf7d2f2aa72e91891f97e7ea40d6cf6f3e8538f3f62d0afcba352342b9",
+        "unchanged": true
+      },
+      {
+        "path": "docs/evidence/coordination-transfer-native-7100-2026-10-15/parent-authorization-provenance.json",
+        "sha256": "d02bce158ab4854507fa0b11bbbda345102bab2832b2e047e1dcbb55b729faa5",
+        "unchanged": true
+      },
+      {
+        "path": "docs/evidence/coordination-transfer-native-7100-2026-10-15/protocol.json",
+        "sha256": "484ca77042ad48ecaf3a9b884a5e9f005a9e8f06f9e406710ea9530dbdbad6c9",
+        "unchanged": true
+      },
+      {
+        "path": "docs/evidence/coordination-transfer-native-7100-2026-10-15/protocol.md",
+        "sha256": "c4f6a0f2c6ab81a226d6ba23a6e2d04a0159bd4190d3d9c74d5906b28bfd0a8d",
+        "unchanged": true
+      },
+      {
+        "path": "docs/evidence/coordination-transfer-native-7100-2026-10-15/preparation-reservation.json",
+        "sha256": "12f845c0d085ef9433bd7aca4836e66221db9a711a0772c2b8b62aa5555e6851",
+        "unchanged": true
+      },
+      {
+        "path": "docs/evidence/coordination-transfer-native-7100-2026-10-15/postrun-budget-audit.json",
+        "sha256": "e15e2cd15e35880f04774dff5bdcee70141f807d7ea4ebc4db5724c293f0fb22",
+        "unchanged": true
+      },
+      {
+        "path": "docs/evidence/coordination-transfer-native-7100-2026-10-15/postrun-budget-audit.md",
+        "sha256": "5e584121f3ced322c2ce046867ab9fccc8c5633d78d2eb597d9f517a3fdb4f63",
+        "unchanged": true
+      },
+      {
+        "path": "docs/evidence/coordination-transfer-native-7100-2026-10-15/archive-index.json",
+        "sha256": "cbc82f6c3d68a5050af84662341a4dfaf82e87036b412e4bab6912a330a44b50",
+        "unchanged": true
+      },
+      {
+        "path": "docs/evidence/coordination-transfer-native-7100-2026-10-15/launch-invocation.json",
+        "sha256": "9ff9ee9ab8dc2c5f27503f8d6b285159c465bd9a28a77516434962187c5ca561",
+        "unchanged": true
+      },
+      {
+        "path": "docs/evidence/coordination-transfer-native-7100-2026-10-15/launcher.stderr.log",
+        "sha256": "77e943a08875b8cdeb474047fc167a578cf67ba7331dd6786673ad125af43bc6",
+        "unchanged": true
+      },
+      {
+        "path": "docs/evidence/coordination-transfer-native-7100-2026-10-15/launcher.stdout.log",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "unchanged": true
+      },
+      {
+        "path": "docs/evidence/coordination-transfer-native-proposal-2026-10-13/manifest.json",
+        "sha256": "4f3708fd50cd4dabf473b7a6bff528ee11ad798cf25dfbeaf0f6141c156818f7",
+        "unchanged": true
+      }
+    ],
+    "inputEntrySubstep": 36,
+    "archivedPrefixFrames": 36,
+    "authorizationApprovedAndSingleUse": true,
+    "parentProvenanceSha256": "87c25d2e01c678d639441ab68115afed29e2632a7366df9319019a12e6c85547",
+    "budgetReservationSha256": "be1a9bb8a01485629944a6f0e52419cf6741e44961d89fc0222793b278ad65a1",
+    "allFrozenFileHashesMatch": true
+  },
+  "nativeAndWallBudget": {
+    "closedHistoricalLedgerCount": 6,
+    "previousChargedSteps": 138940,
+    "singleNewParentReservationSteps": 568,
+    "runtimeAllocations": {
+      "technical": 52,
+      "diagnosticPrefixAndForecast": 516
+    },
+    "allocationsAreSameParentDebitNotSecondDebit": true,
+    "newlyExecutedSteps": 0,
+    "chargedAfterReservation": 139508,
+    "globalNativeCeiling": 300000,
+    "remainingUnchargedSteps": 160492,
+    "previousKnownExecutedSteps": 2238,
+    "previousExecutedExact": false,
+    "noRefundOrRenewal": true,
+    "prudentPreviousWallSeconds": "106.328294294003192",
+    "newAllInclusiveWallProvisionSeconds": 120,
+    "prudentAfterProvisionSeconds": "226.328294294003192",
+    "globalWallCeilingSeconds": 7200,
+    "remainingPrudentUnengagedWallSeconds": "6973.671705705996808",
+    "startupInsideTotalSeconds": 30,
+    "latestNativePermitOffsetSeconds": 113,
+    "shutdownReserveInsideTotalSeconds": 7,
+    "newPhysicalElapsedAtAuditSeconds": 0,
+    "preparationEngagedUnchangedSeconds": 68089,
+    "preparationDeadlineUtc": "2026-10-15T17:12:53+00:00"
+  },
+  "boundedOperation": {
+    "op": "contact-diagnostic",
+    "technicalParityRequiredBeforeForecast": true,
+    "mainPrefixMaximumSteps": 36,
+    "forecastCallsMaximum": 1,
+    "forecastStepsMaximum": 480,
+    "realTransferAfterA36Maximum": 0,
+    "returnedBeforeNativeWindowAdmissionAndRealTransferLoop": true,
+    "outcomeDoesNotClaimLocalOrTerminalSuccess": true,
+    "mandatoryEndpointCurrentObservationTelemetryAndSampleGuard": true,
+    "secondaryEndpointRefusalPreservesOriginalForecastOutcome": true,
+    "refusalClosesAttemptWithoutRetry": true
+  },
+  "validationEvidence": {
+    "workerPureTests": 12,
+    "supervisorPureTests": 51,
+    "supervisorInertProcessTests": 3,
+    "supervisorTotalTests": 54,
+    "testsRerunByAuditor": 0,
+    "stableReleaseBuildReceiptPath": "docs/evidence/coordination-contact-diagnostic-2026-10-15/release-admitted-receipt.json",
+    "stableReleaseBuildReceiptSha256": "f474960d550d82d0b9ed9be6fcdaf02aa20d02bbb855d11a70e3c941e871fd5d",
+    "sourceBeforeAfterMatch": true,
+    "releaseBuildWasNoRun": true,
+    "physicalWorkerPreviouslyExecuted": false,
+    "workerTestsReceiptSha256": "28fde24c89d4569704829682cdbf45908f110b687b356ef60d4833feeab2b3fa",
+    "supervisorValidationSha256": "9ef4622075f1ae39d84c3d2e2b74daf2b7d933ccef858ccb88ffb2ce25f9be8e",
+    "workerReviewSha256": "d4cb2821b62de7db72246d5339736bc30468570cac192dfd9550ce1cc944d364",
+    "previousSourceChangingBuildExcludedFromAdmission": true,
+    "noBroadSuiteClaim": true
+  },
+  "duplicateCheck": {
+    "newOutputPath": "/workspace/LaboratoireHumain/docs/evidence/coordination-contact-diagnostic-2026-10-15/native-run-once",
+    "outputExists": false,
+    "newClaimExists": false,
+    "newRuntimeLedgerExists": false,
+    "otherDiagnosticClaims": [],
+    "historicalClaimsRetained": [
+      {
+        "path": "docs/evidence/coordination-native-serialization-2026-10-13/authorization-claim.json",
+        "authorizationId": "coordination-numeric-parity-serialization-2026-10-13T10:06Z"
+      },
+      {
+        "path": "docs/evidence/coordination-transfer-native-7100-2026-10-15/authorization-claim.json",
+        "authorizationId": "transfer-a36-distinct-2026-10-15-7100-single-history"
+      },
+      {
+        "path": "docs/evidence/coordination-native-parity-renewal-2026-10-13/authorization-claim.json",
+        "authorizationId": "coordination-numeric-parity-2026-10-13T10:06Z"
+      },
+      {
+        "path": "docs/evidence/coordination-native-parity-2026-10-13/authorization-claim.json",
+        "authorizationId": "coordination-numeric-parity-2026-10-13T06:44Z"
+      },
+      {
+        "path": "docs/evidence/coordination-launcher-portability-2026-10-13/e2e/sigterm-during-construction/authorization-claim.json",
+        "authorizationId": "SYNTHETIC-launcher-portability-physical-integrations-zero"
+      },
+      {
+        "path": "docs/evidence/coordination-launcher-portability-2026-10-13/e2e/sigint-after-permit/authorization-claim.json",
+        "authorizationId": "SYNTHETIC-launcher-portability-physical-integrations-zero"
+      },
+      {
+        "path": "docs/evidence/coordination-launcher-portability-2026-10-13/e2e/timeout-after-result/authorization-claim.json",
+        "authorizationId": "SYNTHETIC-launcher-portability-physical-integrations-zero"
+      },
+      {
+        "path": "docs/evidence/coordination-launcher-portability-2026-10-13/e2e/second-thread-refused/authorization-claim.json",
+        "authorizationId": "SYNTHETIC-launcher-portability-physical-integrations-zero"
+      },
+      {
+        "path": "docs/evidence/coordination-launcher-portability-2026-10-13/e2e/sigterm-after-permit/authorization-claim.json",
+        "authorizationId": "SYNTHETIC-launcher-portability-physical-integrations-zero"
+      },
+      {
+        "path": "docs/evidence/coordination-launcher-portability-2026-10-13/e2e/partial-refusal/authorization-claim.json",
+        "authorizationId": "SYNTHETIC-launcher-portability-physical-integrations-zero"
+      },
+      {
+        "path": "docs/evidence/coordination-launcher-portability-2026-10-13/e2e/crash-before-ready/authorization-claim.json",
+        "authorizationId": "SYNTHETIC-launcher-portability-physical-integrations-zero"
+      },
+      {
+        "path": "docs/evidence/coordination-launcher-portability-2026-10-13/e2e/timeout-after-permit/authorization-claim.json",
+        "authorizationId": "SYNTHETIC-launcher-portability-physical-integrations-zero"
+      },
+      {
+        "path": "docs/evidence/coordination-launcher-portability-2026-10-13/e2e/child-process-refused/authorization-claim.json",
+        "authorizationId": "SYNTHETIC-launcher-portability-physical-integrations-zero"
+      },
+      {
+        "path": "docs/evidence/coordination-launcher-portability-2026-10-13/e2e/crash-after-permit/authorization-claim.json",
+        "authorizationId": "SYNTHETIC-launcher-portability-physical-integrations-zero"
+      },
+      {
+        "path": "docs/evidence/coordination-launcher-portability-2026-10-13/e2e/timeout-before-ready/authorization-claim.json",
+        "authorizationId": "SYNTHETIC-launcher-portability-physical-integrations-zero"
+      },
+      {
+        "path": "docs/evidence/coordination-launcher-portability-2026-10-13/e2e/unrelated-child-preserved/authorization-claim.json",
+        "authorizationId": "SYNTHETIC-launcher-portability-physical-integrations-zero"
+      },
+      {
+        "path": "docs/evidence/coordination-launcher-portability-2026-10-13/e2e/success-and-duplicate-claim/authorization-claim.json",
+        "authorizationId": "SYNTHETIC-launcher-portability-physical-integrations-zero"
+      }
+    ],
+    "visibleNativeCandidateProcesses": [],
+    "previousWorker5506Absent": true,
+    "unreadableOtherExeLinks": [
+      {
+        "pid": 1,
+        "comm": "tail"
+      },
+      {
+        "pid": 2,
+        "comm": "cloud-agent-log"
+      },
+      {
+        "pid": 3,
+        "comm": "caas-prefix-tra"
+      },
+      {
+        "pid": 118,
+        "comm": "dockerd"
+      },
+      {
+        "pid": 171,
+        "comm": "containerd"
+      },
+      {
+        "pid": 441,
+        "comm": "codex"
+      },
+      {
+        "pid": 3953,
+        "comm": "git"
+      },
+      {
+        "pid": 4240,
+        "comm": "git"
+      },
+      {
+        "pid": 4780,
+        "comm": "git"
+      },
+      {
+        "pid": 5466,
+        "comm": "git"
+      },
+      {
+        "pid": 6321,
+        "comm": "git"
+      },
+      {
+        "pid": 10137,
+        "comm": "git"
+      },
+      {
+        "pid": 14082,
+        "comm": "codex-linux-san"
+      },
+      {
+        "pid": 14084,
+        "comm": "bwrap"
+      }
+    ],
+    "limit": "Names and available process arguments examined; some unrelated service/sandbox/Git executable symlinks are denied. No privileged global executable census claimed and no denied access bypassed."
+  },
+  "gitAtAudit": {
+    "branch": "investigate/physical-support",
+    "head": "a5c8ff36af4dfbe784277aebc91021040b947a52",
+    "remoteProgress": "a5c8ff36af4dfbe784277aebc91021040b947a52",
+    "remoteMain": "c597959f46f37715035349c8cd0a699b6822111a",
+    "authorizedRustChangesRelativeToBase": [
+      "rust/crates/sim/src/recovery/planner/transfer_worker.rs"
+    ],
+    "newFreezeCommitAndPushPendingRoot": true
+  },
+  "finalRootActions": [
+    "Commit/push the frozen milestone on investigate/physical-support and verify its remote SHA; do not change main.",
+    "Immediately recheck frozen hashes and absence of diagnostic claim/output/process, then launch exactly once using this manifest and authorization.",
+    "Preserve full568 debit and terminate on first parity/forecast/endpoint/time/accounting refusal; no retry, renewal or real transfer beyondA36."
+  ],
+  "limitations": [
+    "A static admission does not establish physical parity or a causal finding; those are the purpose of the one bounded run.",
+    "Historical execution uncertainty remains2238..2239 by archival inference; no old unknown ledger field is replaced.",
+    "The complete stand after impact and qualification remain unproved; recovery stays disabled."
+  ]
+}

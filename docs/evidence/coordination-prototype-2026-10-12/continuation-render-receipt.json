@@ -1,0 +1,20 @@
+{
+  "sourceTraceSha256": "8892cc692cb921306a3d338c6f5b421d263752cae0d7bcd91f0458dc77ae7520",
+  "sourceFramesSha256": "486df4022a60aafa9aa73c5ce68d5d86963f70737adddd67e20ae9b01c564f2e",
+  "modelSha256": "083c13b2cce2d6033a4fc05cba8da7e78bd89634fb306629f4b7a9cd4a177a65",
+  "pngSha256": "0d0e279a1d7d9a35735c2cba093558e09a35a591bf882b32b0d7c6fd741ff637",
+  "mp4Sha256": "c51c62c9cf371cb6b56879afbc6b39fbe3b30db518fa043ca9346669616f4e4e",
+  "pngMilestoneSubsteps": [
+    0,
+    168,
+    432,
+    1680,
+    1920
+  ],
+  "videoArchivedPoseFrames": 81,
+  "videoFps": 10,
+  "newFkInspections": 0,
+  "nativeGeometryQueries": 0,
+  "physicalIntegrations": 0,
+  "scope": "rigid rendering of stored body poses; geometry targets, no physical trajectory"
+}

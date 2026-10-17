@@ -601,7 +601,8 @@ mod tests {
             }
         });
         let camera = Camera::default();
-        let point = camera.matrix(1.5).project_point3(poses[4].position);
+        let head = mesh.model.segments.iter().position(|p| p.id == "head").unwrap();
+        let point = camera.matrix(1.5).project_point3(poses[head].position);
         let (origin, direction) = camera.ray(
             (point.x + 1.0) * 450.0,
             (1.0 - point.y) * 300.0,

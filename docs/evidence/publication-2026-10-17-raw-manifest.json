@@ -1,0 +1,1133 @@
+{
+  "sourceCommit": "d81d0fcbe897e1ae7f0a83b0e50b18a512143fd8",
+  "publicationBase": "c443801cba1b55cb4b3c36a3f7590feb1e2ac109",
+  "excludedFiles": [
+    {
+      "path": "docs/evidence/getup-contact-feedback-2026-10-17/batch01-contact-zero/getup-contact-dynamics.py.gz",
+      "bytes": 3866,
+      "gitBlobSha": "0dd3022dd87ddaa8446935f9e79b5061b92daebd",
+      "sha256": "707b59f4a94da688f96ac1e83869661890f859d2ad8dbeb32aac4a1fa0667031",
+      "availability": "Retained in the original local investigation history; not published in this lean branch."
+    },
+    {
+      "path": "docs/evidence/getup-contact-feedback-2026-10-17/batch01-contact-zero/hybrid-final.bin.gz",
+      "bytes": 1855123,
+      "gitBlobSha": "7dc82b390eb299e0dffcbfb5c1b9db9c87ade9a0",
+      "sha256": "081940c4393c244fa07188aaec8b2ae942b62e1607624ccdc8085fee2b31a1d0",
+      "availability": "Retained in the original local investigation history; not published in this lean branch."
+    },
+    {
+      "path": "docs/evidence/getup-contact-feedback-2026-10-17/batch01-contact-zero/hybrid.json.gz",
+      "bytes": 1530221,
+      "gitBlobSha": "1af18a9c9504bd30bc80483954e352f8fa325994",
+      "sha256": "f715e3d35cef18ea167b616eb022577c40c32de05f4322f51f8bba9c514c9973",
+      "availability": "Retained in the original local investigation history; not published in this lean branch."
+    },
+    {
+      "path": "docs/evidence/getup-contact-feedback-2026-10-17/batch01-contact-zero/probe-getup-contact-feedback.py.gz",
+      "bytes": 4039,
+      "gitBlobSha": "208952b28d4e759aeb41f905033e1c5a28a3fcd9",
+      "sha256": "8ef2ba5362bdc983a143438ed1916470823c473c2bba97232d13ac3ec12466df",
+      "availability": "Retained in the original local investigation history; not published in this lean branch."
+    },
+    {
+      "path": "docs/evidence/getup-contact-feedback-2026-10-17/batch01-contact-zero/protocol.ndjson.gz",
+      "bytes": 7028075,
+      "gitBlobSha": "93367f4b2a5ac8141b32f0460109c0c36ec56690",
+      "sha256": "be0ef9f8b87081f4c5f8c95ebca681c0406c064e294bb2275664177b69d0ab58",
+      "availability": "Retained in the original local investigation history; not published in this lean branch."
+    },
+    {
+      "path": "docs/evidence/getup-contact-feedback-2026-10-17/batch02-normal-contact-zero/getup-contact-dynamics.py.gz",
+      "bytes": 3974,
+      "gitBlobSha": "b16e6f355e49faafd507ce3c1c5ee184520361d5",
+      "sha256": "a513587ff11752f1ad708b3ff5264f66cd24bd1fdb475eb19dfac95e3898b96a",
+      "availability": "Retained in the original local investigation history; not published in this lean branch."
+    },
+    {
+      "path": "docs/evidence/getup-contact-feedback-2026-10-17/batch02-normal-contact-zero/hybrid-final.bin.gz",
+      "bytes": 1854747,
+      "gitBlobSha": "e72274c0c3782b058409bf0d534747c7e216752f",
+      "sha256": "6d5397244f6fd77071415833401e5e311edf9eacb7cbe1c5badabce764438a46",
+      "availability": "Retained in the original local investigation history; not published in this lean branch."
+    },
+    {
+      "path": "docs/evidence/getup-contact-feedback-2026-10-17/batch02-normal-contact-zero/hybrid.json.gz",
+      "bytes": 1663378,
+      "gitBlobSha": "deaab915a3b98657172e72cc069d7231c186c2f2",
+      "sha256": "c86fb89ced6c69a8c9539ca9a6554747a0c3b2878a4a441d5c26ac79fb40bcba",
+      "availability": "Retained in the original local investigation history; not published in this lean branch."
+    },
+    {
+      "path": "docs/evidence/getup-contact-feedback-2026-10-17/batch02-normal-contact-zero/probe-getup-contact-feedback.py.gz",
+      "bytes": 4113,
+      "gitBlobSha": "5302bc3a8f1d4770c07e5fa336d3e788b4b52fe5",
+      "sha256": "d20dd83e0bb824461cda46d2812daf11de885122deee9a4063b44074a40ad171",
+      "availability": "Retained in the original local investigation history; not published in this lean branch."
+    },
+    {
+      "path": "docs/evidence/getup-contact-feedback-2026-10-17/batch02-normal-contact-zero/protocol.ndjson.gz",
+      "bytes": 7051348,
+      "gitBlobSha": "439dbbc8bcded4c9153a13b14d0dbe12a1d47f0f",
+      "sha256": "6cb79c7dde76e0b707d2986be4805aed8edba2264dec392693881fa64277fe69",
+      "availability": "Retained in the original local investigation history; not published in this lean branch."
+    },
+    {
+      "path": "docs/evidence/getup-contact-feedback-2026-10-17/batch03-contact-5mm/getup-contact-dynamics.py.gz",
+      "bytes": 3974,
+      "gitBlobSha": "b16e6f355e49faafd507ce3c1c5ee184520361d5",
+      "sha256": "a513587ff11752f1ad708b3ff5264f66cd24bd1fdb475eb19dfac95e3898b96a",
+      "availability": "Retained in the original local investigation history; not published in this lean branch."
+    },
+    {
+      "path": "docs/evidence/getup-contact-feedback-2026-10-17/batch03-contact-5mm/hybrid-final.bin.gz",
+      "bytes": 1855075,
+      "gitBlobSha": "0cf82e63926812bd155f12f652a2ec7dc45bdcc7",
+      "sha256": "8e45169ac1a837b720e808170f443433e04c5d22f2ceba87b9a50b63a8bb864e",
+      "availability": "Retained in the original local investigation history; not published in this lean branch."
+    },
+    {
+      "path": "docs/evidence/getup-contact-feedback-2026-10-17/batch03-contact-5mm/hybrid.json.gz",
+      "bytes": 1663368,
+      "gitBlobSha": "830a89792e5d977a3db0496f0a9902f3f6c60c4e",
+      "sha256": "d2c48344bafdb5a549d8dea16b732259b962fe3b53aaf3b96d31231fcd11ca39",
+      "availability": "Retained in the original local investigation history; not published in this lean branch."
+    },
+    {
+      "path": "docs/evidence/getup-contact-feedback-2026-10-17/batch03-contact-5mm/probe-getup-contact-feedback.py.gz",
+      "bytes": 4113,
+      "gitBlobSha": "5302bc3a8f1d4770c07e5fa336d3e788b4b52fe5",
+      "sha256": "d20dd83e0bb824461cda46d2812daf11de885122deee9a4063b44074a40ad171",
+      "availability": "Retained in the original local investigation history; not published in this lean branch."
+    },
+    {
+      "path": "docs/evidence/getup-contact-feedback-2026-10-17/batch03-contact-5mm/protocol.ndjson.gz",
+      "bytes": 7049597,
+      "gitBlobSha": "19a1ac2dfff53af3084656b1bbf8afa21ea69e7b",
+      "sha256": "2a924fa403ce262b45534aa005e7d9f510ad1b37599d378ac5af0d54e92999ca",
+      "availability": "Retained in the original local investigation history; not published in this lean branch."
+    },
+    {
+      "path": "docs/evidence/getup-contact-feedback-2026-10-17/batch04-exact-source-extension/hybrid.json.gz",
+      "bytes": 556484,
+      "gitBlobSha": "c0ce7632ff6be66c5814f6d8ebf528aa9b7b2fd3",
+      "sha256": "6b6f6f966f9836bec1ccce02a4cf99f263b8c6949fafbeab90ea86832b39ca71",
+      "availability": "Retained in the original local investigation history; not published in this lean branch."
+    },
+    {
+      "path": "docs/evidence/getup-contact-feedback-2026-10-17/batch04-exact-source-extension/protocol.ndjson.gz",
+      "bytes": 2785893,
+      "gitBlobSha": "17c3f25dfcbf9e26e6f61e69712d7c7869ed0904",
+      "sha256": "8962ca6da15ae19f5e187c1f7b3d865826e1b08483666e5dad1cbe4598666658",
+      "availability": "Retained in the original local investigation history; not published in this lean branch."
+    },
+    {
+      "path": "docs/evidence/getup-contact-feedback-2026-10-17/batch05-retained-balance-3cm/getup-contact-dynamics.py.gz",
+      "bytes": 3974,
+      "gitBlobSha": "b16e6f355e49faafd507ce3c1c5ee184520361d5",
+      "sha256": "a513587ff11752f1ad708b3ff5264f66cd24bd1fdb475eb19dfac95e3898b96a",
+      "availability": "Retained in the original local investigation history; not published in this lean branch."
+    },
+    {
+      "path": "docs/evidence/getup-contact-feedback-2026-10-17/batch05-retained-balance-3cm/hybrid-final.bin.gz",
+      "bytes": 1855047,
+      "gitBlobSha": "34288030b7ea5a8f6a8ff8278632976c8426f6f9",
+      "sha256": "7827f2be31c0b256edef5ff0f09a003b61fd6e38fbc6b3ffdb84f97ea227860e",
+      "availability": "Retained in the original local investigation history; not published in this lean branch."
+    },
+    {
+      "path": "docs/evidence/getup-contact-feedback-2026-10-17/batch05-retained-balance-3cm/hybrid.json.gz",
+      "bytes": 1832426,
+      "gitBlobSha": "f158e338869e8c0325f0eb71396e616180949f33",
+      "sha256": "a3d1d996a4245bcfb01ca380dafb36ca60f10bfd5531a9e86f59087cf87f3be7",
+      "availability": "Retained in the original local investigation history; not published in this lean branch."
+    },
+    {
+      "path": "docs/evidence/getup-contact-feedback-2026-10-17/batch05-retained-balance-3cm/probe-getup-contact-feedback.py.gz",
+      "bytes": 4352,
+      "gitBlobSha": "1e7612373bcfef6fcef4c7b32b94808faa45e7f9",
+      "sha256": "c7698e5bd3467b175fac59b903a2c54caf2f6f7a7cf2c0d2be8edc0673f05428",
+      "availability": "Retained in the original local investigation history; not published in this lean branch."
+    },
+    {
+      "path": "docs/evidence/getup-contact-feedback-2026-10-17/batch05-retained-balance-3cm/protocol.ndjson.gz",
+      "bytes": 7185172,
+      "gitBlobSha": "442ecb3febc55304faf368277a6c63f5dac1217e",
+      "sha256": "4d7b1e0b797b7abc5dfba24d01db18520759a9f83f74afeb9ec95e14f87492cb",
+      "availability": "Retained in the original local investigation history; not published in this lean branch."
+    },
+    {
+      "path": "docs/evidence/getup-contact-feedback-2026-10-17/batch06-right-support-transfer/getup-contact-dynamics.py.gz",
+      "bytes": 3974,
+      "gitBlobSha": "b16e6f355e49faafd507ce3c1c5ee184520361d5",
+      "sha256": "a513587ff11752f1ad708b3ff5264f66cd24bd1fdb475eb19dfac95e3898b96a",
+      "availability": "Retained in the original local investigation history; not published in this lean branch."
+    },
+    {
+      "path": "docs/evidence/getup-contact-feedback-2026-10-17/batch06-right-support-transfer/hybrid-final.bin.gz",
+      "bytes": 1855094,
+      "gitBlobSha": "533da32f165ca2a4b7b225a2936cc5b89ac7797d",
+      "sha256": "f82b2ff81f5da9dacce4f7c8c36a39266a168c9f339e3925ea6afdb1f6cb0dec",
+      "availability": "Retained in the original local investigation history; not published in this lean branch."
+    },
+    {
+      "path": "docs/evidence/getup-contact-feedback-2026-10-17/batch06-right-support-transfer/hybrid.json.gz",
+      "bytes": 2299616,
+      "gitBlobSha": "8e16d619a3dbcccd76215d5ce0ed400e2d3983cc",
+      "sha256": "6830c76843c7704ba86cea1a33b24f8a094d8df4c054ae58ab34b2797172aa9c",
+      "availability": "Retained in the original local investigation history; not published in this lean branch."
+    },
+    {
+      "path": "docs/evidence/getup-contact-feedback-2026-10-17/batch06-right-support-transfer/probe-getup-contact-feedback.py.gz",
+      "bytes": 4534,
+      "gitBlobSha": "40c17eabee08137fb0e2083a7f4b0ffc1d6071a9",
+      "sha256": "238aaead9d3b729aad9896ed43cbf424acee04e963432894c6652a68475d669a",
+      "availability": "Retained in the original local investigation history; not published in this lean branch."
+    },
+    {
+      "path": "docs/evidence/getup-contact-feedback-2026-10-17/batch06-right-support-transfer/protocol.ndjson.gz",
+      "bytes": 8949995,
+      "gitBlobSha": "78bcf2a48da1c74e7ba45253afdf80ea2661af8a",
+      "sha256": "05794d4c7b793f6dcf2b25e13d64fff9d34fb989f776ed1792e4a693e20c16fe",
+      "availability": "Retained in the original local investigation history; not published in this lean branch."
+    },
+    {
+      "path": "docs/evidence/getup-contact-feedback-2026-10-17/batch07-actual-support-unload/getup-contact-dynamics.py.gz",
+      "bytes": 4442,
+      "gitBlobSha": "3d7680b3676dad436aa65ddaac483624331bb23d",
+      "sha256": "2c669a2756d42336f23df019775cf9b1acfa40394a68f3521cf4c160d41722de",
+      "availability": "Retained in the original local investigation history; not published in this lean branch."
+    },
+    {
+      "path": "docs/evidence/getup-contact-feedback-2026-10-17/batch07-actual-support-unload/hybrid-final.bin.gz",
+      "bytes": 1854612,
+      "gitBlobSha": "f9c7a2c860f42217f6fdc01def0f38891c7a196f",
+      "sha256": "45f08661af7237525598741b59c272930092574808aa199600df1bc64cfb2c78",
+      "availability": "Retained in the original local investigation history; not published in this lean branch."
+    },
+    {
+      "path": "docs/evidence/getup-contact-feedback-2026-10-17/batch07-actual-support-unload/hybrid.json.gz",
+      "bytes": 1580276,
+      "gitBlobSha": "6e69539389be85b84139e6b09666c1e4a2a2d362",
+      "sha256": "6ae0105687becbc9caf0623750cec0852f30c8cd801c23aebe341d086f67ec3e",
+      "availability": "Retained in the original local investigation history; not published in this lean branch."
+    },
+    {
+      "path": "docs/evidence/getup-contact-feedback-2026-10-17/batch07-actual-support-unload/probe-getup-contact-feedback.py.gz",
+      "bytes": 5028,
+      "gitBlobSha": "74e9cd7b7f11200ab9313133c845b45b97e0711f",
+      "sha256": "7ad29064fe4a5c6f162b7bded2f80a81b5d644c27746aef34ebb7789549cda46",
+      "availability": "Retained in the original local investigation history; not published in this lean branch."
+    },
+    {
+      "path": "docs/evidence/getup-contact-feedback-2026-10-17/batch07-actual-support-unload/protocol.ndjson.gz",
+      "bytes": 6174052,
+      "gitBlobSha": "d97ceb6cd62832d6a24d3380dbcf9e48a589976a",
+      "sha256": "8182e65136ff53ba5f9caee34caaad9fc6fcca84d1d926c8bd8db88cb9901409",
+      "availability": "Retained in the original local investigation history; not published in this lean branch."
+    },
+    {
+      "path": "docs/evidence/getup-contact-feedback-2026-10-17/batch08-contact-step/getup-contact-dynamics.py.gz",
+      "bytes": 4700,
+      "gitBlobSha": "1b2dfaf6a4c8962e6499ab0feefe17ab02f92911",
+      "sha256": "3ecf9f57991c798df3b9c844dcbd52bef182c15ff161ae3b435290cf85a081d7",
+      "availability": "Retained in the original local investigation history; not published in this lean branch."
+    },
+    {
+      "path": "docs/evidence/getup-contact-feedback-2026-10-17/batch08-contact-step/getup-contact-step.py.gz",
+      "bytes": 1741,
+      "gitBlobSha": "a7b6737887db62859c0eed543f57286207b0c41b",
+      "sha256": "c73c5ecacb636b1abd7ab3e9dedddb712dcce00ca98f1a13e9a53a9949cbf05b",
+      "availability": "Retained in the original local investigation history; not published in this lean branch."
+    },
+    {
+      "path": "docs/evidence/getup-contact-feedback-2026-10-17/batch08-contact-step/hybrid-final.bin.gz",
+      "bytes": 1854674,
+      "gitBlobSha": "58e241a89183eb4dca9ff411aaba26fe6c85d537",
+      "sha256": "7ad16c112563fe14d1cd27190c886981747ccf9228fd281fd0f27bd13c7a10c7",
+      "availability": "Retained in the original local investigation history; not published in this lean branch."
+    },
+    {
+      "path": "docs/evidence/getup-contact-feedback-2026-10-17/batch08-contact-step/hybrid.json.gz",
+      "bytes": 1484461,
+      "gitBlobSha": "bb5a8abdb44fc62d300b7e3dd9ca2e7c91faffc2",
+      "sha256": "7eb2cd772d940cf21315c9fba08d15b37f234272dcf62e306858cbabe0e5b276",
+      "availability": "Retained in the original local investigation history; not published in this lean branch."
+    },
+    {
+      "path": "docs/evidence/getup-contact-feedback-2026-10-17/batch08-contact-step/probe-getup-contact-feedback.py.gz",
+      "bytes": 5605,
+      "gitBlobSha": "b5d1eacef82a1bae3fa2d8aa30fe784526db5ea6",
+      "sha256": "feac0527a0d5ce28e4766bbd4e456083e3e15d78ba290d87f6f08e4a89b3e32c",
+      "availability": "Retained in the original local investigation history; not published in this lean branch."
+    },
+    {
+      "path": "docs/evidence/getup-contact-feedback-2026-10-17/batch08-contact-step/protocol.ndjson.gz",
+      "bytes": 5750835,
+      "gitBlobSha": "bccd00deca56753434e7d72bf6b1493b10917cd8",
+      "sha256": "e43b219aeb462846c4df328da15f563385dc5fc00b3d032e3b76a72b01740745",
+      "availability": "Retained in the original local investigation history; not published in this lean branch."
+    },
+    {
+      "path": "docs/evidence/getup-contact-feedback-2026-10-17/batch09-com-priority-step/getup-contact-dynamics.py.gz",
+      "bytes": 4956,
+      "gitBlobSha": "c7ddd01f28feb0d99fb4100c162a511f4cf33578",
+      "sha256": "624293d4b231b325e981685c101f1708edff1cc332e228315a114bafa3892234",
+      "availability": "Retained in the original local investigation history; not published in this lean branch."
+    },
+    {
+      "path": "docs/evidence/getup-contact-feedback-2026-10-17/batch09-com-priority-step/getup-contact-step.py.gz",
+      "bytes": 1741,
+      "gitBlobSha": "a7b6737887db62859c0eed543f57286207b0c41b",
+      "sha256": "c73c5ecacb636b1abd7ab3e9dedddb712dcce00ca98f1a13e9a53a9949cbf05b",
+      "availability": "Retained in the original local investigation history; not published in this lean branch."
+    },
+    {
+      "path": "docs/evidence/getup-contact-feedback-2026-10-17/batch09-com-priority-step/hybrid-final.bin.gz",
+      "bytes": 1855548,
+      "gitBlobSha": "0c9bff70a4f8edd77b77ebb690fef5f387ca0d62",
+      "sha256": "b7a0820c23b85cd977b49065f97fbce2a4f01c27a4016090d1aa105fd3ba69ac",
+      "availability": "Retained in the original local investigation history; not published in this lean branch."
+    },
+    {
+      "path": "docs/evidence/getup-contact-feedback-2026-10-17/batch09-com-priority-step/hybrid.json.gz",
+      "bytes": 1477499,
+      "gitBlobSha": "b04ab8325fe3cfc227557cbbcd94738c40624290",
+      "sha256": "1fe944e8679544df083c73f93d4111e33ddc1c7aa8ab7e5920cf7c4b90b55af6",
+      "availability": "Retained in the original local investigation history; not published in this lean branch."
+    },
+    {
+      "path": "docs/evidence/getup-contact-feedback-2026-10-17/batch09-com-priority-step/probe-getup-contact-feedback.py.gz",
+      "bytes": 5680,
+      "gitBlobSha": "d4410aa6bb32aac109977b31c49c4d3576bef658",
+      "sha256": "da49341ce839f4e504a8379dfb7d9a046b6edfa56ec4e3793a6cc66c5c3d5209",
+      "availability": "Retained in the original local investigation history; not published in this lean branch."
+    },
+    {
+      "path": "docs/evidence/getup-contact-feedback-2026-10-17/batch09-com-priority-step/protocol.ndjson.gz",
+      "bytes": 5718079,
+      "gitBlobSha": "18091fcdeec01d43979e37da9980d4ac7e19c8f2",
+      "sha256": "4589d390545ca0c71d33242a39619984c6a244d0a1c5e27d515dcaf20f144b52",
+      "availability": "Retained in the original local investigation history; not published in this lean branch."
+    },
+    {
+      "path": "docs/evidence/getup-contact-feedback-2026-10-17/render/batch08-contact-step/preview-encoded-lift.png",
+      "bytes": 209652,
+      "gitBlobSha": "c5e003a686485029ae44b4123e01777da8b79780",
+      "sha256": "eabe7b8205ff5c15f54c208d8c051741f9801fbc542ab04af0683ea6cf80824a",
+      "availability": "Retained in the original local investigation history; not published in this lean branch."
+    },
+    {
+      "path": "docs/evidence/getup-contact-feedback-2026-10-17/render/batch08-contact-step/preview-encoded-stopped.png",
+      "bytes": 169033,
+      "gitBlobSha": "1b508e012381962213fb2973b4cf19e47d8a73a7",
+      "sha256": "14933c825a8119d118de85f2ec2231aa40ce164634679cda2bda817fdbf5f711",
+      "availability": "Retained in the original local investigation history; not published in this lean branch."
+    },
+    {
+      "path": "docs/evidence/getup-contact-feedback-2026-10-17/source-quiet-checkpoint.bin.gz",
+      "bytes": 1854301,
+      "gitBlobSha": "4c94ddc4a4368a9e0326df517ac7ba9fb8ec5f7f",
+      "sha256": "6550ad703adab9768b4cc2ae3a496162e5616f79a0d7fe9dff5ea41580262dd4",
+      "availability": "Retained in the original local investigation history; not published in this lean branch."
+    },
+    {
+      "path": "docs/evidence/getup-recovery-session-2026-10-17/batch01-paired/baseline.json.gz",
+      "bytes": 760070,
+      "gitBlobSha": "53c025faf298a32cbc920d527a9e54b32fd7ebbe",
+      "sha256": "6eaf4dd59cbfa8183196992aa02c66de9898435f235ac4e2b9ad301860abb2f2",
+      "availability": "Retained in the original local investigation history; not published in this lean branch."
+    },
+    {
+      "path": "docs/evidence/getup-recovery-session-2026-10-17/batch01-paired/hybrid.json.gz",
+      "bytes": 765882,
+      "gitBlobSha": "68219209200301cc6af984bc96653e1357526807",
+      "sha256": "02e2b5242695574777b3c71788c76db289f4480f9eedf8371445f56784b85b16",
+      "availability": "Retained in the original local investigation history; not published in this lean branch."
+    },
+    {
+      "path": "docs/evidence/getup-recovery-session-2026-10-17/batch01-paired/protocol.ndjson.gz",
+      "bytes": 5016358,
+      "gitBlobSha": "9cc9449b140394075a3546c0c97a2afbe2da29e2",
+      "sha256": "8bf606223e6f5594799e7264644e38eb4c14bab57108677ef5c1da8bb02910b9",
+      "availability": "Retained in the original local investigation history; not published in this lean branch."
+    },
+    {
+      "path": "docs/evidence/getup-recovery-session-2026-10-17/batch02-rising-sagittal/baseline.json.gz",
+      "bytes": 760070,
+      "gitBlobSha": "53c025faf298a32cbc920d527a9e54b32fd7ebbe",
+      "sha256": "6eaf4dd59cbfa8183196992aa02c66de9898435f235ac4e2b9ad301860abb2f2",
+      "availability": "Retained in the original local investigation history; not published in this lean branch."
+    },
+    {
+      "path": "docs/evidence/getup-recovery-session-2026-10-17/batch02-rising-sagittal/hybrid.json.gz",
+      "bytes": 487474,
+      "gitBlobSha": "f9608f19ff8c732122e660310fea57051b931b33",
+      "sha256": "a172ee98fd0c8cb82adc3d2f25827d54baeea57b3173537a2606dc1f05336ded",
+      "availability": "Retained in the original local investigation history; not published in this lean branch."
+    },
+    {
+      "path": "docs/evidence/getup-recovery-session-2026-10-17/batch02-rising-sagittal/protocol.ndjson.gz",
+      "bytes": 4087190,
+      "gitBlobSha": "13e6f2bb4e4233bcb607602ccb33b8a4461eccc5",
+      "sha256": "9e45118e0186959851a39a00407e7b6a9b68c866fa6b05d7774be2d967721db6",
+      "availability": "Retained in the original local investigation history; not published in this lean branch."
+    },
+    {
+      "path": "docs/evidence/getup-recovery-session-2026-10-17/batch03-additive/baseline.json.gz",
+      "bytes": 760070,
+      "gitBlobSha": "53c025faf298a32cbc920d527a9e54b32fd7ebbe",
+      "sha256": "6eaf4dd59cbfa8183196992aa02c66de9898435f235ac4e2b9ad301860abb2f2",
+      "availability": "Retained in the original local investigation history; not published in this lean branch."
+    },
+    {
+      "path": "docs/evidence/getup-recovery-session-2026-10-17/batch03-additive/hybrid.json.gz",
+      "bytes": 771329,
+      "gitBlobSha": "54342bf7e92c1bd9b5795257b41c274733fb7cde",
+      "sha256": "3c70a1cbca98d1641313ab94d317b76f37eec37a7d43e0aa4cfeff4b7d318472",
+      "availability": "Retained in the original local investigation history; not published in this lean branch."
+    },
+    {
+      "path": "docs/evidence/getup-recovery-session-2026-10-17/batch03-additive/protocol.ndjson.gz",
+      "bytes": 5074150,
+      "gitBlobSha": "5da825772e0e48998cee43b97213f8e1b43a7ecb",
+      "sha256": "a6ee8d32e7b33ac700594c9514fd6101e5997067cb59dbf4ce475c132aef032d",
+      "availability": "Retained in the original local investigation history; not published in this lean branch."
+    },
+    {
+      "path": "docs/evidence/getup-recovery-session-2026-10-17/batch04-quiet-transfer/baseline.json.gz",
+      "bytes": 1050920,
+      "gitBlobSha": "9ca4171a84c1dc3205b225df44ab39894d21d412",
+      "sha256": "e01ff15ee2346f0d90dffb1921e2406943b1d3e6dad139c8ae548dd8e6b3afbb",
+      "availability": "Retained in the original local investigation history; not published in this lean branch."
+    },
+    {
+      "path": "docs/evidence/getup-recovery-session-2026-10-17/batch04-quiet-transfer/hybrid.json.gz",
+      "bytes": 1075181,
+      "gitBlobSha": "ac4fe9a5b17a7d00449269fefc864d2b9dde70f6",
+      "sha256": "de3c71d6f32c5371580fad570cfdc2f20ef5d2ce15733e4f3ff376de2e68225a",
+      "availability": "Retained in the original local investigation history; not published in this lean branch."
+    },
+    {
+      "path": "docs/evidence/getup-recovery-session-2026-10-17/batch04-quiet-transfer/protocol.ndjson.gz",
+      "bytes": 6339062,
+      "gitBlobSha": "194a8d0cf8ab0fee391bdb5502343d48ceabae70",
+      "sha256": "9a122c7585f915f4ae1369e422de16338b0cb9c9f4d7275041c4bc111a8d5b5d",
+      "availability": "Retained in the original local investigation history; not published in this lean branch."
+    },
+    {
+      "path": "docs/evidence/getup-recovery-session-2026-10-17/batch05-reference-transfer/baseline.json.gz",
+      "bytes": 1156692,
+      "gitBlobSha": "e46cd4cd67baebb86bc474fb48f1e33be3510567",
+      "sha256": "f1df8b6216c7b4c03b507c18071c2be33ec97ce06bb48b8267fdd03446ea7021",
+      "availability": "Retained in the original local investigation history; not published in this lean branch."
+    },
+    {
+      "path": "docs/evidence/getup-recovery-session-2026-10-17/batch05-reference-transfer/hybrid.json.gz",
+      "bytes": 1200979,
+      "gitBlobSha": "0d085fc8509edb8845bd92b9be56665f2d4c9d39",
+      "sha256": "b57fc1aa140160b6ccda3d07b2fe1620e017f9e26a7aa9ef6d9dd1ccc5e7ce07",
+      "availability": "Retained in the original local investigation history; not published in this lean branch."
+    },
+    {
+      "path": "docs/evidence/getup-recovery-session-2026-10-17/batch05-reference-transfer/protocol.ndjson.gz",
+      "bytes": 7168032,
+      "gitBlobSha": "3b70cd2cf824b9609baec26ada23e2fc54761a80",
+      "sha256": "912e6f88974710df98ac59dc60578c1c00672b9519a9ef1705dec9cbe9526a68",
+      "availability": "Retained in the original local investigation history; not published in this lean branch."
+    },
+    {
+      "path": "docs/evidence/getup-recovery-session-2026-10-17/batch06-reference-long-hold/baseline.json.gz",
+      "bytes": 1576005,
+      "gitBlobSha": "981e9834281baa26a77306db3702a514ab51d00e",
+      "sha256": "c22a473329edda1f0fa2e8953d87d257793afc46d50cac787145c54de4f798a8",
+      "availability": "Retained in the original local investigation history; not published in this lean branch."
+    },
+    {
+      "path": "docs/evidence/getup-recovery-session-2026-10-17/batch06-reference-long-hold/hybrid.json.gz",
+      "bytes": 1653594,
+      "gitBlobSha": "2c2b3d7daa6c47e326cfe7f81ce6bfa3b0830e9c",
+      "sha256": "4f19e0f2e6fe59436cf34cbe35a1414ec3184ec2b360c230e623bff0d6582a97",
+      "availability": "Retained in the original local investigation history; not published in this lean branch."
+    },
+    {
+      "path": "docs/evidence/getup-recovery-session-2026-10-17/batch06-reference-long-hold/protocol.ndjson.gz",
+      "bytes": 9895172,
+      "gitBlobSha": "a1a44755211a63da9737ac6f751c803fa689b942",
+      "sha256": "5bde0d36fe8c9c892729411268c75d1aca83e0353d33cceb9aa31f01815e4d00",
+      "availability": "Retained in the original local investigation history; not published in this lean branch."
+    },
+    {
+      "path": "docs/evidence/getup-recovery-session-2026-10-17/batch07-equilibrium-zero/hybrid.json.gz",
+      "bytes": 768916,
+      "gitBlobSha": "26bdbdc37989af988841847d70cd70617bdcec0c",
+      "sha256": "5fd9b0bad04960623c1a6ad802162b44d9e1a60312be4af3b130185f6f3aa930",
+      "availability": "Retained in the original local investigation history; not published in this lean branch."
+    },
+    {
+      "path": "docs/evidence/getup-recovery-session-2026-10-17/batch07-equilibrium-zero/protocol.ndjson.gz",
+      "bytes": 2579090,
+      "gitBlobSha": "3c8242e3a151c555688eb8622da856a1c2263be9",
+      "sha256": "165894d4191bd2eccfefa20f6af2bc8852cc22db914ae089e883e84f31afcd85",
+      "availability": "Retained in the original local investigation history; not published in this lean branch."
+    },
+    {
+      "path": "docs/evidence/getup-recovery-session-2026-10-17/batch08-equilibrium-transfer/hybrid.json.gz",
+      "bytes": 452897,
+      "gitBlobSha": "89d5f925f803e31b21b3f5c517f40fdc5906a1c2",
+      "sha256": "c06e8d2d56c41ee14c797faa048a95fc1e9767f9f0caba748eb1b064af0210e6",
+      "availability": "Retained in the original local investigation history; not published in this lean branch."
+    },
+    {
+      "path": "docs/evidence/getup-recovery-session-2026-10-17/batch08-equilibrium-transfer/protocol.ndjson.gz",
+      "bytes": 1311772,
+      "gitBlobSha": "f5c16addbb650c673fe0fbc6c528e9b9e65e8f9d",
+      "sha256": "26c4db33ffdd292dfb646ccd2d87a7d05d93f94d8d732f6db3929c1877a9baa3",
+      "availability": "Retained in the original local investigation history; not published in this lean branch."
+    },
+    {
+      "path": "docs/evidence/getup-recovery-session-2026-10-17/batch09-guarded-retreat/hybrid.json.gz",
+      "bytes": 1597718,
+      "gitBlobSha": "722dfc256303fb6510b95d60e5e09bc4fb286295",
+      "sha256": "8d0c56f692f1071d4dbd46d711ac939aa672d8af55ec2d55b3533489676d6617",
+      "availability": "Retained in the original local investigation history; not published in this lean branch."
+    },
+    {
+      "path": "docs/evidence/getup-recovery-session-2026-10-17/batch09-guarded-retreat/protocol.ndjson.gz",
+      "bytes": 5147200,
+      "gitBlobSha": "edd7a842c5a952fe48e697f06a7eb9c6403280c5",
+      "sha256": "d303f134ab8a38660b94e57c85a1aa27d8c7bbf468d2d6d292e945a51211d3d4",
+      "availability": "Retained in the original local investigation history; not published in this lean branch."
+    },
+    {
+      "path": "docs/evidence/getup-recovery-session-2026-10-17/render/preview-encoded-stopped.png",
+      "bytes": 165813,
+      "gitBlobSha": "f359579eaf562e914cd80beb0ffffdd58d610f66",
+      "sha256": "8744305208b2fadf652ff78f6b9483d63afad91288e664d55f85513261c1dd78",
+      "availability": "Retained in the original local investigation history; not published in this lean branch."
+    },
+    {
+      "path": "docs/evidence/getup-recovery-session-2026-10-17/render/preview-last-recorded-pair.png",
+      "bytes": 186178,
+      "gitBlobSha": "71c2779b62cf12be750b270b42b4633a9a3d9752",
+      "sha256": "c3b9697bf89dff20c6bd7c53c34dc03318e904a2532a3f6b23c115bf29f31ba8",
+      "availability": "Retained in the original local investigation history; not published in this lean branch."
+    },
+    {
+      "path": "docs/evidence/getup-recovery-step-preflight-2026-10-17/probe-protocol.ndjson.gz",
+      "bytes": 5088,
+      "gitBlobSha": "3e497840e89e7c42fd0d0fbd17d356957b39744d",
+      "sha256": "1b4817dca0caf034a3824fb2b90e658ef9bf1fe9283b2b9eb52250c7c11eff89",
+      "availability": "Retained in the original local investigation history; not published in this lean branch."
+    },
+    {
+      "path": "docs/evidence/getup-recovery-step-preflight-2026-10-17/reference-protocol.ndjson.gz",
+      "bytes": 18390,
+      "gitBlobSha": "861d381eec153d5f4c6ced59573513f1eca834da",
+      "sha256": "366e95b58dc1be2d17462cc0e5011725fcff975b9350be9e370d03e8899a30b7",
+      "availability": "Retained in the original local investigation history; not published in this lean branch."
+    },
+    {
+      "path": "docs/evidence/getup-stationary-balance-2026-10-17/build.log.gz",
+      "bytes": 3158,
+      "gitBlobSha": "f1c45651e6414decbb7c494966dfffc45d74b00c",
+      "sha256": "8c6238b4029e3eb20501d584755a6dce85828f4568e858dba07226b8ee62a108",
+      "availability": "Retained in the original local investigation history; not published in this lean branch."
+    },
+    {
+      "path": "docs/evidence/getup-stationary-balance-2026-10-17/npm-test.log.gz",
+      "bytes": 2919,
+      "gitBlobSha": "edb69ff63dd7263a085e853ace1d874c25996d7b",
+      "sha256": "d74cd4ab02d968c4fc04dc8d6d79026053191bac1983551310208937158793c0",
+      "availability": "Retained in the original local investigation history; not published in this lean branch."
+    },
+    {
+      "path": "docs/evidence/getup-stationary-balance-2026-10-17/protocol.ndjson.gz",
+      "bytes": 221347,
+      "gitBlobSha": "2aab46d7f94f4d596c81b0873b7480c09ebac656",
+      "sha256": "8da9c9127fdaaf9b5c4639f99ef1a6c5ae53d4d8d8c3c987d2cdc27807ad6627",
+      "availability": "Retained in the original local investigation history; not published in this lean branch."
+    },
+    {
+      "path": "docs/evidence/getup-stationary-balance-2026-10-17/rust-test.log.gz",
+      "bytes": 1044,
+      "gitBlobSha": "53ce6da1e319ac68d2339b66b34010ca766d3c56",
+      "sha256": "adf2c6d786d9e214488139193bc721008ebcbc37ba2f166ca31439f3f93ff35c",
+      "availability": "Retained in the original local investigation history; not published in this lean branch."
+    },
+    {
+      "path": "docs/evidence/getup-stationary-balance-2026-10-17/seed-getup-checkpoint.bin.gz",
+      "bytes": 1805686,
+      "gitBlobSha": "26f9f96170d903c07c5fbcdccd98cffa8778126a",
+      "sha256": "75339ae68a4bef5210ab86fe83893c8e729cad1f4c32d270ad2592c6f772dfa8",
+      "availability": "Retained in the original local investigation history; not published in this lean branch."
+    },
+    {
+      "path": "docs/evidence/getup-stationary-balance-2026-10-17/wasm-check.log.gz",
+      "bytes": 3796,
+      "gitBlobSha": "72472eb8c7d902487581c383482f320d31d2cde9",
+      "sha256": "48d04bcd9cc217f4c58d18a80e99aa8b1596483e7524be20d00fa159849bae56",
+      "availability": "Retained in the original local investigation history; not published in this lean branch."
+    },
+    {
+      "path": "docs/evidence/getup-stationary-balance-pilot-2026-10-17/baseline-backward.json.gz",
+      "bytes": 334607,
+      "gitBlobSha": "9acfec7e7884b10e4ab09321877d3ca421a08b25",
+      "sha256": "5b4402d7738b45ffd73089b14d3cb5488866049544ce1d06fc75f8a7daf951dd",
+      "availability": "Retained in the original local investigation history; not published in this lean branch."
+    },
+    {
+      "path": "docs/evidence/getup-stationary-balance-pilot-2026-10-17/baseline-forward.json.gz",
+      "bytes": 335309,
+      "gitBlobSha": "5296ab902c669421b9fecbed841db7217ad946c8",
+      "sha256": "7b4d2c99d6fb6ea40f2f76368c5c71a987866ea381cb69b779fbd734cefa2a45",
+      "availability": "Retained in the original local investigation history; not published in this lean branch."
+    },
+    {
+      "path": "docs/evidence/getup-stationary-balance-pilot-2026-10-17/baseline-left.json.gz",
+      "bytes": 334207,
+      "gitBlobSha": "fc7162a5ca165e141da055a7cbcfc9bf36b3dc6b",
+      "sha256": "abc4b8d4d2b820a58d883478ba8c2ef5de82673dd0412f0a27713b1dba7d6fc4",
+      "availability": "Retained in the original local investigation history; not published in this lean branch."
+    },
+    {
+      "path": "docs/evidence/getup-stationary-balance-pilot-2026-10-17/baseline-metrics.json.gz",
+      "bytes": 7084,
+      "gitBlobSha": "443b8681229de51e091112db2bc6908b8825d268",
+      "sha256": "6373325a0945e9019c35007e9f2e25e16932ea12040ab139d6ce184e33a2d065",
+      "availability": "Retained in the original local investigation history; not published in this lean branch."
+    },
+    {
+      "path": "docs/evidence/getup-stationary-balance-pilot-2026-10-17/baseline-right.json.gz",
+      "bytes": 335347,
+      "gitBlobSha": "b909e809d377d7d7f3c5a42fcd6820cbb0a8d505",
+      "sha256": "63063cbe9e58516ca6f5ab43be5a2c5792e5f81b96eff9c023a11d47279d76e1",
+      "availability": "Retained in the original local investigation history; not published in this lean branch."
+    },
+    {
+      "path": "docs/evidence/getup-stationary-balance-pilot-2026-10-17/build.log.gz",
+      "bytes": 3158,
+      "gitBlobSha": "8fb1e20703e46c66f28af8c53298bbc9c74d42c7",
+      "sha256": "e7e692538585932126df119718160c647f05be172e3fe9a7370eda3112039023",
+      "availability": "Retained in the original local investigation history; not published in this lean branch."
+    },
+    {
+      "path": "docs/evidence/getup-stationary-balance-pilot-2026-10-17/candidate-backward.json.gz",
+      "bytes": 208859,
+      "gitBlobSha": "ebd340a3d3b2e4fcc9ce7d611ea97820d14ce43a",
+      "sha256": "494d5264c86f92c601c8d8660563525863a90827f25cf0f93861c843688e4bba",
+      "availability": "Retained in the original local investigation history; not published in this lean branch."
+    },
+    {
+      "path": "docs/evidence/getup-stationary-balance-pilot-2026-10-17/candidate-forward.json.gz",
+      "bytes": 137810,
+      "gitBlobSha": "92fd9ff055b228c504f9a203d2ae3b1068ba995a",
+      "sha256": "771e38ba24e6ae5e9f3c221feae163644ca70645a51815cb05e58b79e692ffed",
+      "availability": "Retained in the original local investigation history; not published in this lean branch."
+    },
+    {
+      "path": "docs/evidence/getup-stationary-balance-pilot-2026-10-17/candidate-left.json.gz",
+      "bytes": 175657,
+      "gitBlobSha": "3034e0a26f9a2d8dcc5aa379cb0c25b15b78daf1",
+      "sha256": "d6c6a4cda7cae525136882da76b48e3da8c846b22b0a2db222d5bbe69f9558cd",
+      "availability": "Retained in the original local investigation history; not published in this lean branch."
+    },
+    {
+      "path": "docs/evidence/getup-stationary-balance-pilot-2026-10-17/candidate-metrics.json.gz",
+      "bytes": 6970,
+      "gitBlobSha": "71e4811f83ff0998c3df6062c04559834b93d720",
+      "sha256": "ace44b14ea64167f5209bd08ef076e318a66503df6e321b37287fcc933d64908",
+      "availability": "Retained in the original local investigation history; not published in this lean branch."
+    },
+    {
+      "path": "docs/evidence/getup-stationary-balance-pilot-2026-10-17/candidate-right.json.gz",
+      "bytes": 200629,
+      "gitBlobSha": "ae0d8a6445a687bf653996f5987ced4a2a1e932f",
+      "sha256": "cc898509a3b7d3b199f4df45ddad425e4d0e351f33fb33052f4fe0ae25641394",
+      "availability": "Retained in the original local investigation history; not published in this lean branch."
+    },
+    {
+      "path": "docs/evidence/getup-stationary-balance-pilot-2026-10-17/experimental-candidate-actor.bin.gz",
+      "bytes": 4518013,
+      "gitBlobSha": "6e07e76a0b8bf214baec7e41b9767b849ac96634",
+      "sha256": "019def1910884d147c506601e253b014412de3b14dc223ec57290be5ea5be0e3",
+      "availability": "Retained in the original local investigation history; not published in this lean branch."
+    },
+    {
+      "path": "docs/evidence/getup-stationary-balance-pilot-2026-10-17/install.log.gz",
+      "bytes": 918,
+      "gitBlobSha": "424bf528e467a064f4eac576ca396f11c5e64b97",
+      "sha256": "8048d8425ca6e0bb99634b179eb958c1f975cc5b06c0a8891725a57ef9a8e410",
+      "availability": "Retained in the original local investigation history; not published in this lean branch."
+    },
+    {
+      "path": "docs/evidence/getup-stationary-balance-pilot-2026-10-17/native-protocol.ndjson.gz",
+      "bytes": 8359837,
+      "gitBlobSha": "023ad822fbe8d01236cc252fecb97ffb1cb10df3",
+      "sha256": "e34615b0438d8be89592a88889a29bbd70bde4de1c8e74592153b8e90e5d557e",
+      "availability": "Retained in the original local investigation history; not published in this lean branch."
+    },
+    {
+      "path": "docs/evidence/getup-stationary-balance-pilot-2026-10-17/npm-test.log.gz",
+      "bytes": 2923,
+      "gitBlobSha": "603deb885416e23b14e81356871b6b513ff1ba44",
+      "sha256": "aca102f2bb65de5846d910833954f0d05b5b277957015360c8b0a0bfd4bb0ad8",
+      "availability": "Retained in the original local investigation history; not published in this lean branch."
+    },
+    {
+      "path": "docs/evidence/getup-stationary-balance-pilot-2026-10-17/paired-heldout.mp4",
+      "bytes": 142590,
+      "gitBlobSha": "73c8fd1af400a307c9251507b87e6ea3d77e0203",
+      "sha256": "f63d26b9b1b1d8cdc37d860759e03298c760abebc36b1f7ec064db950ab1a5c0",
+      "availability": "Retained in the original local investigation history; not published in this lean branch."
+    },
+    {
+      "path": "docs/evidence/getup-stationary-balance-pilot-2026-10-17/paired-last-frame.png",
+      "bytes": 127735,
+      "gitBlobSha": "64ab29eec1637be553e85d221fdd9b982c294bec",
+      "sha256": "4c47cbd7e26de500aa87d2dadbd1edb839b90af9788bfe5769f46e843c12fcfb",
+      "availability": "Retained in the original local investigation history; not published in this lean branch."
+    },
+    {
+      "path": "docs/evidence/getup-stationary-balance-pilot-2026-10-17/run.log.gz",
+      "bytes": 749,
+      "gitBlobSha": "9fe0403bf583ff183f8321bfd568099477738ab2",
+      "sha256": "c121c0140ce0cf0649c23915342cc95cf88f1bcdb82f7ad78e01a8d00ee22670",
+      "availability": "Retained in the original local investigation history; not published in this lean branch."
+    },
+    {
+      "path": "docs/evidence/getup-stationary-balance-pilot-2026-10-17/rust-test.log.gz",
+      "bytes": 1043,
+      "gitBlobSha": "139c54c2f271b1e82a6bf46af1a64f6edf33bf14",
+      "sha256": "c934696433425c3905b447eadb83d2d94ecbdb228a97c5e9d2f7f8a6d4a1cdae",
+      "availability": "Retained in the original local investigation history; not published in this lean branch."
+    },
+    {
+      "path": "docs/evidence/getup-stationary-balance-pilot-2026-10-17/training.ndjson.gz",
+      "bytes": 271484,
+      "gitBlobSha": "11d9e049362ea00bcd344f1c53a9e53b4bdbf7e3",
+      "sha256": "bea6f021dae26d525ba6ab4ee2c4fe670d4f5abf2a28e522932e375e3dafa839",
+      "availability": "Retained in the original local investigation history; not published in this lean branch."
+    },
+    {
+      "path": "docs/evidence/getup-stationary-balance-pilot-2026-10-17/validation.log.gz",
+      "bytes": 596,
+      "gitBlobSha": "4eb788b1f811fbdc609dbf1ab460e79e22d6ce7a",
+      "sha256": "b7d36fee0edea08a826444a058b8324452fd9836714c1fdc0b4869a897cd52c5",
+      "availability": "Retained in the original local investigation history; not published in this lean branch."
+    },
+    {
+      "path": "docs/evidence/getup-stationary-balance-pilot-2026-10-17/wasm-check.log.gz",
+      "bytes": 3172,
+      "gitBlobSha": "123a7ee590d19e4f954772eb9fa1a0782558c9a3",
+      "sha256": "52066a59241f1babd250e89988f8aa90281fe73ce91aadbe23ce205dc0a690b7",
+      "availability": "Retained in the original local investigation history; not published in this lean branch."
+    },
+    {
+      "path": "docs/evidence/getup-contact-feedback-2026-10-17/batch01-contact-zero/summary.json",
+      "bytes": 38381,
+      "gitBlobSha": "2ebd07d65c943b58053fa9a8c7e0117aa9da2039",
+      "sha256": "ff5456437ef88db689774bab71de5c41ce308b7e0da0d2c93b6afc71d5296eb7",
+      "availability": "Supplementary diagnostic text retained in original local investigation history; not published in this lean branch."
+    },
+    {
+      "path": "docs/evidence/getup-contact-feedback-2026-10-17/batch01-failure-state.json",
+      "bytes": 42376,
+      "gitBlobSha": "832d28750fea6f65002702c8310350f716a90d38",
+      "sha256": "1375167b3747c5f4427e39fd575576dbbf4c41aea366c225055aca6ec5a603d5",
+      "availability": "Supplementary diagnostic text retained in original local investigation history; not published in this lean branch."
+    },
+    {
+      "path": "docs/evidence/getup-contact-feedback-2026-10-17/batch02-normal-contact-zero/summary.json",
+      "bytes": 36331,
+      "gitBlobSha": "c16d7a58f5f20c7d081a1be55d8756de21c99075",
+      "sha256": "491d38516fe5da589b63efc5ddc343a9c5b270ce99148b7396d9e7c4e5d65b9e",
+      "availability": "Supplementary diagnostic text retained in original local investigation history; not published in this lean branch."
+    },
+    {
+      "path": "docs/evidence/getup-contact-feedback-2026-10-17/batch03-contact-5mm/summary.json",
+      "bytes": 36328,
+      "gitBlobSha": "2540d3471b923f904ae3e9429dd691a8a516d5e1",
+      "sha256": "abe9b10e02df396f0ef88a0e919f4f3f7c422584c92a53d357a3811f9851ea59",
+      "availability": "Supplementary diagnostic text retained in original local investigation history; not published in this lean branch."
+    },
+    {
+      "path": "docs/evidence/getup-contact-feedback-2026-10-17/batch04-exact-source-extension/summary.json",
+      "bytes": 31620,
+      "gitBlobSha": "561edfd80c693cf8b2a2a9c85885daefec0ef0be",
+      "sha256": "b22b6384e23fb06e153d72fed97a00c02cff92ef14a2a6a292e2b4e8124bdef5",
+      "availability": "Supplementary diagnostic text retained in original local investigation history; not published in this lean branch."
+    },
+    {
+      "path": "docs/evidence/getup-contact-feedback-2026-10-17/batch05-retained-balance-3cm/summary.json",
+      "bytes": 39231,
+      "gitBlobSha": "e50f7e46bfbc93bd43facbf9a299b88579cc6c8d",
+      "sha256": "0303a711d2e53064ab59ca32f8df9c7632739b8e62d40e40ad69df16d5d88fa5",
+      "availability": "Supplementary diagnostic text retained in original local investigation history; not published in this lean branch."
+    },
+    {
+      "path": "docs/evidence/getup-contact-feedback-2026-10-17/batch06-right-support-transfer/summary.json",
+      "bytes": 45081,
+      "gitBlobSha": "7a3720bad855300e35c8bfcad068eb7a28097a22",
+      "sha256": "1e96798627244284da3a530e233a32da19ceb97befbbebec06b3d51ebfd07068",
+      "availability": "Supplementary diagnostic text retained in original local investigation history; not published in this lean branch."
+    },
+    {
+      "path": "docs/evidence/getup-contact-feedback-2026-10-17/batch07-actual-support-unload/summary.json",
+      "bytes": 56478,
+      "gitBlobSha": "6a7968619bf4f315ae0079b4b9aa4ed095d92b6b",
+      "sha256": "be3dfb5687754b277e44eaa264a62c8ff73b7ad412d84f003178607c5e1a1365",
+      "availability": "Supplementary diagnostic text retained in original local investigation history; not published in this lean branch."
+    },
+    {
+      "path": "docs/evidence/getup-contact-feedback-2026-10-17/batch08-contact-step/summary.json",
+      "bytes": 44091,
+      "gitBlobSha": "e9693687f3e7d9215d9622af4dc83d4265904ab3",
+      "sha256": "714ea2db59688bc3009dd2336b61ff9d482129b55b0943a35d73984eaab0cf17",
+      "availability": "Supplementary diagnostic text retained in original local investigation history; not published in this lean branch."
+    },
+    {
+      "path": "docs/evidence/getup-contact-feedback-2026-10-17/batch09-com-priority-step/summary.json",
+      "bytes": 41342,
+      "gitBlobSha": "05931256d70b093ce0706e86b7541f025ca208fa",
+      "sha256": "9f01ee09ac2464b550fafea427d8ec8c0726c1c8f5d31af3ef8290dc397aa51b",
+      "availability": "Supplementary diagnostic text retained in original local investigation history; not published in this lean branch."
+    },
+    {
+      "path": "docs/evidence/getup-contact-feedback-2026-10-17/continue-source.py",
+      "bytes": 2769,
+      "gitBlobSha": "c704199e25801ec116f97572a8d9c1384113296e",
+      "sha256": "7a0ae8ec99739be12501f5537e299694b3a01ee710ead5981953a3d3b3f3f58e",
+      "availability": "Supplementary diagnostic text retained in original local investigation history; not published in this lean branch."
+    },
+    {
+      "path": "docs/evidence/getup-contact-feedback-2026-10-17/loaded-support-target-calibration.json",
+      "bytes": 523,
+      "gitBlobSha": "0ffe0230cce2e93c3e2aa575326945240630ac5b",
+      "sha256": "00d0e698df7c02c562ff32932edd5d062cff13ea1a9f1fdcba431a2a8ef6d34b",
+      "availability": "Supplementary diagnostic text retained in original local investigation history; not published in this lean branch."
+    },
+    {
+      "path": "docs/evidence/getup-contact-feedback-2026-10-17/native-build.log",
+      "bytes": 15989,
+      "gitBlobSha": "00f29c1b1b1d004b044829c98975705a55b6e5c1",
+      "sha256": "cc38bdf1707c55e8d57af3385b6f7412925eca3aafcfc1eb05054e3cb313405f",
+      "availability": "Supplementary diagnostic text retained in original local investigation history; not published in this lean branch."
+    },
+    {
+      "path": "docs/evidence/getup-contact-feedback-2026-10-17/pure-tests.log",
+      "bytes": 426,
+      "gitBlobSha": "abb625ce4bc384e7f79ca9d5b5150fee6c18ebee",
+      "sha256": "c2cdb849fab72a0c9960be58e4f414dc76b1a368c8cae71ff06b2eed235b9b98",
+      "availability": "Supplementary diagnostic text retained in original local investigation history; not published in this lean branch."
+    },
+    {
+      "path": "docs/evidence/getup-contact-feedback-2026-10-17/render/batch05-retained-balance-3cm/render-report.json",
+      "bytes": 6460,
+      "gitBlobSha": "01d54c27cc3aa553613f762a6108c98b1025fa4b",
+      "sha256": "4af29c6afc31b9717a2d83e18eab83aa4bdb7c5eefe3d925ae03d63147d11775",
+      "availability": "Supplementary diagnostic text retained in original local investigation history; not published in this lean branch."
+    },
+    {
+      "path": "docs/evidence/getup-contact-feedback-2026-10-17/render/batch08-contact-step/render-report.json",
+      "bytes": 7623,
+      "gitBlobSha": "6b0d6ca1b7758ea248b77e508b97e9a3feb0251d",
+      "sha256": "a5ee9733d5a642e4cdf0b2ae603b8f239785173bdc4386f1a5789feadb72b4e3",
+      "availability": "Supplementary diagnostic text retained in original local investigation history; not published in this lean branch."
+    },
+    {
+      "path": "docs/evidence/getup-contact-feedback-2026-10-17/render/render_contact_comparison.py",
+      "bytes": 18799,
+      "gitBlobSha": "096688e7364e69e239e84ed8db9a36f2a0432e91",
+      "sha256": "e555e201ffb41cacdb6f921005488e1df1dfafccc1f4036609b648f517aa46bf",
+      "availability": "Supplementary diagnostic text retained in original local investigation history; not published in this lean branch."
+    },
+    {
+      "path": "docs/evidence/getup-contact-feedback-2026-10-17/render/render_partial_step.py",
+      "bytes": 20617,
+      "gitBlobSha": "e53d2bb8754861793bd260dfaf1445c35d014d5f",
+      "sha256": "98175e7cebad1c4bf97f438c042e5a131417bc8765268164760c58ad645a6c27",
+      "availability": "Supplementary diagnostic text retained in original local investigation history; not published in this lean branch."
+    },
+    {
+      "path": "docs/evidence/getup-recovery-session-2026-10-17/batch01-paired/summary.json",
+      "bytes": 129949,
+      "gitBlobSha": "7ba01f5263f53fbdfb0051d281741dfa1599ff56",
+      "sha256": "e350d4682ee45aad6fa01883ade60880b2de57eb7227fd45b48321b3718f5bc2",
+      "availability": "Supplementary diagnostic text retained in original local investigation history; not published in this lean branch."
+    },
+    {
+      "path": "docs/evidence/getup-recovery-session-2026-10-17/batch02-rising-sagittal/summary.json",
+      "bytes": 140740,
+      "gitBlobSha": "b013c70e17a94a55bcfdf7cc9edc8f711cefb70d",
+      "sha256": "abec38724d0dd53768768d3a1ce8073c265e9e4dfd6b6ab6c92e8667fcc7e4b3",
+      "availability": "Supplementary diagnostic text retained in original local investigation history; not published in this lean branch."
+    },
+    {
+      "path": "docs/evidence/getup-recovery-session-2026-10-17/batch03-additive/summary.json",
+      "bytes": 116386,
+      "gitBlobSha": "dbe8ddd9155fd1564c50aa240835dc9396882832",
+      "sha256": "9217e00ed6bdecba43876fd90de62769ea9115047cdbef9fec9817b7e2bf1978",
+      "availability": "Supplementary diagnostic text retained in original local investigation history; not published in this lean branch."
+    },
+    {
+      "path": "docs/evidence/getup-recovery-session-2026-10-17/batch04-quiet-transfer/summary.json",
+      "bytes": 70342,
+      "gitBlobSha": "5c475b85f431689885fc5905cbd32b9622d31ee2",
+      "sha256": "1bff6bf4dc64f49bd022377b830b00b986b08a540d124852776a66f07160cb40",
+      "availability": "Supplementary diagnostic text retained in original local investigation history; not published in this lean branch."
+    },
+    {
+      "path": "docs/evidence/getup-recovery-session-2026-10-17/batch05-reference-transfer/summary.json",
+      "bytes": 72424,
+      "gitBlobSha": "3f757dea303747af6d29d1e73bb0840abf2b7cf4",
+      "sha256": "39ea3dfb23fe47b730c66a0c8fffc1112b007881a2f3cbe2e06b1bf08f6378c0",
+      "availability": "Supplementary diagnostic text retained in original local investigation history; not published in this lean branch."
+    },
+    {
+      "path": "docs/evidence/getup-recovery-session-2026-10-17/batch06-reference-long-hold/summary.json",
+      "bytes": 72368,
+      "gitBlobSha": "0b059adfa62f60788838f33a986fce92cf76882b",
+      "sha256": "6809d55520ec5212049a7a4b9e5e49adc3459a433cc09d1c68287cd28194198c",
+      "availability": "Supplementary diagnostic text retained in original local investigation history; not published in this lean branch."
+    },
+    {
+      "path": "docs/evidence/getup-recovery-session-2026-10-17/batch07-equilibrium-zero/summary.json",
+      "bytes": 33236,
+      "gitBlobSha": "b74cb15d24d91d779cd48c878880c558a3968b1a",
+      "sha256": "130c8044f2ff4fd30051fd3b8871069e61ee1766d71067853a32080cd82a5654",
+      "availability": "Supplementary diagnostic text retained in original local investigation history; not published in this lean branch."
+    },
+    {
+      "path": "docs/evidence/getup-recovery-session-2026-10-17/batch08-equilibrium-transfer/summary.json",
+      "bytes": 64373,
+      "gitBlobSha": "ee9471d9153e3209fc671883623847126cdde098",
+      "sha256": "e82278d7b7ebedc9790f87e934f52d8c5d722840252c7ecff0f927367fc597fb",
+      "availability": "Supplementary diagnostic text retained in original local investigation history; not published in this lean branch."
+    },
+    {
+      "path": "docs/evidence/getup-recovery-session-2026-10-17/batch09-guarded-retreat/executed-probe.py",
+      "bytes": 17345,
+      "gitBlobSha": "0fdb1ce81d454c4e803aeac716d915b47eff2365",
+      "sha256": "f5c4ae39c00cac0be0e0122a19c97873adf6c2935f81371e8eb23aa389ef3790",
+      "availability": "Supplementary diagnostic text retained in original local investigation history; not published in this lean branch."
+    },
+    {
+      "path": "docs/evidence/getup-recovery-session-2026-10-17/batch09-guarded-retreat/posthoc-source-handoff.json",
+      "bytes": 337,
+      "gitBlobSha": "6e7085a279a9283c889c2c2d16493d5ea2b6cfa4",
+      "sha256": "1ec8b4cd339d73b063870e85e5a24935ee6271669d4d586dd73edf2918d39bfc",
+      "availability": "Supplementary diagnostic text retained in original local investigation history; not published in this lean branch."
+    },
+    {
+      "path": "docs/evidence/getup-recovery-session-2026-10-17/batch09-guarded-retreat/summary.json",
+      "bytes": 34442,
+      "gitBlobSha": "cee2961a21810440482a0d80089b2e983c3a825c",
+      "sha256": "a44de586f6e9fc4e0c676ae83918acc66db5561d6d2303ecb32ba018f331e834",
+      "availability": "Supplementary diagnostic text retained in original local investigation history; not published in this lean branch."
+    },
+    {
+      "path": "docs/evidence/getup-recovery-session-2026-10-17/equilibrium-pure-tests.log",
+      "bytes": 103,
+      "gitBlobSha": "790f4d6d8719b161334f2b6de36da974510ce479",
+      "sha256": "d03ce458f2a6cd2b4f27522f3aacad03ce1872c028853507c3ad02ca621bdcad",
+      "availability": "Supplementary diagnostic text retained in original local investigation history; not published in this lean branch."
+    },
+    {
+      "path": "docs/evidence/getup-recovery-session-2026-10-17/pure-tests.log",
+      "bytes": 114,
+      "gitBlobSha": "1a472f09c8f302d24633e14c88879b10a5a2534f",
+      "sha256": "00de392d4ca5be24b934e0c89bc93782952469d1da47a6db6d4a1da236bff09c",
+      "availability": "Supplementary diagnostic text retained in original local investigation history; not published in this lean branch."
+    },
+    {
+      "path": "docs/evidence/getup-recovery-session-2026-10-17/quiet-reference-offline/native-stderr.log",
+      "bytes": 0,
+      "gitBlobSha": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "availability": "Supplementary diagnostic text retained in original local investigation history; not published in this lean branch."
+    },
+    {
+      "path": "docs/evidence/getup-recovery-session-2026-10-17/quiet-reference-offline/response.json",
+      "bytes": 15528,
+      "gitBlobSha": "0c4edc403575b5f4d86f47c09fe65dccaa41ab6b",
+      "sha256": "016027fe37aaaab1795d18a118a8577c7e65efc5ebbd04c18c0deb6be57880bb",
+      "availability": "Supplementary diagnostic text retained in original local investigation history; not published in this lean branch."
+    },
+    {
+      "path": "docs/evidence/getup-recovery-session-2026-10-17/quiet-transfer-offline/check-equilibrium.py",
+      "bytes": 3998,
+      "gitBlobSha": "c7af1f7517a9e5247469edf8bf5feb1ee8c33519",
+      "sha256": "9c07421a40f78c84a066acc2dc17a36e962a1d2e41dc7de9f3f638ff6f2fefcb",
+      "availability": "Supplementary diagnostic text retained in original local investigation history; not published in this lean branch."
+    },
+    {
+      "path": "docs/evidence/getup-recovery-session-2026-10-17/quiet-transfer-offline/equilibrium-path.json",
+      "bytes": 115977,
+      "gitBlobSha": "a4f399987d8f5a246f26c8b9c03fb4a20e30977c",
+      "sha256": "384774bcfbc089a00010a44eeb72399eebb0beed9dae6a64fe0660e66bd421a9",
+      "availability": "Supplementary diagnostic text retained in original local investigation history; not published in this lean branch."
+    },
+    {
+      "path": "docs/evidence/getup-recovery-session-2026-10-17/quiet-transfer-offline/equilibrium-probe.json",
+      "bytes": 125856,
+      "gitBlobSha": "5c544164d68bf77ed3c2d5b4d25b2167cd6cec0d",
+      "sha256": "c19614083cb75c2c34ddc8143f4a0909b0f187c00bf60d0f977549831bca7680",
+      "availability": "Supplementary diagnostic text retained in original local investigation history; not published in this lean branch."
+    },
+    {
+      "path": "docs/evidence/getup-recovery-session-2026-10-17/quiet-transfer-offline/equilibrium-schedule-validation.json",
+      "bytes": 312372,
+      "gitBlobSha": "04780e578ab7cbc3f6f01f6a9f5321dbdff47130",
+      "sha256": "6fbfcfc168680e4af5fabc7af850da0639584067a7b185f4cfc588ac59834b6f",
+      "availability": "Supplementary diagnostic text retained in original local investigation history; not published in this lean branch."
+    },
+    {
+      "path": "docs/evidence/getup-recovery-session-2026-10-17/quiet-transfer-offline/feasible-plans.json",
+      "bytes": 14411,
+      "gitBlobSha": "4509f126cae5a0629a8d78aa3248368bfbc3c1e9",
+      "sha256": "189b58a77fbb80b57d24c7519c15670b91ac3eb5bf677e2290fbfef6cd5eae04",
+      "availability": "Supplementary diagnostic text retained in original local investigation history; not published in this lean branch."
+    },
+    {
+      "path": "docs/evidence/getup-recovery-session-2026-10-17/quiet-transfer-offline/ik-path-feasibility.json",
+      "bytes": 52440,
+      "gitBlobSha": "5279666e0f3366d2a27d14cfb34d0877dfb716f5",
+      "sha256": "6f6e2c312daffc2f4659c0208093c65e93fe4f5f53625ec4458b17b190e82374",
+      "availability": "Supplementary diagnostic text retained in original local investigation history; not published in this lean branch."
+    },
+    {
+      "path": "docs/evidence/getup-recovery-session-2026-10-17/quiet-transfer-offline/native-stderr.log",
+      "bytes": 0,
+      "gitBlobSha": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "availability": "Supplementary diagnostic text retained in original local investigation history; not published in this lean branch."
+    },
+    {
+      "path": "docs/evidence/getup-recovery-session-2026-10-17/quiet-transfer-offline/optimize-equilibrium-path.log",
+      "bytes": 2395,
+      "gitBlobSha": "4837fc8c50ff0d7f55f8e15ae878e2d06f1f5f82",
+      "sha256": "5f55de9ee752cfc961bf61d0cf1976837342fab5ff6f9f290918e844f7484436",
+      "availability": "Supplementary diagnostic text retained in original local investigation history; not published in this lean branch."
+    },
+    {
+      "path": "docs/evidence/getup-recovery-session-2026-10-17/quiet-transfer-offline/optimize-equilibrium-path.py",
+      "bytes": 3346,
+      "gitBlobSha": "25c3067288cc87e26f7a09fdb4b2cb8dfa1f3f54",
+      "sha256": "177b0838c3771425ca7b0d088e0d9e17b42664267c58b787403af301a426c5f0",
+      "availability": "Supplementary diagnostic text retained in original local investigation history; not published in this lean branch."
+    },
+    {
+      "path": "docs/evidence/getup-recovery-session-2026-10-17/quiet-transfer-offline/optimize-equilibrium.log",
+      "bytes": 2749,
+      "gitBlobSha": "69ff28031a35bd944020add2bfaf00e7506ff6ee",
+      "sha256": "74a5685f9fdfbc78ae7c38c032afe2f10ccadae6ae44b84b42b00610aced2493",
+      "availability": "Supplementary diagnostic text retained in original local investigation history; not published in this lean branch."
+    },
+    {
+      "path": "docs/evidence/getup-recovery-session-2026-10-17/quiet-transfer-offline/optimize-equilibrium.py",
+      "bytes": 3682,
+      "gitBlobSha": "538bd88863cbccfd02fea19c72cb8e8490152371",
+      "sha256": "a80b6391660fa4238837c8dfe9ff6ed0d2aefb706f80e6633f920e794451c6cb",
+      "availability": "Supplementary diagnostic text retained in original local investigation history; not published in this lean branch."
+    },
+    {
+      "path": "docs/evidence/getup-recovery-session-2026-10-17/quiet-transfer-offline/optimized-equilibrium.json",
+      "bytes": 3091,
+      "gitBlobSha": "f4f269b4798528aff475bc544a2f80c9f6c785e4",
+      "sha256": "0a7de8d9b8f154f6b055838a0a293630aa73630ba9afaf45ee9c44445f624df7",
+      "availability": "Supplementary diagnostic text retained in original local investigation history; not published in this lean branch."
+    },
+    {
+      "path": "docs/evidence/getup-recovery-session-2026-10-17/quiet-transfer-offline/path-feasibility.json",
+      "bytes": 9567,
+      "gitBlobSha": "ab8d32698e403cdca6501f9b98108683055ae161",
+      "sha256": "d2564009c55c0d0b87842e56c117b71ded76436fd62677e02bc000673fd622ce",
+      "availability": "Supplementary diagnostic text retained in original local investigation history; not published in this lean branch."
+    },
+    {
+      "path": "docs/evidence/getup-recovery-session-2026-10-17/quiet-transfer-offline/source-opposition.json",
+      "bytes": 1649,
+      "gitBlobSha": "4fa9a4bfcc356ad3876b7ec18b15f47e303a2ba6",
+      "sha256": "5c6631f541341dfd55ef2b4cc3afd1a5699fc3604f4c6f16b5902321f1cc626d",
+      "availability": "Supplementary diagnostic text retained in original local investigation history; not published in this lean branch."
+    },
+    {
+      "path": "docs/evidence/getup-recovery-session-2026-10-17/quiet-transfer-offline/validate-equilibrium-schedule.py",
+      "bytes": 2948,
+      "gitBlobSha": "0ca0243dda58833aa53f09a7dafbc3afc814ab26",
+      "sha256": "1d779126c8bfef1022b9827f80ab91b1ebb929ddbc270425818ed12d61336e85",
+      "availability": "Supplementary diagnostic text retained in original local investigation history; not published in this lean branch."
+    },
+    {
+      "path": "docs/evidence/getup-recovery-session-2026-10-17/render/render-report.json",
+      "bytes": 2870,
+      "gitBlobSha": "def99aee64e6583ae1cf3ceb3a0a1ac841d52816",
+      "sha256": "4eb639323a92c0d4d7247ada40b06989f15b036422103bfbcf05a142f4d7722f",
+      "availability": "Supplementary diagnostic text retained in original local investigation history; not published in this lean branch."
+    },
+    {
+      "path": "docs/evidence/getup-recovery-session-2026-10-17/render/render_support_transfer.py",
+      "bytes": 15804,
+      "gitBlobSha": "8d1616b3d3d2a94656230112275736bcf5f67910",
+      "sha256": "c208c2d1e0c0978d03bf6e5f021b63f87470d4c49778d202324d6ebdb378b329",
+      "availability": "Supplementary diagnostic text retained in original local investigation history; not published in this lean branch."
+    },
+    {
+      "path": "docs/evidence/getup-recovery-step-preflight-2026-10-17/npm-test.log",
+      "bytes": 6779,
+      "gitBlobSha": "5293d3858065225506d8bdca0ad280955e0f4063",
+      "sha256": "a6a99c7e2dfb28a6937cecea3fa0b904e7fc222a130532f5660b18c484c075c8",
+      "availability": "Supplementary diagnostic text retained in original local investigation history; not published in this lean branch."
+    },
+    {
+      "path": "docs/evidence/getup-recovery-step-preflight-2026-10-17/pure-tests.log",
+      "bytes": 111,
+      "gitBlobSha": "e841a47a54e7fbdf746bc6e8af7947bb931f13c7",
+      "sha256": "c95fef6b4645ca5fb8a3575b5f4009e9cdb2102ef8c56cdf50d867a9d9c4499d",
+      "availability": "Supplementary diagnostic text retained in original local investigation history; not published in this lean branch."
+    },
+    {
+      "path": "docs/evidence/getup-recovery-step-preflight-2026-10-17/reference-response.json",
+      "bytes": 40512,
+      "gitBlobSha": "cabd334461ea9acaa8c2aecadb619f9841553432",
+      "sha256": "da500c6bf546b17be3b3f01dfe68f230043aaf6a5acb2f87e36f23b20954742f",
+      "availability": "Supplementary diagnostic text retained in original local investigation history; not published in this lean branch."
+    },
+    {
+      "path": "docs/evidence/getup-recovery-step-preflight-2026-10-17/rust-test.log",
+      "bytes": 2827,
+      "gitBlobSha": "aa6c3df72ba5dc545b0debff0904722ee9832d12",
+      "sha256": "82ddb5792611eca41649f4ba31434dbd52978547e77d2ce7da3b52450d28be77",
+      "availability": "Supplementary diagnostic text retained in original local investigation history; not published in this lean branch."
+    },
+    {
+      "path": "docs/evidence/getup-stationary-balance-pilot-2026-10-17/benchmark.json",
+      "bytes": 92,
+      "gitBlobSha": "5a38b104526177d133459aaa1656b8c011847352",
+      "sha256": "bc2e8b3f79948f2669ee03147b121b75a26bdca5d1aafd04f56c8fb21e6a6dae",
+      "availability": "Supplementary diagnostic text retained in original local investigation history; not published in this lean branch."
+    },
+    {
+      "path": "docs/evidence/getup-stationary-balance-pilot-2026-10-17/offline-action-audit.json",
+      "bytes": 288,
+      "gitBlobSha": "f1f936faea73bac79d272f27d1c83a93a5cf1b3a",
+      "sha256": "c0e80670512b933a4a744c95c3459620989adf7c7ed599fa0a08278e5e6b88d1",
+      "availability": "Supplementary diagnostic text retained in original local investigation history; not published in this lean branch."
+    },
+    {
+      "path": "docs/evidence/getup-stationary-balance-pilot-2026-10-17/pip-freeze.txt",
+      "bytes": 185,
+      "gitBlobSha": "35944e7484059ff61afe761d7d790885d0319eb6",
+      "sha256": "c27b0c05c9b651213a58aa566c48728285f08439f8d91b227a89103e7e99ee43",
+      "availability": "Supplementary diagnostic text retained in original local investigation history; not published in this lean branch."
+    },
+    {
+      "path": "docs/evidence/getup-stationary-balance-pilot-2026-10-17/render-report.json",
+      "bytes": 225,
+      "gitBlobSha": "2586b26d09ce379facee4bfcb8a83ebad49ec687",
+      "sha256": "9677c5039a338429df034dee93c47d8dc696e8aef64d4ffc387da3c4d0123c6c",
+      "availability": "Supplementary diagnostic text retained in original local investigation history; not published in this lean branch."
+    }
+  ]
+}

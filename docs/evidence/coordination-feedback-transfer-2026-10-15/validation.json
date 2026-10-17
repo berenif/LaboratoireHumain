@@ -1,0 +1,17 @@
+{
+  "sourceSha256": {
+    "rust/crates/sim/src/recovery/planner/whole_body_controller.rs": "20b533ec426751b518bf46789a310b05807c9d6190252bb8f9f7c2dc02681d05",
+    "rust/crates/sim/src/recovery/planner/transfer_worker.rs": "5593332d4adf7e3b36f2fd0d85d0ae34850aa9e8662ac1ad0025d10b151fcfcc",
+    "rust/crates/sim/src/recovery/planner/geometric_tasks.rs": "80b60746f0dc0fca3fb125d27538f1125f07f7ce7766b292f083c84f10af95bc",
+    "rust/crates/sim/src/recovery/planner/exploration_feedback.rs": "383df6e40bac57b8db4e21fcb34ee541e3c2743317fd38ccfa82ee0cd4255dfc"
+  },
+  "binarySha256": "ed603469308d3c50cb17f71e4a8ba78f6d6021f020beb7fabc70bdbe24f2ac68",
+  "pureTestsPassed": 2,
+  "pureTestsFailed": 0,
+  "nativeStepsForTests": 0,
+  "worldsForTests": 0,
+  "buildWorktreeBase": "4b09f6a0a7b8b7ca27ab546da8d2d40a67039d21",
+  "unfinishedAttributionExcluded": true,
+  "admittedBuildLog": "build-executed-candidate.log",
+  "productionPath": "unchanged; planner and new candidate compile only in test/experimental worker context"
+}

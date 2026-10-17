@@ -1,0 +1,5 @@
+# Raw native streams remain local; lossless gzip archives and indexes are tracked.
+/native-run/*.states.jsonl
+/native-run/*.json.accounting.jsonl
+/native-run/000-native-verification.json
+/native-run/*-planning-*.json

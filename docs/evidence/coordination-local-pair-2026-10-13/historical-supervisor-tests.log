@@ -1,0 +1,52 @@
+test_full_pipe_times_out_without_spawn_or_physics (__main__.PipeTests.test_full_pipe_times_out_without_spawn_or_physics) ... ok
+test_partial_writes_preserve_entire_message (__main__.PipeTests.test_partial_writes_preserve_entire_message) ... ok
+test_protocol_duplicate_keys_are_refused (__main__.PipeTests.test_protocol_duplicate_keys_are_refused) ... ok
+test_protocol_nonfinite_number_is_refused (__main__.PipeTests.test_protocol_nonfinite_number_is_refused) ... ok
+test_disappearing_pid_is_skipped (__main__.ProcessMetadataTests.test_disappearing_pid_is_skipped) ... ok
+test_missing_parent_is_not_an_empty_successful_census (__main__.ProcessMetadataTests.test_missing_parent_is_not_an_empty_successful_census) ... ok
+test_permission_error_is_never_ignored (__main__.ProcessMetadataTests.test_permission_error_is_never_ignored) ... ok
+test_ppid_census_needs_no_children_interface (__main__.ProcessMetadataTests.test_ppid_census_needs_no_children_interface) ... ok
+test_bool_actual_is_not_a_step_count (__main__.RunnerTests.test_bool_actual_is_not_a_step_count) ... ok
+test_child_process_refused_before_permit (__main__.RunnerTests.test_child_process_refused_before_permit) ... ok
+test_claim_prevents_second_run_even_with_new_output (__main__.RunnerTests.test_claim_prevents_second_run_even_with_new_output) ... ok
+test_contradictory_receipt_cannot_credit_steps (__main__.RunnerTests.test_contradictory_receipt_cannot_credit_steps) ... ok
+test_crash_never_refunds_or_restarts (__main__.RunnerTests.test_crash_never_refunds_or_restarts) ... ok
+test_default_is_read_only_and_never_claims_or_spawns (__main__.RunnerTests.test_default_is_read_only_and_never_claims_or_spawns) ... ok
+test_denied_process_interface_refuses_before_claim (__main__.RunnerTests.test_denied_process_interface_refuses_before_claim) ... ok
+test_diagnostic_strings_are_not_booleans (__main__.RunnerTests.test_diagnostic_strings_are_not_booleans) ... ok
+test_evidence_outside_output_refused (__main__.RunnerTests.test_evidence_outside_output_refused) ... ok
+test_evidence_symlink_refused (__main__.RunnerTests.test_evidence_symlink_refused) ... ok
+test_existing_output_refused_before_any_claim (__main__.RunnerTests.test_existing_output_refused_before_any_claim) ... ok
+test_failed_parity_preserves_partial_receipt (__main__.RunnerTests.test_failed_parity_preserves_partial_receipt) ... ok
+test_false_prerequisite_has_no_reservation (__main__.RunnerTests.test_false_prerequisite_has_no_reservation) ... ok
+test_full44_reserved_before_one_worker_and_old_files_unchanged (__main__.RunnerTests.test_full44_reserved_before_one_worker_and_old_files_unchanged) ... ok
+test_input_hash_mutation_blocks_before_spawn (__main__.RunnerTests.test_input_hash_mutation_blocks_before_spawn) ... ok
+test_manifest_changed_during_run_is_detected (__main__.RunnerTests.test_manifest_changed_during_run_is_detected) ... ok
+test_manifest_unknown_field_refused (__main__.RunnerTests.test_manifest_unknown_field_refused) ... ok
+test_missing_trace_preserves_known_actual_but_fails (__main__.RunnerTests.test_missing_trace_preserves_known_actual_but_fails) ... ok
+test_multiple_threads_refused_before_permit (__main__.RunnerTests.test_multiple_threads_refused_before_permit) ... ok
+test_nonzero_exit_is_failure_after_full_receipt (__main__.RunnerTests.test_nonzero_exit_is_failure_after_full_receipt) ... ok
+test_old_register_changed_by_worker_is_detected (__main__.RunnerTests.test_old_register_changed_by_worker_is_detected) ... ok
+test_old_register_final_audit_also_runs_after_partial_failure (__main__.RunnerTests.test_old_register_final_audit_also_runs_after_partial_failure) ... ok
+test_over44_cannot_be_accepted_as_bounded_actual (__main__.RunnerTests.test_over44_cannot_be_accepted_as_bounded_actual) ... ok
+test_parent_does_not_launch_original_worker (__main__.RunnerTests.test_parent_does_not_launch_original_worker) ... ok
+test_partial_success_claim_refused (__main__.RunnerTests.test_partial_success_claim_refused) ... ok
+test_pid_identity_change_after_permit_refuses_result (__main__.RunnerTests.test_pid_identity_change_after_permit_refuses_result) ... ok
+test_prefix_failure_records12_and_never_continues (__main__.RunnerTests.test_prefix_failure_records12_and_never_continues) ... ok
+test_request_for_another_operation_refused (__main__.RunnerTests.test_request_for_another_operation_refused) ... ok
+test_result_unknown_field_refused (__main__.RunnerTests.test_result_unknown_field_refused) ... ok
+test_second_run_same_directory_is_refused (__main__.RunnerTests.test_second_run_same_directory_is_refused) ... ok
+test_shutdown_has_no_extra_physics_grace (__main__.RunnerTests.test_shutdown_has_no_extra_physics_grace) ... ok
+test_spawn_failure_never_refunds_or_restarts (__main__.RunnerTests.test_spawn_failure_never_refunds_or_restarts) ... ok
+test_step_after_mismatching_prefix_is_integrity_failure (__main__.RunnerTests.test_step_after_mismatching_prefix_is_integrity_failure) ... ok
+test_terminal_file_audit_cannot_report_success_past_deadline (__main__.RunnerTests.test_terminal_file_audit_cannot_report_success_past_deadline) ... ok
+test_timeout_kills_and_preserves_unknown_actual_full_charge (__main__.RunnerTests.test_timeout_kills_and_preserves_unknown_actual_full_charge) ... ok
+test_unavailable_process_interface_refuses_before_claim (__main__.RunnerTests.test_unavailable_process_interface_refuses_before_claim) ... ok
+test_wrong_ready_pid_closes_full_reservation (__main__.RunnerTests.test_wrong_ready_pid_closes_full_reservation) ... ok
+test_constructor_failure_also_kills_new_child_without_worker_reference (__main__.WatchdogTests.test_constructor_failure_also_kills_new_child_without_worker_reference) ... ok
+test_timeout_during_constructor_kills_only_new_child (__main__.WatchdogTests.test_timeout_during_constructor_kills_only_new_child) ... ok
+
+----------------------------------------------------------------------
+Ran 47 tests in 0.856s
+
+OK

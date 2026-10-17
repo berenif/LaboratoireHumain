@@ -1,0 +1,172 @@
+{
+  "schema": "laboratoirehumain.independent-contact-diagnostic-worker-review.v1",
+  "createdAtUtc": "2026-10-15T15:31:35.255535+00:00",
+  "reviewer": "/root/continuity_design_review",
+  "baseCommit": "a5c8ff36af4dfbe784277aebc91021040b947a52",
+  "verdict": "No blocking defect identified after mandatory endpoint and sample-clock guards were added. This static review does not replace supervisor, freeze, binary, authorization or actual new-parity checks.",
+  "activity": {
+    "nativeSubstepsExecuted": 0,
+    "simulationWorldsCreated": 0,
+    "fkInspections": 0,
+    "testsExecuted": 0,
+    "rustFilesModified": 0
+  },
+  "authorizedBoundsReviewed": {
+    "totalNativeStepsMaximum": 568,
+    "technicalNativeStepsMaximum": 52,
+    "historyNativeStepsMaximum": 516,
+    "mainPrefixSteps": 36,
+    "forecastCallsMaximum": 1,
+    "forecastStepsMaximum": 480,
+    "mainTransferAfterA36Maximum": 0,
+    "globalWallSecondsMaximum": 120,
+    "workerRemainingWallSecondsMaximum": 113,
+    "automaticRenewal": false,
+    "refund": false
+  },
+  "checks": [
+    {
+      "id": "operation",
+      "status": "pass-static",
+      "finding": "Explicit contact-diagnostic operation; missing or unknown operation refuses. The full-transfer branch remains separate, and its permit requirements cannot consume the 568-step diagnostic permits."
+    },
+    {
+      "id": "budget",
+      "status": "pass-static",
+      "finding": "Exact nonrenewable worker reservation: 52 technical steps plus 516 history steps (36 prefix plus at most one 480-step forecast), total 568. Both permits require distinct IDs, one PID, same deadline, and no prior worker reservation. Native remaining-wall permits are capped at 113 seconds."
+    },
+    {
+      "id": "parity",
+      "status": "pass-static",
+      "finding": "Both technical copy/actual pairs must pass before a NativeKernelAdmission is returned. The new diagnostic invokes this technical procedure itself; old parity is not imported as qualification."
+    },
+    {
+      "id": "no-main-transfer",
+      "status": "pass-static",
+      "finding": "After the first forecast, refusal returns an error. Otherwise ContactDiagnostic validates one requested horizon and exactly 36 main-prefix steps, sets diagnostic_completed, then returns before certify_transfer_horizon, admit_transfer_window or the actual-step loop."
+    },
+    {
+      "id": "single-operation",
+      "status": "pass-static",
+      "finding": "Worker accepts one request and then requires EOF; every second request is refused. Durable cross-process claim and supervisor deadline enforcement remain external prelaunch obligations."
+    },
+    {
+      "id": "historical-comparison",
+      "status": "pass-static",
+      "finding": "The only new projection is exact path support.native_contact_boundary. Existing kind and absent/null owner.transfer exclusions are unchanged. No recursive name filtering or MaterialPatch fields are removed. All remaining old fields retain bit-sensitive comparison, including signed zero and unknown fields."
+    },
+    {
+      "id": "live-telemetry",
+      "status": "pass-static",
+      "finding": "Before projection, live native_contact_boundary must deserialize, have schema1, match both native clocks, contain 25 pairs and preserve canonical segment order. Full new telemetry remains in the archived native frames and preview-step support payload."
+    },
+    {
+      "id": "copy-preserves-cache",
+      "status": "pass-static",
+      "finding": "copy_static_snapshot clones coordination directly with source.coordination.clone(). The newly non-deserializable continuity cache is therefore preserved in native preview copies without JSON round trips."
+    },
+    {
+      "id": "physical-invariants",
+      "status": "pass-static",
+      "finding": "The reviewed patch modifies worker routing, accounting, additive telemetry comparison and pure tests only. Support thresholds, contact matching, drift envelope, actuator contract, native integration and anatomy files examined remain byte-identical to the authorized base."
+    },
+    {
+      "id": "outcome-scope",
+      "status": "pass-static",
+      "finding": "Diagnostic outcome has separate diagnostic_completed and no_real_transfer fields. It does not label the run history_completed, local_success or original_terminal_passed. The eight real technical counterparts remain part of the 52-step technical budget; no_real_transfer concerns the main history after A36."
+    },
+    {
+      "id": "mandatory-current-endpoint",
+      "status": "pass-static",
+      "finding": "Diagnostic completion now requires a validated SupportObservation, contact-boundary schema1, matching native endpoint clocks, all25 canonical segments and LocalSupportSample.native_substep equal to the same endpoint clock. Missing, stale or incomplete evidence returns a refusal before diagnostic_completed. Endpoint validation refusal retains the original preview refusal/execution error in the trace and returned error; it introduces no retry."
+    }
+  ],
+  "blockingFindings": [],
+  "pureTestsInspected": [
+    "pure_contact_diagnostic_has_exact_nonrenewable_568_step_budget",
+    "pure_contact_diagnostic_never_inherits_transfer_mode_or_longer_deadline",
+    "pure_contact_diagnostic_stops_after_one_forecast_before_any_real_window",
+    "pure_contact_diagnostic_prefix_migration_is_one_additive_path_only",
+    "pure_contact_diagnostic_requires_complete_current_endpoint_telemetry"
+  ],
+  "limits": [
+    "The global 120-second envelope includes process startup, output collection and shutdown and must be enforced by the supervisor; the Rust gate limits native permits to at most113 seconds. Supervisor/manifest files are outside this worker-only review.",
+    "No new native parity, forecast outcome, point-loss cause, local success, standing continuation or stability has been measured by this review.",
+    "The full telemetry increases serialization time and volume. The authorized wall cap and exact journal accounting must close the run if exhausted; no retry or automatic budget extension is implied.",
+    "Historical prefix fields retain exact comparison, but the additive telemetry has no old counterpart. Its new native parity and data validity must be checked on the authorized run.",
+    "On an already refused forecast, the local diagnostic sample may legitimately remain atN-1 while support and native_contact_boundary describe current endpointN. The strict endpoint guard may then add a secondary refusal. Analysis must retain and distinguish the original forecast cause from this endpoint-evidence refusal; it must not reinterpret current body/contact data as stale or request an automatic retry."
+  ],
+  "sources": [
+    {
+      "path": "rust/crates/sim/src/recovery/planner/transfer_worker.rs",
+      "sha256": "811df09bae544476e03026a9d832f7ea306ff774fe85e42929f974efd2c3f89c",
+      "bytes": 45457,
+      "unchangedFromBase": false
+    },
+    {
+      "path": "rust/crates/sim/src/recovery/planner/transition_worker.rs",
+      "sha256": "347430caf13b113dcedeee4b1a203d39af4d7adccc59ba50196a0a446a0003b5",
+      "bytes": 53540,
+      "unchangedFromBase": true
+    },
+    {
+      "path": "rust/crates/sim/src/recovery/planner/native_plan_preview.rs",
+      "sha256": "4c86adb033950492f4dc9b758a953bed30959280cca7206412b93bb54ddb4df0",
+      "bytes": 80786,
+      "unchangedFromBase": true
+    },
+    {
+      "path": "rust/crates/sim/src/recovery/planner/support_state.rs",
+      "sha256": "1056ca06337d4312f61e396e97d8f110229f00a846a17eb83f8ec64f82fefdcb",
+      "bytes": 35883,
+      "unchangedFromBase": true
+    },
+    {
+      "path": "rust/crates/sim/src/recovery/planner/material_continuity.rs",
+      "sha256": "323bb017ead27dded0ffcef258040e3aff4683d2c3141db74f2c6f103f57514c",
+      "bytes": 15889,
+      "unchangedFromBase": true
+    },
+    {
+      "path": "rust/crates/sim/src/recovery/planner/transfer_adapter.rs",
+      "sha256": "95415005944a40ec6da5541fdf702a52a91763422b328c161f8aa36544ff0085",
+      "bytes": 36152,
+      "unchangedFromBase": true
+    },
+    {
+      "path": "rust/crates/sim/src/recovery/planner/native_observation.rs",
+      "sha256": "db49427e09240dec0c0e0049e25eca916b0fe5e8b754a641c156363cd0887afc",
+      "bytes": 22007,
+      "unchangedFromBase": true
+    },
+    {
+      "path": "rust/crates/sim/src/recovery/planner/native_contact_diagnostics.rs",
+      "sha256": "57d71b0a99fa6a02506cec50f6a9aba0125c625fac2c8c270eb74f1bfbb01604",
+      "bytes": 12458,
+      "unchangedFromBase": true
+    },
+    {
+      "path": "docs/evidence/coordination-transfer-native-proposal-2026-10-13/worker-prefix-frames.json",
+      "sha256": "12c56e6f2e84db599bea41595fb07bea4503281a5c8950c594fd7631dadccf30",
+      "bytes": 4411455,
+      "unchangedFromBase": true
+    }
+  ],
+  "updatedAtUtc": "2026-10-15T15:34:43.798613+00:00",
+  "resolvedFindings": [
+    {
+      "id": "D-01",
+      "reportedBy": "root audit",
+      "status": "resolved",
+      "finding": "The former if-let endpoint path could omit an endpoint without preventing diagnostic completion.",
+      "resolution": "Diagnostic endpoint observation, complete contact-boundary telemetry and a diagnostic sample are now mandatory before success."
+    },
+    {
+      "id": "D-02",
+      "reportedBy": "/root/continuity_design_review",
+      "status": "resolved",
+      "finding": "The first added endpoint helper accepted sample_present:boolean, which proved presence but not that LocalSupportSample described the endpoint clock.",
+      "resolution": "The helper now receives Option<u64> and requires Some(expected_substep); the added pure test covers None and staleSome(35) for endpoint36. The call passes the existing sample native_substep without another observation or integration."
+    }
+  ]
+}

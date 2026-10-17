@@ -1,0 +1,64 @@
+{
+  "schema": "laboratoirehumain.contact-diagnostic-wall-source-reconciliation.v1",
+  "auditedUtc": "2026-10-15T15:30:44.522130+00:00",
+  "historicalLedgerWindows": [
+    {
+      "path": "docs/evidence/coordination-prototype-2026-10-12/budget/ledger.json",
+      "sha256": "2afa69b3ae9c8ab8343f7dabdf46b955c8ac7b88aa259404958e25d49a72ef07",
+      "method": "Last native closure event UTC minus physical reservation start UTC; this is not complete supervisor startup/reap measurement.",
+      "startUtc": "2026-10-12T20:53:12.695276+00:00",
+      "endUtc": "2026-10-12T20:53:20.625705+00:00",
+      "documentedWindowSeconds": "7.930429"
+    },
+    {
+      "path": "docs/evidence/coordination-local-pair-2026-10-13/budget/ledger.json",
+      "sha256": "e7c6831159ac1ae913a05f2af545a0521181d7142dbabd967908dfe7958fba97",
+      "method": "Last native closure event UTC minus physical reservation start UTC; this is not complete supervisor startup/reap measurement.",
+      "startUtc": "2026-10-13T11:10:50.135208+00:00",
+      "endUtc": "2026-10-13T11:11:02.456529+00:00",
+      "documentedWindowSeconds": "12.321321"
+    },
+    {
+      "path": "docs/evidence/coordination-native-parity-2026-10-13/native-run/physical-ledger.json",
+      "sha256": "73b2e3bff52aadf0414be2f7a4a96fa4cd5da7b02de0945434e4f136bbf476a6",
+      "method": "Native ledger elapsedWallSeconds, rounded to1ns to retain the previously recorded accounting convention.",
+      "rawElapsedWallSeconds": "0.02844643699995686",
+      "documentedWindowSeconds": "0.028446437",
+      "roundingDifferenceSeconds": "4.314E-14"
+    },
+    {
+      "path": "docs/evidence/coordination-native-parity-renewal-2026-10-13/native-run/physical-ledger.json",
+      "sha256": "1411bfcc1a17caa681359cfb39d7c0429f2188375925c22ba4b037df96d44bc2",
+      "method": "Native ledger elapsedWallSeconds, rounded to1ns to retain the previously recorded accounting convention.",
+      "rawElapsedWallSeconds": "0.193373985001017",
+      "documentedWindowSeconds": "0.193373985",
+      "roundingDifferenceSeconds": "-1.017E-12"
+    },
+    {
+      "path": "docs/evidence/coordination-native-serialization-2026-10-13/native-run/physical-ledger.json",
+      "sha256": "191d3216953bfb4aca5b7abcea277454d7d97ad5b4ca72e28ffbc260399af250",
+      "method": "Native ledger elapsedWallSeconds, rounded to1ns to retain the previously recorded accounting convention.",
+      "rawElapsedWallSeconds": "1.4777865719988768",
+      "documentedWindowSeconds": "1.477786572",
+      "roundingDifferenceSeconds": "1.1232E-12"
+    }
+  ],
+  "historicalDocumentedWindowsSeconds": "21.951356994",
+  "lastClosedA36": {
+    "path": "docs/evidence/coordination-transfer-native-7100-2026-10-15/native-run-once/physical-ledger.json",
+    "sha256": "eec8dfa53045dcd38c593ec72d459e757ee3c8b6d3315be0707e263bd3eb2595",
+    "measuredElapsedWallSeconds": "10.376937300003192"
+  },
+  "documentedTotalBeforeDiagnosticSeconds": "32.328294294003192",
+  "retainedConservativeStartupShutdownAllowanceSeconds": 74,
+  "prudentDebitBeforeDiagnosticSeconds": "106.328294294003192",
+  "newDiagnosticProvisionSeconds": 120,
+  "prudentDebitAfterProvisionSeconds": "226.328294294003192",
+  "globalCapSeconds": 7200,
+  "remainingAfterProvisionSeconds": "6973.671705705996808",
+  "newMeasuredElapsedSeconds": 0,
+  "provisionIsMeasuredTime": false,
+  "historicalAllowanceIsMeasuredTime": false,
+  "resetsOrRefunds": false,
+  "auditNativeSteps": 0
+}

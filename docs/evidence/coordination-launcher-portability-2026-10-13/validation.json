@@ -1,0 +1,28 @@
+{
+  "schema": 1,
+  "physicalIntegrations": 0,
+  "realNativeWorkerLaunched": false,
+  "e2eCasesPassed": 16,
+  "activeFixtureSurvivors": [],
+  "signalHandlersAndAlarmsRestoredAllCases": true,
+  "protectedClosedArtifactsVerified": 12,
+  "oldManifestUnchanged": true,
+  "unchangedOldFrozenFiles": 292,
+  "authorizedSourceChangesAfterClosedLot": [
+    {
+      "path": "scripts/run-coordination-numeric-parity.py",
+      "historicalSha256": "9d57bcefac46a1f769378e237edbcdf63a01a10204ba9e7cf6bfdf3daa513db5",
+      "correctedSha256": "e5af00efb904bc203704bc88514a8e8a803dad36b3bca669a017c90ca24f97da",
+      "historicalBytesVerifiedAtCommit": "08aa8684911a87e0c3d6565855a0bb2c84340024"
+    },
+    {
+      "path": "scripts/run-coordination-numeric-parity-test.py",
+      "historicalSha256": "45f19b952baa34644a7880a60641ff2e43216a5a028ac55dc28ad0daced87f47",
+      "correctedSha256": "0d8ba8986bc899bd33fff9af5e9d26c2e2213bf98f8a376b5260e2117ef4f257",
+      "historicalBytesVerifiedAtCommit": "08aa8684911a87e0c3d6565855a0bb2c84340024"
+    }
+  ],
+  "oldAuthorizationStillClosed": true,
+  "newNativeBudgetOpened": false,
+  "runnerSha256": "e5af00efb904bc203704bc88514a8e8a803dad36b3bca669a017c90ca24f97da"
+}

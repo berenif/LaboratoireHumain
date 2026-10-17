@@ -1,0 +1,79 @@
+{
+  "scope": "read-only documentary/numeric prescreen; no native world stepped",
+  "physicalIntegrations": 0,
+  "staticWorldInspections": 0,
+  "inputsSha256": {
+    "evidence/recovery-trajectory-preparation-2026-10-11/reference/source-contact-intervals.json": "ab2993529c153e788025c2a38d4945583c51822ff6591484d2295ac92c148e52",
+    "evidence/recovery-coordinated-retarget-2026-10-11/reference-ready.json": "fef70abf3d016cecf6658b0bc5e7a6361d989eb265840acdc1a4fbc497a70c7d",
+    "evidence/recovery-coordinated-retarget-2026-10-11/ready-geometry.json": "81ce35a3880623272f343afd8901dfd967cd4fa119c67828e1d53c1e9f1e097e",
+    "evidence/hand-support-2026-10-11/corridor-evaluated.json": "e1885c7c75e29b6311a626dff0f0c81c5b62477b3e190361ca8a0aff8b9fd451",
+    "evidence/hand-support-2026-10-11/native-ab/analysis.json": "031f4ad6e2131f2e2b7e83832beb79d387a662a39e2a4826380aacc930e99228",
+    "evidence/hand-support-2026-10-11/terminal-statics.json": "50cb809235f0dba33827f821ad395816f40d58252533791bf830b51368d00d67",
+    "rust/crates/model/data/canonical-v1.json": "083c13b2cce2d6033a4fc05cba8da7e78bd89634fb306629f4b7a9cd4a177a65",
+    "rust/crates/sim/data/recovery-v1.json": "a11f9877f274c574c3e1a9ff6de7b70d4f4589f2fea34146866eba92b97f7216",
+    "rust/crates/sim/data/recovery-contract-v1.json": "57ffc6e4705759dac795e7c1b274edc9016a5e194a8fe4fa175a230c62f595ba"
+  },
+  "sourceInitialContacts": {
+    "handFirstSolvedS": {
+      "left": 0.03250000000000001,
+      "right": 0.013749999999999998
+    },
+    "rightThighLoadedAtStart": true
+  },
+  "nativeReference": {
+    "firstHandIntentS": {
+      "left": 2.4,
+      "right": 7.975
+    },
+    "declaredShinOrThighIntentCount": 0,
+    "actualPreparedHandsBilateralS": 1.4416667222976685,
+    "actualPreparedHeadContactS": 1.5250000953674316,
+    "intermediateSupportPassed": false
+  },
+  "archivedDescentEndpointStatics": {
+    "success": true,
+    "aggregateCapNm": 760,
+    "aggregateTorqueNm": 233.2698835108788,
+    "peakAnatomicalUtilization": 0.39804815578293123,
+    "scope": "one old terminal pose only; no dynamic or full-path certificate"
+  },
+  "initialRootMismatch": {
+    "nativeCrouchPelvisHeightM": 0.9763236545962427,
+    "sourcePelvisHeightM": 0.0993,
+    "sourceValueOrigin": "documented source export; approximate"
+  },
+  "naiveStitch": {
+    "handCorridorEndS": 3.0,
+    "minimumMaximumModeledJointGapRad": 1.0078022615904247,
+    "closestReadyReferenceTimeS": 17.370833333333334,
+    "minimumTransitionTimeAtUnchangedOneRadPerS": 1.0078022615904247,
+    "earlyReferenceWindowS": [
+      2,
+      5
+    ],
+    "earlyWindowJointGapRad": 1.7732650425908065,
+    "earlyWindowClosestReferenceTimeS": 3.1958333333333333,
+    "earlyWindowMinimumTransitionSAtOneRadPerS": 1.7732650425908065,
+    "closestGeometryTimeS": 3.2375,
+    "pelvisPositionGapM": 0.5692786707924015,
+    "pelvisOrientationGapRad": 1.0848400080211467,
+    "meaning": "lower bound only; no root/contact/geometry or dynamic feasibility"
+  },
+  "chosenPhases": [
+    "prepared-descent",
+    "loaded-brace",
+    "plant-lead",
+    "plant-trailing",
+    "release-hands",
+    "rise-and-stand",
+    "original-handoff-and-hold"
+  ],
+  "admissionFailures": [
+    "no complete 25-body numeric motor trajectory from the actual crouch",
+    "no full-path native 0\u00b0/60\u00b0 geometry frames for this phase sequence",
+    "no prospective pre-impact velocity/angular-momentum and support proof",
+    "no static force/couple/friction certificate for every transfer boundary"
+  ],
+  "completeNumericTrajectoryReady": false,
+  "newNativeHistoryAllowed": false
+}

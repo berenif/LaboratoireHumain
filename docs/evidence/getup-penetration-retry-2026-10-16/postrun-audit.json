@@ -1,0 +1,165 @@
+{
+  "physicsIntegrationsForAudit": 0,
+  "historyDurationS": 4,
+  "actualMainNativeSteps": 3200,
+  "actualForecastNativeSteps": 540,
+  "retryNativeSteps": 3740,
+  "failedAttemptNativeSteps": 20,
+  "cumulativeIncrementalActualNativeSteps": 3760,
+  "retryWallSeconds": 36.92994192900369,
+  "cumulativeIncrementalActualWallSeconds": 38.555005164009344,
+  "all161ClockPacketsVerified": true,
+  "forecastAdmitted": true,
+  "exactSeedPoseMatchesFirstForecast": true,
+  "teacherDecisions": 27,
+  "teacherTerminalHeadHeightM": 1.5015016,
+  "teacherTerminalStandingQualified": false,
+  "referenceFramesIncludingStandingTarget": 55,
+  "referenceSourceDurationS": 0.675,
+  "referenceSpeed": 0.5,
+  "slowStartS": 3.60125,
+  "slowRealIntegratedDurationS": 0.39875,
+  "slowDecisions": 16,
+  "slowDecisionPdMaximumError": 2.9728698724973412e-08,
+  "actualSnapshotPdMaximumError": 2.9497528086785962e-08,
+  "actualSnapshotEffortMaximumErrorNm": 5.910000004405447e-05,
+  "actualCommandSnapshotsVerified": 16,
+  "deliveredDecisions": [
+    {
+      "decisionAtNativeStep": 2881,
+      "nextArchivedNativeStep": 2900,
+      "integrationsAfterDecision": 19,
+      "maximumControl": 1
+    },
+    {
+      "decisionAtNativeStep": 2901,
+      "nextArchivedNativeStep": 2920,
+      "integrationsAfterDecision": 19,
+      "maximumControl": 1
+    },
+    {
+      "decisionAtNativeStep": 2921,
+      "nextArchivedNativeStep": 2940,
+      "integrationsAfterDecision": 19,
+      "maximumControl": 1
+    },
+    {
+      "decisionAtNativeStep": 2941,
+      "nextArchivedNativeStep": 2960,
+      "integrationsAfterDecision": 19,
+      "maximumControl": 0.9986237
+    },
+    {
+      "decisionAtNativeStep": 2961,
+      "nextArchivedNativeStep": 2980,
+      "integrationsAfterDecision": 19,
+      "maximumControl": 1
+    },
+    {
+      "decisionAtNativeStep": 2981,
+      "nextArchivedNativeStep": 3000,
+      "integrationsAfterDecision": 19,
+      "maximumControl": 1
+    },
+    {
+      "decisionAtNativeStep": 3001,
+      "nextArchivedNativeStep": 3020,
+      "integrationsAfterDecision": 19,
+      "maximumControl": 1
+    },
+    {
+      "decisionAtNativeStep": 3021,
+      "nextArchivedNativeStep": 3040,
+      "integrationsAfterDecision": 19,
+      "maximumControl": 1
+    },
+    {
+      "decisionAtNativeStep": 3041,
+      "nextArchivedNativeStep": 3060,
+      "integrationsAfterDecision": 19,
+      "maximumControl": 1
+    },
+    {
+      "decisionAtNativeStep": 3061,
+      "nextArchivedNativeStep": 3080,
+      "integrationsAfterDecision": 19,
+      "maximumControl": 0.8452687
+    },
+    {
+      "decisionAtNativeStep": 3081,
+      "nextArchivedNativeStep": 3100,
+      "integrationsAfterDecision": 19,
+      "maximumControl": 1
+    },
+    {
+      "decisionAtNativeStep": 3101,
+      "nextArchivedNativeStep": 3120,
+      "integrationsAfterDecision": 19,
+      "maximumControl": 1
+    },
+    {
+      "decisionAtNativeStep": 3121,
+      "nextArchivedNativeStep": 3140,
+      "integrationsAfterDecision": 19,
+      "maximumControl": 1
+    },
+    {
+      "decisionAtNativeStep": 3141,
+      "nextArchivedNativeStep": 3160,
+      "integrationsAfterDecision": 19,
+      "maximumControl": 1
+    },
+    {
+      "decisionAtNativeStep": 3161,
+      "nextArchivedNativeStep": 3180,
+      "integrationsAfterDecision": 19,
+      "maximumControl": 1
+    },
+    {
+      "decisionAtNativeStep": 3181,
+      "nextArchivedNativeStep": 3200,
+      "integrationsAfterDecision": 19,
+      "maximumControl": 0.9336586
+    }
+  ],
+  "deliveryProof": "Each recorded decision is followed by real native integrations; final-substep diagnostic controls independently match source PD and residual/reference; requested torque matches normalized control times original gear. Production apply_controls applies these equal/opposite torques before world.step. This verifies the command path, not task success.",
+  "maximumJointAngleChangeSinceSlowStartRad": 2.3778151000000003,
+  "headAtSlowStartM": 0.08952092,
+  "headFinalM": 0.14648618,
+  "maximumRealHeadAfterSlowStartM": 0.14648618,
+  "motionFinal": "Recovering",
+  "standingPassed": false,
+  "maximumStableStandingSeconds": 0,
+  "maximumSelfPenetrationM": 0.00054764,
+  "maximumFloorPenetrationM": 0.0077499077,
+  "maximumTeacherSelfPenetrationM": 0.00640856,
+  "maximumTeacherFloorPenetrationM": 0.011216335,
+  "physicalFailure": null,
+  "publicRecoveryDefaultEnabled": false,
+  "qualification": false,
+  "allFrozenInputsUnchanged": true,
+  "firstAttemptAndHistoricalRecordsUnchanged": true,
+  "outcome": "WEAK reference admitted and16 SLOW decisions delivered in real dynamics. Body still down at4s cap after0.39875s of SLOW. No complete reference or stable-standing result; do not extend this history.",
+  "analysisWallSeconds": 0.07169435399555368,
+  "historicalMatchedSeedComparison": {
+    "physicsIntegrations": 0,
+    "historicalReport": "outputs/getup-policy-native-clock-2026-10-16/reference-report.json",
+    "historicalReportSha256": "9b274f10673b6d866fcad5d3ac77784ff0ca17590b91e53874d305812b69b1b6",
+    "historicalEvidenceRecord": "docs/evidence/getup-policy-native-clock-2026-10-16.json",
+    "seedTimeS": 3.60125,
+    "initial25BodyPosesAndTwistsIdentical": true,
+    "first12TeacherInputsActionsAndBeforePosesIdentical": true,
+    "first11CompleteTeacherSnapshotsIdentical": true,
+    "oldRefusal": {
+      "tick": 11,
+      "substep": 11,
+      "check": "self-contact",
+      "offending": "left_thigh/left_foot",
+      "measured": 0.0062771253,
+      "threshold": 0.005
+    },
+    "oldForecastSteps": 232,
+    "newForecastSteps": 540,
+    "inference": "The previous5mm rejection terminated this identical forecast prefix; diagnostic-only policy lets this seed reach the WEAK terminal. This is not evidence of real stable standing."
+  }
+}

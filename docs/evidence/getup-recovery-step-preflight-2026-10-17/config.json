@@ -1,0 +1,22 @@
+{
+  "physicsAllowanceSeconds": 0.0,
+  "totalDeadlineUTC": "2026-10-17T12:00:27Z",
+  "simulatedSecondsPerCase": 8.0,
+  "case": "paired",
+  "checkpointSha256": "fd48aadbfaa66c843d72c71661be3b8902720c47a2fe9de8380f16f0649feb01",
+  "nativeBinarySha256": "9b5b88fe5f94e245a5c49c53ed86fc5b5db1ea24bfe0460a6900ccdd7fc4eefe",
+  "probeSha256": "be5cf49a6b7dd3bbe2fa4d3146dc6d65d8800882b945d889b1c513d1aab4f6d4",
+  "referenceScriptSha256": "f63e4373807af99ba5fa8539efc118dc5554c9fda274469b4ac07e5c74ba3563",
+  "controller": "frozen-SLOW-with-one-contact-gated-IK-swing-leg-intervention-untrained",
+  "clearanceGateM": 0.015,
+  "plannedFootOriginRaiseM": 0.06,
+  "maximumCaptureDirectedPlacementM": 0.06,
+  "naturalUnloadGateN": 3.0,
+  "initialStanceGateBodyweightFraction": 0.7,
+  "blendS": 0.05,
+  "disturbanceSchedule": [],
+  "noRootOrFootConstraints": true,
+  "frozenWeightsChanged": false,
+  "matchedPostWindow": "From 0.5s after hybrid source handoff to the common trial end; mechanism proof requires >=5s remaining.",
+  "acceptance": "A real >=1.5cm cleared >=5cm unloaded reposition for this 6cm-target mechanism probe, with persistent stance support, no flight/nonfoot/integrity failure, improved support/capture, then >=5s unchanged native standing; loaded slip and quiet behavior compared with same-checkpoint baseline. Not a learned step."
+}

@@ -47,7 +47,7 @@ pub struct TickTiming {
     pub contacts_ms: f64,
     pub integrity_ms: f64,
     pub observer_ms: f64,
-    pub controller_substeps_ms: [Option<f64>; 4],
+    pub controller_substeps_ms: [Option<f64>; lh_contracts::SUBSTEPS as usize],
 }
 struct Working {
     timing: TickTiming,
@@ -100,7 +100,7 @@ impl<C: FnMut() -> f64> Recorder<C> {
                         contacts_ms: 0.0,
                         integrity_ms: 0.0,
                         observer_ms: 0.0,
-                        controller_substeps_ms: [None; 4],
+                        controller_substeps_ms: [None; lh_contracts::SUBSTEPS as usize],
                     },
                     started: now,
                     opened: [None; 5],
@@ -115,7 +115,7 @@ impl<C: FnMut() -> f64> Recorder<C> {
                 current.timing.complete = current.has_integration_stamp
                     && event.generation == current.timing.generation
                     && event.tick == current.timing.tick_start + 1
-                    && current.timing.completed_substeps == 4;
+                    && current.timing.completed_substeps == lh_contracts::SUBSTEPS;
                 let [controller, physics, contacts, integrity, observer] = current.totals;
                 current.timing.controller_ms = controller;
                 current.timing.physics_ms = physics;
@@ -133,7 +133,7 @@ impl<C: FnMut() -> f64> Recorder<C> {
             return;
         };
         let index = event.phase.index().expect("non-tick phase");
-        if event.substep >= 4 {
+        if event.substep >= lh_contracts::SUBSTEPS {
             self.valid = false;
             return;
         }
@@ -193,14 +193,14 @@ mod tests {
                 (tick.tick_start, tick.tick_end),
                 (index as u64, index as u64 + 1)
             );
-            assert!(tick.complete && tick.completed_substeps == 4);
-            assert_eq!(tick.controller_substeps_ms, [Some(0.25); 4]);
-            assert_eq!(tick.controller_ms, 1.0);
-            assert_eq!(tick.physics_ms, 1.0);
-            assert_eq!(tick.contacts_ms, 1.0);
-            assert_eq!(tick.integrity_ms, 1.0);
-            assert_eq!(tick.observer_ms, 1.0);
-            assert_eq!(tick.elapsed_ms, 10.25);
+            assert!(tick.complete && tick.completed_substeps == lh_contracts::SUBSTEPS);
+            assert_eq!(tick.controller_substeps_ms, [Some(0.25); lh_contracts::SUBSTEPS as usize]);
+            assert_eq!(tick.controller_ms, 5.0);
+            assert_eq!(tick.physics_ms, 5.0);
+            assert_eq!(tick.contacts_ms, 5.0);
+            assert_eq!(tick.integrity_ms, 5.0);
+            assert_eq!(tick.observer_ms, 5.0);
+            assert_eq!(tick.elapsed_ms, 50.25);
         }
     }
     #[test]

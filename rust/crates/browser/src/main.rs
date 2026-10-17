@@ -61,8 +61,11 @@ mod browser {
         can_strike: bool,
         striker_phase: String,
         motion: String,
+        recovery_step: String,
         falls: u32,
         contacts: u32,
+        max_self_penetration_m: f64,
+        max_floor_penetration_m: f64,
         floor_enabled: bool,
         desired_floor_enabled: bool,
         error: String,
@@ -101,7 +104,7 @@ mod browser {
         view! {
             <header class="topbar">
                 <a class="brand" href="./"><span class="brand-mark">"◎"</span><span>"LABORATOIRE"<b>"HUMAIN"</b></span></a>
-                <span class="preview-tag">"Rust preview · acceptance in progress"</span>
+                <span class="preview-tag">"Experimental · Rust/WASM"</span>
             </header>
             <main class="workspace">
                 <aside class="panel">
@@ -122,7 +125,7 @@ mod browser {
                         <label>"Starting heading"<select id="heading" disabled=move||!status.get().ready prop:value=move||status.get().heading.to_string() on:change=move|e|emit(serde_json::json!({"type":"heading","value":event_target_value(&e)}))><option value="0">"Front · 0°"</option><option value="1.0471975512">"Turn · +60°"</option><option value="-0.7853981634">"Turn · −45°"</option></select></label>
                         <label>"Select a region"<select id="region" prop:value=move||status.get().selected on:change=move|e|emit(serde_json::json!({"type":"region","value":event_target_value(&e)}))>
                             <option value="">"All surfaces"</option><option value="head">"Head"</option><option value="torso">"Torso"</option><option value="pelvis">"Pelvis"</option>
-                            <option value="leftHand">"Left hand"</option><option value="rightHand">"Right hand"</option><option value="leftFoot">"Left foot"</option><option value="rightFoot">"Right foot"</option>
+                            <option value="left_hand">"Left hand"</option><option value="right_hand">"Right hand"</option><option value="left_foot">"Left foot"</option><option value="right_foot">"Right foot"</option>
                         </select></label>
                         <Show when=move||status.get().mode=="playground">
                             <label>"Station"<select id="station" disabled=move||!status.get().ready prop:value=move||status.get().station on:change=move|e|emit(serde_json::json!({"type":"station","value":event_target_value(&e)}))>
@@ -144,10 +147,10 @@ mod browser {
                         <div class="select-row"><label>"Renderer"<select id="renderer" prop:value=move||status.get().requested_renderer on:change=move|e|emit(serde_json::json!({"type":"renderer","value":event_target_value(&e)}))><option value="auto">"Auto"</option><option value="webgpu">"WebGPU"</option><option value="webgl2">"WebGL2"</option></select></label>
                         <label>"Quality"<select id="quality" prop:value=move||status.get().quality on:change=move|e|emit(serde_json::json!({"type":"quality","value":event_target_value(&e)}))><option value="auto">"Auto"</option><option value="low">"Low"</option><option value="high">"High"</option></select></label></div>
                     </div>
-                    <div class="body-spec"><span><b>"25"</b>" segments"</span><span><b>"72.2"</b>" kg"</span><span><b>"1.84"</b>" m"</span></div>
+                    <div class="body-spec"><span><b>"16"</b>" bodies · 21 joints"</span><span><b>"40.84"</b>" kg"</span><span><b>"1.57"</b>" m"</span></div>
                 </aside>
                 <section class="scene" aria-label="Physical experiment" data-tick=move||status.get().tick.to_string() data-generation=move||status.get().generation.to_string()>
-                    <div class="scene-top"><span class="live-dot"></span><span>{move||if status.get().halted {"Trial stopped".to_string()}else if !status.get().ready {"Starting experiment".to_string()}else if status.get().paused {"Trial paused".to_string()}else{"Trial running".to_string()}}</span><span class="backend">{move||status.get().backend}</span></div>
+                    <div class="scene-top"><span class="live-dot"></span><span id="recovery-step">{move||if status.get().halted {"Trial stopped".to_string()}else if !status.get().ready {"Starting experiment".to_string()}else if status.get().paused {"Trial paused".to_string()}else if !status.get().recovery_step.is_empty() {status.get().recovery_step}else{"Trial running".to_string()}}</span><span class="backend">{move||status.get().backend}</span></div>
                     <div id="viewport"></div>
                     <div class="scene-help"><span>"Drag body · pull"</span><span>"Drag empty space · orbit"</span><span>"Scroll · zoom"</span></div>
                     <div class="error-banner" hidden=move||status.get().error.is_empty()><p>{move||status.get().error}</p><button id="graphics-retry" on:click=move|_|emit(serde_json::json!({"type":"retry"}))>"Retry graphics"</button></div>
@@ -155,13 +158,13 @@ mod browser {
                 <section class="metrics" aria-label="Live trial measurements">
                     <div><span>"BODY STATE"</span><strong id="motion">{move||status.get().motion}</strong><small>{move||format!("{} falls",status.get().falls)}</small></div>
                     <div><span>"PHYSICS TIME"</span><strong>{move||format!("{:.2}",status.get().time)}<small>" s"</small></strong></div>
-                    <div><span>"MEASURED SUPPORT"</span><strong>{move||status.get().contacts}<small>" segments"</small></strong></div>
+                    <div><span>"MEASURED SUPPORT"</span><strong>{move||status.get().contacts}<small>" segments"</small></strong><small id="penetration-diagnostic">{move||format!("Max overlap: body {:.2} mm · ground {:.2} mm",status.get().max_self_penetration_m*1000.0,status.get().max_floor_penetration_m*1000.0)}</small></div>
                     <div><span>"COMPLETED STEPS"</span><strong>{move||status.get().steps}</strong></div>
                     <div><span>"PRESENTATION"</span><strong>{move||format!("{:.0}",status.get().fps)}<small>" fps"</small></strong></div>
                     <div><span>"SIMULATION / WALL"</span><strong>{move||format!("{:.2}×",status.get().realtime_ratio)}</strong></div>
                 </section>
             </main>
-            <footer>"Physical acceptance remains open. An upright picture alone does not establish balance or recovery."</footer>
+            <footer>"GetUp reference body. Pretrained recovery is experimental and disabled by default."</footer>
         }
     }
     pub fn run() {

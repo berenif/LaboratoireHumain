@@ -1,0 +1,96 @@
+{
+  "schema": 1,
+  "scope": "7100-second supervisor freeze: pure protocol and explicitly inert process tests only",
+  "recordedUtc": "2026-10-15T14:16:37.511960+00:00",
+  "protocolId": "observed-a36-single-transfer-and-continuation-7100-2026-10-15",
+  "source": [
+    {
+      "path": "docs/evidence/coordination-transfer-native-7100-2026-10-15/run_transfer.py",
+      "sha256": "7ccada025fb9766c87f10c7679c3f01c242c6d12fbadd687de16a5e601e1c2e7",
+      "bytes": 35766
+    },
+    {
+      "path": "docs/evidence/coordination-transfer-native-7100-2026-10-15/test_run_transfer.py",
+      "sha256": "f3b22f07a6bdccd43755183f17d134385f8698970c2660588a6600a7dc84f612",
+      "bytes": 31006
+    },
+    {
+      "path": "docs/evidence/coordination-transfer-native-7100-2026-10-15/supervisor-readme.md",
+      "sha256": "4a1846f946165777b8e199a037fea1d2a04da347f1574abb8c11921b02ae2897",
+      "bytes": 8316
+    }
+  ],
+  "historicalSourcesPreserved": [
+    {
+      "path": "docs/evidence/coordination-transfer-native-proposal-2026-10-13/run_transfer.py",
+      "sha256": "714f96ed06a94c1c45603b1415cbec4c7c1145780f863d2b1ec97b02bb9a20c8",
+      "bytes": 35770
+    },
+    {
+      "path": "docs/evidence/coordination-transfer-native-proposal-2026-10-13/test_run_transfer.py",
+      "sha256": "3de0af5f6ce8d2c7bd847ad2dc7e8c00ad0894295d4421ec8d1b7ce21a1fbc32",
+      "bytes": 28928
+    },
+    {
+      "path": "docs/evidence/coordination-transfer-native-proposal-2026-10-13/supervisor-readme.md",
+      "sha256": "1d70b12a7485948b2e18dae5273c84db39e0873594eef5e2bc99002436d8f5ba",
+      "bytes": 7281
+    }
+  ],
+  "permittedSupervisorDeltaVerified": {
+    "onlyRuntimeChanges": [
+      "maximumWallSeconds 7200 -> 7100",
+      "protocolId -> observed-a36-single-transfer-and-continuation-7100-2026-10-15"
+    ],
+    "otherChanges": "Two docstring references to the total wall limit",
+    "sameNativeProtocol": "transfer-run-v1",
+    "binaryModified": false
+  },
+  "testEvidence": {
+    "path": "docs/evidence/coordination-transfer-native-7100-2026-10-15/deadline-validation.log",
+    "sha256": "c7beb3a7d9583aab36bca27c59e98301abe06fd6018de04056ca6baf86da16e8",
+    "bytes": 6411,
+    "passed": 49,
+    "durationSeconds": 0.96,
+    "exitCode": 0
+  },
+  "uniqueTestsLatest": 49,
+  "pureTests": 46,
+  "inertProcessTests": 3,
+  "limits": {
+    "maximumWallSeconds": 7100,
+    "startupMaximumSeconds": 30,
+    "nativeDeadlineOffsetSeconds": 7093,
+    "shutdownReserveSeconds": 7,
+    "technicalNativeSteps": 52,
+    "historyAndPredictionNativeSteps": 131044,
+    "totalNativeSteps": 131096,
+    "maximumHistories": 1
+  },
+  "boundaryEvidence": [
+    "startup at 30 seconds is refused in monotonic and UTC clocks",
+    "native result at 7093 seconds is refused",
+    "shutdown at 7100 seconds is refused",
+    "29-second startup leaves 7064 seconds on the unchanged native deadline",
+    "completion at 7099.998 seconds is admitted only by the synthetic worker",
+    "old 7200-second authorization refuses before claim or worker",
+    "durable claim and reservations precede spawn; PID binding and uncertain counts precede send",
+    "existing claim refuses retry even with a different output path"
+  ],
+  "testScopeCounters": {
+    "nativeWorkerExecutions": 0,
+    "nativeSubsteps": 0,
+    "worlds": 0,
+    "fkPoses": 0,
+    "physicalBudgetOpened": false,
+    "historicalFamilyReopened": false,
+    "realAuthorizationCreated": false,
+    "realClaimCreated": false
+  },
+  "approvalInTests": "Only synthetic temporary fixtures, removed after each test; never production authorization",
+  "physicalExecutionResponsibility": "Root alone verifies global budget, protected inputs, immutable manifest, explicit parent authorization and duplicate absence before one authorized launch.",
+  "limitations": [
+    "Tests establish supervision, not physical transfer, native parity or recovery success.",
+    "Historical frozen supervision and native binary remain unchanged."
+  ]
+}

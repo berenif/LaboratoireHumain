@@ -1,0 +1,106 @@
+{
+  "status": "closed",
+  "authorization": "User: Enable get up; one bounded browser strike/get-up observation",
+  "startedUtc": "2026-10-16T08:30:27.116840+00:00",
+  "priorClosedRecord": "docs/evidence/coordination-feedback-transfer-2026-10-15/delivery.json",
+  "priorClosedRecordSha256": "d267afe1b3b9c94346157e979de6004277b53533ba0eeabf68cedb8a76ae64bf",
+  "priorNativeChargedSteps": 153508,
+  "priorWallChargedSeconds": 466.3282942940032,
+  "migrationSmoke": {
+    "sourceCommit": "32e24bfbd322c56d32227053efcfcab64a5eab9f",
+    "nativeSteps": 560,
+    "wallChargedSeconds": 120,
+    "wallChargeBasis": "Conservative allowance; exact wall timing was not retained"
+  },
+  "nativeChargedBefore": 154068,
+  "nativeReservation": 6480,
+  "nativeChargedAfter": 160548,
+  "nativeCeiling": 300000,
+  "wallChargedBeforeSeconds": 586.3282942940032,
+  "wallReservationSeconds": 180,
+  "wallChargedAfterSeconds": 766.3282942940032,
+  "wallCeilingSeconds": 7200,
+  "maximumHistories": 1,
+  "maximumSimulatedSeconds": 27,
+  "forecasts": 0,
+  "refund": false,
+  "buildInputs": {
+    "rust/crates/worker/src/lib.rs": "301ce7b04a0aedb64c1c6f8372852bf41f2902e85f09cdc431e5163ed54b8d23",
+    "rust/dist/app/lh_worker_bg.wasm": "ff8f8b795a030cff145af06d959ede77bef2e1c1a0e4f602615d3e07716255e5",
+    "outputs/browser-getup-2026-10-16/observe.mjs": "918894b6795cf1d355af94b883e7f015b8face9dbb0ffc9748c10d77b7b85354"
+  },
+  "launchRetries": 0,
+  "finishedUtc": "2026-10-16T08:32:28.183Z",
+  "nativeActualSteps": 6480,
+  "wallActualSeconds": 120.825044328,
+  "ordinaryBrowserInitialization": true,
+  "recoveryObserved": true,
+  "firstRecovery": {
+    "time": 4.666666666666667,
+    "tick": 280,
+    "observation": {
+      "phase": "Roll",
+      "elapsed_s": 0.004166667,
+      "phase_time_s": 0.004166667,
+      "qualified_time_s": 0,
+      "stable_time_s": 0,
+      "stalled_s": 0,
+      "unsupported_s": 0,
+      "retries": 0,
+      "last_retry": null,
+      "progress": -0.949826
+    }
+  },
+  "impactTime": 2.3333333333333335,
+  "phases": [
+    "Roll"
+  ],
+  "final": {
+    "tick": 1620,
+    "time": 27,
+    "motion": "Recovering",
+    "counters": {
+      "strikes": 1,
+      "falls": 1,
+      "recoveries": 0,
+      "steps": 0,
+      "upright_ticks": 136
+    },
+    "recovery": {
+      "phase": "Roll",
+      "elapsed_s": 22.338652,
+      "phase_time_s": 1.9041779,
+      "qualified_time_s": 0,
+      "stable_time_s": 0,
+      "stalled_s": 1.9000112,
+      "unsupported_s": 0,
+      "retries": 6,
+      "last_retry": "stalled-phase",
+      "progress": -0.79028475
+    },
+    "failure": null,
+    "workerInstances": 1,
+    "pelvisHeightM": 0.18542413
+  },
+  "qualification": false,
+  "artifacts": {
+    "outputs/browser-getup-2026-10-16/result.json": "9dc2e7ad7894b52db37016b47e2eab3b333476f2cd9b497cc12c7d7eb0550ac0",
+    "outputs/browser-getup-2026-10-16/trace.ndjson": "6d6d4660a1a33598bf00aea655b6de1bb9486ce14456198da24844a6b99c691b",
+    "/workspace/lh-deliverables/LaboratoireHumain-getup-enabled-2026-10-16.mp4": "1c815abd9801874f61edc42bae39e9a3cc5968bfa6d734f81331ba496c44a881"
+  },
+  "checks": {
+    "workerProfileUnitTestsPassed": 1,
+    "javascriptToolingTestsPassed": 55,
+    "releaseBrowserBuildPassed": true,
+    "changedRustFilesFormattingPassed": true,
+    "videoDecoded": true,
+    "videoSeconds": 27,
+    "videoFrames": 405
+  },
+  "libraryVideo": {
+    "libraryFileId": "libfile_89c6b419a9b8819182c58d92958139eb",
+    "fileId": "file_0000000022f481f6ad5c3fb55f4d773f",
+    "version": 0,
+    "bytes": 292724
+  }
+}

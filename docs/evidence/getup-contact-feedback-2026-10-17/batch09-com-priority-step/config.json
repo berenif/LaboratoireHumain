@@ -1,0 +1,40 @@
+{
+  "controller": "measured-contact-whole-body-inverse-dynamics-untrained-hybrid",
+  "shiftM": 0.14733470778357233,
+  "simulatedSeconds": 19.0,
+  "physicsCapSeconds": 90.0,
+  "deadlineUTC": "2026-10-17T14:24:00Z",
+  "nearStopModeNoExplicitReleaseNoStep": false,
+  "externalForcesApplied": false,
+  "sourceWeightsChanged": false,
+  "model": "continuous rigid-body mass+armature/Coriolis/gravity/passive springs+damping; original inner PD remains active800Hz; near-stop tolerance is predictive approximation, not strict instantaneous complementarity",
+  "contactConstraints": "actual material-point normal acceleration hard, tangential slip stabilization soft, optimization only; never physical pins",
+  "acceptance": "New retained-balancer gate, not retroactive source-handoff success: actual matched COM/capture/load shift; target COM returned; final>=5s native anchored standing under explicit measured-state balance, no flight/nonfoot and loaded slip<=1cm. No stepping claim.",
+  "checkpointSha256": "3ffed5867ddc238794a2ce94a102c3e2d23bf1a4623070253c91d9d94fa312dd",
+  "nativeBinarySha256": "761b291ec90b0951e9f8d95f8dce30804711c48eda4073da2f6c4947c4b8325a",
+  "probeSha256": "3a29c607888edeadf7b9a192084a06e72eb44b09b81c67dfe011431ec2c123f5",
+  "dynamicsSha256": "ef892bbf781d6d57e72eb31d1e8fe59664558ef6942d49f2bf2f463a08f0251d",
+  "measuredSoleFlatOrientationTask": false,
+  "standingControllerAfterTargetReturn": "measured-contact inverse dynamics retained",
+  "timelineS": {
+    "rampStart": 1.0,
+    "fullShiftStart": 8.366735389178615,
+    "fullShiftEnd": 8.966735389178615,
+    "targetReturned": 12.966735389178615,
+    "postReturnScoringStart": 13.966735389178615
+  },
+  "targetCalibrationSHA256": "00d0e698df7c02c562ff32932edd5d062cff13ea1a9f1fdcba431a2a8ef6d34b",
+  "stepMode": "measured-unload-gated swing, measured landing, then retained balance",
+  "stepAcceptance": "Actual>=5cm unload-land displacement/wholecapsuleclearance>=1.5cm, noflight/nonfoot, loadedslip<=1cm, actuallanding+>=5s retainedbalance anchoredstanding; not a learned step or original10sshuffling fix.",
+  "softUnloadLeft": true,
+  "initialCOM": [
+    1.0804519422301204,
+    0.809975899777216,
+    -0.18871737940769728
+  ],
+  "shiftDirectionWorld": [
+    -0.6449461443265959,
+    0.0,
+    0.7642280228559128
+  ]
+}

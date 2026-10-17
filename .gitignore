@@ -49,3 +49,9 @@ next-env.d.ts
 # Local diagnostic checkpoints (do not publish)
 /docs/checkpoints/
 /docs/checkpoint-*.json
+
+# Local Python tools and environments
+__pycache__/
+*.py[cod]
+.venv/
+venv/

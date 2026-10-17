@@ -1,0 +1,617 @@
+{
+  "schema": "static-publication-check.v1",
+  "checkedUtc": "2026-10-15T15:20:37.565487+00:00",
+  "sourceBaseCommit": "da4575170c6ae9b0858c0851a6f1ed15fe1ce858",
+  "scope": "Read-only file/Git checks and parsing existing test logs; no test or native execution",
+  "newNativeSteps": 0,
+  "newWorlds": 0,
+  "newFkInspections": 0,
+  "checkedHashes": [
+    {
+      "path": "docs/evidence/coordination-prototype-2026-10-12/budget/ledger.json",
+      "sha256": "2afa69b3ae9c8ab8343f7dabdf46b955c8ac7b88aa259404958e25d49a72ef07",
+      "category": "closed-physical-evidence"
+    },
+    {
+      "path": "docs/evidence/coordination-native-parity-2026-10-13/native-run/physical-ledger.json",
+      "sha256": "73b2e3bff52aadf0414be2f7a4a96fa4cd5da7b02de0945434e4f136bbf476a6",
+      "category": "closed-physical-evidence"
+    },
+    {
+      "path": "docs/evidence/coordination-native-parity-renewal-2026-10-13/native-run/physical-ledger.json",
+      "sha256": "1411bfcc1a17caa681359cfb39d7c0429f2188375925c22ba4b037df96d44bc2",
+      "category": "closed-physical-evidence"
+    },
+    {
+      "path": "docs/evidence/coordination-native-serialization-2026-10-13/native-run/physical-ledger.json",
+      "sha256": "191d3216953bfb4aca5b7abcea277454d7d97ad5b4ca72e28ffbc260399af250",
+      "category": "closed-physical-evidence"
+    },
+    {
+      "path": "docs/evidence/coordination-local-pair-2026-10-13/budget/ledger.json",
+      "sha256": "e7c6831159ac1ae913a05f2af545a0521181d7142dbabd967908dfe7958fba97",
+      "category": "closed-physical-evidence"
+    },
+    {
+      "path": "rust/target/release/deps/coordination_worker-60f2b83fe348a1d3",
+      "sha256": "1bb4b91ac8ebfbe382d9525e524b85040ca9890bc90a0ef0467f1ef2b64c8b57",
+      "category": "closed-physical-evidence"
+    },
+    {
+      "path": "rust/target/release/deps/numeric_parity_worker-b68c9e5f8e8cfa37",
+      "sha256": "9e125785fad85b0befc9373c3116d66aa32e8050a998ce08974b0da29d2760cc",
+      "category": "closed-physical-evidence"
+    },
+    {
+      "path": "rust/target/release/deps/numeric_parity_worker_serialization-360529b9ad4cba37",
+      "sha256": "83bddf95897acc6015de7d2947b04ee2f5aaf2eb49b4dcb85ba0a67764f95e1b",
+      "category": "closed-physical-evidence"
+    },
+    {
+      "path": "rust/target/release/deps/coordination_local_pair_worker-bf2c98f759d9dc34",
+      "sha256": "c1c8a12825428758643a7f6e2fafb0a2710f7dca787c1daee07c27ec59849e9c",
+      "category": "closed-physical-evidence"
+    },
+    {
+      "path": "docs/evidence/coordination-prototype-2026-10-12/frozen-manifest.json",
+      "sha256": "4a37d4afbfe3ecd51997208bf5fa7599106fd9c43650cb55f6bcf6400d4e1d29",
+      "category": "closed-physical-evidence"
+    },
+    {
+      "path": "docs/evidence/coordination-native-parity-2026-10-13/manifest.json",
+      "sha256": "40e492a29d723118cb26990b9dd2866d498d9a1a5d5ae815d7aae1d9d92a407a",
+      "category": "closed-physical-evidence"
+    },
+    {
+      "path": "docs/evidence/coordination-native-parity-renewal-2026-10-13/manifest.json",
+      "sha256": "7235b6916b2d669710b0339e474fc245b48cc4311dd893557f4c03164f3326a6",
+      "category": "closed-physical-evidence"
+    },
+    {
+      "path": "docs/evidence/coordination-native-serialization-2026-10-13/manifest.json",
+      "sha256": "179bfe3cb58819cd2ba1b73642969c0eb2a343a052dee83ae89e2850e0830356",
+      "category": "closed-physical-evidence"
+    },
+    {
+      "path": "docs/evidence/coordination-local-pair-2026-10-13/manifest.json",
+      "sha256": "2fbcb3db0cd1bccf14082e772b1efba63e567fe7fce35ed8cccbbbf2ac2cdde9",
+      "category": "closed-physical-evidence"
+    },
+    {
+      "path": "rust/target/release/deps/coordination_transfer_worker-8daed3b7e6b04b70",
+      "sha256": "63e0e035d38d02f762c69b9dacb65d61e179c72ced50f5facd0bc29c64b9e8b5",
+      "category": "closed-physical-evidence"
+    },
+    {
+      "path": "docs/evidence/coordination-transfer-native-7100-2026-10-15/native-run-once/forecast-refusal-review.json",
+      "sha256": "cfa7b05dd663327eb408bf7e7703ff52ed98b4b1f235e87d164f15785cdeb8e0",
+      "category": "closed-physical-evidence"
+    },
+    {
+      "path": "docs/evidence/coordination-transfer-native-7100-2026-10-15/native-run-once/forecast-refusal-review.md",
+      "sha256": "b4c2448cf5105981c2d38fc4c4f09d91dbaf268d6d65bb95ec5841c693e007c2",
+      "category": "closed-physical-evidence"
+    },
+    {
+      "path": "docs/evidence/coordination-transfer-native-7100-2026-10-15/native-run-once/ledger-events.ndjson",
+      "sha256": "842de4a49ac6ede1e8cc5e54e898f7b7085bef57aa9bf7dc73a1551f73f0afc4",
+      "category": "closed-physical-evidence"
+    },
+    {
+      "path": "docs/evidence/coordination-transfer-native-7100-2026-10-15/native-run-once/native-result.json",
+      "sha256": "7da774742c4ef54420efbbbb4991de4afbe640a203463ebe6841e507e00bb19e",
+      "category": "closed-physical-evidence"
+    },
+    {
+      "path": "docs/evidence/coordination-transfer-native-7100-2026-10-15/native-run-once/native-result.json.gz",
+      "sha256": "89c4f37c7182f1c600dbfdae8ad4b0d0414d703205fbc2d91061764d69d6faa0",
+      "category": "closed-physical-evidence"
+    },
+    {
+      "path": "docs/evidence/coordination-transfer-native-7100-2026-10-15/native-run-once/native-result.json.history.accounting.jsonl",
+      "sha256": "1b90ac9ebbc3d0be0fe709d79575494962a1eda153c7db99d3c6dd4155c00371",
+      "category": "closed-physical-evidence"
+    },
+    {
+      "path": "docs/evidence/coordination-transfer-native-7100-2026-10-15/native-run-once/native-result.json.technical.accounting.jsonl",
+      "sha256": "f5771e4f6966ad3d44d9e0b32fb2675346bb60f61c566e8638a6a2cfb8c55609",
+      "category": "closed-physical-evidence"
+    },
+    {
+      "path": "docs/evidence/coordination-transfer-native-7100-2026-10-15/native-run-once/native-trace.jsonl",
+      "sha256": "7561d3dd93743f37e07c99d91adad1a9ef7cf41b746a98d5e71f93e3f4092c96",
+      "category": "closed-physical-evidence"
+    },
+    {
+      "path": "docs/evidence/coordination-transfer-native-7100-2026-10-15/native-run-once/native-trace.jsonl.gz",
+      "sha256": "5daf337c1cf4e07938b1996e2febf752a706415873f2efd5e55454ec4a0a76fc",
+      "category": "closed-physical-evidence"
+    },
+    {
+      "path": "docs/evidence/coordination-transfer-native-7100-2026-10-15/native-run-once/physical-ledger.json",
+      "sha256": "eec8dfa53045dcd38c593ec72d459e757ee3c8b6d3315be0707e263bd3eb2595",
+      "category": "closed-physical-evidence"
+    },
+    {
+      "path": "docs/evidence/coordination-transfer-native-7100-2026-10-15/native-run-once/protocol.ndjson",
+      "sha256": "f3dbf872d26606a475d3f9e81dc3d62a812f219ac0debfb41ecb69573dfe14fb",
+      "category": "closed-physical-evidence"
+    },
+    {
+      "path": "docs/evidence/coordination-transfer-native-7100-2026-10-15/native-run-once/run-result.json",
+      "sha256": "03ce370f490418953dcb074fe4c1f1f3b170ea947818dec9b5224e8b4bdafd49",
+      "category": "closed-physical-evidence"
+    },
+    {
+      "path": "docs/evidence/coordination-transfer-native-7100-2026-10-15/native-run-once/worker.stderr.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "category": "closed-physical-evidence"
+    },
+    {
+      "path": "docs/evidence/coordination-transfer-native-7100-2026-10-15/authorization-claim.json",
+      "sha256": "485b3827851402bc657bcb351ef9593d0ed79b2b93383f2fe64f90f88d9258e5",
+      "category": "closed-physical-evidence"
+    },
+    {
+      "path": "docs/evidence/coordination-transfer-native-7100-2026-10-15/authorization.json",
+      "sha256": "217b8d849369ad084cf7da22c94c820b9472c6d97b6b0e96cd12b674517fd203",
+      "category": "closed-physical-evidence"
+    },
+    {
+      "path": "docs/evidence/coordination-transfer-native-7100-2026-10-15/manifest.json",
+      "sha256": "80b41aaf7d2f2aa72e91891f97e7ea40d6cf6f3e8538f3f62d0afcba352342b9",
+      "category": "closed-physical-evidence"
+    },
+    {
+      "path": "docs/evidence/coordination-transfer-native-7100-2026-10-15/parent-authorization-provenance.json",
+      "sha256": "d02bce158ab4854507fa0b11bbbda345102bab2832b2e047e1dcbb55b729faa5",
+      "category": "closed-physical-evidence"
+    },
+    {
+      "path": "docs/evidence/coordination-transfer-native-7100-2026-10-15/protocol.json",
+      "sha256": "484ca77042ad48ecaf3a9b884a5e9f005a9e8f06f9e406710ea9530dbdbad6c9",
+      "category": "closed-physical-evidence"
+    },
+    {
+      "path": "docs/evidence/coordination-transfer-native-7100-2026-10-15/protocol.md",
+      "sha256": "c4f6a0f2c6ab81a226d6ba23a6e2d04a0159bd4190d3d9c74d5906b28bfd0a8d",
+      "category": "closed-physical-evidence"
+    },
+    {
+      "path": "docs/evidence/coordination-transfer-native-7100-2026-10-15/preparation-reservation.json",
+      "sha256": "12f845c0d085ef9433bd7aca4836e66221db9a711a0772c2b8b62aa5555e6851",
+      "category": "closed-physical-evidence"
+    },
+    {
+      "path": "docs/evidence/coordination-transfer-native-7100-2026-10-15/postrun-budget-audit.json",
+      "sha256": "e15e2cd15e35880f04774dff5bdcee70141f807d7ea4ebc4db5724c293f0fb22",
+      "category": "closed-physical-evidence"
+    },
+    {
+      "path": "docs/evidence/coordination-transfer-native-7100-2026-10-15/postrun-budget-audit.md",
+      "sha256": "5e584121f3ced322c2ce046867ab9fccc8c5633d78d2eb597d9f517a3fdb4f63",
+      "category": "closed-physical-evidence"
+    },
+    {
+      "path": "docs/evidence/coordination-transfer-native-7100-2026-10-15/archive-index.json",
+      "sha256": "cbc82f6c3d68a5050af84662341a4dfaf82e87036b412e4bab6912a330a44b50",
+      "category": "closed-physical-evidence"
+    },
+    {
+      "path": "docs/evidence/coordination-transfer-native-7100-2026-10-15/launch-invocation.json",
+      "sha256": "9ff9ee9ab8dc2c5f27503f8d6b285159c465bd9a28a77516434962187c5ca561",
+      "category": "closed-physical-evidence"
+    },
+    {
+      "path": "docs/evidence/coordination-transfer-native-7100-2026-10-15/launcher.stderr.log",
+      "sha256": "77e943a08875b8cdeb474047fc167a578cf67ba7331dd6786673ad125af43bc6",
+      "category": "closed-physical-evidence"
+    },
+    {
+      "path": "docs/evidence/coordination-transfer-native-7100-2026-10-15/launcher.stdout.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "category": "closed-physical-evidence"
+    },
+    {
+      "path": "docs/evidence/coordination-transfer-native-proposal-2026-10-13/manifest.json",
+      "sha256": "4f3708fd50cd4dabf473b7a6bff528ee11ad798cf25dfbeaf0f6141c156818f7",
+      "category": "closed-physical-evidence"
+    },
+    {
+      "path": "rust/crates/sim/src/recovery/planner/support_state.rs",
+      "sha256": "1056ca06337d4312f61e396e97d8f110229f00a846a17eb83f8ec64f82fefdcb",
+      "category": "independently-reviewed-source"
+    },
+    {
+      "path": "rust/crates/sim/src/recovery/planner/material_continuity.rs",
+      "sha256": "323bb017ead27dded0ffcef258040e3aff4683d2c3141db74f2c6f103f57514c",
+      "category": "independently-reviewed-source"
+    },
+    {
+      "path": "rust/crates/sim/src/recovery/planner/material_continuity_tests.rs",
+      "sha256": "87a5f4ddaab922053d15ff6b7bef4ac44d9303d197e7ad110e318d3b0a3b5bc2",
+      "category": "independently-reviewed-source"
+    },
+    {
+      "path": "rust/crates/sim/src/recovery/planner/support_schedule.rs",
+      "sha256": "723d946abe45186f8cb1fea793726f33c62ef4e770bb001bcaa94a6d662761c6",
+      "category": "independently-reviewed-source"
+    },
+    {
+      "path": "rust/crates/sim/src/recovery/planner/load_transfer.rs",
+      "sha256": "876d8e2fb0878227b6b70ad2f5b553e1db9985719d0b828aaa686d0767523294",
+      "category": "independently-reviewed-source"
+    },
+    {
+      "path": "rust/crates/sim/src/recovery/planner/transfer_adapter.rs",
+      "sha256": "95415005944a40ec6da5541fdf702a52a91763422b328c161f8aa36544ff0085",
+      "category": "independently-reviewed-source"
+    },
+    {
+      "path": "rust/crates/sim/src/recovery/planner/transfer_adapter_tests.rs",
+      "sha256": "72eef3f44b081905aefbc3b2a154809e8d8e8458e7b593049cb211794b715c14",
+      "category": "independently-reviewed-source"
+    },
+    {
+      "path": "rust/crates/sim/src/recovery/planner/command_proposal.rs",
+      "sha256": "3688e7a1ff824b5a016d0d8ad8da44cbcd00c041d096a2d338b6fb33e41326b9",
+      "category": "independently-reviewed-source"
+    },
+    {
+      "path": "rust/crates/sim/src/recovery/planner/geometric_tasks.rs",
+      "sha256": "65af9a336111cc1604b35bd1244bad83fd0c518a6d30bc1e8a37fc4bbf4bdadb",
+      "category": "independently-reviewed-source"
+    },
+    {
+      "path": "rust/crates/sim/src/recovery/planner/whole_body_controller.rs",
+      "sha256": "2476ba571b443274ae35eff43fefb0a6968bab5b6c26fc7f42bcf0d31839a309",
+      "category": "independently-reviewed-source"
+    },
+    {
+      "path": "rust/crates/sim/src/recovery/planner/native_observation.rs",
+      "sha256": "db49427e09240dec0c0e0049e25eca916b0fe5e8b754a641c156363cd0887afc",
+      "category": "independently-reviewed-source"
+    },
+    {
+      "path": "rust/crates/sim/src/recovery/planner/native_contact_diagnostics.rs",
+      "sha256": "57d71b0a99fa6a02506cec50f6a9aba0125c625fac2c8c270eb74f1bfbb01604",
+      "category": "independently-reviewed-source"
+    },
+    {
+      "path": "rust/vendor/rapier3d/src/geometry/contact_pair.rs",
+      "sha256": "3acab3ab974ac68f52dc9cfe70f4b54315ee0f5ecd6d85ac431d16544f13e06e",
+      "category": "independently-reviewed-source"
+    },
+    {
+      "path": "docs/evidence/coordination-contact-continuity-2026-10-15/continuity-archive-36-78.json",
+      "sha256": "1e5b2a1841922798fa51aa6646eed3bfbc5e56c5d3865ef8d27ba6eaa48e9300",
+      "category": "independently-reviewed-source"
+    },
+    {
+      "path": "docs/evidence/coordination-contact-continuity-2026-10-15/continuity-implementation.md",
+      "sha256": "aacba43dd3be75aef092b6cafd821dbbd4576840b56b244f0746284384892a12",
+      "category": "independently-reviewed-source"
+    },
+    {
+      "path": "docs/evidence/coordination-contact-continuity-2026-10-15/forensics.json",
+      "sha256": "9b478ac3f24f4339262f19f2c6b1c91dfb650a53a1fe8b48259bcdca47dd2c64",
+      "category": "independently-reviewed-source"
+    },
+    {
+      "path": "docs/evidence/coordination-transfer-native-7100-2026-10-15/native-run-once/native-trace.jsonl.gz",
+      "sha256": "5daf337c1cf4e07938b1996e2febf752a706415873f2efd5e55454ec4a0a76fc",
+      "category": "independently-reviewed-source"
+    },
+    {
+      "path": "rust/crates/sim/src/recovery/planner/transfer_worker.rs",
+      "sha256": "7bb18f8698d5eda1e7f016f3e9d38c5d16286d63f957d368ed680a64806c7a94",
+      "category": "independently-reviewed-source"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/docs/evidence/coordination-contact-continuity-2026-10-15/render_continuity_proof.py",
+      "sha256": "f9bdcfa4661cb09ee13c9f162bca6d75e8e85f9e7012b3b6322f6ff63d34f7c7",
+      "category": "static-figure"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/docs/evidence/coordination-contact-continuity-2026-10-15/continuity-archive-36-78.json",
+      "sha256": "1e5b2a1841922798fa51aa6646eed3bfbc5e56c5d3865ef8d27ba6eaa48e9300",
+      "category": "static-figure"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/docs/evidence/coordination-contact-continuity-2026-10-15/forensics.json",
+      "sha256": "9b478ac3f24f4339262f19f2c6b1c91dfb650a53a1fe8b48259bcdca47dd2c64",
+      "category": "static-figure"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/rust/crates/sim/src/recovery/planner/material_continuity_tests.rs",
+      "sha256": "87a5f4ddaab922053d15ff6b7bef4ac44d9303d197e7ad110e318d3b0a3b5bc2",
+      "category": "static-figure"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/docs/evidence/coordination-contact-continuity-2026-10-15/first-pure-tests/support_state-material_continuity-tests.log",
+      "sha256": "0f77b5e829449a248221e35694bfd4dfb7e55983466e913536b387aa022ceb5a",
+      "category": "static-figure"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/docs/evidence/coordination-contact-continuity-2026-10-15/continuity-proof.png",
+      "sha256": "c592e68106376db23e39901bf2d0b37451ed4f0c7081874626337843cc2f3a0c",
+      "category": "static-figure"
+    },
+    {
+      "path": "docs/evidence/coordination-contact-continuity-2026-10-15/first-pure-tests/support_state-material_continuity-tests.log",
+      "sha256": "0f77b5e829449a248221e35694bfd4dfb7e55983466e913536b387aa022ceb5a",
+      "category": "recorded-pure-test-log"
+    },
+    {
+      "path": "docs/evidence/coordination-contact-continuity-2026-10-15/first-pure-tests/support_state-tests.log",
+      "sha256": "289d0a724959edff6e0b7a2f4f1f94388f0f57cec9336d199ca13f9639f99171",
+      "category": "recorded-pure-test-log"
+    },
+    {
+      "path": "docs/evidence/coordination-contact-continuity-2026-10-15/first-pure-tests/support_schedule-tests.log",
+      "sha256": "459f0b62ba05c1bc2e091a49dfb5fe6b7686050a756ff48a711dbc2b0d1a85c1",
+      "category": "recorded-pure-test-log"
+    },
+    {
+      "path": "docs/evidence/coordination-contact-continuity-2026-10-15/first-pure-tests/load_transfer-tests.log",
+      "sha256": "3bfa3a83635ac12709de786e8d02968c596c4ac899464f7aa471de897bac690b",
+      "category": "recorded-pure-test-log"
+    },
+    {
+      "path": "docs/evidence/coordination-contact-continuity-2026-10-15/first-pure-tests/transfer_adapter-tests.log",
+      "sha256": "18d1529e3e24b72adacb50ec0f38defde964aa2ae21dc74561b28d3334f752a7",
+      "category": "recorded-pure-test-log"
+    },
+    {
+      "path": "docs/evidence/coordination-contact-continuity-2026-10-15/first-pure-tests/command_proposal-tests.log",
+      "sha256": "1ad5e2ee0756f1b893d4a9322697912a5594ee8e0e2cba96671762add76cf6ad",
+      "category": "recorded-pure-test-log"
+    },
+    {
+      "path": "docs/evidence/coordination-contact-continuity-2026-10-15/first-pure-tests/native_contact_diagnostics-tests.log",
+      "sha256": "a9d7daff21a557a4c4f57d5a79af655f51cb8b5800ca7a00d973be1c5ed8aca7",
+      "category": "recorded-pure-test-log"
+    },
+    {
+      "path": "docs/evidence/coordination-contact-continuity-2026-10-15/first-pure-tests/native_observation-tests.log",
+      "sha256": "8470ce90a855ed3b26ee254889bdd09f3feb7b0539c9f0eeffd93de1926c756c",
+      "category": "recorded-pure-test-log"
+    },
+    {
+      "path": "docs/evidence/coordination-contact-continuity-2026-10-15/fixture-fix-pure-tests/transfer_adapter-tests-pure_equivalent_surface_.log",
+      "sha256": "3e8c5dc237590dd36faff4a66e8b1bed3f3866b7cba51a5a6d2980c5fbae50fd",
+      "category": "recorded-pure-test-log"
+    },
+    {
+      "path": "docs/evidence/coordination-contact-continuity-2026-10-15/fixture-fix-pure-tests/transfer_adapter-tests-pure_surface_reference_.log",
+      "sha256": "63ce7b1f3521231db3357c9d9611dda4512f73c603ebe4478ec84fbb092b3bd4",
+      "category": "recorded-pure-test-log"
+    }
+  ],
+  "recordedPureTestPasses": [
+    {
+      "receipt": "first-pure-tests/receipt.json",
+      "passed": 79,
+      "failed": 3
+    },
+    {
+      "receipt": "fixture-fix-pure-tests/receipt.json",
+      "passed": 3,
+      "failed": 0
+    }
+  ],
+  "distinctTestsUltimatelyPassed": 82,
+  "successfulBuildLogs": [
+    "test-compile-fixture-fix.log",
+    "production-check.log",
+    "worker-debug-build-only.log"
+  ],
+  "validReportLinks": [
+    "coordination-transfer-native-results-2026-10-15.md",
+    "evidence/coordination-contact-continuity-2026-10-15/forensics.md",
+    "evidence/coordination-contact-continuity-2026-10-15/continuity-proof.png",
+    "evidence/coordination-contact-continuity-2026-10-15/continuity-proof-receipt.json",
+    "../rust/crates/sim/src/recovery/planner/material_continuity.rs",
+    "../rust/crates/sim/src/recovery/planner/support_state.rs",
+    "evidence/coordination-contact-continuity-2026-10-15/first-pure-tests/receipt.json",
+    "evidence/coordination-contact-continuity-2026-10-15/fixture-fix-pure-tests/receipt.json",
+    "evidence/coordination-contact-continuity-2026-10-15/implementation-review.md",
+    "evidence/coordination-contact-continuity-2026-10-15/publication-check.json",
+    "evidence/coordination-contact-continuity-2026-10-15/static-scope-and-budget.md",
+    "evidence/coordination-contact-continuity-2026-10-15/final-budget-and-integrity.md"
+  ],
+  "authoredStagedWhitespaceCheck": "PASS",
+  "preservedRawLogWhitespace": [
+    "docs/evidence/coordination-contact-continuity-2026-10-15/first-pure-tests/command_proposal-tests.log:10: new blank line at EOF.",
+    "docs/evidence/coordination-contact-continuity-2026-10-15/first-pure-tests/load_transfer-tests.log:14: new blank line at EOF.",
+    "docs/evidence/coordination-contact-continuity-2026-10-15/first-pure-tests/native_contact_diagnostics-tests.log:9: new blank line at EOF.",
+    "docs/evidence/coordination-contact-continuity-2026-10-15/first-pure-tests/native_observation-tests.log:7: new blank line at EOF.",
+    "docs/evidence/coordination-contact-continuity-2026-10-15/first-pure-tests/support_schedule-tests.log:15: new blank line at EOF.",
+    "docs/evidence/coordination-contact-continuity-2026-10-15/first-pure-tests/support_state-material_continuity-tests.log:26: new blank line at EOF.",
+    "docs/evidence/coordination-contact-continuity-2026-10-15/first-pure-tests/support_state-tests.log:16: new blank line at EOF.",
+    "docs/evidence/coordination-contact-continuity-2026-10-15/fixture-fix-pure-tests/transfer_adapter-tests-pure_equivalent_surface_.log:7: new blank line at EOF.",
+    "docs/evidence/coordination-contact-continuity-2026-10-15/fixture-fix-pure-tests/transfer_adapter-tests-pure_surface_reference_.log:6: new blank line at EOF."
+  ],
+  "artifactInventory": [
+    {
+      "path": "TODO.md",
+      "bytes": 74513,
+      "sha256": "6a91089326f3736f05aab33ece540adb048272139325a0290450971549735bf5"
+    },
+    {
+      "path": "docs/coordination-contact-continuity-2026-10-15.md",
+      "bytes": 11491,
+      "sha256": "91189d2d76ea3c7102ef28bc90bf36e1fe722ad5486c3cfc7c37d5896d9278e0"
+    },
+    {
+      "path": "docs/evidence/coordination-contact-continuity-2026-10-15/check-publication.py",
+      "bytes": 5038,
+      "sha256": "207170ac7f9c9c7fc585b24d3dea6924f397a7aea3de7dbcbe64a10e919680a9"
+    },
+    {
+      "path": "docs/evidence/coordination-contact-continuity-2026-10-15/continuity-archive-36-78.json",
+      "bytes": 52931,
+      "sha256": "1e5b2a1841922798fa51aa6646eed3bfbc5e56c5d3865ef8d27ba6eaa48e9300"
+    },
+    {
+      "path": "docs/evidence/coordination-contact-continuity-2026-10-15/continuity-extract-archive.py",
+      "bytes": 1870,
+      "sha256": "26db6738d9a50463c162bcc35876225b64f9286db19dfc2e7ea11766c5a31e19"
+    },
+    {
+      "path": "docs/evidence/coordination-contact-continuity-2026-10-15/continuity-implementation.md",
+      "bytes": 6406,
+      "sha256": "aacba43dd3be75aef092b6cafd821dbbd4576840b56b244f0746284384892a12"
+    },
+    {
+      "path": "docs/evidence/coordination-contact-continuity-2026-10-15/continuity-proof-receipt.json",
+      "bytes": 3574,
+      "sha256": "d47bcb2ade562a52ffe55ce1dc9f805cca3d6175efa32d9159c8425d0ef07d35"
+    },
+    {
+      "path": "docs/evidence/coordination-contact-continuity-2026-10-15/continuity-proof.png",
+      "bytes": 205363,
+      "sha256": "c592e68106376db23e39901bf2d0b37451ed4f0c7081874626337843cc2f3a0c"
+    },
+    {
+      "path": "docs/evidence/coordination-contact-continuity-2026-10-15/final-budget-and-integrity.json",
+      "bytes": 30382,
+      "sha256": "208fad161c2851f171485e8aca577af6e0b0c61879d0be520c16f54ccdff069e"
+    },
+    {
+      "path": "docs/evidence/coordination-contact-continuity-2026-10-15/final-budget-and-integrity.md",
+      "bytes": 4002,
+      "sha256": "32e3b27250a53b4564fdfc6a9028b5d2cac3b930ef4719432fe9dc1097f32ede"
+    },
+    {
+      "path": "docs/evidence/coordination-contact-continuity-2026-10-15/first-pure-tests/command_proposal-tests.log",
+      "bytes": 718,
+      "sha256": "1ad5e2ee0756f1b893d4a9322697912a5594ee8e0e2cba96671762add76cf6ad"
+    },
+    {
+      "path": "docs/evidence/coordination-contact-continuity-2026-10-15/first-pure-tests/load_transfer-tests.log",
+      "bytes": 1218,
+      "sha256": "3bfa3a83635ac12709de786e8d02968c596c4ac899464f7aa471de897bac690b"
+    },
+    {
+      "path": "docs/evidence/coordination-contact-continuity-2026-10-15/first-pure-tests/native_contact_diagnostics-tests.log",
+      "bytes": 679,
+      "sha256": "a9d7daff21a557a4c4f57d5a79af655f51cb8b5800ca7a00d973be1c5ed8aca7"
+    },
+    {
+      "path": "docs/evidence/coordination-contact-continuity-2026-10-15/first-pure-tests/native_observation-tests.log",
+      "bytes": 379,
+      "sha256": "8470ce90a855ed3b26ee254889bdd09f3feb7b0539c9f0eeffd93de1926c756c"
+    },
+    {
+      "path": "docs/evidence/coordination-contact-continuity-2026-10-15/first-pure-tests/receipt.json",
+      "bytes": 15610,
+      "sha256": "28398faa291f8d1ce3e6a7755222063fa0feefee87edcc96eeb2139a7c1994f9"
+    },
+    {
+      "path": "docs/evidence/coordination-contact-continuity-2026-10-15/first-pure-tests/support_schedule-tests.log",
+      "bytes": 1324,
+      "sha256": "459f0b62ba05c1bc2e091a49dfb5fe6b7686050a756ff48a711dbc2b0d1a85c1"
+    },
+    {
+      "path": "docs/evidence/coordination-contact-continuity-2026-10-15/first-pure-tests/support_state-material_continuity-tests.log",
+      "bytes": 3038,
+      "sha256": "0f77b5e829449a248221e35694bfd4dfb7e55983466e913536b387aa022ceb5a"
+    },
+    {
+      "path": "docs/evidence/coordination-contact-continuity-2026-10-15/first-pure-tests/support_state-tests.log",
+      "bytes": 1321,
+      "sha256": "289d0a724959edff6e0b7a2f4f1f94388f0f57cec9336d199ca13f9639f99171"
+    },
+    {
+      "path": "docs/evidence/coordination-contact-continuity-2026-10-15/first-pure-tests/transfer_adapter-tests.log",
+      "bytes": 4095,
+      "sha256": "18d1529e3e24b72adacb50ec0f38defde964aa2ae21dc74561b28d3334f752a7"
+    },
+    {
+      "path": "docs/evidence/coordination-contact-continuity-2026-10-15/fixture-fix-pure-tests/receipt.json",
+      "bytes": 2461,
+      "sha256": "8a27d87b2d7040c434a948720d5e87e067f87333490bd9423488308b9415f8d5"
+    },
+    {
+      "path": "docs/evidence/coordination-contact-continuity-2026-10-15/fixture-fix-pure-tests/transfer_adapter-tests-pure_equivalent_surface_.log",
+      "bytes": 382,
+      "sha256": "3e8c5dc237590dd36faff4a66e8b1bed3f3866b7cba51a5a6d2980c5fbae50fd"
+    },
+    {
+      "path": "docs/evidence/coordination-contact-continuity-2026-10-15/fixture-fix-pure-tests/transfer_adapter-tests-pure_surface_reference_.log",
+      "bytes": 245,
+      "sha256": "63ce7b1f3521231db3357c9d9611dda4512f73c603ebe4478ec84fbb092b3bd4"
+    },
+    {
+      "path": "docs/evidence/coordination-contact-continuity-2026-10-15/forensics.json",
+      "bytes": 2652965,
+      "sha256": "9b478ac3f24f4339262f19f2c6b1c91dfb650a53a1fe8b48259bcdca47dd2c64"
+    },
+    {
+      "path": "docs/evidence/coordination-contact-continuity-2026-10-15/forensics.md",
+      "bytes": 9781,
+      "sha256": "2cbbed3f1aa2671cc51dc43901fc5054c54be2c7b705c8911c27722ffc829a5d"
+    },
+    {
+      "path": "docs/evidence/coordination-contact-continuity-2026-10-15/forensics.py",
+      "bytes": 36017,
+      "sha256": "98566e3dabf63617b61e4b619edfbd03a7d5e5159c277a3fbcaf4465e8c415c4"
+    },
+    {
+      "path": "docs/evidence/coordination-contact-continuity-2026-10-15/implementation-review.json",
+      "bytes": 11659,
+      "sha256": "14d44b5562f64f5a600634619987fda1b27d6456ff20e5d63b5d07feed85d022"
+    },
+    {
+      "path": "docs/evidence/coordination-contact-continuity-2026-10-15/implementation-review.md",
+      "bytes": 7940,
+      "sha256": "72480be7ac28a55ecc4b6d3bc952fd8d6225c842282badbe733be40276d67671"
+    },
+    {
+      "path": "docs/evidence/coordination-contact-continuity-2026-10-15/production-check.log",
+      "bytes": 572,
+      "sha256": "fb0b414be40a276a501108edd5fe11f0486da6e78aa30189ac0d23813162dc3e"
+    },
+    {
+      "path": "docs/evidence/coordination-contact-continuity-2026-10-15/render_continuity_proof.py",
+      "bytes": 8013,
+      "sha256": "f9bdcfa4661cb09ee13c9f162bca6d75e8e85f9e7012b3b6322f6ff63d34f7c7"
+    },
+    {
+      "path": "docs/evidence/coordination-contact-continuity-2026-10-15/run-pure-checks.py",
+      "bytes": 4002,
+      "sha256": "1048b34d4045585d561dfdba0371a4e8122aaac88dcc936551e860c46cb87c6a"
+    },
+    {
+      "path": "docs/evidence/coordination-contact-continuity-2026-10-15/static-scope-and-budget.json",
+      "bytes": 22849,
+      "sha256": "d4986d752e763a4040ba84d47fff52a3059935d007b7409381ce0f939232f0b2"
+    },
+    {
+      "path": "docs/evidence/coordination-contact-continuity-2026-10-15/static-scope-and-budget.md",
+      "bytes": 4411,
+      "sha256": "fbf94996e80d18f207bb68de4e8b033f6bf67cfd5a4a5d7268db99b80f563368"
+    },
+    {
+      "path": "docs/evidence/coordination-contact-continuity-2026-10-15/test-compile-final.log",
+      "bytes": 9981,
+      "sha256": "99775688c64e82c285ce2bce7211864f077b238c2b4b6d4419952af6c26a012b"
+    },
+    {
+      "path": "docs/evidence/coordination-contact-continuity-2026-10-15/test-compile-fixture-fix.log",
+      "bytes": 9980,
+      "sha256": "dfee1eecbc0f3945569cadd9fe239906c4d2919e8ced6625a9e283e73a85eb61"
+    },
+    {
+      "path": "docs/evidence/coordination-contact-continuity-2026-10-15/test-compile-initial.log",
+      "bytes": 10388,
+      "sha256": "c417c786b158564db27643be42d72fbf78f1ffef7b03a3d8533cb594f921667f"
+    },
+    {
+      "path": "docs/evidence/coordination-contact-continuity-2026-10-15/worker-debug-build-only.log",
+      "bytes": 64680,
+      "sha256": "e5a151d79fa06eaaf11afde91364a7efd37cc37dd541ec6431fd32dca028efba"
+    }
+  ]
+}

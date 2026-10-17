@@ -59,6 +59,212 @@ pub(crate) struct StepController {
     settle_reference: Vector,
     pub status: Status,
 }
+#[cfg(all(test, feature = "experimental-solver-step-observation"))]
+impl StepController {
+    /// Exhaustive read-only projection for native preview parity. Public Status
+    /// alone omits the stance anchors and timers used after recovery handoff.
+    pub(crate) fn parity_memory(&self) -> serde_json::Value {
+        let Self {
+            feet,
+            planted,
+            initial_midpoint,
+            initial_pelvis_height,
+            pelvis_com_offset,
+            swing,
+            next_side,
+            following_side,
+            repositioned,
+            cooldown_s,
+            press_start,
+            last_step_demand,
+            settle_from,
+            settle_s,
+            settle_reference,
+            status,
+        } = self;
+        let vector = |v: Vector| v.to_array().map(f32::to_bits);
+        let pose = |p: Pose| {
+            serde_json::json!({
+            "translationBits":vector(p.translation),
+            "rotationBits":p.rotation.to_array().map(f32::to_bits)})
+        };
+        let swing = swing.as_ref().map(|s| {
+            let Swing {
+                side,
+                start,
+                target,
+                elapsed,
+                ready_s,
+                swing_s,
+                airborne_s,
+                verified_liftoff,
+                landed_s,
+                demand,
+                transfer_bias,
+                qualified_reference,
+                redirected,
+                flat_started,
+                unload_s,
+                following,
+                follow_start,
+            } = s;
+            serde_json::json!({"side":side,"startBits":vector(*start),"targetBits":vector(*target),
+                "elapsedBits":elapsed.to_bits(),"readyBits":ready_s.to_bits(),
+                "swingBits":swing_s.map(f32::to_bits),"airborneBits":airborne_s.to_bits(),
+                "verifiedLiftoff":verified_liftoff,"landedBits":landed_s.to_bits(),
+                "demandBits":vector(*demand),"transferBiasBits":vector(*transfer_bias),
+                "qualifiedReferenceBits":qualified_reference.map(vector),"redirected":redirected,
+                "flatStarted":flat_started,"unloadBits":unload_s.to_bits(),"following":following,
+                "followStart":pose(*follow_start)})
+        });
+        let Status {
+            phase,
+            side,
+            elapsed_s,
+            loads_n,
+            sole_clearance_m,
+            retained_capture_inside,
+            capture,
+            reference,
+            ready_s,
+            airborne_s,
+            verified_liftoff,
+            touchdown_s,
+            aborted,
+        } = status;
+        serde_json::json!({"feet":feet,"plantedBits":planted.map(vector),
+            "initialMidpointBits":vector(*initial_midpoint),"initialPelvisHeightBits":initial_pelvis_height.to_bits(),
+            "pelvisComOffsetBits":vector(*pelvis_com_offset),"swing":swing,"nextSide":next_side,
+            "followingSide":following_side,"repositioned":repositioned,"cooldownBits":cooldown_s.to_bits(),
+            "pressStart":press_start.map(|(clock,v)|(clock,vector(v))),"lastStepDemandBits":vector(*last_step_demand),
+            "settleFromBits":settle_from.iter().map(|q|q.map(f32::to_bits)).collect::<Vec<_>>(),
+            "settleBits":settle_s.to_bits(),"settleReferenceBits":vector(*settle_reference),
+            "status":{"phase":phase,"side":side,"elapsedBits":elapsed_s.to_bits(),
+                "loadsBits":loads_n.map(f32::to_bits),"soleClearanceBits":sole_clearance_m.map(f32::to_bits),
+                "retainedCaptureInside":retained_capture_inside,"captureBits":capture.map(f32::to_bits),
+                "referenceBits":reference.map(f32::to_bits),"readyBits":ready_s.to_bits(),
+                "airborneBits":airborne_s.to_bits(),"verifiedLiftoff":verified_liftoff,
+                "touchdownBits":touchdown_s.to_bits(),"aborted":aborted}})
+    }
+}
+
+#[cfg(all(test, feature = "experimental-solver-step-observation"))]
+mod parity_tests {
+    use super::*;
+    fn fixture() -> StepController {
+        StepController {
+            feet: [18, 23],
+            planted: [Vector::ZERO; 2],
+            initial_midpoint: Vector::ZERO,
+            initial_pelvis_height: 0.,
+            pelvis_com_offset: Vector::ZERO,
+            swing: Some(Swing {
+                side: 0,
+                start: Vector::ZERO,
+                target: Vector::ZERO,
+                elapsed: 0.,
+                ready_s: 0.,
+                swing_s: Some(0.),
+                airborne_s: 0.,
+                verified_liftoff: false,
+                landed_s: 0.,
+                demand: Vector::ZERO,
+                transfer_bias: Vector::ZERO,
+                qualified_reference: Some(Vector::ZERO),
+                redirected: false,
+                flat_started: false,
+                unload_s: 0.,
+                following: false,
+                follow_start: Pose::from_parts(Vector::ZERO, Rotation::IDENTITY),
+            }),
+            next_side: 0,
+            following_side: Some(0),
+            repositioned: false,
+            cooldown_s: 0.,
+            press_start: Some((0, Vector::ZERO)),
+            last_step_demand: Vector::ZERO,
+            settle_from: vec![[0.; 3]],
+            settle_s: 0.,
+            settle_reference: Vector::ZERO,
+            status: Status::default(),
+        }
+    }
+    #[test]
+    fn pure_step_private_stance_and_swing_memory_all_change_identity() {
+        let original = fixture();
+        let before = original.parity_memory();
+        macro_rules! changed {
+            ($c:ident,$edit:expr) => {{
+                let mut $c = original.clone();
+                $edit;
+                assert_ne!(before, $c.parity_memory(), stringify!($edit));
+            }};
+        }
+        changed!(c, c.feet[0] += 1);
+        changed!(c, c.planted[0].x = 1.);
+        changed!(c, c.initial_midpoint.y = 1.);
+        changed!(c, c.initial_pelvis_height = 1.);
+        changed!(c, c.pelvis_com_offset.z = 1.);
+        changed!(c, c.swing = None);
+        changed!(c, c.next_side = 1);
+        changed!(c, c.following_side = None);
+        changed!(c, c.repositioned = true);
+        changed!(c, c.cooldown_s = 1.);
+        changed!(c, c.press_start = None);
+        changed!(c, c.press_start.as_mut().unwrap().0 = 1);
+        changed!(c, c.press_start.as_mut().unwrap().1.x = 1.);
+        changed!(c, c.last_step_demand.x = 1.);
+        changed!(c, c.settle_from[0][0] = 1.);
+        changed!(c, c.settle_s = 1.);
+        changed!(c, c.settle_reference.x = 1.);
+        changed!(c, c.swing.as_mut().unwrap().side = 1);
+        changed!(c, c.swing.as_mut().unwrap().start.x = 1.);
+        changed!(c, c.swing.as_mut().unwrap().target.x = 1.);
+        changed!(c, c.swing.as_mut().unwrap().elapsed = 1.);
+        changed!(c, c.swing.as_mut().unwrap().ready_s = 1.);
+        changed!(c, c.swing.as_mut().unwrap().swing_s = None);
+        changed!(c, c.swing.as_mut().unwrap().airborne_s = 1.);
+        changed!(c, c.swing.as_mut().unwrap().verified_liftoff = true);
+        changed!(c, c.swing.as_mut().unwrap().landed_s = 1.);
+        changed!(c, c.swing.as_mut().unwrap().demand.x = 1.);
+        changed!(c, c.swing.as_mut().unwrap().transfer_bias.x = 1.);
+        changed!(c, c.swing.as_mut().unwrap().qualified_reference = None);
+        changed!(c, c.swing.as_mut().unwrap().redirected = true);
+        changed!(c, c.swing.as_mut().unwrap().flat_started = true);
+        changed!(c, c.swing.as_mut().unwrap().unload_s = 1.);
+        changed!(c, c.swing.as_mut().unwrap().following = true);
+        changed!(c, c.swing.as_mut().unwrap().follow_start.translation.x = 1.);
+        changed!(
+            c,
+            c.swing.as_mut().unwrap().follow_start.rotation = Rotation::from_rotation_x(0.1)
+        );
+        changed!(c, c.status.phase = "changed");
+        changed!(c, c.status.side = Some(1));
+        changed!(c, c.status.elapsed_s = 1.);
+        changed!(c, c.status.loads_n[0] = 1.);
+        changed!(c, c.status.sole_clearance_m[0] = 1.);
+        changed!(c, c.status.retained_capture_inside = true);
+        changed!(c, c.status.capture[0] = 1.);
+        changed!(c, c.status.reference[0] = 1.);
+        changed!(c, c.status.ready_s = 1.);
+        changed!(c, c.status.airborne_s = 1.);
+        changed!(c, c.status.verified_liftoff = true);
+        changed!(c, c.status.touchdown_s = 1.);
+        changed!(c, c.status.aborted = 1);
+    }
+    #[test]
+    fn pure_step_projection_preserves_signed_zero_and_nan_payloads() {
+        let original = fixture();
+        let before = original.parity_memory();
+        for bits in [(-0.0_f32).to_bits(), 0x7fc00001, 0x7fc00002] {
+            let mut changed = original.clone();
+            changed.settle_s = f32::from_bits(bits);
+            assert_eq!(changed.parity_memory()["settleBits"], bits);
+            assert_ne!(before, changed.parity_memory());
+        }
+    }
+}
+
 pub(crate) struct Intent {
     pub reference: Vector,
     pub targets: Vec<(usize, [f32; 3])>,

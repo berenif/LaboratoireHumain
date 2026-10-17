@@ -1,0 +1,25 @@
+{
+  "operationId": "1cdf6255-9e3b-402b-89a6-9f0abdf09b3f",
+  "status": "reserved-before-spawn",
+  "startedUtc": "2026-10-15T20:54:10.923906+00:00",
+  "maximumNativeSteps": 7000,
+  "maximumWallSeconds": 120,
+  "maximumHistorySteps": 6240,
+  "histories": 1,
+  "forecasts": 0,
+  "retries": 0,
+  "nativeChargedBefore": 146508,
+  "nativeChargedAfter": 153508,
+  "wallChargedBeforeSeconds": 346.3282942940032,
+  "wallChargedAfterSeconds": 466.3282942940032,
+  "noRefund": true,
+  "binary": "/workspace/lh-feedback-target/release/deps/coordination_transfer_worker-8daed3b7e6b04b70",
+  "binarySha256": "ed603469308d3c50cb17f71e4a8ba78f6d6021f020beb7fabc70bdbe24f2ac68",
+  "inputHashes": {
+    "/workspace/LaboratoireHumain/docs/evidence/coordination-transfer-candidate-2026-10-13/observed-entry-step36.json": "3bd00408a5fdb3df9f17feda430f5a1aad8334b17c244d3b119a09325891c433",
+    "/workspace/LaboratoireHumain/docs/evidence/coordination-transfer-native-proposal-2026-10-13/worker-prefix-frames.json": "12c56e6f2e84db599bea41595fb07bea4503281a5c8950c594fd7631dadccf30",
+    "/workspace/LaboratoireHumain/docs/evidence/coordination-prototype-2026-10-12/continuation-candidate-program.json": "f14de3871ef9aba18083b36d10eeb56c8587c66a73b1ab2ec54e01830e06e59d",
+    "/workspace/LaboratoireHumain/docs/evidence/coordination-prototype-2026-10-12/continuation-tasks.json": "a96d03d736ca185a0457ae29c33846b69af28ecd5eb81609f60d281463756dd6"
+  },
+  "sourceCommit": "47e856e20d97248646ab85d0a11d761d9688d365"
+}

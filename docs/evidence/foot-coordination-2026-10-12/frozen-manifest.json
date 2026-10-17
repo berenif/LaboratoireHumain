@@ -1,0 +1,36 @@
+{
+  "schema": 1,
+  "campaign": "foot-coordination-2026-10-12",
+  "frozenUtc": "2026-10-12T12:21:57.544258+00:00",
+  "sourceCommit": "67211c7091939b9c029e99a2f489c28bf4cf8e78",
+  "baseCommit": "0a0db455aaff02c005d3affb350eb3f93dc10a1e",
+  "order": [
+    "witness",
+    "coordination"
+  ],
+  "kernel": "/workspace/LaboratoireHumain/evidence/foot-coordination-2026-10-12/kernel-native",
+  "program": "/workspace/LaboratoireHumain/evidence/recovery-coordinated-retarget-2026-10-11/reference-ready.json",
+  "archivedWitness": "/workspace/LaboratoireHumain/evidence/getup-ab-2026-10-12/001-feedback-B",
+  "files": {
+    "/workspace/LaboratoireHumain/evidence/foot-coordination-2026-10-12/kernel-native": "36afdb6560a99236737e590538b76d999d4f0a699bc2006823604e3d5d7048d3",
+    "/workspace/LaboratoireHumain/evidence/recovery-coordinated-retarget-2026-10-11/reference-ready.json": "fef70abf3d016cecf6658b0bc5e7a6361d989eb265840acdc1a4fbc497a70c7d",
+    "/workspace/LaboratoireHumain/evidence/getup-ab-2026-10-12/001-feedback-B/substeps.jsonl": "c3f30e8fb2b4384cd9576387b2e2d282133629c67968591784e94aefc7aad3fe",
+    "/workspace/LaboratoireHumain/evidence/getup-ab-2026-10-12/001-feedback-B/report.json": "bbf4c9e57c09707322a288bf1d3c1587f1d927a4e51c3eef9c9a051fd40ede0f",
+    "/workspace/LaboratoireHumain/rust/Cargo.lock": "57f8ef29219379d35953076b6e468e5b641d08f40f1be4a24fcecdfce546ec94",
+    "/workspace/LaboratoireHumain/rust/crates/sim/src/recovery/planner/contact_observation.rs": "5df6cae5c9f7320cd00258a5c35216d1b9ecde2d51788722207457a1ebf057f3",
+    "/workspace/LaboratoireHumain/rust/crates/sim/src/recovery/support_probe/getup_ab.rs": "a55280a98d642d82d14ee963fb1d9c452dda0dc382acfec66d337515fb2e3a21",
+    "/workspace/LaboratoireHumain/rust/crates/sim/src/recovery/support_probe/whole_history.rs": "32c633e446fd8361ca2cc1ebf8cbd23cb5de5ec8921f0753d6edf5a61e0c76ba",
+    "/workspace/LaboratoireHumain/scripts/run-foot-coordination.py": "5a34ff6375797b0c4f52651ccdd5522b676efc7832bc738c9b32144b9b7e05df",
+    "/workspace/LaboratoireHumain/scripts/run-foot-coordination-test.py": "fba26d30fed13a07699b63a2f61bd616db5d6cd0c219b24ef9b66a143d593b9c",
+    "/workspace/LaboratoireHumain/docs/foot-coordination-decision-2026-10-12.md": "0cf1576ef712a62a54504c6c7f8dfa6673fad591a2d864431b1b07ba260780d1"
+  },
+  "witness": "generic B; identical nominal program, feedback, physical parameters and original observer",
+  "candidate": "C; only foot task coordination and intended-contact command selection versus witness",
+  "verdictRules": {
+    "fullRecovery": "original counter once, Upright, original hold plus extra second before 25s",
+    "heelContact": "posterior hindfoot solver point with positive measured normal impulse; diagnostic only",
+    "footOnlyFeasibility": "requires real sustained support and original fullRecoverySuccess; transient contact is insufficient",
+    "alternative": "if no fullRecovery, foot-only feasibility remains unproved; intermediate support may be needed",
+    "stop": "after at most B and C, even if heel loaded, fall delayed, or failure"
+  }
+}

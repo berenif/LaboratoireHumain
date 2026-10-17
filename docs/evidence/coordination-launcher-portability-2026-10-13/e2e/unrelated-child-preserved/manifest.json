@@ -1,0 +1,82 @@
+{
+  "authorizationId": "SYNTHETIC-launcher-portability-physical-integrations-zero",
+  "binaryPath": "/tmp/lh-launcher-C-only-khdid5tx/fake-worker",
+  "files": [
+    {
+      "path": "/tmp/lh-launcher-C-only-khdid5tx/fake-worker",
+      "role": "binary",
+      "sha256": "6a2df2ba5945e8b4624019cc856370e53c70e9018c464a567ee0f23ff2e8deeb"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/scripts/run-coordination-numeric-parity.py",
+      "role": "code",
+      "sha256": "e5af00efb904bc203704bc88514a8e8a803dad36b3bca669a017c90ca24f97da"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/scripts/fixtures/coordination-fake-worker.c",
+      "role": "code",
+      "sha256": "a53320000f19718588eddba858332c67f29bc7ee49ddcd76418604742e583784"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/scripts/test-coordination-launcher-portability.py",
+      "role": "code",
+      "sha256": "7a3c03d81aa4106793cad3d2ec6db472b91c2217ef0689d925026fbb55082936"
+    },
+    {
+      "path": "/tmp/lh-launcher-C-only-khdid5tx/unrelated-child-preserved/frozen/fixture.json",
+      "role": "fixture",
+      "sha256": "fbf1cc632e8693ddccc0e24e197d74f483647886dd96dc0e71559f818931da11"
+    },
+    {
+      "path": "/tmp/lh-launcher-C-only-khdid5tx/unrelated-child-preserved/frozen/program.json",
+      "role": "program",
+      "sha256": "5a8f1e2aa494218bab1ffedaa81e9af11bd71c389b2700fe3064fd2d2a99f142"
+    },
+    {
+      "path": "/tmp/lh-launcher-C-only-khdid5tx/unrelated-child-preserved/frozen/tasks.json",
+      "role": "tasks",
+      "sha256": "2c7d551745be722625ee1bccb0d0f55d761551909edc90589588649a59a538a2"
+    },
+    {
+      "path": "/tmp/lh-launcher-C-only-khdid5tx/unrelated-child-preserved/frozen/model.json",
+      "role": "model",
+      "sha256": "b7ab7ce5585e4462d9554fa532e7cba37cf23d5939bc53eaf97768f6afa166fe"
+    },
+    {
+      "path": "/tmp/lh-launcher-C-only-khdid5tx/unrelated-child-preserved/frozen/profile.json",
+      "role": "profile",
+      "sha256": "bd2991d00541886e1d793e53eec42374af20559b2c7529b2b63732d6a2122d26"
+    },
+    {
+      "path": "/tmp/lh-launcher-C-only-khdid5tx/unrelated-child-preserved/frozen/criteria.json",
+      "role": "criteria",
+      "sha256": "2d460c76340eca2aa3a754d862b133cbb3847863d4a864e810a55d891edb17bd"
+    },
+    {
+      "path": "/tmp/lh-launcher-C-only-khdid5tx/unrelated-child-preserved/frozen/validation.json",
+      "role": "validation",
+      "sha256": "aff5951a3da5484dbd792020670a1dd09cdd031f21c7c172f3b51ec987fb3af1"
+    },
+    {
+      "path": "/tmp/lh-launcher-C-only-khdid5tx/unrelated-child-preserved/frozen/preparation.json",
+      "role": "preparation",
+      "sha256": "152109645824ab89cd8b34219b16fd816fa62b16b486054969532d78197fb43b"
+    }
+  ],
+  "inputs": {
+    "fixturePath": "/tmp/lh-launcher-C-only-khdid5tx/unrelated-child-preserved/frozen/fixture.json",
+    "programPath": "/tmp/lh-launcher-C-only-khdid5tx/unrelated-child-preserved/frozen/program.json",
+    "tasksPath": "/tmp/lh-launcher-C-only-khdid5tx/unrelated-child-preserved/frozen/tasks.json"
+  },
+  "outputPath": "/tmp/lh-launcher-C-only-khdid5tx/unrelated-child-preserved/batch/run",
+  "prerequisites": {
+    "archived_prefix_12_available": true,
+    "certified_commands_all_scales_available": true,
+    "compiled_release_before_run": true,
+    "separate_authorization_44_steps_120_seconds": true,
+    "single_native_process_thread": true,
+    "static_tests_passed": true,
+    "unchanged_physical_contract": true
+  },
+  "schema": "laboratoirehumain.coordination-numeric-parity-manifest.v1"
+}

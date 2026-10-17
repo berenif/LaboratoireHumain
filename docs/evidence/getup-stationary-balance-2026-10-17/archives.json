@@ -1,0 +1,38 @@
+[
+  {
+    "path": "seed-getup-checkpoint.bin.gz",
+    "sha256": "75339ae68a4bef5210ab86fe83893c8e729cad1f4c32d270ad2592c6f772dfa8",
+    "decodedSha256": "3ffed5867ddc238794a2ce94a102c3e2d23bf1a4623070253c91d9d94fa312dd",
+    "decodedBytes": 7605385
+  },
+  {
+    "path": "protocol.ndjson.gz",
+    "sha256": "8da9c9127fdaaf9b5c4639f99ef1a6c5ae53d4d8d8c3c987d2cdc27807ad6627",
+    "decodedSha256": "c7ad1a9b664ca352c85eb4ae141bf3bcdbbf623497be380c39597f151590b6b6",
+    "decodedBytes": 949343
+  },
+  {
+    "path": "build.log.gz",
+    "sha256": "8c6238b4029e3eb20501d584755a6dce85828f4568e858dba07226b8ee62a108",
+    "decodedSha256": "a5ababdc3efb92fd55ed3f1e6106945062da91b393757e82474339e279eabe6c",
+    "decodedBytes": 13736
+  },
+  {
+    "path": "npm-test.log.gz",
+    "sha256": "d74cd4ab02d968c4fc04dc8d6d79026053191bac1983551310208937158793c0",
+    "decodedSha256": "a044fab95e3184b1b6b7ead24b3256c169b76d7de2f729311ca44a501ed08fbd",
+    "decodedBytes": 6786
+  },
+  {
+    "path": "rust-test.log.gz",
+    "sha256": "adf2c6d786d9e214488139193bc721008ebcbc37ba2f166ca31439f3f93ff35c",
+    "decodedSha256": "a069cd9456f08ab4b1f3689e6bc1cdf06df65fc94c7d9b0d43735fa3a20d4f6f",
+    "decodedBytes": 2732
+  },
+  {
+    "path": "wasm-check.log.gz",
+    "sha256": "48d04bcd9cc217f4c58d18a80e99aa8b1596483e7524be20d00fa159849bae56",
+    "decodedSha256": "8be1e6ecd7c618b852ca61fa0b6038f599d2cc29859f2977a069e6e804b26be7",
+    "decodedBytes": 15927
+  }
+]

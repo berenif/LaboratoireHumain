@@ -1,0 +1,41 @@
+{
+  "schema": 1,
+  "path": "docs/evidence/coordination-transfer-native-proposal-2026-10-13/worker-prefix-frames.json",
+  "bytes": 4411455,
+  "sha256": "12c56e6f2e84db599bea41595fb07bea4503281a5c8950c594fd7631dadccf30",
+  "rows": 36,
+  "source": {
+    "rawPath": "docs/evidence/coordination-local-pair-2026-10-13/native-run/001-A.states.jsonl",
+    "rawSha256": "8338425db8c92038b98b89ae22c4e6f366a6ebd71b000aa615700acbd530bdd8",
+    "rawBytes": 120408477,
+    "archiveIndexSha256": "5eb03af83742e0c248147d025978a2129093b770255b3e707c04ffeb0ffb9656",
+    "parts": [
+      {
+        "path": "docs/evidence/coordination-local-pair-2026-10-13/native-run/001-A.states.jsonl.part00000.gz",
+        "sha256": "3aa05745e67cd1070cb2dbc33dc7471f1a3a5782b29d3eef797d153529be4700",
+        "bytes": 6078448
+      },
+      {
+        "path": "docs/evidence/coordination-local-pair-2026-10-13/native-run/001-A.states.jsonl.part00001.gz",
+        "sha256": "a52ae2d4c6805bd858b89ad0421f500dbba9bf0ddc8167259f52ff9bd931a218",
+        "bytes": 5989740
+      },
+      {
+        "path": "docs/evidence/coordination-local-pair-2026-10-13/native-run/001-A.states.jsonl.part00002.gz",
+        "sha256": "552e8ee309807d1d05373fc5195bf532590002e95486f3b88c9df1fd46ee40f5",
+        "bytes": 6059344
+      },
+      {
+        "path": "docs/evidence/coordination-local-pair-2026-10-13/native-run/001-A.states.jsonl.part00003.gz",
+        "sha256": "e76b0ff3f3e795c9513b07735eeab429694769470ee4d48b7b4283728102463c",
+        "bytes": 3567704
+      }
+    ],
+    "hashesVerified": true
+  },
+  "extractorSha256": "ecb3c10bd52b77aa279cbce3e9b9228e5f45b8dcbe8af8f4e659b89f4f3f6f0b",
+  "sourceExtractorSha256": "59ca4ecbe330c069f102eeb1a9b0f2cf7fff7767887b27937dd22cda38695e6b",
+  "nativeSteps": 0,
+  "fkCalls": 0,
+  "worldsConstructed": 0
+}

@@ -1,0 +1,19 @@
+{
+  "schema": 1,
+  "startedUtc": "2026-10-12T20:14:00Z",
+  "baseCommit": "e3b4ed3b2ddaac5450c2846ec12c736a1287082e",
+  "approvedBy": "owner delegation Yes review corrige implement dans un contexte neuf",
+  "preparationHoursLimit": 40,
+  "preparationDaysLimit": 5,
+  "staticInspectionLimit": 20000,
+  "physicalSubstepsLimit": 300000,
+  "storiesLimit": 4,
+  "storySecondsLimit": 4,
+  "physicsWallSecondsLimit": 7200,
+  "physicalSubstepsReserved": 0,
+  "physicalSubstepsExecuted": 0,
+  "status": "preparing-no-physics",
+  "oldLedgers": "closed; unchanged",
+  "preparationDeadlineUtc": "2026-10-17T20:14:00Z",
+  "physicsDeadlineUtc": null
+}

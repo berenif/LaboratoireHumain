@@ -1,0 +1,10 @@
+{
+  "alarmRestored": true,
+  "error": "Refusal: Cannot replace an existing process alarm",
+  "nativeRustWorkerExecuted": false,
+  "physicalIntegrations": 0,
+  "protocolCountsAreSynthetic": true,
+  "result": null,
+  "signalHandlersRestored": true,
+  "unrelatedSurvivedCleanup": null
+}

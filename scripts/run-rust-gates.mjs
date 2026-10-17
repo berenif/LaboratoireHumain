@@ -131,11 +131,10 @@ try {
       const actuatorParsed = read('actuators','actuators.json'), actuatorRows = Array.isArray(actuatorParsed)?actuatorParsed:[];
       stages.push({name:'actuators',passed:success('actuators')&&actuatorRows.length===432&&actuatorRows.every(r=>r.passed),
         expectedCases:432,actualCases:actuatorRows.length,passedCases:actuatorRows.filter(r=>r.passed).length});
-      const appBuild=run('retained-build',['scripts/run-tool.mjs','vinext','build'],600000,process.execPath);
-      const appTests=run('retained-tests',['--test',...readdirSync('tests').filter(file=>file.endsWith('.test.mjs')).map(file=>join('tests',file))],1800000,process.execPath);
-      const typecheck=run('retained-typecheck',['node_modules/typescript/bin/tsc','--noEmit','--pretty','false'],300000,process.execPath);
-      const application=appBuild&&appTests&&typecheck;
-      stages.push({name:'retained-application',passed:application});
+      const appBuild=run('application-build',['scripts/build-rust-browser.mjs'],600000,process.execPath);
+      const appTests=run('application-tests',['--test',...readdirSync('tests').filter(file=>file.endsWith('.test.mjs')).map(file=>join('tests',file))],1800000,process.execPath);
+      const application=appBuild&&appTests;
+      stages.push({name:'application-build-and-tests',passed:application});
       const physical=stages.filter(stage=>['contact-stress','force-controls','anatomy-structure-collision-ownership','actuators','disturbances','strict-steps','legacy-four','recovery','cycles-five','terrain-21'].includes(stage.name)).every(stage=>stage.passed);
       if(physical) {
         const browser=run('candidate-browser',['scripts/qualify-rust-candidate.mjs',join(out,'candidate'),profilePath],3600000,process.execPath);

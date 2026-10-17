@@ -1,0 +1,153 @@
+{
+  "schema": 1,
+  "scope": "Refused copied prediction only; no main candidate execution",
+  "sourcesSha256": {
+    "/workspace/LaboratoireHumain/docs/evidence/coordination-transfer-native-7100-2026-10-15/render_contact_loss.py": "6a9ba856b8495b68c33180c92b8ae4cc9ab4b7939edb06affe01698791abf57c",
+    "/workspace/LaboratoireHumain/docs/evidence/coordination-transfer-native-7100-2026-10-15/native-run-once/run-result.json": "03ce370f490418953dcb074fe4c1f1f3b170ea947818dec9b5224e8b4bdafd49",
+    "/workspace/LaboratoireHumain/docs/evidence/coordination-transfer-native-7100-2026-10-15/manifest.json": "80b41aaf7d2f2aa72e91891f97e7ea40d6cf6f3e8538f3f62d0afcba352342b9",
+    "/workspace/LaboratoireHumain/docs/evidence/coordination-transfer-native-7100-2026-10-15/native-run-once/native-trace.jsonl": "7561d3dd93743f37e07c99d91adad1a9ef7cf41b746a98d5e71f93e3f4092c96"
+  },
+  "endpointTraceLine": 133,
+  "previousObservationJsonPath": "owner.transfer.decision.policy.latest",
+  "previousObservationNativeSubstep": 77,
+  "endpointNativeSubstep": 78,
+  "retainedPointJsonPath": "owner.transfer.decision.policy.initial_material_obligations[segment=19]",
+  "retainedPointLocalM": [
+    -0.04500000923871994,
+    -0.04500000923871994,
+    0.060000013560056686
+  ],
+  "segment": 19,
+  "matchingToleranceM": 0.012,
+  "panels": [
+    {
+      "nativeSubstep": 77,
+      "contacts": [
+        {
+          "current_upward_load_n": 37.341694076419934,
+          "local_point_m": [
+            -0.052000027149915695,
+            -0.04500001296401024,
+            -0.06000002846121788
+          ],
+          "upward_normal": 1.0,
+          "world_point_m": [
+            -0.14209841191768646,
+            -0.0009065046906471252,
+            -0.07162126898765564
+          ],
+          "distanceToRetainedPointM": 0.12020403627110338
+        },
+        {
+          "current_upward_load_n": 65.34145491279524,
+          "local_point_m": [
+            -0.04500000923871994,
+            -0.04500001668930054,
+            0.060000013560056686
+          ],
+          "upward_normal": 1.0,
+          "world_point_m": [
+            -0.13592493534088135,
+            -0.0043950155377388,
+            0.04837341979146004
+          ],
+          "distanceToRetainedPointM": 7.450580596923828e-09
+        },
+        {
+          "current_upward_load_n": 65.28257506357114,
+          "local_point_m": [
+            0.04500000923871994,
+            -0.04500001668930054,
+            0.06000000983476639
+          ],
+          "upward_normal": 1.0,
+          "world_point_m": [
+            -0.04592727869749069,
+            -0.004213571548461914,
+            0.048998743295669556
+          ],
+          "distanceToRetainedPointM": 0.09000001847744027
+        },
+        {
+          "current_upward_load_n": 36.65604638612029,
+          "local_point_m": [
+            0.0520000085234642,
+            -0.04500001668930054,
+            -0.060000017285346985
+          ],
+          "upward_normal": 1.0,
+          "world_point_m": [
+            -0.038101110607385635,
+            -0.0006968379020690918,
+            -0.07089865952730179
+          ],
+          "distanceToRetainedPointM": 0.15430168777029604
+        }
+      ],
+      "totalCurrentUpwardLoadN": 204.6217704389066,
+      "nearestRetainedPointDistanceM": 7.450580596923828e-09,
+      "retainedPointPresentWithin12mm": true
+    },
+    {
+      "nativeSubstep": 78,
+      "contacts": [
+        {
+          "current_upward_load_n": 47.452341227483835,
+          "local_point_m": [
+            -0.052000027149915695,
+            -0.04500001668930054,
+            -0.06000003218650818
+          ],
+          "upward_normal": 1.0,
+          "world_point_m": [
+            -0.1420830339193344,
+            -0.000979892909526825,
+            -0.07152873277664185
+          ],
+          "distanceToRetainedPointM": 0.12020403999007179
+        },
+        {
+          "current_upward_load_n": 0.9898881842999362,
+          "local_point_m": [
+            0.04500001668930054,
+            -0.04500000178813934,
+            0.06000002101063728
+          ],
+          "upward_normal": 1.0,
+          "world_point_m": [
+            -0.04590063542127609,
+            -0.003751356154680252,
+            0.04909583181142807
+          ],
+          "distanceToRetainedPointM": 0.09000002592802109
+        },
+        {
+          "current_upward_load_n": 37.110702248104545,
+          "local_point_m": [
+            0.0520000196993351,
+            -0.04500001668930054,
+            -0.060000017285346985
+          ],
+          "upward_normal": 1.0,
+          "world_point_m": [
+            -0.038085632026195526,
+            -0.0007736757397651672,
+            -0.07081691920757294
+          ],
+          "distanceToRetainedPointM": 0.15430169479588163
+        }
+      ],
+      "totalCurrentUpwardLoadN": 85.55293165988832,
+      "nearestRetainedPointDistanceM": 0.09000002592802109,
+      "retainedPointPresentWithin12mm": false
+    }
+  ],
+  "outputsSha256": {
+    "contact-point-loss.png": "70f132096573b5384d6f30d064d7b549462008d4a9b31ef05e1ba1bb9c237f9c",
+    "contact-point-loss.svg": "93d6b3cce272b803c5b3ba4a6c460ec3f8e1631a7763750487c0e1905ebc6f3b"
+  },
+  "interpretation": "The retained left forefoot contact disappears; three other contacts remain loaded. This is not proof of whole-foot support loss or drift over 10 mm.",
+  "additionalNativeSubsteps": 0,
+  "newFkInspections": 0,
+  "collisionQueries": 0
+}

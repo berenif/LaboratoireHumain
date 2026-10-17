@@ -1,0 +1,10 @@
+{
+  "alarmRestored": true,
+  "error": "Refusal: Refusal: Native process identity, thread, child or binary contract violated",
+  "nativeRustWorkerExecuted": false,
+  "physicalIntegrations": 0,
+  "protocolCountsAreSynthetic": true,
+  "result": null,
+  "signalHandlersRestored": true,
+  "unrelatedSurvivedCleanup": null
+}

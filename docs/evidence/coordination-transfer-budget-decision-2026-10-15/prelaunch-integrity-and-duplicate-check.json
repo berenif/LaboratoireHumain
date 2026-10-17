@@ -1,0 +1,174 @@
+{
+  "schema": 1,
+  "checkedUtc": "2026-10-15T12:23:42.371341+00:00",
+  "candidateGitCommit": "29df604533439e9ed7570698f2287fc92747d6ef",
+  "manifestSha256": "4f3708fd50cd4dabf473b7a6bff528ee11ad798cf25dfbeaf0f6141c156818f7",
+  "binarySha256": "63e0e035d38d02f762c69b9dacb65d61e179c72ced50f5facd0bc29c64b9e8b5",
+  "frozenFilesVerified": 345,
+  "historicalFilesVerified": [
+    {
+      "path": "docs/evidence/coordination-prototype-2026-10-12/budget/ledger.json",
+      "sha256": "2afa69b3ae9c8ab8343f7dabdf46b955c8ac7b88aa259404958e25d49a72ef07"
+    },
+    {
+      "path": "docs/evidence/coordination-native-parity-2026-10-13/native-run/physical-ledger.json",
+      "sha256": "73b2e3bff52aadf0414be2f7a4a96fa4cd5da7b02de0945434e4f136bbf476a6"
+    },
+    {
+      "path": "docs/evidence/coordination-native-parity-renewal-2026-10-13/native-run/physical-ledger.json",
+      "sha256": "1411bfcc1a17caa681359cfb39d7c0429f2188375925c22ba4b037df96d44bc2"
+    },
+    {
+      "path": "docs/evidence/coordination-native-serialization-2026-10-13/native-run/physical-ledger.json",
+      "sha256": "191d3216953bfb4aca5b7abcea277454d7d97ad5b4ca72e28ffbc260399af250"
+    },
+    {
+      "path": "docs/evidence/coordination-local-pair-2026-10-13/budget/ledger.json",
+      "sha256": "e7c6831159ac1ae913a05f2af545a0521181d7142dbabd967908dfe7958fba97"
+    },
+    {
+      "path": "rust/target/release/deps/coordination_worker-60f2b83fe348a1d3",
+      "sha256": "1bb4b91ac8ebfbe382d9525e524b85040ca9890bc90a0ef0467f1ef2b64c8b57"
+    },
+    {
+      "path": "rust/target/release/deps/numeric_parity_worker-b68c9e5f8e8cfa37",
+      "sha256": "9e125785fad85b0befc9373c3116d66aa32e8050a998ce08974b0da29d2760cc"
+    },
+    {
+      "path": "rust/target/release/deps/numeric_parity_worker_serialization-360529b9ad4cba37",
+      "sha256": "83bddf95897acc6015de7d2947b04ee2f5aaf2eb49b4dcb85ba0a67764f95e1b"
+    },
+    {
+      "path": "rust/target/release/deps/coordination_local_pair_worker-bf2c98f759d9dc34",
+      "sha256": "c1c8a12825428758643a7f6e2fafb0a2710f7dca787c1daee07c27ec59849e9c"
+    },
+    {
+      "path": "docs/evidence/coordination-prototype-2026-10-12/frozen-manifest.json",
+      "sha256": "4a37d4afbfe3ecd51997208bf5fa7599106fd9c43650cb55f6bcf6400d4e1d29"
+    },
+    {
+      "path": "docs/evidence/coordination-native-parity-2026-10-13/manifest.json",
+      "sha256": "40e492a29d723118cb26990b9dd2866d498d9a1a5d5ae815d7aae1d9d92a407a"
+    },
+    {
+      "path": "docs/evidence/coordination-native-parity-renewal-2026-10-13/manifest.json",
+      "sha256": "7235b6916b2d669710b0339e474fc245b48cc4311dd893557f4c03164f3326a6"
+    },
+    {
+      "path": "docs/evidence/coordination-native-serialization-2026-10-13/manifest.json",
+      "sha256": "179bfe3cb58819cd2ba1b73642969c0eb2a343a052dee83ae89e2850e0830356"
+    },
+    {
+      "path": "docs/evidence/coordination-local-pair-2026-10-13/manifest.json",
+      "sha256": "2fbcb3db0cd1bccf14082e772b1efba63e567fe7fce35ed8cccbbbf2ac2cdde9"
+    }
+  ],
+  "nativeProcessesOrCompilersDetected": [],
+  "processInventory": [
+    {
+      "pid": 1,
+      "comm": "tail"
+    },
+    {
+      "pid": 2,
+      "comm": "cloud-agent-log"
+    },
+    {
+      "pid": 3,
+      "comm": "caas-prefix-tra"
+    },
+    {
+      "pid": 118,
+      "comm": "dockerd"
+    },
+    {
+      "pid": 171,
+      "comm": "containerd"
+    },
+    {
+      "pid": 441,
+      "comm": "codex"
+    },
+    {
+      "pid": 3953,
+      "comm": "git"
+    },
+    {
+      "pid": 4240,
+      "comm": "git"
+    },
+    {
+      "pid": 4695,
+      "comm": "codex-linux-san"
+    },
+    {
+      "pid": 4697,
+      "comm": "bwrap"
+    },
+    {
+      "pid": 4698,
+      "comm": "codex",
+      "exe": "/opt/codex/bin/codex"
+    },
+    {
+      "pid": 4699,
+      "comm": "bash",
+      "exe": "/usr/bin/bash"
+    },
+    {
+      "pid": 4702,
+      "comm": "python3",
+      "exe": "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3.12"
+    }
+  ],
+  "exeLinksNotReadable": [
+    {
+      "pid": 1,
+      "comm": "tail"
+    },
+    {
+      "pid": 2,
+      "comm": "cloud-agent-log"
+    },
+    {
+      "pid": 3,
+      "comm": "caas-prefix-tra"
+    },
+    {
+      "pid": 118,
+      "comm": "dockerd"
+    },
+    {
+      "pid": 171,
+      "comm": "containerd"
+    },
+    {
+      "pid": 441,
+      "comm": "codex"
+    },
+    {
+      "pid": 3953,
+      "comm": "git"
+    },
+    {
+      "pid": 4240,
+      "comm": "git"
+    },
+    {
+      "pid": 4695,
+      "comm": "codex-linux-san"
+    },
+    {
+      "pid": 4697,
+      "comm": "bwrap"
+    }
+  ],
+  "processInspectionLimit": "Linux denies /proc/exe reads for several existing service/sandbox and two old git processes; names/status remain visible. No global byte-level executable census is claimed. No candidate claim/output/process name found. Initial stricter assertion requiring every exe link readable failed before any write or launch.",
+  "candidateClaims": [],
+  "candidatePhysicalLedgers": [],
+  "candidateOutputExists": false,
+  "newNativeSteps": 0,
+  "workerStarted": false,
+  "integrityPassed": true,
+  "approvedAuthorizationFileCreated": false
+}

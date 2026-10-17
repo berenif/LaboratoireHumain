@@ -1,0 +1,11 @@
+✔ incremental trial counts actual native integrations including its entire forecast (1.372912ms)
+✔ incremental trial refuses excess, missing, invalid or decreasing counters without physics (5.913734ms)
+✔ transport observation sequence is independent of the physical native count (0.356228ms)
+ℹ tests 3
+ℹ suites 0
+ℹ pass 3
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 312.92331

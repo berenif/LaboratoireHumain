@@ -1,0 +1,12 @@
+
+running 7 tests
+test recovery::planner::native_plan_preview::tests::admission_requires_four_measured_native_frames ... ok
+test recovery::planner::native_plan_preview::tests::bad_horizon_and_clock_overflow_refuse_before_reservation ... ok
+test recovery::planner::native_plan_preview::tests::clock_violation_and_kernel_error_never_refund_a_reservation ... ok
+test recovery::planner::native_plan_preview::tests::fake_kernel_consumes_one_reservation_per_step_and_preserves_partial_trace ... ok
+test recovery::planner::native_plan_preview::tests::partial_four_step_reservation_is_retained_without_starting_a_tick ... ok
+test recovery::planner::native_plan_preview::tests::refused_reservation_does_not_invoke_kernel_or_change_memory ... ok
+test recovery::planner::native_plan_preview::tests::static_snapshot_copies_world_and_controller_memory_without_integration ... ok
+
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 169 filtered out; finished in 0.31s
+

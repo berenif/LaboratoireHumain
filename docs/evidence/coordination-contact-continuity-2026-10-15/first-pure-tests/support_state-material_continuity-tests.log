@@ -1,0 +1,26 @@
+
+running 21 tests
+test recovery::planner::support_state::material_continuity::tests::acquired_face_cannot_turn_over_while_preserving_ground_normal_claims ... ok
+test recovery::planner::support_state::material_continuity::tests::acquisition_without_loaded_coplanar_triangle_never_adds_surface_later ... ok
+test recovery::planner::support_state::material_continuity::tests::archived_78_is_refused_even_if_weak_third_vertex_is_synthetically_strengthened ... ok
+test recovery::planner::support_state::material_continuity::tests::cached_surface_must_be_recomputed_against_current_observation ... ok
+test recovery::planner::support_state::material_continuity::tests::cached_surface_receipt_must_match_patch_identity_and_observation_clock ... ok
+test recovery::planner::support_state::material_continuity::tests::collinear_loaded_points_do_not_define_surface_support ... ok
+test recovery::planner::support_state::material_continuity::tests::contacts_require_flat_ground_normals_with_numeric_tolerance ... ok
+test recovery::planner::support_state::material_continuity::tests::equivalent_surface_is_only_for_held_foot_material_not_pivot_or_other_roles ... ok
+test recovery::planner::support_state::material_continuity::tests::foreign_material_plane_cannot_replace_acquired_face ... ok
+test recovery::planner::support_state::material_continuity::tests::hull_tolerance_is_numerical_and_never_contact_match_distance ... ok
+test recovery::planner::support_state::material_continuity::tests::inconsistent_local_world_contacts_refuse_surface_certificate ... ok
+test recovery::planner::support_state::material_continuity::tests::legacy_import_has_no_surface_and_imported_certificate_is_discarded ... ok
+test recovery::planner::support_state::material_continuity::tests::lifted_material_point_cannot_be_certified_by_ground_claims ... ok
+test recovery::planner::support_state::material_continuity::tests::local_and_world_anchor_or_acquisition_identity_cannot_be_changed ... ok
+test recovery::planner::support_state::material_continuity::tests::original_direct_rule_preserved_and_false_flag_not_overridden_by_direct_cache ... ok
+test recovery::planner::support_state::material_continuity::tests::original_interior_point_has_loaded_surface_certificate_without_reanchoring ... ok
+test recovery::planner::support_state::material_continuity::tests::outside_hull_is_refused_even_inside_axis_aligned_bounds ... ok
+test recovery::planner::support_state::material_continuity::tests::persistence_and_subthreshold_vertex_loads_cannot_enlarge_hull ... ok
+test recovery::planner::support_state::material_continuity::tests::pivot_and_nonfoot_acquisition_never_create_equivalent_surface_reference ... ok
+test recovery::planner::support_state::material_continuity::tests::static_certificate_does_not_reset_drift_or_grant_a_drift_waiver ... ok
+test recovery::planner::support_state::material_continuity::tests::support_on_other_segment_cannot_supply_material_surface ... ok
+
+test result: ok. 21 passed; 0 failed; 0 ignored; 0 measured; 259 filtered out; finished in 0.03s
+

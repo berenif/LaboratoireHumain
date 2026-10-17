@@ -1,0 +1,33 @@
+{
+  "commit": "cba6b74a74234ee1da4d4e0a6863dce9b1e9ef9c",
+  "sources": [
+    {
+      "path": "docs/coordination-local-pair-2026-10-13.md",
+      "sha256": "c13a5e02da8f0ab7da4db741c02fd1b02c2f68db903b0e5cae73915b7f17acab"
+    },
+    {
+      "path": "docs/coordination-prototype-2026-10-12.md",
+      "sha256": "a822de41396ad6c78f69a7fe345a266a654786c135562b0bf8f9d5482491ecb8"
+    },
+    {
+      "path": "docs/evidence/coordination-local-pair-2026-10-13/postrun-causal-review.md",
+      "sha256": "8d9ec142c1a2d5a667b1cfa26a0cd3f348b13bd5dbd55ccfcbd9d0e5947345a5"
+    },
+    {
+      "path": "docs/evidence/coordination-local-pair-2026-10-13/postrun-physical-audit.md",
+      "sha256": "36452a1964ee1ef035e45506c20504aecfdc757bd0111d5a1c66ddd20a9efaa3"
+    },
+    {
+      "path": "docs/evidence/coordination-local-pair-2026-10-13/postrun-budget-audit.md",
+      "sha256": "e61690b0df2072b39442d78cacc8bf94a14f724cad07993dca07a4aabe0313a5"
+    },
+    {
+      "path": "docs/evidence/coordination-local-pair-2026-10-13/postrun-continuation-decision.md",
+      "sha256": "8e253be64b5e98d67268f49259f32fdeee4b4b09c0aa7be32028ae49d32dd611"
+    }
+  ],
+  "path": "/workspace/LaboratoireHumain/docs/evidence/coordination-local-pair-2026-10-13/delivery/LaboratoireHumain-coordination-paire-finale-rapport-complet-2026-10-13.md",
+  "bytes": 70371,
+  "sha256": "d4e690e8eb07750d7f1638e0cc33a07e7e8bf9197f3d8ba8878a9be00698050f",
+  "nativeIntegrations": 0
+}

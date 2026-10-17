@@ -1,0 +1,680 @@
+{
+  "physicsIntegrations": 0,
+  "thresholdsChanged": false,
+  "checkpointBytesUnchanged": true,
+  "cases": [
+    {
+      "kind": "back",
+      "checkpointSha256": "4e90574566dcfe7af6fcb496c301039538a6a0e6f3449dac0f966f87238b782f",
+      "suppliedAnchorsFromNative": 9600,
+      "oneSecondProofNative": 9818,
+      "oneSecondProofPhysicalS": 12.2725,
+      "oneSecondProofAfterTriggerS": 11.7725,
+      "proofTimingMethod": "last pre-flag native stable counter + remaining steps to800; sample gap <800 precludes another full chain",
+      "diagnostic": {
+        "capture": {
+          "x": -0.7183587551116943,
+          "y": 0.8058589696884155,
+          "z": 0.13388197124004364
+        },
+        "com": {
+          "x": -0.7388614416122437,
+          "y": 0.8070359230041504,
+          "z": 0.16375978291034698
+        },
+        "comVelocity": {
+          "x": 0.07148244976997375,
+          "y": -0.004103479906916618,
+          "z": -0.1041685938835144
+        },
+        "feet": [
+          {
+            "x": -0.8989093899726868,
+            "y": 0.026838131248950958,
+            "z": 0.058470845222473145
+          },
+          {
+            "x": -0.7167794108390808,
+            "y": 0.026695875450968742,
+            "z": 0.3516233265399933
+          }
+        ],
+        "footDriftM": [
+          0.0031700395047664642,
+          0.007123996969312429
+        ],
+        "footIds": [
+          16,
+          10
+        ],
+        "headM": 1.4508625268936157,
+        "loadsN": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          251.18504333496094,
+          0,
+          0,
+          0,
+          0,
+          0,
+          144.429443359375,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "motion": [
+          {
+            "angularPassed": true,
+            "angularRadps": 0.15912611782550812,
+            "body": "torso",
+            "linearMps": 0.20234151184558868,
+            "linearPassed": true
+          },
+          {
+            "angularPassed": true,
+            "angularRadps": 0.15912611782550812,
+            "body": "head",
+            "linearMps": 0.2239563912153244,
+            "linearPassed": false
+          },
+          {
+            "angularPassed": true,
+            "angularRadps": 0.2625623047351837,
+            "body": "@abdomen_z",
+            "linearMps": 0.18621566891670227,
+            "linearPassed": true
+          },
+          {
+            "angularPassed": true,
+            "angularRadps": 0.34601613879203796,
+            "body": "lower_waist",
+            "linearMps": 0.17715881764888763,
+            "linearPassed": true
+          },
+          {
+            "angularPassed": true,
+            "angularRadps": 0.34899601340293884,
+            "body": "pelvis",
+            "linearMps": 0.13854551315307617,
+            "linearPassed": true
+          },
+          {
+            "angularPassed": true,
+            "angularRadps": 0.3423716127872467,
+            "body": "@right_hip_x",
+            "linearMps": 0.10612302273511887,
+            "linearPassed": true
+          },
+          {
+            "angularPassed": true,
+            "angularRadps": 0.2849122881889343,
+            "body": "@right_hip_z",
+            "linearMps": 0.10612302273511887,
+            "linearPassed": true
+          },
+          {
+            "angularPassed": true,
+            "angularRadps": 0.25112345814704895,
+            "body": "right_thigh",
+            "linearMps": 0.0664791539311409,
+            "linearPassed": true
+          },
+          {
+            "angularPassed": true,
+            "angularRadps": 0.06895674020051956,
+            "body": "right_shin",
+            "linearMps": 0.02108163759112358,
+            "linearPassed": true
+          },
+          {
+            "angularPassed": true,
+            "angularRadps": 0.06861046701669693,
+            "body": "@right_ankle_y",
+            "linearMps": 0.007513933815062046,
+            "linearPassed": true
+          },
+          {
+            "angularPassed": true,
+            "angularRadps": 0.04922403395175934,
+            "body": "right_foot",
+            "linearMps": 0.008091781288385391,
+            "linearPassed": true
+          },
+          {
+            "angularPassed": true,
+            "angularRadps": 0.3442328870296478,
+            "body": "@left_hip_x",
+            "linearMps": 0.14892587065696716,
+            "linearPassed": true
+          },
+          {
+            "angularPassed": true,
+            "angularRadps": 0.23821011185646057,
+            "body": "@left_hip_z",
+            "linearMps": 0.14892587065696716,
+            "linearPassed": true
+          },
+          {
+            "angularPassed": true,
+            "angularRadps": 0.177058145403862,
+            "body": "left_thigh",
+            "linearMps": 0.12030445039272308,
+            "linearPassed": true
+          },
+          {
+            "angularPassed": true,
+            "angularRadps": 0.2769007682800293,
+            "body": "left_shin",
+            "linearMps": 0.03969262167811394,
+            "linearPassed": true
+          },
+          {
+            "angularPassed": true,
+            "angularRadps": 0.07493877410888672,
+            "body": "@left_ankle_y",
+            "linearMps": 0.005261645186692476,
+            "linearPassed": true
+          },
+          {
+            "angularPassed": true,
+            "angularRadps": 0.02315441332757473,
+            "body": "left_foot",
+            "linearMps": 0.006719117984175682,
+            "linearPassed": true
+          },
+          {
+            "angularPassed": true,
+            "angularRadps": 0.2211911976337433,
+            "body": "@right_shoulder1",
+            "linearMps": 0.20249474048614502,
+            "linearPassed": true
+          },
+          {
+            "angularPassed": true,
+            "angularRadps": 0.2559993863105774,
+            "body": "right_upper_arm",
+            "linearMps": 0.18121060729026794,
+            "linearPassed": true
+          },
+          {
+            "angularPassed": true,
+            "angularRadps": 0.25605958700180054,
+            "body": "right_lower_arm",
+            "linearMps": 0.15040583908557892,
+            "linearPassed": true
+          },
+          {
+            "angularPassed": true,
+            "angularRadps": 0.25605958700180054,
+            "body": "right_hand",
+            "linearMps": 0.1515575498342514,
+            "linearPassed": true
+          },
+          {
+            "angularPassed": true,
+            "angularRadps": 0.1714036762714386,
+            "body": "@left_shoulder1",
+            "linearMps": 0.22227902710437775,
+            "linearPassed": false
+          },
+          {
+            "angularPassed": true,
+            "angularRadps": 0.16300591826438904,
+            "body": "left_upper_arm",
+            "linearMps": 0.2199362963438034,
+            "linearPassed": true
+          },
+          {
+            "angularPassed": true,
+            "angularRadps": 0.1651560515165329,
+            "body": "left_lower_arm",
+            "linearMps": 0.21814551949501038,
+            "linearPassed": true
+          },
+          {
+            "angularPassed": true,
+            "angularRadps": 0.1651560515165329,
+            "body": "left_hand",
+            "linearMps": 0.21833375096321106,
+            "linearPassed": true
+          }
+        ],
+        "nativeSubsteps": 9840,
+        "physicsIntegrations": 0,
+        "predicates": {
+          "angularMotion": true,
+          "bothFeetLoadedAndPersistent": true,
+          "captureInSupport": true,
+          "comInSupport": true,
+          "footDriftFromSuppliedAnchors": true,
+          "footLoadFraction": true,
+          "head": true,
+          "linearMotion": false,
+          "onlyFeet": true,
+          "torso": true
+        },
+        "solverSupportPoints": [
+          [
+            -0.9671769738197327,
+            0.08528470247983932
+          ],
+          [
+            -0.9549617171287537,
+            0.10128046572208405
+          ],
+          [
+            -0.8114659786224365,
+            -0.058994732797145844
+          ],
+          [
+            -0.7748039364814758,
+            -0.011019565165042877
+          ],
+          [
+            -0.7710310220718384,
+            0.3966906666755676
+          ],
+          [
+            -0.6210071444511414,
+            0.24645641446113586
+          ],
+          [
+            -0.5825344324111938,
+            0.29298102855682373
+          ]
+        ],
+        "supportPersistence": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          7422,
+          0,
+          0,
+          0,
+          0,
+          0,
+          7499,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "thresholds": {
+          "angularRadps": 0.6499999761581421,
+          "footDriftM": 0.01,
+          "linearMps": 0.2199999988079071,
+          "torsoUp": 0.9700000286102295
+        },
+        "torsoUp": 0.9985033273696899
+      },
+      "failedPredicates": [
+        "linearMotion"
+      ],
+      "supportGeometry": {
+        "com": {
+          "minimumInwardEdgeDistanceM": 0.06304757691456131,
+          "requiredMarginM": 0.003,
+          "geometricallyInsideWithoutMargin": true
+        },
+        "capture": {
+          "minimumInwardEdgeDistanceM": 0.029749193197120438,
+          "requiredMarginM": 0.003,
+          "geometricallyInsideWithoutMargin": true
+        }
+      }
+    },
+    {
+      "kind": "belly",
+      "checkpointSha256": "041934e1f96e69ffb528c9a76e72ee440f168820a16ca63902d2288b6cbc3912",
+      "suppliedAnchorsFromNative": 11200,
+      "oneSecondProofNative": 11641,
+      "oneSecondProofPhysicalS": 14.55125,
+      "oneSecondProofAfterTriggerS": 14.05125,
+      "proofTimingMethod": "last pre-flag native stable counter + remaining steps to800; sample gap <800 precludes another full chain",
+      "diagnostic": {
+        "capture": {
+          "x": -0.4568193554878235,
+          "y": 0.8116386532783508,
+          "z": -0.6276262402534485
+        },
+        "com": {
+          "x": -0.45693832635879517,
+          "y": 0.8118866682052612,
+          "z": -0.6280003786087036
+        },
+        "comVelocity": {
+          "x": 0.00041355026769451797,
+          "y": -0.0008620704174973071,
+          "z": 0.0013004735810682178
+        },
+        "feet": [
+          {
+            "x": -0.5833385586738586,
+            "y": 0.04226015880703926,
+            "z": -0.7563093304634094
+          },
+          {
+            "x": -0.5724669694900513,
+            "y": 0.03295651078224182,
+            "z": -0.5997922420501709
+          }
+        ],
+        "footDriftM": [
+          0.0014454597840085626,
+          0.0007417197921313345
+        ],
+        "footIds": [
+          16,
+          10
+        ],
+        "headM": 1.45506751537323,
+        "loadsN": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          232.93408203125,
+          0,
+          0,
+          0,
+          0,
+          0,
+          137.2520294189453,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "motion": [
+          {
+            "angularPassed": true,
+            "angularRadps": 0.0041034650057554245,
+            "body": "torso",
+            "linearMps": 0.0021561384201049805,
+            "linearPassed": true
+          },
+          {
+            "angularPassed": true,
+            "angularRadps": 0.0041034650057554245,
+            "body": "head",
+            "linearMps": 0.0019498651381582022,
+            "linearPassed": true
+          },
+          {
+            "angularPassed": true,
+            "angularRadps": 0.006362430285662413,
+            "body": "@abdomen_z",
+            "linearMps": 0.0024010436609387398,
+            "linearPassed": true
+          },
+          {
+            "angularPassed": true,
+            "angularRadps": 0.006919310428202152,
+            "body": "lower_waist",
+            "linearMps": 0.0022430538665503263,
+            "linearPassed": true
+          },
+          {
+            "angularPassed": true,
+            "angularRadps": 0.008093427866697311,
+            "body": "pelvis",
+            "linearMps": 0.0018311383901163936,
+            "linearPassed": true
+          },
+          {
+            "angularPassed": true,
+            "angularRadps": 0.007909382693469524,
+            "body": "@right_hip_x",
+            "linearMps": 0.0023662319872528315,
+            "linearPassed": true
+          },
+          {
+            "angularPassed": true,
+            "angularRadps": 0.05840473622083664,
+            "body": "@right_hip_z",
+            "linearMps": 0.0023662319872528315,
+            "linearPassed": true
+          },
+          {
+            "angularPassed": true,
+            "angularRadps": 0.06050876900553703,
+            "body": "right_thigh",
+            "linearMps": 0.002044613938778639,
+            "linearPassed": true
+          },
+          {
+            "angularPassed": true,
+            "angularRadps": 0.05888612940907478,
+            "body": "right_shin",
+            "linearMps": 0.005950156599283218,
+            "linearPassed": true
+          },
+          {
+            "angularPassed": true,
+            "angularRadps": 0.05975984036922455,
+            "body": "@right_ankle_y",
+            "linearMps": 0.007855018600821495,
+            "linearPassed": true
+          },
+          {
+            "angularPassed": true,
+            "angularRadps": 0.05678551644086838,
+            "body": "right_foot",
+            "linearMps": 0.0061721038073301315,
+            "linearPassed": true
+          },
+          {
+            "angularPassed": true,
+            "angularRadps": 0.0068904641084373,
+            "body": "@left_hip_x",
+            "linearMps": 0.001021555275656283,
+            "linearPassed": true
+          },
+          {
+            "angularPassed": true,
+            "angularRadps": 0.003242588834837079,
+            "body": "@left_hip_z",
+            "linearMps": 0.001021555275656283,
+            "linearPassed": true
+          },
+          {
+            "angularPassed": true,
+            "angularRadps": 0.00209873728454113,
+            "body": "left_thigh",
+            "linearMps": 0.0009478256106376648,
+            "linearPassed": true
+          },
+          {
+            "angularPassed": true,
+            "angularRadps": 0.00306313787586987,
+            "body": "left_shin",
+            "linearMps": 0.0005659658345393836,
+            "linearPassed": true
+          },
+          {
+            "angularPassed": true,
+            "angularRadps": 0.0020287903025746346,
+            "body": "@left_ankle_y",
+            "linearMps": 0.0002702248457353562,
+            "linearPassed": true
+          },
+          {
+            "angularPassed": true,
+            "angularRadps": 0.0012517791474238038,
+            "body": "left_foot",
+            "linearMps": 0.00027518990100361407,
+            "linearPassed": true
+          },
+          {
+            "angularPassed": true,
+            "angularRadps": 0.00678614154458046,
+            "body": "@right_shoulder1",
+            "linearMps": 0.0025363247841596603,
+            "linearPassed": true
+          },
+          {
+            "angularPassed": true,
+            "angularRadps": 0.006978681311011314,
+            "body": "right_upper_arm",
+            "linearMps": 0.0027075400575995445,
+            "linearPassed": true
+          },
+          {
+            "angularPassed": true,
+            "angularRadps": 0.006743083707988262,
+            "body": "right_lower_arm",
+            "linearMps": 0.004144278820604086,
+            "linearPassed": true
+          },
+          {
+            "angularPassed": true,
+            "angularRadps": 0.006743083707988262,
+            "body": "right_hand",
+            "linearMps": 0.004997050389647484,
+            "linearPassed": true
+          },
+          {
+            "angularPassed": true,
+            "angularRadps": 0.005172950681298971,
+            "body": "@left_shoulder1",
+            "linearMps": 0.0017180903814733028,
+            "linearPassed": true
+          },
+          {
+            "angularPassed": true,
+            "angularRadps": 0.005765724461525679,
+            "body": "left_upper_arm",
+            "linearMps": 0.001385267241857946,
+            "linearPassed": true
+          },
+          {
+            "angularPassed": true,
+            "angularRadps": 0.005781870801001787,
+            "body": "left_lower_arm",
+            "linearMps": 0.0008444429258815944,
+            "linearPassed": true
+          },
+          {
+            "angularPassed": true,
+            "angularRadps": 0.005781870801001787,
+            "body": "left_hand",
+            "linearMps": 0.0010036712046712637,
+            "linearPassed": true
+          }
+        ],
+        "nativeSubsteps": 11680,
+        "physicsIntegrations": 0,
+        "predicates": {
+          "angularMotion": true,
+          "bothFeetLoadedAndPersistent": true,
+          "captureInSupport": false,
+          "comInSupport": false,
+          "footDriftFromSuppliedAnchors": true,
+          "footLoadFraction": true,
+          "head": true,
+          "linearMotion": true,
+          "onlyFeet": true,
+          "torso": true
+        },
+        "solverSupportPoints": [
+          [
+            -0.4449462294578552,
+            -0.728848397731781
+          ],
+          [
+            -0.44172704219818115,
+            -0.7890358567237854
+          ],
+          [
+            -0.4296119809150696,
+            -0.5697638392448425
+          ]
+        ],
+        "supportPersistence": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          3280,
+          0,
+          0,
+          0,
+          0,
+          0,
+          3335,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "thresholds": {
+          "angularRadps": 0.6499999761581421,
+          "footDriftM": 0.01,
+          "linearMps": 0.2199999988079071,
+          "torsoUp": 0.9700000286102295
+        },
+        "torsoUp": 0.997065544128418
+      },
+      "failedPredicates": [
+        "captureInSupport",
+        "comInSupport"
+      ],
+      "supportGeometry": {
+        "com": {
+          "minimumInwardEdgeDistanceM": -0.021612721958084724,
+          "requiredMarginM": 0.003,
+          "geometricallyInsideWithoutMargin": false
+        },
+        "capture": {
+          "minimumInwardEdgeDistanceM": -0.021530196979145433,
+          "requiredMarginM": 0.003,
+          "geometricallyInsideWithoutMargin": false
+        }
+      }
+    }
+  ]
+}

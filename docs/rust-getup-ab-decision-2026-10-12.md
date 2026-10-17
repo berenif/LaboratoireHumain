@@ -1,0 +1,107 @@
+# Comparaison get_up_control A/B — décision du 12 octobre 2026
+
+Le propriétaire autorise le jalon limité le 12 octobre à 05:48 UTC, après la
+revue architecturale de `42fccd3`. Base locale et distante vérifiée :
+`42fccd359e88bb0677c40b39310e24313e8cd8d1` sur `investigate/physical-support`.
+Checkout propre, aucun changement concurrent constaté. `main` reste à `c597959`.
+
+## Révision explicite de la dépendance P1
+
+L'audit exhaustif des opérations Rapier, du bilan angulaire et de la borne
+indépendante d'arrondi est **différé**. P1 reste non certifiée et son registre
+reste fermé. Cette décision remplace seulement l'exigence documentaire
+« aucune recherche avant certification P1 » pour la comparaison A/B autorisée.
+Elle n'autorise aucune campagne d'optimisation ni aucune tolérance nouvelle.
+
+Le défaut de lecture CCD est expliqué ; l'observation corrigée est neutre.
+Un résidu angulaire incomplet reste visible. Le retour d'état proposé est une
+approximation cinématique qui produit des commandes articulaires bornées ;
+il ne revendique aucun certificat de dynamique inverse ou de conservation.
+
+Les exigences physiques restent intégralement celles du contrat original :
+anatomie, masses, contacts, gains, caps anatomiques/enveloppe 760 Nm, intégrité,
+aucune assistance au bassin, écriture de pose ou reset pendant l'histoire.
+Le compteur original, les appuis bilatéraux persistants, le settle de 0,30 s,
+le handoff de 0,60 s et le maintien de 1 s restent indépendants du score.
+Succès avant 25 s, puis 1 s d'observation supplémentaire dans le même monde.
+La récupération reste désactivée par défaut et non qualifiée.
+
+## Expérience figée à préparer
+
+Programme complet local issu de [get_up_control](https://github.com/tianxintao/get_up_control),
+déjà adapté et archivé : `reference-ready.json`, SHA-256
+`fef70abf3d016cecf6658b0bc5e7a6361d989eb265840acdc1a4fbc497a70c7d`.
+Ses clés nominales, sa durée de 20,883333 s et son calendrier ne changent pas.
+Témoin A et candidat B utilisent le même exécuteur/terminal ; seul le retour
+d'état coordonné borné est désactivé ou activé. Un retour cinématique ne promet
+pas la charge effectivement livrée : celle-ci est mesurée dans Rapier.
+
+Préparation plafonnée à deux journées de travail, comptées conservativement
+comme 16 heures actives, avec une échéance de sauvegarde à 48 heures calendaires.
+Sans exécuteur et terminal prêts, arrêt sans essai. Chaque intégration, y compris
+test ou copie, doit passer par le registre. Les vérifications préalables sont
+donc statiques, compilation ou tests explicitement sans intégration.
+
+Plafond expérimental : **3 histoires × 26 s, 18 720 pas natifs, un processus
+mono-thread, 600 s murales depuis le premier lancement**. Témoin puis candidat ;
+répétition figée seulement après succès complet. Aucun réglage entre histoires,
+extension automatique ou renouvellement d'un ancien budget. Sans succès complet,
+clôture même si un appui ou un délai de collision s'améliore.
+
+Le manifeste figera binaire, programme, paramètres, installateur, terminal et
+coordonateur avant le premier lancement. Les anciens registres sont conservés
+par SHA. Les preuves porteront sur les contacts anatomiques persistants et leur
+horodatage, le suivi articulaire, l'accélération CoM, les couples/caps, les
+horloges et le verdict terminal. Vidéo depuis états archivés, légendée selon le
+résultat, sans nouvelle simulation de rendu.
+
+## Exécuteur expérimental préparé
+
+`getup_ab.rs` court-circuite la production de commandes historique pendant son
+autorité ; les autres hooks expérimentaux sont également exclus. Les moteurs
+sont installés une fois par sous-pas avec l'installateur natif commun et sa règle
+d'allocation. Dès Handoff, la propriété retourne définitivement au contrôle
+natif. Le banc A est donc un témoin du **nouvel exécuteur sans correction**,
+distinct du témoin historique qui mettait à jour puis écrasait ses commandes.
+
+B utilise les Jacobiennes instantanées des points et des centres de masse
+réellement mesurés, avec les générateurs du chart quaternion natif couplé.
+Il demande le freinage du point de capture vers les appuis présents, tout en
+réduisant les mouvements relatifs de leurs surfaces ; les 46 coordonnées
+participent au même problème borné. Le modèle cinématique suppose que ces
+variations de forme peuvent s'effectuer autour du support. La rotation libre
+de la racine, le suivi dynamique et les charges produites restent des inconnues
+mesurées dans Rapier, sans certificat de faisabilité.
+
+Paramètres fixes : gain capture 4/s, vitesse relative CoM 0,15 m/s, correction
+algébrique de vitesse 0,25 rad/s, offset maximal 0,12 rad, régularisation 0,001,
+poids relatif contact 4, 24 balayages de coordonnées. Le nominal, ses vitesses
+analytiques et son horloge ne changent pas. Une correction nulle conserve les
+bits nominaux ; l'intersection anatomie/slew et la vitesse totale ≤1 rad/s sont
+vérifiées à chaque commande. Aucune consigne globale du bassin n'est installée.
+
+Les contacts portent le sous-pas natif, le segment, le point local/world et la
+persistance segmentaire intégrée originale. La région postérieure du Foot est
+un diagnostic anatomique, pas un nouveau seuil de réussite. Une impulsion
+sélectionnée du dernier intervalle CCD n'est pas une force totale du sous-pas.
+
+Le progrès anti-stagnation provient de la projection des coordonnées **mesurées**
+sur le parcours nominal complet, jamais du temps ou d'un index de phase. Le
+timer f32 original de 3 s reste continu ; le dépassement arrête le banc plutôt
+que de relancer un contrôleur. Celui de perte de support de 0,20 s est également
+continu. Les phases d'intention Brace/Stand ne réinitialisent aucun timer du
+runtime. La demande Stand commence à la fin nominale du programme ; le settle,
+le handoff et le compteur restent attribués par `observe_recovery` original.
+Un refus de cet observateur interdit de recréer la récupération pendant l'essai.
+
+Les tests de convention, neutralité et transfert de propriété sont sans
+intégration. Ils ne remplacent pas la preuve physique d'un terminal chargé ;
+seule une histoire complète peut fournir cette preuve. Aucune réussite complète
+ni qualification n'est acquise au stade de préparation.
+
+Vérifications de préparation : build release et Clippy strict tous targets avec
+et sans fonctionnalité passent ; trois tests Rust nouveaux et le handoff
+original 143/144 passent, chacun sans intégration ; six tests Python du registre
+passent. Format/diff vérifiés. Aucune suite complète, aucune résolution des
+échecs hybrides/TypeScript historiques revendiquée. Ces vérifications autorisent
+le banc expérimental borné ; elles ne certifient pas un handoff physique positif.

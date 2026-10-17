@@ -1,0 +1,33 @@
+{
+  "library": {
+    "operation": "create_library_file",
+    "status": "succeeded",
+    "path": "/LaboratoireHumain-parite-native-rapport-complet-2026-10-13.md",
+    "file_id": "file_00000000952081f5a0de3bb6f455cf9a",
+    "library_file_id": "libfile_a3342baf3be481919473956d53a2929f",
+    "file_name": "LaboratoireHumain-parite-native-rapport-complet-2026-10-13.md",
+    "current_version_number": 0,
+    "restored_from_version_number": null,
+    "xattrs": [
+      {
+        "name": "user.library-file-version",
+        "value": "0"
+      }
+    ],
+    "directory_id": "libdir_25cdd74e2b54819195512af7470fdc1c",
+    "mime_type": "text/markdown",
+    "library_artifact_type": "report",
+    "file_size_bytes": 37547,
+    "external_connectors_accessed": false
+  },
+  "local": {
+    "path": "/workspace/LaboratoireHumain/docs/evidence/coordination-native-serialization-2026-10-13/delivery/LaboratoireHumain-parite-native-rapport-complet-2026-10-13.md"
+  },
+  "helper": {
+    "chunk_id": "ff316d",
+    "wall_time_seconds": 0.000034013,
+    "exit_code": 0,
+    "original_token_count": 40,
+    "output": "/workspace/LaboratoireHumain/docs/evidence/coordination-native-serialization-2026-10-13/delivery/LaboratoireHumain-parite-native-rapport-complet-2026-10-13.md\n"
+  }
+}

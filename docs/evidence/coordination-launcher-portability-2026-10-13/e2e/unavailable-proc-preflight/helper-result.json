@@ -1,0 +1,10 @@
+{
+  "alarmRestored": true,
+  "error": "FileNotFoundError: [Errno 2] No such file or directory: '/tmp/lh-launcher-C-only-khdid5tx/unavailable-proc-preflight/empty-proc/4337/status'",
+  "nativeRustWorkerExecuted": false,
+  "physicalIntegrations": 0,
+  "protocolCountsAreSynthetic": true,
+  "result": null,
+  "signalHandlersRestored": true,
+  "unrelatedSurvivedCleanup": null
+}

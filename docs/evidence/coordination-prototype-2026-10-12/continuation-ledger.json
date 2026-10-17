@@ -1,0 +1,10 @@
+{
+  "scope": "continuation preparation; historical ledgers remain closed",
+  "sharedCeiling": 20000,
+  "delegatedCeiling": 8000,
+  "reservedInspections": 2,
+  "completedInspections": 2,
+  "chargedInspections": 2,
+  "physicalIntegrations": 0,
+  "status": "closed-no-physical-authorization"
+}

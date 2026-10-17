@@ -6,6 +6,7 @@ pub mod calibration;
 pub mod cycles;
 pub mod environment;
 pub mod grab;
+pub mod getup;
 pub mod legacy;
 pub mod measurement;
 mod motion;
@@ -20,7 +21,7 @@ pub mod scenarios;
 mod stepping;
 pub mod striker;
 use lh_contracts::{Contact, Counters, Diagnostics, Motion, SUBSTEP_S, Snapshot, Stamp};
-use lh_model::{Model, Quat, Vec3, integrate_mass};
+use lh_model::{Model, Quat, Vec3};
 use rapier3d::prelude::*;
 use serde::{Deserialize, Serialize};
 use std::collections::BTreeSet;
@@ -128,13 +129,19 @@ pub struct Profile {
     pub corrective_steps_enabled: bool,
     #[serde(default)]
     pub recovery_enabled: bool,
+    #[serde(default, skip_serializing_if = "is_false")]
+    pub recovery_first_phase_only: bool,
+    /// Experimental pretrained policy; remains off until multi-case qualification.
+    #[serde(default)]
+    pub getup_policy_enabled: bool,
 }
+fn is_false(value: &bool) -> bool { !*value }
 impl Default for Profile {
     fn default() -> Self {
         Self {
-            id: "rust-physics-v25-relative-com-feedback".into(),
+            id: "getup-reference-5ad52fbe".into(),
             dt_s: SUBSTEP_S,
-            tick_substeps: 4,
+            tick_substeps: 20,
             contact_friction_model: ContactFriction::Coulomb,
             solver_iterations: 20,
             internal_pgs_iterations: 20,
@@ -143,13 +150,13 @@ impl Default for Profile {
             allowed_linear_error_m: 0.001,
             prediction_distance_m: 0.002,
             motor_scale: 1.0,
-            aggregate_motor_cap_nm: 760.0,
-            angular_damping: 0.52,
-            contact_skin_m: 0.004,
+            aggregate_motor_cap_nm: 920.0,
+            angular_damping: 0.0,
+            contact_skin_m: 0.0,
             max_ccd_substeps: 4,
             disable_solver_speed_cap: true,
-            posture_stiffness_multiplier: 20.0,
-            posture_damping_multiplier: 40.0,
+            posture_stiffness_multiplier: 1.0,
+            posture_damping_multiplier: 1.0,
             supported_tilt_gain: 2.0,
             supported_com_gain_rad_per_m: 5.0,
             supported_com_velocity_gain_s_rad_per_m: 5.0,
@@ -160,13 +167,18 @@ impl Default for Profile {
             reaching_damping_m2: 0.01,
             corrective_steps_enabled: false,
             recovery_enabled: false,
+            recovery_first_phase_only: false,
+            getup_policy_enabled: false,
         }
     }
 }
 impl Profile {
     pub fn validate(&self) -> Result<(), String> {
+        if self.recovery_enabled || self.recovery_first_phase_only || self.corrective_steps_enabled {
+            return Err("Legacy body controllers are unavailable for the GetUp reference body".into());
+        }
         if self.dt_s != SUBSTEP_S
-            || self.tick_substeps != 4
+            || self.tick_substeps != lh_contracts::SUBSTEPS
             || self.solver_iterations == 0
             || self.internal_pgs_iterations == 0
             || self.fall_internal_pgs_iterations == 0
@@ -220,6 +232,7 @@ pub fn configure(world: &mut PhysicsWorld, p: &Profile) {
         400.0
     };
 }
+#[derive(Clone, Serialize, Deserialize)]
 struct Filter {
     exclusions: BTreeSet<(u128, u128)>,
 }
@@ -228,6 +241,26 @@ fn handle_key(h: ColliderHandle) -> u128 {
     ((g as u128) << 32) | i as u128
 }
 impl PhysicsHooks for Filter {
+    fn modify_solver_contacts(&self, context: &mut ContactModificationContext) {
+        let source = |h: ColliderHandle| (1..=25).contains(&context.colliders[h].user_data);
+        if source(context.collider1) && source(context.collider2) {
+            *context.friction = 0.0;
+        }
+    }
+    #[cfg(all(test, feature = "experimental-solver-step-observation"))]
+    fn before_solver_step(&self, dt: Real, bodies: &RigidBodySet) {
+        recovery::planner::contact_observation::before_solve(dt, bodies);
+    }
+    #[cfg(all(test, feature = "experimental-solver-step-observation"))]
+    fn after_solver_step(&self, dt: Real, bodies: &RigidBodySet, phase: &NarrowPhase) {
+        recovery::planner::contact_observation::after_solve(dt, bodies, phase);
+    }
+
+    #[cfg(all(test, feature = "experimental-solver-step-observation"))]
+    fn after_solver_positions(&self, bodies: &RigidBodySet) {
+        recovery::planner::contact_observation::after_positions(bodies);
+    }
+
     fn filter_contact_pair(&self, c: &PairFilterContext) -> Option<SolverFlags> {
         let (a, b) = (handle_key(c.collider1), handle_key(c.collider2));
         if self.exclusions.contains(&(a.min(b), a.max(b))) {
@@ -237,8 +270,21 @@ impl PhysicsHooks for Filter {
         }
     }
 }
+#[derive(Serialize, Deserialize)]
 pub struct Simulation {
+    /// Native experiment only. Held residual; PD is still recomputed each substep.
+    #[cfg(feature = "stationary-balance-experiment")]
+    #[serde(skip)]
+    balance_residual: Option<[f32; 21]>,
+    #[cfg(feature = "stationary-balance-experiment")]
+    #[serde(skip)]
+    balance_torso_force_n: [f32; 2],
+    #[cfg(all(test, feature = "experimental-solver-step-observation"))]
+    #[serde(skip)]
+    coordination: Option<recovery::planner::whole_body_controller::Controller>,
+    #[serde(skip)]
     pub(crate) world: PhysicsWorld,
+    #[serde(skip, default = "checkpoint_model")]
     pub(crate) model: Model,
     pub(crate) bodies: Vec<RigidBodyHandle>,
     pub(crate) colliders: Vec<ColliderHandle>,
@@ -255,6 +301,7 @@ pub struct Simulation {
     rest_com: Vector,
     rest_com_roundoff: Vector,
     heading: Rotation,
+    #[serde(skip)]
     grab: Option<grab::Grab>,
     last_press: u64,
     applied_sequence: u64,
@@ -266,11 +313,20 @@ pub struct Simulation {
     pub first_failure: Option<measurement::Failure>,
     motor_ceiling_sum: f32,
     substeps_completed: u64,
+    #[serde(skip)]
     stepping: Option<stepping::StepController>,
     motion_observation: motion::Observation,
+    #[serde(skip)]
     environment: Option<environment::Environment>,
     striker: Option<striker::Striker>,
+    #[serde(skip)]
     recovery: Option<recovery::Controller>,
+    getup_controller: Option<getup::controller::Controller>,
+    #[serde(default)]
+    getup_fixture: Option<getup::fixtures::State>,
+}
+fn checkpoint_model() -> Model {
+    Model::canonical().expect("pinned GetUp model")
 }
 impl Simulation {
     pub fn new(heading: f32, profile: Profile, floor_enabled: bool) -> Result<Self, String> {
@@ -317,7 +373,7 @@ impl Simulation {
         seed: Option<&[lh_model::Pose]>,
     ) -> Result<Self, String> {
         profile.validate()?;
-        if !heading.is_finite() || profile.dt_s != SUBSTEP_S || profile.tick_substeps != 4 {
+        if !heading.is_finite() || profile.dt_s != SUBSTEP_S || profile.tick_substeps != lh_contracts::SUBSTEPS {
             return Err("Invalid initialization/profile timing".into());
         }
         let model = Model::canonical()?;
@@ -333,7 +389,7 @@ impl Simulation {
                 lh_model::FLAT_FLOOR_HALF_EXTENTS[2],
             )
             .translation(Vector::from_array(lh_model::FLAT_FLOOR_CENTER))
-            .friction(4.0)
+            .friction(1.0)
             .enabled(floor_enabled),
             None,
         );
@@ -351,42 +407,7 @@ impl Simulation {
         let mut joints = Vec::new();
         let mut targets = Vec::new();
         for (index, s) in model.segments.iter().enumerate() {
-            let mass = integrate_mass(&s.geometry, s.mass_kg)?;
-            let mass = MassProperties::with_principal_inertia_frame(
-                vector(mass.center),
-                s.mass_kg,
-                vector(mass.principal),
-                rotation(mass.frame),
-            );
-            let points: Vec<_> = s
-                .geometry
-                .vertices
-                .chunks_exact(3)
-                .map(|p| Vector::new(p[0], p[1], p[2]))
-                .collect();
-            let triangles: Vec<_> = s
-                .geometry
-                .indices
-                .chunks_exact(3)
-                .map(|i| [i[0], i[1], i[2]])
-                .collect();
-            let collider = ColliderBuilder::convex_mesh(points, &triangles)
-                .ok_or_else(|| format!("Invalid convex {}", s.id))?
-                .mass_properties(mass)
-                .friction(if matches!(s.role.as_str(), "hindfoot" | "forefoot") {
-                    4.0
-                } else if matches!(
-                    s.role.as_str(),
-                    "hand" | "forearm" | "forearm-twist" | "shin" | "ankle"
-                ) {
-                    1.2
-                } else {
-                    0.45
-                })
-                .friction_combine_rule(CoefficientCombineRule::Min)
-                .restitution(0.02)
-                .contact_skin(profile.contact_skin_m)
-                .active_hooks(ActiveHooks::FILTER_CONTACT_PAIRS);
+            let collider = getup::collider(s, index)?;
             let initial_pose = seed.map_or_else(
                 || {
                     Pose::from_parts(
@@ -406,14 +427,7 @@ impl Simulation {
                 .linear_damping(0.0)
                 .angular_damping(profile.angular_damping)
                 .can_sleep(false)
-                .ccd_enabled(true)
-                .soft_ccd_prediction(
-                    if matches!(s.role.as_str(), "ankle" | "hindfoot" | "forefoot") {
-                        0.0
-                    } else {
-                        0.12
-                    },
-                )
+                .ccd_enabled(false)
                 .additional_solver_iterations(profile.additional_body_iterations);
             let (b, c) = world.insert(body, collider);
             world.bodies[b].recompute_mass_properties_from_colliders(&world.colliders);
@@ -431,36 +445,8 @@ impl Simulation {
                 let (a, b) = (handle_key(colliders[i]), handle_key(colliders[j]));
                 exclusions.insert((a.min(b), a.max(b)));
             }
-            if let (Some(parent), Some(p)) = (&s.parent, &s.joint_profile) {
-                let parent = model
-                    .segments
-                    .iter()
-                    .position(|s| &s.id == parent)
-                    .ok_or("Missing parent")?;
-                let joint = anatomical_joint(p)?;
-                let q = if seed.is_some() {
-                    measurement::coordinates(
-                        heading_rotation * rotation(model.segments[parent].initial.rotation),
-                        heading_rotation * rotation(s.initial.rotation),
-                        p,
-                    )
-                } else {
-                    measurement::coordinates(
-                        *world.bodies[bodies[parent]].rotation(),
-                        *world.bodies[bodies[i]].rotation(),
-                        p,
-                    )
-                };
-                targets.push(q);
-                joints.push(Some(world.insert_impulse_joint(
-                    bodies[parent],
-                    bodies[i],
-                    joint,
-                )));
-            } else {
-                joints.push(None);
-                targets.push([0.0; 3]);
-            }
+            joints.push(None);
+            targets.push([0.0; 3]);
         }
         let motor_ceiling_sum = model
             .segments
@@ -470,6 +456,12 @@ impl Simulation {
             .map(|a| a.max_motor_torque_nm)
             .sum();
         let mut result = Self {
+            #[cfg(feature = "stationary-balance-experiment")]
+            balance_residual: None,
+            #[cfg(feature = "stationary-balance-experiment")]
+            balance_torso_force_n: [0.0; 2],
+            #[cfg(all(test, feature = "experimental-solver-step-observation"))]
+            coordination: None,
             world,
             model,
             bodies,
@@ -503,450 +495,20 @@ impl Simulation {
             environment,
             striker: None,
             recovery: None,
+            getup_controller: None,
+            getup_fixture: None,
         };
+        getup::assemble(&mut result, spawn_offset.y)?;
         result.capture_rest_com();
-        if seed.is_some() {
-            result.motion = Motion::Fallen;
+        if result.profile.getup_policy_enabled {
+            result.getup_controller = Some(getup::controller::Controller::new(&result.model));
         }
-        if result.profile.corrective_steps_enabled {
-            result.stepping = Some(stepping::StepController::new(&result)?);
-        }
+        if seed.is_some() { return Err("Legacy anatomical seed is not a GetUp initial state".into()); }
         result.configure_motors()?;
         Ok(result)
     }
     fn configure_motors(&mut self) -> Result<(), String> {
-        if self.profile.recovery_enabled
-            && self.motion == Motion::Fallen
-            && self.recovery.is_none()
-            && recovery::has_persistent_support(self)
-        {
-            self.recovery = Some(recovery::Controller::new(self)?);
-            self.motion = Motion::Recovering;
-            self.stepping = None;
-        }
-        let falling = matches!(self.motion, Motion::Falling | Motion::Fallen);
-        let recovering = self.motion == Motion::Recovering
-            && self.recovery.as_ref().is_some_and(|r| !r.handed_off());
-        if falling {
-            self.stepping = None;
-        }
-        // This intent changes bounded native motor targets only. Unsupported
-        // bodies receive no balance correction, and physics owns every pose.
-        self.targets.clone_from(&self.rest_targets);
-        let mut recovery_velocities = [[0.0; 3]; 25];
-        if let Some(mut controller) = self.recovery.take() {
-            self.targets = controller.update(self)?;
-            recovery_velocities.copy_from_slice(controller.velocities());
-            self.recovery = Some(controller);
-        }
-        let mut reference = self.rest_com;
-        let mut reference_roundoff = self.rest_com_roundoff;
-        let mut step_targets = Vec::new();
-        let mut step_velocities = recovery_velocities;
-        if let Some(mut controller) = self.stepping.take() {
-            let intent = controller.update(self)?;
-            reference = intent.reference;
-            reference_roundoff = Vector::ZERO;
-            step_targets = intent.targets;
-            for (index, velocity) in intent.velocities {
-                step_velocities[index] = velocity;
-            }
-            if intent.landed {
-                self.counters.steps += 1;
-            }
-            self.stepping = Some(controller);
-        }
-        if let Some(grab) = &self.grab {
-            reaching::arm_targets(self, grab.segment, grab.local_anchor, grab.control_target())?
-                .into_iter()
-                .for_each(|(index, angles)| self.targets[index] = angles);
-        }
-        for (index, angles) in step_targets {
-            self.targets[index] = angles;
-        }
-        let mut supported = [false; 2];
-        {
-            for (i, segment) in self
-                .model
-                .segments
-                .iter()
-                .enumerate()
-                .filter(|(_, s)| matches!(s.role.as_str(), "hindfoot" | "forefoot"))
-            {
-                let load = self.support_normal_impulse(self.colliders[i])? / self.profile.dt_s;
-                if load >= 3.0 {
-                    supported[usize::from(segment.id.starts_with("right"))] = true;
-                }
-            }
-        }
-        if recovering && self.recovery.as_ref().is_some_and(|r| r.standing()) {
-            reference = recovery::standing_reference(self);
-            reference_roundoff = Vector::ZERO;
-        }
-        if let Some(retained) = self
-            .stepping
-            .as_ref()
-            .and_then(|controller| controller.retained_side())
-        {
-            // Residual swing-sole contact must not receive standing ankle intent
-            // that fights the committed lift and reachable landing trajectory.
-            supported[1 - retained] = false;
-        }
-        if !falling && !recovering && supported.iter().any(|s| *s) {
-            let pelvis = self.world.bodies.get(self.bodies[0]).ok_or("Lost pelvis")?;
-            let mut q = self.heading.inverse() * (*pelvis.rotation());
-            if q.w < 0.0 {
-                q = -q;
-            }
-            let tilt = 2.0 * q.x.atan2(q.w);
-            let roll = 2.0 * q.z.atan2(q.w);
-            let angular_velocity = self.heading.inverse() * pelvis.angvel();
-            let displacement =
-                self.heading.inverse() * self.com_displacement_from(reference, reference_roundoff);
-            let mut velocity = Vector::ZERO;
-            for h in &self.bodies {
-                let b = self.world.bodies.get(*h).ok_or("Lost body")?;
-                velocity += b.linvel() * b.mass();
-            }
-            velocity = self.heading.inverse() * velocity / self.total_mass();
-            let correction = self.profile.supported_tilt_gain * tilt
-                + self.profile.supported_com_gain_rad_per_m * displacement.z
-                + self.profile.supported_com_velocity_gain_s_rad_per_m * velocity.z
-                + self.profile.supported_angular_velocity_gain_s * angular_velocity.x;
-            let lateral = self.profile.supported_tilt_gain * roll
-                - self.profile.supported_com_gain_rad_per_m * displacement.x
-                - self.profile.supported_com_velocity_gain_s_rad_per_m * velocity.x
-                + self.profile.supported_angular_velocity_gain_s * angular_velocity.z;
-            for (i, segment) in self
-                .model
-                .segments
-                .iter()
-                .enumerate()
-                .filter(|(_, s)| matches!(s.role.as_str(), "ankle" | "hindfoot"))
-            {
-                if !supported[usize::from(segment.id.starts_with("right"))] {
-                    continue;
-                }
-                let joint_profile = segment.joint_profile.as_ref().ok_or("Missing ankle")?;
-                let parent = self
-                    .world
-                    .impulse_joints
-                    .get(self.joints[i].ok_or("Missing ankle joint")?)
-                    .ok_or("Lost ankle joint")?
-                    .body1();
-                for (index, basis, angle) in [(0, Vector::X, correction), (2, Vector::Z, lateral)] {
-                    if (segment.role == "ankle") != (index == 0) {
-                        continue;
-                    }
-                    let axis = joint_profile
-                        .axes
-                        .iter()
-                        .find(|a| a.coordinate == if index == 0 { 'x' } else { 'z' })
-                        .ok_or("Missing supported limb coordinate")?;
-                    let world_axis = *self
-                        .world
-                        .bodies
-                        .get(parent)
-                        .ok_or("Lost supported limb parent")?
-                        .rotation()
-                        * rotation(joint_profile.parent_frame.rotation)
-                        * basis;
-                    let direction = world_axis.dot(self.heading * basis);
-                    if segment.role == "hindfoot"
-                        && self
-                            .stepping
-                            .as_ref()
-                            .and_then(|controller| controller.preparing_loaded_sole())
-                            == Some(usize::from(segment.id.starts_with("right")))
-                    {
-                        let parent_rotation = *self.world.bodies[parent].rotation();
-                        let desired =
-                            measurement::coordinates(parent_rotation, self.heading, joint_profile);
-                        let measured = measurement::coordinates(
-                            parent_rotation,
-                            *self.world.bodies[self.bodies[i]].rotation(),
-                            joint_profile,
-                        );
-                        self.targets[i][index] =
-                            desired[index].clamp(axis.min_radians, axis.max_radians);
-                        step_velocities[i][index] =
-                            ((self.targets[i][index] - measured[index]) / 0.20).clamp(-1.0, 1.0)
-                                - self.world.bodies[parent].angvel().dot(world_axis);
-                        continue;
-                    }
-                    let angle = if recovering {
-                        angle.clamp(-0.12, 0.12)
-                    } else {
-                        angle
-                    };
-                    let (authority, previous) = self
-                        .recovery
-                        .as_ref()
-                        .filter(|r| r.handed_off())
-                        .map_or((1.0, 1.0), |r| r.standing_authority());
-                    let base = self.targets[i][index];
-                    let corrected = (base + angle * direction * authority)
-                        .clamp(axis.min_radians, axis.max_radians);
-                    let prior = (base + angle * direction * previous)
-                        .clamp(axis.min_radians, axis.max_radians);
-                    self.targets[i][index] = corrected;
-                    step_velocities[i][index] += (corrected - prior) / self.profile.dt_s;
-                }
-            }
-        }
-        // A swing reserves more of the existing aggregate ceiling for the loaded
-        // leg, then fades back during the stance blend after verified landing.
-        // Every axis retains a nonzero reserve for implicit gravity response.
-        let reserve = self
-            .stepping
-            .as_ref()
-            .and_then(|controller| controller.support_reserve());
-        let transfer_load = self
-            .stepping
-            .as_ref()
-            .and_then(|controller| controller.transfer_load_share(self));
-        let mut weights = [1.0; 25];
-        if let Some((side, strength)) = reserve {
-            for (i, segment) in self.model.segments.iter().enumerate() {
-                let priority = if matches!(
-                    segment.role.as_str(),
-                    "thigh" | "shin" | "ankle" | "hindfoot" | "forefoot"
-                ) {
-                    if usize::from(segment.id.starts_with("right")) == side {
-                        1.0
-                    } else {
-                        0.55
-                    }
-                } else {
-                    0.12
-                };
-                weights[i] = priority * strength + (1.0 - strength);
-            }
-        }
-        if let Some((shares, strength)) = transfer_load {
-            // Later transfers need braking authority at the soles currently
-            // carrying load, even before the intended retained foot qualifies.
-            // Blend inside the same aggregate budget and keep native gains.
-            for (i, segment) in self.model.segments.iter().enumerate() {
-                let priority = if matches!(
-                    segment.role.as_str(),
-                    "thigh" | "shin" | "ankle" | "hindfoot" | "forefoot"
-                ) {
-                    0.55 + 0.45 * shares[usize::from(segment.id.starts_with("right"))]
-                } else {
-                    0.12
-                };
-                weights[i] = weights[i] * (1.0 - strength) + priority * strength;
-            }
-        }
-        let weighted_ceiling: f32 = if reserve.is_some() || transfer_load.is_some() || recovering {
-            self.model
-                .segments
-                .iter()
-                .enumerate()
-                .filter_map(|(i, s)| {
-                    s.joint_profile.as_ref().map(|p| {
-                        p.axes
-                            .iter()
-                            .map(|a| {
-                                a.max_motor_torque_nm
-                                    * weights[i]
-                                    * self
-                                        .recovery
-                                        .as_ref()
-                                        .map_or(1.0, |r| r.weight(s, a.coordinate))
-                            })
-                            .sum::<f32>()
-                    })
-                })
-                .sum()
-        } else {
-            self.motor_ceiling_sum
-        };
-        let effort_scale = self
-            .profile
-            .motor_scale
-            .min(self.profile.aggregate_motor_cap_nm / weighted_ceiling);
-        // Native force-based motors own each anatomical axis. Quiet-standing
-        // stiffness and damping stay unchanged when swing reserves are enabled.
-        let scale = self
-            .profile
-            .motor_scale
-            .min(self.profile.aggregate_motor_cap_nm / self.motor_ceiling_sum);
-        let mut requested_effort = 0.0_f32;
-        let mut motor_requests = [[0.0_f32; 3]; 25];
-        let mut anatomical_caps = [[0.0_f32; 3]; 25];
-        for (i, h) in self.joints.iter().enumerate() {
-            if let (Some(h), Some(p)) = (h, &self.model.segments[i].joint_profile) {
-                let parent_handle = self
-                    .world
-                    .impulse_joints
-                    .get(*h)
-                    .ok_or("Lost joint")?
-                    .body1();
-                let parent = &self.world.bodies[parent_handle];
-                let child = &self.world.bodies[self.bodies[i]];
-                let coordinates =
-                    measurement::coordinates(*parent.rotation(), *child.rotation(), p);
-                let parent_frame = *parent.rotation() * rotation(p.parent_frame.rotation);
-                let relative =
-                    parent_frame.inverse() * (*child.rotation() * rotation(p.child_frame.rotation));
-                let omega = parent_frame.inverse() * (child.angvel() - parent.angvel());
-                let recovery_torque = self.recovery.as_ref().map_or(Vector::ZERO, |r| {
-                    parent_frame.inverse() * r.root_torque(self, &self.model.segments[i])
-                });
-                let recovery_root_authority = self
-                    .recovery
-                    .as_ref()
-                    .is_some_and(|r| r.native_root_authority(self, &self.model.segments[i]));
-                let step_torque = self.stepping.as_ref().map_or(Vector::ZERO, |controller| {
-                    let authority = self
-                        .recovery
-                        .as_ref()
-                        .filter(|r| r.handed_off())
-                        .map_or(1.0, |r| r.standing_authority().0);
-                    parent_frame.inverse()
-                        * controller.root_torque(self, &self.model.segments[i])
-                        * authority
-                });
-                let joint = self
-                    .world
-                    .impulse_joints
-                    .get_mut(*h, true)
-                    .ok_or("Lost joint")?;
-                for a in &p.axes {
-                    let index = match a.coordinate {
-                        'x' => 0,
-                        'y' => 1,
-                        _ => 2,
-                    };
-                    let v = relative.xyz();
-                    let denominator = relative.w * relative.w + v[index] * v[index];
-                    if !denominator.is_finite() || denominator < 1e-12 {
-                        return Err("Singular motor coordinate".into());
-                    }
-                    let e = match index {
-                        0 => Vector::X,
-                        1 => Vector::Y,
-                        _ => Vector::Z,
-                    };
-                    let jac =
-                        (relative.w * relative.w * e + relative.w * v.cross(e) + v[index] * v)
-                            / denominator;
-                    let (target, stiffness, damping, max_force) = if falling {
-                        let p =
-                            passive::feedback(coordinates[index], a, p.limit_soft_zone_fraction);
-                        (p.target, p.stiffness, p.damping, p.ceiling)
-                    } else {
-                        (
-                            self.targets[i][index],
-                            a.passive_stiffness_nm_per_rad
-                                * self.profile.posture_stiffness_multiplier,
-                            a.damping_nms_per_rad * self.profile.posture_damping_multiplier,
-                            a.max_motor_torque_nm,
-                        )
-                    };
-                    let error = (target - coordinates[index] + std::f32::consts::PI)
-                        .rem_euclid(std::f32::consts::TAU)
-                        - std::f32::consts::PI;
-                    // Passive tissue gains retain their canonical values;
-                    // the shared torque budget still caps every native motor.
-                    let gain_scale = if falling { 1.0 } else { scale };
-                    let feedforward = (recovery_torque + step_torque).dot(e);
-                    // The loaded recovery hip installs a world-pelvis effort,
-                    // already damped by measured pelvis angular velocity. Its
-                    // native relative motion must not cancel that effort while
-                    // the planted leg moves. Other joints retain local damping.
-                    let frame_velocity = if recovery_root_authority {
-                        let authority = self
-                            .recovery
-                            .as_ref()
-                            .filter(|r| r.handed_off())
-                            .map_or(1.0, |r| 1.0 - r.standing_authority().0);
-                        jac.dot(omega) * authority
-                    } else {
-                        0.0
-                    };
-                    let target_velocity = if damping * gain_scale > 0.0 {
-                        step_velocities[i][index]
-                            + frame_velocity
-                            + feedforward / (damping * gain_scale)
-                    } else {
-                        0.0
-                    };
-                    let request = (stiffness * error
-                        + damping * (step_velocities[i][index] + frame_velocity - jac.dot(omega)))
-                        * gain_scale
-                        + feedforward;
-                    motor_requests[i][index] = request;
-                    anatomical_caps[i][index] = max_force * self.profile.motor_scale.min(1.0);
-                    let ceiling = max_force
-                        * effort_scale
-                        * weights[i]
-                        * self
-                            .recovery
-                            .as_ref()
-                            .map_or(1.0, |r| r.weight(&self.model.segments[i], a.coordinate));
-                    requested_effort += request.clamp(-ceiling, ceiling).abs();
-                    joint
-                        .data
-                        .set_motor_model(axis(a.coordinate)?, MotorModel::ForceBased)
-                        .set_motor(
-                            axis(a.coordinate)?,
-                            target,
-                            target_velocity,
-                            stiffness * gain_scale,
-                            damping * gain_scale,
-                        )
-                        .set_motor_max_force(axis(a.coordinate)?, ceiling);
-                }
-            }
-        }
-        if !falling
-            && (recovering
-                || self
-                    .stepping
-                    .as_ref()
-                    .is_some_and(|controller| controller.owns_stance()))
-        {
-            // Idle coordinates need a reserve, but cannot monopolize torque
-            // while a loaded sole or torso is already tracking a large error.
-            // Share the same aggregate ceiling using measured native requests.
-            let support_reserves = recovery::support_effort_reserves(self);
-            let mut caps = std::array::from_fn::<_, 25, _>(|i| {
-                std::array::from_fn::<_, 3, _>(|k| {
-                    (0.10 * anatomical_caps[i][k]
-                        + 1.25 * motor_requests[i][k].abs().max(support_reserves[i][k]))
-                    .min(anatomical_caps[i][k])
-                })
-            });
-            let total: f32 = caps.iter().flatten().sum();
-            let budget_scale = (self.profile.aggregate_motor_cap_nm / total.max(1e-6)).min(1.0);
-            requested_effort = 0.0;
-            for (i, h) in self.joints.iter().enumerate() {
-                if let (Some(h), Some(profile)) = (h, &self.model.segments[i].joint_profile) {
-                    let joint = self
-                        .world
-                        .impulse_joints
-                        .get_mut(*h, true)
-                        .ok_or("Lost allocated joint")?;
-                    for a in &profile.axes {
-                        let k = match a.coordinate {
-                            'x' => 0,
-                            'y' => 1,
-                            _ => 2,
-                        };
-                        caps[i][k] *= budget_scale;
-                        joint
-                            .data
-                            .set_motor_max_force(axis(a.coordinate)?, caps[i][k]);
-                        requested_effort += motor_requests[i][k].abs().min(caps[i][k]);
-                    }
-                }
-            }
-        }
-        self.diagnostics.requested_motor_effort_nm = requested_effort;
-        Ok(())
+        getup::configure(self)
     }
     pub(crate) fn environment_colliders(&self) -> impl Iterator<Item = ColliderHandle> + '_ {
         std::iter::once(self.floor)
@@ -1062,7 +624,7 @@ impl Simulation {
         self.grab = None;
     }
     /// Narrow dispatcher for the physical-grab command family. The caller owns
-    /// the Timeline and applies its boundary before these four substeps.
+    /// the Timeline and applies its boundary before the twenty reference substeps.
     pub fn apply_grab_command(
         &mut self,
         command: &lh_contracts::Command,
@@ -1168,6 +730,9 @@ impl Simulation {
             self.recovery_status()
                 .map(|status| lh_contracts::RecoveryObservation {
                     phase: format!("{:?}", status.phase),
+                    arm_transfer: self.recovery.as_ref().and_then(|r| r.arm_transfer_stage()),
+                    roll_coordination: self.recovery.as_ref().and_then(|r| r.roll_coordination()),
+                    first_phase: self.recovery.as_ref().and_then(|r| r.first_phase_observation()),
                     elapsed_s: status.elapsed_s,
                     phase_time_s: status.phase_time_s,
                     qualified_time_s: status.qualified_time_s,
@@ -1202,8 +767,8 @@ impl Simulation {
         });
         Snapshot {
             stamp: Stamp::new(self.generation, self.substeps_completed + 1, self.tick),
-            simulation_time_s: self.substeps_completed as f64 / 240.0,
-            contact_time_s: self.tick as f64 / 60.0,
+            simulation_time_s: self.substeps_completed as f64 / 800.0,
+            contact_time_s: self.tick as f64 / f64::from(lh_contracts::TICK_HZ),
             discontinuity: self.tick == 0 || self.first_failure.is_some(),
             segments: self
                 .bodies
@@ -1247,10 +812,13 @@ impl Simulation {
             return Err(f.clone());
         }
         let mut impulses = [0.0_f32; 25];
-        let mut motor_delivery = [([0.0_f32; 3], Vector::ZERO, Vector::ZERO); 25];
-        let mut prior_delivery = self.diagnostics.delivered_motors.take();
         self.diagnostics.delivered_motor_impulse_nm_s = None;
-        for substep in 0..4 {
+        self.diagnostics.delivered_motors = None;
+        for substep in 0..lh_contracts::SUBSTEPS {
+            for handle in &self.bodies {
+                self.world.bodies[*handle].reset_forces(false);
+                self.world.bodies[*handle].reset_torques(false);
+            }
             let event = |s: &Self, phase, begin| profiling::Event {
                 generation: s.generation,
                 tick: s.tick,
@@ -1292,7 +860,8 @@ impl Simulation {
                 }
             }
             if let Err(error) = self.configure_motors() {
-                let f = measurement::Failure::new(self.tick, substep, "ownership", error, 0.0, 0.0);
+                let check = if self.getup_controller.is_some() { "getup-policy" } else { "ownership" };
+                let f = measurement::Failure::new(self.tick, substep, check, error, 0.0, 0.0);
                 self.first_failure = Some(f.clone());
                 self.motion = Motion::Halted;
                 self.cancel_grab();
@@ -1340,55 +909,35 @@ impl Simulation {
                 } else {
                     self.profile.internal_pgs_iterations
                 };
+            #[cfg(test)]
+            if let Err(failure) = recovery::offline_trajectory_before_step(self, substep) {
+                self.first_failure = Some(failure.clone());
+                self.motion = Motion::Halted;
+                return Err(failure);
+            }
+            #[cfg(all(test, feature = "experimental-solver-step-observation"))]
+            recovery::planner::contact_observation::begin_step(self.substeps_completed + 1);
+            #[cfg(all(test, feature = "numeric-parity-worker"))]
+            if let Err(reason) = recovery::planner::numeric_parity_worker::before_integration(self) {
+                let failure = measurement::Failure::new(self.tick, substep, "numeric-parity-admission", reason, 1., 0.);
+                self.first_failure = Some(failure.clone());
+                self.motion = Motion::Halted;
+                return Err(failure);
+            }
+            #[cfg(all(test, feature = "coordination-worker"))]
+            if let Err(reason) = recovery::planner::transition_worker::before_integration(self) {
+                let failure = measurement::Failure::new(self.tick, substep, "coordination-admission", reason, 1., 0.);
+                self.first_failure = Some(failure.clone());
+                self.motion = Motion::Halted;
+                return Err(failure);
+            }
             self.world.step_with_events(&self.filter, &());
-            let delivered: f32 = self
-                .joints
-                .iter()
-                .flatten()
-                .filter_map(|handle| self.world.impulse_joints.get(*handle))
-                .flat_map(|joint| joint.data.motors[3..].iter())
-                .map(|motor| motor.delivered_abs_impulse)
-                .sum();
-            *self
-                .diagnostics
-                .delivered_motor_impulse_nm_s
-                .get_or_insert(0.0) += delivered;
-            for (i, handle) in self.joints.iter().enumerate() {
-                if let Some(joint) = handle.and_then(|handle| self.world.impulse_joints.get(handle))
-                {
-                    for (k, motor) in joint.data.motors[3..].iter().enumerate() {
-                        motor_delivery[i].0[k] += motor.delivered_abs_impulse;
-                        motor_delivery[i].1 += motor.delivered_angular_impulse_1;
-                        motor_delivery[i].2 += motor.delivered_angular_impulse_2;
-                    }
-                }
-            }
-            if self.diagnostics.delivered_motors.is_none() {
-                self.diagnostics.delivered_motors =
-                    Some(prior_delivery.take().unwrap_or_else(|| {
-                        self.joints
-                            .iter()
-                            .enumerate()
-                            .filter(|(_, handle)| handle.is_some())
-                            .map(|(i, _)| lh_contracts::MotorDelivery {
-                                segment: i as u8,
-                                axis_abs_impulse_nm_s: [0.0; 3],
-                                parent_angular_impulse_nm_s: Vec3::default(),
-                                child_angular_impulse_nm_s: Vec3::default(),
-                            })
-                            .collect()
-                    }));
-            }
-            for delivery in self
-                .diagnostics
-                .delivered_motors
-                .as_mut()
-                .expect("integrated motor observations")
-            {
-                let i = usize::from(delivery.segment);
-                delivery.axis_abs_impulse_nm_s = motor_delivery[i].0;
-                delivery.parent_angular_impulse_nm_s = vec3(motor_delivery[i].1);
-                delivery.child_angular_impulse_nm_s = vec3(motor_delivery[i].2);
+            #[cfg(all(test, feature = "coordination-worker"))]
+            if let Err(reason) = recovery::planner::transition_worker::after_integration(self) {
+                let failure = measurement::Failure::new(self.tick, substep, "coordination-accounting", reason, 1., 0.);
+                self.first_failure = Some(failure.clone());
+                self.motion = Motion::Halted;
+                return Err(failure);
             }
             self.substeps_completed += 1;
             trace(self, event(self, profiling::Phase::Physics, false));
@@ -1465,6 +1014,16 @@ impl Simulation {
                 };
             }
             self.observe_motion(&loads_n);
+            getup::fixtures::observe(self, &loads_n);
+            #[cfg(feature = "stationary-balance-experiment")]
+            let balance_active = self.balance_residual.is_some();
+            #[cfg(not(feature = "stationary-balance-experiment"))]
+            let balance_active = false;
+            if !balance_active && let Some(mut controller) = self.getup_controller.take() {
+                controller.observe(self, &loads_n);
+                if let Some(observation) = self.diagnostics.getup.as_mut() { observation.policy = Some(controller.status.clone()); }
+                self.getup_controller = Some(controller);
+            }
             let observation = observer(self, substep);
             trace(self, event(self, profiling::Phase::Observer, false));
             if let Err(f) = observation {
@@ -1476,9 +1035,9 @@ impl Simulation {
         }
         self.contacts.clear();
         for (i, impulse) in impulses.iter().enumerate().take(self.bodies.len()) {
-            let load = impulse / (4.0 * self.profile.dt_s);
+            let load = impulse / (lh_contracts::SUBSTEPS as f32 * self.profile.dt_s);
             if load >= 3.0 {
-                self.persistence[i] += 1.0 / 60.0;
+                self.persistence[i] += 1.0 / lh_contracts::TICK_HZ as f32;
                 self.contacts.push(Contact {
                     segment: i as u8,
                     normal_load_n: load,
@@ -1687,3 +1246,11 @@ mod tests {
         assert_eq!(s.snapshot().simulation_time_s, halted.simulation_time_s);
     }
 }
+#[cfg(all(test, feature = "coordination-worker", feature = "numeric-parity-worker"))]
+compile_error!("Native workers require separate executables and permits");
+#[cfg(all(test, feature = "coordination-worker", not(feature = "coordination-transfer-worker"), not(feature = "numeric-parity-worker")))]
+fn main() { recovery::planner::transition_worker::main(); }
+#[cfg(all(test, feature = "coordination-transfer-worker", not(feature = "numeric-parity-worker")))]
+fn main() { recovery::planner::transition_worker::transfer_main(); }
+#[cfg(all(test, feature = "numeric-parity-worker", not(feature = "coordination-worker")))]
+fn main() { recovery::planner::numeric_parity_worker::main(); }

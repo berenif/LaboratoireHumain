@@ -1,0 +1,112 @@
+{
+  "schema": 1,
+  "scope": "preparation-only",
+  "executedWorker": false,
+  "constructedSimulation": false,
+  "nativeSteps": 0,
+  "fkEvaluations": 0,
+  "binary": {
+    "path": "rust/target/release/deps/coordination_local_pair_worker-bf2c98f759d9dc34",
+    "sha256": "c1c8a12825428758643a7f6e2fafb0a2710f7dca787c1daee07c27ec59849e9c",
+    "bytes": 4320712
+  },
+  "protectedHistoricalBinaries": [
+    {
+      "path": "rust/target/release/deps/coordination_worker-60f2b83fe348a1d3",
+      "sha256": "1bb4b91ac8ebfbe382d9525e524b85040ca9890bc90a0ef0467f1ef2b64c8b57",
+      "bytes": 4155504,
+      "unchanged": true
+    },
+    {
+      "path": "rust/target/release/deps/numeric_parity_worker-b68c9e5f8e8cfa37",
+      "sha256": "9e125785fad85b0befc9373c3116d66aa32e8050a998ce08974b0da29d2760cc",
+      "bytes": 4479344,
+      "unchanged": true
+    },
+    {
+      "path": "rust/target/release/deps/numeric_parity_worker_serialization-360529b9ad4cba37",
+      "sha256": "83bddf95897acc6015de7d2947b04ee2f5aaf2eb49b4dcb85ba0a67764f95e1b",
+      "bytes": 4315008,
+      "unchanged": true
+    }
+  ],
+  "sourceFiles": [
+    {
+      "path": "rust/crates/sim/Cargo.toml",
+      "sha256": "807e790be2426b8705d020227cc67ec105191407032ff5787eca78b4be4cfa1c",
+      "bytes": 1098
+    },
+    {
+      "path": "rust/crates/sim/src/lib.rs",
+      "sha256": "0ed52eb71a9df3e8803222800f713619d4f3ea2f0e6229147ac30f2f25f08ea7",
+      "bytes": 73782
+    },
+    {
+      "path": "rust/crates/sim/src/recovery/planner/transition_worker.rs",
+      "sha256": "5b39459b5513f3478573b8d1672fd1003267ae1efd3b323e883954350c7ef385",
+      "bytes": 53142
+    },
+    {
+      "path": "rust/crates/sim/src/recovery/planner/native_plan_preview.rs",
+      "sha256": "868065777e8ff905dc04b3880a9100958c7964f2d013913bc15da4ec72a6e6a6",
+      "bytes": 42603
+    }
+  ],
+  "checks": [
+    {
+      "name": "worker-pure-tests",
+      "passed": true,
+      "testCount": 9,
+      "filter": "recovery::planner::transition_worker::pure_tests",
+      "evidence": {
+        "path": "docs/evidence/coordination-local-pair-2026-10-13/rust-pure-worker-tests.log",
+        "sha256": "f9ab822f9bd1f4b700b1b46bc68355788ee1cd12366243e3b266a19110cf10f1",
+        "bytes": 3858
+      }
+    },
+    {
+      "name": "parity-pure-tests",
+      "passed": true,
+      "testCount": 5,
+      "filter": "recovery::planner::native_plan_preview::tests::pure_",
+      "evidence": {
+        "path": "docs/evidence/coordination-local-pair-2026-10-13/rust-pure-parity-tests.log",
+        "sha256": "78e778d438d77b6f2cfcec49af100d25a84ca8e7df09028ac8005c2ba4663ffa",
+        "bytes": 3453
+      }
+    },
+    {
+      "name": "production-check",
+      "passed": true,
+      "testCount": null,
+      "filter": null,
+      "evidence": {
+        "path": "docs/evidence/coordination-local-pair-2026-10-13/rust-production-check.log",
+        "sha256": "6d44fadac9c1ee7c41f02d665176255177c934f121fd546d9139567db3348714",
+        "bytes": 511
+      }
+    },
+    {
+      "name": "release-build-no-run",
+      "passed": true,
+      "testCount": null,
+      "filter": null,
+      "evidence": {
+        "path": "docs/evidence/coordination-local-pair-2026-10-13/rust-release-build.log",
+        "sha256": "09b906706bb0a6de731519109d552d374d0f5754c35bb2d42962e4d0a94ad1c5",
+        "bytes": 48459
+      }
+    }
+  ],
+  "testPurity": "Only scalar accounting, temporary file IO, archived JSON and synthetic NativeParityTrace values; no Simulation/Model construction, worker main, native integration or FK.",
+  "sourceHead": "5e80ecc9d1c1d2b5ef8f6e53ab764c5355b4b4b5",
+  "commands": [
+    "cargo +1.89.0 test --manifest-path rust/Cargo.toml -p lh-sim --lib --features coordination-worker recovery::planner::transition_worker::pure_tests --locked",
+    "cargo +1.89.0 test --manifest-path rust/Cargo.toml -p lh-sim --lib --features coordination-worker recovery::planner::native_plan_preview::tests::pure_ --locked",
+    "cargo +1.89.0 check --manifest-path rust/Cargo.toml -p lh-sim --locked",
+    "cargo +1.89.0 test --manifest-path rust/Cargo.toml -p lh-sim --test coordination-local-pair-worker --features coordination-worker --release --no-run --locked"
+  ],
+  "toolchain": "rustc/cargo 1.89.0, existing isolated /workspace/lh-cargo and /workspace/lh-rustup",
+  "pureTestsPassed": 14,
+  "observationMemoryParity": "DiagnosticMemory: full diagnostic, last LocalSupportSample and CoM speed used by selection; cloned at initial boundary, updated before per-step trace, retained at post-tick."
+}

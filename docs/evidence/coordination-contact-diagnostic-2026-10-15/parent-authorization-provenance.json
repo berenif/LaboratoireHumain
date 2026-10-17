@@ -1,0 +1,17 @@
+{
+  "schema": "laboratoirehumain.contact-diagnostic-parent-provenance.v1",
+  "recordedUtc": "2026-10-15T15:29:02.559776+00:00",
+  "parentSourceThreadId": "01a12799-cefe-7764-8aa3-db5db4c1d0f3",
+  "delivery": "Root relayed the exact text received via codex_delegation in a collaboration message to /root/budget_resume. This quotes the parent decision, not a direct quotation attributed to the owner.",
+  "exactParentAuthorizationText": "Continue avec le diagnostic causal proposé. Décision parent : j'autorise une seule exécution distincte de 568 sous-pas maximum tous usages et 120 secondes murales maximum, prélevés sur les soldes globaux existants, sans remboursement ni renouvellement. Vérifie intégrité, manifeste lié à la correction a5c8ff36af4dfbe784277aebc91021040b947a52, absence de doublon et réservations avant lancement. Ne rouvre pas l'essai clos et ne transforme pas le diagnostic en recherche de paramètres. Exploite la télémétrie pour distinguer déchargement, désélection et renouvellement du contact à l'observation78. Le point hors surface de69,993mm ne doit pas être accepté en élargissant arbitrairement un seuil. Rapporte le mécanisme observé, ce qu'il implique pour le transfert complet et une correction causale si justifiée. Après diagnostic, implémente et teste statiquement toute correction démontrée dans le budget de préparation restant, sans nouveau calcul physique non borné. Commit/push les preuves et résultats. Main inchangée, récupération désactivée. Informe-moi dès le résultat matériel.",
+  "authorizationTextSha256": "30fcd7d082dda023058eaab14a1b5c8d28edf20014024121340a3f123095625e",
+  "authorizedBaseCommit": "a5c8ff36af4dfbe784277aebc91021040b947a52",
+  "singleDistinctExecution": true,
+  "maximumNativeStepsAllUses": 568,
+  "maximumWallSecondsAllInclusive": 120,
+  "automaticRenewalAllowed": false,
+  "refundAllowed": false,
+  "reopensAnyClosedProtocol": false,
+  "scope": "Contact diagnostic at archived observation78; distinguish unloading, solver deselection and contact renewal. Static causal corrections may follow within existing preparation budget.",
+  "physicalSuccessAsserted": false
+}

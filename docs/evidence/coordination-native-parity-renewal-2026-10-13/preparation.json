@@ -1,0 +1,54 @@
+{
+  "schema": 1,
+  "startedUtc": "2026-10-13T10:08:38.746696+00:00",
+  "authority": "Owner Oui. Ne demande plus d\u2019autorisation, Sentinel_1d94b2e17ea481919720d6494ad746fc, 2026-10-13 10:06 UTC; distinct native authorization",
+  "baseCommit": "122d8eb6aef675fa2a7aed551a057ca298665789",
+  "branch": "investigate/physical-support",
+  "remoteBaseVerified": true,
+  "remoteMainVerified": "c597959f46f37715035349c8cd0a699b6822111a",
+  "preparationScope": "Reuse unchanged native binary/oracles; new fixed authorization entrypoint and manifest only; no physical tuning",
+  "originalPreparationDeadlineUtc": "2026-10-17T20:14:00+00:00",
+  "priorPreparationChargedSeconds": 22189,
+  "additionalPreparationReservedSeconds": 1800,
+  "totalPreparationChargedSeconds": 23989,
+  "preparationCapSeconds": 144000,
+  "priorStaticInspectionsCharged": 8923,
+  "additionalStaticInspectionsReserved": 250,
+  "totalStaticInspectionsCharged": 9173,
+  "staticInspectionsCap": 20000,
+  "approvedNativeSubsteps": 44,
+  "approvedNativeWallSeconds": 120,
+  "nativeExecutionStarted": false,
+  "oldRegisters": [
+    {
+      "path": "docs/evidence/foot-coordination-2026-10-12/ledger.json",
+      "sha256": "85f63dbc0a78ed9db0bafc4a63d91e95ff4f34349725854c906ba5332c40f6fa"
+    },
+    {
+      "path": "docs/evidence/coordination-prototype-2026-10-12/continuation-geometry-ledger.json",
+      "sha256": "f4f11215e504c4837030c35a5daf793f141134ec936c53bce4bc0c2496ee8ad5"
+    },
+    {
+      "path": "docs/evidence/coordination-prototype-2026-10-12/budget/ledger.json",
+      "sha256": "2afa69b3ae9c8ab8343f7dabdf46b955c8ac7b88aa259404958e25d49a72ef07"
+    },
+    {
+      "path": "docs/evidence/coordination-prototype-2026-10-12/continuation-ledger.json",
+      "sha256": "64b7bb8f38de84cc4123d7c5ea2809e162f8138585aff2ebd5a8c55921efb13e"
+    },
+    {
+      "path": "docs/evidence/coordination-numeric-correction-2026-10-12/preparation-correction-budget.json",
+      "sha256": "8d5d2db35031fadb76062899cb9c98465cb58337327b468412aba190a1881c80"
+    },
+    {
+      "path": "docs/evidence/intermediate-transfer-prep-2026-10-12/ledger.json",
+      "sha256": "7c5861ab8b6c9e2ac3731cc4cc7453254d6d69571f240d8d0a5d679bd5978610"
+    }
+  ],
+  "originalReleaseWorker": {
+    "path": "rust/target/release/deps/coordination_worker-60f2b83fe348a1d3",
+    "sha256": "1bb4b91ac8ebfbe382d9525e524b85040ca9890bc90a0ef0467f1ef2b64c8b57"
+  },
+  "processInspection": "No native, compiler or inert worker active; branch and remote verified at base",
+  "instructionsInspection": "No AGENTS.md or project skills found; prior repository guidance retained"
+}

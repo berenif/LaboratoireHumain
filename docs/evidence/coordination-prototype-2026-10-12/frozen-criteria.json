@@ -1,0 +1,83 @@
+{
+  "schema": 1,
+  "scope": "frozen local-transfer prototype, no full recovery qualification",
+  "fixture": "landed-crouch-left",
+  "histories": [
+    {
+      "id": "A",
+      "coordination": false,
+      "headingDegrees": 0
+    },
+    {
+      "id": "B",
+      "coordination": true,
+      "headingDegrees": 0
+    },
+    {
+      "id": "B-repeat",
+      "coordination": true,
+      "headingDegrees": 0,
+      "requires": "B local success"
+    },
+    {
+      "id": "B60",
+      "coordination": true,
+      "headingDegrees": 60,
+      "requires": "prior B local success"
+    }
+  ],
+  "physics": {
+    "nativeHz": 240,
+    "controlHz": 60,
+    "planningMaximumHz": 10,
+    "maximumSecondsPerHistory": 4,
+    "maximumAllNativeSubsteps": 300000,
+    "maximumWallSeconds": 7200,
+    "nativeProcesses": 1,
+    "nativeThreads": 1,
+    "longPreviewSubsteps": 480,
+    "maximumCandidatesPerCall": 4,
+    "shortProbesPerCall": 0,
+    "verificationSubsteps": 16
+  },
+  "local": {
+    "hindfootLocalZLessThanM": -0.02,
+    "minimumHeelLoadN": 3,
+    "heelOwnPersistenceSubsteps": 12,
+    "minimumFootSupportWeightFraction": 0.8,
+    "maximumPersistentNonfootLoadN": 3,
+    "supportHullInsetM": 0.003,
+    "requireComAndCaptureInside": true,
+    "all25BodiesMaximumLinearMps": 0.22,
+    "all25BodiesMaximumAngularRadps": 0.65,
+    "consecutiveStableSubsteps": 132,
+    "stableIntervalMustStartBeforeSeconds": 2
+  },
+  "unchanged": [
+    "model",
+    "masses",
+    "friction",
+    "collisions",
+    "anatomy",
+    "actuatorCaps",
+    "ForceBasedInstaller",
+    "originalIntegrityChecks",
+    "measuredHandoffGate",
+    "recoveryDisabledByDefault"
+  ],
+  "forbidden": [
+    "assistedPelvis",
+    "midHistoryReset",
+    "bodyLock",
+    "thresholdRelaxation",
+    "additionalVariant",
+    "automaticBudgetRenewal"
+  ],
+  "finalQualification": {
+    "standBySecondsAfterImpact": 25,
+    "actualStableSeconds": 1,
+    "distinctCases": 24,
+    "authorizedHere": false
+  },
+  "decisionRule": "Any integrity/support/prediction/diagnostic failure closes this allocation; no continuation beyond four seconds. Decide on complete prepared eight-second route from evidence, without executing it."
+}

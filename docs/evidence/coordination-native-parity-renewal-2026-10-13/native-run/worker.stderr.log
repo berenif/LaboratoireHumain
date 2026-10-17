@@ -1,0 +1,4 @@
+
+thread 'main' panicked at crates/sim/src/recovery/planner/numeric_parity_worker.rs:408:5:
+called `Result::unwrap()` on an `Err` value: Error("number out of range", line: 0, column: 0)
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace

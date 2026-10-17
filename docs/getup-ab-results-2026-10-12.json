@@ -1,0 +1,512 @@
+{
+  "schema": 1,
+  "createdUtc": "2026-10-12T06:16:38.197313+00:00",
+  "sourceCommit": "891b4a4acf74afd3d9c5c7d18b826296b4cc3e1d",
+  "scope": "Frozen full-program A/B, no retuning; no complete recovery",
+  "angularCertified": false,
+  "roundoffCertified": false,
+  "recoveryQualified": false,
+  "histories": {
+    "000-witness-A": {
+      "report": {
+        "finalWorldHashes": {
+          "bodies": "53dac90385be9610",
+          "contacts": "5591946a0821b940",
+          "counters": "b699e6f1917fbe60",
+          "motors": "3b1c21ed5985e055"
+        },
+        "firstNativeRecoveryS": null,
+        "firstRefusal": {
+          "check": "ownership",
+          "measured": 0.0,
+          "offending": "A/B measured path stagnation duration",
+          "substep": 0,
+          "threshold": 0.0,
+          "tick": 269
+        },
+        "firstRouteStandingS": 0.004166666666666667,
+        "fullRecoverySuccess": false,
+        "getupAbMode": "A",
+        "getupAbParameters": {
+          "captureGainPerS": 4.0,
+          "contactWeight": 4.0,
+          "coordinateSweeps": 24,
+          "leastSquaresRegularization": 0.001,
+          "maximumCorrectionRateRadps": 0.25,
+          "maximumOffsetRad": 0.12,
+          "maximumRelativeComVelocityMps": 0.15,
+          "minimumPersistentLoadN": 3.0,
+          "progress": "measured nearest point on complete nominal joint path",
+          "stallIncrement": 0.005,
+          "terminalRequest": "nominal program end",
+          "version": "getup-ab-v1"
+        },
+        "headingRadians": 0.0,
+        "idleFailure": null,
+        "idleMetrics": {
+          "max_angular_radps": 0.0,
+          "max_foot_drift_m": 0.0,
+          "max_linear_mps": 0.0,
+          "max_pelvis_drift_m": 0.0
+        },
+        "idleObservedSubsteps": 0,
+        "idleValidationRequested": false,
+        "initialPerturbationDegrees": 0.0,
+        "maximumActualAnatomicalRatio": 1.0,
+        "maximumAllocatedCapSumNm": 760.0,
+        "maximumAnatomicalCapRatio": 1.0,
+        "maximumComAccelerationMps2": 117.86259460449219,
+        "maximumDeliveredAbsoluteNm": 697.622802734375,
+        "maximumLoadsN": [
+          0.0,
+          0.0,
+          3638.30224609375,
+          0.0,
+          6938.86572265625,
+          1319.703125,
+          7921.265625,
+          0.0,
+          0.0,
+          1125.6177978515625,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          821.2528533935547,
+          0.0,
+          0.0,
+          0.0,
+          924.9904174804688,
+          472.43197679519653,
+          153.26156616210938,
+          0.0,
+          0.0,
+          1445.51611328125,
+          487.1867980957031
+        ],
+        "minimumPelvisHeightM": 0.13272491097450256,
+        "nativeHandlesAndGenerationPreserved": true,
+        "noBodyCommandsOrWorldReset": true,
+        "observedValidSubsteps": 1076,
+        "originalControllerControl": false,
+        "originalRecoveries": 0,
+        "physicalSeconds": 4.483333333333333,
+        "physicalSubsteps": 1076,
+        "programDurationS": 20.883333333333333,
+        "qualification": "Four independent final validations still required after frozen success",
+        "quietHoldSubsteps": 0,
+        "releasedToOriginal": false,
+        "requiredHoldSubsteps": 240,
+        "scope": "Whole actual native history, same common command interpreter",
+        "validationPassed": false,
+        "wallSeconds": 5.391964445
+      },
+      "maximumCommandOffsetRad": 0.0,
+      "maximumObservedTargetSlewRadps": 0.9591293334960938,
+      "maximumCommandRateRadps": 0.9590458869934082,
+      "firstPosteriorHindfootTimeS": null,
+      "posteriorHindfootObservedSteps": 0,
+      "finalHeightM": 0.14506423473358154,
+      "finalUpDots": {
+        "pelvis": 0.1384032201376666,
+        "torso": -0.24632549032476447,
+        "leftFoot": -0.30988840783962246,
+        "rightFoot": -0.30461221446650644
+      },
+      "lastNominalTrackingErrorRad": 0.8993237018585205,
+      "lastMeasuredPathProgress": 0.18683013319969177,
+      "persistentFinalSurfaces": [
+        "head",
+        "leftHand",
+        "rightForefoot",
+        "rightHand",
+        "torso"
+      ],
+      "samples": [
+        {
+          "timeS": 0.05,
+          "heightM": 0.9682167172431946,
+          "accelerationZ": -0.6578327417373657,
+          "trackingErrorRad": 0.020444434136152267,
+          "progress": 0.0003418961714487523,
+          "persistentFootPointCount": 4,
+          "footDepthM": 8.04513692855835e-05,
+          "posteriorHindfootPoints": 0
+        },
+        {
+          "timeS": 0.075,
+          "heightM": 0.960659384727478,
+          "accelerationZ": -0.17073331773281097,
+          "trackingErrorRad": 0.03926931694149971,
+          "progress": 0.0008684364729560912,
+          "persistentFootPointCount": 4,
+          "footDepthM": 0.00029134005308151245,
+          "posteriorHindfootPoints": 0
+        },
+        {
+          "timeS": 0.15,
+          "heightM": 0.9504260420799255,
+          "accelerationZ": 0.7422811985015869,
+          "trackingErrorRad": 0.12981973588466644,
+          "progress": 0.0033384135458618402,
+          "persistentFootPointCount": 12,
+          "footDepthM": 0.12447842210531235,
+          "posteriorHindfootPoints": 0
+        },
+        {
+          "timeS": 0.55,
+          "heightM": 0.9537655711174011,
+          "accelerationZ": 0.9593724608421326,
+          "trackingErrorRad": 0.08803960680961609,
+          "progress": 0.025494014844298363,
+          "persistentFootPointCount": 12,
+          "footDepthM": 0.1255916878581047,
+          "posteriorHindfootPoints": 0
+        },
+        {
+          "timeS": 4.479166666666667,
+          "heightM": 0.14523668587207794,
+          "accelerationZ": -0.45168620347976685,
+          "trackingErrorRad": 0.8997080326080322,
+          "progress": 0.18665817379951477,
+          "persistentFootPointCount": 2,
+          "footDepthM": 0.0,
+          "posteriorHindfootPoints": 0
+        }
+      ]
+    },
+    "001-feedback-B": {
+      "report": {
+        "finalWorldHashes": {
+          "bodies": "d927486dab608673",
+          "contacts": "b3c2f6cf99b0c5d6",
+          "counters": "b699e6f1917fbe60",
+          "motors": "addfa92d1b1edb5a"
+        },
+        "firstNativeRecoveryS": null,
+        "firstRefusal": {
+          "check": "ownership",
+          "measured": 0.0,
+          "offending": "Original recovery observer refused A/B; no restart",
+          "substep": 1,
+          "threshold": 0.0,
+          "tick": 1253
+        },
+        "firstRouteStandingS": 0.004166666666666667,
+        "fullRecoverySuccess": false,
+        "getupAbMode": "B",
+        "getupAbParameters": {
+          "captureGainPerS": 4.0,
+          "contactWeight": 4.0,
+          "coordinateSweeps": 24,
+          "leastSquaresRegularization": 0.001,
+          "maximumCorrectionRateRadps": 0.25,
+          "maximumOffsetRad": 0.12,
+          "maximumRelativeComVelocityMps": 0.15,
+          "minimumPersistentLoadN": 3.0,
+          "progress": "measured nearest point on complete nominal joint path",
+          "stallIncrement": 0.005,
+          "terminalRequest": "nominal program end",
+          "version": "getup-ab-v1"
+        },
+        "headingRadians": 0.0,
+        "idleFailure": null,
+        "idleMetrics": {
+          "max_angular_radps": 0.0,
+          "max_foot_drift_m": 0.0,
+          "max_linear_mps": 0.0,
+          "max_pelvis_drift_m": 0.0
+        },
+        "idleObservedSubsteps": 0,
+        "idleValidationRequested": false,
+        "initialPerturbationDegrees": 0.0,
+        "maximumActualAnatomicalRatio": 1.0,
+        "maximumAllocatedCapSumNm": 760.0,
+        "maximumAnatomicalCapRatio": 1.0,
+        "maximumComAccelerationMps2": 117.18080139160156,
+        "maximumDeliveredAbsoluteNm": 682.0955810546875,
+        "maximumLoadsN": [
+          4129.72216796875,
+          3636.40966796875,
+          6468.1181640625,
+          0.0,
+          8488.1142578125,
+          7146.36279296875,
+          299.4953918457031,
+          0.0,
+          0.0,
+          963.7546663954854,
+          255.01841735839844,
+          0.0,
+          49.71875,
+          206.4542389512062,
+          344.09778594970703,
+          33.17344665527344,
+          579.2010498046875,
+          0.0,
+          1407.1920166015625,
+          422.4218444824219,
+          1587.4722900390625,
+          0.0,
+          0.0,
+          488.8079528808594,
+          441.4479293823242
+        ],
+        "minimumPelvisHeightM": 0.10300446301698685,
+        "nativeHandlesAndGenerationPreserved": true,
+        "noBodyCommandsOrWorldReset": true,
+        "observedValidSubsteps": 5013,
+        "originalControllerControl": false,
+        "originalRecoveries": 0,
+        "physicalSeconds": 20.8875,
+        "physicalSubsteps": 5013,
+        "programDurationS": 20.883333333333333,
+        "qualification": "Four independent final validations still required after frozen success",
+        "quietHoldSubsteps": 0,
+        "releasedToOriginal": false,
+        "requiredHoldSubsteps": 240,
+        "scope": "Whole actual native history, same common command interpreter",
+        "validationPassed": false,
+        "wallSeconds": 25.684361724
+      },
+      "maximumCommandOffsetRad": 0.12000000476837158,
+      "maximumObservedTargetSlewRadps": 0.9999990463256836,
+      "maximumCommandRateRadps": 1.0,
+      "firstPosteriorHindfootTimeS": null,
+      "posteriorHindfootObservedSteps": 0,
+      "finalHeightM": 0.10813021659851074,
+      "finalUpDots": {
+        "pelvis": -0.005559298537690882,
+        "torso": 0.02608213772240786,
+        "leftFoot": -0.1375085674214862,
+        "rightFoot": 0.0222480785575061
+      },
+      "lastNominalTrackingErrorRad": 0.24640440940856934,
+      "lastMeasuredPathProgress": 0.9903427362442017,
+      "persistentFinalSurfaces": [
+        "head",
+        "leftForefoot",
+        "leftHand",
+        "lumbar",
+        "rightForefoot",
+        "rightHand",
+        "torso"
+      ],
+      "samples": [
+        {
+          "timeS": 0.05,
+          "heightM": 0.9682167172431946,
+          "accelerationZ": -0.6578327417373657,
+          "trackingErrorRad": 0.020444434136152267,
+          "progress": 0.0003418961714487523,
+          "persistentFootPointCount": 4,
+          "footDepthM": 8.04513692855835e-05,
+          "posteriorHindfootPoints": 0
+        },
+        {
+          "timeS": 0.075,
+          "heightM": 0.9606633186340332,
+          "accelerationZ": -0.26051759719848633,
+          "trackingErrorRad": 0.03927651047706604,
+          "progress": 0.0008780559874139726,
+          "persistentFootPointCount": 4,
+          "footDepthM": 5.9895217418670654e-05,
+          "posteriorHindfootPoints": 0
+        },
+        {
+          "timeS": 0.15,
+          "heightM": 0.9500468373298645,
+          "accelerationZ": 0.638236939907074,
+          "trackingErrorRad": 0.14421330392360687,
+          "progress": 0.0033411334734410048,
+          "persistentFootPointCount": 12,
+          "footDepthM": 0.12538102641701698,
+          "posteriorHindfootPoints": 0
+        },
+        {
+          "timeS": 0.55,
+          "heightM": 0.9560829401016235,
+          "accelerationZ": 0.8129238486289978,
+          "trackingErrorRad": 0.13160577416419983,
+          "progress": 0.02434568665921688,
+          "persistentFootPointCount": 11,
+          "footDepthM": 0.12169213220477104,
+          "posteriorHindfootPoints": 0
+        },
+        {
+          "timeS": 4.479166666666667,
+          "heightM": 0.14677469432353973,
+          "accelerationZ": 0.34762701392173767,
+          "trackingErrorRad": 0.6751651763916016,
+          "progress": 0.18303583562374115,
+          "persistentFootPointCount": 2,
+          "footDepthM": 0.0,
+          "posteriorHindfootPoints": 0
+        },
+        {
+          "timeS": 20.879166666666666,
+          "heightM": 0.10813570022583008,
+          "accelerationZ": 0.20144221186637878,
+          "trackingErrorRad": 0.24623647332191467,
+          "progress": 0.9902982711791992,
+          "persistentFootPointCount": 4,
+          "footDepthM": 0.10252532362937927,
+          "posteriorHindfootPoints": 0
+        }
+      ]
+    }
+  },
+  "ledger": {
+    "schema": 1,
+    "campaign": "getup-ab-2026-10-12",
+    "baseCommit": "42fccd359e88bb0677c40b39310e24313e8cd8d1",
+    "authorizedUtc": "2026-10-12T05:48:00+00:00",
+    "preparationStartedUtc": "2026-10-12T05:55:15.936871+00:00",
+    "preparationWorkCapHours": 16,
+    "preparationSafetyDeadlineUtc": "2026-10-14T05:55:15.936871+00:00",
+    "status": "closed-no-complete-recovery",
+    "limits": {
+      "histories": 3,
+      "nativeStepsPerHistory": 6240,
+      "totalReservedNativeSteps": 18720,
+      "simulationWallSeconds": 600,
+      "processes": 1,
+      "threads": 1
+    },
+    "historiesStarted": 2,
+    "actualNativeStepsKnown": 6089,
+    "reservedNativeSteps": 12480,
+    "entries": [
+      {
+        "index": 0,
+        "mode": "A",
+        "startedUtc": "2026-10-12T06:13:14.758971+00:00",
+        "status": "process-completed",
+        "reservedNativeSteps": 6240,
+        "manifestSha256": "6721eaf7547fb4e7d517cfd9328399a68531905a8f715393106357c301747ac4",
+        "output": "/workspace/LaboratoireHumain/evidence/getup-ab-2026-10-12/000-witness-A",
+        "processExitCode": 0,
+        "endedUtc": "2026-10-12T06:13:20.189089+00:00",
+        "wallSeconds": 5.427415039000152,
+        "actualNativeSteps": 1076,
+        "reportSha256": "2be3e350a788413353871832f6f905cdb81fb4875b66fd3ade723fcd4b286f7b",
+        "fullRecoverySuccess": false,
+        "firstRefusal": {
+          "check": "ownership",
+          "measured": 0.0,
+          "offending": "A/B measured path stagnation duration",
+          "substep": 0,
+          "threshold": 0.0,
+          "tick": 269
+        }
+      },
+      {
+        "index": 1,
+        "mode": "B",
+        "startedUtc": "2026-10-12T06:13:37.235178+00:00",
+        "status": "process-completed",
+        "reservedNativeSteps": 6240,
+        "manifestSha256": "6721eaf7547fb4e7d517cfd9328399a68531905a8f715393106357c301747ac4",
+        "output": "/workspace/LaboratoireHumain/evidence/getup-ab-2026-10-12/001-feedback-B",
+        "processExitCode": 0,
+        "endedUtc": "2026-10-12T06:14:02.961206+00:00",
+        "wallSeconds": 25.72318696100001,
+        "actualNativeSteps": 5013,
+        "reportSha256": "bbf4c9e57c09707322a288bf1d3c1587f1d927a4e51c3eef9c9a051fd40ede0f",
+        "fullRecoverySuccess": false,
+        "firstRefusal": {
+          "check": "ownership",
+          "measured": 0.0,
+          "offending": "Original recovery observer refused A/B; no restart",
+          "substep": 1,
+          "threshold": 0.0,
+          "tick": 1253
+        }
+      }
+    ],
+    "previousLedgers": {
+      "evidence/native-hybrid-v1-2026-10-11/ledger.json": "ec66ac4cd2b8b0d699ff98a5c6c84f7bcad5665e0faf84fa7bff84c1a4ac8650",
+      "evidence/recovery-coordinated-retarget-2026-10-11/native-campaign/ledger.json": "b61f17b180afece7db1e3a7d541edeaf24094f358edd2bb7e1362797d8b600e4"
+    },
+    "programSha256": "fef70abf3d016cecf6658b0bc5e7a6361d989eb265840acdc1a4fbc497a70c7d",
+    "p1AngularCertified": false,
+    "p1NativeRoundoffCertified": false,
+    "recoveryQualified": false,
+    "manifestSha256": "6721eaf7547fb4e7d517cfd9328399a68531905a8f715393106357c301747ac4",
+    "preparationFinishedUtc": "2026-10-12T06:13:14.645857+00:00",
+    "preparationWallConservativeSeconds": 1078.708986,
+    "preparationPhysicalIntegrations": 0,
+    "simulationStartedUtc": "2026-10-12T06:13:14.758950+00:00",
+    "simulationDeadlineUtc": "2026-10-12T06:23:14.758950+00:00",
+    "closedUtc": "2026-10-12T06:15:14.879437+00:00",
+    "closureReason": "B reached nominal end but original physical recovery observer refused; no complete success, third history not admitted",
+    "frozenFilesVerifiedAfterHistories": true,
+    "preparationElapsedFromAuthorizationConservativeS": 1514.645857
+  },
+  "preparationChecks": {
+    "createdUtc": "2026-10-12T06:11:59.316262+00:00",
+    "checks": [
+      {
+        "command": [
+          "/workspace/LaboratoireHumain/rust/target/release/deps/lh_sim-915f3c63bea15a90",
+          "--test-threads=1",
+          "recovery::support_probe::getup_ab::"
+        ],
+        "exitCode": 0,
+        "physicalIntegrations": 0,
+        "scope": "Static-reviewed test functions; no step/advance call"
+      },
+      {
+        "command": [
+          "/workspace/LaboratoireHumain/rust/target/release/deps/lh_sim-915f3c63bea15a90",
+          "--test-threads=1",
+          "--exact",
+          "recovery::tests::measured_handoff_has_matching_native_rates_and_cannot_count_during_blend"
+        ],
+        "exitCode": 0,
+        "physicalIntegrations": 0,
+        "scope": "Static-reviewed test functions; no step/advance call"
+      }
+    ],
+    "clippyDefaultAndFeatureAllTargetsPassed": true,
+    "releaseBuildPassed": true,
+    "pythonBudgetTestsPassed": 6,
+    "completeSuiteRun": false
+  },
+  "identicalNativePrefixSteps": 12,
+  "firstDivergentPhysicalTimeS": 0.05416666666666667,
+  "physicsExecutionWallSeconds": 31.150602000000163,
+  "experimentWallSeconds": 48.202256,
+  "inferences": [
+    "Feedback changes motion after original persistent contacts become available, not a different nominal program",
+    "B follows the nominal joint path near its end while pelvis stays low; joint-shape progress is not a physical recovery certificate",
+    "No evidence proving feet-only impossible or intermediate hand/knee necessary",
+    "Free-root orientation, useful support transfer and achieved dynamic force remain unverified by the approximate kinematic feedback"
+  ],
+  "limitations": [
+    "No physical positive handoff or hold; pure handoff unit test is not physical proof",
+    "The legacy loadedFeet status field is not refreshed by the experimental adapter; use persistentAnatomicalContacts and original physical terminal checks",
+    "Original ownership label wraps command/observer refusal; these refusals do not mean native handles changed",
+    "Complete Rust/TypeScript/browser suites not run; known baseline failures remain",
+    "Feedback uses all currently persistent surfaces, including passive head/trunk contacts; it does not enforce the nominal contact annotations or commanded release order",
+    "Feedback cancels common translation in its relative Jacobian but does not model/control free-root rotation; following relative joint coordinates can leave the mannequin lying down"
+  ],
+  "libraryDelivery": {
+    "status": "succeeded",
+    "operation": "create_library_file",
+    "file_name": "getup-ab-recorded.mp4",
+    "current_version_number": 0,
+    "file_size_bytes": 133392,
+    "library_file_id": "libfile_0088b80606f0819193b9e382e321c903",
+    "file_id": "file_00000000bfc481f58f89770a9de58c2a",
+    "path": "/getup-ab-recorded.mp4",
+    "xattrsApplied": 1
+  },
+  "mediaSha256": {
+    "docs/media/getup-ab-2026-10-12/visuals.json": "d7e4937d0c763e89cb89410a581527f29440e12a3a8bc3c2954314396d601750",
+    "docs/media/getup-ab-2026-10-12/getup-ab-recorded.mp4": "0da358b1e24d121e20fc038a77512d301d76f319256b7be067c77e94ad7fb011",
+    "docs/media/getup-ab-2026-10-12/getup-ab-milestones.png": "54cee4ab32b04ea7b981699b4810c1136bfb7a981aa648373506773c3e0f0052",
+    "docs/media/getup-ab-2026-10-12/getup-ab-comparison.png": "de326212e1ab361b1e248670bf2faae8d29ca724ebccef2f3784b5f0275d1665"
+  },
+  "frozenManifestSha256": "6721eaf7547fb4e7d517cfd9328399a68531905a8f715393106357c301747ac4"
+}

@@ -1,0 +1,86 @@
+{
+  "schema": 1,
+  "scope": "prepared local-pair protocol; no physical execution authorized by this file",
+  "fixture": "landed-crouch-left",
+  "histories": [
+    {
+      "id": "A",
+      "coordination": false,
+      "headingDegrees": 0
+    },
+    {
+      "id": "B",
+      "coordination": true,
+      "headingDegrees": 0
+    }
+  ],
+  "physics": {
+    "nativeHz": 240,
+    "controlHz": 60,
+    "planningMaximumHz": 10,
+    "maximumSecondsPerHistory": 4,
+    "maximumAllNativeSubsteps": 78736,
+    "maximumWallSeconds": 7100,
+    "nativeProcesses": 1,
+    "nativeThreads": 1,
+    "longPreviewSubsteps": 480,
+    "maximumCandidatesPerCall": 4,
+    "shortProbesPerCall": 0,
+    "verificationSubsteps": 16,
+    "maximumPlanningCallsPerBHistory": 40,
+    "planningSpacingNativeSubsteps": 24,
+    "feedbackScales": [
+      0,
+      0.5,
+      1,
+      1.5
+    ],
+    "maximumHistoryNativeSubsteps": 960,
+    "maximumPredictionNativeSubsteps": 76800,
+    "maximumPredictionAndVerificationNativeSubsteps": 76816,
+    "verificationInSameNativeProcess": true
+  },
+  "local": {
+    "hindfootLocalZLessThanM": -0.02,
+    "minimumHeelLoadN": 3,
+    "heelOwnPersistenceSubsteps": 12,
+    "minimumFootSupportWeightFraction": 0.8,
+    "maximumPersistentNonfootLoadN": 3,
+    "supportHullInsetM": 0.003,
+    "requireComAndCaptureInside": true,
+    "all25BodiesMaximumLinearMps": 0.22,
+    "all25BodiesMaximumAngularRadps": 0.65,
+    "consecutiveStableSubsteps": 132,
+    "stableIntervalMustStartBeforeSeconds": 2,
+    "passedIsAnIntervalLatch": true,
+    "realHistoryMustCompleteAll960StepsWithoutRefusal": true
+  },
+  "unchanged": [
+    "model",
+    "masses",
+    "friction",
+    "collisions",
+    "anatomy",
+    "actuatorCaps",
+    "ForceBasedInstaller",
+    "originalIntegrityChecks",
+    "measuredHandoffGate",
+    "recoveryDisabledByDefault"
+  ],
+  "forbidden": [
+    "assistedPelvis",
+    "midHistoryReset",
+    "bodyLock",
+    "thresholdRelaxation",
+    "additionalVariant",
+    "automaticBudgetRenewal"
+  ],
+  "finalQualification": {
+    "standBySecondsAfterImpact": 25,
+    "actualStableSeconds": 1,
+    "distinctCases": 24,
+    "authorizedHere": false
+  },
+  "decisionRule": "Run A then B only after same-process 16-step admission. A local diagnostic failure permits B; any integrity/support/prediction/diagnostic refusal closes admission. Close after B whether local_success is true or false. Both real histories are bounded to 960 steps; no B-repeat, B60, reset, automatic renewal, or continuation beyond 4 s. The complete eight-second reference is a static prerequisite, not a physical success certificate.",
+  "protocolMode": "local-pair"
+}

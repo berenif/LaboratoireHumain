@@ -1,0 +1,211 @@
+{
+  "scope": "Three fixed histories and complete world/controller/reference/fixture checkpoints; raw/gzip roundtrip verified",
+  "cases": {
+    "back": {
+      "trace.ndjson": {
+        "path": "docs/evidence/getup-three-poses-2026-10-16/back/trace.ndjson.gz",
+        "sha256": "460ca144368808672456be859f71effeaf5bd4077492470259563ce97544f5fa",
+        "rawSha256": "979b74a6f222347e546295166487eb8c1a82f9cc74ec0259d9a5e85d2eac1174",
+        "rawBytes": 1371664,
+        "compressedBytes": 284115
+      },
+      "reference-report.json": {
+        "path": "docs/evidence/getup-three-poses-2026-10-16/back/reference-report.json.gz",
+        "sha256": "ef2f678a9473077c91ffe09cc746f571dbf4af36371fcd681e6f555d629a66ed",
+        "rawSha256": "2f11ece2e02206b30c4e05eda4c7bdd2f3ee3c3e25d20d6f8a153a3b239b7e10",
+        "rawBytes": 5097356,
+        "compressedBytes": 1210032
+      },
+      "checkpoint-1600.bin": {
+        "path": "docs/evidence/getup-three-poses-2026-10-16/back/checkpoint-1600.bin.gz",
+        "sha256": "34a6a3fe278b99f39fdd7f682880c993ec461dad05680929aeda3827b48c7042",
+        "rawSha256": "a519075f496535fa01eaa04524861a8af696d30945a23bde0f6d6307c5ae3289",
+        "rawBytes": 2012709,
+        "compressedBytes": 394813
+      },
+      "checkpoint-3200.bin": {
+        "path": "docs/evidence/getup-three-poses-2026-10-16/back/checkpoint-3200.bin.gz",
+        "sha256": "9a703acd4740756fb9e0363241b11183439e4e2cc40bc9e902f170a467f88a13",
+        "rawSha256": "0cf1c784b8fa58dcddf43b96723e8173b9da3328775ee151b874a393a6c325fa",
+        "rawBytes": 2724475,
+        "compressedBytes": 583059
+      },
+      "checkpoint-4800.bin": {
+        "path": "docs/evidence/getup-three-poses-2026-10-16/back/checkpoint-4800.bin.gz",
+        "sha256": "c875b45e289b3f17ecfe47b485d4855d646da086d12ea45ee7590fa8fd3fc275",
+        "rawSha256": "28ace12eaf6ddd8c37c246358ea4d7a3e920db6b6abc4b7b61f8e8aced631052",
+        "rawBytes": 3447073,
+        "compressedBytes": 761284
+      },
+      "checkpoint-6400.bin": {
+        "path": "docs/evidence/getup-three-poses-2026-10-16/back/checkpoint-6400.bin.gz",
+        "sha256": "c881247f20e9ff3f1471c91a61cd621c030472334705bea0dda7a2bebad9c2a6",
+        "rawSha256": "6a53b0c11c8bd2cfc3df35361ade6147ad6e158deb2065c544f8004c6774752b",
+        "rawBytes": 4170589,
+        "compressedBytes": 939453
+      },
+      "checkpoint-8000.bin": {
+        "path": "docs/evidence/getup-three-poses-2026-10-16/back/checkpoint-8000.bin.gz",
+        "sha256": "5830dc038b5ac4b61283978d5b7debfe75a84867a297a9676cb799f06eb4585a",
+        "rawSha256": "a390357c77d82ac0517b8828b6dae02bf7bbdd4c941aa6e2c8bc007013ba0a21",
+        "rawBytes": 4894077,
+        "compressedBytes": 1117719
+      },
+      "checkpoint-9600.bin": {
+        "path": "docs/evidence/getup-three-poses-2026-10-16/back/checkpoint-9600.bin.gz",
+        "sha256": "707e824d209b0551f77f1e84f49c4b88f700024674a69da67e9d9b7f20a6c5b3",
+        "rawSha256": "60c9cd701e26823a9362d45724cc3becb8cb060ea77043bebb8404881f632044",
+        "rawBytes": 5617565,
+        "compressedBytes": 1295967
+      },
+      "checkpoint-final.bin": {
+        "path": "docs/evidence/getup-three-poses-2026-10-16/back/checkpoint-final.bin.gz",
+        "sha256": "b6f488d060e7e3bf3056fca3f963be6beaf7157203700bd62bb6e6da460738da",
+        "rawSha256": "4e90574566dcfe7af6fcb496c301039538a6a0e6f3449dac0f966f87238b782f",
+        "rawBytes": 5726074,
+        "compressedBytes": 1322619
+      },
+      "checkpoint-initial.bin": {
+        "path": "docs/evidence/getup-three-poses-2026-10-16/back/checkpoint-initial.bin.gz",
+        "sha256": "7a557936198fdc01e4392959239217124a7d7cb98e98e7615babeec21b6b186b",
+        "rawSha256": "ef27d8b9986fd635b871010e780e74df96dceec6e48d64d75b7cb754332e031a",
+        "rawBytes": 584689,
+        "compressedBytes": 91991
+      },
+      "checkpoint-trigger.bin": {
+        "path": "docs/evidence/getup-three-poses-2026-10-16/back/checkpoint-trigger.bin.gz",
+        "sha256": "eb712647a8be7d15d5a41818ad352cbb978297bfd2a80c8cb8eb64f462a9cf85",
+        "rawSha256": "6207858a8d081aa2aae588b4c0815ae656376a685bf244600e4b5a586bd186b5",
+        "rawBytes": 635035,
+        "compressedBytes": 112749
+      }
+    },
+    "belly": {
+      "trace.ndjson": {
+        "path": "docs/evidence/getup-three-poses-2026-10-16/belly/trace.ndjson.gz",
+        "sha256": "7e73dbe015ee1a67d42e38ba9f20435352566008bbebfb88cc2e1c1595cf31f4",
+        "rawSha256": "236861e51623b8009f21b3e54bf347164d7be4f77a6bee9d35a36845f637c78d",
+        "rawBytes": 1621452,
+        "compressedBytes": 334842
+      },
+      "reference-report.json": {
+        "path": "docs/evidence/getup-three-poses-2026-10-16/belly/reference-report.json.gz",
+        "sha256": "7b23e05e27742a1209103b8cd69f0f921e1c944a103c091c707de9e19a4898e4",
+        "rawSha256": "30abfa4d91b586cb05f3e752d47c40512798cd785efc553f5073435f5d01b6d0",
+        "rawBytes": 5567002,
+        "compressedBytes": 1354835
+      },
+      "checkpoint-11200.bin": {
+        "path": "docs/evidence/getup-three-poses-2026-10-16/belly/checkpoint-11200.bin.gz",
+        "sha256": "884af9890799ef09eb103fed756dd8e39786b7f9246fea81259149364ab310ab",
+        "rawSha256": "935b5df8dbaf078e6f83e5152ef34530b7cd81874cdd582fcd6826b264be364e",
+        "rawBytes": 5972983,
+        "compressedBytes": 1415022
+      },
+      "checkpoint-1600.bin": {
+        "path": "docs/evidence/getup-three-poses-2026-10-16/belly/checkpoint-1600.bin.gz",
+        "sha256": "639b91b8ffcd90cc8918f8874de1c77925754769e982ea92ebd475b9e43f308d",
+        "rawSha256": "45a656bf9fd4d332812331887da423ca65c6c1734d80a1b76806e0e842c50fff",
+        "rawBytes": 1663600,
+        "compressedBytes": 340061
+      },
+      "checkpoint-3200.bin": {
+        "path": "docs/evidence/getup-three-poses-2026-10-16/belly/checkpoint-3200.bin.gz",
+        "sha256": "8c83aa90745a15321ac2af69ed7feaac8a996ed1ed3ae410792047debb9232b3",
+        "rawSha256": "c18a0fe0a8746af2621773b8d7f439ae592f73f5ce2c832ad0246d60009b1301",
+        "rawBytes": 2376714,
+        "compressedBytes": 520754
+      },
+      "checkpoint-4800.bin": {
+        "path": "docs/evidence/getup-three-poses-2026-10-16/belly/checkpoint-4800.bin.gz",
+        "sha256": "b517af9c3cd91010766ec06167b1b1c084ea542b356bb82cb897858df9d971b5",
+        "rawSha256": "ddca44c5ad8083c7153ff0af1b6e542ec9e9dde55e905b0dbf8af65fc751842a",
+        "rawBytes": 3092722,
+        "compressedBytes": 700824
+      },
+      "checkpoint-6400.bin": {
+        "path": "docs/evidence/getup-three-poses-2026-10-16/belly/checkpoint-6400.bin.gz",
+        "sha256": "5476953c2f6f73911fda3435cf821dd67ef3d32c51590405bcfe6afa42d3b81d",
+        "rawSha256": "e8fc3efdb6192f733fa041be94264994148de0f3f64903754f4c8359d1dd5f14",
+        "rawBytes": 3805671,
+        "compressedBytes": 881357
+      },
+      "checkpoint-8000.bin": {
+        "path": "docs/evidence/getup-three-poses-2026-10-16/belly/checkpoint-8000.bin.gz",
+        "sha256": "b7e7d145b7825b390385f43a3fc53cac8dc63b05e01d5897c9b4436ce1d2d596",
+        "rawSha256": "ad3edf529c089a77206223f561c72ad4c9ab78e411c9a9f064b685a4ab9d54de",
+        "rawBytes": 4518485,
+        "compressedBytes": 1062452
+      },
+      "checkpoint-9600.bin": {
+        "path": "docs/evidence/getup-three-poses-2026-10-16/belly/checkpoint-9600.bin.gz",
+        "sha256": "8b7695f51a571a156f873fd6649280c95d416af26df3a68e78c70c3b507d625f",
+        "rawSha256": "eca3afef1fe9617b4b2ad8ecb55130598bbfb60b0dbece23e89ca042af417634",
+        "rawBytes": 5237218,
+        "compressedBytes": 1240879
+      },
+      "checkpoint-final.bin": {
+        "path": "docs/evidence/getup-three-poses-2026-10-16/belly/checkpoint-final.bin.gz",
+        "sha256": "bd1d54440ec584c6309cfac88d36e9535ba513819340bc9432f93c2ae3f8b16f",
+        "rawSha256": "041934e1f96e69ffb528c9a76e72ee440f168820a16ca63902d2288b6cbc3912",
+        "rawBytes": 6194873,
+        "compressedBytes": 1466367
+      },
+      "checkpoint-initial.bin": {
+        "path": "docs/evidence/getup-three-poses-2026-10-16/belly/checkpoint-initial.bin.gz",
+        "sha256": "deb12b83c3474fba4cc6caf84f5ca4316b7a828bb704c208cdadf4b4ab2f08b6",
+        "rawSha256": "bac7b73b5a9e2182c472f472df6cfb6e50d57a12dc204bd8b5958276a80546de",
+        "rawBytes": 584692,
+        "compressedBytes": 91965
+      },
+      "checkpoint-trigger.bin": {
+        "path": "docs/evidence/getup-three-poses-2026-10-16/belly/checkpoint-trigger.bin.gz",
+        "sha256": "3f182c37e6bc784dbbb31a8156e723a74d1bd1e88bcecf50fef5058d1f04bb59",
+        "rawSha256": "85c44a89033965c657a098bc97f644ed4e7f3795873226d19d7d9d85f4811172",
+        "rawBytes": 636682,
+        "compressedBytes": 112896
+      }
+    },
+    "side": {
+      "trace.ndjson": {
+        "path": "docs/evidence/getup-three-poses-2026-10-16/side/trace.ndjson.gz",
+        "sha256": "1e15265194d7ff9c2c8ad6dcdd432e117c07ee92ffb70738753e7e69da4faa29",
+        "rawSha256": "10d1e038b05762403a23dc3a7a0547bd57d06d5cb488dea096f8cd50afe483d6",
+        "rawBytes": 226291,
+        "compressedBytes": 47312
+      },
+      "reference-report.json": {
+        "path": "docs/evidence/getup-three-poses-2026-10-16/side/reference-report.json.gz",
+        "sha256": "3533d6f27ef023029e7beb23ad40b8aaa9fd26d8f9c0e0011b5b6a83ab0e6445",
+        "rawSha256": "cc3a9263f47b03cda2bfcb108cd9bd3501f0d189b900f8a259be521c8f54679a",
+        "rawBytes": 1023,
+        "compressedBytes": 435
+      },
+      "checkpoint-1600.bin": {
+        "path": "docs/evidence/getup-three-poses-2026-10-16/side/checkpoint-1600.bin.gz",
+        "sha256": "9dce601345cf97de57eddb45147c07cb134864812db250947f99f37b7dc1937a",
+        "rawSha256": "b8d1badf8f4b2886baacfee4b4e8f07d7af4caf75e7957fa23c478d4144e65c6",
+        "rawBytes": 642623,
+        "compressedBytes": 114818
+      },
+      "checkpoint-final.bin": {
+        "path": "docs/evidence/getup-three-poses-2026-10-16/side/checkpoint-final.bin.gz",
+        "sha256": "9dce601345cf97de57eddb45147c07cb134864812db250947f99f37b7dc1937a",
+        "rawSha256": "b8d1badf8f4b2886baacfee4b4e8f07d7af4caf75e7957fa23c478d4144e65c6",
+        "rawBytes": 642623,
+        "compressedBytes": 114818
+      },
+      "checkpoint-initial.bin": {
+        "path": "docs/evidence/getup-three-poses-2026-10-16/side/checkpoint-initial.bin.gz",
+        "sha256": "2384fefbad2897cb5571ccdb0f21cbc9d8b28ce0983ebb38783176b051555ed6",
+        "rawSha256": "69bb6945ee992bc0e6bc45c0b69d6cf91e36c719f6b19dd30de594275ce9a68c",
+        "rawBytes": 584682,
+        "compressedBytes": 92168
+      }
+    }
+  },
+  "matchingRuntimeArtifactsSha256": {
+    "rust/dist/app/lh_worker.js": "101fb209c1a8a757763735329e98a21f25579195faef20862ceb05b9078afc5c",
+    "rust/dist/app/lh_worker_bg.wasm": "82136da8470bbbed50b13d7c04d6b6863e868da7e5c7bd3fbc59e5d0ec5bfa27"
+  }
+}

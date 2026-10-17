@@ -1,0 +1,68 @@
+warning: /workspace/LaboratoireHumain/rust/crates/sim/Cargo.toml: file `/workspace/LaboratoireHumain/rust/crates/sim/src/lib.rs` found to be present in multiple build targets:
+  * `lib` target `lh_sim`
+  * `integration-test` target `coordination-local-pair-worker`
+  * `integration-test` target `coordination-transfer-worker`
+  * `integration-test` target `coordination-worker`
+  * `integration-test` target `numeric-parity-worker`
+  * `integration-test` target `numeric-parity-worker-serialization`
+    Blocking waiting for file lock on package cache
+    Blocking waiting for file lock on package cache
+   Compiling proc-macro2 v1.0.107
+   Compiling unicode-ident v1.0.26
+   Compiling quote v1.0.47
+   Compiling autocfg v1.5.1
+   Compiling libm v0.2.16
+   Compiling serde_core v1.0.229
+   Compiling num-traits v0.2.19
+   Compiling serde v1.0.229
+   Compiling bytemuck v1.25.2
+   Compiling safe_arch v1.2.0
+   Compiling syn v3.0.6
+   Compiling syn v2.0.119
+   Compiling approx v0.5.1
+   Compiling matrixmultiply v0.3.11
+   Compiling num-integer v0.1.47
+   Compiling wide v1.7.1
+   Compiling rawpointer v0.2.1
+   Compiling serde_derive v1.0.229
+   Compiling glam v0.33.10
+   Compiling nalgebra-macros v0.3.0
+   Compiling num-rational v0.4.2
+   Compiling num-complex v0.4.6
+   Compiling typenum v1.20.1
+   Compiling byteorder v1.5.0
+   Compiling zmij v1.0.23
+   Compiling heapless v0.8.0
+   Compiling hash32 v0.3.1
+   Compiling stable_deref_trait v1.2.1
+   Compiling serde_json v1.0.151
+   Compiling thiserror v2.0.21
+   Compiling thiserror-impl v2.0.21
+   Compiling memchr v2.8.3
+   Compiling foldhash v0.2.0
+   Compiling itoa v1.0.18
+   Compiling smallvec v1.16.2
+   Compiling log v0.4.34
+   Compiling rstar v0.13.0
+   Compiling ena v0.14.4
+   Compiling hashbrown v0.17.1
+   Compiling serde_arrays v0.2.0
+   Compiling arrayvec v0.7.8
+   Compiling profiling-procmacros v1.0.18
+   Compiling num-derive v0.4.2
+   Compiling bitflags v2.13.2
+   Compiling simba v0.10.2
+   Compiling ordered-float v5.4.0
+   Compiling static_assertions v1.1.0
+   Compiling downcast-rs v2.0.2
+   Compiling either v1.18.0
+   Compiling slab v0.4.12
+   Compiling profiling v1.0.18
+   Compiling nalgebra v0.35.0
+   Compiling glamx v0.3.1
+   Compiling lh-model v0.1.0 (/workspace/LaboratoireHumain/rust/crates/model)
+   Compiling parry3d v0.30.2
+   Compiling lh-contracts v0.1.0 (/workspace/LaboratoireHumain/rust/crates/contracts)
+   Compiling rapier3d v0.35.0 (/workspace/LaboratoireHumain/rust/vendor/rapier3d)
+   Compiling lh-sim v0.1.0 (/workspace/LaboratoireHumain/rust/crates/sim)
+    Finished `release` profile [optimized] target(s) in 1m 40s

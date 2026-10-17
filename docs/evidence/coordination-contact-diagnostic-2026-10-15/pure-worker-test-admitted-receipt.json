@@ -1,0 +1,50 @@
+{
+  "command": [
+    "/workspace/lh-rustup/toolchains/1.89.0-x86_64-unknown-linux-gnu/bin/cargo",
+    "test",
+    "--manifest-path",
+    "/workspace/LaboratoireHumain/rust/Cargo.toml",
+    "-p",
+    "lh-sim",
+    "--locked",
+    "--offline",
+    "--lib",
+    "--features",
+    "coordination-transfer-worker",
+    "--no-run",
+    "--message-format=json"
+  ],
+  "startedUtc": "2026-10-15T15:35:13.094029+00:00",
+  "wallSeconds": 6.216833172002225,
+  "exitCode": 0,
+  "workerSourceBefore": "811df09bae544476e03026a9d832f7ea306ff774fe85e42929f974efd2c3f89c",
+  "workerSourceAfter": "811df09bae544476e03026a9d832f7ea306ff774fe85e42929f974efd2c3f89c",
+  "historicalReleaseBefore": "63e0e035d38d02f762c69b9dacb65d61e179c72ced50f5facd0bc29c64b9e8b5",
+  "historicalReleaseAfter": "63e0e035d38d02f762c69b9dacb65d61e179c72ced50f5facd0bc29c64b9e8b5",
+  "executables": [
+    {
+      "path": "/workspace/LaboratoireHumain/rust/target/debug/deps/lh_sim-5c8b831f4d644d8a",
+      "sha256": "19e3e1ecfeaf89acf2e5657b4a462abf0ab8f1860e3260552f168fca84c619ec",
+      "target": {
+        "kind": [
+          "lib"
+        ],
+        "crate_types": [
+          "lib"
+        ],
+        "name": "lh_sim",
+        "src_path": "/workspace/LaboratoireHumain/rust/crates/sim/src/lib.rs",
+        "edition": "2024",
+        "doc": true,
+        "doctest": true,
+        "test": true
+      }
+    }
+  ],
+  "workerExecuted": false,
+  "nativeSteps": 0,
+  "stdoutSha256": "b09c9d238d5cf4399334b64ae9d2463e3d624a9a2558d6d8e2c87b55ec3c12b2",
+  "stderrSha256": "c060599637390f4a14c2bb32c3beca5744953e7a47b00eaaa6cbe2bafd79be81",
+  "candidateSourceStable": true,
+  "historicalReleasePreserved": true
+}

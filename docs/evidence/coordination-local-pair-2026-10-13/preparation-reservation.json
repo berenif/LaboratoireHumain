@@ -1,0 +1,64 @@
+{
+  "schema": 1,
+  "startedUtc": "2026-10-13T10:44:39.937862+00:00",
+  "preparationReservationDeadlineUtc": "2026-10-13T11:44:39.937862+00:00",
+  "authority": "Parent instruction after native parity: reconstruct/freeze then one distinct A/B pair, max78736 native steps and <=2h within original family; no automatic renewal",
+  "priorPreparation": {
+    "path": "docs/evidence/coordination-native-serialization-2026-10-13/final-preparation-reservation.json",
+    "sha256": "23c8b93f7a5eb7c20af2c518ea119a36b143c22897ff245e1191ec6e58dff27b"
+  },
+  "priorPreparationChargedSeconds": 24889,
+  "additionalPreparationReservedSeconds": 3600,
+  "totalPreparationChargedSeconds": 28489,
+  "preparationCapSeconds": 144000,
+  "overlapChargedConservatively": true,
+  "refundSeconds": 0,
+  "staticInspectionsCharged": 9173,
+  "additionalStaticInspectionsReserved": 0,
+  "staticInspectionsCap": 20000,
+  "originalPreparationDeadlineUtc": "2026-10-17T20:14:00+00:00",
+  "protected": [
+    {
+      "path": "docs/evidence/coordination-prototype-2026-10-12/budget/ledger.json",
+      "sha256": "2afa69b3ae9c8ab8343f7dabdf46b955c8ac7b88aa259404958e25d49a72ef07"
+    },
+    {
+      "path": "docs/evidence/coordination-native-parity-2026-10-13/native-run/physical-ledger.json",
+      "sha256": "73b2e3bff52aadf0414be2f7a4a96fa4cd5da7b02de0945434e4f136bbf476a6"
+    },
+    {
+      "path": "docs/evidence/coordination-native-parity-renewal-2026-10-13/native-run/physical-ledger.json",
+      "sha256": "1411bfcc1a17caa681359cfb39d7c0429f2188375925c22ba4b037df96d44bc2"
+    },
+    {
+      "path": "docs/evidence/coordination-native-serialization-2026-10-13/native-run/physical-ledger.json",
+      "sha256": "191d3216953bfb4aca5b7abcea277454d7d97ad5b4ca72e28ffbc260399af250"
+    },
+    {
+      "path": "rust/target/release/deps/coordination_worker-60f2b83fe348a1d3",
+      "sha256": "1bb4b91ac8ebfbe382d9525e524b85040ca9890bc90a0ef0467f1ef2b64c8b57"
+    },
+    {
+      "path": "rust/target/release/deps/numeric_parity_worker-b68c9e5f8e8cfa37",
+      "sha256": "9e125785fad85b0befc9373c3116d66aa32e8050a998ce08974b0da29d2760cc"
+    },
+    {
+      "path": "rust/target/release/deps/numeric_parity_worker_serialization-360529b9ad4cba37",
+      "sha256": "83bddf95897acc6015de7d2947b04ee2f5aaf2eb49b4dcb85ba0a67764f95e1b"
+    }
+  ],
+  "plannedNativeMaximum": 78736,
+  "plannedNativeWallSeconds": 7100,
+  "startupMaximumSeconds": 30,
+  "shutdownBudgetSeconds": 7,
+  "familyPriorReservedSteps": 3988,
+  "familyReservedStepsIncludingNewPair": 82724,
+  "familyMaximumNativeSteps": 300000,
+  "familyPriorHistoriesCharged": 2,
+  "familyHistoriesIncludingNewPair": 4,
+  "familyMaximumHistories": 4,
+  "nativeExecutionStarted": false,
+  "baseCommit": "63f1dfb8c3b686c9f6026e709a1dbbf7f60b0d9b",
+  "remoteBaseVerified": true,
+  "mainVerifiedUnchanged": "c597959f46f37715035349c8cd0a699b6822111a"
+}

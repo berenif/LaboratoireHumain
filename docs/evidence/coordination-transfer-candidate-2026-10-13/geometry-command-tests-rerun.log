@@ -1,0 +1,14 @@
+warning: /workspace/LaboratoireHumain/rust/crates/sim/Cargo.toml: file `/workspace/LaboratoireHumain/rust/crates/sim/src/lib.rs` found to be present in multiple build targets:
+  * `lib` target `lh_sim`
+  * `integration-test` target `coordination-local-pair-worker`
+  * `integration-test` target `coordination-worker`
+  * `integration-test` target `numeric-parity-worker`
+  * `integration-test` target `numeric-parity-worker-serialization`
+   Compiling lh-sim v0.1.0 (/workspace/LaboratoireHumain/rust/crates/sim)
+error: couldn't read `crates/sim/src/recovery/planner/transfer_adapter_tests.rs`: No such file or directory (os error 2)
+   --> crates/sim/src/recovery/planner/transfer_adapter.rs:430:1
+    |
+430 | mod tests;
+    | ^^^^^^^^^^
+
+error: could not compile `lh-sim` (lib test) due to 1 previous error

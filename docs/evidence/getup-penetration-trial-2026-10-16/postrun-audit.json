@@ -1,0 +1,46 @@
+{
+  "physicsIntegrationsForAudit": 0,
+  "observedPhysicsDurationS": 0.025,
+  "actualMainNativeSteps": 20,
+  "actualForecastNativeSteps": 0,
+  "actualConsumedNativeSteps": 20,
+  "nativeCountSource": "Simulation::snapshot simulation_time_s = substeps_completed / 800; retained times 0 and 0.025; runtime observation sequence independently replaces stamp.sequence",
+  "transportSequence": [
+    1,
+    2
+  ],
+  "observedTicks": [
+    0,
+    1
+  ],
+  "workerRestartsOrResets": 0,
+  "physicalFailure": null,
+  "harnessFailed": true,
+  "harnessCause": "AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:\n\n0.025 !== 0.00125\n",
+  "impactOccurred": false,
+  "forecastAdmissionEvaluated": false,
+  "teacherDecisions": 0,
+  "slowPolicyDecisions": 0,
+  "slowApplied": false,
+  "standingRecoveryEvaluated": false,
+  "standingPassed": false,
+  "maxObservedStableStandingS": 0,
+  "actualMotion": "Upright",
+  "initialHeadM": 1.4657884,
+  "finalHeadM": 1.4627361,
+  "maximumBodyOriginShiftM": 0.0031560450147898756,
+  "maximumSelfPenetrationM": 0,
+  "maximumFloorPenetrationM": 0,
+  "maximumRequestedMotorEffortNm": 7.6368437,
+  "allArchivedPosesFinite": true,
+  "priorLedgerUnchanged": true,
+  "allFrozenLaunchInputsValidated": true,
+  "postrunOnlyRepairs": {
+    "scripts/validate-getup-bounded.mjs": "5718af33e7551b6e1e22661811ec4c7dc2988b0710a2bd9c227bca9cb792bdb4",
+    "tests/rust-getup-bounded-budget.test.mjs": "fecda146a7ddf3ca59f69d747ca9d3015bee396892b60ec3be450a6270683f69"
+  },
+  "noRelaunch": true,
+  "unspentIncrementalNativeStepsNotReusable": 8180,
+  "retainedReservation": 8200,
+  "outcome": "Trial interrupted by harness counter error before impact; no conclusion about WEAK forecast or SLOW recovery."
+}

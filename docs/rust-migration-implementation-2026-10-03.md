@@ -1,3 +1,5 @@
+> Historical migration/physics record. The maintained application is now Rust/WASM; see [current setup and limitations](../README.md). Earlier statements about the default TypeScript entrypoint describe the state at the time. Physical qualification remains incomplete.
+
 # Rust migration implementation checkpoint — 2026-10-03
 
 Release status: blocked. No accepted artifact, GitHub publication, production

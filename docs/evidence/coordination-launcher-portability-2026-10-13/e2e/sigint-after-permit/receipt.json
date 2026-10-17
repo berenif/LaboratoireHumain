@@ -1,0 +1,33 @@
+{
+  "activeSurvivors": [],
+  "case": "sigint-after-permit",
+  "duplicateClaimRefusal": null,
+  "elapsedSeconds": 0.07075351100002081,
+  "failures": [],
+  "fixtureMode": "hang",
+  "fixturePids": [
+    4367
+  ],
+  "helperExitCode": 0,
+  "helperReceipt": {
+    "alarmRestored": true,
+    "error": "Refusal: Refusal: Cancelled by SIGINT: native process group killed",
+    "nativeRustWorkerExecuted": false,
+    "physicalIntegrations": 0,
+    "protocolCountsAreSynthetic": true,
+    "result": null,
+    "signalHandlersRestored": true,
+    "unrelatedSurvivedCleanup": null
+  },
+  "nativeRustWorkerExecuted": false,
+  "oldNativeRegistersTouched": false,
+  "passed": true,
+  "physicalIntegrations": 0,
+  "protocolCountsAreSynthetic": true,
+  "sentSignal": 2,
+  "statesAfterLauncher": {
+    "4367": null
+  },
+  "temporaryManifestPathsAreHistorical": true,
+  "testWallSeconds": 2
+}

@@ -1,0 +1,973 @@
+{
+  "case": "side-supported",
+  "phase": "preparation",
+  "fixtureValid": false,
+  "triggerNative": null,
+  "counters": {
+    "real": 3200,
+    "forecast": 0,
+    "total": 3200
+  },
+  "checkpoints": [
+    {
+      "path": "/workspace/LaboratoireHumain/outputs/getup-side-completion-2026-10-16/side-supported/checkpoint-initial.bin",
+      "sha256": "c5623744a6f6014629b2c76d83c0abfd6a8ac35a08e2a16c96baac8a303691d3",
+      "binaryWorldDeserialized": true,
+      "bytes": 584681,
+      "controllerEqual": true,
+      "forecastSubsteps": 0,
+      "handlesEqual": true,
+      "jointStateEqual": true,
+      "nativeSubsteps": 0,
+      "passed": true,
+      "physicsIntegrations": 0,
+      "snapshotEqual": true
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/outputs/getup-side-completion-2026-10-16/side-supported/checkpoint-1600.bin",
+      "sha256": "42b45f0658360c9ce45ace28c789c67f5006353abbb13df9a252289347c34693",
+      "binaryWorldDeserialized": true,
+      "bytes": 640594,
+      "controllerEqual": true,
+      "forecastSubsteps": 0,
+      "handlesEqual": true,
+      "jointStateEqual": true,
+      "nativeSubsteps": 1600,
+      "passed": true,
+      "physicsIntegrations": 0,
+      "snapshotEqual": true
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/outputs/getup-side-completion-2026-10-16/side-supported/checkpoint-3200.bin",
+      "sha256": "fbd31541a5cfb5f1f9fb718e1da6c3846aa9dcc3ecb9c8267925fd6a61cf2de5",
+      "binaryWorldDeserialized": true,
+      "bytes": 640701,
+      "controllerEqual": true,
+      "forecastSubsteps": 0,
+      "handlesEqual": true,
+      "jointStateEqual": true,
+      "nativeSubsteps": 3200,
+      "passed": true,
+      "physicsIntegrations": 0,
+      "snapshotEqual": true
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/outputs/getup-side-completion-2026-10-16/side-supported/checkpoint-final.bin",
+      "sha256": "fbd31541a5cfb5f1f9fb718e1da6c3846aa9dcc3ecb9c8267925fd6a61cf2de5",
+      "binaryWorldDeserialized": true,
+      "bytes": 640701,
+      "controllerEqual": true,
+      "forecastSubsteps": 0,
+      "handlesEqual": true,
+      "jointStateEqual": true,
+      "nativeSubsteps": 3200,
+      "passed": true,
+      "physicsIntegrations": 0,
+      "snapshotEqual": true
+    }
+  ],
+  "standingPassed": false,
+  "qualification24Cases": false,
+  "final": {
+    "completed_ticks": 4,
+    "paused": false,
+    "visible": true,
+    "mode": "protocol",
+    "acknowledgements": [],
+    "snapshot": {
+      "stamp": {
+        "schema": 4,
+        "generation": 1,
+        "sequence": 41,
+        "tick": 160
+      },
+      "simulation_time_s": 4,
+      "contact_time_s": 4,
+      "discontinuity": false,
+      "segments": [
+        {
+          "id": "torso",
+          "position": {
+            "x": -0.059809085,
+            "y": 0.1809269,
+            "z": 0.09535927
+          },
+          "rotation": {
+            "x": 0.24289553,
+            "y": -0.10542743,
+            "z": 0.6219566,
+            "w": 0.7370001
+          },
+          "linearVelocity": {
+            "x": -0.00022615491,
+            "y": 0.000013915618,
+            "z": -0.0000028600793
+          },
+          "angularVelocity": {
+            "x": 0.0004050991,
+            "y": 0.00013445022,
+            "z": 0.0008905585
+          }
+        },
+        {
+          "id": "head",
+          "position": {
+            "x": -0.24372526,
+            "y": 0.20153351,
+            "z": 0.13846752
+          },
+          "rotation": {
+            "x": 0.24289553,
+            "y": -0.10542743,
+            "z": 0.6219566,
+            "w": 0.7370001
+          },
+          "linearVelocity": {
+            "x": -0.00023964445,
+            "y": -0.00021241007,
+            "z": 0.000037445116
+          },
+          "angularVelocity": {
+            "x": 0.0004050991,
+            "y": 0.00013445022,
+            "z": 0.0008905585
+          }
+        },
+        {
+          "id": "@abdomen_z",
+          "position": {
+            "x": 0.19039825,
+            "y": 0.15762009,
+            "z": 0.027770184
+          },
+          "rotation": {
+            "x": 0.37924057,
+            "y": -0.27506125,
+            "z": 0.54865927,
+            "w": 0.69253397
+          },
+          "linearVelocity": {
+            "x": -0.00021542025,
+            "y": 0.00021904569,
+            "z": -0.00003871217
+          },
+          "angularVelocity": {
+            "x": 0.0015602151,
+            "y": 0.0000027718488,
+            "z": 0.000624076
+          }
+        },
+        {
+          "id": "lower_waist",
+          "position": {
+            "x": 0.18854226,
+            "y": 0.1429254,
+            "z": 0.0385077
+          },
+          "rotation": {
+            "x": 0.27802265,
+            "y": -0.34952533,
+            "z": 0.50449747,
+            "w": 0.7390061
+          },
+          "linearVelocity": {
+            "x": -0.0002279083,
+            "y": 0.00013098423,
+            "z": -0.0000064037413
+          },
+          "angularVelocity": {
+            "x": 0.0012115178,
+            "y": -0.00077633414,
+            "z": -0.00050243235
+          }
+        },
+        {
+          "id": "pelvis",
+          "position": {
+            "x": 0.3415497,
+            "y": 0.12370682,
+            "z": 0.07407008
+          },
+          "rotation": {
+            "x": 0.16304107,
+            "y": -0.4156537,
+            "z": 0.69657165,
+            "w": 0.56173795
+          },
+          "linearVelocity": {
+            "x": -0.0002848014,
+            "y": 0.00009821829,
+            "z": 0.00019178125
+          },
+          "angularVelocity": {
+            "x": 0.0009334305,
+            "y": -0.0016601353,
+            "z": 0.0001948934
+          }
+        },
+        {
+          "id": "@right_hip_x",
+          "position": {
+            "x": 0.40985924,
+            "y": 0.05994147,
+            "z": 0.02049413
+          },
+          "rotation": {
+            "x": 0.16141,
+            "y": -0.4162898,
+            "z": 0.6987689,
+            "w": 0.55900234
+          },
+          "linearVelocity": {
+            "x": -0.00020042801,
+            "y": 0.00014937844,
+            "z": 0.00022347068
+          },
+          "angularVelocity": {
+            "x": 0.0008274787,
+            "y": -0.0019968653,
+            "z": 0.0004605758
+          }
+        },
+        {
+          "id": "@right_hip_z",
+          "position": {
+            "x": 0.40985924,
+            "y": 0.05994147,
+            "z": 0.02049413
+          },
+          "rotation": {
+            "x": 0.0063426793,
+            "y": -0.28543186,
+            "z": 0.71714085,
+            "w": 0.6358534
+          },
+          "linearVelocity": {
+            "x": -0.00020042801,
+            "y": 0.00014937844,
+            "z": 0.00022347068
+          },
+          "angularVelocity": {
+            "x": -0.008203218,
+            "y": -0.002278457,
+            "z": -0.0034976797
+          }
+        },
+        {
+          "id": "right_thigh",
+          "position": {
+            "x": 0.40985924,
+            "y": 0.05994147,
+            "z": 0.02049413
+          },
+          "rotation": {
+            "x": -0.035888925,
+            "y": -0.33241674,
+            "z": 0.6966071,
+            "w": 0.6348715
+          },
+          "linearVelocity": {
+            "x": -0.00024007518,
+            "y": 0.00050875795,
+            "z": 0.00028891137
+          },
+          "angularVelocity": {
+            "x": -0.008589092,
+            "y": -0.00044724112,
+            "z": -0.0027475876
+          }
+        },
+        {
+          "id": "right_shin",
+          "position": {
+            "x": 0.75713444,
+            "y": 0.061556444,
+            "z": 0.22208385
+          },
+          "rotation": {
+            "x": 0.0958577,
+            "y": -0.18155524,
+            "z": 0.7502,
+            "w": 0.6286184
+          },
+          "linearVelocity": {
+            "x": -0.00025681162,
+            "y": 0.0006273289,
+            "z": 0.00045955082
+          },
+          "angularVelocity": {
+            "x": -0.008325552,
+            "y": -0.0016979028,
+            "z": -0.0032598767
+          }
+        },
+        {
+          "id": "@right_ankle_y",
+          "position": {
+            "x": 1.138794,
+            "y": 0.12135446,
+            "z": 0.27243707
+          },
+          "rotation": {
+            "x": 0.13348727,
+            "y": -0.13611206,
+            "z": 0.7597603,
+            "w": 0.62171614
+          },
+          "linearVelocity": {
+            "x": -0.00017105314,
+            "y": 0.000002321016,
+            "z": 0.00076070003
+          },
+          "angularVelocity": {
+            "x": -0.007757019,
+            "y": -0.004395948,
+            "z": -0.0043650344
+          }
+        },
+        {
+          "id": "right_foot",
+          "position": {
+            "x": 1.1391819,
+            "y": 0.11917068,
+            "z": 0.2715062
+          },
+          "rotation": {
+            "x": 0.14892474,
+            "y": -0.14136764,
+            "z": 0.73863304,
+            "w": 0.6421603
+          },
+          "linearVelocity": {
+            "x": -0.00039481974,
+            "y": 0.0003120157,
+            "z": 0.0010309325
+          },
+          "angularVelocity": {
+            "x": -0.0087573975,
+            "y": -0.005420128,
+            "z": -0.0023793126
+          }
+        },
+        {
+          "id": "@left_hip_x",
+          "position": {
+            "x": 0.34668964,
+            "y": 0.18935032,
+            "z": 0.15931743
+          },
+          "rotation": {
+            "x": 0.18101645,
+            "y": -0.40814635,
+            "z": 0.67140603,
+            "w": 0.5915873
+          },
+          "linearVelocity": {
+            "x": -0.00045611447,
+            "y": 0.000007485156,
+            "z": 0.00023939469
+          },
+          "angularVelocity": {
+            "x": 0.0014312621,
+            "y": -0.000077955425,
+            "z": -0.0010534583
+          }
+        },
+        {
+          "id": "@left_hip_z",
+          "position": {
+            "x": 0.34668964,
+            "y": 0.18935032,
+            "z": 0.15931743
+          },
+          "rotation": {
+            "x": 0.24001199,
+            "y": -0.459143,
+            "z": 0.6526463,
+            "w": 0.55294365
+          },
+          "linearVelocity": {
+            "x": -0.00045611447,
+            "y": 0.000007485156,
+            "z": 0.00023939469
+          },
+          "angularVelocity": {
+            "x": -0.00050789525,
+            "y": -0.000010021482,
+            "z": -0.0017406767
+          }
+        },
+        {
+          "id": "left_thigh",
+          "position": {
+            "x": 0.34668964,
+            "y": 0.18935032,
+            "z": 0.15931743
+          },
+          "rotation": {
+            "x": 0.1258815,
+            "y": -0.5791799,
+            "z": 0.5489172,
+            "w": 0.58949655
+          },
+          "linearVelocity": {
+            "x": -0.0002822245,
+            "y": 0.00022412286,
+            "z": 0.00011668293
+          },
+          "angularVelocity": {
+            "x": -0.0013561195,
+            "y": 0.0015453896,
+            "z": 0.00080655713
+          }
+        },
+        {
+          "id": "left_shin",
+          "position": {
+            "x": 0.67226326,
+            "y": 0.048925936,
+            "z": 0.34129763
+          },
+          "rotation": {
+            "x": 0.3231549,
+            "y": -0.35195917,
+            "z": 0.7161592,
+            "w": 0.508845
+          },
+          "linearVelocity": {
+            "x": -0.000014682482,
+            "y": 0.00039215255,
+            "z": -0.00016257395
+          },
+          "angularVelocity": {
+            "x": -0.0008231851,
+            "y": 0.000568134,
+            "z": -0.00079385494
+          }
+        },
+        {
+          "id": "@left_ankle_y",
+          "position": {
+            "x": 1.0419911,
+            "y": 0.15336078,
+            "z": 0.40064558
+          },
+          "rotation": {
+            "x": 0.37275958,
+            "y": -0.27804235,
+            "z": 0.74796504,
+            "w": 0.47371143
+          },
+          "linearVelocity": {
+            "x": -0.000008409988,
+            "y": 0.0004161676,
+            "z": -0.0004783552
+          },
+          "angularVelocity": {
+            "x": -0.0016071151,
+            "y": 0.002005647,
+            "z": 0.0015603018
+          }
+        },
+        {
+          "id": "left_foot",
+          "position": {
+            "x": 1.0432047,
+            "y": 0.15008251,
+            "z": 0.39510152
+          },
+          "rotation": {
+            "x": 0.424605,
+            "y": -0.2657409,
+            "z": 0.6907486,
+            "w": 0.52160347
+          },
+          "linearVelocity": {
+            "x": 0.000020785694,
+            "y": 0.00056191586,
+            "z": -0.0003018819
+          },
+          "angularVelocity": {
+            "x": -0.0021394205,
+            "y": -0.001138953,
+            "z": 0.0033032238
+          }
+        },
+        {
+          "id": "@right_shoulder1",
+          "position": {
+            "x": -0.15260568,
+            "y": 0.040291026,
+            "z": 0.031190433
+          },
+          "rotation": {
+            "x": 0.19432423,
+            "y": 0.07858114,
+            "z": 0.90268934,
+            "w": 0.3759355
+          },
+          "linearVelocity": {
+            "x": -0.000110472,
+            "y": -0.00008780491,
+            "z": -0.000040125113
+          },
+          "angularVelocity": {
+            "x": 0.00039968174,
+            "y": 0.00013440027,
+            "z": 0.00091825373
+          }
+        },
+        {
+          "id": "right_upper_arm",
+          "position": {
+            "x": -0.15260568,
+            "y": 0.040291026,
+            "z": 0.031190433
+          },
+          "rotation": {
+            "x": 0.5978393,
+            "y": 0.24499118,
+            "z": 0.7049149,
+            "w": 0.29287344
+          },
+          "linearVelocity": {
+            "x": -0.00009135855,
+            "y": 0.000040912928,
+            "z": -0.000021380689
+          },
+          "angularVelocity": {
+            "x": 0.00039824034,
+            "y": -0.00019272807,
+            "z": 0.00091738167
+          }
+        },
+        {
+          "id": "right_lower_arm",
+          "position": {
+            "x": 0.06700596,
+            "y": 0.039913446,
+            "z": -0.19015196
+          },
+          "rotation": {
+            "x": 0.30816013,
+            "y": 0.12549008,
+            "z": 0.87066656,
+            "w": 0.3624108
+          },
+          "linearVelocity": {
+            "x": -0.000078720914,
+            "y": 0.0001028915,
+            "z": -0.0000012892779
+          },
+          "angularVelocity": {
+            "x": 0.00039875315,
+            "y": -0.00007634476,
+            "z": 0.0009176919
+          }
+        },
+        {
+          "id": "right_hand",
+          "position": {
+            "x": -0.018255055,
+            "y": 0.039489597,
+            "z": 0.10976839
+          },
+          "rotation": {
+            "x": 0.30816013,
+            "y": 0.12549008,
+            "z": 0.87066656,
+            "w": 0.3624108
+          },
+          "linearVelocity": {
+            "x": -0.00008997509,
+            "y": 0.000003972731,
+            "z": -0.000004628408
+          },
+          "angularVelocity": {
+            "x": 0.00039875315,
+            "y": -0.00007634476,
+            "z": 0.0009176919
+          }
+        },
+        {
+          "id": "@left_shoulder1",
+          "position": {
+            "x": -0.08317006,
+            "y": 0.3345775,
+            "z": 0.18675438
+          },
+          "rotation": {
+            "x": 0.44837466,
+            "y": -0.046980374,
+            "z": 0.35793993,
+            "w": 0.81776786
+          },
+          "linearVelocity": {
+            "x": -0.00035163574,
+            "y": -0.00008898723,
+            "z": 0.000069754446
+          },
+          "angularVelocity": {
+            "x": 0.0004451024,
+            "y": 0.00021345497,
+            "z": 0.00082276727
+          }
+        },
+        {
+          "id": "left_upper_arm",
+          "position": {
+            "x": -0.08317006,
+            "y": 0.3345775,
+            "z": 0.18675438
+          },
+          "rotation": {
+            "x": 0.4383408,
+            "y": -0.07208991,
+            "z": 0.34718806,
+            "w": 0.825974
+          },
+          "linearVelocity": {
+            "x": -0.0003803274,
+            "y": -0.00012565136,
+            "z": 0.00013077336
+          },
+          "angularVelocity": {
+            "x": 0.00033927767,
+            "y": -0.0006235556,
+            "z": -0.00021514122
+          }
+        },
+        {
+          "id": "left_lower_arm",
+          "position": {
+            "x": 0.19954881,
+            "y": 0.21963224,
+            "z": 0.25062495
+          },
+          "rotation": {
+            "x": 0.5493467,
+            "y": 0.5356057,
+            "z": 0.50071436,
+            "w": 0.40092635
+          },
+          "linearVelocity": {
+            "x": 0.00013401921,
+            "y": 0.00024439726,
+            "z": -0.00018722209
+          },
+          "angularVelocity": {
+            "x": 0.0007844021,
+            "y": 0.0028971129,
+            "z": 0.0041505527
+          }
+        },
+        {
+          "id": "left_hand",
+          "position": {
+            "x": 0.4230441,
+            "y": 0.039817452,
+            "z": 0.37284732
+          },
+          "rotation": {
+            "x": 0.5493467,
+            "y": 0.5356057,
+            "z": 0.50071436,
+            "w": 0.40092635
+          },
+          "linearVelocity": {
+            "x": 0.0006842306,
+            "y": 0.00066027616,
+            "z": -0.0005814913
+          },
+          "angularVelocity": {
+            "x": 0.0007844021,
+            "y": 0.0028971129,
+            "z": 0.0041505527
+          }
+        }
+      ],
+      "striker": {
+        "phase": "idle",
+        "body": {
+          "id": "striker",
+          "position": {
+            "x": 0,
+            "y": 3.45,
+            "z": 2.1
+          },
+          "rotation": {
+            "x": 0,
+            "y": 0,
+            "z": 0,
+            "w": 1
+          },
+          "linearVelocity": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "angularVelocity": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          }
+        },
+        "impactId": 0,
+        "available": true,
+        "lastImpactImpulseNs": 0
+      },
+      "motion": "Fallen",
+      "contacts": [
+        {
+          "segment": 7,
+          "normal_load_n": 139.5302,
+          "persistence_s": 3.8000054
+        },
+        {
+          "segment": 10,
+          "normal_load_n": 7.320223,
+          "persistence_s": 3.3250036
+        },
+        {
+          "segment": 13,
+          "normal_load_n": 12.64425,
+          "persistence_s": 1.9999987
+        },
+        {
+          "segment": 14,
+          "normal_load_n": 39.371403,
+          "persistence_s": 3.6250048
+        },
+        {
+          "segment": 16,
+          "normal_load_n": 17.75867,
+          "persistence_s": 3.6000047
+        },
+        {
+          "segment": 18,
+          "normal_load_n": 19.864119,
+          "persistence_s": 3.150003
+        },
+        {
+          "segment": 20,
+          "normal_load_n": 148.2517,
+          "persistence_s": 3.7750053
+        },
+        {
+          "segment": 24,
+          "normal_load_n": 15.939927,
+          "persistence_s": 3.5000043
+        }
+      ],
+      "counters": {
+        "strikes": 0,
+        "falls": 1,
+        "recoveries": 0,
+        "steps": 0,
+        "upright_ticks": 0
+      },
+      "diagnostics": {
+        "getup": {
+          "controller": "fixture-zero-control-preparation",
+          "learned_policy_loaded": true,
+          "source_bodies": 16,
+          "coordinate_frames": 9,
+          "active_hinges": 21,
+          "joint_angles_rad": [
+            -0.46885395,
+            -0.28235316,
+            0.5882814,
+            0.007840887,
+            0.43633282,
+            -0.13288954,
+            -0.41558895,
+            0.12034711,
+            -0.06724183,
+            0.087266564,
+            0.17811279,
+            -0.39828277,
+            -0.7108638,
+            0.20176709,
+            -0.18343368,
+            1.0011142,
+            -0.98248297,
+            0.72645193,
+            -0.7017409,
+            -0.06046761,
+            -1.5707966
+          ],
+          "joint_velocities_radps": [
+            -0.0032159907,
+            0.00020281812,
+            0.0014362538,
+            -0.00047998715,
+            -0.0056010736,
+            0.0007962866,
+            -0.00033763167,
+            -0.0019323231,
+            0.004113901,
+            0.0017218291,
+            -0.003314447,
+            0.0024251123,
+            0.001183161,
+            -0.00052967004,
+            0.002681174,
+            0.00058400567,
+            -0.0001485999,
+            0.00011361078,
+            -0.00029392884,
+            -0.0015498513,
+            -0.002039964
+          ],
+          "motor_controls": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "physics_step_s": 0.00125,
+          "policy_step_s": 0.025,
+          "observation": [
+            -0.46885395,
+            -0.28235316,
+            0.5882814,
+            0.007840887,
+            0.43633282,
+            -0.13288954,
+            -0.41558895,
+            0.12034711,
+            -0.06724183,
+            0.087266564,
+            0.17811279,
+            -0.39828277,
+            -0.7108638,
+            0.20176709,
+            -0.18343368,
+            1.0011142,
+            -0.98248297,
+            0.72645193,
+            -0.7017409,
+            -0.06046761,
+            -1.5707966,
+            0.2015335,
+            0.37844637,
+            0.103422925,
+            -0.4196911,
+            0.43464077,
+            0.33566955,
+            -1.0029202,
+            0.08766502,
+            -0.10732981,
+            -0.052288093,
+            0.3575759,
+            0.2719712,
+            -1.1272054,
+            -0.48911572,
+            0.8654513,
+            0.10844362,
+            0.000065992404,
+            -0.00006579394,
+            -0.000034032666,
+            -0.0000076126053,
+            -0.000055461926,
+            -0.000073155825,
+            0.00043821265,
+            0.00007078662,
+            0.00028148855,
+            -0.0032159907,
+            0.00020281812,
+            0.0014362538,
+            -0.00047998715,
+            -0.0056010736,
+            0.0007962866,
+            -0.00033763167,
+            -0.0019323231,
+            0.004113901,
+            0.0017218291,
+            -0.003314447,
+            0.0024251123,
+            0.001183161,
+            -0.00052967004,
+            0.002681174,
+            0.00058400567,
+            -0.0001485999,
+            0.00011361078,
+            -0.00029392884,
+            -0.0015498513,
+            -0.002039964
+          ],
+          "policy": {
+            "phase": "awaiting-physical-fall",
+            "started_at_s": null,
+            "since_impact_s": null,
+            "forecast_substeps": 0,
+            "teacher_decisions": 0,
+            "teacher_max_head_height_m": 0,
+            "teacher_terminal_reached": false,
+            "reference_seed_matches_real": false,
+            "reference_frames": 0,
+            "reference_index": 0,
+            "policy_decisions": 0,
+            "reference_tracking_error_rad": 0,
+            "reference_com_error_m": 0,
+            "actual_head_height_m": 0,
+            "stable_standing_s": 0,
+            "prototype_standing_passed": false,
+            "refusal": null
+          }
+        },
+        "controller_ms": null,
+        "update_ms": null,
+        "dropped_time_s": 0,
+        "queue_depth": 0,
+        "requested_motor_effort_nm": 0,
+        "delivered_motor_impulse_nm_s": null,
+        "delivered_motors": null,
+        "recovery": null,
+        "terrain": null,
+        "direct_pelvis_force_n": 0,
+        "direct_pelvis_torque_nm": 0,
+        "max_anchor_separation_m": 2.40274e-7,
+        "max_floor_penetration_m": 0.0022009164,
+        "max_self_penetration_m": 0.03191858,
+        "max_limit_error_rad": 0.000049337745
+      },
+      "acknowledged_sequence": 0
+    },
+    "failure": null
+  },
+  "fixture": {
+    "ground_load_n": 401.3343505859375,
+    "head_height_m": 0.2015335112810135,
+    "kind": "side-supported",
+    "maximum_angular_radps": 0.004509126767516136,
+    "maximum_body_com_speed_mps": 0.0009566803928464651,
+    "preparing": true,
+    "ready": false,
+    "settled_substeps": 0,
+    "torso_face_up": -0.48911571502685547,
+    "torso_long_axis_up": 0.10844369232654572,
+    "torso_side_up": 0.8654512763023376,
+    "trigger_substep": null
+  },
+  "outcome": "invalid-fixture-not-settled-or-orientation",
+  "harnessCompleted": true,
+  "finishedUtc": "2026-10-17T00:00:27.017Z"
+}

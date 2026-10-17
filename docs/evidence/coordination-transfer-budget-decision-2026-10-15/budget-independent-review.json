@@ -1,0 +1,123 @@
+{
+  "schema": "laboratoirehumain.transfer-global-budget-independent-review.v1",
+  "createdUtc": "2026-10-15T12:24:14.020716+00:00",
+  "scope": "Read-only reconciliation of original coordination family starting 2026-10-12T20:14:00Z; notes only, no native, world, FK, build or test execution",
+  "candidateCommit": "29df604533439e9ed7570698f2287fc92747d6ef",
+  "candidateManifestSha256": "4f3708fd50cd4dabf473b7a6bff528ee11ad798cf25dfbeaf0f6141c156818f7",
+  "candidateBinarySha256": "63e0e035d38d02f762c69b9dacb65d61e179c72ced50f5facd0bc29c64b9e8b5",
+  "globalLimits": {
+    "nativeSteps": 300000,
+    "physicalWallSeconds": 7200
+  },
+  "closedLedgers": [
+    {
+      "path": "docs/evidence/coordination-prototype-2026-10-12/budget/ledger.json",
+      "sha256": "2afa69b3ae9c8ab8343f7dabdf46b955c8ac7b88aa259404958e25d49a72ef07",
+      "status": "closed-native-failure",
+      "chargedNativeSteps": 3856,
+      "actualNativeStepsKnown": 1024,
+      "chargedField": "payload.reservations[*].nativeSteps",
+      "knownField": "payload.reservations[*].actualNativeSteps",
+      "refundNativeSteps": 0
+    },
+    {
+      "path": "docs/evidence/coordination-native-parity-2026-10-13/native-run/physical-ledger.json",
+      "sha256": "73b2e3bff52aadf0414be2f7a4a96fa4cd5da7b02de0945434e4f136bbf476a6",
+      "status": "closed-failure",
+      "chargedNativeSteps": 44,
+      "actualNativeStepsKnown": null,
+      "chargedField": "payload.reservedNativeSteps",
+      "knownField": "payload.actualNativeStepsKnown",
+      "refundNativeSteps": 0
+    },
+    {
+      "path": "docs/evidence/coordination-native-parity-renewal-2026-10-13/native-run/physical-ledger.json",
+      "sha256": "1411bfcc1a17caa681359cfb39d7c0429f2188375925c22ba4b037df96d44bc2",
+      "status": "closed-failure",
+      "chargedNativeSteps": 44,
+      "actualNativeStepsKnown": null,
+      "chargedField": "payload.reservedNativeSteps",
+      "knownField": "payload.actualNativeStepsKnown",
+      "refundNativeSteps": 0
+    },
+    {
+      "path": "docs/evidence/coordination-native-serialization-2026-10-13/native-run/physical-ledger.json",
+      "sha256": "191d3216953bfb4aca5b7abcea277454d7d97ad5b4ca72e28ffbc260399af250",
+      "status": "closed-success",
+      "chargedNativeSteps": 44,
+      "actualNativeStepsKnown": 44,
+      "chargedField": "payload.reservedNativeSteps",
+      "knownField": "payload.actualNativeStepsKnown",
+      "refundNativeSteps": 0
+    },
+    {
+      "path": "docs/evidence/coordination-local-pair-2026-10-13/budget/ledger.json",
+      "sha256": "e7c6831159ac1ae913a05f2af545a0521181d7142dbabd967908dfe7958fba97",
+      "status": "closed-native-failure",
+      "chargedNativeSteps": 3856,
+      "actualNativeStepsKnown": 1040,
+      "chargedField": "payload.reservations[*].nativeSteps",
+      "knownField": "payload.reservations[*].actualNativeSteps",
+      "refundNativeSteps": 0
+    }
+  ],
+  "chargedNativeSteps": 7844,
+  "actualNativeStepsKnownSum": 2108,
+  "actualNativeStepsExact": false,
+  "archiveReconciledActualBounds": {
+    "lower": 2108,
+    "upper": 2109,
+    "basis": "Prototype1024 + local pair1040 + serialization44 + first parity0 (pre-spawn failure) + renewal0..1 inferred; this is not an exact native measurement and does not modify unknown ledger fields."
+  },
+  "availableNativeSteps": 292156,
+  "candidateNativeSteps": 131096,
+  "projectedChargedNativeSteps": 138940,
+  "projectedAvailableNativeSteps": 161060,
+  "nativeStepsFit": true,
+  "historicalHistorySlotsUsed": 4,
+  "historicalHistorySlotsLimit": 4,
+  "historicalFamilyReopened": false,
+  "wallAccounting": {
+    "prototypeReservationToClosureSeconds": "7.930429",
+    "firstParityElapsedWallSeconds": "0.028446437",
+    "renewalElapsedWallSeconds": "0.193373985",
+    "serializationElapsedWallSeconds": "1.477786572",
+    "localPairReservationToClosureSeconds": "12.321321",
+    "documentedWindowsSeconds": "21.951356994",
+    "exactEndToEndHistoricalElapsedKnown": false,
+    "localPairMeasuredStartupOffsetSeconds": "0.079525382",
+    "localPairSupervisorStartToLedgerClosureApproxSeconds": "12.400846382",
+    "localPairFinalReapTimestampAvailable": false,
+    "maximumArithmeticRemainingBeforeUnmeasuredPhasesSeconds": "7178.048643006",
+    "conservativeStartupShutdownAllowanceSeconds": "74",
+    "allowanceBasis": "Previous cumulative audit allots startup30+shutdown7 for each of the two A/B launches. This is a conservative planning allowance, not a measured historical elapsed total. The three technical ledgers already report supervisor elapsedWallSeconds.",
+    "conservativePlanningDebitSeconds": "95.951356994",
+    "conservativePlanningRemainderSeconds": "7104.048643006",
+    "candidateFrozenMaximumWallSeconds": 7200,
+    "candidateFitsDocumentedRemaining": false,
+    "candidateFitsConservativePlanningRemaining": false,
+    "wallCapsAreNotAdditionalNativeStepReservations": true
+  },
+  "freezeConstraint": {
+    "path": "docs/evidence/coordination-transfer-native-proposal-2026-10-13/run_transfer.py",
+    "lines": [
+      47,
+      68,
+      116,
+      118,
+      203,
+      213
+    ],
+    "reason": "WALL_SECONDS=7200 and exact authorization LIMITS; all deadlines derive from this frozen constant. Lower duration is not an accepted runtime override."
+  },
+  "exclusions": [
+    "coordination-launcher-portability-2026-10-13/e2e: explicitly synthetic C worker ledgers, zero physical integrations",
+    "foot-coordination-2026-10-12: separate authorization before family origin, 12480 reserved and6235known retained in its closed ledger",
+    "intermediate-transfer-prep-2026-10-12: preceding distinct preparation, zero new native steps",
+    "continuation FK/geometry ledgers and later pure/static/archive work: zero physical integrations; preparation/static counters separate"
+  ],
+  "decision": "BLOCKED_BEFORE_EXECUTION: fixed7200-second protocol cannot fit remaining original7200-second wall ceiling after nonzero previous use. Preserve frozen manifest, do not patch/wrap or launch; report numbers to parent.",
+  "newNativeReservations": 0,
+  "nativeIntegrationsDuringAudit": 0,
+  "historicalFilesModified": false
+}

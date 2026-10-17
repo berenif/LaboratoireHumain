@@ -1,0 +1,15 @@
+{
+  "schema": 1,
+  "operation": "create_library_file",
+  "status": "succeeded",
+  "libraryFileId": "libfile_f22dc5c9d36c81918dccebb16a605550",
+  "fileId": "file_00000000bb3881f6a64c8fcda91ccc41",
+  "currentVersionNumber": 0,
+  "path": "/coordination-native-parity-2026-10-13.md",
+  "fileName": "coordination-native-parity-2026-10-13.md",
+  "mimeType": "text/markdown",
+  "artifactType": "report",
+  "fileSizeBytes": 7775,
+  "localPath": "/workspace/LaboratoireHumain/docs/coordination-native-parity-2026-10-13.md",
+  "localIdentityHelperExitCode": 0
+}

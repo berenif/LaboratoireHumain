@@ -1,0 +1,19 @@
+{
+  "schema": 1,
+  "startupWallSeconds": 30,
+  "nativeWallSeconds": 7100,
+  "shutdownWallSeconds": 7,
+  "maximumTotalWallSeconds": 7137,
+  "startedMonotonic": 15946.150786894,
+  "deadlineMonotonic": 23083.150786894003,
+  "deadlineUtc": "2026-10-13T13:09:47.055692+00:00",
+  "singleProcess": true,
+  "singleThread": true,
+  "descendantsForbidden": true,
+  "signals": [
+    "SIGALRM",
+    "SIGINT",
+    "SIGTERM"
+  ],
+  "killProcessGroupOnFailure": true
+}

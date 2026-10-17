@@ -19,6 +19,11 @@ export async function start_bridge() {
   // Only an explicit automation preload enables the recovery observer. Ordinary
   // pages continue to initialize their existing public mode and default profile.
   const qualification = window.__lhQualification;
+  const getupTrial = window.__lhGetUpTrial;
+  if (getupTrial !== undefined) {
+    if (getupTrial !== true || initialMode !== 'protocol' || qualification !== undefined) throw new Error('Invalid GetUp prototype preload');
+    initialization = { ...initialization, getupTrial: true };
+  }
   if (qualification !== undefined) {
     if (qualification?.kind !== 'recovery' || initialMode !== 'protocol' || !qualification.profile
       || qualification.profile.recovery_enabled !== true) throw new Error('Invalid recovery qualification preload');
@@ -46,6 +51,7 @@ export async function start_bridge() {
   }
   function status() {
     const snapshot = state.last?.reply.snapshot;
+    const getup = snapshot?.diagnostics.getup;
     const graphics = state.renderer ? JSON.parse(state.renderer.diagnostics()) : {};
     return {
       ready: Boolean(state.last && state.renderer && !state.changing && !state.graphicsFault && !state.failed),
@@ -58,9 +64,14 @@ export async function start_bridge() {
       time: snapshot?.simulation_time_s || 0, fps: state.fps,
       realtimeRatio: state.activeWall > 0 ? (snapshot?.simulation_time_s || 0) / state.activeWall : 0,
       steps: snapshot?.counters.steps || 0, contacts: snapshot?.contacts.filter(c => c.normal_load_n >= 3).length || 0,
+      maxSelfPenetrationM: snapshot?.diagnostics.max_self_penetration_m ?? 0,
+      maxFloorPenetrationM: snapshot?.diagnostics.max_floor_penetration_m ?? 0,
       strikes: snapshot?.counters.strikes || 0, strikerPhase: snapshot?.striker?.phase || '',
       canStrike: Boolean(snapshot?.striker?.available && state.renderer && !state.changing && !state.graphicsFault && !state.desiredPaused && state.visible && !state.failed && !state.workerFault && !state.outstanding?.strike && !state.pending.some(entry => entry.action === 'Strike')),
       motion: snapshot?.motion || 'Starting', falls: snapshot?.counters.falls || 0,
+      recoveryStep: getup ? getup.learned_policy_loaded
+        ? `GetUp pretrained · ${getup.policy?.phase || 'initializing'} · Experimental`
+        : 'GetUp body · Reference PD · Learned recovery disabled' : '',
       floorEnabled: state.floorEnabled, desiredFloorEnabled: state.desiredFloorEnabled, error: state.error || state.graphicsError, workerMs: state.workerMs,
     };
   }
@@ -119,7 +130,7 @@ export async function start_bridge() {
     clearWatchdog();
     state.watchdog = setTimeout(() => {
       if (worker === current && state.outstanding?.id === message.requestId) workerFailed('Worker request timed out');
-    }, message.type === 'initialize' ? 10000 : 5000);
+    }, message.type === 'initialize' ? 10000 : getupTrial ? 90000 : 5000);
     try { current.postMessage(message); } catch (error) { workerFailed(error); }
   }
   function cancelPointer(sendCancellation = true, clearTouches = true) {
@@ -178,8 +189,8 @@ export async function start_bridge() {
     if (state.manual || !state.visible || state.desiredPaused || state.failed || !state.renderer || state.changing || state.graphicsFault) return;
     // Publish each automatic tick so input and presentation can run between
     // catch-up ticks. The reply pump drains the remaining accumulated time.
-    const ticks = Math.min(1, Math.floor(state.accumulator * 60 + 1e-8));
-    if (ticks) { state.accumulator -= ticks / 60; send({ type: 'advance', ticks }); }
+    const ticks = Math.min(1, Math.floor(state.accumulator * 40 + 1e-8));
+    if (ticks) { state.accumulator -= ticks / 40; send({ type: 'advance', ticks }); }
   }
   function acceptPresentation() {
     if (state.renderer && state.last) {
@@ -202,6 +213,9 @@ export async function start_bridge() {
       clearWatchdog();
       const outstanding = state.outstanding;
       state.outstanding = null;
+      if (message.type === 'getupReport') { outstanding.manualResolve?.resolve(message.report); pump(); return; }
+      if (message.type === 'getupCheckpoint') { outstanding.manualResolve?.resolve({
+        checkpoint: message.checkpoint, verification: message.verification }); pump(); return; }
       if (message.type === 'error') {
         outstanding.commandSequences.forEach(sequence => {
           state.acknowledgements.get(sequence)?.reject?.(new Error(message.message));
@@ -483,6 +497,14 @@ export async function start_bridge() {
       droppedPackets: state.droppedPackets, droppedFrames: state.droppedFrames,
       mainWasmLinearBytes: bindings.linear_memory_bytes() }; },
     setManual(value) { state.manual = Boolean(value); state.accumulator = 0; state.lastClock = performance.now(); },
+    getupReport() {
+      if (!getupTrial || state.outstanding || !state.manual) return Promise.reject(new Error('GetUp report requires an idle manual prototype'));
+      return new Promise((resolve, reject) => send({ type: 'getupReport' }, { resolve, reject }));
+    },
+    getupCheckpoint() {
+      if (!getupTrial || state.outstanding || !state.manual) return Promise.reject(new Error('GetUp checkpoint requires an idle manual prototype'));
+      return new Promise((resolve, reject) => send({ type: 'getupCheckpoint' }, { resolve, reject }));
+    },
     advance(ticks) {
       if (!Number.isInteger(ticks) || ticks < 0 || ticks > 4 || !state.manual) return Promise.reject(new Error('Manual advance requires 0–4 ticks and manual mode'));
       if (state.disposed || state.workerFault || !state.last) return Promise.reject(new Error('Physical worker is unavailable'));
@@ -517,7 +539,7 @@ export async function start_bridge() {
         // replies. Pending commands are sent before the next automatic tick.
         const prepare = snapshot => {
           const pose = snapshot.segments[segment];
-          if (!pose || !['leftHand', 'rightHand'].includes(pose.id) || !Object.values(pose.position).every(Number.isFinite))
+          if (!pose || !['left_hand', 'right_hand'].includes(pose.id) || !Object.values(pose.position).every(Number.isFinite))
             throw new Error('Qualification press requires a physical hand snapshot');
           preparedOrigin = { ...pose.position };
           preparedStamp = { generation: snapshot.stamp.generation, tick: snapshot.stamp.tick };

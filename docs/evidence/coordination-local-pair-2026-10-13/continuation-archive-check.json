@@ -1,0 +1,178 @@
+{
+  "schema": 1,
+  "scope": "archived-value and hash checks only",
+  "status": "passed",
+  "physicalIntegrations": 0,
+  "staticInspections": 0,
+  "newGeometryQueries": 0,
+  "nativeWorldsConstructed": 0,
+  "nativeExecutionAuthorized": false,
+  "criteriaChange": {
+    "field": "physics.maximumWallSeconds",
+    "before": 7200,
+    "after": 7100
+  },
+  "originalLocalCriteriaUnchanged": true,
+  "unchangedPhysicalInputs": [
+    {
+      "path": "/workspace/LaboratoireHumain/rust/crates/model/data/canonical-v1.json",
+      "sha256": "083c13b2cce2d6033a4fc05cba8da7e78bd89634fb306629f4b7a9cd4a177a65"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/rust/crates/model/data/protocol-provenance-v1.json",
+      "sha256": "9aa7e577f7888d0e18fe3f86fdc2ee7bef10f31ef59ac225e22bbbf9605e66af"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/rust/crates/model/data/protocol-v1.json",
+      "sha256": "d1eeb9932b9b9946ebc6e735b43fc3d4045722d8927a593528c77e139e97c390"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/rust/crates/model/data/provenance-v1.json",
+      "sha256": "c69f4c95deb2a80cc21b1f1cc916b7873364751b180afd8b70b6028f31f9e6c6"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/rust/crates/sim/data/recovery-profile-v24.json",
+      "sha256": "971661c88ae7258f157669d8e8a873161de40990274a9f2fd7d159f50006e00e"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/rust/crates/sim/data/recovery-v1.json",
+      "sha256": "a11f9877f274c574c3e1a9ff6de7b70d4f4589f2fea34146866eba92b97f7216"
+    }
+  ],
+  "geometryArchives": [
+    {
+      "headingDegrees": 0,
+      "archivedRowsRead": 1921,
+      "firstSubstep": 0,
+      "lastSubstep": 1920,
+      "refusals": 0,
+      "physicalIntegrationsOriginallyReported": 0
+    },
+    {
+      "headingDegrees": 60,
+      "archivedRowsRead": 1921,
+      "firstSubstep": 0,
+      "lastSubstep": 1920,
+      "refusals": 0,
+      "physicalIntegrationsOriginallyReported": 0
+    }
+  ],
+  "fixture": {
+    "id": "landed-crouch-left",
+    "storedPoses": 25,
+    "allStoredVelocitiesZero": true,
+    "rootPositionFromArchiveM": [
+      0,
+      0.9763236545962427,
+      0
+    ],
+    "comFromArchiveM": [
+      1.8973538018496328e-18,
+      1.0102847891043298,
+      0.03687050057525005
+    ],
+    "impactOrSettleExecutedHere": false
+  },
+  "inputs": [
+    {
+      "path": "/workspace/LaboratoireHumain/docs/evidence/coordination-local-pair-2026-10-13/check_continuation_archive.py",
+      "sha256": "beb1a3c9cc789632a52a93d6494ff2b4332941d2c82f06b32691214ec53cdb5f"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/docs/evidence/coordination-local-pair-2026-10-13/local-pair-criteria.json",
+      "sha256": "628319208d0803775a984329e3b8d4d1e276cddf45da9020e77187e64bd90d37"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/docs/evidence/coordination-local-pair-2026-10-13/prepare_manifest.py",
+      "sha256": "e6dbebac53402a6501bad2eb1ee9e7d4bcc686c7df8e025a6bc32cdcee8bcf55"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/docs/evidence/coordination-native-serialization-2026-10-13/local-pair-criteria.json",
+      "sha256": "efd81dcb0b83b77708cf4e6a936b63cf103d438b11482b04ddc58caed97b2dc8"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/docs/evidence/coordination-prototype-2026-10-12/continuation-candidate-program.json",
+      "sha256": "f14de3871ef9aba18083b36d10eeb56c8587c66a73b1ab2ec54e01830e06e59d"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/docs/evidence/coordination-prototype-2026-10-12/continuation-native-audit-60deg.json",
+      "sha256": "9ba54012fae3e1f3e7e4cb925947f1bdee51754b29f176cae705045a3ba5d3d6"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/docs/evidence/coordination-prototype-2026-10-12/continuation-native-audit.json",
+      "sha256": "3920dff2c10363d1f40c7b0e0c960519ba03cbcf96e0a71bbb3104ee52059ee5"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/docs/evidence/coordination-prototype-2026-10-12/continuation-native-geometry-60deg.jsonl.gz",
+      "sha256": "a168f3e14ec3c8c4682211cbc4c587366f267af4a6744ea286b4bfbc54c70246"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/docs/evidence/coordination-prototype-2026-10-12/continuation-native-geometry.jsonl.gz",
+      "sha256": "8892cc692cb921306a3d338c6f5b421d263752cae0d7bcd91f0458dc77ae7520"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/docs/evidence/coordination-prototype-2026-10-12/continuation-route-audit.json",
+      "sha256": "3fa816514f49ed17ff7239effa642b4a05a5d5790a7858bddd82aae29db8b48a"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/docs/evidence/coordination-prototype-2026-10-12/continuation-seed.json",
+      "sha256": "aee34338d01d12327769d2ecf4bd08813c4bb50e58075911909e41d925c025a2"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/docs/evidence/coordination-prototype-2026-10-12/continuation-tasks.json",
+      "sha256": "a96d03d736ca185a0457ae29c33846b69af28ecd5eb81609f60d281463756dd6"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/docs/evidence/coordination-prototype-2026-10-12/frozen-criteria.json",
+      "sha256": "375c6c0e409f9f585dc8f22dfe1de3eedf20e61442d482db8119e7ce0f265ce2"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/docs/evidence/coordination-prototype-2026-10-12/frozen-manifest.json",
+      "sha256": "4a37d4afbfe3ecd51997208bf5fa7599106fd9c43650cb55f6bcf6400d4e1d29"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/rust/crates/model/data/canonical-v1.json",
+      "sha256": "083c13b2cce2d6033a4fc05cba8da7e78bd89634fb306629f4b7a9cd4a177a65"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/rust/crates/model/data/protocol-provenance-v1.json",
+      "sha256": "9aa7e577f7888d0e18fe3f86fdc2ee7bef10f31ef59ac225e22bbbf9605e66af"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/rust/crates/model/data/protocol-v1.json",
+      "sha256": "d1eeb9932b9b9946ebc6e735b43fc3d4045722d8927a593528c77e139e97c390"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/rust/crates/model/data/provenance-v1.json",
+      "sha256": "c69f4c95deb2a80cc21b1f1cc916b7873364751b180afd8b70b6028f31f9e6c6"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/rust/crates/sim/data/recovery-profile-v24.json",
+      "sha256": "971661c88ae7258f157669d8e8a873161de40990274a9f2fd7d159f50006e00e"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/rust/crates/sim/data/recovery-v1.json",
+      "sha256": "a11f9877f274c574c3e1a9ff6de7b70d4f4589f2fea34146866eba92b97f7216"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/rust/crates/sim/src/recovery/planner/continuation.rs",
+      "sha256": "74020cce0959251e6ac166acbc61b91a97f92218ca7cc7b4117f0e6ec5d76ff6"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/rust/crates/sim/src/recovery/planner/whole_body_controller.rs",
+      "sha256": "286498411e8fd3dde6e8de3f094c03c8289ab3b2608e7cc9c6610231820cebe3"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/rust/crates/sim/src/recovery/trajectory_geometry.rs",
+      "sha256": "5a1421578e77f8c92c3938ca99ab6faa7e0208b922c8fa24d1b852dda12f6382"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/rust/crates/sim/src/recovery/trajectory_program.rs",
+      "sha256": "b7307684d66a1f29553827f9b99d44db3bb0cddf28df8fbb56d11da369674ccb"
+    },
+    {
+      "path": "/workspace/LaboratoireHumain/scripts/recovery-fixtures.ts",
+      "sha256": "f0b8cac2db78f9bb349ff6cacc4647d0129b68fc79160d62d23411e8cfcf720d"
+    }
+  ]
+}

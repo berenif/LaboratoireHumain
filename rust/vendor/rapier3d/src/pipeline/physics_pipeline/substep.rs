@@ -476,6 +476,8 @@ impl PhysicsPipeline {
             self.counters.custom.resume();
             self.interpolate_kinematic_velocities(&integration_parameters, islands, bodies);
             self.counters.custom.pause();
+            #[cfg(feature = "solver-step-observation")]
+            hooks.before_solver_step(integration_parameters.dt, bodies);
             self.build_islands_and_solve_velocity_constraints(
                 gravity,
                 &integration_parameters,
@@ -487,6 +489,9 @@ impl PhysicsPipeline {
                 multibody_joints,
                 events,
             );
+
+            #[cfg(feature = "solver-step-observation")]
+            hooks.after_solver_step(integration_parameters.dt, bodies, narrow_phase);
 
             // If CCD is enabled, execute the CCD motion clamping.
             if ccd_is_enabled {
@@ -524,6 +529,8 @@ impl PhysicsPipeline {
             // Neutralize bodies whose integrated pose went non-finite before the remaining
             // CCD substeps can spread their velocities.
             self.quarantine.apply_end_step(bodies, colliders);
+            #[cfg(feature = "solver-step-observation")]
+            hooks.after_solver_positions(bodies);
             self.counters.stages.update_time.pause();
 
             if remaining_substeps > 0 {

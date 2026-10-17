@@ -1,0 +1,130 @@
+{
+  "status": "closed",
+  "authorization": "User: Its not getting up; one targeted correction and complete bounded strike-to-recovery test",
+  "startedUtc": "2026-10-16T11:34:40.482874+00:00",
+  "priorClosedRecord": "docs/evidence/browser-getup-2026-10-16.json",
+  "priorClosedRecordSha256": "962af55b4b33441cd3686d2d5deb831ddcebe2fcfbd9bcc746f7c7f0b1bd5d23",
+  "sourceBase": "668bf4d62422372291a020894e511a1ac26999d5",
+  "nativeChargedBefore": 160548,
+  "nativeReservation": 6960,
+  "nativeChargedAfter": 167508,
+  "nativeCeiling": 300000,
+  "wallChargedBeforeSeconds": 766.3282942940032,
+  "wallReservationSeconds": 180,
+  "wallChargedAfterSeconds": 946.3282942940032,
+  "wallCeilingSeconds": 7200,
+  "maximumHistories": 1,
+  "maximumSimulatedSeconds": 29,
+  "forecasts": 0,
+  "launchRetries": 0,
+  "refund": false,
+  "diagnosis": {
+    "baselineTimeSeconds": 10.066666666666666,
+    "lumbarPitchDemandDegrees": -42.4,
+    "ribcagePitchDemandDegrees": -33.6,
+    "minimumPitchDegrees": -10,
+    "leadWasUnusedByRoll": true,
+    "correction": "Use the measured longitudinal roll axis and consume lead direction on retries; no gain, force, anatomy, contact or threshold change"
+  },
+  "inputs": {
+    "rust/crates/sim/src/recovery.rs": "8d608192f96852e985a26688608d1feadace63f2883ef5920cb67f94ab970908",
+    "rust/dist/app/lh_worker_bg.wasm": "ed9f58f979cc08fd8a9cbabf8d41407af2c26e5c49405c845e1ed2f407fd6600",
+    "outputs/browser-getup-roll-fix-2026-10-16/candidate.patch": "f2801ad6495294e62db636b74841629c3725a9c221ca47807568367817f449e5",
+    "outputs/browser-getup-roll-fix-2026-10-16/observe.mjs": "eed6bf114a0836cea81127669fddf666c4f2fb73f134bce42e1db7660702b210"
+  },
+  "finishedUtc": "2026-10-16T11:37:01.532Z",
+  "nativeActualSteps": 6960,
+  "wallActualSeconds": 140.793880756,
+  "fullRecovery": false,
+  "qualification": false,
+  "firstRecovery": {
+    "time": 4.666666666666667,
+    "tick": 280,
+    "observation": {
+      "phase": "Roll",
+      "elapsed_s": 0.004166667,
+      "phase_time_s": 0.004166667,
+      "qualified_time_s": 0,
+      "stable_time_s": 0,
+      "stalled_s": 0,
+      "unsupported_s": 0,
+      "retries": 0,
+      "last_retry": null,
+      "progress": -0.949826
+    }
+  },
+  "impactTime": 2.3333333333333335,
+  "phases": [
+    "Roll"
+  ],
+  "final": {
+    "tick": 1740,
+    "time": 29,
+    "motion": "Recovering",
+    "counters": {
+      "strikes": 1,
+      "falls": 1,
+      "recoveries": 0,
+      "steps": 0,
+      "upright_ticks": 136
+    },
+    "recovery": {
+      "phase": "Roll",
+      "elapsed_s": 24.339079,
+      "phase_time_s": 2.5166712,
+      "qualified_time_s": 0,
+      "stable_time_s": 0,
+      "stalled_s": 1.1291676,
+      "unsupported_s": 0,
+      "retries": 6,
+      "last_retry": "stalled-phase",
+      "progress": -0.7170727
+    },
+    "failure": null,
+    "workerInstances": 1,
+    "pelvisHeightM": 0.1588857
+  },
+  "functionalTestError": "AssertionError [ERR_ASSERTION]: Full strike-to-standing recovery did not complete within the unchanged deadline",
+  "comparison26to27Seconds": {
+    "baseline": {
+      "headAndNeckMeanN": 71.77776525,
+      "headAndNeckMaximumN": 72.624146,
+      "rightUpperArmMeanN": 288.628320625,
+      "finalRollProgress": -0.79028475
+    },
+    "candidate": {
+      "headAndNeckMeanN": 0,
+      "headAndNeckMaximumN": 0,
+      "rightUpperArmMeanN": 250.88675,
+      "finalRollProgress": -0.75639397
+    }
+  },
+  "checks": {
+    "pureRustTestsPassed": 3,
+    "releaseBrowserBuildPassed": true,
+    "fullMovementTestPassed": false,
+    "videoDecoded": true,
+    "videoSeconds": 29,
+    "videoFrames": 435
+  },
+  "remainingGap": "Roll still has no coordinated unloading/repositioning maneuver for the loaded right arm; the body never reaches Brace or standing. The directional correction is not a complete recovery controller.",
+  "artifacts": {
+    "outputs/browser-getup-roll-fix-2026-10-16/result.json": "71b687c9769b42fb17b4715ae9f4a628c523905cb2b9f290ee9ab048a8a17472",
+    "outputs/browser-getup-roll-fix-2026-10-16/trace.ndjson": "c765db4c68ca0c7f82c445f92549a9d35253fd174b3529299d46a5f12dd60083",
+    "/workspace/lh-deliverables/LaboratoireHumain-roll-candidate-2026-10-16.mp4": "635dc3768e0a4a884f4685aed404893d4bbf13e0fa3308ad291c88f1babb81ad"
+  },
+  "libraryVideo": {
+    "libraryFileId": "libfile_5e18bef578f0819187f58b904b90f786",
+    "fileId": "file_00000000018481f5843abb10bc43eb23",
+    "version": 0,
+    "bytes": 398634
+  },
+  "decision": "Retain the verified longitudinal-axis/retry correction and its regression tests. Full get-up remains failed; no further controller variants or physical runs.",
+  "baselineComparison": {
+    "identicalRecordedSnapshots": 69,
+    "lastIdenticalSnapshotTick": 276,
+    "lastIdenticalSnapshotSeconds": 4.6,
+    "nativeStepsBetweenSnapshots": 16,
+    "scope": "Recorded poses, contacts and counters match; intermediate native substeps were not individually compared."
+  }
+}

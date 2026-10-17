@@ -1,0 +1,366 @@
+{
+  "schema": 1,
+  "prerequisites": {
+    "unit_and_static_tests_passed": true,
+    "complete_numeric_reference": true,
+    "continuation_to_standing_defined_and_verified": true,
+    "unchanged_physical_contract": true,
+    "native_accounting_statically_tested": true,
+    "single_process_single_thread_no_concurrent_compilation": true,
+    "prediction_copy_and_motor_paths_statically_checked": true,
+    "local_diagnostic_implemented": true,
+    "four_histories_frozen": true
+  },
+  "files": {
+    "model": [
+      {
+        "path": "/workspace/LaboratoireHumain/rust/crates/model/data/canonical-v1.json",
+        "sha256": "083c13b2cce2d6033a4fc05cba8da7e78bd89634fb306629f4b7a9cd4a177a65"
+      },
+      {
+        "path": "/workspace/LaboratoireHumain/rust/crates/model/data/protocol-provenance-v1.json",
+        "sha256": "9aa7e577f7888d0e18fe3f86fdc2ee7bef10f31ef59ac225e22bbbf9605e66af"
+      },
+      {
+        "path": "/workspace/LaboratoireHumain/rust/crates/model/data/protocol-v1.json",
+        "sha256": "d1eeb9932b9b9946ebc6e735b43fc3d4045722d8927a593528c77e139e97c390"
+      },
+      {
+        "path": "/workspace/LaboratoireHumain/rust/crates/model/data/provenance-v1.json",
+        "sha256": "c69f4c95deb2a80cc21b1f1cc916b7873364751b180afd8b70b6028f31f9e6c6"
+      }
+    ],
+    "profile": [
+      {
+        "path": "/workspace/LaboratoireHumain/rust/crates/sim/data/recovery-profile-v24.json",
+        "sha256": "971661c88ae7258f157669d8e8a873161de40990274a9f2fd7d159f50006e00e"
+      }
+    ],
+    "fixture": [
+      {
+        "path": "/workspace/LaboratoireHumain/rust/crates/sim/data/recovery-v1.json",
+        "sha256": "a11f9877f274c574c3e1a9ff6de7b70d4f4589f2fea34146866eba92b97f7216"
+      }
+    ],
+    "reference": [
+      {
+        "path": "/workspace/LaboratoireHumain/docs/evidence/coordination-prototype-2026-10-12/continuation-candidate-program.json",
+        "sha256": "f14de3871ef9aba18083b36d10eeb56c8587c66a73b1ab2ec54e01830e06e59d"
+      },
+      {
+        "path": "/workspace/LaboratoireHumain/docs/evidence/coordination-prototype-2026-10-12/continuation-tasks.json",
+        "sha256": "a96d03d736ca185a0457ae29c33846b69af28ecd5eb81609f60d281463756dd6"
+      }
+    ],
+    "code": [
+      {
+        "path": "/workspace/LaboratoireHumain/rust/Cargo.lock",
+        "sha256": "57f8ef29219379d35953076b6e468e5b641d08f40f1be4a24fcecdfce546ec94"
+      },
+      {
+        "path": "/workspace/LaboratoireHumain/rust/Cargo.toml",
+        "sha256": "505ba36834476c5ff12d9b08ad9634ccb8c1b91633406a7cf13c1fe02124ba51"
+      },
+      {
+        "path": "/workspace/LaboratoireHumain/rust/crates/contracts/src/lib.rs",
+        "sha256": "0b35530cdd3261530051fd32a4cbb8bb5c4a4c38543a9d8dd636ffff8a620ae5"
+      },
+      {
+        "path": "/workspace/LaboratoireHumain/rust/crates/model/src/lib.rs",
+        "sha256": "211bcee0cf48dc7f3490bef2fa413eb2edff00aa0c2ea117616f5f7e77620f67"
+      },
+      {
+        "path": "/workspace/LaboratoireHumain/rust/crates/sim/Cargo.toml",
+        "sha256": "eaabba8427bb717bb1bd3792fb4c107365446cf8ef697c46da04e0de671f1134"
+      },
+      {
+        "path": "/workspace/LaboratoireHumain/rust/crates/sim/src/actuators.rs",
+        "sha256": "3291389ac25ac563cc635a629b404e93c0a503b9df66ec20153138e36d6d66f9"
+      },
+      {
+        "path": "/workspace/LaboratoireHumain/rust/crates/sim/src/articulation.rs",
+        "sha256": "b895c1a401d2c3630ddda55d580eef15fc728bebcb0281463a4b4fb25e8e247f"
+      },
+      {
+        "path": "/workspace/LaboratoireHumain/rust/crates/sim/src/calibration/tangent.rs",
+        "sha256": "2c06b14065fc2a5ce9d9763b54938e86ef096eb9ad7a1880b50a8fcdaf4ee503"
+      },
+      {
+        "path": "/workspace/LaboratoireHumain/rust/crates/sim/src/calibration.rs",
+        "sha256": "546ce3dbc6be704ee29e43c4e17e175ef81bd83bb42eb4a175d73379bcd9b20c"
+      },
+      {
+        "path": "/workspace/LaboratoireHumain/rust/crates/sim/src/cycles.rs",
+        "sha256": "151d1aca09e6fc0862cab042dfcf6ca4ea978ca4e54cb548e5d8c3aafe69b3af"
+      },
+      {
+        "path": "/workspace/LaboratoireHumain/rust/crates/sim/src/environment.rs",
+        "sha256": "6976912d2a988bca3b61960bc7037a927673bf8780edf9fb22ff1e9e6bdbf143"
+      },
+      {
+        "path": "/workspace/LaboratoireHumain/rust/crates/sim/src/grab.rs",
+        "sha256": "792c196d595ba1f10944cdb05887c9e596aaebfe3306b45b49de3446c0e55b1e"
+      },
+      {
+        "path": "/workspace/LaboratoireHumain/rust/crates/sim/src/legacy.rs",
+        "sha256": "edf52ad5128c45f074a39cf97031a35eadac6a0c16beff0bc3e688c4ea371a10"
+      },
+      {
+        "path": "/workspace/LaboratoireHumain/rust/crates/sim/src/lib.rs",
+        "sha256": "4139edcfe298c147dc6c65185e7ee9eeeeddcd402380d2d5695a7b791be3265d"
+      },
+      {
+        "path": "/workspace/LaboratoireHumain/rust/crates/sim/src/measurement.rs",
+        "sha256": "ccda934b97262270d3beedcc969224e3d2d6e0766f68fbe2f0ed68e26c370e02"
+      },
+      {
+        "path": "/workspace/LaboratoireHumain/rust/crates/sim/src/motion.rs",
+        "sha256": "8487fb46b32a708be85e18eb5d213450beb1602965da64394959fb7a7221157e"
+      },
+      {
+        "path": "/workspace/LaboratoireHumain/rust/crates/sim/src/passive.rs",
+        "sha256": "d3137395214fb6f20c1ddfe1ae0e8d6fbba049ab77fea537368cdfa1ab79544f"
+      },
+      {
+        "path": "/workspace/LaboratoireHumain/rust/crates/sim/src/profiling.rs",
+        "sha256": "13846c39e2e6fc838720134bf4289469c1dc4021ff1ee7fa2878be4b98968ee0"
+      },
+      {
+        "path": "/workspace/LaboratoireHumain/rust/crates/sim/src/quiet.rs",
+        "sha256": "98a2c4f0862cb6dd28d1caddb8ed91a7a10ce82fa366990f3cb6141d1035ae54"
+      },
+      {
+        "path": "/workspace/LaboratoireHumain/rust/crates/sim/src/reaching.rs",
+        "sha256": "f7965eaca0cc26fb58c16430719e890d33aa658ac3166a7039a511099361c174"
+      },
+      {
+        "path": "/workspace/LaboratoireHumain/rust/crates/sim/src/recovery/native_predictor.rs",
+        "sha256": "f1ec58f22b98145a71d1232317de5760b833438d97ca5a409bccfcc037569488"
+      },
+      {
+        "path": "/workspace/LaboratoireHumain/rust/crates/sim/src/recovery/planner/contact_observation.rs",
+        "sha256": "94366ed69861241b360756a440cda1ef7697594cd32b852e1b0a39bf2a9335c2"
+      },
+      {
+        "path": "/workspace/LaboratoireHumain/rust/crates/sim/src/recovery/planner/continuation.rs",
+        "sha256": "74020cce0959251e6ac166acbc61b91a97f92218ca7cc7b4117f0e6ec5d76ff6"
+      },
+      {
+        "path": "/workspace/LaboratoireHumain/rust/crates/sim/src/recovery/planner/coordinated_runtime.rs",
+        "sha256": "d2e780311a7625875ce8b8a5d8957b98da6e078dbadae965336544fb6ccd987e"
+      },
+      {
+        "path": "/workspace/LaboratoireHumain/rust/crates/sim/src/recovery/planner/geometric_tasks.rs",
+        "sha256": "5a8c7a1e391ca153c7077ff26205ada240911e4d7202f416c1e2ca51c8fece00"
+      },
+      {
+        "path": "/workspace/LaboratoireHumain/rust/crates/sim/src/recovery/planner/mod.rs",
+        "sha256": "395bf84ded81711e24da0cf8eafc8750c10ff6c62f4e436069abed3531643a56"
+      },
+      {
+        "path": "/workspace/LaboratoireHumain/rust/crates/sim/src/recovery/planner/native_observation.rs",
+        "sha256": "6b8008b50fe9614af1406eb361a9b4e377ecb03c6cf84b3ccddef0619c3edd74"
+      },
+      {
+        "path": "/workspace/LaboratoireHumain/rust/crates/sim/src/recovery/planner/native_plan_preview.rs",
+        "sha256": "dd8aa73ef28fab228e132f67dc38345ca2a7b2f1bebbbcc19230795214c3a788"
+      },
+      {
+        "path": "/workspace/LaboratoireHumain/rust/crates/sim/src/recovery/planner/support_state.rs",
+        "sha256": "19607d6e8d19ca66579e1c9a830ee8e711bac3e7ce17d907f1e071a7b89b872f"
+      },
+      {
+        "path": "/workspace/LaboratoireHumain/rust/crates/sim/src/recovery/planner/transition_worker.rs",
+        "sha256": "8a46af880505f66e7c0f2af8f4b9306f7f500c71c2596cdf5d3eeae67dc89bba"
+      },
+      {
+        "path": "/workspace/LaboratoireHumain/rust/crates/sim/src/recovery/planner/whole_body_controller.rs",
+        "sha256": "d009509d6a58df102abc549ba4cdd2c844e5c50a3c4de9bae750829b8a8b42a2"
+      },
+      {
+        "path": "/workspace/LaboratoireHumain/rust/crates/sim/src/recovery/planner/whole_body_tasks.rs",
+        "sha256": "e1657cb8c211523b3fe34407a86de2cdf0ce8c8d0da81b1d6770aeca39340084"
+      },
+      {
+        "path": "/workspace/LaboratoireHumain/rust/crates/sim/src/recovery/reference_mapping.rs",
+        "sha256": "b9bfa5022c7abc7de15ff016955975d451fe3293d99869e0478208e1e5cc2512"
+      },
+      {
+        "path": "/workspace/LaboratoireHumain/rust/crates/sim/src/recovery/support_probe/bounded_arm_clearance.rs",
+        "sha256": "32db8922e6b62c0841a343dfe215fe96493e76b03a178c9d887a0d01d5872e35"
+      },
+      {
+        "path": "/workspace/LaboratoireHumain/rust/crates/sim/src/recovery/support_probe/full_trajectory.rs",
+        "sha256": "0cabdb3a4a9eb317b2c32e8d4f72b57172768f7d2fd24bdb56d252b4fae5a817"
+      },
+      {
+        "path": "/workspace/LaboratoireHumain/rust/crates/sim/src/recovery/support_probe/getup_ab.rs",
+        "sha256": "fb023c0afe36e6da69ab7125df4c4bf0fc9fc11a9455586a1c2ff66cab2c875d"
+      },
+      {
+        "path": "/workspace/LaboratoireHumain/rust/crates/sim/src/recovery/support_probe/hand_support_experiment.rs",
+        "sha256": "b24acedb41bb75bd5bf54d374886b46a1c95803455ccd7c3d8800fcde6055a74"
+      },
+      {
+        "path": "/workspace/LaboratoireHumain/rust/crates/sim/src/recovery/support_probe/land_arm_tracking.rs",
+        "sha256": "496a77e4d8f0b604953d6b692dc83ec2937f59f0dcbf9dea175db014fbc6d2f6"
+      },
+      {
+        "path": "/workspace/LaboratoireHumain/rust/crates/sim/src/recovery/support_probe/left_hand_command_audit.rs",
+        "sha256": "1ce8dfde29e4dc36751f06d42500028b02268f405226a8805e0be804835347b2"
+      },
+      {
+        "path": "/workspace/LaboratoireHumain/rust/crates/sim/src/recovery/support_probe/offline_trajectory.rs",
+        "sha256": "5ddfae5ff2f67f4c7423df77b264ee1b93ecd17ea898e249012c693a2117ef3e"
+      },
+      {
+        "path": "/workspace/LaboratoireHumain/rust/crates/sim/src/recovery/support_probe/prone_chain_execution.rs",
+        "sha256": "9b028e8663da3d22c8c7596776b50bcae7ccdbeff8d84d52d7045d1961750646"
+      },
+      {
+        "path": "/workspace/LaboratoireHumain/rust/crates/sim/src/recovery/support_probe/prone_recovery_experiment.rs",
+        "sha256": "5c277ff8c75ceb40afafafc03963ce80204193e0e169d8534705c182d85411ba"
+      },
+      {
+        "path": "/workspace/LaboratoireHumain/rust/crates/sim/src/recovery/support_probe/whole_history.rs",
+        "sha256": "55772764262b40d6b0bcaed90081285fbf3aa98a36a41c687b97144ceb7c654c"
+      },
+      {
+        "path": "/workspace/LaboratoireHumain/rust/crates/sim/src/recovery/support_probe.rs",
+        "sha256": "da64ec868aa9c3130fb195f95792b26872b413dd587f6b46963aa1390a222f7e"
+      },
+      {
+        "path": "/workspace/LaboratoireHumain/rust/crates/sim/src/recovery/trajectory_geometry.rs",
+        "sha256": "5a1421578e77f8c92c3938ca99ab6faa7e0208b922c8fa24d1b852dda12f6382"
+      },
+      {
+        "path": "/workspace/LaboratoireHumain/rust/crates/sim/src/recovery/trajectory_program.rs",
+        "sha256": "b7307684d66a1f29553827f9b99d44db3bb0cddf28df8fbb56d11da369674ccb"
+      },
+      {
+        "path": "/workspace/LaboratoireHumain/rust/crates/sim/src/recovery.rs",
+        "sha256": "b1d6c696b753306cd5257039f6dc52ce141da1e4cf26d598b635ad863a3b8053"
+      },
+      {
+        "path": "/workspace/LaboratoireHumain/rust/crates/sim/src/recovery_contract.rs",
+        "sha256": "cbc443794eee87244758e9be13a5c6ae2d241c3cf64eeb2e125a1295402356fb"
+      },
+      {
+        "path": "/workspace/LaboratoireHumain/rust/crates/sim/src/runtime.rs",
+        "sha256": "6d9abb59c4554e0e384aee2536254bc760b1fdd4255659dc70e913f92f83f62b"
+      },
+      {
+        "path": "/workspace/LaboratoireHumain/rust/crates/sim/src/scenarios.rs",
+        "sha256": "5a90efab469f4dae7dcf7aa7e69219d0dbd4b16d7b66ab3b8018d3b5b4b42810"
+      },
+      {
+        "path": "/workspace/LaboratoireHumain/rust/crates/sim/src/stepping.rs",
+        "sha256": "60a8deb2cfb567b86d62a8976931f28ba19a221e2e15a2f15181bf005f8687d2"
+      },
+      {
+        "path": "/workspace/LaboratoireHumain/rust/crates/sim/src/striker.rs",
+        "sha256": "187c9de81239fe8a6026449838dd45f93fbbd9fb9961cd9c0b12f1fb80338985"
+      },
+      {
+        "path": "/workspace/LaboratoireHumain/scripts/coordination-prototype-budget.py",
+        "sha256": "2b6776d6c9523837024d3bd3bca9b753f4dce932458a1d1ba7898000f4046700"
+      },
+      {
+        "path": "/workspace/LaboratoireHumain/scripts/run-coordination-prototype.py",
+        "sha256": "a66c0e6ec06f565a481ca963c053144f3d0683b1536d399bf172811402cfc754"
+      }
+    ],
+    "binary": [
+      {
+        "path": "/workspace/LaboratoireHumain/rust/target/release/deps/coordination_worker-60f2b83fe348a1d3",
+        "sha256": "1bb4b91ac8ebfbe382d9525e524b85040ca9890bc90a0ef0467f1ef2b64c8b57"
+      }
+    ],
+    "criteria": [
+      {
+        "path": "/workspace/LaboratoireHumain/docs/evidence/coordination-prototype-2026-10-12/frozen-criteria.json",
+        "sha256": "375c6c0e409f9f585dc8f22dfe1de3eedf20e61442d482db8119e7ce0f265ce2"
+      },
+      {
+        "path": "/workspace/LaboratoireHumain/rust/crates/sim/data/recovery-contract-v1.json",
+        "sha256": "57ffc6e4705759dac795e7c1b274edc9016a5e194a8fe4fa175a230c62f595ba"
+      }
+    ],
+    "continuation": [
+      {
+        "path": "/workspace/LaboratoireHumain/docs/evidence/coordination-prototype-2026-10-12/continuation-native-audit-60deg.json",
+        "sha256": "9ba54012fae3e1f3e7e4cb925947f1bdee51754b29f176cae705045a3ba5d3d6"
+      },
+      {
+        "path": "/workspace/LaboratoireHumain/docs/evidence/coordination-prototype-2026-10-12/continuation-native-audit.json",
+        "sha256": "3920dff2c10363d1f40c7b0e0c960519ba03cbcf96e0a71bbb3104ee52059ee5"
+      },
+      {
+        "path": "/workspace/LaboratoireHumain/docs/evidence/coordination-prototype-2026-10-12/continuation-route-audit.json",
+        "sha256": "3fa816514f49ed17ff7239effa642b4a05a5d5790a7858bddd82aae29db8b48a"
+      }
+    ],
+    "preflight_evidence": [
+      {
+        "path": "/workspace/LaboratoireHumain/docs/evidence/coordination-prototype-2026-10-12/budget-tests.log",
+        "sha256": "0dcf4f0043ccb566ed45aedbf37a327b6d95de6c909e7d94fdb8dad94c907fe3"
+      },
+      {
+        "path": "/workspace/LaboratoireHumain/docs/evidence/coordination-prototype-2026-10-12/continuation-tests.log",
+        "sha256": "7d1bd32e47dc4aa8b8725c410d85ea160ddb4aa90100b724acbb02b0075aea56"
+      },
+      {
+        "path": "/workspace/LaboratoireHumain/docs/evidence/coordination-prototype-2026-10-12/coordinated_runtime-tests.log",
+        "sha256": "ed83ffffed363fa7ac1b7857763de2e72ada8bd2d2c76f616ec4def50b42e555"
+      },
+      {
+        "path": "/workspace/LaboratoireHumain/docs/evidence/coordination-prototype-2026-10-12/geometric_tasks-tests.log",
+        "sha256": "6b7d8f535804f59ae2b1d9bb4bcaec27f73dab52c17a0a1a1167861efdb7aeed"
+      },
+      {
+        "path": "/workspace/LaboratoireHumain/docs/evidence/coordination-prototype-2026-10-12/native-worker-build.log",
+        "sha256": "d8cfcb8fa8501606491842ce9dfd47e8a4f3ee731afbd0aeb7625288fd2e4c09"
+      },
+      {
+        "path": "/workspace/LaboratoireHumain/docs/evidence/coordination-prototype-2026-10-12/native_observation-tests.log",
+        "sha256": "ca017814edf26e4894b67b0e26b6d87597509b4429311bc55a6621939ef5cc94"
+      },
+      {
+        "path": "/workspace/LaboratoireHumain/docs/evidence/coordination-prototype-2026-10-12/native_plan_preview-tests.log",
+        "sha256": "87df12edcca1b0480a57d12ebd65ebebca36ef31f9570801428ee824f5865116"
+      },
+      {
+        "path": "/workspace/LaboratoireHumain/docs/evidence/coordination-prototype-2026-10-12/owner-final-review.md",
+        "sha256": "b9f8b998cb615053e744c14f6ff21f51823c3088984d4fb6a3af88e7c24b55ba"
+      },
+      {
+        "path": "/workspace/LaboratoireHumain/docs/evidence/coordination-prototype-2026-10-12/production-check.log",
+        "sha256": "3ac5253c9405364ae135addcd490aec7b0434de1352a038babf3164848409e61"
+      },
+      {
+        "path": "/workspace/LaboratoireHumain/docs/evidence/coordination-prototype-2026-10-12/runner-tests.log",
+        "sha256": "5a8c80c527a752fc702d92a5a0df8b13788b71313b86e7a0a3a676e6725f1fab"
+      },
+      {
+        "path": "/workspace/LaboratoireHumain/docs/evidence/coordination-prototype-2026-10-12/software-review.md",
+        "sha256": "23c9ae52b1bd1a34d22d007b0f753ad6419a7c493dc9d773c22242ccb0fb10b4"
+      },
+      {
+        "path": "/workspace/LaboratoireHumain/docs/evidence/coordination-prototype-2026-10-12/support_state-tests.log",
+        "sha256": "b8490751816e964d76f2535e4058aed2587f653d83cc09f5080cd91f80ed3c69"
+      },
+      {
+        "path": "/workspace/LaboratoireHumain/docs/evidence/coordination-prototype-2026-10-12/whole_body_controller-tests.log",
+        "sha256": "8fc8fa3b017af6ac0bab1a3886c0c5d45bf5f8d7a4a37553dd722970f13322f1"
+      },
+      {
+        "path": "/workspace/LaboratoireHumain/docs/evidence/coordination-prototype-2026-10-12/whole_body_tasks-tests.log",
+        "sha256": "09f00bb9ad6a903f0f2eebe01a4dabc81e1699c8303bff46c0ddeec460d77060"
+      }
+    ]
+  },
+  "workerInputs": {
+    "programPath": "/workspace/LaboratoireHumain/docs/evidence/coordination-prototype-2026-10-12/continuation-candidate-program.json",
+    "tasksPath": "/workspace/LaboratoireHumain/docs/evidence/coordination-prototype-2026-10-12/continuation-tasks.json"
+  }
+}

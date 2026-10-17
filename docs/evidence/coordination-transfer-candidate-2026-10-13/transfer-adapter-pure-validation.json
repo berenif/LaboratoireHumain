@@ -1,0 +1,43 @@
+{
+  "scope": "Focused arithmetic and state-machine tests only; no native admission or physical qualification",
+  "command": "PATH=/workspace/lh-rustup/toolchains/1.89.0-x86_64-unknown-linux-gnu/bin:$PATH CARGO_HOME=/workspace/lh-cargo RUSTUP_HOME=/workspace/lh-rustup cargo test -p lh-sim --lib --features experimental-solver-step-observation recovery::planner::transfer_adapter::tests -- --test-threads=1",
+  "workingDirectory": "/workspace/LaboratoireHumain/rust",
+  "exitCode": 0,
+  "passed": 15,
+  "failed": 0,
+  "ignored": 0,
+  "filteredOut": 226,
+  "testDurationSecondsReportedByCargo": 31.20,
+  "log": "transfer-adapter-pure-tests.log",
+  "sourceHashesRecordedAfterRun": {
+    "rust/crates/sim/src/recovery/planner/transfer_adapter_tests.rs": "0709eaa6f32cded5bac3ac2106c26924d49b29c0641939666af4f310d0370bcb",
+    "rust/crates/sim/src/recovery/planner/transfer_adapter.rs": "2764affc6776dc5d94e00fd2e35019234af7792a733f2078e93d9eff0434b665",
+    "rust/crates/sim/src/recovery/planner/command_proposal.rs": "d09cf9cfbeb650eddbcf2008fa214136f1bb774f2a5bebf44298c77a50c87d5b"
+  },
+  "archivedInputHashes": {
+    "archived-a36-command-result.json": "9ee5613ece4177588f4acfdd07c4adf9d77c6c380830b4f79690afa1af4ce521",
+    "observed-entry-step36.json": "3bd00408a5fdb3df9f17feda430f5a1aad8334b17c244d3b119a09325891c433"
+  },
+  "verifiedContracts": [
+    "Four queued commands preserve exact q/dq and can each be consumed once",
+    "Foreign command bits and altered command history are rejected atomically",
+    "Identical duplicate observations are idempotent; changed, skipped and rewound clocks reject atomically",
+    "Unarmed active and passive native actions reject without installing anything",
+    "The last bridge command uses source 432 and the first following command uses source 433",
+    "Persistent nonfoot support after the latched bilateral event rejects without erasing history",
+    "Adapter clones do not share mutable command or observation state",
+    "Success must be observed by original origin plus 6000 substeps and cannot be rewound, revoked or restarted",
+    "The additional 240-substep terminal interval ends at the first complete tick, adding at most 3 substeps",
+    "Synthetic private payloads of 120 and 124 records require every 24-step checkpoint and the exact endpoint",
+    "Malformed, partial and exhausted synthetic payloads do not grant extra actions",
+    "Archived original f64 task coefficients reproduce all four archived A36 command positions and velocities bit for bit"
+  ],
+  "executionBoundary": {
+    "allowed": ["Model serde metadata", "Program.compile", "archived coefficients", "pure arithmetic QP", "synthetic observations", "private untrusted payload validation"],
+    "notCalled": ["Model::canonical", "Model::validate", "Simulation/world construction", "FK", "assemble_observed", "motor installation", "native integration"],
+    "nativeWindowReceiptConstructed": false,
+    "physicalAdmissionClaimed": false,
+    "globalSuiteClaimed": false,
+    "basis": "Selected pure test bodies and reviewed call paths, not runtime instrumentation"
+  }
+}

@@ -68,7 +68,9 @@ pub fn trials(profile: &crate::Profile) -> Result<Vec<serde_json::Value>, String
     Ok(reports)
 }
 
+#[derive(Clone, serde::Serialize, serde::Deserialize)]
 pub(crate) struct Striker {
+    #[serde(skip, default = "checkpoint_protocol")]
     definition: Protocol,
     body: RigidBodyHandle,
     pub collider: ColliderHandle,
@@ -88,6 +90,9 @@ pub(crate) struct Striker {
     impact_id: u32,
     impacted: bool,
     last_impact_impulse: f32,
+}
+fn checkpoint_protocol() -> Protocol {
+    Protocol::canonical().expect("pinned protocol definition")
 }
 impl Striker {
     pub fn new(world: &mut PhysicsWorld) -> Result<Self, String> {

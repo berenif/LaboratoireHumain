@@ -1,0 +1,61 @@
+warning: /workspace/LaboratoireHumain/rust/crates/sim/Cargo.toml: file `/workspace/LaboratoireHumain/rust/crates/sim/src/lib.rs` found to be present in multiple build targets:
+  * `lib` target `lh_sim`
+  * `integration-test` target `coordination-local-pair-worker`
+  * `integration-test` target `coordination-transfer-worker`
+  * `integration-test` target `coordination-worker`
+  * `integration-test` target `numeric-parity-worker`
+  * `integration-test` target `numeric-parity-worker-serialization`
+   Compiling lh-sim v0.1.0 (/workspace/LaboratoireHumain/rust/crates/sim)
+warning: function `getup_ab_configure` is never used
+  --> crates/sim/src/recovery.rs:34:15
+   |
+34 | pub(crate) fn getup_ab_configure(s: &mut Simulation) -> Result<bool, String> {
+   |               ^^^^^^^^^^^^^^^^^^
+   |
+   = note: `#[warn(dead_code)]` on by default
+
+warning: function `standing_reference` is never used
+   --> crates/sim/src/recovery.rs:672:15
+    |
+672 | pub(crate) fn standing_reference(s: &Simulation) -> Vector {
+    |               ^^^^^^^^^^^^^^^^^^
+
+warning: method `weight` is never used
+   --> crates/sim/src/recovery.rs:944:12
+    |
+801 | impl Controller {
+    | --------------- method in this implementation
+...
+944 |     pub fn weight(&self, part: &Segment, coordinate: char) -> f32 {
+    |            ^^^^^^
+
+warning: field `reference` is never read
+   --> crates/sim/src/stepping.rs:269:9
+    |
+268 | pub(crate) struct Intent {
+    |                   ------ field in this struct
+269 |     pub reference: Vector,
+    |         ^^^^^^^^^
+
+warning: methods `owns_stance`, `preparing_loaded_sole`, and `root_torque` are never used
+   --> crates/sim/src/stepping.rs:275:12
+    |
+274 | impl StepController {
+    | ------------------- methods in this implementation
+275 |     pub fn owns_stance(&self) -> bool {
+    |            ^^^^^^^^^^^
+...
+278 |     pub fn preparing_loaded_sole(&self) -> Option<usize> {
+    |            ^^^^^^^^^^^^^^^^^^^^^
+...
+367 |     pub fn root_torque(&self, s: &Simulation, part: &lh_model::Segment) -> Vector {
+    |            ^^^^^^^^^^^
+
+warning: `lh-sim` (lib test) generated 5 warnings
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 6.76s
+     Running unittests src/lib.rs (rust/target/debug/deps/lh_sim-54f0f18af0408e11)
+
+running 1 test
+test runtime::tests::getup_checkpoint_round_trip_is_complete_and_never_steps ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 159 filtered out; finished in 0.39s

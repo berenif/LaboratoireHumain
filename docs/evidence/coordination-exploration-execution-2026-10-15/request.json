@@ -1,0 +1,19 @@
+{
+  "op": "exploration-run",
+  "operationId": "73c4211a-afed-4c4e-a6d1-8b0f5610f1db",
+  "inputs": {
+    "entryPath": "/workspace/LaboratoireHumain/docs/evidence/coordination-transfer-candidate-2026-10-13/observed-entry-step36.json",
+    "prefixFramesPath": "/workspace/LaboratoireHumain/docs/evidence/coordination-transfer-native-proposal-2026-10-13/worker-prefix-frames.json",
+    "programPath": "/workspace/LaboratoireHumain/docs/evidence/coordination-prototype-2026-10-12/continuation-candidate-program.json",
+    "tasksPath": "/workspace/LaboratoireHumain/docs/evidence/coordination-prototype-2026-10-12/continuation-tasks.json"
+  },
+  "outputPath": "/workspace/LaboratoireHumain/docs/evidence/coordination-exploration-execution-2026-10-15/native-result.json",
+  "tracePath": "/workspace/LaboratoireHumain/docs/evidence/coordination-exploration-execution-2026-10-15/native-trace.jsonl",
+  "permit": {
+    "reservationId": "73c4211a-afed-4c4e-a6d1-8b0f5610f1db",
+    "reservedSteps": 7000,
+    "workerPid": 16790,
+    "deadlineUnixS": 1792096158.1733334,
+    "remainingWallSeconds": 112.97690629400313
+  }
+}

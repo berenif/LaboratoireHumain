@@ -5,7 +5,8 @@ use lh_contracts::{
     Acknowledgement, Action, Command, MAX_ADVANCE_TICKS, Mode, Reject, SCHEMA_VERSION, Snapshot,
     Stamp, Timeline,
 };
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
+use bincode::Options;
 
 #[derive(Serialize)]
 pub struct Reply {
@@ -17,9 +18,12 @@ pub struct Reply {
     pub snapshot: Snapshot,
     pub failure: Option<Failure>,
 }
+#[derive(Serialize, Deserialize)]
 pub struct Runtime {
     simulation: Simulation,
+    #[serde(skip)]
     quiet: Option<crate::quiet::QuietObservation>,
+    #[serde(skip)]
     recovery_measurement: Option<crate::cycles::QualificationObservation>,
     timeline: Timeline,
     heading: f32,
@@ -44,6 +48,101 @@ fn acknowledgement(
     }
 }
 impl Runtime {
+    #[cfg(feature = "stationary-balance-experiment")]
+    pub(crate) fn balance_simulation_mut(&mut self) -> &mut Simulation {
+        &mut self.simulation
+    }
+    pub fn new_getup_fixture(kind:&str) -> Result<Self,String> {
+        let mut profile=Profile::default();profile.getup_policy_enabled=true;
+        let mut runtime=Self::new(Mode::Protocol,0.0,profile)?;
+        crate::getup::fixtures::initialize(&mut runtime.simulation,kind)?;
+        Ok(runtime)
+    }
+    pub fn getup_fixture_report(&self) -> Result<String,String> {
+        let s=&self.simulation;
+        let bounds:Vec<_>=s.colliders.iter().enumerate().filter(|(_,h)|s.world.colliders[**h].is_enabled()).map(|(i,h)|{
+            let a=s.world.colliders[*h].compute_aabb();serde_json::json!({"body":s.model.segments[i].id,
+                "min":[a.mins.x,a.mins.y,a.mins.z],"max":[a.maxs.x,a.maxs.y,a.maxs.z]})
+        }).collect();
+        let (q,dq)=crate::getup::joint_state(s)?;
+        serde_json::to_string(&serde_json::json!({"state":s.getup_fixture,"nativeSubsteps":s.substeps_completed,
+            "jointQ":q,"jointDq":dq,"colliderBounds":bounds,"massKg":s.total_mass()})).map_err(|e|e.to_string())
+    }
+    pub fn trigger_getup_fixture(&mut self) -> Result<(),String> {
+        crate::getup::fixtures::trigger(&mut self.simulation)
+    }
+    pub fn getup_standing_diagnostic(&self, anchors_json: &str) -> Result<String,String> {
+        let anchors: Option<[lh_model::Vec3;2]> = serde_json::from_str(anchors_json).map_err(|e|e.to_string())?;
+        crate::getup::controller::standing_diagnostic(&self.simulation,anchors).map(|v|v.to_string())
+    }
+    fn checkpoint_compatible(&self) -> Result<(), String> {
+        let s = &self.simulation;
+        if self.mode != Mode::Protocol || self.timeline.depth() != 0 || self.quiet.is_some()
+            || self.recovery_measurement.is_some() || s.getup_controller.is_none()
+            || !s.profile.getup_policy_enabled || s.stepping.is_some()
+            || s.environment.is_some() || s.recovery.is_some() || s.grab.is_some()
+        {
+            return Err("Checkpoint requires the isolated GetUp protocol".into());
+        }
+        #[cfg(all(test, feature = "experimental-solver-step-observation"))]
+        if s.coordination.is_some() { return Err("Unsupported experimental controller".into()); }
+        Ok(())
+    }
+
+    /// Full serialized Rapier world, native/controller memory and command timeline.
+    /// Rapier reconstructs only its documented pipeline/CCD workspaces on load.
+    pub fn getup_checkpoint(&self) -> Result<Vec<u8>, String> {
+        self.checkpoint_compatible()?;
+        let world = bincode::DefaultOptions::new().with_fixint_encoding().with_limit(64 * 1024 * 1024)
+            .serialize(&self.simulation.world).map_err(|e| e.to_string())?;
+        // Self-describing auxiliary state preserves serde's optional fields;
+        // binary Rapier state preserves nonfinite workspace sentinels exactly.
+        let auxiliary = serde_json::to_string(self).map_err(|e| e.to_string())?;
+        bincode::DefaultOptions::new().with_fixint_encoding().with_limit(64 * 1024 * 1024)
+            .serialize(&(1_u32, lh_model::CANONICAL_JSON, world, auxiliary)).map_err(|e| e.to_string())
+    }
+
+    pub fn from_getup_checkpoint(bytes: &[u8]) -> Result<Self, String> {
+        let (schema, model, world, auxiliary): (u32, String, Vec<u8>, String) =
+            bincode::DefaultOptions::new().with_fixint_encoding().with_limit(64 * 1024 * 1024)
+                .reject_trailing_bytes().deserialize(bytes).map_err(|e| e.to_string())?;
+        if schema != 1 || model != lh_model::CANONICAL_JSON {
+            return Err("Checkpoint schema/model differs".into());
+        }
+        let mut restored: Self = serde_json::from_str(&auxiliary).map_err(|e| e.to_string())?;
+        restored.simulation.world = bincode::DefaultOptions::new().with_fixint_encoding()
+            .with_limit(64 * 1024 * 1024).reject_trailing_bytes().deserialize(&world).map_err(|e| e.to_string())?;
+        restored.checkpoint_compatible()?;
+        Ok(restored)
+    }
+
+    pub fn verify_getup_checkpoint(&self, bytes: &[u8]) -> Result<String, String> {
+        let restored = Self::from_getup_checkpoint(bytes)?;
+        // The binary world includes maps with compound keys; JSON cannot
+        // represent those maps. Compare generalized motion and observations
+        // here, and validate an actual next tick separately in the admitted run.
+        let same_joints = crate::getup::joint_state(&self.simulation)?
+            == crate::getup::joint_state(&restored.simulation)?;
+        let same_handles = self.simulation.bodies == restored.simulation.bodies
+            && self.simulation.colliders == restored.simulation.colliders
+            && self.simulation.joints == restored.simulation.joints;
+        let same_snapshot = serde_json::to_value(self.simulation.snapshot()).map_err(|e| e.to_string())?
+            == serde_json::to_value(restored.simulation.snapshot()).map_err(|e| e.to_string())?;
+        let same_controller = self.getup_report()? == restored.getup_report()?;
+        if !same_joints || !same_handles || !same_snapshot || !same_controller {
+            return Err(format!("Checkpoint round-trip changed data: joints={same_joints}, handles={same_handles}, snapshot={same_snapshot}, controller={same_controller}"));
+        }
+        Ok(serde_json::json!({"passed":true,"physicsIntegrations":0,"bytes":bytes.len(),
+            "nativeSubsteps":restored.simulation.substeps_completed,
+            "forecastSubsteps":restored.simulation.getup_controller.as_ref().unwrap().status.forecast_substeps,
+            "binaryWorldDeserialized":true,"jointStateEqual":same_joints,"handlesEqual":same_handles,
+            "snapshotEqual":same_snapshot,"controllerEqual":same_controller}).to_string())
+    }
+
+    /// Recorded teacher branch/reference only; this never advances either world.
+    pub fn getup_report(&self) -> Result<String, String> {
+        serde_json::to_string(&self.simulation.getup_controller).map_err(|e| e.to_string())
+    }
     /// Read-only qualification evidence, including ownership before integration.
     pub(crate) fn simulation(&self) -> &Simulation {
         &self.simulation
@@ -531,6 +630,27 @@ impl Runtime {
 mod tests {
     use super::*;
     use lh_model::Vec3;
+
+    #[test]
+    fn getup_checkpoint_round_trip_is_complete_and_never_steps() {
+        let mut profile = Profile::default();
+        profile.getup_policy_enabled = true;
+        let mut live = Runtime::new(Mode::Protocol, 0.0, profile).unwrap();
+        let root = live.simulation.bodies[0];
+        live.simulation.world.bodies[root].add_torque(rapier3d::prelude::Vector::X * 0.125, false);
+        let checkpoint = live.getup_checkpoint().unwrap();
+        let restored = Runtime::from_getup_checkpoint(&checkpoint).unwrap();
+        let verification: serde_json::Value = serde_json::from_str(&live.verify_getup_checkpoint(&checkpoint).unwrap()).unwrap();
+        assert_eq!(verification["passed"], true);
+        assert_eq!(verification["nativeSubsteps"], 0);
+        assert_eq!(restored.simulation.substeps_completed, 0);
+        assert_eq!(restored.timeline.tick, live.timeline.tick);
+        assert_eq!(restored.getup_report().unwrap(), live.getup_report().unwrap());
+        assert!(Runtime::from_getup_checkpoint(&checkpoint[..checkpoint.len()/2]).is_err());
+        let mut trailing = checkpoint.clone(); trailing.push(0);
+        assert!(Runtime::from_getup_checkpoint(&trailing).is_err());
+        assert!(Runtime::new(Mode::Protocol, 0.0, Profile::default()).unwrap().getup_checkpoint().is_err());
+    }
     #[test]
     fn read_only_observer_keeps_every_physical_reply_and_visits_each_substep() {
         let mut plain = runtime();

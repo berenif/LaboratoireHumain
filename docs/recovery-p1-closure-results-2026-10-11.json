@@ -1,0 +1,488 @@
+{
+  "schema": 1,
+  "createdUtc": "2026-10-11T22:09:44.588185+00:00",
+  "sourceBaseCommit": "2e3c9f17b0f35917b926df827660cacf9de764a8",
+  "scope": "P1 continued in existing budget, now closed; no search or budget renewal",
+  "p1Passed": false,
+  "recoveryQualified": false,
+  "ledger": {
+    "schema": 1,
+    "campaign": "native-hybrid-v1",
+    "createdUtc": "2026-10-11T21:35:43.209632+00:00",
+    "contractStartedUtc": "2026-10-11T21:35:43.209632+00:00",
+    "status": "closed-at-wall-deadline-P1-not-certified",
+    "p1Passed": false,
+    "searchStarted": 0,
+    "validationStarted": 0,
+    "limits": {
+      "contractHistories": 32,
+      "nativeStepsPerContractHistory": 6240,
+      "contractWallS": 1800,
+      "globalWallS": 21600,
+      "globalNativeSteps": 1509120
+    },
+    "historiesStarted": 8,
+    "reservedNativeSteps": 49920,
+    "actualNativeStepsKnown": 19512,
+    "entries": [
+      {
+        "index": 0,
+        "label": "reference-observation-on",
+        "startedUtc": "2026-10-11T21:35:43.215799+00:00",
+        "reservedNativeSteps": 6240,
+        "status": "process-completed",
+        "kernelSha256": "01af8583087157eeea11cd465dca3fc1dfebacc906f1a6e2d0cb13b86c573e9c",
+        "programSha256": "fef70abf3d016cecf6658b0bc5e7a6361d989eb265840acdc1a4fbc497a70c7d",
+        "coordinatorSha256": "cdf4b2064cb015734227d70624b4b2fcab31a01c96db17bb37ea95f9d2170b47",
+        "traceEnabled": true,
+        "controllerControl": false,
+        "output": "/workspace/LaboratoireHumain/evidence/native-hybrid-v1-2026-10-11/000-reference-observation-on",
+        "gitHead": "9d68ab2aa2c324ba7ed6262d1de66b30e274e40f",
+        "processExitCode": 0,
+        "endedUtc": "2026-10-11T21:35:51.846780+00:00",
+        "coordinatorWallS": 8.549477099993965,
+        "actualNativeSteps": 1172,
+        "reportSha256": "4d3683ebf52efdff9fe677d89c06d1810d34b4c0f94ad878b2a760725a45c47b",
+        "firstRefusal": {
+          "check": "self-contact",
+          "measured": 0.00509440153837204,
+          "offending": "leftFoot/rightFoot",
+          "substep": 3,
+          "threshold": 0.004999999888241291,
+          "tick": 292
+        },
+        "fullRecoverySuccess": false
+      },
+      {
+        "index": 1,
+        "label": "reference-observation-off",
+        "startedUtc": "2026-10-11T21:35:55.864011+00:00",
+        "reservedNativeSteps": 6240,
+        "status": "process-completed",
+        "kernelSha256": "01af8583087157eeea11cd465dca3fc1dfebacc906f1a6e2d0cb13b86c573e9c",
+        "programSha256": "fef70abf3d016cecf6658b0bc5e7a6361d989eb265840acdc1a4fbc497a70c7d",
+        "coordinatorSha256": "cdf4b2064cb015734227d70624b4b2fcab31a01c96db17bb37ea95f9d2170b47",
+        "traceEnabled": false,
+        "controllerControl": false,
+        "output": "/workspace/LaboratoireHumain/evidence/native-hybrid-v1-2026-10-11/001-reference-observation-off",
+        "gitHead": "9d68ab2aa2c324ba7ed6262d1de66b30e274e40f",
+        "processExitCode": 0,
+        "endedUtc": "2026-10-11T21:36:05.096346+00:00",
+        "coordinatorWallS": 9.189376894006273,
+        "actualNativeSteps": 1172,
+        "reportSha256": "c64baae97aa349870484b6bd8907ef3d96287ca6bdcbf7a25fdd15790b1c8754",
+        "firstRefusal": {
+          "check": "self-contact",
+          "measured": 0.00509440153837204,
+          "offending": "leftFoot/rightFoot",
+          "substep": 3,
+          "threshold": 0.004999999888241291,
+          "tick": 292
+        },
+        "fullRecoverySuccess": false
+      },
+      {
+        "index": 2,
+        "label": "controller-observation-on",
+        "startedUtc": "2026-10-11T21:36:22.222756+00:00",
+        "reservedNativeSteps": 6240,
+        "status": "process-completed",
+        "kernelSha256": "01af8583087157eeea11cd465dca3fc1dfebacc906f1a6e2d0cb13b86c573e9c",
+        "programSha256": "fef70abf3d016cecf6658b0bc5e7a6361d989eb265840acdc1a4fbc497a70c7d",
+        "coordinatorSha256": "cdf4b2064cb015734227d70624b4b2fcab31a01c96db17bb37ea95f9d2170b47",
+        "traceEnabled": true,
+        "controllerControl": true,
+        "output": "/workspace/LaboratoireHumain/evidence/native-hybrid-v1-2026-10-11/002-controller-observation-on",
+        "gitHead": "9d68ab2aa2c324ba7ed6262d1de66b30e274e40f",
+        "processExitCode": 0,
+        "endedUtc": "2026-10-11T21:36:57.803060+00:00",
+        "coordinatorWallS": 35.49430064599437,
+        "actualNativeSteps": 6240,
+        "reportSha256": "aabc5a29b313da379ff1d13a0938383dfc9145c71529e5228e43f54b755bba00",
+        "firstRefusal": null,
+        "fullRecoverySuccess": false
+      },
+      {
+        "index": 3,
+        "label": "controller-observation-off",
+        "startedUtc": "2026-10-11T21:37:13.990749+00:00",
+        "reservedNativeSteps": 6240,
+        "status": "process-completed",
+        "kernelSha256": "01af8583087157eeea11cd465dca3fc1dfebacc906f1a6e2d0cb13b86c573e9c",
+        "programSha256": "fef70abf3d016cecf6658b0bc5e7a6361d989eb265840acdc1a4fbc497a70c7d",
+        "coordinatorSha256": "cdf4b2064cb015734227d70624b4b2fcab31a01c96db17bb37ea95f9d2170b47",
+        "traceEnabled": false,
+        "controllerControl": true,
+        "output": "/workspace/LaboratoireHumain/evidence/native-hybrid-v1-2026-10-11/003-controller-observation-off",
+        "gitHead": "9d68ab2aa2c324ba7ed6262d1de66b30e274e40f",
+        "processExitCode": 0,
+        "endedUtc": "2026-10-11T21:37:48.504080+00:00",
+        "coordinatorWallS": 34.47538635900128,
+        "actualNativeSteps": 6240,
+        "reportSha256": "94b8d437af13c772c109122e24db14ea98898a8f5e7570280f3c623dd65f2bcf",
+        "firstRefusal": null,
+        "fullRecoverySuccess": false
+      },
+      {
+        "index": 4,
+        "label": "final-reference-on",
+        "startedUtc": "2026-10-11T21:47:52.265959+00:00",
+        "reservedNativeSteps": 6240,
+        "status": "process-completed",
+        "kernelSha256": "21a40388a8963fd553ca60a4711402243382d383b3150ac6c8f262bf5c8cd94c",
+        "programSha256": "fef70abf3d016cecf6658b0bc5e7a6361d989eb265840acdc1a4fbc497a70c7d",
+        "coordinatorSha256": "eed7070b4b37adcf006352c8835380f0bbbe7ff395ce19835e724e43bdc9c7eb",
+        "traceEnabled": true,
+        "controllerControl": false,
+        "output": "/workspace/LaboratoireHumain/evidence/native-hybrid-v1-2026-10-11/004-final-reference-on",
+        "gitHead": "9d68ab2aa2c324ba7ed6262d1de66b30e274e40f",
+        "processExitCode": 0,
+        "endedUtc": "2026-10-11T21:47:59.966690+00:00",
+        "coordinatorWallS": 7.6416217669902835,
+        "actualNativeSteps": 1172,
+        "reportSha256": "c2f51e161e2c41e118488667270906911a1fa7366d31270f9f196d002e2eae2e",
+        "firstRefusal": {
+          "check": "self-contact",
+          "measured": 0.00509440153837204,
+          "offending": "leftFoot/rightFoot",
+          "substep": 3,
+          "threshold": 0.004999999888241291,
+          "tick": 292
+        },
+        "fullRecoverySuccess": false
+      },
+      {
+        "index": 5,
+        "label": "final-reference-off",
+        "startedUtc": "2026-10-11T21:48:05.019376+00:00",
+        "reservedNativeSteps": 6240,
+        "status": "process-completed",
+        "kernelSha256": "21a40388a8963fd553ca60a4711402243382d383b3150ac6c8f262bf5c8cd94c",
+        "programSha256": "fef70abf3d016cecf6658b0bc5e7a6361d989eb265840acdc1a4fbc497a70c7d",
+        "coordinatorSha256": "eed7070b4b37adcf006352c8835380f0bbbe7ff395ce19835e724e43bdc9c7eb",
+        "traceEnabled": false,
+        "controllerControl": false,
+        "output": "/workspace/LaboratoireHumain/evidence/native-hybrid-v1-2026-10-11/005-final-reference-off",
+        "gitHead": "9d68ab2aa2c324ba7ed6262d1de66b30e274e40f",
+        "processExitCode": 0,
+        "endedUtc": "2026-10-11T21:48:11.786257+00:00",
+        "coordinatorWallS": 6.739547724995646,
+        "actualNativeSteps": 1172,
+        "reportSha256": "04ea0415f37677db870348805bb89e56d8208ae504492787a9aa799211812bfd",
+        "firstRefusal": {
+          "check": "self-contact",
+          "measured": 0.00509440153837204,
+          "offending": "leftFoot/rightFoot",
+          "substep": 3,
+          "threshold": 0.004999999888241291,
+          "tick": 292
+        },
+        "fullRecoverySuccess": false
+      },
+      {
+        "index": 6,
+        "label": "angular-reference-on",
+        "startedUtc": "2026-10-11T22:05:08.866857+00:00",
+        "reservedNativeSteps": 6240,
+        "status": "process-completed",
+        "kernelSha256": "b6f275ac6ea78503cbae71f7615bd291e1a17f80dce8b2f18ae127090f996dbd",
+        "programSha256": "fef70abf3d016cecf6658b0bc5e7a6361d989eb265840acdc1a4fbc497a70c7d",
+        "coordinatorSha256": "eed7070b4b37adcf006352c8835380f0bbbe7ff395ce19835e724e43bdc9c7eb",
+        "traceEnabled": true,
+        "controllerControl": false,
+        "output": "/workspace/LaboratoireHumain/evidence/native-hybrid-v1-2026-10-11/006-angular-reference-on",
+        "gitHead": "2e3c9f17b0f35917b926df827660cacf9de764a8",
+        "processExitCode": 0,
+        "endedUtc": "2026-10-11T22:05:19.762662+00:00",
+        "coordinatorWallS": 10.816626382002141,
+        "actualNativeSteps": 1172,
+        "reportSha256": "6fe5d720b0f996e0ae43a0aec653e606c9e11660c783b304bae7b604d06c0b7e",
+        "firstRefusal": {
+          "check": "self-contact",
+          "measured": 0.00509440153837204,
+          "offending": "leftFoot/rightFoot",
+          "substep": 3,
+          "threshold": 0.004999999888241291,
+          "tick": 292
+        },
+        "fullRecoverySuccess": false
+      },
+      {
+        "index": 7,
+        "label": "angular-reference-off",
+        "startedUtc": "2026-10-11T22:05:19.850786+00:00",
+        "reservedNativeSteps": 6240,
+        "status": "process-completed",
+        "kernelSha256": "b6f275ac6ea78503cbae71f7615bd291e1a17f80dce8b2f18ae127090f996dbd",
+        "programSha256": "fef70abf3d016cecf6658b0bc5e7a6361d989eb265840acdc1a4fbc497a70c7d",
+        "coordinatorSha256": "eed7070b4b37adcf006352c8835380f0bbbe7ff395ce19835e724e43bdc9c7eb",
+        "traceEnabled": false,
+        "controllerControl": false,
+        "output": "/workspace/LaboratoireHumain/evidence/native-hybrid-v1-2026-10-11/007-angular-reference-off",
+        "gitHead": "2e3c9f17b0f35917b926df827660cacf9de764a8",
+        "processExitCode": 0,
+        "endedUtc": "2026-10-11T22:05:40.406431+00:00",
+        "coordinatorWallS": 20.51059458599775,
+        "actualNativeSteps": 1172,
+        "reportSha256": "a2e13bb55c61445903b06718e6706ee06764b2415a0c196cc8094da39ea02dad",
+        "firstRefusal": {
+          "check": "self-contact",
+          "measured": 0.00509440153837204,
+          "offending": "leftFoot/rightFoot",
+          "substep": 3,
+          "threshold": 0.004999999888241291,
+          "tick": 292
+        },
+        "fullRecoverySuccess": false
+      }
+    ],
+    "previousCampaignLedgerSha256": "b61f17b180afece7db1e3a7d541edeaf24094f358edd2bb7e1362797d8b600e4",
+    "closedUtc": "2026-10-11T22:05:52.102956+00:00",
+    "closureReason": "Absolute technical wall cap reached; independent native roundoff, complete angular operations and physical terminal adapter prerequisites remain unmet"
+  },
+  "deadlineUtc": "2026-10-11T22:05:43.209632+00:00",
+  "lastSimulationEndedUtc": "2026-10-11T22:05:40.406431+00:00",
+  "registrySealedUtc": "2026-10-11T22:05:52.102956+00:00",
+  "allSimulationProcessesEndedBeforeDeadline": true,
+  "angularDiagnosis": {
+    "scope": "Angular diagnosis using native frozen contact lever arms and cached inertia; inverse damping is an estimate, not an independent delivered-impulse journal",
+    "p1Passed": false,
+    "nativeAngularBoundCertified": false,
+    "intervals": 1176,
+    "missingPostPoseBoundary": 0,
+    "maximumUnresolvedAngularNsByAxis": [
+      0.19015617489024805,
+      0.02142980657867888,
+      0.016705770685003785
+    ],
+    "maximumInverseDampingEstimateNsByAxis": [
+      0.003368689256744734,
+      0.0010538862256747501,
+      0.0028708909254951762
+    ],
+    "maximumGeometryTransportNsByAxis": [
+      0.21827654762924453,
+      0.01702885411924626,
+      0.0678712825702803
+    ],
+    "worstInterval": {
+      "native_substep": 329,
+      "ccd_interval": 0,
+      "angular_before_fixed_ns": [
+        260.8555497888049,
+        1.3448467680706586,
+        104.6658978440035
+      ],
+      "angular_after_fixed_ns": [
+        169.7570585279891,
+        2.6518517748641495,
+        69.17093993695201
+      ],
+      "floor_angular_ns": [
+        -94.07539455560722,
+        1.3273035685952275,
+        -36.694796409406365
+      ],
+      "inverse_damping_estimate_ns": [
+        0.003368689256744734,
+        4.122296910617648e-05,
+        -0.001536904536668163
+      ],
+      "unresolved_angular_ns": [
+        0.19015617489024805,
+        -0.020257338832630367,
+        0.0063567606112329145
+      ],
+      "geometry_transport_ns": [
+        -0.21827654762924453,
+        0.008281453584203291,
+        -0.0678712825702803
+      ]
+    }
+  },
+  "angularNeutrality": {
+    "scope": "Read-only CCD impulse boundary diagnosis; no planner or recovery qualification",
+    "p1Passed": false,
+    "roundoffBoundCertified": false,
+    "angularBalanceVerified": false,
+    "neutrality": {
+      "sameNumericRows": true,
+      "sameInitial": true,
+      "sameFinal": true,
+      "sameRefusal": true,
+      "comparedValidNativeSteps": 1171,
+      "sameHistoricalNumericRows": true,
+      "sameHistoricalInitial": true,
+      "sameHistoricalFinal": true,
+      "sameHistoricalRefusal": true,
+      "sameFinalWorldHashesIncludingRefusal": true
+    },
+    "finalWorldHashesCompared": true,
+    "nativeStepsIncludingRefusal": 1172,
+    "solverIntervalsIncludingRefusal": 1176,
+    "multipleIntervalNativeStepsIncludingRefusal": 4,
+    "maxIntervalsPerNativeStep": 2,
+    "observationErrorCount": 0,
+    "maximumIntervalLinearResidualNsByAxis": [
+      9.618635061769965e-07,
+      3.1884572595508587e-06,
+      2.3092020740023145e-06
+    ],
+    "maximumSummedNativeLinearResidualNsByAxis": [
+      9.618635061769965e-07,
+      3.1884572595508587e-06,
+      2.3092020740023145e-06
+    ],
+    "worstLegacyVerticalDiscrepancy": {
+      "nativeSubstep": 330,
+      "timeS": 1.375,
+      "ccdIntervals": 2,
+      "dtS": 0.004166666883975267,
+      "requiredFloorN": [
+        2598.601510795345,
+        6503.863318227283,
+        -178.39548145691379
+      ],
+      "allIntervalsFloorN": [
+        2598.6014314786366,
+        6503.8630243917205,
+        -178.39520266517002
+      ],
+      "legacyReportedVerticalN": 42.9286322593689,
+      "sumLinearResidualNs": [
+        3.3048630143639457e-07,
+        1.2243149112300955e-06,
+        -1.161632326329709e-06
+      ]
+    },
+    "fullRecoverySuccess": false,
+    "firstRefusal": {
+      "check": "self-contact",
+      "measured": 0.00509440153837204,
+      "offending": "leftFoot/rightFoot",
+      "substep": 3,
+      "threshold": 0.004999999888241291,
+      "tick": 292
+    },
+    "hashes": {
+      "evidence/native-hybrid-v1-2026-10-11/006-angular-reference-on/solver-boundaries.jsonl": "3db7e0398f8519dcb1cd56f8d8632018a8353355dbd9e3778029c34bc22ca1a6",
+      "evidence/native-hybrid-v1-2026-10-11/006-angular-reference-on/substeps.jsonl": "6c991d4ec5379e133d41efdc22ceae4571fe62e46e2a9fd8465525a42eb3b15c",
+      "evidence/native-hybrid-v1-2026-10-11/007-angular-reference-off/substeps.jsonl": "6c991d4ec5379e133d41efdc22ceae4571fe62e46e2a9fd8465525a42eb3b15c"
+    }
+  },
+  "terminalAudit": {
+    "createdUtc": "2026-10-11T22:04:51.437146+00:00",
+    "nativeIntegrationSteps": 0,
+    "originalMeasuredHandoffUnitPassed": true,
+    "unitLogSha256": "f4a518eb8ab61e81d3a5b0f51ac5149e13f99bce5c95736816827dc4cafb5e61",
+    "integerDurations": {
+      "settle": 72,
+      "handoff": 144,
+      "ordinaryStableHold": 240,
+      "recoveryDeadline": 6000
+    },
+    "originalF32Timers": {
+      "supportLoss": {
+        "thresholdS": 0.2,
+        "firstF32AdditionAtThreshold": 49,
+        "accumulatedS": 0.20416663587093353
+      },
+      "stall": {
+        "thresholdS": 3.0,
+        "firstF32AdditionAtThreshold": 721,
+        "accumulatedS": 3.0041637420654297
+      }
+    },
+    "terminalPhysicalPositiveProved": false,
+    "terminalInterruptedPhysicalProved": false,
+    "risks": [
+      "enter resets stagnation/best progress/settle/hold; plan index change must not call it blindly",
+      "handoff returns before unsupported/stall update; support loss is rejected immediately elsewhere",
+      "25-second deadline is enforced by workers, not observe_recovery",
+      "historical routeStanding minimum height <0.60 is not an original general terminal criterion"
+    ],
+    "remaining": [
+      "settle 71/72 with actual loaded supports",
+      "handoff support lost and anchors absent",
+      "ordinary hold 239/240 and final observation interrupted",
+      "isolated fast limb",
+      "single owner and unchanged global/stall clock"
+    ]
+  },
+  "roundoffPrerequisite": {
+    "frozenUtc": "2026-10-11T22:04:51.437866+00:00",
+    "p1Admission": false,
+    "nativeLinearBoundCertified": false,
+    "nativeAngularBoundCertified": false,
+    "arbitraryToleranceAdded": false,
+    "measurementArithmetic": "f64 aggregation of native f32 cached states/impulses; inertia inversion remains native f32",
+    "missingForIndependentNativeBound": [
+      "per-operation f32 velocity increments and magnitudes",
+      "native row impulse/Jacobian delivery including joint limits/locks",
+      "actual damping inputs/outputs and angular caps",
+      "gyroscopic operations when enabled",
+      "geometry integration/clamp and mass refresh terms"
+    ],
+    "reason": "Endpoint momentum and cached totals alone do not bound the intervening f32 operations. No tolerance is inferred from the observed residual."
+  },
+  "checks": {
+    "angularReleaseBuildPassed": true,
+    "angularFeatureClippyAllTargetsPassed": true,
+    "zeroIntegrationOriginalHandoffUnitPassed": true,
+    "pythonUnitTestsPassed": 10,
+    "formatAndDiffCheckPassed": true,
+    "newDefaultFeatureClippyRerun": false,
+    "fullTestSuiteRun": false
+  },
+  "connection": {
+    "localWorkspaceReadWriteObservedUtc": "2026-10-11T22:07:29Z",
+    "parentReportedDisconnectedAt": "2026-10-11T22:06:00Z",
+    "parentConnectionRestoredClaimed": false,
+    "libraryUploadSucceeded": false,
+    "libraryFailure": "network before transfer; no Library file created"
+  },
+  "graphPaths": [
+    "docs/media/native-hybrid-v1-2026-10-11/reference-impulse-boundaries.png",
+    "docs/media/native-hybrid-v1-2026-10-11/controller-impulse-boundaries.png",
+    "docs/media/native-hybrid-v1-2026-10-11/angular-diagnosis.png"
+  ],
+  "nextDecisionProposal": {
+    "automaticLaunch": false,
+    "scope": "Complete independent native impulse/Jacobian and numerical-operation journal, freeze analytic bound, then terminal-adapter proof review",
+    "estimatedImplementationDays": "3-5",
+    "verificationBudgetProposalOnly": {
+      "worldHistories": 8,
+      "maximumPhysicalSecondsEach": 26,
+      "maximumNative240HzSteps": 49920,
+      "maximumWallMinutes": 30,
+      "processes": 1
+    },
+    "requirements": [
+      "Separate explicit decision before any new physical execution",
+      "Existing ledger/counters remain closed and unchanged",
+      "No continuation of old 96-history campaign",
+      "No transfer search until P1 certified",
+      "No physics/anatomy/cap/qualification change"
+    ]
+  },
+  "sourceHashes": {
+    "rust/crates/sim/src/recovery/planner/contact_observation.rs": "20a09786f5278e8442782eb3b9fff7c32de62ffad3424de133d6be51d8522be8",
+    "rust/crates/sim/src/lib.rs": "1e64f9bba57e12dea0b0425f3aa172ff6a09f419d5296f3bafb96e78794f6a00",
+    "rust/vendor/rapier3d/src/pipeline/physics_hooks.rs": "3cc24002866d0fcef59337f46184549364a22559293c583eefbe45a9cb77e070",
+    "rust/vendor/rapier3d/src/pipeline/physics_pipeline/substep.rs": "91ef1ecf8b1bbcd668ff90ac3e1adf60e75245e5476f521a935566cb441a7574"
+  },
+  "artifactHashes": {
+    "evidence/native-hybrid-v1-2026-10-11/ledger.json": "ec66ac4cd2b8b0d699ff98a5c6c84f7bcad5665e0faf84fa7bff84c1a4ac8650",
+    "evidence/native-hybrid-v1-2026-10-11/kernel-angular": "b6f275ac6ea78503cbae71f7615bd291e1a17f80dce8b2f18ae127090f996dbd",
+    "docs/media/native-hybrid-v1-2026-10-11/reference-impulse-boundaries.png": "78a005d303ead844ecb73e94dd0f21a1668f2c9d7cbdf4628e6e4d1662c4f48e",
+    "docs/media/native-hybrid-v1-2026-10-11/controller-impulse-boundaries.png": "325661594f5f187863de27b60467f59290aed9aa7ca7a725c80ed5d9eb8f6572",
+    "docs/media/native-hybrid-v1-2026-10-11/angular-diagnosis.png": "114bc8b57e4d9ab4b6b8093ae936814c051dff2c06823b9d2d3e6aa044def32c"
+  },
+  "compiledAngularSourceHashes": {
+    "rust/crates/sim/src/recovery/planner/contact_observation.rs": "8d05066e6fd0035a49c932f46b4b5dbbde6a9bd761e1a997fd53ebfdb173af5d",
+    "rust/crates/sim/src/lib.rs": "1e64f9bba57e12dea0b0425f3aa172ff6a09f419d5296f3bafb96e78794f6a00",
+    "rust/vendor/rapier3d/src/pipeline/physics_hooks.rs": "3cc24002866d0fcef59337f46184549364a22559293c583eefbe45a9cb77e070",
+    "rust/vendor/rapier3d/src/pipeline/physics_pipeline/substep.rs": "91ef1ecf8b1bbcd668ff90ac3e1adf60e75245e5476f521a935566cb441a7574"
+  },
+  "commentsAddedAfterNativeRuns": true
+}

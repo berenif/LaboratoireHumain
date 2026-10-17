@@ -1,0 +1,14 @@
+{
+  "schema": 1,
+  "localReportSha256": "fa181179ae1fcfa50df8af3fb2b3f42a41ce92d5fecf336c08e244ca61703e31",
+  "localReportSizeMatchesLibraryReceipt": true,
+  "localLibraryIdentityAndVersionPersisted": true,
+  "libraryFileId": "libfile_f22dc5c9d36c81918dccebb16a605550",
+  "version": 0,
+  "frozenFilesUnchanged": 294,
+  "nativeIntegrationsDuringValidation": 0,
+  "independentAudits": [
+    "post-run-budget-audit.md",
+    "post-run-environment-audit.md"
+  ]
+}

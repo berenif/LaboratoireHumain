@@ -1,3 +1,5 @@
+> Historical migration/physics record. The maintained application is now Rust/WASM; see [current setup and limitations](../README.md). Earlier statements about the default TypeScript entrypoint describe the state at the time. Physical qualification remains incomplete.
+
 # Rust rework implementation and verification record
 
 **Incomplete. Production remains on the legacy entrypoint.** The current Rust

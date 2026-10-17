@@ -1,0 +1,71 @@
+warning: /workspace/LaboratoireHumain/rust/crates/sim/Cargo.toml: file `/workspace/LaboratoireHumain/rust/crates/sim/src/lib.rs` found to be present in multiple build targets:
+  * `lib` target `lh_sim`
+  * `integration-test` target `coordination-local-pair-worker`
+  * `integration-test` target `coordination-transfer-worker`
+  * `integration-test` target `coordination-worker`
+  * `integration-test` target `numeric-parity-worker`
+  * `integration-test` target `numeric-parity-worker-serialization`
+warning: function `getup_ab_configure` is never used
+  --> crates/sim/src/recovery.rs:34:15
+   |
+34 | pub(crate) fn getup_ab_configure(s: &mut Simulation) -> Result<bool, String> {
+   |               ^^^^^^^^^^^^^^^^^^
+   |
+   = note: `#[warn(dead_code)]` on by default
+
+warning: function `standing_reference` is never used
+   --> crates/sim/src/recovery.rs:672:15
+    |
+672 | pub(crate) fn standing_reference(s: &Simulation) -> Vector {
+    |               ^^^^^^^^^^^^^^^^^^
+
+warning: method `weight` is never used
+   --> crates/sim/src/recovery.rs:944:12
+    |
+801 | impl Controller {
+    | --------------- method in this implementation
+...
+944 |     pub fn weight(&self, part: &Segment, coordinate: char) -> f32 {
+    |            ^^^^^^
+
+warning: field `reference` is never read
+   --> crates/sim/src/stepping.rs:269:9
+    |
+268 | pub(crate) struct Intent {
+    |                   ------ field in this struct
+269 |     pub reference: Vector,
+    |         ^^^^^^^^^
+
+warning: methods `owns_stance`, `preparing_loaded_sole`, and `root_torque` are never used
+   --> crates/sim/src/stepping.rs:275:12
+    |
+274 | impl StepController {
+    | ------------------- methods in this implementation
+275 |     pub fn owns_stance(&self) -> bool {
+    |            ^^^^^^^^^^^
+...
+278 |     pub fn preparing_loaded_sole(&self) -> Option<usize> {
+    |            ^^^^^^^^^^^^^^^^^^^^^
+...
+367 |     pub fn root_torque(&self, s: &Simulation, part: &lh_model::Segment) -> Vector {
+    |            ^^^^^^^^^^^
+
+warning: `lh-sim` (lib test) generated 5 warnings
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.07s
+     Running unittests src/lib.rs (rust/target/debug/deps/lh_sim-6a33cf977d6a4cf0)
+
+running 8 tests
+test getup::controller::tests::teacher_keeps_native_clock_and_bounded_policy_cadence ... ok
+12 source spline fixtures, max error 0.00000011860144066844214; zero physics
+test getup::reference::tests::fixed_splines_match_scipy_without_physics ... ok
+32 upstream PD-loop fixtures, maximum normalized control error 0.00000011920929; torque sum conserved, zero physics
+test getup::actor::tests::source_pd_loop_and_motor_application_match_without_physics ... ok
+Current-velocity observer: max CoM velocity error against geometric finite differences 0.00017405442 m/s; zero physics
+test getup::tests::observation_uses_current_generalized_motion_and_unit_frames_without_integration ... ok
+test getup::controller::tests::exact_state_branch_is_independent_and_never_steps_during_construction ... ok
+test getup::tests::source_assembly_preserves_mass_hinges_and_valid_initial_pose_without_integration ... ok
+test getup::tests::source_motor_permutation_clipping_and_slow_observation_contract ... ok
+actor parity: max action=0.0000032931566, raw=0.00002670288; 32 fixed observations, zero physics
+test getup::actor::tests::fixed_observations_match_pinned_pytorch_actor_without_physics ... ok
+
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 151 filtered out; finished in 0.92s

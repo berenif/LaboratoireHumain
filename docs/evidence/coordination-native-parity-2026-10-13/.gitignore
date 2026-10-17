@@ -1,0 +1,3 @@
+# Raw native evidence remains local; lossless .gz copies and hash index are tracked.
+/native-run/native-result.json
+/native-run/native-trace.jsonl

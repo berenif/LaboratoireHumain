@@ -1,0 +1,14 @@
+
+running 9 tests
+test recovery::planner::load_transfer::tests::pure_archived_b16_generates_intents_without_withdrawal_or_native_admission ... ok
+test recovery::planner::load_transfer::tests::pure_archived_step36_keeps_front_hindfoot_contacts_uncommitted ... ok
+test recovery::planner::load_transfer::tests::pure_clock_failures_are_atomic_and_missing_material_blocks_goal_application ... ok
+test recovery::planner::load_transfer::tests::pure_degenerate_support_is_guidance_only_and_ccd_cannot_fill_it ... ok
+test recovery::planner::load_transfer::tests::pure_heel_reference_matches_archived_material_provenance ... ok
+test recovery::planner::load_transfer::tests::pure_local_milestone_is_latched_and_does_not_block_subsequent_rising_motion ... ok
+test recovery::planner::load_transfer::tests::pure_observed_heel_contact_does_not_authorize_unrequested_whole_foot_release ... ok
+test recovery::planner::load_transfer::tests::pure_original_anchors_survive_and_new_heel_obligations_need_own_history ... ok
+test recovery::planner::load_transfer::tests::pure_segment_history_cannot_replace_new_heel_material_persistence ... ok
+
+test result: ok. 9 passed; 0 failed; 0 ignored; 0 measured; 271 filtered out; finished in 0.19s
+

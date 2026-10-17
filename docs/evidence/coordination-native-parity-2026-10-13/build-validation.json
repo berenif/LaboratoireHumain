@@ -1,0 +1,66 @@
+{
+  "scope": "pure tests and compilation only; no worker execution",
+  "nativeIntegrations": 0,
+  "commands": [
+    {
+      "log": "worker-pure-tests.log",
+      "command": [
+        "/workspace/lh-cargo/bin/cargo",
+        "+1.89.0",
+        "test",
+        "--manifest-path",
+        "rust/Cargo.toml",
+        "-p",
+        "lh-sim",
+        "--locked",
+        "--lib",
+        "--features",
+        "numeric-parity-worker",
+        "recovery::planner::numeric_parity_worker::tests"
+      ],
+      "returncode": 0,
+      "elapsedSeconds": 4.929779741999937,
+      "nativeIntegrations": 0
+    },
+    {
+      "log": "production-check.log",
+      "command": [
+        "/workspace/lh-cargo/bin/cargo",
+        "+1.89.0",
+        "check",
+        "--manifest-path",
+        "rust/Cargo.toml",
+        "-p",
+        "lh-sim",
+        "--locked",
+        "--lib"
+      ],
+      "returncode": 0,
+      "elapsedSeconds": 0.5599423659998592,
+      "nativeIntegrations": 0
+    },
+    {
+      "log": "worker-release-build.jsonl",
+      "command": [
+        "/workspace/lh-cargo/bin/cargo",
+        "+1.89.0",
+        "test",
+        "--manifest-path",
+        "rust/Cargo.toml",
+        "-p",
+        "lh-sim",
+        "--locked",
+        "--release",
+        "--test",
+        "numeric-parity-worker",
+        "--features",
+        "numeric-parity-worker",
+        "--no-run",
+        "--message-format=json"
+      ],
+      "returncode": 0,
+      "elapsedSeconds": 54.18631782500006,
+      "nativeIntegrations": 0
+    }
+  ]
+}

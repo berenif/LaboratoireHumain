@@ -1,0 +1,155 @@
+warning: /workspace/LaboratoireHumain/rust/crates/sim/Cargo.toml: file `/workspace/LaboratoireHumain/rust/crates/sim/src/lib.rs` found to be present in multiple build targets:
+  * `lib` target `lh_sim`
+  * `integration-test` target `coordination-local-pair-worker`
+  * `integration-test` target `coordination-transfer-worker`
+  * `integration-test` target `coordination-worker`
+  * `integration-test` target `numeric-parity-worker`
+  * `integration-test` target `numeric-parity-worker-serialization`
+   Compiling lh-sim v0.1.0 (/workspace/LaboratoireHumain/rust/crates/sim)
+warning: field `native_substep` is never read
+  --> crates/sim/src/recovery/planner/command_proposal.rs:43:9
+   |
+41 | pub(crate) struct CommandProposal {
+   |                   --------------- field in this struct
+42 |     commands: Vec<Command>,
+43 |     pub native_substep: u64,
+   |         ^^^^^^^^^^^^^^
+   |
+   = note: `#[warn(dead_code)]` on by default
+
+warning: method `observation` is never used
+   --> crates/sim/src/recovery/planner/support_schedule.rs:171:12
+    |
+96  | impl SupportSchedule {
+    | -------------------- method in this implementation
+...
+171 |     pub fn observation(&self) -> &SupportObservation {
+    |            ^^^^^^^^^^^
+
+warning: methods `set_feedback_scale`, `preview_with_post_tick`, and `verify_tick` are never used
+   --> crates/sim/src/recovery/planner/native_plan_preview.rs:661:19
+    |
+525 | impl<M: Clone> StaticPreviewBranch<M> {
+    | ------------------------------------- methods in this implementation
+...
+661 |     pub(crate) fn set_feedback_scale(&mut self, scale: f64) -> Result<(), PreviewError> {
+    |                   ^^^^^^^^^^^^^^^^^^
+...
+708 |     pub(crate) fn preview_with_post_tick<O>(
+    |                   ^^^^^^^^^^^^^^^^^^^^^^
+...
+740 |     pub(crate) fn verify_tick<O>(
+    |                   ^^^^^^^^^^^
+
+warning: function `assemble` is never used
+   --> crates/sim/src/recovery/planner/geometric_tasks.rs:174:15
+    |
+174 | pub(crate) fn assemble(
+    |               ^^^^^^^^
+
+warning: function `point_world` is never used
+   --> crates/sim/src/recovery/planner/geometric_tasks.rs:305:15
+    |
+305 | pub(crate) fn point_world(
+    |               ^^^^^^^^^^^
+
+warning: constant `PARAMETERS` is never used
+  --> crates/sim/src/recovery/planner/whole_body_controller.rs:39:18
+   |
+39 | pub(crate) const PARAMETERS: &str = r#"{"version":"coordinated-transition-v2-numeric","solver":"feasible-active-set-newton","commandCompi...
+   |                  ^^^^^^^^^^
+
+warning: method `prepare_command_proposal_observed` is never used
+   --> crates/sim/src/recovery/planner/whole_body_controller.rs:286:19
+    |
+99  | impl Controller {
+    | --------------- method in this implementation
+...
+286 |     pub(crate) fn prepare_command_proposal_observed(
+    |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: field `maximum_constraint_error` is never read
+  --> /workspace/LaboratoireHumain/rust/crates/sim/../../../docs/evidence/coordination-numeric-correction-2026-10-12/frozen-solver-replay.rs:38:9
+   |
+36 | pub(crate) struct Solution {
+   |                   -------- field in this struct
+37 |     pub rates: Rates,
+38 |     pub maximum_constraint_error: f64,
+   |         ^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+   = note: `Solution` has a derived impl for the trait `Debug`, but this is intentionally ignored during dead code analysis
+
+warning: method `verify_rates` is never used
+   --> /workspace/LaboratoireHumain/rust/crates/sim/../../../docs/evidence/coordination-numeric-correction-2026-10-12/frozen-solver-replay.rs:106:19
+    |
+53  | impl Problem {
+    | ------------ method in this implementation
+...
+106 |     pub(crate) fn verify_rates(&self, rates: &Rates) -> Result<(), String> {
+    |                   ^^^^^^^^^^^^
+
+warning: fields `a_receipt`, `b_receipt`, `histories`, `prior_b_success`, `fatal`, and `accounting_uncertain` are never read
+   --> crates/sim/src/recovery/planner/transition_worker.rs:289:5
+    |
+287 | struct Worker {
+    |        ------ fields in this struct
+288 |     inputs: Option<FrozenInputs>,
+289 |     a_receipt: Option<NativeKernelAdmission>,
+    |     ^^^^^^^^^
+290 |     b_receipt: Option<NativeKernelAdmission>,
+    |     ^^^^^^^^^
+...
+295 |     histories: usize,
+    |     ^^^^^^^^^
+296 |     prior_b_success: bool,
+    |     ^^^^^^^^^^^^^^^
+297 |     fatal: bool,
+    |     ^^^^^
+298 |     accounting_uncertain: bool,
+    |     ^^^^^^^^^^^^^^^^^^^^
+
+warning: function `report_result` is never used
+   --> crates/sim/src/recovery/planner/transition_worker.rs:466:4
+    |
+466 | fn report_result(
+    |    ^^^^^^^^^^^^^
+
+warning: function `outcome` is never used
+   --> crates/sim/src/recovery/planner/transition_worker.rs:478:4
+    |
+478 | fn outcome(ok: bool, success: bool) -> Value {
+    |    ^^^^^^^
+
+warning: function `verify` is never used
+   --> crates/sim/src/recovery/planner/transition_worker.rs:604:4
+    |
+604 | fn verify(worker: &mut Worker, request: &Value, stdout: &mut impl Write) -> Result<(), String> {
+    |    ^^^^^^
+
+warning: function `planning` is never used
+   --> crates/sim/src/recovery/planner/transition_worker.rs:758:4
+    |
+758 | fn planning(
+    |    ^^^^^^^^
+
+warning: function `history` is never used
+   --> crates/sim/src/recovery/planner/transition_worker.rs:914:4
+    |
+914 | fn history(
+    |    ^^^^^^^
+
+warning: function `run` is never used
+    --> crates/sim/src/recovery/planner/transition_worker.rs:1104:15
+     |
+1104 | pub(crate) fn run() -> Result<(), String> {
+     |               ^^^
+
+warning: function `main` is never used
+    --> crates/sim/src/recovery/planner/transition_worker.rs:1127:15
+     |
+1127 | pub(crate) fn main() {
+     |               ^^^^
+
+warning: `lh-sim` (lib test) generated 17 warnings
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 15.38s
+  Executable unittests src/lib.rs (rust/target/debug/deps/lh_sim-5c8b831f4d644d8a)

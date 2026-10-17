@@ -1,0 +1,824 @@
+{
+  "protectedArtifacts": [
+    {
+      "path": "docs/evidence/coordination-prototype-2026-10-12/budget/ledger.json",
+      "sha256": "2afa69b3ae9c8ab8343f7dabdf46b955c8ac7b88aa259404958e25d49a72ef07",
+      "status": "closed-native-failure",
+      "kind": "protectedClosedLedgers",
+      "actualSha256": "2afa69b3ae9c8ab8343f7dabdf46b955c8ac7b88aa259404958e25d49a72ef07",
+      "unchanged": true
+    },
+    {
+      "path": "docs/evidence/coordination-native-parity-2026-10-13/native-run/physical-ledger.json",
+      "sha256": "73b2e3bff52aadf0414be2f7a4a96fa4cd5da7b02de0945434e4f136bbf476a6",
+      "status": "closed-failure",
+      "kind": "protectedClosedLedgers",
+      "actualSha256": "73b2e3bff52aadf0414be2f7a4a96fa4cd5da7b02de0945434e4f136bbf476a6",
+      "unchanged": true
+    },
+    {
+      "path": "docs/evidence/coordination-native-parity-renewal-2026-10-13/native-run/physical-ledger.json",
+      "sha256": "1411bfcc1a17caa681359cfb39d7c0429f2188375925c22ba4b037df96d44bc2",
+      "status": "closed-failure",
+      "kind": "protectedClosedLedgers",
+      "actualSha256": "1411bfcc1a17caa681359cfb39d7c0429f2188375925c22ba4b037df96d44bc2",
+      "unchanged": true
+    },
+    {
+      "path": "docs/evidence/coordination-native-serialization-2026-10-13/native-run/physical-ledger.json",
+      "sha256": "191d3216953bfb4aca5b7abcea277454d7d97ad5b4ca72e28ffbc260399af250",
+      "status": "closed-success",
+      "kind": "protectedClosedLedgers",
+      "actualSha256": "191d3216953bfb4aca5b7abcea277454d7d97ad5b4ca72e28ffbc260399af250",
+      "unchanged": true
+    },
+    {
+      "path": "docs/evidence/coordination-local-pair-2026-10-13/budget/ledger.json",
+      "sha256": "e7c6831159ac1ae913a05f2af545a0521181d7142dbabd967908dfe7958fba97",
+      "status": "closed-native-failure",
+      "kind": "protectedClosedLedgers",
+      "actualSha256": "e7c6831159ac1ae913a05f2af545a0521181d7142dbabd967908dfe7958fba97",
+      "unchanged": true
+    },
+    {
+      "path": "rust/target/release/deps/coordination_worker-60f2b83fe348a1d3",
+      "sha256": "1bb4b91ac8ebfbe382d9525e524b85040ca9890bc90a0ef0467f1ef2b64c8b57",
+      "kind": "protectedBinaries",
+      "actualSha256": "1bb4b91ac8ebfbe382d9525e524b85040ca9890bc90a0ef0467f1ef2b64c8b57",
+      "unchanged": true
+    },
+    {
+      "path": "rust/target/release/deps/numeric_parity_worker-b68c9e5f8e8cfa37",
+      "sha256": "9e125785fad85b0befc9373c3116d66aa32e8050a998ce08974b0da29d2760cc",
+      "kind": "protectedBinaries",
+      "actualSha256": "9e125785fad85b0befc9373c3116d66aa32e8050a998ce08974b0da29d2760cc",
+      "unchanged": true
+    },
+    {
+      "path": "rust/target/release/deps/numeric_parity_worker_serialization-360529b9ad4cba37",
+      "sha256": "83bddf95897acc6015de7d2947b04ee2f5aaf2eb49b4dcb85ba0a67764f95e1b",
+      "kind": "protectedBinaries",
+      "actualSha256": "83bddf95897acc6015de7d2947b04ee2f5aaf2eb49b4dcb85ba0a67764f95e1b",
+      "unchanged": true
+    },
+    {
+      "path": "rust/target/release/deps/coordination_local_pair_worker-bf2c98f759d9dc34",
+      "sha256": "c1c8a12825428758643a7f6e2fafb0a2710f7dca787c1daee07c27ec59849e9c",
+      "kind": "protectedBinaries",
+      "actualSha256": "c1c8a12825428758643a7f6e2fafb0a2710f7dca787c1daee07c27ec59849e9c",
+      "unchanged": true
+    },
+    {
+      "path": "docs/evidence/coordination-prototype-2026-10-12/frozen-manifest.json",
+      "sha256": "4a37d4afbfe3ecd51997208bf5fa7599106fd9c43650cb55f6bcf6400d4e1d29",
+      "frozenGitCommit": "b6e711d3dc58909979295df81437e6a5579c41db",
+      "committedManifestBytesVerified": true,
+      "kind": "protectedManifests",
+      "actualSha256": "4a37d4afbfe3ecd51997208bf5fa7599106fd9c43650cb55f6bcf6400d4e1d29",
+      "unchanged": true,
+      "frozenGitManifestSha256": "4a37d4afbfe3ecd51997208bf5fa7599106fd9c43650cb55f6bcf6400d4e1d29",
+      "frozenGitManifestMatches": true
+    },
+    {
+      "path": "docs/evidence/coordination-native-parity-2026-10-13/manifest.json",
+      "sha256": "40e492a29d723118cb26990b9dd2866d498d9a1a5d5ae815d7aae1d9d92a407a",
+      "frozenGitCommit": "08aa8684911a87e0c3d6565855a0bb2c84340024",
+      "committedManifestBytesVerified": true,
+      "kind": "protectedManifests",
+      "actualSha256": "40e492a29d723118cb26990b9dd2866d498d9a1a5d5ae815d7aae1d9d92a407a",
+      "unchanged": true,
+      "frozenGitManifestSha256": "40e492a29d723118cb26990b9dd2866d498d9a1a5d5ae815d7aae1d9d92a407a",
+      "frozenGitManifestMatches": true
+    },
+    {
+      "path": "docs/evidence/coordination-native-parity-renewal-2026-10-13/manifest.json",
+      "sha256": "7235b6916b2d669710b0339e474fc245b48cc4311dd893557f4c03164f3326a6",
+      "frozenGitCommit": "334441445a9f5d97f18aa5d2956658685daf9e9a",
+      "committedManifestBytesVerified": true,
+      "kind": "protectedManifests",
+      "actualSha256": "7235b6916b2d669710b0339e474fc245b48cc4311dd893557f4c03164f3326a6",
+      "unchanged": true,
+      "frozenGitManifestSha256": "7235b6916b2d669710b0339e474fc245b48cc4311dd893557f4c03164f3326a6",
+      "frozenGitManifestMatches": true
+    },
+    {
+      "path": "docs/evidence/coordination-native-serialization-2026-10-13/manifest.json",
+      "sha256": "179bfe3cb58819cd2ba1b73642969c0eb2a343a052dee83ae89e2850e0830356",
+      "frozenGitCommit": "b37eb9a566e1c819a7077c067ded5696f425ca8b",
+      "committedManifestBytesVerified": true,
+      "kind": "protectedManifests",
+      "actualSha256": "179bfe3cb58819cd2ba1b73642969c0eb2a343a052dee83ae89e2850e0830356",
+      "unchanged": true,
+      "frozenGitManifestSha256": "179bfe3cb58819cd2ba1b73642969c0eb2a343a052dee83ae89e2850e0830356",
+      "frozenGitManifestMatches": true
+    },
+    {
+      "path": "docs/evidence/coordination-local-pair-2026-10-13/manifest.json",
+      "sha256": "2fbcb3db0cd1bccf14082e772b1efba63e567fe7fce35ed8cccbbbf2ac2cdde9",
+      "frozenGitCommit": "65925ef032197639f6ebd6c8e897084a5735cacf",
+      "committedManifestBytesVerified": true,
+      "kind": "protectedManifests",
+      "actualSha256": "2fbcb3db0cd1bccf14082e772b1efba63e567fe7fce35ed8cccbbbf2ac2cdde9",
+      "unchanged": true,
+      "frozenGitManifestSha256": "2fbcb3db0cd1bccf14082e772b1efba63e567fe7fce35ed8cccbbbf2ac2cdde9",
+      "frozenGitManifestMatches": true
+    }
+  ],
+  "historicalSourceVerification": [
+    {
+      "manifest": "docs/evidence/coordination-prototype-2026-10-12/frozen-manifest.json",
+      "frozenGitCommit": "b6e711d3dc58909979295df81437e6a5579c41db",
+      "manifestCodeEntries": 54,
+      "sourceVersionsVerified": 54,
+      "nonmatchingEntries": 0,
+      "excludedOrNonmatching": [],
+      "legacySourceSubsetVerified": 54,
+      "legacySourceSubsetDefinition": "Paths under rust/ or scripts/, with suffix .rs, .toml, .lock or .py; docs-side scripts and ancillary vendor data are additionally checked in the complete manifest audit."
+    },
+    {
+      "manifest": "docs/evidence/coordination-native-parity-2026-10-13/manifest.json",
+      "frozenGitCommit": "08aa8684911a87e0c3d6565855a0bb2c84340024",
+      "manifestCodeEntries": 273,
+      "sourceVersionsVerified": 273,
+      "nonmatchingEntries": 0,
+      "excludedOrNonmatching": [],
+      "legacySourceSubsetVerified": 271,
+      "legacySourceSubsetDefinition": "Paths under rust/ or scripts/, with suffix .rs, .toml, .lock or .py; docs-side scripts and ancillary vendor data are additionally checked in the complete manifest audit."
+    },
+    {
+      "manifest": "docs/evidence/coordination-native-parity-renewal-2026-10-13/manifest.json",
+      "frozenGitCommit": "334441445a9f5d97f18aa5d2956658685daf9e9a",
+      "manifestCodeEntries": 275,
+      "sourceVersionsVerified": 275,
+      "nonmatchingEntries": 0,
+      "excludedOrNonmatching": [],
+      "legacySourceSubsetVerified": 272,
+      "legacySourceSubsetDefinition": "Paths under rust/ or scripts/, with suffix .rs, .toml, .lock or .py; docs-side scripts and ancillary vendor data are additionally checked in the complete manifest audit."
+    },
+    {
+      "manifest": "docs/evidence/coordination-native-serialization-2026-10-13/manifest.json",
+      "frozenGitCommit": "b37eb9a566e1c819a7077c067ded5696f425ca8b",
+      "manifestCodeEntries": 277,
+      "sourceVersionsVerified": 277,
+      "nonmatchingEntries": 0,
+      "excludedOrNonmatching": [],
+      "legacySourceSubsetVerified": 273,
+      "legacySourceSubsetDefinition": "Paths under rust/ or scripts/, with suffix .rs, .toml, .lock or .py; docs-side scripts and ancillary vendor data are additionally checked in the complete manifest audit."
+    },
+    {
+      "manifest": "docs/evidence/coordination-local-pair-2026-10-13/manifest.json",
+      "frozenGitCommit": "65925ef032197639f6ebd6c8e897084a5735cacf",
+      "manifestCodeEntries": 304,
+      "sourceVersionsVerified": 304,
+      "nonmatchingEntries": 0,
+      "excludedOrNonmatching": [],
+      "legacySourceSubsetVerified": 287,
+      "legacySourceSubsetDefinition": "Paths under rust/ or scripts/, with suffix .rs, .toml, .lock or .py; docs-side scripts and ancillary vendor data are additionally checked in the complete manifest audit."
+    }
+  ],
+  "schema": 1,
+  "status": "pass-historical-integrity-and-surviving-work-preserved",
+  "auditedUtc": "2026-10-15T09:32:41.057737+00:00",
+  "scope": "Read-only file hashes, JSON/archive inspection and Git blob checks only. No compiler, test, geometry, FK, world, replay or native integration invoked by this auditor.",
+  "historicalSourceVersionsVerified": 1183,
+  "legacySourceSubsetVersionsVerified": 1157,
+  "previousAuditReportedSubsetVersions": 1157,
+  "previousGeometryAuditSha256": "147f0b8754e18b1277b17051257ae9798e5f4069e14ce22ae2f73871f43e7d23",
+  "oldGeometryWindow": {
+    "closed": true,
+    "reservedCallsWithoutRefund": 12,
+    "individualTickets": 1,
+    "usedTickets": 1,
+    "actualAssembleObservedCallsKnown": 1,
+    "actualAssembleObservedCallsExact": true,
+    "unusedButChargedCalls": 11,
+    "refundCalls": 0,
+    "additionalCallsAllowed": 0,
+    "startedUtc": "2026-10-13T12:25:17.675660+00:00",
+    "deadlineUtc": "2026-10-13T12:55:17.675660+00:00",
+    "usedReceiptStartedUtc": "2026-10-13T12:44:48.911000+00:00",
+    "resultCompletedUtc": "2026-10-13T12:44:48.924000+00:00",
+    "intervalFromUsedReceiptToResultMilliseconds": 13,
+    "receiptIntervalIsWholeTestOrCompilationDuration": false,
+    "completedBeforeDeadline": true
+  },
+  "snapshot": {
+    "path": "/workspace/lh-resume-2026-10-15/surviving-work.json",
+    "sha256": "73276770b0c144707991f6000e77a0e2f507c02e4a07798588a9bf8c56d99892",
+    "createdUtc": "2026-10-15T09:28:43.276569+00:00",
+    "head": "bead1a2b8b7b838a828203ef4572b853be6cfc9e",
+    "files": 48,
+    "archivePath": "/workspace/lh-resume-2026-10-15/surviving-work.tar.gz",
+    "archiveSha256": "9e6888b3177aa8601ef82cee8df733bd2f9484f43eb9d8fb68e00093b9ecace8",
+    "archiveExpectedSha256": "9e6888b3177aa8601ef82cee8df733bd2f9484f43eb9d8fb68e00093b9ecace8",
+    "archiveDigestMatches": true,
+    "allSnapshotFilesRecoverableFromArchive": true,
+    "currentWorktreeComparison": [
+      {
+        "path": "TODO.md",
+        "snapshotSha256": "6ffd1937a7821831359bf0a97d23139616aef977be3eba8d48005cb03aee9087",
+        "snapshotBytes": 70844,
+        "archiveSha256": "6ffd1937a7821831359bf0a97d23139616aef977be3eba8d48005cb03aee9087",
+        "archiveBytes": 70844,
+        "archiveMatchesSnapshot": true,
+        "currentSha256": "6ffd1937a7821831359bf0a97d23139616aef977be3eba8d48005cb03aee9087",
+        "currentMatchesSnapshot": true
+      },
+      {
+        "path": "docs/coordination-transfer-candidate-2026-10-13.md",
+        "snapshotSha256": "f9d0b358e76f97180af3b962e8b05cc4f5437d24c9c7d1043207354ddd46bef6",
+        "snapshotBytes": 11012,
+        "archiveSha256": "f9d0b358e76f97180af3b962e8b05cc4f5437d24c9c7d1043207354ddd46bef6",
+        "archiveBytes": 11012,
+        "archiveMatchesSnapshot": true,
+        "currentSha256": "f9d0b358e76f97180af3b962e8b05cc4f5437d24c9c7d1043207354ddd46bef6",
+        "currentMatchesSnapshot": true
+      },
+      {
+        "path": "docs/evidence/coordination-transfer-candidate-2026-10-13/adapter-compile-initial.log",
+        "snapshotSha256": "03a7f49aae5e560150dcd2c644ab3f88d1fc9dd34919932c88a729a89d092250",
+        "snapshotBytes": 7566,
+        "archiveSha256": "03a7f49aae5e560150dcd2c644ab3f88d1fc9dd34919932c88a729a89d092250",
+        "archiveBytes": 7566,
+        "archiveMatchesSnapshot": true,
+        "currentSha256": "03a7f49aae5e560150dcd2c644ab3f88d1fc9dd34919932c88a729a89d092250",
+        "currentMatchesSnapshot": true
+      },
+      {
+        "path": "docs/evidence/coordination-transfer-candidate-2026-10-13/adapter-integration-review.md",
+        "snapshotSha256": "afdec8872c32e6db9baae54197312685a6f03bebcd0005cd709d1634efb95d04",
+        "snapshotBytes": 9834,
+        "archiveSha256": "afdec8872c32e6db9baae54197312685a6f03bebcd0005cd709d1634efb95d04",
+        "archiveBytes": 9834,
+        "archiveMatchesSnapshot": true,
+        "currentSha256": "afdec8872c32e6db9baae54197312685a6f03bebcd0005cd709d1634efb95d04",
+        "currentMatchesSnapshot": true
+      },
+      {
+        "path": "docs/evidence/coordination-transfer-candidate-2026-10-13/archived-a36-command-result.json",
+        "snapshotSha256": "9ee5613ece4177588f4acfdd07c4adf9d77c6c380830b4f79690afa1af4ce521",
+        "snapshotBytes": 1513164,
+        "archiveSha256": "9ee5613ece4177588f4acfdd07c4adf9d77c6c380830b4f79690afa1af4ce521",
+        "archiveBytes": 1513164,
+        "archiveMatchesSnapshot": true,
+        "currentSha256": "9ee5613ece4177588f4acfdd07c4adf9d77c6c380830b4f79690afa1af4ce521",
+        "currentMatchesSnapshot": true
+      },
+      {
+        "path": "docs/evidence/coordination-transfer-candidate-2026-10-13/candidate-independent-review.md",
+        "snapshotSha256": "f2140f20aee36b97e306ffb3ce260d96e035178dc538160db528090810f93635",
+        "snapshotBytes": 13510,
+        "archiveSha256": "f2140f20aee36b97e306ffb3ce260d96e035178dc538160db528090810f93635",
+        "archiveBytes": 13510,
+        "archiveMatchesSnapshot": true,
+        "currentSha256": "f2140f20aee36b97e306ffb3ce260d96e035178dc538160db528090810f93635",
+        "currentMatchesSnapshot": true
+      },
+      {
+        "path": "docs/evidence/coordination-transfer-candidate-2026-10-13/final-integrity-audit.json",
+        "snapshotSha256": "147f0b8754e18b1277b17051257ae9798e5f4069e14ce22ae2f73871f43e7d23",
+        "snapshotBytes": 16245,
+        "archiveSha256": "147f0b8754e18b1277b17051257ae9798e5f4069e14ce22ae2f73871f43e7d23",
+        "archiveBytes": 16245,
+        "archiveMatchesSnapshot": true,
+        "currentSha256": "147f0b8754e18b1277b17051257ae9798e5f4069e14ce22ae2f73871f43e7d23",
+        "currentMatchesSnapshot": true
+      },
+      {
+        "path": "docs/evidence/coordination-transfer-candidate-2026-10-13/final-integrity-audit.md",
+        "snapshotSha256": "0dba0f8ff08cdc5a2073b0d731e47c9b62986f38e7513b3c8798446164df9198",
+        "snapshotBytes": 5216,
+        "archiveSha256": "0dba0f8ff08cdc5a2073b0d731e47c9b62986f38e7513b3c8798446164df9198",
+        "archiveBytes": 5216,
+        "archiveMatchesSnapshot": true,
+        "currentSha256": "0dba0f8ff08cdc5a2073b0d731e47c9b62986f38e7513b3c8798446164df9198",
+        "currentMatchesSnapshot": true
+      },
+      {
+        "path": "docs/evidence/coordination-transfer-candidate-2026-10-13/geometry-command-tests-final.log",
+        "snapshotSha256": "b9262c5118c6378ef73de8b3fb075dc7d0884e2ef291553715e9b74d39ef0c99",
+        "snapshotBytes": 9407,
+        "archiveSha256": "b9262c5118c6378ef73de8b3fb075dc7d0884e2ef291553715e9b74d39ef0c99",
+        "archiveBytes": 9407,
+        "archiveMatchesSnapshot": true,
+        "currentSha256": "b9262c5118c6378ef73de8b3fb075dc7d0884e2ef291553715e9b74d39ef0c99",
+        "currentMatchesSnapshot": true
+      },
+      {
+        "path": "docs/evidence/coordination-transfer-candidate-2026-10-13/geometry-command-tests-rerun.log",
+        "snapshotSha256": "1324742b407f6c86d583a86f76fe00d336462faa3180d3a31c26a38272d58794",
+        "snapshotBytes": 809,
+        "archiveSha256": "1324742b407f6c86d583a86f76fe00d336462faa3180d3a31c26a38272d58794",
+        "archiveBytes": 809,
+        "archiveMatchesSnapshot": true,
+        "currentSha256": "1324742b407f6c86d583a86f76fe00d336462faa3180d3a31c26a38272d58794",
+        "currentMatchesSnapshot": true
+      },
+      {
+        "path": "docs/evidence/coordination-transfer-candidate-2026-10-13/geometry-command-tests.log",
+        "snapshotSha256": "14888074c1927c58087ceaf49783f899691d850a00d14af829370a177e3ee8b7",
+        "snapshotBytes": 3557,
+        "archiveSha256": "14888074c1927c58087ceaf49783f899691d850a00d14af829370a177e3ee8b7",
+        "archiveBytes": 3557,
+        "archiveMatchesSnapshot": true,
+        "currentSha256": "14888074c1927c58087ceaf49783f899691d850a00d14af829370a177e3ee8b7",
+        "currentMatchesSnapshot": true
+      },
+      {
+        "path": "docs/evidence/coordination-transfer-candidate-2026-10-13/geometry-source-validation.json",
+        "snapshotSha256": "ecfea8d9c6875a38167ba0d9d675d095531f892d2f9222f0125f2388a67df87e",
+        "snapshotBytes": 2688,
+        "archiveSha256": "ecfea8d9c6875a38167ba0d9d675d095531f892d2f9222f0125f2388a67df87e",
+        "archiveBytes": 2688,
+        "archiveMatchesSnapshot": true,
+        "currentSha256": "ecfea8d9c6875a38167ba0d9d675d095531f892d2f9222f0125f2388a67df87e",
+        "currentMatchesSnapshot": true
+      },
+      {
+        "path": "docs/evidence/coordination-transfer-candidate-2026-10-13/geometry-tickets/ticket-01-source-amendment.json",
+        "snapshotSha256": "69357a310c6dd9046f752e76c46d4d634f916ebfcddd289998dd6c43e061a02d",
+        "snapshotBytes": 2598,
+        "archiveSha256": "69357a310c6dd9046f752e76c46d4d634f916ebfcddd289998dd6c43e061a02d",
+        "archiveBytes": 2598,
+        "archiveMatchesSnapshot": true,
+        "currentSha256": "69357a310c6dd9046f752e76c46d4d634f916ebfcddd289998dd6c43e061a02d",
+        "currentMatchesSnapshot": true
+      },
+      {
+        "path": "docs/evidence/coordination-transfer-candidate-2026-10-13/geometry-tickets/ticket-01.json",
+        "snapshotSha256": "f2778b252ce700e2e95622bd18d2e4da4367eb58492fbbe673444af7c9461220",
+        "snapshotBytes": 2469,
+        "archiveSha256": "f2778b252ce700e2e95622bd18d2e4da4367eb58492fbbe673444af7c9461220",
+        "archiveBytes": 2469,
+        "archiveMatchesSnapshot": true,
+        "currentSha256": "f2778b252ce700e2e95622bd18d2e4da4367eb58492fbbe673444af7c9461220",
+        "currentMatchesSnapshot": true
+      },
+      {
+        "path": "docs/evidence/coordination-transfer-candidate-2026-10-13/geometry-tickets/ticket-01.used.json",
+        "snapshotSha256": "d277528909c63fa7893888dc2d568a4ef3dba64683f091a88e057e26d767f5b0",
+        "snapshotBytes": 153,
+        "archiveSha256": "d277528909c63fa7893888dc2d568a4ef3dba64683f091a88e057e26d767f5b0",
+        "archiveBytes": 153,
+        "archiveMatchesSnapshot": true,
+        "currentSha256": "d277528909c63fa7893888dc2d568a4ef3dba64683f091a88e057e26d767f5b0",
+        "currentMatchesSnapshot": true
+      },
+      {
+        "path": "docs/evidence/coordination-transfer-candidate-2026-10-13/load-transfer-policy.md",
+        "snapshotSha256": "5ea57a40718db2c1e7bcb6395b73dde9a51633a17c8446225ad80a3a60d42fa4",
+        "snapshotBytes": 11219,
+        "archiveSha256": "5ea57a40718db2c1e7bcb6395b73dde9a51633a17c8446225ad80a3a60d42fa4",
+        "archiveBytes": 11219,
+        "archiveMatchesSnapshot": true,
+        "currentSha256": "5ea57a40718db2c1e7bcb6395b73dde9a51633a17c8446225ad80a3a60d42fa4",
+        "currentMatchesSnapshot": true
+      },
+      {
+        "path": "docs/evidence/coordination-transfer-candidate-2026-10-13/load-transfer-tests-rerun.log",
+        "snapshotSha256": "2cdd0c7cb9ff4d00ade901a9b2ad16658d0510c4e01b3552b0c0f63fcaea6d15",
+        "snapshotBytes": 8709,
+        "archiveSha256": "2cdd0c7cb9ff4d00ade901a9b2ad16658d0510c4e01b3552b0c0f63fcaea6d15",
+        "archiveBytes": 8709,
+        "archiveMatchesSnapshot": true,
+        "currentSha256": "2cdd0c7cb9ff4d00ade901a9b2ad16658d0510c4e01b3552b0c0f63fcaea6d15",
+        "currentMatchesSnapshot": true
+      },
+      {
+        "path": "docs/evidence/coordination-transfer-candidate-2026-10-13/load-transfer-tests.log",
+        "snapshotSha256": "54f3b7eb549689327a9129ea62a15acb97ea589bd7710435309473f1dc4f530a",
+        "snapshotBytes": 1813,
+        "archiveSha256": "54f3b7eb549689327a9129ea62a15acb97ea589bd7710435309473f1dc4f530a",
+        "archiveBytes": 1813,
+        "archiveMatchesSnapshot": true,
+        "currentSha256": "54f3b7eb549689327a9129ea62a15acb97ea589bd7710435309473f1dc4f530a",
+        "currentMatchesSnapshot": true
+      },
+      {
+        "path": "docs/evidence/coordination-transfer-candidate-2026-10-13/native-admission-pure-tests.log",
+        "snapshotSha256": "315b498d901bd3090489ecb8273019a3137c79a276681c671176a5d03e171e21",
+        "snapshotBytes": 9679,
+        "archiveSha256": "315b498d901bd3090489ecb8273019a3137c79a276681c671176a5d03e171e21",
+        "archiveBytes": 9679,
+        "archiveMatchesSnapshot": true,
+        "currentSha256": "315b498d901bd3090489ecb8273019a3137c79a276681c671176a5d03e171e21",
+        "currentMatchesSnapshot": true
+      },
+      {
+        "path": "docs/evidence/coordination-transfer-candidate-2026-10-13/observed-raccord-pure-validation/export_observed_raccord.py",
+        "snapshotSha256": "04b40ddf118f8bee38e4f54fbb0b13177f2f6029fc71ed1ce40e6d0d352a694d",
+        "snapshotBytes": 9059,
+        "archiveSha256": "04b40ddf118f8bee38e4f54fbb0b13177f2f6029fc71ed1ce40e6d0d352a694d",
+        "archiveBytes": 9059,
+        "archiveMatchesSnapshot": true,
+        "currentSha256": "04b40ddf118f8bee38e4f54fbb0b13177f2f6029fc71ed1ce40e6d0d352a694d",
+        "currentMatchesSnapshot": true
+      },
+      {
+        "path": "docs/evidence/coordination-transfer-candidate-2026-10-13/observed-raccord-pure-validation/observed-raccord-export.json",
+        "snapshotSha256": "52d25c09a3c13ccb586420c759662724ff4887ce94cc9ae948cfcd2451a5108f",
+        "snapshotBytes": 1694419,
+        "archiveSha256": "52d25c09a3c13ccb586420c759662724ff4887ce94cc9ae948cfcd2451a5108f",
+        "archiveBytes": 1694419,
+        "archiveMatchesSnapshot": true,
+        "currentSha256": "52d25c09a3c13ccb586420c759662724ff4887ce94cc9ae948cfcd2451a5108f",
+        "currentMatchesSnapshot": true
+      },
+      {
+        "path": "docs/evidence/coordination-transfer-candidate-2026-10-13/observed-raccord-pure-validation/observed-raccord-tests.log",
+        "snapshotSha256": "dd143325e905e2acb89526bfa574e4fd0f139eb763662bf2467270581490c9dd",
+        "snapshotBytes": 9362,
+        "archiveSha256": "dd143325e905e2acb89526bfa574e4fd0f139eb763662bf2467270581490c9dd",
+        "archiveBytes": 9362,
+        "archiveMatchesSnapshot": true,
+        "currentSha256": "dd143325e905e2acb89526bfa574e4fd0f139eb763662bf2467270581490c9dd",
+        "currentMatchesSnapshot": true
+      },
+      {
+        "path": "docs/evidence/coordination-transfer-candidate-2026-10-13/observed-raccord-pure-validation/observed-raccord-validation.md",
+        "snapshotSha256": "b7eead694c77bba39dcdff3125f3c99a54965b3b250a6cabce5bdd170e1465b5",
+        "snapshotBytes": 4560,
+        "archiveSha256": "b7eead694c77bba39dcdff3125f3c99a54965b3b250a6cabce5bdd170e1465b5",
+        "archiveBytes": 4560,
+        "archiveMatchesSnapshot": true,
+        "currentSha256": "b7eead694c77bba39dcdff3125f3c99a54965b3b250a6cabce5bdd170e1465b5",
+        "currentMatchesSnapshot": true
+      },
+      {
+        "path": "docs/evidence/coordination-transfer-candidate-2026-10-13/production-check.log",
+        "snapshotSha256": "f863ce6b3f1b3b1b36d92bdb0a8d6b4e9e0fb413b2f80b2b199d36e2dfd8a3b5",
+        "snapshotBytes": 585,
+        "archiveSha256": "f863ce6b3f1b3b1b36d92bdb0a8d6b4e9e0fb413b2f80b2b199d36e2dfd8a3b5",
+        "archiveBytes": 585,
+        "archiveMatchesSnapshot": true,
+        "currentSha256": "f863ce6b3f1b3b1b36d92bdb0a8d6b4e9e0fb413b2f80b2b199d36e2dfd8a3b5",
+        "currentMatchesSnapshot": true
+      },
+      {
+        "path": "docs/evidence/coordination-transfer-candidate-2026-10-13/static-load-transfer-results.json",
+        "snapshotSha256": "e4e7f0c7f5deb65f11ab2eee30099ccf777902e2cbaeedf13ed12a9c93b9bdcc",
+        "snapshotBytes": 31687,
+        "archiveSha256": "e4e7f0c7f5deb65f11ab2eee30099ccf777902e2cbaeedf13ed12a9c93b9bdcc",
+        "archiveBytes": 31687,
+        "archiveMatchesSnapshot": true,
+        "currentSha256": "e4e7f0c7f5deb65f11ab2eee30099ccf777902e2cbaeedf13ed12a9c93b9bdcc",
+        "currentMatchesSnapshot": true
+      },
+      {
+        "path": "docs/evidence/coordination-transfer-candidate-2026-10-13/transfer-adapter-pure-tests.log",
+        "snapshotSha256": "69478239bece83ce30f2506fa91229106556499b42babb63d8195eed99d491c2",
+        "snapshotBytes": 10887,
+        "archiveSha256": "69478239bece83ce30f2506fa91229106556499b42babb63d8195eed99d491c2",
+        "archiveBytes": 10887,
+        "archiveMatchesSnapshot": true,
+        "currentSha256": "69478239bece83ce30f2506fa91229106556499b42babb63d8195eed99d491c2",
+        "currentMatchesSnapshot": true
+      },
+      {
+        "path": "docs/evidence/coordination-transfer-candidate-2026-10-13/transfer-adapter-pure-validation.json",
+        "snapshotSha256": "2fad3e13a0a255218e8b6538911bee71301364de229fe7dcee42f5cd7a4dbb52",
+        "snapshotBytes": 3100,
+        "archiveSha256": "2fad3e13a0a255218e8b6538911bee71301364de229fe7dcee42f5cd7a4dbb52",
+        "archiveBytes": 3100,
+        "archiveMatchesSnapshot": true,
+        "currentSha256": "2fad3e13a0a255218e8b6538911bee71301364de229fe7dcee42f5cd7a4dbb52",
+        "currentMatchesSnapshot": true
+      },
+      {
+        "path": "docs/evidence/coordination-transfer-candidate-2026-10-13/transfer-driver-gap-review.md",
+        "snapshotSha256": "501a313d8b083f7e5015175c1005825dd24838bbe432692f1c1549d1d4404bac",
+        "snapshotBytes": 15106,
+        "archiveSha256": "501a313d8b083f7e5015175c1005825dd24838bbe432692f1c1549d1d4404bac",
+        "archiveBytes": 15106,
+        "archiveMatchesSnapshot": true,
+        "currentSha256": "501a313d8b083f7e5015175c1005825dd24838bbe432692f1c1549d1d4404bac",
+        "currentMatchesSnapshot": true
+      },
+      {
+        "path": "docs/evidence/coordination-transfer-candidate-2026-10-13/transfer-kernel-parity-pure-tests.log",
+        "snapshotSha256": "cc3466c2e2c11c46ff8b83445825ff47ef1582d706fe70d054f118027c28587d",
+        "snapshotBytes": 10772,
+        "archiveSha256": "cc3466c2e2c11c46ff8b83445825ff47ef1582d706fe70d054f118027c28587d",
+        "archiveBytes": 10772,
+        "archiveMatchesSnapshot": true,
+        "currentSha256": "cc3466c2e2c11c46ff8b83445825ff47ef1582d706fe70d054f118027c28587d",
+        "currentMatchesSnapshot": true
+      },
+      {
+        "path": "docs/evidence/coordination-transfer-candidate-2026-10-13/transfer-technical-four-pure-tests-retry.log",
+        "snapshotSha256": "b90966ca3ea22e71f16c9b6531502e3b0a1cee44d86063b0699f08191a277454",
+        "snapshotBytes": 10289,
+        "archiveSha256": "b90966ca3ea22e71f16c9b6531502e3b0a1cee44d86063b0699f08191a277454",
+        "archiveBytes": 10289,
+        "archiveMatchesSnapshot": true,
+        "currentSha256": "b90966ca3ea22e71f16c9b6531502e3b0a1cee44d86063b0699f08191a277454",
+        "currentMatchesSnapshot": true
+      },
+      {
+        "path": "docs/evidence/coordination-transfer-candidate-2026-10-13/transfer-technical-four-pure-tests.log",
+        "snapshotSha256": "9c7205ff1e1eba9afb70e552a4d83d4e0872d1ac7044c1e4d69c4a53d9ccb5ae",
+        "snapshotBytes": 2658,
+        "archiveSha256": "9c7205ff1e1eba9afb70e552a4d83d4e0872d1ac7044c1e4d69c4a53d9ccb5ae",
+        "archiveBytes": 2658,
+        "archiveMatchesSnapshot": true,
+        "currentSha256": "9c7205ff1e1eba9afb70e552a4d83d4e0872d1ac7044c1e4d69c4a53d9ccb5ae",
+        "currentMatchesSnapshot": true
+      },
+      {
+        "path": "docs/evidence/coordination-transfer-candidate-2026-10-13/transfer-technical-pure-validation.json",
+        "snapshotSha256": "a729f9b94d6cb3ac19188f56ed756ca329ac4e489635af031781d13c6aa6b683",
+        "snapshotBytes": 2477,
+        "archiveSha256": "a729f9b94d6cb3ac19188f56ed756ca329ac4e489635af031781d13c6aa6b683",
+        "archiveBytes": 2477,
+        "archiveMatchesSnapshot": true,
+        "currentSha256": "a729f9b94d6cb3ac19188f56ed756ca329ac4e489635af031781d13c6aa6b683",
+        "currentMatchesSnapshot": true
+      },
+      {
+        "path": "docs/evidence/coordination-transfer-native-proposal-2026-10-13/extract_worker_prefix.py",
+        "snapshotSha256": "ecb3c10bd52b77aa279cbce3e9b9228e5f45b8dcbe8af8f4e659b89f4f3f6f0b",
+        "snapshotBytes": 2238,
+        "archiveSha256": "ecb3c10bd52b77aa279cbce3e9b9228e5f45b8dcbe8af8f4e659b89f4f3f6f0b",
+        "archiveBytes": 2238,
+        "archiveMatchesSnapshot": true,
+        "currentSha256": "ecb3c10bd52b77aa279cbce3e9b9228e5f45b8dcbe8af8f4e659b89f4f3f6f0b",
+        "currentMatchesSnapshot": true
+      },
+      {
+        "path": "docs/evidence/coordination-transfer-native-proposal-2026-10-13/future-native-protocol-validation.json",
+        "snapshotSha256": "71bff8d1f194b035c984f52cc54a016a73e4506dac6ed6c3388a9117de3b327a",
+        "snapshotBytes": 1601,
+        "archiveSha256": "71bff8d1f194b035c984f52cc54a016a73e4506dac6ed6c3388a9117de3b327a",
+        "archiveBytes": 1601,
+        "archiveMatchesSnapshot": true,
+        "currentSha256": "71bff8d1f194b035c984f52cc54a016a73e4506dac6ed6c3388a9117de3b327a",
+        "currentMatchesSnapshot": true
+      },
+      {
+        "path": "docs/evidence/coordination-transfer-native-proposal-2026-10-13/future-native-protocol.json",
+        "snapshotSha256": "40053a9a6538f1a5cd8ad19683fe5979a3034f94ab275b266c42c3cf648de512",
+        "snapshotBytes": 10174,
+        "archiveSha256": "40053a9a6538f1a5cd8ad19683fe5979a3034f94ab275b266c42c3cf648de512",
+        "archiveBytes": 10174,
+        "archiveMatchesSnapshot": true,
+        "currentSha256": "40053a9a6538f1a5cd8ad19683fe5979a3034f94ab275b266c42c3cf648de512",
+        "currentMatchesSnapshot": true
+      },
+      {
+        "path": "docs/evidence/coordination-transfer-native-proposal-2026-10-13/future-native-protocol.md",
+        "snapshotSha256": "7bb6144b5b8e436e51b3693a1ad436752a634cc472747ddf50084d6069419b13",
+        "snapshotBytes": 13497,
+        "archiveSha256": "7bb6144b5b8e436e51b3693a1ad436752a634cc472747ddf50084d6069419b13",
+        "archiveBytes": 13497,
+        "archiveMatchesSnapshot": true,
+        "currentSha256": "7bb6144b5b8e436e51b3693a1ad436752a634cc472747ddf50084d6069419b13",
+        "currentMatchesSnapshot": true
+      },
+      {
+        "path": "docs/evidence/coordination-transfer-native-proposal-2026-10-13/run_transfer.py",
+        "snapshotSha256": "bd655d738d2f98c373c44064fcc9d6776d2c1dcb4e8f3e351439df3dd8ea68b8",
+        "snapshotBytes": 25301,
+        "archiveSha256": "bd655d738d2f98c373c44064fcc9d6776d2c1dcb4e8f3e351439df3dd8ea68b8",
+        "archiveBytes": 25301,
+        "archiveMatchesSnapshot": true,
+        "currentSha256": "bd655d738d2f98c373c44064fcc9d6776d2c1dcb4e8f3e351439df3dd8ea68b8",
+        "currentMatchesSnapshot": true
+      },
+      {
+        "path": "docs/evidence/coordination-transfer-native-proposal-2026-10-13/worker-prefix-frames.json",
+        "snapshotSha256": "12c56e6f2e84db599bea41595fb07bea4503281a5c8950c594fd7631dadccf30",
+        "snapshotBytes": 4411455,
+        "archiveSha256": "12c56e6f2e84db599bea41595fb07bea4503281a5c8950c594fd7631dadccf30",
+        "archiveBytes": 4411455,
+        "archiveMatchesSnapshot": true,
+        "currentSha256": "12c56e6f2e84db599bea41595fb07bea4503281a5c8950c594fd7631dadccf30",
+        "currentMatchesSnapshot": true
+      },
+      {
+        "path": "docs/evidence/coordination-transfer-native-proposal-2026-10-13/worker-prefix-receipt.json",
+        "snapshotSha256": "df7c61692aef97ded588321e75c00e6f2a723d0cad808a0ea1933ba08fae65c8",
+        "snapshotBytes": 1806,
+        "archiveSha256": "df7c61692aef97ded588321e75c00e6f2a723d0cad808a0ea1933ba08fae65c8",
+        "archiveBytes": 1806,
+        "archiveMatchesSnapshot": true,
+        "currentSha256": "df7c61692aef97ded588321e75c00e6f2a723d0cad808a0ea1933ba08fae65c8",
+        "currentMatchesSnapshot": true
+      },
+      {
+        "path": "rust/crates/sim/src/lib.rs",
+        "snapshotSha256": "f3b2394d8898b715e151c3cf27ded8c5d7830c63d156c73f7dbacdd4c5497f86",
+        "snapshotBytes": 74129,
+        "archiveSha256": "f3b2394d8898b715e151c3cf27ded8c5d7830c63d156c73f7dbacdd4c5497f86",
+        "archiveBytes": 74129,
+        "archiveMatchesSnapshot": true,
+        "currentSha256": "d87e6ab2dc4b868443e319ea2eaa882cbe14e05934cba6f7b6e29b94e664e46e",
+        "currentMatchesSnapshot": false
+      },
+      {
+        "path": "rust/crates/sim/src/recovery/planner/load_transfer.rs",
+        "snapshotSha256": "555c93dae299b029cf8e78f5e048833de2bb8f989e3fadf366bfa3705582fcee",
+        "snapshotBytes": 43488,
+        "archiveSha256": "555c93dae299b029cf8e78f5e048833de2bb8f989e3fadf366bfa3705582fcee",
+        "archiveBytes": 43488,
+        "archiveMatchesSnapshot": true,
+        "currentSha256": "555c93dae299b029cf8e78f5e048833de2bb8f989e3fadf366bfa3705582fcee",
+        "currentMatchesSnapshot": true
+      },
+      {
+        "path": "rust/crates/sim/src/recovery/planner/mod.rs",
+        "snapshotSha256": "ad159b7097f5d4c5ce72b65c2efd0457a53f66d8886c59f8612c126e58f0c839",
+        "snapshotBytes": 703,
+        "archiveSha256": "ad159b7097f5d4c5ce72b65c2efd0457a53f66d8886c59f8612c126e58f0c839",
+        "archiveBytes": 703,
+        "archiveMatchesSnapshot": true,
+        "currentSha256": "ad159b7097f5d4c5ce72b65c2efd0457a53f66d8886c59f8612c126e58f0c839",
+        "currentMatchesSnapshot": true
+      },
+      {
+        "path": "rust/crates/sim/src/recovery/planner/native_plan_preview.rs",
+        "snapshotSha256": "95a5999b53b778c694596cad815dc75683d4f2e6c61d60bf5c762396be8769d7",
+        "snapshotBytes": 62406,
+        "archiveSha256": "95a5999b53b778c694596cad815dc75683d4f2e6c61d60bf5c762396be8769d7",
+        "archiveBytes": 62406,
+        "archiveMatchesSnapshot": true,
+        "currentSha256": "95a5999b53b778c694596cad815dc75683d4f2e6c61d60bf5c762396be8769d7",
+        "currentMatchesSnapshot": true
+      },
+      {
+        "path": "rust/crates/sim/src/recovery/planner/observed_raccord.rs",
+        "snapshotSha256": "68aa9a55dff33b201cbe8052eef8bdd0255f7982d2baa3fe6bae534b2295fea7",
+        "snapshotBytes": 20240,
+        "archiveSha256": "68aa9a55dff33b201cbe8052eef8bdd0255f7982d2baa3fe6bae534b2295fea7",
+        "archiveBytes": 20240,
+        "archiveMatchesSnapshot": true,
+        "currentSha256": "68aa9a55dff33b201cbe8052eef8bdd0255f7982d2baa3fe6bae534b2295fea7",
+        "currentMatchesSnapshot": true
+      },
+      {
+        "path": "rust/crates/sim/src/recovery/planner/transfer_adapter.rs",
+        "snapshotSha256": "70fb9feedf19784a4e9e076768695ae9f29f7c88a6306a51e71da16bafe15e90",
+        "snapshotBytes": 35725,
+        "archiveSha256": "70fb9feedf19784a4e9e076768695ae9f29f7c88a6306a51e71da16bafe15e90",
+        "archiveBytes": 35725,
+        "archiveMatchesSnapshot": true,
+        "currentSha256": "70fb9feedf19784a4e9e076768695ae9f29f7c88a6306a51e71da16bafe15e90",
+        "currentMatchesSnapshot": true
+      },
+      {
+        "path": "rust/crates/sim/src/recovery/planner/transfer_adapter_tests.rs",
+        "snapshotSha256": "a5c2b8378641184da98e774ca1ac2af0bee489d7671873ff0b701c448ef5e7d1",
+        "snapshotBytes": 35910,
+        "archiveSha256": "a5c2b8378641184da98e774ca1ac2af0bee489d7671873ff0b701c448ef5e7d1",
+        "archiveBytes": 35910,
+        "archiveMatchesSnapshot": true,
+        "currentSha256": "a5c2b8378641184da98e774ca1ac2af0bee489d7671873ff0b701c448ef5e7d1",
+        "currentMatchesSnapshot": true
+      },
+      {
+        "path": "rust/crates/sim/src/recovery/planner/transfer_worker.rs",
+        "snapshotSha256": "001e0fd4fb8f6877daf98329161d9c26082697f3b03607c3e398416298e86c34",
+        "snapshotBytes": 26808,
+        "archiveSha256": "001e0fd4fb8f6877daf98329161d9c26082697f3b03607c3e398416298e86c34",
+        "archiveBytes": 26808,
+        "archiveMatchesSnapshot": true,
+        "currentSha256": "001e0fd4fb8f6877daf98329161d9c26082697f3b03607c3e398416298e86c34",
+        "currentMatchesSnapshot": true
+      },
+      {
+        "path": "rust/crates/sim/src/recovery/planner/whole_body_controller.rs",
+        "snapshotSha256": "a4597646248f80817a2079d0a53da52e408263f344abcffa40399780297c27a9",
+        "snapshotBytes": 57594,
+        "archiveSha256": "a4597646248f80817a2079d0a53da52e408263f344abcffa40399780297c27a9",
+        "archiveBytes": 57594,
+        "archiveMatchesSnapshot": true,
+        "currentSha256": "a4597646248f80817a2079d0a53da52e408263f344abcffa40399780297c27a9",
+        "currentMatchesSnapshot": true
+      }
+    ]
+  },
+  "currentCodeNotFrozen": [
+    {
+      "path": "rust/crates/sim/src/lib.rs",
+      "snapshotSha256": "f3b2394d8898b715e151c3cf27ded8c5d7830c63d156c73f7dbacdd4c5497f86",
+      "snapshotBytes": 74129,
+      "archiveSha256": "f3b2394d8898b715e151c3cf27ded8c5d7830c63d156c73f7dbacdd4c5497f86",
+      "archiveBytes": 74129,
+      "archiveMatchesSnapshot": true,
+      "currentSha256": "d87e6ab2dc4b868443e319ea2eaa882cbe14e05934cba6f7b6e29b94e664e46e",
+      "currentMatchesSnapshot": false
+    },
+    {
+      "path": "rust/crates/sim/src/recovery/planner/load_transfer.rs",
+      "snapshotSha256": "555c93dae299b029cf8e78f5e048833de2bb8f989e3fadf366bfa3705582fcee",
+      "snapshotBytes": 43488,
+      "archiveSha256": "555c93dae299b029cf8e78f5e048833de2bb8f989e3fadf366bfa3705582fcee",
+      "archiveBytes": 43488,
+      "archiveMatchesSnapshot": true,
+      "currentSha256": "555c93dae299b029cf8e78f5e048833de2bb8f989e3fadf366bfa3705582fcee",
+      "currentMatchesSnapshot": true
+    },
+    {
+      "path": "rust/crates/sim/src/recovery/planner/mod.rs",
+      "snapshotSha256": "ad159b7097f5d4c5ce72b65c2efd0457a53f66d8886c59f8612c126e58f0c839",
+      "snapshotBytes": 703,
+      "archiveSha256": "ad159b7097f5d4c5ce72b65c2efd0457a53f66d8886c59f8612c126e58f0c839",
+      "archiveBytes": 703,
+      "archiveMatchesSnapshot": true,
+      "currentSha256": "ad159b7097f5d4c5ce72b65c2efd0457a53f66d8886c59f8612c126e58f0c839",
+      "currentMatchesSnapshot": true
+    },
+    {
+      "path": "rust/crates/sim/src/recovery/planner/native_plan_preview.rs",
+      "snapshotSha256": "95a5999b53b778c694596cad815dc75683d4f2e6c61d60bf5c762396be8769d7",
+      "snapshotBytes": 62406,
+      "archiveSha256": "95a5999b53b778c694596cad815dc75683d4f2e6c61d60bf5c762396be8769d7",
+      "archiveBytes": 62406,
+      "archiveMatchesSnapshot": true,
+      "currentSha256": "95a5999b53b778c694596cad815dc75683d4f2e6c61d60bf5c762396be8769d7",
+      "currentMatchesSnapshot": true
+    },
+    {
+      "path": "rust/crates/sim/src/recovery/planner/observed_raccord.rs",
+      "snapshotSha256": "68aa9a55dff33b201cbe8052eef8bdd0255f7982d2baa3fe6bae534b2295fea7",
+      "snapshotBytes": 20240,
+      "archiveSha256": "68aa9a55dff33b201cbe8052eef8bdd0255f7982d2baa3fe6bae534b2295fea7",
+      "archiveBytes": 20240,
+      "archiveMatchesSnapshot": true,
+      "currentSha256": "68aa9a55dff33b201cbe8052eef8bdd0255f7982d2baa3fe6bae534b2295fea7",
+      "currentMatchesSnapshot": true
+    },
+    {
+      "path": "rust/crates/sim/src/recovery/planner/transfer_adapter.rs",
+      "snapshotSha256": "70fb9feedf19784a4e9e076768695ae9f29f7c88a6306a51e71da16bafe15e90",
+      "snapshotBytes": 35725,
+      "archiveSha256": "70fb9feedf19784a4e9e076768695ae9f29f7c88a6306a51e71da16bafe15e90",
+      "archiveBytes": 35725,
+      "archiveMatchesSnapshot": true,
+      "currentSha256": "70fb9feedf19784a4e9e076768695ae9f29f7c88a6306a51e71da16bafe15e90",
+      "currentMatchesSnapshot": true
+    },
+    {
+      "path": "rust/crates/sim/src/recovery/planner/transfer_adapter_tests.rs",
+      "snapshotSha256": "a5c2b8378641184da98e774ca1ac2af0bee489d7671873ff0b701c448ef5e7d1",
+      "snapshotBytes": 35910,
+      "archiveSha256": "a5c2b8378641184da98e774ca1ac2af0bee489d7671873ff0b701c448ef5e7d1",
+      "archiveBytes": 35910,
+      "archiveMatchesSnapshot": true,
+      "currentSha256": "a5c2b8378641184da98e774ca1ac2af0bee489d7671873ff0b701c448ef5e7d1",
+      "currentMatchesSnapshot": true
+    },
+    {
+      "path": "rust/crates/sim/src/recovery/planner/transfer_worker.rs",
+      "snapshotSha256": "001e0fd4fb8f6877daf98329161d9c26082697f3b03607c3e398416298e86c34",
+      "snapshotBytes": 26808,
+      "archiveSha256": "001e0fd4fb8f6877daf98329161d9c26082697f3b03607c3e398416298e86c34",
+      "archiveBytes": 26808,
+      "archiveMatchesSnapshot": true,
+      "currentSha256": "001e0fd4fb8f6877daf98329161d9c26082697f3b03607c3e398416298e86c34",
+      "currentMatchesSnapshot": true
+    },
+    {
+      "path": "rust/crates/sim/src/recovery/planner/whole_body_controller.rs",
+      "snapshotSha256": "a4597646248f80817a2079d0a53da52e408263f344abcffa40399780297c27a9",
+      "snapshotBytes": 57594,
+      "archiveSha256": "a4597646248f80817a2079d0a53da52e408263f344abcffa40399780297c27a9",
+      "archiveBytes": 57594,
+      "archiveMatchesSnapshot": true,
+      "currentSha256": "a4597646248f80817a2079d0a53da52e408263f344abcffa40399780297c27a9",
+      "currentMatchesSnapshot": true
+    }
+  ],
+  "newActivity": {
+    "nativeSubsteps": 0,
+    "fkEvaluations": 0,
+    "worldConstructions": 0,
+    "geometryAssemblyCalls": 0,
+    "testsRun": 0,
+    "compilerInvocations": 0
+  },
+  "budget": {
+    "priorPreparationChargedSeconds": 46489,
+    "additionalPreparationReservedSeconds": 10800,
+    "totalPreparationChargedSeconds": 57289,
+    "preparationCapSeconds": 144000,
+    "remainingPreparationSecondsAfterReservation": 86711,
+    "reservationDeadlineUtc": "2026-10-15T12:27:54+00:00",
+    "originalPreparationDeadlineUtc": "2026-10-17T20:14:00+00:00",
+    "outageAdditionalExecutedSeconds": 0,
+    "newNativeAuthorization": 0,
+    "newFkAuthorization": 0,
+    "newGeometryAuthorization": 0,
+    "totalStaticInspectionsCharged": 9185,
+    "staticInspectionsCap": 20000,
+    "familyNativeSubstepsChargedWithoutRefund": 7844,
+    "familyHistorySlotsCharged": 4,
+    "familyHistorySlotsMaximum": 4,
+    "closedPhysicalFamilyReopened": false
+  },
+  "limitations": [
+    "These are conservative budget commitments, not an exact active-time measurement. No refund of previously committed preparation time is taken.",
+    "The single historical A36 observed assembly was run on an earlier source state. Its saved problem and commands survived; current adapter edits are not certified by that historical assembly.",
+    "The 2026-10-13 geometry reservation remains closed: one real call, twelve charged, no restart or new call allowed under this reservation.",
+    "The surviving new source files are preserved, but no source freeze, native binary or physical qualification is established by this audit."
+  ]
+}

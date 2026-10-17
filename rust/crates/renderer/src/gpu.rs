@@ -699,7 +699,7 @@ impl BrowserRenderer {
         Ok(vec![(p.x + 1.0) * width * 0.5, (1.0 - p.y) * height * 0.5])
     }
     pub fn diagnostics(&self) -> Result<String, JsValue> {
-        serde_json::to_string(&serde_json::json!({"backend":self.gpu.as_ref().map(|g| &g.backend),"renderedSegments":if self.snapshot.is_some(){BODY_COUNT}else{0},
+        serde_json::to_string(&serde_json::json!({"backend":self.gpu.as_ref().map(|g| &g.backend),"renderedSegments":if self.snapshot.is_some(){self.mesh.model.segments.iter().filter(|p|!p.geometry.indices.is_empty()).count()}else{0},"poseSlots":BODY_COUNT,
             "renderedEnvironmentPieces":self.environment_displayed.len(),
             "renderedStrikerPieces":if self.striker_displayed.is_some(){4}else{0},
             "strikerPosition":self.striker_displayed.map(|p|p.position.to_array()),

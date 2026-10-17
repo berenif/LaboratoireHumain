@@ -1,0 +1,13 @@
+{
+  "baseCommit": "7a4f1410c9ab0e149dbe694af8175dff18079b33",
+  "budgetSeconds": 37.15260638300242,
+  "sourceSha256": {
+    "rust/crates/sim/src/getup/fixtures.rs": "10033906198914d08a8d66bc2a4eeb6137951e36e0ea8c4d726b5eeccce865d2",
+    "scripts/getup-three-poses.mjs": "26f304538c223245309ddd41feae0f903914a32d0888715cca58cb97ae3cc4a9",
+    "rust/crates/sim/examples/getup_lateral.rs": "6d6b5f70f991ce558022d57a25b0282e1430f2a54915431c8cb1ead9b598730d",
+    "rust/crates/model/data/getup-v1.json": "1611ec8c988c1006b0a819ab21e2b7c410adaaf512080be425d6d6e235a8926a",
+    "rust/crates/sim/src/getup/controller.rs": "58b98165bd40b9f4b35cd681d45b77fda274417ecfb92e8d51398351997b29b8"
+  },
+  "binarySha256": "ca16a3df49ba84fe9de49ac9ff628287548a494ffc7b922744316eba02f25df4",
+  "launchUtc": "2026-10-17T08:00:17.235212+00:00"
+}

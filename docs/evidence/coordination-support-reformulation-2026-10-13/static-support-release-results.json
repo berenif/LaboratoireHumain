@@ -1,0 +1,1429 @@
+{
+  "decisions": [
+    {
+      "completeScheduleUnchangedAfterRefusal": true,
+      "decision": {
+        "evidence": {
+          "allowed": false,
+          "capture_inside": false,
+          "com_inside": false,
+          "released_load_n": 302.865478515625,
+          "releasing": [
+            18,
+            19
+          ],
+          "remaining_current_load_n": 303.93650853965016,
+          "retained_segments": [
+            24
+          ],
+          "support_points_xz_m": [
+            [
+              0.04517434164881706,
+              0.04982592910528183
+            ],
+            [
+              0.13517437875270844,
+              0.04984179139137268
+            ]
+          ]
+        },
+        "obligation_released": false,
+        "refusal": "Original remaining-support gate refused the whole-foot withdrawal",
+        "required_validation": "PreviewRequired"
+      },
+      "feedbackScale": 0.0,
+      "group": "LeftFoot",
+      "nativeSubstep": 16,
+      "obligationsAfter": [
+        19,
+        24
+      ],
+      "obligationsBefore": [
+        19,
+        24
+      ],
+      "observationTimeS": 0.06666666666666667,
+      "trackerAfter": {
+        "active": [
+          {
+            "acquired_substep": 12,
+            "current_contact_present": true,
+            "displacement_from_anchor_m": [
+              -0.000017148850948639494,
+              -0.0005742069265643442,
+              -0.0003469981705549116
+            ],
+            "id": 0,
+            "last_observed_substep": 16,
+            "last_world_point_m": [
+              -0.13483099400857193,
+              -0.001958085217217573,
+              0.04982903744226667
+            ],
+            "local_point_m": [
+              -0.044999998062849045,
+              -0.04500001668930054,
+              0.06000000983476639
+            ],
+            "mode": "Unload",
+            "nearest_current_local_distance_m": 2.26600562419676e-8,
+            "segment": 19,
+            "tangential_drift_m": 0.00034742166521003576,
+            "world_anchor_m": [
+              -0.1348138451576233,
+              -0.0013838782906532288,
+              0.05017603561282158
+            ]
+          },
+          {
+            "acquired_substep": 12,
+            "current_contact_present": true,
+            "displacement_from_anchor_m": [
+              -0.000015774495934831045,
+              -0.0005795429831839784,
+              -0.0003498419330137184
+            ],
+            "id": 1,
+            "last_observed_substep": 16,
+            "last_world_point_m": [
+              0.04517435865845741,
+              -0.0019587125068999513,
+              0.049825914283035476
+            ],
+            "local_point_m": [
+              -0.045000024139881134,
+              -0.04500002786517143,
+              0.06000003218650818
+            ],
+            "mode": "Hold",
+            "nearest_current_local_distance_m": 3.494632065164618e-8,
+            "segment": 24,
+            "tangential_drift_m": 0.0003501973912192566,
+            "world_anchor_m": [
+              0.04519013315439224,
+              -0.001379169523715973,
+              0.050175756216049194
+            ]
+          }
+        ],
+        "archived": [],
+        "next_id": 2
+      },
+      "trackerBefore": {
+        "active": [
+          {
+            "acquired_substep": 12,
+            "current_contact_present": true,
+            "displacement_from_anchor_m": [
+              -0.000017148850948639494,
+              -0.0005742069265643442,
+              -0.0003469981705549116
+            ],
+            "id": 0,
+            "last_observed_substep": 16,
+            "last_world_point_m": [
+              -0.13483099400857193,
+              -0.001958085217217573,
+              0.04982903744226667
+            ],
+            "local_point_m": [
+              -0.044999998062849045,
+              -0.04500001668930054,
+              0.06000000983476639
+            ],
+            "mode": "Unload",
+            "nearest_current_local_distance_m": 2.26600562419676e-8,
+            "segment": 19,
+            "tangential_drift_m": 0.00034742166521003576,
+            "world_anchor_m": [
+              -0.1348138451576233,
+              -0.0013838782906532288,
+              0.05017603561282158
+            ]
+          },
+          {
+            "acquired_substep": 12,
+            "current_contact_present": true,
+            "displacement_from_anchor_m": [
+              -0.000015774495934831045,
+              -0.0005795429831839784,
+              -0.0003498419330137184
+            ],
+            "id": 1,
+            "last_observed_substep": 16,
+            "last_world_point_m": [
+              0.04517435865845741,
+              -0.0019587125068999513,
+              0.049825914283035476
+            ],
+            "local_point_m": [
+              -0.045000024139881134,
+              -0.04500002786517143,
+              0.06000003218650818
+            ],
+            "mode": "Hold",
+            "nearest_current_local_distance_m": 3.494632065164618e-8,
+            "segment": 24,
+            "tangential_drift_m": 0.0003501973912192566,
+            "world_anchor_m": [
+              0.04519013315439224,
+              -0.001379169523715973,
+              0.050175756216049194
+            ]
+          }
+        ],
+        "archived": [],
+        "next_id": 2
+      },
+      "weightN": 708.281982421875
+    },
+    {
+      "completeScheduleUnchangedAfterRefusal": true,
+      "decision": {
+        "evidence": {
+          "allowed": false,
+          "capture_inside": false,
+          "com_inside": false,
+          "released_load_n": 303.9365234375,
+          "releasing": [
+            23,
+            24
+          ],
+          "remaining_current_load_n": 302.8654560442403,
+          "retained_segments": [
+            19
+          ],
+          "support_points_xz_m": [
+            [
+              -0.1348309963941574,
+              0.04982905834913254
+            ],
+            [
+              -0.04483101889491081,
+              0.04984448105096817
+            ]
+          ]
+        },
+        "obligation_released": false,
+        "refusal": "Original remaining-support gate refused the whole-foot withdrawal",
+        "required_validation": "PreviewRequired"
+      },
+      "feedbackScale": 0.0,
+      "group": "RightFoot",
+      "nativeSubstep": 16,
+      "obligationsAfter": [
+        19,
+        24
+      ],
+      "obligationsBefore": [
+        19,
+        24
+      ],
+      "observationTimeS": 0.06666666666666667,
+      "trackerAfter": {
+        "active": [
+          {
+            "acquired_substep": 12,
+            "current_contact_present": true,
+            "displacement_from_anchor_m": [
+              -0.000017148850948639494,
+              -0.0005742069265643442,
+              -0.0003469981705549116
+            ],
+            "id": 0,
+            "last_observed_substep": 16,
+            "last_world_point_m": [
+              -0.13483099400857193,
+              -0.001958085217217573,
+              0.04982903744226667
+            ],
+            "local_point_m": [
+              -0.044999998062849045,
+              -0.04500001668930054,
+              0.06000000983476639
+            ],
+            "mode": "Hold",
+            "nearest_current_local_distance_m": 2.26600562419676e-8,
+            "segment": 19,
+            "tangential_drift_m": 0.00034742166521003576,
+            "world_anchor_m": [
+              -0.1348138451576233,
+              -0.0013838782906532288,
+              0.05017603561282158
+            ]
+          },
+          {
+            "acquired_substep": 12,
+            "current_contact_present": true,
+            "displacement_from_anchor_m": [
+              -0.000015774495934831045,
+              -0.0005795429831839784,
+              -0.0003498419330137184
+            ],
+            "id": 1,
+            "last_observed_substep": 16,
+            "last_world_point_m": [
+              0.04517435865845741,
+              -0.0019587125068999513,
+              0.049825914283035476
+            ],
+            "local_point_m": [
+              -0.045000024139881134,
+              -0.04500002786517143,
+              0.06000003218650818
+            ],
+            "mode": "Unload",
+            "nearest_current_local_distance_m": 3.494632065164618e-8,
+            "segment": 24,
+            "tangential_drift_m": 0.0003501973912192566,
+            "world_anchor_m": [
+              0.04519013315439224,
+              -0.001379169523715973,
+              0.050175756216049194
+            ]
+          }
+        ],
+        "archived": [],
+        "next_id": 2
+      },
+      "trackerBefore": {
+        "active": [
+          {
+            "acquired_substep": 12,
+            "current_contact_present": true,
+            "displacement_from_anchor_m": [
+              -0.000017148850948639494,
+              -0.0005742069265643442,
+              -0.0003469981705549116
+            ],
+            "id": 0,
+            "last_observed_substep": 16,
+            "last_world_point_m": [
+              -0.13483099400857193,
+              -0.001958085217217573,
+              0.04982903744226667
+            ],
+            "local_point_m": [
+              -0.044999998062849045,
+              -0.04500001668930054,
+              0.06000000983476639
+            ],
+            "mode": "Hold",
+            "nearest_current_local_distance_m": 2.26600562419676e-8,
+            "segment": 19,
+            "tangential_drift_m": 0.00034742166521003576,
+            "world_anchor_m": [
+              -0.1348138451576233,
+              -0.0013838782906532288,
+              0.05017603561282158
+            ]
+          },
+          {
+            "acquired_substep": 12,
+            "current_contact_present": true,
+            "displacement_from_anchor_m": [
+              -0.000015774495934831045,
+              -0.0005795429831839784,
+              -0.0003498419330137184
+            ],
+            "id": 1,
+            "last_observed_substep": 16,
+            "last_world_point_m": [
+              0.04517435865845741,
+              -0.0019587125068999513,
+              0.049825914283035476
+            ],
+            "local_point_m": [
+              -0.045000024139881134,
+              -0.04500002786517143,
+              0.06000003218650818
+            ],
+            "mode": "Unload",
+            "nearest_current_local_distance_m": 3.494632065164618e-8,
+            "segment": 24,
+            "tangential_drift_m": 0.0003501973912192566,
+            "world_anchor_m": [
+              0.04519013315439224,
+              -0.001379169523715973,
+              0.050175756216049194
+            ]
+          }
+        ],
+        "archived": [],
+        "next_id": 2
+      },
+      "weightN": 708.281982421875
+    },
+    {
+      "completeScheduleUnchangedAfterRefusal": true,
+      "decision": {
+        "evidence": {
+          "allowed": false,
+          "capture_inside": false,
+          "com_inside": false,
+          "released_load_n": 303.9322814941406,
+          "releasing": [
+            18,
+            19
+          ],
+          "remaining_current_load_n": 301.50651312958007,
+          "retained_segments": [
+            24
+          ],
+          "support_points_xz_m": [
+            [
+              0.04519651457667351,
+              0.04974265769124031
+            ],
+            [
+              0.13519658148288727,
+              0.049795594066381454
+            ]
+          ]
+        },
+        "obligation_released": false,
+        "refusal": "Original remaining-support gate refused the whole-foot withdrawal",
+        "required_validation": "PreviewRequired"
+      },
+      "feedbackScale": 0.5,
+      "group": "LeftFoot",
+      "nativeSubstep": 16,
+      "obligationsAfter": [
+        19,
+        24
+      ],
+      "obligationsBefore": [
+        19,
+        24
+      ],
+      "observationTimeS": 0.06666666666666667,
+      "trackerAfter": {
+        "active": [
+          {
+            "acquired_substep": 12,
+            "current_contact_present": true,
+            "displacement_from_anchor_m": [
+              4.42519970292321e-6,
+              -0.0005536067459681517,
+              -0.00042517426581364925
+            ],
+            "id": 0,
+            "last_observed_substep": 16,
+            "last_world_point_m": [
+              -0.13480941995792037,
+              -0.0019374850366213805,
+              0.04975086134700793
+            ],
+            "local_point_m": [
+              -0.044999998062849045,
+              -0.04500001668930054,
+              0.06000000983476639
+            ],
+            "mode": "Unload",
+            "nearest_current_local_distance_m": 4.012260442327338e-8,
+            "segment": 19,
+            "tangential_drift_m": 0.00042519729385614204,
+            "world_anchor_m": [
+              -0.1348138451576233,
+              -0.0013838782906532288,
+              0.05017603561282158
+            ]
+          },
+          {
+            "acquired_substep": 12,
+            "current_contact_present": true,
+            "displacement_from_anchor_m": [
+              6.390145651596901e-6,
+              -0.0005694295213994564,
+              -0.0004330938119052677
+            ],
+            "id": 1,
+            "last_observed_substep": 16,
+            "last_world_point_m": [
+              0.04519652330004384,
+              -0.0019485990451154293,
+              0.04974266240414393
+            ],
+            "local_point_m": [
+              -0.045000024139881134,
+              -0.04500002786517143,
+              0.06000003218650818
+            ],
+            "mode": "Hold",
+            "nearest_current_local_distance_m": 6.452392069879463e-9,
+            "segment": 24,
+            "tangential_drift_m": 0.00043314095150664755,
+            "world_anchor_m": [
+              0.04519013315439224,
+              -0.001379169523715973,
+              0.050175756216049194
+            ]
+          }
+        ],
+        "archived": [],
+        "next_id": 2
+      },
+      "trackerBefore": {
+        "active": [
+          {
+            "acquired_substep": 12,
+            "current_contact_present": true,
+            "displacement_from_anchor_m": [
+              4.42519970292321e-6,
+              -0.0005536067459681517,
+              -0.00042517426581364925
+            ],
+            "id": 0,
+            "last_observed_substep": 16,
+            "last_world_point_m": [
+              -0.13480941995792037,
+              -0.0019374850366213805,
+              0.04975086134700793
+            ],
+            "local_point_m": [
+              -0.044999998062849045,
+              -0.04500001668930054,
+              0.06000000983476639
+            ],
+            "mode": "Unload",
+            "nearest_current_local_distance_m": 4.012260442327338e-8,
+            "segment": 19,
+            "tangential_drift_m": 0.00042519729385614204,
+            "world_anchor_m": [
+              -0.1348138451576233,
+              -0.0013838782906532288,
+              0.05017603561282158
+            ]
+          },
+          {
+            "acquired_substep": 12,
+            "current_contact_present": true,
+            "displacement_from_anchor_m": [
+              6.390145651596901e-6,
+              -0.0005694295213994564,
+              -0.0004330938119052677
+            ],
+            "id": 1,
+            "last_observed_substep": 16,
+            "last_world_point_m": [
+              0.04519652330004384,
+              -0.0019485990451154293,
+              0.04974266240414393
+            ],
+            "local_point_m": [
+              -0.045000024139881134,
+              -0.04500002786517143,
+              0.06000003218650818
+            ],
+            "mode": "Hold",
+            "nearest_current_local_distance_m": 6.452392069879463e-9,
+            "segment": 24,
+            "tangential_drift_m": 0.00043314095150664755,
+            "world_anchor_m": [
+              0.04519013315439224,
+              -0.001379169523715973,
+              0.050175756216049194
+            ]
+          }
+        ],
+        "archived": [],
+        "next_id": 2
+      },
+      "weightN": 708.281982421875
+    },
+    {
+      "completeScheduleUnchangedAfterRefusal": true,
+      "decision": {
+        "evidence": {
+          "allowed": false,
+          "capture_inside": false,
+          "com_inside": false,
+          "released_load_n": 301.5065002441406,
+          "releasing": [
+            23,
+            24
+          ],
+          "remaining_current_load_n": 303.9322742259061,
+          "retained_segments": [
+            19
+          ],
+          "support_points_xz_m": [
+            [
+              -0.1348094344139099,
+              0.049750883132219315
+            ],
+            [
+              -0.044809430837631226,
+              0.04980326443910599
+            ]
+          ]
+        },
+        "obligation_released": false,
+        "refusal": "Original remaining-support gate refused the whole-foot withdrawal",
+        "required_validation": "PreviewRequired"
+      },
+      "feedbackScale": 0.5,
+      "group": "RightFoot",
+      "nativeSubstep": 16,
+      "obligationsAfter": [
+        19,
+        24
+      ],
+      "obligationsBefore": [
+        19,
+        24
+      ],
+      "observationTimeS": 0.06666666666666667,
+      "trackerAfter": {
+        "active": [
+          {
+            "acquired_substep": 12,
+            "current_contact_present": true,
+            "displacement_from_anchor_m": [
+              4.42519970292321e-6,
+              -0.0005536067459681517,
+              -0.00042517426581364925
+            ],
+            "id": 0,
+            "last_observed_substep": 16,
+            "last_world_point_m": [
+              -0.13480941995792037,
+              -0.0019374850366213805,
+              0.04975086134700793
+            ],
+            "local_point_m": [
+              -0.044999998062849045,
+              -0.04500001668930054,
+              0.06000000983476639
+            ],
+            "mode": "Hold",
+            "nearest_current_local_distance_m": 4.012260442327338e-8,
+            "segment": 19,
+            "tangential_drift_m": 0.00042519729385614204,
+            "world_anchor_m": [
+              -0.1348138451576233,
+              -0.0013838782906532288,
+              0.05017603561282158
+            ]
+          },
+          {
+            "acquired_substep": 12,
+            "current_contact_present": true,
+            "displacement_from_anchor_m": [
+              6.390145651596901e-6,
+              -0.0005694295213994564,
+              -0.0004330938119052677
+            ],
+            "id": 1,
+            "last_observed_substep": 16,
+            "last_world_point_m": [
+              0.04519652330004384,
+              -0.0019485990451154293,
+              0.04974266240414393
+            ],
+            "local_point_m": [
+              -0.045000024139881134,
+              -0.04500002786517143,
+              0.06000003218650818
+            ],
+            "mode": "Unload",
+            "nearest_current_local_distance_m": 6.452392069879463e-9,
+            "segment": 24,
+            "tangential_drift_m": 0.00043314095150664755,
+            "world_anchor_m": [
+              0.04519013315439224,
+              -0.001379169523715973,
+              0.050175756216049194
+            ]
+          }
+        ],
+        "archived": [],
+        "next_id": 2
+      },
+      "trackerBefore": {
+        "active": [
+          {
+            "acquired_substep": 12,
+            "current_contact_present": true,
+            "displacement_from_anchor_m": [
+              4.42519970292321e-6,
+              -0.0005536067459681517,
+              -0.00042517426581364925
+            ],
+            "id": 0,
+            "last_observed_substep": 16,
+            "last_world_point_m": [
+              -0.13480941995792037,
+              -0.0019374850366213805,
+              0.04975086134700793
+            ],
+            "local_point_m": [
+              -0.044999998062849045,
+              -0.04500001668930054,
+              0.06000000983476639
+            ],
+            "mode": "Hold",
+            "nearest_current_local_distance_m": 4.012260442327338e-8,
+            "segment": 19,
+            "tangential_drift_m": 0.00042519729385614204,
+            "world_anchor_m": [
+              -0.1348138451576233,
+              -0.0013838782906532288,
+              0.05017603561282158
+            ]
+          },
+          {
+            "acquired_substep": 12,
+            "current_contact_present": true,
+            "displacement_from_anchor_m": [
+              6.390145651596901e-6,
+              -0.0005694295213994564,
+              -0.0004330938119052677
+            ],
+            "id": 1,
+            "last_observed_substep": 16,
+            "last_world_point_m": [
+              0.04519652330004384,
+              -0.0019485990451154293,
+              0.04974266240414393
+            ],
+            "local_point_m": [
+              -0.045000024139881134,
+              -0.04500002786517143,
+              0.06000003218650818
+            ],
+            "mode": "Unload",
+            "nearest_current_local_distance_m": 6.452392069879463e-9,
+            "segment": 24,
+            "tangential_drift_m": 0.00043314095150664755,
+            "world_anchor_m": [
+              0.04519013315439224,
+              -0.001379169523715973,
+              0.050175756216049194
+            ]
+          }
+        ],
+        "archived": [],
+        "next_id": 2
+      },
+      "weightN": 708.281982421875
+    },
+    {
+      "completeScheduleUnchangedAfterRefusal": true,
+      "decision": {
+        "evidence": {
+          "allowed": false,
+          "capture_inside": false,
+          "com_inside": false,
+          "released_load_n": 301.26239013671875,
+          "releasing": [
+            18,
+            19
+          ],
+          "remaining_current_load_n": 304.2729648209307,
+          "retained_segments": [
+            24
+          ],
+          "support_points_xz_m": [
+            [
+              0.04519450664520264,
+              0.04973473772406578
+            ],
+            [
+              0.13519452512264252,
+              0.04978704825043678
+            ]
+          ]
+        },
+        "obligation_released": false,
+        "refusal": "Original remaining-support gate refused the whole-foot withdrawal",
+        "required_validation": "PreviewRequired"
+      },
+      "feedbackScale": 1.0,
+      "group": "LeftFoot",
+      "nativeSubstep": 16,
+      "obligationsAfter": [
+        19,
+        24
+      ],
+      "obligationsBefore": [
+        19,
+        24
+      ],
+      "observationTimeS": 0.06666666666666667,
+      "trackerAfter": {
+        "active": [
+          {
+            "acquired_substep": 12,
+            "current_contact_present": true,
+            "displacement_from_anchor_m": [
+              9.836728822321117e-7,
+              -0.0005595086858285886,
+              -0.0004343087656382416
+            ],
+            "id": 0,
+            "last_observed_substep": 16,
+            "last_world_point_m": [
+              -0.13481286148474106,
+              -0.0019433869764818174,
+              0.04974172684718334
+            ],
+            "local_point_m": [
+              -0.044999998062849045,
+              -0.04500001668930054,
+              0.06000000983476639
+            ],
+            "mode": "Unload",
+            "nearest_current_local_distance_m": 5.094257865539694e-8,
+            "segment": 19,
+            "tangential_drift_m": 0.0004343098796050492,
+            "world_anchor_m": [
+              -0.1348138451576233,
+              -0.0013838782906532288,
+              0.05017603561282158
+            ]
+          },
+          {
+            "acquired_substep": 12,
+            "current_contact_present": true,
+            "displacement_from_anchor_m": [
+              4.36558625868666e-6,
+              -0.0005704694367503673,
+              -0.00044102103318033326
+            ],
+            "id": 1,
+            "last_observed_substep": 16,
+            "last_world_point_m": [
+              0.04519449874065093,
+              -0.0019496389604663402,
+              0.04973473518286886
+            ],
+            "local_point_m": [
+              -0.045000024139881134,
+              -0.04500002786517143,
+              0.06000003218650818
+            ],
+            "mode": "Hold",
+            "nearest_current_local_distance_m": 1.2355390155149252e-8,
+            "segment": 24,
+            "tangential_drift_m": 0.00044104263971959744,
+            "world_anchor_m": [
+              0.04519013315439224,
+              -0.001379169523715973,
+              0.050175756216049194
+            ]
+          }
+        ],
+        "archived": [],
+        "next_id": 2
+      },
+      "trackerBefore": {
+        "active": [
+          {
+            "acquired_substep": 12,
+            "current_contact_present": true,
+            "displacement_from_anchor_m": [
+              9.836728822321117e-7,
+              -0.0005595086858285886,
+              -0.0004343087656382416
+            ],
+            "id": 0,
+            "last_observed_substep": 16,
+            "last_world_point_m": [
+              -0.13481286148474106,
+              -0.0019433869764818174,
+              0.04974172684718334
+            ],
+            "local_point_m": [
+              -0.044999998062849045,
+              -0.04500001668930054,
+              0.06000000983476639
+            ],
+            "mode": "Unload",
+            "nearest_current_local_distance_m": 5.094257865539694e-8,
+            "segment": 19,
+            "tangential_drift_m": 0.0004343098796050492,
+            "world_anchor_m": [
+              -0.1348138451576233,
+              -0.0013838782906532288,
+              0.05017603561282158
+            ]
+          },
+          {
+            "acquired_substep": 12,
+            "current_contact_present": true,
+            "displacement_from_anchor_m": [
+              4.36558625868666e-6,
+              -0.0005704694367503673,
+              -0.00044102103318033326
+            ],
+            "id": 1,
+            "last_observed_substep": 16,
+            "last_world_point_m": [
+              0.04519449874065093,
+              -0.0019496389604663402,
+              0.04973473518286886
+            ],
+            "local_point_m": [
+              -0.045000024139881134,
+              -0.04500002786517143,
+              0.06000003218650818
+            ],
+            "mode": "Hold",
+            "nearest_current_local_distance_m": 1.2355390155149252e-8,
+            "segment": 24,
+            "tangential_drift_m": 0.00044104263971959744,
+            "world_anchor_m": [
+              0.04519013315439224,
+              -0.001379169523715973,
+              0.050175756216049194
+            ]
+          }
+        ],
+        "archived": [],
+        "next_id": 2
+      },
+      "weightN": 708.281982421875
+    },
+    {
+      "completeScheduleUnchangedAfterRefusal": true,
+      "decision": {
+        "evidence": {
+          "allowed": false,
+          "capture_inside": false,
+          "com_inside": false,
+          "released_load_n": 304.2729797363281,
+          "releasing": [
+            23,
+            24
+          ],
+          "remaining_current_load_n": 301.26239635916966,
+          "retained_segments": [
+            19
+          ],
+          "support_points_xz_m": [
+            [
+              -0.13481289148330688,
+              0.049741752445697784
+            ],
+            [
+              -0.04481284320354462,
+              0.04979362711310387
+            ]
+          ]
+        },
+        "obligation_released": false,
+        "refusal": "Original remaining-support gate refused the whole-foot withdrawal",
+        "required_validation": "PreviewRequired"
+      },
+      "feedbackScale": 1.0,
+      "group": "RightFoot",
+      "nativeSubstep": 16,
+      "obligationsAfter": [
+        19,
+        24
+      ],
+      "obligationsBefore": [
+        19,
+        24
+      ],
+      "observationTimeS": 0.06666666666666667,
+      "trackerAfter": {
+        "active": [
+          {
+            "acquired_substep": 12,
+            "current_contact_present": true,
+            "displacement_from_anchor_m": [
+              9.836728822321117e-7,
+              -0.0005595086858285886,
+              -0.0004343087656382416
+            ],
+            "id": 0,
+            "last_observed_substep": 16,
+            "last_world_point_m": [
+              -0.13481286148474106,
+              -0.0019433869764818174,
+              0.04974172684718334
+            ],
+            "local_point_m": [
+              -0.044999998062849045,
+              -0.04500001668930054,
+              0.06000000983476639
+            ],
+            "mode": "Hold",
+            "nearest_current_local_distance_m": 5.094257865539694e-8,
+            "segment": 19,
+            "tangential_drift_m": 0.0004343098796050492,
+            "world_anchor_m": [
+              -0.1348138451576233,
+              -0.0013838782906532288,
+              0.05017603561282158
+            ]
+          },
+          {
+            "acquired_substep": 12,
+            "current_contact_present": true,
+            "displacement_from_anchor_m": [
+              4.36558625868666e-6,
+              -0.0005704694367503673,
+              -0.00044102103318033326
+            ],
+            "id": 1,
+            "last_observed_substep": 16,
+            "last_world_point_m": [
+              0.04519449874065093,
+              -0.0019496389604663402,
+              0.04973473518286886
+            ],
+            "local_point_m": [
+              -0.045000024139881134,
+              -0.04500002786517143,
+              0.06000003218650818
+            ],
+            "mode": "Unload",
+            "nearest_current_local_distance_m": 1.2355390155149252e-8,
+            "segment": 24,
+            "tangential_drift_m": 0.00044104263971959744,
+            "world_anchor_m": [
+              0.04519013315439224,
+              -0.001379169523715973,
+              0.050175756216049194
+            ]
+          }
+        ],
+        "archived": [],
+        "next_id": 2
+      },
+      "trackerBefore": {
+        "active": [
+          {
+            "acquired_substep": 12,
+            "current_contact_present": true,
+            "displacement_from_anchor_m": [
+              9.836728822321117e-7,
+              -0.0005595086858285886,
+              -0.0004343087656382416
+            ],
+            "id": 0,
+            "last_observed_substep": 16,
+            "last_world_point_m": [
+              -0.13481286148474106,
+              -0.0019433869764818174,
+              0.04974172684718334
+            ],
+            "local_point_m": [
+              -0.044999998062849045,
+              -0.04500001668930054,
+              0.06000000983476639
+            ],
+            "mode": "Hold",
+            "nearest_current_local_distance_m": 5.094257865539694e-8,
+            "segment": 19,
+            "tangential_drift_m": 0.0004343098796050492,
+            "world_anchor_m": [
+              -0.1348138451576233,
+              -0.0013838782906532288,
+              0.05017603561282158
+            ]
+          },
+          {
+            "acquired_substep": 12,
+            "current_contact_present": true,
+            "displacement_from_anchor_m": [
+              4.36558625868666e-6,
+              -0.0005704694367503673,
+              -0.00044102103318033326
+            ],
+            "id": 1,
+            "last_observed_substep": 16,
+            "last_world_point_m": [
+              0.04519449874065093,
+              -0.0019496389604663402,
+              0.04973473518286886
+            ],
+            "local_point_m": [
+              -0.045000024139881134,
+              -0.04500002786517143,
+              0.06000003218650818
+            ],
+            "mode": "Unload",
+            "nearest_current_local_distance_m": 1.2355390155149252e-8,
+            "segment": 24,
+            "tangential_drift_m": 0.00044104263971959744,
+            "world_anchor_m": [
+              0.04519013315439224,
+              -0.001379169523715973,
+              0.050175756216049194
+            ]
+          }
+        ],
+        "archived": [],
+        "next_id": 2
+      },
+      "weightN": 708.281982421875
+    },
+    {
+      "completeScheduleUnchangedAfterRefusal": true,
+      "decision": {
+        "evidence": {
+          "allowed": false,
+          "capture_inside": false,
+          "com_inside": false,
+          "released_load_n": 302.6399841308594,
+          "releasing": [
+            18,
+            19
+          ],
+          "remaining_current_load_n": 305.674880298047,
+          "retained_segments": [
+            24
+          ],
+          "support_points_xz_m": [
+            [
+              0.04518910497426987,
+              0.04972660169005394
+            ],
+            [
+              0.13518911600112915,
+              0.04978182539343834
+            ]
+          ]
+        },
+        "obligation_released": false,
+        "refusal": "Original remaining-support gate refused the whole-foot withdrawal",
+        "required_validation": "PreviewRequired"
+      },
+      "feedbackScale": 1.5,
+      "group": "LeftFoot",
+      "nativeSubstep": 16,
+      "obligationsAfter": [
+        19,
+        24
+      ],
+      "obligationsBefore": [
+        19,
+        24
+      ],
+      "observationTimeS": 0.06666666666666667,
+      "trackerAfter": {
+        "active": [
+          {
+            "acquired_substep": 12,
+            "current_contact_present": true,
+            "displacement_from_anchor_m": [
+              -2.8301974277500364e-6,
+              -0.0005728432899668491,
+              -0.00044850108094465074
+            ],
+            "id": 0,
+            "last_observed_substep": 16,
+            "last_world_point_m": [
+              -0.13481667535505104,
+              -0.001956721580620078,
+              0.04972753453187693
+            ],
+            "local_point_m": [
+              -0.044999998062849045,
+              -0.04500001668930054,
+              0.06000000983476639
+            ],
+            "mode": "Unload",
+            "nearest_current_local_distance_m": 4.029517556127894e-8,
+            "segment": 19,
+            "tangential_drift_m": 0.00044851001061960724,
+            "world_anchor_m": [
+              -0.1348138451576233,
+              -0.0013838782906532288,
+              0.05017603561282158
+            ]
+          },
+          {
+            "acquired_substep": 12,
+            "current_contact_present": true,
+            "displacement_from_anchor_m": [
+              -1.0371792290297943e-6,
+              -0.0005715383737926669,
+              -0.0004491405755103692
+            ],
+            "id": 1,
+            "last_observed_substep": 16,
+            "last_world_point_m": [
+              0.04518909597516321,
+              -0.0019507078975086398,
+              0.049726615640538825
+            ],
+            "local_point_m": [
+              -0.045000024139881134,
+              -0.04500002786517143,
+              0.06000003218650818
+            ],
+            "mode": "Hold",
+            "nearest_current_local_distance_m": 1.8995327925655188e-8,
+            "segment": 24,
+            "tangential_drift_m": 0.00044914177306340454,
+            "world_anchor_m": [
+              0.04519013315439224,
+              -0.001379169523715973,
+              0.050175756216049194
+            ]
+          }
+        ],
+        "archived": [],
+        "next_id": 2
+      },
+      "trackerBefore": {
+        "active": [
+          {
+            "acquired_substep": 12,
+            "current_contact_present": true,
+            "displacement_from_anchor_m": [
+              -2.8301974277500364e-6,
+              -0.0005728432899668491,
+              -0.00044850108094465074
+            ],
+            "id": 0,
+            "last_observed_substep": 16,
+            "last_world_point_m": [
+              -0.13481667535505104,
+              -0.001956721580620078,
+              0.04972753453187693
+            ],
+            "local_point_m": [
+              -0.044999998062849045,
+              -0.04500001668930054,
+              0.06000000983476639
+            ],
+            "mode": "Unload",
+            "nearest_current_local_distance_m": 4.029517556127894e-8,
+            "segment": 19,
+            "tangential_drift_m": 0.00044851001061960724,
+            "world_anchor_m": [
+              -0.1348138451576233,
+              -0.0013838782906532288,
+              0.05017603561282158
+            ]
+          },
+          {
+            "acquired_substep": 12,
+            "current_contact_present": true,
+            "displacement_from_anchor_m": [
+              -1.0371792290297943e-6,
+              -0.0005715383737926669,
+              -0.0004491405755103692
+            ],
+            "id": 1,
+            "last_observed_substep": 16,
+            "last_world_point_m": [
+              0.04518909597516321,
+              -0.0019507078975086398,
+              0.049726615640538825
+            ],
+            "local_point_m": [
+              -0.045000024139881134,
+              -0.04500002786517143,
+              0.06000003218650818
+            ],
+            "mode": "Hold",
+            "nearest_current_local_distance_m": 1.8995327925655188e-8,
+            "segment": 24,
+            "tangential_drift_m": 0.00044914177306340454,
+            "world_anchor_m": [
+              0.04519013315439224,
+              -0.001379169523715973,
+              0.050175756216049194
+            ]
+          }
+        ],
+        "archived": [],
+        "next_id": 2
+      },
+      "weightN": 708.281982421875
+    },
+    {
+      "completeScheduleUnchangedAfterRefusal": true,
+      "decision": {
+        "evidence": {
+          "allowed": false,
+          "capture_inside": false,
+          "com_inside": false,
+          "released_load_n": 305.67486572265625,
+          "releasing": [
+            23,
+            24
+          ],
+          "remaining_current_load_n": 302.639993142486,
+          "retained_segments": [
+            19
+          ],
+          "support_points_xz_m": [
+            [
+              -0.1348167061805725,
+              0.049727555364370346
+            ],
+            [
+              -0.044816698879003525,
+              0.04978315159678459
+            ]
+          ]
+        },
+        "obligation_released": false,
+        "refusal": "Original remaining-support gate refused the whole-foot withdrawal",
+        "required_validation": "PreviewRequired"
+      },
+      "feedbackScale": 1.5,
+      "group": "RightFoot",
+      "nativeSubstep": 16,
+      "obligationsAfter": [
+        19,
+        24
+      ],
+      "obligationsBefore": [
+        19,
+        24
+      ],
+      "observationTimeS": 0.06666666666666667,
+      "trackerAfter": {
+        "active": [
+          {
+            "acquired_substep": 12,
+            "current_contact_present": true,
+            "displacement_from_anchor_m": [
+              -2.8301974277500364e-6,
+              -0.0005728432899668491,
+              -0.00044850108094465074
+            ],
+            "id": 0,
+            "last_observed_substep": 16,
+            "last_world_point_m": [
+              -0.13481667535505104,
+              -0.001956721580620078,
+              0.04972753453187693
+            ],
+            "local_point_m": [
+              -0.044999998062849045,
+              -0.04500001668930054,
+              0.06000000983476639
+            ],
+            "mode": "Hold",
+            "nearest_current_local_distance_m": 4.029517556127894e-8,
+            "segment": 19,
+            "tangential_drift_m": 0.00044851001061960724,
+            "world_anchor_m": [
+              -0.1348138451576233,
+              -0.0013838782906532288,
+              0.05017603561282158
+            ]
+          },
+          {
+            "acquired_substep": 12,
+            "current_contact_present": true,
+            "displacement_from_anchor_m": [
+              -1.0371792290297943e-6,
+              -0.0005715383737926669,
+              -0.0004491405755103692
+            ],
+            "id": 1,
+            "last_observed_substep": 16,
+            "last_world_point_m": [
+              0.04518909597516321,
+              -0.0019507078975086398,
+              0.049726615640538825
+            ],
+            "local_point_m": [
+              -0.045000024139881134,
+              -0.04500002786517143,
+              0.06000003218650818
+            ],
+            "mode": "Unload",
+            "nearest_current_local_distance_m": 1.8995327925655188e-8,
+            "segment": 24,
+            "tangential_drift_m": 0.00044914177306340454,
+            "world_anchor_m": [
+              0.04519013315439224,
+              -0.001379169523715973,
+              0.050175756216049194
+            ]
+          }
+        ],
+        "archived": [],
+        "next_id": 2
+      },
+      "trackerBefore": {
+        "active": [
+          {
+            "acquired_substep": 12,
+            "current_contact_present": true,
+            "displacement_from_anchor_m": [
+              -2.8301974277500364e-6,
+              -0.0005728432899668491,
+              -0.00044850108094465074
+            ],
+            "id": 0,
+            "last_observed_substep": 16,
+            "last_world_point_m": [
+              -0.13481667535505104,
+              -0.001956721580620078,
+              0.04972753453187693
+            ],
+            "local_point_m": [
+              -0.044999998062849045,
+              -0.04500001668930054,
+              0.06000000983476639
+            ],
+            "mode": "Hold",
+            "nearest_current_local_distance_m": 4.029517556127894e-8,
+            "segment": 19,
+            "tangential_drift_m": 0.00044851001061960724,
+            "world_anchor_m": [
+              -0.1348138451576233,
+              -0.0013838782906532288,
+              0.05017603561282158
+            ]
+          },
+          {
+            "acquired_substep": 12,
+            "current_contact_present": true,
+            "displacement_from_anchor_m": [
+              -1.0371792290297943e-6,
+              -0.0005715383737926669,
+              -0.0004491405755103692
+            ],
+            "id": 1,
+            "last_observed_substep": 16,
+            "last_world_point_m": [
+              0.04518909597516321,
+              -0.0019507078975086398,
+              0.049726615640538825
+            ],
+            "local_point_m": [
+              -0.045000024139881134,
+              -0.04500002786517143,
+              0.06000003218650818
+            ],
+            "mode": "Unload",
+            "nearest_current_local_distance_m": 1.8995327925655188e-8,
+            "segment": 24,
+            "tangential_drift_m": 0.00044914177306340454,
+            "world_anchor_m": [
+              0.04519013315439224,
+              -0.001379169523715973,
+              0.050175756216049194
+            ]
+          }
+        ],
+        "archived": [],
+        "next_id": 2
+      },
+      "weightN": 708.281982421875
+    }
+  ],
+  "fixture": "archived-step16-fixtures.json",
+  "forwardKinematicsEvaluations": 0,
+  "modelOrSimulationConstructions": 0,
+  "nativeSubstepsExecuted": 0,
+  "requiredValidation": "PreviewRequired",
+  "schema": "support-schedule-static-release-evidence-v1",
+  "scope": "Pure replay of archived observations; no physical admission",
+  "sourcePlanningSha256": "5ed160d4c9c7d4361ec5d285268a9aa694bc797a419768cfaac0370d46313711",
+  "sourceTraceSha256": "9f152e6402331eda7edfa97a76cf7b352064ed26f632af91b4ed1dcd46d6d667"
+}

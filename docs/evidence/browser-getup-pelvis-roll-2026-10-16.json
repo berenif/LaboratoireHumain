@@ -1,0 +1,281 @@
+{
+  "status": "closed",
+  "authorization": "Continue demonstrated Roll coordination defect: coordinate pelvis and leg contacts, validate Roll-to-Brace and full get-up",
+  "startedUtc": "2026-10-16T12:21:47.112338+00:00",
+  "priorClosedRecord": "docs/evidence/browser-getup-arm-transfer-2026-10-16.json",
+  "priorClosedRecordSha256": "e5ef3d69941691d50d6002b71797c86b69a4d76e9e7b417753977f2752c6d70e",
+  "sourceBase": "ab9731f9d6c74a7361dcede3e5043986015bd79a",
+  "candidateCommit": "da41537f327a59d86266f7a1b0cd79a223ff0665",
+  "nativeChargedBefore": 174468,
+  "nativeReservation": 6960,
+  "nativeChargedAfter": 181428,
+  "nativeCeiling": 300000,
+  "wallChargedBeforeSeconds": 1126.3282942940032,
+  "wallReservationSeconds": 360,
+  "wallChargedAfterSeconds": 1486.3282942940032,
+  "wallCeilingSeconds": 7200,
+  "maximumHistories": 1,
+  "maximumSimulatedSeconds": 29,
+  "forecasts": 0,
+  "launchRetries": 0,
+  "refund": false,
+  "inputs": {
+    "rust/crates/sim/src/recovery.rs": "a5e21a071b8c32581b11db1d8ceda8d83b14f9f9514f67d39f35a688d95301b2",
+    "rust/crates/sim/src/recovery/roll_arm.rs": "53e4e6a46ce1717fc46f15a21adb4ae735b1a4e02e5be7686bc17a02d541a285",
+    "rust/crates/sim/src/lib.rs": "571d04fc7f7e54a50eb7d91ca689ea00e5e3392938d8b8bee4281328a88b0555",
+    "rust/crates/contracts/src/lib.rs": "9200759faf162e123d409d664fb85470217f643b8de95af8084fd55941f87ab1",
+    "rust/crates/sim/data/roll-landed-v1.json": "e5dd8f488e48c82786360f39261ffbe2216a121e8c2c1ce57d6da8e68e216991",
+    "rust/crates/model/data/canonical-v1.json": "083c13b2cce2d6033a4fc05cba8da7e78bd89634fb306629f4b7a9cd4a177a65",
+    "rust/crates/sim/data/recovery-contract-v1.json": "57ffc6e4705759dac795e7c1b274edc9016a5e194a8fe4fa175a230c62f595ba",
+    "rust/dist/app/lh_worker_bg.wasm": "dd50326214ee4808b7ee6a7ff08453c0c1d65abe512627ea58dd7c7d9c9ea404",
+    "outputs/browser-getup-pelvis-roll-2026-10-16/observe.mjs": "0b7ee1471d27495fcb6087d32c32d28d402950269c24b5bb716f290a7f6784a2"
+  },
+  "checksBeforeLaunch": {
+    "pureSimulatorTestsPassed": 9,
+    "contractTestsPassed": 2,
+    "toolingTestsPassed": 55,
+    "browserBuild": true,
+    "experimentalCheckIsolatedTrackedSources": true,
+    "originalExperimentalCheck": "Existing unfinished local attribution references a missing test file; original files preserved"
+  },
+  "hypothesis": "Native equal-and-opposite hip actuation can reorient the pelvis while leg IK preserves solved material contacts. Local spine coordinates follow the pelvis; supported arm and leg transfers permit continuation to Brace. No additional actuator primitive or cap increase.",
+  "geometricPreflight": {
+    "firstAcceptedPelvisRotationRad": 0.059999987,
+    "firstAcceptedPelvisTranslationM": 0.008924054,
+    "firstAcceptedContactErrorM": 0.0023359032,
+    "fullFixedFootContinuationRejected": true,
+    "scope": "Non-integrating virtual kinematics with hypothetical anatomical surface points; not proof of physical support or full dynamic feasibility"
+  },
+  "success": "Brace reached, then recovery completes within 25 seconds after impact and unchanged one-second standing stability",
+  "stop": "One history ends at integrity failure, absent coordination diagnostics, no feasible native hip authority within four seconds of recovery entry, 29 simulated seconds or 360 wall seconds; no renewal or candidate variants",
+  "finishedUtc": "2026-10-16T12:24:14.021Z",
+  "nativeActualSteps": 6960,
+  "wallActualSeconds": 146.628536639,
+  "fullRecovery": false,
+  "braceReached": false,
+  "qualification": false,
+  "phases": [
+    "Roll"
+  ],
+  "armStages": [
+    {
+      "stage": "right:BackSupport",
+      "time": 4.666666666666667
+    },
+    {
+      "stage": "right:Fold",
+      "time": 8.133333333333333
+    },
+    {
+      "stage": "right:Roll",
+      "time": 9.666666666666666
+    }
+  ],
+  "firstPelvisAuthority": {
+    "time": 4.666666666666667,
+    "observation": {
+      "pelvis_target": {
+        "x": -0.766009,
+        "y": 0.42587948,
+        "z": 0.06813716,
+        "w": 0.4766699
+      },
+      "support_legs": [
+        false,
+        true
+      ],
+      "released_legs": [
+        false,
+        false
+      ],
+      "max_contact_error_m": 0.0023415287
+    }
+  },
+  "final": {
+    "tick": 1740,
+    "time": 29,
+    "motion": "Recovering",
+    "counters": {
+      "strikes": 1,
+      "falls": 1,
+      "recoveries": 0,
+      "steps": 0,
+      "upright_ticks": 136
+    },
+    "recovery": {
+      "phase": "Roll",
+      "arm_transfer": "right:Roll",
+      "roll_coordination": {
+        "pelvis_target": {
+          "x": -0.6047615,
+          "y": -0.0633543,
+          "z": 0.39496943,
+          "w": 0.6886574
+        },
+        "support_legs": [
+          false,
+          true
+        ],
+        "released_legs": [
+          true,
+          false
+        ],
+        "max_contact_error_m": 7.342845e-06
+      },
+      "elapsed_s": 24.339079,
+      "phase_time_s": 1.8666774,
+      "qualified_time_s": 0,
+      "stable_time_s": 0,
+      "stalled_s": 0.7583328,
+      "unsupported_s": 0,
+      "retries": 6,
+      "last_retry": "stalled-phase",
+      "progress": -0.9511243
+    },
+    "failure": null,
+    "workerInstances": 1,
+    "pelvisHeightM": 0.12350013
+  },
+  "functionalTestError": "AssertionError [ERR_ASSERTION]: Full strike-to-standing recovery did not complete within the unchanged deadline",
+  "analysis": {
+    "nativeSteps": 6960,
+    "stageTransitions": [
+      {
+        "time": 4.666666666666667,
+        "stage": "right:BackSupport",
+        "loadsN": {
+          "lumbar": 96.13298,
+          "torso": 213.44106,
+          "head": 59.439636,
+          "leftForearmTwist": 15.907101,
+          "rightUpperArm": 42.722244,
+          "rightForearm": 21.890718,
+          "rightHand": 4.3681645,
+          "rightAnkle": 109.39135,
+          "rightForefoot": 153.32204
+        }
+      },
+      {
+        "time": 8.133333333333333,
+        "stage": "right:Fold",
+        "loadsN": {
+          "pelvis": 467.23328,
+          "torso": 104.05992,
+          "head": 68.39475,
+          "leftForearmTwist": 26.386084,
+          "rightFoot": 54.859436
+        }
+      },
+      {
+        "time": 9.666666666666666,
+        "stage": "right:Roll",
+        "loadsN": {
+          "pelvis": 439.0315,
+          "torso": 138.07216,
+          "head": 58.780186,
+          "leftForearmTwist": 28.86506,
+          "rightFoot": 15.779225
+        }
+      }
+    ],
+    "comparison26to27Seconds": {
+      "baseline": {
+        "rightUpperArmMeanN": 182.82880625,
+        "rightShoulderGirdleMeanN": 0.0,
+        "headAndNeckMeanN": 0.0,
+        "backMeanN": 210.171698125,
+        "pelvisMeanN": 0.0,
+        "finalRollProgress": -0.9142445
+      },
+      "candidate": {
+        "rightUpperArmMeanN": 0.0,
+        "rightShoulderGirdleMeanN": 0.0,
+        "headAndNeckMeanN": 65.856769625,
+        "backMeanN": 157.039728125,
+        "pelvisMeanN": 391.823331875,
+        "finalRollProgress": -0.99698585
+      }
+    },
+    "maximumRecordedDiagnostics": {
+      "direct_pelvis_force_n": 0,
+      "direct_pelvis_torque_nm": 0,
+      "max_anchor_separation_m": 4.1271025e-05,
+      "max_floor_penetration_m": 0.034814026,
+      "max_self_penetration_m": 0.0011277233,
+      "max_limit_error_rad": 0.0042297244,
+      "requested_motor_effort_nm": 704.1533
+    },
+    "baselineComparison": {
+      "identicalRecordedSnapshots": 69,
+      "lastIdenticalSnapshotSeconds": 4.6,
+      "nativeStepsBetweenSnapshots": 16
+    },
+    "nativeHipAuthoritySamples": 214,
+    "recoverySamples": 366,
+    "maximumAcceptedContactErrorM": 0.0027783643,
+    "leftLegFirstReleasedSeconds": 5.266666666666667,
+    "leftLegRetainedAgainAfterRelease": false,
+    "leftShinMaximumLoadAfterReleaseN": 0,
+    "leftSoleMaximumLoadAfterReleaseN": 92.14510399999999,
+    "rightUpperArmMaximumLoadAfterFoldClearanceN": 0,
+    "rightGirdleMaximumLoadAfterFoldClearanceN": 177.71478,
+    "bestForwardRoll": {
+      "time": 21.133333333333333,
+      "pelvisForwardY": 0.6907612175141241,
+      "torsoForwardY": 0.8630934,
+      "rightHipAxialCoordinateRad": 0.5235987406111378
+    },
+    "rightHipAxialDuringRoll": {
+      "minimumRad": -0.6981549393108739,
+      "maximumRad": 0.5236438428124234,
+      "lowerLimitRad": -0.6981317007977318,
+      "upperLimitRad": 0.5235987755982988,
+      "samplesWithin001RadOfLimit": 136,
+      "samples": 291
+    },
+    "leftSoleMaximumLoadAfterArmClearanceN": 0,
+    "leftShinMaximumLoadAfterArmClearanceN": 0
+  },
+  "causalOutcome": {
+    "localUnloadingAndFold": "Supported by this deterministic history: native hip authority begins at 4.6667 s, arm fold at 8.1333 s, measured arm clearance at 9.6667 s; no persistent right-upper-arm load thereafter.",
+    "completeRollToBrace": "Failed. Best torso forward vertical component is +0.8631 versus the unchanged required value below -0.6.",
+    "actuatorPrimitive": "Existing equal-and-opposite native hip motors were sufficient to demonstrate the local transfer; no missing physical actuator is established.",
+    "missingControlPrimitive": "Released-leg swing-to-landing and reloading during Roll. The present branch holds hip/knee fold references and only reacquires an already loaded shin; it does not plan a landing before the retained hip reaches axial bounds.",
+    "counterEvidence": "The released left leg never becomes retained support again; no left sole/shin load after arm clearance. The right hip reaches both axial bounds. The right shoulder girdle later carries up to 177.7 N, and mean head/neck load at 26-27 s rises to 65.9 N. Local arm release is not a successful full trajectory."
+  },
+  "checks": {
+    "pureSimulatorTestsPassed": 9,
+    "contractTestsPassed": 2,
+    "toolingTestsPassed": 55,
+    "browserBuildPassed": true,
+    "experimentalCheckPassedInIsolatedTrackedSourceCopy": true,
+    "fullMovementTestPassed": false,
+    "videoDecoded": true,
+    "videoSeconds": 29,
+    "videoFrames": 435
+  },
+  "decision": "Close this fixed-candidate history as a local transfer success and full get-up failure. Preserve the experimental progress and evidence. Do not qualify recovery or infer anatomical impossibility. No further history or variant launched.",
+  "libraryVideo": {
+    "libraryFileId": "libfile_02ba09505638819194facf5ce4fa1994",
+    "fileId": "file_00000000610081f589472aefdeaf4c61",
+    "version": 0,
+    "bytes": 718173,
+    "localPath": "/workspace/lh-deliverables/LaboratoireHumain-pelvis-roll-2026-10-16.mp4"
+  },
+  "artifacts": {
+    "outputs/browser-getup-pelvis-roll-2026-10-16/result.json": "21d66f5fd2e524d16f0525ba4cdb6a83eb53a5013832dfaa1e11c858b1f25c2e",
+    "outputs/browser-getup-pelvis-roll-2026-10-16/trace.ndjson": "22f3b491c26373d093dd93b7f9ee0a19628cf1b98537fcc314ee1b7104234be1",
+    "outputs/browser-getup-pelvis-roll-2026-10-16/analysis.json": "f8ec071c22cfbc9df186a0d9a3224eb00fe256309dcf83e2b170ce16a6e92ea1",
+    "outputs/browser-getup-pelvis-roll-2026-10-16/analyze.py": "51aa31e267a1876fb90181d42fa1458810da97db3f65b9fd7b71a1c14acef794",
+    "outputs/browser-getup-pelvis-roll-2026-10-16/unit.log": "5cfb7a009428205da3c8691a59961ac6ebc9a231199ddc2cc98e5ff7ff3495a8",
+    "outputs/browser-getup-pelvis-roll-2026-10-16/roll-unit.log": "ba40c512f36c75c09a4337a48a2049d5c027df6f1a5ba292d03aea734d017a37",
+    "outputs/browser-getup-pelvis-roll-2026-10-16/planning-unit.log": "feadd5ff574ec1ae5b2c9201be29f892ff76e85f13a6cdb86e4aca6cfd641d18",
+    "outputs/browser-getup-pelvis-roll-2026-10-16/contracts-unit.log": "76129dfd176c66cbd1635dd633f7796f1d29c13d95a9d5e43dd4a28b06dfeafa",
+    "outputs/browser-getup-pelvis-roll-2026-10-16/feature-check-isolated.log": "8cefdb3802d499fd94c399dda9438c1020531b4011daeb4baa4fafcc5cee3c55",
+    "outputs/browser-getup-pelvis-roll-2026-10-16/build.log": "b37431698d045ff0eaad9dae32f314cd455497eccdc6888117673191517ef5d5",
+    "outputs/browser-getup-pelvis-roll-2026-10-16/tooling-tests.log": "35efca63c7dd686dea89d43dd27487900abbde893614f6c6444db4a93b51e64c",
+    "outputs/browser-getup-pelvis-roll-2026-10-16/geometry.log": "92a6c2cd007a98a706b90ce8d8f32e1671364b6bc0f870a901ad446298c9d17e",
+    "outputs/browser-getup-pelvis-roll-2026-10-16/pivot-geometry.log": "cdd3b19efef740bfc3183e5b8c44bcdc539001d6cac5e75769440907e6dec497",
+    "/workspace/lh-deliverables/LaboratoireHumain-pelvis-roll-2026-10-16.mp4": "b9ec7b46aeff470e52f70333ab3bfdc706685a56dce269527b2c5b23ec7e98fd"
+  }
+}

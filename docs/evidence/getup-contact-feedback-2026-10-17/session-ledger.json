@@ -1,0 +1,105 @@
+{
+  "sessionStartUTC": "2026-10-17T13:30:42Z",
+  "totalDeadlineUTC": "2026-10-17T14:30:42Z",
+  "physicalStopUTC": "2026-10-17T14:25:00Z",
+  "physicsWallSeconds": 259.739657291,
+  "nativeSubsteps": 78979,
+  "batches": [
+    {
+      "name": "batch01-contact-zero",
+      "physicsWallSeconds": 31.257269085,
+      "nativeSubsteps": 9600,
+      "totalProcessWallSeconds": 36.06117843699758,
+      "solverWallSeconds": 0.7770652239887568,
+      "stateComputationWallSeconds": 0.7306753899647447,
+      "capSeconds": 60,
+      "outcome": "zero hold rejected: inverse-dynamics infeasible2.85s; safe source return5s,no flight"
+    },
+    {
+      "name": "batch02-normal-contact-zero",
+      "physicsWallSeconds": 32.09278614199999,
+      "nativeSubsteps": 9600,
+      "totalProcessWallSeconds": 40.122242375000496,
+      "solverWallSeconds": 2.6822455230067135,
+      "stateComputationWallSeconds": 1.9280353410140378,
+      "capSeconds": 60,
+      "outcome": "normal-soft zero hold passed5s; whole12s anchored standing; noflight/nonfoot"
+    },
+    {
+      "name": "batch03-contact-5mm",
+      "physicsWallSeconds": 31.274083121000018,
+      "nativeSubsteps": 9600,
+      "totalProcessWallSeconds": 39.156030982998345,
+      "solverWallSeconds": 2.5383652889868245,
+      "stateComputationWallSeconds": 1.8395082370152522,
+      "capSeconds": 60,
+      "outcome": "5mm actual-feedback sign test completed; matched metrics retained"
+    },
+    {
+      "name": "batch04-exact-source-extension",
+      "physicsWallSeconds": 15.442161575999997,
+      "nativeSubsteps": 4800,
+      "totalProcessWallSeconds": 16.908134646997496,
+      "capSeconds": 25,
+      "outcome": "exact-source continuation after5mm shift; final standing metrics retained"
+    },
+    {
+      "name": "batch05-retained-balance-3cm",
+      "physicsWallSeconds": 30.684342308000016,
+      "nativeSubsteps": 9600,
+      "totalProcessWallSeconds": 41.325861065000936,
+      "solverWallSeconds": 4.136202148940356,
+      "stateComputationWallSeconds": 3.2038604289336945,
+      "capSeconds": 60,
+      "outcome": "3cm persistent-balance transfer readout retained"
+    },
+    {
+      "name": "batch06-right-support-transfer",
+      "physicsWallSeconds": 41.93931082399998,
+      "nativeSubsteps": 12000,
+      "totalProcessWallSeconds": 57.10273644799963,
+      "solverWallSeconds": 6.091518607063335,
+      "stateComputationWallSeconds": 4.486229944024672,
+      "capSeconds": 60,
+      "outcome": "fullsupport transfer metrics retained; velocity profile confound declared"
+    },
+    {
+      "name": "batch07-actual-support-unload",
+      "physicsWallSeconds": 27.798521379,
+      "nativeSubsteps": 8339,
+      "totalProcessWallSeconds": 37.19739978299913,
+      "solverWallSeconds": 3.7467322110351233,
+      "stateComputationWallSeconds": 2.6461111339558556,
+      "capSeconds": 90,
+      "outcome": "locked actualsupport/leftforceobjective readout retained"
+    },
+    {
+      "name": "batch08-contact-step",
+      "physicsWallSeconds": 24.51612220400001,
+      "nativeSubsteps": 7740,
+      "totalProcessWallSeconds": 33.379249822999554,
+      "solverWallSeconds": 3.67499170303563,
+      "stateComputationWallSeconds": 2.5116479130083462,
+      "capSeconds": 90,
+      "outcome": "firstcontactstep readout retained"
+    },
+    {
+      "physicsWallSeconds": 24.735060652000012,
+      "nativeSubsteps": 7700,
+      "totalProcessWallSeconds": 33.848232010001084,
+      "solverWallSeconds": 3.8468042769709427,
+      "stateComputationWallSeconds": 2.5548073159880005,
+      "name": "batch09-com-priority-step",
+      "capSeconds": 90,
+      "outcome": "COMpriority100 isolatedablation; partialliftplacement, QPtermination9.625s beforelanding;18.27mmstanceslip rejects"
+    }
+  ],
+  "oldUnusedAllowanceCarried": false,
+  "nativePhysicalStopUTC": "2026-10-17T14:18:52Z",
+  "physicalExperimentsClosed": true,
+  "uncertainOutstandingRequests": false,
+  "totalProcessWallSeconds": 335.10106557099425,
+  "solverWallSeconds": 27.493924983027682,
+  "stateComputationWallSeconds": 19.900875703904603,
+  "solverStateTimingScope": "Per-process measured solver+state totals; totalProcess includes native integration and other process overhead. Session hour also includes build/code/review/render/archive."
+}

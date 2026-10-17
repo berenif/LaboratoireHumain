@@ -1,0 +1,9 @@
+{
+  "physicsIntegrations": 0,
+  "getupRustTestsPassed": 9,
+  "checkpointRustTestsPassed": 1,
+  "browserStaticTestsPassed": 61,
+  "wasmBuildPassed": true,
+  "fourFixtureZeroStepPreflightPassed": true,
+  "positivePhysicsOnlyInRecordedSideAttempt": true
+}

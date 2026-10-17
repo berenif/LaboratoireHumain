@@ -1,0 +1,176 @@
+{
+  "schema": 1,
+  "review": "readiness-contact-telemetry",
+  "generatedUtc": "2026-10-15T15:27:11.826441+00:00",
+  "commit": "a5c8ff36af4dfbe784277aebc91021040b947a52",
+  "status": "ready-subject-to-central-tests-and-freeze",
+  "telemetrySufficientForBoundaryClassification": true,
+  "physicalSubsteps": 0,
+  "newWorlds": 0,
+  "newFkInspections": 0,
+  "collisionQueries": 0,
+  "testsExecuted": 0,
+  "sources": [
+    {
+      "path": "rust/crates/sim/src/recovery/planner/native_contact_diagnostics.rs",
+      "sha256": "57d71b0a99fa6a02506cec50f6a9aba0125c625fac2c8c270eb74f1bfbb01604"
+    },
+    {
+      "path": "rust/crates/sim/src/recovery/planner/native_observation.rs",
+      "sha256": "db49427e09240dec0c0e0049e25eca916b0fe5e8b754a641c156363cd0887afc"
+    },
+    {
+      "path": "rust/crates/sim/src/recovery/planner/support_state.rs",
+      "sha256": "1056ca06337d4312f61e396e97d8f110229f00a846a17eb83f8ec64f82fefdcb"
+    },
+    {
+      "path": "rust/crates/sim/src/recovery/planner/transfer_worker.rs",
+      "sha256": "811df09bae544476e03026a9d832f7ea306ff774fe85e42929f974efd2c3f89c",
+      "initialReviewedSha256": "67a34bf6c114f1451f924317c309c9e488e40fbd17ccd9c68665bf5055524522",
+      "supersededReviewedSha256": [
+        "fb5d5e4589306d19e76c8c1eddbef7e456f343b1243fe024b86889baa1f96cef"
+      ]
+    },
+    {
+      "path": "rust/crates/sim/src/recovery/planner/transition_worker.rs",
+      "sha256": "347430caf13b113dcedeee4b1a203d39af4d7adccc59ba50196a0a446a0003b5"
+    },
+    {
+      "path": "rust/crates/sim/src/recovery/planner/native_plan_preview.rs",
+      "sha256": "4c86adb033950492f4dc9b758a953bed30959280cca7206412b93bb54ddb4df0"
+    },
+    {
+      "path": "rust/crates/sim/src/recovery/planner/whole_body_controller.rs",
+      "sha256": "2476ba571b443274ae35eff43fefb0a6968bab5b6c26fc7f42bcf0d31839a309"
+    },
+    {
+      "path": "rust/vendor/rapier3d/src/geometry/contact_pair.rs",
+      "sha256": "3acab3ab974ac68f52dc9cfe70f4b54315ee0f5ecd6d85ac431d16544f13e06e"
+    },
+    {
+      "path": "docs/evidence/coordination-transfer-native-proposal-2026-10-13/worker-prefix-frames.json",
+      "sha256": "12c56e6f2e84db599bea41595fb07bea4503281a5c8950c594fd7631dadccf30"
+    },
+    {
+      "path": "rust/vendor/rapier3d/src/pipeline/physics_pipeline/substep.rs",
+      "sha256": "91ef1ecf8b1bbcd668ff90ac3e1adf60e75245e5476f521a935566cb441a7574"
+    },
+    {
+      "path": "rust/vendor/rapier3d/src/geometry/collider.rs",
+      "sha256": "7118e443bce797882f698c138f220be2f76b8392f7b0dec7a57ce4f74bb982a2"
+    },
+    {
+      "path": "rust/crates/sim/src/lib.rs",
+      "sha256": "d87e6ab2dc4b868443e319ea2eaa882cbe14e05934cba6f7b6e29b94e664e46e"
+    }
+  ],
+  "blockers": [
+    {
+      "id": "CD-READINESS-01",
+      "description": "Strict archived prefix comparison rejects the new support.native_contact_boundary key at step1 before the requested diagnostic. archived_projection only removes kind and owner.transfer.",
+      "requiredResolution": "Explicitly validate/archive fresh telemetry but omit exactly this new optional field for old-prefix comparison, preserve every historical field and byte-sensitive numeric comparison. Test schema acceptance and rejection of old-field/clock drift without physics.",
+      "prefixFramesChecked": 36,
+      "oldSupportKeys": [
+        "bodies",
+        "ccd_impulses",
+        "center_of_mass_m",
+        "center_of_mass_velocity_mps",
+        "native_substep",
+        "segments",
+        "support_height_m",
+        "time_s",
+        "weight_n"
+      ],
+      "prefixPatchesEmpty": true,
+      "status": "resolved-in-reviewed-worktree-source",
+      "resolution": "archived_projection removes exactly support.native_contact_boundary; compare_live_prefix requires deserializable schema1 telemetry, matching frame/support/native clocks and25 ordered segment pairs. Existing fields still use exact_json; pure negative cases added; execution remains central.",
+      "reviewedWorkerSha256": "811df09bae544476e03026a9d832f7ea306ff774fe85e42929f974efd2c3f89c"
+    }
+  ],
+  "requiredEvidence": [
+    "Every completed predicted boundary carries support.native_contact_boundary with matching native_substep, all25 segment pairs, handles and generations.",
+    "At refusal, persist a fresh native endpoint even if owner.lastObserved still names the previous accepted boundary; endpoint support is authoritative.",
+    "Preserve raw manifold and active solver-cluster collection, all geometric points, selected indices, impulses, current anchors, separation and exclusion reasons.",
+    "Archive first and preceding boundary around any change; do not infer stable material identity from indices, contact_id or feature_id alone.",
+    "Reconcile admitted selected-contact loads with support.segments.contacts using the same normal/impulse/distance/native-dt classifier.",
+    "Abort with missing-diagnostic outcome if telemetry or endpoint is unavailable; no substitute run or silent success."
+  ],
+  "distinguishableOutcomes": [
+    {
+      "kind": "selected-zero-impulse",
+      "evidence": "Same current geometric point remains selected, impulse zero, zero_impulse exclusion; shows no current selected normal impulse at that boundary."
+    },
+    {
+      "kind": "unselected-point",
+      "evidence": "Raw geometric point present, selected_contact_indices empty, unselected_manifold_point reason; cached impulse is not current load."
+    },
+    {
+      "kind": "observation-filter",
+      "evidence": "Selected point present with upward_normal_below_minimum and/or live_separation_exceeded, exact measurements retained."
+    },
+    {
+      "kind": "geometric-point-replacement",
+      "evidence": "Raw point disappears or changes local position/features while pair/subshape and other geometric points persist; correspondence requires geometric comparison, not index equality."
+    },
+    {
+      "kind": "pair-or-manifold-loss",
+      "evidence": "pair_present false or absent current solver manifold; support loss local to this representation, with segment integrated/current load recorded separately."
+    }
+  ],
+  "limitations": [
+    "No new observations have been executed; recurrence at78 is not promised.",
+    "No internal recycle_state/full-narrowphase-update flag or intermediate selection history is exposed. New-contact bit alone does not prove a fresh manifold update.",
+    "Current selected impulse divided by native dt is a boundary metric, not enclosing-step average when CCD has multiple intervals; original CCD impulse journal remains separate.",
+    "Observed manifold replacement alone does not prove mechanically equivalent loaded support, wholefoot separation, contact moment feasibility or full standing continuation.",
+    "If native observation itself errors before endpoint serialization, complete contact telemetry may be unavailable; this is a failed diagnostic and must close the run.",
+    "Collider poses are propagated at normal completed steps, but raw manifold geometry was not recomputed after final integration; transformed raw points alone cannot prove current closest/contact geometry."
+  ],
+  "updatedUtc": "2026-10-15T15:36:39.159027+00:00",
+  "blockingFindingsResolvedInSource": true,
+  "currentBlockers": [],
+  "poseFreshness": {
+    "sourceFinding": "Vendored advance_to_final_positions updates active body pose and attached collider pose before the native callback. Normal callback boundary is after world.step_with_events returns.",
+    "rawGeometryLimitation": "Final CCD interval refreshes broad phase only; no final narrow-phase rerun. Raw tracked local points/features/stored distance may come from the prior or recycled narrow phase. Current-world raw coordinates only transform those cached geometric points through current poses, with stored manifold normal.",
+    "causalEvidencePriority": [
+      "active solver collection",
+      "selected contact indices",
+      "selected normal impulse",
+      "current selected anchors resolved through body poses",
+      "exact exclusion reasons",
+      "raw geometry as corroboration only"
+    ],
+    "postRunCheck": "Compare reported collider pose with current body pose composed with known collider attachment, and inspect selected anchor/segment-local reconstruction; no new FK or collision query."
+  },
+  "endpointCompletenessGuard": {
+    "workerSha256": "811df09bae544476e03026a9d832f7ea306ff774fe85e42929f974efd2c3f89c",
+    "requires": [
+      "SupportObservation.validate passes",
+      "native_contact_boundary is present",
+      "schema_version equals1",
+      "observation and boundary clocks equal endpoint clock",
+      "localDiagnostic sample clock equals endpoint clock",
+      "25 canonical ordered segment pairs"
+    ],
+    "freshSupportArchivedBeforeCompletenessRejection": true,
+    "staleSampleExample": {
+      "worldNativeSubstep": 78,
+      "supportNativeSubstep": 78,
+      "contactBoundaryNativeSubstep": 78,
+      "localDiagnosticNativeSubstep": 77,
+      "outcome": "endpoint completeness refused; current support and boundary78 remain archived, previous localDiagnostic77 is not misrepresented as current"
+    },
+    "whenSampleAbsent": "diagnostic-endpoint-incomplete explicitly archives current support and endpointRefusal",
+    "primaryForecastOutcomePreservedOnSecondaryEndpointFailure": true,
+    "secondaryRecord": "diagnostic-endpoint-refused carries endpointRefusal and originalForecastOutcome; returned error carries both",
+    "preventsSuccessOnMissingOrStaleEvidence": true,
+    "reviewMethod": "source inspection only; no Rust mutation, test, worker, physics or FK execution",
+    "testsPrepared": [
+      "absence of boundary",
+      "absence or stale sample clock",
+      "endpoint observation clock mismatch",
+      "boundary clock mismatch",
+      "incomplete25-segment boundary"
+    ],
+    "testsExecutedByThisReview": 0
+  }
+}

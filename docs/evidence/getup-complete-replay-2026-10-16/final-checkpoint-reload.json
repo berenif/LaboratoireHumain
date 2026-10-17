@@ -1,0 +1,20 @@
+{
+  "passed": true,
+  "physicsIntegrations": 0,
+  "time": 9.8,
+  "stableStandingSeconds": 3.00875,
+  "controllerAndReferencesExact": true,
+  "snapshotSegmentsExact": true,
+  "verification": {
+    "binaryWorldDeserialized": true,
+    "bytes": 3346072,
+    "controllerEqual": true,
+    "forecastSubsteps": 540,
+    "handlesEqual": true,
+    "jointStateEqual": true,
+    "nativeSubsteps": 7840,
+    "passed": true,
+    "physicsIntegrations": 0,
+    "snapshotEqual": true
+  }
+}

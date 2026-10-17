@@ -1,0 +1,19 @@
+{
+  "schema": 1,
+  "announcedUtc": "2026-10-13T11:10:49.572363+00:00",
+  "frozenCommit": "65925ef032197639f6ebd6c8e897084a5735cacf",
+  "remoteShaVerified": true,
+  "manifestSha256": "2fbcb3db0cd1bccf14082e772b1efba63e567fe7fce35ed8cccbbbf2ac2cdde9",
+  "preparingLedgerSha256": "24d31b69a5eb5b449b2b123766b91cee9fa8c5489a55f38a60690c4fbde68ca1",
+  "nativeCap": 78736,
+  "nativeWallSeconds": 7100,
+  "externalWallSeconds": 7137,
+  "histories": [
+    "A",
+    "B"
+  ],
+  "noDuplicateOutput": true,
+  "activeNativeWorkersOrCompilers": [],
+  "allFrozenFilesVerified": true,
+  "invocation": "python3 scripts/run-coordination-prototype.py --binary rust/target/release/deps/coordination_local_pair_worker-bf2c98f759d9dc34 --manifest docs/evidence/coordination-local-pair-2026-10-13/manifest.json --output docs/evidence/coordination-local-pair-2026-10-13/native-run --budget-root docs/evidence/coordination-local-pair-2026-10-13/budget --execute"
+}

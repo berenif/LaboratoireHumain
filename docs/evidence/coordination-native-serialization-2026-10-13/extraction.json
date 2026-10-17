@@ -1,0 +1,8 @@
+{
+  "scope": "Extract existing initial world only; no native world construction or integration",
+  "source": "docs/evidence/coordination-native-parity-renewal-2026-10-13/native-run/native-trace.jsonl",
+  "sourceSha256": "abc2960e5959d8dc584aeb82eda99f1f50fa6806256e8f5552c9d487af335d06",
+  "output": "docs/evidence/coordination-native-serialization-2026-10-13/archived-initial-world.json",
+  "outputSha256": "7660dda75bd7b8edf567a3e804f452457208e3a5cfd35cd9478704ba473feb55",
+  "nativeIntegrations": 0
+}

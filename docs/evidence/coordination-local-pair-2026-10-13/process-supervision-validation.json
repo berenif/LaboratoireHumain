@@ -1,0 +1,44 @@
+{
+  "schema": 1,
+  "createdUtc": "2026-10-13T10:55:55.514731+00:00",
+  "scope": "Pure protocol tests and inert OS process supervision; no native simulation or FK",
+  "physicalIntegrations": 0,
+  "tests": [
+    {
+      "command": "python3 scripts/run-coordination-prototype-test.py -v",
+      "passed": 43,
+      "failed": 0,
+      "log": "process-supervision-tests.log"
+    },
+    {
+      "command": "python3 scripts/run-coordination-numeric-parity-test.py -v",
+      "passed": 47,
+      "failed": 0,
+      "log": "historical-supervisor-tests.log"
+    },
+    {
+      "command": "python3 docs/evidence/coordination-local-pair-2026-10-13/check-process-supervision-inert.py",
+      "passed": 6,
+      "failed": 0,
+      "log": "process-supervision-inert-results.json"
+    }
+  ],
+  "files": [
+    {
+      "path": "scripts/run-coordination-prototype.py",
+      "sha256": "0ab2aec36acfe34c716d110a8ff6164332f6e63627cd5082e749578014e5fc55"
+    },
+    {
+      "path": "scripts/run-coordination-prototype-test.py",
+      "sha256": "338b0c1c7ed8b76451d0165d927f7ef886fd851d7d145335ba2bbadf8bb1359e"
+    },
+    {
+      "path": "scripts/run-coordination-numeric-parity.py",
+      "sha256": "e5af00efb904bc203704bc88514a8e8a803dad36b3bca669a017c90ca24f97da"
+    },
+    {
+      "path": "scripts/run-coordination-numeric-parity-test.py",
+      "sha256": "0d8ba8986bc899bd33fff9af5e9d26c2e2213bf98f8a376b5260e2117ef4f257"
+    }
+  ]
+}

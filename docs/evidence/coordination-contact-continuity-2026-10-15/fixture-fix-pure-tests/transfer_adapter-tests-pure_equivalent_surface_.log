@@ -1,0 +1,7 @@
+
+running 2 tests
+test recovery::planner::transfer_adapter::tests::pure_equivalent_surface_cannot_hide_cumulative_slip_or_refresh_an_anchor ... ok
+test recovery::planner::transfer_adapter::tests::pure_equivalent_surface_keeps_original_anchor_and_still_requires_native_admission ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 278 filtered out; finished in 0.44s
+

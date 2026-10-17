@@ -1,0 +1,1450 @@
+warning: /workspace/LaboratoireHumain/rust/crates/sim/Cargo.toml: file `/workspace/LaboratoireHumain/rust/crates/sim/src/lib.rs` found to be present in multiple build targets:
+  * `lib` target `lh_sim`
+  * `integration-test` target `coordination-local-pair-worker`
+  * `integration-test` target `coordination-worker`
+  * `integration-test` target `numeric-parity-worker`
+  * `integration-test` target `numeric-parity-worker-serialization`
+   Compiling lh-sim v0.1.0 (/workspace/LaboratoireHumain/rust/crates/sim)
+warning: unused import: `super::*`
+   --> crates/sim/src/actuators.rs:150:9
+    |
+150 |     use super::*;
+    |         ^^^^^^^^
+    |
+    = note: `#[warn(unused_imports)]` on by default
+
+warning: unused import: `super::*`
+   --> crates/sim/src/articulation.rs:600:9
+    |
+600 |     use super::*;
+    |         ^^^^^^^^
+
+warning: unused import: `super::*`
+   --> crates/sim/src/calibration/tangent.rs:275:9
+    |
+275 |     use super::*;
+    |         ^^^^^^^^
+
+warning: unused import: `super::*`
+   --> crates/sim/src/calibration.rs:103:9
+    |
+103 |     use super::*;
+    |         ^^^^^^^^
+
+warning: unused import: `super::*`
+   --> crates/sim/src/environment.rs:326:9
+    |
+326 |     use super::*;
+    |         ^^^^^^^^
+
+warning: unused imports: `Profile` and `Simulation`
+   --> crates/sim/src/environment.rs:327:17
+    |
+327 |     use crate::{Profile, Simulation};
+    |                 ^^^^^^^  ^^^^^^^^^^
+
+warning: unused imports: `Action`, `Command`, `Mode`, and `Stamp`
+   --> crates/sim/src/environment.rs:328:24
+    |
+328 |     use lh_contracts::{Action, Command, Mode, Stamp};
+    |                        ^^^^^^  ^^^^^^^  ^^^^  ^^^^^
+
+warning: unused import: `super::*`
+   --> crates/sim/src/grab.rs:158:9
+    |
+158 |     use super::*;
+    |         ^^^^^^^^
+
+warning: unused import: `super::*`
+   --> crates/sim/src/measurement.rs:456:9
+    |
+456 |     use super::*;
+    |         ^^^^^^^^
+
+warning: unused import: `crate::Profile`
+   --> crates/sim/src/measurement.rs:457:9
+    |
+457 |     use crate::Profile;
+    |         ^^^^^^^^^^^^^^
+
+warning: unused imports: `Profile` and `Simulation`
+   --> crates/sim/src/motion.rs:107:17
+    |
+107 |     use crate::{Profile, Simulation};
+    |                 ^^^^^^^  ^^^^^^^^^^
+
+warning: unused import: `lh_contracts::Motion`
+   --> crates/sim/src/motion.rs:108:9
+    |
+108 |     use lh_contracts::Motion;
+    |         ^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `super::*`
+  --> crates/sim/src/passive.rs:33:9
+   |
+33 |     use super::*;
+   |         ^^^^^^^^
+
+warning: unused import: `super::*`
+   --> crates/sim/src/profiling.rs:168:9
+    |
+168 |     use super::*;
+    |         ^^^^^^^^
+
+warning: unused imports: `Profile` and `runtime::Runtime`
+   --> crates/sim/src/profiling.rs:169:17
+    |
+169 |     use crate::{Profile, runtime::Runtime};
+    |                 ^^^^^^^  ^^^^^^^^^^^^^^^^
+
+warning: unused imports: `Action`, `Command`, `Mode`, and `Stamp`
+   --> crates/sim/src/profiling.rs:170:24
+    |
+170 |     use lh_contracts::{Action, Command, Mode, Stamp};
+    |                        ^^^^^^  ^^^^^^^  ^^^^  ^^^^^
+
+warning: unused import: `super::*`
+   --> crates/sim/src/reaching.rs:190:9
+    |
+190 |     use super::*;
+    |         ^^^^^^^^
+
+warning: unused import: `crate::Profile`
+   --> crates/sim/src/reaching.rs:191:9
+    |
+191 |     use crate::Profile;
+    |         ^^^^^^^^^^^^^^
+
+warning: unused import: `crate::Profile`
+   --> crates/sim/src/recovery/native_predictor.rs:324:9
+    |
+324 |     use crate::Profile;
+    |         ^^^^^^^^^^^^^^
+
+warning: unused import: `std::time::Instant`
+   --> crates/sim/src/recovery/native_predictor.rs:325:9
+    |
+325 |     use std::time::Instant;
+    |         ^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `Profile`
+ --> crates/sim/src/recovery/trajectory_geometry.rs:4:13
+  |
+4 | use crate::{Profile, Simulation, quat, vector};
+  |             ^^^^^^^
+
+warning: unused imports: `BufRead` and `Write`
+ --> crates/sim/src/recovery/trajectory_geometry.rs:8:15
+  |
+8 | use std::io::{BufRead, Write};
+  |               ^^^^^^^  ^^^^^
+
+warning: unused import: `super::*`
+   --> crates/sim/src/recovery/planner/native_observation.rs:238:9
+    |
+238 |     use super::*;
+    |         ^^^^^^^^
+
+warning: unused imports: `Deserialize` and `Serialize`
+    --> crates/sim/src/recovery/planner/transition_worker.rs:1126:17
+     |
+1126 |     use serde::{Deserialize, Serialize};
+     |                 ^^^^^^^^^^^  ^^^^^^^^^
+     |
+help: if this is a test module, consider adding a `#[cfg(test)]` to the containing module
+    --> crates/sim/src/recovery/planner/transition_worker.rs:1122:1
+     |
+1122 | mod pure_tests {
+     | ^^^^^^^^^^^^^^
+
+warning: unused import: `path::PathBuf`
+ --> crates/sim/src/recovery/support_probe/hand_support_experiment.rs:7:26
+  |
+7 | use std::{cell::RefCell, path::PathBuf, time::Instant};
+  |                          ^^^^^^^^^^^^^
+
+warning: unused import: `Cell`
+ --> crates/sim/src/recovery/support_probe/offline_trajectory.rs:6:12
+  |
+6 |     cell::{Cell, RefCell},
+  |            ^^^^
+
+warning: unused imports: `contacts`, `full_trajectory`, `getup_ab`, `observe`, and `velocity`
+ --> crates/sim/src/recovery/support_probe/whole_history.rs:2:13
+  |
+2 | use super::{contacts, full_trajectory, getup_ab, observe, velocity};
+  |             ^^^^^^^^  ^^^^^^^^^^^^^^^  ^^^^^^^^  ^^^^^^^  ^^^^^^^^
+
+warning: unused imports: `Simulation`, `measurement`, and `recovery`
+ --> crates/sim/src/recovery/support_probe/whole_history.rs:3:13
+  |
+3 | use crate::{Simulation, measurement, recovery};
+  |             ^^^^^^^^^^  ^^^^^^^^^^^  ^^^^^^^^
+
+warning: unused import: `lh_contracts::Motion`
+ --> crates/sim/src/recovery/support_probe/whole_history.rs:4:5
+  |
+4 | use lh_contracts::Motion;
+  |     ^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `rapier3d::prelude::Rotation`
+ --> crates/sim/src/recovery/support_probe/whole_history.rs:5:5
+  |
+5 | use rapier3d::prelude::Rotation;
+  |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused imports: `Value` and `json`
+ --> crates/sim/src/recovery/support_probe/whole_history.rs:7:18
+  |
+7 | use serde_json::{Value, json};
+  |                  ^^^^^  ^^^^
+
+warning: unused import: `BufWriter`
+ --> crates/sim/src/recovery/support_probe/whole_history.rs:8:15
+  |
+8 | use std::io::{BufWriter, Write};
+  |               ^^^^^^^^^
+
+warning: unused import: `super::*`
+  --> crates/sim/src/recovery_contract.rs:83:9
+   |
+83 |     use super::*;
+   |         ^^^^^^^^
+
+warning: unused import: `super::*`
+   --> crates/sim/src/scenarios.rs:357:9
+    |
+357 |     use super::*;
+    |         ^^^^^^^^
+
+warning: unused import: `crate::Profile`
+    --> crates/sim/src/stepping.rs:1447:9
+     |
+1447 |     use crate::Profile;
+     |         ^^^^^^^^^^^^^^
+
+warning: unused import: `super::*`
+   --> crates/sim/src/striker.rs:602:9
+    |
+602 |     use super::*;
+    |         ^^^^^^^^
+
+warning: unused imports: `Profile` and `runtime::Runtime`
+   --> crates/sim/src/striker.rs:603:17
+    |
+603 |     use crate::{Profile, runtime::Runtime};
+    |                 ^^^^^^^  ^^^^^^^^^^^^^^^^
+
+warning: unused imports: `Action`, `Command`, `Mode`, `Reject`, and `Stamp`
+   --> crates/sim/src/striker.rs:604:24
+    |
+604 |     use lh_contracts::{Action, Command, Mode, Reject, Stamp};
+    |                        ^^^^^^  ^^^^^^^  ^^^^  ^^^^^^  ^^^^^
+
+warning: unused import: `super::*`
+    --> crates/sim/src/lib.rs:1561:9
+     |
+1561 |     use super::*;
+     |         ^^^^^^^^
+     |
+help: if this is a test module, consider adding a `#[cfg(test)]` to the containing module
+    --> crates/sim/src/lib.rs:1560:1
+     |
+1560 | mod tests {
+     | ^^^^^^^^^
+
+warning: method `observe` is never used
+   --> crates/sim/src/cycles.rs:498:8
+    |
+483 | impl RecoveryObservation {
+    | ------------------------ method in this implementation
+...
+498 |     fn observe(
+    |        ^^^^^^^
+    |
+    = note: `#[warn(dead_code)]` on by default
+
+warning: function `point` is never used
+   --> crates/sim/src/cycles.rs:980:8
+    |
+980 |     fn point(n: u64) -> Point {
+    |        ^^^^^
+
+warning: function `fallen` is never used
+   --> crates/sim/src/cycles.rs:983:8
+    |
+983 |     fn fallen() -> RecoveryObservation {
+    |        ^^^^^^
+
+warning: struct `MotorTargetDelta` is never constructed
+  --> crates/sim/src/recovery/native_predictor.rs:16:19
+   |
+16 | pub(crate) struct MotorTargetDelta {
+   |                   ^^^^^^^^^^^^^^^^
+
+warning: constant `DEFAULT_EVALUATION_BUDGET` is never used
+  --> crates/sim/src/recovery/native_predictor.rs:22:18
+   |
+22 | pub(crate) const DEFAULT_EVALUATION_BUDGET: usize = 32;
+   |                  ^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: constant `MAX_HORIZON_STEPS` is never used
+  --> crates/sim/src/recovery/native_predictor.rs:23:18
+   |
+23 | pub(crate) const MAX_HORIZON_STEPS: usize = 4;
+   |                  ^^^^^^^^^^^^^^^^^
+
+warning: struct `PreparedNativeStep` is never constructed
+  --> crates/sim/src/recovery/native_predictor.rs:25:19
+   |
+25 | pub(crate) struct PreparedNativeStep<'a> {
+   |                   ^^^^^^^^^^^^^^^^^^
+
+warning: struct `NativePrediction` is never constructed
+  --> crates/sim/src/recovery/native_predictor.rs:34:19
+   |
+34 | pub(crate) struct NativePrediction {
+   |                   ^^^^^^^^^^^^^^^^
+
+warning: struct `NativeHorizonPrediction` is never constructed
+  --> crates/sim/src/recovery/native_predictor.rs:39:19
+   |
+39 | pub(crate) struct NativeHorizonPrediction {
+   |                   ^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: methods `first`, `terminal`, `steps`, and `predictions` are never used
+  --> crates/sim/src/recovery/native_predictor.rs:44:19
+   |
+43 | impl NativeHorizonPrediction {
+   | ---------------------------- methods in this implementation
+44 |     pub(crate) fn first(&self) -> &NativePrediction {
+   |                   ^^^^^
+...
+48 |     pub(crate) fn terminal(&self) -> &NativePrediction {
+   |                   ^^^^^^^^
+...
+52 |     pub(crate) fn steps(&self) -> usize {
+   |                   ^^^^^
+...
+58 |     pub(crate) fn predictions(&self) -> &[NativePrediction] {
+   |                   ^^^^^^^^^^^
+
+warning: methods `world`, `body`, and `body_count` are never used
+  --> crates/sim/src/recovery/native_predictor.rs:65:19
+   |
+63 | impl NativePrediction {
+   | --------------------- methods in this implementation
+64 |     /// Read-only access to the simulated world, including resolved contacts.
+65 |     pub(crate) fn world(&self) -> &PhysicsWorld {
+   |                   ^^^^^
+...
+69 |     pub(crate) fn body(&self, index: usize) -> Option<&RigidBody> {
+   |                   ^^^^
+...
+75 |     pub(crate) fn body_count(&self) -> usize {
+   |                   ^^^^^^^^^^
+
+warning: multiple associated items are never used
+   --> crates/sim/src/recovery/native_predictor.rs:81:19
+    |
+80  | impl<'a> PreparedNativeStep<'a> {
+    | ------------------------------- associated items in this implementation
+81  |     pub(crate) fn capture(sim: &'a Simulation) -> Self {
+    |                   ^^^^^^^
+...
+85  |     pub(crate) fn with_budget(sim: &'a Simulation, max_evaluations: usize) -> Self {
+    |                   ^^^^^^^^^^^
+...
+109 |     pub(crate) fn remaining_evaluations(&self) -> usize {
+    |                   ^^^^^^^^^^^^^^^^^^^^^
+...
+113 |     pub(crate) fn remaining_integrated_steps(&self) -> usize {
+    |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^
+...
+117 |     pub(crate) fn predict(
+    |                   ^^^^^^^
+...
+133 |     pub(crate) fn predict_horizon(
+    |                   ^^^^^^^^^^^^^^^
+...
+155 |     pub(crate) fn predict_reprepared_horizon(
+    |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^
+...
+219 |     fn prepare(
+    |        ^^^^^^^
+
+warning: function `restore_motor_command` is never used
+   --> crates/sim/src/recovery/native_predictor.rs:288:4
+    |
+288 | fn restore_motor_command(data: &mut GenericJoint, command: &GenericJoint) {
+    |    ^^^^^^^^^^^^^^^^^^^^^
+
+warning: function `copy_world` is never used
+   --> crates/sim/src/recovery/native_predictor.rs:305:4
+    |
+305 | fn copy_world(source: &PhysicsWorld) -> PhysicsWorld {
+    |    ^^^^^^^^^^
+
+warning: function `assert_bodies_bitwise_equal` is never used
+   --> crates/sim/src/recovery/native_predictor.rs:327:8
+    |
+327 |     fn assert_bodies_bitwise_equal(a: &Simulation, b: &NativePrediction) {
+    |        ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: function `assert_motor_impulses_bitwise_equal` is never used
+   --> crates/sim/src/recovery/native_predictor.rs:351:8
+    |
+351 |     fn assert_motor_impulses_bitwise_equal(a: &Simulation, b: &NativePrediction) {
+    |        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: function `checked` is never used
+  --> crates/sim/src/recovery/reference_mapping.rs:35:4
+   |
+35 | fn checked(q: Quat) -> Result<Rotation, String> {
+   |    ^^^^^^^
+
+warning: method `coordinates` is never used
+  --> crates/sim/src/recovery/reference_mapping.rs:44:12
+   |
+43 | impl Mapping {
+   | ------------ method in this implementation
+44 |     pub fn coordinates(
+   |            ^^^^^^^^^^^
+
+warning: fields `coordinates`, `program_substep`, `root_position`, and `root_rotation` are never read
+  --> crates/sim/src/recovery/trajectory_geometry.rs:13:5
+   |
+12 | struct Request {
+   |        ------- fields in this struct
+13 |     coordinates: Option<Coordinates>,
+   |     ^^^^^^^^^^^
+14 |     program_substep: Option<u32>,
+   |     ^^^^^^^^^^^^^^^
+15 |     root_position: [f32; 3],
+   |     ^^^^^^^^^^^^^
+16 |     root_rotation: [f32; 4],
+   |     ^^^^^^^^^^^^^
+
+warning: function `query` is never used
+  --> crates/sim/src/recovery/trajectory_geometry.rs:19:4
+   |
+19 | fn query(
+   |    ^^^^^
+
+warning: function `neutral_program` is never used
+   --> crates/sim/src/recovery/trajectory_program.rs:214:15
+    |
+214 | pub(crate) fn neutral_program(model: &Model) -> Program {
+    |               ^^^^^^^^^^^^^^^
+
+warning: constant `HZ` is never used
+  --> crates/sim/src/recovery/planner/continuation.rs:12:7
+   |
+12 | const HZ: u32 = 240;
+   |       ^^
+
+warning: constant `LOCAL_DEADLINE` is never used
+  --> crates/sim/src/recovery/planner/continuation.rs:13:7
+   |
+13 | const LOCAL_DEADLINE: u32 = 2 * HZ;
+   |       ^^^^^^^^^^^^^^
+
+warning: constant `COMPLETE_DEADLINE` is never used
+  --> crates/sim/src/recovery/planner/continuation.rs:14:7
+   |
+14 | const COMPLETE_DEADLINE: u32 = 25 * HZ;
+   |       ^^^^^^^^^^^^^^^^^
+
+warning: constant `STABLE_PERSISTENCE` is never used
+  --> crates/sim/src/recovery/planner/continuation.rs:15:7
+   |
+15 | const STABLE_PERSISTENCE: u32 = 132; // Original 0.55 s; not standing settle.
+   |       ^^^^^^^^^^^^^^^^^^
+
+warning: constant `EXTRA_HOLD` is never used
+  --> crates/sim/src/recovery/planner/continuation.rs:16:7
+   |
+16 | const EXTRA_HOLD: u32 = HZ;
+   |       ^^^^^^^^^^
+
+warning: struct `Timing` is never constructed
+  --> crates/sim/src/recovery/planner/continuation.rs:20:19
+   |
+20 | pub(crate) struct Timing {
+   |                   ^^^^^^
+
+warning: enum `Refusal` is never used
+  --> crates/sim/src/recovery/planner/continuation.rs:29:17
+   |
+29 | pub(crate) enum Refusal {
+   |                 ^^^^^^^
+
+warning: struct `CommandPreparation` is never constructed
+  --> crates/sim/src/recovery/planner/continuation.rs:44:19
+   |
+44 | pub(crate) struct CommandPreparation {
+   |                   ^^^^^^^^^^^^^^^^^^
+
+warning: function `fixture_coordinates` is never used
+  --> crates/sim/src/recovery/planner/continuation.rs:51:15
+   |
+51 | pub(crate) fn fixture_coordinates(model: &Model, poses: &[Pose]) -> Result<Coordinates, Refusal> {
+   |               ^^^^^^^^^^^^^^^^^^^
+
+warning: function `compile_commands` is never used
+  --> crates/sim/src/recovery/planner/continuation.rs:97:15
+   |
+97 | pub(crate) fn compile_commands(
+   |               ^^^^^^^^^^^^^^^^
+
+warning: enum `MissingPreparation` is never used
+   --> crates/sim/src/recovery/planner/continuation.rs:196:17
+    |
+196 | pub(crate) enum MissingPreparation {
+    |                 ^^^^^^^^^^^^^^^^^^
+
+warning: constant `UNSCREENED_REQUIREMENTS` is never used
+   --> crates/sim/src/recovery/planner/continuation.rs:205:18
+    |
+205 | pub(crate) const UNSCREENED_REQUIREMENTS: [MissingPreparation; 6] = [
+    |                  ^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: function `command_only` is never used
+   --> crates/sim/src/recovery/planner/continuation.rs:219:8
+    |
+219 |     fn command_only() -> (Model, Program, Timing) {
+    |        ^^^^^^^^^^^^
+
+warning: constant `MAP_MAX_AGE_STEPS` is never used
+ --> crates/sim/src/recovery/planner/coordinated_runtime.rs:8:7
+  |
+8 | const MAP_MAX_AGE_STEPS: u64 = 24;
+  |       ^^^^^^^^^^^^^^^^^
+
+warning: struct `ResponseMap` is never constructed
+  --> crates/sim/src/recovery/planner/coordinated_runtime.rs:27:19
+   |
+27 | pub(crate) struct ResponseMap {
+   |                   ^^^^^^^^^^^
+
+warning: struct `OutputTask` is never constructed
+  --> crates/sim/src/recovery/planner/coordinated_runtime.rs:38:19
+   |
+38 | pub(crate) struct OutputTask {
+   |                   ^^^^^^^^^^
+
+warning: struct `OutputConstraint` is never constructed
+  --> crates/sim/src/recovery/planner/coordinated_runtime.rs:44:19
+   |
+44 | pub(crate) struct OutputConstraint {
+   |                   ^^^^^^^^^^^^^^^^
+
+warning: struct `AxisSamples` is never constructed
+  --> crates/sim/src/recovery/planner/coordinated_runtime.rs:52:19
+   |
+52 | pub(crate) struct AxisSamples {
+   |                   ^^^^^^^^^^^
+
+warning: associated items `from_samples`, `problem`, and `require_current` are never used
+   --> crates/sim/src/recovery/planner/coordinated_runtime.rs:61:19
+    |
+57  | impl ResponseMap {
+    | ---------------- associated items in this implementation
+...
+61  |     pub(crate) fn from_samples(
+    |                   ^^^^^^^^^^^^
+...
+124 |     fn problem(
+    |        ^^^^^^^
+...
+167 |     pub(crate) fn require_current(&self, at: u64, mode: u64) -> Result<(), String> {
+    |                   ^^^^^^^^^^^^^^^
+
+warning: function `compile_problem` is never used
+   --> crates/sim/src/recovery/planner/coordinated_runtime.rs:253:15
+    |
+253 | pub(crate) fn compile_problem(
+    |               ^^^^^^^^^^^^^^^
+
+warning: function `decide` is never used
+   --> crates/sim/src/recovery/planner/coordinated_runtime.rs:431:15
+    |
+431 | pub(crate) fn decide(
+    |               ^^^^^^
+
+warning: function `model` is never used
+   --> crates/sim/src/recovery/planner/coordinated_runtime.rs:524:8
+    |
+524 |     fn model() -> Model {
+    |        ^^^^^
+
+warning: function `assert_same_memory` is never used
+   --> crates/sim/src/recovery/planner/coordinated_runtime.rs:620:8
+    |
+620 |     fn assert_same_memory(actual: &Memory, expected: &Memory) {
+    |        ^^^^^^^^^^^^^^^^^^
+
+warning: function `unconstrained_rates` is never used
+   --> crates/sim/src/recovery/planner/coordinated_runtime.rs:633:8
+    |
+633 |     fn unconstrained_rates() -> Problem {
+    |        ^^^^^^^^^^^^^^^^^^^
+
+warning: methods `preview` and `verify_tick` are never used
+   --> crates/sim/src/recovery/planner/native_plan_preview.rs:423:19
+    |
+389 | impl<M: Clone> StaticPreviewBranch<M> {
+    | ------------------------------------- methods in this implementation
+...
+423 |     pub(crate) fn preview<O>(
+    |                   ^^^^^^^
+...
+469 |     pub(crate) fn verify_tick<O>(
+    |                   ^^^^^^^^^^^
+
+warning: method `completed_native_substeps` is never used
+   --> crates/sim/src/recovery/planner/native_plan_preview.rs:645:8
+    |
+644 | trait NativeStepClock {
+    |       --------------- method in this trait
+645 |     fn completed_native_substeps(&self) -> u64;
+    |        ^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: function `run_guarded_steps` is never used
+   --> crates/sim/src/recovery/planner/native_plan_preview.rs:687:4
+    |
+687 | fn run_guarded_steps<S: NativeStepClock, M, O>(
+    |    ^^^^^^^^^^^^^^^^^
+
+warning: function `synthetic_parity` is never used
+   --> crates/sim/src/recovery/planner/native_plan_preview.rs:742:8
+    |
+742 |     fn synthetic_parity(identity: usize, count: usize, post_tick: bool) -> NativeParityTrace {
+    |        ^^^^^^^^^^^^^^^^
+
+warning: struct `FakeClock` is never constructed
+   --> crates/sim/src/recovery/planner/native_plan_preview.rs:845:12
+    |
+845 |     struct FakeClock(u64);
+    |            ^^^^^^^^^
+
+warning: struct `FakeBudget` is never constructed
+   --> crates/sim/src/recovery/planner/native_plan_preview.rs:852:12
+    |
+852 |     struct FakeBudget {
+    |            ^^^^^^^^^^
+
+warning: function `assemble` is never used
+   --> crates/sim/src/recovery/planner/geometric_tasks.rs:174:15
+    |
+174 | pub(crate) fn assemble(
+    |               ^^^^^^^^
+
+warning: function `point_world` is never used
+   --> crates/sim/src/recovery/planner/geometric_tasks.rs:305:15
+    |
+305 | pub(crate) fn point_world(
+    |               ^^^^^^^^^^^
+
+warning: function `observed_state` is never used
+   --> crates/sim/src/recovery/planner/geometric_tasks.rs:555:8
+    |
+555 |     fn observed_state() -> ObservedState {
+    |        ^^^^^^^^^^^^^^
+
+warning: function `geometry` is never used
+   --> crates/sim/src/recovery/planner/geometric_tasks.rs:606:8
+    |
+606 |     fn geometry() -> Geometry {
+    |        ^^^^^^^^
+
+warning: constant `PARAMETERS` is never used
+  --> crates/sim/src/recovery/planner/whole_body_controller.rs:39:18
+   |
+39 | pub(crate) const PARAMETERS: &str = r#"{"version":"coordinated-transition-v2-numeric","solver":"feasible-active-set-newton","commandCompi...
+   |                  ^^^^^^^^^^
+
+warning: function `inputs` is never used
+   --> crates/sim/src/recovery/planner/whole_body_controller.rs:493:8
+    |
+493 |     fn inputs() -> (recovery::trajectory_program::Program, ReferenceTasks) {
+    |        ^^^^^^
+
+warning: function `archived_problems` is never used
+   --> crates/sim/src/recovery/planner/whole_body_controller.rs:547:8
+    |
+547 |     fn archived_problems() -> (
+    |        ^^^^^^^^^^^^^^^^^
+
+warning: constant `AXES` is never used
+ --> /workspace/LaboratoireHumain/rust/crates/sim/../../../docs/evidence/coordination-numeric-correction-2026-10-12/frozen-solver-replay.rs:5:18
+  |
+5 | pub(crate) const AXES: usize = 46;
+  |                  ^^^^
+
+warning: type alias `Rates` is never used
+ --> /workspace/LaboratoireHumain/rust/crates/sim/../../../docs/evidence/coordination-numeric-correction-2026-10-12/frozen-solver-replay.rs:6:17
+  |
+6 | pub(crate) type Rates = [f64; AXES];
+  |                 ^^^^^
+
+warning: constant `FEASIBILITY` is never used
+ --> /workspace/LaboratoireHumain/rust/crates/sim/../../../docs/evidence/coordination-numeric-correction-2026-10-12/frozen-solver-replay.rs:7:7
+  |
+7 | const FEASIBILITY: f64 = 1e-8;
+  |       ^^^^^^^^^^^
+
+warning: constant `PROJECTION_CYCLES` is never used
+ --> /workspace/LaboratoireHumain/rust/crates/sim/../../../docs/evidence/coordination-numeric-correction-2026-10-12/frozen-solver-replay.rs:8:7
+  |
+8 | const PROJECTION_CYCLES: usize = 512;
+  |       ^^^^^^^^^^^^^^^^^
+
+warning: constant `SOLVE_ITERATIONS` is never used
+ --> /workspace/LaboratoireHumain/rust/crates/sim/../../../docs/evidence/coordination-numeric-correction-2026-10-12/frozen-solver-replay.rs:9:7
+  |
+9 | const SOLVE_ITERATIONS: usize = 512;
+  |       ^^^^^^^^^^^^^^^^
+
+warning: struct `Task` is never constructed
+  --> /workspace/LaboratoireHumain/rust/crates/sim/../../../docs/evidence/coordination-numeric-correction-2026-10-12/frozen-solver-replay.rs:12:19
+   |
+12 | pub(crate) struct Task {
+   |                   ^^^^
+
+warning: struct `HardTask` is never constructed
+  --> /workspace/LaboratoireHumain/rust/crates/sim/../../../docs/evidence/coordination-numeric-correction-2026-10-12/frozen-solver-replay.rs:19:19
+   |
+19 | pub(crate) struct HardTask {
+   |                   ^^^^^^^^
+
+warning: struct `Problem` is never constructed
+  --> /workspace/LaboratoireHumain/rust/crates/sim/../../../docs/evidence/coordination-numeric-correction-2026-10-12/frozen-solver-replay.rs:27:19
+   |
+27 | pub(crate) struct Problem {
+   |                   ^^^^^^^
+
+warning: struct `Solution` is never constructed
+  --> /workspace/LaboratoireHumain/rust/crates/sim/../../../docs/evidence/coordination-numeric-correction-2026-10-12/frozen-solver-replay.rs:36:19
+   |
+36 | pub(crate) struct Solution {
+   |                   ^^^^^^^^
+
+warning: function `dot` is never used
+  --> /workspace/LaboratoireHumain/rust/crates/sim/../../../docs/evidence/coordination-numeric-correction-2026-10-12/frozen-solver-replay.rs:43:4
+   |
+43 | fn dot(a: &Rates, b: &Rates) -> f64 {
+   |    ^^^
+
+warning: function `max_difference` is never used
+  --> /workspace/LaboratoireHumain/rust/crates/sim/../../../docs/evidence/coordination-numeric-correction-2026-10-12/frozen-solver-replay.rs:46:4
+   |
+46 | fn max_difference(a: &Rates, b: &Rates) -> f64 {
+   |    ^^^^^^^^^^^^^^
+
+warning: methods `validate`, `violation`, `verify_rates`, `project`, and `solve` are never used
+   --> /workspace/LaboratoireHumain/rust/crates/sim/../../../docs/evidence/coordination-numeric-correction-2026-10-12/frozen-solver-replay.rs:54:19
+    |
+53  | impl Problem {
+    | ------------ methods in this implementation
+54  |     pub(crate) fn validate(&self) -> Result<(), String> {
+    |                   ^^^^^^^^
+...
+94  |     fn violation(&self, x: &Rates) -> f64 {
+    |        ^^^^^^^^^
+...
+106 |     pub(crate) fn verify_rates(&self, rates: &Rates) -> Result<(), String> {
+    |                   ^^^^^^^^^^^^
+...
+116 |     fn project(&self, input: Rates) -> Result<Rates, String> {
+    |        ^^^^^^^
+...
+186 |     pub(crate) fn solve(&self) -> Result<Solution, String> {
+    |                   ^^^^^
+
+warning: constant `MAX_RELEASE_FRACTION` is never used
+  --> crates/sim/src/recovery/planner/support_state.rs:14:11
+   |
+14 | pub const MAX_RELEASE_FRACTION: f64 = 0.25;
+   |           ^^^^^^^^^^^^^^^^^^^^
+
+warning: method `admitted_support` is never used
+  --> crates/sim/src/recovery/planner/support_state.rs:39:8
+   |
+38 | impl SegmentRole {
+   | ---------------- method in this implementation
+39 |     fn admitted_support(self) -> bool {
+   |        ^^^^^^^^^^^^^^^^
+
+warning: method `replace_in_pivot` is never used
+   --> crates/sim/src/recovery/planner/support_state.rs:298:12
+    |
+261 | impl MaterialTracker {
+    | -------------------- method in this implementation
+...
+298 |     pub fn replace_in_pivot(
+    |            ^^^^^^^^^^^^^^^^
+
+warning: function `supported_transfer` is never used
+   --> crates/sim/src/recovery/planner/support_state.rs:342:8
+    |
+342 | pub fn supported_transfer(
+    |        ^^^^^^^^^^^^^^^^^^
+
+warning: method `request_release` is never used
+   --> crates/sim/src/recovery/planner/support_state.rs:396:12
+    |
+395 | impl RetainedSupports {
+    | --------------------- method in this implementation
+396 |     pub fn request_release(
+    |            ^^^^^^^^^^^^^^^
+
+warning: function `observation` is never used
+   --> crates/sim/src/recovery/planner/support_state.rs:673:8
+    |
+673 |     fn observation() -> SupportObservation {
+    |        ^^^^^^^^^^^
+
+warning: function `tick` is never used
+   --> crates/sim/src/recovery/planner/support_state.rs:721:8
+    |
+721 |     fn tick(state: &mut SupportObservation) {
+    |        ^^^^
+
+warning: function `problem` is never used
+   --> crates/sim/src/recovery/planner/whole_body_tasks.rs:709:8
+    |
+709 |     fn problem() -> Problem {
+    |        ^^^^^^^
+
+warning: function `permit` is never used
+    --> crates/sim/src/recovery/planner/transition_worker.rs:1128:8
+     |
+1128 |     fn permit(id: &str, steps: u64) -> Value {
+     |        ^^^^^^
+
+warning: function `path` is never used
+    --> crates/sim/src/recovery/planner/transition_worker.rs:1132:8
+     |
+1132 |     fn path(name: &str) -> String {
+     |        ^^^^
+
+warning: function `request` is never used
+    --> crates/sim/src/recovery/planner/transition_worker.rs:1146:8
+     |
+1146 |     fn request(clock: u64) -> StepReservation {
+     |        ^^^^^^^
+
+warning: function `segment_only_support` is never used
+    --> crates/sim/src/recovery.rs:2112:8
+     |
+2112 |     fn segment_only_support(heading: f32, id: &str) -> Simulation {
+     |        ^^^^^^^^^^^^^^^^^^^^
+
+warning: function `forefoot_only_support` is never used
+    --> crates/sim/src/recovery.rs:2152:8
+     |
+2152 |     fn forefoot_only_support(heading: f32) -> Simulation {
+     |        ^^^^^^^^^^^^^^^^^^^^^
+
+warning: function `contacts` is never used
+  --> crates/sim/src/recovery/support_probe.rs:23:4
+   |
+23 | fn contacts(s: &Simulation) -> Vec<Value> {
+   |    ^^^^^^^^
+
+warning: function `observe` is never used
+  --> crates/sim/src/recovery/support_probe.rs:62:4
+   |
+62 | fn observe(s: &Simulation, previous: Vector) -> Value {
+   |    ^^^^^^^
+
+warning: function `activate_history` is never used
+  --> crates/sim/src/recovery/support_probe/full_trajectory.rs:15:15
+   |
+15 | pub(super) fn activate_history(program: CompiledProgram, start: u64) {
+   |               ^^^^^^^^^^^^^^^^
+
+warning: function `finish_history` is never used
+  --> crates/sim/src/recovery/support_probe/full_trajectory.rs:25:15
+   |
+25 | pub(super) fn finish_history() -> (bool, f64, f32) {
+   |               ^^^^^^^^^^^^^^
+
+warning: struct `ActiveGuard` is never constructed
+  --> crates/sim/src/recovery/support_probe/full_trajectory.rs:82:8
+   |
+82 | struct ActiveGuard;
+   |        ^^^^^^^^^^^
+
+warning: constant `PARAMETERS` is never used
+  --> crates/sim/src/recovery/support_probe/getup_ab.rs:13:18
+   |
+13 | pub(crate) const PARAMETERS: &str = r#"{"version":"getup-ab-v1","captureGainPerS":4.0,"maximumRelativeComVelocityMps":0.15,"maximumCorrec...
+   |                  ^^^^^^^^^^
+
+warning: function `activate` is never used
+  --> crates/sim/src/recovery/support_probe/getup_ab.rs:32:15
+   |
+32 | pub(super) fn activate(program: CompiledProgram, s: &Simulation, enabled: bool) {
+   |               ^^^^^^^^
+
+warning: function `finish` is never used
+  --> crates/sim/src/recovery/support_probe/getup_ab.rs:52:15
+   |
+52 | pub(super) fn finish() -> (bool, f64, f32) {
+   |               ^^^^^^
+
+warning: function `last_command` is never used
+  --> crates/sim/src/recovery/support_probe/getup_ab.rs:58:15
+   |
+58 | pub(super) fn last_command() -> Value {
+   |               ^^^^^^^^^^^^
+
+warning: constant `MAX_WALL_S` is never used
+  --> crates/sim/src/recovery/support_probe/hand_support_experiment.rs:18:7
+   |
+18 | const MAX_WALL_S: f64 = 120.0;
+   |       ^^^^^^^^^^
+
+warning: fields `native_horizon_s` and `stop_at_base` are never read
+  --> crates/sim/src/recovery/support_probe/hand_support_experiment.rs:44:5
+   |
+39 | struct Plan {
+   |        ---- fields in this struct
+...
+44 |     native_horizon_s: f32,
+   |     ^^^^^^^^^^^^^^^^
+45 |     #[serde(default)]
+46 |     stop_at_base: bool,
+   |     ^^^^^^^^^^^^
+   |
+   = note: `Plan` has a derived impl for the trait `Clone`, but this is intentionally ignored during dead code analysis
+
+warning: associated function `load` is never used
+  --> crates/sim/src/recovery/support_probe/hand_support_experiment.rs:50:8
+   |
+49 | impl Plan {
+   | --------- associated function in this implementation
+50 |     fn load(path: &str) -> Result<Self, String> {
+   |        ^^^^
+
+warning: variants `StrictCorridor`, `LandingOnly`, and `ProneRecovery` are never constructed
+  --> crates/sim/src/recovery/support_probe/hand_support_experiment.rs:86:5
+   |
+85 | enum ObservationPolicy {
+   |      ----------------- variants in this enum
+86 |     StrictCorridor,
+   |     ^^^^^^^^^^^^^^
+87 |     LandingOnly,
+   |     ^^^^^^^^^^^
+88 |     ProneRecovery,
+   |     ^^^^^^^^^^^^^
+   |
+   = note: `ObservationPolicy` has a derived impl for the trait `Clone`, but this is intentionally ignored during dead code analysis
+
+warning: function `allowed` is never used
+   --> crates/sim/src/recovery/support_probe/hand_support_experiment.rs:103:4
+    |
+103 | fn allowed(id: &str) -> bool {
+    |    ^^^^^^^
+
+warning: function `command` is never used
+   --> crates/sim/src/recovery/support_probe/hand_support_experiment.rs:107:4
+    |
+107 | fn command(
+    |    ^^^^^^^
+
+warning: multiple fields are never read
+   --> crates/sim/src/recovery/support_probe/hand_support_experiment.rs:180:5
+    |
+175 | struct Context {
+    |        ------- fields in this struct
+...
+180 |     previous_com_velocity: Vector,
+    |     ^^^^^^^^^^^^^^^^^^^^^
+181 |     trace: Vec<Value>,
+    |     ^^^^^
+182 |     unsupported_steps: u64,
+    |     ^^^^^^^^^^^^^^^^^
+183 |     terminal_steps: u64,
+    |     ^^^^^^^^^^^^^^
+184 |     max_terminal_steps: u64,
+    |     ^^^^^^^^^^^^^^^^^^
+185 |     max_cap_sum_nm: f64,
+186 |     max_unplanned_load_n: f32,
+    |     ^^^^^^^^^^^^^^^^^^^^
+187 |     first_hand: Option<Value>,
+    |     ^^^^^^^^^^
+188 |     first_shin: Option<Value>,
+    |     ^^^^^^^^^^
+189 |     first_unplanned: Option<Value>,
+    |     ^^^^^^^^^^^^^^^
+190 |     reference_steps: u64,
+191 |     base_stable_steps: u64,
+    |     ^^^^^^^^^^^^^^^^^
+192 |     max_base_stable_steps: u64,
+    |     ^^^^^^^^^^^^^^^^^^^^^
+193 |     base_gate_open: bool,
+194 |     base_gate_open_time_s: Option<f32>,
+    |     ^^^^^^^^^^^^^^^^^^^^^
+195 |     observation_policy: ObservationPolicy,
+    |     ^^^^^^^^^^^^^^^^^^
+196 |     first_corridor_failure: Option<measurement::Failure>,
+    |     ^^^^^^^^^^^^^^^^^^^^^^
+197 |     rest_steps: u64,
+    |     ^^^^^^^^^^
+198 |     max_rest_steps: u64,
+    |     ^^^^^^^^^^^^^^
+
+warning: function `contacts` is never used
+   --> crates/sim/src/recovery/support_probe/hand_support_experiment.rs:249:4
+    |
+249 | fn contacts(s: &Simulation) -> (Vec<Value>, Vector) {
+    |    ^^^^^^^^
+
+warning: function `momentum` is never used
+   --> crates/sim/src/recovery/support_probe/hand_support_experiment.rs:318:4
+    |
+318 | fn momentum(s: &Simulation) -> Value {
+    |    ^^^^^^^^
+
+warning: function `contact_sum` is never used
+   --> crates/sim/src/recovery/support_probe/hand_support_experiment.rs:334:4
+    |
+334 | fn contact_sum(contacts: &[Value], id: &str) -> f32 {
+    |    ^^^^^^^^^^^
+
+warning: function `observe_step` is never used
+   --> crates/sim/src/recovery/support_probe/hand_support_experiment.rs:342:4
+    |
+342 | fn observe_step(
+    |    ^^^^^^^^^^^^
+
+warning: function `run` is never used
+   --> crates/sim/src/recovery/support_probe/hand_support_experiment.rs:457:4
+    |
+457 | fn run(
+    |    ^^^
+
+warning: function `run_with_policy` is never used
+   --> crates/sim/src/recovery/support_probe/hand_support_experiment.rs:476:4
+    |
+476 | fn run_with_policy(
+    |    ^^^^^^^^^^^^^^^
+
+warning: function `chain_clearance_projection` is never used
+   --> crates/sim/src/recovery/support_probe/land_arm_tracking.rs:177:15
+    |
+177 | pub(super) fn chain_clearance_projection(
+    |               ^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: constant `MARGIN` is never used
+ --> crates/sim/src/recovery/support_probe/bounded_arm_clearance.rs:4:7
+  |
+4 | const MARGIN: f32 = 0.00001;
+  |       ^^^^^^
+
+warning: struct `Axis` is never constructed
+ --> crates/sim/src/recovery/support_probe/bounded_arm_clearance.rs:6:8
+  |
+6 | struct Axis {
+  |        ^^^^
+
+warning: struct `Constraint` is never constructed
+  --> crates/sim/src/recovery/support_probe/bounded_arm_clearance.rs:13:8
+   |
+13 | struct Constraint {
+   |        ^^^^^^^^^^
+
+warning: function `derivative` is never used
+  --> crates/sim/src/recovery/support_probe/bounded_arm_clearance.rs:18:4
+   |
+18 | fn derivative(k: &Kinematics, arm: &[usize], a: Axis, body: usize, point: Vector) -> Vector {
+   |    ^^^^^^^^^^
+
+warning: function `constraints` is never used
+  --> crates/sim/src/recovery/support_probe/bounded_arm_clearance.rs:32:4
+   |
+32 | fn constraints(
+   |    ^^^^^^^^^^^
+
+warning: function `merit` is never used
+   --> crates/sim/src/recovery/support_probe/bounded_arm_clearance.rs:129:4
+    |
+129 | fn merit(c: &[Constraint]) -> f64 {
+    |    ^^^^^
+
+warning: function `bounded_step` is never used
+   --> crates/sim/src/recovery/support_probe/bounded_arm_clearance.rs:134:4
+    |
+134 | fn bounded_step(c: &[Constraint], axes: &[Axis], q: &Coordinates) -> Option<Vec<f64>> {
+    |    ^^^^^^^^^^^^
+
+warning: function `project` is never used
+   --> crates/sim/src/recovery/support_probe/bounded_arm_clearance.rs:211:15
+    |
+211 | pub(super) fn project(
+    |               ^^^^^^^
+
+warning: constant `END_STEP` is never used
+ --> crates/sim/src/recovery/support_probe/left_hand_command_audit.rs:6:7
+  |
+6 | const END_STEP: u64 = BRANCH_STEP + 120;
+  |       ^^^^^^^^
+
+warning: constant `WALL_BUDGET_S` is never used
+ --> crates/sim/src/recovery/support_probe/left_hand_command_audit.rs:7:7
+  |
+7 | const WALL_BUDGET_S: f64 = 45.0;
+  |       ^^^^^^^^^^^^^
+
+warning: fields `started` and `first_stall` are never read
+  --> crates/sim/src/recovery/support_probe/left_hand_command_audit.rs:10:5
+   |
+8  | struct Audit {
+   |        ----- fields in this struct
+9  |     gravity: bool,
+10 |     started: Instant,
+   |     ^^^^^^^
+11 |     first_stall: Option<measurement::Failure>,
+   |     ^^^^^^^^^^^
+
+warning: function `enabled` is never used
+  --> crates/sim/src/recovery/support_probe/left_hand_command_audit.rs:14:15
+   |
+14 | pub(super) fn enabled() -> bool {
+   |               ^^^^^^^
+
+warning: function `remember_stall` is never used
+  --> crates/sim/src/recovery/support_probe/left_hand_command_audit.rs:17:15
+   |
+17 | pub(super) fn remember_stall(f: measurement::Failure) {
+   |               ^^^^^^^^^^^^^^
+
+warning: function `finished` is never used
+  --> crates/sim/src/recovery/support_probe/left_hand_command_audit.rs:23:15
+   |
+23 | pub(super) fn finished(s: &Simulation) -> bool {
+   |               ^^^^^^^^
+
+warning: function `wall_guard` is never used
+  --> crates/sim/src/recovery/support_probe/left_hand_command_audit.rs:26:15
+   |
+26 | pub(super) fn wall_guard(s: &Simulation, substep: u32) -> Result<(), measurement::Failure> {
+   |               ^^^^^^^^^^
+
+warning: function `summary` is never used
+  --> crates/sim/src/recovery/support_probe/left_hand_command_audit.rs:43:15
+   |
+43 | pub(super) fn summary() -> Value {
+   |               ^^^^^^^
+
+warning: function `observe` is never used
+   --> crates/sim/src/recovery/support_probe/left_hand_command_audit.rs:150:15
+    |
+150 | pub(super) fn observe(s: &Simulation) -> Value {
+    |               ^^^^^^^
+
+warning: function `observe_arms` is never used
+   --> crates/sim/src/recovery/support_probe/left_hand_command_audit.rs:153:15
+    |
+153 | pub(super) fn observe_arms(s: &Simulation, sides: &[&str]) -> Value {
+    |               ^^^^^^^^^^^^
+
+warning: constant `HORIZON_S` is never used
+ --> crates/sim/src/recovery/support_probe/prone_chain_execution.rs:4:18
+  |
+4 | pub(super) const HORIZON_S: f32 = 25.0;
+  |                  ^^^^^^^^^
+
+warning: constant `WALL_BUDGET_S` is never used
+ --> crates/sim/src/recovery/support_probe/prone_chain_execution.rs:5:7
+  |
+5 | const WALL_BUDGET_S: f64 = 150.0;
+  |       ^^^^^^^^^^^^^
+
+warning: function `contact_tracking_enabled` is never used
+  --> crates/sim/src/recovery/support_probe/prone_chain_execution.rs:10:15
+   |
+10 | pub(super) fn contact_tracking_enabled() -> bool {
+   |               ^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: function `wall_guard` is never used
+  --> crates/sim/src/recovery/support_probe/prone_chain_execution.rs:13:15
+   |
+13 | pub(super) fn wall_guard(s: &Simulation, substep: u32) -> Result<(), measurement::Failure> {
+   |               ^^^^^^^^^^
+
+warning: fields `hand` and `acquire_contact` are never read
+  --> crates/sim/src/recovery/support_probe/prone_recovery_experiment.rs:10:5
+   |
+6  | struct Stage {
+   |        ----- fields in this struct
+...
+10 |     hand: String,
+   |     ^^^^
+11 |     target_hand_center_m: lh_model::Vec3,
+12 |     acquire_contact: bool,
+   |     ^^^^^^^^^^^^^^^
+   |
+   = note: `Stage` has a derived impl for the trait `Clone`, but this is intentionally ignored during dead code analysis
+
+warning: fields `initial_coordinates` and `construction_errors` are never read
+  --> crates/sim/src/recovery/support_probe/prone_recovery_experiment.rs:27:5
+   |
+26 | struct Program {
+   |        ------- fields in this struct
+27 |     initial_coordinates: Coordinates,
+   |     ^^^^^^^^^^^^^^^^^^^
+...
+31 |     construction_errors: Vec<Value>,
+   |     ^^^^^^^^^^^^^^^^^^^
+   |
+   = note: `Program` has a derived impl for the trait `Clone`, but this is intentionally ignored during dead code analysis
+
+warning: fields `entry_torso_height`, `best_progress`, `last_progress_time`, `milestone_steps`, `max_milestone_steps`, and `missing_hands_steps` are never read
+  --> crates/sim/src/recovery/support_probe/prone_recovery_experiment.rs:42:5
+   |
+34 | struct Running {
+   |        ------- fields in this struct
+...
+42 |     entry_torso_height: f32,
+   |     ^^^^^^^^^^^^^^^^^^
+43 |     best_progress: f32,
+   |     ^^^^^^^^^^^^^
+44 |     last_progress_time: f32,
+   |     ^^^^^^^^^^^^^^^^^^
+45 |     milestone_steps: u64,
+   |     ^^^^^^^^^^^^^^^
+46 |     max_milestone_steps: u64,
+   |     ^^^^^^^^^^^^^^^^^^^
+47 |     missing_hands_steps: u64,
+   |     ^^^^^^^^^^^^^^^^^^^
+
+warning: fields `last_observation` and `hold_first_preparation` are never read
+  --> crates/sim/src/recovery/support_probe/prone_recovery_experiment.rs:52:5
+   |
+49 | pub(super) struct Controller {
+   |                   ---------- fields in this struct
+...
+52 |     last_observation: Value,
+   |     ^^^^^^^^^^^^^^^^
+53 |     hold_first_preparation: bool,
+   |     ^^^^^^^^^^^^^^^^^^^^^^
+
+warning: associated items `load`, `active`, `start`, `observe`, `passed`, and `observation` are never used
+   --> crates/sim/src/recovery/support_probe/prone_recovery_experiment.rs:58:19
+    |
+57  | impl Controller {
+    | --------------- associated items in this implementation
+58  |     pub(super) fn load(path: &str) -> Result<Self, String> {
+    |                   ^^^^
+...
+100 |     pub(super) fn active(&self) -> bool {
+    |                   ^^^^^^
+...
+103 |     pub(super) fn start(&mut self, s: &Simulation, held: &Coordinates) -> Result<(), String> {
+    |                   ^^^^^
+...
+253 |     pub(super) fn observe(
+    |                   ^^^^^^^
+...
+395 |     pub(super) fn passed(&self) -> bool {
+    |                   ^^^^^^
+...
+405 |     pub(super) fn observation(&self) -> Value {
+    |                   ^^^^^^^^^^^
+
+warning: constant `MAX_CASES` is never used
+  --> crates/sim/src/recovery/support_probe/offline_trajectory.rs:11:7
+   |
+11 | const MAX_CASES: usize = 48;
+   |       ^^^^^^^^^
+
+warning: constant `MAX_WALL_S` is never used
+  --> crates/sim/src/recovery/support_probe/offline_trajectory.rs:12:7
+   |
+12 | const MAX_WALL_S: f64 = 600.0;
+   |       ^^^^^^^^^^
+
+warning: constant `TRACE_STRIDE` is never used
+  --> crates/sim/src/recovery/support_probe/offline_trajectory.rs:13:7
+   |
+13 | const TRACE_STRIDE: u64 = 4;
+   |       ^^^^^^^^^^^^
+
+warning: constant `SEARCH_VERSION` is never used
+  --> crates/sim/src/recovery/support_probe/offline_trajectory.rs:14:7
+   |
+14 | const SEARCH_VERSION: &str = "offline-trajectory-v1";
+   |       ^^^^^^^^^^^^^^
+
+warning: associated items `baseline`, `within_family`, and `shifted` are never used
+  --> crates/sim/src/recovery/support_probe/offline_trajectory.rs:32:8
+   |
+31 | impl Parameters {
+   | --------------- associated items in this implementation
+32 |     fn baseline() -> Self {
+   |        ^^^^^^^^
+...
+45 |     fn within_family(self) -> bool {
+   |        ^^^^^^^^^^^^^
+...
+58 |     fn shifted(mut self, dim: usize, amount: f32) -> Option<Self> {
+   |        ^^^^^^^
+
+warning: struct `Plan` is never constructed
+  --> crates/sim/src/recovery/support_probe/offline_trajectory.rs:82:8
+   |
+82 | struct Plan {
+   |        ^^^^
+
+warning: associated function `load` is never used
+  --> crates/sim/src/recovery/support_probe/offline_trajectory.rs:88:8
+   |
+87 | impl Plan {
+   | --------- associated function in this implementation
+88 |     fn load() -> Result<Self, String> {
+   |        ^^^^
+
+warning: multiple fields are never read
+   --> crates/sim/src/recovery/support_probe/offline_trajectory.rs:126:5
+    |
+118 | struct Context {
+    |        ------- fields in this struct
+...
+126 |     max_stable_substeps: u64,
+    |     ^^^^^^^^^^^^^^^^^^^
+127 |     unsupported_substeps: u64,
+    |     ^^^^^^^^^^^^^^^^^^^^
+128 |     bilateral_substeps: u64,
+    |     ^^^^^^^^^^^^^^^^^^
+129 |     balanced_substeps: u64,
+    |     ^^^^^^^^^^^^^^^^^
+130 |     resolved_inside_substeps: u64,
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^
+131 |     highest_stand_row: usize,
+132 |     max_pelvis_height_m: f32,
+    |     ^^^^^^^^^^^^^^^^^^^
+133 |     min_capture_distance_m: f32,
+    |     ^^^^^^^^^^^^^^^^^^^^^^
+...
+140 |     trace: Vec<Value>,
+    |     ^^^^^
+141 |     previous_velocity: Vector,
+    |     ^^^^^^^^^^^^^^^^^
+142 |     velocity_before_last_observation: Vector,
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+143 |     last_observed_substep: u64,
+    |     ^^^^^^^^^^^^^^^^^^^^^
+144 |     quiet_hold_substeps: u64,
+    |     ^^^^^^^^^^^^^^^^^^^
+145 |     first_recovery_s: Option<f32>,
+    |     ^^^^^^^^^^^^^^^^
+146 |     max_nonfoot_load_n: f32,
+    |     ^^^^^^^^^^^^^^^^^^
+147 |     first_unplanned_contact: Option<Value>,
+    |     ^^^^^^^^^^^^^^^^^^^^^^^
+148 |     first_persistent_unplanned_support: Option<Value>,
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: function `capture_distance` is never used
+   --> crates/sim/src/recovery/support_probe/offline_trajectory.rs:513:4
+    |
+513 | fn capture_distance(physical: &Value) -> Option<f32> {
+    |    ^^^^^^^^^^^^^^^^
+
+warning: function `resolved_inside` is never used
+   --> crates/sim/src/recovery/support_probe/offline_trajectory.rs:521:4
+    |
+521 | fn resolved_inside(s: &Simulation, contacts: &[Value]) -> bool {
+    |    ^^^^^^^^^^^^^^^
+
+warning: function `observe_step` is never used
+   --> crates/sim/src/recovery/support_probe/offline_trajectory.rs:547:4
+    |
+547 | fn observe_step(
+    |    ^^^^^^^^^^^^
+
+warning: function `quantiles` is never used
+   --> crates/sim/src/recovery/support_probe/offline_trajectory.rs:622:4
+    |
+622 | fn quantiles(mut samples: Vec<f64>) -> Value {
+    |    ^^^^^^^^^
+
+warning: function `run_case` is never used
+   --> crates/sim/src/recovery/support_probe/offline_trajectory.rs:632:4
+    |
+632 | fn run_case(
+    |    ^^^^^^^^
+
+warning: function `hash_key` is never used
+   --> crates/sim/src/recovery/support_probe/offline_trajectory.rs:789:4
+    |
+789 | fn hash_key(
+    |    ^^^^^^^^
+
+warning: function `integrity_violation` is never used
+   --> crates/sim/src/recovery/support_probe/offline_trajectory.rs:826:4
+    |
+826 | fn integrity_violation(report: &Value) -> f64 {
+    |    ^^^^^^^^^^^^^^^^^^^
+
+warning: function `score` is never used
+   --> crates/sim/src/recovery/support_probe/offline_trajectory.rs:854:4
+    |
+854 | fn score(report: &Value) -> [f64; 13] {
+    |    ^^^^^
+
+warning: function `better` is never used
+   --> crates/sim/src/recovery/support_probe/offline_trajectory.rs:875:4
+    |
+875 | fn better(a: &Value, b: &Value) -> bool {
+    |    ^^^^^^
+
+warning: function `initial_family` is never used
+   --> crates/sim/src/recovery/support_probe/offline_trajectory.rs:884:4
+    |
+884 | fn initial_family() -> Vec<Parameters> {
+    |    ^^^^^^^^^^^^^^
+
+warning: struct `StateHash` is never constructed
+  --> crates/sim/src/recovery/support_probe/whole_history.rs:11:8
+   |
+11 | struct StateHash(u64);
+   |        ^^^^^^^^^
+
+warning: function `hash` is never used
+  --> crates/sim/src/recovery/support_probe/whole_history.rs:23:4
+   |
+23 | fn hash<T: Serialize>(value: &T) -> String {
+   |    ^^^^
+
+warning: function `runtime` is never used
+   --> crates/sim/src/runtime.rs:685:8
+    |
+685 |     fn runtime() -> Runtime {
+    |        ^^^^^^^
+
+warning: function `submit` is never used
+   --> crates/sim/src/runtime.rs:688:8
+    |
+688 |     fn submit(r: &mut Runtime, sequence: u64, tick: u64, action: Action) {
+    |        ^^^^^^
+
+warning: function `begin` is never used
+   --> crates/sim/src/runtime.rs:695:8
+    |
+695 |     fn begin(press: u64) -> Action {
+    |        ^^^^^
+
+warning: function `request` is never used
+    --> crates/sim/src/stepping.rs:1472:8
+     |
+1472 |     fn request(controller: &StepController, s: &Simulation) -> Swing {
+     |        ^^^^^^^
+
+warning: `lh-sim` (test "coordination-local-pair-worker") generated 196 warnings (run `cargo fix --test "coordination-local-pair-worker"` to apply 39 suggestions)
+    Finished `release` profile [optimized] target(s) in 34.14s
+  Executable src/lib.rs (rust/target/release/deps/coordination_local_pair_worker-bf2c98f759d9dc34)

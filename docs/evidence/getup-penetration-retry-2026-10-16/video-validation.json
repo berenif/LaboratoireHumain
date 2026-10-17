@@ -1,0 +1,39 @@
+{
+  "file": "LaboratoireHumain-Rapier-WEAK-SLOW-4s-2026-10-16.mp4",
+  "sha256": "262f069e68944bf041d6cfa1b34faeddbe3f59e7bcc226132bd77b8376d61903",
+  "sizeBytes": 132756,
+  "ffprobe": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_name": "h264",
+        "width": 1280,
+        "height": 720,
+        "pix_fmt": "yuv420p",
+        "r_frame_rate": "20/1",
+        "nb_frames": "100"
+      }
+    ],
+    "format": {
+      "duration": "5.000000",
+      "size": "132756"
+    }
+  },
+  "fullDecodePassed": true,
+  "lastFrameVisuallyInspected": true,
+  "archivedStatesOnly": true,
+  "physicsIntegrations": 0,
+  "physicalDurationSeconds": 4,
+  "presentationDurationSeconds": 5,
+  "finalPoseHoldSeconds": 1,
+  "forecastExplicitlySeparateFromRealMotion": true,
+  "library": {
+    "library_file_id": "libfile_664af6479d6c8191ae7e82b74bb34b7e",
+    "file_id": "file_00000000424881f7a7733641141b934d",
+    "current_version_number": 0,
+    "file_name": "LaboratoireHumain-Rapier-WEAK-SLOW-4s-2026-10-16.mp4",
+    "status": "succeeded",
+    "local_metadata_applied": true
+  }
+}

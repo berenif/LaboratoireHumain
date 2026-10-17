@@ -1,0 +1,67 @@
+warning: /workspace/LaboratoireHumain/rust/crates/sim/Cargo.toml: file `/workspace/LaboratoireHumain/rust/crates/sim/src/lib.rs` found to be present in multiple build targets:
+  * `lib` target `lh_sim`
+  * `integration-test` target `coordination-worker`
+   Compiling lh-sim v0.1.0 (/workspace/LaboratoireHumain/rust/crates/sim)
+warning: method `record` is never used
+   --> crates/sim/src/recovery/planner/native_plan_preview.rs:102:19
+    |
+92  | impl NativeParityTrace {
+    | ---------------------- method in this implementation
+...
+102 |     pub(crate) fn record(&mut self, s: &Simulation, memory: &impl Serialize) -> Result<(), PreviewError> {
+    |                   ^^^^^^
+    |
+    = note: `#[warn(dead_code)]` on by default
+
+warning: methods `set_feedback_scale`, `preview`, `verify_tick`, and `preview_ticks` are never used
+   --> crates/sim/src/recovery/planner/native_plan_preview.rs:234:19
+    |
+226 | impl<M: Clone> StaticPreviewBranch<M> {
+    | ------------------------------------- methods in this implementation
+...
+234 |     pub(crate) fn set_feedback_scale(&mut self, scale: f64) -> Result<(), PreviewError> {
+    |                   ^^^^^^^^^^^^^^^^^^
+...
+249 |     pub(crate) fn preview<O>(
+    |                   ^^^^^^^
+...
+266 |     pub(crate) fn verify_tick<O>(
+    |                   ^^^^^^^^^^^
+...
+273 |     fn preview_ticks<O>(
+    |        ^^^^^^^^^^^^^
+
+warning: variant `Candidate` is never constructed
+   --> crates/sim/src/recovery/planner/native_plan_preview.rs:336:54
+    |
+336 | pub(crate) enum PreviewPurpose { ParityVerification, Candidate }
+    |                 -------------- variant in this enum  ^^^^^^^^^
+    |
+    = note: `PreviewPurpose` has derived impls for the traits `Clone` and `Debug`, but these are intentionally ignored during dead code analysis
+
+warning: method `admit_preview` is never used
+   --> crates/sim/src/recovery/planner/native_plan_preview.rs:354:8
+    |
+350 | pub(crate) trait PreviewBudget {
+    |                  ------------- method in this trait
+...
+354 |     fn admit_preview(&mut self, purpose: PreviewPurpose, steps: u32) -> Result<(), String>;
+    |        ^^^^^^^^^^^^^
+
+warning: constant `PARAMETERS` is never used
+  --> crates/sim/src/recovery/planner/whole_body_controller.rs:24:18
+   |
+24 | pub(crate) const PARAMETERS:&str = r#"{"version":"coordinated-transition-v1","controlHz":60,"previewHz":10,"previewSteps":480,"candidates...
+   |                  ^^^^^^^^^^
+
+warning: `lh-sim` (lib test) generated 5 warnings
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 4.03s
+     Running unittests src/lib.rs (rust/target/debug/deps/lh_sim-68e67b1c237792f1)
+
+running 3 tests
+test recovery::planner::whole_body_controller::tests::malformed_reference_is_refused_before_any_step ... ok
+test recovery::planner::whole_body_controller::tests::handoff_releases_owner_and_preserves_original_measured_gate_without_integration ... ok
+test recovery::planner::whole_body_controller::tests::shared_acquisition_prefix_installs_identical_native_motors_without_integration ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 176 filtered out; finished in 0.23s
+

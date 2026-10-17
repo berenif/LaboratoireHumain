@@ -1,0 +1,15 @@
+#!/usr/bin/env python3
+"""Archive-only stability and penetration audit of the completed source baseline."""
+import json,pathlib,numpy as np
+ROOT=pathlib.Path(__file__).resolve().parents[2];OUT=ROOT/'outputs/getup-source-baseline-2026-10-16'
+result=json.loads((OUT/'result.json').read_text());rows=[json.loads(x) for x in (OUT/'student-continuation-states.ndjson').read_text().splitlines()];assert len(rows)==4320
+mass=json.loads((ROOT/'rust/crates/model/data/getup-v1.json').read_text())['totalMassKg'];count=0;maximum=0;first=None
+for row in rows:
+ s=row['standing'];conditions=s['conditions'];valid=all(conditions.values()) and s['footDriftM'] is not None and s['footDriftM']<=.01
+ count=count+1 if valid else 0;maximum=max(maximum,count)
+ assert abs(count*.00125-s['stableSeconds'])<1e-10
+ if count>=800 and first is None:first=row['phaseNativeStep']*.00125
+assert first==result['firstStableStandingTimeS'] and abs(maximum*.00125-result['maximumStableStandingSeconds'])<1e-10
+last=rows[-800:];final=rows[-1];peak=max(rows,key=lambda x:x['maximumSelfPenetrationM']);over=[r for r in rows if r['selfContactQualificationGateExceeded']]
+audit={'additionalPhysicsIntegrations':0,'completeSlowNativeSteps':len(rows),'sourceReferenceNativeTeacherSteps':result['phaseSteps']['teacher-1'],'sourceReferenceFrames':result['referenceFrames'],'sourceSlowControlDecisions':result['studentControlDecisions'],'sourceSlowDurationS':result['studentTimeS'],'actualSourceStableStanding':first is not None,'firstOneSecondStableProofAtSourceTimeS':first,'continuousStableDurationAtEndS':maximum*.00125,'lastOneSecond':{'minimumHeadHeightM':min(r['headHeightM'] for r in last),'minimumTorsoUp':min(r['observation'][36] for r in last),'minimumFeetLoadN':min(sum(r['standing']['footLoadsN']) for r in last),'bodyWeightN':mass*9.81,'maximumOtherFloorLoadN':max(r['standing']['maximumOtherFloorLoadN'] for r in last),'maximumBodyLinearSpeedMps':max(r['standing']['maximumBodyLinearMps'] for r in last),'maximumBodyAngularSpeedRadps':max(r['standing']['maximumBodyAngularRadps'] for r in last),'maximumAnchorFootDriftM':max(r['standing']['footDriftM'] for r in last),'minimumComCaptureHullMarginM':min(r['standing']['minimumComCaptureHullMarginM'] for r in last)},'completeSlowMaximumSelfPenetrationM':peak['maximumSelfPenetrationM'],'completeSlowMaximumSelfPenetrationAtS':peak['timeS'],'completeSlowNativeStepsAbove5mm':len(over),'completeSlowTimeAbove5mmS':len(over)*.00125,'maximumOverallSelfPenetrationM':result['maximumSelfPenetrationM'],'qualification':False,'nativeActualStepsIncludingInterruptedStudent':result['nativeSteps'],'archivedStateRows':sum(1 for _ in (OUT/'states.ndjson').open())+len(rows),'unarchivedInterruptedStepCount':1,'harnessContinuation':result['harnessContinuation'],'interpretation':'Complete original-conditions SLOW reaches physically verified stable standing, while violating app5mm guard during movement. WEAK reaches source terminal but peaks47mm self penetration; the application cannot accept this as qualified recovery unchanged.'}
+(OUT/'standing-audit.json').write_text(json.dumps(audit,indent=2)+'\n');print(json.dumps(audit,indent=2))

@@ -1,0 +1,26 @@
+{
+  "archiveDecompressedSha256": "ccf1c518fe84792dbe4f9c9e3c0036c5c2c79241c1149d047c78fa4d1cdd59b4",
+  "matchesNativeTrace": true,
+  "videoProbe": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_name": "h264",
+        "width": 960,
+        "height": 600,
+        "avg_frame_rate": "240/1"
+      }
+    ],
+    "format": {
+      "duration": "25.995833",
+      "size": "738052"
+    }
+  },
+  "videoSha256": "25675a392e9fc946b7f5e98d9ad087faf5259085f4798f09bf833554ee405cf9",
+  "videoFrameInspectedAtSeconds": 1.6,
+  "additionalNativeSteps": 0,
+  "preparationClosedUtc": "2026-10-15T20:32:11.134987+00:00",
+  "preparationDeadlineUtc": "2026-10-15T20:48:09Z",
+  "fullRecoveryQualified": false
+}

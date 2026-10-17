@@ -1,0 +1,98 @@
+{
+  "schema": 1,
+  "recordedUtc": "2026-10-16T19:35:03.922560+00:00",
+  "sourceBase": "a3b62570a3745ff965a9248d883bfc3d9f073bf2",
+  "request": "Continue exact stopped history within the same incremental actual allowance; do not replay most of the allowance or invent continuation.",
+  "scope": "read-only continuity audit; no simulation launched",
+  "newPhysicalNativeSteps": 0,
+  "newForecastNativeSteps": 0,
+  "exactResumeAvailable": false,
+  "liveBrowserOrNodeProcesses": [],
+  "blocker": "The bounded launcher closed the browser/worker and retained observations plus serialized controller, not the complete Rapier world. No exact stopped dynamic state remains available.",
+  "controllerAndReferencesArchived": true,
+  "completeRapierWorldArchived": false,
+  "snapshotKeys": [
+    "acknowledged_sequence",
+    "contact_time_s",
+    "contacts",
+    "counters",
+    "diagnostics",
+    "discontinuity",
+    "motion",
+    "segments",
+    "simulation_time_s",
+    "stamp",
+    "striker"
+  ],
+  "controllerArchiveKeys": [
+    "decision_observation",
+    "holding",
+    "impact_substep",
+    "last_decision",
+    "reference",
+    "reference_pose",
+    "residual",
+    "stable_feet",
+    "stable_substeps",
+    "started_substep",
+    "status",
+    "student_decisions",
+    "teacher_failure",
+    "teacher_frames",
+    "teacher_initial",
+    "teacher_native_dt_s"
+  ],
+  "missingContinuityState": [
+    "live WASM Runtime/Simulation instance",
+    "multibody internal state and joint solver data",
+    "narrow/broad-phase contact state and cached impulses",
+    "complete Runtime and physical-world checkpoint"
+  ],
+  "closureEvidence": {
+    "browserClose": "scripts/validate-getup-bounded.mjs:165",
+    "processGroupCleanup": "scripts/run-getup-penetration-trial.py:95",
+    "controllerOnlyExport": "rust/crates/sim/src/runtime.rs:48"
+  },
+  "priorResultRecord": "docs/evidence/getup-penetration-retry-2026-10-16.json",
+  "priorResultRecordSha256": "532afc89b10bdeb62209f0dcb230417c88cf44b52406bad531cd4c6b45b0051c",
+  "verifiedArchiveSha256": {
+    "trace.ndjson": "b99c84ecf88c80ce72311918abfee917161f2f842639b6efc2ec63eda4a5d845",
+    "reference-report.json": "6a642899b3fbe4c7b81771ca705d87f93c50c680454ab0a58aed05c01608d207"
+  },
+  "physicalDurationReachedS": 4,
+  "slowElapsedS": 0.39875000000000016,
+  "slowDecisions": 16,
+  "standingStabilityS": 0,
+  "physicalFailureAtStop": null,
+  "standingQualified": false,
+  "cumulativeIncrementalActualNativeSteps": 3760,
+  "cumulativeIncrementalSimulationWallSeconds": 38.555005164009344,
+  "remainingActualNativeAllowance": 4440,
+  "remainingActualSimulationWallSeconds": 141.44499483599066,
+  "replayLaunched": false,
+  "replayEstimateFromArchivedCost": {
+    "prefixNativeSteps": 3740,
+    "fractionOfRemainingAllowance": 0.8423423423423423,
+    "nativeStepsLeftForNewProgression": 700,
+    "newProgressionSecondsMaximum": 0.875,
+    "referenceDurationS": 1.35,
+    "referenceStillToFollowS": 0.9512499999999999,
+    "reasonNotLaunched": "Replaying the observed prefix would consume84.2% of the remaining native allowance and leave0.875s, less than the0.95125s needed even to reach its final reference target, before any1s stability observation."
+  },
+  "existingValidatedClip": {
+    "file": "LaboratoireHumain-Rapier-WEAK-SLOW-4s-2026-10-16.mp4",
+    "sha256": "262f069e68944bf041d6cfa1b34faeddbe3f59e7bcc226132bd77b8376d61903",
+    "library": {
+      "library_file_id": "libfile_664af6479d6c8191ae7e82b74bb34b7e",
+      "file_id": "file_00000000424881f7a7733641141b934d",
+      "current_version_number": 0,
+      "file_name": "LaboratoireHumain-Rapier-WEAK-SLOW-4s-2026-10-16.mp4",
+      "status": "succeeded",
+      "local_metadata_applied": true
+    },
+    "newClipCreated": false,
+    "reason": "No new physical trajectory exists; reuse the validated4s archived clip."
+  },
+  "historicalLedgersAndEvidenceUnchanged": true,
+  "additionalTestsOrPhysicalComputationsRun": false
+}

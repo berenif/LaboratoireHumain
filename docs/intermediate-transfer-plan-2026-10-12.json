@@ -1,0 +1,57 @@
+{
+  "schema": 1,
+  "status": "phase-contract-only-numeric-trajectory-missing",
+  "sourceFixture": "landed-crouch-left",
+  "clock": "single continuous original native clock at 240 Hz",
+  "maximumRecoveryTimeS": 25,
+  "finalObservationTimeS": 26,
+  "motorProgram": null,
+  "geometryFrames": null,
+  "phases": [
+    {
+      "id": "prepared-descent",
+      "latestS": 3,
+      "intent": ["leftFoot", "leftForefoot", "rightFoot", "rightForefoot", "leftHand", "rightHand", "leftShin", "rightShin"],
+      "requiredForExit": "both real hands and shins loaded; head and torso unloaded; support, capture and whole-body stillness held for original 0.55 s"
+    },
+    {
+      "id": "loaded-brace",
+      "latestS": 5.5,
+      "intent": ["leftHand", "rightHand", "leftShin", "rightShin", "leftForefoot", "rightForefoot"],
+      "requiredForExit": "original Brace and Kneel pose conditions, real support and continuous original phase timing"
+    },
+    {
+      "id": "plant-lead",
+      "latestS": 9,
+      "intent": ["leftHand", "rightHand", "rightShin", "leftFoot", "leftForefoot"],
+      "release": ["leftShin", "leftFoot", "leftForefoot"],
+      "requiredForExit": "release proof excludes entire left leg; left sole actually loaded with torso above original PlantLead threshold"
+    },
+    {
+      "id": "plant-trailing",
+      "latestS": 12,
+      "intent": ["leftHand", "rightHand", "leftFoot", "leftForefoot", "rightFoot", "rightForefoot"],
+      "release": ["rightShin", "rightFoot", "rightForefoot"],
+      "requiredForExit": "release proof excludes entire right leg; both soles actually loaded and shin anchors released"
+    },
+    {
+      "id": "release-hands",
+      "latestS": 14,
+      "intent": ["leftFoot", "leftForefoot", "rightFoot", "rightForefoot", "leftHand", "rightHand"],
+      "release": ["leftHand", "rightHand"],
+      "requiredForExit": "release each hand only after remaining actual sole contacts carry at least 80 percent of weight, released load at most 25 percent, CoM and capture inside by 3 mm"
+    },
+    {
+      "id": "rise-and-stand",
+      "latestS": 20,
+      "intent": ["leftFoot", "leftForefoot", "rightFoot", "rightForefoot"],
+      "requiredForExit": "original standing support, pelvis above 0.93 m, stable all 25 bodies and original settle proof"
+    },
+    {
+      "id": "original-handoff-and-hold",
+      "latestS": 25,
+      "intent": ["leftFoot", "leftForefoot", "rightFoot", "rightForefoot"],
+      "requiredForExit": "original 143/144 handoff and one second stable observation; only original counter may award recovery"
+    }
+  ]
+}

@@ -1,8 +1,8 @@
-//! Frozen golden values copied before qualification, independently of tuning.
+//! Current acceptance contract; historical v1 remains available for old evidence.
 use serde::{Deserialize, Serialize};
 use std::sync::OnceLock;
 
-pub const FROZEN_JSON: &str = include_str!("../data/recovery-contract-v1.json");
+pub const FROZEN_JSON: &str = include_str!("../data/recovery-contract-v2.json");
 pub const PINNED_PROFILE_JSON: &str = include_str!("../data/recovery-profile-v24.json");
 
 pub fn pinned_profile() -> crate::Profile {
@@ -29,8 +29,9 @@ pub struct Contract {
 pub struct Acceptance {
     pub fixed_dt_s: f64,
     pub max_joint_separation_m: f32,
-    pub max_floor_penetration_m: f32,
-    pub max_non_excluded_self_penetration_m: f32,
+    /// None: depth is measured but never rejects a trajectory by itself.
+    pub max_floor_penetration_m: Option<f32>,
+    pub max_non_excluded_self_penetration_m: Option<f32>,
     pub trajectory_position_tolerance_m: f32,
     pub trajectory_rotation_tolerance_degrees: f32,
     pub trajectory_velocity_tolerance: f32,
@@ -73,7 +74,7 @@ pub fn contract() -> &'static Contract {
     CONTRACT.get_or_init(|| serde_json::from_str(FROZEN_JSON).expect("frozen recovery contract"))
 }
 
-/// Durations are counted on the integrated 1/240 s clock, never tick labels.
+/// Durations use the configured native integration clock, never tick labels.
 pub fn substeps(seconds: f64) -> u64 {
     (seconds * f64::from(lh_contracts::TICK_HZ * lh_contracts::SUBSTEPS)).ceil() as u64
 }
@@ -85,12 +86,24 @@ mod tests {
     #[test]
     fn frozen_golden_deadline_and_hold_are_independent_of_profiles() {
         let c = contract();
-        assert_eq!(c.version, 1);
-        assert_eq!(c.source, "scripts/physics-fixtures.ts");
+        assert_eq!(c.version, 2);
+        assert_eq!(c.source, "rust/crates/sim/data/recovery-contract-v1.json");
         assert_eq!(c.source_sha256.len(), 64);
-        assert_eq!(substeps(c.acceptance.recovery_limit_s), 6000);
-        assert_eq!(substeps(c.acceptance.stable_observation_s), 240);
+        assert!(c.acceptance.max_floor_penetration_m.is_none());
+        assert!(c.acceptance.max_non_excluded_self_penetration_m.is_none());
+        assert_eq!(c.acceptance.recovery_limit_s, 25.0);
+        assert_eq!(c.acceptance.stable_observation_s, 1.0);
+        assert_eq!(substeps(c.acceptance.recovery_limit_s), 20000);
+        assert_eq!(substeps(c.acceptance.stable_observation_s), 800);
         assert_eq!(c.acceptance.repeated_cycles, 5);
-        assert_eq!(substeps(c.recovery_acceptance.load_persistence_s), 12);
+        assert_eq!(substeps(c.recovery_acceptance.load_persistence_s), 40);
+
+        let mut old: serde_json::Value =
+            serde_json::from_str(include_str!("../data/recovery-contract-v1.json")).unwrap();
+        let current: serde_json::Value = serde_json::from_str(FROZEN_JSON).unwrap();
+        old["acceptance"]["maxFloorPenetrationM"] = serde_json::Value::Null;
+        old["acceptance"]["maxNonExcludedSelfPenetrationM"] = serde_json::Value::Null;
+        assert_eq!(current["acceptance"], old["acceptance"]);
+        assert_eq!(current["recoveryAcceptance"], old["recoveryAcceptance"]);
     }
 }

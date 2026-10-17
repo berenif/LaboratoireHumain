@@ -1,0 +1,237 @@
+{
+  "status": "closed",
+  "preparedUtc": "2026-10-16T15:10:36.429632+00:00",
+  "reservedUtc": "2026-10-16T15:10:36.429638+00:00",
+  "authorization": "Parent explicitly admits bounded physical retest of corrected be04ad4 within existing cumulative budget; causal integration fixes only, no tuning or engine migration.",
+  "sourceBase": "be04ad4e82163628ea89746dbd60305e81740dff",
+  "candidateCommit": "be04ad4e82163628ea89746dbd60305e81740dff",
+  "referenceCommit": "5ad52fbe1b5b7c56522a1aa10ccf17fb81c0d79e",
+  "outputDirectory": "outputs/getup-policy-retest-browser-2026-10-16",
+  "priorClosedRecord": "docs/evidence/getup-policy-retest-2026-10-16.json",
+  "priorClosedRecordSha256": "a6cedb3d5ed4e9a74392f83c8c6002ad6f9fc20ecaeafd10a324053b5979b912",
+  "nativeChargedBefore": 238648,
+  "wallChargedBeforeSeconds": 3826.328294294003,
+  "nativeCeiling": 300000,
+  "wallCeilingSeconds": 7200,
+  "nativeReservation": 23650,
+  "wallReservationSeconds": 900,
+  "nativeChargedAfter": 262298,
+  "wallChargedAfterSeconds": 4726.328294294003,
+  "maximumRealHistories": 1,
+  "maximumForecastHistories": 1,
+  "maximumMainNativeSteps": 22400,
+  "maximumTeacherNativeSteps": 1250,
+  "mainDtSeconds": 0.00125,
+  "teacherDtSeconds": 0.005,
+  "policyDtSeconds": 0.025,
+  "referenceSpeed": 0.5,
+  "teacherPower": 0.663420431,
+  "integrityPenetrationLimitM": 0.005,
+  "retry": false,
+  "refund": false,
+  "hypothesis": "Corrected live generalized-velocity observation and normalized read-only frames allow the pinned WEAK reference to pass unchanged integrity and reach its source terminal, permitting physical SLOW commands.",
+  "causalComparison": "Physics candidate is be04ad4; only launch/report retention changes after it. Compare first teacher input/action, forecast trajectory and failure against prior frozen run. Prior detailed branch trace was lost, so exact per-substep prior comparison is unavailable.",
+  "trigger": "Actual impact requested at 2 s. Teacher starts only after measured landed/settled state and apparatus retraction; baseline source standing PD remains unchanged before that.",
+  "referenceContract": "Clone all native mechanical state. WEAK 40 Hz/200 Hz, at most 250 decisions, head >1.4 m then one further decision as source. Abort on integrity failure or absent teacher terminal. Interpolate 25-component targets with source not-a-knot cubic at speed .5, append exact source standing target. SLOW 40 Hz with 800 Hz clipped PD. No reference state is assigned to the real body.",
+  "standingCriterion": "New GetUp geometry: head >1.4 m (source terminal); torso up >=.97; both feet load >=3 N for .05 s; feet carry >=80% body weight; no other body load >=3 N; CoM and capture inside actual solver contact hull with 3 mm margin; all body speeds <=.22 m/s and <=.65 rad/s; feet drift <=1 cm throughout one continuous second; completed <=25 s after measured impact. Prototype only, not 24-case qualification.",
+  "stop": "First native integrity failure, reference refusal, missing diagnostics/continuity, stable-standing proof, 25 s after impact, 28 s total real time, 23650 total native integrations, or 900 wall seconds. No retry, parameter variant, or budget renewal.",
+  "reportRetention": "Read and write full native controller report before assertions/screenshots at every snapshot; require exact seed, teacher frames and native refusal when teacher integrity stops. First report request at zero physical steps verifies transport before advance.",
+  "defaultRecoveryEnabled": false,
+  "noPhysicalIntegrationsBeforeAdmission": true,
+  "checksBeforeLaunch": {
+    "toolingTestsPassed": 56,
+    "wasmParity": {
+      "passed": true,
+      "fixtures": 32,
+      "maximumAction": 3.2953812026947915e-06,
+      "maximumRaw": 2.6245117190626388e-05,
+      "physicsIntegrations": 0
+    },
+    "priorCorrectedRustPureTestsPassed": 7,
+    "physicsIntegrations": 0,
+    "browserZeroStepPreflight": {
+      "passed": true,
+      "browser": "154.0.8037.57",
+      "nativeSteps": 0,
+      "forecastSteps": 0,
+      "reportRetained": true,
+      "phase": "awaiting-physical-fall"
+    }
+  },
+  "TODO": [
+    "Completed: full report retained and 4 teacher inputs/actions audited without physics.",
+    "Completed: identify individual hand motion clamp, forecast 5 ms diverging from actual 1.25 ms native clock.",
+    "Next separate bounded admission: keep the cloned world clock and integration parameters; no physics tuning."
+  ],
+  "inputs": {
+    "rust/Cargo.lock": "57f8ef29219379d35953076b6e468e5b641d08f40f1be4a24fcecdfce546ec94",
+    "rust/browser/sim-worker.js": "b1ca06e9367b3e6a5930e4bc4e6510f746b58f8492e9456d0e928c2b765b88d5",
+    "rust/crates/browser/driver.js": "246ee9ede9abe65506ef2a7e9f70a83f70bbcd8c3e84a8bf3df95446cf05c1a5",
+    "rust/crates/browser/src/main.rs": "59d52e7168b6a87365d16a1f3c2b3ba4590419897b3b30ff42b0f9f96a282669",
+    "rust/crates/contracts/src/lib.rs": "e62e9ad58d94363f5feef714694e56c2ec3b7887b69ded45a145fb21d526ef41",
+    "rust/crates/model/data/environment-v1.json": "ba4f094fe6e109c7afebf155338c9f907001d2bf6ec66c9cd3dee257a389484f",
+    "rust/crates/model/data/getup-humanoid.xml": "69a7e87fed168e1f4ad7dee43dfdd8df6bd74b3d4af06d99c991b46b941106db",
+    "rust/crates/model/data/getup-v1.json": "1611ec8c988c1006b0a819ab21e2b7c410adaaf512080be425d6d6e235a8926a",
+    "rust/crates/model/src/lib.rs": "b4fc361330bdb8efa60f7725c5aba8ee63c9dfbf6a8fd48a94b20d2e26ae71e2",
+    "rust/crates/sim/data/getup-policy/metadata.json": "6253bcf48d5b6cc32a386a1734ec8343a2f9f3720384e06bd8ad47c89e775da9",
+    "rust/crates/sim/data/getup-policy/parity.json": "9d30256503e70195b7c8c4a2569ddbe7a869a705747cf923f893ba445518a6b7",
+    "rust/crates/sim/data/getup-policy/student.bin": "c489faed55bdab1669c51dab71a102db91ff2a55143789f682e45cd8169d6dbb",
+    "rust/crates/sim/data/getup-policy/teacher.bin": "f8d8d6ea787366a67aa46352cf5243ed2962dd277b5ca6b6f98a85fc3a67ab4f",
+    "rust/crates/sim/data/recovery-contract-v1.json": "57ffc6e4705759dac795e7c1b274edc9016a5e194a8fe4fa175a230c62f595ba",
+    "rust/crates/sim/src/getup/actor.rs": "c3713e952f2e9151c064ca79c22cc2e96d70e0d8d9f21ceee6f8bf826670dbe4",
+    "rust/crates/sim/src/getup/controller.rs": "d73f0e66fcbfda04a89566a67473cdcb515a81281b7a45856054ae2c22b641bd",
+    "rust/crates/sim/src/getup/reference.rs": "bde04aea19b120ba5f32958eab9d3b3ae4fb5a4190f3af64466cb698add67042",
+    "rust/crates/sim/src/getup.rs": "4fcf66d863c01380f2191d33326c9cb051ed8532e1a28a4b871a011f9aed724e",
+    "rust/crates/sim/src/lib.rs": "1e5dd506bacd0a971bce22c9c100158934cc3977e3c5875e4ac5c53ecc1a6612",
+    "rust/crates/sim/src/measurement.rs": "5e93e3cd347cf8d33527f5eccff410038cb14e9b0f3c758121c9ad714b2ac8e0",
+    "rust/crates/sim/src/motion.rs": "2868d4f7ab332eca51d80cd222f3950bb655bea9e069006076b2afb79b6cb9f8",
+    "rust/crates/sim/src/runtime.rs": "44ea5b81cc6ca572843799fd08a0084ae58fca65c3cc3d40541d52d7b8c6c461",
+    "rust/crates/sim/src/striker.rs": "6ba93c1a9775e469cf929f618360e30551ba1a19e5e128622792d84d6906d3f1",
+    "rust/crates/worker/src/lib.rs": "0615bb5ce76196eb5cf9c9026134bb165cba811c0d64973bd2898dc38e647d25",
+    "rust/dist/app/app-1df6634f608f8d80.css": "6f9e3128c49954cf4c159cd1b3cb0375ca4293e134429847288a5e6549a44271",
+    "rust/dist/app/index.html": "f665e9f2532e4a362394ab17159027a7045520184c532649b79d6cdad2b67855",
+    "rust/dist/app/lh-browser-165c4e39d3e81b6.js": "4b74fd624176024734dbacedc4d99d20295076d50abf65b44bdd3add797fc835",
+    "rust/dist/app/lh-browser-165c4e39d3e81b6_bg.wasm": "5dd82af587404055718b96127479734b01e8be5f060c35d65c0164b47d52faac",
+    "rust/dist/app/lh_worker.js": "167f0bf6516bf5df6f7a4a0d98f2d75189aaf06117e5ecf9ab857a6ebf836de3",
+    "rust/dist/app/lh_worker_bg.wasm": "ef69d7b5ca08ade0c7acbbe35640d42bb374599f525ef7524eef8083bbe268ae",
+    "rust/dist/app/sim-worker.js": "b1ca06e9367b3e6a5930e4bc4e6510f746b58f8492e9456d0e928c2b765b88d5",
+    "rust/dist/app/snippets/lh-browser-575491a8d42d44d5/driver.js": "246ee9ede9abe65506ef2a7e9f70a83f70bbcd8c3e84a8bf3df95446cf05c1a5",
+    "scripts/import-getup-policy.py": "c4bedc5f4c863ecde8f4866865de138f20951f26b22edce60012b06200ba78f7",
+    "scripts/validate-getup-policy.mjs": "2bbf1d4d46779f52bab2930836a5f168fd4d54fcf5c9a310faf5fb0b1e9c97a7",
+    "scripts/verify-getup-policy-parity.mjs": "ec12c70c08c4c9245611d35dfa970a04191ce5b7de1cc9a843c328222d47291c",
+    "tests/rust-qualification-driver.test.mjs": "2cb001f52e4cca32245aa4502d5336cc6f56b03a6a6128380c956f98a7dae0f6",
+    "scripts/rust-browser-test.mjs": "84a0700af7e5702de4554c4b40d912ca442289b9149931f78f3ba1f96986aaa5"
+  },
+  "browserExecutable": "/usr/bin/chromium",
+  "closedUtc": "2026-10-16T15:16:55.195987+00:00",
+  "admissionCommit": "0fa86431a14a8deb2db6d4cee9fcb73529c490cb",
+  "nativeActualSteps": 2897,
+  "mainNativeActualSteps": 2881,
+  "forecastNativeActualSteps": 16,
+  "wallActualSeconds": 42.644284177,
+  "harnessCompleted": true,
+  "physicalRefusal": {
+    "tick": 144,
+    "substep": 1,
+    "check": "getup-policy",
+    "offending": "Teacher Rapier integrity failure: joint-limit right_hand measured=0.06354662 limit=0.06",
+    "measured": 0,
+    "threshold": 0
+  },
+  "nativeTeacherFailure": {
+    "tick": 3,
+    "substep": 0,
+    "check": "joint-limit",
+    "offending": "right_hand",
+    "measured": 0.06354662,
+    "threshold": 0.06
+  },
+  "lastPolicyState": {
+    "phase": "reference-rejected",
+    "started_at_s": 3.60125,
+    "since_impact_s": null,
+    "forecast_substeps": 16,
+    "teacher_decisions": 3,
+    "teacher_max_head_height_m": 0.09305175,
+    "teacher_terminal_reached": false,
+    "reference_seed_matches_real": true,
+    "reference_frames": 0,
+    "reference_index": 0,
+    "policy_decisions": 0,
+    "reference_tracking_error_rad": 0,
+    "reference_com_error_m": 0,
+    "actual_head_height_m": 0,
+    "stable_standing_s": 0,
+    "prototype_standing_passed": false,
+    "refusal": "Teacher Rapier integrity failure: joint-limit right_hand measured=0.06354662 limit=0.06"
+  },
+  "referenceReport": {
+    "sha256": "56bd0bc64bdc1b6d9be260b50606e708f2eb0480eaa40a2184ee4ae7f67da4e8",
+    "bytes": 80597,
+    "forecastSteps": 16,
+    "teacherFrames": 4,
+    "studentDecisions": 0
+  },
+  "fullGetUpQualified": false,
+  "additionalPhysicsForAudit": 0,
+  "outcome": "Corrected observation adapter ran, full forecast report retained. Reference refused after 16 teacher substeps at right_hand fixed-joint drift; no SLOW decisions or standing.",
+  "causalAudit": {
+    "physicsIntegrations": 0,
+    "teacherFramesAudited": 4,
+    "rows": [
+      {
+        "timeSeconds": 0.025,
+        "maximumActorActionError": 3.961620407111344e-06,
+        "maximumPoseObservationError": 1.1582738915216773e-07,
+        "headHeightM": 0.0900956
+      },
+      {
+        "timeSeconds": 0.05,
+        "maximumActorActionError": 2.963196086884501e-06,
+        "maximumPoseObservationError": 2.554210812577562e-07,
+        "headHeightM": 0.09305175
+      },
+      {
+        "timeSeconds": 0.075,
+        "maximumActorActionError": 3.994747924784825e-06,
+        "maximumPoseObservationError": 2.7446708267264697e-07,
+        "headHeightM": 0.0927736
+      },
+      {
+        "timeSeconds": 0.08,
+        "maximumActorActionError": 1.5379138183502228e-06,
+        "maximumPoseObservationError": 2.2430614537993776e-07,
+        "headHeightM": 0.091650434
+      }
+    ],
+    "maximumActorActionError": 3.994747924784825e-06,
+    "maximumPoseObservationError": 2.7446708267264697e-07,
+    "finalFixedLinks": [
+      {
+        "body": "head",
+        "angleRad": 0.0,
+        "anchorSeparationM": 3.664577683082158e-06
+      },
+      {
+        "body": "right_hand",
+        "angleRad": 0.06353837964709289,
+        "anchorSeparationM": 0.02098640284282983
+      },
+      {
+        "body": "left_hand",
+        "angleRad": 0.0,
+        "anchorSeparationM": 6.0350318538275724e-06
+      }
+    ],
+    "nativeFailure": {
+      "tick": 3,
+      "substep": 0,
+      "check": "joint-limit",
+      "offending": "right_hand",
+      "measured": 0.06354662,
+      "threshold": 0.06
+    },
+    "referenceFrames": 0,
+    "studentDecisions": 0,
+    "standingPassed": false,
+    "individualMotionClampEvidence": {
+      "translationFraction": 0.5000001810685127,
+      "translationResidualM": 3.0922316866091765e-06,
+      "rotationFraction": 0.4999998983324589,
+      "rotationResidualRad": 1.0874953033380887e-08,
+      "actualHandBottomM": -0.0009444499999999995,
+      "articulatedHandBottomM": -0.0039958008338702375,
+      "interpretation": "Retained hand pose matches a half-motion clamp while its fixed parent continues. Native CCD source performs per-body pose clamps after solve. Actual CCD event fraction was not separately instrumented."
+    }
+  },
+  "evidence": {
+    "outputs/getup-policy-retest-browser-2026-10-16/retained-audit.log": "870ead72d70eb5cef0baa273944d0b64d2238b275449cf2f86786f452dee4a87",
+    "outputs/getup-policy-retest-browser-2026-10-16/result.json": "485774cab698b59067fb2627aaef84f16e194d3bc4ea7b8ef99db5eda144c0e4",
+    "outputs/getup-policy-retest-browser-2026-10-16/retained-audit.json": "870ead72d70eb5cef0baa273944d0b64d2238b275449cf2f86786f452dee4a87",
+    "outputs/getup-policy-retest-browser-2026-10-16/reference-report.json": "56bd0bc64bdc1b6d9be260b50606e708f2eb0480eaa40a2184ee4ae7f67da4e8",
+    "outputs/getup-policy-retest-browser-2026-10-16/started-once": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "outputs/getup-policy-retest-browser-2026-10-16/trace.ndjson": "b02c8ff19febae37411bbfe0cd1eb0c14f58c915f82203c8a1093db39d4dfa84",
+    "outputs/getup-policy-retest-browser-2026-10-16/physical-run.log": "72c262b953288d462a5319cbc6efea555826d1be1580de6867470875cb4a4a4a",
+    "outputs/getup-policy-retest-browser-2026-10-16/audit-retained.py": "87b9b380743262de408bba1ea6f8fb6565e53a053de6734d5d4d00aabb893b43"
+  }
+}

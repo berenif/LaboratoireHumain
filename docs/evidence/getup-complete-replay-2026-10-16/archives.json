@@ -1,0 +1,73 @@
+{
+  "scope": "Retained raw evidence and complete restorable checkpoints; gzip round-trip verified",
+  "archives": {
+    "trace.ndjson": {
+      "path": "docs/evidence/getup-complete-replay-2026-10-16/trace.ndjson.gz",
+      "sha256": "41d83fd35f2af7c98650877661ab9f8df0d3c9e1ce4a611a5fe65553ace34a58",
+      "rawSha256": "32ade9a1aefba1d52c3526b8d565c41b89160e3efc5472f8bba9314105268b3d",
+      "rawBytes": 1066237,
+      "compressedBytes": 225822
+    },
+    "reference-report.json": {
+      "path": "docs/evidence/getup-complete-replay-2026-10-16/reference-report.json.gz",
+      "sha256": "309ac2911ab8ae7a9e1663eab07d468d36de41ed609558de2cab150f8b6a7b4c",
+      "rawSha256": "f1af6367f835fbf99fb38847447c44d492b0383abaea718b52b6fd4a043a65ab",
+      "rawBytes": 2717839,
+      "compressedBytes": 640751
+    },
+    "checkpoint-00000.bin": {
+      "path": "docs/evidence/getup-complete-replay-2026-10-16/checkpoint-00000.bin.gz",
+      "sha256": "596d257e953b644a34e00fd012c22307ab8e918fcfa39c32e95bd5809ba1696e",
+      "rawSha256": "28a83f517317bc40cc8cba4665a9991001fb633d22d4b30092d4d2e5c4a010e5",
+      "rawBytes": 584392,
+      "compressedBytes": 91839
+    },
+    "checkpoint-01600.bin": {
+      "path": "docs/evidence/getup-complete-replay-2026-10-16/checkpoint-01600.bin.gz",
+      "sha256": "a2cfb429c82475eeea756bca4198dd4ca9703736124b2f688aa6b9c2b4c17f40",
+      "rawSha256": "388282ef24b9a65eb64f0be2a590cdfe06cf94aa0f4d89cd4c7bf5e768af3e04",
+      "rawBytes": 629420,
+      "compressedBytes": 111512
+    },
+    "checkpoint-03200.bin": {
+      "path": "docs/evidence/getup-complete-replay-2026-10-16/checkpoint-03200.bin.gz",
+      "sha256": "4e61041f14afee259e1bf4da22cf2b2d5268579425e543304b21751352578fca",
+      "rawSha256": "c365b8cc2fe339faf079419532d5870cd44469eb048cb10973321b219b043f27",
+      "rawBytes": 1258662,
+      "compressedBytes": 229069
+    },
+    "checkpoint-04800.bin": {
+      "path": "docs/evidence/getup-complete-replay-2026-10-16/checkpoint-04800.bin.gz",
+      "sha256": "bded02e1ebd81238a4b28ab84b276b060a470b92cfce572c9ebf751896ec7356",
+      "rawSha256": "a9f1232c9d2c48de8dd5e454bebc42167406a013d379d15a588e6639569af1f7",
+      "rawBytes": 1962286,
+      "compressedBytes": 418558
+    },
+    "checkpoint-06400.bin": {
+      "path": "docs/evidence/getup-complete-replay-2026-10-16/checkpoint-06400.bin.gz",
+      "sha256": "fbb4784cf3f406d446ef0f0797db5225bf73f859e7d1a4181cae5009528ec5e0",
+      "rawSha256": "1587ac89df097fb3e5d1a9b1622bb0563944d8500fe1fecfaef1ae331b67985a",
+      "rawBytes": 2685146,
+      "compressedBytes": 596677
+    },
+    "checkpoint-final.bin": {
+      "path": "docs/evidence/getup-complete-replay-2026-10-16/checkpoint-final.bin.gz",
+      "sha256": "cc252c530371b0663cf710fbc55a2bd17f61a9f28ca5e810f0da3299726a38a1",
+      "rawSha256": "874efa82ba48052e201641a6552b30d1418c5a68bcf6e228a4db5f587d9f4db6",
+      "rawBytes": 3346072,
+      "compressedBytes": 752011
+    },
+    "postrun-audit.json": {
+      "path": "docs/evidence/getup-complete-replay-2026-10-16/postrun-audit.json.gz",
+      "sha256": "b9346b20d82dd1977c52ebdb308e81b1c8b1dd66e92e5b1fcbe380c2d87fcfaa",
+      "rawSha256": "52d6847b17feecd6b151d3958a5ac361ee58a9d3880d8c5a80ed7ab627afb2c3",
+      "rawBytes": 47511,
+      "compressedBytes": 9746
+    }
+  },
+  "matchingRuntimeArtifacts": {
+    "rust/dist/app/lh_worker.js": "e83f648c82287a7f2f13e2499263e2068e6d10711297aaabca84917c5fe620ad",
+    "rust/dist/app/lh_worker_bg.wasm": "711cbb7ed05305ea2095c9199d8104adc4020c24f537f4581b1be299e7fa4638"
+  },
+  "restoration": "Use the pinned commit/build matching runtime hashes; WorkerRuntime.from_getup_checkpoint(gunzip(checkpointBytes)); inspect/verify without stepping. All binary world fields are retained; Rapier rebuilds documented pipeline/CCD workspaces."
+}

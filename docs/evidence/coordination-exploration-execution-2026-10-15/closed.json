@@ -1,0 +1,43 @@
+{
+  "operationId": "73c4211a-afed-4c4e-a6d1-8b0f5610f1db",
+  "status": "closed",
+  "elapsedSeconds": 30.708708455000306,
+  "error": null,
+  "workerResult": {
+    "accounting": {
+      "abandonedNativeSlots": 0,
+      "actualNativeStepsExact": true,
+      "admittedNativeSteps": 6240,
+      "completedNativeSteps": 6240
+    },
+    "actualNativeSteps": 6240,
+    "endpointNativeSubstep": 6240,
+    "event": "result",
+    "forecasts": 0,
+    "histories": 1,
+    "noRefund": true,
+    "op": "exploration-run",
+    "operationId": "73c4211a-afed-4c4e-a6d1-8b0f5610f1db",
+    "qualified": false,
+    "refusal": null,
+    "reservedNativeSteps": 7000,
+    "simulatedSeconds": 26.0,
+    "status": "closed-completed"
+  },
+  "lastAccounting": {
+    "abandonedNativeSlots": 0,
+    "actualNativeStepsExact": true,
+    "admittedNativeSteps": 6240,
+    "completedNativeSteps": 6240,
+    "event": "after-integration",
+    "nextNativeClock": 6240,
+    "pendingNativeSlots": 0,
+    "reservationId": "73c4211a-afed-4c4e-a6d1-8b0f5610f1db"
+  },
+  "maximumNativeStepsCharged": 7000,
+  "wallSecondsCharged": 120,
+  "retries": 0,
+  "pid": 16790,
+  "returncode": 0,
+  "priorLedgerUnchanged": true
+}

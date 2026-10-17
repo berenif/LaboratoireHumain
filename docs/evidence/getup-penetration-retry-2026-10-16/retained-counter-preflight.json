@@ -1,0 +1,16 @@
+{
+  "passed": true,
+  "physicsIntegrations": 0,
+  "counters": [
+    {
+      "real": 0,
+      "forecast": 0,
+      "total": 0
+    },
+    {
+      "real": 20,
+      "forecast": 0,
+      "total": 20
+    }
+  ]
+}

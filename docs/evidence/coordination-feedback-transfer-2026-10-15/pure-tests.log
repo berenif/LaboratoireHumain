@@ -1,0 +1,7 @@
+
+running 2 tests
+test recovery::planner::whole_body_controller::exploration_feedback::tests::pure_feedback_direction_hull_and_finite_schedule ... ok
+test recovery::planner::whole_body_controller::exploration_feedback::tests::pure_feedback_archived_a36_commands_and_contact_free_case ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 302 filtered out; finished in 0.01s
+

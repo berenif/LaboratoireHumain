@@ -4,14 +4,53 @@ use crate::Simulation;
 use lh_contracts::Motion;
 use rapier3d::prelude::Vector;
 
-#[derive(Default)]
+#[derive(Clone, Default, serde::Serialize, serde::Deserialize)]
 pub(crate) struct Observation {
     unsupported_s: f32,
     settled_s: f32,
 }
 
+#[cfg(all(test, feature = "experimental-solver-step-observation"))]
+impl Observation {
+    /// Read-only native parity memory. Preserve hidden timers and float bits.
+    pub(crate) fn parity_memory(&self) -> [u32; 2] {
+        let Self {
+            unsupported_s,
+            settled_s,
+        } = self;
+        [unsupported_s.to_bits(), settled_s.to_bits()]
+    }
+}
+
+#[cfg(all(test, feature = "experimental-solver-step-observation"))]
+mod parity_tests {
+    use super::Observation;
+    #[test]
+    fn pure_motion_private_timers_preserve_zero_and_nan_bits() {
+        let baseline = Observation::default();
+        for field in 0..2 {
+            for bits in [
+                (-0.0_f32).to_bits(),
+                1.0_f32.to_bits(),
+                0x7fc00001,
+                0x7fc00002,
+            ] {
+                let mut changed = baseline.clone();
+                if field == 0 {
+                    changed.unsupported_s = f32::from_bits(bits);
+                } else {
+                    changed.settled_s = f32::from_bits(bits);
+                }
+                assert_eq!(changed.parity_memory()[field], bits);
+                assert_ne!(baseline.parity_memory(), changed.parity_memory());
+            }
+        }
+    }
+}
+
 impl Simulation {
     pub(crate) fn observe_impact(&mut self) {
+        if let Some(controller) = &mut self.getup_controller { controller.impact(self.substeps_completed); }
         if matches!(self.motion, Motion::Upright | Motion::Reacting) {
             self.counters.falls += 1;
         }
@@ -25,6 +64,7 @@ impl Simulation {
         if self.motion == Motion::Halted {
             return;
         }
+        if self.getup_controller.as_ref().is_some_and(|c| c.started_substep.is_some()) { return; }
         if self.motion == Motion::Recovering {
             self.observe_recovery();
             return;
@@ -48,7 +88,8 @@ impl Simulation {
             self.motion_observation.unsupported_s + self.profile.dt_s
         };
         if matches!(self.motion, Motion::Upright | Motion::Reacting) {
-            let pelvis = &self.world.bodies[self.bodies[0]];
+            let pelvis_index=self.model.segments.iter().position(|p|p.id=="pelvis").unwrap_or(0);
+            let pelvis = &self.world.bodies[self.bodies[pelvis_index]];
             let torso_up = (*self.world.bodies[self.bodies[torso]].rotation() * Vector::Y).y;
             let support_loss_limit = if self.environment.is_some()
                 && self.world.colliders[self.floor].is_enabled()

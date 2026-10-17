@@ -1,0 +1,1337 @@
+{
+  "physicsIntegrations": 0,
+  "priorLedgerUnchanged": true,
+  "thresholdsChanged": false,
+  "forecastAndStudentDecisions": 0,
+  "passivePreparationNative": 3200,
+  "physicalSeconds": 4,
+  "actualPhysicalWallSeconds": 18.12517070699687,
+  "cumulativeBatchPhysicalWallSeconds": 142.84739361699758,
+  "unusedPhysicalWallSeconds": 37.15260638300242,
+  "cumulativeNativeSteps": 27840,
+  "fixtureValid": false,
+  "controllerEvaluated": false,
+  "outcome": "invalid-fixture-not-settled-or-orientation",
+  "orientationFailure": {
+    "faceUp": -0.48911571502685547,
+    "absoluteFaceLimit": 0.35,
+    "sideUp": 0.8654512763023376,
+    "sideMinimum": 0.8,
+    "forwardRollDegrees": 29.473259925296528
+  },
+  "finalFixture": {
+    "ground_load_n": 401.3343505859375,
+    "head_height_m": 0.2015335112810135,
+    "kind": "side-supported",
+    "maximum_angular_radps": 0.004509126767516136,
+    "maximum_body_com_speed_mps": 0.0009566803928464651,
+    "preparing": true,
+    "ready": false,
+    "settled_substeps": 0,
+    "torso_face_up": -0.48911571502685547,
+    "torso_long_axis_up": 0.10844369232654572,
+    "torso_side_up": 0.8654512763023376,
+    "trigger_substep": null
+  },
+  "reloads": [
+    {
+      "label": "initial",
+      "sha256": "c5623744a6f6014629b2c76d83c0abfd6a8ac35a08e2a16c96baac8a303691d3",
+      "verification": {
+        "binaryWorldDeserialized": true,
+        "bytes": 584681,
+        "controllerEqual": true,
+        "forecastSubsteps": 0,
+        "handlesEqual": true,
+        "jointStateEqual": true,
+        "nativeSubsteps": 0,
+        "passed": true,
+        "physicsIntegrations": 0,
+        "snapshotEqual": true
+      },
+      "fixture": {
+        "ground_load_n": 0,
+        "head_height_m": 0.37707817554473877,
+        "kind": "side-supported",
+        "maximum_angular_radps": 0,
+        "maximum_body_com_speed_mps": 0,
+        "preparing": true,
+        "ready": false,
+        "settled_substeps": 0,
+        "torso_face_up": 0,
+        "torso_long_axis_up": 0,
+        "torso_side_up": 1.0000001192092896,
+        "trigger_substep": null
+      },
+      "diagnostic": {
+        "capture": {
+          "x": 0.4060207009315491,
+          "y": 0.38280606269836426,
+          "z": 0.08436062186956406
+        },
+        "com": {
+          "x": 0.4060207009315491,
+          "y": 0.38280606269836426,
+          "z": 0.08436062186956406
+        },
+        "comVelocity": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "feet": [
+          {
+            "x": 1.0415925979614258,
+            "y": 0.48718753457069397,
+            "z": 0.20397678017616272
+          },
+          {
+            "x": 1.129051685333252,
+            "y": 0.26494893431663513,
+            "z": 0.18323463201522827
+          }
+        ],
+        "footDriftM": null,
+        "footIds": [
+          16,
+          10
+        ],
+        "headM": 0.37707817554473877,
+        "loadsN": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "motion": [
+          {
+            "angularPassed": true,
+            "angularRadps": 0,
+            "body": "torso",
+            "linearMps": 0,
+            "linearPassed": true
+          },
+          {
+            "angularPassed": true,
+            "angularRadps": 0,
+            "body": "head",
+            "linearMps": 0,
+            "linearPassed": true
+          },
+          {
+            "angularPassed": true,
+            "angularRadps": 0,
+            "body": "@abdomen_z",
+            "linearMps": 0,
+            "linearPassed": true
+          },
+          {
+            "angularPassed": true,
+            "angularRadps": 0,
+            "body": "lower_waist",
+            "linearMps": 0,
+            "linearPassed": true
+          },
+          {
+            "angularPassed": true,
+            "angularRadps": 0,
+            "body": "pelvis",
+            "linearMps": 0,
+            "linearPassed": true
+          },
+          {
+            "angularPassed": true,
+            "angularRadps": 0,
+            "body": "@right_hip_x",
+            "linearMps": 0,
+            "linearPassed": true
+          },
+          {
+            "angularPassed": true,
+            "angularRadps": 0,
+            "body": "@right_hip_z",
+            "linearMps": 0,
+            "linearPassed": true
+          },
+          {
+            "angularPassed": true,
+            "angularRadps": 0,
+            "body": "right_thigh",
+            "linearMps": 0,
+            "linearPassed": true
+          },
+          {
+            "angularPassed": true,
+            "angularRadps": 0,
+            "body": "right_shin",
+            "linearMps": 0,
+            "linearPassed": true
+          },
+          {
+            "angularPassed": true,
+            "angularRadps": 0,
+            "body": "@right_ankle_y",
+            "linearMps": 0,
+            "linearPassed": true
+          },
+          {
+            "angularPassed": true,
+            "angularRadps": 0,
+            "body": "right_foot",
+            "linearMps": 0,
+            "linearPassed": true
+          },
+          {
+            "angularPassed": true,
+            "angularRadps": 0,
+            "body": "@left_hip_x",
+            "linearMps": 0,
+            "linearPassed": true
+          },
+          {
+            "angularPassed": true,
+            "angularRadps": 0,
+            "body": "@left_hip_z",
+            "linearMps": 0,
+            "linearPassed": true
+          },
+          {
+            "angularPassed": true,
+            "angularRadps": 0,
+            "body": "left_thigh",
+            "linearMps": 0,
+            "linearPassed": true
+          },
+          {
+            "angularPassed": true,
+            "angularRadps": 0,
+            "body": "left_shin",
+            "linearMps": 0,
+            "linearPassed": true
+          },
+          {
+            "angularPassed": true,
+            "angularRadps": 0,
+            "body": "@left_ankle_y",
+            "linearMps": 0,
+            "linearPassed": true
+          },
+          {
+            "angularPassed": true,
+            "angularRadps": 0,
+            "body": "left_foot",
+            "linearMps": 0,
+            "linearPassed": true
+          },
+          {
+            "angularPassed": true,
+            "angularRadps": 0,
+            "body": "@right_shoulder1",
+            "linearMps": 0,
+            "linearPassed": true
+          },
+          {
+            "angularPassed": true,
+            "angularRadps": 0,
+            "body": "right_upper_arm",
+            "linearMps": 0,
+            "linearPassed": true
+          },
+          {
+            "angularPassed": true,
+            "angularRadps": 0,
+            "body": "right_lower_arm",
+            "linearMps": 0,
+            "linearPassed": true
+          },
+          {
+            "angularPassed": true,
+            "angularRadps": 0,
+            "body": "right_hand",
+            "linearMps": 0,
+            "linearPassed": true
+          },
+          {
+            "angularPassed": true,
+            "angularRadps": 0,
+            "body": "@left_shoulder1",
+            "linearMps": 0,
+            "linearPassed": true
+          },
+          {
+            "angularPassed": true,
+            "angularRadps": 0,
+            "body": "left_upper_arm",
+            "linearMps": 0,
+            "linearPassed": true
+          },
+          {
+            "angularPassed": true,
+            "angularRadps": 0,
+            "body": "left_lower_arm",
+            "linearMps": 0,
+            "linearPassed": true
+          },
+          {
+            "angularPassed": true,
+            "angularRadps": 0,
+            "body": "left_hand",
+            "linearMps": 0,
+            "linearPassed": true
+          }
+        ],
+        "nativeSubsteps": 0,
+        "physicsIntegrations": 0,
+        "predicates": {
+          "angularMotion": true,
+          "bothFeetLoadedAndPersistent": false,
+          "captureInSupport": false,
+          "comInSupport": false,
+          "footDriftFromSuppliedAnchors": null,
+          "footLoadFraction": false,
+          "head": false,
+          "linearMotion": true,
+          "onlyFeet": true,
+          "torso": false
+        },
+        "solverSupportPoints": [],
+        "supportPersistence": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "thresholds": {
+          "angularRadps": 0.6499999761581421,
+          "footDriftM": 0.01,
+          "linearMps": 0.2199999988079071,
+          "torsoUp": 0.9700000286102295
+        },
+        "torsoUp": 0
+      }
+    },
+    {
+      "label": "1600",
+      "sha256": "42b45f0658360c9ce45ace28c789c67f5006353abbb13df9a252289347c34693",
+      "verification": {
+        "binaryWorldDeserialized": true,
+        "bytes": 640594,
+        "controllerEqual": true,
+        "forecastSubsteps": 0,
+        "handlesEqual": true,
+        "jointStateEqual": true,
+        "nativeSubsteps": 1600,
+        "passed": true,
+        "physicsIntegrations": 0,
+        "snapshotEqual": true
+      },
+      "fixture": {
+        "ground_load_n": 401.6128234863281,
+        "head_height_m": 0.20169977843761444,
+        "kind": "side-supported",
+        "maximum_angular_radps": 0.02907211147248745,
+        "maximum_body_com_speed_mps": 0.004695812240242958,
+        "preparing": true,
+        "ready": false,
+        "settled_substeps": 0,
+        "torso_face_up": -0.4891285300254822,
+        "torso_long_axis_up": 0.10825535655021667,
+        "torso_side_up": 0.8654674291610718,
+        "trigger_substep": null
+      },
+      "diagnostic": {
+        "capture": {
+          "x": 0.3539438545703888,
+          "y": 0.12770535051822662,
+          "z": 0.15138007700443268
+        },
+        "com": {
+          "x": 0.3540140390396118,
+          "y": 0.1277390867471695,
+          "z": 0.15131989121437073
+        },
+        "comVelocity": {
+          "x": -0.0006151574780233204,
+          "y": -0.00029560711118392646,
+          "z": 0.0005274851573631167
+        },
+        "feet": [
+          {
+            "x": 1.042903184890747,
+            "y": 0.15063202381134033,
+            "z": 0.3956073522567749
+          },
+          {
+            "x": 1.1397417783737183,
+            "y": 0.119354248046875,
+            "z": 0.26996883749961853
+          }
+        ],
+        "footDriftM": null,
+        "footIds": [
+          16,
+          10
+        ],
+        "headM": 0.20169977843761444,
+        "loadsN": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          146.12442016601562,
+          0,
+          0,
+          6.623727798461914,
+          0,
+          0,
+          0,
+          48.75241470336914,
+          0,
+          18.23335838317871,
+          0,
+          15.309391021728516,
+          0,
+          153.50198364257812,
+          0,
+          0,
+          0,
+          13.067536354064941
+        ],
+        "motion": [
+          {
+            "angularPassed": true,
+            "angularRadps": 0.0019123043166473508,
+            "body": "torso",
+            "linearMps": 0.0004951686132699251,
+            "linearPassed": true
+          },
+          {
+            "angularPassed": true,
+            "angularRadps": 0.0019123043166473508,
+            "body": "head",
+            "linearMps": 0.0007627915474586189,
+            "linearPassed": true
+          },
+          {
+            "angularPassed": true,
+            "angularRadps": 0.02121460996568203,
+            "body": "@abdomen_z",
+            "linearMps": 0.0005336068570613861,
+            "linearPassed": true
+          },
+          {
+            "angularPassed": true,
+            "angularRadps": 0.02119537442922592,
+            "body": "lower_waist",
+            "linearMps": 0.000764884171076119,
+            "linearPassed": true
+          },
+          {
+            "angularPassed": true,
+            "angularRadps": 0.02092752233147621,
+            "body": "pelvis",
+            "linearMps": 0.0015260848449543118,
+            "linearPassed": true
+          },
+          {
+            "angularPassed": true,
+            "angularRadps": 0.02234433777630329,
+            "body": "@right_hip_x",
+            "linearMps": 0.0005143054877407849,
+            "linearPassed": true
+          },
+          {
+            "angularPassed": true,
+            "angularRadps": 0.016091519966721535,
+            "body": "@right_hip_z",
+            "linearMps": 0.0005143054877407849,
+            "linearPassed": true
+          },
+          {
+            "angularPassed": true,
+            "angularRadps": 0.004859588108956814,
+            "body": "right_thigh",
+            "linearMps": 0.00048773238086141646,
+            "linearPassed": true
+          },
+          {
+            "angularPassed": true,
+            "angularRadps": 0.00718521187081933,
+            "body": "right_shin",
+            "linearMps": 0.0015533785335719585,
+            "linearPassed": true
+          },
+          {
+            "angularPassed": true,
+            "angularRadps": 0.0049291676841676235,
+            "body": "@right_ankle_y",
+            "linearMps": 0.002838277956470847,
+            "linearPassed": true
+          },
+          {
+            "angularPassed": true,
+            "angularRadps": 0.005504949018359184,
+            "body": "right_foot",
+            "linearMps": 0.0025000623427331448,
+            "linearPassed": true
+          },
+          {
+            "angularPassed": true,
+            "angularRadps": 0.020764712244272232,
+            "body": "@left_hip_x",
+            "linearMps": 0.0037413404788821936,
+            "linearPassed": true
+          },
+          {
+            "angularPassed": true,
+            "angularRadps": 0.018420910462737083,
+            "body": "@left_hip_z",
+            "linearMps": 0.0037413404788821936,
+            "linearPassed": true
+          },
+          {
+            "angularPassed": true,
+            "angularRadps": 0.017595641314983368,
+            "body": "left_thigh",
+            "linearMps": 0.002184543525800109,
+            "linearPassed": true
+          },
+          {
+            "angularPassed": true,
+            "angularRadps": 0.01582259126007557,
+            "body": "left_shin",
+            "linearMps": 0.0022721225395798683,
+            "linearPassed": true
+          },
+          {
+            "angularPassed": true,
+            "angularRadps": 0.01697392389178276,
+            "body": "@left_ankle_y",
+            "linearMps": 0.004695812240242958,
+            "linearPassed": true
+          },
+          {
+            "angularPassed": true,
+            "angularRadps": 0.02907211147248745,
+            "body": "left_foot",
+            "linearMps": 0.002815407933667302,
+            "linearPassed": true
+          },
+          {
+            "angularPassed": true,
+            "angularRadps": 0.003970770165324211,
+            "body": "@right_shoulder1",
+            "linearMps": 0.0005176699487492442,
+            "linearPassed": true
+          },
+          {
+            "angularPassed": true,
+            "angularRadps": 0.003915700130164623,
+            "body": "right_upper_arm",
+            "linearMps": 0.00021017184189986438,
+            "linearPassed": true
+          },
+          {
+            "angularPassed": true,
+            "angularRadps": 0.003908012993633747,
+            "body": "right_lower_arm",
+            "linearMps": 0.00025213853223249316,
+            "linearPassed": true
+          },
+          {
+            "angularPassed": true,
+            "angularRadps": 0.003908012993633747,
+            "body": "right_hand",
+            "linearMps": 0.00019032003183383495,
+            "linearPassed": true
+          },
+          {
+            "angularPassed": true,
+            "angularRadps": 0.0019813082180917263,
+            "body": "@left_shoulder1",
+            "linearMps": 0.0007143613183870912,
+            "linearPassed": true
+          },
+          {
+            "angularPassed": true,
+            "angularRadps": 0.0008293355931527913,
+            "body": "left_upper_arm",
+            "linearMps": 0.0007019438198767602,
+            "linearPassed": true
+          },
+          {
+            "angularPassed": true,
+            "angularRadps": 0.003105273935943842,
+            "body": "left_lower_arm",
+            "linearMps": 0.0002945921733044088,
+            "linearPassed": true
+          },
+          {
+            "angularPassed": true,
+            "angularRadps": 0.003105273935943842,
+            "body": "left_hand",
+            "linearMps": 0.00035614357329905033,
+            "linearPassed": true
+          }
+        ],
+        "nativeSubsteps": 1600,
+        "physicsIntegrations": 0,
+        "predicates": {
+          "angularMotion": true,
+          "bothFeetLoadedAndPersistent": true,
+          "captureInSupport": false,
+          "comInSupport": false,
+          "footDriftFromSuppliedAnchors": null,
+          "footLoadFraction": false,
+          "head": false,
+          "linearMotion": true,
+          "onlyFeet": false,
+          "torso": false
+        },
+        "solverSupportPoints": [
+          [
+            1.0879892110824585,
+            0.44727176427841187
+          ],
+          [
+            1.1507904529571533,
+            0.38206231594085693
+          ]
+        ],
+        "supportPersistence": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          1335,
+          0,
+          0,
+          909,
+          0,
+          0,
+          0,
+          1240,
+          0,
+          1208,
+          0,
+          142,
+          0,
+          1346,
+          0,
+          0,
+          0,
+          1182
+        ],
+        "thresholds": {
+          "angularRadps": 0.6499999761581421,
+          "footDriftM": 0.01,
+          "linearMps": 0.2199999988079071,
+          "torsoUp": 0.9700000286102295
+        },
+        "torsoUp": 0.10825535655021667
+      }
+    },
+    {
+      "label": "3200",
+      "sha256": "fbd31541a5cfb5f1f9fb718e1da6c3846aa9dcc3ecb9c8267925fd6a61cf2de5",
+      "verification": {
+        "binaryWorldDeserialized": true,
+        "bytes": 640701,
+        "controllerEqual": true,
+        "forecastSubsteps": 0,
+        "handlesEqual": true,
+        "jointStateEqual": true,
+        "nativeSubsteps": 3200,
+        "passed": true,
+        "physicsIntegrations": 0,
+        "snapshotEqual": true
+      },
+      "fixture": {
+        "ground_load_n": 401.3343505859375,
+        "head_height_m": 0.2015335112810135,
+        "kind": "side-supported",
+        "maximum_angular_radps": 0.004509126767516136,
+        "maximum_body_com_speed_mps": 0.0009566803928464651,
+        "preparing": true,
+        "ready": false,
+        "settled_substeps": 0,
+        "torso_face_up": -0.48911571502685547,
+        "torso_long_axis_up": 0.10844369232654572,
+        "torso_side_up": 0.8654512763023376,
+        "trigger_substep": null
+      },
+      "diagnostic": {
+        "capture": {
+          "x": 0.35370713472366333,
+          "y": 0.12756523489952087,
+          "z": 0.15144477784633636
+        },
+        "com": {
+          "x": 0.3537229895591736,
+          "y": 0.127564936876297,
+          "z": 0.15143506228923798
+        },
+        "comVelocity": {
+          "x": -0.00013900820340495557,
+          "y": 0.0000026506086214794777,
+          "z": 0.00008525043813278899
+        },
+        "feet": [
+          {
+            "x": 1.043204665184021,
+            "y": 0.1500825136899948,
+            "z": 0.39510151743888855
+          },
+          {
+            "x": 1.1391818523406982,
+            "y": 0.11917068064212799,
+            "z": 0.2715061902999878
+          }
+        ],
+        "footDriftM": null,
+        "footIds": [
+          16,
+          10
+        ],
+        "headM": 0.2015335112810135,
+        "loadsN": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          139.91603088378906,
+          0,
+          0,
+          7.030330657958984,
+          0,
+          0,
+          13.00514030456543,
+          39.18356704711914,
+          0,
+          17.595273971557617,
+          0,
+          20.09723472595215,
+          0,
+          148.28379821777344,
+          0,
+          0,
+          0,
+          16.22295379638672
+        ],
+        "motion": [
+          {
+            "angularPassed": true,
+            "angularRadps": 0.0007594937924295664,
+            "body": "torso",
+            "linearMps": 0.00015363932470791042,
+            "linearPassed": true
+          },
+          {
+            "angularPassed": true,
+            "angularRadps": 0.0007594937924295664,
+            "body": "head",
+            "linearMps": 0.0002261172776343301,
+            "linearPassed": true
+          },
+          {
+            "angularPassed": true,
+            "angularRadps": 0.0009612966096028686,
+            "body": "@abdomen_z",
+            "linearMps": 0.00023026787675917149,
+            "linearPassed": true
+          },
+          {
+            "angularPassed": true,
+            "angularRadps": 0.0013215213548392057,
+            "body": "lower_waist",
+            "linearMps": 0.00018530745001044124,
+            "linearPassed": true
+          },
+          {
+            "angularPassed": true,
+            "angularRadps": 0.0015881462022662163,
+            "body": "pelvis",
+            "linearMps": 0.000229931203648448,
+            "linearPassed": true
+          },
+          {
+            "angularPassed": true,
+            "angularRadps": 0.0020670220255851746,
+            "body": "@right_hip_x",
+            "linearMps": 0.0003349381731823087,
+            "linearPassed": true
+          },
+          {
+            "angularPassed": true,
+            "angularRadps": 0.0024516726844012737,
+            "body": "@right_hip_z",
+            "linearMps": 0.0003349381731823087,
+            "linearPassed": true
+          },
+          {
+            "angularPassed": true,
+            "angularRadps": 0.0017125605372712016,
+            "body": "right_thigh",
+            "linearMps": 0.0002561798319220543,
+            "linearPassed": true
+          },
+          {
+            "angularPassed": true,
+            "angularRadps": 0.0020158954430371523,
+            "body": "right_shin",
+            "linearMps": 0.0004630669136531651,
+            "linearPassed": true
+          },
+          {
+            "angularPassed": true,
+            "angularRadps": 0.004132572561502457,
+            "body": "@right_ankle_y",
+            "linearMps": 0.0008359979256056249,
+            "linearPassed": true
+          },
+          {
+            "angularPassed": true,
+            "angularRadps": 0.004509126767516136,
+            "body": "right_foot",
+            "linearMps": 0.0009566803928464651,
+            "linearPassed": true
+          },
+          {
+            "angularPassed": true,
+            "angularRadps": 0.001366723095998168,
+            "body": "@left_hip_x",
+            "linearMps": 0.0002527397300582379,
+            "linearPassed": true
+          },
+          {
+            "angularPassed": true,
+            "angularRadps": 0.0013998200884088874,
+            "body": "@left_hip_z",
+            "linearMps": 0.0002527397300582379,
+            "linearPassed": true
+          },
+          {
+            "angularPassed": true,
+            "angularRadps": 0.0007718083215877414,
+            "body": "left_thigh",
+            "linearMps": 0.00014862895477563143,
+            "linearPassed": true
+          },
+          {
+            "angularPassed": true,
+            "angularRadps": 0.0005070359329693019,
+            "body": "left_shin",
+            "linearMps": 0.00007715372339589521,
+            "linearPassed": true
+          },
+          {
+            "angularPassed": true,
+            "angularRadps": 0.0010050792479887605,
+            "body": "@left_ankle_y",
+            "linearMps": 0.00009771840268513188,
+            "linearPassed": true
+          },
+          {
+            "angularPassed": true,
+            "angularRadps": 0.0010664204601198435,
+            "body": "left_foot",
+            "linearMps": 0.000052615159802371636,
+            "linearPassed": true
+          },
+          {
+            "angularPassed": true,
+            "angularRadps": 0.0008009466691873968,
+            "body": "@right_shoulder1",
+            "linearMps": 0.00008912226621760055,
+            "linearPassed": true
+          },
+          {
+            "angularPassed": true,
+            "angularRadps": 0.0008089056354947388,
+            "body": "right_upper_arm",
+            "linearMps": 0.00006920367013663054,
+            "linearPassed": true
+          },
+          {
+            "angularPassed": true,
+            "angularRadps": 0.0008010133751668036,
+            "body": "right_lower_arm",
+            "linearMps": 0.00010414700955152512,
+            "linearPassed": true
+          },
+          {
+            "angularPassed": true,
+            "angularRadps": 0.0008010133751668036,
+            "body": "right_hand",
+            "linearMps": 0.00005207166395848617,
+            "linearPassed": true
+          },
+          {
+            "angularPassed": true,
+            "angularRadps": 0.0007230705814436078,
+            "body": "@left_shoulder1",
+            "linearMps": 0.00026696035638451576,
+            "linearPassed": true
+          },
+          {
+            "angularPassed": true,
+            "angularRadps": 0.0005033370689488947,
+            "body": "left_upper_arm",
+            "linearMps": 0.00029368276591412723,
+            "linearPassed": true
+          },
+          {
+            "angularPassed": true,
+            "angularRadps": 0.002047470770776272,
+            "body": "left_lower_arm",
+            "linearMps": 0.00010293353989254683,
+            "linearPassed": true
+          },
+          {
+            "angularPassed": true,
+            "angularRadps": 0.002047470770776272,
+            "body": "left_hand",
+            "linearMps": 0.0003262960526626557,
+            "linearPassed": true
+          }
+        ],
+        "nativeSubsteps": 3200,
+        "physicsIntegrations": 0,
+        "predicates": {
+          "angularMotion": true,
+          "bothFeetLoadedAndPersistent": true,
+          "captureInSupport": false,
+          "comInSupport": false,
+          "footDriftFromSuppliedAnchors": null,
+          "footLoadFraction": false,
+          "head": false,
+          "linearMotion": true,
+          "onlyFeet": false,
+          "torso": false
+        },
+        "solverSupportPoints": [
+          [
+            1.0885403156280518,
+            0.4477244019508362
+          ],
+          [
+            1.149884819984436,
+            0.3837122619152069
+          ]
+        ],
+        "supportPersistence": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          2935,
+          0,
+          0,
+          2509,
+          0,
+          0,
+          1587,
+          2840,
+          0,
+          2808,
+          0,
+          1742,
+          0,
+          2946,
+          0,
+          0,
+          0,
+          2782
+        ],
+        "thresholds": {
+          "angularRadps": 0.6499999761581421,
+          "footDriftM": 0.01,
+          "linearMps": 0.2199999988079071,
+          "torsoUp": 0.9700000286102295
+        },
+        "torsoUp": 0.10844369232654572
+      }
+    },
+    {
+      "label": "final",
+      "sha256": "fbd31541a5cfb5f1f9fb718e1da6c3846aa9dcc3ecb9c8267925fd6a61cf2de5",
+      "verification": {
+        "binaryWorldDeserialized": true,
+        "bytes": 640701,
+        "controllerEqual": true,
+        "forecastSubsteps": 0,
+        "handlesEqual": true,
+        "jointStateEqual": true,
+        "nativeSubsteps": 3200,
+        "passed": true,
+        "physicsIntegrations": 0,
+        "snapshotEqual": true
+      },
+      "fixture": {
+        "ground_load_n": 401.3343505859375,
+        "head_height_m": 0.2015335112810135,
+        "kind": "side-supported",
+        "maximum_angular_radps": 0.004509126767516136,
+        "maximum_body_com_speed_mps": 0.0009566803928464651,
+        "preparing": true,
+        "ready": false,
+        "settled_substeps": 0,
+        "torso_face_up": -0.48911571502685547,
+        "torso_long_axis_up": 0.10844369232654572,
+        "torso_side_up": 0.8654512763023376,
+        "trigger_substep": null
+      },
+      "diagnostic": {
+        "capture": {
+          "x": 0.35370713472366333,
+          "y": 0.12756523489952087,
+          "z": 0.15144477784633636
+        },
+        "com": {
+          "x": 0.3537229895591736,
+          "y": 0.127564936876297,
+          "z": 0.15143506228923798
+        },
+        "comVelocity": {
+          "x": -0.00013900820340495557,
+          "y": 0.0000026506086214794777,
+          "z": 0.00008525043813278899
+        },
+        "feet": [
+          {
+            "x": 1.043204665184021,
+            "y": 0.1500825136899948,
+            "z": 0.39510151743888855
+          },
+          {
+            "x": 1.1391818523406982,
+            "y": 0.11917068064212799,
+            "z": 0.2715061902999878
+          }
+        ],
+        "footDriftM": null,
+        "footIds": [
+          16,
+          10
+        ],
+        "headM": 0.2015335112810135,
+        "loadsN": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          139.91603088378906,
+          0,
+          0,
+          7.030330657958984,
+          0,
+          0,
+          13.00514030456543,
+          39.18356704711914,
+          0,
+          17.595273971557617,
+          0,
+          20.09723472595215,
+          0,
+          148.28379821777344,
+          0,
+          0,
+          0,
+          16.22295379638672
+        ],
+        "motion": [
+          {
+            "angularPassed": true,
+            "angularRadps": 0.0007594937924295664,
+            "body": "torso",
+            "linearMps": 0.00015363932470791042,
+            "linearPassed": true
+          },
+          {
+            "angularPassed": true,
+            "angularRadps": 0.0007594937924295664,
+            "body": "head",
+            "linearMps": 0.0002261172776343301,
+            "linearPassed": true
+          },
+          {
+            "angularPassed": true,
+            "angularRadps": 0.0009612966096028686,
+            "body": "@abdomen_z",
+            "linearMps": 0.00023026787675917149,
+            "linearPassed": true
+          },
+          {
+            "angularPassed": true,
+            "angularRadps": 0.0013215213548392057,
+            "body": "lower_waist",
+            "linearMps": 0.00018530745001044124,
+            "linearPassed": true
+          },
+          {
+            "angularPassed": true,
+            "angularRadps": 0.0015881462022662163,
+            "body": "pelvis",
+            "linearMps": 0.000229931203648448,
+            "linearPassed": true
+          },
+          {
+            "angularPassed": true,
+            "angularRadps": 0.0020670220255851746,
+            "body": "@right_hip_x",
+            "linearMps": 0.0003349381731823087,
+            "linearPassed": true
+          },
+          {
+            "angularPassed": true,
+            "angularRadps": 0.0024516726844012737,
+            "body": "@right_hip_z",
+            "linearMps": 0.0003349381731823087,
+            "linearPassed": true
+          },
+          {
+            "angularPassed": true,
+            "angularRadps": 0.0017125605372712016,
+            "body": "right_thigh",
+            "linearMps": 0.0002561798319220543,
+            "linearPassed": true
+          },
+          {
+            "angularPassed": true,
+            "angularRadps": 0.0020158954430371523,
+            "body": "right_shin",
+            "linearMps": 0.0004630669136531651,
+            "linearPassed": true
+          },
+          {
+            "angularPassed": true,
+            "angularRadps": 0.004132572561502457,
+            "body": "@right_ankle_y",
+            "linearMps": 0.0008359979256056249,
+            "linearPassed": true
+          },
+          {
+            "angularPassed": true,
+            "angularRadps": 0.004509126767516136,
+            "body": "right_foot",
+            "linearMps": 0.0009566803928464651,
+            "linearPassed": true
+          },
+          {
+            "angularPassed": true,
+            "angularRadps": 0.001366723095998168,
+            "body": "@left_hip_x",
+            "linearMps": 0.0002527397300582379,
+            "linearPassed": true
+          },
+          {
+            "angularPassed": true,
+            "angularRadps": 0.0013998200884088874,
+            "body": "@left_hip_z",
+            "linearMps": 0.0002527397300582379,
+            "linearPassed": true
+          },
+          {
+            "angularPassed": true,
+            "angularRadps": 0.0007718083215877414,
+            "body": "left_thigh",
+            "linearMps": 0.00014862895477563143,
+            "linearPassed": true
+          },
+          {
+            "angularPassed": true,
+            "angularRadps": 0.0005070359329693019,
+            "body": "left_shin",
+            "linearMps": 0.00007715372339589521,
+            "linearPassed": true
+          },
+          {
+            "angularPassed": true,
+            "angularRadps": 0.0010050792479887605,
+            "body": "@left_ankle_y",
+            "linearMps": 0.00009771840268513188,
+            "linearPassed": true
+          },
+          {
+            "angularPassed": true,
+            "angularRadps": 0.0010664204601198435,
+            "body": "left_foot",
+            "linearMps": 0.000052615159802371636,
+            "linearPassed": true
+          },
+          {
+            "angularPassed": true,
+            "angularRadps": 0.0008009466691873968,
+            "body": "@right_shoulder1",
+            "linearMps": 0.00008912226621760055,
+            "linearPassed": true
+          },
+          {
+            "angularPassed": true,
+            "angularRadps": 0.0008089056354947388,
+            "body": "right_upper_arm",
+            "linearMps": 0.00006920367013663054,
+            "linearPassed": true
+          },
+          {
+            "angularPassed": true,
+            "angularRadps": 0.0008010133751668036,
+            "body": "right_lower_arm",
+            "linearMps": 0.00010414700955152512,
+            "linearPassed": true
+          },
+          {
+            "angularPassed": true,
+            "angularRadps": 0.0008010133751668036,
+            "body": "right_hand",
+            "linearMps": 0.00005207166395848617,
+            "linearPassed": true
+          },
+          {
+            "angularPassed": true,
+            "angularRadps": 0.0007230705814436078,
+            "body": "@left_shoulder1",
+            "linearMps": 0.00026696035638451576,
+            "linearPassed": true
+          },
+          {
+            "angularPassed": true,
+            "angularRadps": 0.0005033370689488947,
+            "body": "left_upper_arm",
+            "linearMps": 0.00029368276591412723,
+            "linearPassed": true
+          },
+          {
+            "angularPassed": true,
+            "angularRadps": 0.002047470770776272,
+            "body": "left_lower_arm",
+            "linearMps": 0.00010293353989254683,
+            "linearPassed": true
+          },
+          {
+            "angularPassed": true,
+            "angularRadps": 0.002047470770776272,
+            "body": "left_hand",
+            "linearMps": 0.0003262960526626557,
+            "linearPassed": true
+          }
+        ],
+        "nativeSubsteps": 3200,
+        "physicsIntegrations": 0,
+        "predicates": {
+          "angularMotion": true,
+          "bothFeetLoadedAndPersistent": true,
+          "captureInSupport": false,
+          "comInSupport": false,
+          "footDriftFromSuppliedAnchors": null,
+          "footLoadFraction": false,
+          "head": false,
+          "linearMotion": true,
+          "onlyFeet": false,
+          "torso": false
+        },
+        "solverSupportPoints": [
+          [
+            1.0885403156280518,
+            0.4477244019508362
+          ],
+          [
+            1.149884819984436,
+            0.3837122619152069
+          ]
+        ],
+        "supportPersistence": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          2935,
+          0,
+          0,
+          2509,
+          0,
+          0,
+          1587,
+          2840,
+          0,
+          2808,
+          0,
+          1742,
+          0,
+          2946,
+          0,
+          0,
+          0,
+          2782
+        ],
+        "thresholds": {
+          "angularRadps": 0.6499999761581421,
+          "footDriftM": 0.01,
+          "linearMps": 0.2199999988079071,
+          "torsoUp": 0.9700000286102295
+        },
+        "torsoUp": 0.10844369232654572
+      }
+    }
+  ]
+}

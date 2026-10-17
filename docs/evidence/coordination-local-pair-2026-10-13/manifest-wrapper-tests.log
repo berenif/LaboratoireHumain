@@ -1,0 +1,12 @@
+test_changed_fixture_is_refused (__main__.LocalPairCriteriaTests.test_changed_fixture_is_refused) ... ok
+test_current_criteria_file_matches_exact_reduction (__main__.LocalPairCriteriaTests.test_current_criteria_file_matches_exact_reduction) ... ok
+test_extra_history_is_refused (__main__.LocalPairCriteriaTests.test_extra_history_is_refused) ... ok
+test_longer_real_history_is_refused (__main__.LocalPairCriteriaTests.test_longer_real_history_is_refused) ... ok
+test_only_reduced_wall_limit_is_accepted (__main__.LocalPairCriteriaTests.test_only_reduced_wall_limit_is_accepted) ... ok
+test_previous_wall_limit_is_refused (__main__.LocalPairCriteriaTests.test_previous_wall_limit_is_refused) ... ok
+test_relaxed_support_threshold_is_refused (__main__.LocalPairCriteriaTests.test_relaxed_support_threshold_is_refused) ... ok
+
+----------------------------------------------------------------------
+Ran 7 tests in 0.001s
+
+OK

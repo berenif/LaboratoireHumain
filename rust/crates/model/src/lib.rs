@@ -1,8 +1,8 @@
-//! Versioned canonical anatomy. No browser, rendering, or physics-engine types.
+//! Pinned GetUp body and primitive inertias. No browser or physics-engine types.
 use nalgebra::{Matrix3, SymmetricEigen, UnitQuaternion, Vector3};
 use serde::{Deserialize, Serialize};
 
-pub const CANONICAL_JSON: &str = include_str!("../data/canonical-v1.json");
+pub const CANONICAL_JSON: &str = include_str!("../data/getup-v1.json");
 pub const PROTOCOL_JSON: &str = include_str!("../data/protocol-v1.json");
 pub const FLAT_FLOOR_HALF_EXTENTS: [f32; 3] = [12.0, 0.08, 10.5];
 pub const FLAT_FLOOR_CENTER: [f32; 3] = [0.0, -0.08, 0.0];
@@ -233,6 +233,34 @@ pub struct Segment {
     pub collision_exclusions: Vec<String>,
     pub initial: Pose,
     pub golden_mass: GoldenMass,
+    #[serde(default)]
+    pub reference: Option<ReferenceLink>,
+}
+#[derive(Debug, Clone, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ReferenceLink {
+    pub source_body: Option<String>,
+    pub primitives: Vec<ReferencePrimitive>,
+    pub hinge: Option<ReferenceHinge>,
+}
+#[derive(Debug, Clone, Deserialize)]
+pub struct ReferencePrimitive {
+    pub name: String,
+    pub kind: String,
+    pub a: Vec3,
+    pub b: Vec3,
+    pub radius: f32,
+}
+#[derive(Debug, Clone, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ReferenceHinge {
+    pub name: String,
+    pub qpos_index: usize,
+    pub actuator_index: usize,
+    pub armature: f32,
+    pub gear: f32,
+    pub axis: Vec3,
+    pub anchor: Vec3,
 }
 #[derive(Debug, Clone, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -243,6 +271,8 @@ pub struct Model {
     pub segments: Vec<Segment>,
     pub playground: serde_json::Value,
     pub protocol: serde_json::Value,
+    #[serde(default)]
+    pub reference_metadata: serde_json::Value,
 }
 impl Model {
     pub fn canonical() -> Result<Self, String> {
@@ -251,11 +281,11 @@ impl Model {
         Ok(m)
     }
     pub fn validate(&self) -> Result<(), String> {
-        if self.schema_version != 1 || self.segments.len() != 25 {
+        if self.schema_version != 2 || self.segments.len() != 25 {
             return Err("Anatomy/schema mismatch".into());
         }
         let mass: f32 = self.segments.iter().map(|s| s.mass_kg).sum();
-        if (mass - 72.2).abs() > 1e-4 || (self.stature_m - 1.84).abs() > 1e-6 {
+        if (mass - self.total_mass_kg).abs() > 1e-4 || !self.stature_m.is_finite() || self.stature_m <= 0.0 {
             return Err("Mass/stature mismatch".into());
         }
         let mut seen = std::collections::BTreeSet::new();
@@ -269,7 +299,14 @@ impl Model {
             if s.parent.is_some() != s.joint_profile.is_some() {
                 return Err(format!("Missing joint: {}", s.id));
             }
-            integrate_mass(&s.geometry, s.mass_kg)?;
+            if s.reference.is_none() || !s.mass_kg.is_finite() || s.mass_kg < 0.0 {
+                return Err(format!("Missing reference definition: {}", s.id));
+            }
+            let reference = s.reference.as_ref().unwrap();
+            if reference.source_body.is_some() != (s.mass_kg > 0.0)
+                || reference.primitives.is_empty() != reference.source_body.is_none() {
+                return Err(format!("Invalid reference mass/geometry: {}", s.id));
+            }
             if let Some(j) = &s.joint_profile {
                 if !j.limit_soft_zone_fraction.is_finite()
                     || !(0.0..=0.5).contains(&j.limit_soft_zone_fraction)
@@ -304,6 +341,20 @@ pub struct IntegratedMass {
     pub tensor: Matrix3<f64>,
     pub principal: Vec3,
     pub frame: Quat,
+}
+pub fn reference_mass(segment: &Segment) -> Result<IntegratedMass, String> {
+    let g = &segment.golden_mass;
+    let tensor = Matrix3::from_fn(|r, c| g.inertia[r][c]);
+    let eigen = SymmetricEigen::new(tensor);
+    if !tensor.iter().all(|x| x.is_finite()) || eigen.eigenvalues.iter().any(|x| *x < 0.0) {
+        return Err(format!("Invalid reference inertia: {}", segment.id));
+    }
+    let mut axes = eigen.eigenvectors;
+    if axes.determinant() < 0.0 { axes.set_column(2, &(-axes.column(2))); }
+    let q = UnitQuaternion::from_matrix(&axes);
+    Ok(IntegratedMass { volume: g.volume, center: g.center_of_mass, tensor,
+        principal: Vec3 { x:eigen.eigenvalues.x as f32,y:eigen.eigenvalues.y as f32,z:eigen.eigenvalues.z as f32 },
+        frame: Quat { x:q.i as f32,y:q.j as f32,z:q.k as f32,w:q.w as f32 } })
 }
 /// Signed tetrahedral integration of the closed canonical surface. f64 is used
 /// only during initialization; the resulting production bodies use f32.
@@ -378,32 +429,28 @@ pub fn integrate_mass(g: &Geometry, mass: f32) -> Result<IntegratedMass, String>
 mod tests {
     use super::*;
     #[test]
-    fn canonical_tensors_match_independent_legacy_integral() {
-        let m = Model::canonical().expect("canonical");
-        for s in m.segments {
-            let p = integrate_mass(&s.geometry, s.mass_kg).expect("mass");
-            assert!(
-                (p.volume - s.golden_mass.volume.abs()).abs() < 1e-10,
-                "{} volume",
-                s.id
-            );
-            for i in 0..3 {
-                for j in 0..3 {
-                    assert!(
-                        (p.tensor[(i, j)] - s.golden_mass.inertia[i][j]).abs() < 1e-8,
-                        "{} tensor",
-                        s.id
-                    );
-                }
-            }
-            assert!(
-                p.center
-                    .array()
-                    .iter()
-                    .zip(s.golden_mass.center_of_mass.array())
-                    .all(|(a, b)| (*a - b).abs() < 1e-6)
-            );
+    fn reference_spheres_and_capsules_have_analytic_inertia() {
+        let m=Model::canonical().unwrap();
+        assert!((m.total_mass_kg-40.84402122).abs()<1e-5);
+        for name in ["head","right_hand","left_hand"] {
+            let p=m.segments.iter().find(|p|p.id==name).unwrap();
+            let r=if name=="head" {0.09_f64} else {0.04};
+            let mass=1000.0*4.0*std::f64::consts::PI*r.powi(3)/3.0;
+            assert!((f64::from(p.mass_kg)-mass).abs()<1e-6);
+            let inertia=reference_mass(p).unwrap();
+            for k in 0..3 { assert!((inertia.tensor[(k,k)]-0.4*mass*r*r).abs()<1e-12); }
         }
+        let mut order=std::collections::BTreeSet::new();
+        let mut cap=0.0;
+        for p in &m.segments {if let Some(h)=p.reference.as_ref().and_then(|r|r.hinge.as_ref()) {
+            assert!(order.insert(h.qpos_index));cap+=h.gear;
+        }}
+        assert_eq!(order.len(),21);assert_eq!(cap,920.0);
+        let foot=m.segments.iter().find(|p|p.id=="right_foot").unwrap();
+        assert_eq!(foot.reference.as_ref().unwrap().primitives.len(),2);
+        let ankle=m.segments.iter().find(|p|p.id=="@right_ankle_y").unwrap();
+        assert!((ankle.reference.as_ref().unwrap().hinge.as_ref().unwrap().anchor.y-0.08).abs()<1e-6);
+        assert!((foot.reference.as_ref().unwrap().hinge.as_ref().unwrap().anchor.y-0.04).abs()<1e-6);
     }
     #[test]
     fn rejects_invalid_geometry() {
@@ -432,7 +479,7 @@ mod tests {
         for (i, expected) in [50.0 / 3.0, 65.0 / 3.0, 25.0 / 3.0].iter().enumerate() {
             assert!((p.tensor[(i, i)] - expected).abs() < 1e-10);
         }
-        for s in Model::canonical().expect("canonical").segments {
+        for s in Model::canonical().expect("canonical").segments.into_iter().filter(|s|s.mass_kg>0.0) {
             let a = integrate_mass(&s.geometry, s.mass_kg).expect("original");
             let mut reflected = s.geometry;
             for p in reflected.vertices.chunks_exact_mut(3) {

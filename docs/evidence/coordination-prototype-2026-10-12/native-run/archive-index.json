@@ -1,0 +1,51 @@
+{
+  "scope": "lossless compression of already archived native evidence; zero integrations",
+  "files": [
+    {
+      "original": "000-native-verification.json",
+      "originalBytes": 71930205,
+      "originalSha256": "9a6850ea215fa070b006fb5db2cac9c812d5570e56b39a55396a37ff0b3e8e2a",
+      "archive": "000-native-verification.json.gz",
+      "archiveBytes": 4812869,
+      "archiveSha256": "4e7659eff993fdd5c9659fe274a4af930b768d2c1501d5a4b8f1af21ce881ca5",
+      "roundtripVerified": true
+    },
+    {
+      "original": "000-native-verification.states.jsonl",
+      "originalBytes": 1922050,
+      "originalSha256": "333db8f95c63d60d6f6f7f846f838e254d9da1ce325967daad059da2441cd171",
+      "archive": "000-native-verification.states.jsonl.gz",
+      "archiveBytes": 292351,
+      "archiveSha256": "de0ffd0cee45ec389cee4cc20b75fa44c2154c5aeecde412522138026a63eadc",
+      "roundtripVerified": true
+    },
+    {
+      "original": "001-A.states.jsonl",
+      "originalBytes": 120387357,
+      "originalSha256": "7f54902833151216576aae7b16ca1a51efb23eff8cd0f5c7939a39044913b074",
+      "archive": "001-A.states.jsonl.gz",
+      "archiveBytes": 18933527,
+      "archiveSha256": "9c072bf61dcd655e08dbe73ea9faa406a7241cb29959912249a606367f9b00d9",
+      "roundtripVerified": true
+    },
+    {
+      "original": "002-B-planning-000.json",
+      "originalBytes": 72027511,
+      "originalSha256": "b08f6dda06ae902156da7dce2a770cde2aa460974405ab9386e60c249e8d7314",
+      "archive": "002-B-planning-000.json.gz",
+      "archiveBytes": 4844954,
+      "archiveSha256": "fc850282ad61ca62ef761faf6fd251e231bfe8f3d3b031b99844ae1945e5c270",
+      "roundtripVerified": true
+    },
+    {
+      "original": "002-B.states.jsonl",
+      "originalBytes": 5734592,
+      "originalSha256": "38ca7d07d85917df8e282dafc4b3d4d3e3e497a3a22467b4fc7bb6a052bc2492",
+      "archive": "002-B.states.jsonl.gz",
+      "archiveBytes": 864451,
+      "archiveSha256": "e8e9e178beea95396ea31d646ef6a0be3cc1ded3d0a68726a574b1ff064f1433",
+      "roundtripVerified": true
+    }
+  ],
+  "restore": "gzip -dk FILE.gz; verify originalSha256. Original bytes remain in this workspace."
+}

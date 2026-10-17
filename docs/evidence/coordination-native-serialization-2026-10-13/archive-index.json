@@ -1,0 +1,29 @@
+{
+  "schema": 1,
+  "scope": "post-run lossless compression only",
+  "nativeIntegrations": 0,
+  "closedLedgerSha256": "191d3216953bfb4aca5b7abcea277454d7d97ad5b4ca72e28ffbc260399af250",
+  "elapsedSeconds": 1.8644639140002255,
+  "files": [
+    {
+      "rawPath": "/workspace/LaboratoireHumain/docs/evidence/coordination-native-serialization-2026-10-13/native-run/native-result.json",
+      "rawBytes": 8043365,
+      "rawSha256": "91af43ee6a6ee5420b381ddefb5d722876304b25f403154d6e326fe4dbe0924c",
+      "gzipPath": "/workspace/LaboratoireHumain/docs/evidence/coordination-native-serialization-2026-10-13/native-run/native-result.json.gz",
+      "gzipBytes": 1179625,
+      "gzipSha256": "fe8733db9c54ef9a19f46dd68e5064bcfce94966fa40f5496a467badc58d5558",
+      "decompressedBytesAndHashVerified": true,
+      "closedReceiptHashAvailable": true
+    },
+    {
+      "rawPath": "/workspace/LaboratoireHumain/docs/evidence/coordination-native-serialization-2026-10-13/native-run/native-trace.jsonl",
+      "rawBytes": 75314568,
+      "rawSha256": "88802a9348cc7e8ff074b3396d6261e71e43026018168f972f748b3b5f891766",
+      "gzipPath": "/workspace/LaboratoireHumain/docs/evidence/coordination-native-serialization-2026-10-13/native-run/native-trace.jsonl.gz",
+      "gzipBytes": 11131488,
+      "gzipSha256": "25009273796adcf39c2c409572b1d519c55948b75cb84738b53e0774725dd557",
+      "decompressedBytesAndHashVerified": true,
+      "closedReceiptHashAvailable": true
+    }
+  ]
+}

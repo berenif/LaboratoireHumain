@@ -1,0 +1,28 @@
+{
+  "name": "loaded-hull-capture-and-trunk-feedback-v1",
+  "analysis": "causal-baseline.json",
+  "hypothesis": "Initial forward hip-reference progression, near-limit ankles and unbraked forward trunk/CoM motion contribute to early loss of balance; not a proven unique cause.",
+  "phases": {
+    "transfer": "A36 posture reference held for 480 native steps (2s), while state feedback changes joint commands",
+    "continuation": "Then the existing source steps36..1920, with the same continuous feedback; standing reference at absolute9s, source complete at10s; final hold to26s"
+  },
+  "feedback": {
+    "horizontalComVelocity": "sqrt(9.81/max(height,0.2))*(current loaded hull vertex centroid - CoM horizontal position) - measured CoM horizontal velocity",
+    "verticalComVelocity": "2*(reference CoM height - measured height) - measured vertical velocity",
+    "comSpeedBoundMps": 0.15,
+    "trunkAndFootAngularVelocity": "2*rotation error toward world upright/flat - measured angular velocity",
+    "comWeight": 1,
+    "orientationWeight": 1,
+    "currentContactVelocityGuideWeight": 1,
+    "postureWeight": 0.25,
+    "regularization": 0.05,
+    "jointRateBoundRadps": 1,
+    "controlHz": 60
+  },
+  "contacts": "Current loaded foot contacts >=3N rebuilt every decision. Soft velocity guidance only, no retained-anchor persistence requirement. Empty support allowed as a diagnostic state.",
+  "actuation": "Only 46 joint references with exact coherent finite-difference velocities, existing ForceBased installer and unchanged anatomical/aggregate torque limits. No ideal torque model or external root action.",
+  "productionChanged": false,
+  "nativePreviews": 0,
+  "parameterSearch": false,
+  "fullRecoveryQualified": false
+}

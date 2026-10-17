@@ -1,0 +1,34 @@
+{
+  "activeSurvivors": [],
+  "case": "read-only-preflight",
+  "duplicateClaimRefusal": null,
+  "elapsedSeconds": 0.06022124699984488,
+  "failures": [],
+  "fixtureMode": "success",
+  "fixturePids": [],
+  "helperExitCode": 0,
+  "helperReceipt": {
+    "alarmRestored": true,
+    "error": null,
+    "nativeRustWorkerExecuted": false,
+    "physicalIntegrations": 0,
+    "protocolCountsAreSynthetic": true,
+    "result": {
+      "executeRequested": false,
+      "manifestSha256": "35b55fdbbb03cf1413f91c7ab8aa866fe7f340662bbffb70f22a6eab7777b628",
+      "physicalIntegrations": 0,
+      "status": "static-preflight-passed"
+    },
+    "signalHandlersRestored": true,
+    "unrelatedSurvivedCleanup": null
+  },
+  "nativeRustWorkerExecuted": false,
+  "oldNativeRegistersTouched": false,
+  "passed": true,
+  "physicalIntegrations": 0,
+  "protocolCountsAreSynthetic": true,
+  "sentSignal": null,
+  "statesAfterLauncher": {},
+  "temporaryManifestPathsAreHistorical": true,
+  "testWallSeconds": 2
+}

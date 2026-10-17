@@ -1,0 +1,268 @@
+{
+  "schema": 1,
+  "reservationId": "coordination-support-reformulation-static-2026-10-13T11:32:52Z",
+  "status": "closed-static-corrective-pass-native-blocked",
+  "closedUtc": "2026-10-13T11:59:15.634980+00:00",
+  "beforeReservationDeadline": true,
+  "preparationReservedSeconds": 7200,
+  "preparationTotalChargedSeconds": 35689,
+  "preparationCapSeconds": 144000,
+  "refundSeconds": 0,
+  "automaticRenewal": false,
+  "newNativeStepsPerformed": 0,
+  "newWorldsConstructed": 0,
+  "newFkEvaluations": 0,
+  "newTrajectoryGeometricInspections": 0,
+  "pureArithmeticScope": "Exact rational constraints, command QP/f32 compilation and support predicates over supplied archived/synthetic observations, including quaternion point transforms and hull/capture arithmetic. Model metadata serde only; no Model::canonical/validate, FK, anatomy or trajectory reconstruction.",
+  "closedPhysicalFamilyReopened": false,
+  "historySlotsCharged": 4,
+  "historySlotsMaximum": 4,
+  "localCorrectiveCodeCommit": "9a12f84bb0b934bbcae3dfc2b96bc50cacbaf81e",
+  "remoteVerifiedCodeCommit": "9a12f84bb0b934bbcae3dfc2b96bc50cacbaf81e",
+  "remoteMainUnchanged": "c597959f46f37715035349c8cd0a699b6822111a",
+  "checks": {
+    "exactAlgebraTestsPassed": 7,
+    "commandProposalTestsPassed": 5,
+    "supportScheduleTestsPassed": 9,
+    "supportScheduleInstrumentalRerunPassed": 9,
+    "productionCheckPassed": true,
+    "productionExcludesExperimentalModule": true,
+    "globalRustTypescriptSuiteRerun": false,
+    "sourceMarkdownJsonWhitespacePassed": true,
+    "rawCargoLogsPreservedWithTerminalBlankLines": true
+  },
+  "conclusion": {
+    "minimalConflictsByInclusion": 8,
+    "rationalRemovalWitnesses": 64,
+    "archivedCommandCasesFeasible": 4,
+    "f32CommandsPerCase": 4,
+    "axesPerCommand": 46,
+    "physicalAdmissions": 0,
+    "archivedWholeFootReleaseRefusals": 8,
+    "remainingSupportFractionRange": [
+      0.42534,
+      0.43157
+    ],
+    "nativeAdapterImplemented": false,
+    "heelAcquisitionProved": false,
+    "standContinuationProved": false,
+    "recoveryDefaultEnabled": false
+  },
+  "blockingPrerequisites": [
+    "Native observed crouch and prefix provenance",
+    "Complete reference and q/dq raccord for all revised contact branches",
+    "Native command-response and remaining-support preview admission",
+    "Executor that checks each support obligation and copies complete schedule/diagnostic state",
+    "Distinct approved physical protocol; old family stays closed"
+  ],
+  "library": {
+    "attemptedAgain": false,
+    "newFileIds": [],
+    "newVersions": [],
+    "blocker": "Previous official hosted apps tools/list network failure; no fallback"
+  },
+  "protected": [
+    {
+      "kind": "protectedClosedLedgers",
+      "path": "docs/evidence/coordination-prototype-2026-10-12/budget/ledger.json",
+      "sha256": "2afa69b3ae9c8ab8343f7dabdf46b955c8ac7b88aa259404958e25d49a72ef07",
+      "unchanged": true
+    },
+    {
+      "kind": "protectedClosedLedgers",
+      "path": "docs/evidence/coordination-native-parity-2026-10-13/native-run/physical-ledger.json",
+      "sha256": "73b2e3bff52aadf0414be2f7a4a96fa4cd5da7b02de0945434e4f136bbf476a6",
+      "unchanged": true
+    },
+    {
+      "kind": "protectedClosedLedgers",
+      "path": "docs/evidence/coordination-native-parity-renewal-2026-10-13/native-run/physical-ledger.json",
+      "sha256": "1411bfcc1a17caa681359cfb39d7c0429f2188375925c22ba4b037df96d44bc2",
+      "unchanged": true
+    },
+    {
+      "kind": "protectedClosedLedgers",
+      "path": "docs/evidence/coordination-native-serialization-2026-10-13/native-run/physical-ledger.json",
+      "sha256": "191d3216953bfb4aca5b7abcea277454d7d97ad5b4ca72e28ffbc260399af250",
+      "unchanged": true
+    },
+    {
+      "kind": "protectedClosedLedgers",
+      "path": "docs/evidence/coordination-local-pair-2026-10-13/budget/ledger.json",
+      "sha256": "e7c6831159ac1ae913a05f2af545a0521181d7142dbabd967908dfe7958fba97",
+      "unchanged": true
+    },
+    {
+      "kind": "protectedBinaries",
+      "path": "rust/target/release/deps/coordination_worker-60f2b83fe348a1d3",
+      "sha256": "1bb4b91ac8ebfbe382d9525e524b85040ca9890bc90a0ef0467f1ef2b64c8b57",
+      "unchanged": true
+    },
+    {
+      "kind": "protectedBinaries",
+      "path": "rust/target/release/deps/numeric_parity_worker-b68c9e5f8e8cfa37",
+      "sha256": "9e125785fad85b0befc9373c3116d66aa32e8050a998ce08974b0da29d2760cc",
+      "unchanged": true
+    },
+    {
+      "kind": "protectedBinaries",
+      "path": "rust/target/release/deps/numeric_parity_worker_serialization-360529b9ad4cba37",
+      "sha256": "83bddf95897acc6015de7d2947b04ee2f5aaf2eb49b4dcb85ba0a67764f95e1b",
+      "unchanged": true
+    },
+    {
+      "kind": "protectedBinaries",
+      "path": "rust/target/release/deps/coordination_local_pair_worker-bf2c98f759d9dc34",
+      "sha256": "c1c8a12825428758643a7f6e2fafb0a2710f7dca787c1daee07c27ec59849e9c",
+      "unchanged": true
+    },
+    {
+      "kind": "protectedManifests",
+      "path": "docs/evidence/coordination-prototype-2026-10-12/frozen-manifest.json",
+      "sha256": "4a37d4afbfe3ecd51997208bf5fa7599106fd9c43650cb55f6bcf6400d4e1d29",
+      "unchanged": true
+    },
+    {
+      "kind": "protectedManifests",
+      "path": "docs/evidence/coordination-native-parity-2026-10-13/manifest.json",
+      "sha256": "40e492a29d723118cb26990b9dd2866d498d9a1a5d5ae815d7aae1d9d92a407a",
+      "unchanged": true
+    },
+    {
+      "kind": "protectedManifests",
+      "path": "docs/evidence/coordination-native-parity-renewal-2026-10-13/manifest.json",
+      "sha256": "7235b6916b2d669710b0339e474fc245b48cc4311dd893557f4c03164f3326a6",
+      "unchanged": true
+    },
+    {
+      "kind": "protectedManifests",
+      "path": "docs/evidence/coordination-native-serialization-2026-10-13/manifest.json",
+      "sha256": "179bfe3cb58819cd2ba1b73642969c0eb2a343a052dee83ae89e2850e0830356",
+      "unchanged": true
+    },
+    {
+      "kind": "protectedManifests",
+      "path": "docs/evidence/coordination-local-pair-2026-10-13/manifest.json",
+      "sha256": "2fbcb3db0cd1bccf14082e772b1efba63e567fe7fce35ed8cccbbbf2ac2cdde9",
+      "unchanged": true
+    }
+  ],
+  "frozenSourceVersionsVerifiedByIndependentAudit": 1157,
+  "artifacts": [
+    {
+      "path": "docs/evidence/coordination-support-reformulation-2026-10-13/continuation-and-protocol.md",
+      "sizeBytes": 22540,
+      "sha256": "3abcead3c777677f612fc4ab5af5b44763dfd25caaecb364cb179e92f74d0cda"
+    },
+    {
+      "path": "docs/evidence/coordination-support-reformulation-2026-10-13/minimal-conflicts-review.md",
+      "sizeBytes": 7444,
+      "sha256": "49d10845657d14727da0f6eeb6680a4aa78a1e0a5153f1e6d51624eebeb24ae5"
+    },
+    {
+      "path": "docs/evidence/coordination-support-reformulation-2026-10-13/physical-contract-review.md",
+      "sizeBytes": 13369,
+      "sha256": "b82dfb14947332242a2b948d3f7ce87854e55549514a9beddd1e446bc77e7334"
+    },
+    {
+      "path": "docs/evidence/coordination-support-reformulation-2026-10-13/preparation-closure-audit.md",
+      "sizeBytes": 10249,
+      "sha256": "3eba70be12d7d754cb31caf4aa3bba9ea3b83e8cb0354584cede4c319b866bf1"
+    },
+    {
+      "path": "docs/evidence/coordination-support-reformulation-2026-10-13/static-architecture-review.md",
+      "sizeBytes": 6605,
+      "sha256": "5069569144d6a3c35c036b07b2d2190af19b18708f724165a0674fd7186bcfb8"
+    },
+    {
+      "path": "docs/evidence/coordination-support-reformulation-2026-10-13/command-proposal-tests.log",
+      "sizeBytes": 6182,
+      "sha256": "6d75834e8d0f55029f29451d891d900568e4e195ca05603007f759c1a4ff5bd8"
+    },
+    {
+      "path": "docs/evidence/coordination-support-reformulation-2026-10-13/minimal-conflicts-extraction.log",
+      "sizeBytes": 112,
+      "sha256": "96d4b52aa916ce96ebe195c6ce52ba067cb4917730e14496b7964837b24b132d"
+    },
+    {
+      "path": "docs/evidence/coordination-support-reformulation-2026-10-13/minimal-conflicts-tests.log",
+      "sizeBytes": 1109,
+      "sha256": "71faa98539f574737ad2f61153a9462eb6c2d407ba11c8a58af8ef9cde44916c"
+    },
+    {
+      "path": "docs/evidence/coordination-support-reformulation-2026-10-13/production-check.log",
+      "sizeBytes": 511,
+      "sha256": "81bab5d1bf5c9468327f6da1722762ad25728b2c608cfe6a765d93dd26f877f3"
+    },
+    {
+      "path": "docs/evidence/coordination-support-reformulation-2026-10-13/support-schedule-tests-evidence.log",
+      "sizeBytes": 6661,
+      "sha256": "dcb3601c031a1f8111b1ca6a9270291d405fa500c8b2aa8936cbcf22d585e471"
+    },
+    {
+      "path": "docs/evidence/coordination-support-reformulation-2026-10-13/support-schedule-tests.log",
+      "sizeBytes": 6587,
+      "sha256": "d3f51453694c047fab9f9e4a5b8f0c05c5c8d2a0fceb24f34c9a0828a9ca50c3"
+    },
+    {
+      "path": "docs/evidence/coordination-support-reformulation-2026-10-13/archived-step16-fixtures.json",
+      "sizeBytes": 435494,
+      "sha256": "1c7f4cde7ebd9283f8b8b1ebc0cdfe10c5e61721dbf54c17173652be00071ab7"
+    },
+    {
+      "path": "docs/evidence/coordination-support-reformulation-2026-10-13/archived-support-problems.json",
+      "sizeBytes": 57029,
+      "sha256": "c5308a0715ec97c5dbd7ed9e391c000c2c972dbf24130b70dae6299e1ef60d0d"
+    },
+    {
+      "path": "docs/evidence/coordination-support-reformulation-2026-10-13/minimal-support-conflicts.json",
+      "sizeBytes": 221781,
+      "sha256": "634d3a1c95a4ff9ddf05691e236f2a48e044e138378a7a062b074edc3b253de1"
+    },
+    {
+      "path": "docs/evidence/coordination-support-reformulation-2026-10-13/preparation-reservation.json",
+      "sizeBytes": 8584,
+      "sha256": "122f7e019d7384b639535f784aa35d89d15e298b704641a1efff697de05e3695"
+    },
+    {
+      "path": "docs/evidence/coordination-support-reformulation-2026-10-13/static-command-results.json",
+      "sizeBytes": 156563,
+      "sha256": "269731897c231e33c2b653d0913a2bd66ca9462f511f121c63d0e43e7064754a"
+    },
+    {
+      "path": "docs/evidence/coordination-support-reformulation-2026-10-13/static-support-release-results.json",
+      "sizeBytes": 43167,
+      "sha256": "ea8a54b2d60a3e5fae9317c34f774081b1a69844520a9f82086fa2b2e208a6dd"
+    },
+    {
+      "path": "docs/evidence/coordination-support-reformulation-2026-10-13/two-component-conflicts.json",
+      "sizeBytes": 5109,
+      "sha256": "0be1dae12d284ec5574a518d8bc9126a064bfb7276298b4ff49bcb1a600b75fa"
+    },
+    {
+      "path": "docs/coordination-support-reformulation-2026-10-13.md",
+      "sizeBytes": 13197,
+      "sha256": "40b9fe98fccb169dab7ea3d4d2164992f49a56f25bf35a96707f10a585a1cedd"
+    },
+    {
+      "path": "rust/crates/sim/src/recovery/planner/command_proposal.rs",
+      "sizeBytes": 16838,
+      "sha256": "d09cf9cfbeb650eddbcf2008fa214136f1bb774f2a5bebf44298c77a50c87d5b"
+    },
+    {
+      "path": "rust/crates/sim/src/recovery/planner/support_schedule.rs",
+      "sizeBytes": 35032,
+      "sha256": "243e1b712a6a0f02d59480b78205b7bb8d3f6a913b30589d526f06842826997c"
+    },
+    {
+      "path": "rust/crates/sim/src/recovery/planner/whole_body_controller.rs",
+      "sizeBytes": 37534,
+      "sha256": "b6db6f975a5192a4db60d4641f3da312888ff78dcd376b0c87e8c3e2bd09c244"
+    },
+    {
+      "path": "rust/crates/sim/src/recovery/planner/mod.rs",
+      "sizeBytes": 607,
+      "sha256": "b283c4f39d98ce9c15653e2ac89e979e83e09bec9212b354b53cf6b3137cdd28"
+    }
+  ]
+}

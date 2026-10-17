@@ -1,0 +1,284 @@
+{
+  "physicsIntegrations": 0,
+  "files": [
+    {
+      "source": "outputs/getup-side-completion-2026-10-16/admission-tests.json",
+      "archive": "docs/evidence/getup-side-completion-2026-10-16/admission-tests.json",
+      "rawBytes": 253,
+      "rawSha256": "a1c43fec40f0dd5a3b6b2ed6ce3b3125a53dea76e287c2d5e69392fe501875aa",
+      "archivedBytes": 253,
+      "archivedSha256": "a1c43fec40f0dd5a3b6b2ed6ce3b3125a53dea76e287c2d5e69392fe501875aa",
+      "gzip": false
+    },
+    {
+      "source": "outputs/getup-side-completion-2026-10-16/amendment-started-once",
+      "archive": "docs/evidence/getup-side-completion-2026-10-16/amendment-started-once",
+      "rawBytes": 0,
+      "rawSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "archivedBytes": 0,
+      "archivedSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "gzip": false
+    },
+    {
+      "source": "outputs/getup-side-completion-2026-10-16/archive.log",
+      "archive": "docs/evidence/getup-side-completion-2026-10-16/archive.log.gz",
+      "rawBytes": 105,
+      "rawSha256": "992f5a6556c3cbff46b7ff02b44b3da72cd1b97c3a6d1f75dbf08157a1a32cb9",
+      "archivedBytes": 109,
+      "archivedSha256": "d343f0118607e3e9b3fd0b448fc1c6490755182f96100625bab6248d13f57f87",
+      "gzip": true
+    },
+    {
+      "source": "outputs/getup-side-completion-2026-10-16/audit.log",
+      "archive": "docs/evidence/getup-side-completion-2026-10-16/audit.log.gz",
+      "rawBytes": 1509,
+      "rawSha256": "e9215168f29e7615ba6e3f2b1d94f5efa0013488dd6ad023f903c5799a92d85d",
+      "archivedBytes": 691,
+      "archivedSha256": "d6154c5b1158827c2dcfacbd14ed09bbc286328fcda39308f55e653027df74d3",
+      "gzip": true
+    },
+    {
+      "source": "outputs/getup-side-completion-2026-10-16/build.log",
+      "archive": "docs/evidence/getup-side-completion-2026-10-16/build.log.gz",
+      "rawBytes": 779,
+      "rawSha256": "ff5816170427850453bb74911f49f7667907fca8eb3eb3dd53c81927feb8ac50",
+      "archivedBytes": 331,
+      "archivedSha256": "a2427ec1ef7fae7402f848955ff81ef066c72f721a3d64ee91fa164e1302a98c",
+      "gzip": true
+    },
+    {
+      "source": "outputs/getup-side-completion-2026-10-16/checkpoint-tests.log",
+      "archive": "docs/evidence/getup-side-completion-2026-10-16/checkpoint-tests.log.gz",
+      "rawBytes": 2480,
+      "rawSha256": "547542bb717ba196a59b8edb150cac6eced087eab6508daecb147fdccf4cc321",
+      "archivedBytes": 971,
+      "archivedSha256": "808fce19f60e9cf24536eb211214bbac3dd39b145112c00a3dfea3e7273add73",
+      "gzip": true
+    },
+    {
+      "source": "outputs/getup-side-completion-2026-10-16/getup-tests.log",
+      "archive": "docs/evidence/getup-side-completion-2026-10-16/getup-tests.log.gz",
+      "rawBytes": 3284,
+      "rawSha256": "cc8d5d325f299c97dac2075e94c226d67251bb02b14be0955cda7651ba26f6db",
+      "archivedBytes": 1241,
+      "archivedSha256": "517f6a09594545b11d766428809eccdad7419dcf7b38e46e170b463a16d14d6c",
+      "gzip": true
+    },
+    {
+      "source": "outputs/getup-side-completion-2026-10-16/last-rendered-frame.png",
+      "archive": "docs/evidence/getup-side-completion-2026-10-16/last-rendered-frame.png",
+      "rawBytes": 216504,
+      "rawSha256": "c786ca6d3b75d6f43733a5211be67909f9add3db3b582aec2220b74259945092",
+      "archivedBytes": 216504,
+      "archivedSha256": "c786ca6d3b75d6f43733a5211be67909f9add3db3b582aec2220b74259945092",
+      "gzip": false
+    },
+    {
+      "source": "outputs/getup-side-completion-2026-10-16/library-confirmed.json",
+      "archive": "docs/evidence/getup-side-completion-2026-10-16/library-confirmed.json",
+      "rawBytes": 704,
+      "rawSha256": "a5ee590904e30cfc47c4cc7b114a213bffb1c0ec6a25c8512ff5ea7e1d1d48b4",
+      "archivedBytes": 704,
+      "archivedSha256": "a5ee590904e30cfc47c4cc7b114a213bffb1c0ec6a25c8512ff5ea7e1d1d48b4",
+      "gzip": false
+    },
+    {
+      "source": "outputs/getup-side-completion-2026-10-16/postrun-audit.json",
+      "archive": "docs/evidence/getup-side-completion-2026-10-16/postrun-audit.json",
+      "rawBytes": 37049,
+      "rawSha256": "f1aabd073a15b34b778831b9e5f764abf75e3163c67e8062be1d7c8cd12ad47b",
+      "archivedBytes": 37049,
+      "archivedSha256": "f1aabd073a15b34b778831b9e5f764abf75e3163c67e8062be1d7c8cd12ad47b",
+      "gzip": false
+    },
+    {
+      "source": "outputs/getup-side-completion-2026-10-16/preflight-back.bin",
+      "archive": "docs/evidence/getup-side-completion-2026-10-16/preflight-back.bin.gz",
+      "rawBytes": 584689,
+      "rawSha256": "ef27d8b9986fd635b871010e780e74df96dceec6e48d64d75b7cb754332e031a",
+      "archivedBytes": 91991,
+      "archivedSha256": "7a557936198fdc01e4392959239217124a7d7cb98e98e7615babeec21b6b186b",
+      "gzip": true
+    },
+    {
+      "source": "outputs/getup-side-completion-2026-10-16/preflight-belly.bin",
+      "archive": "docs/evidence/getup-side-completion-2026-10-16/preflight-belly.bin.gz",
+      "rawBytes": 584692,
+      "rawSha256": "bac7b73b5a9e2182c472f472df6cfb6e50d57a12dc204bd8b5958276a80546de",
+      "archivedBytes": 91965,
+      "archivedSha256": "deb12b83c3474fba4cc6caf84f5ca4316b7a828bb704c208cdadf4b4ab2f08b6",
+      "gzip": true
+    },
+    {
+      "source": "outputs/getup-side-completion-2026-10-16/preflight-side-supported.bin",
+      "archive": "docs/evidence/getup-side-completion-2026-10-16/preflight-side-supported.bin.gz",
+      "rawBytes": 584681,
+      "rawSha256": "c5623744a6f6014629b2c76d83c0abfd6a8ac35a08e2a16c96baac8a303691d3",
+      "archivedBytes": 92561,
+      "archivedSha256": "a2c7669aa1df6ac9ee626e867cd09f1f3c179984d6ca4180e1d3181eb99e2cca",
+      "gzip": true
+    },
+    {
+      "source": "outputs/getup-side-completion-2026-10-16/preflight-side.bin",
+      "archive": "docs/evidence/getup-side-completion-2026-10-16/preflight-side.bin.gz",
+      "rawBytes": 584682,
+      "rawSha256": "69bb6945ee992bc0e6bc45c0b69d6cf91e36c719f6b19dd30de594275ce9a68c",
+      "archivedBytes": 92168,
+      "archivedSha256": "2384fefbad2897cb5571ccdb0f21cbc9d8b28ce0983ebb38783176b051555ed6",
+      "gzip": true
+    },
+    {
+      "source": "outputs/getup-side-completion-2026-10-16/preflight.json",
+      "archive": "docs/evidence/getup-side-completion-2026-10-16/preflight.json",
+      "rawBytes": 31133,
+      "rawSha256": "28bdb95342a27c1a4899a7229c096a08c0f4cfea294547a08488a1d2ffe51657",
+      "archivedBytes": 31133,
+      "archivedSha256": "28bdb95342a27c1a4899a7229c096a08c0f4cfea294547a08488a1d2ffe51657",
+      "gzip": false
+    },
+    {
+      "source": "outputs/getup-side-completion-2026-10-16/render.log",
+      "archive": "docs/evidence/getup-side-completion-2026-10-16/render.log.gz",
+      "rawBytes": 333,
+      "rawSha256": "b69ddc667a28714a76e573be23149f1e4702ae252447f7a979735f074d1a798d",
+      "archivedBytes": 259,
+      "archivedSha256": "798105f3b0954fe6702b2e9bcd6751c6fbc240d04046e8d11665e70adc361dbb",
+      "gzip": true
+    },
+    {
+      "source": "outputs/getup-side-completion-2026-10-16/side-supported/checkpoint-1600.bin",
+      "archive": "docs/evidence/getup-side-completion-2026-10-16/side-supported/checkpoint-1600.bin.gz",
+      "rawBytes": 640594,
+      "rawSha256": "42b45f0658360c9ce45ace28c789c67f5006353abbb13df9a252289347c34693",
+      "archivedBytes": 114446,
+      "archivedSha256": "101829606dac995be2f18161c405b53e79fd76741fc35cca67d3c0f22b5523d1",
+      "gzip": true
+    },
+    {
+      "source": "outputs/getup-side-completion-2026-10-16/side-supported/checkpoint-3200.bin",
+      "archive": "docs/evidence/getup-side-completion-2026-10-16/side-supported/checkpoint-3200.bin.gz",
+      "rawBytes": 640701,
+      "rawSha256": "fbd31541a5cfb5f1f9fb718e1da6c3846aa9dcc3ecb9c8267925fd6a61cf2de5",
+      "archivedBytes": 114297,
+      "archivedSha256": "1628312000cdc86dee79f972e5557ea7050b7011002dadec5220ea5780ae42a2",
+      "gzip": true
+    },
+    {
+      "source": "outputs/getup-side-completion-2026-10-16/side-supported/checkpoint-final.bin",
+      "archive": "docs/evidence/getup-side-completion-2026-10-16/side-supported/checkpoint-final.bin.gz",
+      "rawBytes": 640701,
+      "rawSha256": "fbd31541a5cfb5f1f9fb718e1da6c3846aa9dcc3ecb9c8267925fd6a61cf2de5",
+      "archivedBytes": 114297,
+      "archivedSha256": "1628312000cdc86dee79f972e5557ea7050b7011002dadec5220ea5780ae42a2",
+      "gzip": true
+    },
+    {
+      "source": "outputs/getup-side-completion-2026-10-16/side-supported/checkpoint-initial.bin",
+      "archive": "docs/evidence/getup-side-completion-2026-10-16/side-supported/checkpoint-initial.bin.gz",
+      "rawBytes": 584681,
+      "rawSha256": "c5623744a6f6014629b2c76d83c0abfd6a8ac35a08e2a16c96baac8a303691d3",
+      "archivedBytes": 92561,
+      "archivedSha256": "a2c7669aa1df6ac9ee626e867cd09f1f3c179984d6ca4180e1d3181eb99e2cca",
+      "gzip": true
+    },
+    {
+      "source": "outputs/getup-side-completion-2026-10-16/side-supported/physical-run.log",
+      "archive": "docs/evidence/getup-side-completion-2026-10-16/side-supported/physical-run.log.gz",
+      "rawBytes": 13549,
+      "rawSha256": "7fba55061d6711613bed6ecac36c2082877b8d94e9d629277742508734e46ac0",
+      "archivedBytes": 4242,
+      "archivedSha256": "2730e5b3c3898d53760a6c03961835646fdd6480635199fb92a2208b6afcf883",
+      "gzip": true
+    },
+    {
+      "source": "outputs/getup-side-completion-2026-10-16/side-supported/reference-report.json",
+      "archive": "docs/evidence/getup-side-completion-2026-10-16/side-supported/reference-report.json.gz",
+      "rawBytes": 1023,
+      "rawSha256": "cc3a9263f47b03cda2bfcb108cd9bd3501f0d189b900f8a259be521c8f54679a",
+      "archivedBytes": 435,
+      "archivedSha256": "3533d6f27ef023029e7beb23ad40b8aaa9fd26d8f9c0e0011b5b6a83ab0e6445",
+      "gzip": true
+    },
+    {
+      "source": "outputs/getup-side-completion-2026-10-16/side-supported/result.json",
+      "archive": "docs/evidence/getup-side-completion-2026-10-16/side-supported/result.json",
+      "rawBytes": 25068,
+      "rawSha256": "83a93928a4f2734baa01382a0ed0583aff880e03b1429c58fdf9d1878cd4110d",
+      "archivedBytes": 25068,
+      "archivedSha256": "83a93928a4f2734baa01382a0ed0583aff880e03b1429c58fdf9d1878cd4110d",
+      "gzip": false
+    },
+    {
+      "source": "outputs/getup-side-completion-2026-10-16/side-supported/started-once",
+      "archive": "docs/evidence/getup-side-completion-2026-10-16/side-supported/started-once",
+      "rawBytes": 0,
+      "rawSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "archivedBytes": 0,
+      "archivedSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "gzip": false
+    },
+    {
+      "source": "outputs/getup-side-completion-2026-10-16/side-supported/trace.ndjson",
+      "archive": "docs/evidence/getup-side-completion-2026-10-16/side-supported/trace.ndjson.gz",
+      "rawBytes": 458841,
+      "rawSha256": "9874aceada10db6f67c405f30366f5d4e26ce054e631efc3ac8e55f0b69b34a2",
+      "archivedBytes": 90353,
+      "archivedSha256": "2831c7ffa45783952d159795391d257333f12b81e5d9d3d1042c696e5f741e0c",
+      "gzip": true
+    },
+    {
+      "source": "outputs/getup-side-completion-2026-10-16/standing-checkpoint-audit.json",
+      "archive": "docs/evidence/getup-side-completion-2026-10-16/standing-checkpoint-audit.json",
+      "rawBytes": 18936,
+      "rawSha256": "764c1ff74a9bdc3cf23d3a8b07a4ddf115adda0e0f77ca130b3dbfaf53cdb8bb",
+      "archivedBytes": 18936,
+      "archivedSha256": "764c1ff74a9bdc3cf23d3a8b07a4ddf115adda0e0f77ca130b3dbfaf53cdb8bb",
+      "gzip": false
+    },
+    {
+      "source": "outputs/getup-side-completion-2026-10-16/static-tests.log",
+      "archive": "docs/evidence/getup-side-completion-2026-10-16/static-tests.log.gz",
+      "rawBytes": 6611,
+      "rawSha256": "016ffe6b82e2fc488229584cb661097f01e2d91a4c0a930f8a629b70d24ccd5d",
+      "archivedBytes": 2796,
+      "archivedSha256": "453a833985ecb0382b995cc37ba15be4fee6311e54d438fd5595290f7a5694e0",
+      "gzip": true
+    },
+    {
+      "source": "outputs/getup-side-completion-2026-10-16/supervisor.log",
+      "archive": "docs/evidence/getup-side-completion-2026-10-16/supervisor.log.gz",
+      "rawBytes": 1910,
+      "rawSha256": "ae32347550a70d360f8d8fdef5ecd11dc2b1e9e6bc497306364359f5ea178ff7",
+      "archivedBytes": 959,
+      "archivedSha256": "f043461e04b5b8f15791910c92059123a55b505a21efe3064fa4390049c8e433",
+      "gzip": true
+    },
+    {
+      "source": "outputs/getup-side-completion-2026-10-16/video-decode.log",
+      "archive": "docs/evidence/getup-side-completion-2026-10-16/video-decode.log.gz",
+      "rawBytes": 0,
+      "rawSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "archivedBytes": 20,
+      "archivedSha256": "f61f27bd17de546264aa58f40f3aafaac7021e0ef69c17f6b1b4cd7664a037ec",
+      "gzip": true
+    },
+    {
+      "source": "outputs/getup-side-completion-2026-10-16/video-ffprobe.json",
+      "archive": "docs/evidence/getup-side-completion-2026-10-16/video-ffprobe.json",
+      "rawBytes": 2720,
+      "rawSha256": "14ee6592407a4e27a653a8dea2a2390f13e9823edb427aaf7ccf5b0c1fad57fe",
+      "archivedBytes": 2720,
+      "archivedSha256": "14ee6592407a4e27a653a8dea2a2390f13e9823edb427aaf7ccf5b0c1fad57fe",
+      "gzip": false
+    },
+    {
+      "source": "outputs/getup-side-completion-2026-10-16/video-validation.json",
+      "archive": "docs/evidence/getup-side-completion-2026-10-16/video-validation.json",
+      "rawBytes": 443,
+      "rawSha256": "500e1ad57ea07b7abef9c28f5c00c2444e953c9752864edda8edc6667364daf9",
+      "archivedBytes": 443,
+      "archivedSha256": "500e1ad57ea07b7abef9c28f5c00c2444e953c9752864edda8edc6667364daf9",
+      "gzip": false
+    }
+  ]
+}

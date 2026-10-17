@@ -1,0 +1,22 @@
+{
+  "command": [
+    "/workspace/lh-rustup/toolchains/1.89.0-x86_64-unknown-linux-gnu/bin/cargo",
+    "test",
+    "--manifest-path",
+    "/workspace/LaboratoireHumain/rust/Cargo.toml",
+    "-p",
+    "lh-sim",
+    "--locked",
+    "--offline",
+    "--lib",
+    "--features",
+    "experimental-solver-step-observation",
+    "--no-run"
+  ],
+  "wallSeconds": 0.17137911900135805,
+  "exitCode": 0,
+  "workerSourceBefore": "fb5d5e4589306d19e76c8c1eddbef7e456f343b1243fe024b86889baa1f96cef",
+  "workerSourceAfter": "fb5d5e4589306d19e76c8c1eddbef7e456f343b1243fe024b86889baa1f96cef",
+  "nativeSteps": 0,
+  "execution": "compile-only"
+}

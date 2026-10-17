@@ -1,0 +1,390 @@
+{
+  "schema": 1,
+  "createdUtc": "2026-10-11T21:49:57.390418+00:00",
+  "sourceBaseCommit": "9d68ab2aa2c324ba7ed6262d1de66b30e274e40f",
+  "branch": "investigate/physical-support",
+  "mainReference": "c597959f46f37715035349c8cd0a699b6822111a",
+  "scope": "Planner observation prerequisite; earlier CCD solves omitted from last-interval impulse read",
+  "p1Passed": false,
+  "physicalRecoveryQualified": false,
+  "recoveryDefaultEnabled": false,
+  "newSearchStarted": 0,
+  "newGeometryInspections": 0,
+  "reference": {
+    "scope": "Read-only CCD impulse boundary diagnosis; no planner or recovery qualification",
+    "p1Passed": false,
+    "roundoffBoundCertified": false,
+    "angularBalanceVerified": false,
+    "neutrality": {
+      "sameNumericRows": true,
+      "sameInitial": true,
+      "sameFinal": true,
+      "sameRefusal": true,
+      "comparedValidNativeSteps": 1171,
+      "sameHistoricalNumericRows": true,
+      "sameHistoricalInitial": true,
+      "sameHistoricalFinal": true,
+      "sameHistoricalRefusal": true,
+      "sameFinalWorldHashesIncludingRefusal": true
+    },
+    "finalWorldHashesCompared": true,
+    "nativeStepsIncludingRefusal": 1172,
+    "solverIntervalsIncludingRefusal": 1176,
+    "multipleIntervalNativeStepsIncludingRefusal": 4,
+    "maxIntervalsPerNativeStep": 2,
+    "observationErrorCount": 0,
+    "maximumIntervalLinearResidualNsByAxis": [
+      9.618635061769965e-07,
+      3.1884572595508587e-06,
+      2.3092020740023145e-06
+    ],
+    "maximumSummedNativeLinearResidualNsByAxis": [
+      9.618635061769965e-07,
+      3.1884572595508587e-06,
+      2.3092020740023145e-06
+    ],
+    "worstLegacyVerticalDiscrepancy": {
+      "nativeSubstep": 330,
+      "timeS": 1.375,
+      "ccdIntervals": 2,
+      "dtS": 0.004166666883975267,
+      "requiredFloorN": [
+        2598.601510795345,
+        6503.863318227283,
+        -178.39548145691379
+      ],
+      "allIntervalsFloorN": [
+        2598.6014314786366,
+        6503.8630243917205,
+        -178.39520266517002
+      ],
+      "legacyReportedVerticalN": 42.9286322593689,
+      "sumLinearResidualNs": [
+        3.3048630143639457e-07,
+        1.2243149112300955e-06,
+        -1.161632326329709e-06
+      ]
+    },
+    "fullRecoverySuccess": false,
+    "firstRefusal": {
+      "check": "self-contact",
+      "measured": 0.00509440153837204,
+      "offending": "leftFoot/rightFoot",
+      "substep": 3,
+      "threshold": 0.004999999888241291,
+      "tick": 292
+    },
+    "hashes": {
+      "evidence/native-hybrid-v1-2026-10-11/004-final-reference-on/solver-boundaries.jsonl": "65454779720156e2c7f11bc92ad7ac84f194f459ec5988fb078c514d05ea270a",
+      "evidence/native-hybrid-v1-2026-10-11/004-final-reference-on/substeps.jsonl": "6c991d4ec5379e133d41efdc22ceae4571fe62e46e2a9fd8465525a42eb3b15c",
+      "evidence/native-hybrid-v1-2026-10-11/005-final-reference-off/substeps.jsonl": "6c991d4ec5379e133d41efdc22ceae4571fe62e46e2a9fd8465525a42eb3b15c"
+    }
+  },
+  "controller": {
+    "scope": "Read-only CCD impulse boundary diagnosis; no planner or recovery qualification",
+    "p1Passed": false,
+    "roundoffBoundCertified": false,
+    "angularBalanceVerified": false,
+    "neutrality": {
+      "sameNumericRows": true,
+      "sameInitial": true,
+      "sameFinal": true,
+      "sameRefusal": true,
+      "comparedValidNativeSteps": 6240,
+      "sameHistoricalNumericRows": true,
+      "sameHistoricalInitial": true,
+      "sameHistoricalFinal": true,
+      "sameHistoricalRefusal": true
+    },
+    "finalWorldHashesCompared": false,
+    "nativeStepsIncludingRefusal": 6240,
+    "solverIntervalsIncludingRefusal": 6244,
+    "multipleIntervalNativeStepsIncludingRefusal": 4,
+    "maxIntervalsPerNativeStep": 2,
+    "observationErrorCount": 0,
+    "maximumIntervalLinearResidualNsByAxis": [
+      1.5150537953090293e-06,
+      6.703105341898663e-06,
+      2.697117807315408e-06
+    ],
+    "maximumSummedNativeLinearResidualNsByAxis": [
+      1.5150537953090293e-06,
+      6.703105341898663e-06,
+      2.697117807315408e-06
+    ],
+    "worstLegacyVerticalDiscrepancy": {
+      "nativeSubstep": 346,
+      "timeS": 1.4416666666666667,
+      "ccdIntervals": 2,
+      "dtS": 0.004166666899999999,
+      "requiredFloorN": [
+        -66.29749715616171,
+        2568.0861320048357,
+        -1141.2467112679128
+      ],
+      "allIntervalsFloorN": [
+        -66.29748398179632,
+        2568.086101441787,
+        -1141.246909464762
+      ],
+      "legacyReportedVerticalN": 443.179500579834,
+      "sumLinearResidualNs": [
+        -5.489319221396727e-08,
+        1.273460452644315e-07,
+        8.258202512934076e-07
+      ]
+    },
+    "fullRecoverySuccess": false,
+    "firstRefusal": null,
+    "hashes": {
+      "evidence/native-hybrid-v1-2026-10-11/002-controller-observation-on/solver-boundaries.jsonl": "d88a9dfa8802458d938dd537bbb145fe8b478c84d4db8c97b80c9be3eb89c8a1",
+      "evidence/native-hybrid-v1-2026-10-11/002-controller-observation-on/substeps.jsonl": "5225dd9c92cdab46529566a9db4cb307b493f83b3a6e93e567fd6c79f3706658",
+      "evidence/native-hybrid-v1-2026-10-11/003-controller-observation-off/substeps.jsonl": "5225dd9c92cdab46529566a9db4cb307b493f83b3a6e93e567fd6c79f3706658"
+    }
+  },
+  "physicalMetrics": {
+    "004-final-reference-on": {
+      "maximumComAccelerationMps2": 215.73753356933594,
+      "maximumDeliveredAbsoluteNm": 680.0576782226562,
+      "maximumActualAnatomicalRatio": 1.0,
+      "quietHoldSubsteps": 0,
+      "originalRecoveries": 0,
+      "minimumPelvisHeightM": 0.12189076840877533
+    },
+    "002-controller-observation-on": {
+      "maximumComAccelerationMps2": 238.61671447753906,
+      "maximumDeliveredAbsoluteNm": 630.2078857421875,
+      "maximumActualAnatomicalRatio": 1.0,
+      "quietHoldSubsteps": 0,
+      "originalRecoveries": 0,
+      "minimumPelvisHeightM": 0.10097463428974152
+    }
+  },
+  "budget": {
+    "campaign": "native-hybrid-v1",
+    "createdUtc": "2026-10-11T21:35:43.209632+00:00",
+    "contractStartedUtc": "2026-10-11T21:35:43.209632+00:00",
+    "limits": {
+      "contractHistories": 32,
+      "nativeStepsPerContractHistory": 6240,
+      "contractWallS": 1800,
+      "globalWallS": 21600,
+      "globalNativeSteps": 1509120
+    },
+    "historiesStarted": 6,
+    "reservedNativeSteps": 37440,
+    "actualNativeStepsKnown": 17168,
+    "searchStarted": 0,
+    "validationStarted": 0
+  },
+  "historyReceipts": [
+    {
+      "index": 0,
+      "label": "reference-observation-on",
+      "startedUtc": "2026-10-11T21:35:43.215799+00:00",
+      "reservedNativeSteps": 6240,
+      "status": "process-completed",
+      "kernelSha256": "01af8583087157eeea11cd465dca3fc1dfebacc906f1a6e2d0cb13b86c573e9c",
+      "programSha256": "fef70abf3d016cecf6658b0bc5e7a6361d989eb265840acdc1a4fbc497a70c7d",
+      "coordinatorSha256": "cdf4b2064cb015734227d70624b4b2fcab31a01c96db17bb37ea95f9d2170b47",
+      "traceEnabled": true,
+      "controllerControl": false,
+      "output": "/workspace/LaboratoireHumain/evidence/native-hybrid-v1-2026-10-11/000-reference-observation-on",
+      "gitHead": "9d68ab2aa2c324ba7ed6262d1de66b30e274e40f",
+      "processExitCode": 0,
+      "endedUtc": "2026-10-11T21:35:51.846780+00:00",
+      "coordinatorWallS": 8.549477099993965,
+      "actualNativeSteps": 1172,
+      "reportSha256": "4d3683ebf52efdff9fe677d89c06d1810d34b4c0f94ad878b2a760725a45c47b",
+      "firstRefusal": {
+        "check": "self-contact",
+        "measured": 0.00509440153837204,
+        "offending": "leftFoot/rightFoot",
+        "substep": 3,
+        "threshold": 0.004999999888241291,
+        "tick": 292
+      },
+      "fullRecoverySuccess": false
+    },
+    {
+      "index": 1,
+      "label": "reference-observation-off",
+      "startedUtc": "2026-10-11T21:35:55.864011+00:00",
+      "reservedNativeSteps": 6240,
+      "status": "process-completed",
+      "kernelSha256": "01af8583087157eeea11cd465dca3fc1dfebacc906f1a6e2d0cb13b86c573e9c",
+      "programSha256": "fef70abf3d016cecf6658b0bc5e7a6361d989eb265840acdc1a4fbc497a70c7d",
+      "coordinatorSha256": "cdf4b2064cb015734227d70624b4b2fcab31a01c96db17bb37ea95f9d2170b47",
+      "traceEnabled": false,
+      "controllerControl": false,
+      "output": "/workspace/LaboratoireHumain/evidence/native-hybrid-v1-2026-10-11/001-reference-observation-off",
+      "gitHead": "9d68ab2aa2c324ba7ed6262d1de66b30e274e40f",
+      "processExitCode": 0,
+      "endedUtc": "2026-10-11T21:36:05.096346+00:00",
+      "coordinatorWallS": 9.189376894006273,
+      "actualNativeSteps": 1172,
+      "reportSha256": "c64baae97aa349870484b6bd8907ef3d96287ca6bdcbf7a25fdd15790b1c8754",
+      "firstRefusal": {
+        "check": "self-contact",
+        "measured": 0.00509440153837204,
+        "offending": "leftFoot/rightFoot",
+        "substep": 3,
+        "threshold": 0.004999999888241291,
+        "tick": 292
+      },
+      "fullRecoverySuccess": false
+    },
+    {
+      "index": 2,
+      "label": "controller-observation-on",
+      "startedUtc": "2026-10-11T21:36:22.222756+00:00",
+      "reservedNativeSteps": 6240,
+      "status": "process-completed",
+      "kernelSha256": "01af8583087157eeea11cd465dca3fc1dfebacc906f1a6e2d0cb13b86c573e9c",
+      "programSha256": "fef70abf3d016cecf6658b0bc5e7a6361d989eb265840acdc1a4fbc497a70c7d",
+      "coordinatorSha256": "cdf4b2064cb015734227d70624b4b2fcab31a01c96db17bb37ea95f9d2170b47",
+      "traceEnabled": true,
+      "controllerControl": true,
+      "output": "/workspace/LaboratoireHumain/evidence/native-hybrid-v1-2026-10-11/002-controller-observation-on",
+      "gitHead": "9d68ab2aa2c324ba7ed6262d1de66b30e274e40f",
+      "processExitCode": 0,
+      "endedUtc": "2026-10-11T21:36:57.803060+00:00",
+      "coordinatorWallS": 35.49430064599437,
+      "actualNativeSteps": 6240,
+      "reportSha256": "aabc5a29b313da379ff1d13a0938383dfc9145c71529e5228e43f54b755bba00",
+      "firstRefusal": null,
+      "fullRecoverySuccess": false
+    },
+    {
+      "index": 3,
+      "label": "controller-observation-off",
+      "startedUtc": "2026-10-11T21:37:13.990749+00:00",
+      "reservedNativeSteps": 6240,
+      "status": "process-completed",
+      "kernelSha256": "01af8583087157eeea11cd465dca3fc1dfebacc906f1a6e2d0cb13b86c573e9c",
+      "programSha256": "fef70abf3d016cecf6658b0bc5e7a6361d989eb265840acdc1a4fbc497a70c7d",
+      "coordinatorSha256": "cdf4b2064cb015734227d70624b4b2fcab31a01c96db17bb37ea95f9d2170b47",
+      "traceEnabled": false,
+      "controllerControl": true,
+      "output": "/workspace/LaboratoireHumain/evidence/native-hybrid-v1-2026-10-11/003-controller-observation-off",
+      "gitHead": "9d68ab2aa2c324ba7ed6262d1de66b30e274e40f",
+      "processExitCode": 0,
+      "endedUtc": "2026-10-11T21:37:48.504080+00:00",
+      "coordinatorWallS": 34.47538635900128,
+      "actualNativeSteps": 6240,
+      "reportSha256": "94b8d437af13c772c109122e24db14ea98898a8f5e7570280f3c623dd65f2bcf",
+      "firstRefusal": null,
+      "fullRecoverySuccess": false
+    },
+    {
+      "index": 4,
+      "label": "final-reference-on",
+      "startedUtc": "2026-10-11T21:47:52.265959+00:00",
+      "reservedNativeSteps": 6240,
+      "status": "process-completed",
+      "kernelSha256": "21a40388a8963fd553ca60a4711402243382d383b3150ac6c8f262bf5c8cd94c",
+      "programSha256": "fef70abf3d016cecf6658b0bc5e7a6361d989eb265840acdc1a4fbc497a70c7d",
+      "coordinatorSha256": "eed7070b4b37adcf006352c8835380f0bbbe7ff395ce19835e724e43bdc9c7eb",
+      "traceEnabled": true,
+      "controllerControl": false,
+      "output": "/workspace/LaboratoireHumain/evidence/native-hybrid-v1-2026-10-11/004-final-reference-on",
+      "gitHead": "9d68ab2aa2c324ba7ed6262d1de66b30e274e40f",
+      "processExitCode": 0,
+      "endedUtc": "2026-10-11T21:47:59.966690+00:00",
+      "coordinatorWallS": 7.6416217669902835,
+      "actualNativeSteps": 1172,
+      "reportSha256": "c2f51e161e2c41e118488667270906911a1fa7366d31270f9f196d002e2eae2e",
+      "firstRefusal": {
+        "check": "self-contact",
+        "measured": 0.00509440153837204,
+        "offending": "leftFoot/rightFoot",
+        "substep": 3,
+        "threshold": 0.004999999888241291,
+        "tick": 292
+      },
+      "fullRecoverySuccess": false
+    },
+    {
+      "index": 5,
+      "label": "final-reference-off",
+      "startedUtc": "2026-10-11T21:48:05.019376+00:00",
+      "reservedNativeSteps": 6240,
+      "status": "process-completed",
+      "kernelSha256": "21a40388a8963fd553ca60a4711402243382d383b3150ac6c8f262bf5c8cd94c",
+      "programSha256": "fef70abf3d016cecf6658b0bc5e7a6361d989eb265840acdc1a4fbc497a70c7d",
+      "coordinatorSha256": "eed7070b4b37adcf006352c8835380f0bbbe7ff395ce19835e724e43bdc9c7eb",
+      "traceEnabled": false,
+      "controllerControl": false,
+      "output": "/workspace/LaboratoireHumain/evidence/native-hybrid-v1-2026-10-11/005-final-reference-off",
+      "gitHead": "9d68ab2aa2c324ba7ed6262d1de66b30e274e40f",
+      "processExitCode": 0,
+      "endedUtc": "2026-10-11T21:48:11.786257+00:00",
+      "coordinatorWallS": 6.739547724995646,
+      "actualNativeSteps": 1172,
+      "reportSha256": "04ea0415f37677db870348805bb89e56d8208ae504492787a9aa799211812bfd",
+      "firstRefusal": {
+        "check": "self-contact",
+        "measured": 0.00509440153837204,
+        "offending": "leftFoot/rightFoot",
+        "substep": 3,
+        "threshold": 0.004999999888241291,
+        "tick": 292
+      },
+      "fullRecoverySuccess": false
+    }
+  ],
+  "previousCampaignLedgerUnchangedSha256": "b61f17b180afece7db1e3a7d541edeaf24094f358edd2bb7e1362797d8b600e4",
+  "verification": {
+    "nativeReplayPairs": 3,
+    "pythonEvidenceAdmissionTestsPassed": 5,
+    "pythonBudgetAdmissionTestsPassed": 5,
+    "releaseBuildPassed": true,
+    "clippyAllTargetsDefaultPassed": true,
+    "clippyAllTargetsObservationFeaturePassed": true,
+    "rustFmtPassed": true,
+    "fullTestSuiteRun": false,
+    "knownBaselineFailuresUnresolved": [
+      "hybrid articulation",
+      "four TypeScript tests"
+    ]
+  },
+  "remainingPrerequisites": [
+    "Independent linear/angular roundoff bound frozen before certification replay",
+    "Native angular impulse, damping and geometry transport journal",
+    "Original terminal/controller ownership adapter non-regressions"
+  ],
+  "artifacts": {
+    "evidence/native-hybrid-v1-2026-10-11/kernel-initial": {
+      "sha256": "01af8583087157eeea11cd465dca3fc1dfebacc906f1a6e2d0cb13b86c573e9c",
+      "bytes": 9931232
+    },
+    "evidence/native-hybrid-v1-2026-10-11/kernel-final": {
+      "sha256": "21a40388a8963fd553ca60a4711402243382d383b3150ac6c8f262bf5c8cd94c",
+      "bytes": 9935328
+    },
+    "evidence/native-hybrid-v1-2026-10-11/ledger.json": {
+      "sha256": "7d9d619218f5e307dabc78267f3931a87b0062892f96f5576cc5ce3f1163b85e",
+      "bytes": 7649
+    },
+    "evidence/native-hybrid-v1-2026-10-11/reference-impulse-boundaries.png": {
+      "sha256": "78a005d303ead844ecb73e94dd0f21a1668f2c9d7cbdf4628e6e4d1662c4f48e",
+      "bytes": 272881
+    },
+    "evidence/native-hybrid-v1-2026-10-11/controller-impulse-boundaries.png": {
+      "sha256": "325661594f5f187863de27b60467f59290aed9aa7ca7a725c80ed5d9eb8f6572",
+      "bytes": 210607
+    },
+    "rust/vendor/solver-step-observation.patch": {
+      "sha256": "eae9bab1c321b7e95c15ce0a849048ebb6d6fda4ca7c503372e358ea7a978392",
+      "bytes": 2993
+    }
+  },
+  "sourceHashes": {
+    "rust/crates/sim/src/recovery/planner/contact_observation.rs": "7d23f07847a1540136bb137924795d1c91cb13b1e0b561cb87fd5e9c1c0da440",
+    "rust/crates/sim/src/recovery/planner/mod.rs": "a7b37478cf166b424571ba6af25e313988f188d3d53c2e73c121d87736eb1111",
+    "rust/crates/sim/src/lib.rs": "83a4abcd00a4a41b59c55575cab7752d5d8b83dcb5b7ec0b41b1b6b00aced185",
+    "rust/crates/sim/src/recovery/support_probe/whole_history.rs": "1cdc60a686117c3c6ed9180f5832c5803d9b0a19acb41a709f29270cafc177e1",
+    "scripts/run-native-recovery-contract.py": "eed7070b4b37adcf006352c8835380f0bbbe7ff395ce19835e724e43bdc9c7eb",
+    "scripts/analyze-native-recovery-boundaries.py": "a8004885016a8134502f2f5e7c587f93622ae2b917742c4da06c5f7e2148cf87"
+  }
+}

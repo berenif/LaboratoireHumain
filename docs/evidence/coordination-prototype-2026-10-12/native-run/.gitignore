@@ -1,0 +1,6 @@
+# Raw originals are retained locally; versioned gzip archives restore identical bytes.
+/000-native-verification.json
+/000-native-verification.states.jsonl
+/001-A.states.jsonl
+/002-B-planning-000.json
+/002-B.states.jsonl

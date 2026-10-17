@@ -1,0 +1,17 @@
+{
+  "schema": 1,
+  "recordedUtc": "2026-10-15T14:15:38.593877+00:00",
+  "source": "Parent delegation in this conversation",
+  "sourceThreadId": "01a12799-cefe-7764-8aa3-db5db4c1d0f3",
+  "parentInstruction": "Reprends depuis le rapport 181192015624a6618c8514a5177a7e3fa467f998. Décision parent : réduis le plafond du superviseur à 7 100 secondes, une seule histoire, 131 096 sous-pas maximum dans le solde global confirmé. Préserve le binaire physique et les preuves historiques. Crée un nouveau gel explicite du superviseur et manifeste avec autorisation actualisée liée aux hashes vérifiés et provenance parent. Teste les échéances sans physique, puis vérifie solde, intégrité et absence de doublon et lance une seule fois. Cette réduction et ce lancement sont autorisés sans nouvel aller-retour. Aucun renouvellement ni réouverture de famille close. Refus de parité ou prévision ferme l’essai. Sinon poursuis toute la continuation et la seconde réelle stable. Conserve vidéo et métriques réelles, commit/push branche de progrès, main et récupération publique inchangés. Rapporte lancement effectif et résultat. Les précédents envois ont échoué à l’admission ; vérifie néanmoins l’absence de doublon.",
+  "supersedesOnlyWallCapAndFreeze": "7200 ->7100seconds; new supervisor/manifest digest explicitly authorized; one unchanged physical binary/candidate",
+  "unchangedBinarySha256": "63e0e035d38d02f762c69b9dacb65d61e179c72ced50f5facd0bc29c64b9e8b5",
+  "maxNativeSteps": 131096,
+  "maxWallSeconds": 7100,
+  "maximumHistories": 1,
+  "globalNativeLimit": 300000,
+  "globalWallLimit": 7200,
+  "reopenHistoricalFamily": false,
+  "automaticRenewalAllowed": false,
+  "noAdditionalConfirmationRequired": true
+}

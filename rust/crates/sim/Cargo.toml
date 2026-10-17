@@ -5,8 +5,47 @@ edition.workspace = true
 publish.workspace = true
 
 [features]
+stationary-balance-experiment = []
+experimental-solver-step-observation = ["rapier3d/solver-step-observation"]
 experimental-joint-velocity-cache = ["rapier3d/experimental-joint-velocity-cache"]
 experimental-simd8 = ["rapier3d/simd8"]
+coordination-worker = ["experimental-solver-step-observation"]
+coordination-transfer-worker = ["coordination-worker"]
+numeric-parity-worker = ["experimental-solver-step-observation"]
+
+[[example]]
+name = "getup_stationary_balance"
+required-features = ["stationary-balance-experiment"]
+
+[[test]]
+name = "coordination-transfer-worker"
+path = "src/lib.rs"
+harness = false
+required-features = ["coordination-transfer-worker"]
+
+[[test]]
+name = "numeric-parity-worker-serialization"
+path = "src/lib.rs"
+harness = false
+required-features = ["numeric-parity-worker"]
+
+[[test]]
+name = "numeric-parity-worker"
+path = "src/lib.rs"
+harness = false
+required-features = ["numeric-parity-worker"]
+
+[[test]]
+name = "coordination-local-pair-worker"
+path = "src/lib.rs"
+harness = false
+required-features = ["coordination-worker"]
+
+[[test]]
+name = "coordination-worker"
+path = "src/lib.rs"
+harness = false
+required-features = ["coordination-worker"]
 
 [dependencies]
 rapier3d.workspace = true
@@ -14,3 +53,4 @@ lh-model.workspace = true
 lh-contracts.workspace = true
 serde.workspace = true
 serde_json.workspace = true
+bincode = "=1.3.3"

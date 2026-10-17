@@ -1,0 +1,12 @@
+{
+  "passed": true,
+  "physicsIntegrations": 0,
+  "validAdmissionChecked": true,
+  "invalidChangesRejected": [
+    "maximumAdditionalNativeSteps",
+    "userCumulativeWallLimitSeconds",
+    "actualNativeConsumedBefore",
+    "remainingWallSeconds",
+    "amendedPlanningCumulativeNativeCeiling"
+  ]
+}

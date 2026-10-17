@@ -1,0 +1,38 @@
+{
+  "file": "LaboratoireHumain-Rapier-relevage-prototype-2026-10-16.mp4",
+  "sha256": "4b5550d2e07bd8aaa0311a020c12fad13039c891edf8b927d7f3e8142f191dc1",
+  "fileSizeBytes": 201726,
+  "ffprobe": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_name": "h264",
+        "width": 1280,
+        "height": 720,
+        "pix_fmt": "yuv420p",
+        "r_frame_rate": "20/1",
+        "nb_frames": "216"
+      }
+    ],
+    "format": {
+      "duration": "10.800000",
+      "size": "201726"
+    }
+  },
+  "fullDecodePassed": true,
+  "intermediateAndFinalFramesVisuallyInspected": true,
+  "physicsIntegrations": 0,
+  "physicalDurationS": 9.8,
+  "presentationDurationS": 10.8,
+  "finalPoseHoldS": 1,
+  "archivedStatesOnly": true,
+  "library": {
+    "library_file_id": "libfile_63a9633fa02c81918512481eddadd6d9",
+    "file_id": "file_00000000e4a481f79ea35e69db939b37",
+    "current_version_number": 0,
+    "file_name": "LaboratoireHumain-Rapier-relevage-prototype-2026-10-16.mp4",
+    "status": "succeeded",
+    "local_metadata_applied": true
+  }
+}

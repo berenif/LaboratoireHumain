@@ -1,0 +1,253 @@
+warning: /workspace/LaboratoireHumain/rust/crates/sim/Cargo.toml: file `/workspace/LaboratoireHumain/rust/crates/sim/src/lib.rs` found to be present in multiple build targets:
+  * `lib` target `lh_sim`
+  * `integration-test` target `coordination-local-pair-worker`
+  * `integration-test` target `coordination-transfer-worker`
+  * `integration-test` target `coordination-worker`
+  * `integration-test` target `numeric-parity-worker`
+  * `integration-test` target `numeric-parity-worker-serialization`
+warning: field `native_substep` is never read
+  --> crates/sim/src/recovery/planner/command_proposal.rs:43:9
+   |
+41 | pub(crate) struct CommandProposal {
+   |                   --------------- field in this struct
+42 |     commands: Vec<Command>,
+43 |     pub native_substep: u64,
+   |         ^^^^^^^^^^^^^^
+   |
+   = note: `#[warn(dead_code)]` on by default
+
+warning: method `observation` is never used
+   --> crates/sim/src/recovery/planner/support_schedule.rs:171:12
+    |
+96  | impl SupportSchedule {
+    | -------------------- method in this implementation
+...
+171 |     pub fn observation(&self) -> &SupportObservation {
+    |            ^^^^^^^^^^^
+
+warning: variant `Preview` is never constructed
+   --> crates/sim/src/recovery/planner/transfer_adapter.rs:161:5
+    |
+153 | enum Authorization {
+    |      ------------- variant in this enum
+...
+161 |     Preview {
+    |     ^^^^^^^
+    |
+    = note: `Authorization` has a derived impl for the trait `Clone`, but this is intentionally ignored during dead code analysis
+
+warning: fields `native_checkpoints` and `preview_entry_identity` are never read
+   --> crates/sim/src/recovery/planner/transfer_adapter.rs:190:5
+    |
+174 | pub(crate) struct Adapter {
+    |                   ------- fields in this struct
+...
+190 |     native_checkpoints: Vec<NativeCheckpoint>,
+    |     ^^^^^^^^^^^^^^^^^^
+...
+194 |     preview_entry_identity: Option<std::sync::Arc<[u8]>>,
+    |     ^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = note: `Adapter` has a derived impl for the trait `Clone`, but this is intentionally ignored during dead code analysis
+
+warning: multiple methods are never used
+   --> crates/sim/src/recovery/planner/transfer_adapter.rs:316:19
+    |
+200 | impl Adapter {
+    | ------------ methods in this implementation
+...
+316 |     pub(crate) fn terminal_monitoring_complete(
+    |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+...
+565 |     pub(super) fn begin_native_preview(&mut self, start: u64, outer_identity: Vec<u8>) {
+    |                   ^^^^^^^^^^^^^^^^^^^^
+...
+574 |     pub(super) fn record_preview_post_tick(
+    |                   ^^^^^^^^^^^^^^^^^^^^^^^^
+...
+601 |     pub(super) fn preview_window(&mut self, instance: usize, start: u64) -> Result<(), String> {
+    |                   ^^^^^^^^^^^^^^
+...
+785 |     pub(crate) fn admit_real_window(
+    |                   ^^^^^^^^^^^^^^^^^
+...
+838 |     pub(super) fn technical_data(
+    |                   ^^^^^^^^^^^^^^
+...
+870 |     pub(crate) fn admit_technical_tick(
+    |                   ^^^^^^^^^^^^^^^^^^^^
+...
+910 |     pub(super) fn complete_native_preview(
+    |                   ^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: struct `NativeWindowReceipt` is never constructed
+  --> crates/sim/src/recovery/planner/native_plan_preview.rs:47:19
+   |
+47 | pub(crate) struct NativeWindowReceipt {
+   |                   ^^^^^^^^^^^^^^^^^^^
+
+warning: method `into_data` is never used
+  --> crates/sim/src/recovery/planner/native_plan_preview.rs:51:19
+   |
+50 | impl NativeWindowReceipt {
+   | ------------------------ method in this implementation
+51 |     pub(super) fn into_data(self) -> super::transfer_adapter::NativeWindowData {
+   |                   ^^^^^^^^^
+
+warning: struct `NativeTechnicalReceipt` is never constructed
+  --> crates/sim/src/recovery/planner/native_plan_preview.rs:58:19
+   |
+58 | pub(crate) struct NativeTechnicalReceipt {
+   |                   ^^^^^^^^^^^^^^^^^^^^^^
+
+warning: method `into_data` is never used
+  --> crates/sim/src/recovery/planner/native_plan_preview.rs:62:19
+   |
+61 | impl NativeTechnicalReceipt {
+   | --------------------------- method in this implementation
+62 |     pub(super) fn into_data(self) -> super::transfer_adapter::NativeTechnicalData {
+   |                   ^^^^^^^^^
+
+warning: methods `record` and `record_post_tick` are never used
+   --> crates/sim/src/recovery/planner/native_plan_preview.rs:482:19
+    |
+467 | impl NativeParityTrace {
+    | ---------------------- methods in this implementation
+...
+482 |     pub(crate) fn record(
+    |                   ^^^^^^
+...
+514 |     pub(crate) fn record_post_tick(
+    |                   ^^^^^^^^^^^^^^^^
+
+warning: fields `completed_preview`, `requested_preview`, and `preview_purpose` are never read
+   --> crates/sim/src/recovery/planner/native_plan_preview.rs:708:5
+    |
+705 | pub(crate) struct StaticPreviewBranch<M> {
+    |                   ------------------- fields in this struct
+...
+708 |     completed_preview: Option<(u64, u32)>,
+    |     ^^^^^^^^^^^^^^^^^
+709 |     requested_preview: Option<(u64, u32)>,
+    |     ^^^^^^^^^^^^^^^^^
+710 |     preview_purpose: Option<PreviewPurpose>,
+    |     ^^^^^^^^^^^^^^^
+
+warning: multiple methods are never used
+   --> crates/sim/src/recovery/planner/native_plan_preview.rs:748:19
+    |
+713 | impl<M: Clone> StaticPreviewBranch<M> {
+    | ------------------------------------- methods in this implementation
+...
+748 |     pub(crate) fn certify_transfer_horizon(
+    |                   ^^^^^^^^^^^^^^^^^^^^^^^^
+...
+801 |     pub(crate) fn certify_technical_transfer_tick(
+    |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+...
+843 |     pub(crate) fn transfer_horizon_evidence(&self) -> serde_json::Value {
+    |                   ^^^^^^^^^^^^^^^^^^^^^^^^^
+...
+849 |     pub(crate) fn set_feedback_scale(&mut self, scale: f64) -> Result<(), PreviewError> {
+    |                   ^^^^^^^^^^^^^^^^^^
+...
+868 |     pub(crate) fn preview<O>(
+    |                   ^^^^^^^
+...
+896 |     pub(crate) fn preview_with_post_tick<O>(
+    |                   ^^^^^^^^^^^^^^^^^^^^^^
+...
+928 |     pub(crate) fn verify_tick<O>(
+    |                   ^^^^^^^^^^^
+...
+944 |     pub(crate) fn verify_tick_with_post_tick<O>(
+    |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^
+...
+961 |     fn preview_ticks<O>(
+    |        ^^^^^^^^^^^^^
+
+warning: variant `Candidate` is never constructed
+    --> crates/sim/src/recovery/planner/native_plan_preview.rs:1134:5
+     |
+1132 | pub(crate) enum PreviewPurpose {
+     |                 -------------- variant in this enum
+1133 |     ParityVerification,
+1134 |     Candidate,
+     |     ^^^^^^^^^
+     |
+     = note: `PreviewPurpose` has derived impls for the traits `Clone` and `Debug`, but these are intentionally ignored during dead code analysis
+
+warning: method `admit_preview` is never used
+    --> crates/sim/src/recovery/planner/native_plan_preview.rs:1153:8
+     |
+1149 | pub(crate) trait PreviewBudget {
+     |                  ------------- method in this trait
+...
+1153 |     fn admit_preview(&mut self, purpose: PreviewPurpose, steps: u32) -> Result<(), String>;
+     |        ^^^^^^^^^^^^^
+
+warning: function `assemble` is never used
+   --> crates/sim/src/recovery/planner/geometric_tasks.rs:174:15
+    |
+174 | pub(crate) fn assemble(
+    |               ^^^^^^^^
+
+warning: function `point_world` is never used
+   --> crates/sim/src/recovery/planner/geometric_tasks.rs:305:15
+    |
+305 | pub(crate) fn point_world(
+    |               ^^^^^^^^^^^
+
+warning: constant `PARAMETERS` is never used
+  --> crates/sim/src/recovery/planner/whole_body_controller.rs:39:18
+   |
+39 | pub(crate) const PARAMETERS: &str = r#"{"version":"coordinated-transition-v2-numeric","solver":"feasible-active-set-newton","commandCompi...
+   |                  ^^^^^^^^^^
+
+warning: methods `prepare_command_proposal_observed`, `admit_technical_transfer_tick`, `admit_transfer_window`, and `continue_transfer_window` are never used
+   --> crates/sim/src/recovery/planner/whole_body_controller.rs:286:19
+    |
+99  | impl Controller {
+    | --------------- methods in this implementation
+...
+286 |     pub(crate) fn prepare_command_proposal_observed(
+    |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+...
+448 |     pub(crate) fn admit_technical_transfer_tick(&mut self,sim:&Simulation,receipt:super::native_plan_preview::NativeTechnicalReceipt)->Re...
+    |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+...
+456 |     pub(crate) fn admit_transfer_window(&mut self,sim:&Simulation,receipt:super::native_plan_preview::NativeWindowReceipt)->Result<(),Str...
+    |                   ^^^^^^^^^^^^^^^^^^^^^
+...
+467 |     pub(crate) fn continue_transfer_window(&mut self,sim:&Simulation)->Result<(),String> {
+    |                   ^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: field `maximum_constraint_error` is never read
+  --> /workspace/LaboratoireHumain/rust/crates/sim/../../../docs/evidence/coordination-numeric-correction-2026-10-12/frozen-solver-replay.rs:38:9
+   |
+36 | pub(crate) struct Solution {
+   |                   -------- field in this struct
+37 |     pub rates: Rates,
+38 |     pub maximum_constraint_error: f64,
+   |         ^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+   = note: `Solution` has a derived impl for the trait `Debug`, but this is intentionally ignored during dead code analysis
+
+warning: method `verify_rates` is never used
+   --> /workspace/LaboratoireHumain/rust/crates/sim/../../../docs/evidence/coordination-numeric-correction-2026-10-12/frozen-solver-replay.rs:106:19
+    |
+53  | impl Problem {
+    | ------------ method in this implementation
+...
+106 |     pub(crate) fn verify_rates(&self, rates: &Rates) -> Result<(), String> {
+    |                   ^^^^^^^^^^^^
+
+warning: `lh-sim` (lib test) generated 20 warnings
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.07s
+     Running unittests src/lib.rs (rust/target/debug/deps/lh_sim-68e67b1c237792f1)
+
+running 1 test
+test motion::parity_tests::pure_motion_private_timers_preserve_zero_and_nan_bits ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 250 filtered out; finished in 0.00s
+

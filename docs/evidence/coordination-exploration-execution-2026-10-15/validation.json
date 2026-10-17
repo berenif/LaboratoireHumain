@@ -1,0 +1,17 @@
+{
+  "sourceFilesSha256": {
+    "rust/crates/sim/src/recovery/planner/whole_body_controller.rs": "f565061d63628d4c7208912816c73d402bbf282639d825c74917fa4cafd2b319",
+    "rust/crates/sim/src/recovery/planner/transfer_worker.rs": "cb7940f59cde1ae257b41253f8c95860669b683e9a56b36070f32dca4b221dd0"
+  },
+  "binarySha256": "a5a153a410e57a0bc18b463669f6610399a12482362406becec339aba64a7cea",
+  "pureUnitTestsPassed": 1,
+  "pureUnitTestsFailed": 0,
+  "additionalNativeSteps": 0,
+  "compiledFromIsolatedWorktreeWithoutUnfinishedAttribution": true,
+  "productionIsolation": "planner module is cfg(all(test, feature=experimental-solver-step-observation)); new path additionally requires coordination-transfer-worker and explicit A36 activation",
+  "unchangedPhysicalKernel": true,
+  "pythonSyntaxChecked": [
+    "run_once.py",
+    "render_result.py"
+  ]
+}

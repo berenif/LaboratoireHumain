@@ -1,0 +1,29 @@
+{
+  "activeSurvivors": [],
+  "case": "existing-alarm-preflight",
+  "duplicateClaimRefusal": null,
+  "elapsedSeconds": 0.03829425399999309,
+  "failures": [],
+  "fixtureMode": "success",
+  "fixturePids": [],
+  "helperExitCode": 0,
+  "helperReceipt": {
+    "alarmRestored": true,
+    "error": "Refusal: Cannot replace an existing process alarm",
+    "nativeRustWorkerExecuted": false,
+    "physicalIntegrations": 0,
+    "protocolCountsAreSynthetic": true,
+    "result": null,
+    "signalHandlersRestored": true,
+    "unrelatedSurvivedCleanup": null
+  },
+  "nativeRustWorkerExecuted": false,
+  "oldNativeRegistersTouched": false,
+  "passed": true,
+  "physicalIntegrations": 0,
+  "protocolCountsAreSynthetic": true,
+  "sentSignal": null,
+  "statesAfterLauncher": {},
+  "temporaryManifestPathsAreHistorical": true,
+  "testWallSeconds": 2
+}

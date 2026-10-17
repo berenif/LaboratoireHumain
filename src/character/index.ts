@@ -1,1 +1,0 @@
-export { createEmbodiedCharacter } from "./EmbodiedCharacter";

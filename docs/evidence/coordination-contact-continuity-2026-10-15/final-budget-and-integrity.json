@@ -1,0 +1,629 @@
+{
+  "schema": "laboratoirehumain.contact-continuity-final-budget-integrity.v1",
+  "auditedUtc": "2026-10-15T15:10:16.403000+00:00",
+  "decision": "STATIC_CORRECTION_PRESERVES_ALL_CLOSED_PHYSICAL_BUDGETS_AND_EVIDENCE;NO_NATIVE_QUALIFICATION_OR_PERMISSION",
+  "auditScope": "Read-only hash/Git-object/log/accounting/process review; writes only this JSON and Markdown. No tests, builds, native executions, worlds, FK or new budget reservations performed by auditor.",
+  "baseline": {
+    "path": "docs/evidence/coordination-contact-continuity-2026-10-15/static-scope-and-budget.json",
+    "sha256": "d4986d752e763a4040ba84d47fff52a3059935d007b7409381ce0f939232f0b2",
+    "gitCommit": "da4575170c6ae9b0858c0851a6f1ed15fe1ce858"
+  },
+  "immutableEvidence": {
+    "historicalProtectedFiles": 14,
+    "physicalReleaseBinariesForThisCandidate": 1,
+    "closedRunAndAuthorizationPieces": 27,
+    "totalArtifactsVerified": 42,
+    "checks": [
+      {
+        "path": "docs/evidence/coordination-prototype-2026-10-12/budget/ledger.json",
+        "expectedSha256": "2afa69b3ae9c8ab8343f7dabdf46b955c8ac7b88aa259404958e25d49a72ef07",
+        "actualSha256": "2afa69b3ae9c8ab8343f7dabdf46b955c8ac7b88aa259404958e25d49a72ef07",
+        "unchanged": true
+      },
+      {
+        "path": "docs/evidence/coordination-native-parity-2026-10-13/native-run/physical-ledger.json",
+        "expectedSha256": "73b2e3bff52aadf0414be2f7a4a96fa4cd5da7b02de0945434e4f136bbf476a6",
+        "actualSha256": "73b2e3bff52aadf0414be2f7a4a96fa4cd5da7b02de0945434e4f136bbf476a6",
+        "unchanged": true
+      },
+      {
+        "path": "docs/evidence/coordination-native-parity-renewal-2026-10-13/native-run/physical-ledger.json",
+        "expectedSha256": "1411bfcc1a17caa681359cfb39d7c0429f2188375925c22ba4b037df96d44bc2",
+        "actualSha256": "1411bfcc1a17caa681359cfb39d7c0429f2188375925c22ba4b037df96d44bc2",
+        "unchanged": true
+      },
+      {
+        "path": "docs/evidence/coordination-native-serialization-2026-10-13/native-run/physical-ledger.json",
+        "expectedSha256": "191d3216953bfb4aca5b7abcea277454d7d97ad5b4ca72e28ffbc260399af250",
+        "actualSha256": "191d3216953bfb4aca5b7abcea277454d7d97ad5b4ca72e28ffbc260399af250",
+        "unchanged": true
+      },
+      {
+        "path": "docs/evidence/coordination-local-pair-2026-10-13/budget/ledger.json",
+        "expectedSha256": "e7c6831159ac1ae913a05f2af545a0521181d7142dbabd967908dfe7958fba97",
+        "actualSha256": "e7c6831159ac1ae913a05f2af545a0521181d7142dbabd967908dfe7958fba97",
+        "unchanged": true
+      },
+      {
+        "path": "rust/target/release/deps/coordination_worker-60f2b83fe348a1d3",
+        "expectedSha256": "1bb4b91ac8ebfbe382d9525e524b85040ca9890bc90a0ef0467f1ef2b64c8b57",
+        "actualSha256": "1bb4b91ac8ebfbe382d9525e524b85040ca9890bc90a0ef0467f1ef2b64c8b57",
+        "unchanged": true
+      },
+      {
+        "path": "rust/target/release/deps/numeric_parity_worker-b68c9e5f8e8cfa37",
+        "expectedSha256": "9e125785fad85b0befc9373c3116d66aa32e8050a998ce08974b0da29d2760cc",
+        "actualSha256": "9e125785fad85b0befc9373c3116d66aa32e8050a998ce08974b0da29d2760cc",
+        "unchanged": true
+      },
+      {
+        "path": "rust/target/release/deps/numeric_parity_worker_serialization-360529b9ad4cba37",
+        "expectedSha256": "83bddf95897acc6015de7d2947b04ee2f5aaf2eb49b4dcb85ba0a67764f95e1b",
+        "actualSha256": "83bddf95897acc6015de7d2947b04ee2f5aaf2eb49b4dcb85ba0a67764f95e1b",
+        "unchanged": true
+      },
+      {
+        "path": "rust/target/release/deps/coordination_local_pair_worker-bf2c98f759d9dc34",
+        "expectedSha256": "c1c8a12825428758643a7f6e2fafb0a2710f7dca787c1daee07c27ec59849e9c",
+        "actualSha256": "c1c8a12825428758643a7f6e2fafb0a2710f7dca787c1daee07c27ec59849e9c",
+        "unchanged": true
+      },
+      {
+        "path": "docs/evidence/coordination-prototype-2026-10-12/frozen-manifest.json",
+        "expectedSha256": "4a37d4afbfe3ecd51997208bf5fa7599106fd9c43650cb55f6bcf6400d4e1d29",
+        "actualSha256": "4a37d4afbfe3ecd51997208bf5fa7599106fd9c43650cb55f6bcf6400d4e1d29",
+        "unchanged": true
+      },
+      {
+        "path": "docs/evidence/coordination-native-parity-2026-10-13/manifest.json",
+        "expectedSha256": "40e492a29d723118cb26990b9dd2866d498d9a1a5d5ae815d7aae1d9d92a407a",
+        "actualSha256": "40e492a29d723118cb26990b9dd2866d498d9a1a5d5ae815d7aae1d9d92a407a",
+        "unchanged": true
+      },
+      {
+        "path": "docs/evidence/coordination-native-parity-renewal-2026-10-13/manifest.json",
+        "expectedSha256": "7235b6916b2d669710b0339e474fc245b48cc4311dd893557f4c03164f3326a6",
+        "actualSha256": "7235b6916b2d669710b0339e474fc245b48cc4311dd893557f4c03164f3326a6",
+        "unchanged": true
+      },
+      {
+        "path": "docs/evidence/coordination-native-serialization-2026-10-13/manifest.json",
+        "expectedSha256": "179bfe3cb58819cd2ba1b73642969c0eb2a343a052dee83ae89e2850e0830356",
+        "actualSha256": "179bfe3cb58819cd2ba1b73642969c0eb2a343a052dee83ae89e2850e0830356",
+        "unchanged": true
+      },
+      {
+        "path": "docs/evidence/coordination-local-pair-2026-10-13/manifest.json",
+        "expectedSha256": "2fbcb3db0cd1bccf14082e772b1efba63e567fe7fce35ed8cccbbbf2ac2cdde9",
+        "actualSha256": "2fbcb3db0cd1bccf14082e772b1efba63e567fe7fce35ed8cccbbbf2ac2cdde9",
+        "unchanged": true
+      },
+      {
+        "path": "rust/target/release/deps/coordination_transfer_worker-8daed3b7e6b04b70",
+        "expectedSha256": "63e0e035d38d02f762c69b9dacb65d61e179c72ced50f5facd0bc29c64b9e8b5",
+        "actualSha256": "63e0e035d38d02f762c69b9dacb65d61e179c72ced50f5facd0bc29c64b9e8b5",
+        "unchanged": true
+      },
+      {
+        "path": "docs/evidence/coordination-transfer-native-7100-2026-10-15/native-run-once/forecast-refusal-review.json",
+        "expectedSha256": "cfa7b05dd663327eb408bf7e7703ff52ed98b4b1f235e87d164f15785cdeb8e0",
+        "actualSha256": "cfa7b05dd663327eb408bf7e7703ff52ed98b4b1f235e87d164f15785cdeb8e0",
+        "unchanged": true
+      },
+      {
+        "path": "docs/evidence/coordination-transfer-native-7100-2026-10-15/native-run-once/forecast-refusal-review.md",
+        "expectedSha256": "b4c2448cf5105981c2d38fc4c4f09d91dbaf268d6d65bb95ec5841c693e007c2",
+        "actualSha256": "b4c2448cf5105981c2d38fc4c4f09d91dbaf268d6d65bb95ec5841c693e007c2",
+        "unchanged": true
+      },
+      {
+        "path": "docs/evidence/coordination-transfer-native-7100-2026-10-15/native-run-once/ledger-events.ndjson",
+        "expectedSha256": "842de4a49ac6ede1e8cc5e54e898f7b7085bef57aa9bf7dc73a1551f73f0afc4",
+        "actualSha256": "842de4a49ac6ede1e8cc5e54e898f7b7085bef57aa9bf7dc73a1551f73f0afc4",
+        "unchanged": true
+      },
+      {
+        "path": "docs/evidence/coordination-transfer-native-7100-2026-10-15/native-run-once/native-result.json",
+        "expectedSha256": "7da774742c4ef54420efbbbb4991de4afbe640a203463ebe6841e507e00bb19e",
+        "actualSha256": "7da774742c4ef54420efbbbb4991de4afbe640a203463ebe6841e507e00bb19e",
+        "unchanged": true
+      },
+      {
+        "path": "docs/evidence/coordination-transfer-native-7100-2026-10-15/native-run-once/native-result.json.gz",
+        "expectedSha256": "89c4f37c7182f1c600dbfdae8ad4b0d0414d703205fbc2d91061764d69d6faa0",
+        "actualSha256": "89c4f37c7182f1c600dbfdae8ad4b0d0414d703205fbc2d91061764d69d6faa0",
+        "unchanged": true
+      },
+      {
+        "path": "docs/evidence/coordination-transfer-native-7100-2026-10-15/native-run-once/native-result.json.history.accounting.jsonl",
+        "expectedSha256": "1b90ac9ebbc3d0be0fe709d79575494962a1eda153c7db99d3c6dd4155c00371",
+        "actualSha256": "1b90ac9ebbc3d0be0fe709d79575494962a1eda153c7db99d3c6dd4155c00371",
+        "unchanged": true
+      },
+      {
+        "path": "docs/evidence/coordination-transfer-native-7100-2026-10-15/native-run-once/native-result.json.technical.accounting.jsonl",
+        "expectedSha256": "f5771e4f6966ad3d44d9e0b32fb2675346bb60f61c566e8638a6a2cfb8c55609",
+        "actualSha256": "f5771e4f6966ad3d44d9e0b32fb2675346bb60f61c566e8638a6a2cfb8c55609",
+        "unchanged": true
+      },
+      {
+        "path": "docs/evidence/coordination-transfer-native-7100-2026-10-15/native-run-once/native-trace.jsonl",
+        "expectedSha256": "7561d3dd93743f37e07c99d91adad1a9ef7cf41b746a98d5e71f93e3f4092c96",
+        "actualSha256": "7561d3dd93743f37e07c99d91adad1a9ef7cf41b746a98d5e71f93e3f4092c96",
+        "unchanged": true
+      },
+      {
+        "path": "docs/evidence/coordination-transfer-native-7100-2026-10-15/native-run-once/native-trace.jsonl.gz",
+        "expectedSha256": "5daf337c1cf4e07938b1996e2febf752a706415873f2efd5e55454ec4a0a76fc",
+        "actualSha256": "5daf337c1cf4e07938b1996e2febf752a706415873f2efd5e55454ec4a0a76fc",
+        "unchanged": true
+      },
+      {
+        "path": "docs/evidence/coordination-transfer-native-7100-2026-10-15/native-run-once/physical-ledger.json",
+        "expectedSha256": "eec8dfa53045dcd38c593ec72d459e757ee3c8b6d3315be0707e263bd3eb2595",
+        "actualSha256": "eec8dfa53045dcd38c593ec72d459e757ee3c8b6d3315be0707e263bd3eb2595",
+        "unchanged": true
+      },
+      {
+        "path": "docs/evidence/coordination-transfer-native-7100-2026-10-15/native-run-once/protocol.ndjson",
+        "expectedSha256": "f3dbf872d26606a475d3f9e81dc3d62a812f219ac0debfb41ecb69573dfe14fb",
+        "actualSha256": "f3dbf872d26606a475d3f9e81dc3d62a812f219ac0debfb41ecb69573dfe14fb",
+        "unchanged": true
+      },
+      {
+        "path": "docs/evidence/coordination-transfer-native-7100-2026-10-15/native-run-once/run-result.json",
+        "expectedSha256": "03ce370f490418953dcb074fe4c1f1f3b170ea947818dec9b5224e8b4bdafd49",
+        "actualSha256": "03ce370f490418953dcb074fe4c1f1f3b170ea947818dec9b5224e8b4bdafd49",
+        "unchanged": true
+      },
+      {
+        "path": "docs/evidence/coordination-transfer-native-7100-2026-10-15/native-run-once/worker.stderr.log",
+        "expectedSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "actualSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "unchanged": true
+      },
+      {
+        "path": "docs/evidence/coordination-transfer-native-7100-2026-10-15/authorization-claim.json",
+        "expectedSha256": "485b3827851402bc657bcb351ef9593d0ed79b2b93383f2fe64f90f88d9258e5",
+        "actualSha256": "485b3827851402bc657bcb351ef9593d0ed79b2b93383f2fe64f90f88d9258e5",
+        "unchanged": true
+      },
+      {
+        "path": "docs/evidence/coordination-transfer-native-7100-2026-10-15/authorization.json",
+        "expectedSha256": "217b8d849369ad084cf7da22c94c820b9472c6d97b6b0e96cd12b674517fd203",
+        "actualSha256": "217b8d849369ad084cf7da22c94c820b9472c6d97b6b0e96cd12b674517fd203",
+        "unchanged": true
+      },
+      {
+        "path": "docs/evidence/coordination-transfer-native-7100-2026-10-15/manifest.json",
+        "expectedSha256": "80b41aaf7d2f2aa72e91891f97e7ea40d6cf6f3e8538f3f62d0afcba352342b9",
+        "actualSha256": "80b41aaf7d2f2aa72e91891f97e7ea40d6cf6f3e8538f3f62d0afcba352342b9",
+        "unchanged": true
+      },
+      {
+        "path": "docs/evidence/coordination-transfer-native-7100-2026-10-15/parent-authorization-provenance.json",
+        "expectedSha256": "d02bce158ab4854507fa0b11bbbda345102bab2832b2e047e1dcbb55b729faa5",
+        "actualSha256": "d02bce158ab4854507fa0b11bbbda345102bab2832b2e047e1dcbb55b729faa5",
+        "unchanged": true
+      },
+      {
+        "path": "docs/evidence/coordination-transfer-native-7100-2026-10-15/protocol.json",
+        "expectedSha256": "484ca77042ad48ecaf3a9b884a5e9f005a9e8f06f9e406710ea9530dbdbad6c9",
+        "actualSha256": "484ca77042ad48ecaf3a9b884a5e9f005a9e8f06f9e406710ea9530dbdbad6c9",
+        "unchanged": true
+      },
+      {
+        "path": "docs/evidence/coordination-transfer-native-7100-2026-10-15/protocol.md",
+        "expectedSha256": "c4f6a0f2c6ab81a226d6ba23a6e2d04a0159bd4190d3d9c74d5906b28bfd0a8d",
+        "actualSha256": "c4f6a0f2c6ab81a226d6ba23a6e2d04a0159bd4190d3d9c74d5906b28bfd0a8d",
+        "unchanged": true
+      },
+      {
+        "path": "docs/evidence/coordination-transfer-native-7100-2026-10-15/preparation-reservation.json",
+        "expectedSha256": "12f845c0d085ef9433bd7aca4836e66221db9a711a0772c2b8b62aa5555e6851",
+        "actualSha256": "12f845c0d085ef9433bd7aca4836e66221db9a711a0772c2b8b62aa5555e6851",
+        "unchanged": true
+      },
+      {
+        "path": "docs/evidence/coordination-transfer-native-7100-2026-10-15/postrun-budget-audit.json",
+        "expectedSha256": "e15e2cd15e35880f04774dff5bdcee70141f807d7ea4ebc4db5724c293f0fb22",
+        "actualSha256": "e15e2cd15e35880f04774dff5bdcee70141f807d7ea4ebc4db5724c293f0fb22",
+        "unchanged": true
+      },
+      {
+        "path": "docs/evidence/coordination-transfer-native-7100-2026-10-15/postrun-budget-audit.md",
+        "expectedSha256": "5e584121f3ced322c2ce046867ab9fccc8c5633d78d2eb597d9f517a3fdb4f63",
+        "actualSha256": "5e584121f3ced322c2ce046867ab9fccc8c5633d78d2eb597d9f517a3fdb4f63",
+        "unchanged": true
+      },
+      {
+        "path": "docs/evidence/coordination-transfer-native-7100-2026-10-15/archive-index.json",
+        "expectedSha256": "cbc82f6c3d68a5050af84662341a4dfaf82e87036b412e4bab6912a330a44b50",
+        "actualSha256": "cbc82f6c3d68a5050af84662341a4dfaf82e87036b412e4bab6912a330a44b50",
+        "unchanged": true
+      },
+      {
+        "path": "docs/evidence/coordination-transfer-native-7100-2026-10-15/launch-invocation.json",
+        "expectedSha256": "9ff9ee9ab8dc2c5f27503f8d6b285159c465bd9a28a77516434962187c5ca561",
+        "actualSha256": "9ff9ee9ab8dc2c5f27503f8d6b285159c465bd9a28a77516434962187c5ca561",
+        "unchanged": true
+      },
+      {
+        "path": "docs/evidence/coordination-transfer-native-7100-2026-10-15/launcher.stderr.log",
+        "expectedSha256": "77e943a08875b8cdeb474047fc167a578cf67ba7331dd6786673ad125af43bc6",
+        "actualSha256": "77e943a08875b8cdeb474047fc167a578cf67ba7331dd6786673ad125af43bc6",
+        "unchanged": true
+      },
+      {
+        "path": "docs/evidence/coordination-transfer-native-7100-2026-10-15/launcher.stdout.log",
+        "expectedSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "actualSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "unchanged": true
+      },
+      {
+        "path": "docs/evidence/coordination-transfer-native-proposal-2026-10-13/manifest.json",
+        "expectedSha256": "4f3708fd50cd4dabf473b7a6bff528ee11ad798cf25dfbeaf0f6141c156818f7",
+        "actualSha256": "4f3708fd50cd4dabf473b7a6bff528ee11ad798cf25dfbeaf0f6141c156818f7",
+        "unchanged": true
+      }
+    ],
+    "allUnchanged": true
+  },
+  "frozenSourceVsCurrentCode": {
+    "manifests": [
+      {
+        "manifestPath": "docs/evidence/coordination-transfer-native-proposal-2026-10-13/manifest.json",
+        "manifestSha256": "4f3708fd50cd4dabf473b7a6bff528ee11ad798cf25dfbeaf0f6141c156818f7",
+        "sourceCommit": "da4575170c6ae9b0858c0851a6f1ed15fe1ce858",
+        "frozenRecords": 345,
+        "gitRecordsVerified": 344,
+        "frozenGitMismatch": [],
+        "binaryVerifiedSeparately": true,
+        "currentWorktreeMatchesFrozenManifest": false,
+        "authorizedCurrentWorktreeSourceDifferences": [
+          {
+            "path": "rust/crates/sim/src/recovery/planner/command_proposal.rs",
+            "role": "code",
+            "frozenSha256": "d09cf9cfbeb650eddbcf2008fa214136f1bb774f2a5bebf44298c77a50c87d5b",
+            "currentSha256": "3688e7a1ff824b5a016d0d8ad8da44cbcd00c041d096a2d338b6fb33e41326b9"
+          },
+          {
+            "path": "rust/crates/sim/src/recovery/planner/geometric_tasks.rs",
+            "role": "code",
+            "frozenSha256": "1c018f4d20ff09921e640aa2c45b2ec04dfc860452a18e816a05e2b9ebf2ee68",
+            "currentSha256": "65af9a336111cc1604b35bd1244bad83fd0c518a6d30bc1e8a37fc4bbf4bdadb"
+          },
+          {
+            "path": "rust/crates/sim/src/recovery/planner/load_transfer.rs",
+            "role": "code",
+            "frozenSha256": "555c93dae299b029cf8e78f5e048833de2bb8f989e3fadf366bfa3705582fcee",
+            "currentSha256": "876d8e2fb0878227b6b70ad2f5b553e1db9985719d0b828aaa686d0767523294"
+          },
+          {
+            "path": "rust/crates/sim/src/recovery/planner/mod.rs",
+            "role": "code",
+            "frozenSha256": "ad159b7097f5d4c5ce72b65c2efd0457a53f66d8886c59f8612c126e58f0c839",
+            "currentSha256": "99dab8a5db204c773cf309bcd71b11fd73ebc18b791d87d476292048a0c1681e"
+          },
+          {
+            "path": "rust/crates/sim/src/recovery/planner/native_observation.rs",
+            "role": "code",
+            "frozenSha256": "6b8008b50fe9614af1406eb361a9b4e377ecb03c6cf84b3ccddef0619c3edd74",
+            "currentSha256": "db49427e09240dec0c0e0049e25eca916b0fe5e8b754a641c156363cd0887afc"
+          },
+          {
+            "path": "rust/crates/sim/src/recovery/planner/support_schedule.rs",
+            "role": "code",
+            "frozenSha256": "243e1b712a6a0f02d59480b78205b7bb8d3f6a913b30589d526f06842826997c",
+            "currentSha256": "723d946abe45186f8cb1fea793726f33c62ef4e770bb001bcaa94a6d662761c6"
+          },
+          {
+            "path": "rust/crates/sim/src/recovery/planner/support_state.rs",
+            "role": "code",
+            "frozenSha256": "19607d6e8d19ca66579e1c9a830ee8e711bac3e7ce17d907f1e071a7b89b872f",
+            "currentSha256": "1056ca06337d4312f61e396e97d8f110229f00a846a17eb83f8ec64f82fefdcb"
+          },
+          {
+            "path": "rust/crates/sim/src/recovery/planner/transfer_adapter.rs",
+            "role": "code",
+            "frozenSha256": "70fb9feedf19784a4e9e076768695ae9f29f7c88a6306a51e71da16bafe15e90",
+            "currentSha256": "95415005944a40ec6da5541fdf702a52a91763422b328c161f8aa36544ff0085"
+          },
+          {
+            "path": "rust/crates/sim/src/recovery/planner/transfer_adapter_tests.rs",
+            "role": "code",
+            "frozenSha256": "a5c2b8378641184da98e774ca1ac2af0bee489d7671873ff0b701c448ef5e7d1",
+            "currentSha256": "72eef3f44b081905aefbc3b2a154809e8d8e8458e7b593049cb211794b715c14"
+          },
+          {
+            "path": "rust/crates/sim/src/recovery/planner/transfer_worker.rs",
+            "role": "code",
+            "frozenSha256": "44e215fc69a5218a42120c74c5175c9be2281d0d500cecf1e227fad498258b99",
+            "currentSha256": "7bb18f8698d5eda1e7f016f3e9d38c5d16286d63f957d368ed680a64806c7a94"
+          },
+          {
+            "path": "rust/crates/sim/src/recovery/planner/whole_body_controller.rs",
+            "role": "code",
+            "frozenSha256": "a4597646248f80817a2079d0a53da52e408263f344abcffa40399780297c27a9",
+            "currentSha256": "2476ba571b443274ae35eff43fefb0a6968bab5b6c26fc7f42bcf0d31839a309"
+          }
+        ]
+      },
+      {
+        "manifestPath": "docs/evidence/coordination-transfer-native-7100-2026-10-15/manifest.json",
+        "manifestSha256": "80b41aaf7d2f2aa72e91891f97e7ea40d6cf6f3e8538f3f62d0afcba352342b9",
+        "sourceCommit": "da4575170c6ae9b0858c0851a6f1ed15fe1ce858",
+        "frozenRecords": 358,
+        "gitRecordsVerified": 357,
+        "frozenGitMismatch": [],
+        "binaryVerifiedSeparately": true,
+        "currentWorktreeMatchesFrozenManifest": false,
+        "authorizedCurrentWorktreeSourceDifferences": [
+          {
+            "path": "rust/crates/sim/src/recovery/planner/command_proposal.rs",
+            "role": "code",
+            "frozenSha256": "d09cf9cfbeb650eddbcf2008fa214136f1bb774f2a5bebf44298c77a50c87d5b",
+            "currentSha256": "3688e7a1ff824b5a016d0d8ad8da44cbcd00c041d096a2d338b6fb33e41326b9"
+          },
+          {
+            "path": "rust/crates/sim/src/recovery/planner/geometric_tasks.rs",
+            "role": "code",
+            "frozenSha256": "1c018f4d20ff09921e640aa2c45b2ec04dfc860452a18e816a05e2b9ebf2ee68",
+            "currentSha256": "65af9a336111cc1604b35bd1244bad83fd0c518a6d30bc1e8a37fc4bbf4bdadb"
+          },
+          {
+            "path": "rust/crates/sim/src/recovery/planner/load_transfer.rs",
+            "role": "code",
+            "frozenSha256": "555c93dae299b029cf8e78f5e048833de2bb8f989e3fadf366bfa3705582fcee",
+            "currentSha256": "876d8e2fb0878227b6b70ad2f5b553e1db9985719d0b828aaa686d0767523294"
+          },
+          {
+            "path": "rust/crates/sim/src/recovery/planner/mod.rs",
+            "role": "code",
+            "frozenSha256": "ad159b7097f5d4c5ce72b65c2efd0457a53f66d8886c59f8612c126e58f0c839",
+            "currentSha256": "99dab8a5db204c773cf309bcd71b11fd73ebc18b791d87d476292048a0c1681e"
+          },
+          {
+            "path": "rust/crates/sim/src/recovery/planner/native_observation.rs",
+            "role": "code",
+            "frozenSha256": "6b8008b50fe9614af1406eb361a9b4e377ecb03c6cf84b3ccddef0619c3edd74",
+            "currentSha256": "db49427e09240dec0c0e0049e25eca916b0fe5e8b754a641c156363cd0887afc"
+          },
+          {
+            "path": "rust/crates/sim/src/recovery/planner/support_schedule.rs",
+            "role": "code",
+            "frozenSha256": "243e1b712a6a0f02d59480b78205b7bb8d3f6a913b30589d526f06842826997c",
+            "currentSha256": "723d946abe45186f8cb1fea793726f33c62ef4e770bb001bcaa94a6d662761c6"
+          },
+          {
+            "path": "rust/crates/sim/src/recovery/planner/support_state.rs",
+            "role": "code",
+            "frozenSha256": "19607d6e8d19ca66579e1c9a830ee8e711bac3e7ce17d907f1e071a7b89b872f",
+            "currentSha256": "1056ca06337d4312f61e396e97d8f110229f00a846a17eb83f8ec64f82fefdcb"
+          },
+          {
+            "path": "rust/crates/sim/src/recovery/planner/transfer_adapter.rs",
+            "role": "code",
+            "frozenSha256": "70fb9feedf19784a4e9e076768695ae9f29f7c88a6306a51e71da16bafe15e90",
+            "currentSha256": "95415005944a40ec6da5541fdf702a52a91763422b328c161f8aa36544ff0085"
+          },
+          {
+            "path": "rust/crates/sim/src/recovery/planner/transfer_adapter_tests.rs",
+            "role": "code",
+            "frozenSha256": "a5c2b8378641184da98e774ca1ac2af0bee489d7671873ff0b701c448ef5e7d1",
+            "currentSha256": "72eef3f44b081905aefbc3b2a154809e8d8e8458e7b593049cb211794b715c14"
+          },
+          {
+            "path": "rust/crates/sim/src/recovery/planner/transfer_worker.rs",
+            "role": "code",
+            "frozenSha256": "44e215fc69a5218a42120c74c5175c9be2281d0d500cecf1e227fad498258b99",
+            "currentSha256": "7bb18f8698d5eda1e7f016f3e9d38c5d16286d63f957d368ed680a64806c7a94"
+          },
+          {
+            "path": "rust/crates/sim/src/recovery/planner/whole_body_controller.rs",
+            "role": "code",
+            "frozenSha256": "a4597646248f80817a2079d0a53da52e408263f344abcffa40399780297c27a9",
+            "currentSha256": "2476ba571b443274ae35eff43fefb0a6968bab5b6c26fc7f42bcf0d31839a309"
+          }
+        ]
+      }
+    ],
+    "newRustFilesAbsentFromHistoricalInventories": [
+      "rust/crates/sim/src/recovery/planner/material_continuity.rs",
+      "rust/crates/sim/src/recovery/planner/material_continuity_tests.rs",
+      "rust/crates/sim/src/recovery/planner/native_contact_diagnostics.rs"
+    ],
+    "nativeFreezeUpdated": false,
+    "newNativeManifestCreated": false,
+    "newNativeAuthorizationCreated": false,
+    "meaning": "Old candidate source bytes remain readable and verifiable from da457517. Current authorized Rust edits intentionally differ and do not inherit old binary parity or native admission. Earlier historical manifest source commits remain those listed in the baseline."
+  },
+  "preparation": {
+    "activeReservationSha256": "12f845c0d085ef9433bd7aca4836e66221db9a711a0772c2b8b62aa5555e6851",
+    "windowStartedUtc": "2026-10-15T14:12:53+00:00",
+    "windowDeadlineUtc": "2026-10-15T17:12:53+00:00",
+    "windowActiveAtAudit": true,
+    "engagedSeconds": 68089,
+    "maximumSeconds": 144000,
+    "remainingUnengagedSeconds": 75911,
+    "newReservationSeconds": 0,
+    "refundSeconds": 0,
+    "windowRemainingCalendarSecondsAtAudit": 7356.597,
+    "executedPreparationSecondsNotCertified": true
+  },
+  "nativeBudgetUnchanged": {
+    "globalMaximumNativeSteps": 300000,
+    "historicalClosedLedgerDebits": 7844,
+    "closedA36AuthorizationDebit": 131096,
+    "cumulativeReservedChargedNativeSteps": 138940,
+    "arithmeticUndebitedNativeSteps": 161060,
+    "historicalKnownExecutedSteps": 2108,
+    "historicalExecutedStepsExact": false,
+    "closedA36ExecutedStepsExact": 130,
+    "cumulativeKnownExecutedSteps": 2238,
+    "cumulativeExecutedStepsExact": false,
+    "previousArchiveDerivedCumulativeBounds": {
+      "lower": 2238,
+      "upper": 2239,
+      "basis": "Prior independent review bounded historical integrations2108..2109; add130exact from the closed A36 run. This is archival inference, not a new native measurement."
+    },
+    "newAuditNativeSteps": 0,
+    "newStaticStagePhysicalPermission": false,
+    "unusedA36SlotsStillDebited": 130966,
+    "refundSteps": 0,
+    "historicalHistorySlotsConsumed": 4,
+    "historicalHistorySlotsRemainClosed": true,
+    "distinctA36SuccessorHistoryConsumed": 1,
+    "distinctA36Status": "closed-refused",
+    "arithmeticRemainderIsExecutionPermission": false
+  },
+  "wallBudgetUnchanged": {
+    "globalPhysicalWallMaximumSeconds": 7200,
+    "historicalDocumentedWindowsSeconds": "21.951356994",
+    "closedA36MeasuredWallSeconds": "10.376937300003192",
+    "cumulativeDocumentedWindowsSeconds": "32.328294294003192",
+    "documentedRemainderBeforeUnmeasuredPhasesSeconds": "7167.671705705996808",
+    "historicalConservativeStartupShutdownAllowanceSeconds": 74,
+    "conservativeCumulativePlanningDebitSeconds": "106.328294294003192",
+    "conservativeArithmeticRemainderSeconds": "7093.671705705996808",
+    "allowanceIsMeasuredExecutedTime": false,
+    "a36AuthorizedEndToEndCapSeconds": 7100,
+    "a36AuthorizationRemainsClosed": true,
+    "unusedTimeAutomaticallyRenewsAuthorization": false,
+    "preparationAndServicePausesExcludedFromPhysicalCompute": true
+  },
+  "closedPhysicalRun": {
+    "status": "closed-refused",
+    "ledgerSha256": "eec8dfa53045dcd38c593ec72d459e757ee3c8b6d3315be0707e263bd3eb2595",
+    "reservedSteps": 131096,
+    "actualStepsExact": 130,
+    "refundSteps": 0,
+    "claimPaths": [
+      "docs/evidence/coordination-transfer-native-7100-2026-10-15/authorization-claim.json"
+    ],
+    "newClaimCount": 0,
+    "worker5506Absent": true,
+    "visibleNativeCandidateProcesses": [],
+    "otherExeLinksNotReadable": [
+      {
+        "pid": 1,
+        "comm": "tail"
+      },
+      {
+        "pid": 2,
+        "comm": "cloud-agent-log"
+      },
+      {
+        "pid": 3,
+        "comm": "caas-prefix-tra"
+      },
+      {
+        "pid": 118,
+        "comm": "dockerd"
+      },
+      {
+        "pid": 171,
+        "comm": "containerd"
+      },
+      {
+        "pid": 441,
+        "comm": "codex"
+      },
+      {
+        "pid": 3953,
+        "comm": "git"
+      },
+      {
+        "pid": 4240,
+        "comm": "git"
+      },
+      {
+        "pid": 4780,
+        "comm": "git"
+      },
+      {
+        "pid": 5466,
+        "comm": "git"
+      },
+      {
+        "pid": 6321,
+        "comm": "git"
+      },
+      {
+        "pid": 9651,
+        "comm": "codex-linux-san"
+      },
+      {
+        "pid": 9653,
+        "comm": "bwrap"
+      }
+    ],
+    "processInspectionLimit": "Some unrelated service/sandbox exe links are denied. No denied access bypassed; no full byte-level process census claimed. PID5506 is absent and no visible native candidate or execute invocation found."
+  },
+  "staticValidationReadFromArchives": {
+    "phases": [
+      {
+        "receiptPath": "docs/evidence/coordination-contact-continuity-2026-10-15/first-pure-tests/receipt.json",
+        "receiptSha256": "28398faa291f8d1ce3e6a7755222063fa0feefee87edcc96eeb2139a7c1994f9",
+        "passed": 79,
+        "failed": 3,
+        "uniqueSelectedNames": 82,
+        "logHashesVerified": true,
+        "declaredNativeSteps": 0,
+        "declaredNewFkOrWorldInspections": 0
+      },
+      {
+        "receiptPath": "docs/evidence/coordination-contact-continuity-2026-10-15/fixture-fix-pure-tests/receipt.json",
+        "receiptSha256": "8a27d87b2d7040c434a948720d5e87e067f87333490bd9423488308b9415f8d5",
+        "passed": 3,
+        "failed": 0,
+        "uniqueSelectedNames": 3,
+        "logHashesVerified": true,
+        "declaredNativeSteps": 0,
+        "declaredNewFkOrWorldInspections": 0
+      }
+    ],
+    "uniqueTestsUltimatelyPassed": 82,
+    "initialPasses": 79,
+    "initialFailures": 3,
+    "failedNamesExactlyMatchSuccessfulRerunNames": true,
+    "rerunPassed": 3,
+    "failedLogsPreserved": true,
+    "testsRerunByAuditor": 0,
+    "physicalReleaseBinaryPreserved": true,
+    "debugWorkerBuildLog": {
+      "path": "docs/evidence/coordination-contact-continuity-2026-10-15/worker-debug-build-only.log",
+      "sha256": "e5a151d79fa06eaaf11afde91364a7efd37cc37dd541ec6431fd32dca028efba",
+      "debugBuildSuccessRecorded": true,
+      "executionOfDedicatedWorkerNotAuthorizedOrPerformedByAuditor": true,
+      "rootDeclaredCommandWasNoRun": true
+    },
+    "validationLimits": "Pure checks and a debug compile do not certify native parity, heel acquisition, transfer, standing or1s stability. No globalRust/TypeScript suite result inferred."
+  },
+  "futureProtocolProposalOnly": {
+    "maximumNativeSteps": 568,
+    "technicalParityIncludingPrefix": 52,
+    "mainPrefixSteps": 36,
+    "forecastSteps": 480,
+    "maximumWallSecondsAllInclusive": 120,
+    "maximumRealTransferStepsBeyondA36": 0,
+    "approved": false,
+    "reservedStepsNow": 0,
+    "wallReservationNowSeconds": 0,
+    "requiresExplicitFutureAuthorization": true,
+    "existingClosedFamilyReopened": false,
+    "newFreezeAndAdmissionStillRequired": true,
+    "arithmeticProposalFitsRemainingSteps": true,
+    "arithmeticFitGrantsPermission": false
+  },
+  "auditActivity": {
+    "nativeSteps": 0,
+    "newWorlds": 0,
+    "fkEvaluations": 0,
+    "geometricAssemblies": 0,
+    "tests": 0,
+    "builds": 0,
+    "newBudgetReservations": 0,
+    "historicalFilesModified": false
+  }
+}

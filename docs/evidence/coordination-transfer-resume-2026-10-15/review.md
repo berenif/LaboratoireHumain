@@ -1,0 +1,42 @@
+# Contre-revue du raccord natif après reprise — 15 octobre 2026
+
+Le candidat possède maintenant une chaîne d'admission techniquement testable, depuis l'entrée observée A36 jusqu'au handoff natif et à la fin de sa surveillance. La présente revue ne prouve ni l'acquisition des talons, ni la conservation réelle des appuis, ni un relevage. **Aucun monde, sous-pas natif, FK ou assemblage géométrique supplémentaire n'a été exécuté dans cette revue.** Les familles physiques closes restent closes.
+
+La première lecture a porté sur `native_plan_preview.rs`, `transfer_adapter.rs`, `whole_body_controller.rs`, le nouveau `transfer_worker.rs`, puis sur les mémoires natives de récupération, de pas et d'observation des chutes. Les corrections de parité ont ensuite été explicitement déléguées au relecteur ; elles ajoutent uniquement des projections en lecture et des tests purs. Le propriétaire du pilote a corrigé séparément son extrémité terminale. Les fichiers et journaux examinés sont identifiés dans [review-evidence.json](review-evidence.json).
+
+## Défauts concrets trouvés et corrigés
+
+| Défaut | Correction et preuve |
+| --- | --- |
+| Le pilote pouvait déclarer `history_completed` après la dernière intégration terminale sans comparer son état extérieur final à celui prédit. Les identités avant commande ne couvrent pas cette ultime transition. | Le pilote compare désormais `transfer_identity(actual, owner)` au checkpoint extérieur final par `require_window_checkpoint` **avant** les drapeaux de succès. Il ne renouvelle aucune fenêtre à cet endroit. Les états intermédiaires restent vérifiés aux frontières de 24 pas. |
+| L'ancienne identité n'incluait pas toute la mémoire utilisée après handoff : ancres et temporisations privées du `StepController`, état de swing, temporisations privées de chute, `rest_com` et sa compensation. Le `Status` public ne suffisait pas. | `Simulation`, `StepController`, `Swing`, `Status` et `motion::Observation` sont destructurés exhaustivement. La projection lie les ancres, commandes de transition, temporisations et références privées. Des changements de champs dans ces structures obligeront à réexaminer le code à la compilation. Les tests synthétiques modifient chaque champ privé et les champs du statut. |
+| Le modèle et le profil étaient attachés au certificat initial du noyau, mais leur mutation après la prévision n'était pas visible dans l'identité avant installation. | Les métadonnées complètes du modèle, le profil, les handles, le filtre de collision, le cap mémorisé et le heading font désormais partie de la projection d'identité. Les flottants structurés sont représentés par leurs bits, y compris les zéros signés et charges utiles NaN. Les champs imbriqués du modèle, du profil et des limites de manipulation sont également destructurés exhaustivement. |
+| Les identités sérialisaient des tableaux d'octets en nombres JSON, en recopiant notamment toutes les commandes du raccord dans chaque état. Cela multipliait inutilement les données retenues par horizon. | `ParityFrame::exact_identity` utilise une balise de version, l'horloge, des longueurs `u64` explicites, les sections brutes et les bits `u32`. La comparaison reste exacte et sans hash. Un test distingue les partitions ambiguës `a/bc` et `ab/c`, les sections vides, l'horloge, les bits moteurs et les charges utiles NaN. |
+
+Les anciennes comparaisons de monde Rapier, corps, moteurs, diagnostics et propriétaire restent présentes. La copie conserve les caches persistants existants ; l'espace de travail transitoire du pipeline demeure reconstruit comme auparavant. La parité de cette famille refuse explicitement les propriétaires dynamiques de grab, striker ou environnement, dont elle ne prétend pas projeter les mémoires privées. Aucun réglage de force, friction, masse, anatomie, collision ou récupération n'a changé.
+
+## Points vérifiés sans modification des équations
+
+- Le passage à `Stand` demande la phase une seule fois ; il n'appelle pas `enter()` et ne remet pas à zéro les compteurs originaux de settle, handoff ou stabilité. Dès que l'observateur original accorde `Handoff`, le propriétaire expérimental devient un moniteur passif et le chemin natif ordinaire installe les moteurs.
+- Le jalon talons/recentrage reste mémorisé. L'absence d'appuis persistants non pédieux et la présence/dérive des ancres matérielles restent contrôlées indépendamment pendant la continuation et après handoff.
+- Les identités de l'état extérieur d'entrée et des checkpoints après tick sont distinctes des identités avant configuration. Le noyau vide légitimement certains accumulateurs au début du tick : aucune égalité entre ces deux phases n'est exigée.
+- Le reçu technique autorise exactement quatre actions, attachées à l'instance réelle et à la portée du candidat. Il ne constitue pas un reçu de trajectoire. Le pilote prévoit deux paires techniques au même A36, puis un rejeu distinct du préfixe pour l'histoire ; les 36 pas du préfixe sont comptés dans chacune de ces deux phases.
+- Le certificat d'un horizon conserve les actions et checkpoints complets ; les fenêtres supplémentaires consomment des actions déjà prédites. Le dernier tick survient au premier multiple de quatre après la seconde supplémentaire, sans redémarrage de cette seconde.
+- Le pilote ne normalise dans le préfixe archivé que le libellé `kind` et le nouveau `owner.transfer` absent ou nul. Les moteurs, contacts, diagnostics, impulsions et tous les autres champs doivent être identiques, y compris les zéros signés. La liaison des quatre fichiers d'entrée à leurs SHA incombe au superviseur avant les permis ; `prepare_inputs` les lit une seule fois et conserve ces octets en mémoire. Le gel et la revalidation du manifeste restent indispensables avant une future exécution autorisée.
+- Le seuil 80 % n'a pas été diminué. Sa provenance et sa portée restent celles de [l'audit initial](../coordination-transfer-candidate-2026-10-13/support-threshold-provenance.md) : règle conservatrice du contrôleur/protocole, non nécessité universelle issue des seules lois physiques. Ce candidat garde les deux pieds et n'autorise aucun retrait gratuit d'appui.
+
+## Vérification pure exécutée
+
+| Filtre Rust précis | Résultat | Journal |
+| --- | --- | --- |
+| `native_plan_preview::tests::pure_` | 10/10 PASS ; 3 nouveaux, 7 réexécutés après correction de cette même projection | [parity-memory-pure-tests.log](parity-memory-pure-tests.log) |
+| `stepping::parity_tests::` | 2/2 PASS | [stepping-memory-pure-tests.log](stepping-memory-pure-tests.log) |
+| `motion::parity_tests::` | 1/1 PASS | [motion-memory-pure-tests.log](motion-memory-pure-tests.log) |
+
+Ces filtres ne construisent aucun `Simulation`, monde Rapier ou modèle canonique validé. Le test du modèle désérialise uniquement les métadonnées JSON ; il n'appelle ni `Model::canonical()` ni `validate()`. Les tests du contrôleur de pas construisent directement des structures synthétiques, sans appeler les constructeurs physiques. Compilation Rust 1.89.0 et `git diff --check` réussis. Les avertissements historiques de code expérimental inutilisé restent distincts des résultats.
+
+Le dimensionnement indicatif joint resérialise seulement les 1 728 commandes déjà archivées. Il donne environ 1,60 Mo de JSON compact contre 4,84 Mo pour son ancien emballage en tableau décimal d'octets, soit 0,77 contre 2,32 Go pour 480 répétitions de cette seule section. Ce n'est **pas** une mesure d'allocation native ni une borne mémoire du futur programme Rust : les formats flottants, le monde, les autres mémoires et plusieurs horizons coexistants ajoutent des coûts. Le format compact supprime la multiplication évitable ; la répétition des courbes reste une limite opérationnelle à mesurer dans un futur protocole borné.
+
+## Ce qui demeure à établir
+
+La production de quatre commandes admissibles à A36 et la continuation articulaire finie ne garantissent pas que l'actionnement `ForceBased` réalisera les vitesses matérielles souhaitées. Les talons, la redistribution effective des charges, le maintien des ancres pendant la montée, la parité native longue et les critères originaux de relevage restent sans nouvelle validation physique. Une prévision exacte peut aussi s'avérer trop coûteuse ou refuser le premier horizon : le protocole futur doit alors conserver le diagnostic et s'arrêter, sans variation automatique ni renouvellement. La qualification des 24 poses/cycles/impacts reste une étape distincte ; la récupération de production demeure désactivée.

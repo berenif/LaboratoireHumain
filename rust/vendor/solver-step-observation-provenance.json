@@ -1,0 +1,18 @@
+{
+  "schema": 1,
+  "baseCommit": "9d68ab2aa2c324ba7ed6262d1de66b30e274e40f",
+  "feature": "solver-step-observation",
+  "defaultEnabled": false,
+  "scope": "Read-only CCD callbacks before/after solve and after pose/clamp/mass refresh; no actuation, constraint arithmetic or serialized physics fields changed.",
+  "patchSha256": "04136de38a3ab5d0147360882e5f77287757ac49a6786d6460ae5e51485be103",
+  "before": {
+    "rust/vendor/rapier3d/Cargo.toml": "7ffc7969de9570ce1b36356d290d028f49fb7c69eaff93b6810116606e869f15",
+    "rust/vendor/rapier3d/src/pipeline/physics_hooks.rs": "eed197b5f0360cc173f6e6147a2c43545d94436746a4164e4e37899abf9f051d",
+    "rust/vendor/rapier3d/src/pipeline/physics_pipeline/substep.rs": "7dd83fedf174927afd7078d20820a1113a27509fceebb78dae5ce4b6347cc7c3"
+  },
+  "after": {
+    "rust/vendor/rapier3d/Cargo.toml": "bab5724cb002e71e96f7fb7bad7c468e5ae0a158391fae0524a96a3c409be4ff",
+    "rust/vendor/rapier3d/src/pipeline/physics_hooks.rs": "3cc24002866d0fcef59337f46184549364a22559293c583eefbe45a9cb77e070",
+    "rust/vendor/rapier3d/src/pipeline/physics_pipeline/substep.rs": "91ef1ecf8b1bbcd668ff90ac3e1adf60e75245e5476f521a935566cb441a7574"
+  }
+}

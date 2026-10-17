@@ -1,0 +1,17 @@
+{
+  "schema": 1,
+  "closedUtc": "2026-10-13T07:18:08.801430+00:00",
+  "preparationElapsedSeconds": 1785.148852,
+  "preparationReservedSeconds": 7200,
+  "preparationCumulativeChargedSeconds": 22189,
+  "preparationCapSeconds": 144000,
+  "staticInspectionReservation": 1000,
+  "staticInspectionCumulativeCharged": 8923,
+  "nativeIntegrationsExecuted": 0,
+  "nativeStepsReservedWithoutRefund": 44,
+  "nativeBudgetClosed": true,
+  "newNativeAuthorizationRequired": true,
+  "frozenPreparationReceiptUnchanged": true,
+  "priorRegistersUnchanged": true,
+  "scope": "Close bookkeeping only; no refund or renewal of preparation or native reservations"
+}

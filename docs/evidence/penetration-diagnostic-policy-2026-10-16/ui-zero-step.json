@@ -1,0 +1,9 @@
+{
+  "passed": true,
+  "physicsIntegrations": 0,
+  "initialTick": 0,
+  "finalTick": 0,
+  "syntheticUiOnly": true,
+  "rendered": "Max overlap: body 47.00 mm · ground 120.00 mm",
+  "browserErrors": []
+}

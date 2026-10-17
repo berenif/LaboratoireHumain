@@ -1,0 +1,33 @@
+{
+  "activeSurvivors": [],
+  "case": "crash-before-ready",
+  "duplicateClaimRefusal": null,
+  "elapsedSeconds": 0.06234368800005541,
+  "failures": [],
+  "fixtureMode": "crash-ready",
+  "fixturePids": [
+    4344
+  ],
+  "helperExitCode": 0,
+  "helperReceipt": {
+    "alarmRestored": true,
+    "error": "Refusal: Refusal: Worker exited without a complete result",
+    "nativeRustWorkerExecuted": false,
+    "physicalIntegrations": 0,
+    "protocolCountsAreSynthetic": true,
+    "result": null,
+    "signalHandlersRestored": true,
+    "unrelatedSurvivedCleanup": null
+  },
+  "nativeRustWorkerExecuted": false,
+  "oldNativeRegistersTouched": false,
+  "passed": true,
+  "physicalIntegrations": 0,
+  "protocolCountsAreSynthetic": true,
+  "sentSignal": null,
+  "statesAfterLauncher": {
+    "4344": null
+  },
+  "temporaryManifestPathsAreHistorical": true,
+  "testWallSeconds": 2
+}

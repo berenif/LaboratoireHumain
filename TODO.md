@@ -1,4 +1,559 @@
+> Historical record. Current application setup and limitations: [README](README.md). Rust/WASM is now the maintained runtime; recovery is disabled and unqualified.
+
 # TODO
+
+**2026-10-15 retour d’état du transfert — candidat essayé et rejeté :**
+
+- [x] Analyser les archives : CoM/vitesse, polygone chargé et mouvement articulaire ; garder la cause dynamique comme hypothèse.
+- [x] Implémenter un seul candidat avec recentrage, freinage du tronc et pieds horizontaux ; deux tests purs ciblés passent.
+- [x] Exécuter une fois : 828 sous-pas, 3,45 s simulées, 5,055 s murales ; arrêt sur collision physique, aucune relance.
+- [x] Livrer vidéo et comparaison : chute 0,233 s plus tôt, aucun talon acquis, aucune station debout. [Résultat](docs/evidence/coordination-feedback-transfer-2026-10-15/RESULT.md).
+- [ ] Toute nouvelle stratégie exige une réorientation ; aucune continuation automatique.
+
+
+**2026-10-15 20:27 UTC — exploration complète A36, protocole clos :**
+
+- [x] Ajouter un chemin expérimental isolé, sans reçu de prévision ni stabilité préalable ; préserver la production et la correction d’attribution inachevée.
+- [x] Vérifier la séquence par un test pur, puis exécuter une histoire : 6 240 sous-pas / 26 s, zéro prévision, 30,709 s murales.
+- [x] Archiver vidéo réelle, appuis et hauteur du bassin : chute à environ 1,6 s, maintien au sol jusqu’à 26 s ; aucun relevage.
+- [x] Fermer sans remboursement ni relance. [Résultat et preuves](docs/evidence/coordination-exploration-execution-2026-10-15/RESULT.md).
+- [ ] Toute nouvelle stratégie ou exécution nécessite une réorientation explicite ; aucune continuation automatique.
+
+
+**2026-10-15 diagnostic causal distinct — autorisation parent, une seule exécution :**
+
+- [x] Figer le candidat issu de `a5c8ff36`, avec un mode diagnostic limité à
+  52 pas de parité, 36 de préfixe et une prévision de 480 pas au maximum ;
+  aucune fenêtre réelle de transfert après A36.
+- [x] Vérifier les preuves historiques, la réservation distincte de 568 pas /
+  120 secondes, l'absence de doublon, les tests statiques et le manifeste.
+  Gel : 429 fichiers ; 12 tests purs du worker et 54 tests du superviseur
+  passent ; audit indépendant favorable avant toute exécution.
+- [ ] Exécuter une seule fois puis fermer le registre sans remboursement ni
+  renouvellement, même en cas de refus précoce ou d'échec technique.
+- [ ] Déterminer le mécanisme de disparition du point retenu ; implémenter
+  uniquement une correction démontrée, vérifiée statiquement sans nouvel essai.
+- [ ] Publier les preuves, budgets et implications pour le transfert complet ;
+  conserver la récupération désactivée et vérifier le SHA distant.
+
+**2026-10-15 continuité matérielle — correction statique, protocole physique clos :**
+
+- [x] Examiner les 130 pas archivés et les lacunes de télémétrie : une absence
+  transitoire existe à 28/29 ; à 78, le coin retenu reste 69,993 mm hors du
+  triangle chargé. Renouvellement interne Rapier non démontrable à cette horloge.
+- [x] Définir une preuve de surface chargée équivalente, avec face et ancre
+  immuables ; conserver le refus de 78 et les seuils physiques existants.
+- [x] Implémenter le certificat, ses consommateurs et la télémétrie des causes
+  d'exclusion ; 82 tests purs distincts passent après correction de trois
+  fixtures CCD, compilation du pilote sans exécution réussie.
+- [x] Contre-revoir la correction et vérifier les 42 pièces immuables ; aucun
+  nouveau pas natif, remboursement ou renouvellement de budget.
+- [x] Préparer le jalon publiable : correction, diagnostic, figure statique,
+  preuves de tests et audit des budgets ; vérifier le SHA distant à la publication.
+  [Correction, preuves et prochaine décision](docs/coordination-contact-continuity-2026-10-15.md).
+  [Analyse des traces](docs/evidence/coordination-contact-continuity-2026-10-15/forensics.md),
+  [périmètre et budgets](docs/evidence/coordination-contact-continuity-2026-10-15/static-scope-and-budget.md).
+
+**2026-10-15 continuation unique à 7 100 s — essai clos sur refus :**
+
+- [x] Préserver le binaire physique et les gels historiques ; réduire uniquement
+  le superviseur, 49 tests purs/inertes réussis et contre-revue indépendante.
+- [x] Figer manifeste et autorisation actualisée ; 358 fichiers et 14 pièces
+  historiques vérifiés, budget global compatible sans remboursement.
+- [x] Contrôler les doublons puis lancer une seule fois : parité réussie,
+  première prévision refusée après 42 pas ; 130 pas natifs exacts au total.
+- [x] Fermer le registre sans relance/remboursement : perte du point retenu de
+  l'avant-pied gauche, autres contacts porteurs ; zéro transfert réel après A36.
+- [x] Archiver mesures, vidéo du préfixe réel et diagnostic de la prévision,
+  sans calcul physique supplémentaire ; préparer la publication du verdict.
+  [Résultats et preuves](docs/coordination-transfer-native-results-2026-10-15.md).
+  [Protocole autorisé](docs/evidence/coordination-transfer-native-7100-2026-10-15/protocol.md).
+
+Les états ci-dessous sont historiques. L'autorisation à 7 100 s a remplacé la
+proposition à 7 200 s et est désormais close ; aucun solde ne vaut autorisation
+de nouvel essai. Aucun succès local, relevage ou qualification n'est établi.
+
+**2026-10-15 admission physique conditionnelle — aucun lancement :**
+
+- [x] Vérifier le candidat `29df604`, 345 fichiers, 14 preuves protégées et
+  l'absence de claim/sortie/processus physique détecté.
+- [x] Réconcilier le plafond global : 7 844 pas débités, 292 156 disponibles ;
+  délai planifiable prudent 7 104,048643 s, inférieur aux 7 200 s du gel.
+- [x] Arrêter avant toute réservation ou exécution, conformément à la condition
+  du parent ; familles closes et critères inchangés.
+- [ ] Décider d'un nouveau gel temporel compatible et de son autorisation liée
+  au SHA, puis seulement effectuer la continuation physique unique.
+  [Chiffres, preuves et blocage](docs/coordination-transfer-budget-decision-2026-10-15.md).
+
+**2026-10-15 candidat figé depuis l'accroupi observé — préparation globale ouverte :**
+
+- [x] Archiver A36, commandes réellement installées et provenance massique ;
+  aucun checkpoint natif inventé, reprise future par préfixe36 vérifié.
+- [x] Auditer le seuil80 % : garde conservatrice conservée, pas loi universelle.
+- [x] Produire la politique talons/recentrage, raccord q/dq fini et adaptateur
+  natif expérimental avec surveillance du relais original.
+- [x] Tester un assemblage commun sur A36 : quatre commandes, erreurQP nulle,
+  une inspection, zéroFK/monde/sous-pas natif ; appui physique non prouvé.
+- [x] Corriger la couverture des mémoires privées et le checkpoint terminal ;
+  contre-revue, tests purs et compilation release sans exécution terminés.
+- [x] Figer pilote, superviseur et manifeste : 345 fichiers et 14 preuves
+  historiques vérifiés ; inspection sans autorisation ni processus natif.
+- [ ] Obtenir via parent le budget physique distinct : une histoire complète,
+  131 096 pas tous usages et 7 200 s murales ; anciens registres clos.
+- [ ] Mesurer acquisition des talons puis continuation complète ; conserver la
+  récupération désactivée jusqu'à qualification24poses/cycles/impacts distincte.
+  [Candidat](docs/coordination-transfer-candidate-2026-10-13.md) et
+  [gel, preuves et décision restante](docs/coordination-transfer-freeze-2026-10-15.md).
+
+**2026-10-12 transfert intermédiaire — préparation close sans nouveau pas physique :**
+
+- [x] Vérifier `c9f07ea` local/distant, les anciens registres clos et les sources
+  get_up_control, mains/tibias et l'observateur original.
+- [x] Définir le parcours mains+tibias → pied avancé → deux pieds → retrait des
+  mains → debout/handoff, ses preuves de transfert et ses échéances globales.
+- [x] Mesurer les écarts de chronologie et de raccord ; refus d'admission
+  numérique, zéro intégration et zéro inspection d'un nouveau monde statique.
+- [ ] Construire un nouveau chemin numérique continu depuis la fixture exacte,
+  avec géométrie 0°/60°, efforts de transfert et freinage avant impact ; aucun
+  raccord direct des deux références archivées n'est admissible à ce stade.
+- [ ] Soumettre puis ouvrir **un budget de simulation distinct** seulement après
+  toutes les portes statiques ; ne pas réutiliser les campagnes closes.
+  [Diagnostic, contrat et budget proposé](docs/intermediate-transfer-preparation-2026-10-12.md).
+
+**2026-10-12 coordination du pied autorisée — préparation bornée :**
+
+- [x] Vérifier et pousser le diagnostic `0a0db45`, distant confirmé ; anciens registres clos.
+- [x] Ouvrir le seul registre de coordination : 8 h de préparation, 2 histoires,
+  12 480 pas natifs et 300 s murales, aucune friction/anatomie nouvelle.
+- [x] Vérifier la coordination, télémétrie par point/moteur et terminal indépendant ; figer.
+- [x] Reproduire B puis comparer C sans retouche ; registre fermé sans récupération.
+- [x] Produire preuve et vidéo fidèle depuis les états enregistrés, sans nouveau calcul physique.
+  [Plan et arrêts](docs/foot-coordination-decision-2026-10-12.md).
+  [Résultat et limites](docs/foot-coordination-results-2026-10-12.md).
+
+**2026-10-12 investigation pied et friction — documentation uniquement :**
+
+- [x] Vérifier `e8205c8` local/distant et les trois registres clos inchangés.
+- [x] Identifier les trois axes existants par pied, semelles/talons, repères et exclusions.
+- [x] Vérifier Coulomb et le coefficient effectif pied-sol 4 ; distinguer rotation,
+  glissement résiduel et talon en l'air dans les traces A/B.
+- [x] Documenter les options et le petit protocole futur ; zéro intégration supplémentaire.
+- [ ] Décider séparément d'une comparaison de commande ou friction ; segmentation
+  non justifiée à ce stade, aucune migration anatomique ni simulation autorisée.
+  [Diagnostic, valeurs et protocoles](docs/recovery-foot-support-investigation-2026-10-12.md).
+
+**2026-10-12 comparaison A/B close — zéro relevage sur deux histoires :**
+
+- [x] Vérifier `42fccd3`, checkout propre, programme get_up_control exact ; anciens budgets clos.
+- [x] Différer explicitement la certification exhaustive P1 pour ce seul jalon,
+  sans modifier les critères physiques ni prétendre le solveur certifié.
+- [x] Préparer propriétaire unique, retour coordonné borné, observations anatomiques
+  horodatées et terminal original ; figer avant témoin puis candidat.
+- [x] Appliquer le plafond : 2 histoires, 6 089 pas, 48,202 s ; aucun troisième
+  essai faute de succès complet. Paramètres et nominal inchangés entre A/B.
+- [x] Clôturer sans renouvellement ; vidéo issue des états enregistrés et verdict fidèle.
+- [ ] Résoudre transfert d'appui, libération des contacts passifs et orientation
+  de racine ; aucune nouvelle campagne autorisée implicitement.
+- [x] Push des trois sauvegardes confirmé après autorisation directe : distant `e8205c8`.
+  [Décision et bornes](docs/rust-getup-ab-decision-2026-10-12.md).
+  [Résultats physiques, vidéo et limites](docs/rust-getup-ab-results-2026-10-12.md).
+
+**2026-10-11 P1 close à l’échéance — bilan linéaire expliqué, certificat manquant :**
+
+- [x] Conserver les compteurs : huit histoires, 19 512 pas ; dernier processus
+  terminé à 22:05:40,406 UTC avant la limite 22:05:43,210. Aucun renouvellement.
+- [x] Observer les termes angulaires et le transport de pose ; neutralité exacte
+  à chaque pas, mais résidu incomplet 0,19016 N·m·s, aucune certification.
+- [x] Vérifier le handoff 143/144 par l’unitaire original sans intégration ;
+  documenter stagnation, timers f32 et preuves terminales physiques manquantes.
+- [ ] Décider séparément du journal indépendant et de sa borne avant tout
+  nouveau calcul. Recherche bloquée, récupération désactivée/non qualifiée.
+  [Clôture, preuves acquises et prochaine décision](docs/rust-recovery-p1-closure-2026-10-11.md).
+
+**Checkpoint précédent — défaut de lecture CCD isolé :**
+
+- [x] Définir une architecture unique : contacts/placements/charges recherchés,
+  46 coordonnées libres et retour d’état, avec preuve du parcours complet.
+- [x] Reprendre l’implémentation autorisée à 21:18 UTC ; les 96 histoires restent closes.
+- [x] Isoler la perte des impulsions des résolutions CCD antérieures ; observation
+  en lecture seule et rejeux identiques au témoin, sans changement de physique.
+- [ ] Certifier le bilan angulaire et une borne d’arrondi indépendante ; P1 non franchie.
+  [Cause mesurée, traces et limites](docs/rust-recovery-impulse-boundary-2026-10-11.md).
+- [ ] Fiabiliser les impulsions d’impact et conserver le terminal original indépendant.
+- [ ] Construire graphe, compilateur, commande corps entier et recherche native bornée.
+- [ ] Appliquer le budget proposé : 32 vérifications + 192 candidats + 8 validations,
+  6 h maximum ; abandon à 64 sans parcours entier admissible, sans prolongation locale.
+- [ ] Distinguer première faisabilité et qualification : 24 poses, cinq cycles,
+  frappes aux différentes étapes et navigateurs ; récupération toujours non qualifiée.
+  [Architecture, interfaces, coûts et portes d’arrêt](docs/rust-recovery-architecture-decision-2026-10-11.md).
+
+**2026-10-11 campagne native close — géométrie admissible, zéro relevage sur 96 :**
+
+- [x] Vérifier la référence entière de 20,883 s : commandes C1, limites conservées,
+  402/402 poses à 0°/60°, plan de contacts existants figé ; 10 533/11 000 inspections.
+- [x] Comparer les histoires réellement intégrées et un rejeu exact ; arrêter à
+  96 comme prévu. Aucun retour debout, 93 refus d’auto-contact et deux articulaires.
+- [x] Préparer les captures et la vidéo de l’échec, les traces et les vérifications.
+- [ ] Résoudre le support physique et le transfert de charge. Campagne terminée,
+  aucune validation finale exécutée, récupération désactivée/non qualifiée.
+  [Verdict, preuves et limites](docs/rust-recovery-coordinated-retarget-2026-10-11.md).
+
+Les sections suivantes conservent les états des jalons antérieurs.
+
+**2026-10-11 préparation de la référence — export acquis, adaptation rejetée :**
+
+- [x] Extraire SLOW dans un environnement CPU isolé autorisé : mouvement entier
+  de 3,65 s, poses/couples déterministes et contacts observés au bon point du solveur.
+- [x] Implémenter un interpréteur de commandes absolues commun et des contrôles
+  indépendants du mapping quaternion ; tests courts distincts du relevage.
+- [x] Inspecter une adaptation à 0°/60° : 78/402 positions invalides, dépassement
+  de vitesse de l’avant-bras gauche, appuis source non transférés. Essai archivé.
+- [x] Obtenir ensuite une adaptation géométriquement admissible et un plan figé ;
+  les 96 histoires physiques échouent et ferment la campagne (voir le verdict ci-dessus).
+  [Résultats, refus et médias](docs/rust-recovery-reference-preparation-2026-10-11.md).
+
+
+**2026-10-11 décision d'architecture — priorité à une trajectoire entière :**
+
+- [x] Fermer la voie des corrections locales de transfert : modèle exact,
+  objectif de 16,7 ms et commandes de jambes absentes de la recherche.
+- [x] Choisir une référence SLOW complète adaptée, un plan de contacts gelé et
+  une optimisation de programmes entiers dans Rapier. Aucun essai lancé ce tour.
+- [ ] Exporter puis adapter une référence entière compatible avec la fixture
+  réelle ; arrêter si le prérequis échoue, avant toute recherche native.
+- [ ] Implémenter l'interpréteur commun et le terminal debout original ; une
+  recherche bornée à 384 histoires / 4 h, arrêt anticipé à 96 sans station debout.
+- [ ] Geler le premier succès et vérifier quatre histoires complètes à 0°/60°,
+  handoff, maintien et 30 s de contrôle ordinaire. Aucun sous-jalon ne prolonge
+  le budget ; qualification des 24 fixtures/cycles/navigateur toujours distincte.
+  [Décision historique, désormais remplacée](https://github.com/berenif/LaboratoireHumain/blob/dcbcdfabaace5f3fbe91c944cb99efe5687276ac/docs/rust-recovery-architecture-decision-2026-10-11.md).
+
+
+**2026-10-11 horizon natif — cause corrigée, transfert toujours non acquis :**
+
+- [x] Isoler le premier écart depuis un même état chargé : quatre vitesses
+  diffèrent de 1 à 2 unités du dernier bit entre maintien et reconstruction `f32`.
+  La même reconstruction donne les quatre pas exacts, contacts compris.
+- [x] Conserver une régression multi-pas chargée et une API qui refuse toute
+  modification de positions, gains, caps, modèles et masques moteur.
+- [x] Rejouer une seule fois avec les objectifs et paramètres inchangés :
+  815 pas/horizons exacts ; stagnation à 13,395833 s, 44,875° / 54,266°,
+  bras 48,256 N. Aucun 75°, aucune répétition de l'échec. Prototypes retirés.
+- [ ] Obtenir le transfert durable et le dégagement réel de chaîne avant la
+  suite. Le défaut de prévision n'explique plus l'échec physique.
+  [Preuves et médias](docs/rust-prone-roll-horizon-equivalence-2026-10-11.md).
+
+
+**2026-10-11 cadence courte — question fermée par stagnation physique :**
+
+- [x] Reprendre exactement le troisième cas ; budget600 +60 s, sans build
+  concurrent. Une relance118,109 s murales /13,27083 s physiques ; aucun timeout.
+- [x] Mesurer45,068°/54,388°, bras53,207 N ; décharge20,833 ms seulement,
+  stagnation originale3 s. Aucun jalon75°, aucune répétition d'un échec.
+- [x] Vérifier785 prochains pas exacts et les écarts à quatre pas ; cibles/caps
+  inchangés. Retirer le prototype ; quatre + sept tests, Clippy/format passent.
+- [ ] Soutenir le transfert et acquérir le jalon avant la suite. La cadence seule
+  ne le fait pas ; méthode hors ligne, aucune trajectoire ou commande temps réel
+  qualifiée. [Verdict et médias](docs/rust-prone-roll-cadence-resolution-2026-10-11.md).
+
+**2026-10-11 contrat moteur natif — interface vérifiée, transfert non acquis :**
+
+- [x] Isoler l'inverseur non neutre sur le témoin : 25 sous-pas natifs ; corriger
+  le seul `dt` ne reproduit pas les couples. Réutiliser les audits existants.
+- [x] Vérifier le delta nul exact sur 2 891 pas ; après 10 s, 491 pas témoin et
+  829 pas transfert égalent les prédictions, impulsions moteur comprises.
+- [x] Exécuter le transfert natif : décharge brève, recontact avant la décision,
+  puis stagnation à 13,45417 s, 45,269°/54,729°. Aucun jalon de 75°.
+- [x] Tester une cadence alignée : troisième tentative arrêtée à 120 s murales,
+  sans bilan physique terminal. Budget clos ; prototypes retirés, régression
+  du contrat conservée. Quatre + sept unitaires, replay chargé, Clippy/format OK.
+- [ ] Soutenir réellement le transfert au-delà de l'horizon bref et acquérir
+  l'appui qualifié avant la suite. Aucun couple arbitraire promis, seuil inchangé.
+  [Rapport, limites et médias locaux](docs/rust-prone-roll-native-command-contract-2026-10-11.md).
+
+**2026-10-11 transfert dynamique bras→torse — effet faible, équilibre non franchi :**
+
+- [x] Vérifier le signe moteur enfant et tous les budgets scalaires/vectoriels.
+  Contraction native des huit coins : marge initiale2,274 N à la ceinture X.
+- [x] Rejouer2 891 pas du maintien exact ; rejeter une première conversion au
+  contrôle nul, corriger son terme impliciteD+dt×K, comparer zéro et transfert.
+  Maximum admis2,325 N, gain43,81°/55,36° :+0,11°/+0,22° face au contrôle nul.
+- [x] Mesurer charges et couples réellement livrés ; stagnation originale3 s
+  à12,04583 s, aucun jalon75°. Prototypes retirés, projection pure conservée.
+- [ ] Résoudre le suivi de couple/charge mesuré en conservant un contrôle nul
+  identique au maintien ; la demande virtuelle−JᵀΔF n'est pas une livraison.
+  Aucun seuil à relâcher. Acquérir et répéter le jalon avant la suite du relevage.
+  Quatre histoires46,89583 s physiques/144,20681 s natives, budget clos.
+  [Rapport concis et médias locaux](docs/rust-prone-roll-dynamic-transfer-2026-10-11.md).
+
+**2026-10-11 continuation après recontact — pivot partiel, stagnation mesurée :**
+
+- [x] Continuer au-delà du verdict historique sans le convertir en réussite.
+  2 071 pas identiques au témoin corrigé ; refus d'une nouvelle cible à8,6625 s.
+- [x] Rejouer puis conserver la dernière commande moteur sans reset :68
+  instantanés/plafonds identiques. Roulis43,60°/54,83°, tête/nuque0 N,
+  bras50,96 N ; stabilité partielle3,3125 s, arrêt sur stagnation3 s à12,04583 s.
+- [x] Mesurer moments et charges natifs ; retirer les prototypes, préserver la
+  projection pure. Huit unitaires candidat, sept après retrait ; Clippy/format OK.
+- [ ] Vérifier dynamiquement un transfert bras droit→contact du torse existant.
+  Audit statique :−0,12429 N·m de roulis par N transféré, faible marge actuelle
+  de ceinture X. Budget vectoriel et réponse physique encore non prouvés.
+  Acquérir et répéter75° avant la phase suivante ; relevage non qualifié.
+  Deux histoires20,70833 s physiques/53,64531 s natives ; budget clos.
+  [Rapport, captures et vidéo locales](docs/rust-prone-roll-contact-continuation-2026-10-11.md).
+  Aucun push ni publication ; aucune nouvelle tentative Library réseau bloquée.
+
+**2026-10-11 projection bornée — cible corrigée, suivi physique ouvert :**
+
+- [x] Reproduire exactement les 2 066 pas du témoin et ajouter la régression
+  géométrique sur son état fautif. Bornes actives, sommets et collisions vérifiés ;
+  refus explicite sans copie de référence si non résolu. Aucune racine libre.
+- [x] Conserver le correctif pur et sa fixture exacte ; sept unitaires ciblés,
+  Clippy strict, format passent. Contrôleurs physiques refusés retirés et archivés.
+- [x] Comparer trois histoires bornées, dont un cache prioritaire rejeté puis
+  corrigé. Cas final : ceinture droite0 N, haut du bras35,85 N, tête/nuque0 N,
+  roulis42,19°/51,71° ; recontact0,20 s à8,629 s, encore en mouvement.
+  603 commandes certifiées ; écart natif du bras≈5,15 mm : suivi physique ouvert.
+- [ ] Contrôler la clearance des sommets réellement suivis sous couples existants,
+  ou vérifier le transfert d'un pivot huméral/scapulaire réellement chargé.
+  Aucun assouplissement de seuil. Acquérir et répéter le jalon75° avant la suite.
+  Trois cas25,2125 s physiques/74,150 s natives ; aucun quatrième essai.
+  [Rapport, captures et vidéo locales](docs/rust-prone-roll-bounded-projection-2026-10-11.md).
+  Library inchangée : aucune nouvelle tentative du transport réseau bloqué.
+
+**2026-10-11 chaîne droite — bras libéré, transfert scapulaire ouvert :**
+
+- [x] Reproduire les 3 186 pas du témoin précédent et comparer une seule tâche
+  de chaîne entière ; 1 469 pas initiaux identiques entre les deux histoires.
+- [x] Définir les cinq contacts droits à libérer et vérifier la course articulaire
+  avant l'essai. Exécuter le dégagement : haut du bras et liens distaux à 0 N,
+  tête/nuque déchargées ; chaîne entière libre 2,254 s.
+- [x] Refuser le recontact scapulaire de 0,20 s à 8,608 s : ceinture droite
+  256,25 N, roulis 42,24°/51,80°, encore en mouvement ; jalon 75° non acquis.
+  Isoler une projection laissant des références sous le sol à une borne active.
+  Prototype retiré, deux fichiers et binaire conservés hors code actif.
+- [ ] Coordonner ceinture/épaule/coude avec bornes actives et références réellement
+  admissibles, ou définir un pivot scapulaire puis son transfert de charge.
+  Aucun gain/plafond/seuil à relever. Ensuite acquérir et répéter le latéral/dorsal
+  avant mains/pieds→accroupi→Stand. Deux cas 21,883 s physiques / 71,879 s natives.
+  [Rapport, trois étapes natives et vidéo](docs/rust-prone-roll-arm-release-2026-10-11.md).
+
+**2026-10-11 route latérale — roulis physique partiel et tête déchargée :**
+
+- [x] Exécuter deux histoires C→paumeG→mainD levée→roulis :1 468pas historiques
+  exacts,1 469pas A/B communs ; pression−JᵀF par moteurs sous caps inchangés.
+- [x] Mesurer46,17° bassin/62,34° torse, tête/nuque0N, appui partiel stable3,229s.
+  Jalon75° non acquis ; stagnation3s originale, aucune répétition/transfert.
+- [x] Isoler le blocage : mainD levée mais bras supérieurD porteur390N final,
+  moment opposé à la paumeG ; ceinture scapulaireG proche de28Nm. Prototype
+  retiré du code actif, traces/binaire/média natif archivés en complément.
+- [ ] Dégager effectivement toute la chaîne du brasD, ou définir son pivot et
+  transfert d'efforts ; ensuite acquérir et répéter l'appui latéral/dorsal.
+  Route complète de référence documentée sans racine mondiale libre ; phases
+  suivantes non exécutées. Deux cas20,217s physiques/58,329s natives.
+  [Rapport, route adaptée et vidéo](docs/rust-prone-roll-2026-10-11.md).
+
+**2026-10-11 transfert de charge — essai ciblé clos, tête toujours porteuse :**
+
+- [x] Reproduire exactement le cas02 antérieur sur3 766pas ; comparer un seul
+  candidat IK depuis les articulations mesurées,2 448pas initiaux identiques.
+- [x] Distinguer convergence géométrique, stabilité et reprise du poids : le
+  candidat garde COM/hull + faibles vitesses3,333s mais tête254,71N, brace0s.
+  Initialisation corrigée insuffisante ; candidat retiré du code actif, preuves
+  compactes préservées. Deux histoires31,567s physiques/111,343s natives.
+- [x] Comparer les descriptions primaires HumanUP/Tao/Physitrack ; vidéos externes
+  non visionnées (proxy403). Schéma textuel sourcé et vidéo native A/B fournis.
+- [ ] Définir puis vérifier un transfert d’appui déchargeant tête/nuque/torse sous
+  les plafonds existants. Route latérale/retournement à examiner, non exécutée.
+  Aucun relevage qualifié ; récupération désactivée ; aucune suite complète verte.
+  [Diagnostic, médias et reproduction](docs/rust-head-load-transfer-2026-10-11.md).
+
+**2026-10-11 chaîne physique après compensation — appuis obtenus, brace refusé :**
+
+- [x] Exécuter trois chutes C complètes ;484pas initiaux identiques dans chaque cas.
+- [x] Corriger les références d’appui pour le torse mesuré et les skins natives,
+  gains/plafonds inchangés : six tâches de bras puis montée réellement exécutées.
+  Deux mains portent pendant2,708s consécutives ; tête226,48N, torse0N au cas02.
+- [x] Diagnostiquer l’omission de référence mondiale et tester une correction par
+  réactions des hanches : refus, ajout retiré du code actif et archivé.
+- [ ] Décharger tête/nuque/torse, relever et stabiliser le tronc pendant0,55s.
+  Brace0s sur trois cas ; aucun genou/pied avancé ou relevage qualifié.
+  44,108s physiques/198,024s natives ;4unitaires ciblés,Clippy et format passent.
+  Suite complète non déclarée verte ; récupération désactivée.
+  [Rapport,traces,médias et budget](docs/rust-prone-chain-gravity-2026-10-11.md).
+
+**2026-10-11 audit causal de la levée gauche — correction isolée vérifiée :**
+
+- [x] Auditer IK, coordonnées, repères natifs, signes, limites et couples
+  transmis. Aucun défaut de mapping établi ; contact torse–bras inclus dans
+  le bilan statique (résidu maximal 0,00486 Nm).
+- [x] Comparer deux cas courts avec 1 268 pas identiques. La compensation
+  gravitaire par moteurs reprend la même tâche : 99,95 → 24,35 mm,
+  seuil 50 mm franchi en 187,5 ms, gains/plafonds inchangés. Deux cas seuls,
+  11,57 s physiques / 38,29 s natives ; aucune nouvelle trajectoire.
+- [x] Conserver sources/binaires exacts, traces A/B et médias ; retirer du
+  banc vivant les phases suivantes rejetées/non vérifiées. Correctif opt-in
+  de diagnostic uniquement. [Rapport et preuves](docs/rust-left-hand-command-audit-2026-10-11.md).
+- [ ] Acquérir des appuis utiles puis décharger tête/torse : B termine encore
+  avec tête 143,5 N, torse 212,0 N, aucune main gauche porteuse et brace 0 s.
+  Aucun passage latéral, transfert ou relevage qualifié par ce suivi.
+
+**2026-10-11 sortie du repos ventral — candidat refusé :**
+
+- [ ] Décharger réellement la tête puis relever le tronc sur des membres porteurs.
+  Un cas C complet reproduit exactement les 484 pas jusqu’au repos, puis
+  lève la main gauche dans le même monde. Arrêt à 5,283 s sur stagnation
+  originale 3 s : résidu main 100 mm, tête 139 N, aucun défaut d’intégrité.
+  Ni passage latéral, ni montée du torse, ni station debout exécutés.
+- [x] Traiter la déflexion de la première levée sous les plafonds existants :
+  correction et résultat isolé décrits dans l’audit causal ci-dessus.
+  Les transitions suivantes restent ouvertes. Prototype complet rejeté
+  conservé dans l’archive historique.
+  [Preuves, coûts et médias](docs/rust-prone-brace-attempt-2026-10-11.md).
+
+**2026-10-11 C framing and ground continuation:**
+
+- [x] Separate the thigh-support corridor refusal from general recovery and
+  numerical integrity. Replay 373 original steps exactly, then observe a single
+  continuation to prone rest at 2.017 s; no physical guard fails.
+- [x] Preserve the original negative test and the invalid early-stop invocation;
+  keep costs, actual contacts, energy, unchanged caps and annotated media.
+  [Framing audit and next decision](docs/rust-c-framing-continuation-2026-10-11.md).
+- [ ] Examine brace preparation from this integrated ground state: reposition
+  palms, acquire real arm support, unload the head, then raise the torso.
+  Reach, collisions and dynamic load transfer remain unverified. No new
+  movement or gain trial has been executed.
+- [ ] Use phase-specific support eligibility and unchanged final standing gates;
+  a transient thigh/trunk contact alone must not terminate general recovery.
+  The earlier 0.55 s tibia corridor target remains a separate subproblem.
+
+**2026-10-11 controlled descent before hand impact:**
+
+- [x] Audit actual A/B kinetic/gravity energy, approximate delivered motor work
+  and resolved support before impact; freeze one tibia-first hypothesis/budget.
+- [x] Prescreen the algebraic coordinated leg/trunk path and execute one native C.
+  Tibias touch37.5ms earlier, but matched-time energy is unchanged and their
+  resultant accelerates COM forward. C fails on persistent thigh support at1.554s.
+  [Energy, contact forces, video and bounded result](docs/rust-controlled-descent-2026-10-11.md).
+- [ ] Obtain genuine0.55s intermediate stability; only then repeat fresh/60°
+  before any onward hand/foot transfer. No geometric or transient-load success.
+- [ ] Certify support and whole-body momentum during descent with native
+  prediction; joint-reference tracking and static terminal feasibility leave
+  the real toe pivot uncontrolled. No new gain/pose campaign or global
+  mechanical-impossibility claim follows this single refusal.
+
+**2026-10-11 strategic review — next discriminating experiment:**
+
+- [x] Audit the actual 25-program scope: fixed arms, shallow sagittal waypoints,
+  foot-only contact guard and extra quiet-before-rise gate. No anatomical
+  impossibility follows.
+- [x] Audit native arm/trunk authority: motorized contact-capable arms, but no
+  new hand preparation in Stand, a late floor-reach proxy and position-only IK.
+- [x] Choose an explicitly supported hands/shins → half-kneel → feet → rise
+  route; record observations, hypotheses and strict abort gates in the
+  [strategic decision](docs/rust-recovery-strategy-review-2026-10-11.md).
+- [x] With Sol, construct and freeze the descent corridor; compare identical
+  leg/trunk commands with reference versus prepared arms. Two native trials
+  fail on head support at 1.596/1.617 s; no success repeats or onward transfer.
+  [Native hand-support experiment](docs/rust-hand-support-experiment-2026-10-11.md).
+- [ ] Prove actual stable intermediate support before implementing onward
+  transfers. Preserve native thresholds, capped effort and final qualification;
+  do not infer success from IK or repeat a gain/waypoint sweep.
+- [ ] Establish a dynamically supported descent before first hand impact:
+  prepared arms track their commands, but the COM arrives descending at 2 m/s
+  and loaded elbows collapse at their capped effort. Advancing the same terminal
+  arms worsens measured reach; no arbitrary timing/cap sweep is justified.
+
+**2026-10-11 offline trajectory planning (local, bounded search completed; physical recovery unresolved):**
+
+- [x] Reject the heavy per-substep correction for recovery and interactive cost;
+  archive its source/binary/actual334-step refusal, remove its control hook.
+- [x] Define complete mechanical pivot/recenter/rise/hold sequences, bounded
+  trajectory variables, native physical objective and independent validation
+  in [offline plan](evidence/offline-trajectory-2026-10-11/PLAN.md).
+- [x] Implement offline native full-trajectory search with Sol, fixed gains,
+  strict caps, deterministic cache and maximum48 evaluations/600s.
+- [x] Compare inherited effort allocation: actual owner clipping is measured;
+  strict capped owner allocation changes motion but does not stabilize transfer.
+- [x] Complete the bounded family evaluation and an independent best-trajectory replay;
+  save physical traces, total cost, labelled visual and portable source backup.
+- [x] Reject 25 distinct B programs for unintended persistent head/torso support;
+  zero stable substeps/rise. Preserve A contact-mode bug, exact B replay/cache
+  and distinguish bounded failure from mechanical impossibility.
+- [ ] Demonstrate stable transfer/rise; only then extract a lightweight recipe
+  and continue independent heading/ordinary-hold/cycle qualification.
+
+**2026-10-11 native control implementation (local, unqualified):**
+
+- [x] Replace serialized research cloning with a faithful direct native clone;
+  preserve exact positions, rotations and velocities of all 25 bodies.
+- [x] Identify coupled motor response, bound command search and validate each
+  proposal with the original physical guards on a fresh clone.
+- [ ] Verify several real steps, supported transfer and rise, measuring
+  computation cost and safe refusal; save labelled evidence at each milestone.
+
+- [x] Verify exact first predictions over several actual steps and original
+  support-loss refusal; archive rejected trajectories and source/binary versions.
+- [ ] Consistently allocate capped effort for the native target owner; prove
+  capture, supported transfer and rise before production adoption.
+  [Native implementation report](docs/rust-native-control-2026-10-11.md).
+
+- [x] Isolate native actuation on matched states: exact command replay,
+  controlled target perturbations, motor-off/direct-torque/PGS controls,
+  vector impulse sign audit and exact cloned-native predictions.
+- [x] Test a local command correction: actual right forefoot braking under
+  unchanged caps; preserve rejected exact-rate bisection and all evidence.
+- [x] Implement the native prediction/identification architecture with Sol
+  using [handoff](evidence/native-actuation-audit-2026-10-11/HANDOFF-SOL.md),
+  validate critical states before another long recovery attempt.
+
+**2026-10-10 recovery system diagnosis (local, unqualified):** stop phase/gain
+trial-and-error. See [mechanical plan and evidence](docs/rust-recovery-system-diagnosis-2026-10-10.md).
+
+- [x] Reproduce the pristine crouch failure; retain deterministic 240 Hz traces
+  at 0 and 60 degrees and distinguish resolved contacts from geometric support.
+- [x] Find a gravity-balanced flat-sole branch within canonical joint/torque
+  limits; keep this separate from full trajectory feasibility.
+- [x] Inspect all 41 sampled poses with native geometry (zero overlaps/limit
+  excess), and compare three native holds: low pose drifts; middle/high fall.
+- [x] Discriminate gravity compensation, toe reserve and full contact-wrench
+  feasibility; preserve rejected native trials and a labelled Library visual.
+- [x] Couple accelerations, six-component wrench and torque allocation: three
+  prepared holds reach 7 s; yaw drift is reduced. Actual crouch routes still fail.
+- [x] Audit the full-body QP refusal at 37.5 ms: two amplified redundant-contact
+  directions cause the refusal; same Rust solver succeeds with 16 independent rows.
+  See [bounded causal audit](docs/rust-recovery-constraint-audit-2026-10-11.md).
+- [x] Compare independent/deduplicated rows in the actual 32-pass pipeline with
+  strict native cap rounding: both repeatable runs stop at 66.67 ms, before 100 ms.
+  See [native failure classification](docs/rust-recovery-native-constraints-2026-10-11.md).
+- [x] Verify a general bounded unilateral contact-mode experiment in the native
+  pipeline: two identical 100 ms trajectories acquire hindfoot support; at
+  183.33 ms a left heel contact appears but a feasible QP reaches its optimizer
+  limit. See [hybrid-contact evidence](docs/rust-recovery-hybrid-contact-modes-2026-10-11.md).
+- [x] Consolidate a general QP backend against every archived exact refused
+  but feasible matrix, with original-unit primal/dual/KKT certificates,
+  deterministic bounded termination and native/WASM runtime/performance evidence.
+  Reject uncertified solutions; retain infeasible/unknown labels separately.
+  Evidence: 458 exact problems, 42 KKT/416 Farkas, native/WASM parity,
+  repeated native vectors, full two-stage call costs; no physical success.
+- [x] Preserve two final 100 ms native trials as a non-regression and attempt
+  the full 25-second initial-to-standing rollout through unchanged physical gates.
+  Resolve numerical refusals before asserting a genuine mechanics blockage;
+  bilateral heels, recentering and recovery remain unqualified.
+  Final all-subset/two-stage run reaches a certified local inverse-dynamics
+  obstruction: right forefoot closes on its 45-degree limit at 10.49 rad/s,
+  with its original 35 Nm cap and aggregate 760 Nm. Both final 100 ms
+  reports are byte-identical; full recovery remains unresolved.
+- [ ] Repair predictor/actuation fidelity: commanded toe braking is negative
+  while actual toe velocity rises; verify native delivered motion before
+  claiming feet-only impossibility or requiring hands/knees.
+- [ ] Solve the complete initial-to-standing contact sequence with dynamics,
+  joint limits, compressive frictional contact and the unchanged 760 Nm budget;
+  compare feet-only and intermediate-support routes only when discriminated.
+- [ ] Execute the complete route with measured contact transitions and bounded
+  effort, then pass the unchanged recovery/handoff/stability contract.
+- [ ] Repeat headings/fixtures, update evidence and visuals, and complete broader
+  regression/browser qualification. Recovery remains disabled by default.
 
 **2026-10-09 strict stepping repaired:** the frozen native matrix now passes
 **9/9**, with two verified reversal steps and stable finishes for every fixture.

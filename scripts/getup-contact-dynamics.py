@@ -1,0 +1,159 @@
+#!/usr/bin/env python3
+"""Measured-state floating-base dynamics for ordinary GetUp motor probes.
+No dynamics are integrated here; contact/stop forces are optimization variables.
+"""
+import importlib.util
+from pathlib import Path
+import numpy as np
+from scipy.spatial.transform import Rotation
+from scipy.optimize import minimize, LinearConstraint, Bounds
+from scipy.spatial import ConvexHull,QhullError
+
+ROOT=Path(__file__).resolve().parents[1]
+s=importlib.util.spec_from_file_location('reference',ROOT/'scripts/getup-step-reference.py')
+reference=importlib.util.module_from_spec(s);s.loader.exec_module(reference)
+
+
+def normalized_rotation(r):return r/np.cbrt(np.linalg.det(r))
+def skew(v):return np.array([[0.,-v[2],v[1]],[v[2],0.,-v[0]],[-v[1],v[0],0.]])
+def support_projection(points,point):
+    """Closest point in the actual solved-contact x/z hull, no added margin."""
+    points=np.unique(np.asarray(points,dtype=float),axis=0);point=np.asarray(point,dtype=float)
+    assert len(points)
+    if len(points)==1:return points[0],float(np.linalg.norm(point-points[0]))
+    try:
+        hull=ConvexHull(points)
+        if max(hull.equations[:,:2]@point+hull.equations[:,2])<=1e-10:return point.copy(),0.
+        vertices=points[hull.vertices]
+    except QhullError:
+        distances=np.sum((points[:,None]-points[None,:])**2,axis=2);a,b=np.unravel_index(np.argmax(distances),distances.shape);vertices=points[[a,b]]
+    best=None
+    for a,b in zip(vertices,np.roll(vertices,-1,axis=0)):
+        delta=b-a;t=np.clip((point-a)@delta/max(1e-20,delta@delta),0,1);candidate=a+t*delta;distance=np.linalg.norm(point-candidate)
+        if best is None or distance<best[1]:best=(candidate,float(distance))
+    return best
+
+
+class ContactDynamics:
+    def __init__(self,model,contact_mode='normal-soft'):
+        self.kin=reference.Kinematics(model);self.parts=model['segments'];self.by_id={p['id']:p for p in self.parts}
+        self.mass=model['totalMassKg'];self.gears=self.kin.gears;self.armature=np.zeros(21);self.spring=np.zeros(21);self.damping=np.zeros(21)
+        self.ancestors={}
+        for p in self.parts:
+            ancestors=[] if p['parent'] is None else self.ancestors[p['parent']].copy()
+            h=p['reference'].get('hinge')
+            if h:
+                i=h['qposIndex'];ancestors.append(i);self.armature[i]=h['armature'];self.spring[i]=p['jointProfile']['axes'][0]['passiveStiffnessNmPerRad'];self.damping[i]=p['jointProfile']['axes'][0]['dampingNmsPerRad']
+            self.ancestors[p['id']]=ancestors
+        self.previous=None;self.contact_mode=contact_mode
+    def geometry(self,q,root):
+        poses=self.kin.forward(q,root);axes=np.zeros((21,3));pivots=np.zeros((21,3))
+        for p in self.parts[1:]:
+            h=p['reference'].get('hinge')
+            if h:
+                parent=poses[p['parent']];rot=normalized_rotation(parent[:3,:3]);frame=self.kin.parent_frames[p['id']];i=h['qposIndex']
+                axes[i]=rot@normalized_rotation(frame[:3,:3])[:,0];pivots[i]=parent[:3,3]+rot@frame[:3,3]
+        return poses,axes,pivots,root[:3,3]
+    def point_jacobian(self,geometry,body,point):
+        poses,axes,pivots,rootpos=geometry;jv=np.zeros((3,27));jw=np.zeros((3,27));jv[:,:3]=np.eye(3);jv[:,3:6]=-skew(point-rootpos);jw[:,3:6]=np.eye(3)
+        for i in self.ancestors[body]:jv[:,6+i]=np.cross(axes[i],point-pivots[i]);jw[:,6+i]=axes[i]
+        return jv,jw
+    def body_data(self,geometry):
+        result=[]
+        for p in self.parts:
+            if p['massKg']==0:continue
+            pose=geometry[0][p['id']];rot=normalized_rotation(pose[:3,:3]);com=pose[:3,3]+pose[:3,:3]@reference.xyz(p['goldenMass']['centerOfMass']);jv,jw=self.point_jacobian(geometry,p['id'],com)
+            result.append((p['id'],p['massKg'],com,rot@np.array(p['goldenMass']['inertia'])@rot.T,jv,jw))
+        return result
+    def state(self,observation,snapshot,diagnostic):
+        obs=np.array(observation);q=obs[:21];root=reference.transform(snapshot['segments'][0]['position'],snapshot['segments'][0]['rotation']);rot=normalized_rotation(root[:3,:3]);v=np.r_[obs[[41,42,40]],rot@obs[[44,45,43]],obs[46:67]]
+        geom=self.geometry(q,root);data=self.body_data(geom);eps=1e-5;root2=root.copy();root2[:3,3]+=v[:3]*eps;root2[:3,:3]=Rotation.from_rotvec(v[3:6]*eps).as_matrix()@root[:3,:3]
+        geom2=self.geometry(q+v[6:]*eps,root2);data2=self.body_data(geom2);M=np.zeros((27,27));bias=np.zeros(27);Jcom=np.zeros((3,27));com=np.zeros(3);com_bias=np.zeros(3)
+        for (_,mass,point,I,jv,jw),(_,_,_,_,jv2,jw2) in zip(data,data2):
+            av=(jv2-jv)@v/eps;aw=(jw2-jw)@v/eps;omega=jw@v;M+=mass*jv.T@jv+jw.T@I@jw;bias+=jv.T@(mass*(av+np.array([0.,9.81,0.])))+jw.T@(I@aw+np.cross(omega,I@omega));Jcom+=mass*jv;com+=mass*point;com_bias+=mass*av
+        M[6:,6:]+=np.diag(self.armature);bias[6:]+=self.spring*q+self.damping*v[6:];bias[3:6]+=.1*v[3:6];Jcom/=self.mass;com/=self.mass;com_bias/=self.mass
+        contacts=[]
+        for foot in diagnostic['contactMotion']['feet']:
+            if foot['loadN']<3.:continue
+            for c in foot['contacts']:
+                if c['normalImpulseNs']<=0:continue
+                point=reference.xyz(c['point']);normal=reference.xyz(c['normal']);normal/=np.linalg.norm(normal);tangent=np.cross(normal,[0.,0.,1.]);tangent/=np.linalg.norm(tangent);basis=np.column_stack([tangent,np.cross(normal,tangent),normal]);jv,_=self.point_jacobian(geom,foot['body'],point)
+                local=np.linalg.solve(geom[0][foot['body']],np.r_[point,1.]);point2=(geom2[0][foot['body']]@local)[:3];jv2,_=self.point_jacobian(geom2,foot['body'],point2)
+                contacts.append(dict(body=foot['body'],point=point,basis=basis,J=jv,bias=(jv2-jv)@v/eps,velocity=jv@v,observedVelocity=reference.xyz(c['velocityMps']),measuredNormalN=c['normalImpulseNs']*800.))
+        return dict(q=q,root=root,v=v,M=M,bias=bias,Jcom=Jcom,com=com,comVelocity=Jcom@v,comBias=com_bias,contacts=contacts,geometry=geom,geometryNext=geom2,directionalEpsilon=eps,
+            comParityErrorM=float(max(abs(com-reference.xyz(diagnostic['com'])))),comVelocityParityErrorMps=float(max(abs(Jcom@v-reference.xyz(diagnostic['comVelocity'])))),contactVelocityParityErrorMps=max((float(max(abs(c['velocity']-c['observedVelocity']))) for c in contacts),default=0.))
+    def solve(self,state,target_com,target_rotation,posture,unload_left=False,swing=None):
+        q=state['q'];v=state['v'];contacts=state['contacts'];nc=len(contacts);assert nc>0
+        active=[]
+        for i,(low,high) in enumerate(self.kin.limits):
+            if swing is not None and i==(13 if swing['body']=='left_foot' else 7) and not any(c['body']==swing['body'] for c in contacts):continue
+            if abs(v[6+i])>.05:continue
+            if abs(q[i]-low)<=1e-4 and v[6+i]<=.01:active.append((i,1.,low))
+            elif abs(q[i]-high)<=1e-4 and v[6+i]>=-.01:active.append((i,-1.,high))
+        n=48+3*nc+len(active);F=self.mass*9.81;A=np.zeros((27,n));A[:,:27]=state['M'];A[6:,27:48]=-np.diag(self.gears)
+        for k,c in enumerate(contacts):A[:,48+3*k:51+3*k]=-c['J'].T@c['basis']*F
+        for k,(i,sign,_) in enumerate(active):A[6+i,48+3*nc+k]=-sign*self.gears[i]
+        row_scale=np.r_[np.full(3,F),np.full(3,40.),self.gears];eq=[A/row_scale[:,None]];rhs=[-state['bias']/row_scale]
+        for c in contacts:
+            axes=np.eye(3) if self.contact_mode=='hard-sticking' else c['basis'][:,2:3].T
+            row=np.zeros((len(axes),n));row[:,:27]=axes@c['J'];eq.append(row);rhs.append(axes@(-c['bias']-20*c['velocity']))
+        for i,sign,bound in active:
+            row=np.zeros((1,n));row[0,6+i]=1.;eq.append(row);rhs.append(np.array([-20*v[6+i]-100*(q[i]-bound)]))
+        E=np.vstack(eq);b=np.concatenate(rhs)
+        # Multiple material points on one rigid foot contain a redundant row.
+        # Remove only numerical row dependence, retain the original residual.
+        U,singular,_=np.linalg.svd(E,full_matrices=False);rank=sum(singular>1e-8)
+        Er=U[:,:rank].T@E;br=U[:,:rank].T@b
+        dependent_error=float(max(abs(b-U[:,:rank]@br)))
+        assert dependent_error<1e-4,dependent_error
+        tasks=[];targets=[]
+        def task(j,desired,weight):
+            row=np.zeros((len(desired),n));row[:,:27]=j;tasks.append(row*weight);targets.append(np.asarray(desired)*weight)
+        if swing is not None:
+            foot=swing['body'];pose=state['geometry'][0][foot];pose2=state['geometryNext'][0][foot];jv,jw=self.point_jacobian(state['geometry'],foot,pose[:3,3]);jv2,jw2=self.point_jacobian(state['geometryNext'],foot,pose2[:3,3]);eps=state['directionalEpsilon']
+            linear_bias=(jv2-jv)@v/eps;angular_bias=(jw2-jw)@v/eps
+            acceleration=100*(np.array(swing['position'])-pose[:3,3])+20*(np.array(swing.get('velocity',[0.,0.,0.]))-jv@v)+np.array(swing.get('acceleration',[0.,0.,0.]))
+            task(jv,np.clip(acceleration,-2.,2.)-linear_bias,20.)
+            rotation=normalized_rotation(pose[:3,:3]);error=.5*sum(np.cross(rotation[:,i],swing['rotation'][:,i]) for i in range(3))
+            task(jw,50*error-12*(jw@v)-angular_bias,2.)
+        if self.contact_mode=='normal-soft':
+            for c in contacts:
+                tangents=c['basis'][:,:2].T
+                task(tangents@c['J'],tangents@(-c['bias']-20*c['velocity']),10.)
+        desired_com=np.clip(9*(target_com-state['com'])-6*state['comVelocity'],-.3,.3)
+        # COM balance outranks swing tracking: exact-state replay of batch08
+        # shows weight10 sacrifices braking while all motor caps remain slack.
+        task(state['Jcom'],desired_com-state['comBias'],100.)
+        R=normalized_rotation(state['root'][:3,:3]);err=.5*sum(np.cross(R[:,i],target_rotation[:,i]) for i in range(3));jrot=np.zeros((3,27));jrot[:,3:6]=np.eye(3)
+        task(jrot,25*err-10*v[3:6],2.)
+        jpost=np.zeros((21,27));jpost[:,6:]=np.eye(21);task(jpost,np.clip(16*(posture-q)-8*v[6:],-5.,5.),.15)
+        B=np.vstack(tasks);d=np.concatenate(targets);H=B.T@B+np.eye(n)*1e-6;g=-B.T@d
+        if unload_left:
+            row=np.zeros(n)
+            for k,c in enumerate(contacts):
+                if c['body']=='left_foot':row[50+3*k]=1.
+            H+=25.*float(unload_left)**2*np.outer(row,row)
+        H[27:48,27:48]+=np.eye(21)*.01
+        for k,c in enumerate(contacts):
+            H[48+3*k:51+3*k,48+3*k:51+3*k]+=np.eye(3)*.005;g[50+3*k]-=.005*c['measuredNormalN']/F
+        lo=np.full(n,-50.);hi=np.full(n,50.);lo[:3]=-2.;hi[:3]=2.;lo[3:6]=-10.;hi[3:6]=10.
+        offset=q-self.kin.nominal+.2*v[6:];lo[27:48]=np.maximum(-.9,-1.-offset);hi[27:48]=np.minimum(.9,1.-offset)
+        for i,(lower,upper) in enumerate(self.kin.limits):
+            if i in [row[0] for row in active]:continue
+            # Constant-acceleration 25ms reachability guard; actual Native
+            # unilateral limits remain authoritative, not replaced by this QP.
+            lo[6+i]=max(lo[6+i],2*(lower-q[i]-.025*v[6+i])/.025**2)
+            hi[6+i]=min(hi[6+i],2*(upper-q[i]-.025*v[6+i])/.025**2)
+        for k in range(nc):lo[48+3*k:51+3*k]=[-2.,-2.,0.];hi[48+3*k:51+3*k]=[2.,2.,2.]
+        lo[48+3*nc:]=0.;hi[48+3*nc:]=5.
+        inequalities=[]
+        for k in range(nc):
+            for a in [0,1]:
+                for sign in [-1,1]:
+                    row=np.zeros(n);row[48+3*k+a]=sign;row[50+3*k]=-.7;inequalities.append(row)
+        C=np.array(inequalities);constraints=[LinearConstraint(Er,br,br),LinearConstraint(C,-np.inf,0.)]
+        start=np.clip(np.zeros(n) if self.previous is None or len(self.previous)!=n else self.previous,lo,hi)
+        result=minimize(lambda z:.5*z@H@z+g@z,start,jac=lambda z:H@z+g,bounds=Bounds(lo,hi),constraints=constraints,method='SLSQP',options={'maxiter':80,'ftol':1e-8,'disp':False})
+        z=result.x;eq_error=float(max(abs(E@z-b)));friction_error=float(max(C@z));bounds_error=float(max(np.max(lo-z),np.max(z-hi)));self.previous=z
+        motor=z[27:48]*self.gears;raw=offset+motor/self.gears;represented=np.clip(raw,-1.,1.);predicted=self.gears*np.clip(self.kin.nominal+represented-q-.2*v[6:],-1.,1.)
+        return represented,dict(success=bool(result.success and eq_error<1e-4 and friction_error<1e-6 and bounds_error<1e-6),optimizerMessage=str(result.message),optimizerSuccess=bool(result.success),boundsError=bounds_error,constraintFeasible=bool(eq_error<1e-4 and friction_error<1e-6 and bounds_error<1e-6),equalityError=eq_error,dependentEqualityError=dependent_error,frictionError=friction_error,desiredComAcceleration=desired_com.tolist(),achievedComAcceleration=(state['Jcom']@z[:27]+state['comBias']).tolist(),qdd=z[:27].tolist(),motorTorquesNm=motor.tolist(),predictedRepresentedTorquesNm=predicted.tolist(),maximumTorqueRepresentationErrorNm=float(max(abs(predicted-motor))),plannedContactForcesWorldN=[(c['basis']@z[48+3*k:51+3*k]*F).tolist() for k,c in enumerate(contacts)],activeStops=[dict(qpos=i,sign=sign,reactionNm=float(z[48+3*nc+k]*self.gears[i])) for k,(i,sign,_) in enumerate(active)],maximumMotorFraction=float(max(abs(motor/self.gears))))

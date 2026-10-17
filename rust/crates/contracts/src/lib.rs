@@ -1,12 +1,12 @@
 //! Tick-indexed, generation-isolated commands and immutable observations.
-use lh_model::{Pose, Vec3};
+use lh_model::{Pose, Quat, Vec3};
 use serde::{Deserialize, Serialize};
 use std::collections::BTreeMap;
 
 pub const SCHEMA_VERSION: u16 = 4;
-pub const TICK_HZ: u32 = 60;
-pub const SUBSTEPS: u32 = 4;
-pub const SUBSTEP_S: f32 = 1.0 / 240.0;
+pub const TICK_HZ: u32 = 40;
+pub const SUBSTEPS: u32 = 20;
+pub const SUBSTEP_S: f32 = 1.0 / 800.0;
 pub const MAX_QUEUED_COMMANDS: usize = 128;
 pub const MAX_FUTURE_TICKS: u64 = 120;
 pub const MAX_ADVANCE_TICKS: u32 = 4;
@@ -180,6 +180,8 @@ pub struct Contact {
 }
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
 pub struct Diagnostics {
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub getup: Option<GetUpObservation>,
     /// None until the actual runtime path supplies a timing measurement.
     pub controller_ms: Option<f64>,
     pub update_ms: Option<f64>,
@@ -206,6 +208,42 @@ pub struct Diagnostics {
     pub max_limit_error_rad: f32,
 }
 #[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct GetUpObservation {
+    pub controller: String,
+    pub learned_policy_loaded: bool,
+    pub source_bodies: u32,
+    pub coordinate_frames: u32,
+    pub active_hinges: u32,
+    pub joint_angles_rad: Vec<f32>,
+    pub joint_velocities_radps: Vec<f32>,
+    pub motor_controls: Vec<f32>,
+    pub physics_step_s: f32,
+    pub policy_step_s: f32,
+    pub observation: Vec<f32>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub policy: Option<GetUpPolicyObservation>,
+}
+#[derive(Debug, Clone, Default, Serialize, Deserialize)]
+pub struct GetUpPolicyObservation {
+    pub phase: String,
+    pub started_at_s: Option<f64>,
+    pub since_impact_s: Option<f64>,
+    pub forecast_substeps: u32,
+    pub teacher_decisions: u32,
+    pub teacher_max_head_height_m: f32,
+    pub teacher_terminal_reached: bool,
+    pub reference_seed_matches_real: bool,
+    pub reference_frames: u32,
+    pub reference_index: u32,
+    pub policy_decisions: u32,
+    pub reference_tracking_error_rad: f32,
+    pub reference_com_error_m: f32,
+    pub actual_head_height_m: f32,
+    pub stable_standing_s: f64,
+    pub prototype_standing_passed: bool,
+    pub refusal: Option<String>,
+}
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct MotorDelivery {
     pub segment: u8,
     pub axis_abs_impulse_nm_s: [f32; 3],
@@ -215,6 +253,12 @@ pub struct MotorDelivery {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct RecoveryObservation {
     pub phase: String,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub arm_transfer: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub roll_coordination: Option<RollCoordinationObservation>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub first_phase: Option<FirstPhaseObservation>,
     pub elapsed_s: f32,
     pub phase_time_s: f32,
     pub qualified_time_s: f32,
@@ -224,6 +268,32 @@ pub struct RecoveryObservation {
     pub retries: u32,
     pub last_retry: Option<String>,
     pub progress: f32,
+}
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct FirstPhaseObservation {
+    pub complete: bool,
+    pub release_ready: bool,
+    pub blocked_reason: Option<String>,
+    pub retained_load_n: f32,
+    pub required_retained_load_n: f32,
+    pub center_of_mass_inside_support: bool,
+    pub capture_inside_support: bool,
+    pub arm_load_n: f32,
+    pub arm_clearance_m: f32,
+    pub fold_error_rad: f32,
+    pub center_of_mass_speed_mps: f32,
+    pub max_body_and_arm_linear_mps: f32,
+    pub max_body_and_arm_angular_radps: f32,
+    pub eligible: bool,
+    pub qualified_s: f32,
+    pub hold_valid_s: f32,
+}
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct RollCoordinationObservation {
+    pub pelvis_target: Option<Quat>,
+    pub support_legs: [bool; 2],
+    pub released_legs: [bool; 2],
+    pub max_contact_error_m: Option<f32>,
 }
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct TerrainObservation {
@@ -264,7 +334,7 @@ pub struct Snapshot {
 /// A received high sequence closes all lower sequences. Duplicates never replay.
 /// Paused/hidden time has no simulation tick; lifecycle commands use the current
 /// boundary. Resets increment generation, clear pending intent, and restart tick 0.
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Timeline {
     pub generation: u64,
     pub tick: u64,

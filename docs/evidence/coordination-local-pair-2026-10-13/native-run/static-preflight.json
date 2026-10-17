@@ -1,0 +1,34 @@
+{
+  "schema": 1,
+  "scope": "static runner preflight; no worker started",
+  "executeRequested": true,
+  "physicalIntegrations": 0,
+  "binary": "/workspace/LaboratoireHumain/rust/target/release/deps/coordination_local_pair_worker-bf2c98f759d9dc34",
+  "binarySha256": "c1c8a12825428758643a7f6e2fafb0a2710f7dca787c1daee07c27ec59849e9c",
+  "manifestPath": "/workspace/LaboratoireHumain/docs/evidence/coordination-local-pair-2026-10-13/manifest.json",
+  "manifestSha256": "2fbcb3db0cd1bccf14082e772b1efba63e567fe7fce35ed8cccbbbf2ac2cdde9",
+  "inputs": {
+    "programPath": "/workspace/LaboratoireHumain/docs/evidence/coordination-prototype-2026-10-12/continuation-candidate-program.json",
+    "tasksPath": "/workspace/LaboratoireHumain/docs/evidence/coordination-prototype-2026-10-12/continuation-tasks.json"
+  },
+  "budgetId": "33c9dd5f-73f2-472a-a2eb-b866ae7c9f2b",
+  "budgetStatus": "preparing",
+  "protocolMode": "local-pair",
+  "historyOrder": [
+    "A",
+    "B"
+  ],
+  "maximumNativeSteps": 78736,
+  "budgetCounters": {
+    "preparationActiveSeconds": 28489,
+    "staticInspections": 9173,
+    "reservedNativeSteps": 0,
+    "reservedPredictionAndVerificationSteps": 0,
+    "reservedVerificationSteps": 0,
+    "actualNativeStepsKnown": 0,
+    "actualNativeStepsExact": true,
+    "unreportedReservedNativeSteps": 0,
+    "actualNativeStepsLowerBound": 0,
+    "actualNativeStepsUpperBound": 0
+  }
+}

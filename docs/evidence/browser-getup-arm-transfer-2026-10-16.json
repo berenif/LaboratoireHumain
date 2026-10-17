@@ -1,0 +1,257 @@
+{
+  "status": "closed",
+  "authorization": "Continue targeted trapped-arm unloading/repositioning and validate complete recovery; one fixed candidate history",
+  "startedUtc": "2026-10-16T11:57:35.191968+00:00",
+  "priorClosedRecord": "docs/evidence/browser-getup-roll-fix-2026-10-16.json",
+  "priorClosedRecordSha256": "a4b30ca88767c9fbedce52dfa0090800e97117e264cdf5db27d16980317ecdfd",
+  "sourceBase": "7d722649a30c3add4ff8543ecb2a45e63d2b329f",
+  "candidateCommit": "4445d26740c93d27e8f91612b96f84383fb0f8c4",
+  "nativeChargedBefore": 167508,
+  "nativeReservation": 6960,
+  "nativeChargedAfter": 174468,
+  "nativeCeiling": 300000,
+  "wallChargedBeforeSeconds": 946.3282942940032,
+  "wallReservationSeconds": 180,
+  "wallChargedAfterSeconds": 1126.3282942940032,
+  "wallCeilingSeconds": 7200,
+  "maximumHistories": 1,
+  "maximumSimulatedSeconds": 29,
+  "forecasts": 0,
+  "launchRetries": 0,
+  "refund": false,
+  "inputs": {
+    "rust/crates/sim/src/recovery.rs": "4da9f914c3f0e57970cd5ff8d109537a5eb344ce60f10fbe068d060cdc3abaa0",
+    "rust/crates/sim/src/recovery/roll_arm.rs": "a074d9680b884a484baac1e8fadcc45667ae9276a3096e4b8ddd427fa8b3c231",
+    "rust/crates/sim/src/lib.rs": "54c832faeb3d9ca379df6b843865a3a6e0b43df9d4846832b59e17c3dc8243b1",
+    "rust/crates/contracts/src/lib.rs": "94af741b11c87bc360bd67c8d82d3c3da03fc5daa2f08c61928768d1beedef95",
+    "rust/dist/app/lh_worker_bg.wasm": "a6e32d3f951136ee929aef2338a5999611ae5b86bd4df66049930a5b6f446b9d",
+    "outputs/browser-getup-arm-transfer-2026-10-16/observe.mjs": "d88ee12c2e31da8d4bb31119f537f6df5f232fd7a516ee3cedc8e6affa90b2a6"
+  },
+  "checksBeforeLaunch": {
+    "pureRustTestsPassed": 6,
+    "toolingTestsPassed": 55,
+    "browserBuild": true,
+    "experimentalCheckIsolatedTrackedSources": true,
+    "originalExperimentalCheck": "blocked by existing untracked material_contact_attribution.rs referencing missing material_contact_attribution_tests.rs"
+  },
+  "hypothesis": "Measured back support permits a loaded-side arm fold before resuming the roll. Arm motion advances only while the whole-arm exclusion passes unchanged load and capture thresholds. Actual arm clearance gates resumed roll.",
+  "success": "Recovery completes within 25 seconds after impact and meets unchanged 1-second standing stability; Brace and later phases must be observed",
+  "stop": "One history ends at integrity failure, 29 simulated seconds or 180 wall seconds; no retry or candidate variants",
+  "finishedUtc": "2026-10-16T11:59:55.028Z",
+  "nativeActualSteps": 6960,
+  "wallActualSeconds": 139.571173542,
+  "fullRecovery": false,
+  "braceReached": false,
+  "qualification": false,
+  "phases": [
+    "Roll"
+  ],
+  "armStages": [
+    {
+      "stage": "right:BackSupport",
+      "time": 4.666666666666667
+    },
+    {
+      "stage": "right:Fold",
+      "time": 5.133333333333334
+    }
+  ],
+  "final": {
+    "tick": 1740,
+    "time": 29,
+    "motion": "Recovering",
+    "counters": {
+      "strikes": 1,
+      "falls": 1,
+      "recoveries": 0,
+      "steps": 0,
+      "upright_ticks": 136
+    },
+    "recovery": {
+      "phase": "Roll",
+      "arm_transfer": "right:BackSupport",
+      "elapsed_s": 24.339079,
+      "phase_time_s": 24.339079,
+      "qualified_time_s": 0,
+      "stable_time_s": 0,
+      "stalled_s": 1.7625093,
+      "unsupported_s": 0,
+      "retries": 7,
+      "last_retry": "arm-support-not-ready",
+      "progress": -0.9152756
+    },
+    "failure": null,
+    "workerInstances": 1,
+    "pelvisHeightM": 0.15323508
+  },
+  "functionalTestError": "AssertionError [ERR_ASSERTION]: Full strike-to-standing recovery did not complete within the unchanged deadline",
+  "comparison26to27Seconds": {
+    "baseline": {
+      "rightUpperArmMeanN": 250.88675,
+      "backMeanN": 0.0,
+      "headAndNeckMeanN": 0.0,
+      "finalRollProgress": -0.75639397
+    },
+    "candidate": {
+      "rightUpperArmMeanN": 182.82880625,
+      "backMeanN": 210.171698125,
+      "headAndNeckMeanN": 0.0,
+      "finalRollProgress": -0.9142445
+    }
+  },
+  "stageTransitions": [
+    {
+      "time": 4.666666666666667,
+      "stage": "right:BackSupport",
+      "loadsN": {
+        "lumbar": 120.45875,
+        "torso": 197.09903,
+        "head": 57.122982,
+        "leftForearmTwist": 15.907101,
+        "rightUpperArm": 45.33497,
+        "rightForearm": 21.917454,
+        "rightHand": 4.263825,
+        "rightAnkle": 114.2141,
+        "rightForefoot": 150.73285
+      }
+    },
+    {
+      "time": 5.133333333333334,
+      "stage": "right:Fold",
+      "loadsN": {
+        "lumbar": 362.72607,
+        "torso": 92.19498,
+        "leftForearmTwist": 8.23225,
+        "leftHand": 10.644561,
+        "rightForearm": 21.840202,
+        "leftFoot": 14.92881,
+        "leftForefoot": 13.392628,
+        "rightAnkle": 117.8547,
+        "rightForefoot": 44.640068
+      }
+    },
+    {
+      "time": 5.2,
+      "stage": "right:BackSupport",
+      "loadsN": {
+        "lumbar": 364.9765,
+        "torso": 20.033184,
+        "head": 18.155024,
+        "leftForearmTwist": 19.30955,
+        "leftHand": 3.755729,
+        "rightUpperArm": 104.29768,
+        "leftFoot": 20.845507,
+        "leftForefoot": 16.062141,
+        "rightAnkle": 100.53628,
+        "rightForefoot": 47.323013
+      }
+    }
+  ],
+  "maximumRecordedDiagnostics": {
+    "direct_pelvis_force_n": 0,
+    "direct_pelvis_torque_nm": 0,
+    "max_anchor_separation_m": 4.1271025e-05,
+    "max_floor_penetration_m": 0.034814026,
+    "max_self_penetration_m": 0.0002651912,
+    "max_limit_error_rad": 0.0042297244,
+    "requested_motor_effort_nm": 484.31326
+  },
+  "finalLoadsN": {
+    "torso": 211.16345,
+    "leftForearmTwist": 17.171215,
+    "leftHand": 6.4378457,
+    "rightUpperArm": 182.21568,
+    "leftForefoot": 26.87836,
+    "rightAnkle": 207.27257,
+    "rightFoot": 57.50375
+  },
+  "finalSpineBackIntent": [
+    {
+      "segment": "lumbar",
+      "requestedCoordinatesRadians": [
+        0.5042659789073474,
+        -0.41755820875116556,
+        -0.4258152733200839
+      ],
+      "bounds": [
+        [
+          "x",
+          -0.17453292519943295,
+          0.3141592653589793
+        ],
+        [
+          "y",
+          -0.13962634015954636,
+          0.13962634015954636
+        ],
+        [
+          "z",
+          -0.17453292519943295,
+          0.17453292519943295
+        ]
+      ]
+    },
+    {
+      "segment": "torso",
+      "requestedCoordinatesRadians": [
+        0.1904881957370903,
+        -0.2840418258933714,
+        -0.20983797269157162
+      ],
+      "bounds": [
+        [
+          "x",
+          -0.17453292519943295,
+          0.2617993877991494
+        ],
+        [
+          "y",
+          -0.20943951023931953,
+          0.20943951023931953
+        ],
+        [
+          "z",
+          -0.20943951023931953,
+          0.20943951023931953
+        ]
+      ]
+    }
+  ],
+  "baselineComparison": {
+    "identicalRecordedSnapshots": 69,
+    "lastIdenticalSnapshotSeconds": 4.6,
+    "nativeStepsBetweenSnapshots": 16,
+    "scope": "Poses, contacts and counters agree at recorded snapshots before recovery; no assertion about every intermediate native substep."
+  },
+  "checks": {
+    "pureRustTestsPassed": 6,
+    "toolingTestsPassed": 55,
+    "browserBuildPassed": true,
+    "experimentalCheckPassedInIsolatedTrackedSourceCopy": true,
+    "fullMovementTestPassed": false,
+    "videoDecoded": true,
+    "videoSeconds": 29,
+    "videoFrames": 435
+  },
+  "remainingGap": "Back support briefly earns whole-arm release, then cannot maintain it. The bounded spinal intent saturates lumbar pitch/yaw/lateral bounds while Roll has no native hip root authority; the arm remains loaded. This is a controller failure, not proof of anatomical impossibility.",
+  "decision": "Close the single-candidate history as failed. No Brace or standing and no qualified get-up. Preserve the tested branch prototype and evidence; no further physical run or parameter sweep.",
+  "artifacts": {
+    "outputs/browser-getup-arm-transfer-2026-10-16/result.json": "9fc1f40b21c315a1f8369e646f64126c23ffb60fe4bc60423e3c8c4ba2650238",
+    "outputs/browser-getup-arm-transfer-2026-10-16/trace.ndjson": "a04c194618fd547fc0a47d433d5eba8aaad1fd76d1e0ccbba65f1985996c8650",
+    "outputs/browser-getup-arm-transfer-2026-10-16/analysis.json": "3ba8d7ec607d05f21359c74f8f0bc6f790bd59495fb26db55e27958db2948b78",
+    "outputs/browser-getup-arm-transfer-2026-10-16/unit.log": "ec35ba5a2a38e9a95f331fe6fbff123d2986d1241a18d145790ccde054b7948a",
+    "outputs/browser-getup-arm-transfer-2026-10-16/roll-unit.log": "70c85ff66e4646a47d5ceaac689087122691c2efa3bf9533fd95077b634aa05d",
+    "outputs/browser-getup-arm-transfer-2026-10-16/planning-unit.log": "834b74171f20d291f644d2580f56eb36e1f1491c7c18fcc3bf50f313f965ec8c",
+    "outputs/browser-getup-arm-transfer-2026-10-16/feature-check-isolated.log": "27865e632605a2058ca8732c211abd3b158339f0316a6495e59443a7f3a4afd4",
+    "outputs/browser-getup-arm-transfer-2026-10-16/build.log": "d67dd75f4c859dfd2aaadef02df9fb47b8660a9a5435b2a723a0e964cb846b26",
+    "outputs/browser-getup-arm-transfer-2026-10-16/tooling-tests.log": "6d0b74e9cd27fbde45002bd1ea949a6cedf27ca0bf892297531b6022df5e652f",
+    "/workspace/lh-deliverables/LaboratoireHumain-arm-transfer-2026-10-16.mp4": "af86314b34ededc643731b61e1ba3e3c0cb625309e2215a35acfdcfc85745c30"
+  },
+  "libraryVideo": {
+    "libraryFileId": "libfile_742d06036bbc819189c8fcdc1e099c2e",
+    "fileId": "file_00000000550881f5ac8667e0078dc10f",
+    "version": 0,
+    "bytes": 387522,
+    "localPath": "/workspace/lh-deliverables/LaboratoireHumain-arm-transfer-2026-10-16.mp4"
+  }
+}

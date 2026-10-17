@@ -1,0 +1,89 @@
+{
+  "schemaVersion": 1,
+  "baseCommit": "c597959f46f37715035349c8cd0a699b6822111a",
+  "branch": "investigate/physical-support",
+  "recoveryDefaultEnabled": false,
+  "physicalRecoveryQualified": false,
+  "campaign": {
+    "histories": 96,
+    "integratedHistories": 96,
+    "referenceProgrammeHistories": 95,
+    "currentControllerControls": 1,
+    "fullOriginalRecoveries": 0,
+    "routeStandingHistories": 0,
+    "refusalChecks": {
+      "self-contact": 93,
+      "none": 1,
+      "joint-limit": 2
+    },
+    "referencePhysicalSecondsRange": [
+      1.4291666666666667,
+      4.929166666666666
+    ],
+    "maxReferenceAllocatedCapSumNm": 760.0,
+    "maxReferenceAnatomicalRatio": 1.0,
+    "bestIndex": 13,
+    "bestReport": "013-g00-candidate/report.json",
+    "elapsedWallS": 1221.338418059997,
+    "finalValidationsRun": 0,
+    "status": "abandoned-at96-without-route-standing",
+    "artifactBytes": 170040121,
+    "fullSuiteClaimedPassing": false
+  },
+  "provenanceHashes": {
+    "referenceSha256": "fef70abf3d016cecf6658b0bc5e7a6361d989eb265840acdc1a4fbc497a70c7d",
+    "modelSha256": "083c13b2cce2d6033a4fc05cba8da7e78bd89634fb306629f4b7a9cd4a177a65",
+    "binarySha256": "9637302167f8e2f6ad6ccc2f8e2a71910315f8b55925fc9e468f9dd2f25b169e",
+    "profileSha256": "971661c88ae7258f157669d8e8a873161de40990274a9f2fd7d159f50006e00e",
+    "contractSha256": "57ffc6e4705759dac795e7c1b274edc9016a5e194a8fe4fa175a230c62f595ba"
+  },
+  "geometry": {
+    "inspectionPassed": 402,
+    "inspectionCount": 402,
+    "headingsDegrees": [
+      0,
+      60
+    ],
+    "totalInspectionsUsed": 10533,
+    "totalInspectionLimit": 11000,
+    "continuousSelfIntervals": 864,
+    "discreteEndpointIntervals": 73,
+    "physicalIntegrationSubsteps": 0,
+    "maximumAnalyticalCommandRateRadS": 0.9600977215944988,
+    "originalCommandRateLimitRadS": 1
+  },
+  "firstReference": {
+    "physicalSeconds": 4.883333333333334,
+    "observedValidSubsteps": 1171,
+    "firstRefusal": {
+      "check": "self-contact",
+      "measured": 0.00509440153837204,
+      "offending": "leftFoot/rightFoot",
+      "substep": 3,
+      "threshold": 0.004999999888241291,
+      "tick": 292
+    },
+    "fullRecoverySuccess": false,
+    "minimumPelvisHeightM": 0.12189076840877533,
+    "maximumAllocatedCapSumNm": 760.0,
+    "maximumActualAnatomicalRatio": 1.0,
+    "maximumDeliveredAbsoluteNm": 680.0576782226562
+  },
+  "searchFamily": {
+    "dimension": 48,
+    "seed": 0,
+    "modeCount": 6,
+    "timeCoefficientCount": 7,
+    "monotoneClockParameters": 6,
+    "maxParallelNativeProcesses": 3,
+    "earlyAbandonWithoutStandingAt": 96,
+    "newCampaignAuthorizedByThisResult": false
+  },
+  "limits": [
+    "Foot loads on the front edge are not posterior heel support.",
+    "Selected contact forces do not close the momentum balance during some impacts.",
+    "No full recovery means no four final validation histories.",
+    "Known baseline hybrid articulation and four TypeScript failures remain; no full-suite-green claim."
+  ],
+  "dataPublication": "Only own project code, native regression fixtures and aggregate results; no third-party source, weights, exported/adapted motion or large local traces."
+}
