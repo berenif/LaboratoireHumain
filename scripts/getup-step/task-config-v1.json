@@ -1,0 +1,262 @@
+{
+  "schema": 1,
+  "name": "conditioned_step_teacher_v1",
+  "status": "review-draft-no-collection-or-optimizer-admission",
+  "sourceCommit": "5ad52fbe1b5b7c56522a1aa10ccf17fb81c0d79e",
+  "taskAdaptation": "reference-conditioned direct-torque SAC teacher; source equations/presets remain separately immutable",
+  "observation": {
+    "teacherWidth": 118,
+    "layout": "physical67, target25-now, target25-ahead, power1",
+    "teacherInitialization": "copy old physical columns 0:67; old power column67 to117; reference columns67:117 exactly zero; fresh critics",
+    "studentWidth": 118,
+    "studentPower": 1.0,
+    "normalization": "none",
+    "hybridPartiallyObserved": true,
+    "externalCheckpointState": [
+      "phase",
+      "referenceSHA256",
+      "referenceClock",
+      "phaseWallStartNativeId",
+      "nativeId",
+      "unloadRun",
+      "clearanceRun",
+      "touchdownRun",
+      "loadRun",
+      "finalQuietRun",
+      "awardedEvents",
+      "entryHeading",
+      "entryFootOrigin",
+      "physicalSlipAnchors",
+      "postLandingAnalysisAnchors",
+      "lastAction",
+      "RNG",
+      "ledger"
+    ]
+  },
+  "timing": {
+    "nativeHz": 800,
+    "policyHz": 40,
+    "nativeSamplesPerTransition": 20,
+    "aheadPolicyDecisions": 5,
+    "transitionBoundary": "freeze pre-action reference and phase for the executed interval reward; evaluate actual events afterward; next observation alone uses any new phase",
+    "recording": "explicit initial row plus post-action rows; equal-length qpos28/qvel27/com3/com_ori3; actual qualified WEAK records only for SLOW",
+    "partialRequests": "verified finite1..19-sample physical terminal transitions are retained with not_done0, dense/control costs scaled by actual duration/25ms and fixed failure penalty; interrupted/unverified/admin partial requests are excluded; corrupt/nonfinite final tensors abort collection",
+    "maximumSuffixSeconds": 24.0,
+    "phaseWallTimeoutSeconds": {
+      "prepare": 5.0,
+      "lift": 4.0,
+      "advance": 4.0,
+      "lower": 4.0,
+      "acquire": 3.0,
+      "settle": 5.0,
+      "hold": 8.0
+    },
+    "nominalSeconds": {
+      "prepare": 3.0,
+      "lift": 2.0,
+      "advance": 2.0,
+      "lower": 2.0,
+      "acquire": 1.0,
+      "settle": 3.0,
+      "hold": 5.0
+    }
+  },
+  "action": {
+    "teacherUnits": "normalized original motor torque, actuator order",
+    "teacherPowerStart": 1.0,
+    "gearScaling": "original gear exactly once; no mass/friction/gear curriculum",
+    "studentUnits": "residual radians, qpos order",
+    "studentMovingKdSeconds": 0.1,
+    "studentHoldingKdSeconds": 0.2,
+    "holdReferenceAndActionAcross20Substeps": true
+  },
+  "phaseGates": {
+    "persistentNativeSamples": 80,
+    "unloadedLeftMaxNExclusive": 3.0,
+    "stanceRightMinimumBodyWeightFraction": 0.8,
+    "rightCaptureInsetM": 0.003,
+    "rightCOMInsetM": 0.003,
+    "liftTargetM": 0.025,
+    "nativeAdvanceClearanceMinimumM": 0.015,
+    "forwardTargetM": 0.06,
+    "forwardAcceptanceMinimumM": 0.05,
+    "lateralAcceptanceMaximumM": 0.02,
+    "touchdownLeftMinimumN": 3.0,
+    "touchdownRightMinimumBodyWeightFraction": 0.5,
+    "totalFeetMinimumBodyWeightFraction": 0.8,
+    "loadAcquisitionLeftMinimumBodyWeightFraction": 0.1,
+    "uprightMaximumDegrees": 5.0,
+    "finalQuietConsecutiveNativeSamples": 4000,
+    "finalQuietRule": "FINAL4000 consecutive actual integrations through declared terminal ID; original native standing predicate plus measured tilt<=5deg; no longest-window substitution",
+    "supportGeometry": "only actual measured contacts; geometric potential is never credited before touchdown"
+  },
+  "reward": {
+    "formula": "weighted mean of exp(-0.5*mean((error/scale)^2)) terms minus costs, plus ordered one-time actual event bonuses",
+    "denseTerms": {
+      "jointPositionErrorRad": {
+        "scale": 0.1,
+        "weight": 0.15
+      },
+      "hipSpeedErrorRadps": {
+        "scale": 0.5,
+        "weight": 0.1
+      },
+      "comHeightErrorM": {
+        "scale": 0.04,
+        "weight": 0.15
+      },
+      "torsoVerticalError": {
+        "scale": 0.15,
+        "weight": 0.1
+      },
+      "leftFootPositionErrorM": {
+        "scale": 0.02,
+        "weight": 0.15
+      },
+      "leftFootRotationErrorRad": {
+        "scale": 0.15,
+        "weight": 0.1
+      },
+      "wholeFootClearanceErrorM": {
+        "scale": 0.01,
+        "weight": 0.1
+      },
+      "signedForwardErrorM": {
+        "scale": 0.02,
+        "weight": 0.1
+      },
+      "comVelocityErrorMps": {
+        "scale": 0.2,
+        "weight": 0.05
+      }
+    },
+    "hipCoordinates": "source qvel[11,17], hinge qpos[5,11]",
+    "normalizedControlMeanSquareCost": 0.01,
+    "normalizedControlChangeMeanSquareCost": 0.005,
+    "loadedSlipIncrementCostPerMeter": 100.0,
+    "eventOrder": [
+      "unloaded",
+      "clearance",
+      "forward",
+      "touchdown",
+      "loadAcquired",
+      "quietComplete"
+    ],
+    "eventBonuses": {
+      "unloaded": 1.0,
+      "clearance": 2.0,
+      "forward": 3.0,
+      "touchdown": 3.0,
+      "loadAcquired": 3.0,
+      "quietComplete": 5.0
+    },
+    "physicalFailurePenalty": 10.0,
+    "stationaryWorldAnchorPenalty": false,
+    "genericUnloadedFootPenalty": false,
+    "rewardNeverOverridesAcceptance": true,
+    "partialPhysicalTerminalRule": "dense and normalized effort/change costs scaled by count/20, actual measured slip cost retained, no event bonus, full physicalFailurePenalty; no bootstrap",
+    "measurementReduction": "post-interval measured finite endpoint errors against the pre-action held target/reference twist; controls are actual normalized actuator controls at the post-interval boundary (and previous boundary for change cost), never held student residuals; slip is sum of actual per-foot cumulative increments; events use all consecutive native samples",
+    "errorDimensions": {
+      "jointPositionErrorRad": 21,
+      "hipSpeedErrorRadps": 2,
+      "comHeightErrorM": 1,
+      "torsoVerticalError": 3,
+      "leftFootPositionErrorM": 3,
+      "leftFootRotationErrorRad": 3,
+      "wholeFootClearanceErrorM": 1,
+      "signedForwardErrorM": 1,
+      "comVelocityErrorMps": 3
+    },
+    "rotationConvention": "world-frame SO(3) geodesic rotvec Log(R_actual*R_target.T), radians, normalized rotations; no Euler-component subtraction",
+    "loadedSlipReduction": "sum of nonnegative actual per-foot cumulative loaded-slip increments; not maximum; no reset within episode",
+    "controlCostUnits": "actual normalized actuator controls in both teacher and student; never student residual radians",
+    "errorFrames": {
+      "jointPositionErrorRad": "q_actual - held q_target, qpos order21",
+      "hipSpeedErrorRadps": "actual hinge dq[5,11] minus admitted phase-clock reference dq[5,11]",
+      "comHeightErrorM": "actual native worldY COM minus target true COM height",
+      "torsoVerticalError": "actual source-order torso-local worldup minus FK target vector3",
+      "leftFootPositionErrorM": "actual minus target native WORLD XYZ foot-origin3",
+      "leftFootRotationErrorRad": "world-frame SO3 geodesic rotvec Log(R_actual R_target.T)",
+      "wholeFootClearanceErrorM": "actual min of both endpoints on both capsules minus target same geometry",
+      "signedForwardErrorM": "actual signed foot displacement against fixed entry heading minus target signed displacement",
+      "comVelocityErrorMps": "actual source-order world COM velocity minus phase-clock reference source-order velocity3"
+    }
+  },
+  "termination": {
+    "physicalTerminalNotDone": 0.0,
+    "finiteTimeTruncationNotDone": 1.0,
+    "truncationObservation": "actual final observation/reference, never reset observation",
+    "physicalFailures": [
+      "native integrity failure",
+      "any flight sample",
+      "any nonfoot floor support",
+      "loaded slip over10mm perfoot",
+      "advance whole capsule clearance below15mm",
+      "interfoot capsule overlap",
+      "COM outside original safety height envelope"
+    ],
+    "comHeightMinimumM": 0.780625,
+    "comHeightMaximumM": 0.829976,
+    "loadedSlipMaximumM": 0.01,
+    "flightDefinition": "both measured foot normal loads<3N in any native sample",
+    "timeouts": "intrinsic phase wall/goal deadline is terminal0 with failure penalty; extrinsic pilot physics/wall/collection cutoff truncates with actual final state and bootstrap1; interrupted/unverified request excluded",
+    "terminalSuccess": "quietComplete is an explicitly absorbing successful task terminal (not_done0), unlike source fixed N+150 truncation; no failure penalty; full actual final observation retained",
+    "failureCodes": [
+      "native_integrity",
+      "flight",
+      "nonfoot_support",
+      "loaded_slip",
+      "advance_clearance",
+      "interfoot_overlap",
+      "com_height",
+      "phase_timeout",
+      "goal_deadline"
+    ],
+    "invalidObservation": "nonfinite/corrupt observations abort/save collection, never replay invalid tensors",
+    "successfulGoalNotDone": 0.0
+  },
+  "curriculum": {
+    "order": [
+      "strong conditioned torque teacher",
+      "WEAK power curriculum",
+      "qualified complete actual WEAK rollouts",
+      "retiming",
+      "SLOW residual RL"
+    ],
+    "weakPowerNoiseStd": 0.04,
+    "weakPowerMultiplier": 0.95,
+    "weakPowerMinimum": 0.4,
+    "reduceOnlyAfter": "ten consecutive deterministic full physical acceptance trials at the current fixed power; all pass; no source return60 threshold",
+    "successfulDataRequiredBeforeSLOW": true
+  },
+  "pilot": {
+    "learningEnabled": false,
+    "collectionEnabled": false,
+    "admissionRequired": [
+      "R1/R2/R4 exact config review",
+      "reference initial twist/closure/clearance checks",
+      "interface-specific native reference diagnostic",
+      "frozen baseline and rollback snapshot",
+      "pertrial cap/throughput admission",
+      "complete hybrid checkpoint restore"
+    ],
+    "actorLearningRate": 1e-05,
+    "criticLearningRate": 0.0001,
+    "temperatureLearningRate": 0.0001,
+    "teacherDiscount": 0.97,
+    "studentDiscount": 0.95,
+    "warmupActualTransitions": 256,
+    "warmupBehavior": "frozen initializer plus Gaussian std0.02 normalized control clipped to power bounds",
+    "afterWarmupBehavior": "current pinned source stochastic actor; logstd[-5,2], unchanged SAC sampling",
+    "batchSize": 128,
+    "firstUpdateTransition": 260,
+    "newTransitionsPerUpdate": 4,
+    "maximumUpdates": 200,
+    "maximumActualTransitions": 2000,
+    "actionProbeEveryUpdates": 25,
+    "actionRMSDriftReassessment": 0.05,
+    "stopRollback": "any known quiet/GetUp regression or failed paired safety check; no blind retuning",
+    "resourceLedger": "session-20261017T223404Z; <=300s new aggregate physics and deadline23:34:04UTC; stage ceilings/reserve unchanged",
+    "hashAdmission": "future runner must match externally pinned expected config SHA256 and task/reference/native/actor code hashes BEFORE collection; computing the current hash alone is not admission"
+  }
+}

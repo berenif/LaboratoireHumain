@@ -215,6 +215,9 @@ pub struct Observation {
 #[derive(Serialize)]
 pub struct NativeFootSample {
     pub native_substep: u64,
+    /// Native-rate evidence for the task's stricter upright/height gates.
+    pub torso_up: f32,
+    pub com_height_m: f32,
     pub loads_n: [f32; 2],
     pub clearance_m: [f32; 2],
     pub positions: [Vec3; 2],
@@ -706,6 +709,8 @@ impl Experiment {
             memory.max_anchor_drift_m = memory.max_anchor_drift_m.max(m.anchor_drift_m);
             native_foot_samples.push(NativeFootSample {
                 native_substep: s.substeps_completed,
+                torso_up: m.torso_up,
+                com_height_m: m.com_height_m,
                 loads_n: m.foot_loads_n,
                 clearance_m: m.foot_clearance_m,
                 positions: m.foot_positions,

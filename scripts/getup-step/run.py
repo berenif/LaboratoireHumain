@@ -131,15 +131,52 @@ def positive_control(native):
         allHoldingNativeStanding=all(x['standing_without_foot_anchor']for result in records[:8]for x in result['native_foot_samples']))
 
 
+def frozen_hold(native,seconds):
+    """Prospective bounded OOD admission test, current pose target, no motion claim."""
+    if not 0<seconds<=2.:raise ValueError('frozen admission hold must be in (0,2] s')
+    original=source_target();entry=native.command(dict(op='sourceState',now=original.tolist(),ahead=original.tolist(),holding=True))
+    physical=np.array(entry['physicalObservation']);ref=m.target(physical[:21],entry['comSource'][2],physical[34:37])
+    initial=native.command(dict(op='observe'));samples=[];stopped=None
+    atomic_json(native.output/'config.json',dict(scope='frozen actual-pose/reference admission; no step',seconds=seconds,holding=True,
+        target=ref.tolist(),studentPower=1.,sourceWeightsChanged=False,externalForcesApplied=False,
+        acceptance='all native samples standing, no flight/nonfoot, <=1cm cumulative loaded slip, <=2cm horizontal COM drift',
+        stop='native failure/termination, any flight/nonfoot, >1cm loaded slip, >2cm COM drift',
+        originalState=initial))
+    com0=np.array(entry['comSource']);states=[];snapshots=[native.command(dict(op='snapshot'))]
+    for _ in range(round(seconds/.025)):
+        x=native.command(dict(op='sourceState',now=ref.tolist(),ahead=ref.tolist(),holding=True))
+        result=native.command(dict(op='stepSourceStudent',reference=ref[:21].tolist(),residual=x['student']['action'],holding=True))
+        samples.extend(result['native_foot_samples']);states.append(result['state']);snapshots.append(native.command(dict(op='snapshot')))
+        current=native.command(dict(op='sourceState',now=ref.tolist(),ahead=ref.tolist(),holding=True))
+        drift=float(np.linalg.norm((np.array(current['comSource'])-com0)[:2]))
+        if result['failure'] or result['terminated'] or result['truncated']:stopped=result['failure']or'native-ended'
+        elif any(max(s['loads_n'])<3. for s in result['native_foot_samples']):stopped='observed-flight'
+        elif any(s['nonfoot_support']for s in result['native_foot_samples']):stopped='observed-nonfoot-support'
+        elif max(result['state']['loaded_slip_distance_m'])>.01:stopped='loaded-slip-over-1cm'
+        elif drift>.02:stopped='COM-drift-over-2cm'
+        if stopped:break
+    unique=[s['native_substep']for s in samples]
+    assert len(unique)==len(set(unique)) and all(b==a+1 for a,b in zip(unique,unique[1:]))
+    native.checkpoint(native.output/'final.bin',dict(phase='frozen-actual-pose-hold',reference=ref.tolist(),holding=True,
+        observedNativeSamples=len(samples),stopped=stopped,initialCOMSource=com0.tolist()))
+    atomic_json(native.output/'actual-snapshots.json',snapshots)
+    return dict(scope='frozen original SLOW on an adapted actual-pose/COM/vertical target; no step or learning claim',
+        requestedSeconds=seconds,observedNativeSamples=len(samples),allNativeStanding=all(s['standing_without_foot_anchor']for s in samples),
+        flightSamples=sum(max(s['loads_n'])<3. for s in samples),nonfootSamples=sum(s['nonfoot_support']for s in samples),
+        stopped=stopped,passed=bool(not stopped and len(samples)==round(seconds*800)and all(s['standing_without_foot_anchor']for s in samples)),
+        final=states[-1]if states else initial,nativeSubsteps=native.substeps,physicsWallSeconds=native.physics)
+
+
 def main():
     ap=argparse.ArgumentParser(description=__doc__)
-    ap.add_argument('mode',choices=['parity','positive-control'])
+    ap.add_argument('mode',choices=['parity','positive-control','frozen-hold'])
     ap.add_argument('--binary',type=Path,required=True);ap.add_argument('--checkpoint',type=Path,required=True)
+    ap.add_argument('--seconds',type=float,default=2.)
     ap.add_argument('--ledger',type=Path,required=True);ap.add_argument('--output',type=Path,required=True)
     a=ap.parse_args();ledger=PilotLedger(a.ledger)
-    native=SourceNative(a.binary,a.checkpoint,a.output,ledger,stage='knownSourceParity',physics_cap=0. if a.mode=='parity' else 3.)
+    native=SourceNative(a.binary,a.checkpoint,a.output,ledger,stage='frozenReference' if a.mode=='frozen-hold' else 'knownSourceParity',physics_cap=0. if a.mode=='parity' else 10. if a.mode=='frozen-hold' else 3.)
     try:
-        report=parity(native) if a.mode=='parity' else positive_control(native);report.update(binarySHA256=sha256(a.binary),checkpointSHA256=sha256(a.checkpoint),scriptSHA256=sha256(__file__))
+        report=parity(native) if a.mode=='parity' else frozen_hold(native,a.seconds) if a.mode=='frozen-hold' else positive_control(native);report.update(binarySHA256=sha256(a.binary),checkpointSHA256=sha256(a.checkpoint),scriptSHA256=sha256(__file__))
         atomic_json(a.output/'summary.json',report);print(json.dumps(report,indent=2))
     finally:native.close()
 if __name__=='__main__':main()

@@ -1,0 +1,94 @@
+{
+  "kind": "planned-unqualified",
+  "physicsIntegrations": 0,
+  "sourceSHA256": "1a50055aac728057e1f275b88d79d8ee0c36d7ee30c8f269fcd20c2b6db27494",
+  "acquisitionSHA256": "d3946a02a55f0182ad70e85cec3949e0bf7614df88dff5a4031264be309bfe62",
+  "modelSHA256": "1611ec8c988c1006b0a819ab21e2b7c410adaaf512080be425d6d6e235a8926a",
+  "generatorSHA256": "3e379382ae3f16f73dbde42e86aa19818661381d199f67d7464c70362ab459ed",
+  "bodyReferenceSHA256": "56720c85e4be69c69606b938ff14d77b30fb1b7158a448d75a2ed95f2a311adb",
+  "timelineSeconds": {
+    "prepare": 3.0,
+    "lift": 2.0,
+    "advance": 2.0,
+    "lower": 2.0,
+    "acquire": 1.0,
+    "settle": 3.0,
+    "hold": 5.0
+  },
+  "trajectoryIncludesInitialAndFinalRows": true,
+  "uniformPolicyDtSeconds": 0.025,
+  "entryHybridReferenceException": {
+    "joint": 20,
+    "actualPosition": -1.5707964897155762,
+    "actualVelocity": -0.0015539779560640454,
+    "referencePosition": -1.5707963705062866,
+    "referenceVelocity": 0.0,
+    "positionDifference": 1.1920928955078125e-07,
+    "velocityDifference": 0.0015539779560640454,
+    "physicalStateChanged": false,
+    "plannedStopReactionCredited": false
+  },
+  "initialMarginExceptions": [
+    7,
+    11,
+    20
+  ],
+  "maximumDenseWeightedIKError": 4.440892098500626e-13,
+  "maximumRightFootMatrixDeviation": 0.0004051123917021039,
+  "maximumRightFootPositionDeviationM": 0.00014088022163938436,
+  "maximumRightFootRotationDeviationRad": 0.00040505495993100736,
+  "entryBridgeFootMotion": "free reference bridge matches measured twist, not an exactly planted-foot constraint; no native writes",
+  "maximumLeftTargetPositionErrorM": 7.000563967224371e-05,
+  "minimumNonElbowNativeMarginRad": 0.012719295591370305,
+  "phaseChecks": [
+    {
+      "phase": "prepare",
+      "minimumWholeCapsuleClearanceM": -9.878241978791835e-05,
+      "minimumCOMHeightM": 0.7936612511897725,
+      "maximumCOMHeightM": 0.8020430231689034,
+      "maximumJointSpeedRadps": 0.25836015519283556
+    },
+    {
+      "phase": "lift",
+      "minimumWholeCapsuleClearanceM": -9.878169023842462e-05,
+      "minimumCOMHeightM": 0.7936612511897725,
+      "maximumCOMHeightM": 0.8040188772972227,
+      "maximumJointSpeedRadps": 0.14010686866350716
+    },
+    {
+      "phase": "advance",
+      "minimumWholeCapsuleClearanceM": 0.02499990623592797,
+      "minimumCOMHeightM": 0.8009646115871538,
+      "maximumCOMHeightM": 0.8040188772972223,
+      "maximumJointSpeedRadps": 0.09990989777188947
+    },
+    {
+      "phase": "lower",
+      "minimumWholeCapsuleClearanceM": 7.581088534713842e-14,
+      "minimumCOMHeightM": 0.7890921834814936,
+      "maximumCOMHeightM": 0.8009646115871538,
+      "maximumJointSpeedRadps": 0.12386241965653189
+    },
+    {
+      "phase": "acquire",
+      "minimumWholeCapsuleClearanceM": -3.2279274485291776e-07,
+      "minimumCOMHeightM": 0.7890921834814936,
+      "maximumCOMHeightM": 0.7902629333329108,
+      "maximumJointSpeedRadps": 0.03932065257059305
+    },
+    {
+      "phase": "settle",
+      "minimumWholeCapsuleClearanceM": -4.4624310740690176e-07,
+      "minimumCOMHeightM": 0.790262251729703,
+      "maximumCOMHeightM": 0.8034074476778098,
+      "maximumJointSpeedRadps": 0.23688225588993306
+    }
+  ],
+  "unqualified": [
+    "static witness is not a teacher or sourcePD authority",
+    "initial bridge has uncredited native stop boundary exception",
+    "contact gates and actual source PD response not demonstrated",
+    "runtime root and COM derivatives are source-frame coherent but native dynamics remain authoritative"
+  ],
+  "referenceDefinition": "planned, not measured teacher; source target observations use actual planned height, not old1.4 terminal sentinel"
+}
