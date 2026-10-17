@@ -1,0 +1,19 @@
+{
+  "schema": 1,
+  "scope": "zero-physics actual-frame decoder and event gates only; no collection/learning",
+  "pythonTestsPassed": 68,
+  "nativeFramesDecodedWithoutIntegration": 220,
+  "maximumCOMHeightReconstructionErrorM": 3.0264421679859765e-07,
+  "review": "R2 narrow decoder/event review clear, 2026-10-17T23:32Z",
+  "sourceSHA256": {
+    "scripts/getup-step/audit_metrics.py": "68677549826173546f5a1cd06e257cb4acf3c2bd3219d6da6681cf61d79a9853",
+    "scripts/getup-step/events.py": "640841f18b74eed3ff8258ca5295546b3925289caab765c9ebca55e3346e0877",
+    "scripts/getup-step/test_audit_metrics.py": "ee8fcbd3c7bfdde0042072554ef237cfe0664adbed9abb9da7e71028e4d20f1d",
+    "scripts/getup-step/test_events.py": "a651d95f512b9156559f63d12510d271d8a790a407ad58b946c6b8e25c16b0d2",
+    "docs/fixtures/getup-step/native-audit-frame.json": "1ef3cce6991c3f92d8c6cae424a17ef3af4a7c92bae38a09e9f2457d96dbac26"
+  },
+  "newAggregatePhysicsSeconds": 2.930621222,
+  "newNativeSubsteps": 900,
+  "collectionEnabled": false,
+  "optimizerUpdates": 0
+}

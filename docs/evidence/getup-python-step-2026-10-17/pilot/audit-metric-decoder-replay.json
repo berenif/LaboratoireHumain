@@ -1,0 +1,25 @@
+[
+  {
+    "batch": "p4-zero-residual-preparation",
+    "decodedNativeFrames": 160,
+    "rightHullDimensionCounts": {
+      "1": 90,
+      "2": 50,
+      "0": 20
+    },
+    "minimumDefinedRightCaptureMarginM": -0.06489848479621796,
+    "maximumNativeCOMHeightReconstructionErrorM": 3.0264421679859765e-07
+  },
+  {
+    "batch": "p5-frozen-weak-teacher-stance",
+    "decodedNativeFrames": 60,
+    "rightHullDimensionCounts": {
+      "1": 5,
+      "0": 52,
+      "2": 1,
+      "-1": 2
+    },
+    "minimumDefinedRightCaptureMarginM": -0.09556738649294468,
+    "maximumNativeCOMHeightReconstructionErrorM": 2.873841205008887e-07
+  }
+]

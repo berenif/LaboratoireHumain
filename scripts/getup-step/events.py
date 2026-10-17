@@ -1,5 +1,7 @@
 """Pure measured-event state machine. Target time cannot fabricate a contact.
 
+Preparation reference time must not be frozen merely because its future3mm
+lift-admission inset is not attained yet. Those counters only admit the lift.
 Inputs require per-native real support margins. A missing geometry measurement
 rejects the packet; a prior hull or prospective contact is never substituted.
 This is scaffolding, not a task collection runner or a success certificate.
@@ -45,8 +47,17 @@ class MeasuredEvents:
             if type(s.get('native_substep'))is not int or s['native_substep']!=self.native_id+offset:raise ValueError('missing/duplicate/nonconsecutive event native IDs')
             for name in ['loads_n','clearance_m','positions']:
                 if name not in s:raise ValueError('missing measured '+name)
+            for prefix in ['right','combined']:
+                dimension=s.get(prefix+'_support_dimension');margins=[s.get(prefix+'_'+q+'_margin_m')for q in ['com','capture']]
+                if type(dimension)is not int or dimension not in [-1,0,1,2]:raise ValueError('missing/invalid measured support dimension')
+                if dimension==2 and not all(type(m)in(int,float)and math.isfinite(m)for m in margins):raise ValueError('polygon needs finite measured margins')
+                if dimension<2 and not all(m is None for m in margins):raise ValueError('point/segment cannot claim polygon margins')
             for name in ['torso_up','com_height_m','right_com_margin_m','right_capture_margin_m','combined_com_margin_m','combined_capture_margin_m']:
-                if type(s.get(name))not in(int,float)or not math.isfinite(s[name]):raise ValueError('missing/nonfinite measured '+name)
+                if name not in s:raise ValueError('missing measured '+name)
+                if s[name]is None and name.endswith('_margin_m'):
+                    prefix=name.split('_')[0]
+                    if s.get(prefix+'_support_dimension')not in [-1,0,1]:raise ValueError('undefined margin without measured lower-dimensional support')
+                elif type(s[name])not in(int,float)or not math.isfinite(s[name]):raise ValueError('nonfinite measured '+name)
             if np.shape(s['loads_n'])!=(2,)or np.shape(s['clearance_m'])!=(2,):raise ValueError('invalid foot metrics')
             if not np.isfinite([s['loads_n'],s['clearance_m']]).all()or min(s['loads_n'])<0:raise ValueError('invalid measured loads/clearances')
             for name in ['nonfoot_support','standing_without_foot_anchor']:
@@ -61,13 +72,13 @@ class MeasuredEvents:
             if s['nonfoot_support']:failure=failure or'nonfoot_support'
             if not cfg['termination']['comHeightMinimumM']<=s['com_height_m']<=cfg['termination']['comHeightMaximumM']:failure=failure or'com_height'
             if self.phase=='advance'and s['clearance_m'][0]<gate['nativeAdvanceClearanceMinimumM']:failure=failure or'advance_clearance'
-            support=right>=.8*self.body_weight_n and s['right_com_margin_m']>=.003 and s['right_capture_margin_m']>=.003
+            support=right>=.8*self.body_weight_n and s['right_com_margin_m']is not None and s['right_capture_margin_m']is not None and s['right_com_margin_m']>=.003 and s['right_capture_margin_m']>=.003
             unloaded=left<3 and support and not s['nonfoot_support']
             self.unload_run=self.unload_run+1 if unloaded else 0
-            self.clearance_run=self.clearance_run+1 if s['clearance_m'][0]>=.015 and right>=.8*self.body_weight_n else 0
+            self.clearance_run=self.clearance_run+1 if s['clearance_m'][0]>=.015 and support else 0
             touchdown=left>=3 and right>=.5*self.body_weight_n and total>=.8*self.body_weight_n and not s['nonfoot_support']
             self.touchdown_run=self.touchdown_run+1 if touchdown else 0
-            acquired=touchdown and left>=.1*self.body_weight_n and s['combined_com_margin_m']>=.003 and s['combined_capture_margin_m']>=.003
+            acquired=touchdown and left>=.1*self.body_weight_n and s['combined_com_margin_m']is not None and s['combined_capture_margin_m']is not None and s['combined_com_margin_m']>=.003 and s['combined_capture_margin_m']>=.003
             self.load_run=self.load_run+1 if acquired else 0
             if self.phase=='hold':
                 if self.hold_anchors is None:raise ValueError('hold requires fixed measured anchors')

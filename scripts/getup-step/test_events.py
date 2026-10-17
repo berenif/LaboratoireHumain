@@ -4,7 +4,7 @@ from events import MeasuredEvents
 def samples(start,n=20,**change):
     result=[]
     for i in range(start+1,start+n+1):
-        s=dict(native_substep=i,loads_n=[0.,400.],clearance_m=[.025,0.],positions=[dict(x=.06,y=.025,z=0.),dict(x=0.,y=0.,z=.2)],torso_up=1.,com_height_m=.8,right_com_margin_m=.005,right_capture_margin_m=.005,combined_com_margin_m=.005,combined_capture_margin_m=.005,nonfoot_support=False,standing_without_foot_anchor=True);s.update(change);result.append(s)
+        s=dict(native_substep=i,loads_n=[0.,400.],clearance_m=[.025,0.],positions=[dict(x=.06,y=.025,z=0.),dict(x=0.,y=0.,z=.2)],torso_up=1.,com_height_m=.8,right_com_margin_m=.005,right_capture_margin_m=.005,combined_com_margin_m=.005,combined_capture_margin_m=.005,right_support_dimension=2,combined_support_dimension=2,nonfoot_support=False,standing_without_foot_anchor=True);s.update(change);result.append(s)
     return result
 class EventTests(unittest.TestCase):
     def state(self):return MeasuredEvents(0,400.,[1.,0.,0.],[0.,0.,0.])
@@ -31,6 +31,13 @@ class EventTests(unittest.TestCase):
             h=self.state();s=samples(0);s[4].pop(bad)
             with self.assertRaises(ValueError):self.observe(h,s)
             self.assertEqual(h.native_id,0)
+    def test_measured_segment_cannot_qualify_polygon_inset(self):
+        h=self.state();packet=samples(0,80,right_com_margin_m=None,right_capture_margin_m=None,right_support_dimension=1)
+        r=self.observe(h,packet);self.assertEqual(r['events'],[]);self.assertEqual(h.unload_run,0)
+    def test_corrupted_segment_margin_cannot_qualify_lift(self):
+        h=self.state();s=samples(0,80,right_support_dimension=1)
+        with self.assertRaises(ValueError):self.observe(h,s)
+        self.assertEqual(h.native_id,0)
     def test_clearance_failure_and_slip_do_not_grant_progress(self):
         h=self.state();h.phase='advance';h.awarded=['unloaded','clearance'];r=self.observe(h,samples(0,20,clearance_m=[.0149,0.]));self.assertEqual(r['physicalFailure'],'advance_clearance');self.assertEqual(r['events'],[])
 if __name__=='__main__':unittest.main()

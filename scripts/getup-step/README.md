@@ -123,3 +123,13 @@ only throwaway random networks and compares one source update with explicit
 critic/actor/temperature/Polyak equations. Run `test_sac_math.py` in an environment
 with Torch; the lightweight math environment explicitly skips that optional test.
 No task actor is optimized or saved by tests, and no training runner is enabled.
+
+`audit_metrics.py` decodes measured native audit frames into true COM and task
+errors, current positive-impulse foot-side solver-anchor hulls, and source-frame
+velocity. Its capture point is an instantaneous variable-height LIP proxy, not
+an exact native wrench/viability certificate. Point/segment/empty support keeps
+an explicitly undefined polygon margin and cannot qualify a 3 mm inset. Actual
+raw capsule clearance is compared to the same target geometry without clamping.
+The decoder has been replayed over all 220 P4/P5 frames without new integration;
+maximum native COM-height reconstruction error is about 0.303 micrometres.
+It is not yet a qualified end-to-end task collection/reward runner.

@@ -89,3 +89,18 @@ Static inputs: `docs/fixtures/getup-step/`, regenerated with
 `scripts/getup-step/build_reference.py`. Raw native checkpoints/journals remain
 local; their hashes are not remote retrieval links. Final actual-motion delivery
 still needs the reviewed accessible artifact or deterministic reproduction route.
+
+## Zero-physics measurement follow-through
+
+The next local checkpoint adds `audit_metrics.py` and a real native-frame fixture.
+All 220 P4/P5 native frames decode successfully; maximum true COM-height
+reconstruction error is 0.303 micrometres. Current positive-impulse foot-side
+paired solver anchors determine support. Point, segment and empty support never
+receive invented polygon margins. Capture is the declared instantaneous
+variable-height LIP proxy, not a full native wrench/viability proof. The decoder
+and stricter event-boundary tests remain separate from a task collection runner.
+
+Read-only engine-comparison readiness check found no installed MuJoCo/dm_control
+or local old source XML/shared library in the selected workspace. An older
+committed MuJoCo2.1.3 report concerns a different falling state. No dependency
+installation or new comparison physics was performed during this pilot.
