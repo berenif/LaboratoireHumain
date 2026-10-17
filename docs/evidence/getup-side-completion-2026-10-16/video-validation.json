@@ -1,0 +1,15 @@
+{
+  "path": "/workspace/lh-deliverables/LaboratoireHumain-GetUp-comparaison-cote-corrige-2026-10-17.mp4",
+  "bytes": 530063,
+  "sha256": "04d69b500af1b6d51313e387381ff3ea743ce915a558b5532a3ebc4931338162",
+  "frames": 312,
+  "fps": 20,
+  "durationS": 15.6,
+  "width": 1600,
+  "height": 900,
+  "codec": "h264",
+  "pixelFormat": "yuv420p",
+  "fullDecodePassed": true,
+  "finalFrameVisuallyInspected": true,
+  "additionalPhysicsIntegrations": 0
+}

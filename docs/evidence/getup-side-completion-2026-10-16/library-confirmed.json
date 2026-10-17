@@ -1,0 +1,21 @@
+{
+  "operation": "create_library_file",
+  "status": "succeeded",
+  "path": "/LaboratoireHumain-GetUp-comparaison-cote-corrige-2026-10-17.mp4",
+  "file_id": "file_00000000bb7c81f6956d2f2bbb99f6f2",
+  "library_file_id": "libfile_377632ce5d088191b935f2e0e0503674",
+  "file_name": "LaboratoireHumain-GetUp-comparaison-cote-corrige-2026-10-17.mp4",
+  "current_version_number": 0,
+  "restored_from_version_number": null,
+  "xattrs": [
+    {
+      "name": "user.library-file-version",
+      "value": "0"
+    }
+  ],
+  "directory_id": "libdir_25cdd74e2b54819195512af7470fdc1c",
+  "mime_type": "video/mp4",
+  "library_artifact_type": "other",
+  "file_size_bytes": 530063,
+  "external_connectors_accessed": false
+}
