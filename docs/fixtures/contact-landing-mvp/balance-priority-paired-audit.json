@@ -1,0 +1,135 @@
+{
+  "status": "local-causal-braking-improvement-not-complete-step",
+  "replay": {
+    "fullResponsesBitIdenticalExceptWallTelemetry": 1485,
+    "firstPrefixNativeFrames": 7400,
+    "continuationRecordedDecisions": 14,
+    "totalPhysicsWallSeconds": 26.251278829,
+    "totalNativeFrames": 7800,
+    "includesFirst20FrameWallTelemetryValidatorStop": true
+  },
+  "cases": [
+    {
+      "pair": "batch24-balance-priority-pair",
+      "mode": "original-tracking",
+      "rawSHA256": "7779bae65007615abeeb823235ef8525cd0d8321fbae8e46c7a245a440ce42ac",
+      "actualCOMAccelerationWorldMps2": [
+        0.09769418574657573,
+        0.019111948069467522,
+        0.03168086265200355
+      ],
+      "plannedCOMAccelerationWorldMps2": null,
+      "initialCOMVelocityWorldMps": [
+        -0.00622646041008148,
+        -0.002823594789928587,
+        0.012283780346565873
+      ],
+      "finalCOMVelocityWorldMps": [
+        -0.0037841057664170863,
+        -0.002345796088191899,
+        0.013075801912865961
+      ],
+      "flightNativeSamples": 0,
+      "nonfootSupportObserved": false,
+      "nativeFrames": 20
+    },
+    {
+      "pair": "batch24-balance-priority-pair",
+      "mode": "balance-priority",
+      "rawSHA256": "5be7863b4cd84bb3d28c68e4789c41e746bbd2647ae09b2af153ca34142d63ce",
+      "actualCOMAccelerationWorldMps2": [
+        0.09767591512057858,
+        0.019108595044228984,
+        0.03167536714723258
+      ],
+      "plannedCOMAccelerationWorldMps2": [
+        0.03340923812261681,
+        0.04857257968437485,
+        0.011393138111727263
+      ],
+      "initialCOMVelocityWorldMps": [
+        -0.00622646041008148,
+        -0.002823594789928587,
+        0.012283780346565873
+      ],
+      "finalCOMVelocityWorldMps": [
+        -0.003784562532067015,
+        -0.0023458799138228624,
+        0.013075664525246687
+      ],
+      "flightNativeSamples": 0,
+      "nonfootSupportObserved": false,
+      "nativeFrames": 20
+    },
+    {
+      "pair": "batch24b-balance-priority-pair",
+      "mode": "original-tracking",
+      "rawSHA256": "ed6fdcd3645861eed33f359d8d9aa868dba7d2c23f9b2bcd680edc2e8b2c842e",
+      "actualCOMAccelerationWorldMps2": [
+        0.039800940257023465,
+        -0.07638342007826485,
+        0.016408856456582438
+      ],
+      "plannedCOMAccelerationWorldMps2": null,
+      "initialCOMVelocityWorldMps": [
+        -0.014248684954209464,
+        0.007728315978276801,
+        0.01502549735625046
+      ],
+      "finalCOMVelocityWorldMps": [
+        -0.013253661447783878,
+        0.00581873047632018,
+        0.015435718767665021
+      ],
+      "flightNativeSamples": 0,
+      "nonfootSupportObserved": false,
+      "nativeFrames": 20
+    },
+    {
+      "pair": "batch24b-balance-priority-pair",
+      "mode": "balance-priority",
+      "rawSHA256": "610087af13e1bd2cca5712b59334611c52914171c3158f18eab10042a5fd8612",
+      "actualCOMAccelerationWorldMps2": [
+        0.042678688260809824,
+        -0.06810147338839584,
+        -0.06857397171696214
+      ],
+      "plannedCOMAccelerationWorldMps2": [
+        0.059324727579812,
+        -0.07165196484023016,
+        -0.08768502532990287
+      ],
+      "initialCOMVelocityWorldMps": [
+        -0.014248684954209464,
+        0.007728315978276801,
+        0.01502549735625046
+      ],
+      "finalCOMVelocityWorldMps": [
+        -0.013181717747689219,
+        0.006025779143566905,
+        0.013311148063326407
+      ],
+      "flightNativeSamples": 0,
+      "nonfootSupportObserved": false,
+      "nativeFrames": 20
+    }
+  ],
+  "interpretation": "Early9.25 pair essentially identical;9.6 is an explicit recovery state with capture0.435mm inside old actual triangle but outside3mm inset. Coupled minimum tracking slack under hard capture/vertical/physical constraints turns actual az from+.016409 to-.068574 m/s2. No whole-step or final-standing qualification.",
+  "remainingLimitations": [
+    "Native contact hull can switch to a line within one25ms command",
+    "Sampled LIP capture ignores full angular momentum and moving support geometry",
+    "Strict actual loaded-slip, landing and final5s standing gates remain unchanged"
+  ],
+  "governedEntryFork": {
+    "physicalStateBitIdenticalToSavedBaseline": true,
+    "onlyReferenceChange": "rate0 means initial swing velocity and acceleration0, rather than immediate1.714mps2 arc acceleration",
+    "oldPlannedLeftKneeAccelerationRadps2": -35.76805791466224,
+    "newPlannedLeftKneeAccelerationRadps2": 0.14509624225505832,
+    "oldActualRightContactCountAt25ms": 2,
+    "newActualRightContactCountAt25ms": 3,
+    "physicsWallSeconds": 0.069448509,
+    "nativeFrames": 20,
+    "noFlightOrNonfoot": true,
+    "standingQualificationClaim": false
+  }
+}

@@ -41,6 +41,26 @@ class StepTests(unittest.TestCase):
   self.last=[dict(loads_n=[40.,360.],clearance_m=[0.,0.])]*20
   for i in range(3):self.update(9.6+i*.025);self.assertEqual(self.step.phase,'land')
   self.update(9.675);self.assertEqual(self.step.phase,'return')
+class CaptureGovernorTests(unittest.TestCase):
+ def setUp(self):
+  self.step=m.RecoveryStep([0.,.8,0.],[.1,.8,0.],2.,None,capture_governor=True);self.step.change('lift',0.);self.start=np.zeros(3);self.end=np.array([0.,.035,0.])
+ def test_zero_margin_pauses_virtual_clock_without_timed_endpoint(self):
+  for i in range(20):
+   p,v,a=self.step.governed_arc(self.start,self.end,i*.025,.35,.001)
+   np.testing.assert_array_equal(p,self.start);np.testing.assert_array_equal(v,np.zeros(3));np.testing.assert_array_equal(a,np.zeros(3))
+  self.assertEqual(self.step.virtual_time,0.)
+ def test_chain_rule_and_continuous_bounded_rate(self):
+  old_rate=0.
+  for i in range(12):
+   p,v,a=self.step.governed_arc(self.start,self.end,i*.025,.35,.006 if i<6 else .001)
+   raw_p,raw_v,raw_a=m.arc(self.start,self.end,self.step.virtual_time,.35)
+   np.testing.assert_allclose(v,raw_v*self.step.phase_rate);np.testing.assert_allclose(a,raw_a*self.step.phase_rate**2+raw_v*self.step.phase_rate_derivative)
+   self.assertLessEqual(abs(self.step.phase_rate-old_rate),.25);self.assertLessEqual(abs(self.step.phase_rate_derivative),10.);old_rate=self.step.phase_rate
+ def test_rate_change_does_not_rewrite_elapsed_reference(self):
+  self.step.governed_arc(self.start,self.end,0.,.35,.006)
+  self.step.governed_arc(self.start,self.end,.025,.35,.001)
+  expected=.025-.1*(1.-np.exp(-.25));self.assertAlmostEqual(self.step.virtual_time,expected)
+
 class TerminalUnloadTests(unittest.TestCase):
  def test_soft_unload_waits_for_readiness_then_matches_the_ceiling_ramp(self):
   goal=m.TerminalUnloadGoal();self.assertEqual(goal.soft_weight,0.);goal.update(False,45.);self.assertEqual(goal.soft_weight,0.);goal.update(True,45.);self.assertEqual(goal.soft_weight,0.)

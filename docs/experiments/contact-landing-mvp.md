@@ -377,3 +377,45 @@ relaxation. After lift only the left chain9:15 is exempt; arms keep their interi
 rest through return/stand in both soft posture and hard tracking references.
 Actual warm-state and three forward QPs pass; displaced-foot return witnesses
 remain approximate. These are prerequisites, not a completed physical step.
+
+B23 achieves 36.85 mm true whole-capsule clearance, but only 46.3 mm of
+translation before its placement timeout. It never restores left-foot support;
+right loaded slip reaches 13.44 mm, exceeding the unchanged 10 mm gate. The
+native COM follows the QP's outward acceleration closely, so this is primarily
+a control-priority failure. At 9.9 s exact desired horizontal COM acceleration
+is infeasible with every tracking band hard, but feasible when arm tracking can
+yield. Blanket arm release is unsafe because it can demand reaction-mass motion.
+
+B24 replays recorded commands with full physical/cache parity to obtain exact
+lift/translation checkpoints, then runs independent 25 ms forks. At the safe
+9.25 s entry both controls are nearly identical. At 9.6 s the new balance-first
+hierarchy reverses actual COM acceleration z from +0.01641 to -0.06857 m/s²
+(model -0.08769). Both forks keep native support without flight/non-foot contact.
+The entire replay plus both pairs consumes 26.18183 s physical wall time and
+7,780 native frames, including a 20-frame parity-check attempt that stopped only
+because wall-time telemetry was mistakenly compared. This is recovery evidence,
+not a complete step: capture starts only 0.435 mm inside the old triangle.
+
+The next opt-in protocol keeps all physical/contact/braking/cap constraints
+hard. It adds a sampled actual-hull capture guard with a 3 mm polygon inset,
+and a vertical height/speed/model-braking envelope. It first minimizes coupled
+squared PD-tracking slack, then optimizes the old task objective within that
+slack plus 1e-6 rad/s². Exactly fixed coordinates contribute analytical constant
+slack cost; original strict solver tolerances remain. Contact-mode primary costs
+are compared in numerical round(cost,6) bins. This is approximate numerical
+priority, not exact native invariance. When actual loaded support degenerates
+to a segment, zero-inset two-sided recovery replaces the impossible polygon
+inset; no missing support corner is invented. Lift still requires a measured
+3 mm polygon capture margin. A continuous capture-aware swing clock decelerates
+below 2 mm margin, with exact velocity/acceleration chain rule and explicit wall
+timeouts; landing continues lowering. Native clearance, actual displacement,
+landing, slip and five-second standing acceptance remain unchanged.
+
+A final same-state 25 ms governor-entry fork preserves three actual stance
+contacts, versus two under the original abrupt lift reference. Initial planned
+left-knee acceleration falls from -35.77 to +0.145 rad/s². Total B24 replay and
+all forks is 26.25128 s/7,800 native frames. These are support/control observations,
+not native standing or complete-step qualification. Early segment recovery is
+hard-feasible: an exact zero-free-tracking-slack witness proves the global
+minimum primary cost and avoids a degenerate semidefinite zero-minimum solve.
+If that certificate fails, the full two-stage hierarchy is still required.

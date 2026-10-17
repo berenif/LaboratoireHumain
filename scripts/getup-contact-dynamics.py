@@ -14,6 +14,8 @@ from scipy.spatial import ConvexHull,QhullError
 ROOT=Path(__file__).resolve().parents[1]
 s=importlib.util.spec_from_file_location('reference',ROOT/'scripts/getup-step-reference.py')
 reference=importlib.util.module_from_spec(s);s.loader.exec_module(reference)
+s=importlib.util.spec_from_file_location('balance_priority',ROOT/'scripts/getup-balance-priority.py')
+balance_priority=importlib.util.module_from_spec(s);s.loader.exec_module(balance_priority)
 
 
 def normalized_rotation(r):return r/np.cbrt(np.linalg.det(r))
@@ -45,7 +47,9 @@ def solve_clarabel_qp(H,g,E,b,C,upper,lo,hi):
     cones=[clarabel.ZeroConeT(len(b)),clarabel.NonnegativeConeT(len(upper)+2*n)]
     settings=clarabel.DefaultSettings();settings.verbose=False;settings.max_iter=200;settings.tol_gap_abs=1e-8;settings.tol_gap_rel=1e-8;settings.tol_feas=1e-9
     solver=clarabel.DefaultSolver(sparse.triu(sparse.csc_matrix(H)).tocsc(),g,A,rhs,cones,settings);solution=solver.solve();status=str(solution.status)
-    return OptimizeResult(x=np.array(solution.x) if solution.x is not None else np.zeros(n),success=status=='Solved',message='Clarabel '+status,nit=solution.iterations)
+    values=np.array(solution.x) if solution.x is not None else np.zeros(n);finite=bool(np.all(np.isfinite(values)))
+    def metric(value):return float(value) if value is not None and np.isfinite(value) else None
+    return OptimizeResult(x=values if finite else np.zeros(n),success=bool(status=='Solved' and finite),message='Clarabel '+status,nit=solution.iterations,primalObjective=metric(solution.obj_val),dualObjective=metric(solution.obj_val_dual),primalResidual=metric(solution.r_prim),dualResidual=metric(solution.r_dual))
 
 
 def separating_float32_neighbor(q,v,lower,upper):
@@ -117,7 +121,7 @@ class ContactDynamics:
                 i=h['qposIndex'];ancestors.append(i);self.armature[i]=h['armature'];self.spring[i]=p['jointProfile']['axes'][0]['passiveStiffnessNmPerRad'];self.damping[i]=p['jointProfile']['axes'][0]['dampingNmsPerRad']
             self.ancestors[p['id']]=ancestors
         assert 0<=joint_reserve_margin<=.001 and (joint_viability or joint_reserve_margin==0.)
-        assert tracking_priority in ['hard-band','physical-first'];self.tracking_priority=tracking_priority
+        assert tracking_priority in ['hard-band','physical-first','balance-first'];assert tracking_priority!='balance-first' or qp_solver=='clarabel';self.tracking_priority=tracking_priority
         assert friction_mode in ['soft-tangent','active-sticking'] and (friction_mode=='soft-tangent' or contact_mode=='unilateral-soft');self.friction_mode=friction_mode
         assert force_jacobian in ['live-geometric','native-frozen'];assert joint_stop_mode in ['near-stop','native-bound-release'];self.joint_stop_mode=joint_stop_mode
         assert not joint_reserve_recovery or (joint_viability and joint_reserve_margin>0.)
@@ -173,7 +177,7 @@ class ContactDynamics:
             if low-1e-4<=q[i]<=low and v[6+i]<=0.:active.append((i,1.,low))
             elif high<=q[i]<=high+1e-4 and v[6+i]>=0.:active.append((i,-1.,high))
         return active
-    def solve(self,state,target_com,target_rotation,posture,unload_left=False,swing=None,_inactive=None,left_force_ceiling_n=None,tracking=None,_released_stops=None):
+    def solve(self,state,target_com,target_rotation,posture,unload_left=False,swing=None,_inactive=None,left_force_ceiling_n=None,tracking=None,_released_stops=None,balance=None):
         if self.joint_stop_mode=='native-bound-release' and _released_stops is None:
             candidates=self.bound_stop_candidates(state,swing);assert len(candidates)<=4,'Bounded joint-stop subset search only';indices=[row[0]for row in candidates];warm=self.previous;attempts=[]
             for count in range(len(indices),-1,-1):
@@ -182,7 +186,7 @@ class ContactDynamics:
                     try:
                         for i in released:
                             low,high=self.kin.limits[i];braking_acceleration_bounds(state['q'][i],state['v'][6+i],low,high,reserve=self.joint_reserve_margin,native_float32_neighbors=True,reserve_recovery=self.joint_reserve_recovery)
-                        action,info=self.solve(state,target_com,target_rotation,posture,unload_left,swing,_inactive,left_force_ceiling_n,tracking,frozenset(released))
+                        action,info=self.solve(state,target_com,target_rotation,posture,unload_left,swing,_inactive,left_force_ceiling_n,tracking,frozenset(released),balance)
                     except (ValueError,AssertionError)as error:
                         attempts.append(dict(released=list(released),error=str(error)));continue
                     attempts.append(dict(released=list(released),success=info['success']))
@@ -200,11 +204,14 @@ class ContactDynamics:
                 inactive=tuple(i for i,b in enumerate(bits) if b)
                 if len(inactive)==len(bits):continue
                 self.previous=warm
-                try:action,info=self.solve(state,target_com,target_rotation,posture,unload_left,swing,inactive,left_force_ceiling_n,tracking,_released_stops)
+                try:action,info=self.solve(state,target_com,target_rotation,posture,unload_left,swing,inactive,left_force_ceiling_n,tracking,_released_stops,balance)
                 except (ValueError,AssertionError) as error:
                     attempts.append(dict(inactive=list(inactive),error=str(error)));continue
                 attempts.append(dict(inactive=list(inactive),feasible=info['constraintFeasible'],optimizerSuccess=info['optimizerSuccess']))
-                if info['success'] and (best is None or info['objectiveCost']<best[1]['objectiveCost']):best=(action,info,self.previous.copy())
+                if info['success']:
+                    key=(round(info.get('minimumTrackingSlackCost',0.),6),info['objectiveCost'])
+                    old_key=None if best is None else (round(best[1].get('minimumTrackingSlackCost',0.),6),best[1]['objectiveCost'])
+                    if best is None or key<old_key:best=(action,info,self.previous.copy())
             if best is None:
                 self.previous=warm
                 return np.zeros(21),dict(success=False,error='No admissible contact mode',contactModeAttempts=attempts)
@@ -294,7 +301,7 @@ class ContactDynamics:
                 try:brake_lo,brake_hi=braking_acceleration_bounds(q[i],v[6+i],lower,upper,reserve=self.joint_reserve_margin,native_float32_neighbors=True,reserve_recovery=self.joint_reserve_recovery)
                 except ValueError as error:raise ValueError(f'Joint {i}: {error}') from error
                 lo[6+i]=max(lo[6+i],brake_lo);hi[6+i]=min(hi[6+i],brake_hi)
-        if self.tracking_priority=='physical-first':
+        if self.tracking_priority in ['physical-first','balance-first']:
             for i,sign,bound in active:
                 acceleration=-20*v[6+i]-100*(q[i]-bound)
                 lo[6+i]=max(lo[6+i],acceleration);hi[6+i]=min(hi[6+i],acceleration)
@@ -306,7 +313,7 @@ class ContactDynamics:
             tracking_relaxations=[]
             for j,i in enumerate(indices):
                 lower,upper,slack=intersect_tracking_acceleration(lo[6+i],hi[6+i],center[j]-16*radius[j],center[j]+16*radius[j],self.tracking_priority=='physical-first')
-                lo[6+i]=lower;hi[6+i]=upper
+                if self.tracking_priority!='balance-first':lo[6+i]=lower;hi[6+i]=upper
                 if slack>0.:tracking_relaxations.append(dict(qpos=int(i),minimumScalarSlackRadps2=float(slack),requiredPhysicalAccelerationRadps2=float(lower)))
             tracking_info=dict(priority=self.tracking_priority,physicalPriorityRelaxations=tracking_relaxations,indices=indices.tolist(),radiusRad=radius.tolist(),positionErrorRad=error.tolist(),velocityErrorRadps=velocity_error.tolist(),centerAccelerationRadps2=center.tolist(),halfWidthAccelerationRadps2=(16*radius).tolist(),minimumPositionMarginRad=float(min(radius-abs(error))),minimumFirstOrderBarrierMarginRadps=float(min(np.r_[4*(radius-error)-velocity_error,4*(radius+error)+velocity_error])),interpretation='Hard moving-reference PD-acceleration band; native tracking and invariant position containment are not guaranteed')
         for k in range(nc):lo[48+3*k:51+3*k]=[-2.,-2.,0.];hi[48+3*k:51+3*k]=[2.,2.,2.]
@@ -332,15 +339,31 @@ class ContactDynamics:
             for k,c in enumerate(contacts):
                 if c['body']=='left_foot':row[50+3*k]=1.
             inequalities.append(row);upper.append(left_force_ceiling_n/F)
+        ceiling_end=len(inequalities);balance_info=None
+        if balance is not None:
+            rows,limits,balance_info=balance_priority.capture_rows(state,balance['points'],balance['capture'],margin=balance.get('margin',.003),allow_segment=balance.get('allowSegmentRecovery',False))
+            for values,limit in zip(rows,limits):
+                row=np.zeros(n);row[:27]=values;inequalities.append(row);upper.append(limit)
+            height=state['com'][1];vy=state['comVelocity'][1];height_lo,height_hi=balance['heightBounds']
+            vertical_lo,vertical_hi=braking_acceleration_bounds(height,vy,height_lo,height_hi,brake=.3)
+            vertical_lo=max(vertical_lo,-.3,(-.05-vy)/.025);vertical_hi=min(vertical_hi,.3,(.05-vy)/.025)
+            assert vertical_lo<=vertical_hi,'Empty COM vertical engineering interval'
+            row=np.zeros(n);row[:27]=state['Jcom'][1]
+            inequalities.extend([row,-row]);upper.extend([vertical_hi-state['comBias'][1],state['comBias'][1]-vertical_lo])
+            balance_info.update(verticalHeightBoundsM=list(balance['heightBounds']),verticalAccelerationIntervalMps2=[float(vertical_lo),float(vertical_hi)],verticalModelBrakingMps2=.3)
         C=np.array(inequalities);upper=np.array(upper);constraints=[LinearConstraint(Er,br,br),LinearConstraint(C,-np.inf,upper)]
         start=np.clip(np.zeros(n) if self.previous is None or len(self.previous)!=n else self.previous,lo,hi)
-        if self.qp_solver=='clarabel':result=solve_clarabel_qp(H,g,Er,br,C,upper,lo,hi)
+        hierarchy=None
+        if self.tracking_priority=='balance-first' and tracking is not None:
+            result,hierarchy=balance_priority.solve_tracking_hierarchy(solve_clarabel_qp,H,g,Er,br,C,upper,lo,hi,6+indices,center-16*radius,center+16*radius)
+            tracking_info['coupledHierarchy']=hierarchy;tracking_info['interpretation']='Minimum coupled PD-acceleration tracking slack under hard sampled balance and physics, then optional task cost; actual invariant position containment is not guaranteed'
+        elif self.qp_solver=='clarabel':result=solve_clarabel_qp(H,g,Er,br,C,upper,lo,hi)
         else:result=minimize(lambda z:.5*z@H@z+g@z,start,jac=lambda z:H@z+g,bounds=Bounds(lo,hi),constraints=constraints,method='SLSQP',options={'maxiter':80,'ftol':1e-8,'disp':False})
-        z=result.x;eq_error=float(max(abs(E@z-b)));inequality_error=float(max(C@z-upper));friction_error=float(max((C@z-upper)[:4*nc]));gap_error=float(max((C@z-upper)[4*nc:gap_end],default=0.));load_error=float(max((C@z-upper)[gap_end:],default=0.)*F);bounds_error=float(max(np.max(lo-z),np.max(z-hi)));self.previous=z
+        z=result.x;eq_error=float(max(abs(E@z-b)));inequality_error=float(max(C@z-upper));friction_error=float(max((C@z-upper)[:4*nc]));gap_error=float(max((C@z-upper)[4*nc:gap_end],default=0.));load_error=float(max((C@z-upper)[gap_end:ceiling_end],default=0.)*F);bounds_error=float(max(np.max(lo-z),np.max(z-hi)));self.previous=z
         braking_margins=[]
         if self.joint_viability:
-            for i,(lower,upper) in enumerate(self.kin.limits):
+            for i,(limit_lower,limit_upper) in enumerate(self.kin.limits):
                 if i in [row[0] for row in active]:continue
-                qnext=q[i]+.025*v[6+i]+.5*.025**2*z[6+i];vnext=v[6+i]+.025*z[6+i];braking_margins.append(min(upper-qnext-max(vnext,0.)**2/100.,qnext-min(vnext,0.)**2/100.-lower))
+                qnext=q[i]+.025*v[6+i]+.5*.025**2*z[6+i];vnext=v[6+i]+.025*z[6+i];braking_margins.append(min(limit_upper-qnext-max(vnext,0.)**2/100.,qnext-min(vnext,0.)**2/100.-limit_lower))
         motor=z[27:48]*self.gears;raw=offset+motor/self.gears;represented=np.clip(raw,-1.,1.);predicted=self.gears*np.clip(self.kin.nominal+represented-q-.2*v[6:],-1.,1.)
-        return represented,dict(trackingConstraint=tracking_info,success=bool(result.success and eq_error<1e-4 and inequality_error<1e-6 and bounds_error<1e-6),qpSolver=self.qp_solver,frictionMode=self.friction_mode,forceJacobianMode=self.force_jacobian,maximumFrozenForcePointOffsetM=max(np.linalg.norm(c['forcePoint']-c['point']) for c in contacts),optimizerMessage=str(result.message),optimizerSuccess=bool(result.success),boundsError=bounds_error,constraintFeasible=bool(eq_error<1e-4 and inequality_error<1e-6 and bounds_error<1e-6),equalityError=eq_error,jointViabilityGuard=self.joint_viability,futureJointStoppingReserveBufferRad=self.joint_reserve_margin,jointReserveRecovery=self.joint_reserve_recovery,separatingFloat32NeighborReleaseJoints=[i for i,(low,high) in enumerate(self.kin.limits) if self.joint_viability and i not in [row[0] for row in active] and separating_float32_neighbor(q[i],v[6+i],low,high)],jointLimitRepresentation='original model min/max deserialized to native f32, then promoted for analysis; installed physics unchanged',minimumPredictedJointStoppingMarginRad=min(braking_margins,default=None),dependentEqualityError=dependent_error,frictionError=friction_error,contactGapViolationM=gap_error,leftNormalForceCeilingN=left_force_ceiling_n,leftNormalForceCeilingViolationN=load_error,plannedLeftNormalForceN=float(sum(z[50+3*k]*F for k,c in enumerate(contacts) if c['body']=='left_foot')),inactiveContacts=sorted(inactive),predictedContactGapsM=[float(c['gap']+.025*(c['basis'][:,2]@c['velocity'])+.5*.025**2*(c['basis'][:,2]@(c['J']@z[:27]+c['bias']))) if c['gap'] is not None else None for c in contacts],objectiveCost=float(.5*z@H@z+g@z+.5*d@d),desiredComAcceleration=desired_com.tolist(),achievedComAcceleration=(state['Jcom']@z[:27]+state['comBias']).tolist(),qdd=z[:27].tolist(),motorTorquesNm=motor.tolist(),predictedRepresentedTorquesNm=predicted.tolist(),maximumTorqueRepresentationErrorNm=float(max(abs(predicted-motor))),plannedContactForcesWorldN=[(c['basis']@z[48+3*k:51+3*k]*F).tolist() for k,c in enumerate(contacts)],activeStops=[dict(qpos=i,sign=sign,reactionNm=float(z[48+3*nc+k]*self.gears[i])) for k,(i,sign,_) in enumerate(active)],maximumMotorFraction=float(max(abs(motor/self.gears))))
+        return represented,dict(balanceGuard=balance_info,minimumTrackingSlackCost=0. if hierarchy is None else hierarchy.get('minimumSquaredSlackCost'),balanceConstraintError=float(max((C@z-upper)[ceiling_end:],default=0.)),trackingConstraint=tracking_info,success=bool(result.success and eq_error<1e-4 and inequality_error<1e-6 and bounds_error<1e-6),qpSolver=self.qp_solver,frictionMode=self.friction_mode,forceJacobianMode=self.force_jacobian,maximumFrozenForcePointOffsetM=max(np.linalg.norm(c['forcePoint']-c['point']) for c in contacts),optimizerMessage=str(result.message),optimizerSuccess=bool(result.success),boundsError=bounds_error,constraintFeasible=bool(eq_error<1e-4 and inequality_error<1e-6 and bounds_error<1e-6),equalityError=eq_error,jointViabilityGuard=self.joint_viability,futureJointStoppingReserveBufferRad=self.joint_reserve_margin,jointReserveRecovery=self.joint_reserve_recovery,separatingFloat32NeighborReleaseJoints=[i for i,(low,high) in enumerate(self.kin.limits) if self.joint_viability and i not in [row[0] for row in active] and separating_float32_neighbor(q[i],v[6+i],low,high)],jointLimitRepresentation='original model min/max deserialized to native f32, then promoted for analysis; installed physics unchanged',minimumPredictedJointStoppingMarginRad=min(braking_margins,default=None),dependentEqualityError=dependent_error,frictionError=friction_error,contactGapViolationM=gap_error,leftNormalForceCeilingN=left_force_ceiling_n,leftNormalForceCeilingViolationN=load_error,plannedLeftNormalForceN=float(sum(z[50+3*k]*F for k,c in enumerate(contacts) if c['body']=='left_foot')),inactiveContacts=sorted(inactive),predictedContactGapsM=[float(c['gap']+.025*(c['basis'][:,2]@c['velocity'])+.5*.025**2*(c['basis'][:,2]@(c['J']@z[:27]+c['bias']))) if c['gap'] is not None else None for c in contacts],objectiveCost=float(.5*z@H@z+g@z+.5*d@d),desiredComAcceleration=desired_com.tolist(),achievedComAcceleration=(state['Jcom']@z[:27]+state['comBias']).tolist(),qdd=z[:27].tolist(),motorTorquesNm=motor.tolist(),predictedRepresentedTorquesNm=predicted.tolist(),maximumTorqueRepresentationErrorNm=float(max(abs(predicted-motor))),plannedContactForcesWorldN=[(c['basis']@z[48+3*k:51+3*k]*F).tolist() for k,c in enumerate(contacts)],activeStops=[dict(qpos=i,sign=sign,reactionNm=float(z[48+3*nc+k]*self.gears[i])) for k,(i,sign,_) in enumerate(active)],maximumMotorFraction=float(max(abs(motor/self.gears))))
