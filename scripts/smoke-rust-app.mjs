@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import { spawn } from 'node:child_process';
 import { chromium, browserLaunchOptions } from './rust-browser-test.mjs';
+import { assertSmokeAdvanceFits, assertSmokeModelContract, maximumSmokeTicks, readSmokeClock } from './rust-smoke-contract.mjs';
 
 // One browser, one bounded physical trajectory. UI initialization/reset checks
 // run at tick zero; no qualification, recovery campaign or hidden warm-up.
@@ -35,8 +36,7 @@ try {
   const initial = await state();
   assert.equal(initial.tick, 0);
   assert.equal(initial.backend, 'WebGL2');
-  assert.equal(initial.graphics.renderedSegments, 25);
-  assert.equal(initial.snapshot.segments.length, 25);
+  assertSmokeModelContract(initial);
   assert.match(await page.locator('.preview-tag').innerText(), /Experimental/);
   for (const id of ['pause', 'reset', 'floor', 'heading', 'region', 'strike', 'renderer', 'quality', 'camera-focus', 'camera-reset']) {
     assert.equal(await page.locator(`#${id}`).count(), 1, id);
@@ -60,6 +60,7 @@ try {
   assert.equal((await page.evaluate(() => window.__lhRust.advance(4))).completed_ticks, 0);
   await page.locator('#pause').click(); await idle();
   const advance = async () => {
+    assertSmokeAdvanceFits(await state(), 4);
     const reply = await page.evaluate(() => window.__lhRust.advance(4));
     assert.equal(reply.failure, null);
     assert.equal(reply.completed_ticks, 4);
@@ -68,14 +69,14 @@ try {
   assert.equal((await state()).canStrike, true);
   await page.locator('#strike').click(); await idle();
   assert.equal((await state()).strikerPhase, 'positioning');
-  for (let tick = 120; tick < 300 && (await state()).strikes === 0; tick += 4) await advance();
+  for (let tick = 120; tick < maximumSmokeTicks && (await state()).strikes === 0; tick += 4) await advance();
   const final = await state();
   assert.equal(final.strikes, 1, 'Striker must make physical contact');
   assert.equal(final.workerInstances, 1);
-  assert.ok(final.tick <= 300 && final.time <= 5.001);
+  assert.ok(final.tick <= maximumSmokeTicks && final.time <= 5.001);
   assert.equal(final.failure, null);
   assert.deepEqual(errors, []);
-  console.log(JSON.stringify({ passed: true, runtime: 'Rust/WASM', backend: final.backend, ticks: final.tick, simulatedSeconds: final.time, nativeSubsteps: final.tick * 4, strikes: final.strikes, segments: final.snapshot.segments.length, physicalQualification: false }));
+  console.log(JSON.stringify({ passed: true, runtime: 'Rust/WASM', backend: final.backend, ticks: final.tick, simulatedSeconds: final.time, nativeSubsteps: readSmokeClock(final).nativeSubsteps, strikes: final.strikes, segments: final.snapshot.segments.length, physicalQualification: false }));
 } finally {
   await browser?.close();
   server.kill();
