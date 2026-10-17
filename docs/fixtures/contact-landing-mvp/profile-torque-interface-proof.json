@@ -1,0 +1,117 @@
+{
+  "interpretation": "Profile torque parameterization correction and one25ms local check, not a step recovery or landing proof",
+  "profileMode": "Direct FF plus predicted q/dq impedance; original\u00b1gear native clamp and\u00b1.9 QP fractions retained",
+  "legacyMode": "Unchanged nominal-residual[-1,1] representation intersection",
+  "B29": {
+    "status": "stopped10.175 beforeplacement",
+    "obsoleteLegacyRepresentation": true,
+    "fullCorrectProfileReplaySHA256": "6413bd2b488d289d52567212a7f7c166038787a6be7a66be2cd7aedf79f836fd",
+    "reactionMassRisk": "Actual left foot moves opposite desiredplacement; large swingjoint motion persists independently of interface"
+  },
+  "B30": {
+    "status": "completed-local-recovery-only",
+    "maximumNativeFrames": 20,
+    "physicsCapSeconds": 1.0,
+    "interpretation": "One local recovery command after corrected profile torque parameterization; old legacy model has no feasible command here; no placement/landing/standing proof",
+    "decisionTorqueParityMaxNm": 1.8779681600911147e-06,
+    "maximumActualMotorFraction": 0.9018470764160156,
+    "predictedJointAccelerationRadps2": [
+      3.1429691025786766,
+      -2.6062294985969805,
+      -3.701189233414497,
+      2.7464567845448316,
+      1.0751950643243646,
+      2.6265140196935715,
+      -5.693525449138791,
+      -3.3237820341701716,
+      -0.4001416643336622,
+      -2.8530247102102604,
+      49.99999999588764,
+      -14.97575367680477,
+      -7.938926837130081,
+      49.99999999339666,
+      49.998578078148185,
+      0.8924652255247584,
+      -1.5730741795164014,
+      -0.7077571460295374,
+      -0.7292197390116645,
+      -1.2968135225325303,
+      0.11879777543983502
+    ],
+    "actualJointAccelerationRadps2": [
+      2.723245620727539,
+      -1.9359824061393738,
+      -2.7860063314437866,
+      2.2764980792999268,
+      1.1198526620864868,
+      1.8301603198051453,
+      -6.562841534614563,
+      -3.784811496734619,
+      0.1439988613128662,
+      -7.54831463098526,
+      40.4099178314209,
+      -15.030611604452133,
+      -9.221420288085938,
+      42.31426239013672,
+      45.16453742980957,
+      0.8040137588977814,
+      -1.8916189670562744,
+      -0.7172098755836487,
+      -0.8306577801704407,
+      -0.9964925050735474,
+      -0.03348451107740402
+    ],
+    "predictedCOMAccelerationMps2": [
+      1.0375798702013095,
+      -0.11763134822933696,
+      0.04865956788561543
+    ],
+    "actualCOMAccelerationMps2": [
+      1.1967516193851535,
+      -0.06641508973596368,
+      -0.004124869295487749
+    ],
+    "beforeSwingJointVelocitiesRadps": [
+      0.020231060683727264,
+      3.070150136947632,
+      0.02644842490553856,
+      4.136509418487549,
+      4.144606590270996,
+      2.4650299549102783
+    ],
+    "afterSwingJointVelocitiesRadps": [
+      -0.16847680509090424,
+      4.080398082733154,
+      -0.34931686520576477,
+      3.9059739112854004,
+      5.202463150024414,
+      3.5941433906555176
+    ],
+    "metrics": {
+      "unloadedRepositionEvents": [],
+      "maximumContinuousNativeStandingWithoutFootAnchorS": 0.0,
+      "maximumContinuousNativeStandingWithFootAnchorS": 0.0,
+      "loadedContactSlipIntegralM": [
+        0.0,
+        0.0002875777264125645
+      ],
+      "nonfootSupportObserved": false,
+      "flightNativeSamples": 0
+    },
+    "physicsWallSeconds": 0.064509251,
+    "nativeSubsteps": 20,
+    "uncertainOutstandingRequests": [],
+    "totalProcessWallSeconds": 0.33443103799800156
+  },
+  "aggregateLedger": {
+    "physicsWallSeconds": 588.4004284760001,
+    "physicsBudgetChargedSeconds": 593.4004284760001,
+    "nativeSubsteps": 172940,
+    "nativeSubstepsUpperBound": 172960
+  },
+  "rawSHA256": {
+    "batch29-future-clearance-suffix/summary.json": "2a38687bd1e270b048ce6093365e6ada8ec9073c50c1cfbdda9fc14a8aeccf07",
+    "batch30-profile-torque-interface-audit/native-command.json": "e72ebd142e7365971f68347eee593cc4d17e42107ee9baf1886e3a376e3ac5c6",
+    "batch30-profile-torque-interface-audit/summary.json": "6c9e6b767335c3fc212eaf1aedd50937c329ea699a35b114e561c448e9a95ea6"
+  }
+}

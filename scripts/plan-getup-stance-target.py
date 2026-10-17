@@ -30,8 +30,10 @@ def static_capacity(c,q,root,contacts,left_share=None,generalized_load=None,velo
     for i in range(21):
         for sign in [-1,1]:
             row=np.zeros(n);row[i]=sign;row[-1]=-1.;C.append(row)
-    # Keep the represented-residual feasibility inherited by the physical QP.
-    offset=q-c.kin.nominal+(0. if velocity is None else .2*velocity[6:]);bounds=list(zip(-1.-offset,1.-offset))
+    # Legacy residual needs representation bounds; profile FF is direct torque.
+    # The minimax capacity LP reports required motor fraction; caller compares
+    # against actual caps. It does not apply torque or change native limits.
+    offset=q-c.kin.nominal+(0. if velocity is None else .2*velocity[6:]);bounds=([(None,None)]*21 if c.actuation_mode=='motion-profile'else list(zip(-1.-offset,1.-offset)))
     for con in contacts:bounds += [(0.,0.)]*3 if left_share==0 and con['body']=='left_foot' else [(-2.,2.),(-2.,2.),(0.,2.)]
     bounds += [(0.,5.)]*len(stops)+[(0.,None)];g=np.zeros(n);g[-1]=1.
     res=linprog(g,A_eq=A,b_eq=-gravity,A_ub=np.array(C),b_ub=np.zeros(len(C)),bounds=bounds,method='highs')

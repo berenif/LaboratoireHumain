@@ -477,3 +477,30 @@ physical stopping reserve is +0.299 mm. No flight/non-foot support; local stance
 slip is 0.184 mm. Total 160 native frames / 0.50808 s physics. The actual capture
 margin alternates with changing contact triangles, so this is local clearance
 evidence only. Placement, landing and final standing remain unqualified.
+
+
+### B29–B30: explicit MotionProfile torque parameterization
+
+The exact 9.875 s phase-chain suffix keeps clearance above 15 mm but stops at
+10.175 s. Cumulative slip is 7.28/8.39 mm. The left foot is being used as a
+reaction mass: its actual origin moves opposite the placement target and reaches
+1.58 m/s horizontal velocity. No complete placement, landing or stand is passed.
+
+A separate interface defect is now corrected opt-in: the QP retained legacy
+nominal-residual action bounds even though MotionProfile applies direct torque
+feedforward plus predicted q/dq impedance. Profile QPs now use the same ±90%gear
+motor-variable bounds without obsolete residual bounds; the main driver passes
+and blends torque feedforward directly. Legacy actuation remains unchanged.
+The corrected full final-state QP is feasible under all guards. A bare physical
+model regression also demonstrates legacy rejection versus profile feasibility.
+
+B30 applies one corrected 25 ms command from the exact stopped checkpoint.
+Decision torque parity is 1.88 µNm; native peak is 90.185%gear including inner
+impedance, below the unchanged physical cap. No flight/non-foot support. This
+confirms the interface, while actual leg momentum still increases as requested
+by the deficient late-state plan. There is no claim that this rescues the step.
+A jointly attainable whole-body swing/landing path is the next prerequisite.
+
+Planner source changed only to distinguish legacy representation from direct
+profile minimax capacity. Older path artifacts and their hashes remain immutable;
+new planning must regenerate its certificate or explicitly verify compatibility.

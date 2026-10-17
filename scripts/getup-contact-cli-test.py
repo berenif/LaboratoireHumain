@@ -7,6 +7,11 @@ from unittest.mock import patch
 sp=importlib.util.spec_from_file_location('probe_cli',Path(__file__).with_name('probe-getup-contact-feedback.py'));cli=importlib.util.module_from_spec(sp);sp.loader.exec_module(cli)
 class NativeConstructionReached(Exception):pass
 class ProbeCLITests(unittest.TestCase):
+ def test_motion_profile_direct_feedforward_does_not_reclip_through_legacy_action(self):
+  gears=np.full(21,20.);nominal=np.zeros(21);source=np.zeros(21);obs=np.zeros(67);obs[:21]=1.28122;ff=np.full(21,10.)
+  np.testing.assert_array_equal(cli.motion_profile_feedforward(gears,nominal,source,obs,1.,ff),ff)
+  np.testing.assert_array_equal(cli.motion_profile_feedforward(gears,nominal,source,obs,0.,ff),np.full(21,-20.))
+  np.testing.assert_array_equal(cli.motion_profile_feedforward(gears,nominal,source,obs,.5,ff),np.full(21,-5.))
  def test_step_stance_target_preserves_planned_height(self):
   class Refs:
    def reference(self,progress):return None,None,np.array([.1,.80006124,.2])

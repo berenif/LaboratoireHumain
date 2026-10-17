@@ -107,6 +107,13 @@ def vertical_speed_acceleration_bounds(lower,upper,velocity,recovery=False,dt=.0
     return lower,upper
 
 
+def torque_fraction_bounds(offset,actuation_mode):
+    offset=np.asarray(offset)
+    if actuation_mode=='motion-profile':return np.full_like(offset,-.9),np.full_like(offset,.9)
+    assert actuation_mode=='legacy-residual'
+    return np.maximum(-.9,-1.-offset),np.minimum(.9,1.-offset)
+
+
 def capsule_clearance_acceleration_lower(height,velocity,minimum=.015,brake=2.,dt=.025,future_reserve=0.):
     assert brake>0. and dt>0. and 0.<=future_reserve<=.002
     gap=height-minimum;current_reserve=gap-max(-velocity,0.)**2/(2*brake)
@@ -140,7 +147,8 @@ def intersect_tracking_acceleration(physical_lower,physical_upper,tracking_lower
 
 
 class ContactDynamics:
-    def __init__(self,model,contact_mode='normal-soft',flat_soles=False,joint_viability=False,qp_solver='slsqp',joint_reserve_margin=0.,force_jacobian='live-geometric',joint_stop_mode='near-stop',joint_reserve_recovery=False,friction_mode='soft-tangent',tracking_priority='hard-band'):
+    def __init__(self,model,contact_mode='normal-soft',flat_soles=False,joint_viability=False,qp_solver='slsqp',joint_reserve_margin=0.,force_jacobian='live-geometric',joint_stop_mode='near-stop',joint_reserve_recovery=False,friction_mode='soft-tangent',tracking_priority='hard-band',actuation_mode='legacy-residual'):
+        assert actuation_mode in ['legacy-residual','motion-profile'];self.actuation_mode=actuation_mode
         self.kin=reference.Kinematics(model);self.kin.limits=self.kin.limits.astype(np.float32).astype(float);self.parts=model['segments'];self.by_id={p['id']:p for p in self.parts}
         self.mass=model['totalMassKg'];self.gears=self.kin.gears;self.armature=np.zeros(21);self.spring=np.zeros(21);self.damping=np.zeros(21)
         self.ancestors={}
@@ -330,7 +338,8 @@ class ContactDynamics:
         for k,c in enumerate(contacts):
             H[48+3*k:51+3*k,48+3*k:51+3*k]+=np.eye(3)*.005;g[50+3*k]-=.005*c['measuredNormalN']/F
         lo=np.full(n,-50.);hi=np.full(n,50.);lo[:3]=-2.;hi[:3]=2.;lo[3:6]=-10.;hi[3:6]=10.
-        offset=q-self.kin.nominal+.2*v[6:];lo[27:48]=np.maximum(-.9,-1.-offset);hi[27:48]=np.minimum(.9,1.-offset)
+        offset=q-self.kin.nominal+.2*v[6:]
+        lo[27:48],hi[27:48]=torque_fraction_bounds(offset,self.actuation_mode)
         for i,(lower,upper) in enumerate(self.kin.limits):
             if i in [row[0] for row in active]:continue
             # Constant-acceleration 25ms reachability guard; actual Native
@@ -411,5 +420,5 @@ class ContactDynamics:
             for i,(limit_lower,limit_upper) in enumerate(self.kin.limits):
                 if i in [row[0] for row in active]:continue
                 qnext=q[i]+.025*v[6+i]+.5*.025**2*z[6+i];vnext=v[6+i]+.025*z[6+i];braking_margins.append(min(limit_upper-qnext-max(vnext,0.)**2/100.,qnext-min(vnext,0.)**2/100.-limit_lower))
-        motor=z[27:48]*self.gears;raw=offset+motor/self.gears;represented=np.clip(raw,-1.,1.);predicted=self.gears*np.clip(self.kin.nominal+represented-q-.2*v[6:],-1.,1.)
-        return represented,dict(balanceGuard=balance_info,minimumTrackingSlackCost=0. if hierarchy is None else hierarchy.get('minimumSquaredSlackCost'),balanceConstraintError=float(max((C@z-upper)[ceiling_end:],default=0.)),trackingConstraint=tracking_info,success=bool(result.success and eq_error<1e-4 and inequality_error<1e-6 and bounds_error<1e-6),qpSolver=self.qp_solver,frictionMode=self.friction_mode,forceJacobianMode=self.force_jacobian,maximumFrozenForcePointOffsetM=max(np.linalg.norm(c['forcePoint']-c['point']) for c in contacts),optimizerMessage=str(result.message),optimizerSuccess=bool(result.success),boundsError=bounds_error,constraintFeasible=bool(eq_error<1e-4 and inequality_error<1e-6 and bounds_error<1e-6),equalityError=eq_error,jointViabilityGuard=self.joint_viability,futureJointStoppingReserveBufferRad=self.joint_reserve_margin,jointReserveRecovery=self.joint_reserve_recovery,separatingFloat32NeighborReleaseJoints=[i for i,(low,high) in enumerate(self.kin.limits) if self.joint_viability and i not in [row[0] for row in active] and separating_float32_neighbor(q[i],v[6+i],low,high)],jointLimitRepresentation='original model min/max deserialized to native f32, then promoted for analysis; installed physics unchanged',minimumPredictedJointStoppingMarginRad=min(braking_margins,default=None),dependentEqualityError=dependent_error,frictionError=friction_error,contactGapViolationM=gap_error,leftNormalForceCeilingN=left_force_ceiling_n,leftNormalForceCeilingViolationN=load_error,plannedLeftNormalForceN=float(sum(z[50+3*k]*F for k,c in enumerate(contacts) if c['body']=='left_foot')),inactiveContacts=sorted(inactive),predictedContactGapsM=[float(c['gap']+.025*(c['basis'][:,2]@c['velocity'])+.5*.025**2*(c['basis'][:,2]@(c['J']@z[:27]+c['bias']))) if c['gap'] is not None else None for c in contacts],objectiveCost=float(.5*z@H@z+g@z+.5*d@d),desiredComAcceleration=desired_com.tolist(),achievedComAcceleration=(state['Jcom']@z[:27]+state['comBias']).tolist(),qdd=z[:27].tolist(),motorTorquesNm=motor.tolist(),predictedRepresentedTorquesNm=predicted.tolist(),maximumTorqueRepresentationErrorNm=float(max(abs(predicted-motor))),plannedContactForcesWorldN=[(c['basis']@z[48+3*k:51+3*k]*F).tolist() for k,c in enumerate(contacts)],activeStops=[dict(qpos=i,sign=sign,reactionNm=float(z[48+3*nc+k]*self.gears[i])) for k,(i,sign,_) in enumerate(active)],maximumMotorFraction=float(max(abs(motor/self.gears))))
+        motor=z[27:48]*self.gears;raw=offset+motor/self.gears;represented=np.clip(raw,-1.,1.);legacy_predicted=self.gears*np.clip(self.kin.nominal+represented-q-.2*v[6:],-1.,1.);predicted=motor.copy()if self.actuation_mode=='motion-profile'else legacy_predicted
+        return represented,dict(actuationMode=self.actuation_mode,maximumLegacyResidualRepresentationErrorNm=float(max(abs(legacy_predicted-motor))),balanceGuard=balance_info,minimumTrackingSlackCost=0. if hierarchy is None else hierarchy.get('minimumSquaredSlackCost'),balanceConstraintError=float(max((C@z-upper)[ceiling_end:],default=0.)),trackingConstraint=tracking_info,success=bool(result.success and eq_error<1e-4 and inequality_error<1e-6 and bounds_error<1e-6),qpSolver=self.qp_solver,frictionMode=self.friction_mode,forceJacobianMode=self.force_jacobian,maximumFrozenForcePointOffsetM=max(np.linalg.norm(c['forcePoint']-c['point']) for c in contacts),optimizerMessage=str(result.message),optimizerSuccess=bool(result.success),boundsError=bounds_error,constraintFeasible=bool(eq_error<1e-4 and inequality_error<1e-6 and bounds_error<1e-6),equalityError=eq_error,jointViabilityGuard=self.joint_viability,futureJointStoppingReserveBufferRad=self.joint_reserve_margin,jointReserveRecovery=self.joint_reserve_recovery,separatingFloat32NeighborReleaseJoints=[i for i,(low,high) in enumerate(self.kin.limits) if self.joint_viability and i not in [row[0] for row in active] and separating_float32_neighbor(q[i],v[6+i],low,high)],jointLimitRepresentation='original model min/max deserialized to native f32, then promoted for analysis; installed physics unchanged',minimumPredictedJointStoppingMarginRad=min(braking_margins,default=None),dependentEqualityError=dependent_error,frictionError=friction_error,contactGapViolationM=gap_error,leftNormalForceCeilingN=left_force_ceiling_n,leftNormalForceCeilingViolationN=load_error,plannedLeftNormalForceN=float(sum(z[50+3*k]*F for k,c in enumerate(contacts) if c['body']=='left_foot')),inactiveContacts=sorted(inactive),predictedContactGapsM=[float(c['gap']+.025*(c['basis'][:,2]@c['velocity'])+.5*.025**2*(c['basis'][:,2]@(c['J']@z[:27]+c['bias']))) if c['gap'] is not None else None for c in contacts],objectiveCost=float(.5*z@H@z+g@z+.5*d@d),desiredComAcceleration=desired_com.tolist(),achievedComAcceleration=(state['Jcom']@z[:27]+state['comBias']).tolist(),qdd=z[:27].tolist(),motorTorquesNm=motor.tolist(),predictedRepresentedTorquesNm=predicted.tolist(),maximumTorqueRepresentationErrorNm=float(max(abs(predicted-motor))),plannedContactForcesWorldN=[(c['basis']@z[48+3*k:51+3*k]*F).tolist() for k,c in enumerate(contacts)],activeStops=[dict(qpos=i,sign=sign,reactionNm=float(z[48+3*nc+k]*self.gears[i])) for k,(i,sign,_) in enumerate(active)],maximumMotorFraction=float(max(abs(motor/self.gears))))
