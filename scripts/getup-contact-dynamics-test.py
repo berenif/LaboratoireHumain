@@ -81,7 +81,48 @@ class ContactDynamicsTests(unittest.TestCase):
    _,info=c.solve(state,np.array(ref['targetCOM']),np.array(ref['rootRotation']),np.array(ref['posture']),unload_left=1.,left_force_ceiling_n=ceiling)
    self.assertTrue(info['success']);self.assertLessEqual(info['plannedLeftNormalForceN'],ceiling+1e-4);self.assertLess(info['leftNormalForceCeilingViolationN'],1e-4);self.assertLessEqual(info['maximumMotorFraction'],.900001);self.assertLess(max(abs(np.array(info['qdd']))),10.)
   np.testing.assert_allclose(info['plannedContactForcesWorldN'][0],[0.,0.,0.],atol=1e-5)
+class JointStopModeTests(unittest.TestCase):
+ def setUp(self):
+  self.model=json.loads((ROOT/'rust/crates/model/data/getup-v1.json').read_text());self.c=d.ContactDynamics(self.model,joint_stop_mode='native-bound-release',joint_viability=True,qp_solver='clarabel',joint_reserve_margin=1e-4);self.state=dict(q=self.c.kin.limits.mean(axis=1),v=np.zeros(27),contacts=[])
+ def test_reactions_require_actual_native_bound_and_nonseparating_velocity(self):
+  for i,sign in [(7,1.),(3,-1.)]:
+   low,high=self.c.kin.limits[i];bound=low if sign>0 else high
+   for offset,velocity,eligible in [(75e-6*sign,-.002*sign,False),(0.,-.002*sign,True),(0.,.002*sign,False),(-50e-6*sign,-.002*sign,True),(-150e-6*sign,-.002*sign,False),(0.,-.06*sign,False)]:
+    with self.subTest(joint=i,offset=offset,velocity=velocity):
+     state=copy.deepcopy(self.state);state['q'][i]=bound+offset;state['v'][6+i]=velocity;candidates=self.c.bound_stop_candidates(state);self.assertEqual(any(row[0]==i for row in candidates),eligible)
+     if eligible:self.assertIn((i,sign,bound),candidates)
+ def test_airborne_ankle_limit_is_an_internal_constraint(self):
+  state=copy.deepcopy(self.state);state['q'][13]=self.c.kin.limits[13,0];swing=dict(body='left_foot');self.assertIn(13,[r[0]for r in self.c.bound_stop_candidates(state,swing)])
+ def test_free_branch_is_preferred_and_active_fallback_is_explicit(self):
+  class SelectionProbe(d.ContactDynamics):
+   def solve(self,state,*args,_released_stops=None,**kwargs):
+    # Recursion passes its mode positionally, like the production wrapper.
+    released=args[8] if len(args)>8 else _released_stops
+    if released is None:return super().solve(state,*args,**kwargs)
+    self.previous=np.ones(1);return np.zeros(21),dict(success=self.accept_free or not released,activeStops=[] if released else [dict(qpos=7,reactionNm=1.)])
+  for accept_free,expected in [(True,[7]),(False,[])]:
+   c=SelectionProbe(self.model,joint_stop_mode='native-bound-release',joint_viability=True,joint_reserve_margin=1e-4);c.accept_free=accept_free;state=copy.deepcopy(self.state);state['q'][7]=c.kin.limits[7,0];_,info=c.solve(state,None,None,None);self.assertTrue(info['success']);self.assertEqual(info['releasedJointStops'],expected)
+ def test_reached_bound_zero_hold_retains_only_legitimate_signed_reactions(self):
+  x=json.loads((ROOT/'docs/fixtures/getup-contact-modes.json').read_text())['quiet'];state=self.c.state(x['observation'],x['snapshot'],x['diagnostic']);_,info=self.c.solve(state,state['com'],d.normalized_rotation(state['root'][:3,:3]),state['q']);self.assertTrue(info['success']);candidates={r[0]for r in self.c.bound_stop_candidates(state)};self.assertTrue(all(r['qpos']in candidates and r['reactionNm']>=0. for r in info['activeStops']));self.assertNotIn(7,[r['qpos']for r in info['activeStops']]);self.assertLess(info['equalityError'],1e-4)
+ def test_stopped_tracking_state_keeps_strict_future_buffer_rejection(self):
+  x=json.loads((ROOT/'docs/fixtures/contact-landing-mvp/joint-stop-tracking-state.json').read_text());c=d.ContactDynamics(self.model,contact_mode='unilateral-soft',flat_soles=True,joint_viability=True,qp_solver='clarabel',joint_reserve_margin=1e-4,force_jacobian='native-frozen',joint_stop_mode='native-bound-release');c.flat_targets={k:np.array(v)for k,v in x['flatTargets'].items()};state=c.state(x['observation'],x['snapshot'],x['diagnostic']);self.assertNotIn(7,[r[0]for r in c.bound_stop_candidates(state)]);_,info=c.solve(state,np.array(x['targetCOM']),np.array(x['targetRotation']),np.array(x['posture']),tracking=x['tracking']);self.assertFalse(info['success']);self.assertEqual(info['error'],'No admissible joint-stop/contact mode')
+
+ def test_positive_buffer_recovery_and_actual_bound_release_solve_stopped_state(self):
+  x=json.loads((ROOT/'docs/fixtures/contact-landing-mvp/joint-stop-tracking-state.json').read_text());c=d.ContactDynamics(self.model,contact_mode='unilateral-soft',flat_soles=True,joint_viability=True,qp_solver='clarabel',joint_reserve_margin=1e-4,force_jacobian='native-frozen',joint_stop_mode='native-bound-release',joint_reserve_recovery=True);c.flat_targets={k:np.array(v)for k,v in x['flatTargets'].items()};state=c.state(x['observation'],x['snapshot'],x['diagnostic']);self.assertNotIn(7,[r[0]for r in c.bound_stop_candidates(state)]);_,info=c.solve(state,np.array(x['targetCOM']),np.array(x['targetRotation']),np.array(x['posture']),tracking=x['tracking']);self.assertTrue(info['success']);self.assertNotIn(7,[r['qpos']for r in info['activeStops']]);a=info['qdd'][13];q=state['q'][7];v=state['v'][13];low=c.kin.limits[7,0];current=q-min(v,0.)**2/100.-low;future=q+.025*v+.5*.025**2*a-min(v+.025*a,0.)**2/100.-low;self.assertGreaterEqual(future,current-1e-9);self.assertLess(info['equalityError'],1e-4)
+
 class BrakingBoundsTests(unittest.TestCase):
+ def test_recovery_buffer_is_mirrored_nondecreasing_and_keeps_negative_reserve_rejection(self):
+  for q,v in [(-1.+75.519e-6,-.00256488),(1.-75.519e-6,.00256488)]:
+   lo,hi=d.braking_acceleration_bounds(q,v,-1.,1.,reserve=1e-4,reserve_recovery=True)
+   current_lower=q-min(v,0.)**2/100.+1.;current_upper=1.-q-max(v,0.)**2/100.
+   for a in np.linspace(lo,hi,7):
+    p=q+.025*v+.5*.025**2*a;w=v+.025*a;self.assertGreaterEqual(p-min(w,0.)**2/100.+1.,min(1e-4,current_lower)-1e-9);self.assertGreaterEqual(1.-p-max(w,0.)**2/100.,min(1e-4,current_upper)-1e-9)
+  a,b=d.braking_acceleration_bounds(-1.+75.519e-6,-.00256488,-1.,1.,reserve=1e-4,reserve_recovery=True);lo,hi=d.braking_acceleration_bounds(1.-75.519e-6,.00256488,-1.,1.,reserve=1e-4,reserve_recovery=True);self.assertAlmostEqual(a,-hi);self.assertAlmostEqual(b,-lo)
+  for q,v in [(-1.+30.235e-6,-.06391884),(1.-30.235e-6,.06391884)]:
+   with self.assertRaisesRegex(ValueError,'Already outside'):d.braking_acceleration_bounds(q,v,-1.,1.,reserve=1e-4,reserve_recovery=True)
+ def test_recovery_does_not_change_outside_buffer_or_neighbor_future_guard(self):
+  for q,v in [(-.9,-.1),(.9,.1),(-1.+.001,0.),(1.-.001,0.)]:self.assertEqual(d.braking_acceleration_bounds(q,v,-1.,1.,reserve=1e-4),d.braking_acceleration_bounds(q,v,-1.,1.,reserve=1e-4,reserve_recovery=True))
+  low=float(np.float32(-.34906585));high=float(np.float32(.78539816));q=float(np.nextafter(np.float32(low),np.float32(-np.inf)));self.assertEqual(d.braking_acceleration_bounds(q,.01,low,high,reserve=1e-4,native_float32_neighbors=True),d.braking_acceleration_bounds(q,.01,low,high,reserve=1e-4,native_float32_neighbors=True,reserve_recovery=True))
  def test_native_neighbor_release_is_one_ulp_separating_only_and_future_safe(self):
   low=float(np.float32(-.3490658503988659));high=float(np.float32(.7853981633974483));below=float(np.nextafter(np.float32(low),np.float32(-np.inf)));above=float(np.nextafter(np.float32(high),np.float32(np.inf)))
   for q,v in [(below,.01084318),(above,-.01084318)]:

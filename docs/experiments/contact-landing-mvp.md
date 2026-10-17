@@ -289,3 +289,28 @@ but are not exact landing certificates. Actual containment/invariance is not
 promised: the native physical step, landing, slip and five-second gates remain
 mandatory. The separately tested height fix preserves the full terminal COM
 vector through lift and landing. Original default source GetUp remains unchanged.
+
+
+B18's tracking protocol prevents the earlier hip runaway but stops at 6.775 s
+before unloading. No flight/non-foot support occurred; loaded slip was
+1.92/1.71 mm. The old predictive ankle-stop mode grants a reaction 75.5 µrad
+INSIDE the installed lower bound and fixes acceleration to +0.0437 rad/s²,
+contradicting the tracking interval [+0.0993,+0.2593]. Merely removing that
+reaction still conflicts with the strict future 100 µrad engineering buffer:
+it requires +0.2835 rad/s², although physical stopping reserve is positive.
+The exact stopped state remains rejected by the old strict-buffer protocol.
+
+The next opt-in protocol uses actual-bound signed stop alternatives, preferring
+reaction-zero release. No stop reaction is available before a native bound is
+physically reached or while separating. Airborne joints retain legitimate
+internal limits. The retained active stabilization is explicitly an approximate
+impact/repair surrogate, not an exact native impulse law. A separate opt-in
+nonworsening buffer rule handles already-inside-buffer free joints: each
+positive current stopping reserve below 100 µrad becomes that side's minimum
+predicted reserve; outside the buffer the full 100 µrad remains required.
+Negative physical stopping reserve is still rejected, including the earlier
+elbow failure; the one-f32-neighbor separating exception also keeps the full
+future buffer. These changes preserve the original motor/physical joint limits,
+tracking gains and all measured success gates. Pure exact-state replay solves
+B18 with ankle reaction zero, while its strict-buffer control remains rejected.
+No physical success is inferred from that replay.
