@@ -19,6 +19,9 @@ enum Command {
         now: [f32; 25],
         ahead: [f32; 25],
     },
+    SourceState { now: [f32;25], ahead: [f32;25], #[serde(default = "full_power")] teacher_power: f32, #[serde(default)] holding: bool },
+    StepSourceTeacher { controls: [f32;21], #[serde(default)] audit: bool },
+    StepSourceStudent { reference: [f32;21], residual: [f32;21], holding: bool, #[serde(default)] audit: bool },
     Diagnostic {},
     ActorAction {
         path: String,
@@ -40,6 +43,7 @@ enum Command {
     },
     Snapshot {},
 }
+fn full_power() -> f32 { 1.0 }
 fn main() -> Result<(), String> {
     let args: Vec<_> = std::env::args().collect();
     if args.len() != 3 && !(args.len() == 4 && args[3] == "--upright-entry") {
@@ -70,6 +74,9 @@ fn main() -> Result<(), String> {
                     json!({"action":experiment.initialized_action()?,"trainedStationaryPolicy":false,"source":"architecture-validated-expanded-SLOW-initialization"}),
                 ),
                 Command::ReferenceAction { now, ahead } => experiment.reference_action(now, ahead),
+                Command::SourceState { now, ahead, teacher_power, holding } => experiment.source_state(now, ahead, teacher_power, holding),
+                Command::StepSourceTeacher { controls, audit } => Ok(serde_json::to_value(experiment.step_source_teacher(controls, audit, &mut budget)?).unwrap()),
+                Command::StepSourceStudent { reference, residual, holding, audit } => Ok(serde_json::to_value(experiment.step_source_student(reference, residual, holding, audit, &mut budget)?).unwrap()),
                 Command::Diagnostic {} => experiment.diagnostic(),
                 Command::ActorAction { path } => {
                     let bytes = fs::read(path).map_err(|e| e.to_string())?;

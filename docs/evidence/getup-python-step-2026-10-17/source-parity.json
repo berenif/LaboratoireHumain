@@ -1,0 +1,15 @@
+{
+  "scope": "source-interface parity, no stepping claim",
+  "rawMaxError": 0.0,
+  "actionMaxError": 5.960464477539063e-08,
+  "controlMaxError": 7.954239833463106e-08,
+  "frameMaxError": 8.336640289208219e-08,
+  "invalidCommandsRejected": 3,
+  "readOnlySnapshotParity": true,
+  "checkpointRoundtrip": true,
+  "nativeSubsteps": 0,
+  "physicsWallSeconds": 0.0,
+  "binarySHA256": "b60a97b538dddedf49ca5aacd1ecbfaca48f597152963e747ff3b9ea2fd0fd8a",
+  "checkpointSHA256": "3ffed5867ddc238794a2ce94a102c3e2d23bf1a4623070253c91d9d94fa312dd",
+  "scriptSHA256": "02bbb748a1d7846af7b58a696c143a6a7fff1d5e54e5166ab819550f50eb1634"
+}

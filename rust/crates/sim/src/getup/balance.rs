@@ -147,6 +147,36 @@ impl MotionProfile {
     }
 }
 
+/// Exact source interfaces for one externally driven policy decision.
+/// Teacher values are normalized actuator controls. Student references and the
+/// separately held residual are qpos-order radians; q/dq refresh every substep.
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+pub(crate) enum SourceCommand {
+    Teacher { controls: [f32; 21] },
+    Student { reference: [f32; 21], holding: bool },
+}
+impl SourceCommand {
+    fn validate(&self) -> Result<(), String> {
+        match self {
+            Self::Teacher { controls } if controls.iter().any(|x| !x.is_finite() || x.abs() > 1.0) =>
+                Err("Source teacher requires finite actuator controls in [-1,1]".into()),
+            Self::Student { reference, .. } if reference.iter().any(|x| !x.is_finite()) =>
+                Err("Source student requires finite qpos-order references".into()),
+            _ => Ok(()),
+        }
+    }
+    pub(crate) fn controls(&self, model: &Model, residual: &[f32;21], q: &[f32;21], dq: &[f32;21]) -> Result<[f32;21],String> {
+        self.validate()?;
+        match self {
+            Self::Teacher { controls } => Ok(*controls),
+            Self::Student { reference, holding } => getup::slow_controls(model, reference, residual, q, dq, *holding),
+        }
+    }
+    pub(crate) fn label(&self) -> &'static str {
+        match self { Self::Teacher { .. } => "source-GetUp-direct-torque-experiment", Self::Student { .. } => "source-GetUp-moving-reference-experiment" }
+    }
+}
+
 #[derive(Clone, Serialize, Deserialize)]
 struct Memory {
     anchor: [f32; 2],
@@ -237,6 +267,7 @@ pub struct Experiment {
     runtime: Runtime,
     memory: Memory,
     episode_limit_substeps: u64,
+    source_command: Option<SourceCommand>,
 }
 
 fn validate_clock(s: &Simulation) -> Result<(), String> {
@@ -404,6 +435,7 @@ impl Experiment {
         Ok(Self {
             runtime,
             episode_limit_substeps: MAX_EPISODE_SUBSTEPS,
+            source_command: None,
             memory: Memory {
                 anchor,
                 elapsed_substeps: 0,
@@ -446,16 +478,17 @@ impl Experiment {
         })
     }
     pub fn checkpoint(&self) -> Result<Vec<u8>, String> {
-        bincode::serialize(&(2u32, self.runtime.getup_checkpoint()?, &self.memory, self.episode_limit_substeps))
+        bincode::serialize(&(3u32, self.runtime.getup_checkpoint()?, &self.memory, self.episode_limit_substeps, &self.source_command))
             .map_err(|e| e.to_string())
     }
     pub fn from_checkpoint(bytes: &[u8]) -> Result<Self, String> {
         use bincode::Options;
         let schema = u32::from_le_bytes(bytes.get(..4).ok_or("Short balance checkpoint")?.try_into().unwrap());
         let options = bincode::DefaultOptions::new().with_fixint_encoding().with_limit(64 * 1024 * 1024).reject_trailing_bytes();
-        let (runtime, memory, episode_limit_substeps) = match schema {
-            1 => { let (_, runtime, memory): (u32, Vec<u8>, Memory) = options.deserialize(bytes).map_err(|e|e.to_string())?; (runtime, memory, MAX_EPISODE_SUBSTEPS) },
-            2 => { let (_, runtime, memory, limit): (u32, Vec<u8>, Memory, u64) = options.deserialize(bytes).map_err(|e|e.to_string())?; (runtime, memory, limit) },
+        let (runtime, memory, episode_limit_substeps, source_command) = match schema {
+            1 => { let (_, runtime, memory): (u32, Vec<u8>, Memory) = options.deserialize(bytes).map_err(|e|e.to_string())?; (runtime, memory, MAX_EPISODE_SUBSTEPS, None) },
+            2 => { let (_, runtime, memory, limit): (u32, Vec<u8>, Memory, u64) = options.deserialize(bytes).map_err(|e|e.to_string())?; (runtime, memory, limit, None) },
+            3 => { let (_, runtime, memory, limit, command): (u32, Vec<u8>, Memory, u64, Option<SourceCommand>) = options.deserialize(bytes).map_err(|e|e.to_string())?; (runtime, memory, limit, command) },
             _ => return Err("Unsupported balance checkpoint".into()),
         };
         if !(16_000..=32_000).contains(&episode_limit_substeps) || episode_limit_substeps % 800 != 0 {
@@ -471,8 +504,10 @@ impl Experiment {
         {
             return Err("Nonfinite balance memory".into());
         }
+        if let Some(command) = &source_command { command.validate()?; }
         runtime.balance_simulation_mut().balance_residual = Some(memory.last_residual);
-        Ok(Self { runtime, memory, episode_limit_substeps })
+        runtime.balance_simulation_mut().balance_source_command = source_command.clone();
+        Ok(Self { runtime, memory, episode_limit_substeps, source_command })
     }
     /// Bounded diagnostic horizon only; never changes physical success gates.
     pub fn set_episode_limit_seconds(&mut self, seconds: u32) -> Result<(), String> {
@@ -492,6 +527,36 @@ impl Experiment {
             .get_or_init(getup::actor::Actor::stationary_initialization)
             .infer(&self.observe()?.observation)
             .map(|p| p.action)
+    }
+    /// Read-only exact source inputs/inference. No standing-nominal shim.
+    pub fn source_state(&self, now: [f32;25], ahead: [f32;25], teacher_power: f32, holding: bool) -> Result<serde_json::Value,String> {
+        if now.iter().chain(&ahead).any(|x| !x.is_finite()) || !teacher_power.is_finite() || !(0.0..=1.0).contains(&teacher_power) {
+            return Err("Invalid source target or teacher power".into());
+        }
+        let s = self.runtime.simulation();
+        let physical = getup::physical_observation(s)?;
+        let student_input = getup::slow_observation(&physical, &now, &ahead);
+        let mut teacher_input = physical.to_vec(); teacher_input.push(teacher_power);
+        let student = getup::actor::student().infer(&student_input)?;
+        let teacher = getup::actor::teacher().infer(&teacher_input)?;
+        let controls = getup::slow_controls(&s.model, now[..21].try_into().unwrap(), &student.action,
+            physical[..21].try_into().unwrap(), physical[46..67].try_into().unwrap(), holding)?;
+        Ok(serde_json::json!({"physicalObservation":physical.to_vec(),"studentObservation":student_input.to_vec(),
+            "teacherObservation":teacher_input,"student":student,"teacher":teacher,
+            "studentMotorControlsActuatorOrder":controls,"holding":holding,"studentPower":1.0,
+            "physicsIntegrations":0,"nativeSubstep":s.substeps_completed,
+            "comSource":getup::source_vector(s.center_of_mass()),"sourceCommand":self.source_command}))
+    }
+    /// Source teacher: power-scaled normalized controls already in actuator order.
+    pub fn step_source_teacher(&mut self, controls: [f32;21], audit: bool, budget: &mut ComputeBudget) -> Result<Transition,String> {
+        let source = SourceCommand::Teacher { controls }; source.validate()?;
+        self.step_with_profile([0.;21], [0.;2], None, Some(source), audit, budget)
+    }
+    /// Source student: reference and residual held for twenty substeps, kp1,
+    /// moving kd.1 or holding kd.2. Only ordinary capped motor commands apply.
+    pub fn step_source_student(&mut self, reference: [f32;21], residual: [f32;21], holding: bool, audit: bool, budget: &mut ComputeBudget) -> Result<Transition,String> {
+        let source = SourceCommand::Student { reference, holding }; source.validate()?;
+        self.step_with_profile(residual, [0.;2], None, Some(source), audit, budget)
     }
     /// Frozen source SLOW following an explicitly supplied kinematic reference.
     /// The returned action is expressed against the experiment's fixed nominal
@@ -549,7 +614,7 @@ impl Experiment {
         torso_force_n: [f32; 2],
         budget: &mut ComputeBudget,
     ) -> Result<Transition, String> {
-        self.step_with_profile(action, torso_force_n, None, false, budget)
+        self.step_with_profile(action, torso_force_n, None, None, false, budget)
     }
     /// Acceleration-predicted inner-impedance reference for one 25ms decision.
     /// All arrays qpos order; original gears, passive elements, and torque caps.
@@ -581,11 +646,17 @@ impl Experiment {
             q: physical[..21].try_into().unwrap(), dq: physical[46..67].try_into().unwrap(),
             qdd, torques_nm,
         };
-        self.step_with_profile(action, [0.0; 2], Some(profile), audit, budget)
+        self.step_with_profile(action, [0.0; 2], Some(profile), None, audit, budget)
+    }
+    fn install_command(&mut self, action: [f32;21], torso_force_n: [f32;2], profile: Option<MotionProfile>, source: Option<SourceCommand>) {
+        let s = self.runtime.balance_simulation_mut();
+        s.balance_residual = Some(action); s.balance_motion_profile = profile;
+        s.balance_source_command = source.clone(); s.balance_torso_force_n = torso_force_n;
+        self.source_command = source; self.memory.last_residual = action;
     }
     fn step_with_profile(
         &mut self, action: [f32; 21], torso_force_n: [f32; 2],
-        profile: Option<MotionProfile>, audit: bool, budget: &mut ComputeBudget,
+        profile: Option<MotionProfile>, source: Option<SourceCommand>, audit: bool, budget: &mut ComputeBudget,
     ) -> Result<Transition, String> {
         if action.iter().any(|v| !v.is_finite() || v.abs() > 1.0) {
             return Err("Action must be 21 finite qpos-order residuals in [-1,1]".into());
@@ -615,10 +686,7 @@ impl Experiment {
                 native_dynamics_audit: None,
             });
         }
-        self.runtime.balance_simulation_mut().balance_residual = Some(action);
-        self.runtime.balance_simulation_mut().balance_motion_profile = profile;
-        self.runtime.balance_simulation_mut().balance_torso_force_n = torso_force_n;
-        self.memory.last_residual = action;
+        self.install_command(action, torso_force_n, profile, source);
         let started = Instant::now();
         let mut native_dynamics_audit = if audit { Some(vec![dynamics_audit_frame(self.runtime.simulation(), &current.metrics, "before")?]) } else { None };
         let native_before = self.runtime.simulation().substeps_completed;
@@ -791,6 +859,62 @@ mod tests {
         assert_eq!(p.control(6,80.0,-100.0,-100.0,0.0),1.0);
         assert_eq!(p.control(6,80.0,100.0,100.0,0.0),-1.0);
         assert!((p.control(6,80.0,p.q[6],p.dq[6],0.0)-p.torques_nm[6]/80.0).abs()<1e-6);
+    }
+    #[test]
+    fn source_commands_keep_distinct_orders_damping_and_original_caps() {
+        let model = Model::canonical().unwrap();
+        let q = [0.0;21]; let dq = [0.5;21]; let residual = [0.1;21];
+        let reference = std::array::from_fn(|i| i as f32 * 0.01);
+        for holding in [false,true] {
+            let source = SourceCommand::Student { reference, holding };
+            let actual = source.controls(&model,&residual,&q,&dq).unwrap();
+            assert_eq!(actual,getup::slow_controls(&model,&reference,&residual,&q,&dq,holding).unwrap());
+        }
+        let controls = std::array::from_fn(|i| -0.4 + i as f32 * 0.03);
+        let teacher = SourceCommand::Teacher { controls };
+        assert_eq!(teacher.controls(&model,&residual,&q,&dq).unwrap(), controls);
+        let mut bad=controls; bad[0]=1.001;
+        assert!(SourceCommand::Teacher { controls:bad }.validate().is_err());
+        let mut bad=reference; bad[0]=f32::NAN;
+        assert!(SourceCommand::Student { reference:bad, holding:false }.validate().is_err());
+    }
+    #[test]
+    fn source_experiment_checkpoint_next_control_and_mode_clear_without_integration() {
+        let mut profile=Profile::default();profile.getup_policy_enabled=true;
+        let runtime = Runtime::new(lh_contracts::Mode::Protocol,0.0,profile).unwrap();
+        let bytes = runtime.getup_checkpoint().unwrap();
+        let mut experiment = Experiment::reset_from_upright_checkpoint(&bytes).unwrap();
+        let residual = std::array::from_fn(|i|i as f32*0.005);
+        for source in [SourceCommand::Teacher { controls: [0.12;21] },
+            SourceCommand::Student { reference:[0.1;21], holding:false },
+            SourceCommand::Student { reference:[-0.1;21], holding:true }] {
+            experiment.install_command(residual,[0.;2],None,Some(source.clone()));
+            let mut restored = Experiment::from_checkpoint(&experiment.checkpoint().unwrap()).unwrap();
+            assert_eq!(restored.source_command,Some(source));
+            for e in [&mut experiment,&mut restored] { getup::configure(e.runtime.balance_simulation_mut()).unwrap(); }
+            assert_eq!(serde_json::to_value(experiment.runtime.simulation().diagnostics.getup.as_ref().unwrap()).unwrap(),
+                serde_json::to_value(restored.runtime.simulation().diagnostics.getup.as_ref().unwrap()).unwrap());
+            assert_eq!(experiment.runtime.simulation().substeps_completed,0);
+            assert_eq!(restored.runtime.simulation().substeps_completed,0);
+        }
+        experiment.install_command([0.;21],[0.;2],None,None);
+        assert!(experiment.source_command.is_none());assert!(experiment.runtime.simulation().balance_source_command.is_none());
+        let p = MotionProfile { start_substep:0,q:[0.;21],dq:[0.;21],qdd:[0.;21],torques_nm:[0.;21] };
+        experiment.install_command([0.;21],[0.;2],Some(p),None);
+        assert!(experiment.runtime.simulation().balance_source_command.is_none());
+        assert!(experiment.runtime.simulation().balance_motion_profile.is_some());
+        let reset = Experiment::reset_from_upright_checkpoint(&bytes).unwrap();
+        assert!(reset.source_command.is_none());assert!(reset.runtime.simulation().balance_source_command.is_none());
+    }
+    #[test]
+    fn source_command_checkpoint_payload_roundtrips_all_reference_values() {
+        for source in [SourceCommand::Teacher { controls: [0.37;21] },
+            SourceCommand::Student { reference: std::array::from_fn(|i|i as f32*0.03), holding:false },
+            SourceCommand::Student { reference: [-0.12;21], holding:true }] {
+            let bytes=bincode::serialize(&Some(source.clone())).unwrap();
+            let restored:Option<SourceCommand>=bincode::deserialize(&bytes).unwrap();
+            assert_eq!(restored,Some(source));
+        }
     }
     #[test]
     fn reward_prefers_quiet_anchored_supported_stance_without_integrations() {

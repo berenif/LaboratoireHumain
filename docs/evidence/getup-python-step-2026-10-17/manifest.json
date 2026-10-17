@@ -1,0 +1,32 @@
+{
+  "schema": 1,
+  "scope": "Python source interface implementation and short parity control; no complete step",
+  "createdUtc": "2026-10-17T22:53:07.912397+00:00",
+  "pythonPureTests": 35,
+  "rustBalancePureTests": 9,
+  "rustObserverPureTests": 4,
+  "physicsNativeSubsteps": 280,
+  "newAggregatePhysicsSeconds": 0.903372796,
+  "sourceSHA256": {
+    "scripts/getup-step/actors.py": "125c3e54eb14318cdc382c060320528b4018dacb3da113e09c70c4c38aa9e366",
+    "scripts/getup-step/test_source_math.py": "317bf5e1e58eb0f180835a847b913d348db359ed4218f99a9ad2b6aa7bdab64d",
+    "scripts/getup-step/run.py": "02bbb748a1d7846af7b58a696c143a6a7fff1d5e54e5166ab819550f50eb1634",
+    "scripts/getup-step/source_math.py": "f4935043b31dfef00b926943d2b3f720fd39691e98672aa6ae00019371ff8dfd",
+    "scripts/getup-step/native_env.py": "bd292d19ab2cf082be5240ba7827f1270582d777f493c04834f1a171ceed1ae9",
+    "scripts/getup-step/test_reference.py": "010f6f34a2894a07359bb57c739c61ba4598fbfd012e0c04bae2d746a549f631",
+    "scripts/getup-step/reference.py": "cc9b323ec7ff8268b928d2ce14173179501f6a7e75a7f9598d584795da17558b",
+    "scripts/getup-step/test_native_env.py": "dc0321507bc1a12275869458f3940c070b6eda316d64cdbe17058a67c87e5a4a",
+    "rust/crates/sim/src/lib.rs": "4431c7ab522f0b4f3766b0e5fee5f1c973344aaa4f8a8da6b97bae0da2b26561",
+    "rust/crates/sim/src/getup.rs": "7e1fe7e1e66db017aef75a75d0e44d926d02bded3b679a32091430414dc3819c",
+    "rust/crates/sim/src/getup/balance.rs": "7ac58316092286ddbb55732deaf0ccb9093e264567e6a7f88d06ee699628ad57",
+    "rust/crates/sim/examples/getup_stationary_balance.rs": "b908fea30aa735997daef7749d530c066dbc2d280e94e9673e1ca3b64e052833"
+  },
+  "rawArtifacts": {
+    "outputs/getup-python-step/session-20261017T223404Z/p0-final-binary-parity/protocol.ndjson": "eaae36bdec293e33a274d385503cd6d780715e77d2e7c59f92d7818dbfc581bd",
+    "outputs/getup-python-step/session-20261017T223404Z/p1-source-positive-control/protocol.ndjson": "a6b2d82899869fd5a9d51158eed1fcd35d4a955b46aeb12d06d41cd103731589"
+  },
+  "rawArtifactAvailability": "local-only; no remote download claimed",
+  "defaultGetUpWeightsChanged": false,
+  "taskLearningLaunched": false,
+  "taskStepQualified": false
+}

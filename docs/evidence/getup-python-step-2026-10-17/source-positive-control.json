@@ -1,0 +1,15 @@
+{
+  "scope": "P1 short source GetUp positive control and independent parity forks; no step/learning claim",
+  "holdingLegacySourceEvolutionExact": true,
+  "movingCheckpointEvolutionExact": true,
+  "teacherCheckpointEvolutionExact": true,
+  "maximumNativeTorqueEquationErrorNm": 3.3679604491965165e-06,
+  "nativeSubsteps": 280,
+  "physicsWallSeconds": 0.903372796,
+  "flightSamples": 0,
+  "nonfootSamples": 0,
+  "allHoldingNativeStanding": true,
+  "binarySHA256": "b60a97b538dddedf49ca5aacd1ecbfaca48f597152963e747ff3b9ea2fd0fd8a",
+  "checkpointSHA256": "3ffed5867ddc238794a2ce94a102c3e2d23bf1a4623070253c91d9d94fa312dd",
+  "scriptSHA256": "02bbb748a1d7846af7b58a696c143a6a7fff1d5e54e5166ab819550f50eb1634"
+}

@@ -281,6 +281,9 @@ pub struct Simulation {
     balance_motion_profile: Option<getup::balance::MotionProfile>,
     #[cfg(feature = "stationary-balance-experiment")]
     #[serde(skip)]
+    balance_source_command: Option<getup::balance::SourceCommand>,
+    #[cfg(feature = "stationary-balance-experiment")]
+    #[serde(skip)]
     balance_torso_force_n: [f32; 2],
     #[cfg(all(test, feature = "experimental-solver-step-observation"))]
     #[serde(skip)]
@@ -463,6 +466,8 @@ impl Simulation {
             balance_residual: None,
             #[cfg(feature = "stationary-balance-experiment")]
             balance_motion_profile: None,
+            #[cfg(feature = "stationary-balance-experiment")]
+            balance_source_command: None,
             #[cfg(feature = "stationary-balance-experiment")]
             balance_torso_force_n: [0.0; 2],
             #[cfg(all(test, feature = "experimental-solver-step-observation"))]
