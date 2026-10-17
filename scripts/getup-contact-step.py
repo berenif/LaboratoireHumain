@@ -81,6 +81,9 @@ class TerminalUnloadGoal:
     def __init__(self,duration=.5):
         assert duration>=.5
         self.duration=duration;self.anchor=None;self.elapsed=0.;self.failed=False
+    @property
+    def soft_weight(self):
+        return 0. if self.anchor is None or self.failed else smooth(self.elapsed/self.duration)
     def update(self,qualified,measured_left_load_n,dt=.025):
         if self.failed:return None
         if not qualified:

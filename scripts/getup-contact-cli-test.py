@@ -7,7 +7,7 @@ sp=importlib.util.spec_from_file_location('probe_cli',Path(__file__).with_name('
 class NativeConstructionReached(Exception):pass
 class ProbeCLITests(unittest.TestCase):
  def test_optional_future_reserve_reaches_native_boundary_without_attribute_error(self):
-  for extra in [[],['--joint-viability','--joint-reserve-margin-rad','.0001'],['--force-jacobian','native-frozen']]:
+  for extra in [[],['--joint-viability','--joint-reserve-margin-rad','.0001'],['--force-jacobian','native-frozen'],['--terminal-unload','--stage-unload-after-readiness','--recovery-step','--unload-left','--motion-profile']]:
    with self.subTest(options=extra),tempfile.TemporaryDirectory() as tmp:
     deadline=(datetime.datetime.now(datetime.timezone.utc)+datetime.timedelta(minutes=1)).isoformat()
     args=['probe','--binary','unused-binary','--checkpoint','unused-checkpoint','--output',str(Path(tmp)/'probe'),'--physics-budget','0','--deadline',deadline,'--flat-soles','--retain-balance','--seconds','8']+extra

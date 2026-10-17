@@ -241,3 +241,29 @@ sum to the native aggregate within 5.9e−10 N·s. Yaw and pose-transport versus
 final relaxed velocity discrepancies remain unresolved. This is a causal
 local-model correction, not a completed step. B16 therefore changes only this
 force map in the same-seed full trial, retaining all physical success gates.
+
+B16's full same-seed force-map trial retained actual right-foot support: COM and
+capture stayed inside the current right-only hull for the last 3.025 s. It still
+stopped at 10.725 s without lift. Actual zero-left capacity remained 1.0112×
+motor limits because stance hip 3 stayed 3.644 mrad below the planned upper stop.
+The ceiling never activated. No flight/non-foot support occurred; loaded slip
+was 1.86/1.92 mm. Physics wall time was 28.7536 s. This validates improved stance
+control but does not qualify unloading or a step.
+
+The next protocol removes reliance on that planned stop. A constrained whole-body
+FK search holds both actual foot poses, keeps all 15 movable torso/leg joints at
+least 0.01 rad inside native bounds, and recomputes true body COM and original-cap
+static equilibrium with ALL stop reactions disabled. The selected posture uses
+0.85 motor fraction, has 10 mm actual geometric right-hull margin, and changes
+root rotation by about 2.1°. Its 81-knot planted-foot reference has 31 µm maximum
+runtime PCHIP foot error; approximate prescribed-motion motor demand peaks at
+0.854. These are planning diagnostics, not integrated success. Seven independent
+frozen actual-controller QPs also pass the original bounds.
+
+B17 prospectively uses that new no-stop reference and delays soft unloading until
+measured current support/capacity qualifies for 100 ms. Soft unloading then ramps
+with the existing 0.5 s measured-load ceiling. Actual readiness also credits no
+stop reaction. The longer 8.725 s ramp preserves the 2 cm/s planning speed; the
+case is 24 simulated seconds with a 90 s physics-wall cap. Lift, placement,
+landing, slip, flight and final five-second anchored-standing gates are unchanged.
+The explicitly labelled offline FK image is a posture preview, not physical proof.

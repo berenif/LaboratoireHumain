@@ -42,6 +42,12 @@ class StepTests(unittest.TestCase):
   for i in range(3):self.update(9.6+i*.025);self.assertEqual(self.step.phase,'land')
   self.update(9.675);self.assertEqual(self.step.phase,'return')
 class TerminalUnloadTests(unittest.TestCase):
+ def test_soft_unload_waits_for_readiness_then_matches_the_ceiling_ramp(self):
+  goal=m.TerminalUnloadGoal();self.assertEqual(goal.soft_weight,0.);goal.update(False,45.);self.assertEqual(goal.soft_weight,0.);goal.update(True,45.);self.assertEqual(goal.soft_weight,0.)
+  weights=[]
+  for _ in range(20):
+   ceiling=goal.update(True,999.);weights.append(goal.soft_weight);self.assertAlmostEqual(ceiling/goal.anchor+goal.soft_weight,1.)
+  self.assertEqual(weights[-1],1.);self.assertTrue(all(a<=b for a,b in zip(weights,weights[1:])));goal.update(False,0.);self.assertEqual(goal.soft_weight,0.)
  def test_ceiling_starts_from_measured_load_and_is_monotone(self):
   goal=m.TerminalUnloadGoal();self.assertIsNone(goal.update(False,45.));limits=[goal.update(True,45.)]
   for i in range(20):limits.append(goal.update(True,999.))

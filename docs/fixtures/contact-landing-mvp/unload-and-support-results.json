@@ -163,6 +163,27 @@
         0.0010781875026303579
       ],
       "cause": "Support-corner loss puts current COM/capture23mm outside right hull; no capacity gate/force ceiling/lift"
+    },
+    "batch16-native-force-jacobian-step": {
+      "physicsWallSeconds": 28.753556234999966,
+      "nativeSubsteps": 8580,
+      "stopped": "no-qualified-unload-step-trial-stopped",
+      "flightNativeSamples": 0,
+      "loadedSlipM": [
+        0.001855336047935483,
+        0.0019214262306299133
+      ],
+      "stepEvents": [
+        {
+          "event": "stop",
+          "timeS": 10.725000000000001
+        }
+      ],
+      "rightSupportRetainedFinalS": 3.025,
+      "actualZeroLeftMotorFraction": 1.0112196357156429,
+      "actualStanceHip3Rad": 0.08362209796905518,
+      "plannedHipStopAttained": false,
+      "terminalCeilingActivated": false
     }
   },
   "ledger": {

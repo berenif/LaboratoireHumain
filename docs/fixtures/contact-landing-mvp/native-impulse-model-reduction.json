@@ -1,0 +1,216 @@
+{
+  "interpretation": "Two independent same-checkpoint25ms trials, all20 native1/800s impulse observations. No additional integrations. Not a step or long-hold qualification.",
+  "residualDefinition": "Sum_k [0.5*(M_before+M_after)*(v_after-v_before) + 0.5*dt*(bias_before+bias_after) - dt*tau_actual - sum_contacts(J_after.T*reported_world_impulse)]. Divide by25ms for equivalent force/torque. This is approximate continuous-model quadrature, not a native integration identity.",
+  "contactJacobianDefinition": "live uses current material point; frozen uses normalized FK body COM plus exported solverLeverFromCom. Every point impulse equals normal*normalImpulseNs+tangentImpulseWorldNs, directed onto the foot.",
+  "cases": [
+    {
+      "rightPoseTransport": {
+        "meanPoseRateMinusFinalVelocityWorldRadps": [
+          0.005199924332190891,
+          0.0024315705878347332,
+          1.2399614216418474e-05
+        ],
+        "minimumPoseRateMinusFinalVelocityWorldRadps": [
+          0.0031757313185245897,
+          0.0019294173009943775,
+          -0.0008504004527015107
+        ],
+        "maximumPoseRateMinusFinalVelocityWorldRadps": [
+          0.0058319429916276816,
+          0.0031842291352330025,
+          0.0003506503994423655
+        ],
+        "totalPoseRotationWorldRad": [
+          -0.0001277648963220768,
+          6.141112788964209e-05,
+          -4.6930460978866806e-05
+        ]
+      },
+      "mode": "live-geometric",
+      "rawArtifact": "live-geometric.json",
+      "qddPredictionErrorNorm": 1.4464116664139295,
+      "predictedCOMAccelerationWorldMps2": [
+        0.003310808019366057,
+        0.004349995038000252,
+        -0.015230905574113591
+      ],
+      "actualCOMAccelerationWorldMps2": [
+        -0.0004899184211534444,
+        -0.004063082353840293,
+        -0.0018702688288276962
+      ],
+      "comAccelerationPredictionErrorNormMps2": 0.016239827798232534,
+      "feet": [
+        {
+          "body": "left_foot",
+          "predictedAngularAccelerationWorldRadps2": [
+            -0.32206774569999086,
+            0.18826709412395087,
+            -0.1631947258637675
+          ],
+          "actualFinalVelocityAngularAccelerationWorldRadps2": [
+            0.0007884390652179718,
+            0.021403664723038673,
+            0.053207166492938995
+          ]
+        },
+        {
+          "body": "right_foot",
+          "predictedAngularAccelerationWorldRadps2": [
+            -0.7744704484274119,
+            0.8869955666178483,
+            -0.3011099750677746
+          ],
+          "actualFinalVelocityAngularAccelerationWorldRadps2": [
+            -0.03153890371322632,
+            4.5746564865112305e-05,
+            -0.013718344271183014
+          ]
+        }
+      ],
+      "excludedGeneralizedStopCoordinates": [
+        23,
+        26
+      ],
+      "impulseClosure": {
+        "live": {
+          "rootForceResidualEquivalentN": [
+            0.0065250583748083495,
+            0.0004890304126803358,
+            -0.015979372831635703
+          ],
+          "rootMomentResidualEquivalentNm": [
+            0.09424895119680476,
+            -0.03282002069376176,
+            0.48146402850496317
+          ],
+          "nonStopGeneralizedResidualNormEquivalent": 1.047084652577335,
+          "nonStopMaximumAbsoluteResidualEquivalent": 0.48146402850496317,
+          "perNativeNonStopResidualRMSEEquivalent": 0.2105186812880926
+        },
+        "frozen": {
+          "rootForceResidualEquivalentN": [
+            0.0065250583748083495,
+            0.0004890304126803358,
+            -0.015979372831635703
+          ],
+          "rootMomentResidualEquivalentNm": [
+            -0.0010695573057151186,
+            0.00014567908005483788,
+            0.01903311228392157
+          ],
+          "nonStopGeneralizedResidualNormEquivalent": 0.08159894326252437,
+          "nonStopMaximumAbsoluteResidualEquivalent": 0.04606515137878242,
+          "perNativeNonStopResidualRMSEEquivalent": 0.02689914502624372
+        }
+      }
+    },
+    {
+      "rightPoseTransport": {
+        "meanPoseRateMinusFinalVelocityWorldRadps": [
+          0.0053658702703024575,
+          0.0029826320156681545,
+          -0.00023887401423823814
+        ],
+        "minimumPoseRateMinusFinalVelocityWorldRadps": [
+          0.005074051585693372,
+          0.0018326081692941966,
+          -0.0005577015687286569
+        ],
+        "maximumPoseRateMinusFinalVelocityWorldRadps": [
+          0.005808212541419016,
+          0.0036636936654092663,
+          0.0002329539178199747
+        ],
+        "totalPoseRotationWorldRad": [
+          -0.0005559073978635369,
+          7.597857091069494e-05,
+          -0.00021894584101607784
+        ]
+      },
+      "mode": "native-frozen",
+      "rawArtifact": "native-frozen.json",
+      "qddPredictionErrorNorm": 0.745999604741208,
+      "predictedCOMAccelerationWorldMps2": [
+        0.003310810106805352,
+        0.004349995841879122,
+        -0.015230890986251409
+      ],
+      "actualCOMAccelerationWorldMps2": [
+        0.0049729343598782175,
+        -0.0009455535142040544,
+        -0.011991402642782981
+      ],
+      "comAccelerationPredictionErrorNormMps2": 0.0064264908576013545,
+      "feet": [
+        {
+          "body": "left_foot",
+          "predictedAngularAccelerationWorldRadps2": [
+            -0.3220679251012524,
+            0.18826682374934262,
+            -0.16319459686144125
+          ],
+          "actualFinalVelocityAngularAccelerationWorldRadps2": [
+            -0.2991509437561035,
+            0.08773975074291229,
+            -0.3133682906627655
+          ]
+        },
+        {
+          "body": "right_foot",
+          "predictedAngularAccelerationWorldRadps2": [
+            -0.7744706875460134,
+            0.8869956121398643,
+            -0.30111003795815744
+          ],
+          "actualFinalVelocityAngularAccelerationWorldRadps2": [
+            -0.8755267411470413,
+            0.0020213425159454346,
+            -0.33863332122564316
+          ]
+        }
+      ],
+      "excludedGeneralizedStopCoordinates": [
+        23,
+        26
+      ],
+      "impulseClosure": {
+        "live": {
+          "rootForceResidualEquivalentN": [
+            -0.0238474698327178,
+            0.0011645585239961065,
+            0.01977223402091416
+          ],
+          "rootMomentResidualEquivalentNm": [
+            0.08004865155481156,
+            -0.03340321959228452,
+            0.46856524445752834
+          ],
+          "nonStopGeneralizedResidualNormEquivalent": 1.0362288339558152,
+          "nonStopMaximumAbsoluteResidualEquivalent": 0.46856524445752834,
+          "perNativeNonStopResidualRMSEEquivalent": 0.2146729537051166
+        },
+        "frozen": {
+          "rootForceResidualEquivalentN": [
+            -0.0238474698327178,
+            0.0011645585239961065,
+            0.01977223402091416
+          ],
+          "rootMomentResidualEquivalentNm": [
+            -0.014926508934984817,
+            0.0001232338294098259,
+            0.004841019203640773
+          ],
+          "nonStopGeneralizedResidualNormEquivalent": 0.0823951743065224,
+          "nonStopMaximumAbsoluteResidualEquivalent": 0.046541528315082736,
+          "perNativeNonStopResidualRMSEEquivalent": 0.05857046051542044
+        }
+      }
+    }
+  ],
+  "remainingMismatch": [
+    "Native yaw acceleration remains near zero while the QP predicts positive yaw acceleration, consistent with missing sticking/friction-mode complementarity.",
+    "Reported final generalized velocity is relaxed after biased-pass pose integration. Pose transport and final velocity remain distinct; separate pose-rate evidence must be retained.",
+    "Nonzero impulse residual includes continuous-model quadrature, internal implicit dynamics, frozen-lever timing and f32 effects. No exact momentum certificate is claimed."
+  ]
+}
