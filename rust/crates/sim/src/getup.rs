@@ -49,7 +49,7 @@ pub(crate) fn collider(part: &lh_model::Segment, index: usize) -> Result<Collide
         .active_hooks(ActiveHooks::FILTER_CONTACT_PAIRS | ActiveHooks::MODIFY_SOLVER_CONTACTS))
 }
 
-pub(crate) fn assemble(s: &mut Simulation) -> Result<(), String> {
+pub(crate) fn assemble(s: &mut Simulation, support_height: f32) -> Result<(), String> {
     for (i, part) in s.model.segments.iter().enumerate() {
         if let (Some(parent), Some(p)) = (&part.parent, &part.joint_profile) {
             let parent = s
@@ -115,7 +115,8 @@ pub(crate) fn assemble(s: &mut Simulation) -> Result<(), String> {
         .map(|h| s.world.colliders[*h].compute_aabb().mins.y)
         .fold(f32::INFINITY, f32::min);
     displacement.fill(0.0);
-    displacement[1] = 0.002 - bottom;
+    // Preserve the selected terrain elevation while normalizing source posture.
+    displacement[1] = support_height + 0.002 - bottom;
     mb.apply_displacements(&displacement);
     mb.forward_kinematics(&s.world.bodies, false);
     mb.update_rigid_bodies(&mut s.world.bodies, true);
@@ -398,6 +399,28 @@ pub fn slow_observation(physical: &[f32; 67], now: &[f32; 25], ahead: &[f32; 25]
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[test]
+    fn source_assembly_retains_selected_terrain_elevation_without_integration() {
+        let baseline = Simulation::new(0.0, Profile::default(), true).unwrap();
+        for difficulty in crate::environment::DIFFICULTIES {
+            for station in crate::environment::STATIONS {
+                let settings = lh_contracts::PlaygroundSettings { station, difficulty };
+                let s = Simulation::new_playground(0.0, Profile::default(), true, settings).unwrap();
+                let offset = s.environment.as_ref().unwrap().spawn_offset(&s.world, &s.model).unwrap();
+                for (body, original) in s.bodies.iter().zip(&baseline.bodies) {
+                    let delta = s.world.bodies[*body].translation()
+                        - baseline.world.bodies[*original].translation();
+                    assert!(delta.distance(offset) < 0.00002, "{settings:?}: {delta:?} vs {offset:?}");
+                }
+                let bottom = s.colliders.iter().filter(|h| s.world.colliders[**h].is_enabled())
+                    .map(|h| s.world.colliders[*h].compute_aabb().mins.y)
+                    .fold(f32::INFINITY, f32::min);
+                assert!((bottom - offset.y - 0.002).abs() < 0.00002, "{settings:?}");
+                assert_eq!(s.substeps_completed, 0);
+                assert_eq!(s.tick, 0);
+            }
+        }
+    }
     #[test]
     fn observation_uses_current_generalized_motion_and_unit_frames_without_integration() {
         let mut s = Simulation::new(0.3, Profile::default(), true).unwrap();

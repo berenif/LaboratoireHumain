@@ -498,7 +498,7 @@ impl Simulation {
             getup_controller: None,
             getup_fixture: None,
         };
-        getup::assemble(&mut result)?;
+        getup::assemble(&mut result, spawn_offset.y)?;
         result.capture_rest_com();
         if result.profile.getup_policy_enabled {
             result.getup_controller = Some(getup::controller::Controller::new(&result.model));
