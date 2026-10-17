@@ -16,6 +16,34 @@ pub struct Prediction {
     pub action: [f32; 21],
 }
 impl Actor {
+    #[cfg(feature = "stationary-balance-experiment")]
+    pub fn stationary_from_bytes(bytes: &[u8]) -> Result<Self, String> {
+        Self::decode(bytes, 120)
+    }
+    /// Architecture-preserving initialization, not a trained balance policy.
+    /// Keep power last; insert two zero-weight position inputs before it.
+    #[cfg(feature = "stationary-balance-experiment")]
+    pub fn stationary_initialization() -> Self {
+        let original = student();
+        let mut layers = Vec::new();
+        for (index, layer) in original.layers.iter().enumerate() {
+            let mut weights = Vec::new();
+            for row in layer.weights.chunks_exact(layer.width) {
+                if index == 0 {
+                    weights.extend_from_slice(&row[..117]);
+                    weights.extend_from_slice(&[0.0, 0.0, row[117]]);
+                } else {
+                    weights.extend_from_slice(row);
+                }
+            }
+            layers.push(Layer {
+                width: if index == 0 { 120 } else { layer.width },
+                weights,
+                bias: layer.bias.clone(),
+            });
+        }
+        Self { input: 120, layers }
+    }
     fn decode(bytes: &[u8], expected: usize) -> Result<Self, String> {
         if bytes.len() < 24 || &bytes[..8] != b"LHGPW001" {
             return Err("Invalid GetUp weight header".into());

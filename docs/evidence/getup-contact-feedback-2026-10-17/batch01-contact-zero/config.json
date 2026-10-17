@@ -1,0 +1,27 @@
+{
+  "controller": "measured-contact-whole-body-inverse-dynamics-untrained-hybrid",
+  "shiftM": 0.0,
+  "simulatedSeconds": 12.0,
+  "physicsCapSeconds": 60.0,
+  "deadlineUTC": "2026-10-17T13:50:00Z",
+  "stickingModeNoReleaseNoStep": true,
+  "externalForcesApplied": false,
+  "sourceWeightsChanged": false,
+  "model": "continuous rigid-body mass+armature/Coriolis/gravity/passive springs+damping; original inner PD remains active800Hz",
+  "contactConstraints": "actual material-point acceleration stabilization only in optimizer, never physical pins",
+  "acceptance": "Zero: fullmodel1-6s>=5s anchoredstanding,noflight/nonfoot,<=1cmslip,<=2cmCOMdrift. Shift sign:actualCOM displacement alongrequested>=2.5mm for5mmtarget, no parasiticflight/slip, source-only7-12s>=5sstanding. This is no stepping claim.",
+  "checkpointSha256": "3ffed5867ddc238794a2ce94a102c3e2d23bf1a4623070253c91d9d94fa312dd",
+  "nativeBinarySha256": "761b291ec90b0951e9f8d95f8dce30804711c48eda4073da2f6c4947c4b8325a",
+  "probeSha256": "c3cf027d194fc0f3112682f63ef45dabcb17b404e2364d8bce55c44544708297",
+  "dynamicsSha256": "dd87ea1029f1417caa600742e069b8437eb0540c167b7a6989cba8ea29714a79",
+  "initialCOM": [
+    1.0804519422301204,
+    0.809975899777216,
+    -0.18871737940769728
+  ],
+  "shiftDirectionWorld": [
+    -0.6597667080190008,
+    0.0,
+    0.7514704857742388
+  ]
+}

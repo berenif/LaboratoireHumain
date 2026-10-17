@@ -48,6 +48,10 @@ fn acknowledgement(
     }
 }
 impl Runtime {
+    #[cfg(feature = "stationary-balance-experiment")]
+    pub(crate) fn balance_simulation_mut(&mut self) -> &mut Simulation {
+        &mut self.simulation
+    }
     pub fn new_getup_fixture(kind:&str) -> Result<Self,String> {
         let mut profile=Profile::default();profile.getup_policy_enabled=true;
         let mut runtime=Self::new(Mode::Protocol,0.0,profile)?;

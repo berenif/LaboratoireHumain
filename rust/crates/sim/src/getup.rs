@@ -5,6 +5,9 @@ pub mod actor;
 pub mod controller;
 pub mod fixtures;
 pub mod reference;
+pub mod standing;
+#[cfg(feature = "stationary-balance-experiment")]
+pub mod balance;
 
 pub fn source_vector(v: Vector) -> [f32; 3] {
     [v.z, v.x, v.y]
@@ -180,6 +183,24 @@ pub(crate) fn configure(s: &mut Simulation) -> Result<(), String> {
     let physical = physical_observation(s)?;
     let q: &[f32; 21] = physical[..21].try_into().unwrap();
     let dq: &[f32; 21] = physical[46..67].try_into().unwrap();
+    #[cfg(feature = "stationary-balance-experiment")]
+    if let Some(residual) = s.balance_residual {
+        let reference = controller::standing_target(&s.model)[..21].try_into().unwrap();
+        let controls = slow_controls(&s.model, &reference, &residual, q, dq, true)?;
+        s.diagnostics.getup = Some(lh_contracts::GetUpObservation {
+            controller: "stationary-balance-external-residual-untrained".into(),
+            learned_policy_loaded: false,
+            source_bodies: 16, coordinate_frames: 9, active_hinges: 21,
+            joint_angles_rad: q.to_vec(), joint_velocities_radps: dq.to_vec(),
+            motor_controls: controls.to_vec(), physics_step_s: s.profile.dt_s,
+            policy_step_s: 0.025, observation: physical.to_vec(), policy: None,
+        });
+        apply_controls(s, &controls)?;
+        let torso = s.model.segments.iter().position(|p| p.id == "torso").unwrap();
+        s.world.bodies[s.bodies[torso]].add_force(
+            Vector::new(s.balance_torso_force_n[0], 0.0, s.balance_torso_force_n[1]), true);
+        return Ok(());
+    }
     let controls = if s.getup_fixture.as_ref().is_some_and(|f|f.preparing) {
         Ok([0.0;21])
     } else if let Some(mut controller) = s.getup_controller.take() {

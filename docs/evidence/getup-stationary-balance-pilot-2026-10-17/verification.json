@@ -1,0 +1,24 @@
+{
+  "nativeReleaseBuild": "passed",
+  "focusedRustTests": {
+    "passed": 3,
+    "failed": 0,
+    "physicsIntegrations": 0
+  },
+  "npmTests": {
+    "passed": 61,
+    "failed": 0,
+    "physicsIntegrations": 0
+  },
+  "defaultFeatureWasmWorkerCheck": "passed",
+  "pythonSyntax": "passed",
+  "focusedRustFormatting": "passed",
+  "gitWhitespace": "passed",
+  "independentPreRunReview": "passed before any rollouts",
+  "independentFinalTraceAndCheckpointAudit": "passed",
+  "independentFullLearnerRead": "weights_only; all model/Adam tensors finite; actor800/critic1000/alpha800 steps",
+  "fullResumeExecution": "not tested",
+  "broadPhysicalQualification": "not run",
+  "fullLint": "not run; pre-existing dead-code warnings remain",
+  "additionalPhysicsForPostprocessing": 0
+}

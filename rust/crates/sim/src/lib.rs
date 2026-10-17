@@ -272,6 +272,13 @@ impl PhysicsHooks for Filter {
 }
 #[derive(Serialize, Deserialize)]
 pub struct Simulation {
+    /// Native experiment only. Held residual; PD is still recomputed each substep.
+    #[cfg(feature = "stationary-balance-experiment")]
+    #[serde(skip)]
+    balance_residual: Option<[f32; 21]>,
+    #[cfg(feature = "stationary-balance-experiment")]
+    #[serde(skip)]
+    balance_torso_force_n: [f32; 2],
     #[cfg(all(test, feature = "experimental-solver-step-observation"))]
     #[serde(skip)]
     coordination: Option<recovery::planner::whole_body_controller::Controller>,
@@ -449,6 +456,10 @@ impl Simulation {
             .map(|a| a.max_motor_torque_nm)
             .sum();
         let mut result = Self {
+            #[cfg(feature = "stationary-balance-experiment")]
+            balance_residual: None,
+            #[cfg(feature = "stationary-balance-experiment")]
+            balance_torso_force_n: [0.0; 2],
             #[cfg(all(test, feature = "experimental-solver-step-observation"))]
             coordination: None,
             world,
@@ -1004,7 +1015,11 @@ impl Simulation {
             }
             self.observe_motion(&loads_n);
             getup::fixtures::observe(self, &loads_n);
-            if let Some(mut controller) = self.getup_controller.take() {
+            #[cfg(feature = "stationary-balance-experiment")]
+            let balance_active = self.balance_residual.is_some();
+            #[cfg(not(feature = "stationary-balance-experiment"))]
+            let balance_active = false;
+            if !balance_active && let Some(mut controller) = self.getup_controller.take() {
                 controller.observe(self, &loads_n);
                 if let Some(observation) = self.diagnostics.getup.as_mut() { observation.policy = Some(controller.status.clone()); }
                 self.getup_controller = Some(controller);

@@ -1,0 +1,95 @@
+{
+  "experimentCompleted": true,
+  "candidateAccepted": false,
+  "reason": "All four frozen heldout comparisons degrade; retain existing controller.",
+  "allFourCases": [
+    {
+      "case": "forward",
+      "baselineCompleted4s": true,
+      "candidateTerminated": true,
+      "candidateElapsedS": 1.568749964935705,
+      "candidateStopReasons": [
+        "head-height-below-1m"
+      ],
+      "baselineMaxDriftM": 0.027179541066288948,
+      "candidateMaxDriftM": 0.5135398507118225,
+      "baselineFinalQuietS": 1.072499976027757,
+      "candidateFinalQuietS": 0.0,
+      "baselineReturn": 149.80697643756866,
+      "candidateReturn": -25.744913524016738
+    },
+    {
+      "case": "backward",
+      "baselineCompleted4s": true,
+      "candidateTerminated": true,
+      "candidateElapsedS": 2.412499946076423,
+      "candidateStopReasons": [
+        "head-height-below-1m"
+      ],
+      "baselineMaxDriftM": 0.016844747588038445,
+      "candidateMaxDriftM": 0.4111855924129486,
+      "baselineFinalQuietS": 2.6937499397899956,
+      "candidateFinalQuietS": 0.0,
+      "baselineReturn": 155.14794027805328,
+      "candidateReturn": -9.868949703872204
+    },
+    {
+      "case": "left",
+      "baselineCompleted4s": true,
+      "candidateTerminated": true,
+      "candidateElapsedS": 2.0349999545142055,
+      "candidateStopReasons": [
+        "anchor-drift-over-0.6m"
+      ],
+      "baselineMaxDriftM": 0.01848076470196247,
+      "candidateMaxDriftM": 0.6003015041351318,
+      "baselineFinalQuietS": 1.7762499602977186,
+      "candidateFinalQuietS": 0.0,
+      "baselineReturn": 153.49235731363297,
+      "candidateReturn": -29.609178936108947
+    },
+    {
+      "case": "right",
+      "baselineCompleted4s": true,
+      "candidateTerminated": true,
+      "candidateElapsedS": 2.331249947892502,
+      "candidateStopReasons": [
+        "anchor-drift-over-0.6m"
+      ],
+      "baselineMaxDriftM": 0.029187090694904327,
+      "candidateMaxDriftM": 0.6000794172286987,
+      "baselineFinalQuietS": 2.1712499514687806,
+      "candidateFinalQuietS": 0.0,
+      "baselineReturn": 150.0472627878189,
+      "candidateReturn": -20.02824568375945
+    }
+  ],
+  "phaseBudgetLedger": {
+    "baseline": {
+      "stepCommands": 640,
+      "nativeIntegrations": 12800,
+      "physicsWallSeconds": 42.194683929
+    },
+    "training": {
+      "stepCommands": 3000,
+      "nativeIntegrations": 59835,
+      "physicsWallSeconds": 190.73185409300027
+    },
+    "candidate": {
+      "stepCommands": 336,
+      "nativeIntegrations": 6678,
+      "physicsWallSeconds": 21.008901024000068
+    }
+  },
+  "totalPhysicsWallSeconds": 253.93543904600034,
+  "nativeIntegrations": 79313,
+  "physicsLimitSeconds": 360,
+  "unusedPhysicsSeconds": 106.06456095399966,
+  "newRolloutsAfterPilot": 0,
+  "learnerCheckpointIsPreEvaluation": true,
+  "resumeMustUseFinalBudgetLedger": true,
+  "resumeTestedEndToEnd": false,
+  "externalResumeArchiveOnly": true,
+  "diagnosis": "Full-policy drift is observed. Fresh-critic error or missing preservation constraints are hypotheses, not a causal ablation.",
+  "nextExperimentHypothesis": "Keep inherited GetUp backbone fixed and learn a small bounded corrective residual with conservative policy preservation; requires separate authorization and evaluation."
+}

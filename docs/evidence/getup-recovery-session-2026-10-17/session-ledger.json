@@ -1,0 +1,82 @@
+{
+  "sessionStartUTC": "2026-10-17T12:11:31Z",
+  "totalDeadlineUTC": "2026-10-17T13:11:31Z",
+  "physicalStopUTC": "2026-10-17T13:06:00Z",
+  "physicsWallSeconds": 373.01979411200017,
+  "nativeSubsteps": 115991,
+  "batches": [
+    {
+      "name": "batch01-paired",
+      "path": "batch01-paired",
+      "physicsWallSeconds": 40.23823206399997,
+      "nativeSubsteps": 12800,
+      "capSeconds": 90,
+      "outcome": "mechanism rejected: no clearance, early recontact, standing/slip regression"
+    },
+    {
+      "name": "batch02-rising-sagittal",
+      "path": "batch02-rising-sagittal",
+      "physicsWallSeconds": 33.45434642400001,
+      "nativeSubsteps": 10364,
+      "capSeconds": 60,
+      "outcome": "rejected: <5mm lift, earlyrecontact, anchor escape"
+    },
+    {
+      "name": "batch03-additive",
+      "path": "batch03-additive",
+      "physicsWallSeconds": 41.575379412000025,
+      "nativeSubsteps": 12800,
+      "capSeconds": 60,
+      "outcome": "rejected: <3mm lift, 2 native flight samples, regained5.056sstance"
+    },
+    {
+      "name": "batch04-quiet-transfer",
+      "path": "batch04-quiet-transfer",
+      "physicsWallSeconds": 51.75057224700005,
+      "nativeSubsteps": 16000,
+      "capSeconds": 90,
+      "outcome": "transfer incomplete: COM2.85cm toward14cmgoal, maxrightload67%, noflight, feet<6.1mm"
+    },
+    {
+      "name": "batch05-reference-transfer",
+      "path": "batch05-reference-transfer",
+      "physicsWallSeconds": 56.497039397000044,
+      "nativeSubsteps": 17600,
+      "capSeconds": 90,
+      "outcome": "transfer incomplete: COM5.8cm toward14cmgoal, rightload70.3%, regained6.504sstance, loadedslip3.5cm"
+    },
+    {
+      "name": "batch06-reference-long-hold",
+      "path": "batch06-reference-long-hold",
+      "physicsWallSeconds": 77.03638639400006,
+      "nativeSubsteps": 24000,
+      "capSeconds": 90,
+      "outcome": "lag hypothesis rejected: maxright72.2%, no85%hold, COMplateau8cmremaining, regained6.38sstance noflight"
+    },
+    {
+      "name": "batch07-equilibrium-zero",
+      "path": "batch07-equilibrium-zero",
+      "physicsWallSeconds": 20.555280494999995,
+      "nativeSubsteps": 6400,
+      "capSeconds": 30,
+      "outcome": "zero-equilibrium full-model hold passed:5s anchored standing, noflight/nonfoot, <1cmslip, COMdrift<2cm"
+    },
+    {
+      "name": "batch08-equilibrium-transfer",
+      "path": "batch08-equilibrium-transfer",
+      "physicsWallSeconds": 10.799223659,
+      "nativeSubsteps": 3227,
+      "capSeconds": 60,
+      "outcome": "rejected: modeltransfer lost balance at4.034s, no qualifiedsupporthold or source-return"
+    },
+    {
+      "name": "batch09-guarded-retreat",
+      "path": "batch09-guarded-retreat",
+      "physicsWallSeconds": 41.113334020000046,
+      "nativeSubsteps": 12800,
+      "capSeconds": 45,
+      "outcome": "guard safely retreated: nofulltransfer/step, maxright67.3%, noflight/nonfoot, 6s source-return anchoredstanding"
+    }
+  ],
+  "oldUnusedAllowanceCarried": false
+}

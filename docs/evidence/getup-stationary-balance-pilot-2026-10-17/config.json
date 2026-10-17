@@ -1,0 +1,68 @@
+{
+  "seed": 20261017,
+  "heldout": [
+    {
+      "name": "forward",
+      "force_n": [
+        20.0,
+        0.0
+      ],
+      "pulse_start": 20,
+      "pulse_ticks": 8,
+      "ticks": 160
+    },
+    {
+      "name": "backward",
+      "force_n": [
+        -20.0,
+        0.0
+      ],
+      "pulse_start": 20,
+      "pulse_ticks": 8,
+      "ticks": 160
+    },
+    {
+      "name": "left",
+      "force_n": [
+        0.0,
+        20.0
+      ],
+      "pulse_start": 20,
+      "pulse_ticks": 8,
+      "ticks": 160
+    },
+    {
+      "name": "right",
+      "force_n": [
+        0.0,
+        -20.0
+      ],
+      "pulse_start": 20,
+      "pulse_ticks": 8,
+      "ticks": 160
+    }
+  ],
+  "maxTrainingTransitions": 3000,
+  "maxUpdates": 1000,
+  "criticWarmupUpdates": 200,
+  "batchSize": 128,
+  "actorLR": 1e-06,
+  "criticLR": 0.0001,
+  "explorationStdMax": 0.05,
+  "physicsLimitSeconds": 360,
+  "totalDeadlineUTC": "2026-10-17T10:44:20Z",
+  "evaluationReserveSeconds": 100,
+  "inputCheckpointSha256": "3ffed5867ddc238794a2ce94a102c3e2d23bf1a4623070253c91d9d94fa312dd",
+  "nativeBinarySha256": "1db3f9045b12c4aaf931329a24f65f9272c477193858d5e49935ef41b368f0f5",
+  "trainerSha256": "95a95066c17d8fd031b786b2cd5149f87d6dcf176d0eccae7aaa03694b218653",
+  "sourceSACSha256": "64b1abe69edaac1e3c3f9064f11bcb3d1168eb1d829117dd415eaa204dee0420",
+  "initialActorSha256": "fddf2e03333fb6942287eafcdc35600cd21b06dbf2d9f7e77e568f1e55912bc5",
+  "initialParityMaxError": 1.9222497940063477e-06,
+  "torchVersion": "2.9.1+cpu",
+  "numpyVersion": "2.5.2",
+  "threads": 2,
+  "gpu": false,
+  "timeoutBootstrap": "yes for finite horizon; no for physical failure/termination; zero-integration excluded",
+  "nativeTorchInitializationActionError": 4.917383193969727e-07,
+  "trainingDirections": "diagonals only; heldout cardinal directions"
+}

@@ -421,7 +421,7 @@ pub fn standing_diagnostic(s: &Simulation, anchors: Option<[Vec3; 2]>) -> Result
         "predicates":predicates,"headM":physical[21],"torsoUp":physical[36],"com":vec3(com),
         "comVelocity":vec3(velocity),"capture":vec3(capture),"footIds":ids,"feet":feet,
         "loadsN":loads,"supportPersistence":s.integrated_support_substeps,"solverSupportPoints":points,
-        "motion":motion,"footDriftM":drift,"thresholds":{"linearMps":contract.stable_linear_mps,
+        "motion":motion,"footDriftM":drift,"contactMotion":super::standing::contact_diagnostic(s)?,"thresholds":{"linearMps":contract.stable_linear_mps,
         "angularRadps":contract.stable_angular_radps,"torsoUp":contract.stable_up_dot,"footDriftM":0.01}}))
 }
 

@@ -1,0 +1,221 @@
+[
+  {
+    "source": "outputs/getup-recovery-step/session-20261017T121131Z/batch01-paired/protocol.ndjson",
+    "archive": "docs/evidence/getup-recovery-session-2026-10-17/batch01-paired/protocol.ndjson.gz",
+    "sha256": "55974c4a6f53dee2a81e3ce7706edc37687c125616f83981f85c84f9cb181e2f",
+    "uncompressedBytes": 19326831
+  },
+  {
+    "source": "outputs/getup-recovery-step/session-20261017T121131Z/batch01-paired/baseline.json",
+    "archive": "docs/evidence/getup-recovery-session-2026-10-17/batch01-paired/baseline.json.gz",
+    "sha256": "9c861868a51bb2487e722b025edc003aa64ded45b59326ae53902422697168f4",
+    "uncompressedBytes": 4210184
+  },
+  {
+    "source": "outputs/getup-recovery-step/session-20261017T121131Z/batch01-paired/hybrid.json",
+    "archive": "docs/evidence/getup-recovery-session-2026-10-17/batch01-paired/hybrid.json.gz",
+    "sha256": "762161e113237b6c229d007fcf61acb67c6aabce9a7a4499e143fa5059a16d87",
+    "uncompressedBytes": 4257687
+  },
+  {
+    "retainedWorkspaceCheckpoint": "outputs/getup-recovery-step/session-20261017T121131Z/batch01-paired/baseline-final.bin",
+    "sha256": "64ef0c0149b0aff645cc58c95e0c62ec95bdc803f6b27531725ac4e118c9f328",
+    "bytes": 4684285
+  },
+  {
+    "retainedWorkspaceCheckpoint": "outputs/getup-recovery-step/session-20261017T121131Z/batch01-paired/hybrid-final.bin",
+    "sha256": "a26865683dd104f010481e1e24b45e0da06d73e9b701947f0a99edf389e24fca",
+    "bytes": 4684199
+  },
+  {
+    "source": "outputs/getup-recovery-step/session-20261017T121131Z/batch02-rising-sagittal/protocol.ndjson",
+    "archive": "docs/evidence/getup-recovery-session-2026-10-17/batch02-rising-sagittal/protocol.ndjson.gz",
+    "sha256": "f1311005059220de7cb90c1925569e670bb3d3b3059e8e09385b03841284e41e",
+    "uncompressedBytes": 15676069
+  },
+  {
+    "source": "outputs/getup-recovery-step/session-20261017T121131Z/batch02-rising-sagittal/baseline.json",
+    "archive": "docs/evidence/getup-recovery-session-2026-10-17/batch02-rising-sagittal/baseline.json.gz",
+    "sha256": "9c861868a51bb2487e722b025edc003aa64ded45b59326ae53902422697168f4",
+    "uncompressedBytes": 4210184
+  },
+  {
+    "source": "outputs/getup-recovery-step/session-20261017T121131Z/batch02-rising-sagittal/hybrid.json",
+    "archive": "docs/evidence/getup-recovery-session-2026-10-17/batch02-rising-sagittal/hybrid.json.gz",
+    "sha256": "18ce81ca0625d12480757d77d54c44c7f55aa70320237d12d77e395e6d38b733",
+    "uncompressedBytes": 2680826
+  },
+  {
+    "retainedWorkspaceCheckpoint": "outputs/getup-recovery-step/session-20261017T121131Z/batch02-rising-sagittal/baseline-final.bin",
+    "sha256": "64ef0c0149b0aff645cc58c95e0c62ec95bdc803f6b27531725ac4e118c9f328",
+    "bytes": 4684285
+  },
+  {
+    "retainedWorkspaceCheckpoint": "outputs/getup-recovery-step/session-20261017T121131Z/batch02-rising-sagittal/hybrid-final.bin",
+    "sha256": "51281408a001cfd8894b068e3efb460603890d39309f40641f7e44c68d0cf121",
+    "bytes": 4684274
+  },
+  {
+    "source": "outputs/getup-recovery-step/session-20261017T121131Z/batch03-additive/protocol.ndjson",
+    "archive": "docs/evidence/getup-recovery-session-2026-10-17/batch03-additive/protocol.ndjson.gz",
+    "sha256": "73cacf269cd9a23ee41670c05db6f95d70d2be27498b2a29566d4aa47de091a7",
+    "uncompressedBytes": 19615672
+  },
+  {
+    "source": "outputs/getup-recovery-step/session-20261017T121131Z/batch03-additive/baseline.json",
+    "archive": "docs/evidence/getup-recovery-session-2026-10-17/batch03-additive/baseline.json.gz",
+    "sha256": "9c861868a51bb2487e722b025edc003aa64ded45b59326ae53902422697168f4",
+    "uncompressedBytes": 4210184
+  },
+  {
+    "source": "outputs/getup-recovery-step/session-20261017T121131Z/batch03-additive/hybrid.json",
+    "archive": "docs/evidence/getup-recovery-session-2026-10-17/batch03-additive/hybrid.json.gz",
+    "sha256": "5cabefc0f3a088893f1af876a68723dcae4385f72119bc6f618d1631c098a2d4",
+    "uncompressedBytes": 4294643
+  },
+  {
+    "retainedWorkspaceCheckpoint": "outputs/getup-recovery-step/session-20261017T121131Z/batch03-additive/baseline-final.bin",
+    "sha256": "64ef0c0149b0aff645cc58c95e0c62ec95bdc803f6b27531725ac4e118c9f328",
+    "bytes": 4684285
+  },
+  {
+    "retainedWorkspaceCheckpoint": "outputs/getup-recovery-step/session-20261017T121131Z/batch03-additive/hybrid-final.bin",
+    "sha256": "4c9a7c18eeac016109054fa68449bd84efa4a671af4b4e94f20576882884aa9e",
+    "bytes": 4684756
+  },
+  {
+    "source": "outputs/getup-recovery-step/session-20261017T121131Z/batch04-quiet-transfer/protocol.ndjson",
+    "archive": "docs/evidence/getup-recovery-session-2026-10-17/batch04-quiet-transfer/protocol.ndjson.gz",
+    "sha256": "f7e6b31d827a0e5fb0c723d0578d312957c288caa07e279fe5ddbce67412221b",
+    "uncompressedBytes": 24613333
+  },
+  {
+    "source": "outputs/getup-recovery-step/session-20261017T121131Z/batch04-quiet-transfer/baseline.json",
+    "archive": "docs/evidence/getup-recovery-session-2026-10-17/batch04-quiet-transfer/baseline.json.gz",
+    "sha256": "9ad03db27d4f622975df035407e41180cbe95f6121392f1ea075b06e7222dc0e",
+    "uncompressedBytes": 5952034
+  },
+  {
+    "source": "outputs/getup-recovery-step/session-20261017T121131Z/batch04-quiet-transfer/hybrid.json",
+    "archive": "docs/evidence/getup-recovery-session-2026-10-17/batch04-quiet-transfer/hybrid.json.gz",
+    "sha256": "b8e7ccd04cc8c003779ea51b2761ca48e07d64c363c94c3f1665c0a653986ba4",
+    "uncompressedBytes": 5933435
+  },
+  {
+    "retainedWorkspaceCheckpoint": "outputs/getup-recovery-step/session-20261017T121131Z/batch04-quiet-transfer/baseline-final.bin",
+    "sha256": "88f348fffe073c610ac55907cd06290ae487f5160d4717f9538f2808e00cb9c8",
+    "bytes": 7605988
+  },
+  {
+    "retainedWorkspaceCheckpoint": "outputs/getup-recovery-step/session-20261017T121131Z/batch04-quiet-transfer/hybrid-final.bin",
+    "sha256": "4b2d7e6c33bc945431c813160bcd51d9217356b0cbb31d9774e74506a31fe3d2",
+    "bytes": 7605046
+  },
+  {
+    "source": "outputs/getup-recovery-step/session-20261017T121131Z/batch05-reference-transfer/protocol.ndjson",
+    "archive": "docs/evidence/getup-recovery-session-2026-10-17/batch05-reference-transfer/protocol.ndjson.gz",
+    "sha256": "26bfc0093eba5863db996a837c2a6418bbcd4753b711fa4b197d436298e0ce56",
+    "uncompressedBytes": 27697345
+  },
+  {
+    "source": "outputs/getup-recovery-step/session-20261017T121131Z/batch05-reference-transfer/baseline.json",
+    "archive": "docs/evidence/getup-recovery-session-2026-10-17/batch05-reference-transfer/baseline.json.gz",
+    "sha256": "a208de50cbf20d0ff43256495c4b0200be43060111e77ca8c24ee5a775626701",
+    "uncompressedBytes": 6586248
+  },
+  {
+    "source": "outputs/getup-recovery-step/session-20261017T121131Z/batch05-reference-transfer/hybrid.json",
+    "archive": "docs/evidence/getup-recovery-session-2026-10-17/batch05-reference-transfer/hybrid.json.gz",
+    "sha256": "985eb46da6c694159266308648d51a62d9b9d1ae5c907ba8eaccecb8c87746e7",
+    "uncompressedBytes": 6572484
+  },
+  {
+    "retainedWorkspaceCheckpoint": "outputs/getup-recovery-step/session-20261017T121131Z/batch05-reference-transfer/baseline-final.bin",
+    "sha256": "23162fd98fb45df4b3f263c89151401737d0a74257cdd41444a4c43e7424bbe2",
+    "bytes": 7606006
+  },
+  {
+    "retainedWorkspaceCheckpoint": "outputs/getup-recovery-step/session-20261017T121131Z/batch05-reference-transfer/hybrid-final.bin",
+    "sha256": "972e0f60422ba7bd92c989e2c4d6fe8dc1d4904438a359a1a226bcd6c56d2671",
+    "bytes": 7606138
+  },
+  {
+    "source": "outputs/getup-recovery-step/session-20261017T121131Z/batch06-reference-long-hold/protocol.ndjson",
+    "archive": "docs/evidence/getup-recovery-session-2026-10-17/batch06-reference-long-hold/protocol.ndjson.gz",
+    "sha256": "720a08367ce22f8c456f2d56a9c02df851404b9fda6e7d2f4114ab98a66e233b",
+    "uncompressedBytes": 38215258
+  },
+  {
+    "source": "outputs/getup-recovery-step/session-20261017T121131Z/batch06-reference-long-hold/baseline.json",
+    "archive": "docs/evidence/getup-recovery-session-2026-10-17/batch06-reference-long-hold/baseline.json.gz",
+    "sha256": "76d3d9f3cc6a54e715600e963234c80b8a92338efefe7ed4dfaf775cd12a1faa",
+    "uncompressedBytes": 8983467
+  },
+  {
+    "source": "outputs/getup-recovery-step/session-20261017T121131Z/batch06-reference-long-hold/hybrid.json",
+    "archive": "docs/evidence/getup-recovery-session-2026-10-17/batch06-reference-long-hold/hybrid.json.gz",
+    "sha256": "4933fae753b5ea3847697eea4a1ce0a4f90e61238e5e11eed18a51edc34519f0",
+    "uncompressedBytes": 8963066
+  },
+  {
+    "retainedWorkspaceCheckpoint": "outputs/getup-recovery-step/session-20261017T121131Z/batch06-reference-long-hold/baseline-final.bin",
+    "sha256": "f7f2492b73c55cd79242d1c92922d8512b35989e45e95f4a7bb82546c07b5100",
+    "bytes": 7605996
+  },
+  {
+    "retainedWorkspaceCheckpoint": "outputs/getup-recovery-step/session-20261017T121131Z/batch06-reference-long-hold/hybrid-final.bin",
+    "sha256": "89bbb59ca2e00501f6785b5c17cc7580d59713455932566cacca5bec001d489d",
+    "bytes": 7606139
+  },
+  {
+    "source": "outputs/getup-recovery-step/session-20261017T121131Z/batch07-equilibrium-zero/protocol.ndjson",
+    "archive": "docs/evidence/getup-recovery-session-2026-10-17/batch07-equilibrium-zero/protocol.ndjson.gz",
+    "sha256": "51a2fa2f35c6810502513a0679858be56358134e16bcee4ee574a0c9cc8421e7",
+    "uncompressedBytes": 9866761
+  },
+  {
+    "source": "outputs/getup-recovery-step/session-20261017T121131Z/batch07-equilibrium-zero/hybrid.json",
+    "archive": "docs/evidence/getup-recovery-session-2026-10-17/batch07-equilibrium-zero/hybrid.json.gz",
+    "sha256": "903eee7425d2070542984f588f524cb12fd990624bc701810d06d4996472690c",
+    "uncompressedBytes": 4730484
+  },
+  {
+    "retainedWorkspaceCheckpoint": "outputs/getup-recovery-step/session-20261017T121131Z/batch07-equilibrium-zero/hybrid-final.bin",
+    "sha256": "1b1479d224f6b5ae1e4cf47b8e2a58b1200aea99f1200b8977e3da68adaddccd",
+    "bytes": 7605863
+  },
+  {
+    "source": "outputs/getup-recovery-step/session-20261017T121131Z/batch08-equilibrium-transfer/protocol.ndjson",
+    "archive": "docs/evidence/getup-recovery-session-2026-10-17/batch08-equilibrium-transfer/protocol.ndjson.gz",
+    "sha256": "5c17f26f7d8639174cdcb0736586b0421d513ceac5545f81c9c5d95a4c46d3b1",
+    "uncompressedBytes": 4922033
+  },
+  {
+    "source": "outputs/getup-recovery-step/session-20261017T121131Z/batch08-equilibrium-transfer/hybrid.json",
+    "archive": "docs/evidence/getup-recovery-session-2026-10-17/batch08-equilibrium-transfer/hybrid.json.gz",
+    "sha256": "b1885537ec505592e16d48babbdb6c71cfffc6f2fa72174c8da312b519c2db63",
+    "uncompressedBytes": 2420110
+  },
+  {
+    "retainedWorkspaceCheckpoint": "outputs/getup-recovery-step/session-20261017T121131Z/batch08-equilibrium-transfer/hybrid-final.bin",
+    "sha256": "ab125e5794f85ee6d60a9913eb74dcf9969159abfbecf838553f0724cd58c7e8",
+    "bytes": 7604041
+  },
+  {
+    "source": "outputs/getup-recovery-step/session-20261017T121131Z/batch09-guarded-retreat/protocol.ndjson",
+    "archive": "docs/evidence/getup-recovery-session-2026-10-17/batch09-guarded-retreat/protocol.ndjson.gz",
+    "sha256": "3d4abaef49f0cd36ae2008c0d94767a4f0e71daa8b5a9a0f755b276434205b9e",
+    "uncompressedBytes": 19786170
+  },
+  {
+    "source": "outputs/getup-recovery-step/session-20261017T121131Z/batch09-guarded-retreat/hybrid.json",
+    "archive": "docs/evidence/getup-recovery-session-2026-10-17/batch09-guarded-retreat/hybrid.json.gz",
+    "sha256": "a6da56da35fbb0ec1ae4016da3a5eef8f9b6e5c1d483a82776bb383867774ba7",
+    "uncompressedBytes": 9419189
+  },
+  {
+    "retainedWorkspaceCheckpoint": "outputs/getup-recovery-step/session-20261017T121131Z/batch09-guarded-retreat/hybrid-final.bin",
+    "sha256": "a2fd631a9bd75110e9b11af12bff3660d6b1a66e1800885b8d6f947ef86dd699",
+    "bytes": 7605826
+  }
+]

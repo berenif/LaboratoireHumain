@@ -1,0 +1,8 @@
+{
+  "physicsCapSeconds": 25.0,
+  "additionalSimulatedSeconds": 6.0,
+  "priorBalanceElapsedS": 11.999999731779099,
+  "checkpointSHA256": "4b774b94373e395cc7932508d98554e63a4e6a5e97a8eac596fa2cf21b4a21eb",
+  "controller": "exact-frozen-initializedAction-only",
+  "purpose": "observe exact saved source handoff continuation, not a modified controller"
+}

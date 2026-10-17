@@ -1,0 +1,33 @@
+{
+  "mode": "zero",
+  "controller": "model-equilibrium-plus-recentered-frozen-SLOW-feedback-untrained",
+  "formula": "source(actual)+blend*(qref-qnom+motorFF/gear-source(zero-velocity-FKref))",
+  "physicsCapSeconds": 30.0,
+  "deadlineUTC": "2026-10-17T12:58:00Z",
+  "simulatedSeconds": 8,
+  "contactAndLimitForcesAppliedToPhysics": false,
+  "onlyOrdinaryBoundedMotorResiduals": true,
+  "checkpointSha256": "3ffed5867ddc238794a2ce94a102c3e2d23bf1a4623070253c91d9d94fa312dd",
+  "pathSha256": "384774bcfbc089a00010a44eeb72399eebb0beed9dae6a64fe0660e66bd421a9",
+  "scriptSha256": "9ac61c92d281de148f361858886c50eaea944afdb30d34acd362eaa35e0c2f8c",
+  "nativeBinarySha256": "9b5b88fe5f94e245a5c49c53ed86fc5b5db1ea24bfe0460a6900ccdd7fc4eefe",
+  "pathProofEqualityMaxError": 1.652527004125659e-10,
+  "pathProofInequalityMinMargin": 7.549671365847388e-08,
+  "qualification": false,
+  "zeroHoldWindowS": [
+    1.0,
+    6.0
+  ],
+  "zeroHoldAcceptance": {
+    "continuousAnchoredStandingS": 5.0,
+    "flightSamples": 0,
+    "nonfootSupport": false,
+    "maximumLoadedSlipIntegralM": 0.01,
+    "maximumHorizontalCOMDriftM": 0.02
+  },
+  "acceptance": "Zero shift: full-model hold 1-6s must retain >=5s native anchored standing, zero flight/nonfoot/failure, each loaded-slip <=1cm, horizontal COM drift <=2cm. Transfer: actual capture/load shift, no support or integrity failure, return >=5s anchored standing. No stepping claim.",
+  "nativeNumpyActorParityMaxError": 4.6659260988235474e-07,
+  "seedJointErrorRad": 4.433517506563511e-06,
+  "seedRootError": 3.9892122449813883e-07,
+  "syntheticObservationFirst37MaxError": 7.929459313604781e-07
+}

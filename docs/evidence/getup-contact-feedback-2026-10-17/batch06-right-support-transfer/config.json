@@ -1,0 +1,35 @@
+{
+  "controller": "measured-contact-whole-body-inverse-dynamics-untrained-hybrid",
+  "shiftM": 0.139815,
+  "simulatedSeconds": 15.0,
+  "physicsCapSeconds": 60.0,
+  "deadlineUTC": "2026-10-17T14:10:00Z",
+  "nearStopModeNoExplicitReleaseNoStep": true,
+  "externalForcesApplied": false,
+  "sourceWeightsChanged": false,
+  "model": "continuous rigid-body mass+armature/Coriolis/gravity/passive springs+damping; original inner PD remains active800Hz; near-stop tolerance is predictive approximation, not strict instantaneous complementarity",
+  "contactConstraints": "actual material-point normal acceleration hard, tangential slip stabilization soft, optimization only; never physical pins",
+  "acceptance": "New retained-balancer gate, not retroactive source-handoff success: actual matched COM/capture/load shift; target COM returned; final>=5s native anchored standing under explicit measured-state balance, no flight/nonfoot and loaded slip<=1cm. No stepping claim.",
+  "checkpointSha256": "3ffed5867ddc238794a2ce94a102c3e2d23bf1a4623070253c91d9d94fa312dd",
+  "nativeBinarySha256": "761b291ec90b0951e9f8d95f8dce30804711c48eda4073da2f6c4947c4b8325a",
+  "probeSha256": "9d1abe93ea7d6f04a4dab363c26671e99a138d621228ed2f971bb2d03db61763",
+  "dynamicsSha256": "da8f148998b968ffc688fe59aec6984653209682fa73500667971f0d767bf269",
+  "standingControllerAfterTargetReturn": "measured-contact inverse dynamics retained",
+  "timelineS": {
+    "rampStart": 1.0,
+    "fullShiftStart": 4.0,
+    "fullShiftEnd": 6.0,
+    "targetReturned": 9.0,
+    "postReturnScoringStart": 10.0
+  },
+  "initialCOM": [
+    1.0804519422301204,
+    0.809975899777216,
+    -0.18871737940769728
+  ],
+  "shiftDirectionWorld": [
+    -0.6597667080190008,
+    0.0,
+    0.7514704857742388
+  ]
+}

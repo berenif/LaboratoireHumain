@@ -1,0 +1,21 @@
+{
+  "artifacts": [
+    {
+      "path": "outputs/getup-stationary-balance/pilot-run/learner.pt",
+      "bytes": 56065289,
+      "sha256": "8655f105fb71311b00c527d5c57b896b5cf765bf7cb37ba4a3e1a7c9b2299364",
+      "retainedLocally": true,
+      "committedToGit": false
+    },
+    {
+      "path": "outputs/getup-stationary-balance/pilot-run/learner-native-checkpoint.bin",
+      "bytes": 7603863,
+      "sha256": "0e70f39d5e258be5b997bfdf8b131ac5acbeb5d824a5c1907cb5c5dab85f9b8e",
+      "retainedLocally": true,
+      "committedToGit": false
+    }
+  ],
+  "finalPhysicsAlreadySpentSeconds": 253.93543904600034,
+  "remainingPhysicsSeconds": 106.06456095399966,
+  "warning": "Pre-evaluation payload budget is not the final consumption. No automatic resume path has been tested. Any future launch must carry forward the final ledger and require valid authorization."
+}

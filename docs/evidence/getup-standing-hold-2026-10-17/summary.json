@@ -1,0 +1,260 @@
+{
+  "allStandingPredicatesPassedEveryNativeSubstep": true,
+  "finalCom": {
+    "x": 1.0804520845413208,
+    "y": 0.8099762201309204,
+    "z": -0.18871740996837616
+  },
+  "initialCom": {
+    "x": 1.0956134796142578,
+    "y": 0.8117663860321045,
+    "z": -0.17939738929271698
+  },
+  "inputCheckpoint": "outputs/getup-lateral/trial/checkpoint-final.bin",
+  "loadedContactSpeedIntegralM": [
+    0.004632969852900706,
+    0.004612341507481681
+  ],
+  "maximumBodyAngularRadps": 0.14053630828857422,
+  "maximumBodyLinearMps": 0.06895769387483597,
+  "maximumFootOriginDriftM": [
+    0.008210989646613598,
+    0.0032397399190813303
+  ],
+  "maximumLoadedContactTangentSpeedMps": [
+    0.022874154150485992,
+    0.004136607050895691
+  ],
+  "minimumFootLoadsN": [
+    167.26890563964844,
+    177.91485595703125
+  ],
+  "nativeSubsteps": 4000,
+  "noExternalSupport": true,
+  "noPoseOrVelocityWrites": true,
+  "outcome": "completed",
+  "physicsWallSeconds": 13.085593248999993,
+  "qualification24Cases": false,
+  "requestedSimulatedSeconds": 5.0,
+  "simulatedSeconds": 5.0,
+  "standingPredicateFailureSubsteps": {},
+  "teacherForecastUnchanged": true,
+  "unloadedFootSubsteps": [
+    0,
+    0
+  ],
+  "sourceBaseCommit": "c443801",
+  "controllerChanged": false,
+  "candidateRun": false,
+  "finalContinuousStandingS": 6.02375,
+  "initialContinuousStandingS": 1.02375,
+  "nativeCriterionUnchanged": true,
+  "physicsComputeAllowanceSeconds": 60.0,
+  "remainingAggregatePhysicsComputeSeconds": 46.91440675100001,
+  "inputCheckpointSha256": "a8672c4e7ea22b7f1d20a6fec9845b4163e3eb37e27140c91728728c8b1a8053",
+  "finalCheckpointSha256": "3ffed5867ddc238794a2ce94a102c3e2d23bf1a4623070253c91d9d94fa312dd",
+  "checkpointInputVerification": {
+    "binaryWorldDeserialized": true,
+    "bytes": 5775790,
+    "controllerEqual": true,
+    "forecastSubsteps": 680,
+    "handlesEqual": true,
+    "jointStateEqual": true,
+    "nativeSubsteps": 10420,
+    "passed": true,
+    "physicsIntegrations": 0,
+    "snapshotEqual": true
+  },
+  "checkpointFinalVerification": {
+    "binaryWorldDeserialized": true,
+    "bytes": 7605385,
+    "controllerEqual": true,
+    "forecastSubsteps": 680,
+    "handlesEqual": true,
+    "jointStateEqual": true,
+    "nativeSubsteps": 14420,
+    "passed": true,
+    "physicsIntegrations": 0,
+    "snapshotEqual": true
+  },
+  "baselineBinarySha256": "106a59466ae80437fef392eb6dc7789e977c48ad621e6564e65713d98871758f",
+  "tests": {
+    "npmPassed": 61,
+    "npmFailed": 0,
+    "focusedRustContactMotionWithoutIntegration": "passed",
+    "fullPhysicalSuite": "not run"
+  },
+  "thresholds": {
+    "angularRadps": 0.6499999761581421,
+    "footDriftM": 0.01,
+    "linearMps": 0.2199999988079071,
+    "torsoUp": 0.9700000286102295
+  },
+  "finalStandingPredicates": {
+    "angularMotion": true,
+    "bothFeetLoadedAndPersistent": true,
+    "captureInSupport": true,
+    "comInSupport": true,
+    "footDriftFromSuppliedAnchors": true,
+    "footLoadFraction": true,
+    "head": true,
+    "linearMotion": true,
+    "onlyFeet": true,
+    "torso": true
+  },
+  "preStandingReadOnlyInspections": [
+    {
+      "nativeSubsteps": 6400,
+      "physicalSeconds": 8.0,
+      "physicsIntegrations": 0,
+      "predicates": {
+        "angularMotion": true,
+        "bothFeetLoadedAndPersistent": true,
+        "captureInSupport": false,
+        "comInSupport": false,
+        "footDriftFromSuppliedAnchors": null,
+        "footLoadFraction": true,
+        "head": true,
+        "linearMotion": false,
+        "onlyFeet": true,
+        "torso": true
+      },
+      "com": {
+        "x": 0.7476975321769714,
+        "y": 0.8102321624755859,
+        "z": -0.2954147756099701
+      },
+      "capture": {
+        "x": 0.7796003818511963,
+        "y": 0.8101104497909546,
+        "z": -0.28177207708358765
+      },
+      "comVelocityMps": {
+        "x": 0.11100920289754868,
+        "y": -0.0004235064552631229,
+        "z": 0.04747119918465614
+      },
+      "maximumBodyLinearMps": 0.2834974229335785,
+      "maximumBodyAngularRadps": 0.5672069191932678,
+      "feet": [
+        {
+          "body": "left_foot",
+          "loadN": 188.89044189453125,
+          "supportSubsteps": 319,
+          "impulseWeightedTangentSpeedMps": 0.0029775798320770264
+        },
+        {
+          "body": "right_foot",
+          "loadN": 211.72125244140625,
+          "supportSubsteps": 383,
+          "impulseWeightedTangentSpeedMps": 0.005073492880910635
+        }
+      ]
+    },
+    {
+      "nativeSubsteps": 8000,
+      "physicalSeconds": 10.0,
+      "physicsIntegrations": 0,
+      "predicates": {
+        "angularMotion": true,
+        "bothFeetLoadedAndPersistent": true,
+        "captureInSupport": false,
+        "comInSupport": false,
+        "footDriftFromSuppliedAnchors": null,
+        "footLoadFraction": true,
+        "head": true,
+        "linearMotion": true,
+        "onlyFeet": true,
+        "torso": true
+      },
+      "com": {
+        "x": 1.0115432739257812,
+        "y": 0.8115017414093018,
+        "z": -0.20785246789455414
+      },
+      "capture": {
+        "x": 1.0265347957611084,
+        "y": 0.8113633990287781,
+        "z": -0.18840526044368744
+      },
+      "comVelocityMps": {
+        "x": 0.052123598754405975,
+        "y": -0.0004809186502825469,
+        "z": 0.06761562079191208
+      },
+      "maximumBodyLinearMps": 0.14874471724033356,
+      "maximumBodyAngularRadps": 0.28467217087745667,
+      "feet": [
+        {
+          "body": "left_foot",
+          "loadN": 211.1598358154297,
+          "supportSubsteps": 219,
+          "impulseWeightedTangentSpeedMps": 0.005380332004278898
+        },
+        {
+          "body": "right_foot",
+          "loadN": 191.94784545898438,
+          "supportSubsteps": 160,
+          "impulseWeightedTangentSpeedMps": 0.0028227241709828377
+        }
+      ]
+    },
+    {
+      "nativeSubsteps": 9600,
+      "physicalSeconds": 12.0,
+      "physicsIntegrations": 0,
+      "predicates": {
+        "angularMotion": true,
+        "bothFeetLoadedAndPersistent": true,
+        "captureInSupport": true,
+        "comInSupport": true,
+        "footDriftFromSuppliedAnchors": null,
+        "footLoadFraction": true,
+        "head": true,
+        "linearMotion": true,
+        "onlyFeet": true,
+        "torso": true
+      },
+      "com": {
+        "x": 1.1060110330581665,
+        "y": 0.8117184638977051,
+        "z": -0.1720711588859558
+      },
+      "capture": {
+        "x": 1.1012626886367798,
+        "y": 0.8115670680999756,
+        "z": -0.1691141128540039
+      },
+      "comVelocityMps": {
+        "x": -0.016507210209965706,
+        "y": -0.0005263991770334542,
+        "z": 0.010279900394380093
+      },
+      "maximumBodyLinearMps": 0.12309181690216064,
+      "maximumBodyAngularRadps": 0.17437297105789185,
+      "feet": [
+        {
+          "body": "left_foot",
+          "loadN": 211.8360137939453,
+          "supportSubsteps": 970,
+          "impulseWeightedTangentSpeedMps": 0.0005815529148094356
+        },
+        {
+          "body": "right_foot",
+          "loadN": 210.41912841796875,
+          "supportSubsteps": 920,
+          "impulseWeightedTangentSpeedMps": 0.0006064757471904159
+        }
+      ]
+    }
+  ],
+  "candidateDecision": "Skipped: at8s and10s both COM and capture were outside the solved support hull; freezing the residual could suppress necessary repositioning. At12s all instantaneous standing predicates already pass. No controller behavior change warranted by final hold baseline.",
+  "render": {
+    "frames": 362,
+    "fps": 20,
+    "physicalDurationS": 18.025,
+    "continuedPhysicsSeconds": 5.0,
+    "additionalPhysicsIntegrationsForRendering": 0,
+    "repeatedFinalTailFrames": 0
+  }
+}
