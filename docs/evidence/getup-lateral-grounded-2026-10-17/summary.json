@@ -1,0 +1,46 @@
+{
+  "outcome": "one-second-standing-passed",
+  "triggerNative": 200,
+  "firstOneSecondStandingNative": 10401,
+  "firstOneSecondStandingPhysicalSeconds": 13.00125,
+  "firstOneSecondStandingSecondsAfterTrigger": 12.75125,
+  "finalRealNative": 10420,
+  "forecastNative": 680,
+  "finalPhysicalSeconds": 13.025,
+  "currentStableStandingSeconds": 1.02375,
+  "physicalWallSeconds": 34.33892510499999,
+  "remainingOriginal180sBudgetSeconds": 2.8136812780024343,
+  "fixtureAtTrigger": {
+    "ground_load_n": 365.77032470703125,
+    "head_height_m": 0.21833465993404388,
+    "kind": "side-supported",
+    "maximum_angular_radps": 5.1999335289001465,
+    "maximum_body_com_speed_mps": 2.445538282394409,
+    "preparing": true,
+    "ready": true,
+    "settled_substeps": 23,
+    "torso_face_up": 0.047931134700775146,
+    "torso_long_axis_up": 0.07761053740978241,
+    "torso_side_up": 0.9958308935165405,
+    "trigger_substep": null
+  },
+  "controllerAndBodyUnchanged": true,
+  "externalSupportOrConstraintsDuringRecovery": false,
+  "publicRecoveryEnabled": false,
+  "qualification24Cases": false,
+  "extraHoldReplay": false,
+  "tests": {
+    "javascript": 61,
+    "getupRust": 11,
+    "wasmWorkerCheck": true,
+    "fullBrowserBuild": false,
+    "fullQualification": false
+  },
+  "firstCrossingEvidence": {
+    "previousPhysicalSeconds": 13.0,
+    "previousStableSeconds": 0.99875,
+    "finalStableSeconds": 1.02375,
+    "nativeDtSeconds": 0.00125
+  },
+  "historicalBackAndBellyNotReplayed": true
+}

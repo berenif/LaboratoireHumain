@@ -87,7 +87,7 @@ if(process.argv[2]==='--preflight') {
         if(result.counters.real-result.triggerNative>=20000) {result.outcome='controller-deadline-without-standing';break;}
       }
       const realLimit=result.phase==='preparation'?preparationLimit:result.triggerNative+20000;
-      const ticks=Math.min(4,Math.floor((realLimit-result.counters.real)/20),Math.floor((nextCheckpoint-result.counters.real)/20));
+      const ticks=Math.min(kind.startsWith('side')&&result.phase==='preparation'?1:4,Math.floor((realLimit-result.counters.real)/20),Math.floor((nextCheckpoint-result.counters.real)/20));
       assert.ok(ticks>0);
       reply=JSON.parse(runtime.advance(ticks));record();
       if(result.counters.real>=nextCheckpoint) {checkpoint(String(result.counters.real));nextCheckpoint+=1600;}

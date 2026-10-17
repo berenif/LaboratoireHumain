@@ -1,4 +1,4 @@
-//! Three fixed initial orientations; construction only, followed by real settling.
+//! Fixed initial orientations; construction only, followed by real ground contact.
 use crate::{Simulation, getup, measurement};
 use rapier3d::prelude::*;
 use serde::{Deserialize, Serialize};
@@ -20,10 +20,11 @@ pub struct State {
 }
 
 // Frozen initial posture, selected by geometry only; no physical tuning runs.
-// Posterior lower arm and flexed legs are intended to widen the passive base of the
-// straight standing posture rotated onto its side. The same 21 hinges are used.
+// Flexed legs and a forward lower arm spread natural contacts. Shoulder geometry
+// keeps the arm near torso height instead of propping the body above a collapsing
+// upper arm. The same 21 hinges are used; no support is imposed after construction.
 pub const SIDE_SUPPORTED_Q: [(usize,f32);7] = [(5,-0.65),(6,-1.1),(11,-0.9),(12,-1.45),
-    (15,0.8663113),(16,-1.0686804),(17,0.2665224)];
+    (15,0.616),(16,0.217),(17,-1.5)];
 fn set_supported_side_joints(s: &mut Simulation) -> Result<(),String> {
     let (q,_) = getup::joint_state(s)?;
     let id = *s.world.multibody_joints.rigid_body_link(s.bodies[0]).ok_or("Missing free root")?;
@@ -43,6 +44,16 @@ fn set_supported_side_joints(s: &mut Simulation) -> Result<(),String> {
     mb.update_rigid_bodies(&mut s.world.bodies,true);
     s.world.bodies.propagate_modified_body_positions_to_colliders(&mut s.world.colliders);
     Ok(())
+}
+
+fn support_bottom(s: &Simulation) -> f32 {
+    s.model.segments.iter().enumerate().flat_map(|(i,p)| {
+        let body=&s.world.bodies[s.bodies[i]];
+        p.reference.as_ref().unwrap().primitives.iter().flat_map(move |primitive| {
+            [primitive.a,primitive.b].map(|endpoint|
+                (body.rotation()*crate::vector(endpoint)+body.translation()).y-primitive.radius)
+        })
+    }).fold(f32::INFINITY,f32::min)
 }
 
 fn displace_root(s: &mut Simulation, translation: Vector, angular: Vector) -> Result<(), String> {
@@ -73,8 +84,13 @@ pub fn initialize(s: &mut Simulation, kind: &str) -> Result<(), String> {
     // The original three cases retain the exact same21 joint coordinates. Only the free
     // root orientation and initial ground clearance differ by fixture definition.
     displace_root(s, Vector::ZERO, angular)?;
-    let bottom = s.colliders.iter().filter(|h| s.world.colliders[**h].is_enabled())
-        .map(|h| s.world.colliders[*h].compute_aabb().mins.y).fold(f32::INFINITY, f32::min);
+    // Rotating a compound's local AABB overestimates its downward extent. For
+    // the corrected lateral fixture use the actual sphere/capsule endpoints,
+    // avoiding an unintended drop before the intended limb contacts the floor.
+    let bottom = if kind=="side-supported" { support_bottom(s) } else {
+        s.colliders.iter().filter(|h| s.world.colliders[**h].is_enabled())
+            .map(|h| s.world.colliders[*h].compute_aabb().mins.y).fold(f32::INFINITY, f32::min)
+    };
     displace_root(s, Vector::Y * (0.002-bottom), Vector::ZERO)?;
     for h in &s.bodies {
         s.world.bodies[*h].reset_forces(false);
@@ -109,18 +125,28 @@ pub fn observe(s: &mut Simulation, loads: &[f32;25]) {
         "side" | "side-supported" => face.abs()<=0.35 && side>=0.8,
         _ => false,
     };
-    let settled = orientation && head_y<=0.5 && load>=0.8*s.total_mass()*9.81
-        && max_v<=0.22 && max_w<=0.65;
+    let grounded = orientation && head_y<=0.5 && load>=0.8*s.total_mass()*9.81;
     let state = s.getup_fixture.as_mut().unwrap();
-    state.settled_substeps = if settled { state.settled_substeps+1 } else {0};
-    state.ready = state.settled_substeps>=120;
+    (state.settled_substeps, state.ready) = admission_progress(
+        &kind, grounded, max_v, max_w, state.settled_substeps);
     state.maximum_body_com_speed_mps=max_v;state.maximum_angular_radps=max_w;state.ground_load_n=load;
     state.torso_long_axis_up=long;state.torso_face_up=face;state.torso_side_up=side;state.head_height_m=head_y;
 }
 
+// Lateral entry is a grounded starting condition, not a passive equilibrium.
+// Waiting for near-zero speed lets a valid side pose roll prone before control.
+// The orientation/actual-load gates are unchanged; 20 native samples are 25 ms.
+fn admission_progress(kind: &str, grounded: bool, speed: f32, angular: f32, prior: u32) -> (u32, bool) {
+    let lateral = matches!(kind, "side" | "side-supported");
+    let admitted = grounded && speed.is_finite() && angular.is_finite()
+        && (lateral || (speed<=0.22 && angular<=0.65));
+    let count = if admitted { prior+1 } else { 0 };
+    (count, count>=if lateral { 20 } else { 120 })
+}
+
 pub fn trigger(s: &mut Simulation) -> Result<(), String> {
     let state=s.getup_fixture.as_ref().ok_or("No GetUp fixture")?;
-    if !state.preparing || !state.ready { return Err("Fixture must be physically settled in its declared orientation".into()); }
+    if !state.preparing || !state.ready { return Err("Fixture must be physically grounded and ready in its declared orientation".into()); }
     s.getup_controller.as_mut().ok_or("Missing learned controller")?.fixture_trigger(s.substeps_completed)?;
     let state=s.getup_fixture.as_mut().unwrap();state.preparing=false;state.trigger_substep=Some(s.substeps_completed);
     s.motion=lh_contracts::Motion::Fallen;
@@ -131,6 +157,46 @@ pub fn trigger(s: &mut Simulation) -> Result<(), String> {
 mod tests {
     use super::*;
     #[test]
+    fn lateral_trigger_changes_only_lifecycle_without_reset_or_support() {
+        let mut profile=crate::Profile::default();profile.getup_policy_enabled=true;
+        let mut s=Simulation::new_protocol(0.0,profile,true).unwrap();
+        initialize(&mut s,"side-supported").unwrap();
+        // Isolate trigger semantics; this synthetic readiness is not a physical trial.
+        s.getup_fixture.as_mut().unwrap().ready=true;
+        let before=s.snapshot().segments;
+        let joints=getup::joint_state(&s).unwrap();
+        let articulation= s.world.multibody_joints.iter().count();
+        let impulses=s.world.impulse_joints.len();
+        trigger(&mut s).unwrap();
+        assert_eq!(serde_json::to_value(before).unwrap(),serde_json::to_value(s.snapshot().segments).unwrap());
+        assert_eq!(joints,getup::joint_state(&s).unwrap());
+        assert_eq!(articulation,s.world.multibody_joints.iter().count());
+        assert_eq!(impulses,s.world.impulse_joints.len());
+        assert!(!s.getup_fixture.as_ref().unwrap().preparing);
+        let saved=serde_json::to_value(&s.getup_fixture).unwrap();
+        observe(&mut s,&[0.0;25]);
+        assert_eq!(saved,serde_json::to_value(&s.getup_fixture).unwrap());
+        assert!(trigger(&mut s).is_err());
+    }
+
+    #[test]
+    fn lateral_admission_requires_persistent_grounding_but_allows_motion() {
+        for kind in ["side", "side-supported"] {
+            assert_eq!(admission_progress(kind, true, 0.7, 1.2, 18), (19, false));
+            assert_eq!(admission_progress(kind, true, 0.7, 1.2, 19), (20, true));
+            // Grounding includes the unchanged lateral orientation and actual-load gates.
+            assert_eq!(admission_progress(kind, false, 0.0, 0.0, 40), (0, false));
+            assert_eq!(admission_progress(kind, true, f32::NAN, 0.0, 40), (0, false));
+            assert_eq!(admission_progress(kind, true, 0.0, f32::INFINITY, 40), (0, false));
+        }
+        for kind in ["back", "belly"] {
+            assert_eq!(admission_progress(kind, true, 0.7, 1.2, 119), (0, false));
+            assert_eq!(admission_progress(kind, true, 0.22, 0.65, 118), (119, false));
+            assert_eq!(admission_progress(kind, true, 0.22, 0.65, 119), (120, true));
+        }
+    }
+
+    #[test]
     fn fixed_orientations_preserve_joint_coordinates_mass_and_integrity_without_stepping() {
         for kind in ["back","belly","side","side-supported"] {
             let mut profile=crate::Profile::default();profile.getup_policy_enabled=true;
@@ -140,6 +206,13 @@ mod tests {
             for i in 0..21 {
                 let expected = if kind=="side-supported" {SIDE_SUPPORTED_Q.iter().find(|(j,_)|*j==i).map(|(_,v)|*v).unwrap_or(q[i])} else {q[i]};
                 assert!((expected-after[i]).abs()<1e-5);assert_eq!(dq[i],velocity[i]);
+            }
+            if kind=="side-supported" {
+                assert!((support_bottom(&s)-0.002).abs()<1e-5);
+                let pelvis=s.model.segments.iter().position(|p|p.id=="pelvis").unwrap();
+                // Pelvis is already near its resting side height, not hanging
+                // more than 20 cm above the ground on an outstretched arm.
+                assert!(s.world.bodies[s.bodies[pelvis]].translation().y<0.23);
             }
             let before = serde_json::to_value(s.snapshot()).unwrap();
             let diagnostic=getup::controller::standing_diagnostic(&s,None).unwrap();
