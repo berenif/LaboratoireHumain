@@ -7,7 +7,8 @@ import itertools
 from pathlib import Path
 import numpy as np
 from scipy.spatial.transform import Rotation
-from scipy.optimize import minimize, LinearConstraint, Bounds
+from scipy.optimize import minimize, LinearConstraint, Bounds,OptimizeResult
+from scipy import sparse
 from scipy.spatial import ConvexHull,QhullError
 
 ROOT=Path(__file__).resolve().parents[1]
@@ -35,8 +36,48 @@ def support_projection(points,point):
     return best
 
 
+def solve_clarabel_qp(H,g,E,b,C,upper,lo,hi):
+    """Same convex QP, official Clarabel convention: Ax+s=b, s>=0."""
+    import clarabel
+    assert clarabel.__version__=='0.11.1','Pinned research backend required'
+    if np.any(lo>hi):raise ValueError('An upper bound is less than the corresponding lower bound.')
+    n=len(g);I=sparse.eye(n,format='csc');A=sparse.vstack([sparse.csc_matrix(E),sparse.csc_matrix(C),I,-I],format='csc');rhs=np.r_[b,upper,hi,-lo]
+    cones=[clarabel.ZeroConeT(len(b)),clarabel.NonnegativeConeT(len(upper)+2*n)]
+    settings=clarabel.DefaultSettings();settings.verbose=False;settings.max_iter=200;settings.tol_gap_abs=1e-8;settings.tol_gap_rel=1e-8;settings.tol_feas=1e-9
+    solver=clarabel.DefaultSolver(sparse.triu(sparse.csc_matrix(H)).tocsc(),g,A,rhs,cones,settings);solution=solver.solve();status=str(solution.status)
+    return OptimizeResult(x=np.array(solution.x) if solution.x is not None else np.zeros(n),success=status=='Solved',message='Clarabel '+status,nit=solution.iterations)
+
+
+def braking_acceleration_bounds(q,v,lower,upper,dt=.025,brake=50.):
+    """Model-relative stopping reserve; no change to native limits or motors."""
+    assert dt>0 and brake>0 and lower<upper
+    def upper_stop(a):return q+dt*v+.5*dt*dt*a+max(v+dt*a,0.)**2/(2*brake)
+    def lower_stop(a):return q+dt*v+.5*dt*dt*a-max(-v-dt*a,0.)**2/(2*brake)
+    if q+max(v,0.)**2/(2*brake)>upper+1e-9 or q-max(-v,0.)**2/(2*brake)<lower-1e-9:
+        raise ValueError(f'Already outside model stopping reserve: q={q},v={v},limits={lower,upper}')
+    if upper_stop(-brake)>upper+1e-9 or lower_stop(brake)<lower-1e-9:
+        raise ValueError('No model-relative braking acceleration interval')
+    lo=-brake;hi=brake
+    if upper_stop(hi)>upper:
+        a,b=lo,hi
+        for _ in range(60):
+            mid=(a+b)/2
+            if upper_stop(mid)<=upper:a=mid
+            else:b=mid
+        hi=a
+    if lower_stop(lo)<lower:
+        a,b=-brake,brake
+        for _ in range(60):
+            mid=(a+b)/2
+            if lower_stop(mid)>=lower:b=mid
+            else:a=mid
+        lo=b
+    if lo>hi+1e-9:raise ValueError('Empty model-relative braking acceleration interval')
+    return lo,hi
+
+
 class ContactDynamics:
-    def __init__(self,model,contact_mode='normal-soft',flat_soles=False):
+    def __init__(self,model,contact_mode='normal-soft',flat_soles=False,joint_viability=False,qp_solver='slsqp'):
         self.kin=reference.Kinematics(model);self.parts=model['segments'];self.by_id={p['id']:p for p in self.parts}
         self.mass=model['totalMassKg'];self.gears=self.kin.gears;self.armature=np.zeros(21);self.spring=np.zeros(21);self.damping=np.zeros(21)
         self.ancestors={}
@@ -46,7 +87,7 @@ class ContactDynamics:
             if h:
                 i=h['qposIndex'];ancestors.append(i);self.armature[i]=h['armature'];self.spring[i]=p['jointProfile']['axes'][0]['passiveStiffnessNmPerRad'];self.damping[i]=p['jointProfile']['axes'][0]['dampingNmsPerRad']
             self.ancestors[p['id']]=ancestors
-        self.previous=None;self.contact_mode=contact_mode;self.flat_soles=flat_soles;self.flat_targets={}
+        self.previous=None;self.contact_mode=contact_mode;self.flat_soles=flat_soles;self.flat_targets={};self.joint_viability=joint_viability;self.qp_solver=qp_solver
     def set_flat_targets(self,state):
         for foot in ['left_foot','right_foot']:
             R=normalized_rotation(state['geometry'][0][foot][:3,:3]);z=R[:,2].copy();z[1]=0.;z/=np.linalg.norm(z);y=np.array([0.,1.,0.]);self.flat_targets[foot]=np.column_stack([np.cross(y,z),y,z])
@@ -86,16 +127,16 @@ class ContactDynamics:
                 contacts.append(dict(body=foot['body'],point=point,basis=basis,J=jv,bias=(jv2-jv)@v/eps,velocity=jv@v,observedVelocity=reference.xyz(c['velocityMps']),measuredNormalN=c['normalImpulseNs']*800.,gap=c.get('signedGapM')))
         return dict(q=q,root=root,v=v,M=M,bias=bias,Jcom=Jcom,com=com,comVelocity=Jcom@v,comBias=com_bias,contacts=contacts,geometry=geom,geometryNext=geom2,directionalEpsilon=eps,
             comParityErrorM=float(max(abs(com-reference.xyz(diagnostic['com'])))),comVelocityParityErrorMps=float(max(abs(Jcom@v-reference.xyz(diagnostic['comVelocity'])))),contactVelocityParityErrorMps=max((float(max(abs(c['velocity']-c['observedVelocity']))) for c in contacts),default=0.))
-    def solve(self,state,target_com,target_rotation,posture,unload_left=False,swing=None,_inactive=None):
+    def solve(self,state,target_com,target_rotation,posture,unload_left=False,swing=None,_inactive=None,left_force_ceiling_n=None):
         if self.contact_mode=='unilateral-soft' and _inactive is None:
-            assert len(state['contacts'])<=6,'Bounded contact-mode enumeration only'
+            assert len(state['contacts'])<=8,'Bounded exhaustive two-foot contact-mode enumeration only'
             assert all(c['gap'] is not None for c in state['contacts']),'Fresh paired gaps required'
             best=None;attempts=[];warm=self.previous
             for bits in itertools.product([False,True],repeat=len(state['contacts'])):
                 inactive=tuple(i for i,b in enumerate(bits) if b)
                 if len(inactive)==len(bits):continue
                 self.previous=warm
-                try:action,info=self.solve(state,target_com,target_rotation,posture,unload_left,swing,inactive)
+                try:action,info=self.solve(state,target_com,target_rotation,posture,unload_left,swing,inactive,left_force_ceiling_n)
                 except (ValueError,AssertionError) as error:
                     attempts.append(dict(inactive=list(inactive),error=str(error)));continue
                 attempts.append(dict(inactive=list(inactive),feasible=info['constraintFeasible'],optimizerSuccess=info['optimizerSuccess']))
@@ -178,6 +219,10 @@ class ContactDynamics:
             # unilateral limits remain authoritative, not replaced by this QP.
             lo[6+i]=max(lo[6+i],2*(lower-q[i]-.025*v[6+i])/.025**2)
             hi[6+i]=min(hi[6+i],2*(upper-q[i]-.025*v[6+i])/.025**2)
+            if self.joint_viability:
+                try:brake_lo,brake_hi=braking_acceleration_bounds(q[i],v[6+i],lower,upper)
+                except ValueError as error:raise ValueError(f'Joint {i}: {error}') from error
+                lo[6+i]=max(lo[6+i],brake_lo);hi[6+i]=min(hi[6+i],brake_hi)
         for k in range(nc):lo[48+3*k:51+3*k]=[-2.,-2.,0.];hi[48+3*k:51+3*k]=[2.,2.,2.]
         for k in inactive:lo[48+3*k:51+3*k]=0.;hi[48+3*k:51+3*k]=0.
         lo[48+3*nc:]=0.;hi[48+3*nc:]=5.
@@ -194,9 +239,22 @@ class ContactDynamics:
                     inequalities.append(-row);upper.append(base)
                 else:
                     inequalities.extend([row,-row]);upper.extend([-base,base-min(c['gap'],0.)])
+        gap_end=len(inequalities)
+        if left_force_ceiling_n is not None:
+            assert np.isfinite(left_force_ceiling_n) and left_force_ceiling_n>=0.,'Invalid left normal force ceiling'
+            row=np.zeros(n)
+            for k,c in enumerate(contacts):
+                if c['body']=='left_foot':row[50+3*k]=1.
+            inequalities.append(row);upper.append(left_force_ceiling_n/F)
         C=np.array(inequalities);upper=np.array(upper);constraints=[LinearConstraint(Er,br,br),LinearConstraint(C,-np.inf,upper)]
         start=np.clip(np.zeros(n) if self.previous is None or len(self.previous)!=n else self.previous,lo,hi)
-        result=minimize(lambda z:.5*z@H@z+g@z,start,jac=lambda z:H@z+g,bounds=Bounds(lo,hi),constraints=constraints,method='SLSQP',options={'maxiter':80,'ftol':1e-8,'disp':False})
-        z=result.x;eq_error=float(max(abs(E@z-b)));inequality_error=float(max(C@z-upper));friction_error=float(max((C@z-upper)[:4*nc]));gap_error=float(max((C@z-upper)[4*nc:],default=0.));bounds_error=float(max(np.max(lo-z),np.max(z-hi)));self.previous=z
+        if self.qp_solver=='clarabel':result=solve_clarabel_qp(H,g,Er,br,C,upper,lo,hi)
+        else:result=minimize(lambda z:.5*z@H@z+g@z,start,jac=lambda z:H@z+g,bounds=Bounds(lo,hi),constraints=constraints,method='SLSQP',options={'maxiter':80,'ftol':1e-8,'disp':False})
+        z=result.x;eq_error=float(max(abs(E@z-b)));inequality_error=float(max(C@z-upper));friction_error=float(max((C@z-upper)[:4*nc]));gap_error=float(max((C@z-upper)[4*nc:gap_end],default=0.));load_error=float(max((C@z-upper)[gap_end:],default=0.)*F);bounds_error=float(max(np.max(lo-z),np.max(z-hi)));self.previous=z
+        braking_margins=[]
+        if self.joint_viability:
+            for i,(lower,upper) in enumerate(self.kin.limits):
+                if i in [row[0] for row in active]:continue
+                qnext=q[i]+.025*v[6+i]+.5*.025**2*z[6+i];vnext=v[6+i]+.025*z[6+i];braking_margins.append(min(upper-qnext-max(vnext,0.)**2/100.,qnext-min(vnext,0.)**2/100.-lower))
         motor=z[27:48]*self.gears;raw=offset+motor/self.gears;represented=np.clip(raw,-1.,1.);predicted=self.gears*np.clip(self.kin.nominal+represented-q-.2*v[6:],-1.,1.)
-        return represented,dict(success=bool(result.success and eq_error<1e-4 and inequality_error<1e-6 and bounds_error<1e-6),optimizerMessage=str(result.message),optimizerSuccess=bool(result.success),boundsError=bounds_error,constraintFeasible=bool(eq_error<1e-4 and inequality_error<1e-6 and bounds_error<1e-6),equalityError=eq_error,dependentEqualityError=dependent_error,frictionError=friction_error,contactGapViolationM=gap_error,inactiveContacts=sorted(inactive),predictedContactGapsM=[float(c['gap']+.025*(c['basis'][:,2]@c['velocity'])+.5*.025**2*(c['basis'][:,2]@(c['J']@z[:27]+c['bias']))) if c['gap'] is not None else None for c in contacts],objectiveCost=float(.5*z@H@z+g@z+.5*d@d),desiredComAcceleration=desired_com.tolist(),achievedComAcceleration=(state['Jcom']@z[:27]+state['comBias']).tolist(),qdd=z[:27].tolist(),motorTorquesNm=motor.tolist(),predictedRepresentedTorquesNm=predicted.tolist(),maximumTorqueRepresentationErrorNm=float(max(abs(predicted-motor))),plannedContactForcesWorldN=[(c['basis']@z[48+3*k:51+3*k]*F).tolist() for k,c in enumerate(contacts)],activeStops=[dict(qpos=i,sign=sign,reactionNm=float(z[48+3*nc+k]*self.gears[i])) for k,(i,sign,_) in enumerate(active)],maximumMotorFraction=float(max(abs(motor/self.gears))))
+        return represented,dict(success=bool(result.success and eq_error<1e-4 and inequality_error<1e-6 and bounds_error<1e-6),qpSolver=self.qp_solver,optimizerMessage=str(result.message),optimizerSuccess=bool(result.success),boundsError=bounds_error,constraintFeasible=bool(eq_error<1e-4 and inequality_error<1e-6 and bounds_error<1e-6),equalityError=eq_error,jointViabilityGuard=self.joint_viability,minimumPredictedJointStoppingMarginRad=min(braking_margins,default=None),dependentEqualityError=dependent_error,frictionError=friction_error,contactGapViolationM=gap_error,leftNormalForceCeilingN=left_force_ceiling_n,leftNormalForceCeilingViolationN=load_error,plannedLeftNormalForceN=float(sum(z[50+3*k]*F for k,c in enumerate(contacts) if c['body']=='left_foot')),inactiveContacts=sorted(inactive),predictedContactGapsM=[float(c['gap']+.025*(c['basis'][:,2]@c['velocity'])+.5*.025**2*(c['basis'][:,2]@(c['J']@z[:27]+c['bias']))) if c['gap'] is not None else None for c in contacts],objectiveCost=float(.5*z@H@z+g@z+.5*d@d),desiredComAcceleration=desired_com.tolist(),achievedComAcceleration=(state['Jcom']@z[:27]+state['comBias']).tolist(),qdd=z[:27].tolist(),motorTorquesNm=motor.tolist(),predictedRepresentedTorquesNm=predicted.tolist(),maximumTorqueRepresentationErrorNm=float(max(abs(predicted-motor))),plannedContactForcesWorldN=[(c['basis']@z[48+3*k:51+3*k]*F).tolist() for k,c in enumerate(contacts)],activeStops=[dict(qpos=i,sign=sign,reactionNm=float(z[48+3*nc+k]*self.gears[i])) for k,(i,sign,_) in enumerate(active)],maximumMotorFraction=float(max(abs(motor/self.gears))))

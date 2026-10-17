@@ -1,0 +1,261 @@
+{
+  "cases": {
+    "batch07-terminal-unload-step": {
+      "physicsWallSeconds": 24.462468056999988,
+      "nativeSubsteps": 6620,
+      "stopped": "inverse-dynamics-step-trial-stopped",
+      "standingS": 7.86625,
+      "flightNativeSamples": 0,
+      "loadedSlipM": [
+        0.0010885908676075916,
+        0.0017957028666847202
+      ],
+      "stepEvents": [
+        {
+          "event": "measured-unload-foot-hold",
+          "timeS": 7.925000000000001
+        },
+        {
+          "event": "lift",
+          "timeS": 8.075000000000001,
+          "targetDisplacementM": 0.060000000000000005,
+          "captureDirected": true
+        }
+      ],
+      "summarySHA256": "96f87a77944479c399115862548aaeaa43875d3aa61cad516015ac7730fd2635"
+    },
+    "batch08-joint-viability-step": {
+      "physicsWallSeconds": 22.584870481000006,
+      "nativeSubsteps": 6540,
+      "stopped": "inverse-dynamics-step-trial-stopped",
+      "standingS": 7.87375,
+      "flightNativeSamples": 0,
+      "loadedSlipM": [
+        0.0011074104079492036,
+        0.0012256889740279314
+      ],
+      "stepEvents": [
+        {
+          "event": "measured-unload-foot-hold",
+          "timeS": 7.95
+        },
+        {
+          "event": "lift",
+          "timeS": 8.05,
+          "targetDisplacementM": 0.06,
+          "captureDirected": true
+        }
+      ],
+      "summarySHA256": "65bdb642146c305235cceeac015113aa49f522cd1e0df5dcb606806959c12f84"
+    },
+    "batch09-feasible-stance-step": {
+      "physicsWallSeconds": 30.746794814000005,
+      "nativeSubsteps": 8580,
+      "stopped": "no-qualified-unload-step-trial-stopped",
+      "standingS": 10.725,
+      "flightNativeSamples": 0,
+      "loadedSlipM": [
+        0.000731141191499066,
+        0.00039903904626896757
+      ],
+      "stepEvents": [
+        {
+          "event": "stop",
+          "timeS": 10.725000000000001
+        }
+      ],
+      "summarySHA256": "c1acc3e24005aa8b073ab5e3d8789786a38590fd85a18212429587eb9f4aab26"
+    },
+    "batch10-clarabel-unilateral-zero": {
+      "physicsWallSeconds": 21.084384304999997,
+      "nativeSubsteps": 6400,
+      "totalProcessWallSeconds": 85.55917640999542,
+      "solverWallSeconds": 59.692800891964,
+      "standingS": 8.0,
+      "flightNativeSamples": 0,
+      "loadedSlipM": [
+        0.00022826592524964552,
+        0.0002620463333269997
+      ],
+      "originalBothFootGeometryGatePassed": false,
+      "oneSidedReadiness": {
+        "originalBothFootGeometryGatePassed": false,
+        "rightOnlyFinalReadyS": 1.35,
+        "rightOnlyMaximumReadyS": 3.075,
+        "nativeStandingS": 8.0,
+        "flightNativeSamples": 0,
+        "physicalGatesUnchanged": true,
+        "ledgerPhysicsWallSeconds": 252.02515492
+      },
+      "summarySHA256": "7606fff6d7ca1c5b2082b5d640d490d4f85fc972ead662aef0ec20a2ace3ac21"
+    }
+  },
+  "ledger": {
+    "sessionStartUTC": "2026-10-17T16:41:29Z",
+    "firstWorkingBatchDeadlineUTC": "2026-10-17T17:41:29Z",
+    "physicsWallSeconds": 252.02515492,
+    "nativeSubsteps": 73280,
+    "batches": [
+      {
+        "physicsWallSeconds": 32.729043346,
+        "nativeSubsteps": 9600,
+        "totalProcessWallSeconds": 375.97657884199725,
+        "solverWallSeconds": 336.2722706429049,
+        "stateComputationWallSeconds": 3.366678262958885,
+        "name": "batch01-unilateral-zero",
+        "capSeconds": 60,
+        "outcome": "fixed1\u20136gatefailedone800Hzpredicate; later8.2475sanchoredstandingunderretainedmodel, noflight/nonfoot"
+      },
+      {
+        "physicsWallSeconds": 26.326949980000006,
+        "nativeSubsteps": 7600,
+        "totalProcessWallSeconds": 364.77810147499986,
+        "solverWallSeconds": 332.79715531998227,
+        "stateComputationWallSeconds": 2.6729991129541304,
+        "name": "batch02-readiness-chain-step",
+        "capSeconds": 90,
+        "outcome": "qualifiedunloadnotreached, cleanstop9.5s; noflight/nonfoot"
+      },
+      {
+        "physicsWallSeconds": 21.52092149,
+        "nativeSubsteps": 6400,
+        "totalProcessWallSeconds": 31.141626483993605,
+        "solverWallSeconds": 4.715222729915695,
+        "stateComputationWallSeconds": 2.405912776979676,
+        "name": "batch03-flat-sole-hold",
+        "capSeconds": 40,
+        "outcome": "flatsoleholdproofrecorded"
+      },
+      {
+        "physicsWallSeconds": 25.02059868000001,
+        "nativeSubsteps": 7540,
+        "totalProcessWallSeconds": 36.067112141994585,
+        "solverWallSeconds": 5.400421569895116,
+        "stateComputationWallSeconds": 2.7976124589913525,
+        "name": "batch04-flat-readiness-step",
+        "capSeconds": 90,
+        "outcome": "flatstep firstreadout"
+      },
+      {
+        "physicsWallSeconds": 22.056056653999985,
+        "nativeSubsteps": 6400,
+        "totalProcessWallSeconds": 30.368451834998268,
+        "solverWallSeconds": 3.2353960989494226,
+        "stateComputationWallSeconds": 2.5041481489606667,
+        "name": "batch05-motion-profile-flat-zero",
+        "capSeconds": 40,
+        "outcome": "profilezero8sallnativeanchoredstanding, actualbothtracks/hull, noflight/nonfoot"
+      },
+      {
+        "physicsWallSeconds": 25.49306711300001,
+        "nativeSubsteps": 7600,
+        "totalProcessWallSeconds": 35.96293038899603,
+        "solverWallSeconds": 4.541330091036798,
+        "stateComputationWallSeconds": 2.9410601369454525,
+        "name": "batch06-motion-profile-flat-step",
+        "capSeconds": 90,
+        "outcome": "noqualifiedunload9.5s, allnativeanchoredstanding/noflight,93.9%rightload, no step"
+      },
+      {
+        "physicsWallSeconds": 24.462468056999988,
+        "nativeSubsteps": 6620,
+        "totalProcessWallSeconds": 34.85505834400101,
+        "solverWallSeconds": 4.65615242493368,
+        "stateComputationWallSeconds": 2.8864893059726455,
+        "name": "batch07-terminal-unload-step",
+        "capSeconds": 90,
+        "outcome": "measured unload/lift21.47mm; predictive swing-knee braking bound obstruction8.275s; no flight/nonfoot"
+      },
+      {
+        "physicsWallSeconds": 22.584870481000006,
+        "nativeSubsteps": 6540,
+        "totalProcessWallSeconds": 31.905869105998136,
+        "solverWallSeconds": 4.185048986000766,
+        "stateComputationWallSeconds": 2.579180985048879,
+        "name": "batch08-joint-viability-step",
+        "capSeconds": 90,
+        "outcome": "strict solver-status rejection during lift; hard-feasible candidate, no flight/nonfoot"
+      },
+      {
+        "physicsWallSeconds": 30.746794814000005,
+        "nativeSubsteps": 8580,
+        "totalProcessWallSeconds": 44.58109810500173,
+        "solverWallSeconds": 6.765317858924391,
+        "stateComputationWallSeconds": 3.474347341019893,
+        "name": "batch09-feasible-stance-step",
+        "capSeconds": 90,
+        "outcome": "all10.725s anchored standing; right hull corner loss blocks unload; no ceiling/lift"
+      },
+      {
+        "physicsWallSeconds": 21.084384304999997,
+        "nativeSubsteps": 6400,
+        "totalProcessWallSeconds": 85.55917640999542,
+        "solverWallSeconds": 59.692800891964,
+        "stateComputationWallSeconds": 2.255115485051647,
+        "name": "batch10-clarabel-unilateral-zero",
+        "capSeconds": 40,
+        "outcome": "all8s native anchored, no flight/nonfoot; BOTH-flat geometry failed; right-only geometry 1.35s"
+      }
+    ],
+    "oldAllowanceCarried": false
+  },
+  "qpBackendParity": [
+    {
+      "case": "quiet",
+      "objectiveDifference": -3.2813629502470576e-07,
+      "maximumMotorFractionDifference": 0.007056067032607022
+    },
+    {
+      "case": "flat",
+      "objectiveDifference": -5.3415484480012765e-08,
+      "maximumMotorFractionDifference": 0.0006178872966100069
+    },
+    {
+      "case": "batch06-motion-profile-flat-step",
+      "objectiveDifference": -1.1537730770783128e-08,
+      "maximumMotorFractionDifference": 0.0007148611838048123
+    },
+    {
+      "case": "batch09-feasible-stance-step",
+      "objectiveDifference": -4.7745887243877405e-08,
+      "maximumMotorFractionDifference": 0.0009598833881593154
+    },
+    {
+      "case": "batch09-feasible-stance-step-fixed-release",
+      "objectiveDifference": -2.947379940110295e-07,
+      "maximumMotorFractionDifference": 0.0024775875579134995
+    }
+  ],
+  "backendParity": [
+    {
+      "case": "quiet",
+      "objectiveDifference": -3.2813629502470576e-07,
+      "maximumMotorFractionDifference": 0.007056067032607022,
+      "originalHardConstraintsPass": true
+    },
+    {
+      "case": "flat",
+      "objectiveDifference": -5.3415484480012765e-08,
+      "maximumMotorFractionDifference": 0.0006178872966100069,
+      "originalHardConstraintsPass": true
+    },
+    {
+      "case": "batch06-motion-profile-flat-step",
+      "objectiveDifference": -1.1537730770783128e-08,
+      "maximumMotorFractionDifference": 0.0007148611838048123,
+      "originalHardConstraintsPass": true
+    },
+    {
+      "case": "batch09-feasible-stance-step",
+      "objectiveDifference": -4.7745887243877405e-08,
+      "maximumMotorFractionDifference": 0.0009598833881593154,
+      "originalHardConstraintsPass": true
+    },
+    {
+      "case": "batch09-feasible-stance-step-fixed-release",
+      "objectiveDifference": -2.947379940110295e-07,
+      "maximumMotorFractionDifference": 0.0024775875579134995,
+      "originalHardConstraintsPass": true
+    }
+  ]
+}

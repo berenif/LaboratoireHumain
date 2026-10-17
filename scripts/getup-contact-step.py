@@ -10,7 +10,8 @@ def arc(start,end,t,duration):
     return start+smooth(u)*delta,6*u*(1-u)/duration*delta,(6-12*u)/duration**2*delta if 0<=t<duration else np.zeros(3)
 
 class RecoveryStep:
-    def __init__(self,initial_com,stance_com,ramp_s,kin):
+    def __init__(self,initial_com,stance_com,ramp_s,kin,transfer_timeout_s=9.5):
+        assert 9.5<=transfer_timeout_s<=12.;self.transfer_timeout_s=transfer_timeout_s
         self.initial_com=np.array(initial_com);self.stance_com=np.array(stance_com);self.ramp_s=ramp_s;self.kin=kin
         self.phase='transfer';self.phase_start=0.;self.unloaded=0;self.capture_run=0.;self.origin=None;self.rotation=None;self.delta=None;self.log=[];self.failed=None;self.return_start=None;self.stand_start=None;self.land_run=0;self.lift_clearance_seen=False
     def foot_task(self,position,velocity=None,acceleration=None):
@@ -32,7 +33,7 @@ class RecoveryStep:
                 self.origin=position.copy();self.rotation=pose[:3,:3]/np.cbrt(np.linalg.det(pose[:3,:3]));capture=np.array([diagnostic['capture'][k] for k in 'xyz']);delta=capture-self.origin;delta[1]=0.;distance=np.linalg.norm(delta);self.delta=delta/max(distance,1e-12)*min(.06,distance)
                 self.bottom=self.kin.bottom('left_foot',pose);self.high=self.origin+np.array([0.,.035,0.]);self.landing=self.origin+self.delta;self.landing[1]-=self.bottom+.001
                 self.change('lift',elapsed,targetDisplacementM=float(np.linalg.norm(self.delta)),captureDirected=True);com=self.stance_com.copy();swing=self.foot_task(self.origin)
-            elif elapsed>=9.5:
+            elif elapsed>=self.transfer_timeout_s:
                 self.failed='no-qualified-unload';self.change('stop',elapsed)
         else:com=self.stance_com.copy()
         dt=elapsed-self.phase_start
@@ -69,3 +70,23 @@ class RecoveryStep:
             com=self.return_origin.copy()
             if self.origin is not None:swing=self.foot_task(self.landing if self.delta is not None else self.origin)
         return com,swing,allow_unload
+
+
+class TerminalUnloadGoal:
+    """Bounded requested load transfer after actual stance support is qualified.
+
+    This constrains only mathematical contact-force allocation. Native measured
+    unloading still gates every physical swing; it never lifts a loaded foot.
+    """
+    def __init__(self,duration=.5):
+        assert duration>=.5
+        self.duration=duration;self.anchor=None;self.elapsed=0.;self.failed=False
+    def update(self,qualified,measured_left_load_n,dt=.025):
+        if self.failed:return None
+        if not qualified:
+            if self.anchor is not None:self.failed=True
+            return None
+        if self.anchor is None:
+            self.anchor=max(0.,float(measured_left_load_n));self.elapsed=0.
+        else:self.elapsed=min(self.duration,self.elapsed+dt)
+        return self.anchor*(1.-smooth(self.elapsed/self.duration))

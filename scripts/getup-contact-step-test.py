@@ -22,6 +22,8 @@ class StepTests(unittest.TestCase):
   self.last=[dict(loads_n=[0.,400.],clearance_m=[.02,0.])]*20;self.state['metrics']['foot_clearance_m'][0]=.02;self.update(8.525);self.assertEqual(self.step.phase,'translate')
  def test_clearance_loss_stops_horizontal_target_and_lands(self):
   self.ready();self.step.phase='translate';self.step.phase_start=8.1;self.update(8.2);self.assertEqual(self.step.phase,'land');self.assertEqual(self.step.failed,'clearance-lost-during-placement')
+ def test_explicit_new_protocol_timeout_waits_but_never_returns_unloaded(self):
+  self.step.transfer_timeout_s=10.725;self.step.capture_run=0.;self.last=[];self.step.update(9.5,self.state,self.model,self.diag,self.last,.02);self.assertEqual(self.step.phase,'transfer');self.step.update(10.725,self.state,self.model,self.diag,self.last,.02);self.assertEqual(self.step.phase,'stop')
  def test_unqualified_timeout_stops_instead_of_returning_over_unloaded_foot(self):
   self.step.capture_run=0.;self.last=[];self.step.update(9.5,self.state,self.model,self.diag,self.last,.02);self.assertEqual(self.step.phase,'stop');self.assertIsNone(self.step.return_start)
  def test_com_cannot_return_until_persistent_landing(self):
@@ -31,4 +33,13 @@ class StepTests(unittest.TestCase):
   self.last=[dict(loads_n=[40.,360.],clearance_m=[0.,0.])]*20
   for i in range(3):self.update(9.6+i*.025);self.assertEqual(self.step.phase,'land')
   self.update(9.675);self.assertEqual(self.step.phase,'return')
+class TerminalUnloadTests(unittest.TestCase):
+ def test_ceiling_starts_from_measured_load_and_is_monotone(self):
+  goal=m.TerminalUnloadGoal();self.assertIsNone(goal.update(False,45.));limits=[goal.update(True,45.)]
+  for i in range(20):limits.append(goal.update(True,999.))
+  self.assertEqual(limits[0],45.);self.assertAlmostEqual(limits[-1],0.);self.assertTrue(all(a>=b>=0 for a,b in zip(limits,limits[1:])));self.assertEqual(goal.anchor,45.)
+ def test_lost_support_aborts_without_recapture_or_force_goal(self):
+  goal=m.TerminalUnloadGoal();goal.update(True,30.);self.assertIsNone(goal.update(False,20.));self.assertTrue(goal.failed);self.assertIsNone(goal.update(True,10.));self.assertEqual(goal.anchor,30.)
+ def test_shorter_than_half_second_is_rejected(self):
+  with self.assertRaises(AssertionError):m.TerminalUnloadGoal(.2)
 if __name__=='__main__':unittest.main()

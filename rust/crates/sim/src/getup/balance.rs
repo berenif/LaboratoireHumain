@@ -8,6 +8,10 @@ pub const OBSERVATION_DIM: usize = 120;
 pub const ACTION_DIM: usize = 21;
 const MAX_EPISODE_SUBSTEPS: u64 = 16_000; // 20 seconds, not a success claim.
 const CLEARANCE_M: f32 = 0.015;
+fn episode_limit_substeps(seconds: u32) -> Result<u64, String> {
+    if !(20..=40).contains(&seconds) { return Err("Diagnostic episode limit must be 20..40 seconds".into()); }
+    Ok(u64::from(seconds) * 800)
+}
 
 #[derive(Clone, Serialize, Deserialize)]
 pub struct Metrics {
@@ -230,6 +234,7 @@ impl ComputeBudget {
 pub struct Experiment {
     runtime: Runtime,
     memory: Memory,
+    episode_limit_substeps: u64,
 }
 
 fn validate_clock(s: &Simulation) -> Result<(), String> {
@@ -383,6 +388,7 @@ impl Experiment {
         s.balance_residual = Some([0.0; 21]);
         Ok(Self {
             runtime,
+            episode_limit_substeps: MAX_EPISODE_SUBSTEPS,
             memory: Memory {
                 anchor,
                 elapsed_substeps: 0,
@@ -425,19 +431,20 @@ impl Experiment {
         })
     }
     pub fn checkpoint(&self) -> Result<Vec<u8>, String> {
-        bincode::serialize(&(1u32, self.runtime.getup_checkpoint()?, &self.memory))
+        bincode::serialize(&(2u32, self.runtime.getup_checkpoint()?, &self.memory, self.episode_limit_substeps))
             .map_err(|e| e.to_string())
     }
     pub fn from_checkpoint(bytes: &[u8]) -> Result<Self, String> {
         use bincode::Options;
-        let (schema, runtime, memory): (u32, Vec<u8>, Memory) = bincode::DefaultOptions::new()
-            .with_fixint_encoding()
-            .with_limit(64 * 1024 * 1024)
-            .reject_trailing_bytes()
-            .deserialize(bytes)
-            .map_err(|e| e.to_string())?;
-        if schema != 1 {
-            return Err("Unsupported balance checkpoint".into());
+        let schema = u32::from_le_bytes(bytes.get(..4).ok_or("Short balance checkpoint")?.try_into().unwrap());
+        let options = bincode::DefaultOptions::new().with_fixint_encoding().with_limit(64 * 1024 * 1024).reject_trailing_bytes();
+        let (runtime, memory, episode_limit_substeps) = match schema {
+            1 => { let (_, runtime, memory): (u32, Vec<u8>, Memory) = options.deserialize(bytes).map_err(|e|e.to_string())?; (runtime, memory, MAX_EPISODE_SUBSTEPS) },
+            2 => { let (_, runtime, memory, limit): (u32, Vec<u8>, Memory, u64) = options.deserialize(bytes).map_err(|e|e.to_string())?; (runtime, memory, limit) },
+            _ => return Err("Unsupported balance checkpoint".into()),
+        };
+        if !(16_000..=32_000).contains(&episode_limit_substeps) || episode_limit_substeps % 800 != 0 {
+            return Err("Invalid checkpoint episode limit".into());
         }
         let mut runtime = Runtime::from_getup_checkpoint(&runtime)?;
         validate_clock(runtime.simulation())?;
@@ -450,8 +457,16 @@ impl Experiment {
             return Err("Nonfinite balance memory".into());
         }
         runtime.balance_simulation_mut().balance_residual = Some(memory.last_residual);
-        Ok(Self { runtime, memory })
+        Ok(Self { runtime, memory, episode_limit_substeps })
     }
+    /// Bounded diagnostic horizon only; never changes physical success gates.
+    pub fn set_episode_limit_seconds(&mut self, seconds: u32) -> Result<(), String> {
+        let limit = episode_limit_substeps(seconds)?;
+        if self.memory.elapsed_substeps > limit { return Err("Episode limit precedes elapsed clock".into()); }
+        self.episode_limit_substeps = limit;
+        Ok(())
+    }
+    pub fn episode_limit_seconds(&self) -> u64 { self.episode_limit_substeps / 800 }
     pub fn snapshot(&self) -> Snapshot {
         self.runtime.simulation().snapshot()
     }
@@ -563,7 +578,7 @@ impl Experiment {
             || current.metrics.com_height_m < 0.5
             || current.metrics.anchor_drift_m > 0.6
             || current.metrics.nonfoot_support;
-        if already_done || self.memory.elapsed_substeps >= MAX_EPISODE_SUBSTEPS {
+        if already_done || self.memory.elapsed_substeps >= self.episode_limit_substeps {
             return Err("Episode ended; reset or load a checkpoint before stepping".into());
         }
         if budget.used_s + 0.25 >= budget.limit_s {
@@ -698,7 +713,7 @@ impl Experiment {
             terminated,
             truncated: !terminated
                 && (reply.failure.is_some()
-                    || self.memory.elapsed_substeps >= MAX_EPISODE_SUBSTEPS),
+                    || self.memory.elapsed_substeps >= self.episode_limit_substeps),
             failure,
             budget_physics_wall_s: budget.used_s,
             native_foot_samples,
@@ -728,6 +743,12 @@ mod tests {
             nonfoot_support: false,
             native_standing_without_foot_anchor: true,
         }
+    }
+    #[test]
+    fn diagnostic_episode_limit_is_bounded_and_default_is_twenty_seconds() {
+        assert_eq!(episode_limit_substeps(20).unwrap(),MAX_EPISODE_SUBSTEPS);
+        assert_eq!(episode_limit_substeps(40).unwrap(),32_000);
+        assert!(episode_limit_substeps(19).is_err());assert!(episode_limit_substeps(41).is_err());
     }
     #[test]
     fn motion_profile_has_exact_feedforward_on_predicted_motion_and_original_caps() {

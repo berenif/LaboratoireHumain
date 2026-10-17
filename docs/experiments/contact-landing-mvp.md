@@ -111,3 +111,59 @@ cleaner transfer than the earlier held-reference trial. Through six trials the
 ledger is153.14664s physical wall/45,140 native integrations; first-block resource
 review remains17:41:29UTC. Next hypothesis is gap-aware release on the now-flat,
 profile-driven controller, pending exact-state replay and a fresh bounded batch.
+
+## Measured unloading and contact-set follow-up
+
+A0.5s bounded left-load ceiling, activated only after measured right-hull
+COM/capture support and sustained right load, achieved actual zero-left support.
+The first lift reached21.47mm capsule clearance but drove the swing knee toward
+extension without braking reserve. An opt-in position/velocity stopping-distance
+guard now uses the existing50rad/s² model bound; this is not proof that the
+plant always has that braking capability. Original native joint/torque limits
+are unchanged. A local equality-RHS shadowing bug in its first offline residual
+check was fixed and covered by a full-solve test before any guard rollout.
+
+The guard-only rollout stopped on solver status during lift. Its candidate was
+hard-feasible, but remains rejected; no physical acceptance was promoted. A
+frozen-pose static calculation independently showed the old stance target would
+need128% of the original ankle cap. This does not prove dynamic impossibility.
+
+A new explicitly composite reference solves full-body planted-foot IK and real
+static force/motor balance, selecting an attainable heelward COM point inside
+the measured stance hull. Its terminal static motor requirement is79.5%; all310
+synthetic reference states admit the unchanged hard-normal QP below80.7%, with
+positive model braking reserve. PCHIP geometry is checked on the actual runtime
+curve. Prescribed-path inverse dynamics is labeled an approximate planning
+capacity diagnostic, not an exact hard-contact trajectory certificate.
+
+The22s diagnostic horizon is bounded separately (default20,max40) and checkpoint
+schema2 preserves it while schema1 remains readable. This changes no physical
+qualification predicate. The new reference rollout stayed standing10.725s with
+0.73/0.40mm slip but never qualified unloading: the stance sole rolled1.44°,
+losing a support corner and putting actual COM/capture15mm outside its current
+right-only triangle. No capacity readiness calculation or ceiling was triggered.
+Hard-normal acceleration rows prevented the angular task from correcting that
+steady tilt. This is a measured contact-mode obstruction, not successful stepping.
+
+The next declared numerical/contact ablation uses the same references and caps
+with exhaustive unilateral contact modes. Official Clarabel0.11.1 is an opt-in
+research QP backend; SLSQP remains default. Its frozen-state objectives agree
+within3.3e-7 but near-degenerate controls are not identical. Full original
+unreduced equalities, gaps, friction and motor/box bounds are still checked.
+An8s native zero hold is required before another full step. No browser controller
+port or default GetUp change is claimed here.
+
+The Clarabel/unilateral zero case (B10) remained anchored for all 8 seconds,
+with no flight or non-foot support and 0.23/0.26 mm loaded slip. Its original
+both-foot flatness prerequisite FAILED: the left foot ended on one capsule
+track. The right foot retained two tracks and a noncollinear support hull for
+its final 1.35 seconds. A subsequent deliberately one-sided stepping protocol
+may use that right-foot prerequisite; it must still qualify actual right-only
+COM/capture support, measured left unloading, capsule clearance, landing and
+five seconds of native anchored balance. This does not retroactively pass B10's
+both-foot geometry gate. B10 used 21.0844 physics-wall seconds and 85.56 total
+process-wall seconds. Cumulative physics after B10 is 252.0252 seconds.
+
+The optional research backend is reproducible with
+`python -m pip install -r scripts/requirements-balance-mvp.txt` (Clarabel 0.11.1).
+The production runtime and default GetUp do not require Python or this package.

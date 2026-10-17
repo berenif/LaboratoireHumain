@@ -53,4 +53,28 @@ class ContactDynamicsTests(unittest.TestCase):
  def test_unilateral_mode_requires_fresh_paired_gap(self):
   c=d.ContactDynamics(self.c.kin.model,contact_mode='unilateral-soft')
   with self.assertRaisesRegex(AssertionError,'Fresh paired gaps'):c.solve(self.state,self.state['com'],self.R,self.state['q'])
+ def test_full_solve_viability_keeps_original_equality_rhs_vector(self):
+  self.c.joint_viability=True;_,info=self.c.solve(self.state,self.state['com'],self.R,self.state['q']);self.assertTrue(info['success']);self.assertLess(info['equalityError'],1e-4);self.assertGreaterEqual(info['minimumPredictedJointStoppingMarginRad'],-1e-8)
+ def test_terminal_load_ceiling_is_feasible_and_does_not_change_hard_caps(self):
+  x=json.loads((ROOT/'docs/fixtures/contact-landing-mvp/terminal-unload-state.json').read_text());c=d.ContactDynamics(self.c.kin.model,flat_soles=True);state=c.state(x['observation'],x['snapshot'],x['diagnostic']);ref=x['reference'];c.flat_targets={k:np.array(v) for k,v in ref['flatTargets'].items()}
+  _,base=c.solve(state,np.array(ref['targetCOM']),np.array(ref['rootRotation']),np.array(ref['posture']),unload_left=1.);self.assertTrue(base['success']);self.assertGreater(base['plannedLeftNormalForceN'],20.)
+  for ceiling in [25.,12.5,0.]:
+   _,info=c.solve(state,np.array(ref['targetCOM']),np.array(ref['rootRotation']),np.array(ref['posture']),unload_left=1.,left_force_ceiling_n=ceiling)
+   self.assertTrue(info['success']);self.assertLessEqual(info['plannedLeftNormalForceN'],ceiling+1e-4);self.assertLess(info['leftNormalForceCeilingViolationN'],1e-4);self.assertLessEqual(info['maximumMotorFraction'],.900001);self.assertLess(max(abs(np.array(info['qdd']))),10.)
+  np.testing.assert_allclose(info['plannedContactForcesWorldN'][0],[0.,0.,0.],atol=1e-5)
+class BrakingBoundsTests(unittest.TestCase):
+ def test_measured_knee_case_reserves_braking_distance(self):
+  lo,hi=d.braking_acceleration_bounds(-.07425740361213684,2.7617790699005127,-2.792526803190927,.03490658503988659);self.assertAlmostEqual(hi,-23.3655,places=3);self.assertEqual(lo,-50.)
+ def test_mirrored_signs_have_mirrored_bounds(self):
+  lo,hi=d.braking_acceleration_bounds(.8,2.,-1.,1.);a,b=d.braking_acceleration_bounds(-.8,-2.,-1.,1.);self.assertAlmostEqual(lo,-b);self.assertAlmostEqual(hi,-a)
+ def test_at_bound_zero_velocity_cannot_accelerate_outward(self):
+  _,hi=d.braking_acceleration_bounds(1.,0.,-1.,1.);lo,_=d.braking_acceleration_bounds(-1.,0.,-1.,1.);self.assertAlmostEqual(hi,0.);self.assertAlmostEqual(lo,0.)
+ def test_already_unviable_is_rejected_not_clamped(self):
+  for q,v in [(1.-1e-5,.5),(-1.+1e-5,-.5),(.0098747611,3.97580433)]:
+   with self.assertRaisesRegex(ValueError,'Already outside'):d.braking_acceleration_bounds(q,v,-1. if abs(q)>.1 else -2.7925268,1. if abs(q)>.1 else .034906585)
+ def test_endpoint_and_stopping_reserve_hold_through_returned_interval(self):
+  for q,v in [(.9,1.),(-.9,-1.),(.2,0.),(.99,-.5)]:
+   lo,hi=d.braking_acceleration_bounds(q,v,-1.,1.)
+   for a in np.linspace(lo,hi,9):
+    p=q+.025*v+.5*.025**2*a;w=v+.025*a;self.assertLessEqual(p+max(w,0.)**2/100.,1.+1e-9);self.assertGreaterEqual(p-min(w,0.)**2/100.,-1.-1e-9)
 if __name__=='__main__':unittest.main()

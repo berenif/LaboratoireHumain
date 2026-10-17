@@ -12,6 +12,7 @@ use std::{
 #[serde(tag = "op", rename_all = "camelCase", deny_unknown_fields)]
 enum Command {
     Reset {},
+    EpisodeLimit { seconds: u32 },
     Observe {},
     InitializedAction {},
     ReferenceAction {
@@ -62,6 +63,7 @@ fn main() -> Result<(), String> {
                     experiment = reset(&seed)?;
                     Ok(serde_json::to_value(experiment.observe()?).unwrap())
                 }
+                Command::EpisodeLimit { seconds } => { experiment.set_episode_limit_seconds(seconds)?; Ok(json!({"episodeLimitSeconds":experiment.episode_limit_seconds(),"physicsIntegrations":0})) },
                 Command::Observe {} => Ok(serde_json::to_value(experiment.observe()?).unwrap()),
                 Command::InitializedAction {} => Ok(
                     json!({"action":experiment.initialized_action()?,"trainedStationaryPolicy":false,"source":"architecture-validated-expanded-SLOW-initialization"}),
@@ -90,6 +92,7 @@ fn main() -> Result<(), String> {
                     let restored = Experiment::from_checkpoint(&bytes)?;
                     let same = serde_json::to_value(experiment.observe()?).unwrap()
                         == serde_json::to_value(restored.observe()?).unwrap()
+                        && experiment.episode_limit_seconds() == restored.episode_limit_seconds()
                         && serde_json::to_value(experiment.snapshot()).unwrap()
                             == serde_json::to_value(restored.snapshot()).unwrap();
                     if !same {

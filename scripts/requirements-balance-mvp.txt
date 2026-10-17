@@ -1,0 +1,2 @@
+# Optional research QP backend; default GetUp/runtime do not depend on Python.
+clarabel==0.11.1
