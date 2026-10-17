@@ -31,6 +31,8 @@ class ContactDynamicsTests(unittest.TestCase):
   np.testing.assert_array_equal(self.c.kin.limits,expected);np.testing.assert_array_equal(json.loads(json.dumps(expected.tolist())),expected)
  def test_mass_is_symmetric_positive_definite(self):
   np.testing.assert_allclose(self.state['M'],self.state['M'].T,atol=1e-12);self.assertGreater(min(np.linalg.eigvalsh(self.state['M'])),.01)
+ def test_tracking_band_intersects_acceleration_without_changing_motor_caps(self):
+  track=dict(indices=[0],position=self.state['q'].copy(),velocity=self.state['v'][6:].copy(),acceleration=np.zeros(21),radius=np.full(21,.01));_,info=self.c.solve(self.state,self.state['com'],self.R,self.state['q'],tracking=track);self.assertTrue(info['success']);self.assertLessEqual(abs(info['qdd'][6]),.160001);self.assertLessEqual(info['maximumMotorFraction'],.900001);self.assertEqual(info['trackingConstraint']['indices'],[0]);self.assertLess(info['boundsError'],1e-6)
  def test_sticking_zero_qp_and_torque_interface(self):
   a,info=self.c.solve(self.state,self.state['com'],self.R,self.state['q']);self.assertTrue(info['success']);self.assertTrue(info['constraintFeasible']);self.assertLess(info['boundsError'],1e-6);self.assertLess(info['equalityError'],1e-4);self.assertLess(info['maximumTorqueRepresentationErrorNm'],1e-10);self.assertLessEqual(max(abs(a)),1.)
   self.assertTrue(all(r['reactionNm']>=0 for r in info['activeStops']))

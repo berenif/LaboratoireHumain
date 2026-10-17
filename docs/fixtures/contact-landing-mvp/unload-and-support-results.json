@@ -184,6 +184,24 @@
       "actualStanceHip3Rad": 0.08362209796905518,
       "plannedHipStopAttained": false,
       "terminalCeilingActivated": false
+    },
+    "batch17-no-stop-posture-step": {
+      "physicsWallSeconds": 16.201877518,
+      "nativeSubsteps": 4720,
+      "stopped": "inverse-dynamics-step-trial-stopped",
+      "flightNativeSamples": 0,
+      "loadedSlipM": [
+        0.002073781736872889,
+        0.0022258125889163673
+      ],
+      "stepEvents": [],
+      "stopTimeS": 5.9,
+      "blockingJoint": 5,
+      "actualPositionRad": 0.347031831741333,
+      "actualVelocityRadps": 0.47925859689712524,
+      "lateQPOutwardAccelerationRadps2": 3.7219272814634756,
+      "lateNativeOutwardAccelerationRadps2": 3.447730541229248,
+      "heightHandoffReached": false
     }
   },
   "ledger": {

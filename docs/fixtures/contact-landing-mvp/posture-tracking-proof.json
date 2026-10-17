@@ -1,0 +1,1931 @@
+{
+  "interpretation": "Offline hard PD-acceleration tracking priority, not a native invariant containment certificate; all original physical success gates retained",
+  "fixedRadiusRad": [
+    0.03,
+    0.03,
+    0.03,
+    0.03,
+    0.03,
+    0.03,
+    0.03,
+    0.005,
+    0.03,
+    0.03,
+    0.03,
+    0.005,
+    0.03,
+    0.01319895685,
+    0.03
+  ],
+  "gains": {
+    "kp": 16,
+    "kd": 8
+  },
+  "independentForwardQPWeights": [
+    0,
+    0.25,
+    0.5,
+    0.75,
+    0.9,
+    0.95,
+    1
+  ],
+  "independentForwardMaximumMotorFraction": 0.84919,
+  "independentForwardMaximumEqualityResidual": 4.1e-15,
+  "actualInitialMaximumMotorFraction": 0.634535,
+  "actualInitialMinimumFirstOrderBarrierMarginRadps": 0.00359788,
+  "initialPreflight": {
+    "trackingConstraint": {
+      "indices": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14
+      ],
+      "radiusRad": [
+        0.03,
+        0.03,
+        0.03,
+        0.03,
+        0.03,
+        0.03,
+        0.03,
+        0.005000000000000032,
+        0.03,
+        0.03,
+        0.03,
+        0.005000000000000032,
+        0.03,
+        0.013198956847188553,
+        0.03
+      ],
+      "positionErrorRad": [
+        -5.204170427930421e-17,
+        4.593547764386585e-15,
+        7.28583859910259e-17,
+        1.1449174941446927e-16,
+        -9.020562075079397e-17,
+        -1.7069679003611782e-15,
+        7.438494264988549e-15,
+        4.6074255521944e-15,
+        -6.331740687315346e-17,
+        -3.1051550219984847e-16,
+        -1.0061396160665481e-16,
+        -1.5751289161869408e-15,
+        7.605027718682322e-15,
+        4.6074255521944e-15,
+        -3.157196726277789e-16
+      ],
+      "velocityErrorRadps": [
+        -0.005525345914065838,
+        -0.004313349723815918,
+        -0.011973370797932148,
+        0.009222898632287979,
+        -0.0025693473871797323,
+        0.00923982448875904,
+        0.01549480389803648,
+        0.016402117908000946,
+        0.015863901004195213,
+        -0.009988512843847275,
+        0.0006549512618221343,
+        -0.0004451516433618963,
+        -0.009167910553514957,
+        0.0013281505089253187,
+        0.011244762688875198
+      ],
+      "centerAccelerationRadps2": [
+        0.044202767312527536,
+        0.03450679779045385,
+        0.09578696638345602,
+        -0.07378318905830566,
+        0.020554779097439302,
+        -0.07391859591004502,
+        -0.12395843118441086,
+        -0.1312169432640813,
+        -0.1269112080335607,
+        0.07990810275078317,
+        -0.005239610094575464,
+        0.0035612131469203723,
+        0.07334328442799798,
+        -0.010625204071476269,
+        -0.08995810151099654
+      ],
+      "halfWidthAccelerationRadps2": [
+        0.48,
+        0.48,
+        0.48,
+        0.48,
+        0.48,
+        0.48,
+        0.48,
+        0.08000000000000052,
+        0.48,
+        0.48,
+        0.48,
+        0.08000000000000052,
+        0.48,
+        0.21118330955501685,
+        0.48
+      ],
+      "minimumPositionMarginRad": 0.004999999999995425,
+      "minimumFirstOrderBarrierMarginRadps": 0.003597882091980753,
+      "interpretation": "Hard moving-reference PD-acceleration band; native tracking and invariant position containment are not guaranteed"
+    },
+    "success": true,
+    "qpSolver": "clarabel",
+    "forceJacobianMode": "native-frozen",
+    "maximumFrozenForcePointOffsetM": 0.0009657836981299714,
+    "optimizerMessage": "Clarabel Solved",
+    "optimizerSuccess": true,
+    "boundsError": -6.6165961598585454e-12,
+    "constraintFeasible": true,
+    "equalityError": 8.36136715420821e-16,
+    "jointViabilityGuard": true,
+    "futureJointStoppingReserveBufferRad": 0.0001,
+    "separatingFloat32NeighborReleaseJoints": [],
+    "jointLimitRepresentation": "original model min/max deserialized to native f32, then promoted for analysis; installed physics unchanged",
+    "minimumPredictedJointStoppingMarginRad": 0.015017459499097052,
+    "dependentEqualityError": 4.440892098500626e-16,
+    "frictionError": -0.021513072871248477,
+    "contactGapViolationM": -2.316770636012072e-16,
+    "leftNormalForceCeilingN": null,
+    "leftNormalForceCeilingViolationN": 0.0,
+    "plannedLeftNormalForceN": 197.28246828463662,
+    "inactiveContacts": [],
+    "predictedContactGapsM": [
+      -0.0003433620781056408,
+      -8.213653540950525e-05,
+      -0.0011396380141371356,
+      -0.0003588888643567515,
+      -0.0002282831328649639,
+      -0.0006810927297917672,
+      -0.0008061330125363698
+    ],
+    "objectiveCost": 6.079536939592906,
+    "desiredComAcceleration": [
+      0.004040768414758892,
+      -0.0037768934912705103,
+      -0.002429325189244003
+    ],
+    "achievedComAcceleration": [
+      0.004039909057728723,
+      -0.0033404140399922637,
+      -0.0026975506864862367
+    ],
+    "qdd": [
+      0.06781213489190958,
+      0.024329556637569798,
+      -0.07055755906729928,
+      0.05351215558245186,
+      -0.018050373876330624,
+      -0.005566283905267814,
+      0.5236558525551779,
+      0.07148073034533324,
+      -0.19852877485951323,
+      0.10843990209698252,
+      0.5005547790890902,
+      0.21199071102656997,
+      0.3560415686842578,
+      -0.21121694324436843,
+      0.12254305920886417,
+      -0.0479840110694512,
+      0.4747603898988079,
+      -0.0764387861559343,
+      0.015408755722476498,
+      -0.22180851356765152,
+      -0.5699581015036659,
+      -0.16337923178592265,
+      -0.7730996414069773,
+      -0.007757758139632538,
+      -3.322330939484635,
+      -0.7806827447784734,
+      0.024601561017334485
+    ],
+    "motorTorquesNm": [
+      0.2407734241604716,
+      4.076830497168265,
+      1.8532733604951548,
+      0.6698050843307101,
+      0.371625817200352,
+      -0.7598474818486032,
+      4.052422994627284,
+      12.690700549497418,
+      0.1474242056516078,
+      -0.5752448998089985,
+      0.1451156529125731,
+      -0.23112109448791918,
+      3.4231455772711654,
+      12.622607578030312,
+      0.31693548354817513,
+      -3.5346894765683654,
+      0.7619485682161343,
+      4.3485290841751874e-05,
+      1.703136603263002,
+      -0.9025819862347719,
+      6.182978360309159e-05
+    ],
+    "predictedRepresentedTorquesNm": [
+      0.24077342416047157,
+      4.076830497168265,
+      1.8532733604951546,
+      0.66980508433071,
+      0.37162581720035204,
+      -0.7598474818486034,
+      4.052422994627284,
+      12.690700549497418,
+      0.14742420565160808,
+      -0.5752448998089983,
+      0.14511565291257295,
+      -0.23112109448791895,
+      3.423145577271164,
+      12.622607578030312,
+      0.31693548354817536,
+      -3.534689476568365,
+      0.7619485682161344,
+      4.348529084552367e-05,
+      1.7031366032630022,
+      -0.9025819862347719,
+      6.182978360413927e-05
+    ],
+    "maximumTorqueRepresentationErrorNm": 3.771797056541931e-15,
+    "plannedContactForcesWorldN": [
+      [
+        -0.07406184102572134,
+        47.51434404531363,
+        -0.36112582820799843
+      ],
+      [
+        -0.10618014912771015,
+        12.83660154131149,
+        -0.3659192967018502
+      ],
+      [
+        0.05174997667265161,
+        106.79670884663193,
+        -0.7060293859239444
+      ],
+      [
+        -0.04552529912686224,
+        30.134784110205896,
+        -0.7211957914924084
+      ],
+      [
+        0.9754283361433406,
+        64.54620278004451,
+        -1.8335176851422137
+      ],
+      [
+        -0.8643977834445357,
+        42.833824083018,
+        1.7782141615253695
+      ],
+      [
+        0.2279928911961198,
+        95.8809468356412,
+        2.099395008457788
+      ]
+    ],
+    "activeStops": [
+      {
+        "qpos": 17,
+        "sign": 1.0,
+        "reactionNm": 0.777771383857191
+      },
+      {
+        "qpos": 20,
+        "sign": 1.0,
+        "reactionNm": 0.8883911376569238
+      }
+    ],
+    "maximumMotorFraction": 0.6345350274748709,
+    "contactModeAttempts": [
+      {
+        "inactive": [],
+        "feasible": true,
+        "optimizerSuccess": true
+      },
+      {
+        "inactive": [
+          6
+        ],
+        "feasible": false,
+        "optimizerSuccess": false
+      },
+      {
+        "inactive": [
+          5
+        ],
+        "feasible": true,
+        "optimizerSuccess": true
+      },
+      {
+        "inactive": [
+          5,
+          6
+        ],
+        "feasible": false,
+        "optimizerSuccess": false
+      },
+      {
+        "inactive": [
+          4
+        ],
+        "feasible": true,
+        "optimizerSuccess": true
+      },
+      {
+        "inactive": [
+          4,
+          6
+        ],
+        "feasible": false,
+        "optimizerSuccess": false
+      },
+      {
+        "inactive": [
+          4,
+          5
+        ],
+        "feasible": true,
+        "optimizerSuccess": true
+      },
+      {
+        "inactive": [
+          4,
+          5,
+          6
+        ],
+        "feasible": false,
+        "optimizerSuccess": false
+      },
+      {
+        "inactive": [
+          3
+        ],
+        "feasible": true,
+        "optimizerSuccess": true
+      },
+      {
+        "inactive": [
+          3,
+          6
+        ],
+        "feasible": false,
+        "optimizerSuccess": false
+      },
+      {
+        "inactive": [
+          3,
+          5
+        ],
+        "feasible": true,
+        "optimizerSuccess": true
+      },
+      {
+        "inactive": [
+          3,
+          5,
+          6
+        ],
+        "feasible": true,
+        "optimizerSuccess": true
+      },
+      {
+        "inactive": [
+          3,
+          4
+        ],
+        "feasible": true,
+        "optimizerSuccess": true
+      },
+      {
+        "inactive": [
+          3,
+          4,
+          6
+        ],
+        "feasible": false,
+        "optimizerSuccess": false
+      },
+      {
+        "inactive": [
+          3,
+          4,
+          5
+        ],
+        "feasible": true,
+        "optimizerSuccess": true
+      },
+      {
+        "inactive": [
+          3,
+          4,
+          5,
+          6
+        ],
+        "feasible": true,
+        "optimizerSuccess": true
+      },
+      {
+        "inactive": [
+          2
+        ],
+        "feasible": false,
+        "optimizerSuccess": false
+      },
+      {
+        "inactive": [
+          2,
+          6
+        ],
+        "feasible": false,
+        "optimizerSuccess": false
+      },
+      {
+        "inactive": [
+          2,
+          5
+        ],
+        "feasible": false,
+        "optimizerSuccess": false
+      },
+      {
+        "inactive": [
+          2,
+          5,
+          6
+        ],
+        "feasible": false,
+        "optimizerSuccess": false
+      },
+      {
+        "inactive": [
+          2,
+          4
+        ],
+        "feasible": false,
+        "optimizerSuccess": false
+      },
+      {
+        "inactive": [
+          2,
+          4,
+          6
+        ],
+        "feasible": false,
+        "optimizerSuccess": false
+      },
+      {
+        "inactive": [
+          2,
+          4,
+          5
+        ],
+        "feasible": false,
+        "optimizerSuccess": false
+      },
+      {
+        "inactive": [
+          2,
+          4,
+          5,
+          6
+        ],
+        "feasible": false,
+        "optimizerSuccess": false
+      },
+      {
+        "inactive": [
+          2,
+          3
+        ],
+        "feasible": false,
+        "optimizerSuccess": false
+      },
+      {
+        "inactive": [
+          2,
+          3,
+          6
+        ],
+        "feasible": false,
+        "optimizerSuccess": false
+      },
+      {
+        "inactive": [
+          2,
+          3,
+          5
+        ],
+        "feasible": false,
+        "optimizerSuccess": false
+      },
+      {
+        "inactive": [
+          2,
+          3,
+          5,
+          6
+        ],
+        "feasible": false,
+        "optimizerSuccess": false
+      },
+      {
+        "inactive": [
+          2,
+          3,
+          4
+        ],
+        "feasible": false,
+        "optimizerSuccess": false
+      },
+      {
+        "inactive": [
+          2,
+          3,
+          4,
+          6
+        ],
+        "feasible": false,
+        "optimizerSuccess": false
+      },
+      {
+        "inactive": [
+          2,
+          3,
+          4,
+          5
+        ],
+        "feasible": false,
+        "optimizerSuccess": false
+      },
+      {
+        "inactive": [
+          2,
+          3,
+          4,
+          5,
+          6
+        ],
+        "feasible": false,
+        "optimizerSuccess": false
+      },
+      {
+        "inactive": [
+          1
+        ],
+        "feasible": true,
+        "optimizerSuccess": true
+      },
+      {
+        "inactive": [
+          1,
+          6
+        ],
+        "feasible": false,
+        "optimizerSuccess": false
+      },
+      {
+        "inactive": [
+          1,
+          5
+        ],
+        "feasible": true,
+        "optimizerSuccess": true
+      },
+      {
+        "inactive": [
+          1,
+          5,
+          6
+        ],
+        "feasible": false,
+        "optimizerSuccess": false
+      },
+      {
+        "inactive": [
+          1,
+          4
+        ],
+        "feasible": true,
+        "optimizerSuccess": true
+      },
+      {
+        "inactive": [
+          1,
+          4,
+          6
+        ],
+        "feasible": false,
+        "optimizerSuccess": false
+      },
+      {
+        "inactive": [
+          1,
+          4,
+          5
+        ],
+        "feasible": true,
+        "optimizerSuccess": true
+      },
+      {
+        "inactive": [
+          1,
+          4,
+          5,
+          6
+        ],
+        "feasible": false,
+        "optimizerSuccess": false
+      },
+      {
+        "inactive": [
+          1,
+          3
+        ],
+        "feasible": true,
+        "optimizerSuccess": true
+      },
+      {
+        "inactive": [
+          1,
+          3,
+          6
+        ],
+        "feasible": false,
+        "optimizerSuccess": false
+      },
+      {
+        "inactive": [
+          1,
+          3,
+          5
+        ],
+        "feasible": true,
+        "optimizerSuccess": true
+      },
+      {
+        "inactive": [
+          1,
+          3,
+          5,
+          6
+        ],
+        "feasible": true,
+        "optimizerSuccess": true
+      },
+      {
+        "inactive": [
+          1,
+          3,
+          4
+        ],
+        "feasible": true,
+        "optimizerSuccess": true
+      },
+      {
+        "inactive": [
+          1,
+          3,
+          4,
+          6
+        ],
+        "feasible": false,
+        "optimizerSuccess": false
+      },
+      {
+        "inactive": [
+          1,
+          3,
+          4,
+          5
+        ],
+        "feasible": true,
+        "optimizerSuccess": true
+      },
+      {
+        "inactive": [
+          1,
+          3,
+          4,
+          5,
+          6
+        ],
+        "feasible": true,
+        "optimizerSuccess": true
+      },
+      {
+        "inactive": [
+          1,
+          2
+        ],
+        "feasible": false,
+        "optimizerSuccess": false
+      },
+      {
+        "inactive": [
+          1,
+          2,
+          6
+        ],
+        "feasible": false,
+        "optimizerSuccess": false
+      },
+      {
+        "inactive": [
+          1,
+          2,
+          5
+        ],
+        "feasible": false,
+        "optimizerSuccess": false
+      },
+      {
+        "inactive": [
+          1,
+          2,
+          5,
+          6
+        ],
+        "feasible": false,
+        "optimizerSuccess": false
+      },
+      {
+        "inactive": [
+          1,
+          2,
+          4
+        ],
+        "feasible": false,
+        "optimizerSuccess": false
+      },
+      {
+        "inactive": [
+          1,
+          2,
+          4,
+          6
+        ],
+        "feasible": false,
+        "optimizerSuccess": false
+      },
+      {
+        "inactive": [
+          1,
+          2,
+          4,
+          5
+        ],
+        "feasible": false,
+        "optimizerSuccess": false
+      },
+      {
+        "inactive": [
+          1,
+          2,
+          4,
+          5,
+          6
+        ],
+        "feasible": false,
+        "optimizerSuccess": false
+      },
+      {
+        "inactive": [
+          1,
+          2,
+          3
+        ],
+        "feasible": false,
+        "optimizerSuccess": false
+      },
+      {
+        "inactive": [
+          1,
+          2,
+          3,
+          6
+        ],
+        "feasible": false,
+        "optimizerSuccess": false
+      },
+      {
+        "inactive": [
+          1,
+          2,
+          3,
+          5
+        ],
+        "feasible": false,
+        "optimizerSuccess": false
+      },
+      {
+        "inactive": [
+          1,
+          2,
+          3,
+          5,
+          6
+        ],
+        "feasible": false,
+        "optimizerSuccess": false
+      },
+      {
+        "inactive": [
+          1,
+          2,
+          3,
+          4
+        ],
+        "feasible": false,
+        "optimizerSuccess": false
+      },
+      {
+        "inactive": [
+          1,
+          2,
+          3,
+          4,
+          6
+        ],
+        "feasible": false,
+        "optimizerSuccess": false
+      },
+      {
+        "inactive": [
+          1,
+          2,
+          3,
+          4,
+          5
+        ],
+        "feasible": false,
+        "optimizerSuccess": false
+      },
+      {
+        "inactive": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6
+        ],
+        "feasible": false,
+        "optimizerSuccess": false
+      },
+      {
+        "inactive": [
+          0
+        ],
+        "feasible": false,
+        "optimizerSuccess": false
+      },
+      {
+        "inactive": [
+          0,
+          6
+        ],
+        "feasible": false,
+        "optimizerSuccess": false
+      },
+      {
+        "inactive": [
+          0,
+          5
+        ],
+        "feasible": false,
+        "optimizerSuccess": false
+      },
+      {
+        "inactive": [
+          0,
+          5,
+          6
+        ],
+        "feasible": false,
+        "optimizerSuccess": false
+      },
+      {
+        "inactive": [
+          0,
+          4
+        ],
+        "feasible": false,
+        "optimizerSuccess": false
+      },
+      {
+        "inactive": [
+          0,
+          4,
+          6
+        ],
+        "feasible": false,
+        "optimizerSuccess": false
+      },
+      {
+        "inactive": [
+          0,
+          4,
+          5
+        ],
+        "feasible": false,
+        "optimizerSuccess": false
+      },
+      {
+        "inactive": [
+          0,
+          4,
+          5,
+          6
+        ],
+        "feasible": false,
+        "optimizerSuccess": false
+      },
+      {
+        "inactive": [
+          0,
+          3
+        ],
+        "feasible": false,
+        "optimizerSuccess": false
+      },
+      {
+        "inactive": [
+          0,
+          3,
+          6
+        ],
+        "feasible": false,
+        "optimizerSuccess": false
+      },
+      {
+        "inactive": [
+          0,
+          3,
+          5
+        ],
+        "feasible": false,
+        "optimizerSuccess": false
+      },
+      {
+        "inactive": [
+          0,
+          3,
+          5,
+          6
+        ],
+        "feasible": false,
+        "optimizerSuccess": false
+      },
+      {
+        "inactive": [
+          0,
+          3,
+          4
+        ],
+        "feasible": false,
+        "optimizerSuccess": false
+      },
+      {
+        "inactive": [
+          0,
+          3,
+          4,
+          6
+        ],
+        "feasible": false,
+        "optimizerSuccess": false
+      },
+      {
+        "inactive": [
+          0,
+          3,
+          4,
+          5
+        ],
+        "feasible": false,
+        "optimizerSuccess": false
+      },
+      {
+        "inactive": [
+          0,
+          3,
+          4,
+          5,
+          6
+        ],
+        "feasible": false,
+        "optimizerSuccess": false
+      },
+      {
+        "inactive": [
+          0,
+          2
+        ],
+        "feasible": false,
+        "optimizerSuccess": false
+      },
+      {
+        "inactive": [
+          0,
+          2,
+          6
+        ],
+        "feasible": false,
+        "optimizerSuccess": false
+      },
+      {
+        "inactive": [
+          0,
+          2,
+          5
+        ],
+        "feasible": false,
+        "optimizerSuccess": false
+      },
+      {
+        "inactive": [
+          0,
+          2,
+          5,
+          6
+        ],
+        "feasible": false,
+        "optimizerSuccess": false
+      },
+      {
+        "inactive": [
+          0,
+          2,
+          4
+        ],
+        "feasible": false,
+        "optimizerSuccess": false
+      },
+      {
+        "inactive": [
+          0,
+          2,
+          4,
+          6
+        ],
+        "feasible": false,
+        "optimizerSuccess": false
+      },
+      {
+        "inactive": [
+          0,
+          2,
+          4,
+          5
+        ],
+        "feasible": false,
+        "optimizerSuccess": false
+      },
+      {
+        "inactive": [
+          0,
+          2,
+          4,
+          5,
+          6
+        ],
+        "feasible": false,
+        "optimizerSuccess": false
+      },
+      {
+        "inactive": [
+          0,
+          2,
+          3
+        ],
+        "feasible": false,
+        "optimizerSuccess": false
+      },
+      {
+        "inactive": [
+          0,
+          2,
+          3,
+          6
+        ],
+        "feasible": false,
+        "optimizerSuccess": false
+      },
+      {
+        "inactive": [
+          0,
+          2,
+          3,
+          5
+        ],
+        "feasible": false,
+        "optimizerSuccess": false
+      },
+      {
+        "inactive": [
+          0,
+          2,
+          3,
+          5,
+          6
+        ],
+        "feasible": false,
+        "optimizerSuccess": false
+      },
+      {
+        "inactive": [
+          0,
+          2,
+          3,
+          4
+        ],
+        "feasible": false,
+        "optimizerSuccess": false
+      },
+      {
+        "inactive": [
+          0,
+          2,
+          3,
+          4,
+          6
+        ],
+        "feasible": false,
+        "optimizerSuccess": false
+      },
+      {
+        "inactive": [
+          0,
+          2,
+          3,
+          4,
+          5
+        ],
+        "feasible": false,
+        "optimizerSuccess": false
+      },
+      {
+        "inactive": [
+          0,
+          2,
+          3,
+          4,
+          5,
+          6
+        ],
+        "feasible": false,
+        "optimizerSuccess": false
+      },
+      {
+        "inactive": [
+          0,
+          1
+        ],
+        "feasible": true,
+        "optimizerSuccess": true
+      },
+      {
+        "inactive": [
+          0,
+          1,
+          6
+        ],
+        "feasible": false,
+        "optimizerSuccess": false
+      },
+      {
+        "inactive": [
+          0,
+          1,
+          5
+        ],
+        "feasible": false,
+        "optimizerSuccess": false
+      },
+      {
+        "inactive": [
+          0,
+          1,
+          5,
+          6
+        ],
+        "feasible": false,
+        "optimizerSuccess": false
+      },
+      {
+        "inactive": [
+          0,
+          1,
+          4
+        ],
+        "feasible": false,
+        "optimizerSuccess": false
+      },
+      {
+        "inactive": [
+          0,
+          1,
+          4,
+          6
+        ],
+        "feasible": false,
+        "optimizerSuccess": false
+      },
+      {
+        "inactive": [
+          0,
+          1,
+          4,
+          5
+        ],
+        "feasible": false,
+        "optimizerSuccess": false
+      },
+      {
+        "inactive": [
+          0,
+          1,
+          4,
+          5,
+          6
+        ],
+        "feasible": false,
+        "optimizerSuccess": false
+      },
+      {
+        "inactive": [
+          0,
+          1,
+          3
+        ],
+        "feasible": true,
+        "optimizerSuccess": true
+      },
+      {
+        "inactive": [
+          0,
+          1,
+          3,
+          6
+        ],
+        "feasible": false,
+        "optimizerSuccess": false
+      },
+      {
+        "inactive": [
+          0,
+          1,
+          3,
+          5
+        ],
+        "feasible": true,
+        "optimizerSuccess": true
+      },
+      {
+        "inactive": [
+          0,
+          1,
+          3,
+          5,
+          6
+        ],
+        "feasible": true,
+        "optimizerSuccess": true
+      },
+      {
+        "inactive": [
+          0,
+          1,
+          3,
+          4
+        ],
+        "feasible": false,
+        "optimizerSuccess": false
+      },
+      {
+        "inactive": [
+          0,
+          1,
+          3,
+          4,
+          6
+        ],
+        "feasible": false,
+        "optimizerSuccess": false
+      },
+      {
+        "inactive": [
+          0,
+          1,
+          3,
+          4,
+          5
+        ],
+        "feasible": false,
+        "optimizerSuccess": false
+      },
+      {
+        "inactive": [
+          0,
+          1,
+          3,
+          4,
+          5,
+          6
+        ],
+        "feasible": false,
+        "optimizerSuccess": false
+      },
+      {
+        "inactive": [
+          0,
+          1,
+          2
+        ],
+        "feasible": false,
+        "optimizerSuccess": false
+      },
+      {
+        "inactive": [
+          0,
+          1,
+          2,
+          6
+        ],
+        "feasible": false,
+        "optimizerSuccess": false
+      },
+      {
+        "inactive": [
+          0,
+          1,
+          2,
+          5
+        ],
+        "feasible": false,
+        "optimizerSuccess": false
+      },
+      {
+        "inactive": [
+          0,
+          1,
+          2,
+          5,
+          6
+        ],
+        "feasible": false,
+        "optimizerSuccess": false
+      },
+      {
+        "inactive": [
+          0,
+          1,
+          2,
+          4
+        ],
+        "feasible": false,
+        "optimizerSuccess": false
+      },
+      {
+        "inactive": [
+          0,
+          1,
+          2,
+          4,
+          6
+        ],
+        "feasible": false,
+        "optimizerSuccess": false
+      },
+      {
+        "inactive": [
+          0,
+          1,
+          2,
+          4,
+          5
+        ],
+        "feasible": false,
+        "optimizerSuccess": false
+      },
+      {
+        "inactive": [
+          0,
+          1,
+          2,
+          4,
+          5,
+          6
+        ],
+        "feasible": false,
+        "optimizerSuccess": false
+      },
+      {
+        "inactive": [
+          0,
+          1,
+          2,
+          3
+        ],
+        "feasible": false,
+        "optimizerSuccess": false
+      },
+      {
+        "inactive": [
+          0,
+          1,
+          2,
+          3,
+          6
+        ],
+        "feasible": false,
+        "optimizerSuccess": false
+      },
+      {
+        "inactive": [
+          0,
+          1,
+          2,
+          3,
+          5
+        ],
+        "feasible": false,
+        "optimizerSuccess": false
+      },
+      {
+        "inactive": [
+          0,
+          1,
+          2,
+          3,
+          5,
+          6
+        ],
+        "feasible": false,
+        "optimizerSuccess": false
+      },
+      {
+        "inactive": [
+          0,
+          1,
+          2,
+          3,
+          4
+        ],
+        "feasible": false,
+        "optimizerSuccess": false
+      },
+      {
+        "inactive": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          6
+        ],
+        "feasible": false,
+        "optimizerSuccess": false
+      },
+      {
+        "inactive": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5
+        ],
+        "feasible": false,
+        "optimizerSuccess": false
+      }
+    ]
+  },
+  "constructedSwingReturn": {
+    "interpretation": "Hypothetical kinematic/contact witnesses only, not actual physical contact states or integrated trajectory proof",
+    "physicsIntegrations": 0,
+    "cases": [
+      {
+        "phase": "lift",
+        "fitWeightedError": 1.4505615891326054,
+        "success": true,
+        "error": null,
+        "maximumMotorFraction": 0.87313415635553,
+        "equalityError": 3.3306690738754696e-16,
+        "tracking": {
+          "indices": [
+            0,
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            8
+          ],
+          "radiusRad": [
+            0.03,
+            0.03,
+            0.03,
+            0.03,
+            0.03,
+            0.03,
+            0.03,
+            0.005000000000000032,
+            0.03
+          ],
+          "positionErrorRad": [
+            1.3877787807814457e-17,
+            0.0,
+            0.0,
+            0.0,
+            -1.3877787807814457e-17,
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          "velocityErrorRadps": [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          "centerAccelerationRadps2": [
+            -2.220446049250313e-16,
+            0.0,
+            0.0,
+            0.0,
+            2.220446049250313e-16,
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          "halfWidthAccelerationRadps2": [
+            0.48,
+            0.48,
+            0.48,
+            0.48,
+            0.48,
+            0.48,
+            0.48,
+            0.08000000000000052,
+            0.48
+          ],
+          "minimumPositionMarginRad": 0.005000000000000032,
+          "minimumFirstOrderBarrierMarginRadps": 0.02000000000000013,
+          "interpretation": "Hard moving-reference PD-acceleration band; native tracking and invariant position containment are not guaranteed"
+        },
+        "q": [
+          0.11212183558066892,
+          -0.37438482039524584,
+          0.07282765274849058,
+          -0.033356903179121225,
+          -0.1189279569908319,
+          0.2508874797344658,
+          -0.48765265059105006,
+          -0.33906584024429015,
+          -0.14556096710886945,
+          0.017993115962903424,
+          0.11065076263716445,
+          0.11709841756271343,
+          -0.6454537640857222,
+          -0.34906584024429316,
+          -0.1408844396112127,
+          0.30754995346069336,
+          -0.41679468750953674,
+          -1.5707963705062866,
+          -0.4412164092063904,
+          0.4394717514514923,
+          -1.5707964897155762
+        ]
+      },
+      {
+        "phase": "land",
+        "fitWeightedError": 4.350366791766999,
+        "success": true,
+        "error": null,
+        "maximumMotorFraction": 0.6674252553198631,
+        "equalityError": 1.3877787807814457e-15,
+        "tracking": {
+          "indices": [
+            0,
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            8
+          ],
+          "radiusRad": [
+            0.03,
+            0.03,
+            0.03,
+            0.03,
+            0.03,
+            0.03,
+            0.03,
+            0.005000000000000032,
+            0.03
+          ],
+          "positionErrorRad": [
+            1.3877787807814457e-17,
+            0.0,
+            0.0,
+            0.0,
+            -1.3877787807814457e-17,
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          "velocityErrorRadps": [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          "centerAccelerationRadps2": [
+            -2.220446049250313e-16,
+            0.0,
+            0.0,
+            0.0,
+            2.220446049250313e-16,
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          "halfWidthAccelerationRadps2": [
+            0.48,
+            0.48,
+            0.48,
+            0.48,
+            0.48,
+            0.48,
+            0.48,
+            0.08000000000000052,
+            0.48
+          ],
+          "minimumPositionMarginRad": 0.005000000000000032,
+          "minimumFirstOrderBarrierMarginRadps": 0.02000000000000013,
+          "interpretation": "Hard moving-reference PD-acceleration band; native tracking and invariant position containment are not guaranteed"
+        },
+        "q": [
+          0.11212183558066892,
+          -0.37438482039524584,
+          0.07282765274849058,
+          -0.033356903179121225,
+          -0.1189279569908319,
+          0.2508874797344658,
+          -0.48765265059105006,
+          -0.33906584024429015,
+          -0.14556096710886945,
+          0.08726646006107329,
+          0.06296764858435569,
+          0.2940487733256839,
+          -0.2890097266811778,
+          -0.1766342357303824,
+          -0.08022609746391993,
+          0.30754995346069336,
+          -0.41679468750953674,
+          -1.5707963705062866,
+          -0.4412164092063904,
+          0.4394717514514923,
+          -1.5707964897155762
+        ]
+      },
+      {
+        "phase": "return",
+        "fitWeightedError": 6.210226667835988,
+        "success": true,
+        "error": null,
+        "maximumMotorFraction": 0.7394030897360713,
+        "equalityError": 4.718447854656915e-16,
+        "tracking": {
+          "indices": [
+            0,
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            8
+          ],
+          "radiusRad": [
+            0.03,
+            0.03,
+            0.03,
+            0.03,
+            0.03,
+            0.03,
+            0.03,
+            0.005000000000000032,
+            0.03
+          ],
+          "positionErrorRad": [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          "velocityErrorRadps": [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          "centerAccelerationRadps2": [
+            -0.0,
+            0.0,
+            -0.0,
+            0.0,
+            0.0,
+            -0.0,
+            0.0,
+            -0.0,
+            0.0
+          ],
+          "halfWidthAccelerationRadps2": [
+            0.48,
+            0.48,
+            0.48,
+            0.48,
+            0.48,
+            0.48,
+            0.48,
+            0.08000000000000052,
+            0.48
+          ],
+          "minimumPositionMarginRad": 0.005000000000000032,
+          "minimumFirstOrderBarrierMarginRadps": 0.02000000000000013,
+          "interpretation": "Hard moving-reference PD-acceleration band; native tracking and invariant position containment are not guaranteed"
+        },
+        "q": [
+          -0.01729857735335827,
+          -0.1075800284743309,
+          -0.020860837772488594,
+          -0.027097227051854134,
+          -0.05127442255616188,
+          0.09414564073085785,
+          -0.39122048020362854,
+          -0.3490658402442932,
+          0.15352921187877655,
+          0.08726646006107329,
+          -0.003878711706966635,
+          0.02784171457712289,
+          -0.5087561490471095,
+          -0.34906584024429316,
+          0.20648501710401335,
+          0.32154324650764465,
+          -0.4233487546443939,
+          -1.5707963705062866,
+          -0.4578973352909088,
+          0.44193145632743835,
+          -1.5707979202270508
+        ]
+      },
+      {
+        "phase": "stand",
+        "fitWeightedError": 6.210226667835988,
+        "success": true,
+        "error": null,
+        "maximumMotorFraction": 0.7394030897360713,
+        "equalityError": 4.718447854656915e-16,
+        "tracking": {
+          "indices": [
+            0,
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            8
+          ],
+          "radiusRad": [
+            0.03,
+            0.03,
+            0.03,
+            0.03,
+            0.03,
+            0.03,
+            0.03,
+            0.005000000000000032,
+            0.03
+          ],
+          "positionErrorRad": [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          "velocityErrorRadps": [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          "centerAccelerationRadps2": [
+            -0.0,
+            0.0,
+            -0.0,
+            0.0,
+            0.0,
+            -0.0,
+            0.0,
+            -0.0,
+            0.0
+          ],
+          "halfWidthAccelerationRadps2": [
+            0.48,
+            0.48,
+            0.48,
+            0.48,
+            0.48,
+            0.48,
+            0.48,
+            0.08000000000000052,
+            0.48
+          ],
+          "minimumPositionMarginRad": 0.005000000000000032,
+          "minimumFirstOrderBarrierMarginRadps": 0.02000000000000013,
+          "interpretation": "Hard moving-reference PD-acceleration band; native tracking and invariant position containment are not guaranteed"
+        },
+        "q": [
+          -0.01729857735335827,
+          -0.1075800284743309,
+          -0.020860837772488594,
+          -0.027097227051854134,
+          -0.05127442255616188,
+          0.09414564073085785,
+          -0.39122048020362854,
+          -0.3490658402442932,
+          0.15352921187877655,
+          0.08726646006107329,
+          -0.003878711706966635,
+          0.02784171457712289,
+          -0.5087561490471095,
+          -0.34906584024429316,
+          0.20648501710401335,
+          0.32154324650764465,
+          -0.4233487546443939,
+          -1.5707963705062866,
+          -0.4578973352909088,
+          0.44193145632743835,
+          -1.5707979202270508
+        ]
+      }
+    ]
+  }
+}

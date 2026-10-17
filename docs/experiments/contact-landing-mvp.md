@@ -267,3 +267,25 @@ stop reaction. The longer 8.725 s ramp preserves the 2 cm/s planning speed; the
 case is 24 simulated seconds with a 90 s physics-wall cap. Lift, placement,
 landing, slip, flight and final five-second anchored-standing gates are unchanged.
 The explicitly labelled offline FK image is a posture preview, not physical proof.
+
+B17 stopped at 5.900 s before unloading when hip-pitch 5 exhausted its braking
+reserve. No flight/non-foot support occurred; loaded slip was 2.07/2.23 mm.
+The late motion was substantially commanded: at 5.850 s the QP requested outward
++3.722 rad/s² while already 0.089 rad beyond its posture target; native delivered
++3.448. Braking that joint was hard-feasible, but increased other coupled posture,
+sole-flat, root-orientation and contact costs. The height handoff was not reached
+and soft unloading stayed zero, so neither caused this failure.
+
+The next new protocol adds an opt-in hard moving-reference PD-acceleration band:
+reference acceleration minus 16×position error minus 8×velocity error, with
+half-width 16×allowed tracking error. Existing posture gains, native viability,
+contact and torque bounds are unchanged. Allowed error is at most 0.03 rad and
+half the complete forward PCHIP path's joint-limit margin. All torso/leg joints
+are protected in transfer; only the left swing chain is exempt after lift.
+The landed left joint posture is retained, rather than pulled back to the old
+pre-step template. Seven forward QPs and actual warm-state preflight pass;
+initial auxiliary margin is positive. Approximate displaced-foot witnesses pass
+but are not exact landing certificates. Actual containment/invariance is not
+promised: the native physical step, landing, slip and five-second gates remain
+mandatory. The separately tested height fix preserves the full terminal COM
+vector through lift and landing. Original default source GetUp remains unchanged.
