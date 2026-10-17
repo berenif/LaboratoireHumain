@@ -347,3 +347,33 @@ native invariant-containment guarantee. A prospective 8 s fixed initial-referenc
 hold must first pass final-five-second anchored standing, no flight/non-foot
 support, total slip at most 10 mm, and actual right-only two-track/noncollinear
 support of at least 1 cm² with tilt at most 2° over the final second.
+
+
+B21 passes this prospective held-balance prerequisite: all 6,400 native samples
+are continuously anchored standing for 8 s, no flight/non-foot support, total
+slip 0.147/0.260 mm. Actual right-only two-track support persists through all
+321 snapshots; minimum hull is 63.44 cm², maximum tilt 0.3133°. A post-run NumPy
+boolean serialization error prevented the first final report write. Recovery
+parsed the complete immutable native journal with zero additional integration;
+all physical evidence is intact. Measured physics was 21.7641 s.
+
+B22 reaches qualified actual right support and reduces actual left load to
+4.35 N, but stops before lift at 8.900 s. Elbow 17 has only −1.51 µrad of model
+stopping reserve. The late motion was commanded: at 8.850 s the QP requests
+−50 rad/s² while its own elbow posture PD requests −2.68; native delivers −49.09.
+The reference is also exactly at the native lower bound. A soft interior target
+alone still chooses −50 in frozen replay, whereas a PD-compatible bound is
+hard-feasible. No flight/non-foot support occurs; slip is 2.31/2.26 mm.
+
+The next opt-in protocol therefore changes both elbow resting references by
+0.1 rad inward and explicitly tracks all six arm coordinates. The real seed is
+unchanged: the smooth path begins at its exact measured arm positions, including
+existing bound contacts. All body COM, fixed-feet IK, static no-stop capacity and
+approximate moving-path capacity are recomputed with those arm poses. Terminal
+motor fraction is 0.85; approximate dynamic peak is 0.85374; PCHIP foot error is
+31.31 µm. First15 torso/leg interior metadata does not extend to seed arms.
+Arm bands are engineering tracking priorities of 0.03 rad with physical-first
+relaxation. After lift only the left chain9:15 is exempt; arms keep their interior
+rest through return/stand in both soft posture and hard tracking references.
+Actual warm-state and three forward QPs pass; displaced-foot return witnesses
+remain approximate. These are prerequisites, not a completed physical step.

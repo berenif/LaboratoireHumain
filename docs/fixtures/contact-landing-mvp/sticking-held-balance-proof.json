@@ -1,0 +1,53 @@
+{
+  "status": "completed-hold-evidence-recovered-from-journal",
+  "physicsIntegrationsDuringRecovery": 0,
+  "reportingFailure": "np.bool_ geometry ready flag prevented final JSON/checkpoint write; no additional simulation, all6400 native samples retained",
+  "passed": true,
+  "preregisteredGate": "Complete8s; final5s native anchoredstanding; noflight/nonfoot; total loadedslip<=10mm; currentRIGHT-only2tracks/noncollinearhull>=1cm2/tilt<=2deg final>=1s",
+  "metrics": {
+    "unloadedRepositionEvents": [],
+    "maximumContinuousNativeStandingWithoutFootAnchorS": 8.0,
+    "maximumContinuousNativeStandingWithFootAnchorS": 8.0,
+    "loadedContactSlipIntegralM": [
+      0.0001473407494245295,
+      0.0002604431608119732
+    ],
+    "nonfootSupportObserved": false,
+    "flightNativeSamples": 0
+  },
+  "finalFiveSeconds": {
+    "unloadedRepositionEvents": [],
+    "maximumContinuousNativeStandingWithoutFootAnchorS": 5.0,
+    "maximumContinuousNativeStandingWithFootAnchorS": 5.0,
+    "loadedContactSlipIntegralM": [
+      8.534912522918611e-05,
+      0.00016118382594868327
+    ],
+    "nonfootSupportObserved": false,
+    "flightNativeSamples": 0
+  },
+  "finalRightGeometry": {
+    "tracks": [
+      0,
+      1
+    ],
+    "contacts": 3,
+    "hullAreaM2": 0.0063437808761053135,
+    "tiltDeg": 0.307357031704407,
+    "ready": true,
+    "consecutiveReadyS": 8.000000000000046
+  },
+  "physicsWallSeconds": 21.764091261999997,
+  "nativeSubsteps": 6400,
+  "uncertainOutstandingRequests": [],
+  "physicsCapSeconds": 30.0,
+  "processWallFromFilesystemSeconds": 260.4715139865875,
+  "rawJournalSHA256": "6482904b8b06fe164c88d021f8a1bde252afff2024264a4f731aee71af2abaf5",
+  "independentGeometryVerification": {
+    "snapshotCount": 321,
+    "minimumRightHullAreaM2": 0.00634378,
+    "maximumRightTiltDeg": 0.3133,
+    "bothTracksEverySnapshot": true,
+    "maximumHorizontalCOMDriftM": 0.00042194
+  }
+}

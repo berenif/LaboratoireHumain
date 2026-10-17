@@ -228,6 +228,19 @@
       ],
       "stepEvents": [],
       "summarySHA256": "98568f64e8640881cfb4059771d688a358962ec2f327f7c782e598e6fdc10129"
+    },
+    "batch22-sticking-physical-priority-step": {
+      "physicsWallSeconds": 23.80968617300001,
+      "nativeSubsteps": 7120,
+      "stopped": "inverse-dynamics-step-trial-stopped",
+      "standingS": 6.57125,
+      "flightNativeSamples": 0,
+      "loadedSlipM": [
+        0.0023060287300813737,
+        0.002264241316431713
+      ],
+      "stepEvents": [],
+      "summarySHA256": "a84daca65162f7310cfe6dcaee8e5863014e009822352869851a16108092ff6b"
     }
   },
   "ledger": {
@@ -717,5 +730,11 @@
       }
     ],
     "nativeAssemblyTest": "All21 installed min/max exactly equal model deserialized f32; JSON f32 round-trip; zero integrations"
+  },
+  "aggregateBudgetBeforeNextTrial": {
+    "physicsWallSeconds": 477.17507014,
+    "physicsBudgetChargedSeconds": 482.17507014,
+    "nativeSubsteps": 139840,
+    "nativeSubstepsUpperBound": 139860
   }
 }

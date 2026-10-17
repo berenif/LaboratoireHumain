@@ -28,6 +28,14 @@ class TrackingTests(unittest.TestCase):
   for phase in ['lift','translate','land','return','stand']:
    x=self.state(10.,phase,.8,landed);self.assertEqual(x['indices'],list(range(9)))
    if phase in ['return','stand']:np.testing.assert_array_equal(x['position'][9:15],landed);np.testing.assert_array_equal(x['velocity'][9:15],np.zeros(6))
+ def test_opt_in_arm_references_are_tracked_and_retained_after_landing(self):
+  import copy
+  plan=copy.deepcopy(self.plan);q0=np.array(plan['pathKnots'][0]['q']);rest=q0.copy();rest[15:]=np.clip(rest[15:],self.c.kin.limits[15:,0]+.1,self.c.kin.limits[15:,1]-.1)
+  for row in plan['pathKnots']:row['q'][15:]=(q0[15:]+row['weight']*(rest[15:]-q0[15:])).tolist()
+  tracker=t.TrackingReference(p.FeasibleReferences(plan,self.c),self.c.kin.limits,include_arms=True);start=tracker.reference(0.,self.ramp,'transfer',0.,q0);self.assertEqual(start['indices'],list(range(21)));np.testing.assert_array_equal(start['position'][15:],q0[15:]);np.testing.assert_allclose(tracker.radius[15:],.03)
+  for phase in ['lift','translate','land','return','stand']:
+   x=tracker.reference(12.,self.ramp,phase,2.,q0,np.arange(6)*.1);self.assertEqual(x['indices'],list(range(9))+list(range(15,21)));np.testing.assert_allclose(x['position'][15:],rest[15:]);np.testing.assert_array_equal(x['velocity'][15:],np.zeros(6));np.testing.assert_array_equal(x['acceleration'][15:],np.zeros(6))
+  with self.assertRaisesRegex(AssertionError,'Interior terminal'):t.TrackingReference(self.refs,self.c.kin.limits,include_arms=True)
  def test_initial_admissibility_and_velocity_violation_are_visible(self):
   x=self.state(0.);good=t.admissibility(self.initial,np.zeros(21),x);self.assertGreater(min(good.values()),0.);bad=t.admissibility(self.initial,np.full(21,1.),x);self.assertLess(bad['minimumFirstOrderBarrierMarginRadps'],0.)
 if __name__=='__main__':unittest.main()

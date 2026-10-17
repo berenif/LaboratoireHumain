@@ -301,7 +301,7 @@ class ContactDynamics:
         tracking_info=None
         if tracking is not None:
             indices=np.asarray(tracking['indices'],dtype=int);radius=np.asarray(tracking['radius'])[indices];error=q[indices]-np.asarray(tracking['position'])[indices];velocity_error=v[6+indices]-np.asarray(tracking['velocity'])[indices];reference_acceleration=np.asarray(tracking['acceleration'])[indices]
-            assert len(set(indices))==len(indices) and all(0<=i<15 for i in indices) and np.all(radius>0.) and np.all(np.isfinite(np.r_[error,velocity_error,reference_acceleration,radius]))
+            assert len(set(indices))==len(indices) and all(0<=i<21 for i in indices) and np.all(radius>0.) and np.all(np.isfinite(np.r_[error,velocity_error,reference_acceleration,radius]))
             center=reference_acceleration-16*error-8*velocity_error
             tracking_relaxations=[]
             for j,i in enumerate(indices):
