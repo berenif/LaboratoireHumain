@@ -125,6 +125,24 @@ fn reward(m: &Metrics, previous: &[f32; 21], unloaded_s: [f32; 2]) -> Reward {
     r
 }
 
+/// One decision's acceleration-predicted reference, qpos order. Native lab only.
+/// No state writes: the ordinary bounded joint torque path still drives physics.
+#[derive(Clone)]
+pub(crate) struct MotionProfile {
+    pub start_substep: u64,
+    pub q: [f32; 21],
+    pub dq: [f32; 21],
+    pub qdd: [f32; 21],
+    pub torques_nm: [f32; 21],
+}
+impl MotionProfile {
+    pub fn control(&self, i: usize, gear: f32, q: f32, dq: f32, t: f32) -> f32 {
+        let q_ref = self.q[i] + t * self.dq[i] + 0.5 * t * t * self.qdd[i];
+        let dq_ref = self.dq[i] + t * self.qdd[i];
+        (self.torques_nm[i] / gear + q_ref - q + 0.2 * (dq_ref - dq)).clamp(-1.0, 1.0)
+    }
+}
+
 #[derive(Clone, Serialize, Deserialize)]
 struct Memory {
     anchor: [f32; 2],
@@ -501,6 +519,37 @@ impl Experiment {
         torso_force_n: [f32; 2],
         budget: &mut ComputeBudget,
     ) -> Result<Transition, String> {
+        self.step_with_profile(action, torso_force_n, None, budget)
+    }
+    /// Acceleration-predicted inner-impedance reference for one 25ms decision.
+    /// All arrays qpos order; original gears, passive elements, and torque caps.
+    pub fn step_motion_profile(
+        &mut self, action: [f32; 21], torques_nm: [f32; 21],
+        qdd: [f32; 21], budget: &mut ComputeBudget,
+    ) -> Result<Transition, String> {
+        if qdd.iter().any(|v| !v.is_finite() || v.abs() > 50.001)
+            || torques_nm.iter().any(|v| !v.is_finite()) {
+            return Err("Motion profile requires finite torques and |qdd|<=50 rad/s2".into());
+        }
+        let physical = getup::physical_observation(self.runtime.simulation())?;
+        for p in &self.runtime.simulation().model.segments {
+            if let Some(h) = p.reference.as_ref().and_then(|r| r.hinge.as_ref()) {
+                if torques_nm[h.qpos_index].abs() > h.gear + 1e-5 {
+                    return Err("Motion profile torque exceeds original gear cap".into());
+                }
+            }
+        }
+        let profile = MotionProfile {
+            start_substep: self.runtime.simulation().substeps_completed,
+            q: physical[..21].try_into().unwrap(), dq: physical[46..67].try_into().unwrap(),
+            qdd, torques_nm,
+        };
+        self.step_with_profile(action, [0.0; 2], Some(profile), budget)
+    }
+    fn step_with_profile(
+        &mut self, action: [f32; 21], torso_force_n: [f32; 2],
+        profile: Option<MotionProfile>, budget: &mut ComputeBudget,
+    ) -> Result<Transition, String> {
         if action.iter().any(|v| !v.is_finite() || v.abs() > 1.0) {
             return Err("Action must be 21 finite qpos-order residuals in [-1,1]".into());
         }
@@ -529,6 +578,7 @@ impl Experiment {
             });
         }
         self.runtime.balance_simulation_mut().balance_residual = Some(action);
+        self.runtime.balance_simulation_mut().balance_motion_profile = profile;
         self.runtime.balance_simulation_mut().balance_torso_force_n = torso_force_n;
         self.memory.last_residual = action;
         let started = Instant::now();
@@ -678,6 +728,20 @@ mod tests {
             nonfoot_support: false,
             native_standing_without_foot_anchor: true,
         }
+    }
+    #[test]
+    fn motion_profile_has_exact_feedforward_on_predicted_motion_and_original_caps() {
+        let mut p = MotionProfile { start_substep: 123, q: [0.0;21], dq: [0.0;21], qdd:[0.0;21], torques_nm:[0.0;21] };
+        p.q[6]=0.3; p.dq[6]=0.7; p.qdd[6]=40.99; p.torques_nm[6]=15.662;
+        for k in 0..20 {
+            let t=k as f32/800.0;
+            let q=p.q[6]+t*p.dq[6]+0.5*t*t*p.qdd[6];
+            let dq=p.dq[6]+t*p.qdd[6];
+            assert!((80.0*p.control(6,80.0,q,dq,t)-p.torques_nm[6]).abs()<1e-5);
+        }
+        assert_eq!(p.control(6,80.0,-100.0,-100.0,0.0),1.0);
+        assert_eq!(p.control(6,80.0,100.0,100.0,0.0),-1.0);
+        assert!((p.control(6,80.0,p.q[6],p.dq[6],0.0)-p.torques_nm[6]/80.0).abs()<1e-6);
     }
     #[test]
     fn reward_prefers_quiet_anchored_supported_stance_without_integrations() {

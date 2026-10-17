@@ -29,4 +29,28 @@ class ContactDynamicsTests(unittest.TestCase):
  def test_separating_ankle_cannot_get_stop_reaction(self):
   state=copy.deepcopy(self.state);state['v'][13]=.02
   _,info=self.c.solve(state,state['com'],self.R,state['q']);self.assertNotIn(7,[r['qpos'] for r in info['activeStops']])
+ def test_flat_targets_use_true_sole_normal_and_preserve_heading(self):
+  c=d.ContactDynamics(self.c.kin.model,flat_soles=True);c.set_flat_targets(self.state)
+  for foot,R in c.flat_targets.items():
+   np.testing.assert_allclose(R[:,1],[0.,1.,0.],atol=1e-12);np.testing.assert_allclose(R.T@R,np.eye(3),atol=1e-12);self.assertAlmostEqual(np.linalg.det(R),1.);heading=self.state['geometry'][0][foot][:3,2].copy();heading[1]=0.;heading/=np.linalg.norm(heading);np.testing.assert_allclose(R[:,2],heading,atol=1e-12)
+ def test_native_paired_gap_and_impulse_units(self):
+  fixtures=json.loads((ROOT/'docs/fixtures/getup-contact-modes.json').read_text())
+  for x in [fixtures['quiet'],fixtures['failed']]:
+   cm=x['diagnostic']['contactMotion'];self.assertAlmostEqual(cm['expectedHumanFloorSolverSubstepS'],cm['nativeFrameDtS']/(cm['nativeBaseSolverIterations']+cm['humanMaximumAdditionalSolverIterations']),places=10)
+   for foot in cm['feet']:
+    self.assertAlmostEqual(sum(c['normalImpulseNs'] for c in foot['contacts'])/cm['nativeFrameDtS'],foot['loadN'],places=3)
+    for c in foot['contacts']:self.assertAlmostEqual(np.dot(d.reference.xyz(c['point'])-d.reference.xyz(c['floorPoint']),d.reference.xyz(c['normal'])),c['signedGapM'],places=9)
+  opening=fixtures['failed']['diagnostic']['contactMotion']['feet'][1]['contacts'][1];self.assertGreater(abs(opening['signedGapM']-opening['point']['y']),5e-5)
+ def test_unilateral_quiet_mode_preserves_support(self):
+  x=json.loads((ROOT/'docs/fixtures/getup-contact-modes.json').read_text())['quiet'];c=d.ContactDynamics(self.c.kin.model,contact_mode='unilateral-soft');state=c.state(x['observation'],x['snapshot'],x['diagnostic'])
+  _,info=c.solve(state,state['com'],d.normalized_rotation(state['root'][:3,:3]),state['q']);self.assertTrue(info['success']);self.assertEqual(info['inactiveContacts'],[]);self.assertTrue(all(g<=1e-6 for g in info['predictedContactGapsM']))
+ def test_unilateral_rolling_mode_has_no_inactive_force(self):
+  fixtures=json.loads((ROOT/'docs/fixtures/getup-contact-modes.json').read_text());x=fixtures['failed'];c=d.ContactDynamics(self.c.kin.model,contact_mode='unilateral-soft');state=c.state(x['observation'],x['snapshot'],x['diagnostic']);quiet=c.state(fixtures['quiet']['observation'],fixtures['quiet']['snapshot'],fixtures['quiet']['diagnostic']);target=quiet['com'].copy();target[[0,2]]=[.9854289905196197,-.07612006698020413];pose=state['geometry'][0]['left_foot'];swing=dict(body='left_foot',position=pose[:3,3],rotation=d.normalized_rotation(pose[:3,:3]))
+  _,info=c.solve(state,target,d.normalized_rotation(quiet['root'][:3,:3]),quiet['q'],swing=swing);self.assertTrue(info['success']);self.assertIn(1,info['inactiveContacts'])
+  for i,(gap,force) in enumerate(zip(info['predictedContactGapsM'],info['plannedContactForcesWorldN'])):
+   if i in info['inactiveContacts']:self.assertGreaterEqual(gap,-1e-6);self.assertLess(max(abs(v) for v in force),1e-6)
+   else:self.assertLessEqual(gap,1e-6);self.assertGreaterEqual(gap,min(state['contacts'][i]['gap'],0.)-1e-6)
+ def test_unilateral_mode_requires_fresh_paired_gap(self):
+  c=d.ContactDynamics(self.c.kin.model,contact_mode='unilateral-soft')
+  with self.assertRaisesRegex(AssertionError,'Fresh paired gaps'):c.solve(self.state,self.state['com'],self.R,self.state['q'])
 if __name__=='__main__':unittest.main()

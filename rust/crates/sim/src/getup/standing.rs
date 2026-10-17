@@ -5,6 +5,11 @@ use crate::*;
 pub(crate) struct FootContact {
     pub body: usize,
     pub point: Vector,
+    pub floor_point: Vector,
+    pub signed_gap_m: f32,
+    pub cached_distance_m: f32,
+    pub solver_lever_from_com: Vector,
+    pub solver_point_velocity: Vector,
     pub normal: Vector,
     pub impulse: f32,
     pub velocity: Vector,
@@ -38,26 +43,35 @@ pub(crate) fn contacts(s: &Simulation) -> Result<Vec<FootContact>, String> {
                 continue;
             }
             for contact in &manifold.data.solver_contacts {
-                let impulse = manifold.points[contact.contact_indices()[0] as usize]
-                    .data
-                    .impulse;
+                let point_data = &manifold.points[contact.contact_indices()[0] as usize].data;
+                let impulse = point_data.impulse;
                 if impulse <= 0.0 {
                     continue;
                 }
                 let (a, b) = manifold
                     .data
                     .solver_contact_world_points(contact, &s.world.bodies);
-                let point = if pair.collider2 == s.colliders[i] {
-                    b
+                let (point, floor_point) = if pair.collider2 == s.colliders[i] {
+                    (b, a)
                 } else {
-                    a
+                    (a, b)
                 };
                 let body = &s.world.bodies[s.bodies[i]];
                 let com =
                     body.translation() + body.rotation().normalize() * body.local_center_of_mass();
+                let solver_lever = if pair.collider2 == s.colliders[i] {
+                    point_data.solver_dp2
+                } else {
+                    point_data.solver_dp1
+                };
                 out.push(FootContact {
                     body: i,
                     point,
+                    floor_point,
+                    signed_gap_m: (point - floor_point).dot(normal),
+                    cached_distance_m: contact.dist,
+                    solver_lever_from_com: solver_lever,
+                    solver_point_velocity: point_velocity(twists[i].0, twists[i].1, solver_lever),
                     normal,
                     impulse,
                     velocity: point_velocity(twists[i].0, twists[i].1, point - com),
@@ -75,6 +89,18 @@ pub fn contact_diagnostic(s: &Simulation) -> Result<serde_json::Value, String> {
         .recovery_acceptance
         .minimum_load_n;
     let mut feet = Vec::new();
+    // Multibody scenes use one solver group at the island's maximum extra
+    // iteration count. This reports the human/floor group's expected h,
+    // separately from the unchanged 800 Hz simulation frame.
+    let extra = s
+        .bodies
+        .iter()
+        .map(|h| s.world.bodies[*h].additional_solver_iterations())
+        .max()
+        .unwrap_or(0);
+    let solver_h = s.world.integration_parameters.dt
+        / (s.world.integration_parameters.num_solver_iterations + extra) as f32;
+    let softness = &s.world.integration_parameters.static_contact_softness;
     for name in ["left_foot", "right_foot"] {
         let i = s
             .model
@@ -88,6 +114,9 @@ pub fn contact_diagnostic(s: &Simulation) -> Result<serde_json::Value, String> {
             .map(|c| {
                 let tangent = c.velocity - c.normal * c.velocity.dot(c.normal);
                 serde_json::json!({"point":vec3(c.point), "normal":vec3(c.normal),
+                "floorPoint":vec3(c.floor_point),"signedGapM":c.signed_gap_m,
+                "cachedSolverDistanceM":c.cached_distance_m,"normalVelocityMps":c.velocity.dot(c.normal),
+                "solverLeverFromCom":vec3(c.solver_lever_from_com),"solverPointVelocityMps":vec3(c.solver_point_velocity),
                 "normalImpulseNs":c.impulse,"velocityMps":vec3(c.velocity),
                 "tangentVelocityMps":vec3(tangent),"tangentSpeedMps":tangent.length()})
             })
@@ -111,6 +140,16 @@ pub fn contact_diagnostic(s: &Simulation) -> Result<serde_json::Value, String> {
     }
     Ok(
         serde_json::json!({"physicsIntegrations":0,"velocitySource":"current-generalized-motion",
+        "gapSource":"paired body-local solver anchors resolved at current post-solve poses; cached distance is last full narrow-phase update",
+        "nativeFrameDtS":s.world.integration_parameters.dt,
+        "nativeBaseSolverIterations":s.world.integration_parameters.num_solver_iterations,
+        "humanMaximumAdditionalSolverIterations":extra,
+        "expectedHumanFloorSolverSubstepS":solver_h,
+        "staticContactErpInvS":softness.erp_inv_dt(solver_h),
+        "staticContactCfmFactor":softness.cfm_factor(solver_h),
+        "staticContactNaturalFrequencyHz":s.world.integration_parameters.static_contact_softness.natural_frequency,
+        "staticContactDampingRatio":s.world.integration_parameters.static_contact_softness.damping_ratio,
+        "maximumCorrectiveVelocityMps":s.world.integration_parameters.max_corrective_velocity(),
         "interpretation":"Post-solve velocity at solved foot-side contact points; foot-origin displacement also includes rolling and unloaded repositioning.","feet":feet}),
     )
 }

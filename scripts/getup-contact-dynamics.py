@@ -3,6 +3,7 @@
 No dynamics are integrated here; contact/stop forces are optimization variables.
 """
 import importlib.util
+import itertools
 from pathlib import Path
 import numpy as np
 from scipy.spatial.transform import Rotation
@@ -35,7 +36,7 @@ def support_projection(points,point):
 
 
 class ContactDynamics:
-    def __init__(self,model,contact_mode='normal-soft'):
+    def __init__(self,model,contact_mode='normal-soft',flat_soles=False):
         self.kin=reference.Kinematics(model);self.parts=model['segments'];self.by_id={p['id']:p for p in self.parts}
         self.mass=model['totalMassKg'];self.gears=self.kin.gears;self.armature=np.zeros(21);self.spring=np.zeros(21);self.damping=np.zeros(21)
         self.ancestors={}
@@ -45,7 +46,10 @@ class ContactDynamics:
             if h:
                 i=h['qposIndex'];ancestors.append(i);self.armature[i]=h['armature'];self.spring[i]=p['jointProfile']['axes'][0]['passiveStiffnessNmPerRad'];self.damping[i]=p['jointProfile']['axes'][0]['dampingNmsPerRad']
             self.ancestors[p['id']]=ancestors
-        self.previous=None;self.contact_mode=contact_mode
+        self.previous=None;self.contact_mode=contact_mode;self.flat_soles=flat_soles;self.flat_targets={}
+    def set_flat_targets(self,state):
+        for foot in ['left_foot','right_foot']:
+            R=normalized_rotation(state['geometry'][0][foot][:3,:3]);z=R[:,2].copy();z[1]=0.;z/=np.linalg.norm(z);y=np.array([0.,1.,0.]);self.flat_targets[foot]=np.column_stack([np.cross(y,z),y,z])
     def geometry(self,q,root):
         poses=self.kin.forward(q,root);axes=np.zeros((21,3));pivots=np.zeros((21,3))
         for p in self.parts[1:]:
@@ -79,11 +83,30 @@ class ContactDynamics:
                 if c['normalImpulseNs']<=0:continue
                 point=reference.xyz(c['point']);normal=reference.xyz(c['normal']);normal/=np.linalg.norm(normal);tangent=np.cross(normal,[0.,0.,1.]);tangent/=np.linalg.norm(tangent);basis=np.column_stack([tangent,np.cross(normal,tangent),normal]);jv,_=self.point_jacobian(geom,foot['body'],point)
                 local=np.linalg.solve(geom[0][foot['body']],np.r_[point,1.]);point2=(geom2[0][foot['body']]@local)[:3];jv2,_=self.point_jacobian(geom2,foot['body'],point2)
-                contacts.append(dict(body=foot['body'],point=point,basis=basis,J=jv,bias=(jv2-jv)@v/eps,velocity=jv@v,observedVelocity=reference.xyz(c['velocityMps']),measuredNormalN=c['normalImpulseNs']*800.))
+                contacts.append(dict(body=foot['body'],point=point,basis=basis,J=jv,bias=(jv2-jv)@v/eps,velocity=jv@v,observedVelocity=reference.xyz(c['velocityMps']),measuredNormalN=c['normalImpulseNs']*800.,gap=c.get('signedGapM')))
         return dict(q=q,root=root,v=v,M=M,bias=bias,Jcom=Jcom,com=com,comVelocity=Jcom@v,comBias=com_bias,contacts=contacts,geometry=geom,geometryNext=geom2,directionalEpsilon=eps,
             comParityErrorM=float(max(abs(com-reference.xyz(diagnostic['com'])))),comVelocityParityErrorMps=float(max(abs(Jcom@v-reference.xyz(diagnostic['comVelocity'])))),contactVelocityParityErrorMps=max((float(max(abs(c['velocity']-c['observedVelocity']))) for c in contacts),default=0.))
-    def solve(self,state,target_com,target_rotation,posture,unload_left=False,swing=None):
+    def solve(self,state,target_com,target_rotation,posture,unload_left=False,swing=None,_inactive=None):
+        if self.contact_mode=='unilateral-soft' and _inactive is None:
+            assert len(state['contacts'])<=6,'Bounded contact-mode enumeration only'
+            assert all(c['gap'] is not None for c in state['contacts']),'Fresh paired gaps required'
+            best=None;attempts=[];warm=self.previous
+            for bits in itertools.product([False,True],repeat=len(state['contacts'])):
+                inactive=tuple(i for i,b in enumerate(bits) if b)
+                if len(inactive)==len(bits):continue
+                self.previous=warm
+                try:action,info=self.solve(state,target_com,target_rotation,posture,unload_left,swing,inactive)
+                except (ValueError,AssertionError) as error:
+                    attempts.append(dict(inactive=list(inactive),error=str(error)));continue
+                attempts.append(dict(inactive=list(inactive),feasible=info['constraintFeasible'],optimizerSuccess=info['optimizerSuccess']))
+                if info['success'] and (best is None or info['objectiveCost']<best[1]['objectiveCost']):best=(action,info,self.previous.copy())
+            if best is None:
+                self.previous=warm
+                return np.zeros(21),dict(success=False,error='No admissible contact mode',contactModeAttempts=attempts)
+            self.previous=best[2];best[1]['contactModeAttempts']=attempts
+            return best[:2]
         q=state['q'];v=state['v'];contacts=state['contacts'];nc=len(contacts);assert nc>0
+        inactive=set(() if _inactive is None else _inactive)
         active=[]
         for i,(low,high) in enumerate(self.kin.limits):
             if swing is not None and i==(13 if swing['body']=='left_foot' else 7) and not any(c['body']==swing['body'] for c in contacts):continue
@@ -94,7 +117,7 @@ class ContactDynamics:
         for k,c in enumerate(contacts):A[:,48+3*k:51+3*k]=-c['J'].T@c['basis']*F
         for k,(i,sign,_) in enumerate(active):A[6+i,48+3*nc+k]=-sign*self.gears[i]
         row_scale=np.r_[np.full(3,F),np.full(3,40.),self.gears];eq=[A/row_scale[:,None]];rhs=[-state['bias']/row_scale]
-        for c in contacts:
+        for c in contacts if self.contact_mode!='unilateral-soft' else []:
             axes=np.eye(3) if self.contact_mode=='hard-sticking' else c['basis'][:,2:3].T
             row=np.zeros((len(axes),n));row[:,:27]=axes@c['J'];eq.append(row);rhs.append(axes@(-c['bias']-20*c['velocity']))
         for i,sign,bound in active:
@@ -109,6 +132,11 @@ class ContactDynamics:
         tasks=[];targets=[]
         def task(j,desired,weight):
             row=np.zeros((len(desired),n));row[:,:27]=j;tasks.append(row*weight);targets.append(np.asarray(desired)*weight)
+        if self.flat_soles:
+            if not self.flat_targets:self.set_flat_targets(state)
+            for foot in self.flat_targets:
+                if not any(c['body']==foot for c in contacts):continue
+                pose=state['geometry'][0][foot];pose2=state['geometryNext'][0][foot];R=normalized_rotation(pose[:3,:3]);target=self.flat_targets[foot];_,jw=self.point_jacobian(state['geometry'],foot,pose[:3,3]);_,jw2=self.point_jacobian(state['geometryNext'],foot,pose2[:3,3]);angular_bias=(jw2-jw)@v/state['directionalEpsilon'];error=.5*sum(np.cross(R[:,i],target[:,i]) for i in range(3));task(jw,50*error-12*(jw@v)-angular_bias,2.)
         if swing is not None:
             foot=swing['body'];pose=state['geometry'][0][foot];pose2=state['geometryNext'][0][foot];jv,jw=self.point_jacobian(state['geometry'],foot,pose[:3,3]);jv2,jw2=self.point_jacobian(state['geometryNext'],foot,pose2[:3,3]);eps=state['directionalEpsilon']
             linear_bias=(jv2-jv)@v/eps;angular_bias=(jw2-jw)@v/eps
@@ -120,6 +148,12 @@ class ContactDynamics:
             for c in contacts:
                 tangents=c['basis'][:,:2].T
                 task(tangents@c['J'],tangents@(-c['bias']-20*c['velocity']),10.)
+        if self.contact_mode=='unilateral-soft':
+            for k,c in enumerate(contacts):
+                if k in inactive:continue
+                # Receding-horizon approximation, not the native biased-pass
+                # CFM law on a final (bias-free-relaxed) reported velocity.
+                task(c['J'],-c['bias']-20*c['velocity'],10.)
         desired_com=np.clip(9*(target_com-state['com'])-6*state['comVelocity'],-.3,.3)
         # COM balance outranks swing tracking: exact-state replay of batch08
         # shows weight10 sacrifices braking while all motor caps remain slack.
@@ -145,15 +179,24 @@ class ContactDynamics:
             lo[6+i]=max(lo[6+i],2*(lower-q[i]-.025*v[6+i])/.025**2)
             hi[6+i]=min(hi[6+i],2*(upper-q[i]-.025*v[6+i])/.025**2)
         for k in range(nc):lo[48+3*k:51+3*k]=[-2.,-2.,0.];hi[48+3*k:51+3*k]=[2.,2.,2.]
+        for k in inactive:lo[48+3*k:51+3*k]=0.;hi[48+3*k:51+3*k]=0.
         lo[48+3*nc:]=0.;hi[48+3*nc:]=5.
         inequalities=[]
         for k in range(nc):
             for a in [0,1]:
                 for sign in [-1,1]:
                     row=np.zeros(n);row[48+3*k+a]=sign;row[50+3*k]=-.7;inequalities.append(row)
-        C=np.array(inequalities);constraints=[LinearConstraint(Er,br,br),LinearConstraint(C,-np.inf,0.)]
+        upper=[0.]*len(inequalities)
+        if self.contact_mode=='unilateral-soft':
+            for k,c in enumerate(contacts):
+                normal=c['basis'][:,2];row=np.zeros(n);row[:27]=.5*.025**2*(normal@c['J']);base=c['gap']+.025*(normal@c['velocity'])+.5*.025**2*(normal@c['bias'])
+                if k in inactive:
+                    inequalities.append(-row);upper.append(base)
+                else:
+                    inequalities.extend([row,-row]);upper.extend([-base,base-min(c['gap'],0.)])
+        C=np.array(inequalities);upper=np.array(upper);constraints=[LinearConstraint(Er,br,br),LinearConstraint(C,-np.inf,upper)]
         start=np.clip(np.zeros(n) if self.previous is None or len(self.previous)!=n else self.previous,lo,hi)
         result=minimize(lambda z:.5*z@H@z+g@z,start,jac=lambda z:H@z+g,bounds=Bounds(lo,hi),constraints=constraints,method='SLSQP',options={'maxiter':80,'ftol':1e-8,'disp':False})
-        z=result.x;eq_error=float(max(abs(E@z-b)));friction_error=float(max(C@z));bounds_error=float(max(np.max(lo-z),np.max(z-hi)));self.previous=z
+        z=result.x;eq_error=float(max(abs(E@z-b)));inequality_error=float(max(C@z-upper));friction_error=float(max((C@z-upper)[:4*nc]));gap_error=float(max((C@z-upper)[4*nc:],default=0.));bounds_error=float(max(np.max(lo-z),np.max(z-hi)));self.previous=z
         motor=z[27:48]*self.gears;raw=offset+motor/self.gears;represented=np.clip(raw,-1.,1.);predicted=self.gears*np.clip(self.kin.nominal+represented-q-.2*v[6:],-1.,1.)
-        return represented,dict(success=bool(result.success and eq_error<1e-4 and friction_error<1e-6 and bounds_error<1e-6),optimizerMessage=str(result.message),optimizerSuccess=bool(result.success),boundsError=bounds_error,constraintFeasible=bool(eq_error<1e-4 and friction_error<1e-6 and bounds_error<1e-6),equalityError=eq_error,dependentEqualityError=dependent_error,frictionError=friction_error,desiredComAcceleration=desired_com.tolist(),achievedComAcceleration=(state['Jcom']@z[:27]+state['comBias']).tolist(),qdd=z[:27].tolist(),motorTorquesNm=motor.tolist(),predictedRepresentedTorquesNm=predicted.tolist(),maximumTorqueRepresentationErrorNm=float(max(abs(predicted-motor))),plannedContactForcesWorldN=[(c['basis']@z[48+3*k:51+3*k]*F).tolist() for k,c in enumerate(contacts)],activeStops=[dict(qpos=i,sign=sign,reactionNm=float(z[48+3*nc+k]*self.gears[i])) for k,(i,sign,_) in enumerate(active)],maximumMotorFraction=float(max(abs(motor/self.gears))))
+        return represented,dict(success=bool(result.success and eq_error<1e-4 and inequality_error<1e-6 and bounds_error<1e-6),optimizerMessage=str(result.message),optimizerSuccess=bool(result.success),boundsError=bounds_error,constraintFeasible=bool(eq_error<1e-4 and inequality_error<1e-6 and bounds_error<1e-6),equalityError=eq_error,dependentEqualityError=dependent_error,frictionError=friction_error,contactGapViolationM=gap_error,inactiveContacts=sorted(inactive),predictedContactGapsM=[float(c['gap']+.025*(c['basis'][:,2]@c['velocity'])+.5*.025**2*(c['basis'][:,2]@(c['J']@z[:27]+c['bias']))) if c['gap'] is not None else None for c in contacts],objectiveCost=float(.5*z@H@z+g@z+.5*d@d),desiredComAcceleration=desired_com.tolist(),achievedComAcceleration=(state['Jcom']@z[:27]+state['comBias']).tolist(),qdd=z[:27].tolist(),motorTorquesNm=motor.tolist(),predictedRepresentedTorquesNm=predicted.tolist(),maximumTorqueRepresentationErrorNm=float(max(abs(predicted-motor))),plannedContactForcesWorldN=[(c['basis']@z[48+3*k:51+3*k]*F).tolist() for k,c in enumerate(contacts)],activeStops=[dict(qpos=i,sign=sign,reactionNm=float(z[48+3*nc+k]*self.gears[i])) for k,(i,sign,_) in enumerate(active)],maximumMotorFraction=float(max(abs(motor/self.gears))))

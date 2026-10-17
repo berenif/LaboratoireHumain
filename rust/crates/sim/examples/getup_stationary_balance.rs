@@ -27,6 +27,9 @@ enum Command {
         #[serde(default)]
         torso_force_n: [f32; 2],
     },
+    StepMotionProfile {
+        action: [f32; 21], torques_nm: [f32; 21], qdd: [f32; 21],
+    },
     Checkpoint {
         path: String,
     },
@@ -79,6 +82,9 @@ fn main() -> Result<(), String> {
                     &mut budget,
                 )?)
                 .unwrap()),
+                Command::StepMotionProfile { action, torques_nm, qdd } => Ok(serde_json::to_value(
+                    experiment.step_motion_profile(action, torques_nm, qdd, &mut budget)?
+                ).unwrap()),
                 Command::Checkpoint { path } => {
                     let bytes = experiment.checkpoint()?;
                     let restored = Experiment::from_checkpoint(&bytes)?;

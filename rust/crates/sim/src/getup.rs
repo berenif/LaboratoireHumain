@@ -187,9 +187,20 @@ pub(crate) fn configure(s: &mut Simulation) -> Result<(), String> {
     #[cfg(feature = "stationary-balance-experiment")]
     if let Some(residual) = s.balance_residual {
         let reference = controller::standing_target(&s.model)[..21].try_into().unwrap();
-        let controls = slow_controls(&s.model, &reference, &residual, q, dq, true)?;
+        let controls = if let Some(profile) = &s.balance_motion_profile {
+            let t = (s.substeps_completed - profile.start_substep) as f32 * s.profile.dt_s;
+            if t > 0.025 { return Err("Expired experimental motion profile".into()); }
+            let mut controls = [0.0; 21];
+            for p in &s.model.segments {
+                if let Some(h) = p.reference.as_ref().and_then(|r| r.hinge.as_ref()) {
+                    let i = h.qpos_index;
+                    controls[h.actuator_index] = profile.control(i, h.gear, q[i], dq[i], t);
+                }
+            }
+            controls
+        } else { slow_controls(&s.model, &reference, &residual, q, dq, true)? };
         s.diagnostics.getup = Some(lh_contracts::GetUpObservation {
-            controller: "stationary-balance-external-residual-untrained".into(),
+            controller: if s.balance_motion_profile.is_some() { "stationary-balance-motion-profile-untrained" } else { "stationary-balance-external-residual-untrained" }.into(),
             learned_policy_loaded: false,
             source_bodies: 16, coordinate_frames: 9, active_hinges: 21,
             joint_angles_rad: q.to_vec(), joint_velocities_radps: dq.to_vec(),

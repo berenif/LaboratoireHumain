@@ -278,6 +278,9 @@ pub struct Simulation {
     balance_residual: Option<[f32; 21]>,
     #[cfg(feature = "stationary-balance-experiment")]
     #[serde(skip)]
+    balance_motion_profile: Option<getup::balance::MotionProfile>,
+    #[cfg(feature = "stationary-balance-experiment")]
+    #[serde(skip)]
     balance_torso_force_n: [f32; 2],
     #[cfg(all(test, feature = "experimental-solver-step-observation"))]
     #[serde(skip)]
@@ -458,6 +461,8 @@ impl Simulation {
         let mut result = Self {
             #[cfg(feature = "stationary-balance-experiment")]
             balance_residual: None,
+            #[cfg(feature = "stationary-balance-experiment")]
+            balance_motion_profile: None,
             #[cfg(feature = "stationary-balance-experiment")]
             balance_torso_force_n: [0.0; 2],
             #[cfg(all(test, feature = "experimental-solver-step-observation"))]

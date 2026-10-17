@@ -1,0 +1,204 @@
+{
+  "outcome": "Failed step readiness; safe retained balance, no step",
+  "physicsWallSeconds": 25.49306711300001,
+  "nativeSubsteps": 7600,
+  "continuousNativeStandingS": 9.5,
+  "flightNativeSamples": 0,
+  "loadedSlipM": [
+    0.003381750017455544,
+    0.0006361450669299252
+  ],
+  "finalFootLoadsN": [
+    24.464933395385742,
+    376.7450866699219
+  ],
+  "stepEvents": [
+    {
+      "event": "stop",
+      "timeS": 9.5
+    }
+  ],
+  "actuation": {
+    "decisions": 380,
+    "firstNativeMaximumTorqueErrorNm": 2.859337552507668e-06,
+    "lastNativeMaximumFormulaErrorNm": 6.2065860507946186e-06,
+    "lastNativeSamplesChecked": 380,
+    "qposToActuatorOrder": [
+      1,
+      0,
+      2,
+      3,
+      4,
+      5,
+      6,
+      8,
+      7,
+      9,
+      10,
+      11,
+      12,
+      14,
+      13,
+      15,
+      16,
+      17,
+      18,
+      19,
+      20
+    ],
+    "formula": "sameoriginalgearclip FF+gear*(qref-q+.2*(dqref-dq)), nativepreintegrationt=k/800"
+  },
+  "ledger": {
+    "sessionStartUTC": "2026-10-17T16:41:29Z",
+    "firstWorkingBatchDeadlineUTC": "2026-10-17T17:41:29Z",
+    "physicsWallSeconds": 153.146637263,
+    "nativeSubsteps": 45140,
+    "batches": [
+      {
+        "physicsWallSeconds": 32.729043346,
+        "nativeSubsteps": 9600,
+        "totalProcessWallSeconds": 375.97657884199725,
+        "solverWallSeconds": 336.2722706429049,
+        "stateComputationWallSeconds": 3.366678262958885,
+        "name": "batch01-unilateral-zero",
+        "capSeconds": 60,
+        "outcome": "fixed1\u20136gatefailedone800Hzpredicate; later8.2475sanchoredstandingunderretainedmodel, noflight/nonfoot"
+      },
+      {
+        "physicsWallSeconds": 26.326949980000006,
+        "nativeSubsteps": 7600,
+        "totalProcessWallSeconds": 364.77810147499986,
+        "solverWallSeconds": 332.79715531998227,
+        "stateComputationWallSeconds": 2.6729991129541304,
+        "name": "batch02-readiness-chain-step",
+        "capSeconds": 90,
+        "outcome": "qualifiedunloadnotreached, cleanstop9.5s; noflight/nonfoot"
+      },
+      {
+        "physicsWallSeconds": 21.52092149,
+        "nativeSubsteps": 6400,
+        "totalProcessWallSeconds": 31.141626483993605,
+        "solverWallSeconds": 4.715222729915695,
+        "stateComputationWallSeconds": 2.405912776979676,
+        "name": "batch03-flat-sole-hold",
+        "capSeconds": 40,
+        "outcome": "flatsoleholdproofrecorded"
+      },
+      {
+        "physicsWallSeconds": 25.02059868000001,
+        "nativeSubsteps": 7540,
+        "totalProcessWallSeconds": 36.067112141994585,
+        "solverWallSeconds": 5.400421569895116,
+        "stateComputationWallSeconds": 2.7976124589913525,
+        "name": "batch04-flat-readiness-step",
+        "capSeconds": 90,
+        "outcome": "flatstep firstreadout"
+      },
+      {
+        "physicsWallSeconds": 22.056056653999985,
+        "nativeSubsteps": 6400,
+        "totalProcessWallSeconds": 30.368451834998268,
+        "solverWallSeconds": 3.2353960989494226,
+        "stateComputationWallSeconds": 2.5041481489606667,
+        "name": "batch05-motion-profile-flat-zero",
+        "capSeconds": 40,
+        "outcome": "profilezero8sallnativeanchoredstanding, actualbothtracks/hull, noflight/nonfoot"
+      },
+      {
+        "physicsWallSeconds": 25.49306711300001,
+        "nativeSubsteps": 7600,
+        "totalProcessWallSeconds": 35.96293038899603,
+        "solverWallSeconds": 4.541330091036798,
+        "stateComputationWallSeconds": 2.9410601369454525,
+        "name": "batch06-motion-profile-flat-step",
+        "capSeconds": 90,
+        "outcome": "noqualifiedunload9.5s, allnativeanchoredstanding/noflight,93.9%rightload, no step"
+      }
+    ],
+    "oldAllowanceCarried": false
+  },
+  "summarySHA256": "99a7817c99d8633dd6a526a4304b7295f6baa7e3a6cde8d7dfb8f6f946362805",
+  "config": {
+    "controller": "measured-contact-whole-body-inverse-dynamics-untrained-hybrid",
+    "shiftM": 0.09831783863606686,
+    "simulatedSeconds": 19.0,
+    "physicsCapSeconds": 90.0,
+    "deadlineUTC": "2026-10-17T17:41:29Z",
+    "nearStopModeNoExplicitReleaseNoStep": false,
+    "externalForcesApplied": false,
+    "sourceWeightsChanged": false,
+    "model": "continuous rigid-body mass+armature/Coriolis/gravity/passive springs+damping; acceleration-predicted q/dq inner impedance recomputed800Hz with original caps; near-stop tolerance is predictive approximation, not strict instantaneous complementarity",
+    "contactConstraints": "actual material-point normal acceleration hard, tangential slip stabilization soft, optimization only; never physical pins",
+    "acceptance": "Prospective flat-hold: final5s of complete8s retained-model case native anchored standing; noflight/nonfoot, total loaded slip<=1cm; actual both capsule tracks plus noncollinear support hull>=1cm^2 and <=2deg tilt for final>=1s of40Hzdiagnostics. No stepping claim.",
+    "checkpointSha256": "243a0f54821c91f24f76299e94847d54ea6ff5231af5eba3df1fd6dda48169b6",
+    "nativeBinarySha256": "fad7869313fcb270121a47d2967bf3198c059d96751a87f9c6ccb651c645104d",
+    "probeSha256": "33a553ec987e217fffc4e6f201f5f2a3151c4fe8095679663e495a1418ba7787",
+    "dynamicsSha256": "4bf06188215b48cc1fc217a01182d5612eb4aa89372c1f2a3d5ddc554dad414f",
+    "motionProfileActuation": true,
+    "motionProfileInterpretation": "qref=q0+t*dq0+.5t\u00b2*qdd,dqref=dq0+t*qdd, tau=tauFF+gear*((qref-q)+.2*(dqref-dq)), t=k/800 before integration, same original torque caps/passives. Experimental profile is refreshed each decision; checkpoint retains physical state, next explicit command must reestablish mode.",
+    "contactMode": "normal-soft",
+    "contactModeInterpretation": "original hard-normal acceleration and soft tangent stabilization",
+    "standingControllerAfterTargetReturn": "measured-contact inverse dynamics retained",
+    "timelineS": {
+      "rampStart": 1.0,
+      "fullShiftStart": 8.366735389178615,
+      "fullShiftEnd": 8.966735389178615,
+      "targetReturned": 12.966735389178615,
+      "postReturnScoringStart": 13.966735389178615
+    },
+    "referenceContextSHA256": "a0e6a297f1c66609efd382a2fa7c5bfe1dd4eb55e08c8fb3371c4c3968a06ff6",
+    "referenceChoice": "Retain previous measured-balancer initial COM/q/root-rotation targets, no physical state modification",
+    "flatSolesLoadedAngularTask": true,
+    "flatOrientationTargetsWorld": {
+      "left_foot": [
+        [
+          0.27877511083890416,
+          0.0,
+          0.9603564117434509
+        ],
+        [
+          0.0,
+          1.0,
+          0.0
+        ],
+        [
+          -0.9603564117434509,
+          0.0,
+          0.27877511083890416
+        ]
+      ],
+      "right_foot": [
+        [
+          0.2349990021262168,
+          0.0,
+          0.9719956116154447
+        ],
+        [
+          0.0,
+          1.0,
+          0.0
+        ],
+        [
+          -0.9719956116154447,
+          0.0,
+          0.2349990021262168
+        ]
+      ]
+    },
+    "balancedEntryNoSourceBlend": true,
+    "targetCalibrationSHA256": "62457a4e050e30b9dd67f5127d9886b96cff69b0ffa2047cc54b2bae2c00a77f",
+    "stepMode": "measured-unload-gated swing, measured landing, then retained balance",
+    "stepAcceptance": "Actual>=5cm unload-land displacement/wholecapsuleclearance>=1.5cm, noflight/nonfoot, loadedslip<=1cm, actuallanding+>=5s retainedbalance anchoredstanding; not a learned step or original10sshuffling fix.",
+    "softUnloadLeft": true,
+    "initialCOM": [
+      1.0804519422301204,
+      0.809975899777216,
+      -0.18871737940769728
+    ],
+    "shiftDirectionWorld": [
+      -0.3487433039446308,
+      0.0,
+      0.9372182819139748
+    ]
+  }
+}

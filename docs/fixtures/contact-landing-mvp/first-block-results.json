@@ -1,0 +1,360 @@
+{
+  "results": {
+    "batch01-unilateral-zero": {
+      "status": "completed-untrained-contact-feedback-not-step-qualification",
+      "physicsWallSeconds": 32.729043346,
+      "nativeSubsteps": 9600,
+      "totalProcessWallSeconds": 375.97657884199725,
+      "stopped": null,
+      "fullModelHoldPassed": false,
+      "flightNativeSamples": 0,
+      "maximumContinuousNativeStandingWithFootAnchorS": 8.2475,
+      "loadedContactSlipIntegralM": [
+        0.0012796535520119767,
+        0.0012483823101982253
+      ],
+      "flatStandingGatePassed": null,
+      "stepMechanismPassed": null,
+      "summarySHA256": "af4330fe8ce0b8276c127911090a69632e61e9e03680cd8f8e496057f437c894",
+      "config": {
+        "controller": "measured-contact-whole-body-inverse-dynamics-untrained-hybrid",
+        "shiftM": 0.0,
+        "simulatedSeconds": 12.0,
+        "physicsCapSeconds": 60.0,
+        "deadlineUTC": "2026-10-17T17:41:29Z",
+        "nearStopModeNoExplicitReleaseNoStep": true,
+        "externalForcesApplied": false,
+        "sourceWeightsChanged": false,
+        "model": "continuous rigid-body mass+armature/Coriolis/gravity/passive springs+damping; original inner PD remains active800Hz; near-stop tolerance is predictive approximation, not strict instantaneous complementarity",
+        "contactConstraints": "actual material-point predicted gap active/release constraints and soft velocity stabilization, optimization only; never physical pins",
+        "acceptance": "New retained-balancer gate, not retroactive source-handoff success: actual matched COM/capture/load shift; target COM returned; final>=5s native anchored standing under explicit measured-state balance, no flight/nonfoot and loaded slip<=1cm. No stepping claim.",
+        "checkpointSha256": "3ffed5867ddc238794a2ce94a102c3e2d23bf1a4623070253c91d9d94fa312dd",
+        "nativeBinarySha256": "5485a9786785ffe9991debcac9595228b6e1205d2b35e7e4c3be6be42216a95f",
+        "probeSha256": "75446e0edf23fe827591806a6f2e078db6a6ba7837bb3290cf3c5600d54b542f",
+        "dynamicsSha256": "f6b3310531240be566aecf6abff6e2e22324d328ed56342a2e0549fc2308722f",
+        "contactMode": "unilateral-soft",
+        "contactModeInterpretation": "25ms constant-acceleration end-gap active/release surrogate; active gaps do not worsen existing penetration and end at/below zero, inactive forces zero and endgap nonnegative; soft existing velocity stabilization; not an exact biased-pass CFM equation",
+        "standingControllerAfterTargetReturn": "measured-contact inverse dynamics retained",
+        "timelineS": {
+          "rampStart": 1.0,
+          "fullShiftStart": 2.5,
+          "fullShiftEnd": 4.5,
+          "targetReturned": 6.0,
+          "postReturnScoringStart": 7.0
+        },
+        "softUnloadLeft": false,
+        "initialCOM": [
+          1.0804519422301204,
+          0.809975899777216,
+          -0.18871737940769728
+        ],
+        "shiftDirectionWorld": [
+          -0.6597667080190008,
+          0.0,
+          0.7514704857742388
+        ]
+      }
+    },
+    "batch02-readiness-chain-step": {
+      "status": "completed-untrained-contact-feedback-not-step-qualification",
+      "physicsWallSeconds": 26.326949980000006,
+      "nativeSubsteps": 7600,
+      "totalProcessWallSeconds": 364.77810147499986,
+      "stopped": "no-qualified-unload-step-trial-stopped",
+      "fullModelHoldPassed": false,
+      "flightNativeSamples": 0,
+      "maximumContinuousNativeStandingWithFootAnchorS": 7.625,
+      "loadedContactSlipIntegralM": [
+        0.0036550623833062393,
+        0.006977731735849496
+      ],
+      "flatStandingGatePassed": null,
+      "stepMechanismPassed": false,
+      "summarySHA256": "7894be6c85c72a5e3a6939c55675a14803da9a70550536a3c612da0b1c90fc70",
+      "config": {
+        "controller": "measured-contact-whole-body-inverse-dynamics-untrained-hybrid",
+        "shiftM": 0.14296062225738407,
+        "simulatedSeconds": 19.0,
+        "physicsCapSeconds": 90.0,
+        "deadlineUTC": "2026-10-17T17:41:29Z",
+        "nearStopModeNoExplicitReleaseNoStep": false,
+        "externalForcesApplied": false,
+        "sourceWeightsChanged": false,
+        "model": "continuous rigid-body mass+armature/Coriolis/gravity/passive springs+damping; original inner PD remains active800Hz; near-stop tolerance is predictive approximation, not strict instantaneous complementarity",
+        "contactConstraints": "actual material-point predicted gap active/release constraints and soft velocity stabilization, optimization only; never physical pins",
+        "acceptance": "New retained-balancer gate, not retroactive source-handoff success: actual matched COM/capture/load shift; target COM returned; final>=5s native anchored standing under explicit measured-state balance, no flight/nonfoot and loaded slip<=1cm. No stepping claim.",
+        "checkpointSha256": "52eb7c7021a0805d8c73ade1732c1b3df2f921981bba4f19c0d2bb959c01f68e",
+        "nativeBinarySha256": "5485a9786785ffe9991debcac9595228b6e1205d2b35e7e4c3be6be42216a95f",
+        "probeSha256": "e6370cfc5d4016709f68f7f3cf88aa3b5c7ad672572ac9c836f6d10e54f0a30a",
+        "dynamicsSha256": "f6b3310531240be566aecf6abff6e2e22324d328ed56342a2e0549fc2308722f",
+        "contactMode": "unilateral-soft",
+        "contactModeInterpretation": "25ms constant-acceleration end-gap active/release surrogate; active gaps do not worsen existing penetration and end at/below zero, inactive forces zero and endgap nonnegative; soft existing velocity stabilization; not an exact biased-pass CFM equation",
+        "standingControllerAfterTargetReturn": "measured-contact inverse dynamics retained",
+        "timelineS": {
+          "rampStart": 1.0,
+          "fullShiftStart": 8.366735389178615,
+          "fullShiftEnd": 8.966735389178615,
+          "targetReturned": 12.966735389178615,
+          "postReturnScoringStart": 13.966735389178615
+        },
+        "referenceContextSHA256": "a0e6a297f1c66609efd382a2fa7c5bfe1dd4eb55e08c8fb3371c4c3968a06ff6",
+        "referenceChoice": "Retain previous measured-balancer initial COM/q/root-rotation targets, no physical state modification",
+        "balancedEntryNoSourceBlend": true,
+        "targetCalibrationSHA256": "c5e49f36c2529936d69a7eeca8e471f19dbd9d36acf28f65b68653bf83803b17",
+        "stepMode": "measured-unload-gated swing, measured landing, then retained balance",
+        "stepAcceptance": "Actual>=5cm unload-land displacement/wholecapsuleclearance>=1.5cm, noflight/nonfoot, loadedslip<=1cm, actuallanding+>=5s retainedbalance anchoredstanding; not a learned step or original10sshuffling fix.",
+        "softUnloadLeft": true,
+        "initialCOM": [
+          1.0804519422301204,
+          0.809975899777216,
+          -0.18871737940769728
+        ],
+        "shiftDirectionWorld": [
+          -0.6538946830425252,
+          0.0,
+          0.7565855823954852
+        ]
+      }
+    },
+    "batch03-flat-sole-hold": {
+      "status": "completed-untrained-contact-feedback-not-step-qualification",
+      "physicsWallSeconds": 21.52092149,
+      "nativeSubsteps": 6400,
+      "totalProcessWallSeconds": 31.141626483993605,
+      "stopped": null,
+      "fullModelHoldPassed": false,
+      "flightNativeSamples": 0,
+      "maximumContinuousNativeStandingWithFootAnchorS": 6.88125,
+      "loadedContactSlipIntegralM": [
+        0.0015653674924907784,
+        0.0019418437131992123
+      ],
+      "flatStandingGatePassed": true,
+      "stepMechanismPassed": null,
+      "summarySHA256": "e47ddce3f2ad00b48098c5d6fc6117cb0343638f336243ab441b8c459b1f361f",
+      "config": {
+        "controller": "measured-contact-whole-body-inverse-dynamics-untrained-hybrid",
+        "shiftM": 0.0,
+        "simulatedSeconds": 8.0,
+        "physicsCapSeconds": 40.0,
+        "deadlineUTC": "2026-10-17T17:41:29Z",
+        "nearStopModeNoExplicitReleaseNoStep": true,
+        "externalForcesApplied": false,
+        "sourceWeightsChanged": false,
+        "model": "continuous rigid-body mass+armature/Coriolis/gravity/passive springs+damping; original inner PD remains active800Hz; near-stop tolerance is predictive approximation, not strict instantaneous complementarity",
+        "contactConstraints": "actual material-point normal acceleration hard, tangential slip stabilization soft, optimization only; never physical pins",
+        "acceptance": "Prospective flat-hold: final5s of complete8s retained-model case native anchored standing; noflight/nonfoot, total loaded slip<=1cm; actual both capsule tracks plus noncollinear support hull>=1cm^2 and <=2deg tilt for final>=1s of40Hzdiagnostics. No stepping claim.",
+        "checkpointSha256": "3ffed5867ddc238794a2ce94a102c3e2d23bf1a4623070253c91d9d94fa312dd",
+        "nativeBinarySha256": "5485a9786785ffe9991debcac9595228b6e1205d2b35e7e4c3be6be42216a95f",
+        "probeSha256": "1dc8993e2bdaa6735824c1b4d058500bfd9ce5bfd3b38e667168b584beadf2a5",
+        "dynamicsSha256": "4bf06188215b48cc1fc217a01182d5612eb4aa89372c1f2a3d5ddc554dad414f",
+        "contactMode": "normal-soft",
+        "contactModeInterpretation": "original hard-normal acceleration and soft tangent stabilization",
+        "standingControllerAfterTargetReturn": "measured-contact inverse dynamics retained",
+        "timelineS": {
+          "rampStart": 1.0,
+          "fullShiftStart": 2.5,
+          "fullShiftEnd": 4.5,
+          "targetReturned": 6.0,
+          "postReturnScoringStart": 7.0
+        },
+        "flatSolesLoadedAngularTask": true,
+        "flatOrientationTargetsWorld": {
+          "left_foot": [
+            [
+              0.27877511083890416,
+              0.0,
+              0.9603564117434509
+            ],
+            [
+              0.0,
+              1.0,
+              0.0
+            ],
+            [
+              -0.9603564117434509,
+              0.0,
+              0.27877511083890416
+            ]
+          ],
+          "right_foot": [
+            [
+              0.2349990021262168,
+              0.0,
+              0.9719956116154447
+            ],
+            [
+              0.0,
+              1.0,
+              0.0
+            ],
+            [
+              -0.9719956116154447,
+              0.0,
+              0.2349990021262168
+            ]
+          ]
+        },
+        "balancedEntryNoSourceBlend": false,
+        "softUnloadLeft": false,
+        "initialCOM": [
+          1.0804519422301204,
+          0.809975899777216,
+          -0.18871737940769728
+        ],
+        "shiftDirectionWorld": [
+          -0.6597667080190008,
+          0.0,
+          0.7514704857742388
+        ]
+      }
+    },
+    "batch04-flat-readiness-step": {
+      "status": "completed-untrained-contact-feedback-not-step-qualification",
+      "physicsWallSeconds": 25.02059868000001,
+      "nativeSubsteps": 7540,
+      "totalProcessWallSeconds": 36.067112141994585,
+      "stopped": "step-support-or-tracking-guard",
+      "fullModelHoldPassed": false,
+      "flightNativeSamples": 1,
+      "maximumContinuousNativeStandingWithFootAnchorS": 5.225,
+      "loadedContactSlipIntegralM": [
+        0.0027671798697049606,
+        0.022690943556428894
+      ],
+      "flatStandingGatePassed": null,
+      "stepMechanismPassed": false,
+      "summarySHA256": "8e09058608a28104ad8b5056e90d11b3a7e512ad407d81d1e2bf4840835d231f",
+      "config": {
+        "controller": "measured-contact-whole-body-inverse-dynamics-untrained-hybrid",
+        "shiftM": 0.09831783863606686,
+        "simulatedSeconds": 19.0,
+        "physicsCapSeconds": 90.0,
+        "deadlineUTC": "2026-10-17T17:41:29Z",
+        "nearStopModeNoExplicitReleaseNoStep": false,
+        "externalForcesApplied": false,
+        "sourceWeightsChanged": false,
+        "model": "continuous rigid-body mass+armature/Coriolis/gravity/passive springs+damping; original inner PD remains active800Hz; near-stop tolerance is predictive approximation, not strict instantaneous complementarity",
+        "contactConstraints": "actual material-point normal acceleration hard, tangential slip stabilization soft, optimization only; never physical pins",
+        "acceptance": "New retained-balancer gate, not retroactive source-handoff success: actual matched COM/capture/load shift; target COM returned; final>=5s native anchored standing under explicit measured-state balance, no flight/nonfoot and loaded slip<=1cm. No stepping claim.",
+        "checkpointSha256": "243a0f54821c91f24f76299e94847d54ea6ff5231af5eba3df1fd6dda48169b6",
+        "nativeBinarySha256": "5485a9786785ffe9991debcac9595228b6e1205d2b35e7e4c3be6be42216a95f",
+        "probeSha256": "53b28a9537a7030ce0f6ee190cbf9bf8d2adbc7c24d344cc23a6ddeef0d9ae72",
+        "dynamicsSha256": "4bf06188215b48cc1fc217a01182d5612eb4aa89372c1f2a3d5ddc554dad414f",
+        "contactMode": "normal-soft",
+        "contactModeInterpretation": "original hard-normal acceleration and soft tangent stabilization",
+        "standingControllerAfterTargetReturn": "measured-contact inverse dynamics retained",
+        "timelineS": {
+          "rampStart": 1.0,
+          "fullShiftStart": 8.366735389178615,
+          "fullShiftEnd": 8.966735389178615,
+          "targetReturned": 12.966735389178615,
+          "postReturnScoringStart": 13.966735389178615
+        },
+        "referenceContextSHA256": "a0e6a297f1c66609efd382a2fa7c5bfe1dd4eb55e08c8fb3371c4c3968a06ff6",
+        "referenceChoice": "Retain previous measured-balancer initial COM/q/root-rotation targets, no physical state modification",
+        "flatSolesLoadedAngularTask": true,
+        "flatOrientationTargetsWorld": {
+          "left_foot": [
+            [
+              0.27877511083890416,
+              0.0,
+              0.9603564117434509
+            ],
+            [
+              0.0,
+              1.0,
+              0.0
+            ],
+            [
+              -0.9603564117434509,
+              0.0,
+              0.27877511083890416
+            ]
+          ],
+          "right_foot": [
+            [
+              0.2349990021262168,
+              0.0,
+              0.9719956116154447
+            ],
+            [
+              0.0,
+              1.0,
+              0.0
+            ],
+            [
+              -0.9719956116154447,
+              0.0,
+              0.2349990021262168
+            ]
+          ]
+        },
+        "balancedEntryNoSourceBlend": true,
+        "targetCalibrationSHA256": "62457a4e050e30b9dd67f5127d9886b96cff69b0ffa2047cc54b2bae2c00a77f",
+        "stepMode": "measured-unload-gated swing, measured landing, then retained balance",
+        "stepAcceptance": "Actual>=5cm unload-land displacement/wholecapsuleclearance>=1.5cm, noflight/nonfoot, loadedslip<=1cm, actuallanding+>=5s retainedbalance anchoredstanding; not a learned step or original10sshuffling fix.",
+        "softUnloadLeft": true,
+        "initialCOM": [
+          1.0804519422301204,
+          0.809975899777216,
+          -0.18871737940769728
+        ],
+        "shiftDirectionWorld": [
+          -0.3487433039446308,
+          0.0,
+          0.9372182819139748
+        ]
+      }
+    }
+  },
+  "aggregateLedger": {
+    "sessionStartUTC": "2026-10-17T16:41:29Z",
+    "firstWorkingBatchDeadlineUTC": "2026-10-17T17:41:29Z",
+    "physicsWallSeconds": 105.597513496,
+    "nativeSubsteps": 31140,
+    "batches": [
+      {
+        "physicsWallSeconds": 32.729043346,
+        "nativeSubsteps": 9600,
+        "totalProcessWallSeconds": 375.97657884199725,
+        "solverWallSeconds": 336.2722706429049,
+        "stateComputationWallSeconds": 3.366678262958885,
+        "name": "batch01-unilateral-zero",
+        "capSeconds": 60,
+        "outcome": "fixed1\u20136gatefailedone800Hzpredicate; later8.2475sanchoredstandingunderretainedmodel, noflight/nonfoot"
+      },
+      {
+        "physicsWallSeconds": 26.326949980000006,
+        "nativeSubsteps": 7600,
+        "totalProcessWallSeconds": 364.77810147499986,
+        "solverWallSeconds": 332.79715531998227,
+        "stateComputationWallSeconds": 2.6729991129541304,
+        "name": "batch02-readiness-chain-step",
+        "capSeconds": 90,
+        "outcome": "qualifiedunloadnotreached, cleanstop9.5s; noflight/nonfoot"
+      },
+      {
+        "physicsWallSeconds": 21.52092149,
+        "nativeSubsteps": 6400,
+        "totalProcessWallSeconds": 31.141626483993605,
+        "solverWallSeconds": 4.715222729915695,
+        "stateComputationWallSeconds": 2.405912776979676,
+        "name": "batch03-flat-sole-hold",
+        "capSeconds": 40,
+        "outcome": "flatsoleholdproofrecorded"
+      },
+      {
+        "physicsWallSeconds": 25.02059868000001,
+        "nativeSubsteps": 7540,
+        "totalProcessWallSeconds": 36.067112141994585,
+        "solverWallSeconds": 5.400421569895116,
+        "stateComputationWallSeconds": 2.7976124589913525,
+        "name": "batch04-flat-readiness-step",
+        "capSeconds": 90,
+        "outcome": "flatstep firstreadout"
+      }
+    ],
+    "oldAllowanceCarried": false
+  }
+}

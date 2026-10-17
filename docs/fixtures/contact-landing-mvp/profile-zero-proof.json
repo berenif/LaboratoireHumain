@@ -1,0 +1,141 @@
+{
+  "geometry": {
+    "finalGeometry": {
+      "elapsedS": 7.999999821186066,
+      "feet": [
+        {
+          "body": "left_foot",
+          "tracks": [
+            0,
+            1
+          ],
+          "contacts": 4,
+          "hullAreaM2": 0.008470896266320685,
+          "tiltDeg": 0.7461795172636662,
+          "loadN": 199.47427368164062
+        },
+        {
+          "body": "right_foot",
+          "tracks": [
+            0,
+            1
+          ],
+          "contacts": 3,
+          "hullAreaM2": 0.006353233096053833,
+          "tiltDeg": 0.253385030834764,
+          "loadN": 201.2452850341797
+        }
+      ],
+      "ready": true,
+      "consecutiveReadyS": 8.025
+    },
+    "maximumConsecutiveReadyS": 8.025,
+    "standingGatePassed": true,
+    "geometryGatePassed": true,
+    "finalFiveSeconds": {
+      "unloadedRepositionEvents": [],
+      "maximumContinuousNativeStandingWithoutFootAnchorS": 5.0,
+      "maximumContinuousNativeStandingWithFootAnchorS": 5.0,
+      "loadedContactSlipIntegralM": [
+        9.103512414966966e-05,
+        0.0001316202835207037
+      ],
+      "nonfootSupportObserved": false,
+      "flightNativeSamples": 0
+    },
+    "loadedSlipM": [
+      0.00020478859836416008,
+      0.00031326576945588124
+    ],
+    "maximumCOMDriftM": 0.0010722460637683276
+  },
+  "actuation": {
+    "decisions": 320,
+    "firstNativeMaximumTorqueErrorNm": 2.3813263787531014e-06,
+    "lastNativeMaximumFormulaErrorNm": 6.2065860507946186e-06,
+    "lastNativeSamplesChecked": 320,
+    "qposToActuatorOrder": [
+      1,
+      0,
+      2,
+      3,
+      4,
+      5,
+      6,
+      8,
+      7,
+      9,
+      10,
+      11,
+      12,
+      14,
+      13,
+      15,
+      16,
+      17,
+      18,
+      19,
+      20
+    ],
+    "formula": "sameoriginalgearclip FF+gear*(qref-q+.2*(dqref-dq)), nativepreintegrationt=k/800"
+  },
+  "ledger": {
+    "sessionStartUTC": "2026-10-17T16:41:29Z",
+    "firstWorkingBatchDeadlineUTC": "2026-10-17T17:41:29Z",
+    "physicsWallSeconds": 127.65357015,
+    "nativeSubsteps": 37540,
+    "batches": [
+      {
+        "physicsWallSeconds": 32.729043346,
+        "nativeSubsteps": 9600,
+        "totalProcessWallSeconds": 375.97657884199725,
+        "solverWallSeconds": 336.2722706429049,
+        "stateComputationWallSeconds": 3.366678262958885,
+        "name": "batch01-unilateral-zero",
+        "capSeconds": 60,
+        "outcome": "fixed1\u20136gatefailedone800Hzpredicate; later8.2475sanchoredstandingunderretainedmodel, noflight/nonfoot"
+      },
+      {
+        "physicsWallSeconds": 26.326949980000006,
+        "nativeSubsteps": 7600,
+        "totalProcessWallSeconds": 364.77810147499986,
+        "solverWallSeconds": 332.79715531998227,
+        "stateComputationWallSeconds": 2.6729991129541304,
+        "name": "batch02-readiness-chain-step",
+        "capSeconds": 90,
+        "outcome": "qualifiedunloadnotreached, cleanstop9.5s; noflight/nonfoot"
+      },
+      {
+        "physicsWallSeconds": 21.52092149,
+        "nativeSubsteps": 6400,
+        "totalProcessWallSeconds": 31.141626483993605,
+        "solverWallSeconds": 4.715222729915695,
+        "stateComputationWallSeconds": 2.405912776979676,
+        "name": "batch03-flat-sole-hold",
+        "capSeconds": 40,
+        "outcome": "flatsoleholdproofrecorded"
+      },
+      {
+        "physicsWallSeconds": 25.02059868000001,
+        "nativeSubsteps": 7540,
+        "totalProcessWallSeconds": 36.067112141994585,
+        "solverWallSeconds": 5.400421569895116,
+        "stateComputationWallSeconds": 2.7976124589913525,
+        "name": "batch04-flat-readiness-step",
+        "capSeconds": 90,
+        "outcome": "flatstep firstreadout"
+      },
+      {
+        "physicsWallSeconds": 22.056056653999985,
+        "nativeSubsteps": 6400,
+        "totalProcessWallSeconds": 30.368451834998268,
+        "solverWallSeconds": 3.2353960989494226,
+        "stateComputationWallSeconds": 2.5041481489606667,
+        "name": "batch05-motion-profile-flat-zero",
+        "capSeconds": 40,
+        "outcome": "profilezero8sallnativeanchoredstanding, actualbothtracks/hull, noflight/nonfoot"
+      }
+    ],
+    "oldAllowanceCarried": false
+  }
+}
