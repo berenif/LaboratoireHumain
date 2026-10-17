@@ -542,6 +542,11 @@ mod tests {
                     .get_multibody(id.multibody)
                     .unwrap();
                 let link = mb.link(id.id).unwrap();
+                let limits = &link.joint.data.limits[3];
+                assert_eq!([limits.min, limits.max], [a.min_radians, a.max_radians]);
+                let serialized = serde_json::to_string(&[limits.min, limits.max]).unwrap();
+                let restored: [f32; 2] = serde_json::from_str(&serialized).unwrap();
+                assert_eq!(restored, [limits.min, limits.max]);
                 assert!(!link.joint.kinematic);
                 assert_eq!(mb.armature()[link.assembly_id()], 0.01);
             }

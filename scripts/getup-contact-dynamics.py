@@ -48,12 +48,23 @@ def solve_clarabel_qp(H,g,E,b,C,upper,lo,hi):
     return OptimizeResult(x=np.array(solution.x) if solution.x is not None else np.zeros(n),success=status=='Solved',message='Clarabel '+status,nit=solution.iterations)
 
 
-def braking_acceleration_bounds(q,v,lower,upper,dt=.025,brake=50.,reserve=0.):
+def separating_float32_neighbor(q,v,lower,upper):
+    """One representable neighbor, separating only; never a physical limit edit."""
+    assert float(np.float32(lower))==lower and float(np.float32(upper))==upper
+    before=float(np.nextafter(np.float32(lower),np.float32(-np.inf)))
+    after=float(np.nextafter(np.float32(upper),np.float32(np.inf)))
+    return bool((v>0 and before<=q<lower) or (v<0 and upper<q<=after))
+
+
+def braking_acceleration_bounds(q,v,lower,upper,dt=.025,brake=50.,reserve=0.,native_float32_neighbors=False):
     """Model-relative stopping reserve; no change to native limits or motors."""
     assert dt>0 and brake>0 and 0<=reserve<(upper-lower)/2 and lower<upper
     def upper_stop(a):return q+dt*v+.5*dt*dt*a+max(v+dt*a,0.)**2/(2*brake)
     def lower_stop(a):return q+dt*v+.5*dt*dt*a-max(-v-dt*a,0.)**2/(2*brake)
-    if q+max(v,0.)**2/(2*brake)>upper+1e-9 or q-max(-v,0.)**2/(2*brake)<lower-1e-9:
+    roundoff_release=native_float32_neighbors and separating_float32_neighbor(q,v,lower,upper)
+    lower_ok=q-max(-v,0.)**2/(2*brake)>=lower-1e-9 or (roundoff_release and v>0)
+    upper_ok=q+max(v,0.)**2/(2*brake)<=upper+1e-9 or (roundoff_release and v<0)
+    if not (lower_ok and upper_ok):
         raise ValueError(f'Already outside model stopping reserve: q={q},v={v},limits={lower,upper}')
     # Buffer only future stopping positions, never the current physical-state test.
     future_lower=lower+reserve;future_upper=upper-reserve
@@ -80,7 +91,7 @@ def braking_acceleration_bounds(q,v,lower,upper,dt=.025,brake=50.,reserve=0.):
 
 class ContactDynamics:
     def __init__(self,model,contact_mode='normal-soft',flat_soles=False,joint_viability=False,qp_solver='slsqp',joint_reserve_margin=0.):
-        self.kin=reference.Kinematics(model);self.parts=model['segments'];self.by_id={p['id']:p for p in self.parts}
+        self.kin=reference.Kinematics(model);self.kin.limits=self.kin.limits.astype(np.float32).astype(float);self.parts=model['segments'];self.by_id={p['id']:p for p in self.parts}
         self.mass=model['totalMassKg'];self.gears=self.kin.gears;self.armature=np.zeros(21);self.spring=np.zeros(21);self.damping=np.zeros(21)
         self.ancestors={}
         for p in self.parts:
@@ -223,7 +234,7 @@ class ContactDynamics:
             lo[6+i]=max(lo[6+i],2*(lower-q[i]-.025*v[6+i])/.025**2)
             hi[6+i]=min(hi[6+i],2*(upper-q[i]-.025*v[6+i])/.025**2)
             if self.joint_viability:
-                try:brake_lo,brake_hi=braking_acceleration_bounds(q[i],v[6+i],lower,upper,reserve=self.joint_reserve_margin)
+                try:brake_lo,brake_hi=braking_acceleration_bounds(q[i],v[6+i],lower,upper,reserve=self.joint_reserve_margin,native_float32_neighbors=True)
                 except ValueError as error:raise ValueError(f'Joint {i}: {error}') from error
                 lo[6+i]=max(lo[6+i],brake_lo);hi[6+i]=min(hi[6+i],brake_hi)
         for k in range(nc):lo[48+3*k:51+3*k]=[-2.,-2.,0.];hi[48+3*k:51+3*k]=[2.,2.,2.]
@@ -260,4 +271,4 @@ class ContactDynamics:
                 if i in [row[0] for row in active]:continue
                 qnext=q[i]+.025*v[6+i]+.5*.025**2*z[6+i];vnext=v[6+i]+.025*z[6+i];braking_margins.append(min(upper-qnext-max(vnext,0.)**2/100.,qnext-min(vnext,0.)**2/100.-lower))
         motor=z[27:48]*self.gears;raw=offset+motor/self.gears;represented=np.clip(raw,-1.,1.);predicted=self.gears*np.clip(self.kin.nominal+represented-q-.2*v[6:],-1.,1.)
-        return represented,dict(success=bool(result.success and eq_error<1e-4 and inequality_error<1e-6 and bounds_error<1e-6),qpSolver=self.qp_solver,optimizerMessage=str(result.message),optimizerSuccess=bool(result.success),boundsError=bounds_error,constraintFeasible=bool(eq_error<1e-4 and inequality_error<1e-6 and bounds_error<1e-6),equalityError=eq_error,jointViabilityGuard=self.joint_viability,futureJointStoppingReserveBufferRad=self.joint_reserve_margin,minimumPredictedJointStoppingMarginRad=min(braking_margins,default=None),dependentEqualityError=dependent_error,frictionError=friction_error,contactGapViolationM=gap_error,leftNormalForceCeilingN=left_force_ceiling_n,leftNormalForceCeilingViolationN=load_error,plannedLeftNormalForceN=float(sum(z[50+3*k]*F for k,c in enumerate(contacts) if c['body']=='left_foot')),inactiveContacts=sorted(inactive),predictedContactGapsM=[float(c['gap']+.025*(c['basis'][:,2]@c['velocity'])+.5*.025**2*(c['basis'][:,2]@(c['J']@z[:27]+c['bias']))) if c['gap'] is not None else None for c in contacts],objectiveCost=float(.5*z@H@z+g@z+.5*d@d),desiredComAcceleration=desired_com.tolist(),achievedComAcceleration=(state['Jcom']@z[:27]+state['comBias']).tolist(),qdd=z[:27].tolist(),motorTorquesNm=motor.tolist(),predictedRepresentedTorquesNm=predicted.tolist(),maximumTorqueRepresentationErrorNm=float(max(abs(predicted-motor))),plannedContactForcesWorldN=[(c['basis']@z[48+3*k:51+3*k]*F).tolist() for k,c in enumerate(contacts)],activeStops=[dict(qpos=i,sign=sign,reactionNm=float(z[48+3*nc+k]*self.gears[i])) for k,(i,sign,_) in enumerate(active)],maximumMotorFraction=float(max(abs(motor/self.gears))))
+        return represented,dict(success=bool(result.success and eq_error<1e-4 and inequality_error<1e-6 and bounds_error<1e-6),qpSolver=self.qp_solver,optimizerMessage=str(result.message),optimizerSuccess=bool(result.success),boundsError=bounds_error,constraintFeasible=bool(eq_error<1e-4 and inequality_error<1e-6 and bounds_error<1e-6),equalityError=eq_error,jointViabilityGuard=self.joint_viability,futureJointStoppingReserveBufferRad=self.joint_reserve_margin,separatingFloat32NeighborReleaseJoints=[i for i,(low,high) in enumerate(self.kin.limits) if self.joint_viability and i not in [row[0] for row in active] and separating_float32_neighbor(q[i],v[6+i],low,high)],jointLimitRepresentation='original model min/max deserialized to native f32, then promoted for analysis; installed physics unchanged',minimumPredictedJointStoppingMarginRad=min(braking_margins,default=None),dependentEqualityError=dependent_error,frictionError=friction_error,contactGapViolationM=gap_error,leftNormalForceCeilingN=left_force_ceiling_n,leftNormalForceCeilingViolationN=load_error,plannedLeftNormalForceN=float(sum(z[50+3*k]*F for k,c in enumerate(contacts) if c['body']=='left_foot')),inactiveContacts=sorted(inactive),predictedContactGapsM=[float(c['gap']+.025*(c['basis'][:,2]@c['velocity'])+.5*.025**2*(c['basis'][:,2]@(c['J']@z[:27]+c['bias']))) if c['gap'] is not None else None for c in contacts],objectiveCost=float(.5*z@H@z+g@z+.5*d@d),desiredComAcceleration=desired_com.tolist(),achievedComAcceleration=(state['Jcom']@z[:27]+state['comBias']).tolist(),qdd=z[:27].tolist(),motorTorquesNm=motor.tolist(),predictedRepresentedTorquesNm=predicted.tolist(),maximumTorqueRepresentationErrorNm=float(max(abs(predicted-motor))),plannedContactForcesWorldN=[(c['basis']@z[48+3*k:51+3*k]*F).tolist() for k,c in enumerate(contacts)],activeStops=[dict(qpos=i,sign=sign,reactionNm=float(z[48+3*nc+k]*self.gears[i])) for k,(i,sign,_) in enumerate(active)],maximumMotorFraction=float(max(abs(motor/self.gears))))

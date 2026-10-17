@@ -202,3 +202,19 @@ braking acceleration from 0.4909 to 0.7827 rad/s², leaving at least 100 microra
 predicted reserve. The buffer is an engineering margin, not a certified bound
 on all native prediction error. The already-unviable stopped state remains
 rejected; there is no retroactive state correction or pose reset.
+
+B13 was externally interrupted before a result. Its durable trace measured
+4.3075 physics-wall seconds; accounting reserves another 5 seconds / 20 native
+substeps for a potentially unrecorded final command. The single same-seed retry
+used only the remainder of that original allowance. It stopped safely at
+4.750 s on a representation edge before any lift: ankle 7 was exactly one
+native f32 neighbor below its lower limit and moving back inside. No flight or
+non-foot support occurred; slip was approximately 0.56 mm per foot.
+
+The numerical correction matches all 21 analysis bounds to the original native
+f32 limits. A one-neighbor current observation is accepted only when separating
+back inside, with no stop-force reaction. Zero/closing velocity and larger
+violations remain rejected. Predicted motion and its future braking reserve
+still use the unchanged native range. No physical bound, actual pose or velocity
+is modified. Pure native assembly verifies every installed bound and its JSON
+round-trip; frozen replay verifies the separating ankle has no stop reaction.

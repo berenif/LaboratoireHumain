@@ -12,6 +12,13 @@ class ContactDynamicsTests(unittest.TestCase):
   for p in snapshot['segments']:p['linearVelocity']={'x':999,'y':999,'z':999};p['angularVelocity']={'x':999,'y':999,'z':999}
   state=self.c.state(self.x['initial']['observation'],snapshot,self.x['diagnostic']);np.testing.assert_array_equal(state['v'],self.state['v'])
   self.assertLess(state['comParityErrorM'],1e-5);self.assertLess(state['comVelocityParityErrorMps'],2e-5);self.assertLess(state['contactVelocityParityErrorMps'],2e-5)
+ def test_all_joint_limits_match_native_f32_and_json_round_trip(self):
+  expected=np.zeros((21,2))
+  for part in self.c.parts:
+   h=part['reference'].get('hinge')
+   if h:
+    axis=part['jointProfile']['axes'][0];expected[h['qposIndex']]=np.array([axis['minRadians'],axis['maxRadians']],dtype=np.float32).astype(float)
+  np.testing.assert_array_equal(self.c.kin.limits,expected);np.testing.assert_array_equal(json.loads(json.dumps(expected.tolist())),expected)
  def test_mass_is_symmetric_positive_definite(self):
   np.testing.assert_allclose(self.state['M'],self.state['M'].T,atol=1e-12);self.assertGreater(min(np.linalg.eigvalsh(self.state['M'])),.01)
  def test_sticking_zero_qp_and_torque_interface(self):
@@ -63,6 +70,18 @@ class ContactDynamicsTests(unittest.TestCase):
    self.assertTrue(info['success']);self.assertLessEqual(info['plannedLeftNormalForceN'],ceiling+1e-4);self.assertLess(info['leftNormalForceCeilingViolationN'],1e-4);self.assertLessEqual(info['maximumMotorFraction'],.900001);self.assertLess(max(abs(np.array(info['qdd']))),10.)
   np.testing.assert_allclose(info['plannedContactForcesWorldN'][0],[0.,0.,0.],atol=1e-5)
 class BrakingBoundsTests(unittest.TestCase):
+ def test_native_neighbor_release_is_one_ulp_separating_only_and_future_safe(self):
+  low=float(np.float32(-.3490658503988659));high=float(np.float32(.7853981633974483));below=float(np.nextafter(np.float32(low),np.float32(-np.inf)));above=float(np.nextafter(np.float32(high),np.float32(np.inf)))
+  for q,v in [(below,.01084318),(above,-.01084318)]:
+   self.assertTrue(d.separating_float32_neighbor(q,v,low,high));a,b=d.braking_acceleration_bounds(q,v,low,high,reserve=1e-4,native_float32_neighbors=True)
+   for dd in [a,b]:
+    p=q+.025*v+.5*.025**2*dd;w=v+.025*dd;self.assertGreaterEqual(p-min(w,0.)**2/100.,low+1e-4-1e-9);self.assertLessEqual(p+max(w,0.)**2/100.,high-1e-4+1e-9)
+   for velocity in [0.,-v]:
+    self.assertFalse(d.separating_float32_neighbor(q,velocity,low,high))
+    with self.assertRaisesRegex(ValueError,'Already outside'):d.braking_acceleration_bounds(q,velocity,low,high,native_float32_neighbors=True)
+  for q,v,direction in [(below,.01,-np.inf),(above,-.01,np.inf)]:
+   farther=float(np.nextafter(np.float32(q),np.float32(direction)));self.assertFalse(d.separating_float32_neighbor(farther,v,low,high))
+   with self.assertRaisesRegex(ValueError,'Already outside'):d.braking_acceleration_bounds(farther,v,low,high,native_float32_neighbors=True)
  def test_future_buffer_tightens_both_sides_without_changing_current_bounds(self):
   for q,v in [(.9,1.),(-.9,-1.)]:
    oldlo,oldhi=d.braking_acceleration_bounds(q,v,-1.,1.);lo,hi=d.braking_acceleration_bounds(q,v,-1.,1.,reserve=1e-4)

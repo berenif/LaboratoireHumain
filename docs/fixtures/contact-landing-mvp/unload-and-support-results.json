@@ -133,13 +133,29 @@
         }
       ],
       "cause": "Elbow17 current model stopping reserve short by10.62microrad; near-stop speed cutoff excludes it; no placement or landing"
+    },
+    "batch13c-future-reserve-step": {
+      "stopped": "inverse-dynamics-step-trial-stopped",
+      "simulatedSeconds": 4.75,
+      "physicsWallSeconds": 12.427262977999987,
+      "nativeSubsteps": 3800,
+      "flightNativeSamples": 0,
+      "loadedSlipM": [
+        0.0005580087830432492,
+        0.0005572255483333428
+      ],
+      "cause": "Ankle7 one representable f32 neighbor outside native lower bound, separating; old double-limit current guard rejects it",
+      "nativeLowerBound": -0.3490658402442932,
+      "observedQ": -0.3490658700466156,
+      "observedVelocityRadps": 0.010843181051313877,
+      "stepMechanismPassed": false
     }
   },
   "ledger": {
     "sessionStartUTC": "2026-10-17T16:41:29Z",
     "firstWorkingBatchDeadlineUTC": "2026-10-17T17:41:29Z",
-    "physicsWallSeconds": 306.69470617400003,
-    "nativeSubsteps": 88940,
+    "physicsWallSeconds": 323.429494609,
+    "nativeSubsteps": 94060,
     "batches": [
       {
         "physicsWallSeconds": 32.729043346,
@@ -260,9 +276,40 @@
         "name": "batch12-readiness-conjunction-step",
         "capSeconds": 90,
         "outcome": "true30.49mm lift; stop during early translation on elbow model braking reserve; no flight/nonfoot, no placement/landing"
+      },
+      {
+        "name": "batch13b-future-reserve-step",
+        "status": "externally-interrupted-no-result",
+        "physicsWallSeconds": 4.3075254570000014,
+        "nativeSubsteps": 1320,
+        "uncertainAdditionalWallUpperBoundSeconds": 5.0,
+        "uncertainAdditionalNativeSubstepsUpperBound": 20,
+        "physicsBudgetChargedSeconds": 9.307525457,
+        "capSeconds": 90,
+        "observedSimulatedSeconds": 1.65,
+        "outcome": "no live process/session, no terminal result; last completed initializedAction; at most one native request could be omitted; restart uses remaining original allowance"
+      },
+      {
+        "physicsWallSeconds": 12.427262977999987,
+        "nativeSubsteps": 3800,
+        "totalProcessWallSeconds": 62.06057692600007,
+        "solverWallSeconds": 46.68978061202506,
+        "stateComputationWallSeconds": 1.359637510999164,
+        "name": "batch13c-future-reserve-step",
+        "capSeconds": 80.692474543,
+        "outcome": "safe early stop on one-f32-neighbor separating ankle representation; no lift/flight/nonfoot"
       }
     ],
-    "oldAllowanceCarried": false
+    "oldAllowanceCarried": false,
+    "physicsBudgetChargedSeconds": 328.429494609,
+    "nativeSubstepsUpperBound": 94080,
+    "nonPhysicalLaunchFailures": [
+      {
+        "name": "batch13-future-reserve-step",
+        "nativeSubsteps": 0,
+        "reason": "argparse destination mismatch, corrected in e625217 before Native construction"
+      }
+    ]
   },
   "qpBackendParity": [
     {
@@ -322,5 +369,264 @@
       "maximumMotorFractionDifference": 0.0024775875579134995,
       "originalHardConstraintsPass": true
     }
-  ]
+  ],
+  "nativeLimitRepresentation": {
+    "source": "AxisProfile min_radians/max_radians:f32 in crates/model; sim/lib.rs build_generic_joint directly set_limits; no degrees conversion",
+    "jointCount": 21,
+    "limits": [
+      {
+        "qpos": 0,
+        "body": "@abdomen_z",
+        "jsonLimits": [
+          -0.7853981633974483,
+          0.7853981633974483
+        ],
+        "nativeFloat32Limits": [
+          -0.7853981852531433,
+          0.7853981852531433
+        ]
+      },
+      {
+        "qpos": 1,
+        "body": "lower_waist",
+        "jsonLimits": [
+          -1.3089969389957472,
+          0.5235987755982988
+        ],
+        "nativeFloat32Limits": [
+          -1.3089969158172607,
+          0.5235987901687622
+        ]
+      },
+      {
+        "qpos": 2,
+        "body": "pelvis",
+        "jsonLimits": [
+          -0.6108652381980153,
+          0.6108652381980153
+        ],
+        "nativeFloat32Limits": [
+          -0.6108652353286743,
+          0.6108652353286743
+        ]
+      },
+      {
+        "qpos": 3,
+        "body": "@right_hip_x",
+        "jsonLimits": [
+          -0.4363323129985824,
+          0.08726646259971647
+        ],
+        "nativeFloat32Limits": [
+          -0.4363323152065277,
+          0.0872664600610733
+        ]
+      },
+      {
+        "qpos": 4,
+        "body": "@right_hip_z",
+        "jsonLimits": [
+          -0.5235987755982988,
+          0.4363323129985824
+        ],
+        "nativeFloat32Limits": [
+          -0.5235987901687622,
+          0.4363323152065277
+        ]
+      },
+      {
+        "qpos": 5,
+        "body": "right_thigh",
+        "jsonLimits": [
+          -1.9198621771937625,
+          0.3490658503988659
+        ],
+        "nativeFloat32Limits": [
+          -1.919862151145935,
+          0.3490658402442932
+        ]
+      },
+      {
+        "qpos": 6,
+        "body": "right_shin",
+        "jsonLimits": [
+          -2.792526803190927,
+          0.03490658503988659
+        ],
+        "nativeFloat32Limits": [
+          -2.7925267219543457,
+          0.03490658476948738
+        ]
+      },
+      {
+        "qpos": 7,
+        "body": "@right_ankle_y",
+        "jsonLimits": [
+          -0.3490658503988659,
+          0.7853981633974483
+        ],
+        "nativeFloat32Limits": [
+          -0.3490658402442932,
+          0.7853981852531433
+        ]
+      },
+      {
+        "qpos": 8,
+        "body": "right_foot",
+        "jsonLimits": [
+          -0.8726646259971648,
+          0.8726646259971648
+        ],
+        "nativeFloat32Limits": [
+          -0.8726646304130554,
+          0.8726646304130554
+        ]
+      },
+      {
+        "qpos": 9,
+        "body": "@left_hip_x",
+        "jsonLimits": [
+          -0.4363323129985824,
+          0.08726646259971647
+        ],
+        "nativeFloat32Limits": [
+          -0.4363323152065277,
+          0.0872664600610733
+        ]
+      },
+      {
+        "qpos": 10,
+        "body": "@left_hip_z",
+        "jsonLimits": [
+          -0.5235987755982988,
+          0.4363323129985824
+        ],
+        "nativeFloat32Limits": [
+          -0.5235987901687622,
+          0.4363323152065277
+        ]
+      },
+      {
+        "qpos": 11,
+        "body": "left_thigh",
+        "jsonLimits": [
+          -1.9198621771937625,
+          0.3490658503988659
+        ],
+        "nativeFloat32Limits": [
+          -1.919862151145935,
+          0.3490658402442932
+        ]
+      },
+      {
+        "qpos": 12,
+        "body": "left_shin",
+        "jsonLimits": [
+          -2.792526803190927,
+          0.03490658503988659
+        ],
+        "nativeFloat32Limits": [
+          -2.7925267219543457,
+          0.03490658476948738
+        ]
+      },
+      {
+        "qpos": 13,
+        "body": "@left_ankle_y",
+        "jsonLimits": [
+          -0.3490658503988659,
+          0.7853981633974483
+        ],
+        "nativeFloat32Limits": [
+          -0.3490658402442932,
+          0.7853981852531433
+        ]
+      },
+      {
+        "qpos": 14,
+        "body": "left_foot",
+        "jsonLimits": [
+          -0.8726646259971648,
+          0.8726646259971648
+        ],
+        "nativeFloat32Limits": [
+          -0.8726646304130554,
+          0.8726646304130554
+        ]
+      },
+      {
+        "qpos": 15,
+        "body": "@right_shoulder1",
+        "jsonLimits": [
+          -1.4835298641951802,
+          1.0471975511965976
+        ],
+        "nativeFloat32Limits": [
+          -1.483529806137085,
+          1.0471975803375244
+        ]
+      },
+      {
+        "qpos": 16,
+        "body": "right_upper_arm",
+        "jsonLimits": [
+          -1.4835298641951802,
+          1.0471975511965976
+        ],
+        "nativeFloat32Limits": [
+          -1.483529806137085,
+          1.0471975803375244
+        ]
+      },
+      {
+        "qpos": 17,
+        "body": "right_lower_arm",
+        "jsonLimits": [
+          -1.5707963267948966,
+          0.8726646259971648
+        ],
+        "nativeFloat32Limits": [
+          -1.5707963705062866,
+          0.8726646304130554
+        ]
+      },
+      {
+        "qpos": 18,
+        "body": "@left_shoulder1",
+        "jsonLimits": [
+          -1.0471975511965976,
+          1.4835298641951802
+        ],
+        "nativeFloat32Limits": [
+          -1.0471975803375244,
+          1.483529806137085
+        ]
+      },
+      {
+        "qpos": 19,
+        "body": "left_upper_arm",
+        "jsonLimits": [
+          -1.0471975511965976,
+          1.4835298641951802
+        ],
+        "nativeFloat32Limits": [
+          -1.0471975803375244,
+          1.483529806137085
+        ]
+      },
+      {
+        "qpos": 20,
+        "body": "left_lower_arm",
+        "jsonLimits": [
+          -1.5707963267948966,
+          0.8726646259971648
+        ],
+        "nativeFloat32Limits": [
+          -1.5707963705062866,
+          0.8726646304130554
+        ]
+      }
+    ],
+    "nativeAssemblyTest": "All21 installed min/max exactly equal model deserialized f32; JSON f32 round-trip; zero integrations"
+  }
 }
