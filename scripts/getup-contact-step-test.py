@@ -28,6 +28,10 @@ class StepTests(unittest.TestCase):
  def test_horizontal_progress_requires_actual_whole_clearance(self):
   self.ready();self.update(8.5);self.assertEqual(self.step.phase,'lift')
   self.last=[dict(loads_n=[0.,400.],clearance_m=[.02,0.])]*20;self.state['metrics']['foot_clearance_m'][0]=.02;self.update(8.525);self.assertEqual(self.step.phase,'translate')
+ def test_translate_waits_for_endpoint_stopping_clearance(self):
+  self.ready();self.last=[dict(loads_n=[0.,400.],clearance_m=[.02,0.])]*20
+  self.step.update(8.5,self.state,self.model,self.diag,self.last,0.,clearance_ready=False);self.assertEqual(self.step.phase,'lift')
+  self.step.update(8.525,self.state,self.model,self.diag,self.last,0.,clearance_ready=True);self.assertEqual(self.step.phase,'translate')
  def test_clearance_loss_stops_horizontal_target_and_lands(self):
   self.ready();self.step.phase='translate';self.step.phase_start=8.1;self.update(8.2);self.assertEqual(self.step.phase,'land');self.assertEqual(self.step.failed,'clearance-lost-during-placement')
  def test_explicit_new_protocol_timeout_waits_but_never_returns_unloaded(self):

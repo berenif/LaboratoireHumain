@@ -100,6 +100,33 @@ def braking_acceleration_bounds(q,v,lower,upper,dt=.025,brake=50.,reserve=0.,nat
     return lo,hi
 
 
+def vertical_speed_acceleration_bounds(lower,upper,velocity,recovery=False,dt=.025):
+    lower=max(lower,-.3);upper=min(upper,.3)
+    lower=max(lower,min(.3,4*(-.05-velocity))if recovery and velocity<-.05 else (-.05-velocity)/dt)
+    upper=min(upper,-min(.3,4*(velocity-.05))if recovery and velocity>.05 else (.05-velocity)/dt)
+    return lower,upper
+
+
+def capsule_clearance_acceleration_lower(height,velocity,minimum=.015,brake=2.,dt=.025):
+    assert brake>0. and dt>0.
+    gap=height-minimum
+    if gap-max(-velocity,0.)**2/(2*brake)<-1e-9:raise ValueError('Already outside capsule clearance stopping reserve')
+    def future(a):return gap+dt*velocity+.5*dt*dt*a-max(-velocity-dt*a,0.)**2/(2*brake)
+    lower=-brake;upper=brake
+    for _ in range(64):
+        if future(lower)<=0.:break
+        lower*=2.
+    else:raise ValueError('No finite capsule clearance acceleration bracket')
+    assert future(upper)>=-1e-9
+    for _ in range(60):
+        mid=(lower+upper)/2
+        if future(mid)>=0.:upper=mid
+        else:lower=mid
+    t=dt
+    if velocity<0. and gap>0.:t=min(t,-2*gap/velocity)
+    return max(upper,-2*(gap+velocity*t)/t**2)
+
+
 def intersect_tracking_acceleration(physical_lower,physical_upper,tracking_lower,tracking_upper,physical_first=False):
     """Preserve hard physics; optional minimum scalar tracking-band slack."""
     if physical_lower>physical_upper:raise ValueError('Empty physical acceleration interval')
@@ -177,6 +204,16 @@ class ContactDynamics:
             if low-1e-4<=q[i]<=low and v[6+i]<=0.:active.append((i,1.,low))
             elif high<=q[i]<=high+1e-4 and v[6+i]>=0.:active.append((i,-1.,high))
         return active
+    def swing_clearance_points(self,state,body='left_foot',minimum=.015,brake=2.):
+        """True capsule endpoint lower-clearance/braking rows, model only."""
+        pose=state['geometry'][0][body];pose2=state['geometryNext'][0][body];rows=[]
+        for capsule in self.by_id[body]['reference']['primitives']:
+            for end in ['a','b']:
+                local=np.r_[reference.xyz(capsule[end]),1.];point=(pose@local)[:3];point2=(pose2@local)[:3]
+                j=self.point_jacobian(state['geometry'],body,point)[0];j2=self.point_jacobian(state['geometryNext'],body,point2)[0];bias=(j2-j)@state['v']/state['directionalEpsilon'];velocity=j@state['v'];height=point[1]-capsule['radius'];reserve=height-max(-velocity[1],0.)**2/(2*brake)-minimum
+                lower=capsule_clearance_acceleration_lower(height,velocity[1],minimum,brake)
+                rows.append(dict(name=capsule['name']+':'+end,J=j[1],bias=float(bias[1]),height=float(height),velocity=float(velocity[1]),currentStoppingReserveM=float(reserve),lowerAcceleration=float(lower)))
+        return rows
     def solve(self,state,target_com,target_rotation,posture,unload_left=False,swing=None,_inactive=None,left_force_ceiling_n=None,tracking=None,_released_stops=None,balance=None):
         if self.joint_stop_mode=='native-bound-release' and _released_stops is None:
             candidates=self.bound_stop_candidates(state,swing);assert len(candidates)<=4,'Bounded joint-stop subset search only';indices=[row[0]for row in candidates];warm=self.previous;attempts=[]
@@ -346,11 +383,17 @@ class ContactDynamics:
                 row=np.zeros(n);row[:27]=values;inequalities.append(row);upper.append(limit)
             height=state['com'][1];vy=state['comVelocity'][1];height_lo,height_hi=balance['heightBounds']
             vertical_lo,vertical_hi=braking_acceleration_bounds(height,vy,height_lo,height_hi,brake=.3)
-            vertical_lo=max(vertical_lo,-.3,(-.05-vy)/.025);vertical_hi=min(vertical_hi,.3,(.05-vy)/.025)
+            speed_recovery=bool(balance.get('verticalSpeedRecovery',False)and abs(vy)>.05)
+            vertical_lo,vertical_hi=vertical_speed_acceleration_bounds(vertical_lo,vertical_hi,vy,speed_recovery)
             assert vertical_lo<=vertical_hi,'Empty COM vertical engineering interval'
             row=np.zeros(n);row[:27]=state['Jcom'][1]
             inequalities.extend([row,-row]);upper.extend([vertical_hi-state['comBias'][1],state['comBias'][1]-vertical_lo])
-            balance_info.update(verticalHeightBoundsM=list(balance['heightBounds']),verticalAccelerationIntervalMps2=[float(vertical_lo),float(vertical_hi)],verticalModelBrakingMps2=.3)
+            balance_info.update(verticalHeightBoundsM=list(balance['heightBounds']),verticalAccelerationIntervalMps2=[float(vertical_lo),float(vertical_hi)],verticalModelBrakingMps2=.3,verticalSpeedRecoveryActive=speed_recovery)
+            if balance.get('swingClearance'):
+                clear=balance['swingClearance'];clearance_points=self.swing_clearance_points(state,clear.get('body','left_foot'),clear.get('minimumM',.015),clear.get('modelBrakingMps2',2.))
+                for point in clearance_points:
+                    row=np.zeros(n);row[:27]=-point['J'];inequalities.append(row);upper.append(point['bias']-point['lowerAcceleration'])
+                balance_info['swingClearance']=[{k:v for k,v in point.items()if k!='J'}for point in clearance_points]
         C=np.array(inequalities);upper=np.array(upper);constraints=[LinearConstraint(Er,br,br),LinearConstraint(C,-np.inf,upper)]
         start=np.clip(np.zeros(n) if self.previous is None or len(self.previous)!=n else self.previous,lo,hi)
         hierarchy=None

@@ -7,6 +7,22 @@ ROOT=Path(__file__).resolve().parents[1];spec=importlib.util.spec_from_file_loca
 class ContactDynamicsTests(unittest.TestCase):
  def setUp(self):
   self.x=json.loads((ROOT/'docs/evidence/getup-recovery-session-2026-10-17/quiet-transfer-offline/plan.json').read_text());self.c=d.ContactDynamics(json.loads((ROOT/'rust/crates/model/data/getup-v1.json').read_text()));self.state=self.c.state(self.x['initial']['observation'],self.x['snapshot'],self.x['diagnostic']);self.R=d.normalized_rotation(self.state['root'][:3,:3])
+ def test_capsule_clearance_uses_all_endpoints_and_angular_velocity(self):
+  st=copy.deepcopy(self.state);root=st['root'].copy();root[1,3]+=.08;st['v']=np.zeros(27);st['v'][3]=1.;root2=root.copy();root2[:3,:3]=d.Rotation.from_rotvec([1e-5,0.,0.]).as_matrix()@root[:3,:3];st['geometry']=self.c.geometry(st['q'],root);st['geometryNext']=self.c.geometry(st['q'],root2)
+  rows=self.c.swing_clearance_points(st);self.assertEqual(len(rows),4);self.assertEqual(len(set(r['name']for r in rows)),4);self.assertAlmostEqual(min(r['height']for r in rows),self.c.kin.bottom('left_foot',st['geometry'][0]['left_foot']));self.assertGreater(max(r['velocity']for r in rows)-min(r['velocity']for r in rows),.05)
+ def test_capsule_clearance_prevents_interior_parabolic_dip(self):
+  floor=.015;height=floor+55e-6;velocity=-.01;acc=d.capsule_clearance_acceleration_lower(height,velocity);self.assertGreater(acc,.8)
+  times=np.linspace(0.,.025,1001);self.assertGreaterEqual(min(height+velocity*times+.5*acc*times**2),floor-1e-10)
+  with self.assertRaises(ValueError):d.capsule_clearance_acceleration_lower(floor-1e-6,.01)
+ def test_impact_speed_recovery_preserves_height_and_acceleration_bounds(self):
+  for sign in [-1.,1.]:
+   v=sign*.08474382;old=d.vertical_speed_acceleration_bounds(-.3,.3,v);self.assertGreater(old[0],old[1]);lo,hi=d.vertical_speed_acceleration_bounds(-.3,.3,v,True);self.assertLessEqual(lo,hi);self.assertGreaterEqual(lo,-.3);self.assertLessEqual(hi,.3)
+   for a in [lo,hi]:self.assertLess(abs(v+.025*a),abs(v))
+  self.assertEqual(d.vertical_speed_acceleration_bounds(-.3,.3,.01),d.vertical_speed_acceleration_bounds(-.3,.3,.01,True))
+ def test_frozen_rotating_toe_clearance_guard_preserves_physical_caps(self):
+  x=json.loads((ROOT/'docs/fixtures/contact-landing-mvp/whole-capsule-clearance-state.json').read_text());c=d.ContactDynamics(self.c.kin.model,contact_mode='unilateral-soft',flat_soles=True,joint_viability=True,qp_solver='clarabel',joint_reserve_margin=1e-4,force_jacobian='native-frozen',joint_stop_mode='native-bound-release',joint_reserve_recovery=True,friction_mode='active-sticking',tracking_priority='balance-first');c.flat_targets={k:np.array(v)for k,v in x['flatTargets'].items()};state=c.state(x['observation'],x['snapshot'],x['diagnostic']);_,info=c.solve(state,np.array(x['targetCOM']),np.array(x['targetRotation']),np.array(x['posture']),swing={k:np.array(v)if isinstance(v,list)else v for k,v in x['swing'].items()},tracking=x['tracking'],balance=x['balance']);self.assertTrue(info['success']);self.assertLess(info['equalityError'],1e-4);self.assertLessEqual(info['maximumMotorFraction'],.900001)
+  for point in c.swing_clearance_points(state):
+   acceleration=point['J']@np.array(info['qdd'])+point['bias'];self.assertGreaterEqual(acceleration,point['lowerAcceleration']-1e-6);v=point['velocity']+.025*acceleration;h=point['height']+.025*point['velocity']+.5*.025**2*acceleration;self.assertGreaterEqual(h-min(v,0.)**2/4.,.015-1e-8)
  def test_actual_generalized_velocity_not_snapshot_cache(self):
   snapshot=copy.deepcopy(self.x['snapshot'])
   for p in snapshot['segments']:p['linearVelocity']={'x':999,'y':999,'z':999};p['angularVelocity']={'x':999,'y':999,'z':999}

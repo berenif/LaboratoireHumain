@@ -31,7 +31,7 @@ class RecoveryStep:
         self.phase_rate=target+(old-target)*decay;self.governor_target=1. if capture_margin>=.002 else 0.;self.phase_rate_derivative=(self.governor_target-self.phase_rate)/tau;self.governor_last=elapsed
         p,v,a=arc(start,end,self.virtual_time,duration)
         return p,v*self.phase_rate,a*self.phase_rate**2+v*self.phase_rate_derivative
-    def update(self,elapsed,state,model,diagnostic,last_samples,right_distance,lift_ready=True,capture_margin=None):
+    def update(self,elapsed,state,model,diagnostic,last_samples,right_distance,lift_ready=True,capture_margin=None,clearance_ready=True):
         pose=model['geometry'][0]['left_foot'];position=pose[:3,3];loads=state['metrics']['foot_loads_n'];clearance=state['metrics']['foot_clearance_m'][0]
         for sample in last_samples:
             self.unloaded=self.unloaded+1 if sample['loads_n'][0]<3. and sample['loads_n'][1]>=.8*self.kin.model['totalMassKg']*9.81 else 0
@@ -53,7 +53,7 @@ class RecoveryStep:
         if self.phase=='lift':
             p,v,a=self.governed_arc(self.origin,self.high,elapsed,.35,capture_margin);swing=self.foot_task(p,v,a);progress=self.virtual_time if self.capture_governor else dt
             native_clear=bool(last_samples and all(row['clearance_m'][0]>=.015 and row['loads_n'][0]<3. for row in last_samples))
-            if progress>=.35 and native_clear:
+            if progress>=.35 and native_clear and clearance_ready:
                 self.lift_clearance_seen=True;self.change('translate',elapsed)
             elif dt>=(2. if self.capture_governor else .85):
                 self.failed='clearance-not-reached';self.landing=position.copy();self.landing[1]-=self.kin.bottom('left_foot',pose)+.001;self.lower_origin=position.copy();self.change('land',elapsed)

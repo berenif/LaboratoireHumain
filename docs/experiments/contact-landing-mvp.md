@@ -419,3 +419,36 @@ not native standing or complete-step qualification. Early segment recovery is
 hard-feasible: an exact zero-free-tracking-slack witness proves the global
 minimum primary cost and avoids a degenerate semidefinite zero-minimum solve.
 If that certificate fails, the full two-stage hierarchy is still required.
+
+B25 retains support without flight/non-foot contact and total slip 8.80/8.00 mm,
+but fails before placement/landing. Peak true clearance is 17.80 mm. During
+9.900–10.000 s the foot origin rises 54.53→56.95 mm while sole tilt increases
+4.21→6.90°; endpoint height loss makes true clearance fall 17.35→14.74 mm.
+The body did not simply lower the foot origin. Emergency lowering starts at
+10.000; actual touchdown impulse near 10.100 raises COM vertical speed from
+0.00186 to 0.08474 m/s. Requiring the nominal 0.05 m/s envelope in one 25 ms
+step then contradicts the ±0.3 m/s² engineering acceleration bound. Native
+physical support/cap constraints themselves remain feasible.
+
+The next opt-ins protect all four capsule endpoints during horizontal placement,
+using material-point height, angular-inclusive velocity/Jdot, a future stopping
+height with assumed 2 m/s² braking, and the exact interior quadratic dip bound
+for the local constant-acceleration model. There is no artificial current
+Cartesian acceleration cap. Lift waits for current endpoint stopping readiness;
+intended landing is exempt. These are model constraints, not a native braking
+proof. After actual left contact in land/return/stand, an out-of-envelope vertical
+speed must recover monotonically toward 0.05 m/s (gain 4/s, acceleration still
+bounded ±0.3), while the height stopping envelope remains hard.
+
+B26 isolates the endpoint guard at the first binding state, 9.975 s. Four
+recorded commands replay exactly, then two independent 25 ms forks differ only
+in the guard. Baseline drops to 14.7385 mm; the guard retains 15.3464 mm throughout,
+with positive resulting stopping reserve 0.105 mm. No flight/non-foot support,
+unchanged maximum motor torque 36 Nm. Next-step guarded QP remains feasible.
+Total is 120 native frames / 0.40706 s physics. This demonstrates local clearance
+correction, not a complete placement, persistent landing or five-second stand.
+
+Precision caveat for the earlier B24 governor-entry fork: the equivalent exact
+zero-slack certificate also removed tiny numerical slack, changing ungoverned
+reference torques by at most 0.000508 Nm and acceleration by 0.000982 rad/s².
+The observed knee-reference difference was 35.9 rad/s²; raw branches are retained.
