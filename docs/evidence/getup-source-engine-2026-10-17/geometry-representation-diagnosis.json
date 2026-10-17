@@ -1,0 +1,299 @@
+{
+  "physicsIntegrations": 0,
+  "explicitStaticForwardCalls": 1,
+  "rootQuaternionNormSquared": 1.000594629534111,
+  "maximumRawFKNativeErrorM": 8.173342525585579e-07,
+  "maximumNormalizedFKSourceErrorM": 6.661699538672011e-16,
+  "maximumNativeSourcePositionErrorM": 0.000736706170497987,
+  "rows": [
+    {
+      "body": "torso",
+      "nativeQuaternionNormSquared": 1.000594629534111,
+      "nativePositionWorldM": [
+        1.0620765686035156,
+        1.2649967670440674,
+        -0.19319163262844086
+      ],
+      "sourcePositionInNativeWorldM": [
+        1.0620765686035156,
+        1.2649967670440674,
+        -0.19319163262844086
+      ],
+      "rawFKNativeErrorM": 0.0,
+      "normalizedFKSourceErrorM": 0.0,
+      "sourceNativePositionErrorM": 0.0,
+      "rawUnitFKDifferenceM": 0.0
+    },
+    {
+      "body": "head",
+      "nativeQuaternionNormSquared": 1.000594629534111,
+      "nativePositionWorldM": [
+        1.0569863319396973,
+        1.4550364017486572,
+        -0.19177748262882233
+      ],
+      "sourcePositionInNativeWorldM": [
+        1.0569893613555577,
+        1.4549233919780376,
+        -0.19177831610078622
+      ],
+      "rawFKNativeErrorM": 7.424583052474817e-08,
+      "normalizedFKSourceErrorM": 0.0,
+      "sourceNativePositionErrorM": 0.0001130534399807527,
+      "rawUnitFKDifferenceM": 0.0001129796114812127
+    },
+    {
+      "body": "lower_waist",
+      "nativeQuaternionNormSquared": 1.000594466768229,
+      "nativePositionWorldM": [
+        1.0660600662231445,
+        1.0052711963653564,
+        -0.19569997489452362
+      ],
+      "sourcePositionInNativeWorldM": [
+        1.066057664522222,
+        1.0054254493138501,
+        -0.19569848774949464
+      ],
+      "rawFKNativeErrorM": 1.0187919356024495e-07,
+      "normalizedFKSourceErrorM": 2.220446049250313e-16,
+      "sourceNativePositionErrorM": 0.0001542788121767112,
+      "rawUnitFKDifferenceM": 0.0001543741214512252
+    },
+    {
+      "body": "pelvis",
+      "nativeQuaternionNormSquared": 1.0005941811820496,
+      "nativePositionWorldM": [
+        1.0877519845962524,
+        0.8416993618011475,
+        -0.19038426876068115
+      ],
+      "sourcePositionInNativeWorldM": [
+        1.0877366859405275,
+        0.8419507773929257,
+        -0.19038593693868558
+      ],
+      "rawFKNativeErrorM": 1.4575658372556815e-07,
+      "normalizedFKSourceErrorM": 2.2887833992611187e-16,
+      "sourceNativePositionErrorM": 0.0002518861478407135,
+      "rawUnitFKDifferenceM": 0.0002520234867640859
+    },
+    {
+      "body": "right_thigh",
+      "nativeQuaternionNormSquared": 1.0005938694157044,
+      "nativePositionWorldM": [
+        1.0681993961334229,
+        0.8027458786964417,
+        -0.09182406961917877
+      ],
+      "sourcePositionInNativeWorldM": [
+        1.0681957620708904,
+        0.8030203939129295,
+        -0.09188427433128847
+      ],
+      "rawFKNativeErrorM": 1.9295375026171715e-07,
+      "normalizedFKSourceErrorM": 2.2247786310271853e-16,
+      "sourceNativePositionErrorM": 0.0002810630140271871,
+      "rawUnitFKDifferenceM": 0.00028125586913027464
+    },
+    {
+      "body": "right_shin",
+      "nativeQuaternionNormSquared": 1.0005938539433057,
+      "nativePositionWorldM": [
+        1.0788015127182007,
+        0.40098124742507935,
+        -0.08783017098903656
+      ],
+      "sourcePositionInNativeWorldM": [
+        1.0787915109405266,
+        0.4014941985103821,
+        -0.08789277255761106
+      ],
+      "rawFKNativeErrorM": 5.169922301913127e-07,
+      "normalizedFKSourceErrorM": 4.509747244882934e-16,
+      "sourceNativePositionErrorM": 0.0005168537586763758,
+      "rawUnitFKDifferenceM": 0.0005173632089348047
+    },
+    {
+      "body": "right_foot",
+      "nativeQuaternionNormSquared": 1.0005936871579686,
+      "nativePositionWorldM": [
+        0.977916419506073,
+        0.0292914230376482,
+        -0.11512533575296402
+      ],
+      "sourcePositionInNativeWorldM": [
+        0.9779662876812213,
+        0.03002497094594049,
+        -0.11517177510047445
+      ],
+      "rawFKNativeErrorM": 8.173342525585579e-07,
+      "normalizedFKSourceErrorM": 6.661699538672011e-16,
+      "sourceNativePositionErrorM": 0.000736706170497987,
+      "rawUnitFKDifferenceM": 0.0007375125112631866
+    },
+    {
+      "body": "left_thigh",
+      "nativeQuaternionNormSquared": 1.000593999330394,
+      "nativePositionWorldM": [
+        1.1179664134979248,
+        0.8013869524002075,
+        -0.28565120697021484
+      ],
+      "sourcePositionInNativeWorldM": [
+        1.1179331703263748,
+        0.8016623100520179,
+        -0.28559629210058957
+      ],
+      "rawFKNativeErrorM": 1.6058356208337361e-07,
+      "normalizedFKSourceErrorM": 2.482534153247273e-16,
+      "sourceNativePositionErrorM": 0.00028274120281841997,
+      "rawUnitFKDifferenceM": 0.0002828945868837575
+    },
+    {
+      "body": "left_shin",
+      "nativeQuaternionNormSquared": 1.0005939313175904,
+      "nativePositionWorldM": [
+        1.1424660682678223,
+        0.4006423056125641,
+        -0.27890652418136597
+      ],
+      "sourcePositionInNativeWorldM": [
+        1.1424182972508223,
+        0.4011555435260277,
+        -0.2788556360740563
+      ],
+      "rawFKNativeErrorM": 4.30539631843545e-07,
+      "normalizedFKSourceErrorM": 5.087681048627601e-16,
+      "sourceNativePositionErrorM": 0.0005179621852483814,
+      "rawUnitFKDifferenceM": 0.0005183910482597438
+    },
+    {
+      "body": "left_foot",
+      "nativeQuaternionNormSquared": 1.0005938060682487,
+      "nativePositionWorldM": [
+        1.0368913412094116,
+        0.03013492003083229,
+        -0.3045690357685089
+      ],
+      "sourcePositionInNativeWorldM": [
+        1.0369061983985621,
+        0.0308680572834283,
+        -0.30450293668986805
+      ],
+      "rawFKNativeErrorM": 7.261386285302536e-07,
+      "normalizedFKSourceErrorM": 4.827894691472311e-16,
+      "sourceNativePositionErrorM": 0.0007362608609797533,
+      "rawUnitFKDifferenceM": 0.0007369802621593777
+    },
+    {
+      "body": "right_upper_arm",
+      "nativeQuaternionNormSquared": 1.0005944364062949,
+      "nativePositionWorldM": [
+        1.0215058326721191,
+        1.3227336406707764,
+        -0.027182191610336304
+      ],
+      "sourcePositionInNativeWorldM": [
+        1.02152998358208,
+        1.3226992963820976,
+        -0.02728083565882461
+      ],
+      "rawFKNativeErrorM": 5.3427331570652114e-08,
+      "normalizedFKSourceErrorM": 0.0,
+      "sourceNativePositionErrorM": 0.00010720748536807993,
+      "rawUnitFKDifferenceM": 0.00010719836375721761
+    },
+    {
+      "body": "right_lower_arm",
+      "nativeQuaternionNormSquared": 1.0005944288300954,
+      "nativePositionWorldM": [
+        1.0454418659210205,
+        1.0504826307296753,
+        0.12322409451007843
+      ],
+      "sourcePositionInNativeWorldM": [
+        1.0454517877749963,
+        1.0506100277336188,
+        0.12303608677671374
+      ],
+      "rawFKNativeErrorM": 9.620335177791708e-08,
+      "normalizedFKSourceErrorM": 2.7755575615628914e-17,
+      "sourceNativePositionErrorM": 0.00022732212299954842,
+      "rawUnitFKDifferenceM": 0.00022739276197999
+    },
+    {
+      "body": "right_hand",
+      "nativeQuaternionNormSquared": 1.0005944288300954,
+      "nativePositionWorldM": [
+        1.1716370582580566,
+        0.8023456335067749,
+        0.26400184631347656
+      ],
+      "sourcePositionInNativeWorldM": [
+        1.171572062281803,
+        0.8026204096837951,
+        0.26373017228790463
+      ],
+      "rawFKNativeErrorM": 2.029160729442584e-07,
+      "normalizedFKSourceErrorM": 2.5438405243138006e-16,
+      "sourceNativePositionErrorM": 0.00039183312845834033,
+      "rawUnitFKDifferenceM": 0.000391986127876934
+    },
+    {
+      "body": "left_upper_arm",
+      "nativeQuaternionNormSquared": 1.0005946425688466,
+      "nativePositionWorldM": [
+        1.099432349205017,
+        1.3272849321365356,
+        -0.35830792784690857
+      ],
+      "sourcePositionInNativeWorldM": [
+        1.099410180626241,
+        1.327247895559071,
+        -0.3582098086332226
+      ],
+      "rawFKNativeErrorM": 3.748622414947279e-08,
+      "normalizedFKSourceErrorM": 0.0,
+      "sourceNativePositionErrorM": 0.00010719390864035903,
+      "rawUnitFKDifferenceM": 0.00010719836375712331
+    },
+    {
+      "body": "left_lower_arm",
+      "nativeQuaternionNormSquared": 1.0005945136070808,
+      "nativePositionWorldM": [
+        1.1689934730529785,
+        1.041158676147461,
+        -0.461306095123291
+      ],
+      "sourcePositionInNativeWorldM": [
+        1.1689298748673722,
+        1.0412916085278243,
+        -0.4611467505924775
+      ],
+      "rawFKNativeErrorM": 1.0813768551010245e-07,
+      "normalizedFKSourceErrorM": 2.2887833992611187e-16,
+      "sourceNativePositionErrorM": 0.00021704014942324992,
+      "rawUnitFKDifferenceM": 0.00021706956823466962
+    },
+    {
+      "body": "left_hand",
+      "nativeQuaternionNormSquared": 1.0005945136070808,
+      "nativePositionWorldM": [
+        1.3249269723892212,
+        0.7748748064041138,
+        -0.5070580244064331
+      ],
+      "sourcePositionInNativeWorldM": [
+        1.3247706948920825,
+        0.7751659204612316,
+        -0.5068715465472818
+      ],
+      "rawFKNativeErrorM": 1.7575387660097234e-07,
+      "normalizedFKSourceErrorM": 4.577566798522237e-16,
+      "sourceNativePositionErrorM": 0.00037939958133495705,
+      "rawUnitFKDifferenceM": 0.0003795104158230292
+    }
+  ],
+  "scope": "representation diagnosis only; native application unchanged; only a new diagnostic source world receives transferred q/qvel; zero integrations and no parity gate relaxed"
+}

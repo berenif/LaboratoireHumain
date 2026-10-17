@@ -133,3 +133,16 @@ raw capsule clearance is compared to the same target geometry without clamping.
 The decoder has been replayed over all 220 P4/P5 frames without new integration;
 maximum native COM-height reconstruction error is about 0.303 micrometres.
 It is not yet a qualified end-to-end task collection/reward runner.
+
+## Original-engine diagnostic
+
+`source_engine.py` first rejects an incompatible transferred native configuration
+without integration. `source_positive_control.py` implements the separately
+reviewed original-source reset and fixed WEAK evaluation. The isolated official
+MuJoCo2.1.3 dependency and pinned XML remain local; receipts and compact evidence
+are in `docs/evidence/getup-source-engine-2026-10-17/`. The experiment report is
+`docs/experiments/getup-source-engine-comparison.md`.
+
+The completed source get-up does not qualify its final pose as a step start.
+Only measured final q/qvel/control/contact telemetry has been retained, not a
+complete warm-start cache checkpoint. No source task optimizer is enabled.

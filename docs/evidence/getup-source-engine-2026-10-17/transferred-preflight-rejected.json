@@ -1,0 +1,18 @@
+{
+  "physicsIntegrations": 0,
+  "maximumBodyPositionErrorM": 0.000736706170497987,
+  "maximumBodyRotationErrorRad": 2.3161648131957007e-07,
+  "observationBlockErrors": [
+    0.0,
+    0.0007328646405386774,
+    9.514439378866804e-07,
+    0.0
+  ],
+  "massError": 1.7763568394002505e-15,
+  "inertiaError": 5.551115123125783e-17,
+  "gearError": 0.0,
+  "rawSameError": 1.430511474609375e-06,
+  "actionSameError": 6.854534149169922e-07,
+  "actionSourceDifference": 0.0020536035299301147,
+  "warnings": 0
+}

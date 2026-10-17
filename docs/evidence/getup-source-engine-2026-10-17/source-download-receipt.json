@@ -1,0 +1,26 @@
+{
+  "humanoid_static.xml": {
+    "url": "https://raw.githubusercontent.com/tianxintao/get_up_control/5ad52fbe1b5b7c56522a1aa10ccf17fb81c0d79e/data/humanoid_static.xml",
+    "gitBlobSHA1": "116102676121c2dac409370951b0c8cfeba7d8a0",
+    "sha256": "d49ff2ba18fd46bad06047addddb77dc0dfbbf4e9e70d30934d344353b9015ed",
+    "bytes": 11663
+  },
+  "skybox.xml": {
+    "url": "https://raw.githubusercontent.com/tianxintao/get_up_control/5ad52fbe1b5b7c56522a1aa10ccf17fb81c0d79e/data/skybox.xml",
+    "gitBlobSHA1": "67bd1b7552e323e96d296263d2d47011241b7c5f",
+    "sha256": "52f3687ca30329b4077b0a26feaad9b73d201e183cbde0ffbd6cd52de51907bd",
+    "bytes": 202
+  },
+  "visual.xml": {
+    "url": "https://raw.githubusercontent.com/tianxintao/get_up_control/5ad52fbe1b5b7c56522a1aa10ccf17fb81c0d79e/data/visual.xml",
+    "gitBlobSHA1": "fca4585cfdac41871ea2f6b8374908aed0e0b5bf",
+    "sha256": "ec1d274ab70d95604133dafa92c0d1194de51bba997bd53b70bc67eb95d823fc",
+    "bytes": 175
+  },
+  "materials.xml": {
+    "url": "https://raw.githubusercontent.com/tianxintao/get_up_control/5ad52fbe1b5b7c56522a1aa10ccf17fb81c0d79e/data/materials.xml",
+    "gitBlobSHA1": "d58f2c34b35d1e49c145830ab604bbadfd1c5d0f",
+    "sha256": "5f1279351cd6e7f83fa4a2e733558ffb297ad19f9bd4e757bdaec6e7d36a777c",
+    "bytes": 1108
+  }
+}

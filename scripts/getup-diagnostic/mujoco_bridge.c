@@ -10,6 +10,7 @@ typedef struct {
     double solved_loads[17];
     double support_points[128]; int support_count;
     int feet[2];
+    double audit_foot_slip[2];
 } LH;
 int lh_version(void) { return mj_version(); }
 void *lh_open(const char *xml, char *error, int length) {
@@ -60,6 +61,7 @@ static void forward_without_actuation(LH *h) {
 }
 void lh_reset_data(LH *h) {
     mj_resetData(h->m,h->d);
+    memset(h->audit_foot_slip,0,sizeof(h->audit_foot_slip));
     memset(h->solved_loads,0,sizeof(h->solved_loads)); h->support_count=0;
     forward_without_actuation(h);
 }
@@ -70,6 +72,7 @@ void lh_assign_state(LH *h, const double *qpos, const double *qvel) {
 }
 void lh_set_state(LH *h, const double *qpos, const double *qvel) {
     mj_resetData(h->m,h->d);
+    memset(h->audit_foot_slip,0,sizeof(h->audit_foot_slip));
     memset(h->solved_loads,0,sizeof(h->solved_loads)); h->support_count=0;
     lh_assign_state(h,qpos,qvel);
 }

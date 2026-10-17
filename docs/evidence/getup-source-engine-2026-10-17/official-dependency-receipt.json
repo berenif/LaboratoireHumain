@@ -1,0 +1,14 @@
+{
+  "package": "mujoco",
+  "version": "2.1.3",
+  "officialMetadataURL": "https://pypi.org/pypi/mujoco/2.1.3/json",
+  "wheelFilename": "mujoco-2.1.3-cp310-cp310-manylinux_2_17_x86_64.manylinux2014_x86_64.whl",
+  "wheelSHA256": "92ffe7156d03720d04476bd44022919050f34425f9ad6ad9ed5cc348ff19cb74",
+  "wheelBytes": 7414883,
+  "loadedLibrary": "libmujoco_nogl.so.2.1.3",
+  "loadedLibrarySHA256": "a8d51e013c6435c2a58ddc1a98f19cefd2990199c2f125eda930ff10d5f58520",
+  "pythonExtensionLoaded": false,
+  "globalInstall": false,
+  "buildCommand": "cc -shared -fPIC -O2 -Wall -Wextra -Werror -I$LIB/include scripts/getup-step/source_bridge.c $LIB/libmujoco_nogl.so.2.1.3 -Wl,-rpath,$LIB -o source_bridge.so",
+  "distribution": "dependency and original XML remain local; only receipts and independently written adapter code are committed"
+}
