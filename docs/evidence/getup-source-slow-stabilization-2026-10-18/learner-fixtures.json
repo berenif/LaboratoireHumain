@@ -1,0 +1,18 @@
+{
+  "passed": true,
+  "tests": 9,
+  "sourceNativeIntegrations": 0,
+  "candidateOptimizerCalls": 0,
+  "disposableSyntheticSACUpdates": 3,
+  "disposableSyntheticOptimizerCalls": 10,
+  "scope": "pure/fake-world fixtures only; no candidate, benchmark, physical data collection or live source integrations",
+  "meanRawBatch1OriginalBitExact": true,
+  "sourcePDRefresh20": true,
+  "finitePartialFailureMask": true,
+  "fullStochasticNextActionAndUpdateRestore": true,
+  "replayResidualUnitsAndMasks": true,
+  "logSHA256": "2b9d9961993734089c33b221788ddd53e3651be0efefac6bd36788f508e76701",
+  "disposableSyntheticCriticOnlyUpdates": 1,
+  "populatedAdamTargetAlphaReplayRNGRestore": true,
+  "full20FrameFailureAndSuccessMasksZero": true
+}

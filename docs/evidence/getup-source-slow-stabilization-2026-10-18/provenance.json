@@ -1,0 +1,36 @@
+{
+  "sourceConfigSHA256": "c8ac2dba22ac8c1f1e386575624f45f7b1ee5855b7340fba285b984e233faebf",
+  "runtimeAdmissionSHA256": "ecfca07cb9761f767d997b1e7aabee0c63313ffe500b93ad33f05798f34df58d",
+  "stageActualClosedUtc": "2026-10-18T01:26:06.814066+00:00",
+  "stageSetupReviewRunWallSeconds": 1136.814066,
+  "pythonTestCount": 116,
+  "allPythonTestsPassed": true,
+  "rawAndDerivedWeightsLocalOnly": true,
+  "sourceWeightsNotOverwritten": true,
+  "rawArtifacts": {
+    "runtime-admission.json": {
+      "sha256": "ecfca07cb9761f767d997b1e7aabee0c63313ffe500b93ad33f05798f34df58d",
+      "bytes": 8257
+    },
+    "benchmark/frames.ndjson": {
+      "sha256": "0bde1d4b1482dca55243dd0245e6d455914826d46fe6f16e4fc1509e6d522ac6",
+      "bytes": 7747035
+    },
+    "learner/frames.ndjson": {
+      "sha256": "7a19167a73d941d758ff87602149400c1f98f7cb25b5bccf5c6880fc49c1e0fc",
+      "bytes": 28666982
+    },
+    "learner/transitions.json": {
+      "sha256": "92f57967ee1914c0e4fbb02e0c8cc2868d023c02faaa2168d566b63cc6fc3141",
+      "bytes": 3833033
+    },
+    "learner/updates.json": {
+      "sha256": "86d7cd39bbef4158c5028a5049e7c41a94934e3db9b379e31fa23e055f28704a",
+      "bytes": 276414
+    },
+    "learner/latest-checkpoint.json": {
+      "sha256": "d2de182dfcf29c94d6dac34117f2bb5295b9fb4b93e5cae6dca2972940c1438c",
+      "bytes": 592
+    }
+  }
+}

@@ -1,0 +1,838 @@
+[
+  {
+    "phase": "critic-only",
+    "criticLoss": 34.89794921875,
+    "criticOnlyUpdates": 1,
+    "sourceActorUpdates": 0,
+    "sourceAlphaUpdates": 0,
+    "targetUpdated": true
+  },
+  {
+    "phase": "critic-only",
+    "criticLoss": 35.64533996582031,
+    "criticOnlyUpdates": 2,
+    "sourceActorUpdates": 0,
+    "sourceAlphaUpdates": 0,
+    "targetUpdated": true
+  },
+  {
+    "phase": "critic-only",
+    "criticLoss": 34.43134689331055,
+    "criticOnlyUpdates": 3,
+    "sourceActorUpdates": 0,
+    "sourceAlphaUpdates": 0,
+    "targetUpdated": true
+  },
+  {
+    "phase": "critic-only",
+    "criticLoss": 29.401880264282227,
+    "criticOnlyUpdates": 4,
+    "sourceActorUpdates": 0,
+    "sourceAlphaUpdates": 0,
+    "targetUpdated": true
+  },
+  {
+    "phase": "critic-only",
+    "criticLoss": 30.466341018676758,
+    "criticOnlyUpdates": 5,
+    "sourceActorUpdates": 0,
+    "sourceAlphaUpdates": 0,
+    "targetUpdated": true
+  },
+  {
+    "phase": "critic-only",
+    "criticLoss": 26.622392654418945,
+    "criticOnlyUpdates": 6,
+    "sourceActorUpdates": 0,
+    "sourceAlphaUpdates": 0,
+    "targetUpdated": true
+  },
+  {
+    "phase": "critic-only",
+    "criticLoss": 24.783180236816406,
+    "criticOnlyUpdates": 7,
+    "sourceActorUpdates": 0,
+    "sourceAlphaUpdates": 0,
+    "targetUpdated": true
+  },
+  {
+    "phase": "critic-only",
+    "criticLoss": 25.181190490722656,
+    "criticOnlyUpdates": 8,
+    "sourceActorUpdates": 0,
+    "sourceAlphaUpdates": 0,
+    "targetUpdated": true
+  },
+  {
+    "phase": "critic-only",
+    "criticLoss": 23.864341735839844,
+    "criticOnlyUpdates": 9,
+    "sourceActorUpdates": 0,
+    "sourceAlphaUpdates": 0,
+    "targetUpdated": true
+  },
+  {
+    "phase": "critic-only",
+    "criticLoss": 22.295806884765625,
+    "criticOnlyUpdates": 10,
+    "sourceActorUpdates": 0,
+    "sourceAlphaUpdates": 0,
+    "targetUpdated": true
+  },
+  {
+    "phase": "critic-only",
+    "criticLoss": 21.4605712890625,
+    "criticOnlyUpdates": 11,
+    "sourceActorUpdates": 0,
+    "sourceAlphaUpdates": 0,
+    "targetUpdated": true
+  },
+  {
+    "phase": "critic-only",
+    "criticLoss": 20.47559356689453,
+    "criticOnlyUpdates": 12,
+    "sourceActorUpdates": 0,
+    "sourceAlphaUpdates": 0,
+    "targetUpdated": true
+  },
+  {
+    "phase": "critic-only",
+    "criticLoss": 20.86688232421875,
+    "criticOnlyUpdates": 13,
+    "sourceActorUpdates": 0,
+    "sourceAlphaUpdates": 0,
+    "targetUpdated": true
+  },
+  {
+    "phase": "critic-only",
+    "criticLoss": 18.37090301513672,
+    "criticOnlyUpdates": 14,
+    "sourceActorUpdates": 0,
+    "sourceAlphaUpdates": 0,
+    "targetUpdated": true
+  },
+  {
+    "phase": "critic-only",
+    "criticLoss": 16.052663803100586,
+    "criticOnlyUpdates": 15,
+    "sourceActorUpdates": 0,
+    "sourceAlphaUpdates": 0,
+    "targetUpdated": true
+  },
+  {
+    "phase": "critic-only",
+    "criticLoss": 15.54710865020752,
+    "criticOnlyUpdates": 16,
+    "sourceActorUpdates": 0,
+    "sourceAlphaUpdates": 0,
+    "targetUpdated": true
+  },
+  {
+    "phase": "critic-only",
+    "criticLoss": 16.314807891845703,
+    "criticOnlyUpdates": 17,
+    "sourceActorUpdates": 0,
+    "sourceAlphaUpdates": 0,
+    "targetUpdated": true
+  },
+  {
+    "phase": "critic-only",
+    "criticLoss": 14.42181396484375,
+    "criticOnlyUpdates": 18,
+    "sourceActorUpdates": 0,
+    "sourceAlphaUpdates": 0,
+    "targetUpdated": true
+  },
+  {
+    "phase": "critic-only",
+    "criticLoss": 12.681446075439453,
+    "criticOnlyUpdates": 19,
+    "sourceActorUpdates": 0,
+    "sourceAlphaUpdates": 0,
+    "targetUpdated": true
+  },
+  {
+    "phase": "critic-only",
+    "criticLoss": 11.13654613494873,
+    "criticOnlyUpdates": 20,
+    "sourceActorUpdates": 0,
+    "sourceAlphaUpdates": 0,
+    "targetUpdated": true
+  },
+  {
+    "phase": "critic-only",
+    "criticLoss": 10.418108940124512,
+    "criticOnlyUpdates": 21,
+    "sourceActorUpdates": 0,
+    "sourceAlphaUpdates": 0,
+    "targetUpdated": true
+  },
+  {
+    "phase": "critic-only",
+    "criticLoss": 9.832661628723145,
+    "criticOnlyUpdates": 22,
+    "sourceActorUpdates": 0,
+    "sourceAlphaUpdates": 0,
+    "targetUpdated": true
+  },
+  {
+    "phase": "critic-only",
+    "criticLoss": 8.8660888671875,
+    "criticOnlyUpdates": 23,
+    "sourceActorUpdates": 0,
+    "sourceAlphaUpdates": 0,
+    "targetUpdated": true
+  },
+  {
+    "phase": "critic-only",
+    "criticLoss": 8.539863586425781,
+    "criticOnlyUpdates": 24,
+    "sourceActorUpdates": 0,
+    "sourceAlphaUpdates": 0,
+    "targetUpdated": true
+  },
+  {
+    "phase": "critic-only",
+    "criticLoss": 7.137454032897949,
+    "criticOnlyUpdates": 25,
+    "sourceActorUpdates": 0,
+    "sourceAlphaUpdates": 0,
+    "targetUpdated": true
+  },
+  {
+    "phase": "critic-only",
+    "criticLoss": 7.071583271026611,
+    "criticOnlyUpdates": 26,
+    "sourceActorUpdates": 0,
+    "sourceAlphaUpdates": 0,
+    "targetUpdated": true
+  },
+  {
+    "phase": "critic-only",
+    "criticLoss": 6.928685188293457,
+    "criticOnlyUpdates": 27,
+    "sourceActorUpdates": 0,
+    "sourceAlphaUpdates": 0,
+    "targetUpdated": true
+  },
+  {
+    "phase": "critic-only",
+    "criticLoss": 5.0420145988464355,
+    "criticOnlyUpdates": 28,
+    "sourceActorUpdates": 0,
+    "sourceAlphaUpdates": 0,
+    "targetUpdated": true
+  },
+  {
+    "phase": "critic-only",
+    "criticLoss": 6.075740337371826,
+    "criticOnlyUpdates": 29,
+    "sourceActorUpdates": 0,
+    "sourceAlphaUpdates": 0,
+    "targetUpdated": true
+  },
+  {
+    "phase": "critic-only",
+    "criticLoss": 5.294240474700928,
+    "criticOnlyUpdates": 30,
+    "sourceActorUpdates": 0,
+    "sourceAlphaUpdates": 0,
+    "targetUpdated": true
+  },
+  {
+    "phase": "critic-only",
+    "criticLoss": 3.4288854598999023,
+    "criticOnlyUpdates": 31,
+    "sourceActorUpdates": 0,
+    "sourceAlphaUpdates": 0,
+    "targetUpdated": true
+  },
+  {
+    "phase": "critic-only",
+    "criticLoss": 3.5262703895568848,
+    "criticOnlyUpdates": 32,
+    "sourceActorUpdates": 0,
+    "sourceAlphaUpdates": 0,
+    "targetUpdated": true
+  },
+  {
+    "phase": "critic-only",
+    "criticLoss": 3.022881507873535,
+    "criticOnlyUpdates": 33,
+    "sourceActorUpdates": 0,
+    "sourceAlphaUpdates": 0,
+    "targetUpdated": true
+  },
+  {
+    "phase": "critic-only",
+    "criticLoss": 2.006122589111328,
+    "criticOnlyUpdates": 34,
+    "sourceActorUpdates": 0,
+    "sourceAlphaUpdates": 0,
+    "targetUpdated": true
+  },
+  {
+    "phase": "critic-only",
+    "criticLoss": 1.3143036365509033,
+    "criticOnlyUpdates": 35,
+    "sourceActorUpdates": 0,
+    "sourceAlphaUpdates": 0,
+    "targetUpdated": true
+  },
+  {
+    "phase": "critic-only",
+    "criticLoss": 1.4219460487365723,
+    "criticOnlyUpdates": 36,
+    "sourceActorUpdates": 0,
+    "sourceAlphaUpdates": 0,
+    "targetUpdated": true
+  },
+  {
+    "phase": "critic-only",
+    "criticLoss": 1.154943823814392,
+    "criticOnlyUpdates": 37,
+    "sourceActorUpdates": 0,
+    "sourceAlphaUpdates": 0,
+    "targetUpdated": true
+  },
+  {
+    "phase": "critic-only",
+    "criticLoss": 0.49293380975723267,
+    "criticOnlyUpdates": 38,
+    "sourceActorUpdates": 0,
+    "sourceAlphaUpdates": 0,
+    "targetUpdated": true
+  },
+  {
+    "phase": "critic-only",
+    "criticLoss": 0.30957984924316406,
+    "criticOnlyUpdates": 39,
+    "sourceActorUpdates": 0,
+    "sourceAlphaUpdates": 0,
+    "targetUpdated": true
+  },
+  {
+    "phase": "critic-only",
+    "criticLoss": 1.3858106136322021,
+    "criticOnlyUpdates": 40,
+    "sourceActorUpdates": 0,
+    "sourceAlphaUpdates": 0,
+    "targetUpdated": true
+  },
+  {
+    "phase": "critic-only",
+    "criticLoss": 0.9703784584999084,
+    "criticOnlyUpdates": 41,
+    "sourceActorUpdates": 0,
+    "sourceAlphaUpdates": 0,
+    "targetUpdated": true
+  },
+  {
+    "phase": "critic-only",
+    "criticLoss": 0.927647590637207,
+    "criticOnlyUpdates": 42,
+    "sourceActorUpdates": 0,
+    "sourceAlphaUpdates": 0,
+    "targetUpdated": true
+  },
+  {
+    "phase": "critic-only",
+    "criticLoss": 0.633368194103241,
+    "criticOnlyUpdates": 43,
+    "sourceActorUpdates": 0,
+    "sourceAlphaUpdates": 0,
+    "targetUpdated": true
+  },
+  {
+    "phase": "critic-only",
+    "criticLoss": 0.6224278807640076,
+    "criticOnlyUpdates": 44,
+    "sourceActorUpdates": 0,
+    "sourceAlphaUpdates": 0,
+    "targetUpdated": true
+  },
+  {
+    "phase": "critic-only",
+    "criticLoss": 1.590025782585144,
+    "criticOnlyUpdates": 45,
+    "sourceActorUpdates": 0,
+    "sourceAlphaUpdates": 0,
+    "targetUpdated": true
+  },
+  {
+    "phase": "critic-only",
+    "criticLoss": 0.3855881094932556,
+    "criticOnlyUpdates": 46,
+    "sourceActorUpdates": 0,
+    "sourceAlphaUpdates": 0,
+    "targetUpdated": true
+  },
+  {
+    "phase": "critic-only",
+    "criticLoss": 0.5461803674697876,
+    "criticOnlyUpdates": 47,
+    "sourceActorUpdates": 0,
+    "sourceAlphaUpdates": 0,
+    "targetUpdated": true
+  },
+  {
+    "phase": "critic-only",
+    "criticLoss": 1.1322613954544067,
+    "criticOnlyUpdates": 48,
+    "sourceActorUpdates": 0,
+    "sourceAlphaUpdates": 0,
+    "targetUpdated": true
+  },
+  {
+    "phase": "critic-only",
+    "criticLoss": 0.863214373588562,
+    "criticOnlyUpdates": 49,
+    "sourceActorUpdates": 0,
+    "sourceAlphaUpdates": 0,
+    "targetUpdated": true
+  },
+  {
+    "phase": "critic-only",
+    "criticLoss": 0.5661033391952515,
+    "criticOnlyUpdates": 50,
+    "sourceActorUpdates": 0,
+    "sourceAlphaUpdates": 0,
+    "targetUpdated": true
+  },
+  {
+    "phase": "critic-only",
+    "criticLoss": 1.6598021984100342,
+    "criticOnlyUpdates": 51,
+    "sourceActorUpdates": 0,
+    "sourceAlphaUpdates": 0,
+    "targetUpdated": true
+  },
+  {
+    "phase": "critic-only",
+    "criticLoss": 0.9011449217796326,
+    "criticOnlyUpdates": 52,
+    "sourceActorUpdates": 0,
+    "sourceAlphaUpdates": 0,
+    "targetUpdated": true
+  },
+  {
+    "phase": "critic-only",
+    "criticLoss": 0.5905283689498901,
+    "criticOnlyUpdates": 53,
+    "sourceActorUpdates": 0,
+    "sourceAlphaUpdates": 0,
+    "targetUpdated": true
+  },
+  {
+    "phase": "critic-only",
+    "criticLoss": 0.9657964110374451,
+    "criticOnlyUpdates": 54,
+    "sourceActorUpdates": 0,
+    "sourceAlphaUpdates": 0,
+    "targetUpdated": true
+  },
+  {
+    "phase": "critic-only",
+    "criticLoss": 1.0892802476882935,
+    "criticOnlyUpdates": 55,
+    "sourceActorUpdates": 0,
+    "sourceAlphaUpdates": 0,
+    "targetUpdated": true
+  },
+  {
+    "phase": "critic-only",
+    "criticLoss": 0.7005031108856201,
+    "criticOnlyUpdates": 56,
+    "sourceActorUpdates": 0,
+    "sourceAlphaUpdates": 0,
+    "targetUpdated": true
+  },
+  {
+    "phase": "critic-only",
+    "criticLoss": 0.9295270442962646,
+    "criticOnlyUpdates": 57,
+    "sourceActorUpdates": 0,
+    "sourceAlphaUpdates": 0,
+    "targetUpdated": true
+  },
+  {
+    "phase": "critic-only",
+    "criticLoss": 1.2175263166427612,
+    "criticOnlyUpdates": 58,
+    "sourceActorUpdates": 0,
+    "sourceAlphaUpdates": 0,
+    "targetUpdated": true
+  },
+  {
+    "phase": "critic-only",
+    "criticLoss": 0.6167479157447815,
+    "criticOnlyUpdates": 59,
+    "sourceActorUpdates": 0,
+    "sourceAlphaUpdates": 0,
+    "targetUpdated": true
+  },
+  {
+    "phase": "critic-only",
+    "criticLoss": 0.7878797054290771,
+    "criticOnlyUpdates": 60,
+    "sourceActorUpdates": 0,
+    "sourceAlphaUpdates": 0,
+    "targetUpdated": true
+  },
+  {
+    "phase": "critic-only",
+    "criticLoss": 0.4705333113670349,
+    "criticOnlyUpdates": 61,
+    "sourceActorUpdates": 0,
+    "sourceAlphaUpdates": 0,
+    "targetUpdated": true
+  },
+  {
+    "phase": "critic-only",
+    "criticLoss": 0.5335813760757446,
+    "criticOnlyUpdates": 62,
+    "sourceActorUpdates": 0,
+    "sourceAlphaUpdates": 0,
+    "targetUpdated": true
+  },
+  {
+    "phase": "critic-only",
+    "criticLoss": 0.17738668620586395,
+    "criticOnlyUpdates": 63,
+    "sourceActorUpdates": 0,
+    "sourceAlphaUpdates": 0,
+    "targetUpdated": true
+  },
+  {
+    "phase": "critic-only",
+    "criticLoss": 0.18154504895210266,
+    "criticOnlyUpdates": 64,
+    "sourceActorUpdates": 0,
+    "sourceAlphaUpdates": 0,
+    "targetUpdated": true
+  },
+  {
+    "phase": "critic-only",
+    "criticLoss": 0.1460600197315216,
+    "criticOnlyUpdates": 65,
+    "sourceActorUpdates": 0,
+    "sourceAlphaUpdates": 0,
+    "targetUpdated": true
+  },
+  {
+    "phase": "critic-only",
+    "criticLoss": 0.2101851999759674,
+    "criticOnlyUpdates": 66,
+    "sourceActorUpdates": 0,
+    "sourceAlphaUpdates": 0,
+    "targetUpdated": true
+  },
+  {
+    "phase": "critic-only",
+    "criticLoss": 0.24035386741161346,
+    "criticOnlyUpdates": 67,
+    "sourceActorUpdates": 0,
+    "sourceAlphaUpdates": 0,
+    "targetUpdated": true
+  },
+  {
+    "phase": "critic-only",
+    "criticLoss": 0.9093711376190186,
+    "criticOnlyUpdates": 68,
+    "sourceActorUpdates": 0,
+    "sourceAlphaUpdates": 0,
+    "targetUpdated": true
+  },
+  {
+    "phase": "critic-only",
+    "criticLoss": 0.9946190714836121,
+    "criticOnlyUpdates": 69,
+    "sourceActorUpdates": 0,
+    "sourceAlphaUpdates": 0,
+    "targetUpdated": true
+  },
+  {
+    "phase": "critic-only",
+    "criticLoss": 0.9598422050476074,
+    "criticOnlyUpdates": 70,
+    "sourceActorUpdates": 0,
+    "sourceAlphaUpdates": 0,
+    "targetUpdated": true
+  },
+  {
+    "phase": "critic-only",
+    "criticLoss": 0.9123176336288452,
+    "criticOnlyUpdates": 71,
+    "sourceActorUpdates": 0,
+    "sourceAlphaUpdates": 0,
+    "targetUpdated": true
+  },
+  {
+    "phase": "critic-only",
+    "criticLoss": 1.1938763856887817,
+    "criticOnlyUpdates": 72,
+    "sourceActorUpdates": 0,
+    "sourceAlphaUpdates": 0,
+    "targetUpdated": true
+  },
+  {
+    "phase": "critic-only",
+    "criticLoss": 0.5723097324371338,
+    "criticOnlyUpdates": 73,
+    "sourceActorUpdates": 0,
+    "sourceAlphaUpdates": 0,
+    "targetUpdated": true
+  },
+  {
+    "phase": "critic-only",
+    "criticLoss": 0.6384904384613037,
+    "criticOnlyUpdates": 74,
+    "sourceActorUpdates": 0,
+    "sourceAlphaUpdates": 0,
+    "targetUpdated": true
+  },
+  {
+    "phase": "critic-only",
+    "criticLoss": 0.240176260471344,
+    "criticOnlyUpdates": 75,
+    "sourceActorUpdates": 0,
+    "sourceAlphaUpdates": 0,
+    "targetUpdated": true
+  },
+  {
+    "phase": "critic-only",
+    "criticLoss": 0.5913065671920776,
+    "criticOnlyUpdates": 76,
+    "sourceActorUpdates": 0,
+    "sourceAlphaUpdates": 0,
+    "targetUpdated": true
+  },
+  {
+    "phase": "critic-only",
+    "criticLoss": 0.5525796413421631,
+    "criticOnlyUpdates": 77,
+    "sourceActorUpdates": 0,
+    "sourceAlphaUpdates": 0,
+    "targetUpdated": true
+  },
+  {
+    "phase": "critic-only",
+    "criticLoss": 0.8705731630325317,
+    "criticOnlyUpdates": 78,
+    "sourceActorUpdates": 0,
+    "sourceAlphaUpdates": 0,
+    "targetUpdated": true
+  },
+  {
+    "phase": "critic-only",
+    "criticLoss": 0.5392712354660034,
+    "criticOnlyUpdates": 79,
+    "sourceActorUpdates": 0,
+    "sourceAlphaUpdates": 0,
+    "targetUpdated": true
+  },
+  {
+    "phase": "critic-only",
+    "criticLoss": 0.8471767902374268,
+    "criticOnlyUpdates": 80,
+    "sourceActorUpdates": 0,
+    "sourceAlphaUpdates": 0,
+    "targetUpdated": true
+  },
+  {
+    "phase": "critic-only",
+    "criticLoss": 1.180415391921997,
+    "criticOnlyUpdates": 81,
+    "sourceActorUpdates": 0,
+    "sourceAlphaUpdates": 0,
+    "targetUpdated": true
+  },
+  {
+    "phase": "critic-only",
+    "criticLoss": 0.24564026296138763,
+    "criticOnlyUpdates": 82,
+    "sourceActorUpdates": 0,
+    "sourceAlphaUpdates": 0,
+    "targetUpdated": true
+  },
+  {
+    "phase": "critic-only",
+    "criticLoss": 0.8666492700576782,
+    "criticOnlyUpdates": 83,
+    "sourceActorUpdates": 0,
+    "sourceAlphaUpdates": 0,
+    "targetUpdated": true
+  },
+  {
+    "phase": "critic-only",
+    "criticLoss": 0.46161597967147827,
+    "criticOnlyUpdates": 84,
+    "sourceActorUpdates": 0,
+    "sourceAlphaUpdates": 0,
+    "targetUpdated": true
+  },
+  {
+    "phase": "critic-only",
+    "criticLoss": 0.20484690368175507,
+    "criticOnlyUpdates": 85,
+    "sourceActorUpdates": 0,
+    "sourceAlphaUpdates": 0,
+    "targetUpdated": true
+  },
+  {
+    "phase": "critic-only",
+    "criticLoss": 0.21030786633491516,
+    "criticOnlyUpdates": 86,
+    "sourceActorUpdates": 0,
+    "sourceAlphaUpdates": 0,
+    "targetUpdated": true
+  },
+  {
+    "phase": "critic-only",
+    "criticLoss": 0.18036535382270813,
+    "criticOnlyUpdates": 87,
+    "sourceActorUpdates": 0,
+    "sourceAlphaUpdates": 0,
+    "targetUpdated": true
+  },
+  {
+    "phase": "critic-only",
+    "criticLoss": 0.4557844400405884,
+    "criticOnlyUpdates": 88,
+    "sourceActorUpdates": 0,
+    "sourceAlphaUpdates": 0,
+    "targetUpdated": true
+  },
+  {
+    "phase": "critic-only",
+    "criticLoss": 0.2349117398262024,
+    "criticOnlyUpdates": 89,
+    "sourceActorUpdates": 0,
+    "sourceAlphaUpdates": 0,
+    "targetUpdated": true
+  },
+  {
+    "phase": "critic-only",
+    "criticLoss": 0.9220522046089172,
+    "criticOnlyUpdates": 90,
+    "sourceActorUpdates": 0,
+    "sourceAlphaUpdates": 0,
+    "targetUpdated": true
+  },
+  {
+    "phase": "critic-only",
+    "criticLoss": 0.1588134467601776,
+    "criticOnlyUpdates": 91,
+    "sourceActorUpdates": 0,
+    "sourceAlphaUpdates": 0,
+    "targetUpdated": true
+  },
+  {
+    "phase": "critic-only",
+    "criticLoss": 0.9604017734527588,
+    "criticOnlyUpdates": 92,
+    "sourceActorUpdates": 0,
+    "sourceAlphaUpdates": 0,
+    "targetUpdated": true
+  },
+  {
+    "phase": "critic-only",
+    "criticLoss": 0.5015088319778442,
+    "criticOnlyUpdates": 93,
+    "sourceActorUpdates": 0,
+    "sourceAlphaUpdates": 0,
+    "targetUpdated": true
+  },
+  {
+    "phase": "critic-only",
+    "criticLoss": 0.223444402217865,
+    "criticOnlyUpdates": 94,
+    "sourceActorUpdates": 0,
+    "sourceAlphaUpdates": 0,
+    "targetUpdated": true
+  },
+  {
+    "phase": "critic-only",
+    "criticLoss": 0.40579622983932495,
+    "criticOnlyUpdates": 95,
+    "sourceActorUpdates": 0,
+    "sourceAlphaUpdates": 0,
+    "targetUpdated": true
+  },
+  {
+    "phase": "critic-only",
+    "criticLoss": 0.43783658742904663,
+    "criticOnlyUpdates": 96,
+    "sourceActorUpdates": 0,
+    "sourceAlphaUpdates": 0,
+    "targetUpdated": true
+  },
+  {
+    "phase": "critic-only",
+    "criticLoss": 0.24605108797550201,
+    "criticOnlyUpdates": 97,
+    "sourceActorUpdates": 0,
+    "sourceAlphaUpdates": 0,
+    "targetUpdated": true
+  },
+  {
+    "phase": "critic-only",
+    "criticLoss": 0.19134581089019775,
+    "criticOnlyUpdates": 98,
+    "sourceActorUpdates": 0,
+    "sourceAlphaUpdates": 0,
+    "targetUpdated": true
+  },
+  {
+    "phase": "critic-only",
+    "criticLoss": 0.7482383847236633,
+    "criticOnlyUpdates": 99,
+    "sourceActorUpdates": 0,
+    "sourceAlphaUpdates": 0,
+    "targetUpdated": true
+  },
+  {
+    "phase": "critic-only",
+    "criticLoss": 0.20235896110534668,
+    "criticOnlyUpdates": 100,
+    "sourceActorUpdates": 0,
+    "sourceAlphaUpdates": 0,
+    "targetUpdated": true
+  },
+  {
+    "phase": "source-SAC",
+    "newActualTransitions": 260,
+    "criticLoss": 0.1575152724981308,
+    "actorLoss": 10.758176803588867,
+    "temperatureLoss": -3.17793607711792,
+    "alpha": 0.10001000049998522,
+    "optimizerCalls": [
+      "critic",
+      "actor",
+      "alpha"
+    ],
+    "drift": {
+      "rms": 0.016765348613262177,
+      "maximum": 0.031050220131874084,
+      "latentStdMaximum": 0.020063040778040886
+    }
+  },
+  {
+    "phase": "source-SAC",
+    "newActualTransitions": 264,
+    "criticLoss": 0.9083472490310669,
+    "actorLoss": 10.751669883728027,
+    "temperatureLoss": -3.186447858810425,
+    "alpha": 0.10002000268850739,
+    "optimizerCalls": [
+      "critic",
+      "actor",
+      "alpha"
+    ],
+    "drift": {
+      "rms": 0.033558014780282974,
+      "maximum": 0.06216353178024292,
+      "latentStdMaximum": 0.020126424729824066
+    }
+  }
+]

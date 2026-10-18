@@ -1,0 +1,184 @@
+{
+  "stopped": "completed64-SLOW-residual-benchmark",
+  "passed": true,
+  "allBranchNativeIntegrations": 1280,
+  "allBranchPolicyIntervals": 64,
+  "fullCache20SampleContinuationBitExact": true,
+  "physicsSeconds": 0.08396159231779166,
+  "processWallSeconds": 12.087804406997748,
+  "endToEndPolicyIntervalsPerSecond": 5.294592619562058,
+  "throwawayCriticUpdates": 16,
+  "throwawayCriticLosses": [
+    34.87443542480469,
+    32.773704528808594,
+    31.65705108642578,
+    30.088356018066406,
+    28.407970428466797,
+    27.59855842590332,
+    25.275074005126953,
+    24.7305908203125,
+    23.866191864013672,
+    21.358678817749023,
+    21.34942626953125,
+    20.076942443847656,
+    19.173749923706055,
+    18.674352645874023,
+    17.377506256103516,
+    16.06243133544922
+  ],
+  "allBenchmarkLearningStateDiscarded": true,
+  "actorUpdates": 0,
+  "sourceAlphaUpdates": 0,
+  "taskLearnerDataCollected": false,
+  "maximumPerNativeTorqueErrorNm": 0.0,
+  "final": {
+    "reward": 0.9808911125764591,
+    "dense": 0.9981264903370091,
+    "terms": {
+      "jointPositionErrorRad": 0.9990892744092915,
+      "hipSpeedErrorRadps": 0.9999944762195982,
+      "comHeightErrorM": 0.9999523153133689,
+      "torsoVerticalError": 0.9999578011761195,
+      "leftFootPositionErrorM": 0.9902288419627477,
+      "leftFootRotationErrorRad": 0.9983296089853059,
+      "wholeFootClearanceErrorM": 0.9999993343410393,
+      "signedForwardErrorM": 0.9990842220764562,
+      "comVelocityErrorMps": 0.9999876260869176
+    },
+    "cost": 0.01723537776054994,
+    "eventBonus": 0.0,
+    "terminated": false,
+    "truncated": false,
+    "not_done": 1.0,
+    "physicalFailure": null,
+    "success": false,
+    "awardedEvents": [],
+    "nativeSampleCount": 20,
+    "durationSeconds": 0.025,
+    "phase": "stabilize",
+    "referenceClock": {
+      "tau": 1.5749999999999984,
+      "rate": 1.0,
+      "last_native_substep": 7660,
+      "target_rate": 1.0,
+      "response_seconds": 0.1,
+      "sample_seconds": 0.00125
+    },
+    "quietConsecutiveSamples": 1181,
+    "loadedSlipM": [
+      0.005632676323738456,
+      0.005424753618224267
+    ],
+    "nativeConditions": [
+      {
+        "nativeId": 7641,
+        "quiet": true,
+        "anchorDriftM": 0.004781564500407581
+      },
+      {
+        "nativeId": 7642,
+        "quiet": true,
+        "anchorDriftM": 0.00478540331272538
+      },
+      {
+        "nativeId": 7643,
+        "quiet": true,
+        "anchorDriftM": 0.004789241606933709
+      },
+      {
+        "nativeId": 7644,
+        "quiet": true,
+        "anchorDriftM": 0.004793079542798296
+      },
+      {
+        "nativeId": 7645,
+        "quiet": true,
+        "anchorDriftM": 0.004796917246771742
+      },
+      {
+        "nativeId": 7646,
+        "quiet": true,
+        "anchorDriftM": 0.004800754819073216
+      },
+      {
+        "nativeId": 7647,
+        "quiet": true,
+        "anchorDriftM": 0.004804592339409168
+      },
+      {
+        "nativeId": 7648,
+        "quiet": true,
+        "anchorDriftM": 0.0048084298714427326
+      },
+      {
+        "nativeId": 7649,
+        "quiet": true,
+        "anchorDriftM": 0.004812267466251148
+      },
+      {
+        "nativeId": 7650,
+        "quiet": true,
+        "anchorDriftM": 0.004816105165002766
+      },
+      {
+        "nativeId": 7651,
+        "quiet": true,
+        "anchorDriftM": 0.004819943001040018
+      },
+      {
+        "nativeId": 7652,
+        "quiet": true,
+        "anchorDriftM": 0.0048237810015103535
+      },
+      {
+        "nativeId": 7653,
+        "quiet": true,
+        "anchorDriftM": 0.004827619188650515
+      },
+      {
+        "nativeId": 7654,
+        "quiet": true,
+        "anchorDriftM": 0.004831457580799522
+      },
+      {
+        "nativeId": 7655,
+        "quiet": true,
+        "anchorDriftM": 0.004835296193202653
+      },
+      {
+        "nativeId": 7656,
+        "quiet": true,
+        "anchorDriftM": 0.0048391350386479265
+      },
+      {
+        "nativeId": 7657,
+        "quiet": true,
+        "anchorDriftM": 0.004842974127968556
+      },
+      {
+        "nativeId": 7658,
+        "quiet": true,
+        "anchorDriftM": 0.004846813470440546
+      },
+      {
+        "nativeId": 7659,
+        "quiet": true,
+        "anchorDriftM": 0.004850653074093416
+      },
+      {
+        "nativeId": 7660,
+        "quiet": true,
+        "anchorDriftM": 0.004854492945953445
+      }
+    ],
+    "taskDataCollectionEnabled": false,
+    "optimizerEnabled": false,
+    "measurementOnly": true,
+    "heldTorqueTeacherActionVerified": false,
+    "replayEligible": false,
+    "sourceResidualCommandVerified": true,
+    "maximumPerNativeTorqueErrorNm": 0.0,
+    "sourceInnerPDHz": 800,
+    "sourceKDSeconds": 0.2
+  }
+}

@@ -1,0 +1,23 @@
+{
+  "stopped": "deterministic-residual-drift-stop-rollback",
+  "candidatePromoted": false,
+  "selectedPolicy": "immutable-source-SLOW-baseline",
+  "rollbackToFrozen": true,
+  "pairedPhysicalSafetyRegression": false,
+  "candidateActualTransitions": 264,
+  "candidateActorUpdates": 2,
+  "criticOnlyUpdates": 100,
+  "candidateOptimizerCallsCharged": 106,
+  "allStageNativeIntegrations": 6538,
+  "allStagePolicyIntervals": 328,
+  "allStagePhysicsSeconds": 0.40306047051853966,
+  "candidateRunWallSeconds": 48.85255458499887,
+  "validation": [],
+  "quietStabilizationQualified": false,
+  "forwardStepQualified": false,
+  "sourceHoldingReferencePreserved": true,
+  "sourceInnerPDHz": 800,
+  "actionUnits": "qpos-order residual radians",
+  "runtimeAdmissionSHA256": "ecfca07cb9761f767d997b1e7aabee0c63313ffe500b93ad33f05798f34df58d",
+  "sourceModelAndWeightsRedistributed": false
+}

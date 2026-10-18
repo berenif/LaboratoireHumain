@@ -1,0 +1,1674 @@
+{
+  "schema": 1,
+  "scope": "pure checkpoint/probe/loss/gradient audit, no optimizer call, no source engine, no new candidate",
+  "optimizerSteps": 0,
+  "nativeIntegrations": 0,
+  "sourceActorActionUnits": "qpos-order residual radians",
+  "probeSourceRows": [
+    2400,
+    2420,
+    2440,
+    2460,
+    2480,
+    2500,
+    2520,
+    2540,
+    2560,
+    2580,
+    2600,
+    2620,
+    2640,
+    2660,
+    2680,
+    2700,
+    2720,
+    2740,
+    2760,
+    2780,
+    2800,
+    2820,
+    2840,
+    2860,
+    2880,
+    2900,
+    2920,
+    2940,
+    2960,
+    2980,
+    3000,
+    3020,
+    3040,
+    3060,
+    3080,
+    3100,
+    3120,
+    3140,
+    3160,
+    3180,
+    3200,
+    3220,
+    3240,
+    3260,
+    3280,
+    3300,
+    3320,
+    3340,
+    3360,
+    3380,
+    3400,
+    3420,
+    3440,
+    3460,
+    3480,
+    3500,
+    3520,
+    3540,
+    3560,
+    3580,
+    3600,
+    3620,
+    3640,
+    3660,
+    3680,
+    3700,
+    3720,
+    3740,
+    3760,
+    3780,
+    3800,
+    3820,
+    3840,
+    3860,
+    3880,
+    3900,
+    3920,
+    3940,
+    3960,
+    3980,
+    4000,
+    4020,
+    4040,
+    4060,
+    4080,
+    4100,
+    4120,
+    4140,
+    4160,
+    4180,
+    4200,
+    4220,
+    4240,
+    4260,
+    4280,
+    4300,
+    4320,
+    4340,
+    4360,
+    4380,
+    4400,
+    4420,
+    4440,
+    4460,
+    4480,
+    4500,
+    4520,
+    4540,
+    4560,
+    4580,
+    4600,
+    4620,
+    4640,
+    4660,
+    4680,
+    4700,
+    4720,
+    4740,
+    4760,
+    4780,
+    4800,
+    4820,
+    4840,
+    4860,
+    4880,
+    4900,
+    4920,
+    4940,
+    4960,
+    4980,
+    5000,
+    5020,
+    5040,
+    5060,
+    5080,
+    5100,
+    5120,
+    5140,
+    5160,
+    5180,
+    5200,
+    5220,
+    5240,
+    5260,
+    5280,
+    5300,
+    5320,
+    5340,
+    5360,
+    5380,
+    5400,
+    5420,
+    5440,
+    5460,
+    5480,
+    5500,
+    5520,
+    5540,
+    5560,
+    5580,
+    5600,
+    5620,
+    5640,
+    5660,
+    5680,
+    5700,
+    5720,
+    5740,
+    5760,
+    5780,
+    5800,
+    5820,
+    5840,
+    5860,
+    5880,
+    5900,
+    5920,
+    5940,
+    5960,
+    5980,
+    6000,
+    6020,
+    6040,
+    6060,
+    6080,
+    6100,
+    6120,
+    6140,
+    6160,
+    6180,
+    6200,
+    6220,
+    6240,
+    6260,
+    6280,
+    6300,
+    6320,
+    6340,
+    6360,
+    6380,
+    6400
+  ],
+  "sourceCheckpointLabels": [
+    "critic-warmup actor0",
+    "actor1",
+    "actor2"
+  ],
+  "checkpointActorUpdateCounters": [
+    0,
+    1,
+    2
+  ],
+  "residualAndLayerDrift": [
+    {
+      "label": "actor_update_1",
+      "globalResidualDrift": {
+        "l2": 1.0892316976617693,
+        "rms": 0.01676534887237364,
+        "maximum": 0.031050220131874084,
+        "mean": -0.00037775049705916184,
+        "nonzero": 4221,
+        "count": 4221
+      },
+      "coordinates": [
+        {
+          "l2": 0.42994535545238427,
+          "rms": 0.030326007152710593,
+          "maximum": 0.031050220131874084,
+          "mean": 0.030323848054183658,
+          "nonzero": 201,
+          "count": 201,
+          "qposIndex": 15,
+          "joint": "right_shoulder1",
+          "entryDeltaRad": 0.030011191964149475,
+          "maximumProbeSourceRow": 2500
+        },
+        {
+          "l2": 0.3604395366171028,
+          "rms": 0.025423444693497818,
+          "maximum": 0.02653002366423607,
+          "mean": -0.025419320151283967,
+          "nonzero": 201,
+          "count": 201,
+          "qposIndex": 1,
+          "joint": "abdomen_y",
+          "entryDeltaRad": -0.02558761090040207,
+          "maximumProbeSourceRow": 2420
+        },
+        {
+          "l2": 0.36181591032075866,
+          "rms": 0.02552052660926349,
+          "maximum": 0.026259221136569977,
+          "mean": 0.02551921531187361,
+          "nonzero": 201,
+          "count": 201,
+          "qposIndex": 14,
+          "joint": "left_ankle_x",
+          "entryDeltaRad": 0.02579537034034729,
+          "maximumProbeSourceRow": 2460
+        },
+        {
+          "l2": 0.3496579764965729,
+          "rms": 0.02466297207718465,
+          "maximum": 0.025582049041986465,
+          "mean": -0.024660849582348297,
+          "nonzero": 201,
+          "count": 201,
+          "qposIndex": 18,
+          "joint": "left_shoulder1",
+          "entryDeltaRad": -0.025142773985862732,
+          "maximumProbeSourceRow": 2580
+        },
+        {
+          "l2": 0.3043173168687569,
+          "rms": 0.021464888528322956,
+          "maximum": 0.021989211440086365,
+          "mean": -0.02146247867031477,
+          "nonzero": 201,
+          "count": 201,
+          "qposIndex": 8,
+          "joint": "right_ankle_x",
+          "entryDeltaRad": -0.02142956852912903,
+          "maximumProbeSourceRow": 2880
+        },
+        {
+          "l2": 0.2806913375173188,
+          "rms": 0.01979844043273269,
+          "maximum": 0.020960062742233276,
+          "mean": 0.01977191754241488,
+          "nonzero": 201,
+          "count": 201,
+          "qposIndex": 20,
+          "joint": "left_elbow",
+          "entryDeltaRad": 0.020614296197891235,
+          "maximumProbeSourceRow": 5580
+        },
+        {
+          "l2": 0.2674804669328153,
+          "rms": 0.018866617467887203,
+          "maximum": 0.019882388412952423,
+          "mean": 0.018857495331052524,
+          "nonzero": 201,
+          "count": 201,
+          "qposIndex": 7,
+          "joint": "right_ankle_y",
+          "entryDeltaRad": 0.019476786255836487,
+          "maximumProbeSourceRow": 5760
+        },
+        {
+          "l2": 0.24279216211763452,
+          "rms": 0.017125238711450354,
+          "maximum": 0.01808423176407814,
+          "mean": -0.017118941334572004,
+          "nonzero": 201,
+          "count": 201,
+          "qposIndex": 16,
+          "joint": "right_shoulder2",
+          "entryDeltaRad": -0.016706125810742378,
+          "maximumProbeSourceRow": 3240
+        },
+        {
+          "l2": 0.2436071886437424,
+          "rms": 0.01718272625015022,
+          "maximum": 0.017974138259887695,
+          "mean": 0.01716966178286728,
+          "nonzero": 201,
+          "count": 201,
+          "qposIndex": 17,
+          "joint": "right_elbow",
+          "entryDeltaRad": 0.017582595348358154,
+          "maximumProbeSourceRow": 5580
+        },
+        {
+          "l2": 0.23535618824259152,
+          "rms": 0.01660074555421029,
+          "maximum": 0.017212629318237305,
+          "mean": 0.016595061664557577,
+          "nonzero": 201,
+          "count": 201,
+          "qposIndex": 9,
+          "joint": "left_hip_x",
+          "entryDeltaRad": 0.01710483431816101,
+          "maximumProbeSourceRow": 2660
+        },
+        {
+          "l2": 0.21693720499561747,
+          "rms": 0.015301570646027681,
+          "maximum": 0.015847019851207733,
+          "mean": -0.015297815467773089,
+          "nonzero": 201,
+          "count": 201,
+          "qposIndex": 19,
+          "joint": "left_shoulder2",
+          "entryDeltaRad": -0.015232565812766552,
+          "maximumProbeSourceRow": 4820
+        },
+        {
+          "l2": 0.19129359625121165,
+          "rms": 0.013492809945761691,
+          "maximum": 0.014018997550010681,
+          "mean": -0.013487122253287787,
+          "nonzero": 201,
+          "count": 201,
+          "qposIndex": 5,
+          "joint": "right_hip_y",
+          "entryDeltaRad": -0.013951122760772705,
+          "maximumProbeSourceRow": 5900
+        },
+        {
+          "l2": 0.1824027271263208,
+          "rms": 0.01286569638992026,
+          "maximum": 0.013723880052566528,
+          "mean": -0.012859588776210054,
+          "nonzero": 201,
+          "count": 201,
+          "qposIndex": 6,
+          "joint": "right_knee",
+          "entryDeltaRad": -0.01326712965965271,
+          "maximumProbeSourceRow": 2420
+        },
+        {
+          "l2": 0.14730453243706707,
+          "rms": 0.010390060615058592,
+          "maximum": 0.011917201802134514,
+          "mean": -0.010380376329580646,
+          "nonzero": 201,
+          "count": 201,
+          "qposIndex": 12,
+          "joint": "left_knee",
+          "entryDeltaRad": -0.01031953003257513,
+          "maximumProbeSourceRow": 2620
+        },
+        {
+          "l2": 0.12611369859065763,
+          "rms": 0.008895374440063305,
+          "maximum": 0.009323200210928917,
+          "mean": -0.008885899869104227,
+          "nonzero": 201,
+          "count": 201,
+          "qposIndex": 2,
+          "joint": "abdomen_x",
+          "entryDeltaRad": -0.008907945826649666,
+          "maximumProbeSourceRow": 4800
+        },
+        {
+          "l2": 0.1192238611201484,
+          "rms": 0.008409402774683107,
+          "maximum": 0.008981265127658844,
+          "mean": 0.008401816905434453,
+          "nonzero": 201,
+          "count": 201,
+          "qposIndex": 3,
+          "joint": "right_hip_x",
+          "entryDeltaRad": 0.008828073740005493,
+          "maximumProbeSourceRow": 3180
+        },
+        {
+          "l2": 0.11981414505158523,
+          "rms": 0.008451038192998181,
+          "maximum": 0.008778943680226803,
+          "mean": 0.008447190019214035,
+          "nonzero": 201,
+          "count": 201,
+          "qposIndex": 11,
+          "joint": "left_hip_y",
+          "entryDeltaRad": 0.008213912136852741,
+          "maximumProbeSourceRow": 4220
+        },
+        {
+          "l2": 0.10106951462810745,
+          "rms": 0.007128893903989206,
+          "maximum": 0.007553482428193092,
+          "mean": -0.007121430049692072,
+          "nonzero": 201,
+          "count": 201,
+          "qposIndex": 4,
+          "joint": "right_hip_z",
+          "entryDeltaRad": -0.00703943707048893,
+          "maximumProbeSourceRow": 4120
+        },
+        {
+          "l2": 0.08178580260366142,
+          "rms": 0.005768725730596931,
+          "maximum": 0.006190245971083641,
+          "mean": 0.005764525682568106,
+          "nonzero": 201,
+          "count": 201,
+          "qposIndex": 0,
+          "joint": "abdomen_z",
+          "entryDeltaRad": 0.005455786362290382,
+          "maximumProbeSourceRow": 3760
+        },
+        {
+          "l2": 0.04116323351862714,
+          "rms": 0.0029034306296927357,
+          "maximum": 0.003420300781726837,
+          "mean": -0.002885942731923725,
+          "nonzero": 201,
+          "count": 201,
+          "qposIndex": 13,
+          "joint": "left_ankle_y",
+          "entryDeltaRad": -0.002594791352748871,
+          "maximumProbeSourceRow": 3600
+        },
+        {
+          "l2": 0.012645583991581215,
+          "rms": 0.0008919507228433483,
+          "maximum": 0.0016655548242852092,
+          "mean": 0.0007962724836821209,
+          "nonzero": 201,
+          "count": 201,
+          "qposIndex": 10,
+          "joint": "left_hip_z",
+          "entryDeltaRad": 0.000873960554599762,
+          "maximumProbeSourceRow": 2400
+        }
+      ],
+      "tensorDrift": {
+        "trunk.0.weight": {
+          "l2": 0.002567882447772337,
+          "rms": 7.387273134893221e-06,
+          "maximum": 1.0013580322265625e-05,
+          "mean": 1.11950588844365e-07,
+          "nonzero": 66000,
+          "count": 120832
+        },
+        "trunk.0.bias": {
+          "l2": 0.00024492731493814455,
+          "rms": 7.653978591817017e-06,
+          "maximum": 1.0000541806221008e-05,
+          "mean": -5.663595814553446e-07,
+          "nonzero": 600,
+          "count": 1024
+        },
+        "trunk.2.weight": {
+          "l2": 0.004722676724638381,
+          "rms": 4.611988988904669e-06,
+          "maximum": 1.0013580322265625e-05,
+          "mean": -8.636562345756132e-08,
+          "nonzero": 223114,
+          "count": 1048576
+        },
+        "trunk.2.bias": {
+          "l2": 0.00019286734736840945,
+          "rms": 6.027104605262795e-06,
+          "maximum": 1.0000541806221008e-05,
+          "mean": -1.5623432858546948e-07,
+          "nonzero": 372,
+          "count": 1024
+        },
+        "trunk.4.weight": {
+          "l2": 0.0012498276283078446,
+          "rms": 6.026643435096049e-06,
+          "maximum": 1.0013580322265625e-05,
+          "mean": 1.5569211059009886e-06,
+          "nonzero": 15624,
+          "count": 43008
+        },
+        "trunk.4.bias": {
+          "l2": 6.485151817178764e-05,
+          "rms": 1.0006806504034311e-05,
+          "maximum": 1.0013580322265625e-05,
+          "mean": 4.292408448236529e-06,
+          "nonzero": 42,
+          "count": 42
+        }
+      },
+      "latentStdMinimum": 0.020060911774635315,
+      "latentStdMaximum": 0.020063040778040886
+    },
+    {
+      "label": "actor_update_2",
+      "globalResidualDrift": {
+        "l2": 2.1802384270968114,
+        "rms": 0.03355801886201037,
+        "maximum": 0.06216353178024292,
+        "mean": -0.000652526300096012,
+        "nonzero": 4221,
+        "count": 4221
+      },
+      "coordinates": [
+        {
+          "l2": 0.8633829498103643,
+          "rms": 0.06089833784558047,
+          "maximum": 0.06216353178024292,
+          "mean": 0.06089408599322115,
+          "nonzero": 201,
+          "count": 201,
+          "qposIndex": 15,
+          "joint": "right_shoulder1",
+          "entryDeltaRad": 0.06069287657737732,
+          "maximumProbeSourceRow": 2620
+        },
+        {
+          "l2": 0.72102460824365,
+          "rms": 0.05085715463508219,
+          "maximum": 0.05288319289684296,
+          "mean": -0.0508497923575527,
+          "nonzero": 201,
+          "count": 201,
+          "qposIndex": 1,
+          "joint": "abdomen_y",
+          "entryDeltaRad": -0.05141420662403107,
+          "maximumProbeSourceRow": 2420
+        },
+        {
+          "l2": 0.724658149053839,
+          "rms": 0.051113444843133196,
+          "maximum": 0.052452780306339264,
+          "mean": 0.051111381334155354,
+          "nonzero": 201,
+          "count": 201,
+          "qposIndex": 14,
+          "joint": "left_ankle_x",
+          "entryDeltaRad": 0.051614150404930115,
+          "maximumProbeSourceRow": 2460
+        },
+        {
+          "l2": 0.6914601289176701,
+          "rms": 0.048771837047309974,
+          "maximum": 0.05061262100934982,
+          "mean": -0.04876751730691141,
+          "nonzero": 201,
+          "count": 201,
+          "qposIndex": 18,
+          "joint": "left_shoulder1",
+          "entryDeltaRad": -0.050005171447992325,
+          "maximumProbeSourceRow": 2580
+        },
+        {
+          "l2": 0.6093767870478752,
+          "rms": 0.042982124515021744,
+          "maximum": 0.04403191804885864,
+          "mean": -0.0429773664296563,
+          "nonzero": 201,
+          "count": 201,
+          "qposIndex": 8,
+          "joint": "right_ankle_x",
+          "entryDeltaRad": -0.042804181575775146,
+          "maximumProbeSourceRow": 2940
+        },
+        {
+          "l2": 0.5676656626287198,
+          "rms": 0.040040048640863364,
+          "maximum": 0.04200184345245361,
+          "mean": 0.03999100054674481,
+          "nonzero": 201,
+          "count": 201,
+          "qposIndex": 20,
+          "joint": "left_elbow",
+          "entryDeltaRad": 0.0418170690536499,
+          "maximumProbeSourceRow": 5660
+        },
+        {
+          "l2": 0.5314812723303682,
+          "rms": 0.037487798534917495,
+          "maximum": 0.039085593074560165,
+          "mean": 0.037472951990454945,
+          "nonzero": 201,
+          "count": 201,
+          "qposIndex": 7,
+          "joint": "right_ankle_y",
+          "entryDeltaRad": 0.03889621049165726,
+          "maximumProbeSourceRow": 5660
+        },
+        {
+          "l2": 0.49434155489562465,
+          "rms": 0.03486816484823514,
+          "maximum": 0.036097586154937744,
+          "mean": 0.03484422650503282,
+          "nonzero": 201,
+          "count": 201,
+          "qposIndex": 17,
+          "joint": "right_elbow",
+          "entryDeltaRad": 0.035913556814193726,
+          "maximumProbeSourceRow": 4580
+        },
+        {
+          "l2": 0.48485617549354304,
+          "rms": 0.03419911777063377,
+          "maximum": 0.03608906641602516,
+          "mean": -0.03418812672816106,
+          "nonzero": 201,
+          "count": 201,
+          "qposIndex": 16,
+          "joint": "right_shoulder2",
+          "entryDeltaRad": -0.03322393447160721,
+          "maximumProbeSourceRow": 3240
+        },
+        {
+          "l2": 0.45928452599809494,
+          "rms": 0.032395432684445065,
+          "maximum": 0.0337381511926651,
+          "mean": 0.03238438514631186,
+          "nonzero": 201,
+          "count": 201,
+          "qposIndex": 9,
+          "joint": "left_hip_x",
+          "entryDeltaRad": 0.03351553529500961,
+          "maximumProbeSourceRow": 2620
+        },
+        {
+          "l2": 0.43455334977648175,
+          "rms": 0.030651030012150943,
+          "maximum": 0.03173232078552246,
+          "mean": -0.030643817797229064,
+          "nonzero": 201,
+          "count": 201,
+          "qposIndex": 19,
+          "joint": "left_shoulder2",
+          "entryDeltaRad": -0.030096516013145447,
+          "maximumProbeSourceRow": 4960
+        },
+        {
+          "l2": 0.38516060235900584,
+          "rms": 0.027167134227538164,
+          "maximum": 0.028323300182819366,
+          "mean": -0.027154592778626366,
+          "nonzero": 201,
+          "count": 201,
+          "qposIndex": 5,
+          "joint": "right_hip_y",
+          "entryDeltaRad": -0.028323300182819366,
+          "maximumProbeSourceRow": 6400
+        },
+        {
+          "l2": 0.37013022209380353,
+          "rms": 0.02610697294506336,
+          "maximum": 0.02786426618695259,
+          "mean": -0.026095310392886845,
+          "nonzero": 201,
+          "count": 201,
+          "qposIndex": 6,
+          "joint": "right_knee",
+          "entryDeltaRad": -0.027300376445055008,
+          "maximumProbeSourceRow": 2420
+        },
+        {
+          "l2": 0.2968632111670428,
+          "rms": 0.02093911645063789,
+          "maximum": 0.023938113823533058,
+          "mean": -0.02092033474525409,
+          "nonzero": 201,
+          "count": 201,
+          "qposIndex": 12,
+          "joint": "left_knee",
+          "entryDeltaRad": -0.020934894680976868,
+          "maximumProbeSourceRow": 2620
+        },
+        {
+          "l2": 0.24460373389587145,
+          "rms": 0.017253017132609613,
+          "maximum": 0.018406622111797333,
+          "mean": 0.017238161920463266,
+          "nonzero": 201,
+          "count": 201,
+          "qposIndex": 3,
+          "joint": "right_hip_x",
+          "entryDeltaRad": 0.018193591386079788,
+          "maximumProbeSourceRow": 3200
+        },
+        {
+          "l2": 0.24604524657008525,
+          "rms": 0.017354693597105744,
+          "maximum": 0.018097270280122757,
+          "mean": 0.017346518095675393,
+          "nonzero": 201,
+          "count": 201,
+          "qposIndex": 11,
+          "joint": "left_hip_y",
+          "entryDeltaRad": 0.016870297491550446,
+          "maximumProbeSourceRow": 4180
+        },
+        {
+          "l2": 0.24439491058919077,
+          "rms": 0.017238287872223982,
+          "maximum": 0.017892997711896896,
+          "mean": -0.017220466068728055,
+          "nonzero": 201,
+          "count": 201,
+          "qposIndex": 2,
+          "joint": "abdomen_x",
+          "entryDeltaRad": -0.01718144677579403,
+          "maximumProbeSourceRow": 4920
+        },
+        {
+          "l2": 0.19916555680970266,
+          "rms": 0.014048055232576037,
+          "maximum": 0.014923219569027424,
+          "mean": -0.014032424056893261,
+          "nonzero": 201,
+          "count": 201,
+          "qposIndex": 4,
+          "joint": "right_hip_z",
+          "entryDeltaRad": -0.013646508567035198,
+          "maximumProbeSourceRow": 4120
+        },
+        {
+          "l2": 0.16935898856600856,
+          "rms": 0.011945662009128062,
+          "maximum": 0.012731321156024933,
+          "mean": 0.0119390521124376,
+          "nonzero": 201,
+          "count": 201,
+          "qposIndex": 0,
+          "joint": "abdomen_z",
+          "entryDeltaRad": 0.011461113579571247,
+          "maximumProbeSourceRow": 3760
+        },
+        {
+          "l2": 0.08318012971087776,
+          "rms": 0.0058670739818117166,
+          "maximum": 0.006938271224498749,
+          "mean": -0.005833627915575137,
+          "nonzero": 201,
+          "count": 201,
+          "qposIndex": 13,
+          "joint": "left_ankle_y",
+          "entryDeltaRad": -0.005165974609553814,
+          "maximumProbeSourceRow": 3020
+        },
+        {
+          "l2": 0.027431434946163333,
+          "rms": 0.0019348642375986648,
+          "maximum": 0.0038015120662748814,
+          "mean": 0.001758560630960844,
+          "nonzero": 201,
+          "count": 201,
+          "qposIndex": 10,
+          "joint": "left_hip_z",
+          "entryDeltaRad": 0.002050185576081276,
+          "maximumProbeSourceRow": 2400
+        }
+      ],
+      "tensorDrift": {
+        "trunk.0.weight": {
+          "l2": 0.004913068389035526,
+          "rms": 1.4133893921702221e-05,
+          "maximum": 2.002716064453125e-05,
+          "mean": 2.1570231553079858e-07,
+          "nonzero": 66110,
+          "count": 120832
+        },
+        "trunk.0.bias": {
+          "l2": 0.00048632389372736185,
+          "rms": 1.5197621678980058e-05,
+          "maximum": 2.0013190805912018e-05,
+          "mean": -1.1136684108237205e-06,
+          "nonzero": 601,
+          "count": 1024
+        },
+        "trunk.2.weight": {
+          "l2": 0.009397465635503999,
+          "rms": 9.177212534671888e-06,
+          "maximum": 2.0015984773635864e-05,
+          "mean": -1.5569302131909768e-07,
+          "nonzero": 224664,
+          "count": 1048576
+        },
+        "trunk.2.bias": {
+          "l2": 0.0003839790986390947,
+          "rms": 1.199934683247171e-05,
+          "maximum": 2.0014122128486633e-05,
+          "mean": -2.7493548948598345e-07,
+          "nonzero": 374,
+          "count": 1024
+        },
+        "trunk.4.weight": {
+          "l2": 0.0024952746585091487,
+          "rms": 1.2032163715108611e-05,
+          "maximum": 2.002716064453125e-05,
+          "mean": 3.1144479803589863e-06,
+          "nonzero": 15708,
+          "count": 43008
+        },
+        "trunk.4.bias": {
+          "l2": 0.00012966649286738367,
+          "rms": 2.0007974227272998e-05,
+          "maximum": 2.002716064453125e-05,
+          "mean": 8.58676486088717e-06,
+          "nonzero": 42,
+          "count": 42
+        }
+      },
+      "latentStdMinimum": 0.020122116431593895,
+      "latentStdMaximum": 0.020126424729824066
+    }
+  ],
+  "relativeParameterDrift": [
+    {
+      "actorUpdate": 1,
+      "parameterDeltaL2": 0.00552821469682512,
+      "parameterReferenceL2": 75.97515456006003,
+      "relativeParameterL2": 7.276345443239533e-05
+    },
+    {
+      "actorUpdate": 2,
+      "parameterDeltaL2": 0.010912275714276623,
+      "parameterReferenceL2": 75.97515456006003,
+      "relativeParameterL2": 0.000143629529646435
+    }
+  ],
+  "layerOutputDirectionalDecomposition": [
+    {
+      "actorUpdate": 1,
+      "scope": "first-order output directional derivatives at frozen cp002 along ACTUAL checkpoint parameter differences, no parameter updates",
+      "layers": {
+        "inputLayer": {
+          "directionalResidual": {
+            "l2": 0.19092723606954168,
+            "rms": 0.0029387335392601437,
+            "maximum": 0.005932683125138283,
+            "mean": -5.42154535300585e-05,
+            "nonzero": 4221,
+            "count": 4221
+          },
+          "projectionOntoActualDrift": 0.16558060079239859
+        },
+        "hiddenLayer": {
+          "directionalResidual": {
+            "l2": 0.814420406771256,
+            "rms": 0.012535480079776796,
+            "maximum": 0.02341248281300068,
+            "mean": -7.840121289359057e-05,
+            "nonzero": 4221,
+            "count": 4221
+          },
+          "projectionOntoActualDrift": 0.745711078941642
+        },
+        "meanHead": {
+          "directionalResidual": {
+            "l2": 0.10682377753076717,
+            "rms": 0.0016442212451333424,
+            "maximum": 0.001710577867925167,
+            "mean": -0.0002641462127628893,
+            "nonzero": 4221,
+            "count": 4221
+          },
+          "projectionOntoActualDrift": 0.08545241570438356
+        },
+        "logstdHead": {
+          "directionalResidual": {
+            "l2": 0.0,
+            "rms": 0.0,
+            "maximum": 0.0,
+            "mean": 0.0,
+            "nonzero": 0,
+            "count": 4221
+          },
+          "projectionOntoActualDrift": 0.0
+        }
+      },
+      "linearSumErrorVsActual": {
+        "l2": 0.007685669438516629,
+        "rms": 0.00011829708016308847,
+        "maximum": 0.0009758546948432922,
+        "mean": -1.9012377440737014e-05,
+        "nonzero": 4221,
+        "count": 4221
+      },
+      "linearSum": {
+        "l2": 1.0857066729595193,
+        "rms": 0.016711092033315604,
+        "maximum": 0.030872220173478127,
+        "mean": -0.00039676287449989887,
+        "nonzero": 4221,
+        "count": 4221
+      }
+    },
+    {
+      "actorUpdate": 2,
+      "scope": "first-order output directional derivatives at frozen cp002 along ACTUAL checkpoint parameter differences, no parameter updates",
+      "layers": {
+        "inputLayer": {
+          "directionalResidual": {
+            "l2": 0.3812181088296145,
+            "rms": 0.005867672236049467,
+            "maximum": 0.011838804930448532,
+            "mean": -0.00011979647749209525,
+            "nonzero": 4221,
+            "count": 4221
+          },
+          "projectionOntoActualDrift": 0.16511681748779936
+        },
+        "hiddenLayer": {
+          "directionalResidual": {
+            "l2": 1.6253016557959248,
+            "rms": 0.02501648578604492,
+            "maximum": 0.04662100970745087,
+            "mean": -7.662373306783518e-05,
+            "nonzero": 4221,
+            "count": 4221
+          },
+          "projectionOntoActualDrift": 0.7434709957740068
+        },
+        "meanHead": {
+          "directionalResidual": {
+            "l2": 0.21353586572358743,
+            "rms": 0.003286723378786526,
+            "maximum": 0.003422063309699297,
+            "mean": -0.0005276411489023787,
+            "nonzero": 4221,
+            "count": 4221
+          },
+          "projectionOntoActualDrift": 0.08536336364039179
+        },
+        "logstdHead": {
+          "directionalResidual": {
+            "l2": 0.0,
+            "rms": 0.0,
+            "maximum": 0.0,
+            "mean": 0.0,
+            "nonzero": 0,
+            "count": 4221
+          },
+          "projectionOntoActualDrift": 0.0
+        }
+      },
+      "linearSumErrorVsActual": {
+        "l2": 0.024232697817845456,
+        "rms": 0.00037298733952300213,
+        "maximum": 0.0022152066230773926,
+        "mean": -7.153505006453361e-05,
+        "nonzero": 4221,
+        "count": 4221
+      },
+      "linearSum": {
+        "l2": 2.1671459094438927,
+        "rms": 0.03335650009741686,
+        "maximum": 0.06152799725532532,
+        "mean": -0.0007240613501605455,
+        "nonzero": 4221,
+        "count": 4221
+      }
+    }
+  ],
+  "firstActorUpdateLossClosure": {
+    "fourCollectionActionMaximumErrors": [
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "reconstructedCriticLoss": 0.1575152724981308,
+    "recordedCriticLoss": 0.1575152724981308,
+    "criticLossAbsoluteError": 0.0,
+    "reconstructedActorLoss": 10.758176803588867,
+    "recordedActorLoss": 10.758176803588867,
+    "actorLossAbsoluteError": 0.0,
+    "alphaBeforeUpdate": 0.10000000000000002,
+    "entropyLoss": 5.277935981750488,
+    "negativeQLoss": 5.480240821838379,
+    "sampleMeanLogProbability": 52.77935791015625,
+    "sampleMeanMinQ": -5.480240821838379,
+    "sampleMeanTarget": -5.462900638580322,
+    "batchSize": 128,
+    "replayCount": 260,
+    "parameterGradientLinearClosureMaximum": 1.686566974967718e-07,
+    "firstAdamAlgebraDeltaMaximumError": 1.862645149230957e-09
+  },
+  "firstActorUpdateGradientDecomposition": {
+    "entropyL2": 9.351197050676985,
+    "negativeQL2": 7.653204826940229,
+    "totalL2": 13.459490568192939,
+    "entropyToQL2Ratio": 1.2218668207807026,
+    "entropyQCosine": 0.24551566399451435,
+    "entropyTotalSignAgreement": 0.8382773995399475,
+    "qTotalSignAgreement": 0.9355294704437256,
+    "perTensor": {
+      "trunk.0.weight": {
+        "entropy": {
+          "l2": 1.5236790106331317,
+          "rms": 0.0043833131969165115,
+          "maximum": 0.054138895124197006,
+          "mean": -4.176746570198764e-05,
+          "nonzero": 66000,
+          "count": 120832
+        },
+        "negativeQ": {
+          "l2": 3.6235550319169065,
+          "rms": 0.01042422746543887,
+          "maximum": 0.1432856172323227,
+          "mean": -8.599658993939299e-05,
+          "nonzero": 66000,
+          "count": 120832
+        },
+        "total": {
+          "l2": 4.84813651055741,
+          "rms": 0.013947098174141486,
+          "maximum": 0.19200848042964935,
+          "mean": -0.00012776402553973135,
+          "nonzero": 66000,
+          "count": 120832
+        },
+        "entropyQCosine": 0.7292639902883892,
+        "actualParameterDelta": {
+          "l2": 0.002567882447772337,
+          "rms": 7.387273134893221e-06,
+          "maximum": 1.0013580322265625e-05,
+          "mean": 1.11950588844365e-07,
+          "nonzero": 66000,
+          "count": 120832
+        },
+        "firstAdamAlgebraDeltaError": {
+          "l2": 3.3660622537968514e-09,
+          "rms": 9.683473353471893e-12,
+          "maximum": 1.862645149230957e-09,
+          "mean": -2.8353967008562472e-14,
+          "nonzero": 54,
+          "count": 120832
+        }
+      },
+      "trunk.0.bias": {
+        "entropy": {
+          "l2": 0.2663157986816886,
+          "rms": 0.00832236870880277,
+          "maximum": 0.03427596390247345,
+          "mean": 0.0005280952992530175,
+          "nonzero": 600,
+          "count": 1024
+        },
+        "negativeQ": {
+          "l2": 0.6333397469781914,
+          "rms": 0.019791867093068485,
+          "maximum": 0.09071579575538635,
+          "mean": 0.001090132343598782,
+          "nonzero": 600,
+          "count": 1024
+        },
+        "total": {
+          "l2": 0.8473795348207552,
+          "rms": 0.026480610463148604,
+          "maximum": 0.12156283110380173,
+          "mean": 0.0016182277497733821,
+          "nonzero": 600,
+          "count": 1024
+        },
+        "entropyQCosine": 0.7292674748822014,
+        "actualParameterDelta": {
+          "l2": 0.00024492731493814455,
+          "rms": 7.653978591817017e-06,
+          "maximum": 1.0000541806221008e-05,
+          "mean": -5.663595814553446e-07,
+          "nonzero": 600,
+          "count": 1024
+        },
+        "firstAdamAlgebraDeltaError": {
+          "l2": 0.0,
+          "rms": 0.0,
+          "maximum": 0.0,
+          "mean": 0.0,
+          "nonzero": 0,
+          "count": 1024
+        }
+      },
+      "trunk.2.weight": {
+        "entropy": {
+          "l2": 2.300189127724028,
+          "rms": 0.002246278445042955,
+          "maximum": 0.0361158512532711,
+          "mean": -1.6636382939273435e-05,
+          "nonzero": 223114,
+          "count": 1048576
+        },
+        "negativeQ": {
+          "l2": 5.681095729941528,
+          "rms": 0.005547945048770912,
+          "maximum": 0.10536408424377441,
+          "mean": 4.815527794149611e-06,
+          "nonzero": 223114,
+          "count": 1048576
+        },
+        "total": {
+          "l2": 7.541474468732369,
+          "rms": 0.007364721160871322,
+          "maximum": 0.11557820439338684,
+          "mean": -1.1820856382990869e-05,
+          "nonzero": 223114,
+          "count": 1048576
+        },
+        "entropyQCosine": 0.738783373123882,
+        "actualParameterDelta": {
+          "l2": 0.004722676724638381,
+          "rms": 4.611988988904669e-06,
+          "maximum": 1.0013580322265625e-05,
+          "mean": -8.636562345756132e-08,
+          "nonzero": 223114,
+          "count": 1048576
+        },
+        "firstAdamAlgebraDeltaError": {
+          "l2": 4.109605929420476e-09,
+          "rms": 4.013287040449684e-12,
+          "maximum": 1.862645149230957e-09,
+          "mean": -2.96637714392034e-15,
+          "nonzero": 265,
+          "count": 1048576
+        }
+      },
+      "trunk.2.bias": {
+        "entropy": {
+          "l2": 0.2825537812347386,
+          "rms": 0.008829805663585584,
+          "maximum": 0.04420241713523865,
+          "mean": -9.682784762787833e-05,
+          "nonzero": 372,
+          "count": 1024
+        },
+        "negativeQ": {
+          "l2": 0.6978850131821905,
+          "rms": 0.021808906661943454,
+          "maximum": 0.12897731363773346,
+          "mean": 2.8143196161067863e-05,
+          "nonzero": 372,
+          "count": 1024
+        },
+        "total": {
+          "l2": 0.9264127032912388,
+          "rms": 0.02895039697785122,
+          "maximum": 0.141489177942276,
+          "mean": -6.868472567589379e-05,
+          "nonzero": 372,
+          "count": 1024
+        },
+        "entropyQCosine": 0.7387806285706532,
+        "actualParameterDelta": {
+          "l2": 0.00019286734736840945,
+          "rms": 6.027104605262795e-06,
+          "maximum": 1.0000541806221008e-05,
+          "mean": -1.5623432858546948e-07,
+          "nonzero": 372,
+          "count": 1024
+        },
+        "firstAdamAlgebraDeltaError": {
+          "l2": 1.4551915228366852e-11,
+          "rms": 4.547473508864641e-13,
+          "maximum": 1.4551915228366852e-11,
+          "mean": 1.4210854715202004e-14,
+          "nonzero": 1,
+          "count": 1024
+        }
+      },
+      "trunk.4.weight": {
+        "entropy": {
+          "l2": 8.88581764684748,
+          "rms": 0.04284723218940119,
+          "maximum": 0.24695058166980743,
+          "mean": -0.015430745615839245,
+          "nonzero": 15624,
+          "count": 43008
+        },
+        "negativeQ": {
+          "l2": 3.488098546137716,
+          "rms": 0.016819540333342254,
+          "maximum": 0.19184419512748718,
+          "mean": 0.0005633769606823766,
+          "nonzero": 15624,
+          "count": 43008
+        },
+        "total": {
+          "l2": 9.91474008098334,
+          "rms": 0.04780867526559843,
+          "maximum": 0.24740082025527954,
+          "mean": -0.01486736877407746,
+          "nonzero": 15624,
+          "count": 43008
+        },
+        "entropyQCosine": 0.11578621726917038,
+        "actualParameterDelta": {
+          "l2": 0.0012498276283078446,
+          "rms": 6.026643435096049e-06,
+          "maximum": 1.0013580322265625e-05,
+          "mean": 1.5569211059009886e-06,
+          "nonzero": 15624,
+          "count": 43008
+        },
+        "firstAdamAlgebraDeltaError": {
+          "l2": 8.19151336996416e-11,
+          "rms": 3.9499311070147963e-13,
+          "maximum": 1.4551915228366852e-11,
+          "mean": -1.136022493006922e-13,
+          "nonzero": 5298,
+          "count": 43008
+        }
+      },
+      "trunk.4.bias": {
+        "entropy": {
+          "l2": 0.8508246193560556,
+          "rms": 0.1312850889968611,
+          "maximum": 0.18367034196853638,
+          "mean": -0.09449926846822823,
+          "nonzero": 42,
+          "count": 42
+        },
+        "negativeQ": {
+          "l2": 0.3339912674246392,
+          "rms": 0.051535971421706725,
+          "maximum": 0.14272324740886688,
+          "mean": 0.0034502499871623946,
+          "nonzero": 42,
+          "count": 42
+        },
+        "total": {
+          "l2": 0.9493461546876765,
+          "rms": 0.1464872919419388,
+          "maximum": 0.1840030997991562,
+          "mean": -0.0910490175620431,
+          "nonzero": 42,
+          "count": 42
+        },
+        "entropyQCosine": 0.11578611410668276,
+        "actualParameterDelta": {
+          "l2": 6.485151817178764e-05,
+          "rms": 1.0006806504034311e-05,
+          "maximum": 1.0013580322265625e-05,
+          "mean": 4.292408448236529e-06,
+          "nonzero": 42,
+          "count": 42
+        },
+        "firstAdamAlgebraDeltaError": {
+          "l2": 0.0,
+          "rms": 0.0,
+          "maximum": 0.0,
+          "mean": 0.0,
+          "nonzero": 0,
+          "count": 42
+        }
+      }
+    },
+    "meanHead": {
+      "trunk.4.weight": {
+        "entropy": {
+          "l2": 1.3218854104545499,
+          "rms": 0.009014345168847837,
+          "maximum": 0.08288902789354324,
+          "mean": -0.0008816145009514777,
+          "nonzero": 7812,
+          "count": 21504
+        },
+        "negativeQ": {
+          "l2": 3.488083203140543,
+          "rms": 0.023786317423654123,
+          "maximum": 0.19184419512748718,
+          "mean": 0.0011230830996238944,
+          "nonzero": 7812,
+          "count": 21504
+        },
+        "total": {
+          "l2": 4.5946180001338135,
+          "rms": 0.031332120200922346,
+          "maximum": 0.2222040742635727,
+          "mean": 0.00024146864287608171,
+          "nonzero": 7812,
+          "count": 21504
+        }
+      },
+      "trunk.4.bias": {
+        "entropy": {
+          "l2": 0.12657210027804972,
+          "rms": 0.027620296685414474,
+          "maximum": 0.06164407357573509,
+          "mean": -0.005399347303041611,
+          "nonzero": 21,
+          "count": 21
+        },
+        "negativeQ": {
+          "l2": 0.3339898007131752,
+          "rms": 0.07288254967196864,
+          "maximum": 0.14272324740886688,
+          "mean": 0.006877902496073928,
+          "nonzero": 21,
+          "count": 21
+        },
+        "total": {
+          "l2": 0.4399420207803492,
+          "rms": 0.09600321960084693,
+          "maximum": 0.1653013378381729,
+          "mean": 0.0014785572531677428,
+          "nonzero": 21,
+          "count": 21
+        }
+      }
+    },
+    "logstdHead": {
+      "trunk.4.weight": {
+        "entropy": {
+          "l2": 8.786943394301199,
+          "rms": 0.05992088278523427,
+          "maximum": 0.24695058166980743,
+          "mean": -0.029979876730727013,
+          "nonzero": 7812,
+          "count": 21504
+        },
+        "negativeQ": {
+          "l2": 0.010345798028939916,
+          "rms": 7.055119433384235e-05,
+          "maximum": 0.0005845474079251289,
+          "mean": 3.670821740858757e-06,
+          "nonzero": 7812,
+          "count": 21504
+        },
+        "total": {
+          "l2": 8.785872540977568,
+          "rms": 0.05991358030545194,
+          "maximum": 0.24740082025527954,
+          "mean": -0.029976206191031002,
+          "nonzero": 7812,
+          "count": 21504
+        }
+      },
+      "trunk.4.bias": {
+        "entropy": {
+          "l2": 0.841357258442322,
+          "rms": 0.1835992058720221,
+          "maximum": 0.18367034196853638,
+          "mean": -0.18359918963341487,
+          "nonzero": 21,
+          "count": 21
+        },
+        "negativeQ": {
+          "l2": 0.0009898158871089137,
+          "rms": 0.00021599553460697435,
+          "maximum": 0.0004335793782956898,
+          "mean": 2.2597478250862056e-05,
+          "nonzero": 21,
+          "count": 21
+        },
+        "total": {
+          "l2": 0.8412545035671314,
+          "rms": 0.18357678291994653,
+          "maximum": 0.1840030997991562,
+          "mean": -0.18357659237725393,
+          "nonzero": 21,
+          "count": 21
+        }
+      }
+    }
+  },
+  "gradientParameterGroups": {
+    "sharedTrunk": {
+      "entropyL2": 2.786257076197639,
+      "negativeQL2": 6.803907883622261,
+      "entropyToQL2Ratio": 0.4095083478282326,
+      "cosine": 0.7358106446050308
+    },
+    "meanHead": {
+      "entropyL2": 1.3279312990292045,
+      "negativeQL2": 3.504036760510885,
+      "entropyToQL2Ratio": 0.3789718515497518,
+      "cosine": 0.7803783757165569
+    },
+    "logstdHead": {
+      "entropyL2": 8.827131824720137,
+      "negativeQL2": 0.010393039610527337,
+      "entropyToQL2Ratio": 849.3311057699561,
+      "cosine": -0.10409830987485608
+    },
+    "meanAffectingParameters": {
+      "entropyL2": 3.086523939580386,
+      "negativeQL2": 7.653197770071599,
+      "entropyToQL2Ratio": 0.4032985991359675,
+      "cosine": 0.7442402413109473
+    }
+  },
+  "originalTemperatureLocalCounterfactual": {
+    "scope": "local first-actor-loss scaling ONLY; same recorded actor/noise/postcritic, no critic retraining or optimizer update",
+    "originalLogAlpha": -7.397831280657282,
+    "originalAlpha": 0.000612579835321518,
+    "freshAlpha": 0.10000000000000002,
+    "freshToOriginalAlphaRatio": 163.24402834369192,
+    "entropyLossAtOriginalAlpha": 0.032331571545382284,
+    "negativeQLossUnchanged": 5.480240821838379,
+    "totalActorLossAtOriginalAlpha": 5.512572393383762,
+    "entropyGradientL2AtOriginalAlpha": 0.05728354749362772,
+    "negativeQGradientL2Unchanged": 7.653204826940229,
+    "totalGradientL2AtOriginalAlpha": 7.667469921609073,
+    "freshVsReweightedGradientCosine": 0.744044555818642
+  },
+  "originalVsReinitializedLatentStd": {
+    "probeCount": 201,
+    "coordinateCount": 21,
+    "source": "existing original safe student.bin with original logstd head",
+    "originalMinimum": 0.09109055250883102,
+    "originalMedian": 0.16320765018463135,
+    "originalMaximum": 0.2059604823589325,
+    "originalQuantiles": {
+      "0.1": 0.10771270841360092,
+      "0.25": 0.14118923246860504,
+      "0.5": 0.16320765018463135,
+      "0.75": 0.17496976256370544,
+      "0.9": 0.19893471896648407
+    },
+    "freshConstant": 0.02,
+    "originalBelowFreshCount": 0,
+    "originalAboveFreshCount": 4221,
+    "perCoordinate": [
+      {
+        "qposIndex": 0,
+        "joint": "abdomen_z",
+        "minimum": 0.14050894975662231,
+        "median": 0.1487734019756317,
+        "maximum": 0.15136097371578217,
+        "entryStd": 0.15136097371578217,
+        "freshToEntryOriginalRatio": 0.13213445651819716
+      },
+      {
+        "qposIndex": 1,
+        "joint": "abdomen_y",
+        "minimum": 0.14844952523708344,
+        "median": 0.1644914597272873,
+        "maximum": 0.16753005981445312,
+        "entryStd": 0.16753005981445312,
+        "freshToEntryOriginalRatio": 0.11938156067126625
+      },
+      {
+        "qposIndex": 2,
+        "joint": "abdomen_x",
+        "minimum": 0.13531199097633362,
+        "median": 0.14279988408088684,
+        "maximum": 0.14380580186843872,
+        "entryStd": 0.14380580186843872,
+        "freshToEntryOriginalRatio": 0.13907644712622289
+      },
+      {
+        "qposIndex": 3,
+        "joint": "right_hip_x",
+        "minimum": 0.12699507176876068,
+        "median": 0.14106197655200958,
+        "maximum": 0.14258065819740295,
+        "entryStd": 0.14138568937778473,
+        "freshToEntryOriginalRatio": 0.1414570320943847
+      },
+      {
+        "qposIndex": 4,
+        "joint": "right_hip_z",
+        "minimum": 0.14527922868728638,
+        "median": 0.1539483219385147,
+        "maximum": 0.15707984566688538,
+        "entryStd": 0.15707984566688538,
+        "freshToEntryOriginalRatio": 0.12732378183267007
+      },
+      {
+        "qposIndex": 5,
+        "joint": "right_hip_y",
+        "minimum": 0.12292083352804184,
+        "median": 0.13341842591762543,
+        "maximum": 0.13849268853664398,
+        "entryStd": 0.13849268853664398,
+        "freshToEntryOriginalRatio": 0.14441195568752477
+      },
+      {
+        "qposIndex": 6,
+        "joint": "right_knee",
+        "minimum": 0.09109055250883102,
+        "median": 0.09641268104314804,
+        "maximum": 0.09763479232788086,
+        "entryStd": 0.09763479232788086,
+        "freshToEntryOriginalRatio": 0.2048450098898684
+      },
+      {
+        "qposIndex": 7,
+        "joint": "right_ankle_y",
+        "minimum": 0.19149592518806458,
+        "median": 0.20202529430389404,
+        "maximum": 0.20307210087776184,
+        "entryStd": 0.2027071863412857,
+        "freshToEntryOriginalRatio": 0.09866448427895014
+      },
+      {
+        "qposIndex": 8,
+        "joint": "right_ankle_x",
+        "minimum": 0.15777571499347687,
+        "median": 0.1711653470993042,
+        "maximum": 0.17741265892982483,
+        "entryStd": 0.17741265892982483,
+        "freshToEntryOriginalRatio": 0.11273152728019795
+      },
+      {
+        "qposIndex": 9,
+        "joint": "left_hip_x",
+        "minimum": 0.13272418081760406,
+        "median": 0.14080053567886353,
+        "maximum": 0.14674319326877594,
+        "entryStd": 0.14674319326877594,
+        "freshToEntryOriginalRatio": 0.13629252270235015
+      },
+      {
+        "qposIndex": 10,
+        "joint": "left_hip_z",
+        "minimum": 0.16503965854644775,
+        "median": 0.1676899790763855,
+        "maximum": 0.1710917353630066,
+        "entryStd": 0.1710917353630066,
+        "freshToEntryOriginalRatio": 0.11689635362903915
+      },
+      {
+        "qposIndex": 11,
+        "joint": "left_hip_y",
+        "minimum": 0.09976017475128174,
+        "median": 0.10855608433485031,
+        "maximum": 0.11167890578508377,
+        "entryStd": 0.11167890578508377,
+        "freshToEntryOriginalRatio": 0.17908484918797682
+      },
+      {
+        "qposIndex": 12,
+        "joint": "left_knee",
+        "minimum": 0.10267114639282227,
+        "median": 0.10723549127578735,
+        "maximum": 0.10818585753440857,
+        "entryStd": 0.10729093849658966,
+        "freshToEntryOriginalRatio": 0.18640903211631166
+      },
+      {
+        "qposIndex": 13,
+        "joint": "left_ankle_y",
+        "minimum": 0.16922558844089508,
+        "median": 0.18467755615711212,
+        "maximum": 0.19249849021434784,
+        "entryStd": 0.19249849021434784,
+        "freshToEntryOriginalRatio": 0.10389691876403769
+      },
+      {
+        "qposIndex": 14,
+        "joint": "left_ankle_x",
+        "minimum": 0.1524255871772766,
+        "median": 0.16270712018013,
+        "maximum": 0.16800540685653687,
+        "entryStd": 0.16800540685653687,
+        "freshToEntryOriginalRatio": 0.11904378778165393
+      },
+      {
+        "qposIndex": 15,
+        "joint": "right_shoulder1",
+        "minimum": 0.16241763532161713,
+        "median": 0.17189283668994904,
+        "maximum": 0.1780698299407959,
+        "entryStd": 0.1780698299407959,
+        "freshToEntryOriginalRatio": 0.11231548885428563
+      },
+      {
+        "qposIndex": 16,
+        "joint": "right_shoulder2",
+        "minimum": 0.16380412876605988,
+        "median": 0.17834226787090302,
+        "maximum": 0.18129020929336548,
+        "entryStd": 0.18129020929336548,
+        "freshToEntryOriginalRatio": 0.11032035363606325
+      },
+      {
+        "qposIndex": 17,
+        "joint": "right_elbow",
+        "minimum": 0.18510867655277252,
+        "median": 0.20220054686069489,
+        "maximum": 0.2059604823589325,
+        "entryStd": 0.2059604823589325,
+        "freshToEntryOriginalRatio": 0.09710600679768024
+      },
+      {
+        "qposIndex": 18,
+        "joint": "left_shoulder1",
+        "minimum": 0.1826307773590088,
+        "median": 0.19653411209583282,
+        "maximum": 0.20314276218414307,
+        "entryStd": 0.20314276218414307,
+        "freshToEntryOriginalRatio": 0.09845292928463076
+      },
+      {
+        "qposIndex": 19,
+        "joint": "left_shoulder2",
+        "minimum": 0.15711651742458344,
+        "median": 0.16516388952732086,
+        "maximum": 0.17099064588546753,
+        "entryStd": 0.17099064588546753,
+        "freshToEntryOriginalRatio": 0.11696546262183455
+      },
+      {
+        "qposIndex": 20,
+        "joint": "left_elbow",
+        "minimum": 0.16152642667293549,
+        "median": 0.17195026576519012,
+        "maximum": 0.17546403408050537,
+        "entryStd": 0.17546403408050537,
+        "freshToEntryOriginalRatio": 0.11398347305080037
+      }
+    ]
+  },
+  "inputSHA256": {
+    "/workspace/scratch/5def91918e35/mvp-landing/outputs/getup-source-slow-stabilization/session-20261018T010710Z/learner/checkpoint-002.pt": "5df285355b4369f840e708783dbafeba34c55bedc01cec184fa9ab7d87e8a7f8",
+    "/workspace/scratch/5def91918e35/mvp-landing/outputs/getup-source-slow-stabilization/session-20261018T010710Z/learner/checkpoint-003.pt": "e8f98e375f810cee91512db9db9b3bbffbf673e3c73a3cdffcec27e4ed9cc33e",
+    "/workspace/scratch/5def91918e35/mvp-landing/outputs/getup-source-slow-stabilization/session-20261018T010710Z/learner/checkpoint-004.pt": "aa81fa4f069c6b1270a960cc7e84483b7b716a0fbc4a4601cdd981b04abbe563",
+    "/workspace/scratch/5def91918e35/mvp-landing/outputs/getup-source-slow-stabilization/session-20261018T010710Z/learner/transitions.json": "92f57967ee1914c0e4fbb02e0c8cc2868d023c02faaa2168d566b63cc6fc3141",
+    "/workspace/scratch/5def91918e35/mvp-landing/outputs/getup-source-slow-stabilization/session-20261018T010710Z/learner/updates.json": "86d7cd39bbef4158c5028a5049e7c41a94934e3db9b379e31fa23e055f28704a",
+    "/workspace/scratch/5def91918e35/mvp-landing/outputs/getup-source-engine/session-20261017T233404Z/slow-continuation/frames.ndjson": "a880c0f00ba698da9c06267f17ea677410cf0147d70f105942f4892da7bef47a",
+    "/workspace/scratch/5def91918e35/mvp-landing/scripts/getup-training/SAC.py": "64b1abe69edaac1e3c3f9064f11bcb3d1168eb1d829117dd415eaa204dee0420",
+    "/workspace/scratch/5def91918e35/mvp-landing/scripts/getup-step/slow_learning.py": "79b170e412ebb2b23bce8d4228445b337efc214a50fddeabb7da19d1bb18e7da",
+    "/workspace/scratch/5def91918e35/mvp-landing/rust/crates/sim/data/getup-policy/student.bin": "c489faed55bdab1669c51dab71a102db91ff2a55143789f682e45cd8169d6dbb",
+    "/workspace/scratch/5def91918e35/mvp-landing/outputs/getup-source-slow-stabilization/session-20261018T010710Z/learner/pinned-student-log-alpha-local.pt": "839dd6a95e3a17db160eb06611ba22254e3d9d17eb34f326ac0260e49c189465",
+    "/workspace/scratch/5def91918e35/mvp-landing/outputs/getup-source-slow-stabilization/session-20261018T010710Z/learner/causal-gradient-audit.py": "ce8a7eec5aa26d01d514edc6c4c83bd196d41f42e738870d4e7f4bf987dc89d9"
+  },
+  "limitations": [
+    "Gradient decomposition is local to one exact recorded minibatch and first update.",
+    "Q-gradient magnitude does not establish critic calibration or accuracy.",
+    "First Adam fresh-moment algebra normalizes coordinate magnitudes; gradient norms alone do not assign deterministic-output drift causality.",
+    "Original-alpha reweighting leaves fresh-alpha-trained critics fixed, so it cannot predict an alternate training result.",
+    "The stopped candidate remains rejected; no alternate parameters are saved or evaluated in an engine."
+  ]
+}
