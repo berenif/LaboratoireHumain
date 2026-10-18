@@ -135,3 +135,42 @@ The next proposed diagnostic is frozen-actor, replay-only critic target fitting
 with episode-separated holdout and exact mask0 target checks. It requires a fresh
 bounded review/admission. No further actor update or physics is authorized by
 this failed result or by the diagnosis.
+
+## Closed replay-only critic check: two fixed200-update arms
+
+A separate15min/zero-physics admission starts03:47:02UTC. Both arms restore the
+SAME final critic and populated Adam, keep actor/alpha/target critic frozen, and
+regress to the SAME fixed source-Gaussian/noise Bellman targets. All510 mask0
+targets independently reproduce exactly as reward. There is no Polyak update.
+Episode%5 splits3994 training/1005 update-heldout rows; one unfinished row is
+excluded. The starting weights already saw these episodes, so this is withheld
+from the diagnostic updates, not independently unseen-data validation.
+
+Both arms finish exactly200 critic updates (400 calls total), with0 actor,
+target-critic or physics updates. All Adam step counters are1994→2194 and frozen
+inputs/hashes remain unchanged. Neither passes the prospectively fixed endpoint
+criteria (both critics: heldout terminal RMSE≤1/absolute bias≤.5, train-terminal
+RMSE≤.5, nonterminal fixed-target RMSE≤initial+10%).
+
+-Initial heldout terminal twin RMSE9.62/10.01; nonterminal2.45/2.26
+-Natural mixture: terminal10.37/10.50; train-terminal9.53/9.63;
+ nonterminal2.19/2.19
+-50% terminal-balanced: terminal6.42/6.48; train-terminal4.11/4.45;
+ nonterminal4.83/4.90
+
+Oversampling terminals changes the fit substantially but trades off nonterminal
+fit and does not solve even the training-terminal slice at this fixed endpoint.
+This rejects the simple200-update weighting remedy, not the possibility of any
+future value model. Exact target/mask and gradient fixtures do not support a
+mask0-bootstrap or MSE-algebra bug. Remaining explanations include insufficient
+optimization, sampling/approximation conflict and the partially observed task;
+this test does not isolate one. Frozen nonterminal bootstrap targets are a
+fitability diagnostic, not ground-truth Q values.
+
+No extra arm, extension, actor update or physical run follows. The next engineering
+prerequisite is a value representation/target-fitting procedure that demonstrably
+fits the exact absorbing terminal targets while preserving the declared
+nonterminal check. Only then could a separately reviewed policy-learning proposal
+be justified. The baseline remains selected; no stabilization or footstep success
+is claimed. Compact fixed-target evidence is in the sibling critic-fit evidence
+folder; diagnostic endpoint weights stay local.

@@ -1,0 +1,43 @@
+{
+  "schema": 1,
+  "scope": "Replay-only fixed-target critic fitting diagnostic; no policy release",
+  "sourceCheckpoint": "outputs/getup-source-continuation/session-20261018T032214Z/learner/milestone-final.pt",
+  "sourceCheckpointSHA256": "0b7756ced7ea94fe847d4404617b29584a9d92f2ea87eb9e55ec62691c83d0cf",
+  "arms": [
+    "natural",
+    "balanced"
+  ],
+  "updatesPerArm": 200,
+  "maximumOptimizerCalls": 400,
+  "batchSize": 128,
+  "wallSeconds": 900,
+  "reportReserveSeconds": 120,
+  "physicsIntegrations": 0,
+  "actorUpdates": 0,
+  "targetCriticUpdates": 0,
+  "frozen": "same final full Gaussian actor, source alpha and target critic in both arms",
+  "initialCriticAndAdam": "same populated final checkpoint, independently restored for each arm",
+  "targets": "Once-only source Gaussian noise20261018; source epsilon-squash; frozen target twin minimum and alpha, gamma.97; mask0 targets BIT-EXACT reward; reused unchanged by both arms",
+  "split": "Complete episodes0..509 only; episode%5==0 heldout, remaining train; final unfinished episode excluded; entire carried episode48 stays together",
+  "sampling": {
+    "natural": "128 training rows uniformly with replacement",
+    "balanced": "64 training physical terminals plus64 training nonterminals, uniformly with replacement"
+  },
+  "samplerSeed": 934718,
+  "targetNoiseSeed": 20261018,
+  "evaluationUpdates": [
+    0,
+    50,
+    100,
+    200
+  ],
+  "endpointCriteriaPerTwin": {
+    "heldoutTerminalRMSEMaximum": 1.0,
+    "heldoutTerminalAbsoluteBiasMaximum": 0.5,
+    "trainTerminalRMSEMaximum": 0.5,
+    "heldoutNonterminalFixedTargetRMSEMaximumFactorOfInitial": 1.1
+  },
+  "selection": "Fixed200-update endpoints; all outcomes retained; neither arm releases actor learning, new observation, policy promotion or physics",
+  "holdoutInterpretation": "Separated only for these additional200-update fits: starting actor/critic already saw all5000 rows; this is closed-data calibration, not unseen-episode or physical generalization.",
+  "nonterminalMetricInterpretation": "Regression to a single frozen bootstrap/noise target, not ground-truth value calibration or a policy advantage certificate."
+}

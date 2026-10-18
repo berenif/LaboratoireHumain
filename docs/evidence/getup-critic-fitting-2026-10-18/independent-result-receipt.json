@@ -1,0 +1,23 @@
+{
+  "scope": "independent R1 saved-data sanity audit, zero updates/physics",
+  "sourceSummarySHA256": "48769bf4c79c76fbe440549a75cee7c7f2940c128ad0d46e820d6f715e5fafe0",
+  "endpointMetricMaximumReconstructionError": 0,
+  "checkedInputHashes": 87,
+  "terminalTargetsBitExactReward": 510,
+  "allBatchIndicesReconstructed": true,
+  "allBatchesTrainOnly": true,
+  "balancedBatchStrata": [
+    64,
+    64
+  ],
+  "adamParameterStatesPerArm": 12,
+  "adamInitialStep": 1994,
+  "adamFinalStep": 2194,
+  "actualCriticCalls": 400,
+  "actorUpdates": 0,
+  "targetCriticUpdates": 0,
+  "physicsIntegrations": 0,
+  "originalCheckpointUnmodified": true,
+  "bothEndpointCriteriaFailed": true,
+  "noAdditionalUpdatesAdmitted": true
+}

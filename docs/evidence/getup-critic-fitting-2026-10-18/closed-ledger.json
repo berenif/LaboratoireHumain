@@ -1,0 +1,22 @@
+{
+  "schema": 1,
+  "kind": "frozen-actor-fixed-target-critic-fitting",
+  "startedUtc": "2026-10-18T03:47:02+00:00",
+  "deadlineUtc": "2026-10-18T04:02:02+00:00",
+  "wallLimitSeconds": 900,
+  "optimizerLimit": 400,
+  "optimizerCalls": 400,
+  "armOptimizerCalls": {
+    "natural": 200,
+    "balanced": 200
+  },
+  "pendingOptimizer": null,
+  "physicsSeconds": 0,
+  "sourceIntegrations": 0,
+  "actorUpdates": 0,
+  "targetCriticUpdates": 0,
+  "reservedReportWallSeconds": 120,
+  "status": "closed-fixed-critic-diagnostic",
+  "noAutomaticExtension": true,
+  "result": "completed-fixed200-per-arm"
+}

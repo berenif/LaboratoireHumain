@@ -1,0 +1,34 @@
+{
+  "schema": 1,
+  "noWeightsOrReplayDistributed": true,
+  "files": {
+    "admission.json": {
+      "sha256": "346f8ff739f2294475ce3f10a91912120a351159b6ec7a3a330885902f807e89",
+      "bytes": 15964
+    },
+    "closed-ledger.json": {
+      "sha256": "f8acb1740268d226f0859c6f53f99d6aa7e0d32466e09e5ffe2da45faa1726ea",
+      "bytes": 593
+    },
+    "closure-verification.json": {
+      "sha256": "f5dc3fa178e3fe96305c20af7b1f1eb7eebb97bd288033d7b5668071b86fea4c",
+      "bytes": 627
+    },
+    "fixtures.json": {
+      "sha256": "171f7de4870da2ebe8871e8d4218e2b6fc2bca449f14dcc1baf5fbe8d839b986",
+      "bytes": 172
+    },
+    "independent-result-receipt.json": {
+      "sha256": "f129c57f4129279a0369f4dfcd49925e0ea7fdc412164a9996113ff602543877",
+      "bytes": 715
+    },
+    "outcome.json": {
+      "sha256": "48769bf4c79c76fbe440549a75cee7c7f2940c128ad0d46e820d6f715e5fafe0",
+      "bytes": 12796
+    },
+    "target-split-receipt.json": {
+      "sha256": "4af62e0118ee932d30445a3b58206df95d36853e163006f0af2dc26a5821ae04",
+      "bytes": 5001
+    }
+  }
+}

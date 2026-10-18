@@ -1,0 +1,24 @@
+{
+  "passed": true,
+  "allInputHashesUnchanged": true,
+  "checkedInputs": 87,
+  "fixedTerminalTargetsExactlyReward": true,
+  "endpointStates": {
+    "natural": {
+      "optimizerSteps": [
+        2194.0
+      ],
+      "checkpointSHA256": "a687d5507af3939190dd2fc73576cc9b24b7cc4818594c988f8779296fd71fdf",
+      "criticAllFinite": true
+    },
+    "balanced": {
+      "optimizerSteps": [
+        2194.0
+      ],
+      "checkpointSHA256": "f68b6fe7cf0a995dab3e81c3b3925fabe34a874be72b5c8ba9b2e3e22bf9e490",
+      "criticAllFinite": true
+    }
+  },
+  "sourceCheckpointUnmodified": true,
+  "newPhysicsOrOptimizerCallsByAudit": 0
+}
