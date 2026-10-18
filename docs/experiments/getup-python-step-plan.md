@@ -578,3 +578,116 @@ mask1 with the actual final observation. Administrative/corrupt partials abort.
 No forward-step or full GetUp regression qualification is implied by stabilization.
 Source/math and resource design review, then fresh parent admission, are required
 before this disabled proposal can execute.
+
+## 13. Proposed offline mean-head trust-region follow-up (not admitted)
+
+Section12 is closed: source800Hz interface/continuation passed, but the second
+full-network actor update crossed the unchanged0.02rad RMS/0.05rad maximum guard.
+No candidate validation followed. Exact saved-batch reconstruction shows that Q
+dominates gradients of mean-affecting parameters2.48×. Shared-trunk changes account
+for about90.9% of the local FIRST-ORDER mean-drift projection (JVP), not an exact
+nonlinear causal fraction.
+Freshalpha0.1 was163.24× the pinned learned SLOWalpha0.000612579835321518;
+the resetstd0.02 was8.16× below the original median0.16321. These are material
+adaptations. Reweighting alpha alone with the existing critics does not prove a
+rescue; those critics themselves were trained under the fresh temperature.
+
+### One fixed candidate and fixed recorded data
+
+Reuse ONLY the exact256-transition replay saved before the first actor update
+(checkpoint002), including both finite physical failures/masks. No new physical
+collection or selecting successful episodes. Start the original SLOW deterministic
+mean again. Retain its learnedalpha0.000612579835321518 as a FIXED temperature;
+there is no alpha optimizer in this follow-up. Restore and freeze the ENTIRE ORIGINAL learned logstd head and both hidden layers,
+so sigma_j(state) is exactly the original state-dependent SLOW distribution
+(about0.091–0.206 on historical probes), not the previous forced0.02. This is an
+explicit choice, with no fallback to another std. The256replay transitions were
+collected atstd0.02: they have limited coverage of the broader original policy.
+Off-policy SAC can consume them, but finite coverage does not calibrate Q on the
+original policy tails, and neither TD loss nor a KL witness certifies that gap.
+
+Freeze both shared hidden layers and ORIGINAL logstd output rows. Train ONLY the21mean
+output rows and biases. Keep original118conditioning, holding target1.4, power1,
+800Hz PD/kd0.2 and physical limits. Fresh critics/targets/optimizers use the declared
+seed0, batch128, discount0.97 and tau0.005. Rewarm critics for at most100charged
+critic-only steps under the corrected fixedalpha. Targets Polyak-update after
+each critic step; the entire actor remains fixed during warmup.
+
+The trust witness set is all pre/next118states in that fixed replay, with duplicates
+retained and a hash published. Anchor means are the IMMUTABLE initial pretrained
+raw Gaussian means on these states. The source historical201probe set remains the
+unchanged independent action-drift guard; it never chooses a line-search scale.
+Add a preregistered historical midpoint set (source rows2410+20n, n0..199) as a
+heldout final offline audit, not line-search input. Require its deterministic
+residual drift versus the immutable original actor to satisfy RMS<=0.02rad and
+maximum<=0.05rad. Failure rejects the branch without another proposal or scale
+search. Logical trajectory overlap and any bit-identical observations are
+disclosed; this is not an IID-generalization certificate.
+
+### Proposal, backtracking, accounting and checkpoints
+
+For at most5proposal attempts:
+
+1. Sample one fixed128-transition batch from replay. Perform ONE charged source
+   critic update and one target Polyak update. This occurs once per attempt,
+   irrespective of actor acceptance.
+2. Snapshot actor parameters, full Adam moments/step counts and RNG. Draw ONE
+   actor Gaussian noise matrix. Evaluate source actor loss `alpha*logpi-minQ`
+   with fixedalpha and the frozen original state-dependent logstd. Take ONE charged mean-head Adam proposal at1e-5. Every
+   proposal counts even if rejected; there are no optimizer calls per scale.
+3. Evaluate scales1,1/2,...,1/1024 in that exact order by forwarding
+   `theta_before+scale*(theta_proposed-theta_before)`. Trunk/std never change.
+   Reuse that SAME actor noise and frozen post-critic network for all loss
+   evaluations; line-search forwards consume no extra random draws.
+4. Accept the first scale satisfying BOTH: actor loss decreases by at least1e-6
+   on the fixed proposal batch, and EVERY replay witness has summed latent
+   Gaussian KL≤0.05 against the immutable anchor. Because both policies have the SAME frozen state-dependent sigma_j(state), this
+   is `0.5*sum_j((mu_candidate_raw_j-mu_anchor_raw_j)^2/sigma_anchor_j(state)^2)`,
+   with NO division by21. Bind the original per-state sigma witness matrix/hash.
+   Power1/tanh is ideal-bijective; finite-precision/source epsilon logprob remains
+   disclosed. This is a finite-state trust bound, not native/global invariance.
+5. On acceptance retain the proposal's Adam moments/step counter while applying
+   scaled parameters: explicitly projected Adam, not a claim of an unmodified
+   source optimizer trajectory. On no accepted scale, restore actor, mean-head Adam and Torch actor-noise RNG
+   to the snapshot taken AFTER replay batch sampling and critic/target work.
+   Preserve the already-advanced critic, target and replay-RNG states and all
+   charges; end proposal generation.
+   The final candidate is the last accepted state under this fixed stopping rule;
+   there is no best-physical-checkpoint selection.
+6. Apply the UNCHANGED201probe RMS≤0.02/max≤0.05 guard after acceptance. A failure
+   rejects the branch; do not retry scales using heldout guard values. Log every
+   scale/loss/KL and all frozen-tensor checks. Final midpoint audit is evaluated
+   once. Rejection rolls back only the actor-side proposal state just specified;
+   retained critic/target/replay-RNG advances are explicitly checkpointed.
+
+Maximum optimization cost is100warmup critic +5proposal critic +5actor proposal
+calls =110charged optimizer calls, with0alpha/supervised updates. Accepted scaled
+steps are counted separately from proposal attempts. Checkpoints bind replay,
+all networks/targets, trainable-row mask, frozen tensors, Adam/RNG, proposal/accept
+counts, trust/noise witnesses and next-action/update continuation fixtures. All
+rejections and retained previous states remain reproducible.
+
+### Prospective physical validation and fresh budget proposal
+
+Propose a NEW15min process-wall/3physics-second stage, all physics reserved for
+ONE frozen/candidate pair in DETERMINISTIC source evaluation mode: use each
+actor's tanh(mean), with no sampled residual noise. Thus the original broader std
+affects offline SAC/KL but this pair does not qualify stochastic deployment.
+At most2×8s×40Hz=640actual policy intervals and12800
+source800Hz integrations. Protect300wall seconds throughout ALL offline work,
+including optimizer proposals, line-search forwards, audits, checkpoint writes
+and cleanup. Re-admit the COMPLETE pair immediately before its first integration
+against live remaining wall/physics/interval capacity; predict its full cost from
+measured5.29interval/s plus50% headroom. No physical training, retry, second
+candidate or automatic reserve transfer. Rechecking the existing exact20sample
+continuation proof is HASH-ONLY. Any newly executed repeat must consume the SAME
+640interval/12800integration single-pair ceiling, with no additional diagnostic
+branch. Changed adapter math requires renewed evidence.
+
+Only a candidate with at least one accepted proposal and all offline guards may
+enter that single fixed pair. Actual FINAL4000samples/5s standing, foot-only load,
+COM/capture, upright≤5degrees and10mm slip/anchor criteria remain unchanged. An
+incomplete or failed pair remains a failure; no clock-only or best-past window.
+This is still stabilization viability, with no forward-step claim. Fresh focused
+source/math and resource review plus parent admission are required. No optimizer
+proposal or new integration is authorized by this text.
