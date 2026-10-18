@@ -1,0 +1,174 @@
+{
+  "schema": 1,
+  "checkpoint": "reviewed-walk-stage1-partial",
+  "dateUTC": "2026-10-18",
+  "status": "experimental-unqualified",
+  "implementationSourceCommit": "7a39c20be2163d5202c26955e78f5997399a74d4",
+  "stablePresetChanged": false,
+  "originalContactModelQualificationClaim": false,
+  "contactImpratio": 8.0,
+  "frictionMu": 1.0,
+  "physicsStepSeconds": 0.00125,
+  "torqueUpdateSeconds": 0.005,
+  "loadedSettleProtocol": "measured received-feet midpoint plus35mm heading; original readiness and80native samples",
+  "allOriginalPhysicalAndArmGatesUnchanged": true,
+  "runs": [
+    {
+      "id": "baseline-context-one",
+      "mode": "baseline-context",
+      "requestedSteps": 1,
+      "actualIntegrations": 11719,
+      "physicalSeconds": 14.64875,
+      "finalQuietSeconds": 5.0,
+      "loadAcquisitionOwnFootAdvancesM": [
+        0.1819564170206502
+      ],
+      "loadedLandingTimesS": [
+        8.1275
+      ],
+      "globalLoadedSlipM": [
+        0.0013669477115946043,
+        0.0015553292856326868
+      ],
+      "reviewedWalkPilotPhysicalPass": true,
+      "reviewedWalkDiagnosticPass": false,
+      "reviewedWalkTenStepPhysicalPass": false,
+      "reviewedWalkFinalPlanPass": false,
+      "failedChecks": [],
+      "exactRetainedNativeWitnessesVerified": 21,
+      "auditSHA256": "db09992b2a31cd2e3304a925e0a356db75992c8d70681283873c64fbd53ae86b",
+      "auditorSHA256": "208b04eccf72dc36df8593e4ce525118e52bdd15538a0c67497c02e6fe0fffb6",
+      "runtimeSourceSHA256": "3efd55823949bf79d98856bab9a809808faddf24a12f21bcb4287c97db7dd935",
+      "receiptSHA256": "1179163d27ad8119518d11d9b9883aa5bd11aa053439dc6ce811148875dfff94",
+      "framesSHA256": "069544ab9d37f876cb70b2d4b1635dfc4ca93275d2615732ccbbd1f06fa83cd8",
+      "controlSHA256": "e1abcc718670168b609adb9a3a2aca3d6c75e88bef48269cdbd81e95df86690b",
+      "wrenchDiagnosticsEnabled": false
+    },
+    {
+      "id": "continuous-com-one-01",
+      "mode": "continuous-com",
+      "requestedSteps": 1,
+      "actualIntegrations": 11719,
+      "physicalSeconds": 14.64875,
+      "finalQuietSeconds": 5.0,
+      "loadAcquisitionOwnFootAdvancesM": [
+        0.18196490517481714
+      ],
+      "loadedLandingTimesS": [
+        8.1275
+      ],
+      "globalLoadedSlipM": [
+        0.0012889512712208147,
+        0.0014965138600516075
+      ],
+      "reviewedWalkPilotPhysicalPass": true,
+      "reviewedWalkDiagnosticPass": false,
+      "reviewedWalkTenStepPhysicalPass": false,
+      "reviewedWalkFinalPlanPass": false,
+      "failedChecks": [],
+      "exactRetainedNativeWitnessesVerified": 21,
+      "auditSHA256": "de37cd030a17d6f5d62ab17d3a4d11e4aa43446b6f929775e7dbbb173c603035",
+      "auditorSHA256": "208b04eccf72dc36df8593e4ce525118e52bdd15538a0c67497c02e6fe0fffb6",
+      "runtimeSourceSHA256": "3efd55823949bf79d98856bab9a809808faddf24a12f21bcb4287c97db7dd935",
+      "receiptSHA256": "f086d3bf480b847917a27043fffb750f5c392fe6f54c0b5983a3ea41ab3a3b8e",
+      "framesSHA256": "301f1a1adfc8b282771e794f5c977436dc299078742a5147ce98ff96ff513a7d",
+      "controlSHA256": "dd613d0dbf845454a5d50785ae2a5d09234844fe3a938df044eb9b06bd4dac74",
+      "wrenchDiagnosticsEnabled": false
+    },
+    {
+      "id": "continuous-com-two-01",
+      "mode": "continuous-com",
+      "requestedSteps": 2,
+      "actualIntegrations": 17827,
+      "physicalSeconds": 22.28375,
+      "finalQuietSeconds": 5.0,
+      "loadAcquisitionOwnFootAdvancesM": [
+        0.18196490517481714,
+        0.1819485778757207
+      ],
+      "loadedLandingTimesS": [
+        8.1275,
+        15.76125
+      ],
+      "globalLoadedSlipM": [
+        0.0030154930000153013,
+        0.0024686778653681095
+      ],
+      "reviewedWalkPilotPhysicalPass": false,
+      "reviewedWalkDiagnosticPass": true,
+      "reviewedWalkTenStepPhysicalPass": false,
+      "reviewedWalkFinalPlanPass": false,
+      "failedChecks": [],
+      "exactRetainedNativeWitnessesVerified": 42,
+      "auditSHA256": "fe0cc7bacd2b197330c0de82096f4c042765107a2c6cc3a7c39ec7f50ba82d69",
+      "auditorSHA256": "c9948569f980c6f3190b8e97ec850492a10f16e05490ac1a0db8c33fe70cc8da",
+      "runtimeSourceSHA256": "bb096bcdb2176f844a86a40064d718898425e291c912ba9b467ceb91261d40a7",
+      "receiptSHA256": "7641c3c87a2d2f4381b205ac32b29921d1c78f4c464d46fcb9a7c97daabcf437",
+      "framesSHA256": "15d1c7cae899b91e15df0fbe227192fcfb6f858271a40986383ec4e95ba900d7",
+      "controlSHA256": "5a39936a51fafa7059545f3b928aed66d1c2035bc4fe3171147ea7a4e7ab0aac",
+      "wrenchDiagnosticsEnabled": true
+    }
+  ],
+  "causalComparison": {
+    "sameContactOneStepSlipReductionPercent": [
+      5.705880597393448,
+      3.7815430230800366
+    ],
+    "timingImproved": false,
+    "twoStepLoadedLandingIntervalSeconds": 7.63375,
+    "deliveredVideoLoadedLandingIntervalsSeconds": [
+      6.66375,
+      6.66,
+      6.665
+    ],
+    "twoStepVsDeliveredVideo": "slower; final speed/appearance requirement not established",
+    "wrenchLoggingFirstStepExactPhysicsPrefix": {
+      "nativeSamples": 7719,
+      "maximumAbsoluteErrors": {
+        "qpos": 0.0,
+        "qvel": 0.0,
+        "com": 0.0,
+        "comVelocity": 0.0,
+        "actualMotorTorquesNm": 0.0,
+        "loadedSlipDistanceM": 0.0
+      },
+      "proofSHA256": "f6ad15772300de1f15c326bad0e20d396fb0b6547477c33d7db466c1035d53a3"
+    }
+  },
+  "referenceEnvelope": {
+    "maximumSummedSpeedMps": 0.19260552331163003,
+    "maximumSummedAccelerationMps2": 0.3901818436690813,
+    "provenance": "frozen6step command witness maxima, conservative caps; not physiological norms",
+    "designSHA256": "f6467798ce2538fd480e845e38ff6c68013cc6045221e9a268ca88195043d2c9"
+  },
+  "exactOutputOptimization": {
+    "commit": "8d09496",
+    "pairedSamplesPerScenario": 10,
+    "ordinaryWallMsBefore": 21.238,
+    "ordinaryWallMsAfter": 18.132,
+    "ordinaryWallImprovementPercent": 14.62,
+    "observerForecastSpeedupEstablished": false,
+    "exactControlsReceiptsNativeBytesModelAndHeldCommand": true,
+    "physicsIntegrations": 0
+  },
+  "tests": {
+    "nativeReferenceControllerTests": 20,
+    "nativeReferenceControllerTestsPassed": true,
+    "continuousComPureTests": 32,
+    "continuousComPureTestsPassed": true,
+    "savedAuditRegressionTests": 230,
+    "savedAuditRegressionTestsPassed": true,
+    "subsequentTargetedAuditTests": 66,
+    "subsequentTargetedAuditTestsPassed": true,
+    "broadSuiteClaim": false,
+    "unavailableOptionalTests": "Four existing Torch-dependent modules cannot import in the light venv; no installation attempted"
+  },
+  "limitations": [
+    "Only baseline and isolated continuous-COM pilots are qualified; two steps are diagnostic only.",
+    "Seven-step continuation is running, not yet an audited result.",
+    "Coupled posture, knee/foot cycle and cadence changes are not dynamically validated.",
+    "No ten-step plus quiet result, final pixel comparison or faster cadence established.",
+    "Net shear utilization is only a lower bound; individual-contact nonsaturation is not established.",
+    "Ten own-foot advances do not prove1.8m body travel."
+  ]
+}
