@@ -1,0 +1,18 @@
+{
+  "scope": "closed-artifact inference only; zero optimizer or physics steps",
+  "transitions": 5000,
+  "completeEpisodes": 510,
+  "completeReturnRows": 4999,
+  "pairs": 10034740,
+  "strictPairs": 0,
+  "tightPairs": 0,
+  "coarseExploratoryPairs": 6,
+  "nearestJointDistance": 0.9075349739879709,
+  "nearestResidualRMSRadians": 0.0907534973987971,
+  "meanCriticMinusObservedSoftReturn": 7.9367928001623635,
+  "terminalProximityMeanGap": 11.501695911082352,
+  "contract": "Task history is omitted and can affect reward/termination even at identical observation/action.",
+  "causalAttribution": "Not established empirically by this replay; no strict/tight action-conditioned collision found.",
+  "report": "report.md",
+  "capturedAfterClosed": true
+}

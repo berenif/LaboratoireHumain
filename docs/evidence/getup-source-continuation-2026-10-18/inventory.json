@@ -1,0 +1,46 @@
+{
+  "schema": 1,
+  "rawWeightsCachesAndJournalsRemainLocal": true,
+  "files": {
+    "closed-ledger.json": {
+      "sha256": "541862ce977b63bff9a93f688ac869547c7beeded8f2958b2946c9f2ad4531bf",
+      "bytes": 2088
+    },
+    "compact-outcome.json": {
+      "sha256": "baffe864a3bbf7ea4395937e20d46fca90a3a1a4c11844f7bfa7450ab8c4a397",
+      "bytes": 2811
+    },
+    "critic-attribution-receipt.json": {
+      "sha256": "6b1aeb8319a37a8944759138a0ade35a8cc47c2b32da6f4327e1824bf8f25e52",
+      "bytes": 1608
+    },
+    "fixtures.json": {
+      "sha256": "3bb923c94ecd29a42a99b9d1f52b4c74f01e3885db0ec4a852a849e5df5d9483",
+      "bytes": 599
+    },
+    "observability-conclusion.json": {
+      "sha256": "2880302a8e6654da36c3a57aca424aed70f850b5a1ac3af3a9f43b414d14238f",
+      "bytes": 749
+    },
+    "observability-input-manifest.json": {
+      "sha256": "f2be9cafddd0b25abb436e60ede2fb09c22e4e9b47f93dee59ce5dce44e7c04e",
+      "bytes": 6583
+    },
+    "observability-report.md": {
+      "sha256": "c147a763d369fda7aa1a425a5f60adb93cf230fe7a46993351825d171e36aa3f",
+      "bytes": 11336
+    },
+    "restore-receipt.json": {
+      "sha256": "81eb163cc77b039b7c5656961c56c94ffe4d07054255c6e93a166fd1ed3533df",
+      "bytes": 1604
+    },
+    "runtime-admission.json": {
+      "sha256": "91bf48e355d607ac55174a6005e011bb524b28c254f2de75ff31b232a61deaa2",
+      "bytes": 18860
+    },
+    "saved-journal-reduction.json": {
+      "sha256": "1419970adaeaee4abda2b8a8207a3aa3577f4c557f64a8851ca1b6ab16c632fc",
+      "bytes": 25227
+    }
+  }
+}

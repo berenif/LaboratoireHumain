@@ -1,0 +1,71 @@
+{
+  "checkpointRecovery": {
+    "slot": 0,
+    "generation": 57,
+    "native": "outputs/getup-source-continuation/session-20261018T032214Z/learner/rolling-0.bin",
+    "learner": "outputs/getup-source-continuation/session-20261018T032214Z/learner/rolling-0.pt",
+    "controller": "outputs/getup-source-continuation/session-20261018T032214Z/learner/rolling-0.json",
+    "nativeSHA256": "839cdaaef1c4a5b3f9fbabe7db62b86183bcf85f5258337ec5323afacbc447e1",
+    "learnerSHA256": "0b7756ced7ea94fe847d4404617b29584a9d92f2ea87eb9e55ec62691c83d0cf",
+    "controllerSHA256": "2861613718931eaef8d9c5f9ae28b13b6202a73ab5c627b50c4e140b17eec9a6",
+    "actualCandidateTransitions": 5000,
+    "chargedGlobalPolicyInterval": 3420,
+    "chargedGlobalSourceIntegrations": 64096,
+    "recoveryScope": "complete state at these IDs; later charged work is not refunded or assumed current",
+    "stageNewActualTransitions": 3420,
+    "priorTrainingIntegrations": 31110,
+    "priorActualTransitions": 1580,
+    "priorProposalAttempt": 139,
+    "runtimeAdmissionSHA256": "91bf48e355d607ac55174a6005e011bb524b28c254f2de75ff31b232a61deaa2",
+    "continuationConfigSHA256": "3886425eb10f962c6f1fa06838d89ed4a1b9422963ca4d57456789ae95bcfda0"
+  },
+  "chargedWorkAfterLastCheckpointIsNotRefunded": true,
+  "stopped": "completed-cumulative5000",
+  "newActualTransitions": 3420,
+  "cumulativeActualTransitions": 5000,
+  "newAcceptedSteps": 855,
+  "cumulativeAcceptedSteps": 866,
+  "newProposalAttempts": 855,
+  "cumulativeProposalAttempt": 994,
+  "candidateOptimizerCalls": 1710,
+  "allOptimizerCalls": 1710,
+  "allSourceIntegrations": 66445,
+  "allPolicyIntervals": 3538,
+  "physicsSeconds": 4.1900025647482835,
+  "runWallSeconds": 585.0850041910016,
+  "validation": [
+    {
+      "branch": "frozen",
+      "policyIntervals": 115,
+      "final4000QuietQualified": false,
+      "physicalFailure": "loaded_slip",
+      "elapsedSeconds": 2.864999999999994,
+      "terminalSamples": 12,
+      "mask": 0.0,
+      "loadedSlipM": [
+        0.01000163525102614,
+        0.009685628069879897
+      ],
+      "anchorDriftM": 0.008744582402139739
+    },
+    {
+      "branch": "candidate",
+      "policyIntervals": 3,
+      "final4000QuietQualified": false,
+      "physicalFailure": "fixed_anchor_drift",
+      "elapsedSeconds": 0.07125000000000001,
+      "terminalSamples": 17,
+      "mask": 0.0,
+      "loadedSlipM": [
+        0.0021746483489684344,
+        0.008391607975197675
+      ],
+      "anchorDriftM": 0.01019815343696804
+    }
+  ],
+  "selectedPolicy": "immutable-source-SLOW-baseline",
+  "quietStabilizationQualified": false,
+  "forwardStepQualified": false,
+  "runtimeAdmissionSHA256": "91bf48e355d607ac55174a6005e011bb524b28c254f2de75ff31b232a61deaa2",
+  "rawSummarySHA256": "8c5c470af1aa8484bb2b62776a3492c384f0c50350b78afabaad57f80aa5efea"
+}

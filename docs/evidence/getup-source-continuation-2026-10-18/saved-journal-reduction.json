@@ -1,0 +1,940 @@
+{
+  "schema": 1,
+  "kind": "closed saved-journal algebraic reduction; zero engine/optimizer",
+  "newActualTransitions": 3420,
+  "cumulativeActualTransitions": 5000,
+  "priorTrainingNativeSamples": 31110,
+  "newTrainingNativeSamples": 64096,
+  "cumulativeTrainingNativeSamples": 95206,
+  "trainingTerminalCounts": {
+    "loaded_slip": 137,
+    "fixed_anchor_drift": 324,
+    "flight": 1
+  },
+  "partialTerminalCounts": {
+    "loaded_slip": 133,
+    "fixed_anchor_drift": 301,
+    "flight": 1
+  },
+  "full20SamplePhysicalTerminals": 27,
+  "terminalProofCount": 462,
+  "newProposalAttempts": 855,
+  "newAcceptedProposals": 855,
+  "cumulativeProposalAttempt": 994,
+  "cumulativeAcceptedProposals": 866,
+  "newOptimizerCalls": 1710,
+  "cumulativeCandidateOptimizerCalls": 2988,
+  "acceptedScaleCounts": {
+    "1.0": 855
+  },
+  "maximumIncrementalKL": 0.013705530437895741,
+  "minimumAcceptedLossDecrease": 0.004069328308105469,
+  "branches": [
+    {
+      "branch": "training",
+      "actualNativeSamples": 64096,
+      "torqueEquationMaximumErrorNm": 0.0,
+      "controlEquationMaximumError": 0.0,
+      "warningSamples": 0,
+      "bothFeetUnloadedSamples": 1,
+      "nonfootSupportSamples": 0,
+      "loadedSlipFirstCrossings": [
+        {
+          "localSample": 424,
+          "globalIntegration": 424,
+          "episode": 48,
+          "nativeId": 6964
+        },
+        {
+          "localSample": 1441,
+          "globalIntegration": 1441,
+          "episode": 50,
+          "nativeId": 7095
+        },
+        {
+          "localSample": 2122,
+          "globalIntegration": 2122,
+          "episode": 51,
+          "nativeId": 7081
+        },
+        {
+          "localSample": 2727,
+          "globalIntegration": 2727,
+          "episode": 52,
+          "nativeId": 7005
+        },
+        {
+          "localSample": 3345,
+          "globalIntegration": 3345,
+          "episode": 53,
+          "nativeId": 7018
+        },
+        {
+          "localSample": 3872,
+          "globalIntegration": 3872,
+          "episode": 54,
+          "nativeId": 6927
+        },
+        {
+          "localSample": 4379,
+          "globalIntegration": 4379,
+          "episode": 55,
+          "nativeId": 6907
+        },
+        {
+          "localSample": 6011,
+          "globalIntegration": 6011,
+          "episode": 58,
+          "nativeId": 7031
+        },
+        {
+          "localSample": 6534,
+          "globalIntegration": 6534,
+          "episode": 59,
+          "nativeId": 6923
+        },
+        {
+          "localSample": 7733,
+          "globalIntegration": 7733,
+          "episode": 62,
+          "nativeId": 7095
+        },
+        {
+          "localSample": 8170,
+          "globalIntegration": 8170,
+          "episode": 63,
+          "nativeId": 6837
+        },
+        {
+          "localSample": 9117,
+          "globalIntegration": 9117,
+          "episode": 67,
+          "nativeId": 6707
+        },
+        {
+          "localSample": 9427,
+          "globalIntegration": 9427,
+          "episode": 68,
+          "nativeId": 6710
+        },
+        {
+          "localSample": 9790,
+          "globalIntegration": 9790,
+          "episode": 69,
+          "nativeId": 6763
+        },
+        {
+          "localSample": 11024,
+          "globalIntegration": 11024,
+          "episode": 77,
+          "nativeId": 6607
+        },
+        {
+          "localSample": 11283,
+          "globalIntegration": 11283,
+          "episode": 78,
+          "nativeId": 6659
+        },
+        {
+          "localSample": 11820,
+          "globalIntegration": 11820,
+          "episode": 82,
+          "nativeId": 6603
+        },
+        {
+          "localSample": 12431,
+          "globalIntegration": 12431,
+          "episode": 86,
+          "nativeId": 6555
+        },
+        {
+          "localSample": 12580,
+          "globalIntegration": 12580,
+          "episode": 87,
+          "nativeId": 6549
+        },
+        {
+          "localSample": 13323,
+          "globalIntegration": 13323,
+          "episode": 93,
+          "nativeId": 6595
+        },
+        {
+          "localSample": 13561,
+          "globalIntegration": 13561,
+          "episode": 95,
+          "nativeId": 6525
+        },
+        {
+          "localSample": 13679,
+          "globalIntegration": 13679,
+          "episode": 96,
+          "nativeId": 6518
+        },
+        {
+          "localSample": 13842,
+          "globalIntegration": 13842,
+          "episode": 98,
+          "nativeId": 6526
+        },
+        {
+          "localSample": 13964,
+          "globalIntegration": 13964,
+          "episode": 100,
+          "nativeId": 6469
+        },
+        {
+          "localSample": 14471,
+          "globalIntegration": 14471,
+          "episode": 104,
+          "nativeId": 6608
+        },
+        {
+          "localSample": 15605,
+          "globalIntegration": 15605,
+          "episode": 115,
+          "nativeId": 6531
+        },
+        {
+          "localSample": 15761,
+          "globalIntegration": 15761,
+          "episode": 116,
+          "nativeId": 6556
+        },
+        {
+          "localSample": 16274,
+          "globalIntegration": 16274,
+          "episode": 121,
+          "nativeId": 6528
+        },
+        {
+          "localSample": 16539,
+          "globalIntegration": 16539,
+          "episode": 123,
+          "nativeId": 6581
+        },
+        {
+          "localSample": 16947,
+          "globalIntegration": 16947,
+          "episode": 127,
+          "nativeId": 6525
+        },
+        {
+          "localSample": 17095,
+          "globalIntegration": 17095,
+          "episode": 128,
+          "nativeId": 6548
+        },
+        {
+          "localSample": 17375,
+          "globalIntegration": 17375,
+          "episode": 130,
+          "nativeId": 6594
+        },
+        {
+          "localSample": 17760,
+          "globalIntegration": 17760,
+          "episode": 132,
+          "nativeId": 6563
+        },
+        {
+          "localSample": 17968,
+          "globalIntegration": 17968,
+          "episode": 133,
+          "nativeId": 6608
+        },
+        {
+          "localSample": 18080,
+          "globalIntegration": 18080,
+          "episode": 134,
+          "nativeId": 6512
+        },
+        {
+          "localSample": 18277,
+          "globalIntegration": 18277,
+          "episode": 136,
+          "nativeId": 6528
+        },
+        {
+          "localSample": 18430,
+          "globalIntegration": 18430,
+          "episode": 137,
+          "nativeId": 6553
+        },
+        {
+          "localSample": 19141,
+          "globalIntegration": 19141,
+          "episode": 143,
+          "nativeId": 6491
+        },
+        {
+          "localSample": 19338,
+          "globalIntegration": 19338,
+          "episode": 144,
+          "nativeId": 6597
+        },
+        {
+          "localSample": 19649,
+          "globalIntegration": 19649,
+          "episode": 147,
+          "nativeId": 6487
+        },
+        {
+          "localSample": 19765,
+          "globalIntegration": 19765,
+          "episode": 148,
+          "nativeId": 6516
+        },
+        {
+          "localSample": 20069,
+          "globalIntegration": 20069,
+          "episode": 149,
+          "nativeId": 6704
+        },
+        {
+          "localSample": 20488,
+          "globalIntegration": 20488,
+          "episode": 151,
+          "nativeId": 6641
+        },
+        {
+          "localSample": 20736,
+          "globalIntegration": 20736,
+          "episode": 152,
+          "nativeId": 6648
+        },
+        {
+          "localSample": 21488,
+          "globalIntegration": 21488,
+          "episode": 155,
+          "nativeId": 6816
+        },
+        {
+          "localSample": 21622,
+          "globalIntegration": 21622,
+          "episode": 156,
+          "nativeId": 6534
+        },
+        {
+          "localSample": 21770,
+          "globalIntegration": 21770,
+          "episode": 157,
+          "nativeId": 6548
+        },
+        {
+          "localSample": 22223,
+          "globalIntegration": 22223,
+          "episode": 159,
+          "nativeId": 6628
+        },
+        {
+          "localSample": 22423,
+          "globalIntegration": 22423,
+          "episode": 160,
+          "nativeId": 6600
+        },
+        {
+          "localSample": 22637,
+          "globalIntegration": 22637,
+          "episode": 161,
+          "nativeId": 6614
+        },
+        {
+          "localSample": 25365,
+          "globalIntegration": 25365,
+          "episode": 175,
+          "nativeId": 6629
+        },
+        {
+          "localSample": 25631,
+          "globalIntegration": 25631,
+          "episode": 176,
+          "nativeId": 6666
+        },
+        {
+          "localSample": 28006,
+          "globalIntegration": 28006,
+          "episode": 186,
+          "nativeId": 6674
+        },
+        {
+          "localSample": 29598,
+          "globalIntegration": 29598,
+          "episode": 193,
+          "nativeId": 6605
+        },
+        {
+          "localSample": 30812,
+          "globalIntegration": 30812,
+          "episode": 198,
+          "nativeId": 6586
+        },
+        {
+          "localSample": 31503,
+          "globalIntegration": 31503,
+          "episode": 202,
+          "nativeId": 6519
+        },
+        {
+          "localSample": 31848,
+          "globalIntegration": 31848,
+          "episode": 204,
+          "nativeId": 6500
+        },
+        {
+          "localSample": 32251,
+          "globalIntegration": 32251,
+          "episode": 206,
+          "nativeId": 6509
+        },
+        {
+          "localSample": 32488,
+          "globalIntegration": 32488,
+          "episode": 207,
+          "nativeId": 6637
+        },
+        {
+          "localSample": 32633,
+          "globalIntegration": 32633,
+          "episode": 208,
+          "nativeId": 6545
+        },
+        {
+          "localSample": 32870,
+          "globalIntegration": 32870,
+          "episode": 210,
+          "nativeId": 6555
+        },
+        {
+          "localSample": 33094,
+          "globalIntegration": 33094,
+          "episode": 212,
+          "nativeId": 6563
+        },
+        {
+          "localSample": 33318,
+          "globalIntegration": 33318,
+          "episode": 213,
+          "nativeId": 6624
+        },
+        {
+          "localSample": 34475,
+          "globalIntegration": 34475,
+          "episode": 221,
+          "nativeId": 6609
+        },
+        {
+          "localSample": 34634,
+          "globalIntegration": 34634,
+          "episode": 222,
+          "nativeId": 6559
+        },
+        {
+          "localSample": 34921,
+          "globalIntegration": 34921,
+          "episode": 223,
+          "nativeId": 6687
+        },
+        {
+          "localSample": 35034,
+          "globalIntegration": 35034,
+          "episode": 224,
+          "nativeId": 6513
+        },
+        {
+          "localSample": 35155,
+          "globalIntegration": 35155,
+          "episode": 225,
+          "nativeId": 6521
+        },
+        {
+          "localSample": 35348,
+          "globalIntegration": 35348,
+          "episode": 226,
+          "nativeId": 6593
+        },
+        {
+          "localSample": 35908,
+          "globalIntegration": 35908,
+          "episode": 229,
+          "nativeId": 6546
+        },
+        {
+          "localSample": 36087,
+          "globalIntegration": 36087,
+          "episode": 230,
+          "nativeId": 6579
+        },
+        {
+          "localSample": 36262,
+          "globalIntegration": 36262,
+          "episode": 231,
+          "nativeId": 6575
+        },
+        {
+          "localSample": 36850,
+          "globalIntegration": 36850,
+          "episode": 235,
+          "nativeId": 6493
+        },
+        {
+          "localSample": 37051,
+          "globalIntegration": 37051,
+          "episode": 236,
+          "nativeId": 6601
+        },
+        {
+          "localSample": 37256,
+          "globalIntegration": 37256,
+          "episode": 238,
+          "nativeId": 6557
+        },
+        {
+          "localSample": 37512,
+          "globalIntegration": 37512,
+          "episode": 240,
+          "nativeId": 6590
+        },
+        {
+          "localSample": 37718,
+          "globalIntegration": 37718,
+          "episode": 241,
+          "nativeId": 6606
+        },
+        {
+          "localSample": 38114,
+          "globalIntegration": 38114,
+          "episode": 245,
+          "nativeId": 6586
+        },
+        {
+          "localSample": 38195,
+          "globalIntegration": 38195,
+          "episode": 246,
+          "nativeId": 6481
+        },
+        {
+          "localSample": 38443,
+          "globalIntegration": 38443,
+          "episode": 249,
+          "nativeId": 6518
+        },
+        {
+          "localSample": 38878,
+          "globalIntegration": 38878,
+          "episode": 252,
+          "nativeId": 6599
+        },
+        {
+          "localSample": 39045,
+          "globalIntegration": 39045,
+          "episode": 253,
+          "nativeId": 6567
+        },
+        {
+          "localSample": 39490,
+          "globalIntegration": 39490,
+          "episode": 255,
+          "nativeId": 6629
+        },
+        {
+          "localSample": 39950,
+          "globalIntegration": 39950,
+          "episode": 258,
+          "nativeId": 6551
+        },
+        {
+          "localSample": 40363,
+          "globalIntegration": 40363,
+          "episode": 262,
+          "nativeId": 6618
+        },
+        {
+          "localSample": 41174,
+          "globalIntegration": 41174,
+          "episode": 270,
+          "nativeId": 6598
+        },
+        {
+          "localSample": 41433,
+          "globalIntegration": 41433,
+          "episode": 272,
+          "nativeId": 6604
+        },
+        {
+          "localSample": 41651,
+          "globalIntegration": 41651,
+          "episode": 275,
+          "nativeId": 6489
+        },
+        {
+          "localSample": 42328,
+          "globalIntegration": 42328,
+          "episode": 280,
+          "nativeId": 6575
+        },
+        {
+          "localSample": 43181,
+          "globalIntegration": 43181,
+          "episode": 286,
+          "nativeId": 6624
+        },
+        {
+          "localSample": 43311,
+          "globalIntegration": 43311,
+          "episode": 287,
+          "nativeId": 6530
+        },
+        {
+          "localSample": 43407,
+          "globalIntegration": 43407,
+          "episode": 288,
+          "nativeId": 6496
+        },
+        {
+          "localSample": 43815,
+          "globalIntegration": 43815,
+          "episode": 291,
+          "nativeId": 6595
+        },
+        {
+          "localSample": 43999,
+          "globalIntegration": 43999,
+          "episode": 292,
+          "nativeId": 6584
+        },
+        {
+          "localSample": 44206,
+          "globalIntegration": 44206,
+          "episode": 293,
+          "nativeId": 6607
+        },
+        {
+          "localSample": 45143,
+          "globalIntegration": 45143,
+          "episode": 298,
+          "nativeId": 6536
+        },
+        {
+          "localSample": 45514,
+          "globalIntegration": 45514,
+          "episode": 301,
+          "nativeId": 6522
+        },
+        {
+          "localSample": 45701,
+          "globalIntegration": 45701,
+          "episode": 302,
+          "nativeId": 6587
+        },
+        {
+          "localSample": 46234,
+          "globalIntegration": 46234,
+          "episode": 306,
+          "nativeId": 6610
+        },
+        {
+          "localSample": 46376,
+          "globalIntegration": 46376,
+          "episode": 307,
+          "nativeId": 6542
+        },
+        {
+          "localSample": 46585,
+          "globalIntegration": 46585,
+          "episode": 308,
+          "nativeId": 6609
+        },
+        {
+          "localSample": 46787,
+          "globalIntegration": 46787,
+          "episode": 309,
+          "nativeId": 6602
+        },
+        {
+          "localSample": 47240,
+          "globalIntegration": 47240,
+          "episode": 314,
+          "nativeId": 6624
+        },
+        {
+          "localSample": 47403,
+          "globalIntegration": 47403,
+          "episode": 316,
+          "nativeId": 6508
+        },
+        {
+          "localSample": 47534,
+          "globalIntegration": 47534,
+          "episode": 317,
+          "nativeId": 6531
+        },
+        {
+          "localSample": 47806,
+          "globalIntegration": 47806,
+          "episode": 319,
+          "nativeId": 6629
+        },
+        {
+          "localSample": 47986,
+          "globalIntegration": 47986,
+          "episode": 320,
+          "nativeId": 6580
+        },
+        {
+          "localSample": 48169,
+          "globalIntegration": 48169,
+          "episode": 321,
+          "nativeId": 6583
+        },
+        {
+          "localSample": 49034,
+          "globalIntegration": 49034,
+          "episode": 327,
+          "nativeId": 6530
+        },
+        {
+          "localSample": 49353,
+          "globalIntegration": 49353,
+          "episode": 330,
+          "nativeId": 6571
+        },
+        {
+          "localSample": 49724,
+          "globalIntegration": 49724,
+          "episode": 332,
+          "nativeId": 6545
+        },
+        {
+          "localSample": 49931,
+          "globalIntegration": 49931,
+          "episode": 333,
+          "nativeId": 6607
+        },
+        {
+          "localSample": 50103,
+          "globalIntegration": 50103,
+          "episode": 334,
+          "nativeId": 6572
+        },
+        {
+          "localSample": 50245,
+          "globalIntegration": 50245,
+          "episode": 335,
+          "nativeId": 6542
+        },
+        {
+          "localSample": 50362,
+          "globalIntegration": 50362,
+          "episode": 336,
+          "nativeId": 6517
+        },
+        {
+          "localSample": 50636,
+          "globalIntegration": 50636,
+          "episode": 338,
+          "nativeId": 6631
+        },
+        {
+          "localSample": 50842,
+          "globalIntegration": 50842,
+          "episode": 339,
+          "nativeId": 6606
+        },
+        {
+          "localSample": 50952,
+          "globalIntegration": 50952,
+          "episode": 340,
+          "nativeId": 6510
+        },
+        {
+          "localSample": 51067,
+          "globalIntegration": 51067,
+          "episode": 341,
+          "nativeId": 6515
+        },
+        {
+          "localSample": 51673,
+          "globalIntegration": 51673,
+          "episode": 346,
+          "nativeId": 6597
+        },
+        {
+          "localSample": 52206,
+          "globalIntegration": 52206,
+          "episode": 352,
+          "nativeId": 6499
+        },
+        {
+          "localSample": 52341,
+          "globalIntegration": 52341,
+          "episode": 353,
+          "nativeId": 6535
+        },
+        {
+          "localSample": 52622,
+          "globalIntegration": 52622,
+          "episode": 357,
+          "nativeId": 6521
+        },
+        {
+          "localSample": 52908,
+          "globalIntegration": 52908,
+          "episode": 359,
+          "nativeId": 6638
+        },
+        {
+          "localSample": 53080,
+          "globalIntegration": 53080,
+          "episode": 360,
+          "nativeId": 6572
+        },
+        {
+          "localSample": 53735,
+          "globalIntegration": 53735,
+          "episode": 364,
+          "nativeId": 6525
+        },
+        {
+          "localSample": 54314,
+          "globalIntegration": 54314,
+          "episode": 370,
+          "nativeId": 6676
+        },
+        {
+          "localSample": 54485,
+          "globalIntegration": 54485,
+          "episode": 372,
+          "nativeId": 6509
+        },
+        {
+          "localSample": 55389,
+          "globalIntegration": 55389,
+          "episode": 380,
+          "nativeId": 6542
+        },
+        {
+          "localSample": 55623,
+          "globalIntegration": 55623,
+          "episode": 381,
+          "nativeId": 6634
+        },
+        {
+          "localSample": 56036,
+          "globalIntegration": 56036,
+          "episode": 386,
+          "nativeId": 6513
+        },
+        {
+          "localSample": 56300,
+          "globalIntegration": 56300,
+          "episode": 388,
+          "nativeId": 6620
+        },
+        {
+          "localSample": 56871,
+          "globalIntegration": 56871,
+          "episode": 395,
+          "nativeId": 6548
+        },
+        {
+          "localSample": 57373,
+          "globalIntegration": 57373,
+          "episode": 403,
+          "nativeId": 6535
+        },
+        {
+          "localSample": 59575,
+          "globalIntegration": 59575,
+          "episode": 433,
+          "nativeId": 6526
+        },
+        {
+          "localSample": 62253,
+          "globalIntegration": 62253,
+          "episode": 475,
+          "nativeId": 6579
+        },
+        {
+          "localSample": 62975,
+          "globalIntegration": 62975,
+          "episode": 489,
+          "nativeId": 6488
+        }
+      ]
+    },
+    {
+      "branch": "frozen",
+      "actualNativeSamples": 2292,
+      "torqueEquationMaximumErrorNm": 0.0,
+      "controlEquationMaximumError": 0.0,
+      "warningSamples": 0,
+      "bothFeetUnloadedSamples": 0,
+      "nonfootSupportSamples": 0,
+      "loadedSlipFirstCrossings": [
+        {
+          "localSample": 2292,
+          "globalIntegration": 66388,
+          "episode": null,
+          "nativeId": 8692
+        }
+      ],
+      "elapsedSeconds": 2.865,
+      "physicalFailure": "loaded_slip",
+      "loadedSlipM": [
+        0.01000163525102614,
+        0.009685628069879897
+      ],
+      "firstAnchorCrossingSample": null,
+      "terminalAnchorDriftM": 0.008744582402139739,
+      "terminalNativeSamples": 12,
+      "terminalMask": 0.0,
+      "final4000QuietQualified": false
+    },
+    {
+      "branch": "candidate",
+      "actualNativeSamples": 57,
+      "torqueEquationMaximumErrorNm": 0.0,
+      "controlEquationMaximumError": 0.0,
+      "warningSamples": 0,
+      "bothFeetUnloadedSamples": 0,
+      "nonfootSupportSamples": 0,
+      "loadedSlipFirstCrossings": [],
+      "elapsedSeconds": 0.07125,
+      "physicalFailure": "fixed_anchor_drift",
+      "loadedSlipM": [
+        0.0021746483489684344,
+        0.008391607975197675
+      ],
+      "firstAnchorCrossingSample": 57,
+      "terminalAnchorDriftM": 0.01019815343696804,
+      "terminalNativeSamples": 17,
+      "terminalMask": 0.0,
+      "final4000QuietQualified": false
+    }
+  ],
+  "deterministicFirstCommand": {
+    "initialObservation118BitExact": true,
+    "residualRMSDifferenceRad": 0.45997876793743436,
+    "residualMaximumDifferenceRad": 0.8091887533664703
+  },
+  "allNewStageNativeSamples": 66445,
+  "candidateMinusFrozenFailureTimeS": -2.79375,
+  "quietQualified": false,
+  "forwardStepQualified": false,
+  "selectedPolicy": "immutable-source-SLOW-baseline",
+  "allInputSHA256": {
+    "/workspace/scratch/5def91918e35/mvp-landing/outputs/getup-source-continuation/session-20261018T032214Z/runtime-admission.json": "91bf48e355d607ac55174a6005e011bb524b28c254f2de75ff31b232a61deaa2",
+    "/workspace/scratch/5def91918e35/mvp-landing/outputs/getup-source-continuation/session-20261018T032214Z/ledger.json": "541862ce977b63bff9a93f688ac869547c7beeded8f2958b2946c9f2ad4531bf",
+    "/workspace/scratch/5def91918e35/mvp-landing/outputs/getup-source-continuation/session-20261018T032214Z/learner/summary.json": "8c5c470af1aa8484bb2b62776a3492c384f0c50350b78afabaad57f80aa5efea",
+    "/workspace/scratch/5def91918e35/mvp-landing/outputs/getup-source-continuation/session-20261018T032214Z/learner/latest-checkpoint.json": "f6191087f81fdde89cb00461598dd4ed1266e981504ebfede23f1608b6cb73b0",
+    "/workspace/scratch/5def91918e35/mvp-landing/outputs/getup-source-continuation/session-20261018T032214Z/learner/transitions.ndjson": "f7266e76f2dcb19f24426843920ba1a38ed651952b2d4948571e71f747edaac3",
+    "/workspace/scratch/5def91918e35/mvp-landing/outputs/getup-source-continuation/session-20261018T032214Z/learner/updates.ndjson": "eb773379e70f81212ad74b780babe4074bef315d884ed3fa5549760360e591a6",
+    "/workspace/scratch/5def91918e35/mvp-landing/outputs/getup-source-continuation/session-20261018T032214Z/learner/terminal-proofs.ndjson": "fae0adeca2d02e559bd4dec8d7efcbfbbbfbd3498c3d8a7b335b701e6161dfd8",
+    "/workspace/scratch/5def91918e35/mvp-landing/outputs/getup-source-continuation/session-20261018T032214Z/learner/frames.ndjson": "1a6d19e3cc9e20e815c6535023c8e6b04eed9b76d4f02fac954ccabc847c59fd",
+    "/workspace/scratch/5def91918e35/mvp-landing/outputs/getup-source-continuation/session-20261018T032214Z/learner/frozen-frames.ndjson": "17d0519af5e8974e051f79a5598271d839dc000dfe44701de19eb82118069dbf",
+    "/workspace/scratch/5def91918e35/mvp-landing/outputs/getup-source-continuation/session-20261018T032214Z/learner/candidate-frames.ndjson": "5b5286833a2138a6480ed2d10ed15b89844d69a8bd8dd8eed81df0dc1a165e60",
+    "/workspace/scratch/5def91918e35/mvp-landing/outputs/getup-source-continuation/session-20261018T032214Z/learner/final-audits.json": "ee26dfc5e70a8f1f8ce151139b89691b6f048387eaa6cf5ac8b7e274525134eb",
+    "/workspace/scratch/5def91918e35/mvp-landing/outputs/getup-source-continuation/session-20261018T032214Z/learner/episodes.json": "5865850bde1dd6ee7e955689bb85eaa5f7bcfd4d252f5bb3cd41a1e58e0b4d22"
+  }
+}

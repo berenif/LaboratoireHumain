@@ -1,0 +1,34 @@
+{
+  "scope": "independent read-only saved-tensor/source-loss attribution; no optimizer or engine calls",
+  "reviewer": "R1 source/math audit",
+  "inputs": {
+    "outputs/getup-source-continuation/session-20261018T032214Z/learner/milestone-final.pt": "0b7756ced7ea94fe847d4404617b29584a9d92f2ea87eb9e55ec62691c83d0cf",
+    "outputs/getup-source-continuation/session-20261018T032214Z/learner/attempt-0993-local.pt": "9cb1936d47c96e26f0fe7db15e233e42e0bfe0b0e7ae33b0240d5d5b5215a9a3",
+    "outputs/getup-source-continuation/session-20261018T032214Z/learner/attempt-0994-local.pt": "8d014bd0aca972663d08b06a54d9b3b9a6b4ef6654b022b19a8b52ee96839063"
+  },
+  "lastProposal": {
+    "attempt": 994,
+    "sourceLossClosureError": 0.0,
+    "localLossGainQ": 0.01014662,
+    "localLossGainEntropy": 2.995e-06,
+    "entropyToQMeanHeadGradientNormRatio": 0.001414,
+    "entropyToQStdHeadGradientNormRatio": 0.03626
+  },
+  "terminalFitting": {
+    "actualMaskZeroTerminals": 510,
+    "exactRewardTargetMean": -9.61915,
+    "minimumTwinQMean": -1.1604,
+    "minimumTwinQRMSE": 9.55351
+  },
+  "latest256Replay": {
+    "terminalCount": 75,
+    "exactRewardTargetMean": -9.6198,
+    "minimumTwinQMean": 0.56353,
+    "minimumTwinQRMSE": 10.57475
+  },
+  "entryStateFinalCritic": {
+    "originalDeterministicActionMinimumQ": 10.503,
+    "finalCandidateDeterministicActionMinimumQ": 9.027
+  },
+  "interpretation": "Direct mask0 fitting error and cumulative distribution drift are supported. Entropy-only driver and a simple final-entry critic ranking inversion are not supported. No unique causal attribution or policy release."
+}

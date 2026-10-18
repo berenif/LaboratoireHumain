@@ -1,0 +1,18 @@
+{
+  "passed": true,
+  "logSHA256": "7abe5f7852c673c2649add659eb4a8c1ae961d04946f9b4876bccf7df90a2bb9",
+  "pureTests": 4,
+  "regressions": {
+    "online": {
+      "tests": 8,
+      "logSHA256": "7705ec66f804306f4fb1d4438bf372fbed0e9f1644e1edee6f783fc943495b2a"
+    },
+    "ledger": {
+      "tests": 8,
+      "logSHA256": "5e6db25a39712980a08f80f44bf34e25cb25a5ded45e72ab58d291f307d859c2"
+    }
+  },
+  "newEngineIntegrations": 0,
+  "newCandidateOptimizerCalls": 0,
+  "scope": "pure throwaway semantic fixtures, populated retained-state next-action/batch-index/attempt140 restore, new resource caps"
+}

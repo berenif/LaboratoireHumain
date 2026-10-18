@@ -1,0 +1,54 @@
+{
+  "passed": true,
+  "newIntegrations": 0,
+  "newOptimizerCalls": 0,
+  "retainedNativeCounter": 6540,
+  "nativeBytesRoundTripExact": true,
+  "controllerEnvelopeRoundTripExact": true,
+  "nextObservation118MatchesReplay": true,
+  "nextGaussianAction": [
+    0.006888861767947674,
+    -0.12146405130624771,
+    -0.34204280376434326,
+    -0.1889718621969223,
+    -0.2118874192237854,
+    0.052610043436288834,
+    -0.10514892637729645,
+    -0.4186398684978485,
+    0.4243660867214203,
+    -0.2852008640766144,
+    -0.04783794656395912,
+    -0.146226704120636,
+    -0.03394763544201851,
+    0.007429306395351887,
+    -0.2671619653701782,
+    -0.09730388224124908,
+    0.15816228091716766,
+    -0.33670729398727417,
+    -0.19255101680755615,
+    -0.023386329412460327,
+    -0.46041321754455566
+  ],
+  "nextActionNoiseSHA256": "0cef75bb270df8ec896c20567ba7f9e52b00601408411fe0e9d45f563df9b381",
+  "nextReplayIndicesAtFutureSize1584SHA256": "f95935476fdcf10e07d82bedb44ceccce313e9b3316a94ca8dcf5419382e8cbd",
+  "nextProposal140NoiseSHA256": "e8d8ca406a35b5d5bb2068b27e23024a64c7d474989962ae58b30ac00d469c95",
+  "oldUnfinishedEpisode": 48,
+  "oldEpisodeRowsCarried": 7,
+  "oldClock": {
+    "tau": 0.175,
+    "rate": 1.0,
+    "last_native_substep": 6540,
+    "target_rate": 1.0,
+    "response_seconds": 0.1,
+    "sample_seconds": 0.00125
+  },
+  "oldSlip": [
+    0.0020284666548212992,
+    0.0015043418958506877
+  ],
+  "oldBindingsPreserved": {
+    "runtimeAdmissionSHA256": "fdc1abd826a244f57f964858d2bc5820ad57991ef504dc9180f8d446ec103cd6"
+  },
+  "newRejectionStreak": 0,
+  "oldAnchorRejectionsPreserved": 128
+}

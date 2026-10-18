@@ -1,0 +1,167 @@
+{
+  "capturedAfterClosed": true,
+  "files": [
+    {
+      "path": "outputs/getup-source-online/session-20261018T030112Z/ledger.json",
+      "sha256": "377a141e326bb87eae4a268895e068db0ede7603f24eb1d045b1255ae28c61e1",
+      "bytes": 1745,
+      "mtimeNs": 1792293002760095872
+    },
+    {
+      "path": "outputs/getup-source-online/session-20261018T030112Z/learner/summary.json",
+      "sha256": "68a60121416e30beb46added627cf20f3ec749811d683aa1fb6e4b92834f6fa9",
+      "bytes": 15570,
+      "mtimeNs": 1792293002747631317
+    },
+    {
+      "path": "outputs/getup-source-online/session-20261018T030112Z/learner/episodes.json",
+      "sha256": "05a3dfdc864eda1cfb5987ade61178f85609f9e6dca4e3b3590fc6b202ba8a6b",
+      "bytes": 397933,
+      "mtimeNs": 1792293002757264282
+    },
+    {
+      "path": "outputs/getup-source-online/session-20261018T030112Z/learner/transitions.ndjson",
+      "sha256": "109bb7dd8aea4a1b4e3d0ec66333d60851408886e1acd474e80573501f00c73c",
+      "bytes": 18963112,
+      "mtimeNs": 1792292984076917284
+    },
+    {
+      "path": "outputs/getup-source-online/session-20261018T030112Z/learner/frames.ndjson",
+      "sha256": "ce228f31532491361dab0626459ea432da467b480c2414b82bb4669b001f7ed9",
+      "bytes": 181469744,
+      "mtimeNs": 1792292984072917210
+    },
+    {
+      "path": "outputs/getup-source-online/session-20261018T030112Z/learner/milestone-final-manifest.json",
+      "sha256": "55c6879d5ed070f5e18deb91c9b10ca6ea106e67ffd911e26a3b3592a7ebadb5",
+      "bytes": 592,
+      "mtimeNs": 1792292984870829468
+    },
+    {
+      "path": "outputs/getup-source-online/session-20261018T030112Z/learner/milestone-final.pt",
+      "sha256": "096e33b7815fc226120f1057d6ce6e0ae17ce96f6297c2e0b798b7706f890716",
+      "bytes": 46152944,
+      "mtimeNs": 1792292984760929949
+    },
+    {
+      "path": "outputs/getup-source-online/session-20261018T030112Z/learner/milestone-final.json",
+      "sha256": "358aeedb3de3ec82e2232578be510162fad276bb38d073c010166f35520ecbe4",
+      "bytes": 16556,
+      "mtimeNs": 1792292984860931799
+    },
+    {
+      "path": "outputs/getup-source-online/session-20261018T030112Z/learner/milestone-final.bin",
+      "sha256": "48691f8ed906a47d4bbe86b3bf9a8496f1afa476dcc3cc6dc9309d0e48adb529",
+      "bytes": 14658416,
+      "mtimeNs": 1792292984612681882
+    },
+    {
+      "path": "outputs/getup-source-continuation/session-20261018T032214Z/ledger.json",
+      "sha256": "541862ce977b63bff9a93f688ac869547c7beeded8f2958b2946c9f2ad4531bf",
+      "bytes": 2088,
+      "mtimeNs": 1792294822516097655
+    },
+    {
+      "path": "outputs/getup-source-continuation/session-20261018T032214Z/learner/summary.json",
+      "sha256": "8c5c470af1aa8484bb2b62776a3492c384f0c50350b78afabaad57f80aa5efea",
+      "bytes": 16656,
+      "mtimeNs": 1792294822413727812
+    },
+    {
+      "path": "outputs/getup-source-continuation/session-20261018T032214Z/learner/episodes.json",
+      "sha256": "5865850bde1dd6ee7e955689bb85eaa5f7bcfd4d252f5bb3cd41a1e58e0b4d22",
+      "bytes": 3624536,
+      "mtimeNs": 1792294822506712715
+    },
+    {
+      "path": "outputs/getup-source-continuation/session-20261018T032214Z/learner/transitions.ndjson",
+      "sha256": "f7266e76f2dcb19f24426843920ba1a38ed651952b2d4948571e71f747edaac3",
+      "bytes": 40782410,
+      "mtimeNs": 1792294811110499859
+    },
+    {
+      "path": "outputs/getup-source-continuation/session-20261018T032214Z/learner/frames.ndjson",
+      "sha256": "1a6d19e3cc9e20e815c6535023c8e6b04eed9b76d4f02fac954ccabc847c59fd",
+      "bytes": 378497903,
+      "mtimeNs": 1792294811110499859
+    },
+    {
+      "path": "outputs/getup-source-continuation/session-20261018T032214Z/learner/milestone-5000-manifest.json",
+      "sha256": "a61af85f1da413b47a35f29ed8f564288d219e74049b36f6691db96e56c31c84",
+      "bytes": 607,
+      "mtimeNs": 1792294811998717406
+    },
+    {
+      "path": "outputs/getup-source-continuation/session-20261018T032214Z/learner/milestone-5000.pt",
+      "sha256": "3f0124cde43da198ee4403e979a782f8ec443b310d9074850c3a3c29835958ed",
+      "bytes": 51992112,
+      "mtimeNs": 1792294811866513980
+    },
+    {
+      "path": "outputs/getup-source-continuation/session-20261018T032214Z/learner/milestone-5000.json",
+      "sha256": "c6f45768c3cff9e1dd4ed5e9777455721e3bb1a715dea328e8e7f15c278e14ec",
+      "bytes": 16504,
+      "mtimeNs": 1792294811965440139
+    },
+    {
+      "path": "outputs/getup-source-continuation/session-20261018T032214Z/learner/milestone-5000.bin",
+      "sha256": "839cdaaef1c4a5b3f9fbabe7db62b86183bcf85f5258337ec5323afacbc447e1",
+      "bytes": 14658416,
+      "mtimeNs": 1792294811450538132
+    },
+    {
+      "path": "scripts/getup-step/source_task.py",
+      "sha256": "083d7a7df475d448e1ddcb9b9cbffc4222b71c7cc115cfd2e8962c5cc7ec10e8",
+      "bytes": 20409,
+      "mtimeNs": 1792288683825270210
+    },
+    {
+      "path": "scripts/getup-step/slow_task.py",
+      "sha256": "e061918ede3cab1c18173c97127d498b992a04c29b83aa20ef091dd48d92d099",
+      "bytes": 8243,
+      "mtimeNs": 1792289237139418730
+    },
+    {
+      "path": "scripts/getup-step/source_math.py",
+      "sha256": "f4935043b31dfef00b926943d2b3f720fd39691e98672aa6ae00019371ff8dfd",
+      "bytes": 7088,
+      "mtimeNs": 1792276662645470220
+    },
+    {
+      "path": "scripts/getup-step/task.py",
+      "sha256": "dfbb4f5ded122e40d976d0d64071d0046f210aac95397425d27b4941618648ee",
+      "bytes": 7010,
+      "mtimeNs": 1792282954678824931
+    },
+    {
+      "path": "scripts/getup-step/reference.py",
+      "sha256": "e9e0657e203601d22dd032ceb88eaab187dad0c77fd34105fd1c87cc843c79a6",
+      "bytes": 5480,
+      "mtimeNs": 1792282954678941426
+    },
+    {
+      "path": "scripts/getup-step/task-config-mujoco-slow-stabilization-v1.json",
+      "sha256": "c8ac2dba22ac8c1f1e386575624f45f7b1ee5855b7340fba285b984e233faebf",
+      "bytes": 14860,
+      "mtimeNs": 1792285581185152484
+    },
+    {
+      "path": "scripts/getup-step/slow-online-protocol-v1.json",
+      "sha256": "556d119fae46eb4ff63a13bbd20d2dc6f50850dc6345afdbadf324ebb5e81ec3",
+      "bytes": 7614,
+      "mtimeNs": 1792290466885596959
+    },
+    {
+      "path": "scripts/getup-training/SAC.py",
+      "sha256": "64b1abe69edaac1e3c3f9064f11bcb3d1168eb1d829117dd415eaa204dee0420",
+      "bytes": 9458,
+      "mtimeNs": 1792255469691013656
+    }
+  ],
+  "script": {
+    "path": "outputs/getup-source-continuation/session-20261018T032214Z/observability-audit/audit.py",
+    "sha256": "67362a16b60bba774b9fca3381dab254b22b41a50d56d13021db6e8b80861d9e",
+    "bytes": 17867,
+    "mtimeNs": 1792294969717455247
+  }
+}
