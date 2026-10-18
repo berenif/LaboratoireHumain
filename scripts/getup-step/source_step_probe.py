@@ -101,6 +101,7 @@ class Controller:
   vel=(self.com1-self.com0)*ds if phase=='transfer'else np.zeros(3);acc=(self.com1-self.com0)*dds if phase=='transfer'else np.zeros(3)
   if phase in ['settle','stand']:
    s,ds,dds=clock(t,self.phase_duration('settle'))if phase=='settle'else(1.,0.,0.);target=self.com1+(self.finalCom-self.com1)*s;vel=(self.finalCom-self.com1)*ds;acc=(self.finalCom-self.com1)*dds
+  if hasattr(self,'adjust_com_reference'):target,vel,acc=self.adjust_com_reference(t,phase,target,vel,acc)
   task(Jcom,acc+45*(target-com)+13*(vel-Jcom@v)-w.read('lh_jdot',(3,),-1),12.)
   if hasattr(self,'add_capture_constraints'):self.add_capture_constraints(phase,N,Jcom,com,v,ineq,ub)
   if hasattr(self,'add_upright_tasks'):

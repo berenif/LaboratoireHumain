@@ -1,0 +1,2397 @@
+{
+  "schema": 1,
+  "scope": "Explicit impratio8 prospective support admission; original model and ten-step qualification not claimed",
+  "tenStepsAndFinalQuietQualified": false,
+  "selectedPresetChanged": false,
+  "selectedPresetSHA256": "a73270f51cb94a83545ee530f1edf620f287b1f7407f08a0c9afb174a61c658d",
+  "requestedOwnFootAdvanceM": 0.18,
+  "commandedOwnFootAdvanceM": 0.182,
+  "globalPerFootLoadedSlipLimitM": 0.01,
+  "finalQuietRequiredS": 5.0,
+  "physicsIntegrationsThisCheckpoint": 59291,
+  "subtotals": {
+    "geometricPilots": 8002,
+    "prospectivePilot": 11719,
+    "continuousTenAttempt": 39570
+  },
+  "independentAuditsPhysicsIntegrations": 0,
+  "geometricPilotFailures": {
+    "schema": 1,
+    "tenStepsQualified": false,
+    "totalActualIntegrations": 8002,
+    "attempts": [
+      {
+        "name": "pilot1",
+        "source": "/tmp/cadence-robust-8-pilot1/frozen-source-manifest.json",
+        "sourceManifestSHA256": "fd217b8cbd9cbb01354a5d8b72a25301d6ea4102c758d1287c47bc89f4af6f4c",
+        "stopped": "ValueError('robust support COM correction exceeds 12mm')",
+        "integrations": 3200,
+        "physicsSimSeconds": 4.0,
+        "completedSteps": 0,
+        "globalLoadedSlipM": [
+          0.0005884695615718305,
+          0.0004255872893551308
+        ],
+        "captureMinimumM": 0.026529112603870142,
+        "finalJointReserveRad": 0.012423851706678146,
+        "physicsGuardFailure": false
+      },
+      {
+        "name": "pilot2",
+        "source": "/tmp/cadence-robust-8-pilot2/frozen-source-manifest.json",
+        "sourceManifestSHA256": "0cd61df3535e658ce8f399ad07ac613b4f19245d931854d0d8a6088499a740db",
+        "stopped": "phase-timeout-transfer",
+        "integrations": 4802,
+        "physicsSimSeconds": 6.0025,
+        "completedSteps": 0,
+        "globalLoadedSlipM": [
+          0.0006208484519759448,
+          0.00045832065814250557
+        ],
+        "captureMinimumM": 0.026529112603870142,
+        "finalJointReserveRad": 0.012243128590357755,
+        "physicsGuardFailure": false
+      }
+    ]
+  },
+  "causalDiagnosis": {
+    "topology": {
+      "path": "/tmp/cadence-impratio8-capture-diagnosis/consecutive-frame-proof.json",
+      "sha256": "84ce99eb4e2851a3a9ec1ea0ab72fc6eede9424c51243ed2fd4f34be04b86d28",
+      "summary": {
+        "schema": 1,
+        "physicsIntegrations": 0,
+        "causalMechanism": "A shallow stance contact disappeared for the next executed native solve between torque updates, changing actual solved support from four corners to three. COM and CP remained well inside the previous footprint; total support persisted. The current scratch held-control solve has four contacts again and is not the already executed three-contact solve.",
+        "previousSourceStep": 3613,
+        "currentSourceStep": 3614,
+        "previousTimeS": 4.51625,
+        "currentTimeS": 4.5175,
+        "previousActualMarginM": 0.01210686352221474,
+        "currentActualMarginM": -0.002653457197109299,
+        "currentCPInsidePreviousHullMarginM": 0.012870969412594524,
+        "horizontalComMotionM": 7.085746588581371e-06,
+        "capturePointMotionM": 4.3813162495801275e-05,
+        "stanceLoadBeforeAfterN": [
+          401.58599270220896,
+          402.160403492973
+        ],
+        "cornerCountBeforeAfter": [
+          4,
+          3
+        ],
+        "missingCornerIndex": 0,
+        "missingCornerClearanceBeforeAfterM": [
+          2.88066966305095e-07,
+          -6.500807440447398e-07
+        ],
+        "lastAppliedControlTimeS": 4.515,
+        "lastAppliedControlCPMarginsM": [
+          0.10738993572524999,
+          0.01281361790633806,
+          0.02655260883094701,
+          0.10261006420316451
+        ],
+        "matchingProfile2": {
+          "sourceStep": 3614,
+          "marginM": 0.011943952053606433,
+          "cornerCount": 4,
+          "weakestCornerClearanceM": -6.915013546485507e-05
+        },
+        "allArchivedMarginsRebuiltExactly": true,
+        "readonlyOwnModelInspection": {
+          "profile8": [
+            "step-01-lift.bin",
+            "final.bin"
+          ],
+          "profile2": [
+            "step-01-lift.bin",
+            "step-01-translate.bin",
+            "final.bin"
+          ],
+          "noCrossModelRestore": true,
+          "nativeModelAndCounterPure": true
+        },
+        "evidenceSHA256": {
+          "compare_saved_capture.py": "a1da5ee6c1febbd5d2efcb191a966466f05f8ef1b4edf7c83c1232e10e4fcf69",
+          "saved-capture-comparison.json": "13c403a1ed1a1420349e3101b23b402f27d127c9dd98bd02d152544337fec805",
+          "inspect_profiles.py": "920d531ffca62a5ac34e19caccf186e6347449b394e79d84d7629305d09f9de1",
+          "profile-8-contact-report.json": "5d879fbe91c4af39e0ed95ae9707b2b9eb0c9ef7f953b60cfa6a963a113823cc",
+          "profile-2-contact-report.json": "1f0fcc81d74b3796fc254539b486cb7310ba1c4634c48df25eab94d776c7c836"
+        }
+      }
+    },
+    "prospectiveUnloadSummaryPath": "/tmp/cadence-robust-unload-diagnosis/summary.json",
+    "prospectiveUnloadSummarySHA256": "12262299eb1be76ad2d2eeeab5fc21ff2b9e55d2f38483af05d251e2e6c30a5e",
+    "currentTriangleProjection": {
+      "path": "/tmp/cadence-robust-unload-diagnosis/current-triangle-projection.json",
+      "sha256": "d1e22730e1a642720215dee92b075550c3840559012d3ef050b13f5196cdf62c",
+      "summary": {
+        "physicsIntegrations": 0,
+        "states": [
+          {
+            "pilot": 1,
+            "sourceStep": 3200,
+            "physicsIntegrations": 0,
+            "prospectiveRiskCornerFromCurrentUnloadForecast": 0,
+            "currentActuallyObservedEndpointSupport": [
+              true,
+              true,
+              true,
+              true
+            ],
+            "currentGeometrySurvivorCorners": [
+              1,
+              2,
+              3
+            ],
+            "currentTriangleCOMMarginM": -0.0021018558142973376,
+            "currentTriangleCaptureMarginM": -0.002099170129944705,
+            "referenceMarginM": -0.0020728209975378054,
+            "geometricProjectionOnlyNoStateShiftApplied": true,
+            "plans": [
+              {
+                "referenceInsetM": 0.003,
+                "referenceGoalXY": [
+                  0.31640562436914155,
+                  0.0669885008547966
+                ],
+                "correctionXYM": [
+                  0.0049382693187906,
+                  -0.001160607172195488
+                ],
+                "magnitudeM": 0.0050728209975377785,
+                "sameShiftedComMarginM": 0.002970965183240415,
+                "sameShiftedCaptureMarginM": 0.0029736508675930473,
+                "sameShiftedFullHullComMarginM": 0.007073251767548083,
+                "sameShiftedFullHullCaptureMarginM": 0.0070699637127420445
+              },
+              {
+                "referenceInsetM": 0.004,
+                "referenceGoalXY": [
+                  0.3173791003347211,
+                  0.0667597115533884
+                ],
+                "correctionXYM": [
+                  0.005911745284370162,
+                  -0.0013893964736036851
+                ],
+                "magnitudeM": 0.006072820997537734,
+                "sameShiftedComMarginM": 0.00397096518324036,
+                "sameShiftedCaptureMarginM": 0.003973650867592993,
+                "sameShiftedFullHullComMarginM": 0.006077598240954829,
+                "sameShiftedFullHullCaptureMarginM": 0.00607431018614879
+              }
+            ]
+          },
+          {
+            "pilot": 2,
+            "sourceStep": 4802,
+            "physicsIntegrations": 0,
+            "prospectiveRiskCornerFromCurrentUnloadForecast": 0,
+            "currentActuallyObservedEndpointSupport": [
+              true,
+              true,
+              true,
+              true
+            ],
+            "currentGeometrySurvivorCorners": [
+              1,
+              2,
+              3
+            ],
+            "currentTriangleCOMMarginM": -0.00206428440271772,
+            "currentTriangleCaptureMarginM": -0.0020643169467411404,
+            "referenceMarginM": -0.0020320929721705516,
+            "geometricProjectionOnlyNoStateShiftApplied": true,
+            "plans": [
+              {
+                "referenceInsetM": 0.003,
+                "referenceGoalXY": [
+                  0.3163658724994155,
+                  0.06699737607823898
+                ],
+                "correctionXYM": [
+                  0.0048985174490645544,
+                  -0.001151731948753107
+                ],
+                "magnitudeM": 0.0050320929721705794,
+                "sameShiftedComMarginM": 0.00296780856945289,
+                "sameShiftedCaptureMarginM": 0.002967776025429414,
+                "sameShiftedFullHullComMarginM": 0.007075465425967209,
+                "sameShiftedFullHullCaptureMarginM": 0.007075496750316712
+              },
+              {
+                "referenceInsetM": 0.004,
+                "referenceGoalXY": [
+                  0.3173393277746171,
+                  0.0667684987591746
+                ],
+                "correctionXYM": [
+                  0.00587197272426615,
+                  -0.0013806092678174953
+                ],
+                "magnitudeM": 0.006032092972170538,
+                "sameShiftedComMarginM": 0.003967808569452835,
+                "sameShiftedCaptureMarginM": 0.003967776025429359,
+                "sameShiftedFullHullComMarginM": 0.006079811899399046,
+                "sameShiftedFullHullCaptureMarginM": 0.006079843223748549
+              }
+            ]
+          }
+        ]
+      }
+    },
+    "interpretation": "Held current geometry selects corner2 and requires >12mm; current-state proposed unloaded QP pressure and pure native clearance jet agree on corner0, requiring6.073mm. Trial controls are never applied."
+  },
+  "qualifiedProspectivePilot": {
+    "path": "/tmp/cadence-robust-8-pilot3/independent-audit-summary.json",
+    "sha256": "25672176772001c7ff7dd97f54c95c0a40e4ee58a575836073fa0c95f4fbceef",
+    "summary": {
+      "schema": 1,
+      "savedDataOnly": true,
+      "physicsIntegrations": 0,
+      "folder": "/tmp/cadence-robust-8-pilot3/run/generation-001",
+      "auditPath": "/tmp/cadence-robust-8-pilot3/robust-support-audit-final.json",
+      "auditSHA256": "d8caa1f0c7c4d6dc4956671329a8c47842a2673d86551ebd02d75a9a565baff0",
+      "auditorSHA256": "18e8c5017e769830261602d2027680a7defa05a7e01f2ecf28897fda053aa789",
+      "testCases": 61,
+      "testFailures": 0,
+      "testLog": "/tmp/cadence-robust-forecast-audit-tests-final.txt",
+      "testLogSHA256": "9304df287c14a9987689760af433331baffb53b02b21bf1cf2e4fc439e492125",
+      "actualIntegrations": 11719,
+      "actualDurationS": 14.64875,
+      "completedSteps": 1,
+      "requestedSteps": 1,
+      "actualOwnFootAdvanceM": 0.1819779988358517,
+      "landingTimeS": 8.1275,
+      "explicitProspectiveUnloadRiskImpratio8PilotPass": true,
+      "explicitProspectiveUnloadRiskImpratio8TenStepPass": false,
+      "originalStrictCadencedSequencePass": false,
+      "originalTenStep180mmQualificationPass": false,
+      "geometricProfilePilotPass": false,
+      "failedChecks": [],
+      "originalFailedChecks": [
+        "selectedModelHelperAndInitialStateIdentity"
+      ],
+      "explicitModelProofPass": true,
+      "strictSourceProvenancePass": true,
+      "nativeWitnessReplay": {
+        "passed": true,
+        "physicsIntegrations": 0,
+        "expectedSelectedWitnesses": 21,
+        "nativeVerifiedWitnesses": 21,
+        "checkpointImports": 21,
+        "proposedQPSolves": 21,
+        "pureMotorResponseCalls": 21,
+        "selectedCoverageComplete": true,
+        "maximumAbsoluteErrors": {
+          "qpos": 0.0,
+          "qvel": 0.0,
+          "bound arm_posture": 0.0,
+          "bound arm_velocity": 0.0,
+          "bound arm_acceleration": 0.0,
+          "proposed motor control": 0.0,
+          "proposed normal pressure": 0.0,
+          "native proposed response": 0.0,
+          "current matched support": 0.0,
+          "current endpoint clearance": 0.0,
+          "endpoint vertical velocity": 0.0,
+          "endpoint vertical acceleration": 0.0,
+          "local clearance forecast": 4.336808689942018e-19
+        },
+        "failures": []
+      },
+      "actualTriangleReplay": {
+        "prospectiveRiskReplayPass": true,
+        "maximumRetainedHistorySamples": 21,
+        "independentFootEndpointMaximumErrorM": 1.294103713078698e-15,
+        "perStep": {
+          "1": {
+            "selection": {
+              "weakCorner": 0,
+              "survivingCorners": [
+                1,
+                2,
+                3
+              ],
+              "historySourceStartS": 3.9000000000002597,
+              "historySourceEndS": 4.000000000000275,
+              "historySamples": 21,
+              "selectedAtTransferS": 4.0,
+              "comCorrectionM": [
+                0.00591174271313788,
+                -0.0013893958693648317,
+                0.0
+              ],
+              "correctionMagnitudeM": 0.00607281835626152,
+              "correctionDurationS": 1.0,
+              "initialReserveM": -0.003101853173019086,
+              "riskAgreementFrequency": 1.0
+            },
+            "unload": 80,
+            "maximumUnloadRun": 80,
+            "liftAdmitted": true,
+            "lastPhase": "stand",
+            "clock": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "minimumLiftActualMarginM": 0.0036862293308592697,
+            "liftActualReserveSamples": 642,
+            "maximumLiftActualReserveRun": 642,
+            "selectionNativeStep": 3200,
+            "boundedUnavailableSolves": 0,
+            "lastBoundedUnavailableCandidate": null,
+            "phaseStartNativeStep": 7719,
+            "liftAdmissionNativeStep": 4098
+          }
+        }
+      },
+      "frozenAuditManifestSHA256": "2e97abdc83962ec713fb6ffdf80f6811b13bb2b0eaf395a29899fe472d3c431d",
+      "retainedInspectorSHA256": "d719cda16cb681748bd62c26b9de4bbd2f5aabef3863fba801e22c10b5b358e0",
+      "originallyLoadedInspectorPath": "/tmp/cadence-contact-creep/read_only_contacts.so",
+      "retainedInspectorCopyPath": "/tmp/cadence-robust-8-pilot3/contact-inspector.so",
+      "independentDisagreement": null,
+      "tenQualificationClaim": false
+    }
+  },
+  "failedContinuousTen": {
+    "path": "/workspace/shared/cadence-robust-8-ten/independent-audit-summary.json",
+    "sha256": "c3e206826ed4a9b395b35e78710e225d633582cc9eb74a70a97083676df99b73",
+    "summary": {
+      "schema": 1,
+      "savedDataOnly": true,
+      "physicsIntegrations": 0,
+      "requestedSteps": 10,
+      "actualIntegrations": 39570,
+      "actualDurationS": 49.4625,
+      "stopReason": "global-loaded-slip-10mm",
+      "completedSteps": 6,
+      "loadedLandings": 6,
+      "finalQuietS": 0.0,
+      "globalLoadedSlipM": [
+        0.01000005839571001,
+        0.007849188450570149
+      ],
+      "measuredMaximumMotorFraction": 0.9499999999991371,
+      "measuredMinimumComCaptureMarginM": 0.003034920917361461,
+      "perStep": [
+        {
+          "index": 1,
+          "swingSide": "left",
+          "startNativeStep": 0,
+          "landingNativeStep": 6502,
+          "landingTimeS": 8.1275,
+          "achievedAtLoadAcquisitionM": 0.1819564170206502,
+          "completedNativeStep": 7719,
+          "completedTimeS": 9.64875,
+          "achievedForwardM": 0.18196128980745918,
+          "completed": true
+        },
+        {
+          "index": 2,
+          "swingSide": "right",
+          "startNativeStep": 7719,
+          "landingNativeStep": 12609,
+          "landingTimeS": 15.76125,
+          "achievedAtLoadAcquisitionM": 0.18200031410245837,
+          "completedNativeStep": 13827,
+          "completedTimeS": 17.28375,
+          "achievedForwardM": 0.1820144621026568,
+          "completed": true
+        },
+        {
+          "index": 3,
+          "swingSide": "left",
+          "startNativeStep": 13827,
+          "landingNativeStep": 18716,
+          "landingTimeS": 23.395,
+          "achievedAtLoadAcquisitionM": 0.1813858018538183,
+          "completedNativeStep": 19934,
+          "completedTimeS": 24.9175,
+          "achievedForwardM": 0.181215751937159,
+          "completed": true
+        },
+        {
+          "index": 4,
+          "swingSide": "right",
+          "startNativeStep": 19934,
+          "landingNativeStep": 24825,
+          "landingTimeS": 31.03125,
+          "achievedAtLoadAcquisitionM": 0.1820008767789605,
+          "completedNativeStep": 26042,
+          "completedTimeS": 32.5525,
+          "achievedForwardM": 0.18198722831071404,
+          "completed": true
+        },
+        {
+          "index": 5,
+          "swingSide": "left",
+          "startNativeStep": 26042,
+          "landingNativeStep": 30932,
+          "landingTimeS": 38.665,
+          "achievedAtLoadAcquisitionM": 0.18157047174856303,
+          "completedNativeStep": 32149,
+          "completedTimeS": 40.18625,
+          "achievedForwardM": 0.18141204394675356,
+          "completed": true
+        },
+        {
+          "index": 6,
+          "swingSide": "right",
+          "startNativeStep": 32149,
+          "landingNativeStep": 37041,
+          "landingTimeS": 46.30125,
+          "achievedAtLoadAcquisitionM": 0.18200074132684538,
+          "completedNativeStep": 38259,
+          "completedTimeS": 47.823750000000004,
+          "achievedForwardM": 0.18199646349288193,
+          "completed": true
+        },
+        {
+          "index": 7,
+          "swingSide": "left",
+          "startNativeStep": 38259,
+          "completed": false
+        }
+      ],
+      "flags": {
+        "explicitProspectiveUnloadRiskImpratio8PilotPass": false,
+        "explicitProspectiveUnloadRiskImpratio8TenStepPass": false,
+        "explicitRobustSupportImpratio8PilotPass": false,
+        "explicitRobustSupportImpratio8TenStepPass": false,
+        "originalStrictCadencedSequencePass": false,
+        "originalTenStep180mmQualificationPass": false
+      },
+      "observedChecks": {
+        "explicitModelProof": true,
+        "allSourceProvenance": true,
+        "trialControls": true,
+        "exactNativeAndQPSelectedWitnessReplay": true,
+        "allObservedRobustAdmissionChecks": true,
+        "stoppedSafeArmTracking": true
+      },
+      "qualificationFailedChecks": [
+        "everyOtherOriginalCheckPasses",
+        "independentActualTriangleReplay"
+      ],
+      "originalFailedChecks": [
+        "allExpectedStepRecords",
+        "globalLoadedSlipWithinOriginalLimit",
+        "exactOrderedConsecutivePhases",
+        "allMeasuredStepDistances",
+        "everyStepLiftQualified",
+        "everyStepLandingQualified",
+        "everyStepUnloadQualified",
+        "everyStepCompletionQualified",
+        "landingAndCompletionAreActualPhaseEnds",
+        "everyMotionPhaseHonorsConfiguredDuration",
+        "allLoadedSettleTargetsReconstructed",
+        "everyIntermediateLoadedSettleQualified",
+        "finalFiveSecondsQuietOnFinalStep",
+        "completedRunner",
+        "selectedModelHelperAndInitialStateIdentity",
+        "existingMotionArmAndBodyFKQualification",
+        "independentLimbFKAndExactOpposition"
+      ],
+      "robustReplayFailedChecks": [
+        "allRequestedStepsHaveMeasuredCausalSelection",
+        "allRequestedLiftsHaveMeasuredActualTriangleAdmission"
+      ],
+      "exactNativeForecastReplay": {
+        "passed": true,
+        "physicsIntegrations": 0,
+        "selectedManifestCount": 6,
+        "expectedSelectedWitnesses": 126,
+        "nativeVerifiedWitnesses": 126,
+        "checkpointImports": 126,
+        "proposedQPSolves": 126,
+        "pureMotorResponseCalls": 126,
+        "forecastCalls": 126,
+        "nonselectedForecastCalls": 0,
+        "selectedCoverageComplete": true,
+        "coveredSteps": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6
+        ],
+        "maximumAbsoluteErrors": {
+          "qpos": 0.0,
+          "qvel": 0.0,
+          "bound arm_posture": 0.0,
+          "bound arm_velocity": 0.0,
+          "bound arm_acceleration": 0.0,
+          "proposed motor control": 0.0,
+          "proposed normal pressure": 0.0,
+          "native proposed response": 0.0,
+          "current matched support": 0.0,
+          "current endpoint clearance": 0.0,
+          "endpoint vertical velocity": 0.0,
+          "endpoint vertical acceleration": 0.0,
+          "local clearance forecast": 4.336808689942018e-19
+        },
+        "failures": []
+      },
+      "robustMeasuredPerStep": {
+        "1": {
+          "selection": {
+            "weakCorner": 0,
+            "survivingCorners": [
+              1,
+              2,
+              3
+            ],
+            "historySourceStartS": 3.9000000000002597,
+            "historySourceEndS": 4.000000000000275,
+            "historySamples": 21,
+            "selectedAtTransferS": 4.0,
+            "comCorrectionM": [
+              0.00591174271313788,
+              -0.0013893958693648317,
+              0.0
+            ],
+            "correctionMagnitudeM": 0.00607281835626152,
+            "correctionDurationS": 1.0,
+            "initialReserveM": -0.003101853173019086,
+            "riskAgreementFrequency": 1.0
+          },
+          "unload": 80,
+          "maximumUnloadRun": 80,
+          "liftAdmitted": true,
+          "lastPhase": "settle",
+          "clock": [
+            4.4383056341246174e-08,
+            -5.3215816723999565e-05,
+            0.042502517213017385
+          ],
+          "minimumLiftActualMarginM": 0.0036862293308592697,
+          "liftActualReserveSamples": 642,
+          "maximumLiftActualReserveRun": 642,
+          "selectionNativeStep": 3200,
+          "boundedUnavailableSolves": 0,
+          "lastBoundedUnavailableCandidate": null,
+          "phaseStartNativeStep": 6502,
+          "liftAdmissionNativeStep": 4098
+        },
+        "2": {
+          "selection": {
+            "weakCorner": 0,
+            "survivingCorners": [
+              1,
+              2,
+              3
+            ],
+            "historySourceStartS": 11.550000000001296,
+            "historySourceEndS": 11.650000000001347,
+            "historySamples": 21,
+            "selectedAtTransferS": 2.00125,
+            "comCorrectionM": [
+              -0.0008478862871825199,
+              0.0006687662412086515,
+              0.0
+            ],
+            "correctionMagnitudeM": 0.0010798886245222267,
+            "correctionDurationS": 1.0,
+            "initialReserveM": 0.0019046856702498735,
+            "riskAgreementFrequency": 1.0
+          },
+          "unload": 80,
+          "maximumUnloadRun": 80,
+          "liftAdmitted": true,
+          "lastPhase": "settle",
+          "clock": [
+            5.554734450186061e-09,
+            -1.332588076143425e-05,
+            0.02130386073177739
+          ],
+          "minimumLiftActualMarginM": 0.003034920917361461,
+          "liftActualReserveSamples": 642,
+          "maximumLiftActualReserveRun": 642,
+          "selectionNativeStep": 9320,
+          "boundedUnavailableSolves": 0,
+          "lastBoundedUnavailableCandidate": null,
+          "phaseStartNativeStep": 12609,
+          "liftAdmissionNativeStep": 10204
+        },
+        "3": {
+          "selection": {
+            "weakCorner": 0,
+            "survivingCorners": [
+              1,
+              2,
+              3
+            ],
+            "historySourceStartS": 19.185000000000674,
+            "historySourceEndS": 19.285000000000583,
+            "historySamples": 21,
+            "selectedAtTransferS": 2.00125,
+            "comCorrectionM": [
+              0.0039310248742141785,
+              -0.0009310118786819838,
+              0.0
+            ],
+            "correctionMagnitudeM": 0.0040397697558075705,
+            "correctionDurationS": 1.0,
+            "initialReserveM": -0.0010138547540706191,
+            "riskAgreementFrequency": 1.0
+          },
+          "unload": 80,
+          "maximumUnloadRun": 80,
+          "liftAdmitted": true,
+          "lastPhase": "settle",
+          "clock": [
+            0.0,
+            -0.0,
+            -0.0
+          ],
+          "minimumLiftActualMarginM": 0.003608108439235924,
+          "liftActualReserveSamples": 641,
+          "maximumLiftActualReserveRun": 641,
+          "selectionNativeStep": 15428,
+          "boundedUnavailableSolves": 0,
+          "lastBoundedUnavailableCandidate": null,
+          "phaseStartNativeStep": 18716,
+          "liftAdmissionNativeStep": 16312
+        },
+        "4": {
+          "selection": {
+            "weakCorner": 0,
+            "survivingCorners": [
+              1,
+              2,
+              3
+            ],
+            "historySourceStartS": 26.81999999999373,
+            "historySourceEndS": 26.91999999999364,
+            "historySamples": 21,
+            "selectedAtTransferS": 2.0025,
+            "comCorrectionM": [
+              -0.0010602035291074063,
+              0.0008223957096422096,
+              0.0
+            ],
+            "correctionMagnitudeM": 0.0013417772640679647,
+            "correctionDurationS": 1.0,
+            "initialReserveM": 0.0016549925801607754,
+            "riskAgreementFrequency": 1.0
+          },
+          "unload": 80,
+          "maximumUnloadRun": 80,
+          "liftAdmitted": true,
+          "lastPhase": "settle",
+          "clock": [
+            5.554734450186061e-09,
+            -1.332588076143425e-05,
+            0.02130386073177739
+          ],
+          "minimumLiftActualMarginM": 0.003129503749718765,
+          "liftActualReserveSamples": 642,
+          "maximumLiftActualReserveRun": 642,
+          "selectionNativeStep": 21536,
+          "boundedUnavailableSolves": 0,
+          "lastBoundedUnavailableCandidate": null,
+          "phaseStartNativeStep": 24825,
+          "liftAdmissionNativeStep": 22420
+        },
+        "5": {
+          "selection": {
+            "weakCorner": 0,
+            "survivingCorners": [
+              1,
+              2,
+              3
+            ],
+            "historySourceStartS": 34.45499999998679,
+            "historySourceEndS": 34.5549999999867,
+            "historySamples": 21,
+            "selectedAtTransferS": 2.0025,
+            "comCorrectionM": [
+              0.003951431546027867,
+              -0.0009442989383829925,
+              0.0
+            ],
+            "correctionMagnitudeM": 0.0040626975949454355,
+            "correctionDurationS": 1.0,
+            "initialReserveM": -0.0010324071520783898,
+            "riskAgreementFrequency": 1.0
+          },
+          "unload": 80,
+          "maximumUnloadRun": 80,
+          "liftAdmitted": true,
+          "lastPhase": "settle",
+          "clock": [
+            0.0,
+            -0.0,
+            -0.0
+          ],
+          "minimumLiftActualMarginM": 0.003612757612181272,
+          "liftActualReserveSamples": 642,
+          "maximumLiftActualReserveRun": 642,
+          "selectionNativeStep": 27644,
+          "boundedUnavailableSolves": 0,
+          "lastBoundedUnavailableCandidate": null,
+          "phaseStartNativeStep": 30932,
+          "liftAdmissionNativeStep": 28528
+        },
+        "6": {
+          "selection": {
+            "weakCorner": 0,
+            "survivingCorners": [
+              1,
+              2,
+              3
+            ],
+            "historySourceStartS": 42.089999999979845,
+            "historySourceEndS": 42.189999999979754,
+            "historySamples": 21,
+            "selectedAtTransferS": 2.00375,
+            "comCorrectionM": [
+              -0.00113713325412923,
+              0.000867713496885747,
+              0.0
+            ],
+            "correctionMagnitudeM": 0.0014303841268429342,
+            "correctionDurationS": 1.0,
+            "initialReserveM": 0.0015550398156817255,
+            "riskAgreementFrequency": 1.0
+          },
+          "unload": 80,
+          "maximumUnloadRun": 80,
+          "liftAdmitted": true,
+          "lastPhase": "settle",
+          "clock": [
+            5.554734450186061e-09,
+            -1.332588076143425e-05,
+            0.02130386073177739
+          ],
+          "minimumLiftActualMarginM": 0.0031242920151499654,
+          "liftActualReserveSamples": 642,
+          "maximumLiftActualReserveRun": 642,
+          "selectionNativeStep": 33752,
+          "boundedUnavailableSolves": 0,
+          "lastBoundedUnavailableCandidate": null,
+          "phaseStartNativeStep": 37041,
+          "liftAdmissionNativeStep": 34636
+        },
+        "7": {
+          "selection": null,
+          "unload": 0,
+          "maximumUnloadRun": 0,
+          "liftAdmitted": false,
+          "lastPhase": "transfer",
+          "clock": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "minimumLiftActualMarginM": null,
+          "liftActualReserveSamples": 0,
+          "maximumLiftActualReserveRun": 0,
+          "selectionNativeStep": null,
+          "boundedUnavailableSolves": 0,
+          "lastBoundedUnavailableCandidate": null,
+          "phaseStartNativeStep": 38259
+        }
+      },
+      "independentFootEndpointMaximumErrorM": 1.294103713078698e-15,
+      "maximumRetainedHistorySamples": 21,
+      "forecastAccounting": {
+        "schema": 1,
+        "savedDataOnly": true,
+        "physicsIntegrations": 0,
+        "countsByStep": {
+          "1": {
+            "actualControlNotes": 1930,
+            "causalForecastNotes": 21,
+            "unselectedForecastNotes": 20,
+            "selectedControlNotes": 1130
+          },
+          "2": {
+            "actualControlNotes": 1527,
+            "causalForecastNotes": 21,
+            "unselectedForecastNotes": 20,
+            "selectedControlNotes": 1127
+          },
+          "3": {
+            "actualControlNotes": 1527,
+            "causalForecastNotes": 21,
+            "unselectedForecastNotes": 20,
+            "selectedControlNotes": 1127
+          },
+          "4": {
+            "actualControlNotes": 1527,
+            "causalForecastNotes": 21,
+            "unselectedForecastNotes": 20,
+            "selectedControlNotes": 1127
+          },
+          "5": {
+            "actualControlNotes": 1527,
+            "causalForecastNotes": 21,
+            "unselectedForecastNotes": 20,
+            "selectedControlNotes": 1127
+          },
+          "6": {
+            "actualControlNotes": 1527,
+            "causalForecastNotes": 21,
+            "unselectedForecastNotes": 20,
+            "selectedControlNotes": 1127
+          },
+          "7": {
+            "actualControlNotes": 328,
+            "causalForecastNotes": 0,
+            "unselectedForecastNotes": 0,
+            "selectedControlNotes": 0
+          }
+        },
+        "selections": {
+          "1": {
+            "forecastHistoryNativeSteps": [
+              3120,
+              3124,
+              3128,
+              3132,
+              3136,
+              3140,
+              3144,
+              3148,
+              3152,
+              3156,
+              3160,
+              3164,
+              3168,
+              3172,
+              3176,
+              3180,
+              3184,
+              3188,
+              3192,
+              3196,
+              3200
+            ],
+            "historyPredictedRiskCorners": [
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0
+            ],
+            "retainedExactNativeForecastWitnesses": 21,
+            "weakCorner": 0,
+            "survivingCorners": [
+              1,
+              2,
+              3
+            ],
+            "selectedAtTransferS": 4.0
+          },
+          "2": {
+            "forecastHistoryNativeSteps": [
+              9240,
+              9244,
+              9248,
+              9252,
+              9256,
+              9260,
+              9264,
+              9268,
+              9272,
+              9276,
+              9280,
+              9284,
+              9288,
+              9292,
+              9296,
+              9300,
+              9304,
+              9308,
+              9312,
+              9316,
+              9320
+            ],
+            "historyPredictedRiskCorners": [
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0
+            ],
+            "retainedExactNativeForecastWitnesses": 21,
+            "weakCorner": 0,
+            "survivingCorners": [
+              1,
+              2,
+              3
+            ],
+            "selectedAtTransferS": 2.0012500000000006
+          },
+          "3": {
+            "forecastHistoryNativeSteps": [
+              15348,
+              15352,
+              15356,
+              15360,
+              15364,
+              15368,
+              15372,
+              15376,
+              15380,
+              15384,
+              15388,
+              15392,
+              15396,
+              15400,
+              15404,
+              15408,
+              15412,
+              15416,
+              15420,
+              15424,
+              15428
+            ],
+            "historyPredictedRiskCorners": [
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0
+            ],
+            "retainedExactNativeForecastWitnesses": 21,
+            "weakCorner": 0,
+            "survivingCorners": [
+              1,
+              2,
+              3
+            ],
+            "selectedAtTransferS": 2.001249999999999
+          },
+          "4": {
+            "forecastHistoryNativeSteps": [
+              21456,
+              21460,
+              21464,
+              21468,
+              21472,
+              21476,
+              21480,
+              21484,
+              21488,
+              21492,
+              21496,
+              21500,
+              21504,
+              21508,
+              21512,
+              21516,
+              21520,
+              21524,
+              21528,
+              21532,
+              21536
+            ],
+            "historyPredictedRiskCorners": [
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0
+            ],
+            "retainedExactNativeForecastWitnesses": 21,
+            "weakCorner": 0,
+            "survivingCorners": [
+              1,
+              2,
+              3
+            ],
+            "selectedAtTransferS": 2.0025000000000013
+          },
+          "5": {
+            "forecastHistoryNativeSteps": [
+              27564,
+              27568,
+              27572,
+              27576,
+              27580,
+              27584,
+              27588,
+              27592,
+              27596,
+              27600,
+              27604,
+              27608,
+              27612,
+              27616,
+              27620,
+              27624,
+              27628,
+              27632,
+              27636,
+              27640,
+              27644
+            ],
+            "historyPredictedRiskCorners": [
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0
+            ],
+            "retainedExactNativeForecastWitnesses": 21,
+            "weakCorner": 0,
+            "survivingCorners": [
+              1,
+              2,
+              3
+            ],
+            "selectedAtTransferS": 2.0024999999999977
+          },
+          "6": {
+            "forecastHistoryNativeSteps": [
+              33672,
+              33676,
+              33680,
+              33684,
+              33688,
+              33692,
+              33696,
+              33700,
+              33704,
+              33708,
+              33712,
+              33716,
+              33720,
+              33724,
+              33728,
+              33732,
+              33736,
+              33740,
+              33744,
+              33748,
+              33752
+            ],
+            "historyPredictedRiskCorners": [
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0
+            ],
+            "retainedExactNativeForecastWitnesses": 21,
+            "weakCorner": 0,
+            "survivingCorners": [
+              1,
+              2,
+              3
+            ],
+            "selectedAtTransferS": 2.0037499999999966
+          }
+        },
+        "selectedManifests": 6,
+        "selectedWitnesses": 126,
+        "lastStepIndex": 7,
+        "lastStepStartNativeStep": 38259,
+        "lastStepActualElapsedS": 1.63875,
+        "nominalForecastWindowStartS": 1.9,
+        "noUnselectedSeventhForecastExpected": true
+      },
+      "nativeContinuityMetrics": {
+        "sourceTimeMaximumErrorS": 2.6858515411731787e-11,
+        "positionVelocityContinuityMaxErrorM": 1.1102230246251565e-16,
+        "hingePositionVelocityContinuityMaxErrorRad": 1.1101976136367389e-16,
+        "quaternionVelocityContinuityMaxErrorRad": 5.285305756197124e-16,
+        "loadedSlipAccumulatorMaximumErrorM": 8.673269964026763e-19
+      },
+      "recordedDataHashes": {
+        "frames.ndjson": "fa4b361b5d73715257612070d37355ab0dd155d157870645cfaf23e0ef6f6322",
+        "control.json": "314a7456175469ab80b6c3676ac253925c2493262b461a36bf44eba869bfae2a",
+        "multistep-summary.json": "63723737e4059c6bf5e72118809bcbb3f94130aee5f2949f1028d863d3255768",
+        "summary.json": "d408738bb8e14242fb53182a8ab40617a4319afb56d6fe95f78cf7e8b82c9598",
+        "final.bin": "dd07d7b91214fac58770d7215415971042519c7c1c9d63d16a5f236805e7ed28",
+        "cadenced-step-config.json": "9e667e068e6976eb9551fb690106e264feb0d143f0b399b61ccd5e03222b80e0",
+        "opposed-arm-run.json": "ce0b484cfd4c3c3f1c2f0c980cc9920b64dab1cdf6f53fcd0c62bc816bf1aac0"
+      },
+      "artifactSHA256": {
+        "robust-support-audit.json": "157026d949cbb0b09d9903b9bd690ad602ca4abc1f75bd67976be14a4ab5a814",
+        "original-strict-audit.json": "3ad5a4b5d93a2a22f515d1f5f3a56db9e838b183c1bc7cd903d957a2de742829",
+        "native-accounting-and-physical-audit.json": "bbca97ef485382c1098f916e503183f496c73e1061897a1471fe06753ef5ff64",
+        "stopped-safe-arm-audit.json": "23f5b6a4a6747bb131ce0045b38bf1f2be81e3e452feddf32661587fef878898",
+        "forecast-accounting.json": "207f3acf9ae20ad8be6b9f9448749a53b9ba7b1d44848232c4b2c929f15ca622",
+        "frozen-audit/sha256.json": "2e97abdc83962ec713fb6ffdf80f6811b13bb2b0eaf395a29899fe472d3c431d",
+        "contact-inspector.so": "d719cda16cb681748bd62c26b9de4bbd2f5aabef3863fba801e22c10b5b358e0",
+        "contact-inspector.c": "bd6989fe94a8835c6f26aa126e19f46765204391595cd50543a704470824a215",
+        "phase-slip-attribution.json": "f04d14c1ee5f4143b53e85618403e32be250a5ac1ecff144537bd2e04ce27192"
+      },
+      "auditorSHA256": "18e8c5017e769830261602d2027680a7defa05a7e01f2ecf28897fda053aa789",
+      "focusedAuditTests": {
+        "cases": 61,
+        "failed": 0,
+        "log": "/tmp/cadence-robust-forecast-audit-tests-final.txt",
+        "sha256": "9304df287c14a9987689760af433331baffb53b02b21bf1cf2e4fc439e492125"
+      },
+      "originallyLoadedInspectorPath": "/tmp/cadence-contact-creep/read_only_contacts.so",
+      "retainedInspectorPath": "/workspace/shared/cadence-robust-8-ten/contact-inspector.so",
+      "retainedPathIsHistoricalLoadedPath": false,
+      "independentDisagreements": [],
+      "qualificationClaim": false,
+      "evidenceLimit": "Saved-data continuity and hashed source receipts cannot prove absence of every possible unrecorded external intervention."
+    }
+  },
+  "phaseSlipAttribution": {
+    "path": "/workspace/shared/cadence-robust-8-ten/phase-slip-attribution.json",
+    "sha256": "f04d14c1ee5f4143b53e85618403e32be250a5ac1ecff144537bd2e04ce27192",
+    "summary": {
+      "schema": 1,
+      "savedDataOnly": true,
+      "physicsIntegrations": 0,
+      "scope": "One terminal sequence; per-foot10mm global gate is unchanged. Summing feet is descriptive attribution only.",
+      "stopped": "global-loaded-slip-10mm",
+      "runnerPassed": false,
+      "actualRecordedIntegrations": 39570,
+      "nativeCountersContiguous": true,
+      "summaryCountsMatch": true,
+      "totalSlipM": [
+        0.01000005839571001,
+        0.007849188450570149
+      ],
+      "integratedSavedSlipSpeedsM": [
+        0.01000005839571001,
+        0.007849188450570149
+      ],
+      "maximumPerSampleAccumulatorErrorM": 8.673269964026763e-19,
+      "summarySlipMaximumErrorM": 0.0,
+      "startupFirstTransfer": {
+        "loadedSlipM": [
+          0.0006061333158358358,
+          0.0004511091614390109
+        ],
+        "fractionOfPerFootTotal": [
+          0.06061297762979712,
+          0.05747207679874768
+        ],
+        "fractionOfBothFeetSlip": 0.05923176963039085,
+        "dominatesMoreThanHalfOfBothFeetSlip": false
+      },
+      "postStartupLoadedSlipM": [
+        0.009393925079874174,
+        0.0073980792891311375
+      ],
+      "phaseTotals": [
+        {
+          "phase": "transfer",
+          "loadedSlipM": [
+            0.003548183264058602,
+            0.0037362725216540473
+          ],
+          "fractionOfPerFootTotal": [
+            0.3548162544311501,
+            0.47600749366422107
+          ]
+        },
+        {
+          "phase": "lift",
+          "loadedSlipM": [
+            0.0009146044602754018,
+            0.0005406110703232591
+          ],
+          "fractionOfPerFootTotal": [
+            0.09145991194089065,
+            0.06887477268863257
+          ]
+        },
+        {
+          "phase": "translate",
+          "loadedSlipM": [
+            0.00041992330693411094,
+            0.0006962672766957778
+          ],
+          "fractionOfPerFootTotal": [
+            0.04199208547764646,
+            0.08870563894350153
+          ]
+        },
+        {
+          "phase": "land",
+          "loadedSlipM": [
+            0.0023215797890643033,
+            0.0005541509473581931
+          ],
+          "fractionOfPerFootTotal": [
+            0.23215662321134573,
+            0.07059977612308961
+          ]
+        },
+        {
+          "phase": "settle",
+          "loadedSlipM": [
+            0.0027957675753775926,
+            0.0023218866345388715
+          ],
+          "fractionOfPerFootTotal": [
+            0.279575124938967,
+            0.29581231858055523
+          ]
+        }
+      ],
+      "perStepPhase": [
+        {
+          "step": 1,
+          "phase": "transfer",
+          "swingSide": 0,
+          "samples": 4098,
+          "firstNativeStep": 1,
+          "lastNativeStep": 4098,
+          "loadedSlipM": [
+            0.0006061333158358358,
+            0.0004511091614390109
+          ],
+          "durationS": 5.1225000000000005,
+          "meanLoadedSlipSpeedMps": [
+            0.00011832763608313046,
+            8.806425796759607e-05
+          ],
+          "fractionOfPerFootTotal": [
+            0.06061297762979712,
+            0.05747207679874768
+          ]
+        },
+        {
+          "step": 1,
+          "phase": "lift",
+          "swingSide": 0,
+          "samples": 642,
+          "firstNativeStep": 4099,
+          "lastNativeStep": 4740,
+          "loadedSlipM": [
+            0.0,
+            0.00032598053446276866
+          ],
+          "durationS": 0.8025,
+          "meanLoadedSlipSpeedMps": [
+            0.0,
+            0.00040620627347385505
+          ],
+          "fractionOfPerFootTotal": [
+            0.0,
+            0.04153047624166675
+          ]
+        },
+        {
+          "step": 1,
+          "phase": "translate",
+          "swingSide": 0,
+          "samples": 961,
+          "firstNativeStep": 4741,
+          "lastNativeStep": 5701,
+          "loadedSlipM": [
+            0.0,
+            0.00010115622365818684
+          ],
+          "durationS": 1.20125,
+          "meanLoadedSlipSpeedMps": [
+            0.0,
+            8.420913519932307e-05
+          ],
+          "fractionOfPerFootTotal": [
+            0.0,
+            0.0128874754753581
+          ]
+        },
+        {
+          "step": 1,
+          "phase": "land",
+          "swingSide": 0,
+          "samples": 801,
+          "firstNativeStep": 5702,
+          "lastNativeStep": 6502,
+          "loadedSlipM": [
+            5.9255031016044795e-06,
+            6.352997839816521e-05
+          ],
+          "durationS": 1.00125,
+          "meanLoadedSlipSpeedMps": [
+            5.918105469767271e-06,
+            6.345066506683168e-05
+          ],
+          "fractionOfPerFootTotal": [
+            0.0005925468499410463,
+            0.008093827635588304
+          ]
+        },
+        {
+          "step": 1,
+          "phase": "settle",
+          "swingSide": 0,
+          "samples": 1217,
+          "firstNativeStep": 6503,
+          "lastNativeStep": 7719,
+          "loadedSlipM": [
+            0.0006938806998139218,
+            0.0005609692942783839
+          ],
+          "durationS": 1.52125,
+          "meanLoadedSlipSpeedMps": [
+            0.00045612535731399956,
+            0.0003687554933629475
+          ],
+          "fractionOfPerFootTotal": [
+            0.06938766478719706,
+            0.07146844515341408
+          ]
+        },
+        {
+          "step": 2,
+          "phase": "transfer",
+          "swingSide": 1,
+          "samples": 2485,
+          "firstNativeStep": 7720,
+          "lastNativeStep": 10204,
+          "loadedSlipM": [
+            0.0006797638489911056,
+            0.0005168764555125022
+          ],
+          "durationS": 3.10625,
+          "meanLoadedSlipSpeedMps": [
+            0.00021883745641564767,
+            0.00016639885891750572
+          ],
+          "fractionOfPerFootTotal": [
+            0.06797598794850257,
+            0.06585094226842743
+          ]
+        },
+        {
+          "step": 2,
+          "phase": "lift",
+          "swingSide": 1,
+          "samples": 642,
+          "firstNativeStep": 10205,
+          "lastNativeStep": 10846,
+          "loadedSlipM": [
+            0.0003634440519206532,
+            0.0
+          ],
+          "durationS": 0.8025,
+          "meanLoadedSlipSpeedMps": [
+            0.0004528897843248015,
+            0.0
+          ],
+          "fractionOfPerFootTotal": [
+            0.03634419295757007,
+            0.0
+          ]
+        },
+        {
+          "step": 2,
+          "phase": "translate",
+          "swingSide": 1,
+          "samples": 962,
+          "firstNativeStep": 10847,
+          "lastNativeStep": 11808,
+          "loadedSlipM": [
+            0.00014498723375847792,
+            0.0
+          ],
+          "durationS": 1.2025000000000001,
+          "meanLoadedSlipSpeedMps": [
+            0.00012057150416505439,
+            0.0
+          ],
+          "fractionOfPerFootTotal": [
+            0.014498638710017626,
+            0.0
+          ]
+        },
+        {
+          "step": 2,
+          "phase": "land",
+          "swingSide": 1,
+          "samples": 801,
+          "firstNativeStep": 11809,
+          "lastNativeStep": 12609,
+          "loadedSlipM": [
+            0.0003192672113008074,
+            2.3349110054424107e-05
+          ],
+          "durationS": 1.00125,
+          "meanLoadedSlipSpeedMps": [
+            0.0003188686255189088,
+            2.331996010429374e-05
+          ],
+          "fractionOfPerFootTotal": [
+            0.03192653469281458,
+            0.002974716456543743
+          ]
+        },
+        {
+          "step": 2,
+          "phase": "settle",
+          "swingSide": 1,
+          "samples": 1218,
+          "firstNativeStep": 12610,
+          "lastNativeStep": 13827,
+          "loadedSlipM": [
+            0.0002944931652376394,
+            0.00040474507789724527
+          ],
+          "durationS": 1.5225,
+          "meanLoadedSlipSpeedMps": [
+            0.0001934273663301408,
+            0.000265842415696056
+          ],
+          "fractionOfPerFootTotal": [
+            0.029449144553393397,
+            0.051565213454372524
+          ]
+        },
+        {
+          "step": 3,
+          "phase": "transfer",
+          "swingSide": 0,
+          "samples": 2485,
+          "firstNativeStep": 13828,
+          "lastNativeStep": 16312,
+          "loadedSlipM": [
+            0.000337432430692685,
+            0.00044964622464548163
+          ],
+          "durationS": 3.10625,
+          "meanLoadedSlipSpeedMps": [
+            0.00010863015877430502,
+            0.0001447553238295313
+          ],
+          "fractionOfPerFootTotal": [
+            0.03374304602435545,
+            0.057285696155354796
+          ]
+        },
+        {
+          "step": 3,
+          "phase": "lift",
+          "swingSide": 0,
+          "samples": 641,
+          "firstNativeStep": 16313,
+          "lastNativeStep": 16953,
+          "loadedSlipM": [
+            0.0,
+            0.00011403716283260026
+          ],
+          "durationS": 0.80125,
+          "meanLoadedSlipSpeedMps": [
+            0.0,
+            0.00014232407217797225
+          ],
+          "fractionOfPerFootTotal": [
+            0.0,
+            0.01452852910217958
+          ]
+        },
+        {
+          "step": 3,
+          "phase": "translate",
+          "swingSide": 0,
+          "samples": 962,
+          "firstNativeStep": 16954,
+          "lastNativeStep": 17915,
+          "loadedSlipM": [
+            0.0,
+            0.00029963502673387024
+          ],
+          "durationS": 1.2025000000000001,
+          "meanLoadedSlipSpeedMps": [
+            0.0,
+            0.0002491767374086239
+          ],
+          "fractionOfPerFootTotal": [
+            0.0,
+            0.03817401360928025
+          ]
+        },
+        {
+          "step": 3,
+          "phase": "land",
+          "swingSide": 0,
+          "samples": 801,
+          "firstNativeStep": 17916,
+          "lastNativeStep": 18716,
+          "loadedSlipM": [
+            0.0007068512313996088,
+            0.00021047459385493614
+          ],
+          "durationS": 1.00125,
+          "meanLoadedSlipSpeedMps": [
+            0.000705968770436563,
+            0.0002102118290686004
+          ],
+          "fractionOfPerFootTotal": [
+            0.07068471037157598,
+            0.026814822345060104
+          ]
+        },
+        {
+          "step": 3,
+          "phase": "settle",
+          "swingSide": 0,
+          "samples": 1218,
+          "firstNativeStep": 18717,
+          "lastNativeStep": 19934,
+          "loadedSlipM": [
+            0.0006079091144277531,
+            0.00030432788677823945
+          ],
+          "durationS": 1.5225,
+          "meanLoadedSlipSpeedMps": [
+            0.0003992834905929413,
+            0.00019988695354892575
+          ],
+          "fractionOfPerFootTotal": [
+            0.060790556452004714,
+            0.038771891985359797
+          ]
+        },
+        {
+          "step": 4,
+          "phase": "transfer",
+          "swingSide": 1,
+          "samples": 2486,
+          "firstNativeStep": 19935,
+          "lastNativeStep": 22420,
+          "loadedSlipM": [
+            0.0006380077842308395,
+            0.0007213664174693544
+          ],
+          "durationS": 3.1075,
+          "meanLoadedSlipSpeedMps": [
+            0.00020531223949504085,
+            0.00023213722203358148
+          ],
+          "fractionOfPerFootTotal": [
+            0.06380040585608406,
+            0.09190331229936974
+          ]
+        },
+        {
+          "step": 4,
+          "phase": "lift",
+          "swingSide": 1,
+          "samples": 642,
+          "firstNativeStep": 22421,
+          "lastNativeStep": 23062,
+          "loadedSlipM": [
+            0.000283684864651545,
+            0.0
+          ],
+          "durationS": 0.8025,
+          "meanLoadedSlipSpeedMps": [
+            0.00035350138897388786,
+            0.0
+          ],
+          "fractionOfPerFootTotal": [
+            0.02836832080633097,
+            0.0
+          ]
+        },
+        {
+          "step": 4,
+          "phase": "translate",
+          "swingSide": 1,
+          "samples": 962,
+          "firstNativeStep": 23063,
+          "lastNativeStep": 24024,
+          "loadedSlipM": [
+            0.00013495865887998542,
+            0.0
+          ],
+          "durationS": 1.2025000000000001,
+          "meanLoadedSlipSpeedMps": [
+            0.00011223173295632883,
+            0.0
+          ],
+          "fractionOfPerFootTotal": [
+            0.013495787078391682,
+            0.0
+          ]
+        },
+        {
+          "step": 4,
+          "phase": "land",
+          "swingSide": 1,
+          "samples": 801,
+          "firstNativeStep": 24025,
+          "lastNativeStep": 24825,
+          "loadedSlipM": [
+            0.00033779309278808567,
+            2.409730552332262e-05
+          ],
+          "durationS": 1.00125,
+          "meanLoadedSlipSpeedMps": [
+            0.0003373713785648796,
+            2.4067221496452058e-05
+          ],
+          "fractionOfPerFootTotal": [
+            0.033779112023285554,
+            0.00307003783576788
+          ]
+        },
+        {
+          "step": 4,
+          "phase": "settle",
+          "swingSide": 1,
+          "samples": 1217,
+          "firstNativeStep": 24826,
+          "lastNativeStep": 26042,
+          "loadedSlipM": [
+            0.0003059532898834266,
+            0.0003849251031157073
+          ],
+          "durationS": 1.52125,
+          "meanLoadedSlipSpeedMps": [
+            0.00020111966467275372,
+            0.00025303211379832855
+          ],
+          "fractionOfPerFootTotal": [
+            0.030595150325790042,
+            0.04904011485260583
+          ]
+        },
+        {
+          "step": 5,
+          "phase": "transfer",
+          "swingSide": 0,
+          "samples": 2486,
+          "firstNativeStep": 26043,
+          "lastNativeStep": 28528,
+          "loadedSlipM": [
+            0.0003477838238750775,
+            0.000461845121141175
+          ],
+          "durationS": 3.1075,
+          "meanLoadedSlipSpeedMps": [
+            0.00011191756198715285,
+            0.0001486227260309493
+          ],
+          "fractionOfPerFootTotal": [
+            0.03477817929786045,
+            0.05883985638128328
+          ]
+        },
+        {
+          "step": 5,
+          "phase": "lift",
+          "swingSide": 0,
+          "samples": 642,
+          "firstNativeStep": 28529,
+          "lastNativeStep": 29170,
+          "loadedSlipM": [
+            0.0,
+            0.00010059337302789021
+          ],
+          "durationS": 0.8025,
+          "meanLoadedSlipSpeedMps": [
+            0.0,
+            0.00012534999754254233
+          ],
+          "fractionOfPerFootTotal": [
+            0.0,
+            0.012815767344786238
+          ]
+        },
+        {
+          "step": 5,
+          "phase": "translate",
+          "swingSide": 0,
+          "samples": 961,
+          "firstNativeStep": 29171,
+          "lastNativeStep": 30131,
+          "loadedSlipM": [
+            0.0,
+            0.00029547602630372073
+          ],
+          "durationS": 1.20125,
+          "meanLoadedSlipSpeedMps": [
+            0.0,
+            0.0002459737992122545
+          ],
+          "fractionOfPerFootTotal": [
+            0.0,
+            0.03764414985886318
+          ]
+        },
+        {
+          "step": 5,
+          "phase": "land",
+          "swingSide": 0,
+          "samples": 801,
+          "firstNativeStep": 30132,
+          "lastNativeStep": 30932,
+          "loadedSlipM": [
+            0.0006206828533925277,
+            0.00020942014904049965
+          ],
+          "durationS": 1.00125,
+          "meanLoadedSlipSpeedMps": [
+            0.0006199079684319877,
+            0.00020915870066466881
+          ],
+          "fractionOfPerFootTotal": [
+            0.06206792288921016,
+            0.026680484276726445
+          ]
+        },
+        {
+          "step": 5,
+          "phase": "settle",
+          "swingSide": 0,
+          "samples": 1217,
+          "firstNativeStep": 30933,
+          "lastNativeStep": 32149,
+          "loadedSlipM": [
+            0.0005908957407468832,
+            0.0003053863304137705
+          ],
+          "durationS": 1.52125,
+          "meanLoadedSlipSpeedMps": [
+            0.0003884277671302437,
+            0.00020074697151274972
+          ],
+          "fractionOfPerFootTotal": [
+            0.05908922901894007,
+            0.038906739510323245
+          ]
+        },
+        {
+          "step": 6,
+          "phase": "transfer",
+          "swingSide": 1,
+          "samples": 2487,
+          "firstNativeStep": 32150,
+          "lastNativeStep": 34636,
+          "loadedSlipM": [
+            0.0006164734100176476,
+            0.0006965559696760779
+          ],
+          "durationS": 3.10875,
+          "meanLoadedSlipSpeedMps": [
+            0.00019830266506397993,
+            0.00022406303809443598
+          ],
+          "fractionOfPerFootTotal": [
+            0.06164698100984215,
+            0.08874241892172706
+          ]
+        },
+        {
+          "step": 6,
+          "phase": "lift",
+          "swingSide": 1,
+          "samples": 642,
+          "firstNativeStep": 34637,
+          "lastNativeStep": 35278,
+          "loadedSlipM": [
+            0.00026747554370320364,
+            0.0
+          ],
+          "durationS": 0.8025,
+          "meanLoadedSlipSpeedMps": [
+            0.0003333028581971385,
+            0.0
+          ],
+          "fractionOfPerFootTotal": [
+            0.026747398176989616,
+            0.0
+          ]
+        },
+        {
+          "step": 6,
+          "phase": "translate",
+          "swingSide": 1,
+          "samples": 962,
+          "firstNativeStep": 35279,
+          "lastNativeStep": 36240,
+          "loadedSlipM": [
+            0.0001399774142956476,
+            0.0
+          ],
+          "durationS": 1.2025000000000001,
+          "meanLoadedSlipSpeedMps": [
+            0.00011640533413359466,
+            0.0
+          ],
+          "fractionOfPerFootTotal": [
+            0.013997659689237156,
+            0.0
+          ]
+        },
+        {
+          "step": 6,
+          "phase": "land",
+          "swingSide": 1,
+          "samples": 801,
+          "firstNativeStep": 36241,
+          "lastNativeStep": 37041,
+          "loadedSlipM": [
+            0.00033105989708166923,
+            2.3279810486845354e-05
+          ],
+          "durationS": 1.00125,
+          "meanLoadedSlipSpeedMps": [
+            0.0003306465888456122,
+            2.325074705302907e-05
+          ],
+          "fractionOfPerFootTotal": [
+            0.03310579638451839,
+            0.0029658875734031274
+          ]
+        },
+        {
+          "step": 6,
+          "phase": "settle",
+          "swingSide": 1,
+          "samples": 1218,
+          "firstNativeStep": 37042,
+          "lastNativeStep": 38259,
+          "loadedSlipM": [
+            0.0003026355652679686,
+            0.0003615329420555251
+          ],
+          "durationS": 1.5225,
+          "meanLoadedSlipSpeedMps": [
+            0.00019877541232707298,
+            0.00023746006046339906
+          ],
+          "fractionOfPerFootTotal": [
+            0.030263379801641777,
+            0.04605991362447975
+          ]
+        },
+        {
+          "step": 7,
+          "phase": "transfer",
+          "swingSide": 0,
+          "samples": 1311,
+          "firstNativeStep": 38260,
+          "lastNativeStep": 39570,
+          "loadedSlipM": [
+            0.00032258865041541115,
+            0.0004388731717704453
+          ],
+          "durationS": 1.63875,
+          "meanLoadedSlipSpeedMps": [
+            0.0001968504350361014,
+            0.00026780971580194987
+          ],
+          "fractionOfPerFootTotal": [
+            0.03225867666470833,
+            0.055913190839311094
+          ]
+        }
+      ],
+      "framesSHA256": "fa4b361b5d73715257612070d37355ab0dd155d157870645cfaf23e0ef6f6322"
+    }
+  },
+  "terminalContactInspection": {
+    "path": "/tmp/cadence-robust-ten-terminal-contact/summary.json",
+    "sha256": "fb246b263e9e18c2a1738b10a085870f48f64b63e6cc4df02fc63b25383bc52e",
+    "summary": {
+      "schema": 1,
+      "physicsIntegrations": 0,
+      "outerControllerSolves": 0,
+      "controlsApplied": 0,
+      "modelOrControllerEdits": 0,
+      "scope": "One final retained-cache contact inspection. No dynamics, model/controller changes or new experiment.",
+      "run": {
+        "stopped": "global-loaded-slip-10mm",
+        "actualIntegrations": 39570,
+        "nativeTimeS": 49.46249999997314,
+        "phase": "transfer",
+        "phaseElapsedS": 1.6387499999999946,
+        "globalLoadedSlipM": [
+          0.01000005839571001,
+          0.007849188450570149
+        ],
+        "completedSteps": [
+          {
+            "index": 1,
+            "achievedForwardM": 0.18196128980745918,
+            "completedNativeStep": 7719,
+            "completedAt": "measured-loaded-settle"
+          },
+          {
+            "index": 2,
+            "achievedForwardM": 0.1820144621026568,
+            "completedNativeStep": 13827,
+            "completedAt": "measured-loaded-settle"
+          },
+          {
+            "index": 3,
+            "achievedForwardM": 0.181215751937159,
+            "completedNativeStep": 19934,
+            "completedAt": "measured-loaded-settle"
+          },
+          {
+            "index": 4,
+            "achievedForwardM": 0.18198722831071404,
+            "completedNativeStep": 26042,
+            "completedAt": "measured-loaded-settle"
+          },
+          {
+            "index": 5,
+            "achievedForwardM": 0.18141204394675356,
+            "completedNativeStep": 32149,
+            "completedAt": "measured-loaded-settle"
+          },
+          {
+            "index": 6,
+            "achievedForwardM": 0.18199646349288193,
+            "completedNativeStep": 38259,
+            "completedAt": "measured-loaded-settle"
+          }
+        ],
+        "requestedSteps": 10,
+        "finalQuietCompleted": false,
+        "completionClaim": false
+      },
+      "terminal": {
+        "feet": [
+          {
+            "side": 0,
+            "cachedPreviousSolvedLoadN": 5.254417989873223,
+            "cachedAuditedTransportedPointSlipSpeedMps": 0.00011091832152271339,
+            "freshHeldControlLoadN": 5.2573503414922875,
+            "freshNormalForceWeightedMaterialTangentSpeedMps": 0.00011092185448210091,
+            "freshMaximumPyramidalUtilization": 0.7690287140750215,
+            "freshMaximumPyramidalUtilizationAbove1N": 0.7690287140750215,
+            "freshNormalForceWeightedPyramidalUtilization": 0.6762104535693054,
+            "freshActiveContactCount": 4
+          },
+          {
+            "side": 1,
+            "cachedPreviousSolvedLoadN": 396.36781360706277,
+            "cachedAuditedTransportedPointSlipSpeedMps": 6.72885924388362e-05,
+            "freshHeldControlLoadN": 396.353611378172,
+            "freshNormalForceWeightedMaterialTangentSpeedMps": 6.72881144107651e-05,
+            "freshMaximumPyramidalUtilization": 0.015578483562310438,
+            "freshMaximumPyramidalUtilizationAbove1N": 0.015578483562310438,
+            "freshNormalForceWeightedPyramidalUtilization": 0.010107550409709974,
+            "freshActiveContactCount": 4
+          }
+        ],
+        "contactCount": 8,
+        "contactsAtLeast1N": 8,
+        "minimumContactNormalN": 1.2291338620735395,
+        "maximumContactNormalN": 122.25535252107954,
+        "contactRegularizationRRange": [
+          0.020142032599877003,
+          0.020415468719411255
+        ],
+        "footEndpointClearances": [
+          {
+            "endpointClearancesM": [
+              -4.028169148552474e-07,
+              -9.259647451888287e-07,
+              -1.3473400024034687e-06,
+              -1.240805774380821e-06
+            ],
+            "minimumClearanceM": -1.3473400024034687e-06
+          },
+          {
+            "endpointClearancesM": [
+              -0.00018570668576215268,
+              -0.00017238823757062885,
+              -0.00012354254084029695,
+              -0.00015166685593001952
+            ],
+            "minimumClearanceM": -0.00018570668576215268
+          }
+        ],
+        "footTiltDeg": [
+          0.0009037410813655117,
+          0.05939674794990474
+        ],
+        "freshHeldCOMAccelerationMps2": [
+          0.13200385604651355,
+          -0.09089840540168123,
+          0.022796813733394497
+        ]
+      },
+      "modelSettings": {
+        "version": 213,
+        "timestep": 0.00125,
+        "impratio": 8.0,
+        "cone": 0,
+        "coneName": "pyramidal",
+        "solver": 2,
+        "solverName": "Newton",
+        "iterations": 100,
+        "tolerance": 1e-08,
+        "noslipIterations": 0,
+        "noslipTolerance": 1e-06,
+        "integrator": 0,
+        "disableflags": 0,
+        "enableflags": 0,
+        "overrideMargin": 0.0,
+        "overrideSolref": [
+          0.02,
+          1.0
+        ],
+        "overrideSolimp": [
+          0.9,
+          0.95,
+          0.001,
+          0.5,
+          2.0
+        ]
+      },
+      "effectiveContactSettings": {
+        "dim": [
+          3
+        ],
+        "friction": [
+          1.0,
+          1.0,
+          0.005,
+          0.0001,
+          0.0001
+        ],
+        "solref": [
+          0.0175,
+          1.0
+        ],
+        "solimp": [
+          0.9,
+          0.97,
+          0.002,
+          0.5,
+          2.0
+        ]
+      },
+      "previousOriginalModelTerminal": {
+        "sourceCounter": 17290,
+        "impratio": 1.0,
+        "feet": [
+          {
+            "side": 0,
+            "cachedPreviousSolvedLoadN": 224.32630796223816,
+            "cachedAuditedTransportedPointSlipSpeedMps": 0.0011628510604751428,
+            "freshHeldControlLoadN": 224.32892658287176,
+            "freshNormalForceWeightedMaterialTangentSpeedMps": 0.0011628527118366374,
+            "freshMaximumPyramidalUtilization": 0.049362577281892625,
+            "freshMaximumPyramidalUtilizationAbove1N": 0.049362577281892625,
+            "freshNormalForceWeightedPyramidalUtilization": 0.04864207288454712,
+            "freshActiveContactCount": 4
+          },
+          {
+            "side": 1,
+            "cachedPreviousSolvedLoadN": 175.06359533647574,
+            "cachedAuditedTransportedPointSlipSpeedMps": 0.0013281556895590892,
+            "freshHeldControlLoadN": 175.10259679111897,
+            "freshNormalForceWeightedMaterialTangentSpeedMps": 0.0013281528841836967,
+            "freshMaximumPyramidalUtilization": 0.06435085858893323,
+            "freshMaximumPyramidalUtilizationAbove1N": 0.06435085858893323,
+            "freshNormalForceWeightedPyramidalUtilization": 0.0625176821859892,
+            "freshActiveContactCount": 4
+          }
+        ],
+        "contactRegularizationRRange": [
+          0.1407989375990398,
+          0.147614819752969
+        ],
+        "comparisonCaveat": "Different phase/load distribution, source time, controller and explicitly changed impratio. Instantaneous speeds/loads are descriptive, not matched causal effect sizes."
+      },
+      "conclusion": "At the terminal snapshot both feet are strictly inside the actual mu1 pyramidal cone, including every >=1N contact. The heavily loaded right stance foot has max utilization .01558 and nonzero measured material-point speed, consistent with inside-cone regularized contact creep. The lightly loaded left foot has max .76903, still below saturation. The cumulative 10mm gate crossing is not an instantaneous Coulomb-cone saturation event. This snapshot cannot exclude earlier transient saturation or attribute all cumulative slip to one mechanism.",
+      "forceGeometryComparison": "Effective contact dim3, mu1, solref[.0175,1] and solimp[.9,.97,.002,.5,2] match the prior inspection. The documented model change is impratio8. All eight current corners carry positive loads, each >=1.229N; right foot tilt .0594deg and left .000904deg. Left near-zero penetrations and only5.25N load are consistent with the current seventh-transfer unloading phase; no new terminal total-support/contact-topology collapse is evident.",
+      "purity": {
+        "nativeCheckpointBytesUnchanged": true,
+        "nativeCounterUnchanged": true,
+        "modelFingerprintUnchanged": true,
+        "ownModelCacheBindingChecked": true,
+        "freshAccelerationBitwiseEqualPinnedV9": true,
+        "freshNetForceMaximumParityErrorN": 8.881784197001252e-16,
+        "cachedGeometryForcePairingUsed": false
+      },
+      "timestampPolicy": "Cached previous-solve per-foot load and transported material-point slip are retained actual metrics. Previous per-contact force/frame pairing was not archived, so stale force buffers are never paired with refreshed geometry. Fresh held-control contacts are simultaneous current-state scratch solve and not claimed as earlier executed forces.",
+      "cachedPreviousSolveTimeS": 49.46124999997314,
+      "currentGeometryAndFreshHeldSolveTimeS": 49.46249999997314,
+      "hashes": {
+        "modelSHA256": "28c2d6bbbf9845285a69798df92412d45a857c811126b1d2e4650cb49ff1a6c8",
+        "checkpointSHA256": "dd07d7b91214fac58770d7215415971042519c7c1c9d63d16a5f236805e7ed28",
+        "pinnedNativeHelperSHA256": "20ddefbcbdd328b1661ce163e4df6aeb0e953192c677b79d3076c904de5a0ba5",
+        "inspectionHelperSourceSHA256": "bd6989fe94a8835c6f26aa126e19f46765204391595cd50543a704470824a215",
+        "inspectionHelperSHA256": "d719cda16cb681748bd62c26b9de4bbd2f5aabef3863fba801e22c10b5b358e0",
+        "terminalReportSHA256": "3f88dc47344c97a41ade037f4f80c453dc1c8ee51be0e1ef10ba19e2b81b8dd1",
+        "inspectionHarnessSHA256": "a4ce5c5c576733f2c6ff8e5189903c7f40ab1865def689399bef3d695976abde",
+        "contactTableSHA256": "9a6b1c6566c865b8616da59e3898789eb009720459f4c28dec3ff8d2b94d2209",
+        "runSummarySHA256": "d408738bb8e14242fb53182a8ab40617a4319afb56d6fe95f78cf7e8b82c9598",
+        "multiStepSummarySHA256": "63723737e4059c6bf5e72118809bcbb3f94130aee5f2949f1028d863d3255768"
+      }
+    }
+  },
+  "sourceReceipt": {
+    "stopped": "global-loaded-slip-10mm",
+    "finished": false,
+    "actualIntegrations": 39570,
+    "physicsStepS": 0.00125,
+    "torqueUpdateS": 0.005,
+    "selectedPresetChanged": false,
+    "originalMotorStrength": true,
+    "originalFriction": true,
+    "rootAssistance": false,
+    "physicalStateInstallationsAfterInitialization": 0,
+    "codeSHA256AtStart": {
+      "source_opposed_arm_swing.py": "b8a2dabf8fe367f93ed4202c3116ea81f979b289eabb81902ff9071bd1b40dcf",
+      "source_step_probe.py": "2269800f37a13e6345afeedf88604eae60116a5244c9f2c4f56261f951bc1b80",
+      "source_multistep_probe.py": "8b916a9a26d02b7b6f3a34c7387584df4b86f6761b501d1f9e2428d7aa39622d",
+      "plan_source_arm_knee.py": "b8a47f48e8d37fd8328b6fdebcc0f48ee334782ea276bb75cc1d915b119c8858",
+      "source_arm_knee_mobility.py": "7835072bdc183fe5eff5551458b5adefa7473d781b738bde5ee5987e1742c547",
+      "source_selected_step.py": "ab21d078d9c0109c987d5c5963a7dd796c06f8f54df7624594ad9fb3bb55ef90",
+      "source_upright_large_steps.py": "ec0e665d5027af9d9931c2366c6099d4c41e10ceaa16f6eb032159c0eae90d2c",
+      "source_cadenced_ten_steps.py": "6e736c4be1aebcf6bb477bfce94f545fc881ccc0c773b6f27f8d55b652794f29",
+      "source_implicit_arm_coordination.py": "3969b65f8200bab45608c1c414ac111b7f77e2166050c7fa934854d04ce91052",
+      "source_robust_support_steps.py": "172938d619860a2219d64d2cd850b2b046fe7272c11dc617c9d8e49c4f35c016",
+      "source_contact_impedance_probe.py": "3027d148822a4e7ccac5657cf46764cd3979957b99e175c0dcbb66c8880f0f57"
+    },
+    "codeUnchangedDuringRun": true
+  },
+  "tests": {
+    "separateSuites": [
+      {
+        "cases": 27,
+        "path": "/tmp/robust-support-tests-final-27.txt",
+        "sha256": "1d351b70d5efd806aad121d021244859a4d266a4c5e8f9820a56bce50b95644e"
+      },
+      {
+        "cases": 48,
+        "path": "/tmp/robust-support-baseline-regressions-48.txt",
+        "sha256": "17eeb3911c503378952114e28f05f6e76116a9d0002e11f95237270fc6876032"
+      },
+      {
+        "cases": 61,
+        "path": "/tmp/cadence-robust-forecast-audit-tests-final.txt",
+        "sha256": "9304df287c14a9987689760af433331baffb53b02b21bf1cf2e4fc439e492125"
+      }
+    ],
+    "totalCIQualificationClaim": false
+  },
+  "actualSpeedReference": {
+    "receipt": {
+      "path": "/workspace/shared/cadence-video/cadence-render-receipt-compact.json",
+      "sha256": "948d10ba70c568b7c5febbc8440b56742d09133eff76d5e6c384b1ebe23811ca",
+      "summary": {
+        "sourceJournalSHA256": "de837c5d6b0d041bc12b1bb6c012f136aebeac8fc5b9169eb4ec673b4ffc7e78",
+        "sourceIntervalSteps": [
+          26,
+          22906
+        ],
+        "sourceIntervalS": [
+          0.0325,
+          28.6325
+        ],
+        "initialCropS": 0.0325,
+        "omittedFailedTailS": 0.79875,
+        "sourceHz": 800,
+        "outputFPS": 30,
+        "outputFrames": 858,
+        "encodedDurationS": 28.6,
+        "sourceIntervalDurationS": 28.6,
+        "playbackSpeedFactor": 1,
+        "nativeSamplingMaxTimeErrorS": 0.0004166666666666667,
+        "independentlyValidatedCompletedSteps": 4,
+        "achievedOwnFootForwardM": [
+          0.18204877821946583,
+          0.182008668244079,
+          0.18155906577172487,
+          0.18199264877120885
+        ],
+        "condition": {
+          "impratio": 2,
+          "frictionMu": 1,
+          "alteredContactModel": true,
+          "originalModelQualificationClaim": false
+        },
+        "tenStepsAndFinalFiveQuietQualified": false,
+        "partial": true,
+        "additionalPhysicsIntegrations": 0,
+        "simulatorImportedOrRun": false,
+        "poseInterpolation": false,
+        "inventedPoses": 0,
+        "duplicatedVideoSourceSteps": 0,
+        "terminalTailFramesAdded": 0,
+        "FKMaxErrorM": {
+          "COM": 5.551115123125783e-16,
+          "footOrigin": 9.783840404509192e-16,
+          "wholeFootClearance": 9.749145934989656e-16
+        },
+        "outputSHA256": {
+          "/workspace/shared/cadence-video/cadence-actual-speed.mp4": "f1d65caa4348238e3208e6cbad91444d3c944965329a9116ffb58624d569af5b",
+          "/workspace/shared/cadence-video/cadence-actual-speed-screenshot.png": "f904f6982c15533d4e7b65d43d2e969879cb7789169582b357d006a8bb22fb3f",
+          "/workspace/shared/cadence-video/cadence-completed-prefix-final.png": "68b21ec84906aa99de16ef12385020e5a09c3d3159af525738aa162acbfd99fb"
+        },
+        "decodedSpotCheckFrames": [
+          0,
+          429,
+          857
+        ],
+        "decodedFrameSize": [
+          1280,
+          720
+        ],
+        "fullReceipt": "cadence-render-receipt.json",
+        "reproduceCommand": "./reproduce-render.sh",
+        "decodedVideoVisualSpotCheckPassed": true,
+        "fullReceiptSHA256": "70571856263852fd386526ce44a98eb9d3adb1bd973a68f081e1f217151f50ff"
+      }
+    },
+    "bodyAngles": {
+      "path": "/workspace/shared/cadence-video/measured-body-angle-context.json",
+      "sha256": "70271ccd1df9dbe12897703978b5799537226122d027b976f350e4323d5ee063",
+      "summary": {
+        "source": "/tmp/cadence-impratio-2/run/generation-001/frames.ndjson",
+        "lastSourceTimeS": 28.6325,
+        "phases": [
+          "lift",
+          "translate",
+          "land"
+        ],
+        "nativeSamples": 9616,
+        "anglesWorldYawFactored": true,
+        "statistics": {
+          "torso": {
+            "pitchDeg": {
+              "min": -2.861591446551156,
+              "median": 2.7046742981963896,
+              "max": 5.719888007559354
+            },
+            "rollDeg": {
+              "min": -11.973849197048667,
+              "median": -2.6646498002545407,
+              "max": 9.21804410728404
+            },
+            "tiltDeg": {
+              "min": 6.762070722377619,
+              "median": 10.989695996214175,
+              "max": 12.918130044809235
+            }
+          },
+          "pelvis": {
+            "pitchDeg": {
+              "min": -30.73493809582116,
+              "median": 25.988493709157254,
+              "max": 33.39460492584776
+            },
+            "rollDeg": {
+              "min": -24.020566376149667,
+              "median": -0.09596403475412636,
+              "max": 10.104324259956893
+            },
+            "tiltDeg": {
+              "min": 17.173644821767873,
+              "median": 28.509837322739855,
+              "max": 40.28724768067216
+            }
+          }
+        }
+      }
+    },
+    "scope": "Video is earlier explicit-impratio2 four-step prefix at1x; not this six-step run, not ten steps. New safe admission adds1s/step and is slower than that video."
+  },
+  "retainedRawEvidence": "Local only: exact compressed native forecast payloads, model-bound caches, journals, XML, shared libraries and videos are not committed.",
+  "remainingWork": "Ten-step global-slip goal remains open; humanlike forward-bust/COM plan is separately reviewed before implementation."
+}

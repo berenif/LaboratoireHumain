@@ -8,7 +8,8 @@ from source_step_preview import LiveStep
 from scipy.spatial.transform import Rotation
 def posture_ready(row,c):
  com=np.array(row['com']);capture=com[:2]+np.array(row['comVelocity'])[:2]*math.sqrt(com[2]/9.81)
- return np.linalg.norm((com-c.com1)[:2])<.008 and np.linalg.norm(capture-c.com1[:2])<.01 and row['jointLimitMinimumMarginRad']>=.005 and min(row['jointLimitMarginsRad'][i]for i in (7,13))>=getattr(c,'minimum_ankle_ready_rad',0.) and row['maximumBodyLinearMps']<=.05 and row['maximumBodyAngularRadps']<=.2
+ goal=c.transfer_ready_goal()if hasattr(c,'transfer_ready_goal')else c.com1
+ return (not hasattr(c,'robust_support_ready')or c.robust_support_ready(row))and np.linalg.norm((com-goal)[:2])<.008 and np.linalg.norm(capture-goal[:2])<.01 and row['jointLimitMinimumMarginRad']>=.005 and min(row['jointLimitMarginsRad'][i]for i in (7,13))>=getattr(c,'minimum_ankle_ready_rad',0.) and row['maximumBodyLinearMps']<=.05 and row['maximumBodyAngularRadps']<=.2
 def loaded_settle_ready(row,c,mass):
  # Loaded double-support admission, not an intermediate quiet hold.
  com=np.array(row['com']);capture=com[:2]+np.array(row['comVelocity'])[:2]*math.sqrt(com[2]/9.81)
