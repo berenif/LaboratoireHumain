@@ -1,0 +1,121 @@
+{
+  "schema": 1,
+  "date": "2026-10-18",
+  "sourceBaselineCommit": "ee5ae4f4644f44b956ea24e3870a8155b4557676",
+  "sourceBaselineTree": "336d5609be5f3f293a4fec3eb39c607340a03817",
+  "implementationCommit": "f1a198f44ed8ade3afd48c654818d6c98a684346",
+  "selectedPresetChanged": false,
+  "defaultPromoted": false,
+  "modelSHA256": "216d5c0159abf07139f5556c59e244ae77cb7557ba5256e301ebc5e1c8bbc399",
+  "helperSHA256": "20ddefbcbdd328b1661ce163e4df6aeb0e953192c677b79d3076c904de5a0ba5",
+  "physicsHz": 800,
+  "torqueControlHz": 200,
+  "physicalStateWritesAfterInitialization": 0,
+  "rootAssistance": false,
+  "originalMotorStrength": true,
+  "originalFriction": true,
+  "originalPhysicalGateRelaxation": false,
+  "upstreamAssetsAdded": false,
+  "rawDataLocalOnly": true,
+  "mainRunnerIntegrations": 46428,
+  "exactAggregateAcrossAllDiagnosticsAvailable": false,
+  "attempts": [
+    {
+      "attempt": "seek-reference-240mm-v1",
+      "actualIntegrations": 0,
+      "recordedPhysicsS": 0.0,
+      "stopped": "AttributeError(\"'ContactSeekingController' object has no attribute 'contact_seek'\")",
+      "runnerCompleted": false,
+      "codeUnchangedDuringRun": true,
+      "codeSHA256AtStart": {
+        "source_opposed_arm_swing.py": "3d48035d84c1abdbee9a1b5f5df1b545e4a874b465ddc70d4e8fdb2fbc28172e",
+        "source_step_probe.py": "13d0d31f17ca911fcf7852a75e17d6d393b519a08c4e41f663a8bf62b2e2bd9c",
+        "source_multistep_probe.py": "2953a849eaa91fcbc8b755406cc881ebe3ce3827029046b05e01ad9e173379be",
+        "plan_source_arm_knee.py": "b8a47f48e8d37fd8328b6fdebcc0f48ee334782ea276bb75cc1d915b119c8858",
+        "source_arm_knee_mobility.py": "7835072bdc183fe5eff5551458b5adefa7473d781b738bde5ee5987e1742c547",
+        "source_selected_step.py": "ab21d078d9c0109c987d5c5963a7dd796c06f8f54df7624594ad9fb3bb55ef90",
+        "source_upright_large_steps.py": "c86f1bac2dcf06aac89b85bbb2560c0bbd8dd70a1ef6e98bba588cc1e67ac892"
+      },
+      "rawJournalLocal": "outputs/getup-source-step/contact-seek-20261018/seek-reference-240mm-v1/run/generation-001/frames.ndjson",
+      "journalSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "auditedOpposedStepPass": null
+    },
+    {
+      "attempt": "seek-reference-240mm-v2",
+      "actualIntegrations": 15476,
+      "recordedPhysicsS": 19.345,
+      "stopped": "measured-alternating-multistep-plus5squiet",
+      "runnerCompleted": true,
+      "codeUnchangedDuringRun": true,
+      "codeSHA256AtStart": {
+        "source_opposed_arm_swing.py": "3d48035d84c1abdbee9a1b5f5df1b545e4a874b465ddc70d4e8fdb2fbc28172e",
+        "source_step_probe.py": "522f8177634c8d43cfcfdfe9b7b4aff4d9861e61961052d7550f8d113ee5083a",
+        "source_multistep_probe.py": "2953a849eaa91fcbc8b755406cc881ebe3ce3827029046b05e01ad9e173379be",
+        "plan_source_arm_knee.py": "b8a47f48e8d37fd8328b6fdebcc0f48ee334782ea276bb75cc1d915b119c8858",
+        "source_arm_knee_mobility.py": "7835072bdc183fe5eff5551458b5adefa7473d781b738bde5ee5987e1742c547",
+        "source_selected_step.py": "ab21d078d9c0109c987d5c5963a7dd796c06f8f54df7624594ad9fb3bb55ef90",
+        "source_upright_large_steps.py": "c86f1bac2dcf06aac89b85bbb2560c0bbd8dd70a1ef6e98bba588cc1e67ac892"
+      },
+      "rawJournalLocal": "outputs/getup-source-step/contact-seek-20261018/seek-reference-240mm-v2/run/generation-001/frames.ndjson",
+      "journalSHA256": "d22c41a4066f41711777ce82c25eb8608b1690888ccd29b011609e80f86b4342",
+      "auditedOpposedStepPass": true
+    },
+    {
+      "attempt": "final-reference-240mm",
+      "actualIntegrations": 15476,
+      "recordedPhysicsS": 19.345,
+      "stopped": "measured-alternating-multistep-plus5squiet",
+      "runnerCompleted": true,
+      "codeUnchangedDuringRun": true,
+      "codeSHA256AtStart": {
+        "source_opposed_arm_swing.py": "3d48035d84c1abdbee9a1b5f5df1b545e4a874b465ddc70d4e8fdb2fbc28172e",
+        "source_step_probe.py": "522f8177634c8d43cfcfdfe9b7b4aff4d9861e61961052d7550f8d113ee5083a",
+        "source_multistep_probe.py": "2953a849eaa91fcbc8b755406cc881ebe3ce3827029046b05e01ad9e173379be",
+        "plan_source_arm_knee.py": "b8a47f48e8d37fd8328b6fdebcc0f48ee334782ea276bb75cc1d915b119c8858",
+        "source_arm_knee_mobility.py": "7835072bdc183fe5eff5551458b5adefa7473d781b738bde5ee5987e1742c547",
+        "source_selected_step.py": "ab21d078d9c0109c987d5c5963a7dd796c06f8f54df7624594ad9fb3bb55ef90",
+        "source_upright_large_steps.py": "423377c58687d9b0972cf345ca2bb7a2acd22ae710dafb530d2715e10601e188"
+      },
+      "rawJournalLocal": "outputs/getup-source-step/contact-seek-20261018/final-reference-240mm/run/generation-001/frames.ndjson",
+      "journalSHA256": "d22c41a4066f41711777ce82c25eb8608b1690888ccd29b011609e80f86b4342",
+      "auditedOpposedStepPass": true
+    },
+    {
+      "attempt": "final-hardened-reference-240mm",
+      "actualIntegrations": 15476,
+      "recordedPhysicsS": 19.345,
+      "stopped": "measured-alternating-multistep-plus5squiet",
+      "runnerCompleted": true,
+      "codeUnchangedDuringRun": true,
+      "codeSHA256AtStart": {
+        "source_opposed_arm_swing.py": "3d48035d84c1abdbee9a1b5f5df1b545e4a874b465ddc70d4e8fdb2fbc28172e",
+        "source_step_probe.py": "522f8177634c8d43cfcfdfe9b7b4aff4d9861e61961052d7550f8d113ee5083a",
+        "source_multistep_probe.py": "2953a849eaa91fcbc8b755406cc881ebe3ce3827029046b05e01ad9e173379be",
+        "plan_source_arm_knee.py": "b8a47f48e8d37fd8328b6fdebcc0f48ee334782ea276bb75cc1d915b119c8858",
+        "source_arm_knee_mobility.py": "7835072bdc183fe5eff5551458b5adefa7473d781b738bde5ee5987e1742c547",
+        "source_selected_step.py": "ab21d078d9c0109c987d5c5963a7dd796c06f8f54df7624594ad9fb3bb55ef90",
+        "source_upright_large_steps.py": "018734e14513bb77c25be3c8c01bc4aa334cc6e1779c491437528f6626d0a473"
+      },
+      "rawJournalLocal": "outputs/getup-source-step/contact-seek-20261018/final-hardened-reference-240mm/run/generation-001/frames.ndjson",
+      "journalSHA256": "1edbcd85be4764b19b504155b9c76c37ee252b561f977dc85b95445e228c31d4",
+      "auditedOpposedStepPass": true
+    }
+  ],
+  "savedFinalStateContactDiagnostic": {
+    "physicalIntegrations": 800,
+    "downwardTargetAdjustmentM": 0.0015,
+    "localLog": "/tmp/landing-probe-1p5mm.log",
+    "qualification": false,
+    "caveat": "Diagnostic initially held zero command until the next 4-step controller boundary; it was used only to isolate contact sensitivity, never as motion evidence."
+  },
+  "uprightDiagnostics": "unqualified-upright-transfer-diagnostics.json",
+  "userDirectionChanged": "Further upright optimization stopped; forward-trunk human gait plan requested. No implementation of the new gait plan is included.",
+  "codeSHA256": {
+    "source_step_probe.py": "522f8177634c8d43cfcfdfe9b7b4aff4d9861e61961052d7550f8d113ee5083a",
+    "source_upright_large_steps.py": "018734e14513bb77c25be3c8c01bc4aa334cc6e1779c491437528f6626d0a473",
+    "test_source_contact_seek.py": "ef2480cf71a3f5e4d75726228be4f8fd51897d9e162fc7d3bb0c9426050521f6",
+    "test_source_upright_large_steps.py": "36d344781bf737029c8de4d6f4917cc20a0e2c5f19f802fce4e5e961c3bac11e",
+    "test_source_stance_reference.py": "8f03ffa782de48c8a0f1cdc3f3d0c9bb68f13df91f7a606163a0a4a348e48b60"
+  },
+  "physicalLimits": "Independent full native audits determine single-step qualification; startup inherited ankle violation through63.75ms remains. No multistep, humanlike gait, anatomy maximum, perturbation robustness, energy or full-CI claim."
+}

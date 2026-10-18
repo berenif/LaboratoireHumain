@@ -1,0 +1,146 @@
+{
+  "status": "diagnostic only; no full step or quiet qualification; tuning stopped when user requested forward-lean human gait plan",
+  "trackedPlannerChange": false,
+  "dynamicAttemptCount": 7,
+  "exactAggregateIntegrationCountAvailable": false,
+  "attemptCaveat": "Seven cases include a zero-integration initialization exception, two 1600-step baseline/weight1 cases, a reporting exception in the next case, and the three serialized cases below. Only the serialized cases and printed closed-run counters are retained; no exact overall integration total is claimed.",
+  "serializedCases": [
+    {
+      "artifact": "outputs/getup-source-step/upright-large-20261018/diagnose-transfer-coordination/restored-w3.0-com0-knee0.json",
+      "weight": 3.0,
+      "comOffsetM": 0,
+      "kneeWeight": 0,
+      "stop": "unloaded-ready",
+      "sourceStartS": 6.0025,
+      "sourceEndS": 6.525,
+      "physicalIntegrations": 418,
+      "readyAtS": 6.39125,
+      "maxMotor": 0.9345439870079472,
+      "minCaptureM": 0.01134046470886052,
+      "minAnkleRad": 0.022761002785139428,
+      "minJointRad": 0.019360506551646228,
+      "maxBodyTiltDeg": 10.118618693006793,
+      "loadedSlipM": [
+        0.0017319211109194897,
+        0.0014132167581488817
+      ],
+      "final": {
+        "t": 6.525,
+        "ankleReserveDeg": [
+          2.3714090491174438,
+          8.461322583458719
+        ],
+        "comErrorM": 0.0015046155961237109,
+        "loadN": [
+          0.0,
+          400.35290696040596
+        ],
+        "captureMarginM": 0.0114151690270195,
+        "bodyTiltDeg": [
+          10.081885812334244,
+          3.168277752243154
+        ],
+        "bodyLinearMps": 0.012835524533500073,
+        "bodyAngularRadps": 0.03502247408871326,
+        "ready": true,
+        "unloadRun": 80
+      }
+    },
+    {
+      "artifact": "outputs/getup-source-step/upright-large-20261018/diagnose-transfer-coordination/initial-w3.0-com0-knee0.json",
+      "weight": 3.0,
+      "comOffsetM": 0,
+      "kneeWeight": 0,
+      "stop": "unloaded-ready",
+      "sourceStartS": 0.0,
+      "sourceEndS": 4.13625,
+      "physicalIntegrations": 3309,
+      "readyAtS": 4.00125,
+      "maxMotor": 0.9379737160270947,
+      "minCaptureM": 0.011582356148206019,
+      "minAnkleRad": -0.009099015031161617,
+      "minJointRad": -0.009099015031161617,
+      "maxBodyTiltDeg": 10.617081928600008,
+      "loadedSlipM": [
+        0.001422611612049504,
+        0.0012045294788725984
+      ],
+      "final": {
+        "t": 4.1362499999999995,
+        "ankleReserveDeg": [
+          3.1497928968767295,
+          8.159178031040549
+        ],
+        "comErrorM": 0.0018317947957065604,
+        "loadN": [
+          0.0,
+          400.61268221969783
+        ],
+        "captureMarginM": 0.011582356148206019,
+        "bodyTiltDeg": [
+          10.547554068100188,
+          3.2792169734711867
+        ],
+        "bodyLinearMps": 0.005655310645008052,
+        "bodyAngularRadps": 0.01370019982445069,
+        "ready": true,
+        "unloadRun": 80
+      }
+    },
+    {
+      "artifact": "outputs/getup-source-step/upright-large-20261018/diagnose-transfer-coordination/initial-w3.0-com0-knee0-duration0.1.json",
+      "weight": 3.0,
+      "comOffsetM": 0,
+      "kneeWeight": 0,
+      "stop": "diagnostic-bound",
+      "sourceStartS": 0.0,
+      "sourceEndS": 0.1,
+      "physicalIntegrations": 80,
+      "readyAtS": null,
+      "maxMotor": 0.755761752957472,
+      "minCaptureM": 0.05625569699864702,
+      "minAnkleRad": -0.009098998833807104,
+      "minJointRad": -0.009098998833807104,
+      "maxBodyTiltDeg": 7.722069034715981,
+      "loadedSlipM": [
+        0.0004961575672813328,
+        0.0004982400167375901
+      ],
+      "final": {
+        "t": 0.1,
+        "ankleReserveDeg": [
+          0.7810476128657708,
+          0.8806736988869481
+        ],
+        "comErrorM": 0.12797055251801576,
+        "loadN": [
+          195.3349356145499,
+          206.34435734019502
+        ],
+        "captureMarginM": 0.06031727842460828,
+        "bodyTiltDeg": [
+          1.7903608630024235,
+          7.539828855268611
+        ],
+        "bodyLinearMps": 0.05275803686039111,
+        "bodyAngularRadps": 0.2986253025975993,
+        "ready": false,
+        "unloadRun": 0
+      }
+    }
+  ],
+  "zeroIntegrationPlanningCalls": {
+    "fixedPointReplans": 5,
+    "coupledPlannerVariants": 2
+  },
+  "coupledPlanner": {
+    "armResidualWeight": 8.0,
+    "maximumArmJointMismatchRad": 0.0006985101935894633,
+    "armSagittalErrorDeg": [
+      0.0017280223877533393,
+      0.017374265409200073
+    ],
+    "strictStaticMotorFraction": 0.9107926103637558,
+    "notImplemented": true
+  }
+}

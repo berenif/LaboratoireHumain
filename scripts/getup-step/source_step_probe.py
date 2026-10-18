@@ -117,6 +117,7 @@ class Controller:
    if hasattr(self,'arm_kp'):task(np.eye(27)[21:],self.arm_acceleration+self.arm_kp*(self.arm_posture-q[15:])+self.arm_kd*(self.arm_velocity-v[21:]),self.arm_weight)
    else:task(np.eye(27)[21:],20*(self.arm_posture-q[15:])-10*v[21:],1.)
   contacts=[]
+  landing_adjustment=self.landing_adjustment(t,phase)if hasattr(self,'landing_adjustment')else None
   for side,foot in enumerate(feet):
    body=foot['body'];J=w.read('lh_body_jac',(6,27),body);b=w.read('lh_jdot',(6,),body);pos=w.arr(3,(17,3))[body];R=w.arr(5,(17,3,3))[body];pos0,Rinitial=self.targets[side];Rflat=self.flatRotations[side];axis=Rotation.from_matrix(Rflat@Rinitial.T).as_rotvec();pt=pos0.copy();pvel=np.zeros(3);pacc=np.zeros(3);wvel=np.zeros(3);wacc=np.zeros(3);R0=Rflat
    if phase=='transfer':
@@ -128,6 +129,8 @@ class Controller:
     elif phase=='translate':pt[2]+=.04;pt+=self.step_distance*self.heading*s;pvel=self.step_distance*self.heading*ds;pacc=self.step_distance*self.heading*dds
     elif phase=='land':pt=self.landing.copy();pt[2]+=.04*(1-s)-.0005*s;pvel[2]=-.0405*ds;pacc[2]=-.0405*dds
     else:pt=self.landing.copy();pt[2]-=.0005
+    if landing_adjustment is not None:
+     offset,rate,acceleration=landing_adjustment;pt[2]-=offset;pvel[2]-=rate;pacc[2]-=acceleration
    desired=np.r_[pacc+100*(pt-pos)+20*(pvel-J[:3]@v),wacc+100*Rotation.from_matrix(R0@R.T).as_rotvec()+20*(wvel-J[3:]@v)]-b
    task(J,desired,20. if side==self.swing_side and phase in ['lift','translate','land']else 25.)
    if not single or side==self.stance_side:

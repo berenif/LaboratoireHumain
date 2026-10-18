@@ -3,6 +3,14 @@
 Essai du 18 octobre 2026. La base sélectionnée et l'application restent
 inchangées. Les nouvelles commandes sont expérimentales et optionnelles.
 
+## Suite : réception de 24 cm
+
+Une correction ultérieure de recherche de contact a qualifié un pas unique de
+241,926 mm, avec réception chargée et cinq secondes calmes. Le
+[rapport de correction](getup-source-contact-seek.md) conserve ses preuves et
+ses limites. Les résultats ci-dessous décrivent les essais antérieurs. La
+posture verticale ne constitue plus la direction de travail demandée.
+
 ## Conclusion
 
 - Le témoin à bras opposés réalise **182,112 mm**, puis cinq secondes calmes.

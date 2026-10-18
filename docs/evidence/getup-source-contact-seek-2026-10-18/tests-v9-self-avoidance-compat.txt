@@ -1,0 +1,7 @@
+test_active_self_geometry_changes_joint_torques (test_source_self_avoidance.SelfAvoidance.test_active_self_geometry_changes_joint_torques) ... ok
+test_capsule_separation_matches_measured_native_contact (test_source_self_avoidance.SelfAvoidance.test_capsule_separation_matches_measured_native_contact) ... ok
+
+----------------------------------------------------------------------
+Ran 2 tests in 0.472s
+
+OK

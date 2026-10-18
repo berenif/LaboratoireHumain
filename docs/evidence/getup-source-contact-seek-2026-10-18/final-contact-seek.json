@@ -1,0 +1,91 @@
+{
+  "maximumDepthM": 0.0003300000000001688,
+  "maximumRateMps": 0.003,
+  "maximumAbsAccelerationMps2": 0.029999999999999995,
+  "phaseEvents": [
+    {
+      "event": "lift",
+      "timeS": 4.135,
+      "stepIndex": 1
+    },
+    {
+      "event": "translate",
+      "timeS": 6.13625,
+      "stepIndex": 1
+    },
+    {
+      "event": "land",
+      "timeS": 8.1375,
+      "stepIndex": 1
+    },
+    {
+      "event": "settle",
+      "timeS": 10.34375,
+      "stepIndex": 1
+    },
+    {
+      "event": "stand",
+      "timeS": 14.345,
+      "stepIndex": 1
+    }
+  ],
+  "landing": {
+    "index": 1,
+    "swingSide": "left",
+    "requestedDistanceM": 0.24,
+    "commandedDistanceM": 0.242,
+    "startNativeStep": 0,
+    "startSourceTimeS": 0.0,
+    "entryCOM": [
+      0.38007874160510713,
+      -0.03922870920128895,
+      0.8081642540803642
+    ],
+    "initialFeet": [
+      [
+        0.5164085985705382,
+        -0.032167538723330336,
+        0.028424512834071075
+      ],
+      [
+        0.3253183487011271,
+        0.10000097728588249,
+        0.02863416314941853
+      ]
+    ],
+    "bodyAdaptsThrough": "current-state COM/capture feedback, measured contact load, whole-body inverse dynamics, joint ground barriers; no inter-step state installation",
+    "postureVariant": "selected-hips-knees-opposed-arms",
+    "staticRequiredMotorFraction": 0.9026041969668359,
+    "staticMinimumSelfSeparationM": 0.07197189789791991,
+    "lift25mmConsecutiveS": 0.85875,
+    "landingNativeStep": 8275,
+    "landingTimeS": 10.34375,
+    "achievedAtLoadAcquisitionM": 0.24157527852622745,
+    "measuredSupportAnchors": [
+      [
+        0.41143590919475304,
+        -0.24974374386714132,
+        0.026904881905005076
+      ],
+      [
+        0.32718029746230776,
+        0.09866643629162414,
+        0.026149352311654127
+      ]
+    ],
+    "swingLoadedN": 21.905082195169967,
+    "stanceLoadedN": 379.2098859041768,
+    "completedNativeStep": 15476,
+    "completedTimeS": 19.345,
+    "achievedForwardM": 0.24192626698156558,
+    "loadedSlipThisStepM": [
+      0.002612785470728018,
+      0.00316651177826733
+    ],
+    "bodyLinearMps": 3.355196448595479e-05,
+    "bodyAngularRadps": 0.00014160698411525924,
+    "comCaptureMarginM": 0.07839259657676906,
+    "quietConsecutiveS": 5.0
+  },
+  "originalDeadlinePreserved": true
+}

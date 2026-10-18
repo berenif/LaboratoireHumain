@@ -49,7 +49,66 @@ def cone_jet(up, angular_jacobian, omega, angular_bias):
     return row, derivative, bias
 
 
-class UprightController(OpposedArmController):
+class ContactSeekingController(OpposedArmController):
+    """Small bounded downward target correction, governed by measured contact.
+
+    A geometrically near-ground foot can remain unloaded because the torque QP
+    trades a millimetre of foot tracking against other tasks. This reference
+    search starts only after the nominal descent, never creates virtual load,
+    and retains the original landing deadline and all physical gates.
+    """
+    SEEK_MAX_M = .003
+    SEEK_SPEED_MPS = .003
+    SEEK_ACCEL_MPS2 = .03
+    SEEK_LOAD_N = 12.
+
+    def landing_adjustment(self, t, phase):
+        now = self.w.l.lh_time(self.w.h)
+        if hasattr(self, '_seek_time') and now == self._seek_time:
+            return self._seek_jet
+        dt = 0. if not hasattr(self, '_seek_time') else now-self._seek_time
+        if dt < 0.:
+            raise ValueError('contact seek requires monotonic native source time')
+        depth = getattr(self, '_seek_depth', 0.)
+        previous = getattr(self, '_seek_rate', 0.)
+        remaining = max(0., self.SEEK_MAX_M-depth)
+        # Discrete stopping-distance bound includes this update's travel.
+        # Braking begins before the positional cap without a velocity reset.
+        half_accel_dt = .5*self.SEEK_ACCEL_MPS2*dt
+        safe_rate = max(0., math.sqrt(half_accel_dt**2 +
+            2*self.SEEK_ACCEL_MPS2*max(0., remaining-.5*previous*dt))-half_accel_dt)
+        desired = 0.
+        if phase == 'land':
+            feet = self.w.feet()
+            loads = self.w.arr(20, (17,))
+            loaded = float(loads[self.swing_body]) >= self.SEEK_LOAD_N
+            nominal_done = t >= getattr(self, 'trajectory_time_scale', 1.)
+            near_ground = feet[self.swing_side]['clearance'] <= .003
+            stance_loaded = loads[feet[self.stance_side]['body']] >= .8*self.w.mass*9.81
+            if nominal_done and near_ground and stance_loaded and not loaded:
+                desired = min(self.SEEK_SPEED_MPS, safe_rate)
+        # An acquired contact or phase change requests braking. Continue its
+        # tiny remaining target travel through settle, rather than dropping
+        # target speed discontinuously at the original 3N landing admission.
+        rate = previous + float(np.clip(desired-previous,
+            -self.SEEK_ACCEL_MPS2*dt, self.SEEK_ACCEL_MPS2*dt))
+        depth += min(remaining, .5*(previous+rate)*dt)
+        acceleration = (rate-previous)/dt if dt > 0. else 0.
+        self._seek_time, self._seek_depth, self._seek_rate = now, depth, rate
+        self._seek_jet = (depth, rate, acceleration)
+        self.contact_seek = dict(depthM=depth, rateMps=rate,
+            accelerationMps2=acceleration, limitM=self.SEEK_MAX_M,
+            measuredLoadThresholdN=self.SEEK_LOAD_N,
+            originalLandingDeadlinePreserved=True)
+        return self._seek_jet
+
+    def solve(self, t, phase='transfer'):
+        u, info = super().solve(t, phase)
+        info['contactSeek'] = self.contact_seek
+        return u, info
+
+
+class UprightController(ContactSeekingController):
     def add_upright_tasks(self, t, phase, width, task, inequalities, bounds):
         w = self.w
         v = w.arr(1, (27,))
@@ -101,6 +160,14 @@ class UprightController(OpposedArmController):
         bias=w.read('lh_jdot',(6,),1)[3:]
         error=Rotation.from_matrix(self.rootR@R.T).as_rotvec()
         task(J[2:3],np.array([40.*error[2]-12.*(J@v)[2]-bias[2]]),4.)
+        if phase == 'transfer' and hasattr(self, 'minimum_ankle_ready_rad'):
+            # The static reserved posture was underweighted by the global .2
+            # posture task. Reach its ankle reference through joint torques
+            # before the unchanged measured-reserve unload admission.
+            indices = np.array([7, 13])
+            q = w.arr(0, (28,))[7:]
+            task(np.eye(27)[6+indices],
+                 20.*(self.q0[indices]-q[indices])-8.*v[6+indices], 3.)
 
     def solve(self, t, phase='transfer'):
         u, info = super().solve(t, phase)
@@ -120,6 +187,8 @@ class LargeStep(OpposedArmMultiStep):
 
     def begin_step(self):
         super().begin_step()
+        if not self.upright_enabled:
+            self.controller.__class__ = ContactSeekingController
         if self.upright_enabled:
             w=self.world;before=native_bytes(w)
             arms=self.arm_map.evaluate(-(limb_telemetry(w,'leg')[0]-self.leg_origin))[0]
@@ -168,12 +237,19 @@ class LargeStep(OpposedArmMultiStep):
                 uprightEnabled=self.upright_enabled,softDeadbandDeg=DEADBAND_DEG,
                 uprightStaticPreferenceWeight=1.,
                 uprightAnkleReferenceReserveRad=.06,uprightAnkleReadyReserveRad=.035,
+                uprightTransferAnkleTaskWeight=3.,uprightTransferAnkleTaskKp=20.,
+                uprightTransferAnkleTaskKd=8.,
                 runtimeMeasuredCaptureAndJointGuards=True,inheritedJointEntryGraceS=INHERITED_ENTRY_LIMIT_END_S,
                 tiltLimitDeg=TILT_LIMIT_DEG,requestedDistancesM=self.distances,
                 experimentalMaximumDistanceM=self.experimental_distance_limit,
                 experimentalMaximumSupportRelativeReachM=self.support_relative_reach,
                 originalMaximumSupportRelativeReachM=.18,
-                originalMotorAndContactSafetyGates=True),indent=2)+'\n')
+                originalMotorAndContactSafetyGates=True,
+                boundedContactSeek=dict(maximumDepthM=ContactSeekingController.SEEK_MAX_M,
+                    maximumSpeedMps=ContactSeekingController.SEEK_SPEED_MPS,
+                    maximumAccelerationMps2=ContactSeekingController.SEEK_ACCEL_MPS2,
+                    measuredLoadThresholdN=ContactSeekingController.SEEK_LOAD_N,
+                    originalLandingDeadlinePreserved=True)),indent=2)+'\n')
 
 
 def main():

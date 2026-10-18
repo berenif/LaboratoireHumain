@@ -470,11 +470,12 @@ class NativeUprightQP(unittest.TestCase):
             for self_avoidance in (False, True):
                 current = Controller(self.world, 0, .062, self_avoidance)
                 previous = frozen.Controller(self.world, 0, .062, self_avoidance)
-                for t in (0., .5, 1.5):
-                    actual, actual_info = current.solve(t, 'transfer')
-                    expected, expected_info = previous.solve(t, 'transfer')
-                    np.testing.assert_array_equal(actual, expected)
-                    self.assertEqual(actual_info, expected_info)
+                for phase in ('transfer', 'lift', 'translate', 'land', 'settle', 'stand'):
+                    for t in (0., .5, 1.5):
+                        actual, actual_info = current.solve(t, phase)
+                        expected, expected_info = previous.solve(t, phase)
+                        np.testing.assert_array_equal(actual, expected)
+                        self.assertEqual(actual_info, expected_info)
         self.assertEqual(native_bytes(self.world), self.before)
 
 

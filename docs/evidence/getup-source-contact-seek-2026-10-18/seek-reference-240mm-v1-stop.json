@@ -1,0 +1,7 @@
+{
+  "stopped": "AttributeError(\"'ContactSeekingController' object has no attribute 'contact_seek'\")",
+  "actualIntegrations": 0,
+  "runnerCompleted": false,
+  "codeUnchangedDuringRun": true,
+  "cause": "AttributeError: contact_seek not initialized during transfer; corrected before v2"
+}

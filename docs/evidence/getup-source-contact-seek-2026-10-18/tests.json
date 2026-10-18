@@ -1,0 +1,53 @@
+{
+  "finalEightModules": {
+    "total": 63,
+    "passed": 61,
+    "skipped": 2,
+    "failed": 0,
+    "modules": [
+      "test_source_contact_seek",
+      "test_source_upright_large_steps",
+      "test_source_opposed_arm_swing",
+      "test_source_arm_knee_mobility",
+      "test_source_hip_mobility",
+      "test_source_selected_step",
+      "test_source_stance_reference",
+      "test_source_self_avoidance"
+    ]
+  },
+  "historicalV6CasesRetestedWithPinnedV9": {
+    "total": 2,
+    "passed": 2,
+    "oldHelperNotValidated": true
+  },
+  "initialAggregate": {
+    "total": 62,
+    "passed": 59,
+    "failed": 1,
+    "skipped": 2,
+    "cause": "historical fixed6400 checkpoint counter expectation; restored pinned q/qvel cold cache correctly has0; test now asserts captured counter unchanged by zero-integration QP"
+  },
+  "unextendedQPParity": {
+    "frozenCommit": "970273f",
+    "phases": [
+      "transfer",
+      "lift",
+      "translate",
+      "land",
+      "settle",
+      "stand"
+    ],
+    "timesS": [
+      0.0,
+      0.5,
+      1.5
+    ],
+    "selfAvoidance": [
+      false,
+      true
+    ],
+    "bitExact": true
+  },
+  "sourceChangedDuringFinalPhysicalRun": false,
+  "fullCIClaim": false
+}

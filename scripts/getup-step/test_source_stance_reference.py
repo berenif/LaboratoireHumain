@@ -14,6 +14,6 @@ class StanceReference(unittest.TestCase):
  def test_time_scale_preserves_geometric_target_and_changes_joint_commands(self):
   w=World(BASE,HELPER)
   try:
-   w.restore(BASE/'slow-continuation/final.bin');c=Controller(w);u,a=c.solve(.5);c.trajectory_time_scale=2.;v,b=c.solve(1.);np.testing.assert_array_equal(a['comTarget'],b['comTarget']);self.assertGreater(max(abs(u-v)),1e-6);self.assertTrue(np.isfinite(v).all());self.assertLessEqual(max(abs(v)),.95000001);self.assertEqual(w.l.lh_dim(w.h,6),6400)
+   w.restore(BASE/'slow-continuation/final.bin');count=w.l.lh_dim(w.h,6);c=Controller(w);u,a=c.solve(.5);c.trajectory_time_scale=2.;v,b=c.solve(1.);np.testing.assert_array_equal(a['comTarget'],b['comTarget']);self.assertGreater(max(abs(u-v)),1e-6);self.assertTrue(np.isfinite(v).all());self.assertLessEqual(max(abs(v)),.95000001);self.assertEqual(w.l.lh_dim(w.h,6),count)
   finally:w.close()
 if __name__=='__main__':unittest.main()
