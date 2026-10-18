@@ -41,7 +41,7 @@ class SourceSLOWEnv(SourceTaskEnv):
         a=np.asarray(residual,dtype=float)
         if a.shape!=(21,)or not np.isfinite(a).all()or max(abs(a))>1:raise ValueError('qpos-order residual21 radians required')
         if not callable(counted_integrate):raise ValueError('counted integration callback required')
-        before=self.core.observation(self.world.observation());rows=[];expected=[];preview=copy.deepcopy(self.core)
+        before=self.core.observation(self.world.observation());rows=[];samples=[];expected=[];preview=self.core.preview_state()
         self.held_command=dict(qref=self.core.source_standing.tolist(),residual=a.tolist(),kd=.2,nativeSamples=20,completedSamples=0)
         for sample in range(20):
             q=self.world.arr(0,(28,))[7:].copy();dq=self.world.arr(1,(27,))[6:].copy();u=slow_controls(self.core.source_standing,a,q,dq,holding=True)
@@ -58,12 +58,12 @@ class SourceSLOWEnv(SourceTaskEnv):
             row['slowCommandAudit']=dict(expectedControls=u.tolist(),maximumTorqueErrorNm=error)
             # Audit is stripped from engine packets before controller hashing.
             expected.append(row.pop('slowCommandAudit'));rows.append(row);self.held_command['completedSamples']=sample+1
-            x=decode_source_frame(row,self.core.model)
+            validated=self.core.validate(row);samples.append(validated);x=validated.metrics
             if x['nativeId']!=self.core.native_id+sample+1 or abs(row['timeS']-(self.core.start_time+(x['nativeId']-self.core.start_id)*.00125))>1e-9:raise ValueError('invalid per-native SLOW clock')
             preview.slip+=x['slipSpeed']*.00125
             failure,_,_=preview._failure_and_quiet(x)
             if failure:break
-        info=self.core.consume(rows,extrinsic_cutoff=extrinsic_cutoff)
+        info=self.core.consume(rows,extrinsic_cutoff=extrinsic_cutoff,validated_samples=samples)
         info.update(sourceResidualCommandVerified=True,maximumPerNativeTorqueErrorNm=max(x['maximumTorqueErrorNm']for x in expected),sourceInnerPDHz=800,sourceKDSeconds=.2)
         return dict(state=before.tolist(),action=a.tolist(),next_state=info['actualFinalObservation118'],reward=info['reward'],not_done=info['not_done'],info=info,actualFrames=rows,perNativeControls=expected)
     def checkpoint(self):

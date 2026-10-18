@@ -13,7 +13,7 @@ from stabilization_ledger import StageBudget
 from source_math import ORDER
 
 def fingerprints(stage,source):
-    local=['slow_benchmark.py','slow_task.py','source_task.py','source_task_env.py','source_slow_control.py','source_engine.py','source_positive_control.py','source_math.py','actors.py','reference.py','audit_metrics.py','native_env.py','task.py','training.py','stabilization_init.py','stabilization_ledger.py','source_bridge.c']
+    local=['slow_benchmark.py','slow_task.py','source_task.py','source_observer.py','source_task_env.py','source_slow_control.py','source_engine.py','source_positive_control.py','source_math.py','actors.py','reference.py','audit_metrics.py','native_env.py','task.py','training.py','stabilization_init.py','stabilization_ledger.py','source_bridge.c']
     paths=[Path(__file__).with_name(n)for n in local]+[CONFIG_PATH,ROOT/'scripts/getup-step-reference.py',ROOT/'scripts/getup-training/SAC.py',ROOT/'scripts/getup-diagnostic/compare_mujoco.py',ROOT/'scripts/getup-diagnostic/mujoco_bridge.c',ROOT/'rust/crates/model/data/getup-v1.json',ROOT/'rust/crates/sim/data/getup-policy/student.bin',source/'source_bridge_v2.so',source/'dependency/official-wheel/mujoco/libmujoco_nogl.so.2.1.3',*sorted((source/'source-model').glob('*.xml')),source/'slow-continuation/final.bin',source/'slow-continuation/final.controller.json',source/'slow-continuation/frames.ndjson']
     return {str(p.resolve()):sha256(p)for p in paths}
 

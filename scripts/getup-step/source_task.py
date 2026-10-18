@@ -15,6 +15,7 @@ from audit_metrics import fk, support_margin, task_errors
 from reference import PhaseClock
 from source_math import P, ORDER, conditioned_teacher_observation
 from task import TaskHistory, load_config
+from source_observer import model_context,packet_hash,validated_sample,checked_metrics
 
 CONFIG_PATH=Path(__file__).with_name('task-config-mujoco-stabilization-v1.json')
 
@@ -49,16 +50,20 @@ def decode_source_frame(row,model):
     No stale geometry contacts are used to manufacture support. World coordinates
     returned for generic task errors use native Y-up; source targets remain Z-up.
     """
-    json.dumps(row,allow_nan=False)
+    packet_hash(row)  # reject nonfinite fields even when not used by task math
+    return _decode_source_frame(row,model_context(model))
+
+def _decode_source_frame(row,context):
+    model=context.model
     if type(row.get('timeS'))not in(int,float)or not math.isfinite(row['timeS'])or row['timeS']<0:raise ValueError('invalid source engine time')
     if type(row.get('sourceStep'))is not int or row['sourceStep']<0:raise ValueError('invalid source integration ID')
     q=_vector(row['qpos'],28,'source qpos');v=_vector(row['qvel'],27,'source qvel');physical=_vector(row['physicalObservation'],67,'physical67');com=_vector(row['comSource'],3,'source COM')
     if abs(np.linalg.norm(q[3:7])-1)>1e-6 or np.max(abs(q[7:]-physical[:21]))>1e-10 or np.max(abs(v-physical[40:67]))>1e-10:raise ValueError('source pose/observer mismatch')
-    kin=fk.Kinematics(model);root=np.eye(4);root[:3,3]=P.T@q[:3];root[:3,:3]=P.T@Rotation.from_quat(q[[4,5,6,3]]).as_matrix()@P
+    kin=context.kin;root=np.eye(4);root[:3,3]=P.T@q[:3];root[:3,:3]=P.T@Rotation.from_quat(q[[4,5,6,3]]).as_matrix()@P
     poses=kin.forward(q[7:],root)
     geometry=np.r_[poses['head'][1,3],np.concatenate([P@root[:3,:3].T@(poses[name][:3,3]-root[:3,3])for name in ['left_hand','left_foot','right_hand','right_foot']]),P@root[:3,:3].T@np.array([0.,1.,0.])]
     if np.max(abs(geometry-physical[21:37]))>2e-6:raise ValueError('source physical geometry mismatch')
-    parts={p['id']:p for p in model['segments']};mass=sum(p['massKg']for p in parts.values())
+    parts=context.parts;mass=context.mass
     true_com=sum(p['massKg']*(poses[name]@np.r_[fk.xyz(p['goldenMass']['centerOfMass']),1])[:3]for name,p in parts.items())/mass
     if np.max(abs(P@true_com-com))>2e-6:raise ValueError('source/FK COM mismatch')
     loads=_vector(row['loadsN'],2,'foot loads');all_loads=_vector(row['allBodyFloorLoadsN'],17,'body loads');qfrc=_vector(row['qfrcActuator'],27,'actual actuator force');speed=_vector(row['loadedSlipSpeedMps'],2,'actual loaded slip speed')
@@ -76,10 +81,7 @@ def decode_source_frame(row,model):
     capture=com[:2]+physical[37:39]*math.sqrt(max(com[2],0)/9.81)
     margin,dimension=support_margin(points,com[:2]);capture_margin,other_dimension=support_margin(points,capture)
     if dimension!=other_dimension:raise ValueError('support dimension mismatch')
-    gear=np.zeros(21)
-    for p in parts.values():
-        h=p['reference'].get('hinge')
-        if h:gear[h['qposIndex']]=h['gear']
+    gear=context.gear
     controls=qfrc[6:][ORDER]/gear[ORDER]
     if np.max(abs(controls))>1.000001:raise ValueError('source original gear cap exceeded')
     clearances=[kin.bottom(name,poses[name])for name in ['left_foot','right_foot']]
@@ -113,15 +115,22 @@ class SourceStabilization:
     step phasechain is deliberately not enabled by this stabilization config.
     """
     def __init__(self,initial_row,model,*,config_path=CONFIG_PATH):
-        self.config,self.config_sha=load_config(config_path);self.model=model;self.entry_packet=copy.deepcopy(initial_row)
+        self.config,self.config_sha=load_config(config_path);self._context=model_context(model);self.model=self._context.model;self.entry_packet=copy.deepcopy(initial_row)
         if self.config['engine']['fullStepCurriculumEnabled']or self.config['timing']['nativeHz']not in[200,800]:raise ValueError('not the stabilization-only source preset')
-        self.initial=decode_source_frame(initial_row,model);self.target=fixed_stabilization_target(self.initial);self.native_id=self.initial['nativeId'];self.start_id=self.native_id;self.start_time=float(initial_row['timeS'])
+        self.initial=self.validate(initial_row).metrics;self.target=fixed_stabilization_target(self.initial);self.native_id=self.initial['nativeId'];self.start_id=self.native_id;self.start_time=float(initial_row['timeS'])
         self.sample_seconds=1/self.config['timing']['nativeHz'];self.clock=PhaseClock(0.,1.,self.native_id,sample_seconds=self.sample_seconds);self.history=TaskHistory(self.native_id);self.feet_run=[0,0];self.quiet_run=0;self.slip=np.zeros(2);self.previous_controls=self.initial['controls'].copy();self.anchors=np.array([self.initial['transforms'][name][:3,3]for name in ['left_foot','right_foot']]);self.terminal=False
         heading=self.initial['transforms']['torso'][:3,2].copy();heading[1]=0
         if np.linalg.norm(heading)<1e-8:raise ValueError('undefined entry forward heading')
         self.heading=heading/np.linalg.norm(heading);self.entry_left=self.anchors[0].copy();self.last_packet_hash=self.packet_hash(initial_row)
     @staticmethod
-    def packet_hash(row):return hashlib.sha256(json.dumps(row,sort_keys=True,allow_nan=False,separators=(',',':')).encode()).hexdigest()
+    def packet_hash(row):return packet_hash(row)
+    def validate(self,row):
+        digest=packet_hash(row);return validated_sample(_decode_source_frame(row,self._context),digest,self._context)
+    def preview_state(self):
+        # _failure_and_quiet mutates exactly these three fields. Static model,
+        # configuration, reference, clocks and history are never touched there.
+        trial=copy.copy(self);trial.slip=self.slip.copy();trial.feet_run=self.feet_run.copy();return trial
+    MUTABLE_CONSUME_FIELDS=('native_id','clock','history','feet_run','quiet_run','slip','previous_controls','last_packet_hash','terminal')
     def observation(self,physical,power=1.):
         # For a held stabilization reference the now and +125ms targets coincide.
         t=np.r_[self.target['q'],self.target['com'][2],self.target['com_ori']]
@@ -140,17 +149,19 @@ class SourceStabilization:
         quiet=bool(not fail and x['physical'][21]>1.4 and x['physical'][36]>=math.cos(math.radians(5))and min(self.feet_run)>=self.config['phaseGates']['persistentNativeSamples']and sum(x['loads'])>=.8*x['mass']*9.81 and x['combinedDimension']==2 and min(x['combinedCOMMargin'],x['combinedCaptureMargin'])>=.003 and x['maximumLinear']<=.22 and x['maximumAngular']<=.65)
         self.quiet_run=self.quiet_run+1 if quiet else 0
         return fail,quiet,drift
-    def consume(self,rows,*,extrinsic_cutoff=False,expected_teacher_controls=None):
+    def consume(self,rows,*,extrinsic_cutoff=False,expected_teacher_controls=None,validated_samples=None):
         if self.terminal:raise ValueError('cannot step a terminal task')
         if type(extrinsic_cutoff)is not bool:raise ValueError('invalid collection cutoff')
         # Decode and validate every sample before changing ANY hybrid state.
-        xs=[decode_source_frame(r,self.model)for r in rows];n=len(xs);maximum=self.config['timing']['nativeSamplesPerTransition']
+        if validated_samples is None:validated_samples=[self.validate(r)for r in rows]
+        if len(validated_samples)!=len(rows):raise ValueError('validated sample count mismatch')
+        xs=[checked_metrics(x,r,self._context)for x,r in zip(validated_samples,rows)];n=len(xs);maximum=self.config['timing']['nativeSamplesPerTransition']
         if not 1<=n<=maximum or [x['nativeId']for x in xs]!=list(range(self.native_id+1,self.native_id+1+n)):raise ValueError('requires consecutive new source integrations')
         if expected_teacher_controls is not None:
             expected=_vector(expected_teacher_controls,21,'held torque-teacher control')
             if np.max(abs(expected))>1 or any(np.max(abs(x['controls']-expected))>1e-6 for x in xs):raise ValueError('executed controls do not match held torque-teacher action')
         if any(abs(row['timeS']-(self.start_time+(x['nativeId']-self.start_id)*self.sample_seconds))>1e-9 for row,x in zip(rows,xs)):raise ValueError('source integration clock/timestep mismatch')
-        backup=copy.deepcopy(self.__dict__)
+        backup={k:copy.deepcopy(getattr(self,k))for k in self.MUTABLE_CONSUME_FIELDS}
         try:
             failure=None;conditions=[]
             for index,x in enumerate(xs):
@@ -168,12 +179,14 @@ class SourceStabilization:
             self.native_id=xs[-1]['nativeId'];self.previous_controls=xs[-1]['controls'].copy();self.last_packet_hash=self.packet_hash(rows[-1]);self.terminal=bool(result['terminated']or result['truncated'])
             result.update(phase='stabilize',referenceClock=self.clock.state(),quietConsecutiveSamples=self.quiet_run,loadedSlipM=self.slip.tolist(),nativeConditions=conditions,actualFinalObservation118=self.observation(xs[-1]['physical']).tolist(),taskDataCollectionEnabled=False,optimizerEnabled=False,measurementOnly=True,heldTorqueTeacherActionVerified=expected_teacher_controls is not None,replayEligible=False)
             json.dumps(_plain(result),allow_nan=False);return _plain(result)
-        except BaseException:self.__dict__.clear();self.__dict__.update(backup);raise
+        except BaseException:
+            for k,v in backup.items():setattr(self,k,v)
+            raise
     def terminal_in_prefix(self,rows):
         """Nonmutating per-native safety preview for the counted engine driver."""
-        trial=copy.deepcopy(self)
+        trial=self.preview_state()
         for offset,row in enumerate(rows,1):
-            x=decode_source_frame(row,self.model)
+            x=self.validate(row).metrics
             if x['nativeId']!=self.native_id+offset:raise ValueError('nonconsecutive preview')
             trial.slip+=x['slipSpeed']*self.sample_seconds
             failure,_,_=trial._failure_and_quiet(x)

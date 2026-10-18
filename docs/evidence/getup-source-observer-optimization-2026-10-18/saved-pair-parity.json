@@ -1,0 +1,85 @@
+{
+  "scope": "pure saved-packet fake-world replay; no engine construction, integration, optimizer or policy inference",
+  "newNativeIntegrations": 0,
+  "optimizerCalls": 0,
+  "legacyCommit": "54957e7843f5aeab507d8bff314e670611ddf260",
+  "results": [
+    {
+      "branch": "frozen-original",
+      "observer": "legacy",
+      "policyIntervals": 115,
+      "savedPacketsReplayed": 2292,
+      "wallSeconds": 12.745336681007757,
+      "policyIntervalsPerSecond": 9.02290797632402,
+      "allCommandAndNativeSafetyOutputsExactlyEqual": true,
+      "finalNativeId": 8692,
+      "finalSlipM": [
+        0.01000163525102614,
+        0.009685628069879897
+      ],
+      "terminal": true
+    },
+    {
+      "branch": "frozen-original",
+      "observer": "optimized",
+      "policyIntervals": 115,
+      "savedPacketsReplayed": 2292,
+      "wallSeconds": 3.9653156040003523,
+      "policyIntervalsPerSecond": 29.001474657902104,
+      "allCommandAndNativeSafetyOutputsExactlyEqual": true,
+      "finalNativeId": 8692,
+      "finalSlipM": [
+        0.01000163525102614,
+        0.009685628069879897
+      ],
+      "terminal": true
+    },
+    {
+      "branch": "candidate",
+      "observer": "legacy",
+      "policyIntervals": 112,
+      "savedPacketsReplayed": 2230,
+      "wallSeconds": 12.288711891989806,
+      "policyIntervalsPerSecond": 9.114055320395734,
+      "allCommandAndNativeSafetyOutputsExactlyEqual": true,
+      "finalNativeId": 8630,
+      "finalSlipM": [
+        0.010002189497448284,
+        0.009587704979582284
+      ],
+      "terminal": true
+    },
+    {
+      "branch": "candidate",
+      "observer": "optimized",
+      "policyIntervals": 112,
+      "savedPacketsReplayed": 2230,
+      "wallSeconds": 4.100536924001062,
+      "policyIntervalsPerSecond": 27.31349627519437,
+      "allCommandAndNativeSafetyOutputsExactlyEqual": true,
+      "finalNativeId": 8630,
+      "finalSlipM": [
+        0.010002189497448284,
+        0.009587704979582284
+      ],
+      "terminal": true
+    }
+  ],
+  "aggregateLegacyWallSeconds": 25.034048572997563,
+  "aggregateOptimizedWallSeconds": 8.065852528001415,
+  "inputHashes": {
+    "/workspace/scratch/5def91918e35/mvp-landing/scripts/getup-step/source_task.py": "083d7a7df475d448e1ddcb9b9cbffc4222b71c7cc115cfd2e8962c5cc7ec10e8",
+    "/workspace/scratch/5def91918e35/mvp-landing/scripts/getup-step/source_observer.py": "f3f2948d2ef2e32fc49ec52c42d16f0edeaa13decddd747adae868234d63a533",
+    "/workspace/scratch/5def91918e35/mvp-landing/scripts/getup-step/slow_task.py": "e061918ede3cab1c18173c97127d498b992a04c29b83aa20ef091dd48d92d099",
+    "/workspace/scratch/5def91918e35/mvp-landing/scripts/getup-step/source_task_env.py": "a0f8450c41ba3619477e655a2b6b70248c79e695a1e44134f859f6a606b8e6ff",
+    "/workspace/scratch/5def91918e35/mvp-landing/scripts/getup-step/replay_observer_parity.py": "0ffa512a2216a696a5e5a445825e56120d73e28b5fbb95150abd30b39c506399",
+    "/workspace/scratch/5def91918e35/mvp-landing/rust/crates/model/data/getup-v1.json": "1611ec8c988c1006b0a819ab21e2b7c410adaaf512080be425d6d6e235a8926a",
+    "/workspace/scratch/5def91918e35/mvp-landing/outputs/getup-source-slow-stabilization/session-20261018T010710Z/benchmark-preflight.json": "ee947e4f25f7e49f17caf9889048623f1d1a678dea8e3a731af7e0f940c29eda",
+    "/workspace/scratch/5def91918e35/mvp-landing/scripts/getup-step/task-config-mujoco-slow-stabilization-v1.json": "c8ac2dba22ac8c1f1e386575624f45f7b1ee5855b7340fba285b984e233faebf",
+    "outputs/getup-source-trust-region/session-20261018T014021Z/result/frozen-original-frames.ndjson": "23d3435c7ad784fcbe73a9575cba39460b211c1e5b000af5f6aa697f4221445b",
+    "outputs/getup-source-trust-region/session-20261018T014021Z/result/frozen-original-commands.json": "2c962200cd1bbd5aff1510a678362f409620983f6a4972f838065449ad16f750",
+    "outputs/getup-source-trust-region/session-20261018T014021Z/result/candidate-frames.ndjson": "f72cf2b21908411e2b978d0028a0d4d58b8374ce3eec7bf7b6c80782d7a3a2ce",
+    "outputs/getup-source-trust-region/session-20261018T014021Z/result/candidate-commands.json": "2d542766994b59eb7225da1a792f33c51106e9efacd048b3e523d40a212264f7"
+  },
+  "pureObserverSpeedup": 3.1037076968726316
+}

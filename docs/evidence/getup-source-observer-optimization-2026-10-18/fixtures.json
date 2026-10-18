@@ -1,0 +1,15 @@
+{
+  "scope": "pure fixture/saved-packet replay; no engine construction or optimizer",
+  "newPhysicsIntegrations": 0,
+  "candidateOptimizerCalls": 0,
+  "tests": {
+    "sourceSuite": 43,
+    "measuredIntervals": 5,
+    "finalImmutableObserver": 4
+  },
+  "logs": {
+    "tests.log": "4ecc4a33711db3cbd21ec2dfb29da8599689da8b11f728fb605d16a9963b2377",
+    "slow-tests.log": "991a633d1c5e4145e370e41ef9fb8014be0bdae9bf68fe13245d3a58d7917394",
+    "final-observer-tests.log": "c8731cba5a9152c05069811fbc4c3f13e69a6d16704855e90a79e5784f585515"
+  }
+}
