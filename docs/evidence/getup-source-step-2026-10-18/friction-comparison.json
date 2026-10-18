@@ -1,0 +1,53 @@
+{
+  "friction-baseline": {
+    "stopped": "measured-forward-step-plus5squiet",
+    "actualIntegrations": 9605,
+    "maximumWholeFootClearanceM": 0.03949020691483443,
+    "finalQuietConsecutiveS": 5.0,
+    "loadedSlipDistanceM": [
+      0.002844691236391073,
+      0.0035578928310898116
+    ],
+    "maximumMotorFraction": 0.9499999999993111,
+    "maximumSelfPenetrationM": 0.0,
+    "modelSHA256": "69a7e87fed168e1f4ad7dee43dfdd8df6bd74b3d4af06d99c991b46b941106db",
+    "runnerSHA256": "f24afe3085b9afb8787aaa493cd5bf8ca8bdd5cfb6e4430364ac6446c4a52706",
+    "helperSHA256": "379a5b2681bf38b078770ee4521f43129989ce3a5c820462376494d2e0d4c49d",
+    "finalForwardPlacementM": 0.061657173779172084,
+    "finalLoadsN": [
+      199.67007299544417,
+      201.00966507546036
+    ],
+    "effectiveFriction": [
+      1.0,
+      1.0
+    ]
+  },
+  "friction-increased": {
+    "stopped": "measured-forward-step-plus5squiet",
+    "actualIntegrations": 9605,
+    "maximumWholeFootClearanceM": 0.03949585448903739,
+    "finalQuietConsecutiveS": 5.0,
+    "loadedSlipDistanceM": [
+      0.002949910838897061,
+      0.0035033834018970093
+    ],
+    "maximumMotorFraction": 0.9499999999977131,
+    "maximumSelfPenetrationM": 0.0,
+    "modelSHA256": "d274e61ec9c8ae66247e9dfd998e1729949ccb25f60b24bac92bed09a5f250cf",
+    "runnerSHA256": "f24afe3085b9afb8787aaa493cd5bf8ca8bdd5cfb6e4430364ac6446c4a52706",
+    "helperSHA256": "379a5b2681bf38b078770ee4521f43129989ce3a5c820462376494d2e0d4c49d",
+    "finalForwardPlacementM": 0.061653083252741915,
+    "finalLoadsN": [
+      199.65374740692036,
+      201.02614820010857
+    ],
+    "effectiveFriction": [
+      1.2,
+      1.2
+    ]
+  },
+  "selected": "friction-baseline",
+  "reason": "Both branches pass; increasing effective mu1.0 to1.2 provides no consistent slip improvement, so original source model stays selected.",
+  "pairedInitialQposQvel": "identical cold source endpoint state; each model rebuilds its own contacts/solver cache; no cross-model full-cache restore"
+}

@@ -1,0 +1,80 @@
+{
+  "scope": "Original-source MuJoCo single-stance forward-step diagnostic; no application runtime integration, policy training, deployment, or weight redistribution",
+  "allBranches": [
+    {
+      "run": "probe01",
+      "actualIntegrations": 2143,
+      "physicsSimSeconds": 2.67875,
+      "status": "measured25mm-whole-foot-liftoff-100ms",
+      "receiptSHA256": "611dc4f08fa6f342525ee66bb07041fab2b7018b6f20b4b42cafbf943fea06f7"
+    },
+    {
+      "run": "probe02",
+      "actualIntegrations": 6461,
+      "physicsSimSeconds": 8.07625,
+      "status": "loaded-slip-10mm",
+      "receiptSHA256": "3b5f3d0e8f52d0e7e35838db854a100e833669e55a2cb00e669622042fa86d2d"
+    },
+    {
+      "run": "probe03",
+      "actualIntegrations": 6321,
+      "physicsSimSeconds": 7.90125,
+      "status": "loaded-slip-10mm",
+      "receiptSHA256": "15de6d02747aaef6867d79d0e0b274208ae9747df324762bb933697627aa4dd6"
+    },
+    {
+      "run": "probe04",
+      "actualIntegrations": 1,
+      "physicsSimSeconds": 0.00125,
+      "status": "ray telemetry numpy-bool serialization error after one real integration; final cache retained",
+      "receiptSHA256": "51e1586fd783c17adf67cc49f45d80e8c17c24b26a2f273c66d3801944f7757d"
+    },
+    {
+      "run": "probe05",
+      "actualIntegrations": 5846,
+      "physicsSimSeconds": 7.3075,
+      "status": "loaded-slip-10mm",
+      "receiptSHA256": "bd1cb71eecb3ccb17f18be23761f444056cfb15dc96697a585d67de4391f2c93"
+    },
+    {
+      "run": "probe06",
+      "actualIntegrations": 4824,
+      "physicsSimSeconds": 6.03,
+      "status": "loaded-slip-10mm",
+      "receiptSHA256": "37703d2d41eb82e3d83bcb7c323e5899c45708c0c11e88b184060662cf302e5c"
+    },
+    {
+      "run": "probe07",
+      "actualIntegrations": 9605,
+      "physicsSimSeconds": 12.00625,
+      "status": "measured-forward-step-plus5squiet",
+      "receiptSHA256": "ec293b1030a5ea6248e134ed57c7d54d95d9f4db21fe0f7db5782445b732dc8e"
+    },
+    {
+      "run": "friction-baseline",
+      "actualIntegrations": 9605,
+      "physicsSimSeconds": 12.00625,
+      "status": "measured-forward-step-plus5squiet",
+      "receiptSHA256": "428dc3468daa2dd32e63bb305944f1350d91e08f576ca9870dd54df2254d6aa4"
+    },
+    {
+      "run": "friction-increased",
+      "actualIntegrations": 9605,
+      "physicsSimSeconds": 12.00625,
+      "status": "measured-forward-step-plus5squiet",
+      "receiptSHA256": "2ef542f84db200e9f42da24a1c30100ef0f5b2f527bd6f8b8e338d22d98e046b"
+    }
+  ],
+  "totalActualIntegrations": 54411,
+  "totalActualSimSeconds": 68.01375,
+  "selectedRun": "friction-baseline",
+  "checkpointAndFullJournalsRetainedLocally": true,
+  "sourceAssetsRedistributed": false,
+  "implementationSHA256": {
+    "scripts/getup-step/source_step_probe.py": "f24afe3085b9afb8787aaa493cd5bf8ca8bdd5cfb6e4430364ac6446c4a52706",
+    "scripts/getup-step/source_dynamics.c": "0f23b186c23c0ad54e4c8a08ad56cd2a61f300902e70327dfba5884a31b0590a",
+    "scripts/getup-step/test_source_step_probe.py": "d38f399a742e33548e1bd08bc2e477ba725a3bfd03cdd1e53e6f8b032b3bb765",
+    "scripts/getup-step/audit_source_step.py": "b24c5aa7d1f6fc8e9d0e64823d37c552617dddd0b0fdbdd105a409bb604e1960",
+    "scripts/getup-step/build_source_step_probe.sh": "7bb0140add2e6ab609ddf11334640defb492543ae7a343a3282eec339a0224c2"
+  }
+}

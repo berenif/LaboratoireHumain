@@ -1,0 +1,14 @@
+test_actual_compiled_source_friction (test_source_step_probe.GroundRays.test_actual_compiled_source_friction) ... ok
+test_every_joint_has_actual_ground_ray (test_source_step_probe.GroundRays.test_every_joint_has_actual_ground_ray) ... ok
+test_far_joint_ground_does_not_bias_posture (test_source_step_probe.GroundRays.test_far_joint_ground_does_not_bias_posture) ... ok
+test_floor_height_comes_from_installed_geometry (test_source_step_probe.GroundRays.test_floor_height_comes_from_installed_geometry) ... ok
+test_heel_forefoot_clearance_from_ground (test_source_step_probe.GroundRays.test_heel_forefoot_clearance_from_ground) ... ok
+test_joint_ground_distance_causally_changes_motor_command (test_source_step_probe.GroundRays.test_joint_ground_distance_causally_changes_motor_command) ... ok
+test_joint_no_hit_stops_before_command (test_source_step_probe.GroundRays.test_joint_no_hit_stops_before_command) ... ok
+test_no_hit_is_explicit_and_blocks_target (test_source_step_probe.GroundRays.test_no_hit_is_explicit_and_blocks_target) ... ok
+test_self_geometries_never_win_ray (test_source_step_probe.GroundRays.test_self_geometries_never_win_ray) ... ok
+
+----------------------------------------------------------------------
+Ran 9 tests in 1.178s
+
+OK
