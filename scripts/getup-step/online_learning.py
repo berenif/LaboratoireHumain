@@ -108,7 +108,8 @@ def divergence(mu0,ls0,mu,ls):
     if not result.isfinite().all()or float(result.min())< -1e-8:raise ValueError('invalid Gaussian KL')
     return result.clamp_min(0)
 
-def _propose(agent,original,batch,witness,generator,*,charge,complete,check,minimum_decrease=1e-6,kl_limit=.05,mean_limit=.05):
+def _propose(agent,original,batch,witness,generator,*,charge,complete,check,minimum_decrease=1e-6,kl_limit=.05,mean_limit=.05,enforce_original_mean_distance=True):
+    if type(enforce_original_mean_distance)is not bool:raise ValueError('explicit original-mean rejection mode required')
     check();frozen=trunk_sha(original)
     if trunk_sha(agent.actor)!=frozen:raise ValueError('original trunk changed')
     bf=Features(agent.actor,batch,frozen);wf=Features(agent.actor,witness,frozen)
@@ -124,7 +125,7 @@ def _propose(agent,original,batch,witness,generator,*,charge,complete,check,mini
             for name,p in head.state_dict().items():p.copy_(before[name]+scale*(after[name]-before[name]))
             mu,ls=wf.distribution(agent.actor);kl=divergence(old_mu,old_ls,mu,ls);distance=.5*torch.sum(((mu-anchor_mu)/anchor_ls.exp())**2,-1);candidate=float(loss(agent,bf,noise));record=dict(scale=scale,actorLoss=candidate,lossDecrease=base-candidate,maximumStepKL=float(kl.max()),maximumOriginalMeanDistance=float(distance.max()))
         trials.append(record)
-        if record['lossDecrease']>=minimum_decrease and record['maximumStepKL']<=kl_limit and record['maximumOriginalMeanDistance']<=mean_limit:accepted=scale;break
+        if record['lossDecrease']>=minimum_decrease and record['maximumStepKL']<=kl_limit and(not enforce_original_mean_distance or record['maximumOriginalMeanDistance']<=mean_limit):accepted=scale;break
     if accepted is None:head.load_state_dict(before);agent.actor_optimizer.load_state_dict(copy.deepcopy(opt))
     if trunk_sha(agent.actor)!=frozen or abs(float(agent.alpha)-ALPHA)>1e-12:raise ValueError('frozen trunk/temperature changed')
     return dict(accepted=accepted is not None,scale=accepted,baselineActorLoss=base,trials=trials,headGradientNorms=gradients,proposedStdParameterMaximumChange=std_delta,noiseSHA256=tensor_sha(noise),proposalGeneratorAfterNoiseSHA256=tensor_sha(rng_before),batchSHA256=bf.input_sha,witnessSHA256=wf.input_sha,trunkSHA256=frozen,_evidence=dict(beforeHead=before,proposedHead=after,beforeAdam=opt,proposedAdam=proposed_adam,retainedAdam=copy.deepcopy(agent.actor_optimizer.state_dict()),noise=noise,proposalGeneratorAfterNoise=rng_before))
