@@ -1,0 +1,35 @@
+test_complete_synthetic_pilot_passes (test_source_cadenced_audit.CadencedJournalAudit.test_complete_synthetic_pilot_passes) ... ok
+test_fabricated_foot_origin_fails (test_source_cadenced_audit.CadencedJournalAudit.test_fabricated_foot_origin_fails) ... ok
+test_forged_positive_capture_margin_fails (test_source_cadenced_audit.CadencedJournalAudit.test_forged_positive_capture_margin_fails) ... ok
+test_global_slip_counter_reset_fails (test_source_cadenced_audit.CadencedJournalAudit.test_global_slip_counter_reset_fails) ... ok
+test_insufficient_clearance_run_fails (test_source_cadenced_audit.CadencedJournalAudit.test_insufficient_clearance_run_fails) ... ok
+test_insufficient_landing_load_run_fails (test_source_cadenced_audit.CadencedJournalAudit.test_insufficient_landing_load_run_fails) ... ok
+test_invalid_ground_ray_fails (test_source_cadenced_audit.CadencedJournalAudit.test_invalid_ground_ray_fails) ... ok
+test_landing_record_must_be_at_phase_end (test_source_cadenced_audit.CadencedJournalAudit.test_landing_record_must_be_at_phase_end) ... ok
+test_landing_summary_cannot_substitute_for_actual_distance (test_source_cadenced_audit.CadencedJournalAudit.test_landing_summary_cannot_substitute_for_actual_distance) ... ok
+test_missing_final_step_fails (test_source_cadenced_audit.CadencedJournalAudit.test_missing_final_step_fails) ... ok
+test_missing_land_phase_fails (test_source_cadenced_audit.CadencedJournalAudit.test_missing_land_phase_fails) ... ok
+test_native_counter_reset_fails (test_source_cadenced_audit.CadencedJournalAudit.test_native_counter_reset_fails) ... ok
+test_one_short_of_five_seconds_fails (test_source_cadenced_audit.CadencedJournalAudit.test_one_short_of_five_seconds_fails) ... ok
+test_root_pose_installation_fails (test_source_cadenced_audit.CadencedJournalAudit.test_root_pose_installation_fails) ... ok
+test_root_rotation_installation_fails (test_source_cadenced_audit.CadencedJournalAudit.test_root_rotation_installation_fails) ... ok
+test_slip_limit_cannot_be_relaxed_in_config (test_source_cadenced_audit.CadencedJournalAudit.test_slip_limit_cannot_be_relaxed_in_config) ... ok
+test_source_time_warp_fails (test_source_cadenced_audit.CadencedJournalAudit.test_source_time_warp_fails) ... ok
+test_undefined_support_hull_fails (test_source_cadenced_audit.CadencedJournalAudit.test_undefined_support_hull_fails) ... ok
+test_unload_must_be_measured (test_source_cadenced_audit.CadencedJournalAudit.test_unload_must_be_measured) ... ok
+test_wrong_measured_side_fails (test_source_cadenced_audit.CadencedJournalAudit.test_wrong_measured_side_fails) ... ok
+test_completion_must_equal_landing_sample (test_source_cadenced_audit.ContinuousLoadedHandoffAudit.test_completion_must_equal_landing_sample) ... ok
+test_continuous_protocol_requires_explicit_zero_intermediate_stand (test_source_cadenced_audit.ContinuousLoadedHandoffAudit.test_continuous_protocol_requires_explicit_zero_intermediate_stand) ... ok
+test_default_historical_mode_rejects_199_stable_samples (test_source_cadenced_audit.ContinuousLoadedHandoffAudit.test_default_historical_mode_rejects_199_stable_samples) ... ok
+test_default_historical_mode_still_accepts_200_stable_samples (test_source_cadenced_audit.ContinuousLoadedHandoffAudit.test_default_historical_mode_still_accepts_200_stable_samples) ... ok
+test_explicit_continuous_loaded_handoff_passes (test_source_cadenced_audit.ContinuousLoadedHandoffAudit.test_explicit_continuous_loaded_handoff_passes) ... ok
+test_final_quiet_is_still_five_seconds (test_source_cadenced_audit.ContinuousLoadedHandoffAudit.test_final_quiet_is_still_five_seconds) ... ok
+test_handoff_requires_full_loaded_landing_run (test_source_cadenced_audit.ContinuousLoadedHandoffAudit.test_handoff_requires_full_loaded_landing_run) ... ok
+test_missing_explicit_flag_cannot_skip_intermediate_stand (test_source_cadenced_audit.ContinuousLoadedHandoffAudit.test_missing_explicit_flag_cannot_skip_intermediate_stand) ... ok
+test_next_transfer_starts_immediately_after_landing (test_source_cadenced_audit.ContinuousLoadedHandoffAudit.test_next_transfer_starts_immediately_after_landing) ... ok
+test_nonfinal_settle_or_stand_is_not_continuous_handoff (test_source_cadenced_audit.ContinuousLoadedHandoffAudit.test_nonfinal_settle_or_stand_is_not_continuous_handoff) ... ok
+
+----------------------------------------------------------------------
+Ran 30 tests in 128.355s
+
+OK

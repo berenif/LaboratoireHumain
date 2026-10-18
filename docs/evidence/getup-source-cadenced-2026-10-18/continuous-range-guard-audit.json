@@ -1,0 +1,708 @@
+{
+  "schema": 1,
+  "savedDataOnly": true,
+  "physicsIntegrations": 0,
+  "requestedSteps": 10,
+  "requestedDistanceM": 0.18,
+  "strictCadencedSequencePass": false,
+  "tenStep180mmQualificationPass": false,
+  "failedChecks": [
+    "allExpectedStepRecords",
+    "postEntryJointLimits",
+    "exactOrderedConsecutivePhases",
+    "allMeasuredStepDistances",
+    "everyStepLiftQualified",
+    "everyStepLandingQualified",
+    "everyStepUnloadQualified",
+    "everyStepCompletionQualified",
+    "landingAndCompletionAreActualPhaseEnds",
+    "everyMotionPhaseHonorsConfiguredDuration",
+    "finalFiveSecondsQuietOnFinalStep",
+    "completedRunner",
+    "existingMotionArmAndBodyFKQualification",
+    "independentLimbFKAndExactOpposition"
+  ],
+  "measured": {
+    "checks": {
+      "explicitHandoffProtocol": true,
+      "boundedRequestedCount": true,
+      "allExpectedStepRecords": false,
+      "originalQuietAndSlipThresholds": true,
+      "physicalTimeConfiguration": true,
+      "contiguousNativeCounters": true,
+      "elapsedMatchesActualIntegrations": true,
+      "alternatingMeasuredSides": true,
+      "requestedDistancesAndSides": true,
+      "controllerDurationsMatchConfiguration": true,
+      "stepOriginsMatchPrecedingMeasuredFeet": true,
+      "stepStartCountersMatchJournal": true,
+      "stepHeadingMatchesNativeRoot": true,
+      "phaseElapsedMatchesNativeSamples": true,
+      "finiteRecordedState": true,
+      "unitRootQuaternions": true,
+      "monotonicGlobalLoadedSlip": true,
+      "globalLoadedSlipWithinOriginalLimit": true,
+      "originalGlobalPhysicalGates": true,
+      "postEntryJointLimits": false,
+      "captureMarginTelemetryMatchesReconstruction": true,
+      "definedNonnegativeCurrentCapture": true,
+      "allOriginalGroundRays": true,
+      "forwardMatchesMeasuredFootPosition": true,
+      "landingSummaryMatchesMeasuredTransition": true,
+      "completionSummaryMatchesMeasuredTransition": true,
+      "continuousHandoffBeginsOnNextSample": true,
+      "nonemptyJournal": true,
+      "exactOrderedConsecutivePhases": false,
+      "allMeasuredStepDistances": false,
+      "everyStepLiftQualified": false,
+      "everyStepLandingQualified": false,
+      "everyStepUnloadQualified": false,
+      "everyStepCompletionQualified": false,
+      "landingAndCompletionAreActualPhaseEnds": false,
+      "everyMotionPhaseHonorsConfiguredDuration": false,
+      "finalFiveSecondsQuietOnFinalStep": false,
+      "sourceTimeContinuity": true,
+      "rootPositionContinuity": true,
+      "hingePositionContinuity": true,
+      "rootQuaternionContinuity": true,
+      "loadedSlipAccumulatorContinuity": true,
+      "originalMotorLimit": true,
+      "consistentGlobalIntegrationAccounting": true,
+      "completedRunner": false,
+      "declaredNoResetOrRootAssistance": true,
+      "originalMotorFrictionAndClock": true,
+      "codeUnchangedDuringRun": true,
+      "selectedModelHelperAndInitialStateIdentity": true,
+      "retainedModelAndHelperBytesMatchIdentity": true,
+      "summaryGlobalSlipMatchesJournal": true,
+      "existingMotionArmAndBodyFKQualification": false,
+      "independentLimbFKAndExactOpposition": false
+    },
+    "passed": false,
+    "actualRecordedIntegrations": 13110,
+    "continuousLoadedHandoff": true,
+    "physicsSimSeconds": 16.3875,
+    "sourceTimeMaximumErrorS": 3.5704772471945034e-12,
+    "positionVelocityContinuityMaxErrorM": 1.1101552619893762e-16,
+    "hingePositionVelocityContinuityMaxErrorRad": 1.1102230246251565e-16,
+    "quaternionVelocityContinuityMaxErrorRad": 4.570274341583382e-16,
+    "loadedSlipAccumulatorMaximumErrorM": 8.62517768321293e-19,
+    "globalLoadedSlipM": [
+      0.008070018719270742,
+      0.00779607136857737
+    ],
+    "maximumMotorFraction": 0.9499999999984133,
+    "minimumComCaptureMarginM": 0.008273408166897311,
+    "netCOMForwardM": 0.11811307745903986,
+    "netFootMidpointForwardM": 0.1813992503957869,
+    "distanceDefinition": "Each requested distance is swing-foot displacement from its own measured step-entry position, not landing separation beyond the other foot.",
+    "measuredPerStep": {
+      "1": {
+        "phases": [
+          "transfer",
+          "lift",
+          "translate",
+          "land"
+        ],
+        "clear": 0,
+        "maximumClearRun": 273,
+        "clearAtTransition": true,
+        "landing": 116,
+        "landingAtRecordedTransition": true,
+        "maximumLandingRun": 116,
+        "unload": 0,
+        "unloadAtTransition": true,
+        "ready": 0,
+        "finalForwardM": 0.18193924311078905,
+        "completedAtRecordedTransition": true,
+        "phaseLastNativeSteps": {
+          "transfer": 3308,
+          "lift": 3949,
+          "translate": 4910,
+          "land": 5711
+        },
+        "phaseEndElapsedS": {
+          "transfer": 4.135,
+          "lift": 0.8012500000000005,
+          "translate": 1.20125,
+          "land": 1.0012499999999998
+        },
+        "phaseStartNativeStep": 4910,
+        "finalSupportRelativeForwardM": 0.21787333938502967,
+        "landingTimeS": 7.13875,
+        "landingForwardM": 0.18193924311078905,
+        "landingSupportRelativeForwardM": 0.21787333938502967
+      },
+      "2": {
+        "phases": [
+          "transfer",
+          "lift",
+          "translate",
+          "land"
+        ],
+        "clear": 0,
+        "maximumClearRun": 273,
+        "clearAtTransition": true,
+        "landing": 123,
+        "landingAtRecordedTransition": true,
+        "maximumLandingRun": 123,
+        "unload": 0,
+        "unloadAtTransition": true,
+        "ready": 0,
+        "finalForwardM": 0.18199530769997985,
+        "completedAtRecordedTransition": true,
+        "phaseLastNativeSteps": {
+          "transfer": 8221,
+          "lift": 8863,
+          "translate": 9824,
+          "land": 10625
+        },
+        "phaseEndElapsedS": {
+          "transfer": 3.137500000000001,
+          "lift": 0.8024999999999984,
+          "translate": 1.2012500000000017,
+          "land": 1.0012499999999989
+        },
+        "phaseStartNativeStep": 9824,
+        "finalSupportRelativeForwardM": -0.03663804966987237,
+        "landingTimeS": 13.28125,
+        "landingForwardM": 0.18199530769997985,
+        "landingSupportRelativeForwardM": -0.03663804966987237
+      },
+      "3": {
+        "phases": [
+          "transfer"
+        ],
+        "clear": 0,
+        "maximumClearRun": 0,
+        "clearAtTransition": false,
+        "landing": 0,
+        "landingAtRecordedTransition": false,
+        "maximumLandingRun": 0,
+        "unload": 0,
+        "unloadAtTransition": false,
+        "ready": 0,
+        "finalForwardM": -0.0006651793123026393,
+        "completedAtRecordedTransition": false,
+        "phaseLastNativeSteps": {
+          "transfer": 13110
+        },
+        "phaseEndElapsedS": {
+          "transfer": 3.1062499999999993
+        },
+        "phaseStartNativeStep": 10625,
+        "finalSupportRelativeForwardM": 0.0341329363235852
+      }
+    }
+  },
+  "originalMotionAudit": {
+    "schema": 1,
+    "savedDataOnly": true,
+    "physicsIntegrations": 0,
+    "actualRecordedIntegrations": 13110,
+    "physicsSimSeconds": 16.3875,
+    "stopped": "measured-new-joint-limit-overrun",
+    "runnerCompleted": false,
+    "config": {
+      "uprightEnabled": false,
+      "softDeadbandDeg": 1.5,
+      "uprightStaticPreferenceWeight": 1.0,
+      "uprightAnkleReferenceReserveRad": 0.06,
+      "uprightAnkleReadyReserveRad": 0.035,
+      "uprightTransferAnkleTaskWeight": 3.0,
+      "uprightTransferAnkleTaskKp": 20.0,
+      "uprightTransferAnkleTaskKd": 8.0,
+      "runtimeMeasuredCaptureAndJointGuards": true,
+      "inheritedJointEntryGraceS": 0.06375,
+      "tiltLimitDeg": 12.0,
+      "requestedDistancesM": [
+        0.18,
+        0.18,
+        0.18,
+        0.18,
+        0.18,
+        0.18,
+        0.18,
+        0.18,
+        0.18,
+        0.18
+      ],
+      "experimentalMaximumDistanceM": 0.302,
+      "experimentalMaximumSupportRelativeReachM": 0.3,
+      "originalMaximumSupportRelativeReachM": 0.18,
+      "originalMotorAndContactSafetyGates": true,
+      "boundedContactSeek": {
+        "maximumDepthM": 0.003,
+        "maximumSpeedMps": 0.003,
+        "maximumAccelerationMps2": 0.03,
+        "measuredLoadThresholdN": 12.0,
+        "originalLandingDeadlinePreserved": true
+      }
+    },
+    "steps": [
+      {
+        "index": 1,
+        "swingSide": "left",
+        "requestedDistanceM": 0.18,
+        "commandedDistanceM": 0.182,
+        "startNativeStep": 0,
+        "startSourceTimeS": 0.0,
+        "entryCOM": [
+          0.38007874160510713,
+          -0.03922870920128895,
+          0.8081642540803642
+        ],
+        "initialFeet": [
+          [
+            0.5164085985705382,
+            -0.032167538723330336,
+            0.028424512834071075
+          ],
+          [
+            0.3253183487011271,
+            0.10000097728588249,
+            0.02863416314941853
+          ]
+        ],
+        "bodyAdaptsThrough": "current-state COM/capture feedback, measured contact load, whole-body inverse dynamics, joint ground barriers; no inter-step state installation",
+        "postureVariant": "selected-hips-knees-opposed-arms",
+        "staticRequiredMotorFraction": 0.9026041969668359,
+        "staticMinimumSelfSeparationM": 0.07197189789791991,
+        "phaseDurationsS": {
+          "transfer": 4.0,
+          "lift": 0.8,
+          "translate": 1.2,
+          "land": 1.0,
+          "settle": 1.8
+        },
+        "lift25mmConsecutiveS": 0.34125,
+        "landingNativeStep": 5711,
+        "landingTimeS": 7.13875,
+        "achievedAtLoadAcquisitionM": 0.18193924311078905,
+        "measuredSupportAnchors": [
+          [
+            0.4375515274409729,
+            -0.19612928027959545,
+            0.026916771837090014
+          ],
+          [
+            0.32715039226254555,
+            0.09879458751930037,
+            0.026143829389126842
+          ]
+        ],
+        "swingLoadedN": 18.337456486650265,
+        "stanceLoadedN": 381.7653050693633,
+        "completedNativeStep": 5711,
+        "completedTimeS": 7.13875,
+        "achievedForwardM": 0.18193924311078905,
+        "loadedSlipThisStepM": [
+          0.001615200553561628,
+          0.0023141566449165376
+        ],
+        "bodyLinearMps": 0.007783462604191101,
+        "bodyAngularRadps": 0.021368204206374267,
+        "comCaptureMarginM": 0.02856600129623635,
+        "quietConsecutiveS": 0.0,
+        "completedAt": "measured-loaded-landing"
+      },
+      {
+        "index": 2,
+        "swingSide": "right",
+        "requestedDistanceM": 0.18,
+        "commandedDistanceM": 0.182,
+        "startNativeStep": 5711,
+        "startSourceTimeS": 7.138749999999651,
+        "entryCOM": [
+          0.311892911787907,
+          0.06776364500927637,
+          0.7918243848753628
+        ],
+        "initialFeet": [
+          [
+            0.4375515274409729,
+            -0.19612928027959545,
+            0.026916771837090014
+          ],
+          [
+            0.32715039226254555,
+            0.09879458751930037,
+            0.026143829389126842
+          ]
+        ],
+        "bodyAdaptsThrough": "current-state COM/capture feedback, measured contact load, whole-body inverse dynamics, joint ground barriers; no inter-step state installation",
+        "postureVariant": "selected-hips-knees-opposed-arms",
+        "staticRequiredMotorFraction": 0.9041546492533581,
+        "staticMinimumSelfSeparationM": 0.03800536241867852,
+        "phaseDurationsS": {
+          "transfer": 3.0,
+          "lift": 0.8,
+          "translate": 1.2,
+          "land": 1.0,
+          "settle": 1.8
+        },
+        "lift25mmConsecutiveS": 0.34125,
+        "landingNativeStep": 10625,
+        "landingTimeS": 13.28125,
+        "achievedAtLoadAcquisitionM": 0.18199530769997985,
+        "measuredSupportAnchors": [
+          [
+            0.43796754221699624,
+            -0.19662282383219623,
+            0.026156354469368218
+          ],
+          [
+            0.2486620287018926,
+            -0.06540613194067903,
+            0.026898965147380667
+          ]
+        ],
+        "swingLoadedN": 23.68910116117884,
+        "stanceLoadedN": 376.6842662802255,
+        "completedNativeStep": 10625,
+        "completedTimeS": 13.28125,
+        "achievedForwardM": 0.18199530769997985,
+        "loadedSlipThisStepM": [
+          0.005007353395693838,
+          0.0037207487990806756
+        ],
+        "bodyLinearMps": 0.01796790880454817,
+        "bodyAngularRadps": 0.03216176022425265,
+        "comCaptureMarginM": 0.030850585816074638,
+        "quietConsecutiveS": 0.0,
+        "completedAt": "measured-loaded-landing"
+      },
+      {
+        "index": 3,
+        "swingSide": "left",
+        "requestedDistanceM": 0.18,
+        "commandedDistanceM": 0.182,
+        "startNativeStep": 10625,
+        "startSourceTimeS": 13.281250000002181,
+        "entryCOM": [
+          0.4213542087371902,
+          -0.22582245070664808,
+          0.7746958330889171
+        ],
+        "initialFeet": [
+          [
+            0.43796754221699624,
+            -0.19662282383219623,
+            0.026156354469368218
+          ],
+          [
+            0.2486620287018926,
+            -0.06540613194067903,
+            0.026898965147380667
+          ]
+        ],
+        "bodyAdaptsThrough": "current-state COM/capture feedback, measured contact load, whole-body inverse dynamics, joint ground barriers; no inter-step state installation",
+        "postureVariant": "selected-hips-knees-opposed-arms",
+        "staticRequiredMotorFraction": 0.9009659778571276,
+        "staticMinimumSelfSeparationM": 0.07151213906805953,
+        "phaseDurationsS": {
+          "transfer": 3.0,
+          "lift": 0.8,
+          "translate": 1.2,
+          "land": 1.0,
+          "settle": 1.8
+        }
+      }
+    ],
+    "measuredPerStep": {
+      "1": {
+        "maximumForwardM": 0.18196572923257848,
+        "finalForwardM": 0.18193924311078905,
+        "maximumSupportRelativeForwardM": 0.21790595899461793,
+        "maximumStanceOriginDisplacementM": 0.003635815139211571,
+        "maximumStanceOriginHorizontalDisplacementM": 0.0026803812440706278,
+        "landingQualified": true,
+        "qualifiedLandingForwardM": 0.18193939156357702,
+        "finalStanceOriginHorizontalDisplacementM": 0.0021935724013236813,
+        "qualifiedLandingTimeS": 7.1375
+      },
+      "2": {
+        "maximumForwardM": 0.1820268083055781,
+        "finalForwardM": 0.18199530769997985,
+        "maximumSupportRelativeForwardM": -0.036587406550559615,
+        "maximumStanceOriginDisplacementM": 0.0012883874031433017,
+        "maximumStanceOriginHorizontalDisplacementM": 0.0011765588726466304,
+        "landingQualified": true,
+        "qualifiedLandingForwardM": 0.18199534845717816,
+        "finalStanceOriginHorizontalDisplacementM": 0.0006454870503608392,
+        "qualifiedLandingTimeS": 13.280000000000001
+      },
+      "3": {
+        "maximumForwardM": 3.310554934916795e-05,
+        "finalForwardM": -0.0006651793123026393,
+        "maximumSupportRelativeForwardM": 0.0341329363235852,
+        "maximumStanceOriginDisplacementM": 0.00120815759360967,
+        "maximumStanceOriginHorizontalDisplacementM": 0.0011938980670571692,
+        "landingQualified": false,
+        "qualifiedLandingForwardM": null,
+        "finalStanceOriginHorizontalDisplacementM": 0.0011938980670571692
+      }
+    },
+    "maximumMotorFraction": 0.9499999999984133,
+    "minimumWalkingJointReserveDeg": -0.0050826793619312685,
+    "minimumAllSampleJointReserveDeg": -0.5213407492084223,
+    "lastOutsideJointLimitTimeS": 16.3875,
+    "strictAllSampleJointLimitsPass": false,
+    "globalLoadedSlipM": [
+      0.008070018719270742,
+      0.00779607136857737
+    ],
+    "minimumComCaptureMarginM": 0.008273408166897311,
+    "maximumSelfPenetrationM": 0.0,
+    "postEntryJointViolationSamples": 1,
+    "undefinedCaptureSamples": 0,
+    "negativeCaptureSamples": 0,
+    "firstCaptureViolation": null,
+    "observedMeasuredRuntimeGuardsPass": false,
+    "maximumNonfootLoadN": 0.0,
+    "flightSamples": 0,
+    "warnings": 0,
+    "invalidRaySamples": 0,
+    "minimumCommandSampledSelfSeparationM": 0.030732803639714285,
+    "mechanicalAbsoluteWorkJ": 245.2363031461987,
+    "orientation": {
+      "torso": {
+        "maximumAbsPitchDeg": 14.281477633305117,
+        "maximumAbsRollDeg": 9.209719555177749,
+        "maximumTiltDeg": 14.63038901302594,
+        "rmsTiltDeg": 9.051388571777746,
+        "finalPitchDeg": 14.281477633305117,
+        "finalRollDeg": -3.209667571077916,
+        "finalTiltDeg": 14.63038901302594
+      },
+      "pelvis": {
+        "maximumAbsPitchDeg": 43.61497126257433,
+        "maximumAbsRollDeg": 26.684521457569186,
+        "maximumTiltDeg": 44.357841245107096,
+        "rmsTiltDeg": 29.761855325718884,
+        "finalPitchDeg": 43.61497126257433,
+        "finalRollDeg": 2.816704190504613,
+        "finalTiltDeg": 43.68757494581987
+      },
+      "torsoRelativePelvis": {
+        "maximumAbsPitchDeg": 30.708852012184348,
+        "maximumAbsRollDeg": 18.95743961240458,
+        "maximumTiltDeg": 34.61238366060951,
+        "rmsTiltDeg": 25.15356047171222,
+        "finalPitchDeg": -27.53538941084702,
+        "finalRollDeg": 9.831302246073916,
+        "finalTiltDeg": 29.108073583277918
+      },
+      "torsoGait": {
+        "maximumAbsPitchDeg": 8.846827027615491,
+        "maximumAbsRollDeg": 9.209719555177749,
+        "maximumTiltDeg": 9.876861699047875,
+        "rmsTiltDeg": 9.453042067238275,
+        "finalPitchDeg": 8.425722910142568,
+        "finalRollDeg": -4.6120135647369365,
+        "finalTiltDeg": 9.597388056964459
+      },
+      "pelvisGait": {
+        "maximumAbsPitchDeg": 37.045131562463766,
+        "maximumAbsRollDeg": 26.684521457569186,
+        "maximumTiltDeg": 44.357841245107096,
+        "rmsTiltDeg": 33.564486131468556,
+        "finalPitchDeg": 34.83548781587361,
+        "finalRollDeg": 1.4396796085325398,
+        "finalTiltDeg": 34.861468154728456
+      },
+      "torsoRelativePelvisGait": {
+        "maximumAbsPitchDeg": 30.708852012184348,
+        "maximumAbsRollDeg": 18.95743961240458,
+        "maximumTiltDeg": 34.61238366060951,
+        "rmsTiltDeg": 29.025323807351057,
+        "finalPitchDeg": -25.506846145046232,
+        "finalRollDeg": -12.825923766097024,
+        "finalTiltDeg": 28.355859927401244
+      }
+    },
+    "observed12DegreeTiltBoundPass": false,
+    "finalBaseQuietSamples": 0,
+    "finalUprightQuietSamples": 0,
+    "armAmplitude": {
+      "allGait": {
+        "samples": 4807,
+        "legExcursionDeg": [
+          32.634691057020675,
+          23.092686002146625
+        ],
+        "actualArmExcursionDeg": [
+          32.598777943423435,
+          22.938955075450586
+        ],
+        "targetArmExcursionDeg": [
+          32.634691057020675,
+          23.092686002146625
+        ],
+        "actualArmToLegExcursionRatio": [
+          0.9988995417932871,
+          0.9933428737271295
+        ],
+        "measuredArmLegCorrelation": [
+          -0.9999897403415053,
+          -0.9999654191180087
+        ],
+        "measuredAngularGain": [
+          -0.9980585443534015,
+          -0.9964315881385055
+        ],
+        "rmsTrackingErrorDeg": [
+          0.05907087021918917,
+          0.07265219485355365
+        ],
+        "maximumTrackingErrorDeg": [
+          0.13087777981355478,
+          0.15837678780206882
+        ]
+      },
+      "step1Gait": {
+        "samples": 2403,
+        "legExcursionDeg": [
+          4.798212095308117,
+          19.716639138342412
+        ],
+        "actualArmExcursionDeg": [
+          4.902752847538935,
+          19.730328143727412
+        ],
+        "targetArmExcursionDeg": [
+          4.798212095308117,
+          19.716639138342412
+        ],
+        "actualArmToLegExcursionRatio": [
+          1.0217874387697536,
+          1.0006942869567654
+        ],
+        "measuredArmLegCorrelation": [
+          -0.9999026878856963,
+          -0.999988885510725
+        ],
+        "measuredAngularGain": [
+          -1.0174994765528507,
+          -1.003016218971342
+        ],
+        "rmsTrackingErrorDeg": [
+          0.0395504699606955,
+          0.04769310013317795
+        ],
+        "maximumTrackingErrorDeg": [
+          0.08344490855958249,
+          0.09977196466136773
+        ]
+      },
+      "step2Gait": {
+        "samples": 2404,
+        "legExcursionDeg": [
+          32.634691057020675,
+          12.940287197512477
+        ],
+        "actualArmExcursionDeg": [
+          32.598777943423435,
+          12.769799385153027
+        ],
+        "targetArmExcursionDeg": [
+          32.634691057020675,
+          12.940287197512477
+        ],
+        "actualArmToLegExcursionRatio": [
+          0.9988995417932871,
+          0.9868250364341046
+        ],
+        "measuredArmLegCorrelation": [
+          -0.9999949881206437,
+          -0.9999421985055322
+        ],
+        "measuredAngularGain": [
+          -0.9994000864560264,
+          -0.9898148977998306
+        ],
+        "rmsTrackingErrorDeg": [
+          0.07357781554777063,
+          0.09099890972165105
+        ],
+        "maximumTrackingErrorDeg": [
+          0.13087777981355478,
+          0.15837678780206882
+        ]
+      }
+    },
+    "armTrackingPass": true,
+    "independentFKCheck": {
+      "samples": 656,
+      "comparedBodyTelemetry": 1312,
+      "allFramesHaveUprightTelemetry": true,
+      "maximumWrappedOrientationErrorDeg": 1.1084466677857563e-12,
+      "coveragePass": true,
+      "physicsIntegrations": 0
+    },
+    "hashes": {
+      "frames.ndjson": "83223acc16fa65311829987f9b27faa0a481e80f97dcf9a5d8eae72b002ce339",
+      "control.json": "c8fcb5951bf9d161b9c898f7d141b778a01fa28a65d8110442ada03890aaab89",
+      "final.bin": "ed5c90de036795317e0b88a5a6ff6d2154c1d0712520a10f4c13845a47086ee0"
+    },
+    "allRecordedStepsHaveMeasuredLanding": false,
+    "auditedMotionPass": false,
+    "auditedOpposedStepPass": false,
+    "auditedUprightStepPass": false,
+    "cadencedSequence": {
+      "requestedSteps": 10,
+      "recordedSteps": 3,
+      "completeAlternatingSequence": false,
+      "continuousRecordedIntegration": false,
+      "finalFiveSecondsQuiet": false,
+      "physicalTimeS": 16.3875,
+      "landingTimesS": [
+        7.1375,
+        13.280000000000001,
+        null
+      ],
+      "cadenceConfig": {
+        "physicalTimeOnly": true,
+        "playbackSpeed": 1.0,
+        "requestedSteps": 10,
+        "requestedDistanceM": 0.18,
+        "phaseDurationsS": {
+          "transfer": 3.0,
+          "lift": 0.8,
+          "translate": 1.2,
+          "land": 1.0,
+          "settle": 1.8
+        },
+        "initialTransferS": 4.0,
+        "finalQuietRequiredS": 5.0,
+        "intermediateStableRequiredS": 0.0,
+        "continuousLoadedHandoff": true,
+        "measuredSupportCaptureBarrier": {
+          "reserveM": 0.003,
+          "gainPerS": 8.0
+        },
+        "opposedArmRangeBarrier": {
+          "verifiedRangeReserveRad": 0.02,
+          "predictionHorizonS": 0.2,
+          "clippingEnabled": false
+        },
+        "globalLoadedSlipLimitM": 0.01,
+        "integrationBudget": 160000,
+        "originalContactJointMotorCollisionCaptureGates": true,
+        "noInterstepStateInstallation": true
+      }
+    },
+    "auditedCadencedStepsPass": false
+  },
+  "opposedSwingAudit": null,
+  "evidenceLimit": "No-reset/root-assistance declarations are checked alongside saved-state continuity and source receipts; logs alone cannot prove all possible unrecorded external forces absent.",
+  "hashes": {
+    "frames.ndjson": "83223acc16fa65311829987f9b27faa0a481e80f97dcf9a5d8eae72b002ce339",
+    "control.json": "c8fcb5951bf9d161b9c898f7d141b778a01fa28a65d8110442ada03890aaab89",
+    "multistep-summary.json": "b64f3b5b971a523dda2d112aba84ee8d14660b5c6229c4dc7767f28598e9865b",
+    "summary.json": "17a664922b130c67a334239022d9a239e197fa1d9924056953697ddc75760649",
+    "final.bin": "ed5c90de036795317e0b88a5a6ff6d2154c1d0712520a10f4c13845a47086ee0",
+    "cadenced-step-config.json": "42b8f3e3954e245d3c19258f2efe1fa657f07f1eed26bf99997b27f1ac129b95",
+    "opposed-arm-run.json": "fb03d88a81a6251e58545671563dd0005dc2d29ff5b4daf3b868b6723302cd1b"
+  }
+}

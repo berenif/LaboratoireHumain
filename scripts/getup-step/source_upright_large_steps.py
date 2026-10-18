@@ -82,7 +82,7 @@ class ContactSeekingController(OpposedArmController):
             feet = self.w.feet()
             loads = self.w.arr(20, (17,))
             loaded = float(loads[self.swing_body]) >= self.SEEK_LOAD_N
-            nominal_done = t >= getattr(self, 'trajectory_time_scale', 1.)
+            nominal_done = t >= self.phase_duration('land')
             near_ground = feet[self.swing_side]['clearance'] <= .003
             stance_loaded = loads[feet[self.stance_side]['body']] >= .8*self.w.mass*9.81
             if nominal_done and near_ground and stance_loaded and not loaded:

@@ -13,7 +13,7 @@ def unloaded_support_ready(row,c,mass):
  return posture_ready(row,c)and row['feet'][c.swing_side]['loadN']<.5 and row['feet'][c.stance_side]['loadN']>=.8*mass*9.81
 class MultiStep(LiveStep):
  def __init__(self,base,helper,output,distances=(.03,.06,.09,.045),planned_support=False,time_scale=1.):
-  assert .75<=time_scale<=2. and(planned_support or time_scale==1.),'time scaling requires the planned-support controller';self.time_scale=time_scale;self.planned_support=planned_support;self.distances=tuple(distances);self.step_index=0;self.step_records=[];self.ready_run=0;super().__init__(base,helper,output,maximum_integrations=64000 if time_scale>1 else 48000);self.begin_step()
+  assert .75<=time_scale<=2. and(planned_support or time_scale==1.),'time scaling requires the planned-support controller';self.time_scale=time_scale;self.planned_support=planned_support;self.distances=tuple(distances);self.step_index=0;self.step_records=[];self.ready_run=0;super().__init__(base,helper,output,maximum_integrations=getattr(self,'sequence_integration_budget',64000 if time_scale>1 else 48000));self.begin_step()
  def begin_step(self):
   w=self.world;side=self.step_index%2;requested=self.distances[self.step_index];distance_limit=getattr(self,'experimental_distance_limit',.12);candidate=Controller(w,side,requested+.002,self_avoidance=True,maximum_distance=distance_limit);separation=float((candidate.targets[side][0]-candidate.targets[1-side][0])@candidate.heading);maximum=max(.025,getattr(self,'support_relative_reach',.18)-separation);chosen=min(requested+.002,maximum);assert chosen>=requested,'requested placement outside the bounded support-relative reach';self.controller=Controller(w,side,chosen,self_avoidance=True,maximum_distance=distance_limit);self.unload_run=0
   if self.planned_support:
@@ -43,7 +43,7 @@ class MultiStep(LiveStep):
    elif row['com'][2]<.65:self.failure='height-guard'
    if self.failure:self.paused=True;break
    nextphase=None
-   if self.phase=='transfer'and elapsed>=2.*self.time_scale:
+   if self.phase=='transfer'and elapsed>=c.phase_duration(self.phase):
     com=np.array(row['com']);capture=com[:2]+np.array(row['comVelocity'])[:2]*math.sqrt(com[2]/9.81)
     if self.planned_support:
      ready_posture=posture_ready(row,c)
@@ -53,14 +53,18 @@ class MultiStep(LiveStep):
     elif np.linalg.norm((com-c.com1)[:2])<.012 and np.linalg.norm(capture-c.com1[:2])<.015:nextphase='lift'
    elif self.phase=='lift':
     self.clear_run=self.clear_run+1 if swing['clearance']>=.025 and swing['loadN']<3 and support['loadN']>=.8*w.mass*9.81 else 0
-    if elapsed>=self.time_scale and self.clear_run>=80:nextphase='translate';self.step_records[-1]['lift25mmConsecutiveS']=self.clear_run*.00125
-   elif self.phase=='translate'and elapsed>=self.time_scale:
+    if elapsed>=c.phase_duration(self.phase) and self.clear_run>=80:nextphase='translate';self.step_records[-1]['lift25mmConsecutiveS']=self.clear_run*.00125
+   elif self.phase=='translate'and elapsed>=c.phase_duration(self.phase):
     if forward>=requested and swing['clearance']>=.025 and swing['loadN']<3:nextphase='land'
    elif self.phase=='land':
     self.land_run=self.land_run+1 if swing['loadN']>=3 and support['loadN']>=3 and swing['clearance']<=.003 and forward>=requested else 0
-    if elapsed>=self.time_scale and self.land_run>=80:
+    if elapsed>=c.phase_duration(self.phase) and self.land_run>=80:
      nextphase='settle';self.step_records[-1].update(landingNativeStep=self.steps,landingTimeS=self.steps*.00125,achievedAtLoadAcquisitionM=forward,measuredSupportAnchors=[f['position']for f in row['feet']],swingLoadedN=swing['loadN'],stanceLoadedN=support['loadN'])
-   elif self.phase=='settle'and elapsed>=2.*self.time_scale:nextphase='stand'
+     if getattr(self,'continuous_loaded_handoff',False)and self.step_index<len(self.distances)-1:
+      self.step_records[-1].update(completedNativeStep=self.steps,completedTimeS=self.steps*.00125,achievedForwardM=forward,loadedSlipThisStepM=(self.slip-self.step_slip).tolist(),bodyLinearMps=row['maximumBodyLinearMps'],bodyAngularRadps=row['maximumBodyAngularRadps'],comCaptureMarginM=row['minimumComCaptureMarginM'],quietConsecutiveS=0.,completedAt='measured-loaded-landing')
+      self.step_index+=1;self.begin_step();self.events.append(dict(event='next-actual-support-step',timeS=self.steps*.00125,stepIndex=self.step_index+1));print('NEXT STEP',self.step_index+1,'requested',self.distances[self.step_index],flush=True);continue
+
+   elif self.phase=='settle'and elapsed>=c.phase_duration(self.phase):nextphase='stand'
    elif self.phase=='stand':
     stable=row['maximumBodyLinearMps']<=.05 and row['maximumBodyAngularRadps']<=.15 and row['minimumComCaptureMarginM']is not None and row['minimumComCaptureMarginM']>=.01 and all(f['loadN']>=3 for f in row['feet'])and self.quiet_run>0
     self.ready_run=self.ready_run+1 if stable else 0
@@ -72,7 +76,7 @@ class MultiStep(LiveStep):
    if nextphase:
     self.events.append(dict(event=nextphase,timeS=self.steps*.00125,stepIndex=self.step_index+1));self.phase=nextphase;self.phase_start=self.steps*.00125;w.checkpoint(self.folder/f'step-{self.step_index+1:02d}-{nextphase}.bin');
     if not self.planned_support or nextphase in ['settle','stand']:c.q0=np.clip(w.arr(0,(28,))[7:].copy(),w.limits[:,0]+.002,w.limits[:,1]-.002)
-   elif self.phase!='stand'and elapsed>{'transfer':2.,'lift':1.,'translate':1.,'land':1.,'settle':2.}[self.phase]*self.time_scale+2.:self.failure='phase-timeout-'+self.phase;self.paused=True;break
+   elif self.phase!='stand'and elapsed>c.phase_duration(self.phase)+2.:self.failure='phase-timeout-'+self.phase;self.paused=True;break
   self.journal.flush();return (self.steps-before+19)//20
  def close(self):
   if self.world:

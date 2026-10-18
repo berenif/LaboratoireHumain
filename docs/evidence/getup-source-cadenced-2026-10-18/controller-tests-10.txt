@@ -1,0 +1,15 @@
+test_historical_scale_fallback_is_unchanged (test_source_cadenced_steps.DurationContract.test_historical_scale_fallback_is_unchanged) ... ok
+test_phase_durations_are_independent_physical_seconds (test_source_cadenced_steps.DurationContract.test_phase_durations_are_independent_physical_seconds) ... ok
+test_ten_step_budget_and_preset_are_explicit (test_source_cadenced_steps.DurationContract.test_ten_step_budget_and_preset_are_explicit) ... ok
+test_com_root_posture_and_measured_arm_derivative_history_are_carried (test_source_cadenced_steps.LoadedHandoffReferenceContinuity.test_com_root_posture_and_measured_arm_derivative_history_are_carried) ... ok
+test_capture_and_com_face_inequalities_match_exact_jets (test_source_cadenced_steps.MeasuredCaptureBarrier.test_capture_and_com_face_inequalities_match_exact_jets) ... ok
+test_only_single_support_motion_phases_add_barriers (test_source_cadenced_steps.MeasuredCaptureBarrier.test_only_single_support_motion_phases_add_barriers) ... ok
+test_undefined_support_does_not_fabricate_virtual_support (test_source_cadenced_steps.MeasuredCaptureBarrier.test_undefined_support_does_not_fabricate_virtual_support) ... ok
+test_default_motor_commands_exactly_match_previous_code (test_source_cadenced_steps.NativeTimingParity.test_default_motor_commands_exactly_match_previous_code) ... ok
+test_override_clocks_use_exact_per_phase_duration (test_source_cadenced_steps.NativeTimingParity.test_override_clocks_use_exact_per_phase_duration) ... ok
+test_thigh_pitch_jacobian_and_bias_match_independent_directional_fk (test_source_cadenced_steps.NativeTimingParity.test_thigh_pitch_jacobian_and_bias_match_independent_directional_fk) ... ok
+
+----------------------------------------------------------------------
+Ran 10 tests in 3.770s
+
+OK

@@ -89,29 +89,32 @@ class Controller:
   self.heading=self.rootR[:,0].copy();self.heading[2]=0;self.heading/=np.linalg.norm(self.heading);self.landing=self.targets[self.swing_side][0]+self.step_distance*self.heading;self.landing[2]=w.ground_height(self.landing)+self.radii[self.swing_side]-.0005;self.finalCom=self.com0.copy();self.finalCom[:2]=(self.landing[:2]+self.targets[self.stance_side][0][:2])/2+.035*self.heading[:2]
   self.B=np.zeros((27,21));order=[1,0,2,3,4,5,6,8,7,9,10,11,12,14,13,15,16,17,18,19,20]
   for i,j in enumerate(order):self.B[6+j,i]=w.gears[i]
+ def phase_duration(self,phase):
+  return getattr(self,'phase_durations',{}).get(phase,{'transfer':2.,'lift':1.,'translate':1.,'land':1.,'settle':2.}.get(phase,0.)*getattr(self,'trajectory_time_scale',1.))
  def solve(self,t,phase='transfer'):
   w=self.w;v=w.arr(1,(27,)).copy();q=w.arr(0,(28,))[7:].copy();M=w.read('lh_mass_matrix',(27,27));bias=w.read('lh_bias',(27,));Jcom=w.read('lh_com_jac',(3,27));com=w.arr(6,(17,3))[1].copy();feet=w.feet();single=phase in ['lift','translate']or(phase=='land'and w.arr(20,(17,))[self.swing_body]<3.);ncontact=4 if single else 8;N=48+ncontact*3
   Aeq=[];beq=[];costA=[];costb=[];ineq=[];ub=[]
   def task(J,target,weight):
    row=np.zeros((len(target),N));row[:,:27]=J;costA.extend(row*weight);costb.extend(np.asarray(target)*weight)
-  motion_scale=getattr(self,'trajectory_time_scale',1.);s,ds,dds=clock(t,2.*motion_scale)
+  motion_scale=getattr(self,'trajectory_time_scale',1.);s,ds,dds=clock(t,self.phase_duration('transfer'))
   target=self.com0+(self.com1-self.com0)*s if phase=='transfer'else self.com1
   vel=(self.com1-self.com0)*ds if phase=='transfer'else np.zeros(3);acc=(self.com1-self.com0)*dds if phase=='transfer'else np.zeros(3)
   if phase in ['settle','stand']:
-   s,ds,dds=clock(t,2.*motion_scale)if phase=='settle'else(1.,0.,0.);target=self.com1+(self.finalCom-self.com1)*s;vel=(self.finalCom-self.com1)*ds;acc=(self.finalCom-self.com1)*dds
+   s,ds,dds=clock(t,self.phase_duration('settle'))if phase=='settle'else(1.,0.,0.);target=self.com1+(self.finalCom-self.com1)*s;vel=(self.finalCom-self.com1)*ds;acc=(self.finalCom-self.com1)*dds
   task(Jcom,acc+45*(target-com)+13*(vel-Jcom@v)-w.read('lh_jdot',(3,),-1),12.)
+  if hasattr(self,'add_capture_constraints'):self.add_capture_constraints(phase,N,Jcom,com,v,ineq,ub)
   if hasattr(self,'add_upright_tasks'):
    self.add_upright_tasks(t,phase,N,task,ineq,ub)
   else:
    Jr=w.read('lh_body_jac',(6,27),1)[3:];R=w.arr(5,(17,3,3))[1];root_target=self.rootR;root_velocity=np.zeros(3);root_acceleration=np.zeros(3)
    if self.self_avoidance:
-    lean,lean_v,lean_a=clock(t,2.*motion_scale)if phase=='transfer'else(1.,0.,0.)
-    if phase=='settle':lean,lean_v,lean_a=clock(t,2.*motion_scale);lean,lean_v,lean_a=1.-lean,-lean_v,-lean_a
+    lean,lean_v,lean_a=clock(t,self.phase_duration('transfer'))if phase=='transfer'else(1.,0.,0.)
+    if phase=='settle':lean,lean_v,lean_a=clock(t,self.phase_duration('settle'));lean,lean_v,lean_a=1.-lean,-lean_v,-lean_a
     elif phase=='stand':lean,lean_v,lean_a=0.,0.,0.
     root_target=Rotation.from_rotvec(self.lean_axis*lean).as_matrix()@self.rootR;root_velocity=self.lean_axis*lean_v;root_acceleration=self.lean_axis*lean_a
    rerr=Rotation.from_matrix(root_target@R.T).as_rotvec();task(Jr,root_acceleration+40*rerr+12*(root_velocity-Jr@v)-w.read('lh_jdot',(6,),1)[3:],4.)
   if phase=='transfer'and hasattr(self,'posture_start'):
-   ps,pv,pa=clock(t,2.*motion_scale);delta=self.q0-self.posture_start;task(np.eye(27)[6:],delta*pa+20*(self.posture_start+delta*ps-q)+8*(delta*pv-v[6:]),.2)
+   ps,pv,pa=clock(t,self.phase_duration('transfer'));delta=self.q0-self.posture_start;task(np.eye(27)[6:],delta*pa+20*(self.posture_start+delta*ps-q)+8*(delta*pv-v[6:]),.2)
   else:task(np.eye(27)[6:],20*(self.q0-q)-8*v[6:],.2)
   if self.self_avoidance:
    if hasattr(self,'arm_kp'):task(np.eye(27)[21:],self.arm_acceleration+self.arm_kp*(self.arm_posture-q[15:])+self.arm_kd*(self.arm_velocity-v[21:]),self.arm_weight)
@@ -121,10 +124,10 @@ class Controller:
   for side,foot in enumerate(feet):
    body=foot['body'];J=w.read('lh_body_jac',(6,27),body);b=w.read('lh_jdot',(6,),body);pos=w.arr(3,(17,3))[body];R=w.arr(5,(17,3,3))[body];pos0,Rinitial=self.targets[side];Rflat=self.flatRotations[side];axis=Rotation.from_matrix(Rflat@Rinitial.T).as_rotvec();pt=pos0.copy();pvel=np.zeros(3);pacc=np.zeros(3);wvel=np.zeros(3);wacc=np.zeros(3);R0=Rflat
    if phase=='transfer':
-    sf,dsf,ddsf=clock(t,2.*motion_scale);R0=Rotation.from_rotvec(axis*sf).as_matrix()@Rinitial;wvel=axis*dsf;wacc=axis*ddsf;pt[2]+=(self.floorTargets[side]-pos0[2])*sf;pvel[2]=(self.floorTargets[side]-pos0[2])*dsf;pacc[2]=(self.floorTargets[side]-pos0[2])*ddsf
+    sf,dsf,ddsf=clock(t,self.phase_duration('transfer'));R0=Rotation.from_rotvec(axis*sf).as_matrix()@Rinitial;wvel=axis*dsf;wacc=axis*ddsf;pt[2]+=(self.floorTargets[side]-pos0[2])*sf;pvel[2]=(self.floorTargets[side]-pos0[2])*dsf;pacc[2]=(self.floorTargets[side]-pos0[2])*ddsf
    else:pt[2]=self.floorTargets[side]
    if side==self.swing_side and phase!='transfer':
-    s,ds,dds=clock(t,motion_scale)
+    s,ds,dds=clock(t,self.phase_duration(phase))if phase in ['lift','translate','land']else(1.,0.,0.)
     if phase=='lift':pt[2]+=.04*s;pvel[2]=.04*ds;pacc[2]=.04*dds
     elif phase=='translate':pt[2]+=.04;pt+=self.step_distance*self.heading*s;pvel=self.step_distance*self.heading*ds;pacc=self.step_distance*self.heading*dds
     elif phase=='land':pt=self.landing.copy();pt[2]+=.04*(1-s)-.0005*s;pvel[2]=-.0405*ds;pacc[2]=-.0405*dds

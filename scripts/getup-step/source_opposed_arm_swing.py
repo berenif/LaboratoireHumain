@@ -137,7 +137,7 @@ class OpposedArmController(Controller):
         self.previous_time, self.previous_leg_rate = now, leg_rate.copy()
         dq = jac*np.repeat(-leg_rate, 3)
         ddq = hessian*np.repeat(leg_rate**2, 3)-jac*np.repeat(leg_acc, 3)
-        s, ds, dds = clock(t, 4.) if self.placement and phase == 'transfer' else (1., 0., 0.)
+        s, ds, dds = clock(t, getattr(self,'arm_placement_duration',4.)) if self.placement and phase == 'transfer' else (1., 0., 0.)
         target = self.arm_start+s*(mapped-self.arm_start)
         velocity = ds*(mapped-self.arm_start)+s*dq
         acceleration = dds*(mapped-self.arm_start)+2*ds*dq+s*ddq

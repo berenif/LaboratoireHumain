@@ -1,0 +1,1755 @@
+{
+  "status": "active-causal-investigation",
+  "noTenStepQualification": true,
+  "scope": "Closed diagnostic branches only; each branch resumes a retained checkpoint and is not a continuous ten-step qualification.",
+  "artifacts": [
+    {
+      "filename": "results.json",
+      "localPath": "/tmp/cadence-contact-damping/results.json",
+      "sha256": "7fc405e5de559b91d516227de5e4544bb2654280fcacdd4ddbbf3fb1ec4c29a7",
+      "summary": {
+        "checkpoint": "/tmp/cadence-sequence-3/run/generation-001/step-01-settle.bin",
+        "checkpointSHA256": "d6de41f2ddf6c0eb38e9f41765f1792dde66e210367ebd15d390d0f4c6d0dbc0",
+        "originalRunReceipt": {
+          "stopped": "global-loaded-slip-10mm",
+          "finished": false,
+          "actualIntegrations": 19945,
+          "physicsStepS": 0.00125,
+          "torqueUpdateS": 0.005,
+          "selectedPresetChanged": false,
+          "originalMotorStrength": true,
+          "originalFriction": true,
+          "rootAssistance": false,
+          "physicalStateInstallationsAfterInitialization": 0,
+          "codeSHA256AtStart": {
+            "source_opposed_arm_swing.py": "b8a2dabf8fe367f93ed4202c3116ea81f979b289eabb81902ff9071bd1b40dcf",
+            "source_step_probe.py": "ee1e18bb56c2fcf33a1075409af480ee7a018efb3a1b5b7add6316078637a3df",
+            "source_multistep_probe.py": "ff6ffdbf2a14978924194b9399a87e58acc5f78069dc6b0c4a4a2d476e636225",
+            "plan_source_arm_knee.py": "b8a47f48e8d37fd8328b6fdebcc0f48ee334782ea276bb75cc1d915b119c8858",
+            "source_arm_knee_mobility.py": "7835072bdc183fe5eff5551458b5adefa7473d781b738bde5ee5987e1742c547",
+            "source_selected_step.py": "ab21d078d9c0109c987d5c5963a7dd796c06f8f54df7624594ad9fb3bb55ef90",
+            "source_upright_large_steps.py": "ec0e665d5027af9d9931c2366c6099d4c41e10ceaa16f6eb032159c0eae90d2c",
+            "source_cadenced_ten_steps.py": "77a29bb3259a63510187b7ad7c661ce288a5e84eb75aede5e3a76050359dd1e1"
+          },
+          "codeUnchangedDuringRun": true
+        },
+        "tempControllerSHA256": "45a5d782b0b3e9de37e215a7d6d12fe142ab90a71146a4613d92697b5eaeb531",
+        "noTrackedControllerEdits": true,
+        "originalRuntimeGatesPreserved": true,
+        "branchDiagnosticOnly": true,
+        "results": [
+          {
+            "kd": 0.0,
+            "weight": 0.0,
+            "sourceStartStep": 5711,
+            "sourceEndStep": 7151,
+            "physicalIntegrations": 1440,
+            "physicalDurationS": 1.8,
+            "stopped": "bounded-saved-settle-diagnostic",
+            "originalGlobalSlipAtCheckpointM": [
+              0.0016278360248593896,
+              0.0023299385210156405
+            ],
+            "slipDeltaM": [
+              0.0013189748663885042,
+              0.0011465650649194977
+            ],
+            "globalSlipFinalM": [
+              0.002946810891247894,
+              0.0034765035859351382
+            ],
+            "minimumCaptureM": 0.02856553138169357,
+            "minimumJointRad": 0.018620874072402538,
+            "maximumMotorFraction": 0.8558268780569881,
+            "maximumSelfPenetrationM": 0.0,
+            "maximumNonfootLoadN": 0.0,
+            "slipPointTasks": 0,
+            "finalLoadsN": [
+              199.2620302518311,
+              201.31719302397224
+            ],
+            "finalCOM": [
+              0.36656985742416115,
+              -0.07947927169052076,
+              0.807447662709008
+            ],
+            "finalBodyLinearMps": 0.011618685076171155,
+            "finalBodyAngularRadps": 0.024261822924185494,
+            "rows": [
+              {
+                "t": 0.00125,
+                "slipDeltaMm": [
+                  8.747193777484431e-05,
+                  7.447957940925204e-05
+                ],
+                "globalSlipMm": [
+                  1.6279234967971645,
+                  2.33001300059505
+                ],
+                "captureMarginM": 0.02856798474079164,
+                "jointMarginRad": 0.01869575695109038,
+                "loadsN": [
+                  18.337697781957157,
+                  381.77060863970576
+                ],
+                "motorFraction": 0.7990795178846676
+              },
+              {
+                "t": 0.25125000000000003,
+                "slipDeltaMm": [
+                  0.12603970534929404,
+                  0.09655048019145641
+                ],
+                "globalSlipMm": [
+                  1.7538757302086836,
+                  2.4264890012070968
+                ],
+                "captureMarginM": 0.031438133343503344,
+                "jointMarginRad": 0.01864194440837741,
+                "loadsN": [
+                  9.500639552383138,
+                  392.11046680694966
+                ],
+                "motorFraction": 0.7784633916635934
+              },
+              {
+                "t": 0.50125,
+                "slipDeltaMm": [
+                  0.35074174189554513,
+                  0.28000431911238877
+                ],
+                "globalSlipMm": [
+                  1.9785777667549347,
+                  2.609942840128029
+                ],
+                "captureMarginM": 0.04493612557227719,
+                "jointMarginRad": 0.01863978738783101,
+                "loadsN": [
+                  11.206364287740293,
+                  390.6933158567592
+                ],
+                "motorFraction": 0.7735884902675656
+              },
+              {
+                "t": 0.75125,
+                "slipDeltaMm": [
+                  0.4929176235935523,
+                  0.4131432972362633
+                ],
+                "globalSlipMm": [
+                  2.120753648452942,
+                  2.7430818182519037
+                ],
+                "captureMarginM": 0.07049937520809496,
+                "jointMarginRad": 0.01907237308886467,
+                "loadsN": [
+                  67.50639510539844,
+                  333.5177399578858
+                ],
+                "motorFraction": 0.4586906996899595
+              },
+              {
+                "t": 1.00125,
+                "slipDeltaMm": [
+                  0.591058647403324,
+                  0.5151113074400668
+                ],
+                "globalSlipMm": [
+                  2.2188946722627136,
+                  2.8450498284557075
+                ],
+                "captureMarginM": 0.0829524186719407,
+                "jointMarginRad": 0.019528147434268783,
+                "loadsN": [
+                  136.91920001174995,
+                  263.4213240525602
+                ],
+                "motorFraction": 0.27384873763104806
+              },
+              {
+                "t": 1.25125,
+                "slipDeltaMm": [
+                  0.8544762998449635,
+                  0.7305422896069693
+                ],
+                "globalSlipMm": [
+                  2.482312324704353,
+                  3.06048081062261
+                ],
+                "captureMarginM": 0.08483680225292684,
+                "jointMarginRad": 0.01970701563409305,
+                "loadsN": [
+                  196.63118340327927,
+                  203.22825098029875
+                ],
+                "motorFraction": 0.2574356141078056
+              },
+              {
+                "t": 1.50125,
+                "slipDeltaMm": [
+                  1.140944247037942,
+                  0.9856913052514226
+                ],
+                "globalSlipMm": [
+                  2.768780271897332,
+                  3.315629826267063
+                ],
+                "captureMarginM": 0.08594117445070293,
+                "jointMarginRad": 0.019641825837336757,
+                "loadsN": [
+                  223.99882741080046,
+                  175.8500223708828
+                ],
+                "motorFraction": 0.32751956686607475
+              },
+              {
+                "t": 1.75125,
+                "slipDeltaMm": [
+                  1.309789780255721,
+                  1.1405120540376426
+                ],
+                "globalSlipMm": [
+                  2.9376258051151107,
+                  3.4704505750532832
+                ],
+                "captureMarginM": 0.08621773852059539,
+                "jointMarginRad": 0.01954462423366765,
+                "loadsN": [
+                  207.71938706570091,
+                  192.65924862107903
+                ],
+                "motorFraction": 0.30429723903758515
+              },
+              {
+                "t": 1.8,
+                "slipDeltaMm": [
+                  1.3189748663885041,
+                  1.1465650649194978
+                ],
+                "globalSlipMm": [
+                  2.946810891247894,
+                  3.4765035859351383
+                ],
+                "captureMarginM": 0.08621832853548717,
+                "jointMarginRad": 0.019539961119439564,
+                "loadsN": [
+                  199.2620302518311,
+                  201.31719302397224
+                ],
+                "motorFraction": 0.2886449200480946
+              }
+            ],
+            "wallS": 8.307841023997753,
+            "qualification": false
+          },
+          {
+            "kd": 20.0,
+            "weight": 15.0,
+            "sourceStartStep": 5711,
+            "sourceEndStep": 7151,
+            "physicalIntegrations": 1440,
+            "physicalDurationS": 1.8,
+            "stopped": "bounded-saved-settle-diagnostic",
+            "originalGlobalSlipAtCheckpointM": [
+              0.0016278360248593896,
+              0.0023299385210156405
+            ],
+            "slipDeltaM": [
+              0.0013140736329006742,
+              0.0011506724049038346
+            ],
+            "globalSlipFinalM": [
+              0.002941909657760064,
+              0.003480610925919475
+            ],
+            "minimumCaptureM": 0.028550472376956154,
+            "minimumJointRad": 0.018653293554416805,
+            "maximumMotorFraction": 0.8533246396996529,
+            "maximumSelfPenetrationM": 0.0,
+            "maximumNonfootLoadN": 0.0,
+            "slipPointTasks": 2859,
+            "finalLoadsN": [
+              198.75477156672716,
+              201.83195102918074
+            ],
+            "finalCOM": [
+              0.36634749604279265,
+              -0.07938222918830436,
+              0.8074571178479247
+            ],
+            "finalBodyLinearMps": 0.012320119261784522,
+            "finalBodyAngularRadps": 0.025686126332151175,
+            "rows": [
+              {
+                "t": 0.00125,
+                "slipDeltaMm": [
+                  8.747193777484431e-05,
+                  7.447957940925204e-05
+                ],
+                "globalSlipMm": [
+                  1.6279234967971645,
+                  2.33001300059505
+                ],
+                "captureMarginM": 0.02856798474079164,
+                "jointMarginRad": 0.01869575695109038,
+                "loadsN": [
+                  18.337697781957157,
+                  381.77060863970576
+                ],
+                "motorFraction": 0.7990795178846676
+              },
+              {
+                "t": 0.25125000000000003,
+                "slipDeltaMm": [
+                  0.1314897392595319,
+                  0.09182251626161947
+                ],
+                "globalSlipMm": [
+                  1.7593257641189215,
+                  2.42176103727726
+                ],
+                "captureMarginM": 0.03133314095846407,
+                "jointMarginRad": 0.018709670612779172,
+                "loadsN": [
+                  9.693032632792958,
+                  391.9108582505694
+                ],
+                "motorFraction": 0.7735710626622572
+              },
+              {
+                "t": 0.50125,
+                "slipDeltaMm": [
+                  0.36407146667553836,
+                  0.2724456556057603
+                ],
+                "globalSlipMm": [
+                  1.991907491534928,
+                  2.602384176621401
+                ],
+                "captureMarginM": 0.04476282845357937,
+                "jointMarginRad": 0.018731070227191227,
+                "loadsN": [
+                  10.640247010548823,
+                  391.17803587860476
+                ],
+                "motorFraction": 0.7738041467858032
+              },
+              {
+                "t": 0.75125,
+                "slipDeltaMm": [
+                  0.513051683108596,
+                  0.40241552114618107
+                ],
+                "globalSlipMm": [
+                  2.1408877079679858,
+                  2.7323540421618215
+                ],
+                "captureMarginM": 0.07031163076530722,
+                "jointMarginRad": 0.01914799264276623,
+                "loadsN": [
+                  67.10644562028455,
+                  333.9210892919516
+                ],
+                "motorFraction": 0.45826935700212484
+              },
+              {
+                "t": 1.00125,
+                "slipDeltaMm": [
+                  0.6061281478765875,
+                  0.5048631331140084
+                ],
+                "globalSlipMm": [
+                  2.2339641727359774,
+                  2.834801654129649
+                ],
+                "captureMarginM": 0.08308789340278877,
+                "jointMarginRad": 0.019582492716764932,
+                "loadsN": [
+                  136.62003147099384,
+                  263.71779888856855
+                ],
+                "motorFraction": 0.27584270933206195
+              },
+              {
+                "t": 1.25125,
+                "slipDeltaMm": [
+                  0.8622396361380933,
+                  0.7236051225268351
+                ],
+                "globalSlipMm": [
+                  2.490075660997483,
+                  3.0535436435424756
+                ],
+                "captureMarginM": 0.08497679254084989,
+                "jointMarginRad": 0.01975365532766693,
+                "loadsN": [
+                  196.34677557918195,
+                  203.50131340887623
+                ],
+                "motorFraction": 0.26043978642601096
+              },
+              {
+                "t": 1.50125,
+                "slipDeltaMm": [
+                  1.142520563649774,
+                  0.9833739474634172
+                ],
+                "globalSlipMm": [
+                  2.7703565885091637,
+                  3.3133124684790576
+                ],
+                "captureMarginM": 0.08608748110543268,
+                "jointMarginRad": 0.019704896792505533,
+                "loadsN": [
+                  223.63199401477527,
+                  176.20620200155594
+                ],
+                "motorFraction": 0.3303977203668507
+              },
+              {
+                "t": 1.75125,
+                "slipDeltaMm": [
+                  1.3059599822111383,
+                  1.1435754553429496
+                ],
+                "globalSlipMm": [
+                  2.933796007070528,
+                  3.47351397635859
+                ],
+                "captureMarginM": 0.08636636512084878,
+                "jointMarginRad": 0.019634553836354263,
+                "loadsN": [
+                  207.23635518146637,
+                  193.14502349911106
+                ],
+                "motorFraction": 0.30702562849510767
+              },
+              {
+                "t": 1.8,
+                "slipDeltaMm": [
+                  1.3140736329006741,
+                  1.1506724049038346
+                ],
+                "globalSlipMm": [
+                  2.9419096577600636,
+                  3.480610925919475
+                ],
+                "captureMarginM": 0.08636686814516936,
+                "jointMarginRad": 0.01963435665152824,
+                "loadsN": [
+                  198.75477156672716,
+                  201.83195102918074
+                ],
+                "motorFraction": 0.2912480648829428
+              }
+            ],
+            "wallS": 7.040854508999473,
+            "qualification": false
+          },
+          {
+            "kd": 40.0,
+            "weight": 30.0,
+            "sourceStartStep": 5711,
+            "sourceEndStep": 7151,
+            "physicalIntegrations": 1440,
+            "physicalDurationS": 1.8,
+            "stopped": "bounded-saved-settle-diagnostic",
+            "originalGlobalSlipAtCheckpointM": [
+              0.0016278360248593896,
+              0.0023299385210156405
+            ],
+            "slipDeltaM": [
+              0.0013127727885941926,
+              0.0011560529284025123
+            ],
+            "globalSlipFinalM": [
+              0.002940608813453582,
+              0.0034859914494181528
+            ],
+            "minimumCaptureM": 0.02854032833866313,
+            "minimumJointRad": 0.018662684908770766,
+            "maximumMotorFraction": 0.8523276417963169,
+            "maximumSelfPenetrationM": 0.0,
+            "maximumNonfootLoadN": 0.0,
+            "slipPointTasks": 2859,
+            "finalLoadsN": [
+              198.6268046199795,
+              201.9450699502713
+            ],
+            "finalCOM": [
+              0.36627101018227415,
+              -0.07937550114180317,
+              0.807479994841524
+            ],
+            "finalBodyLinearMps": 0.013071911981437317,
+            "finalBodyAngularRadps": 0.027346889023310613,
+            "rows": [
+              {
+                "t": 0.00125,
+                "slipDeltaMm": [
+                  8.747193777484431e-05,
+                  7.447957940925204e-05
+                ],
+                "globalSlipMm": [
+                  1.6279234967971645,
+                  2.33001300059505
+                ],
+                "captureMarginM": 0.02856798474079164,
+                "jointMarginRad": 0.01869575695109038,
+                "loadsN": [
+                  18.337697781957157,
+                  381.77060863970576
+                ],
+                "motorFraction": 0.7990795178846676
+              },
+              {
+                "t": 0.25125000000000003,
+                "slipDeltaMm": [
+                  0.1328238509167934,
+                  0.08991537936115304
+                ],
+                "globalSlipMm": [
+                  1.760659875776183,
+                  2.4198539003767934
+                ],
+                "captureMarginM": 0.031279960219429775,
+                "jointMarginRad": 0.01872797894998013,
+                "loadsN": [
+                  9.853146039186537,
+                  391.74699252546606
+                ],
+                "motorFraction": 0.7709857990384446
+              },
+              {
+                "t": 0.50125,
+                "slipDeltaMm": [
+                  0.3685970775099128,
+                  0.269569814015149
+                ],
+                "globalSlipMm": [
+                  1.9964331023693025,
+                  2.5995083350307895
+                ],
+                "captureMarginM": 0.04466472357927448,
+                "jointMarginRad": 0.018754194385765866,
+                "loadsN": [
+                  10.27002205808736,
+                  391.4528213023424
+                ],
+                "motorFraction": 0.7751382021326677
+              },
+              {
+                "t": 0.75125,
+                "slipDeltaMm": [
+                  0.5207217109694936,
+                  0.39828324424573924
+                ],
+                "globalSlipMm": [
+                  2.1485577358288834,
+                  2.7282217652613796
+                ],
+                "captureMarginM": 0.070206085023815,
+                "jointMarginRad": 0.019175744473868273,
+                "loadsN": [
+                  66.85544492124453,
+                  334.17779935007013
+                ],
+                "motorFraction": 0.45848934494440036
+              },
+              {
+                "t": 1.00125,
+                "slipDeltaMm": [
+                  0.6119804258221614,
+                  0.5012416775970977
+                ],
+                "globalSlipMm": [
+                  2.239816450681551,
+                  2.831180198612738
+                ],
+                "captureMarginM": 0.08313649297430709,
+                "jointMarginRad": 0.01960598691904991,
+                "loadsN": [
+                  136.47147105456582,
+                  263.87246045684617
+                ],
+                "motorFraction": 0.2763173206019125
+              },
+              {
+                "t": 1.25125,
+                "slipDeltaMm": [
+                  0.8654930291547298,
+                  0.7225299111127456
+                ],
+                "globalSlipMm": [
+                  2.4933290540141195,
+                  3.052468432128386
+                ],
+                "captureMarginM": 0.08501969064178688,
+                "jointMarginRad": 0.019760049620948017,
+                "loadsN": [
+                  196.3401502644004,
+                  203.50873245206324
+                ],
+                "motorFraction": 0.260808481857196
+              },
+              {
+                "t": 1.50125,
+                "slipDeltaMm": [
+                  1.1437680520744924,
+                  0.9853515254664822
+                ],
+                "globalSlipMm": [
+                  2.771604076933882,
+                  3.3152900464821227
+                ],
+                "captureMarginM": 0.08613650943980944,
+                "jointMarginRad": 0.01970446196894038,
+                "loadsN": [
+                  223.63314664164037,
+                  176.19602529421945
+                ],
+                "motorFraction": 0.331512237621715
+              },
+              {
+                "t": 1.75125,
+                "slipDeltaMm": [
+                  1.3050839788703181,
+                  1.1483821860796937
+                ],
+                "globalSlipMm": [
+                  2.932920003729708,
+                  3.478320707095334
+                ],
+                "captureMarginM": 0.08642670883354614,
+                "jointMarginRad": 0.019649187784261724,
+                "loadsN": [
+                  207.12644935062406,
+                  193.23975054395902
+                ],
+                "motorFraction": 0.3085345423000607
+              },
+              {
+                "t": 1.8,
+                "slipDeltaMm": [
+                  1.3127727885941927,
+                  1.1560529284025123
+                ],
+                "globalSlipMm": [
+                  2.9406088134535824,
+                  3.4859914494181528
+                ],
+                "captureMarginM": 0.08642869003565234,
+                "jointMarginRad": 0.01965427977679557,
+                "loadsN": [
+                  198.6268046199795,
+                  201.9450699502713
+                ],
+                "motorFraction": 0.2927599348667821
+              }
+            ],
+            "wallS": 8.66226590199949,
+            "qualification": false
+          },
+          {
+            "kd": 80.0,
+            "weight": 40.0,
+            "sourceStartStep": 5711,
+            "sourceEndStep": 7151,
+            "physicalIntegrations": 1440,
+            "physicalDurationS": 1.8,
+            "stopped": "bounded-saved-settle-diagnostic",
+            "originalGlobalSlipAtCheckpointM": [
+              0.0016278360248593896,
+              0.0023299385210156405
+            ],
+            "slipDeltaM": [
+              0.0013158446769371169,
+              0.0011631621279244884
+            ],
+            "globalSlipFinalM": [
+              0.0029436807017965065,
+              0.003493100648940129
+            ],
+            "minimumCaptureM": 0.028537336202751312,
+            "minimumJointRad": 0.018663721467615746,
+            "maximumMotorFraction": 0.8520289400930278,
+            "maximumSelfPenetrationM": 0.0,
+            "maximumNonfootLoadN": 0.0,
+            "slipPointTasks": 2859,
+            "finalLoadsN": [
+              198.79071358639624,
+              201.74141450538883
+            ],
+            "finalCOM": [
+              0.36629546824320125,
+              -0.07944613973902649,
+              0.8075247006822817
+            ],
+            "finalBodyLinearMps": 0.014090220117038636,
+            "finalBodyAngularRadps": 0.029716688257211986,
+            "rows": [
+              {
+                "t": 0.00125,
+                "slipDeltaMm": [
+                  8.747193777484431e-05,
+                  7.447957940925204e-05
+                ],
+                "globalSlipMm": [
+                  1.6279234967971645,
+                  2.33001300059505
+                ],
+                "captureMarginM": 0.02856798474079164,
+                "jointMarginRad": 0.01869575695109038,
+                "loadsN": [
+                  18.337697781957157,
+                  381.77060863970576
+                ],
+                "motorFraction": 0.7990795178846676
+              },
+              {
+                "t": 0.25125000000000003,
+                "slipDeltaMm": [
+                  0.13186708508293,
+                  0.08945905779610738
+                ],
+                "globalSlipMm": [
+                  1.7597031099423197,
+                  2.419397578811748
+                ],
+                "captureMarginM": 0.03125523315040521,
+                "jointMarginRad": 0.018709891354772745,
+                "loadsN": [
+                  10.036915179482596,
+                  391.5618239430145
+                ],
+                "motorFraction": 0.7695822559205461
+              },
+              {
+                "t": 0.50125,
+                "slipDeltaMm": [
+                  0.36774720678345635,
+                  0.2695663553033399
+                ],
+                "globalSlipMm": [
+                  1.995583231642846,
+                  2.5995048763189805
+                ],
+                "captureMarginM": 0.044599900679682225,
+                "jointMarginRad": 0.01872399486145304,
+                "loadsN": [
+                  10.379308693299375,
+                  391.31739490714835
+                ],
+                "motorFraction": 0.7738732664396311
+              },
+              {
+                "t": 0.75125,
+                "slipDeltaMm": [
+                  0.5209331963221856,
+                  0.3983977039680956
+                ],
+                "globalSlipMm": [
+                  2.1487692211815754,
+                  2.728336224983736
+                ],
+                "captureMarginM": 0.07013693101867671,
+                "jointMarginRad": 0.019168371838551135,
+                "loadsN": [
+                  66.63229607236178,
+                  334.4043148009308
+                ],
+                "motorFraction": 0.4594929980639207
+              },
+              {
+                "t": 1.00125,
+                "slipDeltaMm": [
+                  0.6123173442311579,
+                  0.5018420843519943
+                ],
+                "globalSlipMm": [
+                  2.2401533690905477,
+                  2.831780605367635
+                ],
+                "captureMarginM": 0.08312560641359529,
+                "jointMarginRad": 0.01960847227544482,
+                "loadsN": [
+                  136.40630065493244,
+                  263.95286591823293
+                ],
+                "motorFraction": 0.2746548549049201
+              },
+              {
+                "t": 1.25125,
+                "slipDeltaMm": [
+                  0.8667608058267456,
+                  0.7256946190825403
+                ],
+                "globalSlipMm": [
+                  2.4945968306861355,
+                  3.055633140098181
+                ],
+                "captureMarginM": 0.08499213033492137,
+                "jointMarginRad": 0.0197317816118594,
+                "loadsN": [
+                  196.55064898522227,
+                  203.3102574200458
+                ],
+                "motorFraction": 0.25938060048440986
+              },
+              {
+                "t": 1.50125,
+                "slipDeltaMm": [
+                  1.146399410868146,
+                  0.9909990789347978
+                ],
+                "globalSlipMm": [
+                  2.7742354357275354,
+                  3.320937599950438
+                ],
+                "captureMarginM": 0.08611690514285242,
+                "jointMarginRad": 0.019646800180795898,
+                "loadsN": [
+                  223.96782454577874,
+                  175.8512649947963
+                ],
+                "motorFraction": 0.3312978182082275
+              },
+              {
+                "t": 1.75125,
+                "slipDeltaMm": [
+                  1.3080932257002107,
+                  1.1552162650717794
+                ],
+                "globalSlipMm": [
+                  2.9359292505596004,
+                  3.4851547860874197
+                ],
+                "captureMarginM": 0.08643092441019468,
+                "jointMarginRad": 0.019600968865580493,
+                "loadsN": [
+                  207.3133910335274,
+                  193.01713946910343
+                ],
+                "motorFraction": 0.3097703295466607
+              },
+              {
+                "t": 1.8,
+                "slipDeltaMm": [
+                  1.3158446769371168,
+                  1.1631621279244884
+                ],
+                "globalSlipMm": [
+                  2.9436807017965063,
+                  3.493100648940129
+                ],
+                "captureMarginM": 0.0864364171842022,
+                "jointMarginRad": 0.019613690500780212,
+                "loadsN": [
+                  198.79071358639624,
+                  201.74141450538883
+                ],
+                "motorFraction": 0.2941309136669891
+              }
+            ],
+            "wallS": 12.97584346000076,
+            "qualification": false
+          },
+          {
+            "kd": 80.0,
+            "weight": 200.0,
+            "sourceStartStep": 5711,
+            "sourceEndStep": 7151,
+            "physicalIntegrations": 1440,
+            "physicalDurationS": 1.8,
+            "stopped": "bounded-saved-settle-diagnostic",
+            "originalGlobalSlipAtCheckpointM": [
+              0.0016278360248593896,
+              0.0023299385210156405
+            ],
+            "slipDeltaM": [
+              0.0013145689570742234,
+              0.0011646653221247302
+            ],
+            "globalSlipFinalM": [
+              0.002942404981933613,
+              0.0034946038431403707
+            ],
+            "minimumCaptureM": 0.028532464039783212,
+            "minimumJointRad": 0.018661908748102807,
+            "maximumMotorFraction": 0.8519310008085487,
+            "maximumSelfPenetrationM": 0.0,
+            "maximumNonfootLoadN": 0.0,
+            "slipPointTasks": 2859,
+            "finalLoadsN": [
+              198.74484247321374,
+              201.78620384197012
+            ],
+            "finalCOM": [
+              0.36627275924649205,
+              -0.07943897202178173,
+              0.8075215445820162
+            ],
+            "finalBodyLinearMps": 0.014455039790313628,
+            "finalBodyAngularRadps": 0.030763964410782857,
+            "rows": [
+              {
+                "t": 0.00125,
+                "slipDeltaMm": [
+                  8.747193777484431e-05,
+                  7.447957940925204e-05
+                ],
+                "globalSlipMm": [
+                  1.6279234967971645,
+                  2.33001300059505
+                ],
+                "captureMarginM": 0.02856798474079164,
+                "jointMarginRad": 0.01869575695109038,
+                "loadsN": [
+                  18.337697781957157,
+                  381.77060863970576
+                ],
+                "motorFraction": 0.7990795178846676
+              },
+              {
+                "t": 0.25125000000000003,
+                "slipDeltaMm": [
+                  0.131826780030409,
+                  0.08844888480192799
+                ],
+                "globalSlipMm": [
+                  1.7596628048897986,
+                  2.4183874058175685
+                ],
+                "captureMarginM": 0.031240964174698654,
+                "jointMarginRad": 0.01870088095326139,
+                "loadsN": [
+                  10.094231616245551,
+                  391.5007638944828
+                ],
+                "motorFraction": 0.7691726561994569
+              },
+              {
+                "t": 0.50125,
+                "slipDeltaMm": [
+                  0.36713770559760056,
+                  0.26679204942825585
+                ],
+                "globalSlipMm": [
+                  1.9949737304569901,
+                  2.5967305704438965
+                ],
+                "captureMarginM": 0.044572783788549675,
+                "jointMarginRad": 0.018716715337320222,
+                "loadsN": [
+                  10.372143001375573,
+                  391.3091660032809
+                ],
+                "motorFraction": 0.7738988271098642
+              },
+              {
+                "t": 0.75125,
+                "slipDeltaMm": [
+                  0.520248005688947,
+                  0.3940222927079394
+                ],
+                "globalSlipMm": [
+                  2.1480840305483366,
+                  2.72396081372358
+                ],
+                "captureMarginM": 0.07011284241697979,
+                "jointMarginRad": 0.01916900324297588,
+                "loadsN": [
+                  66.70841609869328,
+                  334.32020893455655
+                ],
+                "motorFraction": 0.4577010027933018
+              },
+              {
+                "t": 1.00125,
+                "slipDeltaMm": [
+                  0.6118268719473364,
+                  0.4975881243348096
+                ],
+                "globalSlipMm": [
+                  2.239662896806726,
+                  2.82752664535045
+                ],
+                "captureMarginM": 0.08314409236166609,
+                "jointMarginRad": 0.019607229917273372,
+                "loadsN": [
+                  136.54018012240613,
+                  263.8058008855703
+                ],
+                "motorFraction": 0.25333767451357136
+              },
+              {
+                "t": 1.25125,
+                "slipDeltaMm": [
+                  0.8666405548378799,
+                  0.7243819762649383
+                ],
+                "globalSlipMm": [
+                  2.4944765796972694,
+                  3.0543204972805786
+                ],
+                "captureMarginM": 0.08501093389932618,
+                "jointMarginRad": 0.019736127941970993,
+                "loadsN": [
+                  196.18563586262422,
+                  203.68043281390027
+                ],
+                "motorFraction": 0.24749809650634177
+              },
+              {
+                "t": 1.50125,
+                "slipDeltaMm": [
+                  1.1462613756514692,
+                  0.991267185461026
+                ],
+                "globalSlipMm": [
+                  2.774097400510859,
+                  3.3212057064766665
+                ],
+                "captureMarginM": 0.08614154090781379,
+                "jointMarginRad": 0.01965294400473061,
+                "loadsN": [
+                  223.45654840516607,
+                  176.3535550375157
+                ],
+                "motorFraction": 0.3336723024309048
+              },
+              {
+                "t": 1.75125,
+                "slipDeltaMm": [
+                  1.3070176333700543,
+                  1.156516731347747
+                ],
+                "globalSlipMm": [
+                  2.9348536582294438,
+                  3.4864552523633874
+                ],
+                "captureMarginM": 0.0864574435190853,
+                "jointMarginRad": 0.019622950503123127,
+                "loadsN": [
+                  207.22558704932095,
+                  193.10159111931193
+                ],
+                "motorFraction": 0.3101941161067298
+              },
+              {
+                "t": 1.8,
+                "slipDeltaMm": [
+                  1.3145689570742234,
+                  1.16466532212473
+                ],
+                "globalSlipMm": [
+                  2.942404981933613,
+                  3.4946038431403705
+                ],
+                "captureMarginM": 0.08646349146954346,
+                "jointMarginRad": 0.019638283879717777,
+                "loadsN": [
+                  198.74484247321374,
+                  201.78620384197012
+                ],
+                "motorFraction": 0.2943268686554644
+              }
+            ],
+            "wallS": 6.967781743998785,
+            "qualification": false
+          },
+          {
+            "kd": 120.0,
+            "weight": 500.0,
+            "sourceStartStep": 5711,
+            "sourceEndStep": 7151,
+            "physicalIntegrations": 1440,
+            "physicalDurationS": 1.8,
+            "stopped": "bounded-saved-settle-diagnostic",
+            "originalGlobalSlipAtCheckpointM": [
+              0.0016278360248593896,
+              0.0023299385210156405
+            ],
+            "slipDeltaM": [
+              0.001323243775033992,
+              0.0011750354820996975
+            ],
+            "globalSlipFinalM": [
+              0.0029510797998933817,
+              0.003504974003115338
+            ],
+            "minimumCaptureM": 0.02853276179597336,
+            "minimumJointRad": 0.018662329036094993,
+            "maximumMotorFraction": 0.8313152654597303,
+            "maximumSelfPenetrationM": 0.0,
+            "maximumNonfootLoadN": 0.0,
+            "slipPointTasks": 2858,
+            "finalLoadsN": [
+              199.10575249298242,
+              201.73695014845617
+            ],
+            "finalCOM": [
+              0.36631551539115587,
+              -0.07951979597698512,
+              0.8075567710924524
+            ],
+            "finalBodyLinearMps": 0.01303548083922694,
+            "finalBodyAngularRadps": 0.034974663244224234,
+            "rows": [
+              {
+                "t": 0.00125,
+                "slipDeltaMm": [
+                  8.747193777484431e-05,
+                  7.447957940925204e-05
+                ],
+                "globalSlipMm": [
+                  1.6279234967971645,
+                  2.33001300059505
+                ],
+                "captureMarginM": 0.02856798474079164,
+                "jointMarginRad": 0.01869575695109038,
+                "loadsN": [
+                  18.337697781957157,
+                  381.77060863970576
+                ],
+                "motorFraction": 0.7990795178846676
+              },
+              {
+                "t": 0.25125000000000003,
+                "slipDeltaMm": [
+                  0.1282047297667167,
+                  0.08862883884424005
+                ],
+                "globalSlipMm": [
+                  1.7560407546261063,
+                  2.4185673598598805
+                ],
+                "captureMarginM": 0.031222760344848388,
+                "jointMarginRad": 0.018673235596355253,
+                "loadsN": [
+                  10.18533265748647,
+                  391.40083484695543
+                ],
+                "motorFraction": 0.7698102588024968
+              },
+              {
+                "t": 0.50125,
+                "slipDeltaMm": [
+                  0.36133741460532665,
+                  0.26736249873821755
+                ],
+                "globalSlipMm": [
+                  1.9891734394647163,
+                  2.597301019753858
+                ],
+                "captureMarginM": 0.04452988507089656,
+                "jointMarginRad": 0.0186747121698716,
+                "loadsN": [
+                  13.44561281792835,
+                  388.4038914905102
+                ],
+                "motorFraction": 0.7515675302997071
+              },
+              {
+                "t": 0.75125,
+                "slipDeltaMm": [
+                  0.5161492592296194,
+                  0.3951810351092706
+                ],
+                "globalSlipMm": [
+                  2.143985284089009,
+                  2.7251195561249113
+                ],
+                "captureMarginM": 0.07007808619912054,
+                "jointMarginRad": 0.01914847160675137,
+                "loadsN": [
+                  67.48216034779313,
+                  333.5380818256365
+                ],
+                "motorFraction": 0.4495498486569602
+              },
+              {
+                "t": 1.00125,
+                "slipDeltaMm": [
+                  0.6091752129241247,
+                  0.49877065216111627
+                ],
+                "globalSlipMm": [
+                  2.2370112377835145,
+                  2.828709173176757
+                ],
+                "captureMarginM": 0.08312005350361024,
+                "jointMarginRad": 0.01960552462139664,
+                "loadsN": [
+                  136.25625720288517,
+                  264.1229964529625
+                ],
+                "motorFraction": 0.26656318096147913
+              },
+              {
+                "t": 1.25125,
+                "slipDeltaMm": [
+                  0.8657802281080588,
+                  0.7262609198271825
+                ],
+                "globalSlipMm": [
+                  2.493616252967448,
+                  3.056199440842823
+                ],
+                "captureMarginM": 0.08496547174534769,
+                "jointMarginRad": 0.019706164434145634,
+                "loadsN": [
+                  196.69272483673228,
+                  203.1873584037248
+                ],
+                "motorFraction": 0.2656389700719262
+              },
+              {
+                "t": 1.50125,
+                "slipDeltaMm": [
+                  1.1509396412650665,
+                  0.9974477120775747
+                ],
+                "globalSlipMm": [
+                  2.778775666124456,
+                  3.327386233093215
+                ],
+                "captureMarginM": 0.08610098279457329,
+                "jointMarginRad": 0.019593512316210093,
+                "loadsN": [
+                  224.31163798514535,
+                  175.4914395497829
+                ],
+                "motorFraction": 0.3289649464266419
+              },
+              {
+                "t": 1.75125,
+                "slipDeltaMm": [
+                  1.3144864092345399,
+                  1.1641366390881436
+                ],
+                "globalSlipMm": [
+                  2.9423224340939296,
+                  3.494075160103784
+                ],
+                "captureMarginM": 0.08646088342605374,
+                "jointMarginRad": 0.019564735829031843,
+                "loadsN": [
+                  209.35335032146497,
+                  190.37612100434333
+                ],
+                "motorFraction": 0.3652598013815009
+              },
+              {
+                "t": 1.8,
+                "slipDeltaMm": [
+                  1.323243775033992,
+                  1.1750354820996975
+                ],
+                "globalSlipMm": [
+                  2.9510797998933818,
+                  3.504974003115338
+                ],
+                "captureMarginM": 0.0864513819702375,
+                "jointMarginRad": 0.019603499706429384,
+                "loadsN": [
+                  199.10575249298242,
+                  201.73695014845617
+                ],
+                "motorFraction": 0.2955795236603325
+              }
+            ],
+            "wallS": 11.092559396998695,
+            "qualification": false
+          }
+        ]
+      }
+    },
+    {
+      "filename": "results_hard.json",
+      "localPath": "/tmp/cadence-contact-damping/results_hard.json",
+      "sha256": "bf801436b3566c32fbeee56a5ae8aee87bb8e9c0dc6a2264c3e8736f0a9d4746",
+      "summary": {
+        "checkpoint": "/tmp/cadence-sequence-3/run/generation-001/step-01-settle.bin",
+        "checkpointSHA256": "d6de41f2ddf6c0eb38e9f41765f1792dde66e210367ebd15d390d0f4c6d0dbc0",
+        "originalRunReceipt": {
+          "stopped": "global-loaded-slip-10mm",
+          "finished": false,
+          "actualIntegrations": 19945,
+          "physicsStepS": 0.00125,
+          "torqueUpdateS": 0.005,
+          "selectedPresetChanged": false,
+          "originalMotorStrength": true,
+          "originalFriction": true,
+          "rootAssistance": false,
+          "physicalStateInstallationsAfterInitialization": 0,
+          "codeSHA256AtStart": {
+            "source_opposed_arm_swing.py": "b8a2dabf8fe367f93ed4202c3116ea81f979b289eabb81902ff9071bd1b40dcf",
+            "source_step_probe.py": "ee1e18bb56c2fcf33a1075409af480ee7a018efb3a1b5b7add6316078637a3df",
+            "source_multistep_probe.py": "ff6ffdbf2a14978924194b9399a87e58acc5f78069dc6b0c4a4a2d476e636225",
+            "plan_source_arm_knee.py": "b8a47f48e8d37fd8328b6fdebcc0f48ee334782ea276bb75cc1d915b119c8858",
+            "source_arm_knee_mobility.py": "7835072bdc183fe5eff5551458b5adefa7473d781b738bde5ee5987e1742c547",
+            "source_selected_step.py": "ab21d078d9c0109c987d5c5963a7dd796c06f8f54df7624594ad9fb3bb55ef90",
+            "source_upright_large_steps.py": "ec0e665d5027af9d9931c2366c6099d4c41e10ceaa16f6eb032159c0eae90d2c",
+            "source_cadenced_ten_steps.py": "77a29bb3259a63510187b7ad7c661ce288a5e84eb75aede5e3a76050359dd1e1"
+          },
+          "codeUnchangedDuringRun": true
+        },
+        "tempControllerSHA256": "d43e2023b856947501d8dbb64e07892bc8f54828c744bf9c7b7756e7444ce98b",
+        "noTrackedControllerEdits": true,
+        "originalRuntimeGatesPreserved": true,
+        "branchDiagnosticOnly": true,
+        "results": [
+          {
+            "kd": 20.0,
+            "hardPointMode": "one-matched-per-loaded-foot",
+            "maximumHardEqualityResidualMps2": 5.863365348801608e-16,
+            "weight": 1.0,
+            "sourceStartStep": 5711,
+            "sourceEndStep": 7151,
+            "physicalIntegrations": 1440,
+            "physicalDurationS": 1.8,
+            "stopped": "bounded-saved-settle-diagnostic",
+            "originalGlobalSlipAtCheckpointM": [
+              0.0016278360248593896,
+              0.0023299385210156405
+            ],
+            "slipDeltaM": [
+              0.0013129209040319953,
+              0.0011530840119578275
+            ],
+            "globalSlipFinalM": [
+              0.002940756928891385,
+              0.003483022532973468
+            ],
+            "minimumCaptureM": 0.02854520931610141,
+            "minimumJointRad": 0.0186570404710249,
+            "maximumMotorFraction": 0.8528925169747059,
+            "maximumSelfPenetrationM": 0.0,
+            "maximumNonfootLoadN": 0.0,
+            "slipPointTasks": 720,
+            "finalLoadsN": [
+              198.57677159381427,
+              202.01251178873446
+            ],
+            "finalCOM": [
+              0.3662710226363666,
+              -0.07937614999930714,
+              0.8074827529556758
+            ],
+            "finalBodyLinearMps": 0.012771844908057032,
+            "finalBodyAngularRadps": 0.026762639784825036,
+            "rows": [
+              {
+                "t": 0.00125,
+                "slipDeltaMm": [
+                  8.747193777484431e-05,
+                  7.447957940925204e-05
+                ],
+                "globalSlipMm": [
+                  1.6279234967971645,
+                  2.33001300059505
+                ],
+                "captureMarginM": 0.02856798474079164,
+                "jointMarginRad": 0.01869575695109038,
+                "loadsN": [
+                  18.337697781957157,
+                  381.77060863970576
+                ],
+                "motorFraction": 0.7990795178846676
+              },
+              {
+                "t": 0.25125000000000003,
+                "slipDeltaMm": [
+                  0.13236010430575348,
+                  0.09113202782527405
+                ],
+                "globalSlipMm": [
+                  1.7601961291651431,
+                  2.4210705488409143
+                ],
+                "captureMarginM": 0.031305381033044255,
+                "jointMarginRad": 0.0187268476254856,
+                "loadsN": [
+                  9.711711306211267,
+                  391.8874264658057
+                ],
+                "motorFraction": 0.7724321013631147
+              },
+              {
+                "t": 0.50125,
+                "slipDeltaMm": [
+                  0.367239553625192,
+                  0.27111444693602577
+                ],
+                "globalSlipMm": [
+                  1.9950755784845817,
+                  2.601052967951666
+                ],
+                "captureMarginM": 0.04472609903799213,
+                "jointMarginRad": 0.018764946597667365,
+                "loadsN": [
+                  10.52048180109011,
+                  391.2836086484275
+                ],
+                "motorFraction": 0.7736939678291598
+              },
+              {
+                "t": 0.75125,
+                "slipDeltaMm": [
+                  0.5183689781798099,
+                  0.40033673570943507
+                ],
+                "globalSlipMm": [
+                  2.1462050030391997,
+                  2.7302752567250756
+                ],
+                "captureMarginM": 0.07028293266828561,
+                "jointMarginRad": 0.01917368543122655,
+                "loadsN": [
+                  67.07405714473117,
+                  333.957459389082
+                ],
+                "motorFraction": 0.457858992336949
+              },
+              {
+                "t": 1.00125,
+                "slipDeltaMm": [
+                  0.6102774512869774,
+                  0.5033708428336175
+                ],
+                "globalSlipMm": [
+                  2.238113476146367,
+                  2.833309363849258
+                ],
+                "captureMarginM": 0.08313109001590585,
+                "jointMarginRad": 0.019587832576884123,
+                "loadsN": [
+                  136.62372041090083,
+                  263.7132449549323
+                ],
+                "motorFraction": 0.27614877188859616
+              },
+              {
+                "t": 1.25125,
+                "slipDeltaMm": [
+                  0.8646962859174192,
+                  0.7233611398224025
+                ],
+                "globalSlipMm": [
+                  2.492532310776809,
+                  3.053299660838043
+                ],
+                "captureMarginM": 0.08502675428182499,
+                "jointMarginRad": 0.019747040978149277,
+                "loadsN": [
+                  196.34322732800626,
+                  203.49776713756015
+                ],
+                "motorFraction": 0.2615679755930532
+              },
+              {
+                "t": 1.50125,
+                "slipDeltaMm": [
+                  1.1432171060503677,
+                  0.9842253343987917
+                ],
+                "globalSlipMm": [
+                  2.7710531309097575,
+                  3.3141638554144324
+                ],
+                "captureMarginM": 0.08614498976696455,
+                "jointMarginRad": 0.01970407806490737,
+                "loadsN": [
+                  223.54672716418418,
+                  176.28435808406869
+                ],
+                "motorFraction": 0.3321559426717711
+              },
+              {
+                "t": 1.75125,
+                "slipDeltaMm": [
+                  1.3051009635468753,
+                  1.145711494893033
+                ],
+                "globalSlipMm": [
+                  2.932936988406265,
+                  3.4756500159086734
+                ],
+                "captureMarginM": 0.086427375638929,
+                "jointMarginRad": 0.01964868938855524,
+                "loadsN": [
+                  207.07238265026794,
+                  193.309007656267
+                ],
+                "motorFraction": 0.30832235275461933
+              },
+              {
+                "t": 1.8,
+                "slipDeltaMm": [
+                  1.3129209040319954,
+                  1.1530840119578274
+                ],
+                "globalSlipMm": [
+                  2.940756928891385,
+                  3.483022532973468
+                ],
+                "captureMarginM": 0.08642806591649627,
+                "jointMarginRad": 0.019651141974681874,
+                "loadsN": [
+                  198.57677159381427,
+                  202.01251178873446
+                ],
+                "motorFraction": 0.29246447669410613
+              }
+            ],
+            "wallS": 7.663491616000101,
+            "qualification": false
+          },
+          {
+            "kd": 20.0,
+            "hardPointMode": "all-matched-loaded-points",
+            "maximumHardEqualityResidualMps2": 0.0,
+            "weight": 4.0,
+            "sourceStartStep": 5711,
+            "sourceEndStep": 5712,
+            "physicalIntegrations": 1,
+            "physicalDurationS": 0.00125,
+            "stopped": "solver-terminal-RuntimeError('QP PrimalInfeasible')",
+            "originalGlobalSlipAtCheckpointM": [
+              0.0016278360248593896,
+              0.0023299385210156405
+            ],
+            "slipDeltaM": [
+              8.747193777484431e-08,
+              7.447957940925204e-08
+            ],
+            "globalSlipFinalM": [
+              0.0016279234967971645,
+              0.0023300130005950498
+            ],
+            "minimumCaptureM": 0.02856798474079164,
+            "minimumJointRad": 0.01869575695109038,
+            "maximumMotorFraction": 0.7990795178846676,
+            "maximumSelfPenetrationM": 0.0,
+            "maximumNonfootLoadN": 0.0,
+            "slipPointTasks": 7,
+            "finalLoadsN": [
+              18.337697781957157,
+              381.77060863970576
+            ],
+            "finalCOM": [
+              0.3118909300851059,
+              0.06776282422027417,
+              0.79182702695646
+            ],
+            "finalBodyLinearMps": 0.007815584450740511,
+            "finalBodyAngularRadps": 0.021229537813444388,
+            "rows": [
+              {
+                "t": 0.00125,
+                "slipDeltaMm": [
+                  8.747193777484431e-05,
+                  7.447957940925204e-05
+                ],
+                "globalSlipMm": [
+                  1.6279234967971645,
+                  2.33001300059505
+                ],
+                "captureMarginM": 0.02856798474079164,
+                "jointMarginRad": 0.01869575695109038,
+                "loadsN": [
+                  18.337697781957157,
+                  381.77060863970576
+                ],
+                "motorFraction": 0.7990795178846676
+              }
+            ],
+            "wallS": 0.03684678300123778,
+            "qualification": false
+          }
+        ]
+      }
+    },
+    {
+      "filename": "native_refinement_results.json",
+      "localPath": "/tmp/cadence-contact-damping/native_refinement_results.json",
+      "sha256": "c9a6510e80dba8b98f3f516f0c1dbbc08cc58b46db5deba052eb8e18ff94c630",
+      "summary": {
+        "stopped": "RefinementBlocker('exact-native-preserved-acceleration-0.01338065030539859')",
+        "sourceStartStep": 5711,
+        "sourceEndStep": 5720,
+        "actualIntegrations": 9,
+        "physicsS": 0.01125,
+        "originalGlobalSlipM": [
+          0.0016278360248593896,
+          0.0023299385210156405
+        ],
+        "incrementalSlipM": [
+          1.388445456497597e-06,
+          1.3769575249325886e-06
+        ],
+        "finalGlobalSlipM": [
+          0.0016292244703158872,
+          0.002331315478540573
+        ],
+        "minimumCaptureM": 0.028564357374565114,
+        "minimumJointRad": 0.01869276534290054,
+        "maximumMotorFraction": 0.7990795178846676,
+        "linearizationCalls": 3,
+        "exactResponseCalls": 3,
+        "nativePurityVerified": true,
+        "actualAppliedCorrections": 2,
+        "maximumAppliedDu": 0.019999999989949398,
+        "maximumPreservedAccelerationError": 7.887024366937112e-13,
+        "wallS": 0.3159699770003499,
+        "qualification": false,
+        "sourceCodeSHA256": "75cd7c56ec9865183926cef5ee651be17f121b5e247d66f39b484f0cc41518de"
+      }
+    },
+    {
+      "filename": "native_refinement_soft_results.json",
+      "localPath": "/tmp/cadence-contact-damping/native_refinement_soft_results.json",
+      "sha256": "3fcbd3227a82375637bdcbc47293e067e13bbf27641ff171047b8fcf4c082378",
+      "summary": {
+        "stopped": "RefinementBlocker('native-baseline-foot-load')",
+        "sourceStartStep": 5711,
+        "sourceEndStep": 5780,
+        "actualIntegrations": 69,
+        "physicsS": 0.08625000000000001,
+        "originalGlobalSlipM": [
+          0.0016278360248593896,
+          0.0023299385210156405
+        ],
+        "incrementalSlipM": [
+          8.150538503371948e-05,
+          2.0138882705825808e-05
+        ],
+        "finalGlobalSlipM": [
+          0.0017093414098931091,
+          0.0023500774037214663
+        ],
+        "minimumCaptureM": 0.028538427995208004,
+        "minimumJointRad": 0.018634870799713488,
+        "maximumMotorFraction": 0.89910186622581,
+        "linearizationCalls": 18,
+        "exactResponseCalls": 17,
+        "nativePurityVerified": true,
+        "actualAppliedCorrections": 17,
+        "maximumAppliedDu": 0.01999999999989124,
+        "maximumPreservedAccelerationError": 0.8510045474503123,
+        "wallS": 2.761791702996561,
+        "qualification": false,
+        "sourceCodeSHA256": "d1e598bcd89f05ff72cfe2c2456907db9b246cb4a212d985e86fa7f04aa5c868"
+      }
+    },
+    {
+      "filename": "native_refinement_phase_gates_results.json",
+      "localPath": "/tmp/cadence-contact-damping/native_refinement_phase_gates_results.json",
+      "sha256": "cb458156a899e1a50ecb64064b6b15c99f40b9946123e4ca2cdbf83b3388ee89",
+      "summary": {
+        "stopped": "capture-guard",
+        "sourceStartStep": 5711,
+        "sourceEndStep": 5895,
+        "actualIntegrations": 184,
+        "physicsS": 0.23,
+        "originalGlobalSlipM": [
+          0.0016278360248593896,
+          0.0023299385210156405
+        ],
+        "incrementalSlipM": [
+          0.0012581034072309536,
+          9.081011422999979e-05
+        ],
+        "finalGlobalSlipM": [
+          0.0028859394320903432,
+          0.0024207486352456403
+        ],
+        "minimumCaptureM": -0.027815815337109473,
+        "minimumJointRad": 0.018607539754732505,
+        "maximumMotorFraction": 0.89910186622581,
+        "linearizationCalls": 46,
+        "exactResponseCalls": 51,
+        "nativePurityVerified": true,
+        "actualAppliedCorrections": 46,
+        "maximumAppliedDu": 0.01999999999989124,
+        "maximumPreservedAccelerationError": 0.8568340752219168,
+        "wallS": 5.233797880999191,
+        "qualification": false,
+        "sourceCodeSHA256": "d1e598bcd89f05ff72cfe2c2456907db9b246cb4a212d985e86fa7f04aa5c868"
+      }
+    },
+    {
+      "filename": "native_original_tasks_results.json",
+      "localPath": "/tmp/cadence-contact-damping/native_original_tasks_results.json",
+      "sha256": "74f524c9b2e911197fd6855fde860908b02a3353afdceaeaee6108ec2a665626",
+      "summary": {
+        "stopped": "RefinementBlocker('native-baseline-acceleration-gate-6-violation-1.8665472697034058')",
+        "sourceStartStep": 5711,
+        "sourceEndStep": 5804,
+        "actualIntegrations": 93,
+        "physicsS": 0.11625,
+        "originalGlobalSlipM": [
+          0.0016278360248593896,
+          0.0023299385210156405
+        ],
+        "incrementalSlipM": [
+          0.0006379482771450907,
+          0.00011155197026709376
+        ],
+        "finalGlobalSlipM": [
+          0.0022657843020044803,
+          0.0024414904912827343
+        ],
+        "minimumCaptureM": 0.011059552118638183,
+        "minimumJointRad": 0.018520401189072055,
+        "maximumMotorFraction": 0.8517725742835075,
+        "linearizationCalls": 24,
+        "exactResponseCalls": 24,
+        "nativePurityVerified": true,
+        "actualAppliedCorrections": 23,
+        "maximumAppliedDu": 0.019999999999581516,
+        "maximumPreservedAccelerationError": 7.727719908524165,
+        "wallS": 3.310951744999329,
+        "qualification": false,
+        "sourceCodeSHA256": "c6e63b10d9d05cae00ac4bab6c0f04caff010c98f21acdcdc60727ea4b5855f2"
+      }
+    },
+    {
+      "filename": "native_refinement_model_report.json",
+      "localPath": "/tmp/cadence-contact-damping/native_refinement_model_report.json",
+      "sha256": "acc70daba64fb5fddaf63ad3b242651cb6879d0810be2eb476de1f2f9de9acad",
+      "summary": {
+        "stopped": "RefinementBlocker('exact-native-preserved-acceleration-0.01338065030539859')",
+        "sourceStartStep": 5711,
+        "sourceEndStep": 5720,
+        "actualIntegrations": 9,
+        "physicsS": 0.01125,
+        "originalGlobalSlipM": [
+          0.0016278360248593896,
+          0.0023299385210156405
+        ],
+        "incrementalSlipM": [
+          1.388445456497597e-06,
+          1.3769575249325886e-06
+        ],
+        "finalGlobalSlipM": [
+          0.0016292244703158872,
+          0.002331315478540573
+        ],
+        "minimumCaptureM": 0.028564357374565114,
+        "minimumJointRad": 0.01869276534290054,
+        "maximumMotorFraction": 0.7990795178846676,
+        "linearizationCalls": 3,
+        "exactResponseCalls": 3,
+        "nativePurityVerified": true,
+        "actualAppliedCorrections": 2,
+        "maximumAppliedDu": 0.019999999989949398,
+        "maximumPreservedAccelerationError": 7.887024366937112e-13,
+        "wallS": 0.6558598400006304,
+        "qualification": false,
+        "sourceCodeSHA256": "d1e598bcd89f05ff72cfe2c2456907db9b246cb4a212d985e86fa7f04aa5c868"
+      }
+    }
+  ]
+}

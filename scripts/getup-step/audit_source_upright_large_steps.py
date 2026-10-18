@@ -65,7 +65,8 @@ def audit(folder):
         current['finalStanceOriginHorizontalDisplacementM']=float(np.linalg.norm(stance_delta[:2]))
         qualifies=row['phase']=='land'and all(f['loadN']>=3 for f in row['feet'])and row['feet'][side]['clearance']<=.003 and observed>=row['requestedForwardM']
         landing_runs[row['stepIndex']]=landing_runs[row['stepIndex']]+1 if qualifies else 0
-        if landing_runs[row['stepIndex']]>=80 and row['phaseElapsedS']>=2. and not current['landingQualified']:
+        landing_duration=reference.get('phase_durations',{}).get('land',reference.get('trajectory_time_scale',1.))
+        if landing_runs[row['stepIndex']]>=80 and row['phaseElapsedS']>=landing_duration and not current['landingQualified']:
             current['landingQualified']=True;current['qualifiedLandingForwardM']=observed;current['qualifiedLandingTimeS']=row['elapsedS']
         if count==1 or count%20==0:
             root=np.eye(4);root[:3,:3]=P.T@Rotation.from_quat(q[[4,5,6,3]]).as_matrix()@P;root[:3,3]=P.T@q[:3];poses=kin.forward(q[7:],root);fksamples+=1
@@ -104,9 +105,20 @@ def audit(folder):
     if summary.get('passed'):
         from audit_source_multistep import audit as original_audit
         result['originalMotionAudit']=original_audit(folder)
-    result['auditedMotionPass']=bool(result.get('originalMotionAudit',{}).get('walkingPhaseQualificationPass',False)and result['observedMeasuredRuntimeGuardsPass'])
+    result['allRecordedStepsHaveMeasuredLanding']=bool(steps)and all(step['landingQualified']for step in steps.values())
+    result['auditedMotionPass']=bool(result['allRecordedStepsHaveMeasuredLanding']and result.get('originalMotionAudit',{}).get('walkingPhaseQualificationPass',False)and result['observedMeasuredRuntimeGuardsPass'])
     result['auditedOpposedStepPass']=bool(result['auditedMotionPass']and result['armTrackingPass']and result['independentFKCheck']['coveragePass']and fkerror<1e-8)
     result['auditedUprightStepPass']=bool(config.get('uprightEnabled')and result['auditedMotionPass']and result['observedMeasuredRuntimeGuardsPass']and uprightquiet and cone and result['armTrackingPass']and result['independentFKCheck']['coveragePass']and fkerror<1e-8)
+    cadence_path=folder/'cadenced-step-config.json'
+    if cadence_path.exists():
+        cadence=json.loads(cadence_path.read_text())
+        expected=cadence['requestedSteps']
+        records=summary.get('steps',[])
+        complete=len(records)==expected and list(steps)==list(range(1,expected+1))
+        alternating=complete and all(s['swingSide']==('left'if i%2==0 else'right')for i,s in enumerate(records))
+        continuous=result.get('originalMotionAudit',{}).get('positionVelocityContinuityMaxErrorM',999)<1e-10 and result.get('originalMotionAudit',{}).get('hingePositionVelocityContinuityMaxErrorRad',999)<1e-10
+        result['cadencedSequence']=dict(requestedSteps=expected,recordedSteps=len(records),completeAlternatingSequence=alternating,continuousRecordedIntegration=continuous,finalFiveSecondsQuiet=basequiet,physicalTimeS=count*.00125,landingTimesS=[steps[k].get('qualifiedLandingTimeS')for k in steps],cadenceConfig=cadence)
+        result['auditedCadencedStepsPass']=bool(result['auditedOpposedStepPass']and alternating and continuous and basequiet)
     return result
 
 
