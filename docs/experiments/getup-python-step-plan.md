@@ -833,3 +833,87 @@ This is substantive online stabilization viability, still far below the source's
 millions-of-transitions training scale. Exact protocol/config and runner review,
 pure replay/partial-terminal/projection/continuation fixtures, fresh resource
 admission and parent release are required before any new collection or update.
+
+## 15. Proposed exact online continuation without original-policy rejection
+
+The closed §14 stage produced1,580 genuinely new transitions,1,000 critic
+warmups and139 critic/head proposals. Eleven were accepted, then128 consecutive
+proposals were rejected ONLY by the original-policy scaled-mean-distance bound.
+All1,408 rejected scale trials still met incremental full KL and loss decrease.
+The physical candidate failed the unchanged10mm left-slip gate at2.815s versus
+2.865s for the original. It remains rejected; this proposal does not change that
+outcome or any physical acceptance limit.
+
+The original-policy distance and historical drift tests are training-preservation
+heuristics, not motor/contact/quiet-standing constraints. Prospectively make BOTH
+report-only, including final historical/midpoint reports. Retain incremental full
+Gaussian KL(previous accepted||proposal)≤0.05, common-noise loss decrease≥1e-6,
+all11 scales, frozen original hidden layers/temperature and learned mean+std heads.
+The source118 observation, original hold sentinel1.4, residual radians,
+20×800Hz PD with kd.2, original gear caps and measured task reward are unchanged.
+No new teacher architecture, variance fallback or best-physical-checkpoint choice.
+
+### Exact starting state and causal scope
+
+Continue the retained **TRAINING** checkpoint at cumulative transition1,580,
+proposal139, accepted-step11 and critic-update1,139. Bind native, learner,
+controller, closed prior ledger and prior-runtime hashes in
+`slow-online-continuation-v1.json`. Do not use either final validation cache.
+Restore actual physical pose/twist/contact solver memory, controller clocks,
+slip/anchors/current episode, all1580 replay entries, Adam/critic-target state and
+ALL four random streams. No planned-state writes, reseeding, fresh critics or
+repeated warmup. The next proposal stream is140, not a restarted attempt1.
+Carry the seven unfinished old episode rows into complete-return accounting;
+old completed episodes stay report-only evidence and all historical costs remain
+charged in their original closed ledgers.
+
+Collect at most3,420 additional actual transitions to cumulative5,000. Each four
+new transitions permits one critic plus one both-head proposal:≤855 additional
+proposals and1,710 optimizer calls. Replay capacity remains5,000, the existing
+initial1024 pre/next witnesses remain fixed, and the recent256 witnesses advance
+with genuinely new data. The new loss/KL-only consecutive-rejection counter starts at0, because the old128
+anchor-only vetoes are no longer rejection criteria. Preserve that old128 history
+unchanged; this is only a declared stopping-rule migration, with no RNG, attempt,
+Adam or budget reset. The prospective128-loss/KL-rejection stop remains; a shorter
+normal endpoint must be labelled, never described as full5,000 data.
+A zero-new-accept endpoint skips a redundant candidate pair. All expected finite
+physical failures remain mask0 and permit actual-cache episode reset. Corrupt,
+warning, mapping, unresolved or resource failures abort; all charges remain.
+
+At each proposal still report original scaled-mean distance, historical201
+residual drift, latent std and cumulative full KL. At the endpoint report the
+200 midpoints too. They cannot stop or veto this prospective learning branch;
+finite source numerics and the incremental KL/loss constraints remain hard.
+The original asset stays immutable. The one fixed final original/candidate pair
+retains all original per-native physical gates, first10mm slip/anchor stopping,
+actual support and FINAL4000 quiet samples. No stabilized result means no policy
+promotion. This remains a stabilization experiment, not forward-step proof.
+
+### Fresh bounded proposal and release
+
+Propose45 minutes TOTAL new process wall and15 new aggregate physics seconds:
+11 training plus4 protected validation. Admit≤3,420 new training intervals and
+≤640 final-pair intervals,≤4,060 total and≤81,200 new native integrations.
+Protect300 wall seconds continuously, retain the8GiB output/12GiB-free gates,
+periodic64-completed-transition full states, fixed milestones, prevalidation/final
+states and durable per-terminal/per-proposal evidence. Periodic cadence uses
+cumulative transition IDs; native clock/reset IDs never control its count.
+No benchmark physics or discarded optimizer calls are repeated. The old proof
+and actual measured full-path/IO costs are reused by explicit hash/semantic
+compatibility review, with no budget/counter transfer.
+
+Current50%-headroom projections are1,172.44s training and79.78s complete pair;
+physics6.002s/1.123s. These are admission estimates, not guarantees. Fresh setup,
+review, restore, writes and cleanup count against the new clock; re-admit the
+whole remaining trajectory plus protected pair live before the first integration
+and final pair. If it cannot fit, stop before new learning rather than shorten
+validation, reset the deadline or choose a physical-best intermediate model.
+
+Before execution: focused R1/R4 scope review; full populated-state restore with
+exact next Gaussian action, next replay-index draw and attempt140 tape parity;
+zero-integration native/controller packet, clock, anchors and slip equality;
+migration fixtures proving original-distance/historical violations are report-only
+but incremental KL/loss/nonfinite checks still reject/abort with exact rollback,
+charges and retired RNG; externally pinned fresh manifest and no outstanding
+transaction. Independent source-engine/PD and prior physical results remain preserved. No execution is
+admitted merely by adding this plan or disabled config.
