@@ -1,0 +1,78 @@
+{
+  "stopped": "actual-terminal-loaded_slip",
+  "policyIntervalsCharged": 7,
+  "allBranchSourceIntegrations": 33,
+  "aggregatePhysicsSeconds": 0.002726547005295288,
+  "processWallSeconds": 1.264165435997711,
+  "fullCacheContinuedPhysicalBitExact": true,
+  "maximumInitialMeanVsAnalyticBaseError": 1.0132789611816406e-06,
+  "baseSaturationCount": 1,
+  "optimizerUpdates": 0,
+  "taskCollectionEnabled": false,
+  "sourceSACEnabled": false,
+  "failedFitWeightsLoaded": false,
+  "diagnosticCompleted": false,
+  "final": {
+    "reward": -10.809157642831762,
+    "dense": 0.5170877131858731,
+    "terms": {
+      "jointPositionErrorRad": 0.8490673513913789,
+      "hipSpeedErrorRadps": 1.4127930412555809e-205,
+      "comHeightErrorM": 0.9996288086017381,
+      "torsoVerticalError": 0.9944293149666257,
+      "leftFootPositionErrorM": 0.996576855402298,
+      "leftFootRotationErrorRad": 0.9945809323604295,
+      "wholeFootClearanceErrorM": 0.9963641769471718,
+      "signedForwardErrorM": 0.9991221091657883,
+      "comVelocityErrorMps": 0.7314449931294936
+    },
+    "cost": 1.3262453560176344,
+    "eventBonus": 0.0,
+    "terminated": true,
+    "truncated": false,
+    "not_done": 0.0,
+    "physicalFailure": "loaded_slip",
+    "success": false,
+    "awardedEvents": [],
+    "nativeSampleCount": 3,
+    "durationSeconds": 0.015,
+    "phase": "stabilize",
+    "referenceClock": {
+      "tau": 0.14,
+      "rate": 1.0,
+      "last_native_substep": 28,
+      "target_rate": 1.0,
+      "response_seconds": 0.1,
+      "sample_seconds": 0.005
+    },
+    "quietConsecutiveSamples": 0,
+    "loadedSlipM": [
+      0.004839121019162432,
+      0.010214623793293381
+    ],
+    "nativeConditions": [
+      {
+        "nativeId": 26,
+        "quiet": false,
+        "anchorDriftM": 0.001969862299039557
+      },
+      {
+        "nativeId": 27,
+        "quiet": false,
+        "anchorDriftM": 0.0030465549387445824
+      },
+      {
+        "nativeId": 28,
+        "quiet": false,
+        "anchorDriftM": 0.00587232608933334
+      }
+    ],
+    "taskDataCollectionEnabled": false,
+    "optimizerEnabled": false,
+    "measurementOnly": true,
+    "heldTorqueTeacherActionVerified": true,
+    "replayEligible": false
+  },
+  "fiveSecondQuietQualified": false,
+  "forwardStepQualified": false
+}

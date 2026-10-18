@@ -39,4 +39,18 @@ class StageBudgetTests(unittest.TestCase):
                 with self.assertRaises(ValueError):b.integrate('benchmark',lambda _:n.__setitem__(0,1),counter)
                 self.assertTrue(b.data['requestOutstanding']);self.assertEqual(b.data['sourceIntegrations'],1)
             with self.assertRaises(ValueError):StageBudget(p)
+    def test_separate_analytic_diagnostic_limits(self):
+        with tempfile.TemporaryDirectory()as folder:
+            p=Path(folder)/'ledger.json';x=self.make(p)
+            x.update(profile='analytic-diagnostic',aggregatePhysicsLimitSeconds=1.,validationWallReservedSeconds=0,allIntervalLimit=64)
+            p.write_text(json.dumps(x))
+            with StageBudget(p)as b:
+                self.assertGreater(b.allowance('benchmark'),0.)
+                for stage in ['training','validation']:
+                    with self.assertRaises(TimeoutError):b.begin_interval(stage)
+                for _ in range(64):b.begin_interval('benchmark')
+                with self.assertRaises(TimeoutError):b.begin_interval('benchmark')
+                self.assertEqual(b.data['totalPolicyIntervals'],64)
+            x['aggregatePhysicsLimitSeconds']=10.;p.write_text(json.dumps(x))
+            with self.assertRaises(ValueError):StageBudget(p)
 if __name__=='__main__':unittest.main()

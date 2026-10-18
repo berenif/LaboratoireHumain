@@ -105,3 +105,47 @@ pure fixtures at source SHA256
 This clearance covers the conditional latent shift, original hold semantics,
 saturation and correction gradients only. It gives no engine/optimizer or
 application export admission.
+
+
+## Separate analytic held-control diagnostic (closed)
+
+A fresh, separately admitted diagnostic ran after the fit branch closed. It had
+600 s total setup/review/execution wall time, a tighter120 s execution deadline,
+1 s aggregate physics, and64 total40 Hz intervals/320 source200 Hz steps. It
+loaded no failed-fit weights and enabled no optimizer or task-data collection.
+The actual admitted window was00:56:09–01:06:09 UTC on2026-10-18.
+
+The frozen SLOW actor plus original holding PD was evaluated at each policy
+boundary, then its normalized actuator torque was held for25 ms. This preserved
+pointwise source holding torque semantics but intentionally tested the different
+closed-loop timescale. The initial source200 Hz cache was exact; it had previously
+received the actual800 Hz SLOW endpoint q/qvel with a disclosed cold-cache/model
+transition. No solver cache was transferred between different models/timesteps.
+
+The first command was run twice from the same complete model-bound cache and
+controller/RNG sidecar. ALL five post-integration packets were bit-exact. Both
+branches were charged. The retained branch then failed the unchanged10 mm loaded
+slip gate at source step28, t=0.140 s:
+
+- Charged33 integrations in7 intervals:5 repeated-prefix steps +28 retained
+- Loaded slip L4.8391 mm / R10.2146 mm; first crossing at the final actual step
+- Actual original-gear torque equation residual exactly0 Nm
+- No warning, flight or nonfoot sample before the stop
+- Maximum hinge speed0.445 rad/s at0.100 s →3.204 at0.125 s →17.214 at0.140 s
+- Only about1.68 mm total COM displacement, despite the rapid joint response
+- One final base saturation was interiorized by about1e-6 normalized control;
+  this epsilon effect is far smaller than the observed response
+- Aggregate physics0.00272655 s, zero optimizer calls, zero replay collection
+
+This rejects this particular200 Hz/held25 ms torque initializer at the recorded
+entry. Algebraic initialization fidelity and exact cache continuation did not
+establish dynamic equivalence to SLOW's800 Hz inner PD. The direct-torque analytic
+branch is stopped. There is no automatic longer hold, SAC release or reuse of its
+unused allowance. Retaining source SLOW's original800 Hz inner PD is the next
+causal design direction, subject to a separate bounded proposal and admission.
+
+Implementation: `scripts/getup-step/analytic_diagnostic.py`, explicit
+`analytic-diagnostic-config-v1.json`, and a separate diagnostic ledger profile.
+Compact own evidence is in `docs/evidence/getup-analytic-diagnostic-2026-10-18/`.
+The107 Python tests pass. Raw journals/caches and original actor assets remain
+local; no new upstream or derived weights were published.

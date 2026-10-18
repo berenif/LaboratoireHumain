@@ -1,0 +1,28 @@
+{
+  "preflightSHA256": "2b1b751d97234ba93f5dae7c5204a7f736788ec73572e40fd42b1e2355a97472",
+  "rawLocalArtifacts": {
+    "frames.ndjson": {
+      "sha256": "4197e95a9afdc8f6a2875bd6dc8b81943e74efa803591aecf4c8e2cc431c70af",
+      "bytes": 179042,
+      "committed": false
+    },
+    "commands.json": {
+      "sha256": "0c97b176a2c5754ef5440065e6dce964e49cbbc0a14f6629c352b3652b20bf34",
+      "bytes": 66701,
+      "committed": false
+    },
+    "final-source-cache-local.bin": {
+      "sha256": "624f34ffa7e7d33cf75e65aaecddea0bc1a1beab19c4f6fd34770c71eb4f943f",
+      "bytes": 14658416,
+      "committed": false
+    },
+    "final-controller.json": {
+      "sha256": "a111ea36a5c3e8692c42a85a5a53f60e50154bc1efcc66ab1bc3a5d41cc32d50",
+      "bytes": 10985,
+      "committed": false
+    }
+  },
+  "sourcePolicy": "frozen original SLOW holding actor and original PD; analytic zero correction",
+  "noDerivedWeightsCreated": true,
+  "rawTraceAndCacheLocalOnly": true
+}

@@ -1,0 +1,397 @@
+{
+  "scope": "pure journal reduction; no additional integrations/optimizer",
+  "allGlobalNativeIdsConsecutive": true,
+  "retainedLocalNativeIdsConsecutive": true,
+  "chargedSourceSteps": 33,
+  "retainedSourceSteps": 28,
+  "retainedSimSeconds": 0.14,
+  "fullCacheFirstCommandPacketsEqual": true,
+  "sourceDtS": 0.005,
+  "maximumActualTorqueEquationErrorNm": 0.0,
+  "loadedSlipM": [
+    0.004839121019162432,
+    0.010214623793293381
+  ],
+  "sourceWarnings": 0,
+  "nonfootSamples": 0,
+  "bothFeetUnloadedSamples": 0,
+  "minimumCOMHeightM": 0.808120294854497,
+  "maximumCOMHeightM": 0.8092542233376799,
+  "finalCOMHorizontalDriftM": 0.0012795228283169842,
+  "maximumHingeSpeedRadps": 17.214499205762728,
+  "firstLoadedSlipThresholdSourceStep": 28,
+  "finalControllerSidecarExists": true,
+  "series": [
+    {
+      "sourceStep": 1,
+      "timeS": 0.005,
+      "command": 1,
+      "loadedSlipM": [
+        1.859082895743968e-05,
+        1.7626173393576546e-05
+      ],
+      "maximumHingeSpeedRadps": 0.006784908724842414,
+      "comHeightM": 0.8081629904840555,
+      "comHorizontalDriftM": 8.607435408368686e-06,
+      "normalizedMotorMaximum": 0.3088849186897278
+    },
+    {
+      "sourceStep": 2,
+      "timeS": 0.01,
+      "command": 1,
+      "loadedSlipM": [
+        3.717401233649063e-05,
+        3.524847762534437e-05
+      ],
+      "maximumHingeSpeedRadps": 0.00689542886770281,
+      "comHeightM": 0.8081617195127357,
+      "comHorizontalDriftM": 1.721308586686455e-05,
+      "normalizedMotorMaximum": 0.3088849186897278
+    },
+    {
+      "sourceStep": 3,
+      "timeS": 0.015,
+      "command": 1,
+      "loadedSlipM": [
+        5.5753765551223284e-05,
+        5.287234830434913e-05
+      ],
+      "maximumHingeSpeedRadps": 0.007065129163741538,
+      "comHeightM": 0.8081604332185379,
+      "comHorizontalDriftM": 2.5819909114743557e-05,
+      "normalizedMotorMaximum": 0.3088849186897278
+    },
+    {
+      "sourceStep": 4,
+      "timeS": 0.02,
+      "command": 1,
+      "loadedSlipM": [
+        7.433331111053674e-05,
+        7.04997951819885e-05
+      ],
+      "maximumHingeSpeedRadps": 0.007273230519049074,
+      "comHeightM": 0.808159124913531,
+      "comHorizontalDriftM": 3.443164742578002e-05,
+      "normalizedMotorMaximum": 0.3088849186897278
+    },
+    {
+      "sourceStep": 5,
+      "timeS": 0.025,
+      "command": 1,
+      "loadedSlipM": [
+        9.291568138008709e-05,
+        8.813128704706328e-05
+      ],
+      "maximumHingeSpeedRadps": 0.007506078608628669,
+      "comHeightM": 0.8081577903844748,
+      "comHorizontalDriftM": 4.3052369211093726e-05,
+      "normalizedMotorMaximum": 0.3088849186897278
+    },
+    {
+      "sourceStep": 6,
+      "timeS": 0.030000000000000002,
+      "command": 2,
+      "loadedSlipM": [
+        0.00011147587916533825,
+        0.00010578683035221615
+      ],
+      "maximumHingeSpeedRadps": 0.007315412293985923,
+      "comHeightM": 0.8081564755240198,
+      "comHorizontalDriftM": 5.1644541917287834e-05,
+      "normalizedMotorMaximum": 0.309011310338974
+    },
+    {
+      "sourceStep": 7,
+      "timeS": 0.035,
+      "command": 2,
+      "loadedSlipM": [
+        0.00013003250661818762,
+        0.00012345546037387454
+      ],
+      "maximumHingeSpeedRadps": 0.007330947620126847,
+      "comHeightM": 0.8081552149345791,
+      "comHorizontalDriftM": 6.018263029510284e-05,
+      "normalizedMotorMaximum": 0.309011310338974
+    },
+    {
+      "sourceStep": 8,
+      "timeS": 0.04,
+      "command": 2,
+      "loadedSlipM": [
+        0.0001485940965216475,
+        0.000141133034808442
+      ],
+      "maximumHingeSpeedRadps": 0.007553293574847246,
+      "comHeightM": 0.8081540422098952,
+      "comHorizontalDriftM": 6.8643214225688e-05,
+      "normalizedMotorMaximum": 0.309011310338974
+    },
+    {
+      "sourceStep": 9,
+      "timeS": 0.045,
+      "command": 2,
+      "loadedSlipM": [
+        0.00016716330694254634,
+        0.0001588148644719572
+      ],
+      "maximumHingeSpeedRadps": 0.007877032268604985,
+      "comHeightM": 0.8081529714632926,
+      "comHorizontalDriftM": 7.701129929320789e-05,
+      "normalizedMotorMaximum": 0.309011310338974
+    },
+    {
+      "sourceStep": 10,
+      "timeS": 0.049999999999999996,
+      "command": 2,
+      "loadedSlipM": [
+        0.00018574001232628663,
+        0.00017649570010425702
+      ],
+      "maximumHingeSpeedRadps": 0.00880309848220365,
+      "comHeightM": 0.8081519955087916,
+      "comHorizontalDriftM": 8.528222889576241e-05,
+      "normalizedMotorMaximum": 0.309011310338974
+    },
+    {
+      "sourceStep": 11,
+      "timeS": 0.05499999999999999,
+      "command": 3,
+      "loadedSlipM": [
+        0.00020427580703866215,
+        0.0001937400266361316
+      ],
+      "maximumHingeSpeedRadps": 0.01717824337534505,
+      "comHeightM": 0.8081511389400302,
+      "comHorizontalDriftM": 9.378084402617888e-05,
+      "normalizedMotorMaximum": 0.3086681365966797
+    },
+    {
+      "sourceStep": 12,
+      "timeS": 0.05999999999999999,
+      "command": 3,
+      "loadedSlipM": [
+        0.00022277203427849184,
+        0.00021080207666030463
+      ],
+      "maximumHingeSpeedRadps": 0.034143838055902556,
+      "comHeightM": 0.8081502244489775,
+      "comHorizontalDriftM": 0.00010262194088232408,
+      "normalizedMotorMaximum": 0.3086681365966797
+    },
+    {
+      "sourceStep": 13,
+      "timeS": 0.06499999999999999,
+      "command": 3,
+      "loadedSlipM": [
+        0.00024122858113957452,
+        0.00022779051921283948
+      ],
+      "maximumHingeSpeedRadps": 0.04721099553680549,
+      "comHeightM": 0.8081490796879204,
+      "comHorizontalDriftM": 0.00011190965079377003,
+      "normalizedMotorMaximum": 0.3086681365966797
+    },
+    {
+      "sourceStep": 14,
+      "timeS": 0.06999999999999999,
+      "command": 3,
+      "loadedSlipM": [
+        0.00025965743995080197,
+        0.0002447579041090302
+      ],
+      "maximumHingeSpeedRadps": 0.05740242876083519,
+      "comHeightM": 0.8081476159547615,
+      "comHorizontalDriftM": 0.00012171760836608749,
+      "normalizedMotorMaximum": 0.3086681365966797
+    },
+    {
+      "sourceStep": 15,
+      "timeS": 0.075,
+      "command": 3,
+      "loadedSlipM": [
+        0.0002780769048018473,
+        0.0002617314783086649
+      ],
+      "maximumHingeSpeedRadps": 0.06558154918202144,
+      "comHeightM": 0.8081458397750533,
+      "comHorizontalDriftM": 0.00013208184929360678,
+      "normalizedMotorMaximum": 0.3086681365966797
+    },
+    {
+      "sourceStep": 16,
+      "timeS": 0.08,
+      "command": 4,
+      "loadedSlipM": [
+        0.0002968352837079906,
+        0.0002823994718340277
+      ],
+      "maximumHingeSpeedRadps": 0.09118096254120853,
+      "comHeightM": 0.8081416966085961,
+      "comHorizontalDriftM": 0.0001406092454984499,
+      "normalizedMotorMaximum": 0.31144267320632935
+    },
+    {
+      "sourceStep": 17,
+      "timeS": 0.085,
+      "command": 4,
+      "loadedSlipM": [
+        0.0003165380840087665,
+        0.00030410725903044815
+      ],
+      "maximumHingeSpeedRadps": 0.21282826998011833,
+      "comHeightM": 0.8081363051037489,
+      "comHorizontalDriftM": 0.00014651004657007666,
+      "normalizedMotorMaximum": 0.31144267320632935
+    },
+    {
+      "sourceStep": 18,
+      "timeS": 0.09000000000000001,
+      "command": 4,
+      "loadedSlipM": [
+        0.0003374372237001643,
+        0.0003252879091072934
+      ],
+      "maximumHingeSpeedRadps": 0.306826313414841,
+      "comHeightM": 0.8081307426845739,
+      "comHorizontalDriftM": 0.00014911397732987706,
+      "normalizedMotorMaximum": 0.31144267320632935
+    },
+    {
+      "sourceStep": 19,
+      "timeS": 0.09500000000000001,
+      "command": 4,
+      "loadedSlipM": [
+        0.00035949349526962767,
+        0.00034522872904955786
+      ],
+      "maximumHingeSpeedRadps": 0.3821323326050109,
+      "comHeightM": 0.8081254749954575,
+      "comHorizontalDriftM": 0.0001480532541014293,
+      "normalizedMotorMaximum": 0.31144267320632935
+    },
+    {
+      "sourceStep": 20,
+      "timeS": 0.10000000000000002,
+      "command": 4,
+      "loadedSlipM": [
+        0.0003824840717262392,
+        0.0003636910665344706
+      ],
+      "maximumHingeSpeedRadps": 0.44487842628082186,
+      "comHeightM": 0.808120294854497,
+      "comHorizontalDriftM": 0.00014333492744417965,
+      "normalizedMotorMaximum": 0.31144267320632935
+    },
+    {
+      "sourceStep": 21,
+      "timeS": 0.10500000000000002,
+      "command": 5,
+      "loadedSlipM": [
+        0.00040864593845233447,
+        0.00040773585289257395
+      ],
+      "maximumHingeSpeedRadps": 0.612054572964743,
+      "comHeightM": 0.80814095873346,
+      "comHorizontalDriftM": 0.0001521440771157482,
+      "normalizedMotorMaximum": 0.3640769124031067
+    },
+    {
+      "sourceStep": 22,
+      "timeS": 0.11000000000000003,
+      "command": 5,
+      "loadedSlipM": [
+        0.0004546354931995769,
+        0.00047807090847288214
+      ],
+      "maximumHingeSpeedRadps": 1.437371518145042,
+      "comHeightM": 0.8081839981652844,
+      "comHorizontalDriftM": 0.0001747981294863419,
+      "normalizedMotorMaximum": 0.3640769124031067
+    },
+    {
+      "sourceStep": 23,
+      "timeS": 0.11500000000000003,
+      "command": 5,
+      "loadedSlipM": [
+        0.0005287873770661168,
+        0.0005771491833423646
+      ],
+      "maximumHingeSpeedRadps": 2.0830022726214286,
+      "comHeightM": 0.8082436306638218,
+      "comHorizontalDriftM": 0.00021290843787059074,
+      "normalizedMotorMaximum": 0.3640769124031067
+    },
+    {
+      "sourceStep": 24,
+      "timeS": 0.12000000000000004,
+      "command": 5,
+      "loadedSlipM": [
+        0.0006325243199429367,
+        0.000764145131500007
+      ],
+      "maximumHingeSpeedRadps": 2.5892399501172347,
+      "comHeightM": 0.8083128238571681,
+      "comHorizontalDriftM": 0.0002703356479356073,
+      "normalizedMotorMaximum": 0.3640769124031067
+    },
+    {
+      "sourceStep": 25,
+      "timeS": 0.12500000000000003,
+      "command": 5,
+      "loadedSlipM": [
+        0.0007608855254910829,
+        0.0010520129290390052
+      ],
+      "maximumHingeSpeedRadps": 3.203908618763327,
+      "comHeightM": 0.8083840632217931,
+      "comHorizontalDriftM": 0.00035134703578070393,
+      "normalizedMotorMaximum": 0.3640769124031067
+    },
+    {
+      "sourceStep": 26,
+      "timeS": 0.13000000000000003,
+      "command": 6,
+      "loadedSlipM": [
+        0.0009708271982715586,
+        0.0014326546041721526
+      ],
+      "maximumHingeSpeedRadps": 5.3337740214585265,
+      "comHeightM": 0.8084956203371029,
+      "comHorizontalDriftM": 0.0005127902745119766,
+      "normalizedMotorMaximum": 0.9999989867210388
+    },
+    {
+      "sourceStep": 27,
+      "timeS": 0.13500000000000004,
+      "command": 6,
+      "loadedSlipM": [
+        0.0021513514727663306,
+        0.0038619176466937227
+      ],
+      "maximumHingeSpeedRadps": 11.855644604091161,
+      "comHeightM": 0.8088040873807903,
+      "comHorizontalDriftM": 0.0007708760985409032,
+      "normalizedMotorMaximum": 0.9999989867210388
+    },
+    {
+      "sourceStep": 28,
+      "timeS": 0.14000000000000004,
+      "command": 6,
+      "loadedSlipM": [
+        0.004839121019162432,
+        0.010214623793293381
+      ],
+      "maximumHingeSpeedRadps": 17.214499205762728,
+      "comHeightM": 0.8092542233376799,
+      "comHorizontalDriftM": 0.0012795228283169842,
+      "normalizedMotorMaximum": 0.9999989867210388
+    }
+  ],
+  "inputSHA256": {
+    "frames.ndjson": "4197e95a9afdc8f6a2875bd6dc8b81943e74efa803591aecf4c8e2cc431c70af",
+    "commands.json": "0c97b176a2c5754ef5440065e6dce964e49cbbc0a14f6629c352b3652b20bf34",
+    "preflight.json": "2b1b751d97234ba93f5dae7c5204a7f736788ec73572e40fd42b1e2355a97472",
+    "summary.json": "813daf50977ac1a56d6871e67e93cebb3b27642177a63749e449cd12db552d1f",
+    "ledger.json": "5328f4793a49079c83dffdc208db29a68efe27b71e11ed057977a3d1a8725b59"
+  }
+}

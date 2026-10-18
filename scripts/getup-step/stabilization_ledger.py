@@ -15,7 +15,9 @@ class StageBudget:
         except BaseException:self.lock.close();self.lock=None;raise
         self.data=json.loads(path.read_text())
         if self.data.get('requestOutstanding'):self.close();raise ValueError('unresolved source request: reconciliation required')
-        self.deadline=dt.datetime.fromisoformat(self.data['deadlineUtc'].replace('Z','+00:00'))
+        self.deadline=dt.datetime.fromisoformat(self.data['deadlineUtc'].replace('Z','+00:00'));self.profile=self.data.get('profile','stabilization')
+        if self.profile not in ['stabilization','analytic-diagnostic']:self.close();raise ValueError('unknown admitted budget profile')
+        if self.profile=='analytic-diagnostic'and(self.data['aggregatePhysicsLimitSeconds']!=1 or self.data['validationWallReservedSeconds']!=0 or self.data['allIntervalLimit']!=64):self.close();raise ValueError('wrong diagnostic limits')
         for key in ['physicsSeconds','sourceIntegrations','totalPolicyIntervals','stagePhysicsSeconds','stagePolicyIntervals']:
             if key not in self.data:self.close();raise ValueError('missing admitted budget counters')
         if any(not math.isfinite(v)or v<0 for v in self.data['stagePhysicsSeconds'].values()):self.close();raise ValueError('invalid phase physics counters')
@@ -32,8 +34,8 @@ class StageBudget:
     def allowance(self,stage):
         if self.data.get('requestOutstanding'):raise ValueError('unresolved source request blocks admission')
         if stage not in ['benchmark','training','validation']:raise ValueError('unknown stage')
-        d=self.data;limit={'benchmark':1.,'training':6.,'validation':3.}[stage]
-        reserved=0. if stage=='validation'else max(0.,3.-d['stagePhysicsSeconds']['validation'])
+        d=self.data;diagnostic=self.profile=='analytic-diagnostic';limit=({'benchmark':1.,'training':0.,'validation':0.}if diagnostic else{'benchmark':1.,'training':6.,'validation':3.})[stage]
+        reserved=0. if diagnostic or stage=='validation'else max(0.,3.-d['stagePhysicsSeconds']['validation'])
         wall_reserved=0. if stage=='validation'else d['validationWallReservedSeconds']
         result=min(limit-d['stagePhysicsSeconds'][stage],d['aggregatePhysicsLimitSeconds']-d['physicsSeconds']-reserved,self.remaining_wall()-wall_reserved-.05)
         if stage=='benchmark':
@@ -43,8 +45,8 @@ class StageBudget:
         return result
     def begin_interval(self,stage):
         self.allowance(stage);d=self.data
-        cap={'benchmark':64,'training':796,'validation':640}[stage];reserve=0 if stage=='validation'else max(0,640-d['stagePolicyIntervals']['validation'])
-        if d['stagePolicyIntervals'][stage]>=cap or d['totalPolicyIntervals']+1+reserve>1500:raise TimeoutError('source interval/validation reserve exhausted')
+        diagnostic=self.profile=='analytic-diagnostic';cap=({'benchmark':64,'training':0,'validation':0}if diagnostic else{'benchmark':64,'training':796,'validation':640})[stage];reserve=0 if diagnostic or stage=='validation'else max(0,640-d['stagePolicyIntervals']['validation'])
+        if d['stagePolicyIntervals'][stage]>=cap or d['totalPolicyIntervals']+1+reserve>(64 if diagnostic else 1500):raise TimeoutError('source interval/validation reserve exhausted')
         d['stagePolicyIntervals'][stage]+=1;d['totalPolicyIntervals']+=1;d['status']='running-'+stage;atomic_json(self.path,d)
     def integrate(self,stage,step_one,counter):
         if self.data.get('requestOutstanding'):raise ValueError('outstanding source request')

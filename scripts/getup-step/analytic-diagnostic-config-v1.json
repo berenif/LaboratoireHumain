@@ -1,0 +1,23 @@
+{
+  "schema": 1,
+  "kind": "separate analytic zero-correction held-torque diagnostic",
+  "policy": "AnalyticSLOWHoldingActor, deterministic normalized actuator torque, power1, zero correction",
+  "sourceHoldActorTargetHeight": 1.4,
+  "taskReference": "fixed measured entry q/COM/vertical; used by measurement core and correction inputs only",
+  "measurementCoreConfigSHA256": "ac3f550c829c446b1c8643b059c605fd55d96a60645c00778afb7eeece6572bb",
+  "failedFitWeightsLoaded": false,
+  "trainingOrCollectionEnabled": false,
+  "optimizerUpdates": 0,
+  "maximumPolicyIntervals": 64,
+  "maximumNativeIntegrationsAllBranches": 320,
+  "sourceHz": 200,
+  "policyHz": 40,
+  "maximumAggregatePhysicsSeconds": 1.0,
+  "maximumStageWallSeconds": 600,
+  "maximumRunWallSeconds": 120,
+  "firstCommandRepeatCharged": true,
+  "physicalStops": "measurement core's original per-native flight/nonfoot/height/self/interfoot/slip/entry-anchor gates; no threshold changes",
+  "scope": "pointwise original SLOW holding torque becomes held25ms torque in original200Hz static model; tests initialization response and paired fullcache continuation only, never5s quiet or forward step",
+  "modelCacheTransfer": "source800Hz q/qvel previously transferred to fresh200Hz model; this diagnostic loads only its own model-bound source200Hz initial cache; no cache across models",
+  "noFallbackOrLongerHold": true
+}
