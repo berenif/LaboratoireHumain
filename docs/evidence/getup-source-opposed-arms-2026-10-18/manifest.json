@@ -1,0 +1,87 @@
+{
+  "schema": 1,
+  "experiment": "selected hips+knees, opposed equal-angle near-body arms",
+  "date": "2026-10-18",
+  "baselineCommit": "749ee2d7e433530e83f52186cdbcd8ad323a2fa8",
+  "baselineRemoteEquivalent": "309174924eb58a856508202e1b561a3fb4acdbf9",
+  "selectedPresetChanged": false,
+  "defaultPromoted": false,
+  "modelSHA256": "216d5c0159abf07139f5556c59e244ae77cb7557ba5256e301ebc5e1c8bbc399",
+  "helperSHA256": "20ddefbcbdd328b1661ce163e4df6aeb0e953192c677b79d3076c904de5a0ba5",
+  "physicsHz": 800,
+  "torqueControlHz": 200,
+  "actualIntegrationsByAttempt": {
+    "staticRejectedMap": 0,
+    "oneStep": 15312,
+    "firstFourSteps": 49861,
+    "finalCodeFourSteps": 49861
+  },
+  "totalExperimentIntegrations": 115034,
+  "rawDataLocalOnly": true,
+  "assetsAdded": false,
+  "physicalStateWritesAfterInitialization": 0,
+  "rootAssistance": false,
+  "motorStrengthChanged": false,
+  "frictionChanged": false,
+  "admissionGatesRelaxed": false,
+  "finalCodeReceipt": "final-code-receipt.json",
+  "deterministicReplay": {
+    "frames.ndjson": {
+      "firstSHA256": "65440d4107a05878a8109186293358c3d805193e8c09b5484e78bdc0a9dfce85",
+      "finalSHA256": "65440d4107a05878a8109186293358c3d805193e8c09b5484e78bdc0a9dfce85",
+      "exactByteParity": true
+    },
+    "control.json": {
+      "firstSHA256": "51b8a979a935e3ddbda65dfec2271f185c2789df1b05cd0bbfe125bdb3135529",
+      "finalSHA256": "51b8a979a935e3ddbda65dfec2271f185c2789df1b05cd0bbfe125bdb3135529",
+      "exactByteParity": true
+    },
+    "final.bin": {
+      "firstSHA256": "ca0506b8ed8d4fab68d95a4330407c62ce99fbaec4fb652c1251a71c2fd40832",
+      "finalSHA256": "ca0506b8ed8d4fab68d95a4330407c62ce99fbaec4fb652c1251a71c2fd40832",
+      "exactByteParity": true
+    }
+  },
+  "independentFKCheck": {
+    "samples": 2494,
+    "samplingHz": 40.0,
+    "maximumPitchErrorRad": 8.326672684688674e-16,
+    "physicsIntegrations": 0
+  },
+  "tests": {
+    "focusedPassed": 40,
+    "newZeroIntegrationTests": 10,
+    "frozenDefaultCommandComparisons": 18,
+    "earlierBroadDiscovery": {
+      "tests": 75,
+      "errors": 10,
+      "missingTorchImports": 4,
+      "existingPreviewOutputDirectories": 6,
+      "passed": false
+    }
+  },
+  "codeSHA256": {
+    "scripts/getup-step/source_opposed_arm_swing.py": "81e5af968e34031885b811d6b1ccc0fba5e5251f6ec8bf12aef4c0b7e75bdfa3",
+    "scripts/getup-step/source_step_probe.py": "42bbcb323e4eea967923af6deed33913e6cbe600e8f1be6500bd680c3c9f0492",
+    "scripts/getup-step/audit_source_opposed_arm_swing.py": "d470193a3c64008f8d41d926f29536615652b4890fba0085d9aaeed37f7697a6",
+    "scripts/getup-step/test_source_opposed_arm_swing.py": "48a84b0dc28b5a57edfcfd8743b2a792429b19cdb9bc9678daf80ce461ba1335"
+  },
+  "localRuns": {
+    "oneStep": "outputs/getup-source-step/opposed-arms-experiment01/pilot02/run/generation-001",
+    "fourStep": "outputs/getup-source-step/opposed-arms-experiment01/four-step01/run/generation-001",
+    "finalCodeRepeat": "outputs/getup-source-step/opposed-arms-experiment01/four-step02-final/run/generation-001"
+  },
+  "evidenceFiles": [
+    "one-step.json",
+    "four-step.json",
+    "final-code-receipt.json",
+    "frozen-baseline-parity.json",
+    "work-by-phase.json",
+    "tests.txt"
+  ],
+  "caveats": [
+    "Inherited initial soft-limit overrun through63.75ms; strict all-sample joint limit gate remains false.",
+    "Mechanical work includes physical arm placement and all body motion. No energy-saving claim.",
+    "One scenario and deterministic replay do not establish robustness."
+  ]
+}

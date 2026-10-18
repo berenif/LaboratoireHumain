@@ -1,0 +1,114 @@
+{
+  "frozenControllerCommit": "749ee2d7",
+  "zeroIntegrations": true,
+  "comparisons": [
+    {
+      "phase": "transfer",
+      "t": 0.0,
+      "maximumMotorDifference": 0.0,
+      "infoExactlyEqual": true
+    },
+    {
+      "phase": "transfer",
+      "t": 0.5,
+      "maximumMotorDifference": 0.0,
+      "infoExactlyEqual": true
+    },
+    {
+      "phase": "transfer",
+      "t": 1.0,
+      "maximumMotorDifference": 0.0,
+      "infoExactlyEqual": true
+    },
+    {
+      "phase": "lift",
+      "t": 0.0,
+      "maximumMotorDifference": 0.0,
+      "infoExactlyEqual": true
+    },
+    {
+      "phase": "lift",
+      "t": 0.5,
+      "maximumMotorDifference": 0.0,
+      "infoExactlyEqual": true
+    },
+    {
+      "phase": "lift",
+      "t": 1.0,
+      "maximumMotorDifference": 0.0,
+      "infoExactlyEqual": true
+    },
+    {
+      "phase": "translate",
+      "t": 0.0,
+      "maximumMotorDifference": 0.0,
+      "infoExactlyEqual": true
+    },
+    {
+      "phase": "translate",
+      "t": 0.5,
+      "maximumMotorDifference": 0.0,
+      "infoExactlyEqual": true
+    },
+    {
+      "phase": "translate",
+      "t": 1.0,
+      "maximumMotorDifference": 0.0,
+      "infoExactlyEqual": true
+    },
+    {
+      "phase": "land",
+      "t": 0.0,
+      "maximumMotorDifference": 0.0,
+      "infoExactlyEqual": true
+    },
+    {
+      "phase": "land",
+      "t": 0.5,
+      "maximumMotorDifference": 0.0,
+      "infoExactlyEqual": true
+    },
+    {
+      "phase": "land",
+      "t": 1.0,
+      "maximumMotorDifference": 0.0,
+      "infoExactlyEqual": true
+    },
+    {
+      "phase": "settle",
+      "t": 0.0,
+      "maximumMotorDifference": 0.0,
+      "infoExactlyEqual": true
+    },
+    {
+      "phase": "settle",
+      "t": 0.5,
+      "maximumMotorDifference": 0.0,
+      "infoExactlyEqual": true
+    },
+    {
+      "phase": "settle",
+      "t": 1.0,
+      "maximumMotorDifference": 0.0,
+      "infoExactlyEqual": true
+    },
+    {
+      "phase": "stand",
+      "t": 0.0,
+      "maximumMotorDifference": 0.0,
+      "infoExactlyEqual": true
+    },
+    {
+      "phase": "stand",
+      "t": 0.5,
+      "maximumMotorDifference": 0.0,
+      "infoExactlyEqual": true
+    },
+    {
+      "phase": "stand",
+      "t": 1.0,
+      "maximumMotorDifference": 0.0,
+      "infoExactlyEqual": true
+    }
+  ]
+}

@@ -1,0 +1,21 @@
+{
+  "stopped": "measured-alternating-multistep-plus5squiet",
+  "finished": true,
+  "actualIntegrations": 49861,
+  "physicsStepS": 0.00125,
+  "torqueUpdateS": 0.005,
+  "selectedPresetChanged": false,
+  "originalMotorStrength": true,
+  "originalFriction": true,
+  "rootAssistance": false,
+  "physicalStateInstallationsAfterInitialization": 0,
+  "codeSHA256AtStart": {
+    "source_opposed_arm_swing.py": "81e5af968e34031885b811d6b1ccc0fba5e5251f6ec8bf12aef4c0b7e75bdfa3",
+    "source_step_probe.py": "42bbcb323e4eea967923af6deed33913e6cbe600e8f1be6500bd680c3c9f0492",
+    "source_multistep_probe.py": "6a581d6ef8770c768110762152eaaeefbca9b73e359f72b6da43e4c069c8de96",
+    "plan_source_arm_knee.py": "ed25c54b023ffd5aafb50fafde1d54599a13e166121c77843e14b66abbe17854",
+    "source_arm_knee_mobility.py": "7835072bdc183fe5eff5551458b5adefa7473d781b738bde5ee5987e1742c547",
+    "source_selected_step.py": "ab21d078d9c0109c987d5c5963a7dd796c06f8f54df7624594ad9fb3bb55ef90"
+  },
+  "codeUnchangedDuringRun": true
+}

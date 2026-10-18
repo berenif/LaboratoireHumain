@@ -110,7 +110,9 @@ class Controller:
   if phase=='transfer'and hasattr(self,'posture_start'):
    ps,pv,pa=clock(t,2.*motion_scale);delta=self.q0-self.posture_start;task(np.eye(27)[6:],delta*pa+20*(self.posture_start+delta*ps-q)+8*(delta*pv-v[6:]),.2)
   else:task(np.eye(27)[6:],20*(self.q0-q)-8*v[6:],.2)
-  if self.self_avoidance:task(np.eye(27)[21:],20*(self.arm_posture-q[15:])-10*v[21:],1.)
+  if self.self_avoidance:
+   if hasattr(self,'arm_kp'):task(np.eye(27)[21:],self.arm_acceleration+self.arm_kp*(self.arm_posture-q[15:])+self.arm_kd*(self.arm_velocity-v[21:]),self.arm_weight)
+   else:task(np.eye(27)[21:],20*(self.arm_posture-q[15:])-10*v[21:],1.)
   contacts=[]
   for side,foot in enumerate(feet):
    body=foot['body'];J=w.read('lh_body_jac',(6,27),body);b=w.read('lh_jdot',(6,),body);pos=w.arr(3,(17,3))[body];R=w.arr(5,(17,3,3))[body];pos0,Rinitial=self.targets[side];Rflat=self.flatRotations[side];axis=Rotation.from_matrix(Rflat@Rinitial.T).as_rotvec();pt=pos0.copy();pvel=np.zeros(3);pacc=np.zeros(3);wvel=np.zeros(3);wacc=np.zeros(3);R0=Rflat

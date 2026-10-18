@@ -1,0 +1,57 @@
+{
+  "selected": {
+    "first4sPlacementAndTransfer": {
+      "samples": 3200,
+      "totalAbsoluteWorkJ": 10.196384487349295,
+      "armAbsoluteWorkJ": 0.1301464913720446
+    },
+    "transferAfter4s": {
+      "samples": 10045,
+      "totalAbsoluteWorkJ": 48.24576207573688,
+      "armAbsoluteWorkJ": 0.0783606671023529
+    },
+    "gait": {
+      "samples": 19212,
+      "totalAbsoluteWorkJ": 147.19488406279325,
+      "armAbsoluteWorkJ": 0.35545276554873734
+    },
+    "settle": {
+      "samples": 12804,
+      "totalAbsoluteWorkJ": 29.572069395840785,
+      "armAbsoluteWorkJ": 0.14912736090091533
+    },
+    "stand": {
+      "samples": 4600,
+      "totalAbsoluteWorkJ": 2.6058705476754644,
+      "armAbsoluteWorkJ": 0.012474032685659423
+    }
+  },
+  "opposedArms": {
+    "first4sPlacementAndTransfer": {
+      "samples": 3200,
+      "totalAbsoluteWorkJ": 11.433049965690804,
+      "armAbsoluteWorkJ": 2.006184433049685
+    },
+    "transferAfter4s": {
+      "samples": 10045,
+      "totalAbsoluteWorkJ": 35.254471594810305,
+      "armAbsoluteWorkJ": 1.3863219500756636
+    },
+    "gait": {
+      "samples": 19212,
+      "totalAbsoluteWorkJ": 206.28873060602226,
+      "armAbsoluteWorkJ": 7.525149884453222
+    },
+    "settle": {
+      "samples": 12804,
+      "totalAbsoluteWorkJ": 31.572449601382374,
+      "armAbsoluteWorkJ": 1.672610700387746
+    },
+    "stand": {
+      "samples": 4600,
+      "totalAbsoluteWorkJ": 2.5780581721173412,
+      "armAbsoluteWorkJ": 0.17747398677902765
+    }
+  },
+  "interpretation": "First four seconds include whole-body support transfer and physical arm placement. This split is descriptive, not a causal attribution to swing alone. Absolute mechanical work is not electrical/metabolic energy."
+}
