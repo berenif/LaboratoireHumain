@@ -9,13 +9,22 @@ from scipy.spatial.transform import Rotation
 def posture_ready(row,c):
  com=np.array(row['com']);capture=com[:2]+np.array(row['comVelocity'])[:2]*math.sqrt(com[2]/9.81)
  return np.linalg.norm((com-c.com1)[:2])<.008 and np.linalg.norm(capture-c.com1[:2])<.01 and row['jointLimitMinimumMarginRad']>=.005 and min(row['jointLimitMarginsRad'][i]for i in (7,13))>=getattr(c,'minimum_ankle_ready_rad',0.) and row['maximumBodyLinearMps']<=.05 and row['maximumBodyAngularRadps']<=.2
+def loaded_settle_ready(row,c,mass):
+ # Loaded double-support admission, not an intermediate quiet hold.
+ com=np.array(row['com']);capture=com[:2]+np.array(row['comVelocity'])[:2]*math.sqrt(com[2]/9.81)
+ return (all(f['loadN']>=3 and f['clearance']<=.003 for f in row['feet'])
+  and sum(f['loadN']for f in row['feet'])>=.8*mass*9.81
+  and row['minimumComCaptureMarginM']is not None and row['minimumComCaptureMarginM']>=.01
+  and np.linalg.norm((com-c.finalCom)[:2])<.008 and np.linalg.norm(capture-c.finalCom[:2])<.01
+  and row['jointLimitMinimumMarginRad']>=.005
+  and row['maximumBodyLinearMps']<=.05 and row['maximumBodyAngularRadps']<=.2)
 def unloaded_support_ready(row,c,mass):
  return posture_ready(row,c)and row['feet'][c.swing_side]['loadN']<.5 and row['feet'][c.stance_side]['loadN']>=.8*mass*9.81
 class MultiStep(LiveStep):
  def __init__(self,base,helper,output,distances=(.03,.06,.09,.045),planned_support=False,time_scale=1.):
   assert .75<=time_scale<=2. and(planned_support or time_scale==1.),'time scaling requires the planned-support controller';self.time_scale=time_scale;self.planned_support=planned_support;self.distances=tuple(distances);self.step_index=0;self.step_records=[];self.ready_run=0;super().__init__(base,helper,output,maximum_integrations=getattr(self,'sequence_integration_budget',64000 if time_scale>1 else 48000));self.begin_step()
  def begin_step(self):
-  w=self.world;side=self.step_index%2;requested=self.distances[self.step_index];distance_limit=getattr(self,'experimental_distance_limit',.12);candidate=Controller(w,side,requested+.002,self_avoidance=True,maximum_distance=distance_limit);separation=float((candidate.targets[side][0]-candidate.targets[1-side][0])@candidate.heading);maximum=max(.025,getattr(self,'support_relative_reach',.18)-separation);chosen=min(requested+.002,maximum);assert chosen>=requested,'requested placement outside the bounded support-relative reach';self.controller=Controller(w,side,chosen,self_avoidance=True,maximum_distance=distance_limit);self.unload_run=0
+  w=self.world;side=self.step_index%2;requested=self.distances[self.step_index];distance_limit=getattr(self,'experimental_distance_limit',.12);candidate=Controller(w,side,requested+.002,self_avoidance=True,maximum_distance=distance_limit);separation=float((candidate.targets[side][0]-candidate.targets[1-side][0])@candidate.heading);maximum=max(.025,getattr(self,'support_relative_reach',.18)-separation);chosen=min(requested+.002,maximum);assert chosen>=requested,'requested placement outside the bounded support-relative reach';self.controller=Controller(w,side,chosen,self_avoidance=True,maximum_distance=distance_limit);self.unload_run=0;self.settle_ready_run=0
   if self.planned_support:
    from plan_source_stance import plan
    reference=plan(w,1-side,True,.9);assert reference['staticMotorContactFeasible']and reference['minimumRequiredMotorFraction']<.925 and reference['minimumSelfSeparationM']>.01,'no motor-reserved stance reference';self.controller.com1=np.array(reference['comReferenceSource']);self.controller.lean_axis=Rotation.from_matrix(np.array(reference['rootReferenceSource'])@self.controller.rootR.T).as_rotvec();self.controller.q0=np.array(reference['qReference']);self.controller.joint_reserve=.01;self.controller.trajectory_time_scale=self.time_scale;self.controller.posture_start=w.arr(0,(28,))[7:].copy();(self.folder/f'stance-reference-{self.step_index+1:02d}.json').write_text(json.dumps(reference,indent=2)+'\n')
@@ -64,7 +73,13 @@ class MultiStep(LiveStep):
       self.step_records[-1].update(completedNativeStep=self.steps,completedTimeS=self.steps*.00125,achievedForwardM=forward,loadedSlipThisStepM=(self.slip-self.step_slip).tolist(),bodyLinearMps=row['maximumBodyLinearMps'],bodyAngularRadps=row['maximumBodyAngularRadps'],comCaptureMarginM=row['minimumComCaptureMarginM'],quietConsecutiveS=0.,completedAt='measured-loaded-landing')
       self.step_index+=1;self.begin_step();self.events.append(dict(event='next-actual-support-step',timeS=self.steps*.00125,stepIndex=self.step_index+1));print('NEXT STEP',self.step_index+1,'requested',self.distances[self.step_index],flush=True);continue
 
-   elif self.phase=='settle'and elapsed>=c.phase_duration(self.phase):nextphase='stand'
+   elif self.phase=='settle':
+    if getattr(self,'loaded_settle_handoff',False)and self.step_index<len(self.distances)-1:
+     self.settle_ready_run=self.settle_ready_run+1 if loaded_settle_ready(row,c,w.mass)else 0
+     if elapsed>=c.phase_duration(self.phase)and self.settle_ready_run>=80 and forward>=requested:
+      self.step_records[-1].update(completedNativeStep=self.steps,completedTimeS=self.steps*.00125,achievedForwardM=forward,loadedSlipThisStepM=(self.slip-self.step_slip).tolist(),bodyLinearMps=row['maximumBodyLinearMps'],bodyAngularRadps=row['maximumBodyAngularRadps'],comCaptureMarginM=row['minimumComCaptureMarginM'],quietConsecutiveS=0.,loadedSettleReadyConsecutiveS=self.settle_ready_run*.00125,completedAt='measured-loaded-settle')
+      self.step_index+=1;self.begin_step();self.events.append(dict(event='next-actual-support-step',timeS=self.steps*.00125,stepIndex=self.step_index+1));print('NEXT STEP',self.step_index+1,'requested',self.distances[self.step_index],flush=True);continue
+    elif elapsed>=c.phase_duration(self.phase):nextphase='stand'
    elif self.phase=='stand':
     stable=row['maximumBodyLinearMps']<=.05 and row['maximumBodyAngularRadps']<=.15 and row['minimumComCaptureMarginM']is not None and row['minimumComCaptureMarginM']>=.01 and all(f['loadN']>=3 for f in row['feet'])and self.quiet_run>0
     self.ready_run=self.ready_run+1 if stable else 0
@@ -74,6 +89,10 @@ class MultiStep(LiveStep):
      if final:self.finished=True;self.paused=True;break
      self.step_index+=1;self.begin_step();self.events.append(dict(event='next-actual-support-step',timeS=self.steps*.00125,stepIndex=self.step_index+1));print('NEXT STEP',self.step_index+1,'requested',self.distances[self.step_index],flush=True);continue
    if nextphase:
+    if nextphase=='settle'and getattr(self,'loaded_settle_handoff',False):
+     c.finalCom[:2]=np.mean(np.array([f['position']for f in row['feet']]),axis=0)[:2]+.035*c.heading[:2]
+     self.step_records[-1].update(settleMeasuredFeet=[f['position']for f in row['feet']],settleComTargetSource=c.finalCom.tolist())
+     path=self.folder/f'controller-step-{self.step_index+1:02d}.json';record=json.loads(path.read_text());record['finalCom']=c.finalCom.tolist();path.write_text(json.dumps(record)+'\n')
     self.events.append(dict(event=nextphase,timeS=self.steps*.00125,stepIndex=self.step_index+1));self.phase=nextphase;self.phase_start=self.steps*.00125;w.checkpoint(self.folder/f'step-{self.step_index+1:02d}-{nextphase}.bin');
     if not self.planned_support or nextphase in ['settle','stand']:c.q0=np.clip(w.arr(0,(28,))[7:].copy(),w.limits[:,0]+.002,w.limits[:,1]-.002)
    elif self.phase!='stand'and elapsed>c.phase_duration(self.phase)+2.:self.failure='phase-timeout-'+self.phase;self.paused=True;break

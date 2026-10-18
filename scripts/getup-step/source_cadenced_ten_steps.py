@@ -14,10 +14,12 @@ from scipy.spatial import ConvexHull,QhullError
 from scipy.spatial.transform import Rotation
 
 from source_step_probe import sha
+from source_implicit_arm_coordination import implicit_arm_task
 from source_selected_step import prepare
 from source_upright_large_steps import LargeStep,ContactSeekingController
 
-PHASE_DURATIONS = dict(transfer=3., lift=.8, translate=1.2, land=1., settle=1.8)
+PHASE_DURATIONS = dict(transfer=2., lift=.8, translate=1.2, land=1., settle=1.52)
+DIRECT_PHASE_DURATIONS = dict(transfer=3., lift=.8, translate=1.2, land=1., settle=1.8)
 
 
 def thigh_pitch_jet(w,side):
@@ -56,7 +58,7 @@ class CadencedController(ContactSeekingController):
                 measuredPitchRateRadps=rate,minimumReservedMarginRad=min(angle-lower,upper-angle),
                 predictionHorizonS=horizon,verifiedArmRangeReserveRad=reserve,clippingEnabled=False))
         self.capture_barrier=[]
-        if phase not in ('lift','translate','land'):
+        if phase not in ('lift','translate','land')and not(phase=='settle'and getattr(self,'loaded_settle_capture_barrier',False)):
             return
         count=self.w.l.lh_support_count(self.w.h)
         points=self.w.arr(21,(128,))[:2*count].reshape(-1,2)
@@ -85,17 +87,35 @@ class CadencedController(ContactSeekingController):
 
     def solve(self,t,phase='transfer'):
         u,info=super().solve(t,phase)
+        if hasattr(self,'_simultaneous_arm_telemetry'):
+            info['simultaneousArmCoordination']=self._simultaneous_arm_telemetry
+            info['opposedArmSwing']['targetArmAccelerationRadps2']=None
+            info['opposedArmSwing']['accelerationTargetModel']='same-QP implicit measured thigh acceleration'
+            info['opposedArmSwing']['finiteDifferenceLegAccelerationUsed']=False
         info['captureBarrier']=self.capture_barrier
         info['opposedArmRangeBarrier']=self.arm_range_barrier
         return u,info
 
 
+class SimultaneousArmCadencedController(CadencedController):
+    def arm_acceleration_task(self,t,phase):
+        # The measured thigh acceleration is part of this same whole-body QP,
+        # rather than a delayed finite difference fed back as an external input.
+        arm=implicit_arm_task(self,t,phase,thigh_jet_fn=thigh_pitch_jet)
+        self._simultaneous_arm_telemetry=arm.telemetry
+        return arm
+
+
 class CadencedSteps(LargeStep):
-    def __init__(self, base, helper, output, count=10, distance=.18):
+    def __init__(self, base, helper, output, count=10, distance=.18,handoff='loaded-settle',implicit_arms=False):
+        assert handoff in ('loaded-settle','loaded-landing')
         self.sequence_integration_budget = 160000
-        self.continuous_loaded_handoff = True
+        self.loaded_settle_handoff=handoff=='loaded-settle'
+        self.continuous_loaded_handoff=handoff=='loaded-landing'
+        self.implicit_arms=bool(implicit_arms)
         super().__init__(base, helper, output, (distance,)*count, False)
         self.code_at_start[Path(__file__).name] = sha(__file__)
+        self.code_at_start['source_implicit_arm_coordination.py']=sha(Path(__file__).with_name('source_implicit_arm_coordination.py'))
 
     def begin_step(self):
         previous=getattr(self,'controller',None)if self.step_index>0 else None
@@ -103,18 +123,20 @@ class CadencedSteps(LargeStep):
         if previous is not None:
             # Preserve target C0/C1 and the measured-thigh differentiation
             # history at a loaded handoff. Native pose/velocity are untouched.
-            self.controller.com0=previous.com1.copy()
+            settled=getattr(self,'loaded_settle_handoff',False)
+            self.controller.com0=(previous.finalCom if settled else previous.com1).copy()
             reference_R=Rotation.from_rotvec(self.controller.lean_axis).as_matrix()@self.controller.rootR
-            self.controller.rootR=Rotation.from_rotvec(previous.lean_axis).as_matrix()@previous.rootR
+            self.controller.rootR=previous.rootR.copy()if settled else Rotation.from_rotvec(previous.lean_axis).as_matrix()@previous.rootR
             self.controller.lean_axis=Rotation.from_matrix(reference_R@self.controller.rootR.T).as_rotvec()
             self.controller.posture_start=previous.q0.copy()
             self.controller.previous_time=previous.previous_time
             self.controller.previous_leg_rate=previous.previous_leg_rate.copy()
 
-        self.controller.phase_durations = PHASE_DURATIONS.copy()
+        self.controller.phase_durations = (PHASE_DURATIONS if getattr(self,'loaded_settle_handoff',False)else DIRECT_PHASE_DURATIONS).copy()
         if self.step_index == 0:
             self.controller.phase_durations['transfer'] = 4.
-        self.controller.__class__=CadencedController
+        self.controller.__class__=SimultaneousArmCadencedController if getattr(self,'implicit_arms',False)else CadencedController
+        self.controller.loaded_settle_capture_barrier=getattr(self,'loaded_settle_handoff',False)
         self.controller.arm_placement_duration = self.controller.phase_duration('transfer')
         record = {k:v for k,v in vars(self.controller).items() if k!='w' and not k.startswith('_')}
         (self.folder/f'controller-step-{self.step_index+1:02d}.json').write_text(
@@ -127,8 +149,15 @@ class CadencedSteps(LargeStep):
             (self.folder/'cadenced-step-config.json').write_text(json.dumps(dict(
                 physicalTimeOnly=True, playbackSpeed=1.,
                 requestedSteps=len(self.distances), requestedDistanceM=self.distances[0],
-                phaseDurationsS=PHASE_DURATIONS, initialTransferS=4.,
-                finalQuietRequiredS=5., intermediateStableRequiredS=0.,continuousLoadedHandoff=True,
+                phaseDurationsS=PHASE_DURATIONS if self.loaded_settle_handoff else DIRECT_PHASE_DURATIONS, initialTransferS=4.,
+                finalQuietRequiredS=5., intermediateStableRequiredS=0.,continuousLoadedHandoff=self.continuous_loaded_handoff,
+                loadedSettleHandoff=self.loaded_settle_handoff,
+                loadedSettleReadiness=dict(consecutiveS=.1,minimumEachFootLoadN=3.,minimumTotalWeightFraction=.8,
+                    maximumFootClearanceM=.003,minimumCaptureMarginM=.01,minimumJointMarginRad=.005,
+                    maximumComTargetErrorM=.008,maximumCaptureTargetErrorM=.01,
+                    maximumBodyLinearMps=.05,maximumBodyAngularRadps=.2,forwardMidpointOffsetM=.035),
+                simultaneousArmCoordination=dict(enabled=self.implicit_arms,finiteDifferenceAccelerationUsed=not self.implicit_arms,
+                    positionGain=100.,velocityGain=20.,taskWeight=2.,angularGain=-1.,targetClippingEnabled=False),
                 measuredSupportCaptureBarrier=dict(reserveM=.003,gainPerS=8.),
                 opposedArmRangeBarrier=dict(verifiedRangeReserveRad=.02,predictionHorizonS=.2,clippingEnabled=False),
                 globalLoadedSlipLimitM=.01, integrationBudget=self.sequence_integration_budget,
@@ -141,10 +170,12 @@ def main():
     p.add_argument('--output', type=Path, required=True)
     p.add_argument('--count', type=int, default=10)
     p.add_argument('--distance', type=float, default=.18)
+    p.add_argument('--handoff',choices=('loaded-settle','loaded-landing'),default='loaded-settle')
+    p.add_argument('--implicit-arms',action='store_true')
     a=p.parse_args()
     assert 1<=a.count<=10 and .12<=a.distance<=.24
     session,helper,_=prepare(a.output)
-    live=CadencedSteps(session,helper,a.output/'run',a.count,a.distance)
+    live=CadencedSteps(session,helper,a.output/'run',a.count,a.distance,a.handoff,a.implicit_arms)
     live.paused=False; started=time.monotonic()
     try:
         while not live.finished and not live.failure:

@@ -1,0 +1,815 @@
+{
+  "schema": 1,
+  "status": "two-explicit-comparisons-stopped-unqualified",
+  "tenStepRequestFinished": false,
+  "selectedPresetChanged": false,
+  "unchangedOriginalModelTenStepQualification": false,
+  "onlyComparedContactImpedanceValues": [
+    1.0,
+    2.0,
+    8.0
+  ],
+  "noImpratio5ModelOrRunCreated": true,
+  "frictionMu": 1.0,
+  "motorLimit": 0.95,
+  "geometryUnchanged": true,
+  "physicsStepS": 0.00125,
+  "controlStepS": 0.005,
+  "globalPerFootLoadedSlipLimitM": 0.01,
+  "finalQuietRequiredS": 5.0,
+  "baselineReplay": {
+    "path": "/tmp/cadence-contact-creep/original-settle-replay-summary.json",
+    "sha256": "3c2fbff5a816e4c4ec52b02eeb435f6492a0a6215b15c300c4fdb19e00818ce2",
+    "result": {
+      "schema": 1,
+      "diagnosticParityTolerances": {
+        "qpos": 1e-09,
+        "qvel": 1e-07,
+        "globalSlipM": 1e-10
+      },
+      "elapsedArithmetic": "original global-counter time subtraction",
+      "priorStrictRoundoffAttemptCountedSeparately": 389,
+      "scope": "Original-model parity replay only; separate from prior19 native-correction cases and not a continuous-sequence qualification.",
+      "modelImpratio": 1.0,
+      "modifiedModelUsed": false,
+      "fullCacheImportedOnlyIntoIdenticalModel": true,
+      "modelSHA256": "216d5c0159abf07139f5556c59e244ae77cb7557ba5256e301ebc5e1c8bbc399",
+      "helperSHA256": "20ddefbcbdd328b1661ce163e4df6aeb0e953192c677b79d3076c904de5a0ba5",
+      "harnessSHA256": "710630ac03b9944b47865c3465946489918c7f8ddbf1864622850ed96830bf48",
+      "checkpoint": "/tmp/cadence-sequence-8/run/generation-001/step-01-settle.bin",
+      "checkpointSHA256": "6cf298dd9b9414d7e2c79ccd8061f2530d9095d363ee30eb6b1696e4b2ee42ca",
+      "sourceStartStep": 5711,
+      "sourceEndStep": 6927,
+      "actualNativeIntegrations": 1216,
+      "maximumAuthorizedIntegrations": 1216,
+      "physicsS": 1.52,
+      "outerSolveCalls": 304,
+      "stopped": "bounded-original-settle-parity-replay",
+      "originalCheckpointGlobalSlipM": [
+        0.001615200553561628,
+        0.0023141566449165376
+      ],
+      "finalGlobalSlipM": [
+        0.0031228685521842866,
+        0.003908268521317211
+      ],
+      "incrementalSlipM": [
+        0.0015076679986226586,
+        0.0015941118764006734
+      ],
+      "maximumPerStepQposDifference": 0.0,
+      "maximumPerStepQvelDifference": 0.0,
+      "maximumPerStepGlobalSlipDifferenceM": 0.0,
+      "firstMismatch": null,
+      "everyActualNativeSampleCompared": 1216,
+      "minimumJointMarginRad": 0.01864615333911579,
+      "minimumCaptureMarginM": 0.028565416774362584,
+      "maximumMotorFraction": 0.8544167277480205,
+      "measuredMidpointFinalComTarget": [
+        0.3671729854173158,
+        -0.0802050871373321,
+        0.8081642540803642
+      ],
+      "reconstructedQ0FromActualCheckpointWithOriginalTransitionClip": true,
+      "reconstructedPreviousTimeFromExactHistoricalNativeRow": true,
+      "originalNumericPhysicalGatesRetained": true,
+      "wallS": 10.545240324001497,
+      "qualification": false,
+      "verifiedBaselineMatch": "All qpos, qvel and cumulative loaded-slip arrays exactly equal the original saved candidate8 journal at every actual integration; no diagnostic tolerance was needed.",
+      "separateReplayAccounting": {
+        "strictRoundoffAttemptIntegrations": 389,
+        "exactFullReplayIntegrations": 1216,
+        "totalTheseReplayIntegrations": 1605,
+        "priorNativeDiagnosticCasesUnchanged": 19,
+        "priorNativeDiagnosticIntegrationsUnchanged": 13355
+      },
+      "strictAttempt": {
+        "stopped": "baseline-reconstruction-parity-mismatch",
+        "maxQposDifference": 1.4414025528708407e-12,
+        "maxQvelDifference": 1.201223148727948e-10,
+        "maxGlobalSlipDifferenceM": 5.488014556687126e-15,
+        "cause": "Different local i*dt elapsed arithmetic produced solver/feedback roundoff; exact original global-counter subtraction eliminates the discrepancy. This was never a physical gate failure."
+      },
+      "evidenceSHA256": {
+        "original-settle-replay-parity.json": "2f09fc503598c7cb55cb0c8e09eb3ce430ddc6c4cf55e44cb405514c87590073",
+        "replay_original_settle.py": "710630ac03b9944b47865c3465946489918c7f8ddbf1864622850ed96830bf48",
+        "original-settle-replay-strict-roundoff-attempt.json": "f7b34042afd0abe33b064d238825ce8526812302e1b78d28e83b124382a9f698",
+        "replay_original_settle_strict_roundoff_attempt.py": "bbe64ed3ca72f480ca704bf4fa98422df02b9a0751982d55c7f839c71310e8bf",
+        "source-8-hashes.json": "4a7e81e617497cfb09bf5b159452038ab78a71d4b9d0f8ee0d74251e21135ee1"
+      }
+    }
+  },
+  "independentComparisons": {
+    "schema": 1,
+    "savedDataOnly": true,
+    "physicsIntegrationsByAuditors": 0,
+    "profiles": [
+      {
+        "impratio": 2,
+        "actualIntegrations": 23545,
+        "physicsSimSeconds": 29.431250000000002,
+        "stopped": "global-loaded-slip-10mm",
+        "completedSteps": [
+          1,
+          2,
+          3,
+          4
+        ],
+        "qualifiedLandings": [
+          1,
+          2,
+          3,
+          4
+        ],
+        "originalSelectedModelIdentityPass": false,
+        "originalStrictCadencedSequencePass": false,
+        "explicitExperimentalTenStepPass": false,
+        "alteredModelProofPass": true,
+        "nativeContinuityAndSourceIntegrityPass": true,
+        "unchangedTrialControlsPass": true,
+        "loadedSlipM": [
+          0.01000010599960306,
+          0.008774740055958586
+        ],
+        "finalMeasured": {
+          "step": 5,
+          "phase": "transfer",
+          "jointMarginRad": 0.019856440220901828,
+          "captureMarginM": 0.0796706443363577
+        },
+        "armTrackingPass": true,
+        "armExactTargetIdentityPass": true,
+        "armFKPass": true,
+        "allReportsReferToSameFrames": true,
+        "independentDisagreements": [],
+        "summaryPath": "/tmp/cadence-impratio-2/independent-audit-summary.json",
+        "summarySHA256": "c1a30be07ec8f3cd3f883708f870eea05e985304921111680844d8c99a547672",
+        "reports": {
+          "explicitExperiment": "/tmp/cadence-impratio-2/contact-impedance-audit.json",
+          "originalStrict": "/tmp/cadence-impratio-2/strict-audit.json",
+          "arm": "/tmp/cadence-impratio-2/stopped-safe-arm-audit.json",
+          "native": "/tmp/cadence-impratio-2/native-saved-data-audit.json",
+          "phaseSlip": "/tmp/cadence-impratio-2/phase-slip-attribution.json",
+          "modelProof": "/tmp/cadence-impratio-2/independent-terminal-model-proof.json"
+        },
+        "reportSHA256": {
+          "explicitExperiment": "3294a0b824f5914ed60dfc0578897da8ebffb887634f23ae1c8c5bf9b6f8dee7",
+          "originalStrict": "db0cfe695f35ea3a8b0a19424c89cbcde982483437c3fee3034cb21fe52722b1",
+          "arm": "39e96ef08d0efead4616dca73c8f38e2b07d6a5c8a5f4d85a9efea5becbc1c76",
+          "native": "56d05fa053f52a59c3c8acfd93556ebba073c63f0dbba968f6de1bf91e2908e6",
+          "phaseSlip": "e4d5ea394f7cd8f3bd82dc00a22d92b50f1a75c82aa12fa4f6c24ae35f5e505f",
+          "modelProof": "9388df6eb656c54ac75968d996364bf33fd7b7601351b5ab044e8545b34a9657"
+        }
+      },
+      {
+        "impratio": 8,
+        "actualIntegrations": 3614,
+        "physicsSimSeconds": 4.5175,
+        "stopped": "measured-current-support-capture-outside",
+        "completedSteps": [],
+        "qualifiedLandings": [],
+        "originalSelectedModelIdentityPass": false,
+        "originalStrictCadencedSequencePass": false,
+        "explicitExperimentalTenStepPass": false,
+        "alteredModelProofPass": true,
+        "nativeContinuityAndSourceIntegrityPass": true,
+        "unchangedTrialControlsPass": true,
+        "loadedSlipM": [
+          0.0005885496992289899,
+          0.000484058078597677
+        ],
+        "finalMeasured": {
+          "step": 1,
+          "phase": "lift",
+          "jointMarginRad": 0.010967958578399606,
+          "captureMarginM": -0.002653457197109299
+        },
+        "armTrackingPass": false,
+        "armExactTargetIdentityPass": true,
+        "armFKPass": true,
+        "allReportsReferToSameFrames": true,
+        "independentDisagreements": [],
+        "summaryPath": "/tmp/cadence-impratio-8/independent-audit-summary.json",
+        "summarySHA256": "c7655342cd9fa9f9b32035beba0e388952e1a0609bbc1bb66dff6f992b3cfc88",
+        "reports": {
+          "explicitExperiment": "/tmp/cadence-impratio-8/contact-impedance-audit.json",
+          "originalStrict": "/tmp/cadence-impratio-8/strict-audit.json",
+          "arm": "/tmp/cadence-impratio-8/stopped-safe-arm-audit.json",
+          "native": "/tmp/cadence-impratio-8/native-saved-data-audit.json",
+          "phaseSlip": "/tmp/cadence-impratio-8/phase-slip-attribution.json",
+          "modelProof": "/tmp/cadence-impratio-8/independent-terminal-model-proof.json"
+        },
+        "reportSHA256": {
+          "explicitExperiment": "d8c967d310e44be2e0f78aaad562f462c5d925b0a95272eff46151bd6ccf51ff",
+          "originalStrict": "2ac5b942a5f248a137a274f859256e703a7f844585fc497db7d3b51fc9178b5c",
+          "arm": "454fffc1d456cc0bf375fd00fe34eb99d1620652e007fc3ee1314cc2b6b737fb",
+          "native": "71b3dd0929dcb6fd8e13d10b7f736c2cb6af054475e3d067b3fd93296c29d8c6",
+          "phaseSlip": "383a481407fe9abef9e4243577bffa1f0a5255f470aaf4a10cf638acea6ee68f",
+          "modelProof": "55f203da10e8abeeda813764d04bc110bbb7b18850f34391511487fd6bd61d82"
+        }
+      }
+    ],
+    "unitTests": {
+      "passed": 53,
+      "failed": 0,
+      "log": "/tmp/cadence-contact-impedance-audit-tests-53-final.txt",
+      "sha256": "389eb25a91bc3a71e709da14d789d976d875945cbe05f293dcbaccfb870bf95d"
+    },
+    "trackedEditsOnly": [
+      "scripts/getup-step/audit_source_contact_impedance.py",
+      "scripts/getup-step/test_source_contact_impedance_audit.py"
+    ],
+    "scope": "Isolated explicit impratio2 and impratio8 comparisons; neither qualifies ten steps plus final5s quiet. Original selected-model qualification remains false for both."
+  },
+  "actualInspectorArgument": "/tmp/cadence-contact-creep/read_only_contacts.so",
+  "inspectorSourceSHA256": "bd6989fe94a8835c6f26aa126e19f46765204391595cd50543a704470824a215",
+  "buildScriptSHA256": "a373fa23473d390fa7a50d0a5519690d2bc164357430931e39ec48a09b307e87",
+  "profileReceipts": {
+    "2": {
+      "preparation": {
+        "schema": 1,
+        "experiment": "contact-impratio-only",
+        "baselineImpratio": 1.0,
+        "candidateImpratio": 2.0,
+        "baselineModelSHA256": "216d5c0159abf07139f5556c59e244ae77cb7557ba5256e301ebc5e1c8bbc399",
+        "modelSHA256": "d02f5dfa58eec28d04eb502d13b9c693b78ded5799798b2fa38b8c9fe68c9b9d",
+        "helperSHA256": "20ddefbcbdd328b1661ce163e4df6aeb0e953192c677b79d3076c904de5a0ba5",
+        "initialQposQvelSHA256": "d8f8cea00fb8c54f9344523a1a512410f982ec86e7c1d382434a77a2cac0d707",
+        "coldCacheSHA256": "a1384e489e8442d2b79367788ca514a05f07344f11ad95ac8749495e23531874",
+        "originalFullCacheImportedIntoCandidate": false,
+        "modelBoundColdCacheRebuilt": true,
+        "initialNativeCounter": 0,
+        "physicsIntegrations": 0,
+        "onlyXMLDifference": "option impratio: absent(default1) -> 2",
+        "originalAndCandidateOptions": [
+          [
+            213.0,
+            0.00125,
+            1.0,
+            0.0,
+            2.0,
+            100.0,
+            1e-08,
+            0.0,
+            1e-06,
+            0.0,
+            0.0,
+            0.0,
+            20.0,
+            27.0,
+            0.0,
+            0.02,
+            1.0,
+            0.9,
+            0.95,
+            0.001,
+            0.5,
+            2.0
+          ],
+          [
+            213.0,
+            0.00125,
+            2.0,
+            0.0,
+            2.0,
+            100.0,
+            1e-08,
+            0.0,
+            1e-06,
+            0.0,
+            0.0,
+            0.0,
+            20.0,
+            27.0,
+            0.0,
+            0.02,
+            1.0,
+            0.9,
+            0.95,
+            0.001,
+            0.5,
+            2.0
+          ]
+        ],
+        "originalMuGeometryMassMotorJointLimitsPreserved": true,
+        "originalSolverSolrefSolimpConeAndClockPreserved": true,
+        "selectedPresetChanged": false,
+        "originalModelQualificationClaim": false,
+        "inspectorSHA256": "d719cda16cb681748bd62c26b9de4bbd2f5aabef3863fba801e22c10b5b358e0",
+        "runnerSHA256": "51c5dca0f9a11c723e3137551b1f7573e14b60ac0a93d503ccbb8982ad0eec21"
+      },
+      "stopped": "global-loaded-slip-10mm",
+      "actualIntegrations": 23545,
+      "physicsSimSeconds": 29.431250000000002,
+      "globalLoadedSlipM": [
+        0.01000010599960306,
+        0.008774740055958586
+      ],
+      "completedSteps": 4,
+      "steps": [
+        {
+          "index": 1,
+          "swingSide": "left",
+          "requestedDistanceM": 0.18,
+          "commandedDistanceM": 0.182,
+          "startNativeStep": 0,
+          "startSourceTimeS": 0.0,
+          "entryCOM": [
+            0.38007874160510713,
+            -0.03922870920128895,
+            0.8081642540803642
+          ],
+          "initialFeet": [
+            [
+              0.5164085985705382,
+              -0.032167538723330336,
+              0.028424512834071075
+            ],
+            [
+              0.3253183487011271,
+              0.10000097728588249,
+              0.02863416314941853
+            ]
+          ],
+          "bodyAdaptsThrough": "current-state COM/capture feedback, measured contact load, whole-body inverse dynamics, joint ground barriers; no inter-step state installation",
+          "postureVariant": "selected-hips-knees-opposed-arms",
+          "staticRequiredMotorFraction": 0.9026041969668359,
+          "staticMinimumSelfSeparationM": 0.07197189789791991,
+          "phaseDurationsS": {
+            "transfer": 4.0,
+            "lift": 0.8,
+            "translate": 1.2,
+            "land": 1.0,
+            "settle": 1.52
+          },
+          "lift25mmConsecutiveS": 0.3425,
+          "landingNativeStep": 5697,
+          "landingTimeS": 7.12125,
+          "achievedAtLoadAcquisitionM": 0.18194624318750796,
+          "measuredSupportAnchors": [
+            [
+              0.43755800932892713,
+              -0.19614016833329156,
+              0.026957626782500355
+            ],
+            [
+              0.3273528195952193,
+              0.0987228757695693,
+              0.026463477407136442
+            ]
+          ],
+          "swingLoadedN": 18.008021090183618,
+          "stanceLoadedN": 382.09522329064424,
+          "settleMeasuredFeet": [
+            [
+              0.43755800932892713,
+              -0.19614016833329156,
+              0.026957626782500355
+            ],
+            [
+              0.3273528195952193,
+              0.0987228757695693,
+              0.026463477407136442
+            ]
+          ],
+          "settleComTargetSource": [
+            0.36727744002762974,
+            -0.0802463870390457,
+            0.8081642540803642
+          ],
+          "completedNativeStep": 6915,
+          "completedTimeS": 8.64375,
+          "achievedForwardM": 0.18204877821946583,
+          "loadedSlipThisStepM": [
+            0.002059465172681993,
+            0.0027173927510901466
+          ],
+          "bodyLinearMps": 0.01703889304668414,
+          "bodyAngularRadps": 0.034767233227622846,
+          "comCaptureMarginM": 0.08555487492384795,
+          "quietConsecutiveS": 0.0,
+          "loadedSettleReadyConsecutiveS": 0.125,
+          "completedAt": "measured-loaded-settle"
+        },
+        {
+          "index": 2,
+          "swingSide": "right",
+          "requestedDistanceM": 0.18,
+          "commandedDistanceM": 0.182,
+          "startNativeStep": 6915,
+          "startSourceTimeS": 8.643749999999809,
+          "entryCOM": [
+            0.3676642293293887,
+            -0.08019818650408793,
+            0.8077353344175718
+          ],
+          "initialFeet": [
+            [
+              0.437986457928746,
+              -0.1964601566320967,
+              0.026672360402428104
+            ],
+            [
+              0.3277690469607958,
+              0.09873270630887138,
+              0.02670263640194844
+            ]
+          ],
+          "bodyAdaptsThrough": "current-state COM/capture feedback, measured contact load, whole-body inverse dynamics, joint ground barriers; no inter-step state installation",
+          "postureVariant": "selected-hips-knees-opposed-arms",
+          "staticRequiredMotorFraction": 0.9043411706960851,
+          "staticMinimumSelfSeparationM": 0.026948786754346143,
+          "phaseDurationsS": {
+            "transfer": 2.0,
+            "lift": 0.8,
+            "translate": 1.2,
+            "land": 1.0,
+            "settle": 1.52
+          },
+          "lift25mmConsecutiveS": 0.34125,
+          "landingNativeStep": 11028,
+          "landingTimeS": 13.785,
+          "achievedAtLoadAcquisitionM": 0.18200442771689576,
+          "measuredSupportAnchors": [
+            [
+              0.43845250572773425,
+              -0.1971165056696142,
+              0.02647631189181581
+            ],
+            [
+              0.24893802933100062,
+              -0.06531389768001229,
+              0.02694365271456737
+            ]
+          ],
+          "swingLoadedN": 25.466675778060356,
+          "stanceLoadedN": 374.7999614677428,
+          "settleMeasuredFeet": [
+            [
+              0.43845250572773425,
+              -0.1971165056696142,
+              0.02647631189181581
+            ],
+            [
+              0.24893802933100062,
+              -0.06531389768001229,
+              0.02694365271456737
+            ]
+          ],
+          "settleComTargetSource": [
+            0.328522500449714,
+            -0.16275544801415853,
+            0.8077353344175718
+          ],
+          "completedNativeStep": 12246,
+          "completedTimeS": 15.307500000000001,
+          "achievedForwardM": 0.182008668244079,
+          "loadedSlipThisStepM": [
+            0.0028640773254113966,
+            0.0015611613099796463
+          ],
+          "bodyLinearMps": 0.016486364058620376,
+          "bodyAngularRadps": 0.030731704082151586,
+          "comCaptureMarginM": 0.10513524370609151,
+          "quietConsecutiveS": 0.0,
+          "loadedSettleReadyConsecutiveS": 0.18125,
+          "completedAt": "measured-loaded-settle"
+        },
+        {
+          "index": 3,
+          "swingSide": "left",
+          "requestedDistanceM": 0.18,
+          "commandedDistanceM": 0.182,
+          "startNativeStep": 12246,
+          "startSourceTimeS": 15.307500000003218,
+          "entryCOM": [
+            0.32870970748258865,
+            -0.16300214821069214,
+            0.8077244081920312
+          ],
+          "initialFeet": [
+            [
+              0.4385014999377024,
+              -0.19712749928533055,
+              0.02669707155849845
+            ],
+            [
+              0.24904463679822958,
+              -0.06536988800746975,
+              0.026674697815305765
+            ]
+          ],
+          "bodyAdaptsThrough": "current-state COM/capture feedback, measured contact load, whole-body inverse dynamics, joint ground barriers; no inter-step state installation",
+          "postureVariant": "selected-hips-knees-opposed-arms",
+          "staticRequiredMotorFraction": 0.901799533176446,
+          "staticMinimumSelfSeparationM": 0.031175695073716342,
+          "phaseDurationsS": {
+            "transfer": 2.0,
+            "lift": 0.8,
+            "translate": 1.2,
+            "land": 1.0,
+            "settle": 1.52
+          },
+          "lift25mmConsecutiveS": 0.34375,
+          "landingNativeStep": 16356,
+          "landingTimeS": 20.445,
+          "achievedAtLoadAcquisitionM": 0.18155441570904104,
+          "measuredSupportAnchors": [
+            [
+              0.35946997584262114,
+              -0.36057810963685266,
+              0.02691380609115844
+            ],
+            [
+              0.24920304679330632,
+              -0.06523707620706938,
+              0.026483945446803554
+            ]
+          ],
+          "swingLoadedN": 35.80131292447672,
+          "stanceLoadedN": 365.54701821249887,
+          "settleMeasuredFeet": [
+            [
+              0.35946997584262114,
+              -0.36057810963685266,
+              0.02691380609115844
+            ],
+            [
+              0.24920304679330632,
+              -0.06523707620706938,
+              0.026483945446803554
+            ]
+          ],
+          "settleComTargetSource": [
+            0.2891493360310318,
+            -0.2444409039882605,
+            0.8077244081920312
+          ],
+          "completedNativeStep": 17574,
+          "completedTimeS": 21.9675,
+          "achievedForwardM": 0.18155906577172487,
+          "loadedSlipThisStepM": [
+            0.002092637383004761,
+            0.0024465262382564953
+          ],
+          "bodyLinearMps": 0.020754091800621138,
+          "bodyAngularRadps": 0.036221166407738266,
+          "comCaptureMarginM": 0.08530674355073889,
+          "quietConsecutiveS": 0.0,
+          "loadedSettleReadyConsecutiveS": 0.1625,
+          "completedAt": "measured-loaded-settle"
+        },
+        {
+          "index": 4,
+          "swingSide": "right",
+          "requestedDistanceM": 0.18,
+          "commandedDistanceM": 0.182,
+          "startNativeStep": 17574,
+          "startSourceTimeS": 21.967499999998143,
+          "entryCOM": [
+            0.28912435925095953,
+            -0.24402466557618138,
+            0.8070019872220908
+          ],
+          "initialFeet": [
+            [
+              0.3593925249408024,
+              -0.3605459687612565,
+              0.026672703178921106
+            ],
+            [
+              0.24917085867468763,
+              -0.06517694089913599,
+              0.02669875649676874
+            ]
+          ],
+          "bodyAdaptsThrough": "current-state COM/capture feedback, measured contact load, whole-body inverse dynamics, joint ground barriers; no inter-step state installation",
+          "postureVariant": "selected-hips-knees-opposed-arms",
+          "staticRequiredMotorFraction": 0.9042084106914873,
+          "staticMinimumSelfSeparationM": 0.032916634456565105,
+          "phaseDurationsS": {
+            "transfer": 2.0,
+            "lift": 0.8,
+            "translate": 1.2,
+            "land": 1.0,
+            "settle": 1.52
+          },
+          "lift25mmConsecutiveS": 0.34125,
+          "landingNativeStep": 21688,
+          "landingTimeS": 27.11,
+          "achievedAtLoadAcquisitionM": 0.1820041859259489,
+          "measuredSupportAnchors": [
+            [
+              0.36000798291599634,
+              -0.36045042422947965,
+              0.026476884161279343
+            ],
+            [
+              0.170382695025229,
+              -0.2292438641001429,
+              0.026944342652884708
+            ]
+          ],
+          "swingLoadedN": 25.16991101898161,
+          "stanceLoadedN": 375.10130112579225,
+          "settleMeasuredFeet": [
+            [
+              0.36000798291599634,
+              -0.36045042422947965,
+              0.026476884161279343
+            ],
+            [
+              0.170382695025229,
+              -0.2292438641001429,
+              0.026944342652884708
+            ]
+          ],
+          "settleComTargetSource": [
+            0.25003033346290987,
+            -0.3263911231140711,
+            0.8070019872220908
+          ],
+          "completedNativeStep": 22906,
+          "completedTimeS": 28.6325,
+          "achievedForwardM": 0.18199264877120885,
+          "loadedSlipThisStepM": [
+            0.002693990501369369,
+            0.001725399046737055
+          ],
+          "bodyLinearMps": 0.016596569432868587,
+          "bodyAngularRadps": 0.03196311972779744,
+          "comCaptureMarginM": 0.10513163551571546,
+          "quietConsecutiveS": 0.0,
+          "loadedSettleReadyConsecutiveS": 0.18125,
+          "completedAt": "measured-loaded-settle"
+        },
+        {
+          "index": 5,
+          "swingSide": "left",
+          "requestedDistanceM": 0.18,
+          "commandedDistanceM": 0.182,
+          "startNativeStep": 22906,
+          "startSourceTimeS": 28.63249999999208,
+          "entryCOM": [
+            0.2502415709192082,
+            -0.3265315650992191,
+            0.8069557383044996
+          ],
+          "initialFeet": [
+            [
+              0.36007493788527284,
+              -0.3604649282250725,
+              0.026697418458340366
+            ],
+            [
+              0.17050329413481086,
+              -0.2292890418422224,
+              0.026674329640340624
+            ]
+          ],
+          "bodyAdaptsThrough": "current-state COM/capture feedback, measured contact load, whole-body inverse dynamics, joint ground barriers; no inter-step state installation",
+          "postureVariant": "selected-hips-knees-opposed-arms",
+          "staticRequiredMotorFraction": 0.9016938367787439,
+          "staticMinimumSelfSeparationM": 0.02961358698651545,
+          "phaseDurationsS": {
+            "transfer": 2.0,
+            "lift": 0.8,
+            "translate": 1.2,
+            "land": 1.0,
+            "settle": 1.52
+          }
+        }
+      ],
+      "finalJointMarginRad": 0.019856440220901828,
+      "finalCaptureMarginM": 0.0796706443363577,
+      "codeUnchangedDuringRun": true,
+      "independentAuditSummarySHA256": "c1a30be07ec8f3cd3f883708f870eea05e985304921111680844d8c99a547672"
+    },
+    "8": {
+      "preparation": {
+        "schema": 1,
+        "experiment": "contact-impratio-only",
+        "baselineImpratio": 1.0,
+        "candidateImpratio": 8.0,
+        "baselineModelSHA256": "216d5c0159abf07139f5556c59e244ae77cb7557ba5256e301ebc5e1c8bbc399",
+        "modelSHA256": "28c2d6bbbf9845285a69798df92412d45a857c811126b1d2e4650cb49ff1a6c8",
+        "helperSHA256": "20ddefbcbdd328b1661ce163e4df6aeb0e953192c677b79d3076c904de5a0ba5",
+        "initialQposQvelSHA256": "d8f8cea00fb8c54f9344523a1a512410f982ec86e7c1d382434a77a2cac0d707",
+        "coldCacheSHA256": "e67ea78936a59c8cc387391f1c2fdd8504a601801376e0bf6abd0256bbd9582a",
+        "originalFullCacheImportedIntoCandidate": false,
+        "modelBoundColdCacheRebuilt": true,
+        "initialNativeCounter": 0,
+        "physicsIntegrations": 0,
+        "onlyXMLDifference": "option impratio: absent(default1) -> 8",
+        "originalAndCandidateOptions": [
+          [
+            213.0,
+            0.00125,
+            1.0,
+            0.0,
+            2.0,
+            100.0,
+            1e-08,
+            0.0,
+            1e-06,
+            0.0,
+            0.0,
+            0.0,
+            20.0,
+            27.0,
+            0.0,
+            0.02,
+            1.0,
+            0.9,
+            0.95,
+            0.001,
+            0.5,
+            2.0
+          ],
+          [
+            213.0,
+            0.00125,
+            8.0,
+            0.0,
+            2.0,
+            100.0,
+            1e-08,
+            0.0,
+            1e-06,
+            0.0,
+            0.0,
+            0.0,
+            20.0,
+            27.0,
+            0.0,
+            0.02,
+            1.0,
+            0.9,
+            0.95,
+            0.001,
+            0.5,
+            2.0
+          ]
+        ],
+        "originalMuGeometryMassMotorJointLimitsPreserved": true,
+        "originalSolverSolrefSolimpConeAndClockPreserved": true,
+        "selectedPresetChanged": false,
+        "originalModelQualificationClaim": false,
+        "inspectorSHA256": "d719cda16cb681748bd62c26b9de4bbd2f5aabef3863fba801e22c10b5b358e0",
+        "runnerSHA256": "3027d148822a4e7ccac5657cf46764cd3979957b99e175c0dcbb66c8880f0f57"
+      },
+      "stopped": "measured-current-support-capture-outside",
+      "actualIntegrations": 3614,
+      "physicsSimSeconds": 4.5175,
+      "globalLoadedSlipM": [
+        0.0005885496992289899,
+        0.000484058078597677
+      ],
+      "completedSteps": 0,
+      "steps": [
+        {
+          "index": 1,
+          "swingSide": "left",
+          "requestedDistanceM": 0.18,
+          "commandedDistanceM": 0.182,
+          "startNativeStep": 0,
+          "startSourceTimeS": 0.0,
+          "entryCOM": [
+            0.38007874160510713,
+            -0.03922870920128895,
+            0.8081642540803642
+          ],
+          "initialFeet": [
+            [
+              0.5164085985705382,
+              -0.032167538723330336,
+              0.028424512834071075
+            ],
+            [
+              0.3253183487011271,
+              0.10000097728588249,
+              0.02863416314941853
+            ]
+          ],
+          "bodyAdaptsThrough": "current-state COM/capture feedback, measured contact load, whole-body inverse dynamics, joint ground barriers; no inter-step state installation",
+          "postureVariant": "selected-hips-knees-opposed-arms",
+          "staticRequiredMotorFraction": 0.9026041969668359,
+          "staticMinimumSelfSeparationM": 0.07197189789791991,
+          "phaseDurationsS": {
+            "transfer": 4.0,
+            "lift": 0.8,
+            "translate": 1.2,
+            "land": 1.0,
+            "settle": 1.52
+          }
+        }
+      ],
+      "finalJointMarginRad": 0.010967958578399606,
+      "finalCaptureMarginM": -0.002653457197109299,
+      "codeUnchangedDuringRun": true,
+      "independentAuditSummarySHA256": "c7655342cd9fa9f9b32035beba0e388952e1a0609bbc1bb66dff6f992b3cfc88"
+    }
+  },
+  "currentWork": "read-only capture topology diagnosis; actual-speed four-step partial video rendering; no more parameter scan",
+  "explicitContactProfileAttemptIntegrationSubtotal": 27159
+}

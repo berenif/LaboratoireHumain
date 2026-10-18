@@ -1,5 +1,5 @@
 {
-  "status": "active-causal-investigation",
+  "status": "inside-cone-contact-creep-diagnosed-impratio-comparison-prepared",
   "noTenStepQualification": true,
   "scope": "Closed diagnostic branches only; each branch resumes a retained checkpoint and is not a continuous ten-step qualification.",
   "artifacts": [
@@ -1751,5 +1751,882 @@
         "sourceCodeSHA256": "d1e598bcd89f05ff72cfe2c2456907db9b246cb4a212d985e86fa7f04aa5c868"
       }
     }
-  ]
+  ],
+  "postCheckpointClosure": {
+    "nativeCases": [
+      {
+        "mode": "baseline",
+        "kd": 0.0,
+        "weight": 0.0,
+        "actualIntegrations": 1440,
+        "sourceStart": 5711,
+        "sourceEnd": 7151,
+        "stop": "bounded-saved-settle-diagnostic",
+        "slipDeltaM": [
+          0.0013189748663885042,
+          0.0011465650649194977
+        ],
+        "relativeSlipChangePercent": [
+          0.0,
+          0.0
+        ],
+        "minimumCaptureM": 0.02856553138169357,
+        "minimumJointRad": 0.018620874072402538,
+        "maximumMotorFraction": 0.8558268780569881
+      },
+      {
+        "mode": "soft-material-point-damping",
+        "kd": 20.0,
+        "weight": 15.0,
+        "actualIntegrations": 1440,
+        "sourceStart": 5711,
+        "sourceEnd": 7151,
+        "stop": "bounded-saved-settle-diagnostic",
+        "slipDeltaM": [
+          0.0013140736329006742,
+          0.0011506724049038346
+        ],
+        "relativeSlipChangePercent": [
+          -0.37159415336321944,
+          0.3582299958376334
+        ],
+        "minimumCaptureM": 0.028550472376956154,
+        "minimumJointRad": 0.018653293554416805,
+        "maximumMotorFraction": 0.8533246396996529
+      },
+      {
+        "mode": "soft-material-point-damping",
+        "kd": 40.0,
+        "weight": 30.0,
+        "actualIntegrations": 1440,
+        "sourceStart": 5711,
+        "sourceEnd": 7151,
+        "stop": "bounded-saved-settle-diagnostic",
+        "slipDeltaM": [
+          0.0013127727885941926,
+          0.0011560529284025123
+        ],
+        "relativeSlipChangePercent": [
+          -0.47021955856472175,
+          0.82750327681409
+        ],
+        "minimumCaptureM": 0.02854032833866313,
+        "minimumJointRad": 0.018662684908770766,
+        "maximumMotorFraction": 0.8523276417963169
+      },
+      {
+        "mode": "soft-material-point-damping",
+        "kd": 80.0,
+        "weight": 40.0,
+        "actualIntegrations": 1440,
+        "sourceStart": 5711,
+        "sourceEnd": 7151,
+        "stop": "bounded-saved-settle-diagnostic",
+        "slipDeltaM": [
+          0.0013158446769371169,
+          0.0011631621279244884
+        ],
+        "relativeSlipChangePercent": [
+          -0.23731987099634422,
+          1.4475465468813953
+        ],
+        "minimumCaptureM": 0.028537336202751312,
+        "minimumJointRad": 0.018663721467615746,
+        "maximumMotorFraction": 0.8520289400930278
+      },
+      {
+        "mode": "soft-material-point-damping",
+        "kd": 80.0,
+        "weight": 200.0,
+        "actualIntegrations": 1440,
+        "sourceStart": 5711,
+        "sourceEnd": 7151,
+        "stop": "bounded-saved-settle-diagnostic",
+        "slipDeltaM": [
+          0.0013145689570742234,
+          0.0011646653221247302
+        ],
+        "relativeSlipChangePercent": [
+          -0.3340404299245425,
+          1.578650680980176
+        ],
+        "minimumCaptureM": 0.028532464039783212,
+        "minimumJointRad": 0.018661908748102807,
+        "maximumMotorFraction": 0.8519310008085487
+      },
+      {
+        "mode": "soft-material-point-damping",
+        "kd": 120.0,
+        "weight": 500.0,
+        "actualIntegrations": 1440,
+        "sourceStart": 5711,
+        "sourceEnd": 7151,
+        "stop": "bounded-saved-settle-diagnostic",
+        "slipDeltaM": [
+          0.001323243775033992,
+          0.0011750354820996975
+        ],
+        "relativeSlipChangePercent": [
+          0.3236535247389982,
+          2.4831052376603324
+        ],
+        "minimumCaptureM": 0.02853276179597336,
+        "minimumJointRad": 0.018662329036094993,
+        "maximumMotorFraction": 0.8313152654597303
+      },
+      {
+        "mode": "hard-material-point-damping",
+        "pointMode": "one-matched-per-loaded-foot",
+        "kd": 20.0,
+        "actualIntegrations": 1440,
+        "sourceStart": 5711,
+        "sourceEnd": 7151,
+        "stop": "bounded-saved-settle-diagnostic",
+        "slipDeltaM": [
+          0.0013129209040319953,
+          0.0011530840119578275
+        ],
+        "maximumHardEqualityResidualMps2": 5.863365348801608e-16
+      },
+      {
+        "mode": "hard-material-point-damping",
+        "pointMode": "all-matched-loaded-points",
+        "kd": 20.0,
+        "actualIntegrations": 1,
+        "sourceStart": 5711,
+        "sourceEnd": 5712,
+        "stop": "solver-terminal-RuntimeError('QP PrimalInfeasible')",
+        "slipDeltaM": [
+          8.747193777484431e-08,
+          7.447957940925204e-08
+        ],
+        "maximumHardEqualityResidualMps2": 0.0
+      },
+      {
+        "mode": "strict-native-preservation",
+        "artifact": "native_refinement_results.json",
+        "actualIntegrations": 9,
+        "sourceStart": 5711,
+        "sourceEnd": 5720,
+        "stop": "RefinementBlocker('exact-native-preserved-acceleration-0.01338065030539859')",
+        "slipDeltaM": [
+          1.388445456497597e-06,
+          1.3769575249325886e-06
+        ],
+        "minimumCaptureM": 0.028564357374565114,
+        "minimumJointRad": 0.01869276534290054,
+        "maximumMotorFraction": 0.7990795178846676,
+        "nativePurityVerified": true,
+        "maximumAppliedDu": 0.019999999989949398,
+        "acceptedScaleCounts": {
+          "1.0": 2
+        }
+      },
+      {
+        "mode": "strict-native-preservation-report-repeat",
+        "artifact": "native_refinement_model_report.json",
+        "actualIntegrations": 9,
+        "sourceStart": 5711,
+        "sourceEnd": 5720,
+        "stop": "RefinementBlocker('exact-native-preserved-acceleration-0.01338065030539859')",
+        "slipDeltaM": [
+          1.388445456497597e-06,
+          1.3769575249325886e-06
+        ],
+        "minimumCaptureM": 0.028564357374565114,
+        "minimumJointRad": 0.01869276534290054,
+        "maximumMotorFraction": 0.7990795178846676,
+        "nativePurityVerified": true,
+        "maximumAppliedDu": 0.019999999989949398,
+        "nativeBaselineViolatedAccelerationRowsAtStop": [],
+        "originalShearPenalty": 0.1,
+        "acceptedScaleCounts": {
+          "1.0": 2
+        }
+      },
+      {
+        "mode": "soft-native-preservation-extra-per-foot-load-check",
+        "artifact": "native_refinement_soft_results.json",
+        "actualIntegrations": 69,
+        "sourceStart": 5711,
+        "sourceEnd": 5780,
+        "stop": "RefinementBlocker('native-baseline-foot-load')",
+        "slipDeltaM": [
+          8.150538503371948e-05,
+          2.0138882705825808e-05
+        ],
+        "minimumCaptureM": 0.028538427995208004,
+        "minimumJointRad": 0.018634870799713488,
+        "maximumMotorFraction": 0.89910186622581,
+        "nativePurityVerified": true,
+        "maximumAppliedDu": 0.01999999999989124,
+        "nativeBaselineViolatedAccelerationRowsAtStop": [],
+        "originalShearPenalty": 0.1,
+        "acceptedScaleCounts": {
+          "1.0": 17
+        }
+      },
+      {
+        "mode": "soft-native-preservation-original-settle-gates",
+        "artifact": "native_refinement_phase_gates_results.json",
+        "actualIntegrations": 184,
+        "sourceStart": 5711,
+        "sourceEnd": 5895,
+        "stop": "capture-guard",
+        "slipDeltaM": [
+          0.0012581034072309536,
+          9.081011422999979e-05
+        ],
+        "minimumCaptureM": -0.027815815337109473,
+        "minimumJointRad": 0.018607539754732505,
+        "maximumMotorFraction": 0.89910186622581,
+        "nativePurityVerified": true,
+        "maximumAppliedDu": 0.01999999999989124,
+        "nativeBaselineViolatedAccelerationRowsAtStop": [],
+        "originalShearPenalty": 0.1,
+        "acceptedScaleCounts": {
+          "0.5": 5,
+          "1.0": 41
+        }
+      },
+      {
+        "mode": "native-original-task-targets",
+        "artifact": "native_original_tasks_results.json",
+        "actualIntegrations": 93,
+        "sourceStart": 5711,
+        "sourceEnd": 5804,
+        "stop": "RefinementBlocker('native-baseline-acceleration-gate-6-violation-1.8665472697034058')",
+        "slipDeltaM": [
+          0.0006379482771450907,
+          0.00011155197026709376
+        ],
+        "minimumCaptureM": 0.011059552118638183,
+        "minimumJointRad": 0.018520401189072055,
+        "maximumMotorFraction": 0.8517725742835075,
+        "nativePurityVerified": true,
+        "maximumAppliedDu": 0.019999999999581516,
+        "nativeBaselineViolatedAccelerationRowsAtStop": [
+          {
+            "row": 6,
+            "violation": 1.8665472697034058
+          }
+        ],
+        "originalShearPenalty": 0.1,
+        "acceptedScaleCounts": {
+          "0.5": 1,
+          "1.0": 22
+        }
+      },
+      {
+        "mode": "native-original-task-targets-held-applied-control",
+        "artifact": "native_held_control_results.json",
+        "actualIntegrations": 442,
+        "sourceStart": 5711,
+        "sourceEnd": 6153,
+        "stop": "capture-guard",
+        "slipDeltaM": [
+          0.00048345465789948936,
+          0.0020289435780396223
+        ],
+        "minimumCaptureM": -6.592547901757007e-05,
+        "minimumJointRad": 0.006750368207062096,
+        "maximumMotorFraction": 0.8633577738785124,
+        "nativePurityVerified": true,
+        "maximumAppliedDu": 0.019999999867271266,
+        "nativeBaselineViolatedAccelerationRowsAtStop": [
+          {
+            "row": 15,
+            "violation": 0.8297004605194862
+          }
+        ],
+        "originalShearPenalty": 0.1,
+        "acceptedScaleCounts": {
+          "0.5": 4,
+          "1.0": 107
+        }
+      },
+      {
+        "mode": "maintained-support-telemetry-pre-correction-error",
+        "artifact": "native_maintained_support_telemetry_error.json",
+        "actualIntegrations": 1,
+        "sourceStart": 5711,
+        "sourceEnd": 5712,
+        "stop": "KeyError('loadN')",
+        "slipDeltaM": [
+          8.747193777484431e-08,
+          7.447957940925204e-08
+        ],
+        "minimumCaptureM": 0.02856798474079164,
+        "minimumJointRad": 0.01869575695109038,
+        "maximumMotorFraction": 0.7990795178846676,
+        "nativePurityVerified": true
+      },
+      {
+        "mode": "maintained-support-native-held-original-tasks",
+        "artifact": "native_maintained_support_results.json",
+        "actualIntegrations": 281,
+        "sourceStart": 5711,
+        "sourceEnd": 5992,
+        "stop": "RefinementBlocker('no-exact-native-feasible-held-control-candidate')",
+        "slipDeltaM": [
+          0.0007247874001239409,
+          0.0008613754591210309
+        ],
+        "minimumCaptureM": 0.012063335319757673,
+        "minimumJointRad": 0.01501693604280549,
+        "maximumMotorFraction": 0.8529711324625308,
+        "nativePurityVerified": true,
+        "matchedBaselineIncrementalSlipM": [
+          0.00021523333761612972,
+          0.0001676221282060921
+        ],
+        "matchedBaselineSlipRatios": [
+          3.367449523161717,
+          5.138793238933026
+        ],
+        "seekDepthM": 0.0003007499999999085,
+        "finalLoadsN": [
+          1.4443754939560185,
+          395.56448798423816
+        ]
+      },
+      {
+        "mode": "maintained-support-exact-terminal-replay",
+        "artifact": "native_maintained_support_replay_results.json",
+        "actualIntegrations": 281,
+        "sourceStart": 5711,
+        "sourceEnd": 5992,
+        "stop": "RefinementBlocker('no-exact-native-feasible-held-control-candidate')",
+        "slipDeltaM": [
+          0.0007247874001239409,
+          0.0008613754591210309
+        ],
+        "minimumCaptureM": 0.012063335319757673,
+        "minimumJointRad": 0.01501693604280549,
+        "maximumMotorFraction": 0.8529711324625308
+      },
+      {
+        "mode": "same-QP-implicit-arm-only",
+        "artifact": "native_implicit_arm_results.json",
+        "actualIntegrations": 1440,
+        "sourceStart": 5711,
+        "sourceEnd": 7151,
+        "stop": "bounded-native-response-settle-diagnostic",
+        "slipDeltaM": [
+          0.0012976435735992506,
+          0.0011280464829769269
+        ],
+        "minimumCaptureM": 0.028566279707288866,
+        "minimumJointRad": 0.018621213701508488,
+        "maximumMotorFraction": 0.8562783446690084,
+        "matchedBaselineIncrementalSlipM": [
+          0.0013189748663885042,
+          0.0011465650649194977
+        ],
+        "relativeSlipChangePercent": [
+          -1.6172630224305262,
+          -1.6151357222689455
+        ],
+        "outerSolveCalls": 360,
+        "nativeAdapterPurityVerified": true
+      },
+      {
+        "mode": "native-achieved-virtual-qdd-with-implicit-arms",
+        "artifact": "native_achieved_implicit_results.json",
+        "actualIntegrations": 465,
+        "sourceStart": 5711,
+        "sourceEnd": 6176,
+        "stop": "capture-guard",
+        "slipDeltaM": [
+          0.0007570581154658378,
+          0.0034122051122460247
+        ],
+        "minimumCaptureM": -3.74018171022672e-05,
+        "minimumJointRad": 0.007865524228725829,
+        "maximumMotorFraction": 0.9304522772238137,
+        "nativePurityVerified": true,
+        "exactCommonSampleImplicitComparison": {
+          "t": 0.50125,
+          "nativeAchievedSlipMm": [
+            0.7570581154658378,
+            3.188887235214793
+          ],
+          "implicitOnlySlipMm": [
+            0.35009983788553023,
+            0.27969926835758746
+          ],
+          "slipRatios": [
+            2.1624063582496373,
+            11.401128268730014
+          ]
+        },
+        "acceptedCorrectionCount": 116,
+        "acceptedScaleCounts": {
+          "1.0": 115,
+          "0.5": 1
+        },
+        "exactFeasibilityRestorationCount": 55,
+        "maximumRestorationDu": 0.0009846008199710932,
+        "everyAcceptedExactObjectiveImproved": true
+      }
+    ],
+    "exactCaseCount": 19,
+    "exactIntegrations": 13355,
+    "closure": {
+      "status": "Closed. No tested native-response refinement materially improves loaded slip with original gates. Implicit arm coupling alone completes the bounded saved-settle branch with ~1.62% less slip; its continuous sequence qualification is separate.",
+      "dynamicCases": 19,
+      "actualNativeIntegrations": 13355,
+      "checkpointSourceStep": 5711,
+      "qualification": false,
+      "implicitOnly": {
+        "actualIntegrations": 1440,
+        "minimumCaptureM": 0.028566279707288866,
+        "minimumJointRad": 0.018621213701508488,
+        "maximumMotorFraction": 0.8562783446690084,
+        "incrementalSlipM": [
+          0.0012976435735992506,
+          0.0011280464829769269
+        ],
+        "outerSolveCalls": 360
+      },
+      "achievedNative": {
+        "actualIntegrations": 465,
+        "stopped": "capture-guard",
+        "minimumCaptureM": -3.74018171022672e-05,
+        "minimumJointRad": 0.007865524228725829,
+        "maximumMotorFraction": 0.9304522772238137,
+        "incrementalSlipM": [
+          0.0007570581154658378,
+          0.0034122051122460247
+        ]
+      },
+      "commonSampleComparison": {
+        "t": 0.50125,
+        "nativeAchievedSlipMm": [
+          0.7570581154658378,
+          3.188887235214793
+        ],
+        "implicitOnlySlipMm": [
+          0.35009983788553023,
+          0.27969926835758746
+        ],
+        "slipRatios": [
+          2.1624063582496373,
+          11.401128268730014
+        ]
+      },
+      "acceptedNativeCorrections": 116,
+      "acceptedScaleCounts": {
+        "1.0": 115,
+        "0.5": 1
+      },
+      "exactFeasibilityRestorations": 55,
+      "maximumRestorationDu": 0.0009846008199710932,
+      "terminalFeasibility": {
+        "nativeCounter": 5992,
+        "additionalIntegrations": 0,
+        "readOnly": true,
+        "status": "Optimization terminated successfully. (HiGHS Status 7: Optimal)",
+        "conservativeInteriorRow": 18,
+        "conservativeInteriorMargin": 0.0001,
+        "minimumLinearizedTrustRadius": 5.8503476893540566e-05,
+        "maxDu": 5.8503476893540566e-05,
+        "maximumMotorFraction": 0.8470608179944344,
+        "exactOriginalBoundMaximumViolation": -8.369818980846766e-05,
+        "exactOriginalBoundsPass": true,
+        "exactSettleSupportPass": true,
+        "exactLoadsN": [
+          1.4143516259707032,
+          395.5769800686747
+        ],
+        "linearizedOriginalBoundMaximumViolation": -9.999999999998899e-05,
+        "bindingRowIndex": 18,
+        "rightHipYUpperStoppingResidual": -8.369818980846766e-05,
+        "controlCandidate": [
+          -0.13296792867350696,
+          0.027929489948867344,
+          0.16347858743313304,
+          -0.8470608179944344,
+          0.5205358845210944,
+          -0.04155547590352953,
+          0.22010010653281067,
+          0.18462061908318303,
+          0.5560876574991247,
+          -0.17132603261776064,
+          0.016880869649532313,
+          -0.041078504743829646,
+          0.00846110408434185,
+          -0.026855947208861967,
+          0.0036210270773960663,
+          0.03671997431014587,
+          -0.11035434788470908,
+          0.0038298608640767702,
+          0.01959649903196766,
+          0.18476625639348973,
+          -0.005191975429270132
+        ],
+        "controlChange": [
+          5.8503476893540566e-05,
+          -5.8503476893540566e-05,
+          5.8503476893540566e-05,
+          5.8503476893540566e-05,
+          5.8503476893540566e-05,
+          -5.8503476893540566e-05,
+          -5.850347689354053e-05,
+          5.8503476893540566e-05,
+          -5.8503476893540566e-05,
+          -5.8503476893540566e-05,
+          -5.8503476893540566e-05,
+          -5.8503476893540566e-05,
+          -5.8503476893540566e-05,
+          5.8503476893540566e-05,
+          -5.8503476893540566e-05,
+          5.8503476893540566e-05,
+          -5.8503476893540566e-05,
+          -5.8503476893540566e-05,
+          -5.8503476893540566e-05,
+          5.8503476893540566e-05,
+          -5.8503476893540566e-05
+        ],
+        "nativePurityVerified": true
+      },
+      "recommendation": "Keep implicit arm coupling as the separately tested control-mechanism candidate. Next change should coordinate a smooth support-relative COM path and measured new-foot load acquisition before the COM advances beyond that support, including predictive measured-support viability throughout transfer/settle. Revisit fixed +35mm stance-forward target rather than increasing foot gains or native acceleration fitting.",
+      "evidenceSHA256": {
+        "run_implicit_arm.py": "5d5fbf80f42d36bbd9fec4826e381a5e9b21389e7e9b79b2092046a1de263f96",
+        "source_step_probe_implicit_arm.py": "8424f8cb0b405457a67e4b15c52ffaa8d9f50b62cb5cae4991cdef2a2a532462",
+        "run_native_achieved_implicit.py": "780c41f33040fcaefbcb38f67354f80e7b4f50f9b5eb7a95dfb4fdd263f1d477",
+        "source_step_probe_native_achieved_implicit.py": "5e7785f8f336ecf94ce01ee0b3a68acbb04028367992cfe93a66552b23f4ad83",
+        "frozen-source-manifest.json": "6dd7aa1b3671e44c0b6cb02d5442150098a9fe3ec5d4f6c2263a005de4db1cdd"
+      }
+    },
+    "summarySHA256": "0db34b3dcd35b22717602d130411e963f91df6c34ba9a45c5d2817fbbc7b0bc1",
+    "jointStoppingDiagnosis": {
+      "schema": 1,
+      "physicsIntegrations": 0,
+      "source6": "git b353b46; eight recorded source hashes match",
+      "source7": "frozen working code; nine recorded source hashes match",
+      "terminalReconstructionCaveat": "One hypothetical terminal solve per cloned controller, at the terminal native state rather than the previous actual torque-update state. Original last-control history and unload floor target reconstructed; no proposed control applied.",
+      "runs": {
+        "6": {
+          "savedNativeCounter": 13110,
+          "nativePurityVerified": true,
+          "outerSolveCount": 1,
+          "guardedJoint": "right_hip_x",
+          "jointReserveRad": 0.01,
+          "stoppingHorizonS": 0.12,
+          "upperStoppingBoundRadps2": -2.907355808386896,
+          "outerPredictedQddRadps2": -2.9073560486729786,
+          "heldNativeAccelerationRadps2": -1.3933735201919282,
+          "proposedNativeAccelerationRadps2": -1.4097408731338579,
+          "heldMaximumMotorFraction": 0.9499999991892787,
+          "outerMaximumMotorFraction": 0.9499999992153325,
+          "thresholdCrossings": {
+            "0.02": {
+              "t": 15.64,
+              "marginRad": 0.019831963412431486,
+              "outwardRateRadps": 0.20446923246483317,
+              "phase": "transfer"
+            },
+            "0.01": {
+              "t": 15.7075,
+              "marginRad": 0.00990560822996367,
+              "outwardRateRadps": 0.09608635798017402,
+              "phase": "transfer"
+            },
+            "0.005": {
+              "t": 16.34,
+              "marginRad": 0.0049916044645975655,
+              "outwardRateRadps": 0.10677072855469746,
+              "phase": "transfer"
+            },
+            "0.001": {
+              "t": 16.37625,
+              "marginRad": 0.0009957979677727158,
+              "outwardRateRadps": 0.1032932367104022,
+              "phase": "transfer"
+            },
+            "0.0": {
+              "t": 16.3875,
+              "marginRad": -8.870948968886516e-05,
+              "outwardRateRadps": 0.09036876942247316,
+              "phase": "transfer"
+            }
+          },
+          "stanceFootRelativeCOM": [
+            0.04183093818901374,
+            0.02445859769634482,
+            0.739707167899643
+          ],
+          "stanceFootRelativeCOMTarget": [
+            0.03909652690312551,
+            0.024888715674488554,
+            0.7340949741879444
+          ]
+        },
+        "7": {
+          "savedNativeCounter": 3905,
+          "nativePurityVerified": true,
+          "outerSolveCount": 1,
+          "guardedJoint": "right_hip_y",
+          "jointReserveRad": 0.01,
+          "stoppingHorizonS": 0.12,
+          "upperStoppingBoundRadps2": -2.121949664886817,
+          "outerPredictedQddRadps2": -2.1219497090342956,
+          "heldNativeAccelerationRadps2": -2.108691804672478,
+          "proposedNativeAccelerationRadps2": -2.165689227498522,
+          "heldMaximumMotorFraction": 0.6840020779408151,
+          "outerMaximumMotorFraction": 0.6842230952253799,
+          "thresholdCrossings": {
+            "0.02": {
+              "t": 4.7775,
+              "marginRad": 0.019830604717886113,
+              "outwardRateRadps": 0.38715198087213476,
+              "phase": "lift"
+            },
+            "0.01": {
+              "t": 4.80875,
+              "marginRad": 0.009909048683520716,
+              "outwardRateRadps": 0.25615022654176556,
+              "phase": "lift"
+            },
+            "0.005": {
+              "t": 4.8325000000000005,
+              "marginRad": 0.004908763829311491,
+              "outwardRateRadps": 0.1715441533134204,
+              "phase": "lift"
+            },
+            "0.001": {
+              "t": 4.865,
+              "marginRad": 0.0009558618084907211,
+              "outwardRateRadps": 0.07981844195164028,
+              "phase": "lift"
+            },
+            "0.0": {
+              "t": 4.8812500000000005,
+              "marginRad": -1.6749116248826468e-05,
+              "outwardRateRadps": 0.0438440705911354,
+              "phase": "lift"
+            }
+          },
+          "stanceFootRelativeCOM": [
+            0.033555338153565574,
+            -0.004823908605916728,
+            0.7717618180444437
+          ],
+          "stanceFootRelativeCOMTarget": [
+            0.03457488709272736,
+            -0.004159189259331306,
+            0.7664694189193288
+          ]
+        }
+      },
+      "recommendation": {
+        "change": "Lift duration .8s -> 1.2s only",
+        "reason": "Current implicit run has a genuine high-rate stance-hip excursion during lift; actual native braking already closely matches the reserved predictive bound at the terminal state. Slower traversal isolates dynamic overshoot while preserving geometry.",
+        "preserve": [
+          "18cm foot advance",
+          "40mm lift path",
+          "COM target",
+          "all numeric physical gates",
+          "actual global slip metric"
+        ],
+        "qualification": "Hypothesis only; no test was launched."
+      },
+      "separateLegacyIssue": "Third-transfer swing unloading changes load ~15.9N to1.8N in50ms while right_hip_x reverses from near stationary to+.0795rad/s. Terminal95% motor cap and native-vs-predicted braking mismatch remain a distinct transfer concern.",
+      "evidenceSHA256": {
+        "inspect_terminal.py": "502e725e993db5860adc0423c8ead8b10cef649e0f572d0adf4a041c8a4bb7b3",
+        "run-6-terminal-stopping.json": "c51651182e1313627eee71c1db331f2b6a88d9d98acddb0dd6a2d69388bc85dc",
+        "run-7-terminal-stopping.json": "19f2a3c23de24c8c79e7f823714a142d042f492df6c89280a6f85d6c542d7ddd"
+      },
+      "capacityConclusion": "Neither terminal diagnosis establishes an anatomical or physical motor-capacity impossibility. They identify distinct trajectory/control-demand failures under the current policies.",
+      "selectedFollowOnContext": "Parent selected a legacy-explicit-arm measured-midpoint loaded-settle/transfer path for candidate8; the hypothetical slower implicit lift was not launched or combined with that experiment."
+    },
+    "jointStoppingDiagnosisSHA256": "47217e92e7173e8db0b8202e772984df3116eaac28c592fea41ccfb0de69b863",
+    "additionalJointDiagnosticIntegrations": 0,
+    "contactForceConeDiagnosis": "active read-only; no model/contact parameters changed"
+  },
+  "contactCreepDiagnosis": {
+    "summary": {
+      "schema": 1,
+      "physicsIntegrations": 0,
+      "causalConclusion": "Terminal steady loaded-foot slip is present well inside the correct pyramidal friction cone. Regularized contact creep is supported; terminal Coulomb saturation is rejected. Retained-state snapshots cannot rule out unsaved transient saturation over the whole trajectory.",
+      "modelSettings": {
+        "version": 213,
+        "timestep": 0.00125,
+        "impratio": 1.0,
+        "cone": 0,
+        "coneName": "pyramidal",
+        "solver": 2,
+        "solverName": "Newton",
+        "iterations": 100,
+        "tolerance": 1e-08,
+        "noslipIterations": 0,
+        "noslipTolerance": 1e-06,
+        "integrator": 0,
+        "disableflags": 0,
+        "enableflags": 0,
+        "overrideMargin": 0.0,
+        "overrideSolref": [
+          0.02,
+          1.0
+        ],
+        "overrideSolimp": [
+          0.9,
+          0.95,
+          0.001,
+          0.5,
+          2.0
+        ]
+      },
+      "effectiveContactSettings": {
+        "dim": 3,
+        "friction": [
+          1.0,
+          1.0,
+          0.005,
+          0.0001,
+          0.0001
+        ],
+        "solref": [
+          0.0175,
+          1.0
+        ],
+        "solimp": [
+          0.9,
+          0.97,
+          0.002,
+          0.5,
+          2.0
+        ],
+        "geom1Condim": 3,
+        "geom2Condim": 1,
+        "geom1Priority": 0,
+        "geom2Priority": 0,
+        "geom1Friction": [
+          1.0,
+          0.005,
+          0.0001
+        ],
+        "geom2Friction": [
+          0.7,
+          0.005,
+          0.0001
+        ]
+      },
+      "terminal": {
+        "sourceCounter": 17290,
+        "nativeTimeS": 21.612499999998466,
+        "cachedActualFeet": [
+          {
+            "side": 0,
+            "cachedPreviousSolvedLoadN": 224.32630796223816,
+            "cachedAuditedTransportedPointSlipSpeedMps": 0.0011628510604751428,
+            "freshHeldControlLoadN": 224.32892658287176,
+            "freshNormalForceWeightedMaterialTangentSpeedMps": 0.0011628527118366374,
+            "freshMaximumPyramidalUtilization": 0.049362577281892625,
+            "freshMaximumPyramidalUtilizationAbove1N": 0.049362577281892625,
+            "freshNormalForceWeightedPyramidalUtilization": 0.04864207288454712,
+            "freshActiveContactCount": 4
+          },
+          {
+            "side": 1,
+            "cachedPreviousSolvedLoadN": 175.06359533647574,
+            "cachedAuditedTransportedPointSlipSpeedMps": 0.0013281556895590892,
+            "freshHeldControlLoadN": 175.10259679111897,
+            "freshNormalForceWeightedMaterialTangentSpeedMps": 0.0013281528841836967,
+            "freshMaximumPyramidalUtilization": 0.06435085858893323,
+            "freshMaximumPyramidalUtilizationAbove1N": 0.06435085858893323,
+            "freshNormalForceWeightedPyramidalUtilization": 0.0625176821859892,
+            "freshActiveContactCount": 4
+          }
+        ],
+        "contactRegularizationRRange": [
+          0.1407989375990398,
+          0.147614819752969
+        ],
+        "perContactNormalForceRangeN": [
+          42.034967007179986,
+          56.61648470872588
+        ]
+      },
+      "snapshotCount": 16,
+      "allNativeAndModelBytesPure": true,
+      "allFreshResponsesMatchPinnedV9": true,
+      "perPhaseActualSlipM": [
+        {
+          "phase": "transfer",
+          "loadedSlipM": [
+            0.00391814940615773,
+            0.0034187747384527897
+          ],
+          "fractionOfPerFootTotal": [
+            0.391777157808085,
+            0.3531901754291245
+          ]
+        },
+        {
+          "phase": "lift",
+          "loadedSlipM": [
+            0.0005843750735910307,
+            0.0005393023865830028
+          ],
+          "fractionOfPerFootTotal": [
+            0.05843187221640318,
+            0.05571478646551565
+          ]
+        },
+        {
+          "phase": "translate",
+          "loadedSlipM": [
+            0.0006313233784043483,
+            0.0012137168668125305
+          ],
+          "fractionOfPerFootTotal": [
+            0.0631262499741177,
+            0.12538786726404982
+          ]
+        },
+        {
+          "phase": "land",
+          "loadedSlipM": [
+            0.0014386348154212223,
+            0.0006339178056364676
+          ],
+          "fractionOfPerFootTotal": [
+            0.1438496087524632,
+            0.06548941012759313
+          ]
+        },
+        {
+          "phase": "settle",
+          "loadedSlipM": [
+            0.003428481721795206,
+            0.00387398762874923
+          ],
+          "fractionOfPerFootTotal": [
+            0.342815111248931,
+            0.4002177607137169
+          ]
+        }
+      ],
+      "transferAndSettleSlipFractions": [
+        0.7345922690570159,
+        0.7534079361428415
+      ],
+      "bothFeetDescriptiveTransferAndSettleFraction": 0.7438465301706554,
+      "snapshotSaturationCaveat": "One .023636N contact at second landing reached cone utilization1; no contact >=1N reached saturation in the retained snapshots. Newly landed left contact at third landing reached.76884 utilization, unlike the heavily loaded right foot maximum.01405.",
+      "timestampPolicy": "Cached previous-solve per-foot load and transported material-point slip are retained actual metrics. Previous per-contact force/frame pairing was not archived, so stale force buffers are never paired with refreshed geometry. Fresh held-control contacts are simultaneous current-state scratch solve and not claimed as earlier executed forces.",
+      "helperSafety": "Separate shared library exports only lh_ro_model, lh_ro_model_fingerprint and lh_ro_ground_contacts. No mj_step, live-state/model mutation, force application or controller calls. Fresh forward solver calls operate on allocated mjData copy only.",
+      "selectedSingleIntervention": "Parent-authorized isolated impratio1->2 comparison, otherwise identical original mu1/motors/geometry/gates. No contact/model tuning was applied in this diagnostic.",
+      "artifactsSHA256": {
+        "read_only_contacts.c": "bd6989fe94a8835c6f26aa126e19f46765204391595cd50543a704470824a215",
+        "read_only_contacts.so": "d719cda16cb681748bd62c26b9de4bbd2f5aabef3863fba801e22c10b5b358e0",
+        "inspect_checkpoints.py": "8d3005388f5163e5e21950dd1d16c87d6048b0d6b9a83129a8201409c81eefc7",
+        "checkpoint-contact-report.json": "bf3e5df1444c44770a1664ddc28799ea8f0f5a0c657a4c70fe494875bdcd4484",
+        "phase-slip-attribution.json": "f1defa84a2e9cc9ddf44b333d6f6d8a43f78d7ff938b2056414f0bf01bd258d9"
+      }
+    },
+    "sha256": "f0f0647e08ac154b37881047994d99d820997a9bb2d7294061a87a2deb6eed05",
+    "physicsIntegrations": 0
+  }
 }

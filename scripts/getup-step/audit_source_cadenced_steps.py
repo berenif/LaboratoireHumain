@@ -11,6 +11,7 @@ import hashlib
 import json
 import math
 from pathlib import Path
+import re
 
 import numpy as np
 from scipy.spatial import ConvexHull, QhullError
@@ -19,10 +20,109 @@ from scipy.spatial.transform import Rotation
 DT = .00125
 PHASES = ('transfer', 'lift', 'translate', 'land', 'settle', 'stand')
 ROOT = Path(__file__).resolve().parents[2]
+IMPLICIT_ARM_MODE = 'same-QP-implicit-measured-thigh-acceleration'
+IMPLICIT_ACCELERATION_MODEL = 'same-QP implicit measured thigh acceleration'
+LOADED_SETTLE_READINESS = dict(consecutiveS=.1, minimumEachFootLoadN=3.,
+    minimumTotalWeightFraction=.8, maximumFootClearanceM=.003,
+    minimumCaptureMarginM=.01, minimumJointMarginRad=.005,
+    maximumComTargetErrorM=.008, maximumCaptureTargetErrorM=.01,
+    maximumBodyLinearMps=.05, maximumBodyAngularRadps=.2,
+    forwardMidpointOffsetM=.035)
 
 
 def digest(path):
     return hashlib.sha256(path.read_bytes()).hexdigest()
+
+
+def json_array_items(path):
+    """Stream the saved control array without retaining every command note."""
+    decoder = json.JSONDecoder()
+    buffer, position, eof, started = '', 0, False, False
+    with Path(path).open() as source:
+        while True:
+            if not eof and (position >= len(buffer) or len(buffer)-position < 65536):
+                buffer = buffer[position:]+source.read(1048576)
+                position = 0
+                eof = len(buffer) == 0 or source.tell() == Path(path).stat().st_size
+            while position < len(buffer) and buffer[position].isspace():
+                position += 1
+            if not started:
+                if position >= len(buffer) or buffer[position] != '[':
+                    raise ValueError('control journal must be one JSON array')
+                position += 1
+                started = True
+                continue
+            if position < len(buffer) and buffer[position] == ',':
+                position += 1
+                continue
+            if position < len(buffer) and buffer[position] == ']':
+                if buffer[position+1:].strip() or source.read().strip():
+                    raise ValueError('trailing data after control journal')
+                return
+            try:
+                item, end = decoder.raw_decode(buffer, position)
+            except json.JSONDecodeError:
+                if eof:
+                    raise ValueError('incomplete control journal')
+                buffer = buffer[position:]+source.read(1048576)
+                position = 0
+                eof = source.tell() == Path(path).stat().st_size
+                continue
+            position = end
+            yield item
+
+
+def audit_implicit_provenance(cadence, receipt, notes, actual_integrations,
+                              expected_module_sha256=None):
+    """Pure opt-in provenance checks, independent of journal physical gates."""
+    if 'simultaneousArmCoordination' not in cadence:
+        return dict(declared=False, passed=True, checks={}, actualControlNotes=0)
+    config = cadence['simultaneousArmCoordination']
+    config = config if isinstance(config, dict) else {}
+    if config.get('enabled') is False:
+        return dict(declared=True, enabled=False, passed=True, checks={}, actualControlNotes=0)
+    checks = dict(implicitConfigurationExact=(config.get('enabled') is True
+        and config.get('mode', IMPLICIT_ARM_MODE) == IMPLICIT_ARM_MODE
+        and config.get('finiteDifferenceAccelerationUsed') is False
+        and config.get('positionGain') == 100. and config.get('velocityGain') == 20.
+        and config.get('taskWeight') == 2. and config.get('angularGain') == -1.
+        and config.get('targetClippingEnabled') is False))
+    module_hash = receipt.get('codeSHA256AtStart', {}).get('source_implicit_arm_coordination.py', '')
+    checks['implicitModuleSourceHash'] = bool(isinstance(module_hash, str)
+        and re.fullmatch(r'[0-9a-fA-F]{64}', module_hash)
+        and (expected_module_sha256 is None or module_hash.lower() == expected_module_sha256.lower()))
+    checks.update(implicitEveryControlMode=True, implicitEveryControlGains=True,
+        implicitEveryControlOpposedAcceleration=True, implicit200HzControlSchedule=True)
+    count = 0
+    for index, note in enumerate(notes):
+        count += 1
+        if not isinstance(note, dict):
+            checks['implicitEveryControlMode'] = False
+            checks['implicit200HzControlSchedule'] = False
+            continue
+        coordination = note.get('simultaneousArmCoordination', {})
+        opposed = note.get('opposedArmSwing', {})
+        coordination = coordination if isinstance(coordination, dict) else {}
+        opposed = opposed if isinstance(opposed, dict) else {}
+        checks['implicitEveryControlMode'] &= bool(coordination.get('mode') == IMPLICIT_ARM_MODE
+            and coordination.get('sideOrder') == ['right','left']
+            and coordination.get('finiteDifferenceAccelerationUsed') is False
+            and coordination.get('targetClippingEnabled') is False)
+        checks['implicitEveryControlGains'] &= bool(coordination.get('positionGain') == 100.
+            and coordination.get('velocityGain') == 20. and coordination.get('taskWeight') == 2.)
+        checks['implicitEveryControlOpposedAcceleration'] &= bool(
+            opposed.get('accelerationTargetModel') == IMPLICIT_ACCELERATION_MODEL
+            and opposed.get('finiteDifferenceLegAccelerationUsed') is False
+            and 'targetArmAccelerationRadps2' in opposed
+            and opposed['targetArmAccelerationRadps2'] is None)
+        t = note.get('t')
+        checks['implicit200HzControlSchedule'] &= bool(isinstance(t, (int,float))
+            and math.isfinite(t) and abs(t-index*.005) < 1e-8)
+    checks['implicit200HzControlSchedule'] &= count == (actual_integrations+3)//4
+    checks['implicitControlNotesPresent'] = count > 0
+    return dict(declared=True, enabled=True, passed=all(checks.values()), checks=checks,
+        actualControlNotes=count, expectedControlNotes=(actual_integrations+3)//4,
+        sourceModuleSHA256=module_hash, expectedMode=IMPLICIT_ARM_MODE)
 
 
 def capture_margin(row):
@@ -48,6 +148,20 @@ def quiet(row, mass, drift, margin):
             and row['maximumSelfPenetrationM'] <= .005)
 
 
+def loaded_settle_ready(row, target, mass, margin):
+    """Readiness from measured rows and an independently rebuilt target."""
+    if target is None:
+        return False
+    com = np.array(row['com'])
+    capture = com[:2]+np.array(row['comVelocity'])[:2]*math.sqrt(com[2]/9.81)
+    return bool(all(f['loadN'] >= 3. and f['clearance'] <= .003 for f in row['feet'])
+        and sum(f['loadN'] for f in row['feet']) >= .8*mass*9.81
+        and margin is not None and margin >= .01 and row['jointLimitMinimumMarginRad'] >= .005
+        and np.linalg.norm(com[:2]-np.array(target)[:2]) < .008
+        and np.linalg.norm(capture-np.array(target)[:2]) < .01
+        and row['maximumBodyLinearMps'] <= .05 and row['maximumBodyAngularRadps'] <= .2)
+
+
 def audit_rows(rows, entry, records, references, cadence, mass, gears):
     """Pure streaming qualification, also used by synthetic corruption tests."""
     checks = {}
@@ -57,13 +171,23 @@ def audit_rows(rows, entry, records, references, cadence, mass, gears):
     expected = cadence['requestedSteps']
     requested = cadence['requestedDistanceM']
     continuous = cadence.get('continuousLoadedHandoff', False) is True
+    loaded_settle = cadence.get('loadedSettleHandoff', False) is True
     def expected_phases(index):
-        return PHASES[:4] if continuous and index < expected else PHASES
-    check('explicitHandoffProtocol', type(cadence.get('continuousLoadedHandoff', False)) is bool)
+        if index < expected:
+            return PHASES[:4] if continuous else PHASES[:5] if loaded_settle else PHASES
+        return PHASES
+    def completion_phase(index):
+        return ('land' if continuous else 'settle' if loaded_settle else 'stand') if index < expected else 'stand'
+    check('explicitHandoffProtocol', type(cadence.get('continuousLoadedHandoff', False)) is bool
+          and type(cadence.get('loadedSettleHandoff', False)) is bool and not (continuous and loaded_settle))
+    if loaded_settle:
+        policy = cadence.get('loadedSettleReadiness', {})
+        check('originalLoadedSettleReadinessThresholds', isinstance(policy, dict)
+              and all(policy.get(k) == v for k,v in LOADED_SETTLE_READINESS.items()))
     check('boundedRequestedCount', type(expected) is int and 1 <= expected <= 10)
     check('allExpectedStepRecords', [s['index'] for s in records] == list(range(1, expected+1)))
     check('originalQuietAndSlipThresholds', cadence['finalQuietRequiredS'] == 5.
-          and cadence['intermediateStableRequiredS'] == (0. if continuous else .25)
+          and cadence['intermediateStableRequiredS'] == (0. if continuous or loaded_settle else .25)
           and cadence['globalLoadedSlipLimitM'] == .01)
     check('physicalTimeConfiguration', cadence['physicalTimeOnly'] is True and cadence['playbackSpeed'] == 1.)
     states = {}
@@ -108,8 +232,10 @@ def audit_rows(rows, entry, records, references, cadence, mass, gears):
         state = states.setdefault(index, dict(phases=[], clear=0, maximumClearRun=0, clearAtTransition=False,
             landing=0, landingAtRecordedTransition=False, maximumLandingRun=0,
             unload=0, unloadAtTransition=False, ready=0, anchor=None,
-            finalForwardM=0., completedAtRecordedTransition=False, phaseLastNativeSteps={}, phaseEndElapsedS={}))
+            finalForwardM=0., completedAtRecordedTransition=False, phaseLastNativeSteps={}, phaseEndElapsedS={},
+            measuredSettleTargetSource=None, loadedSettleReadySamples=0, loadedSettleAtTransition=False))
         if first_sample:
+            state['entryComSource'] = final_com.tolist()
             check('stepOriginsMatchPrecedingMeasuredFeet', np.max(abs(np.array([t[0] for t in reference['targets']])-previous_feet)) < 1e-10)
             check('stepStartCountersMatchJournal', record['startNativeStep'] == row['sourceStep']-1
                   and abs(record['startSourceTimeS']-previous_time) < 1e-8)
@@ -117,6 +243,11 @@ def audit_rows(rows, entry, records, references, cadence, mass, gears):
                 prior = record_by_step.get(index-1, {})
                 check('continuousHandoffBeginsOnNextSample', phase == 'transfer'
                       and previous_step == prior.get('landingNativeStep') == prior.get('completedNativeStep'))
+            if loaded_settle and index > 1:
+                prior = record_by_step.get(index-1, {})
+                check('loadedSettleHandoffBeginsOnNextSample', phase == 'transfer'
+                      and previous_step == prior.get('completedNativeStep')
+                      and states.get(index-1, {}).get('phaseLastNativeSteps', {}).get('settle') == previous_step)
             heading = Rotation.from_quat(previous_q[[4,5,6,3]]).as_matrix()[:,0]
             heading[2] = 0.
             heading /= np.linalg.norm(heading)
@@ -179,6 +310,19 @@ def audit_rows(rows, entry, records, references, cadence, mass, gears):
             state['landingSupportRelativeForwardM'] = state['finalSupportRelativeForwardM']
             check('landingSummaryMatchesMeasuredTransition', abs(record['landingTimeS']-row['elapsedS']) < 1e-10
                   and abs(record['achievedAtLoadAcquisitionM']-observed) < 1e-10)
+            if loaded_settle:
+                positions = np.array([f['position'] for f in row['feet']])
+                target = np.array(state['entryComSource'])
+                target[:2] = np.mean(positions,axis=0)[:2]+.035*heading[:2]
+                state['measuredSettleTargetSource'] = target.tolist()
+                saved_feet = np.asarray(record.get('settleMeasuredFeet', []))
+                saved_target = np.asarray(record.get('settleComTargetSource', []))
+                reference_target = np.asarray(reference.get('finalCom', []))
+                check('loadedSettleTargetReconstructedFromActualLanding',
+                    saved_feet.shape == (2,3) and saved_target.shape == (3,) and reference_target.shape == (3,)
+                    and np.max(abs(saved_feet-positions)) < 1e-10
+                    and np.max(abs(saved_target-target)) < 1e-10
+                    and np.max(abs(reference_target-target)) < 1e-10)
         com = np.array(row['com'])
         final_com = com.copy()
         capture = com[:2]+np.array(row['comVelocity'])[:2]*math.sqrt(com[2]/9.81)
@@ -192,6 +336,11 @@ def audit_rows(rows, entry, records, references, cadence, mass, gears):
         state['unload'] = state['unload']+1 if unloaded else 0
         if phase == 'transfer':
             state['unloadAtTransition'] = state['unload'] >= 80
+        settle_target = state['measuredSettleTargetSource']
+        settle_ready = loaded_settle and phase == 'settle' and loaded_settle_ready(row, settle_target, mass, margin)
+        state['loadedSettleReadySamples'] = state['loadedSettleReadySamples']+1 if settle_ready else 0
+        if phase == 'settle':
+            state['loadedSettleAtTransition'] = state['loadedSettleReadySamples'] >= 80
         drift = math.inf
         if phase == 'stand':
             positions = np.array([f['position'] for f in row['feet']])
@@ -208,6 +357,14 @@ def audit_rows(rows, entry, records, references, cadence, mass, gears):
                 state['completedAtRecordedTransition'] = (phase == 'land' and observed >= requested
                     and row['sourceStep'] == record.get('landingNativeStep')
                     and state['landingAtRecordedTransition'])
+            elif loaded_settle and index < expected:
+                state['completedAtRecordedTransition'] = (phase == 'settle' and observed >= requested
+                    and row['phaseElapsedS']-DT >= durations['settle']-1e-10
+                    and state['loadedSettleAtTransition'])
+                check('loadedSettleCompletionSummaryMatchesReadiness',
+                    record.get('completedAt') == 'measured-loaded-settle'
+                    and record.get('loadedSettleReadyConsecutiveS', -1.) >= .1
+                    and abs(record.get('loadedSettleReadyConsecutiveS', -1.)-state['loadedSettleReadySamples']*DT) < 1e-10)
             else:
                 state['completedAtRecordedTransition'] = (phase == 'stand' and observed >= requested
                     and (index == expected or state['ready'] >= 200))
@@ -224,11 +381,16 @@ def audit_rows(rows, entry, records, references, cadence, mass, gears):
     check('everyStepCompletionQualified', len(states) == expected and all(s['completedAtRecordedTransition'] for s in states.values()))
     check('landingAndCompletionAreActualPhaseEnds', all(
         s['phaseLastNativeSteps'].get('land') == record_by_step[i].get('landingNativeStep', -1)
-        and s['phaseLastNativeSteps'].get('land' if continuous and i < expected else 'stand') == record_by_step[i].get('completedNativeStep', -1)
+        and s['phaseLastNativeSteps'].get(completion_phase(i)) == record_by_step[i].get('completedNativeStep', -1)
         for i,s in states.items()))
     check('everyMotionPhaseHonorsConfiguredDuration', all(
         all(s['phaseEndElapsedS'].get(p, -1.)-DT >= references[i]['phase_durations'][p]-1e-10 for p in expected_phases(i) if p != 'stand')
         for i,s in states.items()))
+    if loaded_settle:
+        check('allLoadedSettleTargetsReconstructed', len(states) == expected
+              and all(s['measuredSettleTargetSource'] is not None for s in states.values()))
+        check('everyIntermediateLoadedSettleQualified', len(states) == expected
+              and all(s['loadedSettleAtTransition'] for i,s in states.items() if i < expected))
     check('finalFiveSecondsQuietOnFinalStep', len(final_quiet) == 4000 and all(i == expected and q for i,q in final_quiet))
     check('sourceTimeContinuity', time_error < 1e-8)
     check('rootPositionContinuity', position_error < 1e-10)
@@ -238,6 +400,7 @@ def audit_rows(rows, entry, records, references, cadence, mass, gears):
     check('originalMotorLimit', motor <= .95000001)
     return dict(checks=checks, passed=all(checks.values()), actualRecordedIntegrations=count,
         continuousLoadedHandoff=continuous,
+        loadedSettleHandoff=loaded_settle,
         physicsSimSeconds=count*DT, sourceTimeMaximumErrorS=time_error,
         positionVelocityContinuityMaxErrorM=position_error,
         hingePositionVelocityContinuityMaxErrorRad=hinge_error,
@@ -282,6 +445,13 @@ def audit(folder):
         and receipt['originalFriction'] is True and receipt['physicsStepS'] == DT
         and receipt['torqueUpdateS'] == .005 and receipt['selectedPresetChanged'] is False)
     checks['codeUnchangedDuringRun'] = receipt['codeUnchangedDuringRun'] is True
+    frozen_implicit = folder.parents[1]/'frozen-source/source_implicit_arm_coordination.py'
+    implicit_path = frozen_implicit if frozen_implicit.is_file() else Path(__file__).with_name('source_implicit_arm_coordination.py')
+    implicit = audit_implicit_provenance(cadence, receipt,
+        json_array_items(folder/'control.json') if 'simultaneousArmCoordination' in cadence else (),
+        count, digest(implicit_path) if implicit_path.is_file() else '')
+    implicit['sourceModulePathChecked'] = str(implicit_path)
+    checks.update(implicit['checks'])
     selection = json.loads((folder.parents[1]/'selection.json').read_text())
     preset = json.loads((Path(__file__).with_name('source-step-selected-v1.json')).read_text())
     state_hash = hashlib.sha256(np.r_[initial['entry']['qpos'], initial['entry']['qvel']].astype('<f8').tobytes()).hexdigest()
@@ -309,7 +479,7 @@ def audit(folder):
         tenStep180mmQualificationPass=bool(measured['passed'] and cadence['requestedSteps'] == 10
             and abs(cadence['requestedDistanceM']-.18) < 1e-12),
         failedChecks=[name for name,value in checks.items() if not value], measured=measured,
-        originalMotionAudit=physical, opposedSwingAudit=opposition,
+        originalMotionAudit=physical, opposedSwingAudit=opposition, implicitArmProvenance=implicit,
         evidenceLimit='No-reset/root-assistance declarations are checked alongside saved-state continuity and source receipts; logs alone cannot prove all possible unrecorded external forces absent.',
         hashes={n:digest(folder/n) for n in ('frames.ndjson','control.json','multistep-summary.json','summary.json','final.bin','cadenced-step-config.json','opposed-arm-run.json')})
 

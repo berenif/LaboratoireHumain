@@ -1,10 +1,15 @@
 """Zero-integration synthetic journal corruption checks for strict cadence audit."""
 import copy
+import json
+from pathlib import Path
+import tempfile
 import unittest
 
 import numpy as np
 
-from audit_source_cadenced_steps import DT, PHASES, audit_rows
+from audit_source_cadenced_steps import (DT, PHASES, audit_rows,
+    audit_implicit_provenance, json_array_items, IMPLICIT_ARM_MODE,
+    IMPLICIT_ACCELERATION_MODEL, LOADED_SETTLE_READINESS, loaded_settle_ready)
 
 
 def fixture():
@@ -78,6 +83,29 @@ def sequence_fixture(continuous=True, stable_samples=200):
     if continuous:
         cadence['continuousLoadedHandoff'] = True
     return first+second,entry,[first_record,second_record],{1:references[1],2:second_reference},cadence
+
+
+def loaded_settle_fixture():
+    rows,entry,records,references,cadence = sequence_fixture(False,0)
+    cadence.update(loadedSettleHandoff=True,continuousLoadedHandoff=False,
+        intermediateStableRequiredS=0.,loadedSettleReadiness=LOADED_SETTLE_READINESS.copy(),
+        simultaneousArmCoordination=dict(enabled=False))
+    for record in records:
+        index = record['index']
+        landing = next(r for r in rows if r['sourceStep'] == record['landingNativeStep'])
+        feet = [f['position'] for f in landing['feet']]
+        target = np.mean(feet,axis=0);target[:2] += [.035,0.];target[2] = .8
+        record.update(settleMeasuredFeet=copy.deepcopy(feet),settleComTargetSource=target.tolist())
+        references[index]['finalCom'] = target.tolist()
+        references[index]['com1'] = target.tolist()
+        for row in rows:
+            if row['stepIndex'] == index:
+                row['com'] = target.tolist()
+                x = target[0]
+                row['supportPointsXY'] = [[x-.1,-.02],[x-.1,.02],[x+.1,-.02],[x+.1,.02]]
+        if index < len(records):
+            record.update(completedAt='measured-loaded-settle',loadedSettleReadyConsecutiveS=81*DT)
+    return rows,entry,records,references,cadence
 
 
 class CadencedJournalAudit(unittest.TestCase):
@@ -243,6 +271,182 @@ class ContinuousLoadedHandoffAudit(unittest.TestCase):
     def test_continuous_protocol_requires_explicit_zero_intermediate_stand(self):
         self.cadence['intermediateStableRequiredS'] = .25
         self.rejects('originalQuietAndSlipThresholds')
+
+
+class ImplicitArmProvenance(unittest.TestCase):
+    def setUp(self):
+        self.cadence = dict(simultaneousArmCoordination=dict(enabled=True,
+            finiteDifferenceAccelerationUsed=False, positionGain=100.,
+            velocityGain=20., taskWeight=2., angularGain=-1., targetClippingEnabled=False))
+        self.module_hash = 'a'*64
+        self.receipt = dict(codeSHA256AtStart={'source_implicit_arm_coordination.py':self.module_hash})
+        note = dict(simultaneousArmCoordination=dict(mode=IMPLICIT_ARM_MODE,
+            sideOrder=['right','left'], finiteDifferenceAccelerationUsed=False,
+            targetClippingEnabled=False,positionGain=100.,velocityGain=20.,taskWeight=2.),
+            opposedArmSwing=dict(accelerationTargetModel=IMPLICIT_ACCELERATION_MODEL,
+                finiteDifferenceLegAccelerationUsed=False,targetArmAccelerationRadps2=None))
+        self.notes = [dict(copy.deepcopy(note),t=0.),dict(copy.deepcopy(note),t=.005)]
+
+    def result(self):
+        return audit_implicit_provenance(self.cadence,self.receipt,iter(self.notes),5,self.module_hash)
+
+    def rejects(self,key):
+        result = self.result()
+        self.assertFalse(result['passed'])
+        self.assertFalse(result['checks'][key])
+
+    def test_valid_implicit_provenance_passes(self):
+        result = self.result()
+        self.assertTrue(result['passed'],result['checks'])
+        self.assertEqual(result['actualControlNotes'],2)
+
+    def test_historical_configuration_does_not_require_implicit_fields(self):
+        result = audit_implicit_provenance({}, {}, [], 5)
+        self.assertTrue(result['passed'])
+        self.assertFalse(result['declared'])
+
+    def test_explicitly_disabled_mode_keeps_legacy_provenance_rules(self):
+        result = audit_implicit_provenance(dict(simultaneousArmCoordination=dict(enabled=False)),{},[],5)
+        self.assertTrue(result['passed'])
+        self.assertFalse(result['enabled'])
+
+    def test_missing_module_hash_fails(self):
+        self.receipt['codeSHA256AtStart'].clear()
+        self.rejects('implicitModuleSourceHash')
+
+    def test_malformed_or_mismatched_module_hash_fails(self):
+        for value in ('not-a-sha256','b'*64):
+            with self.subTest(value=value):
+                self.receipt['codeSHA256AtStart']['source_implicit_arm_coordination.py'] = value
+                self.rejects('implicitModuleSourceHash')
+
+    def test_finite_difference_or_wrong_mode_telemetry_fails(self):
+        for key,value in (('finiteDifferenceAccelerationUsed',True),('mode','legacy'),
+                          ('targetClippingEnabled',True),('sideOrder',['left','right'])):
+            with self.subTest(key=key):
+                saved = copy.deepcopy(self.notes[0]['simultaneousArmCoordination'])
+                self.notes[0]['simultaneousArmCoordination'][key] = value
+                self.rejects('implicitEveryControlMode')
+                self.notes[0]['simultaneousArmCoordination'] = saved
+
+    def test_wrong_configuration_gains_or_clipping_fail(self):
+        for key,value in (('positionGain',99.),('velocityGain',19.),('taskWeight',3.),
+                          ('angularGain',-.9),('targetClippingEnabled',True),
+                          ('finiteDifferenceAccelerationUsed',True),('mode','legacy')):
+            with self.subTest(key=key):
+                saved = copy.deepcopy(self.cadence)
+                self.cadence['simultaneousArmCoordination'][key] = value
+                self.rejects('implicitConfigurationExact')
+                self.cadence = saved
+
+    def test_wrong_note_gains_fail(self):
+        for key in ('positionGain','velocityGain','taskWeight'):
+            with self.subTest(key=key):
+                self.notes[0]['simultaneousArmCoordination'][key] += 1.
+                self.rejects('implicitEveryControlGains')
+                self.notes[0]['simultaneousArmCoordination'][key] -= 1.
+
+    def test_legacy_acceleration_array_or_model_fails(self):
+        for key,value in (('targetArmAccelerationRadps2',[0.]*6),
+                          ('accelerationTargetModel','finite-difference'),
+                          ('finiteDifferenceLegAccelerationUsed',True)):
+            with self.subTest(key=key):
+                saved = copy.deepcopy(self.notes[0]['opposedArmSwing'])
+                self.notes[0]['opposedArmSwing'][key] = value
+                self.rejects('implicitEveryControlOpposedAcceleration')
+                self.notes[0]['opposedArmSwing'] = saved
+
+    def test_missing_per_control_implicit_telemetry_fails(self):
+        del self.notes[0]['simultaneousArmCoordination']
+        self.rejects('implicitEveryControlMode')
+
+    def test_original_five_millisecond_schedule_is_required(self):
+        self.notes[1]['t'] = .004
+        self.rejects('implicit200HzControlSchedule')
+
+    def test_missing_or_extra_control_note_fails(self):
+        self.notes.pop()
+        self.rejects('implicit200HzControlSchedule')
+        self.notes.extend([copy.deepcopy(self.notes[0]),copy.deepcopy(self.notes[0])])
+        self.notes[1]['t'],self.notes[2]['t'] = .005,.010
+        self.rejects('implicit200HzControlSchedule')
+
+    def test_streamed_control_array_matches_json_decoder(self):
+        notes = [dict(t=i*.005,padding='x'*1500) for i in range(900)]
+        with tempfile.TemporaryDirectory() as folder:
+            path = Path(folder)/'controls.json'
+            path.write_text(json.dumps(notes)+'\n')
+            self.assertEqual(list(json_array_items(path)),notes)
+
+
+class LoadedSettleHandoffAudit(unittest.TestCase):
+    def setUp(self):
+        self.rows,self.entry,self.records,self.references,self.cadence = loaded_settle_fixture()
+
+    def result(self):
+        return audit_rows(self.rows,self.entry,self.records,self.references,self.cadence,10.,np.ones(21))
+
+    def rejects(self,key):
+        result = self.result()
+        self.assertFalse(result['passed'])
+        self.assertFalse(result['checks'][key])
+
+    def test_positive_loaded_settle_protocol_passes(self):
+        result = self.result()
+        self.assertTrue(result['passed'],[k for k,v in result['checks'].items() if not v])
+
+    def test_forged_midpoint_target_fails(self):
+        self.references[1]['finalCom'][0] += .001
+        self.rejects('loadedSettleTargetReconstructedFromActualLanding')
+
+    def test_forged_landing_foot_record_fails(self):
+        self.records[0]['settleMeasuredFeet'][0][0] += .001
+        self.rejects('loadedSettleTargetReconstructedFromActualLanding')
+
+    def test_readiness_counter_cannot_replace_eighty_actual_samples(self):
+        rows = [r for r in self.rows if r['stepIndex'] == 1 and r['phase'] == 'settle']
+        rows[-2]['maximumBodyLinearMps'] = .050001
+        self.rejects('everyIntermediateLoadedSettleQualified')
+
+    def test_completion_at_landing_cannot_skip_settle(self):
+        record = self.records[0]
+        record['completedNativeStep'] = record['landingNativeStep']
+        record['completedTimeS'] = record['landingTimeS']
+        self.rejects('everyStepCompletionQualified')
+
+    def test_relaxed_readiness_configuration_fails(self):
+        self.cadence['loadedSettleReadiness']['minimumCaptureMarginM'] = 0.
+        self.rejects('originalLoadedSettleReadinessThresholds')
+
+    def test_protocol_flags_are_mutually_exclusive(self):
+        self.cadence['continuousLoadedHandoff'] = True
+        self.rejects('explicitHandoffProtocol')
+
+    def test_final_five_seconds_are_not_removed(self):
+        self.rows.pop()
+        self.rejects('finalFiveSecondsQuietOnFinalStep')
+
+    def test_all_readiness_conditions_use_measured_values(self):
+        row = next(r for r in self.rows if r['stepIndex'] == 1 and r['phase'] == 'settle')
+        target = self.references[1]['finalCom']
+        self.assertTrue(loaded_settle_ready(row,target,10.,.02))
+        for key,value in (('maximumBodyLinearMps',.050001),('maximumBodyAngularRadps',.200001),
+                          ('jointLimitMinimumMarginRad',.004999)):
+            changed = copy.deepcopy(row);changed[key] = value
+            self.assertFalse(loaded_settle_ready(changed,target,10.,.02),key)
+        for field,value in (('loadN',2.999),('clearance',.003001)):
+            changed = copy.deepcopy(row);changed['feet'][0][field] = value
+            self.assertFalse(loaded_settle_ready(changed,target,10.,.02),field)
+        changed = copy.deepcopy(row)
+        for foot in changed['feet']:
+            foot['loadN'] = 3.
+        self.assertFalse(loaded_settle_ready(changed,target,10.,.02))
+        changed = copy.deepcopy(row);changed['com'][0] += .008001
+        self.assertFalse(loaded_settle_ready(changed,target,10.,.02))
+        changed = copy.deepcopy(row);changed['comVelocity'][0] = .04
+        self.assertFalse(loaded_settle_ready(changed,target,10.,.02))
+        self.assertFalse(loaded_settle_ready(row,target,10.,.009999))
+        self.assertFalse(loaded_settle_ready(row,target,10.,None))
 
 
 if __name__ == '__main__':

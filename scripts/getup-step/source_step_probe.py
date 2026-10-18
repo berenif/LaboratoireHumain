@@ -117,7 +117,9 @@ class Controller:
    ps,pv,pa=clock(t,self.phase_duration('transfer'));delta=self.q0-self.posture_start;task(np.eye(27)[6:],delta*pa+20*(self.posture_start+delta*ps-q)+8*(delta*pv-v[6:]),.2)
   else:task(np.eye(27)[6:],20*(self.q0-q)-8*v[6:],.2)
   if self.self_avoidance:
-   if hasattr(self,'arm_kp'):task(np.eye(27)[21:],self.arm_acceleration+self.arm_kp*(self.arm_posture-q[15:])+self.arm_kd*(self.arm_velocity-v[21:]),self.arm_weight)
+   if hasattr(self,'arm_acceleration_task'):
+    arm=self.arm_acceleration_task(t,phase);task(arm.jacobian,arm.target,arm.weight)
+   elif hasattr(self,'arm_kp'):task(np.eye(27)[21:],self.arm_acceleration+self.arm_kp*(self.arm_posture-q[15:])+self.arm_kd*(self.arm_velocity-v[21:]),self.arm_weight)
    else:task(np.eye(27)[21:],20*(self.arm_posture-q[15:])-10*v[21:],1.)
   contacts=[]
   landing_adjustment=self.landing_adjustment(t,phase)if hasattr(self,'landing_adjustment')else None
