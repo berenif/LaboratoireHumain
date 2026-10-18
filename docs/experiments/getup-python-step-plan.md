@@ -691,3 +691,145 @@ incomplete or failed pair remains a failure; no clock-only or best-past window.
 This is still stabilization viability, with no forward-step claim. Fresh focused
 source/math and resource review plus parent admission are required. No optimizer
 proposal or new integration is authorized by this text.
+
+## 14. Proposed actual online SLOW stabilization (not admitted)
+
+The offline five-proposal pair failed: the candidate reached 10 mm loaded slip
+77.5 ms earlier than the original. No further fixed-replay fit is proposed.
+The observer now preserves all 4,522 historical packet/227 command outputs
+exactly while cutting pure observer time about threefold. This is not an actual
+end-to-end training-rate measurement; a fresh bounded benchmark must establish it.
+
+### Actual new data, original distribution and one algorithm
+
+Start one new candidate from the original learned SLOW mean AND state-dependent
+std, original holding target 1.4, power 1 and fixed learned alpha
+0.000612579835321518. Freeze BOTH hidden layers; train the 42 mean/logstd output rows and biases,
+as the source SAC distribution permits. Alpha remains fixed with no temperature
+optimizer. Original std roughly 0.091–0.206 is INITIALIZATION, not a frozen-noise
+promise. The source reparameterized tanh-Gaussian is sampled during actual
+collection and its std head can learn to reduce task-induced failures. No torque
+conversion, reference change or automatic exploration-scale fallback. Initial
+broad exploration may fail quickly; finite task failures are learning data,
+not evidence of an action-mapping catastrophe or a requirement to be quiet first.
+
+Collect at most 5,000 NEW actual policy intervals into replay capacity 5,000.
+Do not train on the old narrow-std replay. Each reset restores the same actual
+complete 800 Hz source endpoint and starts new prospective analysis anchors;
+independent collection/critic/proposal/replay RNG roles continue rather than
+reseeding per episode. Role seeds derive from SHA256 of protocol/root-seed0/role;
+each monotonically charged proposal ID selects a NEW proposal substream. Rejected
+attempt-local noise may be restored for audit, but its ID is retired forever.
+Never rewind collection, critic-target or replay RNG after a proposal rejection. There are
+no planned-pose writes or helper forces. This is one-entry training scope, not
+varied-start qualification. Retain every verified finite physical terminal,
+including partial intervals, with its actual final observation and mask zero.
+Corrupt/uncertain infrastructure packets abort rather than entering replay.
+
+The whole actor stays original for the first 1,024 actual transitions. Fresh
+139-input twin critics/targets receive 1,000 critic-only updates, batch 128,
+discount 0.97, Adam critic rate 1e-4, target Polyak 0.005 after every update.
+Then each FOUR new transitions permits one batch-128 critic update and one
+policy-output-head Adam proposal at 1e-5: at most 994 proposals by transition 5,000.
+Maximum candidate optimizer cost is 1,000 + 994 + 994 = 2,988 calls. No optimizer
+call is refunded on projection, rejection, physical reset or checkpoint restore.
+
+Each proposal keeps the reviewed common-noise loss-decrease test and scales
+1, 1/2, ..., 1/1024. Add the FULL summed Gaussian KL(previous accepted || candidate)
+limit 0.05, including std changes:
+`sum(log(sc/so) + (so^2+(mo-mc)^2)/(2*sc^2) - 0.5) <= 0.05`.
+Also retain `0.5*sum(((mc-m_original)/s_original)^2) <= 0.05` as a separate
+original-scaled MEAN-DISTANCE bound; with changing std it is not called a KL. The witness set includes all 2,048 pre/next states of
+the first 1,024 NEW transitions plus the most recent 256 transitions' pre/next
+states (duplicates retained). The historical 201-probe RMS 0.02 / maximum 0.05 rad
+veto remains independent and unchanged; the historical midpoint audit applies
+once at the final endpoint with the same limits. Finite witnesses do not guarantee
+global policy safety or critic calibration. Incremental KL does NOT bound
+cumulative variance or full KL to the original policy; log the cumulative
+distribution change separately. Source logstd bounds [-5,2] remain. A pure
+fixture must show nonzero logstd gradients and actual std-row updates; the old
+mean-only helper's zero-std-gradient hook is not reusable for this protocol.
+At EACH proposal, compute frozen-trunk hidden features ONCE for the exact hashed
+witness/batch tensors and reuse them for all head-only scale evaluations. Bind
+input shape/dtype/hash and immutable trunk hash; prove raw42/action/logprob/loss
+AND head-gradient parity against the full source actor. Do not cache live engine
+state or reuse features for a different observation tensor.
+
+On no accepted scale, restore both output heads and their Adam to the postcritic
+snapshot. Retain critic/target/replay state and charges; retire that proposal RNG
+substream rather than feeding its rejection-conditioned draws to another role.
+Then collect FOUR genuinely new transitions
+before another attempt. No same-batch retries. Stop after 128 consecutive rejected
+proposals. A global drift violation aborts the branch before another physical
+action. Abort on engine warnings, PD/mapping mismatch, corrupt/nonfinite observations or
+infrastructure uncertainty. Verified finite slip/flight/nonfoot/overlap/height/
+self-penetration task terminals retain mask zero and permit an actual-cache
+training reset; a native_integrity label caused solely by verified penetration
+with zero warnings is still a physical task failure, not corrupt telemetry.
+Report short episodes by actual native duration (<80 samples means <0.1 s),
+without a pre-warmup short-episode abort. No smaller-noise fallback.
+
+Preregister immutable full checkpoints at actual transitions 1,024, 2,048,
+3,072, 4,096 and 5,000 plus the final boundary. At EVERY proposal/physical
+terminal, atomically replace the rolling full learner/native/controller checkpoint
+and keep immutable lightweight head/Adam/RNG/batch/noise/KL/hash receipts and
+raw terminal packets. Full state includes targets, replay and controller/phase/
+anchors; no automatic reconstruction refunds. Admit at least 12 GiB free and
+cap stage outputs at 8 GiB INCLUDING atomic temporary files; admit free space
+before writes and abort rather than delete evidence to fit. Compact receipts
+are audit records, not independently resumable full checkpoints. Log critic
+TD errors, Q values, gradient norms, all scales/KLs/drift and std witnesses. At
+fixed milestones report task-only behaviour returns `G_t=sum(gamma^(k-t)*r_k)`
+and, separately, source-SOFT behaviour returns
+`S_t=r_t+gamma*(S_(t+1)-alpha*logpi_(t+1))`, final `S=r_terminal`.
+Use ONLY complete physical/goal-terminated episodes; administrative truncations
+are not terminal-zero returns. Record original latent noise, source-epsilon
+logprob and policy version AT collection, never by atanh(action) reconstruction.
+Both comparisons are explicitly off-policy diagnostics, not current-policy Q
+certificates or heldout Monte Carlo optimization targets. No physical-best
+checkpoint selection; low TD loss alone is not calibrated-critic evidence.
+
+### Fresh bounded resources and release gates
+
+Propose 45 minutes TOTAL process wall and 20 aggregate physics seconds:
+1 s benchmark, 15 s collection/training, 4 s protected validation. Policy ceilings
+are 64 benchmark + 5,000 training + 640 validation = 5,704 actual intervals,
+at most 114,080 actual native integrations. Protect 300 wall seconds, all 640
+validation intervals and 4 physics seconds continuously; no reserve transfer.
+The benchmark has an additional 120 s execution deadline. Setup, fixtures,
+review, observer work, all proposal forwards, writes and cleanup count from the
+new stage's start. The previous stage's unused budgets remain closed.
+
+The benchmark first verifies zero-step original-distribution parity and the
+actual 20-sample restore/evolution repeat with the optimized observer. Every
+repeated integration is charged within its 64-interval ceiling. Only after all
+64 deterministic intervals pass may it time up to 16 separately precharged
+throwaway critic updates and TWO separately precharged output-head Adam proposals,
+with forced rejection only to time all eleven forward scales at the maximum
+2,560-state witness size, using the SAME frozen-feature cache path as training.
+Also time feature computation, the 201-probe veto, backward/Adam, full
+serialization/hash/rolling-checkpoint write, actual-cache restore and controller
+reset. Discard ALL benchmark learning/RNG state. Benchmark calls are at most 18,
+separate from 2,988 candidate calls (3,006 total). Record actual optimized policy
+intervals/s, physics/sample and the COMPLETE worst-case proposal/checkpoint/reset
+cost, not merely critic or forward time. Re-admit the complete planned collection/optimizer
+work plus paired final validation using those measurements and 50% headroom
+under the live stage lock, before collection and before actor release. If it does
+not fit, stop rather than silently shortening the task or extending the budget.
+
+Final-pair eligibility is ONLY: completed 5,000 transitions, or the preregistered
+128-consecutive-proposal-rejection endpoint, with at least ONE accepted update
+and all final audits passed. Mapping/warning/integrity/drift/resource/storage
+aborts quarantine the branch and skip candidate validation; capacity exhaustion
+does not silently define a shorter training endpoint. Zero accepted updates keep
+the original selected and skip the duplicate pair. One deterministic original/
+candidate final pair, at most 8 s each, uses that final candidate under the fixed
+stopping rule, never a selected best physical checkpoint. The actual FINAL 4,000 samples, five degrees upright,
+support/capture, foot-only load, 10 mm slip and fixed-anchor gates stay unchanged.
+Any earlier partial/failure remains failure; no step result is implied. No
+deployment, default-policy change or source/derived-weight redistribution.
+
+This is substantive online stabilization viability, still far below the source's
+millions-of-transitions training scale. Exact protocol/config and runner review,
+pure replay/partial-terminal/projection/continuation fixtures, fresh resource
+admission and parent release are required before any new collection or update.

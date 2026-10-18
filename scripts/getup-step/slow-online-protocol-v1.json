@@ -1,0 +1,153 @@
+{
+  "schema": 1,
+  "name": "source_SLOW_online_stabilization_v1",
+  "designOnly": true,
+  "collectionEnabled": false,
+  "learningEnabled": false,
+  "scope": "one actual source800Hz endpoint; stabilization only; no forward-step or deployment qualification",
+  "equationPreset": {
+    "path": "task-config-mujoco-slow-stabilization-v1.json",
+    "sha256": "c8ac2dba22ac8c1f1e386575624f45f7b1ee5855b7340fba285b984e233faebf",
+    "activeSections": [
+      "timing",
+      "reward",
+      "termination",
+      "phaseGates",
+      "engine"
+    ],
+    "basePilotBlockInactive": true,
+    "actorReference": "source standing q21 plus height sentinel1.4 plus up[0,0,1], now/ahead, power1"
+  },
+  "policy": {
+    "initializer": "original learned SLOW mean and state-dependent logstd, no .02 reinitialization",
+    "frozen": [
+      "both hidden layers"
+    ],
+    "trainable": "all42mean/logstd output rows and biases",
+    "alpha": 0.000612579835321518,
+    "alphaFixed": true,
+    "alphaOptimizerCalls": 0,
+    "action": "qpos-order residual radians;20held native substeps; actualq/dq refresh at800Hz,kd.2,originalgear once",
+    "collection": "source tanhGaussian with original learned std INITIALIZATION; std head learns via sameSAC loss; no forced .02 or smaller-scale fallback",
+    "evaluation": "deterministic tanh(mean)",
+    "stdLearning": "source logstd transform and bounds[-5,2], outputheadAdam together withmean; fixedoriginalalpha",
+    "stdGradientFixtureRequired": "nonzerologstdgradients and actualstdrowupdates; oldmean-only zero-stdgradienthook forbidden"
+  },
+  "replay": {
+    "maximumActualNewTransitions": 5000,
+    "capacity": 5000,
+    "legacyTrainingTransitions": 0,
+    "warmupActualTransitions": 1024,
+    "episodeRngContinues": true,
+    "finiteFullOrPartialPhysicalTerminalMask": 0,
+    "absorbingGoalMask": 0,
+    "administrativeCutoffMask": 1,
+    "corruptOrUncertainRequests": "abort and exclude invalid tensors; all integration costs retained",
+    "rngRoles": {
+      "rootSeed": 0,
+      "seedDerivation": "SHA256(protocol version/rootseed/role/attemptID), role labels distinct",
+      "collection": "dedicated continuous sourceGaussian sampling stream",
+      "critic_target": "dedicated continuous nextaction/noise stream forcritic targets",
+      "actor_proposal": "fresh substream for EACH monotonically charged attemptID; fixednoise within11scales; retired onaccept/reject, no drawreuse inanyotherrole",
+      "replay": "dedicated continuous PCG64 batch-index stream",
+      "checkpoint": "saveall4roles+attemptID; no role reseed perphysicalreset and no collection/critic/replay rewind onproposalrejection"
+    }
+  },
+  "learning": {
+    "seed": 0,
+    "batchSize": 128,
+    "discount": 0.97,
+    "tau": 0.005,
+    "criticLearningRate": 0.0001,
+    "actorLearningRate": 1e-05,
+    "adamBetas": [
+      0.9,
+      0.999
+    ],
+    "freshTwinCriticsTargetsOptimizers": true,
+    "criticOnlyWarmupUpdates": 1000,
+    "criticOnlyPolyakEveryUpdate": true,
+    "newActualTransitionsPerProposal": 4,
+    "maximumProposals": 994,
+    "maximumCandidateOptimizerCalls": 2988,
+    "maximumBenchmarkThrowawayCriticCalls": 16,
+    "maximumAllChargedLearningCalls": 3006,
+    "maximumBenchmarkThrowawayMeanheadCalls": 2
+  },
+  "trust": {
+    "scales": [
+      1,
+      0.5,
+      0.25,
+      0.125,
+      0.0625,
+      0.03125,
+      0.015625,
+      0.0078125,
+      0.00390625,
+      0.001953125,
+      0.0009765625
+    ],
+    "sameGaussianDrawAllScales": true,
+    "minimumSameBatchActorLossDecrease": 1e-06,
+    "witnesses": "all2048pre/nextstatesofinitial1024actualtransitions plusmostrecent256actualtransitionspre/nextstates;duplicatesretained",
+    "globalHistoricalProbeCount": 201,
+    "maximumDeterministicResidualRMSDriftRad": 0.02,
+    "maximumDeterministicResidualMaxDriftRad": 0.05,
+    "finalMidpointProbeCount": 200,
+    "projection": "accepted scaledbothheads retainfullAdam; rejectrestoresbothheads+Adam, retainscritic/replay/charges, retiresproposal substream; neverrewindcollection/critic/replayRNG",
+    "noAcceptance": "collect4newactualtransitions before nextproposal; no same-batch retry",
+    "maximumConsecutiveRejectedProposals": 128,
+    "maximumFullGaussianKLPreviousToCandidate": 0.05,
+    "maximumOriginalScaledMeanDistance": 0.05,
+    "fullGaussianKLFormula": "sum(log(sc/so)+(so^2+(mo-mc)^2)/(2sc^2)-.5), direction previousaccepted||candidate",
+    "featureCache": "onceperproposal exacthashedwitness/batch tensors+frozentrunkhash; reusehiddenfeatures across11scales; sourceforward/loss/headgradient parityrequired",
+    "cumulativeVariance": "incremental fullKLdoesNOTbound cumulativevariance/fullKLtooriginal; reportcumulativedistributionchange; source logstdbounds[-5,2]"
+  },
+  "stops": {
+    "globalDrift": "abort before nextphysicalaction; baseline remains selected",
+    "nativeIntegrity": "abort enginewarnings,PD/controlmappingmismatch,nonfinite/corrupt/infrastructureuncertainty; verifiedpenetration-only native_integrity withwarnings0 isfinitephysicalterminal0 andmayresetactualtrainingcache",
+    "fullStepCurriculum": false,
+    "finitePhysicalFailures": "slip/flight/nonfoot/overlap/height/verifiedselfpenetration retainmask0andresetactualcache; sourcewarning/PDmapping/nonfinite/corruptabort",
+    "shortEpisodes": "report actualnativecount<80(<.1s), not a warmupabort"
+  },
+  "milestones": {
+    "actualTransitions": [
+      1024,
+      2048,
+      3072,
+      4096,
+      5000
+    ],
+    "checkpointEveryProposalAndTerminal": true,
+    "criticCalibration": "separate task-onlydiscountedcompletebehaviourreturn andsourceSOFTreturn r_t+gamma*(S_next-alpha*loggedsourceepsilonlogpi_next), finalr; onlycompletephysical/goal episodes, noadmintruncation0; logactualnoise/policyversion atcollection; offpolicyreportonly",
+    "physicalPair": "one final original/candidate pair only, max8seach,FINAL4000actual quiet samples,alloriginal gates",
+    "fullCheckpointPolicy": "immutable full at5milestones+final; rolling atomic full learner/native/controller everyproposal/terminal; immutable lightweighthead/Adam/RNG/batch/noise/KL/hashreceipts andrawterminalproof; no reconstructionrefund;compactreceiptsarenotindependentlyresumable",
+    "pairEligibleEndpoints": "completed5000 or128consecutiveproposalrejections with>=1acceptedupdateandfinalaudits; safety/infrastructure/drift/resource/storageabort skipscandidatepair; zeroaccepted skipsduplicatepair"
+  },
+  "resources": {
+    "status": "proposed-not-admitted",
+    "maximumTotalProcessWallSeconds": 2700,
+    "maximumAggregatePhysicsSeconds": 20,
+    "benchmarkPhysicsSeconds": 1,
+    "trainingPhysicsSeconds": 15,
+    "protectedValidationPhysicsSeconds": 4,
+    "protectedValidationWallSeconds": 300,
+    "benchmarkExecutionWallSeconds": 120,
+    "benchmarkIntervals": 64,
+    "trainingIntervals": 5000,
+    "protectedValidationIntervals": 640,
+    "maximumAllIntervals": 5704,
+    "maximumAllNativeIntegrations": 114080,
+    "rateHeadroomFactor": 1.5,
+    "liveProjectionGates": [
+      "beforecollection",
+      "beforeactorrelease",
+      "beforefinalpair"
+    ],
+    "noReserveTransfer": true,
+    "benchmark": "64 deterministicintervalsincluding20samplerepeat; then16chargeddiscardedcriticupdates+2chargeddiscardedmeanheadproposalsforcedto11scales with2560witnesses; pricebackward/Adam,201probeveto,fullserialization/hash/rollingwrite andactualcacherestore/controllerreset; discardalllearning/RNG;timeexactfeaturecachecompute andcachedheadscalepath,allcheckpointtemporaryIOandreset",
+    "minimumFreeBytesBeforeCollection": 12884901888,
+    "maximumStageOutputBytesIncludingTemp": 8589934592
+  }
+}
