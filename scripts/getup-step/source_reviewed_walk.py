@@ -15,6 +15,7 @@ from pathlib import Path
 import time
 import zlib
 import ctypes as C
+from dataclasses import asdict
 
 import numpy as np
 
@@ -25,11 +26,12 @@ from source_contact_impedance_probe import prepare_impedance
 from source_opposed_arm_swing import limb_telemetry
 from source_arm_knee_mobility import native_bytes
 from source_solved_wrench_diagnostics import reader as read_solved_wrenches
-from source_continuous_com import QuinticSegment, plan_forward, validate_reference
+from source_continuous_com import QuinticSegment, plan_forward, plan_projected, validate_reference
 from source_reference_context import (REFERENCE_VERSION, canonical, digest, make_context,
     nominal_com, prospective_unload_context)
+from source_soft_load_preference import AcquiredLoad, prepare_preference
 
-MODES = ('baseline-context', 'continuous-com')
+MODES = ('baseline-context', 'continuous-com', 'continuous-com-projected', 'continuous-com-load')
 CONFIG_FIELDS = ('q0','com0','com1','targets','rootR','flatRotations','radii','floorTargets',
     'swing_side','stance_side','swing_body','self_avoidance','B','heading','landing',
     'step_distance','finalCom','lean_axis','phase_durations','joint_reserve','posture_start',
@@ -61,6 +63,26 @@ class ReviewedController(RobustSupportController):
         self.robust_support_barrier = []
         self.capture_barrier = []
         self.arm_range_barrier = []
+        if mode == 'continuous-com-load':
+            self._soft_load_anchor = None
+            self._prepared_soft_load_preference = None
+            self._soft_load_saved_targets = set()
+            self._soft_load_witnesses = []
+
+    def prepare_phase_handoff(self, old_phase, new_phase, row, *, landing_consecutive_samples):
+        if self._reviewed_mode != 'continuous-com-load' or new_phase != 'settle':
+            return
+        if (old_phase != 'land' or self._soft_load_anchor is not None
+                or row.get('phase') != 'land' or row.get('stepIndex') != self._reviewed_step_index
+                or type(landing_consecutive_samples) is not int or landing_consecutive_samples < 80
+                or any(foot['loadN'] < 3. for foot in row['feet'])
+                or row['sourceStep'] != self.w.l.lh_dim(self.w.h, 6)
+                or abs(row['sourceTimeS']-self.w.l.lh_time(self.w.h)) > 1e-10):
+            raise ValueError('invalid or replaced acquired-load handoff')
+        self._soft_load_anchor = AcquiredLoad(row['sourceStep'], row['sourceTimeS'],
+            self._reviewed_step_index, self.swing_side,
+            row['feet'][self.swing_side]['loadN'], self.w.mass*9.81,
+            landing_consecutive_samples)
 
     def prepared_arm_measurement(self):
         w = self.w
@@ -87,6 +109,9 @@ class ReviewedController(RobustSupportController):
         config['unload_admitted'] = bool(getattr(self, 'unload_admitted', False))
         config['referenceVersion'] = REFERENCE_VERSION
         config['mode'] = self._reviewed_mode
+        if self._reviewed_mode == 'continuous-com-load':
+            config['softLoadAcquisition'] = (None if self._soft_load_anchor is None
+                else asdict(self._soft_load_anchor))
         return (self.w.l.lh_dim(self.w.h, 6), self.w.l.lh_time(self.w.h), self._reviewed_step_index,
             phase, float(t), self._reference_epoch, digest(serial(config)))
 
@@ -110,6 +135,9 @@ class ReviewedController(RobustSupportController):
             mappingNeutral=self._mapping.neutral_pitch,
             path=self._com_path.receipt() if hasattr(self, '_com_path') else None,
             settle=self._com_settle.receipt() if hasattr(self, '_com_settle') else None)
+        if self._reviewed_mode == 'continuous-com-load':
+            tasks['softLoadPreference'] = (None if self._prepared_soft_load_preference is None
+                else self._prepared_soft_load_preference.receipt())
         w = self.w
         native = tuple(w.arr(index, shape).tobytes() for index, shape in
             ((0, (28,)), (1, (27,)), (2, (21,)), (3, (17, 3)),
@@ -132,14 +160,15 @@ class ReviewedController(RobustSupportController):
             target = target+s*self._robust_delta
             velocity = velocity+ds*self._robust_delta
             acceleration = acceleration+dds*self._robust_delta
-        if self._reviewed_mode != 'continuous-com':
+        if self._reviewed_mode not in ('continuous-com', 'continuous-com-projected', 'continuous-com-load'):
             return target, velocity, acceleration
         now = self.w.l.lh_time(self.w.h)
         if phase in ('translate', 'land'):
             if not hasattr(self, '_com_path'):
                 if phase != 'translate':
                     raise ValueError('continuous COM phase history unavailable')
-                self._com_path, self._com_path_plan = plan_forward(self, now-t)
+                planner = plan_projected if self._reviewed_mode == 'continuous-com-projected' else plan_forward
+                self._com_path, self._com_path_plan = planner(self, now-t)
             p, v, a = self._com_path.evaluate(now)
             target, velocity, acceleration = target+p, velocity+v, acceleration+a
         elif phase == 'settle' and hasattr(self, '_com_path'):
@@ -178,6 +207,14 @@ class ReviewedController(RobustSupportController):
         config = {k: getattr(self, k) for k in CONFIG_FIELDS if hasattr(self, k)}
         config.update(mode=self._reviewed_mode, referenceVersion=REFERENCE_VERSION,
             armMappingRanges=self._mapping.ranges)
+        if self._reviewed_mode == 'continuous-com-load':
+            self._prepared_soft_load_preference = prepare_preference(self._soft_load_anchor,
+                phase, t, self.w.l.lh_dim(self.w.h, 6), self.w.l.lh_time(self.w.h),
+                self.phase_duration('settle'))
+            causal['softLoadAcquisition'] = (None if self._soft_load_anchor is None
+                else asdict(self._soft_load_anchor))
+            config['softLoadPreference'] = (None if self._prepared_soft_load_preference is None
+                else self._prepared_soft_load_preference.receipt())
         self._prepared_reference_context = make_context(self, t, phase,
             draft_com, causal=causal, config=serial(config), seek=seek)
         draft_token = self._prepared_inputs_token(t, phase)
@@ -266,6 +303,32 @@ class ReviewedController(RobustSupportController):
             forecasts=copy.deepcopy(self._forecast_records))
         info['actualMotorControl'] = u.tolist()
         info['actualMotorControlSHA256'] = control_sha(u)
+        if (self._reviewed_mode == 'continuous-com-load' and phase == 'settle'
+                and hasattr(self, '_soft_load_evidence_folder')):
+            for threshold in (.1, .5):
+                if t < threshold or threshold in self._soft_load_saved_targets:
+                    continue
+                payload = native_bytes(self.w)
+                folder = self._soft_load_evidence_folder
+                folder.mkdir(exist_ok=True)
+                name = f'after-{threshold:.1f}s-source-{self.w.l.lh_dim(self.w.h, 6):06d}.native-payload.zlib'
+                path = folder/name; path.write_bytes(zlib.compress(payload, 1))
+                self._soft_load_witnesses.append(dict(thresholdS=threshold,
+                    sourceStep=self.w.l.lh_dim(self.w.h, 6), sourceTimeS=self.w.l.lh_time(self.w.h),
+                    elapsedS=t, phase=phase, payloadSHA256=hashlib.sha256(payload).hexdigest(),
+                    payloadBytes=len(payload), filename=name, compressedSHA256=sha(path),
+                    contextSHA256=info['referenceContext']['contextSHA256'],
+                    actualMotorControlSHA256=info['actualMotorControlSHA256'],
+                    qpAssemblySHA256=info['qpAssemblySHA256']))
+                manifest = dict(schema=1, profile='retained-acquired-load-hinge-v1',
+                    modelSHA256=sha(self.w.xml), helperSHA256=sha(self.w.helper),
+                    bridgeSHA256=sha(self.w.base/'source_bridge_v2.so'),
+                    engineSHA256=sha(self.w.base/'dependency/official-wheel/mujoco/libmujoco_nogl.so.2.1.3'),
+                    stepIndex=self._reviewed_step_index, samples=self._soft_load_witnesses,
+                    physicsIntegrations=0, actualCommandNotYetApplied=True,
+                    payloadEncoding='zlib-compressed exact lh_checkpoint_export payload')
+                (folder/'manifest.json').write_text(json.dumps(manifest, indent=2)+'\n')
+                self._soft_load_saved_targets.add(threshold)
         # Preparation may select support, but its planning config is unchanged.
         self._command_cache = (self._command_identity(t, phase), u.copy(), copy.deepcopy(info))
         return u, info
@@ -287,7 +350,7 @@ class ReviewedSteps(CadencedSteps):
         self.code_at_start.update({name: sha(Path(__file__).with_name(name)) for name in
             ('source_reviewed_walk.py', 'source_reference_context.py', 'source_robust_support_steps.py',
              'source_contact_impedance_probe.py', 'source_continuous_com.py',
-             'source_solved_wrench_diagnostics.py')})
+             'source_solved_wrench_diagnostics.py', 'source_soft_load_preference.py')})
 
     def begin_step(self):
         previous = getattr(self, 'controller', None) if self.step_index > 0 else None
@@ -296,6 +359,8 @@ class ReviewedSteps(CadencedSteps):
         self.controller.install_reviewed(self.step_index+1, self.reviewed_mode)
         self.controller._robust_evidence_folder = self.folder/f'robust-risk-step-{self.step_index+1:02d}'
         self.controller._robust_step_index = self.step_index+1
+        if self.reviewed_mode == 'continuous-com-load':
+            self.controller._soft_load_evidence_folder = self.folder/f'soft-load-step-{self.step_index+1:02d}'
         # Inherited setup solves are descriptive. Their history is discarded;
         # only actual commands contribute causal derivative/support observations.
         if previous is None:
@@ -357,12 +422,22 @@ class ReviewedSteps(CadencedSteps):
             contactImpratio=8., originalModelQualificationClaim=False, selectedPresetChanged=False,
             rootAssistance=False, physicalStateInstallationsAfterInitialization=0,
             loadedSlipResetBetweenSteps=False, implicitArms=False, wrenchDiagnosticsEnabled=True)
+        if self.reviewed_mode == 'continuous-com-load':
+            receipt['softLoadPreferenceEnabled'] = True
         (self.folder/'reviewed-walk-run.json').write_text(json.dumps(receipt, indent=2)+'\n')
-        (self.folder/'reviewed-walk-config.json').write_text(json.dumps(dict(schema=2,
+        reviewed_config = dict(schema=2,
             profile='five-reviewed-walk', mode=self.reviewed_mode, requestedSteps=len(self.distances),
             referenceVersion=REFERENCE_VERSION, loadedSettleProtocolUnchanged=True,
             originalModelQualificationClaim=False, finalPlanQualificationClaim=False,
-            originalPhysicalGatesUnchanged=True, wrenchDiagnosticsEnabled=True), indent=2)+'\n')
+            originalPhysicalGatesUnchanged=True, wrenchDiagnosticsEnabled=True)
+        if self.reviewed_mode == 'continuous-com-load':
+            reviewed_config['softLoadPreference'] = dict(enabled=True,
+                policy='retained-acquired-load-hinge-v1', weightPerNewton=.0005,
+                maximumAcquiredWeightFraction=.1, activationS=.1,
+                fadeDurationS=self.controller.phase_duration('settle'),
+                acquiredFrom='actual qualified land-to-settle native sample',
+                noHardForceFloor=True, originalCornerNormalAndShearCostsUnchanged=True)
+        (self.folder/'reviewed-walk-config.json').write_text(json.dumps(reviewed_config, indent=2)+'\n')
         self._wrench_summary.update(actualIntegrations=self.steps, sourceStepLast=self._wrench_last_source_step,
             allNativeSamplesCovered=self._wrench_summary['nativeSamples'] == self.steps,
             stopped=reason, globalLoadedSlipM=self.slip.tolist())

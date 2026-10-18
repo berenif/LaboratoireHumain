@@ -1,5 +1,6 @@
 """Reviewed-controller command ownership tests. No native integration allowed."""
 import copy
+from dataclasses import replace
 import json
 from pathlib import Path
 import tempfile
@@ -13,6 +14,9 @@ from source_arm_knee_mobility import native_bytes
 from source_cadenced_ten_steps import CadencedController, CadencedSteps
 from source_opposed_arm_swing import limb_telemetry
 import source_reviewed_walk as reviewed
+import source_step_probe as core
+from source_reference_context import canonical
+from source_soft_load_preference import AcquiredLoad
 from source_reviewed_walk import ReviewedController, ReviewedSteps, control_sha
 from source_reference_context import prospective_unload_context
 from source_step_probe import World, Controller, clock
@@ -317,6 +321,67 @@ class NativeReviewedCommands(unittest.TestCase):
         self.assertEqual(c._prepared_inputs_token(.37, 'transfer'), baseline)
         c.robust_support['selected'] = True
         self.assertNotEqual(c._prepared_inputs_token(.37, 'transfer'), baseline)
+
+    def test_soft_load_none_transfer_matches_unchanged_com_context_command(self):
+        ordinary, load = self.controller(), self.controller()
+        ordinary.install_reviewed(1, 'continuous-com')
+        load.install_reviewed(1, 'continuous-com-load')
+        expected, a = ordinary.solve(.37, 'transfer')
+        actual, b = load.solve(.37, 'transfer')
+        np.testing.assert_array_equal(actual, expected)
+        self.assertEqual(a['qpAssemblySHA256'], b['qpAssemblySHA256'])
+        self.assertIsNone(json.loads(load._prepared_reference_context.config_json)['softLoadPreference'])
+        self.assertNotIn('softLoadHinge', b)
+
+    def test_soft_load_native_qp_has_only_declared_border_and_excludes_slack_from_forces(self):
+        c = self.controller(); c.install_reviewed(1, 'continuous-com-load')
+        # Synthetic qualified-anchor metadata isolates matrix consumption. This
+        # does not qualify a landing in the cold, zero-integration fixture.
+        c._soft_load_anchor = AcquiredLoad(self.counter, self.now, 1, c.swing_side,
+                                         31., self.w.mass*9.81, 80)
+        measured = self.w.arr(6, (17,3))[1].copy()
+        assemblies = []; factory = core.clarabel.DefaultSolver
+        def solver(P, q, A, b, cones, settings):
+            assemblies.append((P.toarray().copy(), np.array(q), A.toarray().copy(),
+                               np.array(b), tuple(x.dim for x in cones)))
+            return factory(P, q, A, b, cones, settings)
+        with patch.object(c, 'corrected_com_reference', return_value=(measured, np.zeros(3), np.zeros(3))), \
+             patch.object(core.clarabel, 'DefaultSolver', side_effect=solver):
+            _, info = c.solve(0., 'settle')
+            context = c._prepared_reference_context
+            config = json.loads(context.config_json); config['softLoadPreference'] = None
+            plain = replace(context, config_json=canonical(config))
+            Controller.solve(c, 0., 'settle', reference_context=plain)
+        P, q, A, b, cones = assemblies[0]; baseP, baseq, baseA, baseb, basecones = assemblies[1]
+        n = len(baseq)
+        np.testing.assert_array_equal(P[:n,:n], baseP)
+        np.testing.assert_array_equal(q[:n], baseq)
+        np.testing.assert_array_equal(A[:-2,:n], baseA)
+        np.testing.assert_array_equal(b[:-2], baseb)
+        np.testing.assert_array_equal(P[:n,n], 0.)
+        np.testing.assert_array_equal(A[:-2,n], 0.)
+        self.assertEqual(P[n,n], .0005**2)
+        self.assertEqual(cones, (basecones[0], basecones[1]+2))
+        self.assertEqual(len(info['predictedForcesN']), 8)
+        self.assertEqual(info['softLoadHinge']['baseQPWidth'], n)
+        self.assertEqual(info['softLoadHinge']['augmentedQPWidth'], n+1)
+        self.assertFalse(info['softLoadHinge']['hardForceFloor'])
+        with self.assertRaisesRegex(ValueError, 'outside declared settle'):
+            Controller.solve(c, 0., 'transfer', reference_context=replace(context, phase='transfer'))
+
+    def test_acquired_load_handoff_is_once_and_bound_to_current_native_row(self):
+        c = self.controller(); c.install_reviewed(1, 'continuous-com-load')
+        row = dict(sourceStep=self.counter, sourceTimeS=self.now, phase='land', stepIndex=1,
+                   feet=[dict(loadN=31.), dict(loadN=369.)])
+        with self.assertRaisesRegex(ValueError, 'invalid or replaced'):
+            c.prepare_phase_handoff('transfer', 'settle', row, landing_consecutive_samples=80)
+        c.prepare_phase_handoff('land', 'settle', row, landing_consecutive_samples=80)
+        anchor = c._soft_load_anchor
+        self.assertEqual(anchor.source_step, self.counter)
+        self.assertEqual(anchor.measured_normal_n, row['feet'][c.swing_side]['loadN'])
+        with self.assertRaisesRegex(ValueError, 'invalid or replaced'):
+            c.prepare_phase_handoff('land', 'settle', row, landing_consecutive_samples=81)
+        self.assertIs(c._soft_load_anchor, anchor)
 
     def test_nonzero_native_arm_derivative_survives_forecast_and_reference_edit(self):
         c = self.controller()

@@ -11,7 +11,9 @@ import numpy as np
 
 from audit_source_reviewed_walk import (CONTEXT_FIELDS, OLD_FLAGS, PROFILE, REQUIRED_SOURCES, REQUIRED_ROBUST_REPLAY_CHECKS,
     VERSION, ExactReviewedForecastReplay, audit_context, audit_continuous_com, audit_reference_journal, audit_source_provenance, audit_wrench_sample, audit_wrench_summary, command_sha,
-    hermite_coefficients, independent_references, limits_from_bound_xml, jet_matches, qualify_reviewed,
+    audit_soft_load_context, independent_soft_load_border,
+    hermite_coefficients, independent_references, independent_endpoint_projection, projected_capture_extrema,
+    limits_from_bound_xml, jet_matches, qualify_reviewed,
     reviewed_robust_result, segment_jet, value_sha)
 from audit_source_contact_impedance import ORIGINAL_IDENTITY, REQUIRED_STRICT_CHECKS
 from audit_source_robust_support import UNLOAD_CHECK
@@ -331,6 +333,10 @@ class ProfileQualification(unittest.TestCase):
         for count in (0,3,6,11,True):
             r=self.result(count);self.assertFalse(any(r[key] for key in
                 ('reviewedWalkDiagnosticPass','reviewedWalkPilotPhysicalPass','reviewedWalkTenStepPhysicalPass','reviewedWalkFinalPlanPass')))
+    def test_soft_load_cannot_qualify_without_active_settle_native_witnesses(self):
+        r=self.result(1,mode='continuous-com-load')
+        self.assertFalse(r['reviewedWalkPilotPhysicalPass'])
+        self.assertFalse(r['checks']['activeSoftLoadNativeAssemblyAndCommandReplay'])
     def test_missing_physical_or_arm_gate_fails_closed(self):
         good=dict(passed=True);original=original_fixture(1)
         del original['measured']['checks']['independentLimbFKAndExactOpposition']
@@ -392,6 +398,195 @@ class ContinuousSupportReplay(unittest.TestCase):
     def test_changed_current_support_rejects_existing_path(self):
         self.row['supportPointsXY']=[[x+.1,y]for x,y in self.row['supportPointsXY']]
         self.assertFalse(self.result()['passed'])
+
+
+class SoftLoadReplay(unittest.TestCase):
+    def fixture(self,elapsed=.5):
+        from source_soft_load_preference import AcquiredLoad, prepare_preference
+        d=fixture();r=d['receipt'];anchor=AcquiredLoad(10,.0125,1,0,31.,100.,80)
+        r.update(phase='settle',elapsed=elapsed,source_step=10+round(elapsed/.00125),source_time=.0125+elapsed)
+        r['config'].update(mode='continuous-com-load',softLoadPreference=prepare_preference(
+            anchor,'settle',elapsed,r['source_step'],r['source_time']).receipt())
+        r['causal']['softLoadAcquisition']=anchor.receipt()
+        note=d['note'];note['predictedForcesN']=[[0.,0.,20.]]*8
+        note['softLoadHinge']=dict(policy='retained-acquired-load-hinge-v1',baseQPWidth=72,augmentedQPWidth=73,
+            slackN=0.,targetNormalN=r['config']['softLoadPreference']['floor_jet'][0],predictedNewFootNormalN=80.,
+            weightPerNewton=.0005,hardForceFloor=False)
+        return r,note,anchor.receipt()
+    def test_causal_floor_jets_at_activation_fade_and_exact_endpoints(self):
+        for elapsed in (0.,.05,.1,.5,1.52,2.):
+            r,n,a=self.fixture(elapsed);proof=audit_soft_load_context(r,n,a)
+            self.assertTrue(proof['passed'],proof['checks'])
+    def test_replaced_measured_anchor_rejected(self):
+        r,n,a=self.fixture();r['causal']['softLoadAcquisition']['measured_normal_n']+=1.
+        self.assertFalse(audit_soft_load_context(r,n,a)['checks']['softLoadAnchorIndependentlyMeasuredAndNeverReplaced'])
+    def test_missing_external_handoff_binding_fails_closed(self):
+        r,n,a=self.fixture();self.assertFalse(audit_soft_load_context(r,n)['passed'])
+    def test_counter_clock_or_stage_clock_mutation_rejected(self):
+        for key in ('source_step','source_time'):
+            r,n,a=self.fixture();r[key]+=.00125 if key=='source_time' else 1
+            self.assertFalse(audit_soft_load_context(r,n,a)['checks']['softLoadMeasuredHandoffClock'])
+    def test_floor_weight_and_boolean_floor_mutations_rejected(self):
+        for key,value in (('weight',.001),('floor_jet',[True,0.,0.]),('floor_jet',[1.,0.,0.])):
+            r,n,a=self.fixture();r['config']['softLoadPreference'][key]=value
+            self.assertFalse(audit_soft_load_context(r,n,a)['checks']['softLoadIndependentC2FloorAndWeight'])
+    def test_predicted_force_slice_and_slack_constraints_verified(self):
+        for key,value in (('predictedNewFootNormalN',79.),('slackN',-1.),('baseQPWidth',73),('hardForceFloor',True)):
+            r,n,a=self.fixture();n['softLoadHinge'][key]=value
+            self.assertFalse(audit_soft_load_context(r,n,a)['checks']['softLoadOneSlackMetadataAndPredictedForce'])
+    def test_pref_cannot_exist_before_landing_or_in_other_modes(self):
+        r,n,a=self.fixture();r['phase']='transfer'
+        self.assertFalse(audit_soft_load_context(r,n,None)['passed'])
+        r,n,a=self.fixture();r['config']['mode']='continuous-com'
+        self.assertFalse(audit_soft_load_context(r,n,a)['passed'])
+    def test_retained_anchor_but_no_preference_in_stand(self):
+        r,n,a=self.fixture();r['phase']='stand';r['config']['softLoadPreference']=None;n.pop('softLoadHinge')
+        self.assertTrue(audit_soft_load_context(r,n,a)['passed'])
+    def test_independent_qp_border_preserves_every_original_cost_and_row(self):
+        import source_soft_load_preference as producer
+        r,n,a=self.fixture();preference=producer.SoftLoadPreference.from_receipt(r['config']['softLoadPreference'])
+        rng=np.random.default_rng(14);raw=rng.normal(size=(72,72));P=raw.T@raw;q=rng.normal(size=72)
+        A=rng.normal(size=(13,72));b=rng.normal(size=13);indices=(50,53,56,59)
+        expected=independent_soft_load_border(P,q,A,b,indices,preference.floor_jet[0])
+        actual=producer.extend_qp(P,q,A,b,indices,preference)
+        for x,y in zip(expected,actual):np.testing.assert_array_equal(x,y)
+        np.testing.assert_array_equal(actual[0][:72,:72],P);np.testing.assert_array_equal(actual[2][:-2,:72],A)
+        for original,unchanged in zip((P,q,A,b),producer.extend_qp(P,q,A,b,indices,None)):
+            self.assertIs(original,unchanged)
+    def journal_transition(self,prefix=0,land_samples=801):
+        d=fixture();rows=[];notes=[];captured=[];handoff=prefix+land_samples
+        for source in range(1,handoff+5):
+            row=copy.deepcopy(d['row']);phase='translate' if source<=prefix else 'land' if source<=handoff else 'settle'
+            start=0 if phase=='translate' else prefix if phase=='land' else handoff
+            row.update(sourceStep=source,sourceTimeS=source*.00125,stepIndex=1,phase=phase,
+                phaseElapsedS=(source-start)*.00125,actualMotorTorquesNm=[0.]*21)
+            row['feet'][0].update(position=[.18,.1,.027],loadN=50. if source-prefix>=722 else 0.)
+            rows.append(row)
+            n=source-1
+            if n%4==0:
+                note=copy.deepcopy(d['note']);note.update(t=n*.00125,phase=phase)
+                note['reviewedWalk']['mode']='continuous-com-load';r=note['referenceContext']
+                r.update(phase=phase,source_step=n,source_time=n*.00125,elapsed=(n-start)*.00125)
+                r['config']['mode']='continuous-com-load'
+                before=None if n==0 else (n-4)*.00125
+                r['causal']['contactSeekBefore']['timeS']=before;r['causal']['contactSeekAfter']['timeS']=n*.00125
+                notes.append(note)
+        def capture(receipt,note,row,reference,**kwargs):
+            if receipt['phase']=='settle':captured.append(kwargs['expected_load_anchor'])
+            return dict(checks={})
+        with patch('audit_source_reviewed_walk.audit_context',side_effect=capture),patch(
+                'audit_source_reviewed_walk.audit_continuous_com',return_value=dict(checks={})):
+            result=audit_reference_journal(rows,d['row'],{1:d['reference']},notes,mode='continuous-com-load',gears=np.ones(21))
+        return result,captured
+    def test_streamed_handoff_anchor_precedes_first_command_at_all_offsets(self):
+        for prefix in (0,1,2,7):
+            result,anchors=self.journal_transition(prefix)
+            self.assertTrue(result['checks']['softLoadOriginalQualifiedLandingHandoff'])
+            self.assertTrue(result['checks']['completeReferenceCommandSchedule'])
+            self.assertTrue(anchors)
+            self.assertEqual(anchors[0],dict(source_step=prefix+801,source_time=(prefix+801)*.00125,
+                step_index=1,new_side=0,measured_normal_n=50.,body_weight_n=98.10000000000001,qualified_landing_samples=80))
+    def test_source_float_phase_comparison_is_replayed_without_early_tolerance(self):
+        # At prefix 3, 803*DT-3*DT is just below 1.0 in source arithmetic.
+        self.assertLess(803*.00125-3*.00125,1.)
+        result,anchors=self.journal_transition(3,802)
+        self.assertTrue(result['checks']['softLoadOriginalQualifiedLandingHandoff'])
+        self.assertEqual(anchors[0]['source_step'],805)
+        self.assertEqual(anchors[0]['qualified_landing_samples'],81)
+    def test_streamed_eligible_landing_cannot_be_delayed_and_reanchored(self):
+        result,anchors=self.journal_transition(0,883)
+        self.assertFalse(result['checks']['softLoadOriginalQualifiedLandingHandoff'])
+        self.assertFalse(result['checks']['softLoadFirstEligibleLandingHandoffNeverDelayed'])
+
+
+class IndependentProjectionMath(unittest.TestCase):
+    def project(self, desired, A, b, radius):
+        return independent_endpoint_projection(desired,np.asarray(A).reshape(-1,2),b,radius)
+    def test_closed_form_capture_and_frozen_radius_constants(self):
+        critical,maximum=projected_capture_extrema(.8,2.2)
+        self.assertAlmostEqual(critical,.8037714552054018,14)
+        self.assertAlmostEqual(maximum,1.0418076078276193,14)
+    def test_interior_and_zero_goal(self):
+        np.testing.assert_allclose(self.project([.2,.3],[],[],1.),[.2,.3])
+        np.testing.assert_allclose(self.project([0.,0.],[],[],1.),[0.,0.])
+    def test_single_line_projection(self):
+        np.testing.assert_allclose(self.project([2.,.4],[[1.,0.]],[.5],2.),[.5,.4])
+    def test_two_line_vertex(self):
+        np.testing.assert_allclose(self.project([2.,2.],[[1.,0.],[0.,1.]],[.5,.25],5.),[.5,.25])
+    def test_circle_only_radial_projection(self):
+        np.testing.assert_allclose(self.project([2.,0.],[],[],1.),[1.,0.])
+    def test_line_circle_intersection(self):
+        np.testing.assert_allclose(self.project([2.,2.],[[1.,0.]],[.5],1.),[.5,np.sqrt(.75)])
+    def test_duplicate_scaled_and_near_parallel_constraints(self):
+        np.testing.assert_allclose(self.project([2.,2.],[[1.,0.],[1000.,0.],[0.,1.]],[.5,500.,.25],5.),[.5,.25])
+        np.testing.assert_allclose(self.project([2.,.4],[[1e-14,0.]],[5e-15],5.),[.5,.4])
+        np.testing.assert_allclose(self.project([2.,2.],[[1.,0.],[1.,1e-10]],[.5,.5],5.),[.5-2e-10,2.],atol=1e-9)
+    def test_tangent_line(self):
+        np.testing.assert_allclose(self.project([2.,2.],[[0.,-1.]],[-1.],1.),[0.,1.],atol=1e-12)
+    def test_infeasible_zero_normal_and_nonfinite_inputs_rejected(self):
+        for A,b in (([[1.,0.],[-1.,0.]],[-2.,-2.]),([[0.,0.]],[-1.])):
+            with self.assertRaises(ValueError):self.project([0.,0.],A,b,1.)
+        with self.assertRaises(ValueError):self.project([np.nan,0.],[],[],1.)
+        with self.assertRaises(ValueError):projected_capture_extrema(0.,2.2)
+
+
+class ProjectedSupportReplay(ContinuousSupportReplay):
+    def setUp(self):
+        super().setUp()
+        import source_continuous_com as producer
+        c0=self.receipt['config'];delta=np.asarray(self.receipt['causal']['robustCorrection']['deltaM'])
+        equations=np.asarray(self.receipt['causal']['continuousCom']['plan']['actualSupportEquations'])
+        c=SimpleNamespace(com1=np.asarray(c0['com1']),_robust_delta=delta,heading=np.asarray(c0['heading']),
+            landing=np.asarray(c0['landing']),targets=c0['targets'],stance_side=c0['stance_side'],
+            phase_duration=lambda p:c0['phase_durations'][p],w=SimpleNamespace(h=None,l=SimpleNamespace(lh_time=lambda h:.5)))
+        with patch.object(producer,'actual_equations',return_value=equations):
+            path,plan=producer.plan_projected(c,0.);offset=path.evaluate(.5)
+            total=(c.com1+delta+offset[0],offset[1],offset[2])
+            diagnostic=producer.validate_reference(c,'translate',total)
+        c0['mode']='continuous-com-projected'
+        self.receipt['causal']['arm']['nativeSourceTimeS']=.5
+        self.receipt['causal']['continuousCom']=dict(path=path.receipt(),settle=None,plan=plan,diagnostic=diagnostic)
+        self.receipt['com']=dict(zip(('position','velocity','acceleration'),[x.tolist() for x in total]))
+    def plan(self):return self.receipt['causal']['continuousCom']['plan']
+    def test_projected_plan_replayed_without_importing_producer_projector(self):
+        import source_continuous_com as producer
+        with patch.object(producer,'project_endpoint',side_effect=AssertionError('producer projector called')):
+            result=self.result();self.assertTrue(result['passed'],result['checks'])
+    def test_rehashed_goal_mutation_rejected(self):
+        self.plan()['plannedGoalSourceM'][0]+=.01;rehash(self.receipt)
+        self.assertFalse(self.result()['checks']['projectedGoalUsesPlannedFeetAndCorrectedOrigin'])
+    def test_adaptive_face_reserve_mutation_rejected(self):
+        self.plan()['planningFaceReservesM'][0]+=.001;rehash(self.receipt)
+        self.assertFalse(self.result()['checks']['projectedOriginAndAdaptiveFaceReserves'])
+    def test_lateral_constraint_widening_rejected(self):
+        self.plan()['projectionConstraintsB'][-1]=.02;rehash(self.receipt)
+        self.assertFalse(self.result()['checks']['projectedHalfPlanesIndependentlyRebuilt'])
+    def test_capture_overshoot_cannot_be_replaced_by_endpoint_only_factor(self):
+        factors=self.plan()['wholePolynomialFactors'];factors[np.argmax(factors)]=1.;rehash(self.receipt)
+        self.assertFalse(self.result()['checks']['projectedExactWholePolynomialFactors'])
+    def test_missing_true_capture_extremum_rejected(self):
+        xs=self.plan()['wholePolynomialExtremaU'];critical,_=projected_capture_extrema(.8,2.2)
+        xs[min(range(len(xs)),key=lambda index:abs(xs[index]-critical))]=.5;rehash(self.receipt)
+        self.assertFalse(self.result()['checks']['projectedExactWholePolynomialExtrema'])
+    def test_feasible_but_suboptimal_endpoint_rejected(self):
+        self.plan()['projectionLocalEndpointM']=[0.,0.];self.plan()['forwardM']=self.plan()['lateralM']=0.;rehash(self.receipt)
+        self.assertFalse(self.result()['checks']['projectedClosestFeasibleEndpoint'])
+    def test_displacement_envelope_radius_cannot_be_widened(self):
+        self.plan()['maximumDisplacementM']+=.01;rehash(self.receipt)
+        self.assertFalse(self.result()['checks']['projectedClosestFeasibleEndpoint'])
+    def test_selected_triangle_faces_cannot_be_omitted(self):
+        self.plan()['actualSupportEquations']=self.plan()['actualSupportEquations'][:-3];rehash(self.receipt)
+        self.assertFalse(self.result()['checks']['continuousPlanUsesCurrentActualSupport'])
+    def test_plan_is_immutable_after_first_command(self):
+        self.assertTrue(self.result()['passed'])
+        self.plan()['plannedAtSourceTimeS']+=.01;rehash(self.receipt)
+        self.assertFalse(self.result()['checks']['continuousPlanNeverReplaced'])
+    def test_future_measured_settle_target_is_not_used_as_projected_goal(self):
+        self.receipt['config']['finalCom']=[-10.,20.,.9]
+        result=self.result();self.assertTrue(result['passed'],result['checks'])
+    def test_projected_mode_independently_rebuilds_total_com_jets(self):
+        expected=independent_references(self.receipt['config'],self.receipt['causal'],.5,'translate')
+        self.assertTrue(jet_matches(self.receipt['com'],expected['com'],3))
 
 
 class SourceBinding(unittest.TestCase):

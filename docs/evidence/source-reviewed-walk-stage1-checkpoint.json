@@ -165,10 +165,80 @@
   },
   "limitations": [
     "Only baseline and isolated continuous-COM pilots are qualified; two steps are diagnostic only.",
-    "Seven-step continuation is running, not yet an audited result.",
+    "The seven-step continuation failed during seventh landing at53.78375s; only six loaded advances were qualified.",
     "Coupled posture, knee/foot cycle and cadence changes are not dynamically validated.",
     "No ten-step plus quiet result, final pixel comparison or faster cadence established.",
     "Net shear utilization is only a lower bound; individual-contact nonsaturation is not established.",
     "Ten own-foot advances do not prove1.8m body travel."
-  ]
+  ],
+  "sevenStepContinuation": {
+    "status": "failed-not-qualified",
+    "mode": "continuous-com",
+    "qualifiedLoadedLandings": 6,
+    "requestedSteps": 7,
+    "actualIntegrations": 43027,
+    "physicalSeconds": 53.78375,
+    "priorFailureHorizonExceededSeconds": 4.321249999999999,
+    "terminalPhase": "step7-land",
+    "terminalReason": "global-loaded-slip-10mm",
+    "globalLoadedSlipM": [
+      0.010006525896032056,
+      0.008518264437488132
+    ],
+    "finalQuietSeconds": 0.0,
+    "loadAcquisitionOwnFootAdvancesM": [
+      0.18196490517481714,
+      0.1819485778757207,
+      0.18125361337370177,
+      0.18194854321906567,
+      0.18127564384869047,
+      0.18194962795036768
+    ],
+    "targetedFailureEvidenceVerified": true,
+    "targetedEvidenceFailedChecks": [],
+    "fullQualificationAuditPerformed": false,
+    "nativeWitnessReplayPerformed": false,
+    "allQualificationFlags": false,
+    "failureAuditSHA256": "df7f6bd8c1d643f5d3c10f9b43d2ea6d985df10f833bd31a7e4279d52e1ffb50",
+    "failureAuditorSHA256": "0a228c9682e4654b8e43914a6e89c33946902fb4c2ac4ca771dc4a4b47bcc414",
+    "runtimeSourceBindingsAtStartAndEndVerified": true
+  },
+  "nextIsolatedFactor": {
+    "mode": "continuous-com-load",
+    "baselineComPolicy": "validated10mmforward path; projectedendpoint factor notstacked",
+    "policy": "retained-acquired-load-hinge-v1",
+    "weightPerNewton": 0.0005,
+    "activationSeconds": 0.1,
+    "maximumAcquiredBodyWeightFraction": 0.1,
+    "originalCornerAndShearCostsUnchanged": true,
+    "oneFreelyAbsorbingSlack": true,
+    "hardForceFloor": false,
+    "qualifiedActualLandingAnchorOnly": true,
+    "oldNonePathQPAssemblyExactlyUnchanged": true,
+    "physicalQualificationEstablished": false,
+    "pureAndNativeRegressionTestsPassed": 117,
+    "legacyCadenceTestsPassed": 10
+  },
+  "projectedEndpointPilot": {
+    "status": "rejected-worse-matched-slip-unqualified",
+    "mode": "continuous-com-projected",
+    "actualIntegrations": 11719,
+    "physicalSeconds": 14.64875,
+    "finalQuietSeconds": 5.0,
+    "runnerFinished": true,
+    "independentPhysicalPassClaim": false,
+    "fullQualificationAuditPerformed": false,
+    "globalLoadedSlipM": [
+      0.0016105904474088431,
+      0.0016411312470159833
+    ],
+    "relativeSlipChangeFraction": [
+      0.2495355591553059,
+      0.09663618281449704
+    ],
+    "matchedBaseline": "continuous-com-one-01",
+    "sourceBindingsVerified": true,
+    "sourceBindingSHA256": "97a9839939bc3d2256dd12ffc156a3ad5556013080cd23197857397c1c15b5ff",
+    "projectedAuditFocusedTestsPassed": 92
+  }
 }

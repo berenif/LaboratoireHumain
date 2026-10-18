@@ -66,3 +66,31 @@ common prefix and whole sequence, both sides, and missed tuning hypotheses.
 Report foot separation, COM progression and body travel; ten own-foot advances
 do not establish 1.8 m body travel. A physical-only, slower or visually unchanged
 result is partial. Explicit impratio=8 never qualifies the original contact model.
+
+## Experimental implementation checkpoint
+
+Shared immutable references and the first continuous-COM factor pass independent
+one-step+5s and two-step+5s diagnostics. Same-contact cadence is unchanged. The
+seven-step continuation stops on the original global-slip guard during seventh
+landing at53.78375s: six loaded advances, left/right slip10.00653/8.51826mm,
+zero final quiet. Its targeted failure replay is consistent; no full passing
+qualification is claimed. This exceeds the former failure horizon without
+completing the required seven-step gate, so posture remains unstacked.
+
+The next opt-in factor projects one planned COM endpoint toward the planned
+landing/stance midpoint using only the current actual support. It preserves
+per-face origin margins up to4mm and retains every-command3mm validation, C2
+jets, the frozen total envelope and the original measured settle target. The
+legacy10mm mode stays unchanged. Forty pure projector tests pass; physical
+pilots and independent new-mode replay remain required. The compact evidence
+receipt records exact hashes, partial flags and known limitations.
+
+The projected-endpoint one-step trial finishes its5s quiet but increases both
+feet's cumulative slip (1.611/1.641mm versus1.289/1.497mm). It is rejected,
+not independently physically qualified or promoted; no two-step expansion is
+justified. The next finite trial keeps the validated10mm COM policy and adds
+only a weak acquired-load-retention squared hinge. A freely absorbing slack,
+fixed0.0005N^-1 weight, original corner/shear costs and all admissions remain.
+If its matched effect is negligible, do not spend long continuation runs on it;
+prioritize earlier state-valid causal selection without shortening history or
+measured admission gates.

@@ -90,6 +90,7 @@ class MultiStep(LiveStep):
      if final:self.finished=True;self.paused=True;break
      self.step_index+=1;self.begin_step();self.events.append(dict(event='next-actual-support-step',timeS=self.steps*.00125,stepIndex=self.step_index+1));print('NEXT STEP',self.step_index+1,'requested',self.distances[self.step_index],flush=True);continue
    if nextphase:
+    if hasattr(c,'prepare_phase_handoff'):c.prepare_phase_handoff(self.phase,nextphase,row,landing_consecutive_samples=self.land_run)
     if nextphase=='settle'and getattr(self,'loaded_settle_handoff',False):
      c.finalCom[:2]=np.mean(np.array([f['position']for f in row['feet']]),axis=0)[:2]+.035*c.heading[:2]
      self.step_records[-1].update(settleMeasuredFeet=[f['position']for f in row['feet']],settleComTargetSource=c.finalCom.tolist())

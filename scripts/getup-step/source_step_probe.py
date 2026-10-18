@@ -206,9 +206,23 @@ class Controller:
      separation_bias=float(normal@(point_bias(a,pa)-point_bias(b,pb)));minimum_acceleration=-20.*approach-100.*(gap-.01)-separation_bias;barrier=np.zeros(N);barrier[:27]=-J;ineq.append(barrier);ub.append(-minimum_acceleration)
   ca=np.array(costA);cb=np.array(costb);P=ca.T@ca+np.diag(np.r_[np.full(27,1e-5),np.full(21,1e-3),np.full(ncontact*3,1e-8)]);linear=-ca.T@cb
   AA=np.vstack([Aeq,ineq]);bb=np.r_[beq,ub];settings=clarabel.DefaultSettings();settings.verbose=False;settings.max_iter=100
-  sol=clarabel.DefaultSolver(sparse.csc_matrix(P),linear,sparse.csc_matrix(AA),bb,[clarabel.ZeroConeT(len(beq)),clarabel.NonnegativeConeT(len(ub))],settings).solve()
+  preference=None;inequality_count=len(ub)
+  if reference_context is not None:
+   prepared_config=json.loads(reference_context.config_json);raw_preference=prepared_config.get('softLoadPreference')
+   if raw_preference is not None:
+    from source_soft_load_preference import SoftLoadPreference,prepare_preference,extend_qp
+    if phase!='settle'or prepared_config.get('mode')!='continuous-com-load':raise ValueError('soft-load preference outside declared settle mode')
+    preference=SoftLoadPreference.from_receipt(raw_preference)
+    if preference.anchor.new_side!=self.swing_side or preference.anchor.step_index!=self._reviewed_step_index:raise ValueError('soft-load preference belongs to another foot or step')
+    expected=prepare_preference(preference.anchor,phase,t,w.l.lh_dim(w.h,6),w.l.lh_time(w.h),self.phase_duration('settle'))
+    if expected.receipt()!=raw_preference:raise ValueError('soft-load preference clock or target mismatch')
+    normal_indices=tuple(50+3*i for i,(body,point)in enumerate(contacts)if body==self.swing_body)
+    if len(normal_indices)!=4:raise ValueError('soft-load preference requires four existing new-foot contact variables')
+    P,linear,AA,bb=extend_qp(P,linear,AA,bb,normal_indices,preference);inequality_count+=2
+  sol=clarabel.DefaultSolver(sparse.csc_matrix(P),linear,sparse.csc_matrix(AA),bb,[clarabel.ZeroConeT(len(beq)),clarabel.NonnegativeConeT(inequality_count)],settings).solve()
   if str(sol.status)not in ['Solved','AlmostSolved']:raise RuntimeError('QP '+str(sol.status))
-  x=np.array(sol.x);info=dict(comTarget=target.tolist(),comErrorM=float(np.linalg.norm(target-com)),predictedForcesN=x[48:].reshape(-1,3).tolist(),maximumMotorFraction=float(np.max(abs(x[27:48]))),dynamicsResidual=float(np.max(abs(dynamics@x+bias))),jointGroundAdjustments=ground_adjustments,activeJointGroundBarriers=sum(row['active']for row in ground_adjustments),selfAvoidance=self_adjustments,activeSelfAvoidanceBarriers=sum(row['active']for row in self_adjustments))
+  x=np.array(sol.x);info=dict(comTarget=target.tolist(),comErrorM=float(np.linalg.norm(target-com)),predictedForcesN=x[48:N].reshape(-1,3).tolist(),maximumMotorFraction=float(np.max(abs(x[27:48]))),dynamicsResidual=float(np.max(abs(dynamics@x[:N]+bias))),jointGroundAdjustments=ground_adjustments,activeJointGroundBarriers=sum(row['active']for row in ground_adjustments),selfAvoidance=self_adjustments,activeSelfAvoidanceBarriers=sum(row['active']for row in self_adjustments))
+  if preference is not None:info['softLoadHinge']=dict(policy='retained-acquired-load-hinge-v1',baseQPWidth=N,augmentedQPWidth=N+1,slackN=float(x[N]),targetNormalN=preference.floor_jet[0],predictedNewFootNormalN=float(sum(x[i]for i in normal_indices)),weightPerNewton=preference.weight,hardForceFloor=False)
   if reference_context is not None:
    info['referenceContext']=reference_context.receipt();info['qpAssemblySHA256']={name:hashlib.sha256(np.ascontiguousarray(value,dtype='<f8').tobytes()).hexdigest()for name,value in [('P',P),('linear',linear),('A',AA),('b',bb)]}
   return x[27:48],info

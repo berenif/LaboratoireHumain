@@ -27,7 +27,7 @@ from audit_source_robust_support import (audit_replay, ExactForecastReplay, Foot
 PROFILE = 'five-reviewed-walk'
 VERSION = 'reviewed-reference-v1'
 COUNTS = (1, 2, 7, 10)
-MODES = ('baseline-context', 'continuous-com')
+MODES = ('baseline-context', 'continuous-com', 'continuous-com-projected', 'continuous-com-load')
 REQUIRED_SOURCES = frozenset(('source_reviewed_walk.py', 'source_reference_context.py',
     'source_step_probe.py', 'source_multistep_probe.py', 'source_cadenced_ten_steps.py',
     'source_selected_step.py', 'source_opposed_arm_swing.py', 'source_upright_large_steps.py',
@@ -164,7 +164,7 @@ def independent_references(config, causal, elapsed, phase, hypothetical=False):
             correction_clock = np.array((1., 0., 0.))
         delta = array(correction['deltaM'], (3,))
         com = tuple(p+k*delta for p, k in zip(com, correction_clock))
-    if c.get('mode') == 'continuous-com':
+    if c.get('mode') in ('continuous-com', 'continuous-com-projected', 'continuous-com-load'):
         continuous = causal['continuousCom']; now = float(causal['arm']['nativeSourceTimeS'])
         if phase in ('translate', 'land'):
             path = segment_jet(continuous['path'], now)
@@ -230,9 +230,95 @@ def independent_references(config, causal, elapsed, phase, hypothetical=False):
     return dict(com=com, joints=joints, orientations=[orientation], feet=feet, correctionClock=correction_clock)
 
 
+_UNBOUND_ANCHOR = object()
+SOFT_LOAD_POLICY = 'retained-acquired-load-hinge-v1'
+SOFT_LOAD_ANCHOR_FIELDS = frozenset(('source_step', 'source_time', 'step_index', 'new_side',
+    'measured_normal_n', 'body_weight_n', 'qualified_landing_samples'))
+
+
+def independent_soft_load_border(P, linear, A, b, normal_indices, floor):
+    """One-slack border constructed without the producer helper."""
+    n = len(linear); rows = len(b)
+    P = array(P, (n, n)); linear = array(linear, (n,)); A = array(A, (rows, n)); b = array(b, (rows,))
+    indices = tuple(normal_indices)
+    if (not indices or len(set(indices)) != len(indices)
+            or any(type(index) is not int or not 0 <= index < n for index in indices)
+            or type(floor) not in (int, float) or not math.isfinite(floor) or floor < 0.): raise ValueError('invalid soft-load border')
+    cost = np.pad(P, ((0, 1), (0, 1))); cost[-1, -1] = .0005**2
+    q = np.r_[linear, 0.]; constraints = np.pad(A, ((0, 2), (0, 1)))
+    constraints[-2, -1] = -1.; constraints[-1, -1] = -1.; constraints[-1, list(indices)] = -1.
+    return cost, q, constraints, np.r_[b, 0., -floor]
+
+
+def audit_soft_load_context(receipt, note, expected_anchor=_UNBOUND_ANCHOR):
+    """Bind the optional C2 load preference to an independently measured handoff."""
+    checks = {}
+    def check(name, condition): checks[name] = bool(condition)
+    try:
+        c, causal, phase = receipt['config'], receipt['causal'], receipt['phase']
+        anchor, preference, hinge = causal.get('softLoadAcquisition'), c.get('softLoadPreference'), note.get('softLoadHinge')
+        if c.get('mode') != 'continuous-com-load':
+            check('noSoftLoadPreferenceInOtherModes', anchor is None and preference is None and hinge is None)
+        else:
+            check('softLoadExplicitPreparedFields', 'softLoadAcquisition' in causal and 'softLoadPreference' in c)
+            before = phase in ('transfer', 'lift', 'translate', 'land')
+            check('softLoadAnchorOnlyAfterQualifiedLanding', (before and anchor is None)
+                or (not before and isinstance(anchor, dict) and set(anchor) == SOFT_LOAD_ANCHOR_FIELDS))
+            if before:
+                check('noSoftLoadBeforeAcquisition', preference is None and hinge is None)
+            else:
+                check('softLoadAnchorIndependentlyMeasuredAndNeverReplaced', expected_anchor is not _UNBOUND_ANCHOR
+                    and expected_anchor is not None and equal(anchor, expected_anchor))
+                if not isinstance(anchor, dict): raise ValueError('missing acquired load')
+                check('softLoadAnchorStrictIdentityAndQualification', set(anchor) == SOFT_LOAD_ANCHOR_FIELDS
+                    and all(type(anchor[key]) is int and anchor[key] >= 0 for key in
+                        ('source_step', 'step_index', 'new_side', 'qualified_landing_samples'))
+                    and all(type(anchor[key]) in (int, float) and math.isfinite(anchor[key]) for key in
+                        ('source_time', 'measured_normal_n', 'body_weight_n')) and anchor['source_time'] >= 0.
+                    and anchor['new_side'] == c['swing_side'] and anchor['step_index'] == receipt['step_index']
+                    and anchor['qualified_landing_samples'] >= 80 and float(anchor['measured_normal_n']) >= 3.
+                    and math.isfinite(float(anchor['body_weight_n'])) and float(anchor['body_weight_n']) > 0.)
+                if phase == 'settle':
+                    elapsed, duration = float(receipt['elapsed']), float(c['phase_durations']['settle'])
+                    check('softLoadMeasuredHandoffClock', elapsed >= 0.
+                        and close(DT*(receipt['source_step']-anchor['source_step']), elapsed, 1e-9)
+                        and close(receipt['source_time']-anchor['source_time'], elapsed, 1e-9))
+                    a, da, dda = clock(elapsed, .1); fade, reversed_rate, ddfade = clock(duration-elapsed, duration)
+                    dfade = -reversed_rate; acquired = min(anchor['measured_normal_n'], .1*anchor['body_weight_n'])
+                    floor = [acquired*a*fade, acquired*(da*fade+a*dfade), acquired*(dda*fade+2*da*dfade+a*ddfade)]
+                    if elapsed == 0. or elapsed >= duration: floor = [0., 0., 0.]
+                    check('softLoadIndependentC2FloorAndWeight', isinstance(preference, dict)
+                        and set(preference) == {'schema', 'policy', 'anchor', 'floor_jet', 'weight'}
+                        and type(preference['schema']) is int and preference['schema'] == 1
+                        and preference['policy'] == SOFT_LOAD_POLICY and equal(preference['anchor'], anchor)
+                        and type(preference['floor_jet']) is list and len(preference['floor_jet']) == 3
+                        and all(type(value) in (int, float) and math.isfinite(value) for value in preference['floor_jet'])
+                        and close(preference['floor_jet'], floor, 1e-9) and preference['weight'] == .0005)
+                    forces = array(note['predictedForcesN'], (8, 3)); side = anchor['new_side']
+                    predicted = float(np.sum(forces[4*side:4*side+4, 2]))
+                    check('softLoadOneSlackMetadataAndPredictedForce', isinstance(hinge, dict)
+                        and set(hinge) == {'policy', 'baseQPWidth', 'augmentedQPWidth', 'slackN', 'targetNormalN',
+                            'predictedNewFootNormalN', 'weightPerNewton', 'hardForceFloor'}
+                        and hinge['policy'] == SOFT_LOAD_POLICY and type(hinge['baseQPWidth']) is int and hinge['baseQPWidth'] == 72
+                        and type(hinge['augmentedQPWidth']) is int and hinge['augmentedQPWidth'] == 73
+                        and all(type(hinge[key]) in (int, float) and math.isfinite(hinge[key]) for key in
+                            ('slackN', 'targetNormalN', 'predictedNewFootNormalN', 'weightPerNewton'))
+                        and math.isfinite(hinge['slackN']) and hinge['slackN'] >= -1e-7
+                        and close(hinge['targetNormalN'], floor[0], 1e-9)
+                        and close(hinge['predictedNewFootNormalN'], predicted, 1e-9)
+                        and hinge['slackN']+predicted >= floor[0]-1e-7
+                        and hinge['weightPerNewton'] == .0005 and hinge['hardForceFloor'] is False)
+                else:
+                    check('noSoftLoadOutsideSettle', preference is None and hinge is None)
+    except (KeyError, ValueError, TypeError, IndexError, ArithmeticError):
+        checks['completeSoftLoadReferenceEvidence'] = False
+    return dict(passed=bool(checks) and all(checks.values()), checks=checks)
+
+
 def audit_context(receipt, note, row, reference, *, expected_elapsed=None,
                   expected_q0=None, expected_floor=None, expected_final=None,
-                  previous_arm=None, expected_mode='baseline-context', hypothetical=False):
+                  previous_arm=None, expected_mode='baseline-context', hypothetical=False,
+                  expected_load_anchor=_UNBOUND_ANCHOR):
     """Pure independent context arithmetic and causal identity check.
 
     `row` is the PRECEDING measured native sample, never the result of applying
@@ -246,6 +332,7 @@ def audit_context(receipt, note, row, reference, *, expected_elapsed=None,
         d = copy.deepcopy(receipt); claimed = d.pop('contextSHA256')
         check('contextDigest', is_sha(claimed) and value_sha(d) == claimed)
         c, causal = receipt['config'], receipt['causal']; t = float(receipt['elapsed']); phase = note['phase']
+        for key, value in audit_soft_load_context(receipt, note, expected_load_anchor)['checks'].items(): check(key, value)
         check('contextBoundToPrecedingNativeSample', type(receipt['source_step']) is int
             and receipt['source_step'] == row['sourceStep'] and close(receipt['source_time'], row['sourceTimeS'], 1e-12)
             and close(note['t'], row['sourceStep']*DT, 1e-10) and receipt['step_index'] == note['stepIndex']
@@ -319,6 +406,8 @@ def audit_source_provenance(receipt, source_dir, frozen_dir=None):
         codeUnchangedDuringRun=receipt.get('codeUnchangedDuringRun') is True)
     if receipt.get('wrenchDiagnosticsEnabled') is True:
         checks['requiredSolvedWrenchReaderSourcePresent'] = isinstance(start, dict) and 'source_solved_wrench_diagnostics.py' in start
+    if receipt.get('softLoadPreferenceEnabled') is True:
+        checks['requiredSoftLoadPreferenceSourcePresent'] = isinstance(start, dict) and 'source_soft_load_preference.py' in start
     if isinstance(start, dict):
         for name, expected in start.items():
             safe = isinstance(name, str) and name == Path(name).name and name.endswith('.py') and is_sha(expected)
@@ -350,6 +439,11 @@ def qualify_reviewed(original, robust, references, model, controls, provenance, 
         unchangedContactAndArmControlGates=controls is True,
         startEndSourceProvenance=provenance.get('passed') is True,
         exactNativeReferenceAndQPWitnessReplay=native.get('passed') is True)
+    if mode == 'continuous-com-load':
+        load_native = native.get('activeSoftLoadWitnessReplay', {})
+        checks['activeSoftLoadNativeAssemblyAndCommandReplay'] = (load_native.get('passed') is True
+            and load_native.get('expectedWitnesses') == 2*count
+            and load_native.get('verifiedWitnesses') == 2*count and load_native.get('physicsIntegrations') == 0)
     physical = all(checks.values())
     # Baseline-context is an unchanged-motion parity profile. Continuous-com
     # still requires independent B evidence; a boolean in a runner is insufficient.
@@ -371,6 +465,156 @@ def qualify_reviewed(original, robust, references, model, controls, provenance, 
     return result
 
 
+def projected_capture_extrema(height, duration):
+    """Closed-form global extrema, independent of producer polynomial roots."""
+    if not math.isfinite(height) or not math.isfinite(duration) or height <= 0. or duration <= 0.:
+        raise ValueError('invalid projected capture clock/height')
+    k = math.sqrt(height/9.81)/duration
+    critical = .5*(1.+1./(math.hypot(1., 4.*k)+4.*k))
+    s = 10.*critical**3-15.*critical**4+6.*critical**5
+    maximum = s+k*30.*critical**2*(1.-critical)**2
+    return critical, maximum
+
+
+def independent_endpoint_projection(desired, A, b, radius):
+    """Minimize distance on each entire feasible boundary-line interval.
+
+    This does not copy the producer's line-pair/line-circle active-set code.
+    An optimum is desired, circle-radial, or on at least one boundary line.
+    Clipping that line by every half-plane and the disk covers all its vertices.
+    """
+    desired = array(desired, (2,)); A = array(A, (len(A), 2)); b = array(b, (len(A),))
+    if not math.isfinite(radius) or radius <= 0.: raise ValueError('invalid projection radius')
+    normals, bounds = [], []
+    for normal, bound in zip(A, b):
+        length = float(np.hypot(*normal))
+        if length == 0.:
+            if bound < 0.: raise ValueError('infeasible zero-normal half-plane')
+            continue
+        normals.append(normal/length); bounds.append(float(bound/length))
+    normals = np.asarray(normals).reshape(-1, 2); bounds = np.asarray(bounds)
+    candidates = [desired.copy(), np.zeros(2)]
+    norm = float(np.linalg.norm(desired))
+    if norm > 0.: candidates.append(radius*desired/norm)
+    for normal, bound in zip(normals, bounds):
+        remaining = radius**2-bound**2
+        if remaining < -1e-14*max(1., radius**2): continue
+        centre = bound*normal; tangent = np.array([-normal[1], normal[0]])
+        extent = math.sqrt(max(0., remaining)); lower, upper = -extent, extent
+        for other, limit in zip(normals, bounds):
+            coefficient = float(other@tangent); rhs = float(limit-other@centre)
+            low_value, high_value = sorted((coefficient*lower, coefficient*upper))
+            if low_value > rhs+1e-12:
+                lower, upper = 1., 0.; break
+            if high_value <= rhs+1e-12: continue
+            if coefficient > 0.: upper = min(upper, rhs/coefficient)
+            elif coefficient < 0.: lower = max(lower, rhs/coefficient)
+            elif rhs < -1e-12:
+                lower, upper = 1., 0.; break
+        if lower <= upper+1e-12:
+            candidates.append(centre+float(np.clip(tangent@desired, lower, upper))*tangent)
+    feasible = [point for point in candidates if np.isfinite(point).all()
+        and np.linalg.norm(point) <= radius+1e-12 and np.all(normals@point <= bounds+1e-12)]
+    if not feasible: raise ValueError('empty projected endpoint intersection')
+    return min(feasible, key=lambda point: float(np.sum((point-desired)**2))).copy()
+
+
+def audit_projected_plan(plan, config, origin, equations, path):
+    """Independently rebuild goal, face reserves, extrema, constraints and optimum."""
+    checks = {}
+    def check(name, condition): checks[name] = bool(condition)
+    try:
+        c = config; origin = array(origin, (3,)); equations = array(equations, (len(equations), 3))
+        heading = array(c['heading'], (3,))[:2]
+        if abs(float(np.linalg.norm(heading))-1.) > 1e-10: raise ValueError('nonunit heading')
+        basis = np.column_stack((heading, [-heading[1], heading[0]]))
+        duration = float(c['phase_durations']['translate']+c['phase_durations']['land'])
+        critical, maximum = projected_capture_extrema(float(origin[2]), duration)
+        margins = -(equations[:, :2]@origin[:2]+equations[:, 2]); reserves = np.minimum(.004, margins)
+        check('projectedOriginAndAdaptiveFaceReserves', min(margins) >= .003-1e-10
+            and close(plan.get('planningOriginMarginsM'), margins)
+            and close(plan.get('planningFaceReservesM'), reserves)
+            and plan.get('planningReserveRule') == 'min(4mm,current-origin-margin) per actual support face; reject origin below3mm')
+        goal = .5*(array(c['landing'], (3,))+array(c['targets'][c['stance_side']][0], (3,)))
+        goal[:2] += .035*heading; goal[2] = origin[2]
+        desired = basis.T@(goal[:2]-origin[:2])
+        check('projectedGoalUsesPlannedFeetAndCorrectedOrigin', close(plan.get('plannedGoalSourceM'), goal)
+            and close(plan.get('plannedDeltaLocalM'), desired))
+        xs = array(plan['wholePolynomialExtremaU'], (len(plan['wholePolynomialExtremaU']),))
+        roots = (0., 1., critical)
+        check('projectedExactWholePolynomialExtrema', len(xs) >= 3 and close(xs[:2], [0., 1.])
+            and all(min(abs(float(x)-root) for root in roots) <= 1e-9 for x in xs)
+            and all(min(abs(float(x)-root) for x in xs) <= 1e-9 for root in roots))
+        k = math.sqrt(origin[2]/9.81)/duration
+        smooth = lambda x: 10.*x**3-15.*x**4+6.*x**5
+        factors = [float(smooth(x)) for x in xs]+[float(smooth(x)+k*30.*x**2*(1.-x)**2) for x in xs]
+        check('projectedExactWholePolynomialFactors', close(plan.get('wholePolynomialFactors'), factors)
+            and abs(max(factors)-maximum) <= 1e-10 and abs(min(factors)) <= 1e-10)
+        # Receipt row ordering is checked separately. The optimization uses
+        # independently derived exact extrema, never the receipt's factors/A/b.
+        def constraints(values):
+            A, b = [], []
+            for face, margin, reserve in zip(equations, margins, reserves):
+                for factor in values:
+                    A.append(factor*(face[:2]@basis)); b.append(float(margin-reserve))
+            return np.asarray(A+[[0., 1.], [0., -1.]]), np.asarray(b+[.012, .012])
+        reported_A, reported_b = constraints(factors)
+        check('projectedHalfPlanesIndependentlyRebuilt', close(plan.get('projectionConstraintsA'), reported_A)
+            and close(plan.get('projectionConstraintsB'), reported_b))
+        A, b = constraints((0., 1., maximum))
+        radius = min(.19260552331163003*duration/(15./8.), .3901818436690813*duration**2/(10./math.sqrt(3.)))
+        local = independent_endpoint_projection(desired, A, b, radius)
+        delta = np.r_[basis@local, 0.]
+        check('projectedClosestFeasibleEndpoint', close(plan.get('projectionLocalEndpointM'), local, 1e-10)
+            and close(plan.get('forwardM'), local[0]) and close(plan.get('lateralM'), local[1])
+            and close(plan.get('maximumDisplacementM'), radius))
+        coeff = hermite_coefficients((np.zeros(3),)*3, (delta, np.zeros(3), np.zeros(3)), duration)
+        check('projectedZeroJetQuinticAndExactEnvelope', close(path['coefficients'], coeff)
+            and np.linalg.norm(delta)*(15./8.)/duration <= .19260552331163003+1e-10
+            and np.linalg.norm(delta)*(10./math.sqrt(3.))/duration**2 <= .3901818436690813+1e-10)
+        check('projectedPolicyAndFrozenBounds', plan.get('endpointPolicy') == 'closest-feasible-planned-midpoint-v1'
+            and plan.get('reserveM') == .003 and plan.get('designReserveCapM') == .004
+            and plan.get('frozenMaximumTotalSpeedMps') == .19260552331163003
+            and plan.get('frozenMaximumTotalAccelerationMps2') == .3901818436690813
+            and plan.get('correctionBoundsUnchanged') is True
+            and plan.get('referenceCaptureProxy') == 'constant planned COM height sqrt(z/g)'
+            and close(plan.get('phaseStartSourceTimeS'), path['startSourceTimeS']))
+    except (KeyError, ValueError, TypeError, IndexError, ArithmeticError):
+        checks['completeProjectedCOMPlanReplay'] = False
+    return dict(passed=bool(checks) and all(checks.values()), checks=checks)
+
+
+def audit_legacy_continuous_endpoint(plan, c, start, equations, path):
+    """The unchanged original 10mm/lateral-scalar planning audit."""
+    heading = array(c['heading'], (3,))[:2]; left = np.array([-heading[1], heading[0]])
+    T = float(path['durationS']); tau = math.sqrt(start[2]/9.81)
+    f = np.polynomial.Polynomial([0., 0., 0., 10., -15., 6.])
+    capture = f+tau/T*f.deriv(); xs = [0., 1.]
+    xs.extend(float(x.real) for x in capture.deriv().roots() if abs(x.imag) < 1e-10 and 0. < x.real < 1.)
+    factors = [float(p(x)) for p in (f, capture) for x in xs]
+    lower, upper = -.012, .012
+    for nx, ny, offset in equations:
+        normal = np.array([nx, ny]); base = float(normal@start[:2]+offset+.003)
+        for factor in factors:
+            a = factor*float(normal@left); b = -base-factor*.010*float(normal@heading)
+            if abs(a) < 1e-14:
+                if b < -1e-12: raise ValueError('infeasible continuous reference')
+            elif a > 0.: upper = min(upper, b/a)
+            else: lower = max(lower, b/a)
+    if lower > upper+1e-12: raise ValueError('empty continuous lateral interval')
+    preferred = min((.0025, -.0025), key=lambda x: abs(x-float(np.clip(x, lower, upper))))
+    lateral = float(np.clip(preferred, lower, upper)); delta = np.r_[.010*heading+lateral*left, 0.]
+    coeff = hermite_coefficients((np.zeros(3),)*3, (delta, np.zeros(3), np.zeros(3)), T)
+    checks = dict(continuousPathAndLateralChoiceReconstructed=close(path['coefficients'], coeff)
+        and close(plan['lateralM'], lateral) and close(plan['lateralIntervalM'], [lower, upper])
+        and plan.get('forwardM') == .010 and plan.get('reserveM') == .003
+        and close(plan.get('phaseStartSourceTimeS'), path['startSourceTimeS'])
+        and plan.get('frozenMaximumTotalSpeedMps') == .19260552331163003
+        and plan.get('frozenMaximumTotalAccelerationMps2') == .3901818436690813
+        and plan.get('correctionBoundsUnchanged') is True)
+    return dict(passed=all(checks.values()), checks=checks)
+
+
 def audit_continuous_com(receipt, row, reference, state, elapsed):
     """Reconstruct frozen polynomial endpoints, current support and total jets."""
     from scipy.spatial import ConvexHull
@@ -383,6 +627,8 @@ def audit_continuous_com(receipt, row, reference, state, elapsed):
         path, settle, plan = [continuous.get(k) for k in ('path', 'settle', 'plan')]
         if path is not None:
             check('continuousPathNeverReplaced', state['continuousPath'] is None or equal(state['continuousPath'], path))
+            check('continuousPlanNeverReplaced', state.get('continuousPlan') is None or equal(state['continuousPlan'], plan))
+            state['continuousPlan'] = copy.deepcopy(plan)
             first = state['continuousPath'] is None
             state['continuousPath'] = copy.deepcopy(path)
             check('continuousPathClockFromMeasuredPhase', close(path['startSourceTimeS'], state['phaseStarts'].get('translate'))
@@ -397,32 +643,12 @@ def audit_continuous_com(receipt, row, reference, state, elapsed):
                 actual.append(triangle(support_observation(row, c['stance_side']), ids, actual=True))
                 check('continuousPlanUsesCurrentActualSupport', close(equations, np.vstack(actual))
                     and close(plan['plannedAtSourceTimeS'], row['sourceTimeS']))
-            heading = array(c['heading'], (3,))[:2]; left = np.array([-heading[1], heading[0]])
-            T = float(path['durationS']); tau = math.sqrt(start[2]/9.81)
-            f = np.polynomial.Polynomial([0., 0., 0., 10., -15., 6.])
-            capture = f+tau/T*f.deriv(); xs = [0., 1.]
-            xs.extend(float(x.real) for x in capture.deriv().roots() if abs(x.imag) < 1e-10 and 0. < x.real < 1.)
-            factors = [float(p(x)) for p in (f, capture) for x in xs]
-            lower, upper = -.012, .012
-            for nx, ny, offset in equations:
-                normal = np.array([nx, ny]); base = float(normal@start[:2]+offset+.003)
-                for factor in factors:
-                    a = factor*float(normal@left); b = -base-factor*.010*float(normal@heading)
-                    if abs(a) < 1e-14:
-                        if b < -1e-12: raise ValueError('infeasible continuous reference')
-                    elif a > 0.: upper = min(upper, b/a)
-                    else: lower = max(lower, b/a)
-            if lower > upper+1e-12: raise ValueError('empty continuous lateral interval')
-            preferred = min((.0025, -.0025), key=lambda x: abs(x-float(np.clip(x, lower, upper))))
-            lateral = float(np.clip(preferred, lower, upper)); delta = np.r_[.010*heading+lateral*left, 0.]
-            coeff = hermite_coefficients((np.zeros(3),)*3, (delta, np.zeros(3), np.zeros(3)), T)
-            check('continuousPathAndLateralChoiceReconstructed', close(path['coefficients'], coeff)
-                and close(plan['lateralM'], lateral) and close(plan['lateralIntervalM'], [lower, upper])
-                and plan.get('forwardM') == .010 and plan.get('reserveM') == .003
-                and close(plan.get('phaseStartSourceTimeS'), path['startSourceTimeS'])
-                and plan.get('frozenMaximumTotalSpeedMps') == .19260552331163003
-                and plan.get('frozenMaximumTotalAccelerationMps2') == .3901818436690813
-                and plan.get('correctionBoundsUnchanged') is True)
+            if c.get('mode') == 'continuous-com-projected':
+                projected = audit_projected_plan(plan, c, start, equations, path)
+                for key, value in projected['checks'].items(): check(key, value)
+            else:
+                legacy = audit_legacy_continuous_endpoint(plan, c, start, equations, path)
+                for key, value in legacy['checks'].items(): check(key, value)
         if phase in ('translate', 'land'): check('continuousPathPresentDuringAdvance', path is not None)
         if phase == 'settle':
             check('continuousSettlePresent', path is not None and settle is not None)
@@ -566,14 +792,24 @@ def audit_reference_journal(rows, entry, references, notes, *, mode='baseline-co
         state = states.setdefault(index, dict(phase=None, phaseStart=n, phaseStarts={}, continuousPath=None, continuousSettle=None, seek=None,
             q0=np.array(reference['q0'], dtype=float), unload=False,
             floor=np.array(reference['floorTargets'], dtype=float), final=None,
-            entryCom=array(previous['com'], (3,)).copy()))
+            entryCom=array(previous['com'], (3,)).copy(), loadAnchor=None, landRun=0, firstEligibleLandingStep=None))
         if state['phase'] != phase:
+            old_phase = state['phase']
             state['phaseStart'] = n; state['phaseStarts'][phase] = n*DT
             if phase in ('settle', 'stand'):
                 q = np.asarray(previous['qpos'], dtype=float)[7:]
                 state['q0'] = np.clip(q, limits[:, 0]+.002, limits[:, 1]-.002) if limits is not None else q.copy()
             state['phase'] = phase
             if phase == 'settle':
+                if mode == 'continuous-com-load':
+                    check('softLoadOriginalQualifiedLandingHandoff', old_phase == 'land' and state['loadAnchor'] is None
+                        and state['landRun'] >= 80
+                        and (previous['sourceStep']-1)*DT-state['phaseStarts']['land'] >= reference['phase_durations']['land']
+                        and state['firstEligibleLandingStep'] == previous['sourceStep'])
+                    state['loadAnchor'] = dict(source_step=previous['sourceStep'], source_time=previous['sourceTimeS'],
+                        step_index=index, new_side=reference['swing_side'],
+                        measured_normal_n=previous['feet'][reference['swing_side']]['loadN'],
+                        body_weight_n=entry['massKg']*9.81, qualified_landing_samples=state['landRun'])
                 # Controller construction preserves measured entry height.
                 # Cadenced loaded handoff replaces com0 with the previous
                 # desired final target, but does not replace finalCom's z.
@@ -599,7 +835,7 @@ def audit_reference_journal(rows, entry, references, notes, *, mode='baseline-co
                 final = state['final'] if phase in ('settle', 'stand') and state['final'] is not None else original_final
                 result = audit_context(receipt, note, previous, reference, expected_elapsed=elapsed,
                     expected_q0=state['q0'], expected_floor=state['floor'], expected_final=final,
-                    previous_arm=previous_arm, expected_mode=mode)
+                    previous_arm=previous_arm, expected_mode=mode, expected_load_anchor=state['loadAnchor'])
                 for key, value in result['checks'].items(): check(key, value)
                 previous_arm = dict(time=previous['sourceTimeS'], rate=array(receipt['causal']['arm']['measuredLegPitchRateRadps'], (2,)))
                 epoch = receipt['epoch']; key = (index, receipt['source_step'], phase, epoch)
@@ -649,7 +885,7 @@ def audit_reference_journal(rows, entry, references, notes, *, mode='baseline-co
                     and note['reviewedWalk'].get('referenceVersion') == VERSION
                     and note['reviewedWalk'].get('immutablePreparedContext') is True)
                 support = note.get('robustSupportAdmission', {}); state['support'] = support
-                if mode == 'continuous-com':
+                if mode in ('continuous-com', 'continuous-com-projected', 'continuous-com-load'):
                     continuous_proof = audit_continuous_com(receipt, previous, reference, state, elapsed)
                     for key, value in continuous_proof['checks'].items(): check(key, value)
                 correction = receipt['causal']['robustCorrection']
@@ -712,6 +948,16 @@ def audit_reference_journal(rows, entry, references, notes, *, mode='baseline-co
                 except (KeyError, ValueError, TypeError, ArithmeticError):
                     check('completeWrenchSummaryMotorAndJointTelemetry', False)
         if 'loadedSlipDistanceM' in row: previous_slip = np.asarray(row['loadedSlipDistanceM'], dtype=float)
+        if mode == 'continuous-com-load' and phase == 'land':
+            side = reference['swing_side']; forward = float((np.asarray(row['feet'][side]['position'])
+                -np.asarray(reference['targets'][side][0]))@np.asarray(reference['heading']))
+            loaded = (row['feet'][side]['loadN'] >= 3. and row['feet'][1-side]['loadN'] >= 3.
+                and row['feet'][side]['clearance'] <= .003 and forward >= .18)
+            state['landRun'] = state['landRun']+1 if loaded else 0
+            if state['landRun'] >= 80 and n*DT-state['phaseStarts']['land'] >= reference['phase_durations']['land']:
+                if state['firstEligibleLandingStep'] is None: state['firstEligibleLandingStep'] = row['sourceStep']
+            if state['firstEligibleLandingStep'] is not None:
+                check('softLoadFirstEligibleLandingHandoffNeverDelayed', state['firstEligibleLandingStep'] == row['sourceStep'])
         # The inherited measured posture/admission test is evaluated after
         # every integration and can alter only the next command's unload floor.
         if phase == 'transfer' and elapsed >= reference['phase_durations']['transfer']:
@@ -888,7 +1134,8 @@ class ExactReviewedForecastReplay(ExactForecastReplay):
                 self._require(equal(final_receipt.get(name), actual_receipt.get(name)), 'final parity shared reference mismatch: '+name)
         self._require(all(equal(config.get(k), reference[k]) for k in STATIC_FIELDS if k in reference), 'forecast static step reference mismatch')
         self._require(equal(config['q0'][:15], reference['q0'][:15]), 'forecast leg/knee posture mismatch')
-        allowed = set(config)-{'mode', 'referenceVersion', 'armMappingRanges'}
+        self._require(audit_soft_load_context(receipt, note, None)['passed'], 'invalid forecast soft-load scope')
+        allowed = set(config)-{'mode', 'referenceVersion', 'armMappingRanges', 'softLoadPreference'}
         self._require(set(fields) == allowed|{'arm_posture', 'arm_velocity', 'arm_acceleration', 'unload_admitted'}, 'unexpected reviewed probe fields')
         for name in allowed: self._require(equal(fields[name], config[name]), 'probe field/context mismatch: '+name)
         for name, field in (('arm_posture', 'position'), ('arm_velocity', 'velocity'), ('arm_acceleration', 'acceleration')):
@@ -1064,6 +1311,13 @@ def audit(folder):
         and config.get('originalPhysicalGatesUnchanged') is True and receipt.get('implicitArms') is False
         and receipt.get('loadedSlipResetBetweenSteps') is False and receipt.get('rootAssistance') is False
         and receipt.get('physicalStateInstallationsAfterInitialization') == 0)
+    expected_load = dict(enabled=True, policy=SOFT_LOAD_POLICY, weightPerNewton=.0005,
+        maximumAcquiredWeightFraction=.1, activationS=.1, fadeDurationS=1.52,
+        acquiredFrom='actual qualified land-to-settle native sample', noHardForceFloor=True,
+        originalCornerNormalAndShearCostsUnchanged=True)
+    declarations['explicitSoftLoadPreferencePolicy'] = (receipt.get('softLoadPreferenceEnabled') is True
+        and config.get('softLoadPreference') == expected_load) if config['mode'] == 'continuous-com-load' else (
+        receipt.get('softLoadPreferenceEnabled', False) is False and config.get('softLoadPreference') is None)
     provenance['checks'].update(declarations); provenance['passed'] = all(provenance['checks'].values())
     # Final B evidence is deliberately not inferred from names or runner booleans.
     result = qualify_reviewed(original, robust, reference_proof, proof, controls_pass, provenance,
