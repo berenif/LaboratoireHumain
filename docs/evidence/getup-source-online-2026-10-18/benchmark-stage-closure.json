@@ -1,0 +1,16 @@
+{
+  "stage": "closed-benchmark-only",
+  "candidateTransitions": 0,
+  "candidateOptimizerCalls": 0,
+  "benchmarkIntervals": 64,
+  "benchmarkIntegrations": 1280,
+  "discardedBenchmarkOptimizerCalls": 18,
+  "physicsSeconds": 0.07487383487750776,
+  "checkpointCadenceOverlaySHA256": "2b0379a2ffd59a7d5c55e6a3bdb12ee69970e828e2ce7dec8b67c22aacc65df6",
+  "revisedTrainingProjectionSeconds": 1669.9124058599446,
+  "protectedValidationWallSeconds": 300,
+  "pairProjectionSeconds": 79.77748259693908,
+  "ledgerSHA256": "9974f796e717b4d10fd0fe5191352bfcb5af234c06d38b25f2f2091bd855720c",
+  "oldDeadlineNotExtended": true,
+  "unusedAllowanceNotTransferred": true
+}

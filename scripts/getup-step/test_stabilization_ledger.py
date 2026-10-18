@@ -64,4 +64,22 @@ class StageBudgetTests(unittest.TestCase):
                 with self.assertRaises(TimeoutError):b.begin_interval('validation')
                 b.data['sourceIntegrations']=12800
                 with self.assertRaises(TimeoutError):b.integrate('validation',lambda _:None,lambda:0)
+    def test_unresolved_optimizer_or_projection_blocks_restart(self):
+        with tempfile.TemporaryDirectory()as folder:
+            p=Path(folder)/'ledger.json'
+            for key in ['pendingOptimizer','proposalInProgress']:
+                x=self.make(p);x[key]='candidate-head';p.write_text(json.dumps(x))
+                with self.assertRaises(ValueError):StageBudget(p)
+    def test_online_exact_caps_and_four_second_tail(self):
+        with tempfile.TemporaryDirectory()as folder:
+            p=Path(folder)/'ledger.json';x=self.make(p);x.update(profile='slow-online',aggregatePhysicsLimitSeconds=20.,allIntervalLimit=5704,maximumSourceSteps=114080);p.write_text(json.dumps(x))
+            with StageBudget(p)as b:
+                self.assertGreater(b.allowance('training'),0)
+                b.data['physicsSeconds']=16.;b.data['stagePhysicsSeconds']['training']=15.;b.data['stagePhysicsSeconds']['benchmark']=1.
+                with self.assertRaises(TimeoutError):b.allowance('training')
+                self.assertGreater(b.allowance('validation'),0)
+                b.data['sourceIntegrations']=114080
+                with self.assertRaises(TimeoutError):b.integrate('validation',lambda _:None,lambda:0)
+                b.data['stagePolicyIntervals']['training']=5000;b.data['totalPolicyIntervals']=5064
+                with self.assertRaises(TimeoutError):b.begin_interval('training')
 if __name__=='__main__':unittest.main()

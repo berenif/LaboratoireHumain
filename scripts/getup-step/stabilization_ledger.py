@@ -14,10 +14,11 @@ class StageBudget:
         try:fcntl.flock(self.lock,fcntl.LOCK_EX|fcntl.LOCK_NB)
         except BaseException:self.lock.close();self.lock=None;raise
         self.data=json.loads(path.read_text())
-        if self.data.get('requestOutstanding'):self.close();raise ValueError('unresolved source request: reconciliation required')
+        if self.data.get('requestOutstanding')or self.data.get('pendingOptimizer')or self.data.get('proposalInProgress'):self.close();raise ValueError('unresolved source/optimizer/proposal request: reconciliation required')
         self.deadline=dt.datetime.fromisoformat(self.data['deadlineUtc'].replace('Z','+00:00'));self.profile=self.data.get('profile','stabilization')
-        if self.profile not in ['stabilization','analytic-diagnostic','slow-stabilization','slow-offline-trust']:self.close();raise ValueError('unknown admitted budget profile')
+        if self.profile not in ['stabilization','analytic-diagnostic','slow-stabilization','slow-offline-trust','slow-online']:self.close();raise ValueError('unknown admitted budget profile')
         if self.profile=='slow-offline-trust'and(self.data['aggregatePhysicsLimitSeconds']!=3 or self.data['validationWallReservedSeconds']!=300 or self.data['allIntervalLimit']!=640 or self.data['maximumSourceSteps']!=12800):self.close();raise ValueError('wrong offline-trust limits')
+        if self.profile=='slow-online'and(self.data['aggregatePhysicsLimitSeconds']!=20 or self.data['validationWallReservedSeconds']!=300 or self.data['allIntervalLimit']!=5704 or self.data['maximumSourceSteps']!=114080):self.close();raise ValueError('wrong online limits')
         if self.profile=='analytic-diagnostic'and(self.data['aggregatePhysicsLimitSeconds']!=1 or self.data['validationWallReservedSeconds']!=0 or self.data['allIntervalLimit']!=64):self.close();raise ValueError('wrong diagnostic limits')
         for key in ['physicsSeconds','sourceIntegrations','totalPolicyIntervals','stagePhysicsSeconds','stagePolicyIntervals']:
             if key not in self.data:self.close();raise ValueError('missing admitted budget counters')
@@ -35,8 +36,8 @@ class StageBudget:
     def allowance(self,stage):
         if self.data.get('requestOutstanding'):raise ValueError('unresolved source request blocks admission')
         if stage not in ['benchmark','training','validation']:raise ValueError('unknown stage')
-        d=self.data;diagnostic=self.profile=='analytic-diagnostic';offline=self.profile=='slow-offline-trust';limit=({'benchmark':0.,'training':0.,'validation':3.}if offline else{'benchmark':1.,'training':0.,'validation':0.}if diagnostic else{'benchmark':1.,'training':6.,'validation':3.})[stage]
-        reserved=0. if diagnostic or stage=='validation'else max(0.,3.-d['stagePhysicsSeconds']['validation'])
+        d=self.data;diagnostic=self.profile=='analytic-diagnostic';offline=self.profile=='slow-offline-trust';online=self.profile=='slow-online';limit=({'benchmark':1.,'training':15.,'validation':4.}if online else{'benchmark':0.,'training':0.,'validation':3.}if offline else{'benchmark':1.,'training':0.,'validation':0.}if diagnostic else{'benchmark':1.,'training':6.,'validation':3.})[stage]
+        reserved=0. if diagnostic or stage=='validation'else max(0.,(4. if online else 3.)-d['stagePhysicsSeconds']['validation'])
         wall_reserved=0. if stage=='validation'else d['validationWallReservedSeconds']
         result=min(limit-d['stagePhysicsSeconds'][stage],d['aggregatePhysicsLimitSeconds']-d['physicsSeconds']-reserved,self.remaining_wall()-wall_reserved-.05)
         if stage=='benchmark':
@@ -46,12 +47,13 @@ class StageBudget:
         return result
     def begin_interval(self,stage):
         self.allowance(stage);d=self.data
-        diagnostic=self.profile=='analytic-diagnostic';offline=self.profile=='slow-offline-trust';cap=({'benchmark':0,'training':0,'validation':640}if offline else{'benchmark':64,'training':0,'validation':0}if diagnostic else{'benchmark':64,'training':796,'validation':640})[stage];reserve=0 if diagnostic or stage=='validation'else max(0,640-d['stagePolicyIntervals']['validation'])
-        if d['stagePolicyIntervals'][stage]>=cap or d['totalPolicyIntervals']+1+reserve>(640 if offline else 64 if diagnostic else 1500):raise TimeoutError('source interval/validation reserve exhausted')
+        diagnostic=self.profile=='analytic-diagnostic';offline=self.profile=='slow-offline-trust';online=self.profile=='slow-online';cap=({'benchmark':64,'training':5000,'validation':640}if online else{'benchmark':0,'training':0,'validation':640}if offline else{'benchmark':64,'training':0,'validation':0}if diagnostic else{'benchmark':64,'training':796,'validation':640})[stage];reserve=0 if diagnostic or stage=='validation'else max(0,640-d['stagePolicyIntervals']['validation'])
+        if d['stagePolicyIntervals'][stage]>=cap or d['totalPolicyIntervals']+1+reserve>(5704 if online else 640 if offline else 64 if diagnostic else 1500):raise TimeoutError('source interval/validation reserve exhausted')
         d['stagePolicyIntervals'][stage]+=1;d['totalPolicyIntervals']+=1;d['status']='running-'+stage;atomic_json(self.path,d)
     def integrate(self,stage,step_one,counter):
         if self.data.get('requestOutstanding'):raise ValueError('outstanding source request')
         if self.profile=='slow-offline-trust'and self.data['sourceIntegrations']>=12800:raise TimeoutError('offline trust native integration cap')
+        if self.profile=='slow-online'and self.data['sourceIntegrations']>=114080:raise TimeoutError('online native integration cap')
         remaining=self.allowance(stage);before=counter()
         if type(before)is not int or before<0:raise ValueError('invalid pre-integration counter')
         d=self.data;d.update(requestOutstanding=True,pendingPossibleNativeIntegrations=1,pendingStage=stage,pendingPhysicsReserveSeconds=remaining);atomic_json(self.path,d)

@@ -1,0 +1,13 @@
+{
+  "schema": 1,
+  "parentProtocolSHA256": "556d119fae46eb4ff63a13bbd20d2dc6f50850dc6345afdbadf324ebb5e81ec3",
+  "scope": "checkpoint cadence only; source actions, loss, RNG roles, all physical/replay/resource limits unchanged",
+  "fullRollingEveryVerifiedTransitions": 64,
+  "fullAlso": ["after critic warmup", "fixed1024/2048/3072/4096/5000 milestones", "before validation", "final complete boundary"],
+  "everyTerminalBeforeReset": ["raw native terminal packet and preceding executed interval", "action/reward/bootstrap mask/behaviour witness", "actual reset cache hash and ordinal", "charged global interval and integration IDs"],
+  "everyProposal": "immutable compact head/proposed-and-retainedAdam/RNG/batch/noise/trust receipt; full learner only at declared cadence",
+  "interruption": "last complete checkpoint is older than current charged ledger; retain all later charges and durable journals; never claim exact current-state resume or refund/reconstruct transitions for free",
+  "protectedValidationUnchanged": true,
+  "maximumActualNewTransitionsUnchanged": 5000,
+  "candidateEndpointsUnchanged": true
+}
