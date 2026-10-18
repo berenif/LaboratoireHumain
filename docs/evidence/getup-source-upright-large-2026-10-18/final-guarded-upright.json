@@ -1,0 +1,140 @@
+{
+  "schema": 1,
+  "savedDataOnly": true,
+  "physicsIntegrations": 0,
+  "actualRecordedIntegrations": 4802,
+  "physicsSimSeconds": 6.0025,
+  "stopped": "phase-timeout-transfer",
+  "runnerCompleted": false,
+  "config": {
+    "uprightEnabled": true,
+    "softDeadbandDeg": 1.5,
+    "uprightStaticPreferenceWeight": 1.0,
+    "uprightAnkleReferenceReserveRad": 0.06,
+    "uprightAnkleReadyReserveRad": 0.035,
+    "runtimeMeasuredCaptureAndJointGuards": true,
+    "inheritedJointEntryGraceS": 0.06375,
+    "tiltLimitDeg": 12.0,
+    "requestedDistancesM": [
+      0.12
+    ],
+    "experimentalMaximumDistanceM": 0.302,
+    "experimentalMaximumSupportRelativeReachM": 0.3,
+    "originalMaximumSupportRelativeReachM": 0.18,
+    "originalMotorAndContactSafetyGates": true
+  },
+  "steps": [
+    {
+      "index": 1,
+      "swingSide": "left",
+      "requestedDistanceM": 0.12,
+      "commandedDistanceM": 0.122,
+      "startNativeStep": 0,
+      "startSourceTimeS": 0.0,
+      "entryCOM": [
+        0.38007874160510713,
+        -0.03922870920128895,
+        0.8081642540803642
+      ],
+      "initialFeet": [
+        [
+          0.5164085985705382,
+          -0.032167538723330336,
+          0.028424512834071075
+        ],
+        [
+          0.3253183487011271,
+          0.10000097728588249,
+          0.02863416314941853
+        ]
+      ],
+      "bodyAdaptsThrough": "current-state COM/capture feedback, measured contact load, whole-body inverse dynamics, joint ground barriers; no inter-step state installation",
+      "postureVariant": "selected-hips-knees-opposed-arms",
+      "staticRequiredMotorFraction": 0.9026041967904324,
+      "staticMinimumSelfSeparationM": 0.07197190334590331
+    }
+  ],
+  "measuredPerStep": {
+    "1": {
+      "maximumForwardM": 0.0004567776290340359,
+      "finalForwardM": 0.00034620740020378907,
+      "maximumSupportRelativeForwardM": 0.03625843560530125,
+      "maximumStanceOriginDisplacementM": 0.003617789166225458,
+      "maximumStanceOriginHorizontalDisplacementM": 0.002752704872825693,
+      "landingQualified": false,
+      "qualifiedLandingForwardM": null,
+      "finalStanceOriginHorizontalDisplacementM": 0.0019180653715427155
+    }
+  },
+  "maximumMotorFraction": 0.7842287814704907,
+  "minimumWalkingJointReserveDeg": null,
+  "minimumAllSampleJointReserveDeg": -0.5213351589189225,
+  "lastOutsideJointLimitTimeS": 0.06375,
+  "strictAllSampleJointLimitsPass": false,
+  "globalLoadedSlipM": [
+    0.0017037382692118186,
+    0.0013553323592295369
+  ],
+  "minimumComCaptureMarginM": 0.027063005950142188,
+  "maximumSelfPenetrationM": 0.0,
+  "postEntryJointViolationSamples": 0,
+  "undefinedCaptureSamples": 0,
+  "negativeCaptureSamples": 0,
+  "firstCaptureViolation": null,
+  "observedMeasuredRuntimeGuardsPass": true,
+  "maximumNonfootLoadN": 0.0,
+  "flightSamples": 0,
+  "warnings": 0,
+  "invalidRaySamples": 0,
+  "minimumCommandSampledSelfSeparationM": 0.0752782812348734,
+  "mechanicalAbsoluteWorkJ": 13.386337789029136,
+  "orientation": {
+    "torso": {
+      "maximumAbsPitchDeg": 1.598898151698358,
+      "maximumAbsRollDeg": 10.528825987183962,
+      "maximumTiltDeg": 10.5665694882479,
+      "rmsTiltDeg": 8.296185646775436,
+      "finalPitchDeg": -0.8775493260953753,
+      "finalRollDeg": 10.081034667042163,
+      "finalTiltDeg": 10.118764228206135
+    },
+    "pelvis": {
+      "maximumAbsPitchDeg": 7.704469383236589,
+      "maximumAbsRollDeg": 2.5467906045779487,
+      "maximumTiltDeg": 7.722070337124733,
+      "rmsTiltDeg": 4.295982320037245,
+      "finalPitchDeg": 2.458811054020022,
+      "finalRollDeg": 2.5467906045779487,
+      "finalTiltDeg": 3.539478980539381
+    },
+    "torsoRelativePelvis": {
+      "maximumAbsPitchDeg": 6.665838752270669,
+      "maximumAbsRollDeg": 8.111917787791679,
+      "maximumTiltDeg": 8.915564261453486,
+      "rmsTiltDeg": 7.558880868334982,
+      "finalPitchDeg": -3.337449064719782,
+      "finalRollDeg": 7.53415863451841,
+      "finalTiltDeg": 8.236372040380676
+    }
+  },
+  "observed12DegreeTiltBoundPass": true,
+  "finalBaseQuietSamples": 0,
+  "finalUprightQuietSamples": 0,
+  "armAmplitude": {},
+  "armTrackingPass": false,
+  "independentFKCheck": {
+    "samples": 241,
+    "comparedBodyTelemetry": 482,
+    "allFramesHaveUprightTelemetry": true,
+    "maximumWrappedOrientationErrorDeg": 2.3590018827235326e-12,
+    "coveragePass": true,
+    "physicsIntegrations": 0
+  },
+  "hashes": {
+    "frames.ndjson": "42e03aded8889adbce10941b8c4f89857c2718a8e2b17ef064219c99d373a4c2",
+    "control.json": "1392c5d60ba8ecfbb763e5cfc84d04ab3c54db6e8dda768d05dee315e20a9e81",
+    "final.bin": "4d5bbafebfc9bce043aef30385c4a4317b74b0fe48c8af12ff8519b639fd0171"
+  },
+  "auditedMotionPass": false,
+  "auditedUprightStepPass": false
+}

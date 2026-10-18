@@ -1,0 +1,42 @@
+{
+  "runs": {
+    "focused": {
+      "run": 29,
+      "passed": 29,
+      "skipped": 0,
+      "failures": 0,
+      "errors": 0,
+      "seconds": 17.313,
+      "log": "outputs/getup-source-step/upright-large-20261018/validation-final-20261018/focused-corrected.log"
+    },
+    "seven-module": {
+      "run": 63,
+      "passed": 52,
+      "skipped": 11,
+      "failures": 0,
+      "errors": 0,
+      "seconds": 74.775,
+      "log": "outputs/getup-source-step/upright-large-20261018/validation-final-20261018/seven-module-corrected.log"
+    },
+    "legacy-v9-compat": {
+      "run": 11,
+      "passed": 11,
+      "skipped": 0,
+      "failures": 0,
+      "errors": 0,
+      "seconds": 4.313,
+      "log": "outputs/getup-source-step/upright-large-20261018/validation-final-20261018/legacy-v9-compat.log"
+    }
+  },
+  "sourceUnchangedDuringCorrectedSevenModuleRun": true,
+  "sourceHashes": {
+    "source_step_probe.py": "1081bbd236bd760f82f116f36881d88e2c70576adaded5de46924aba29f57281",
+    "source_multistep_probe.py": "2953a849eaa91fcbc8b755406cc881ebe3ce3827029046b05e01ad9e173379be",
+    "source_opposed_arm_swing.py": "3d48035d84c1abdbee9a1b5f5df1b545e4a874b465ddc70d4e8fdb2fbc28172e",
+    "source_upright_large_steps.py": "76782ae63804af7ba624848f0770a19fd97446d30bba9067eb8792004360125f",
+    "plan_source_arm_knee.py": "b8a47f48e8d37fd8328b6fdebcc0f48ee334782ea276bb75cc1d915b119c8858",
+    "test_source_upright_large_steps.py": "804e488ed89b095f7a756aaa285a10efc811ba353d0ea15d9ec4c8f42eeece89"
+  },
+  "earlierFixtureSamplingFailurePreservedIn": "focused.log and seven-module.log",
+  "fixtureCorrection": "Use np.linspace with supplied exact endpoint; no clipping and no control source changes."
+}

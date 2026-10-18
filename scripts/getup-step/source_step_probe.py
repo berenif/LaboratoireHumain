@@ -74,8 +74,8 @@ class World:
   return dict(jointGroundRays=self.joint_ground_rays(),maximumBodyLinearMps=motion[0],maximumBodyAngularRadps=motion[1],maximumSelfPenetrationM=motion[2],comVelocity=comv.tolist(),torsoTiltDeg=float(np.rad2deg(np.arccos(np.clip(self.arr(5,(17,3,3))[1,2,2],-1,1)))),jointLimitMinimumMarginRad=float(min(limits)),jointLimitMarginsRad=limits.tolist(),actualMotorTorquesNm=self.arr(8,(27,))[6:].copy().tolist(),supportPointsXY=points.tolist(),sourceStep=self.l.lh_dim(self.h,6),sourceTimeS=self.l.lh_time(self.h),qpos=self.arr(0,(28,)).copy().tolist(),qvel=self.arr(1,(27,)).copy().tolist(),com=self.arr(6,(17,3))[1].copy().tolist(),feet=[dict(position=self.arr(3,(17,3))[i].copy().tolist(),groundRays=f['groundRays'],clearance=f['clearance'],loadN=load[i],loadedSlipSpeedMps=self.l.lh_foot_slip_speed(self.h,j))for j,(i,f)in enumerate(zip(footids,feet))],nonfootLoadN=max(load[i]for i in range(1,17)if i not in footids),warnings=self.l.lh_warnings(self.h))
  def close(self):self.l.lh_close(self.h)
 class Controller:
- def __init__(self,w,swing_side=0,distance=.062,self_avoidance=False):
-  assert swing_side in [0,1]and .02<=distance<=.12
+ def __init__(self,w,swing_side=0,distance=.062,self_avoidance=False,maximum_distance=.12):
+  assert .12<=maximum_distance<=.302 and swing_side in [0,1]and .02<=distance<=maximum_distance
   self.self_avoidance=self_avoidance
   if self_avoidance:w.l.lh_self_separation.argtypes=[C.c_void_p,PTR];w.l.lh_self_separation.restype=None
   self.swing_side=swing_side;self.stance_side=1-swing_side;self.step_distance=distance;self.swing_body=w.ids['left_foot'if swing_side==0 else'right_foot']
@@ -100,13 +100,16 @@ class Controller:
   if phase in ['settle','stand']:
    s,ds,dds=clock(t,2.*motion_scale)if phase=='settle'else(1.,0.,0.);target=self.com1+(self.finalCom-self.com1)*s;vel=(self.finalCom-self.com1)*ds;acc=(self.finalCom-self.com1)*dds
   task(Jcom,acc+45*(target-com)+13*(vel-Jcom@v)-w.read('lh_jdot',(3,),-1),12.)
-  Jr=w.read('lh_body_jac',(6,27),1)[3:];R=w.arr(5,(17,3,3))[1];root_target=self.rootR;root_velocity=np.zeros(3);root_acceleration=np.zeros(3)
-  if self.self_avoidance:
-   lean,lean_v,lean_a=clock(t,2.*motion_scale)if phase=='transfer'else(1.,0.,0.)
-   if phase=='settle':lean,lean_v,lean_a=clock(t,2.*motion_scale);lean,lean_v,lean_a=1.-lean,-lean_v,-lean_a
-   elif phase=='stand':lean,lean_v,lean_a=0.,0.,0.
-   root_target=Rotation.from_rotvec(self.lean_axis*lean).as_matrix()@self.rootR;root_velocity=self.lean_axis*lean_v;root_acceleration=self.lean_axis*lean_a
-  rerr=Rotation.from_matrix(root_target@R.T).as_rotvec();task(Jr,root_acceleration+40*rerr+12*(root_velocity-Jr@v)-w.read('lh_jdot',(6,),1)[3:],4.)
+  if hasattr(self,'add_upright_tasks'):
+   self.add_upright_tasks(t,phase,N,task,ineq,ub)
+  else:
+   Jr=w.read('lh_body_jac',(6,27),1)[3:];R=w.arr(5,(17,3,3))[1];root_target=self.rootR;root_velocity=np.zeros(3);root_acceleration=np.zeros(3)
+   if self.self_avoidance:
+    lean,lean_v,lean_a=clock(t,2.*motion_scale)if phase=='transfer'else(1.,0.,0.)
+    if phase=='settle':lean,lean_v,lean_a=clock(t,2.*motion_scale);lean,lean_v,lean_a=1.-lean,-lean_v,-lean_a
+    elif phase=='stand':lean,lean_v,lean_a=0.,0.,0.
+    root_target=Rotation.from_rotvec(self.lean_axis*lean).as_matrix()@self.rootR;root_velocity=self.lean_axis*lean_v;root_acceleration=self.lean_axis*lean_a
+   rerr=Rotation.from_matrix(root_target@R.T).as_rotvec();task(Jr,root_acceleration+40*rerr+12*(root_velocity-Jr@v)-w.read('lh_jdot',(6,),1)[3:],4.)
   if phase=='transfer'and hasattr(self,'posture_start'):
    ps,pv,pa=clock(t,2.*motion_scale);delta=self.q0-self.posture_start;task(np.eye(27)[6:],delta*pa+20*(self.posture_start+delta*ps-q)+8*(delta*pv-v[6:]),.2)
   else:task(np.eye(27)[6:],20*(self.q0-q)-8*v[6:],.2)

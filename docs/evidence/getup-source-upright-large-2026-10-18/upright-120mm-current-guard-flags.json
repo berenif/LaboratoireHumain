@@ -1,0 +1,22 @@
+{
+  "attempt": "pilot-upright-120mm-extended",
+  "basisAuditPath": "docs/evidence/getup-source-upright-large-2026-10-18/upright-120mm.json",
+  "basisAuditSHA256": "ff07adb68f775ecb4751cd4cee55d538afd34e7d6cacab30ca8f79feaa0e50e4",
+  "journalSHA256": "d6367ba469c46a347ad2bec1064b987daabe3578d10f152880d9173a799ca0b8",
+  "actualRecordedIntegrations": 15314,
+  "postEntryJointViolationSamples": 64,
+  "undefinedCaptureSamples": 0,
+  "negativeCaptureSamples": 473,
+  "firstCaptureViolation": {
+    "timeS": 9.2475,
+    "phase": "land",
+    "marginM": -4.182411240027939e-05
+  },
+  "observedMeasuredRuntimeGuardsPass": false,
+  "runnerCompleted": true,
+  "auditedMotionPass": false,
+  "auditedOpposedStepPass": false,
+  "auditedUprightStepPass": false,
+  "physicsIntegrations": 0,
+  "reduction": "Reuses verified saved FK/motion audit, independently rescans every journal row for current runtime guard semantics."
+}

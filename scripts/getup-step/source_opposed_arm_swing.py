@@ -53,11 +53,13 @@ def limb_telemetry(w, kind):
 
 class SagittalArmMap:
     """Read-only FK lookup, preserving lateral clearance while swinging in x/z."""
-    def __init__(self, q, limits, goal):
+    def __init__(self, q, limits, goal, ranges=None):
         self.goal = np.array(goal)
         model = json.loads((ROOT/'rust/crates/model/data/getup-v1.json').read_text())
         kin = fk.Kinematics(model)
         self.grid = np.linspace(-.45, .45, 91)
+        self.ranges = np.array(ranges if ranges is not None else [[-.45,.45],[-.45,.45]])
+        self.extended = ranges is not None
         self.curves = []
         self.neutral_vectors = []
         self.maximum_fit_error_m = 0.
@@ -72,7 +74,9 @@ class SagittalArmMap:
             self.neutral_vectors.append(neutral.tolist())
             samples = []
             lower, upper = limits[offset:offset+2, 0]+.02, limits[offset:offset+2, 1]-.02
-            for angle in self.grid:
+            grid=(np.linspace(*self.ranges[side_index],round(np.ptp(self.ranges[side_index])/.01)+1)
+                  if self.extended else self.grid)
+            for angle in grid:
                 target = Rotation.from_rotvec([0., -angle, 0.]).apply(neutral)
                 fit = least_squares(lambda shoulder: vector(shoulder)-target,
                     np.array(goal[3*side_index:3*side_index+2]).clip(lower+1e-8, upper-1e-8),
@@ -81,16 +85,16 @@ class SagittalArmMap:
                 self.maximum_fit_error_m = max(self.maximum_fit_error_m, float(error))
                 assert fit.success and error < 1e-7, 'sagittal shoulder target infeasible'
                 samples.append(np.r_[fit.x, goal[3*side_index+2]])
-            self.curves.append(CubicSpline(self.grid, np.array(samples), axis=0))
+            self.curves.append(CubicSpline(grid, np.array(samples), axis=0))
         self.neutral_pitch = pitch(np.array(self.neutral_vectors))
 
     def evaluate(self, delta):
-        assert np.max(abs(delta)) <= .45, 'measured leg excursion exceeds verified arm map'
+        assert np.all(delta>=self.ranges[:,0]) and np.all(delta<=self.ranges[:,1]), 'measured leg excursion exceeds verified arm map'
         return tuple(np.concatenate([curve(delta[i], order) for i, curve in enumerate(self.curves)])
                      for order in (0, 1, 2))
 
     def receipt(self):
-        return dict(mapping='arm sagittal pitch change = - ipsilateral measured thigh pitch change',
+        result = dict(mapping='arm sagittal pitch change = - ipsilateral measured thigh pitch change',
                     angularGain=-1., sideOrder=list(SIDES), coordinateFrame='torso-local source x-forward z-up',
                     shoulderHinges='two oblique, mirrored axes, inverted with exact model FK',
                     verifiedSwingDeltaRangeRad=[-.45,.45], maximumFKFitErrorM=self.maximum_fit_error_m,
@@ -98,6 +102,10 @@ class SagittalArmMap:
                     elbowNeutralRad=self.goal[[2,5]].tolist(), goalRad=self.goal.tolist(),
                     placementDurationS=4., positionGain=ARM_KP, velocityGain=ARM_KD, taskWeight=ARM_WEIGHT,
                     balanceArmOffsetEnabled=False, sameAmplitudeTarget=True, clippingEnabled=False)
+        if self.extended:
+            result.pop('verifiedSwingDeltaRangeRad')
+            result['verifiedSwingDeltaRangeBySideRad']=self.ranges.tolist()
+        return result
 
 
 class OpposedArmController(Controller):
@@ -165,7 +173,7 @@ class OpposedArmMultiStep(MultiStep):
         w = self.world; before = native_bytes(w)
         if self.arm_map is None:
             goal = arms_along_body_goal(w)
-            self.arm_map = SagittalArmMap(w.arr(0, (28,))[7:], w.limits, goal)
+            self.arm_map = getattr(self,'arm_mapping_type',SagittalArmMap)(w.arr(0, (28,))[7:], w.limits, goal)
             self.leg_origin = limb_telemetry(w, 'leg')[0]
             (self.folder/'arm-mapping.json').write_text(json.dumps(self.arm_map.receipt(), indent=2)+'\n')
         arms = self.arm_map.evaluate(-(limb_telemetry(w, 'leg')[0]-self.leg_origin))[0]

@@ -1,0 +1,26 @@
+{
+  "physicsIntegrationsAlreadyRecorded": 15312,
+  "additionalAuditIntegrations": 0,
+  "sourceCommit": "970273f61385bb1bb897e9ba3651f8d314bd1165",
+  "sourceTree": "5aea96de35c3068b8bce6b30e53c934f341c418c",
+  "hashes": {
+    "frames.ndjson": {
+      "historical": "94c0ab35c725a025b24ff663a0b33969e81911327a43990165ef636d673385d9",
+      "restored": "94c0ab35c725a025b24ff663a0b33969e81911327a43990165ef636d673385d9",
+      "exactByteParity": true
+    },
+    "control.json": {
+      "historical": "eaa4a604035e82cd98fea0306b808cd7115c3fc5c4e385a3cb08c8839815038d",
+      "restored": "eaa4a604035e82cd98fea0306b808cd7115c3fc5c4e385a3cb08c8839815038d",
+      "exactByteParity": true
+    },
+    "final.bin": {
+      "historical": "e3331518eba066a5c89dea081282915c1e12e2cc698d5613c2dccc3fe48c4a8a",
+      "restored": "2b2bf30bc926b642c5e3e88450f648255fd32c4135f3eba22cf849f5b79e072e",
+      "exactByteParity": false
+    }
+  },
+  "physicalJournalAndCommandsExact": true,
+  "cacheByteParityClaim": false,
+  "cacheNote": "New local cold-cache wrapper binds rebuilt source_bridge_v2; no claim that retained native-cache bytes match the historical executor."
+}

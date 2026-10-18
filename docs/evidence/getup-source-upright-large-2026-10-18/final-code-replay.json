@@ -1,0 +1,54 @@
+{
+  "schema": 1,
+  "codeCommit": "5137b67e3e83e4854ec54bd896311bd342c83008",
+  "sourceUnchangedDuringFinalReplay": true,
+  "actualIntegrations": 15312,
+  "auditedOpposedStepPass": true,
+  "earlierConservativeMapAndFinalMaxVerifiedMap": {
+    "globalLoadedSlipM": {
+      "old": [
+        0.0023954913378785693,
+        0.002486778632193057
+      ],
+      "final": [
+        0.002395491336781546,
+        0.0024867787991802804
+      ]
+    },
+    "minimumComCaptureMarginM": {
+      "old": 0.011074400676530649,
+      "final": 0.0110744010148775
+    },
+    "minimumWalkingJointReserveDeg": {
+      "old": 0.3178924017096894,
+      "final": 0.31789243432613135
+    },
+    "maximumMotorFraction": {
+      "old": 0.9369599418796618,
+      "final": 0.9369599410259661
+    }
+  },
+  "rawRun": "outputs/getup-source-step/upright-large-20261018/final-commit-reference-180mm/run/generation-001",
+  "runReceipt": {
+    "stopped": "measured-alternating-multistep-plus5squiet",
+    "finished": true,
+    "actualIntegrations": 15312,
+    "physicsStepS": 0.00125,
+    "torqueUpdateS": 0.005,
+    "selectedPresetChanged": false,
+    "originalMotorStrength": true,
+    "originalFriction": true,
+    "rootAssistance": false,
+    "physicalStateInstallationsAfterInitialization": 0,
+    "codeSHA256AtStart": {
+      "source_opposed_arm_swing.py": "3d48035d84c1abdbee9a1b5f5df1b545e4a874b465ddc70d4e8fdb2fbc28172e",
+      "source_step_probe.py": "1081bbd236bd760f82f116f36881d88e2c70576adaded5de46924aba29f57281",
+      "source_multistep_probe.py": "2953a849eaa91fcbc8b755406cc881ebe3ce3827029046b05e01ad9e173379be",
+      "plan_source_arm_knee.py": "b8a47f48e8d37fd8328b6fdebcc0f48ee334782ea276bb75cc1d915b119c8858",
+      "source_arm_knee_mobility.py": "7835072bdc183fe5eff5551458b5adefa7473d781b738bde5ee5987e1742c547",
+      "source_selected_step.py": "ab21d078d9c0109c987d5c5963a7dd796c06f8f54df7624594ad9fb3bb55ef90",
+      "source_upright_large_steps.py": "76782ae63804af7ba624848f0770a19fd97446d30bba9067eb8792004360125f"
+    },
+    "codeUnchangedDuringRun": true
+  }
+}

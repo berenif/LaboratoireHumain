@@ -1,0 +1,20 @@
+{
+  "attempt": "pilot-reference-120mm-v2",
+  "basisAuditPath": "docs/evidence/getup-source-upright-large-2026-10-18/reference-120mm-old-map.json",
+  "basisAuditSHA256": "7b13a4192721f1f2f314e632dbd38a9aa3d074db6f749898302e84c9de69e251",
+  "journalSHA256": "04a5aff021e682024c86c90bdb3b131b6ea03ecd1bfc7d88152942261fc910b2",
+  "actualRecordedIntegrations": 15312,
+  "postEntryJointViolationSamples": 0,
+  "undefinedCaptureSamples": 0,
+  "negativeCaptureSamples": 0,
+  "firstCaptureViolation": null,
+  "observedMeasuredRuntimeGuardsPass": true,
+  "runnerCompleted": true,
+  "auditedMotionPass": true,
+  "auditedOpposedStepPass": true,
+  "auditedUprightStepPass": false,
+  "fkTelemetryCoveragePass": true,
+  "savedIndependentFKErrorUpperBoundDeg": 1.3129497489217101e-12,
+  "physicsIntegrations": 0,
+  "reduction": "Reuses hash-bound saved FK/motion audit; rescans every journal row for current runtime guards and telemetry coverage. Wrapped orientation error is no greater than the saved raw error."
+}

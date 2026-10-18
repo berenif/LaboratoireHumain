@@ -8,14 +8,14 @@ from source_step_preview import LiveStep
 from scipy.spatial.transform import Rotation
 def posture_ready(row,c):
  com=np.array(row['com']);capture=com[:2]+np.array(row['comVelocity'])[:2]*math.sqrt(com[2]/9.81)
- return np.linalg.norm((com-c.com1)[:2])<.008 and np.linalg.norm(capture-c.com1[:2])<.01 and row['jointLimitMinimumMarginRad']>=.005 and row['maximumBodyLinearMps']<=.05 and row['maximumBodyAngularRadps']<=.2
+ return np.linalg.norm((com-c.com1)[:2])<.008 and np.linalg.norm(capture-c.com1[:2])<.01 and row['jointLimitMinimumMarginRad']>=.005 and min(row['jointLimitMarginsRad'][i]for i in (7,13))>=getattr(c,'minimum_ankle_ready_rad',0.) and row['maximumBodyLinearMps']<=.05 and row['maximumBodyAngularRadps']<=.2
 def unloaded_support_ready(row,c,mass):
  return posture_ready(row,c)and row['feet'][c.swing_side]['loadN']<.5 and row['feet'][c.stance_side]['loadN']>=.8*mass*9.81
 class MultiStep(LiveStep):
  def __init__(self,base,helper,output,distances=(.03,.06,.09,.045),planned_support=False,time_scale=1.):
   assert .75<=time_scale<=2. and(planned_support or time_scale==1.),'time scaling requires the planned-support controller';self.time_scale=time_scale;self.planned_support=planned_support;self.distances=tuple(distances);self.step_index=0;self.step_records=[];self.ready_run=0;super().__init__(base,helper,output,maximum_integrations=64000 if time_scale>1 else 48000);self.begin_step()
  def begin_step(self):
-  w=self.world;side=self.step_index%2;requested=self.distances[self.step_index];candidate=Controller(w,side,requested+.002,self_avoidance=True);separation=float((candidate.targets[side][0]-candidate.targets[1-side][0])@candidate.heading);maximum=max(.025,.18-separation);chosen=min(requested+.002,maximum);assert chosen>=requested,'requested placement outside the bounded support-relative reach';self.controller=Controller(w,side,chosen,self_avoidance=True);self.unload_run=0
+  w=self.world;side=self.step_index%2;requested=self.distances[self.step_index];distance_limit=getattr(self,'experimental_distance_limit',.12);candidate=Controller(w,side,requested+.002,self_avoidance=True,maximum_distance=distance_limit);separation=float((candidate.targets[side][0]-candidate.targets[1-side][0])@candidate.heading);maximum=max(.025,getattr(self,'support_relative_reach',.18)-separation);chosen=min(requested+.002,maximum);assert chosen>=requested,'requested placement outside the bounded support-relative reach';self.controller=Controller(w,side,chosen,self_avoidance=True,maximum_distance=distance_limit);self.unload_run=0
   if self.planned_support:
    from plan_source_stance import plan
    reference=plan(w,1-side,True,.9);assert reference['staticMotorContactFeasible']and reference['minimumRequiredMotorFraction']<.925 and reference['minimumSelfSeparationM']>.01,'no motor-reserved stance reference';self.controller.com1=np.array(reference['comReferenceSource']);self.controller.lean_axis=Rotation.from_matrix(np.array(reference['rootReferenceSource'])@self.controller.rootR.T).as_rotvec();self.controller.q0=np.array(reference['qReference']);self.controller.joint_reserve=.01;self.controller.trajectory_time_scale=self.time_scale;self.controller.posture_start=w.arr(0,(28,))[7:].copy();(self.folder/f'stance-reference-{self.step_index+1:02d}.json').write_text(json.dumps(reference,indent=2)+'\n')

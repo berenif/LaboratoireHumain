@@ -1,0 +1,390 @@
+{
+  "schema": 1,
+  "savedDataOnly": true,
+  "physicsIntegrations": 0,
+  "actualRecordedIntegrations": 15312,
+  "physicsSimSeconds": 19.14,
+  "stopped": "measured-alternating-multistep-plus5squiet",
+  "runnerCompleted": true,
+  "config": {
+    "uprightEnabled": false,
+    "softDeadbandDeg": 1.5,
+    "uprightStaticPreferenceWeight": 1.0,
+    "uprightAnkleReferenceReserveRad": 0.06,
+    "uprightAnkleReadyReserveRad": 0.035,
+    "runtimeMeasuredCaptureAndJointGuards": true,
+    "inheritedJointEntryGraceS": 0.06375,
+    "tiltLimitDeg": 12.0,
+    "requestedDistancesM": [
+      0.18
+    ],
+    "experimentalMaximumDistanceM": 0.302,
+    "experimentalMaximumSupportRelativeReachM": 0.3,
+    "originalMaximumSupportRelativeReachM": 0.18,
+    "originalMotorAndContactSafetyGates": true
+  },
+  "steps": [
+    {
+      "index": 1,
+      "swingSide": "left",
+      "requestedDistanceM": 0.18,
+      "commandedDistanceM": 0.182,
+      "startNativeStep": 0,
+      "startSourceTimeS": 0.0,
+      "entryCOM": [
+        0.38007874160510713,
+        -0.03922870920128895,
+        0.8081642540803642
+      ],
+      "initialFeet": [
+        [
+          0.5164085985705382,
+          -0.032167538723330336,
+          0.028424512834071075
+        ],
+        [
+          0.3253183487011271,
+          0.10000097728588249,
+          0.02863416314941853
+        ]
+      ],
+      "bodyAdaptsThrough": "current-state COM/capture feedback, measured contact load, whole-body inverse dynamics, joint ground barriers; no inter-step state installation",
+      "postureVariant": "selected-hips-knees-opposed-arms",
+      "staticRequiredMotorFraction": 0.9026041967904324,
+      "staticMinimumSelfSeparationM": 0.07197190334590331,
+      "lift25mmConsecutiveS": 0.85875,
+      "landingNativeStep": 8111,
+      "landingTimeS": 10.13875,
+      "achievedAtLoadAcquisitionM": 0.18194996536096333,
+      "measuredSupportAnchors": [
+        [
+          0.4374758801097831,
+          -0.1961047733084499,
+          0.026918130203843045
+        ],
+        [
+          0.3270458489027837,
+          0.09880538007339178,
+          0.026142794854032696
+        ]
+      ],
+      "swingLoadedN": 18.77989482427599,
+      "stanceLoadedN": 381.74951640137255,
+      "completedNativeStep": 15312,
+      "completedTimeS": 19.14,
+      "achievedForwardM": 0.1821116338896564,
+      "loadedSlipThisStepM": [
+        0.0023954913378785693,
+        0.002486778632193057
+      ],
+      "bodyLinearMps": 2.6369285908753478e-05,
+      "bodyAngularRadps": 0.00010842725598107088,
+      "comCaptureMarginM": 0.08620468012029975,
+      "quietConsecutiveS": 5.0
+    }
+  ],
+  "measuredPerStep": {
+    "1": {
+      "maximumForwardM": 0.1821116338896564,
+      "finalForwardM": 0.1821116338896564,
+      "maximumSupportRelativeForwardM": 0.21819726113503354,
+      "maximumStanceOriginDisplacementM": 0.0035980870812352475,
+      "maximumStanceOriginHorizontalDisplacementM": 0.0027326301274179696,
+      "landingQualified": true,
+      "qualifiedLandingForwardM": 0.18194994572127338,
+      "finalStanceOriginHorizontalDisplacementM": 0.0020610382318263245,
+      "qualifiedLandingTimeS": 10.137500000000001
+    }
+  },
+  "maximumMotorFraction": 0.9369599418796618,
+  "minimumWalkingJointReserveDeg": 0.3178924017096894,
+  "minimumAllSampleJointReserveDeg": -0.521340746132104,
+  "lastOutsideJointLimitTimeS": 0.06375,
+  "strictAllSampleJointLimitsPass": false,
+  "globalLoadedSlipM": [
+    0.0023954913378785693,
+    0.002486778632193057
+  ],
+  "minimumComCaptureMarginM": 0.011074400676530649,
+  "maximumSelfPenetrationM": 0.0,
+  "postEntryJointViolationSamples": 0,
+  "undefinedCaptureSamples": 0,
+  "negativeCaptureSamples": 0,
+  "firstCaptureViolation": null,
+  "observedMeasuredRuntimeGuardsPass": true,
+  "maximumNonfootLoadN": 0.0,
+  "flightSamples": 0,
+  "warnings": 0,
+  "invalidRaySamples": 0,
+  "minimumCommandSampledSelfSeparationM": 0.06882245448821056,
+  "mechanicalAbsoluteWorkJ": 78.03608656115293,
+  "orientation": {
+    "torso": {
+      "maximumAbsPitchDeg": 1.241743986892501,
+      "maximumAbsRollDeg": 9.216892640574514,
+      "maximumTiltDeg": 9.235284517834073,
+      "rmsTiltDeg": 6.566016295396544,
+      "finalPitchDeg": -1.0120570582178445,
+      "finalRollDeg": 1.322438750985056,
+      "finalTiltDeg": 1.6652092495852493
+    },
+    "pelvis": {
+      "maximumAbsPitchDeg": 30.944459909351174,
+      "maximumAbsRollDeg": 10.494777086533267,
+      "maximumTiltDeg": 32.162711959176164,
+      "rmsTiltDeg": 17.554068491805104,
+      "finalPitchDeg": -2.831694587055074,
+      "finalRollDeg": 1.8061123383591469,
+      "finalTiltDeg": 3.3582554220281366
+    },
+    "torsoRelativePelvis": {
+      "maximumAbsPitchDeg": 30.9786116320877,
+      "maximumAbsRollDeg": 13.192691051492936,
+      "maximumTiltDeg": 31.0052207560646,
+      "rmsTiltDeg": 18.251112456034104,
+      "finalPitchDeg": 1.8086268118220934,
+      "finalRollDeg": -0.5003211549667296,
+      "finalTiltDeg": 1.8765311222943801
+    },
+    "torsoGait": {
+      "maximumAbsPitchDeg": 0.6613627671777917,
+      "maximumAbsRollDeg": 9.216892640574514,
+      "maximumTiltDeg": 9.235284517834073,
+      "rmsTiltDeg": 9.200201043060474,
+      "finalPitchDeg": 0.6613627671777917,
+      "finalRollDeg": 9.111752912215294,
+      "finalTiltDeg": 9.13552123348443
+    },
+    "pelvisGait": {
+      "maximumAbsPitchDeg": 30.944459909351174,
+      "maximumAbsRollDeg": 10.494777086533267,
+      "maximumTiltDeg": 32.162711959176164,
+      "rmsTiltDeg": 26.44037821713713,
+      "finalPitchDeg": -19.19062558060258,
+      "finalRollDeg": -5.031734672781286,
+      "finalTiltDeg": 19.815248023357455
+    },
+    "torsoRelativePelvisGait": {
+      "maximumAbsPitchDeg": 30.9786116320877,
+      "maximumAbsRollDeg": 12.609778794076707,
+      "maximumTiltDeg": 31.0052207560646,
+      "rmsTiltDeg": 26.971641760843482,
+      "finalPitchDeg": 20.178910502090574,
+      "finalRollDeg": 12.609778794076707,
+      "finalTiltDeg": 23.65470188054911
+    }
+  },
+  "observed12DegreeTiltBoundPass": false,
+  "finalBaseQuietSamples": 4000,
+  "finalUprightQuietSamples": 4000,
+  "armAmplitude": {
+    "allGait": {
+      "samples": 4803,
+      "legExcursionDeg": [
+        4.833561548186148,
+        20.724571383022088
+      ],
+      "actualArmExcursionDeg": [
+        4.903651161385063,
+        20.77077364340767
+      ],
+      "targetArmExcursionDeg": [
+        4.8335615481861485,
+        20.724571383022088
+      ],
+      "actualArmToLegExcursionRatio": [
+        1.014500614608956,
+        1.00222934696847
+      ],
+      "measuredArmLegCorrelation": [
+        -0.9999588503254123,
+        -0.9999952925721379
+      ],
+      "measuredAngularGain": [
+        -1.0117310946185076,
+        -1.00207272863922
+      ],
+      "rmsTrackingErrorDeg": [
+        0.027108675604011572,
+        0.03908139505179543
+      ],
+      "maximumTrackingErrorDeg": [
+        0.050531110260771075,
+        0.08133276697195911
+      ]
+    },
+    "step1Gait": {
+      "samples": 4803,
+      "legExcursionDeg": [
+        4.833561548186148,
+        20.724571383022088
+      ],
+      "actualArmExcursionDeg": [
+        4.903651161385063,
+        20.77077364340767
+      ],
+      "targetArmExcursionDeg": [
+        4.8335615481861485,
+        20.724571383022088
+      ],
+      "actualArmToLegExcursionRatio": [
+        1.014500614608956,
+        1.00222934696847
+      ],
+      "measuredArmLegCorrelation": [
+        -0.9999588503254123,
+        -0.9999952925721379
+      ],
+      "measuredAngularGain": [
+        -1.0117310946185076,
+        -1.00207272863922
+      ],
+      "rmsTrackingErrorDeg": [
+        0.027108675604011572,
+        0.03908139505179543
+      ],
+      "maximumTrackingErrorDeg": [
+        0.050531110260771075,
+        0.08133276697195911
+      ]
+    }
+  },
+  "armTrackingPass": true,
+  "independentFKCheck": {
+    "samples": 766,
+    "comparedBodyTelemetry": 1532,
+    "allFramesHaveUprightTelemetry": true,
+    "maximumWrappedOrientationErrorDeg": 1.1084466677857563e-12,
+    "coveragePass": true,
+    "physicsIntegrations": 0
+  },
+  "hashes": {
+    "frames.ndjson": "f961d2d6023b42e9b9e8246c7908163ce382cc04740da0ce84509c7799073dc5",
+    "control.json": "4d261dc3ec9e29ab675fc0f4a838268094bf68df808a30b97d1ec4a728033ffb",
+    "final.bin": "e5f51258edcb18cba7fca3dbec5a452160e5682da667a1a4732ab255012a0c2f"
+  },
+  "originalMotionAudit": {
+    "savedDataOnly": true,
+    "positionVelocityContinuityMaxErrorM": 1.110058055859692e-16,
+    "hingePositionVelocityContinuityMaxErrorRad": 1.1102219658339725e-16,
+    "lastOutsideJointLimitTimeS": 0.06375,
+    "walkingPhaseQualificationPass": true,
+    "walkingJointLimitsPass": true,
+    "minimumWalkingJointReserveRad": 0.005548269076906531,
+    "minimumRecordedComCaptureMarginM": 0.011074400676530649,
+    "rayControlAudit": {
+      "controlSolves": 3828,
+      "activeJointGroundBarrierSolves": 0,
+      "activeSelfAvoidanceSolves": 0,
+      "minimumAdjacentNonfootColliderClearanceM": 0.0660146605253941
+    },
+    "physicsIntegrations": 0,
+    "motionAndQuietGatesPass": true,
+    "strictAllSampleJointLimitsPass": false,
+    "strictAllGatesPass": false,
+    "actualRecordedIntegrations": 15312,
+    "physicsSimSeconds": 19.14,
+    "finalQuietSamples": 4000,
+    "finalQuietMinimumJointReserveRad": 0.009787675778905547,
+    "maximumMotorFraction": 0.9369599418796618,
+    "maximumSelfPenetrationM": 0.0,
+    "maximumNonfootLoadN": 0.0,
+    "flightSamples": 0,
+    "warnings": 0,
+    "missingOrSelfEligibleJointRayCount": 0,
+    "globalLoadedSlipM": [
+      0.0023954913378785693,
+      0.002486778632193057
+    ],
+    "inheritedInitialJointMarginRad": -0.009130479328801344,
+    "worstJointSample": {
+      "timeS": 0.00125,
+      "step": 1,
+      "phase": "transfer",
+      "joint": "right_ankle_y",
+      "marginRad": -0.009099112544809107
+    },
+    "steps": [
+      {
+        "index": 1,
+        "side": "left",
+        "requestedDistanceM": 0.18,
+        "achievedForwardM": 0.1821116338896564,
+        "maximumWholeFootClearanceM": 0.04002469046244492,
+        "maximumLoadedClear25mmConsecutiveSamples": 2964
+      }
+    ],
+    "phases": [
+      {
+        "step": 1,
+        "phase": "transfer",
+        "samples": 3308,
+        "loadedSlipIncrementM": [
+          0.001575897409990936,
+          0.0012237879724492002
+        ],
+        "minimumJointMarginRad": -0.009099112544809107
+      },
+      {
+        "step": 1,
+        "phase": "lift",
+        "samples": 1601,
+        "loadedSlipIncrementM": [
+          0.0,
+          0.00022629186506734696
+        ],
+        "minimumJointMarginRad": 0.005548269076906531
+      },
+      {
+        "step": 1,
+        "phase": "translate",
+        "samples": 1601,
+        "loadedSlipIncrementM": [
+          0.0,
+          0.0003113461205695254
+        ],
+        "minimumJointMarginRad": 0.009716289353570717
+      },
+      {
+        "step": 1,
+        "phase": "land",
+        "samples": 1601,
+        "loadedSlipIncrementM": [
+          2.700262371199474e-05,
+          7.047580420295463e-05
+        ],
+        "minimumJointMarginRad": 0.01244774448298308
+      },
+      {
+        "step": 1,
+        "phase": "settle",
+        "samples": 3201,
+        "loadedSlipIncrementM": [
+          0.0006246173563004781,
+          0.000509695836417185
+        ],
+        "minimumJointMarginRad": 0.018602644856538397
+      },
+      {
+        "step": 1,
+        "phase": "stand",
+        "samples": 4000,
+        "loadedSlipIncrementM": [
+          0.0001679739478751604,
+          0.00014518103348684468
+        ],
+        "minimumJointMarginRad": 0.009787675778905547
+      }
+    ],
+    "hashes": {
+      "frames.ndjson": "f961d2d6023b42e9b9e8246c7908163ce382cc04740da0ce84509c7799073dc5",
+      "control.json": "4d261dc3ec9e29ab675fc0f4a838268094bf68df808a30b97d1ec4a728033ffb",
+      "multistep-summary.json": "3a2e105e31bc5e07b71ba22336eadce98780f4fadc69d7f227506403c6d98dd4",
+      "summary.json": "133832ec920ae8c81c7c9c1700142b05e039d3e0d3a29d89f01ea5e3653b6d1a",
+      "final.bin": "e5f51258edcb18cba7fca3dbec5a452160e5682da667a1a4732ab255012a0c2f"
+    }
+  },
+  "auditedMotionPass": true,
+  "auditedUprightStepPass": false,
+  "auditedOpposedStepPass": true
+}

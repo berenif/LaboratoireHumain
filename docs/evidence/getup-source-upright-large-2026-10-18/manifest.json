@@ -1,0 +1,386 @@
+{
+  "schema": 1,
+  "date": "2026-10-18",
+  "sourceBaselineCommit": "970273f61385bb1bb897e9ba3651f8d314bd1165",
+  "sourceBaselineTree": "5aea96de35c3068b8bce6b30e53c934f341c418c",
+  "selectedPresetChanged": false,
+  "defaultPromoted": false,
+  "modelSHA256": "216d5c0159abf07139f5556c59e244ae77cb7557ba5256e301ebc5e1c8bbc399",
+  "helperSHA256": "20ddefbcbdd328b1661ce163e4df6aeb0e953192c677b79d3076c904de5a0ba5",
+  "physicsHz": 800,
+  "torqueControlHz": 200,
+  "physicalStateWritesAfterInitialization": 0,
+  "rootAssistance": false,
+  "originalMotorStrength": true,
+  "originalFriction": true,
+  "originalPhysicalGateRelaxation": false,
+  "upstreamAssetsAdded": false,
+  "rawDataLocalOnly": true,
+  "recordedIntegrationsAcrossAllAttempts": 216279,
+  "integrationsFromClosedRuns": 177747,
+  "exactAggregateIntegrationCountAvailable": false,
+  "aggregateCountCaveat": "Three interrupted processes retain partial journals. Their recorded integrations are a lower bound; no exact aggregate count is claimed. All closed-run counters equal consecutive recorded native IDs.",
+  "attempts": [
+    {
+      "attempt": "final-commit-reference-180mm",
+      "recordedIntegrations": 15312,
+      "recordedPhysicsS": 19.14,
+      "stopped": "measured-alternating-multistep-plus5squiet",
+      "runnerCompleted": true,
+      "closedNativeCountAvailable": true,
+      "codeUnchangedDuringRun": true,
+      "rawJournalLocal": "outputs/getup-source-step/upright-large-20261018/final-commit-reference-180mm/run/generation-001/frames.ndjson",
+      "lastPhase": "stand",
+      "lastStepIndex": 1,
+      "lastObservedForwardM": 0.18211163392067414,
+      "lastLoadedSlipM": [
+        0.002395491336781546,
+        0.0024867787991802804
+      ]
+    },
+    {
+      "attempt": "final-current-guarded-upright",
+      "recordedIntegrations": 4802,
+      "recordedPhysicsS": 6.0025,
+      "stopped": "phase-timeout-transfer",
+      "runnerCompleted": false,
+      "closedNativeCountAvailable": true,
+      "codeUnchangedDuringRun": true,
+      "rawJournalLocal": "outputs/getup-source-step/upright-large-20261018/final-current-guarded-upright/run/generation-001/frames.ndjson",
+      "lastPhase": "transfer",
+      "lastStepIndex": 1,
+      "lastObservedForwardM": 0.00034620740045106506,
+      "lastLoadedSlipM": [
+        0.0017037382538641012,
+        0.0013553323672499135
+      ]
+    },
+    {
+      "attempt": "final-guarded-upright-repeat",
+      "recordedIntegrations": 4802,
+      "recordedPhysicsS": 6.0025,
+      "stopped": "phase-timeout-transfer",
+      "runnerCompleted": false,
+      "closedNativeCountAvailable": true,
+      "codeUnchangedDuringRun": true,
+      "rawJournalLocal": "outputs/getup-source-step/upright-large-20261018/final-guarded-upright-repeat/run/generation-001/frames.ndjson",
+      "lastPhase": "transfer",
+      "lastStepIndex": 1,
+      "lastObservedForwardM": 0.00034620740020378907,
+      "lastLoadedSlipM": [
+        0.0017037382692118186,
+        0.0013553323592295369
+      ]
+    },
+    {
+      "attempt": "pilot-reference-120mm",
+      "recordedIntegrations": 6476,
+      "recordedPhysicsS": 8.095,
+      "stopped": "infrastructure-library-reextraction-interrupted",
+      "runnerCompleted": false,
+      "closedNativeCountAvailable": false,
+      "codeUnchangedDuringRun": null,
+      "rawJournalLocal": "outputs/getup-source-step/upright-large-20261018/pilot-reference-120mm/run/generation-001/frames.ndjson",
+      "lastPhase": "translate",
+      "lastStepIndex": 1,
+      "lastObservedForwardM": 0.12196280051480186,
+      "lastLoadedSlipM": [
+        0.0015758974110780487,
+        0.0016751583757187033
+      ]
+    },
+    {
+      "attempt": "pilot-reference-120mm-v2",
+      "recordedIntegrations": 15312,
+      "recordedPhysicsS": 19.14,
+      "stopped": "measured-alternating-multistep-plus5squiet",
+      "runnerCompleted": true,
+      "closedNativeCountAvailable": true,
+      "codeUnchangedDuringRun": false,
+      "rawJournalLocal": "outputs/getup-source-step/upright-large-20261018/pilot-reference-120mm-v2/run/generation-001/frames.ndjson",
+      "lastPhase": "stand",
+      "lastStepIndex": 1,
+      "lastObservedForwardM": 0.12208551372746468,
+      "lastLoadedSlipM": [
+        0.0023296527664785965,
+        0.0023294376288530393
+      ]
+    },
+    {
+      "attempt": "pilot-upright-120mm",
+      "recordedIntegrations": 3552,
+      "recordedPhysicsS": 4.44,
+      "stopped": "global-loaded-slip-10mm",
+      "runnerCompleted": false,
+      "closedNativeCountAvailable": true,
+      "codeUnchangedDuringRun": true,
+      "rawJournalLocal": "outputs/getup-source-step/upright-large-20261018/pilot-upright-120mm/run/generation-001/frames.ndjson",
+      "lastPhase": "transfer",
+      "lastStepIndex": 1,
+      "lastObservedForwardM": 0.002428970591652344,
+      "lastLoadedSlipM": [
+        0.003884086369971726,
+        0.010023120323111366
+      ]
+    },
+    {
+      "attempt": "pilot-upright-120mm-ankle-reserve",
+      "recordedIntegrations": 4802,
+      "recordedPhysicsS": 6.0025,
+      "stopped": "phase-timeout-transfer",
+      "runnerCompleted": false,
+      "closedNativeCountAvailable": true,
+      "codeUnchangedDuringRun": false,
+      "rawJournalLocal": "outputs/getup-source-step/upright-large-20261018/pilot-upright-120mm-ankle-reserve/run/generation-001/frames.ndjson",
+      "lastPhase": "transfer",
+      "lastStepIndex": 1,
+      "lastObservedForwardM": 0.00034620740020378907,
+      "lastLoadedSlipM": [
+        0.0017037382692118186,
+        0.0013553323592295369
+      ]
+    },
+    {
+      "attempt": "pilot-upright-120mm-extended",
+      "recordedIntegrations": 15314,
+      "recordedPhysicsS": 19.142500000000002,
+      "stopped": "measured-alternating-multistep-plus5squiet",
+      "runnerCompleted": true,
+      "closedNativeCountAvailable": true,
+      "codeUnchangedDuringRun": true,
+      "rawJournalLocal": "outputs/getup-source-step/upright-large-20261018/pilot-upright-120mm-extended/run/generation-001/frames.ndjson",
+      "lastPhase": "stand",
+      "lastStepIndex": 1,
+      "lastObservedForwardM": 0.12215971991805004,
+      "lastLoadedSlipM": [
+        0.0032284711449577013,
+        0.004567850343422857
+      ]
+    },
+    {
+      "attempt": "pilot-upright-120mm-v2",
+      "recordedIntegrations": 3664,
+      "recordedPhysicsS": 4.58,
+      "stopped": "AssertionError('measured leg excursion exceeds verified arm map')",
+      "runnerCompleted": false,
+      "closedNativeCountAvailable": true,
+      "codeUnchangedDuringRun": true,
+      "rawJournalLocal": "outputs/getup-source-step/upright-large-20261018/pilot-upright-120mm-v2/run/generation-001/frames.ndjson",
+      "lastPhase": "transfer",
+      "lastStepIndex": 1,
+      "lastObservedForwardM": 0.0015874043660846007,
+      "lastLoadedSlipM": [
+        0.002712785908336692,
+        0.004786069615732346
+      ]
+    },
+    {
+      "attempt": "pilot-upright-120mm-v3",
+      "recordedIntegrations": 0,
+      "recordedPhysicsS": 0.0,
+      "stopped": "zero-integration-reference-admission-rejected",
+      "runnerCompleted": false,
+      "closedNativeCountAvailable": false,
+      "codeUnchangedDuringRun": null,
+      "rawJournalLocal": "outputs/getup-source-step/upright-large-20261018/pilot-upright-120mm-v3/run/generation-001/frames.ndjson"
+    },
+    {
+      "attempt": "pilot-upright-120mm-v4",
+      "recordedIntegrations": 4444,
+      "recordedPhysicsS": 5.555,
+      "stopped": "AssertionError('measured leg excursion exceeds verified arm map')",
+      "runnerCompleted": false,
+      "closedNativeCountAvailable": true,
+      "codeUnchangedDuringRun": true,
+      "rawJournalLocal": "outputs/getup-source-step/upright-large-20261018/pilot-upright-120mm-v4/run/generation-001/frames.ndjson",
+      "lastPhase": "lift",
+      "lastStepIndex": 1,
+      "lastObservedForwardM": 0.00634324785286864,
+      "lastLoadedSlipM": [
+        0.0015293630231814968,
+        0.0038726775758289394
+      ]
+    },
+    {
+      "attempt": "pilot-upright-120mm-v5",
+      "recordedIntegrations": 6272,
+      "recordedPhysicsS": 7.84,
+      "stopped": "AssertionError('measured leg excursion exceeds verified arm map')",
+      "runnerCompleted": false,
+      "closedNativeCountAvailable": true,
+      "codeUnchangedDuringRun": true,
+      "rawJournalLocal": "outputs/getup-source-step/upright-large-20261018/pilot-upright-120mm-v5/run/generation-001/frames.ndjson",
+      "lastPhase": "translate",
+      "lastStepIndex": 1,
+      "lastObservedForwardM": 0.11877284135135348,
+      "lastLoadedSlipM": [
+        0.0015309505591991012,
+        0.0015493181703318047
+      ]
+    },
+    {
+      "attempt": "reference-180mm-extended-guarded",
+      "recordedIntegrations": 15312,
+      "recordedPhysicsS": 19.14,
+      "stopped": "measured-alternating-multistep-plus5squiet",
+      "runnerCompleted": true,
+      "closedNativeCountAvailable": true,
+      "codeUnchangedDuringRun": true,
+      "rawJournalLocal": "outputs/getup-source-step/upright-large-20261018/reference-180mm-extended-guarded/run/generation-001/frames.ndjson",
+      "lastPhase": "stand",
+      "lastStepIndex": 1,
+      "lastObservedForwardM": 0.1821116338896564,
+      "lastLoadedSlipM": [
+        0.0023954913378785693,
+        0.002486778632193057
+      ]
+    },
+    {
+      "attempt": "reference-240mm-maxverified-guarded",
+      "recordedIntegrations": 9711,
+      "recordedPhysicsS": 12.13875,
+      "stopped": "phase-timeout-land",
+      "runnerCompleted": false,
+      "closedNativeCountAvailable": true,
+      "codeUnchangedDuringRun": true,
+      "rawJournalLocal": "outputs/getup-source-step/upright-large-20261018/reference-240mm-maxverified-guarded/run/generation-001/frames.ndjson",
+      "lastPhase": "land",
+      "lastStepIndex": 1,
+      "lastObservedForwardM": 0.2416007193784712,
+      "lastLoadedSlipM": [
+        0.0015758974209360498,
+        0.0022415775209038554
+      ]
+    },
+    {
+      "attempt": "reference-sequence-120-180-240mm",
+      "recordedIntegrations": 17568,
+      "recordedPhysicsS": 21.96,
+      "stopped": "AssertionError('measured leg excursion exceeds verified arm map')",
+      "runnerCompleted": false,
+      "closedNativeCountAvailable": true,
+      "codeUnchangedDuringRun": false,
+      "rawJournalLocal": "outputs/getup-source-step/upright-large-20261018/reference-sequence-120-180-240mm/run/generation-001/frames.ndjson",
+      "lastPhase": "translate",
+      "lastStepIndex": 2,
+      "lastObservedForwardM": 0.15537745902531716,
+      "lastLoadedSlipM": [
+        0.003331303492366562,
+        0.002804906400798027
+      ]
+    },
+    {
+      "attempt": "reference-sequence-extended",
+      "recordedIntegrations": 29392,
+      "recordedPhysicsS": 36.74,
+      "stopped": "AssertionError('measured leg excursion exceeds verified arm map')",
+      "runnerCompleted": false,
+      "closedNativeCountAvailable": true,
+      "codeUnchangedDuringRun": true,
+      "rawJournalLocal": "outputs/getup-source-step/upright-large-20261018/reference-sequence-extended/run/generation-001/frames.ndjson",
+      "lastPhase": "translate",
+      "lastStepIndex": 3,
+      "lastObservedForwardM": 0.24025131489481527,
+      "lastLoadedSlipM": [
+        0.004340834721010217,
+        0.004813408714754268
+      ]
+    },
+    {
+      "attempt": "reference-single-180mm",
+      "recordedIntegrations": 6232,
+      "recordedPhysicsS": 7.79,
+      "stopped": "AssertionError('measured leg excursion exceeds verified arm map')",
+      "runnerCompleted": false,
+      "closedNativeCountAvailable": true,
+      "codeUnchangedDuringRun": true,
+      "rawJournalLocal": "outputs/getup-source-step/upright-large-20261018/reference-single-180mm/run/generation-001/frames.ndjson",
+      "lastPhase": "translate",
+      "lastStepIndex": 1,
+      "lastObservedForwardM": 0.17479414775742386,
+      "lastLoadedSlipM": [
+        0.0015758974110780487,
+        0.0017125415387347445
+      ]
+    },
+    {
+      "attempt": "reference-single-240mm",
+      "recordedIntegrations": 5944,
+      "recordedPhysicsS": 7.43,
+      "stopped": "AssertionError('measured leg excursion exceeds verified arm map')",
+      "runnerCompleted": false,
+      "closedNativeCountAvailable": true,
+      "codeUnchangedDuringRun": true,
+      "rawJournalLocal": "outputs/getup-source-step/upright-large-20261018/reference-single-240mm/run/generation-001/frames.ndjson",
+      "lastPhase": "translate",
+      "lastStepIndex": 1,
+      "lastObservedForwardM": 0.18387723746929255,
+      "lastLoadedSlipM": [
+        0.0015758974110780487,
+        0.0016829849234620902
+      ]
+    },
+    {
+      "attempt": "restored-reference-30mm",
+      "recordedIntegrations": 13354,
+      "recordedPhysicsS": 16.6925,
+      "stopped": "infrastructure-library-reextraction-interrupted",
+      "runnerCompleted": false,
+      "closedNativeCountAvailable": false,
+      "codeUnchangedDuringRun": null,
+      "rawJournalLocal": "outputs/getup-source-step/upright-large-20261018/restored-reference-30mm/run/generation-001/frames.ndjson",
+      "lastPhase": "stand",
+      "lastStepIndex": 1,
+      "lastObservedForwardM": 0.03201025705712024,
+      "lastLoadedSlipM": [
+        0.002153028523363535,
+        0.002066895219721653
+      ]
+    },
+    {
+      "attempt": "restored-reference-30mm-v2",
+      "recordedIntegrations": 15312,
+      "recordedPhysicsS": 19.14,
+      "stopped": "measured-alternating-multistep-plus5squiet",
+      "runnerCompleted": true,
+      "closedNativeCountAvailable": true,
+      "codeUnchangedDuringRun": false,
+      "rawJournalLocal": "outputs/getup-source-step/upright-large-20261018/restored-reference-30mm-v2/run/generation-001/frames.ndjson",
+      "lastPhase": "stand",
+      "lastStepIndex": 1,
+      "lastObservedForwardM": 0.03201774163251903,
+      "lastLoadedSlipM": [
+        0.0022286312561555486,
+        0.002142199521622897
+      ]
+    },
+    {
+      "attempt": "upright-sequence-120-180-240mm",
+      "recordedIntegrations": 18702,
+      "recordedPhysicsS": 23.3775,
+      "stopped": "explicitly-interrupted-after-pilot-audit-disqualification",
+      "runnerCompleted": false,
+      "closedNativeCountAvailable": false,
+      "codeUnchangedDuringRun": null,
+      "rawJournalLocal": "outputs/getup-source-step/upright-large-20261018/upright-sequence-120-180-240mm/run/generation-001/frames.ndjson",
+      "lastPhase": "land",
+      "lastStepIndex": 2,
+      "lastObservedForwardM": 0.1823219372153689,
+      "lastLoadedSlipM": [
+        0.0040160051910059285,
+        0.004567996615556797
+      ]
+    }
+  ],
+  "codeSHA256": {
+    "source_step_probe.py": "1081bbd236bd760f82f116f36881d88e2c70576adaded5de46924aba29f57281",
+    "source_multistep_probe.py": "2953a849eaa91fcbc8b755406cc881ebe3ce3827029046b05e01ad9e173379be",
+    "source_opposed_arm_swing.py": "3d48035d84c1abdbee9a1b5f5df1b545e4a874b465ddc70d4e8fdb2fbc28172e",
+    "plan_source_arm_knee.py": "b8a47f48e8d37fd8328b6fdebcc0f48ee334782ea276bb75cc1d915b119c8858",
+    "source_upright_large_steps.py": "76782ae63804af7ba624848f0770a19fd97446d30bba9067eb8792004360125f",
+    "audit_source_upright_large_steps.py": "80d68f14c1f9065667c6ee8ba70d67b53db65361d8c8ce9d5ab1e531861a0b96",
+    "restore_source_step_assets.py": "b15cdfa8a88e1247a404f6686b9f0fcd58cb637a1681ff82c0301565b3c73616",
+    "test_source_upright_large_steps.py": "804e488ed89b095f7a756aaa285a10efc811ba353d0ea15d9ec4c8f42eeece89"
+  },
+  "physicalLimits": "Independent gate audits, not runner completion, determine qualification. Initial inherited joint overrun through63.75ms remains separately disclosed. No anatomical maximum or robustness claim."
+}

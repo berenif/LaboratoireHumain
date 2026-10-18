@@ -1,0 +1,26 @@
+[
+  {
+    "side": "right",
+    "lastAdmittedRearwardDelta": -0.6203251020812989,
+    "infeasibleBoundaryBracket": [
+      -0.6203351497650147,
+      -0.6203351020812988
+    ],
+    "retainedJointReserveRad": 0.02,
+    "fitErrorM": 6.772932420304013e-11,
+    "jointMarginRad": 0.020011719144157114,
+    "physicsIntegrations": 0
+  },
+  {
+    "side": "left",
+    "lastAdmittedRearwardDelta": -0.5292790834808349,
+    "infeasibleBoundaryBracket": [
+      -0.5292891120910643,
+      -0.5292890834808348
+    ],
+    "retainedJointReserveRad": 0.02,
+    "fitErrorM": 1.921453061039038e-09,
+    "jointMarginRad": 0.020012259767820506,
+    "physicsIntegrations": 0
+  }
+]
