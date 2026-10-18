@@ -1,0 +1,325 @@
+{
+  "savedDataOnly": true,
+  "positionVelocityContinuityMaxErrorM": 1.1102060839662115e-16,
+  "hingePositionVelocityContinuityMaxErrorRad": 1.1102082015485796e-16,
+  "lastOutsideJointLimitTimeS": 0.06375,
+  "walkingPhaseQualificationPass": true,
+  "walkingJointLimitsPass": true,
+  "minimumWalkingJointReserveRad": 0.0071758891681998616,
+  "minimumRecordedComCaptureMarginM": 0.006920497294622796,
+  "rayControlAudit": {
+    "controlSolves": 12465,
+    "activeJointGroundBarrierSolves": 0,
+    "activeSelfAvoidanceSolves": 0,
+    "minimumAdjacentNonfootColliderClearanceM": 0.06604563681031463
+  },
+  "physicsIntegrations": 0,
+  "motionAndQuietGatesPass": true,
+  "strictAllSampleJointLimitsPass": false,
+  "strictAllGatesPass": false,
+  "actualRecordedIntegrations": 49857,
+  "physicsSimSeconds": 62.32125,
+  "finalQuietSamples": 4000,
+  "finalQuietMinimumJointReserveRad": 0.010236772317004927,
+  "maximumMotorFraction": 0.9499999999863489,
+  "maximumSelfPenetrationM": 0.0,
+  "maximumNonfootLoadN": 0.0,
+  "flightSamples": 0,
+  "warnings": 0,
+  "missingOrSelfEligibleJointRayCount": 0,
+  "globalLoadedSlipM": [
+    0.006532259888897667,
+    0.00554970777197299
+  ],
+  "inheritedInitialJointMarginRad": -0.009130479328801344,
+  "worstJointSample": {
+    "timeS": 0.00125,
+    "step": 1,
+    "phase": "transfer",
+    "joint": "right_ankle_y",
+    "marginRad": -0.009099131720845755
+  },
+  "steps": [
+    {
+      "index": 1,
+      "side": "left",
+      "requestedDistanceM": 0.03,
+      "achievedForwardM": 0.0319223635202575,
+      "maximumWholeFootClearanceM": 0.03977334972246219,
+      "maximumLoadedClear25mmConsecutiveSamples": 2963
+    },
+    {
+      "index": 2,
+      "side": "right",
+      "requestedDistanceM": 0.06,
+      "achievedForwardM": 0.06191560217705992,
+      "maximumWholeFootClearanceM": 0.03998761455270336,
+      "maximumLoadedClear25mmConsecutiveSamples": 2965
+    },
+    {
+      "index": 3,
+      "side": "left",
+      "requestedDistanceM": 0.09,
+      "achievedForwardM": 0.09190368201551564,
+      "maximumWholeFootClearanceM": 0.040004062250961675,
+      "maximumLoadedClear25mmConsecutiveSamples": 2967
+    },
+    {
+      "index": 4,
+      "side": "right",
+      "requestedDistanceM": 0.045,
+      "achievedForwardM": 0.046859552194832815,
+      "maximumWholeFootClearanceM": 0.039866912092357126,
+      "maximumLoadedClear25mmConsecutiveSamples": 2964
+    }
+  ],
+  "phases": [
+    {
+      "step": 1,
+      "phase": "transfer",
+      "samples": 3307,
+      "loadedSlipIncrementM": [
+        0.001795007498894278,
+        0.0011712674745499607
+      ],
+      "minimumJointMarginRad": -0.009099131720845755
+    },
+    {
+      "step": 1,
+      "phase": "lift",
+      "samples": 1601,
+      "loadedSlipIncrementM": [
+        0.0,
+        0.00015063906415467305
+      ],
+      "minimumJointMarginRad": 0.008672172801241607
+    },
+    {
+      "step": 1,
+      "phase": "translate",
+      "samples": 1601,
+      "loadedSlipIncrementM": [
+        0.0,
+        0.00012424966169650021
+      ],
+      "minimumJointMarginRad": 0.009936246862790377
+    },
+    {
+      "step": 1,
+      "phase": "land",
+      "samples": 1601,
+      "loadedSlipIncrementM": [
+        6.455652838961647e-05,
+        0.00014046353347082086
+      ],
+      "minimumJointMarginRad": 0.0071758891681998616
+    },
+    {
+      "step": 1,
+      "phase": "settle",
+      "samples": 3201,
+      "loadedSlipIncrementM": [
+        0.0004495952071498122,
+        0.0003654687323222149
+      ],
+      "minimumJointMarginRad": 0.009676106518618166
+    },
+    {
+      "step": 1,
+      "phase": "stand",
+      "samples": 200,
+      "loadedSlipIncrementM": [
+        1.1226290389842845e-05,
+        1.0615112993063317e-05
+      ],
+      "minimumJointMarginRad": 0.009819951269405047
+    },
+    {
+      "step": 2,
+      "phase": "transfer",
+      "samples": 3311,
+      "loadedSlipIncrementM": [
+        0.0010352707347982219,
+        0.0009648602190716086
+      ],
+      "minimumJointMarginRad": 0.00908322513394888
+    },
+    {
+      "step": 2,
+      "phase": "lift",
+      "samples": 1601,
+      "loadedSlipIncrementM": [
+        0.00020646148795826474,
+        0.0
+      ],
+      "minimumJointMarginRad": 0.008541419094579172
+    },
+    {
+      "step": 2,
+      "phase": "translate",
+      "samples": 1601,
+      "loadedSlipIncrementM": [
+        0.0002193384445769303,
+        0.0
+      ],
+      "minimumJointMarginRad": 0.009952628159060062
+    },
+    {
+      "step": 2,
+      "phase": "land",
+      "samples": 1601,
+      "loadedSlipIncrementM": [
+        8.961455391800696e-05,
+        9.249965107814258e-05
+      ],
+      "minimumJointMarginRad": 0.009889028333106786
+    },
+    {
+      "step": 2,
+      "phase": "settle",
+      "samples": 3201,
+      "loadedSlipIncrementM": [
+        0.00032771411225726924,
+        0.0003706030430294825
+      ],
+      "minimumJointMarginRad": 0.009853067958360606
+    },
+    {
+      "step": 2,
+      "phase": "stand",
+      "samples": 200,
+      "loadedSlipIncrementM": [
+        7.001118023550537e-06,
+        4.30222978745759e-06
+      ],
+      "minimumJointMarginRad": 0.009925092165392613
+    },
+    {
+      "step": 3,
+      "phase": "transfer",
+      "samples": 3311,
+      "loadedSlipIncrementM": [
+        0.00037957469449239993,
+        0.00035783952140041805
+      ],
+      "minimumJointMarginRad": 0.009926022411066437
+    },
+    {
+      "step": 3,
+      "phase": "lift",
+      "samples": 1601,
+      "loadedSlipIncrementM": [
+        0.0,
+        7.233227449367826e-05
+      ],
+      "minimumJointMarginRad": 0.010014849695014871
+    },
+    {
+      "step": 3,
+      "phase": "translate",
+      "samples": 1601,
+      "loadedSlipIncrementM": [
+        0.0,
+        0.00018947112350869467
+      ],
+      "minimumJointMarginRad": 0.010004647760870178
+    },
+    {
+      "step": 3,
+      "phase": "land",
+      "samples": 1601,
+      "loadedSlipIncrementM": [
+        0.0001710071081844327,
+        0.00017567194627532163
+      ],
+      "minimumJointMarginRad": 0.009892317690808783
+    },
+    {
+      "step": 3,
+      "phase": "settle",
+      "samples": 3201,
+      "loadedSlipIncrementM": [
+        0.0004607883437318062,
+        0.0003994192472807877
+      ],
+      "minimumJointMarginRad": 0.009806385714139276
+    },
+    {
+      "step": 3,
+      "phase": "stand",
+      "samples": 200,
+      "loadedSlipIncrementM": [
+        3.014040620552029e-06,
+        2.9883828425829317e-06
+      ],
+      "minimumJointMarginRad": 0.010292769444294692
+    },
+    {
+      "step": 4,
+      "phase": "transfer",
+      "samples": 3312,
+      "loadedSlipIncrementM": [
+        0.0003994378056205493,
+        0.000418568798179534
+      ],
+      "minimumJointMarginRad": 0.010250417957703428
+    },
+    {
+      "step": 4,
+      "phase": "lift",
+      "samples": 1601,
+      "loadedSlipIncrementM": [
+        0.00024292568970603334,
+        0.0
+      ],
+      "minimumJointMarginRad": 0.008663973750324017
+    },
+    {
+      "step": 4,
+      "phase": "translate",
+      "samples": 1601,
+      "loadedSlipIncrementM": [
+        0.0001459854655666993,
+        0.0
+      ],
+      "minimumJointMarginRad": 0.009533551194689932
+    },
+    {
+      "step": 4,
+      "phase": "land",
+      "samples": 1601,
+      "loadedSlipIncrementM": [
+        0.0001494863627786976,
+        0.00011444005072742958
+      ],
+      "minimumJointMarginRad": 0.009909638156727296
+    },
+    {
+      "step": 4,
+      "phase": "settle",
+      "samples": 3201,
+      "loadedSlipIncrementM": [
+        0.00034152881368184826,
+        0.000377546206333023
+      ],
+      "minimumJointMarginRad": 0.009866886247033912
+    },
+    {
+      "step": 4,
+      "phase": "stand",
+      "samples": 4000,
+      "loadedSlipIncrementM": [
+        3.2725588158854894e-05,
+        4.646149877759586e-05
+      ],
+      "minimumJointMarginRad": 0.010236772317004927
+    }
+  ],
+  "hashes": {
+    "frames.ndjson": "560db42fc81a23861391a6f3599af59360b4df4c16827cd830b2687081d1839d",
+    "control.json": "adebf7085353940a386d442bada8979f050c6454c85f61f66382e96f29793486",
+    "multistep-summary.json": "6a23f96843cad17db44761fd397f310235922185e1ac1af8ee84387a92f2451d",
+    "summary.json": "f673de7232f605e8f97b35af6c0708831393f29f155dc1f01c1dbd66e4065cc3",
+    "final.bin": "c70bfff7ac770d0b802449e63f67e8c840c5b82f91c6bb7c7dbff60952340b85"
+  }
+}

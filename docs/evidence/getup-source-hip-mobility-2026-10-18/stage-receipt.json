@@ -1,0 +1,17 @@
+{
+  "stage": "hip-ROM-only paired four-step diagnostic",
+  "actualNativeIntegrations": 99703,
+  "aggregatePhysicsSimSeconds": 124.62875,
+  "physicsIntegrationsInPreflightTestsAuditsAndRendering": 0,
+  "recipe": "scripts/getup-step/source_hip_mobility.py",
+  "savedDataAuditor": "scripts/getup-step/audit_source_hip_mobility.py",
+  "finalCodePreflightRebuildsExactExecutedModelsAndColdCaches": true,
+  "filesSHA256": {
+    "scripts/getup-step/source_hip_mobility.py": "70a9ce38cdb44aa2d13e94b7175d58fde80a290bcc5f39883e42b1aa2ca6e427",
+    "scripts/getup-step/audit_source_hip_mobility.py": "88ea3190e257b2f49233e2bccf4ea4a5590c8025676635875818b329a5311c74",
+    "scripts/getup-step/test_source_hip_mobility.py": "d5152d3b31f7d4af82b38fa901b0b30779eb09fae7d99cc4bcd77562087f99fc"
+  },
+  "originalXMLWeightsAndNativeCachesPublished": false,
+  "defaultModelPromoted": false,
+  "scope": "one bilateral +10deg-per-bound hip-ROM variant; same controller, motors, friction, initial q/qvel, distances and timing"
+}

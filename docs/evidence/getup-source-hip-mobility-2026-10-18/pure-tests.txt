@@ -1,0 +1,10 @@
+test_exact_six_ranges_only (test_source_hip_mobility.HipMobilityRecipe.test_exact_six_ranges_only) ... ok
+test_missing_hip_rejected (test_source_hip_mobility.HipMobilityRecipe.test_missing_hip_rejected) ... ok
+test_unbounded_expansion_rejected (test_source_hip_mobility.HipMobilityRecipe.test_unbounded_expansion_rejected) ... ok
+test_unknown_range_rejected (test_source_hip_mobility.HipMobilityRecipe.test_unknown_range_rejected) ... ok
+test_zero_expansion_semantically_identical (test_source_hip_mobility.HipMobilityRecipe.test_zero_expansion_semantically_identical) ... ok
+
+----------------------------------------------------------------------
+Ran 5 tests in 0.002s
+
+OK

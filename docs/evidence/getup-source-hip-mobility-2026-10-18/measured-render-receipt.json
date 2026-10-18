@@ -1,0 +1,121 @@
+{
+  "video": "outputs/getup-source-step/hip-mobility-pair01/render-wider/laboratoirehumain-hip-rom-plus10deg-four-steps.mp4",
+  "contactSheet": "outputs/getup-source-step/hip-mobility-pair01/render-wider/measured-four-step-contact-sheet.png",
+  "frames": 624,
+  "encodedDurationS": 62.3075,
+  "sourcePhysicalDurationS": 62.3075,
+  "sourceSampleHz": 800,
+  "exactVideoFramerate": "499200/49846",
+  "sheetSourceJournalRows": [
+    11511,
+    23022,
+    34535,
+    49846
+  ],
+  "sampling": "Distinct nearest archived interval-end qpos. Each displayed sample is within half one 800Hz tick of its true display interval end.",
+  "maximumDisplayTimingErrorS": 0.0006250000000012079,
+  "additionalPhysicsIntegrations": 0,
+  "simulatorImportedOrRun": false,
+  "plannedPathUsed": false,
+  "poseInterpolation": false,
+  "duplicatedSourceSamples": 0,
+  "terminalTailFramesAdded": 0,
+  "controllerModified": false,
+  "jointGroundRaysDisplayed": true,
+  "jointGroundRaysPerRecordedFrame": 22,
+  "visualizationRevisionOnly": false,
+  "sameRecordedRun": "outputs/getup-source-step/hip-mobility-pair01/wider/generation-001/frames.ndjson",
+  "mainCameraAzimuthElevationDeg": [
+    25,
+    14
+  ],
+  "detailCameraAzimuthElevationDeg": [
+    -55,
+    14
+  ],
+  "rayStyle": "X-ray overlay in front of opaque body. True anchor dots and ground-hit crosses; coincident joint axes deduplicated visually without moving origins. Trunk purple, left/right arm magenta/green, left/right leg orange/blue.",
+  "distinctPhysicalRayOrigins": 15,
+  "rayDistanceLabel": "Anchor-to-ground distance, explicitly distinct from collider/capsule clearance.",
+  "COMFKParityMaxErrorM": 6.661338147750939e-16,
+  "footPositionFKParityMaxErrorM": 1.0824674490095276e-15,
+  "wholeFootClearanceFKParityMaxErrorM": 1.0755285551056204e-15,
+  "multistepResult": {
+    "completedSteps": [
+      {
+        "index": 1,
+        "swingSide": "left",
+        "requestedDistanceM": 0.03,
+        "achievedForwardM": 0.03184441763603745,
+        "completedTimeS": 14.38875
+      },
+      {
+        "index": 2,
+        "swingSide": "right",
+        "requestedDistanceM": 0.06,
+        "achievedForwardM": 0.06188542776915356,
+        "completedTimeS": 28.7775
+      },
+      {
+        "index": 3,
+        "swingSide": "left",
+        "requestedDistanceM": 0.09,
+        "achievedForwardM": 0.09182940355650475,
+        "completedTimeS": 43.16875
+      },
+      {
+        "index": 4,
+        "swingSide": "right",
+        "requestedDistanceM": 0.045,
+        "achievedForwardM": 0.046913741118467425,
+        "completedTimeS": 62.307500000000005
+      }
+    ],
+    "attemptedSteps": 4,
+    "measuredSequenceSteps": 4,
+    "fourStepsPlusQuietMeasured": true,
+    "strictAllSampleJointLimitsQualified": false,
+    "fullSequencePassed": false,
+    "stateInstallationsBetweenSteps": 0
+  },
+  "result": {
+    "stopReason": "measured-alternating-multistep-plus5squiet",
+    "quietConsecutiveS": 5.0,
+    "quiet5sMeasured": true,
+    "strictAllSampleQualification": false,
+    "jointRangeCaveat": {
+      "minimumMarginRad": -0.009099131732075771,
+      "maximumCrossingRad": 0.009099131732075771,
+      "maximumCrossingDeg": 0.5213418454815043,
+      "joint": "right_ankle_y",
+      "elapsedS": 0.00125,
+      "phase": "transfer",
+      "stepIndex": 1,
+      "onlyInitialTransfer": true,
+      "negativeRecordCount": 51,
+      "firstNegativeElapsedS": 0.00125,
+      "lastNegativeElapsedS": 0.06375,
+      "quietMinimumJointMarginRad": 0.009780040511902843,
+      "minimumWalkingPhaseJointMarginRad": 0.007687691840529642,
+      "inheritedInitialMinimumMarginRad": -0.009130479328801344
+    },
+    "maximumClearanceM": 0.03997066290778592,
+    "currentSwingFootDisplacementM": 0.046913741118467425,
+    "maximumCumulativeLoadedSlipM": 0.007510787795311716,
+    "quietWindowDistinctRecordedRows": 4000,
+    "quietWindowFirstElapsedS": 57.30875,
+    "quietWindowLastElapsedS": 62.307500000000005
+  },
+  "inputSHA256": {
+    "/workspace/scratch/5def91918e35/mvp-landing/outputs/getup-source-step/hip-mobility-pair01/wider/generation-001/frames.ndjson": "5464bfb1df304e48b3a864bb74d4b88f030cccee4c93315d6bde49b9e7fdcde4",
+    "/workspace/scratch/5def91918e35/mvp-landing/outputs/getup-source-step/hip-mobility-pair01/wider/generation-001/summary.json": "1293521f0362632603e9cf7e5a0428fa9b8337b110cef9b2308a6ded77acf457",
+    "/workspace/scratch/5def91918e35/mvp-landing/outputs/getup-source-step/hip-mobility-pair01/wider/generation-001/multistep-summary.json": "6e3bbd7b948479c0c913a9ab28b6e6980866fa55a4251e2080ebf75345022a39",
+    "/workspace/scratch/5def91918e35/mvp-landing/rust/crates/model/data/getup-v1.json": "1611ec8c988c1006b0a819ab21e2b7c410adaaf512080be425d6d6e235a8926a",
+    "/workspace/scratch/5def91918e35/mvp-landing/scripts/getup-step-reference.py": "ae8894e614dc5d5bbacfc756a3c951bd1054f292abad8b9b4688c7ffe95b0e1c",
+    "/workspace/scratch/5def91918e35/mvp-landing/outputs/getup-source-step/hip-mobility-pair01/render-wider-executed.py": "5c295a0a1ab47d34843cdc9e642d1064388734480bbe83d3d0e02b3900d9007c"
+  },
+  "artifactSHA256": {
+    "outputs/getup-source-step/hip-mobility-pair01/render-wider/laboratoirehumain-hip-rom-plus10deg-four-steps.mp4": "9056f04519dea14048963dba159c801554ea04b2de1f384fd5d5955006cc6cbc",
+    "outputs/getup-source-step/hip-mobility-pair01/render-wider/measured-four-step-contact-sheet.png": "833d6d523333c96a5d313d0fc50ac0d5d3c59b8f3a557103232bc572f90f8fbb",
+    "outputs/getup-source-step/hip-mobility-pair01/render-wider-executed.py": "5c295a0a1ab47d34843cdc9e642d1064388734480bbe83d3d0e02b3900d9007c"
+  }
+}

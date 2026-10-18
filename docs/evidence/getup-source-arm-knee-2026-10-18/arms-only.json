@@ -1,0 +1,957 @@
+{
+  "savedDataOnly": true,
+  "physicsIntegrationsForAudit": 0,
+  "stopped": "global-loaded-slip-10mm",
+  "passed": false,
+  "actualIntegrations": 30226,
+  "physicsSimSeconds": 37.7825,
+  "finalQuietS": 0.0,
+  "steps": [
+    {
+      "index": 1,
+      "swingSide": "left",
+      "requestedDistanceM": 0.03,
+      "commandedDistanceM": 0.032,
+      "startNativeStep": 0,
+      "startSourceTimeS": 0.0,
+      "entryCOM": [
+        0.38007874160510713,
+        -0.03922870920128895,
+        0.8081642540803642
+      ],
+      "initialFeet": [
+        [
+          0.5164085985705382,
+          -0.032167538723330336,
+          0.028424512834071075
+        ],
+        [
+          0.3253183487011271,
+          0.10000097728588249,
+          0.02863416314941853
+        ]
+      ],
+      "bodyAdaptsThrough": "current-state COM/capture feedback, measured contact load, whole-body inverse dynamics, joint ground barriers; no inter-step state installation",
+      "postureVariant": "arms",
+      "staticRequiredMotorFraction": 0.9015941069865931,
+      "staticMinimumSelfSeparationM": 0.06315797023414305,
+      "lift25mmConsecutiveS": 0.85875,
+      "landingNativeStep": 8111,
+      "landingTimeS": 10.13875,
+      "achievedAtLoadAcquisitionM": 0.03193418599663696,
+      "measuredSupportAnchors": [
+        [
+          0.5025622688655114,
+          -0.0609437684030602,
+          0.026918067401086467
+        ],
+        [
+          0.3269336558955882,
+          0.0988449513571138,
+          0.026149832203058526
+        ]
+      ],
+      "swingLoadedN": 18.954724865931528,
+      "stanceLoadedN": 381.554820491582,
+      "completedNativeStep": 11512,
+      "completedTimeS": 14.39,
+      "achievedForwardM": 0.031900714174631944,
+      "loadedSlipThisStepM": [
+        0.002148069876039392,
+        0.0020174187082201427
+      ],
+      "bodyLinearMps": 0.004098644114481468,
+      "bodyAngularRadps": 0.010758140812134616,
+      "comCaptureMarginM": 0.10384983341174431,
+      "quietConsecutiveS": 0.25
+    },
+    {
+      "index": 2,
+      "swingSide": "right",
+      "requestedDistanceM": 0.06,
+      "commandedDistanceM": 0.062,
+      "startNativeStep": 11512,
+      "startSourceTimeS": 14.390000000002749,
+      "entryCOM": [
+        0.398953285997877,
+        -0.01218270065106537,
+        0.8082983709628854
+      ],
+      "initialFeet": [
+        [
+          0.5028552150309945,
+          -0.06104760639403772,
+          0.02643322795183685
+        ],
+        [
+          0.3269137734824227,
+          0.09893485727975222,
+          0.026432855486917102
+        ]
+      ],
+      "bodyAdaptsThrough": "current-state COM/capture feedback, measured contact load, whole-body inverse dynamics, joint ground barriers; no inter-step state installation",
+      "postureVariant": "arms",
+      "staticRequiredMotorFraction": 0.9040053939633399,
+      "staticMinimumSelfSeparationM": 0.07420294629574961,
+      "lift25mmConsecutiveS": 0.8462500000000001,
+      "landingNativeStep": 19626,
+      "landingTimeS": 24.5325,
+      "achievedAtLoadAcquisitionM": 0.06194443341930325,
+      "measuredSupportAnchors": [
+        [
+          0.5025365800637178,
+          -0.06151051404203013,
+          0.026154188222877642
+        ],
+        [
+          0.300067529919539,
+          0.043110183502715296,
+          0.026908086707976404
+        ]
+      ],
+      "swingLoadedN": 21.52508567004105,
+      "stanceLoadedN": 379.00609096040523,
+      "completedNativeStep": 23027,
+      "completedTimeS": 28.78375,
+      "achievedForwardM": 0.06196943795715885,
+      "loadedSlipThisStepM": [
+        0.0018515319540133666,
+        0.0011365204409020998
+      ],
+      "bodyLinearMps": 0.0037950659077152274,
+      "bodyAngularRadps": 0.012804693498757706,
+      "comCaptureMarginM": 0.10477941729810497,
+      "quietConsecutiveS": 0.25
+    },
+    {
+      "index": 3,
+      "swingSide": "left",
+      "requestedDistanceM": 0.09,
+      "commandedDistanceM": 0.092,
+      "startNativeStep": 23027,
+      "startSourceTimeS": 28.783749999991944,
+      "entryCOM": [
+        0.38619906111234975,
+        -0.04062712653292076,
+        0.8083702118272881
+      ],
+      "initialFeet": [
+        [
+          0.5024319269888896,
+          -0.06147653346407598,
+          0.026431855023378692
+        ],
+        [
+          0.2998897719836796,
+          0.04316807653398442,
+          0.026432445011848535
+        ]
+      ],
+      "bodyAdaptsThrough": "current-state COM/capture feedback, measured contact load, whole-body inverse dynamics, joint ground barriers; no inter-step state installation",
+      "postureVariant": "arms",
+      "staticRequiredMotorFraction": 0.9011181844268569,
+      "staticMinimumSelfSeparationM": 0.029495632214926272,
+      "lift25mmConsecutiveS": 0.8575
+    }
+  ],
+  "globalLoadedSlipM": [
+    0.004654492699626978,
+    0.0100046047542547
+  ],
+  "finalComCaptureMarginM": -0.02160337876026097,
+  "maximumMotorFraction": 0.9499999999997943,
+  "maximumArmJointSpeedRadps": 0.1846285240814524,
+  "maximumSelfPenetrationM": 0.0,
+  "minimumMeasuredSelfSeparationM": 0.02641261868126194,
+  "maximumNonfootLoadN": 0.0,
+  "flightSamples": 0,
+  "warnings": 0,
+  "missingOrSelfEligibleGroundRays": 0,
+  "jointRaysPerSample": 22,
+  "footRaysPerSample": 8,
+  "hingeContinuityMaximumErrorRad": 1.1101340861656948e-16,
+  "inheritedInitialJointMarginRad": -0.009130479328801344,
+  "minimumJointReserveRad": -0.009099131724348342,
+  "lastOutsideJointLimitTimeS": 0.06375,
+  "maximumArmBalanceOffsetRad": 0.035,
+  "totalAbsoluteMechanicalWorkJ": 165.19863190085,
+  "armAbsoluteMechanicalWorkJ": 2.699797684278063,
+  "initialArmGeometry": {
+    "right": {
+      "handHorizontalDistanceFromShoulderM": 0.32788951548391637,
+      "handBelowShoulderM": 0.5202853646721778
+    },
+    "left": {
+      "handHorizontalDistanceFromShoulderM": 0.279655914849378,
+      "handBelowShoulderM": 0.5477258299506919
+    }
+  },
+  "finalArmGeometry": {
+    "right": {
+      "handHorizontalDistanceFromShoulderM": 0.11249124633176694,
+      "handBelowShoulderM": 0.6030379771639706
+    },
+    "left": {
+      "handHorizontalDistanceFromShoulderM": 0.10671638540232455,
+      "handBelowShoulderM": 0.6044941308582534
+    }
+  },
+  "finalKneeAnglesDeg": [
+    -31.85207089369144,
+    -32.59550993094892
+  ],
+  "phases": [
+    {
+      "step": 1,
+      "phase": "transfer",
+      "samples": 3308,
+      "maximumArmJointSpeedRadps": 0.1846285240814524,
+      "kneeMinDeg": [
+        -21.384247223563428,
+        -25.445594019154793
+      ],
+      "kneeMaxDeg": [
+        -16.40634433417315,
+        -13.133151078413881
+      ],
+      "maximumMotorFraction": 0.9199824459674668,
+      "minimumJointReserveRad": -0.009099131724348342,
+      "minimumComCaptureMarginM": 0.011547571265372647,
+      "maximumSelfPenetrationM": 0.0,
+      "loadedSlipIncrementM": [
+        0.0016181673851418939,
+        0.001210186342674612
+      ],
+      "endpointArmGeometry": {
+        "right": {
+          "handHorizontalDistanceFromShoulderM": 0.044783271526616895,
+          "handBelowShoulderM": 0.6119790818927582
+        },
+        "left": {
+          "handHorizontalDistanceFromShoulderM": 0.1699664125740253,
+          "handBelowShoulderM": 0.5895077199323737
+        }
+      },
+      "durationS": 4.135
+    },
+    {
+      "step": 1,
+      "phase": "lift",
+      "samples": 1601,
+      "maximumArmJointSpeedRadps": 0.02707178431671018,
+      "kneeMinDeg": [
+        -24.50890688908319,
+        -31.058667259374715
+      ],
+      "kneeMaxDeg": [
+        -21.260785260125022,
+        -13.265456712228996
+      ],
+      "maximumMotorFraction": 0.9147337091918161,
+      "minimumJointReserveRad": 0.008218824359454535,
+      "minimumComCaptureMarginM": 0.01148097765162015,
+      "maximumSelfPenetrationM": 0.0,
+      "loadedSlipIncrementM": [
+        0.0,
+        0.00018389316126835812
+      ],
+      "endpointArmGeometry": {
+        "right": {
+          "handHorizontalDistanceFromShoulderM": 0.041531307873396706,
+          "handBelowShoulderM": 0.6119575327633487
+        },
+        "left": {
+          "handHorizontalDistanceFromShoulderM": 0.16577644065077027,
+          "handBelowShoulderM": 0.5906345549455795
+        }
+      },
+      "durationS": 2.00125
+    },
+    {
+      "step": 1,
+      "phase": "translate",
+      "samples": 1601,
+      "maximumArmJointSpeedRadps": 0.007234764783161468,
+      "kneeMinDeg": [
+        -24.78839993607303,
+        -36.848431695010476
+      ],
+      "kneeMaxDeg": [
+        -24.50908177128977,
+        -30.682671952755733
+      ],
+      "maximumMotorFraction": 0.862402493934986,
+      "minimumJointReserveRad": 0.009257197687632002,
+      "minimumComCaptureMarginM": 0.01218263955870591,
+      "maximumSelfPenetrationM": 0.0,
+      "loadedSlipIncrementM": [
+        0.0,
+        9.019992911068878e-05
+      ],
+      "endpointArmGeometry": {
+        "right": {
+          "handHorizontalDistanceFromShoulderM": 0.04317233367698762,
+          "handBelowShoulderM": 0.6118588682876118
+        },
+        "left": {
+          "handHorizontalDistanceFromShoulderM": 0.166401509193131,
+          "handBelowShoulderM": 0.5904558681064258
+        }
+      },
+      "durationS": 2.00125
+    },
+    {
+      "step": 1,
+      "phase": "land",
+      "samples": 1601,
+      "maximumArmJointSpeedRadps": 0.020840518523952297,
+      "kneeMinDeg": [
+        -24.629564946657904,
+        -36.899208111366065
+      ],
+      "kneeMaxDeg": [
+        -21.159702088919712,
+        -13.365780721205665
+      ],
+      "maximumMotorFraction": 0.9045100024839554,
+      "minimumJointReserveRad": 0.007732504543426763,
+      "minimumComCaptureMarginM": 0.011423018964364151,
+      "maximumSelfPenetrationM": 0.0,
+      "loadedSlipIncrementM": [
+        9.680689469276547e-05,
+        0.00016785358807860874
+      ],
+      "endpointArmGeometry": {
+        "right": {
+          "handHorizontalDistanceFromShoulderM": 0.04632830702303041,
+          "handBelowShoulderM": 0.6118468119027516
+        },
+        "left": {
+          "handHorizontalDistanceFromShoulderM": 0.16799546715926825,
+          "handBelowShoulderM": 0.5900791296396388
+        }
+      },
+      "durationS": 2.00125
+    },
+    {
+      "step": 1,
+      "phase": "settle",
+      "samples": 3201,
+      "maximumArmJointSpeedRadps": 0.020969886748253726,
+      "kneeMinDeg": [
+        -21.159103956286103,
+        -16.781712271823174
+      ],
+      "kneeMaxDeg": [
+        -12.973965072562113,
+        -13.277831194480889
+      ],
+      "maximumMotorFraction": 0.7865327997331975,
+      "minimumJointReserveRad": 0.008218224515067929,
+      "minimumComCaptureMarginM": 0.028284952687054526,
+      "maximumSelfPenetrationM": 0.0,
+      "loadedSlipIncrementM": [
+        0.00042600566405439906,
+        0.0003549307068329464
+      ],
+      "endpointArmGeometry": {
+        "right": {
+          "handHorizontalDistanceFromShoulderM": 0.11315260566923256,
+          "handBelowShoulderM": 0.6031485251377943
+        },
+        "left": {
+          "handHorizontalDistanceFromShoulderM": 0.10540756248737046,
+          "handBelowShoulderM": 0.6043052976614723
+        }
+      },
+      "durationS": 4.00125
+    },
+    {
+      "step": 1,
+      "phase": "stand",
+      "samples": 200,
+      "maximumArmJointSpeedRadps": 0.01044815552630777,
+      "kneeMinDeg": [
+        -13.024826339541912,
+        -14.970227251266941
+      ],
+      "kneeMaxDeg": [
+        -12.839690882304161,
+        -14.941305107543332
+      ],
+      "maximumMotorFraction": 0.2701882267526773,
+      "minimumJointReserveRad": 0.015011914576413488,
+      "minimumComCaptureMarginM": 0.10383129545958708,
+      "maximumSelfPenetrationM": 0.0,
+      "loadedSlipIncrementM": [
+        7.0899321503335375e-06,
+        1.0354980254928623e-05
+      ],
+      "endpointArmGeometry": {
+        "right": {
+          "handHorizontalDistanceFromShoulderM": 0.1122701300805125,
+          "handBelowShoulderM": 0.6032994536256304
+        },
+        "left": {
+          "handHorizontalDistanceFromShoulderM": 0.1062761476291545,
+          "handBelowShoulderM": 0.6041554301804251
+        }
+      },
+      "durationS": 0.25
+    },
+    {
+      "step": 2,
+      "phase": "transfer",
+      "samples": 3311,
+      "maximumArmJointSpeedRadps": 0.024994266229241738,
+      "kneeMinDeg": [
+        -15.10370004626852,
+        -18.85179977288758
+      ],
+      "kneeMaxDeg": [
+        -12.768273401263057,
+        -14.94381825860376
+      ],
+      "maximumMotorFraction": 0.9230594814974522,
+      "minimumJointReserveRad": 0.00981655172224194,
+      "minimumComCaptureMarginM": 0.009948810567281918,
+      "maximumSelfPenetrationM": 0.0,
+      "loadedSlipIncrementM": [
+        0.0007515980514384629,
+        0.0006811824595893217
+      ],
+      "endpointArmGeometry": {
+        "right": {
+          "handHorizontalDistanceFromShoulderM": 0.24757528627753364,
+          "handBelowShoulderM": 0.5617731149169687
+        },
+        "left": {
+          "handHorizontalDistanceFromShoulderM": 0.05218676491559091,
+          "handBelowShoulderM": 0.6115647679665825
+        }
+      },
+      "durationS": 4.13875
+    },
+    {
+      "step": 2,
+      "phase": "lift",
+      "samples": 1601,
+      "maximumArmJointSpeedRadps": 0.03412898464958589,
+      "kneeMinDeg": [
+        -19.112295958454187,
+        -20.50142953794988
+      ],
+      "kneeMaxDeg": [
+        -13.222005095330612,
+        -18.218648862772785
+      ],
+      "maximumMotorFraction": 0.9245549593748729,
+      "minimumJointReserveRad": 0.00866051757942371,
+      "minimumComCaptureMarginM": 0.010074709545419003,
+      "maximumSelfPenetrationM": 0.0,
+      "loadedSlipIncrementM": [
+        0.00015260181642864348,
+        0.0
+      ],
+      "endpointArmGeometry": {
+        "right": {
+          "handHorizontalDistanceFromShoulderM": 0.23489712107559577,
+          "handBelowShoulderM": 0.567121972759067
+        },
+        "left": {
+          "handHorizontalDistanceFromShoulderM": 0.04619855896108816,
+          "handBelowShoulderM": 0.6118559427421137
+        }
+      },
+      "durationS": 2.00125
+    },
+    {
+      "step": 2,
+      "phase": "translate",
+      "samples": 1601,
+      "maximumArmJointSpeedRadps": 0.005837384583676159,
+      "kneeMinDeg": [
+        -27.117350729728525,
+        -23.071258755315732
+      ],
+      "kneeMaxDeg": [
+        -19.112360826196642,
+        -20.497376605791306
+      ],
+      "maximumMotorFraction": 0.7852207371720004,
+      "minimumJointReserveRad": 0.009672983577805716,
+      "minimumComCaptureMarginM": 0.011690933774880397,
+      "maximumSelfPenetrationM": 0.0,
+      "loadedSlipIncrementM": [
+        0.000383646168953308,
+        0.0
+      ],
+      "endpointArmGeometry": {
+        "right": {
+          "handHorizontalDistanceFromShoulderM": 0.23578897780476205,
+          "handBelowShoulderM": 0.566674138978825
+        },
+        "left": {
+          "handHorizontalDistanceFromShoulderM": 0.04500416968409409,
+          "handBelowShoulderM": 0.6118478819724329
+        }
+      },
+      "durationS": 2.00125
+    },
+    {
+      "step": 2,
+      "phase": "land",
+      "samples": 1601,
+      "maximumArmJointSpeedRadps": 0.033774998766007404,
+      "kneeMinDeg": [
+        -28.69478069402977,
+        -22.8007119437149
+      ],
+      "kneeMaxDeg": [
+        -17.44226086752284,
+        -19.737036173005894
+      ],
+      "maximumMotorFraction": 0.8734860918319282,
+      "minimumJointReserveRad": 0.008364688831100975,
+      "minimumComCaptureMarginM": 0.009866140607164342,
+      "maximumSelfPenetrationM": 0.0,
+      "loadedSlipIncrementM": [
+        0.00022786147506164388,
+        7.845841007739695e-05
+      ],
+      "endpointArmGeometry": {
+        "right": {
+          "handHorizontalDistanceFromShoulderM": 0.24675553088093125,
+          "handBelowShoulderM": 0.5621389481974033
+        },
+        "left": {
+          "handHorizontalDistanceFromShoulderM": 0.05223547976910137,
+          "handBelowShoulderM": 0.6115346508254184
+        }
+      },
+      "durationS": 2.00125
+    },
+    {
+      "step": 2,
+      "phase": "settle",
+      "samples": 3201,
+      "maximumArmJointSpeedRadps": 0.029493365799126835,
+      "kneeMinDeg": [
+        -21.053941719713908,
+        -19.977950109738682
+      ],
+      "kneeMaxDeg": [
+        -17.33420986432539,
+        -12.274475550144118
+      ],
+      "maximumMotorFraction": 0.738064887264077,
+      "minimumJointReserveRad": 0.008654797861187336,
+      "minimumComCaptureMarginM": 0.029805192446476003,
+      "maximumSelfPenetrationM": 0.0,
+      "loadedSlipIncrementM": [
+        0.0003332356026504845,
+        0.0003753047648479171
+      ],
+      "endpointArmGeometry": {
+        "right": {
+          "handHorizontalDistanceFromShoulderM": 0.10412087311114747,
+          "handBelowShoulderM": 0.6044088433792307
+        },
+        "left": {
+          "handHorizontalDistanceFromShoulderM": 0.11600017926769456,
+          "handBelowShoulderM": 0.6025372798159692
+        }
+      },
+      "durationS": 4.00125
+    },
+    {
+      "step": 2,
+      "phase": "stand",
+      "samples": 200,
+      "maximumArmJointSpeedRadps": 0.00848355959638275,
+      "kneeMinDeg": [
+        -19.616343043103807,
+        -12.316120330489335
+      ],
+      "kneeMaxDeg": [
+        -19.517905818613453,
+        -12.074684310028898
+      ],
+      "maximumMotorFraction": 0.25605306285251905,
+      "minimumJointReserveRad": 0.017690310508029272,
+      "minimumComCaptureMarginM": 0.10475313047744358,
+      "maximumSelfPenetrationM": 0.0,
+      "loadedSlipIncrementM": [
+        2.588839480823814e-06,
+        1.5748063874640277e-06
+      ],
+      "endpointArmGeometry": {
+        "right": {
+          "handHorizontalDistanceFromShoulderM": 0.10482850631617653,
+          "handBelowShoulderM": 0.6042950771630964
+        },
+        "left": {
+          "handHorizontalDistanceFromShoulderM": 0.11521792783887108,
+          "handBelowShoulderM": 0.6026811118175593
+        }
+      },
+      "durationS": 0.25
+    },
+    {
+      "step": 3,
+      "phase": "transfer",
+      "samples": 3313,
+      "maximumArmJointSpeedRadps": 0.013784632566217973,
+      "kneeMinDeg": [
+        -40.24321684986388,
+        -15.886200992964666
+      ],
+      "kneeMaxDeg": [
+        -19.509798832730795,
+        -8.721731084575719
+      ],
+      "maximumMotorFraction": 0.9177128213112102,
+      "minimumJointReserveRad": 0.00937269522909212,
+      "minimumComCaptureMarginM": 0.010100268160424364,
+      "maximumSelfPenetrationM": 0.0,
+      "loadedSlipIncrementM": [
+        0.0006548908695742199,
+        0.0006196043146448876
+      ],
+      "endpointArmGeometry": {
+        "right": {
+          "handHorizontalDistanceFromShoulderM": 0.07470812593330889,
+          "handBelowShoulderM": 0.6088888624424855
+        },
+        "left": {
+          "handHorizontalDistanceFromShoulderM": 0.1476877639232076,
+          "handBelowShoulderM": 0.5954341411828403
+        }
+      },
+      "durationS": 4.14125
+    },
+    {
+      "step": 3,
+      "phase": "lift",
+      "samples": 1601,
+      "maximumArmJointSpeedRadps": 0.02200038414985268,
+      "kneeMinDeg": [
+        -41.92972571244599,
+        -37.25796900821854
+      ],
+      "kneeMaxDeg": [
+        -40.126171340156276,
+        -8.910191465854918
+      ],
+      "maximumMotorFraction": 0.916754438248699,
+      "minimumJointReserveRad": 0.0060358369332032535,
+      "minimumComCaptureMarginM": 0.010299754556572782,
+      "maximumSelfPenetrationM": 0.0,
+      "loadedSlipIncrementM": [
+        0.0,
+        0.0005291186069306558
+      ],
+      "endpointArmGeometry": {
+        "right": {
+          "handHorizontalDistanceFromShoulderM": 0.07348991327598296,
+          "handBelowShoulderM": 0.6088714425939796
+        },
+        "left": {
+          "handHorizontalDistanceFromShoulderM": 0.14655570266884763,
+          "handBelowShoulderM": 0.5957460330952448
+        }
+      },
+      "durationS": 2.00125
+    },
+    {
+      "step": 3,
+      "phase": "translate",
+      "samples": 1601,
+      "maximumArmJointSpeedRadps": 0.008985623412290622,
+      "kneeMinDeg": [
+        -44.05105021028229,
+        -40.06264213853929
+      ],
+      "kneeMaxDeg": [
+        -41.55438852035299,
+        -37.26081492428897
+      ],
+      "maximumMotorFraction": 0.9499999999893969,
+      "minimumJointReserveRad": 0.004514624704892056,
+      "minimumComCaptureMarginM": 0.00919597604058875,
+      "maximumSelfPenetrationM": 0.0,
+      "loadedSlipIncrementM": [
+        0.0,
+        0.0006066966300478233
+      ],
+      "endpointArmGeometry": {
+        "right": {
+          "handHorizontalDistanceFromShoulderM": 0.07683877347315171,
+          "handBelowShoulderM": 0.6084979275293256
+        },
+        "left": {
+          "handHorizontalDistanceFromShoulderM": 0.1441468363827758,
+          "handBelowShoulderM": 0.5962917978105235
+        }
+      },
+      "durationS": 2.00125
+    },
+    {
+      "step": 3,
+      "phase": "land",
+      "samples": 684,
+      "maximumArmJointSpeedRadps": 0.16737985275552061,
+      "kneeMinDeg": [
+        -43.96892147459523,
+        -42.81060976769298
+      ],
+      "kneeMaxDeg": [
+        -31.377043623658672,
+        -32.59550993094892
+      ],
+      "maximumMotorFraction": 0.9499999999997943,
+      "minimumJointReserveRad": 0.005723401031527561,
+      "minimumComCaptureMarginM": -0.02160337876026097,
+      "maximumSelfPenetrationM": 0.0,
+      "loadedSlipIncrementM": [
+        0.0,
+        0.005095246053509092
+      ],
+      "endpointArmGeometry": {
+        "right": {
+          "handHorizontalDistanceFromShoulderM": 0.11249124633176694,
+          "handBelowShoulderM": 0.6030379771639706
+        },
+        "left": {
+          "handHorizontalDistanceFromShoulderM": 0.10671638540232455,
+          "handBelowShoulderM": 0.6044941308582534
+        }
+      },
+      "durationS": 0.855
+    }
+  ],
+  "joints": [
+    {
+      "joint": "abdomen_z",
+      "minimumAngleDeg": -26.01731072107333,
+      "maximumAngleDeg": 9.603745359540062,
+      "excursionDeg": 35.62105608061339,
+      "maximumSpeedRadps": 1.876777557331638,
+      "maximumTorqueNm": 3.934461269669124,
+      "rmsMotorFraction": 0.05129111651095162,
+      "absoluteMechanicalWorkJ": 4.793824834897358
+    },
+    {
+      "joint": "abdomen_y",
+      "minimumAngleDeg": -26.433975245802188,
+      "maximumAngleDeg": 26.162993157687776,
+      "excursionDeg": 52.59696840348996,
+      "maximumSpeedRadps": 1.482138234924477,
+      "maximumTorqueNm": 6.168800132987739,
+      "rmsMotorFraction": 0.03283453933490723,
+      "absoluteMechanicalWorkJ": 2.925600536874636
+    },
+    {
+      "joint": "abdomen_x",
+      "minimumAngleDeg": -4.667029924151227,
+      "maximumAngleDeg": 11.261415403989222,
+      "excursionDeg": 15.928445328140452,
+      "maximumSpeedRadps": 0.8297256898359601,
+      "maximumTorqueNm": 6.522775388257193,
+      "rmsMotorFraction": 0.0978208046979512,
+      "absoluteMechanicalWorkJ": 6.044072369668623
+    },
+    {
+      "joint": "right_hip_x",
+      "minimumAngleDeg": -10.36397272248241,
+      "maximumAngleDeg": 4.6720732764326485,
+      "excursionDeg": 15.03604599891506,
+      "maximumSpeedRadps": 0.6871059874997868,
+      "maximumTorqueNm": 37.99999999999177,
+      "rmsMotorFraction": 0.5504090390163028,
+      "absoluteMechanicalWorkJ": 25.990826890888616
+    },
+    {
+      "joint": "right_hip_z",
+      "minimumAngleDeg": -4.664912743811129,
+      "maximumAngleDeg": 24.741331058324192,
+      "excursionDeg": 29.406243802135318,
+      "maximumSpeedRadps": 1.3905858719127189,
+      "maximumTorqueNm": 22.92971681417527,
+      "rmsMotorFraction": 0.22265226871449356,
+      "absoluteMechanicalWorkJ": 16.298952543828563
+    },
+    {
+      "joint": "right_hip_y",
+      "minimumAngleDeg": -43.23793275229046,
+      "maximumAngleDeg": 19.52960607292249,
+      "excursionDeg": 62.76753882521295,
+      "maximumSpeedRadps": 1.4328542342873922,
+      "maximumTorqueNm": 28.46604298209026,
+      "rmsMotorFraction": 0.09571829421587044,
+      "absoluteMechanicalWorkJ": 15.484879282604581
+    },
+    {
+      "joint": "right_knee",
+      "minimumAngleDeg": -44.05105021028229,
+      "maximumAngleDeg": -12.768273401263057,
+      "excursionDeg": 31.282776809019232,
+      "maximumSpeedRadps": 0.6053239561421662,
+      "maximumTorqueNm": 27.478542549783263,
+      "rmsMotorFraction": 0.2222388676418662,
+      "absoluteMechanicalWorkJ": 22.08666103146876
+    },
+    {
+      "joint": "right_ankle_y",
+      "minimumAngleDeg": -20.521341845038755,
+      "maximumAngleDeg": -12.473494219663346,
+      "excursionDeg": 8.047847625375407,
+      "maximumSpeedRadps": 0.5215244568173564,
+      "maximumTorqueNm": 18.99999978317583,
+      "rmsMotorFraction": 0.4066447722121248,
+      "absoluteMechanicalWorkJ": 3.9601481846790896
+    },
+    {
+      "joint": "right_ankle_x",
+      "minimumAngleDeg": -10.16704996644437,
+      "maximumAngleDeg": 12.452380403145483,
+      "excursionDeg": 22.619430369589853,
+      "maximumSpeedRadps": 3.4115526266804093,
+      "maximumTorqueNm": 4.868318904341929,
+      "rmsMotorFraction": 0.08843893136365855,
+      "absoluteMechanicalWorkJ": 2.387530778613842
+    },
+    {
+      "joint": "left_hip_x",
+      "minimumAngleDeg": -8.893672249494987,
+      "maximumAngleDeg": 4.455229640315992,
+      "excursionDeg": 13.348901889810978,
+      "maximumSpeedRadps": 0.6886063789281317,
+      "maximumTorqueNm": 36.982198374994915,
+      "rmsMotorFraction": 0.3969765882371726,
+      "absoluteMechanicalWorkJ": 18.650552604628967
+    },
+    {
+      "joint": "left_hip_z",
+      "minimumAngleDeg": -24.61852802456275,
+      "maximumAngleDeg": 7.295806632193582,
+      "excursionDeg": 31.914334656756335,
+      "maximumSpeedRadps": 1.599842851134374,
+      "maximumTorqueNm": 15.29898259383926,
+      "rmsMotorFraction": 0.1554328976481519,
+      "absoluteMechanicalWorkJ": 12.374741730912962
+    },
+    {
+      "joint": "left_hip_y",
+      "minimumAngleDeg": -52.35600636104502,
+      "maximumAngleDeg": 19.520738633037695,
+      "excursionDeg": 71.87674499408271,
+      "maximumSpeedRadps": 1.689480713122959,
+      "maximumTorqueNm": 24.42081521291417,
+      "rmsMotorFraction": 0.09638652081296369,
+      "absoluteMechanicalWorkJ": 13.703260390364685
+    },
+    {
+      "joint": "left_knee",
+      "minimumAngleDeg": -42.81060976769298,
+      "maximumAngleDeg": -8.721731084575719,
+      "excursionDeg": 34.088878683117265,
+      "maximumSpeedRadps": 1.8370541935561069,
+      "maximumTorqueNm": 27.93454827182211,
+      "rmsMotorFraction": 0.1722955464415684,
+      "absoluteMechanicalWorkJ": 11.28979793970478
+    },
+    {
+      "joint": "left_ankle_y",
+      "minimumAngleDeg": -20.511471715351107,
+      "maximumAngleDeg": -4.936245904056075,
+      "excursionDeg": 15.575225811295033,
+      "maximumSpeedRadps": 1.2994228697442418,
+      "maximumTorqueNm": 15.377152162544013,
+      "rmsMotorFraction": 0.3303029842917083,
+      "absoluteMechanicalWorkJ": 4.814319638797244
+    },
+    {
+      "joint": "left_ankle_x",
+      "minimumAngleDeg": -13.291377386100642,
+      "maximumAngleDeg": 8.37194266652857,
+      "excursionDeg": 21.66332005262921,
+      "maximumSpeedRadps": 3.651938265122218,
+      "maximumTorqueNm": 3.933313585132512,
+      "rmsMotorFraction": 0.07590864403748508,
+      "absoluteMechanicalWorkJ": 1.6936654586392461
+    },
+    {
+      "joint": "right_shoulder1",
+      "minimumAngleDeg": 17.540124574588614,
+      "maximumAngleDeg": 40.24886578436153,
+      "excursionDeg": 22.708741209772914,
+      "maximumSpeedRadps": 0.1846285240814524,
+      "maximumTorqueNm": 3.461461814215508,
+      "rmsMotorFraction": 0.055918954465023,
+      "absoluteMechanicalWorkJ": 0.8042243898848934
+    },
+    {
+      "joint": "right_shoulder2",
+      "minimumAngleDeg": -39.83688183013601,
+      "maximumAngleDeg": -24.063379802847912,
+      "excursionDeg": 15.773502027288098,
+      "maximumSpeedRadps": 0.10309964284884356,
+      "maximumTorqueNm": 3.101298094785599,
+      "rmsMotorFraction": 0.09557568687983967,
+      "absoluteMechanicalWorkJ": 0.6500024753726859
+    },
+    {
+      "joint": "right_elbow",
+      "minimumAngleDeg": -90.46917510476591,
+      "maximumAngleDeg": -88.65030585673131,
+      "excursionDeg": 1.8188692480345974,
+      "maximumSpeedRadps": 0.15212387860850513,
+      "maximumTorqueNm": 1.0315246190786407,
+      "rmsMotorFraction": 0.009182843168103619,
+      "absoluteMechanicalWorkJ": 0.038759134844149404
+    },
+    {
+      "joint": "left_shoulder1",
+      "minimumAngleDeg": -43.4046956019139,
+      "maximumAngleDeg": -25.00648215338725,
+      "excursionDeg": 18.398213448526647,
+      "maximumSpeedRadps": 0.1640783849271522,
+      "maximumTorqueNm": 2.82648586287392,
+      "rmsMotorFraction": 0.05652220046891946,
+      "absoluteMechanicalWorkJ": 0.684958918254757
+    },
+    {
+      "joint": "left_shoulder2",
+      "minimumAngleDeg": 25.88337995083357,
+      "maximumAngleDeg": 37.90899712374136,
+      "excursionDeg": 12.025617172907786,
+      "maximumSpeedRadps": 0.09351627850059935,
+      "maximumTorqueNm": 2.5815463755079198,
+      "rmsMotorFraction": 0.0844557396949307,
+      "absoluteMechanicalWorkJ": 0.4886823976361336
+    },
+    {
+      "joint": "left_elbow",
+      "minimumAngleDeg": -90.47153233267358,
+      "maximumAngleDeg": -88.80836838876324,
+      "excursionDeg": 1.663163943910336,
+      "maximumSpeedRadps": 0.15792653382493296,
+      "maximumTorqueNm": 0.9314289628081416,
+      "rmsMotorFraction": 0.007986256966797778,
+      "absoluteMechanicalWorkJ": 0.0331703682854436
+    }
+  ],
+  "hashes": {
+    "frames.ndjson": "c799a64df9f83504be692550110137fdc56676b157e008b735b2a6b44a5905ac",
+    "control.json": "4c89848b0b6468771bdd63e53a5e78431fac2c29ff72f6fbaa7409307ef6437b",
+    "summary.json": "41ee30594ed3df94231fd39fbcff6015c7aa240b9f0d0c28a9d2bbc4de031cbd",
+    "multistep-summary.json": "80dcfe37e9437a18bd6658c858ae97948172fd5e360f8905e530fcaeb1e873d5",
+    "final.bin": "be8769b0a4b399a8b5185db82828c2f9563593cc1ba9e32a3cfa93199f6c718c"
+  },
+  "modelSHA256": "69a7e87fed168e1f4ad7dee43dfdd8df6bd74b3d4af06d99c991b46b941106db",
+  "helperSHA256": "20ddefbcbdd328b1661ce163e4df6aeb0e953192c677b79d3076c904de5a0ba5",
+  "physicalStateWritesAfterInitialization": 0,
+  "rootAssistance": false,
+  "strictAllSampleJointLimitsPass": false
+}

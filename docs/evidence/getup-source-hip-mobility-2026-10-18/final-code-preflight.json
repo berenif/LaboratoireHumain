@@ -1,0 +1,56 @@
+{
+  "finalRecipeRebuildsExactExecutedModelsAndColdCaches": {
+    "reference": {
+      "source-model/humanoid_high_freq.xml": true,
+      "slow-continuation/final.bin": true
+    },
+    "wider": {
+      "source-model/humanoid_high_freq.xml": true,
+      "slow-continuation/final.bin": true
+    }
+  },
+  "physicsIntegrations": 0,
+  "preflight": {
+    "passed": true,
+    "physicsIntegrations": 0,
+    "identicalInitialQposQvel": true,
+    "identicalCompiledGeometryMassGearsFriction": true,
+    "changedCompiledLimits": [
+      "right_hip_x",
+      "right_hip_z",
+      "right_hip_y",
+      "left_hip_x",
+      "left_hip_z",
+      "left_hip_y"
+    ],
+    "otherJointLimitsUnchanged": true,
+    "foreignModelCacheRejected": true,
+    "plannerUsesOwnModelAndLimits": true,
+    "plannerAndGeometryQueriesPreserveFullNativeState": true,
+    "staticReferences": [
+      {
+        "minimumRequiredMotorFraction": 0.9009190749938037,
+        "minimumSelfSeparationM": 0.07541564091793249,
+        "minimumJointReserveRad": 0.020000000000000014
+      },
+      {
+        "minimumRequiredMotorFraction": 0.9002761950445664,
+        "minimumSelfSeparationM": 0.07652482502549743,
+        "minimumJointReserveRad": 0.020000000000000056
+      }
+    ],
+    "finalQuietAndWalkingPredicatesChanged": false
+  },
+  "implementationHashes": {
+    "files": {
+      "scripts/getup-step/source_hip_mobility.py": "70a9ce38cdb44aa2d13e94b7175d58fde80a290bcc5f39883e42b1aa2ca6e427",
+      "scripts/getup-step/source_multistep_probe.py": "6a581d6ef8770c768110762152eaaeefbca9b73e359f72b6da43e4c069c8de96",
+      "scripts/getup-step/source_step_probe.py": "4b935f43dab20a2b6f619a2fd6a603a71163e27e6202b705d0500dc6863bb61e",
+      "scripts/getup-step/source_step_preview.py": "183e1816cd2648550827cbef4a279ccc06b47099d95cb2567a038d515cef4590",
+      "scripts/getup-step/plan_source_stance.py": "1496461723e3a304bb1f6d1357216328e8429fe48822376ad20eee22dfb5f9a3",
+      "scripts/getup-step-reference.py": "ae8894e614dc5d5bbacfc756a3c951bd1054f292abad8b9b4688c7ffe95b0e1c",
+      "rust/crates/model/data/getup-v1.json": "1611ec8c988c1006b0a819ab21e2b7c410adaaf512080be425d6d6e235a8926a"
+    },
+    "helperSHA256": "20ddefbcbdd328b1661ce163e4df6aeb0e953192c677b79d3076c904de5a0ba5"
+  }
+}

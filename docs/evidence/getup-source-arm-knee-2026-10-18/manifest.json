@@ -1,0 +1,77 @@
+{
+  "dateUtc": "2026-10-18",
+  "defaultPromoted": false,
+  "modelChanges": false,
+  "motorPowerChanged": false,
+  "rootAssistance": false,
+  "physicalStateWritesAfterInitialization": 0,
+  "recipe": {
+    "base": "outputs/getup-source-engine/session-20261017T233404Z",
+    "helper": "outputs/getup-source-step/first-liftoff/source_dynamics-v9.so",
+    "requestedDistancesM": [
+      0.03,
+      0.06,
+      0.09,
+      0.045
+    ],
+    "trajectoryTimeScale": 2,
+    "maximumMotorFraction": 0.95,
+    "maximumIntegrations": 64000,
+    "maximumProcessWallSeconds": 300,
+    "finalQuietRequiredS": 5,
+    "groundRaysAtEachIntegration": {
+      "joint": 22,
+      "foot": 8
+    }
+  },
+  "physicalRunFolders": {
+    "baseline": "outputs/getup-source-step/multistep10/generation-001",
+    "arms": "outputs/getup-source-step/arm-knee-experiment01/arms/generation-001",
+    "knees": "outputs/getup-source-step/arm-knee-experiment01/knees/generation-001"
+  },
+  "comparisonQualification": "One deterministic run each; historical baseline exactly independently reproduced by hip-only pair. No robustness or energetic improvement claim.",
+  "decision": {
+    "arms": "failed third landing loaded-slip guard; do not promote",
+    "knees": "four steps plus5squiet pass with actual flexion and reduced observed slip; opt-in only",
+    "combinedArmsKnees": "not justified because isolated arms failed"
+  },
+  "preflight": {
+    "arms": {
+      "physicsIntegrations": 0,
+      "minimumRequiredMotorFraction": 0.9015941069865931,
+      "minimumSelfSeparationM": 0.06315797023414305,
+      "minimumJointReserveRad": 0.020000000000000014,
+      "staticMotorContactFeasible": true,
+      "armGoalRad": [
+        0.67448201427752,
+        -0.6678759389295567,
+        -1.5507963267948963,
+        -0.726558430810194,
+        0.649914172538831,
+        -1.5507963267948963
+      ],
+      "kneeGoalRad": null
+    },
+    "knees": {
+      "physicsIntegrations": 0,
+      "minimumRequiredMotorFraction": 0.9008609410909596,
+      "minimumSelfSeparationM": 0.07341704821639478,
+      "minimumJointReserveRad": 0.020000000000000014,
+      "staticMotorContactFeasible": true,
+      "armGoalRad": null,
+      "kneeGoalRad": [
+        -0.4799655442984406,
+        -0.4799655442984406
+      ]
+    }
+  },
+  "sourceSHA256": {
+    "source_step_probe.py": "4b935f43dab20a2b6f619a2fd6a603a71163e27e6202b705d0500dc6863bb61e",
+    "source_multistep_probe.py": "6a581d6ef8770c768110762152eaaeefbca9b73e359f72b6da43e4c069c8de96",
+    "plan_source_stance.py": "1496461723e3a304bb1f6d1357216328e8429fe48822376ad20eee22dfb5f9a3",
+    "source_arm_knee_mobility.py": "7835072bdc183fe5eff5551458b5adefa7473d781b738bde5ee5987e1742c547",
+    "plan_source_arm_knee.py": "ed25c54b023ffd5aafb50fafde1d54599a13e166121c77843e14b66abbe17854",
+    "audit_source_arm_knee.py": "ff0f076da388f06fb15906d13e09e8490248c165be7a51c832f03498fdd2884e",
+    "test_source_arm_knee_mobility.py": "6cf89fb8af1e1a31ec6391aa86e6232f92b9f50572f6557ba40bee03b77ce1a3"
+  }
+}

@@ -1,0 +1,140 @@
+{
+  "experiment": "single justified hip-ROM-plus-knee-preference combination; arms unchanged",
+  "defaultPromoted": false,
+  "physicsRunsAdded": 1,
+  "rows": {
+    "baseline": {
+      "passed": true,
+      "actualIntegrations": 49857,
+      "physicsSimSeconds": 62.32125,
+      "finalQuietS": 5.0,
+      "globalLoadedSlipM": [
+        0.008611178356278722,
+        0.005964614947363048
+      ],
+      "minimumComCaptureMarginM": 0.002541722560608306,
+      "finalKneeAnglesDeg": [
+        -4.032006600296031,
+        -23.88877014400853
+      ],
+      "totalAbsoluteMechanicalWorkJ": 235.38391625902466,
+      "maximumMotorFraction": 0.9499999999973359,
+      "achievedDistancesM": [
+        0.03190568572970379,
+        0.06205779221457993,
+        0.09184431255499945,
+        0.04680300848481798
+      ]
+    },
+    "knees": {
+      "passed": true,
+      "actualIntegrations": 49857,
+      "physicsSimSeconds": 62.32125,
+      "finalQuietS": 5.0,
+      "globalLoadedSlipM": [
+        0.006532259888897667,
+        0.00554970777197299
+      ],
+      "minimumComCaptureMarginM": 0.006920497294622796,
+      "finalKneeAnglesDeg": [
+        -23.87889307537227,
+        -23.220509664963288
+      ],
+      "totalAbsoluteMechanicalWorkJ": 242.9011103350369,
+      "maximumMotorFraction": 0.9499999999863489,
+      "achievedDistancesM": [
+        0.0319223635202575,
+        0.06191560217705992,
+        0.09190368201551564,
+        0.046859552194832815
+      ]
+    },
+    "hip-knees": {
+      "passed": true,
+      "actualIntegrations": 49861,
+      "physicsSimSeconds": 62.32625,
+      "finalQuietS": 5.0,
+      "globalLoadedSlipM": [
+        0.006773774735653683,
+        0.006252889340407679
+      ],
+      "minimumComCaptureMarginM": 0.007843595993922814,
+      "finalKneeAnglesDeg": [
+        -24.146467403745294,
+        -22.493965362801312
+      ],
+      "totalAbsoluteMechanicalWorkJ": 237.8149705693958,
+      "maximumMotorFraction": 0.9499999999908064,
+      "achievedDistancesM": [
+        0.03193572743597817,
+        0.06196056322269131,
+        0.09193375830856777,
+        0.046881850611976326
+      ]
+    },
+    "hips": {
+      "passed": true,
+      "actualIntegrations": 49846,
+      "physicsSimSeconds": 62.307500000000005,
+      "finalQuietS": 5.0,
+      "globalLoadedSlipM": [
+        0.007510787795311716,
+        0.005748092525240315
+      ],
+      "minimumComCaptureMarginM": 0.009719679135099468,
+      "totalAbsoluteMechanicalWorkJ": 205.72448046125345,
+      "maximumMotorFraction": 0.936146600381697,
+      "achievedDistancesM": [
+        0.03184441763603745,
+        0.06188542776915356,
+        0.09182940355650475,
+        0.046913741118467425
+      ]
+    }
+  },
+  "scope": {
+    "separateExperimentalModel": true,
+    "sixHipLimitsExpanded10degPerBound": true,
+    "otherModelPropertiesChanged": false,
+    "sameInitialQposQvel": true,
+    "modelSpecificColdCache": true,
+    "motorPowerChanged": false,
+    "frictionChanged": false,
+    "timingChanged": false,
+    "requestedDistancesChanged": false,
+    "physicalStateWritesAfterInitialization": 0,
+    "rootAssistance": false,
+    "newArmsRecipeEnabled": false,
+    "repeatedTrialsOrRobustnessClaim": false
+  },
+  "preflight": {
+    "physicsIntegrations": 0,
+    "minimumRequiredMotorFraction": 0.9012700168229106,
+    "minimumSelfSeparationM": 0.07536513438252943,
+    "minimumJointReserveRad": 0.020000000000000056,
+    "staticMotorContactFeasible": true,
+    "kneeGoalRad": [
+      -0.4799655442984406,
+      -0.4799655442984406
+    ],
+    "armGoalRad": null
+  },
+  "nativeStateBytesPreservedDuringPreflight": true,
+  "combinedModelSHA256": "216d5c0159abf07139f5556c59e244ae77cb7557ba5256e301ebc5e1c8bbc399",
+  "originalHipLimitExceededSamples": 29135,
+  "minimumOwnHipReserveDeg": 0.3242896347259693,
+  "walkingPhaseQualificationPass": true,
+  "strictAllGatesPass": false,
+  "inheritedLastOutsideJointLimitTimeS": 0.06375,
+  "decision": "Combination passes with actual knee flexion but does not dominate isolated variants. Hips-only has lower work and larger minimum capture margin; knees-only has lower sum slip. Remain opt-in; no further parameter search.",
+  "runFolder": "outputs/getup-source-step/arm-knee-experiment01/hip-knees/generation-001",
+  "sourceSHA256": {
+    "source_step_probe.py": "4b935f43dab20a2b6f619a2fd6a603a71163e27e6202b705d0500dc6863bb61e",
+    "source_multistep_probe.py": "6a581d6ef8770c768110762152eaaeefbca9b73e359f72b6da43e4c069c8de96",
+    "plan_source_stance.py": "1496461723e3a304bb1f6d1357216328e8429fe48822376ad20eee22dfb5f9a3",
+    "source_arm_knee_mobility.py": "7835072bdc183fe5eff5551458b5adefa7473d781b738bde5ee5987e1742c547",
+    "plan_source_arm_knee.py": "ed25c54b023ffd5aafb50fafde1d54599a13e166121c77843e14b66abbe17854",
+    "audit_source_arm_knee.py": "ff0f076da388f06fb15906d13e09e8490248c165be7a51c832f03498fdd2884e",
+    "test_source_arm_knee_mobility.py": "6cf89fb8af1e1a31ec6391aa86e6232f92b9f50572f6557ba40bee03b77ce1a3"
+  }
+}

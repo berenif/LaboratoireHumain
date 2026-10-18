@@ -1,0 +1,26 @@
+test_balance_feedback_changes_real_motor_commands_with_target_slew_bound (test_source_arm_knee_mobility.ArmKneeMobility.test_balance_feedback_changes_real_motor_commands_with_target_slew_bound) ... ok
+test_com_velocity_and_torso_rate_each_causally_change_bounded_offset (test_source_arm_knee_mobility.ArmKneeMobility.test_com_velocity_and_torso_rate_each_causally_change_bounded_offset) ... ok
+test_each_isolated_reference_has_motor_and_collision_reserve (test_source_arm_knee_mobility.ArmKneeMobility.test_each_isolated_reference_has_motor_and_collision_reserve) ... ok
+test_original_knees_already_flexed_and_modest_preference_is_27_5deg (test_source_arm_knee_mobility.ArmKneeMobility.test_original_knees_already_flexed_and_modest_preference_is_27_5deg) ... ok
+test_transfer_requires_actual_capture_load_and_joint_reserve (test_source_balance_feedback.AdmissionFeedback.test_transfer_requires_actual_capture_load_and_joint_reserve) ... ok
+test_actual_velocity_counterfactual_changes_commands_without_steps (test_source_balance_feedback.BalanceFeedback.test_actual_velocity_counterfactual_changes_commands_without_steps) ... ok
+test_com_sensor_counterfactual_changes_actual_qp_commands (test_source_balance_feedback.BalanceFeedback.test_com_sensor_counterfactual_changes_actual_qp_commands) ... ok
+test_measured_landing_load_changes_contact_solve (test_source_balance_feedback.BalanceFeedback.test_measured_landing_load_changes_contact_solve) ... ok
+test_active_self_geometry_changes_joint_torques (test_source_self_avoidance.SelfAvoidance.test_active_self_geometry_changes_joint_torques) ... ok
+test_capsule_separation_matches_measured_native_contact (test_source_self_avoidance.SelfAvoidance.test_capsule_separation_matches_measured_native_contact) ... ok
+test_static_reference_is_pure_contact_qualified_and_motor_bounded (test_source_stance_reference.StanceReference.test_static_reference_is_pure_contact_qualified_and_motor_bounded) ... ok
+test_time_scale_preserves_geometric_target_and_changes_joint_commands (test_source_stance_reference.StanceReference.test_time_scale_preserves_geometric_target_and_changes_joint_commands) ... ok
+test_actual_compiled_source_friction (test_source_step_probe.GroundRays.test_actual_compiled_source_friction) ... ok
+test_every_joint_has_actual_ground_ray (test_source_step_probe.GroundRays.test_every_joint_has_actual_ground_ray) ... ok
+test_far_joint_ground_does_not_bias_posture (test_source_step_probe.GroundRays.test_far_joint_ground_does_not_bias_posture) ... ok
+test_floor_height_comes_from_installed_geometry (test_source_step_probe.GroundRays.test_floor_height_comes_from_installed_geometry) ... ok
+test_heel_forefoot_clearance_from_ground (test_source_step_probe.GroundRays.test_heel_forefoot_clearance_from_ground) ... ok
+test_joint_ground_distance_causally_changes_motor_command (test_source_step_probe.GroundRays.test_joint_ground_distance_causally_changes_motor_command) ... ok
+test_joint_no_hit_stops_before_command (test_source_step_probe.GroundRays.test_joint_no_hit_stops_before_command) ... ok
+test_no_hit_is_explicit_and_blocks_target (test_source_step_probe.GroundRays.test_no_hit_is_explicit_and_blocks_target) ... ok
+test_self_geometries_never_win_ray (test_source_step_probe.GroundRays.test_self_geometries_never_win_ray) ... ok
+
+----------------------------------------------------------------------
+Ran 21 tests in 8.325s
+
+OK

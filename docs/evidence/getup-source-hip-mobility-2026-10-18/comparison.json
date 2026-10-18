@@ -1,0 +1,1214 @@
+{
+  "experiment": "bilateral-hip-ROM-plus10deg-per-bound",
+  "savedDataOnly": true,
+  "auditPhysicsIntegrations": 0,
+  "preflight": {
+    "passed": true,
+    "physicsIntegrations": 0,
+    "identicalInitialQposQvel": true,
+    "identicalCompiledGeometryMassGearsFriction": true,
+    "changedCompiledLimits": [
+      "right_hip_x",
+      "right_hip_z",
+      "right_hip_y",
+      "left_hip_x",
+      "left_hip_z",
+      "left_hip_y"
+    ],
+    "otherJointLimitsUnchanged": true,
+    "foreignModelCacheRejected": true,
+    "plannerUsesOwnModelAndLimits": true,
+    "plannerAndGeometryQueriesPreserveFullNativeState": true,
+    "staticReferences": [
+      {
+        "minimumRequiredMotorFraction": 0.9009190749938037,
+        "minimumSelfSeparationM": 0.07541564091793249,
+        "minimumJointReserveRad": 0.020000000000000014
+      },
+      {
+        "minimumRequiredMotorFraction": 0.9002761950445664,
+        "minimumSelfSeparationM": 0.07652482502549743,
+        "minimumJointReserveRad": 0.020000000000000056
+      }
+    ],
+    "finalQuietAndWalkingPredicatesChanged": false
+  },
+  "arms": {
+    "reference": {
+      "stopped": "measured-alternating-multistep-plus5squiet",
+      "passed": true,
+      "actualIntegrations": 49857,
+      "physicsSimSeconds": 62.32125,
+      "finalQuietS": 5.0,
+      "globalLoadedSlipM": [
+        0.008611178356278722,
+        0.005964614947363048
+      ],
+      "achievedDistancesM": [
+        0.03190568572970379,
+        0.06205779221457993,
+        0.09184431255499945,
+        0.04680300848481798
+      ],
+      "lastOutsideOwnJointLimitTimeS": 0.06375,
+      "originalHipLimitExceededSamples": 0,
+      "hingePositionVelocityContinuityMaxErrorRad": 1.1102209070427884e-16,
+      "absoluteJointMechanicalWorkJ": 235.38391625902574,
+      "meanSumNormalizedMotorEffort": 2.825921602039262,
+      "hips": [
+        {
+          "joint": "right_hip_x",
+          "observedMinDeg": -8.567792881352398,
+          "observedMaxDeg": 4.694532797130591,
+          "observedSpanDeg": 13.26232567848299,
+          "minimumOwnLimitReserveDeg": 0.305467202869409,
+          "minimumOriginalLimitReserveDeg": 0.305467202869409,
+          "rmsNormalizedMotorEffort": 0.468014098204146,
+          "maximumNormalizedMotorEffort": 0.9499999999973359
+        },
+        {
+          "joint": "right_hip_z",
+          "observedMinDeg": -10.304074828894787,
+          "observedMaxDeg": 16.567939331973157,
+          "observedSpanDeg": 26.87201416086795,
+          "minimumOwnLimitReserveDeg": 8.432060668026843,
+          "minimumOriginalLimitReserveDeg": 8.432060668026843,
+          "rmsNormalizedMotorEffort": 0.2610414382720688,
+          "maximumNormalizedMotorEffort": 0.5915638065158494
+        },
+        {
+          "joint": "right_hip_y",
+          "observedMinDeg": -45.61207975872378,
+          "observedMaxDeg": 19.492963779039314,
+          "observedSpanDeg": 65.1050435377631,
+          "minimumOwnLimitReserveDeg": 0.5070362209606851,
+          "minimumOriginalLimitReserveDeg": 0.5070362209606851,
+          "rmsNormalizedMotorEffort": 0.1340964224891636,
+          "maximumNormalizedMotorEffort": 0.3559198776806908
+        },
+        {
+          "joint": "left_hip_x",
+          "observedMinDeg": -9.417469018555462,
+          "observedMaxDeg": 4.3329879373355435,
+          "observedSpanDeg": 13.750456955891005,
+          "minimumOwnLimitReserveDeg": 0.6670120626644565,
+          "minimumOriginalLimitReserveDeg": 0.6670120626644565,
+          "rmsNormalizedMotorEffort": 0.4018354096025907,
+          "maximumNormalizedMotorEffort": 0.9292534384716845
+        },
+        {
+          "joint": "left_hip_z",
+          "observedMinDeg": -17.500938964031825,
+          "observedMaxDeg": 12.957464489387187,
+          "observedSpanDeg": 30.458403453419006,
+          "minimumOwnLimitReserveDeg": 12.042535510612813,
+          "minimumOriginalLimitReserveDeg": 12.042535510612813,
+          "rmsNormalizedMotorEffort": 0.273279315200266,
+          "maximumNormalizedMotorEffort": 0.6030234281628071
+        },
+        {
+          "joint": "left_hip_y",
+          "observedMinDeg": -63.72817223595743,
+          "observedMaxDeg": 11.644212854631787,
+          "observedSpanDeg": 75.37238509058922,
+          "minimumOwnLimitReserveDeg": 8.355787145368213,
+          "minimumOriginalLimitReserveDeg": 8.355787145368213,
+          "rmsNormalizedMotorEffort": 0.098836995669918,
+          "maximumNormalizedMotorEffort": 0.19004328175370247
+        }
+      ],
+      "allJoints": [
+        {
+          "joint": "abdomen_z",
+          "minimumLimitReserveDeg": 18.47561521849531,
+          "rmsNormalizedMotorEffort": 0.04093023532618358,
+          "maximumNormalizedMotorEffort": 0.08944710569705139
+        },
+        {
+          "joint": "abdomen_y",
+          "minimumLimitReserveDeg": 0.40232744316112684,
+          "rmsNormalizedMotorEffort": 0.15876748286444564,
+          "maximumNormalizedMotorEffort": 0.2473588373536973
+        },
+        {
+          "joint": "abdomen_x",
+          "minimumLimitReserveDeg": 10.07425736673373,
+          "rmsNormalizedMotorEffort": 0.06510738357693387,
+          "maximumNormalizedMotorEffort": 0.12347068617980236
+        },
+        {
+          "joint": "right_hip_x",
+          "minimumLimitReserveDeg": 0.305467202869409,
+          "rmsNormalizedMotorEffort": 0.468014098204146,
+          "maximumNormalizedMotorEffort": 0.9499999999973359
+        },
+        {
+          "joint": "right_hip_z",
+          "minimumLimitReserveDeg": 8.432060668026843,
+          "rmsNormalizedMotorEffort": 0.2610414382720688,
+          "maximumNormalizedMotorEffort": 0.5915638065158494
+        },
+        {
+          "joint": "right_hip_y",
+          "minimumLimitReserveDeg": 0.5070362209606851,
+          "rmsNormalizedMotorEffort": 0.1340964224891636,
+          "maximumNormalizedMotorEffort": 0.3559198776806908
+        },
+        {
+          "joint": "right_knee",
+          "minimumLimitReserveDeg": 0.46147209794719757,
+          "rmsNormalizedMotorEffort": 0.19665105814970332,
+          "maximumNormalizedMotorEffort": 0.3993686906797082
+        },
+        {
+          "joint": "right_ankle_y",
+          "minimumLimitReserveDeg": -0.5213418448380717,
+          "rmsNormalizedMotorEffort": 0.3991693692818762,
+          "maximumNormalizedMotorEffort": 0.7837657426822694
+        },
+        {
+          "joint": "right_ankle_x",
+          "minimumLimitReserveDeg": 35.06251384952391,
+          "rmsNormalizedMotorEffort": 0.08571931145256571,
+          "maximumNormalizedMotorEffort": 0.18996339234128254
+        },
+        {
+          "joint": "left_hip_x",
+          "minimumLimitReserveDeg": 0.6670120626644565,
+          "rmsNormalizedMotorEffort": 0.4018354096025907,
+          "maximumNormalizedMotorEffort": 0.9292534384716845
+        },
+        {
+          "joint": "left_hip_z",
+          "minimumLimitReserveDeg": 12.042535510612813,
+          "rmsNormalizedMotorEffort": 0.273279315200266,
+          "maximumNormalizedMotorEffort": 0.6030234281628071
+        },
+        {
+          "joint": "left_hip_y",
+          "minimumLimitReserveDeg": 8.355787145368213,
+          "rmsNormalizedMotorEffort": 0.098836995669918,
+          "maximumNormalizedMotorEffort": 0.19004328175370247
+        },
+        {
+          "joint": "left_knee",
+          "minimumLimitReserveDeg": 1.0917397109874039,
+          "rmsNormalizedMotorEffort": 0.1599672102152169,
+          "maximumNormalizedMotorEffort": 0.3401332639914329
+        },
+        {
+          "joint": "left_ankle_y",
+          "minimumLimitReserveDeg": -0.5114717156007098,
+          "rmsNormalizedMotorEffort": 0.371714971851293,
+          "maximumNormalizedMotorEffort": 0.7683992764861758
+        },
+        {
+          "joint": "left_ankle_x",
+          "minimumLimitReserveDeg": 36.383815550830356,
+          "rmsNormalizedMotorEffort": 0.08163547581328671,
+          "maximumNormalizedMotorEffort": 0.19646562411766422
+        },
+        {
+          "joint": "right_shoulder1",
+          "minimumLimitReserveDeg": 40.74224938230647,
+          "rmsNormalizedMotorEffort": 0.17013617338360582,
+          "maximumNormalizedMotorEffort": 0.19708493783239736
+        },
+        {
+          "joint": "right_shoulder2",
+          "minimumLimitReserveDeg": 60.38583156256571,
+          "rmsNormalizedMotorEffort": 0.04061653850237535,
+          "maximumNormalizedMotorEffort": 0.0651844385251588
+        },
+        {
+          "joint": "right_elbow",
+          "minimumLimitReserveDeg": -0.469175104767246,
+          "rmsNormalizedMotorEffort": 0.020688577236684196,
+          "maximumNormalizedMotorEffort": 0.0257881154800128
+        },
+        {
+          "joint": "left_shoulder1",
+          "minimumLimitReserveDeg": 34.12353691482078,
+          "rmsNormalizedMotorEffort": 0.13803729308508025,
+          "maximumNormalizedMotorEffort": 0.15791070755490094
+        },
+        {
+          "joint": "left_shoulder2",
+          "minimumLimitReserveDeg": 58.255448930683535,
+          "rmsNormalizedMotorEffort": 0.020206014129456697,
+          "maximumNormalizedMotorEffort": 0.04012152781035196
+        },
+        {
+          "joint": "left_elbow",
+          "minimumLimitReserveDeg": -0.4715323326725703,
+          "rmsNormalizedMotorEffort": 0.017972740801574072,
+          "maximumNormalizedMotorEffort": 0.023285724073348696
+        }
+      ],
+      "savedDataQualification": {
+        "savedDataOnly": true,
+        "positionVelocityContinuityMaxErrorM": 1.1101446740775355e-16,
+        "hingePositionVelocityContinuityMaxErrorRad": 1.1102209070427884e-16,
+        "lastOutsideJointLimitTimeS": 0.06375,
+        "walkingPhaseQualificationPass": true,
+        "walkingJointLimitsPass": true,
+        "minimumWalkingJointReserveRad": 0.0053314084469286566,
+        "minimumRecordedComCaptureMarginM": 0.002541722560608306,
+        "rayControlAudit": {
+          "controlSolves": 12465,
+          "activeJointGroundBarrierSolves": 0,
+          "activeSelfAvoidanceSolves": 0,
+          "minimumAdjacentNonfootColliderClearanceM": 0.06598897625866328
+        },
+        "physicsIntegrations": 0,
+        "motionAndQuietGatesPass": true,
+        "strictAllSampleJointLimitsPass": false,
+        "strictAllGatesPass": false,
+        "actualRecordedIntegrations": 49857,
+        "physicsSimSeconds": 62.32125,
+        "finalQuietSamples": 4000,
+        "finalQuietMinimumJointReserveRad": 0.009909630572065842,
+        "maximumMotorFraction": 0.9499999999973359,
+        "maximumSelfPenetrationM": 0.0,
+        "maximumNonfootLoadN": 0.0,
+        "flightSamples": 0,
+        "warnings": 0,
+        "missingOrSelfEligibleJointRayCount": 0,
+        "globalLoadedSlipM": [
+          0.008611178356278722,
+          0.005964614947363048
+        ],
+        "inheritedInitialJointMarginRad": -0.009130479328801344,
+        "worstJointSample": {
+          "timeS": 0.00125,
+          "step": 1,
+          "phase": "transfer",
+          "joint": "right_ankle_y",
+          "marginRad": -0.009099131720845755
+        },
+        "steps": [
+          {
+            "index": 1,
+            "side": "left",
+            "requestedDistanceM": 0.03,
+            "achievedForwardM": 0.03190568572970379,
+            "maximumWholeFootClearanceM": 0.03971166311873073,
+            "maximumLoadedClear25mmConsecutiveSamples": 2962
+          },
+          {
+            "index": 2,
+            "side": "right",
+            "requestedDistanceM": 0.06,
+            "achievedForwardM": 0.06205779221457993,
+            "maximumWholeFootClearanceM": 0.03961305644534893,
+            "maximumLoadedClear25mmConsecutiveSamples": 2957
+          },
+          {
+            "index": 3,
+            "side": "left",
+            "requestedDistanceM": 0.09,
+            "achievedForwardM": 0.09184431255499945,
+            "maximumWholeFootClearanceM": 0.03995432815068897,
+            "maximumLoadedClear25mmConsecutiveSamples": 2963
+          },
+          {
+            "index": 4,
+            "side": "right",
+            "requestedDistanceM": 0.045,
+            "achievedForwardM": 0.04680300848481798,
+            "maximumWholeFootClearanceM": 0.039868969891343004,
+            "maximumLoadedClear25mmConsecutiveSamples": 2964
+          }
+        ],
+        "phases": [
+          {
+            "step": 1,
+            "phase": "transfer",
+            "samples": 3307,
+            "loadedSlipIncrementM": [
+              0.0017452670474112568,
+              0.0011868060918387969
+            ],
+            "minimumJointMarginRad": -0.009099131720845755
+          },
+          {
+            "step": 1,
+            "phase": "lift",
+            "samples": 1601,
+            "loadedSlipIncrementM": [
+              0.0,
+              0.0001583125537463531
+            ],
+            "minimumJointMarginRad": 0.008477204635868318
+          },
+          {
+            "step": 1,
+            "phase": "translate",
+            "samples": 1601,
+            "loadedSlipIncrementM": [
+              0.0,
+              0.00010340987402579428
+            ],
+            "minimumJointMarginRad": 0.009949822344714532
+          },
+          {
+            "step": 1,
+            "phase": "land",
+            "samples": 1601,
+            "loadedSlipIncrementM": [
+              6.77049420490202e-05,
+              0.00015026410831166714
+            ],
+            "minimumJointMarginRad": 0.007539882324134148
+          },
+          {
+            "step": 1,
+            "phase": "settle",
+            "samples": 3201,
+            "loadedSlipIncrementM": [
+              0.00043775691882967497,
+              0.00036329276834385195
+            ],
+            "minimumJointMarginRad": 0.00884974327207888
+          },
+          {
+            "step": 1,
+            "phase": "stand",
+            "samples": 200,
+            "loadedSlipIncrementM": [
+              7.815306990215792e-06,
+              1.1024671763529455e-05
+            ],
+            "minimumJointMarginRad": 0.009813718755756762
+          },
+          {
+            "step": 2,
+            "phase": "transfer",
+            "samples": 3311,
+            "loadedSlipIncrementM": [
+              0.0010059529457962283,
+              0.0010199216936358294
+            ],
+            "minimumJointMarginRad": 0.008921344662960573
+          },
+          {
+            "step": 2,
+            "phase": "lift",
+            "samples": 1601,
+            "loadedSlipIncrementM": [
+              0.0012196095873061846,
+              0.0
+            ],
+            "minimumJointMarginRad": 0.00749059352336176
+          },
+          {
+            "step": 2,
+            "phase": "translate",
+            "samples": 1601,
+            "loadedSlipIncrementM": [
+              0.00011732893581856314,
+              0.0
+            ],
+            "minimumJointMarginRad": 0.00934780733676921
+          },
+          {
+            "step": 2,
+            "phase": "land",
+            "samples": 1601,
+            "loadedSlipIncrementM": [
+              0.001137760083356647,
+              3.837983236388469e-05
+            ],
+            "minimumJointMarginRad": 0.009725117254212323
+          },
+          {
+            "step": 2,
+            "phase": "settle",
+            "samples": 3201,
+            "loadedSlipIncrementM": [
+              0.0003790615055227573,
+              0.0004600544411602174
+            ],
+            "minimumJointMarginRad": 0.0053314084469286566
+          },
+          {
+            "step": 2,
+            "phase": "stand",
+            "samples": 200,
+            "loadedSlipIncrementM": [
+              9.416752139625693e-06,
+              1.3298449900685412e-05
+            ],
+            "minimumJointMarginRad": 0.007139251349916845
+          },
+          {
+            "step": 3,
+            "phase": "transfer",
+            "samples": 3310,
+            "loadedSlipIncrementM": [
+              0.00044450036131791007,
+              0.0004167322436041598
+            ],
+            "minimumJointMarginRad": 0.00735222246585214
+          },
+          {
+            "step": 3,
+            "phase": "lift",
+            "samples": 1601,
+            "loadedSlipIncrementM": [
+              0.0,
+              0.0001115127137153258
+            ],
+            "minimumJointMarginRad": 0.009777021946508362
+          },
+          {
+            "step": 3,
+            "phase": "translate",
+            "samples": 1601,
+            "loadedSlipIncrementM": [
+              0.0,
+              0.00015716720025066473
+            ],
+            "minimumJointMarginRad": 0.009993485448545059
+          },
+          {
+            "step": 3,
+            "phase": "land",
+            "samples": 1601,
+            "loadedSlipIncrementM": [
+              0.00014383346690920347,
+              0.000322765279189635
+            ],
+            "minimumJointMarginRad": 0.009767759004936302
+          },
+          {
+            "step": 3,
+            "phase": "settle",
+            "samples": 3201,
+            "loadedSlipIncrementM": [
+              0.0005106469827164031,
+              0.00046323763375727064
+            ],
+            "minimumJointMarginRad": 0.0070219385542920065
+          },
+          {
+            "step": 3,
+            "phase": "stand",
+            "samples": 200,
+            "loadedSlipIncrementM": [
+              2.447372502435187e-06,
+              3.564539696615694e-06
+            ],
+            "minimumJointMarginRad": 0.009175627219944471
+          },
+          {
+            "step": 4,
+            "phase": "transfer",
+            "samples": 3313,
+            "loadedSlipIncrementM": [
+              0.000383103330634447,
+              0.00040880333758511016
+            ],
+            "minimumJointMarginRad": 0.009309463740331925
+          },
+          {
+            "step": 4,
+            "phase": "lift",
+            "samples": 1601,
+            "loadedSlipIncrementM": [
+              0.0003403710082401758,
+              0.0
+            ],
+            "minimumJointMarginRad": 0.005560841321749957
+          },
+          {
+            "step": 4,
+            "phase": "translate",
+            "samples": 1601,
+            "loadedSlipIncrementM": [
+              0.0001483305046949563,
+              0.0
+            ],
+            "minimumJointMarginRad": 0.009959333877331167
+          },
+          {
+            "step": 4,
+            "phase": "land",
+            "samples": 1601,
+            "loadedSlipIncrementM": [
+              0.00014211930860940844,
+              0.0001797972068583618
+            ],
+            "minimumJointMarginRad": 0.009685825866229125
+          },
+          {
+            "step": 4,
+            "phase": "settle",
+            "samples": 3201,
+            "loadedSlipIncrementM": [
+              0.00034866917786033,
+              0.00037232138079568936
+            ],
+            "minimumJointMarginRad": 0.009739466859060908
+          },
+          {
+            "step": 4,
+            "phase": "stand",
+            "samples": 4000,
+            "loadedSlipIncrementM": [
+              1.9482817573279396e-05,
+              2.3948926819605636e-05
+            ],
+            "minimumJointMarginRad": 0.009909630572065842
+          }
+        ],
+        "hashes": {
+          "frames.ndjson": "e6a477a605b47686f370392d46037bba96d1688d78b92ccf04df2b473b200657",
+          "control.json": "b8a687b273f557576ad9b2697cedcf782da042235edff21972fc2b8d46b45b77",
+          "multistep-summary.json": "401fa1c939c512e2fc22d1e562ebdc67aa2d69c405fdd0c437121a88c5ff736c",
+          "summary.json": "632903ec64ff20933c08ca36f90cdf3b17ff0a61f3d57c7620de724f5946f2de",
+          "final.bin": "a750e937cc31bcab080af16e5d36929e60e36f4c8d0685592e8ae57b4494c301"
+        }
+      },
+      "modelSHA256": "69a7e87fed168e1f4ad7dee43dfdd8df6bd74b3d4af06d99c991b46b941106db"
+    },
+    "wider": {
+      "stopped": "measured-alternating-multistep-plus5squiet",
+      "passed": true,
+      "actualIntegrations": 49846,
+      "physicsSimSeconds": 62.307500000000005,
+      "finalQuietS": 5.0,
+      "globalLoadedSlipM": [
+        0.007510787795311716,
+        0.005748092525240315
+      ],
+      "achievedDistancesM": [
+        0.03184441763603745,
+        0.06188542776915356,
+        0.09182940355650475,
+        0.046913741118467425
+      ],
+      "lastOutsideOwnJointLimitTimeS": 0.06375,
+      "originalHipLimitExceededSamples": 48398,
+      "hingePositionVelocityContinuityMaxErrorRad": 1.1102095333093658e-16,
+      "absoluteJointMechanicalWorkJ": 205.72448046125345,
+      "meanSumNormalizedMotorEffort": 2.711422185642834,
+      "hips": [
+        {
+          "joint": "right_hip_x",
+          "observedMinDeg": -6.642689992012609,
+          "observedMaxDeg": 10.256598058716646,
+          "observedSpanDeg": 16.899288050729258,
+          "minimumOwnLimitReserveDeg": 4.743401941283352,
+          "minimumOriginalLimitReserveDeg": -5.256598058716646,
+          "rmsNormalizedMotorEffort": 0.43921782745592824,
+          "maximumNormalizedMotorEffort": 0.9117556823002955
+        },
+        {
+          "joint": "right_hip_z",
+          "observedMinDeg": -8.199152983656235,
+          "observedMaxDeg": 29.972192662193713,
+          "observedSpanDeg": 38.171345645849954,
+          "minimumOwnLimitReserveDeg": 5.027807337806284,
+          "minimumOriginalLimitReserveDeg": -4.972192662193714,
+          "rmsNormalizedMotorEffort": 0.3068993616525579,
+          "maximumNormalizedMotorEffort": 0.6971835145469409
+        },
+        {
+          "joint": "right_hip_y",
+          "observedMinDeg": 7.884631773226123,
+          "observedMaxDeg": 29.55952770334049,
+          "observedSpanDeg": 21.674895930114367,
+          "minimumOwnLimitReserveDeg": 0.44047229665950843,
+          "minimumOriginalLimitReserveDeg": -9.559527703340489,
+          "rmsNormalizedMotorEffort": 0.0780208967895308,
+          "maximumNormalizedMotorEffort": 0.14778642298785702
+        },
+        {
+          "joint": "left_hip_x",
+          "observedMinDeg": -15.19925599679049,
+          "observedMaxDeg": 3.6191364314329557,
+          "observedSpanDeg": 18.818392428223444,
+          "minimumOwnLimitReserveDeg": 11.380863568567044,
+          "minimumOriginalLimitReserveDeg": 1.3808635685670443,
+          "rmsNormalizedMotorEffort": 0.4394828168895158,
+          "maximumNormalizedMotorEffort": 0.936146600381697
+        },
+        {
+          "joint": "left_hip_z",
+          "observedMinDeg": -27.283729896870387,
+          "observedMaxDeg": 10.90299313647291,
+          "observedSpanDeg": 38.18672303334329,
+          "minimumOwnLimitReserveDeg": 12.716270103129613,
+          "minimumOriginalLimitReserveDeg": 2.716270103129612,
+          "rmsNormalizedMotorEffort": 0.22617000986645472,
+          "maximumNormalizedMotorEffort": 0.5620698579763763
+        },
+        {
+          "joint": "left_hip_y",
+          "observedMinDeg": 2.6078987373777434,
+          "observedMaxDeg": 29.55910828997294,
+          "observedSpanDeg": 26.9512095525952,
+          "minimumOwnLimitReserveDeg": 0.44089171002705596,
+          "minimumOriginalLimitReserveDeg": -9.559108289972942,
+          "rmsNormalizedMotorEffort": 0.11490786184201705,
+          "maximumNormalizedMotorEffort": 0.24088546913051428
+        }
+      ],
+      "allJoints": [
+        {
+          "joint": "abdomen_z",
+          "minimumLimitReserveDeg": 9.678983204539431,
+          "rmsNormalizedMotorEffort": 0.05865330912823963,
+          "maximumNormalizedMotorEffort": 0.11249466791693603
+        },
+        {
+          "joint": "abdomen_y",
+          "minimumLimitReserveDeg": 36.05414571534378,
+          "rmsNormalizedMotorEffort": 0.07888191396898533,
+          "maximumNormalizedMotorEffort": 0.12112516779851319
+        },
+        {
+          "joint": "abdomen_x",
+          "minimumLimitReserveDeg": 26.432999995492985,
+          "rmsNormalizedMotorEffort": 0.07050382582967013,
+          "maximumNormalizedMotorEffort": 0.13662194576637463
+        },
+        {
+          "joint": "right_hip_x",
+          "minimumLimitReserveDeg": 4.743401941283352,
+          "rmsNormalizedMotorEffort": 0.43921782745592824,
+          "maximumNormalizedMotorEffort": 0.9117556823002955
+        },
+        {
+          "joint": "right_hip_z",
+          "minimumLimitReserveDeg": 5.027807337806284,
+          "rmsNormalizedMotorEffort": 0.3068993616525579,
+          "maximumNormalizedMotorEffort": 0.6971835145469409
+        },
+        {
+          "joint": "right_hip_y",
+          "minimumLimitReserveDeg": 0.44047229665950843,
+          "rmsNormalizedMotorEffort": 0.0780208967895308,
+          "maximumNormalizedMotorEffort": 0.14778642298785702
+        },
+        {
+          "joint": "right_knee",
+          "minimumLimitReserveDeg": 10.084365402597804,
+          "rmsNormalizedMotorEffort": 0.18633093779049556,
+          "maximumNormalizedMotorEffort": 0.3340865672180073
+        },
+        {
+          "joint": "right_ankle_y",
+          "minimumLimitReserveDeg": -0.5213418454815043,
+          "rmsNormalizedMotorEffort": 0.354598542888205,
+          "maximumNormalizedMotorEffort": 0.7830059851894838
+        },
+        {
+          "joint": "right_ankle_x",
+          "minimumLimitReserveDeg": 36.700946347204955,
+          "rmsNormalizedMotorEffort": 0.0836033950566055,
+          "maximumNormalizedMotorEffort": 0.18938947160680153
+        },
+        {
+          "joint": "left_hip_x",
+          "minimumLimitReserveDeg": 11.380863568567044,
+          "rmsNormalizedMotorEffort": 0.4394828168895158,
+          "maximumNormalizedMotorEffort": 0.936146600381697
+        },
+        {
+          "joint": "left_hip_z",
+          "minimumLimitReserveDeg": 12.716270103129613,
+          "rmsNormalizedMotorEffort": 0.22617000986645472,
+          "maximumNormalizedMotorEffort": 0.5620698579763763
+        },
+        {
+          "joint": "left_hip_y",
+          "minimumLimitReserveDeg": 0.44089171002705596,
+          "rmsNormalizedMotorEffort": 0.11490786184201705,
+          "maximumNormalizedMotorEffort": 0.24088546913051428
+        },
+        {
+          "joint": "left_knee",
+          "minimumLimitReserveDeg": 8.57859814495864,
+          "rmsNormalizedMotorEffort": 0.18548404973520777,
+          "maximumNormalizedMotorEffort": 0.3463072270074898
+        },
+        {
+          "joint": "left_ankle_y",
+          "minimumLimitReserveDeg": -0.5114717149379363,
+          "rmsNormalizedMotorEffort": 0.3566721281616298,
+          "maximumNormalizedMotorEffort": 0.7690859551587524
+        },
+        {
+          "joint": "left_ankle_x",
+          "minimumLimitReserveDeg": 35.452457837574286,
+          "rmsNormalizedMotorEffort": 0.08522966510436387,
+          "maximumNormalizedMotorEffort": 0.1949390592638419
+        },
+        {
+          "joint": "right_shoulder1",
+          "minimumLimitReserveDeg": 40.906489514295004,
+          "rmsNormalizedMotorEffort": 0.17755528426534503,
+          "maximumNormalizedMotorEffort": 0.20134280339074256
+        },
+        {
+          "joint": "right_shoulder2",
+          "minimumLimitReserveDeg": 60.38186174160209,
+          "rmsNormalizedMotorEffort": 0.041200737623722845,
+          "maximumNormalizedMotorEffort": 0.0651844385255749
+        },
+        {
+          "joint": "right_elbow",
+          "minimumLimitReserveDeg": -0.46917510476563024,
+          "rmsNormalizedMotorEffort": 0.02037694106015107,
+          "maximumNormalizedMotorEffort": 0.02578811548048927
+        },
+        {
+          "joint": "left_shoulder1",
+          "minimumLimitReserveDeg": 33.62316266800956,
+          "rmsNormalizedMotorEffort": 0.13194430414754144,
+          "maximumNormalizedMotorEffort": 0.15369280060713142
+        },
+        {
+          "joint": "left_shoulder2",
+          "minimumLimitReserveDeg": 58.457815982993566,
+          "rmsNormalizedMotorEffort": 0.017466413355167635,
+          "maximumNormalizedMotorEffort": 0.040121527810198204
+        },
+        {
+          "joint": "left_elbow",
+          "minimumLimitReserveDeg": -0.4715323326759035,
+          "rmsNormalizedMotorEffort": 0.01843924916227098,
+          "maximumNormalizedMotorEffort": 0.023285724073729846
+        }
+      ],
+      "savedDataQualification": {
+        "savedDataOnly": true,
+        "positionVelocityContinuityMaxErrorM": 1.1102230246251565e-16,
+        "hingePositionVelocityContinuityMaxErrorRad": 1.1102095333093658e-16,
+        "lastOutsideJointLimitTimeS": 0.06375,
+        "walkingPhaseQualificationPass": true,
+        "walkingJointLimitsPass": true,
+        "minimumWalkingJointReserveRad": 0.007687691840529642,
+        "minimumRecordedComCaptureMarginM": 0.009719679135099468,
+        "rayControlAudit": {
+          "controlSolves": 12462,
+          "activeJointGroundBarrierSolves": 0,
+          "activeSelfAvoidanceSolves": 0,
+          "minimumAdjacentNonfootColliderClearanceM": 0.06586018266511122
+        },
+        "physicsIntegrations": 0,
+        "motionAndQuietGatesPass": true,
+        "strictAllSampleJointLimitsPass": false,
+        "strictAllGatesPass": false,
+        "actualRecordedIntegrations": 49846,
+        "physicsSimSeconds": 62.307500000000005,
+        "finalQuietSamples": 4000,
+        "finalQuietMinimumJointReserveRad": 0.009780040511902843,
+        "maximumMotorFraction": 0.936146600381697,
+        "maximumSelfPenetrationM": 0.0,
+        "maximumNonfootLoadN": 0.0,
+        "flightSamples": 0,
+        "warnings": 0,
+        "missingOrSelfEligibleJointRayCount": 0,
+        "globalLoadedSlipM": [
+          0.007510787795311716,
+          0.005748092525240315
+        ],
+        "inheritedInitialJointMarginRad": -0.009130479328801344,
+        "worstJointSample": {
+          "timeS": 0.00125,
+          "step": 1,
+          "phase": "transfer",
+          "joint": "right_ankle_y",
+          "marginRad": -0.009099131732075771
+        },
+        "steps": [
+          {
+            "index": 1,
+            "side": "left",
+            "requestedDistanceM": 0.03,
+            "achievedForwardM": 0.03184441763603745,
+            "maximumWholeFootClearanceM": 0.03997066290778592,
+            "maximumLoadedClear25mmConsecutiveSamples": 2965
+          },
+          {
+            "index": 2,
+            "side": "right",
+            "requestedDistanceM": 0.06,
+            "achievedForwardM": 0.06188542776915356,
+            "maximumWholeFootClearanceM": 0.039461290363607154,
+            "maximumLoadedClear25mmConsecutiveSamples": 2956
+          },
+          {
+            "index": 3,
+            "side": "left",
+            "requestedDistanceM": 0.09,
+            "achievedForwardM": 0.09182940355650475,
+            "maximumWholeFootClearanceM": 0.039965974391548115,
+            "maximumLoadedClear25mmConsecutiveSamples": 2965
+          },
+          {
+            "index": 4,
+            "side": "right",
+            "requestedDistanceM": 0.045,
+            "achievedForwardM": 0.046913741118467425,
+            "maximumWholeFootClearanceM": 0.03933508982784226,
+            "maximumLoadedClear25mmConsecutiveSamples": 2953
+          }
+        ],
+        "phases": [
+          {
+            "step": 1,
+            "phase": "transfer",
+            "samples": 3307,
+            "loadedSlipIncrementM": [
+              0.0017478426962224851,
+              0.0012173076174476192
+            ],
+            "minimumJointMarginRad": -0.009099131732075771
+          },
+          {
+            "step": 1,
+            "phase": "lift",
+            "samples": 1601,
+            "loadedSlipIncrementM": [
+              0.0,
+              0.0001881946097472191
+            ],
+            "minimumJointMarginRad": 0.007986045984589296
+          },
+          {
+            "step": 1,
+            "phase": "translate",
+            "samples": 1601,
+            "loadedSlipIncrementM": [
+              0.0,
+              8.31815148516807e-05
+            ],
+            "minimumJointMarginRad": 0.009577697547843433
+          },
+          {
+            "step": 1,
+            "phase": "land",
+            "samples": 1601,
+            "loadedSlipIncrementM": [
+              8.698269020780973e-05,
+              0.0001743895039140143
+            ],
+            "minimumJointMarginRad": 0.009631629887715931
+          },
+          {
+            "step": 1,
+            "phase": "settle",
+            "samples": 3201,
+            "loadedSlipIncrementM": [
+              0.00044442181741112313,
+              0.0003886349145070943
+            ],
+            "minimumJointMarginRad": 0.009627372054824113
+          },
+          {
+            "step": 1,
+            "phase": "stand",
+            "samples": 200,
+            "loadedSlipIncrementM": [
+              6.841867484169619e-06,
+              1.0026999798101299e-05
+            ],
+            "minimumJointMarginRad": 0.009796866665172876
+          },
+          {
+            "step": 2,
+            "phase": "transfer",
+            "samples": 3307,
+            "loadedSlipIncrementM": [
+              0.0007619042312485224,
+              0.000617048667133233
+            ],
+            "minimumJointMarginRad": 0.00976807696242954
+          },
+          {
+            "step": 2,
+            "phase": "lift",
+            "samples": 1601,
+            "loadedSlipIncrementM": [
+              0.0002868277810927412,
+              0.0
+            ],
+            "minimumJointMarginRad": 0.008103839940022062
+          },
+          {
+            "step": 2,
+            "phase": "translate",
+            "samples": 1601,
+            "loadedSlipIncrementM": [
+              0.0003296741666731994,
+              0.0
+            ],
+            "minimumJointMarginRad": 0.009814385140727744
+          },
+          {
+            "step": 2,
+            "phase": "land",
+            "samples": 1601,
+            "loadedSlipIncrementM": [
+              0.00034348794842745415,
+              8.39297210129728e-05
+            ],
+            "minimumJointMarginRad": 0.00790487516578564
+          },
+          {
+            "step": 2,
+            "phase": "settle",
+            "samples": 3201,
+            "loadedSlipIncrementM": [
+              0.0003317683824203667,
+              0.000353616426565622
+            ],
+            "minimumJointMarginRad": 0.008381585912904277
+          },
+          {
+            "step": 2,
+            "phase": "stand",
+            "samples": 200,
+            "loadedSlipIncrementM": [
+              2.688075701262789e-06,
+              1.7353492311098472e-06
+            ],
+            "minimumJointMarginRad": 0.009780061802116657
+          },
+          {
+            "step": 3,
+            "phase": "transfer",
+            "samples": 3309,
+            "loadedSlipIncrementM": [
+              0.0005140474320341568,
+              0.000532746839168445
+            ],
+            "minimumJointMarginRad": 0.009603553412426469
+          },
+          {
+            "step": 3,
+            "phase": "lift",
+            "samples": 1601,
+            "loadedSlipIncrementM": [
+              0.0,
+              0.00025049040951403154
+            ],
+            "minimumJointMarginRad": 0.007687691840529642
+          },
+          {
+            "step": 3,
+            "phase": "translate",
+            "samples": 1601,
+            "loadedSlipIncrementM": [
+              0.0,
+              0.0002381167373536339
+            ],
+            "minimumJointMarginRad": 0.0086903536583256
+          },
+          {
+            "step": 3,
+            "phase": "land",
+            "samples": 1601,
+            "loadedSlipIncrementM": [
+              3.969587294217619e-05,
+              0.00020820797306521626
+            ],
+            "minimumJointMarginRad": 0.009076572330297461
+          },
+          {
+            "step": 3,
+            "phase": "settle",
+            "samples": 3201,
+            "loadedSlipIncrementM": [
+              0.00045954237935187745,
+              0.0004016564179636405
+            ],
+            "minimumJointMarginRad": 0.009637370618610808
+          },
+          {
+            "step": 3,
+            "phase": "stand",
+            "samples": 200,
+            "loadedSlipIncrementM": [
+              3.003887791955956e-06,
+              2.295707945134187e-06
+            ],
+            "minimumJointMarginRad": 0.00985588662389203
+          },
+          {
+            "step": 4,
+            "phase": "transfer",
+            "samples": 3307,
+            "loadedSlipIncrementM": [
+              0.0006431013388750991,
+              0.0005481602134633527
+            ],
+            "minimumJointMarginRad": 0.009740686885776562
+          },
+          {
+            "step": 4,
+            "phase": "lift",
+            "samples": 1601,
+            "loadedSlipIncrementM": [
+              0.00024778165783954486,
+              0.0
+            ],
+            "minimumJointMarginRad": 0.008414818707246752
+          },
+          {
+            "step": 4,
+            "phase": "translate",
+            "samples": 1601,
+            "loadedSlipIncrementM": [
+              0.00029885006964422076,
+              0.0
+            ],
+            "minimumJointMarginRad": 0.009756303444816594
+          },
+          {
+            "step": 4,
+            "phase": "land",
+            "samples": 1601,
+            "loadedSlipIncrementM": [
+              0.0005871059301412549,
+              6.0062479456715265e-05
+            ],
+            "minimumJointMarginRad": 0.007695011984720224
+          },
+          {
+            "step": 4,
+            "phase": "settle",
+            "samples": 3201,
+            "loadedSlipIncrementM": [
+              0.0003378810456481276,
+              0.00036367092758929267
+            ],
+            "minimumJointMarginRad": 0.008298793926602821
+          },
+          {
+            "step": 4,
+            "phase": "stand",
+            "samples": 4000,
+            "loadedSlipIncrementM": [
+              3.733852415416846e-05,
+              2.4619495512186e-05
+            ],
+            "minimumJointMarginRad": 0.009780040511902843
+          }
+        ],
+        "hashes": {
+          "frames.ndjson": "5464bfb1df304e48b3a864bb74d4b88f030cccee4c93315d6bde49b9e7fdcde4",
+          "control.json": "97a0023edfa564f9c5aaf2bce4ebaec817fa853c37255b030d07e2f221d1b699",
+          "multistep-summary.json": "6e3bbd7b948479c0c913a9ab28b6e6980866fa55a4251e2080ebf75345022a39",
+          "summary.json": "1293521f0362632603e9cf7e5a0428fa9b8337b110cef9b2308a6ded77acf457",
+          "final.bin": "8a74a2f4604e2efa7f43ecd87daa590a4d90c8c676618341d287a5d44ac13aa5"
+        }
+      },
+      "modelSHA256": "216d5c0159abf07139f5556c59e244ae77cb7557ba5256e301ebc5e1c8bbc399"
+    }
+  },
+  "referenceReproducesHistoricalMeasuredState": true,
+  "adaptation": {
+    "experimental": true,
+    "sourceModelSHA256": "69a7e87fed168e1f4ad7dee43dfdd8df6bd74b3d4af06d99c991b46b941106db",
+    "modelSHA256": "216d5c0159abf07139f5556c59e244ae77cb7557ba5256e301ebc5e1c8bbc399",
+    "ranges": [
+      {
+        "joint": "right_hip_x",
+        "sourceAxis": "1 0 0",
+        "beforeDeg": [
+          -25.0,
+          5.0
+        ],
+        "afterDeg": [
+          -35.0,
+          15.0
+        ]
+      },
+      {
+        "joint": "right_hip_z",
+        "sourceAxis": "0 0 1",
+        "beforeDeg": [
+          -30.0,
+          25.0
+        ],
+        "afterDeg": [
+          -40.0,
+          35.0
+        ]
+      },
+      {
+        "joint": "right_hip_y",
+        "sourceAxis": "0 1 0",
+        "beforeDeg": [
+          -110.0,
+          20.0
+        ],
+        "afterDeg": [
+          -120.0,
+          30.0
+        ]
+      },
+      {
+        "joint": "left_hip_x",
+        "sourceAxis": "-1 0 0",
+        "beforeDeg": [
+          -25.0,
+          5.0
+        ],
+        "afterDeg": [
+          -35.0,
+          15.0
+        ]
+      },
+      {
+        "joint": "left_hip_z",
+        "sourceAxis": "0 0 -1",
+        "beforeDeg": [
+          -30.0,
+          25.0
+        ],
+        "afterDeg": [
+          -40.0,
+          35.0
+        ]
+      },
+      {
+        "joint": "left_hip_y",
+        "sourceAxis": "0 1 0",
+        "beforeDeg": [
+          -110.0,
+          20.0
+        ],
+        "afterDeg": [
+          -120.0,
+          30.0
+        ]
+      }
+    ],
+    "modelChanges": "six hip joint ranges only",
+    "originalWarmCacheImported": false,
+    "cacheRebuiltFromIdenticalColdQposQvel": true,
+    "physicsIntegrations": 0,
+    "anatomicalRealismClaim": false,
+    "motorPowerChanged": false,
+    "defaultPromoted": false
+  },
+  "scope": {
+    "originalModelChanged": false,
+    "defaultPromoted": false,
+    "controllerChanged": false,
+    "motorPowerChanged": false,
+    "frictionChanged": false,
+    "requestedDistancesChanged": false,
+    "phaseTimingChanged": false,
+    "physicalRootAssistance": false,
+    "physicalStateInstallationsBetweenSteps": 0,
+    "initialState": "identical measured qpos/qvel, fresh model-specific solver state",
+    "anatomicalRealismClaim": false
+  }
+}
