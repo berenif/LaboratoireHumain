@@ -14,6 +14,9 @@ export async function start_bridge() {
   const host = document.getElementById('viewport');
   const bindings = window.lhBindings;
   let worker = null;
+  const sourceStepLab = new URL(location.href).searchParams.get('sourceStepLab') === '1';
+  if (sourceStepLab && location.hostname !== '127.0.0.1') throw new Error('Source step preview requires loopback');
+  let rayOverlay = null;
   const initialMode = new URL(location.href).searchParams.get('mode') === 'playground' ? 'playground' : 'protocol';
   let initialization = { mode: initialMode, heading: 0, generation: 1, floorEnabled: true };
   // Only an explicit automation preload enables the recovery observer. Ordinary
@@ -32,7 +35,7 @@ export async function start_bridge() {
   const state = {
     disposed: false, renderer: null, canvas: null, changing: false, graphicsFault: false, graphicsError: '',
     backendRequested: new URL(location.href).searchParams.get('renderer') || 'auto',
-    quality: 'auto', selected: '', heading: 0, floorEnabled: true, desiredFloorEnabled: true, desiredPaused: false,
+    quality: 'auto', selected: '', heading: 0, floorEnabled: true, desiredFloorEnabled: true, desiredPaused: sourceStepLab,
     playground: { station: 'flat', difficulty: 'challenging' },
     visible: !document.hidden, visibleSent: true, last: null, pending: [], acknowledgements: new Map(),
     requestId: 0, sequence: 0, outstanding: null, press: 0, pointer: null,
@@ -69,7 +72,7 @@ export async function start_bridge() {
       strikes: snapshot?.counters.strikes || 0, strikerPhase: snapshot?.striker?.phase || '',
       canStrike: Boolean(snapshot?.striker?.available && state.renderer && !state.changing && !state.graphicsFault && !state.desiredPaused && state.visible && !state.failed && !state.workerFault && !state.outstanding?.strike && !state.pending.some(entry => entry.action === 'Strike')),
       motion: snapshot?.motion || 'Starting', falls: snapshot?.counters.falls || 0,
-      recoveryStep: getup ? getup.learned_policy_loaded
+      recoveryStep: sourceStepLab ? `Native source lab · ${state.last?.reply.sourceStepLab?.phase || 'paused'} · ${state.last?.reply.sourceStepLab?.quietSeconds?.toFixed(2) || '0.00'} s quiet` : getup ? getup.learned_policy_loaded
         ? `GetUp pretrained · ${getup.policy?.phase || 'initializing'} · Experimental`
         : 'GetUp body · Reference PD · Learned recovery disabled' : '',
       floorEnabled: state.floorEnabled, desiredFloorEnabled: state.desiredFloorEnabled, error: state.error || state.graphicsError, workerMs: state.workerMs,
@@ -97,7 +100,7 @@ export async function start_bridge() {
     fail('Physical worker stopped: ' + failure.message + '. Reset to start a fresh trial.');
   }
   function spawnWorker() {
-    const current = new Worker(new URL('sim-worker.js', document.baseURI), { type: 'module', name: 'physical-body' });
+    const current = new Worker(new URL(sourceStepLab ? '/__source_step/worker.js' : 'sim-worker.js', document.baseURI), { type: 'module', name: 'physical-body' });
     worker = current; state.workerInstances++;
     current.onmessage = event => { if (worker === current) onWorkerMessage(event); };
     current.onerror = event => {
@@ -272,6 +275,7 @@ export async function start_bridge() {
         state.desiredPaused = message.reply.paused;
         state.desiredFloorEnabled = state.floorEnabled;
       }
+      if (sourceStepLab) { state.desiredPaused = message.reply.paused; state.accumulator = Math.min(state.accumulator, 0.025); }
       state.failed = Boolean(message.reply.failure);
       if (['Falling', 'Fallen', 'Recovering'].includes(message.reply.snapshot.motion)) cancelPointer(false);
       if (state.failed) { state.desiredPaused = true; state.error = 'Physics halted: ' + message.reply.failure.check + '. Reset to retry.'; cancelPointer(false); }
@@ -283,7 +287,13 @@ export async function start_bridge() {
   function freshCanvas() {
     const canvas = document.createElement('canvas');
     canvas.id = 'simulation'; canvas.tabIndex = 0; canvas.setAttribute('aria-label', 'Interactive physical body');
-    host.replaceChildren(canvas); state.canvas = canvas; return canvas;
+    host.replaceChildren(canvas);
+    if (sourceStepLab) {
+      rayOverlay = document.createElement('canvas'); rayOverlay.dataset.sourceJointRays = '22';
+      Object.assign(rayOverlay.style, { position: 'absolute', pointerEvents: 'none', left: '0', top: '0', zIndex: '2' });
+      host.style.position = 'relative'; host.append(rayOverlay);
+    }
+    state.canvas = canvas; return canvas;
   }
   async function changeRenderer(requested) {
     if (state.changing || state.disposed) return;
@@ -303,6 +313,7 @@ export async function start_bridge() {
     finally { state.changing = false; state.accumulator = 0; state.lastClock = performance.now(); notify(); }
   }
   function action(value) {
+    if (sourceStepLab && ['floor', 'mode', 'heading', 'station', 'difficulty', 'strike'].includes(value.type)) return;
     if (['pause', 'reset', 'floor', 'mode', 'heading', 'station', 'difficulty', 'strike'].includes(value.type)) {
       if (value.type === 'reset' && state.workerFault) { restartWorker(); return; }
       if (!state.last || state.workerFault || (state.failed && value.type !== 'reset')) return;
@@ -354,7 +365,7 @@ export async function start_bridge() {
     event.preventDefault(); state.canvas.focus(); state.canvas.setPointerCapture(event.pointerId);
     const rect = state.canvas.getBoundingClientRect();
     const x = event.clientX - rect.left, y = event.clientY - rect.top;
-    const canGrab = ['Upright', 'Reacting'].includes(state.last?.reply.snapshot.motion);
+    const canGrab = !sourceStepLab && ['Upright', 'Reacting'].includes(state.last?.reply.snapshot.motion);
     const hit = event.button === 0 && canGrab && !state.desiredPaused && !state.failed ? JSON.parse(state.renderer.pick(x, y, rect.width, rect.height)) : null;
     state.lastPick = hit;
     if (hit) {
@@ -436,6 +447,18 @@ export async function start_bridge() {
         if (rect.width > 0 && rect.height > 0) {
           state.renderer.resize(rect.width, rect.height, ratio);
           if (state.renderer.draw(now)) {
+            if (sourceStepLab && rayOverlay && state.last?.reply.sourceStepLab) {
+              const hostRect = host.getBoundingClientRect();
+              rayOverlay.width = Math.round(rect.width); rayOverlay.height = Math.round(rect.height);
+              Object.assign(rayOverlay.style, { width: `${rect.width}px`, height: `${rect.height}px`, left: `${rect.left - hostRect.left}px`, top: `${rect.top - hostRect.top}px` });
+              const context = rayOverlay.getContext('2d'); context.strokeStyle = '#bc805577'; context.lineWidth = 1;
+              for (const ray of state.last.reply.sourceStepLab.jointGroundRaysWorld) {
+                if (!ray.hit) continue;
+                const a = state.renderer.project_world_point(new Float32Array(ray.origin), rect.width, rect.height);
+                const b = state.renderer.project_world_point(new Float32Array(ray.point), rect.width, rect.height);
+                if ([...a, ...b].every(Number.isFinite)) { context.beginPath(); context.moveTo(...a); context.lineTo(...b); context.stroke(); }
+              }
+            }
             state.frameCount++;
             const displayedTimeS = state.renderer.presentation_time_s();
             const sources = state.snapshotSources;
@@ -484,6 +507,7 @@ export async function start_bridge() {
   active = { dispose }; listen(window, 'pagehide', dispose);
   window.__lhRust = {
     get diagnostics() { return { ...status(), snapshot: state.last?.reply.snapshot, graphics: state.renderer ? JSON.parse(state.renderer.diagnostics()) : null,
+      ...(sourceStepLab ? { sourceStepLab: state.last?.reply.sourceStepLab } : {}),
       disposed: state.disposed, confirmedPaused: state.last?.reply.paused, outstanding: Boolean(state.outstanding), queueDepth: state.pending.length, workerInstances: state.workerInstances,
       workerFault: state.workerFault, manualRequests: state.manualRequests.length,
       rendererChanges: state.rendererChanges, backlogSeconds: state.accumulator, lastPick: state.lastPick,
@@ -550,5 +574,13 @@ export async function start_bridge() {
     } } : {}),
     projectSegment(segment) { const rect = state.canvas.getBoundingClientRect(); const point = state.renderer.project_segment(segment, rect.width, rect.height); return { x: rect.left + point[0], y: rect.top + point[1] }; },
   };
+  if (sourceStepLab) {
+    const label = document.querySelector('.preview-tag'); if (label) label.textContent = 'LOCAL VALIDATION · native source engine';
+    const intro = document.querySelector('.intro'); if (intro) intro.textContent = 'Live source-engine step. Start, pause and reset. Joint rays affect clearance constraints. Dragging and impacts are unavailable in this validation preview.';
+    const button = document.createElement('button'); button.id = 'source-live-step'; button.className = 'primary'; button.textContent = 'Start live step';
+    button.onclick = () => { if (state.last && state.desiredPaused && !state.last.reply.sourceStepLab.finished) action({ type: 'pause' }); };
+    document.querySelector('.button-row')?.before(button);
+    const footnote = document.querySelector('footer'); if (footnote) footnote.textContent = 'Loopback source-engine validation. Default Rust/WASM runtime unchanged. Lines show joint-anchor ground rays, not collider clearance.';
+  }
   spawnWorker(); state.raf = requestAnimationFrame(frame); notify(); await changeRenderer(state.backendRequested);
 }

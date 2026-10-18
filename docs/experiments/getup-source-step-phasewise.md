@@ -14,7 +14,7 @@ material-point slip is **2.845 / 3.558 mm**. All 9,605 actual 800 Hz samples hav
 foot support, zero nonfoot load, no engine warnings, and zero self penetration.
 Actual torques remain within 95% of the original gear caps. The final 4,000
 samples stay inside joint limits. The inherited source entry has a 9.13 mrad
-soft elbow-limit excursion; this recovers and is not concealed or credited as
+soft ankle-limit excursion (the elbows also start outside their limits); this recovers and is not concealed or credited as
 planned actuation. The replay receipt preserves this caveat.
 
 The controller uses joint torques only: original mass/bias/Jacobians, constrained
@@ -57,3 +57,23 @@ OPENBLAS_NUM_THREADS=1 .venv/mvp/bin/python scripts/getup-step/audit_source_step
 
 No pose-suite robustness, learned GetUp adaptation, browser controller port,
 release qualification, or default behavior change is implied.
+
+## Alternating unequal steps
+
+The same opt-in source controller now alternates measured support feet and
+requests 30 / 60 / 90 / 45 mm. A two-step bounded qualification completes
+31.870 / 61.730 mm, then 4,000 quiet samples, in 15,411 uninterrupted native
+integrations. Global loaded material-point slip is 9.478 / 5.099 mm; no flight,
+nonfoot support, self penetration or warnings occur. Peak effort is 95%.
+The final quiet joint reserve is at least 8.566 mrad. This is **not strict
+all-sample joint-limit qualification**: second-lift left hip-z briefly exceeds
+its soft limit by 9.907 mrad. The four-step extension still fails the unchanged
+10 mm global slip guard. Second-lift stance slip contributes 3.896 mm, the
+largest loss. The saved-data audit records each phase's global-slip increment.
+
+Each new step takes its references from the actually landed, loaded, stable
+state; there is no inter-step state installation. Per-joint ground barriers and
+foot-ray clearance/landing inputs remain active in every phase. Native
+self-collider separation adds a distinct, tested arm/thigh avoidance barrier.
+Source-engine multi-step validation remains separate from the single-step
+loopback UI and the default Rust/WASM application.

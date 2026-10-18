@@ -683,6 +683,23 @@ impl BrowserRenderer {
         }
         Ok((origin + direction * distance).to_array().to_vec())
     }
+    /// Read-only projection for the opt-in local ground-ray overlay.
+    pub fn project_world_point(
+        &self,
+        point: &[f32],
+        width: f32,
+        height: f32,
+    ) -> Result<Vec<f32>, JsValue> {
+        if point.len() != 3 || point.iter().any(|x| !x.is_finite()) || width <= 0.0 || height <= 0.0
+        {
+            return Err(error("Invalid overlay point or viewport"));
+        }
+        let p = self
+            .camera
+            .matrix(width / height)
+            .project_point3(Vec3::from_slice(point));
+        Ok(vec![(p.x + 1.0) * width * 0.5, (1.0 - p.y) * height * 0.5])
+    }
     pub fn project_segment(
         &self,
         segment: usize,

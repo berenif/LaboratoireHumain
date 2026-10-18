@@ -1,0 +1,176 @@
+{
+  "savedDataOnly": true,
+  "physicsIntegrations": 0,
+  "motionAndQuietGatesPass": true,
+  "strictAllSampleJointLimitsPass": false,
+  "strictAllGatesPass": false,
+  "actualRecordedIntegrations": 15411,
+  "physicsSimSeconds": 19.26375,
+  "finalQuietSamples": 4000,
+  "finalQuietMinimumJointReserveRad": 0.008566423692447867,
+  "maximumMotorFraction": 0.9499999999999048,
+  "maximumSelfPenetrationM": 0.0,
+  "maximumNonfootLoadN": 0.0,
+  "flightSamples": 0,
+  "warnings": 0,
+  "missingOrSelfEligibleJointRayCount": 0,
+  "globalLoadedSlipM": [
+    0.009477809670814578,
+    0.00509938293849273
+  ],
+  "inheritedInitialJointMarginRad": -0.009130479328801344,
+  "worstJointSample": {
+    "timeS": 10.071250000000001,
+    "step": 2,
+    "phase": "lift",
+    "joint": "left_hip_z",
+    "marginRad": -0.009906792853696778
+  },
+  "steps": [
+    {
+      "index": 1,
+      "side": "left",
+      "requestedDistanceM": 0.03,
+      "achievedForwardM": 0.03187031335110941,
+      "maximumWholeFootClearanceM": 0.03905652838792814,
+      "maximumLoadedClear25mmConsecutiveSamples": 1473
+    },
+    {
+      "index": 2,
+      "side": "right",
+      "requestedDistanceM": 0.06,
+      "achievedForwardM": 0.061730267625087085,
+      "maximumWholeFootClearanceM": 0.038581526417710704,
+      "maximumLoadedClear25mmConsecutiveSamples": 1451
+    }
+  ],
+  "phases": [
+    {
+      "step": 1,
+      "phase": "transfer",
+      "samples": 1601,
+      "loadedSlipIncrementM": [
+        0.0015681505712501183,
+        0.0011391383909781022
+      ],
+      "minimumJointMarginRad": -0.009099598842222945
+    },
+    {
+      "step": 1,
+      "phase": "lift",
+      "samples": 801,
+      "loadedSlipIncrementM": [
+        3.855369303765611e-07,
+        0.00031886261437078997
+      ],
+      "minimumJointMarginRad": -0.0028762030096297075
+    },
+    {
+      "step": 1,
+      "phase": "translate",
+      "samples": 801,
+      "loadedSlipIncrementM": [
+        0.0,
+        0.00022185390664175033
+      ],
+      "minimumJointMarginRad": -0.0005332298778132349
+    },
+    {
+      "step": 1,
+      "phase": "land",
+      "samples": 801,
+      "loadedSlipIncrementM": [
+        0.00012252725045744546,
+        0.0003268513715107661
+      ],
+      "minimumJointMarginRad": -0.0032893751324529763
+    },
+    {
+      "step": 1,
+      "phase": "settle",
+      "samples": 1601,
+      "loadedSlipIncrementM": [
+        0.0007984605562372708,
+        0.0006655456463265088
+      ],
+      "minimumJointMarginRad": 0.0008949804236901282
+    },
+    {
+      "step": 1,
+      "phase": "stand",
+      "samples": 200,
+      "loadedSlipIncrementM": [
+        9.436186236247163e-06,
+        1.2671395655336742e-05
+      ],
+      "minimumJointMarginRad": 0.00900018954348658
+    },
+    {
+      "step": 2,
+      "phase": "transfer",
+      "samples": 1602,
+      "loadedSlipIncrementM": [
+        0.0008140140695884102,
+        0.0010260079337487001
+      ],
+      "minimumJointMarginRad": -0.0016083937473972965
+    },
+    {
+      "step": 2,
+      "phase": "lift",
+      "samples": 801,
+      "loadedSlipIncrementM": [
+        0.0038963109746662943,
+        1.0876871316691482e-06
+      ],
+      "minimumJointMarginRad": -0.009906792853696778
+    },
+    {
+      "step": 2,
+      "phase": "translate",
+      "samples": 801,
+      "loadedSlipIncrementM": [
+        0.0005753225266494234,
+        0.0
+      ],
+      "minimumJointMarginRad": -0.005760167158610108
+    },
+    {
+      "step": 2,
+      "phase": "land",
+      "samples": 801,
+      "loadedSlipIncrementM": [
+        0.0007509174610457522,
+        0.00028688918088230634
+      ],
+      "minimumJointMarginRad": -0.004012042235984892
+    },
+    {
+      "step": 2,
+      "phase": "settle",
+      "samples": 1601,
+      "loadedSlipIncrementM": [
+        0.0006645739253511602,
+        0.0008224655760555406
+      ],
+      "minimumJointMarginRad": 6.925822499675993e-05
+    },
+    {
+      "step": 2,
+      "phase": "stand",
+      "samples": 4000,
+      "loadedSlipIncrementM": [
+        0.00027771061240207916,
+        0.00027800923519125977
+      ],
+      "minimumJointMarginRad": 0.008566423692447867
+    }
+  ],
+  "hashes": {
+    "frames.ndjson": "82e25510f2811993a37f44fcbb366c2b8fbf7700832441368c281ae507d99f02",
+    "control.json": "1599b80d9d26b114e52bebeaca6d949ca34c9b0d38bc136e4a22e77d19155fcf",
+    "multistep-summary.json": "faf12261c2662252201067276b385f5d1acaae9b0bcde592be63069c052b124b",
+    "summary.json": "338296421b8daf195dd25eac7bd903b33b0e1a1b1ca9e38252ffa96dc72084fe",
+    "final.bin": "9f272e1cdad425c3251a50717b5ff9bf390cfb5575078d4859e0e644f61c0d62"
+  }
+}

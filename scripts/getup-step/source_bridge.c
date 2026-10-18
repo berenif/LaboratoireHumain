@@ -7,12 +7,16 @@
 #include <stddef.h>
 
 typedef struct { int body; double local[3], normal[3], force; } FloorPoint;
+static double audit_ground_wrench[12];
+static LH *audit_ground_owner=NULL;
+void lh_last_ground_wrench(LH*h,double*out){if(h==audit_ground_owner)mju_copy(out,audit_ground_wrench,12);else mju_zero(out,12);}
 
 int lh_step_audited(LH *h, int maximum) {
     if(h->steps>=maximum) return -1;
     FloorPoint floor_points[128]; int floor_point_count=0;
     h->steps++;
     mj_step2(h->m,h->d);
+    mju_zero(audit_ground_wrench,12);audit_ground_owner=h;
     memset(h->solved_loads,0,sizeof(h->solved_loads));
     h->support_count=0; h->audit_foot_slip[0]=h->audit_foot_slip[1]=0;
     for(int i=0;i<h->d->ncon;i++) {
@@ -23,6 +27,13 @@ int lh_step_audited(LH *h, int maximum) {
         int body=a==0?b:a; double sign=a==0?1:-1, up=sign*c->frame[2];
         if(body>=17 || up<0.65 || force[0]<=0) continue;
         h->solved_loads[body]+=force[0]*up;
+        if(body==h->feet[0] || body==h->feet[1]) {
+            int side=body==h->feet[0]?0:1;double world[3],lever[3],moment[3];
+            mju_mulMatTVec(world,c->frame,force,3,3);
+            for(int k=0;k<3;k++){world[k]*=sign;lever[k]=c->pos[k]-h->d->xpos[3*body+k];}
+            mju_cross(moment,lever,world);
+            for(int k=0;k<3;k++){audit_ground_wrench[6*side+k]+=world[k];audit_ground_wrench[6*side+3+k]+=moment[k];}
+        }
         if((body==h->feet[0] || body==h->feet[1]) && floor_point_count<128) {
             FloorPoint *p=&floor_points[floor_point_count++]; p->body=body; p->force=force[0];
             double delta[3];

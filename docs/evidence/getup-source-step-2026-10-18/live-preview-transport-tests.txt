@@ -1,0 +1,11 @@
+test_existing_renderer_packet_identity (test_source_step_preview.Preview.test_existing_renderer_packet_identity) ... ok
+test_full_live_step_is_measured (test_source_step_preview.Preview.test_full_live_step_is_measured) ... ok
+test_loopback_origin_guard (test_source_step_preview.Preview.test_loopback_origin_guard) ... ok
+test_pause_stops_physics (test_source_step_preview.Preview.test_pause_stops_physics) ... ok
+test_reset_determinism_and_monotonic_charges (test_source_step_preview.Preview.test_reset_determinism_and_monotonic_charges) ... ok
+test_stale_requests_never_integrate (test_source_step_preview.Preview.test_stale_requests_never_integrate) ... ok
+
+----------------------------------------------------------------------
+Ran 6 tests in 29.856s
+
+OK
