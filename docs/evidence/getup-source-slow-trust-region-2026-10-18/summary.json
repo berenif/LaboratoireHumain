@@ -1,0 +1,17 @@
+{
+  "stopped": "completed-fixed-pair",
+  "optimizerCalls": 110,
+  "proposalAttempts": 5,
+  "acceptedSteps": 5,
+  "physicsSeconds": 0.3364374093944207,
+  "actualPolicyIntervals": 227,
+  "actualNativeIntegrations": 4522,
+  "runWallSeconds": 49.44272185199952,
+  "quietStabilizationQualified": false,
+  "forwardStepQualified": false,
+  "selectedPolicy": "immutable-source-SLOW-baseline",
+  "fixedOriginalAlpha": 0.000612579835321518,
+  "originalStateDependentStdFrozen": true,
+  "deterministicPair": true,
+  "admissionSHA256": "09ccb770f7f5886a998b2098db2a30e7fa0b8d4a6858b8461a0dca82aaada3cc"
+}

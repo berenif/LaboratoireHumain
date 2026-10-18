@@ -1,0 +1,38 @@
+{
+  "schema": 1,
+  "profile": "slow-offline-trust",
+  "startedUtc": "2026-10-18T01:40:21+00:00",
+  "deadlineUtc": "2026-10-18T01:55:21+00:00",
+  "planSHA256": "dcbd484f57aa51457a3145ec5c39eb10b7cd32326168da37c99d27c0be48b3e7",
+  "aggregatePhysicsLimitSeconds": 3.0,
+  "validationWallReservedSeconds": 300,
+  "allIntervalLimit": 640,
+  "maximumSourceSteps": 12800,
+  "physicsSeconds": 0.3364374093944207,
+  "sourceIntegrations": 4522,
+  "totalPolicyIntervals": 227,
+  "stagePhysicsSeconds": {
+    "benchmark": 0.0,
+    "training": 0.0,
+    "validation": 0.3364374093944207
+  },
+  "stagePolicyIntervals": {
+    "benchmark": 0,
+    "training": 0,
+    "validation": 227
+  },
+  "requestOutstanding": false,
+  "pendingOptimizer": null,
+  "optimizerCalls": 110,
+  "optimizerLimit": 110,
+  "proposalAttempts": 5,
+  "acceptedSteps": 5,
+  "status": "closed-offline-trust",
+  "taskCollectionEnabled": false,
+  "pendingPossibleNativeIntegrations": 0,
+  "pendingStage": "validation",
+  "pendingPhysicsReserveSeconds": 0.0,
+  "lastCallPhysicsSeconds": 6.562798807863146e-05,
+  "lastCallStage": "validation",
+  "unusedAllowanceNotTransferred": true
+}

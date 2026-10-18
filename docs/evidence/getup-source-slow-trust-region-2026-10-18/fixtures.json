@@ -1,0 +1,6 @@
+{
+  "passed": true,
+  "tests": 11,
+  "scope": "synthetic throwaway optimizer arithmetic and fake ledger;0candidate calls/0engine integrations",
+  "logSHA256": "f369e8cb814fa449dfa4fe0b00a1b05551e5c9fea240148aa52d8a2d02b3355e"
+}

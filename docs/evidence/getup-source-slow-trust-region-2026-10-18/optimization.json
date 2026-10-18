@@ -1,0 +1,942 @@
+[
+  {
+    "phase": "warmup",
+    "criticLoss": 1.767109990119934,
+    "criticOnlyUpdates": 1,
+    "sourceActorUpdates": 0,
+    "sourceAlphaUpdates": 0,
+    "targetUpdated": true
+  },
+  {
+    "phase": "warmup",
+    "criticLoss": 4.234085559844971,
+    "criticOnlyUpdates": 2,
+    "sourceActorUpdates": 0,
+    "sourceAlphaUpdates": 0,
+    "targetUpdated": true
+  },
+  {
+    "phase": "warmup",
+    "criticLoss": 5.383773326873779,
+    "criticOnlyUpdates": 3,
+    "sourceActorUpdates": 0,
+    "sourceAlphaUpdates": 0,
+    "targetUpdated": true
+  },
+  {
+    "phase": "warmup",
+    "criticLoss": 0.7703171968460083,
+    "criticOnlyUpdates": 4,
+    "sourceActorUpdates": 0,
+    "sourceAlphaUpdates": 0,
+    "targetUpdated": true
+  },
+  {
+    "phase": "warmup",
+    "criticLoss": 2.1376373767852783,
+    "criticOnlyUpdates": 5,
+    "sourceActorUpdates": 0,
+    "sourceAlphaUpdates": 0,
+    "targetUpdated": true
+  },
+  {
+    "phase": "warmup",
+    "criticLoss": 0.36643946170806885,
+    "criticOnlyUpdates": 6,
+    "sourceActorUpdates": 0,
+    "sourceAlphaUpdates": 0,
+    "targetUpdated": true
+  },
+  {
+    "phase": "warmup",
+    "criticLoss": 0.22752641141414642,
+    "criticOnlyUpdates": 7,
+    "sourceActorUpdates": 0,
+    "sourceAlphaUpdates": 0,
+    "targetUpdated": true
+  },
+  {
+    "phase": "warmup",
+    "criticLoss": 1.8104286193847656,
+    "criticOnlyUpdates": 8,
+    "sourceActorUpdates": 0,
+    "sourceAlphaUpdates": 0,
+    "targetUpdated": true
+  },
+  {
+    "phase": "warmup",
+    "criticLoss": 1.6480169296264648,
+    "criticOnlyUpdates": 9,
+    "sourceActorUpdates": 0,
+    "sourceAlphaUpdates": 0,
+    "targetUpdated": true
+  },
+  {
+    "phase": "warmup",
+    "criticLoss": 0.019539229571819305,
+    "criticOnlyUpdates": 10,
+    "sourceActorUpdates": 0,
+    "sourceAlphaUpdates": 0,
+    "targetUpdated": true
+  },
+  {
+    "phase": "warmup",
+    "criticLoss": 1.763763666152954,
+    "criticOnlyUpdates": 11,
+    "sourceActorUpdates": 0,
+    "sourceAlphaUpdates": 0,
+    "targetUpdated": true
+  },
+  {
+    "phase": "warmup",
+    "criticLoss": 1.6587848663330078,
+    "criticOnlyUpdates": 12,
+    "sourceActorUpdates": 0,
+    "sourceAlphaUpdates": 0,
+    "targetUpdated": true
+  },
+  {
+    "phase": "warmup",
+    "criticLoss": 5.15616512298584,
+    "criticOnlyUpdates": 13,
+    "sourceActorUpdates": 0,
+    "sourceAlphaUpdates": 0,
+    "targetUpdated": true
+  },
+  {
+    "phase": "warmup",
+    "criticLoss": 1.7032687664031982,
+    "criticOnlyUpdates": 14,
+    "sourceActorUpdates": 0,
+    "sourceAlphaUpdates": 0,
+    "targetUpdated": true
+  },
+  {
+    "phase": "warmup",
+    "criticLoss": 0.025797095149755478,
+    "criticOnlyUpdates": 15,
+    "sourceActorUpdates": 0,
+    "sourceAlphaUpdates": 0,
+    "targetUpdated": true
+  },
+  {
+    "phase": "warmup",
+    "criticLoss": 0.029741665348410606,
+    "criticOnlyUpdates": 16,
+    "sourceActorUpdates": 0,
+    "sourceAlphaUpdates": 0,
+    "targetUpdated": true
+  },
+  {
+    "phase": "warmup",
+    "criticLoss": 5.24645471572876,
+    "criticOnlyUpdates": 17,
+    "sourceActorUpdates": 0,
+    "sourceAlphaUpdates": 0,
+    "targetUpdated": true
+  },
+  {
+    "phase": "warmup",
+    "criticLoss": 1.8452434539794922,
+    "criticOnlyUpdates": 18,
+    "sourceActorUpdates": 0,
+    "sourceAlphaUpdates": 0,
+    "targetUpdated": true
+  },
+  {
+    "phase": "warmup",
+    "criticLoss": 0.017994917929172516,
+    "criticOnlyUpdates": 19,
+    "sourceActorUpdates": 0,
+    "sourceAlphaUpdates": 0,
+    "targetUpdated": true
+  },
+  {
+    "phase": "warmup",
+    "criticLoss": 0.011108659207820892,
+    "criticOnlyUpdates": 20,
+    "sourceActorUpdates": 0,
+    "sourceAlphaUpdates": 0,
+    "targetUpdated": true
+  },
+  {
+    "phase": "warmup",
+    "criticLoss": 0.0055848765186965466,
+    "criticOnlyUpdates": 21,
+    "sourceActorUpdates": 0,
+    "sourceAlphaUpdates": 0,
+    "targetUpdated": true
+  },
+  {
+    "phase": "warmup",
+    "criticLoss": 0.0022232825867831707,
+    "criticOnlyUpdates": 22,
+    "sourceActorUpdates": 0,
+    "sourceAlphaUpdates": 0,
+    "targetUpdated": true
+  },
+  {
+    "phase": "warmup",
+    "criticLoss": 0.00047694199020043015,
+    "criticOnlyUpdates": 23,
+    "sourceActorUpdates": 0,
+    "sourceAlphaUpdates": 0,
+    "targetUpdated": true
+  },
+  {
+    "phase": "warmup",
+    "criticLoss": 1.7913663387298584,
+    "criticOnlyUpdates": 24,
+    "sourceActorUpdates": 0,
+    "sourceAlphaUpdates": 0,
+    "targetUpdated": true
+  },
+  {
+    "phase": "warmup",
+    "criticLoss": 0.0021099841687828302,
+    "criticOnlyUpdates": 25,
+    "sourceActorUpdates": 0,
+    "sourceAlphaUpdates": 0,
+    "targetUpdated": true
+  },
+  {
+    "phase": "warmup",
+    "criticLoss": 1.7863301038742065,
+    "criticOnlyUpdates": 26,
+    "sourceActorUpdates": 0,
+    "sourceAlphaUpdates": 0,
+    "targetUpdated": true
+  },
+  {
+    "phase": "warmup",
+    "criticLoss": 3.3156962394714355,
+    "criticOnlyUpdates": 27,
+    "sourceActorUpdates": 0,
+    "sourceAlphaUpdates": 0,
+    "targetUpdated": true
+  },
+  {
+    "phase": "warmup",
+    "criticLoss": 0.014859404414892197,
+    "criticOnlyUpdates": 28,
+    "sourceActorUpdates": 0,
+    "sourceAlphaUpdates": 0,
+    "targetUpdated": true
+  },
+  {
+    "phase": "warmup",
+    "criticLoss": 5.080100059509277,
+    "criticOnlyUpdates": 29,
+    "sourceActorUpdates": 0,
+    "sourceAlphaUpdates": 0,
+    "targetUpdated": true
+  },
+  {
+    "phase": "warmup",
+    "criticLoss": 4.95156192779541,
+    "criticOnlyUpdates": 30,
+    "sourceActorUpdates": 0,
+    "sourceAlphaUpdates": 0,
+    "targetUpdated": true
+  },
+  {
+    "phase": "warmup",
+    "criticLoss": 1.6766128540039062,
+    "criticOnlyUpdates": 31,
+    "sourceActorUpdates": 0,
+    "sourceAlphaUpdates": 0,
+    "targetUpdated": true
+  },
+  {
+    "phase": "warmup",
+    "criticLoss": 3.437159299850464,
+    "criticOnlyUpdates": 32,
+    "sourceActorUpdates": 0,
+    "sourceAlphaUpdates": 0,
+    "targetUpdated": true
+  },
+  {
+    "phase": "warmup",
+    "criticLoss": 3.4401473999023438,
+    "criticOnlyUpdates": 33,
+    "sourceActorUpdates": 0,
+    "sourceAlphaUpdates": 0,
+    "targetUpdated": true
+  },
+  {
+    "phase": "warmup",
+    "criticLoss": 1.821272611618042,
+    "criticOnlyUpdates": 34,
+    "sourceActorUpdates": 0,
+    "sourceAlphaUpdates": 0,
+    "targetUpdated": true
+  },
+  {
+    "phase": "warmup",
+    "criticLoss": 0.08287568390369415,
+    "criticOnlyUpdates": 35,
+    "sourceActorUpdates": 0,
+    "sourceAlphaUpdates": 0,
+    "targetUpdated": true
+  },
+  {
+    "phase": "warmup",
+    "criticLoss": 1.8302397727966309,
+    "criticOnlyUpdates": 36,
+    "sourceActorUpdates": 0,
+    "sourceAlphaUpdates": 0,
+    "targetUpdated": true
+  },
+  {
+    "phase": "warmup",
+    "criticLoss": 1.7106044292449951,
+    "criticOnlyUpdates": 37,
+    "sourceActorUpdates": 0,
+    "sourceAlphaUpdates": 0,
+    "targetUpdated": true
+  },
+  {
+    "phase": "warmup",
+    "criticLoss": 0.08100062608718872,
+    "criticOnlyUpdates": 38,
+    "sourceActorUpdates": 0,
+    "sourceAlphaUpdates": 0,
+    "targetUpdated": true
+  },
+  {
+    "phase": "warmup",
+    "criticLoss": 0.07238483428955078,
+    "criticOnlyUpdates": 39,
+    "sourceActorUpdates": 0,
+    "sourceAlphaUpdates": 0,
+    "targetUpdated": true
+  },
+  {
+    "phase": "warmup",
+    "criticLoss": 4.97879695892334,
+    "criticOnlyUpdates": 40,
+    "sourceActorUpdates": 0,
+    "sourceAlphaUpdates": 0,
+    "targetUpdated": true
+  },
+  {
+    "phase": "warmup",
+    "criticLoss": 3.4649081230163574,
+    "criticOnlyUpdates": 41,
+    "sourceActorUpdates": 0,
+    "sourceAlphaUpdates": 0,
+    "targetUpdated": true
+  },
+  {
+    "phase": "warmup",
+    "criticLoss": 3.4681577682495117,
+    "criticOnlyUpdates": 42,
+    "sourceActorUpdates": 0,
+    "sourceAlphaUpdates": 0,
+    "targetUpdated": true
+  },
+  {
+    "phase": "warmup",
+    "criticLoss": 1.6960113048553467,
+    "criticOnlyUpdates": 43,
+    "sourceActorUpdates": 0,
+    "sourceAlphaUpdates": 0,
+    "targetUpdated": true
+  },
+  {
+    "phase": "warmup",
+    "criticLoss": 1.695236325263977,
+    "criticOnlyUpdates": 44,
+    "sourceActorUpdates": 0,
+    "sourceAlphaUpdates": 0,
+    "targetUpdated": true
+  },
+  {
+    "phase": "warmup",
+    "criticLoss": 6.9308319091796875,
+    "criticOnlyUpdates": 45,
+    "sourceActorUpdates": 0,
+    "sourceAlphaUpdates": 0,
+    "targetUpdated": true
+  },
+  {
+    "phase": "warmup",
+    "criticLoss": 0.030501671135425568,
+    "criticOnlyUpdates": 46,
+    "sourceActorUpdates": 0,
+    "sourceAlphaUpdates": 0,
+    "targetUpdated": true
+  },
+  {
+    "phase": "warmup",
+    "criticLoss": 0.029135549440979958,
+    "criticOnlyUpdates": 47,
+    "sourceActorUpdates": 0,
+    "sourceAlphaUpdates": 0,
+    "targetUpdated": true
+  },
+  {
+    "phase": "warmup",
+    "criticLoss": 3.4941117763519287,
+    "criticOnlyUpdates": 48,
+    "sourceActorUpdates": 0,
+    "sourceAlphaUpdates": 0,
+    "targetUpdated": true
+  },
+  {
+    "phase": "warmup",
+    "criticLoss": 1.6992601156234741,
+    "criticOnlyUpdates": 49,
+    "sourceActorUpdates": 0,
+    "sourceAlphaUpdates": 0,
+    "targetUpdated": true
+  },
+  {
+    "phase": "warmup",
+    "criticLoss": 0.02016153372824192,
+    "criticOnlyUpdates": 50,
+    "sourceActorUpdates": 0,
+    "sourceAlphaUpdates": 0,
+    "targetUpdated": true
+  },
+  {
+    "phase": "warmup",
+    "criticLoss": 6.877312660217285,
+    "criticOnlyUpdates": 51,
+    "sourceActorUpdates": 0,
+    "sourceAlphaUpdates": 0,
+    "targetUpdated": true
+  },
+  {
+    "phase": "warmup",
+    "criticLoss": 1.703452467918396,
+    "criticOnlyUpdates": 52,
+    "sourceActorUpdates": 0,
+    "sourceAlphaUpdates": 0,
+    "targetUpdated": true
+  },
+  {
+    "phase": "warmup",
+    "criticLoss": 0.019025592133402824,
+    "criticOnlyUpdates": 53,
+    "sourceActorUpdates": 0,
+    "sourceAlphaUpdates": 0,
+    "targetUpdated": true
+  },
+  {
+    "phase": "warmup",
+    "criticLoss": 3.5165817737579346,
+    "criticOnlyUpdates": 54,
+    "sourceActorUpdates": 0,
+    "sourceAlphaUpdates": 0,
+    "targetUpdated": true
+  },
+  {
+    "phase": "warmup",
+    "criticLoss": 3.5189733505249023,
+    "criticOnlyUpdates": 55,
+    "sourceActorUpdates": 0,
+    "sourceAlphaUpdates": 0,
+    "targetUpdated": true
+  },
+  {
+    "phase": "warmup",
+    "criticLoss": 1.832437515258789,
+    "criticOnlyUpdates": 56,
+    "sourceActorUpdates": 0,
+    "sourceAlphaUpdates": 0,
+    "targetUpdated": true
+  },
+  {
+    "phase": "warmup",
+    "criticLoss": 3.5233216285705566,
+    "criticOnlyUpdates": 57,
+    "sourceActorUpdates": 0,
+    "sourceAlphaUpdates": 0,
+    "targetUpdated": true
+  },
+  {
+    "phase": "warmup",
+    "criticLoss": 5.212214469909668,
+    "criticOnlyUpdates": 58,
+    "sourceActorUpdates": 0,
+    "sourceAlphaUpdates": 0,
+    "targetUpdated": true
+  },
+  {
+    "phase": "warmup",
+    "criticLoss": 1.7190836668014526,
+    "criticOnlyUpdates": 59,
+    "sourceActorUpdates": 0,
+    "sourceAlphaUpdates": 0,
+    "targetUpdated": true
+  },
+  {
+    "phase": "warmup",
+    "criticLoss": 3.4055895805358887,
+    "criticOnlyUpdates": 60,
+    "sourceActorUpdates": 0,
+    "sourceAlphaUpdates": 0,
+    "targetUpdated": true
+  },
+  {
+    "phase": "warmup",
+    "criticLoss": 1.7254869937896729,
+    "criticOnlyUpdates": 61,
+    "sourceActorUpdates": 0,
+    "sourceAlphaUpdates": 0,
+    "targetUpdated": true
+  },
+  {
+    "phase": "warmup",
+    "criticLoss": 1.7295126914978027,
+    "criticOnlyUpdates": 62,
+    "sourceActorUpdates": 0,
+    "sourceAlphaUpdates": 0,
+    "targetUpdated": true
+  },
+  {
+    "phase": "warmup",
+    "criticLoss": 0.050832949578762054,
+    "criticOnlyUpdates": 63,
+    "sourceActorUpdates": 0,
+    "sourceAlphaUpdates": 0,
+    "targetUpdated": true
+  },
+  {
+    "phase": "warmup",
+    "criticLoss": 0.04845919460058212,
+    "criticOnlyUpdates": 64,
+    "sourceActorUpdates": 0,
+    "sourceAlphaUpdates": 0,
+    "targetUpdated": true
+  },
+  {
+    "phase": "warmup",
+    "criticLoss": 0.042941346764564514,
+    "criticOnlyUpdates": 65,
+    "sourceActorUpdates": 0,
+    "sourceAlphaUpdates": 0,
+    "targetUpdated": true
+  },
+  {
+    "phase": "warmup",
+    "criticLoss": 0.03359345719218254,
+    "criticOnlyUpdates": 66,
+    "sourceActorUpdates": 0,
+    "sourceAlphaUpdates": 0,
+    "targetUpdated": true
+  },
+  {
+    "phase": "warmup",
+    "criticLoss": 0.023727716878056526,
+    "criticOnlyUpdates": 67,
+    "sourceActorUpdates": 0,
+    "sourceAlphaUpdates": 0,
+    "targetUpdated": true
+  },
+  {
+    "phase": "warmup",
+    "criticLoss": 3.563239574432373,
+    "criticOnlyUpdates": 68,
+    "sourceActorUpdates": 0,
+    "sourceAlphaUpdates": 0,
+    "targetUpdated": true
+  },
+  {
+    "phase": "warmup",
+    "criticLoss": 3.6940507888793945,
+    "criticOnlyUpdates": 69,
+    "sourceActorUpdates": 0,
+    "sourceAlphaUpdates": 0,
+    "targetUpdated": true
+  },
+  {
+    "phase": "warmup",
+    "criticLoss": 3.7011399269104004,
+    "criticOnlyUpdates": 70,
+    "sourceActorUpdates": 0,
+    "sourceAlphaUpdates": 0,
+    "targetUpdated": true
+  },
+  {
+    "phase": "warmup",
+    "criticLoss": 3.58376407623291,
+    "criticOnlyUpdates": 71,
+    "sourceActorUpdates": 0,
+    "sourceAlphaUpdates": 0,
+    "targetUpdated": true
+  },
+  {
+    "phase": "warmup",
+    "criticLoss": 5.312782287597656,
+    "criticOnlyUpdates": 72,
+    "sourceActorUpdates": 0,
+    "sourceAlphaUpdates": 0,
+    "targetUpdated": true
+  },
+  {
+    "phase": "warmup",
+    "criticLoss": 1.8569773435592651,
+    "criticOnlyUpdates": 73,
+    "sourceActorUpdates": 0,
+    "sourceAlphaUpdates": 0,
+    "targetUpdated": true
+  },
+  {
+    "phase": "warmup",
+    "criticLoss": 1.858264446258545,
+    "criticOnlyUpdates": 74,
+    "sourceActorUpdates": 0,
+    "sourceAlphaUpdates": 0,
+    "targetUpdated": true
+  },
+  {
+    "phase": "warmup",
+    "criticLoss": 0.021193962544202805,
+    "criticOnlyUpdates": 75,
+    "sourceActorUpdates": 0,
+    "sourceAlphaUpdates": 0,
+    "targetUpdated": true
+  },
+  {
+    "phase": "warmup",
+    "criticLoss": 1.8613617420196533,
+    "criticOnlyUpdates": 76,
+    "sourceActorUpdates": 0,
+    "sourceAlphaUpdates": 0,
+    "targetUpdated": true
+  },
+  {
+    "phase": "warmup",
+    "criticLoss": 1.7438061237335205,
+    "criticOnlyUpdates": 77,
+    "sourceActorUpdates": 0,
+    "sourceAlphaUpdates": 0,
+    "targetUpdated": true
+  },
+  {
+    "phase": "warmup",
+    "criticLoss": 3.584690809249878,
+    "criticOnlyUpdates": 78,
+    "sourceActorUpdates": 0,
+    "sourceAlphaUpdates": 0,
+    "targetUpdated": true
+  },
+  {
+    "phase": "warmup",
+    "criticLoss": 1.8672161102294922,
+    "criticOnlyUpdates": 79,
+    "sourceActorUpdates": 0,
+    "sourceAlphaUpdates": 0,
+    "targetUpdated": true
+  },
+  {
+    "phase": "warmup",
+    "criticLoss": 3.706204414367676,
+    "criticOnlyUpdates": 80,
+    "sourceActorUpdates": 0,
+    "sourceAlphaUpdates": 0,
+    "targetUpdated": true
+  },
+  {
+    "phase": "warmup",
+    "criticLoss": 5.4258527755737305,
+    "criticOnlyUpdates": 81,
+    "sourceActorUpdates": 0,
+    "sourceAlphaUpdates": 0,
+    "targetUpdated": true
+  },
+  {
+    "phase": "warmup",
+    "criticLoss": 0.04211962968111038,
+    "criticOnlyUpdates": 82,
+    "sourceActorUpdates": 0,
+    "sourceAlphaUpdates": 0,
+    "targetUpdated": true
+  },
+  {
+    "phase": "warmup",
+    "criticLoss": 3.709975242614746,
+    "criticOnlyUpdates": 83,
+    "sourceActorUpdates": 0,
+    "sourceAlphaUpdates": 0,
+    "targetUpdated": true
+  },
+  {
+    "phase": "warmup",
+    "criticLoss": 1.7641537189483643,
+    "criticOnlyUpdates": 84,
+    "sourceActorUpdates": 0,
+    "sourceAlphaUpdates": 0,
+    "targetUpdated": true
+  },
+  {
+    "phase": "warmup",
+    "criticLoss": 0.04923632740974426,
+    "criticOnlyUpdates": 85,
+    "sourceActorUpdates": 0,
+    "sourceAlphaUpdates": 0,
+    "targetUpdated": true
+  },
+  {
+    "phase": "warmup",
+    "criticLoss": 0.04390420392155647,
+    "criticOnlyUpdates": 86,
+    "sourceActorUpdates": 0,
+    "sourceAlphaUpdates": 0,
+    "targetUpdated": true
+  },
+  {
+    "phase": "warmup",
+    "criticLoss": 0.035676583647727966,
+    "criticOnlyUpdates": 87,
+    "sourceActorUpdates": 0,
+    "sourceAlphaUpdates": 0,
+    "targetUpdated": true
+  },
+  {
+    "phase": "warmup",
+    "criticLoss": 1.7618191242218018,
+    "criticOnlyUpdates": 88,
+    "sourceActorUpdates": 0,
+    "sourceAlphaUpdates": 0,
+    "targetUpdated": true
+  },
+  {
+    "phase": "warmup",
+    "criticLoss": 0.01688571646809578,
+    "criticOnlyUpdates": 89,
+    "sourceActorUpdates": 0,
+    "sourceAlphaUpdates": 0,
+    "targetUpdated": true
+  },
+  {
+    "phase": "warmup",
+    "criticLoss": 5.270225524902344,
+    "criticOnlyUpdates": 90,
+    "sourceActorUpdates": 0,
+    "sourceAlphaUpdates": 0,
+    "targetUpdated": true
+  },
+  {
+    "phase": "warmup",
+    "criticLoss": 0.006882206536829472,
+    "criticOnlyUpdates": 91,
+    "sourceActorUpdates": 0,
+    "sourceAlphaUpdates": 0,
+    "targetUpdated": true
+  },
+  {
+    "phase": "warmup",
+    "criticLoss": 5.410889625549316,
+    "criticOnlyUpdates": 92,
+    "sourceActorUpdates": 0,
+    "sourceAlphaUpdates": 0,
+    "targetUpdated": true
+  },
+  {
+    "phase": "warmup",
+    "criticLoss": 1.8845319747924805,
+    "criticOnlyUpdates": 93,
+    "sourceActorUpdates": 0,
+    "sourceAlphaUpdates": 0,
+    "targetUpdated": true
+  },
+  {
+    "phase": "warmup",
+    "criticLoss": 0.006496743764728308,
+    "criticOnlyUpdates": 94,
+    "sourceActorUpdates": 0,
+    "sourceAlphaUpdates": 0,
+    "targetUpdated": true
+  },
+  {
+    "phase": "warmup",
+    "criticLoss": 1.7713059186935425,
+    "criticOnlyUpdates": 95,
+    "sourceActorUpdates": 0,
+    "sourceAlphaUpdates": 0,
+    "targetUpdated": true
+  },
+  {
+    "phase": "warmup",
+    "criticLoss": 1.77217698097229,
+    "criticOnlyUpdates": 96,
+    "sourceActorUpdates": 0,
+    "sourceAlphaUpdates": 0,
+    "targetUpdated": true
+  },
+  {
+    "phase": "warmup",
+    "criticLoss": 0.00987172219902277,
+    "criticOnlyUpdates": 97,
+    "sourceActorUpdates": 0,
+    "sourceAlphaUpdates": 0,
+    "targetUpdated": true
+  },
+  {
+    "phase": "warmup",
+    "criticLoss": 0.00909954309463501,
+    "criticOnlyUpdates": 98,
+    "sourceActorUpdates": 0,
+    "sourceAlphaUpdates": 0,
+    "targetUpdated": true
+  },
+  {
+    "phase": "warmup",
+    "criticLoss": 3.7736153602600098,
+    "criticOnlyUpdates": 99,
+    "sourceActorUpdates": 0,
+    "sourceAlphaUpdates": 0,
+    "targetUpdated": true
+  },
+  {
+    "phase": "warmup",
+    "criticLoss": 0.010727070271968842,
+    "criticOnlyUpdates": 100,
+    "sourceActorUpdates": 0,
+    "sourceAlphaUpdates": 0,
+    "targetUpdated": true
+  },
+  {
+    "phase": "proposal",
+    "accepted": true,
+    "scale": 1.0,
+    "baselineActorLoss": -1.281301736831665,
+    "trials": [
+      {
+        "scale": 1.0,
+        "actorLoss": -1.282049536705017,
+        "maximumKL": 0.001307593658566475,
+        "meanKL": 0.0012711100280284882,
+        "lossDecrease": 0.0007477998733520508
+      }
+    ],
+    "optimizerProposalsCharged": 1,
+    "actorNoiseRngRestored": false,
+    "actorNoiseSHA256": "3cbf1e4a41cc702187ead64bc4ee5c05ef0e5eba048e702dd3ead9c6e77944a6",
+    "actorInputBatchSHA256": "0e3aa1b4be54f7ba9e87b5c079c72771de50ed3e0323a0c8d238035562e1566a",
+    "preActorTorchRngSHA256": "81ed9dd03b6e838c426a04475aaf5272cce70f426188d26997cee5c4143f5c31",
+    "resultTorchRngSHA256": "3e2a5f0fe2180a3e3aa27aee77e810cd6984b2ca3634d08c3774d367bd0320d0",
+    "attempt": 1,
+    "criticLoss": 3.6631195545196533,
+    "preActorCheckpointSHA256": "a6fd32e53fa127e939eaf5be294863db5ee6c221a098d36dfa7b906edf97639c",
+    "globalGuard": {
+      "rms": 0.001643932773731649,
+      "maximum": 0.0017111282795667648
+    }
+  },
+  {
+    "phase": "proposal",
+    "accepted": true,
+    "scale": 1.0,
+    "baselineActorLoss": -1.2804127931594849,
+    "trials": [
+      {
+        "scale": 1.0,
+        "actorLoss": -1.2811535596847534,
+        "maximumKL": 0.005217812489718199,
+        "meanKL": 0.00507193710654974,
+        "lossDecrease": 0.0007407665252685547
+      }
+    ],
+    "optimizerProposalsCharged": 1,
+    "actorNoiseRngRestored": false,
+    "actorNoiseSHA256": "5a63b5a4abbbb3e40ee31c1ffec658aad38d8ebeed8ae7c8a5326d1b26e69193",
+    "actorInputBatchSHA256": "795feb8ae239cbb5741621cecfe49cdac3c80bd04ffeb540ea9f1b29e024f55f",
+    "preActorTorchRngSHA256": "9879008d8e4a161aab2a73d7f647b282ba805ab3e12a65abecd8f1eba30d72ac",
+    "resultTorchRngSHA256": "bf548dfc537c8ce39fdaf3c541d7dc7a6276cc0f22a7530f7c03ae4b510b6527",
+    "attempt": 2,
+    "criticLoss": 1.781121850013733,
+    "preActorCheckpointSHA256": "9136b3f831bb9c73450e39ff0aa6f7b4f0d27b104723825e24c9aafa7eeeaf20",
+    "globalGuard": {
+      "rms": 0.0032836489845067263,
+      "maximum": 0.003422684967517853
+    }
+  },
+  {
+    "phase": "proposal",
+    "accepted": true,
+    "scale": 1.0,
+    "baselineActorLoss": -1.2842568159103394,
+    "trials": [
+      {
+        "scale": 1.0,
+        "actorLoss": -1.285014033317566,
+        "maximumKL": 0.011740750633180141,
+        "meanKL": 0.01141316257417202,
+        "lossDecrease": 0.0007572174072265625
+      }
+    ],
+    "optimizerProposalsCharged": 1,
+    "actorNoiseRngRestored": false,
+    "actorNoiseSHA256": "2f6b78e43ca3c10399b57560f0ada025605e32a984cdb1b97de736ed69b6ba34",
+    "actorInputBatchSHA256": "b1c7daa1a40eceb87f49015c23f168bb72ebbb1c987e3a887da4139dd49aff89",
+    "preActorTorchRngSHA256": "137dbf02941dc80966677f53f0bc2a05a22f60124d63db315ccbb716e0c28c01",
+    "resultTorchRngSHA256": "419152878c90aade86cbb78e737d2b877a769f3d31cb922d9a551cb28d45f8a9",
+    "attempt": 3,
+    "criticLoss": 0.015285221859812737,
+    "preActorCheckpointSHA256": "58d708695e52feb2e05f58666797e2a23ce3a6a24f0e3fcc7e217f564374ee1b",
+    "globalGuard": {
+      "rms": 0.0049249837175011635,
+      "maximum": 0.005136153195053339
+    }
+  },
+  {
+    "phase": "proposal",
+    "accepted": true,
+    "scale": 1.0,
+    "baselineActorLoss": -1.289667010307312,
+    "trials": [
+      {
+        "scale": 1.0,
+        "actorLoss": -1.2904415130615234,
+        "maximumKL": 0.02089216560125351,
+        "meanKL": 0.020309142768383026,
+        "lossDecrease": 0.0007745027542114258
+      }
+    ],
+    "optimizerProposalsCharged": 1,
+    "actorNoiseRngRestored": false,
+    "actorNoiseSHA256": "1079215be6d1a7159bc371d08b3205124cb27bfdb90c13aa4f84bf758cc95b78",
+    "actorInputBatchSHA256": "1222d31ac2ee9a56c7fed11e869c64525150723e3d99d503f668aec85fd1efb8",
+    "preActorTorchRngSHA256": "d732b2925ceeab3962284ac0ca2cc9b8897477a0409604a0a1aa5206e64ac7f8",
+    "resultTorchRngSHA256": "d3063cf32d3601091f4b105387f8738c1e37b4b7c3850511ddc94cf1e2f443cc",
+    "attempt": 4,
+    "criticLoss": 1.896665096282959,
+    "preActorCheckpointSHA256": "e40b97f582208828fdf91eb75995ca2ec516040079e894440177d62ecf861c1c",
+    "globalGuard": {
+      "rms": 0.006568439770489931,
+      "maximum": 0.006850594189018011
+    }
+  },
+  {
+    "phase": "proposal",
+    "accepted": true,
+    "scale": 1.0,
+    "baselineActorLoss": -1.2781537771224976,
+    "trials": [
+      {
+        "scale": 1.0,
+        "actorLoss": -1.2789273262023926,
+        "maximumKL": 0.032668426632881165,
+        "meanKL": 0.031755927950143814,
+        "lossDecrease": 0.0007735490798950195
+      }
+    ],
+    "optimizerProposalsCharged": 1,
+    "actorNoiseRngRestored": false,
+    "actorNoiseSHA256": "d1995760b611ac483ebec6ccc2da406f0ece7a10459892a18503c3931026e3c2",
+    "actorInputBatchSHA256": "3ddebceb7dbb15e089cd4b455d167621a142c2a380e6257ea9f942d05fb69370",
+    "preActorTorchRngSHA256": "569730bcd87873f71b9756751f4bd11c1fefd248cf4a1a5a612c53fec0853d84",
+    "resultTorchRngSHA256": "c520c544538b8d0a75cdefed80234ba2d6edb626d9a976c5c67ccc313ba805ba",
+    "attempt": 5,
+    "criticLoss": 7.205456256866455,
+    "preActorCheckpointSHA256": "76a2b8c18ff5d7bc72a9bfeca13e52511b1d5951a7b514f37f79f937fe3eae3e",
+    "globalGuard": {
+      "rms": 0.008211788721382618,
+      "maximum": 0.008566336706280708
+    }
+  }
+]

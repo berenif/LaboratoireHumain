@@ -53,4 +53,15 @@ class StageBudgetTests(unittest.TestCase):
                 self.assertEqual(b.data['totalPolicyIntervals'],64)
             x['aggregatePhysicsLimitSeconds']=10.;p.write_text(json.dumps(x))
             with self.assertRaises(ValueError):StageBudget(p)
+    def test_offline_trust_preserves_only_validation_physics(self):
+        with tempfile.TemporaryDirectory()as folder:
+            p=Path(folder)/'ledger.json';x=self.make(p);x.update(profile='slow-offline-trust',aggregatePhysicsLimitSeconds=3.,allIntervalLimit=640,maximumSourceSteps=12800);p.write_text(json.dumps(x))
+            with StageBudget(p)as b:
+                for stage in ['benchmark','training']:
+                    with self.assertRaises(TimeoutError):b.begin_interval(stage)
+                self.assertGreater(b.allowance('validation'),0)
+                for _ in range(640):b.begin_interval('validation')
+                with self.assertRaises(TimeoutError):b.begin_interval('validation')
+                b.data['sourceIntegrations']=12800
+                with self.assertRaises(TimeoutError):b.integrate('validation',lambda _:None,lambda:0)
 if __name__=='__main__':unittest.main()

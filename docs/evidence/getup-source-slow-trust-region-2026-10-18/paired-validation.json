@@ -1,0 +1,40 @@
+[
+  {
+    "branch": "frozen-original",
+    "actualPolicyIntervals": 115,
+    "quietQualified": false,
+    "terminal": true,
+    "truncated": false,
+    "bootstrap": 0.0,
+    "firstPhysicalFailure": "loaded_slip",
+    "elapsedSeconds": 2.864999999999994,
+    "terminalNativeID": 8692,
+    "terminalSampleCount": 12,
+    "loadedSlipM": [
+      0.01000163525102614,
+      0.009685628069879897
+    ],
+    "quietConsecutiveSamples": 0,
+    "maximumPerNativeTorqueErrorNm": 0.0,
+    "sourceInnerPDHz": 800
+  },
+  {
+    "branch": "candidate",
+    "actualPolicyIntervals": 112,
+    "quietQualified": false,
+    "terminal": true,
+    "truncated": false,
+    "bootstrap": 0.0,
+    "firstPhysicalFailure": "loaded_slip",
+    "elapsedSeconds": 2.7874999999999943,
+    "terminalNativeID": 8630,
+    "terminalSampleCount": 10,
+    "loadedSlipM": [
+      0.010002189497448284,
+      0.009587704979582284
+    ],
+    "quietConsecutiveSamples": 0,
+    "maximumPerNativeTorqueErrorNm": 0.0,
+    "sourceInnerPDHz": 800
+  }
+]

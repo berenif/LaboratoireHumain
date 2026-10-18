@@ -1,0 +1,43 @@
+{
+  "planSHA256": "dcbd484f57aa51457a3145ec5c39eb10b7cd32326168da37c99d27c0be48b3e7",
+  "startedUtc": "2026-10-18T01:40:21+00:00",
+  "closedLedgerWriteUtc": "2026-10-18T01:49:03.495575+00:00",
+  "rawJournalsAndWeightsLocalOnly": true,
+  "optimizerAttemptsCharged": 110,
+  "physicalTrainingTransitions": 0,
+  "fixtureSuiteTests": 11,
+  "artifacts": {
+    "admission.json": {
+      "sha256": "09ccb770f7f5886a998b2098db2a30e7fa0b8d4a6858b8461a0dca82aaada3cc",
+      "bytes": 8480
+    },
+    "result/witness-local.pt": {
+      "sha256": "e0c86b54b642e3576fd27662391aade8aa7895b5d5df7b8cbad0c65aa2f9b689",
+      "bytes": 562651
+    },
+    "result/frozen-original-frames.ndjson": {
+      "sha256": "23d3435c7ad784fcbe73a9575cba39460b211c1e5b000af5f6aa697f4221445b",
+      "bytes": 12576508
+    },
+    "result/candidate-frames.ndjson": {
+      "sha256": "f72cf2b21908411e2b978d0028a0d4d58b8374ce3eec7bf7b6c80782d7a3a2ce",
+      "bytes": 12226489
+    },
+    "result/frozen-original-commands.json": {
+      "sha256": "2c962200cd1bbd5aff1510a678362f409620983f6a4972f838065449ad16f750",
+      "bytes": 1653098
+    },
+    "result/candidate-commands.json": {
+      "sha256": "2d542766994b59eb7225da1a792f33c51106e9efacd048b3e523d40a212264f7",
+      "bytes": 1608951
+    },
+    "result/latest-checkpoint.json": {
+      "sha256": "f2e7084bfdd18289215bfe43ed8727c3ae4ff2c760590ecd947f27330be37665",
+      "bytes": 198
+    },
+    "fixtures.log": {
+      "sha256": "f369e8cb814fa449dfa4fe0b00a1b05551e5c9fea240148aa52d8a2d02b3355e",
+      "bytes": 1688
+    }
+  }
+}
