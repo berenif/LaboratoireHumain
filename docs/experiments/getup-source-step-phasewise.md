@@ -67,9 +67,9 @@ integrations. Global loaded material-point slip is 9.478 / 5.099 mm; no flight,
 nonfoot support, self penetration or warnings occur. Peak effort is 95%.
 The final quiet joint reserve is at least 8.566 mrad. This is **not strict
 all-sample joint-limit qualification**: second-lift left hip-z briefly exceeds
-its soft limit by 9.907 mrad. The four-step extension still fails the unchanged
-10 mm global slip guard. Second-lift stance slip contributes 3.896 mm, the
-largest loss. The saved-data audit records each phase's global-slip increment.
+its soft limit by 9.907 mrad. Earlier four-step extensions stopped at the unchanged
+10 mm global slip guard. Their second-lift stance slip contributed 3.896 mm,
+the largest loss. The saved-data audit records each phase's global-slip increment.
 
 Each new step takes its references from the actually landed, loaded, stable
 state; there is no inter-step state installation. Per-joint ground barriers and
@@ -77,3 +77,33 @@ foot-ray clearance/landing inputs remain active in every phase. Native
 self-collider separation adds a distinct, tested arm/thigh avoidance barrier.
 Source-engine multi-step validation remains separate from the single-step
 loopback UI and the default Rust/WASM application.
+
+## Four unequal steps and quiet hold
+
+The motor-reserved measured-state reference and coherent 2× phase durations
+complete **31.906 / 62.058 / 91.844 / 46.803 mm** against requests
+30 / 60 / 90 / 45 mm, then **5.000 s quiet**. There are 49,857 uninterrupted
+800 Hz integrations over 62.32125 s. Global loaded slip is 8.611 / 5.965 mm;
+there is no flight, nonfoot support, self penetration or warning. All recorded
+COM/capture states remain inside measured support (minimum 2.542 mm).
+
+All walking joint margins are positive (minimum 5.331 mrad); the original
+startup ankle excursion ends by 0.065 s. This inherited entry still prevents a
+strict all-startup-sample limit claim. Final quiet reserve is at least
+9.910 mrad and actual effort never exceeds 95% of the original caps.
+
+The left/right order, requested distances and quintic path shape are programmed.
+Before each step, actual stance geometry, COM and joint state produce a new
+contact-qualified static motor-reserve reference. Live COM/velocity, orientation,
+joint limits and contact feedback determine motor commands and phase admission.
+Foot rays set floor/clearance targets; all 22 joint rays remain QP inputs. Their
+avoidance barriers stay dormant on this safe path (nearest nonfoot collider
+65.989 mm), as do the self-avoidance barriers. Counterfactual ground, COM,
+velocity, load and reserve tests separately prove their command/admission paths.
+No physical root assistance or inter-step state installation is used.
+
+Reproduce with the retained pinned source assets and rebuilt helper:
+`source_multistep_probe.py --base SOURCE_SESSION --helper HELPER --output NEW_RUN
+--planned-support --time-scale 2 --distances .03 .06 .09 .045`. Audit saved data
+with `audit_source_multistep.py NEW_RUN/generation-001`. Default single-step
+preview and the Rust/WASM app remain unchanged.
