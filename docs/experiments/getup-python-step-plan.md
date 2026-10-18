@@ -495,3 +495,86 @@ recorded in [the source stabilization pilot report](getup-source-stabilization-p
 That prototype is pure work only and needs a new reviewed admission before any
 activation. The existing section11 fit thresholds and physical success gates
 have not been weakened by these outcomes.
+
+
+## 12. Proposed source SLOW stabilization adaptation (design only)
+
+The separately admitted analytic torque diagnostic is closed. It reproduced
+pointwise source holding torque and exact full-cache continuation, but held25ms
+actuator torque at200Hz produced rapid joint-rate growth and crossed10mm loaded
+slip after0.140s. The failed fitted and analytic200Hz initializer branches stay
+closed. Their unused allowance does not transfer.
+
+The next causal option preserves the original SLOW execution mechanism itself:
+original `humanoid_high_freq.xml`,800Hz inner PD,40Hz qpos-order residual-angle
+actions. This is a SLOW-stage task adaptation with a known holding reference,
+not a new STRONG→WEAK torque-teacher reproduction or a forward-step result.
+The disabled exact proposal is
+`scripts/getup-step/task-config-mujoco-slow-stabilization-v1.json`.
+
+### Policy, observations and motor interface
+
+- Initialize the original118→1024→1024→42 SLOW actor mean exactly, with no fitting
+  and no conversion of its residual head into normalized motor torque.
+- Keep its ORIGINAL holding target now/ahead: source standingq, actor-height
+  sentinel1.4, torso vertical[0,0,1], power1. Physical observed COM remains real;
+  reward targets separately use measured entry geometry. No observation
+  normalization or new phase input is silently added. This remains hybrid and
+  partially observed because anchor/history gates live in the controller sidecar.
+- For each40Hz decision hold referenceq and residuala for20 native samples.
+  Refresh actualq/dq each800Hz sample and apply
+  `u=clip(qref+a-q-.2*dq,-1,1)[ORDER]`; original gear is applied exactly once.
+  Reward effort uses ACTUAL normalized motor controls, never residual radians.
+- Preserve mean/trunk tensors bit-exact. Compare all21 deterministic source means
+  bit-exact under identical Torch dtype/device/batch1 on fixed real states;
+  batched/DenseActor paths retain declared bounded parity tolerances.
+  Initialize only the logstd output rows to latentstd0.02 via the exact inverse
+  source tanh-affine map. This is pre-tanh residual-angle noise, with state-dependent
+  post-tanh amplitude. No additive torque noise or action reinterpretation.
+- Use fresh139-input twin critics/targets, optimizers and alpha0.1 because the
+  reward changes. Saved-source discount0.97 is explicitly selected; README0.95
+  remains a separate preset. Actorlr1e-5, critic/alphalr1e-4, tau0.005.
+
+### Entry, physics and learning gates
+
+The actual original800Hz SLOW final cache is a training-only start. It is upright
+but fails strict5s quietness by20.59mm foot drift. Learning stabilization must not
+require a successful quiet episode first. Restore that same model-bound cache;
+retain source historical telemetry and create only prospective analysis anchors
+for the new episode. No physical pose/reference injection,200Hz model transfer,
+helper root force, gain or gear change is allowed.
+
+Before collection or actor release, implement/test the residual-action800Hz
+adapter, finite partial physical terminals, actual-control cost units, source
+reference boundaries and complete hybrid checkpoints. The heldqref/residual/kd,
+phase/counters/anchors, original entry packet, actor/critic/optimizer/replay/RNG
+state are required. The first full20-frame command repeat must match actual
+physical evolution exactly; all branches remain charged. Stochastic next-action
+and next-update restore tests are separate gates.
+
+One proposed fresh30min/10physics-second stage contains benchmark≤1s, collection/
+training≤6s, protected validation≥3s and300wall seconds. Protect640validation
+intervals out of1500: benchmark64 +training796 +validation640. At800Hz the all-
+branch integration maximum is30000. The120s benchmark execution subcap remains.
+The benchmark may use up to16throwaway critic-only updates; discard all benchmark
+learning/RNG state afterward. Initial actual held-residual safety/parity and
+measured end-to-end throughput must pass before releasing the remaining stage.
+
+The candidate collects at most256initial actual transitions with its ENTIRE actor
+frozen and source latentstd.02 noise, then performs100critic-only warmup updates with
+explicit target Polyak after each while actor/alpha remain untouched. Only then
+may at most25source actor/critic/alpha updates run, one per4NEW actual transitions.
+Ordinary source updates release trunk, mean AND logstd parameters; std0.02 is
+initialization only. Record its actual values and retain source[-5,2] bounds.
+These are viability limits, with no convergence promise. Every5updates compare
+against immutable source means on real probes: RMS drift>0.02rad or any entry
+>0.05rad stops/rolls back. Do not spend a failed initializer's unused budget.
+
+Paired frozen/candidate validation has at most8s per branch from the same exact
+800Hz state. An actual quiet result requires the FINAL4000consecutive native
+samples, original physical/support/slip gates and measured tilt≤5degrees. Intrinsic
+failure and absorbing success use mask0; extrinsic finite collection cutoff uses
+mask1 with the actual final observation. Administrative/corrupt partials abort.
+No forward-step or full GetUp regression qualification is implied by stabilization.
+Source/math and resource design review, then fresh parent admission, are required
+before this disabled proposal can execute.

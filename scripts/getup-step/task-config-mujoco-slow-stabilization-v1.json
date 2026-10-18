@@ -1,0 +1,268 @@
+{
+  "schema": 1,
+  "name": "source_slow_residual_stabilization_v1",
+  "status": "design-only-disabled-pending-source-resource-review-and-fresh-admission",
+  "sourceCommit": "5ad52fbe1b5b7c56522a1aa10ccf17fb81c0d79e",
+  "taskAdaptation": "SLOW-stage residual-angle stabilization in original800Hz MuJoCo model, preserving source innerPD and deterministic pretrained mean; fixed original source actor hold target and separate measured-entry task reward; no new strong/WEAK teacher or full step claim",
+  "observation": {
+    "layout": "physical67, ORIGINAL source holding target25 now, same target25 ahead, power1",
+    "studentWidth": 118,
+    "studentPower": 1.0,
+    "normalization": "none",
+    "hybridPartiallyObserved": true,
+    "externalCheckpointState": [
+      "phase",
+      "referenceSHA256",
+      "referenceClock",
+      "phaseWallStartNativeId",
+      "nativeId",
+      "unloadRun",
+      "clearanceRun",
+      "touchdownRun",
+      "loadRun",
+      "finalQuietRun",
+      "awardedEvents",
+      "entryHeading",
+      "entryFootOrigin",
+      "physicalSlipAnchors",
+      "postLandingAnalysisAnchors",
+      "lastAction",
+      "RNG",
+      "ledger"
+    ],
+    "policyReference": "source STANDING_POSE21, actor height sentinel1.4, torsovertical[0,0,1], both now and ahead; no substitution of measured physical COM height",
+    "rewardReference": "fixed actual episode entry joint/COM/foot geometry; distinct from actor-conditioning source holding target"
+  },
+  "timing": {
+    "nativeHz": 800,
+    "policyHz": 40,
+    "nativeSamplesPerTransition": 20,
+    "aheadPolicyDecisions": 5,
+    "transitionBoundary": "freeze pre-action reference and phase for the executed interval reward; evaluate actual events afterward; next observation alone uses any new phase",
+    "recording": "source800Hz actual consecutive samples; physical/model cache and original entry packet preserved on episode restore; no planned-pose installation",
+    "partialRequests": "verified finite1..19-native-sample physical terminal transitions retained mask0 with actual-duration/25ms dense/cost scaling and full failure cost; administrative/uncertain partials excluded; invalid final tensors abort",
+    "maximumSuffixSeconds": 8.0,
+    "phaseWallTimeoutSeconds": {
+      "stabilize": 8.0
+    },
+    "nominalSeconds": {
+      "stabilize": 5.0
+    }
+  },
+  "action": {
+    "teacherUnits": "not used: no direct-torque teacher in this proposal",
+    "gearScaling": "original gear exactly once; no mass/friction/gear curriculum",
+    "studentUnits": "qpos-order residual angle radians, actor tanh output at power1",
+    "studentMovingKdSeconds": 0.1,
+    "studentHoldingKdSeconds": 0.2,
+    "heldSourceSamplesPerDecision": 20,
+    "sourcePD": "hold qref21 and residual21 for20substeps; refresh actual q/dq each800Hz step; u_actuator=clip(qref+residual-q-.2*dq,-1,1)[ORDER]; original gear once",
+    "controlCosts": "post-interval ACTUAL normalized motor controls, not residual radians"
+  },
+  "phaseGates": {
+    "persistentNativeSamples": 80,
+    "totalFeetMinimumBodyWeightFraction": 0.8,
+    "uprightMaximumDegrees": 5.0,
+    "finalQuietConsecutiveNativeSamples": 4000,
+    "finalQuietRule": "FINAL4000consecutive actual800Hz integration samples through declared terminal sample/5s, fixed prospective entry anchors, original native standing plus actual tilt<=5degrees; no longest-past-window selection",
+    "supportGeometry": "only actual measured contacts; geometric potential is never credited before touchdown",
+    "quietDeadlineTie": "success at exactly8s precedes intrinsic deadline if actual FINAL4000sample quiet condition is met; physical failure always wins",
+    "activePhase": "stabilize-only; no unload/lift/translate/lower/load phases or clearance admission in this preset",
+    "headMinimumMExclusive": 1.4,
+    "eachFootMinimumN": 3.0,
+    "combinedCOMInsetM": 0.003,
+    "combinedCaptureInsetM": 0.003,
+    "maximumBodyLinearMps": 0.22,
+    "maximumBodyAngularRadps": 0.65,
+    "fixedAnchorDriftMaximumM": 0.01
+  },
+  "reward": {
+    "formula": "weighted mean of exp(-0.5*mean((error/scale)^2)) terms minus costs, plus ordered one-time actual event bonuses",
+    "denseTerms": {
+      "jointPositionErrorRad": {
+        "scale": 0.1,
+        "weight": 0.15
+      },
+      "hipSpeedErrorRadps": {
+        "scale": 0.5,
+        "weight": 0.1
+      },
+      "comHeightErrorM": {
+        "scale": 0.04,
+        "weight": 0.15
+      },
+      "torsoVerticalError": {
+        "scale": 0.15,
+        "weight": 0.1
+      },
+      "leftFootPositionErrorM": {
+        "scale": 0.02,
+        "weight": 0.15
+      },
+      "leftFootRotationErrorRad": {
+        "scale": 0.15,
+        "weight": 0.1
+      },
+      "wholeFootClearanceErrorM": {
+        "scale": 0.01,
+        "weight": 0.1
+      },
+      "signedForwardErrorM": {
+        "scale": 0.02,
+        "weight": 0.1
+      },
+      "comVelocityErrorMps": {
+        "scale": 0.2,
+        "weight": 0.05
+      }
+    },
+    "hipCoordinates": "source qvel[11,17], hinge qpos[5,11]",
+    "normalizedControlMeanSquareCost": 0.01,
+    "normalizedControlChangeMeanSquareCost": 0.005,
+    "loadedSlipIncrementCostPerMeter": 100.0,
+    "eventOrder": [
+      "quietComplete"
+    ],
+    "eventBonuses": {
+      "quietComplete": 5.0
+    },
+    "physicalFailurePenalty": 10.0,
+    "stationaryWorldAnchorPenalty": false,
+    "genericUnloadedFootPenalty": false,
+    "rewardNeverOverridesAcceptance": true,
+    "partialPhysicalTerminalRule": "verified finite physical terminal1..19native samples: endpoint dense/control costs multiplied by nativeSampleCount/20; actual measured slip increment cost retained without extra duration scaling; no event bonus; full configured failure penalty; mask0, no nextQ; full20-sample transitions unscaled",
+    "measurementReduction": "post-interval measured finite endpoint errors against the pre-action held target/reference twist; controls are actual normalized actuator controls at the post-interval boundary (and previous boundary for change cost), never held student residuals; slip is sum of actual per-foot cumulative increments; events use all consecutive native samples",
+    "errorDimensions": {
+      "jointPositionErrorRad": 21,
+      "hipSpeedErrorRadps": 2,
+      "comHeightErrorM": 1,
+      "torsoVerticalError": 3,
+      "leftFootPositionErrorM": 3,
+      "leftFootRotationErrorRad": 3,
+      "wholeFootClearanceErrorM": 1,
+      "signedForwardErrorM": 1,
+      "comVelocityErrorMps": 3
+    },
+    "rotationConvention": "world-frame SO(3) geodesic rotvec Log(R_actual*R_target.T), radians, normalized rotations; no Euler-component subtraction",
+    "loadedSlipReduction": "sum of nonnegative actual per-foot cumulative loaded-slip increments; not maximum; no reset within episode",
+    "controlCostUnits": "actual normalized actuator controls in both teacher and student; never student residual radians",
+    "errorFrames": {
+      "jointPositionErrorRad": "q_actual - held q_target, qpos order21",
+      "hipSpeedErrorRadps": "actual hinge dq[5,11] minus admitted phase-clock reference dq[5,11]",
+      "comHeightErrorM": "actual native worldY COM minus target true COM height",
+      "torsoVerticalError": "actual source-order torso-local worldup minus FK target vector3",
+      "leftFootPositionErrorM": "actual minus target native WORLD XYZ foot-origin3",
+      "leftFootRotationErrorRad": "world-frame SO3 geodesic rotvec Log(R_actual R_target.T)",
+      "wholeFootClearanceErrorM": "actual min of both endpoints on both capsules minus target same geometry",
+      "signedForwardErrorM": "actual signed foot displacement against fixed entry heading minus target signed displacement",
+      "comVelocityErrorMps": "actual source-order world COM velocity minus phase-clock reference source-order velocity3"
+    }
+  },
+  "termination": {
+    "physicalTerminalNotDone": 0.0,
+    "finiteTimeTruncationNotDone": 1.0,
+    "truncationObservation": "actual final observation/reference, never reset observation",
+    "physicalFailures": [
+      "native integrity failure",
+      "any flight sample",
+      "any nonfoot floor support",
+      "loaded slip over10mm perfoot",
+      "interfoot capsule overlap",
+      "COM outside original safety height envelope",
+      "fixed prospective entry anchor drift over10mm perfoot"
+    ],
+    "comHeightMinimumM": 0.780625,
+    "comHeightMaximumM": 0.829976,
+    "loadedSlipMaximumM": 0.01,
+    "flightDefinition": "both measured foot normal loads<3N in any native sample",
+    "timeouts": "intrinsic phase wall/goal deadline is terminal0 with failure penalty; extrinsic pilot physics/wall/collection cutoff truncates with actual final state and bootstrap1; interrupted/unverified request excluded",
+    "terminalSuccess": "quietComplete is an explicitly absorbing successful task terminal (not_done0), unlike source fixed N+150 truncation; no failure penalty; full actual final observation retained",
+    "failureCodes": [
+      "native_integrity",
+      "flight",
+      "nonfoot_support",
+      "loaded_slip",
+      "interfoot_overlap",
+      "com_height",
+      "phase_timeout",
+      "goal_deadline",
+      "fixed_anchor_drift"
+    ],
+    "invalidObservation": "nonfinite/corrupt observations abort/save collection, never replay invalid tensors",
+    "successfulGoalNotDone": 0.0,
+    "interfootOverlap": "minimum distance across all four capsule segment pairs minus both radii; negative is physical interfoot_overlap, no imaginary contact"
+  },
+  "curriculum": {
+    "active": false,
+    "currentStage": "SLOW-only stabilization adaptation from imported SLOW actor and known source holding reference",
+    "sourcePipelineRemainsDistinct": "full STRONG->WEAK->qualified actual teacher->SLOW remains original documented pipeline, not newly reproduced by this stabilization stage",
+    "successfulTeacherDataRequiredBeforeThisStabilization": false,
+    "fullStepCurriculumEnabled": false
+  },
+  "pilot": {
+    "collectionEnabled": false,
+    "learningEnabled": false,
+    "initializer": "immutable original SLOW118 mean; logstd head separately initialized to latentstd.02 by exact inverse source mapping; no mean fit or torque conversion",
+    "actorArchitecture": "original118-1024-1024-42 source actor; deterministic21 mean preserved exactly on fixed real probes before collection; logstd rows zeroed/inversebias without touching shared trunk/mean rows",
+    "power": 1.0,
+    "actorLearningRate": 1e-05,
+    "criticLearningRate": 0.0001,
+    "temperatureLearningRate": 0.0001,
+    "discount": 0.97,
+    "discountPreset": "saved original SLOW argument preset .97; README .95 remains a separate source fixture",
+    "tau": 0.005,
+    "initialAlpha": 0.1,
+    "adamBetas": [
+      0.9,
+      0.999
+    ],
+    "freshLearningState": "fresh twin139-input critics, copied fresh target, fresh actor/critic/alpha optimizers and alpha; no old task replay/optimizer resume",
+    "batchSize": 128,
+    "warmupActualTransitions": 256,
+    "criticOnlyWarmupUpdates": 100,
+    "maximumActorUpdates": 25,
+    "newActualTransitionsPerActorUpdate": 4,
+    "exploration": "source reparameterized tanhGaussian residual sampler with latentstd.02 during initial frozen-mean collection; no additive normalized-torque noise; output residual radians in[-1,1] with power1",
+    "criticOnlyWarmup": "manual Polyak tau.005 after every critic-only update; actor/alpha parameters and optimizer state untouched; after warmup ordinary source actorfreq1 equations",
+    "maximumSupervisedUpdates": 0,
+    "actionProbeEveryUpdates": 5,
+    "deterministicResidualRMSDriftMaximumRad": 0.02,
+    "deterministicResidualMaximumDriftRad": 0.05,
+    "rollback": "stop and retain candidate/baseline on action drift threshold, parity/infrastructure uncertainty, budget failure or paired physical safety regression; no new candidate or longer budget automatically",
+    "benchmark": "up to64global policy intervals including20-frame exact fullcache first-command repeat; all integrations charged; at most16throwaway critic-only updates after interface parity, then discard network/optimizer/target/RNG state",
+    "initializationAdmission": "actual source8s800Hz final cache, unqualified foot creep explicitly allowed as training-only starting state; no alreadyquiet5s learning prerequisite; frozen actual held-residual benchmark must pass original immediate physical stops before actor release",
+    "continuationGate": "native/model/controller/held-qref/residual/kd/clock/anchors/RNG sidecar and next20actual samples exact across restore, plus stochastic learner next-action/update equality; global ledger never restored/refunded",
+    "validation": "paired frozen-initializer/candidate max8s each from exact same original800Hz cache, independent prospective fixed anchors, preserve historical telemetry; final4000actual quiet samples required for a quiet result; no step claim",
+    "hashAdmission": "externally expected config/code/source actor/model/bridge/library/entry/replay hashes before collection; current computed hash alone cannot release run",
+    "proposedResources": {
+      "status": "not admitted",
+      "maximumProcessWallSeconds": 1800,
+      "maximumAggregatePhysicsSeconds": 10,
+      "benchmarkMaximumPhysicsSeconds": 1,
+      "trainingMaximumPhysicsSeconds": 6,
+      "protectedValidationPhysicsSeconds": 3,
+      "protectedValidationWallSeconds": 300,
+      "benchmarkMaximumExecutionWallSeconds": 120,
+      "maximumActualPolicyIntervals": 1500,
+      "benchmarkMaximumIntervals": 64,
+      "trainingMaximumIntervals": 796,
+      "protectedValidationIntervals": 640,
+      "maximumAllBranchSourceIntegrations": 30000,
+      "noReserveTransfer": true
+    },
+    "warmupFreeze": "ENTIRE actor, including shared trunk, mean and logstd heads, frozen throughout256initialactual transitions and100critic-only updates; actor/alpha optimizers untouched",
+    "afterWarmupActorParameters": "ordinary source SAC releases shared trunk, mean and logstd heads; latentstd.02 is initialization only, not a fixed-noise promise; preserve source logstd bounds[-5,2] and record actual per-probe std every update",
+    "meanParityFixture": "mean/trunk tensors unchanged bitexact; original and logstd-reinitialized Torch actors use identical dtype/device/batch1 for deterministic controller action bitexact checks; batched/DenseActor inference uses separately declared bounded source parity tolerances"
+  },
+  "engine": {
+    "name": "MuJoCo",
+    "version": "2.1.3",
+    "model": "humanoid_high_freq.xml",
+    "nativeHz": 800,
+    "sourceStage": "SLOW residual-angle holding adaptation",
+    "quietInitializationRequiredForLearning": false,
+    "fullStepCurriculumEnabled": false,
+    "initialization": "exact original800Hz SLOWfinal fullcache; no200Hz model switch or directtorque conversion; original result remains unqualified by20.59mm drift"
+  },
+  "designOnly": true
+}
