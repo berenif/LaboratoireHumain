@@ -1,0 +1,49 @@
+{
+  "scope": "training-only frozen initializer calibration, not quiet or step qualification; power1 is not a separate strong-trained checkpoint",
+  "physicsWallSeconds": 0.00040077300218399614,
+  "phaseAggregatePhysicsWallSeconds": 0.44757397016655887,
+  "newSourceSteps": 6,
+  "phaseAggregateSourceSteps": 8057,
+  "cases": [
+    {
+      "power": 0.663420431,
+      "stopped": "loaded-slip-over10mm",
+      "sourceSteps": 6,
+      "sourceSimSeconds": 0.030000000000000002,
+      "loadedSlipM": [
+        0.0016558879653740216,
+        0.010710854945097149
+      ],
+      "maxRaw42Error": 2.1457672119140625e-06,
+      "maxAction21Error": 8.121132850646973e-07,
+      "maxTorqueEquationErrorNm": 0.0,
+      "sourceStrictQuietQualified": false,
+      "stepQualified": false
+    }
+  ],
+  "optimizerUpdates": 0,
+  "taskDataCollected": false,
+  "inputHashes": {
+    "/workspace/scratch/5def91918e35/mvp-landing/scripts/getup-step/source_teacher_stance.py": "905e12c780a0ad96da50b3f8d3f5b8515df9cd4ad00aedcfde829a64e80c8482",
+    "/workspace/scratch/5def91918e35/mvp-landing/scripts/getup-step/source_engine.py": "d7820718aa3310a7716675dfa6c572cfcab7e38ed4f9053cb0b4cf16d8b80fbf",
+    "/workspace/scratch/5def91918e35/mvp-landing/scripts/getup-step/source_slow_control.py": "5018db7042f85a8ff84d4cd77eb7d673acfd28b07a3e121786011870c3c4f3d9",
+    "/workspace/scratch/5def91918e35/mvp-landing/scripts/getup-step/actors.py": "125c3e54eb14318cdc382c060320528b4018dacb3da113e09c70c4c38aa9e366",
+    "/workspace/scratch/5def91918e35/mvp-landing/scripts/getup-step/source_math.py": "f4935043b31dfef00b926943d2b3f720fd39691e98672aa6ae00019371ff8dfd",
+    "/workspace/scratch/5def91918e35/mvp-landing/scripts/getup-step/native_env.py": "bd292d19ab2cf082be5240ba7827f1270582d777f493c04834f1a171ceed1ae9",
+    "/workspace/scratch/5def91918e35/mvp-landing/scripts/getup-step/source_positive_control.py": "adc0647bb230f64491ac7b14b8d2fc354a3dd8e73bd6e960ac30917e88ac2adc",
+    "/workspace/scratch/5def91918e35/mvp-landing/scripts/getup-diagnostic/compare_mujoco.py": "0173722caec508da85b253ed1e3b2b768ec1b3a2faa0d7f5f606e9522830afef",
+    "/workspace/scratch/5def91918e35/mvp-landing/rust/crates/model/data/getup-v1.json": "1611ec8c988c1006b0a819ab21e2b7c410adaaf512080be425d6d6e235a8926a",
+    "/workspace/scratch/5def91918e35/mvp-landing/rust/crates/sim/data/getup-policy/teacher.bin": "f8d8d6ea787366a67aa46352cf5243ed2962dd277b5ca6b6f98a85fc3a67ab4f",
+    "/workspace/scratch/5def91918e35/mvp-landing/outputs/getup-source-engine/session-20261017T233404Z/source_bridge.so": "d470729cfeb4f966db504ea5327d8f5f5f53fd2ea85df47bfba063a2484d48a6",
+    "/workspace/scratch/5def91918e35/mvp-landing/outputs/getup-source-engine/session-20261017T233404Z/source_bridge_v2.so": "ca5308ce5d876628a995e40ba3b18cad7954e2bd0b3beeb02c5c9ea70a1dcde9",
+    "/workspace/scratch/5def91918e35/mvp-landing/outputs/getup-source-engine/session-20261017T233404Z/dependency/official-wheel/mujoco/libmujoco_nogl.so.2.1.3": "a8d51e013c6435c2a58ddc1a98f19cefd2990199c2f125eda930ff10d5f58520",
+    "/workspace/scratch/5def91918e35/mvp-landing/outputs/getup-source-engine/session-20261017T233404Z/slow-continuation/final.bin": "bff582b69c24843e3e869b4f3e5f54998669b50bc86b88d27b5292f6d86fb799",
+    "/workspace/scratch/5def91918e35/mvp-landing/outputs/getup-source-engine/session-20261017T233404Z/slow-continuation/final.controller.json": "595be30924f70509c91942adc41a6807cd94f61c63b9a4504172aa3a73d04e1e",
+    "/workspace/scratch/5def91918e35/mvp-landing/outputs/getup-source-engine/session-20261017T233404Z/source-model/humanoid_high_freq.xml": "69a7e87fed168e1f4ad7dee43dfdd8df6bd74b3d4af06d99c991b46b941106db",
+    "/workspace/scratch/5def91918e35/mvp-landing/outputs/getup-source-engine/session-20261017T233404Z/source-model/humanoid_static.xml": "d49ff2ba18fd46bad06047addddb77dc0dfbbf4e9e70d30934d344353b9015ed",
+    "/workspace/scratch/5def91918e35/mvp-landing/outputs/getup-source-engine/session-20261017T233404Z/source-model/materials.xml": "5f1279351cd6e7f83fa4a2e733558ffb297ad19f9bd4e757bdaec6e7d36a777c",
+    "/workspace/scratch/5def91918e35/mvp-landing/outputs/getup-source-engine/session-20261017T233404Z/source-model/skybox.xml": "52f3687ca30329b4077b0a26feaad9b73d201e183cbde0ffbd6cd52de51907bd",
+    "/workspace/scratch/5def91918e35/mvp-landing/outputs/getup-source-engine/session-20261017T233404Z/source-model/visual.xml": "ec1d274ab70d95604133dafa92c0d1194de51bba997bd53b70bc67eb95d823fc"
+  },
+  "sourceSummarySHA256": "fd3f2a82b62f1ff71b132bddaab1db9e6692558316391d3b012194f43a206870"
+}

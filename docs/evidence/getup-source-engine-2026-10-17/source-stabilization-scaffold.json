@@ -1,0 +1,33 @@
+{
+  "status": "pure/fake source-stabilization scaffold only; collection and optimizer disabled",
+  "pythonTestsPassed": 92,
+  "physicsIntegrationsDuringScaffoldTests": 0,
+  "sourceTaskConfigCollectionEnabled": false,
+  "sourceTaskConfigLearningEnabled": false,
+  "actualSourceComparisonPhysicsSeconds": 0.44757397016655887,
+  "actualSourceComparisonIntegrations": 8057,
+  "actualStepQualified": false,
+  "finalFiveSecondQuietQualified": false,
+  "reviewScope": [
+    "R2 pure math/atomic resume/200Hz timing/partial terminals/overlap geometry",
+    "R1 source-action initialization proposal design",
+    "R4 fresh30min10s resource proposal design"
+  ],
+  "executionGatesRemaining": [
+    "exact causal dataset generation and provenance checks",
+    "supervised and critic-only tensor invariants",
+    "fresh stage ledger and resource admission",
+    "actual held-control and continued-engine cache parity benchmark",
+    "candidate actor-release check"
+  ],
+  "hashes": {
+    "scripts/getup-step/source_task.py": "2d0f73dd25a35fb65519016172fffb2212c45f92e8a2c8ef64ac3844bac028d3",
+    "scripts/getup-step/source_task_env.py": "d6167d59dea4222dfc0bd5c7e1a8526a68382895532405df656a4af690797a57",
+    "scripts/getup-step/task.py": "dfbb4f5ded122e40d976d0d64071d0046f210aac95397425d27b4941618648ee",
+    "scripts/getup-step/reference.py": "e9e0657e203601d22dd032ceb88eaab187dad0c77fd34105fd1c87cc843c79a6",
+    "scripts/getup-step/training.py": "0b83adee1dc7875c20f86c4cb9b00dbd09877b475d84395c3aec3c887decffd8",
+    "scripts/getup-step/task-config-mujoco-stabilization-v1.json": "ac3f550c829c446b1c8643b059c605fd55d96a60645c00778afb7eeece6572bb",
+    "docs/experiments/getup-python-step-plan.md": "e775804890056f3011318f448e6ac17d35ee5822c6a3ef424844c019510ee5a8",
+    "docs/fixtures/getup-step/source-SLOW-final-frame.json": "a2797f5757ed64c1aed875f0cb36d258ec6ca12002163b393222e2d240cb7fdd"
+  }
+}

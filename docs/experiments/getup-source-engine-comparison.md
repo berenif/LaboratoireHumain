@@ -118,3 +118,80 @@ source-engine reset distribution. It is not a five-second native stance or
 forward-step proof, nor a complete causal separation of engine differences
 from initial-state distribution. The original transferred-quiet geometry gate
 still fails. No task collection, curriculum advancement or optimizer was run.
+
+## Original-source SLOW follow-through
+
+The same measured WEAK run supplies the original source reference collector:
+first post-policy head crossing at0.975 s, then exactly one extra decision gives
+40 post-action frames. The exact source cubic at speed0.5 yields80 moving
+reference frames. The original high-frequency XML is verified at0.00125 s;
+SLOW policy is40 Hz, residual/reference held for20 integrations, actual q/dq
+refreshed every substep, moving kd0.1/holding0.2. Source terminal observation
+height1.4 and standing pose are preserved. The teacher's static-model solver
+cache is never transferred to the different model/timestep.
+
+The bounded observation window was80 moving plus240 hold decisions:40 hold
+settling decisions, then the FINAL200 decisions/4000 integrations/5 seconds.
+Only that final window could freeze an analysis anchor or accrue quiet samples.
+All quiet conditions include actual≤5-degree torso tilt, source foot loads/body
+velocities,3 mm COM/capture support inset, height/self-contact limits and fixed
+foot-origin drift≤10 mm. These are versioned source predicates, not a claim of
+native Rapier equivalence.
+
+A serializer rejected numpy.bool after the first source integration. That one
+integration and its physical cost were retained. The actual complete source
+cache was saved; after a full-packet finite-JSON regression, the exact same
+first command resumed its remaining19 substeps with its original residual and
+reference. The first sample was recovered from that exact cache. The final
+journal has unique consecutive source IDs0..6400, without a repeated integration.
+
+The whole6400-frame/8-second source episode completed. Head finished1.452587 m,
+torso tilt1.73885 degrees. Source observation/PD/direct motor-torque equations
+were independently verified, warnings0. All4000 final samples pass every quiet
+condition **except fixed foot-anchor drift**. Drift first exceeds10 mm at4.480 s
+and ends20.5898 mm; maximum consecutive valid run is1183 samples/1.47875 s.
+Actual final-five-second loaded sliding is L20.13/R20.68 mm, so this is genuine
+sliding rather than merely foot-origin rotation. The strict final-five-second
+quiet-entry proof fails and is not relabeled.
+
+Pure FK half-second windows show ongoing foot-origin transport: final L3.02 and
+R3.30 mm/s, with foot separation increasing from0.201 to0.232 m. No additional
+five-second extension was launched under a 'currently settled' assumption.
+The source upright endpoint remains a real, low-velocity **training-only**
+initialization candidate; learning quietness cannot require an already quiet
+five-second policy as a circular prerequisite. Evaluation success still retains
+all physical gates.
+
+The source cache now preserves mjData's pointer-free header, fixed-layout main
+buffer, stack and own diagnostic state. Fresh allocated pointers are retained;
+XML/own bridge/official library/payload hashes bind the checkpoint. Zero-step
+restore is byte-exact and corrupt checkpoints reject. Next-command/continued
+physical-evolution parity has not yet been independently paired, so exact
+resume admission for a task learner remains open.
+
+## Frozen torque initializer on the actual SLOW endpoint
+
+A new200 Hz static-source world received the actual800 Hz SLOW endpoint q/qvel.
+Only timestep differs between the verified model XMLs; zero-step body positions,
+rotations and physical67 matched exactly. Solver/contact caches were deliberately
+not transferred. This is a training-initializer calibration, not a quiet entry.
+
+The fixed WEAK power0.663420431 direct-torque actor failed the predeclared
+10 mm per-foot loaded-slip condition after6 integrations/30 ms. Right slip was
+7.936 mm at frame5 and10.711 mm at frame6; the next integration was not executed.
+Left slip was1.656 mm, COM drift1.125 mm, warnings/flight/nonfoot0. Actor action
+error≤8.12e-7 and the direct torque equation error was0. Optional power1 was
+skipped after the failure. It would not have been a separately trained STRONG
+checkpoint in any case.
+
+Total comparison phase:8057 source integrations, comprising1657 at200 Hz and
+6400 at800 Hz, aggregate16.285 simulated seconds and0.447573970 physics seconds.
+The original serialization-abort integration remains included. No Rapier
+integration, task collection or optimizer occurred in this source phase.
+The prospective10-second allowance was a ceiling, not a target to spend.
+
+The new stabilization-only source environment is disabled scaffolding. It uses
+actual combined measured support, fixed entry anchors, source-clock counters,
+explicit replay-terminal masks and native/controller/RNG checkpoints. Its pure
+fixtures are not a dynamically demonstrated teacher or a successful step. The
+next learning proposal is separately recorded in plan section11.

@@ -144,5 +144,17 @@ are in `docs/evidence/getup-source-engine-2026-10-17/`. The experiment report is
 `docs/experiments/getup-source-engine-comparison.md`.
 
 The completed source get-up does not qualify its final pose as a step start.
-Only measured final q/qvel/control/contact telemetry has been retained, not a
-complete warm-start cache checkpoint. No source task optimizer is enabled.
+The completed SLOW follow-through has a full model/library-bound cache plus
+controller sidecar; zero-step restore is exact, while paired continued engine
+dynamics parity is still unqualified. Its final5s quiet gate fails20.59mm drift.
+No source task optimizer is enabled.
+
+`source_task.py` and `source_task_env.py` provide a DISABLED stabilization-only
+source200Hz task boundary. Five actual integrations form one40Hz transition;
+partial finite physical terminals retain mask0, extrinsic cutoffs retain actual
+final state/mask1, and success requires1000actual consecutive samples/5s.
+Actual combined support, original gears, entry anchors and complete hybrid/RNG
+state are preserved. Future full stepping needs source-specific trajectory and
+per-foot support admission. `task-config-mujoco-stabilization-v1.json` selects a
+proposed torque-imitation initializer; neither fitting nor collection is admitted
+by this preset. Current pure tests are scaffolding evidence, never physics success.

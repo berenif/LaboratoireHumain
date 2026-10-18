@@ -1,0 +1,95 @@
+{
+  "stopped": "completed80moving-plus240hold",
+  "exactPartialCommandContinuation": true,
+  "previouslyChargedSLOWSteps": 1,
+  "source800HzSteps": 6400,
+  "sourceSimSeconds": 7.9999999999994795,
+  "physicsWallSeconds": 0.3553213320192299,
+  "phaseAggregatePhysicsWallSeconds": 0.44717319716437487,
+  "phaseAggregateAllSourceSteps": 8051,
+  "processWallSeconds": 13.497043718998611,
+  "movingDecisions": 80,
+  "declaredHoldDecisions": 240,
+  "observedPolicyCommands": 320,
+  "maximumRaw42ParityError": 3.5762786865234375e-06,
+  "maximumAction21ParityError": 2.562999725341797e-06,
+  "maximumTorqueEquationErrorNm": 0.0,
+  "finalHeadHeightM": 1.4525866842239243,
+  "finalTorsoTiltDeg": 1.738851028741897,
+  "finalQuietConsecutiveSamples": 0,
+  "maximumQuietConsecutiveSamples": 1183,
+  "final4000ConsecutiveQuietQualified": false,
+  "finalStanding": {
+    "qualified": false,
+    "conditions": {
+      "holding": true,
+      "declaredFinalWindow": true,
+      "head": true,
+      "upright5deg": true,
+      "bothFeet": true,
+      "totalFootLoad": true,
+      "footOnly": true,
+      "linearSpeed": true,
+      "angularSpeed": true,
+      "balance": true,
+      "height": true,
+      "selfPenetration": true,
+      "fixedAnchorDrift": false
+    },
+    "quietConsecutiveSamples": 0,
+    "quietSeconds": 0.0,
+    "minimumComCaptureMarginM": 0.05614860023622398,
+    "maximumBodyLinearMps": 0.0048156623898786026,
+    "maximumBodyAngularRadps": 0.011869394750996416,
+    "anchorDriftM": 0.020589821701855544,
+    "solvedPositiveForcePointsCurrentXY": [
+      [
+        0.33557041526215714,
+        0.17204150283173575
+      ],
+      [
+        0.23200135559611376,
+        -0.011733459973962343
+      ],
+      [
+        0.5663643586792847,
+        0.020751248697203746
+      ],
+      [
+        0.4872388837722674,
+        -0.17479656207216354
+      ]
+    ]
+  },
+  "fullCacheCheckpointBytes": 14658416,
+  "fullCacheCheckpointSHA256": "bff582b69c24843e3e869b4f3e5f54998669b50bc86b88d27b5292f6d86fb799",
+  "continuedEvolutionParityQualified": false,
+  "sourceModelCacheTransfer": false,
+  "stepQualified": false,
+  "optimizerUpdates": 0,
+  "scope": "original SLOW source reference/cubic/PD with explicit240-decision hold diagnostic; no task training or Rapier result",
+  "inputHashes": {
+    "scripts/getup-step/source_slow_control.py": "5018db7042f85a8ff84d4cd77eb7d673acfd28b07a3e121786011870c3c4f3d9",
+    "scripts/getup-step/source_engine.py": "d7820718aa3310a7716675dfa6c572cfcab7e38ed4f9053cb0b4cf16d8b80fbf",
+    "scripts/getup-step/source_positive_control.py": "adc0647bb230f64491ac7b14b8d2fc354a3dd8e73bd6e960ac30917e88ac2adc",
+    "scripts/getup-step/source_bridge.c": "55c98df1e33937ec409ad731957050f10242f6e4d5606da731a6b7cf9f2ca2e9",
+    "scripts/getup-diagnostic/mujoco_bridge.c": "179e9fd1e7826ea15138187bc2c4f3b50e5aa444a5145ae6fa402784593eecbb",
+    "scripts/getup-diagnostic/compare_mujoco.py": "0173722caec508da85b253ed1e3b2b768ec1b3a2faa0d7f5f606e9522830afef",
+    "scripts/getup-step/actors.py": "125c3e54eb14318cdc382c060320528b4018dacb3da113e09c70c4c38aa9e366",
+    "scripts/getup-step/source_math.py": "f4935043b31dfef00b926943d2b3f720fd39691e98672aa6ae00019371ff8dfd",
+    "scripts/getup-step/reference.py": "cc9b323ec7ff8268b928d2ce14173179501f6a7e75a7f9598d584795da17558b",
+    "scripts/getup-step/native_env.py": "bd292d19ab2cf082be5240ba7827f1270582d777f493c04834f1a171ceed1ae9",
+    "rust/crates/model/data/getup-v1.json": "1611ec8c988c1006b0a819ab21e2b7c410adaaf512080be425d6d6e235a8926a",
+    "rust/crates/sim/data/getup-policy/student.bin": "c489faed55bdab1669c51dab71a102db91ff2a55143789f682e45cd8169d6dbb",
+    "outputs/getup-source-engine/session-20261017T233404Z/source_bridge_v2.so": "ca5308ce5d876628a995e40ba3b18cad7954e2bd0b3beeb02c5c9ea70a1dcde9",
+    "outputs/getup-source-engine/session-20261017T233404Z/dependency/official-wheel/mujoco/libmujoco_nogl.so.2.1.3": "a8d51e013c6435c2a58ddc1a98f19cefd2990199c2f125eda930ff10d5f58520",
+    "outputs/getup-source-engine/session-20261017T233404Z/source-model/humanoid_high_freq.xml": "69a7e87fed168e1f4ad7dee43dfdd8df6bd74b3d4af06d99c991b46b941106db",
+    "outputs/getup-source-engine/session-20261017T233404Z/corrected-attempt/positive-control-frames.ndjson": "c57ab1ee0c82850bb0e4f29cca1a278d4438d076dfb9ebf455ca236070e8672c",
+    "outputs/getup-source-engine/session-20261017T233404Z/source-model/humanoid_static.xml": "d49ff2ba18fd46bad06047addddb77dc0dfbbf4e9e70d30934d344353b9015ed",
+    "outputs/getup-source-engine/session-20261017T233404Z/source-model/materials.xml": "5f1279351cd6e7f83fa4a2e733558ffb297ad19f9bd4e757bdaec6e7d36a777c",
+    "outputs/getup-source-engine/session-20261017T233404Z/source-model/skybox.xml": "52f3687ca30329b4077b0a26feaad9b73d201e183cbde0ffbd6cd52de51907bd",
+    "outputs/getup-source-engine/session-20261017T233404Z/source-model/visual.xml": "ec1d274ab70d95604133dafa92c0d1194de51bba997bd53b70bc67eb95d823fc"
+  },
+  "aggregateSLOWPhysicsWallSecondsIncludingFirstSegment": 0.35546752202208154,
+  "recoveredFirstSample": "source step1 recovered from exact full physical cache after strictJSON numpy.bool abort; original held command retained through remaining19substeps; noreset/duplicatestep"
+}

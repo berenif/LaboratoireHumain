@@ -4,6 +4,7 @@
  */
 #include "../getup-diagnostic/mujoco_bridge.c"
 #include <math.h>
+#include <stddef.h>
 
 typedef struct { int body; double local[3], normal[3], force; } FloorPoint;
 
@@ -44,6 +45,9 @@ int lh_step_audited(LH *h, int maximum) {
         double point[3],jac[81],v[3];
         mju_mulMatVec(point,h->d->xmat+9*p->body,p->local,3,3);
         for(int k=0;k<3;k++) point[k]+=h->d->xpos[3*p->body+k];
+        if(i<h->support_count) {
+            h->support_points[2*i]=point[0]; h->support_points[2*i+1]=point[1];
+        }
         mj_jac(h->m,h->d,jac,NULL,point,p->body);
         for(int k=0;k<3;k++) v[k]=mju_dot(jac+27*k,h->d->qvel,27);
         double vn=mju_dot(v,p->normal,3),speed2=0;
@@ -60,4 +64,41 @@ int lh_joint_info(LH *h, int joint, double *out) {
     out[2]=h->m->jnt_limited[joint];
     out[3]=h->m->jnt_range[2*joint]; out[4]=h->m->jnt_range[2*joint+1];
     return 0;
+}
+/* Same-engine/model/ABI checkpoint. Pointer fields stay allocated by mj_makeData;
+ * all pointer targets live in its fixed-layout main buffer (MuJoCo2.1.3).
+ * The caller binds model/library hashes. No forward/integration on restore. */
+int lh_checkpoint_size(LH *h) {
+    return 10*(int)sizeof(int)+(int)(sizeof(LH)-offsetof(LH,steps))+
+        (int)offsetof(mjData,buffer)+h->d->nbuffer+h->d->nstack*(int)sizeof(mjtNum);
+}
+int lh_checkpoint_export(LH *h, char *out, int length) {
+    if(length!=lh_checkpoint_size(h) || h->d->pstack!=0) return -1;
+    int header[10]={0x4c485343,213,h->m->nq,h->m->nv,h->m->nu,h->m->nbody,
+        h->d->nbuffer,h->d->nstack,(int)offsetof(mjData,buffer),(int)sizeof(LH)};
+    int tail=(int)(sizeof(LH)-offsetof(LH,steps));
+    memcpy(out,header,sizeof(header));out+=sizeof(header);
+    memcpy(out,(char*)h+offsetof(LH,steps),tail);out+=tail;
+    memcpy(out,h->d,offsetof(mjData,buffer));out+=offsetof(mjData,buffer);
+    memcpy(out,h->d->buffer,h->d->nbuffer);out+=h->d->nbuffer;
+    memcpy(out,h->d->stack,h->d->nstack*sizeof(mjtNum));
+    return length;
+}
+int lh_checkpoint_import(LH *h, const char *in, int length) {
+    if(length!=lh_checkpoint_size(h)) return -1;
+    int got[10],expected[10]={0x4c485343,213,h->m->nq,h->m->nv,h->m->nu,h->m->nbody,
+        h->d->nbuffer,h->d->nstack,(int)offsetof(mjData,buffer),(int)sizeof(LH)};
+    memcpy(got,in,sizeof(got));if(memcmp(got,expected,sizeof(got))) return -2;
+    int tail=(int)(sizeof(LH)-offsetof(LH,steps));in+=sizeof(got);
+    int stored_steps;memcpy(&stored_steps,in,sizeof(stored_steps));
+    mjData header;memset(&header,0,sizeof(header));
+    memcpy(&header,in+tail,offsetof(mjData,buffer));
+    if(stored_steps<0 || header.nbuffer!=h->d->nbuffer || header.nstack!=h->d->nstack ||
+       header.pstack!=0 || header.ncon<0 || header.ncon>h->m->nconmax ||
+       header.nefc<0 || header.nefc>h->m->njmax || !isfinite(header.time)) return -3;
+    memcpy((char*)h+offsetof(LH,steps),in,tail);in+=tail;
+    memcpy(h->d,in,offsetof(mjData,buffer));in+=offsetof(mjData,buffer);
+    memcpy(h->d->buffer,in,h->d->nbuffer);in+=h->d->nbuffer;
+    memcpy(h->d->stack,in,h->d->nstack*sizeof(mjtNum));
+    return length;
 }

@@ -45,9 +45,12 @@ def admit_task_learning(config_path,*,expected_config_sha256,admission):
     return config,digest
 
 
-def learning_update_due(actual_transitions,updates,config):
+def learning_update_due(actual_transitions,updates,config,*,critic_only_updates=0):
     if type(actual_transitions)is not int or type(updates)is not int or min(actual_transitions,updates)<0:raise ValueError('invalid learning counters')
     p=config['pilot']
+    if p.get('firstUpdateTransition')is None:
+        if type(critic_only_updates)is not int or critic_only_updates<0:raise ValueError('invalid critic-only counter')
+        return bool(critic_only_updates>=p['criticOnlyWarmupUpdates']and updates<p['maximumUpdates']and actual_transitions<=p['maximumActualTransitions']and actual_transitions>=p['warmupActualTransitions']+p['newTransitionsPerUpdate']and(actual_transitions-p['warmupActualTransitions'])%p['newTransitionsPerUpdate']==0)
     return bool(updates<p['maximumUpdates']and actual_transitions<=p['maximumActualTransitions']and actual_transitions>=p['firstUpdateTransition']and(actual_transitions-p['warmupActualTransitions'])%p['newTransitionsPerUpdate']==0)
 
 

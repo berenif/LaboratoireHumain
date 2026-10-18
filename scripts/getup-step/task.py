@@ -1,7 +1,7 @@
 """Pure adapted task reward/transition bookkeeping. No collection or optimizer.
 
 This file intentionally does not reproduce source rewards; source_math.py does.
-Full20-sample intervals and verified finite physical-terminal partials are valid.
+Full engine-specific policy intervals and verified finite physical-terminal partials are valid.
 """
 from dataclasses import dataclass, field
 import hashlib
@@ -28,6 +28,8 @@ def load_config(path=CONFIG_PATH,*,expected_sha256=None):
 
 def validate_config(config):
     reward=config['reward']
+    timing=config['timing'];hz=timing['nativeHz'];samples=timing['nativeSamplesPerTransition']
+    if type(hz)is not int or hz not in [200,800]or timing['policyHz']!=40 or type(samples)is not int or samples*40!=hz:raise ValueError('invalid engine/policy timing')
     for name,term in reward['denseTerms'].items():
         if not math.isfinite(term['scale'])or term['scale']<=0 or not math.isfinite(term['weight'])or term['weight']<0:
             raise ValueError('invalid reward scale/weight')
@@ -63,9 +65,10 @@ class TaskHistory:
         """
         self.__post_init__()
         config=config or load_config()[0];validate_config(config);cfg=config['reward'];ids=list(native_ids)
-        if any(type(i)is not int for i in ids)or not 1<=len(ids)<=20 or ids!=list(range(self.last_native_id+1,self.last_native_id+1+len(ids))):
+        expected_samples=config['timing']['nativeSamplesPerTransition'];sample_hz=config['timing']['nativeHz']
+        if any(type(i)is not int for i in ids)or not 1<=len(ids)<=expected_samples or ids!=list(range(self.last_native_id+1,self.last_native_id+1+len(ids))):
             raise ValueError('task transition requires consecutive NEW native IDs')
-        if len(ids)!=20 and not physical_failure:
+        if len(ids)!=expected_samples and not physical_failure:
             raise ValueError('only verified finite physical terminals may be partial')
         if set(errors)!=set(cfg['denseTerms']):raise ValueError('missing/extra task error terms')
         terms={}
@@ -86,7 +89,7 @@ class TaskHistory:
             if event!=order[len(awarded)]:raise ValueError('event out of physical sequence')
             awarded.append(event);bonus+=cfg['eventBonuses'][event]
         dense=sum(cfg['denseTerms'][name]['weight']*value for name,value in terms.items())
-        duration_fraction=len(ids)/20.
+        duration_fraction=len(ids)/expected_samples
         dense*=duration_fraction
         costs=duration_fraction*(cfg['normalizedControlMeanSquareCost']*float(np.mean(control**2))+cfg['normalizedControlChangeMeanSquareCost']*float(np.mean((control-previous)**2)))+cfg['loadedSlipIncrementCostPerMeter']*loaded_slip_increment_m
         if physical_failure:
@@ -99,4 +102,4 @@ class TaskHistory:
         return dict(reward=reward,dense=dense,terms=terms,cost=costs,eventBonus=bonus,
                     terminated=bool(physical_failure or success),truncated=bool(truncated and not physical_failure and not success),
                     not_done=0. if physical_failure or success else 1.,physicalFailure=physical_failure,
-                    success=success,awardedEvents=awarded.copy(),nativeSampleCount=len(ids),durationSeconds=len(ids)/800.)
+                    success=success,awardedEvents=awarded.copy(),nativeSampleCount=len(ids),durationSeconds=len(ids)/sample_hz)

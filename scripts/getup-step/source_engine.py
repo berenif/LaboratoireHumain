@@ -18,18 +18,24 @@ OLD=ROOT/'scripts/getup-diagnostic/compare_mujoco.py'
 spec=importlib.util.spec_from_file_location('counted_source_world',OLD);old=importlib.util.module_from_spec(spec);spec.loader.exec_module(old)
 
 
-def frozen_actor():
+def torch_actor(dense):
     torch.set_num_threads(1)
-    dense=DenseActor.load(ROOT/'rust/crates/sim/data/getup-policy/teacher.bin')
-    net=torch.nn.Sequential(torch.nn.Linear(68,1024),torch.nn.ReLU(),torch.nn.Linear(1024,1024),torch.nn.ReLU(),torch.nn.Linear(1024,42));net.eval()
+    width=dense.dimensions[0]
+    net=torch.nn.Sequential(torch.nn.Linear(width,1024),torch.nn.ReLU(),torch.nn.Linear(1024,1024),torch.nn.ReLU(),torch.nn.Linear(1024,42));net.eval()
     with torch.no_grad():
         for i,(w,b)in zip([0,2,4],dense.layers):net[i].weight.copy_(torch.from_numpy(w));net[i].bias.copy_(torch.from_numpy(b))
-    def infer(physical):
-        obs=teacher_observation(physical,POWER)
-        with torch.inference_mode():raw=net(torch.from_numpy(obs)[None,:])[0];action=torch.tanh(raw[:21])*np.float32(POWER)
-        if not torch.isfinite(raw).all()or not torch.isfinite(action).all():raise ValueError('nonfinite frozen teacher')
+    def infer(observation):
+        obs=np.asarray(observation,dtype=np.float32)
+        if obs.shape!=(width,)or not np.isfinite(obs).all()or not 0<=obs[-1]<=1:raise ValueError('invalid source actor observation')
+        with torch.inference_mode():raw=net(torch.from_numpy(obs)[None,:])[0];action=torch.tanh(raw[:21])*obs[-1]
+        if not torch.isfinite(raw).all()or not torch.isfinite(action).all():raise ValueError('nonfinite frozen actor')
         return raw.numpy().copy(),action.numpy().copy()
-    return infer,dense
+    return infer
+
+
+def frozen_actor():
+    dense=DenseActor.load(ROOT/'rust/crates/sim/data/getup-policy/teacher.bin');predict=torch_actor(dense)
+    return lambda physical:predict(teacher_observation(physical,POWER)),dense
 
 
 class World(old.World):

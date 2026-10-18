@@ -32,18 +32,19 @@ class PhaseClock:
     last_native_substep:int
     target_rate:float=1.
     response_seconds:float=.1
+    sample_seconds:float=NATIVE_DT
 
     def __post_init__(self):
-        if not all(math.isfinite(x)for x in [self.tau,self.rate,self.target_rate,self.response_seconds]) or self.tau<0 or not 0<=self.rate<=1 or self.target_rate not in [0.,1.] or self.response_seconds!=.1:
+        if not all(math.isfinite(x)for x in [self.tau,self.rate,self.target_rate,self.response_seconds]) or self.tau<0 or not 0<=self.rate<=1 or self.target_rate not in [0.,1.] or self.response_seconds!=.1 or self.sample_seconds not in [.00125,.005]:
             raise ValueError('invalid/restored reference clock scalars')
-        if not isinstance(self.last_native_substep,(int,np.integer))or self.last_native_substep<0:
+        if isinstance(self.last_native_substep,(bool,np.bool_))or not isinstance(self.last_native_substep,(int,np.integer))or self.last_native_substep<0:
             raise ValueError('native clock must be a nonnegative integer')
 
     def advance(self,native_substep,admitted,phase_end):
         self.__post_init__()
-        if not isinstance(native_substep,(int,np.integer))or native_substep<self.last_native_substep or not math.isfinite(phase_end)or phase_end<self.tau or not isinstance(admitted,(bool,np.bool_)):
+        if isinstance(native_substep,(bool,np.bool_))or not isinstance(native_substep,(int,np.integer))or native_substep<self.last_native_substep or not math.isfinite(phase_end)or phase_end<self.tau or not isinstance(admitted,(bool,np.bool_)):
             raise ValueError('invalid/restored reference clock')
-        dt=(native_substep-self.last_native_substep)*NATIVE_DT
+        dt=(native_substep-self.last_native_substep)*self.sample_seconds
         old_target=self.target_rate
         decay=math.exp(-dt/self.response_seconds)
         increment=old_target*dt+(self.rate-old_target)*self.response_seconds*(1-decay)

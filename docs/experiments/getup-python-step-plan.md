@@ -179,3 +179,302 @@ All reviewers inspected R0 SHA256 `fb4607657558d080fa0c4317abc9d1ee2b20ebc7dcac6
 | R5 acceptance/integration | review_getup_mvp_acceptance |complete proof, nonregression, native/WASM/browser delivery | CLEAR after R1 correction verification |
 
 Launch order after clearance: preserve research checkpoint → implement/test minimal Python math + native source bridge → known-GetUp parity → bounded frozen reference probe → evidence-led learning branch if needed. The deliverable remains the foot lifting, advancing and landing, followed by five seconds of balance.
+
+## 10. Source-engine learning addendum, 17 October23:54 UTC
+
+This is an explicit post-review adaptation, informed by the separate original
+MuJoCo positive-control result. The five reviews above remain the record of the
+original plan; this addendum receives focused source/resource review before
+its new collection or optimizer scope can be admitted.
+
+### Evidence and engine boundary
+
+The imported WEAK actor completed one original200 Hz MuJoCo2.1.3 get-up from the
+exact dm_control1.0.1 reset algorithm: teacher return184.4147, head above1.4 m
+from teacher time0.965 s through the final5.29 s. The source diagnostic reports
+actual flight/nonfoot/slip, final torso tilt12.96 degrees and no five-degree
+quiet-step qualification. Its final state is **not** silently used as a step
+start. The compact report is
+`docs/experiments/getup-source-engine-comparison.md`.
+
+Learning will therefore first use the verified original MuJoCo source engine
+inside Python: teacher stages use the pinned static200 Hz model, and SLOW uses
+the pinned high-frequency800 Hz model. Native Rapier remains the application
+engine and a separate later transfer/product acceptance gate. No default app
+engine, mass, inertia, motor gear, friction, joint limit or installed actor is
+changed by this decision. A MuJoCo step would be a source mechanical milestone,
+not the final native/browser product.
+
+The attempted transferred-native quiet comparison retains its failed0.2 mm
+geometry gate. Native root quaternion norm squared1.00059463 explains a0.737 mm
+body-position difference after source unit-quaternion projection. This is not
+an exact cross-engine state match, nor proof that every failure is caused by
+physics rather than initial-state distribution. No task optimizer was run.
+
+### Minimal source task environment and interface
+
+1. Preserve independently written source math, safe actor loader and source SAC
+   equations. A new `source_task_env.py` will wrap the counted official MuJoCo
+   adapter, observe67 source physical coordinates, sample a40 Hz policy, and
+   hold actuator-order teacher controls for5 source integrations. Source SLOW
+   holds qpos-order reference/residual for20 source integrations, recomputing
+   measured q/dq PD each800 Hz substep with kd .1 motion/.2 holding. Power and
+   original gear are each applied once.
+2. Add per-source-integration solved foot/body loads, transported foot-side
+   force-bearing material points, actual body/foot poses and velocities,
+   whole-capsule clearance, normalized applied motor controls and warnings.
+   Keep solved-force versus refreshed-geometry stages explicit. Only actual
+   positive force-bearing points enter the declared support/LIP proxy; no
+   planned contact or old hull is substituted. These are source predicates,
+   not a claim that source soft contacts reproduce native impulse predicates.
+3. Reuse the reviewed pure geometry/reward/event calculations through an
+   explicit source-to-canonical frame adapter. Use a **separate** hashed
+   `task-config-mujoco-v1.json`:200 Hz teacher means5 samples/25 ms transition,
+   20 samples/100 ms persistence and1000 consecutive samples/5 s final hold.
+   Source SLOW800 Hz and final Rapier acceptance retain20/80/4000 respectively.
+   Durations, reward integral fractions and physical-terminal masks must remain
+   identical in seconds. No blind reuse of800 Hz counters on the200 Hz world.
+4. Freeze forward at real step entry: source torso local +X projected onto the
+   ground (equivalent to model/native local +Z under P). Rebase the planned
+   +60 mm/25 mm whole-body guide to the **actual** source stance/root/q/dq and
+   actual contact geometry. The old B27-native witness is a potential guide,
+   not a teacher or an already matched source reset. Regenerate and check the
+   bridge, actual installed joint bounds, root rotations and both-foot closure.
+5. Freeze pre-action reference/phase for each executed interval reward; update
+   measured event timers afterward. Source-native100 ms unload, clearance,
+   forward placement, actual3 N touchdown, actual10% BW load acquisition and
+   final upright hold gates retain their physical thresholds. Whole-capsule
+   advance clearance15 mm, forward≥50 mm/lateral≤20 mm, zero step-window
+   nonfoot/flight and per-foot cumulative slip≤10 mm remain the mechanical
+   requirements. Initial get-up may have flight/nonfoot before the separately
+   qualified and declared step-entry window; it cannot be relabeled as a step.
+6. Qualify a source quiet entry first, using source SLOW terminal holding or
+   another measured source condition. Require actual five-degree upright,
+   continuous five-second quiet/source support proof. The original actor's
+   terminal observation sentinel1.4 is preserved in source-parity fixtures;
+   any task reference actual-height inputs are explicit adaptations. A final
+   WEAK head-height event alone does not admit the stepping task.
+7. Checkpoint complete source physical state, warm starts, controls and stage
+   caches together with hybrid phase/reference clock/events/anchors, replay,
+   all RNGs and budget. The present saved final q/qvel/control/contact packet
+   is measured state only, not a complete solver-cache checkpoint. Do not
+   advertise exact resume until next-command and continued physical-evolution
+   equality pass. A deterministic one-prefix replay to capture discarded
+   source caches, if needed, is a separately counted diagnostic.
+
+### Safe initialization and full-checkpoint availability
+
+The pinned source tree does ship actor/critic/critic-target/actor-optimizer/
+critic-optimizer/log-alpha/alpha-optimizer files for both WEAK and SLOW. It does
+not ship a replay buffer, RNG/environment state or a separate STRONG checkpoint.
+Only the safe actor binaries are currently imported locally. Availability of
+old critics/optimizers is not evidence they fit a new task.
+
+Preserve the original WEAK actor and prove the audited68→118 zero-reference-
+column expansion again. Old physical columns0:67 stay unchanged, old power67
+moves to117, reference columns67:117 start exactly zero. For the changed step
+reward/action context use fresh twin task critics and target copies, fresh
+actor/critic/temperature optimizers and declared alpha. An old teacher critic
+has89 inputs; the new conditioned teacher critic has139. This is task
+adaptation rather than an exact training resume. No `.pt` is inspected with
+unrestricted pickle; any future inspection requires pinned hashes and CPU
+`weights_only=True`, without additional safe globals.
+
+Before exploration, test the initialized teacher's actual deterministic controls
+on the qualified source quiet entry. Explicitly distinguish the imported WEAK
+power0.663420431 from the proposed strong-stage task power1; neither inherits
+a stable-stance guarantee. Retain the reviewed deterministic-drift, rollback
+and paired frozen-baseline gates with fresh critics. A successful get-up
+asset is not automatically a quiet-step teacher. Preserve frozen source GetUp
+paired baselines and stop if the initializer cannot supply stable support.
+Do not pretend that zero-weight reference inputs condition behavior before
+learning. If that baseline fails, report the exact obstruction and review a
+separate initialization/curriculum change; do not spend a blind SAC pilot.
+Strong→WEAK completion tests and qualified actual WEAK trajectories still precede
+SLOW task training. No source optimizer or task collection is currently enabled.
+
+### Throughput and prospective admission
+
+The measured original-source episode included full inference, dual actor parity,
+per-integration durable budget writes and complete journals:250 teacher
+transitions plus80 reset decisions took3.0843 process seconds, about81.1 teacher
+transitions/s conservatively. Actual integration alone cost0.0916405 s for1650
+steps. Those are different quantities. A prior synthetic CPU128-batch benchmark
+of100 critic updates took3.659 s; it is not a newly measured source-task optimizer
+throughput or a convergence estimate. The next fresh budget proposal must include an explicitly bounded end-to-end
+task/update benchmark substage and protected validation reserve. Training is
+released only after that authorized substage measures throughput and verifies
+the remaining reserve; the benchmark is not a circular precondition to proposing
+its own budget.
+
+The first Python pilot is closed and its unused300 s allowance is not reused.
+The current original-engine comparison phase has its own10 s physics cap and
+00:34:04 UTC deadline; it authorizes diagnosis/design, **not task learning**.
+Any new collection/optimizer phase requires a tested/hash-locked source config,
+qualified entry/reference, measured event/restore wiring, preserved frozen
+baseline, focused R1/R4 clearance and a fresh bounded resource proposal. Never
+extrapolate the old Rapier178-hour estimate as the source-engine ETA, or imply
+that a small viability pilot will train the complete movement.
+
+Addendum review receipts: R1 source fidelity cleared §10 at content SHA256
+`63dcd00ce7c89580d14b98ce8c5d44ded6cdd0c7ab282cbeb689cf0a1f073116`.
+R4 cleared the final two power/budget-admission clarifications at
+`00c0a174fefc8d2b4e355cf01bb15b4fd690f43977c71754923c8a26c8e74747`.
+These are design clearances, not collection/optimizer or physical qualification.
+
+### Stabilization admission clarification after source SLOW evidence
+
+The complete source SLOW follow-through reaches actual upright low-velocity
+standing but fails the fixed-anchor quiet requirement through measured stance
+sliding. Preserve that failure. Requiring an already five-second-quiet policy
+before learning quietness would be circular. The exact actual source endpoint
+may therefore be admitted as a **training-only initialization** for an explicit
+stabilization→forward-step curriculum, after safety/interface/data/budget gates.
+It is not an evaluation pass, successful step teacher, or permission to weaken
+any final quiet/slip requirement. Curriculum stabilization has its own locked
+objective/events/config; full step phases remain unavailable until actual
+stabilization and whole-body reference admission. Source collection/optimization
+still require the next bounded proposal and remain disabled in this comparison
+phase.
+
+## 11. Proposed next phase: source stabilization before stepping
+
+Status: proposal only. The comparison phase ends at 2026-10-18 00:34:04 UTC.
+Its remaining allowance is not a task-learning allowance. No task data or
+optimizer is enabled by this section or by the new disabled source preset.
+
+### Delivered environment boundary
+
+`scripts/getup-step/source_task.py` decodes actual source q/qvel, true FK/COM,
+original actuator torques, solved positive-force support anchors transported to
+the current pose, every-body speeds, foot loads and slip. Its stabilization
+reference is the actual measured entry pose; target velocity is zero. This is a
+new fixed-reference task input, not the original source terminal-height sentinel.
+The only phase is `stabilize`. Actual 200 Hz integration IDs drive the reference
+clock, with five native samples per 40 Hz transition. Quietness need not hold at
+reset. Entry anchors are fixed prospectively, and every sample contributes to
+persistence, actual cumulative loaded slip and the final five-second counter.
+No right-only polygon is inferred from the bridge's combined support points.
+The forward-step curriculum remains disabled until per-foot support telemetry
+and a source-entry-specific trajectory are admitted.
+
+`scripts/getup-step/source_task_env.py` connects this core to the original
+200 Hz static model, direct actuator-order torque held for five integrations,
+actual per-frame failure checks, and the source full-cache/Python sidecar.
+The integration callback must own the separately admitted write-ahead resource
+ledger. Current config refuses execution before any control write. Checkpoints
+bind model/library/code/config/native data, actual packet identity, task clocks,
+anchors, all counters/event history, previous controls and complete RNG state.
+Restoring an environment never restores/refunds the global budget ledger.
+Pure/fake continuation parity is distinct from unmeasured paired engine-dynamics
+parity, which remains an explicit admission gate.
+
+Only verified finite physical-terminal partials are valid shorter transitions.
+A physical/task failure and absorbing successful five-second goal have mask0;
+an extrinsic completed-interval cutoff has mask1 and the actual final observation.
+Infrastructure, corrupt observation or uncertain/unfinished requests abort replay.
+A recorded SLOW residual rollout is measurement evidence, not a held direct-torque
+teacher replay transition. A future teacher interval must verify all five applied
+normalized torques against its held actuator action.
+
+### Initialization choices and curriculum
+
+The actual SLOW endpoint is an allowed training-only initialization: torso is
+upright and slow, but feet still creep. Its strict quiet proof failed. The WEAK
+actor at its trained power0.663420431 failed this source stance after30 ms under
+the disclosed cold-cache switch. Power1 is not a separately trained STRONG actor;
+the optional diagnostic was correctly skipped after that failure.
+
+Preferred next experiment is an explicitly adapted **SLOW-derived torque
+imitation warm start**. Labels must be actual normalized actuator controls from
+measured source SLOW packets, not residual angles. A new 118-input direct-torque
+actor is fitted to these labels with source action/order/power semantics, using
+first3s for fitting and final2s for contiguous held-out validation of the measured
+SLOW final5s. Use only each original40Hz decision FIRST800Hz substep, without averaging:
+labels at source IDs2401+20n pair with PRE-action packets2400+20n. The first120
+pairs (3s) fit and last80 pairs (2s) validate. The future200Hz teacher holds this
+approximate torque25ms; fitting cannot establish dynamic equivalence. Fixed entry target25 now/ahead and power1 form its118 inputs. The fit is an approximation;
+copying the SLOW residual head is forbidden. At power1, target mean is
+atanh(clamp(u, -1+epsilon, 1-epsilon)); action-space error must also be reported: held-out RMS≤0.02 and maximum absolute
+error≤0.05 are required before a physics benchmark. Initialize constant source
+logstd=ln(0.02), using the inverse source[-5,2] map, and freeze those output rows
+during supervised fitting. This std is latent before tanh; it is not constant
+normalized-control noise. Epsilon1e-6 is fixed; any saturated label
+|u|≥1−epsilon aborts the fit, with counts retained. Failing these fixed thresholds stops this candidate.
+Fresh source-task twin critics/targets, alpha and all optimizers are used.
+The original actors remain immutable. Any supervised updates require the fresh
+phase authorization below, even though no physics is involved.
+
+Alternative is the audited WEAK68-to118 zero-reference-column expansion with
+fresh task critics. It is a known failed stance initializer, not a preserved
+quiet baseline. It can supply failed stabilization training episodes only under
+an explicitly selected/hash-locked protocol. It is not automatically tried if
+the preferred fit fails. Choosing another initializer is a new causal decision.
+
+Stabilization uses dense pose/height/velocity/foot/clearance terms and measured
+slip/control costs, plus one once-only quiet-completion bonus. Failures remain in
+replay with their correct terminal masks; phase deadlines are intrinsic failures.
+No unload/advance reward or commanded foot movement is enabled in stage0.
+After stabilization evidence, propose preparation/unload, lift, forward60 mm,
+touchdown/load-acquisition, upright settling and final5s as later explicit stages.
+The original full-step acceptance gates are unchanged. No SLOW task distillation
+or WEAK power reduction occurs without qualified actual complete task rollouts.
+
+### Fresh bounded proposal and stop rules
+
+Proposed next phase: at most30 minutes process wall and10 seconds aggregate
+physics across all engines, starting only after parent admission. These are new
+ceilings, not reused pilot reserves. Maximum actual task transitions1500, including benchmark paired branches,
+failed episodes, warmup, training and frozen/candidate validation;
+maximum8 seconds per episode, with every failed/reset/probe integration charged.
+Nonvalidation physics ceilings are benchmark1s plus training/collection6s,
+with3s reserved for validation. All fit/setup/benchmark/training must stop with
+at least300 wall seconds remaining. No paid/remote training. Release gates are sequential:
+
+1. Pure admission and initializer fit: lock exact config/code/model/actor/data
+   hashes, failure taxonomy, endpoint reward reduction and full RNG/checkpoint
+   payload. At most100 supervised actor updates, batch128, one fixed seed;
+   preserve fit/validation action error and source baseline actors. No SAC yet.
+2. Counted throughput/continuation benchmark: at most64 actual policy intervals,
+   1.6 simulated seconds,1 physics second and120 seconds process wall, including
+   a bounded same-cache next-command paired continuation. At most16 throwaway
+   critic-only updates on valid actual transitions. Discard all benchmark network,
+   target, optimizer and RNG state; retain every physical charge. Candidate
+   initialization returns to the immutable fitted actor and declared RNG. Measure full decode/event/
+   journal/replay/update throughput; pure forward estimates do not release SAC.
+   Require the fitted actor to complete the actual held40Hz/200Hz stance benchmark
+   without parity or immediate physical failure before SAC actor release.
+   Low supervised error alone is insufficient. Admit the remaining episode count
+   and a full5s terminal tail from these rates.
+3. Stabilization viability pilot: at most1500 actual transitions total,
+   256-transition replay warmup using the frozen fitted actor plus0.02 normalized
+   Gaussian control noise (one clipping to power1),100 critic-only updates with actor frozen, then at most25 actor
+   updates and25 associated critic/alpha updates, at most one per four NEW actual
+   collection transitions after warmup; batch128, source learning
+   rates/discount/tau. Critic-only warmup manually refreshes target critics after EVERY update with
+   source Polyak tau0.005 while actor/alpha parameters and optimizers stay frozen.
+   Setting policy_freq huge is insufficient because upstream ties target refresh
+   to actor updates. Exact target/untouched-actor tests gate this adaptation.
+   The16 benchmark updates are throwaway, separate from100 candidate updates.
+   Ordinary source policy_freq1 resumes afterward. Actor updates are separately released after critic warmup.
+   Log fresh-Q behavior and deterministic actor drift on fixed real probes.
+   After warmup the unchanged source stochastic actor sampling is used.
+   Exploration/control bounds and the chosen exact warm-start config must be
+   frozen before collection. This is a learning-viability probe, not a plausible
+   SAC convergence or full-step promise.
+4. Protected validation: retain at least3 physics seconds and5 minutes wall for
+   paired frozen-initializer/candidate actual episodes and the full final5s tail.
+   Protect640 actual policy intervals for the worst-case pair2×8s×40Hz.
+   Thus benchmark≤64 plus training/warmup/failed-episode intervals≤796 leaves
+   the shared1500 interval ceiling intact. Check wall, physics AND transition
+   reserves before every training admission. Full episode admission is computed from measured throughput before launch;
+   unspent stage ceilings do not transfer automatically. The full varied-start/
+   repeated-step/product regression matrix cannot be certified by this pilot.
+
+Stop/rollback on parity/nonfinite/infrastructure uncertainty, budget exhaustion,
+material safety regression relative to the same failed/stable initializer,
+deterministic action RMS drift>0.05 without reassessment, or a failed paired
+probe. No hidden reward/cap/standing/slip changes and no second blind candidate.
+Failure of this tiny pilot is evidence about this initializer/protocol only.
+Exact task config and new resource ledger must receive focused source/math and
+budget review before collection or any supervised/SAC optimizer is released.
