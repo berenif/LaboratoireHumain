@@ -29,6 +29,19 @@ class SACMathTests(unittest.TestCase):
             np.testing.assert_allclose(raw,expected['raw'],atol=2e-4,rtol=0.)
             np.testing.assert_allclose(np.tanh(raw[:21])*np.float32(power),expected['action'],atol=5e-5,rtol=0.)
             self.assertEqual(torch.count_nonzero(agent.actor.trunk[0].weight[:,67:117]).item(),0)
+    def test_critic_only_warmup_polyak_and_untouched_actor_alpha(self):
+        from training import critic_only_update
+        torch.set_num_threads(1);torch.manual_seed(5)
+        a=source.SAC(118,21,discount=.97,policy_freq=1,tau=.005)
+        old_actor=copy.deepcopy(a.actor.state_dict());old_alpha=a.log_alpha.detach().clone();actor_optimizer=copy.deepcopy(a.actor_optimizer.state_dict());alpha_optimizer=copy.deepcopy(a.log_alpha_optimizer.state_dict());old_target=[p.detach().clone()for p in a.critic_target.parameters()]
+        x=torch.zeros(4,118);x[:,-1]=1.;u=torch.zeros(4,21);r=torch.tensor([[1.],[-10.],[0.],[.5]]);mask=torch.tensor([[1.],[0.],[1.],[0.]])
+        class Replay:
+            def sample(self,n):return x,u,x,r,mask
+        charged=[];out=critic_only_update(a,Replay(),4,before_optimizer_step=lambda:charged.append(1))
+        self.assertEqual(charged,[1]);self.assertEqual(out['criticOnlyUpdates'],1);self.assertEqual(a.total_it,0)
+        for key,value in a.actor.state_dict().items():torch.testing.assert_close(value,old_actor[key],atol=0,rtol=0)
+        torch.testing.assert_close(a.log_alpha,old_alpha,atol=0,rtol=0);self.assertEqual(a.actor_optimizer.state_dict(),actor_optimizer);self.assertEqual(a.log_alpha_optimizer.state_dict(),alpha_optimizer)
+        for current,p,old in zip(a.critic_target.parameters(),a.critic.parameters(),old_target):torch.testing.assert_close(current,.005*p+.995*old,atol=0,rtol=0)
     def test_pinned_source_synthetic_one_update_matches_explicit_equations(self):
         self.assertEqual(hashlib.sha256(PATH.read_bytes()).hexdigest(),'64b1abe69edaac1e3c3f9064f11bcb3d1168eb1d829117dd415eaa204dee0420')
         torch.set_num_threads(1);torch.manual_seed(20261017)

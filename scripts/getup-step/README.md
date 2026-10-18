@@ -158,3 +158,20 @@ state are preserved. Future full stepping needs source-specific trajectory and
 per-foot support admission. `task-config-mujoco-stabilization-v1.json` selects a
 proposed torque-imitation initializer; neither fitting nor collection is admitted
 by this preset. Current pure tests are scaffolding evidence, never physics success.
+
+## Bounded stabilization initializer result
+
+The separate local100-step torque fit failed the fixed action-error gate. Its
+prospectively admitted reconstruction100 +continuation400 also failed at the
+fixed500 endpoint;600 actual optimizer calls are retained. No source physics,
+task collection or SAC update ran in that stage. The fit tools preserve full
+Adam and NumPy/Torch RNG state after every extension step. See
+`docs/experiments/getup-source-stabilization-pilot.md` for exact evidence.
+
+`analytic_actor.py` is an INACTIVE pure architecture prototype, using the frozen
+source SLOW holding-PD torque as a state-dependent pre-tanh mean base plus a
+zero-initialized trainable correction. It preserves the original base's terminal
+height1.4 while task references enter the correction. Pointwise source torque
+parity does not establish held200Hz stability. Its epsilon-regularized source
+logprob is not an exact normalized density near saturation; the existing
+single-MLP binary exporter cannot represent this two-network composition.

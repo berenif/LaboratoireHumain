@@ -1,0 +1,23 @@
+{
+  "status": "completed bounded failed initializer stage; no fallback activated",
+  "pythonTestsPassed": 106,
+  "fitCalls": 600,
+  "parameterTrajectoryUpdates": 500,
+  "reconstructed100ActorBitExact": true,
+  "sourcePhysicsIntegrations": 0,
+  "taskSACActorUpdates": 0,
+  "taskCriticUpdates": 0,
+  "prototypePureMathTests": 4,
+  "prototypeActivated": false,
+  "fullStepQualified": false,
+  "checkpointTensorRNGRestoreTestPassed": true,
+  "hashes": {
+    "scripts/getup-step/analytic_actor.py": "2e05f5f1da7981d7965f8ab4c4b588ec3fe423d1e56a7912dc8ed6c30d959309",
+    "scripts/getup-step/stabilization_init.py": "6267d0664e3eee3f0fd984954be66de250e9a4372c7dc3bae2b950d76badd25c",
+    "scripts/getup-step/fit_stabilization.py": "7782419566e18924726800482bc4d82562217e449520337aad28d6f13cab9fcc",
+    "scripts/getup-step/extend_stabilization_fit.py": "d7d75684efe22755ddc54dafd0f0faf0789b6101a36398158148c76bb9036bb0",
+    "scripts/getup-step/stabilization_ledger.py": "ec0f0b09ffa85360d1dceae921c3edc09585052eb1dd627c57cc92e70b6ccb4c",
+    "scripts/getup-step/benchmark_stabilization.py": "ba9824ed3c1829deaca54d630ebceb9524dde522795e2c33ec145a95082eda7b",
+    "scripts/getup-step/training.py": "5442f73ee159252fee77d9b362f6a8cbbfa5acc93f11d3546709bf5f26a09d69"
+  }
+}

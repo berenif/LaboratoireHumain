@@ -1,0 +1,17 @@
+{
+  "status": "pure prototype only; not activated in stopped fit branch",
+  "architecture": "frozen original SLOW holding-torque latent base +zero initialized mean correction",
+  "actualDataPoints": 200,
+  "power": 1.0,
+  "sourceHoldActorTargetHeight": 1.4,
+  "newTaskTargetHeight": 0.8081642389297485,
+  "maximumActualControlError": 1.600012183189392e-06,
+  "RMSActualControlError": 3.9751031977175444e-07,
+  "maximumInitialMeanVersusOwnBaseError": 2.9802322387695312e-08,
+  "maximumStdError": 0.0,
+  "saturationSamples": 0,
+  "physicsIntegrations": 0,
+  "optimizerUpdates": 0,
+  "held200HzDynamicsQualified": false,
+  "fullStepQualified": false
+}

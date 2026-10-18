@@ -478,3 +478,20 @@ probe. No hidden reward/cap/standing/slip changes and no second blind candidate.
 Failure of this tiny pilot is evidence about this initializer/protocol only.
 Exact task config and new resource ledger must receive focused source/math and
 budget review before collection or any supervised/SAC optimizer is released.
+
+### Section11 admission and observed outcome
+
+The bounded local stage was admitted and began at2026-10-18 00:31:06 UTC,
+with the original01:01:06 deadline and protected reserves. The first100-step
+fit failed its fixed heldout gate. A separately prospective extension explicitly
+allowed100 charged deterministic reconstruction calls plus400 new updates;
+all actor tensors matched exactly at the reconstructed100 endpoint. Total
+actual fit calls600 reached parameter-trajectory endpoint500, which also failed.
+No physics, held-control benchmark, task collection or SAC update was released.
+The branch stopped without threshold changes or automatic fallback.
+
+The complete evidence and the inactive analytic-base architecture prototype are
+recorded in [the source stabilization pilot report](getup-source-stabilization-pilot.md).
+That prototype is pure work only and needs a new reviewed admission before any
+activation. The existing section11 fit thresholds and physical success gates
+have not been weakened by these outcomes.

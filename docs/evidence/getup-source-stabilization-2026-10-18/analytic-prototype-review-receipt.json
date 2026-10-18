@@ -1,0 +1,16 @@
+{
+  "status": "pure inactive architecture prototype; no fallback activation",
+  "mathReview": {
+    "reviewer": "independent source/math review",
+    "sourceSHA256": "2e05f5f1da7981d7965f8ab4c4b588ec3fe423d1e56a7912dc8ed6c30d959309",
+    "testSHA256": "bfb6cca2932e138290a3153dd26a8211050a3c9b07aedd01c358b7165de8f729",
+    "reviewedTests": 4,
+    "clearanceScope": "source holding semantics, conditional latent-shift density, saturation and correction gradients only"
+  },
+  "physicsIntegrations": 0,
+  "optimizerUpdates": 0,
+  "activationAdmitted": false,
+  "singleMLPExportSupported": false,
+  "sourceEpsilonLogprobIsExactNormalizedDensity": false,
+  "held200HzStanceQualified": false
+}

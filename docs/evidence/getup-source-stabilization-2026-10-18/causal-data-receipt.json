@@ -1,0 +1,20 @@
+{
+  "sourceJournalSHA256": "a880c0f00ba698da9c06267f17ea677410cf0147d70f105942f4892da7bef47a",
+  "sourceInitialId": 0,
+  "sourceFinalId": 6400,
+  "pairCount": 200,
+  "fitPairCount": 120,
+  "heldoutPairCount": 80,
+  "firstLabelId": 2401,
+  "lastLabelId": 6381,
+  "preInputIdShift": -1,
+  "labelStride": 20,
+  "power": 1.0,
+  "fixedEntryTargetSourceId": 6400,
+  "sourceHz": 800,
+  "futureTeacherHz": 200,
+  "policyHz": 40,
+  "saturatedLabels": 0,
+  "maximumActualControl": 0.46823927760124207,
+  "scope": "actual PRE physical\u2192first-substep normalized actuator torque; approximate initialization labels, not teacher replay or dynamics equivalence"
+}

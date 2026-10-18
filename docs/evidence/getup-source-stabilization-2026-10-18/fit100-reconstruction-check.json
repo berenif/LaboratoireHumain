@@ -1,0 +1,16 @@
+{
+  "bitExactActor": true,
+  "actualOptimizerCalls": 200,
+  "trajectoryUpdates": 100,
+  "allNamedTensorsCompared": [
+    "trunk.0.weight",
+    "trunk.0.bias",
+    "trunk.2.weight",
+    "trunk.2.bias",
+    "trunk.4.weight",
+    "trunk.4.bias"
+  ],
+  "firstLoss": 2.101565361022949,
+  "finalLoss": 0.0060708182863891125,
+  "scope": "deterministic reconstruction; original optimizer was not saved; all100 reconstruction calls charged"
+}
