@@ -37,8 +37,8 @@ class SourceTaskWorld(SlowWorld):
 
 
 class SourceTaskEnv:
-    def __init__(self,world,model,*,config_path,expected_config_sha256,bindings,rng,original_entry_packet=None):
-        self.world=world;current=world.task_packet();entry=current if original_entry_packet is None else original_entry_packet;self.core=SourceStabilization(entry,model,config_path=config_path)
+    def __init__(self,world,model,*,config_path,expected_config_sha256,bindings,rng,original_entry_packet=None,core_factory=SourceStabilization):
+        self.world=world;current=world.task_packet();entry=current if original_entry_packet is None else original_entry_packet;self.core=core_factory(entry,model,config_path=config_path)
         self.resume_required=self.core.packet_hash(current)!=self.core.packet_hash(entry)
         if self.core.config_sha!=expected_config_sha256:raise ValueError('externally pinned source task config mismatch')
         if not isinstance(bindings,dict)or not bindings:raise ValueError('source/model/code bindings required')

@@ -16,7 +16,7 @@ class StageBudget:
         self.data=json.loads(path.read_text())
         if self.data.get('requestOutstanding'):self.close();raise ValueError('unresolved source request: reconciliation required')
         self.deadline=dt.datetime.fromisoformat(self.data['deadlineUtc'].replace('Z','+00:00'));self.profile=self.data.get('profile','stabilization')
-        if self.profile not in ['stabilization','analytic-diagnostic']:self.close();raise ValueError('unknown admitted budget profile')
+        if self.profile not in ['stabilization','analytic-diagnostic','slow-stabilization']:self.close();raise ValueError('unknown admitted budget profile')
         if self.profile=='analytic-diagnostic'and(self.data['aggregatePhysicsLimitSeconds']!=1 or self.data['validationWallReservedSeconds']!=0 or self.data['allIntervalLimit']!=64):self.close();raise ValueError('wrong diagnostic limits')
         for key in ['physicsSeconds','sourceIntegrations','totalPolicyIntervals','stagePhysicsSeconds','stagePolicyIntervals']:
             if key not in self.data:self.close();raise ValueError('missing admitted budget counters')

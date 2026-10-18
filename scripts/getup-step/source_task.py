@@ -114,9 +114,9 @@ class SourceStabilization:
     """
     def __init__(self,initial_row,model,*,config_path=CONFIG_PATH):
         self.config,self.config_sha=load_config(config_path);self.model=model;self.entry_packet=copy.deepcopy(initial_row)
-        if self.config['engine']['fullStepCurriculumEnabled']or self.config['timing']['nativeHz']!=200:raise ValueError('not the stabilization-only source preset')
+        if self.config['engine']['fullStepCurriculumEnabled']or self.config['timing']['nativeHz']not in[200,800]:raise ValueError('not the stabilization-only source preset')
         self.initial=decode_source_frame(initial_row,model);self.target=fixed_stabilization_target(self.initial);self.native_id=self.initial['nativeId'];self.start_id=self.native_id;self.start_time=float(initial_row['timeS'])
-        self.clock=PhaseClock(0.,1.,self.native_id,sample_seconds=.005);self.history=TaskHistory(self.native_id);self.feet_run=[0,0];self.quiet_run=0;self.slip=np.zeros(2);self.previous_controls=self.initial['controls'].copy();self.anchors=np.array([self.initial['transforms'][name][:3,3]for name in ['left_foot','right_foot']]);self.terminal=False
+        self.sample_seconds=1/self.config['timing']['nativeHz'];self.clock=PhaseClock(0.,1.,self.native_id,sample_seconds=self.sample_seconds);self.history=TaskHistory(self.native_id);self.feet_run=[0,0];self.quiet_run=0;self.slip=np.zeros(2);self.previous_controls=self.initial['controls'].copy();self.anchors=np.array([self.initial['transforms'][name][:3,3]for name in ['left_foot','right_foot']]);self.terminal=False
         heading=self.initial['transforms']['torso'][:3,2].copy();heading[1]=0
         if np.linalg.norm(heading)<1e-8:raise ValueError('undefined entry forward heading')
         self.heading=heading/np.linalg.norm(heading);self.entry_left=self.anchors[0].copy();self.last_packet_hash=self.packet_hash(initial_row)
@@ -149,18 +149,18 @@ class SourceStabilization:
         if expected_teacher_controls is not None:
             expected=_vector(expected_teacher_controls,21,'held torque-teacher control')
             if np.max(abs(expected))>1 or any(np.max(abs(x['controls']-expected))>1e-6 for x in xs):raise ValueError('executed controls do not match held torque-teacher action')
-        if any(abs(row['timeS']-(self.start_time+(x['nativeId']-self.start_id)*.005))>1e-9 for row,x in zip(rows,xs)):raise ValueError('source integration clock/timestep mismatch')
+        if any(abs(row['timeS']-(self.start_time+(x['nativeId']-self.start_id)*self.sample_seconds))>1e-9 for row,x in zip(rows,xs)):raise ValueError('source integration clock/timestep mismatch')
         backup=copy.deepcopy(self.__dict__)
         try:
             failure=None;conditions=[]
             for index,x in enumerate(xs):
-                self.slip+=x['slipSpeed']*.005;f,quiet,drift=self._failure_and_quiet(x);conditions.append(dict(nativeId=x['nativeId'],quiet=quiet,anchorDriftM=drift))
+                self.slip+=x['slipSpeed']*self.sample_seconds;f,quiet,drift=self._failure_and_quiet(x);conditions.append(dict(nativeId=x['nativeId'],quiet=quiet,anchorDriftM=drift))
                 if f:
                     if index!=n-1:raise ValueError('driver continued after a physical terminal')
                     failure=f
             if n<maximum and failure is None:raise ValueError('incomplete nonterminal requests excluded')
             self.clock.advance(xs[-1]['nativeId'],True,self.config['timing']['maximumSuffixSeconds'])
-            if not failure and self.quiet_run<self.config['phaseGates']['finalQuietConsecutiveNativeSamples']and (xs[-1]['nativeId']-self.start_id)*.005>=self.config['timing']['maximumSuffixSeconds']:failure='phase_timeout'
+            if not failure and self.quiet_run<self.config['phaseGates']['finalQuietConsecutiveNativeSamples']and (xs[-1]['nativeId']-self.start_id)*self.sample_seconds>=self.config['timing']['maximumSuffixSeconds']:failure='phase_timeout'
             events=['quietComplete']if self.quiet_run>=self.config['phaseGates']['finalQuietConsecutiveNativeSamples']and not failure else[]
             errors=task_errors(xs[-1],self.target,self.heading,self.entry_left)
             slip_increment=float(np.sum(self.slip-backup['slip']))
@@ -175,7 +175,7 @@ class SourceStabilization:
         for offset,row in enumerate(rows,1):
             x=decode_source_frame(row,self.model)
             if x['nativeId']!=self.native_id+offset:raise ValueError('nonconsecutive preview')
-            trial.slip+=x['slipSpeed']*.005
+            trial.slip+=x['slipSpeed']*self.sample_seconds
             failure,_,_=trial._failure_and_quiet(x)
             if failure:return failure
         return None
@@ -202,7 +202,7 @@ class SourceStabilization:
         trial.target={k:np.asarray(v,dtype=float)if isinstance(v,list)else v for k,v in s['target'].items()};trial.clock=clock;trial.history=history
         elapsed=s['native_id']-s['start_id']
         if any(type(s[k])is not int or s[k]<0 for k in ['native_id','start_id','quiet_run'])or type(s['terminal'])is not bool or elapsed<0:raise ValueError('invalid restored task counters')
-        if s['start_id']!=self.start_id or s['start_time']!=self.start_time or clock.sample_seconds!=.005 or clock.rate!=1 or clock.target_rate!=1 or abs(clock.tau-min(elapsed*.005,self.config['timing']['maximumSuffixSeconds']))>1e-10:raise ValueError('restored source phase clock mismatch')
+        if s['start_id']!=self.start_id or s['start_time']!=self.start_time or clock.sample_seconds!=self.sample_seconds or clock.rate!=1 or clock.target_rate!=1 or abs(clock.tau-min(elapsed*self.sample_seconds,self.config['timing']['maximumSuffixSeconds']))>1e-10:raise ValueError('restored source phase clock mismatch')
         if not isinstance(s['feet_run'],list)or len(s['feet_run'])!=2 or any(type(v)is not int or not 0<=v<=elapsed for v in s['feet_run'])or s['quiet_run']>elapsed:raise ValueError('invented restored persistence')
         for k,shape in [('slip',(2,)),('previous_controls',(21,)),('anchors',(2,3)),('heading',(3,)),('entry_left',(3,))]:
             if np.shape(getattr(trial,k))!=shape or not np.isfinite(getattr(trial,k)).all():raise ValueError('invalid restored geometry/control')
