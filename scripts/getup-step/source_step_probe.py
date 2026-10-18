@@ -91,7 +91,8 @@ class Controller:
   for i,j in enumerate(order):self.B[6+j,i]=w.gears[i]
  def phase_duration(self,phase):
   return getattr(self,'phase_durations',{}).get(phase,{'transfer':2.,'lift':1.,'translate':1.,'land':1.,'settle':2.}.get(phase,0.)*getattr(self,'trajectory_time_scale',1.))
- def solve(self,t,phase='transfer'):
+ def solve(self,t,phase='transfer',reference_context=None):
+  if reference_context is None:reference_context=getattr(self,'_prepared_reference_context',None)
   w=self.w;v=w.arr(1,(27,)).copy();q=w.arr(0,(28,))[7:].copy();M=w.read('lh_mass_matrix',(27,27));bias=w.read('lh_bias',(27,));Jcom=w.read('lh_com_jac',(3,27));com=w.arr(6,(17,3))[1].copy();feet=w.feet();single=phase in ['lift','translate']or(phase=='land'and w.arr(20,(17,))[self.swing_body]<3.);ncontact=4 if single else 8;N=48+ncontact*3
   Aeq=[];beq=[];costA=[];costb=[];ineq=[];ub=[]
   def task(J,target,weight):
@@ -101,10 +102,17 @@ class Controller:
   vel=(self.com1-self.com0)*ds if phase=='transfer'else np.zeros(3);acc=(self.com1-self.com0)*dds if phase=='transfer'else np.zeros(3)
   if phase in ['settle','stand']:
    s,ds,dds=clock(t,self.phase_duration('settle'))if phase=='settle'else(1.,0.,0.);target=self.com1+(self.finalCom-self.com1)*s;vel=(self.finalCom-self.com1)*ds;acc=(self.finalCom-self.com1)*dds
-  if hasattr(self,'adjust_com_reference'):target,vel,acc=self.adjust_com_reference(t,phase,target,vel,acc)
+  if reference_context is not None:
+   reference_context.validate(self,t,phase);target,vel,acc=reference_context.com.arrays()
+  elif hasattr(self,'adjust_com_reference'):target,vel,acc=self.adjust_com_reference(t,phase,target,vel,acc)
   task(Jcom,acc+45*(target-com)+13*(vel-Jcom@v)-w.read('lh_jdot',(3,),-1),12.)
-  if hasattr(self,'add_capture_constraints'):self.add_capture_constraints(phase,N,Jcom,com,v,ineq,ub)
-  if hasattr(self,'add_upright_tasks'):
+  if reference_context is not None:
+   for row,bound in reference_context.capture_constraints:ineq.append(np.array(row));ub.append(bound)
+  elif hasattr(self,'add_capture_constraints'):self.add_capture_constraints(phase,N,Jcom,com,v,ineq,ub)
+  if reference_context is not None:
+   for orientation in reference_context.orientations:
+    body=orientation.body;Jr=w.read('lh_body_jac',(6,27),body)[3:];R=w.arr(5,(17,3,3))[body];root_target,root_velocity,root_acceleration=orientation.arrays();rerr=Rotation.from_matrix(root_target@R.T).as_rotvec();task(Jr,root_acceleration+orientation.kp*rerr+orientation.kd*(root_velocity-Jr@v)-w.read('lh_jdot',(6,),body)[3:],orientation.weight)
+  elif hasattr(self,'add_upright_tasks'):
    self.add_upright_tasks(t,phase,N,task,ineq,ub)
   else:
    Jr=w.read('lh_body_jac',(6,27),1)[3:];R=w.arr(5,(17,3,3))[1];root_target=self.rootR;root_velocity=np.zeros(3);root_acceleration=np.zeros(3)
@@ -114,16 +122,20 @@ class Controller:
     elif phase=='stand':lean,lean_v,lean_a=0.,0.,0.
     root_target=Rotation.from_rotvec(self.lean_axis*lean).as_matrix()@self.rootR;root_velocity=self.lean_axis*lean_v;root_acceleration=self.lean_axis*lean_a
    rerr=Rotation.from_matrix(root_target@R.T).as_rotvec();task(Jr,root_acceleration+40*rerr+12*(root_velocity-Jr@v)-w.read('lh_jdot',(6,),1)[3:],4.)
-  if phase=='transfer'and hasattr(self,'posture_start'):
+  if reference_context is not None:
+   joint_target,joint_velocity,joint_acceleration=reference_context.joints.arrays();task(np.eye(27)[6:],joint_acceleration+20*(joint_target-q)+8*(joint_velocity-v[6:]),.2)
+  elif phase=='transfer'and hasattr(self,'posture_start'):
    ps,pv,pa=clock(t,self.phase_duration('transfer'));delta=self.q0-self.posture_start;task(np.eye(27)[6:],delta*pa+20*(self.posture_start+delta*ps-q)+8*(delta*pv-v[6:]),.2)
   else:task(np.eye(27)[6:],20*(self.q0-q)-8*v[6:],.2)
   if self.self_avoidance:
-   if hasattr(self,'arm_acceleration_task'):
+   if reference_context is not None:
+    arm_target,arm_velocity,arm_acceleration=reference_context.arms.arrays();task(np.eye(27)[21:],arm_acceleration+reference_context.arm_gains[0]*(arm_target-q[15:])+reference_context.arm_gains[1]*(arm_velocity-v[21:]),reference_context.arm_gains[2])
+   elif hasattr(self,'arm_acceleration_task'):
     arm=self.arm_acceleration_task(t,phase);task(arm.jacobian,arm.target,arm.weight)
    elif hasattr(self,'arm_kp'):task(np.eye(27)[21:],self.arm_acceleration+self.arm_kp*(self.arm_posture-q[15:])+self.arm_kd*(self.arm_velocity-v[21:]),self.arm_weight)
    else:task(np.eye(27)[21:],20*(self.arm_posture-q[15:])-10*v[21:],1.)
   contacts=[]
-  landing_adjustment=self.landing_adjustment(t,phase)if hasattr(self,'landing_adjustment')else None
+  landing_adjustment=self.landing_adjustment(t,phase)if reference_context is None and hasattr(self,'landing_adjustment')else None
   for side,foot in enumerate(feet):
    body=foot['body'];J=w.read('lh_body_jac',(6,27),body);b=w.read('lh_jdot',(6,),body);pos=w.arr(3,(17,3))[body];R=w.arr(5,(17,3,3))[body];pos0,Rinitial=self.targets[side];Rflat=self.flatRotations[side];axis=Rotation.from_matrix(Rflat@Rinitial.T).as_rotvec();pt=pos0.copy();pvel=np.zeros(3);pacc=np.zeros(3);wvel=np.zeros(3);wacc=np.zeros(3);R0=Rflat
    if phase=='transfer':
@@ -137,6 +149,7 @@ class Controller:
     else:pt=self.landing.copy();pt[2]-=.0005
     if landing_adjustment is not None:
      offset,rate,acceleration=landing_adjustment;pt[2]-=offset;pvel[2]-=rate;pacc[2]-=acceleration
+   if reference_context is not None:pt,pvel,pacc,R0,wvel,wacc=reference_context.feet[side].arrays()
    desired=np.r_[pacc+100*(pt-pos)+20*(pvel-J[:3]@v),wacc+100*Rotation.from_matrix(R0@R.T).as_rotvec()+20*(wvel-J[3:]@v)]-b
    task(J,desired,20. if side==self.swing_side and phase in ['lift','translate','land']else 25.)
    if not single or side==self.stance_side:
@@ -150,7 +163,7 @@ class Controller:
    row=np.zeros(N);row[50+3*i]=1.;costA.append(row*.001);costb.append(w.mass*9.81/ncontact*.001)
    for horizontal in [0,1]:
     shear=np.zeros(N);shear[48+3*i+horizontal]=1.;costA.append(shear*getattr(self,'shear_weight',.1));costb.append(0.)
-  if phase=='transfer'and getattr(self,'unload_admitted',False):
+  if phase=='transfer'and (reference_context.unload_admitted if reference_context is not None else getattr(self,'unload_admitted',False)):
    unload=np.zeros(N)
    for i,(body,point)in enumerate(contacts):
     if body==self.swing_body:unload[50+3*i]=1.
@@ -195,7 +208,10 @@ class Controller:
   AA=np.vstack([Aeq,ineq]);bb=np.r_[beq,ub];settings=clarabel.DefaultSettings();settings.verbose=False;settings.max_iter=100
   sol=clarabel.DefaultSolver(sparse.csc_matrix(P),linear,sparse.csc_matrix(AA),bb,[clarabel.ZeroConeT(len(beq)),clarabel.NonnegativeConeT(len(ub))],settings).solve()
   if str(sol.status)not in ['Solved','AlmostSolved']:raise RuntimeError('QP '+str(sol.status))
-  x=np.array(sol.x);return x[27:48],dict(comTarget=target.tolist(),comErrorM=float(np.linalg.norm(target-com)),predictedForcesN=x[48:].reshape(-1,3).tolist(),maximumMotorFraction=float(np.max(abs(x[27:48]))),dynamicsResidual=float(np.max(abs(dynamics@x+bias))),jointGroundAdjustments=ground_adjustments,activeJointGroundBarriers=sum(row['active']for row in ground_adjustments),selfAvoidance=self_adjustments,activeSelfAvoidanceBarriers=sum(row['active']for row in self_adjustments))
+  x=np.array(sol.x);info=dict(comTarget=target.tolist(),comErrorM=float(np.linalg.norm(target-com)),predictedForcesN=x[48:].reshape(-1,3).tolist(),maximumMotorFraction=float(np.max(abs(x[27:48]))),dynamicsResidual=float(np.max(abs(dynamics@x+bias))),jointGroundAdjustments=ground_adjustments,activeJointGroundBarriers=sum(row['active']for row in ground_adjustments),selfAvoidance=self_adjustments,activeSelfAvoidanceBarriers=sum(row['active']for row in self_adjustments))
+  if reference_context is not None:
+   info['referenceContext']=reference_context.receipt();info['qpAssemblySHA256']={name:hashlib.sha256(np.ascontiguousarray(value,dtype='<f8').tobytes()).hexdigest()for name,value in [('P',P),('linear',linear),('A',AA),('b',bb)]}
+  return x[27:48],info
 def main():
  from scipy.spatial import ConvexHull,QhullError
  p=argparse.ArgumentParser();p.add_argument('--base',type=Path,required=True);p.add_argument('--output',type=Path,required=True);p.add_argument('--seconds',type=float,default=15.);p.add_argument('--helper',type=Path,required=True);p.add_argument('--xml',type=Path);p.add_argument('--cold-entry',type=Path);p.add_argument('--execute',action='store_true');args=p.parse_args();assert 0<args.seconds<=20.;args.output.mkdir(parents=True,exist_ok=True)

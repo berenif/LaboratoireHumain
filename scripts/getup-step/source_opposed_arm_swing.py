@@ -127,14 +127,17 @@ class OpposedArmController(Controller):
         return c
 
     def solve(self, t, phase='transfer'):
-        legs, leg_rate, _ = limb_telemetry(self.w, 'leg')
+        if hasattr(self, 'prepared_arm_measurement'):
+            legs, leg_rate, leg_acc = self.prepared_arm_measurement()
+        else:
+            legs, leg_rate, _ = limb_telemetry(self.w, 'leg')
+            now = self.w.l.lh_time(self.w.h)
+            dt = None if self.previous_time is None else now-self.previous_time
+            leg_acc = ((leg_rate-self.previous_leg_rate)/dt
+                       if dt is not None and dt > 1e-8 else np.zeros(2))
+            self.previous_time, self.previous_leg_rate = now, leg_rate.copy()
         delta = -(legs-self.leg_origin)
         mapped, jac, hessian = self._mapping.evaluate(delta)
-        now = self.w.l.lh_time(self.w.h)
-        dt = None if self.previous_time is None else now-self.previous_time
-        leg_acc = ((leg_rate-self.previous_leg_rate)/dt
-                   if dt is not None and dt > 1e-8 else np.zeros(2))
-        self.previous_time, self.previous_leg_rate = now, leg_rate.copy()
         dq = jac*np.repeat(-leg_rate, 3)
         ddq = hessian*np.repeat(leg_rate**2, 3)-jac*np.repeat(leg_acc, 3)
         s, ds, dds = clock(t, getattr(self,'arm_placement_duration',4.)) if self.placement and phase == 'transfer' else (1., 0., 0.)
@@ -146,6 +149,8 @@ class OpposedArmController(Controller):
         self.arm_posture = target
         self.arm_velocity = velocity
         self.arm_acceleration = acceleration
+        if hasattr(self, 'prepare_reference_context'):
+            self.prepare_reference_context(t, phase)
         u, core = super().solve(t, phase)
         actual, _, vectors = limb_telemetry(self.w, 'arm')
         core['opposedArmSwing'] = dict(measuredLegPitchRad=legs.tolist(), measuredLegPitchRateRadps=leg_rate.tolist(),
