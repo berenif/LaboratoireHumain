@@ -203,22 +203,6 @@
     "failureAuditorSHA256": "0a228c9682e4654b8e43914a6e89c33946902fb4c2ac4ca771dc4a4b47bcc414",
     "runtimeSourceBindingsAtStartAndEndVerified": true
   },
-  "nextIsolatedFactor": {
-    "mode": "continuous-com-load",
-    "baselineComPolicy": "validated10mmforward path; projectedendpoint factor notstacked",
-    "policy": "retained-acquired-load-hinge-v1",
-    "weightPerNewton": 0.0005,
-    "activationSeconds": 0.1,
-    "maximumAcquiredBodyWeightFraction": 0.1,
-    "originalCornerAndShearCostsUnchanged": true,
-    "oneFreelyAbsorbingSlack": true,
-    "hardForceFloor": false,
-    "qualifiedActualLandingAnchorOnly": true,
-    "oldNonePathQPAssemblyExactlyUnchanged": true,
-    "physicalQualificationEstablished": false,
-    "pureAndNativeRegressionTestsPassed": 117,
-    "legacyCadenceTestsPassed": 10
-  },
   "projectedEndpointPilot": {
     "status": "rejected-worse-matched-slip-unqualified",
     "mode": "continuous-com-projected",
@@ -240,5 +224,198 @@
     "sourceBindingsVerified": true,
     "sourceBindingSHA256": "97a9839939bc3d2256dd12ffc156a3ad5556013080cd23197857397c1c15b5ff",
     "projectedAuditFocusedTestsPassed": 92
+  },
+  "softLoadPilot": {
+    "mode": "continuous-com-load",
+    "baselineComPolicy": "validated10mmforward path; projectedendpoint factor notstacked",
+    "policy": "retained-acquired-load-hinge-v1",
+    "weightPerNewton": 0.0005,
+    "activationSeconds": 0.1,
+    "maximumAcquiredBodyWeightFraction": 0.1,
+    "originalCornerAndShearCostsUnchanged": true,
+    "oneFreelyAbsorbingSlack": true,
+    "hardForceFloor": false,
+    "qualifiedActualLandingAnchorOnly": true,
+    "oldNonePathQPAssemblyExactlyUnchanged": true,
+    "physicalQualificationEstablished": false,
+    "pureAndNativeRegressionTestsPassed": 117,
+    "legacyCadenceTestsPassed": 10,
+    "status": "rejected-negligible-or-worse-matched-slip-unqualified",
+    "actualIntegrations": 11719,
+    "physicalSeconds": 14.64875,
+    "finalQuietSeconds": 5.0,
+    "runnerFinished": true,
+    "independentPhysicalPassClaim": false,
+    "fullQualificationAuditPerformed": false,
+    "globalLoadedSlipM": [
+      0.0012892875207203495,
+      0.0014966664299038497
+    ],
+    "relativeSlipChangeFraction": [
+      0.00026087056607160264,
+      0.00010195048118588623
+    ],
+    "matchedBaseline": "continuous-com-one-01",
+    "sourceBindingsVerified": true,
+    "sourceBindingSHA256": "8d449cb18c11e865510ba5c5402d2400fdef21e2c19be718fddf812bb99ffeb1",
+    "activeSettleNativeWitnessReplayPerformed": false,
+    "softLoadAuditFocusedTestsPassed": 105
+  },
+  "causalSelectionPilots": [
+    {
+      "id": "causal-selection-one-01",
+      "mode": "continuous-com-causal",
+      "sourceCommit": "ad68c0ad890a3322efb39c01bd14694eef7e22d8",
+      "requestedSteps": 1,
+      "runnerFinished": true,
+      "actualIntegrations": 10921,
+      "physicalSeconds": 13.651250000000001,
+      "finalQuietSeconds": 5.0,
+      "loadAcquisitionOwnFootAdvancesM": [
+        0.18196387112790272
+      ],
+      "loadedLandingTimesS": [
+        7.13
+      ],
+      "loadedLandingIntervalsS": [],
+      "globalLoadedSlipM": [
+        0.0012998163396315619,
+        0.001481049233255655
+      ],
+      "runtimeSourceBindingsVerified": true,
+      "runtimeSourceCount": 17,
+      "auditStatus": "passed-independent-reviewed-profile",
+      "receiptSHA256": "69f0750f7a9f6bd36717a60a95144fde5fb201ae7e3a3e01fdc1eae8bf9178d5",
+      "framesSHA256": "b94f9a15f28e829bdb66560b2d7542fe926a67187f48509a35159c1ae0605924",
+      "controlSHA256": "b4587e862381574200d7977725536ba340b653edf99e79a034212d3be39ab4f9",
+      "sourceBindingSHA256": "bc4229f659834904186f36800bb514d43e22110f4ab1f4f92c40832786d00581",
+      "independentReviewedAuditPass": true,
+      "auditSHA256": "eba570eaf8cc2e47ce8ae5daabb303e47e390ea0cb8490d87ebab33110a81f1f",
+      "auditorSHA256": "ccc3fd65704978e152fc679ecbb41b77c50c552ce5dd91c0821935f96aeb0131",
+      "reviewedWalkPilotPhysicalPass": true,
+      "reviewedWalkDiagnosticPass": false,
+      "reviewedWalkTenStepPhysicalPass": false,
+      "reviewedWalkFinalPlanPass": false,
+      "originalQualificationFlags": false,
+      "failedChecks": [],
+      "exactRetainedNativeWitnessesVerified": 21
+    },
+    {
+      "id": "causal-selection-two-01",
+      "mode": "continuous-com-causal",
+      "sourceCommit": "ad68c0ad890a3322efb39c01bd14694eef7e22d8",
+      "requestedSteps": 2,
+      "runnerFinished": true,
+      "actualIntegrations": 16418,
+      "physicalSeconds": 20.5225,
+      "finalQuietSeconds": 5.0,
+      "loadAcquisitionOwnFootAdvancesM": [
+        0.18196387112790272,
+        0.18199910858051438
+      ],
+      "loadedLandingTimesS": [
+        7.13,
+        14.0
+      ],
+      "loadedLandingIntervalsS": [
+        6.87
+      ],
+      "globalLoadedSlipM": [
+        0.002980365104698318,
+        0.002433961997166387
+      ],
+      "runtimeSourceBindingsVerified": true,
+      "runtimeSourceCount": 17,
+      "auditStatus": "passed-independent-reviewed-profile",
+      "receiptSHA256": "db58e40a9914a4c5ec62b6917351c63e185602779897cdb71c657117b93b4011",
+      "framesSHA256": "7f717b8501a12e610e2b37ee9e128468ad77cba444adf64d09a11dec2924440e",
+      "controlSHA256": "9250fc260ccb6fc3a736367389ab56574c9179d6b0569187622c1561d025ebc4",
+      "sourceBindingSHA256": "66cd3c5ac5fdaf23adb8c97d660d0d641f90496227d0d064df928f7c6cef7a11",
+      "independentReviewedAuditPass": true,
+      "auditSHA256": "9eb25696ced555bc2619909e8dc3399a768016bc26c0cc5717722454b10389f8",
+      "auditorSHA256": "ccc3fd65704978e152fc679ecbb41b77c50c552ce5dd91c0821935f96aeb0131",
+      "reviewedWalkPilotPhysicalPass": false,
+      "reviewedWalkDiagnosticPass": true,
+      "reviewedWalkTenStepPhysicalPass": false,
+      "reviewedWalkFinalPlanPass": false,
+      "originalQualificationFlags": false,
+      "failedChecks": [],
+      "exactRetainedNativeWitnessesVerified": 42
+    }
+  ],
+  "causalSevenStepContinuation": {
+    "status": "failed-not-qualified",
+    "mode": "continuous-com-causal",
+    "sourceCommit": "ad68c0ad890a3322efb39c01bd14694eef7e22d8",
+    "qualifiedLoadedLandings": 6,
+    "requestedSteps": 7,
+    "actualIntegrations": 38572,
+    "physicalSeconds": 48.215,
+    "terminalPhase": "land",
+    "terminalReason": "global-loaded-slip-10mm",
+    "globalLoadedSlipM": [
+      0.010007600632685404,
+      0.008614424124049214
+    ],
+    "finalQuietSeconds": 0.0,
+    "loadAcquisitionOwnFootAdvancesM": [
+      0.18196387112790272,
+      0.18199910858051438,
+      0.18124854204744015,
+      0.18194897250259046,
+      0.1812761702571523,
+      0.18194971342565067
+    ],
+    "loadedLandingTimesS": [
+      7.13,
+      14.0,
+      20.87125,
+      27.74625,
+      34.62125,
+      41.49625
+    ],
+    "loadedLandingIntervalsS": [
+      6.87,
+      6.87125,
+      6.875,
+      6.8750000000000036,
+      6.875
+    ],
+    "runtimeSourceBindingsVerified": true,
+    "sourceBindingSHA256": "666041ce98344635975a7ff8a1cbd2b80db9dfd2321ce6191c4fc7ade88d8f2a",
+    "targetedFailureAuditStatus": "active-no-full-qualification",
+    "fullQualificationAuditPerformed": false,
+    "allQualificationFlags": false
+  },
+  "closedCausalSelectionFactor": {
+    "mode": "continuous-com-causal",
+    "baselineComPolicy": "validated10mmforward path; projectedendpoint andsoftload factors notstacked",
+    "policy": "actual-loaded-history-no-nominal-wait-v1",
+    "fullMeasuredHistoryAndPhysicalLiftGatesUnchanged": true,
+    "totalComEnvelopeUnchanged": true,
+    "exactRationalWholeOverlapAdmission": true,
+    "actualNominalTransferPrescreensPassed": 7,
+    "pureAndNativeRegressionTestsPassed": 151,
+    "physicalQualificationEstablished": false,
+    "physicalPilotsRunnerFinished": [
+      1,
+      2
+    ],
+    "sevenStepContinuationStatus": "terminal-six-landings-slip-failure",
+    "currentCandidateSourceCommit": "ad68c0ad890a3322efb39c01bd14694eef7e22d8"
+  },
+  "nextIsolatedFactor": {
+    "stage": "isolated-coupled-posture-and-phase-leg-visual-references",
+    "stage1TuningClosed": true,
+    "isolatedVisualPilotsBeforeSevenAllowed": true,
+    "physicalQualificationEstablished": false,
+    "finalTenStepAndVisualAcceptanceUnchanged": true
+  },
+  "sequenceRevision": {
+    "reason": "Earlier COM/load/selection factors do not clear cumulative slip at seven; indefinitely blocking visual implementation does not establish safety.",
+    "isolatedVisualOneAndTwoStepPilotsPermitted": true,
+    "allActualPhysicalAndArmGatesUnchanged": true,
+    "combinedTenPlusQuietAndVisualAcceptanceUnchanged": true,
+    "stablePresetChanged": false
   }
 }

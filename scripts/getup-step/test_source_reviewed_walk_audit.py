@@ -640,4 +640,238 @@ class PolynomialReconstruction(unittest.TestCase):
             with self.assertRaises(ValueError):segment_jet(segment,.5)
 
 
+from fractions import Fraction as F
+import math
+import unittest
+
+import audit_source_reviewed_walk as overlap_audit
+
+
+def zero_certificate():
+    checks = {k: True for k in overlap_audit.CHECK_ORDER}
+    return {
+        'schema': 1, 'policy': overlap_audit.POLICY, 'method': overlap_audit.PRODUCER_METHOD,
+        'nominal': {'deltaM': [0., 0., 0.], 'startS': 0., 'durationS': 1.},
+        'correction': {'deltaM': [0., 0., 0.], 'startS': 0., 'durationS': 1.,
+                       'magnitudeM': 0., 'maximumSpeedMps': 0.,
+                       'maximumAccelerationMps2': 0.},
+        'caps': dict(overlap_audit.CAPS),
+        'maximumTotalSpeedMps': 0., 'maximumTotalAccelerationMps2': 0.,
+        'conservativeMaximumTotalSpeedMps': 0.,
+        'conservativeMaximumTotalAccelerationMps2': 0.,
+        'maximumSpeedAtS': 1., 'maximumAccelerationAtS': 1.,
+        'candidateCriticalTimesS': {'speed': [0., 1.], 'acceleration': [0., 1.]},
+        'windows': [{'startS': 0., 'endS': 1., 'nominalActive': True,
+                     'correctionActive': True,
+                     'speedStationaryTimesS': [], 'speedStationaryRootCount': 0,
+                     'speedSquaredDerivativeDegree': 0, 'speedUpperBound': 0.,
+                     'accelerationStationaryTimesS': [], 'accelerationStationaryRootCount': 0,
+                     'accelerationSquaredDerivativeDegree': 0, 'accelerationUpperBound': 0.}],
+        'boundaryJets': [{'timeS': t, 'positionM': [0., 0., 0.],
+                          'velocityMps': [0., 0., 0.], 'accelerationMps2': [0., 0., 0.]}
+                         for t in (0., 1.)],
+        'checks': checks, 'passed': True, 'rejections': [], 'unresolvedCapBounds': []}
+
+
+def analytic_rejected_certificate():
+    """Handwritten one-axis .1m/1s quintic fixture, no producer call."""
+    cert = zero_certificate()
+    proof = overlap_audit.independent_overlap_envelope((.1,0.,0.), 1., (0.,0.,0.), 0., 1.)
+    cert['nominal']['deltaM'][0] = .1
+    cert['boundaryJets'][1]['positionM'][0] = .1
+    low, high = .5-math.sqrt(3)/6, .5+math.sqrt(3)/6
+    cert.update(maximumTotalSpeedMps=.1875,
+                maximumTotalAccelerationMps2=.1*10/math.sqrt(3),
+                maximumSpeedAtS=.5, maximumAccelerationAtS=high,
+                conservativeMaximumTotalSpeedMps=proof['maxima']['speed']['upper'],
+                conservativeMaximumTotalAccelerationMps2=proof['maxima']['acceleration']['upper'])
+    window = cert['windows'][0]
+    window.update(speedStationaryTimesS=[.5], speedStationaryRootCount=1,
+                  speedSquaredDerivativeDegree=7, speedUpperBound=proof['maxima']['speed']['upper'],
+                  accelerationStationaryTimesS=[low,.5,high], accelerationStationaryRootCount=3,
+                  accelerationSquaredDerivativeDegree=5,
+                  accelerationUpperBound=proof['maxima']['acceleration']['upper'])
+    cert['candidateCriticalTimesS'] = {'speed': [0.,.5,1.], 'acceleration': [0.,low,.5,high,1.]}
+    cert['checks']['totalAcceleration'] = False
+    cert['passed'] = False
+    cert['rejections'] = ['totalAcceleration']
+    return cert
+
+
+class IndependentOverlapAuditTests(unittest.TestCase):
+    def test_zero_overlap_and_handcrafted_schema(self):
+        inputs = ((0., 0., 0.), 1., (0., 0., 0.), 0., 1.)
+        proof = overlap_audit.independent_overlap_envelope(*inputs)
+        self.assertTrue(proof['passed'])
+        result = overlap_audit.audit_overlap_certificate(zero_certificate(), *inputs)
+        self.assertTrue(result['certificateValid'], result['errors'])
+        self.assertTrue(result['envelopePassed'])
+
+    def test_analytic_single_quintic_and_honest_rejection(self):
+        good = overlap_audit.independent_overlap_envelope((.05, 0., 0.), 1., (0., 0., 0.), 0., 1.)
+        self.assertTrue(good['passed'])
+        self.assertAlmostEqual(good['maxima']['speed']['lower'], .05*15/8, places=15)
+        self.assertAlmostEqual(good['maxima']['acceleration']['upper'], .05*10/math.sqrt(3), places=15)
+        self.assertEqual(good['windows'][0]['speed']['stationaryRootCount'], 1)
+        # Acceleration^2 has two maxima and an interior zero, all stationary.
+        self.assertEqual(good['windows'][0]['acceleration']['stationaryRootCount'], 3)
+        bad = overlap_audit.independent_overlap_envelope((.1, 0., 0.), 1., (0., 0., 0.), 0., 1.)
+        self.assertFalse(bad['passed'])
+        self.assertTrue(bad['resolved'])
+        self.assertEqual(bad['rejections'], ['totalAcceleration'])
+        result = overlap_audit.audit_overlap_certificate(analytic_rejected_certificate(),
+                    (.1,0.,0.), 1., (0.,0.,0.), 0., 1.)
+        self.assertTrue(result['certificateValid'], result['errors'])
+        self.assertFalse(result['envelopePassed'])
+        self.assertFalse(result['passed'])
+
+    def test_expanded_overlap_cancellation_and_windows(self):
+        proof = overlap_audit.independent_overlap_envelope((.01, .002, 0.), 1., (-.01, -.002, 0.), 0., 1.)
+        self.assertTrue(proof['passed'])
+        self.assertEqual(proof['maxima']['speed']['upper'], 0.)
+        self.assertEqual(proof['maxima']['acceleration']['upper'], 0.)
+        staggered = overlap_audit.independent_overlap_envelope((.05, 0., 0.), 1., (0., .01, 0.), .25, 1.)
+        self.assertTrue(staggered['passed'])
+        self.assertEqual([(w['startS'], w['endS']) for w in staggered['windows']],
+                         [(0., .25), (.25, 1.), (1., 1.25)])
+
+    def test_root_multiplicity_and_nearby_roots(self):
+        roots, _ = overlap_audit._isolate_stationary([F(1,16), F(-1,2), F(3,2), F(-2), F(1)])
+        self.assertEqual(roots, [(F(1,2), F(1,2))])
+        # q' = (u-.5)^2 - 2^-100; two roots 2^-49 apart.
+        roots, _ = overlap_audit._isolate_stationary([F(0), F(1,4)-F(1,2**100), F(-1,2), F(1,3)])
+        self.assertEqual(len(roots), 2)
+        for interval, expected in zip(roots, (F(1,2)-F(1,2**50), F(1,2)+F(1,2**50))):
+            self.assertLessEqual(interval[0], expected)
+            self.assertGreaterEqual(interval[1], expected)
+        roots, _ = overlap_audit._isolate_stationary([F(0), F(1), F(0), F(1)])
+        self.assertEqual(roots, [])
+
+    def test_exact_correction_gates_and_no_cap_slack(self):
+        at_gate = overlap_audit.independent_overlap_envelope((0., 0., 0.), 1., (.012, 0., 0.), 0., 1.)
+        self.assertTrue(at_gate['passed'])
+        beyond_gate = overlap_audit.independent_overlap_envelope((0., 0., 0.), 1.,
+                    (math.nextafter(.012, math.inf), 0., 0.), 0., 1.)
+        self.assertFalse(beyond_gate['checks']['correctionMagnitude'])
+        short = overlap_audit.independent_overlap_envelope((0., 0., 0.), 1., (0., 0., 0.), 0.,
+                                                   math.nextafter(1., 0.))
+        self.assertFalse(short['checks']['correctionDuration'])
+
+    def test_metadata_tampering_and_fail_closed_limits(self):
+        inputs = ((0., 0., 0.), 1., (0., 0., 0.), 0., 1.)
+        cases = []
+        cert = zero_certificate(); cert['caps']['totalSpeedMps'] = math.nextafter(overlap_audit.CAPS['totalSpeedMps'], math.inf); cases.append(cert)
+        cert = zero_certificate(); cert['boundaryJets'][0]['velocityMps'][0] = .001; cases.append(cert)
+        cert = zero_certificate(); cert['windows'][0]['speedStationaryRootCount'] = 1; cases.append(cert)
+        cert = zero_certificate(); cert['maximumSpeedAtS'] = .25; cases.append(cert)
+        cert = zero_certificate(); cert['checks']['totalSpeed'] = False; cases.append(cert)
+        for cert in cases:
+            result = overlap_audit.audit_overlap_certificate(cert, *inputs)
+            self.assertFalse(result['certificateValid'], result)
+        unresolved = overlap_audit.independent_overlap_envelope((.05, 0., 0.), 1., (0., 0., 0.), 0., 1., max_depth=0)
+        self.assertFalse(unresolved['passed'])
+        self.assertFalse(unresolved['resolved'])
+        self.assertIn('proofError', unresolved)
+
+    def test_invalid_inputs(self):
+        for inputs in [((True,0,0),1,(0,0,0),0,1), ((math.nan,0,0),1,(0,0,0),0,1),
+                       ((0,0,0),0,(0,0,0),0,1), ((0,0,0),1,(0,0,0),-1,1)]:
+            with self.assertRaises(ValueError):
+                overlap_audit.independent_overlap_envelope(*inputs)
+
+
+
+
+class StateOnlyCausalReplay(unittest.TestCase):
+    def setUp(self):
+        import audit_source_reviewed_walk as audit
+        from test_source_robust_support_audit import forecast_fixture
+        from source_causal_com_overlap import certify_overlap
+        self.audit = audit
+        self.data = forecast_fixture()
+        self.data['endpoint_validator'] = lambda row: 0.
+        self.data['cadence']['reviewedReferenceProfile'] = dict(mode='continuous-com-causal')
+        ref = self.data['references'][1]
+        ref['phase_durations']['transfer'] = .5
+        delta = next(n for n in self.data['notes'] if n['robustSupportAdmission']['selected'])['robustSupportAdmission']['comCorrectionM']
+        cert = certify_overlap([0.,0.,0.], .5, delta, .1, 1.)
+        for note in self.data['notes']:
+            note['referenceContext'] = dict(causal=dict(causalOverlap=copy.deepcopy(cert)
+                if note['robustSupportAdmission']['selected'] else None))
+
+    def result(self):
+        return self.audit.audit_causal_support_replay(**self.data)
+
+    def test_first_actual_state_window_selects_before_nominal_transfer(self):
+        from audit_source_robust_support import selection_from_history, support_observation
+        result = self.result()
+        wrapped = reviewed_robust_result(result, 1, dict(passed=True, causalOverlapEnvelopePass=True), mode='continuous-com-causal')
+        self.assertTrue(wrapped['passed'], [k for k,v in result['checks'].items() if not v])
+        self.assertTrue(wrapped['causalModeReplayVerified'])
+        self.assertEqual(result['perStep'][1]['selection']['selectedAtTransferS'], .1)
+        obs = support_observation(self.data['entry'], 1)
+        history = [(i*.005, 0, obs['present'], True, 4*i) for i in range(21)]
+        row = copy.deepcopy(self.data['entry']); row['sourceTimeS'] = .1
+        self.assertIsNone(selection_from_history(history, row, self.data['references'][1], .1, 10., actual=True, prospective=True))
+        self.assertIsNotNone(self.audit.state_only_selection_from_history(history, row, self.data['references'][1], .1, 10., actual=True, prospective=True))
+
+    def test_actual_load_loss_resets_history_before_selection(self):
+        self.data['rows'][39]['feet'][1]['loadN'] = 50.
+        self.assertFalse(self.result()['checks']['selectionAtFirstCausalEligibleSolve'])
+
+    def test_risk_disagreement_cannot_be_omitted(self):
+        from test_source_robust_support_audit import forecast_fixture
+        altered = forecast_fixture(disagreements=5)
+        self.data['notes'][0:21] = altered['notes'][0:21]
+        self.assertFalse(self.result()['checks']['selectionAtFirstCausalEligibleSolve'])
+
+    def test_missing_actual_survivor_blocks_early_selection(self):
+        self.data['rows'][39]['supportPointsXY'].pop(2)
+        self.assertFalse(self.result()['checks']['selectionAtFirstCausalEligibleSolve'])
+
+    def test_envelope_rejection_precedes_any_selection_commit(self):
+        cert = self.data['notes'][20]['referenceContext']['causal']['causalOverlap']
+        cert['passed'] = False
+        with patch.object(self.audit, 'audit_overlap_certificate', return_value=dict(valid=True,
+                independent=dict(passed=False))):
+            result = self.result()
+        self.assertFalse(result['checks']['summedEnvelopeRejectionRemainsUnselected'])
+        self.assertFalse(result['checks']['selectionAtFirstCausalEligibleSolve'])
+
+    def test_mutated_overlap_cannot_pass_causal_coverage(self):
+        self.data['notes'][20]['referenceContext']['causal']['causalOverlap']['correction']['startS'] += .005
+        self.assertFalse(self.result()['checks']['everyCausalCandidateOverlapCertificateValid'])
+
+    def test_original_minimum_transfer_and_eighty_samples_still_bind(self):
+        self.data['references'][1]['phase_durations']['transfer'] = 1.2
+        result = self.result()
+        self.assertFalse(result['checks']['eachLiftHas80ActualTriangleCorrectedUnloadSamples'])
+
+    def test_causal_mode_cannot_qualify_through_old_profile(self):
+        legacy = dict(checks=dict.fromkeys(REQUIRED_ROBUST_REPLAY_CHECKS, True))
+        r = reviewed_robust_result(legacy, 1, dict(passed=True), mode='continuous-com-causal')
+        self.assertFalse(r['passed']); self.assertFalse(r['causalModeReplayVerified'])
+        good = dict(passed=True)
+        q = qualify_reviewed(original_fixture(1), good, good, dict(passed=True, expectedImpratio=8.), True, good, good, 1, mode='continuous-com-causal')
+        self.assertFalse(q['reviewedWalkPilotPhysicalPass'])
+
+    def test_policy_literal_and_helper_source_are_required(self):
+        from source_reviewed_walk import causal_selection_policy
+        self.assertEqual(self.audit.causal_selection_policy_audit(), causal_selection_policy())
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            for name in REQUIRED_SOURCES: (root/name).write_text(name)
+            hashes = {name:self.audit.file_sha(root/name) for name in REQUIRED_SOURCES}
+            receipt = dict(codeSHA256AtStart=hashes, codeSHA256AtEnd=hashes,
+                causalSupportSelectionEnabled=True)
+            self.assertFalse(audit_source_provenance(receipt, root)['passed'])
+
+    def test_independent_verifier_does_not_call_producer(self):
+        cert = self.data['notes'][20]['referenceContext']['causal']['causalOverlap']
+        with patch('source_causal_com_overlap.certify_overlap', side_effect=AssertionError('producer called')):
+            result = self.audit.audit_overlap_certificate(cert, [0.,0.,0.], .5,
+                cert['correction']['deltaM'], .1, 1.)
+        self.assertTrue(result['passed'], result['errors'])
+
+
 if __name__=='__main__':unittest.main()

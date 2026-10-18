@@ -30,8 +30,9 @@ from source_continuous_com import QuinticSegment, plan_forward, plan_projected, 
 from source_reference_context import (REFERENCE_VERSION, canonical, digest, make_context,
     nominal_com, prospective_unload_context)
 from source_soft_load_preference import AcquiredLoad, prepare_preference
+from source_causal_com_overlap import certify_overlap
 
-MODES = ('baseline-context', 'continuous-com', 'continuous-com-projected', 'continuous-com-load')
+MODES = ('baseline-context', 'continuous-com', 'continuous-com-projected', 'continuous-com-load', 'continuous-com-causal')
 CONFIG_FIELDS = ('q0','com0','com1','targets','rootR','flatRotations','radii','floorTargets',
     'swing_side','stance_side','swing_body','self_avoidance','B','heading','landing',
     'step_distance','finalCom','lean_axis','phase_durations','joint_reserve','posture_start',
@@ -46,6 +47,21 @@ def serial(value):
 
 def control_sha(control):
     return hashlib.sha256(np.ascontiguousarray(control, dtype='<f8').tobytes()).hexdigest()
+
+
+def causal_selection_policy():
+    return dict(schema=1, policy='actual-loaded-history-no-nominal-wait-v1',
+        stateOnlySupportSelection=True,
+        nominalRiskHistoryTimerRequired=False, nominalSelectionTimerRequired=False,
+        minimumLoadedHistoryS=.1, minimumHistorySamples=21,
+        minimumActualStanceWeightFraction=.8, minimumRiskAgreementFrequency=.8,
+        actualSurvivorsRequired=True, minimumCorrectionDurationS=1.,
+        maximumCorrectionM=.012, maximumCorrectionSpeedMps=.025,
+        maximumCorrectionAccelerationMps2=.15,
+        maximumTotalSpeedMps=.19260552331163003,
+        maximumTotalAccelerationMps2=.3901818436690813,
+        originalMinimumTransferAndMeasuredLiftGatesUnchanged=True,
+        transferReferenceValidation='every command after state-qualified selection; unchanged legacy transfer before selection')
 
 
 class ReviewedController(RobustSupportController):
@@ -63,11 +79,26 @@ class ReviewedController(RobustSupportController):
         self.robust_support_barrier = []
         self.capture_barrier = []
         self.arm_range_barrier = []
+        self._state_only_support_selection = mode == 'continuous-com-causal'
+        if self._state_only_support_selection:
+            self._causal_overlap_plan = None
         if mode == 'continuous-com-load':
             self._soft_load_anchor = None
             self._prepared_soft_load_preference = None
             self._soft_load_saved_targets = set()
             self._soft_load_witnesses = []
+
+    def admit_robust_reference(self, t, delta, duration):
+        if not self._state_only_support_selection:
+            return True
+        certificate = certify_overlap(self.com1-self.com0,
+            self.phase_duration('transfer'), delta, t, duration)
+        if not certificate['passed']:
+            self.robust_support.update(lastAdmissionRejection='summed causal COM jets exceed frozen envelope',
+                lastRejectedCausalOverlap=certificate)
+            return False
+        self._causal_overlap_plan = certificate
+        return True
 
     def prepare_phase_handoff(self, old_phase, new_phase, row, *, landing_consecutive_samples):
         if self._reviewed_mode != 'continuous-com-load' or new_phase != 'settle':
@@ -138,6 +169,8 @@ class ReviewedController(RobustSupportController):
         if self._reviewed_mode == 'continuous-com-load':
             tasks['softLoadPreference'] = (None if self._prepared_soft_load_preference is None
                 else self._prepared_soft_load_preference.receipt())
+        if self._state_only_support_selection:
+            tasks['causalOverlap'] = self._causal_overlap_plan
         w = self.w
         native = tuple(w.arr(index, shape).tobytes() for index, shape in
             ((0, (28,)), (1, (27,)), (2, (21,)), (3, (17, 3)),
@@ -160,7 +193,7 @@ class ReviewedController(RobustSupportController):
             target = target+s*self._robust_delta
             velocity = velocity+ds*self._robust_delta
             acceleration = acceleration+dds*self._robust_delta
-        if self._reviewed_mode not in ('continuous-com', 'continuous-com-projected', 'continuous-com-load'):
+        if self._reviewed_mode not in ('continuous-com', 'continuous-com-projected', 'continuous-com-load', 'continuous-com-causal'):
             return target, velocity, acceleration
         now = self.w.l.lh_time(self.w.h)
         if phase in ('translate', 'land'):
@@ -180,6 +213,13 @@ class ReviewedController(RobustSupportController):
                     initial, (self.finalCom.copy(), np.zeros(3), np.zeros(3)))
             target, velocity, acceleration = self._com_settle.evaluate(now)
         if phase in ('translate', 'land', 'settle', 'stand'):
+            self._com_reference_diagnostic = validate_reference(self, phase, (target, velocity, acceleration))
+        elif (self._reviewed_mode == 'continuous-com-causal' and phase == 'transfer'
+                and self.robust_support.get('selected', False)):
+            # Before selection the historical transfer remains unchanged,
+            # including the inherited zero-counter contact-cache startup. Once
+            # the measured loaded window exists, validate the complete jet
+            # against current actual support on every transfer command too.
             self._com_reference_diagnostic = validate_reference(self, phase, (target, velocity, acceleration))
         return target, velocity, acceleration
 
@@ -207,6 +247,9 @@ class ReviewedController(RobustSupportController):
         config = {k: getattr(self, k) for k in CONFIG_FIELDS if hasattr(self, k)}
         config.update(mode=self._reviewed_mode, referenceVersion=REFERENCE_VERSION,
             armMappingRanges=self._mapping.ranges)
+        if self._state_only_support_selection:
+            config['causalSupportSelectionPolicy'] = causal_selection_policy()
+            causal['causalOverlap'] = self._causal_overlap_plan
         if self._reviewed_mode == 'continuous-com-load':
             self._prepared_soft_load_preference = prepare_preference(self._soft_load_anchor,
                 phase, t, self.w.l.lh_dim(self.w.h, 6), self.w.l.lh_time(self.w.h),
@@ -234,6 +277,9 @@ class ReviewedController(RobustSupportController):
                 deltaM=getattr(self, '_robust_delta', np.zeros(3)).tolist(),
                 startTransferS=getattr(self, '_robust_start', None), durationS=getattr(self, '_robust_duration', None),
                 clock=serial(getattr(self, '_robust_clock', (0., 0., 0.))))
+            if self._state_only_support_selection:
+                causal['causalOverlap'] = self._causal_overlap_plan
+                causal['continuousCom']['diagnostic'] = getattr(self, '_com_reference_diagnostic', None)
             final = make_context(self, t, phase, final_com,
                 causal=causal, config=serial(config), seek=seek)
         self._prepared_reference_context = final
@@ -350,7 +396,8 @@ class ReviewedSteps(CadencedSteps):
         self.code_at_start.update({name: sha(Path(__file__).with_name(name)) for name in
             ('source_reviewed_walk.py', 'source_reference_context.py', 'source_robust_support_steps.py',
              'source_contact_impedance_probe.py', 'source_continuous_com.py',
-             'source_solved_wrench_diagnostics.py', 'source_soft_load_preference.py')})
+             'source_solved_wrench_diagnostics.py', 'source_soft_load_preference.py',
+             'source_causal_com_overlap.py')})
 
     def begin_step(self):
         previous = getattr(self, 'controller', None) if self.step_index > 0 else None
@@ -424,6 +471,8 @@ class ReviewedSteps(CadencedSteps):
             loadedSlipResetBetweenSteps=False, implicitArms=False, wrenchDiagnosticsEnabled=True)
         if self.reviewed_mode == 'continuous-com-load':
             receipt['softLoadPreferenceEnabled'] = True
+        if self.reviewed_mode == 'continuous-com-causal':
+            receipt['causalSupportSelectionEnabled'] = True
         (self.folder/'reviewed-walk-run.json').write_text(json.dumps(receipt, indent=2)+'\n')
         reviewed_config = dict(schema=2,
             profile='five-reviewed-walk', mode=self.reviewed_mode, requestedSteps=len(self.distances),
@@ -437,6 +486,8 @@ class ReviewedSteps(CadencedSteps):
                 fadeDurationS=self.controller.phase_duration('settle'),
                 acquiredFrom='actual qualified land-to-settle native sample',
                 noHardForceFloor=True, originalCornerNormalAndShearCostsUnchanged=True)
+        if self.reviewed_mode == 'continuous-com-causal':
+            reviewed_config['causalSupportSelectionPolicy'] = causal_selection_policy()
         (self.folder/'reviewed-walk-config.json').write_text(json.dumps(reviewed_config, indent=2)+'\n')
         self._wrench_summary.update(actualIntegrations=self.steps, sourceStepLast=self._wrench_last_source_step,
             allNativeSamplesCovered=self._wrench_summary['nativeSamples'] == self.steps,

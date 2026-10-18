@@ -178,6 +178,19 @@ class NativeReviewedCommands(unittest.TestCase):
         self.assertEqual(info['actualMotorControlSHA256'], control_sha(actual))
         self.assertEqual(info['reviewedWalk']['mode'], 'baseline-context')
 
+    def test_causal_mode_before_loaded_selection_preserves_baseline_qp(self):
+        current, baseline = self.controller(), self.controller()
+        current.install_reviewed(1, 'continuous-com-causal')
+        baseline.install_reviewed(1, 'continuous-com')
+        actual, info = current.solve(.37, 'transfer')
+        expected, old = baseline.solve(.37, 'transfer')
+        np.testing.assert_array_equal(actual, expected)
+        self.assertEqual(info['qpAssemblySHA256'], old['qpAssemblySHA256'])
+        self.assertFalse(info['robustSupportAdmission']['selected'])
+        self.assertIsNone(info['referenceContext']['causal']['causalOverlap'])
+        self.assertTrue(info['referenceContext']['config']['causalSupportSelectionPolicy']
+                        ['originalMinimumTransferAndMeasuredLiftGatesUnchanged'])
+
     def test_repeated_command_is_cached_and_returned_values_are_detached(self):
         c = self.controller()
         with patch.object(c, 'prepare_reference_context', wraps=c.prepare_reference_context) as preparation, \

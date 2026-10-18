@@ -94,3 +94,41 @@ fixed0.0005N^-1 weight, original corner/shear costs and all admissions remain.
 If its matched effect is negligible, do not spend long continuation runs on it;
 prioritize earlier state-valid causal selection without shortening history or
 measured admission gates.
+
+The fixed soft-load one-step trial also finishes five quiet seconds, but left/
+right slip increases by0.026%/0.010%; it is rejected without a two-step expansion.
+The next isolated mode, `continuous-com-causal`, retains the validated10mm COM
+path and starts risk observation/selection from actual loaded-state eligibility
+rather than nominal transfer timers. It still requires the complete100ms/21
+command history, risk agreement, actual three-point survivors, original bounded
+correction, minimum transfer and all measured lift gates. An exact-rational
+piecewise-polynomial certificate must admit the summed nominal/corrective COM
+speed and acceleration within the unchanged frozen envelope before selection.
+After selection, every transfer command also validates its complete reference
+against the current actual support hull. The inherited preselection startup is
+unchanged. Seven retained nominal-transfer prescreens and151 focused tests pass.
+The one-/two-step pilots finish their five quiet seconds, with the first landing
+0.9975s earlier and the alternating interval6.870s versus7.63375s. This remains
+slower than the delivered video's approximately6.66s. Two-step cumulative slip
+is2.98037/2.43396mm. Independent new-mode qualification remains pending; one
+seven-step gate continuation stops during seventh landing at48.215s, with six
+loaded advances and left/right slip10.00760/8.61442mm. The one-/two-step reviewed
+audits pass, including21/42 exact native witnesses; no ten-step/final pass exists.
+
+## Observed-limit sequence revision
+
+Stage-one COM/load/selection tuning is closed. Its repeatable cumulative-slip
+limit does not justify indefinitely blocking the requested visual correction.
+Permit isolated posture and coordinated knee/foot one-/two-step pilots before
+the seven-step ordering gate, with independent audits and every actual physical
+and arm gate unchanged. Do not stack an unqualified factor or promote a preset.
+The combined final acceptance remains ten alternating advances plus4,000 quiet
+native samples, faster cadence and improved full actual-speed front/profile
+pixels. This is a sequence revision, not a relaxed final test.
+
+The coupled static seeds remain marginal and require fresh current-support LP,
+geometry and full-jet checks. Their initial reference inherits a0.020rad ankle
+reserve; the improved endpoint requires0.060rad. A C2 transition must report that
+distinction rather than invent a reset or assert endpoint reserves throughout.
+The fixed-root knee family is rejected; moving pelvis/root transport must be
+included in a realizable hip/knee/ankle-foot pair.

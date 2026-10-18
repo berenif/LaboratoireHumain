@@ -134,7 +134,8 @@ class RobustSupportController(CadencedController):
         if not loaded:
             self._robust_history.clear()
             return
-        if t<self.phase_duration('transfer')-.1-1e-10:return
+        state_only=bool(getattr(self,'_state_only_support_selection',False))
+        if not state_only and t<self.phase_duration('transfer')-.1-1e-10:return
         risk,forecast=self._forecast_unload_risk(t,corners,clearance)
         self.robust_support['currentCausalUnloadForecast']=forecast
         if self._robust_history and now-self._robust_history[-1][0]>.0050001:self._robust_history.clear()
@@ -142,7 +143,7 @@ class RobustSupportController(CadencedController):
         while len(self._robust_history)>1 and self._robust_history[1][0]<now-.1-1e-10:self._robust_history.popleft()
         # Wait for nominal transfer, then use only the preceding measured
         # window. The extra movement is admitted by state, not a fixed lift cut.
-        if t<self.phase_duration('transfer')or len(self._robust_history)<21 or now-self._robust_history[0][0]<.1-1e-9:return
+        if (not state_only and t<self.phase_duration('transfer'))or len(self._robust_history)<21 or now-self._robust_history[0][0]<.1-1e-9:return
         history=list(self._robust_history);votes=np.bincount([h[1]for h in history if h[1]>=0],minlength=4)
         weak=int(np.argmax(votes));survivors=[i for i in range(4)if i!=weak]
         if votes[weak]/len(history)<.8 or not all(h[3]and all(h[2][survivors])for h in history):return
@@ -156,6 +157,9 @@ class RobustSupportController(CadencedController):
                 lastAdmissionRejection='bounded correction unavailable; continue observing current support')
             return
         duration=max(1.,1.875*distance/.025,np.sqrt(5.78*distance/.15))
+        # An opt-in controller may reject a proposed overlap before any support
+        # selection/correction is committed. Legacy observers have no hook.
+        if hasattr(self,'admit_robust_reference') and not self.admit_robust_reference(t,delta,duration):return
         com=self.w.arr(6,(17,3))[1];J=self.w.read('lh_com_jac',(3,27));v=self.w.arr(1,(27,));cp=com[:2]+np.sqrt(com[2]/9.81)*(J@v)[:2]
         initial_margin=float(min(np.min(-(equations[:,:2]@com[:2]+equations[:,2])),np.min(-(equations[:,:2]@cp+equations[:,2]))))
         self._robust_delta=delta;self._robust_start=t;self._robust_duration=duration

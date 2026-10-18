@@ -14,6 +14,7 @@ import math
 from pathlib import Path
 import re
 from types import SimpleNamespace
+from fractions import Fraction
 
 import numpy as np
 from scipy.spatial.transform import Rotation
@@ -27,7 +28,7 @@ from audit_source_robust_support import (audit_replay, ExactForecastReplay, Foot
 PROFILE = 'five-reviewed-walk'
 VERSION = 'reviewed-reference-v1'
 COUNTS = (1, 2, 7, 10)
-MODES = ('baseline-context', 'continuous-com', 'continuous-com-projected', 'continuous-com-load')
+MODES = ('baseline-context', 'continuous-com', 'continuous-com-projected', 'continuous-com-load', 'continuous-com-causal')
 REQUIRED_SOURCES = frozenset(('source_reviewed_walk.py', 'source_reference_context.py',
     'source_step_probe.py', 'source_multistep_probe.py', 'source_cadenced_ten_steps.py',
     'source_selected_step.py', 'source_opposed_arm_swing.py', 'source_upright_large_steps.py',
@@ -61,6 +62,22 @@ OLD_FLAGS = ('strictCadencedSequencePass', 'tenStep180mmQualificationPass',
     'explicitRobustSupportImpratio8PilotPass', 'explicitRobustSupportImpratio8TenStepPass',
     'explicitProspectiveUnloadRiskImpratio8PilotPass', 'explicitProspectiveUnloadRiskImpratio8TenStepPass')
 MOTOR_JOINT_ORDER = (1, 0, 2, 3, 4, 5, 6, 8, 7, 9, 10, 11, 12, 14, 13, 15, 16, 17, 18, 19, 20)
+
+
+def causal_selection_policy_audit():
+    """Independent literal policy, never read back from the runtime producer."""
+    return dict(schema=1, policy='actual-loaded-history-no-nominal-wait-v1',
+        stateOnlySupportSelection=True,
+        nominalRiskHistoryTimerRequired=False, nominalSelectionTimerRequired=False,
+        minimumLoadedHistoryS=.1, minimumHistorySamples=21,
+        minimumActualStanceWeightFraction=.8, minimumRiskAgreementFrequency=.8,
+        actualSurvivorsRequired=True, minimumCorrectionDurationS=1.,
+        maximumCorrectionM=.012, maximumCorrectionSpeedMps=.025,
+        maximumCorrectionAccelerationMps2=.15,
+        maximumTotalSpeedMps=.19260552331163003,
+        maximumTotalAccelerationMps2=.3901818436690813,
+        originalMinimumTransferAndMeasuredLiftGatesUnchanged=True,
+        transferReferenceValidation='every command after state-qualified selection; unchanged legacy transfer before selection')
 
 
 def canonical(value):
@@ -164,7 +181,7 @@ def independent_references(config, causal, elapsed, phase, hypothetical=False):
             correction_clock = np.array((1., 0., 0.))
         delta = array(correction['deltaM'], (3,))
         com = tuple(p+k*delta for p, k in zip(com, correction_clock))
-    if c.get('mode') in ('continuous-com', 'continuous-com-projected', 'continuous-com-load'):
+    if c.get('mode') in ('continuous-com', 'continuous-com-projected', 'continuous-com-load', 'continuous-com-causal'):
         continuous = causal['continuousCom']; now = float(causal['arm']['nativeSourceTimeS'])
         if phase in ('translate', 'land'):
             path = segment_jet(continuous['path'], now)
@@ -333,6 +350,8 @@ def audit_context(receipt, note, row, reference, *, expected_elapsed=None,
         check('contextDigest', is_sha(claimed) and value_sha(d) == claimed)
         c, causal = receipt['config'], receipt['causal']; t = float(receipt['elapsed']); phase = note['phase']
         for key, value in audit_soft_load_context(receipt, note, expected_load_anchor)['checks'].items(): check(key, value)
+        if expected_mode != 'continuous-com-causal':
+            check('noStateOnlySelectionPolicyInOtherModes', c.get('causalSupportSelectionPolicy') is None and causal.get('causalOverlap') is None)
         check('contextBoundToPrecedingNativeSample', type(receipt['source_step']) is int
             and receipt['source_step'] == row['sourceStep'] and close(receipt['source_time'], row['sourceTimeS'], 1e-12)
             and close(note['t'], row['sourceStep']*DT, 1e-10) and receipt['step_index'] == note['stepIndex']
@@ -408,6 +427,8 @@ def audit_source_provenance(receipt, source_dir, frozen_dir=None):
         checks['requiredSolvedWrenchReaderSourcePresent'] = isinstance(start, dict) and 'source_solved_wrench_diagnostics.py' in start
     if receipt.get('softLoadPreferenceEnabled') is True:
         checks['requiredSoftLoadPreferenceSourcePresent'] = isinstance(start, dict) and 'source_soft_load_preference.py' in start
+    if receipt.get('causalSupportSelectionEnabled') is True:
+        checks['requiredCausalOverlapCertificateSourcePresent'] = isinstance(start, dict) and 'source_causal_com_overlap.py' in start
     if isinstance(start, dict):
         for name, expected in start.items():
             safe = isinstance(name, str) and name == Path(name).name and name.endswith('.py') and is_sha(expected)
@@ -444,6 +465,8 @@ def qualify_reviewed(original, robust, references, model, controls, provenance, 
         checks['activeSoftLoadNativeAssemblyAndCommandReplay'] = (load_native.get('passed') is True
             and load_native.get('expectedWitnesses') == 2*count
             and load_native.get('verifiedWitnesses') == 2*count and load_native.get('physicsIntegrations') == 0)
+    if mode == 'continuous-com-causal':
+        checks['independentStateOnlyCausalAndOverlapReplay'] = robust.get('causalModeReplayVerified') is True
     physical = all(checks.values())
     # Baseline-context is an unchanged-motion parity profile. Continuous-com
     # still requires independent B evidence; a boolean in a runner is insufficient.
@@ -661,7 +684,8 @@ def audit_continuous_com(receipt, row, reference, state, elapsed):
                 coeff = hermite_coefficients(initial, final, c['phase_durations']['settle'])
                 check('continuousSettleC2EndpointsAndMeasuredTarget', close(settle['startSourceTimeS'], start_time)
                     and close(settle['durationS'], c['phase_durations']['settle']) and close(settle['coefficients'], coeff))
-        if phase in ('translate', 'land', 'settle', 'stand'):
+        if phase in ('translate', 'land', 'settle', 'stand') or (phase == 'transfer'
+                and c.get('mode') == 'continuous-com-causal' and correction.get('selected')):
             points = np.unique(np.asarray(row['supportPointsXY']), axis=0)
             eq = [ConvexHull(points).equations]
             if phase in ('translate', 'land'):
@@ -782,7 +806,7 @@ def audit_reference_journal(rows, entry, references, notes, *, mode='baseline-co
     checks = {}
     def check(name, condition): checks[name] = checks.get(name, True) and bool(condition)
     previous = entry; stream = iter(notes); next_note = next(stream, None)
-    states = {}; previous_arm = None; count = commands = 0; command = None
+    states = {}; previous_arm = None; count = commands = 0; command = None; overlap_proofs = {}
     max_torque_error = 0.
     max_epoch = {}; epoch_bindings = {}
     wrench_samples = 0; wrench_phase = {}; previous_slip = np.zeros(2)
@@ -885,7 +909,25 @@ def audit_reference_journal(rows, entry, references, notes, *, mode='baseline-co
                     and note['reviewedWalk'].get('referenceVersion') == VERSION
                     and note['reviewedWalk'].get('immutablePreparedContext') is True)
                 support = note.get('robustSupportAdmission', {}); state['support'] = support
-                if mode in ('continuous-com', 'continuous-com-projected', 'continuous-com-load'):
+                if mode == 'continuous-com-causal':
+                    check('explicitCausalStateOnlyPolicyEveryCommand', receipt['config'].get('causalSupportSelectionPolicy') == causal_selection_policy_audit()
+                        and 'causalOverlap' in receipt['causal'])
+                    overlap = receipt['causal'].get('causalOverlap'); correction = receipt['causal']['robustCorrection']
+                    if not correction['selected']:
+                        check('noOverlapCertificateBeforeSelection', overlap is None)
+                    else:
+                        check('selectedOverlapCertificateNeverReplaced', state.get('causalOverlap') is None or equal(state['causalOverlap'], overlap))
+                        if state.get('causalOverlap') is None:
+                            proof = audit_overlap_certificate(overlap, np.asarray(reference['com1'])-np.asarray(reference['com0']),
+                                reference['phase_durations']['transfer'], correction['deltaM'], correction['startTransferS'], correction['durationS'])
+                            check('independentSelectedWholePolynomialOverlap', proof.get('valid') is True and proof['independent']['passed'] is True
+                                and isinstance(overlap, dict) and overlap.get('passed') is True and overlap.get('unresolvedCapBounds') == [])
+                            overlap_proofs[index] = dict(passed=proof.get('valid') is True and proof['independent']['passed'] is True,
+                                checks=proof['checks'], errors=proof['errors'],
+                                independentEnvelope=proof['independent'], metadataTolerance=proof['metadataTolerance'],
+                                certificateSHA256=value_sha(overlap), method='independent exact-rational Bernstein full-interval cap proof')
+                            state['causalOverlap'] = copy.deepcopy(overlap)
+                if mode in ('continuous-com', 'continuous-com-projected', 'continuous-com-load', 'continuous-com-causal'):
                     continuous_proof = audit_continuous_com(receipt, previous, reference, state, elapsed)
                     for key, value in continuous_proof['checks'].items(): check(key, value)
                 correction = receipt['causal']['robustCorrection']
@@ -986,6 +1028,9 @@ def audit_reference_journal(rows, entry, references, notes, *, mode='baseline-co
         failedChecks=[k for k, v in checks.items() if not v], actualRecordedIntegrations=count,
         actualControlNotes=commands, maximumHeldCommandTorqueErrorNm=max_torque_error,
         independentReferenceArithmetic=True, physicsIntegrations=0,
+        causalOverlapEnvelopePass=(bool(overlap_proofs) and set(overlap_proofs) == set(references)
+            and all(proof['passed'] for proof in overlap_proofs.values())) if mode == 'continuous-com-causal' else None,
+        causalOverlapProofs=overlap_proofs,
         wrenchDiagnostics=dict(enabled=wrench_enabled, available=wrench_enabled and wrench_samples == count and count > 0,
             coveragePass=(wrench_samples == count and count > 0) if wrench_enabled else None,
             verifiedNativeSamples=wrench_samples, expectedNativeSamples=count if wrench_enabled else 0,
@@ -1135,7 +1180,7 @@ class ExactReviewedForecastReplay(ExactForecastReplay):
         self._require(all(equal(config.get(k), reference[k]) for k in STATIC_FIELDS if k in reference), 'forecast static step reference mismatch')
         self._require(equal(config['q0'][:15], reference['q0'][:15]), 'forecast leg/knee posture mismatch')
         self._require(audit_soft_load_context(receipt, note, None)['passed'], 'invalid forecast soft-load scope')
-        allowed = set(config)-{'mode', 'referenceVersion', 'armMappingRanges', 'softLoadPreference'}
+        allowed = set(config)-{'mode', 'referenceVersion', 'armMappingRanges', 'softLoadPreference', 'causalSupportSelectionPolicy'}
         self._require(set(fields) == allowed|{'arm_posture', 'arm_velocity', 'arm_acceleration', 'unload_admitted'}, 'unexpected reviewed probe fields')
         for name in allowed: self._require(equal(fields[name], config[name]), 'probe field/context mismatch: '+name)
         for name, field in (('arm_posture', 'position'), ('arm_velocity', 'velocity'), ('arm_acceleration', 'acceleration')):
@@ -1201,7 +1246,854 @@ class ExactReviewedForecastReplay(ExactForecastReplay):
         return result
 
 
-def reviewed_robust_result(legacy, count, reference_proof):
+# Independent whole-interval polynomial proof, distinct from producer Sturm code.
+from numbers import Real
+
+F = Fraction
+POLICY = 'causal-quintic-overlap-v1'
+PRODUCER_METHOD = 'exact-rational-polynomial-sturm-interval-bounds'
+CAPS = {
+    'totalSpeedMps': .19260552331163003,
+    'totalAccelerationMps2': .3901818436690813,
+    'correctionMagnitudeM': .012,
+    'minimumCorrectionDurationS': 1.,
+    'correctionSpeedMps': .025,
+    'correctionAccelerationMps2': .15,
+}
+ATOL = 2e-11
+RTOL = 2e-10
+ROOT_WIDTH = F(1, 2**64)
+CHECK_ORDER = ('correctionDuration', 'correctionMagnitude', 'correctionSpeed',
+               'correctionAcceleration', 'totalSpeed', 'totalAcceleration')
+
+
+def _number(value, label):
+    if isinstance(value, bool) or not isinstance(value, Real):
+        raise ValueError('invalid ' + label)
+    try:
+        value = float(value)
+    except (ValueError, OverflowError) as exc:
+        raise ValueError('invalid ' + label) from exc
+    if not math.isfinite(value):
+        raise ValueError('nonfinite ' + label)
+    return value
+
+
+def _vector(value, label):
+    try:
+        out = tuple(_number(x, label) for x in value)
+    except TypeError as exc:
+        raise ValueError('invalid ' + label) from exc
+    if len(out) != 3:
+        raise ValueError('invalid ' + label + ' dimension')
+    return out
+
+
+def _inputs(nominal_delta3, nominal_duration, correction_delta3,
+            correction_start, correction_duration):
+    n = _vector(nominal_delta3, 'nominal delta')
+    c = _vector(correction_delta3, 'correction delta')
+    T = _number(nominal_duration, 'nominal duration')
+    S = _number(correction_start, 'correction start')
+    D = _number(correction_duration, 'correction duration')
+    if T <= 0 or D <= 0 or S < 0:
+        raise ValueError('invalid positive duration or causal start')
+    if not math.isfinite(S + D) or S + D <= S:
+        raise ValueError('unrepresentable correction interval')
+    return tuple(map(F, n)), F(T), tuple(map(F, c)), F(S), F(D)
+
+
+def _trim(p):
+    p = list(p)
+    while len(p) > 1 and p[-1] == 0:
+        p.pop()
+    return p or [F(0)]
+
+
+def _sum_poly(a, b):
+    out = [F(0)] * max(len(a), len(b))
+    for i, value in enumerate(a):
+        out[i] += value
+    for i, value in enumerate(b):
+        out[i] += value
+    return _trim(out)
+
+
+def _derivative(p):
+    return _trim([F(i) * c for i, c in enumerate(p) if i])
+
+
+def _evaluate(p, u):
+    total = F(0)
+    for coefficient in reversed(p):
+        total = total * u + coefficient
+    return total
+
+
+def _compose_affine(p, offset, scale):
+    """Binomial expansion p(offset + scale*u), ascending power coefficients."""
+    out = [F(0)] * len(p)
+    for power, coefficient in enumerate(p):
+        for j in range(power + 1):
+            out[j] += coefficient * math.comb(power, j) * offset**(power-j) * scale**j
+    return _trim(out)
+
+
+def _divide(a, b):
+    a, b = _trim(a), _trim(b)
+    if b == [0]:
+        raise ValueError('polynomial division by zero')
+    quotient = [F(0)] * max(1, len(a) - len(b) + 1)
+    while a != [0] and len(a) >= len(b):
+        j = len(a) - len(b)
+        scale = a[-1] / b[-1]
+        quotient[j] += scale
+        for i in range(len(b)):
+            a[i+j] -= scale * b[i]
+        a = _trim(a)
+    return _trim(quotient), a
+
+
+def _monic(p):
+    return [x / p[-1] for x in p] if p != [0] else p
+
+
+def _squarefree_interior(p):
+    """Remove multiplicity and roots at 0/1, which are boundary candidates."""
+    p = _trim(p)
+    if len(p) <= 1:
+        return [F(1)]
+    a, b = p, _derivative(p)
+    while b != [0]:
+        _, remainder = _divide(a, b)
+        a, b = b, _monic(remainder)
+    p, remainder = _divide(p, _monic(a))
+    if remainder != [0]:
+        raise ValueError('square-free division did not close')
+    while len(p) > 1 and p[0] == 0:
+        p = p[1:]
+    while len(p) > 1 and _evaluate(p, F(1)) == 0:
+        p, remainder = _divide(p, [F(-1), F(1)])
+        if remainder != [0]:
+            raise ValueError('endpoint division did not close')
+    return _monic(p)
+
+
+def _bernstein(p):
+    degree = len(p) - 1
+    return [sum((p[i] * F(math.comb(k, i), math.comb(degree, i))
+                 for i in range(k + 1)), F(0)) for k in range(degree + 1)]
+
+
+def _bisect_controls(controls):
+    row = list(controls)
+    left, right = [row[0]], [row[-1]]
+    while len(row) > 1:
+        row = [(a+b)/2 for a, b in zip(row, row[1:])]
+        left.append(row[0])
+        right.append(row[-1])
+    return left, list(reversed(right))
+
+
+def _variations(controls):
+    signs = [(x > 0) - (x < 0) for x in controls if x]
+    return sum(a != b for a, b in zip(signs, signs[1:]))
+
+
+def _isolate_stationary(poly, *, max_depth=256, max_nodes=20000):
+    """Descartes in the Bernstein basis: 0 variations => 0 roots; 1 => 1.
+
+    Square-free reduction ensures subdivision eventually separates real roots.
+    Exact roots on subdivision boundaries are recorded once and excluded from
+    the two open children by ignoring zero endpoint controls.
+    """
+    derivative = _derivative(poly)
+    p = _squarefree_interior(derivative)
+    if len(p) <= 1:
+        return [], 0
+    pending = [(F(0), F(1), _bernstein(p), 0)]
+    roots, visited = [], 0
+    while pending:
+        left, right, controls, depth = pending.pop()
+        visited += 1
+        if visited > max_nodes:
+            raise ValueError('Bernstein root-node limit exhausted')
+        variations = _variations(controls)
+        if variations == 0:
+            continue
+        if variations == 1 and right - left <= ROOT_WIDTH:
+            roots.append((left, right))
+            continue
+        if depth >= max_depth:
+            raise ValueError('Bernstein root-depth limit exhausted')
+        middle = (left + right)/2
+        a, b = _bisect_controls(controls)
+        if a[-1] == 0:
+            roots.append((middle, middle))
+        pending.append((middle, right, b, depth+1))
+        pending.append((left, middle, a, depth+1))
+    roots.sort()
+    if any(a[1] >= b[0] for a, b in zip(roots, roots[1:])):
+        raise ValueError('Bernstein stationary intervals overlap')
+    return roots, visited
+
+
+def _position_poly(delta, duration, start, left, right):
+    midpoint = (left + right)/2
+    if midpoint <= start:
+        return [[F(0)] for _ in delta]
+    if midpoint >= start + duration:
+        return [[d] for d in delta]
+    # Expanded position is 10u^3 - 15u^4 + 6u^5. No factored jets.
+    base = _compose_affine([F(0), F(0), F(0), F(10), F(-15), F(6)],
+                           (left-start)/duration, (right-left)/duration)
+    return [[d*x for x in base] for d in delta]
+
+
+def _square_norm(vectors):
+    out = [F(0)]
+    for p in vectors:
+        square = [F(0)] * (2*len(p)-1)
+        for i, a in enumerate(p):
+            for j, b in enumerate(p):
+                square[i+j] += a*b
+        out = _sum_poly(out, square)
+    return out
+
+
+def _exact_jets(delta, duration, start, t):
+    if t <= start:
+        return ([F(0)]*3, [F(0)]*3, [F(0)]*3)
+    if t >= start + duration:
+        return (list(delta), [F(0)]*3, [F(0)]*3)
+    u = (t-start)/duration
+    p = [F(0), F(0), F(0), F(10), F(-15), F(6)]
+    return tuple([d*_evaluate(jet, u)/duration**order for d in delta]
+                 for order, jet in enumerate((p, _derivative(p),
+                                              _derivative(_derivative(p)))))
+
+
+def _total_jets(n, T, c, S, D, t):
+    first, second = _exact_jets(n, T, F(0), t), _exact_jets(c, D, S, t)
+    return tuple([x+y for x, y in zip(a, b)] for a, b in zip(first, second))
+
+
+def _sqrt_float(value, upward=True):
+    if value < 0:
+        raise ValueError('negative squared norm')
+    if not value:
+        return 0.
+    exponent = value.numerator.bit_length() - value.denominator.bit_length()
+    exponent -= exponent % 2
+    try:
+        result = math.ldexp(math.sqrt(float(value/F(2)**exponent)), exponent//2)
+    except (OverflowError, ValueError) as exc:
+        raise ValueError('nonfinite independent norm') from exc
+    if not math.isfinite(result):
+        raise ValueError('nonfinite independent norm')
+    if upward:
+        while F(result)**2 < value:
+            result = math.nextafter(result, math.inf)
+            if not math.isfinite(result):
+                raise ValueError('nonfinite independent norm')
+    else:
+        while F(result)**2 > value:
+            result = math.nextafter(result, 0.)
+    return result
+
+
+def _fraction_pair(value):
+    return [value.numerator, value.denominator]
+
+
+def _maximum_enclosure(poly, roots):
+    samples = [(F(0), _evaluate(poly, F(0))), (F(1), _evaluate(poly, F(1)))]
+    uppers = [value for _, value in samples]
+    root_data = []
+    for left, right in roots:
+        midpoint = (left+right)/2
+        samples.append((midpoint, _evaluate(poly, midpoint)))
+        local = _compose_affine(poly, left, right-left)
+        controls = _bernstein(local)
+        upper = max(controls)
+        uppers.append(upper)
+        root_data.append({'unitIntervalExact': [_fraction_pair(left), _fraction_pair(right)],
+                          'squaredValueUpperExact': _fraction_pair(upper)})
+    witness, lower = max(samples, key=lambda x: (x[1], x[0]))
+    upper = max(F(0), *uppers)
+    if lower < 0 or upper < lower:
+        raise ValueError('invalid independent norm enclosure')
+    return lower, upper, witness, root_data
+
+
+def _build(nominal_delta3, nominal_duration, correction_delta3, correction_start,
+           correction_duration, *, max_depth=256, max_nodes=20000):
+    n, T, c, S, D = _inputs(nominal_delta3, nominal_duration, correction_delta3,
+                           correction_start, correction_duration)
+    boundaries = sorted({F(0), T, S, S+D})
+    windows = []
+    for left, right in zip(boundaries, boundaries[1:]):
+        np = _position_poly(n, T, F(0), left, right)
+        cp = _position_poly(c, D, S, left, right)
+        positions = [_sum_poly(a, b) for a, b in zip(np, cp)]
+        velocity = [[a/(right-left) for a in _derivative(p)] for p in positions]
+        acceleration = [[a/(right-left) for a in _derivative(p)] for p in velocity]
+        polys = {'speed': _square_norm(velocity),
+                 'acceleration': _square_norm(acceleration)}
+        window = {'left': left, 'right': right,
+                  'nominalActive': F(0) < (left+right)/2 < T,
+                  'correctionActive': S < (left+right)/2 < S+D,
+                  'polynomials': polys, 'metrics': {}}
+        for name, p in polys.items():
+            roots, nodes = _isolate_stationary(p, max_depth=max_depth, max_nodes=max_nodes)
+            lower, upper, witness, root_data = _maximum_enclosure(p, roots)
+            window['metrics'][name] = {'roots': roots, 'lower': lower, 'upper': upper,
+                                       'witness': witness, 'rootData': root_data,
+                                       'subdivisionNodes': nodes}
+        windows.append(window)
+    return (n, T, c, S, D), boundaries, windows
+
+
+def independent_overlap_envelope(nominal_delta3, nominal_duration, correction_delta3,
+                                 correction_start, correction_duration, *,
+                                 max_depth=256, max_nodes=20000):
+    """JSON-safe exact proof summary; algebra exhaustion returns passed=False.
+
+    Invalid/nonfinite inputs raise ValueError, as the producer API does. Exact
+    numerators/denominators accompany displayed bounds. All comparisons to caps
+    are exact, with no ATOL/RTOL. Outside the reported boundary range both jets
+    are constant and have zero speed/acceleration.
+    """
+    parsed = _inputs(nominal_delta3, nominal_duration, correction_delta3,
+                     correction_start, correction_duration)
+    n, T, c, S, D = parsed
+    norm2 = sum((x*x for x in c), F(0))
+    corr_speed2 = F(225, 64)*norm2/D**2
+    corr_accel2 = F(100, 3)*norm2/D**4
+    checks = {
+        'correctionDuration': D >= F(CAPS['minimumCorrectionDurationS']),
+        'correctionMagnitude': norm2 <= F(CAPS['correctionMagnitudeM'])**2,
+        'correctionSpeed': corr_speed2 <= F(CAPS['correctionSpeedMps'])**2,
+        'correctionAcceleration': corr_accel2 <= F(CAPS['correctionAccelerationMps2'])**2,
+    }
+    result = {'method': 'independent-exact-bernstein-descartes', 'resolved': False,
+              'caps': dict(CAPS), 'checks': checks, 'passed': False,
+              'unresolvedCapBounds': [], 'windows': [], 'maxima': {},
+              'correctionSquared': {name: _fraction_pair(value) for name, value in
+                (('magnitude', norm2), ('speed', corr_speed2), ('acceleration', corr_accel2))}}
+    try:
+        _, boundaries, windows = _build(*parsed, max_depth=max_depth, max_nodes=max_nodes)
+        for name, cap_name, check_name in (
+                ('speed', 'totalSpeedMps', 'totalSpeed'),
+                ('acceleration', 'totalAccelerationMps2', 'totalAcceleration')):
+            lower = max(w['metrics'][name]['lower'] for w in windows)
+            upper = max(w['metrics'][name]['upper'] for w in windows)
+            cap2 = F(CAPS[cap_name])**2
+            checks[check_name] = upper <= cap2
+            if lower <= cap2 < upper:
+                result['unresolvedCapBounds'].append(name)
+            result['maxima'][name] = {
+                'lower': _sqrt_float(lower, False), 'upper': _sqrt_float(upper, True),
+                'lowerSquaredExact': _fraction_pair(lower),
+                'upperSquaredExact': _fraction_pair(upper)}
+        for w in windows:
+            public = {'startS': float(w['left']), 'endS': float(w['right']),
+                      'nominalActive': w['nominalActive'],
+                      'correctionActive': w['correctionActive']}
+            for name, p in w['polynomials'].items():
+                m = w['metrics'][name]
+                public[name] = {
+                    'squaredPolynomialExact': [_fraction_pair(x) for x in p],
+                    'squaredDerivativeDegree': len(_derivative(p))-1,
+                    'stationaryRootCount': len(m['roots']),
+                    'stationaryTimesS': [float(w['left']+(w['right']-w['left'])*(a+b)/2)
+                                         for a, b in m['roots']],
+                    'stationaryRoots': m['rootData'],
+                    'lower': _sqrt_float(m['lower'], False),
+                    'upper': _sqrt_float(m['upper'], True),
+                    'lowerSquaredExact': _fraction_pair(m['lower']),
+                    'upperSquaredExact': _fraction_pair(m['upper']),
+                    'subdivisionNodes': m['subdivisionNodes']}
+            result['windows'].append(public)
+        result['boundaryJets'] = []
+        for t in boundaries:
+            p, v, a = _total_jets(*parsed, t)
+            result['boundaryJets'].append({'timeS': float(t),
+                'positionM': list(map(float, p)), 'velocityMps': list(map(float, v)),
+                'accelerationMps2': list(map(float, a))})
+        result['resolved'] = not result['unresolvedCapBounds']
+        result['passed'] = result['resolved'] and all(checks.values())
+    except (ValueError, OverflowError, ZeroDivisionError) as exc:
+        checks.update(totalSpeed=False, totalAcceleration=False)
+        result['proofError'] = str(exc)
+    result['rejections'] = [name for name in CHECK_ORDER if not checks.get(name, False)]
+    return result
+
+
+def audit_overlap_certificate(cert, nominal_delta3, nominal_duration, correction_delta3,
+                              correction_start, correction_duration, *,
+                              atol=ATOL, rtol=RTOL, max_depth=256, max_nodes=20000):
+    """Audit producer metadata and independently prove its admission decision.
+
+    certificateValid/valid distinguish metadata validity from envelopePassed.
+    Thus an honest cap rejection can be a valid certificate. A producer's
+    conservative unresolved rejection may disagree with an independently proved
+    admission; that is exposed separately rather than silently accepted as an
+    identical decision. passed requires validity AND independent admission.
+    """
+    if not (0 <= atol <= 1e-9 and 0 <= rtol <= 1e-9):
+        raise ValueError('metadata tolerances must be in [0, 1e-9]')
+    independent = independent_overlap_envelope(nominal_delta3, nominal_duration,
+        correction_delta3, correction_start, correction_duration,
+        max_depth=max_depth, max_nodes=max_nodes)
+    errors, detail = [], {}
+
+    def require(ok, label):
+        detail[label] = bool(ok)
+        if not ok:
+            errors.append(label)
+
+    def numeric(value):
+        return _number(value, 'certificate numeric metadata')
+
+    def near(actual, expected):
+        actual, expected = numeric(actual), numeric(expected)
+        return abs(actual-expected) <= atol + rtol*max(abs(actual), abs(expected))
+
+    def exact(actual, expected):
+        return F(numeric(actual)) == F(expected)
+
+    def vector_near(actual, expected):
+        return isinstance(actual, (list, tuple)) and len(actual) == 3 and all(
+            near(a, b) for a, b in zip(actual, expected))
+
+    def norm_matches(value, lower, upper):
+        value = numeric(value)
+        if value < 0:
+            return False
+        tolerance = F(atol + rtol*abs(value))
+        return max(F(0), F(value)-tolerance)**2 <= lower and upper <= (F(value)+tolerance)**2
+
+    try:
+        require(isinstance(cert, dict), 'schema.object')
+        if not isinstance(cert, dict):
+            raise ValueError('certificate is not an object')
+        require(type(cert['schema']) is int and cert['schema'] == 1, 'schema.version')
+        require(cert['policy'] == POLICY, 'schema.policy')
+        require(cert['method'] == PRODUCER_METHOD, 'schema.method')
+        parsed, boundaries, windows = _build(nominal_delta3, nominal_duration,
+            correction_delta3, correction_start, correction_duration,
+            max_depth=max_depth, max_nodes=max_nodes)
+        n, T, c, S, D = parsed
+        require(independent['resolved'], 'independent.proofResolved')
+        require(set(cert['caps']) == set(CAPS) and all(exact(cert['caps'][k], v)
+                for k, v in CAPS.items()), 'inputs.frozenCaps')
+        for name, expected_delta, expected_start, expected_duration in (
+                ('nominal', n, F(0), T), ('correction', c, S, D)):
+            item = cert[name]
+            require(isinstance(item['deltaM'], (list, tuple)) and len(item['deltaM']) == 3
+                    and all(exact(a, b) for a, b in zip(item['deltaM'], expected_delta)),
+                    'inputs.'+name+'.delta')
+            require(exact(item['startS'], expected_start), 'inputs.'+name+'.start')
+            require(exact(item['durationS'], expected_duration), 'inputs.'+name+'.duration')
+        norm2 = sum((x*x for x in c), F(0))
+        for field, squared in (('magnitudeM', norm2),
+                ('maximumSpeedMps', F(225, 64)*norm2/D**2),
+                ('maximumAccelerationMps2', F(100, 3)*norm2/D**4)):
+            value = numeric(cert['correction'][field])
+            require(value >= 0 and F(value)**2 >= squared and norm_matches(value, squared, squared),
+                    'correction.'+field)
+        supplied_windows = cert['windows']
+        require(isinstance(supplied_windows, list) and len(supplied_windows) == len(windows),
+                'windows.count')
+        candidate_times = {'speed': [float(t) for t in boundaries],
+                           'acceleration': [float(t) for t in boundaries]}
+        for index, (w, item) in enumerate(zip(windows, supplied_windows)):
+            prefix = 'windows.'+str(index)+'.'
+            require(exact(item['startS'], float(w['left'])) and
+                    exact(item['endS'], float(w['right'])), prefix+'bounds')
+            for key in ('nominalActive', 'correctionActive'):
+                require(type(item[key]) is bool and item[key] == w[key], prefix+key)
+            for name, poly in w['polynomials'].items():
+                m = w['metrics'][name]
+                times = item[name+'StationaryTimesS']
+                require(isinstance(times, list) and len(times) == len(m['roots']),
+                        prefix+name+'.stationaryCount')
+                require(type(item[name+'StationaryRootCount']) is int and
+                        item[name+'StationaryRootCount'] == len(m['roots']),
+                        prefix+name+'.rootCount')
+                require(type(item[name+'SquaredDerivativeDegree']) is int and
+                        item[name+'SquaredDerivativeDegree'] == len(_derivative(poly))-1,
+                        prefix+name+'.degree')
+                expected_times = [float(w['left']+(w['right']-w['left'])*(a+b)/2)
+                                  for a, b in m['roots']]
+                require(all(near(a, b) for a, b in zip(times, expected_times)) and
+                        all(numeric(a) <= numeric(b) for a, b in zip(times, times[1:])),
+                        prefix+name+'.stationaryTimes')
+                candidate_times[name].extend(numeric(t) for t in times)
+                require(norm_matches(item[name+'UpperBound'], m['lower'], m['upper']),
+                        prefix+name+'.upperBound')
+        supplied_boundary = cert['boundaryJets']
+        require(isinstance(supplied_boundary, list) and len(supplied_boundary) == len(boundaries),
+                'boundaryJets.count')
+        for index, (t, item) in enumerate(zip(boundaries, supplied_boundary)):
+            require(exact(item['timeS'], float(t)), 'boundaryJets.'+str(index)+'.time')
+            expected = _total_jets(*parsed, t)
+            for name, vector in zip(('positionM', 'velocityMps', 'accelerationMps2'), expected):
+                require(vector_near(item[name], vector), 'boundaryJets.'+str(index)+'.'+name)
+        for name, maximum_key, conservative_key, time_key, jet_index in (
+                ('speed', 'maximumTotalSpeedMps', 'conservativeMaximumTotalSpeedMps', 'maximumSpeedAtS', 1),
+                ('acceleration', 'maximumTotalAccelerationMps2',
+                 'conservativeMaximumTotalAccelerationMps2', 'maximumAccelerationAtS', 2)):
+            lower = max(w['metrics'][name]['lower'] for w in windows)
+            upper = max(w['metrics'][name]['upper'] for w in windows)
+            require(norm_matches(cert[maximum_key], lower, upper), name+'.maximum')
+            require(norm_matches(cert[conservative_key], lower, upper), name+'.conservativeMaximum')
+            require(numeric(cert[conservative_key]) + atol + rtol*abs(numeric(cert[conservative_key]))
+                    >= numeric(cert[maximum_key]), name+'.conservativeOrdering')
+            supplied = cert['candidateCriticalTimesS'][name]
+            expected = sorted(set(candidate_times[name]))
+            # Float conversion can merge distinct exact times. Compare the
+            # unique float representations, while still checking monotonicity.
+            require(isinstance(supplied, list) and
+                    all(numeric(a) <= numeric(b) for a, b in zip(supplied, supplied[1:])) and
+                    len(set(map(numeric, supplied))) == len(expected) and
+                    all(near(a, b) for a, b in zip(sorted(set(map(numeric, supplied))), expected)),
+                    name+'.candidateTimes')
+            maximum_time = numeric(cert[time_key])
+            require(any(near(maximum_time, t) for t in expected), name+'.maximizerCandidate')
+            jets = _total_jets(*parsed, F(maximum_time))[jet_index]
+            squared_at_time = sum((x*x for x in jets), F(0))
+            require(norm_matches(cert[maximum_key], squared_at_time, squared_at_time),
+                    name+'.maximizerValue')
+            candidate_max = max(sum((x*x for x in _total_jets(*parsed, F(t))[jet_index]), F(0))
+                                for t in supplied)
+            require(norm_matches(cert[maximum_key], candidate_max, candidate_max),
+                    name+'.candidateMaximum')
+        producer_checks = cert['checks']
+        require(set(producer_checks) == set(CHECK_ORDER) and
+                all(type(producer_checks[k]) is bool for k in CHECK_ORDER), 'decision.checkSchema')
+        unresolved = cert['unresolvedCapBounds']
+        require(isinstance(unresolved, list) and len(unresolved) == len(set(unresolved)) and
+                all(name in ('speed', 'acceleration') for name in unresolved), 'decision.unresolvedSchema')
+        conservative_mismatch = []
+        for check in CHECK_ORDER:
+            expected = independent['checks'][check]
+            actual = producer_checks[check]
+            metric = {'totalSpeed': 'speed', 'totalAcceleration': 'acceleration'}.get(check)
+            allowed_conservative = (expected and not actual and metric in unresolved)
+            require(actual == expected or allowed_conservative, 'decision.'+check)
+            if allowed_conservative:
+                conservative_mismatch.append(metric)
+        for metric in unresolved:
+            check, key, maximum_key, cap_key = (
+                ('totalSpeed', 'conservativeMaximumTotalSpeedMps', 'maximumTotalSpeedMps', 'totalSpeedMps')
+                if metric == 'speed' else
+                ('totalAcceleration', 'conservativeMaximumTotalAccelerationMps2',
+                 'maximumTotalAccelerationMps2', 'totalAccelerationMps2'))
+            cap = CAPS[cap_key]
+            require(not producer_checks[check] and numeric(cert[key]) >= cap and
+                    numeric(cert[maximum_key]) <= cap + atol + rtol*cap,
+                    'decision.unresolved.'+metric)
+        require(type(cert['passed']) is bool and cert['passed'] == all(producer_checks.values()),
+                'decision.passed')
+        require(cert['rejections'] == [k for k in CHECK_ORDER if not producer_checks[k]],
+                'decision.rejections')
+        cap_agreement = all(producer_checks[k] == independent['checks'][k] for k in CHECK_ORDER)
+    except (KeyError, TypeError, ValueError, IndexError, OverflowError, ZeroDivisionError) as exc:
+        errors.append('malformedOrUnresolved: '+str(exc))
+        cap_agreement, conservative_mismatch = False, []
+    valid = not errors
+    return {'passed': valid and independent['passed'], 'valid': valid,
+            'certificateValid': valid, 'envelopePassed': independent['passed'],
+            'capDecisionAgreement': cap_agreement,
+            'conservativeUnresolvedMismatch': conservative_mismatch,
+            'checks': detail, 'errors': errors, 'independent': independent,
+            'metadataTolerance': {'absolute': atol, 'relative': rtol}}
+
+
+def state_only_selection_from_history(history, row, reference, elapsed, mass, actual=False, prospective=False):
+    """Pure causal selection from the retained 200 Hz preceding-state window."""
+    from audit_source_robust_support import support_observation, triangle, inset_projection, measured_margin, RESERVE, ASSOCIATION
+    if elapsed < 0. or not history:
+        return None
+    now = row['sourceTimeS']
+    if now-history[0][0] < .1-1e-9:
+        return None
+    if prospective and len(history) < 21:return None
+    votes = np.bincount([h[1] for h in history if not prospective or h[1] >= 0],minlength=4)
+    weak = int(np.argmax(votes));survivors = [i for i in range(4) if i != weak]
+    frequency = float(votes[weak]/len(history))
+    if frequency < .8 or not all(h[3] and all(h[2][survivors]) for h in history):
+        return None
+    obs = support_observation(row,reference['stance_side'])
+    eq = triangle(obs,survivors,actual=actual)
+    goal = inset_projection(np.array(reference['com1'])[:2],eq,RESERVE+ASSOCIATION)
+    delta = np.r_[goal-np.array(reference['com1'])[:2],0.]
+    distance = float(np.linalg.norm(delta))
+    duration = max(1.,1.875*distance/.025,math.sqrt(5.78*distance/.15))
+    return dict(weakCorner=weak,survivingCorners=survivors,
+        historySourceStartS=history[0][0],historySourceEndS=now,historySamples=len(history),
+        shallowestFrequency=frequency,selectedAtTransferS=elapsed,comCorrectionM=delta.tolist(),
+        correctionMagnitudeM=distance,correctionDurationS=duration,
+        initialReserveM=min(measured_margin(row,eq)-.001,RESERVE))
+
+
+def audit_causal_support_replay(rows,entry,references,cadence,notes,mass,endpoint_validator=None,
+                 prospective=False,forecast_replayer=None):
+    """Separate state-only profile; legacy timer-gated auditor is never changed."""
+    from collections import deque
+    from scipy.spatial import QhullError
+    from audit_source_robust_support import (ACTUAL_PATCH, NOMINAL_PATCH, MAX_SHIFT, RESERVE,
+        ASSOCIATION, support_observation, forecast_math, triangle, measured_margin, quintic)
+    from audit_source_cadenced_steps import capture_margin
+    checks = {}
+    def check(name,condition):
+        checks[name] = checks.get(name,True) and bool(condition)
+    check('explicitStateOnlyCausalReplayProfile', cadence.get('reviewedReferenceProfile', {}).get('mode') == 'continuous-com-causal')
+    policy = cadence.get('robustSupportAdmission',{})
+    mode = policy.get('supportPatchConstruction',NOMINAL_PATCH)
+    check('geometricRiskSignalPolicyOnly',policy.get('riskSignal','current-shallowest-endpoint-height') == 'current-shallowest-endpoint-height')
+    if prospective:
+        check('explicitProspectiveRiskPolicy',policy.get('riskSignal') == FORECAST_RISK
+            and policy.get('forecastHorizonS') == .1 and policy.get('forecastControlApplied') is False
+            and policy.get('forecastRolloutIntegrations') == 0 and forecast_replayer is not None)
+    check('explicitActualSupportPatchConstruction',mode == ACTUAL_PATCH)
+    check('robustAdmissionPolicy',policy.get('enabled') is True
+        and policy.get('causalWeakCornerHistoryS') == .1 and policy.get('minimumFrequency') == .8
+        and policy.get('actualSurvivorsRequired') is True and policy.get('maximumComCorrectionM') == MAX_SHIFT
+        and policy.get('measuredAdmissionReserveM') == RESERVE
+        and policy.get('allFrameOriginalCaptureGuardUnchanged') is True
+        and policy.get('arbitraryCornerLossRobustnessClaim') is False)
+    check('explicitPilotOrTenRequest',type(cadence.get('requestedSteps')) is int
+        and cadence['requestedSteps'] in (1,10) and cadence.get('requestedDistanceM') == .18)
+    stream = iter(notes);next_note = next(stream,None)
+    previous = entry;count = control_count = 0;states = {};last_step = None
+    metadata_keys = ('weakCorner','survivingCorners','historySourceStartS','historySourceEndS',
+        'historySamples','riskAgreementFrequency' if prospective else 'shallowestFrequency','selectedAtTransferS','comCorrectionM',
+        'correctionMagnitudeM','correctionDurationS')
+    endpoint_error = 0.;maximum_history = 0
+    for row in rows:
+        index,phase = row['stepIndex'],row['phase'];count += 1
+        reference = references[index]
+        state = states.setdefault(index,dict(history=deque(),selection=None,unload=0,maximumUnloadRun=0,
+            liftAdmitted=False,lastPhase=None,clock=(0.,0.,0.),minimumLiftActualMarginM=None,
+            liftActualReserveSamples=0,maximumLiftActualReserveRun=0,selectionNativeStep=None,
+            boundedUnavailableSolves=0,lastBoundedUnavailableCandidate=None))
+        check('originalFootRadiiPreserved',reference.get('radii') == [.027,.027])
+        if state['lastPhase'] != phase:
+            state['phaseStartNativeStep'] = count-1
+        elapsed = (count-1-state['phaseStartNativeStep'])*DT
+        check('phaseClockReconstructedFromNativeCounters',abs(row['phaseElapsedS']-elapsed-DT) < 1e-9)
+        if (count-1)%4 == 0:
+            note = next_note;next_note = next(stream,None);control_count += 1
+            check('allActualControlNotesAligned',note is not None and note.get('stepIndex') == index
+                and note.get('phase') == phase and abs(note.get('t',-1.)-(count-1)*DT) < 1e-9)
+            if note is None:
+                break
+            telemetry = note.get('robustSupportAdmission',{})
+            check('robustTelemetryOnEveryActualControl',isinstance(telemetry,dict)
+                and telemetry.get('causalHistoryOnly') is True and type(telemetry.get('selected')) is bool)
+            if endpoint_validator is not None:
+                error = endpoint_validator(previous)
+                endpoint_error = max(endpoint_error,error)
+                check('independentFootEndpointFK',error < 1e-9)
+            eligible = None
+            if phase == 'transfer' and state['selection'] is None:
+                obs = support_observation(previous,reference['stance_side'])
+                now = previous['sourceTimeS']
+                loaded = previous['feet'][reference['stance_side']]['loadN'] >= .8*mass*9.81
+                append = True;risk = int(np.argmax(obs['clearances']))
+                if prospective:
+                    if not loaded:state['history'].clear()
+                    append = loaded
+                    if append:
+                        forecast = telemetry.get('currentCausalUnloadForecast',telemetry.get('selectedCausalUnloadForecast',{}))
+                        calculation = forecast_math(forecast,previous,reference)
+                        for key,value in calculation['checks'].items():check(key,value)
+                        risk = calculation['risk']
+                        if forecast_replayer is not None:
+                            witness = forecast_replayer(note,previous,reference,forecast)
+                            check('allRetainedNativeForecastWitnessesReplay',witness.get('passed') is True)
+                        if state['history'] and now-state['history'][-1][0] > .0050001:state['history'].clear()
+                if append:state['history'].append((now,risk,obs['present'],loaded,previous['sourceStep']))
+                while len(state['history']) > 1 and state['history'][1][0] < now-.1-1e-10:
+                    state['history'].popleft()
+                maximum_history = max(maximum_history,len(state['history']))
+                try:
+                    eligible = state_only_selection_from_history(state['history'],previous,reference,elapsed,mass,
+                        actual=mode == ACTUAL_PATCH,prospective=prospective) if append else None
+                    if prospective and eligible is not None:
+                        eligible['riskAgreementFrequency'] = eligible.pop('shallowestFrequency')
+                    if eligible is not None and eligible['correctionMagnitudeM'] > MAX_SHIFT:
+                        state['boundedUnavailableSolves'] += 1
+                        state['lastBoundedUnavailableCandidate'] = {k:eligible[k] for k in (
+                            'weakCorner','correctionMagnitudeM','selectedAtTransferS','historySourceStartS','historySourceEndS')}
+                        check('unavailableCorrectionRemainsUnselected',telemetry.get('selected') is False)
+                        if mode == ACTUAL_PATCH:
+                            check('boundedRejectionTelemetryMatchesCurrentCausalCandidate',
+                                telemetry.get('lastRejectedWeakCorner') == eligible['weakCorner']
+                                and close(telemetry.get('lastRejectedCorrectionM'),eligible['correctionMagnitudeM'])
+                                and telemetry.get('lastAdmissionRejection') == 'bounded correction unavailable; continue observing current support')
+                        eligible = None
+                    if eligible is not None:
+                        certificate = (note.get('referenceContext', {}).get('causal', {}).get('causalOverlap')
+                            if telemetry.get('selected') else telemetry.get('lastRejectedCausalOverlap'))
+                        # The geometric replay is independent and compared at
+                        # the unchanged selection tolerance. Prove the exact
+                        # binary jet that the producer actually certified:
+                        # equivalent projection arithmetic can differ by ULPs.
+                        proposed = certificate['correction'] if isinstance(certificate, dict) else {}
+                        check('causalOverlapInputsBoundToIndependentCandidate',
+                            close(proposed.get('deltaM'), eligible['comCorrectionM'])
+                            and close(proposed.get('startS'), elapsed)
+                            and close(proposed.get('durationS'), eligible['correctionDurationS']))
+                        inputs = (np.asarray(reference['com1'])-np.asarray(reference['com0']),
+                            reference['phase_durations']['transfer'], proposed.get('deltaM'),
+                            proposed.get('startS'), proposed.get('durationS'))
+                        proof = audit_overlap_certificate(certificate, *inputs)
+                        envelope = proof['independent']
+                        check('everyCausalCandidateOverlapCertificateValid', proof.get('valid') is True)
+                        state['overlapCandidates'] = state.get('overlapCandidates', 0)+1
+                        if not envelope['passed']:
+                            state['overlapRejectedCandidates'] = state.get('overlapRejectedCandidates', 0)+1
+                            check('summedEnvelopeRejectionRemainsUnselected', telemetry.get('selected') is False
+                                and telemetry.get('lastAdmissionRejection') == 'summed causal COM jets exceed frozen envelope')
+                            eligible = None
+                        else:
+                            check('firstStateEligibleCertificatePassed', certificate is not None
+                                and certificate.get('passed') is True and certificate.get('unresolvedCapBounds') == [])
+                except (ValueError,QhullError):
+                    check('validCausalSelectionGeometry',False)
+            if state['selection'] is None:
+                check('selectionAtFirstCausalEligibleSolve',bool(eligible) == (telemetry.get('selected') is True))
+                if eligible is not None and telemetry.get('selected') is True:
+                    if prospective:
+                        ids = [h[4] for h in state['history']]
+                        check('selectedWindowNativeWitnessCoverage',forecast_replayer is not None
+                            and forecast_replayer.coverage(index,ids)
+                            and telemetry.get('forecastHistoryNativeSteps') == ids
+                            and telemetry.get('historyPredictedRiskCorners') == [h[1] for h in state['history']]
+                            and telemetry.get('retainedExactNativeForecastWitnesses') == len(ids)
+                            and telemetry.get('riskSignal') == FORECAST_RISK)
+                    state['selection'] = eligible
+                    state['selectionNativeStep'] = count-1
+                    state['history'].clear()
+            selected = state['selection']
+            check('selectionNeverDisappearsOrReplacesHistory',telemetry.get('selected') is (selected is not None))
+            if selected is not None:
+                check('selectionMatchesPrecedingActualHistory',all(close(telemetry.get(k),selected[k]) for k in metadata_keys))
+                check('selectionScopeAndPhysicalBounds',telemetry.get('allSurvivorsActuallySupportedThroughoutHistory') is True
+                    and telemetry.get('maximumCorrectionM') == MAX_SHIFT
+                    and telemetry.get('maximumReferenceSpeedMps') == .025
+                    and telemetry.get('maximumReferenceAccelerationMps2') == .15
+                    and telemetry.get('admissionReserveM') == RESERVE
+                    and telemetry.get('referenceReserveM') == RESERVE+ASSOCIATION
+                    and telemetry.get('endpointSupportAssociationToleranceM') == ASSOCIATION
+                    and telemetry.get('arbitraryCornerLossRobustnessClaim') is False)
+                if mode == ACTUAL_PATCH:
+                    check('selectionDeclaresActualPointConstruction',telemetry.get('supportPatchConstruction') == ACTUAL_PATCH)
+                delta = np.array(selected['comCorrectionM']);duration = selected['correctionDurationS']
+                check('boundedC2Correction',selected['correctionMagnitudeM'] <= MAX_SHIFT+1e-12
+                    and duration >= 1. and 1.875*np.linalg.norm(delta)/duration <= .025+1e-12
+                    and (10/math.sqrt(3))*np.linalg.norm(delta)/duration**2 <= .15+1e-12)
+                if phase == 'transfer':
+                    state['clock'] = quintic(elapsed-selected['selectedAtTransferS'],duration)
+                elif phase == 'settle':
+                    a,b,c = quintic(elapsed,reference['phase_durations']['settle']);state['clock'] = (1.-a,-b,-c)
+                else:
+                    state['clock'] = (0.,0.,0.) if phase == 'stand' else (1.,0.,0.)
+                check('analyticC2CorrectionClock',close(telemetry.get('correctionClock'),state['clock']))
+                base = np.array(reference['com1'])
+                if phase == 'transfer':
+                    s,_,_ = quintic(elapsed,reference['phase_durations']['transfer'])
+                    base = np.array(reference['com0'])+(base-np.array(reference['com0']))*s
+                elif phase in ('settle','stand'):
+                    s = quintic(elapsed,reference['phase_durations']['settle'])[0] if phase == 'settle' else 1.
+                    base = base+(np.array(reference['finalCom'])-base)*s
+                check('emittedCOMTargetMatchesBoundedCorrection',close(note.get('comTarget'),base+state['clock'][0]*delta))
+                obs = support_observation(previous,reference['stance_side'])
+                present = all(obs['present'][selected['survivingCorners']])
+                barriers = telemetry.get('barriers',[])
+                expected_barriers = phase in ('transfer','lift','translate','land') and present
+                check('barriersNeverUseMissingOrUnselectedSupport',len(barriers) == (3 if expected_barriers else 0))
+                if expected_barriers:
+                    try:
+                        eq = triangle(obs,selected['survivingCorners'],actual=mode == ACTUAL_PATCH)
+                        com = np.array(previous['com']);cp = com[:2]+math.sqrt(com[2]/9.81)*np.array(previous['comVelocity'])[:2]
+                        s,ds,dds = state['clock'] if phase == 'transfer' else (1.,0.,0.)
+                        gap = RESERVE-selected['initialReserveM'];reserve = selected['initialReserveM']+s*gap
+                        check('triangleBarrierMarginsAndC2ReserveReplay',all(
+                            close(b.get('captureMarginM'),-float(e[:2]@cp+e[2]))
+                            and close(b.get('comMarginM'),-float(e[:2]@com[:2]+e[2]))
+                            and close(b.get('reserveM'),reserve) and close(b.get('reserveRateMps'),ds*gap)
+                            and close(b.get('reserveAccelerationMps2'),dds*gap)
+                            and b.get('actualSurvivingSupportOnly') is True and b.get('gainPerS') == 8.
+                            for b,e in zip(barriers,eq)))
+                    except (ValueError,QhullError):
+                        check('triangleBarrierMarginsAndC2ReserveReplay',False)
+            else:
+                check('unselectedControllerAddsNoTriangleBarrier',telemetry.get('barriers') == [])
+                base = np.array(reference['com1'])
+                if phase == 'transfer':
+                    s,_,_ = quintic(elapsed,reference['phase_durations']['transfer'])
+                    base = np.array(reference['com0'])+(base-np.array(reference['com0']))*s
+                check('unselectedCOMReferenceRemainsNominal',close(note.get('comTarget'),base))
+        actual_margin = None
+        selected = state['selection']
+        if selected is not None:
+            try:
+                obs = support_observation(row,reference['stance_side'])
+                actual_margin = measured_margin(row,triangle(obs,selected['survivingCorners'],actual=True))
+            except (ValueError,QhullError):
+                pass
+        full_margin = capture_margin(row)
+        check('unchangedEveryNativeActualHullCaptureGuard',full_margin is not None and full_margin >= 0.)
+        ready = False
+        if phase == 'transfer' and selected is not None:
+            com = np.array(row['com']);cp = com[:2]+math.sqrt(com[2]/9.81)*np.array(row['comVelocity'])[:2]
+            goal = np.array(reference['com1'])+selected['comCorrectionM']
+            ready = (elapsed >= reference['phase_durations']['transfer']-1e-10 and state['clock'][0] >= 1.
+                and actual_margin is not None and actual_margin >= RESERVE
+                and np.linalg.norm((com-goal)[:2]) < .008 and np.linalg.norm(cp-goal[:2]) < .01
+                and row['jointLimitMinimumMarginRad'] >= .005
+                and min(row['jointLimitMarginsRad'][i] for i in (7,13)) >= reference.get('minimum_ankle_ready_rad',0.)
+                and row['maximumBodyLinearMps'] <= .05 and row['maximumBodyAngularRadps'] <= .2
+                and row['feet'][reference['swing_side']]['loadN'] < .5
+                and row['feet'][reference['stance_side']]['loadN'] >= .8*mass*9.81)
+            state['unload'] = state['unload']+1 if ready else 0
+            state['maximumUnloadRun'] = max(state['maximumUnloadRun'],state['unload'])
+            if endpoint_validator is not None and ready:
+                error = endpoint_validator(row);endpoint_error = max(endpoint_error,error)
+                check('independentFootEndpointFK',error < 1e-9)
+        if phase == 'lift' and state['lastPhase'] == 'transfer':
+            state['liftAdmitted'] = state['unload'] >= 80
+            check('eachLiftHas80ActualTriangleCorrectedUnloadSamples',state['liftAdmitted'])
+            state['liftAdmissionNativeStep'] = count-1
+        if phase == 'lift':
+            if actual_margin is not None:
+                state['minimumLiftActualMarginM'] = actual_margin if state['minimumLiftActualMarginM'] is None else min(state['minimumLiftActualMarginM'],actual_margin)
+            state['liftActualReserveSamples'] = state['liftActualReserveSamples']+1 if actual_margin is not None and actual_margin >= RESERVE else 0
+            state['maximumLiftActualReserveRun'] = max(state['maximumLiftActualReserveRun'],state['liftActualReserveSamples'])
+        state['lastPhase'] = phase;previous = row;last_step = index
+    check('actualControlScheduleComplete',control_count == (count+3)//4 and next_note is None)
+    check('allRequestedStepsHaveMeasuredCausalSelection',len(states) == cadence['requestedSteps']
+        and all(s['selection'] is not None for s in states.values()))
+    check('allRequestedLiftsHaveMeasuredActualTriangleAdmission',len(states) == cadence['requestedSteps']
+        and all(s['liftAdmitted'] for s in states.values()))
+    check('nonemptyReplay',count > 0)
+    results = {i:{k:v for k,v in s.items() if k != 'history'} for i,s in states.items()}
+    prospective_pass = (prospective and all(v for k,v in checks.items() if k != 'geometricRiskSignalPolicyOnly'))
+    return dict(passed=all(checks.values()),prospectiveRiskReplayPass=prospective_pass,
+        checks=checks,actualRecordedIntegrations=count,
+        actualControlNotes=control_count,supportPatchConstruction=mode,
+        nominalGeometryDiagnosticOnly=mode != ACTUAL_PATCH,maximumRetainedHistorySamples=maximum_history,
+        independentFootEndpointMaximumErrorM=endpoint_error,perStep=results,
+        replayProfile='continuous-com-causal-state-only-v1',
+        interpretation='Actual-triangle admission is measured before lift. Minimum margins during lift are reported separately; arbitrary corner-loss robustness is not claimed.')
+
+
+def reviewed_robust_result(legacy, count, reference_proof, *, mode="baseline-context"):
     """Retain old output verbatim; replace only explicitly named policy checks."""
     old = legacy.get('checks', {})
     exclusions = {'geometricRiskSignalPolicyOnly', 'explicitPilotOrTenRequest',
@@ -1209,8 +2101,17 @@ def reviewed_robust_result(legacy, count, reference_proof):
     checks = dict(fullLegacyCausalAndNativeCoverage=REQUIRED_ROBUST_REPLAY_CHECKS <= set(old) and all(v is True for k, v in old.items() if k not in exclusions),
         diagnosticOrPilotOrTenCount=type(count) is int and count in COUNTS,
         independentReviewedReferenceReplay=reference_proof.get('passed') is True)
+    if mode == 'continuous-com-causal':
+        required = ('explicitStateOnlyCausalReplayProfile',
+            'causalOverlapInputsBoundToIndependentCandidate',
+            'everyCausalCandidateOverlapCertificateValid', 'firstStateEligibleCertificatePassed')
+        checks['independentStateOnlySelectionAndEnvelopeAdmission'] = (
+            legacy.get('replayProfile') == 'continuous-com-causal-state-only-v1'
+            and all(old.get(k) is True for k in required)
+            and reference_proof.get('causalOverlapEnvelopePass') is True)
     return dict(passed=all(checks.values()), checks=checks,
         failedChecks=[k for k, v in checks.items() if not v], unchangedLegacyReplay=legacy,
+        causalModeReplayVerified=mode == 'continuous-com-causal' and all(checks.values()),
         replacedLegacyPolicyChecks=sorted(exclusions), oldProfileQualificationClaim=False)
 
 
@@ -1271,13 +2172,14 @@ def audit(folder):
     native = ExactReviewedForecastReplay(base, folder, references, receipt, mapping)
     try:
         with (folder/'frames.ndjson').open() as source:
-            legacy = audit_replay((json.loads(line) for line in source), initial['entry'], references, cadence,
+            replay = audit_causal_support_replay if config['mode'] == 'continuous-com-causal' else audit_replay
+            legacy = replay((json.loads(line) for line in source), initial['entry'], references, cadence,
                 json_array_items(folder/'control.json'), model_data['totalMassKg'], FootEndpointFK(),
                 prospective=True, forecast_replayer=native)
         native_proof = native.summary()
     finally:
         native.close()
-    robust = reviewed_robust_result(legacy, config['requestedSteps'], reference_proof)
+    robust = reviewed_robust_result(legacy, config['requestedSteps'], reference_proof, mode=config['mode'])
     original = audit_cadence(folder)
     proof = audit_preparation(base, initial, expected_ratio=8.)
     final = cache_proof((folder/'final.bin').read_bytes(), proof['alteredModelSHA256'],
@@ -1318,6 +2220,13 @@ def audit(folder):
     declarations['explicitSoftLoadPreferencePolicy'] = (receipt.get('softLoadPreferenceEnabled') is True
         and config.get('softLoadPreference') == expected_load) if config['mode'] == 'continuous-com-load' else (
         receipt.get('softLoadPreferenceEnabled', False) is False and config.get('softLoadPreference') is None)
+    declarations['explicitCausalSupportSelectionPolicy'] = (
+        receipt.get('causalSupportSelectionEnabled') is True
+        and config.get('causalSupportSelectionPolicy') == causal_selection_policy_audit()
+        and cadence.get('reviewedReferenceProfile', {}).get('mode') == 'continuous-com-causal'
+        ) if config['mode'] == 'continuous-com-causal' else (
+        receipt.get('causalSupportSelectionEnabled', False) is False
+        and config.get('causalSupportSelectionPolicy') is None)
     provenance['checks'].update(declarations); provenance['passed'] = all(provenance['checks'].values())
     # Final B evidence is deliberately not inferred from names or runner booleans.
     result = qualify_reviewed(original, robust, reference_proof, proof, controls_pass, provenance,
