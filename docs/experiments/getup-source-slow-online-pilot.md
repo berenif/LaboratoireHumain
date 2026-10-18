@@ -1,8 +1,8 @@
 # Source SLOW online stabilization pilot
 
-Status at 2026-10-18 03:03 UTC: implementation and original-distribution benchmark
-passed. Candidate collection/learning awaits the final fresh-window admission.
-No quiet-standing improvement or forward step has been established.
+Status at 2026-10-18 03:10 UTC: real online learning and the fixed final pair
+completed. The candidate failed the slip gate50ms earlier than the immutable
+source baseline. Baseline retained; no quiet-standing or forward-step success.
 
 ## Mechanism
 
@@ -69,3 +69,81 @@ Code uses the pinned source equations and local source assets documented in the
 main Python GetUp plan. Raw cache/trace/model weights remain local; upstream
 redistribution permission is unverified. The compact benchmark evidence is under
 `docs/evidence/getup-source-online-2026-10-18/`. No application default changed.
+
+
+## Actual online outcome
+
+The fresh stage ran267.624s wall and2.210328s actual physics. It collected1,580
+NEW transitions before the prospectively defined128-consecutive-rejection stop:
+1,000 critic warmups,139 additional critic updates and139 both-head proposals,
+1,278 counted calls in total. Eleven proposals were accepted. Every rejected
+proposal/physical reset retained all prior charges and independent RNG progress.
+
+Training contains31,110 actual native samples across49 episodes, with42 loaded
+slip and6 fixed-anchor terminals. Forty-seven terminals are partial, and one
+physical terminal occupies all20 samples; all48 have mask0 and durable reset
+proofs. There were no warning, both-feet-unloaded or nonfoot-support samples.
+Independent saved-data checks reproduce every motor-control/torque equation at
+exact0Nm error. All35,654 training plus validation native IDs are consecutive.
+
+The final deterministic pair, from the same original full800Hz cache, gives:
+
+-Original: first left-slip10mm crossing at2.865s (2,292 samples),
+ L10.001635mm/R9.685628mm
+-Candidate: first left-slip10mm crossing at2.815s (2,252 samples),
+ L10.002413mm/R9.281825mm
+-Both stop on that first crossing; both terminal intervals have12 samples and
+ mask0. Neither supplies the final4,000 quiet samples. The candidate is50ms worse
+ on this failure time, so no physical improvement is supported.
+
+Historical mean drift remained within the preset: RMS0.009403rad,
+maximum0.010444rad. Cumulative full Gaussian KL to the original reaches0.06228;
+this is distinct from the incremental previous-policy KL cap. All128 rejected
+proposals fail the original-scaled MEAN-distance preservation bound; their1,408
+scale trials still satisfy loss decrease and incremental KL. The preservation
+heuristic has stopped learning, including coupled std updates; it is not a
+physical impossibility certificate. A prospective learning-scope change requires
+new reviewed admission, and does not qualify this candidate.
+
+The committed training checkpoint covers all1,580 transitions and31,110 training
+integrations. Validation caches/controllers are separate; they are never relabelled
+as the training state. The ledger closes at1,808 total policy intervals and35,654
+native integrations with no outstanding native/optimizer/proposal transaction.
+The earlier benchmark's1,280 integrations and18 discarded calls remain in their
+separate closed ledger; no unused allowance transfers.
+
+Reproduce the zero-engine/zero-optimizer journal algebra with:
+
+```sh
+.venv/mvp/bin/python scripts/getup-step/reduce_online_stage.py \
+  --stage outputs/getup-source-online/session-20261018T030112Z \
+  --source outputs/getup-source-engine/session-20261017T233404Z \
+  --output /tmp/online-stage-reduction.json
+```
+
+The compact reduction/summary and input hashes are in the evidence directory.
+Raw local journals/checkpoints are required by this reducer; no source or derived
+weights have been redistributed.
+
+
+## Forward-only causal audit
+
+A separate zero-engine/zero-optimizer audit verifies all139 receipt hashes and48
+complete behaviour-return recurrences. Attempt139's replay batch,2560 witnesses,
+noise and all11 recorded loss/KL/distance trials reconstruct with exactly zero
+closure error. All rejected scale trials satisfy incremental KL and loss decrease;
+the smallest-scale original-mean-distance excess is only0.86–2.24×10^-6 above0.05.
+
+Using that same saved full-Adam parameter delta, a std-only forward substitution
+would lower the local actor loss by0.000980616 while passing the local incremental
+KL/mean-distance tests and leaving deterministic means unchanged. This demonstrates
+coupling in the42-output projection, not a tested physical improvement. Across the
+actual11 accepted steps, the median pointwise std ratio rises2.590% (range−2.852%
+to+3.569%); variance did not collapse.
+
+The final critic's first48 episode-start predictions average3.072 versus recorded
+soft behaviour return15.049, RMSE12.247. Same-first31 RMSE changes12.628→12.319
+from the1000-update warmup to final. These off-policy realized-return comparisons
+are report-only, not an unbiased current-policy value estimate. They do not prove
+the50ms physical regression's cause or qualify the candidate. The next scope is a
+prospective reviewed continuation; no source critic is replaced midrun.

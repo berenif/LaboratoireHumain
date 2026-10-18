@@ -1,0 +1,2777 @@
+{
+  "schema": 1,
+  "scope": "saved-artifact arithmetic only; no engine import/integration, optimizer construction/step, or new checkpoint/weights",
+  "optimizerSteps": 0,
+  "nativeIntegrations": 0,
+  "verification": {
+    "receiptCount": 139,
+    "maximumReturnClosureError": 0.0,
+    "maximumDiagnostic1024ClosureError": 0.0
+  },
+  "alpha": 0.000612579835321518,
+  "newActualTransitions": 1580,
+  "attempts": 139,
+  "accepted": 11,
+  "rejected": 128,
+  "rejection": {
+    "allScaleFailureCounts": {
+      "lossDecrease": 0,
+      "stepKL": 0,
+      "originalMeanDistance": 128
+    },
+    "individualScaleFailureCombinations": {
+      "originalMeanDistance": 1408
+    },
+    "rejectedSmallestScaleMeanDistance": {
+      "count": 128,
+      "minimum": 0.050000857561826706,
+      "q25": 0.050001299008727074,
+      "median": 0.05000143498182297,
+      "q75": 0.050001662224531174,
+      "maximum": 0.050002243369817734,
+      "mean": 0.05000146781094372,
+      "rms": 0.05000146781171973
+    },
+    "allRejectedScaleMinimumLossDecrease": 1.0251998901367188e-05,
+    "allRejectedScaleMaximumStepKL": 0.001416193537022159
+  },
+  "originalDistributionComparisons": {
+    "historical201": {
+      "originalStd": {
+        "count": 4221,
+        "minimum": 0.09109055250883102,
+        "q25": 0.14118923246860504,
+        "median": 0.16320765018463135,
+        "q75": 0.17496976256370544,
+        "maximum": 0.2059604823589325,
+        "mean": 0.15721125037953684,
+        "rms": 0.15986244861523283
+      },
+      "finalStd": {
+        "count": 4221,
+        "minimum": 0.09384197741746902,
+        "q25": 0.14366790652275085,
+        "median": 0.16472288966178894,
+        "q75": 0.179657980799675,
+        "maximum": 0.2122972309589386,
+        "mean": 0.15986694710439936,
+        "rms": 0.16273370127005102
+      },
+      "finalToOriginalStdRatio": {
+        "count": 4221,
+        "minimum": 0.9714806079864502,
+        "q25": 1.011535406112671,
+        "median": 1.025903344154358,
+        "q75": 1.0279734134674072,
+        "maximum": 1.035690188407898,
+        "mean": 1.015940470764406,
+        "rms": 1.0161262497104535
+      },
+      "relativeStdChangePercent": {
+        "count": 4221,
+        "minimum": -2.8519392013549805,
+        "q25": 1.1535406112670898,
+        "median": 2.590334415435791,
+        "q75": 2.7973413467407227,
+        "maximum": 3.569018840789795,
+        "mean": 1.5940470764405974,
+        "rms": 2.5131928334674822
+      },
+      "stdReducedCount": 804,
+      "stdIncreasedCount": 3417,
+      "deterministicResidualDrift": {
+        "count": 4221,
+        "minimum": -0.010438830591738224,
+        "q25": -0.009114945307374,
+        "median": 0.00920635461807251,
+        "q75": 0.009891495108604431,
+        "maximum": 0.010444169864058495,
+        "mean": 0.0019930318426857117,
+        "rms": 0.009403095017394083
+      },
+      "maximumOriginalToFinalFullKL": 0.062274076930476985,
+      "meanOriginalToFinalFullKL": 0.0576631557016403,
+      "maximumFinalToOriginalFullKL": 0.06387095873579757,
+      "maximumOriginalScaledMeanDistance": 0.0506858304142952,
+      "perCoordinate": [
+        {
+          "index": 0,
+          "joint": "abdomen_z",
+          "medianStdRatio": 1.0146955251693726,
+          "minimumStdRatio": 1.0143873691558838,
+          "maximumStdRatio": 1.0149856805801392,
+          "maximumMeanResidualDrift": 0.01036105677485466
+        },
+        {
+          "index": 1,
+          "joint": "abdomen_y",
+          "medianStdRatio": 1.009705901145935,
+          "minimumStdRatio": 1.009674310684204,
+          "maximumStdRatio": 1.0098750591278076,
+          "maximumMeanResidualDrift": 0.009821135550737381
+        },
+        {
+          "index": 2,
+          "joint": "abdomen_x",
+          "medianStdRatio": 1.0269854068756104,
+          "minimumStdRatio": 1.026338815689087,
+          "maximumStdRatio": 1.0274598598480225,
+          "maximumMeanResidualDrift": 0.009271466173231602
+        },
+        {
+          "index": 3,
+          "joint": "right_hip_x",
+          "medianStdRatio": 1.0141252279281616,
+          "minimumStdRatio": 1.0137672424316406,
+          "maximumStdRatio": 1.0143885612487793,
+          "maximumMeanResidualDrift": 0.009915977716445923
+        },
+        {
+          "index": 4,
+          "joint": "right_hip_z",
+          "medianStdRatio": 1.025858998298645,
+          "minimumStdRatio": 1.0255075693130493,
+          "maximumStdRatio": 1.0263735055923462,
+          "maximumMeanResidualDrift": 0.008721168152987957
+        },
+        {
+          "index": 5,
+          "joint": "right_hip_y",
+          "medianStdRatio": 0.9737063646316528,
+          "minimumStdRatio": 0.9734216332435608,
+          "maximumStdRatio": 0.9745039343833923,
+          "maximumMeanResidualDrift": 0.010391304269433022
+        },
+        {
+          "index": 6,
+          "joint": "right_knee",
+          "medianStdRatio": 1.0308516025543213,
+          "minimumStdRatio": 1.0302053689956665,
+          "maximumStdRatio": 1.031491994857788,
+          "maximumMeanResidualDrift": 0.010328784584999084
+        },
+        {
+          "index": 7,
+          "joint": "right_ankle_y",
+          "medianStdRatio": 1.0316368341445923,
+          "minimumStdRatio": 1.0311945676803589,
+          "maximumStdRatio": 1.0322812795639038,
+          "maximumMeanResidualDrift": 0.010201796889305115
+        },
+        {
+          "index": 8,
+          "joint": "right_ankle_x",
+          "medianStdRatio": 0.9718430638313293,
+          "minimumStdRatio": 0.9714806079864502,
+          "maximumStdRatio": 0.9725570678710938,
+          "maximumMeanResidualDrift": 0.009934917092323303
+        },
+        {
+          "index": 9,
+          "joint": "left_hip_x",
+          "medianStdRatio": 1.027267336845398,
+          "minimumStdRatio": 1.026719331741333,
+          "maximumStdRatio": 1.0277423858642578,
+          "maximumMeanResidualDrift": 0.009935587644577026
+        },
+        {
+          "index": 10,
+          "joint": "left_hip_z",
+          "medianStdRatio": 1.0256352424621582,
+          "minimumStdRatio": 1.025234580039978,
+          "maximumStdRatio": 1.0261181592941284,
+          "maximumMeanResidualDrift": 0.009344466030597687
+        },
+        {
+          "index": 11,
+          "joint": "left_hip_y",
+          "medianStdRatio": 1.021128535270691,
+          "minimumStdRatio": 1.0206977128982544,
+          "maximumStdRatio": 1.021544098854065,
+          "maximumMeanResidualDrift": 0.010438830591738224
+        },
+        {
+          "index": 12,
+          "joint": "left_knee",
+          "medianStdRatio": 0.9751964211463928,
+          "minimumStdRatio": 0.9747291207313538,
+          "maximumStdRatio": 0.9756326675415039,
+          "maximumMeanResidualDrift": 0.010444169864058495
+        },
+        {
+          "index": 13,
+          "joint": "left_ankle_y",
+          "medianStdRatio": 1.0275341272354126,
+          "minimumStdRatio": 1.0270713567733765,
+          "maximumStdRatio": 1.0280715227127075,
+          "maximumMeanResidualDrift": 0.0004643052816390991
+        },
+        {
+          "index": 14,
+          "joint": "left_ankle_x",
+          "medianStdRatio": 1.029088020324707,
+          "minimumStdRatio": 1.028722882270813,
+          "maximumStdRatio": 1.0297173261642456,
+          "maximumMeanResidualDrift": 0.010071918368339539
+        },
+        {
+          "index": 15,
+          "joint": "right_shoulder1",
+          "medianStdRatio": 1.027642846107483,
+          "minimumStdRatio": 1.027200698852539,
+          "maximumStdRatio": 1.0282273292541504,
+          "maximumMeanResidualDrift": 0.009876027703285217
+        },
+        {
+          "index": 16,
+          "joint": "right_shoulder2",
+          "medianStdRatio": 1.0268272161483765,
+          "minimumStdRatio": 1.0263170003890991,
+          "maximumStdRatio": 1.0273592472076416,
+          "maximumMeanResidualDrift": 0.009459919296205044
+        },
+        {
+          "index": 17,
+          "joint": "right_elbow",
+          "medianStdRatio": 1.0306994915008545,
+          "minimumStdRatio": 1.0302835702896118,
+          "maximumStdRatio": 1.0313501358032227,
+          "maximumMeanResidualDrift": 0.009263724088668823
+        },
+        {
+          "index": 18,
+          "joint": "left_shoulder1",
+          "medianStdRatio": 1.0115536451339722,
+          "minimumStdRatio": 1.0115278959274292,
+          "maximumStdRatio": 1.0118827819824219,
+          "maximumMeanResidualDrift": 0.010312594473361969
+        },
+        {
+          "index": 19,
+          "joint": "left_shoulder2",
+          "medianStdRatio": 0.9968644976615906,
+          "minimumStdRatio": 0.9966477751731873,
+          "maximumStdRatio": 0.9968821406364441,
+          "maximumMeanResidualDrift": 0.008899387903511524
+        },
+        {
+          "index": 20,
+          "joint": "left_elbow",
+          "medianStdRatio": 1.0349518060684204,
+          "minimumStdRatio": 1.0343914031982422,
+          "maximumStdRatio": 1.035690188407898,
+          "maximumMeanResidualDrift": 0.009292453527450562
+        }
+      ]
+    },
+    "lastWitness2560": {
+      "originalStd": {
+        "count": 53760,
+        "minimum": 0.09010498970746994,
+        "q25": 0.14282293990254402,
+        "median": 0.1658979132771492,
+        "q75": 0.17956684529781342,
+        "maximum": 0.2319592535495758,
+        "mean": 0.16013499027952396,
+        "rms": 0.16293812240646416
+      },
+      "finalStd": {
+        "count": 53760,
+        "minimum": 0.09283629804849625,
+        "q25": 0.14569836854934692,
+        "median": 0.16770710051059723,
+        "q75": 0.18360480666160583,
+        "maximum": 0.23943354189395905,
+        "mean": 0.162815986707158,
+        "rms": 0.16582846630497425
+      },
+      "finalToOriginalStdRatio": {
+        "count": 53760,
+        "minimum": 0.9703782200813293,
+        "q25": 1.0114132165908813,
+        "median": 1.0259292125701904,
+        "q75": 1.0280207395553589,
+        "maximum": 1.0366313457489014,
+        "mean": 1.0158470903268262,
+        "rms": 1.0160311263265238
+      },
+      "relativeStdChangePercent": {
+        "count": 53760,
+        "minimum": -2.9621779918670654,
+        "q25": 1.1413216590881348,
+        "median": 2.592921257019043,
+        "q75": 2.8020739555358887,
+        "maximum": 3.6631345748901367,
+        "mean": 1.5847090326826132,
+        "rms": 2.5001380175753236
+      },
+      "stdReducedCount": 10240,
+      "stdIncreasedCount": 43520,
+      "deterministicResidualDrift": {
+        "count": 53760,
+        "minimum": -0.010637303814291954,
+        "q25": -0.008885100483894348,
+        "median": 0.008883737027645111,
+        "q75": 0.009812580421566963,
+        "maximum": 0.010692231357097626,
+        "mean": 0.0019548809812774725,
+        "rms": 0.009246408870809205
+      },
+      "maximumOriginalToFinalFullKL": 0.06211251611264612,
+      "meanOriginalToFinalFullKL": 0.05577760673105414,
+      "maximumFinalToOriginalFullKL": 0.06368145842388884,
+      "maximumOriginalScaledMeanDistance": 0.04998684674501419,
+      "perCoordinate": [
+        {
+          "index": 0,
+          "joint": "abdomen_z",
+          "medianStdRatio": 1.0146872997283936,
+          "minimumStdRatio": 1.0137689113616943,
+          "maximumStdRatio": 1.0154212713241577,
+          "maximumMeanResidualDrift": 0.010520048439502716
+        },
+        {
+          "index": 1,
+          "joint": "abdomen_y",
+          "medianStdRatio": 1.009678840637207,
+          "minimumStdRatio": 1.0090388059616089,
+          "maximumStdRatio": 1.0103034973144531,
+          "maximumMeanResidualDrift": 0.009951647371053696
+        },
+        {
+          "index": 2,
+          "joint": "abdomen_x",
+          "medianStdRatio": 1.0269221067428589,
+          "minimumStdRatio": 1.025026798248291,
+          "maximumStdRatio": 1.0284334421157837,
+          "maximumMeanResidualDrift": 0.009453844279050827
+        },
+        {
+          "index": 3,
+          "joint": "right_hip_x",
+          "medianStdRatio": 1.0140819549560547,
+          "minimumStdRatio": 1.0129528045654297,
+          "maximumStdRatio": 1.014830470085144,
+          "maximumMeanResidualDrift": 0.010277319699525833
+        },
+        {
+          "index": 4,
+          "joint": "right_hip_z",
+          "medianStdRatio": 1.025820016860962,
+          "minimumStdRatio": 1.0239613056182861,
+          "maximumStdRatio": 1.0271179676055908,
+          "maximumMeanResidualDrift": 0.008921402506530285
+        },
+        {
+          "index": 5,
+          "joint": "right_hip_y",
+          "medianStdRatio": 0.9737323522567749,
+          "minimumStdRatio": 0.9721223711967468,
+          "maximumStdRatio": 0.9764545559883118,
+          "maximumMeanResidualDrift": 0.010490870103240013
+        },
+        {
+          "index": 6,
+          "joint": "right_knee",
+          "medianStdRatio": 1.0307536125183105,
+          "minimumStdRatio": 1.0285282135009766,
+          "maximumStdRatio": 1.0324509143829346,
+          "maximumMeanResidualDrift": 0.010637303814291954
+        },
+        {
+          "index": 7,
+          "joint": "right_ankle_y",
+          "medianStdRatio": 1.0315810441970825,
+          "minimumStdRatio": 1.0296227931976318,
+          "maximumStdRatio": 1.0330899953842163,
+          "maximumMeanResidualDrift": 0.010692231357097626
+        },
+        {
+          "index": 8,
+          "joint": "right_ankle_x",
+          "medianStdRatio": 0.9718639850616455,
+          "minimumStdRatio": 0.9703782200813293,
+          "maximumStdRatio": 0.9740686416625977,
+          "maximumMeanResidualDrift": 0.010408565402030945
+        },
+        {
+          "index": 9,
+          "joint": "left_hip_x",
+          "medianStdRatio": 1.0272611379623413,
+          "minimumStdRatio": 1.025215983390808,
+          "maximumStdRatio": 1.0285453796386719,
+          "maximumMeanResidualDrift": 0.010367285460233688
+        },
+        {
+          "index": 10,
+          "joint": "left_hip_z",
+          "medianStdRatio": 1.02556312084198,
+          "minimumStdRatio": 1.023539662361145,
+          "maximumStdRatio": 1.0267915725708008,
+          "maximumMeanResidualDrift": 0.00965324230492115
+        },
+        {
+          "index": 11,
+          "joint": "left_hip_y",
+          "medianStdRatio": 1.0211007595062256,
+          "minimumStdRatio": 1.0191444158554077,
+          "maximumStdRatio": 1.0221197605133057,
+          "maximumMeanResidualDrift": 0.010578146204352379
+        },
+        {
+          "index": 12,
+          "joint": "left_knee",
+          "medianStdRatio": 0.9752586483955383,
+          "minimumStdRatio": 0.9741794466972351,
+          "maximumStdRatio": 0.9768971800804138,
+          "maximumMeanResidualDrift": 0.010689109563827515
+        },
+        {
+          "index": 13,
+          "joint": "left_ankle_y",
+          "medianStdRatio": 1.0274934768676758,
+          "minimumStdRatio": 1.025587797164917,
+          "maximumStdRatio": 1.0288640260696411,
+          "maximumMeanResidualDrift": 0.0007986128330230713
+        },
+        {
+          "index": 14,
+          "joint": "left_ankle_x",
+          "medianStdRatio": 1.029022216796875,
+          "minimumStdRatio": 1.0271828174591064,
+          "maximumStdRatio": 1.0305033922195435,
+          "maximumMeanResidualDrift": 0.01044171117246151
+        },
+        {
+          "index": 15,
+          "joint": "right_shoulder1",
+          "medianStdRatio": 1.0276110172271729,
+          "minimumStdRatio": 1.0257296562194824,
+          "maximumStdRatio": 1.0290333032608032,
+          "maximumMeanResidualDrift": 0.010517694056034088
+        },
+        {
+          "index": 16,
+          "joint": "right_shoulder2",
+          "medianStdRatio": 1.0268064737319946,
+          "minimumStdRatio": 1.0249298810958862,
+          "maximumStdRatio": 1.0281479358673096,
+          "maximumMeanResidualDrift": 0.00971490889787674
+        },
+        {
+          "index": 17,
+          "joint": "right_elbow",
+          "medianStdRatio": 1.0306100845336914,
+          "minimumStdRatio": 1.0286176204681396,
+          "maximumStdRatio": 1.031934380531311,
+          "maximumMeanResidualDrift": 0.01010468602180481
+        },
+        {
+          "index": 18,
+          "joint": "left_shoulder1",
+          "medianStdRatio": 1.0115216970443726,
+          "minimumStdRatio": 1.0109726190567017,
+          "maximumStdRatio": 1.0120140314102173,
+          "maximumMeanResidualDrift": 0.010534059256315231
+        },
+        {
+          "index": 19,
+          "joint": "left_shoulder2",
+          "medianStdRatio": 0.9968834519386292,
+          "minimumStdRatio": 0.9965839982032776,
+          "maximumStdRatio": 0.9971928000450134,
+          "maximumMeanResidualDrift": 0.009016592055559158
+        },
+        {
+          "index": 20,
+          "joint": "left_elbow",
+          "medianStdRatio": 1.0348842144012451,
+          "minimumStdRatio": 1.0324121713638306,
+          "maximumStdRatio": 1.0366313457489014,
+          "maximumMeanResidualDrift": 0.010015085339546204
+        }
+      ]
+    },
+    "all1580ActualPrestates": {
+      "originalStd": {
+        "count": 33180,
+        "minimum": 0.08893200010061264,
+        "q25": 0.1428222805261612,
+        "median": 0.16596344113349915,
+        "q75": 0.1795329824090004,
+        "maximum": 0.2319592535495758,
+        "mean": 0.16011305847028387,
+        "rms": 0.16291254433476954
+      },
+      "finalStd": {
+        "count": 33180,
+        "minimum": 0.09161486476659775,
+        "q25": 0.14572079852223396,
+        "median": 0.16771713644266129,
+        "q75": 0.18352576345205307,
+        "maximum": 0.23943354189395905,
+        "mean": 0.16279455677568552,
+        "rms": 0.16580361295507412
+      },
+      "finalToOriginalStdRatio": {
+        "count": 33180,
+        "minimum": 0.9703261852264404,
+        "q25": 1.0114142298698425,
+        "median": 1.0259328484535217,
+        "q75": 1.0280281007289886,
+        "maximum": 1.0368120670318604,
+        "mean": 1.0158508715049699,
+        "rms": 1.0160349957044053
+      },
+      "relativeStdChangePercent": {
+        "count": 33180,
+        "minimum": -2.967381477355957,
+        "q25": 1.141422986984253,
+        "median": 2.593284845352173,
+        "q75": 2.8028100728988647,
+        "maximum": 3.681206703186035,
+        "mean": 1.5850871504969881,
+        "rms": 2.5007388630381526
+      },
+      "stdReducedCount": 6320,
+      "stdIncreasedCount": 26860,
+      "deterministicResidualDrift": {
+        "count": 33180,
+        "minimum": -0.010693252086639404,
+        "q25": -0.008885089308023453,
+        "median": 0.00888870656490326,
+        "q75": 0.00981399416923523,
+        "maximum": 0.010743370279669762,
+        "mean": 0.0019550670651597786,
+        "rms": 0.009248293262548399
+      },
+      "maximumOriginalToFinalFullKL": 0.06253515629941059,
+      "meanOriginalToFinalFullKL": 0.05580319153014879,
+      "maximumFinalToOriginalFullKL": 0.06419695576283663,
+      "maximumOriginalScaledMeanDistance": 0.04998684674501419,
+      "perCoordinate": [
+        {
+          "index": 0,
+          "joint": "abdomen_z",
+          "medianStdRatio": 1.0146937370300293,
+          "minimumStdRatio": 1.0136868953704834,
+          "maximumStdRatio": 1.0154831409454346,
+          "maximumMeanResidualDrift": 0.010583305731415749
+        },
+        {
+          "index": 1,
+          "joint": "abdomen_y",
+          "medianStdRatio": 1.0096837282180786,
+          "minimumStdRatio": 1.0089714527130127,
+          "maximumStdRatio": 1.0103034973144531,
+          "maximumMeanResidualDrift": 0.009961064904928207
+        },
+        {
+          "index": 2,
+          "joint": "abdomen_x",
+          "medianStdRatio": 1.0269334316253662,
+          "minimumStdRatio": 1.024901032447815,
+          "maximumStdRatio": 1.0284334421157837,
+          "maximumMeanResidualDrift": 0.009453844279050827
+        },
+        {
+          "index": 3,
+          "joint": "right_hip_x",
+          "medianStdRatio": 1.0140974521636963,
+          "minimumStdRatio": 1.0129528045654297,
+          "maximumStdRatio": 1.014963150024414,
+          "maximumMeanResidualDrift": 0.010295223444700241
+        },
+        {
+          "index": 4,
+          "joint": "right_hip_z",
+          "medianStdRatio": 1.0258289575576782,
+          "minimumStdRatio": 1.0239613056182861,
+          "maximumStdRatio": 1.0272713899612427,
+          "maximumMeanResidualDrift": 0.008953675627708435
+        },
+        {
+          "index": 5,
+          "joint": "right_hip_y",
+          "medianStdRatio": 0.9737156629562378,
+          "minimumStdRatio": 0.9719070792198181,
+          "maximumStdRatio": 0.9764545559883118,
+          "maximumMeanResidualDrift": 0.01060057245194912
+        },
+        {
+          "index": 6,
+          "joint": "right_knee",
+          "medianStdRatio": 1.0307657718658447,
+          "minimumStdRatio": 1.028593897819519,
+          "maximumStdRatio": 1.0324509143829346,
+          "maximumMeanResidualDrift": 0.010693252086639404
+        },
+        {
+          "index": 7,
+          "joint": "right_ankle_y",
+          "medianStdRatio": 1.0315948724746704,
+          "minimumStdRatio": 1.0295549631118774,
+          "maximumStdRatio": 1.033165693283081,
+          "maximumMeanResidualDrift": 0.010743370279669762
+        },
+        {
+          "index": 8,
+          "joint": "right_ankle_x",
+          "medianStdRatio": 0.9718449711799622,
+          "minimumStdRatio": 0.9703261852264404,
+          "maximumStdRatio": 0.9741085767745972,
+          "maximumMeanResidualDrift": 0.010408565402030945
+        },
+        {
+          "index": 9,
+          "joint": "left_hip_x",
+          "medianStdRatio": 1.0272741317749023,
+          "minimumStdRatio": 1.025215983390808,
+          "maximumStdRatio": 1.02873694896698,
+          "maximumMeanResidualDrift": 0.010518509894609451
+        },
+        {
+          "index": 10,
+          "joint": "left_hip_z",
+          "medianStdRatio": 1.0255810022354126,
+          "minimumStdRatio": 1.023539662361145,
+          "maximumStdRatio": 1.0269402265548706,
+          "maximumMeanResidualDrift": 0.00965324230492115
+        },
+        {
+          "index": 11,
+          "joint": "left_hip_y",
+          "medianStdRatio": 1.021107792854309,
+          "minimumStdRatio": 1.0191444158554077,
+          "maximumStdRatio": 1.0222419500350952,
+          "maximumMeanResidualDrift": 0.01066887192428112
+        },
+        {
+          "index": 12,
+          "joint": "left_knee",
+          "medianStdRatio": 0.9752463698387146,
+          "minimumStdRatio": 0.9741794466972351,
+          "maximumStdRatio": 0.9768971800804138,
+          "maximumMeanResidualDrift": 0.010689109563827515
+        },
+        {
+          "index": 13,
+          "joint": "left_ankle_y",
+          "medianStdRatio": 1.0275070667266846,
+          "minimumStdRatio": 1.025587797164917,
+          "maximumStdRatio": 1.0289429426193237,
+          "maximumMeanResidualDrift": 0.0007986128330230713
+        },
+        {
+          "index": 14,
+          "joint": "left_ankle_x",
+          "medianStdRatio": 1.029036521911621,
+          "minimumStdRatio": 1.0271828174591064,
+          "maximumStdRatio": 1.030588984489441,
+          "maximumMeanResidualDrift": 0.01062493771314621
+        },
+        {
+          "index": 15,
+          "joint": "right_shoulder1",
+          "medianStdRatio": 1.0276216268539429,
+          "minimumStdRatio": 1.0257296562194824,
+          "maximumStdRatio": 1.029098391532898,
+          "maximumMeanResidualDrift": 0.01054292917251587
+        },
+        {
+          "index": 16,
+          "joint": "right_shoulder2",
+          "medianStdRatio": 1.0268123149871826,
+          "minimumStdRatio": 1.0249298810958862,
+          "maximumStdRatio": 1.0283031463623047,
+          "maximumMeanResidualDrift": 0.00971490889787674
+        },
+        {
+          "index": 17,
+          "joint": "right_elbow",
+          "medianStdRatio": 1.0306240320205688,
+          "minimumStdRatio": 1.0286176204681396,
+          "maximumStdRatio": 1.0320507287979126,
+          "maximumMeanResidualDrift": 0.010159499943256378
+        },
+        {
+          "index": 18,
+          "joint": "left_shoulder1",
+          "medianStdRatio": 1.0115267038345337,
+          "minimumStdRatio": 1.0110015869140625,
+          "maximumStdRatio": 1.0120183229446411,
+          "maximumMeanResidualDrift": 0.010690808296203613
+        },
+        {
+          "index": 19,
+          "joint": "left_shoulder2",
+          "medianStdRatio": 0.996878981590271,
+          "minimumStdRatio": 0.9965009093284607,
+          "maximumStdRatio": 0.9972125291824341,
+          "maximumMeanResidualDrift": 0.009070025756955147
+        },
+        {
+          "index": 20,
+          "joint": "left_elbow",
+          "medianStdRatio": 1.0349023342132568,
+          "minimumStdRatio": 1.0324121713638306,
+          "maximumStdRatio": 1.0368120670318604,
+          "maximumMeanResidualDrift": 0.010015085339546204
+        }
+      ]
+    }
+  },
+  "recordedLossGradientTrends": [
+    {
+      "attempts": [
+        1,
+        6
+      ],
+      "baselineActorLoss": {
+        "count": 6,
+        "minimum": -2.7820725440979004,
+        "q25": -2.640004277229309,
+        "median": -2.57004177570343,
+        "q75": -2.532109498977661,
+        "maximum": -2.485487699508667,
+        "mean": -2.5984057188034058,
+        "rms": 2.600281584863422
+      },
+      "meanHeadGradientNorm": {
+        "count": 6,
+        "minimum": 23.425046920776367,
+        "q25": 24.385894775390625,
+        "median": 24.870957374572754,
+        "q75": 25.15853214263916,
+        "maximum": 25.750097274780273,
+        "mean": 24.732609430948894,
+        "rms": 24.743675123559
+      },
+      "stdHeadGradientNorm": {
+        "count": 6,
+        "minimum": 2.7953543663024902,
+        "q25": 2.851408898830414,
+        "median": 3.0009677410125732,
+        "q75": 3.0550440549850464,
+        "maximum": 3.6262056827545166,
+        "mean": 3.049686829249064,
+        "rms": 3.062243116172633
+      },
+      "criticLoss": {
+        "count": 6,
+        "minimum": 1.4209023714065552,
+        "q25": 1.8652434945106506,
+        "median": 2.2388651371002197,
+        "q75": 2.5873732566833496,
+        "maximum": 2.7526278495788574,
+        "mean": 2.1825843453407288,
+        "rms": 2.233572569336022
+      }
+    },
+    {
+      "attempts": [
+        7,
+        11
+      ],
+      "baselineActorLoss": {
+        "count": 5,
+        "minimum": -2.2691025733947754,
+        "q25": -2.2388322353363037,
+        "median": -2.17323899269104,
+        "q75": -2.1524505615234375,
+        "maximum": -2.14628529548645,
+        "mean": -2.1959819316864015,
+        "rms": 2.196531264304901
+      },
+      "meanHeadGradientNorm": {
+        "count": 5,
+        "minimum": 26.555940628051758,
+        "q25": 26.581382751464844,
+        "median": 26.592992782592773,
+        "q75": 27.416364669799805,
+        "maximum": 27.678281784057617,
+        "mean": 26.96499252319336,
+        "rms": 26.969314010484794
+      },
+      "stdHeadGradientNorm": {
+        "count": 5,
+        "minimum": 1.9225448369979858,
+        "q25": 2.254901170730591,
+        "median": 2.2878470420837402,
+        "q75": 2.902005672454834,
+        "maximum": 2.940276861190796,
+        "mean": 2.461515116691589,
+        "rms": 2.4932656084506983
+      },
+      "criticLoss": {
+        "count": 5,
+        "minimum": 2.0926852226257324,
+        "q25": 2.185713768005371,
+        "median": 2.7200465202331543,
+        "q75": 4.185827255249023,
+        "maximum": 4.988753795623779,
+        "mean": 3.234605312347412,
+        "rms": 3.434068823801092
+      }
+    },
+    {
+      "attempts": [
+        12,
+        43
+      ],
+      "baselineActorLoss": {
+        "count": 32,
+        "minimum": -3.0133700370788574,
+        "q25": -2.780280888080597,
+        "median": -2.528260111808777,
+        "q75": -2.420195758342743,
+        "maximum": -1.5903736352920532,
+        "mean": -2.5564064271748066,
+        "rms": 2.5755632699100652
+      },
+      "meanHeadGradientNorm": {
+        "count": 32,
+        "minimum": 20.675907135009766,
+        "q25": 22.44031524658203,
+        "median": 23.959003448486328,
+        "q75": 24.886091232299805,
+        "maximum": 30.661691665649414,
+        "mean": 23.915643334388733,
+        "rms": 24.013211722026053
+      },
+      "stdHeadGradientNorm": {
+        "count": 32,
+        "minimum": 1.8219748735427856,
+        "q25": 2.452120542526245,
+        "median": 2.7184975147247314,
+        "q75": 3.0014981627464294,
+        "maximum": 3.6788854598999023,
+        "mean": 2.738875951617956,
+        "rms": 2.7671030602702906
+      },
+      "criticLoss": {
+        "count": 32,
+        "minimum": 1.2658851146697998,
+        "q25": 2.4090770483016968,
+        "median": 3.186260223388672,
+        "q75": 4.0462422370910645,
+        "maximum": 6.294027328491211,
+        "mean": 3.2614933885633945,
+        "rms": 3.499008761602154
+      }
+    },
+    {
+      "attempts": [
+        44,
+        75
+      ],
+      "baselineActorLoss": {
+        "count": 32,
+        "minimum": -2.936713457107544,
+        "q25": -2.6987486481666565,
+        "median": -2.546516180038452,
+        "q75": -2.4465290904045105,
+        "maximum": -2.207531213760376,
+        "mean": -2.5752087906003,
+        "rms": 2.5822748382993663
+      },
+      "meanHeadGradientNorm": {
+        "count": 32,
+        "minimum": 21.291366577148438,
+        "q25": 22.661054611206055,
+        "median": 23.461061477661133,
+        "q75": 24.35387086868286,
+        "maximum": 26.674291610717773,
+        "mean": 23.645198464393616,
+        "rms": 23.683644651084116
+      },
+      "stdHeadGradientNorm": {
+        "count": 32,
+        "minimum": 1.6091328859329224,
+        "q25": 2.644897222518921,
+        "median": 2.943499445915222,
+        "q75": 3.4142232537269592,
+        "maximum": 4.036874294281006,
+        "mean": 2.932779710739851,
+        "rms": 2.992988335947266
+      },
+      "criticLoss": {
+        "count": 32,
+        "minimum": 1.9352552890777588,
+        "q25": 2.6762503385543823,
+        "median": 4.4551005363464355,
+        "q75": 5.572944760322571,
+        "maximum": 8.866143226623535,
+        "mean": 4.4562076181173325,
+        "rms": 4.869012509454421
+      }
+    },
+    {
+      "attempts": [
+        76,
+        107
+      ],
+      "baselineActorLoss": {
+        "count": 32,
+        "minimum": -3.190314531326294,
+        "q25": -2.759655714035034,
+        "median": -2.6365561485290527,
+        "q75": -2.41634738445282,
+        "maximum": -2.184873342514038,
+        "mean": -2.631202019751072,
+        "rms": 2.6451017657997906
+      },
+      "meanHeadGradientNorm": {
+        "count": 32,
+        "minimum": 18.863969802856445,
+        "q25": 21.500057220458984,
+        "median": 24.240286827087402,
+        "q75": 25.4469051361084,
+        "maximum": 27.64940643310547,
+        "mean": 23.478118538856506,
+        "rms": 23.618708010441264
+      },
+      "stdHeadGradientNorm": {
+        "count": 32,
+        "minimum": 2.094305992126465,
+        "q25": 2.477420926094055,
+        "median": 2.8233667612075806,
+        "q75": 3.168335795402527,
+        "maximum": 4.147428035736084,
+        "mean": 2.848980411887169,
+        "rms": 2.8904001380548876
+      },
+      "criticLoss": {
+        "count": 32,
+        "minimum": 1.566375970840454,
+        "q25": 2.593656003475189,
+        "median": 3.999450206756592,
+        "q75": 5.0809502601623535,
+        "maximum": 8.848409652709961,
+        "mean": 4.10972636193037,
+        "rms": 4.469393228567469
+      }
+    },
+    {
+      "attempts": [
+        108,
+        139
+      ],
+      "baselineActorLoss": {
+        "count": 32,
+        "minimum": -3.158426523208618,
+        "q25": -2.8178057074546814,
+        "median": -2.7608094215393066,
+        "q75": -2.5287209153175354,
+        "maximum": -2.1814842224121094,
+        "mean": -2.7092058435082436,
+        "rms": 2.719553030360414
+      },
+      "meanHeadGradientNorm": {
+        "count": 32,
+        "minimum": 18.675613403320312,
+        "q25": 21.047714233398438,
+        "median": 22.6840763092041,
+        "q75": 23.71302032470703,
+        "maximum": 25.560836791992188,
+        "mean": 22.413543462753296,
+        "rms": 22.47801169351538
+      },
+      "stdHeadGradientNorm": {
+        "count": 32,
+        "minimum": 1.9124627113342285,
+        "q25": 2.4447879791259766,
+        "median": 2.763401508331299,
+        "q75": 3.0160924196243286,
+        "maximum": 3.5607197284698486,
+        "mean": 2.7424246668815613,
+        "rms": 2.7758118818741537
+      },
+      "criticLoss": {
+        "count": 32,
+        "minimum": 2.076798915863037,
+        "q25": 4.016342580318451,
+        "median": 5.3576741218566895,
+        "q75": 6.777976989746094,
+        "maximum": 13.564702987670898,
+        "mean": 5.781648829579353,
+        "rms": 6.2897415973746025
+      }
+    }
+  ],
+  "attempt139Counterfactual": {
+    "scope": "one exact recorded postcritic batch/noise/witness; mean-only/std-only saved full-Adam parameter delta substitutions, forward only; no new candidate/engine test",
+    "batchSize": 128,
+    "replaySize": 1580,
+    "batchSHA256": "c1a87ce73efcde1214137af699c37f5d92ff63f09e2067ad4ad901a54b572666",
+    "witnessSHA256": "5bba0d008c9ce3c544a92786dba8f31e0ae100ead2e48126afee624824952865",
+    "noiseSHA256": "44094b5a2f21a27237df9bf5e46b4a45368b7d617dae616741a2b8a357690bed",
+    "baselineActorLoss": -2.7983040809631348,
+    "baselineLossTerms": {
+      "entropy": 0.005987278651446104,
+      "negativeQ": -2.804291248321533,
+      "meanSourceEpsilonLogProbability": 9.773876190185547,
+      "meanMinimumQ": 2.804291248321533
+    },
+    "recordedFullProposalClosureMaximum": 0.0,
+    "closurePerScale": [
+      {
+        "actorLoss": 0.0,
+        "lossDecrease": 0.0,
+        "maximumStepKL": 0.0,
+        "maximumOriginalMeanDistance": 0.0
+      },
+      {
+        "actorLoss": 0.0,
+        "lossDecrease": 0.0,
+        "maximumStepKL": 0.0,
+        "maximumOriginalMeanDistance": 0.0
+      },
+      {
+        "actorLoss": 0.0,
+        "lossDecrease": 0.0,
+        "maximumStepKL": 0.0,
+        "maximumOriginalMeanDistance": 0.0
+      },
+      {
+        "actorLoss": 0.0,
+        "lossDecrease": 0.0,
+        "maximumStepKL": 0.0,
+        "maximumOriginalMeanDistance": 0.0
+      },
+      {
+        "actorLoss": 0.0,
+        "lossDecrease": 0.0,
+        "maximumStepKL": 0.0,
+        "maximumOriginalMeanDistance": 0.0
+      },
+      {
+        "actorLoss": 0.0,
+        "lossDecrease": 0.0,
+        "maximumStepKL": 0.0,
+        "maximumOriginalMeanDistance": 0.0
+      },
+      {
+        "actorLoss": 0.0,
+        "lossDecrease": 0.0,
+        "maximumStepKL": 0.0,
+        "maximumOriginalMeanDistance": 0.0
+      },
+      {
+        "actorLoss": 0.0,
+        "lossDecrease": 0.0,
+        "maximumStepKL": 0.0,
+        "maximumOriginalMeanDistance": 0.0
+      },
+      {
+        "actorLoss": 0.0,
+        "lossDecrease": 0.0,
+        "maximumStepKL": 0.0,
+        "maximumOriginalMeanDistance": 0.0
+      },
+      {
+        "actorLoss": 0.0,
+        "lossDecrease": 0.0,
+        "maximumStepKL": 0.0,
+        "maximumOriginalMeanDistance": 0.0
+      },
+      {
+        "actorLoss": 0.0,
+        "lossDecrease": 0.0,
+        "maximumStepKL": 0.0,
+        "maximumOriginalMeanDistance": 0.0
+      }
+    ],
+    "variants": {
+      "both": {
+        "trials": [
+          {
+            "scale": 1.0,
+            "actorLoss": -2.809798240661621,
+            "lossDecrease": 0.011494159698486328,
+            "maximumStepKL": 0.001367215031504998,
+            "maximumOriginalMeanDistance": 0.06587544083595276,
+            "meanOriginalMeanDistance": 0.05814199522137642,
+            "maximumDeterministicActionChange": 0.0017678383737802505,
+            "maximumLatentStdChange": 0.0012446492910385132,
+            "lossTerms": {
+              "entropy": 0.005966808646917343,
+              "negativeQ": -2.815765142440796,
+              "meanSourceEpsilonLogProbability": 9.740459442138672,
+              "meanMinimumQ": 2.815765142440796
+            },
+            "passesThreeLocalGuards": false
+          },
+          {
+            "scale": 0.5,
+            "actorLoss": -2.8040592670440674,
+            "lossDecrease": 0.005755186080932617,
+            "maximumStepKL": 0.00034207411149900224,
+            "maximumOriginalMeanDistance": 0.05763835832476616,
+            "meanOriginalMeanDistance": 0.05088727921247482,
+            "maximumDeterministicActionChange": 0.0008835140615701675,
+            "maximumLatentStdChange": 0.0006215274333953857,
+            "lossTerms": {
+              "entropy": 0.005977035965770483,
+              "negativeQ": -2.8100364208221436,
+              "meanSourceEpsilonLogProbability": 9.757153511047363,
+              "meanMinimumQ": 2.8100364208221436
+            },
+            "passesThreeLocalGuards": false
+          },
+          {
+            "scale": 0.25,
+            "actorLoss": -2.801182985305786,
+            "lossDecrease": 0.002878904342651367,
+            "maximumStepKL": 8.553236788727547e-05,
+            "maximumOriginalMeanDistance": 0.05373907834291458,
+            "meanOriginalMeanDistance": 0.04745292663574219,
+            "maximumDeterministicActionChange": 0.0004419982433319092,
+            "maximumLatentStdChange": 0.00031051039695739746,
+            "lossTerms": {
+              "entropy": 0.005982155445963144,
+              "negativeQ": -2.8071653842926025,
+              "meanSourceEpsilonLogProbability": 9.765511512756348,
+              "meanMinimumQ": 2.8071653842926025
+            },
+            "passesThreeLocalGuards": false
+          },
+          {
+            "scale": 0.125,
+            "actorLoss": -2.79974365234375,
+            "lossDecrease": 0.0014395713806152344,
+            "maximumStepKL": 2.1380069674059587e-05,
+            "maximumOriginalMeanDistance": 0.05184411630034447,
+            "meanOriginalMeanDistance": 0.04578401893377304,
+            "maximumDeterministicActionChange": 0.0002207476645708084,
+            "maximumLatentStdChange": 0.00015525519847869873,
+            "lossTerms": {
+              "entropy": 0.005984716583043337,
+              "negativeQ": -2.8057286739349365,
+              "meanSourceEpsilonLogProbability": 9.769693374633789,
+              "meanMinimumQ": 2.8057286739349365
+            },
+            "passesThreeLocalGuards": false
+          },
+          {
+            "scale": 0.0625,
+            "actorLoss": -2.7990238666534424,
+            "lossDecrease": 0.0007197856903076172,
+            "maximumStepKL": 5.340898110051118e-06,
+            "maximumOriginalMeanDistance": 0.05091043934226036,
+            "meanOriginalMeanDistance": 0.04496156424283981,
+            "maximumDeterministicActionChange": 0.00011035799980163574,
+            "maximumLatentStdChange": 7.769465446472168e-05,
+            "lossTerms": {
+              "entropy": 0.005985997151583433,
+              "negativeQ": -2.8050098419189453,
+              "meanSourceEpsilonLogProbability": 9.771784782409668,
+              "meanMinimumQ": 2.8050098419189453
+            },
+            "passesThreeLocalGuards": false
+          },
+          {
+            "scale": 0.03125,
+            "actorLoss": -2.798664093017578,
+            "lossDecrease": 0.0003600120544433594,
+            "maximumStepKL": 1.337735072826085e-06,
+            "maximumOriginalMeanDistance": 0.050448205322027206,
+            "meanOriginalMeanDistance": 0.044553492218256,
+            "maximumDeterministicActionChange": 5.511939525604248e-05,
+            "maximumLatentStdChange": 3.878772258758545e-05,
+            "lossTerms": {
+              "entropy": 0.005986638367176056,
+              "negativeQ": -2.8046505451202393,
+              "meanSourceEpsilonLogProbability": 9.772829055786133,
+              "meanMinimumQ": 2.8046505451202393
+            },
+            "passesThreeLocalGuards": false
+          },
+          {
+            "scale": 0.015625,
+            "actorLoss": -2.7984843254089355,
+            "lossDecrease": 0.00018024444580078125,
+            "maximumStepKL": 3.3333932414336687e-07,
+            "maximumOriginalMeanDistance": 0.05021682754158974,
+            "meanOriginalMeanDistance": 0.044349972158670425,
+            "maximumDeterministicActionChange": 2.7917325496673584e-05,
+            "maximumLatentStdChange": 1.9431114196777344e-05,
+            "lossTerms": {
+              "entropy": 0.005986958742141724,
+              "negativeQ": -2.804471254348755,
+              "meanSourceEpsilonLogProbability": 9.773351669311523,
+              "meanMinimumQ": 2.804471254348755
+            },
+            "passesThreeLocalGuards": false
+          },
+          {
+            "scale": 0.0078125,
+            "actorLoss": -2.798393726348877,
+            "lossDecrease": 8.96453857421875e-05,
+            "maximumStepKL": 8.381437832660765e-08,
+            "maximumOriginalMeanDistance": 0.05010208114981651,
+            "meanOriginalMeanDistance": 0.0442483052611351,
+            "maximumDeterministicActionChange": 1.411978155374527e-05,
+            "maximumLatentStdChange": 9.775161743164062e-06,
+            "lossTerms": {
+              "entropy": 0.005987119395285845,
+              "negativeQ": -2.8043811321258545,
+              "meanSourceEpsilonLogProbability": 9.773614883422852,
+              "meanMinimumQ": 2.8043811321258545
+            },
+            "passesThreeLocalGuards": false
+          },
+          {
+            "scale": 0.00390625,
+            "actorLoss": -2.7983498573303223,
+            "lossDecrease": 4.57763671875e-05,
+            "maximumStepKL": 2.1642524716813938e-08,
+            "maximumOriginalMeanDistance": 0.050045572221279144,
+            "meanOriginalMeanDistance": 0.044198282063007355,
+            "maximumDeterministicActionChange": 7.793307304382324e-06,
+            "maximumLatentStdChange": 4.9173831939697266e-06,
+            "lossTerms": {
+              "entropy": 0.005987199023365974,
+              "negativeQ": -2.8043372631073,
+              "meanSourceEpsilonLogProbability": 9.773744583129883,
+              "meanMinimumQ": 2.8043372631073
+            },
+            "passesThreeLocalGuards": false
+          },
+          {
+            "scale": 0.001953125,
+            "actorLoss": -2.7983264923095703,
+            "lossDecrease": 2.2411346435546875e-05,
+            "maximumStepKL": 5.348422205120329e-09,
+            "maximumOriginalMeanDistance": 0.050015248358249664,
+            "meanOriginalMeanDistance": 0.04417230933904648,
+            "maximumDeterministicActionChange": 4.192814230918884e-06,
+            "maximumLatentStdChange": 2.4586915969848633e-06,
+            "lossTerms": {
+              "entropy": 0.005987238604575396,
+              "negativeQ": -2.804313898086548,
+              "meanSourceEpsilonLogProbability": 9.773811340332031,
+              "meanMinimumQ": 2.804313898086548
+            },
+            "passesThreeLocalGuards": false
+          },
+          {
+            "scale": 0.0009765625,
+            "actorLoss": -2.7983157634735107,
+            "lossDecrease": 1.1682510375976562e-05,
+            "maximumStepKL": 1.5707282696730829e-09,
+            "maximumOriginalMeanDistance": 0.0500013567507267,
+            "meanOriginalMeanDistance": 0.04416019842028618,
+            "maximumDeterministicActionChange": 2.561137080192566e-06,
+            "maximumLatentStdChange": 1.2814998626708984e-06,
+            "lossTerms": {
+              "entropy": 0.005987259559333324,
+              "negativeQ": -2.804302930831909,
+              "meanSourceEpsilonLogProbability": 9.773842811584473,
+              "meanMinimumQ": 2.804302930831909
+            },
+            "passesThreeLocalGuards": false
+          }
+        ],
+        "firstPassingScale": null
+      },
+      "meanOnly": {
+        "trials": [
+          {
+            "scale": 1.0,
+            "actorLoss": -2.808825731277466,
+            "lossDecrease": 0.010521650314331055,
+            "maximumStepKL": 0.0011446343179563057,
+            "maximumOriginalMeanDistance": 0.06587544083595276,
+            "meanOriginalMeanDistance": 0.05814199522137642,
+            "maximumDeterministicActionChange": 0.0017678383737802505,
+            "maximumLatentStdChange": 0.0,
+            "lossTerms": {
+              "entropy": 0.0059856534935534,
+              "negativeQ": -2.8148117065429688,
+              "meanSourceEpsilonLogProbability": 9.771222114562988,
+              "meanMinimumQ": 2.8148117065429688
+            },
+            "passesThreeLocalGuards": false
+          },
+          {
+            "scale": 0.5,
+            "actorLoss": -2.803571939468384,
+            "lossDecrease": 0.0052678585052490234,
+            "maximumStepKL": 0.0002861546673642579,
+            "maximumOriginalMeanDistance": 0.05763835832476616,
+            "meanOriginalMeanDistance": 0.05088727921247482,
+            "maximumDeterministicActionChange": 0.0008835140615701675,
+            "maximumLatentStdChange": 0.0,
+            "lossTerms": {
+              "entropy": 0.00598645955324173,
+              "negativeQ": -2.809558391571045,
+              "meanSourceEpsilonLogProbability": 9.772538185119629,
+              "meanMinimumQ": 2.809558391571045
+            },
+            "passesThreeLocalGuards": false
+          },
+          {
+            "scale": 0.25,
+            "actorLoss": -2.800938606262207,
+            "lossDecrease": 0.0026345252990722656,
+            "maximumStepKL": 7.152124300002782e-05,
+            "maximumOriginalMeanDistance": 0.05373907834291458,
+            "meanOriginalMeanDistance": 0.04745292663574219,
+            "maximumDeterministicActionChange": 0.0004419982433319092,
+            "maximumLatentStdChange": 0.0,
+            "lossTerms": {
+              "entropy": 0.005986867938190699,
+              "negativeQ": -2.8069257736206055,
+              "meanSourceEpsilonLogProbability": 9.773204803466797,
+              "meanMinimumQ": 2.8069257736206055
+            },
+            "passesThreeLocalGuards": false
+          },
+          {
+            "scale": 0.125,
+            "actorLoss": -2.799621820449829,
+            "lossDecrease": 0.001317739486694336,
+            "maximumStepKL": 1.7872656499551276e-05,
+            "maximumOriginalMeanDistance": 0.05184411630034447,
+            "meanOriginalMeanDistance": 0.04578401893377304,
+            "maximumDeterministicActionChange": 0.0002207476645708084,
+            "maximumLatentStdChange": 0.0,
+            "lossTerms": {
+              "entropy": 0.005987072829157114,
+              "negativeQ": -2.8056085109710693,
+              "meanSourceEpsilonLogProbability": 9.773539543151855,
+              "meanMinimumQ": 2.8056085109710693
+            },
+            "passesThreeLocalGuards": false
+          },
+          {
+            "scale": 0.0625,
+            "actorLoss": -2.7989625930786133,
+            "lossDecrease": 0.0006585121154785156,
+            "maximumStepKL": 4.46347499716282e-06,
+            "maximumOriginalMeanDistance": 0.05091043934226036,
+            "meanOriginalMeanDistance": 0.04496156424283981,
+            "maximumDeterministicActionChange": 0.00011035799980163574,
+            "maximumLatentStdChange": 0.0,
+            "lossTerms": {
+              "entropy": 0.005987176205962896,
+              "negativeQ": -2.804949998855591,
+              "meanSourceEpsilonLogProbability": 9.773707389831543,
+              "meanMinimumQ": 2.804949998855591
+            },
+            "passesThreeLocalGuards": false
+          },
+          {
+            "scale": 0.03125,
+            "actorLoss": -2.798633575439453,
+            "lossDecrease": 0.0003294944763183594,
+            "maximumStepKL": 1.1184187618251684e-06,
+            "maximumOriginalMeanDistance": 0.050448205322027206,
+            "meanOriginalMeanDistance": 0.044553492218256,
+            "maximumDeterministicActionChange": 5.511939525604248e-05,
+            "maximumLatentStdChange": 0.0,
+            "lossTerms": {
+              "entropy": 0.005987226963043213,
+              "negativeQ": -2.8046207427978516,
+              "meanSourceEpsilonLogProbability": 9.773791313171387,
+              "meanMinimumQ": 2.8046207427978516
+            },
+            "passesThreeLocalGuards": false
+          },
+          {
+            "scale": 0.015625,
+            "actorLoss": -2.798468589782715,
+            "lossDecrease": 0.00016450881958007812,
+            "maximumStepKL": 2.785428656615352e-07,
+            "maximumOriginalMeanDistance": 0.05021682754158974,
+            "meanOriginalMeanDistance": 0.044349972158670425,
+            "maximumDeterministicActionChange": 2.7917325496673584e-05,
+            "maximumLatentStdChange": 0.0,
+            "lossTerms": {
+              "entropy": 0.005987252574414015,
+              "negativeQ": -2.8044562339782715,
+              "meanSourceEpsilonLogProbability": 9.773833274841309,
+              "meanMinimumQ": 2.8044562339782715
+            },
+            "passesThreeLocalGuards": false
+          },
+          {
+            "scale": 0.0078125,
+            "actorLoss": -2.7983860969543457,
+            "lossDecrease": 8.20159912109375e-05,
+            "maximumStepKL": 7.008176539091693e-08,
+            "maximumOriginalMeanDistance": 0.05010208114981651,
+            "meanOriginalMeanDistance": 0.0442483052611351,
+            "maximumDeterministicActionChange": 1.411978155374527e-05,
+            "maximumLatentStdChange": 0.0,
+            "lossTerms": {
+              "entropy": 0.005987266078591347,
+              "negativeQ": -2.8043735027313232,
+              "meanSourceEpsilonLogProbability": 9.77385425567627,
+              "meanMinimumQ": 2.8043735027313232
+            },
+            "passesThreeLocalGuards": false
+          },
+          {
+            "scale": 0.00390625,
+            "actorLoss": -2.7983460426330566,
+            "lossDecrease": 4.1961669921875e-05,
+            "maximumStepKL": 1.821886497221925e-08,
+            "maximumOriginalMeanDistance": 0.050045572221279144,
+            "meanOriginalMeanDistance": 0.044198282063007355,
+            "maximumDeterministicActionChange": 7.793307304382324e-06,
+            "maximumLatentStdChange": 0.0,
+            "lossTerms": {
+              "entropy": 0.005987272597849369,
+              "negativeQ": -2.804333448410034,
+              "meanSourceEpsilonLogProbability": 9.773865699768066,
+              "meanMinimumQ": 2.804333448410034
+            },
+            "passesThreeLocalGuards": false
+          },
+          {
+            "scale": 0.001953125,
+            "actorLoss": -2.7983248233795166,
+            "lossDecrease": 2.0742416381835938e-05,
+            "maximumStepKL": 4.515339990796008e-09,
+            "maximumOriginalMeanDistance": 0.050015248358249664,
+            "meanOriginalMeanDistance": 0.04417230933904648,
+            "maximumDeterministicActionChange": 4.192814230918884e-06,
+            "maximumLatentStdChange": 0.0,
+            "lossTerms": {
+              "entropy": 0.00598727585747838,
+              "negativeQ": -2.804312229156494,
+              "meanSourceEpsilonLogProbability": 9.773871421813965,
+              "meanMinimumQ": 2.804312229156494
+            },
+            "passesThreeLocalGuards": false
+          },
+          {
+            "scale": 0.0009765625,
+            "actorLoss": -2.7983145713806152,
+            "lossDecrease": 1.049041748046875e-05,
+            "maximumStepKL": 1.3577378110696259e-09,
+            "maximumOriginalMeanDistance": 0.0500013567507267,
+            "meanOriginalMeanDistance": 0.04416019842028618,
+            "maximumDeterministicActionChange": 2.561137080192566e-06,
+            "maximumLatentStdChange": 0.0,
+            "lossTerms": {
+              "entropy": 0.005987277254462242,
+              "negativeQ": -2.8043019771575928,
+              "meanSourceEpsilonLogProbability": 9.773872375488281,
+              "meanMinimumQ": 2.8043019771575928
+            },
+            "passesThreeLocalGuards": false
+          }
+        ],
+        "firstPassingScale": null
+      },
+      "stdOnly": {
+        "trials": [
+          {
+            "scale": 1.0,
+            "actorLoss": -2.7992846965789795,
+            "lossDecrease": 0.0009806156158447266,
+            "maximumStepKL": 0.0002349382244382081,
+            "maximumOriginalMeanDistance": 0.04998684674501419,
+            "meanOriginalMeanDistance": 0.04414721950888634,
+            "maximumDeterministicActionChange": 0.0,
+            "maximumLatentStdChange": 0.0012446492910385132,
+            "lossTerms": {
+              "entropy": 0.005968433804810047,
+              "negativeQ": -2.80525279045105,
+              "meanSourceEpsilonLogProbability": 9.743111610412598,
+              "meanMinimumQ": 2.80525279045105
+            },
+            "passesThreeLocalGuards": true
+          },
+          {
+            "scale": 0.5,
+            "actorLoss": -2.798793077468872,
+            "lossDecrease": 0.0004889965057373047,
+            "maximumStepKL": 5.8801830208121686e-05,
+            "maximumOriginalMeanDistance": 0.04998684674501419,
+            "meanOriginalMeanDistance": 0.04414721950888634,
+            "maximumDeterministicActionChange": 0.0,
+            "maximumLatentStdChange": 0.0006215274333953857,
+            "lossTerms": {
+              "entropy": 0.005977855063974857,
+              "negativeQ": -2.8047711849212646,
+              "meanSourceEpsilonLogProbability": 9.758491516113281,
+              "meanMinimumQ": 2.8047711849212646
+            },
+            "passesThreeLocalGuards": true
+          },
+          {
+            "scale": 0.25,
+            "actorLoss": -2.798548936843872,
+            "lossDecrease": 0.0002448558807373047,
+            "maximumStepKL": 1.4710310113796865e-05,
+            "maximumOriginalMeanDistance": 0.04998684674501419,
+            "meanOriginalMeanDistance": 0.04414721950888634,
+            "maximumDeterministicActionChange": 0.0,
+            "maximumLatentStdChange": 0.00031051039695739746,
+            "lossTerms": {
+              "entropy": 0.005982566624879837,
+              "negativeQ": -2.8045318126678467,
+              "meanSourceEpsilonLogProbability": 9.766182899475098,
+              "meanMinimumQ": 2.8045318126678467
+            },
+            "passesThreeLocalGuards": true
+          },
+          {
+            "scale": 0.125,
+            "actorLoss": -2.798426389694214,
+            "lossDecrease": 0.00012230873107910156,
+            "maximumStepKL": 3.6794599479472723e-06,
+            "maximumOriginalMeanDistance": 0.04998684674501419,
+            "meanOriginalMeanDistance": 0.04414721950888634,
+            "maximumDeterministicActionChange": 0.0,
+            "maximumLatentStdChange": 0.00015525519847869873,
+            "lossTerms": {
+              "entropy": 0.005984922405332327,
+              "negativeQ": -2.8044114112854004,
+              "meanSourceEpsilonLogProbability": 9.770029067993164,
+              "meanMinimumQ": 2.8044114112854004
+            },
+            "passesThreeLocalGuards": true
+          },
+          {
+            "scale": 0.0625,
+            "actorLoss": -2.798365354537964,
+            "lossDecrease": 6.127357482910156e-05,
+            "maximumStepKL": 9.197491337986641e-07,
+            "maximumOriginalMeanDistance": 0.04998684674501419,
+            "meanOriginalMeanDistance": 0.04414721950888634,
+            "maximumDeterministicActionChange": 0.0,
+            "maximumLatentStdChange": 7.769465446472168e-05,
+            "lossTerms": {
+              "entropy": 0.005986100994050503,
+              "negativeQ": -2.804351329803467,
+              "meanSourceEpsilonLogProbability": 9.771952629089355,
+              "meanMinimumQ": 2.804351329803467
+            },
+            "passesThreeLocalGuards": true
+          },
+          {
+            "scale": 0.03125,
+            "actorLoss": -2.798334836959839,
+            "lossDecrease": 3.075599670410156e-05,
+            "maximumStepKL": 2.2996828330512642e-07,
+            "maximumOriginalMeanDistance": 0.04998684674501419,
+            "meanOriginalMeanDistance": 0.04414721950888634,
+            "maximumDeterministicActionChange": 0.0,
+            "maximumLatentStdChange": 3.878772258758545e-05,
+            "lossTerms": {
+              "entropy": 0.005986690055578947,
+              "negativeQ": -2.804321765899658,
+              "meanSourceEpsilonLogProbability": 9.772913932800293,
+              "meanMinimumQ": 2.804321765899658
+            },
+            "passesThreeLocalGuards": true
+          },
+          {
+            "scale": 0.015625,
+            "actorLoss": -2.7983193397521973,
+            "lossDecrease": 1.52587890625e-05,
+            "maximumStepKL": 5.7533585062774506e-08,
+            "maximumOriginalMeanDistance": 0.04998684674501419,
+            "meanOriginalMeanDistance": 0.04414721950888634,
+            "maximumDeterministicActionChange": 0.0,
+            "maximumLatentStdChange": 1.9431114196777344e-05,
+            "lossTerms": {
+              "entropy": 0.0059869843535125256,
+              "negativeQ": -2.8043062686920166,
+              "meanSourceEpsilonLogProbability": 9.773395538330078,
+              "meanMinimumQ": 2.8043062686920166
+            },
+            "passesThreeLocalGuards": true
+          },
+          {
+            "scale": 0.0078125,
+            "actorLoss": -2.798311710357666,
+            "lossDecrease": 7.62939453125e-06,
+            "maximumStepKL": 1.437543473148395e-08,
+            "maximumOriginalMeanDistance": 0.04998684674501419,
+            "meanOriginalMeanDistance": 0.04414721950888634,
+            "maximumDeterministicActionChange": 0.0,
+            "maximumLatentStdChange": 9.775161743164062e-06,
+            "lossTerms": {
+              "entropy": 0.005987131968140602,
+              "negativeQ": -2.8042988777160645,
+              "meanSourceEpsilonLogProbability": 9.77363395690918,
+              "meanMinimumQ": 2.8042988777160645
+            },
+            "passesThreeLocalGuards": true
+          },
+          {
+            "scale": 0.00390625,
+            "actorLoss": -2.7983078956604004,
+            "lossDecrease": 3.814697265625e-06,
+            "maximumStepKL": 3.6214604093309788e-09,
+            "maximumOriginalMeanDistance": 0.04998684674501419,
+            "meanOriginalMeanDistance": 0.04414721950888634,
+            "maximumDeterministicActionChange": 0.0,
+            "maximumLatentStdChange": 4.9173831939697266e-06,
+            "lossTerms": {
+              "entropy": 0.005987205542623997,
+              "negativeQ": -2.804295063018799,
+              "meanSourceEpsilonLogProbability": 9.773755073547363,
+              "meanMinimumQ": 2.804295063018799
+            },
+            "passesThreeLocalGuards": true
+          },
+          {
+            "scale": 0.001953125,
+            "actorLoss": -2.7983059883117676,
+            "lossDecrease": 1.9073486328125e-06,
+            "maximumStepKL": 9.050566407431404e-10,
+            "maximumOriginalMeanDistance": 0.04998684674501419,
+            "meanOriginalMeanDistance": 0.04414721950888634,
+            "maximumDeterministicActionChange": 0.0,
+            "maximumLatentStdChange": 2.4586915969848633e-06,
+            "lossTerms": {
+              "entropy": 0.005987242329865694,
+              "negativeQ": -2.804293394088745,
+              "meanSourceEpsilonLogProbability": 9.773815155029297,
+              "meanMinimumQ": 2.804293394088745
+            },
+            "passesThreeLocalGuards": true
+          },
+          {
+            "scale": 0.0009765625,
+            "actorLoss": -2.798305034637451,
+            "lossDecrease": 9.5367431640625e-07,
+            "maximumStepKL": 2.2919205422411437e-10,
+            "maximumOriginalMeanDistance": 0.04998684674501419,
+            "meanOriginalMeanDistance": 0.04414721950888634,
+            "maximumDeterministicActionChange": 0.0,
+            "maximumLatentStdChange": 1.2814998626708984e-06,
+            "lossTerms": {
+              "entropy": 0.005987260490655899,
+              "negativeQ": -2.8042922019958496,
+              "meanSourceEpsilonLogProbability": 9.773846626281738,
+              "meanMinimumQ": 2.8042922019958496
+            },
+            "passesThreeLocalGuards": false
+          }
+        ],
+        "firstPassingScale": 1.0
+      }
+    }
+  },
+  "criticBehaviourCalibration": {
+    "scope": "realized off-policy behaviour returns, source-epsilon logprob; not a current-policy value certificate and not an unbiased counterfactual policy estimate",
+    "at1024After1000Warmup": {
+      "episodes": 31,
+      "transitions": 1020,
+      "episodeStartsTaskOnly": {
+        "predicted": {
+          "count": 31,
+          "minimum": 1.794971227645874,
+          "q25": 2.4250266551971436,
+          "median": 2.9012115001678467,
+          "q75": 3.1222965717315674,
+          "maximum": 3.542048692703247,
+          "mean": 2.78937872763603,
+          "rms": 2.8279411305567486
+        },
+        "behaviourReturn": {
+          "count": 31,
+          "minimum": 8.50949326934993,
+          "q25": 14.315690385492381,
+          "median": 16.020653437247702,
+          "q75": 16.74321043070175,
+          "maximum": 19.11894859772073,
+          "mean": 15.238310777319617,
+          "rms": 15.450793662300867
+        },
+        "bias": -12.448932049683588,
+        "rmse": 12.754544687460175,
+        "mae": 12.448932049683588,
+        "pearson": -0.4059616447679018
+      },
+      "episodeStartsSourceSoft": {
+        "predicted": {
+          "count": 31,
+          "minimum": 1.794971227645874,
+          "q25": 2.4250266551971436,
+          "median": 2.9012115001678467,
+          "q75": 3.1222965717315674,
+          "maximum": 3.542048692703247,
+          "mean": 2.78937872763603,
+          "rms": 2.8279411305567486
+        },
+        "behaviourReturn": {
+          "count": 31,
+          "minimum": 8.419866370416027,
+          "q25": 14.189309768293327,
+          "median": 15.878090955401104,
+          "q75": 16.612206887960568,
+          "maximum": 18.960841043923914,
+          "mean": 15.112211533347137,
+          "rms": 15.323905061361417
+        },
+        "bias": -12.322832805711109,
+        "rmse": 12.628235747076769,
+        "mae": 12.322832805711109,
+        "pearson": -0.4064617207592422
+      },
+      "allCompleteTransitionsTaskOnly": {
+        "predicted": {
+          "count": 1020,
+          "minimum": -9.483742713928223,
+          "q25": 2.082135021686554,
+          "median": 2.5623722076416016,
+          "q75": 3.0025373697280884,
+          "maximum": 4.667806625366211,
+          "mean": 2.2461877372901085,
+          "rms": 2.9077865310688673
+        },
+        "behaviourReturn": {
+          "count": 1020,
+          "minimum": -9.966825887307236,
+          "q25": -1.1214008896191048,
+          "median": 5.88652228438653,
+          "q75": 11.52271607112661,
+          "maximum": 19.11894859772073,
+          "mean": 5.004369370226677,
+          "rms": 9.11982946118463
+        },
+        "bias": -2.7581816329365703,
+        "rmse": 7.654241997039916,
+        "mae": 6.5357284388401755,
+        "pearson": 0.3749514286446788
+      },
+      "allCompleteTransitionsSourceSoft": {
+        "predicted": {
+          "count": 1020,
+          "minimum": -9.483742713928223,
+          "q25": 2.082135021686554,
+          "median": 2.5623722076416016,
+          "q75": 3.0025373697280884,
+          "maximum": 4.667806625366211,
+          "mean": 2.2461877372901085,
+          "rms": 2.9077865310688673
+        },
+        "behaviourReturn": {
+          "count": 1020,
+          "minimum": -9.966825887307236,
+          "q25": -1.168035568511569,
+          "median": 5.811319390352375,
+          "q75": 11.415056808394032,
+          "maximum": 18.960841043923914,
+          "mean": 4.930266087216218,
+          "rms": 9.046787066425603
+        },
+        "bias": -2.6840783499261094,
+        "rmse": 7.592598655917762,
+        "mae": 6.485571122549625,
+        "pearson": 0.37493777733887407
+      },
+      "episodeStartRows": [
+        {
+          "episode": 0,
+          "replayIndex": 0,
+          "qMinimum": 2.065213203430176,
+          "taskOnly": 16.783287004092408,
+          "sourceSoft": 16.65346410344881
+        },
+        {
+          "episode": 1,
+          "replayIndex": 36,
+          "qMinimum": 2.9012115001678467,
+          "taskOnly": 15.846852055055404,
+          "sourceSoft": 15.727237408082047
+        },
+        {
+          "episode": 2,
+          "replayIndex": 70,
+          "qMinimum": 2.487562894821167,
+          "taskOnly": 15.896818723409456,
+          "sourceSoft": 15.76393737898072
+        },
+        {
+          "episode": 3,
+          "replayIndex": 104,
+          "qMinimum": 2.4850096702575684,
+          "taskOnly": 16.300434316752682,
+          "sourceSoft": 16.173462514048957
+        },
+        {
+          "episode": 4,
+          "replayIndex": 139,
+          "qMinimum": 1.794971227645874,
+          "taskOnly": 17.459477976900395,
+          "sourceSoft": 17.31992301733727
+        },
+        {
+          "episode": 5,
+          "replayIndex": 176,
+          "qMinimum": 2.6465275287628174,
+          "taskOnly": 19.11894859772073,
+          "sourceSoft": 18.960841043923914
+        },
+        {
+          "episode": 6,
+          "replayIndex": 217,
+          "qMinimum": 2.8326377868652344,
+          "taskOnly": 16.994400406311765,
+          "sourceSoft": 16.863334995593092
+        },
+        {
+          "episode": 7,
+          "replayIndex": 254,
+          "qMinimum": 3.2488083839416504,
+          "taskOnly": 16.672515578312122,
+          "sourceSoft": 16.53171379566568
+        },
+        {
+          "episode": 8,
+          "replayIndex": 290,
+          "qMinimum": 3.0869719982147217,
+          "taskOnly": 14.46803809012614,
+          "sourceSoft": 14.340377294980312
+        },
+        {
+          "episode": 9,
+          "replayIndex": 321,
+          "qMinimum": 3.0977015495300293,
+          "taskOnly": 14.648299571299797,
+          "sourceSoft": 14.522516035632878
+        },
+        {
+          "episode": 10,
+          "replayIndex": 352,
+          "qMinimum": 2.9976468086242676,
+          "taskOnly": 14.488177080245318,
+          "sourceSoft": 14.366918028573952
+        },
+        {
+          "episode": 11,
+          "replayIndex": 383,
+          "qMinimum": 2.9217000007629395,
+          "taskOnly": 16.27346285870597,
+          "sourceSoft": 16.144563886023064
+        },
+        {
+          "episode": 12,
+          "replayIndex": 418,
+          "qMinimum": 2.966860294342041,
+          "taskOnly": 18.70565131510288,
+          "sourceSoft": 18.549785811670446
+        },
+        {
+          "episode": 13,
+          "replayIndex": 458,
+          "qMinimum": 3.283226728439331,
+          "taskOnly": 10.182274213045229,
+          "sourceSoft": 10.08153368623969
+        },
+        {
+          "episode": 14,
+          "replayIndex": 481,
+          "qMinimum": 3.346163272857666,
+          "taskOnly": 8.50949326934993,
+          "sourceSoft": 8.419866370416027
+        },
+        {
+          "episode": 15,
+          "replayIndex": 502,
+          "qMinimum": 2.0783286094665527,
+          "taskOnly": 13.925547827800852,
+          "sourceSoft": 13.801106298203456
+        },
+        {
+          "episode": 16,
+          "replayIndex": 532,
+          "qMinimum": 2.1740198135375977,
+          "taskOnly": 16.436973186684895,
+          "sourceSoft": 16.31031782782336
+        },
+        {
+          "episode": 17,
+          "replayIndex": 567,
+          "qMinimum": 3.117630958557129,
+          "taskOnly": 15.800172706335628,
+          "sourceSoft": 15.680875668299413
+        },
+        {
+          "episode": 18,
+          "replayIndex": 601,
+          "qMinimum": 2.725182056427002,
+          "taskOnly": 17.30989079284321,
+          "sourceSoft": 17.16774196401364
+        },
+        {
+          "episode": 19,
+          "replayIndex": 638,
+          "qMinimum": 2.3650436401367188,
+          "taskOnly": 15.84950860703521,
+          "sourceSoft": 15.72994450599074
+        },
+        {
+          "episode": 20,
+          "replayIndex": 672,
+          "qMinimum": 2.232881546020508,
+          "taskOnly": 13.188220986260234,
+          "sourceSoft": 13.08682512206283
+        },
+        {
+          "episode": 21,
+          "replayIndex": 701,
+          "qMinimum": 2.6479954719543457,
+          "taskOnly": 16.477279386866506,
+          "sourceSoft": 16.338146504602484
+        },
+        {
+          "episode": 22,
+          "replayIndex": 736,
+          "qMinimum": 3.447810173034668,
+          "taskOnly": 16.70313385731109,
+          "sourceSoft": 16.570949672472327
+        },
+        {
+          "episode": 23,
+          "replayIndex": 771,
+          "qMinimum": 2.142242431640625,
+          "taskOnly": 16.128319888894524,
+          "sourceSoft": 15.989840879335809
+        },
+        {
+          "episode": 24,
+          "replayIndex": 806,
+          "qMinimum": 3.034646511077881,
+          "taskOnly": 17.709405479344973,
+          "sourceSoft": 17.572863327016506
+        },
+        {
+          "episode": 25,
+          "replayIndex": 844,
+          "qMinimum": 3.542048692703247,
+          "taskOnly": 13.815541766046739,
+          "sourceSoft": 13.697919513140466
+        },
+        {
+          "episode": 26,
+          "replayIndex": 874,
+          "qMinimum": 2.2246835231781006,
+          "taskOnly": 16.81094201524207,
+          "sourceSoft": 16.68055582611871
+        },
+        {
+          "episode": 27,
+          "replayIndex": 910,
+          "qMinimum": 2.8517565727233887,
+          "taskOnly": 14.163342680858623,
+          "sourceSoft": 14.038242241606344
+        },
+        {
+          "episode": 28,
+          "replayIndex": 940,
+          "qMinimum": 3.330902338027954,
+          "taskOnly": 9.91055214709886,
+          "sourceSoft": 9.815834532883368
+        },
+        {
+          "episode": 29,
+          "replayIndex": 963,
+          "qMinimum": 3.2663931846618652,
+          "taskOnly": 9.790018274606803,
+          "sourceSoft": 9.699827324173857
+        },
+        {
+          "episode": 30,
+          "replayIndex": 986,
+          "qMinimum": 3.126962184906006,
+          "taskOnly": 16.020653437247702,
+          "sourceSoft": 15.878090955401104
+        }
+      ]
+    },
+    "finalCriticSameFirst31Episodes": {
+      "episodes": 31,
+      "transitions": 1020,
+      "episodeStartsTaskOnly": {
+        "predicted": {
+          "count": 31,
+          "minimum": 2.3488383293151855,
+          "q25": 2.861223816871643,
+          "median": 3.1570045948028564,
+          "q75": 3.3657968044281006,
+          "maximum": 3.5524985790252686,
+          "mean": 3.0820193829074984,
+          "rms": 3.102068399279775
+        },
+        "behaviourReturn": {
+          "count": 31,
+          "minimum": 8.50949326934993,
+          "q25": 14.315690385492381,
+          "median": 16.020653437247702,
+          "q75": 16.74321043070175,
+          "maximum": 19.11894859772073,
+          "mean": 15.238310777319617,
+          "rms": 15.450793662300867
+        },
+        "bias": -12.156291394412118,
+        "rmse": 12.445659954753184,
+        "mae": 12.156291394412118,
+        "pearson": -0.26365458813932247
+      },
+      "episodeStartsSourceSoft": {
+        "predicted": {
+          "count": 31,
+          "minimum": 2.3488383293151855,
+          "q25": 2.861223816871643,
+          "median": 3.1570045948028564,
+          "q75": 3.3657968044281006,
+          "maximum": 3.5524985790252686,
+          "mean": 3.0820193829074984,
+          "rms": 3.102068399279775
+        },
+        "behaviourReturn": {
+          "count": 31,
+          "minimum": 8.419866370416027,
+          "q25": 14.189309768293327,
+          "median": 15.878090955401104,
+          "q75": 16.612206887960568,
+          "maximum": 18.960841043923914,
+          "mean": 15.112211533347137,
+          "rms": 15.323905061361417
+        },
+        "bias": -12.030192150439639,
+        "rmse": 12.319286385652509,
+        "mae": 12.030192150439639,
+        "pearson": -0.26414653212463807
+      },
+      "allCompleteTransitionsTaskOnly": {
+        "predicted": {
+          "count": 1020,
+          "minimum": -9.815633773803711,
+          "q25": 2.595904529094696,
+          "median": 3.047206163406372,
+          "q75": 3.416421890258789,
+          "maximum": 5.93458890914917,
+          "mean": 2.727999688246671,
+          "rms": 3.282216804521973
+        },
+        "behaviourReturn": {
+          "count": 1020,
+          "minimum": -9.966825887307236,
+          "q25": -1.1214008896191048,
+          "median": 5.88652228438653,
+          "q75": 11.52271607112661,
+          "maximum": 19.11894859772073,
+          "mean": 5.004369370226677,
+          "rms": 9.11982946118463
+        },
+        "bias": -2.2763696819800074,
+        "rmse": 7.494636305929115,
+        "mae": 6.420714365767972,
+        "pearson": 0.37624856838814186
+      },
+      "allCompleteTransitionsSourceSoft": {
+        "predicted": {
+          "count": 1020,
+          "minimum": -9.815633773803711,
+          "q25": 2.595904529094696,
+          "median": 3.047206163406372,
+          "q75": 3.416421890258789,
+          "maximum": 5.93458890914917,
+          "mean": 2.727999688246671,
+          "rms": 3.282216804521973
+        },
+        "behaviourReturn": {
+          "count": 1020,
+          "minimum": -9.966825887307236,
+          "q25": -1.168035568511569,
+          "median": 5.811319390352375,
+          "q75": 11.415056808394032,
+          "maximum": 18.960841043923914,
+          "mean": 4.930266087216218,
+          "rms": 9.046787066425603
+        },
+        "bias": -2.202266398969547,
+        "rmse": 7.436446814194513,
+        "mae": 6.372692708455489,
+        "pearson": 0.37623228778478907
+      },
+      "episodeStartRows": [
+        {
+          "episode": 0,
+          "replayIndex": 0,
+          "qMinimum": 2.4256904125213623,
+          "taskOnly": 16.783287004092408,
+          "sourceSoft": 16.65346410344881
+        },
+        {
+          "episode": 1,
+          "replayIndex": 36,
+          "qMinimum": 3.0949432849884033,
+          "taskOnly": 15.846852055055404,
+          "sourceSoft": 15.727237408082047
+        },
+        {
+          "episode": 2,
+          "replayIndex": 70,
+          "qMinimum": 2.7790544033050537,
+          "taskOnly": 15.896818723409456,
+          "sourceSoft": 15.76393737898072
+        },
+        {
+          "episode": 3,
+          "replayIndex": 104,
+          "qMinimum": 2.8937222957611084,
+          "taskOnly": 16.300434316752682,
+          "sourceSoft": 16.173462514048957
+        },
+        {
+          "episode": 4,
+          "replayIndex": 139,
+          "qMinimum": 2.3488383293151855,
+          "taskOnly": 17.459477976900395,
+          "sourceSoft": 17.31992301733727
+        },
+        {
+          "episode": 5,
+          "replayIndex": 176,
+          "qMinimum": 3.002190113067627,
+          "taskOnly": 19.11894859772073,
+          "sourceSoft": 18.960841043923914
+        },
+        {
+          "episode": 6,
+          "replayIndex": 217,
+          "qMinimum": 3.324230194091797,
+          "taskOnly": 16.994400406311765,
+          "sourceSoft": 16.863334995593092
+        },
+        {
+          "episode": 7,
+          "replayIndex": 254,
+          "qMinimum": 3.503579616546631,
+          "taskOnly": 16.672515578312122,
+          "sourceSoft": 16.53171379566568
+        },
+        {
+          "episode": 8,
+          "replayIndex": 290,
+          "qMinimum": 3.162937879562378,
+          "taskOnly": 14.46803809012614,
+          "sourceSoft": 14.340377294980312
+        },
+        {
+          "episode": 9,
+          "replayIndex": 321,
+          "qMinimum": 3.404055118560791,
+          "taskOnly": 14.648299571299797,
+          "sourceSoft": 14.522516035632878
+        },
+        {
+          "episode": 10,
+          "replayIndex": 352,
+          "qMinimum": 3.021017074584961,
+          "taskOnly": 14.488177080245318,
+          "sourceSoft": 14.366918028573952
+        },
+        {
+          "episode": 11,
+          "replayIndex": 383,
+          "qMinimum": 3.2632434368133545,
+          "taskOnly": 16.27346285870597,
+          "sourceSoft": 16.144563886023064
+        },
+        {
+          "episode": 12,
+          "replayIndex": 418,
+          "qMinimum": 3.2127723693847656,
+          "taskOnly": 18.70565131510288,
+          "sourceSoft": 18.549785811670446
+        },
+        {
+          "episode": 13,
+          "replayIndex": 458,
+          "qMinimum": 3.4092366695404053,
+          "taskOnly": 10.182274213045229,
+          "sourceSoft": 10.08153368623969
+        },
+        {
+          "episode": 14,
+          "replayIndex": 481,
+          "qMinimum": 3.51607084274292,
+          "taskOnly": 8.50949326934993,
+          "sourceSoft": 8.419866370416027
+        },
+        {
+          "episode": 15,
+          "replayIndex": 502,
+          "qMinimum": 2.459737539291382,
+          "taskOnly": 13.925547827800852,
+          "sourceSoft": 13.801106298203456
+        },
+        {
+          "episode": 16,
+          "replayIndex": 532,
+          "qMinimum": 2.492868423461914,
+          "taskOnly": 16.436973186684895,
+          "sourceSoft": 16.31031782782336
+        },
+        {
+          "episode": 17,
+          "replayIndex": 567,
+          "qMinimum": 3.3887476921081543,
+          "taskOnly": 15.800172706335628,
+          "sourceSoft": 15.680875668299413
+        },
+        {
+          "episode": 18,
+          "replayIndex": 601,
+          "qMinimum": 3.128612518310547,
+          "taskOnly": 17.30989079284321,
+          "sourceSoft": 17.16774196401364
+        },
+        {
+          "episode": 19,
+          "replayIndex": 638,
+          "qMinimum": 2.8287253379821777,
+          "taskOnly": 15.84950860703521,
+          "sourceSoft": 15.72994450599074
+        },
+        {
+          "episode": 20,
+          "replayIndex": 672,
+          "qMinimum": 2.4947710037231445,
+          "taskOnly": 13.188220986260234,
+          "sourceSoft": 13.08682512206283
+        },
+        {
+          "episode": 21,
+          "replayIndex": 701,
+          "qMinimum": 3.1570045948028564,
+          "taskOnly": 16.477279386866506,
+          "sourceSoft": 16.338146504602484
+        },
+        {
+          "episode": 22,
+          "replayIndex": 736,
+          "qMinimum": 3.5524985790252686,
+          "taskOnly": 16.70313385731109,
+          "sourceSoft": 16.570949672472327
+        },
+        {
+          "episode": 23,
+          "replayIndex": 771,
+          "qMinimum": 2.7303285598754883,
+          "taskOnly": 16.128319888894524,
+          "sourceSoft": 15.989840879335809
+        },
+        {
+          "episode": 24,
+          "replayIndex": 806,
+          "qMinimum": 3.342845916748047,
+          "taskOnly": 17.709405479344973,
+          "sourceSoft": 17.572863327016506
+        },
+        {
+          "episode": 25,
+          "replayIndex": 844,
+          "qMinimum": 3.4894416332244873,
+          "taskOnly": 13.815541766046739,
+          "sourceSoft": 13.697919513140466
+        },
+        {
+          "episode": 26,
+          "replayIndex": 874,
+          "qMinimum": 3.0751750469207764,
+          "taskOnly": 16.81094201524207,
+          "sourceSoft": 16.68055582611871
+        },
+        {
+          "episode": 27,
+          "replayIndex": 910,
+          "qMinimum": 3.1137664318084717,
+          "taskOnly": 14.163342680858623,
+          "sourceSoft": 14.038242241606344
+        },
+        {
+          "episode": 28,
+          "replayIndex": 940,
+          "qMinimum": 3.518031358718872,
+          "taskOnly": 9.91055214709886,
+          "sourceSoft": 9.815834532883368
+        },
+        {
+          "episode": 29,
+          "replayIndex": 963,
+          "qMinimum": 3.19122052192688,
+          "taskOnly": 9.790018274606803,
+          "sourceSoft": 9.699827324173857
+        },
+        {
+          "episode": 30,
+          "replayIndex": 986,
+          "qMinimum": 3.2172436714172363,
+          "taskOnly": 16.020653437247702,
+          "sourceSoft": 15.878090955401104
+        }
+      ]
+    },
+    "finalCriticAll48CompleteEpisodes": {
+      "episodes": 48,
+      "transitions": 1573,
+      "episodeStartsTaskOnly": {
+        "predicted": {
+          "count": 48,
+          "minimum": 1.6238588094711304,
+          "q25": 2.952051818370819,
+          "median": 3.1250407695770264,
+          "q75": 3.3533202409744263,
+          "maximum": 3.5524985790252686,
+          "mean": 3.0716581071416535,
+          "rms": 3.0958465197355163
+        },
+        "behaviourReturn": {
+          "count": 48,
+          "minimum": 8.353286027325726,
+          "q25": 14.053597695400468,
+          "median": 15.926624604506344,
+          "q75": 16.72317214400642,
+          "maximum": 19.11894859772073,
+          "mean": 15.173803932461,
+          "rms": 15.37174511139575
+        },
+        "bias": -12.102145825319345,
+        "rmse": 12.372084483694385,
+        "mae": 12.102145825319345,
+        "pearson": -0.21644912873419295
+      },
+      "episodeStartsSourceSoft": {
+        "predicted": {
+          "count": 48,
+          "minimum": 1.6238588094711304,
+          "q25": 2.952051818370819,
+          "median": 3.1250407695770264,
+          "q75": 3.3533202409744263,
+          "maximum": 3.5524985790252686,
+          "mean": 3.0716581071416535,
+          "rms": 3.0958465197355163
+        },
+        "behaviourReturn": {
+          "count": 48,
+          "minimum": 8.26628567941917,
+          "q25": 13.941979807276745,
+          "median": 15.793802889830745,
+          "q75": 16.591578280216446,
+          "maximum": 18.960841043923914,
+          "mean": 15.049370355689382,
+          "rms": 15.24663425628879
+        },
+        "bias": -11.977712248547727,
+        "rmse": 12.247468423987335,
+        "mae": 11.977712248547727,
+        "pearson": -0.21679284437304475
+      },
+      "allCompleteTransitionsTaskOnly": {
+        "predicted": {
+          "count": 1573,
+          "minimum": -9.815633773803711,
+          "q25": 2.495466470718384,
+          "median": 3.002190351486206,
+          "q75": 3.39542555809021,
+          "maximum": 5.93458890914917,
+          "mean": 2.755678629598569,
+          "rms": 3.17152262775826
+        },
+        "behaviourReturn": {
+          "count": 1573,
+          "minimum": -9.966825887307236,
+          "q25": -1.1480821698109431,
+          "median": 5.792362995561477,
+          "q75": 11.454706689630518,
+          "maximum": 19.11894859772073,
+          "mean": 4.944044675767974,
+          "rms": 9.052867929535799
+        },
+        "bias": -2.1883660461694046,
+        "rmse": 7.580194012399305,
+        "mae": 6.5165918802401945,
+        "pearson": 0.30678867856549324
+      },
+      "allCompleteTransitionsSourceSoft": {
+        "predicted": {
+          "count": 1573,
+          "minimum": -9.815633773803711,
+          "q25": 2.495466470718384,
+          "median": 3.002190351486206,
+          "q75": 3.39542555809021,
+          "maximum": 5.93458890914917,
+          "mean": 2.755678629598569,
+          "rms": 3.17152262775826
+        },
+        "behaviourReturn": {
+          "count": 1573,
+          "minimum": -9.966825887307236,
+          "q25": -1.1811884506359949,
+          "median": 5.709069941846973,
+          "q75": 11.349050573923272,
+          "maximum": 18.960841043923914,
+          "mean": 4.870769605878102,
+          "rms": 8.980694009686104
+        },
+        "bias": -2.1150909762795322,
+        "rmse": 7.523259420476683,
+        "mae": 6.469094039718669,
+        "pearson": 0.30675840500940266
+      },
+      "episodeStartRows": [
+        {
+          "episode": 0,
+          "replayIndex": 0,
+          "qMinimum": 2.4256904125213623,
+          "taskOnly": 16.783287004092408,
+          "sourceSoft": 16.65346410344881
+        },
+        {
+          "episode": 1,
+          "replayIndex": 36,
+          "qMinimum": 3.0949432849884033,
+          "taskOnly": 15.846852055055404,
+          "sourceSoft": 15.727237408082047
+        },
+        {
+          "episode": 2,
+          "replayIndex": 70,
+          "qMinimum": 2.7790544033050537,
+          "taskOnly": 15.896818723409456,
+          "sourceSoft": 15.76393737898072
+        },
+        {
+          "episode": 3,
+          "replayIndex": 104,
+          "qMinimum": 2.8937222957611084,
+          "taskOnly": 16.300434316752682,
+          "sourceSoft": 16.173462514048957
+        },
+        {
+          "episode": 4,
+          "replayIndex": 139,
+          "qMinimum": 2.3488383293151855,
+          "taskOnly": 17.459477976900395,
+          "sourceSoft": 17.31992301733727
+        },
+        {
+          "episode": 5,
+          "replayIndex": 176,
+          "qMinimum": 3.002190113067627,
+          "taskOnly": 19.11894859772073,
+          "sourceSoft": 18.960841043923914
+        },
+        {
+          "episode": 6,
+          "replayIndex": 217,
+          "qMinimum": 3.324230194091797,
+          "taskOnly": 16.994400406311765,
+          "sourceSoft": 16.863334995593092
+        },
+        {
+          "episode": 7,
+          "replayIndex": 254,
+          "qMinimum": 3.503579616546631,
+          "taskOnly": 16.672515578312122,
+          "sourceSoft": 16.53171379566568
+        },
+        {
+          "episode": 8,
+          "replayIndex": 290,
+          "qMinimum": 3.162937879562378,
+          "taskOnly": 14.46803809012614,
+          "sourceSoft": 14.340377294980312
+        },
+        {
+          "episode": 9,
+          "replayIndex": 321,
+          "qMinimum": 3.404055118560791,
+          "taskOnly": 14.648299571299797,
+          "sourceSoft": 14.522516035632878
+        },
+        {
+          "episode": 10,
+          "replayIndex": 352,
+          "qMinimum": 3.021017074584961,
+          "taskOnly": 14.488177080245318,
+          "sourceSoft": 14.366918028573952
+        },
+        {
+          "episode": 11,
+          "replayIndex": 383,
+          "qMinimum": 3.2632434368133545,
+          "taskOnly": 16.27346285870597,
+          "sourceSoft": 16.144563886023064
+        },
+        {
+          "episode": 12,
+          "replayIndex": 418,
+          "qMinimum": 3.2127723693847656,
+          "taskOnly": 18.70565131510288,
+          "sourceSoft": 18.549785811670446
+        },
+        {
+          "episode": 13,
+          "replayIndex": 458,
+          "qMinimum": 3.4092366695404053,
+          "taskOnly": 10.182274213045229,
+          "sourceSoft": 10.08153368623969
+        },
+        {
+          "episode": 14,
+          "replayIndex": 481,
+          "qMinimum": 3.51607084274292,
+          "taskOnly": 8.50949326934993,
+          "sourceSoft": 8.419866370416027
+        },
+        {
+          "episode": 15,
+          "replayIndex": 502,
+          "qMinimum": 2.459737539291382,
+          "taskOnly": 13.925547827800852,
+          "sourceSoft": 13.801106298203456
+        },
+        {
+          "episode": 16,
+          "replayIndex": 532,
+          "qMinimum": 2.492868423461914,
+          "taskOnly": 16.436973186684895,
+          "sourceSoft": 16.31031782782336
+        },
+        {
+          "episode": 17,
+          "replayIndex": 567,
+          "qMinimum": 3.3887476921081543,
+          "taskOnly": 15.800172706335628,
+          "sourceSoft": 15.680875668299413
+        },
+        {
+          "episode": 18,
+          "replayIndex": 601,
+          "qMinimum": 3.128612518310547,
+          "taskOnly": 17.30989079284321,
+          "sourceSoft": 17.16774196401364
+        },
+        {
+          "episode": 19,
+          "replayIndex": 638,
+          "qMinimum": 2.8287253379821777,
+          "taskOnly": 15.84950860703521,
+          "sourceSoft": 15.72994450599074
+        },
+        {
+          "episode": 20,
+          "replayIndex": 672,
+          "qMinimum": 2.4947710037231445,
+          "taskOnly": 13.188220986260234,
+          "sourceSoft": 13.08682512206283
+        },
+        {
+          "episode": 21,
+          "replayIndex": 701,
+          "qMinimum": 3.1570045948028564,
+          "taskOnly": 16.477279386866506,
+          "sourceSoft": 16.338146504602484
+        },
+        {
+          "episode": 22,
+          "replayIndex": 736,
+          "qMinimum": 3.5524985790252686,
+          "taskOnly": 16.70313385731109,
+          "sourceSoft": 16.570949672472327
+        },
+        {
+          "episode": 23,
+          "replayIndex": 771,
+          "qMinimum": 2.7303285598754883,
+          "taskOnly": 16.128319888894524,
+          "sourceSoft": 15.989840879335809
+        },
+        {
+          "episode": 24,
+          "replayIndex": 806,
+          "qMinimum": 3.342845916748047,
+          "taskOnly": 17.709405479344973,
+          "sourceSoft": 17.572863327016506
+        },
+        {
+          "episode": 25,
+          "replayIndex": 844,
+          "qMinimum": 3.4894416332244873,
+          "taskOnly": 13.815541766046739,
+          "sourceSoft": 13.697919513140466
+        },
+        {
+          "episode": 26,
+          "replayIndex": 874,
+          "qMinimum": 3.0751750469207764,
+          "taskOnly": 16.81094201524207,
+          "sourceSoft": 16.68055582611871
+        },
+        {
+          "episode": 27,
+          "replayIndex": 910,
+          "qMinimum": 3.1137664318084717,
+          "taskOnly": 14.163342680858623,
+          "sourceSoft": 14.038242241606344
+        },
+        {
+          "episode": 28,
+          "replayIndex": 940,
+          "qMinimum": 3.518031358718872,
+          "taskOnly": 9.91055214709886,
+          "sourceSoft": 9.815834532883368
+        },
+        {
+          "episode": 29,
+          "replayIndex": 963,
+          "qMinimum": 3.19122052192688,
+          "taskOnly": 9.790018274606803,
+          "sourceSoft": 9.699827324173857
+        },
+        {
+          "episode": 30,
+          "replayIndex": 986,
+          "qMinimum": 3.2172436714172363,
+          "taskOnly": 16.020653437247702,
+          "sourceSoft": 15.878090955401104
+        },
+        {
+          "episode": 31,
+          "replayIndex": 1020,
+          "qMinimum": 3.292156219482422,
+          "taskOnly": 15.328737117238346,
+          "sourceSoft": 15.200814517322202
+        },
+        {
+          "episode": 32,
+          "replayIndex": 1052,
+          "qMinimum": 2.3760006427764893,
+          "taskOnly": 13.71851264981805,
+          "sourceSoft": 13.604870430212667
+        },
+        {
+          "episode": 33,
+          "replayIndex": 1082,
+          "qMinimum": 3.121469020843506,
+          "taskOnly": 15.95643048560323,
+          "sourceSoft": 15.823668400680772
+        },
+        {
+          "episode": 34,
+          "replayIndex": 1116,
+          "qMinimum": 3.5206966400146484,
+          "taskOnly": 17.379085059326655,
+          "sourceSoft": 17.249112160318454
+        },
+        {
+          "episode": 35,
+          "replayIndex": 1153,
+          "qMinimum": 3.0647993087768555,
+          "taskOnly": 16.562733092166695,
+          "sourceSoft": 16.43493027056072
+        },
+        {
+          "episode": 36,
+          "replayIndex": 1189,
+          "qMinimum": 2.959946870803833,
+          "taskOnly": 17.777470665140406,
+          "sourceSoft": 17.64480868469917
+        },
+        {
+          "episode": 37,
+          "replayIndex": 1227,
+          "qMinimum": 3.2830703258514404,
+          "taskOnly": 16.534383497653497,
+          "sourceSoft": 16.408143833979533
+        },
+        {
+          "episode": 38,
+          "replayIndex": 1262,
+          "qMinimum": 3.410137891769409,
+          "taskOnly": 16.135994157621937,
+          "sourceSoft": 16.01473565921148
+        },
+        {
+          "episode": 39,
+          "replayIndex": 1297,
+          "qMinimum": 3.4010112285614014,
+          "taskOnly": 8.353286027325726,
+          "sourceSoft": 8.26628567941917
+        },
+        {
+          "episode": 40,
+          "replayIndex": 1318,
+          "qMinimum": 3.0235676765441895,
+          "taskOnly": 14.065882339019774,
+          "sourceSoft": 13.95542656310069
+        },
+        {
+          "episode": 41,
+          "replayIndex": 1349,
+          "qMinimum": 3.3707942962646484,
+          "taskOnly": 16.955200912374146,
+          "sourceSoft": 16.81441950815419
+        },
+        {
+          "episode": 42,
+          "replayIndex": 1385,
+          "qMinimum": 2.969928026199341,
+          "taskOnly": 15.343671519389483,
+          "sourceSoft": 15.223802908591104
+        },
+        {
+          "episode": 43,
+          "replayIndex": 1418,
+          "qMinimum": 3.1127209663391113,
+          "taskOnly": 13.362312448765003,
+          "sourceSoft": 13.257611808586166
+        },
+        {
+          "episode": 44,
+          "replayIndex": 1447,
+          "qMinimum": 3.3474955558776855,
+          "taskOnly": 14.799088846699455,
+          "sourceSoft": 14.671388301413382
+        },
+        {
+          "episode": 45,
+          "replayIndex": 1479,
+          "qMinimum": 1.6238588094711304,
+          "taskOnly": 17.37200770461559,
+          "sourceSoft": 17.236360185324468
+        },
+        {
+          "episode": 46,
+          "replayIndex": 1516,
+          "qMinimum": 3.090968132019043,
+          "taskOnly": 12.293414373919285,
+          "sourceSoft": 12.183201087950012
+        },
+        {
+          "episode": 47,
+          "replayIndex": 1543,
+          "qMinimum": 2.9283666610717773,
+          "taskOnly": 14.01674376454255,
+          "sourceSoft": 13.901639539804904
+        }
+      ]
+    }
+  },
+  "limitations": [
+    "The three local proposal guards are finite-sample checks; successful offline loss decrease does not establish better standing or safe exploration.",
+    "One saved-delta std-only substitution is neither an optimized std-only direction nor a tested alternate policy.",
+    "Final critic is held fixed for the local substitution, with no Bellman/optimizer rerun.",
+    "Critic versus realized behaviour returns mixes stochastic trajectories and policy versions; bias/RMSE are report-only diagnostics.",
+    "Recorded gradient trends are different random minibatches/noises/critics, not a controlled time-series comparison.",
+    "The original-scaled mean bound is enforced on its2560-state witness only. The independent historical201 action-drift guard uses different units/thresholds; its max mean-distance.05068583 is not a configured bound failure.",
+    "The candidate failed physical validation and remains rejected; no new physical or optimizer experiment is authorized by this report."
+  ],
+  "fullLocalAuditSHA256": "a5b410f9cf681ef5f8c2e5d377f5ead1a0d38f157d1b7432530266a8e3e58c9a"
+}

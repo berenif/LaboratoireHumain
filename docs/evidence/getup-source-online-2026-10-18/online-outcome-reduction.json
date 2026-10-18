@@ -1,0 +1,105 @@
+{
+  "schema": 1,
+  "kind": "saved-journal algebraic reduction; zero engine/optimizer",
+  "newActualTransitions": 1580,
+  "trainingTerminalCounts": {
+    "loaded_slip": 42,
+    "fixed_anchor_drift": 6
+  },
+  "partialTerminalCounts": {
+    "loaded_slip": 41,
+    "fixed_anchor_drift": 6
+  },
+  "behaviourPolicyVersions": {
+    "0": 1028,
+    "1": 4,
+    "2": 4,
+    "3": 4,
+    "4": 4,
+    "5": 4,
+    "6": 4,
+    "7": 4,
+    "8": 4,
+    "9": 4,
+    "10": 4,
+    "11": 512
+  },
+  "terminalProofCount": 48,
+  "proposalAttempts": 139,
+  "acceptedProposals": 11,
+  "lastAcceptedAttempt": 11,
+  "finalConsecutiveRejections": 128,
+  "acceptedScales": [
+    1.0,
+    1.0,
+    1.0,
+    1.0,
+    1.0,
+    1.0,
+    0.0625,
+    0.015625,
+    0.0078125,
+    0.00390625,
+    0.0009765625
+  ],
+  "candidateOptimizerCalls": 1278,
+  "branches": [
+    {
+      "branch": "training",
+      "actualNativeSamples": 31110,
+      "torqueEquationMaximumErrorNm": 0.0,
+      "controlEquationMaximumError": 0.0,
+      "warningSamples": 0,
+      "bothFeetUnloadedSamples": 0,
+      "nonfootSupportSamples": 0
+    },
+    {
+      "branch": "frozen",
+      "actualNativeSamples": 2292,
+      "torqueEquationMaximumErrorNm": 0.0,
+      "controlEquationMaximumError": 0.0,
+      "warningSamples": 0,
+      "bothFeetUnloadedSamples": 0,
+      "nonfootSupportSamples": 0,
+      "elapsedSeconds": 2.865,
+      "loadedSlipM": [
+        0.01000163525102614,
+        0.009685628069879897
+      ],
+      "firstLoadedSlipCrossingSample": 2292
+    },
+    {
+      "branch": "candidate",
+      "actualNativeSamples": 2252,
+      "torqueEquationMaximumErrorNm": 0.0,
+      "controlEquationMaximumError": 0.0,
+      "warningSamples": 0,
+      "bothFeetUnloadedSamples": 0,
+      "nonfootSupportSamples": 0,
+      "elapsedSeconds": 2.815,
+      "loadedSlipM": [
+        0.010002413480451272,
+        0.009281825488058362
+      ],
+      "firstLoadedSlipCrossingSample": 2252
+    }
+  ],
+  "allGlobalSamples": 35654,
+  "candidateMinusFrozenFailureTimeS": -0.050000000000000266,
+  "quietQualified": false,
+  "forwardStepQualified": false,
+  "selectedPolicy": "immutable-source-SLOW-baseline",
+  "allInputSHA256": {
+    "/workspace/scratch/5def91918e35/mvp-landing/outputs/getup-source-online/session-20261018T030112Z/runtime-admission.json": "fdc1abd826a244f57f964858d2bc5820ad57991ef504dc9180f8d446ec103cd6",
+    "/workspace/scratch/5def91918e35/mvp-landing/outputs/getup-source-online/session-20261018T030112Z/fresh-candidate-window.json": "9656de13249a3575fbd4ff205711f950cfcbccd9578e507d29c6019eff86c3bd",
+    "/workspace/scratch/5def91918e35/mvp-landing/outputs/getup-source-online/session-20261018T030112Z/ledger.json": "377a141e326bb87eae4a268895e068db0ede7603f24eb1d045b1255ae28c61e1",
+    "/workspace/scratch/5def91918e35/mvp-landing/outputs/getup-source-online/session-20261018T030112Z/learner/summary.json": "68a60121416e30beb46added627cf20f3ec749811d683aa1fb6e4b92834f6fa9",
+    "/workspace/scratch/5def91918e35/mvp-landing/outputs/getup-source-online/session-20261018T030112Z/learner/transitions.ndjson": "109bb7dd8aea4a1b4e3d0ec66333d60851408886e1acd474e80573501f00c73c",
+    "/workspace/scratch/5def91918e35/mvp-landing/outputs/getup-source-online/session-20261018T030112Z/learner/updates.ndjson": "66e1daa5267b29a76197e557fb6163f444bb6cb73449d9b9355ec445d6ee26c2",
+    "/workspace/scratch/5def91918e35/mvp-landing/outputs/getup-source-online/session-20261018T030112Z/learner/terminal-proofs.ndjson": "01e2a9cfb25c536d2904ccee0e247ff8a15d2044599055f9b67a96ccaf9b66f3",
+    "/workspace/scratch/5def91918e35/mvp-landing/outputs/getup-source-online/session-20261018T030112Z/learner/frames.ndjson": "ce228f31532491361dab0626459ea432da467b480c2414b82bb4669b001f7ed9",
+    "/workspace/scratch/5def91918e35/mvp-landing/outputs/getup-source-online/session-20261018T030112Z/learner/frozen-frames.ndjson": "129b2175dc78c668f0fc382ed8ba6b42c15930aa22c0fdb14b8414049db34f5f",
+    "/workspace/scratch/5def91918e35/mvp-landing/outputs/getup-source-online/session-20261018T030112Z/learner/candidate-frames.ndjson": "7dd15b2b83a848d21806238bb090b4f42c335cf81a98a980416dcbf0a4c8da20",
+    "/workspace/scratch/5def91918e35/mvp-landing/outputs/getup-source-online/session-20261018T030112Z/learner/final-audits.json": "ac3292cf597400b984f21fb75a5de41465ff4bcd9786b54f0d38bd7f3f3bcecb"
+  }
+}

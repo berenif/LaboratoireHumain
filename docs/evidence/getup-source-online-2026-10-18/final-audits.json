@@ -1,0 +1,12 @@
+{
+  "historical": {
+    "rms": 0.00940309464931488,
+    "maximum": 0.010444169864058495,
+    "maximumCumulativeFullKL": 0.062274076930476985
+  },
+  "midpoint": {
+    "rms": 0.009403642266988754,
+    "maximum": 0.010443909093737602,
+    "maximumCumulativeFullKL": 0.06228013342575761
+  }
+}

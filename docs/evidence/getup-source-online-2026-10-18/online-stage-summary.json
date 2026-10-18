@@ -1,0 +1,45 @@
+{
+  "chargedWorkAfterLastCheckpointIsNotRefunded": true,
+  "stopped": "normal128-consecutive-rejections",
+  "newActualTransitions": 1580,
+  "acceptedSteps": 11,
+  "proposalAttempts": 139,
+  "candidateOptimizerCalls": 1278,
+  "allOptimizerCalls": 1278,
+  "allSourceIntegrations": 35654,
+  "allPolicyIntervals": 1808,
+  "physicsSeconds": 2.2103276753332466,
+  "runWallSeconds": 267.6240640390024,
+  "selectedPolicy": "immutable-source-SLOW-baseline",
+  "quietStabilizationQualified": false,
+  "forwardStepQualified": false,
+  "runtimeAdmissionSHA256": "fdc1abd826a244f57f964858d2bc5820ad57991ef504dc9180f8d446ec103cd6",
+  "validation": [
+    {
+      "branch": "frozen",
+      "policyIntervals": 115,
+      "failure": "loaded_slip",
+      "elapsedSeconds": 2.864999999999994,
+      "loadedSlipM": [
+        0.01000163525102614,
+        0.009685628069879897
+      ],
+      "quietConsecutiveSamples": 0,
+      "final4000QuietQualified": false
+    },
+    {
+      "branch": "candidate",
+      "policyIntervals": 113,
+      "failure": "loaded_slip",
+      "elapsedSeconds": 2.814999999999994,
+      "loadedSlipM": [
+        0.010002413480451272,
+        0.009281825488058362
+      ],
+      "quietConsecutiveSamples": 0,
+      "final4000QuietQualified": false
+    }
+  ],
+  "trainingCheckpointAccountedAtTransitions": 1580,
+  "trainingCheckpointGlobalIntegrations": 31110
+}
