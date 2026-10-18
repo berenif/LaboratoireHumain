@@ -132,3 +132,14 @@ l'expérience hanche. L'empreinte XML expérimentale attendue est
 `216d5c0159abf07139f5556c59e244ae77cb7557ba5256e301ebc5e1c8bbc399`.
 Les résultats complets et la comparaison à quatre conditions sont conservés
 dans les fichiers compacts `hip-knees*.json` et `combined-comparison.json`.
+
+## Choix retenu par l'utilisateur, 18 octobre 2026
+
+La base source sélectionnée pour la suite cumule désormais hanches +10° et
+flexion des genoux, avec les bras d'origine. Le preset est
+`scripts/getup-step/source-step-selected-v1.json`. Lancer simplement
+`.venv/mvp/bin/python scripts/getup-step/source_selected_step.py --output NEW` :
+la copie du modèle et son cache froid correctement lié sont préparés sans
+assembler les chemins d'expériences. `--prepare-only` vérifie sans intégration ;
+`--variant baseline` conserve un témoin explicite. Ce choix ne modifie ni le
+modèle original ni les entrées historiques ni l'application/WASM principale.

@@ -1,0 +1,10 @@
+{
+  "schema": 1,
+  "selectedVariant": "hip10-knee27_5",
+  "sourceSession": "outputs/getup-source-engine/session-20261017T233404Z",
+  "helper": "outputs/getup-source-step/first-liftoff/source_dynamics-v9.so",
+  "sourceModelSHA256": "69a7e87fed168e1f4ad7dee43dfdd8df6bd74b3d4af06d99c991b46b941106db",
+  "selectedModelSHA256": "216d5c0159abf07139f5556c59e244ae77cb7557ba5256e301ebc5e1c8bbc399",
+  "helperSHA256": "20ddefbcbdd328b1661ce163e4df6aeb0e953192c677b79d3076c904de5a0ba5",
+  "initialQposQvelSHA256": "d8f8cea00fb8c54f9344523a1a512410f982ec86e7c1d382434a77a2cac0d707"
+}
