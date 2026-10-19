@@ -1,0 +1,14 @@
+use lh_sim::{Simulation,Profile,getup};
+use lh_model::Model;
+use serde_json::json;
+fn cross(a:[f64;3],b:[f64;3])->[f64;3]{[a[1]*b[2]-a[2]*b[1],a[2]*b[0]-a[0]*b[2],a[0]*b[1]-a[1]*b[0]]}
+fn rotate(q:[f64;4],v:[f64;3])->[f64;3]{let n=q.iter().map(|x|x*x).sum::<f64>().sqrt();let q=q.map(|x|x/n);let u=[q[0],q[1],q[2]];let uv=cross(u,v);let uuv=cross(u,uv);std::array::from_fn(|k|v[k]+2.0*(q[3]*uv[k]+uuv[k]))}
+fn sample(s:&Simulation,model:&Model)->serde_json::Value{
+ let snap=s.snapshot();let mut sum=[0.0_f64;3];let mut mass=0.0_f64;
+ for (pose,part) in snap.segments.iter().zip(&model.segments){assert_eq!(pose.id,part.id);let m=f64::from(part.mass_kg);let c=part.golden_mass.center_of_mass;let r=rotate([pose.rotation.x as f64,pose.rotation.y as f64,pose.rotation.z as f64,pose.rotation.w as f64],[c.x as f64,c.y as f64,c.z as f64]);let p=pose.position;mass+=m;for k in 0..3{sum[k]+=([p.x as f64,p.y as f64,p.z as f64][k]+r[k])*m;}}
+ let root=&snap.segments[0];let q=[root.rotation.x as f64,root.rotation.y as f64,root.rotation.z as f64,root.rotation.w as f64];let local=model.segments[0].golden_mass.center_of_mass;let r=rotate(q,[local.x as f64,local.y as f64,local.z as f64]);
+ let p=getup::physical_observation(s).unwrap();let omega=rotate(q,[p[44] as f64,p[45] as f64,p[43] as f64]);let velocity=[p[38] as f64,p[39] as f64,p[37] as f64];let prediction=cross(omega,r);let com=s.center_of_mass();
+ json!({"physicalSeconds":snap.simulation_time_s,"modelMassPoseComF64":sum.map(|x|x/mass),"ordinaryComF32":[com.x,com.y,com.z],"rootWorldComOffsetM":r,"physicalComVelocityMps":velocity,"rootAngularVelocityWorldRadps":omega,"rootOmegaCrossComOffsetMps":prediction,"velocityMinusPredictedCommonOffsetMps":[velocity[0]-prediction[0],velocity[1]-prediction[1],velocity[2]-prediction[2]]})
+}
+fn trial_profile()->Profile{let mut p=Profile::default();if std::env::var("LH_BUDGET_CANDIDATE").as_deref()==Ok("1"){p.id="getup-800hz-4plus1-qualification-v1".into();p.solver_iterations=4;p.additional_body_iterations=1;}p.validate().unwrap();p}
+fn main(){let model=Model::canonical().unwrap();for heading in [0.0,std::f32::consts::PI/3.0,-std::f32::consts::PI/4.0]{let mut s=Simulation::new(heading,trial_profile(),false).unwrap();let mut rows=vec![sample(&s,&model)];for _ in 0..30{s.advance_tick_observed(|s,_|{rows.push(sample(s,&model));Ok(())}).unwrap();}let first=&rows[0];let last=rows.last().unwrap();let delta:Vec<f64>=(0..3).map(|k|last["modelMassPoseComF64"][k].as_f64().unwrap()-first["modelMassPoseComF64"][k].as_f64().unwrap()).collect();let dr:Vec<f64>=(0..3).map(|k|last["rootWorldComOffsetM"][k].as_f64().unwrap()-first["rootWorldComOffsetM"][k].as_f64().unwrap()).collect();println!("{}",json!({"profile":trial_profile(),"diagnosticOnly":true,"acceptanceCorrectionApplied":false,"releaseAccepted":false,"heading":heading,"physicalComDeltaM":delta,"rootComOffsetDeltaM":dr,"differenceHorizontalM":[delta[0]-dr[0],delta[2]-dr[2]],"samples":rows}));}}

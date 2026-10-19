@@ -1,0 +1,235 @@
+{
+  "date": "2026-10-19",
+  "outerPhysicalIntegrationHz": 800,
+  "controlHz": 40,
+  "noExternalAssistAdded": true,
+  "acceptance": {
+    "ballisticHorizontalDriftM": 0.0001,
+    "loadedFootCumulativeSlipStopM": 0.02,
+    "standingGates": "Existing every-native-sample support, posture, motion, contact load/persistence, and quiet predicates unchanged"
+  },
+  "releaseAccepted": false,
+  "scope": "Correct the Rapier multibody free-root body-origin to COM mapping; no controller, timestep, budget, solver threshold, or source damping change in the isolated mapping slice",
+  "status": "engine-mechanics-and-isolated-ballistic-pass",
+  "cause": {
+    "rootCoordinates": "Body-origin translation with world angular velocity",
+    "inertiaCoordinates": "Rigid-body COM",
+    "missingLeverM": [
+      0,
+      -0.0463685152,
+      -0.00386404293
+    ],
+    "observedBaselineDrift": "Approximately 0.393 mm after 0.75 physical seconds follows the changing rotated root COM offset",
+    "diagnosticSubtractionsUsedForAcceptance": false
+  },
+  "implementation": [
+    "Refresh root shift23 from rotated local COM relative to local joint frame in full forward kinematics",
+    "Refresh the same lever in displaced single-branch forward kinematics",
+    "Cache the root rigid-body linear velocity at COM while retaining generalized joint velocity at the free-joint origin"
+  ],
+  "independentMechanics": {
+    "newTests": 6,
+    "passed": 6,
+    "allEngineTestsPassed": 73,
+    "allEngineTestsFailed": 0,
+    "checks": [
+      "Six COM Jacobian columns versus central finite differences at three headings",
+      "Root COM velocity from origin velocity plus angular cross lever",
+      "Displaced branch Jacobian exact equality to full forward kinematics",
+      "Kinetic energy and virtual work / point-force projection",
+      "Zero-force COM and anisotropic angular-momentum bias derivatives",
+      "Finite 800 Hz augmented dynamics against independently differentiated f64 bias and implicit solve residual"
+    ],
+    "finiteDtMaxError": 1.1515e-08,
+    "raw": [
+      {
+        "path": "outputs/getup-budget-20261019/root-com-engine-baseline-tests.log",
+        "sha256": "cb4d2a9a78ef58ba094090603633894f61b6ef582adb3203fae65158057da081"
+      },
+      {
+        "path": "outputs/getup-budget-20261019/root-com-engine-finite-dt-tests.log",
+        "sha256": "08f3f95c4a8e27c59440c565747bce334c785d0c72df6456d67cc7d43f8f5570"
+      },
+      {
+        "path": "outputs/getup-budget-20261019/root-com-engine-all-tests.log",
+        "sha256": "42fedaa1bcb68a9ca09f1e1e78ab44ea707671d0c167bc4f6b25a83d02260254"
+      }
+    ],
+    "testSource": {
+      "path": "rust/vendor/rapier3d/src/dynamics/joint/multibody_joint/root_com_tests.rs",
+      "sha256": "b783e8adf3d0a854532a93f26b1527707f2d3653bda110a500acf3d0c30f0b88"
+    }
+  },
+  "isolatedBallistic": {
+    "before": {
+      "path": "outputs/getup-budget-20261019/root-com-snapshot-probe.ndjson",
+      "sha256": "096f800cff670b00d3df00c006c8220dd2ba618fbbe35c2b5ac3c7b8df5be52b",
+      "headings": [
+        {
+          "headingRad": 0.0,
+          "nativeSamples": 601,
+          "physicalSeconds": 0.75,
+          "maxHorizontalDriftMIndependentF64": 0.00039990295388785986,
+          "maxHorizontalDriftMOrdinaryF32": 0.00039991084527849646,
+          "allSamplesPassUnchanged0_1mmGate": false,
+          "physicalFinalComDeltaM": [
+            6.58696621286004e-09,
+            -2.759356476784566,
+            0.0003930651307649403
+          ],
+          "rootComOffsetDeltaM": [
+            4.3042693732809635e-09,
+            -3.110775990654985e-05,
+            0.0003934495106444479
+          ]
+        },
+        {
+          "headingRad": 1.0471975803375244,
+          "nativeSamples": 601,
+          "physicalSeconds": 0.75,
+          "maxHorizontalDriftMIndependentF64": 0.0003998743743697013,
+          "maxHorizontalDriftMOrdinaryF32": 0.000399885207536814,
+          "allSamplesPassUnchanged0_1mmGate": false,
+          "physicalFinalComDeltaM": [
+            0.00034028086619795374,
+            -2.7593564631188117,
+            0.0001965914001362803
+          ],
+          "rootComOffsetDeltaM": [
+            0.0003407283566275931,
+            -3.110736880831272e-05,
+            0.00019672973858675456
+          ]
+        },
+        {
+          "headingRad": -0.7853981852531433,
+          "nativeSamples": 601,
+          "physicalSeconds": 0.75,
+          "maxHorizontalDriftMIndependentF64": 0.00039977541600384324,
+          "maxHorizontalDriftMOrdinaryF32": 0.0003997899069405078,
+          "allSamplesPassUnchanged0_1mmGate": false,
+          "physicalFinalComDeltaM": [
+            -0.00027763017553918135,
+            -2.759356610631323,
+            0.0002779645083720861
+          ],
+          "rootComOffsetDeltaM": [
+            -0.0002781781541257391,
+            -3.110648908984798e-05,
+            0.00027821945266575786
+          ]
+        }
+      ]
+    },
+    "mappingOnly": {
+      "path": "outputs/getup-budget-20261019/root-com-snapshot-candidate.ndjson",
+      "sha256": "88c831d22a0697db320048d817d72750a1e6c44934af8c74465b02c9dc5ba724",
+      "headings": [
+        {
+          "headingRad": 0.0,
+          "nativeSamples": 601,
+          "physicalSeconds": 0.75,
+          "maxHorizontalDriftMIndependentF64": 5.601880233032886e-07,
+          "maxHorizontalDriftMOrdinaryF32": 5.504465837685439e-07,
+          "allSamplesPassUnchanged0_1mmGate": true,
+          "physicalFinalComDeltaM": [
+            -1.5372670479571361e-09,
+            -2.759058216372797,
+            -3.3697372992143315e-07
+          ],
+          "rootComOffsetDeltaM": [
+            4.291502305523628e-09,
+            -3.110775021000073e-05,
+            0.00039344938100783306
+          ]
+        },
+        {
+          "headingRad": 1.0471975803375244,
+          "nativeSamples": 601,
+          "physicalSeconds": 0.75,
+          "maxHorizontalDriftMIndependentF64": 6.636482636118379e-07,
+          "maxHorizontalDriftMOrdinaryF32": 6.500958459489366e-07,
+          "allSamplesPassUnchanged0_1mmGate": true,
+          "physicalFinalComDeltaM": [
+            -4.851268190150804e-07,
+            -2.7590582979846796,
+            -1.1596374716385527e-07
+          ],
+          "rootComOffsetDeltaM": [
+            0.00034072659704844624,
+            -3.110715380686552e-05,
+            0.00019672703740640442
+          ]
+        },
+        {
+          "headingRad": -0.7853981852531433,
+          "nativeSamples": 601,
+          "physicalSeconds": 0.75,
+          "maxHorizontalDriftMIndependentF64": 6.922295328485179e-07,
+          "maxHorizontalDriftMOrdinaryF32": 6.781851085370223e-07,
+          "allSamplesPassUnchanged0_1mmGate": true,
+          "physicalFinalComDeltaM": [
+            5.06509566719493e-07,
+            -2.759058370126536,
+            -1.697521117959705e-07
+          ],
+          "rootComOffsetDeltaM": [
+            -0.00027817767640316753,
+            -3.1106531177244046e-05,
+            0.00027822072615181406
+          ]
+        }
+      ]
+    },
+    "measurement": "601 samples per heading including initial state and every 800 Hz integration through 0.75 s; independent f64 mass-weighted COM from actual exported poses and pinned local COM offsets, plus ordinary simulation COM"
+  },
+  "mappingOnlyDefaultStanding5S": {
+    "raw": [
+      {
+        "path": "outputs/getup-budget-20261019/root-com-default-standing5-zero.ndjson",
+        "sha256": "6f9f8ce9af43047f51de0e6a978fa4818c13cacc142c17470e48cf47cd25852d"
+      }
+    ],
+    "cases": [
+      {
+        "heading": 0.0,
+        "physicalSeconds": 5.0,
+        "nativeObservedAfter0_5S": 3601,
+        "failure": null,
+        "standingSupportFailureSubsteps": 0,
+        "standingPredicateFailureSubsteps": {},
+        "quietFailuresAfter3S": {},
+        "minimumTorsoUp": 0.9998434782028198,
+        "loadedSlipIntegralM": [
+          0.0001246504325772335,
+          0.00020849773302142392
+        ],
+        "maximumFootOriginDriftM": [
+          0.0025821649469435215,
+          0.0021635612938553095
+        ],
+        "quietLegacyMetrics": {
+          "max_angular_radps": 0.0018123871413990855,
+          "max_foot_drift_m": 0.0011632292298600078,
+          "max_linear_mps": 0.0013056136667728424,
+          "max_pelvis_drift_m": 0.0002261924382764846
+        }
+      }
+    ],
+    "allPassed": true
+  },
+  "source": {
+    "path": "rust/vendor/rapier3d/src/dynamics/joint/multibody_joint/multibody.rs",
+    "sha256": "35831f4433acf35ab2b059fa8b1e3af972274a63a2b2e1b37d94b454d07f2bb2"
+  },
+  "reproducer": {
+    "path": "docs/evidence/probes/getup-root-com-snapshot-2026-10-19.rs",
+    "sha256": "b7776bb96ce971a9b38970b50051e5fb66ef868cc03cbb33c1e77fd9ee6657da",
+    "method": "Build lh-sim release offline/locked with the pinned toolchain, link this external Rust probe to that rlib, run once against the parent source and once against this mapping slice. No private Simulation fields or state mutations are used."
+  },
+  "limits": [
+    "This corrects mechanics and ballistic conservation; it is not walking/recovery or realtime qualification",
+    "Current broader standing/browser qualification also includes the separately documented source-freejoint correction",
+    "Only the application dim3/f32 vendor configuration was executed"
+  ]
+}

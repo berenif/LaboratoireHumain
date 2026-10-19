@@ -583,6 +583,10 @@ impl Multibody {
 
         link.joint_velocity = joint_velocity;
         bodies.index_mut_internal(link.rigid_body).vels = link.joint_velocity;
+        // A free root's coordinates describe the body origin, whereas rigid
+        // body velocities and COM-centered inertia are evaluated at its COM.
+        bodies.index_mut_internal(link.rigid_body).vels.linvel +=
+            link.joint_velocity.angvel.gcross(link.shift23);
 
         for i in 1..self.links.len() {
             let (link, parent_link) = self.links.get_mut_with_parent(i);
@@ -1335,6 +1339,11 @@ impl Multibody {
             let link = &mut self.links[0];
             link.local_to_parent = link.joint.body_to_parent();
             link.local_to_world = link.local_to_parent;
+            let rb = &bodies[link.rigid_body];
+            link.shift02 = Vector::ZERO;
+            // Compute the lever locally to avoid subtracting large world points.
+            link.shift23 = link.local_to_world.rotation
+                * (rb.mprops.local_mprops.local_com - link.joint.data.local_frame2.translation);
         }
 
         // Handle the children. They all have a parent within this multibody.
@@ -1474,6 +1483,10 @@ impl Multibody {
             } else {
                 link.local_to_parent = link.joint.body_to_parent();
                 link.local_to_world = link.local_to_parent;
+                let rb = &bodies[link.rigid_body];
+                link.shift02 = Vector::ZERO;
+                link.shift23 = link.local_to_world.rotation
+                    * (rb.mprops.local_mprops.local_com - link.joint.data.local_frame2.translation);
                 parent_to_world = Pose::IDENTITY;
             }
 
@@ -1955,3 +1968,7 @@ mod test {
 #[cfg(all(test, feature = "dim3"))]
 #[path = "zero_inertia_tests.rs"]
 mod zero_inertia_tests;
+
+#[cfg(all(test, feature = "dim3"))]
+#[path = "root_com_tests.rs"]
+mod root_com_tests;
