@@ -67,6 +67,42 @@ def controller():
 
 
 class WholeBodyOwnership(unittest.TestCase):
+    def test_default_profile_policy_stays_original_and_delegates_exactly(self):
+        c, _ = controller()
+        self.assertEqual(c.wholebody_profile, w.PROFILE)
+        self.assertEqual(c.flight_admission_receipt_field, 'finiteStatic')
+        self.assertEqual(w.WholeBodySteps.wholebody_profile, w.PROFILE)
+        samples, support, feet, contacts, marker = object(), object(), object(), object(), object()
+        with patch.object(w, 'actual_contacts', return_value=contacts) as current, \
+                patch.object(w, 'finite_static_admission', return_value=marker) as original:
+            self.assertIs(c._admit_flight_samples(samples, support, feet), marker)
+        current.assert_called_once_with(c, support)
+        original.assert_called_once_with(c.w, samples, contacts)
+        proposal, context, payload = object(), object(), object()
+        with patch.object(w, 'verify_current_activation_identity') as original_identity:
+            c._verify_activation_identity(proposal, context, support, feet, payload)
+        original_identity.assert_called_once_with(proposal, context, support, feet, payload)
+
+    def test_default_cycle_factory_preserves_original_constructor(self):
+        c,_=controller();realizer=object();context=object()
+        c.w.limits=np.tile([-1.,1.],(21,1));c.heading=np.array([1.,0.,0.])
+        proposal=dict(independentKnotsRad=[[0.]*9]*3);marker=object()
+        with patch.object(w,'WholeBodyCycle',return_value=marker)as original:
+            self.assertIs(c._construct_cycle(realizer,context,proposal),marker)
+        original.assert_called_once_with(realizer,context,c.w.limits,c.heading,proposal['independentKnotsRad'])
+
+    def test_explicit_profile_label_does_not_change_owned_tasks_or_headers(self):
+        context = fixture_context(); sample = sample_for(context)
+        original = w.owned_context(context, sample, {}, pelvis_weight=4.)
+        declared = w.owned_context(context, sample, {}, pelvis_weight=4., profile='new-unqualified-profile')
+        a, b = original.receipt(), declared.receipt()
+        self.assertEqual(b['diagnostics']['wholeBodyCycle'].pop('profile'), 'new-unqualified-profile')
+        self.assertEqual(a['diagnostics']['wholeBodyCycle'].pop('profile'), w.PROFILE)
+        # Context SHA intentionally changes with the explicit profile header.
+        a.pop('contextSHA256'); b.pop('contextSHA256')
+        self.assertEqual(a, b)
+        self.assertIs(declared.arms, context.arms)
+
     def test_disabled_transform_is_exact_object_without_plan_world_or_history(self):
         c, _ = controller(); context = fixture_context()
         with patch.object(c, '_activate_wholebody', side_effect=AssertionError('activation')):

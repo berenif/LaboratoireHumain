@@ -20,6 +20,41 @@ class CycleTests(unittest.TestCase):
         cls.path=WholeBodyCycle(cls.realizer,cls.context,cls.limits,cls.inputs['controller']['heading'],cls.knots,
             design_only=True,entry_elapsed=cls.context.elapsed)
 
+    def test_explicit_physical_lumbar_mode_keeps_legacy_key_and_joint_interior(self):
+        from coupled_posture_reference import digest
+        default=WholeBodyCycle(self.realizer,self.context,self.limits,self.inputs['controller']['heading'],self.knots,
+            design_only=True,entry_elapsed=self.context.elapsed)
+        physical=WholeBodyCycle(self.realizer,self.context,self.limits,self.inputs['controller']['heading'],self.knots,
+            design_only=True,entry_elapsed=self.context.elapsed,lumbar_window_deg=None)
+        key=dict(version=__import__('wholebody_cycle_reference').VERSION,
+            context=self.context.receipt()['contextSHA256'],knots=self.knots.tolist(),
+            stance=self.realizer.stance_pose.position,limits=self.limits.tolist(),entryElapsed=self.context.elapsed)
+        self.assertEqual(default.key,digest(key))
+        self.assertEqual(physical.key,digest(dict(key,lumbarWindowDeg=None)))
+        self.assertNotEqual(physical.key,default.key)
+        self.assertIsNone(physical.receipt()['experimentalLumbarWindowDeg'])
+        self.assertEqual(physical.receipt()['lumbarOriginalPhysicalInteriorRad'],.01)
+        # Isolated validator mutation only, never a consistent pose/candidate.
+        sample=default.sample('lift',0.)
+        arrays=[a.copy()for a in sample.geometric.full_joints.arrays()]
+        arrays[0][0]+=math.copysign(math.radians(6.),np.mean(self.limits[0])-arrays[0][0])
+        changed=replace(sample,geometric=replace(sample.geometric,full_joints=Jet(*arrays)))
+        self.assertFalse(default.validate_sample(changed)['checks']['lumbar'])
+        check=physical.validate_sample(changed)
+        self.assertTrue(check['checks']['lumbar'])
+        margin=np.minimum(arrays[0][:3]-self.limits[:3,0],self.limits[:3,1]-arrays[0][:3])-.01
+        self.assertEqual(check['minimumLumbarSlackRad'],float(min(margin)))
+        arrays[0][0]=self.limits[0,1]-.005
+        unsafe=replace(sample,geometric=replace(sample.geometric,full_joints=Jet(*arrays)))
+        self.assertFalse(physical.validate_sample(unsafe)['checks']['lumbar'])
+        self.assertFalse(physical.validate_sample(unsafe)['checks']['lowerJointInterior'])
+
+    def test_lumbar_policy_is_explicit_finite_positive_or_none(self):
+        for bad in (float('nan'),float('inf'),0.,-5.,True,'free'):
+            with self.subTest(bad=bad),self.assertRaisesRegex(ValueError,'lumbar window'):
+                WholeBodyCycle(self.realizer,self.context,self.limits,self.inputs['controller']['heading'],self.knots,
+                    design_only=True,lumbar_window_deg=bad)
+
     def test_entry_all_command_jets_preserved(self):
         sample=self.path.sample('lift',0.,runtime_arms=self.context.arms)
         for a,b in zip(sample.com.arrays(),self.context.com.arrays()):np.testing.assert_array_equal(a,b)

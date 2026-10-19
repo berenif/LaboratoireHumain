@@ -38,11 +38,14 @@ class OptimizerRawDomainArmMap:
         return self.original.evaluate(delta,reserve=0.)
 
 
-def _bounds(realizer,context,limits):
+def _bounds(realizer,context,limits,*,lumbar_window_deg=5.):
     q0=np.array(context.joints.position)[:15]
     lo=limits[:15,0]+.01;hi=limits[:15,1]-.01
-    lo[:3]=np.maximum(lo[:3],q0[:3]-math.radians(5.))
-    hi[:3]=np.minimum(hi[:3],q0[:3]+math.radians(5.));hi[[6,12]]=np.minimum(hi[[6,12]],0.)
+    if lumbar_window_deg is not None:
+        if type(lumbar_window_deg)not in(int,float)or not math.isfinite(lumbar_window_deg)or lumbar_window_deg<=0.:raise ValueError('positive explicit lumbar window or None required')
+        lo[:3]=np.maximum(lo[:3],q0[:3]-math.radians(lumbar_window_deg))
+        hi[:3]=np.minimum(hi[:3],q0[:3]+math.radians(lumbar_window_deg))
+    hi[[6,12]]=np.minimum(hi[[6,12]],0.)
     return q0,lo,hi
 
 
@@ -196,18 +199,19 @@ class AnalyticPolishEvaluator:
     Every implicit foot solve retains the original fixed q0 branch seed/Newton
     cap/tolerance. Node keys include all9 position/velocity/acceleration values.
     """
-    def __init__(self,realizer,context,limits,heading,support,anchor,*,design_only=False,entry_elapsed=0.,check_control=lambda:None,constraint_nodes=None,envelope_brackets=None,global_translate_support=False,node_geometry=None,global_support_phases=None):
+    def __init__(self,realizer,context,limits,heading,support,anchor,*,design_only=False,entry_elapsed=0.,check_control=lambda:None,constraint_nodes=None,envelope_brackets=None,global_translate_support=False,node_geometry=None,global_support_phases=None,lumbar_window_deg=5.):
         support.validate_identity(context)
         self.r=realizer;self.context=context;self.limits=np.array(limits,float,copy=True)
         if self.limits.shape!=(21,2)or not np.isfinite(self.limits).all():raise ValueError('finite original21x2 source limits required')
         self.anchor=np.array(anchor,dtype=np.float64,copy=True).reshape(27)
         if not np.isfinite(self.anchor).all():raise ValueError('finite bound27-coordinate candidate required')
         self.anchor.setflags(write=False);self.check_control=check_control;self.support=support
-        self.q0,self.lo,self.hi=_bounds(realizer,context,self.limits);self.idx=realizer.independent_indices
+        self.q0,self.lo,self.hi=_bounds(realizer,context,self.limits,lumbar_window_deg=lumbar_window_deg);self.idx=realizer.independent_indices
+        self.lumbar_window_deg=lumbar_window_deg
         self.bounds=list(zip(np.tile(self.lo[self.idx],3),np.tile(self.hi[self.idx],3)))
         # Original entry constructor uses the original strict map. Only the
         # optimizer copy's future prediction uses the declared raw-domain proxy.
-        self.entry=WholeBodyCycle(realizer,context,self.limits,heading,self.anchor.reshape(3,9),design_only=design_only,entry_elapsed=entry_elapsed)
+        self.entry=WholeBodyCycle(realizer,context,self.limits,heading,self.anchor.reshape(3,9),design_only=design_only,entry_elapsed=entry_elapsed,lumbar_window_deg=lumbar_window_deg)
         self.optimizer_realizer=copy.copy(realizer)
         self.optimizer_realizer.arm_map=OptimizerRawDomainArmMap(realizer.arm_map)
         self.declared_nodes=normalized_constraint_nodes(constraint_nodes)
@@ -246,6 +250,7 @@ class AnalyticPolishEvaluator:
         self.exceptions=[];self.last_requested=None;self.last_fully_evaluated=None;self.last_result=None
         self.key_base=dict(version=VERSION,context=context.receipt()['contextSHA256'],stance=realizer.stance_pose.position,
             limits=self.entry.limits.tolist(),entryElapsed=entry_elapsed)
+        if self.entry.lumbar_window_deg!=5.:self.key_base['lumbarWindowDeg']=self.entry.lumbar_window_deg
 
     def path(self,x,*,strict_map=False):
         p=copy.copy(self.entry);knots=np.array(x,dtype=np.float64,copy=True).reshape(3,9);knots.setflags(write=False)

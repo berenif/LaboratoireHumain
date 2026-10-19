@@ -24,6 +24,73 @@ class FakeKinematics:
 
 
 class SampleFKMemoTests(unittest.TestCase):
+    def assert_pose_bits(self, expected, actual):
+        self.assertEqual(tuple(expected), tuple(actual))
+        for name in expected:
+            self.assertEqual(expected[name].dtype, actual[name].dtype)
+            self.assertEqual(expected[name].shape, actual[name].shape)
+            self.assertEqual(expected[name].tobytes(), actual[name].tobytes())
+
+    def test_body_misses_are_original_positional_fk_bitwise(self):
+        f = AnalyticCOMGeometryTests.fixture
+        memo = geometry._SampleFKMemo(f.kin)
+        q = np.asarray(f.full.position).copy()
+        root = np.eye(4)
+        root[:3, 3] = [.13, -.24, .35]
+        for index, value in ((None, None), (20, np.nextafter(0., 1.)),
+                             (20, -0.), (0, .21), (6, -.81), (12, -.92)):
+            if index is not None:
+                q[index] = value
+            self.assert_pose_bits(f.kin.forward(q, root), memo.forward(q, root))
+        root[3, 2] = -0.
+        self.assert_pose_bits(f.kin.forward(q, root), memo.forward(q, root))
+        self.assertGreater(memo.body_memo.hits, 0)
+        self.assertGreater(memo.body_memo.misses, 0)
+        self.assertEqual(memo.body_memo.requests,
+                         memo.body_memo.hits + memo.body_memo.misses)
+
+    def test_body_byte_keys_reuse_unchanged_subtrees_not_changed_angles(self):
+        f = AnalyticCOMGeometryTests.fixture
+        memo = geometry._SamplePositionalBodyMemo(f.kin)
+        q = np.asarray(f.full.position).copy()
+        root = np.eye(4)
+        first = memo.forward(q, root)
+        misses = memo.misses
+        # Even when trig rounds a changed subnormal angle to the same pose,
+        # its own body must be recomputed from the requested exact angle bits.
+        q[20] = np.nextafter(0., 1.)
+        memo.forward(q, root)
+        self.assertGreater(memo.misses, misses)
+        misses = memo.misses
+        q[20] = -0.
+        memo.forward(q, root)
+        self.assertGreater(memo.misses, misses)
+        q[f.realizer.swing_indices] += .017
+        changed = memo.forward(q, root)
+        self.assert_pose_bits(f.kin.forward(q, root), changed)
+        stance = ('left_foot', 'right_foot')[f.realizer.stance_side]
+        self.assertIs(changed[stance], first[stance])
+        misses = memo.misses
+        root[3, 2] = -0.
+        self.assert_pose_bits(f.kin.forward(q, root), memo.forward(q, root))
+        self.assertGreater(memo.misses, misses)
+        with self.assertRaises(ValueError):
+            changed[stance][0, 0] = 8.
+
+    def test_body_cache_is_bounded_and_owned_by_one_sample(self):
+        f = AnalyticCOMGeometryTests.fixture
+        q = np.asarray(f.full.position).copy()
+        root = np.eye(4)
+        memo = geometry._SampleFKMemo(f.kin, body_capacity=2)
+        self.assert_pose_bits(f.kin.forward(q, root), memo.forward(q, root))
+        self.assertEqual(len(memo.body_memo.cache), 2)
+        self.assertGreater(memo.body_memo.evictions, 0)
+        another = geometry._SampleFKMemo(f.kin)
+        self.assertIsNot(memo.body_memo, another.body_memo)
+        another.forward(q, root)
+        self.assertEqual(another.body_memo.hits, 0)
+        self.assertEqual(another.body_memo.misses, len(f.kin.parts) - 1)
+
     def test_full_bytes_include_ulp_signed_zero_and_root(self):
         kin = FakeKinematics()
         memo = geometry._SampleFKMemo(kin)
@@ -90,10 +157,17 @@ class SampleFKMemoTests(unittest.TestCase):
         self.assertEqual(len(memos), 2)
         self.assertIsNot(memos[0], memos[1])
         self.assertGreater(memos[0].hits, 0)
+        self.assertGreater(memos[0].body_memo.hits, 0)
+        self.assertIsNot(memos[0].body_memo, memos[1].body_memo)
         self.assertEqual(memos[0].requests, memos[0].hits + memos[0].misses)
         self.assertEqual((memos[0].requests, memos[0].hits, memos[0].misses),
                          (memos[1].requests, memos[1].hits, memos[1].misses))
         self.assertEqual(memos[0].evictions, 0)
+        self.assertEqual(memos[0].body_memo.evictions, 0)
+        self.assertEqual((memos[0].body_memo.requests, memos[0].body_memo.hits,
+                          memos[0].body_memo.misses),
+                         (memos[1].body_memo.requests, memos[1].body_memo.hits,
+                          memos[1].body_memo.misses))
 
     @classmethod
     def setUpClass(cls):

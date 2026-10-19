@@ -838,7 +838,7 @@ def validate_settle_sample(plan, sample, support):
     return dict(accepted=True, checks=checks, **support_check)
 
 
-def owned_context(context, sample, check, *, pelvis_weight):
+def owned_context(context, sample, check, *, pelvis_weight, profile=PROFILE):
     """One pure task replacement. All arms/history/safety header owners survive."""
     lower = sample.lower_joints.arrays(); old = context.joints.arrays()
     joints = ContextJet.make(*(np.r_[a, b[15:]] for a, b in zip(lower, old)))
@@ -863,7 +863,7 @@ def owned_context(context, sample, check, *, pelvis_weight):
     if len(feet) != 2:
         raise ValueError('two owned whole-body command feet required')
     diagnostics = json.loads(context.diagnostics_json)
-    diagnostics['wholeBodyCycle'] = dict(profile=PROFILE, sampleAdmission=check,
+    diagnostics['wholeBodyCycle'] = dict(profile=profile, sampleAdmission=check,
         **sample.diagnostics, runtimeArmsObjectUnchanged=True, lower15Only=True,
         completedCorrectionEmbeddedOnce=True, contactSeekAppliedOnce=True)
     return replace(context, com=ContextJet.make(*sample.com.arrays()), joints=joints,
@@ -871,6 +871,20 @@ def owned_context(context, sample, check, *, pelvis_weight):
 
 
 class WholeBodyController(ReviewedController):
+    wholebody_profile = PROFILE
+    flight_admission_receipt_field = 'finiteStatic'
+
+    def _construct_cycle(self, realizer, context, proposal):
+        return WholeBodyCycle(realizer, context, self.w.limits, self.heading,
+            proposal['independentKnotsRad'])
+
+    def _verify_activation_identity(self, proposal, context, support, feet, payload):
+        verify_current_activation_identity(proposal, context, support, feet, payload)
+
+    def _admit_flight_samples(self, samples, support, feet):
+        """Legacy policy stays exact; explicit new profiles override this seam."""
+        return finite_static_admission(self.w, samples, actual_contacts(self, support))
+
     def install_reviewed(self, step_index, mode):
         super().install_reviewed(step_index, mode)
         self._wholebody_enabled = False
@@ -893,7 +907,7 @@ class WholeBodyController(ReviewedController):
     def _save_wholebody_receipt(self):
         if not hasattr(self, '_wholebody_evidence_path'):
             return
-        value = dict(schema=1, profile=PROFILE, flight=self._wholebody_receipt,
+        value = dict(schema=1, profile=self.wholebody_profile, flight=self._wholebody_receipt,
             settle=self._wholebody_settle_receipt, freshFlightAdmission=self._wholebody_admitted,
             originalAdmissionInherited=False, finalPlanQualificationClaim=False,
             oldProfileQualificationClaim=False, visualQualificationClaim=False,
@@ -970,9 +984,8 @@ class WholeBodyController(ReviewedController):
             MatrixJet.rest(feet[self.stance_side]), mapping, self.leg_origin)
         checks = []; static_samples = []; static = None
         try:
-            verify_current_activation_identity(proposal, context, support, feet, before)
-            cycle = WholeBodyCycle(realizer, context, self.w.limits, self.heading,
-                proposal['independentKnotsRad'])
+            self._verify_activation_identity(proposal, context, support, feet, before)
+            cycle = self._construct_cycle(realizer, context, proposal)
             for phase, duration in zip(PHASES, cycle.durations):
                 for fraction in ANALYTIC_FRACTIONS:
                     sample = cycle.sample(phase, fraction*duration)
@@ -988,13 +1001,14 @@ class WholeBodyController(ReviewedController):
             if initial_check.get('accepted') is not True:
                 raise ValueError('current arm-conditioned activation admission failed')
             static_samples.insert(0, ('actual-arm-conditioned-activation', initial))
-            static = finite_static_admission(self.w, static_samples, actual_contacts(self, support))
+            static = self._admit_flight_samples(static_samples, support, feet)
             if static.get('accepted') is not True:
-                raise ValueError('current whole-body finite static admission failed')
+                policy = 'static' if self.flight_admission_receipt_field == 'finiteStatic' else 'planned-jet'
+                raise ValueError('current whole-body finite '+policy+' admission failed')
         except Exception as error:
             self._wholebody_receipt = dict(accepted=False, rejection=str(error),
                 proposal=proposal, retainedActivationInput=retained_input,
-                analyticChecks=checks, finiteStatic=static, optimizerCalls=0)
+                analyticChecks=checks, **{self.flight_admission_receipt_field: static}, optimizerCalls=0)
             self._save_wholebody_receipt()
             raise
         if native_bytes(self.w) != before:
@@ -1007,7 +1021,7 @@ class WholeBodyController(ReviewedController):
             retainedPayload=payload_path.name, compressedPayloadSHA256=sha(payload_path),
             sourceBindings=self._native_source_bindings(), path=cycle.receipt(),
             provisionalSurvivors=list(self._wholebody_survivors), analyticChecks=checks,
-            finiteStatic=static, optimizerCalls=0, originalAdmissionInherited=False,
+            **{self.flight_admission_receipt_field: static}, optimizerCalls=0, originalAdmissionInherited=False,
             wholeNonlinearPathProven=False, everyCommandRecheckRequired=True)
         if self._wholebody_history or self._wholebody_admitted or self._wholebody_payloads:
             raise ValueError('new proposal inherited old support-risk history')
@@ -1133,7 +1147,8 @@ class WholeBodyController(ReviewedController):
         if context.phase == 'settle' and self._wholebody_settle is None:
             # Assemble outgoing analytic tasks at THIS current command identity,
             # using its already-prepared arms/seek. No old context is relabeled.
-            outgoing = owned_context(context, sample, dict(outgoingBoundary=True), pelvis_weight=4.)
+            outgoing = owned_context(context, sample, dict(outgoingBoundary=True),
+                pelvis_weight=4., profile=self.wholebody_profile)
             self._activate_settle(context, outgoing, support)
             sample = self._sample_current(context.elapsed, context.phase, prepared_arms=context.arms)
         if context.phase in ('settle', 'stand'):
@@ -1154,9 +1169,10 @@ class WholeBodyController(ReviewedController):
             pelvis_weight = 4.*float(clock(context.elapsed, self.phase_duration('lift'))[0])
         else:
             pelvis_weight = 4.
-        result = owned_context(context, sample, check, pelvis_weight=pelvis_weight)
+        result = owned_context(context, sample, check, pelvis_weight=pelvis_weight,
+            profile=self.wholebody_profile)
         config = json.loads(result.config_json)
-        config['wholeBodyCycle'] = dict(profile=PROFILE, pathSHA256=self._wholebody_cycle.key,
+        config['wholeBodyCycle'] = dict(profile=self.wholebody_profile, pathSHA256=self._wholebody_cycle.key,
             settlePathSHA256=None if self._wholebody_settle is None else self._wholebody_settle.key,
             pelvisWeight=pelvis_weight, originalCorrectionEmbeddedOnce=True,
             provisionalSurvivors=list(self._wholebody_survivors), originalAdmissionInherited=False,
@@ -1212,7 +1228,7 @@ class WholeBodyController(ReviewedController):
             path.write_bytes(witness['compressed'])
             saved.append({k:v for k,v in witness.items() if k != 'compressed'} | dict(
                 filename=path.name, compressedSHA256=sha(path)))
-        admission = dict(schema=1, profile=PROFILE, pathSHA256=self._wholebody_cycle.key,
+        admission = dict(schema=1, profile=self.wholebody_profile, pathSHA256=self._wholebody_cycle.key,
             historySourceStartS=history[0][1], historySourceEndS=now, historySamples=21,
             historyPredictedRiskCorners=[h[2] for h in history],
             riskAgreementFrequency=float(votes[weak]/len(history)), survivingCorners=list(survivors),
@@ -1234,7 +1250,7 @@ class WholeBodyController(ReviewedController):
     def solve(self, t, phase='transfer'):
         u, info = super().solve(t, phase)
         if self._wholebody_enabled:
-            info['reviewedWalk']['featureProfile'] = PROFILE
+            info['reviewedWalk']['featureProfile'] = self.wholebody_profile
             info['wholeBodyCycle'] = dict(enabled=self._wholebody_cycle is not None,
                 pathSHA256=None if self._wholebody_cycle is None else self._wholebody_cycle.key,
                 freshReferenceAdmission=self._wholebody_admitted,
@@ -1246,6 +1262,7 @@ class WholeBodyController(ReviewedController):
 
 class WholeBodySteps(ReviewedSteps):
     reviewed_controller_class = WholeBodyController
+    wholebody_profile = PROFILE
 
     def __init__(self, base, helper, output, count=1, *, proposal_json):
         if count != 1:
@@ -1284,7 +1301,7 @@ class WholeBodySteps(ReviewedSteps):
             if not path.exists():
                 continue
             value = json.loads(path.read_text())
-            value.update(profile=PROFILE, wholeBodyCycleEnabled=True,
+            value.update(profile=self.wholebody_profile, wholeBodyCycleEnabled=True,
                 requestedSteps=1, crossStepOwnershipReviewed=False,
                 finalPlanQualificationClaim=False, oldProfileQualificationClaim=False,
                 originalModelQualificationClaim=False, visualQualificationClaim=False,
@@ -1298,7 +1315,7 @@ class WholeBodySteps(ReviewedSteps):
         path = self.folder/'cadenced-step-config.json'
         if path.exists():
             value = json.loads(path.read_text())
-            value['reviewedReferenceProfile']['featureProfile'] = PROFILE
+            value['reviewedReferenceProfile']['featureProfile'] = self.wholebody_profile
             value['reviewedReferenceProfile']['oldProfileQualificationClaim'] = False
             value['reviewedReferenceProfile']['finalPlanQualificationClaim'] = False
             path.write_text(json.dumps(value, indent=2)+'\n')

@@ -362,4 +362,44 @@ class RefinementTests(PolishTests):
         self.assertEqual(method.call_count,1);self.assertIs(a,b);self.assertIs(row,again)
         np.testing.assert_array_equal(a,e.constraint_block(sample));self.assertIs(path.realizer.arm_map.original,f.arm_map)
 
+class PhysicalLumbarBoundsTests(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        cls.f=make_math_fixture();cls.knots=np.tile(np.asarray(cls.f.lower.position)[cls.f.realizer.independent_indices],(3,1))
+
+    def test_default5_matches_original_bits_none_changes_only_lumbar(self):
+        f=self.f;q0,lo,hi=polish._bounds(f.realizer,f.context,f.limits)
+        oldlo=f.limits[:15,0]+.01;oldhi=f.limits[:15,1]-.01
+        oldlo[:3]=np.maximum(oldlo[:3],q0[:3]-math.radians(5.));oldhi[:3]=np.minimum(oldhi[:3],q0[:3]+math.radians(5.))
+        oldhi[[6,12]]=np.minimum(oldhi[[6,12]],0.)
+        np.testing.assert_array_equal(lo.view(np.uint64),oldlo.view(np.uint64));np.testing.assert_array_equal(hi.view(np.uint64),oldhi.view(np.uint64))
+        _,physical_lo,physical_hi=polish._bounds(f.realizer,f.context,f.limits,lumbar_window_deg=None)
+        np.testing.assert_array_equal(physical_lo[:3],f.limits[:3,0]+.01);np.testing.assert_array_equal(physical_hi[:3],f.limits[:3,1]-.01)
+        np.testing.assert_array_equal(physical_lo[3:].view(np.uint64),lo[3:].view(np.uint64));np.testing.assert_array_equal(physical_hi[3:].view(np.uint64),hi[3:].view(np.uint64))
+
+    def test_physical_mode_forwards_cycle_key_and_only_six_joint_slack_rows(self):
+        f=self.f
+        args=(f.realizer,f.context,f.limits,f.heading,f.support,self.knots)
+        old=polish.AnalyticPolishEvaluator(*args,design_only=True)
+        physical=polish.AnalyticPolishEvaluator(*args,design_only=True,lumbar_window_deg=None)
+        self.assertEqual(old.lumbar_window_deg,5.);self.assertIsNone(physical.entry.lumbar_window_deg)
+        self.assertNotIn('lumbarWindowDeg',old.key_base);self.assertIsNone(physical.key_base['lumbarWindowDeg'])
+        x=self.knots.reshape(27);self.assertEqual(physical.path(x,strict_map=True).key,physical.entry.key)
+        self.assertNotEqual(old.entry.key,physical.entry.key);self.assertEqual(old.labels,physical.labels)
+        sample=physical.entry.sample('lift',.2);a=old.constraint_block(sample);b=physical.constraint_block(sample)
+        unchanged=[i for i in range(len(a))if i not in(0,1,2,15,16,17)]
+        np.testing.assert_array_equal(a[unchanged].view(np.uint64),b[unchanged].view(np.uint64))
+        np.testing.assert_allclose(b[:3]-a[:3],old.lo[:3]-physical.lo[:3],rtol=0.,atol=1e-15)
+        np.testing.assert_allclose(b[15:18]-a[15:18],physical.hi[:3]-old.hi[:3],rtol=0.,atol=1e-15)
+
+    def test_invalid_lumbar_parameter_rejected_without_any_optimizer(self):
+        for value in(False,0.,-1.,float('nan')):
+            with self.subTest(value=value),self.assertRaises(ValueError):polish._bounds(self.f.realizer,self.f.context,self.f.limits,lumbar_window_deg=value)
+
+    def test_explicit_nondefault_finite_window_keeps_entry_and_path_key_identical(self):
+        f=self.f;e=polish.AnalyticPolishEvaluator(f.realizer,f.context,f.limits,f.heading,f.support,self.knots,
+            design_only=True,lumbar_window_deg=7)
+        self.assertEqual(e.key_base['lumbarWindowDeg'],7.)
+        self.assertEqual(e.path(self.knots.reshape(27),strict_map=True).key,e.entry.key)
+
 if __name__=='__main__':unittest.main(verbosity=2)

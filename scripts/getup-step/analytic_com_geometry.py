@@ -22,7 +22,53 @@ from wholebody_cycle_reference import (
 )
 from coupled_posture_kinematics import pose_jet_to_source
 
-VERSION = 'plain-triple-analytic-com-geometry-v2-sample-fk-reuse'
+VERSION = 'plain-triple-analytic-com-geometry-v3-sample-body-fk-reuse'
+
+
+class _SamplePositionalBodyMemo:
+    """Original positional FK arithmetic with exact, sample-local body reuse.
+
+    During Newton only the six swing angles change. A whole-vector miss need
+    not recompute an unchanged stance/arm subtree. Body identity, every parent
+    transform bit and the actual angle bits are the entire dependency key;
+    static frames belong to this one original kinematics instance. No position
+    solution, seed or cache survives the owning analytic sample.
+    """
+    def __init__(self, kinematics, capacity=256):
+        self.original = kinematics
+        self.capacity = capacity
+        self.cache = {}
+        self.requests = self.hits = self.misses = self.evictions = 0
+
+    def forward(self, q, root):
+        out = {'torso': root.copy()}
+        out['torso'].setflags(write=False)
+        for index, part in enumerate(self.original.parts[1:], 1):
+            name = part['id']
+            parent = out[part['parent']]
+            hinge = part['reference'].get('hinge')
+            angle = None if not hinge else q[hinge['qposIndex']]
+            key = (index, np.asarray(parent, dtype=np.float64).tobytes(),
+                   None if angle is None else np.asarray(angle, dtype=np.float64).tobytes())
+            self.requests += 1
+            if key in self.cache:
+                self.hits += 1
+                out[name] = self.cache[key]
+                continue
+            self.misses += 1
+            # EXACT original Kinematics.forward miss expression: NumPy trig,
+            # all three left-associated matrix products, and original frames.
+            rot = np.eye(4)
+            if hinge:
+                c, s = np.cos(angle), np.sin(angle)
+                rot[1:3, 1:3] = [[c, -s], [s, c]]
+            value = parent @ self.original.parent_frames[name] @ rot @ self.original.child_inverse[name]
+            value.setflags(write=False)
+            out[name] = self.cache[key] = value
+            if len(self.cache) > self.capacity:
+                self.cache.pop(next(iter(self.cache)))
+                self.evictions += 1
+        return out
 
 
 class _SampleFKMemo:
@@ -31,14 +77,18 @@ class _SampleFKMemo:
     Original Newton and original spatial Jacobian request identical complete
     q/root transforms successively. Full float64 byte keys retain signed zero
     and every coordinate. No value is rounded, no IK solution is retained, and
-    the original kinematics performs every cache miss with unchanged arithmetic.
+    body-level misses use the original positional FK arithmetic unchanged.
     The cache is discarded as soon as sample() returns or raises.
     """
-    def __init__(self, kinematics, capacity=64):
+    def __init__(self, kinematics, capacity=64, *, body_capacity=256):
         self.original = kinematics
         self.capacity = capacity
         self.cache = {}
         self.requests = self.hits = self.misses = self.evictions = 0
+        # Non-source test doubles keep the old exact whole-vector behavior.
+        self.body_memo = (_SamplePositionalBodyMemo(kinematics, body_capacity)
+                          if all(hasattr(kinematics, name) for name in
+                                 ('parts', 'parent_frames', 'child_inverse')) else None)
 
     def __getattr__(self, name):
         return getattr(self.original, name)
@@ -51,7 +101,8 @@ class _SampleFKMemo:
             self.hits += 1
             return self.cache[key]
         self.misses += 1
-        result = self.original.forward(q, root)
+        result = (self.original.forward(q, root) if self.body_memo is None
+                  else self.body_memo.forward(q, root))
         self.cache[key] = result
         if len(self.cache) > self.capacity:
             self.cache.pop(next(iter(self.cache)))

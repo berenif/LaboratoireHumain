@@ -1,280 +1,198 @@
 # Five-reviewed gait correction implementation
 
-Status: experimental and opt-in. The requested final result is not achieved;
-no stable preset, original-contact qualification or deployment is changed.
+Status: experimental and opt-in. Final acceptance is unmet. No stable preset,
+original-contact qualification, main merge or deployment is changed. Detailed
+hashes, numeric checkpoints and failed attempts remain in the existing
+`docs/evidence/source-reviewed-walk-stage1-checkpoint.json`.
 
 ## Five actual reviews incorporated
 
-1. Calibrate forward-positive thorax/pelvis axes and distinguish visual
-   preferences from anatomical limits. Measure the mobile knee and respect the
-   rigid two-capsule foot. Preserve opposition in the instantaneous thorax frame.
-2. Keep the strict measured-arm gates. Prepare one immutable command for actual
-   and prospective-unload QPs; admit changed references with current support,
-   motor and ankle reserve rather than naive angle clamps.
-3. Audit all native samples, global slip and same-world continuity. Distinguish
-   own-foot advances from COM/body travel. Compare matching loaded-landings and
+1. Calibrate forward-positive thorax/pelvis axes; separate visual preferences
+   from anatomical limits. Measure knee motion and respect rigid two-capsule
+   feet. Preserve arm opposition in the instantaneous thorax frame.
+2. Prepare one immutable measured-arm/reference command for actual and
+   prospective-unload QPs. Admit changed tasks using current support and native
+   effort/ankle reserve, rather than naive angle clamps.
+3. Audit every native sample, global slip and same-world continuity. Distinguish
+   own-foot advances from COM/body travel; compare matching loaded-landings and
    actual-speed front/profile pixels.
 4. Implement shared-reference parity, continuous COM/load progression, coupled
-   posture, coordinated knee/foot motion, then cadence. Isolate causal changes;
-   do not hide a six-step failure by stacking unqualified factors.
-5. Preserve measured midpoint+35 mm loaded-settle and 80-sample readiness,
-   distinct unload/airborne gates, idempotent histories and a separately declared
-   audit profile for changed gait references.
+   posture, coordinated knee/foot motion, then cadence. Isolate causal factors;
+   do not conceal a partial six-step result by stacking unqualified changes.
+5. Preserve measured midpoint+35 mm loaded-settle, 80-sample readiness, distinct
+   unload/airborne gates, idempotent history and a new changed-reference profile.
 
 ## Unchanged physical and arm contracts
 
-- Explicit impratio=8, friction=1, original geometry/strength; 800 Hz physics,
-  200 Hz torque commands, motor bounds ±0.95 and global loaded slip ≤10 mm/foot.
-- All original joint, collision, ground-ray, contact, support, capture and phase
-  deadlines remain. No actual state installation after initialization, root
-  assistance, slip reset or playback timewarp.
-- Unload: swing <0.5 N, stance ≥0.8 BW, 80 consecutive native samples. Advance:
-  whole-foot clearance ≥25 mm, swing <3 N, stance ≥0.8 BW, 80 samples.
+- Explicit impratio=8, engine friction=1, original geometry/strength; 800 Hz
+  physics, 200 Hz commands, motor bounds ±0.95, loaded slip ≤10 mm per foot.
+- Original joints, collisions, ground rays, contact/support/capture constraints
+  and phase deadlines. No actual state installation after initialization, root
+  assistance, slip reset, hidden world reset or playback timewarp.
+- Unload: swing <0.5 N, stance ≥0.8 BW for 80 native samples. Advance: whole-foot
+  clearance ≥25 mm, swing <3 N, stance ≥0.8 BW for 80 samples.
 - Robust support: ≥100 ms/21 causal commands, pressure/clearance agreement ≥0.8,
-  three unique actual surviving contacts, original bounded correction and 3 mm
-  measured reserve. Changed tasks acquire a fresh window; old admission is only
-  provisional geometry.
-- Loaded settle: actual received-feet midpoint+35 mm heading, unchanged height,
-  1.52 s planned phase and original 80-sample measured readiness. No silent switch
-  to loaded-landing handoff. Final quiet requires 4,000 consecutive samples.
-- Delayed measured ipsilateral thigh drives near-body opposed arms at gain −1.
-  Keep persistent origins/history, ≤0.5° maximum error, excursion ratio ±5%,
-  correlation ≤−0.98, exact target/FK checks, no clipping and original map reserve.
-- Freeze total COM speed/acceleration at 0.19260552331163003 m/s and
-  0.3901818436690813 m/s²; do not widen them to admit a return path.
+  three unique actual survivors and 3 mm reserved margin. Correction remains
+  ≤12 mm, ≤0.025 m/s, ≤0.15 m/s² and ≥1 s. Changed tasks reacquire admission.
+- Loaded settle: actual received-feet midpoint+35 mm heading, original height,
+  1.52 s planned phase and 80-sample measured readiness; never silently switch
+  handoff protocols. Final quiet requires 4,000 consecutive native samples.
+- Delayed measured ipsilateral thigh drives opposed near-body arms at gain −1.
+  Keep origins/history, ≤0.5° max error, excursion ratio ±5%, correlation ≤−0.98,
+  exact target/FK identity, no clipping and original reserved map checks.
+- Total COM caps: 0.19260552331163003 m/s and 0.3901818436690813 m/s².
+- The inherited startup exception ends at native34 for the negative ankle and
+  native51 for all joints; it is not a new gait relaxation.
 
-The delivered video shows four ≥180 mm own-foot advances, not ten, at about
-6.66 s per loaded-landing interval. Ten advances never imply 1.8 m body travel.
+Forward bust 3–5°, pelvis ≤15°, roll ≤5°, early knee gain ≥10° and median interval
+≤5 s are soft preferences, not anatomical limits. The reference video contains
+four ≥180 mm own-foot advances, about 6.66 s between loaded-landings, under its
+older explicit contact model. Ten foot advances do not imply 1.8 m body travel.
 
-## Implemented and measured checkpoints
+## Measured history and approved architecture
 
-Shared immutable references now prepare measured arms/contact-seek once per
-command; both QP consumers retain subclass tasks and use that same context.
-Native payloads, controls, histories, reference identities and sources are bound.
+Shared immutable contexts now preserve subclass tasks in both QP consumers and
+prepare measured arms/contact seek once per command. Continuous COM and earlier
+state-valid selection reduce alternating intervals to 6.870 s, still slower
+than the video. A seven-step attempt stops in the seventh landing after six
+completed advances at global slip 10.00760/8.61442 mm. Stage-one drift tuning is
+closed; rejected tangential damping/native-acceleration fixes are not repeated.
 
-Continuous COM and earlier state-valid support selection pass independent
-one-/two-step plus five-second quiet diagnostics. Earlier selection reduces the
-first landing by 0.9975 s and alternating intervals from 7.63375 to 6.870 s,
-still slower than the delivered video. The seven-step continuation stops at
-48.215 s during seventh landing: six completed advances, global slip
-10.00760/8.61442 mm, no final quiet. Endpoint projection and soft load-retention
-trials are rejected; prior tangential damping/native-acceleration fixes are not
-repeated. Stage-one tuning is closed.
+The approved ordering revision permits isolated visual pilots before a full
+seven-/ten-step pass. The historical v3 posture pilot passes one 181.484 mm
+loaded advance and 4,000 quiet samples, with slip 1.418/1.180 mm. Mid-advance
+pelvis pitch improves −30.53°→−17.37°, but torso tilt stays about 9.3°, landing is
+1.85 s slower and quiet pelvis remains −18.24°. Its return explicitly requests
+an incompatible combination of root, lumbar and knee references. It is a
+physical-only historical checkpoint, not final visual/cadence success.
 
-The approved sequence revision allows isolated posture/knee pilots before that
-seven-step ordering gate, with final acceptance unchanged. The first posture
-handoff is rejected before application because its initial COM is outside the
-selected triangle. The next completes a loaded step but rejects its old settle
-quintic on the frozen derivative caps. A single analytical seven-cubic return
-preserves the same measured target and 1.52 s duration; its independent whole
-current-hull/capture certificate has 25.271 mm reserve.
+The resulting revision gives ONE stance-realized whole-body path ownership of
+lower joints, feet, COM, thorax and pelvis jets. Nine lumbar/stance-leg coordinates
+per phase derive the root and exact rigid swing-foot continuation; the root is
+never applied to the actual world. Original clocks are 0.8/1.2/1.0 s, advance
+command 182 mm and lift 40 mm. Declared C2 compatibility slack preserves the
+actual prepared command at activation. Predicted arm geometry is separate from
+the exact already-prepared measured arm jets used by every actual command.
 
-The v3 posture pilot independently passes 12,402 native rows, 3,101 commands,
-42 exact native witness replays and five quiet seconds. Loaded advance is
-181.484 mm at 8.98 s; final after-quiet advance is 181.369 mm; slip is
-1.418/1.180 mm. The complete settle owner absorbs the finished correction once;
-a separate all-command proof verifies its diagnostic clock semantics. The first
-clock-expectation failure and all immutable subproofs are retained.
+After actual landing, a separate causal same-foot endpoint retains both received
+feet and the original measured COM target. Its geometry, remaining original
+settle deadline and incoming C2 jets remain bound; endpoint feasibility never
+substitutes for return-path admission. Counts two/ten stay blocked until C2
+cross-step ownership, persistent arm history and alternating native pilots are
+qualified. Prepared cross-step utilities alone do not remove that guard.
 
-This is only a physical checkpoint. Mid-advance pelvis pitch improves from
-−30.53° to −17.37°, while torso tilt remains about 9.3° and landing is 1.85 s
-slower. Quiet pelvis is −18.24° versus baseline −2.64°. The quiet task explicitly
-requests −20.32°: the return mixes landing lumbar angles with persistent knee
-goals and initial root orientation, rather than one foot/COM-compatible pose.
-No overall visual, cadence or ten-step pass is claimed.
+## Recovery and current native-feasibility stage
 
-## Approved common-pose reference revision
+The shared artifact directory disappeared around 03:09 UTC on 2026-10-19.
+Historical raw journals/certificates and iteration-33 coordinates were lost;
+compact reports and source/native assets survive. No missing proof is recreated
+or reused to qualify a new run. Contact XML rebuild bytes match; the new inspector
+is explicitly regenerated. One unchanged prefix reproduces context, feet,
+support and arm-map hashes at native 3,200, but full native payload bytes differ.
+Only the accepted 27-coordinate vector 0959186d… is recovered exactly.
 
-Two finite moving-root/both-leg endpoint families fail; neither is installed.
-The inherited weak-joint target is also off the simultaneous task-FK manifold
-by 3.469 mm COM and 2.646 mm foot position. A declared C2 compatibility slack
-must preserve the actual prepared command at activation, not project a pose or
-zero velocities.
+One explicitly fresh current-input problem uses that anchor, original limits
+and all nine actual support faces over all phases: 1,102 geometric rows. It
+converges in four iterations (216.08 s) and passes 123 strict samples, 603 actual
+200 Hz grid samples and 235 numerical-extrema samples. Planned knee correction
+19.23° and COM progress 37.93 mm remain mathematical references only.
 
-One stance-realized whole-body path now owns lower joints, both feet, COM,
-thorax and pelvis jets. Nine independent lumbar/stance-leg coordinates drive an
-implicit exact rigid swing-foot continuation. COM is free inside the unchanged
-actual support/capture and derivative bounds. Root is derived by stance FK and
-is never physically applied. Offline future-arm geometry is a prediction;
-each actual command recomputes complete COM with the exact already-prepared
-measured arm jets. Strong arms/gains/history, weak arm-tail preferences and
-safety headers retain their owners.
+For exact activation binding, one cold-prefix world is held at native 3,200
+while offline planning/certification runs. Native bytes, time and counter do not
+advance; only that same world may resume after current-input preflight and a
+fresh 21-command window. Record compute wall time separately; no real-time
+computation claim. Failure stops before applying a changed reference.
 
-The implemented flight horizon has 27 knot coordinates, original 0.8/1.2/1.0 s
-clocks, stationary waits and exact held x/y through lift. Its fixed soft body1
-and weak-posture preferences do not make 10° knee gain or neutral pelvis hard
-anatomy. The first proposal has an explicitly recorded 0.6 mm landing-center
-reference difference; it is not silently labeled identical to the old path.
+That fresh candidate is rejected by current native static admission at lift25%:
+right_hip_x requires 0.933357 versus the strict 0.925 reserve. A targeted negative
+proof confirms zero changed whole-body commands and unchanged actual bytes at
+3,200 samples. Eleven of thirteen diagnostic poses exceed the original 0.95
+static motor bound. Exact native M*qdd+b shows inertia helps some moving samples
+and hurts others; stationary endpoints need 1.12389/1.19972/1.30857. Lift25% lacks
+a same-three-contact moving wrench even with diagnostic unbounded motors. These
+are local path failures, not a global physical-impossibility proof.
 
-At actual landing, a separate causal same-foot endpoint retains both current
-feet and the controller-owned measured COM target. It derives root from stance
-and keeps body preferences soft. The first endpoint matches geometry to
-7.95e−14; two counter-zero native static rechecks require only 0.3057 motor
-fraction and retain 76.57 mm clean gap. It misses the soft body preferences.
-Its C2 return from the old posture landing is rejected at 0.2375 s: acceleration
-0.43010 exceeds the unchanged 0.39018 m/s² cap. Endpoint feasibility is not
-path/native admission. First-command lag of 0–3 native samples is handled with
-current identity and only the remaining original 1.52 s deadline, not backdating.
+The approved native stage therefore adds effort/contact-wrench constraints to
+the same whole-pose path, with soft body/knee preferences yielding to feasibility.
+Original moving cones use μ=0.6 and Fn≥0 with NO upper bound; the earlier moving
+body-weight cap is corrected and all thirteen results are unchanged. At truly
+static poses Fn≤BW is redundant under equilibrium and nonnegative normals.
 
-An executable count-one opt-in wrapper now requires a bound passing proposal
-before constructing a native world. It rechecks current finite analytic/static
-admission, then acquires its own 21-command window. Missing endpoint/path,
-non-rest unsupported handoff, changed seek ownership or live bound failures
-reject; there is no hybrid rest fallback. Counts two/ten remain blocked until
-explicit C2 cross-step ownership is reviewed.
+First restore stationary endpoints, then a bounded complete moving-path solve.
+The original strict motor gate remains <0.925; a fixed 1e−7 tighter numerical
+planning interior is separately declared. Experimental lumbar ±5° is not a
+physical limit, but no observed active bound yet justifies widening it.
 
-## Current computational gate and next actions
+The first 54-variable restoration stops after three major iterations/9.63 s on
+a Newton-invalid trial. Its exact retained 6bb755… pose passes original endpoint
+geometry and lowers native requirements to 0.92499896/0.92498865/0.92500085. The
+last still fails reserve. An exact rigid-foot wrench-cone elimination removes
+force auxiliaries: all actual 3D rays/facets, root-zero/rank conditions and native
+point-Jacobian factorization are verified. Independent nine-force/full27-equation
+LP checks remain. Reduced native motors agree with original static LP to 1.45e−15.
+Its first local-box SLSQP trial is nevertheless Newton-invalid (4.69 s).
 
-One fixed 80-iteration flight solve was interrupted and verified stopped at its
-20-minute compute ceiling, without a candidate. This is a numerical planning
-blocker, not a physical/global infeasibility proof. A zero-optimizer profile
-measures about 0.90 s per evaluation, dominated by repeated inner Newton IK;
-27-coordinate finite differences cost about 25 s before line searches. Huge
-initial acceleration violations cross an unconverged IK branch, not a proven
-physical acceleration demand. Converged-point derivatives agree to 1.7e−8.
+Genuine-domain SQP then rejects undefined requested trials and backtracks without
+projection or fabricated constraints/derivatives. Its anchor-directed mode reaches
+180 s after 72 accepted points / 73 local QPs, reducing violation only to 7.90e−7;
+final checks expire, so admission is false. The next causal substep is explicitly
+minimum-step feasibility restoration from that exact retained 545543… point,
+using the ORIGINAL fixed 6bb-centered local bounds. It does not optimize or claim
+KKT/minimum-anchor optimality; the 095918 anchor remains the later preference.
+There is no radius, seed, model or weight scan. Every local optimizer call is
+reported separately from the outer trajectory solver.
 
-The timeout checkpoint is retained. Immutable entry reuse, phase-local caches
-and a bounded exact-float64 candidate cache preserve all 33 measured objective/
-832-constraint vectors bit-for-bit, including the invalid inner-IK branch. With
-zero optimizer calls, a full 27-coordinate objective/constraint stencil falls
-from 37.07 to 13.10 s (2.83×); the repeated constraint sweep takes 2 ms. Fixed
-seeds, tolerances, targets, bounds and arithmetic order are unchanged. Detached
-iteration packets retain unadmitted knots, residuals and cache counters; cache
-hits still check the cooperative deadline/cancellation.
+Minimum-step restoration passes all three original endpoint geometry, map, gap,
+independent native-primal and original static-LP gates in 1.47 s / two local QPs.
+The largest coordinate change is 3.24e−7 rad; strict motor requirements are
+0.92499932 / 0.92499345 / 0.92499990. Candidate 2bbdb51a… is endpoint-feasible
+only. A zero-optimizer full moving profile evaluates all 2,025 constraints and
+the complete 27-coordinate Jacobian in 107.54 s. Moving COM acceleration fails
+by 0.04754 m/s², motor reserve by 0.03428, and capture support by 0.106 mm.
+All 218 scalar searches remain present. Full native restoration and actual
+physical validation remain pending; endpoint proof never substitutes for them.
+The first combined native attempt rejects its initial local QP after 44 local
+iterations, before any trajectory step. Exact held world counter/time/full
+payload remain unchanged and all 800 commands are original prefix commands.
+A read-only linear-feasibility diagnosis distinguishes numerical failure from
+experimental design-bound restrictions before another trajectory attempt.
 
-One identical-problem recovery stops cleanly at 180.002 s with 33 retained
-iterations. It restores every prescreen foot-pose residual to about 4e−13 and
-reduces final major-iterate slack to −4.89e−7, but does not converge or admit a
-proposal. A zero-optimizer diagnostic of that exact final major path confirms
-lift-75% analytic acceleration exceeds the cap by 5.47e−7 m/s², and the translate
-endpoint misses the same reserved map boundary by 39.2 picoradians. Neither is
-relaxed. A single approved minimum-norm feasibility polish uses analytic jets
-and all original constraints around this exact retained path, then the original
-strict 123 samples. Its explicit two-stage profile binds both failed receipts;
-missing/downgraded provenance is rejected. The requested shape is visible only
-in unadmitted math: 20.1° extra early knee bend followed by extension, with
-38.6 mm sampled COM progression for the 182 mm foot command. The polish
-converges in two iterations but rejects 12/123 strict samples: acceleration
-peaks at 0.403917 m/s² between the sparse nodes and the support/capture minimum
-is 2.89164 mm. No runtime binding or native world is created.
+The diagnosis proves the original local linear problem infeasible. Removing
+only the experimental lumbar ±5° shape window makes its otherwise-identical
+linear problem solver-feasible; all three lift-knot lumbar upper bounds carry
+constraint pressure. The tiny raw LP residual is retained, so this is no native
+or nonlinear proof. A single conditioned minimum-step QP then solves in two
+iterations / 1.24 s with 2.4e−14 unscaled residual and no bound violation.
 
-One approved bounded refinement retains the same 27 coordinates and exact
-iteration-33 minimum-norm anchor. Three source-worst brackets supply current-candidate
-scalar envelope constraints for lift acceleration and translate/land support;
-the final certificate also checks the complete 200 Hz command grid and bounded
-numerical extrema. An explicit envelope Jacobian reuses current minimizing
-times for its 27 columns; rejected synthetic baselines cannot produce gradients.
-Original clocks are hash-bound, and numeric evidence cannot
-be replaced by pass flags. The first envelope refinement passes all 123 samples,
-but three of 603 command-grid samples and global extrema reject a newly active
-translate capture face: 2.999091 mm minimum reserve. It is not admitted. The
-shared producer now proceeds to bounded face-aware exchange over the whole
-translate phase, with deterministic continuation and the original objective.
-Repeated FK-jet object validation is optimized separately; the original strict
-FK owner remains the independent final certificate. The fast analytic COM
-evaluator matches 15 archived/perturbed/arm/seek cases bit-for-bit and measures
-7.09× faster with zero optimizers or native worlds. Whole-phase exchange covers
-all 56 translate COM/capture face-quarter envelopes (890 total rows), reusing
-the same profile and hash-linked deterministic history. Exchange one converges
-in two iterations and passes the original 123 samples, all 603 command samples
-and 219 strict numerical-extrema evaluations. Runtime preflight verifies the
-bound proposal. The first native trial stops safely at counter 3,200 (4 s),
-before applying any whole-body command: actual-state lift capture reserve is
-2.95678 mm against the unchanged 3 mm requirement. Its final native payload is
-identical to the retained pre-admission payload; all 32 frozen sources and an
-independent targeted negative proof are retained. The offline first-lift witness
-is not the actual stationary-transfer activation input. The same 27-coordinate
-family and original objective now retarget that exact retained current state,
-with all nine support faces covered across all three flight phases (216 closed
-quarter envelopes; 1,102 total rows). Historical input certificates remain
-historical. The next pilot must reproduce the bound actual state exactly and
-pass current analytic/static/dynamic admission. Prior failures remain immutable.
-The bounded actual-input retarget retains two complete iterates at its 300 s
-solve cap; the 180 s certificate is incomplete and records a 7.56e−8 m/s²
-acceleration excess and 4.64e−9 m reserve deficit. It is not admitted. Exact
-duplicate-FK memoization precedes a deterministic same-input continuation, with
-the original objective and bounds. The causal settle receipt now retains its
-solved endpoint geometry and binds that geometry into path identity; no numeric
-reference is changed by this evidence correction. No seed, goal or weight grid is permitted. Only a completely admitted
-proposal proceeds to one native step plus quiet,
-independent audit and actual-speed visual review, then alternating diagnostics
-and the full ten-step test.
+Explicit physical-lumbar v2 removes that design window in planning, runtime
+validation and preflight. Original physical joint limits plus .01-rad interior,
+all other guards and every strict/current native gate remain. The old profile
+cannot qualify it. One positively row-normalized linear-feasibility initializer
+and convex QP still supply only a direction: every actual requested trajectory
+trial must pass genuine-domain backtracking and full final admission. Failed
+numerical restorations now skip the full final certificate and retain a clear
+unattempted result; passing candidates still require all 123 + 603 strict samples.
 
-## Recovery checkpoint (2026-10-19)
-
-The shared execution directory disappeared at about 03:09 UTC. Historical
-compact results below remain historical reports; their raw journals, certificates,
-proposal receipts and the iteration-33 vector are no longer available locally.
-Source checkpoint aaf6a7b and the ignored repository native assets survive. No
-missing receipt is reconstructed or used to qualify a new run.
-
-The contact XML rebuild matches its recorded hash exactly. The new inspector
-build differs and is labeled regenerated. One unchanged baseline replay stops
-at 3,300 native integrations. At counter 3,200 the prepared context, actual
-feet/support and original arm map reproduce their recorded hashes exactly;
-the full native payload differs, so original native-state byte equality is
-unproven. The accepted 27-coordinate vector alone is recovered exactly
-(0959186d…), without its original certificate. New 72-test and 106-test scoped
-runs pass; no recovered-raw-proof or physical-pass claim follows.
-
-The approved fallback is one explicitly new current-state problem, anchored
-and initialized only by those recovered coordinates. It preserves all original
-27-coordinate, foot, clock, map, derivative, joint and support bounds; all nine
-actual support faces across all three phases remain covered by 1,102 rows.
-Two scalar-envelope brackets are freshly declared, without attributing them to
-lost selection receipts. New source/profile checks reject historical proof
-substitution, changed anchors and contradictory qualification flags.
-
-For exact native binding, one cold-prefix world is held at counter 3,200 while
-one bounded 300 s producer and 180 s strict certificate run. No native time or
-state advances during this compute hold. Resume the same world only after
-full source/current-input preflight, analytic/static admission and a fresh
-21-command dynamic window. Record wall compute separately from physical time;
-this is not a real-time computation claim. A failed or incomplete proposal
-stops the held world without applying a changed reference. Retain all new
-artifacts in ignored repository outputs with new receipts. No seed scan,
-limit relaxation, mid-run restore or final qualification is authorized by this
-recovery stage.
-
-The fresh current-input producer converges in four major iterations (216.08 s)
-and passes 123 strict samples, 603 command-grid samples and 235 numerical
-extrema evaluations (105.56 s), with zero failures. Its planned early-knee
-correction is 19.23° and COM forward progress is 37.93 mm for a 182 mm foot
-command. These remain mathematical references, not observed gait improvement.
-The same-world hold/preflight preserves identical native bytes, counter and time.
-
-Current native admission then rejects lift-25%: right_hip_x needs 0.933357 motor
-fraction versus the unchanged strict 0.925 planning reserve. The actual world
-stops at 3,200 integrations with zero changed whole-body commands; a targeted
-negative proof confirms its final payload equals the held activation input and
-all frozen sources remain unchanged. A full passing-candidate audit is not run.
-
-A zero-integration native diagnostic checks all 13 poses: 11 lack static
-equilibrium inside the original 0.95 motor bound. Static equilibrium alone does
-not establish moving-path infeasibility. Exact planned-jet inverse dynamics is
-also checked using native M*qdd+b, the same actual support points, force cones
-and motors. Physical-body velocity parity is within 5.3e−16, with acceleration
-parity within 3.6e−6 under the existing finite-difference Jdot helper. Inertia
-helps some samples and hurts others; lift-25% has no same-contact wrench even
-with diagnostic unbounded motor auxiliaries. Stationary knot endpoints require
-1.12389/1.19972/1.30857, so inertia cannot rescue those endpoints. No auxiliary
-control is applied, and this is not a global physical-impossibility proof.
-
-The approved next stage adds native effort/contact-wrench feasibility to the
-same path problem. First restore the three stationary whole-pose endpoints
-under original motor, friction, actual-support and source-joint bounds, reporting
-which experimental design bounds (including lumbar ±5°) are active. Soft body/
-knee preferences yield to feasibility. Only then attempt one bounded full
-planned-jet solve and current-state/native validation. No geometry-only proposal
-or loosened physical limit can advance this stage.
+The complete analytic planner sampler matches every strict field, constraint
+and validator bitwise at all thirteen actual nodes and measures 3.41× faster.
+Exact per-body positional memoization additionally preserves every strict
+field, constraint and check bitwise at all thirteen actual nodes; measured
+strict-to-optimized aggregate speedup is 3.97×. Original Newton, scalar searches
+and strict final/runtime sampling remain unchanged. A separate
+finite planned-jet adapter checks two fresh scratches, native M*qdd+b/full27
+witnesses through moving samples, additional original static reserve at entry
+and stationary endpoints, and unchanged actual-world bytes. The feature profile
+`reviewed-native-planned-jets-wholebody-one-step-v1` remains unqualified. A full
+moving producer, exact current-input integration, passing native pilot, new-profile
+independent audit and actual-speed visual review are still required.
 
 ## Final acceptance
 
 Require ten alternating own-foot advances ≥180 mm in one uninterrupted world,
-then 4,000 quiet native samples; independently pass every unchanged physical,
-arm, source/history and no-assistance gate. Also require faster loaded-landing
-intervals and improved full actual-speed front/profile pixels: less waiting and
-lateral sway, earlier knee flexion with controlled extension, coordinated pelvis
-and slight forward bust, and visible near-body opposed arms. Report all phase
-intervals, both sides, foot separation, COM progression/body travel and missed
-preferences. A slower, physical-only or visually partial result is not final.
+then 4,000 quiet native samples, with every unchanged physical, arm, history and
+no-assistance gate independently passing. Also require faster loaded-landings
+and improved complete actual-speed front/profile pixels: less waiting/lateral
+sway, earlier knee flexion with controlled extension, coordinated pelvis and
+slight forward bust, and visible near-body opposed arms. Report both sides,
+phase intervals, foot separation, COM/body travel and missed soft preferences.
+A slower, physical-only or visually partial result is not final success.

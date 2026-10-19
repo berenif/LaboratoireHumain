@@ -146,7 +146,11 @@ class WholeBodyCycle:
     already elapsed .00125s is subtracted from the .8s original lift clock.
     """
     def __init__(self,realizer,context,source_limits,heading,independent_knots,
-            *,design_only=False,entry_elapsed=0.):
+            *,design_only=False,entry_elapsed=0.,lumbar_window_deg=5.):
+        if lumbar_window_deg is not None and (type(lumbar_window_deg) not in (int,float)
+                or not math.isfinite(lumbar_window_deg) or lumbar_window_deg<=0.):
+            raise ValueError('explicit positive experimental lumbar window or None required')
+        self.lumbar_window_deg=None if lumbar_window_deg is None else float(lumbar_window_deg)
         if not design_only:
             config=json.loads(context.config_json);causal=json.loads(context.causal_json)
             if (context.phase!='transfer' or context.elapsed<config['phase_durations']['transfer']-1e-10
@@ -196,8 +200,10 @@ class WholeBodyCycle:
         self.foot_segments=(C2Segment.between(0.,self.durations[0],as_jet(swing.translation),Jet.rest(high)),
             C2Segment.between(0.,1.2,Jet.rest(high),Jet.rest(end)),
             C2Segment.between(0.,1.,Jet.rest(end),Jet.rest(landed)))
-        self.key=digest(dict(version=VERSION,context=context.receipt()['contextSHA256'],knots=knots.tolist(),
-            stance=realizer.stance_pose.position,limits=self.limits.tolist(),entryElapsed=entry_elapsed))
+        key_data=dict(version=VERSION,context=context.receipt()['contextSHA256'],knots=knots.tolist(),
+            stance=realizer.stance_pose.position,limits=self.limits.tolist(),entryElapsed=entry_elapsed)
+        if self.lumbar_window_deg!=5.:key_data['lumbarWindowDeg']=self.lumbar_window_deg
+        self.key=digest(key_data)
 
     def clock(self,phase,elapsed):
         aliases={'lift_wait':('lift',self.durations[0]),'translate_wait':('translate',1.2),
@@ -246,7 +252,8 @@ class WholeBodyCycle:
     def validate_sample(self,sample,current_support=None,*,require_clearance=False):
         full=np.array(sample.geometric.full_joints.position);q=full[:15]
         margins=np.minimum(full-self.limits[:,0],self.limits[:,1]-full)
-        lumbar=math.radians(5.)-abs(q[:3]-np.array(self.lower0.position)[:3])
+        lumbar=(margins[:3]-.01 if self.lumbar_window_deg is None else
+            math.radians(self.lumbar_window_deg)-abs(q[:3]-np.array(self.lower0.position)[:3]))
         delta=np.array(sample.geometric.future_arm_delta_right_left.position);ranges=np.array(self.realizer.arm_map.ranges)
         mapmargin=np.minimum(delta-ranges[:,0],ranges[:,1]-delta)-.02
         clearance=self.realizer.kin.bottom(FEET[self.swing_side],sample.geometric.pose(FEET[self.swing_side]).T)
@@ -311,6 +318,8 @@ class WholeBodyCycle:
             initialContextSHA256=self.entry.receipt()['contextSHA256'],runtimeActivationRequiresStationaryTransfer=True,
             savedFirstLiftIsOfflineDesignOnly=self.design_only,freeCOM=True,stanceRealizedRoot=True,arbitraryRoot=False,
             runtimeArmsRemainPreparedMeasured=True,compatibilitySlackOnCompleteCommand=True,
+            experimentalLumbarWindowDeg=self.lumbar_window_deg,experimentalLumbarIsPhysicalLimit=False,
+            lumbarOriginalPhysicalInteriorRad=.01,
             nativeAdmission=False,physicsIntegrations=0,stateInstallations=0,
             settle='causal measured same-current-foot endpoint/path must be separately admitted; no hybrid q0 return',
             wholeNonlinearPathProof=False,requiresEveryCommandCurrentSupportAndDerivativeChecks=True)
