@@ -1,0 +1,172 @@
+{
+  "schema": 1,
+  "date": "2026-10-19",
+  "baselineCommit": "dbe3f4db377147f4673b73d651d44850ceed8d7e",
+  "scope": "Second exact-arithmetic performance slice, revised after a measured rejected implementation: ancestor-prefix output domains with a sticky finite-accumulator eligibility proof.",
+  "change": {
+    "method": "Keep original six-term spatial reductions and link order. Restrict output rows/columns to the exact ancestor prefix only when omitted suffix columns are exactly zero. A per-call sticky eligibility flag starts true only for at most 2^16 links and remains true only while all used J, spatial inertia and weighted Coriolis operands have magnitude <=2^16. This conservatively bounds accumulated mass/Coriolis entries below2^71/2^52, safely below f32 overflow. Any unproved input makes the remainder of assembly use original dense arithmetic. All propagation, scratch, kinematic permutation, passive diagonals and both LU factorizations remain unchanged.",
+    "twoDimensionalPath": "Original arithmetic retained; prefix path enabled only in 3D.",
+    "sourceSha256": {
+      "rust/vendor/rapier3d/src/dynamics/joint/multibody_joint/multibody.rs": "93e6b56e74dc288d9bbacc694b39cbe711df9a3e49f2c7768022adaf2e41c94b",
+      "rust/vendor/rapier3d/src/dynamics/joint/multibody_joint/zero_inertia_tests.rs": "d3253e3c147fa67e1c91997b7848d5aca20d425c55f551932356a4c1de26a4fa"
+    }
+  },
+  "preSimulationArithmeticProof": {
+    "passed": true,
+    "testsPassed": 5,
+    "testsIgnored": 0,
+    "allEngineUnitTestsPassed": 67,
+    "allEngineUnitTestsIgnored": 0,
+    "fixture": "Synthetic branched 25-body assemblies with 9 massless frames and 3 fixed attachments; 27-DoF free root and 21-DoF fixed root; rotated/moving states, internal kinematic joint, passive diagonals, repeated updates.",
+    "comparison": "Bitwise equality against both the original dense implementation and the previously validated zero-inertia-only implementation.",
+    "comparedBits": [
+      "augmented_mass",
+      "acc_augmented_mass",
+      "both LU matrices and pivot sequences",
+      "weighted Coriolis scratch",
+      "all descendant linear/angular Coriolis matrices"
+    ],
+    "invalidOperands": "Original NaN/Inf and confirmed finite M*J-overflow cases, exact and just-above2^16 eligibility boundaries, and isolated infinite massless-frame joint velocity causing Coriolis-stage invalidation all preserve original matrix/LU/scratch bits.",
+    "rejectedFixtureCorrection": "The first overflow setup used an inverse mass at Rapier's existing zero-inverse epsilon. Its failing assertion was retained, then the fixture was corrected to confirm real overflow; no production bound or acceptance criterion changed.",
+    "logs": [
+      "outputs/getup-performance-20261019/bounded-prefix-matrix-tests.log",
+      "outputs/getup-performance-20261019/bounded-prefix-all-engine-unit-tests.log"
+    ],
+    "note": "Standalone pinned vendored-engine lock for unit arithmetic; native and WASM workspace builds separately checked."
+  },
+  "nativeWorkspaceParity": {
+    "passed": true,
+    "comparison": "Exact full JSON equality, no float tolerances",
+    "zeroDegreeFull40HzSnapshotsAndDiagnostics": 201,
+    "rotatedHeadingsDegrees": [
+      60,
+      -45
+    ],
+    "rotatedFullSnapshotsAndDiagnosticsPerHeadingAt1Hz": 5,
+    "nativeIntegrationsPerCandidateHeading": 4000,
+    "standingGate": "All unchanged predicates at every 800 Hz sample from 0.5 s; no failures. Full cumulative loaded slip remains <=20 mm.",
+    "filesSha256": {
+      "outputs/getup-standing-fix-20261019/continuous-0deg-poses.ndjson": "eb4ac0d7798f2df02c571802c545e05d5aa8f223183d29276fe42cdc4b44216b",
+      "outputs/getup-performance-20261019/bounded-prefix-0deg-poses.ndjson": "eb4ac0d7798f2df02c571802c545e05d5aa8f223183d29276fe42cdc4b44216b",
+      "outputs/getup-standing-fix-20261019/continuous-final-other-headings.ndjson": "f13c29309089a6f08648a1e27dd723e2eac34170563513020780cdf7764fcb3c",
+      "outputs/getup-performance-20261019/bounded-prefix-other-summary.ndjson": "df23e966abe2f30a95bfd8ff2b929f94e0cd6efda6e7dba7985d63ee310cd68d"
+    }
+  },
+  "browserCandidate": {
+    "buildLog": "outputs/getup-performance-20261019/bounded-prefix-browser-build.log",
+    "matchedMeasurementPending": false,
+    "workerWasmSha256": "86ead4bc29abd5580d939e389f8df179755a6cdc9a59ed29ddcba793c5d0af90",
+    "driverSha256": "4c6281e19c4540e3ba72a74a5b1514b5d1b9c58e56c1f8a2dbfb3adb4812d74e",
+    "immutableArtifact": "outputs/browser-capability-20261019/app-sticky-bound-candidate",
+    "appManifest": "outputs/getup-performance-20261019/bounded-prefix-app-sha256.txt",
+    "appManifestSha256": "0b24194d5ab7acb6d275413ef7dbae2d61626f73d4a4857d6f2afd2456862e82",
+    "matchedPairRuns": [
+      {
+        "report": "outputs/browser-capability-20261019/profile-fixed-zero-only-sticky-cpu-120/report.json",
+        "physicalTicks": 120,
+        "physicalSeconds": 3,
+        "wallSeconds": 13.368900000002235,
+        "simulationToWallRatio": 0.22440140924081253,
+        "meanCoreMs": 104.32083333327124,
+        "meanPhysicsMs": 102.00666666564842,
+        "dedicatedWorkerCpuSeconds": 12.53,
+        "dedicatedWorkerCpuToWorkerElapsedRatio": 0.9980326093029395,
+        "servedAssetHashesVerified": true
+      },
+      {
+        "report": "outputs/browser-capability-20261019/profile-fixed-sticky-bound-cpu-120/report.json",
+        "physicalTicks": 120,
+        "physicalSeconds": 3,
+        "wallSeconds": 12.01629999999702,
+        "simulationToWallRatio": 0.24966087730838477,
+        "meanCoreMs": 91.64000000019247,
+        "meanPhysicsMs": 89.41916666748003,
+        "dedicatedWorkerCpuSeconds": 11,
+        "dedicatedWorkerCpuToWorkerElapsedRatio": 0.9967831090554514,
+        "servedAssetHashesVerified": true
+      },
+      {
+        "report": "outputs/browser-capability-20261019/profile-fixed-sticky-bound-cpu-repeat-120/report.json",
+        "physicalTicks": 120,
+        "physicalSeconds": 3,
+        "wallSeconds": 12.04489999999851,
+        "simulationToWallRatio": 0.2490680703036448,
+        "meanCoreMs": 92.74583333336437,
+        "meanPhysicsMs": 90.57666666749864,
+        "dedicatedWorkerCpuSeconds": 11.16,
+        "dedicatedWorkerCpuToWorkerElapsedRatio": 0.9989348275568957,
+        "servedAssetHashesVerified": true
+      },
+      {
+        "report": "outputs/browser-capability-20261019/profile-fixed-zero-only-sticky-cpu-repeat-120/report.json",
+        "physicalTicks": 120,
+        "physicalSeconds": 3,
+        "wallSeconds": 14.455800000000744,
+        "simulationToWallRatio": 0.20752915784666678,
+        "meanCoreMs": 110.00166666659837,
+        "meanPhysicsMs": 107.41083333377416,
+        "dedicatedWorkerCpuSeconds": 13.25,
+        "dedicatedWorkerCpuToWorkerElapsedRatio": 1.0008913598531675,
+        "servedAssetHashesVerified": true
+      }
+    ],
+    "pooledBaselineWallSeconds": 27.824700000002977,
+    "pooledCandidateWallSeconds": 24.06119999999553,
+    "pooledSpeedup": 1.1564136452050664,
+    "pooledWallReductionPercent": 13.525752299241478,
+    "exactSnapshotParity": {
+      "passed": true,
+      "fullSnapshotsPerRun": 121,
+      "physicalTraceSha256": "ffa40a2f4c84f80e841115cb6711d83ffff6cb985b6eda97e01b55f0f351085d",
+      "excludedFields": [
+        "diagnostics.controller_ms",
+        "diagnostics.update_ms"
+      ],
+      "reports": [
+        "outputs/browser-capability-20261019/sticky-bound-browser-physical-exact-120.json",
+        "outputs/browser-capability-20261019/sticky-bound-browser-physical-exact-120-repeat.json"
+      ]
+    },
+    "functionalRegression": {
+      "passed": true,
+      "grabScenarios": 6,
+      "exactFullGrabSnapshots": 23,
+      "physicalSnapshotsAndCommandsMatchOriginalBaseline": true,
+      "grabReport": "outputs/browser-capability-20261019/sticky-bound-browser-grab-exact.json",
+      "readinessAutoFallbackAndRepeatAutoPassed": true,
+      "readinessLog": "outputs/browser-capability-20261019/readiness-sticky-bound-candidate.log",
+      "smokePassed": true,
+      "smokeTicks": 132,
+      "smokeSimulatedSeconds": 3.3,
+      "smokeNativeIntegrations": 2640,
+      "smokeStrikes": 1,
+      "smokeSegments": 25,
+      "smokeLog": "outputs/browser-capability-20261019/smoke-sticky-bound-candidate.log",
+      "javascriptTestsPassed": 83,
+      "javascriptTestsFailed": 0,
+      "javascriptLog": "outputs/browser-capability-20261019/npm-test-sticky-bound-candidate.log"
+    }
+  },
+  "limits": [
+    "Still only about0.249\u00d7 simulation/wall speed on this desktop/headless executor. This measured optimization does not qualify real-time use or mobile performance.",
+    "Native candidate validation is bounded to 5 physical seconds per heading; prior 33 s long-hold proof is not relabeled as directly rerun here.",
+    "Existing broader native, ballistic, recovery, mobile and real-time release gaps remain.",
+    "The full historical native inventory is not rerun for this narrow slice; its known failures are not ignored or claimed fixed. Dedicated engine tests plus exact native/browser dynamics are the new checks."
+  ],
+  "releaseAccepted": false,
+  "candidateAccepted": true,
+  "previousRejectedImplementation": {
+    "evidence": "docs/evidence/getup-mass-matrix-prefix-performance-2026-10-19.json",
+    "causalFinding": "The smaller quadform becomes cheaper, but extra inlined checks in update_mass_matrix overwhelm it. Samples do not distinguish individual inlined source lines.",
+    "pooledWallRegressionPercent": 10.15
+  },
+  "freshCandidateCpuProfile": {
+    "massMatrixInclusiveSampleShare": 0.547194,
+    "massMatrixOwnSampleShare": 0.340967,
+    "quadformSampleShare": 0.138626,
+    "luNewSampleShare": 0.046581,
+    "luSolveSampleShare": 0.064015,
+    "genericJointSolveSampleShare": 0.096941,
+    "report": "outputs/browser-capability-20261019/profile-sticky-bound-worker-cpu/aggregated.json"
+  }
+}

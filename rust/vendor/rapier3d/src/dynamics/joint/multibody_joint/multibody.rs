@@ -656,10 +656,10 @@ impl Multibody {
     }
 
     pub(crate) fn update_mass_matrix(&mut self, dt: Real, bodies: &RigidBodySet) {
-        self.update_mass_matrix_impl::<true>(dt, bodies);
+        self.update_mass_matrix_impl::<true, true>(dt, bodies);
     }
 
-    fn update_mass_matrix_impl<const SKIP_ZERO_INERTIA: bool>(
+    fn update_mass_matrix_impl<const SKIP_ZERO_INERTIA: bool, const USE_PREFIX: bool>(
         &mut self,
         dt: Real,
         bodies: &RigidBodySet,
@@ -689,6 +689,17 @@ impl Multibody {
         }
 
         let mut curr_assembly_id = 0;
+
+        // Conservative eligibility proof for omitting zero outer products.
+        // With at most 2^16 links and |J|, |M|, |weighted C| <= 2^16,
+        // every accumulated mass entry is below 2^71 (including rounding)
+        // and every Coriolis entry below 2^52, far below even f32::MAX.
+        // A single rejected operand makes the rest of this assembly dense.
+        // This avoids repeatedly scanning the complete output matrices while
+        // retaining IEEE nonfinite propagation for all unproved inputs.
+        const PREFIX_OPERAND_BOUND: Real = 65536.0;
+        let mut finite_prefix_accumulators =
+            cfg!(feature = "dim3") && USE_PREFIX && self.links.len() <= 65536;
 
         for i in 0..self.links.len() {
             let link = &self.links[i];
@@ -734,6 +745,12 @@ impl Multibody {
                 && rb.vels.angvel.is_finite()
                 && body_jacobian.iter().all(|x| x.is_finite());
 
+            let prefix_end = link.assembly_id + link.joint.ndofs();
+            let bounded_jacobian = finite_prefix_accumulators
+                && body_jacobian
+                    .iter()
+                    .all(|x| x.abs() <= PREFIX_OPERAND_BOUND);
+            let mut use_prefix = false;
             if !skip_local_inertia {
                 #[allow(unused_mut)] // mut is needed for 3D but not for 2D.
                 let mut augmented_inertia = rb_inertia;
@@ -753,10 +770,37 @@ impl Multibody {
                 let rb_mass_matrix_wo_gyro = concat_rb_mass_matrix(rb_mass, rb_inertia.into());
                 #[allow(clippy::useless_conversion)] // Needed in 3D, no-op in 2D
                 let rb_mass_matrix = concat_rb_mass_matrix(rb_mass, augmented_inertia.into());
-                self.augmented_mass
-                    .quadform(1.0, &rb_mass_matrix_wo_gyro, body_jacobian, 1.0);
-                self.acc_augmented_mass
-                    .quadform(1.0, &rb_mass_matrix, body_jacobian, 1.0);
+                // Transforms act column-wise; this link adds only its own
+                // assembly_id..prefix_end. Check the omitted suffix exactly.
+                finite_prefix_accumulators = finite_prefix_accumulators
+                    && bounded_jacobian
+                    && rb_mass_matrix_wo_gyro
+                        .iter()
+                        .chain(rb_mass_matrix.iter())
+                        .all(|x| x.abs() <= PREFIX_OPERAND_BOUND);
+                use_prefix = finite_prefix_accumulators
+                    && prefix_end > 0
+                    && prefix_end < self.ndofs
+                    && body_jacobian
+                        .columns(prefix_end, self.ndofs - prefix_end)
+                        .iter()
+                        .all(|x| *x == 0.0);
+                if use_prefix {
+                    // Keep the static six-row Jacobian type and the original
+                    // six-term reductions, changing only the outer domains.
+                    let jacobian = body_jacobian.columns(0, prefix_end);
+                    self.augmented_mass
+                        .view_mut((0, 0), (prefix_end, prefix_end))
+                        .quadform(1.0, &rb_mass_matrix_wo_gyro, &jacobian, 1.0);
+                    self.acc_augmented_mass
+                        .view_mut((0, 0), (prefix_end, prefix_end))
+                        .quadform(1.0, &rb_mass_matrix, &jacobian, 1.0);
+                } else {
+                    self.augmented_mass
+                        .quadform(1.0, &rb_mass_matrix_wo_gyro, body_jacobian, 1.0);
+                    self.acc_augmented_mass
+                        .quadform(1.0, &rb_mass_matrix, body_jacobian, 1.0);
+                }
             }
 
             /*
@@ -887,8 +931,31 @@ impl Multibody {
             // Keep the scratch workspace identical, including nonfinite IEEE
             // propagation. Only omit the final product when it is provably zero.
             if !skip_local_inertia || !self.i_coriolis_dt.iter().all(|x| *x == 0.0) {
-                self.acc_augmented_mass
-                    .gemm_tr(1.0, rb_j, &self.i_coriolis_dt, 1.0);
+                finite_prefix_accumulators = finite_prefix_accumulators
+                    && bounded_jacobian
+                    && self
+                        .i_coriolis_dt
+                        .iter()
+                        .all(|x| x.abs() <= PREFIX_OPERAND_BOUND);
+                if use_prefix
+                    && finite_prefix_accumulators
+                    && self.i_coriolis_dt
+                        .columns(prefix_end, self.ndofs - prefix_end)
+                        .iter()
+                        .all(|x| *x == 0.0)
+                {
+                    self.acc_augmented_mass
+                        .view_mut((0, 0), (prefix_end, prefix_end))
+                        .gemm_tr(
+                            1.0,
+                            &rb_j.columns(0, prefix_end),
+                            &self.i_coriolis_dt.columns(0, prefix_end),
+                            1.0,
+                        );
+                } else {
+                    self.acc_augmented_mass
+                        .gemm_tr(1.0, rb_j, &self.i_coriolis_dt, 1.0);
+                }
             }
         }
 

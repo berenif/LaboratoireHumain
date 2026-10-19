@@ -1,0 +1,97 @@
+{
+  "schema": 1,
+  "date": "2026-10-19",
+  "baselineCommit": "dbe3f4db377147f4673b73d651d44850ceed8d7e",
+  "scope": "Second narrow exact-arithmetic performance slice: ancestor-prefix output domains on top of the previously validated zero-inertia elision. No solver, controller, physical gate or model changes.",
+  "change": {
+    "method": "For each link, preserve all six-term spatial reductions and link accumulation order while reducing only the output rows/columns to 0..assembly_id+joint.ndofs(). Verify every omitted Jacobian/Coriolis column is exactly zero; reject the fast path on nonfinite inputs, nonfinite output accumulators, or finite operands large enough for a spatial M*J intermediate to overflow. Keep original dense arithmetic on rejected inputs. Keep full Coriolis propagation, scratch, kinematic permutation and both LU factorizations.",
+    "twoDimensionalPath": "Original arithmetic retained; prefix path enabled only in 3D.",
+    "sourceSha256": {
+      "rust/vendor/rapier3d/src/dynamics/joint/multibody_joint/multibody.rs": "33b6af66c97fee98f29af16e6d10dd67b05f74c3c1e36b3d1f940fb43f58aaf9",
+      "rust/vendor/rapier3d/src/dynamics/joint/multibody_joint/zero_inertia_tests.rs": "303ee61f239b18abb2e085f6b0fb11731f0c08bf5df08bc9b60703e3d521ad52"
+    }
+  },
+  "preSimulationArithmeticProof": {
+    "passed": true,
+    "testsPassed": 3,
+    "testsIgnored": 0,
+    "allEngineUnitTestsPassed": 65,
+    "allEngineUnitTestsIgnored": 0,
+    "fixture": "Synthetic branched 25-body assemblies with 9 massless frames and 3 fixed attachments; 27-DoF free root and 21-DoF fixed root; rotated/moving states, internal kinematic joint, passive diagonals, repeated updates.",
+    "comparison": "Bitwise equality against both the original dense implementation and the previously validated zero-inertia-only implementation.",
+    "comparedBits": [
+      "augmented_mass",
+      "acc_augmented_mass",
+      "both LU matrices and pivot sequences",
+      "weighted Coriolis scratch",
+      "all descendant linear/angular Coriolis matrices"
+    ],
+    "invalidOperands": "NaN/Inf inputs, signed-zero suffixes and a confirmed finite M*J overflow case retain dense propagation bits. The overflow fixture explicitly checks an infinite intermediate and a NaN outside the retained prefix in the dense reference.",
+    "rejectedFixtureCorrection": "The first overflow setup used an inverse mass at Rapier's existing zero-inverse epsilon. Its failing assertion was retained, then the fixture was corrected to confirm real overflow; no production bound or acceptance criterion changed.",
+    "logs": [
+      "outputs/getup-performance-20261019/prefix-matrix-tests.log",
+      "outputs/getup-performance-20261019/prefix-all-engine-unit-tests.log",
+      "outputs/getup-performance-20261019/prefix-overflow-fixture-invalid.log"
+    ],
+    "note": "Standalone pinned vendored-engine lock for unit arithmetic; native and WASM workspace builds separately checked."
+  },
+  "nativeWorkspaceParity": {
+    "passed": true,
+    "comparison": "Exact full JSON equality, no float tolerances",
+    "zeroDegreeFull40HzSnapshotsAndDiagnostics": 201,
+    "rotatedHeadingsDegrees": [
+      60,
+      -45
+    ],
+    "rotatedFullSnapshotsAndDiagnosticsPerHeadingAt1Hz": 5,
+    "nativeIntegrationsPerCandidateHeading": 4000,
+    "standingGate": "All unchanged predicates at every 800 Hz sample from 0.5 s; no failures. Full cumulative loaded slip remains <=20 mm.",
+    "filesSha256": {
+      "outputs/getup-standing-fix-20261019/continuous-0deg-poses.ndjson": "eb4ac0d7798f2df02c571802c545e05d5aa8f223183d29276fe42cdc4b44216b",
+      "outputs/getup-performance-20261019/prefix-0deg-poses.ndjson": "eb4ac0d7798f2df02c571802c545e05d5aa8f223183d29276fe42cdc4b44216b",
+      "outputs/getup-standing-fix-20261019/continuous-final-other-headings.ndjson": "f13c29309089a6f08648a1e27dd723e2eac34170563513020780cdf7764fcb3c",
+      "outputs/getup-performance-20261019/prefix-other-summary.ndjson": "242ec06afacd1383a3a5c81fcee49046865c839e50def552e0f7c4670f7776e1"
+    }
+  },
+  "browserCandidate": {
+    "workerWasmSha256": "fe926279ec82f19c090266f0a0c9f248c53a13176d7bf6e0196d1ee91d3dae18",
+    "driverSha256": "4c6281e19c4540e3ba72a74a5b1514b5d1b9c58e56c1f8a2dbfb3adb4812d74e",
+    "immutableArtifact": "outputs/browser-capability-20261019/app-prefix-candidate",
+    "buildLog": "outputs/getup-performance-20261019/prefix-browser-build.log",
+    "appManifest": "outputs/getup-performance-20261019/prefix-app-sha256.txt",
+    "appManifestSha256": "70b801c73cdcb43fb32c4dfd87ea75386372841732c008ce5094dd10bc6f6a41",
+    "matchedMeasurementPending": false,
+    "pooledZeroOnlyWallSeconds": 27.2645,
+    "pooledPrefixWallSeconds": 30.0329,
+    "workerCpuToElapsedRatioRange": [
+      0.9956,
+      1.0012
+    ],
+    "exactFullSnapshotsPerRun": 121,
+    "runs": 4,
+    "rejectedSummary": "outputs/browser-capability-20261019/prefix-rejected-browser-summary.json"
+  },
+  "limits": [
+    "This first prefix implementation is rejected for performance; functional chain was not run after the regression was confirmed.",
+    "Native candidate validation is bounded to 5 physical seconds per heading; prior 33 s long-hold proof is not relabeled as directly rerun here.",
+    "Existing broader native, ballistic, recovery, mobile and real-time release gaps remain."
+  ],
+  "releaseAccepted": false,
+  "candidateAccepted": false,
+  "rejectionReason": "Exact physics parity passes, but actual browser forward/reverse pairs show a pooled 10.15% wall-time regression. Implementation is rejected pending a causal profile, not published as a performance gain.",
+  "causalProfile": {
+    "quadformSampleMsPerCompletedTick": {
+      "zeroOnly": 28.41,
+      "rejectedPrefix": 16.02
+    },
+    "massMatrixOwnSampleMsPerCompletedTick": {
+      "zeroOnly": 33.9,
+      "rejectedPrefix": 65.75
+    },
+    "finding": "The smaller quadform becomes cheaper, but extra inlined checks in update_mass_matrix overwhelm it. Samples do not distinguish individual inlined source lines.",
+    "reports": [
+      "outputs/browser-capability-20261019/profile-zero-only-worker-cpu/aggregated.json",
+      "outputs/browser-capability-20261019/profile-prefix-worker-cpu/aggregated.json"
+    ]
+  }
+}
