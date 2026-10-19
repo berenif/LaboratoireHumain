@@ -1,0 +1,231 @@
+{
+  "schema": 1,
+  "checkedAt": "2026-10-19T13:49:35.975Z",
+  "scope": "Immutable final combined Rust/WASM app on desktop Linux Chromium headless-shell. Actual ordinary-app standing snapshots, real-pointer interactions, renderer fallback/recovery and bounded striker smoke. No Android, every-800Hz browser observer, recovery, real-time performance or release qualification.",
+  "runtime": {
+    "browser": "155.0.8059.79",
+    "renderer": "WebGL2",
+    "driverSha256": "4c6281e19c4540e3ba72a74a5b1514b5d1b9c58e56c1f8a2dbfb3adb4812d74e",
+    "workerWasmSha256": "411be2c58fb3c8d0135261e4d6197acf6a31e14501cbfd98b136e8837995904f",
+    "artifact": "outputs/browser-capability-20261019/app-standing-final-repeat-auto",
+    "artifactSha256": {
+      "app-1df6634f608f8d80.css": "6f9e3128c49954cf4c159cd1b3cb0375ca4293e134429847288a5e6549a44271",
+      "index.html": "e66f7147dd7ba9fab899d5be48593642a463a9f075d26d1ef807c6c40d568ccc",
+      "lh-browser-4479461c3e1613b6.js": "ec9a8317fc58b63cf4f6874c3ed03808743c61c19a9c485020f0dc64dfd9c4f5",
+      "lh-browser-4479461c3e1613b6_bg.wasm": "b72e126e7587859ae1891c1e892d1508b255d024967edaa662cf95d937934411",
+      "lh_worker.js": "f5ab14e78b52ad83577646105b61526484096924ec39f5a72d8ee039cb652da2",
+      "lh_worker_bg.wasm": "411be2c58fb3c8d0135261e4d6197acf6a31e14501cbfd98b136e8837995904f",
+      "sim-worker.js": "a3a2b18c222c045fc08bf19aff2e96b92f0bc18ad6023bcca660195054267996",
+      "snippets/lh-browser-575491a8d42d44d5/driver.js": "4c6281e19c4540e3ba72a74a5b1514b5d1b9c58e56c1f8a2dbfb3adb4812d74e"
+    }
+  },
+  "ordinaryNoInputStanding": {
+    "passed": true,
+    "report": "outputs/browser-capability-20261019/hold-standing-final-repeat-auto/result.json",
+    "settlingPhysicalSeconds": 3,
+    "quietPhysicalSeconds": 30,
+    "final": {
+      "tick": 1320,
+      "time": 33,
+      "motion": "Upright",
+      "backend": "WebGL2",
+      "workerInstances": 1,
+      "error": "",
+      "failure": null
+    },
+    "metrics": {
+      "snapshotCount": 1321,
+      "steadySnapshotCount": 1201,
+      "referenceTime": 3,
+      "finalTime": 33,
+      "steadyPhysicalSeconds": 30,
+      "maximumSnapshotGapTicks": 1,
+      "minUpY": {
+        "torso": 0.999628318842122,
+        "pelvis": 0.992446321346018,
+        "right_foot": 0.9999290110961281,
+        "left_foot": 0.9999287545989171
+      },
+      "minimumAggregateFootLoadsN": {
+        "right_foot": 200.18544,
+        "left_foot": 200.28545
+      },
+      "maximumLinearSpeedMps": 0.0013172332063142935,
+      "maximumAngularSpeedRadps": 0.002419007675544633,
+      "maximumPelvisDriftM": 0.0015912281829895932,
+      "maximumFootBodyDriftM": 0.007079828505136335,
+      "maximumLoadedFootHorizontalBodySpeedProxyMps": 0.0005090337770086754,
+      "maximumFloorPenetrationM": 0.0010222999,
+      "maximumSelfPenetrationM": 0,
+      "violations": [],
+      "contactPointSlipAvailable": false,
+      "slipLimit": "The ordinary snapshot exposes aggregate segment loads and body velocities, not contact-point tangential velocity. Horizontal foot-body speed is a proxy, not contact slip."
+    },
+    "snapshotVelocityCaveat": "Snapshot body velocities are reported caches; they are not authoritative current generalized/contact-point velocities. Up vectors, positions/drift and aggregate loads are recorded separately.",
+    "observation": {
+      "wallSeconds": 187.00860000000148,
+      "simulationSeconds": 33,
+      "integratedSimulationToWallRatio": 0.17646247284884084,
+      "presentedFrames": 10426,
+      "averagePresentedFps": 55.751446724909535,
+      "lastHalfSecondPresentedFps": 60,
+      "appReportedSimulationToWallRatio": 0.17647766621653607
+    },
+    "performanceContext": "Physics owner confirmed all competing native suites and Rust builds terminal before this run. Only the ordinary app, read-only snapshot tracing and native browser recording run in this executor; desktop Linux headless software rendering, not Android or hardware/real-time qualification.",
+    "nativeWallTimeVideo": "outputs/browser-capability-20261019/hold-standing-final-repeat-auto/standing-hold-native-wall-time.webm",
+    "retimed": false,
+    "finalScreenshot": "outputs/browser-capability-20261019/hold-standing-final-repeat-auto/after-thirty-quiet-physical-seconds.png",
+    "screenshotsVisuallyInspected": true
+  },
+  "rendererReadiness": {
+    "passed": true,
+    "report": "outputs/browser-capability-20261019/readiness-standing-final-repeat-auto/result.json",
+    "stages": [
+      {
+        "name": "auto-fallback",
+        "backend": "WebGL2",
+        "requestedRenderer": "auto",
+        "fallback": "Error: WebGPU render check failed: OperationError: A valid external Instance reference no longer exists.. Choose Auto or WebGL2.",
+        "error": "",
+        "ready": true,
+        "tick": 0,
+        "generation": 1,
+        "workerInstances": 1,
+        "rendererChanges": 1,
+        "controller": "measured-contact-standing-balance",
+        "recoveryStep": "GetUp body \u00b7 Joint balance \u00b7 Learned recovery disabled"
+      },
+      {
+        "name": "explicit-webgpu-error",
+        "backend": "",
+        "requestedRenderer": "webgpu",
+        "fallback": "",
+        "error": "Graphics unavailable: Error: WebGPU render check failed: OperationError: A valid external Instance reference no longer exists.. Choose Auto or WebGL2.",
+        "ready": false,
+        "tick": 0,
+        "generation": 1,
+        "workerInstances": 1,
+        "rendererChanges": 1,
+        "controller": "measured-contact-standing-balance",
+        "recoveryStep": "GetUp body \u00b7 Joint balance \u00b7 Learned recovery disabled"
+      },
+      {
+        "name": "recovered-webgl2",
+        "backend": "WebGL2",
+        "requestedRenderer": "webgl2",
+        "fallback": "",
+        "error": "",
+        "ready": true,
+        "tick": 0,
+        "generation": 1,
+        "workerInstances": 1,
+        "rendererChanges": 2,
+        "controller": "measured-contact-standing-balance",
+        "recoveryStep": "GetUp body \u00b7 Joint balance \u00b7 Learned recovery disabled"
+      },
+      {
+        "name": "repeated-auto-fallback",
+        "backend": "WebGL2",
+        "requestedRenderer": "auto",
+        "fallback": "Error: WebGPU render check failed: OperationError: A valid external Instance reference no longer exists.. Choose Auto or WebGL2.",
+        "error": "",
+        "ready": true,
+        "tick": 0,
+        "generation": 1,
+        "workerInstances": 1,
+        "rendererChanges": 2,
+        "controller": "measured-contact-standing-balance",
+        "recoveryStep": "GetUp body \u00b7 Joint balance \u00b7 Learned recovery disabled"
+      },
+      {
+        "name": "reset-after-fallback",
+        "backend": "WebGL2",
+        "requestedRenderer": "auto",
+        "fallback": "Error: WebGPU render check failed: OperationError: A valid external Instance reference no longer exists.. Choose Auto or WebGL2.",
+        "error": "",
+        "ready": true,
+        "tick": 0,
+        "generation": 2,
+        "workerInstances": 1,
+        "rendererChanges": 2,
+        "controller": "measured-contact-standing-balance",
+        "recoveryStep": "GetUp body \u00b7 Joint balance \u00b7 Learned recovery disabled"
+      },
+      {
+        "name": "auto-without-webgpu-api",
+        "backend": "WebGL2",
+        "requestedRenderer": "auto",
+        "fallback": "",
+        "error": "",
+        "ready": true,
+        "tick": 0,
+        "generation": 1,
+        "workerInstances": 1,
+        "rendererChanges": 1,
+        "controller": "measured-contact-standing-balance",
+        "recoveryStep": "GetUp body \u00b7 Joint balance \u00b7 Learned recovery disabled"
+      }
+    ],
+    "errors": [],
+    "note": "Repeated Auto retains an already-working fallback. Explicit WebGPU and a later recovery still probe capability; the GPU API is not disabled."
+  },
+  "realPointerGrab": {
+    "passed": true,
+    "report": "outputs/browser-capability-20261019/grab-standing-final-repeat-auto/browser-result.json",
+    "scenarios": [
+      "No grab",
+      "Actual hand pull, mouse release, natural continuation",
+      "Continued held-pull control",
+      "pointercancel",
+      "blur",
+      "Reset during active physical drag"
+    ],
+    "errors": [],
+    "httpErrors": [],
+    "recording": "outputs/browser-capability-20261019/grab-standing-final-repeat-auto/grab-manual-clock.webm",
+    "automaticRecording": "outputs/browser-capability-20261019/grab-standing-final-repeat-auto/grab-automatic-scheduler.webm",
+    "retimed": false,
+    "shortAutomaticObservation": {
+      "wallSeconds": 2.144199999999255,
+      "simulationSeconds": 0.35,
+      "integratedSimulationToWallRatio": 0.16323104188047832,
+      "presentedFrames": 110,
+      "averagePresentedFps": 51.30118459100747,
+      "lastHalfSecondPresentedFps": 52,
+      "appReportedSimulationToWallRatio": 0.17500875043752182
+    }
+  },
+  "boundedStrikerSmoke": {
+    "passed": true,
+    "result": {
+      "passed": true,
+      "runtime": "Rust/WASM",
+      "backend": "WebGL2",
+      "ticks": 132,
+      "simulatedSeconds": 3.3,
+      "nativeSubsteps": 2640,
+      "strikes": 1,
+      "segments": 25,
+      "physicalQualification": false
+    },
+    "log": "outputs/browser-capability-20261019/smoke-standing-final-repeat-auto.log"
+  },
+  "javaScriptTests": {
+    "passed": 83,
+    "failed": 0,
+    "log": "outputs/browser-capability-20261019/npm-test-standing-final-repeat-auto.log"
+  },
+  "sourceSha256": {
+    "rust/crates/browser/driver.js": "4c6281e19c4540e3ba72a74a5b1514b5d1b9c58e56c1f8a2dbfb3adb4812d74e",
+    "rust/crates/sim/src/getup.rs": "a39f6f5e3b66d5761b0ec18f1c33fbde6c82a26c54f5066f85a4182fd9388ecd",
+    "rust/crates/sim/src/getup/supported_standing.rs": "173e9f52ff6b99b42003a89e8c38c34c97b1db4cd5e50dad222e7bbd8a1f11b3",
+    "scripts/verify-rust-grab.mjs": "2eb9a4bbff8fcae415a6ca0a8ff3c7cf40bd875cd673d48a97f207158a95cc22"
+  },
+  "limits": [
+    "Standing proof samples every returned40Hz snapshot; it does not replace the separate native800Hz observer campaign",
+    "Snapshot body velocity fields are reported caches, not authoritative current generalized velocities",
+    "The ordinary app exposes no contact-point slip velocity; body speed is labeled as a proxy",
+    "Shared headless software rendering and recording are not user-hardware or mobile performance qualification",
+    "The prior long-hold timing was taken only after native builds/trials were confirmed terminal"
+  ]
+}

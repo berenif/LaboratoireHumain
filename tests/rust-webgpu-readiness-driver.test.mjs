@@ -233,6 +233,23 @@ test('Auto without a browser GPU API directly creates WebGL2', async t => {
   assert.equal(h.canvases.length, 1, 'Missing GPU API must not create a probe canvas');
 });
 
+test('Repeated Auto preserves a working WebGL2 fallback after a known GPU failure', async t => {
+  const h = driverHarness({ gpu: rejectingGpu() }); t.after(h.close);
+  await h.started; await h.advance(2);
+  const before = h.continuity(), renderer = h.rendererCalls[0];
+  const changes = h.bridge.diagnostics.rendererChanges;
+  h.bridge.action({ type: 'renderer', value: 'auto' });
+  assert.equal(h.bridge.diagnostics.ready, true);
+  assert.equal(h.bridge.diagnostics.backend, 'WebGL2');
+  assert.equal(h.bridge.diagnostics.rendererChanges, changes);
+  assert.equal(h.rendererCalls.length, 1);
+  assert.equal(renderer.disposed, false);
+  assert.equal(renderer.freed, false);
+  assert.equal(h.gpu.calls.filter(call => call === 'adapter').length, 1, 'Known failed GPU path must not replace a working Auto fallback');
+  assert.match(h.bridge.diagnostics.rendererFallbackReason, /GPU render queue rejected/);
+  h.assertContinuity(before);
+});
+
 test('Successful GPU submission completion allows Auto to create WebGPU', async t => {
   const completion = deferred();
   const h = driverHarness({ gpu: mockGpu(() => completion.promise) }); t.after(h.close);

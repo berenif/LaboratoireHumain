@@ -67,7 +67,7 @@ export async function start_bridge() {
   }
   const state = {
     disposed: false, renderer: null, canvas: null, changing: false, graphicsFault: false, graphicsError: '',
-    backendRequested: new URL(location.href).searchParams.get('renderer') || 'auto', backendFallbackReason: '',
+    backendRequested: new URL(location.href).searchParams.get('renderer') || 'auto', backendFallbackReason: '', lastWebGpuFailure: '',
     quality: 'auto', selected: '', heading: 0, floorEnabled: true, desiredFloorEnabled: true, desiredPaused: sourceStepLab,
     playground: { station: 'flat', difficulty: 'challenging' },
     visible: !document.hidden, visibleSent: true, last: null, pending: [], acknowledgements: new Map(),
@@ -330,6 +330,15 @@ export async function start_bridge() {
   }
   async function changeRenderer(requested) {
     if (state.changing || state.disposed) return;
+    const currentBackend = state.renderer && !state.graphicsFault ? status().backend : '';
+    if (requested === 'auto' && (currentBackend === 'WebGPU'
+      || currentBackend === 'WebGL2' && (state.lastWebGpuFailure || !navigator.gpu))) {
+      // Auto can keep an already verified view. Repeatedly destroying a working
+      // fallback only to reprobe a failed GPU path needlessly churns contexts.
+      cancelPointer(); state.backendRequested = requested;
+      state.backendFallbackReason = currentBackend === 'WebGL2' ? state.lastWebGpuFailure : '';
+      notify(); return;
+    }
     state.changing = true; cancelPointer(); state.backendRequested = requested; state.backendFallbackReason = ''; notify();
     // Detach the retired canvas before destroying its device. Its asynchronous
     // context-lost event must not overwrite the next renderer's startup result.
@@ -339,9 +348,16 @@ export async function start_bridge() {
     try {
       const first = requested === 'auto' ? (navigator.gpu ? 'webgpu' : 'webgl2') : requested;
       const makeRenderer = async backend => {
-        if (backend === 'webgpu') await verify_webgpu_render_queue(navigator.gpu, () => document.createElement('canvas'));
-        if (state.disposed) throw new Error('Renderer was disposed during initialization');
-        return bindings.make_renderer(freshCanvas(), backend);
+        try {
+          if (backend === 'webgpu') await verify_webgpu_render_queue(navigator.gpu, () => document.createElement('canvas'));
+          if (state.disposed) throw new Error('Renderer was disposed during initialization');
+          const renderer = await bindings.make_renderer(freshCanvas(), backend);
+          if (backend === 'webgpu') state.lastWebGpuFailure = '';
+          return renderer;
+        } catch (error) {
+          if (backend === 'webgpu') state.lastWebGpuFailure = String(error);
+          throw error;
+        }
       };
       try { state.renderer = await makeRenderer(first); }
       catch (error) {
