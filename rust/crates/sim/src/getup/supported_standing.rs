@@ -6,7 +6,42 @@ use crate::*;
 
 type SupportReactions = [(usize, Vector, Vector); 2];
 
+/// A control intention bound to a recovered stance, never a body-state edit.
+/// Every build decodes this type to refuse unsupported active checkpoints.
+#[derive(Clone, Copy, Serialize, Deserialize)]
+pub(super) struct StandingReference {
+    pub(super) com: Vector,
+    pub(super) forward: Vector,
+    pub(super) lateral: Vector,
+}
+
+#[cfg(feature = "getup-terminal-balance-experiment")]
+pub(super) fn recovered_reference(s: &Simulation) -> Option<StandingReference> {
+    let mut forward = s.world.bodies[s.bodies[0]].rotation().normalize() * Vector::Z;
+    forward.y = 0.0;
+    let forward = forward.try_normalize()?;
+    let reference = StandingReference {
+        com: s.center_of_mass(),
+        forward,
+        lateral: Vector::Y.cross(forward),
+    };
+    if !reference.com.is_finite() {
+        return None;
+    }
+    support_reactions_in_frame(s, reference.com, reference.forward, reference.lateral)?;
+    Some(reference)
+}
+
 fn support_reactions(s: &Simulation) -> Option<SupportReactions> {
+    support_reactions_in_frame(s, s.rest_com, s.heading * Vector::Z, s.heading * Vector::X)
+}
+
+fn support_reactions_in_frame(
+    s: &Simulation,
+    reference_com: Vector,
+    forward: Vector,
+    lateral: Vector,
+) -> Option<SupportReactions> {
     if !s.world.colliders[s.floor].is_enabled() {
         return None;
     }
@@ -32,8 +67,6 @@ fn support_reactions(s: &Simulation) -> Option<SupportReactions> {
             return None;
         }
     }
-    let forward = s.heading * Vector::Z;
-    let lateral = s.heading * Vector::X;
     let com = s.center_of_mass();
     let twists = super::current_twists(s).ok()?;
     let com_velocity = s
@@ -49,7 +82,7 @@ fn support_reactions(s: &Simulation) -> Option<SupportReactions> {
     // This is a joint-torque intention, never an external root force.
     let height = com.y - s.world.colliders[s.floor].compute_aabb().maxs.y;
     let desired_cop =
-        com + ((com - s.rest_com) * 4.0 + com_velocity * 4.0) * (height.max(0.0) / 9.81);
+        com + ((com - reference_com) * 4.0 + com_velocity * 4.0) * (height.max(0.0) / 9.81);
     let mut points = [Vector::ZERO; 2];
     let floor_bounds = s.world.colliders[s.floor].compute_aabb();
     for side in 0..2 {
@@ -271,6 +304,24 @@ pub(crate) fn controls(
         }
     }
     Ok(controls)
+}
+
+#[cfg(feature = "getup-terminal-balance-experiment")]
+pub(super) fn controls_with_reference(
+    s: &Simulation,
+    reference: &StandingReference,
+    q_target: &[f32; 21],
+    q: &[f32; 21],
+    dq: &[f32; 21],
+) -> Result<([f32; 21], bool), String> {
+    let mut controls = super::slow_controls(&s.model, q_target, &[0.0; 21], q, dq, true)?;
+    let support = support_reactions_in_frame(s, reference.com, reference.forward, reference.lateral);
+    if let Some(support) = support {
+        for (control, feedforward) in controls.iter_mut().zip(compensation(s, support, q)) {
+            *control = (*control + feedforward).clamp(-1.0, 1.0);
+        }
+    }
+    Ok((controls, support.is_some()))
 }
 
 #[cfg(test)]

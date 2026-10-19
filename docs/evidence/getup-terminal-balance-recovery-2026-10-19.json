@@ -1,0 +1,829 @@
+{
+  "date": "2026-10-19",
+  "scope": "First default-OFF terminal joint-balance handoff after unchanged frozen WEAK/SLOW recovery; fresh four-pose native replay and30s every-native standing continuations",
+  "status": "experimental-three-of-four-one-second-passes-all-three-thirty-second-holds-fail",
+  "releaseAccepted": false,
+  "productionRecoveryEnabled": false,
+  "defaultProfileChanged": false,
+  "physicalAcceptanceChanged": false,
+  "features": [
+    "getup-terminal-balance-experiment"
+  ],
+  "profile": "Unchanged Profile::default20base+5additional,800Hz native/40Hz policy, frozen actors. The separately qualified3+1 standing profile is not used.",
+  "baselineEvidence": {
+    "path": "docs/evidence/getup-frozen-recovery-root-correction-2026-10-19.json",
+    "sha256": "daefab492a0c598112dd7716a9593125b8ab2cc24722560bcfc6ebc6ce181aa4"
+  },
+  "sourceFreeze": {
+    "path": "outputs/getup-terminal-balance-20261019/source-freeze.json",
+    "sha256": "373a02285f1833d4f822a9d4041d34d8f779ceb233d9abf187d6fc3027b67df3"
+  },
+  "sourceFiles": {
+    "rust/crates/sim/Cargo.toml": "851423e9b0d0f7c4bad1034fad200a33200a9b006284062ff3830b6737c5cdfa",
+    "rust/crates/sim/src/getup.rs": "36fbed558bdc732f22e8f7272184ccba0129fb44606889cbf288516e5aae1f32",
+    "rust/crates/sim/src/getup/controller.rs": "d9703ae75bea428dfd91829ae315df73a6a23c625d1971a85d43655c1b147a28",
+    "rust/crates/sim/src/getup/supported_standing.rs": "0976787eb42e74b6684565cc7702f225d0b3eb90cca635dc50dd9b18e4ee94bf",
+    "rust/crates/sim/src/runtime.rs": "4abedc23f8d62d42e5396f282a2b57551be27e70d51ef38b97f7284395629342",
+    "rust/crates/sim/examples/getup_terminal_recovery.rs": "32b7c89e3b6743fe34ef762e454a80f3501123a9ae492e2f6da234f52439688e",
+    "rust/crates/sim/src/getup/terminal_balance_tests.rs": "933a7673fdae697ee7c7467b357d2c2ebd88feee0edfb88ca1d8d10e310fcbad",
+    "rust/crates/sim/src/actuators.rs": "fa4afa39a83569ac9a8af2c64189db3ef92ec2bb3596e4b519c953de6b302cac"
+  },
+  "build": {
+    "rust": "1.89.0",
+    "cargo": "offline locked release",
+    "library": {
+      "path": "rust/target/release/deps/liblh_sim-4a816169700ed6b6.rlib",
+      "sha256": "041d7d5ed1a224c40471b140dfb28ea79bb4e9bb1ac00dbd482c0c5fc41b6dd0"
+    },
+    "example": {
+      "path": "rust/target/release/examples/getup_terminal_recovery",
+      "sha256": "467f2b57d8f9e32751e7282437ea3cc182a2742d0ef57d7b4910c14401db64ec"
+    }
+  },
+  "mechanism": {
+    "activation": "Only after a real recovery started, final appended canonical reference is selected, last SLOW decision reached it, and80 consecutive native samples already meet all original standing predicates; actual measured floor support must still be available.",
+    "activationIsNotAcceptance": true,
+    "boundControlIntent": "Capture actual recovered whole-bodyCOM and orthonormal torso-yaw frame once. Apply existing source zero-residual holdingPD plus existing measured-contact inverse-static joint compensation in that frame. Gains and actuator bounds unchanged.",
+    "acceptance": "Original800consecutive qualifying native samples completed within25physical seconds after fixture trigger. The80-sample transfer neither credits samples, resets anchors/counter, nor extends deadline.",
+    "ready": "Before any actual fall, reuse the already qualified supported-standing joint controller rather than bare sourcePD. No teacher/student decisions are produced.",
+    "boundedArchive": "After transfer, WEAK forecast and SLOW decision/archive counts remain frozen at their complete original prefix. No archive limit increase.",
+    "rootAssistance": false,
+    "poseOrVelocityWrites": false
+  },
+  "tests": {
+    "featureOn": {
+      "handoff": {
+        "passed": 8,
+        "failed": 0,
+        "log": {
+          "path": "outputs/getup-terminal-balance-20261019/handoff-tests-corrected.log",
+          "sha256": "098af24394ccd4b9bd575684e6519dd8284908868921c4968a93eadae3cd6908"
+        }
+      },
+      "actuators": {
+        "passed": 6,
+        "failed": 0,
+        "log": {
+          "path": "outputs/getup-terminal-balance-20261019/actuator-tests-corrected.log",
+          "sha256": "9596d4384248cab28f02dda99e68379d30a68623b4dec8dd946e9d424eecc7f0"
+        }
+      }
+    },
+    "featureOff": {
+      "handoff": {
+        "passed": 3,
+        "failed": 0,
+        "log": {
+          "path": "outputs/getup-terminal-balance-20261019/handoff-tests-default.log",
+          "sha256": "35605317663689dc12487f8e12561f8ae7b4eceed4380586d5ce563c33f63dc5"
+        }
+      },
+      "actuators": {
+        "passed": 6,
+        "failed": 0,
+        "log": {
+          "path": "outputs/getup-terminal-balance-20261019/actuator-tests-default.log",
+          "sha256": "c6ffa671c2ee5bb876f25e215ecb262e947475fc0d737d28ad98cdbdd11d8e74"
+        }
+      }
+    },
+    "acceptanceCallerCheck": "passes; fixed actuator coverage is separately documented in fixed-actuator-contract-2026-10-19.json",
+    "testOnlyCorrection": "Runtime report strings serialize f32 in shortest-decimal form; tests decode them back into Controller before comparing typed representations. No numerical threshold was relaxed."
+  },
+  "prefixComparison": {
+    "raw": {
+      "path": "outputs/getup-terminal-balance-20261019/all-prefix-comparisons.json",
+      "sha256": "9cfc1a8b195269096aa209945e2f66506106fcf92ec054a9cb4264259af04df7"
+    },
+    "normalization": "Frozen baseline versus opt-in candidate; only timing fields removed throughout, and pre-first-recovery-integration Ready label/phase plus activation-boundary controller ID removed at their explicitly described boundaries",
+    "cases": [
+      {
+        "kind": "back",
+        "activationNative": 3904,
+        "exactFullNormalizedEmittedPacketsBeforeFirstChangedCommand": 179,
+        "exactStudentDecisionPrefix": 172,
+        "exactTeacherActionsObservationsTargetsAndBeforePoses": 49
+      },
+      {
+        "kind": "belly",
+        "activationNative": 1984,
+        "exactFullNormalizedEmittedPacketsBeforeFirstChangedCommand": 83,
+        "exactStudentDecisionPrefix": 76,
+        "exactTeacherActionsObservationsTargetsAndBeforePoses": 27
+      },
+      {
+        "kind": "side",
+        "activationNative": null,
+        "exactFullNormalizedEmittedPacketsBeforeFirstChangedCommand": 1021,
+        "exactStudentDecisionPrefix": 1000,
+        "exactTeacherActionsObservationsTargetsAndBeforePoses": 37
+      },
+      {
+        "kind": "side-supported",
+        "activationNative": 16137,
+        "exactFullNormalizedEmittedPacketsBeforeFirstChangedCommand": 808,
+        "exactStudentDecisionPrefix": 797,
+        "exactTeacherActionsObservationsTargetsAndBeforePoses": 34
+      }
+    ]
+  },
+  "freshCases": [
+    {
+      "kind": "back",
+      "outcome": "experimental-terminal-balance-one-second-standing-pass",
+      "fixtureAdmitted": true,
+      "triggerNative": 480,
+      "realNativeIntegrations": 4980,
+      "forecastNativeIntegrations": 980,
+      "totalActualIntegrations": 5960,
+      "nativeObserverSamples": 4980,
+      "lastObservedNative": 4980,
+      "unobservedRealTailNativeSteps": 0,
+      "firstLatchedStandingPassNative": 4975,
+      "physicalSeconds": 6.225,
+      "maximumRequestedMotorEffortNm": 713.5970458984375,
+      "standingPassed": true,
+      "maximumContiguousStableSecondsObservedAt800Hz": 1.00625,
+      "finalContiguousStableSeconds": 1.00625,
+      "terminalBalance": {
+        "activated_native_substep": 3904,
+        "first_actual_control_jump_max": 0.9096999,
+        "first_balance_controls": [
+          -0.07888326,
+          0.021867432,
+          0.1341285,
+          0.45755315,
+          -0.04233115,
+          -0.06869404,
+          -0.0076954737,
+          0.10722901,
+          0.90366185,
+          0.4966229,
+          -0.05218129,
+          -0.020675851,
+          0.14222747,
+          -0.16247527,
+          0.39361563,
+          -0.06422139,
+          0.030811492,
+          0.013325876,
+          0.18078706,
+          -0.06930843,
+          0.0135135045
+        ],
+        "first_compensation_active": true,
+        "first_saturated_controls": 0,
+        "last_slow_controls": [
+          0.09928988,
+          -0.039059497,
+          0.12942061,
+          0.26741505,
+          0.09134521,
+          0.08277532,
+          -0.089568436,
+          0.12872016,
+          -0.00603807,
+          0.40220565,
+          0.0033376664,
+          -0.078335255,
+          0.1318884,
+          -0.10243664,
+          -0.31433985,
+          -0.12538204,
+          0.08046902,
+          -0.23769139,
+          0.20236415,
+          0.018345999,
+          -0.4154655
+        ],
+        "reference": {
+          "com": [
+            -0.5940335,
+            0.80396277,
+            -0.12266173
+          ],
+          "forward": [
+            0.8113447,
+            0.0,
+            -0.584568
+          ],
+          "lateral": [
+            -0.584568,
+            0.0,
+            -0.8113447
+          ]
+        }
+      },
+      "loadedSlip": {
+        "atTriggerM": [
+          0.0012560380568550052,
+          0.0015357416116467007
+        ],
+        "first20mmCrossingPhysicalSeconds": [
+          0.69375,
+          0.7075
+        ],
+        "interpretation": "Read-only cumulative integral of impulse-weighted solved foot-point tangent speed, only while that foot is loaded, starting at first real fixture integration and ending at lastObservedNative. A terminal integrity failure may leave an explicitly reported unobserved real tail. Forecast clone is separately counted and not included in this real-body integral. Recovery has no whole-motion20mm stop;20mm crossings are diagnostic only. The frozen controller retains its10mm foot-origin gate within a contiguous stable-standing interval.",
+        "loadedNativeSamples": [
+          3565,
+          3663
+        ],
+        "m": [
+          0.23728615492572505,
+          0.5629459753096294
+        ],
+        "maximumTangentSpeedMps": [
+          2.290543556213379,
+          3.4071545600891113
+        ]
+      },
+      "firstStandingPassSecondsAfterTrigger": 5.61875,
+      "baselineStandingPassed": false,
+      "raw": {
+        "path": "outputs/getup-terminal-balance-20261019/back/result.json",
+        "sha256": "b4aa336f225e7ae36ff8cd47d57bb512c52d042d2ffdd95860daf0e2be51393c"
+      },
+      "referenceReport": {
+        "path": "outputs/getup-terminal-balance-20261019/back/reference-report.json",
+        "sha256": "5586a772e1f7b488e5e37cca401f8c391e67e295c7596df6a96da6d9eaa1afae"
+      },
+      "checkpointVerification": {
+        "binaryWorldDeserialized": true,
+        "bytes": 3031160,
+        "controllerEqual": true,
+        "forecastSubsteps": 980,
+        "handlesEqual": true,
+        "jointStateEqual": true,
+        "nativeSubsteps": 4980,
+        "passed": true,
+        "physicsIntegrations": 0,
+        "snapshotEqual": true
+      },
+      "finalOriginalAnchoredStandingPredicates": {
+        "angularMotion": true,
+        "bothFeetLoadedAndPersistent": true,
+        "captureInSupport": true,
+        "comInSupport": true,
+        "footDriftFromSuppliedAnchors": true,
+        "footLoadFraction": true,
+        "head": true,
+        "linearMotion": true,
+        "onlyFeet": true,
+        "torso": true
+      }
+    },
+    {
+      "kind": "belly",
+      "outcome": "experimental-terminal-balance-one-second-standing-pass",
+      "fixtureAdmitted": true,
+      "triggerNative": 480,
+      "realNativeIntegrations": 3100,
+      "forecastNativeIntegrations": 540,
+      "totalActualIntegrations": 3640,
+      "nativeObserverSamples": 3100,
+      "lastObservedNative": 3100,
+      "unobservedRealTailNativeSteps": 0,
+      "firstLatchedStandingPassNative": 3094,
+      "physicalSeconds": 3.875,
+      "maximumRequestedMotorEffortNm": 679.62158203125,
+      "standingPassed": true,
+      "maximumContiguousStableSecondsObservedAt800Hz": 1.0075,
+      "finalContiguousStableSeconds": 1.0075,
+      "terminalBalance": {
+        "activated_native_substep": 1984,
+        "first_actual_control_jump_max": 0.9750444,
+        "first_balance_controls": [
+          0.024784826,
+          0.009603325,
+          -0.007992243,
+          0.20654255,
+          0.0107431095,
+          -0.08892773,
+          -0.12500416,
+          0.11766752,
+          1.0,
+          0.30365902,
+          -0.07048772,
+          -0.031422693,
+          0.025485698,
+          -0.09765452,
+          0.71392965,
+          -0.04059066,
+          0.008220416,
+          0.010891997,
+          0.16378532,
+          -0.049046274,
+          0.010085151
+        ],
+        "first_compensation_active": true,
+        "first_saturated_controls": 1,
+        "last_slow_controls": [
+          0.1064349,
+          0.00043441379,
+          -0.00453481,
+          0.046807684,
+          0.04215756,
+          0.07898686,
+          -0.044826012,
+          0.2621174,
+          0.024955556,
+          0.06652203,
+          -0.08193034,
+          -0.06738446,
+          0.034368124,
+          -0.118678465,
+          -0.006543332,
+          -0.17115419,
+          0.019736875,
+          -0.19998124,
+          0.14261982,
+          0.0069234427,
+          -0.23817979
+        ],
+        "reference": {
+          "com": [
+            0.13027704,
+            0.807034,
+            -0.55663323
+          ],
+          "forward": [
+            -0.5301658,
+            0.0,
+            0.84789395
+          ],
+          "lateral": [
+            0.84789395,
+            -0.0,
+            0.5301658
+          ]
+        }
+      },
+      "loadedSlip": {
+        "atTriggerM": [
+          0.0011370016193649256,
+          0.0018185208800150566
+        ],
+        "first20mmCrossingPhysicalSeconds": [
+          0.6375,
+          1.81375
+        ],
+        "interpretation": "Read-only cumulative integral of impulse-weighted solved foot-point tangent speed, only while that foot is loaded, starting at first real fixture integration and ending at lastObservedNative. A terminal integrity failure may leave an explicitly reported unobserved real tail. Forecast clone is separately counted and not included in this real-body integral. Recovery has no whole-motion20mm stop;20mm crossings are diagnostic only. The frozen controller retains its10mm foot-origin gate within a contiguous stable-standing interval.",
+        "loadedNativeSamples": [
+          2268,
+          2211
+        ],
+        "m": [
+          0.0830856156979256,
+          0.051108884928289244
+        ],
+        "maximumTangentSpeedMps": [
+          1.8579847812652588,
+          1.022178292274475
+        ]
+      },
+      "firstStandingPassSecondsAfterTrigger": 3.2675,
+      "baselineStandingPassed": true,
+      "raw": {
+        "path": "outputs/getup-terminal-balance-20261019/belly/result.json",
+        "sha256": "d101e61ee2cfa84f8ce1432fac5cb5da9ad7d3f21378b3b7647c32adf442cef4"
+      },
+      "referenceReport": {
+        "path": "outputs/getup-terminal-balance-20261019/belly/reference-report.json",
+        "sha256": "e78f6277cb5f35fde2651f9d8bcb090e26a487c816b58ad5d0ee4884ff20f785"
+      },
+      "checkpointVerification": {
+        "binaryWorldDeserialized": true,
+        "bytes": 1792535,
+        "controllerEqual": true,
+        "forecastSubsteps": 540,
+        "handlesEqual": true,
+        "jointStateEqual": true,
+        "nativeSubsteps": 3100,
+        "passed": true,
+        "physicsIntegrations": 0,
+        "snapshotEqual": true
+      },
+      "finalOriginalAnchoredStandingPredicates": {
+        "angularMotion": true,
+        "bothFeetLoadedAndPersistent": true,
+        "captureInSupport": true,
+        "comInSupport": true,
+        "footDriftFromSuppliedAnchors": true,
+        "footLoadFraction": true,
+        "head": true,
+        "linearMotion": true,
+        "onlyFeet": true,
+        "torso": true
+      }
+    },
+    {
+      "kind": "side",
+      "outcome": "25-second-recovery-deadline",
+      "fixtureAdmitted": true,
+      "triggerNative": 380,
+      "realNativeIntegrations": 20380,
+      "forecastNativeIntegrations": 740,
+      "totalActualIntegrations": 21120,
+      "nativeObserverSamples": 20380,
+      "lastObservedNative": 20380,
+      "unobservedRealTailNativeSteps": 0,
+      "firstLatchedStandingPassNative": null,
+      "physicalSeconds": 25.475,
+      "maximumRequestedMotorEffortNm": 703.1237182617188,
+      "standingPassed": false,
+      "maximumContiguousStableSecondsObservedAt800Hz": 0.0,
+      "finalContiguousStableSeconds": 0.0,
+      "terminalBalance": null,
+      "loadedSlip": {
+        "atTriggerM": [
+          0.0,
+          0.007941235617445273
+        ],
+        "first20mmCrossingPhysicalSeconds": [
+          2.0075,
+          0.5175
+        ],
+        "interpretation": "Read-only cumulative integral of impulse-weighted solved foot-point tangent speed, only while that foot is loaded, starting at first real fixture integration and ending at lastObservedNative. A terminal integrity failure may leave an explicitly reported unobserved real tail. Forecast clone is separately counted and not included in this real-body integral. Recovery has no whole-motion20mm stop;20mm crossings are diagnostic only. The frozen controller retains its10mm foot-origin gate within a contiguous stable-standing interval.",
+        "loadedNativeSamples": [
+          2256,
+          17120
+        ],
+        "m": [
+          0.6775613192980561,
+          1.053766362401393
+        ],
+        "maximumTangentSpeedMps": [
+          2.2667970657348633,
+          2.2456612586975098
+        ]
+      },
+      "firstStandingPassSecondsAfterTrigger": null,
+      "baselineStandingPassed": false,
+      "raw": {
+        "path": "outputs/getup-terminal-balance-20261019/side/result.json",
+        "sha256": "d8d27abd84c742f4dd4f8c473e981e485ed9e7926ea815a40302aebeaba943d1"
+      },
+      "referenceReport": {
+        "path": "outputs/getup-terminal-balance-20261019/side/reference-report.json",
+        "sha256": "4bfa8ab28a1b5e6ff8236f984731785e1a5951abb84e0988defb7f8ad8b38099"
+      },
+      "checkpointVerification": {
+        "binaryWorldDeserialized": true,
+        "bytes": 10252807,
+        "controllerEqual": true,
+        "forecastSubsteps": 740,
+        "handlesEqual": true,
+        "jointStateEqual": true,
+        "nativeSubsteps": 20380,
+        "passed": true,
+        "physicsIntegrations": 0,
+        "snapshotEqual": true
+      },
+      "finalOriginalAnchoredStandingPredicates": null
+    },
+    {
+      "kind": "side-supported",
+      "outcome": "experimental-terminal-balance-one-second-standing-pass",
+      "fixtureAdmitted": true,
+      "triggerNative": 200,
+      "realNativeIntegrations": 17500,
+      "forecastNativeIntegrations": 680,
+      "totalActualIntegrations": 18180,
+      "nativeObserverSamples": 17500,
+      "lastObservedNative": 17500,
+      "unobservedRealTailNativeSteps": 0,
+      "firstLatchedStandingPassNative": 17491,
+      "physicalSeconds": 21.875,
+      "maximumRequestedMotorEffortNm": 677.6972045898438,
+      "standingPassed": true,
+      "maximumContiguousStableSecondsObservedAt800Hz": 1.01125,
+      "finalContiguousStableSeconds": 1.01125,
+      "terminalBalance": {
+        "activated_native_substep": 16137,
+        "first_actual_control_jump_max": 0.7967058,
+        "first_balance_controls": [
+          0.24875952,
+          0.0068386905,
+          -0.13486643,
+          0.09410256,
+          -0.015914157,
+          -0.022145629,
+          0.06578855,
+          0.0530328,
+          0.5680885,
+          0.045768276,
+          0.038317673,
+          0.052211497,
+          0.24959254,
+          -0.13946284,
+          0.54118586,
+          -0.07568054,
+          0.055547256,
+          0.013655467,
+          0.12492073,
+          -0.086810246,
+          0.018955778
+        ],
+        "first_compensation_active": true,
+        "first_saturated_controls": 0,
+        "last_slow_controls": [
+          0.043648243,
+          0.020315384,
+          0.052425895,
+          -0.1256475,
+          0.12667282,
+          -0.15926893,
+          0.20771961,
+          0.30438882,
+          -0.2286173,
+          -0.061828755,
+          0.21897182,
+          0.09202006,
+          0.049182586,
+          -0.34823215,
+          0.16817978,
+          -0.16116601,
+          0.03952071,
+          -0.44506872,
+          0.10918126,
+          -0.058931556,
+          -0.35640198
+        ],
+        "reference": {
+          "com": [
+            1.2318667,
+            0.8070162,
+            0.17097135
+          ],
+          "forward": [
+            -0.74638844,
+            0.0,
+            -0.6655105
+          ],
+          "lateral": [
+            -0.6655105,
+            0.0,
+            0.74638844
+          ]
+        }
+      },
+      "loadedSlip": {
+        "atTriggerM": [
+          0.0,
+          0.001148693860632193
+        ],
+        "first20mmCrossingPhysicalSeconds": [
+          0.56125,
+          0.3975
+        ],
+        "interpretation": "Read-only cumulative integral of impulse-weighted solved foot-point tangent speed, only while that foot is loaded, starting at first real fixture integration and ending at lastObservedNative. A terminal integrity failure may leave an explicitly reported unobserved real tail. Forecast clone is separately counted and not included in this real-body integral. Recovery has no whole-motion20mm stop;20mm crossings are diagnostic only. The frozen controller retains its10mm foot-origin gate within a contiguous stable-standing interval.",
+        "loadedNativeSamples": [
+          14236,
+          15259
+        ],
+        "m": [
+          0.6971070620925195,
+          0.997408496562026
+        ],
+        "maximumTangentSpeedMps": [
+          1.5599005222320557,
+          1.5288469791412354
+        ]
+      },
+      "firstStandingPassSecondsAfterTrigger": 21.61375,
+      "baselineStandingPassed": true,
+      "raw": {
+        "path": "outputs/getup-terminal-balance-20261019/side-supported/result.json",
+        "sha256": "2a49ae7e744ebb356ca324e35d9b533a0c521f469f68f63e3e1bdbc4633d4f59"
+      },
+      "referenceReport": {
+        "path": "outputs/getup-terminal-balance-20261019/side-supported/reference-report.json",
+        "sha256": "7cbe82e414360fcf9583f71dc22233d6c2cc4fd4e8fb1827baf5a9cd19f2de01"
+      },
+      "checkpointVerification": {
+        "binaryWorldDeserialized": true,
+        "bytes": 8318074,
+        "controllerEqual": true,
+        "forecastSubsteps": 680,
+        "handlesEqual": true,
+        "jointStateEqual": true,
+        "nativeSubsteps": 17500,
+        "passed": true,
+        "physicsIntegrations": 0,
+        "snapshotEqual": true
+      },
+      "finalOriginalAnchoredStandingPredicates": {
+        "angularMotion": true,
+        "bothFeetLoadedAndPersistent": true,
+        "captureInSupport": true,
+        "comInSupport": true,
+        "footDriftFromSuppliedAnchors": true,
+        "footLoadFraction": true,
+        "head": true,
+        "linearMotion": true,
+        "onlyFeet": true,
+        "torso": true
+      }
+    }
+  ],
+  "standingContinuations": [
+    {
+      "outcome": "completed",
+      "requestedSimulatedSeconds": 30.0,
+      "simulatedSeconds": 30.0,
+      "nativeSubsteps": 24000,
+      "actualContinuationIntegrations": 24000,
+      "unobservedTerminalTailNative": 0,
+      "allStandingPredicatesPassedEveryNativeSubstep": false,
+      "standingPredicateFailureSubsteps": {
+        "footDriftFromSuppliedAnchors": 6514
+      },
+      "maximumFootOriginDriftM": [
+        0.012789449654519558,
+        0.013631900772452354
+      ],
+      "minimumFootLoadsN": [
+        190.9762420654297,
+        197.54345703125
+      ],
+      "maximumBodyLinearMps": 0.007212450727820396,
+      "maximumBodyAngularRadps": 0.015186861157417297,
+      "loadedContactSpeedIntegralM": [
+        2.600447620153535e-05,
+        4.304694641767555e-05
+      ],
+      "unloadedFootSubsteps": [
+        0,
+        0
+      ],
+      "teacherForecastUnchanged": true,
+      "slowDecisionCountUnchanged": true,
+      "slowDecisionArchiveLengthUnchanged": true,
+      "loadedSlipStopM": 0.02,
+      "loadedSlipIntegralStartsAt": "First native integration after restoring this newly measured passing recovery checkpoint; unchanged recovery-wide slip remains separately reported without a whole-getup stop",
+      "kind": "back",
+      "passed": false,
+      "raw": {
+        "path": "outputs/getup-terminal-balance-20261019/back-hold30/result.json",
+        "sha256": "211c20fe2c3a7b7c79744f4b8bac2a62bf9cf8d606587e346757e9cde53bc4fc"
+      },
+      "completionIsNotPhysicalAcceptance": true,
+      "firstFailure": {
+        "observedNative": 17487,
+        "physicalSeconds": 28.08375
+      }
+    },
+    {
+      "outcome": "completed",
+      "requestedSimulatedSeconds": 30.0,
+      "simulatedSeconds": 30.0,
+      "nativeSubsteps": 24000,
+      "actualContinuationIntegrations": 24000,
+      "unobservedTerminalTailNative": 0,
+      "allStandingPredicatesPassedEveryNativeSubstep": false,
+      "standingPredicateFailureSubsteps": {
+        "footDriftFromSuppliedAnchors": 14708
+      },
+      "maximumFootOriginDriftM": [
+        0.028844280168414116,
+        0.01688229665160179
+      ],
+      "minimumFootLoadsN": [
+        172.7531280517578,
+        186.7484588623047
+      ],
+      "maximumBodyLinearMps": 0.007041375618427992,
+      "maximumBodyAngularRadps": 0.02056986652314663,
+      "loadedContactSpeedIntegralM": [
+        0.00023835621840316026,
+        0.0007415424511643891
+      ],
+      "unloadedFootSubsteps": [
+        0,
+        0
+      ],
+      "teacherForecastUnchanged": true,
+      "slowDecisionCountUnchanged": true,
+      "slowDecisionArchiveLengthUnchanged": true,
+      "loadedSlipStopM": 0.02,
+      "loadedSlipIntegralStartsAt": "First native integration after restoring this newly measured passing recovery checkpoint; unchanged recovery-wide slip remains separately reported without a whole-getup stop",
+      "kind": "belly",
+      "passed": false,
+      "raw": {
+        "path": "outputs/getup-terminal-balance-20261019/belly-hold30/result.json",
+        "sha256": "8a07088e68e8ef3c56a8811985241ef58a0e2708804adb952c91cb6406b6f318"
+      },
+      "completionIsNotPhysicalAcceptance": true,
+      "firstFailure": {
+        "observedNative": 9293,
+        "physicalSeconds": 15.49125
+      }
+    },
+    {
+      "outcome": "completed",
+      "requestedSimulatedSeconds": 30.0,
+      "simulatedSeconds": 30.0,
+      "nativeSubsteps": 24000,
+      "actualContinuationIntegrations": 24000,
+      "unobservedTerminalTailNative": 0,
+      "allStandingPredicatesPassedEveryNativeSubstep": false,
+      "standingPredicateFailureSubsteps": {
+        "footDriftFromSuppliedAnchors": 4242,
+        "footLoadFraction": 7
+      },
+      "maximumFootOriginDriftM": [
+        0.011644870974123478,
+        0.010485316626727581
+      ],
+      "minimumFootLoadsN": [
+        76.41058349609375,
+        122.77802276611328
+      ],
+      "maximumBodyLinearMps": 0.03233528137207031,
+      "maximumBodyAngularRadps": 0.1842465102672577,
+      "loadedContactSpeedIntegralM": [
+        0.0004203427803605212,
+        0.0012224602969030881
+      ],
+      "unloadedFootSubsteps": [
+        0,
+        0
+      ],
+      "teacherForecastUnchanged": true,
+      "slowDecisionCountUnchanged": true,
+      "slowDecisionArchiveLengthUnchanged": true,
+      "loadedSlipStopM": 0.02,
+      "loadedSlipIntegralStartsAt": "First native integration after restoring this newly measured passing recovery checkpoint; unchanged recovery-wide slip remains separately reported without a whole-getup stop",
+      "kind": "side-supported",
+      "passed": false,
+      "raw": {
+        "path": "outputs/getup-terminal-balance-20261019/side-supported-hold30/result.json",
+        "sha256": "514196e286cec90f7cba1b0d175b6153e62596aa8bd3fb68d1174ffa05c0681b"
+      },
+      "completionIsNotPhysicalAcceptance": true,
+      "firstFailure": {
+        "observedNative": 1010,
+        "physicalSeconds": 23.1375
+      }
+    }
+  ],
+  "readyPreflight": [
+    {
+      "heading": 0.0,
+      "physicalSeconds": 5.0,
+      "failure": null,
+      "standingSupportFailureSubsteps": 0,
+      "standingPredicateFailureSubsteps": {},
+      "quietFailuresAfter3S": {},
+      "loadedSlipIntegralM": [
+        0.00012222425419242388,
+        0.00020684599888228197
+      ],
+      "maximumFootOriginDriftM": [
+        0.002554310020059347,
+        0.002129725646227598
+      ]
+    },
+    {
+      "heading": 1.0471975803375244,
+      "physicalSeconds": 5.0,
+      "failure": null,
+      "standingSupportFailureSubsteps": 0,
+      "standingPredicateFailureSubsteps": {},
+      "quietFailuresAfter3S": {},
+      "loadedSlipIntegralM": [
+        7.410259774864877e-05,
+        0.00012992351151098032
+      ],
+      "maximumFootOriginDriftM": [
+        0.00025275483494624496,
+        0.0005149384378455579
+      ]
+    },
+    {
+      "heading": -0.7853981852531433,
+      "physicalSeconds": 5.0,
+      "failure": null,
+      "standingSupportFailureSubsteps": 0,
+      "standingPredicateFailureSubsteps": {},
+      "quietFailuresAfter3S": {},
+      "loadedSlipIntegralM": [
+        0.00014362922022876,
+        0.00019235593340425844
+      ],
+      "maximumFootOriginDriftM": [
+        0.005528605077415705,
+        0.005615744739770889
+      ]
+    }
+  ],
+  "knownOpenGaps": [
+    "Plain side never meets original standing predicates, so handoff never activates and its unchanged25s recovery failure remains.",
+    "All three recovered30s holds fail the unchanged10mm fixed-origin standing predicate; side-supported also has7native foot-weight-fraction failures.",
+    "Resisted-impact without actual fall can strand inherited Falling/deadline lifecycle; repeated impact/fall cannot yet start a new recovery epoch after a latched first pass.",
+    "No24case recovery admission, recovery realtime/mobile claim, walking admission or source-asset redistribution-rights clearance.",
+    "Final post-solve tangent velocity is relaxed after biased position integration; its small integral is not equivalent to actual foot-origin position stability. Quantization/bias causes need separate causal tests."
+  ],
+  "browserEvidence": "docs/evidence/browser-terminal-balance-recovery-2026-10-19.json",
+  "nextDiagnostic": "Separate exact-checkpoint friction_in_bias_pass flag-only continuation; no default or controller promotion based on this first slice."
+}

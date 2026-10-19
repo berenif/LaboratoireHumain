@@ -7,6 +7,7 @@ publish.workspace = true
 [features]
 stationary-balance-experiment = []
 standing-dynamics-experiment = []
+getup-terminal-balance-experiment = []
 experimental-solver-step-observation = ["rapier3d/solver-step-observation"]
 experimental-joint-velocity-cache = ["rapier3d/experimental-joint-velocity-cache"]
 experimental-simd8 = ["rapier3d/simd8"]
@@ -29,6 +30,10 @@ required-features = ["standing-dynamics-experiment"]
 [[example]]
 name = "getup_dynamic_quiet"
 required-features = ["standing-dynamics-experiment"]
+
+[[example]]
+name = "getup_terminal_recovery"
+required-features = ["getup-terminal-balance-experiment"]
 
 [[test]]
 name = "coordination-transfer-worker"

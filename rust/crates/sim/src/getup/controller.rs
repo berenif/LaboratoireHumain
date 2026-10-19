@@ -38,6 +38,18 @@ pub struct StudentDecision {
     holding: bool,
     before: Vec<lh_model::Pose>,
 }
+
+#[derive(Serialize, Deserialize)]
+struct TerminalBalance {
+    activated_native_substep: u64,
+    reference: super::supported_standing::StandingReference,
+    last_slow_controls: [f32; 21],
+    first_balance_controls: Option<[f32; 21]>,
+    first_actual_control_jump_max: Option<f32>,
+    first_saturated_controls: Option<usize>,
+    first_compensation_active: Option<bool>,
+}
+
 #[derive(Serialize, Deserialize)]
 pub struct Controller {
     pub status: lh_contracts::GetUpPolicyObservation,
@@ -56,6 +68,8 @@ pub struct Controller {
     last_decision: Option<u64>,
     stable_substeps: u64,
     stable_feet: Option<[Vec3; 2]>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    terminal_balance: Option<TerminalBalance>,
 }
 impl Controller {
     pub fn new(model: &Model) -> Self {
@@ -80,7 +94,56 @@ impl Controller {
             last_decision: None,
             stable_substeps: 0,
             stable_feet: None,
+            terminal_balance: None,
         }
+    }
+    pub(crate) fn controller_label(&self) -> &'static str {
+        if self.terminal_balance.is_some() {
+            "experimental-recovery-joint-balance-hold"
+        } else if cfg!(feature = "getup-terminal-balance-experiment")
+            && self.status.phase == "experimental-joint-balance-awaiting-fall"
+        {
+            "experimental-recovery-joint-balance-ready"
+        } else {
+            "pretrained-WEAK-SLOW"
+        }
+    }
+    pub(crate) fn checkpoint_variant_supported(&self) -> bool {
+        (self.terminal_balance.is_none()
+            && self.status.phase != "experimental-joint-balance-awaiting-fall")
+            || cfg!(feature = "getup-terminal-balance-experiment")
+    }
+
+    #[cfg(feature = "getup-terminal-balance-experiment")]
+    fn bind_terminal_balance(&mut self, s: &Simulation) {
+        // holding starts true before recovery, and reference_frames excludes
+        // the appended canonical terminal target. Require the real final index.
+        if self.terminal_balance.is_some()
+            || self.started_substep.is_none()
+            || self.reference.is_empty()
+            || !self.holding
+            || self.status.reference_index as usize != self.reference.len() - 1
+            || self.last_decision.is_none_or(|index| index < (self.reference.len() - 1) as u64)
+            || self.stable_substeps < 80
+        {
+            return;
+        }
+        let Some(reference) = super::supported_standing::recovered_reference(s) else {
+            return;
+        };
+        let Some(last_slow_controls) = s.diagnostics.getup.as_ref()
+            .and_then(|g| g.motor_controls.as_slice().try_into().ok()) else {
+            return;
+        };
+        self.terminal_balance = Some(TerminalBalance {
+            activated_native_substep: s.substeps_completed,
+            reference,
+            last_slow_controls,
+            first_balance_controls: None,
+            first_actual_control_jump_max: None,
+            first_saturated_controls: None,
+            first_compensation_active: None,
+        });
     }
     pub fn impact(&mut self, substep: u64) {
         if self.impact_substep.is_none() {
@@ -96,6 +159,9 @@ impl Controller {
         Ok(())
     }
     pub fn command(&mut self, s: &Simulation, physical: &[f32; 67]) -> Result<[f32; 21], String> {
+        if !self.checkpoint_variant_supported() {
+            return Err("Active terminal balance requires its experimental controller build".into());
+        }
         if self
             .impact_substep
             .or(self.started_substep)
@@ -104,6 +170,36 @@ impl Controller {
         {
             self.status.refusal = Some("25-second physical recovery deadline reached".into());
             return Err(self.status.refusal.clone().unwrap());
+        }
+        #[cfg(feature = "getup-terminal-balance-experiment")]
+        if self.started_substep.is_none() && s.motion != Motion::Fallen {
+            // Loading the recovery policy must not replace the qualified
+            // upright balance with bare source PD while waiting for a fall.
+            // Lying fixture preparation bypasses command and remains zero-control.
+            self.status.phase = "experimental-joint-balance-awaiting-fall".into();
+            return super::supported_standing::controls(
+                s, &self.reference_pose,
+                physical[..21].try_into().unwrap(), physical[46..67].try_into().unwrap(),
+            );
+        }
+        #[cfg(feature = "getup-terminal-balance-experiment")]
+        if let Some(balance) = self.terminal_balance.as_mut() {
+            let q = physical[..21].try_into().unwrap();
+            let dq = physical[46..67].try_into().unwrap();
+            let (controls, compensation_active) = super::supported_standing::controls_with_reference(
+                s, &balance.reference, &self.reference_pose, q, dq,
+            )?;
+            if balance.first_balance_controls.is_none() {
+                balance.first_actual_control_jump_max = Some(controls.iter()
+                    .zip(balance.last_slow_controls).map(|(a, b)| (*a - b).abs()).fold(0.0, f32::max));
+                balance.first_saturated_controls = Some(controls.iter().filter(|x| x.abs() >= 1.0).count());
+                balance.first_balance_controls = Some(controls);
+                balance.first_compensation_active = Some(compensation_active);
+            }
+            // Stop running and archiving SLOW after the explicit controller
+            // transfer. Its decision counter/archive remain a complete prefix.
+            self.status.phase = "experimental-joint-balance-holding".into();
+            return Ok(controls);
         }
         let mut new_decision = false;
         if self.started_substep.is_none()
@@ -351,6 +447,8 @@ impl Controller {
             self.stable_feet = None;
         }
         self.stable_substeps = if stable { self.stable_substeps + 1 } else { 0 };
+        #[cfg(feature = "getup-terminal-balance-experiment")]
+        self.bind_terminal_balance(s);
         self.status.stable_standing_s = self.stable_substeps as f64 / 800.0;
         let elapsed = self
             .impact_substep
@@ -475,6 +573,10 @@ fn fork(real: &Simulation) -> Result<Simulation, String> {
     shadow.diagnostics = Diagnostics::default();
     Ok(shadow)
 }
+
+#[cfg(test)]
+#[path = "terminal_balance_tests.rs"]
+mod terminal_balance_tests;
 
 #[cfg(test)]
 mod tests {

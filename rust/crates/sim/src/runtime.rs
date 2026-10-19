@@ -77,6 +77,9 @@ impl Runtime {
     }
     fn checkpoint_compatible(&self) -> Result<(), String> {
         let s = &self.simulation;
+        if s.getup_controller.as_ref().is_some_and(|c| !c.checkpoint_variant_supported()) {
+            return Err("Checkpoint requires the experimental terminal-balance controller build".into());
+        }
         if self.mode != Mode::Protocol || self.timeline.depth() != 0 || self.quiet.is_some()
             || self.recovery_measurement.is_some() || s.getup_controller.is_none()
             || !s.profile.getup_policy_enabled || s.stepping.is_some()

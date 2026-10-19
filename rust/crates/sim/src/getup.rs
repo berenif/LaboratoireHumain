@@ -238,8 +238,8 @@ pub(crate) fn configure(s: &mut Simulation) -> Result<(), String> {
     s.diagnostics.getup = Some(lh_contracts::GetUpObservation {
         controller: if s.getup_fixture.as_ref().is_some_and(|f|f.preparing) {
             "fixture-zero-control-preparation"
-        } else if s.getup_controller.is_some() {
-            "pretrained-WEAK-SLOW"
+        } else if let Some(controller) = &s.getup_controller {
+            controller.controller_label()
         } else if cfg!(feature = "standing-dynamics-experiment") {
             "experimental-cop-complete-centroidal-standing-balance"
         } else {
