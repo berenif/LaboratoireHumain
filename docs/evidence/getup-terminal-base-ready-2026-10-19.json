@@ -1,0 +1,640 @@
+{
+  "schema": 1,
+  "date": "2026-10-19",
+  "classification": "completed-negative-default-off-terminal-base-ready-control-admission-experiment",
+  "disposition": "Not promoted. Earlier side binding regresses the unchanged 25-second result from 768/800 to 734/800 stable samples. Back and side-supported complete 30-second native holds. Belly passes the original one-second gate without binding, then its requested 30-second continuation stops at 24.8 seconds on the existing 1,100-decision archive bound; measured physical stability is not a30s success.",
+  "standingQualified": false,
+  "qualification24Cases": false,
+  "releaseAccepted": false,
+  "productionRecoveryEnabled": false,
+  "defaultPublicProfileChanged": false,
+  "physicalAcceptanceChanged": false,
+  "browserBuildOrProofForThisFeature": false,
+  "repositoryHeadAtDocumentation": "c2da03d0f928bac01bdc6c4b34fd28e91364f871",
+  "rawFreezeBaseCommit": "ef720d4603f41cfbf8426f0f72522dc69c7e1eda",
+  "rawFreezeUtc": "2026-10-19T18:40:35.249597+00:00",
+  "sourceFreeze": {
+    "receipt": {
+      "path": "outputs/getup-terminal-base-ready-20261019/source-freeze-initial.json",
+      "sha256": "f93e569e27237d94b0cef2a9ead9ab8df6a83aac0cb55163cf66813f2cbc5be2",
+      "bytes": 1346
+    },
+    "sourceSha256": {
+      "rust/crates/sim/Cargo.toml": "9898019eae6f68b3ae68ad81b75fbf4442a9b5bd53233af6f794094a8d36a7ce",
+      "rust/crates/sim/src/getup/controller.rs": "90754b0cfaf9e7c08dca21fd7be61536a2100517c9965bfa58d4e0b174437465",
+      "rust/crates/sim/src/getup/supported_standing.rs": "87312f277e196fb07b65ab0083dc6c72ba15dc4746c9b2446f24f17d84394054",
+      "rust/crates/sim/src/getup/terminal_balance_tests.rs": "a2520e48cc500ad76e08f1a0001285b47a53e904b7024222d08cb1594bd4e543",
+      "rust/crates/sim/src/getup/terminal_base_ready_tests.rs": "c70848f23bd9e2f4f75b2a01b5aefe05e7fdfa434a1a72ad30f7f2b3c2fcb902",
+      "rust/crates/sim/src/runtime.rs": "32949399f1eccb7576e8e552ccb7dffec7dc0893ae62176d7bb03161b1054fcf",
+      "rust/crates/sim/src/getup_terminal_base_ready_checkpoint_tests.rs": "ef2097e223e1bc61aea5c90bfc22caa7beef2eaeae5d1c85954d76bb24c55f1c",
+      "rust/crates/sim/src/getup_root_translation_checkpoint_tests.rs": "aabc61eba8a1a4ba589215bd5daf58982b00d1e3af50afc7237d07a95ab9c1cf"
+    },
+    "allEightCurrentSourceHashesMatchFreezeManifestAndReadOnlyReview": true,
+    "note": "The raw freeze base is historical lineage. The tested candidate is the exact eight-file source overlay identified by these hashes, not a claim that the overlay is committed in HEAD."
+  },
+  "frozenLibrary": {
+    "path": "outputs/getup-terminal-base-ready-20261019/liblh_sim-base-ready-frozen.rlib",
+    "sha256": "cdc7665c89e0de1c7a3c57b68e2e4c23b6e9f5c997f46a369ab3bd54e49ad8cb",
+    "bytes": 24606212
+  },
+  "libraryBuildReceipt": {
+    "path": "outputs/getup-terminal-base-ready-20261019/frozen-library-manifest.json",
+    "sha256": "830b3766bca0273f98363baa5e558fed599e7eb11f9880bdad233b9d0ebd9086",
+    "bytes": 2637
+  },
+  "experiment": {
+    "feature": "getup-terminal-base-ready-experiment",
+    "defaultOff": true,
+    "executedFeatures": [
+      "getup-terminal-base-ready-experiment",
+      "getup-terminal-balance-experiment",
+      "standing-dynamics-experiment",
+      "root-translation-carry-experiment"
+    ],
+    "scope": "Control-admission only. Independent80-native-sample counter/10mm anchors; strict torso/head/leg and virtual-frame motion bounds; canonical shoulder ancestry permits only arm branches to use existing settle bounds. Requires finite active unclipped exact terminal preview before one-time recovered-reference binding. Original acceptance counter/anchors remain independent.",
+    "unchangedActors": {
+      "rust/crates/sim/data/getup-policy/teacher.bin": "f8d8d6ea787366a67aa46352cf5243ed2962dd277b5ca6b6f98a85fc3a67ab4f",
+      "rust/crates/sim/data/getup-policy/student.bin": "c489faed55bdab1669c51dab71a102db91ff2a55143789f682e45cd8169d6dbb"
+    },
+    "actorHashesReverified": true,
+    "unchangedGainsAndBounds": true,
+    "rootOrBodyForceTorqueAssistance": false,
+    "poseOrVelocityAssistance": false,
+    "legacyNoneSemantics": "Legacy terminal_base_ready=None schemas1/2 retain their old admission path and omitted optional fields. Compatibility tests explicitly construct legacyNone fixtures; standing assertions are not relaxed.",
+    "checkpoint": "Schema3 strict terminal-base-ready-v1 wrapper with typed inner1or2 auxiliary. Exact schema2 root-carry sidecar retained. Unknown, hidden, unsupported and inconsistent variants refused.",
+    "freshCarry": "Explicit root-carry activation at native0 in every fresh fixture; same-live serialized body-world and embedded runtime unchanged at activation. Holds restore measured checkpoints with existing nonzero carry and no activation/reset."
+  },
+  "profile": {
+    "input": {
+      "path": "outputs/getup-terminal-base-ready-20261019/fresh-3plus1/profile.json",
+      "sha256": "ea6da63a9996d9528f3dc25041cf476fdf0cfa828f57c57d119b78c8ebd0f3a7",
+      "bytes": 1152
+    },
+    "id": "getup-800hz-3plus1-recovery-qualification-v1",
+    "solverIterations": 3,
+    "additionalBodyIterations": 1,
+    "allFreshResultsMatchEveryInputF32Bit": true,
+    "byteIdenticalToRetained3plus1Profile": true,
+    "perPoseProfileSelection": false
+  },
+  "unchangedCriteria": {
+    "nativeHz": 800,
+    "controllerHz": 40,
+    "originalContiguousStandingNativeSamples": 800,
+    "recoveryDeadlineSecondsAfterTrigger": 25,
+    "maximumWholeBodyLinearMps": 0.22,
+    "maximumWholeBodyAngularRadps": 0.65,
+    "footOriginDriftFromOriginalStableAnchorsM": 0.01,
+    "headHeightGreaterThanM": 1.4,
+    "torsoUpAtLeast": 0.97,
+    "loadedContinuationSlipStopM": 0.02,
+    "wholeRecovery20mmStop": false,
+    "admissionCounterCanCountAsOriginalStandingSamples": false
+  },
+  "freshRecovery": [
+    {
+      "kind": "side",
+      "outcome": "25-second-recovery-deadline",
+      "standingPassed": false,
+      "triggerNative": 340,
+      "terminalBalanceActivationNative": 19439,
+      "terminalBaseReadyCount": 80,
+      "firstLatchedOriginalStandingPassNative": null,
+      "polledTerminalNative": 20340,
+      "originalStableNativeSamplesAtTerminal": 734,
+      "realNativeIntegrations": 20340,
+      "forecastNativeIntegrations": 700,
+      "unobservedRealTailNativeSteps": 0
+    },
+    {
+      "kind": "back",
+      "outcome": "experimental-terminal-balance-one-second-standing-pass",
+      "standingPassed": true,
+      "triggerNative": 480,
+      "terminalBalanceActivationNative": 2807,
+      "terminalBaseReadyCount": 80,
+      "firstLatchedOriginalStandingPassNative": 3572,
+      "polledTerminalNative": 3580,
+      "originalStableNativeSamplesAtTerminal": 808,
+      "realNativeIntegrations": 3580,
+      "forecastNativeIntegrations": 960,
+      "unobservedRealTailNativeSteps": 0
+    },
+    {
+      "kind": "belly",
+      "outcome": "frozen-one-second-standing-pass",
+      "standingPassed": true,
+      "triggerNative": 400,
+      "terminalBalanceActivationNative": null,
+      "terminalBaseReadyCount": 0,
+      "firstLatchedOriginalStandingPassNative": 2551,
+      "polledTerminalNative": 2560,
+      "originalStableNativeSamplesAtTerminal": 809,
+      "realNativeIntegrations": 2560,
+      "forecastNativeIntegrations": 540,
+      "unobservedRealTailNativeSteps": 0
+    },
+    {
+      "kind": "side-supported",
+      "outcome": "experimental-terminal-balance-one-second-standing-pass",
+      "standingPassed": true,
+      "triggerNative": 140,
+      "terminalBalanceActivationNative": 16100,
+      "terminalBaseReadyCount": 80,
+      "firstLatchedOriginalStandingPassNative": 17085,
+      "polledTerminalNative": 17100,
+      "originalStableNativeSamplesAtTerminal": 815,
+      "realNativeIntegrations": 17100,
+      "forecastNativeIntegrations": 720,
+      "unobservedRealTailNativeSteps": 0
+    }
+  ],
+  "standingContinuations": [
+    {
+      "kind": "back",
+      "rawOutcome": "completed",
+      "thirtySecondHoldPassed": true,
+      "requestedSimulatedSeconds": 30.0,
+      "measuredSimulatedSeconds": 30.0,
+      "actualContinuationIntegrations": 24000,
+      "unobservedTerminalTailNative": 0,
+      "allStandingPredicatesPassedEveryMeasuredNativeSubstep": true,
+      "originalControllerCounterContinuousEveryMeasuredNativeSubstep": true,
+      "originalControllerStableCounterAtInput": 808,
+      "originalControllerStableCounterFinal": 24808,
+      "originalStableAnchorsUnchanged": true,
+      "maximumFootOriginDriftM": [
+        0.00018890525097958744,
+        0.00019768261699937284
+      ],
+      "loadedContactSpeedIntegralM": [
+        2.010793092942086e-06,
+        5.4812678046689485e-06
+      ],
+      "maximumBodyLinearMps": 0.032658521085977554,
+      "maximumBodyAngularRadps": 0.04305994138121605,
+      "teacherForecastUnchanged": true,
+      "slowDecisionCountUnchanged": true,
+      "noExternalSupport": true,
+      "noPoseOrVelocityWrites": true,
+      "terminalFailure": null
+    },
+    {
+      "kind": "belly",
+      "rawOutcome": "physical-failure",
+      "thirtySecondHoldPassed": false,
+      "requestedSimulatedSeconds": 30.0,
+      "measuredSimulatedSeconds": 24.8,
+      "actualContinuationIntegrations": 19840,
+      "unobservedTerminalTailNative": 0,
+      "allStandingPredicatesPassedEveryMeasuredNativeSubstep": true,
+      "originalControllerCounterContinuousEveryMeasuredNativeSubstep": true,
+      "originalControllerStableCounterAtInput": 809,
+      "originalControllerStableCounterFinal": 20649,
+      "originalStableAnchorsUnchanged": true,
+      "maximumFootOriginDriftM": [
+        0.004119150340557098,
+        0.002970454515889287
+      ],
+      "loadedContactSpeedIntegralM": [
+        0.006530382516357337,
+        0.010394352567964235
+      ],
+      "maximumBodyLinearMps": 0.015266785398125648,
+      "maximumBodyAngularRadps": 0.09408612549304962,
+      "teacherForecastUnchanged": true,
+      "slowDecisionCountUnchanged": false,
+      "noExternalSupport": true,
+      "noPoseOrVelocityWrites": true,
+      "terminalFailure": {
+        "check": "getup-policy",
+        "measured": 0.0,
+        "offending": "GetUp decision archive bound reached",
+        "substep": 0,
+        "threshold": 0.0,
+        "tick": 1120
+      }
+    },
+    {
+      "kind": "side-supported",
+      "rawOutcome": "completed",
+      "thirtySecondHoldPassed": true,
+      "requestedSimulatedSeconds": 30.0,
+      "measuredSimulatedSeconds": 30.0,
+      "actualContinuationIntegrations": 24000,
+      "unobservedTerminalTailNative": 0,
+      "allStandingPredicatesPassedEveryMeasuredNativeSubstep": true,
+      "originalControllerCounterContinuousEveryMeasuredNativeSubstep": true,
+      "originalControllerStableCounterAtInput": 815,
+      "originalControllerStableCounterFinal": 24815,
+      "originalStableAnchorsUnchanged": true,
+      "maximumFootOriginDriftM": [
+        0.00031621515518054366,
+        0.00029708389774896204
+      ],
+      "loadedContactSpeedIntegralM": [
+        6.119426635748939e-06,
+        3.1124635057278295e-06
+      ],
+      "maximumBodyLinearMps": 0.0186116024851799,
+      "maximumBodyAngularRadps": 0.022457284852862358,
+      "teacherForecastUnchanged": true,
+      "slowDecisionCountUnchanged": true,
+      "noExternalSupport": true,
+      "noPoseOrVelocityWrites": true,
+      "terminalFailure": null
+    }
+  ],
+  "bellyLimit": {
+    "thirtySecondResult": "INCOMPLETE",
+    "boundType": "Controller decision archive integrity bound, not a measured standing-predicate failure",
+    "physicalTimeAtRefusalSeconds": 28.0,
+    "continuationSeconds": 24.8,
+    "continuationNativeIntegrations": 19840,
+    "finalArchiveLength": 1100,
+    "finalPolicyDecisionCount": 1101,
+    "terminalBaseReadyCount": 0,
+    "terminalBalance": null,
+    "exactLaterReadinessBlockerExported": false,
+    "knownBaselineTransition": {
+      "activationNative": 1831,
+      "firstAnkleControlIndex": 8,
+      "firstAnkleControl": 1.0,
+      "firstSaturatedControls": 1,
+      "interpretation": "The old admitted transition reaches the cap and does not satisfy the new no-clipping admission requirement. Later rejection reasons are not exported; no specific later blocker is claimed."
+    },
+    "archiveOrGateExtended": false,
+    "physicalSampleCoverage": "Every one of 19,840 observed continuation native substeps passed standing predicates and kept the original counter continuous. The remaining 5.2 requested seconds were not executed."
+  },
+  "sideNegativeCausalEvidence": {
+    "baselineActivationNative": 19652,
+    "candidateActivationNative": 19439,
+    "lastExactMatchedPhysicalSampleNative": 19420,
+    "firstDifferentPhysicalSampleNative": 19440,
+    "sampledPostBindOriginalMotionFailures": [
+      {
+        "native": 19480,
+        "angularPassed": true,
+        "angularRadps": 0.42913156747817993,
+        "body": "right_hand",
+        "linearMps": 0.22937007248401642,
+        "linearPassed": false
+      },
+      {
+        "native": 19500,
+        "angularPassed": true,
+        "angularRadps": 0.46300241351127625,
+        "body": "right_hand",
+        "linearMps": 0.24045056104660034,
+        "linearPassed": false
+      },
+      {
+        "native": 19520,
+        "angularPassed": true,
+        "angularRadps": 0.4769299328327179,
+        "body": "right_hand",
+        "linearMps": 0.2442491501569748,
+        "linearPassed": false
+      },
+      {
+        "native": 19540,
+        "angularPassed": true,
+        "angularRadps": 0.4787617325782776,
+        "body": "right_hand",
+        "linearMps": 0.24310068786144257,
+        "linearPassed": false
+      },
+      {
+        "native": 19560,
+        "angularPassed": true,
+        "angularRadps": 0.4727281332015991,
+        "body": "right_hand",
+        "linearMps": 0.238633930683136,
+        "linearPassed": false
+      },
+      {
+        "native": 19580,
+        "angularPassed": true,
+        "angularRadps": 0.46160539984703064,
+        "body": "right_hand",
+        "linearMps": 0.23172985017299652,
+        "linearPassed": false
+      },
+      {
+        "native": 19600,
+        "angularPassed": true,
+        "angularRadps": 0.4473987817764282,
+        "body": "right_hand",
+        "linearMps": 0.22301584482192993,
+        "linearPassed": false
+      }
+    ],
+    "peakSampledRightHandLinearMps": 0.2442491501569748,
+    "peakNative": 19520,
+    "otherSampledPredicates": "Across19440..19620, sampled head/torso, base motion, angular motion, both-foot support, support-hull COM/capture and foot-load predicates pass. Unanchored diagnostic foot drift is unavailable; original runtime gate is separately authoritative.",
+    "candidateFinalStableSamples": 734,
+    "baselineFinalStableSamples": 768,
+    "inferredCandidateFinalStableRunStartNative": 19607,
+    "inferredBaselineFinalStableRunStartNative": 19573,
+    "nativeLastFailedBodyOrPredicateExported": false,
+    "initialTorqueJumpsNm": [
+      {
+        "actuator_index": 3,
+        "body": "@right_hip_x",
+        "role": "base",
+        "torque_jump_nm": 10.84724
+      },
+      {
+        "actuator_index": 8,
+        "body": "@right_ankle_y",
+        "role": "base",
+        "torque_jump_nm": 14.566808
+      },
+      {
+        "actuator_index": 9,
+        "body": "@left_hip_x",
+        "role": "base",
+        "torque_jump_nm": 10.292738
+      },
+      {
+        "actuator_index": 17,
+        "body": "right_lower_arm",
+        "role": "arm",
+        "torque_jump_nm": 20.832062
+      },
+      {
+        "actuator_index": 20,
+        "body": "left_lower_arm",
+        "role": "arm",
+        "torque_jump_nm": 19.653917
+      }
+    ],
+    "all21RawPdAndCompensatedSaturationFlagsFalse": true,
+    "baselineRightElbowJumpNm": 19.44094088,
+    "interpretation": "A whole-controller transfer transient follows earlier binding and the sampled right hand alone breaches the original linear gate. Similar~19Nm baseline elbow jumps mean jump magnitude alone is not a causal discriminant. This does not isolate arm-only causality or establish the exact800Hz last failure."
+  },
+  "matchedBaselinePrefix": {
+    "baselineDirectory": "outputs/getup-root-translation-carry-20261019/fresh-3plus1",
+    "comparison": {
+      "path": "outputs/getup-terminal-base-ready-20261019/fresh-3plus1/matched-baseline-prefix-comparison.json",
+      "sha256": "a72aade5a7ab0816ca66d31d57f403f5536c6b3885a82145952820ea55e7f8d0",
+      "bytes": 32297
+    },
+    "cases": [
+      {
+        "kind": "side",
+        "earlierBranchTransferNative": 19439,
+        "comparedPhysicalSamples": 973,
+        "lastComparedSampleNative": 19420,
+        "physicalMismatches": 0,
+        "exactTeacherArchive": true,
+        "exactSlowDecisionArchivePrefix": true,
+        "comparedSlowPrefixLength": 955
+      },
+      {
+        "kind": "back",
+        "earlierBranchTransferNative": 2807,
+        "comparedPhysicalSamples": 124,
+        "lastComparedSampleNative": 2800,
+        "physicalMismatches": 0,
+        "exactTeacherArchive": true,
+        "exactSlowDecisionArchivePrefix": true,
+        "comparedSlowPrefixLength": 117
+      },
+      {
+        "kind": "belly",
+        "earlierBranchTransferNative": 1831,
+        "comparedPhysicalSamples": 78,
+        "lastComparedSampleNative": 1820,
+        "physicalMismatches": 0,
+        "exactTeacherArchive": true,
+        "exactSlowDecisionArchivePrefix": true,
+        "comparedSlowPrefixLength": 72
+      },
+      {
+        "kind": "side-supported",
+        "earlierBranchTransferNative": 16100,
+        "comparedPhysicalSamples": 807,
+        "lastComparedSampleNative": 16100,
+        "physicalMismatches": 0,
+        "exactTeacherArchive": true,
+        "exactSlowDecisionArchivePrefix": true,
+        "comparedSlowPrefixLength": 798
+      }
+    ],
+    "independentlyRecomputedReadOnly": true,
+    "scope": "Exact saved physical pose/velocity, joint state, controls and fixture samples through the earlier transfer in either branch, plus complete teacher archive and pre-transfer SLOW archive prefix. No claim of unseen800Hz physical equality.",
+    "initialPostprocessingError": {
+      "preservedRaw": {
+        "path": "outputs/getup-terminal-base-ready-20261019/fresh-3plus1/prefix-comparison-initial-keying.json",
+        "sha256": "828bcbe2decf6189262b3f76f03fe1c4346143025b9c3ec82c2004581f414b5e",
+        "bytes": 30750
+      },
+      "cause": "Initial native-only key conflated duplicate pre/posttrigger advance0 rows; initial belly SLOW comparison also crossed the old baseline transfer.",
+      "correction": "Postprocessing only: key(native,triggerNative), compare SLOW only before the earlier branch transfer. No source, profile, thresholds, trajectories or raw runs changed.",
+      "dynamicsRerun": false
+    }
+  },
+  "focusedGates": {
+    "featureOnPassed": 38,
+    "featureOffPassed": 24,
+    "totalPassed": 62,
+    "failed": 0,
+    "ignored": 0,
+    "gateResults": [
+      {
+        "log": "outputs/getup-terminal-base-ready-20261019/gates/getup_fixture_profile_tests-feature-off.log",
+        "passed": 4,
+        "failed": 0,
+        "ignored": 0,
+        "exitCode": 0
+      },
+      {
+        "log": "outputs/getup-terminal-base-ready-20261019/gates/getup_fixture_profile_tests-feature-on.log",
+        "passed": 4,
+        "failed": 0,
+        "ignored": 0,
+        "exitCode": 0
+      },
+      {
+        "log": "outputs/getup-terminal-base-ready-20261019/gates/getup_root_translation_checkpoint_tests-feature-off.log",
+        "passed": 8,
+        "failed": 0,
+        "ignored": 0,
+        "exitCode": 0
+      },
+      {
+        "log": "outputs/getup-terminal-base-ready-20261019/gates/getup_root_translation_checkpoint_tests-feature-on.log",
+        "passed": 8,
+        "failed": 0,
+        "ignored": 0,
+        "exitCode": 0
+      },
+      {
+        "log": "outputs/getup-terminal-base-ready-20261019/gates/supported_standing__tests-feature-on.log",
+        "passed": 5,
+        "failed": 0,
+        "ignored": 0,
+        "exitCode": 0
+      },
+      {
+        "log": "outputs/getup-terminal-base-ready-20261019/gates/terminal-feature-off.log",
+        "passed": 12,
+        "failed": 0,
+        "ignored": 0,
+        "exitCode": 0
+      },
+      {
+        "log": "outputs/getup-terminal-base-ready-20261019/gates/terminal-feature-on.log",
+        "passed": 21,
+        "failed": 0,
+        "ignored": 0,
+        "exitCode": 0
+      }
+    ],
+    "libraryAndBothProbeCompileExitCode": 0,
+    "compileFailure": false,
+    "review": {
+      "path": "outputs/getup-terminal-base-ready-20261019/independent-source-review.json",
+      "sha256": "872797504367e3cac2727a4b5177e5b3a8d3e0a08736335c2b19ca63e79eb545",
+      "bytes": 1918
+    },
+    "blockingReviewFindings": [],
+    "nonblockingCoverageGap": "Checkpoint restore and synthetic 79-to80 admission are tested separately, no combined restored 79-to80 binding test yet",
+    "unitWorkIsSeparateFromCampaignNativeIntegrationCounts": true,
+    "documentationWorkerReranTestsOrDynamics": false
+  },
+  "workAccounting": {
+    "freshRealNativeIntegrations": 43580,
+    "freshForecastNativeIntegrations": 2920,
+    "holdRealNativeIntegrations": 67840,
+    "combinedRealNativeIntegrations": 111420,
+    "combinedRealPlusForecastNativeIntegrations": 114340,
+    "unitWorkIncluded": false,
+    "allFourFreshProcessesTerminal": true,
+    "allThreeAttemptedHoldProcessesTerminal": true,
+    "sideHoldAttempted": false,
+    "unobservedRealTailNativeIntegrations": 0,
+    "processExitZeroDoesNotMeanPhysicalAcceptance": true
+  },
+  "executedProbeCopies": [
+    {
+      "executedSource": "outputs/getup-terminal-base-ready-20261019/fresh-recovery.rs",
+      "retainedExactCopy": "docs/evidence/probes/getup-terminal-base-ready-fresh-recovery-2026-10-19.rs",
+      "sha256": "cf21f13017ac8cf80f9f848c8775a5e72db96692900ad2dac71e672b25a28617",
+      "bytes": 14598
+    },
+    {
+      "executedSource": "outputs/getup-terminal-base-ready-20261019/active-standing-continuation.rs",
+      "retainedExactCopy": "docs/evidence/probes/getup-terminal-base-ready-active-standing-continuation-2026-10-19.rs",
+      "sha256": "ce2860612b93fbe74d80031e2115e5f91ed017ba8c01617087cdca33cdf99ad0",
+      "bytes": 12885
+    },
+    {
+      "executedSource": "outputs/getup-terminal-base-ready-20261019/compare-baseline-prefix.py",
+      "retainedExactCopy": "docs/evidence/probes/getup-terminal-base-ready-compare-baseline-prefix-2026-10-19.py",
+      "sha256": "fc1bf3b142cd6db77b199e88545be317a3531d902443f3e507854e5038a00323",
+      "bytes": 3274
+    }
+  ],
+  "rawReceiptSha256": {
+    "outputs/getup-terminal-base-ready-20261019/source-freeze-initial.json": "f93e569e27237d94b0cef2a9ead9ab8df6a83aac0cb55163cf66813f2cbc5be2",
+    "outputs/getup-terminal-base-ready-20261019/frozen-library-manifest.json": "830b3766bca0273f98363baa5e558fed599e7eb11f9880bdad233b9d0ebd9086",
+    "outputs/getup-terminal-base-ready-20261019/independent-source-review.json": "872797504367e3cac2727a4b5177e5b3a8d3e0a08736335c2b19ca63e79eb545",
+    "outputs/getup-terminal-base-ready-20261019/run-recovery.py": "418ab6e57282ebab1d732d0808adfd16b0e66fd82b2c927d2f48a6c1d228cb56",
+    "outputs/getup-terminal-base-ready-20261019/run-holds.py": "34656efc5c77ebd140e08b3f6530cebf37ec712b1e338636dbcd39754ec975ac",
+    "outputs/getup-terminal-base-ready-20261019/holds-runner.exit": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa",
+    "outputs/getup-terminal-base-ready-20261019/holds-console.log": "b4165d2c0638e697a15bb8cbe73e1116867472fef6f9c958bbf1b01b139e914a",
+    "outputs/getup-terminal-base-ready-20261019/prefix-comparison-console.log": "fdb4be179604436c22c3112af4868db66574a3cbfe374b5c4a98bc137b315160",
+    "outputs/getup-terminal-base-ready-20261019/fresh-3plus1/profile.json": "ea6da63a9996d9528f3dc25041cf476fdf0cfa828f57c57d119b78c8ebd0f3a7",
+    "outputs/getup-terminal-base-ready-20261019/fresh-3plus1/process-ledger.json": "994c53455686bdd1b629b1bf7a80eb1e15ae64692e33d059f21ae4fab7f70daa",
+    "outputs/getup-terminal-base-ready-20261019/fresh-3plus1/hold-process-ledger.json": "07a2821cdea9368b04893fbcc124ed0968cf448c5018f8f3ced29d0025d3b90a",
+    "outputs/getup-terminal-base-ready-20261019/fresh-3plus1/matched-baseline-prefix-comparison.json": "a72aade5a7ab0816ca66d31d57f403f5536c6b3885a82145952820ea55e7f8d0",
+    "outputs/getup-terminal-base-ready-20261019/fresh-3plus1/prefix-comparison-initial-keying.json": "828bcbe2decf6189262b3f76f03fe1c4346143025b9c3ec82c2004581f414b5e",
+    "outputs/getup-terminal-base-ready-20261019/fresh-3plus1/side/result.json": "ca9a1c44dd48c744ec37876a9c91c93d5af7629baf1dce4743989fe3d65baad3",
+    "outputs/getup-terminal-base-ready-20261019/fresh-3plus1/side/reference-report.json": "ab96f76c2a41ce18073fc072eba16bb2540a6a00fde7c7a6df4cad806001551c",
+    "outputs/getup-terminal-base-ready-20261019/fresh-3plus1/side/trace.ndjson": "df1a36544649241984edcfe6c4abf980194793594a27c83dc6d0fe6a99009ad6",
+    "outputs/getup-terminal-base-ready-20261019/fresh-3plus1/side/diagnostics-40hz.ndjson": "e677b170ed5d755c98ab5fa56359528c75767847688cb87e01486b961c03bc0d",
+    "outputs/getup-terminal-base-ready-20261019/fresh-3plus1/side/explicit-carry-mode.json": "998a664c674452f273584a4bd4194130621d3a79c1376de2d6537e9fdd775f12",
+    "outputs/getup-terminal-base-ready-20261019/fresh-3plus1/side/checkpoint-initial.json": "ef7242aa7b6777921a8245073a3485fb6b91f92ffad0946b51a470be48044977",
+    "outputs/getup-terminal-base-ready-20261019/fresh-3plus1/side/checkpoint-trigger.json": "23d462c746fe706aebd8fe8a9d86a9f1537c343130c6cb8631c1ab6437f4e1a4",
+    "outputs/getup-terminal-base-ready-20261019/fresh-3plus1/side/checkpoint-final.json": "3df1f354e741cb0312e44731c5493daba1f10a4dc90c4846125fd1ef908b9e5f",
+    "outputs/getup-terminal-base-ready-20261019/fresh-3plus1/side/checkpoint-final.bin": "a045e8c64aa0abf757a0bcd351682138ab0059a771d31d3d91fa3bf75ea2dd5b",
+    "outputs/getup-terminal-base-ready-20261019/fresh-3plus1/back/result.json": "b3946aa8c2c7ebc1d83e456769c8565e7d52089372211dd48e07cb788361ac58",
+    "outputs/getup-terminal-base-ready-20261019/fresh-3plus1/back/reference-report.json": "e4cfa092a298ca57296e8506ac2dfb642471f92886226f3ab1b0171fce4d33fb",
+    "outputs/getup-terminal-base-ready-20261019/fresh-3plus1/back/trace.ndjson": "214c7e92ac0a231c34c835efa2a0c4f3a96eca129936e2985765821861ef507b",
+    "outputs/getup-terminal-base-ready-20261019/fresh-3plus1/back/diagnostics-40hz.ndjson": "4cf18fe9d7c6e11fd60aa8433397d7ab12463cb083370c8c153ac5cc84576ea9",
+    "outputs/getup-terminal-base-ready-20261019/fresh-3plus1/back/explicit-carry-mode.json": "5e2e12b993ba02b79ce01b212f7e42b2ae1c6577e0bf0935e5e645fb25ef9ed7",
+    "outputs/getup-terminal-base-ready-20261019/fresh-3plus1/back/checkpoint-initial.json": "728cdce1c1a30fabc7d943db0b685d66e0295434b7ca9be49110fe0d3b54333b",
+    "outputs/getup-terminal-base-ready-20261019/fresh-3plus1/back/checkpoint-trigger.json": "ccfe85c3ce52621d389f0b74cb1c09a79b5c7b19071b600f151ec017c1d2cc84",
+    "outputs/getup-terminal-base-ready-20261019/fresh-3plus1/back/checkpoint-final.json": "5d7cb6d8e1f405560ab0196196f5af3d99527ba71552de4606f6e7e50788f4e2",
+    "outputs/getup-terminal-base-ready-20261019/fresh-3plus1/back/checkpoint-final.bin": "75176a7f45b1809b0287293289f756437467c63a8840eac173b40fbd6c0b74d4",
+    "outputs/getup-terminal-base-ready-20261019/fresh-3plus1/belly/result.json": "f2c4724639b082c33585f678a61d10d9960423f14e316634b2038858654ebf1c",
+    "outputs/getup-terminal-base-ready-20261019/fresh-3plus1/belly/reference-report.json": "e6b960892a3bcf431f1830b8612d0214473563d03d5f551cbf40f39651d4b787",
+    "outputs/getup-terminal-base-ready-20261019/fresh-3plus1/belly/trace.ndjson": "b15b683bb0690dba583325f1ca0caa7708850ad79cbba89850cc224488d14ed5",
+    "outputs/getup-terminal-base-ready-20261019/fresh-3plus1/belly/diagnostics-40hz.ndjson": "951506671156d09831933a42f71a2e506b8434ae9222e8649db6ece338127d97",
+    "outputs/getup-terminal-base-ready-20261019/fresh-3plus1/belly/explicit-carry-mode.json": "68e5448e0be7d9d102ffd66bb25f723dba9604816fe3930717f94aedc0b9ea9e",
+    "outputs/getup-terminal-base-ready-20261019/fresh-3plus1/belly/checkpoint-initial.json": "6972b54660e63efc5e1060035a8c417a282117933b46433789057cd65d4feca4",
+    "outputs/getup-terminal-base-ready-20261019/fresh-3plus1/belly/checkpoint-trigger.json": "0b4a6389c5c7ae09cd283cfbd25eb438e73bccb43932222ed1435536179d2d61",
+    "outputs/getup-terminal-base-ready-20261019/fresh-3plus1/belly/checkpoint-final.json": "ec1dec06f8bb5577ed339458d31b6edc35dc071abd7f29518a799169276f7cf1",
+    "outputs/getup-terminal-base-ready-20261019/fresh-3plus1/belly/checkpoint-final.bin": "a4898e336c1b34e94c34dc44ddfd8cb4efff0294ce5a1dc9ecc507720797dfd2",
+    "outputs/getup-terminal-base-ready-20261019/fresh-3plus1/side-supported/result.json": "c64b1c9811864479be53b7c5ba0afc9b73c8c2b7cf04e4d286568a443eaecd3b",
+    "outputs/getup-terminal-base-ready-20261019/fresh-3plus1/side-supported/reference-report.json": "3cc3a509d3b974ab968c6b97aa1a2a67e2b2f5bfec27ce5b7f457274684c8ff9",
+    "outputs/getup-terminal-base-ready-20261019/fresh-3plus1/side-supported/trace.ndjson": "4789678c473ec611c5830ef656a9a08b83a297e085d216cb4b44fa74d5a13351",
+    "outputs/getup-terminal-base-ready-20261019/fresh-3plus1/side-supported/diagnostics-40hz.ndjson": "38e2bc1066ebcd560d83d2a393864c2d5f1f1e8cab164a3cecc21990642c4caa",
+    "outputs/getup-terminal-base-ready-20261019/fresh-3plus1/side-supported/explicit-carry-mode.json": "9d6017a483391883815a24ed9c5f6ab6d2ea509f1fbf802edb2ba14ba863f281",
+    "outputs/getup-terminal-base-ready-20261019/fresh-3plus1/side-supported/checkpoint-initial.json": "a4f7ce54aed206a926c81e827ed08abb5a611caab7906e5ca0086303ec4248b0",
+    "outputs/getup-terminal-base-ready-20261019/fresh-3plus1/side-supported/checkpoint-trigger.json": "d603ec123315cc02d137f9c48f03f5479ff9f523228ae8a2610f3f4386e00eb9",
+    "outputs/getup-terminal-base-ready-20261019/fresh-3plus1/side-supported/checkpoint-final.json": "6c3b017b0bd58c038700266414cdb1ea8d4dd5cdf7897c32533f3f0954e45896",
+    "outputs/getup-terminal-base-ready-20261019/fresh-3plus1/side-supported/checkpoint-final.bin": "ad657de296483f4a6590951f8eeac22740ee1ed778b7a8f0a1408d19581f956c",
+    "outputs/getup-terminal-base-ready-20261019/fresh-3plus1/back-hold30/result.json": "b19a7afaf548a9ebffa27ea88508ba57b80da5b43e4c9c12a3581d7489437a33",
+    "outputs/getup-terminal-base-ready-20261019/fresh-3plus1/back-hold30/reference-report.json": "7a933435d181ce748fc037174495e6384b04a258a96358d7be1ff8f8192ca528",
+    "outputs/getup-terminal-base-ready-20261019/fresh-3plus1/back-hold30/native-diagnostics.ndjson": "60e587875aca2520ddcb03f33a029d69d9d636094ecb5fae7d583bf78eebefff",
+    "outputs/getup-terminal-base-ready-20261019/fresh-3plus1/back-hold30/explicit-integration-mode.json": "3c166b7fb8b2d7ef260a85ec3e5e47094617d4149bed52145e3eaa37caa01a1a",
+    "outputs/getup-terminal-base-ready-20261019/fresh-3plus1/back-hold30/checkpoint-input-verification.json": "363c0eb6f03c28db443b523fa605d1681d0583cc17d77ad2a9802450d2c8787d",
+    "outputs/getup-terminal-base-ready-20261019/fresh-3plus1/back-hold30/checkpoint-final-verification.json": "10dce3bf9b5b6d28bb1b1153ce613949d528d5a598248630bd8bf40684425c68",
+    "outputs/getup-terminal-base-ready-20261019/fresh-3plus1/back-hold30/checkpoint-final.bin": "c5806fbc9dee835bdd9c65c127f1ac08327c8a78aa19dcc82acc3cee2a48a19d",
+    "outputs/getup-terminal-base-ready-20261019/fresh-3plus1/belly-hold30/result.json": "b071f9030372d7c102e7f7714cad56ed349e08899321293a56d011805c43bc56",
+    "outputs/getup-terminal-base-ready-20261019/fresh-3plus1/belly-hold30/reference-report.json": "0432b4c5c8aa839c9d0ac44841209c4fef6e8f094420d60a4035c14ee312c6d6",
+    "outputs/getup-terminal-base-ready-20261019/fresh-3plus1/belly-hold30/native-diagnostics.ndjson": "eccf55ee8f2b8e850f9ded570069498452d97aca261f110d6bc63b2a71990f00",
+    "outputs/getup-terminal-base-ready-20261019/fresh-3plus1/belly-hold30/explicit-integration-mode.json": "1a41151019ee58b247b3042e8a59f3fe3eb3869dcb052e05e9d031352cb35a90",
+    "outputs/getup-terminal-base-ready-20261019/fresh-3plus1/belly-hold30/checkpoint-input-verification.json": "68d809c21410a010d7889c3c9ef454f52b8a7ee8f089745d5052e518af442e38",
+    "outputs/getup-terminal-base-ready-20261019/fresh-3plus1/belly-hold30/checkpoint-final-verification.json": "2ebd050c9e9ec9029e09fec0447f4e1ec46334c5a13e5ae174533f11cae99b4f",
+    "outputs/getup-terminal-base-ready-20261019/fresh-3plus1/belly-hold30/checkpoint-final.bin": "8706eb6fafbbe8ebe0c658b0aa3275812e93238c239694a38699722f609edad0",
+    "outputs/getup-terminal-base-ready-20261019/fresh-3plus1/side-supported-hold30/result.json": "b02ebf117cf3786878373cfb6a688b6e3cd71beac899b24a0689403adc680576",
+    "outputs/getup-terminal-base-ready-20261019/fresh-3plus1/side-supported-hold30/reference-report.json": "29fc3e3e9726c2c69e757ff6c1924e47e2826a5cabf62b1b48a1745f81c917c1",
+    "outputs/getup-terminal-base-ready-20261019/fresh-3plus1/side-supported-hold30/native-diagnostics.ndjson": "5d2d19c238629ed861f64cdb9e63ccd195568d582e286783b0f3b4a0248961bd",
+    "outputs/getup-terminal-base-ready-20261019/fresh-3plus1/side-supported-hold30/explicit-integration-mode.json": "a39fe159d29fc3d63ac869f5a7b109de76060b5d6071e8d1df626a3e764f824c",
+    "outputs/getup-terminal-base-ready-20261019/fresh-3plus1/side-supported-hold30/checkpoint-input-verification.json": "985a260f3440d8680867bb10d31fd9b2b88bc3abb1325bf55d0ef62f2db234c7",
+    "outputs/getup-terminal-base-ready-20261019/fresh-3plus1/side-supported-hold30/checkpoint-final-verification.json": "fca99a57c65c51a48b2dc187a19eaba27d4e895fa5da8d8e0afffe5245c8e313",
+    "outputs/getup-terminal-base-ready-20261019/fresh-3plus1/side-supported-hold30/checkpoint-final.bin": "4ba3e3718eb31937aa7fb3a48106428887c4ab706dd7d1a2ba92a40a9283d871",
+    "outputs/getup-root-translation-carry-20261019/fresh-3plus1/side/result.json": "5846d4729c471f68e177083971ae6dc2eaa225163282c1e9978eb69c4831a10a",
+    "outputs/getup-root-translation-carry-20261019/fresh-3plus1/side/reference-report.json": "2d22535ba45532bfccff775852ca0d6d613d83dd06bbaf972bc367d5e829fc2a",
+    "outputs/getup-root-translation-carry-20261019/fresh-3plus1/belly/result.json": "d8dba1755e34157943a51b32ed35995ea5c347d84ef3d7a67a44221788199ec5",
+    "outputs/getup-terminal-base-ready-20261019/gates/fresh-recovery-compile.exit": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa",
+    "outputs/getup-terminal-base-ready-20261019/gates/active-standing-continuation-compile.exit": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa",
+    "outputs/getup-terminal-base-ready-20261019/gates/library-build.exit": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa",
+    "outputs/getup-terminal-base-ready-20261019/gates/getup_fixture_profile_tests-feature-off.log": "3aa866561c60c45fd3dd9d6f3fbd4cae761549c33e25ff86f8b72ebfc056624a",
+    "outputs/getup-terminal-base-ready-20261019/gates/getup_fixture_profile_tests-feature-off.exit": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa",
+    "outputs/getup-terminal-base-ready-20261019/gates/getup_fixture_profile_tests-feature-on.log": "c63092dbaa510cc7fef157655edde121d09dc60c8db4c02d380bbc7f30756092",
+    "outputs/getup-terminal-base-ready-20261019/gates/getup_fixture_profile_tests-feature-on.exit": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa",
+    "outputs/getup-terminal-base-ready-20261019/gates/getup_root_translation_checkpoint_tests-feature-off.log": "6f39c0dcba146a30fa06f255847cb50de2d08d8cefc1248dbc762ba550daed46",
+    "outputs/getup-terminal-base-ready-20261019/gates/getup_root_translation_checkpoint_tests-feature-off.exit": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa",
+    "outputs/getup-terminal-base-ready-20261019/gates/getup_root_translation_checkpoint_tests-feature-on.log": "f11c31d97ac1797b632e6b8494d7f4a4a1056454c03934fb8cf9e29be5cb3bb2",
+    "outputs/getup-terminal-base-ready-20261019/gates/getup_root_translation_checkpoint_tests-feature-on.exit": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa",
+    "outputs/getup-terminal-base-ready-20261019/gates/supported_standing__tests-feature-on.log": "a4cee3bf8139089f3369c3f8654e54174481da83705d0a65d0021478afa51f24",
+    "outputs/getup-terminal-base-ready-20261019/gates/supported_standing__tests-feature-on.exit": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa",
+    "outputs/getup-terminal-base-ready-20261019/gates/terminal-feature-off.log": "2b0405cd9d77573f32d8f1a4c7259fea9a3e0bed006f88fd09405e0ce9fc77f7",
+    "outputs/getup-terminal-base-ready-20261019/gates/terminal-feature-off.exit": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa",
+    "outputs/getup-terminal-base-ready-20261019/gates/terminal-feature-on.log": "d3530b62f5850c7d3d36b3621b71d936669fbf80ec03c59c83ad0b54654bd714",
+    "outputs/getup-terminal-base-ready-20261019/gates/terminal-feature-on.exit": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+  },
+  "limits": [
+    "Four fresh fixtures and three requested continuations only; not the 24-case qualification suite.",
+    "Side fails 25-second deadline; belly continuation is incomplete. Back and side-supported 30-second holds do not promote the feature.",
+    "No new feature browser build or browser demonstration. Existing carry-only back/belly browser proof at c2da03d0 is separate evidence.",
+    "Checkpoint restore and synthetic 79-to80 admission are tested separately; combined restored 79-to80 binding remains a nonblocking coverage gap.",
+    "Proposed C2 bumpless transfer plus full 80-sample legacy fallback is not implemented or tested in this slice."
+  ],
+  "documentationVerificationUtc": "2026-10-19T18:59:22.403272+00:00"
+}

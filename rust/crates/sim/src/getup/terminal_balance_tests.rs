@@ -39,6 +39,7 @@ fn settled_geometry() -> Simulation {
 /// Synthetic lifecycle state only: no fall, teacher, or recovery is claimed.
 fn terminal_controller(s: &Simulation) -> Controller {
     let mut c = Controller::new(&s.model);
+    c.terminal_base_ready = None; // This suite specifies the retained legacy variant.
     c.started_substep = Some(s.substeps_completed - 20);
     c.impact_substep = c.started_substep;
     c.reference = vec![standing_target(&s.model); 2];
@@ -96,6 +97,7 @@ fn ready_branch_keeps_exact_existing_standing_controls_without_actor_or_state_wr
     let s = settled_geometry();
     let physical = physical_observation(&s).unwrap();
     let mut c = Controller::new(&s.model);
+    c.terminal_base_ready = None;
     let expected = supported_standing::controls(
         &s, &standing_target(&s.model)[..21].try_into().unwrap(),
         physical[..21].try_into().unwrap(), physical[46..67].try_into().unwrap(),
@@ -353,6 +355,8 @@ fn active_support_loss_returns_exact_zero_residual_holding_pd() {
 fn legacy_json_omits_none_and_active_checkpoints_roundtrip_or_explicitly_refuse() {
     let s = settled_geometry();
     let legacy = Controller::new(&s.model);
+    let mut legacy = legacy;
+    legacy.terminal_base_ready = None;
     let legacy_json = serde_json::to_value(&legacy).unwrap();
     assert!(legacy_json.get("terminal_balance").is_none());
     let decoded: Controller = serde_json::from_value(legacy_json.clone()).unwrap();
@@ -363,6 +367,7 @@ fn legacy_json_omits_none_and_active_checkpoints_roundtrip_or_explicitly_refuse(
     // Explicit ready state also requires the experimental build, even though
     // no terminal binding has been captured and that optional field is absent.
     let mut ready = Controller::new(&s.model);
+    ready.terminal_base_ready = None;
     ready.status.phase = "experimental-joint-balance-awaiting-fall".into();
     let ready_json = serde_json::to_value(&ready).unwrap();
     assert!(ready_json.get("terminal_balance").is_none());
@@ -397,6 +402,7 @@ fn legacy_json_omits_none_and_active_checkpoints_roundtrip_or_explicitly_refuse(
             last_slow_controls: [0.125; 21], first_balance_controls: Some([0.25; 21]),
             first_actual_control_jump_max: Some(0.125), first_saturated_controls: Some(0),
             first_compensation_active: Some(true),
+            first_actual_torque_jump_max_nm: None, first_control_transition: None,
         });
     }
     let active_json = serde_json::to_value(&c).unwrap();

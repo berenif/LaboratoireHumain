@@ -108,13 +108,19 @@ fn assert_same_checkpoint_envelope(left: &[u8], right: &[u8]) {
     assert_exact_bytes(left.3.as_bytes(), right.3.as_bytes());
 }
 
-fn fixture() -> Runtime {
-    Runtime::new_getup_fixture("belly").unwrap()
+fn legacy_runtime() -> Runtime {
+    let mut runtime = Runtime::new_getup_fixture("belly").unwrap();
+    // These unchanged schema-1/2 assertions deliberately exercise the legacy
+    // controller, including in builds whose fresh controllers use schema 3.
+    let mut controller = serde_json::to_value(runtime.simulation.getup_controller.as_ref().unwrap()).unwrap();
+    controller.as_object_mut().unwrap().remove("terminal_base_ready");
+    runtime.simulation.getup_controller = Some(serde_json::from_value(controller).unwrap());
+    runtime
 }
 
 #[test]
 fn inactive_checkpoint_retains_the_original_schema_one_bytes() {
-    let live = fixture();
+    let live = legacy_runtime();
     let auxiliary = serde_json::to_string(&live).unwrap();
     let expected = packed(&(
         1,
@@ -186,7 +192,7 @@ mod compensated {
     }
 
     fn with_nonzero_history() -> Runtime {
-        let mut runtime = fixture();
+        let mut runtime = legacy_runtime();
         runtime
             .set_root_translation_compensation_enabled(true)
             .unwrap();
@@ -295,7 +301,7 @@ mod compensated {
 
     #[test]
     fn activation_and_nonzero_history_checkpoint_are_physics_neutral_and_exact() {
-        let mut runtime = fixture();
+        let mut runtime = legacy_runtime();
         let world = world_bytes(&runtime);
         let auxiliary = serde_json::to_string(&runtime).unwrap();
         runtime

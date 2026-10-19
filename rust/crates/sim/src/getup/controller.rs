@@ -46,8 +46,46 @@ struct TerminalBalance {
     last_slow_controls: [f32; 21],
     first_balance_controls: Option<[f32; 21]>,
     first_actual_control_jump_max: Option<f32>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    first_actual_torque_jump_max_nm: Option<f32>,
     first_saturated_controls: Option<usize>,
     first_compensation_active: Option<bool>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    first_control_transition: Option<TerminalControlTransition>,
+}
+
+#[derive(Serialize, Deserialize)]
+struct TerminalActuatorJump {
+    body: String,
+    role: String,
+    actuator_index: usize,
+    normalized_jump: f32,
+    torque_jump_nm: f32,
+    raw_pd: f32,
+    raw_compensated: f32,
+    pd_saturated: bool,
+    compensated_saturated: bool,
+}
+
+#[derive(Serialize, Deserialize)]
+struct TerminalControlTransition {
+    preview: super::supported_standing::TerminalControlPreview,
+    actuator_jumps: Vec<TerminalActuatorJump>,
+}
+
+/// Explicit semantic variant, also decoded by builds that must refuse it.
+#[derive(Serialize, Deserialize)]
+enum TerminalBaseReadyFormat {
+    #[serde(rename = "terminal-base-ready-v1")]
+    V1,
+}
+
+#[derive(Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+struct TerminalBaseReady {
+    format: TerminalBaseReadyFormat,
+    consecutive_substeps: u64,
+    feet: Option<[Vec3; 2]>,
 }
 
 #[derive(Serialize, Deserialize)]
@@ -70,6 +108,8 @@ pub struct Controller {
     stable_feet: Option<[Vec3; 2]>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     terminal_balance: Option<TerminalBalance>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    terminal_base_ready: Option<TerminalBaseReady>,
 }
 impl Controller {
     pub fn new(model: &Model) -> Self {
@@ -95,23 +135,58 @@ impl Controller {
             stable_substeps: 0,
             stable_feet: None,
             terminal_balance: None,
+            terminal_base_ready: if cfg!(feature = "getup-terminal-base-ready-experiment") {
+                Some(TerminalBaseReady {
+                    format: TerminalBaseReadyFormat::V1,
+                    consecutive_substeps: 0,
+                    feet: None,
+                })
+            } else { None },
         }
     }
     pub(crate) fn controller_label(&self) -> &'static str {
         if self.terminal_balance.is_some() {
-            "experimental-recovery-joint-balance-hold"
+            if self.terminal_base_ready.is_some() {
+                "experimental-recovery-base-ready-joint-balance-hold"
+            } else { "experimental-recovery-joint-balance-hold" }
         } else if cfg!(feature = "getup-terminal-balance-experiment")
             && self.status.phase == "experimental-joint-balance-awaiting-fall"
         {
-            "experimental-recovery-joint-balance-ready"
+            if self.terminal_base_ready.is_some() {
+                "experimental-recovery-base-ready-joint-balance-ready"
+            } else { "experimental-recovery-joint-balance-ready" }
         } else {
             "pretrained-WEAK-SLOW"
         }
     }
     pub(crate) fn checkpoint_variant_supported(&self) -> bool {
-        (self.terminal_balance.is_none()
+        (!self.terminal_base_ready_variant()
+            || cfg!(feature = "getup-terminal-base-ready-experiment"))
+            && self.terminal_base_ready_variant_valid()
+            && ((self.terminal_balance.is_none()
             && self.status.phase != "experimental-joint-balance-awaiting-fall")
-            || cfg!(feature = "getup-terminal-balance-experiment")
+            || cfg!(feature = "getup-terminal-balance-experiment"))
+    }
+    pub(crate) fn terminal_base_ready_variant(&self) -> bool {
+        self.terminal_base_ready.is_some()
+    }
+    pub(crate) fn terminal_base_ready_variant_valid(&self) -> bool {
+        self.terminal_base_ready.as_ref().is_none_or(|ready| {
+            ready.consecutive_substeps <= 80
+                && (match ready.feet {
+                    None => ready.consecutive_substeps == 0,
+                    Some(feet) => ready.consecutive_substeps > 0
+                        && feet.iter().all(|p| vector(*p).is_finite()),
+                })
+                && (self.terminal_balance.is_none() || ready.consecutive_substeps == 80)
+        })
+    }
+    #[cfg(feature = "getup-terminal-balance-experiment")]
+    fn terminal_admission_ready(&self) -> bool {
+        self.terminal_base_ready.as_ref().map_or(self.stable_substeps >= 80, |ready| {
+            cfg!(feature = "getup-terminal-base-ready-experiment")
+                && ready.consecutive_substeps == 80
+        })
     }
 
     #[cfg(feature = "getup-terminal-balance-experiment")]
@@ -124,13 +199,18 @@ impl Controller {
             || !self.holding
             || self.status.reference_index as usize != self.reference.len() - 1
             || self.last_decision.is_none_or(|index| index < (self.reference.len() - 1) as u64)
-            || self.stable_substeps < 80
+            || !self.terminal_admission_ready()
         {
             return;
         }
         let Some(reference) = super::supported_standing::recovered_reference(s) else {
             return;
         };
+        self.bind_terminal_balance_reference(s, reference);
+    }
+    #[cfg(feature = "getup-terminal-balance-experiment")]
+    fn bind_terminal_balance_reference(&mut self, s: &Simulation, reference: super::supported_standing::StandingReference) {
+        if self.terminal_balance.is_some() { return; }
         let Some(last_slow_controls) = s.diagnostics.getup.as_ref()
             .and_then(|g| g.motor_controls.as_slice().try_into().ok()) else {
             return;
@@ -141,9 +221,95 @@ impl Controller {
             last_slow_controls,
             first_balance_controls: None,
             first_actual_control_jump_max: None,
+            first_actual_torque_jump_max_nm: None,
             first_saturated_controls: None,
             first_compensation_active: None,
+            first_control_transition: None,
         });
+    }
+
+    #[cfg(feature = "getup-terminal-base-ready-experiment")]
+    fn reset_terminal_base_ready(&mut self) {
+        if let Some(ready) = self.terminal_base_ready.as_mut() {
+            ready.consecutive_substeps = 0;
+            ready.feet = None;
+        }
+    }
+
+    /// Distinct control admission. This never changes the frozen acceptance
+    /// counter/anchors and never treats a desired reaction as physical support.
+    #[cfg(feature = "getup-terminal-base-ready-experiment")]
+    fn terminal_base_ready_candidate(&self, s: &Simulation, physical: &[f32; 67], loads: &[f32; 25])
+        -> Option<([Vec3; 2], super::supported_standing::StandingReference)>
+    {
+        if self.started_substep.is_none() || self.reference.is_empty() || !self.holding
+            || self.status.reference_index as usize != self.reference.len() - 1
+            || self.last_decision.is_none_or(|index| index < (self.reference.len() - 1) as u64)
+            || physical.iter().any(|x| !x.is_finite())
+        { return None; }
+        let contract = &recovery_contract::contract().recovery_acceptance;
+        let ids = ["left_foot", "right_foot"]
+            .map(|id| s.model.segments.iter().position(|p| p.id == id).unwrap());
+        let feet = ids.map(|i| vec3(s.world.bodies[s.bodies[i]].translation()));
+        let foot_load: f32 = ids.iter().map(|i| loads[*i]).sum();
+        let only_feet = loads.iter().enumerate().all(|(i, l)| ids.contains(&i) || *l < 3.0);
+        let mut points = Vec::new();
+        for i in ids {
+            if let Some(pair) = s.world.narrow_phase.contact_pair(s.floor, s.colliders[i]) {
+                for manifold in pair.solver_manifolds() {
+                    let sign = if pair.collider2 == s.colliders[i] { 1.0 } else { -1.0 };
+                    if manifold.data.normal.y * sign < 0.65 { continue; }
+                    for contact in &manifold.data.solver_contacts {
+                        let point = &manifold.points[contact.contact_indices()[0] as usize];
+                        if point.data.impulse > 0.0 {
+                            let (a, b) = manifold.data.solver_contact_world_points(contact, &s.world.bodies);
+                            let p = if pair.collider2 == s.colliders[i] { b } else { a };
+                            points.push([p.x, p.z]);
+                        }
+                    }
+                }
+            }
+        }
+        let com = s.center_of_mass();
+        let vel = Vector::new(physical[38], physical[39], physical[37]);
+        let capture = com + vel * (com.y.max(0.0) / 9.81).sqrt();
+        let balanced = stepping::inside_support(points.clone(), [com.x, com.z], 0.003)
+            && stepping::inside_support(points, [capture.x, capture.z], 0.003);
+        let twists = super::current_twists(s).ok()?;
+        if !(physical[21] > 1.4
+            && physical[36] >= contract.stable_up_dot
+            && ids.iter().all(|i| loads[*i] >= contract.minimum_load_n && s.integrated_support_substeps[*i] >= 40)
+            && foot_load >= 0.8 * s.total_mass() * 9.81
+            && only_feet && balanced
+            && terminal_base_ready_motion_passes(&s.model, &twists))
+        { return None; }
+        let reference = super::supported_standing::recovered_reference(s)?;
+        let preview = super::supported_standing::terminal_control_preview(
+            s, &reference, &self.reference_pose,
+            physical[..21].try_into().unwrap(), physical[46..67].try_into().unwrap(),
+        ).ok()?;
+        preview.finite_active_unclipped().then_some((feet, reference))
+    }
+
+    #[cfg(feature = "getup-terminal-base-ready-experiment")]
+    fn observe_terminal_base_ready(&mut self, s: &Simulation, physical: &[f32; 67], loads: &[f32; 25]) {
+        if self.terminal_base_ready.is_none() || self.terminal_balance.is_some() { return; }
+        let Some((feet, reference)) = self.terminal_base_ready_candidate(s, physical, loads) else {
+            self.reset_terminal_base_ready();
+            return;
+        };
+        let ready = self.terminal_base_ready.as_mut().unwrap();
+        let anchors = ready.feet.get_or_insert(feet);
+        if !anchors.iter().zip(&feet).all(|(a, b)| vector(*a).distance(vector(*b)) <= 0.01) {
+            self.reset_terminal_base_ready();
+            return;
+        }
+        ready.consecutive_substeps = (ready.consecutive_substeps + 1).min(80);
+        if ready.consecutive_substeps == 80 {
+            // Bind exactly this admitted recovered frame, once, without a world
+            // write or a second reference capture.
+            self.bind_terminal_balance_reference(s, reference);
+        }
     }
     pub fn impact(&mut self, substep: u64) {
         if self.impact_substep.is_none() {
@@ -159,6 +325,9 @@ impl Controller {
         Ok(())
     }
     pub fn command(&mut self, s: &Simulation, physical: &[f32; 67]) -> Result<[f32; 21], String> {
+        if self.terminal_base_ready_variant() && !cfg!(feature = "getup-terminal-base-ready-experiment") {
+            return Err("Terminal base readiness requires its experimental controller build".into());
+        }
         if !self.checkpoint_variant_supported() {
             return Err("Active terminal balance requires its experimental controller build".into());
         }
@@ -195,6 +364,32 @@ impl Controller {
                 balance.first_saturated_controls = Some(controls.iter().filter(|x| x.abs() >= 1.0).count());
                 balance.first_balance_controls = Some(controls);
                 balance.first_compensation_active = Some(compensation_active);
+                #[cfg(feature = "getup-terminal-base-ready-experiment")]
+                if self.terminal_base_ready.is_some() {
+                    balance.first_actual_torque_jump_max_nm = Some(s.model.segments.iter()
+                        .filter_map(|p| p.reference.as_ref()?.hinge.as_ref())
+                        .map(|h| h.gear * (controls[h.actuator_index] - balance.last_slow_controls[h.actuator_index]).abs())
+                        .fold(0.0, f32::max));
+                    let preview = super::supported_standing::terminal_control_preview(
+                        s, &balance.reference, &self.reference_pose, q, dq,
+                    )?;
+                    let actuator_jumps = s.model.segments.iter().enumerate().filter_map(|(i, part)| {
+                        let h = part.reference.as_ref()?.hinge.as_ref()?;
+                        let jump = controls[h.actuator_index] - balance.last_slow_controls[h.actuator_index];
+                        Some(TerminalActuatorJump {
+                            body: part.id.clone(),
+                            role: if terminal_base_ready_arm_body(&s.model, i) { "arm" } else { "base" }.into(),
+                            actuator_index: h.actuator_index,
+                            normalized_jump: jump,
+                            torque_jump_nm: h.gear * jump,
+                            raw_pd: preview.raw_pd[h.actuator_index],
+                            raw_compensated: preview.raw_compensated[h.actuator_index],
+                            pd_saturated: preview.pd_saturated[h.actuator_index],
+                            compensated_saturated: preview.compensated_saturated[h.actuator_index],
+                        })
+                    }).collect();
+                    balance.first_control_transition = Some(TerminalControlTransition { preview, actuator_jumps });
+                }
             }
             // Stop running and archiving SLOW after the explicit controller
             // transfer. Its decision counter/archive remain a complete prefix.
@@ -376,7 +571,11 @@ impl Controller {
         }
         let physical = match super::physical_observation(s) {
             Ok(p) => p,
-            Err(_) => return,
+            Err(_) => {
+                #[cfg(feature = "getup-terminal-base-ready-experiment")]
+                if self.terminal_balance.is_none() { self.reset_terminal_base_ready(); }
+                return;
+            },
         };
         self.status.actual_head_height_m = physical[21];
         let contract = &recovery_contract::contract().recovery_acceptance;
@@ -447,6 +646,8 @@ impl Controller {
             self.stable_feet = None;
         }
         self.stable_substeps = if stable { self.stable_substeps + 1 } else { 0 };
+        #[cfg(feature = "getup-terminal-base-ready-experiment")]
+        self.observe_terminal_base_ready(s, &physical, loads);
         #[cfg(feature = "getup-terminal-balance-experiment")]
         self.bind_terminal_balance(s);
         self.status.stable_standing_s = self.stable_substeps as f64 / 800.0;
@@ -467,6 +668,31 @@ impl Controller {
             Motion::Recovering
         };
     }
+}
+
+/// Source shoulder coordinate frames and all descendants form the arm tree.
+/// The complement includes head and every virtual trunk/leg coordinate frame.
+#[cfg(feature = "getup-terminal-base-ready-experiment")]
+fn terminal_base_ready_arm_body(model: &Model, mut index: usize) -> bool {
+    for _ in 0..model.segments.len() {
+        let part = &model.segments[index];
+        if ["@right_shoulder1", "@left_shoulder1"].contains(&part.id.as_str()) { return true; }
+        let Some(parent) = part.parent.as_ref() else { return false; };
+        let Some(parent) = model.segments.iter().position(|p| &p.id == parent) else { return false; };
+        index = parent;
+    }
+    false
+}
+
+#[cfg(feature = "getup-terminal-base-ready-experiment")]
+fn terminal_base_ready_motion_passes(model: &Model, twists: &[(Vector, Vector)]) -> bool {
+    let contract = &recovery_contract::contract().recovery_acceptance;
+    twists.len() == model.segments.len() && twists.iter().enumerate().all(|(i, (v, w))| {
+        let (linear, angular) = if terminal_base_ready_arm_body(model, i) {
+            (contract.settle_linear_mps, contract.settle_angular_radps)
+        } else { (contract.stable_linear_mps, contract.stable_angular_radps) };
+        v.is_finite() && w.is_finite() && v.length() <= linear && w.length() <= angular
+    })
 }
 
 
@@ -577,6 +803,10 @@ fn fork(real: &Simulation) -> Result<Simulation, String> {
 #[cfg(test)]
 #[path = "terminal_balance_tests.rs"]
 mod terminal_balance_tests;
+
+#[cfg(all(test, feature = "getup-terminal-base-ready-experiment"))]
+#[path = "terminal_base_ready_tests.rs"]
+mod terminal_base_ready_tests;
 
 #[cfg(test)]
 mod tests {

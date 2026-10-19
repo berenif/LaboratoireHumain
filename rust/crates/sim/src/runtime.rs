@@ -10,6 +10,20 @@ use bincode::Options;
 
 const GETUP_CHECKPOINT_LIMIT: u64 = 64 * 1024 * 1024;
 
+#[cfg(feature = "getup-terminal-base-ready-experiment")]
+const TERMINAL_BASE_READY_CHECKPOINT_FORMAT: &str = "terminal-base-ready-v1";
+
+#[cfg(feature = "getup-terminal-base-ready-experiment")]
+#[derive(Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+struct TerminalBaseReadyCheckpoint {
+    format: String,
+    inner_schema: u32,
+    // Preserve either existing typed auxiliary JSON string verbatim, including
+    // schema 2's exact-bit root-translation sidecar.
+    auxiliary: String,
+}
+
 #[cfg(feature = "root-translation-carry-experiment")]
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
@@ -136,6 +150,16 @@ impl Runtime {
     }
     fn checkpoint_compatible(&self) -> Result<(), String> {
         let s = &self.simulation;
+        if let Some(controller) = &s.getup_controller {
+            if controller.terminal_base_ready_variant()
+                && !cfg!(feature = "getup-terminal-base-ready-experiment")
+            {
+                return Err("Checkpoint requires getup-terminal-base-ready-experiment".into());
+            }
+            if !controller.terminal_base_ready_variant_valid() {
+                return Err("Invalid checkpoint terminal base-ready controller state".into());
+            }
+        }
         if s.getup_controller.as_ref().is_some_and(|c| !c.checkpoint_variant_supported()) {
             return Err("Checkpoint requires the experimental terminal-balance controller build".into());
         }
@@ -251,6 +275,16 @@ impl Runtime {
                 }).map_err(|e| e.to_string())?)
             } else { (schema, auxiliary) }
         };
+        #[cfg(feature = "getup-terminal-base-ready-experiment")]
+        let (schema, auxiliary) = if self.simulation.getup_controller.as_ref()
+            .is_some_and(|controller| controller.terminal_base_ready_variant())
+        {
+            (3_u32, serde_json::to_string(&TerminalBaseReadyCheckpoint {
+                format: TERMINAL_BASE_READY_CHECKPOINT_FORMAT.into(),
+                inner_schema: schema,
+                auxiliary,
+            }).map_err(|e| e.to_string())?)
+        } else { (schema, auxiliary) };
         bincode::DefaultOptions::new().with_fixint_encoding().with_limit(64 * 1024 * 1024)
             .serialize(&(schema, lh_model::CANONICAL_JSON, world, auxiliary)).map_err(|e| e.to_string())
     }
@@ -263,6 +297,22 @@ impl Runtime {
         if model != lh_model::CANONICAL_JSON {
             return Err("Checkpoint schema/model differs".into());
         }
+        #[cfg(not(feature = "getup-terminal-base-ready-experiment"))]
+        if schema == 3 {
+            return Err("Checkpoint requires getup-terminal-base-ready-experiment".into());
+        }
+        let terminal_base_ready_checkpoint = schema == 3;
+        #[cfg(feature = "getup-terminal-base-ready-experiment")]
+        let (schema, auxiliary) = if terminal_base_ready_checkpoint {
+            let wrapper: TerminalBaseReadyCheckpoint = serde_json::from_str(&auxiliary).map_err(|e| e.to_string())?;
+            if wrapper.format != TERMINAL_BASE_READY_CHECKPOINT_FORMAT {
+                return Err("Checkpoint terminal base-ready format differs".into());
+            }
+            if !matches!(wrapper.inner_schema, 1 | 2) {
+                return Err("Checkpoint terminal base-ready inner schema differs".into());
+            }
+            (wrapper.inner_schema, wrapper.auxiliary)
+        } else { (schema, auxiliary) };
         #[cfg(not(feature = "root-translation-carry-experiment"))]
         if schema == 2 { return Err("Compensated checkpoint requires root-translation-carry-experiment".into()); }
         #[cfg(feature = "root-translation-carry-experiment")]
@@ -280,6 +330,15 @@ impl Runtime {
         #[cfg(not(feature = "root-translation-carry-experiment"))]
         if schema != 1 { return Err("Checkpoint schema/model differs".into()); }
         let mut restored: Self = serde_json::from_str(&auxiliary).map_err(|e| e.to_string())?;
+        let terminal_base_ready_variant = restored.simulation.getup_controller.as_ref()
+            .is_some_and(|controller| controller.terminal_base_ready_variant());
+        #[cfg(not(feature = "getup-terminal-base-ready-experiment"))]
+        if terminal_base_ready_variant {
+            return Err("Checkpoint requires getup-terminal-base-ready-experiment".into());
+        }
+        if terminal_base_ready_variant != terminal_base_ready_checkpoint {
+            return Err("Checkpoint terminal base-ready marker/controller differs".into());
+        }
         restored.simulation.world = bincode::DefaultOptions::new().with_fixint_encoding()
             .with_limit(64 * 1024 * 1024).reject_trailing_bytes().deserialize(&world).map_err(|e| e.to_string())?;
         restored.checkpoint_compatible()?;
@@ -820,6 +879,10 @@ mod getup_fixture_profile_tests;
 #[cfg(test)]
 #[path = "getup_root_translation_checkpoint_tests.rs"]
 mod getup_root_translation_checkpoint_tests;
+
+#[cfg(test)]
+#[path = "getup_terminal_base_ready_checkpoint_tests.rs"]
+mod getup_terminal_base_ready_checkpoint_tests;
 
 #[cfg(test)]
 mod tests {

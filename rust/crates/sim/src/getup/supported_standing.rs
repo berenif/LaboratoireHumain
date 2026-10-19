@@ -15,6 +15,62 @@ pub(super) struct StandingReference {
     pub(super) lateral: Vector,
 }
 
+/// Algebraic evidence for admission/transition only. Production control remains
+/// the unchanged source-PD-plus-compensation path below.
+#[derive(Serialize, Deserialize)]
+pub(super) struct TerminalControlPreview {
+    pub(super) controls: [f32; 21],
+    pub(super) raw_pd: [f32; 21],
+    pub(super) raw_compensated: [f32; 21],
+    pub(super) pd_saturated: [bool; 21],
+    pub(super) compensated_saturated: [bool; 21],
+    pub(super) compensation_active: bool,
+}
+
+impl TerminalControlPreview {
+    #[cfg(feature = "getup-terminal-base-ready-experiment")]
+    pub(super) fn finite_active_unclipped(&self) -> bool {
+        self.compensation_active
+            && self.raw_pd.iter().chain(&self.raw_compensated).chain(&self.controls)
+                .all(|x| x.is_finite())
+            && !self.pd_saturated.iter().chain(&self.compensated_saturated).any(|x| *x)
+    }
+}
+
+#[cfg(feature = "getup-terminal-base-ready-experiment")]
+pub(super) fn terminal_control_preview(
+    s: &Simulation,
+    reference: &StandingReference,
+    q_target: &[f32; 21],
+    q: &[f32; 21],
+    dq: &[f32; 21],
+) -> Result<TerminalControlPreview, String> {
+    // Call the original helper for validation and the exact first clamp.
+    let pd = super::slow_controls(&s.model, q_target, &[0.0; 21], q, dq, true)?;
+    let mut raw_pd = [0.0; 21];
+    for part in &s.model.segments {
+        if let Some(h) = part.reference.as_ref().and_then(|r| r.hinge.as_ref()) {
+            let i = h.qpos_index;
+            raw_pd[h.actuator_index] = (q_target[i] + 0.0) - q[i] - 0.2 * dq[i];
+        }
+    }
+    let support = support_reactions_in_frame(s, reference.com, reference.forward, reference.lateral);
+    let mut raw_compensated = pd;
+    if let Some(support) = support {
+        for (control, feedforward) in raw_compensated.iter_mut().zip(compensation(s, support, q)) {
+            *control += feedforward;
+        }
+    }
+    Ok(TerminalControlPreview {
+        controls: raw_compensated.map(|x| x.clamp(-1.0, 1.0)),
+        raw_pd,
+        raw_compensated,
+        pd_saturated: raw_pd.map(|x| !x.is_finite() || x.abs() >= 1.0),
+        compensated_saturated: raw_compensated.map(|x| !x.is_finite() || x.abs() >= 1.0),
+        compensation_active: support.is_some(),
+    })
+}
+
 #[cfg(feature = "getup-terminal-balance-experiment")]
 pub(super) fn recovered_reference(s: &Simulation) -> Option<StandingReference> {
     let mut forward = s.world.bodies[s.bodies[0]].rotation().normalize() * Vector::Z;
