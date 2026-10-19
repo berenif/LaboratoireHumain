@@ -293,7 +293,8 @@ mod enabled {
 
     #[test]
     fn fresh_zero_variant_uses_schema_three_before_any_integration() {
-        let runtime = Runtime::new_getup_fixture("belly").unwrap();
+        // Explicit V1 fixture: new V2-capable builds select V2 by default.
+        let runtime = variant_runtime(0, false);
         let checkpoint = runtime.getup_checkpoint().unwrap();
         let wrapper = wrapper(&checkpoint);
         assert_eq!(wrapper.format, "terminal-base-ready-v1");

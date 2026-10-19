@@ -151,6 +151,11 @@ impl Runtime {
     fn checkpoint_compatible(&self) -> Result<(), String> {
         let s = &self.simulation;
         if let Some(controller) = &s.getup_controller {
+            if controller.terminal_bumpless_variant()
+                && !cfg!(feature = "getup-terminal-bumpless-experiment")
+            {
+                return Err("Checkpoint requires getup-terminal-bumpless-experiment".into());
+            }
             if controller.terminal_base_ready_variant()
                 && !cfg!(feature = "getup-terminal-base-ready-experiment")
             {
@@ -158,6 +163,9 @@ impl Runtime {
             }
             if !controller.terminal_base_ready_variant_valid() {
                 return Err("Invalid checkpoint terminal base-ready controller state".into());
+            }
+            if !controller.terminal_bumpless_clock_valid(s.substeps_completed) {
+                return Err("Invalid checkpoint terminal bumpless activation clock".into());
             }
         }
         if s.getup_controller.as_ref().is_some_and(|c| !c.checkpoint_variant_supported()) {
@@ -883,6 +891,10 @@ mod getup_root_translation_checkpoint_tests;
 #[cfg(test)]
 #[path = "getup_terminal_base_ready_checkpoint_tests.rs"]
 mod getup_terminal_base_ready_checkpoint_tests;
+
+#[cfg(test)]
+#[path = "getup_terminal_bumpless_checkpoint_tests.rs"]
+mod getup_terminal_bumpless_checkpoint_tests;
 
 #[cfg(test)]
 mod tests {

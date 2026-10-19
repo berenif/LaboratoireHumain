@@ -52,6 +52,36 @@ struct TerminalBalance {
     first_compensation_active: Option<bool>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     first_control_transition: Option<TerminalControlTransition>,
+    #[serde(default, skip_serializing_if = "Option::is_none", deserialize_with = "present_terminal_bumpless")]
+    bumpless: Option<TerminalBumpless>,
+}
+
+fn present_terminal_bumpless<'de, D: serde::Deserializer<'de>>(deserializer: D)
+    -> Result<Option<TerminalBumpless>, D::Error>
+{
+    // Absence retains the byte-omitted legacy state. An explicit field must
+    // contain V2 state; null must not smuggle a V2-only field into V1/None.
+    TerminalBumpless::deserialize(deserializer).map(Some)
+}
+
+#[derive(Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+struct TerminalBumpless {
+    admission: TerminalAdmission,
+    stable_substeps_at_binding: u64,
+    first_intended_controls: Option<[f32; 21]>,
+    first_intended_control_jump_max: Option<f32>,
+    first_intended_torque_jump_max_nm: Option<f32>,
+    /// Final normalized-control validation diagnostic, never a progress clock.
+    last_blend_clamped_controls: usize,
+}
+
+#[derive(Clone, Copy, Serialize, Deserialize)]
+enum TerminalAdmission {
+    #[serde(rename = "full-body80")]
+    FullBody80,
+    #[serde(rename = "early-base80")]
+    EarlyBase80,
 }
 
 #[derive(Serialize, Deserialize)]
@@ -74,10 +104,12 @@ struct TerminalControlTransition {
 }
 
 /// Explicit semantic variant, also decoded by builds that must refuse it.
-#[derive(Serialize, Deserialize)]
+#[derive(Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 enum TerminalBaseReadyFormat {
     #[serde(rename = "terminal-base-ready-v1")]
     V1,
+    #[serde(rename = "terminal-base-ready-bumpless-v2")]
+    BumplessV2,
 }
 
 #[derive(Serialize, Deserialize)]
@@ -137,7 +169,9 @@ impl Controller {
             terminal_balance: None,
             terminal_base_ready: if cfg!(feature = "getup-terminal-base-ready-experiment") {
                 Some(TerminalBaseReady {
-                    format: TerminalBaseReadyFormat::V1,
+                    format: if cfg!(feature = "getup-terminal-bumpless-experiment") {
+                        TerminalBaseReadyFormat::BumplessV2
+                    } else { TerminalBaseReadyFormat::V1 },
                     consecutive_substeps: 0,
                     feet: None,
                 })
@@ -146,13 +180,17 @@ impl Controller {
     }
     pub(crate) fn controller_label(&self) -> &'static str {
         if self.terminal_balance.is_some() {
-            if self.terminal_base_ready.is_some() {
+            if self.terminal_bumpless_variant() {
+                "experimental-recovery-bumpless-joint-balance-hold"
+            } else if self.terminal_base_ready.is_some() {
                 "experimental-recovery-base-ready-joint-balance-hold"
             } else { "experimental-recovery-joint-balance-hold" }
         } else if cfg!(feature = "getup-terminal-balance-experiment")
             && self.status.phase == "experimental-joint-balance-awaiting-fall"
         {
-            if self.terminal_base_ready.is_some() {
+            if self.terminal_bumpless_variant() {
+                "experimental-recovery-bumpless-joint-balance-ready"
+            } else if self.terminal_base_ready.is_some() {
                 "experimental-recovery-base-ready-joint-balance-ready"
             } else { "experimental-recovery-joint-balance-ready" }
         } else {
@@ -162,6 +200,8 @@ impl Controller {
     pub(crate) fn checkpoint_variant_supported(&self) -> bool {
         (!self.terminal_base_ready_variant()
             || cfg!(feature = "getup-terminal-base-ready-experiment"))
+            && (!self.terminal_bumpless_variant()
+                || cfg!(feature = "getup-terminal-bumpless-experiment"))
             && self.terminal_base_ready_variant_valid()
             && ((self.terminal_balance.is_none()
             && self.status.phase != "experimental-joint-balance-awaiting-fall")
@@ -170,22 +210,48 @@ impl Controller {
     pub(crate) fn terminal_base_ready_variant(&self) -> bool {
         self.terminal_base_ready.is_some()
     }
+    pub(crate) fn terminal_bumpless_variant(&self) -> bool {
+        self.terminal_base_ready.as_ref().is_some_and(|ready|
+            ready.format == TerminalBaseReadyFormat::BumplessV2)
+    }
     pub(crate) fn terminal_base_ready_variant_valid(&self) -> bool {
-        self.terminal_base_ready.as_ref().is_none_or(|ready| {
+        let bumpless = self.terminal_bumpless_variant();
+        let binding_valid = self.terminal_balance.as_ref().is_none_or(|balance| {
+            if !bumpless { return balance.bumpless.is_none(); }
+            balance.bumpless.as_ref().is_some_and(|blend| {
+                let admission_valid = match blend.admission {
+                    TerminalAdmission::FullBody80 => blend.stable_substeps_at_binding >= 80,
+                    TerminalAdmission::EarlyBase80 => blend.stable_substeps_at_binding < 80
+                        && self.terminal_base_ready.as_ref().is_some_and(|ready|
+                            ready.consecutive_substeps == 80),
+                };
+                admission_valid && normalized_controls_valid(&balance.last_slow_controls)
+                    && blend.last_blend_clamped_controls <= 21
+                    && blend.first_intended_controls.as_ref().is_none_or(normalized_controls_valid)
+                    && blend.first_intended_control_jump_max.is_none_or(|x| x.is_finite() && x >= 0.0)
+                    && blend.first_intended_torque_jump_max_nm.is_none_or(|x| x.is_finite() && x >= 0.0)
+            })
+        });
+        binding_valid && self.terminal_base_ready.as_ref().is_none_or(|ready| {
             ready.consecutive_substeps <= 80
                 && (match ready.feet {
                     None => ready.consecutive_substeps == 0,
                     Some(feet) => ready.consecutive_substeps > 0
                         && feet.iter().all(|p| vector(*p).is_finite()),
                 })
-                && (self.terminal_balance.is_none() || ready.consecutive_substeps == 80)
+                && (bumpless || self.terminal_balance.is_none() || ready.consecutive_substeps == 80)
         })
+    }
+    pub(crate) fn terminal_bumpless_clock_valid(&self, completed_native_substeps: u64) -> bool {
+        !self.terminal_bumpless_variant() || self.terminal_balance.as_ref().is_none_or(|balance|
+            completed_native_substeps.checked_sub(balance.activated_native_substep).is_some())
     }
     #[cfg(feature = "getup-terminal-balance-experiment")]
     fn terminal_admission_ready(&self) -> bool {
         self.terminal_base_ready.as_ref().map_or(self.stable_substeps >= 80, |ready| {
-            cfg!(feature = "getup-terminal-base-ready-experiment")
-                && ready.consecutive_substeps == 80
+            (ready.format == TerminalBaseReadyFormat::BumplessV2 && self.stable_substeps >= 80)
+                || (cfg!(feature = "getup-terminal-base-ready-experiment")
+                    && ready.consecutive_substeps == 80)
         })
     }
 
@@ -215,6 +281,19 @@ impl Controller {
             .and_then(|g| g.motor_controls.as_slice().try_into().ok()) else {
             return;
         };
+        let bumpless = if self.terminal_bumpless_variant() {
+            if !normalized_controls_valid(&last_slow_controls) { return; }
+            Some(TerminalBumpless {
+                admission: if self.stable_substeps >= 80 {
+                    TerminalAdmission::FullBody80
+                } else { TerminalAdmission::EarlyBase80 },
+                stable_substeps_at_binding: self.stable_substeps,
+                first_intended_controls: None,
+                first_intended_control_jump_max: None,
+                first_intended_torque_jump_max_nm: None,
+                last_blend_clamped_controls: 0,
+            })
+        } else { None };
         self.terminal_balance = Some(TerminalBalance {
             activated_native_substep: s.substeps_completed,
             reference,
@@ -225,6 +304,7 @@ impl Controller {
             first_saturated_controls: None,
             first_compensation_active: None,
             first_control_transition: None,
+            bumpless,
         });
     }
 
@@ -325,11 +405,17 @@ impl Controller {
         Ok(())
     }
     pub fn command(&mut self, s: &Simulation, physical: &[f32; 67]) -> Result<[f32; 21], String> {
+        if self.terminal_bumpless_variant() && !cfg!(feature = "getup-terminal-bumpless-experiment") {
+            return Err("Terminal bumpless transfer requires its experimental controller build".into());
+        }
         if self.terminal_base_ready_variant() && !cfg!(feature = "getup-terminal-base-ready-experiment") {
             return Err("Terminal base readiness requires its experimental controller build".into());
         }
         if !self.checkpoint_variant_supported() {
             return Err("Active terminal balance requires its experimental controller build".into());
+        }
+        if !self.terminal_bumpless_clock_valid(s.substeps_completed) {
+            return Err("Terminal bumpless activation is ahead of the native clock".into());
         }
         if self
             .impact_substep
@@ -355,9 +441,28 @@ impl Controller {
         if let Some(balance) = self.terminal_balance.as_mut() {
             let q = physical[..21].try_into().unwrap();
             let dq = physical[46..67].try_into().unwrap();
-            let (controls, compensation_active) = super::supported_standing::controls_with_reference(
+            let (live_controls, compensation_active) = super::supported_standing::controls_with_reference(
                 s, &balance.reference, &self.reference_pose, q, dq,
             )?;
+            #[cfg(feature = "getup-terminal-bumpless-experiment")]
+            let (controls, blending) = if let Some(blend) = balance.bumpless.as_mut() {
+                let k = s.substeps_completed.checked_sub(balance.activated_native_substep)
+                    .ok_or("Terminal bumpless activation is ahead of the native clock")?;
+                let (controls, clamped) = terminal_bumpless_controls(&balance.last_slow_controls, &live_controls, k)?;
+                blend.last_blend_clamped_controls = clamped;
+                if blend.first_intended_controls.is_none() {
+                    blend.first_intended_controls = Some(live_controls);
+                    blend.first_intended_control_jump_max = Some(live_controls.iter()
+                        .zip(balance.last_slow_controls).map(|(a, b)| (*a - b).abs()).fold(0.0, f32::max));
+                    blend.first_intended_torque_jump_max_nm = Some(s.model.segments.iter()
+                        .filter_map(|p| p.reference.as_ref()?.hinge.as_ref())
+                        .map(|h| h.gear * (live_controls[h.actuator_index] - balance.last_slow_controls[h.actuator_index]).abs())
+                        .fold(0.0, f32::max));
+                }
+                (controls, k < 20)
+            } else { (live_controls, false) };
+            #[cfg(not(feature = "getup-terminal-bumpless-experiment"))]
+            let (controls, blending) = (live_controls, false);
             if balance.first_balance_controls.is_none() {
                 balance.first_actual_control_jump_max = Some(controls.iter()
                     .zip(balance.last_slow_controls).map(|(a, b)| (*a - b).abs()).fold(0.0, f32::max));
@@ -393,7 +498,9 @@ impl Controller {
             }
             // Stop running and archiving SLOW after the explicit controller
             // transfer. Its decision counter/archive remain a complete prefix.
-            self.status.phase = "experimental-joint-balance-holding".into();
+            self.status.phase = if blending {
+                "experimental-joint-balance-blending"
+            } else { "experimental-joint-balance-holding" }.into();
             return Ok(controls);
         }
         let mut new_decision = false;
@@ -670,6 +777,41 @@ impl Controller {
     }
 }
 
+fn normalized_controls_valid(controls: &[f32; 21]) -> bool {
+    controls.iter().all(|x| x.is_finite() && (-1.0..=1.0).contains(x))
+}
+
+/// Endpoint-reference crossfade only. Sample-held torques and live feedback
+/// need not be C2 through contact switches or the standing controller's clamps.
+#[cfg(feature = "getup-terminal-bumpless-experiment")]
+fn terminal_bumpless_weight(s: f64) -> f64 {
+    let s = s.clamp(0.0, 1.0);
+    (10.0 * s.powi(3) - 15.0 * s.powi(4) + 6.0 * s.powi(5)).clamp(0.0, 1.0)
+}
+
+#[cfg(feature = "getup-terminal-bumpless-experiment")]
+fn terminal_bumpless_controls(source: &[f32; 21], live: &[f32; 21], k: u64)
+    -> Result<([f32; 21], usize), String>
+{
+    if !normalized_controls_valid(source) || !normalized_controls_valid(live) {
+        return Err("Terminal bumpless controls must be finite normalized actuator commands".into());
+    }
+    // Copy endpoints, preserving every f32 word including signed zero. Twenty
+    // physical intervals at 800 Hz are 25 ms; calls never advance this clock.
+    if k == 0 { return Ok((*source, 0)); }
+    if k >= 20 { return Ok((*live, 0)); }
+    let w = terminal_bumpless_weight(k as f64 / 20.0);
+    let mut clamped = 0;
+    let mut controls = [0.0; 21];
+    for i in 0..21 {
+        let value = ((1.0 - w) * f64::from(source[i]) + w * f64::from(live[i])) as f32;
+        if !value.is_finite() { return Err("Nonfinite terminal bumpless interpolation".into()); }
+        if !(-1.0..=1.0).contains(&value) { clamped += 1; }
+        controls[i] = value.clamp(-1.0, 1.0);
+    }
+    Ok((controls, clamped))
+}
+
 /// Source shoulder coordinate frames and all descendants form the arm tree.
 /// The complement includes head and every virtual trunk/leg coordinate frame.
 #[cfg(feature = "getup-terminal-base-ready-experiment")]
@@ -807,6 +949,10 @@ mod terminal_balance_tests;
 #[cfg(all(test, feature = "getup-terminal-base-ready-experiment"))]
 #[path = "terminal_base_ready_tests.rs"]
 mod terminal_base_ready_tests;
+
+#[cfg(all(test, feature = "getup-terminal-bumpless-experiment"))]
+#[path = "terminal_bumpless_tests.rs"]
+mod terminal_bumpless_tests;
 
 #[cfg(test)]
 mod tests {

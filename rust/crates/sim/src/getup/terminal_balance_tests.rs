@@ -403,6 +403,7 @@ fn legacy_json_omits_none_and_active_checkpoints_roundtrip_or_explicitly_refuse(
             first_actual_control_jump_max: Some(0.125), first_saturated_controls: Some(0),
             first_compensation_active: Some(true),
             first_actual_torque_jump_max_nm: None, first_control_transition: None,
+            bumpless: None,
         });
     }
     let active_json = serde_json::to_value(&c).unwrap();

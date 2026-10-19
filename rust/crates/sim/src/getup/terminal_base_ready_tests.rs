@@ -24,6 +24,8 @@ fn settled_geometry() -> Simulation {
 
 fn terminal_controller(s: &Simulation) -> Controller {
     let mut c = Controller::new(&s.model);
+    // This retained suite specifies V1 even in a V2-capable build.
+    c.terminal_base_ready.as_mut().unwrap().format = TerminalBaseReadyFormat::V1;
     assert!(c.terminal_base_ready_variant());
     c.started_substep = Some(s.substeps_completed - 20);
     c.impact_substep = c.started_substep;
