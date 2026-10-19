@@ -656,6 +656,14 @@ impl Multibody {
     }
 
     pub(crate) fn update_mass_matrix(&mut self, dt: Real, bodies: &RigidBodySet) {
+        self.update_mass_matrix_impl::<true>(dt, bodies);
+    }
+
+    fn update_mass_matrix_impl<const SKIP_ZERO_INERTIA: bool>(
+        &mut self,
+        dt: Real,
+        bodies: &RigidBodySet,
+    ) {
         if self.ndofs == 0 {
             return; // Nothing to do.
         }
@@ -708,28 +716,48 @@ impl Multibody {
                 }
             }
 
-            #[allow(unused_mut)] // mut is needed for 3D but not for 2D.
-            let mut augmented_inertia = rb_inertia;
-
+            // A massless coordinate frame still propagates its Jacobian and
+            // Coriolis terms to massive descendants, but its own spatial inertia
+            // contributes exactly zero. Keep dense work for nonfinite operands:
+            // IEEE 0 * NaN/Inf must not be silently replaced by a finite zero.
+            #[cfg(feature = "dim2")]
+            let zero_angular_inertia = rb_inertia == 0.0;
             #[cfg(feature = "dim3")]
-            {
-                // Derivative of gyroscopic forces.
-                let gyroscopic_matrix = rb.vels.angvel.gcross_matrix() * rb_inertia
-                    - (rb_inertia * rb.vels.angvel).gcross_matrix();
+            let zero_angular_inertia = rb_inertia == crate::math::Matrix::ZERO;
+            // This first elision path is covered for 3D only; retain the
+            // original arithmetic in 2D until its own parity fixtures exist.
+            let skip_local_inertia = cfg!(feature = "dim3")
+                && SKIP_ZERO_INERTIA
+                && rb_mass == Vector::ZERO
+                && zero_angular_inertia
+                && dt.is_finite()
+                && rb.vels.angvel.is_finite()
+                && body_jacobian.iter().all(|x| x.is_finite());
 
-                augmented_inertia += gyroscopic_matrix * dt;
+            if !skip_local_inertia {
+                #[allow(unused_mut)] // mut is needed for 3D but not for 2D.
+                let mut augmented_inertia = rb_inertia;
+
+                #[cfg(feature = "dim3")]
+                {
+                    // Derivative of gyroscopic forces.
+                    let gyroscopic_matrix = rb.vels.angvel.gcross_matrix() * rb_inertia
+                        - (rb_inertia * rb.vels.angvel).gcross_matrix();
+
+                    augmented_inertia += gyroscopic_matrix * dt;
+                }
+
+                // TODO: optimize that (knowing the structure of the augmented inertia matrix).
+                // TODO: this could be better optimized in 2D.
+                #[allow(clippy::useless_conversion)] // Needed in 3D, no-op in 2D
+                let rb_mass_matrix_wo_gyro = concat_rb_mass_matrix(rb_mass, rb_inertia.into());
+                #[allow(clippy::useless_conversion)] // Needed in 3D, no-op in 2D
+                let rb_mass_matrix = concat_rb_mass_matrix(rb_mass, augmented_inertia.into());
+                self.augmented_mass
+                    .quadform(1.0, &rb_mass_matrix_wo_gyro, body_jacobian, 1.0);
+                self.acc_augmented_mass
+                    .quadform(1.0, &rb_mass_matrix, body_jacobian, 1.0);
             }
-
-            // TODO: optimize that (knowing the structure of the augmented inertia matrix).
-            // TODO: this could be better optimized in 2D.
-            #[allow(clippy::useless_conversion)] // Needed in 3D, no-op in 2D
-            let rb_mass_matrix_wo_gyro = concat_rb_mass_matrix(rb_mass, rb_inertia.into());
-            #[allow(clippy::useless_conversion)] // Needed in 3D, no-op in 2D
-            let rb_mass_matrix = concat_rb_mass_matrix(rb_mass, augmented_inertia.into());
-            self.augmented_mass
-                .quadform(1.0, &rb_mass_matrix_wo_gyro, body_jacobian, 1.0);
-            self.acc_augmented_mass
-                .quadform(1.0, &rb_mass_matrix, body_jacobian, 1.0);
 
             /*
              *
@@ -856,8 +884,12 @@ impl Multibody {
                 i_coriolis_dt_w.gemm(dt, &mat_to_na(rb_inertia), coriolis_w, 0.0);
             }
 
-            self.acc_augmented_mass
-                .gemm_tr(1.0, rb_j, &self.i_coriolis_dt, 1.0);
+            // Keep the scratch workspace identical, including nonfinite IEEE
+            // propagation. Only omit the final product when it is provably zero.
+            if !skip_local_inertia || !self.i_coriolis_dt.iter().all(|x| *x == 0.0) {
+                self.acc_augmented_mass
+                    .gemm_tr(1.0, rb_j, &self.i_coriolis_dt, 1.0);
+            }
         }
 
         /*
@@ -1852,3 +1884,7 @@ mod test {
         );
     }
 }
+
+#[cfg(all(test, feature = "dim3"))]
+#[path = "zero_inertia_tests.rs"]
+mod zero_inertia_tests;

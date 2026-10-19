@@ -1,0 +1,144 @@
+{
+  "schema": 1,
+  "date": "2026-10-19",
+  "baselineCommit": "c614027",
+  "scope": "First narrow exact-arithmetic performance slice for the unchanged25-body GetUp engine; no real-time/recovery/release qualification.",
+  "measuredCause": {
+    "ordinaryAppLongHoldSimulationToWallRatio": 0.176461894,
+    "cleanOuterProfileTicks": 105,
+    "physicsShareOfCore": 0.9794,
+    "controllerShareOfCore": 0.0053,
+    "cpuSampleCount": 11955,
+    "massMatrixInclusiveSampleShare": 0.6666,
+    "quadformSelfSampleShare": 0.315,
+    "profileReports": [
+      "outputs/browser-capability-20261019/profile-standing-final-clean/report.json",
+      "outputs/browser-capability-20261019/profile-standing-worker-cpu/aggregated.json"
+    ],
+    "sourceFinding": "Each40 Hz tick runs20 native integrations, each retaining25 true solver substeps. The multibody mass assembly and dual LU factorization execute500 and1000 times per tick respectively. Two dense spatial-inertia quadforms plus a Coriolis accumulation were performed even for9 exactly massless coordinate frames."
+  },
+  "change": {
+    "method": "Elide only proven-zero3D body-local spatial inertia contributions: exactly zero effective mass AND exactly zero effective angular inertia, with finite dt/angular velocity/body Jacobian. Keep every Jacobian, Coriolis propagation, assembly index, damping/armature/spring diagonal and both LU factorizations. Keep weighted Coriolis scratch identical and omit its final dense product only when all weighted entries are actually zero. Nonfinite inputs retain original dense arithmetic.",
+    "twoDimensionalPath": "Original arithmetic retained; new optimization enabled only for3D covered by tests.",
+    "unchanged": [
+      "800 Hz native integration,20 integrations per40 Hz tick",
+      "20 base plus5 additional solver substeps and internal PGS settings",
+      "Model, masses, inertia, passive properties, controller and gains",
+      "All physical/standing/slip gates, commands, ownership and schemas",
+      "No root/body forces, pose/velocity writes, impulses or resets added"
+    ],
+    "parkedIndependentCandidate": "COM-observation reuse is saved locally but not included, because its entire controller region is only0.53% of measured core time.",
+    "sourceSha256": {
+      "rust/vendor/rapier3d/src/dynamics/joint/multibody_joint/multibody.rs": "3ba32d9cdfc1e4bf7464361a688a7429c8679b0e365fc31914392029fca085bf",
+      "rust/vendor/rapier3d/src/dynamics/joint/multibody_joint/zero_inertia_tests.rs": "ec11a5d0b5f977f14ab45372ba293ba3671a4d390a49dfd498decaceefeee081"
+    }
+  },
+  "preSimulationArithmeticProof": {
+    "passed": true,
+    "testsPassed": 2,
+    "testsIgnored": 0,
+    "syntheticCases": 27,
+    "fixture": "Independent25-body27-DoF branched matrices with9 zero-inertia frames,3 fixed attachments, massive descendants, moving/rotated states, springs/damping/armature; zero-mass/nonzero-inertia and nonzero-mass/zero-inertia negatives.",
+    "comparedBits": [
+      "augmented_mass",
+      "acc_augmented_mass",
+      "both LU matrices and pivot sequences",
+      "weighted Coriolis scratch",
+      "all descendant linear/angular Coriolis matrices"
+    ],
+    "invalidOperands": "NaN/Inf dt, Jacobian or angular velocity, an early massive-link NaN preceding finite massless frames, signed zero and finite overflow retain dense-propagation bits.",
+    "allExistingEngineUnitTestsPassed": 64,
+    "allExistingEngineUnitTestsIgnored": 0,
+    "logs": [
+      "outputs/getup-performance-20261019/zero-inertia-matrix-tests.log",
+      "outputs/getup-performance-20261019/zero-inertia-all-engine-unit-tests.log"
+    ],
+    "note": "Standalone pinned vendored-engine lock for unit arithmetic; actual workspace builds additionally checked below."
+  },
+  "nativeWorkspaceParity": {
+    "passed": true,
+    "comparison": "Exact full JSON equality, no float tolerances",
+    "zeroDegreeFull40HzSnapshotsAndDiagnostics": 201,
+    "rotatedHeadingsDegrees": [
+      60,
+      -45
+    ],
+    "rotatedFullSnapshotsAndDiagnosticsPerHeadingAt1Hz": 5,
+    "nativeIntegrationsPerCandidateHeading": 4000,
+    "standingGate": "All unchanged predicates at every800Hz sample from0.5s; no failures. Full cumulative loaded slip remains <=20mm.",
+    "candidateWorkerBuildPending": false,
+    "filesSha256": {
+      "outputs/getup-standing-fix-20261019/continuous-0deg-poses.ndjson": "eb4ac0d7798f2df02c571802c545e05d5aa8f223183d29276fe42cdc4b44216b",
+      "outputs/getup-performance-20261019/zero-inertia-0deg-poses.ndjson": "eb4ac0d7798f2df02c571802c545e05d5aa8f223183d29276fe42cdc4b44216b",
+      "outputs/getup-standing-fix-20261019/continuous-final-other-headings.ndjson": "f13c29309089a6f08648a1e27dd723e2eac34170563513020780cdf7764fcb3c",
+      "outputs/getup-performance-20261019/zero-inertia-other-summary.ndjson": "b9e210f2c63950759e9abec5b7cbbebefbcce58cd9fd39838df60f8dce6138ee"
+    }
+  },
+  "browserCandidate": {
+    "workerWasmSha256": "be64ffb8a799d60d150710f11086c9df2e8ab8bc401b342e89cac579b00c969c",
+    "driverSha256": "4c6281e19c4540e3ba72a74a5b1514b5d1b9c58e56c1f8a2dbfb3adb4812d74e",
+    "immutableArtifact": "outputs/browser-capability-20261019/app-zero-inertia-candidate",
+    "buildLog": "outputs/getup-performance-20261019/zero-inertia-browser-build.log",
+    "appManifest": "outputs/getup-performance-20261019/zero-inertia-app-sha256.txt",
+    "appManifestSha256": "b1b0cb55628958303c6ad87f0df9018c027ebf60efd781aec6fef0b5cdb2d51d",
+    "forwardPair": {
+      "physicalTicks": 120,
+      "physicalSeconds": 3,
+      "exactFullSnapshots": 121,
+      "excludedComparisonFields": [
+        "diagnostics.controller_ms",
+        "diagnostics.update_ms"
+      ],
+      "baselineWallSeconds": 15.6395,
+      "candidateWallSeconds": 12.7304,
+      "baselineSimulationToWallRatio": 0.19182,
+      "candidateSimulationToWallRatio": 0.23566,
+      "speedupRatio": 1.2285,
+      "wallReductionPercent": 18.6,
+      "baselineMeanCoreMs": 123.305,
+      "candidateMeanCoreMs": 100.778,
+      "baselineMeanPhysicsMs": 120.794,
+      "candidateMeanPhysicsMs": 98.669,
+      "report": "outputs/browser-capability-20261019/zero-inertia-browser-physical-exact-120.json"
+    },
+    "reverseOrderPair": {
+      "physicalTicks": 120,
+      "physicalSeconds": 3,
+      "exactFullSnapshots": 121,
+      "candidateWallSeconds": 13.2519,
+      "baselineWallSeconds": 15.9121,
+      "candidateSimulationToWallRatio": 0.22638,
+      "baselineSimulationToWallRatio": 0.18854,
+      "speedupRatio": 1.2007,
+      "wallReductionPercent": 16.72,
+      "report": "outputs/browser-capability-20261019/zero-inertia-browser-physical-exact-120-repeat.json"
+    },
+    "grabRegression": {
+      "passed": true,
+      "scenarios": 6,
+      "physicalSnapshots": 23,
+      "physicalSnapshotsAndExactCommandsBitwiseMatchBaseline": true,
+      "report": "outputs/browser-capability-20261019/zero-inertia-browser-grab-exact.json"
+    },
+    "combinedPairedSpeedupApprox": 1.214,
+    "otherRegression": {
+      "rendererReadinessPassed": true,
+      "repeatAutoAndFallbackPassed": true,
+      "smokePassed": true,
+      "smokeTicks": 132,
+      "smokeSimulatedSeconds": 3.3,
+      "smokeNativeIntegrations": 2640,
+      "smokeStrikes": 1,
+      "smokeSegments": 25,
+      "javascriptTestsPassed": 83,
+      "javascriptTestsFailed": 0
+    }
+  },
+  "limits": [
+    "Still below1\u00d7 real-time simulation on this desktop/headless executor; software presentation FPS is separate.",
+    "Candidate has bounded bitwise matrix/native/browser state-equivalence proof; baseline33 s long holds are not mislabeled as directly rerun on this new artifact.",
+    "Existing broader native/ballistic/recovery gaps remain; no physical thresholds or ignored-test inventory changed.",
+    "No sparsity/prefix optimization is included in this first slice."
+  ],
+  "releaseAccepted": false
+}
