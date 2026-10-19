@@ -1,0 +1,1094 @@
+{
+  "schema": 1,
+  "date": "2026-10-19",
+  "status": "actual-browser-four-first-standing-passes-but-only-three-of-four-thirty-second-holds;side-renderer-quaternion-domain-failure",
+  "releaseAccepted": false,
+  "qualificationClaim": false,
+  "productionRecoveryEnabled": false,
+  "defaultPublicProfileChanged": false,
+  "physicalAcceptanceChanged": false,
+  "disposition": "All four actual-WASM cases earn the original one-second standing gate. Back, belly and side-supported sustain the full30physical seconds. Plain side is stopped by the original renderer unit-quaternion guard at17.05s, before full30s, despite426 green sampled standing predicates/counters. This candidate is not admitted.",
+  "artifact": {
+    "sourceBase": "4e6a881246205e57036658e3d6eb627b4c42f4ff",
+    "sourceEquivalentCommit": "2a9afeee485de0dec50cf10896af456303d57211",
+    "features": [
+      "lh-worker/root-translation-carry-experiment",
+      "lh-sim/getup-terminal-balance-experiment",
+      "lh-sim/standing-dynamics-experiment"
+    ],
+    "baseReadyAndBumplessEnabled": false,
+    "artifactSha256": {
+      "app-1df6634f608f8d80.css": "6f9e3128c49954cf4c159cd1b3cb0375ca4293e134429847288a5e6549a44271",
+      "index.html": "221d98d000ed295c49b44fb777e57d182caf3cc8e0e04083bbc8afb8ad206bce",
+      "lh-browser-d4ccffd02e73cb75.js": "ec9a8317fc58b63cf4f6874c3ed03808743c61c19a9c485020f0dc64dfd9c4f5",
+      "lh-browser-d4ccffd02e73cb75_bg.wasm": "5895574d87e93f6a2eddec98662797b16c298c90f2ee8298f6d72917f4d1b07e",
+      "lh_worker.js": "481b03a49c7bf2edcaf2449724afd5b3272542ccb827e7d09749cee9bc4421d9",
+      "lh_worker_bg.wasm": "5f07c8e459f7131ab41d952ff71cc051e7bec989a4ed5fa794e54fbc75e918c7",
+      "sim-worker.js": "a3a2b18c222c045fc08bf19aff2e96b92f0bc18ad6023bcca660195054267996",
+      "snippets/lh-browser-575491a8d42d44d5/driver.js": "4c6281e19c4540e3ba72a74a5b1514b5d1b9c58e56c1f8a2dbfb3adb4812d74e"
+    },
+    "sourceManifest": {
+      "path": "outputs/browser-capability-20261019/recovery-fixture/consistent-solver-budget/build/source-manifest.json",
+      "sha256": "5641b92a692a1bbb34273d96ba81cda2493becaf80fa3f8bef91088c4371eea6",
+      "bytes": 48277
+    },
+    "buildManifest": {
+      "path": "outputs/browser-capability-20261019/recovery-fixture/consistent-solver-budget/build/build-manifest.json",
+      "sha256": "97c67231cfad157868f81999f8107bb7bfa7286e281e3c0005bc0f516fde57e5",
+      "bytes": 3794
+    },
+    "fixtureAdapterManifest": {
+      "path": "outputs/browser-capability-20261019/recovery-fixture/consistent-solver-budget/build/app-fixture-test-fixture-adapter-manifest.json",
+      "sha256": "22c6037f1f3e915e8f18b967a4836ac14222a996bce4f9cf50cac69c9d780342",
+      "bytes": 4377
+    },
+    "fixtureAdapterSha256": "c24a0d1f28c714dd7a18ac8935de9fbc4d4c29ab2b45a2de861512857228f868",
+    "toolchain": "Rust1.89.0/wasm-bindgen0.2.108,release wasm32-unknown-unknown,no extra target flags",
+    "changes": "WorkerWASM/glue only replace fixed renderer base assets. Copied test-only sim-worker adapter calls existing fixture/profile/carry/observer APIs; original driver and renderer unchanged."
+  },
+  "completeExplicitProfile": {
+    "path": "docs/evidence/profiles/getup-800hz-3plus1-consistent-recovery-budget-v1.json",
+    "sha256": "da054ad1556556b20e9469c042e6e5fd4088f3630092a9d4a7b992de43f2199c",
+    "bytes": 1213,
+    "value": {
+      "id": "getup-800hz-3plus1-consistent-recovery-budget-v1",
+      "dt_s": 0.00125,
+      "tick_substeps": 20,
+      "contact_friction_model": "coulomb",
+      "solver_iterations": 3,
+      "internal_pgs_iterations": 20,
+      "fall_internal_pgs_iterations": 32,
+      "additional_body_iterations": 1,
+      "allowed_linear_error_m": 0.001,
+      "prediction_distance_m": 0.002,
+      "motor_scale": 1.0,
+      "aggregate_motor_cap_nm": 920.0,
+      "angular_damping": 0.0,
+      "contact_skin_m": 0.0,
+      "max_ccd_substeps": 4,
+      "disable_solver_speed_cap": true,
+      "posture_stiffness_multiplier": 1.0,
+      "posture_damping_multiplier": 1.0,
+      "supported_tilt_gain": 2.0,
+      "supported_com_gain_rad_per_m": 5.0,
+      "supported_com_velocity_gain_s_rad_per_m": 5.0,
+      "supported_angular_velocity_gain_s": 2.0,
+      "grab_limits": {
+        "angular_frequency_rad_s": 16.0,
+        "target_speed_m_s": 1.5,
+        "target_acceleration_m_s2": 8.0,
+        "force_n": 180.0,
+        "torque_nm": 12.0,
+        "positive_power_w": 36.0
+      },
+      "reaching_iterations": 6,
+      "reaching_coordinate_increment_rad": 0.15,
+      "reaching_damping_m2": 0.01,
+      "corrective_steps_enabled": false,
+      "recovery_enabled": false,
+      "getup_policy_enabled": true,
+      "getup_solver_budget": "consistent-recovery-phase-v1"
+    },
+    "actualTypedRuntimeReadbackVerifiedAllFour": true,
+    "budgetDifference": "Same complete3+1 carry recovery profile except id and explicit consistent-recovery-phase-v1 selector. Source recovery uses32internal PGS; terminal standing20.800Hz physics/40Hz control and all actors/gains/acceptance bounds unchanged."
+  },
+  "nativeContext": {
+    "path": "docs/evidence/getup-consistent-solver-budget-2026-10-19.json",
+    "sha256": "c88d19a5f2cd6483ed1cf4d337c6b407a08cde4d2d90008779eb803fb922d29c",
+    "bytes": 27977,
+    "commit": "2a9afee",
+    "result": "Four fresh native recoveries and four30s continuations pass all96000native predicates/counters/anchors.39unique tests/42executions pass. Native and WASM trajectories are evaluated independently; no parity claim."
+  },
+  "browser": "Chromium155.0.8059.79 desktop/headless WebGL2 SwiftShader; explicitWebGL2 path",
+  "observationContract": {
+    "sampling": "40Hz published snapshots. Each passing hold has1201 distinct20-native-step samples over24000native steps. Exact original Controller::stable_feet retained at first pass and checked against pass/stop controller exports; native stable counter continuity supplements sampled predicates.",
+    "purity": "Carry once at native0 before preparation/forecast. Same-live model/world bytes and original embedded Runtime string exactly equal across schema1\u21922 activation; exact-zero initial carry. Actual typed profile/algorithm/budget readback retained.",
+    "checkpoints": "Schema2 history preserved. Native verifier compares snapshot/controller/handles/joints/root-integrator state and reports0integrations. It does not prove full latent Rapier-workspace equality. Nonzero u64 sidecar values are never reserialized or numerically compared via JavaScript Numbers; raw checkpoint bytes are authoritative.",
+    "cadence": "Fresh autonomous fixtures; original driver one-tick automatic scheduler, native preparation polls80steps back/belly or20lateral. Trigger+advance(0) preserves325cached f32 pose/velocity words and native clock. No physical input/reset/support injection or midworld profile switch.",
+    "timing": "Physical-only. First-pass checkpoint holds and instrumentation exclude clean performance/realtime/mobile qualification. Later native diagnostic work could overlap by agreement; no clean timing claim."
+  },
+  "cases": [
+    {
+      "kind": "side",
+      "firstStandingPassed": true,
+      "thirtySecondHoldPassed": false,
+      "firstPassObservedPhysicalS": 6.425,
+      "firstPassObservedNative": 5140,
+      "firstNativePassDerivedFromStableCounter": 5134,
+      "finalPhysicalS": 17.05,
+      "finalNative": 13640,
+      "observedPostPassPhysicalSeconds": 10.625,
+      "postPassSamples": 426,
+      "originalCounterFirstS": 1.0075,
+      "originalCounterFinalS": 11.6325,
+      "sampledOriginalCounterContinuous": true,
+      "originalStableFeet": [
+        {
+          "x": 0.11262762,
+          "y": 0.027166735,
+          "z": -0.2013165
+        },
+        {
+          "x": 0.46551672,
+          "y": 0.026712798,
+          "z": 0.07100789
+        }
+      ],
+      "maximumOriginalAnchorDriftM": [
+        0.001462089247070253,
+        0.0004570501914713532
+      ],
+      "standingPredicateViolations": 0,
+      "triggerNative": 320,
+      "triggerPoseVelocityF32WordsUnchanged": true,
+      "actualSolverBudgetSamples": 683,
+      "actualSolverBudgetCounts": [
+        {
+          "current": 20,
+          "selectedNext": 20,
+          "sourceRecoveryActive": false,
+          "samples": 478
+        },
+        {
+          "current": 32,
+          "selectedNext": 32,
+          "sourceRecoveryActive": false,
+          "samples": 16
+        },
+        {
+          "current": 32,
+          "selectedNext": 32,
+          "sourceRecoveryActive": true,
+          "samples": 189
+        }
+      ],
+      "activation": {
+        "calls": 1,
+        "purity": {
+          "schemaBefore": 1,
+          "schemaAfter": 2,
+          "modelBytesEqual": true,
+          "worldBytesEqual": true,
+          "embeddedRuntimeStringExactlyEqual": true,
+          "root": [
+            0,
+            0
+          ],
+          "algorithm": "f32-dq-f64-remainder-v1",
+          "initialRemainderBits": [
+            0,
+            0,
+            0
+          ],
+          "bytesBefore": 584794,
+          "bytesAfter": 585581
+        },
+        "actualTypedProfileVerified": true,
+        "actualAlgorithmReadback": {
+          "activeRoots": [
+            [
+              0,
+              0
+            ]
+          ],
+          "algorithm": "f32-dq-f64-remainder-v1"
+        },
+        "actualBudgetUnchangedByActivation": {
+          "currentInternalPgsIterations": 20,
+          "selectedNextInternalPgsIterations": 20,
+          "sourceRecoveryActive": false
+        },
+        "beforeVerification": {
+          "binaryWorldDeserialized": true,
+          "bytes": 584794,
+          "controllerEqual": true,
+          "forecastSubsteps": 0,
+          "handlesEqual": true,
+          "jointStateEqual": true,
+          "nativeSubsteps": 0,
+          "passed": true,
+          "physicsIntegrations": 0,
+          "rootIntegratorStateEqual": true,
+          "snapshotEqual": true
+        },
+        "afterVerification": {
+          "binaryWorldDeserialized": true,
+          "bytes": 585581,
+          "controllerEqual": true,
+          "forecastSubsteps": 0,
+          "handlesEqual": true,
+          "jointStateEqual": true,
+          "nativeSubsteps": 0,
+          "passed": true,
+          "physicsIntegrations": 0,
+          "rootIntegratorStateEqual": true,
+          "snapshotEqual": true
+        },
+        "beforeBinary": {
+          "path": "outputs/browser-capability-20261019/recovery-fixture/consistent-solver-budget/side-quaternion-replay/activation-before-checkpoint.bin",
+          "sha256": "430c9141828d0beee9bc5513e6c6127fb8491353a22e2080ed528175b2e8d5b7",
+          "bytes": 584794
+        },
+        "afterBinary": {
+          "path": "outputs/browser-capability-20261019/recovery-fixture/consistent-solver-budget/side-quaternion-replay/activation-after-checkpoint.bin",
+          "sha256": "e893770311e725d96d0453ba662922ba861bebc9e4f7bf8eb9b84e2727980c74",
+          "bytes": 585581
+        },
+        "fullProof": {
+          "path": "outputs/browser-capability-20261019/recovery-fixture/consistent-solver-budget/side-quaternion-replay/activation-proof.json",
+          "sha256": "3e406a711920223244c0fa8c64ed7776ba12da0e193921c3100bba212cae6faa",
+          "bytes": 24596
+        }
+      },
+      "checkpoints": {
+        "first-pass": {
+          "binary": {
+            "path": "outputs/browser-capability-20261019/recovery-fixture/consistent-solver-budget/side-quaternion-replay/first-pass-checkpoint.bin",
+            "sha256": "ee9df0b9d769f60c93b8ee3a320ff2be83b1e1616872859bb880d6db6e7cf55a",
+            "bytes": 3208554
+          },
+          "controller": {
+            "path": "outputs/browser-capability-20261019/recovery-fixture/consistent-solver-budget/side-quaternion-replay/first-pass-controller.json",
+            "sha256": "3889094f32fad3896c34d025d3df42c31dc16615bb7196629a41f5097ae4da43",
+            "bytes": 4742637
+          },
+          "schema": 2,
+          "rawAuxiliarySha256": "e99d9ea7403cbe4d9222c487cd0167181b8e901e7c26934d9bc72527a2aa5c4e",
+          "verification": {
+            "binaryWorldDeserialized": true,
+            "bytes": 3208554,
+            "controllerEqual": true,
+            "forecastSubsteps": 720,
+            "handlesEqual": true,
+            "jointStateEqual": true,
+            "nativeSubsteps": 5140,
+            "passed": true,
+            "physicsIntegrations": 0,
+            "rootIntegratorStateEqual": true,
+            "snapshotEqual": true
+          },
+          "timeS": 6.425
+        }
+      },
+      "stopCheckpointUnavailable": {
+        "workerFault": true,
+        "error": "Physical worker stopped: Non-unit physical quaternion. Reset to start a fresh trial.",
+        "time": 17.05,
+        "reason": "Original driver already terminated the worker. No stop checkpoint can be exported; no resurrection or continuation attempted."
+      },
+      "driverError": "Physical worker stopped: Non-unit physical quaternion. Reset to start a fresh trial.",
+      "nativeFailure": null,
+      "telemetry": {
+        "bounds": {
+          "maximumQueueDepth": 0,
+          "maximumOutstandingAdvances": 1,
+          "maximumAdvanceTicks": 1,
+          "maximumTransferBuffers": 3
+        },
+        "droppedPackets": 0,
+        "droppedFrames": 0,
+        "droppedInputs": 0,
+        "pendingVisualInputs": 0
+      },
+      "rawResult": {
+        "path": "outputs/browser-capability-20261019/recovery-fixture/consistent-solver-budget/side-quaternion-replay/result.json",
+        "sha256": "d7cf196cdf28af29234d2684d2813f561f440738f92899c5ff9488c2733faf52",
+        "bytes": 27336789
+      },
+      "recordVideo": false,
+      "performanceContext": "Physical-only deterministic replay after original renderer rejected quaternion and terminated worker; first-pass checkpoint scheduling hold; no performance qualification",
+      "observedPaceExcludedFromPerformanceQualification": null,
+      "screenshots": [
+        {
+          "path": "outputs/browser-capability-20261019/recovery-fixture/consistent-solver-budget/side-quaternion-replay/initial-fixed-fixture.png",
+          "sha256": "a321eefab8f95fdc3f5edc9b039d543e1444b16b5abc39da7ab674bf52b7008f",
+          "bytes": 197662
+        },
+        {
+          "path": "outputs/browser-capability-20261019/recovery-fixture/consistent-solver-budget/side-quaternion-replay/failure.png",
+          "sha256": "3a4def175f07174ecfc7b8e0e4a061b9fa1e46b2eb4e73c6b9c383792dade74f",
+          "bytes": 197179
+        }
+      ]
+    },
+    {
+      "kind": "back",
+      "firstStandingPassed": true,
+      "thirtySecondHoldPassed": true,
+      "firstPassObservedPhysicalS": 6.275,
+      "firstPassObservedNative": 5020,
+      "firstNativePassDerivedFromStableCounter": 5012,
+      "finalPhysicalS": 36.275,
+      "finalNative": 29020,
+      "observedPostPassPhysicalSeconds": 30.0,
+      "postPassSamples": 1201,
+      "originalCounterFirstS": 1.01,
+      "originalCounterFinalS": 31.01,
+      "sampledOriginalCounterContinuous": true,
+      "originalStableFeet": [
+        {
+          "x": -0.6528725,
+          "y": 0.02673907,
+          "z": 0.061614204
+        },
+        {
+          "x": -0.73507726,
+          "y": 0.026748298,
+          "z": 0.43248796
+        }
+      ],
+      "maximumOriginalAnchorDriftM": [
+        0.0001072098093573004,
+        9.523839980829507e-05
+      ],
+      "standingPredicateViolations": 0,
+      "triggerNative": 480,
+      "triggerPoseVelocityF32WordsUnchanged": true,
+      "actualSolverBudgetSamples": 1452,
+      "actualSolverBudgetCounts": [
+        {
+          "current": 20,
+          "selectedNext": 20,
+          "sourceRecoveryActive": false,
+          "samples": 1258
+        },
+        {
+          "current": 32,
+          "selectedNext": 32,
+          "sourceRecoveryActive": false,
+          "samples": 24
+        },
+        {
+          "current": 32,
+          "selectedNext": 32,
+          "sourceRecoveryActive": true,
+          "samples": 170
+        }
+      ],
+      "activation": {
+        "calls": 1,
+        "purity": {
+          "schemaBefore": 1,
+          "schemaAfter": 2,
+          "modelBytesEqual": true,
+          "worldBytesEqual": true,
+          "embeddedRuntimeStringExactlyEqual": true,
+          "root": [
+            0,
+            0
+          ],
+          "algorithm": "f32-dq-f64-remainder-v1",
+          "initialRemainderBits": [
+            0,
+            0,
+            0
+          ],
+          "bytesBefore": 584801,
+          "bytesAfter": 585588
+        },
+        "actualTypedProfileVerified": true,
+        "actualAlgorithmReadback": {
+          "activeRoots": [
+            [
+              0,
+              0
+            ]
+          ],
+          "algorithm": "f32-dq-f64-remainder-v1"
+        },
+        "actualBudgetUnchangedByActivation": {
+          "currentInternalPgsIterations": 20,
+          "selectedNextInternalPgsIterations": 20,
+          "sourceRecoveryActive": false
+        },
+        "beforeVerification": {
+          "binaryWorldDeserialized": true,
+          "bytes": 584801,
+          "controllerEqual": true,
+          "forecastSubsteps": 0,
+          "handlesEqual": true,
+          "jointStateEqual": true,
+          "nativeSubsteps": 0,
+          "passed": true,
+          "physicsIntegrations": 0,
+          "rootIntegratorStateEqual": true,
+          "snapshotEqual": true
+        },
+        "afterVerification": {
+          "binaryWorldDeserialized": true,
+          "bytes": 585588,
+          "controllerEqual": true,
+          "forecastSubsteps": 0,
+          "handlesEqual": true,
+          "jointStateEqual": true,
+          "nativeSubsteps": 0,
+          "passed": true,
+          "physicsIntegrations": 0,
+          "rootIntegratorStateEqual": true,
+          "snapshotEqual": true
+        },
+        "beforeBinary": {
+          "path": "outputs/browser-capability-20261019/recovery-fixture/consistent-solver-budget/back-thirty/activation-before-checkpoint.bin",
+          "sha256": "8203497536c87c302578fb2128f200039182146733af806d5b4ec3540d21144c",
+          "bytes": 584801
+        },
+        "afterBinary": {
+          "path": "outputs/browser-capability-20261019/recovery-fixture/consistent-solver-budget/back-thirty/activation-after-checkpoint.bin",
+          "sha256": "b1e3ffcdeee0661649e8166a7a81b973ce399a3cb8a8fc25318277adbf1b9f48",
+          "bytes": 585588
+        },
+        "fullProof": {
+          "path": "outputs/browser-capability-20261019/recovery-fixture/consistent-solver-budget/back-thirty/activation-proof.json",
+          "sha256": "11ebbf09b48356db2dfade4add8704dedd21234f7d2dd3ef809b96320a9d8a67",
+          "bytes": 24520
+        }
+      },
+      "checkpoints": {
+        "first-pass": {
+          "binary": {
+            "path": "outputs/browser-capability-20261019/recovery-fixture/consistent-solver-budget/back-thirty/first-pass-checkpoint.bin",
+            "sha256": "8e161e9de3a91ba2aa7de715f7fba89d9a3e12a8fb1a184fb5c4a1116df12172",
+            "bytes": 3271619
+          },
+          "controller": {
+            "path": "outputs/browser-capability-20261019/recovery-fixture/consistent-solver-budget/back-thirty/first-pass-controller.json",
+            "sha256": "a7410b40d31cb76e1b879e280588c06aaefdeacfeeab68f83c1cea609eb84f80",
+            "bytes": 4864494
+          },
+          "schema": 2,
+          "rawAuxiliarySha256": "d6cc547418c36cc48b9d9711753ad58e3b4dc29e14fba8138d118a736ff84958",
+          "verification": {
+            "binaryWorldDeserialized": true,
+            "bytes": 3271619,
+            "controllerEqual": true,
+            "forecastSubsteps": 960,
+            "handlesEqual": true,
+            "jointStateEqual": true,
+            "nativeSubsteps": 5020,
+            "passed": true,
+            "physicsIntegrations": 0,
+            "rootIntegratorStateEqual": true,
+            "snapshotEqual": true
+          },
+          "timeS": 6.275
+        },
+        "stop": {
+          "binary": {
+            "path": "outputs/browser-capability-20261019/recovery-fixture/consistent-solver-budget/back-thirty/stop-checkpoint.bin",
+            "sha256": "f0d216e273125ce1438c500363c2b5764f6dc7b790b274d15ec0b5bf5cd40ea7",
+            "bytes": 3271797
+          },
+          "controller": {
+            "path": "outputs/browser-capability-20261019/recovery-fixture/consistent-solver-budget/back-thirty/stop-controller.json",
+            "sha256": "01dfd86dc29d9e96617eb178167e3e75c1242634cb6fa15eb75b658fc72c4272",
+            "bytes": 4864498
+          },
+          "schema": 2,
+          "rawAuxiliarySha256": "00df32f5e5f310941ec1752bdabc5980ef4e4eed525cdd8b84c3372b77e291a0",
+          "verification": {
+            "binaryWorldDeserialized": true,
+            "bytes": 3271797,
+            "controllerEqual": true,
+            "forecastSubsteps": 960,
+            "handlesEqual": true,
+            "jointStateEqual": true,
+            "nativeSubsteps": 29020,
+            "passed": true,
+            "physicsIntegrations": 0,
+            "rootIntegratorStateEqual": true,
+            "snapshotEqual": true
+          },
+          "timeS": 36.275
+        }
+      },
+      "stopCheckpointUnavailable": null,
+      "driverError": "",
+      "nativeFailure": null,
+      "telemetry": {
+        "bounds": {
+          "maximumQueueDepth": 0,
+          "maximumOutstandingAdvances": 1,
+          "maximumAdvanceTicks": 1,
+          "maximumTransferBuffers": 3
+        },
+        "droppedPackets": 0,
+        "droppedFrames": 0,
+        "droppedInputs": 0,
+        "pendingVisualInputs": 0
+      },
+      "rawResult": {
+        "path": "outputs/browser-capability-20261019/recovery-fixture/consistent-solver-budget/back-thirty/result.json",
+        "sha256": "69f5de033e9c16c6fb0556fa54044e35f90e192736e338d843f55e7654ff09bd",
+        "bytes": 69329094
+      },
+      "recordVideo": false,
+      "performanceContext": "Physical-only unencoded fresh consistent-recovery-phase3+1 trial; original driver/renderer guards active; checkpoint holds included; no clean performance qualification",
+      "observedPaceExcludedFromPerformanceQualification": {
+        "simulationSeconds": 36.275,
+        "wallSeconds": 40.09990000000596,
+        "integratedSimulationToWallRatio": 0.9046157222335868,
+        "presentedFrames": 2351,
+        "note": "Recorded encoded/concurrency context; not realtime/mobile or native800Hz standing qualification."
+      },
+      "screenshots": [
+        {
+          "path": "outputs/browser-capability-20261019/recovery-fixture/consistent-solver-budget/back-thirty/initial-fixed-fixture.png",
+          "sha256": "fb0275876165dfdcff284da2ab15b2898643458df135854d55c9b30d177d9dfe",
+          "bytes": 195083
+        },
+        {
+          "path": "outputs/browser-capability-20261019/recovery-fixture/consistent-solver-budget/back-thirty/after-thirty-physical-seconds-standing.png",
+          "sha256": "7fadedecd0fc5b3e2bc301e88babcfea505d08bd51b935b2a8101c60f05fa14a",
+          "bytes": 198490
+        }
+      ]
+    },
+    {
+      "kind": "belly",
+      "firstStandingPassed": true,
+      "thirtySecondHoldPassed": true,
+      "firstPassObservedPhysicalS": 3.4,
+      "firstPassObservedNative": 2720,
+      "firstNativePassDerivedFromStableCounter": 2706,
+      "finalPhysicalS": 33.4,
+      "finalNative": 26720,
+      "observedPostPassPhysicalSeconds": 30.0,
+      "postPassSamples": 1201,
+      "originalCounterFirstS": 1.0175,
+      "originalCounterFinalS": 31.0175,
+      "sampledOriginalCounterContinuous": true,
+      "originalStableFeet": [
+        {
+          "x": 0.15892369,
+          "y": 0.027503807,
+          "z": -0.6003343
+        },
+        {
+          "x": -0.048039895,
+          "y": 0.026902609,
+          "z": -0.72783583
+        }
+      ],
+      "maximumOriginalAnchorDriftM": [
+        0.0008861201931722462,
+        0.00027357597718946636
+      ],
+      "standingPredicateViolations": 0,
+      "triggerNative": 400,
+      "triggerPoseVelocityF32WordsUnchanged": true,
+      "actualSolverBudgetSamples": 1337,
+      "actualSolverBudgetCounts": [
+        {
+          "current": 20,
+          "selectedNext": 20,
+          "sourceRecoveryActive": false,
+          "samples": 1245
+        },
+        {
+          "current": 32,
+          "selectedNext": 32,
+          "sourceRecoveryActive": false,
+          "samples": 20
+        },
+        {
+          "current": 32,
+          "selectedNext": 32,
+          "sourceRecoveryActive": true,
+          "samples": 72
+        }
+      ],
+      "activation": {
+        "calls": 1,
+        "purity": {
+          "schemaBefore": 1,
+          "schemaAfter": 2,
+          "modelBytesEqual": true,
+          "worldBytesEqual": true,
+          "embeddedRuntimeStringExactlyEqual": true,
+          "root": [
+            0,
+            0
+          ],
+          "algorithm": "f32-dq-f64-remainder-v1",
+          "initialRemainderBits": [
+            0,
+            0,
+            0
+          ],
+          "bytesBefore": 584804,
+          "bytesAfter": 585591
+        },
+        "actualTypedProfileVerified": true,
+        "actualAlgorithmReadback": {
+          "activeRoots": [
+            [
+              0,
+              0
+            ]
+          ],
+          "algorithm": "f32-dq-f64-remainder-v1"
+        },
+        "actualBudgetUnchangedByActivation": {
+          "currentInternalPgsIterations": 20,
+          "selectedNextInternalPgsIterations": 20,
+          "sourceRecoveryActive": false
+        },
+        "beforeVerification": {
+          "binaryWorldDeserialized": true,
+          "bytes": 584804,
+          "controllerEqual": true,
+          "forecastSubsteps": 0,
+          "handlesEqual": true,
+          "jointStateEqual": true,
+          "nativeSubsteps": 0,
+          "passed": true,
+          "physicsIntegrations": 0,
+          "rootIntegratorStateEqual": true,
+          "snapshotEqual": true
+        },
+        "afterVerification": {
+          "binaryWorldDeserialized": true,
+          "bytes": 585591,
+          "controllerEqual": true,
+          "forecastSubsteps": 0,
+          "handlesEqual": true,
+          "jointStateEqual": true,
+          "nativeSubsteps": 0,
+          "passed": true,
+          "physicsIntegrations": 0,
+          "rootIntegratorStateEqual": true,
+          "snapshotEqual": true
+        },
+        "beforeBinary": {
+          "path": "outputs/browser-capability-20261019/recovery-fixture/consistent-solver-budget/belly-thirty/activation-before-checkpoint.bin",
+          "sha256": "fac78a2a655edc1cb70135cea8c1f6e4920440cdf142d44484a14061c0888560",
+          "bytes": 584804
+        },
+        "afterBinary": {
+          "path": "outputs/browser-capability-20261019/recovery-fixture/consistent-solver-budget/belly-thirty/activation-after-checkpoint.bin",
+          "sha256": "08ea549dc61f36cdae34d78e19572487978081de423a06707701a47cab67f628",
+          "bytes": 585591
+        },
+        "fullProof": {
+          "path": "outputs/browser-capability-20261019/recovery-fixture/consistent-solver-budget/belly-thirty/activation-proof.json",
+          "sha256": "429017214f3f5cb81530259f360b01acc61b161df679569f971ec1010dfbe5bb",
+          "bytes": 24568
+        }
+      },
+      "checkpoints": {
+        "first-pass": {
+          "binary": {
+            "path": "outputs/browser-capability-20261019/recovery-fixture/consistent-solver-budget/belly-thirty/first-pass-checkpoint.bin",
+            "sha256": "bfe56e427cc4fff5c9a0b35d2d581fc962398379ada56b3e13c784275ad82715",
+            "bytes": 1895527
+          },
+          "controller": {
+            "path": "outputs/browser-capability-20261019/recovery-fixture/consistent-solver-budget/belly-thirty/first-pass-controller.json",
+            "sha256": "373812f794b19c55cb8571a5e8c47159da9f755a516e586b0a839d865b724598",
+            "bytes": 2332322
+          },
+          "schema": 2,
+          "rawAuxiliarySha256": "691b696e718ca8f58853a85714538a98cdb3e4ae8b1f45dd70be0d688904c88e",
+          "verification": {
+            "binaryWorldDeserialized": true,
+            "bytes": 1895527,
+            "controllerEqual": true,
+            "forecastSubsteps": 540,
+            "handlesEqual": true,
+            "jointStateEqual": true,
+            "nativeSubsteps": 2720,
+            "passed": true,
+            "physicsIntegrations": 0,
+            "rootIntegratorStateEqual": true,
+            "snapshotEqual": true
+          },
+          "timeS": 3.4
+        },
+        "stop": {
+          "binary": {
+            "path": "outputs/browser-capability-20261019/recovery-fixture/consistent-solver-budget/belly-thirty/stop-checkpoint.bin",
+            "sha256": "2c15a20f190d486e13a1b2c007783dd8aea451c856f21fc542b926c336eb9ac3",
+            "bytes": 1895598
+          },
+          "controller": {
+            "path": "outputs/browser-capability-20261019/recovery-fixture/consistent-solver-budget/belly-thirty/stop-controller.json",
+            "sha256": "09abb4701ae0ff718ef5e7effcfc9ee50c133d53d5535961b8f2712abcfe1138",
+            "bytes": 2332326
+          },
+          "schema": 2,
+          "rawAuxiliarySha256": "8b353da6367ab5d0e9b9f3181da3266bd9aa18111df07e18462e78471a43772b",
+          "verification": {
+            "binaryWorldDeserialized": true,
+            "bytes": 1895598,
+            "controllerEqual": true,
+            "forecastSubsteps": 540,
+            "handlesEqual": true,
+            "jointStateEqual": true,
+            "nativeSubsteps": 26720,
+            "passed": true,
+            "physicsIntegrations": 0,
+            "rootIntegratorStateEqual": true,
+            "snapshotEqual": true
+          },
+          "timeS": 33.4
+        }
+      },
+      "stopCheckpointUnavailable": null,
+      "driverError": "",
+      "nativeFailure": null,
+      "telemetry": {
+        "bounds": {
+          "maximumQueueDepth": 0,
+          "maximumOutstandingAdvances": 1,
+          "maximumAdvanceTicks": 1,
+          "maximumTransferBuffers": 3
+        },
+        "droppedPackets": 0,
+        "droppedFrames": 0,
+        "droppedInputs": 0,
+        "pendingVisualInputs": 0
+      },
+      "rawResult": {
+        "path": "outputs/browser-capability-20261019/recovery-fixture/consistent-solver-budget/belly-thirty/result.json",
+        "sha256": "e01a3a11213b19dc2558da4d650465ed8a0e1af92c4bc35f7fe7eb9fed8423bf",
+        "bytes": 69100108
+      },
+      "recordVideo": false,
+      "performanceContext": "Physical-only unencoded fresh consistent-recovery-phase3+1 trial; original driver/renderer guards active; checkpoint holds included; no clean performance qualification",
+      "observedPaceExcludedFromPerformanceQualification": {
+        "simulationSeconds": 33.4,
+        "wallSeconds": 35.17870000000298,
+        "integratedSimulationToWallRatio": 0.9494381543376295,
+        "presentedFrames": 2070,
+        "note": "Recorded encoded/concurrency context; not realtime/mobile or native800Hz standing qualification."
+      },
+      "screenshots": [
+        {
+          "path": "outputs/browser-capability-20261019/recovery-fixture/consistent-solver-budget/belly-thirty/initial-fixed-fixture.png",
+          "sha256": "8bf5107e84b8803f98ae5b11839d86478d435a5e8651546d55bb2438239aa4d8",
+          "bytes": 194582
+        },
+        {
+          "path": "outputs/browser-capability-20261019/recovery-fixture/consistent-solver-budget/belly-thirty/after-thirty-physical-seconds-standing.png",
+          "sha256": "528a7836ded8b09032bd6f179b67eeadcfd8cf103093991750da1a6968b3a7ba",
+          "bytes": 196662
+        }
+      ]
+    },
+    {
+      "kind": "side-supported",
+      "firstStandingPassed": true,
+      "thirtySecondHoldPassed": true,
+      "firstPassObservedPhysicalS": 10.225,
+      "firstPassObservedNative": 8180,
+      "firstNativePassDerivedFromStableCounter": 8179,
+      "finalPhysicalS": 40.225,
+      "finalNative": 32180,
+      "observedPostPassPhysicalSeconds": 30.0,
+      "postPassSamples": 1201,
+      "originalCounterFirstS": 1.00125,
+      "originalCounterFinalS": 31.00125,
+      "sampledOriginalCounterContinuous": true,
+      "originalStableFeet": [
+        {
+          "x": 0.8105975,
+          "y": 0.02688025,
+          "z": -0.44846252
+        },
+        {
+          "x": 0.83250546,
+          "y": 0.026995907,
+          "z": -0.21715784
+        }
+      ],
+      "maximumOriginalAnchorDriftM": [
+        7.884197111707181e-05,
+        0.0001429706026101485
+      ],
+      "standingPredicateViolations": 0,
+      "triggerNative": 140,
+      "triggerPoseVelocityF32WordsUnchanged": true,
+      "actualSolverBudgetSamples": 1610,
+      "actualSolverBudgetCounts": [
+        {
+          "current": 20,
+          "selectedNext": 20,
+          "sourceRecoveryActive": false,
+          "samples": 1253
+        },
+        {
+          "current": 32,
+          "selectedNext": 32,
+          "sourceRecoveryActive": false,
+          "samples": 7
+        },
+        {
+          "current": 32,
+          "selectedNext": 32,
+          "sourceRecoveryActive": true,
+          "samples": 350
+        }
+      ],
+      "activation": {
+        "calls": 1,
+        "purity": {
+          "schemaBefore": 1,
+          "schemaAfter": 2,
+          "modelBytesEqual": true,
+          "worldBytesEqual": true,
+          "embeddedRuntimeStringExactlyEqual": true,
+          "root": [
+            0,
+            0
+          ],
+          "algorithm": "f32-dq-f64-remainder-v1",
+          "initialRemainderBits": [
+            0,
+            0,
+            0
+          ],
+          "bytesBefore": 584770,
+          "bytesAfter": 585557
+        },
+        "actualTypedProfileVerified": true,
+        "actualAlgorithmReadback": {
+          "activeRoots": [
+            [
+              0,
+              0
+            ]
+          ],
+          "algorithm": "f32-dq-f64-remainder-v1"
+        },
+        "actualBudgetUnchangedByActivation": {
+          "currentInternalPgsIterations": 20,
+          "selectedNextInternalPgsIterations": 20,
+          "sourceRecoveryActive": false
+        },
+        "beforeVerification": {
+          "binaryWorldDeserialized": true,
+          "bytes": 584770,
+          "controllerEqual": true,
+          "forecastSubsteps": 0,
+          "handlesEqual": true,
+          "jointStateEqual": true,
+          "nativeSubsteps": 0,
+          "passed": true,
+          "physicsIntegrations": 0,
+          "rootIntegratorStateEqual": true,
+          "snapshotEqual": true
+        },
+        "afterVerification": {
+          "binaryWorldDeserialized": true,
+          "bytes": 585557,
+          "controllerEqual": true,
+          "forecastSubsteps": 0,
+          "handlesEqual": true,
+          "jointStateEqual": true,
+          "nativeSubsteps": 0,
+          "passed": true,
+          "physicsIntegrations": 0,
+          "rootIntegratorStateEqual": true,
+          "snapshotEqual": true
+        },
+        "beforeBinary": {
+          "path": "outputs/browser-capability-20261019/recovery-fixture/consistent-solver-budget/side-supported-thirty/activation-before-checkpoint.bin",
+          "sha256": "1d43f6727f09ac349ea0881e6d429374b2f8a100b431016d69c5772d6bbe3c13",
+          "bytes": 584770
+        },
+        "afterBinary": {
+          "path": "outputs/browser-capability-20261019/recovery-fixture/consistent-solver-budget/side-supported-thirty/activation-after-checkpoint.bin",
+          "sha256": "5fbf1a206dea9253975996b325b25847818ca0c1ec90bec91fc4f75c68ecda79",
+          "bytes": 585557
+        },
+        "fullProof": {
+          "path": "outputs/browser-capability-20261019/recovery-fixture/consistent-solver-budget/side-supported-thirty/activation-proof.json",
+          "sha256": "3ac966f5fdf1749009060451bbc2545d5e74fc7e7efbcabb82eab81e5487c751",
+          "bytes": 24584
+        }
+      },
+      "checkpoints": {
+        "first-pass": {
+          "binary": {
+            "path": "outputs/browser-capability-20261019/recovery-fixture/consistent-solver-budget/side-supported-thirty/first-pass-checkpoint.bin",
+            "sha256": "ca2815e195ffd046b3b86dde670106980b79b46f0ddc23a5f7c581ad4a674e7a",
+            "bytes": 4775146
+          },
+          "controller": {
+            "path": "outputs/browser-capability-20261019/recovery-fixture/consistent-solver-budget/side-supported-thirty/first-pass-controller.json",
+            "sha256": "f75f42ee562ffe1cf7b422895c2d51f1c61aca428cff2acd6fcdcba702b01c2a",
+            "bytes": 7605940
+          },
+          "schema": 2,
+          "rawAuxiliarySha256": "71e98294a6da2a9f934e3a03d3ad2ae58378a3620517be5e4fc6ae2b2582473c",
+          "verification": {
+            "binaryWorldDeserialized": true,
+            "bytes": 4775146,
+            "controllerEqual": true,
+            "forecastSubsteps": 700,
+            "handlesEqual": true,
+            "jointStateEqual": true,
+            "nativeSubsteps": 8180,
+            "passed": true,
+            "physicsIntegrations": 0,
+            "rootIntegratorStateEqual": true,
+            "snapshotEqual": true
+          },
+          "timeS": 10.225
+        },
+        "stop": {
+          "binary": {
+            "path": "outputs/browser-capability-20261019/recovery-fixture/consistent-solver-budget/side-supported-thirty/stop-checkpoint.bin",
+            "sha256": "6fc287917f10150bb4bb46b26870df7f59a295f38f177eef28ce7ca02f84d4aa",
+            "bytes": 4775254
+          },
+          "controller": {
+            "path": "outputs/browser-capability-20261019/recovery-fixture/consistent-solver-budget/side-supported-thirty/stop-controller.json",
+            "sha256": "36f6b98387a132439bbaaaf0dbc76e9e2326f1e63c9981bdedd7c5acd3774e9f",
+            "bytes": 7605944
+          },
+          "schema": 2,
+          "rawAuxiliarySha256": "e66f33cdac36e4e1dd582710f683705405ac614494c5313a8c343f11aa715c64",
+          "verification": {
+            "binaryWorldDeserialized": true,
+            "bytes": 4775254,
+            "controllerEqual": true,
+            "forecastSubsteps": 700,
+            "handlesEqual": true,
+            "jointStateEqual": true,
+            "nativeSubsteps": 32180,
+            "passed": true,
+            "physicsIntegrations": 0,
+            "rootIntegratorStateEqual": true,
+            "snapshotEqual": true
+          },
+          "timeS": 40.225
+        }
+      },
+      "stopCheckpointUnavailable": null,
+      "driverError": "",
+      "nativeFailure": null,
+      "telemetry": {
+        "bounds": {
+          "maximumQueueDepth": 0,
+          "maximumOutstandingAdvances": 1,
+          "maximumAdvanceTicks": 1,
+          "maximumTransferBuffers": 3
+        },
+        "droppedPackets": 0,
+        "droppedFrames": 0,
+        "droppedInputs": 0,
+        "pendingVisualInputs": 0
+      },
+      "rawResult": {
+        "path": "outputs/browser-capability-20261019/recovery-fixture/consistent-solver-budget/side-supported-thirty/result.json",
+        "sha256": "690469dde843ca04caf58c8f1bdf77f4557d4a3a9e733cfc2d05c838e963bd90",
+        "bytes": 73719918
+      },
+      "recordVideo": false,
+      "performanceContext": "Physical-only unencoded fresh consistent-recovery-phase3+1 trial; original driver/renderer guards active; checkpoint holds included; no clean performance qualification",
+      "observedPaceExcludedFromPerformanceQualification": {
+        "simulationSeconds": 40.225,
+        "wallSeconds": 46.07519999999553,
+        "integratedSimulationToWallRatio": 0.8730293086086203,
+        "presentedFrames": 2664,
+        "note": "Recorded encoded/concurrency context; not realtime/mobile or native800Hz standing qualification."
+      },
+      "screenshots": [
+        {
+          "path": "outputs/browser-capability-20261019/recovery-fixture/consistent-solver-budget/side-supported-thirty/initial-fixed-fixture.png",
+          "sha256": "14152c8a62d652b6458b58ac6b789c42f496bce93263485952b3a41886905603",
+          "bytes": 196890
+        },
+        {
+          "path": "outputs/browser-capability-20261019/recovery-fixture/consistent-solver-budget/side-supported-thirty/after-thirty-physical-seconds-standing.png",
+          "sha256": "90a4f2aa0cd9f40633dba6b648388f1e6f7f8d96a2c7ec09103e45e5f6418bbb",
+          "bytes": 199357
+        }
+      ]
+    }
+  ],
+  "sideQuaternionFailure": {
+    "errorOrigin": "rust/crates/renderer/src/lib.rs physical_poses: reject abs(q.length_squared()-1) >0.001. Original browser driver catches renderer error and terminates worker, reporting Physical worker stopped; native simulation failure remains null.",
+    "timeS": 17.05,
+    "native": 13640,
+    "firstPassTimeS": 6.425,
+    "sampledStandingPredicatesPassed": 426,
+    "originalStableCounterS": 11.6325,
+    "torsoQuaternionWordsUint32": [
+      3146111968,
+      3212145465,
+      3157492201,
+      3197255425
+    ],
+    "torsoNormSquaredF64Diagnostic": 1.00100231340616,
+    "maximumBodyNormSquaredF64Diagnostic": 1.0010023307866005,
+    "rawWords": "All325 authentic received transfer-buffer u32 words copied before original driver recycle/detach. F64 sums are diagnostic; original f32 renderer independently rejected its unchanged guard.",
+    "diagnosis": {
+      "path": "outputs/browser-capability-20261019/recovery-fixture/consistent-solver-budget/side-quaternion-diagnosis.json",
+      "sha256": "a0eba7257c0e33dcd765643d4d8d25f6b8e28bd33fbdbe0a2ddc768de373fed6",
+      "bytes": 11431
+    },
+    "growthTrace": {
+      "path": "outputs/browser-capability-20261019/recovery-fixture/consistent-solver-budget/side-quaternion-growth.json",
+      "sha256": "931ca5d44496848c79da3dd4033f75bae337b6db185a975144df6c70da4d96b5",
+      "bytes": 3584
+    },
+    "noStopCheckpoint": "Original driver already terminated worker. Stop export is explicitly unavailable; no worker resurrection, guard bypass or extra integration.",
+    "initialFilmingAttempt": {
+      "status": "Interrupted after original renderer fault because prior recorder hung requesting a checkpoint from terminated worker. Waiting subsequent-case batch also interrupted before it started. No completed result/video or30s pass is claimed from this attempt.",
+      "log": {
+        "path": "outputs/browser-capability-20261019/recovery-fixture/consistent-solver-budget/side-thirty.log",
+        "sha256": "8431da1125948bba40bc0770937c783e2292d7f307efe2ce818cfb94f001e2a0",
+        "bytes": 8962
+      },
+      "exactInitialRecorder": {
+        "path": "outputs/browser-capability-20261019/recovery-fixture/consistent-solver-budget/initial-recorder-cafbf50f.mjs",
+        "sha256": "cafbf50f3858806bf261df9911867b2789d8b442a6632bee7081b96c176247f9",
+        "bytes": 28882
+      },
+      "firstPassCheckpoint": {
+        "path": "outputs/browser-capability-20261019/recovery-fixture/consistent-solver-budget/side-thirty/first-pass-checkpoint.bin",
+        "sha256": "ee9df0b9d769f60c93b8ee3a320ff2be83b1e1616872859bb880d6db6e7cf55a",
+        "bytes": 3208554
+      },
+      "firstPassController": {
+        "path": "outputs/browser-capability-20261019/recovery-fixture/consistent-solver-budget/side-thirty/first-pass-controller.json",
+        "sha256": "3889094f32fad3896c34d025d3df42c31dc16615bb7196629a41f5097ae4da43",
+        "bytes": 4742637
+      },
+      "firstPassCheckpointAndControllerByteEqualToReplay": true
+    },
+    "replayChange": "Recorder-only raw-packet retention and terminated-worker skip; app/profile/physical path unchanged. Exact renderer rejection time reproduced."
+  },
+  "probes": [
+    {
+      "path": "docs/evidence/probes/make-consistent-budget-fixture-app-2026-10-19.mjs",
+      "sha256": "f2c7ae9a049b2cafb40181465554cb3ef6383fee2600d77733ebdc08ab0d3b4a",
+      "bytes": 9425
+    },
+    {
+      "path": "docs/evidence/probes/record-getup-consistent-budget-2026-10-19.mjs",
+      "sha256": "760d971dd4f72a1bd98f939aab0ef216c9131298726d781d4858b73f66b5059e",
+      "bytes": 29965
+    },
+    {
+      "path": "docs/evidence/probes/getup-checkpoint-envelope-2026-10-19.mjs",
+      "sha256": "d37282926f41c148c4214c2e985af7fb9ee4aa30a8dd66b861bc53edc8551c9e",
+      "bytes": 4102
+    }
+  ],
+  "reproduction": {
+    "cwd": "Repository root",
+    "build": "Freeze exact2a9afee with only the three listed features and canonical toolchain/no target flags; preserve fixed renderer/driver base and build hash manifest.",
+    "adapt": "node docs/evidence/probes/make-consistent-budget-fixture-app-2026-10-19.mjs <app-unadapted> <fresh-app-fixture-test> <build-manifest.json> docs/evidence/profiles/getup-800hz-3plus1-consistent-recovery-budget-v1.json",
+    "observe": "RUST_BROWSER_EXECUTABLE=<official-headless-shell> RUST_BROWSER_NO_VIDEO=1 FIXTURE_PERFORMANCE_CONTEXT=<honest-context> node docs/evidence/probes/record-getup-consistent-budget-2026-10-19.mjs <app-fixture-test> <fresh-output> <back|belly|side|side-supported>"
+  },
+  "limitations": [
+    "No global recovery/release admission: actual side full30s fails the unit-quaternion domain. No normalization, tolerance relaxation or physics state correction was applied.",
+    "Historical recorder still has a bounded known first-pass-fault edge: it attempts pending first-pass capture before checking update.error. A renderer fault on that same first-pass packet could hang. These four observed first-pass captures succeeded; only the later side fault used the repaired stop path. Future harness must guard workerFault/error before all exports.",
+    "Browser standing snapshots are40Hz, not an independent800Hz observer. Original counters/anchors remain native controller data; native campaign is separate.",
+    "No native/WASM trajectory parity, whole-recovery20mm contact-slip, heading sweep,24case coverage, touch-force latency, Android, capableWebGPU or clean performance qualification. Foot-origin drift is distinct from integrated contact slip.",
+    "No successful full side clip exists for this artifact. Initial filming was interrupted after renderer rejection; raw negative replay is authoritative. Earlier passed back/belly footage belongs to the different a6d3c0b3 worker and profile."
+  ]
+}
