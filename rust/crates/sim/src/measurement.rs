@@ -315,10 +315,9 @@ pub(crate) fn inspect_world(
 /// A character resting on its trunk cannot pass a quiet standing observation.
 pub fn standing_support(s: &Simulation, substep: u32) -> Result<(), Failure> {
     for (i, segment) in s.model.segments.iter().enumerate() {
-        if matches!(
-            segment.id.as_str(),
-            "pelvis" | "torso" | "leftFoot" | "rightFoot"
-        ) {
+        if matches!(segment.id.as_str(), "pelvis" | "torso")
+            || matches!(segment.role.as_str(), "hindfoot" | "forefoot")
+        {
             let up = (*s.world.bodies[s.bodies[i]].rotation() * Vector::Y).y;
             if up < 0.97 {
                 return Err(Failure::new(
@@ -493,6 +492,32 @@ mod tests {
         let failure = standing_support(&s, 0).expect_err("lying pelvis must fail");
         assert_eq!(failure.check, "standing-up");
         assert!(failure.measured < 0.97);
+    }
+    #[test]
+    fn standing_orientation_guard_includes_both_current_getup_feet() {
+        for name in ["left_foot", "right_foot"] {
+            let mut s = Simulation::new(0.0, Profile::default(), true).unwrap();
+            let foot = s
+                .model
+                .segments
+                .iter()
+                .position(|part| part.id == name)
+                .unwrap();
+            assert_eq!(s.model.segments[foot].role, "hindfoot");
+            s.world.bodies[s.bodies[foot]].set_rotation(Rotation::from_rotation_x(0.5), true);
+            let before = serde_json::to_value(s.snapshot()).unwrap();
+            let failure = standing_support(&s, 0).expect_err("tilted physical foot must fail");
+            assert_eq!(failure.check, "standing-up");
+            assert_eq!(failure.offending, name);
+            assert_eq!(failure.threshold, 0.97);
+            assert!(failure.measured < failure.threshold);
+            assert_eq!(s.substeps_completed, 0);
+            assert_eq!(
+                serde_json::to_value(s.snapshot()).unwrap(),
+                before,
+                "read-only guard"
+            );
+        }
     }
     #[test]
     fn deliberate_anchor_limit_ownership_and_nonfinite_violations_fail_without_stepping() {

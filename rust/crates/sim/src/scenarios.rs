@@ -92,8 +92,15 @@ fn run_disturbances(
 ) -> Result<Vec<serde_json::Value>, String> {
     let require_steps = scope == Scope::Steps;
     let inputs: Inputs = serde_json::from_str(INPUTS).map_err(|e| e.to_string())?;
-    if inputs.schema != 1 || inputs.command_tick_hz != 60 {
-        return Err("Fixture schema/rate".into());
+    if inputs.schema != 1 {
+        return Err("Fixture schema".into());
+    }
+    if inputs.command_tick_hz != lh_contracts::TICK_HZ {
+        return Err(format!(
+            "Legacy disturbance fixtures require a {} Hz anatomical model; the current GetUp contract is {} Hz and is not qualified by these fixtures. Re-export and qualify model-specific inputs instead of implicitly remapping them.",
+            inputs.command_tick_hz,
+            lh_contracts::TICK_HZ,
+        ));
     }
     let mut reports = Vec::new();
     for p in inputs
@@ -355,6 +362,22 @@ fn run_disturbances(
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn legacy_inputs_are_rejected_before_constructing_a_different_physical_model() {
+        let inputs: Inputs = serde_json::from_str(INPUTS).unwrap();
+        assert_eq!(
+            inputs.command_tick_hz, 60,
+            "historical inputs remain unchanged"
+        );
+        assert_eq!(lh_contracts::TICK_HZ, 40);
+        for scope in [Scope::Foundation, Scope::Disturbances, Scope::Steps] {
+            let error = run_disturbances(&Profile::default(), Some("slow-hand-forward"), scope)
+                .expect_err("historical model/clock cannot qualify GetUp");
+            assert!(error.contains("Legacy disturbance fixtures require a 60 Hz anatomical model"));
+            assert!(error.contains("current GetUp contract is 40 Hz"));
+        }
+    }
 
     #[test]
     fn foundation_scope_preserves_recoverable_probes_and_full_release_coverage() {

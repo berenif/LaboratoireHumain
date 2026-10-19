@@ -17,6 +17,8 @@ Drag the body to pull, drag empty space to orbit, and scroll to zoom. Space paus
 
 Grabs now deliver bounded external point forces into the GetUp multibody instead of changing a link velocity cache that the solver overwrote. The [native before/after evidence](docs/evidence/grab-multibody-2026-10-19.json) demonstrates hand-to-torso propagation and force removal on release. The accompanying reconstructed native clip is not browser footage; browser interaction verification remains blocked by the current executor's browser-launch restrictions.
 
+The [current-model contract audit](docs/evidence/getup-fixture-contracts-2026-10-19.json) rejects incompatible historical 60 Hz disturbance inputs, halts safely on lost body ownership and restores both feet to the unchanged standing-orientation guard. The native simulation suite remains unqualified: 80 tests pass, 79 fail and 12 existing tests are ignored. Quiet-standing and ballistic-COM failures remain visible with their original thresholds.
+
 ```sh
 npm test                 # JavaScript tooling/fixture tests, no physical campaign
 npm run verify:smoke     # built app; one trajectory, at most 5 simulated seconds

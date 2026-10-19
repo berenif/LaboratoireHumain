@@ -824,6 +824,32 @@ impl Simulation {
         let mut impulses = [0.0_f32; 25];
         self.diagnostics.delivered_motor_impulse_nm_s = None;
         self.diagnostics.delivered_motors = None;
+        // Check ownership before force reset or any other body indexing. A
+        // missing handle is a halted trial, never a panic or a skipped link.
+        if let Some((index, _)) = self
+            .bodies
+            .iter()
+            .enumerate()
+            .find(|(_, handle)| self.world.bodies.get(**handle).is_none())
+        {
+            let grabbed = self.grab.as_ref().is_some_and(|grab| grab.segment == index);
+            let failure = measurement::Failure::new(
+                self.tick,
+                0,
+                if grabbed {
+                    "grab-ownership"
+                } else {
+                    "ownership"
+                },
+                self.model.segments[index].id.clone(),
+                1.0,
+                0.0,
+            );
+            self.motion = Motion::Halted;
+            self.first_failure = Some(failure.clone());
+            self.cancel_grab();
+            return Err(failure);
+        }
         for substep in 0..lh_contracts::SUBSTEPS {
             for handle in &self.bodies {
                 self.world.bodies[*handle].reset_forces(false);
@@ -1169,23 +1195,33 @@ mod tests {
         for heading in [0.0, std::f32::consts::PI / 3.0, -std::f32::consts::PI / 4.0] {
             let mut s = Simulation::new(heading, Profile::default(), false).expect("fixture");
             assert!(
-                (s.total_mass() - 72.2).abs() < 1e-4,
+                (s.total_mass() - s.model.total_mass_kg).abs() < 1e-4,
                 "mass counted exactly once"
             );
+            assert!(
+                (s.model.total_mass_kg - 40.844_02).abs() < 1e-4,
+                "pinned GetUp mass"
+            );
             let origin = s.center_of_mass();
-            for tick in 1..=30 {
+            for tick in 1_u32..=30 {
                 s.advance_tick().expect("ballistic integrity");
-                let time = tick as f32 / 60.0;
+                assert_eq!(
+                    s.substeps_completed,
+                    u64::from(tick * lh_contracts::SUBSTEPS)
+                );
+                let time = tick as f32 / lh_contracts::TICK_HZ as f32;
                 let com = s.center_of_mass();
                 let expected = origin.y - 0.5 * 9.81 * time * time;
                 // Semi-implicit fixed integration has a deterministic O(dt) position
                 // offset; velocity and horizontal COM must still be ballistic.
                 assert!((com.y - expected).abs() < 9.81 * time * SUBSTEP_S / 2.0 + 0.0001);
                 assert!((com.x - origin.x).abs() < 0.0001 && (com.z - origin.z).abs() < 0.0001);
+                let twists = getup::current_twists(&s).expect("integrated generalized velocity");
                 let momentum: Vector = s
                     .bodies
                     .iter()
-                    .map(|h| s.world.bodies[*h].linvel() * s.world.bodies[*h].mass())
+                    .zip(twists)
+                    .map(|(h, (velocity, _))| velocity * s.world.bodies[*h].mass())
                     .sum();
                 assert!((momentum.y / s.total_mass() + 9.81 * time).abs() < 0.0002);
                 assert!(s.snapshot().contacts.is_empty());
@@ -1271,10 +1307,16 @@ mod tests {
     #[test]
     fn lost_grab_body_halts_and_cancels_before_any_integration() {
         let mut s = Simulation::new(0.0, Profile::default(), true).expect("fixture");
-        s.begin_grab(14, 41, Vec3::default(), Vec3::default())
+        let hand = s
+            .model
+            .segments
+            .iter()
+            .position(|part| part.id == "right_hand")
+            .unwrap();
+        s.begin_grab(hand, 41, Vec3::default(), Vec3::default())
             .expect("press");
         s.world
-            .remove_body(s.bodies[14])
+            .remove_body(s.bodies[hand])
             .expect("deliberate ownership violation");
         let failure = s.advance_tick().expect_err("lost body halts");
         assert_eq!(failure.check, "grab-ownership");
@@ -1287,6 +1329,24 @@ mod tests {
             s.advance_tick().expect_err("halt persists").check,
             failure.check
         );
+    }
+    #[test]
+    fn lost_ungrabbed_body_halts_before_force_reset_or_integration() {
+        let mut s = Simulation::new(0.0, Profile::default(), true).unwrap();
+        let shin = s
+            .model
+            .segments
+            .iter()
+            .position(|part| part.id == "left_shin")
+            .unwrap();
+        s.world.remove_body(s.bodies[shin]).unwrap();
+        let failure = s.advance_tick().expect_err("lost body must halt safely");
+        assert_eq!(failure.check, "ownership");
+        assert_eq!(failure.offending, "left_shin");
+        assert_eq!(s.motion, Motion::Halted);
+        assert_eq!(s.substeps_completed, 0);
+        assert!(s.diagnostics.delivered_motor_impulse_nm_s.is_none());
+        assert!(s.diagnostics.delivered_motors.is_none());
     }
     #[test]
     fn equivalent_quaternion_signs_produce_the_same_supported_intent() {
@@ -1322,7 +1382,10 @@ mod tests {
         })
         .expect_err("halt");
         let halted = s.snapshot();
-        assert_eq!(halted.simulation_time_s, 1.0 / 240.0);
+        assert_eq!(
+            halted.simulation_time_s,
+            1.0 / f64::from(lh_contracts::TICK_HZ * lh_contracts::SUBSTEPS)
+        );
         assert!(lh_contracts::accepts_observation(
             initial.stamp,
             halted.stamp

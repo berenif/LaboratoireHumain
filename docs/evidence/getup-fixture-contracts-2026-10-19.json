@@ -1,0 +1,301 @@
+{
+  "schema": 1,
+  "date": "2026-10-19",
+  "baselineCommit": "28792989ce35419edf3f096d38122229b007bc4c",
+  "scope": "Current-model fixture contracts, lost-body ownership halt and both-foot orientation guard; no broad legacy-test migration or controller tuning",
+  "changes": [
+    "Reject historical 60 Hz disturbance fixtures before constructing a 40 Hz GetUp simulation; retain their source JSON, IDs, schedules and fingerprints unchanged. CLI returns invalid-input exit 2 with no success or physical trial report.",
+    "Preflight every body handle before force reset/indexing; halt at zero new integrations on ownership loss, cancel grabs and preserve failure evidence. Test actual right_hand by ID and independent ungrabbed-body loss.",
+    "Apply the unchanged standing-up >=0.97 check to physical hindfoot/forefoot roles, including current left_foot/right_foot; both tilted-foot negative fixtures prove read-only rejection.",
+    "Correct numerical test fixtures for pinned 40.84402 kg body, 40 Hz ticks, 20 substeps/tick, exact 800 Hz observation time and authoritative articulated velocities. Physical tolerances are unchanged."
+  ],
+  "unchanged": {
+    "controllerAndModel": true,
+    "standingUpMinimum": 0.97,
+    "ballisticHorizontalCoordinateStrictToleranceM": 0.0001,
+    "ballisticVerticalMomentumToleranceMps": 0.0002,
+    "historicalScenarioInputSha256": "86e5413016818418bb0f6fcda5c60c9d125190a80d4ad32c2edd3092ed940d3d",
+    "ignoredTests": [
+      "recovery::native_predictor::tests::archived_loaded_prefix_matches_25_bodies_and_times_copy",
+      "recovery::support_probe::capture_support_trace",
+      "recovery::support_probe::full_trajectory::audit_external_reference_geometry_without_integration",
+      "recovery::support_probe::hand_support_experiment::controlled_descent_one",
+      "recovery::support_probe::hand_support_experiment::hand_support_ab",
+      "recovery::support_probe::hand_support_experiment::left_hand_command_audit::diagnose_left_hand_one",
+      "recovery::support_probe::hand_support_experiment::observe_c_landing_once",
+      "recovery::support_probe::hand_support_experiment::prone_chain_execution::execute_prone_chain_one",
+      "recovery::support_probe::inspect_static_geometry",
+      "recovery::support_probe::offline_trajectory::offline_trajectory_search",
+      "recovery::support_probe::whole_history::run_whole_reference_native_history",
+      "recovery::trajectory_geometry::serve_trajectory_geometry"
+    ],
+    "recoveryAndCorrectiveSteppingRemainUnavailable": true,
+    "offlinePerFootWalkSlipStopM": 0.02
+  },
+  "simSuite": {
+    "baseline": {
+      "passed": 73,
+      "failed": 83,
+      "ignored": 12
+    },
+    "final": {
+      "passed": 80,
+      "failed": 79,
+      "ignored": 12
+    },
+    "baselineTests": 168,
+    "finalTests": 171,
+    "exit": 101,
+    "resolvedFailures": [
+      "motion::tests::unsupported_fall_is_observed_once_and_cancels_grab_without_pose_writes",
+      "runtime::tests::read_only_observer_keeps_every_physical_reply_and_visits_each_substep",
+      "tests::halted_substep_observation_has_the_integrated_time_and_new_sequence",
+      "tests::lost_grab_body_halts_and_cancels_before_any_integration"
+    ],
+    "addedTests": {
+      "measurement::tests::standing_orientation_guard_includes_both_current_getup_feet": "ok",
+      "scenarios::tests::legacy_inputs_are_rejected_before_constructing_a_different_physical_model": "ok",
+      "tests::lost_ungrabbed_body_halts_before_force_reset_or_integration": "ok"
+    },
+    "newFailedTestNames": [],
+    "remainingFailureNames": [
+      "actuators::tests::anatomical_motor_delivery_satisfies_all_joint_headings_postures_and_directions",
+      "articulation::tests::canonical_articulation_preserves_ownership_but_cannot_complete_a_native_step",
+      "articulation::tests::hybrid_preserves_canonical_anatomy_and_exposes_stale_velocity_writeback",
+      "articulation::tests::spherical_native_coordinates_do_not_preserve_anatomical_limit_semantics",
+      "calibration::tests::canonical_contacts_follow_momentum_while_cached_point_totals_do_not",
+      "cycles::tests::descent_and_upright_labels_without_measured_impact_never_pass",
+      "cycles::tests::impact_and_stable_standing_without_physical_descent_do_not_complete_a_cycle",
+      "cycles::tests::interrupted_stability_resets_the_entire_hold",
+      "cycles::tests::one_second_hold_must_finish_within_twenty_five_seconds_of_actual_impact",
+      "cycles::tests::ordinary_stance_hold_counts_before_upright_label_but_requires_observed_return",
+      "cycles::tests::qualification_rejects_mutated_profile_without_changing_the_trial",
+      "cycles::tests::qualification_rejects_offset_press_origin_without_rejecting_public_grab_commands",
+      "cycles::tests::runtime_measurement_counts_actual_substeps_and_never_rebaselines_after_reset",
+      "environment::tests::all_course_variants_spawn_connected_anatomy_over_the_selected_surface",
+      "motion::tests::loaded_leg_calibration_remains_valid_without_a_torso",
+      "reaching::tests::virtual_reach_improves_both_arms_at_rotated_headings_without_writing_bodies",
+      "recovery::native_predictor::tests::invalid_changes_and_budget_leave_world_untouched",
+      "recovery::native_predictor::tests::perturbation_isolated_from_baseline_and_real_world",
+      "recovery::native_predictor::tests::reconstructed_four_step_horizon_matches_loaded_contact_execution",
+      "recovery::native_predictor::tests::zero_velocity_delta_preserves_warm_contacts_and_motor_delivery",
+      "recovery::roll_arm::tests::arm_transfer_cannot_swing_without_measured_alternate_contacts",
+      "recovery::roll_arm::tests::arm_transfer_fold_is_bounded_and_clears_both_arms_on_back",
+      "recovery::roll_arm::tests::first_phase_completion_requires_consecutive_evidence",
+      "recovery::roll_arm::tests::first_phase_hold_preserves_targets_and_physics_without_counting_recovery",
+      "recovery::roll_arm::tests::pelvis_roll_first_step_preserves_ankle_and_toe_points_within_bounds",
+      "recovery::roll_arm::tests::pelvis_roll_rejects_unreachable_fixed_foot_continuation",
+      "recovery::roll_arm::tests::pelvis_roll_replaces_saturated_spine_intent_and_requires_solved_leg_contacts",
+      "recovery::support_probe::full_trajectory::full_program_installs_equal_search_replay_motors_without_body_mutation",
+      "recovery::support_probe::full_trajectory::full_program_native_search_replay_preserve_every_substep_body_motor_and_contact",
+      "recovery::support_probe::getup_ab::owner_rejects_duplicate_clock_and_releases_at_handoff_without_integration",
+      "recovery::support_probe::getup_ab::zero_feedback_preserves_analytic_nominal_commands_without_integration",
+      "recovery::support_probe::hand_support_experiment::closed_phase_gate_holds_targets_without_body_writes",
+      "recovery::support_probe::hand_support_experiment::land_arm_tracking::arm_fk_and_endpoint_jacobian_match_the_native_coordinate_convention",
+      "recovery::support_probe::hand_support_experiment::land_arm_tracking::exact_recorded_projection_is_bounded_and_nonpenetrating_without_world_mutation",
+      "recovery::support_probe::hand_support_experiment::land_arm_tracking::whole_arm_vertex_jacobians_match_native_coordinates_without_mutating_bodies",
+      "recovery::support_probe::hand_support_experiment::prepared_arms_change_only_native_motor_targets_and_caps",
+      "recovery::support_probe::hand_support_experiment::prone_recovery_experiment::a_new_task_measures_progress_from_its_own_goal",
+      "recovery::support_probe::offline_trajectory::owner_allocation_changes_only_joint_motors_and_respects_caps",
+      "recovery::tests::brace_and_kneel_retain_actual_knee_anchors_without_transfer",
+      "recovery::tests::canonical_seed_validation_rejects_reordered_disconnected_and_moving_bodies",
+      "recovery::tests::entry_settling_cannot_count_as_ordinary_stability",
+      "recovery::tests::failed_rise_returns_to_passive_falling_without_changing_a_pose",
+      "recovery::tests::forefoot_only_support_retains_surface_anchor_during_virtual_leg_planning",
+      "recovery::tests::loaded_root_effort_survives_relative_motion_inside_native_limits",
+      "recovery::tests::measured_capture_brakes_toward_loaded_support_without_body_writes",
+      "recovery::tests::measured_handoff_has_matching_native_rates_and_cannot_count_during_blend",
+      "recovery::tests::measured_toe_pivot_keeps_both_contact_points_inside_native_bounds",
+      "recovery::tests::moving_leg_and_reported_other_load_cannot_prove_its_own_release",
+      "recovery::tests::planted_support_reserves_effort_even_at_measured_joint_targets",
+      "recovery::tests::recovery_caps_and_input_lockout_survive_an_interrupting_impact",
+      "recovery::tests::recovery_planning_preserves_every_dynamic_pose_and_caps_coordinates",
+      "recovery::tests::recovery_requires_real_support_and_remains_opt_in",
+      "recovery::tests::remaining_soles_earn_knee_transfer_but_reject_leg_release_and_outward_capture",
+      "recovery::tests::reported_sole_load_cannot_skip_a_still_planted_knee",
+      "recovery::tests::stand_center_comes_from_forefoot_contact_at_canonical_upright_orientation",
+      "recovery::tests::standing_authority_and_native_root_effort_transfer_continuously",
+      "recovery::tests::standing_handoff_keeps_anchor_derived_soles_instead_of_elevated_centers",
+      "recovery::tests::supported_rise_projects_infeasible_flat_soles_without_body_writes",
+      "recovery::tests::supported_rise_retains_a_bounded_trajectory_from_measured_entry",
+      "recovery::tests::toe_only_support_cannot_certify_geometric_sole_balance",
+      "recovery::tests::unreachable_stance_is_no_plan_without_an_ownership_error",
+      "recovery::trajectory_program::program_refuses_interior_rate_limits_root_commands_and_foreign_surfaces",
+      "recovery::trajectory_program::program_rejects_hermite_interior_anatomical_overshoot_with_valid_knots",
+      "recovery::trajectory_program::whole_program_search_replay_commands_are_absolute_and_bit_identical",
+      "runtime::tests::full_quiet_trial_matches_the_independent_native_observer_and_stops_at_1920",
+      "stepping::tests::a_late_admitted_swing_gets_its_own_bounded_clock_without_counting_a_slide",
+      "stepping::tests::a_loaded_slide_cannot_count_as_a_step_and_floor_loss_cancels_the_plan",
+      "stepping::tests::an_aborted_transfer_preserves_the_existing_stance_policy",
+      "stepping::tests::leg_inverse_matches_canonical_geometry_at_each_heading_without_pose_writes",
+      "stepping::tests::leg_inverse_reaches_shifted_stance_and_swing_goals_in_forward_kinematics",
+      "stepping::tests::release_cancels_only_a_safe_uncommitted_transfer_without_counting_a_step",
+      "stepping::tests::stance_velocity_tracks_the_complete_blend_and_clears_without_support",
+      "stepping::tests::swing_diagnostic_separates_reach_installation_and_motion_without_body_writes",
+      "stepping::tests::swing_reserves_preserve_native_gains_and_each_hard_effort_ceiling",
+      "stepping::tests::swing_velocity_tracks_the_virtual_foot_path_and_clears_on_support_loss",
+      "stepping::tests::touchdown_targets_bound_solver_overshoot_without_modifying_the_pose",
+      "stepping::tests::transfer_reserve_requires_landing_persistent_load_and_uncommitted_swing",
+      "stepping::tests::verified_landing_keeps_native_caps_bounded_and_new_swing_takes_priority",
+      "tests::mass_accounting_and_ballistic_com_are_independent_of_heading"
+    ],
+    "note": "The ballistic test still fails; after its stale mass/time assumptions were corrected it now reaches the unchanged horizontal COM tolerance. It is not counted as fixed."
+  },
+  "standardChecks": {
+    "npmTest": {
+      "passed": true,
+      "tests": 68,
+      "exit": 0
+    },
+    "nativeWorkspace": {
+      "passed": false,
+      "exit": 101,
+      "reached": [
+        "acceptance unit tests:4 passed",
+        "acceptance CLI tests:2 passed",
+        "contracts:2 passed",
+        "model:3 passed",
+        "renderer:6 passed",
+        "simulation:80 passed,79 failed,12 ignored"
+      ],
+      "notReachedAfterFailure": [
+        "worker tests",
+        "documentation tests"
+      ]
+    },
+    "build": {
+      "passed": true,
+      "exit": 0,
+      "artifact": "rust/dist/fixture-guard-app"
+    },
+    "lint": {
+      "passed": false,
+      "exit": 1,
+      "stoppedAt": "Existing whole-repository rustfmt differences; Clippy not reached"
+    },
+    "browser": {
+      "run": false,
+      "reason": "Previously verified browser-launch/isolated-loopback restrictions remain; no repeated denied launch and no browser pass claimed"
+    },
+    "releaseQualification": {
+      "run": false,
+      "passed": false
+    }
+  },
+  "physicalFailuresKeptVisible": {
+    "quietStanding": {
+      "setup": "Current canonical GetUp via Simulation::new_protocol(heading 0°, default profile, floor=true), no imported legacy body fixture",
+      "firstObservedFailure": {
+        "tick": 120,
+        "substep": 0,
+        "physicalTimeS": 3.00125,
+        "check": "standing-up",
+        "body": "torso",
+        "measuredUp": 0.7726807,
+        "minimumUp": 0.97
+      },
+      "limitation": "This is one initial setup; no claim about all postures or separate MuJoCo experiments. Controller/threshold unchanged."
+    },
+    "ballisticCom": {
+      "setup": "Read-only external native ballistic diagnostic using public Simulation::new, default profile, floor disabled, no grab, three headings, at most30 ticks each. No physics/gate changes.",
+      "thresholdM": 0.0001,
+      "thresholdSemantics": "At least one of abs(COM.x-origin.x), abs(COM.z-origin.z) >=0.0001m, matching existing strict less-than assertion. f32 subtraction exactly as test.",
+      "headings": [
+        {
+          "headingDegrees": 0.0,
+          "firstThresholdCrossing": {
+            "tick": 8,
+            "timeS": 0.2,
+            "comM": [
+              -1.1127344379247006e-08,
+              0.623786211013794,
+              0.015576759353280067
+            ],
+            "deltaM": [
+              -1.1309760239441857e-08,
+              -0.196261465549469,
+              0.00012003537267446518
+            ],
+            "contactCount": 0,
+            "motion": "Falling",
+            "failureCheck": null
+          },
+          "finalHorizontalNormM": 0.00039307307460534693,
+          "allContactsEmpty": true,
+          "integrityFailures": []
+        },
+        {
+          "headingDegrees": 60.000001669652114,
+          "firstThresholdCrossing": {
+            "tick": 8,
+            "timeS": 0.2,
+            "comM": [
+              0.01348987314850092,
+              0.623786211013794,
+              0.00778838898986578
+            ],
+            "deltaM": [
+              0.00010395888239145279,
+              -0.196261465549469,
+              6.0031190514564514e-05
+            ],
+            "contactCount": 0,
+            "motion": "Falling",
+            "failureCheck": null
+          },
+          "finalHorizontalNormM": 0.0003929998205686124,
+          "allContactsEmpty": true,
+          "integrityFailures": []
+        },
+        {
+          "headingDegrees": -45.00000125223908,
+          "firstThresholdCrossing": {
+            "tick": 9,
+            "timeS": 0.225,
+            "comM": [
+              -0.011037017218768597,
+              0.5716614127159119,
+              0.011037018150091171
+            ],
+            "deltaM": [
+              -0.00010746996849775314,
+              -0.24838626384735107,
+              0.00010746438056230545
+            ],
+            "contactCount": 0,
+            "motion": "Falling",
+            "failureCheck": null
+          },
+          "finalHorizontalNormM": 0.0003928791627263776,
+          "allContactsEmpty": true,
+          "integrityFailures": []
+        }
+      ]
+    },
+    "legacyClockAccounting": "Quiet SETTLE_TICKS120/END_TICK1920 and hard-coded480/7200 substep totals retain old rates. Legacy cycle timing also uses240 Hz. These diagnostics remain unqualified and were not silently rewritten in this scope."
+  },
+  "sourceSha256": {
+    "rust/crates/acceptance/tests/cli.rs": "9b0fc88f8580b2deefd9956f1542d0bb697fe4f7cc0c07922c1a9d5e36580bc2",
+    "rust/crates/sim/src/lib.rs": "f9ebbc614cf92c7591b113d81a6844e0b7574988d50309aff02677f2c16bb4eb",
+    "rust/crates/sim/src/measurement.rs": "eb2826a8c3114092bb8b1362c528afea76c2c47b567c7a51a88c6a81805b7c13",
+    "rust/crates/sim/src/motion.rs": "9e0c72ab0173c2f043676bc35c24957c1b6bcb7e4990ca74c50d52040187e19e",
+    "rust/crates/sim/src/runtime.rs": "e2d52c4b23d0530230498727d0d5e2cd826122f37136508324d17cb6a6b39354",
+    "rust/crates/sim/src/scenarios.rs": "da82b0de69671f43e308d1c0896cd6ad91e9c138733aca2a5086c760283adb99"
+  },
+  "builtWasmSha256": {
+    "lh-browser-4643350ed5dec4be_bg.wasm": "b72e126e7587859ae1891c1e892d1508b255d024967edaa662cf95d937934411",
+    "lh_worker_bg.wasm": "4103ece84a9f4da8208a426d2263dc1800c719cd1ecefa819038a9a6efd5fa17"
+  },
+  "evidenceSha256": {
+    "outputs/getup-fixture-repair-20261019/baseline-sim-suite.log": "4c130f03007e207aaf33972178a720456a193ec0640e824b92855087322fb206",
+    "outputs/getup-fixture-repair-20261019/final-sim-suite.log": "a2c9371a395cd3f7f8065a7ad43c03d4000a0e93824f11cbb8629d9c71556f29",
+    "outputs/getup-fixture-repair-20261019/final-workspace-tests.log": "1e73cb00c87480773a9b14079de339fbcfc7b7da02d5d6f5564e2d943b0815fb",
+    "outputs/getup-fixture-repair-20261019/final-js-tests.log": "c35016e1eafc75d96cb74de2fa67f52131ee1b066a2ee08e240ed90eef795115",
+    "outputs/getup-fixture-repair-20261019/final-build.log": "208f0494a4def5687d4c5666382da8f326967cc71bd329f63b2f15772c3b951a",
+    "outputs/getup-fixture-repair-20261019/final-lint.log": "6dd7263b264a819444112fadc2dcd0d93a690f678f691c92ff2d959c59033005",
+    "outputs/getup-fixture-repair-20261019/ballistic-com-probe.csv": "c8746a100951ef02fe31dd5d5f11594a851a70286c27fd325558836b245ff4aa",
+    "outputs/getup-fixture-repair-20261019/ballistic-com-probe.json": "00a9f39dd69f0bfafbc77bcbecd3d3cf71b7376a884dbaa4e08aaca68c73d246",
+    "outputs/getup-fixture-repair-20261019/ballistic-com-probe.rs": "8def4baa354b146a04c78f5d5e4e48487d6843d19bc8563ed9b8913a10506a62"
+  },
+  "review": "Independent read-only review found no weakened gate, changed historical fixture, ignored test addition or fabricated admission."
+}

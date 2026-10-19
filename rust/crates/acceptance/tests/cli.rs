@@ -66,8 +66,8 @@ fn invalid_mode_or_profile_does_not_create_evidence() {
 }
 
 #[test]
-fn disturbance_exit_matches_the_scoped_result_without_release_admission() {
-    for (require_steps, expected) in [(false, 0), (true, 1)] {
+fn legacy_disturbance_inputs_cannot_claim_getup_or_step_admission() {
+    for require_steps in [false, true] {
         let out = Evidence::new();
         let mut args = vec!["--diagnose-disturbances", "--fixture", "slow-hand-forward"];
         if require_steps {
@@ -76,16 +76,21 @@ fn disturbance_exit_matches_the_scoped_result_without_release_admission() {
         let result = out.run(&args);
         assert_eq!(
             result.status.code(),
-            Some(expected),
+            Some(2),
             "{}",
             String::from_utf8_lossy(&result.stderr)
         );
-        let summary: serde_json::Value = serde_json::from_slice(&result.stdout).unwrap();
-        assert_eq!(summary["passed"], expected == 0);
-        assert_eq!(summary["cases"], 1);
-        assert_eq!(summary["releaseAccepted"], false);
-        let reports: serde_json::Value =
-            serde_json::from_slice(&fs::read(out.0.join("disturbances.json")).unwrap()).unwrap();
-        assert_eq!(reports[0]["passed"], expected == 0);
+        let error = String::from_utf8_lossy(&result.stderr);
+        assert!(error.contains("Legacy disturbance fixtures require a 60 Hz anatomical model"));
+        assert!(error.contains("current GetUp contract is 40 Hz"));
+        assert!(
+            result.stdout.is_empty(),
+            "no success summary for unsupported inputs"
+        );
+        assert!(!out.0.join("disturbances.json").exists());
+        assert!(!out.0.join("acceptance.json").exists());
+        // The CLI retains the requested profile, but no physical trial/report
+        // or release admission is fabricated for another model's fixtures.
+        assert!(out.0.join("profile.json").exists());
     }
 }

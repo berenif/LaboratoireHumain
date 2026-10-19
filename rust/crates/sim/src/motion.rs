@@ -162,7 +162,7 @@ mod tests {
             .model
             .segments
             .iter()
-            .position(|part| part.id == "rightHand")
+            .position(|part| part.id == "right_hand")
             .unwrap();
         let target = crate::vec3(s.world.bodies[s.bodies[hand]].translation());
         s.begin_grab(hand, 1, lh_model::Vec3::default(), target)

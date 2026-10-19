@@ -672,7 +672,7 @@ mod tests {
         assert_eq!(
             visits,
             (0..24)
-                .flat_map(|tick| (0..4).map(move |substep| (tick, substep)))
+                .flat_map(|tick| (0..lh_contracts::SUBSTEPS).map(move |substep| (tick, substep)))
                 .collect::<Vec<_>>()
         );
     }
