@@ -1,0 +1,2159 @@
+{
+  "schema": 1,
+  "savedDataOnly": true,
+  "physicsIntegrations": 0,
+  "evidenceScope": "Gait quality measurements only; no full physical qualification implied.",
+  "actualRecordedIntegrations": 60409,
+  "physicsSimSeconds": 75.51125,
+  "nativeRowRange": [
+    1,
+    60409
+  ],
+  "loadedLandings": [
+    {
+      "sourceStep": 5704,
+      "sourceTimeS": 7.129999999999653,
+      "elapsedS": 7.13,
+      "stepIndex": 1,
+      "phase": "land",
+      "ownFootAdvanceM": 0.18196387112790272,
+      "consecutiveLoadedSamples": 118
+    },
+    {
+      "sourceStep": 11200,
+      "sourceTimeS": 14.000000000002549,
+      "elapsedS": 14.0,
+      "stepIndex": 2,
+      "phase": "land",
+      "ownFootAdvanceM": 0.18199910858051438,
+      "consecutiveLoadedSamples": 123
+    },
+    {
+      "sourceStep": 16697,
+      "sourceTimeS": 20.87124999999914,
+      "elapsedS": 20.87125,
+      "stepIndex": 3,
+      "phase": "land",
+      "ownFootAdvanceM": 0.18124854204744015,
+      "consecutiveLoadedSamples": 124
+    },
+    {
+      "sourceStep": 22197,
+      "sourceTimeS": 27.746249999992887,
+      "elapsedS": 27.74625,
+      "stepIndex": 4,
+      "phase": "land",
+      "ownFootAdvanceM": 0.18194897250259046,
+      "consecutiveLoadedSamples": 123
+    },
+    {
+      "sourceStep": 27697,
+      "sourceTimeS": 34.62124999998664,
+      "elapsedS": 34.62125,
+      "stepIndex": 5,
+      "phase": "land",
+      "ownFootAdvanceM": 0.1812761702571523,
+      "consecutiveLoadedSamples": 124
+    },
+    {
+      "sourceStep": 33197,
+      "sourceTimeS": 41.496249999980385,
+      "elapsedS": 41.49625,
+      "stepIndex": 6,
+      "phase": "land",
+      "ownFootAdvanceM": 0.18194971342565067,
+      "consecutiveLoadedSamples": 123
+    },
+    {
+      "sourceStep": 38697,
+      "sourceTimeS": 48.37124999997413,
+      "elapsedS": 48.37125,
+      "stepIndex": 7,
+      "phase": "land",
+      "ownFootAdvanceM": 0.18131715739258644,
+      "consecutiveLoadedSamples": 124
+    },
+    {
+      "sourceStep": 44197,
+      "sourceTimeS": 55.24624999996788,
+      "elapsedS": 55.24625,
+      "stepIndex": 8,
+      "phase": "land",
+      "ownFootAdvanceM": 0.18195039612208222,
+      "consecutiveLoadedSamples": 123
+    },
+    {
+      "sourceStep": 49692,
+      "sourceTimeS": 62.11499999996163,
+      "elapsedS": 62.115,
+      "stepIndex": 9,
+      "phase": "land",
+      "ownFootAdvanceM": 0.18136468011005907,
+      "consecutiveLoadedSamples": 123
+    },
+    {
+      "sourceStep": 55192,
+      "sourceTimeS": 68.98999999995539,
+      "elapsedS": 68.99,
+      "stepIndex": 10,
+      "phase": "land",
+      "ownFootAdvanceM": 0.18195290149135626,
+      "consecutiveLoadedSamples": 123
+    }
+  ],
+  "loadedLandingIntervalsS": [
+    6.87,
+    6.87125,
+    6.875,
+    6.8750000000000036,
+    6.875,
+    6.875,
+    6.875,
+    6.868749999999999,
+    6.874999999999993
+  ],
+  "medianLoadedLandingIntervalS": 6.875,
+  "allNineLoadedLandingIntervalsAvailable": true,
+  "landingSummaryMatchesMeasuredRows": true,
+  "cadenceMedianBelow7_63S": true,
+  "phaseRuns": [
+    {
+      "stepIndex": 1,
+      "phase": "transfer",
+      "firstNativeStep": 1,
+      "firstTimeS": 0.00125,
+      "samples": 3299,
+      "lastNativeStep": 3299,
+      "lastTimeS": 4.12375,
+      "durationS": 4.12375,
+      "nominalDurationS": 4.0,
+      "beyondNominalS": 0.12375000000000025
+    },
+    {
+      "stepIndex": 1,
+      "phase": "lift",
+      "firstNativeStep": 3300,
+      "firstTimeS": 4.125,
+      "samples": 642,
+      "lastNativeStep": 3941,
+      "lastTimeS": 4.9262500000000005,
+      "durationS": 0.8025,
+      "nominalDurationS": 0.8,
+      "beyondNominalS": 0.0024999999999999467
+    },
+    {
+      "stepIndex": 1,
+      "phase": "translate",
+      "firstNativeStep": 3942,
+      "firstTimeS": 4.9275,
+      "samples": 962,
+      "lastNativeStep": 4903,
+      "lastTimeS": 6.12875,
+      "durationS": 1.2025000000000001,
+      "nominalDurationS": 1.2,
+      "beyondNominalS": 0.0025000000000001688
+    },
+    {
+      "stepIndex": 1,
+      "phase": "land",
+      "firstNativeStep": 4904,
+      "firstTimeS": 6.13,
+      "samples": 801,
+      "lastNativeStep": 5704,
+      "lastTimeS": 7.13,
+      "durationS": 1.00125,
+      "nominalDurationS": 1.0,
+      "beyondNominalS": 0.0012499999999999734
+    },
+    {
+      "stepIndex": 1,
+      "phase": "settle",
+      "firstNativeStep": 5705,
+      "firstTimeS": 7.1312500000000005,
+      "samples": 1217,
+      "lastNativeStep": 6921,
+      "lastTimeS": 8.651250000000001,
+      "durationS": 1.52125,
+      "nominalDurationS": 1.52,
+      "beyondNominalS": 0.0012499999999999734
+    },
+    {
+      "stepIndex": 2,
+      "phase": "transfer",
+      "firstNativeStep": 6922,
+      "firstTimeS": 8.6525,
+      "samples": 1875,
+      "lastNativeStep": 8796,
+      "lastTimeS": 10.995000000000001,
+      "durationS": 2.34375,
+      "nominalDurationS": 2.0,
+      "beyondNominalS": 0.34375
+    },
+    {
+      "stepIndex": 2,
+      "phase": "lift",
+      "firstNativeStep": 8797,
+      "firstTimeS": 10.99625,
+      "samples": 642,
+      "lastNativeStep": 9438,
+      "lastTimeS": 11.7975,
+      "durationS": 0.8025,
+      "nominalDurationS": 0.8,
+      "beyondNominalS": 0.0024999999999999467
+    },
+    {
+      "stepIndex": 2,
+      "phase": "translate",
+      "firstNativeStep": 9439,
+      "firstTimeS": 11.79875,
+      "samples": 961,
+      "lastNativeStep": 10399,
+      "lastTimeS": 12.998750000000001,
+      "durationS": 1.20125,
+      "nominalDurationS": 1.2,
+      "beyondNominalS": 0.0012499999999999734
+    },
+    {
+      "stepIndex": 2,
+      "phase": "land",
+      "firstNativeStep": 10400,
+      "firstTimeS": 13.0,
+      "samples": 801,
+      "lastNativeStep": 11200,
+      "lastTimeS": 14.0,
+      "durationS": 1.00125,
+      "nominalDurationS": 1.0,
+      "beyondNominalS": 0.0012499999999999734
+    },
+    {
+      "stepIndex": 2,
+      "phase": "settle",
+      "firstNativeStep": 11201,
+      "firstTimeS": 14.00125,
+      "samples": 1218,
+      "lastNativeStep": 12418,
+      "lastTimeS": 15.5225,
+      "durationS": 1.5225,
+      "nominalDurationS": 1.52,
+      "beyondNominalS": 0.0024999999999999467
+    },
+    {
+      "stepIndex": 3,
+      "phase": "transfer",
+      "firstNativeStep": 12419,
+      "firstTimeS": 15.52375,
+      "samples": 1874,
+      "lastNativeStep": 14292,
+      "lastTimeS": 17.865000000000002,
+      "durationS": 2.3425000000000002,
+      "nominalDurationS": 2.0,
+      "beyondNominalS": 0.34250000000000025
+    },
+    {
+      "stepIndex": 3,
+      "phase": "lift",
+      "firstNativeStep": 14293,
+      "firstTimeS": 17.86625,
+      "samples": 642,
+      "lastNativeStep": 14934,
+      "lastTimeS": 18.6675,
+      "durationS": 0.8025,
+      "nominalDurationS": 0.8,
+      "beyondNominalS": 0.0024999999999999467
+    },
+    {
+      "stepIndex": 3,
+      "phase": "translate",
+      "firstNativeStep": 14935,
+      "firstTimeS": 18.66875,
+      "samples": 962,
+      "lastNativeStep": 15896,
+      "lastTimeS": 19.87,
+      "durationS": 1.2025000000000001,
+      "nominalDurationS": 1.2,
+      "beyondNominalS": 0.0025000000000001688
+    },
+    {
+      "stepIndex": 3,
+      "phase": "land",
+      "firstNativeStep": 15897,
+      "firstTimeS": 19.87125,
+      "samples": 801,
+      "lastNativeStep": 16697,
+      "lastTimeS": 20.87125,
+      "durationS": 1.00125,
+      "nominalDurationS": 1.0,
+      "beyondNominalS": 0.0012499999999999734
+    },
+    {
+      "stepIndex": 3,
+      "phase": "settle",
+      "firstNativeStep": 16698,
+      "firstTimeS": 20.8725,
+      "samples": 1218,
+      "lastNativeStep": 17915,
+      "lastTimeS": 22.39375,
+      "durationS": 1.5225,
+      "nominalDurationS": 1.52,
+      "beyondNominalS": 0.0024999999999999467
+    },
+    {
+      "stepIndex": 4,
+      "phase": "transfer",
+      "firstNativeStep": 17916,
+      "firstTimeS": 22.395,
+      "samples": 1877,
+      "lastNativeStep": 19792,
+      "lastTimeS": 24.740000000000002,
+      "durationS": 2.34625,
+      "nominalDurationS": 2.0,
+      "beyondNominalS": 0.34624999999999995
+    },
+    {
+      "stepIndex": 4,
+      "phase": "lift",
+      "firstNativeStep": 19793,
+      "firstTimeS": 24.74125,
+      "samples": 642,
+      "lastNativeStep": 20434,
+      "lastTimeS": 25.5425,
+      "durationS": 0.8025,
+      "nominalDurationS": 0.8,
+      "beyondNominalS": 0.0024999999999999467
+    },
+    {
+      "stepIndex": 4,
+      "phase": "translate",
+      "firstNativeStep": 20435,
+      "firstTimeS": 25.54375,
+      "samples": 962,
+      "lastNativeStep": 21396,
+      "lastTimeS": 26.745,
+      "durationS": 1.2025000000000001,
+      "nominalDurationS": 1.2,
+      "beyondNominalS": 0.0025000000000001688
+    },
+    {
+      "stepIndex": 4,
+      "phase": "land",
+      "firstNativeStep": 21397,
+      "firstTimeS": 26.74625,
+      "samples": 801,
+      "lastNativeStep": 22197,
+      "lastTimeS": 27.74625,
+      "durationS": 1.00125,
+      "nominalDurationS": 1.0,
+      "beyondNominalS": 0.0012499999999999734
+    },
+    {
+      "stepIndex": 4,
+      "phase": "settle",
+      "firstNativeStep": 22198,
+      "firstTimeS": 27.747500000000002,
+      "samples": 1218,
+      "lastNativeStep": 23415,
+      "lastTimeS": 29.26875,
+      "durationS": 1.5225,
+      "nominalDurationS": 1.52,
+      "beyondNominalS": 0.0024999999999999467
+    },
+    {
+      "stepIndex": 5,
+      "phase": "transfer",
+      "firstNativeStep": 23416,
+      "firstTimeS": 29.27,
+      "samples": 1877,
+      "lastNativeStep": 25292,
+      "lastTimeS": 31.615000000000002,
+      "durationS": 2.34625,
+      "nominalDurationS": 2.0,
+      "beyondNominalS": 0.34624999999999995
+    },
+    {
+      "stepIndex": 5,
+      "phase": "lift",
+      "firstNativeStep": 25293,
+      "firstTimeS": 31.61625,
+      "samples": 642,
+      "lastNativeStep": 25934,
+      "lastTimeS": 32.417500000000004,
+      "durationS": 0.8025,
+      "nominalDurationS": 0.8,
+      "beyondNominalS": 0.0024999999999999467
+    },
+    {
+      "stepIndex": 5,
+      "phase": "translate",
+      "firstNativeStep": 25935,
+      "firstTimeS": 32.41875,
+      "samples": 962,
+      "lastNativeStep": 26896,
+      "lastTimeS": 33.62,
+      "durationS": 1.2025000000000001,
+      "nominalDurationS": 1.2,
+      "beyondNominalS": 0.0025000000000001688
+    },
+    {
+      "stepIndex": 5,
+      "phase": "land",
+      "firstNativeStep": 26897,
+      "firstTimeS": 33.62125,
+      "samples": 801,
+      "lastNativeStep": 27697,
+      "lastTimeS": 34.62125,
+      "durationS": 1.00125,
+      "nominalDurationS": 1.0,
+      "beyondNominalS": 0.0012499999999999734
+    },
+    {
+      "stepIndex": 5,
+      "phase": "settle",
+      "firstNativeStep": 27698,
+      "firstTimeS": 34.6225,
+      "samples": 1218,
+      "lastNativeStep": 28915,
+      "lastTimeS": 36.143750000000004,
+      "durationS": 1.5225,
+      "nominalDurationS": 1.52,
+      "beyondNominalS": 0.0024999999999999467
+    },
+    {
+      "stepIndex": 6,
+      "phase": "transfer",
+      "firstNativeStep": 28916,
+      "firstTimeS": 36.145,
+      "samples": 1877,
+      "lastNativeStep": 30792,
+      "lastTimeS": 38.49,
+      "durationS": 2.34625,
+      "nominalDurationS": 2.0,
+      "beyondNominalS": 0.34624999999999995
+    },
+    {
+      "stepIndex": 6,
+      "phase": "lift",
+      "firstNativeStep": 30793,
+      "firstTimeS": 38.49125,
+      "samples": 642,
+      "lastNativeStep": 31434,
+      "lastTimeS": 39.292500000000004,
+      "durationS": 0.8025,
+      "nominalDurationS": 0.8,
+      "beyondNominalS": 0.0024999999999999467
+    },
+    {
+      "stepIndex": 6,
+      "phase": "translate",
+      "firstNativeStep": 31435,
+      "firstTimeS": 39.29375,
+      "samples": 962,
+      "lastNativeStep": 32396,
+      "lastTimeS": 40.495,
+      "durationS": 1.2025000000000001,
+      "nominalDurationS": 1.2,
+      "beyondNominalS": 0.0025000000000001688
+    },
+    {
+      "stepIndex": 6,
+      "phase": "land",
+      "firstNativeStep": 32397,
+      "firstTimeS": 40.49625,
+      "samples": 801,
+      "lastNativeStep": 33197,
+      "lastTimeS": 41.49625,
+      "durationS": 1.00125,
+      "nominalDurationS": 1.0,
+      "beyondNominalS": 0.0012499999999999734
+    },
+    {
+      "stepIndex": 6,
+      "phase": "settle",
+      "firstNativeStep": 33198,
+      "firstTimeS": 41.4975,
+      "samples": 1218,
+      "lastNativeStep": 34415,
+      "lastTimeS": 43.018750000000004,
+      "durationS": 1.5225,
+      "nominalDurationS": 1.52,
+      "beyondNominalS": 0.0024999999999999467
+    },
+    {
+      "stepIndex": 7,
+      "phase": "transfer",
+      "firstNativeStep": 34416,
+      "firstTimeS": 43.02,
+      "samples": 1877,
+      "lastNativeStep": 36292,
+      "lastTimeS": 45.365,
+      "durationS": 2.34625,
+      "nominalDurationS": 2.0,
+      "beyondNominalS": 0.34624999999999995
+    },
+    {
+      "stepIndex": 7,
+      "phase": "lift",
+      "firstNativeStep": 36293,
+      "firstTimeS": 45.36625,
+      "samples": 642,
+      "lastNativeStep": 36934,
+      "lastTimeS": 46.167500000000004,
+      "durationS": 0.8025,
+      "nominalDurationS": 0.8,
+      "beyondNominalS": 0.0024999999999999467
+    },
+    {
+      "stepIndex": 7,
+      "phase": "translate",
+      "firstNativeStep": 36935,
+      "firstTimeS": 46.16875,
+      "samples": 962,
+      "lastNativeStep": 37896,
+      "lastTimeS": 47.37,
+      "durationS": 1.2025000000000001,
+      "nominalDurationS": 1.2,
+      "beyondNominalS": 0.0025000000000001688
+    },
+    {
+      "stepIndex": 7,
+      "phase": "land",
+      "firstNativeStep": 37897,
+      "firstTimeS": 47.37125,
+      "samples": 801,
+      "lastNativeStep": 38697,
+      "lastTimeS": 48.37125,
+      "durationS": 1.00125,
+      "nominalDurationS": 1.0,
+      "beyondNominalS": 0.0012499999999999734
+    },
+    {
+      "stepIndex": 7,
+      "phase": "settle",
+      "firstNativeStep": 38698,
+      "firstTimeS": 48.3725,
+      "samples": 1218,
+      "lastNativeStep": 39915,
+      "lastTimeS": 49.893750000000004,
+      "durationS": 1.5225,
+      "nominalDurationS": 1.52,
+      "beyondNominalS": 0.0024999999999999467
+    },
+    {
+      "stepIndex": 8,
+      "phase": "transfer",
+      "firstNativeStep": 39916,
+      "firstTimeS": 49.895,
+      "samples": 1877,
+      "lastNativeStep": 41792,
+      "lastTimeS": 52.24,
+      "durationS": 2.34625,
+      "nominalDurationS": 2.0,
+      "beyondNominalS": 0.34624999999999995
+    },
+    {
+      "stepIndex": 8,
+      "phase": "lift",
+      "firstNativeStep": 41793,
+      "firstTimeS": 52.24125,
+      "samples": 642,
+      "lastNativeStep": 42434,
+      "lastTimeS": 53.042500000000004,
+      "durationS": 0.8025,
+      "nominalDurationS": 0.8,
+      "beyondNominalS": 0.0024999999999999467
+    },
+    {
+      "stepIndex": 8,
+      "phase": "translate",
+      "firstNativeStep": 42435,
+      "firstTimeS": 53.04375,
+      "samples": 962,
+      "lastNativeStep": 43396,
+      "lastTimeS": 54.245000000000005,
+      "durationS": 1.2025000000000001,
+      "nominalDurationS": 1.2,
+      "beyondNominalS": 0.0025000000000001688
+    },
+    {
+      "stepIndex": 8,
+      "phase": "land",
+      "firstNativeStep": 43397,
+      "firstTimeS": 54.24625,
+      "samples": 801,
+      "lastNativeStep": 44197,
+      "lastTimeS": 55.24625,
+      "durationS": 1.00125,
+      "nominalDurationS": 1.0,
+      "beyondNominalS": 0.0012499999999999734
+    },
+    {
+      "stepIndex": 8,
+      "phase": "settle",
+      "firstNativeStep": 44198,
+      "firstTimeS": 55.2475,
+      "samples": 1218,
+      "lastNativeStep": 45415,
+      "lastTimeS": 56.768750000000004,
+      "durationS": 1.5225,
+      "nominalDurationS": 1.52,
+      "beyondNominalS": 0.0024999999999999467
+    },
+    {
+      "stepIndex": 9,
+      "phase": "transfer",
+      "firstNativeStep": 45416,
+      "firstTimeS": 56.77,
+      "samples": 1873,
+      "lastNativeStep": 47288,
+      "lastTimeS": 59.11,
+      "durationS": 2.34125,
+      "nominalDurationS": 2.0,
+      "beyondNominalS": 0.34125000000000005
+    },
+    {
+      "stepIndex": 9,
+      "phase": "lift",
+      "firstNativeStep": 47289,
+      "firstTimeS": 59.11125,
+      "samples": 641,
+      "lastNativeStep": 47929,
+      "lastTimeS": 59.91125,
+      "durationS": 0.80125,
+      "nominalDurationS": 0.8,
+      "beyondNominalS": 0.0012499999999999734
+    },
+    {
+      "stepIndex": 9,
+      "phase": "translate",
+      "firstNativeStep": 47930,
+      "firstTimeS": 59.9125,
+      "samples": 962,
+      "lastNativeStep": 48891,
+      "lastTimeS": 61.11375,
+      "durationS": 1.2025000000000001,
+      "nominalDurationS": 1.2,
+      "beyondNominalS": 0.0025000000000001688
+    },
+    {
+      "stepIndex": 9,
+      "phase": "land",
+      "firstNativeStep": 48892,
+      "firstTimeS": 61.115,
+      "samples": 801,
+      "lastNativeStep": 49692,
+      "lastTimeS": 62.115,
+      "durationS": 1.00125,
+      "nominalDurationS": 1.0,
+      "beyondNominalS": 0.0012499999999999734
+    },
+    {
+      "stepIndex": 9,
+      "phase": "settle",
+      "firstNativeStep": 49693,
+      "firstTimeS": 62.11625,
+      "samples": 1218,
+      "lastNativeStep": 50910,
+      "lastTimeS": 63.6375,
+      "durationS": 1.5225,
+      "nominalDurationS": 1.52,
+      "beyondNominalS": 0.0024999999999999467
+    },
+    {
+      "stepIndex": 10,
+      "phase": "transfer",
+      "firstNativeStep": 50911,
+      "firstTimeS": 63.63875,
+      "samples": 1878,
+      "lastNativeStep": 52788,
+      "lastTimeS": 65.985,
+      "durationS": 2.3475,
+      "nominalDurationS": 2.0,
+      "beyondNominalS": 0.34750000000000014
+    },
+    {
+      "stepIndex": 10,
+      "phase": "lift",
+      "firstNativeStep": 52789,
+      "firstTimeS": 65.98625,
+      "samples": 642,
+      "lastNativeStep": 53430,
+      "lastTimeS": 66.7875,
+      "durationS": 0.8025,
+      "nominalDurationS": 0.8,
+      "beyondNominalS": 0.0024999999999999467
+    },
+    {
+      "stepIndex": 10,
+      "phase": "translate",
+      "firstNativeStep": 53431,
+      "firstTimeS": 66.78875000000001,
+      "samples": 961,
+      "lastNativeStep": 54391,
+      "lastTimeS": 67.98875,
+      "durationS": 1.20125,
+      "nominalDurationS": 1.2,
+      "beyondNominalS": 0.0012499999999999734
+    },
+    {
+      "stepIndex": 10,
+      "phase": "land",
+      "firstNativeStep": 54392,
+      "firstTimeS": 67.99,
+      "samples": 801,
+      "lastNativeStep": 55192,
+      "lastTimeS": 68.99,
+      "durationS": 1.00125,
+      "nominalDurationS": 1.0,
+      "beyondNominalS": 0.0012499999999999734
+    },
+    {
+      "stepIndex": 10,
+      "phase": "settle",
+      "firstNativeStep": 55193,
+      "firstTimeS": 68.99125000000001,
+      "samples": 1217,
+      "lastNativeStep": 56409,
+      "lastTimeS": 70.51125,
+      "durationS": 1.52125,
+      "nominalDurationS": 1.52,
+      "beyondNominalS": 0.0012499999999999734
+    },
+    {
+      "stepIndex": 10,
+      "phase": "stand",
+      "firstNativeStep": 56410,
+      "firstTimeS": 70.5125,
+      "samples": 4000,
+      "lastNativeStep": 60409,
+      "lastTimeS": 75.51125,
+      "durationS": 5.0,
+      "nominalDurationS": null,
+      "beyondNominalS": null
+    }
+  ],
+  "phaseTotalDurationS": {
+    "transfer": 25.23,
+    "lift": 8.02375,
+    "translate": 12.0225,
+    "land": 10.012500000000001,
+    "settle": 15.2225,
+    "stand": 5.0
+  },
+  "maximumTransfer": {
+    "stepIndex": 1,
+    "phase": "transfer",
+    "firstNativeStep": 1,
+    "firstTimeS": 0.00125,
+    "samples": 3299,
+    "lastNativeStep": 3299,
+    "lastTimeS": 4.12375,
+    "durationS": 4.12375,
+    "nominalDurationS": 4.0,
+    "beyondNominalS": 0.12375000000000025
+  },
+  "walkingForwardCOMSpeed": {
+    "definition": "abs(measured COM velocity dot fixed initial heading) < 0.005 m/s; transfer/lift/translate/land/settle rows after arm placement, before terminal stand",
+    "initialArmPlacementExcludedUntilS": 4.0,
+    "thresholdMps": 0.005,
+    "walkingSamples": 53209,
+    "nearZeroSamples": 19390,
+    "walkingDurationS": 66.51125,
+    "nearZeroDurationS": 24.2375,
+    "nearZeroFraction": 0.36441203555789436
+  },
+  "travel": {
+    "netCOMForwardM": 0.8587614993488333,
+    "netCOMHorizontalM": 0.8587945117126584,
+    "COMHorizontalPathLengthM": 2.7716903766821255,
+    "initialHeading": [
+      -0.4336564124126707,
+      -0.9010783073481304,
+      0.0
+    ],
+    "ownFootAdvanceDefinition": "Each swing foot from its own measured step-entry origin, not separation beyond the stance foot.",
+    "perStep": [
+      {
+        "stepIndex": 1,
+        "swingSide": "left",
+        "finalOwnFootAdvanceM": 0.1819771522374706,
+        "requestedM": 0.18,
+        "loadedLandingOwnFootAdvanceM": 0.18196387112790272
+      },
+      {
+        "stepIndex": 2,
+        "swingSide": "right",
+        "finalOwnFootAdvanceM": 0.1820119668850984,
+        "requestedM": 0.18,
+        "loadedLandingOwnFootAdvanceM": 0.18199910858051438
+      },
+      {
+        "stepIndex": 3,
+        "swingSide": "left",
+        "finalOwnFootAdvanceM": 0.18118661986524387,
+        "requestedM": 0.18,
+        "loadedLandingOwnFootAdvanceM": 0.18124854204744015
+      },
+      {
+        "stepIndex": 4,
+        "swingSide": "right",
+        "finalOwnFootAdvanceM": 0.181946079212661,
+        "requestedM": 0.18,
+        "loadedLandingOwnFootAdvanceM": 0.18194897250259046
+      },
+      {
+        "stepIndex": 5,
+        "swingSide": "left",
+        "finalOwnFootAdvanceM": 0.18115537294580658,
+        "requestedM": 0.18,
+        "loadedLandingOwnFootAdvanceM": 0.1812761702571523
+      },
+      {
+        "stepIndex": 6,
+        "swingSide": "right",
+        "finalOwnFootAdvanceM": 0.18195253945126583,
+        "requestedM": 0.18,
+        "loadedLandingOwnFootAdvanceM": 0.18194971342565067
+      },
+      {
+        "stepIndex": 7,
+        "swingSide": "left",
+        "finalOwnFootAdvanceM": 0.1812396921826471,
+        "requestedM": 0.18,
+        "loadedLandingOwnFootAdvanceM": 0.18131715739258644
+      },
+      {
+        "stepIndex": 8,
+        "swingSide": "right",
+        "finalOwnFootAdvanceM": 0.18195302996140442,
+        "requestedM": 0.18,
+        "loadedLandingOwnFootAdvanceM": 0.18195039612208222
+      },
+      {
+        "stepIndex": 9,
+        "swingSide": "left",
+        "finalOwnFootAdvanceM": 0.18126685315545565,
+        "requestedM": 0.18,
+        "loadedLandingOwnFootAdvanceM": 0.18136468011005907
+      },
+      {
+        "stepIndex": 10,
+        "swingSide": "right",
+        "finalOwnFootAdvanceM": 0.18194757645503765,
+        "requestedM": 0.18,
+        "loadedLandingOwnFootAdvanceM": 0.18195290149135626
+      }
+    ],
+    "sumOwnFootAdvancesM": 1.816636882352091,
+    "sumLoadedLandingOwnFootAdvancesM": 1.8169715130573347,
+    "netCOMForwardPerSumOwnFootAdvances": 0.4727205022045746,
+    "maximumAbsLateralCOMDisplacementM": 0.11669620528339848,
+    "lateralCOMPeakToPeakM": 0.21936282123814135
+  },
+  "tiltDegByPhase": {
+    "transfer": {
+      "pelvis": {
+        "samples": 20184,
+        "rms": 22.955980686259778,
+        "p95": 28.599255543343705,
+        "maximum": 29.374778777972242
+      },
+      "torso": {
+        "samples": 20184,
+        "rms": 7.086280472767112,
+        "p95": 12.693409596906603,
+        "maximum": 12.986402807470135
+      },
+      "torsoRelativePelvis": {
+        "samples": 20184,
+        "rms": 23.772042574612932,
+        "p95": 29.836778786094523,
+        "maximum": 31.09462355682459
+      }
+    },
+    "lift": {
+      "pelvis": {
+        "samples": 6419,
+        "rms": 29.91784773549208,
+        "p95": 37.069029732026166,
+        "maximum": 37.415122625428694
+      },
+      "torso": {
+        "samples": 6419,
+        "rms": 10.366879932312465,
+        "p95": 12.99024054622238,
+        "maximum": 13.030549052101764
+      },
+      "torsoRelativePelvis": {
+        "samples": 6419,
+        "rms": 28.357329231753823,
+        "p95": 29.59540871649003,
+        "maximum": 30.590214056542983
+      }
+    },
+    "translate": {
+      "pelvis": {
+        "samples": 9618,
+        "rms": 32.850925465177575,
+        "p95": 40.24341651312672,
+        "maximum": 40.50792933593787
+      },
+      "torso": {
+        "samples": 9618,
+        "rms": 10.37750906096805,
+        "p95": 12.993217818459069,
+        "maximum": 13.031458032805832
+      },
+      "torsoRelativePelvis": {
+        "samples": 9618,
+        "rms": 28.12168840821932,
+        "p95": 30.762907956007954,
+        "maximum": 31.127820512630528
+      }
+    },
+    "land": {
+      "pelvis": {
+        "samples": 8010,
+        "rms": 26.059711165675743,
+        "p95": 34.611611421961086,
+        "maximum": 35.36459038105953
+      },
+      "torso": {
+        "samples": 8010,
+        "rms": 10.392180352528516,
+        "p95": 13.034127174787313,
+        "maximum": 13.079795526855015
+      },
+      "torsoRelativePelvis": {
+        "samples": 8010,
+        "rms": 25.38974415032027,
+        "p95": 28.95667826947165,
+        "maximum": 29.786500973711036
+      }
+    },
+    "settle": {
+      "pelvis": {
+        "samples": 12178,
+        "rms": 22.96584851782506,
+        "p95": 26.654709096779897,
+        "maximum": 27.15692548428015
+      },
+      "torso": {
+        "samples": 12178,
+        "rms": 6.496036887608545,
+        "p95": 12.511190744094808,
+        "maximum": 13.062410162330151
+      },
+      "torsoRelativePelvis": {
+        "samples": 12178,
+        "rms": 24.06752433708776,
+        "p95": 26.558432849751384,
+        "maximum": 28.37727730487115
+      }
+    },
+    "stand": {
+      "pelvis": {
+        "samples": 4000,
+        "rms": 24.23359962221886,
+        "p95": 24.338660393895957,
+        "maximum": 24.338926931953896
+      },
+      "torso": {
+        "samples": 4000,
+        "rms": 1.8025099206593624,
+        "p95": 1.8090850434613945,
+        "maximum": 1.8096209052837744
+      },
+      "torsoRelativePelvis": {
+        "samples": 4000,
+        "rms": 25.342599434552838,
+        "p95": 25.461889386946474,
+        "maximum": 25.462264846677407
+      }
+    }
+  },
+  "last4000": {
+    "samples": 4000,
+    "full4000RowsPresent": true,
+    "nativeRowRange": [
+      56410,
+      60409
+    ],
+    "intervalStartS": 70.51125,
+    "intervalEndS": 75.51125,
+    "durationS": 5.0,
+    "allStand": true,
+    "tiltDeg": {
+      "pelvis": {
+        "samples": 4000,
+        "rms": 24.23359962221886,
+        "p95": 24.338660393895957,
+        "maximum": 24.338926931953896
+      },
+      "torso": {
+        "samples": 4000,
+        "rms": 1.8025099206593624,
+        "p95": 1.8090850434613945,
+        "maximum": 1.8096209052837744
+      },
+      "torsoRelativePelvis": {
+        "samples": 4000,
+        "rms": 25.342599434552838,
+        "p95": 25.461889386946474,
+        "maximum": 25.462264846677407
+      }
+    },
+    "firstTiltDeg": {
+      "pelvis": 23.296032120254623,
+      "torso": 1.77268331843502,
+      "torsoRelativePelvis": 24.22430854239556
+    },
+    "finalTiltDeg": {
+      "pelvis": 24.337110843534916,
+      "torso": 1.8041547429109377,
+      "torsoRelativePelvis": 25.459782733176798
+    }
+  },
+  "capture": {
+    "margins": {
+      "recordedCombined": {
+        "samples": 60409,
+        "undefinedSamples": 0,
+        "firstUndefinedAt": null,
+        "negativeSamples": 0,
+        "below3mmSamples": 15,
+        "minimumM": 0.002983710304914816,
+        "minimumAt": {
+          "sourceStep": 49560,
+          "sourceTimeS": 61.94999999996178,
+          "elapsedS": 61.95,
+          "stepIndex": 9,
+          "phase": "land",
+          "supportPointsXY": [
+            [
+              0.02474387159835481,
+              -0.48510146451273056
+            ],
+            [
+              -0.0803937666002241,
+              -0.6679841442734998
+            ],
+            [
+              0.042949595419907435,
+              -0.4933806034170276
+            ],
+            [
+              -0.025776595135566287,
+              -0.6928215609863908
+            ]
+          ],
+          "com": [
+            0.002046884808887735,
+            -0.6011793659402679,
+            0.7896013031969253
+          ],
+          "comVelocity": [
+            0.001025439322194722,
+            -0.0031613926671127785,
+            -0.006759042266037589
+          ],
+          "reconstructedCOMMarginM": 0.003550968398839699,
+          "reconstructedCaptureMarginM": 0.002983710304914816
+        },
+        "allFrameDefinedNonnegativePass": true,
+        "allFrame3mmQualityPass": false
+      },
+      "reconstructedCOM": {
+        "samples": 60409,
+        "undefinedSamples": 0,
+        "firstUndefinedAt": null,
+        "negativeSamples": 0,
+        "below3mmSamples": 0,
+        "minimumM": 0.0035138635021531583,
+        "minimumAt": {
+          "sourceStep": 49569,
+          "sourceTimeS": 61.96124999996177,
+          "elapsedS": 61.96125,
+          "stepIndex": 9,
+          "phase": "land",
+          "supportPointsXY": [
+            [
+              0.024730905312973506,
+              -0.48509130020737423
+            ],
+            [
+              -0.08040959083878597,
+              -0.6679723396713427
+            ],
+            [
+              0.04293652713173919,
+              -0.49337073240253226
+            ],
+            [
+              -0.025792725382488908,
+              -0.6928106362568169
+            ]
+          ],
+          "com": [
+            0.00205255963834622,
+            -0.601223561855312,
+            0.7895059743837872
+          ],
+          "comVelocity": [
+            0.000144510552217785,
+            -0.004960748370855854,
+            -0.012950954054878002
+          ],
+          "reconstructedCOMMarginM": 0.0035138635021531583,
+          "reconstructedCaptureMarginM": 0.003016590832189664
+        },
+        "allFrameDefinedNonnegativePass": true,
+        "allFrame3mmQualityPass": true
+      },
+      "reconstructedCapture": {
+        "samples": 60409,
+        "undefinedSamples": 0,
+        "firstUndefinedAt": null,
+        "negativeSamples": 0,
+        "below3mmSamples": 15,
+        "minimumM": 0.002983710304914816,
+        "minimumAt": {
+          "sourceStep": 49560,
+          "sourceTimeS": 61.94999999996178,
+          "elapsedS": 61.95,
+          "stepIndex": 9,
+          "phase": "land",
+          "supportPointsXY": [
+            [
+              0.02474387159835481,
+              -0.48510146451273056
+            ],
+            [
+              -0.0803937666002241,
+              -0.6679841442734998
+            ],
+            [
+              0.042949595419907435,
+              -0.4933806034170276
+            ],
+            [
+              -0.025776595135566287,
+              -0.6928215609863908
+            ]
+          ],
+          "com": [
+            0.002046884808887735,
+            -0.6011793659402679,
+            0.7896013031969253
+          ],
+          "comVelocity": [
+            0.001025439322194722,
+            -0.0031613926671127785,
+            -0.006759042266037589
+          ],
+          "reconstructedCOMMarginM": 0.003550968398839699,
+          "reconstructedCaptureMarginM": 0.002983710304914816
+        },
+        "allFrameDefinedNonnegativePass": true,
+        "allFrame3mmQualityPass": false
+      }
+    },
+    "telemetryMismatchSamples": 0,
+    "byPhase": {
+      "transfer": {
+        "recordedCombined": {
+          "samples": 20184,
+          "undefinedSamples": 0,
+          "firstUndefinedAt": null,
+          "negativeSamples": 0,
+          "below3mmSamples": 0,
+          "minimumM": 0.005730819652738917,
+          "minimumAt": {
+            "sourceStep": 3299,
+            "sourceTimeS": 4.123750000000251,
+            "elapsedS": 4.12375,
+            "stepIndex": 1,
+            "phase": "transfer",
+            "supportPointsXY": [
+              [
+                0.33782490026869877,
+                0.17066643308112722
+              ],
+              [
+                0.23410512177766668,
+                -0.013024066594598635
+              ],
+              [
+                0.3560941316939506,
+                0.16252835311011918
+              ],
+              [
+                0.288912816053422,
+                -0.037438306507622796
+              ]
+            ],
+            "com": [
+              0.31741839111590914,
+              0.06656156446688376,
+              0.7931017855730109
+            ],
+            "comVelocity": [
+              0.0012969789754705243,
+              -0.00021060303112228462,
+              -0.0009681476324191587
+            ],
+            "reconstructedCOMMarginM": 0.006099465314432229,
+            "reconstructedCaptureMarginM": 0.005730819652738917
+          },
+          "allFrameDefinedNonnegativePass": true,
+          "allFrame3mmQualityPass": true
+        },
+        "reconstructedCOM": {
+          "samples": 20184,
+          "undefinedSamples": 0,
+          "firstUndefinedAt": null,
+          "negativeSamples": 0,
+          "below3mmSamples": 0,
+          "minimumM": 0.005871772807633013,
+          "minimumAt": {
+            "sourceStep": 14235,
+            "sourceTimeS": 17.79375000000194,
+            "elapsedS": 17.79375,
+            "stepIndex": 3,
+            "phase": "transfer",
+            "supportPointsXY": [
+              [
+                0.2600956482524633,
+                0.006401451913851608
+              ],
+              [
+                0.15605256224836012,
+                -0.177106134393352
+              ],
+              [
+                0.27835065573031975,
+                -0.001768830793994064
+              ],
+              [
+                0.21081758468192954,
+                -0.2016169825168891
+              ]
+            ],
+            "com": [
+              0.23971477331271765,
+              -0.09776117599440677,
+              0.7924397099005014
+            ],
+            "comVelocity": [
+              -0.0011176759997403429,
+              -0.0040365059852960836,
+              -0.00039621579539235577
+            ],
+            "reconstructedCOMMarginM": 0.005871772807633013,
+            "reconstructedCaptureMarginM": 0.005805441658210286
+          },
+          "allFrameDefinedNonnegativePass": true,
+          "allFrame3mmQualityPass": true
+        },
+        "reconstructedCapture": {
+          "samples": 20184,
+          "undefinedSamples": 0,
+          "firstUndefinedAt": null,
+          "negativeSamples": 0,
+          "below3mmSamples": 0,
+          "minimumM": 0.005730819652738917,
+          "minimumAt": {
+            "sourceStep": 3299,
+            "sourceTimeS": 4.123750000000251,
+            "elapsedS": 4.12375,
+            "stepIndex": 1,
+            "phase": "transfer",
+            "supportPointsXY": [
+              [
+                0.33782490026869877,
+                0.17066643308112722
+              ],
+              [
+                0.23410512177766668,
+                -0.013024066594598635
+              ],
+              [
+                0.3560941316939506,
+                0.16252835311011918
+              ],
+              [
+                0.288912816053422,
+                -0.037438306507622796
+              ]
+            ],
+            "com": [
+              0.31741839111590914,
+              0.06656156446688376,
+              0.7931017855730109
+            ],
+            "comVelocity": [
+              0.0012969789754705243,
+              -0.00021060303112228462,
+              -0.0009681476324191587
+            ],
+            "reconstructedCOMMarginM": 0.006099465314432229,
+            "reconstructedCaptureMarginM": 0.005730819652738917
+          },
+          "allFrameDefinedNonnegativePass": true,
+          "allFrame3mmQualityPass": true
+        }
+      },
+      "lift": {
+        "recordedCombined": {
+          "samples": 6419,
+          "undefinedSamples": 0,
+          "firstUndefinedAt": null,
+          "negativeSamples": 0,
+          "below3mmSamples": 0,
+          "minimumM": 0.003067366913841796,
+          "minimumAt": {
+            "sourceStep": 9105,
+            "sourceTimeS": 11.38125000000121,
+            "elapsedS": 11.38125,
+            "stepIndex": 2,
+            "phase": "lift",
+            "supportPointsXY": [
+              [
+                0.4877432003697603,
+                -0.14388448812448132
+              ],
+              [
+                0.4699961405628512,
+                -0.1346631030934652
+              ],
+              [
+                0.35542373222769746,
+                -0.31178776816948883
+              ]
+            ],
+            "com": [
+              0.420007469790993,
+              -0.22376311482881311,
+              0.788026022177907
+            ],
+            "comVelocity": [
+              -0.0003153775744241553,
+              -0.004341963537530934,
+              0.014212495700728134
+            ],
+            "reconstructedCOMMarginM": 0.0037588687119823327,
+            "reconstructedCaptureMarginM": 0.003067366913841796
+          },
+          "allFrameDefinedNonnegativePass": true,
+          "allFrame3mmQualityPass": true
+        },
+        "reconstructedCOM": {
+          "samples": 6419,
+          "undefinedSamples": 0,
+          "firstUndefinedAt": null,
+          "negativeSamples": 0,
+          "below3mmSamples": 0,
+          "minimumM": 0.003553565204784337,
+          "minimumAt": {
+            "sourceStep": 42225,
+            "sourceTimeS": 52.78124999997012,
+            "elapsedS": 52.78125,
+            "stepIndex": 8,
+            "phase": "lift",
+            "supportPointsXY": [
+              [
+                0.2512671829681856,
+                -0.6313900414204014
+              ],
+              [
+                0.23333871291883954,
+                -0.6225263145754323
+              ],
+              [
+                0.12234065519146853,
+                -0.8019125588140619
+              ]
+            ],
+            "com": [
+              0.18465527643438687,
+              -0.7136009322096324,
+              0.7886886694280848
+            ],
+            "comVelocity": [
+              0.000654077272175646,
+              -0.0016017860017911376,
+              0.0041813613237557
+            ],
+            "reconstructedCOMMarginM": 0.003553565204784337,
+            "reconstructedCaptureMarginM": 0.003131720660967563
+          },
+          "allFrameDefinedNonnegativePass": true,
+          "allFrame3mmQualityPass": true
+        },
+        "reconstructedCapture": {
+          "samples": 6419,
+          "undefinedSamples": 0,
+          "firstUndefinedAt": null,
+          "negativeSamples": 0,
+          "below3mmSamples": 0,
+          "minimumM": 0.003067366913841796,
+          "minimumAt": {
+            "sourceStep": 9105,
+            "sourceTimeS": 11.38125000000121,
+            "elapsedS": 11.38125,
+            "stepIndex": 2,
+            "phase": "lift",
+            "supportPointsXY": [
+              [
+                0.4877432003697603,
+                -0.14388448812448132
+              ],
+              [
+                0.4699961405628512,
+                -0.1346631030934652
+              ],
+              [
+                0.35542373222769746,
+                -0.31178776816948883
+              ]
+            ],
+            "com": [
+              0.420007469790993,
+              -0.22376311482881311,
+              0.788026022177907
+            ],
+            "comVelocity": [
+              -0.0003153775744241553,
+              -0.004341963537530934,
+              0.014212495700728134
+            ],
+            "reconstructedCOMMarginM": 0.0037588687119823327,
+            "reconstructedCaptureMarginM": 0.003067366913841796
+          },
+          "allFrameDefinedNonnegativePass": true,
+          "allFrame3mmQualityPass": true
+        }
+      },
+      "translate": {
+        "recordedCombined": {
+          "samples": 9618,
+          "undefinedSamples": 0,
+          "firstUndefinedAt": null,
+          "negativeSamples": 0,
+          "below3mmSamples": 0,
+          "minimumM": 0.004805142667626328,
+          "minimumAt": {
+            "sourceStep": 15896,
+            "sourceTimeS": 19.87000000000005,
+            "elapsedS": 19.87,
+            "stepIndex": 3,
+            "phase": "translate",
+            "supportPointsXY": [
+              [
+                0.2599126100782098,
+                0.006594363876500753
+              ],
+              [
+                0.15589208564005153,
+                -0.1769259950965575
+              ],
+              [
+                0.27816842619342547,
+                -0.0015736043120687243
+              ],
+              [
+                0.21065953398569848,
+                -0.20142989966226593
+              ]
+            ],
+            "com": [
+              0.23802587171932207,
+              -0.10452652685644273,
+              0.7928759550885558
+            ],
+            "comVelocity": [
+              -0.001761830536527718,
+              -0.008282569952058822,
+              0.0003082585079123255
+            ],
+            "reconstructedCOMMarginM": 0.005084159404388389,
+            "reconstructedCaptureMarginM": 0.004805142667626328
+          },
+          "allFrameDefinedNonnegativePass": true,
+          "allFrame3mmQualityPass": true
+        },
+        "reconstructedCOM": {
+          "samples": 9618,
+          "undefinedSamples": 0,
+          "firstUndefinedAt": null,
+          "negativeSamples": 0,
+          "below3mmSamples": 0,
+          "minimumM": 0.005084159404388389,
+          "minimumAt": {
+            "sourceStep": 15896,
+            "sourceTimeS": 19.87000000000005,
+            "elapsedS": 19.87,
+            "stepIndex": 3,
+            "phase": "translate",
+            "supportPointsXY": [
+              [
+                0.2599126100782098,
+                0.006594363876500753
+              ],
+              [
+                0.15589208564005153,
+                -0.1769259950965575
+              ],
+              [
+                0.27816842619342547,
+                -0.0015736043120687243
+              ],
+              [
+                0.21065953398569848,
+                -0.20142989966226593
+              ]
+            ],
+            "com": [
+              0.23802587171932207,
+              -0.10452652685644273,
+              0.7928759550885558
+            ],
+            "comVelocity": [
+              -0.001761830536527718,
+              -0.008282569952058822,
+              0.0003082585079123255
+            ],
+            "reconstructedCOMMarginM": 0.005084159404388389,
+            "reconstructedCaptureMarginM": 0.004805142667626328
+          },
+          "allFrameDefinedNonnegativePass": true,
+          "allFrame3mmQualityPass": true
+        },
+        "reconstructedCapture": {
+          "samples": 9618,
+          "undefinedSamples": 0,
+          "firstUndefinedAt": null,
+          "negativeSamples": 0,
+          "below3mmSamples": 0,
+          "minimumM": 0.004805142667626328,
+          "minimumAt": {
+            "sourceStep": 15896,
+            "sourceTimeS": 19.87000000000005,
+            "elapsedS": 19.87,
+            "stepIndex": 3,
+            "phase": "translate",
+            "supportPointsXY": [
+              [
+                0.2599126100782098,
+                0.006594363876500753
+              ],
+              [
+                0.15589208564005153,
+                -0.1769259950965575
+              ],
+              [
+                0.27816842619342547,
+                -0.0015736043120687243
+              ],
+              [
+                0.21065953398569848,
+                -0.20142989966226593
+              ]
+            ],
+            "com": [
+              0.23802587171932207,
+              -0.10452652685644273,
+              0.7928759550885558
+            ],
+            "comVelocity": [
+              -0.001761830536527718,
+              -0.008282569952058822,
+              0.0003082585079123255
+            ],
+            "reconstructedCOMMarginM": 0.005084159404388389,
+            "reconstructedCaptureMarginM": 0.004805142667626328
+          },
+          "allFrameDefinedNonnegativePass": true,
+          "allFrame3mmQualityPass": true
+        }
+      },
+      "land": {
+        "recordedCombined": {
+          "samples": 8010,
+          "undefinedSamples": 0,
+          "firstUndefinedAt": null,
+          "negativeSamples": 0,
+          "below3mmSamples": 15,
+          "minimumM": 0.002983710304914816,
+          "minimumAt": {
+            "sourceStep": 49560,
+            "sourceTimeS": 61.94999999996178,
+            "elapsedS": 61.95,
+            "stepIndex": 9,
+            "phase": "land",
+            "supportPointsXY": [
+              [
+                0.02474387159835481,
+                -0.48510146451273056
+              ],
+              [
+                -0.0803937666002241,
+                -0.6679841442734998
+              ],
+              [
+                0.042949595419907435,
+                -0.4933806034170276
+              ],
+              [
+                -0.025776595135566287,
+                -0.6928215609863908
+              ]
+            ],
+            "com": [
+              0.002046884808887735,
+              -0.6011793659402679,
+              0.7896013031969253
+            ],
+            "comVelocity": [
+              0.001025439322194722,
+              -0.0031613926671127785,
+              -0.006759042266037589
+            ],
+            "reconstructedCOMMarginM": 0.003550968398839699,
+            "reconstructedCaptureMarginM": 0.002983710304914816
+          },
+          "allFrameDefinedNonnegativePass": true,
+          "allFrame3mmQualityPass": false
+        },
+        "reconstructedCOM": {
+          "samples": 8010,
+          "undefinedSamples": 0,
+          "firstUndefinedAt": null,
+          "negativeSamples": 0,
+          "below3mmSamples": 0,
+          "minimumM": 0.0035138635021531583,
+          "minimumAt": {
+            "sourceStep": 49569,
+            "sourceTimeS": 61.96124999996177,
+            "elapsedS": 61.96125,
+            "stepIndex": 9,
+            "phase": "land",
+            "supportPointsXY": [
+              [
+                0.024730905312973506,
+                -0.48509130020737423
+              ],
+              [
+                -0.08040959083878597,
+                -0.6679723396713427
+              ],
+              [
+                0.04293652713173919,
+                -0.49337073240253226
+              ],
+              [
+                -0.025792725382488908,
+                -0.6928106362568169
+              ]
+            ],
+            "com": [
+              0.00205255963834622,
+              -0.601223561855312,
+              0.7895059743837872
+            ],
+            "comVelocity": [
+              0.000144510552217785,
+              -0.004960748370855854,
+              -0.012950954054878002
+            ],
+            "reconstructedCOMMarginM": 0.0035138635021531583,
+            "reconstructedCaptureMarginM": 0.003016590832189664
+          },
+          "allFrameDefinedNonnegativePass": true,
+          "allFrame3mmQualityPass": true
+        },
+        "reconstructedCapture": {
+          "samples": 8010,
+          "undefinedSamples": 0,
+          "firstUndefinedAt": null,
+          "negativeSamples": 0,
+          "below3mmSamples": 15,
+          "minimumM": 0.002983710304914816,
+          "minimumAt": {
+            "sourceStep": 49560,
+            "sourceTimeS": 61.94999999996178,
+            "elapsedS": 61.95,
+            "stepIndex": 9,
+            "phase": "land",
+            "supportPointsXY": [
+              [
+                0.02474387159835481,
+                -0.48510146451273056
+              ],
+              [
+                -0.0803937666002241,
+                -0.6679841442734998
+              ],
+              [
+                0.042949595419907435,
+                -0.4933806034170276
+              ],
+              [
+                -0.025776595135566287,
+                -0.6928215609863908
+              ]
+            ],
+            "com": [
+              0.002046884808887735,
+              -0.6011793659402679,
+              0.7896013031969253
+            ],
+            "comVelocity": [
+              0.001025439322194722,
+              -0.0031613926671127785,
+              -0.006759042266037589
+            ],
+            "reconstructedCOMMarginM": 0.003550968398839699,
+            "reconstructedCaptureMarginM": 0.002983710304914816
+          },
+          "allFrameDefinedNonnegativePass": true,
+          "allFrame3mmQualityPass": false
+        }
+      },
+      "settle": {
+        "recordedCombined": {
+          "samples": 12178,
+          "undefinedSamples": 0,
+          "firstUndefinedAt": null,
+          "negativeSamples": 0,
+          "below3mmSamples": 0,
+          "minimumM": 0.03611954425579428,
+          "minimumAt": {
+            "sourceStep": 11201,
+            "sourceTimeS": 14.00125000000255,
+            "elapsedS": 14.00125,
+            "stepIndex": 2,
+            "phase": "settle",
+            "supportPointsXY": [
+              [
+                0.15550521792803249,
+                -0.1769322790395022
+              ],
+              [
+                0.2778354933961858,
+                -0.00161740886735863
+              ],
+              [
+                0.21026582331760008,
+                -0.20145318771374765
+              ],
+              [
+                0.48805339387390123,
+                -0.1440274349082502
+              ],
+              [
+                0.40895937527806814,
+                -0.33958851440212084
+              ],
+              [
+                0.4703069033185866,
+                -0.13480453104921583
+              ],
+              [
+                0.35571990361212424,
+                -0.31191980282501786
+              ]
+            ],
+            "com": [
+              0.41359027925303804,
+              -0.23156365960862163,
+              0.786398114469656
+            ],
+            "comVelocity": [
+              0.00018083631877643976,
+              -0.0004044103182624323,
+              0.001111554090036322
+            ],
+            "reconstructedCOMMarginM": 0.03620994055749127,
+            "reconstructedCaptureMarginM": 0.03611954425579428
+          },
+          "allFrameDefinedNonnegativePass": true,
+          "allFrame3mmQualityPass": true
+        },
+        "reconstructedCOM": {
+          "samples": 12178,
+          "undefinedSamples": 0,
+          "firstUndefinedAt": null,
+          "negativeSamples": 0,
+          "below3mmSamples": 0,
+          "minimumM": 0.036207610221913045,
+          "minimumAt": {
+            "sourceStep": 11213,
+            "sourceTimeS": 14.016250000002557,
+            "elapsedS": 14.01625,
+            "stepIndex": 2,
+            "phase": "settle",
+            "supportPointsXY": [
+              [
+                0.15550566886500133,
+                -0.1769325718210049
+              ],
+              [
+                0.2778355573556966,
+                -0.0016174316420310003
+              ],
+              [
+                0.210266328200574,
+                -0.20145336008265038
+              ],
+              [
+                0.488054196538773,
+                -0.14402738707575685
+              ],
+              [
+                0.40896032665361765,
+                -0.33958852695759406
+              ],
+              [
+                0.4703076991365157,
+                -0.1348044966735515
+              ],
+              [
+                0.35572083444684566,
+                -0.311919855750978
+              ]
+            ],
+            "com": [
+              0.4135918173849081,
+              -0.23156822986056452,
+              0.786411693686168
+            ],
+            "comVelocity": [
+              -1.3105848847962505e-05,
+              -0.00018937119247035319,
+              0.0007661521682758341
+            ],
+            "reconstructedCOMMarginM": 0.036207610221913045,
+            "reconstructedCaptureMarginM": 0.03619094692642322
+          },
+          "allFrameDefinedNonnegativePass": true,
+          "allFrame3mmQualityPass": true
+        },
+        "reconstructedCapture": {
+          "samples": 12178,
+          "undefinedSamples": 0,
+          "firstUndefinedAt": null,
+          "negativeSamples": 0,
+          "below3mmSamples": 0,
+          "minimumM": 0.03611954425579428,
+          "minimumAt": {
+            "sourceStep": 11201,
+            "sourceTimeS": 14.00125000000255,
+            "elapsedS": 14.00125,
+            "stepIndex": 2,
+            "phase": "settle",
+            "supportPointsXY": [
+              [
+                0.15550521792803249,
+                -0.1769322790395022
+              ],
+              [
+                0.2778354933961858,
+                -0.00161740886735863
+              ],
+              [
+                0.21026582331760008,
+                -0.20145318771374765
+              ],
+              [
+                0.48805339387390123,
+                -0.1440274349082502
+              ],
+              [
+                0.40895937527806814,
+                -0.33958851440212084
+              ],
+              [
+                0.4703069033185866,
+                -0.13480453104921583
+              ],
+              [
+                0.35571990361212424,
+                -0.31191980282501786
+              ]
+            ],
+            "com": [
+              0.41359027925303804,
+              -0.23156365960862163,
+              0.786398114469656
+            ],
+            "comVelocity": [
+              0.00018083631877643976,
+              -0.0004044103182624323,
+              0.001111554090036322
+            ],
+            "reconstructedCOMMarginM": 0.03620994055749127,
+            "reconstructedCaptureMarginM": 0.03611954425579428
+          },
+          "allFrameDefinedNonnegativePass": true,
+          "allFrame3mmQualityPass": true
+        }
+      },
+      "stand": {
+        "recordedCombined": {
+          "samples": 4000,
+          "undefinedSamples": 0,
+          "firstUndefinedAt": null,
+          "negativeSamples": 0,
+          "below3mmSamples": 0,
+          "minimumM": 0.10533632209226773,
+          "minimumAt": {
+            "sourceStep": 58696,
+            "sourceTimeS": 73.3699999999514,
+            "elapsedS": 73.37,
+            "stepIndex": 10,
+            "phase": "stand",
+            "supportPointsXY": [
+              [
+                -0.05383759562206216,
+                -0.6491421615004661
+              ],
+              [
+                -0.15928159306875733,
+                -0.8318483830754284
+              ],
+              [
+                -0.035645601700249094,
+                -0.6574518761214894
+              ],
+              [
+                -0.10470561130331822,
+                -0.8567775269384981
+              ],
+              [
+                0.17262310278683127,
+                -0.7940944028190557
+              ],
+              [
+                0.09886607944330279,
+                -0.9917301827461433
+              ],
+              [
+                0.15463282264934566,
+                -0.785356564394618
+              ],
+              [
+                0.04489523903084612,
+                -0.96551666747283
+              ]
+            ],
+            "com": [
+              0.01444797676985161,
+              -0.816301542221359,
+              0.8070656626081902
+            ],
+            "comVelocity": [
+              3.878643053902556e-08,
+              3.381351635364189e-07,
+              5.799761032103146e-07
+            ],
+            "reconstructedCOMMarginM": 0.10533640928621979,
+            "reconstructedCaptureMarginM": 0.10533632209226773
+          },
+          "allFrameDefinedNonnegativePass": true,
+          "allFrame3mmQualityPass": true
+        },
+        "reconstructedCOM": {
+          "samples": 4000,
+          "undefinedSamples": 0,
+          "firstUndefinedAt": null,
+          "negativeSamples": 0,
+          "below3mmSamples": 0,
+          "minimumM": 0.10533640487563523,
+          "minimumAt": {
+            "sourceStep": 58730,
+            "sourceTimeS": 73.41249999995136,
+            "elapsedS": 73.41250000000001,
+            "stepIndex": 10,
+            "phase": "stand",
+            "supportPointsXY": [
+              [
+                -0.05383723457852581,
+                -0.6491423656551041
+              ],
+              [
+                -0.15928107952426257,
+                -0.8318486752418262
+              ],
+              [
+                -0.03564523372077209,
+                -0.6574520650916619
+              ],
+              [
+                -0.10470507695100131,
+                -0.8567777735514995
+              ],
+              [
+                0.17262347898043556,
+                -0.794094665355126
+              ],
+              [
+                0.0988664837799768,
+                -0.9917304557851137
+              ],
+              [
+                0.1546331975987079,
+                -0.7853568294924844
+              ],
+              [
+                0.04489563963479379,
+                -0.9655169481971889
+              ]
+            ],
+            "com": [
+              0.014448123706115694,
+              -0.8163016162061497,
+              0.8070656870448351
+            ],
+            "comVelocity": [
+              1.6491580205606612e-08,
+              3.1415599481886294e-07,
+              5.215173300232976e-07
+            ],
+            "reconstructedCOMMarginM": 0.10533640487563523,
+            "reconstructedCaptureMarginM": 0.10533632694027206
+          },
+          "allFrameDefinedNonnegativePass": true,
+          "allFrame3mmQualityPass": true
+        },
+        "reconstructedCapture": {
+          "samples": 4000,
+          "undefinedSamples": 0,
+          "firstUndefinedAt": null,
+          "negativeSamples": 0,
+          "below3mmSamples": 0,
+          "minimumM": 0.10533632209226773,
+          "minimumAt": {
+            "sourceStep": 58696,
+            "sourceTimeS": 73.3699999999514,
+            "elapsedS": 73.37,
+            "stepIndex": 10,
+            "phase": "stand",
+            "supportPointsXY": [
+              [
+                -0.05383759562206216,
+                -0.6491421615004661
+              ],
+              [
+                -0.15928159306875733,
+                -0.8318483830754284
+              ],
+              [
+                -0.035645601700249094,
+                -0.6574518761214894
+              ],
+              [
+                -0.10470561130331822,
+                -0.8567775269384981
+              ],
+              [
+                0.17262310278683127,
+                -0.7940944028190557
+              ],
+              [
+                0.09886607944330279,
+                -0.9917301827461433
+              ],
+              [
+                0.15463282264934566,
+                -0.785356564394618
+              ],
+              [
+                0.04489523903084612,
+                -0.96551666747283
+              ]
+            ],
+            "com": [
+              0.01444797676985161,
+              -0.816301542221359,
+              0.8070656626081902
+            ],
+            "comVelocity": [
+              3.878643053902556e-08,
+              3.381351635364189e-07,
+              5.799761032103146e-07
+            ],
+            "reconstructedCOMMarginM": 0.10533640928621979,
+            "reconstructedCaptureMarginM": 0.10533632209226773
+          },
+          "allFrameDefinedNonnegativePass": true,
+          "allFrame3mmQualityPass": true
+        }
+      }
+    },
+    "allFrameDefinedNonnegativePass": true,
+    "allFrame3mmQualityPass": false,
+    "definition": "Signed distances to recorded current-support convex hull; capture = COMxy + COMvelocityxy*sqrt(COMz/9.81). Undefined is failure, never excluded from pass."
+  },
+  "slip": {
+    "cumulativePerFootLimitM": 0.02,
+    "strictExceedanceRequired": true,
+    "equalityAllowed": true,
+    "maximumPerFootM": [
+      0.015783443136204715,
+      0.012772921862381714
+    ],
+    "finalPerFootM": [
+      0.015783443136204715,
+      0.012772921862381714
+    ],
+    "firstStrictExceedance": null,
+    "within20mmPass": true
+  },
+  "sourceJournalSHA256": "a028dbdf98a9800fb7df7127d375d4a64302052df9b1b63e6656ae1f0278f98c",
+  "finalSummaryAccountingMatches": true,
+  "archivedReference": {
+    "source": "docs/evidence/getup-source-unconstrained-2026-10-19/summary.json",
+    "rawJournalAvailable": false,
+    "evidenceLimit": "Archived compact measurements only; lost journal metrics cannot be recomputed.",
+    "loadedLandingTimesS": null,
+    "loadedLandingIntervalsS": null,
+    "loadedLandingIntervalsAvailable": false,
+    "archivedCompletionTimesS": [
+      9.64875,
+      17.28375,
+      24.9175,
+      32.5525,
+      40.18625,
+      47.823750000000004,
+      55.4575,
+      63.09,
+      70.7225,
+      83.35875
+    ],
+    "archivedCompletionIntervalsS": [
+      7.635000000000002,
+      7.633749999999999,
+      7.635000000000002,
+      7.633749999999999,
+      7.637500000000003,
+      7.633749999999999,
+      7.6325,
+      7.632499999999993,
+      12.636250000000004
+    ],
+    "completionIntervalsDefinition": "Completion may include settle and final quiet; not loaded-landing cadence.",
+    "archivedCOMHorizontalTravelM": 0.8589672744852376,
+    "archivedOwnFootAdvancesM": [
+      0.18196128980745918,
+      0.1820144621026568,
+      0.181215751937159,
+      0.18198722831071404,
+      0.18141204394675356,
+      0.18199646349288193,
+      0.18140945567066588,
+      0.18200188622512714,
+      0.18102231602291,
+      0.18199349755430452
+    ],
+    "archivedMinimumCombinedCaptureMarginM": 0.002951397547704987
+  }
+}

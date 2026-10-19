@@ -19,26 +19,36 @@ from audit_source_terminal_pelvis import (ACTIVATION_FIELDS, DURATION, MAX_ANGLE
 from test_source_reviewed_walk_audit import fixture, rehash
 
 
-def activation_fixture():
+def activation_fixture(landing_step=80, native_clock=False):
     R = Rotation.from_euler('ZYX', [.4, .3, -.1]).as_matrix()
     yaw, upright, axis, endpoint = terminal_geometry(R)
-    history = [dict(sourceStep=sid, sourceTimeS=sid*core.DT, feetLoadN=[100., 100.])
-        for sid in range(80, 161)]
-    landing = dict(index=1, landingNativeStep=80, landingTimeS=.1,
+    anchor_step = landing_step+80
+    times = {sid: sid*core.DT for sid in range(landing_step, anchor_step+1)}
+    if native_clock:
+        now = 0.
+        for sid in range(1, anchor_step+1):
+            now += core.DT
+            if sid >= landing_step: times[sid] = now
+    landing_time, anchor_time = times[landing_step], times[anchor_step]
+    history = [dict(sourceStep=sid, sourceTimeS=times[sid], feetLoadN=[100., 100.])
+        for sid in range(landing_step, anchor_step+1)]
+    landing = dict(index=1, landingNativeStep=landing_step, landingTimeS=landing_step*core.DT,
         requestedDistanceM=.18, achievedAtLoadAcquisitionM=.181,
-        actualLandingConsecutiveSamples=80, actualLandingFeetLoadN=[100., 100.])
+        actualLandingConsecutiveSamples=80, actualLandingFeetLoadN=[100., 100.],
+        actualLandingSourceTimeS=landing_time)
     a = dict(schema=1, profile=PROFILE, body=4, stepIndex=1, finalStepIndex=1,
-        sourceStep=160, sourceTimeS=.2, standEntry=True, initialRotationSource=R.tolist(),
+        sourceStep=anchor_step, sourceTimeS=anchor_time, standEntry=True, initialRotationSource=R.tolist(),
         yawRad=yaw, uprightRotationSource=upright.tolist(), axisWorldRad=axis.tolist(),
         boundedEndpointRotationSource=endpoint.tolist(), correctionAngleRad=float(np.linalg.norm(axis)),
         durationS=4., maximumWeight=.5,
-        measuredFinalLanding=dict(sourceStep=80, sourceTimeS=.1, stepIndex=1,
+        measuredFinalLanding=dict(sourceStep=landing_step, sourceTimeS=landing_time, stepIndex=1,
             landingConsecutiveSamples=80, feetLoadN=[100.,100.], forwardM=.181, requestedForwardM=.18),
         loadedHistory=dict(minimumDurationS=.1, minimumEachFootLoadN=3., minimumTotalWeightFraction=.8,
-            bodyWeightN=98.1, sourceStartStep=80, sourceEndStep=160,
-            sourceStartTimeS=.1, sourceEndTimeS=.2, durationS=.1, samples=history))
+            bodyWeightN=98.1, sourceStartStep=landing_step, sourceEndStep=anchor_step,
+            sourceStartTimeS=landing_time, sourceEndTimeS=anchor_time,
+            durationS=anchor_time-landing_time, samples=history))
     a['activationSHA256'] = core.value_sha(a)
-    anchor = dict(sourceStep=160, sourceTimeS=.2, stepIndex=1, phase='settle',
+    anchor = dict(sourceStep=anchor_step, sourceTimeS=anchor_time, stepIndex=1, phase='settle',
         actualPelvisRotationSource=R.tolist())
     return a, anchor, landing, history, R
 
@@ -128,6 +138,28 @@ class GeometryAndActivation(unittest.TestCase):
         result=audit_activation(a,anchor,1,landing,history,10.,lambda row:R)
         self.assertTrue(result['passed'],result)
         self.assertEqual(set(a),ACTIVATION_FIELDS)
+    def test_long_time_native_clock_drift_is_bound_to_actual_landing(self):
+        a,anchor,landing,history,R=activation_fixture(55192,native_clock=True)
+        self.assertEqual(landing['actualLandingSourceTimeS'],68.98999999995539)
+        self.assertEqual(landing['landingTimeS'],68.99)
+        self.assertGreater(abs(landing['actualLandingSourceTimeS']-landing['landingTimeS']),1e-12)
+        result=audit_activation(a,anchor,1,landing,history,10.,lambda row:R)
+        self.assertTrue(result['passed'],result)
+    def test_swapped_or_misbound_landing_clocks_are_rejected(self):
+        for defect in ('activationCounterClock','summaryNativeClock','differentNativeSample'):
+            with self.subTest(defect=defect):
+                a,anchor,landing,history,R=activation_fixture(55192,native_clock=True)
+                if defect=='activationCounterClock':
+                    a['measuredFinalLanding']['sourceTimeS']=landing['landingTimeS']
+                elif defect=='summaryNativeClock':
+                    landing['landingTimeS']=landing['actualLandingSourceTimeS']
+                else:
+                    a['measuredFinalLanding']['sourceTimeS']=history[1]['sourceTimeS']
+                rehash_activation(a)
+                result=audit_activation(a,anchor,1,landing,history,10.,lambda row:R)
+                key=('terminalLandingSummaryMatchesStepCounterClock' if defect=='summaryNativeClock'
+                    else 'terminalAnchorFollowsMeasuredFinalLanding')
+                self.assertFalse(result['checks'][key],result)
     def test_rehashed_activation_corruptions_rejected(self):
         for field,change in (
             ('sourceStep',lambda a:a.__setitem__('sourceStep',159)),

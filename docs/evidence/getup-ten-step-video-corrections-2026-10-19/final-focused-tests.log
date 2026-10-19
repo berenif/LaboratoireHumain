@@ -1,0 +1,21 @@
+............................................................................s.........s........................................................................s..........................................................sssssssssssss.......................................................................................................................................usage: - [-h] --output OUTPUT --inspector INSPECTOR [--count {1,10}]
+         [--wall-cap-s WALL_CAP_S]
+-: error: argument --wall-cap-s: wall cap must be finite and between 120 and 7200 seconds
+usage: - [-h] --output OUTPUT --inspector INSPECTOR [--count {1,10}]
+         [--wall-cap-s WALL_CAP_S]
+-: error: argument --wall-cap-s: wall cap must be finite and between 120 and 7200 seconds
+usage: - [-h] --output OUTPUT --inspector INSPECTOR [--count {1,10}]
+         [--wall-cap-s WALL_CAP_S]
+-: error: argument --wall-cap-s: wall cap must be finite and between 120 and 7200 seconds
+usage: - [-h] --output OUTPUT --inspector INSPECTOR [--count {1,10}]
+         [--wall-cap-s WALL_CAP_S]
+-: error: argument --wall-cap-s: wall cap must be finite and between 120 and 7200 seconds
+usage: - [-h] --output OUTPUT --inspector INSPECTOR [--count {1,10}]
+         [--wall-cap-s WALL_CAP_S]
+-: error: argument --count: invalid choice: '2' (choose from 1, 10)
+...................................................
+----------------------------------------------------------------------
+Ran 416 tests in 149.335s
+
+OK (skipped=16)
+RESULT 416 failures 0 errors 0 skips 16

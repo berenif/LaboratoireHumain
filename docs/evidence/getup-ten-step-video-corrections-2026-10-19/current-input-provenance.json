@@ -1,0 +1,342 @@
+{
+  "schema": 1,
+  "recordedUTC": "2026-10-19T08:14:02Z",
+  "repositoryHEAD": "60fbf9df89e4db91bda97969e01853439d0c0227",
+  "repositoryRoot": "/workspace/scratch/5def91918e35/mvp-landing",
+  "recoveryMethod": "Fresh network download of hash-pinned upstream XMLs and official MuJoCo wheel; C libraries recompiled from committed sources; new cold checkpoint installed from committed compact qpos/qvel and exported at native counter zero.",
+  "lostOriginalOutputBytesRestored": false,
+  "originalWarmCacheRecovered": false,
+  "rebuiltHelperMatchesHistoricalPinnedBytes": true,
+  "physicsIntegrations": 0,
+  "pythonExtensionImported": false,
+  "nativeVersion": 213,
+  "engineSourceURL": "https://pypi.org/pypi/mujoco/2.1.3/json",
+  "wheelFilename": "mujoco-2.1.3-cp310-cp310-manylinux_2_17_x86_64.manylinux2014_x86_64.whl",
+  "sourceCommit": "5ad52fbe1b5b7c56522a1aa10ccf17fb81c0d79e",
+  "sourceXMLURLs": {
+    "materials.xml": "https://raw.githubusercontent.com/tianxintao/get_up_control/5ad52fbe1b5b7c56522a1aa10ccf17fb81c0d79e/data/materials.xml",
+    "humanoid_high_freq.xml": "https://raw.githubusercontent.com/tianxintao/get_up_control/5ad52fbe1b5b7c56522a1aa10ccf17fb81c0d79e/data/humanoid_high_freq.xml",
+    "skybox.xml": "https://raw.githubusercontent.com/tianxintao/get_up_control/5ad52fbe1b5b7c56522a1aa10ccf17fb81c0d79e/data/skybox.xml",
+    "visual.xml": "https://raw.githubusercontent.com/tianxintao/get_up_control/5ad52fbe1b5b7c56522a1aa10ccf17fb81c0d79e/data/visual.xml"
+  },
+  "pythonVersion": "3.12.14 (main, Aug 25 2026, 14:00:49) [Clang 22.1.3 ]",
+  "pipFreeze": [
+    "cffi==2.1.1",
+    "clarabel==0.11.1",
+    "numpy==2.3.5",
+    "pycparser==3.11",
+    "scipy==1.17.0"
+  ],
+  "compiler": "gcc (Debian 14.2.0-19) 14.2.0",
+  "platform": "Linux-6.18.55-x86_64-with-glibc2.41",
+  "commands": [
+    "python3 -m venv .venv",
+    ".venv/bin/python -m pip install -r scripts/getup-step/requirements.txt clarabel",
+    ".venv/bin/python scripts/getup-step/restore_source_step_assets.py",
+    "bash scripts/getup-step/build_source_contact_inspection.sh \"$PWD/outputs/getup-source-engine/session-20261017T233404Z\" \"$PWD/outputs/getup-source-contact-inspection/recovered-20261019/source_contact_inspection.so\"",
+    ".venv/bin/python scripts/getup-step/source_selected_step.py --output outputs/getup-source-input-recovery-20261019/selected-preflight --prepare-only",
+    "PYTHONDONTWRITEBYTECODE=1 OPENBLAS_NUM_THREADS=1 PYTHONPATH=scripts/getup-step .venv/bin/python -m unittest -v test_source_contact_inspection test_source_contact_impedance_probe test_source_selected_step",
+    ".venv/bin/python scripts/getup-step/source_contact_impedance_probe.py --output outputs/getup-source-input-recovery-20261019/impratio8-preflight --inspector \"$PWD/outputs/getup-source-contact-inspection/recovered-20261019/source_contact_inspection.so\" --impratio 8 --prepare-only"
+  ],
+  "inputFiles": [
+    {
+      "path": "scripts/getup-step/restore_source_step_assets.py",
+      "sha256": "b15cdfa8a88e1247a404f6686b9f0fcd58cb637a1681ff82c0301565b3c73616",
+      "bytes": 4278
+    },
+    {
+      "path": "scripts/getup-step/build_source_step_probe.sh",
+      "sha256": "7bb0140add2e6ab609ddf11334640defb492543ae7a343a3282eec339a0224c2",
+      "bytes": 572
+    },
+    {
+      "path": "scripts/getup-step/build_source_contact_inspection.sh",
+      "sha256": "a373fa23473d390fa7a50d0a5519690d2bc164357430931e39ec48a09b307e87",
+      "bytes": 699
+    },
+    {
+      "path": "scripts/getup-step/source_dynamics.c",
+      "sha256": "ed2168151f8288c8afbc77034f962251f2f11b5eacdca534a37e32309fac792d",
+      "bytes": 8351
+    },
+    {
+      "path": "scripts/getup-step/source_bridge.c",
+      "sha256": "7d865eb04ce98a445f667e45a88669a7850016e104a605f7429b8cfd68f036e9",
+      "bytes": 6278
+    },
+    {
+      "path": "scripts/getup-diagnostic/mujoco_bridge.c",
+      "sha256": "179e9fd1e7826ea15138187bc2c4f3b50e5aa444a5145ae6fa402784593eecbb",
+      "bytes": 4861
+    },
+    {
+      "path": "scripts/getup-step/source_contact_inspection.c",
+      "sha256": "bd6989fe94a8835c6f26aa126e19f46765204391595cd50543a704470824a215",
+      "bytes": 3688
+    },
+    {
+      "path": "scripts/getup-step/source-step-selected-v1.json",
+      "sha256": "a73270f51cb94a83545ee530f1edf620f287b1f7407f08a0c9afb174a61c658d",
+      "bytes": 574
+    },
+    {
+      "path": "docs/fixtures/getup-step/source-SLOW-final-frame.json",
+      "sha256": "a2797f5757ed64c1aed875f0cb36d258ec6ca12002163b393222e2d240cb7fdd",
+      "bytes": 5504
+    },
+    {
+      "path": "docs/evidence/getup-source-engine-2026-10-17/official-dependency-receipt.json",
+      "sha256": "5cf8816e0bd60ae2fef261c236172140933fdf30b490b290f62ea667e3502397",
+      "bytes": 828
+    },
+    {
+      "path": "docs/evidence/getup-source-engine-2026-10-17/source-download-receipt.json",
+      "sha256": "db3ba07287d63fc36411e55a89cedb196944600bd7546c13fd95e68d66b9f166",
+      "bytes": 1294
+    }
+  ],
+  "outputFiles": [
+    {
+      "path": "outputs/getup-source-engine/session-20261017T233404Z/source-model/humanoid_high_freq.xml",
+      "sha256": "69a7e87fed168e1f4ad7dee43dfdd8df6bd74b3d4af06d99c991b46b941106db",
+      "bytes": 11665
+    },
+    {
+      "path": "outputs/getup-source-engine/session-20261017T233404Z/source-model/materials.xml",
+      "sha256": "5f1279351cd6e7f83fa4a2e733558ffb297ad19f9bd4e757bdaec6e7d36a777c",
+      "bytes": 1108
+    },
+    {
+      "path": "outputs/getup-source-engine/session-20261017T233404Z/source-model/skybox.xml",
+      "sha256": "52f3687ca30329b4077b0a26feaad9b73d201e183cbde0ffbd6cd52de51907bd",
+      "bytes": 202
+    },
+    {
+      "path": "outputs/getup-source-engine/session-20261017T233404Z/source-model/visual.xml",
+      "sha256": "ec1d274ab70d95604133dafa92c0d1194de51bba997bd53b70bc67eb95d823fc",
+      "bytes": 175
+    },
+    {
+      "path": "outputs/getup-source-engine/session-20261017T233404Z/dependency/mujoco-2.1.3-cp310-cp310-manylinux_2_17_x86_64.manylinux2014_x86_64.whl",
+      "sha256": "92ffe7156d03720d04476bd44022919050f34425f9ad6ad9ed5cc348ff19cb74",
+      "bytes": 7414883
+    },
+    {
+      "path": "outputs/getup-source-engine/session-20261017T233404Z/dependency/official-wheel/mujoco/libmujoco_nogl.so.2.1.3",
+      "sha256": "a8d51e013c6435c2a58ddc1a98f19cefd2990199c2f125eda930ff10d5f58520",
+      "bytes": 2612016
+    },
+    {
+      "path": "outputs/getup-source-engine/session-20261017T233404Z/source_bridge_v2.so",
+      "sha256": "7697c215dd15b28c61ffdb4dbccc421b9ec83f53a6aba645d62c9244114a4e12",
+      "bytes": 21608
+    },
+    {
+      "path": "outputs/getup-source-step/first-liftoff/source_dynamics-v9.so",
+      "sha256": "20ddefbcbdd328b1661ce163e4df6aeb0e953192c677b79d3076c904de5a0ba5",
+      "bytes": 31256
+    },
+    {
+      "path": "outputs/getup-source-contact-inspection/recovered-20261019/source_contact_inspection.so",
+      "sha256": "0105cc93362dee5e48e4e9bf541c8de647b8c41e6fb830cca94016fa1cffd161",
+      "bytes": 15944
+    },
+    {
+      "path": "outputs/getup-source-engine/session-20261017T233404Z/slow-continuation/final.bin",
+      "sha256": "7790881ccae4c88c93250668975d2a1b05d5fb4cc03985a5309671611a69a6a2",
+      "bytes": 14658416
+    },
+    {
+      "path": "outputs/getup-source-input-recovery-20261019/selected-preflight/model-session/source-model/humanoid_high_freq.xml",
+      "sha256": "216d5c0159abf07139f5556c59e244ae77cb7557ba5256e301ebc5e1c8bbc399",
+      "bytes": 11667
+    },
+    {
+      "path": "outputs/getup-source-input-recovery-20261019/selected-preflight/model-session/source-model/materials.xml",
+      "sha256": "5f1279351cd6e7f83fa4a2e733558ffb297ad19f9bd4e757bdaec6e7d36a777c",
+      "bytes": 1108
+    },
+    {
+      "path": "outputs/getup-source-input-recovery-20261019/selected-preflight/model-session/source-model/skybox.xml",
+      "sha256": "52f3687ca30329b4077b0a26feaad9b73d201e183cbde0ffbd6cd52de51907bd",
+      "bytes": 202
+    },
+    {
+      "path": "outputs/getup-source-input-recovery-20261019/selected-preflight/model-session/source-model/visual.xml",
+      "sha256": "ec1d274ab70d95604133dafa92c0d1194de51bba997bd53b70bc67eb95d823fc",
+      "bytes": 175
+    },
+    {
+      "path": "outputs/getup-source-input-recovery-20261019/selected-preflight/model-session/slow-continuation/final.bin",
+      "sha256": "d017174e13fac2b42addd9710999a7ec5855e3067626ad215c3a9bfa13e224a3",
+      "bytes": 14658416
+    },
+    {
+      "path": "outputs/getup-source-input-recovery-20261019/impratio8-preflight/model-session/source-model/humanoid_high_freq.xml",
+      "sha256": "28c2d6bbbf9845285a69798df92412d45a857c811126b1d2e4650cb49ff1a6c8",
+      "bytes": 11680
+    },
+    {
+      "path": "outputs/getup-source-input-recovery-20261019/impratio8-preflight/model-session/slow-continuation/final.bin",
+      "sha256": "e67ea78936a59c8cc387391f1c2fdd8504a601801376e0bf6abd0256bbd9582a",
+      "bytes": 14658416
+    },
+    {
+      "path": "outputs/getup-source-input-recovery-20261019/impratio8-preflight/contact-impedance-model.json",
+      "sha256": "c54907b32349eae7a248e37a7d378757c8b57f8656948e37b96b56a869676852",
+      "bytes": 1727
+    },
+    {
+      "path": "outputs/getup-source-input-recovery-20261019/zero-integration-tests.log",
+      "sha256": "90bd1c1bcc890f11c99af9b9eab20737557ad5d2f07566d3ae2bccfded4cf0e4",
+      "bytes": 6355
+    }
+  ],
+  "headerFiles": [
+    {
+      "path": "outputs/getup-source-engine/session-20261017T233404Z/dependency/official-wheel/mujoco/include/mjdata.h",
+      "sha256": "798f4551f0ba8537ef16496e5460a60f50991361058ded11c791f494abc907a6",
+      "bytes": 17253
+    },
+    {
+      "path": "outputs/getup-source-engine/session-20261017T233404Z/dependency/official-wheel/mujoco/include/mjexport.h",
+      "sha256": "2d0ec44615ce9e0dd3d80ce9ca2a8bcad1906840d2ab6b5a9af785f7be989f8b",
+      "bytes": 1533
+    },
+    {
+      "path": "outputs/getup-source-engine/session-20261017T233404Z/dependency/official-wheel/mujoco/include/mjmodel.h",
+      "sha256": "9444b301afb5513ee03ae3aa30dfcffdbec75ea15f8c9ba6502222115411fcb6",
+      "bytes": 53510
+    },
+    {
+      "path": "outputs/getup-source-engine/session-20261017T233404Z/dependency/official-wheel/mujoco/include/mjrender.h",
+      "sha256": "f64522cae133e0524686e298010e1a7b72a06a9ed14e2502a8d16e0e088e6a37",
+      "bytes": 6878
+    },
+    {
+      "path": "outputs/getup-source-engine/session-20261017T233404Z/dependency/official-wheel/mujoco/include/mjtnum.h",
+      "sha256": "65148603cf0d534cfc4b123801bd2a9592e7b2548ee59b9cf9c4ca703c84e400",
+      "bytes": 1148
+    },
+    {
+      "path": "outputs/getup-source-engine/session-20261017T233404Z/dependency/official-wheel/mujoco/include/mjui.h",
+      "sha256": "3ed4cfe59611e2a6e413b20dd997e47dea5628c3b3fa1909d2f00638ccd6b5a1",
+      "bytes": 12451
+    },
+    {
+      "path": "outputs/getup-source-engine/session-20261017T233404Z/dependency/official-wheel/mujoco/include/mjvisualize.h",
+      "sha256": "5298788e4c608fd81ef937439d4593206d5437d2f3adc9901f7b5847f850601f",
+      "bytes": 15787
+    },
+    {
+      "path": "outputs/getup-source-engine/session-20261017T233404Z/dependency/official-wheel/mujoco/include/mjxmacro.h",
+      "sha256": "554b663df141e78df014b540c927cb67a71049d773b244d0d40809f56cd461b2",
+      "bytes": 33445
+    },
+    {
+      "path": "outputs/getup-source-engine/session-20261017T233404Z/dependency/official-wheel/mujoco/include/mujoco.h",
+      "sha256": "1b861026c278277933b5ca60e0e8f748a9ec09826af9d8bde6bea5764f182184",
+      "bytes": 43359
+    }
+  ],
+  "initialQposQvelSHA256": "d8f8cea00fb8c54f9344523a1a512410f982ec86e7c1d382434a77a2cac0d707",
+  "limitations": [
+    "The original lost warm checkpoint and intermediate logs were not recovered.",
+    "Cold state derives solely from qpos/qvel in the committed actual source SLOW final-frame fixture.",
+    "Cold checkpoint payload need not be byte-identical to any prior checkpoint; it is separately model/library/bridge bound and native counter is zero.",
+    "No gait execution is included in this recovery receipt."
+  ],
+  "tests": {
+    "log": "outputs/getup-source-input-recovery-20261019/zero-integration-tests.log",
+    "zeroIntegration": true,
+    "testsRun": 30,
+    "passed": 20,
+    "skipped": 10,
+    "skipReason": "Optional archived prepared ratio2/8 folders and historical selected experiment folders are absent. Actual fresh original/selected/ratio8 zero-integration preflights are separately recorded."
+  },
+  "selected-preflight/selection.json": {
+    "variant": "hip10-knee27_5",
+    "modelSHA256": "216d5c0159abf07139f5556c59e244ae77cb7557ba5256e301ebc5e1c8bbc399",
+    "helperSHA256": "20ddefbcbdd328b1661ce163e4df6aeb0e953192c677b79d3076c904de5a0ba5",
+    "initialQposQvelSHA256": "d8f8cea00fb8c54f9344523a1a512410f982ec86e7c1d382434a77a2cac0d707",
+    "modelSpecificColdCache": true,
+    "physicsIntegrations": 0,
+    "armsExperimentEnabled": false,
+    "kneeNeutralFlexionDeg": [
+      27.5,
+      27.5
+    ]
+  },
+  "impratio8-preflight/contact-impedance-model.json": {
+    "schema": 1,
+    "experiment": "contact-impratio-only",
+    "baselineImpratio": 1.0,
+    "candidateImpratio": 8.0,
+    "baselineModelSHA256": "216d5c0159abf07139f5556c59e244ae77cb7557ba5256e301ebc5e1c8bbc399",
+    "modelSHA256": "28c2d6bbbf9845285a69798df92412d45a857c811126b1d2e4650cb49ff1a6c8",
+    "helperSHA256": "20ddefbcbdd328b1661ce163e4df6aeb0e953192c677b79d3076c904de5a0ba5",
+    "initialQposQvelSHA256": "d8f8cea00fb8c54f9344523a1a512410f982ec86e7c1d382434a77a2cac0d707",
+    "coldCacheSHA256": "e67ea78936a59c8cc387391f1c2fdd8504a601801376e0bf6abd0256bbd9582a",
+    "originalFullCacheImportedIntoCandidate": false,
+    "modelBoundColdCacheRebuilt": true,
+    "initialNativeCounter": 0,
+    "physicsIntegrations": 0,
+    "onlyXMLDifference": "option impratio: absent(default1) -> 8",
+    "originalAndCandidateOptions": [
+      [
+        213.0,
+        0.00125,
+        1.0,
+        0.0,
+        2.0,
+        100.0,
+        1e-08,
+        0.0,
+        1e-06,
+        0.0,
+        0.0,
+        0.0,
+        20.0,
+        27.0,
+        0.0,
+        0.02,
+        1.0,
+        0.9,
+        0.95,
+        0.001,
+        0.5,
+        2.0
+      ],
+      [
+        213.0,
+        0.00125,
+        8.0,
+        0.0,
+        2.0,
+        100.0,
+        1e-08,
+        0.0,
+        1e-06,
+        0.0,
+        0.0,
+        0.0,
+        20.0,
+        27.0,
+        0.0,
+        0.02,
+        1.0,
+        0.9,
+        0.95,
+        0.001,
+        0.5,
+        2.0
+      ]
+    ],
+    "originalMuGeometryMassMotorJointLimitsPreserved": true,
+    "originalSolverSolrefSolimpConeAndClockPreserved": true,
+    "selectedPresetChanged": false,
+    "originalModelQualificationClaim": false,
+    "inspectorSHA256": "0105cc93362dee5e48e4e9bf541c8de647b8c41e6fb830cca94016fa1cffd161",
+    "runnerSHA256": "3027d148822a4e7ccac5657cf46764cd3979957b99e175c0dcbb66c8880f0f57"
+  }
+}

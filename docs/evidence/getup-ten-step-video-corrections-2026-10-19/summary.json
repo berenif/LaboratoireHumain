@@ -1,0 +1,427 @@
+{
+  "postRunAuditClockBindingRepair": {
+    "audit_source_terminal_pelvis.py": {
+      "path": "scripts/getup-step/audit_source_terminal_pelvis.py",
+      "bytes": 38295,
+      "sha256": "492a08db219a257a8a96b7804002aa0cad8dd2068805f0bd488ac7ecc2de3935"
+    },
+    "test_source_terminal_pelvis_audit.py": {
+      "path": "scripts/getup-step/test_source_terminal_pelvis_audit.py",
+      "bytes": 24532,
+      "sha256": "e37b9a47e5784c38972db9bee877f5d06beb205550da94b9a858c3a8cb1d4e60"
+    }
+  },
+  "nativeRecoveryProvenance": {
+    "path": "docs/evidence/getup-ten-step-video-corrections-2026-10-19/current-input-provenance.json",
+    "bytes": 14849,
+    "sha256": "63c70e44860042abec8326588e5c982b3b31829303086e3c8d08acaeadd81814"
+  },
+  "schema": 1,
+  "date": "2026-10-19",
+  "status": "physical audits passed; visual targets partially achieved",
+  "sourceImplementationCommit": "5d9d1885a0dc47b4ed3c39d80af7c741b304390a",
+  "reviewPasses": {
+    "actualCount": 5,
+    "completedBeforeImplementation": true,
+    "scope": [
+      "decoded video and visible gait",
+      "causal cadence and controller clocks",
+      "physical acceptance and evidence",
+      "bounded terminal posture feasibility",
+      "final integration of revised plan"
+    ]
+  },
+  "referenceVideo": {
+    "libraryFileId": "libfile_6356c4b4a56c819189bc0b2ffa2d2c49",
+    "sha256": "e193082df6a47b27a4dddc04e099f81062e81f8914eca843e75789efa730c24f",
+    "steps": 10,
+    "durationS": 83.35875,
+    "finalPelvisTiltDeg": 24.11,
+    "finalTorsoTiltDeg": 1.81,
+    "historicalRawJournalsRecovered": false
+  },
+  "scope": {
+    "applicationDefaultsChanged": false,
+    "originalGetUpModelQualified": false,
+    "mainChanged": false,
+    "deployed": false,
+    "physicalModel": "selected hip10-knee27_5, explicit impratio8",
+    "slipLimitM": 0.02,
+    "stopStrictlyAboveLimit": true,
+    "startupJointGraceS": 0.06375,
+    "softTerminalOnlyPelvisCorrection": {
+      "maximumAngleDeg": 6,
+      "durationS": 4,
+      "weight": 0.5
+    },
+    "fullVisualPlanQualificationPass": false
+  },
+  "runs": {
+    "cadence-only": {
+      "actualNativeIntegrations": 60409,
+      "durationS": 75.51125,
+      "finalQuietS": 5.0,
+      "completedLoadedLandings": 10,
+      "ownFootAdvancesM": [
+        0.18196387112790272,
+        0.18199910858051438,
+        0.18124854204744015,
+        0.18194897250259046,
+        0.1812761702571523,
+        0.18194971342565067,
+        0.18131715739258644,
+        0.18195039612208222,
+        0.18136468011005907,
+        0.18195290149135626
+      ],
+      "loadedSlipPerFootM": [
+        0.015783443136204715,
+        0.012772921862381714
+      ],
+      "slipPass": true,
+      "physicalAuditVerdictField": "reviewedWalkTenStepPhysicalPass",
+      "physicalAuditPass": true,
+      "finalVisualPlanPass": false,
+      "minimumRecordedCombinedCaptureM": 0.002983710304914816,
+      "allFrameDefinedNonnegativeCapturePass": true,
+      "allFrame3mmCaptureQualityPass": false,
+      "below3mmSamples": 15,
+      "finalTiltDeg": {
+        "pelvis": 24.337110843534916,
+        "torso": 1.8041547429109377,
+        "torsoRelativePelvis": 25.459782733176798
+      },
+      "netCOMForwardM": 0.8587614993488333,
+      "executionWallElapsedS": 524.7393371490002,
+      "wallCapS": 3600.0,
+      "continuousSingleWorld": true,
+      "rootAssistance": false,
+      "loadedSlipResetBetweenSteps": false,
+      "frozenRuntimeCodeUnchanged": true,
+      "executedModelSHA256": "28c2d6bbbf9845285a69798df92412d45a857c811126b1d2e4650cb49ff1a6c8",
+      "helperSHA256": "20ddefbcbdd328b1661ce163e4df6aeb0e953192c677b79d3076c904de5a0ba5",
+      "adapterSHA256": "183e1816cd2648550827cbef4a279ccc06b47099d95cb2567a038d515cef4590",
+      "journal": {
+        "path": "outputs/ten-step-video-corrections-20261019/cadence-only/run/generation-001/frames.ndjson",
+        "sha256": "a028dbdf98a9800fb7df7127d375d4a64302052df9b1b63e6656ae1f0278f98c"
+      },
+      "nativeFinalCheckpoint": {
+        "path": "outputs/ten-step-video-corrections-20261019/cadence-only/run/generation-001/final.bin",
+        "bytes": 14658416,
+        "sha256": "73afc1f1335aa6661bea5b5089fefd34ce79431666d55087ab195cc1e19d0ea4"
+      },
+      "audit": {
+        "path": "outputs/ten-step-video-corrections-20261019/cadence-only-audit.json",
+        "bytes": 1103921,
+        "sha256": "dc9479f096b3e67e7fd228f0fb73aa540ed4f72aa86ce1dcd265ce4e62add66b"
+      }
+    },
+    "final-terminal-ten": {
+      "actualNativeIntegrations": 63612,
+      "durationS": 79.515,
+      "finalQuietS": 5.0,
+      "completedLoadedLandings": 10,
+      "ownFootAdvancesM": [
+        0.18196387112790272,
+        0.18199910858051438,
+        0.18124854204744015,
+        0.18194897250259046,
+        0.1812761702571523,
+        0.18194971342565067,
+        0.18131715739258644,
+        0.18195039612208222,
+        0.18136468011005907,
+        0.18195290149135626
+      ],
+      "loadedSlipPerFootM": [
+        0.015797063313405434,
+        0.012790840856581425
+      ],
+      "slipPass": true,
+      "physicalAuditVerdictField": "terminalPelvisTenStepPhysicalPass",
+      "physicalAuditPass": true,
+      "finalVisualPlanPass": false,
+      "minimumRecordedCombinedCaptureM": 0.002983710304914816,
+      "allFrameDefinedNonnegativeCapturePass": true,
+      "allFrame3mmCaptureQualityPass": false,
+      "below3mmSamples": 15,
+      "finalTiltDeg": {
+        "pelvis": 19.139736499976898,
+        "torso": 1.7947096756721121,
+        "torsoRelativePelvis": 20.181204333986255
+      },
+      "netCOMForwardM": 0.8587377576147683,
+      "executionWallElapsedS": 554.9859174949997,
+      "wallCapS": 3600.0,
+      "continuousSingleWorld": true,
+      "rootAssistance": false,
+      "loadedSlipResetBetweenSteps": false,
+      "frozenRuntimeCodeUnchanged": true,
+      "executedModelSHA256": "28c2d6bbbf9845285a69798df92412d45a857c811126b1d2e4650cb49ff1a6c8",
+      "helperSHA256": "20ddefbcbdd328b1661ce163e4df6aeb0e953192c677b79d3076c904de5a0ba5",
+      "adapterSHA256": "183e1816cd2648550827cbef4a279ccc06b47099d95cb2567a038d515cef4590",
+      "journal": {
+        "path": "outputs/ten-step-video-corrections-20261019/final-terminal-ten/run/generation-001/frames.ndjson",
+        "sha256": "c987886c68b5aed1d46a918db8421907ff89b15b21eda22c19d2fed287847e2b"
+      },
+      "nativeFinalCheckpoint": {
+        "path": "outputs/ten-step-video-corrections-20261019/final-terminal-ten/run/generation-001/final.bin",
+        "bytes": 14658416,
+        "sha256": "f4bde11fa3479698a04faa27f9b97d3f5a00620c0a44e6f469608a3fddf6a0df"
+      },
+      "audit": {
+        "path": "outputs/ten-step-video-corrections-20261019/final-terminal-ten-audit.json",
+        "bytes": 1111496,
+        "sha256": "34c59345f4151d3d93a9a97f70fbc93ca11cc66090a695ce90ac88cc9a124a20"
+      }
+    }
+  },
+  "cadence": {
+    "loadedLandingIntervalsS": [
+      6.87,
+      6.87125,
+      6.875,
+      6.8750000000000036,
+      6.875,
+      6.875,
+      6.875,
+      6.868749999999999,
+      6.874999999999993
+    ],
+    "medianLoadedLandingIntervalS": 6.875,
+    "maximumTransfer": {
+      "stepIndex": 1,
+      "phase": "transfer",
+      "firstNativeStep": 1,
+      "firstTimeS": 0.00125,
+      "samples": 3299,
+      "lastNativeStep": 3299,
+      "lastTimeS": 4.12375,
+      "durationS": 4.12375,
+      "nominalDurationS": 4.0,
+      "beyondNominalS": 0.12375000000000025
+    },
+    "walkingForwardCOMSpeed": {
+      "definition": "abs(measured COM velocity dot fixed initial heading) < 0.005 m/s; transfer/lift/translate/land/settle rows after arm placement, before terminal stand",
+      "initialArmPlacementExcludedUntilS": 4.0,
+      "thresholdMps": 0.005,
+      "walkingSamples": 53209,
+      "nearZeroSamples": 19390,
+      "walkingDurationS": 66.51125,
+      "nearZeroDurationS": 24.2375,
+      "nearZeroFraction": 0.36441203555789436
+    }
+  },
+  "terminalAddedDurationS": 4.003749999999997,
+  "reductionFromHistoricalTotalS": 3.84375,
+  "postureComparison": {
+    "physicsIntegrations": 0,
+    "comparison": "Pair quiet sample k=1..4000 in the cadence-only final 5 s with quiet sample k in the terminal-corrected final 5 s; physical times differ because the corrected quiet starts after its 4 s ramp.",
+    "samples": 4000,
+    "thresholdReductionDeg": 5.0,
+    "torsoLimitDeg": 5.0,
+    "baselineNativeRange": [
+      56410,
+      60409
+    ],
+    "correctedNativeRange": [
+      59613,
+      63612
+    ],
+    "metrics": {
+      "pelvis": {
+        "minimumReductionDeg": 4.117841288088968,
+        "meanReductionDeg": 5.091524205053842,
+        "maximumReductionDeg": 5.19922495478248,
+        "initialReductionDeg": 4.1276253399070235,
+        "finalReductionDeg": 5.1973743435580175,
+        "minimumReductionQuietSample": 29,
+        "below5DegreeReductionSamples": 595,
+        "all4000ReductionAtLeast5Deg": false,
+        "correctedMaximumTiltDeg": 19.1684067803476,
+        "correctedAll4000TiltAtMost5Deg": false
+      },
+      "torsoRelativePelvis": {
+        "minimumReductionDeg": 4.007944049533158,
+        "meanReductionDeg": 5.158504735349813,
+        "maximumReductionDeg": 5.2806374984394715,
+        "initialReductionDeg": 4.0157293780048775,
+        "finalReductionDeg": 5.278578399190543,
+        "minimumReductionQuietSample": 24,
+        "below5DegreeReductionSamples": 535,
+        "all4000ReductionAtLeast5Deg": false,
+        "correctedMaximumTiltDeg": 20.20857916439068,
+        "correctedAll4000TiltAtMost5Deg": false
+      },
+      "torso": {
+        "minimumReductionDeg": -0.022855841478854,
+        "meanReductionDeg": 0.00847280373289723,
+        "maximumReductionDeg": 0.015725884990369865,
+        "initialReductionDeg": -0.019059810177937564,
+        "finalReductionDeg": 0.009445067238825544,
+        "minimumReductionQuietSample": 93,
+        "below5DegreeReductionSamples": 4000,
+        "all4000ReductionAtLeast5Deg": false,
+        "correctedMaximumTiltDeg": 1.7947096756721121,
+        "correctedAll4000TiltAtMost5Deg": true
+      }
+    },
+    "all4000PostureTargetPass": false,
+    "historicalVideoFinalPelvis24_11DegReduction": 4.970263500023101,
+    "historicalReferenceLimitation": "Only the historical final value 24.11 deg is available; historical quiet raw rows were not recovered, so no historical all-row comparison is claimed."
+  },
+  "remainingLimitations": [
+    "Strict 3 mm reserve across every sample fails at 2.983710304914816 mm for 15 landing samples; positive capture, robust admissions and final quiet remain separately checked.",
+    "Final pelvis remains 19.1397365 degrees; the pointwise 5-degree improvement target fails on part of the final quiet interval.",
+    "Final knees flex more than in cadence-only: left/right 22.959659/22.150560 degrees versus 21.148147/15.378712 degrees.",
+    "Walking phase is unchanged by the terminal-only preference: 36.4412 percent near-zero forward COM speed, 219.3628 mm lateral excursion, pelvis peak about 40.51 degrees.",
+    "Historical final pixel comparisons do not replace missing historical native quiet rows.",
+    "The modified selected model and inherited startup joint grace are explicit; the unchanged original GetUp model is not qualified."
+  ],
+  "tests": {
+    "pythonFocusedAggregate": {
+      "testsRun": 416,
+      "passed": 400,
+      "skipped": 16,
+      "failures": 0,
+      "errors": 0,
+      "note": "Before the final audit-only clock-binding repair; unavailable historical Git references are explicit skips."
+    },
+    "auditClockBindingAfterRepair": {
+      "testsRun": 25,
+      "passed": 25,
+      "failures": 0,
+      "errors": 0
+    },
+    "npm": {
+      "passed": 68,
+      "failed": 0
+    },
+    "fullApplicationCIClaimed": false
+  },
+  "deliveredVideoLibraryFileId": "libfile_b2aff1c0dd9c81919fff53c9e21fab77",
+  "analysisAndRenderAdditionalIntegrations": 0,
+  "artifacts": {
+    "final-terminal-ten-quality.json": {
+      "path": "docs/evidence/getup-ten-step-video-corrections-2026-10-19/final-terminal-ten-quality.json",
+      "bytes": 61010,
+      "sha256": "5e980967ef92f10c1e7785f5675498b3ce1cdc93e15cd783eaf7f96061daff2a"
+    },
+    "cadence-only-quality.json": {
+      "path": "docs/evidence/getup-ten-step-video-corrections-2026-10-19/cadence-only-quality.json",
+      "bytes": 61014,
+      "sha256": "ece5d94d8ab62b81c84634d2e4896bbe52660b069197b849af23a881675f767f"
+    },
+    "final-limb-quality.json": {
+      "path": "docs/evidence/getup-ten-step-video-corrections-2026-10-19/final-limb-quality.json",
+      "bytes": 6233,
+      "sha256": "7aa84acf04d72e3212f90eb2aaf6b88b62eaf28cd79d1de22086d10165a48a78"
+    },
+    "final-quiet-pointwise-comparison.json": {
+      "path": "docs/evidence/getup-ten-step-video-corrections-2026-10-19/final-quiet-pointwise-comparison.json",
+      "bytes": 2216,
+      "sha256": "3e9c9968ff4499ea12a774d0a24ef41219c708bcbc732be137806eeffe9bcba1"
+    },
+    "walking-prefix-journal-comparison.json": {
+      "path": "docs/evidence/getup-ten-step-video-corrections-2026-10-19/walking-prefix-journal-comparison.json",
+      "bytes": 1779,
+      "sha256": "dc01aabb550a454b5bd8e920d771447b793ae2610073c33425fdacde2f767723"
+    },
+    "walking-prefix-checkpoint-comparison.json": {
+      "path": "docs/evidence/getup-ten-step-video-corrections-2026-10-19/walking-prefix-checkpoint-comparison.json",
+      "bytes": 35541,
+      "sha256": "732e253a526fbcc64669f395191bcc410e4220a525409e580af0f64859f3a37f"
+    },
+    "final-checkpoint-verification.json": {
+      "path": "docs/evidence/getup-ten-step-video-corrections-2026-10-19/final-checkpoint-verification.json",
+      "bytes": 552,
+      "sha256": "b9dec8ce07de21da32057725d6c4c286d4862db0e07567cbc39ecb4716f36d62"
+    },
+    "cadence-final-checkpoint-verification.json": {
+      "path": "docs/evidence/getup-ten-step-video-corrections-2026-10-19/cadence-final-checkpoint-verification.json",
+      "bytes": 257,
+      "sha256": "902c097f350eb646c43309a50b049c72cc9834e5dae4a9c3555f2d8beb150e99"
+    },
+    "final-focused-tests.log": {
+      "path": "docs/evidence/getup-ten-step-video-corrections-2026-10-19/final-focused-tests.log",
+      "bytes": 1520,
+      "sha256": "b968854a78c26e8e7c5143b9d13018beb03a5ee8b886f3bba6dec028647e6170"
+    },
+    "npm-test-final.log": {
+      "path": "docs/evidence/getup-ten-step-video-corrections-2026-10-19/npm-test-final.log",
+      "bytes": 7492,
+      "sha256": "f803b0f0585320abbe4a6bb5ea418fb5da502531a404222f05e9b8ada9a603fc"
+    },
+    "cadence-only-audit.json": {
+      "path": "outputs/ten-step-video-corrections-20261019/cadence-only-audit.json",
+      "bytes": 1103921,
+      "sha256": "dc9479f096b3e67e7fd228f0fb73aa540ed4f72aa86ce1dcd265ce4e62add66b"
+    },
+    "final-terminal-ten-audit.json": {
+      "path": "outputs/ten-step-video-corrections-20261019/final-terminal-ten-audit.json",
+      "bytes": 1111496,
+      "sha256": "34c59345f4151d3d93a9a97f70fbc93ca11cc66090a695ce90ac88cc9a124a20"
+    },
+    "terminal-pilot-audit.json": {
+      "path": "outputs/ten-step-video-corrections-20261019/terminal-pilot-audit.json",
+      "bytes": 171527,
+      "sha256": "97d466e06645ccb900a3077510bb986fe7671a39657ea92a020afdfa94126ad5"
+    },
+    "final-terminal-ten-audit-clock-binding-pre-fix.json": {
+      "path": "outputs/ten-step-video-corrections-20261019/final-terminal-ten-audit-clock-binding-pre-fix.json",
+      "bytes": 1111546,
+      "sha256": "23514dfc78613b2df80bbad2c615ce1bc19d732f0885282b9774853d0e8bc87c"
+    },
+    "audit-clock-binding-tests.log": {
+      "path": "docs/evidence/getup-ten-step-video-corrections-2026-10-19/audit-clock-binding-tests.log",
+      "bytes": 4501,
+      "sha256": "330e6fe92d18d41f9e19e0b11d98ae92d3d72cf7fc800d95ff4abf12bfed0e87"
+    },
+    "final-video-inspection.json": {
+      "path": "docs/evidence/getup-ten-step-video-corrections-2026-10-19/final-video-inspection.json",
+      "bytes": 14852,
+      "sha256": "1840d66728a2c9ea33e69c7087aeb1c3de6abe54ce0b31a7f3e6ba29f66cc83f"
+    },
+    "final-video-post-render-audit-binding.json": {
+      "path": "docs/evidence/getup-ten-step-video-corrections-2026-10-19/final-video-post-render-audit-binding.json",
+      "bytes": 3123,
+      "sha256": "e337e2ab1d8c8d0068876bd637835792489e863ee93c946961bdb126beb2d3c9"
+    }
+  },
+  "render": {
+    "sourceRecordedRows": 63612,
+    "sourcePhysicalDurationS": 79.515,
+    "encodedDurationS": 79.515,
+    "videoFrames": 795,
+    "exactVideoFPS": "53000/5301",
+    "sourceJournalSHA256": "c987886c68b5aed1d46a918db8421907ff89b15b21eda22c19d2fed287847e2b",
+    "additionalPhysicsIntegrations": 0,
+    "simulatorImportedOrRun": false,
+    "plannedPosesUsed": false,
+    "poseInterpolation": false,
+    "duplicatedVideoPoses": 0,
+    "terminalTailFramesAdded": 0,
+    "FKBodyCOMMaxErrorM": 6.661338147750939e-16,
+    "FKFootOriginMaxErrorM": 1.2073675392798577e-15,
+    "FKWholeFootClearanceMaxErrorM": 1.2073675392798577e-15,
+    "fullPhysicalPass": false,
+    "allFrame3mmCaptureQualityPass": false,
+    "independentPhysicalAuditBoundToJournal": false,
+    "report": {
+      "path": "outputs/ten-step-video-corrections-20261019/final-terminal-ten/run/generation-001/render/measured-upright-render-report.json",
+      "bytes": 37544,
+      "sha256": "4735366d2f76e33ed23fb9453b76e22fc5fb2caeaffda590e14f5cbcb2516794"
+    },
+    "createdBeforeSuccessfulIndependentAudit": true,
+    "postRenderIndependentAuditBinding": {
+      "path": "docs/evidence/getup-ten-step-video-corrections-2026-10-19/final-video-post-render-audit-binding.json",
+      "bytes": 3123,
+      "sha256": "e337e2ab1d8c8d0068876bd637835792489e863ee93c946961bdb126beb2d3c9"
+    },
+    "video": {
+      "path": "outputs/ten-step-video-corrections-20261019/final-terminal-ten/run/generation-001/render/laboratoirehumain-grands-pas-debout-mesures.mp4",
+      "bytes": 2249876,
+      "sha256": "2c831c8fb122b1318e2d03f646c91562957e4d998d76cd6810672489437ccb73"
+    }
+  }
+}

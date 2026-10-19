@@ -1,0 +1,43 @@
+{
+  "schema": 1,
+  "createdAtUTC": "2026-10-19T09:02:09.389164+00:00",
+  "savedDataOnly": true,
+  "physicsIntegrations": 0,
+  "deliveredVideo": "/workspace/scratch/5def91918e35/mvp-landing/outputs/ten-step-video-corrections-20261019/final-terminal-ten/run/generation-001/render/laboratoirehumain-grands-pas-debout-mesures.mp4",
+  "deliveredVideoSHA256": "2c831c8fb122b1318e2d03f646c91562957e4d998d76cd6810672489437ccb73",
+  "deliveredVideoBytesModified": false,
+  "sourceJournalSHA256": "c987886c68b5aed1d46a918db8421907ff89b15b21eda22c19d2fed287847e2b",
+  "independentAudit": "/workspace/scratch/5def91918e35/mvp-landing/outputs/ten-step-video-corrections-20261019/final-terminal-ten-audit.json",
+  "independentAuditSHA256": "34c59345f4151d3d93a9a97f70fbc93ca11cc66090a695ce90ac88cc9a124a20",
+  "originalEncodingReport": "/workspace/scratch/5def91918e35/mvp-landing/outputs/ten-step-video-corrections-20261019/final-terminal-ten/run/generation-001/render/measured-upright-render-report.json",
+  "originalEncodingReportSHA256": "4735366d2f76e33ed23fb9453b76e22fc5fb2caeaffda590e14f5cbcb2516794",
+  "pixelInspectionReport": "/workspace/scratch/5def91918e35/mvp-landing/outputs/ten-step-video-corrections-20261019/final-video-inspection.json",
+  "pixelInspectionReportSHA256": "1840d66728a2c9ea33e69c7087aeb1c3de6abe54ce0b31a7f3e6ba29f66cc83f",
+  "initialFailedClockBindingAudit": "/workspace/scratch/5def91918e35/mvp-landing/outputs/ten-step-video-corrections-20261019/final-terminal-ten-audit-clock-binding-pre-fix.json",
+  "initialFailedClockBindingAuditSHA256": "23514dfc78613b2df80bbad2c615ce1bc19d732f0885282b9774853d0e8bc87c",
+  "checks": {
+    "fullIndependentTerminalTenStepPhysicalAuditPass": true,
+    "noFailedIndependentChecks": true,
+    "independentAuditBoundToJournal": true,
+    "actualNativeJournalSummaryAndReceiptAgree": true,
+    "deliveredVideoBytesUnchanged": true,
+    "sourceRuntimeHashesUnchanged": true,
+    "actualVideoPixelsInspected": true,
+    "final4000ActualQuietSamplesAfterRamp": true,
+    "allThreeChangedTaskNativeWitnessesPass": true,
+    "exactOneXDurationAndAllFramesDecoded": true
+  },
+  "physicalQualificationPass": true,
+  "cadenceTargetPass": true,
+  "allFrame3mmCaptureQualityPass": false,
+  "pointwise4000PostureReductionTargetPass": false,
+  "strictFiveDegreePelvisAlignmentPass": false,
+  "captionAtEncoding": "audit en cours",
+  "captionContext": "The video was encoded and delivered before the successful full audit retry. This separate receipt qualifies the same unchanged video and journal afterward; the original rendering report retains its pending-audit state.",
+  "limitations": [
+    "Pelvis retains about 19.14 deg tilt; corrected knee flexion remains about 22-23 deg.",
+    "Minimum pointwise quiet improvement is 4.11784 deg pelvis and 4.00794 deg relative tilt, below the throughout-5-s >=5 deg target.",
+    "15 native samples remain below the stricter all-frame 3 mm capture quality threshold; minimum 2.9837103 mm.",
+    "Exact per-run native witness replays are local saved-assembly evidence; they cannot exclude every possible unrecorded intervention."
+  ]
+}

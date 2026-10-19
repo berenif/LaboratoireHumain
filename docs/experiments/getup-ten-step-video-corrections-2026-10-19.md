@@ -1,6 +1,6 @@
 # Dix pas : corrections après revue de la vidéo du 19 octobre
 
-Statut : quatre revues indépendantes incorporées ; cinquième revue d’intégration ci-dessous, achevée avant modification du contrôleur.
+Statut : cinq revues achevées avant modification du contrôleur ; implémentation et essais natifs terminés, audits physiques réussis. Objectifs visuels partiellement atteints.
 
 ## Référence effectivement regardée
 
@@ -32,9 +32,11 @@ Les cinq passes sont réelles et distinctes. La passe 5 a confronté le document
 - Posture : profil opt-in `terminal-pelvis-soft-v1` dans `source_terminal_pelvis.py`, réservé au maintien terminal. Le pilote à un pas passe son audit indépendant, ses 21 témoins d’appui et ses trois témoins de commandes posturales ; aucune intégration supplémentaire pendant ces relectures.
 - Mesure : `analyze_source_gait_quality.py` sépare les intervalles de réception, l’attente, les inclinaisons, les marges COM/capture et le déplacement propre des pieds du déplacement du COM.
 - Rendu : les marges capture indéfinies ne peuvent plus passer silencieusement. Un verdict physique complet exige un audit indépendant lié au même journal ; le test de réserve à 3 mm reste distinct. Le rendu conserve la durée rationnelle exacte, les poses enregistrées distinctes et le dernier échantillon réel.
-- Audit : trois anciens réducteurs chargeaient tout le journal de commandes ; l’essai de dix pas a révélé une allocation excessive. La lecture et les empreintes sont désormais progressives, avec les mêmes calculs et contrôles. Le pilote et les nouvelles séquences ne sont pas réintégrés pour cette correction du lecteur.
+- Audit : les anciens réducteurs chargeaient tout le journal de commandes ; l’essai de dix pas a révélé une allocation excessive. La lecture et les empreintes sont désormais progressives, avec les mêmes calculs et contrôles. Le pilote et les nouvelles séquences ne sont pas réintégrés pour cette correction du lecteur. Une seconde réparation lie le temps natif accumulé à sa ligne native et le temps résumé au compteur × DT, sans élargir la comparaison à 10⁻¹² ni les gardes de séquence. Elle évite de rejeter 68,98999999995539 s face à 68,99 s lorsque les deux horloges ont été vérifiées séparément ; les substitutions et mauvais échantillons restent rejetés.
 
 ## Résultats physiques enregistrés
+
+Le pilote à un pas termine **14 124 intégrations / 17,655 s**, avec 5 s de calme neuf. De l’activation à la fin, le bassin passe de **4,70206° à 1,10340°**, le tronc de **1,64640° à 1,66117°**, et l’angle relatif de **3,68111° à 0,56145°**. Le maintien post-activation dure **9,00375 s**, dont 4,00375 s de rampe/alignement sur les grilles et 5 s de calme. Ce succès sur un état facile ne préjuge pas du gain après dix pas.
 
 La cadence seule termine **60 409 intégrations / 75,51125 s**, avec dix avances ≥180 mm puis 5 s calmes. Glissement gauche/droite : **15,78344 / 12,77292 mm**. Les neuf intervalles de réception sont **6,870 ; 6,87125 ; 6,875 ; 6,875 ; 6,875 ; 6,875 ; 6,875 ; 6,86875 ; 6,875 s**. Leur médiane vaut **6,875 s**. Le bassin final reste incliné à **24,33711°**.
 
@@ -46,6 +48,14 @@ Les **56 409 premiers échantillons**, jusqu’à l’activation terminale, ont 
 
 - La réserve capture stricte de **3 mm sur toute la séquence échoue** : minimum **2,9837103 mm**, au pas 9 en réception, pendant 15 échantillons. La marge reste définie et positive à chaque intégration ; les admissions et le calme conservent leurs seuils. Aucun arrondi ne transforme ce déficit en réussite.
 - Environ **36,44 %** du temps de marche après le placement initial des bras, stabilisations intermédiaires comprises et maintien final exclu, reste à une vitesse COM avant absolue <5 mm/s. La marche conserve des arrêts et un transfert latéral important.
-- Le bassin pendant la marche n’est pas corrigé par la préférence terminale. Sa pointe mesurée atteint environ **40,51°**. La posture finale reste au-dessus d’un alignement à 5°.
+- Le bassin pendant la marche n’est pas corrigé par la préférence terminale. Sa pointe mesurée atteint environ **40,51°**. La posture finale reste au-dessus d’un alignement à 5°. Les genoux finaux gauche/droite sont davantage fléchis : **22,95966° / 22,15056°**, contre **21,14815° / 15,37871°** pour la cadence seule. La préférence douce du bassin ne redresse donc pas les jambes.
+- Le balancement latéral du COM atteint **219,36 mm** crête à crête, avec vitesse latérale RMS **52,61 mm/s**. Les bras opposés bougent réellement : excursions droite/gauche **34,64303° / 23,56265°**, corrélations bras/cuisse **−0,999993 / −0,999985**, erreurs de suivi maximales **0,12752° / 0,11225°**. La première impression de bras presque statiques venait de la lenteur des pixels, pas de l’absence de mouvement opposé mesuré.
 - La petite excursion articulaire de départ et sa grâce héritée de 63,75 ms sont conservées explicitement. Le modèle reste la variante sélectionnée hanches/genoux avec `impratio=8`, sans qualification du modèle original GetUp inchangé.
-- Les verdicts physiques complets des deux séquences et le rendu final sont encore en cours de vérification à ce stade du document. Le résumé de preuves final précisera ces verdicts, les tests, les empreintes et les fichiers livrés.
+- Les audits indépendants complets de la cadence seule et du profil terminal passent, sans contrôle en échec, avec zéro nouvelle intégration. Les anciens verdicts de qualification du modèle original et le verdict global du plan visuel restent faux. Le MP4 réel de **79,515 s**, **795 images** en **800 × 450**, a été décodé en entier ; treize images représentatives et la fin ont été inspectées visuellement. Son titre annonce le bassin partiellement corrigé. Il conserve « audit en cours », car il a été livré avant la fin de la relecture ; un reçu séparé lie son empreinte inchangée à l’audit réussi après rendu.
+
+## Tests et livraison
+
+- Suite Python ciblée : **416 tests, 400 réussis, 16 ignorés explicitement**, aucune erreur ni échec. Les anciens objets Git nécessaires aux tests de parité historique manquent ; leurs vérifications ne sont pas inventées.
+- Après la réparation indépendante de liaison d’horloges : **25/25 tests** du lecteur terminal réussis, dont la dérive à 55 192 intégrations et trois mauvaises liaisons d’horloge rejetées. Les sources du contrôleur restent figées.
+- Suite npm : **68/68** tests réussis. La CI complète de l’application n’est pas revendiquée.
+- Résumé compact, métriques par phase, reçus et empreintes : `docs/evidence/getup-ten-step-video-corrections-2026-10-19/`. Les journaux bruts et preuves natives restent dans les sorties locales ; aucun XML, poids ou moteur original n’est redistribué.

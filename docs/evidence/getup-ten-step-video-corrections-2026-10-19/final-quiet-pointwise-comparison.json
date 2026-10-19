@@ -1,0 +1,56 @@
+{
+  "physicsIntegrations": 0,
+  "comparison": "Pair quiet sample k=1..4000 in the cadence-only final 5 s with quiet sample k in the terminal-corrected final 5 s; physical times differ because the corrected quiet starts after its 4 s ramp.",
+  "samples": 4000,
+  "thresholdReductionDeg": 5.0,
+  "torsoLimitDeg": 5.0,
+  "baselineNativeRange": [
+    56410,
+    60409
+  ],
+  "correctedNativeRange": [
+    59613,
+    63612
+  ],
+  "metrics": {
+    "pelvis": {
+      "minimumReductionDeg": 4.117841288088968,
+      "meanReductionDeg": 5.091524205053842,
+      "maximumReductionDeg": 5.19922495478248,
+      "initialReductionDeg": 4.1276253399070235,
+      "finalReductionDeg": 5.1973743435580175,
+      "minimumReductionQuietSample": 29,
+      "below5DegreeReductionSamples": 595,
+      "all4000ReductionAtLeast5Deg": false,
+      "correctedMaximumTiltDeg": 19.1684067803476,
+      "correctedAll4000TiltAtMost5Deg": false
+    },
+    "torsoRelativePelvis": {
+      "minimumReductionDeg": 4.007944049533158,
+      "meanReductionDeg": 5.158504735349813,
+      "maximumReductionDeg": 5.2806374984394715,
+      "initialReductionDeg": 4.0157293780048775,
+      "finalReductionDeg": 5.278578399190543,
+      "minimumReductionQuietSample": 24,
+      "below5DegreeReductionSamples": 535,
+      "all4000ReductionAtLeast5Deg": false,
+      "correctedMaximumTiltDeg": 20.20857916439068,
+      "correctedAll4000TiltAtMost5Deg": false
+    },
+    "torso": {
+      "minimumReductionDeg": -0.022855841478854,
+      "meanReductionDeg": 0.00847280373289723,
+      "maximumReductionDeg": 0.015725884990369865,
+      "initialReductionDeg": -0.019059810177937564,
+      "finalReductionDeg": 0.009445067238825544,
+      "minimumReductionQuietSample": 93,
+      "below5DegreeReductionSamples": 4000,
+      "all4000ReductionAtLeast5Deg": false,
+      "correctedMaximumTiltDeg": 1.7947096756721121,
+      "correctedAll4000TiltAtMost5Deg": true
+    }
+  },
+  "all4000PostureTargetPass": false,
+  "historicalVideoFinalPelvis24_11DegReduction": 4.970263500023101,
+  "historicalReferenceLimitation": "Only the historical final value 24.11 deg is available; historical quiet raw rows were not recovered, so no historical all-row comparison is claimed."
+}

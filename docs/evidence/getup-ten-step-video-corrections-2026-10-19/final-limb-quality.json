@@ -1,0 +1,200 @@
+{
+  "savedDataOnly": true,
+  "physicsIntegrations": 0,
+  "sideOrder": [
+    "right",
+    "left"
+  ],
+  "kneeFlexionDefinition": "Negative signed native knee hinge angle in degrees, with zero at straight; exact hinge metadata maps right qposIndex=6, left=12 after the floating base.",
+  "kneeFlexionDegByPhase": {
+    "transfer": {
+      "right": {
+        "minimum": 2.651787394299531,
+        "mean": 17.679590815757724,
+        "rms": 19.39372011961447,
+        "p95": 28.05233599274091,
+        "maximum": 28.122505429000235
+      },
+      "left": {
+        "minimum": 16.789672221172612,
+        "mean": 23.97322263654833,
+        "rms": 24.150484026883124,
+        "p95": 27.803336052642642,
+        "maximum": 34.30615463861511
+      }
+    },
+    "lift": {
+      "right": {
+        "minimum": 4.479874264569689,
+        "mean": 19.134840793251733,
+        "rms": 22.285312119728793,
+        "p95": 35.591616799913254,
+        "maximum": 36.96754986423402
+      },
+      "left": {
+        "minimum": 22.250956397471434,
+        "mean": 32.061638310740754,
+        "rms": 32.748803985611744,
+        "p95": 42.12719943261345,
+        "maximum": 42.377085619485584
+      }
+    },
+    "translate": {
+      "right": {
+        "minimum": 7.763708400799707,
+        "mean": 28.587869326957566,
+        "rms": 30.68268406779754,
+        "p95": 39.1712586223623,
+        "maximum": 39.26361902626953
+      },
+      "left": {
+        "minimum": 29.671073584966575,
+        "mean": 41.39416608367693,
+        "rms": 41.484714675425174,
+        "p95": 43.96110628657236,
+        "maximum": 44.15118764197135
+      }
+    },
+    "land": {
+      "right": {
+        "minimum": 18.64131889670718,
+        "mean": 33.292940277939415,
+        "rms": 33.868337360591944,
+        "p95": 39.55216673558763,
+        "maximum": 39.660171801729945
+      },
+      "left": {
+        "minimum": 9.944640862313724,
+        "mean": 31.71618333130001,
+        "rms": 32.99372959368183,
+        "p95": 41.38121504199694,
+        "maximum": 42.12063397432844
+      }
+    },
+    "settle": {
+      "right": {
+        "minimum": 8.637306415386083,
+        "mean": 21.969667394577744,
+        "rms": 22.88502047506725,
+        "p95": 31.756572186951082,
+        "maximum": 32.28444201535443
+      },
+      "left": {
+        "minimum": 10.257631412906496,
+        "mean": 22.78112981303105,
+        "rms": 23.469630397478298,
+        "p95": 32.611318468387665,
+        "maximum": 32.861596139497145
+      }
+    },
+    "stand": {
+      "right": {
+        "minimum": 15.468212607031353,
+        "mean": 20.559046047876123,
+        "rms": 20.69898787852462,
+        "p95": 22.149737210018493,
+        "maximum": 22.244696060923964
+      },
+      "left": {
+        "minimum": 18.055374849982858,
+        "mean": 22.358412544247276,
+        "rms": 22.38218420598045,
+        "p95": 22.96949212504883,
+        "maximum": 22.975038096615243
+      }
+    }
+  },
+  "kneeFlexionDegFinalQuiet": {
+    "cadence-only": {
+      "right": {
+        "minimum": 15.360139196943598,
+        "mean": 15.948134225051282,
+        "rms": 16.01810870022373,
+        "p95": 20.122530945994598,
+        "maximum": 22.244696060923964,
+        "first": 22.244696060923964,
+        "final": 15.378711647537909
+      },
+      "left": {
+        "minimum": 18.055374849982858,
+        "mean": 20.943391900065865,
+        "rms": 20.952205713501595,
+        "p95": 21.178256525863784,
+        "maximum": 21.183217914411127,
+        "first": 18.055374849982858,
+        "final": 21.148146596416666
+      }
+    },
+    "final-terminal-ten": {
+      "right": {
+        "minimum": 22.088361994410338,
+        "mean": 22.143418623245854,
+        "rms": 22.14342033329077,
+        "p95": 22.15005890683498,
+        "maximum": 22.15055968851819,
+        "first": 22.088361994410338,
+        "final": 22.15055968851819
+      },
+      "left": {
+        "minimum": 22.959659056253354,
+        "mean": 22.964029899135625,
+        "rms": 22.96403002401901,
+        "p95": 22.967764382907223,
+        "maximum": 22.972737231630255,
+        "first": 22.972737231630255,
+        "final": 22.959659056253354
+      }
+    }
+  },
+  "walkingDefinition": "Measured rows after 4 s arm placement, before terminal stand; this prefix is independently verified equal in both fresh runs.",
+  "walkingSamples": 53209,
+  "walkingLateralCOM": {
+    "coordinateDefinition": "Dot product with fixed initial heading-left horizontal axis; no filtered or planned COM.",
+    "peakToPeakM": 0.21936282123814133,
+    "rmsAroundMeanM": 0.09006621676973167,
+    "rmsVelocityMps": 0.05261394026289338
+  },
+  "walkingMeasuredArmAndThigh": {
+    "right": {
+      "armPitchChangeDeg": {
+        "minimum": -26.108483886768695,
+        "mean": -9.850931392582774,
+        "rms": 13.961952519324486,
+        "p95": 5.0517373673064405,
+        "maximum": 8.534550065081802
+      },
+      "ipsilateralThighPitchChangeDeg": {
+        "minimum": -8.529945580721039,
+        "mean": 9.842098209289363,
+        "rms": 13.964659220005444,
+        "p95": 23.721665953296927,
+        "maximum": 26.154677371602876
+      },
+      "armPitchPeakToPeakDeg": 34.6430339518505,
+      "thighPitchPeakToPeakDeg": 34.68462295232391,
+      "actualArmVsIpsilateralThighCorrelation": -0.99999274897854,
+      "maximumAbsTrackingErrorDeg": 0.12751627085226122
+    },
+    "left": {
+      "armPitchChangeDeg": {
+        "minimum": -28.053639952520182,
+        "mean": -14.826837603167398,
+        "rms": 16.102230084635227,
+        "p95": -5.68371192512195,
+        "maximum": -4.490992974327283
+      },
+      "ipsilateralThighPitchChangeDeg": {
+        "minimum": 4.437749228793316,
+        "mean": 14.821699831093678,
+        "rms": 16.10298690772135,
+        "p95": 25.823342268971324,
+        "maximum": 28.085997448435986
+      },
+      "armPitchPeakToPeakDeg": 23.562646978192898,
+      "thighPitchPeakToPeakDeg": 23.64824821964267,
+      "actualArmVsIpsilateralThighCorrelation": -0.9999852987632561,
+      "maximumAbsTrackingErrorDeg": 0.11225399187631303
+    }
+  },
+  "limitation": "Measured same-side arm/thigh antiphase quality is a diagnostic; no cadence or upright qualification is inferred from correlation. Historical raw limb data were not recovered."
+}

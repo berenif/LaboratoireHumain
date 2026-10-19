@@ -1,0 +1,16 @@
+{
+  "actualIntegrations": 63612,
+  "nativeTimeS": 79.51499999994581,
+  "summaryIntegrations": 63612,
+  "receiptIntegrations": 63612,
+  "verificationPhysicsIntegrations": 0,
+  "finalCheckpointSHA256": "f4bde11fa3479698a04faa27f9b97d3f5a00620c0a44e6f469608a3fddf6a0df",
+  "finalNativeCounterMatchesSummary": true,
+  "sourceStartEndHashesEqual": true,
+  "sourceCurrentHashesEqualStart": true,
+  "receiptCodeUnchanged": true,
+  "journalRows": 63612,
+  "allAgree": true,
+  "finalRecordedSourceStep": 63612,
+  "finalRecordedSourceTimeS": 79.51499999994581
+}

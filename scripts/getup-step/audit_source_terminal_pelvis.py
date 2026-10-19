@@ -159,7 +159,12 @@ def audit_activation(activation, anchor, final_index, landing, history, mass, pe
             and core.close(activation['correctionAngleRad'], np.linalg.norm(axis), 1e-12)
             and np.linalg.norm(axis) <= MAX_ANGLE_RAD+1e-12
             and activation['durationS'] == DURATION and activation['maximumWeight'] == MAX_WEIGHT)
-        expected_landing = dict(sourceStep=landing['landingNativeStep'], sourceTimeS=landing['landingTimeS'],
+        # The summary uses the integration counter clock; activation and native
+        # rows use the accumulated simulator clock. Bind each to its own source
+        # without widening the exact native-row comparison for long runs.
+        check('terminalLandingSummaryMatchesStepCounterClock',
+            core.close(landing['landingTimeS'], landing['landingNativeStep']*core.DT, 1e-12))
+        expected_landing = dict(sourceStep=landing['landingNativeStep'], sourceTimeS=landing['actualLandingSourceTimeS'],
             stepIndex=final_index, landingConsecutiveSamples=landing.get('landingConsecutiveSamples'),
             feetLoadN=landing.get('feetLoadN'), forwardM=landing['achievedAtLoadAcquisitionM'],
             requestedForwardM=landing['requestedDistanceM'])
@@ -263,6 +268,7 @@ def audit_terminal_journal(rows, notes, entry, activation, summary, mass, pelvis
             if row['stepIndex'] == final_index and sid == final_record.get('landingNativeStep'):
                 final_record['actualLandingConsecutiveSamples'] = landing_run
                 landing_row = row
+                final_record['actualLandingSourceTimeS'] = now
                 final_record['actualLandingFeetLoadN'] = [f['loadN'] for f in row['feet']]
             loaded = (row['stepIndex'] == final_index
                 and min(f['loadN'] for f in row['feet']) >= 3.
