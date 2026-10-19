@@ -1,0 +1,587 @@
+{
+  "schema": 1,
+  "date": "2026-10-19",
+  "scope": "Completed, explicitly activated default-OFF root-translation-carry correctness gates and unchanged-20+5 belly checkpoint continuation. Fresh 3+1 recovery campaign is excluded.",
+  "status": "completed-20plus5-checkpoint-comparison-NOT-QUALIFIED",
+  "standingQualified": false,
+  "releaseAccepted": false,
+  "productionRecoveryEnabled": false,
+  "defaultProfileChanged": false,
+  "physicalAcceptanceChanged": false,
+  "experiment": {
+    "feature": "root-translation-carry-experiment",
+    "algorithm": "f32-dq-f64-remainder-v1",
+    "features": [
+      "getup-terminal-balance-experiment",
+      "standing-dynamics-experiment",
+      "root-translation-carry-experiment"
+    ],
+    "compileEnabledStartsInactive": true,
+    "activationRequired": true,
+    "arithmetic": "Retain the existing engine f32 dq = velocity * dt product; use an f64 remainder only in free-root translation-coordinate addition. Angular integration is unchanged.",
+    "noPoseVelocityOrRootForceAssist": true,
+    "sourceSlowWeakControlUnchanged": true,
+    "inputCheckpoint": {
+      "path": "outputs/getup-terminal-dynamics-20261019/belly/checkpoint-final.bin",
+      "sha256": "3fa0d9d1de32c30e1e893a49fb28d8cf201e3f537397548f1fc9199582c5bb95",
+      "bytes": 1792938
+    },
+    "inputNativeSubsteps": 3040,
+    "inputPhysicalSeconds": 3.8,
+    "activationAtInputBoundary": {
+      "nativeIntegrations": 0,
+      "remainder": [
+        0,
+        0,
+        0
+      ],
+      "binaryWorldAndRuntimeControllerStateUnchanged": true
+    },
+    "numericalProfile": {
+      "solverIterations": 20,
+      "additionalBodyIterations": 5,
+      "nativeHz": 800,
+      "controllerHz": 40,
+      "checkpointProfileMorph": false
+    },
+    "frozenLibrary": {
+      "path": "outputs/getup-root-translation-carry-20261019/liblh_sim-carry-frozen.rlib",
+      "sha256": "ac8d054ed1412571f9f91f056255b46afda18ae3fcc04eaac30a66e12476b6dd",
+      "bytes": 24054950
+    },
+    "dependencyManifest": "outputs/getup-root-translation-carry-20261019/runtime-frozen-rlib-manifest.json",
+    "allFiveRecordedDependencyHashesReverified": true,
+    "baselineFrozenLibrary": {
+      "path": "outputs/getup-terminal-dynamics-20261019/liblh_sim-frozen.rlib",
+      "sha256": "6fa3ba26faf9dbb031b9b0ebc6cbbc77edda510fd619d0b0eee62347e8442dcb",
+      "bytes": 23791186
+    },
+    "sourceBaseCommit": "2708eda150275a3544267444cb70ca0cda48fd25",
+    "sourceSha256": {
+      "rust/crates/sim/Cargo.toml": "93690cd613fd83ed5e04e9636f496285dfae1adfa15b944cefc009e7cc2521b1",
+      "rust/crates/sim/src/getup_fixture_profile_tests.rs": "9aabd3649be57e8a8d55977a446e9548d6e69e99cbe5c01277557e455a3852d0",
+      "rust/crates/sim/src/getup_root_translation_checkpoint_tests.rs": "ef6200665eded0fa1b10cb155c57f6c5c85059c6ee62bfb5e2627157e3299727",
+      "rust/crates/sim/src/runtime.rs": "7d7493dbcdaa4c9e2b1deb771fc6ec068f55b5d4ce73bcd25e9da53c6073b955",
+      "rust/vendor/rapier3d/Cargo.toml": "952118c8a8cad953cf9731da9f777491daedca0c2495e07a9a156d68a4ac4283",
+      "rust/vendor/rapier3d/src/dynamics/joint/multibody_joint/mod.rs": "ae3031204f216acc748c6ea330c8b09b1f2c223ae8c3c3a719e1cfeb6fba7db6",
+      "rust/vendor/rapier3d/src/dynamics/joint/multibody_joint/multibody.rs": "661b71d6df77746b04755aedcc2be2e97ad94641fec61884939d31dd6f48bd80",
+      "rust/vendor/rapier3d/src/dynamics/joint/multibody_joint/multibody_joint.rs": "34af55b12f3a7c126366f7599e8087fb2265aef18fedfd1efe00bfd82ff4bc81",
+      "rust/vendor/rapier3d/src/dynamics/joint/multibody_joint/root_translation_compensation_tests.rs": "26eff2a83a08f1de789f43529287cb6946177b5c8c97594ad349ef165b0b3ec5"
+    },
+    "allFinalSourceHashesReverified": true,
+    "freezeChronology": "Initial and final freezes are historical pre-campaign receipts. The candidateDynamicsExecuted=false field is not the final campaign verdict. Changes between freezes were test-only construction comparison/first-tick proof and serializer-scope comments; production algorithm unchanged."
+  },
+  "checkpointContract": {
+    "inactiveLegacySchema": 1,
+    "activeSchema": 2,
+    "activeSidecar": "Exact-bit root integrator state keyed by rigid-body root index and generation; qbits and f64 remainderbits are validated against each root.",
+    "featureOffRejectsActiveSchema2": true,
+    "rawWorldBincodePreservesActiveCarryAlone": false,
+    "serializationScope": "Rapier serde skips pipeline/CCD workspaces and the initial multibody topology-refresh queue. These isolated GetUp first-step proofs do not establish generic raw-world checkpoint completeness.",
+    "externalActivationRoundTripAndNextTick": {
+      "passed": true,
+      "realNativeIntegrations": 60,
+      "forecastIntegrations": 0,
+      "branches": 3,
+      "ordinaryTicksPerBranch": 1,
+      "checks": [
+        "zero-integration activation purity",
+        "schema-2 exact state round trip",
+        "active live/restored next-tick physical replies excluding only wall cost",
+        "active live/restored binary world, controller, and sidecar equality",
+        "compiled-inactive next-tick control"
+      ],
+      "standingQualification": false,
+      "rawResult": "outputs/getup-root-translation-carry-20261019/checkpoint-probe-result/result.json"
+    }
+  },
+  "correctnessGates": {
+    "vendor": {
+      "focusedPassed": 19,
+      "fullVendorLibPassed": 94,
+      "failed": 0,
+      "initialCompileFailure": {
+        "exitCode": 101,
+        "cause": "Missing test-only vec! macro import",
+        "testsExecuted": 0,
+        "nativeDynamicsBeforeCorrection": 0
+      },
+      "scope": "Native vendor correctness, not standing-dynamics or performance qualification; focused tests overlap the full vendor library suite."
+    },
+    "runtime": {
+      "enabledPassed": 26,
+      "featureOffPassed": 8,
+      "totalFinalPassed": 34,
+      "failedFinal": 0,
+      "finalRealNativeIntegrations": 13100,
+      "finalForecastIntegrations": 0,
+      "initialFailedAttempt": {
+        "passed": 3,
+        "failed": 4,
+        "realNativeIntegrations": 80,
+        "forecastIntegrations": 0
+      },
+      "includingInitialAttemptRealNativeIntegrations": 13180,
+      "scope": "Focused native library/checkpoint tests; not full-workspace or WASM qualification."
+    },
+    "constructionComparisonCorrection": {
+      "cause": "Only unordered serialization order of the 24-edge MultibodyJointSet.to_join HashSet differed in fresh construction.",
+      "proof": "Four byte offsets differed; the same 24 typed handle pairs were present; all bytes outside the named to_join slice matched exactly.",
+      "correctedComparator": "Only at native zero, validate the named serialized to_join field and sort its full typed handle-pair set; compare everything outside it exactly. No tolerance or broad byte masking.",
+      "unchangedStrictChecks": "Same-live tuple and activation byte equality retained. Actual first ordinary tick live/restored/clone equality used 60 native integrations; integrated-history proof used 80. Postintegration world and integrator comparisons remain exact.",
+      "rawDiagnostic": "outputs/getup-root-translation-carry-20261019/construction-to-join-order-diagnostic.json"
+    }
+  },
+  "disabledBaselineParity": {
+    "passed": true,
+    "comparison": "Old frozen 6fa3ba26... library versus new carry-feature-compiled but inactive library from the identical checkpoint, one ordinary 20-native tick each.",
+    "checks": {
+      "fullPhysicalReplyExceptOnlyWallCost": true,
+      "schema1": true,
+      "canonicalModelBytes": true,
+      "fullSerializedWorldBytes": true,
+      "fullAuxiliaryExceptOnlyWallCost": true
+    },
+    "excludedWallClockKeys": [
+      "controller_ms",
+      "update_ms"
+    ],
+    "numericTolerance": 0,
+    "initialComparisonFailure": "Only f32 shortest-decimal JSON representation versus f64-promoted JSON Value formatting. Typed Snapshot reserialization restored the declared mixed f32/f64 wire contract; no dynamics were rerun and no numeric tolerance was added.",
+    "initialResultPreserved": "outputs/getup-root-translation-carry-20261019/disabled-baseline-representation-only-initial.json",
+    "correctedResult": "outputs/getup-root-translation-carry-20261019/disabled-baseline-parity.json"
+  },
+  "completed20plus5Continuation": {
+    "outcome": "completed",
+    "standingQualified": false,
+    "requestedAndObservedSeconds": 30,
+    "realNativeIntegrations": 24000,
+    "nativeObserverSamples": 24000,
+    "forecastIntegrations": 0,
+    "unobservedTerminalTailNative": 0,
+    "allStandingPredicatesPassedEveryNativeSubstep": false,
+    "standingPredicateFailureSubsteps": {
+      "footLoadFraction": 4
+    },
+    "allOtherObservedNativeStandingPredicatesPass": true,
+    "maximumFootOriginDriftM": [
+      0.0054952665232121944,
+      0.008183224126696587
+    ],
+    "baselineMaximumFootOriginDriftM": [
+      0.04232267662882805,
+      0.043748561292886734
+    ],
+    "minimumFootLoadsN": [
+      115.1731185913086,
+      182.17576599121094
+    ],
+    "loadedContactSpeedIntegralM": [
+      0.00044606006055015877,
+      0.0004687153156245232
+    ],
+    "loadedSlipStopM": 0.02,
+    "unloadedFootSubsteps": [
+      0,
+      0
+    ],
+    "observerAnchorScope": "Every-native diagnostic anchors are the foot origins at checkpoint restoration. The original controller stable_feet anchors and existing counter were separately retained and monitored, never reset by the probe to manufacture a pass.",
+    "originalControllerCounterContinuousEveryNativeSubstep": false,
+    "originalControllerCounterDiscontinuitySubsteps": 13449,
+    "originalControllerStableCounterAtInput": 810,
+    "originalControllerStableCounterExpectedFinal": 24810,
+    "originalControllerStableCounterFinal": 11922,
+    "originalStableAnchorsUnchanged": false,
+    "firstOriginalCounterReset": {
+      "continuationNative": 10552,
+      "physicalSeconds": 16.99,
+      "expectedStableNative": 11362,
+      "actualStableNative": 0,
+      "diagnosticUsesOriginalControllerAnchors": true,
+      "predicates": {
+        "angularMotion": true,
+        "bothFeetLoadedAndPersistent": true,
+        "captureInSupport": true,
+        "comInSupport": true,
+        "footDriftFromSuppliedAnchors": true,
+        "footLoadFraction": false,
+        "head": true,
+        "linearMotion": true,
+        "onlyFeet": true,
+        "torso": true
+      },
+      "footLoadsN": [
+        117.25776672363281,
+        201.00863647460938
+      ],
+      "footDriftM": [
+        0.003979266155511141,
+        0.004822131246328354
+      ]
+    },
+    "teacherForecastUnchanged": true,
+    "slowDecisionCountUnchanged": true,
+    "slowDecisionArchiveLengthUnchanged": true,
+    "teacherForecastCountBeforeAndAfter": 540,
+    "slowDecisionCountBeforeAndAfter": 76,
+    "decisionArchiveExactlyEqual": true,
+    "teacherFramesAndReferenceExactlyEqual": true,
+    "diskTraceScope": "The observer evaluated all 24000 native substeps. Saved native diagnostics contain 1200 regular control-boundary samples plus all four failing native samples (1204 rows); control trace has 1200 rows ending at physical 33.8 s.",
+    "verdict": "Reduced drift does not qualify this continuation: four actual 800 Hz foot-load-fraction failures reset the original stable counter and changed its stable anchors. Never discard those failures, reset original anchors/counter, or use the final latched prototype flag to call it passed.",
+    "rawResult": "outputs/getup-root-translation-carry-20261019/belly-hold30/result.json"
+  },
+  "accounting": {
+    "completedCampaignOnly": {
+      "oldFrozenBaseline": {
+        "realNativeIntegrations": 20,
+        "forecastIntegrations": 0
+      },
+      "externalCheckpointProbeAllThreeBranches": {
+        "realNativeIntegrations": 60,
+        "forecastIntegrations": 0
+      },
+      "active30sContinuation": {
+        "realNativeIntegrations": 24000,
+        "forecastIntegrations": 0
+      },
+      "totalRealNativeIntegrations": 24080,
+      "totalForecastIntegrations": 0
+    },
+    "runtimeTestWorkSeparate": {
+      "finalRealNativeIntegrations": 13100,
+      "initialFailedAttemptRealNativeIntegrations": 80,
+      "totalRealNativeIntegrations": 13180,
+      "forecastIntegrations": 0
+    },
+    "vendorFullPipelineIntegrationCount": "Not inventoried; no campaign/runtime/vendor combined integration total is asserted."
+  },
+  "executedProbeSources": [
+    {
+      "maintainedSource": {
+        "path": "docs/evidence/probes/getup-root-translation-carry-checkpoint-2026-10-19.rs",
+        "sha256": "2389f26c6f6d44c68b29c5971c60bdb2cbaf92b373d4f2a17b048ed342cbbd04",
+        "bytes": 8317
+      },
+      "executedSource": "outputs/getup-root-translation-carry-20261019/checkpoint-probe.rs",
+      "executedBinary": {
+        "path": "outputs/getup-root-translation-carry-20261019/checkpoint-probe",
+        "sha256": "19b4c4cbd991c8da2916e6d44ed68322da19a062a68ea5553af10c4843f9305f",
+        "bytes": 16441872
+      }
+    },
+    {
+      "maintainedSource": {
+        "path": "docs/evidence/probes/getup-root-translation-carry-standing-continuation-2026-10-19.rs",
+        "sha256": "c5d40ba660dc3e32ad85c58f723d0036f51b277c510420f74eabc726f67eb61b",
+        "bytes": 13251
+      },
+      "executedSource": "outputs/getup-root-translation-carry-20261019/standing-continuation.rs",
+      "executedBinary": {
+        "path": "outputs/getup-root-translation-carry-20261019/standing-continuation",
+        "sha256": "0d362f0c62720ef012e19fb0311a8e197ef3e06effc1bb9180f6da5174e353c8",
+        "bytes": 16616752
+      }
+    },
+    {
+      "maintainedSource": {
+        "path": "docs/evidence/probes/getup-root-translation-carry-baseline-one-tick-2026-10-19.rs",
+        "sha256": "dc15eb833cbdf84a9b115d182696b211abd913735c8c4f9944bb9a38d4171cac",
+        "bytes": 914
+      },
+      "executedSource": "outputs/getup-root-translation-carry-20261019/baseline-one-tick.rs",
+      "executedBinary": {
+        "path": "outputs/getup-root-translation-carry-20261019/baseline-one-tick",
+        "sha256": "679404d3eeeb43af3d2241e2a060b3d244ec2b0a1de07a4ddeceff361db58ae9",
+        "bytes": 16233608
+      }
+    },
+    {
+      "maintainedSource": {
+        "path": "docs/evidence/probes/getup-root-translation-carry-canonicalize-reply-2026-10-19.rs",
+        "sha256": "5c37983389d1a3068358a59d933e6f581b1f0c593673fd8bea42b988c0cd3475",
+        "bytes": 545
+      },
+      "executedSource": "outputs/getup-root-translation-carry-20261019/canonicalize-reply.rs",
+      "executedBinary": {
+        "path": "outputs/getup-root-translation-carry-20261019/canonicalize-reply",
+        "sha256": "23f636d336b667cde16ab8073158416360fec9c752a9526603d4f8536f85120a",
+        "bytes": 2440968
+      }
+    },
+    {
+      "maintainedSource": {
+        "path": "docs/evidence/probes/getup-root-translation-carry-compare-disabled-baseline-2026-10-19.py",
+        "sha256": "1085d200582ac1b1cdc2ac935a9365aeaf2037213719c545e709e5611dffe7f1",
+        "bytes": 1854
+      },
+      "executedSource": "outputs/getup-root-translation-carry-20261019/compare-disabled-baseline.py",
+      "execution": "Read-only comparison of already-generated typed replies/checkpoints; no integrations."
+    }
+  ],
+  "rawArtifacts": [
+    {
+      "path": "outputs/getup-root-translation-carry-20261019/source-freeze-initial.json",
+      "sha256": "7bdba713cd07e933652049a963f1a31c2b575e4dca6eb200e8ea8cf65bc054cd",
+      "bytes": 2079
+    },
+    {
+      "path": "outputs/getup-root-translation-carry-20261019/source-freeze-final.json",
+      "sha256": "3af8e50aae2378d44053b07a253efa89ee1e8f1125c297f0b15d5ae035459679",
+      "bytes": 2504
+    },
+    {
+      "path": "outputs/getup-root-translation-carry-20261019/vendor-gates-summary.json",
+      "sha256": "4c2bc56ad54ff328732913c3b1d6cf0f597d0845fcdc26ef4c228c8180cecf25",
+      "bytes": 1899
+    },
+    {
+      "path": "outputs/getup-root-translation-carry-20261019/vendor-focused-command.txt",
+      "sha256": "805fe84e6b8848b5e2307d61ca3cd1e07d3c7aef1b36427745c173d3fa990b0e",
+      "bytes": 464
+    },
+    {
+      "path": "outputs/getup-root-translation-carry-20261019/vendor-full-command.txt",
+      "sha256": "6ea373f257a47c8677a95c3ce44426b61632ee52539c7dbc5dc622bf65acd394",
+      "bytes": 428
+    },
+    {
+      "path": "outputs/getup-root-translation-carry-20261019/vendor-focused-attempt1.log",
+      "sha256": "e661d5b275f5d9f09c7d197a92ecbc21bca897988786456ad0012d43d56bfa50",
+      "bytes": 957
+    },
+    {
+      "path": "outputs/getup-root-translation-carry-20261019/vendor-focused.log",
+      "sha256": "ec3e10783013ecbba27be1ca329cc913d740084ebead65889e40ba30fc4456ce",
+      "bytes": 3179
+    },
+    {
+      "path": "outputs/getup-root-translation-carry-20261019/vendor-full.log",
+      "sha256": "2f665cd14f1f0c84c365d3399afbece019fd5adcd174b485add30c4c78cc9c08",
+      "bytes": 10801
+    },
+    {
+      "path": "outputs/getup-root-translation-carry-20261019/runtime-gate-ledger.json",
+      "sha256": "e73261ed14d7d7e59577cc17e88edf0eeaf6c5ed0a1381361bd22d9ef9ff9639",
+      "bytes": 3317
+    },
+    {
+      "path": "outputs/getup-root-translation-carry-20261019/runtime-frozen-rlib-manifest.json",
+      "sha256": "2c98fa9e10b8dcca800cc310e93d4751bc227ade7d12aee45543fdf5af50e2c6",
+      "bytes": 2041
+    },
+    {
+      "path": "outputs/getup-root-translation-carry-20261019/runtime-gate-source-sha256.txt",
+      "sha256": "618112ec9bd2247c41e4717d8d2fcd2d1ea0d56b0775c3d86a14d769c4e3a4fa",
+      "bytes": 712
+    },
+    {
+      "path": "outputs/getup-root-translation-carry-20261019/runtime-gate-final-source-sha256.txt",
+      "sha256": "7b1ec2076178aaf1e70951c21a067195d9da3c7e02e28db28f3acd1d02e67b71",
+      "bytes": 712
+    },
+    {
+      "path": "outputs/getup-root-translation-carry-20261019/runtime-gate-final-doc-corrected-source-sha256.txt",
+      "sha256": "31710a7338e99dc0bd17717525f7f6a319f4369dc65fb25738377157e34b150e",
+      "bytes": 712
+    },
+    {
+      "path": "outputs/getup-root-translation-carry-20261019/runtime-enabled-root-checkpoint-tests-initial-4-failed.log",
+      "sha256": "30faa83f0dc175af8808bf269b75122a2db57e0c45c03a164a5d9b0f1ebe5d72",
+      "bytes": 6042118
+    },
+    {
+      "path": "outputs/getup-root-translation-carry-20261019/construction-to-join-order-diagnostic.json",
+      "sha256": "276e9455f6b4fa68530d77f0dfa1ec36b3fcf9ceef10375de641ea22ea78d1c5",
+      "bytes": 3355
+    },
+    {
+      "path": "outputs/getup-root-translation-carry-20261019/runtime-enabled-root-checkpoint-tests.log",
+      "sha256": "37d28398941d420916d11e3af31787820c8d3048f2b0f4f7f2a401a9989b2c51",
+      "bytes": 1246
+    },
+    {
+      "path": "outputs/getup-root-translation-carry-20261019/runtime-enabled-profile-tests.log",
+      "sha256": "8b857d27fc76b7e5e33446d36e3e8be5e4660375836aa37b2d4b9b2a9c26f269",
+      "bytes": 646
+    },
+    {
+      "path": "outputs/getup-root-translation-carry-20261019/runtime-enabled-legacy-checkpoint-tests.log",
+      "sha256": "5cec131d74e1104f047cb98e711121131580af4f294ffa396f50c9bdf11a86e2",
+      "bytes": 198
+    },
+    {
+      "path": "outputs/getup-root-translation-carry-20261019/runtime-enabled-terminal-balance-tests.log",
+      "sha256": "836048c89946fa11b5cb9009f87c1c98c23fbd076c61000c40c1dafb722b7506",
+      "bytes": 1126
+    },
+    {
+      "path": "outputs/getup-root-translation-carry-20261019/runtime-enabled-supported-standing-tests.log",
+      "sha256": "0c76144db5b56fc8fb01aa82681b7ebc8032499645a3324ada5b099f27034e12",
+      "bytes": 1195
+    },
+    {
+      "path": "outputs/getup-root-translation-carry-20261019/runtime-disabled-root-checkpoint-tests.log",
+      "sha256": "4b82052a6d625efb663b6d1a174aab8e3d7d57c49d4e536089ef0b1bbd1a180c",
+      "bytes": 470
+    },
+    {
+      "path": "outputs/getup-root-translation-carry-20261019/runtime-disabled-profile-tests.log",
+      "sha256": "ae18145dadef35458c34dcfc971c5cae3d67424bd1e18e6f234b93a7b9017a0f",
+      "bytes": 646
+    },
+    {
+      "path": "outputs/getup-root-translation-carry-20261019/runtime-disabled-legacy-checkpoint-tests.log",
+      "sha256": "9ac778220eee8e51dd37d6e2b3ca6c47b4ad08c07c881afabee559f2bbfa3495",
+      "bytes": 198
+    },
+    {
+      "path": "outputs/getup-root-translation-carry-20261019/baseline-ledger.json",
+      "sha256": "3e648da598975e6fe6ac3418dc690f8ed567651b66507738a30c31e33298be5b",
+      "bytes": 630
+    },
+    {
+      "path": "outputs/getup-root-translation-carry-20261019/baseline-one-tick-result/reply.json",
+      "sha256": "6656aab408ba12a46a9c9d6b0fefc1ef80d88ec38098dde9f004f13e10bec41f",
+      "bytes": 19999
+    },
+    {
+      "path": "outputs/getup-root-translation-carry-20261019/baseline-one-tick-result/typed-reply.json",
+      "sha256": "1dd92da171de04fff874f59a93b4138ac117d26b589dafb2a21911f2ebbb6f76",
+      "bytes": 24143
+    },
+    {
+      "path": "outputs/getup-root-translation-carry-20261019/baseline-one-tick-result/checkpoint.bin",
+      "sha256": "82bad5dabbe849eec05429024a5b845db0d144095bf6ea16bd9a282da7feb6d4",
+      "bytes": 1793044
+    },
+    {
+      "path": "outputs/getup-root-translation-carry-20261019/checkpoint-probe-process-ledger.json",
+      "sha256": "bf277e2652353e666d2b0db49c2b4afd5fe6a7c3fa4ed051023051fbb095d792",
+      "bytes": 906
+    },
+    {
+      "path": "outputs/getup-root-translation-carry-20261019/checkpoint-probe-result/result.json",
+      "sha256": "c6151667eb4241a36181b68800672d907c1ac62ce14a584d8cdd37b3bdbc95b1",
+      "bytes": 615
+    },
+    {
+      "path": "outputs/getup-root-translation-carry-20261019/checkpoint-probe-result/active-checkpoint-before-tick.bin",
+      "sha256": "753c1105666238adf00ce219d66fadd779b267d75dbad42a72d1f3b4f68083d8",
+      "bytes": 1924295
+    },
+    {
+      "path": "outputs/getup-root-translation-carry-20261019/checkpoint-probe-result/active-checkpoint-after-tick.bin",
+      "sha256": "5b622f67038ec7bd99511ec37e64b6a1b11601b2996db4ec3d27557773783757",
+      "bytes": 1924365
+    },
+    {
+      "path": "outputs/getup-root-translation-carry-20261019/checkpoint-probe-result/active-live-tick-receipt.bin",
+      "sha256": "5b622f67038ec7bd99511ec37e64b6a1b11601b2996db4ec3d27557773783757",
+      "bytes": 1924365
+    },
+    {
+      "path": "outputs/getup-root-translation-carry-20261019/checkpoint-probe-result/active-restored-tick-receipt.bin",
+      "sha256": "5b622f67038ec7bd99511ec37e64b6a1b11601b2996db4ec3d27557773783757",
+      "bytes": 1924365
+    },
+    {
+      "path": "outputs/getup-root-translation-carry-20261019/checkpoint-probe-result/typed-disabled-final-reply.json",
+      "sha256": "1dd92da171de04fff874f59a93b4138ac117d26b589dafb2a21911f2ebbb6f76",
+      "bytes": 24143
+    },
+    {
+      "path": "outputs/getup-root-translation-carry-20261019/checkpoint-probe-result/disabled-checkpoint-after-tick.bin",
+      "sha256": "82bad5dabbe849eec05429024a5b845db0d144095bf6ea16bd9a282da7feb6d4",
+      "bytes": 1793044
+    },
+    {
+      "path": "outputs/getup-root-translation-carry-20261019/disabled-baseline-representation-only-initial.json",
+      "sha256": "d5a9d560abce266c387c035e78a6327e9f92c1445d0f277a7801016e091f510f",
+      "bytes": 758
+    },
+    {
+      "path": "outputs/getup-root-translation-carry-20261019/disabled-baseline-parity.json",
+      "sha256": "04ebeffd015d77a9a14cfaab6a15527bfdde5abc8ed23596aea37133f0b89d6e",
+      "bytes": 870
+    },
+    {
+      "path": "outputs/getup-root-translation-carry-20261019/belly-hold30-process-ledger.json",
+      "sha256": "3c736d7d93e6aa183c0e5f433dfbc8212584a84f7b04b349e849d330a560d648",
+      "bytes": 1643
+    },
+    {
+      "path": "outputs/getup-root-translation-carry-20261019/belly-hold30/result.json",
+      "sha256": "78a22361e99658706cfb6b49d07e31922dff0615cd0b8dd68349e44d4a715d0f",
+      "bytes": 94470
+    },
+    {
+      "path": "outputs/getup-root-translation-carry-20261019/belly-hold30/explicit-integration-mode.json",
+      "sha256": "f10d11b3bd2dd912979176577c413f8c124fa80530f8e6cba54deea3bbfcc88f",
+      "bytes": 153
+    },
+    {
+      "path": "outputs/getup-root-translation-carry-20261019/belly-hold30/checkpoint-input-verification.json",
+      "sha256": "250678759eec13f2bd64c1ad6a8aedd648908d2f889a91b8ae49c5d1550d1dc5",
+      "bytes": 295
+    },
+    {
+      "path": "outputs/getup-root-translation-carry-20261019/belly-hold30/checkpoint-active-initial-verification.json",
+      "sha256": "ffa60f21ecd25b40dcc74efde8ab75208026615f5dd4fb8a4bad25c9a6cf8d57",
+      "bytes": 295
+    },
+    {
+      "path": "outputs/getup-root-translation-carry-20261019/belly-hold30/checkpoint-final-verification.json",
+      "sha256": "c16dc552fc8a9adca9fbd28408d43fe95c00e7935cdb99d3f243b5318f4f72cc",
+      "bytes": 296
+    },
+    {
+      "path": "outputs/getup-root-translation-carry-20261019/belly-hold30/checkpoint-active-initial.bin",
+      "sha256": "45b75c0be8e1a6fd4014406deff9bd54403ad8c11edff715caad79f98115225a",
+      "bytes": 1924295
+    },
+    {
+      "path": "outputs/getup-root-translation-carry-20261019/belly-hold30/checkpoint-final.bin",
+      "sha256": "04789161ca5d1ce7e2e4c4794896018c0be8c8c2b1ba671dde293a707d4d8fe4",
+      "bytes": 1924055
+    },
+    {
+      "path": "outputs/getup-root-translation-carry-20261019/belly-hold30/native-diagnostics.ndjson",
+      "sha256": "ec5d35107d76b3fb562e5347e5c9bf68e3f7efe8874b4502907311fb3ae31a58",
+      "bytes": 16096269
+    },
+    {
+      "path": "outputs/getup-root-translation-carry-20261019/belly-hold30/trace.ndjson",
+      "sha256": "4323f64af9b63448b72c32887293920da55ea695cd3dde2227985989bbc6175a",
+      "bytes": 18256331
+    },
+    {
+      "path": "outputs/getup-root-translation-carry-20261019/load-spike-native-samples.json",
+      "sha256": "ecfcb0cde4dcb68dc5234d07c7f30fe5cae2922acb3bbe5314090fbc209da8fc",
+      "bytes": 45610
+    },
+    {
+      "path": "outputs/getup-terminal-dynamics-20261019/belly-hold30/result.json",
+      "sha256": "82bef7c7a1ba2ec830197bf6e6032d0c23a1a051b3414436250f04db0aa62037",
+      "bytes": 78023
+    }
+  ],
+  "excludedPendingWork": {
+    "scope": "Fresh explicitly activated 3+1 four-pose recovery and any subsequent active-checkpoint continuations",
+    "outcomesIncluded": false,
+    "accountingIncluded": false,
+    "reason": "Separate active work at preparation time; no provisional outcomes or hashes of mutable results are imported."
+  },
+  "limitations": [
+    "No performance claim.",
+    "No WASM qualification.",
+    "No public or default promotion.",
+    "No angular carry.",
+    "One completed belly checkpoint continuation does not qualify fresh recovery, all poses, or 24-case standing acceptance."
+  ],
+  "evidencePreparation": {
+    "sourceEdits": false,
+    "buildsOrDynamicsExecuted": false,
+    "stagingOrCommits": false,
+    "checks": "Read-only JSON/log inspection, source/artifact SHA-256 checks, 1204 native-diagnostic/1200 control-trace row validation, exact archive comparisons, and byte-identical maintained probe copies."
+  }
+}

@@ -232,11 +232,11 @@ fn explicit_three_plus_one_is_applied_before_all_fixture_initial_poses_without_i
             crate::getup::joint_state(&default.simulation).unwrap(),
             "{kind}: initial generalized state"
         );
-        assert_eq!(
-            runtime.getup_fixture_report().unwrap(),
-            default.getup_fixture_report().unwrap(),
-            "{kind}"
-        );
+        let mut explicit_report: Value = serde_json::from_str(&runtime.getup_fixture_report().unwrap()).unwrap();
+        let mut default_report: Value = serde_json::from_str(&default.getup_fixture_report().unwrap()).unwrap();
+        assert_eq!(explicit_report.as_object_mut().unwrap().remove("profile").unwrap(), json(&simulation.profile));
+        assert_eq!(default_report.as_object_mut().unwrap().remove("profile").unwrap(), json(&default.simulation.profile));
+        assert_eq!(explicit_report, default_report, "{kind}");
         assert_eq!(
             runtime.getup_report().unwrap(),
             default.getup_report().unwrap(),

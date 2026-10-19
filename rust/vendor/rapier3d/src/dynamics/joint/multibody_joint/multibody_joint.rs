@@ -16,6 +16,76 @@ use crate::utils::RotationOps;
 use crate::utils::vect_to_na;
 use na::DVectorViewMut;
 
+/// Exact sidecar representation of an explicitly activated root accumulator.
+///
+/// The ordinary serialized multibody intentionally omits this state. Active
+/// checkpoints must store and validate this sidecar separately.
+#[cfg(feature = "compensated-root-integration")]
+#[cfg_attr(feature = "serde-serialize", derive(Serialize, Deserialize))]
+#[cfg_attr(feature = "serde-serialize", serde(deny_unknown_fields))]
+#[derive(Copy, Clone, Debug, PartialEq, Eq)]
+pub struct RootTranslationIntegratorState {
+    /// Current solver-visible f32 root coordinates, as IEEE-754 bits.
+    pub qbits: [u32; 3],
+    /// Requested-minus-delivered displacement, as exact IEEE-754 f64 bits.
+    pub remainderbits: [u64; 3],
+}
+
+#[cfg(feature = "compensated-root-integration")]
+impl RootTranslationIntegratorState {
+    /// Arithmetic contract for checkpoint sidecar compatibility.
+    pub const ALGORITHM: &'static str = "f32-dq-f64-remainder-v1";
+}
+
+#[cfg(feature = "compensated-root-integration")]
+#[derive(Copy, Clone, Debug)]
+pub(super) struct RootTranslationIntegrator {
+    pub(super) qbits: [u32; 3],
+    pub(super) remainder: [f64; 3],
+    pub(super) root_body: crate::dynamics::RigidBodyHandle,
+}
+
+#[cfg(feature = "compensated-root-integration")]
+impl RootTranslationIntegrator {
+    pub(super) fn new(joint: &MultibodyJoint, root_body: crate::dynamics::RigidBodyHandle) -> Self {
+        Self {
+            qbits: Self::coordinate_bits(joint),
+            remainder: [0.0; 3],
+            root_body,
+        }
+    }
+
+    pub(super) fn coordinate_bits(joint: &MultibodyJoint) -> [u32; 3] {
+        core::array::from_fn(|i| joint.coords[i].to_bits())
+    }
+
+    pub(super) fn state(self) -> RootTranslationIntegratorState {
+        RootTranslationIntegratorState {
+            qbits: self.qbits,
+            remainderbits: self.remainder.map(f64::to_bits),
+        }
+    }
+
+    fn integrate(&mut self, joint: &mut MultibodyJoint, dt: Real, vels: &[Real]) {
+        let qbits = Self::coordinate_bits(joint);
+        if self.qbits != qbits {
+            // Internal or external coordinate replacement starts a fresh history.
+            self.qbits = qbits;
+            self.remainder = [0.0; 3];
+        }
+        for i in 0..3 {
+            // Deliberately keep the requested displacement multiplication in f32.
+            let dq = vels[i] * dt;
+            let q = f64::from(joint.coords[i]);
+            let y = f64::from(dq) + self.remainder[i];
+            let qnew = (q + y) as Real;
+            self.remainder[i] = y - (f64::from(qnew) - q);
+            joint.coords[i] = qnew;
+        }
+        self.qbits = Self::coordinate_bits(joint);
+    }
+}
+
 #[cfg_attr(feature = "serde-serialize", derive(Serialize, Deserialize))]
 #[derive(Copy, Clone, Debug)]
 /// An joint attached to two bodies based on the reduced coordinates formalism.
@@ -142,6 +212,28 @@ impl MultibodyJoint {
             }
         }
 
+        self.integrate_angular(dt, vels, locked_bits, curr_free_dof);
+    }
+
+    #[cfg(feature = "compensated-root-integration")]
+    pub(super) fn integrate_with_root_translation(
+        &mut self,
+        dt: Real,
+        vels: &[Real],
+        integrator: &mut RootTranslationIntegrator,
+    ) {
+        debug_assert!(self.data.locked_axes.is_empty());
+        integrator.integrate(self, dt, vels);
+        self.integrate_angular(dt, vels, 0, DIM);
+    }
+
+    fn integrate_angular(
+        &mut self,
+        dt: Real,
+        vels: &[Real],
+        locked_bits: u8,
+        curr_free_dof: usize,
+    ) {
         let locked_ang_bits = locked_bits >> DIM;
         let num_free_ang_dofs = ANG_DIM - locked_ang_bits.count_ones() as usize;
         match num_free_ang_dofs {

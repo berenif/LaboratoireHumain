@@ -56,6 +56,8 @@ status = "actively-developed"
 [features]
 # Read-only callbacks around each CCD solve; disabled by default.
 solver-step-observation = []
+# Explicitly activated, root-only f32 translation accumulation experiment.
+compensated-root-integration = []
 alloc = [
     "nalgebra/alloc",
     "parry3d/alloc",

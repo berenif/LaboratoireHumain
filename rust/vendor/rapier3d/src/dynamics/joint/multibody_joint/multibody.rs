@@ -1,3 +1,5 @@
+#[cfg(feature = "compensated-root-integration")]
+use super::multibody_joint::{RootTranslationIntegrator, RootTranslationIntegratorState};
 use super::multibody_link::{MultibodyLink, MultibodyLinkVec};
 use super::multibody_workspace::MultibodyWorkspace;
 use crate::alloc_prelude::*;
@@ -125,6 +127,13 @@ pub struct Multibody {
     /// `<equality><joint>`. Resolved as velocity constraints each step.
     couplings: Vec<MultibodyDofCoupling>,
 
+    // The feature only makes the experiment available; explicit activation is
+    // required. Raw serde/bincode worlds are deliberately incomplete active
+    // checkpoints: callers must carry the validated integer-bit sidecar.
+    #[cfg(feature = "compensated-root-integration")]
+    #[cfg_attr(feature = "serde-serialize", serde(skip))]
+    root_translation_integrator: Option<RootTranslationIntegrator>,
+
     /*
      * Workspaces.
      */
@@ -167,6 +176,8 @@ impl Multibody {
             root_is_dynamic: false,
             self_contacts_enabled,
             couplings: Vec::new(),
+            #[cfg(feature = "compensated-root-integration")]
+            root_translation_integrator: None,
             // solver_workspace: Some(SolverWorkspace::new()),
         }
     }
@@ -253,6 +264,8 @@ impl Multibody {
     }
 
     pub(crate) fn append(&mut self, mut rhs: Multibody, parent: usize, joint: MultibodyJoint) {
+        #[cfg(feature = "compensated-root-integration")]
+        self.reset_root_translation_compensation();
         let joint_ndofs = joint.ndofs();
         let rhs_root_ndofs = rhs.links[0].joint.ndofs();
         let ndofs_before_append = self.velocities.len();
@@ -337,6 +350,8 @@ impl Multibody {
     /// Mutable reference to the first link of this multibody.
     #[inline]
     pub fn root_mut(&mut self) -> &mut MultibodyLink {
+        #[cfg(feature = "compensated-root-integration")]
+        self.reset_root_translation_compensation();
         &mut self.links[0]
     }
 
@@ -353,6 +368,10 @@ impl Multibody {
     /// Return `None` if the given id does not identifies a multibody link part of `self`.
     #[inline]
     pub fn link_mut(&mut self, id: usize) -> Option<&mut MultibodyLink> {
+        #[cfg(feature = "compensated-root-integration")]
+        if id == 0 {
+            self.reset_root_translation_compensation();
+        }
         self.links.get_mut(id)
     }
 
@@ -372,7 +391,149 @@ impl Multibody {
     ///
     /// All link are guaranteed to be yielded before its descendant.
     pub fn links_mut(&mut self) -> impl Iterator<Item = &mut MultibodyLink> {
+        #[cfg(feature = "compensated-root-integration")]
+        self.reset_root_translation_compensation();
         self.links.iter_mut()
+    }
+
+    #[cfg(feature = "compensated-root-integration")]
+    fn root_translation_compensation_eligible(&self) -> bool {
+        self.root_is_dynamic
+            && self.links.first().is_some_and(|root| {
+                root.internal_id == 0
+                    && root.assembly_id == 0
+                    && !root.joint.kinematic
+                    && root.joint.data.locked_axes.is_empty()
+                    && root.joint.data.local_frame1 == Pose::IDENTITY
+                    && root.joint.data.local_frame2 == Pose::IDENTITY
+            })
+    }
+
+    /// Enables or disables experimental compensated free-root translation.
+    ///
+    /// Enabling is explicit, requires a dynamic canonical six-free-axis root,
+    /// and changes no pose or velocity. Re-enabling an active root is idempotent.
+    #[cfg(feature = "compensated-root-integration")]
+    pub fn set_root_translation_compensation_enabled(
+        &mut self,
+        enabled: bool,
+    ) -> Result<(), &'static str> {
+        if !enabled {
+            self.root_translation_integrator = None;
+            return Ok(());
+        }
+        if !self.root_translation_compensation_eligible() {
+            return Err("root translation compensation requires a dynamic canonical free root");
+        }
+        if (0..3).any(|i| !self.links[0].joint.coords[i].is_finite()) {
+            return Err("root translation compensation requires finite root coordinates");
+        }
+        self.synchronize_root_translation_compensation();
+        if self.root_translation_integrator.is_none() {
+            self.root_translation_integrator = Some(RootTranslationIntegrator::new(
+                &self.links[0].joint,
+                self.links[0].rigid_body,
+            ));
+        }
+        Ok(())
+    }
+
+    /// Zeros/rebases an active accumulator without changing any pose or velocity.
+    ///
+    /// Activation is retained for an eligible root. Ineligible roots are disabled.
+    /// Call this explicitly for same-pose resets: `RigidBody::set_position` with
+    /// the current pose is a no-op and cannot signal a history reset.
+    #[cfg(feature = "compensated-root-integration")]
+    pub fn reset_root_translation_compensation(&mut self) {
+        if let Some(integrator) = self.root_translation_integrator {
+            self.root_translation_integrator = (self.root_translation_compensation_eligible()
+                && integrator.root_body == self.links[0].rigid_body)
+                .then(|| {
+                    RootTranslationIntegrator::new(&self.links[0].joint, self.links[0].rigid_body)
+                });
+        }
+    }
+
+    /// Returns the exact active sidecar, or `None` when disabled.
+    ///
+    /// This does not hide invalid/stale state. Checkpoint exporters should
+    /// validate it with `restore_root_translation_integrator_state` on a clone.
+    #[cfg(feature = "compensated-root-integration")]
+    pub fn root_translation_integrator_state(&self) -> Option<RootTranslationIntegratorState> {
+        self.root_translation_integrator
+            .map(RootTranslationIntegrator::state)
+    }
+
+    /// Validates and restores a root accumulator without changing physical state.
+    ///
+    /// Coordinate bits must exactly match the current root. Rejection leaves
+    /// the existing accumulator unchanged, and never sanitizes nonfinite poses.
+    #[cfg(feature = "compensated-root-integration")]
+    pub fn restore_root_translation_integrator_state(
+        &mut self,
+        state: RootTranslationIntegratorState,
+    ) -> Result<(), &'static str> {
+        if !self.root_translation_compensation_eligible() {
+            return Err("root translation compensation requires a dynamic canonical free root");
+        }
+        if self
+            .root_translation_integrator
+            .is_some_and(|integrator| integrator.root_body != self.links[0].rigid_body)
+        {
+            return Err("active root translation accumulator belongs to a replaced root");
+        }
+        if state.qbits != RootTranslationIntegrator::coordinate_bits(&self.links[0].joint) {
+            return Err("root translation accumulator coordinate bits do not match root");
+        }
+        let remainder = state.remainderbits.map(f64::from_bits);
+        for i in 0..3 {
+            let q = f32::from_bits(state.qbits[i]);
+            if !q.is_finite() || !remainder[i].is_finite() {
+                return Err("root translation accumulator must be finite");
+            }
+            // Use one current-binade f32 ULP, the larger neighbor gap at
+            // powers of two. At MAX extrapolate the finite spacing.
+            let magnitude = q.abs().to_bits();
+            let gap = if magnitude == 0 {
+                f64::from(f32::from_bits(1))
+            } else if magnitude == f32::MAX.to_bits() {
+                f64::from(f32::MAX) - f64::from(f32::from_bits(magnitude - 1))
+            } else {
+                f64::from(f32::from_bits(magnitude + 1)) - f64::from(q.abs())
+            };
+            // For an exact f64 q+y, y is an available f64 candidate when
+            // rounding qnew-q, so the subtraction error is at most the f32
+            // cast error; their sum is <= one ULP. Substantial opposite-sign
+            // cancellation is exact by Sterbenz. In the remaining (inexact
+            // addition) case both f64 errors are tiny at qnew's scale, leaving
+            // the residual below one ULP. Half an ULP is insufficient because
+            // of double rounding. Assumes IEEE round-to-nearest, no fast-math
+            // or flush-to-zero; exact extreme-exponent conservation is not promised.
+            if remainder[i].abs() > gap {
+                return Err("root translation accumulator remainder exceeds arithmetic bound");
+            }
+        }
+        self.root_translation_integrator = Some(RootTranslationIntegrator {
+            qbits: state.qbits,
+            remainder,
+            root_body: self.links[0].rigid_body,
+        });
+        Ok(())
+    }
+
+    #[cfg(feature = "compensated-root-integration")]
+    fn synchronize_root_translation_compensation(&mut self) {
+        if let Some(integrator) = self.root_translation_integrator {
+            if !self.root_translation_compensation_eligible()
+                || integrator.root_body != self.links[0].rigid_body
+            {
+                self.root_translation_integrator = None;
+            } else if integrator.qbits
+                != RootTranslationIntegrator::coordinate_bits(&self.links[0].joint)
+            {
+                self.reset_root_translation_compensation();
+            }
+        }
     }
 
     /// The vector of damping applied to this multibody.
@@ -407,6 +568,8 @@ impl Multibody {
         dof: MultibodyJoint,
         body: RigidBodyHandle,
     ) -> &mut MultibodyLink {
+        #[cfg(feature = "compensated-root-integration")]
+        self.reset_root_translation_compensation();
         assert!(
             parent.is_none() || !self.links.is_empty(),
             "Multibody::build_body: invalid parent id."
@@ -943,7 +1106,8 @@ impl Multibody {
                         .all(|x| x.abs() <= PREFIX_OPERAND_BOUND);
                 if use_prefix
                     && finite_prefix_accumulators
-                    && self.i_coriolis_dt
+                    && self
+                        .i_coriolis_dt
                         .columns(prefix_end, self.ndofs - prefix_end)
                         .iter()
                         .all(|x| *x == 0.0)
@@ -1180,7 +1344,20 @@ impl Multibody {
 
     #[inline]
     pub(crate) fn integrate(&mut self, dt: Real) {
+        #[cfg(feature = "compensated-root-integration")]
+        self.synchronize_root_translation_compensation();
         for rb in self.links.iter_mut() {
+            #[cfg(feature = "compensated-root-integration")]
+            if rb.internal_id == 0 {
+                if let Some(integrator) = &mut self.root_translation_integrator {
+                    rb.joint.integrate_with_root_translation(
+                        dt,
+                        &self.velocities.as_slice()[rb.assembly_id..],
+                        integrator,
+                    );
+                    continue;
+                }
+            }
             rb.joint
                 .integrate(dt, &self.velocities.as_slice()[rb.assembly_id..])
         }
@@ -1191,13 +1368,46 @@ impl Multibody {
     /// Note this does **not** updates the link poses, only their generalized coordinates.
     /// To update the link poses and associated rigid-bodies, call [`Self::forward_kinematics`].
     pub fn apply_displacements(&mut self, disp: &[Real]) {
+        #[cfg(feature = "compensated-root-integration")]
+        self.synchronize_root_translation_compensation();
         for link in self.links.iter_mut() {
+            #[cfg(feature = "compensated-root-integration")]
+            if link.internal_id == 0 {
+                if let Some(integrator) = &mut self.root_translation_integrator {
+                    link.joint.integrate_with_root_translation(
+                        1.0,
+                        &disp[link.assembly_id..],
+                        integrator,
+                    );
+                    continue;
+                }
+            }
             link.joint.apply_displacement(&disp[link.assembly_id..])
         }
     }
 
     pub(crate) fn update_root_type(&mut self, bodies: &RigidBodySet, take_body_pose: bool) {
         if let Some(rb) = bodies.get(self.links[0].rigid_body) {
+            #[cfg(feature = "compensated-root-integration")]
+            let routine_pose_import = take_body_pose
+                && rb.is_dynamic() == self.root_is_dynamic
+                && !rb.changes.intersects(
+                    crate::dynamics::RigidBodyChanges::POSITION
+                        | crate::dynamics::RigidBodyChanges::TYPE,
+                )
+                && *rb.position() == self.links[0].local_to_world;
+            #[cfg(feature = "compensated-root-integration")]
+            {
+                if rb.is_dynamic() != self.root_is_dynamic {
+                    self.root_translation_integrator = None;
+                } else if rb.changes.intersects(
+                    crate::dynamics::RigidBodyChanges::POSITION
+                        | crate::dynamics::RigidBodyChanges::TYPE,
+                ) || (take_body_pose && *rb.position() != self.links[0].local_to_world)
+                {
+                    self.reset_root_translation_compensation();
+                }
+            }
             if rb.is_dynamic() != self.root_is_dynamic {
                 let root_pose = if take_body_pose {
                     *rb.position()
@@ -1261,11 +1471,30 @@ impl Multibody {
             if take_body_pose {
                 if self.links[0].joint.data.locked_axes.is_empty() {
                     self.links[0].joint.set_free_pos(*rb.position());
+                    #[cfg(feature = "compensated-root-integration")]
+                    if routine_pose_import {
+                        if let Some(integrator) = &mut self.root_translation_integrator {
+                            let qbits =
+                                RootTranslationIntegrator::coordinate_bits(&self.links[0].joint);
+                            for i in 0..3 {
+                                // Identity FK may canonicalize -0 to +0. A
+                                // verified routine import of that same pose
+                                // must not discard unrelated-axis residue.
+                                if f32::from_bits(integrator.qbits[i]) == 0.0
+                                    && f32::from_bits(qbits[i]) == 0.0
+                                {
+                                    integrator.qbits[i] = qbits[i];
+                                }
+                            }
+                        }
+                    }
                 } else {
                     self.links[0].joint.data.local_frame1 = *rb.position();
                 }
             }
         }
+        #[cfg(feature = "compensated-root-integration")]
+        self.synchronize_root_translation_compensation();
     }
 
     /// Update the rigid-body poses based on this multibody joint poses.
@@ -1450,6 +1679,26 @@ impl Multibody {
             let mut link = self.links[*i];
 
             if let Some(displacement) = displacement {
+                #[cfg(feature = "compensated-root-integration")]
+                let mut copied_integrator =
+                    if *i == 0 && self.root_translation_compensation_eligible() {
+                        self.root_translation_integrator
+                            .filter(|integrator| integrator.root_body == link.rigid_body)
+                    } else {
+                        None
+                    };
+                #[cfg(feature = "compensated-root-integration")]
+                if let Some(integrator) = &mut copied_integrator {
+                    link.joint.integrate_with_root_translation(
+                        1.0,
+                        &displacement[link.assembly_id..],
+                        integrator,
+                    );
+                } else {
+                    link.joint
+                        .apply_displacement(&displacement[link.assembly_id..]);
+                }
+                #[cfg(not(feature = "compensated-root-integration"))]
                 link.joint
                     .apply_displacement(&displacement[link.assembly_id..]);
             }

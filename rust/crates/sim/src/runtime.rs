@@ -8,6 +8,36 @@ use lh_contracts::{
 use serde::{Deserialize, Serialize};
 use bincode::Options;
 
+const GETUP_CHECKPOINT_LIMIT: u64 = 64 * 1024 * 1024;
+
+#[cfg(feature = "root-translation-carry-experiment")]
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+struct RootTranslationCheckpointEntry {
+    /// Stable rigid-body identity, including the arena generation.
+    root: [u32; 2],
+    #[serde(deserialize_with = "required_root_translation_state")]
+    state: Option<rapier3d::dynamics::RootTranslationIntegratorState>,
+}
+
+#[cfg(feature = "root-translation-carry-experiment")]
+fn required_root_translation_state<'de, D: serde::Deserializer<'de>>(deserializer: D)
+    -> Result<Option<rapier3d::dynamics::RootTranslationIntegratorState>, D::Error>
+{
+    Option::deserialize(deserializer)
+}
+
+#[cfg(feature = "root-translation-carry-experiment")]
+#[derive(Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+struct RootTranslationCheckpoint {
+    format: String,
+    // Keep the original typed Runtime serialization intact. Converting it to
+    // JSON Value first changes the decimal serialization of f32 fields.
+    runtime: String,
+    roots: Vec<RootTranslationCheckpointEntry>,
+}
+
 #[derive(Serialize)]
 pub struct Reply {
     pub completed_ticks: u32,
@@ -74,8 +104,28 @@ impl Runtime {
                 "min":[a.mins.x,a.mins.y,a.mins.z],"max":[a.maxs.x,a.maxs.y,a.maxs.z]})
         }).collect();
         let (q,dq)=crate::getup::joint_state(s)?;
-        serde_json::to_string(&serde_json::json!({"state":s.getup_fixture,"nativeSubsteps":s.substeps_completed,
-            "jointQ":q,"jointDq":dq,"colliderBounds":bounds,"massKg":s.total_mass()})).map_err(|e|e.to_string())
+        #[derive(Serialize)]
+        struct Report<'a> {
+            #[serde(flatten)]
+            observations: serde_json::Value,
+            profile: &'a Profile,
+            #[cfg(feature = "root-translation-carry-experiment")]
+            #[serde(rename = "rootTranslationCompensation", skip_serializing_if = "Option::is_none")]
+            root_translation_compensation: Option<serde_json::Value>,
+        }
+        #[cfg(feature = "root-translation-carry-experiment")]
+        let active_roots: Vec<_> = self.root_translation_checkpoint_entries()?.into_iter()
+            .filter(|entry| entry.state.is_some()).map(|entry| entry.root).collect();
+        serde_json::to_string(&Report {
+            observations: serde_json::json!({"state":s.getup_fixture,"nativeSubsteps":s.substeps_completed,
+                "jointQ":q,"jointDq":dq,"colliderBounds":bounds,"massKg":s.total_mass()}),
+            profile: &s.profile,
+            #[cfg(feature = "root-translation-carry-experiment")]
+            root_translation_compensation: (!active_roots.is_empty()).then(|| serde_json::json!({
+                "algorithm": rapier3d::dynamics::RootTranslationIntegratorState::ALGORITHM,
+                "activeRoots": active_roots,
+            })),
+        }).map_err(|e|e.to_string())
     }
     pub fn trigger_getup_fixture(&mut self) -> Result<(),String> {
         crate::getup::fixtures::trigger(&mut self.simulation)
@@ -101,8 +151,87 @@ impl Runtime {
         Ok(())
     }
 
-    /// Full serialized Rapier world, native/controller memory and command timeline.
-    /// Rapier reconstructs only its documented pipeline/CCD workspaces on load.
+    /// Default-OFF numerical experiment. This changes only integrator history;
+    /// it never changes coordinates, velocities, forces or the native clock.
+    #[cfg(feature = "root-translation-carry-experiment")]
+    pub fn set_root_translation_compensation_enabled(&mut self, enabled: bool) -> Result<(), String> {
+        self.checkpoint_compatible()?;
+        // Preflight every root before changing history, so a later invalid
+        // root cannot leave this operation partly applied. Disabling also
+        // remains available if an active state has become unexportable.
+        let mut roots = Vec::new();
+        for multibody in self.simulation.world.multibody_joints.multibodies() {
+            multibody.clone().set_root_translation_compensation_enabled(enabled).map_err(str::to_string)?;
+            roots.push(multibody.root().rigid_body_handle());
+        }
+        for root in roots {
+            let index = self.simulation.world.multibody_joints.rigid_body_link(root)
+                .ok_or("Missing checkpoint root")?.multibody;
+            self.simulation.world.multibody_joints.get_multibody_mut(index)
+                .ok_or("Missing checkpoint multibody")?
+                .set_root_translation_compensation_enabled(enabled).map_err(str::to_string)?;
+        }
+        Ok(())
+    }
+
+    #[cfg(feature = "root-translation-carry-experiment")]
+    fn root_translation_checkpoint_entries(&self) -> Result<Vec<RootTranslationCheckpointEntry>, String> {
+        let world = &self.simulation.world;
+        let mut entries = Vec::new();
+        for multibody in world.multibody_joints.multibodies() {
+            let root = multibody.root().rigid_body_handle();
+            let link = world.multibody_joints.rigid_body_link(root).ok_or("Missing checkpoint root link")?;
+            if world.bodies.get(root).is_none() || link.id != 0
+                || world.multibody_joints.get_multibody(link.multibody)
+                    .is_none_or(|mapped| mapped.root().rigid_body_handle() != root)
+            {
+                return Err("Invalid checkpoint root identity".into());
+            }
+            let state = multibody.root_translation_integrator_state();
+            if let Some(state) = state {
+                // Validation is immutable on the live world; no stale or
+                // invalid active state may silently become an inactive export.
+                multibody.clone().restore_root_translation_integrator_state(state).map_err(str::to_string)?;
+            }
+            let (index, generation) = root.into_raw_parts();
+            entries.push(RootTranslationCheckpointEntry { root: [index, generation], state });
+        }
+        entries.sort_unstable_by_key(|entry| entry.root);
+        if entries.windows(2).any(|pair| pair[0].root == pair[1].root) {
+            return Err("Duplicate checkpoint root identity".into());
+        }
+        Ok(entries)
+    }
+
+    #[cfg(feature = "root-translation-carry-experiment")]
+    fn restore_root_translation_checkpoint_entries(&mut self, entries: Vec<RootTranslationCheckpointEntry>) -> Result<(), String> {
+        let expected = self.root_translation_checkpoint_entries()?;
+        if entries.len() != expected.len() || entries.iter().zip(&expected).any(|(entry, expected)| entry.root != expected.root) {
+            return Err("Checkpoint root identities differ, are missing, duplicated or unordered".into());
+        }
+        if !entries.iter().any(|entry| entry.state.is_some()) {
+            return Err("Compensated checkpoint has no active root state".into());
+        }
+        for entry in entries {
+            let root = rapier3d::prelude::RigidBodyHandle::from_raw_parts(entry.root[0], entry.root[1]);
+            let index = self.simulation.world.multibody_joints.rigid_body_link(root)
+                .ok_or("Missing checkpoint root")?.multibody;
+            let multibody = self.simulation.world.multibody_joints.get_multibody_mut(index)
+                .ok_or("Missing checkpoint multibody")?;
+            match entry.state {
+                Some(state) => multibody.restore_root_translation_integrator_state(state).map_err(str::to_string)?,
+                None => multibody.set_root_translation_compensation_enabled(false).map_err(str::to_string)?,
+            }
+        }
+        Ok(())
+    }
+
+    /// Isolated GetUp world, native/controller memory and command timeline.
+    /// Rapier serde skips pipeline/CCD workspaces and the initial multibody
+    /// topology-refresh queue. First-step continuity is tested explicitly;
+    /// this does not promise generic raw-world checkpoint completeness.
+    /// Active compensated root integration additionally requires schema 2's
+    /// exact-bit sidecar: generic Rapier world serde does not preserve it.
     pub fn getup_checkpoint(&self) -> Result<Vec<u8>, String> {
         self.checkpoint_compatible()?;
         let world = bincode::DefaultOptions::new().with_fixint_encoding().with_limit(64 * 1024 * 1024)
@@ -110,21 +239,56 @@ impl Runtime {
         // Self-describing auxiliary state preserves serde's optional fields;
         // binary Rapier state preserves nonfinite workspace sentinels exactly.
         let auxiliary = serde_json::to_string(self).map_err(|e| e.to_string())?;
+        let schema = 1_u32;
+        #[cfg(feature = "root-translation-carry-experiment")]
+        let (schema, auxiliary) = {
+            let roots = self.root_translation_checkpoint_entries()?;
+            if roots.iter().any(|entry| entry.state.is_some()) {
+                (2_u32, serde_json::to_string(&RootTranslationCheckpoint {
+                    format: rapier3d::dynamics::RootTranslationIntegratorState::ALGORITHM.into(),
+                    runtime: auxiliary,
+                    roots,
+                }).map_err(|e| e.to_string())?)
+            } else { (schema, auxiliary) }
+        };
         bincode::DefaultOptions::new().with_fixint_encoding().with_limit(64 * 1024 * 1024)
-            .serialize(&(1_u32, lh_model::CANONICAL_JSON, world, auxiliary)).map_err(|e| e.to_string())
+            .serialize(&(schema, lh_model::CANONICAL_JSON, world, auxiliary)).map_err(|e| e.to_string())
     }
 
     pub fn from_getup_checkpoint(bytes: &[u8]) -> Result<Self, String> {
+        if bytes.len() as u64 > GETUP_CHECKPOINT_LIMIT { return Err("Checkpoint exceeds size limit".into()); }
         let (schema, model, world, auxiliary): (u32, String, Vec<u8>, String) =
             bincode::DefaultOptions::new().with_fixint_encoding().with_limit(64 * 1024 * 1024)
                 .reject_trailing_bytes().deserialize(bytes).map_err(|e| e.to_string())?;
-        if schema != 1 || model != lh_model::CANONICAL_JSON {
+        if model != lh_model::CANONICAL_JSON {
             return Err("Checkpoint schema/model differs".into());
         }
+        #[cfg(not(feature = "root-translation-carry-experiment"))]
+        if schema == 2 { return Err("Compensated checkpoint requires root-translation-carry-experiment".into()); }
+        #[cfg(feature = "root-translation-carry-experiment")]
+        let (auxiliary, roots) = match schema {
+            1 => (auxiliary, None),
+            2 => {
+                let wrapper: RootTranslationCheckpoint = serde_json::from_str(&auxiliary).map_err(|e| e.to_string())?;
+                if wrapper.format != rapier3d::dynamics::RootTranslationIntegratorState::ALGORITHM {
+                    return Err("Checkpoint root integration format differs".into());
+                }
+                (wrapper.runtime, Some(wrapper.roots))
+            },
+            _ => return Err("Checkpoint schema/model differs".into()),
+        };
+        #[cfg(not(feature = "root-translation-carry-experiment"))]
+        if schema != 1 { return Err("Checkpoint schema/model differs".into()); }
         let mut restored: Self = serde_json::from_str(&auxiliary).map_err(|e| e.to_string())?;
         restored.simulation.world = bincode::DefaultOptions::new().with_fixint_encoding()
             .with_limit(64 * 1024 * 1024).reject_trailing_bytes().deserialize(&world).map_err(|e| e.to_string())?;
         restored.checkpoint_compatible()?;
+        #[cfg(feature = "root-translation-carry-experiment")]
+        if let Some(roots) = roots {
+            restored.restore_root_translation_checkpoint_entries(roots)?;
+        }
+        // Schema 1 is a deliberate inactive baseline boundary: Rapier serde
+        // constructs every skipped root integrator state as None.
         Ok(restored)
     }
 
@@ -141,14 +305,25 @@ impl Runtime {
         let same_snapshot = serde_json::to_value(self.simulation.snapshot()).map_err(|e| e.to_string())?
             == serde_json::to_value(restored.simulation.snapshot()).map_err(|e| e.to_string())?;
         let same_controller = self.getup_report()? == restored.getup_report()?;
+        #[cfg(feature = "root-translation-carry-experiment")]
+        let same_integrator = self.root_translation_checkpoint_entries()? == restored.root_translation_checkpoint_entries()?;
+        #[cfg(feature = "root-translation-carry-experiment")]
+        if !same_integrator { return Err("Checkpoint round-trip changed root integrator state".into()); }
         if !same_joints || !same_handles || !same_snapshot || !same_controller {
             return Err(format!("Checkpoint round-trip changed data: joints={same_joints}, handles={same_handles}, snapshot={same_snapshot}, controller={same_controller}"));
         }
-        Ok(serde_json::json!({"passed":true,"physicsIntegrations":0,"bytes":bytes.len(),
+        let report = serde_json::json!({"passed":true,"physicsIntegrations":0,"bytes":bytes.len(),
             "nativeSubsteps":restored.simulation.substeps_completed,
             "forecastSubsteps":restored.simulation.getup_controller.as_ref().unwrap().status.forecast_substeps,
             "binaryWorldDeserialized":true,"jointStateEqual":same_joints,"handlesEqual":same_handles,
-            "snapshotEqual":same_snapshot,"controllerEqual":same_controller}).to_string())
+            "snapshotEqual":same_snapshot,"controllerEqual":same_controller});
+        #[cfg(feature = "root-translation-carry-experiment")]
+        let report = {
+            let mut report = report;
+            report["rootIntegratorStateEqual"] = serde_json::json!(same_integrator);
+            report
+        };
+        Ok(report.to_string())
     }
 
     /// Recorded teacher branch/reference only; this never advances either world.
@@ -641,6 +816,10 @@ impl Runtime {
 #[cfg(test)]
 #[path = "getup_fixture_profile_tests.rs"]
 mod getup_fixture_profile_tests;
+
+#[cfg(test)]
+#[path = "getup_root_translation_checkpoint_tests.rs"]
+mod getup_root_translation_checkpoint_tests;
 
 #[cfg(test)]
 mod tests {
