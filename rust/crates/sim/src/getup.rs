@@ -81,6 +81,11 @@ pub(crate) fn assemble(s: &mut Simulation, support_height: f32) -> Result<(), St
     if mb.ndofs() != 27 {
         return Err("GetUp requires free root plus 21 hinges".into());
     }
+    // The pinned MJCF uses <freejoint>, whose source semantics explicitly
+    // exclude joint-default damping and armature. Rapier otherwise gives its
+    // free angular DOFs a 0.1 damping default. Keep all six root DOFs passive.
+    mb.damping_mut().rows_mut(0, 6).fill(0.0);
+    mb.armature_mut().rows_mut(0, 6).fill(0.0);
     let mut displacement = vec![0.0; mb.ndofs()];
     for (i, part) in s.model.segments.iter().enumerate() {
         if let Some(h) = part.reference.as_ref().and_then(|r| r.hinge.as_ref()) {
@@ -417,6 +422,22 @@ pub fn slow_observation(physical: &[f32; 67], now: &[f32; 25], ahead: &[f32; 25]
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[test]
+    fn source_freejoint_has_zero_root_damping_and_armature_without_changing_hinges() {
+        let s = Simulation::new(0.0, Profile::default(), false).unwrap();
+        let id = s.world.multibody_joints.rigid_body_link(s.bodies[0]).unwrap();
+        let mb = s.world.multibody_joints.get_multibody(id.multibody).unwrap();
+        assert!(mb.damping().rows(0,6).iter().all(|x|*x==0.0));
+        assert!(mb.armature().rows(0,6).iter().all(|x|*x==0.0));
+        for (i,part) in s.model.segments.iter().enumerate() {
+            assert_eq!(s.world.bodies[s.bodies[i]].angular_damping(),0.0);
+            if let Some(hinge) = part.reference.as_ref().and_then(|r|r.hinge.as_ref()) {
+                let link = mb.links().find(|l|l.rigid_body_handle()==s.bodies[i]).unwrap();
+                assert_eq!(mb.damping()[link.assembly_id()],part.joint_profile.as_ref().unwrap().axes[0].damping_nms_per_rad);
+                assert_eq!(mb.armature()[link.assembly_id()],hinge.armature);
+            }
+        }
+    }
     #[test]
     fn source_assembly_retains_selected_terrain_elevation_without_integration() {
         let baseline = Simulation::new(0.0, Profile::default(), true).unwrap();
