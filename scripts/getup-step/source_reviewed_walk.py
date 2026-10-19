@@ -65,6 +65,25 @@ def causal_selection_policy():
 
 
 class ReviewedController(RobustSupportController):
+    def _complete_reference_context(self, context, t, phase):
+        """Pure optional visual-factor seam; original safety/history owners stay.
+
+        The effective context is finalized BEFORE either actual or prospective
+        QP consumption. Feature implementations must declare and independently
+        replay their references; this seam alone grants no qualification.
+        """
+        transform = getattr(self, 'transform_reviewed_reference_context', None)
+        if transform is None:
+            return context
+        result = transform(context)
+        result.validate(self, t, phase)
+        if (result.arms is not context.arms or result.arm_gains != context.arm_gains
+                or result.capture_constraints != context.capture_constraints
+                or result.unload_admitted != context.unload_admitted
+                or result.hypothetical_changes != context.hypothetical_changes):
+            raise ValueError('visual reference hook changed an existing safety/history owner')
+        return result
+
     def install_reviewed(self, step_index, mode):
         self._reviewed_step_index = int(step_index)
         self._reviewed_mode = mode
@@ -258,8 +277,9 @@ class ReviewedController(RobustSupportController):
                 else asdict(self._soft_load_anchor))
             config['softLoadPreference'] = (None if self._prepared_soft_load_preference is None
                 else self._prepared_soft_load_preference.receipt())
-        self._prepared_reference_context = make_context(self, t, phase,
-            draft_com, causal=causal, config=serial(config), seek=seek)
+        self._prepared_reference_context = self._complete_reference_context(
+            make_context(self, t, phase, draft_com, causal=causal,
+                config=serial(config), seek=seek), t, phase)
         draft_token = self._prepared_inputs_token(t, phase)
         observation_key = (self.w.l.lh_dim(self.w.h, 6), self._reviewed_step_index, phase)
         selected_before = bool(self.robust_support.get('selected'))
@@ -280,8 +300,8 @@ class ReviewedController(RobustSupportController):
             if self._state_only_support_selection:
                 causal['causalOverlap'] = self._causal_overlap_plan
                 causal['continuousCom']['diagnostic'] = getattr(self, '_com_reference_diagnostic', None)
-            final = make_context(self, t, phase, final_com,
-                causal=causal, config=serial(config), seek=seek)
+            final = self._complete_reference_context(make_context(self, t, phase, final_com,
+                causal=causal, config=serial(config), seek=seek), t, phase)
         self._prepared_reference_context = final
         # A newly selected triangle changes inequalities immediately. Bind an
         # additional pure forecast to the FINAL context, separate from voting.
@@ -294,10 +314,10 @@ class ReviewedController(RobustSupportController):
         self.arm_range_barrier = diagnostics['opposedArmRangeBarrier']
         self.robust_support_barrier = diagnostics['robustSupportBarriers']
 
-    def _forecast_unload_risk(self, t, corners, clearance, role='causal-observer'):
+    def _forecast_unload_risk(self, t, corners, clearance, role='causal-observer', reference_context=None):
         """Pure shared-reference QP; no recast, arm update, seek or rollout."""
         w = self.w; before = native_bytes(w); counter = w.l.lh_dim(w.h, 6)
-        context = prospective_unload_context(self, self._prepared_reference_context)
+        context = prospective_unload_context(self, self._prepared_reference_context if reference_context is None else reference_context)
         u, info = Controller.solve(self, t, 'transfer', reference_context=context)
         forces = np.array(info['predictedForcesN']).reshape(2, 4, 3)[self.stance_side, :, 2]
         w.l.lh_motor_response.argtypes = [C.c_void_p, PTR, PTR]; w.l.lh_motor_response.restype = None
@@ -402,7 +422,10 @@ class ReviewedSteps(CadencedSteps):
     def begin_step(self):
         previous = getattr(self, 'controller', None) if self.step_index > 0 else None
         super().begin_step()
-        self.controller.__class__ = ReviewedController
+        controller_class = getattr(self, 'reviewed_controller_class', ReviewedController)
+        if not isinstance(controller_class, type) or not issubclass(controller_class, ReviewedController):
+            raise ValueError('reviewed controller factory must preserve the shared reference owner')
+        self.controller.__class__ = controller_class
         self.controller.install_reviewed(self.step_index+1, self.reviewed_mode)
         self.controller._robust_evidence_folder = self.folder/f'robust-risk-step-{self.step_index+1:02d}'
         self.controller._robust_step_index = self.step_index+1

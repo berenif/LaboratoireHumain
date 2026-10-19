@@ -874,4 +874,35 @@ class StateOnlyCausalReplay(unittest.TestCase):
         self.assertTrue(result['passed'], result['errors'])
 
 
+
+
+
+class ExplicitPostureScopeTests(unittest.TestCase):
+    def test_default_context_rejects_posture_even_with_valid_digest(self):
+        f=fixture();f['receipt']['config']['coupledPosture']={'profile':'reviewed-coupled-posture-pilot-v3'}
+        rehash(f['receipt'])
+        proof=audit_context(f['receipt'],f['note'],f['row'],f['reference'])
+        self.assertFalse(proof['passed']);self.assertFalse(proof['checks']['explicitReferenceFeatureScope'])
+
+    def test_default_context_rejects_bounded_settle_even_with_valid_digest(self):
+        f=fixture();f['receipt']['config']['boundedSettle']={'profile':'seven-cubic-constant-jerk'}
+        rehash(f['receipt'])
+        proof=audit_context(f['receipt'],f['note'],f['row'],f['reference'])
+        self.assertFalse(proof['passed']);self.assertFalse(proof['checks']['explicitReferenceFeatureScope'])
+
+    def test_default_context_rejects_hidden_feature_declaration(self):
+        f=fixture();f['note']['reviewedWalk']['featureProfile']='reviewed-coupled-posture-pilot-v3'
+        self.assertFalse(audit_context(f['receipt'],f['note'],f['row'],f['reference'])['passed'])
+
+    def test_callback_changes_only_explicit_reference_seam(self):
+        f=fixture();calls=[]
+        class Policy:
+            def references(self,*args):
+                calls.append(args)
+                return {'sentinel':'explicit policy'}
+        self.assertEqual(independent_references(f['receipt']['config'],f['receipt']['causal'],0.,'transfer',reference_policy=Policy()),{'sentinel':'explicit policy'})
+        self.assertEqual(len(calls),1)
+        self.assertIn('feet',independent_references(f['receipt']['config'],f['receipt']['causal'],0.,'transfer'))
+
+
 if __name__=='__main__':unittest.main()

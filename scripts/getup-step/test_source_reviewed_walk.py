@@ -15,7 +15,7 @@ from source_cadenced_ten_steps import CadencedController, CadencedSteps
 from source_opposed_arm_swing import limb_telemetry
 import source_reviewed_walk as reviewed
 import source_step_probe as core
-from source_reference_context import canonical
+from source_reference_context import canonical, Jet
 from source_soft_load_preference import AcquiredLoad
 from source_reviewed_walk import ReviewedController, ReviewedSteps, control_sha
 from source_reference_context import prospective_unload_context
@@ -190,6 +190,29 @@ class NativeReviewedCommands(unittest.TestCase):
         self.assertIsNone(info['referenceContext']['causal']['causalOverlap'])
         self.assertTrue(info['referenceContext']['config']['causalSupportSelectionPolicy']
                         ['originalMinimumTransferAndMeasuredLiftGatesUnchanged'])
+
+    def test_optional_pure_visual_hook_disabled_identity_preserves_exact_qp(self):
+        current, baseline = self.controller(), self.controller()
+        calls = []
+        current.transform_reviewed_reference_context = lambda context: calls.append(context) or context
+        actual, info = current.solve(.37, 'transfer')
+        expected, old = baseline.solve(.37, 'transfer')
+        np.testing.assert_array_equal(actual, expected)
+        self.assertEqual(info['qpAssemblySHA256'], old['qpAssemblySHA256'])
+        self.assertEqual(len(calls), 1)
+        current.solve(.37, 'transfer')
+        self.assertEqual(len(calls), 1)
+
+    def test_visual_hook_cannot_replace_measured_arms_or_capture_rows(self):
+        mutations = [
+            lambda context: replace(context, arms=Jet.make(*context.arms.arrays())),
+            lambda context: replace(context, capture_constraints=context.capture_constraints+(((0.,)*72, 1.),)),
+            lambda context: replace(context, unload_admitted=not context.unload_admitted),
+        ]
+        for transform in mutations:
+            c = self.controller(); c.transform_reviewed_reference_context = transform
+            with self.subTest(transform=transform), self.assertRaisesRegex(ValueError, 'safety/history owner'):
+                c.solve(.37, 'transfer')
 
     def test_repeated_command_is_cached_and_returned_values_are_detached(self):
         c = self.controller()

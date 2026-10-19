@@ -132,3 +132,87 @@ reserve; the improved endpoint requires0.060rad. A C2 transition must report tha
 distinction rather than invent a reset or assert endpoint reserves throughout.
 The fixed-root knee family is rejected; moving pelvis/root transport must be
 included in a realizable hip/knee/ankle-foot pair.
+
+The shared controller now has a pure final-context visual hook before both QP
+consumers, with measured-arm identity and original capture/unload ownership
+enforced. Separate C2 pelvis/thorax and moving-frame coordinated leg/foot modules
+are implemented;66 focused integration tests pass, including exact disabled QP
+parity, FK/IK jets, contact-seek and waits. The leg math fixtures are not admitted
+source gaits. The first actual-state posture retarget has a reserved static
+endpoint and a3mm-support-bounded COM handoff; native posture pilots remain
+pending their explicit current-version causal admission.
+
+The isolated native posture entry point now freezes one current-foot-matched
++1° thorax candidate after the nominal transfer reference finishes, using one
+bounded static family and an independent counter-zero recheck. Its provisional
+triangle grants no admission. A new complete100ms risk window must confirm that
+same triangle under the changed references; the frozen candidate is never
+retargeted inside the window. The total COM overlap is certified before selection,
+with current measured support checked every command. The initial ankle-reference
+floor is explicitly inherited, while the endpoint requires0.060rad. Separate soft
+thorax/pelvis tasks activate continuously, delayed arm targets remain identical,
+and C2 lower-joint/SO(3) references return during the original measured settle.
+This is a new unqualified profile, requiring its own native pilot and replay;
+static tests and the old profile cannot greenlight it.
+
+The first native posture attempt stops safely at4.000s before applying a changed
+posture: its reserved endpoint passes every static check, but the old nominal
+COM is2.073mm outside the proposed triangle at the handoff's start. The complete
+3mm path gate refuses it. The next isolated profile therefore uses the already
+qualified early-selection baseline, whose correction is complete before4s.
+That completed COM offset and safety geometry are retained provisionally; the
+posture path embeds the offset exactly once. The earlier window cannot admit
+posture lift: a separate complete100ms window under the new tasks must confirm
+the same triangle before the unchanged lift gates. No retarget, new correction,
+physical deadline change or weakened support gate is introduced.
+
+The causal-baseline posture trial acquires its own21-command history at4.1s,
+passes the original80-sample unload/clearance/landing gates, and records a real
+181.484mm loaded advance at8.98s. It stops at9.175s in settle, with0s quiet and
+0.659/0.711mm global slip, when the complete reference acceleration exceeds the
+frozen cap. The targeted replay checks all7,340 native rows,22 source bindings,
+and exact reuse of the qualified baseline prefix through3,200. No passing audit
+is claimed. Actual-speed matched pixels show pelvis pitch improving from−30.53°
+to−17.37° in mid-advance; torso total tilt stays~9.3°, and landing is1.85s later.
+
+Its unchanged measured-target return is181.927mm long. The old1.52s quintic peaks
+at0.224416m/s and0.454620m/s², exceeding both frozen caps. A single analytical
+seven-cubic C2 acceleration/coast family fits the SAME target,1.52s duration and
+caps, with25.271mm conservative current-hull/capture margin. It preserves the
+legacy path object when that path already fits, rejects genuine nonzero incoming
+jets, and retains every-command current-support checks. This is a new opt-in
+profile and must complete a fresh native pilot; no reserve or deadline is widened.
+
+The bounded-settle posture pilot physically completes one 181.484 mm loaded
+advance at 8.98 s and 4,000 quiet samples, with 1.418/1.180 mm global loaded slip.
+Its separately versioned independent audit passes all 12,402 native rows,
+3,101 commands and 42 exact native witnesses. The original clock-expectation
+failure is retained; an independent all-command proof verifies the new complete
+settle owner embeds the completed correction once, rather than adding a second
+faded offset. The loaded prefix is exactly unchanged from the preceding trial.
+Actual-speed pixels show the mid-advance pelvis improvement, but final pelvis
+pitch is −18.24° versus −2.64° baseline, and the first landing is 1.85 s slower.
+This is a physical checkpoint,
+not completion of the requested visual, cadence or ten-step result. The pelvis
+task remains active at weight 4 through quiet; inspect its coupled return target
+and achieved tracking before choosing a correction.
+
+Two finite moving-root/both-leg endpoint attempts also fail: the hard-thorax
+family misses the swing foot by 29.432 mm; the original-soft-thorax family misses
+it by 16.440 mm and produces only 6.885° of the requested 10° knee gain, with 23.750 mm
+planned clearance. Neither is admitted. Moreover, the inherited weak-joint
+reference is off the simultaneous task-FK manifold by 3.469 mm COM and 2.646 mm foot
+position. A pure declared C2 compatibility-slack bridge now preserves the real
+prepared command at activation; no pose or velocity projection is permitted.
+Do not repeat goal/weight scans. The approved substantive planning revision now
+uses one stance-realized whole-body trajectory, allows its COM to move inside
+the unchanged actual-support/capture and total-derivative bounds, and derives the
+coordinated COM/body/knee/foot jets from that trajectory. This revision needs
+explicit reference ownership, current-state endpoint/path admission and native
+one-/two-step evidence before combining it with ten-step acceptance. One causal
+same-foot quiet endpoint matches feet/COM/heading to 7.95e−14, but its first C2
+return from the old posture landing exceeds the unchanged acceleration cap at
+0.2375 s (0.43010 m/s² versus 0.39018). Its endpoint and return are distinct results;
+no native use follows from geometric feasibility. One finite free-COM full-flight
+horizon is now being solved, with exact Cartesian foot commands and analytical
+FK jets; no weight/goal grid, root installation or duplicate invocation is used.

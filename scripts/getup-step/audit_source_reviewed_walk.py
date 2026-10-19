@@ -159,8 +159,10 @@ def hermite_coefficients(initial, final, duration):
     return np.array((c0, c1, c2, 10*r0-4*r1+.5*r2, -15*r0+7*r1-r2, 6*r0-3*r1+.5*r2))
 
 
-def independent_references(config, causal, elapsed, phase, hypothetical=False):
+def independent_references(config, causal, elapsed, phase, hypothetical=False, reference_policy=None):
     """Rebuild all planned task jets without importing the reference producer."""
+    if reference_policy is not None:
+        return reference_policy.references(config, causal, elapsed, phase, hypothetical)
     c = config
     com0, com1, final = [array(c[k], (3,)) for k in ('com0', 'com1', 'finalCom')]
     durations = c['phase_durations']
@@ -335,7 +337,7 @@ def audit_soft_load_context(receipt, note, expected_anchor=_UNBOUND_ANCHOR):
 def audit_context(receipt, note, row, reference, *, expected_elapsed=None,
                   expected_q0=None, expected_floor=None, expected_final=None,
                   previous_arm=None, expected_mode='baseline-context', hypothetical=False,
-                  expected_load_anchor=_UNBOUND_ANCHOR):
+                  expected_load_anchor=_UNBOUND_ANCHOR, reference_policy=None):
     """Pure independent context arithmetic and causal identity check.
 
     `row` is the PRECEDING measured native sample, never the result of applying
@@ -349,6 +351,11 @@ def audit_context(receipt, note, row, reference, *, expected_elapsed=None,
         d = copy.deepcopy(receipt); claimed = d.pop('contextSHA256')
         check('contextDigest', is_sha(claimed) and value_sha(d) == claimed)
         c, causal = receipt['config'], receipt['causal']; t = float(receipt['elapsed']); phase = note['phase']
+        check('explicitReferenceFeatureScope', reference_policy is not None or (c.get('coupledPosture') is None
+            and c.get('boundedSettle') is None and note.get('reviewedWalk', {}).get('featureProfile') is None))
+        bound_reference = reference_policy.bound_reference(reference, receipt) if reference_policy else reference
+        if reference_policy is not None:
+            for key, value in reference_policy.context_checks(receipt, note, row, reference).items(): check(key, value)
         for key, value in audit_soft_load_context(receipt, note, expected_load_anchor)['checks'].items(): check(key, value)
         if expected_mode != 'continuous-com-causal':
             check('noStateOnlySelectionPolicyInOtherModes', c.get('causalSupportSelectionPolicy') is None and causal.get('causalOverlap') is None)
@@ -359,7 +366,7 @@ def audit_context(receipt, note, row, reference, *, expected_elapsed=None,
             and (expected_elapsed is None or close(t, expected_elapsed, 1e-10)))
         check('explicitReviewedReferenceMode', c.get('mode') == expected_mode and expected_mode in MODES
             and c.get('referenceVersion') == VERSION)
-        check('staticReferencesBoundToSavedStep', all(equal(c.get(k), reference[k]) for k in STATIC_FIELDS if k in reference))
+        check('staticReferencesBoundToSavedStep', all(equal(c.get(k), bound_reference[k]) for k in STATIC_FIELDS if k in bound_reference))
         arm = note.get('opposedArmSwing', {})
         check('preparedArmTasksBoundToActualDelayedTargets', all(equal(receipt['arms'][field], arm.get(key))
             for field, key in (('position', 'targetArmJointRad'), ('velocity', 'targetArmVelocityRadps'), ('acceleration', 'targetArmAccelerationRadps2')))
@@ -387,7 +394,7 @@ def audit_context(receipt, note, row, reference, *, expected_elapsed=None,
             and close(measure.get('measuredLegPitchAccelerationRadps2'), acceleration, 1e-9)
             and equal(causal.get('armHistoryAfter'), dict(previousTimeS=row['sourceTimeS'], previousLegRateRadps=rate.tolist())))
         audit_config = copy.deepcopy(c); audit_config['initialFloorTargets'] = reference['floorTargets']
-        expected = independent_references(audit_config, causal, t, phase, hypothetical)
+        expected = independent_references(audit_config, causal, t, phase, hypothetical, reference_policy)
         check('independentCOMJets', jet_matches(receipt['com'], expected['com'], 3))
         check('independentJointAndKneeJets', jet_matches(receipt['joints'], expected['joints'], 21))
         check('independentOrientationJets', equal(receipt['orientations'], expected['orientations']))
@@ -638,7 +645,7 @@ def audit_legacy_continuous_endpoint(plan, c, start, equations, path):
     return dict(passed=all(checks.values()), checks=checks)
 
 
-def audit_continuous_com(receipt, row, reference, state, elapsed):
+def audit_continuous_com(receipt, row, reference, state, elapsed, reference_policy=None):
     """Reconstruct frozen polynomial endpoints, current support and total jets."""
     from scipy.spatial import ConvexHull
     from audit_source_robust_support import support_observation, triangle
@@ -673,7 +680,9 @@ def audit_continuous_com(receipt, row, reference, state, elapsed):
                 legacy = audit_legacy_continuous_endpoint(plan, c, start, equations, path)
                 for key, value in legacy['checks'].items(): check(key, value)
         if phase in ('translate', 'land'): check('continuousPathPresentDuringAdvance', path is not None)
-        if phase == 'settle':
+        if phase == 'settle' and reference_policy is not None and c.get('coupledPosture') is not None:
+            for key, value in reference_policy.settle_checks(receipt, row, state).items(): check(key, value)
+        elif phase == 'settle':
             check('continuousSettlePresent', path is not None and settle is not None)
             if path is not None and settle is not None:
                 check('continuousSettleNeverReplaced', state['continuousSettle'] is None or equal(state['continuousSettle'], settle))
@@ -694,7 +703,8 @@ def audit_continuous_com(receipt, row, reference, state, elapsed):
             capture = p[:2]+math.sqrt(p[2]/9.81)*v[:2]
             margin = float(min(np.min(-(eq[:, :2]@p[:2]+eq[:, 2])), np.min(-(eq[:, :2]@capture+eq[:, 2]))))
             speed, acceleration = float(np.linalg.norm(v)), float(np.linalg.norm(a))
-            diagnostic = continuous['diagnostic']
+            diagnostic = (reference_policy.reference_diagnostic(receipt) if reference_policy is not None
+                else continuous['diagnostic'])
             check('continuousTotalJetsInsideCurrentActualSupportInset', margin >= .003-1e-10
                 and close(diagnostic.get('referenceSupportMarginM'), margin) and diagnostic.get('actualSupportOnly') is True)
             check('continuousTotalJetEnvelopeNeverWidened', speed <= .19260552331163003+1e-10
@@ -801,7 +811,7 @@ def audit_wrench_sample(diagnostic, row, expected_bindings, held_control_sha, pr
 
 
 def audit_reference_journal(rows, entry, references, notes, *, mode='baseline-context',
-                            gears=None, limits=None, arm_mapping=None, wrench_enabled=False, wrench_bindings=None):
+                            gears=None, limits=None, arm_mapping=None, wrench_enabled=False, wrench_bindings=None, reference_policy=None):
     """Bounded-memory native-clock, history, task and held-command replay."""
     checks = {}
     def check(name, condition): checks[name] = checks.get(name, True) and bool(condition)
@@ -859,7 +869,7 @@ def audit_reference_journal(rows, entry, references, notes, *, mode='baseline-co
                 final = state['final'] if phase in ('settle', 'stand') and state['final'] is not None else original_final
                 result = audit_context(receipt, note, previous, reference, expected_elapsed=elapsed,
                     expected_q0=state['q0'], expected_floor=state['floor'], expected_final=final,
-                    previous_arm=previous_arm, expected_mode=mode, expected_load_anchor=state['loadAnchor'])
+                    previous_arm=previous_arm, expected_mode=mode, expected_load_anchor=state['loadAnchor'], reference_policy=reference_policy)
                 for key, value in result['checks'].items(): check(key, value)
                 previous_arm = dict(time=previous['sourceTimeS'], rate=array(receipt['causal']['arm']['measuredLegPitchRateRadps'], (2,)))
                 epoch = receipt['epoch']; key = (index, receipt['source_step'], phase, epoch)
@@ -928,7 +938,7 @@ def audit_reference_journal(rows, entry, references, notes, *, mode='baseline-co
                                 certificateSHA256=value_sha(overlap), method='independent exact-rational Bernstein full-interval cap proof')
                             state['causalOverlap'] = copy.deepcopy(overlap)
                 if mode in ('continuous-com', 'continuous-com-projected', 'continuous-com-load', 'continuous-com-causal'):
-                    continuous_proof = audit_continuous_com(receipt, previous, reference, state, elapsed)
+                    continuous_proof = audit_continuous_com(receipt, previous, reference, state, elapsed, reference_policy)
                     for key, value in continuous_proof['checks'].items(): check(key, value)
                 correction = receipt['causal']['robustCorrection']
                 check('contextCorrectionBoundToCausalAdmission', correction['selected'] is support.get('selected')
@@ -1010,11 +1020,13 @@ def audit_reference_journal(rows, entry, references, notes, *, mode='baseline-co
                     obs = support_observation(row, reference['stance_side'])
                     margin = measured_margin(row, triangle(obs, telemetry['survivingCorners'], actual=True))
                     com = np.asarray(row['com']); cp = com[:2]+math.sqrt(com[2]/9.81)*np.asarray(row['comVelocity'])[:2]
-                    goal = np.asarray(reference['com1'])+np.asarray(telemetry['comCorrectionM'])
+                    goal = (reference_policy.goal(note, reference) if reference_policy else
+                        np.asarray(reference['com1'])+np.asarray(telemetry['comCorrectionM']))
                     ready = (margin >= .003 and np.linalg.norm((com-goal)[:2]) < .008
                         and np.linalg.norm(cp-goal[:2]) < .01 and row['jointLimitMinimumMarginRad'] >= .005
                         and min(row['jointLimitMarginsRad'][i] for i in (7, 13)) >= reference.get('minimum_ankle_ready_rad', 0.)
                         and row['maximumBodyLinearMps'] <= .05 and row['maximumBodyAngularRadps'] <= .2)
+                    if reference_policy is not None: ready = ready and reference_policy.ready(note, row)
                     if ready:
                         state['unload'] = True; state['floor'][reference['swing_side']] = reference['floorTargets'][reference['swing_side']]+.0006
             except (KeyError, ValueError, TypeError, IndexError):
@@ -1131,6 +1143,10 @@ class ExactReviewedForecastReplay(ExactForecastReplay):
     Reconstructing the controller never calls its observer or arm differentiator.
     The inherited native verifier forbids step entry points and checks all bytes.
     """
+    def __init__(self, *args, reference_policy=None, **kwargs):
+        self.reference_policy = reference_policy
+        super().__init__(*args, **kwargs)
+
     @staticmethod
     def _equal(a, b, tolerance=1e-10):
         # Schema2 explicitly records the absent initial derivative history.
@@ -1161,6 +1177,9 @@ class ExactReviewedForecastReplay(ExactForecastReplay):
             'reviewed probe transfer clock mismatch')
         self._require(context.elapsed == t, 'context/probe elapsed clock mismatch')
         config = receipt['config']
+        self._require(self.reference_policy is not None or (config.get('coupledPosture') is None
+            and config.get('boundedSettle') is None and note.get('reviewedWalk', {}).get('featureProfile') is None),
+            'undeclared reference feature in default profile')
         actual_receipt = note.get('referenceContext', {})
         # The observer may vote from the preselection draft. The newly selected
         # command also retains a distinct final-context parity proposal.
@@ -1177,10 +1196,11 @@ class ExactReviewedForecastReplay(ExactForecastReplay):
             final_receipt = parity[0].get('probeControllerInput', {}).get('referenceContext', {})
             for name in ('com', 'joints', 'arms', 'arm_gains', 'orientations', 'capture_constraints', 'causal', 'config', 'diagnostics'):
                 self._require(equal(final_receipt.get(name), actual_receipt.get(name)), 'final parity shared reference mismatch: '+name)
-        self._require(all(equal(config.get(k), reference[k]) for k in STATIC_FIELDS if k in reference), 'forecast static step reference mismatch')
+        bound_reference = self.reference_policy.bound_reference(reference, receipt) if self.reference_policy else reference
+        self._require(all(equal(config.get(k), bound_reference[k]) for k in STATIC_FIELDS if k in bound_reference), 'forecast static step reference mismatch')
         self._require(equal(config['q0'][:15], reference['q0'][:15]), 'forecast leg/knee posture mismatch')
         self._require(audit_soft_load_context(receipt, note, None)['passed'], 'invalid forecast soft-load scope')
-        allowed = set(config)-{'mode', 'referenceVersion', 'armMappingRanges', 'softLoadPreference', 'causalSupportSelectionPolicy'}
+        allowed = set(config)-{'mode', 'referenceVersion', 'armMappingRanges', 'softLoadPreference', 'causalSupportSelectionPolicy', 'coupledPosture', 'boundedSettle'}
         self._require(set(fields) == allowed|{'arm_posture', 'arm_velocity', 'arm_acceleration', 'unload_admitted'}, 'unexpected reviewed probe fields')
         for name in allowed: self._require(equal(fields[name], config[name]), 'probe field/context mismatch: '+name)
         for name, field in (('arm_posture', 'position'), ('arm_velocity', 'velocity'), ('arm_acceleration', 'acceleration')):
@@ -1189,7 +1209,7 @@ class ExactReviewedForecastReplay(ExactForecastReplay):
         self._require(fields['unload_admitted'] is True, 'probe unload force bound missing')
         # Independently reconstruct the draft/final tasks before the native QP.
         audit_config = copy.deepcopy(config); audit_config['initialFloorTargets'] = reference['floorTargets']
-        planned = independent_references(audit_config, receipt['causal'], t, 'transfer', hypothetical=True)
+        planned = independent_references(audit_config, receipt['causal'], t, 'transfer', hypothetical=True, reference_policy=self.reference_policy)
         self._require(jet_matches(receipt['com'], planned['com'], 3), 'probe COM reference mismatch')
         self._require(jet_matches(receipt['joints'], planned['joints'], 21), 'probe joint/knee reference mismatch')
         self._require(equal(receipt['orientations'], planned['orientations']), 'probe orientation reference mismatch')
@@ -1840,7 +1860,7 @@ def state_only_selection_from_history(history, row, reference, elapsed, mass, ac
 
 
 def audit_causal_support_replay(rows,entry,references,cadence,notes,mass,endpoint_validator=None,
-                 prospective=False,forecast_replayer=None):
+                 prospective=False,forecast_replayer=None,reference_policy=None):
     """Separate state-only profile; legacy timer-gated auditor is never changed."""
     from collections import deque
     from scipy.spatial import QhullError
@@ -1898,6 +1918,8 @@ def audit_causal_support_replay(rows,entry,references,cadence,notes,mass,endpoin
                 error = endpoint_validator(previous)
                 endpoint_error = max(endpoint_error,error)
                 check('independentFootEndpointFK',error < 1e-9)
+            if reference_policy is not None:
+                for key,value in reference_policy.observe(note, previous, reference, elapsed, forecast_replayer).items(): check(key,value)
             eligible = None
             if phase == 'transfer' and state['selection'] is None:
                 obs = support_observation(previous,reference['stance_side'])
@@ -2003,6 +2025,8 @@ def audit_causal_support_replay(rows,entry,references,cadence,notes,mass,endpoin
                     a,b,c = quintic(elapsed,reference['phase_durations']['settle']);state['clock'] = (1.-a,-b,-c)
                 else:
                     state['clock'] = (0.,0.,0.) if phase == 'stand' else (1.,0.,0.)
+                if reference_policy is not None:
+                    state['clock'] = reference_policy.correction_clock(note, state['clock'])
                 check('analyticC2CorrectionClock',close(telemetry.get('correctionClock'),state['clock']))
                 base = np.array(reference['com1'])
                 if phase == 'transfer':
@@ -2011,7 +2035,8 @@ def audit_causal_support_replay(rows,entry,references,cadence,notes,mass,endpoin
                 elif phase in ('settle','stand'):
                     s = quintic(elapsed,reference['phase_durations']['settle'])[0] if phase == 'settle' else 1.
                     base = base+(np.array(reference['finalCom'])-base)*s
-                check('emittedCOMTargetMatchesBoundedCorrection',close(note.get('comTarget'),base+state['clock'][0]*delta))
+                check('emittedCOMTargetMatchesBoundedCorrection',close(note.get('comTarget'),
+                    reference_policy.expected_com(note, reference) if reference_policy else base+state['clock'][0]*delta))
                 obs = support_observation(previous,reference['stance_side'])
                 present = all(obs['present'][selected['survivingCorners']])
                 barriers = telemetry.get('barriers',[])
@@ -2052,7 +2077,7 @@ def audit_causal_support_replay(rows,entry,references,cadence,notes,mass,endpoin
         ready = False
         if phase == 'transfer' and selected is not None:
             com = np.array(row['com']);cp = com[:2]+math.sqrt(com[2]/9.81)*np.array(row['comVelocity'])[:2]
-            goal = np.array(reference['com1'])+selected['comCorrectionM']
+            goal = reference_policy.goal(note, reference) if reference_policy else np.array(reference['com1'])+selected['comCorrectionM']
             ready = (elapsed >= reference['phase_durations']['transfer']-1e-10 and state['clock'][0] >= 1.
                 and actual_margin is not None and actual_margin >= RESERVE
                 and np.linalg.norm((com-goal)[:2]) < .008 and np.linalg.norm(cp-goal[:2]) < .01
@@ -2061,6 +2086,7 @@ def audit_causal_support_replay(rows,entry,references,cadence,notes,mass,endpoin
                 and row['maximumBodyLinearMps'] <= .05 and row['maximumBodyAngularRadps'] <= .2
                 and row['feet'][reference['swing_side']]['loadN'] < .5
                 and row['feet'][reference['stance_side']]['loadN'] >= .8*mass*9.81)
+            if reference_policy is not None: ready = ready and reference_policy.ready(note, row)
             state['unload'] = state['unload']+1 if ready else 0
             state['maximumUnloadRun'] = max(state['maximumUnloadRun'],state['unload'])
             if endpoint_validator is not None and ready:
@@ -2132,7 +2158,7 @@ def limits_from_bound_xml(path, model):
     return limits
 
 
-def audit(folder):
+def audit(folder, *, reference_policy=None):
     folder = Path(folder); base = folder.parents[1]
     read = lambda p: json.loads(Path(p).read_text())
     config = read(folder/'reviewed-walk-config.json'); receipt = read(folder/'reviewed-walk-run.json')
@@ -2160,7 +2186,7 @@ def audit(folder):
     with (folder/'frames.ndjson').open() as source:
         reference_proof = audit_reference_journal((json.loads(line) for line in source), entry, references,
             json_array_items(folder/'control.json'), mode=config['mode'], gears=gears, limits=limits, arm_mapping=mapping,
-            wrench_enabled=wrench_enabled, wrench_bindings=wrench_bindings)
+            wrench_enabled=wrench_enabled, wrench_bindings=wrench_bindings, reference_policy=reference_policy)
     wrench_summary_proof = None
     if wrench_enabled:
         saved_wrench_path = folder/'reviewed-wrench-summary.json'
@@ -2169,13 +2195,14 @@ def audit(folder):
         reference_proof['checks']['independentWrenchPhaseSummaryReplay'] = wrench_summary_proof['passed']
         reference_proof['passed'] = all(reference_proof['checks'].values())
         reference_proof['failedChecks'] = [k for k, v in reference_proof['checks'].items() if not v]
-    native = ExactReviewedForecastReplay(base, folder, references, receipt, mapping)
+    native = ExactReviewedForecastReplay(base, folder, references, receipt, mapping, reference_policy=reference_policy)
+    if reference_policy is not None: reference_policy.install_native_windows(native)
     try:
         with (folder/'frames.ndjson').open() as source:
             replay = audit_causal_support_replay if config['mode'] == 'continuous-com-causal' else audit_replay
             legacy = replay((json.loads(line) for line in source), initial['entry'], references, cadence,
                 json_array_items(folder/'control.json'), model_data['totalMassKg'], FootEndpointFK(),
-                prospective=True, forecast_replayer=native)
+                prospective=True, forecast_replayer=native, **(dict(reference_policy=reference_policy) if reference_policy else {}))
         native_proof = native.summary()
     finally:
         native.close()
@@ -2202,7 +2229,7 @@ def audit(folder):
         and type(receipt.get('wrenchDiagnosticsEnabled', False)) is bool
         and config.get('wrenchDiagnosticsEnabled', False) == receipt.get('wrenchDiagnosticsEnabled', False),
         exactReviewedSchemaAndProfile=config.get('schema') == receipt.get('schema') == 2
-        and config.get('profile') == receipt.get('profile') == PROFILE
+        and config.get('profile') == receipt.get('profile') == (reference_policy.profile if reference_policy else PROFILE)
         and config.get('mode') == receipt.get('mode') and config.get('referenceVersion') == receipt.get('referenceVersion') == VERSION,
         explicitNoOriginalOrPrematureFinalClaim=config.get('originalModelQualificationClaim') is False
         and config.get('finalPlanQualificationClaim') is False and receipt.get('originalModelQualificationClaim') is False,
@@ -2227,6 +2254,9 @@ def audit(folder):
         ) if config['mode'] == 'continuous-com-causal' else (
         receipt.get('causalSupportSelectionEnabled', False) is False
         and config.get('causalSupportSelectionPolicy') is None)
+    declarations['explicitFeatureProfileScope'] = (reference_policy.declarations(config, receipt, cadence) if reference_policy else
+        config.get('coupledPostureEnabled', False) is False and receipt.get('coupledPostureEnabled', False) is False
+        and cadence.get('reviewedReferenceProfile', {}).get('featureProfile') is None)
     provenance['checks'].update(declarations); provenance['passed'] = all(provenance['checks'].values())
     # Final B evidence is deliberately not inferred from names or runner booleans.
     result = qualify_reviewed(original, robust, reference_proof, proof, controls_pass, provenance,
@@ -2243,6 +2273,8 @@ def audit(folder):
         hashes={name: file_sha(folder/name) for name in ('reviewed-walk-config.json', 'reviewed-walk-run.json',
             'frames.ndjson', 'control.json', 'multistep-summary.json', 'summary.json', 'final.bin')},
         evidenceLimit='Every saved native sample is checked; exact retained native witnesses bind references and QP commands locally. Hashed saved data cannot exclude every unrecorded external intervention. Physical qualification alone does not establish visual/cadence improvement.')
+    if reference_policy is not None:
+        result = reference_policy.finish(result)
     if wrench_enabled and (folder/'reviewed-wrench-summary.json').is_file():
         result['hashes']['reviewed-wrench-summary.json'] = file_sha(folder/'reviewed-wrench-summary.json')
     return result
