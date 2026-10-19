@@ -1,0 +1,345 @@
+{
+  "schema": 1,
+  "date": "2026-10-19",
+  "scope": "Plain-side diagnostic: clamp exactly one interpolated reference coordinate; unchanged frozen ordinary WEAK/SLOW controller and original 20+5 solver profile.",
+  "outcome": "The single-entry clamp slightly changes peak head and torso posture but does not resolve the support/posture failure within the fixed 3-second horizon.",
+  "admission": false,
+  "productionPromotion": false,
+  "new25SecondExtensionConducted": false,
+  "recoveryDeadlineOrAcceptanceChanged": false,
+  "limits": [
+    "Both arms stop at native 2780, exactly 3 seconds after trigger native 380. No new 25-second run, longer clamped continuation, 24-case admission or production promotion was performed.",
+    "Both arms have zero COM-in-support samples, zero capture-in-support samples and zero stable-standing duration over all 2400 recovery-native samples. Persistent two-foot loading is nonzero and is reported separately; it is not a standing pass.",
+    "Peak torso-up remains below the unchanged 0.97 criterion. Right foot remains unloaded and well above the floor near peak head height.",
+    "Clamped recovery loaded slip is not reduced overall. Whole-getup 20 mm crossings are diagnostic only; original stable-interval 10 mm and all other acceptance gates remain unchanged.",
+    "A raw out-of-range spline target can be offset by the learned residual. This outcome is not a source-bug assertion.",
+    "Concurrent build/browser physical work may overlap. This is an untimed physical diagnostic, with no timing or performance conclusion."
+  ],
+  "identity": {
+    "preservedOrdinaryLibrary": {
+      "path": "outputs/getup-recovery-root-20261019/liblh_sim-frozen-default.rlib",
+      "sha256": "65631ac402177bbdce5df0514ae093285bebd0e56b34033f62a68529f0276e11"
+    },
+    "actorsControllerSeedProfileGainsAndBodyStateUnchanged": true,
+    "teacher": {
+      "path": "rust/crates/sim/data/getup-policy/teacher.bin",
+      "sha256": "f8d8d6ea787366a67aa46352cf5243ed2962dd277b5ca6b6f98a85fc3a67ab4f"
+    },
+    "student": {
+      "path": "rust/crates/sim/data/getup-policy/student.bin",
+      "sha256": "c489faed55bdab1669c51dab71a102db91ff2a55143789f682e45cd8169d6dbb"
+    },
+    "productionSourceChangedByDiagnostic": false
+  },
+  "design": {
+    "fixture": "side",
+    "preparationPollingTicks": 1,
+    "triggerNative": 380,
+    "triggerPhysicalSeconds": 0.475,
+    "sharedCheckpointNative": 400,
+    "finalNativeEachArm": 2780,
+    "nativeStepSeconds": 0.00125,
+    "policyStepSeconds": 0.025,
+    "solverBaseIterations": 20,
+    "humanAdditionalIterations": 5,
+    "sharedTeacherDecisions": 37,
+    "sharedForecastNativeIntegrations": 740,
+    "referenceFramesBeforeCanonicalTerminal": 74,
+    "referenceAndTerminalEntries": 75,
+    "checkpointTuple": "(u32 schema, String canonical model JSON, Vec<u8> binary Rapier world, String auxiliary runtime JSON)",
+    "checkpointEncoding": "bincode 1.3.3; DefaultOptions; fixed integer encoding; 64 MiB limit; reject trailing bytes",
+    "singleMutation": {
+      "bincode": "1.3.3 DefaultOptions/fixed-int/64MiB/reject-trailing-bytes",
+      "checkpointTuple": "(u32,String,Vec<u8>,String)",
+      "exactlyOneAuxiliaryJsonLeafDiffers": [
+        "/simulation/getup_controller/reference/72/14"
+      ],
+      "experimentScope": "One diagnostic reference-entry ablation; no source-bug or recovery-success claim.",
+      "nativeSubstepsAtMutation": 400,
+      "newValue": -0.8726646304130554,
+      "newValueF32Bits": 3210700531,
+      "oldValue": -1.1102084,
+      "preparationPollingTicks": 1,
+      "profileUnchanged": true,
+      "sameModelStringBytes": true,
+      "sameSchema": true,
+      "sameWorldBytes": true,
+      "triggerNative": 380,
+      "worldBytes": 118261
+    },
+    "profileAssertionCorrection": "Both checkpoint-string and live-to_value representations are decoded and re-encoded through the frozen typed lh_sim::Profile."
+  },
+  "referenceContext": {
+    "joint": "left_ankle_x",
+    "qposIndex": 14,
+    "actuatorIndex": 13,
+    "sourceRangeRadians": [
+      -0.8726646259971648,
+      0.8726646259971648
+    ],
+    "teacherPostStepRawQRangeRadians": [
+      -0.8382917,
+      0.8726716
+    ],
+    "teacherKnotsWithinRangeTo1eMinus5": true,
+    "interpolatedReferenceRangeRadians": [
+      -1.1102084,
+      0.91978836
+    ],
+    "firstOutOfRangeReferenceIndex": 11,
+    "firstOutOfRangeReferenceValueRadians": 0.91978836,
+    "clampedReferenceIndex": 72,
+    "rawReferenceReport": {
+      "path": "outputs/getup-recovery-root-20261019/side/reference-report.json",
+      "sha256": "395e682d78b34733df78433720d332aa7aaab12016b3b0c75d6f3ffd814a3013"
+    }
+  },
+  "causalChecks": {
+    "decisions0Through66ExactlyEqual": true,
+    "beforePosesThroughDecision67ExactlyEqual": true,
+    "firstInputDifference": {
+      "decisionIndex": 67,
+      "field": "observation",
+      "nativeSubstep": 1720
+    },
+    "firstInputChangedLeavesAtDecision67": [
+      "/106"
+    ],
+    "firstResidualDifference": {
+      "decisionIndex": 67,
+      "field": "residual",
+      "nativeSubstep": 1720
+    },
+    "firstControlDifference": {
+      "decisionIndex": 67,
+      "field": "controls",
+      "nativeSubstep": 1720
+    },
+    "firstEveryNativePhysicalDiagnosticDifference": 1721,
+    "firstArchivedBeforePoseDifference": {
+      "decisionIndex": 68,
+      "field": "before",
+      "nativeSubstep": 1740
+    },
+    "baselineMatchesRetainedFrozen40HzPoseSamples": {
+      "matched40HzSamples": 140,
+      "differingSamples": 0
+    },
+    "comparison": {
+      "path": "outputs/getup-side-spline-ablation-20261019/run-attempt-2/comparison.json",
+      "sha256": "8fca8fb857c9ba0b758aa3c9b6d10450f84240742b49bbb24d8b5bae2022baca"
+    }
+  },
+  "arms": {
+    "baseline": {
+      "endNative": 2780,
+      "elapsedAfterTriggerSeconds": 3.0,
+      "everyNativeRecoverySamples": 2400,
+      "peakHead": {
+        "nativeSubstep": 2094,
+        "elapsedAfterTriggerSeconds": 2.1425,
+        "headM": 1.4189642667770386,
+        "torsoUp": 0.927876353263855
+      },
+      "peakTorsoUp": {
+        "nativeSubstep": 2138,
+        "elapsedAfterTriggerSeconds": 2.1975000000000002,
+        "headM": 1.4099317789077759,
+        "torsoUp": 0.94437175989151
+      },
+      "supportPassedNativeSampleCounts": {
+        "bothFeetLoadedAndPersistent": 187,
+        "captureInSupport": 0,
+        "comInSupport": 0,
+        "footLoadFraction": 554,
+        "onlyFeet": 1139,
+        "torso": 0
+      },
+      "maximumContiguousStableSeconds": 0.0,
+      "prototypeStandingPassed": false,
+      "rightFootAtElapsed2p15Seconds": {
+        "clearanceM": 0.1713783703134823,
+        "loadN": 0.0
+      },
+      "recoveryLoadedSlipM": [
+        0.3017945016958397,
+        0.20027428119472443
+      ],
+      "finalHeadM": 0.29508355259895325,
+      "policyDecisions": 120,
+      "newPolicyDecisionsAfterSharedCheckpoint": 119,
+      "additionalForecastIntegrations": 0,
+      "integrityFailure": null,
+      "unobservedRealTailNativeSteps": 0,
+      "result": {
+        "path": "outputs/getup-side-spline-ablation-20261019/run-attempt-2/baseline/result.json",
+        "sha256": "becc25aa1613aa646dfe7e6345a5682dc991233c570ac8b55ec4ce8ac340a653"
+      },
+      "controllerArchive": {
+        "path": "outputs/getup-side-spline-ablation-20261019/run-attempt-2/baseline/reference-report.json",
+        "sha256": "caacb0564d79c361552fc31abcbc252ee25a5776a5cb61f24425d1b65bdce733"
+      },
+      "nativeObservations": {
+        "path": "outputs/getup-side-spline-ablation-20261019/run-attempt-2/baseline/native-observations.ndjson",
+        "sha256": "9d4db3f4487da26fd66ceeb898bcbf9e99eeec0275abb07d33c18960c5b18fdf"
+      },
+      "trace40Hz": {
+        "path": "outputs/getup-side-spline-ablation-20261019/run-attempt-2/baseline/trace.ndjson",
+        "sha256": "13196a44b4511a78298a2a717662654b15c50b595026d81d0734b731a4c73e7d"
+      },
+      "standingDiagnostics40Hz": {
+        "path": "outputs/getup-side-spline-ablation-20261019/run-attempt-2/baseline/diagnostics-40hz.ndjson",
+        "sha256": "4b7b2dcf166022d7e24fdcc04703a0b812a4e87f502788226fd1839ed29ef8c8"
+      }
+    },
+    "clamped": {
+      "endNative": 2780,
+      "elapsedAfterTriggerSeconds": 3.0,
+      "everyNativeRecoverySamples": 2400,
+      "peakHead": {
+        "nativeSubstep": 2092,
+        "elapsedAfterTriggerSeconds": 2.14,
+        "headM": 1.4229143857955933,
+        "torsoUp": 0.9388954639434814
+      },
+      "peakTorsoUp": {
+        "nativeSubstep": 2133,
+        "elapsedAfterTriggerSeconds": 2.19125,
+        "headM": 1.4134777784347534,
+        "torsoUp": 0.9524902701377869
+      },
+      "supportPassedNativeSampleCounts": {
+        "bothFeetLoadedAndPersistent": 169,
+        "captureInSupport": 0,
+        "comInSupport": 0,
+        "footLoadFraction": 572,
+        "onlyFeet": 1160,
+        "torso": 0
+      },
+      "maximumContiguousStableSeconds": 0.0,
+      "prototypeStandingPassed": false,
+      "rightFootAtElapsed2p15Seconds": {
+        "clearanceM": 0.16628767545725434,
+        "loadN": 0.0
+      },
+      "recoveryLoadedSlipM": [
+        0.4667463895270066,
+        0.20200839167882803
+      ],
+      "finalHeadM": 0.6326715350151062,
+      "policyDecisions": 120,
+      "newPolicyDecisionsAfterSharedCheckpoint": 119,
+      "additionalForecastIntegrations": 0,
+      "integrityFailure": null,
+      "unobservedRealTailNativeSteps": 0,
+      "result": {
+        "path": "outputs/getup-side-spline-ablation-20261019/run-attempt-2/clamped/result.json",
+        "sha256": "f149cbb65079c6e5cc7670323d345e4bb323295a28b18be0aa2a66fdc161d1df"
+      },
+      "controllerArchive": {
+        "path": "outputs/getup-side-spline-ablation-20261019/run-attempt-2/clamped/reference-report.json",
+        "sha256": "34c8e935627ab9f68f161b22685c5a7ebf60e0da92f65f4169d745bccffd7c41"
+      },
+      "nativeObservations": {
+        "path": "outputs/getup-side-spline-ablation-20261019/run-attempt-2/clamped/native-observations.ndjson",
+        "sha256": "92c59e1cac9565b5503d3f2a48afa07209e7aa176d5a081a5e507f71a837bc21"
+      },
+      "trace40Hz": {
+        "path": "outputs/getup-side-spline-ablation-20261019/run-attempt-2/clamped/trace.ndjson",
+        "sha256": "27213c22831ce5e3891151c6ba28d48768130b9223f8c156c260450cb97edc3e"
+      },
+      "standingDiagnostics40Hz": {
+        "path": "outputs/getup-side-spline-ablation-20261019/run-attempt-2/clamped/diagnostics-40hz.ndjson",
+        "sha256": "503092ae96ce12a8fe07e601dcef4a2471f599272c075c29eb7f206d6fe02662"
+      }
+    }
+  },
+  "attemptAccounting": {
+    "physicalInvocations": 2,
+    "hypothesisTrials": 1,
+    "attempt1": {
+      "outcome": "Mechanical f32 JSON representation assertion in first preparation observer",
+      "exitCode": 101,
+      "realNativeIntegrations": 1,
+      "forecastNativeIntegrations": 0,
+      "interventionApplied": false,
+      "source": {
+        "path": "outputs/getup-side-spline-ablation-20261019/attempt-1-source.rs",
+        "sha256": "362f75034f613cc8ad7297f46e7189f1e8e80f8b286dfaff2f0ec817f5c14ccc"
+      },
+      "stderr": {
+        "path": "outputs/getup-side-spline-ablation-20261019/stderr.log",
+        "sha256": "51c1f9fa03bfdf1076d3777a9afee4bd05780a2b22d59effa35f5c15c6fd966b"
+      },
+      "ledger": {
+        "path": "outputs/getup-side-spline-ablation-20261019/attempt-1-process-ledger.json",
+        "sha256": "2ceb9af59476e1cf67aac60843d8b9928144383bb01722de17ba0f19048b1f8a"
+      }
+    },
+    "attempt2": {
+      "outcome": "Both bounded arms terminal",
+      "exitCode": 0,
+      "realNativeIntegrations": 5160,
+      "sharedForecastNativeIntegrations": 740,
+      "realBreakdown": {
+        "sharedPreparationAndFirstRecoveryTick": 400,
+        "baselineAfterCheckpoint": 2380,
+        "clampedAfterCheckpoint": 2380
+      },
+      "stderr": {
+        "path": "outputs/getup-side-spline-ablation-20261019/attempt-2-stderr.log",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    },
+    "totals": {
+      "attempt2Real": 5160,
+      "attempt2SharedForecast": 740,
+      "failedSetupExtraReal": 1,
+      "failedSetupExtraForecast": 0,
+      "allAttemptsReal": 5161,
+      "allAttemptsForecast": 740,
+      "allAttemptsTotal": 5901
+    },
+    "processLedger": {
+      "path": "outputs/getup-side-spline-ablation-20261019/process-ledger.json",
+      "sha256": "45ee8421f1c940fbeb1f892c25273752d37b10946c5fc5029229c3eb1c3e4055"
+    }
+  },
+  "reproduction": {
+    "maintainedThinHarness": {
+      "path": "docs/evidence/probes/getup-side-spline-ablation-2026-10-19.rs",
+      "sha256": "98412e4cb44341d3ab1b7aa42ca4fc3b754bb721f74966f40c6ac486ae28a725"
+    },
+    "exactExecutedSource": {
+      "path": "outputs/getup-side-spline-ablation-20261019/side-spline-ablation.rs",
+      "sha256": "98412e4cb44341d3ab1b7aa42ca4fc3b754bb721f74966f40c6ac486ae28a725"
+    },
+    "executedBinary": {
+      "path": "outputs/getup-side-spline-ablation-20261019/side-spline-ablation",
+      "sha256": "8733b2904fea486f01b9a2b025e9155a937a27ca945352ac7edce533b01b4022"
+    },
+    "compiler": "rustc 1.89.0; --edition=2024 -C opt-level=3 -C lto=thin; no Cargo rebuild or added feature; no direct lh_model dependency",
+    "usedBuildScript": {
+      "path": "outputs/getup-side-spline-ablation-20261019/build.sh",
+      "sha256": "9468e131383858f63d422211047528d271fb48fcbe4d8f9259649ee481708d90"
+    },
+    "pinnedDependencyHashes": {
+      "path": "outputs/getup-side-spline-ablation-20261019/pinned-input-sha256.txt",
+      "sha256": "0c7eb1ad9d51fd622428cb3711e162895d3ad734a46398f920bfefac3e87110e"
+    },
+    "reductionScript": {
+      "path": "outputs/getup-side-spline-ablation-20261019/reduce-results.py",
+      "sha256": "5e239bde84e8bf25bed9875b7c912fbc713d233eabf905629eeae8208294d41b"
+    },
+    "invocation": "side-spline-ablation FRESH_OUTPUT_DIRECTORY; creates a single common seed and runs baseline and clamped arms exactly once each to native 2780",
+    "thinLinkReference": "rustc --edition=2024 -C opt-level=3 -C lto=thin -L dependency=rust/target/release/deps --extern lh_sim=outputs/getup-recovery-root-20261019/liblh_sim-frozen-default.rlib --extern serde_json=rust/target/release/deps/libserde_json-144c00c18b0640d6.rlib --extern bincode=rust/target/release/deps/libbincode-a9935cef594b22ab.rlib docs/evidence/probes/getup-side-spline-ablation-2026-10-19.rs -o FRESH_PROBE_BINARY",
+    "rawOutcomeSummary": {
+      "path": "outputs/getup-side-spline-ablation-20261019/outcome-summary.json",
+      "sha256": "085af6a29493963bf4fc4acf9fba20bb41f55526ec6e52bbec36191ed0345388"
+    },
+    "mutationAudit": {
+      "path": "outputs/getup-side-spline-ablation-20261019/run-attempt-2/mutation-audit.json",
+      "sha256": "c12d3c3da1480b30d41c5714ae44930e6798b9a5b3ef41ecddbe0986a8347078"
+    }
+  }
+}
