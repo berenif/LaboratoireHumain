@@ -1,0 +1,1351 @@
+{
+  "schema": 1,
+  "checkedAt": "2026-10-19T16:28:05.700Z",
+  "scope": "Actual desktop Chromium-headless-shell/WebGL2 tests of the root-COM/freejoint corrected engine, existing static controller, and complete explicit3+1 numerical profile. Bounded physical checks and repeated ordinary-app average throughput observations. Input-to-visible latency and broader release/mobile/recovery qualification remain open.",
+  "browserChecksPassed": true,
+  "releaseAccepted": false,
+  "productionNumericalProfileChanged": false,
+  "extraControllerFeature": false,
+  "transportOrSchedulerChanged": false,
+  "build": {
+    "previousCanonicalBuildEvidence": "docs/evidence/browser-root-com-validation-2026-10-19.json",
+    "manifest": {
+      "path": "outputs/browser-capability-20261019/root-com-correction/build-manifest.json",
+      "sha256": "03ef1b874f66199f3dd3eb3f3c07f27360343833b864495ad9311381fa8bfedc"
+    },
+    "artifact": "outputs/browser-capability-20261019/root-com-correction/app",
+    "artifactSha256": {
+      "app-1df6634f608f8d80.css": "6f9e3128c49954cf4c159cd1b3cb0375ca4293e134429847288a5e6549a44271",
+      "index.html": "e66f7147dd7ba9fab899d5be48593642a463a9f075d26d1ef807c6c40d568ccc",
+      "lh-browser-4479461c3e1613b6.js": "ec9a8317fc58b63cf4f6874c3ed03808743c61c19a9c485020f0dc64dfd9c4f5",
+      "lh-browser-4479461c3e1613b6_bg.wasm": "b72e126e7587859ae1891c1e892d1508b255d024967edaa662cf95d937934411",
+      "lh_worker.js": "f5ab14e78b52ad83577646105b61526484096924ec39f5a72d8ee039cb652da2",
+      "lh_worker_bg.wasm": "4fa298cfff4340fd3c5e65ebd95d2dd714be84639b7e7acc23cb2180a4e96c07",
+      "sim-worker.js": "a3a2b18c222c045fc08bf19aff2e96b92f0bc18ad6023bcca660195054267996",
+      "snippets/lh-browser-575491a8d42d44d5/driver.js": "4c6281e19c4540e3ba72a74a5b1514b5d1b9c58e56c1f8a2dbfb3adb4812d74e"
+    },
+    "controllerDiagnostic": "measured-contact-standing-balance",
+    "toolchain": "cargo 1.89.0 (c24e10642 2025-06-23)\nrustc 1.89.0 (29483883e 2025-08-04)\nbinary: rustc\ncommit-hash: 29483883eed69d5fb4db01964cdf2af4d86e9cb2\ncommit-date: 2025-08-04\nhost: x86_64-unknown-linux-gnu\nrelease: 1.89.0\nLLVM version: 20.1.7\nwasm-bindgen 0.2.108\n",
+    "features": {
+      "worker": [],
+      "sim": [],
+      "rapier": [
+        "alloc",
+        "dim3",
+        "f32",
+        "serde-serialize",
+        "std"
+      ],
+      "rustflags": [],
+      "simd128": false
+    },
+    "correctionScope": "Combined root-COM mapping/cached-velocity correction and zero free-root damping/armature. Expected trajectories change; no old-engine bitwise parity claim or exclusive attribution to one part.",
+    "engineCommit": "68361ca",
+    "sourceContractCommit": "579e7d6"
+  },
+  "explicitProfile": {
+    "path": "docs/evidence/profiles/getup-800hz-3plus1-qualification-v1.json",
+    "rawSha256": "a197f6ba375c8f502904353a540c287549034d1df616b1c125c88ba6e94ee899",
+    "profile": {
+      "id": "getup-800hz-3plus1-qualification-v1",
+      "dt_s": 0.00125,
+      "tick_substeps": 20,
+      "contact_friction_model": "coulomb",
+      "solver_iterations": 3,
+      "internal_pgs_iterations": 20,
+      "fall_internal_pgs_iterations": 32,
+      "additional_body_iterations": 1,
+      "allowed_linear_error_m": 0.001,
+      "prediction_distance_m": 0.002,
+      "motor_scale": 1,
+      "aggregate_motor_cap_nm": 920,
+      "angular_damping": 0,
+      "contact_skin_m": 0,
+      "max_ccd_substeps": 4,
+      "disable_solver_speed_cap": true,
+      "posture_stiffness_multiplier": 1,
+      "posture_damping_multiplier": 1,
+      "supported_tilt_gain": 2,
+      "supported_com_gain_rad_per_m": 5,
+      "supported_com_velocity_gain_s_rad_per_m": 5,
+      "supported_angular_velocity_gain_s": 2,
+      "grab_limits": {
+        "angular_frequency_rad_s": 16,
+        "target_speed_m_s": 1.5,
+        "target_acceleration_m_s2": 8,
+        "force_n": 180,
+        "torque_nm": 12,
+        "positive_power_w": 36
+      },
+      "reaching_iterations": 6,
+      "reaching_coordinate_increment_rad": 0.15,
+      "reaching_damping_m2": 0.01,
+      "corrective_steps_enabled": false,
+      "recovery_enabled": false,
+      "getup_policy_enabled": false
+    },
+    "canonical": {
+      "path": "docs/evidence/profiles/getup-800hz-3plus1-qualification-v1.json",
+      "sha256": "a197f6ba375c8f502904353a540c287549034d1df616b1c125c88ba6e94ee899"
+    },
+    "differenceFrom4plus1": "Only profile ID and solver_iterations4→3; additional_body_iterations remains1. Model, gains, physical gates,800Hz physics,40Hz control,20substeps/tick, internalPGS20 and fallPGS32 unchanged."
+  },
+  "clock": {
+    "outerPhysicsHz": 800,
+    "controlHz": 40,
+    "nativeSubstepsPerTick": 20
+  },
+  "runtime": {
+    "browser": "155.0.8059.79",
+    "renderer": "WebGL2",
+    "host": "Linux desktop headless, software rendering",
+    "provenance": "outputs/browser-capability-20261019/debian/download-provenance.json"
+  },
+  "throughput": {
+    "unchangedRequiredAverageRatio": 0.99,
+    "allThreeLongNoEncoderRunsMeetRatio": true,
+    "pooledSimulationToWallRatio": 0.999041323982,
+    "method": "Three sequential fresh-browser runs, each rendered ordinary automatic app from tick0 to1320/time33s. One3s settling interval then30s quiet. No physical input, no external encoder; original production transport, one tick per advance, one outstanding request, three transfer buffers. Physics owner held all builds/native trials idle throughout. Every repeat retained. Ratio uses exact start→final reply wall interval; presented-frame count captured inside final reply task.",
+    "summary": {
+      "path": "outputs/browser-capability-20261019/root-com-correction/three-noencoder-holds-summary.json",
+      "sha256": "61396cd41ccf6a3e6f71eed356f0aac693b52f9414cabd1e438739eab927a218"
+    },
+    "runs": [
+      {
+        "run": "a",
+        "raw": {
+          "path": "outputs/browser-capability-20261019/root-com-correction/hold-explicit-3plus1-noencoder-a/result.json",
+          "sha256": "168e501d7107a30205c44c078a71a8047e2a35c8af60dd953fd7868632e19159"
+        },
+        "passed": true,
+        "profileSha256": "a197f6ba375c8f502904353a540c287549034d1df616b1c125c88ba6e94ee899",
+        "worker": "4fa298cfff4340fd3c5e65ebd95d2dd714be84639b7e7acc23cb2180a4e96c07",
+        "initial": {
+          "tick": 0,
+          "time": 0,
+          "backend": "WebGL2",
+          "controller": "measured-contact-standing-balance",
+          "fallbackReason": "Error: WebGPU render check failed: OperationError: A valid external Instance reference no longer exists.. Choose Auto or WebGL2."
+        },
+        "final": {
+          "tick": 1320,
+          "time": 33,
+          "motion": "Upright",
+          "backend": "WebGL2",
+          "workerInstances": 1,
+          "error": "",
+          "failure": null
+        },
+        "metrics": {
+          "snapshotCount": 1321,
+          "steadySnapshotCount": 1201,
+          "referenceTime": 3,
+          "finalTime": 33,
+          "steadyPhysicalSeconds": 30,
+          "maximumSnapshotGapTicks": 1,
+          "minUpY": {
+            "torso": 0.9999091359604388,
+            "pelvis": 0.9922608382597746,
+            "right_foot": 0.9999315548667137,
+            "left_foot": 0.9999321447561974
+          },
+          "minimumAggregateFootLoadsN": {
+            "right_foot": 200.32732,
+            "left_foot": 200.32037
+          },
+          "maximumLinearSpeedMps": 0.000579200060495574,
+          "maximumAngularSpeedRadps": 0.003044331923798017,
+          "maximumPelvisDriftM": 0.00014363622837181898,
+          "maximumFootBodyDriftM": 0.00075289933197208,
+          "maximumLoadedFootHorizontalBodySpeedProxyMps": 0.00009139107276263367,
+          "maximumFloorPenetrationM": 0.00095460744,
+          "maximumSelfPenetrationM": 0,
+          "violations": [],
+          "contactPointSlipAvailable": false,
+          "slipLimit": "The ordinary snapshot exposes aggregate segment loads and body velocities, not contact-point tangential velocity. Horizontal foot-body speed is a proxy, not contact slip."
+        },
+        "observation": {
+          "wallSeconds": 33.02760000000149,
+          "simulationSeconds": 33,
+          "integratedSimulationToWallRatio": 0.9991643352831725,
+          "presentedFrames": 1941,
+          "averagePresentedFps": 58.76902953892842,
+          "lastHalfSecondPresentedFps": 54.2005420054202,
+          "frameCountEndpoint": "Captured inside the final target-reply listener, not after polling/screenshot delay",
+          "appReportedSimulationToWallRatio": 0.9995335510095399
+        },
+        "physicalInputCount": 0,
+        "commandCount": 0,
+        "errors": [],
+        "telemetry": {
+          "method": "Nearest-rank p95/p99; p50 lower midpoint. All advance packets ending at ticks1..1320; driver stamps the final packet later in the same reply task than the harness endpoint. Frames use exact startedAt..endedAt final-reply window. Warm subsets explicitly defined by displayed observation tick, never substituted for cold/full window.",
+          "packetCount": 1320,
+          "presentationFrameRecords": 1941,
+          "discardedAfterTargetFrames": 7,
+          "droppedPackets": 0,
+          "droppedFrames": 0,
+          "bounds": {
+            "maximumQueueDepth": 0,
+            "maximumOutstandingAdvances": 1,
+            "maximumAdvanceTicks": 1,
+            "maximumTransferBuffers": 3
+          },
+          "workerUpdateMs": {
+            "count": 1320,
+            "mean": 16.310909090817653,
+            "p50": 16.399999998509884,
+            "p95": 19.699999999254942,
+            "p99": 22.699999999254942,
+            "max": 132.5
+          },
+          "roundtripMs": {
+            "count": 1320,
+            "mean": 22.228863636392987,
+            "p50": 18.5,
+            "p95": 32.29999999701977,
+            "p99": 42,
+            "max": 164.60000000149012
+          },
+          "fullWindow": {
+            "count": 1941,
+            "frameIntervalMs": {
+              "count": 1941,
+              "mean": 17.01628026790199,
+              "p50": 16.600000001490116,
+              "p95": 19.199999999254942,
+              "p99": 27.899999998509884,
+              "max": 150.80000000074506
+            },
+            "snapshotAgeMs": {
+              "count": 1941,
+              "mean": 66.37220841436387,
+              "p50": 55.667760873006046,
+              "p95": 115.68555773579646,
+              "p99": 276.9610659926184,
+              "max": 750.5999511741102
+            },
+            "backlogSeconds": {
+              "count": 1941,
+              "mean": 0.07591468315301149,
+              "p50": 0.03319999999999757,
+              "p95": 0.39169999999999877,
+              "p99": 0.4749999999999992,
+              "max": 0.5166999999999999
+            },
+            "frameCpuMs": {
+              "count": 1941,
+              "mean": 0.9217413704264631,
+              "p50": 0.8999999985098839,
+              "p95": 1.2999999970197678,
+              "p99": 1.7999999970197678,
+              "max": 13.599999997764826
+            }
+          },
+          "afterSettlingTick120": {
+            "count": 1761,
+            "frameIntervalMs": {
+              "count": 1761,
+              "mean": 16.836399772855486,
+              "p50": 16.600000001490116,
+              "p95": 18.399999998509884,
+              "p99": 24.5,
+              "max": 101.80000000074506
+            },
+            "snapshotAgeMs": {
+              "count": 1761,
+              "mean": 59.704261713023136,
+              "p50": 53.899620050804515,
+              "p95": 99.728535279286,
+              "p99": 141.01353625535467,
+              "max": 312.27006811373667
+            },
+            "backlogSeconds": {
+              "count": 1761,
+              "mean": 0.04615195911413744,
+              "p50": 0.0328999999999975,
+              "p95": 0.11649999999999784,
+              "p99": 0.2832999999999968,
+              "max": 0.3749999999999976
+            },
+            "frameCpuMs": {
+              "count": 1761,
+              "mean": 0.9061896649613969,
+              "p50": 0.8999999985098839,
+              "p95": 1.199999999254942,
+              "p99": 1.699999999254942,
+              "max": 13.599999997764826
+            }
+          },
+          "afterTick400": {
+            "count": 1371,
+            "frameIntervalMs": {
+              "count": 1371,
+              "mean": 16.763384390953878,
+              "p50": 16.600000001490116,
+              "p95": 18.199999999254942,
+              "p99": 23.5,
+              "max": 67.60000000149012
+            },
+            "snapshotAgeMs": {
+              "count": 1371,
+              "mean": 55.1425913898819,
+              "p50": 51.72337959601646,
+              "p95": 88.09522186516915,
+              "p99": 110.75675387513184,
+              "max": 134.56210275229387
+            },
+            "backlogSeconds": {
+              "count": 1371,
+              "mean": 0.03567716994893958,
+              "p50": 0.032699999999996766,
+              "p95": 0.0578999999999975,
+              "p99": 0.09959999999999823,
+              "max": 0.12459999999999823
+            },
+            "frameCpuMs": {
+              "count": 1371,
+              "mean": 0.8856309263360361,
+              "p50": 0.8000000007450581,
+              "p95": 1.199999999254942,
+              "p99": 1.6000000014901161,
+              "max": 13.599999997764826
+            }
+          }
+        }
+      },
+      {
+        "run": "b",
+        "raw": {
+          "path": "outputs/browser-capability-20261019/root-com-correction/hold-explicit-3plus1-noencoder-b/result.json",
+          "sha256": "149b59adebc97b4847ec9ec11aad15c6b05a48fcb135e080066ac6e66ba35b99"
+        },
+        "passed": true,
+        "profileSha256": "a197f6ba375c8f502904353a540c287549034d1df616b1c125c88ba6e94ee899",
+        "worker": "4fa298cfff4340fd3c5e65ebd95d2dd714be84639b7e7acc23cb2180a4e96c07",
+        "initial": {
+          "tick": 0,
+          "time": 0,
+          "backend": "WebGL2",
+          "controller": "measured-contact-standing-balance",
+          "fallbackReason": "Error: WebGPU render check failed: OperationError: A valid external Instance reference no longer exists.. Choose Auto or WebGL2."
+        },
+        "final": {
+          "tick": 1320,
+          "time": 33,
+          "motion": "Upright",
+          "backend": "WebGL2",
+          "workerInstances": 1,
+          "error": "",
+          "failure": null
+        },
+        "metrics": {
+          "snapshotCount": 1321,
+          "steadySnapshotCount": 1201,
+          "referenceTime": 3,
+          "finalTime": 33,
+          "steadyPhysicalSeconds": 30,
+          "maximumSnapshotGapTicks": 1,
+          "minUpY": {
+            "torso": 0.9999091359604388,
+            "pelvis": 0.9922608382597746,
+            "right_foot": 0.9999315548667137,
+            "left_foot": 0.9999321447561974
+          },
+          "minimumAggregateFootLoadsN": {
+            "right_foot": 200.32732,
+            "left_foot": 200.32037
+          },
+          "maximumLinearSpeedMps": 0.000579200060495574,
+          "maximumAngularSpeedRadps": 0.003044331923798017,
+          "maximumPelvisDriftM": 0.00014363622837181898,
+          "maximumFootBodyDriftM": 0.00075289933197208,
+          "maximumLoadedFootHorizontalBodySpeedProxyMps": 0.00009139107276263367,
+          "maximumFloorPenetrationM": 0.00095460744,
+          "maximumSelfPenetrationM": 0,
+          "violations": [],
+          "contactPointSlipAvailable": false,
+          "slipLimit": "The ordinary snapshot exposes aggregate segment loads and body velocities, not contact-point tangential velocity. Horizontal foot-body speed is a proxy, not contact slip."
+        },
+        "observation": {
+          "wallSeconds": 33.02530000000075,
+          "simulationSeconds": 33,
+          "integratedSimulationToWallRatio": 0.9992339206608041,
+          "presentedFrames": 1966,
+          "averagePresentedFps": 59.530117818761845,
+          "lastHalfSecondPresentedFps": 60,
+          "frameCountEndpoint": "Captured inside the final target-reply listener, not after polling/screenshot delay",
+          "appReportedSimulationToWallRatio": 0.9995365784954374
+        },
+        "physicalInputCount": 0,
+        "commandCount": 0,
+        "errors": [],
+        "telemetry": {
+          "method": "Nearest-rank p95/p99; p50 lower midpoint. All advance packets ending at ticks1..1320; driver stamps the final packet later in the same reply task than the harness endpoint. Frames use exact startedAt..endedAt final-reply window. Warm subsets explicitly defined by displayed observation tick, never substituted for cold/full window.",
+          "packetCount": 1320,
+          "presentationFrameRecords": 1966,
+          "discardedAfterTargetFrames": 2,
+          "droppedPackets": 0,
+          "droppedFrames": 0,
+          "bounds": {
+            "maximumQueueDepth": 0,
+            "maximumOutstandingAdvances": 1,
+            "maximumAdvanceTicks": 1,
+            "maximumTransferBuffers": 3
+          },
+          "workerUpdateMs": {
+            "count": 1320,
+            "mean": 16.45128787868854,
+            "p50": 16.400000002235174,
+            "p95": 19.799999997019768,
+            "p99": 24.599999997764826,
+            "max": 65.69999999925494
+          },
+          "roundtripMs": {
+            "count": 1320,
+            "mean": 22.23878787880989,
+            "p50": 18.800000000745058,
+            "p95": 32.30000000074506,
+            "p99": 38.30000000074506,
+            "max": 81.69999999925494
+          },
+          "fullWindow": {
+            "count": 1966,
+            "frameIntervalMs": {
+              "count": 1966,
+              "mean": 16.79760935910554,
+              "p50": 16.600000001490116,
+              "p95": 19.399999998509884,
+              "p99": 24,
+              "max": 76.69999999925494
+            },
+            "snapshotAgeMs": {
+              "count": 1966,
+              "mean": 63.43318921879844,
+              "p50": 55.04741972755073,
+              "p95": 117.72994882471926,
+              "p99": 184.20151009908682,
+              "max": 509.90009765699506
+            },
+            "backlogSeconds": {
+              "count": 1966,
+              "mean": 0.05741129196337868,
+              "p50": 0.03310000000000097,
+              "p95": 0.22450000000000106,
+              "p99": 0.27450000000000063,
+              "max": 0.31620000000000137
+            },
+            "frameCpuMs": {
+              "count": 1966,
+              "mean": 0.9206510681473287,
+              "p50": 0.8999999985098839,
+              "p95": 1.2000000029802322,
+              "p99": 1.800000000745058,
+              "max": 4.600000001490116
+            }
+          },
+          "afterSettlingTick120": {
+            "count": 1788,
+            "frameIntervalMs": {
+              "count": 1788,
+              "mean": 16.77779642058124,
+              "p50": 16.600000001490116,
+              "p95": 18.699999999254942,
+              "p99": 23.199999999254942,
+              "max": 76.69999999925494
+            },
+            "snapshotAgeMs": {
+              "count": 1788,
+              "mean": 58.01069626619188,
+              "p50": 53.751115466177,
+              "p95": 96.10589742554839,
+              "p99": 126.5410502729319,
+              "max": 184.8599030686455
+            },
+            "backlogSeconds": {
+              "count": 1788,
+              "mean": 0.04981465324384945,
+              "p50": 0.033000000000000605,
+              "p95": 0.1912000000000018,
+              "p99": 0.27450000000000074,
+              "max": 0.31620000000000137
+            },
+            "frameCpuMs": {
+              "count": 1788,
+              "mean": 0.9113534675552708,
+              "p50": 0.8999999985098839,
+              "p95": 1.199999999254942,
+              "p99": 1.800000000745058,
+              "max": 4.600000001490116
+            }
+          },
+          "afterTick400": {
+            "count": 1368,
+            "frameIntervalMs": {
+              "count": 1368,
+              "mean": 16.775511695905344,
+              "p50": 16.600000001490116,
+              "p95": 18.700000002980232,
+              "p99": 23.5,
+              "max": 45.100000001490116
+            },
+            "snapshotAgeMs": {
+              "count": 1368,
+              "mean": 57.87695014705275,
+              "p50": 53.614450292643596,
+              "p95": 96.68182693259587,
+              "p99": 126.37090740019084,
+              "max": 184.8599030686455
+            },
+            "backlogSeconds": {
+              "count": 1368,
+              "mean": 0.05443457602339404,
+              "p50": 0.03270000000000006,
+              "p95": 0.23280000000000203,
+              "p99": 0.2828000000000017,
+              "max": 0.31620000000000137
+            },
+            "frameCpuMs": {
+              "count": 1368,
+              "mean": 0.9024122806745227,
+              "p50": 0.8999999985098839,
+              "p95": 1.199999999254942,
+              "p99": 2,
+              "max": 4.600000001490116
+            }
+          }
+        }
+      },
+      {
+        "run": "c",
+        "raw": {
+          "path": "outputs/browser-capability-20261019/root-com-correction/hold-explicit-3plus1-noencoder-c/result.json",
+          "sha256": "eae402addb151731528b5b8989425aadb66eff4a340c51d836c9376151a4f925"
+        },
+        "passed": true,
+        "profileSha256": "a197f6ba375c8f502904353a540c287549034d1df616b1c125c88ba6e94ee899",
+        "worker": "4fa298cfff4340fd3c5e65ebd95d2dd714be84639b7e7acc23cb2180a4e96c07",
+        "initial": {
+          "tick": 0,
+          "time": 0,
+          "backend": "WebGL2",
+          "controller": "measured-contact-standing-balance",
+          "fallbackReason": "Error: WebGPU render check failed: OperationError: A valid external Instance reference no longer exists.. Choose Auto or WebGL2."
+        },
+        "final": {
+          "tick": 1320,
+          "time": 33,
+          "motion": "Upright",
+          "backend": "WebGL2",
+          "workerInstances": 1,
+          "error": "",
+          "failure": null
+        },
+        "metrics": {
+          "snapshotCount": 1321,
+          "steadySnapshotCount": 1201,
+          "referenceTime": 3,
+          "finalTime": 33,
+          "steadyPhysicalSeconds": 30,
+          "maximumSnapshotGapTicks": 1,
+          "minUpY": {
+            "torso": 0.9999091359604388,
+            "pelvis": 0.9922608382597746,
+            "right_foot": 0.9999315548667137,
+            "left_foot": 0.9999321447561974
+          },
+          "minimumAggregateFootLoadsN": {
+            "right_foot": 200.32732,
+            "left_foot": 200.32037
+          },
+          "maximumLinearSpeedMps": 0.000579200060495574,
+          "maximumAngularSpeedRadps": 0.003044331923798017,
+          "maximumPelvisDriftM": 0.00014363622837181898,
+          "maximumFootBodyDriftM": 0.00075289933197208,
+          "maximumLoadedFootHorizontalBodySpeedProxyMps": 0.00009139107276263367,
+          "maximumFloorPenetrationM": 0.00095460744,
+          "maximumSelfPenetrationM": 0,
+          "violations": [],
+          "contactPointSlipAvailable": false,
+          "slipLimit": "The ordinary snapshot exposes aggregate segment loads and body velocities, not contact-point tangential velocity. Horizontal foot-body speed is a proxy, not contact slip."
+        },
+        "observation": {
+          "wallSeconds": 33.04210000000149,
+          "simulationSeconds": 33,
+          "integratedSimulationToWallRatio": 0.9987258679078664,
+          "presentedFrames": 1952,
+          "averagePresentedFps": 59.07614830776228,
+          "lastHalfSecondPresentedFps": 60,
+          "frameCountEndpoint": "Captured inside the final target-reply listener, not after polling/screenshot delay",
+          "appReportedSimulationToWallRatio": 0.9990312424315938
+        },
+        "physicalInputCount": 0,
+        "commandCount": 0,
+        "errors": [],
+        "telemetry": {
+          "method": "Nearest-rank p95/p99; p50 lower midpoint. All advance packets ending at ticks1..1320; driver stamps the final packet later in the same reply task than the harness endpoint. Frames use exact startedAt..endedAt final-reply window. Warm subsets explicitly defined by displayed observation tick, never substituted for cold/full window.",
+          "packetCount": 1320,
+          "presentationFrameRecords": 1952,
+          "discardedAfterTargetFrames": 13,
+          "droppedPackets": 0,
+          "droppedFrames": 0,
+          "bounds": {
+            "maximumQueueDepth": 0,
+            "maximumOutstandingAdvances": 1,
+            "maximumAdvanceTicks": 1,
+            "maximumTransferBuffers": 3
+          },
+          "workerUpdateMs": {
+            "count": 1320,
+            "mean": 16.275833333342927,
+            "p50": 16.300000000745058,
+            "p95": 19.699999999254942,
+            "p99": 24.700000002980232,
+            "max": 76.89999999850988
+          },
+          "roundtripMs": {
+            "count": 1320,
+            "mean": 22.218333333355346,
+            "p50": 18.600000001490116,
+            "p95": 31.600000001490116,
+            "p99": 38.599999997764826,
+            "max": 175.40000000223517
+          },
+          "fullWindow": {
+            "count": 1952,
+            "frameIntervalMs": {
+              "count": 1952,
+              "mean": 16.930584016393443,
+              "p50": 16.699999999254942,
+              "p95": 18.599999997764826,
+              "p99": 22.100000001490116,
+              "max": 168.69999999925494
+            },
+            "snapshotAgeMs": {
+              "count": 1952,
+              "mean": 60.80659965344209,
+              "p50": 53.310868564592965,
+              "p95": 105.03796196834355,
+              "p99": 210.2547911113288,
+              "max": 487.2999511733651
+            },
+            "backlogSeconds": {
+              "count": 1952,
+              "mean": 0.04795860655737825,
+              "p50": 0.03290000000000154,
+              "p95": 0.16620000000000074,
+              "p99": 0.2249000000000002,
+              "max": 0.26620000000000055
+            },
+            "frameCpuMs": {
+              "count": 1952,
+              "mean": 0.9072745901849274,
+              "p50": 0.8999999985098839,
+              "p95": 1.2000000029802322,
+              "p99": 1.7000000029802322,
+              "max": 5.900000002235174
+            }
+          },
+          "afterSettlingTick120": {
+            "count": 1774,
+            "frameIntervalMs": {
+              "count": 1774,
+              "mean": 16.910259301015078,
+              "p50": 16.699999999254942,
+              "p95": 18.300000000745058,
+              "p99": 21.699999999254942,
+              "max": 168.69999999925494
+            },
+            "snapshotAgeMs": {
+              "count": 1774,
+              "mean": 57.879258754648866,
+              "p50": 52.704533309382896,
+              "p95": 95.82013052894763,
+              "p99": 140.46413639781804,
+              "max": 363.75348784657945
+            },
+            "backlogSeconds": {
+              "count": 1774,
+              "mean": 0.041882243517475555,
+              "p50": 0.032800000000001175,
+              "p95": 0.11530000000000117,
+              "p99": 0.20790000000000136,
+              "max": 0.26620000000000055
+            },
+            "frameCpuMs": {
+              "count": 1774,
+              "mean": 0.8980834273203552,
+              "p50": 0.8999999985098839,
+              "p95": 1.199999999254942,
+              "p99": 1.699999999254942,
+              "max": 3.800000000745058
+            }
+          },
+          "afterTick400": {
+            "count": 1365,
+            "frameIntervalMs": {
+              "count": 1365,
+              "mean": 16.775824175824177,
+              "p50": 16.699999999254942,
+              "p95": 17.400000002235174,
+              "p99": 20.800000000745058,
+              "max": 168.69999999925494
+            },
+            "snapshotAgeMs": {
+              "count": 1365,
+              "mean": 54.283156182191114,
+              "p50": 51.153619909611734,
+              "p95": 85.10521481763863,
+              "p99": 107.48086574679837,
+              "max": 272.718193740915
+            },
+            "backlogSeconds": {
+              "count": 1365,
+              "mean": 0.035472747252748314,
+              "p50": 0.032500000000001895,
+              "p95": 0.04120000000000081,
+              "p99": 0.13210000000000044,
+              "max": 0.18200000000000185
+            },
+            "frameCpuMs": {
+              "count": 1365,
+              "mean": 0.8801465201890949,
+              "p50": 0.8000000007450581,
+              "p95": 1.199999999254942,
+              "p99": 1.699999999254942,
+              "max": 3.800000000745058
+            }
+          }
+        }
+      }
+    ],
+    "shortColdObservation": {
+      "raw": {
+        "path": "outputs/browser-capability-20261019/root-com-correction/profile-explicit-3plus1-120/report.json",
+        "sha256": "3e7853bed8ddbc39a2a30659fa9abb4972cd56860ae7a53063b73aba6a83f615"
+      },
+      "physicalSeconds": 3,
+      "wallSeconds": 3.0366000000014903,
+      "simulationWallRatio": 0.9879470460378474,
+      "meetsRatioThreshold": false,
+      "coreTick": {
+        "count": 120,
+        "mean": 17.394999999925496,
+        "p50": 16.5,
+        "p95": 21.299999997019768,
+        "max": 77.30000000074506,
+        "total": 2087.3999999910593
+      },
+      "workerUpdate": {
+        "count": 120,
+        "mean": 17.680833333420257,
+        "p50": 16.700000002980232,
+        "p95": 22,
+        "max": 77.80000000074506,
+        "total": 2121.700000010431
+      },
+      "roundTrip": {
+        "count": 120,
+        "mean": 23.606666666672876,
+        "p50": 19.600000001490116,
+        "p95": 35.80000000074506,
+        "max": 100.80000000074506,
+        "total": 2832.800000000745
+      },
+      "workerToFirstMainListener": {
+        "count": 120,
+        "mean": 5.4633321124129,
+        "p50": 1.899951171129942,
+        "p95": 14.200097657740116,
+        "max": 27.199902344495058,
+        "total": 655.599853489548
+      },
+      "harnessSnapshotClone": {
+        "count": 120,
+        "mean": 0.2825000002359351,
+        "p50": 0.30000000074505806,
+        "p95": 0.5,
+        "max": 1.199999999254942,
+        "total": 33.900000028312206
+      },
+      "phaseShareOfCore": {
+        "controllerMs": 0.025965315710639193,
+        "physicsMs": 0.9176966561229609,
+        "contactsMs": 0.003736705946789253,
+        "integrityMs": 0.044217687082514875,
+        "observerMs": 0.004694835681128213
+      },
+      "limits": "Single short cold observation is below the unchanged.99 threshold and is preserved. Longer repeated windows establish sustained average throughput, not a claim that every cold window/deadline passes."
+    },
+    "latencyDisposition": {
+      "status": "Open",
+      "fullWindowSnapshotAgeIncludesHarnessSetup": true,
+      "coldAgeExplanation": "Tick0 snapshot is initialized while manual mode holds the app during harness setup. The age of that pose continues to grow before automatic start; full/cold age includes this real setup age. Warm after-tick120 and after-tick400 subsets are explicitly labeled and never replace full results.",
+      "warmAfterTick120SnapshotAgeP95Ms": [
+        99.728535279286,
+        96.10589742554839,
+        95.82013052894763
+      ],
+      "warmAfterTick120SnapshotAgeMaxMs": [
+        312.27006811373667,
+        184.8599030686455,
+        363.75348784657945
+      ],
+      "limits": "No physical inputs were made in these holds, so no input-to-applied-force or input-to-visible latency is established. Average near1× pace and~59FPS do not establish per-request/frame deadlines, bounded snapshot age, mobile performance or broad realtime qualification."
+    }
+  },
+  "physicalStanding": {
+    "method": "Each of the video and three no-encoder runs records1321 consecutive40Hz snapshots,3settling+30quiet physical seconds. All fixed snapshot gates passed, one worker and zero physical inputs/commands/errors. Native every800Hz gates are separate.",
+    "snapshotLimits": {
+      "upYMinimum": 0.97,
+      "pelvisDriftM": 0.03,
+      "footBodyDriftM": 0.01,
+      "footLoadMinimumN": 3,
+      "bodyCacheLinearSpeedMps": 0.1,
+      "bodyCacheAngularSpeedRadps": 0.5
+    },
+    "aggregateMetrics": [
+      {
+        "run": "a",
+        "snapshotCount": 1321,
+        "steadySnapshotCount": 1201,
+        "referenceTime": 3,
+        "finalTime": 33,
+        "steadyPhysicalSeconds": 30,
+        "maximumSnapshotGapTicks": 1,
+        "minUpY": {
+          "torso": 0.9999091359604388,
+          "pelvis": 0.9922608382597746,
+          "right_foot": 0.9999315548667137,
+          "left_foot": 0.9999321447561974
+        },
+        "minimumAggregateFootLoadsN": {
+          "right_foot": 200.32732,
+          "left_foot": 200.32037
+        },
+        "maximumLinearSpeedMps": 0.000579200060495574,
+        "maximumAngularSpeedRadps": 0.003044331923798017,
+        "maximumPelvisDriftM": 0.00014363622837181898,
+        "maximumFootBodyDriftM": 0.00075289933197208,
+        "maximumLoadedFootHorizontalBodySpeedProxyMps": 0.00009139107276263367,
+        "maximumFloorPenetrationM": 0.00095460744,
+        "maximumSelfPenetrationM": 0,
+        "violations": [],
+        "contactPointSlipAvailable": false,
+        "slipLimit": "The ordinary snapshot exposes aggregate segment loads and body velocities, not contact-point tangential velocity. Horizontal foot-body speed is a proxy, not contact slip."
+      },
+      {
+        "run": "b",
+        "snapshotCount": 1321,
+        "steadySnapshotCount": 1201,
+        "referenceTime": 3,
+        "finalTime": 33,
+        "steadyPhysicalSeconds": 30,
+        "maximumSnapshotGapTicks": 1,
+        "minUpY": {
+          "torso": 0.9999091359604388,
+          "pelvis": 0.9922608382597746,
+          "right_foot": 0.9999315548667137,
+          "left_foot": 0.9999321447561974
+        },
+        "minimumAggregateFootLoadsN": {
+          "right_foot": 200.32732,
+          "left_foot": 200.32037
+        },
+        "maximumLinearSpeedMps": 0.000579200060495574,
+        "maximumAngularSpeedRadps": 0.003044331923798017,
+        "maximumPelvisDriftM": 0.00014363622837181898,
+        "maximumFootBodyDriftM": 0.00075289933197208,
+        "maximumLoadedFootHorizontalBodySpeedProxyMps": 0.00009139107276263367,
+        "maximumFloorPenetrationM": 0.00095460744,
+        "maximumSelfPenetrationM": 0,
+        "violations": [],
+        "contactPointSlipAvailable": false,
+        "slipLimit": "The ordinary snapshot exposes aggregate segment loads and body velocities, not contact-point tangential velocity. Horizontal foot-body speed is a proxy, not contact slip."
+      },
+      {
+        "run": "c",
+        "snapshotCount": 1321,
+        "steadySnapshotCount": 1201,
+        "referenceTime": 3,
+        "finalTime": 33,
+        "steadyPhysicalSeconds": 30,
+        "maximumSnapshotGapTicks": 1,
+        "minUpY": {
+          "torso": 0.9999091359604388,
+          "pelvis": 0.9922608382597746,
+          "right_foot": 0.9999315548667137,
+          "left_foot": 0.9999321447561974
+        },
+        "minimumAggregateFootLoadsN": {
+          "right_foot": 200.32732,
+          "left_foot": 200.32037
+        },
+        "maximumLinearSpeedMps": 0.000579200060495574,
+        "maximumAngularSpeedRadps": 0.003044331923798017,
+        "maximumPelvisDriftM": 0.00014363622837181898,
+        "maximumFootBodyDriftM": 0.00075289933197208,
+        "maximumLoadedFootHorizontalBodySpeedProxyMps": 0.00009139107276263367,
+        "maximumFloorPenetrationM": 0.00095460744,
+        "maximumSelfPenetrationM": 0,
+        "violations": [],
+        "contactPointSlipAvailable": false,
+        "slipLimit": "The ordinary snapshot exposes aggregate segment loads and body velocities, not contact-point tangential velocity. Horizontal foot-body speed is a proxy, not contact slip."
+      }
+    ],
+    "measurementLimits": "Snapshot body velocities are reported caches; they are not authoritative current generalized/contact-point velocities. Up vectors, positions/drift and aggregate loads are recorded separately. The ordinary snapshot exposes aggregate segment loads and body velocities, not contact-point tangential velocity. Horizontal foot-body speed is a proxy, not contact slip.",
+    "fullRateNativeEvidence": "docs/evidence/getup-3plus1-qualification-2026-10-19.json"
+  },
+  "videoObservation": {
+    "raw": {
+      "path": "outputs/browser-capability-20261019/root-com-correction/hold-explicit-3plus1/result.json",
+      "sha256": "31a27f40be86247c60c799b43d94fe7ceb3639933c83cfba5532326c288ea1a2"
+    },
+    "passed": true,
+    "method": "Separate33s physical hold with native-wall-time Playwright encoder active. Native jobs idle. No retiming; do not substitute no-encoder timing for this clip.",
+    "observation": {
+      "wallSeconds": 36.024800000000745,
+      "simulationSeconds": 33,
+      "integratedSimulationToWallRatio": 0.9160356199062678,
+      "presentedFrames": 2059,
+      "averagePresentedFps": 57.15507095112138,
+      "lastHalfSecondPresentedFps": 60,
+      "appReportedSimulationToWallRatio": 0.9162797929763035
+    },
+    "metrics": {
+      "snapshotCount": 1321,
+      "steadySnapshotCount": 1201,
+      "referenceTime": 3,
+      "finalTime": 33,
+      "steadyPhysicalSeconds": 30,
+      "maximumSnapshotGapTicks": 1,
+      "minUpY": {
+        "torso": 0.9999091359604388,
+        "pelvis": 0.9922608382597746,
+        "right_foot": 0.9999315548667137,
+        "left_foot": 0.9999321447561974
+      },
+      "minimumAggregateFootLoadsN": {
+        "right_foot": 200.32732,
+        "left_foot": 200.32037
+      },
+      "maximumLinearSpeedMps": 0.000579200060495574,
+      "maximumAngularSpeedRadps": 0.003044331923798017,
+      "maximumPelvisDriftM": 0.00014363622837181898,
+      "maximumFootBodyDriftM": 0.00075289933197208,
+      "maximumLoadedFootHorizontalBodySpeedProxyMps": 0.00009139107276263367,
+      "maximumFloorPenetrationM": 0.00095460744,
+      "maximumSelfPenetrationM": 0,
+      "violations": [],
+      "contactPointSlipAvailable": false,
+      "slipLimit": "The ordinary snapshot exposes aggregate segment loads and body velocities, not contact-point tangential velocity. Horizontal foot-body speed is a proxy, not contact slip."
+    },
+    "fpsCaveat": "This earlier video hold harness counted final frames after a≤1s poll/screenshot delay. Historical video FPS is approximate; physical simulation/wall ratio uses the exact final reply and remains valid. The three no-encoder runs use corrected final-reply frame endpoints."
+  },
+  "realPointer": {
+    "raw": {
+      "path": "outputs/browser-capability-20261019/root-com-correction/grab-explicit-3plus1/browser-result.json",
+      "sha256": "4ab982297c2781d4b26ebe106d6c0d29814f0fc6f82c7841315b14c590732a73"
+    },
+    "passed": true,
+    "scenarios": [
+      "No grab",
+      "Actual hand pull, mouse release, natural continuation",
+      "Continued held-pull control",
+      "pointercancel",
+      "blur",
+      "Reset during active physical drag"
+    ],
+    "checks": [
+      "Every served asset matches the captured built artifact hash",
+      {
+        "name": "Identical trial initialization",
+        "allPoseAndVelocityComponentsExactlyEqual": true,
+        "maximumPositionDifferenceM": 0
+      },
+      {
+        "name": "Identical physical state before release",
+        "allPoseAndVelocityComponentsExactlyEqual": true,
+        "maximumPositionDifferenceM": 0
+      },
+      {
+        "name": "pointercancel: identical pre-cancellation physical state",
+        "allPoseAndVelocityComponentsExactlyEqual": true,
+        "maximumPositionDifferenceM": 0
+      },
+      {
+        "name": "pointercancel: physical continuation equals real mouse release despite stale held-button motion",
+        "allPoseAndVelocityComponentsExactlyEqual": true,
+        "maximumPositionDifferenceM": 0
+      },
+      {
+        "name": "blur: identical pre-cancellation physical state",
+        "allPoseAndVelocityComponentsExactlyEqual": true,
+        "maximumPositionDifferenceM": 0
+      },
+      {
+        "name": "blur: physical continuation equals real mouse release despite stale held-button motion",
+        "allPoseAndVelocityComponentsExactlyEqual": true,
+        "maximumPositionDifferenceM": 0
+      },
+      {
+        "name": "Reset restores clean physical initialization",
+        "allPoseAndVelocityComponentsExactlyEqual": true,
+        "maximumPositionDifferenceM": 0
+      },
+      {
+        "name": "Reset leaves no phantom physical force after stale held-button movement",
+        "allPoseAndVelocityComponentsExactlyEqual": true,
+        "maximumPositionDifferenceM": 0
+      },
+      "Cancellation matches an actual released physical trajectory; continuing held-pull control diverges. This tests physical behavior, not pointer metadata alone."
+    ],
+    "browserErrors": [],
+    "httpErrors": [],
+    "profilePageInitializations": [
+      {
+        "scene": "deterministic manual-clock regression",
+        "count": 1
+      },
+      {
+        "scene": "separate automatic-scheduler observation",
+        "count": 1
+      }
+    ],
+    "context": "Physical-only real-pointer regression after clean timing window; no performance claim from these clips."
+  },
+  "readiness": {
+    "raw": {
+      "path": "outputs/browser-capability-20261019/root-com-correction/readiness-explicit-3plus1/result.json",
+      "sha256": "f56efeba258575b5e0fd772798d4b4f6ba58ee0a5f50844b174069e6bdda0ff9"
+    },
+    "passed": true,
+    "stages": [
+      {
+        "name": "auto-fallback",
+        "backend": "WebGL2",
+        "requestedRenderer": "auto",
+        "fallback": "Error: WebGPU render check failed: OperationError: A valid external Instance reference no longer exists.. Choose Auto or WebGL2.",
+        "error": "",
+        "ready": true,
+        "tick": 0,
+        "generation": 1,
+        "workerInstances": 1,
+        "rendererChanges": 1,
+        "controller": "measured-contact-standing-balance",
+        "recoveryStep": "GetUp body · Joint balance · Learned recovery disabled"
+      },
+      {
+        "name": "explicit-webgpu-error",
+        "backend": "",
+        "requestedRenderer": "webgpu",
+        "fallback": "",
+        "error": "Graphics unavailable: Error: WebGPU render check failed: OperationError: A valid external Instance reference no longer exists.. Choose Auto or WebGL2.",
+        "ready": false,
+        "tick": 0,
+        "generation": 1,
+        "workerInstances": 1,
+        "rendererChanges": 1,
+        "controller": "measured-contact-standing-balance",
+        "recoveryStep": "GetUp body · Joint balance · Learned recovery disabled"
+      },
+      {
+        "name": "recovered-webgl2",
+        "backend": "WebGL2",
+        "requestedRenderer": "webgl2",
+        "fallback": "",
+        "error": "",
+        "ready": true,
+        "tick": 0,
+        "generation": 1,
+        "workerInstances": 1,
+        "rendererChanges": 2,
+        "controller": "measured-contact-standing-balance",
+        "recoveryStep": "GetUp body · Joint balance · Learned recovery disabled"
+      },
+      {
+        "name": "repeated-auto-fallback",
+        "backend": "WebGL2",
+        "requestedRenderer": "auto",
+        "fallback": "Error: WebGPU render check failed: OperationError: A valid external Instance reference no longer exists.. Choose Auto or WebGL2.",
+        "error": "",
+        "ready": true,
+        "tick": 0,
+        "generation": 1,
+        "workerInstances": 1,
+        "rendererChanges": 2,
+        "controller": "measured-contact-standing-balance",
+        "recoveryStep": "GetUp body · Joint balance · Learned recovery disabled"
+      },
+      {
+        "name": "reset-after-fallback",
+        "backend": "WebGL2",
+        "requestedRenderer": "auto",
+        "fallback": "Error: WebGPU render check failed: OperationError: A valid external Instance reference no longer exists.. Choose Auto or WebGL2.",
+        "error": "",
+        "ready": true,
+        "tick": 0,
+        "generation": 2,
+        "workerInstances": 1,
+        "rendererChanges": 2,
+        "controller": "measured-contact-standing-balance",
+        "recoveryStep": "GetUp body · Joint balance · Learned recovery disabled"
+      },
+      {
+        "name": "auto-without-webgpu-api",
+        "backend": "WebGL2",
+        "requestedRenderer": "auto",
+        "fallback": "",
+        "error": "",
+        "ready": true,
+        "tick": 0,
+        "generation": 1,
+        "workerInstances": 1,
+        "rendererChanges": 1,
+        "controller": "measured-contact-standing-balance",
+        "recoveryStep": "GetUp body · Joint balance · Learned recovery disabled"
+      }
+    ],
+    "profileInitializations": [
+      1,
+      1
+    ],
+    "errors": [],
+    "limits": "SwiftShader queue failure is environment-specific. Auto fallback, explicit WebGPU failure and WebGL2 recovery are verified; capable native WebGPU hardware and real Android are untested."
+  },
+  "strikerSmoke": {
+    "log": {
+      "path": "outputs/browser-capability-20261019/root-com-correction/smoke-explicit-3plus1.log",
+      "sha256": "d9c1aefa35e1136ac79f47653d86406a2b0b99b4953d64630c80654296c6a63f"
+    },
+    "passed": true,
+    "tick": 132,
+    "simulationSeconds": 3.3,
+    "nativeSubsteps": 2640,
+    "strikes": 1,
+    "poseSlots": 25
+  },
+  "independentFloorlessCom": {
+    "raw": {
+      "path": "outputs/browser-capability-20261019/root-com-correction/floorless-explicit-3plus1/result.json",
+      "sha256": "6c1ac151750d84ecb0423127a5cbbb1df0da5a9dbe193d60bff80f006856bca1"
+    },
+    "passed": true,
+    "model": {
+      "path": "rust/crates/model/data/getup-v1.json",
+      "sha256": "1611ec8c988c1006b0a819ab21e2b7c410adaaf512080be425d6d6e235a8926a",
+      "quaternionHandling": "Pinned-engine full raw Hamilton q*(0,p)*conjugate(q) formula, no normalization and no unit-only shortcut. Source mass/localCOM and exported pose components restored to f32; transform/weighted sum independently accumulated in f64. Norm drift recorded; unchanged0.1mm horizontal COM criterion.",
+      "formula": "sum(m_i*(snapshot body-origin position + snapshot rotation * model.goldenMass.centerOfMass))/sum(m_i); positive-mass16source bodies only,9zero-mass coordinate frames excluded. f64 observation arithmetic, f32 exported poses; no body-origin-as-COM shortcut."
+    },
+    "observerSource": {
+      "path": "scripts/rust-browser-center-of-mass.mjs",
+      "sha256": "722dc17e701aaeae67d839e02ed7df6c03a13295741d9549bf9f58b58d149d42"
+    },
+    "observerTests": "tests/rust-browser-center-of-mass.test.mjs",
+    "horizontalRadialThresholdM": 0.0001,
+    "physicalSecondsPerHeading": 0.5,
+    "headings": [
+      {
+        "headingRadians": 0,
+        "finalTick": 20,
+        "finalTime": 0.5,
+        "maximumHorizontalComDriftM": 2.7486485377555934e-7,
+        "maximumQuaternionNormError": 0.000008622902469168636,
+        "contributors": 16,
+        "workerInstances": 1,
+        "floorEnabled": false,
+        "commands": [
+          [
+            {
+              "stamp": {
+                "schema": 4,
+                "generation": 1,
+                "sequence": 1,
+                "tick": 0
+              },
+              "action": {
+                "Initialize": {
+                  "mode": "protocol",
+                  "heading": 0
+                }
+              }
+            }
+          ],
+          [
+            {
+              "stamp": {
+                "schema": 4,
+                "generation": 2,
+                "sequence": 2,
+                "tick": 0
+              },
+              "action": {
+                "SetFloorEnabled": {
+                  "enabled": false
+                }
+              }
+            }
+          ]
+        ],
+        "screenshot": "floorless-heading-0.png"
+      },
+      {
+        "headingRadians": 1.0471975512,
+        "finalTick": 20,
+        "finalTime": 0.5,
+        "maximumHorizontalComDriftM": 2.487199526180727e-7,
+        "maximumQuaternionNormError": 0.000008609386489943915,
+        "contributors": 16,
+        "workerInstances": 1,
+        "floorEnabled": false,
+        "commands": [
+          [
+            {
+              "stamp": {
+                "schema": 4,
+                "generation": 1,
+                "sequence": 1,
+                "tick": 0
+              },
+              "action": {
+                "Initialize": {
+                  "mode": "protocol",
+                  "heading": 1.0471975512
+                }
+              }
+            }
+          ],
+          [
+            {
+              "stamp": {
+                "schema": 4,
+                "generation": 2,
+                "sequence": 2,
+                "tick": 0
+              },
+              "action": {
+                "SetFloorEnabled": {
+                  "enabled": false
+                }
+              }
+            }
+          ]
+        ],
+        "screenshot": "floorless-heading-1.png"
+      },
+      {
+        "headingRadians": -0.7853981634,
+        "finalTick": 20,
+        "finalTime": 0.5,
+        "maximumHorizontalComDriftM": 2.574336723178043e-7,
+        "maximumQuaternionNormError": 0.000008605744191259035,
+        "contributors": 16,
+        "workerInstances": 1,
+        "floorEnabled": false,
+        "commands": [
+          [
+            {
+              "stamp": {
+                "schema": 4,
+                "generation": 1,
+                "sequence": 1,
+                "tick": 0
+              },
+              "action": {
+                "Initialize": {
+                  "mode": "protocol",
+                  "heading": -0.7853981634
+                }
+              }
+            }
+          ],
+          [
+            {
+              "stamp": {
+                "schema": 4,
+                "generation": 2,
+                "sequence": 2,
+                "tick": 0
+              },
+              "action": {
+                "SetFloorEnabled": {
+                  "enabled": false
+                }
+              }
+            }
+          ]
+        ],
+        "screenshot": "floorless-heading-2.png"
+      }
+    ],
+    "limits": "Independent snapshot-derived material-COM estimate, not bit-exact cached engine COM. Model mass/localCOM are source constants; engine mass reciprocal and f32/JSON rounding can differ by tiny amounts. Browser checks0.5s and radial horizontal drift<=0.1mm; native fixture is0.75s with per-axis0.1mm and additional vertical/momentum checks. This does not replace native ballistic qualification."
+  },
+  "nodeTests": {
+    "passed": 100,
+    "failed": 0,
+    "log": {
+      "path": "outputs/browser-capability-20261019/root-com-correction/npm-test-3plus1.log",
+      "sha256": "a97e50c393e72b6dcdd79130745349fb776df21359ee6798caf0459082a85e29"
+    }
+  },
+  "nativeEvidence": {
+    "profile": {
+      "path": "docs/evidence/getup-3plus1-qualification-2026-10-19.json",
+      "sha256": "df6856922665086f657075111881c3db93a6ff7f53baa8cc68936b23ce58ffec"
+    },
+    "commit": "f2f717c",
+    "engine": {
+      "path": "docs/evidence/getup-root-com-mapping-2026-10-19.json",
+      "sha256": "10b0a40812ebe0cbb8c81d5ebd54a7c2d0dd2693ef8601458ae5e3d9682d4ed5"
+    },
+    "sourceAndCombined": {
+      "path": "docs/evidence/getup-source-freejoint-2026-10-19.json",
+      "sha256": "e339ba095a4c8f70dea57126e1a539726847ef0cc362dc870f68a6bd040fd4c5"
+    },
+    "limits": "Native physically qualified target fixture/profile and inherited failures remain exactly as recorded by the native owner. Browser snapshots do not substitute for every800Hz native support/contact/ballistic gates."
+  },
+  "media": [
+    {
+      "path": "outputs/browser-capability-20261019/root-com-correction/hold-explicit-3plus1/standing-hold-native-wall-time.mp4",
+      "sha256": "6a514fa4cdea9c798dc3866a9f9ce9c96d00d61a31a06348a6004ab32d1c5272",
+      "durationSeconds": 42.12,
+      "sizeBytes": 1150561,
+      "retimed": false,
+      "inspection": "Final screenshot and temporal contact sheet inspected: body continuously upright, correct Joint balance label, explicit3+1/root-correction TEST banner and simulation/wall clocks visible. Video pacing is the separate0.916× encoded observation."
+    },
+    {
+      "path": "outputs/browser-capability-20261019/root-com-correction/hold-explicit-3plus1/contact-sheet.png",
+      "sha256": "ac6dae007f53be67cfe4afe021b2b5f97587d9ff106c27389b6e225ca1c6c767"
+    },
+    {
+      "path": "outputs/browser-capability-20261019/root-com-correction/hold-explicit-3plus1/after-thirty-quiet-physical-seconds.png",
+      "sha256": "9ee4536d719d4a2c7c93f26b95fa20eced89da7c8209d0b6c173f61494fe40cb"
+    }
+  ],
+  "harnesses": [
+    {
+      "path": "outputs/browser-capability-20261019/root-com-correction/verify-standing-hold-used-video3.mjs",
+      "sha256": "9aee031ebf7fc81afbddc6a7ac4b632a5b1051413580934a5bf1a80fd8b94db7"
+    },
+    {
+      "path": "outputs/browser-capability-20261019/root-com-correction/verify-standing-hold-used-noencoder3.mjs",
+      "sha256": "b8517777b3a7e877de973f17eb444011af2d8b132545e232440c724a81a36521"
+    },
+    {
+      "path": "outputs/browser-capability-20261019/root-com-correction/profile-fixed-ticks-used.mjs",
+      "sha256": "cb544c38a3a5c3986daccc3e39357c6cf0cdfe4542f89534c4261ecb3a6b3f69"
+    },
+    {
+      "path": "outputs/browser-capability-20261019/root-com-correction/verify-floorless-com.mjs",
+      "sha256": "33d97aa4bdcb09f86888af3aa4e58dbdf43afd8c9001c97b9f8d84fe0b8c566b"
+    },
+    {
+      "path": "outputs/browser-capability-20261019/root-com-correction/verify-readiness.mjs",
+      "sha256": "dfb0c90d46f0ec1b46f4d5efc7f8751ff61dd40bc3502b264dfa4458fb61d4a0"
+    },
+    {
+      "path": "outputs/browser-capability-20261019/root-com-correction/summarize-3plus1.mjs",
+      "sha256": "598b95407e1ada688bbc90a30df82e1cfd8d6b337b58373cbd548626313ac73f"
+    }
+  ],
+  "next": "Keep complete3+1 explicit. Measure actual pointer-event→applied-force and event→visible response on original transport, preserving coalesced/missing-visible inputs and existing limits. No default/profile promotion follows from average throughput alone."
+}
