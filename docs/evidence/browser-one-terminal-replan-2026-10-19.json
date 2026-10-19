@@ -1,0 +1,674 @@
+{
+  "schema": 1,
+  "date": "2026-10-19",
+  "classification": "rejected-actual-WASM-back-after-one-genuine-terminal-reference-replan",
+  "disposition": "REJECTED for the requested recovery goal. The actual native settled gate admitted exactly one fresh forecast, but the real back trial still never earned the original1s standing pass and stopped at the unchanged original25s deadline. No other poses or new film were run for this rejected candidate.",
+  "actualPhysicalReplanSuccessDemonstrated": false,
+  "releaseAccepted": false,
+  "qualification24Cases": false,
+  "allFourFreshBrowserPosesQualified": false,
+  "thirtySecondRecoveredHoldQualified": false,
+  "performanceQualified": false,
+  "actualAndroidQualified": false,
+  "nativeWasmTrajectoryEqualityClaimed": false,
+  "productionRecoveryEnabled": false,
+  "defaultPublicProfileChanged": false,
+  "physicalAcceptanceChanged": false,
+  "nativeEvidence": {
+    "document": {
+      "path": "docs/evidence/getup-terminal-reference-replan-2026-10-19.json",
+      "sha256": "3be1e3371d151ba4caf7cf15a587e0dc227bbd184988acc37f5277778e02d6df",
+      "bytes": 26202
+    },
+    "evidenceCommit": "d37b8645339a2cb1436cd2b23894a0a14fbe7113",
+    "recordedStatus": "completed-rejected-one-terminal-reference-replan-negative-experiment",
+    "scope": "Separate native4fresh+4hold behavior and correctness/compatibility gates. Native fresh recoveries did not consume the optional replan, so their success is not evidence that a physical replan succeeds."
+  },
+  "sourceAndBuild": {
+    "baseCommit": "4c19366f67941819955580c965d8bb01b040d568",
+    "sourceManifest": {
+      "path": "outputs/browser-capability-20261019/recovery-fixture/one-terminal-replan/build/source-manifest.json",
+      "sha256": "b7134568646d1a59118cb6291190bf4e8f3ef7f4011483ffaa2aa4e9cbf02548",
+      "bytes": 48981
+    },
+    "sourceFreeze": {
+      "path": "outputs/getup-terminal-replan-20261019/source-freeze.json",
+      "sha256": "b93242f5b359517e9ba22b19f76bd3cf0020739f2aef7c2b59af8fafdd8c694a",
+      "bytes": 1431
+    },
+    "sourceSha256": {
+      "rust/crates/sim/Cargo.toml": "70e72b0cca95a26d8b13e98b66f9aeeb2c5c9df6fc4c12224bf5dd6fb0788e54",
+      "rust/crates/sim/src/lib.rs": "af587a9d90aaa847c28f5a023e7bcc6677a08bb37e2a07568ea96ddbeaff551c",
+      "rust/crates/sim/src/runtime.rs": "fa46dca47eab061244193ada068403bce294416749fe45a50a1007b8f7dc4438",
+      "rust/crates/sim/src/getup/controller.rs": "9f54efc7f283a716ef2524f89203694bda14f10f86390ea288ee0ef3220f6154",
+      "rust/crates/sim/src/getup/terminal_replan_tests.rs": "17de06213ae073712bc63bfd19e9c83f6b51c727d989771b3dc3798175891439",
+      "docs/evidence/profiles/getup-800hz-3plus1-one-terminal-replan-v1.json": "9193400c547b0d3457e4cd8f8e609932c245b0b2a26fe037410451dba4e350e3"
+    },
+    "sourceFileCount": 370,
+    "rejectedReplayPatch": {
+      "path": "docs/evidence/patches/getup-one-terminal-replan-rejected-2026-10-19.patch",
+      "sha256": "41307f420feea87be9436432fd93ac3f79ec795a310d3c7e4a1de5b815210278",
+      "bytes": 51597
+    },
+    "experimentalReplanPresentInCurrentProductionTree": false,
+    "restoredProductionBaseCommit": "4c19366f67941819955580c965d8bb01b040d568",
+    "reproduction": "The replan source/profile was rejected and restored out of the current tree. Apply the exact rejectedReplayPatch to an isolated full4c19366 checkout, verify all six override hashes, and use that experimental checkout/profile when reproducing the unchanged executed probes. Frozen source/app/library/raw evidence remains preserved; no patch is applied to current production by this proof.",
+    "all370FrozenSourceFilesReverified": true,
+    "buildManifest": {
+      "path": "outputs/browser-capability-20261019/recovery-fixture/one-terminal-replan/build/build-manifest.json",
+      "sha256": "79d8f1631235954210a398914c9206a9e5f8e610e514c820c3acf1ee14abff78",
+      "bytes": 3239
+    },
+    "buildRecipe": {
+      "path": "outputs/browser-capability-20261019/recovery-fixture/one-terminal-replan/build/build-worker.sh",
+      "sha256": "31038a75b9a3c1843473cdbc4f58b9db3bee5ce088ba9c7400b0e1fc40db8cb1",
+      "bytes": 1242
+    },
+    "target": "wasm32-unknown-unknown",
+    "toolchain": "1.89.0",
+    "wasmBindgen": "0.2.108",
+    "rustFlags": [],
+    "requestedExtraFeatures": [
+      "lh-worker/root-translation-carry-experiment",
+      "lh-sim/standing-dynamics-experiment",
+      "lh-sim/unit-root-rotation-experiment",
+      "lh-sim/getup-terminal-replan-experiment"
+    ],
+    "effectiveSimFeatures": [
+      "root-translation-carry-experiment",
+      "getup-terminal-balance-experiment",
+      "standing-dynamics-experiment",
+      "unit-root-rotation-experiment",
+      "getup-repeat-cycle-experiment",
+      "getup-terminal-replan-experiment"
+    ],
+    "simFingerprints": [
+      {
+        "path": "outputs/browser-capability-20261019/recovery-fixture/one-terminal-replan/build/target/wasm32-unknown-unknown/release/.fingerprint/lh-sim-72c3309851d24ae5/lib-lh_sim.json",
+        "sha256": "85d5c8b5edd1e24f311b37b0aec5dad0ebef00944630d0959f17ee115f02825e",
+        "features": "[\"getup-repeat-cycle-experiment\", \"getup-terminal-balance-experiment\", \"getup-terminal-replan-experiment\", \"root-translation-carry-experiment\", \"standing-dynamics-experiment\", \"unit-root-rotation-experiment\"]",
+        "rustflags": []
+      }
+    ],
+    "baseReadyAndBumplessEnabled": false,
+    "workerWasmSha256": "9483a53b55bdc684e81000cff1b4e8d71b9df36fee9f9fbbfb192816a4756d83",
+    "rendererWasmSha256": "5895574d87e93f6a2eddec98662797b16c298c90f2ee8298f6d72917f4d1b07e",
+    "driverSha256": "4c6281e19c4540e3ba72a74a5b1514b5d1b9c58e56c1f8a2dbfb3adb4812d74e",
+    "ordinaryTransportSha256": "a3a2b18c222c045fc08bf19aff2e96b92f0bc18ad6023bcca660195054267996",
+    "workerRustSha256": {
+      "rust/crates/worker/Cargo.toml": "8cc8c747a9479839dc8c080988f11f83be62cccd08799feb36299f41ef6b28b2",
+      "rust/crates/worker/src/lib.rs": "e23b855c03f314f8901b05bf26cfaa48a0a45027c3cfd7d569a0af3f17680213"
+    },
+    "onlyUnadaptedAppChangesFromFixedRendererBase": [
+      "lh_worker.js",
+      "lh_worker_bg.wasm"
+    ]
+  },
+  "explicitProfile": {
+    "document": {
+      "path": "outputs/browser-capability-20261019/recovery-fixture/one-terminal-replan/build/source/docs/evidence/profiles/getup-800hz-3plus1-one-terminal-replan-v1.json",
+      "sha256": "9193400c547b0d3457e4cd8f8e609932c245b0b2a26fe037410451dba4e350e3",
+      "bytes": 1341
+    },
+    "canonicalPathWhenReplayPatchApplied": "docs/evidence/profiles/getup-800hz-3plus1-one-terminal-replan-v1.json",
+    "value": {
+      "id": "getup-800hz-3plus1-one-terminal-replan-v1",
+      "dt_s": 0.00125,
+      "tick_substeps": 20,
+      "contact_friction_model": "coulomb",
+      "solver_iterations": 3,
+      "internal_pgs_iterations": 20,
+      "fall_internal_pgs_iterations": 32,
+      "additional_body_iterations": 1,
+      "allowed_linear_error_m": 0.001,
+      "prediction_distance_m": 0.002,
+      "motor_scale": 1,
+      "aggregate_motor_cap_nm": 920,
+      "angular_damping": 0,
+      "contact_skin_m": 0,
+      "max_ccd_substeps": 4,
+      "disable_solver_speed_cap": true,
+      "posture_stiffness_multiplier": 1,
+      "posture_damping_multiplier": 1,
+      "supported_tilt_gain": 2,
+      "supported_com_gain_rad_per_m": 5,
+      "supported_com_velocity_gain_s_rad_per_m": 5,
+      "supported_angular_velocity_gain_s": 2,
+      "grab_limits": {
+        "angular_frequency_rad_s": 16,
+        "target_speed_m_s": 1.5,
+        "target_acceleration_m_s2": 8,
+        "force_n": 180,
+        "torque_nm": 12,
+        "positive_power_w": 36
+      },
+      "reaching_iterations": 6,
+      "reaching_coordinate_increment_rad": 0.15,
+      "reaching_damping_m2": 0.01,
+      "corrective_steps_enabled": false,
+      "recovery_enabled": false,
+      "getup_policy_enabled": true,
+      "getup_solver_budget": "consistent-recovery-phase-v1",
+      "root_rotation_normalization": "unit-free-root-v1",
+      "getup_repeated_recovery": "completed-cycle-one-terminal-reference-replan-v1"
+    },
+    "onlyTypedChangesFromRepeatBaseline": [
+      "id",
+      "getup_repeated_recovery"
+    ],
+    "actualEntireProfileEqualAtEveryPublication": true
+  },
+  "testRoute": {
+    "artifactPath": "/workspace/scratch/5def91918e35/mvp-landing/outputs/browser-capability-20261019/recovery-fixture/one-terminal-replan/build/app-fixture-test-final",
+    "adapterManifest": {
+      "path": "outputs/browser-capability-20261019/recovery-fixture/one-terminal-replan/build/app-fixture-test-final-fixture-adapter-manifest.json",
+      "sha256": "2f3365fc2ad15f0700917826ed3334b2672c57ebaeda1d90c82b08c0da8428ba",
+      "bytes": 4821
+    },
+    "builder": {
+      "path": "docs/evidence/probes/make-one-terminal-replan-fixture-app-2026-10-19.mjs",
+      "sha256": "981743d037557a9582339dbfdd77eceb31ea9c079f6d68c7ec13ce9e85fb0ad6",
+      "bytes": 13976
+    },
+    "recorder": {
+      "path": "docs/evidence/probes/record-getup-one-terminal-replan-2026-10-19.mjs",
+      "sha256": "a1698a2317a9353a93acb15217b8da8052d61c29284c46e6c226b4d14ff64150",
+      "bytes": 56889
+    },
+    "checkpointHelper": {
+      "path": "docs/evidence/probes/getup-checkpoint-envelope-2026-10-19.mjs",
+      "sha256": "d37282926f41c148c4214c2e985af7fb9ee4aa30a8dd66b861bc53edc8551c9e",
+      "bytes": 4102
+    },
+    "scope": "Copied worker only: existing typed fixture constructor, original readiness polling/trigger, once-only carry activation at native0 with world/Runtime and unused-budget purity, actual immutable replan/current-standing metadata. No physical command, reset, forced replan, profile/pose/force change or replacement worker. Original driver/renderer/automatic one-tick scheduling preserved.",
+    "allFrozenAppHashes": {
+      "app-1df6634f608f8d80.css": "6f9e3128c49954cf4c159cd1b3cb0375ca4293e134429847288a5e6549a44271",
+      "index.html": "221d98d000ed295c49b44fb777e57d182caf3cc8e0e04083bbc8afb8ad206bce",
+      "lh-browser-d4ccffd02e73cb75.js": "ec9a8317fc58b63cf4f6874c3ed03808743c61c19a9c485020f0dc64dfd9c4f5",
+      "lh-browser-d4ccffd02e73cb75_bg.wasm": "5895574d87e93f6a2eddec98662797b16c298c90f2ee8298f6d72917f4d1b07e",
+      "lh_worker.js": "481b03a49c7bf2edcaf2449724afd5b3272542ccb827e7d09749cee9bc4421d9",
+      "lh_worker_bg.wasm": "9483a53b55bdc684e81000cff1b4e8d71b9df36fee9f9fbbfb192816a4756d83",
+      "sim-worker.js": "0b841f4df1f861d764cf7f4cbce7c9c38df9a59e3ee7cc9317591801d5fd5657",
+      "snippets/lh-browser-575491a8d42d44d5/driver.js": "4c6281e19c4540e3ba72a74a5b1514b5d1b9c58e56c1f8a2dbfb3adb4812d74e"
+    },
+    "physicalHz": 800,
+    "publicationHz": 40,
+    "workerInstances": 1,
+    "generation": 1,
+    "fixture": "back",
+    "fixtureTriggerNative": 480,
+    "preparationPollingNative": 80,
+    "trigger325F32PoseVelocityWordsUnchanged": true,
+    "native0Activation": {
+      "proof": {
+        "path": "outputs/browser-capability-20261019/recovery-fixture/one-terminal-replan/back-thirty/activation-proof.json",
+        "sha256": "48cd3e5ab815b644525748ac1ba86846f06650daf5d24e83a3e49743f55715f6",
+        "bytes": 25846
+      },
+      "before": {
+        "path": "outputs/browser-capability-20261019/recovery-fixture/one-terminal-replan/back-thirty/activation-before-checkpoint.bin",
+        "sha256": "c34189e72b879eb0d2876833ab634f37b052d0119187b2676d4ebbed3e1f5b68",
+        "bytes": 585100
+      },
+      "after": {
+        "path": "outputs/browser-capability-20261019/recovery-fixture/one-terminal-replan/back-thirty/activation-after-checkpoint.bin",
+        "sha256": "53573fceb578d4f958fb6cbd85c5fda87da79e67580d319f2ec41df7ab1a23dc",
+        "bytes": 585909
+      },
+      "activationCalls": 1,
+      "binaryWorldAndEmbeddedRuntimeStringExactlyEqual": true,
+      "unusedReplanStateBeforeAfterExactlyEqual": true,
+      "initialCarryRemainderBits": [
+        0,
+        0,
+        0
+      ]
+    },
+    "liveBudgetReadback": "Strict typed format/domain, one-per-world monotonic used, attempted timestamp/prior work immutable after consumption. Actual240-consecutive-native gate remains production feature; browser observes its state at40Hz and never forces it."
+  },
+  "actualBrowserResult": {
+    "rawResult": {
+      "path": "outputs/browser-capability-20261019/recovery-fixture/one-terminal-replan/back-thirty/result.json",
+      "sha256": "39b67a59b62ca8be3cd545ab3477728ac593b570fa931e73b1993751ecb7f8dd",
+      "bytes": 43999156
+    },
+    "analysis": {
+      "path": "outputs/browser-capability-20261019/recovery-fixture/one-terminal-replan/back-negative-summary.json",
+      "sha256": "41ad53b79a57040a284cc2752687f2666de687b20f7a98d312e1c44eeb4a4a52",
+      "bytes": 49169
+    },
+    "analyzer": {
+      "path": "outputs/browser-capability-20261019/recovery-fixture/one-terminal-replan/analyze-back-negative-2026-10-19.mjs",
+      "sha256": "d9cc2a233088f5bce81f930dec320b2c1d76d39ab4a675a969fc4427bd7cf654",
+      "bytes": 5492
+    },
+    "browserVersion": "155.0.8059.79",
+    "backend": "WebGL2",
+    "adapter": {
+      "device": 0,
+      "deviceType": "Cpu",
+      "driver": "",
+      "driverInfo": "WebGL 2.0 (OpenGL ES 3.0 Chromium)",
+      "name": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)",
+      "vendor": 0
+    },
+    "recordVideo": false,
+    "performanceContext": "Physical-only fresh back once-per-world terminal replan admission and original25s/native1s+30s hold; no encoder; read-only checkpoint pauses; no pace/Android/admission claim",
+    "outcome": "original25s-recovery-deadline-failure",
+    "passed": false,
+    "diagnosticCaptureComplete": true,
+    "recorderQualificationAssertion": "AssertionError [ERR_ASSERTION]: Original native1s pass plus30s continuous original-anchor/counter hold required\n    at file:///workspace/scratch/5def91918e35/mvp-landing/outputs/browser-capability-20261019/recovery-fixture/one-terminal-replan/record-getup-one-terminal-replan-2026-10-19.mjs:644:10",
+    "assertionMeaning": "The final assertion records failure to meet the required original1s standing+30s hold. It is not a worker/observer/native integrity failure. Raw original stop/fault fields are retained separately.",
+    "nativeFailure": null,
+    "workerFault": false,
+    "observerFault": null,
+    "pageErrors": [],
+    "publicationCount": 1025,
+    "originalImpactNative": 480,
+    "originalImpactTimeS": 0.6,
+    "unchangedDeadlineNative": 20480,
+    "unchangedDeadlineS": 25.6,
+    "newForecastStartNative": 6777,
+    "newForecastStartTimeS": 8.47125,
+    "controllerStartDidNotRenewPhysicalEpoch": true,
+    "replan": {
+      "native": 6780,
+      "time": 8.475,
+      "publicationDelayNativeSubsteps": 3,
+      "actualAttemptNative": 6777,
+      "priorForecastSubsteps": 1020,
+      "originalTriggerNative": 480,
+      "originalImpactNative": 480,
+      "policy": {
+        "phase": "slow-following",
+        "started_at_s": 8.47125,
+        "since_impact_s": 7.875,
+        "forecast_substeps": 620,
+        "teacher_decisions": 31,
+        "teacher_max_head_height_m": 1.5025743,
+        "teacher_terminal_reached": true,
+        "reference_seed_matches_real": true,
+        "reference_frames": 62,
+        "reference_index": 0,
+        "policy_decisions": 1,
+        "reference_tracking_error_rad": 0.29921755,
+        "reference_com_error_m": -0.00031656027,
+        "actual_head_height_m": 0.08998647,
+        "stable_standing_s": 0,
+        "prototype_standing_passed": false,
+        "refusal": null
+      },
+      "solverBudget": {
+        "currentInternalPgsIterations": 32,
+        "selectedNextInternalPgsIterations": 32,
+        "sourceRecoveryActive": true
+      },
+      "physicalBitClaim": false,
+      "note": "First observed publication, not immediate native pre/post attempt state.",
+      "state": {
+        "attempted_native_substep": 6777,
+        "format": "one-terminal-reference-fall-replan-v1",
+        "prior_forecast_substeps": 1020,
+        "settled_native_samples": 0,
+        "used": true
+      },
+      "firstObservedUnusedPriorSample": {
+        "native": 6760,
+        "time": 8.45,
+        "maximumReplansPerPhysicalTrial": 1,
+        "state": {
+          "attempted_native_substep": null,
+          "format": "one-terminal-reference-fall-replan-v1",
+          "prior_forecast_substeps": 0,
+          "settled_native_samples": 223,
+          "used": false
+        }
+      },
+      "transitionCount": 1,
+      "budgetNeverRenewed": true,
+      "originalDeadlineNative": 20480
+    },
+    "firstNativeStandingPass": null,
+    "maximumOriginalStandingCounterS": 0,
+    "postReplanPublications": 686,
+    "actualPostReplanMaximumHead": {
+      "timeS": 9.95,
+      "nativeSubsteps": 7960,
+      "policy": {
+        "phase": "slow-following",
+        "started_at_s": 8.47125,
+        "since_impact_s": 9.35,
+        "forecast_substeps": 620,
+        "teacher_decisions": 31,
+        "teacher_max_head_height_m": 1.5025743,
+        "teacher_terminal_reached": true,
+        "reference_seed_matches_real": true,
+        "reference_frames": 62,
+        "reference_index": 59,
+        "policy_decisions": 60,
+        "reference_tracking_error_rad": 0.80937785,
+        "reference_com_error_m": -0.016820133,
+        "actual_head_height_m": 1.4348603,
+        "stable_standing_s": 0,
+        "prototype_standing_passed": false,
+        "refusal": null
+      },
+      "headM": 1.434860348701477,
+      "torsoUp": 0.9510384798049927,
+      "pelvisY": 0.84413844,
+      "maxCurrentLinearMps": 3.9148929119110107,
+      "maxCurrentLinearBody": "@left_ankle_y",
+      "maxCurrentAngularRadps": 9.10993766784668,
+      "maxCurrentAngularBody": "left_shin",
+      "comVelocity": {
+        "x": 0.38942214846611023,
+        "y": 0.2734500467777252,
+        "z": -0.2565577030181885
+      },
+      "feet": [
+        {
+          "body": "left_foot",
+          "loadN": 0,
+          "loaded": false,
+          "supportSubsteps": 0,
+          "tangentSpeedMps": null
+        },
+        {
+          "body": "right_foot",
+          "loadN": 0,
+          "loaded": false,
+          "supportSubsteps": 0,
+          "tangentSpeedMps": null
+        }
+      ],
+      "predicates": {
+        "angularMotion": false,
+        "bothFeetLoadedAndPersistent": false,
+        "captureInSupport": false,
+        "comInSupport": false,
+        "footDriftFromSuppliedAnchors": null,
+        "footLoadFraction": false,
+        "head": true,
+        "linearMotion": false,
+        "onlyFeet": true,
+        "torso": false
+      },
+      "replan": {
+        "attempted_native_substep": 6777,
+        "format": "one-terminal-reference-fall-replan-v1",
+        "prior_forecast_substeps": 1020,
+        "settled_native_samples": 0,
+        "used": true
+      }
+    },
+    "firstNewReferenceExhausted": {
+      "timeS": 10.025,
+      "nativeSubsteps": 8020,
+      "policy": {
+        "phase": "slow-holding",
+        "started_at_s": 8.47125,
+        "since_impact_s": 9.425,
+        "forecast_substeps": 620,
+        "teacher_decisions": 31,
+        "teacher_max_head_height_m": 1.5025743,
+        "teacher_terminal_reached": true,
+        "reference_seed_matches_real": true,
+        "reference_frames": 62,
+        "reference_index": 62,
+        "policy_decisions": 63,
+        "reference_tracking_error_rad": 1.4640348,
+        "reference_com_error_m": -0.57870144,
+        "actual_head_height_m": 1.415056,
+        "stable_standing_s": 0,
+        "prototype_standing_passed": false,
+        "refusal": null
+      },
+      "headM": 1.4150559902191162,
+      "torsoUp": 0.9132519960403442,
+      "pelvisY": 0.8449892,
+      "maxCurrentLinearMps": 3.8439266681671143,
+      "maxCurrentLinearBody": "left_hand",
+      "maxCurrentAngularRadps": 7.884488582611084,
+      "maxCurrentAngularBody": "right_thigh",
+      "comVelocity": {
+        "x": 0.16176916658878326,
+        "y": 0.06922725588083267,
+        "z": -0.30084991455078125
+      },
+      "feet": [
+        {
+          "body": "left_foot",
+          "loadN": 305.0516662597656,
+          "loaded": true,
+          "supportSubsteps": 26,
+          "tangentSpeedMps": 0.0514826625585556
+        },
+        {
+          "body": "right_foot",
+          "loadN": 0,
+          "loaded": false,
+          "supportSubsteps": 0,
+          "tangentSpeedMps": null
+        }
+      ],
+      "predicates": {
+        "angularMotion": false,
+        "bothFeetLoadedAndPersistent": false,
+        "captureInSupport": false,
+        "comInSupport": false,
+        "footDriftFromSuppliedAnchors": null,
+        "footLoadFraction": false,
+        "head": true,
+        "linearMotion": false,
+        "onlyFeet": true,
+        "torso": false
+      },
+      "replan": {
+        "attempted_native_substep": 6777,
+        "format": "one-terminal-reference-fall-replan-v1",
+        "prior_forecast_substeps": 1020,
+        "settled_native_samples": 0,
+        "used": true
+      }
+    },
+    "postReplanComInSupportTrueCount": 0,
+    "postReplanCaptureInSupportTrueCount": 0,
+    "final": {
+      "timeS": 25.6,
+      "nativeSubsteps": 20480,
+      "policy": {
+        "phase": "slow-holding",
+        "started_at_s": 8.47125,
+        "since_impact_s": 25,
+        "forecast_substeps": 620,
+        "teacher_decisions": 31,
+        "teacher_max_head_height_m": 1.5025743,
+        "teacher_terminal_reached": true,
+        "reference_seed_matches_real": true,
+        "reference_frames": 62,
+        "reference_index": 62,
+        "policy_decisions": 686,
+        "reference_tracking_error_rad": 0.6700027,
+        "reference_com_error_m": -1.2635127,
+        "actual_head_height_m": 0.09000022,
+        "stable_standing_s": 0,
+        "prototype_standing_passed": false,
+        "refusal": null
+      },
+      "headM": 0.090000219643116,
+      "torsoUp": 0.011619124561548233,
+      "pelvisY": 0.10972226,
+      "maxCurrentLinearMps": 0.040578294545412064,
+      "maxCurrentLinearBody": "right_hand",
+      "maxCurrentAngularRadps": 0.31902551651000977,
+      "maxCurrentAngularBody": "@right_ankle_y",
+      "comVelocity": {
+        "x": -7.753321551717818e-05,
+        "y": 0.0006218361668288708,
+        "z": 0.001024412689730525
+      },
+      "feet": [
+        {
+          "body": "left_foot",
+          "loadN": 0,
+          "loaded": false,
+          "supportSubsteps": 0,
+          "tangentSpeedMps": null
+        },
+        {
+          "body": "right_foot",
+          "loadN": 61.94901657104492,
+          "loaded": true,
+          "supportSubsteps": 10482,
+          "tangentSpeedMps": 0.025200016796588898
+        }
+      ],
+      "predicates": {
+        "angularMotion": true,
+        "bothFeetLoadedAndPersistent": false,
+        "captureInSupport": false,
+        "comInSupport": false,
+        "footDriftFromSuppliedAnchors": null,
+        "footLoadFraction": false,
+        "head": false,
+        "linearMotion": true,
+        "onlyFeet": false,
+        "torso": false
+      },
+      "replan": {
+        "attempted_native_substep": 6777,
+        "format": "one-terminal-reference-fall-replan-v1",
+        "prior_forecast_substeps": 1020,
+        "settled_native_samples": 0,
+        "used": true
+      }
+    },
+    "finalGlobalCounters": {
+      "strikes": 0,
+      "falls": 1,
+      "recoveries": 0,
+      "steps": 0,
+      "upright_ticks": 0
+    },
+    "stopReason": "unchanged-recovery-deadline",
+    "readOnlyCheckpoints": {
+      "replan-observed": {
+        "timeS": 8.475,
+        "nativeSubsteps": 6780,
+        "schema": 2,
+        "checkpoint": {
+          "path": "outputs/browser-capability-20261019/recovery-fixture/one-terminal-replan/back-thirty/replan-observed-checkpoint.bin",
+          "sha256": "a59090467301aaa6f6ad81be586dcd07ac4e05562bbd7acdd8f69f9376af6b13",
+          "bytes": 1260233
+        },
+        "controller": {
+          "path": "outputs/browser-capability-20261019/recovery-fixture/one-terminal-replan/back-thirty/replan-observed-controller.json",
+          "sha256": "e9bf35515c0bd09f5733283a9e778d2898a5527eb3c4c88ab5a97d863e3ce0ab",
+          "bytes": 1169387
+        },
+        "rawAuxiliarySha256": "d413add67f34e0d03fc2242d9dfa60135c7e40d74938d12807b466dfdc876673",
+        "verification": {
+          "binaryWorldDeserialized": true,
+          "bytes": 1260233,
+          "controllerEqual": true,
+          "forecastSubsteps": 620,
+          "handlesEqual": true,
+          "jointStateEqual": true,
+          "nativeSubsteps": 6780,
+          "passed": true,
+          "physicsIntegrations": 0,
+          "rootIntegratorStateEqual": true,
+          "snapshotEqual": true
+        }
+      },
+      "stop": {
+        "timeS": 25.6,
+        "nativeSubsteps": 20480,
+        "schema": 2,
+        "checkpoint": {
+          "path": "outputs/browser-capability-20261019/recovery-fixture/one-terminal-replan/back-thirty/stop-checkpoint.bin",
+          "sha256": "3edd79837a2fab151728246c13e51f526fbcb62f6f78e889cb185d34b2b4bc4f",
+          "bytes": 8030925
+        },
+        "controller": {
+          "path": "outputs/browser-capability-20261019/recovery-fixture/one-terminal-replan/back-thirty/stop-controller.json",
+          "sha256": "764cbad66835770bc9eb7f06cebb3c79d2bacc1783cf789a8bb32f3533e106a6",
+          "bytes": 13517176
+        },
+        "rawAuxiliarySha256": "a8ea94bb93e2ea022dd991b09132b3367a7ad8a78e4496d3091f7fce9c8dd3d8",
+        "verification": {
+          "binaryWorldDeserialized": true,
+          "bytes": 8030925,
+          "controllerEqual": true,
+          "forecastSubsteps": 620,
+          "handlesEqual": true,
+          "jointStateEqual": true,
+          "nativeSubsteps": 20480,
+          "passed": true,
+          "physicsIntegrations": 0,
+          "rootIntegratorStateEqual": true,
+          "snapshotEqual": true
+        }
+      }
+    },
+    "sameTargetBeforeReplanPrefix": {
+      "comparedSnapshots": 339,
+      "lastTimeS": 8.45,
+      "allFullEmittedSnapshotJsonEqual": true,
+      "excludedOnly": [
+        "diagnostics.controller_ms",
+        "diagnostics.update_ms"
+      ],
+      "scope": "Same-target JSON prefix only; no immediate native6777 pre/post bit claim or cross-target equality.",
+      "baseline": {
+        "path": "outputs/browser-capability-20261019/recovery-fixture/unit-root-rotation/back-thirty/result.json",
+        "sha256": "42faa957061e078a34695ea520d09e7302865e3c26fe28af84e7bd4bca5d5f01",
+        "bytes": 26937195
+      },
+      "firstPostAttemptDifference": {
+        "nativeSubsteps": 6780,
+        "timeS": 8.475,
+        "field": "segments[0].position.x",
+        "candidate": 1.6049887,
+        "baseline": 1.6048049
+      }
+    },
+    "commands": [],
+    "physicalInputs": [],
+    "budgetRenewals": 0,
+    "secondReplans": 0
+  },
+  "teacherTerminalInterpretation": {
+    "sourcePath": "outputs/browser-capability-20261019/recovery-fixture/one-terminal-replan/build/source/rust/crates/sim/src/getup/controller.rs",
+    "sourceSha256": "9f54efc7f283a716ef2524f89203694bda14f10f86390ea288ee0ef3220f6154",
+    "criterion": "Inherited source head>1.4m, followed by one more40Hz teacher action tick; this is not supported/quiet1s native standing.",
+    "comparison": "Old and fresh forecast both reach this source height terminal. Actual post-replan body earns no native standing time.",
+    "storedTeacherContacts": "Not interpreted as current support: teacher fork clones contact cache and forecast loop directly stepsworld/inspects integrity without refreshing the snapshot contact cache. Actual contact evidence here comes from live read-only currentStandingDiagnostic."
+  },
+  "media": {
+    "initial": {
+      "path": "outputs/browser-capability-20261019/recovery-fixture/one-terminal-replan/back-thirty/initial-fixed-fixture.png",
+      "sha256": "cd711fb64cea0ab2c05cdb72b45ac66f70616a6eaa1c67cfc2171be54e189344",
+      "bytes": 201843
+    },
+    "failureState": {
+      "path": "outputs/browser-capability-20261019/recovery-fixture/one-terminal-replan/back-thirty/failure.png",
+      "sha256": "c56727237b62dd26e579a20f01f3538615ea9bb732b15dadffad42b83f7d1d0a",
+      "bytes": 198316
+    },
+    "newVideoRecorded": false,
+    "newNegativeVideoDelivered": false
+  },
+  "review": {
+    "sourceAndRoute": "Independent review PASS: all370source files/eightassets, exact6features/emptyflags, strictstate/purity/epoch/queue/refusals and9observer synthetics.",
+    "actualNegative": "Independent audit PASS: all1025live states, original480epoch/oneconsumption6777, bothschema2checkpoint/controller/auxiliary receipts and embeddedcontroller equality, clean faults,339-Snapshot prefix exact except2profiling clocks and unsupported postreplan ascent."
+  },
+  "limitations": [
+    "No recovery,30s hold, all-pose admission,24case or performance/Android success claim.",
+    "The new teacher flag means inherited head>1.4m terminal plus one more teacher tick; it does not mean the supported/quiet original1s standing gate.",
+    "Stored teacher snapshot contacts are not treated as current loads. Actual support/twist conclusions use existing immutable currentStandingDiagnostic at40Hz.",
+    "40Hz data does not independently retain every800Hz admission/acceptance predicate or immediate pre/post-replan physical bits.",
+    "Earlier successful back and current side cases are not pooled into an all-four pass; the present experimental candidate remains unadmitted.",
+    "No deadline extension, second retry, profile sweep, forced fall or reset was used after this failure."
+  ]
+}
