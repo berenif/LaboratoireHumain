@@ -247,7 +247,10 @@ try {
   const realtimeInput = await grab();
   await page.evaluate(() => {
     window.__grabEvidence.clockMode = 'AUTOMATIC SCHEDULER'; window.__grabEvidence.scene = 'Actual hand drag, then release';
-    window.__grabEvidence.wallStart = performance.now(); window.__lhRust.setManual(false);
+    window.__grabEvidence.wallStart = performance.now();
+    const d = window.__lhRust.diagnostics;
+    window.__grabEvidence.realtimeStart = { time: d.time, frames: d.graphics.frames };
+    window.__lhRust.setManual(false);
   });
   await page.waitForTimeout(1100);
   await page.mouse.up();
@@ -260,9 +263,17 @@ try {
   assert.ok(realtimeFinal.tick > 0, 'Automatic scheduler must actually integrate physics');
   assert.equal(realtimeFinal.failure, null); assert.equal(realtimeFinal.error, '');
   assert.equal(realtimeFinal.activePointer, null); assert.equal(realtimeFinal.workerInstances, 1);
+  const observation = await page.evaluate(() => {
+    const d = window.__lhRust.diagnostics, start = window.__grabEvidence.realtimeStart;
+    const wallSeconds = (performance.now() - window.__grabEvidence.wallStart) / 1000;
+    const simulationSeconds = d.time - start.time, presentedFrames = d.graphics.frames - start.frames;
+    return { wallSeconds, simulationSeconds, integratedSimulationToWallRatio: simulationSeconds / wallSeconds,
+      presentedFrames, averagePresentedFps: presentedFrames / wallSeconds, lastHalfSecondPresentedFps: d.fps,
+      appReportedSimulationToWallRatio: d.realtimeRatio };
+  });
   await label('Automatic 2 s observation ended; frozen for screenshot');
   report.realtimeScene = { input: realtimeInput, release: realtimeReleased, final: physical(realtimeFinal),
-    observedWallSeconds: await page.evaluate(() => (performance.now() - window.__grabEvidence.wallStart) / 1000),
+    observedWallSeconds: observation.wallSeconds, observation,
     screenshot: await screenshot('automatic-scheduler-after-2s-wall'),
     note: 'Separate native wall-time footage using the automatic scheduler; actual integrated time is reported, with no speed/performance admission.' };
   assert.deepEqual(report.browserErrors, []); assert.deepEqual(report.httpErrors, []);
