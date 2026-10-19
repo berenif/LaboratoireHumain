@@ -107,7 +107,7 @@ export async function start_bridge() {
       motion: snapshot?.motion || 'Starting', falls: snapshot?.counters.falls || 0,
       recoveryStep: sourceStepLab ? `Native source lab · ${state.last?.reply.sourceStepLab?.phase || 'paused'} · ${state.last?.reply.sourceStepLab?.quietSeconds?.toFixed(2) || '0.00'} s quiet` : getup ? getup.learned_policy_loaded
         ? `GetUp pretrained · ${getup.policy?.phase || 'initializing'} · Experimental`
-        : 'GetUp body · Reference PD · Learned recovery disabled' : '',
+        : `GetUp body · ${getup.controller === 'measured-contact-standing-balance' ? 'Joint balance' : 'Reference PD'} · Learned recovery disabled` : '',
       floorEnabled: state.floorEnabled, desiredFloorEnabled: state.desiredFloorEnabled, error: state.error || state.graphicsError, workerMs: state.workerMs,
     };
   }

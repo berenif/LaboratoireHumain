@@ -56,7 +56,7 @@ async function microtasksUntil(predicate, description) {
   assert.ok(predicate(), description);
 }
 
-function driverHarness({ requested = 'auto', gpu = mockGpu() } = {}) {
+function driverHarness({ requested = 'auto', gpu = mockGpu(), diagnostics = {} } = {}) {
   const workers = [], messages = [], rendererCalls = [], timers = new Map(), canvases = [];
   const listenable = () => {
     const listeners = new Map();
@@ -131,7 +131,7 @@ function driverHarness({ requested = 'auto', gpu = mockGpu() } = {}) {
         completed_ticks: request.type === 'advance' ? request.ticks : 0, acknowledgements: [],
         snapshot: {
           stamp: { schema: 4, generation: 1, sequence: request.requestId, tick },
-          simulation_time_s: tick / 40, segments: [], contacts: [], motion: 'Upright', diagnostics: {},
+          simulation_time_s: tick / 40, segments: [], contacts: [], motion: 'Upright', diagnostics,
           counters: { strikes: 0, falls: 0, recoveries: 0, steps: 0 },
           striker: { available: true, phase: 'idle' },
         },
@@ -313,4 +313,15 @@ test('Retired-canvas context loss cannot overwrite a WebGPU probe error or a rep
   assert.equal(prevented, 3);
   assert.equal(h.bridge.diagnostics.halted, true, 'The active canvas still reports genuine context loss');
   assert.match(h.bridge.diagnostics.error, /Graphics connection lost/);
+});
+
+test('Controller status labels distinguish measured joint balance from source-only reference PD', async t => {
+  for (const [controller, label] of [
+    ['measured-contact-standing-balance', 'Joint balance'],
+    ['source-standing-pd-zero-residual', 'Reference PD'],
+  ]) {
+    const h = driverHarness({ requested: 'webgl2', diagnostics: { getup: { controller, learned_policy_loaded: false } } });
+    t.after(h.close); await h.started;
+    assert.equal(h.bridge.diagnostics.recoveryStep, `GetUp body · ${label} · Learned recovery disabled`);
+  }
 });
