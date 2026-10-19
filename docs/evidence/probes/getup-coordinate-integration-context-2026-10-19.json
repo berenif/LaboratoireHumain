@@ -1,0 +1,59 @@
+{
+  "checkpoint": {
+    "path": "outputs/getup-terminal-dynamics-20261019/belly-hold30/checkpoint-final.bin",
+    "sha256": "fd4f0140290c0963af0da6941c181564bd6d7b95c381236d60a0b70fecf4bfd1"
+  },
+  "combinedFeatures": [
+    "getup-terminal-balance-experiment",
+    "standing-dynamics-experiment"
+  ],
+  "initialSimulationTimeS": 33.8,
+  "initialExportedRootPose": {
+    "id": "torso",
+    "position": {
+      "x": 0.15154053270816803,
+      "y": 1.2816662788391113,
+      "z": -0.5866723656654358
+    },
+    "rotation": {
+      "w": 0.9540039896965027,
+      "x": 0.031533848494291306,
+      "y": -0.3273603618144989,
+      "z": 0.009931481443345547
+    }
+  },
+  "frozenBaselineLibrary": {
+    "path": "outputs/getup-terminal-dynamics-20261019/liblh_sim-frozen.rlib",
+    "sha256": "6fa3ba26faf9dbb031b9b0ebc6cbbc77edda510fd619d0b0eee62347e8442dcb"
+  },
+  "frozenBuildLog": "outputs/getup-terminal-dynamics-20261019/build.jsonl",
+  "sourceContextMeaning": "Verified rust/ is clean at the pinned committed source used for the frozen combined library. Archive this exact commit; no working-tree overlay.",
+  "sourceSha256": {
+    "rust/Cargo.toml": "505ba36834476c5ff12d9b08ad9634ccb8c1b91633406a7cf13c1fe02124ba51",
+    "rust/Cargo.lock": "e49287c1257899e7246bad70030e49e485a25b420bf68f6359c90ba079521275",
+    "rust/rust-toolchain.toml": "56c85bcfe85649e54e2bfd35ee168407f81ef164481796f3d690bdc9f2a4ac85",
+    "rust/crates/sim/Cargo.toml": "851423e9b0d0f7c4bad1034fad200a33200a9b006284062ff3830b6737c5cdfa",
+    "rust/crates/sim/src/lib.rs": "f9ebbc614cf92c7591b113d81a6844e0b7574988d50309aff02677f2c16bb4eb",
+    "rust/crates/sim/src/getup.rs": "36fbed558bdc732f22e8f7272184ccba0129fb44606889cbf288516e5aae1f32",
+    "rust/crates/sim/src/getup/controller.rs": "d9703ae75bea428dfd91829ae315df73a6a23c625d1971a85d43655c1b147a28",
+    "rust/crates/sim/src/getup/supported_standing.rs": "0976787eb42e74b6684565cc7702f225d0b3eb90cca635dc50dd9b18e4ee94bf",
+    "rust/crates/sim/src/runtime.rs": "4abedc23f8d62d42e5396f282a2b57551be27e70d51ef38b97f7284395629342",
+    "rust/vendor/rapier3d/Cargo.toml": "bab5724cb002e71e96f7fb7bad7c468e5ae0a158391fae0524a96a3c409be4ff",
+    "rust/vendor/rapier3d/src/lib.rs": "d038e95444f8ceca2c6722b744214db520764296f02ff217ff6ae409d8fbebdf",
+    "rust/vendor/rapier3d/src/dynamics/solver/staged_island_solver/helpers.rs": "7db47533b9688c3a4bd75fe9de908420988e1e60a960babb9ed957d120752926",
+    "rust/vendor/rapier3d/src/dynamics/solver/staged_island_solver/worker.rs": "a70edd5c4e71919f9801cbb529d598a74322f362267b7feecea280745972b284",
+    "rust/vendor/rapier3d/src/dynamics/joint/multibody_joint/multibody_joint.rs": "34d66c2f7a9c4f31b17f6d0657b812c2ce1504d8acb59cb4270131211f8a5256"
+  },
+  "comparisonExcludedWallCostKeys": [
+    "controller_ms",
+    "update_ms"
+  ],
+  "expectedNativeIntegrations": 20,
+  "expectedInternalRows": 500,
+  "baselineDependencies": {
+    "serde_json": "/workspace/scratch/5def91918e35/mvp-landing/rust/target/release/deps/libserde_json-144c00c18b0640d6.rlib",
+    "bincode": "/workspace/scratch/5def91918e35/mvp-landing/rust/target/release/deps/libbincode-a9935cef594b22ab.rlib",
+    "rapier3d": "/workspace/scratch/5def91918e35/mvp-landing/rust/target/release/deps/librapier3d-948bb1bd4035e1bc.rlib"
+  },
+  "sourceGitCommit": "aee0e191767ac2c7185366f8b757563a2c63f7c6"
+}

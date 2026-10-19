@@ -1,0 +1,174 @@
+{
+  "schema": 1,
+  "date": "2026-10-19",
+  "classification": "bounded-observer-only-physics-neutral-coordinate-integration-diagnostic",
+  "sourceCommit": "aee0e191767ac2c7185366f8b757563a2c63f7c6",
+  "features": [
+    "getup-terminal-balance-experiment",
+    "standing-dynamics-experiment"
+  ],
+  "inputCheckpoint": {
+    "path": "outputs/getup-terminal-dynamics-20261019/belly-hold30/checkpoint-final.bin",
+    "sha256": "fd4f0140290c0963af0da6941c181564bd6d7b95c381236d60a0b70fecf4bfd1"
+  },
+  "baselineLibrary": {
+    "path": "outputs/getup-terminal-dynamics-20261019/liblh_sim-frozen.rlib",
+    "sha256": "6fa3ba26faf9dbb031b9b0ebc6cbbc77edda510fd619d0b0eee62347e8442dcb"
+  },
+  "initialSimulationTimeS": 33.8,
+  "initialExportedRootPose": {
+    "id": "torso",
+    "position": {
+      "x": 0.15154053270816803,
+      "y": 1.2816662788391113,
+      "z": -0.5866723656654358
+    },
+    "rotation": {
+      "w": 0.9540039896965027,
+      "x": 0.031533848494291306,
+      "y": -0.3273603618144989,
+      "z": 0.009931481443345547
+    }
+  },
+  "window": {
+    "ordinaryTicksPerMode": 1,
+    "initialZeroTickReadPerMode": true,
+    "nativeIntegrationsPerMode": 20,
+    "internalObservedRows": 500,
+    "requestedSimulatedSecondsPerMode": 0.025,
+    "actualSimulatedSecondsPerMode": 0.025000000000005684,
+    "physicalComparisonsOnly": true,
+    "wallPerformanceClaim": false
+  },
+  "neutrality": {
+    "passed": true,
+    "passedChecks": 16,
+    "checks": {
+      "initial-snapshot.json": true,
+      "initial-diagnostic.json": true,
+      "initial-controller.json": true,
+      "initial-fixture.json": true,
+      "final-reply.json": true,
+      "final-snapshot.json": true,
+      "final-diagnostic.json": true,
+      "final-controller.json": true,
+      "final-fixture.json": true,
+      "checkpoint_schema": true,
+      "checkpoint_canonical_model_bytes": true,
+      "checkpoint_binary_world_bytes": true,
+      "checkpoint_auxiliary_without_wallcost": true,
+      "input_sha_equal": true,
+      "expected_capture_modes": true,
+      "exact_500_internal_rows": true
+    },
+    "onlyExcludedWallCostKeys": [
+      "controller_ms",
+      "update_ms"
+    ],
+    "binaryWorldBytesExactlyEqual": true,
+    "binaryWorldSha256": "67919c73aae9b8190466d9569c19a06a92d4424762d71073904eb0686223a53a",
+    "fullRemovedPathsRecord": "outputs/getup-coordinate-integration-diagnostic-20261019/parity-and-attribution.json"
+  },
+  "rootTranslation": {
+    "axisOrder": [
+      "x",
+      "y",
+      "z"
+    ],
+    "rootBody": [
+      0,
+      0
+    ],
+    "actualCoordinateDeltaM": [
+      0.0,
+      1.1563301086425781e-05,
+      -2.9802322387695312e-05
+    ],
+    "biasedVelocityIntegralM": [
+      3.484471707647856e-07,
+      2.9732151230345805e-05,
+      -1.5380115834706788e-05
+    ],
+    "relaxedVelocityIntegralM": [
+      1.4209317092772383e-07,
+      2.4311559033160067e-05,
+      -1.5007828108302924e-05
+    ],
+    "integrationRoundingErrorM": [
+      -3.484471707647856e-07,
+      -1.8168850143920037e-05,
+      -1.4422206552988526e-05
+    ],
+    "biasMinusRelaxIntegralM": [
+      2.0635399983706183e-07,
+      5.4205921971857855e-06,
+      -3.7228772640386146e-07
+    ],
+    "lostNonzeroIncrementCounts": [
+      500,
+      403,
+      0
+    ],
+    "roundedOperationMismatchCounts": [
+      0,
+      0,
+      0
+    ],
+    "decompositionClosureErrorM": [
+      -5.293955920339377e-23,
+      -3.3881317890172014e-20,
+      -8.470329472543003e-22
+    ]
+  },
+  "interpretation": {
+    "proved": "In this exact 25ms continuation, nonzero root-coordinate integration increments are lost/quantized by the existing f32 update. Observation preserves the baseline physical state exactly.",
+    "x": "All 500 nonzero biased x increments produced zero coordinate movement; rounding residual -0.3484471707647856 micrometers versus bias-minus-relax +0.20635399983706183 micrometers.",
+    "y": "403 of 500 nonzero biased y increments produced zero coordinate movement; rounding residual -18.168850143920037 micrometers versus bias-minus-relax +5.4205921971857855 micrometers.",
+    "z": "Rounding residual -14.422206552988526 micrometers versus bias-minus-relax -0.37228772640386146 micrometers, with zero mismatches against the existing rounded f32 expression.",
+    "notEstablished": [
+      "Cumulative 30-second contribution",
+      "Attribution of every foot displacement",
+      "A required integrator change or root/frame bug"
+    ],
+    "noThirtySecondExtrapolation": true
+  },
+  "purity": {
+    "productionSolverMathChanged": false,
+    "productionSerdeLayoutChanged": false,
+    "productionSolverOrderChanged": false,
+    "defaultProfileChanged": false,
+    "thresholdsChanged": false,
+    "controllerVariantAdded": false,
+    "compensatedIntegratorAdded": false,
+    "observerPatchAppliedOnlyToIsolatedArchive": true,
+    "captureStorage": "default-OFF feature; bounded thread-local copies outside serialized world"
+  },
+  "executionNote": {
+    "initialBaselineLinkFailed": true,
+    "cause": "Frozen Cargo rlib contains thin-LTO bitcode; initial direct baseline link omitted -C lto=thin.",
+    "correction": "Added -C lto=thin to baseline rustc link; re-used already-verified isolated patched source.",
+    "integrationsBeforeMechanicalCorrection": 0,
+    "laterRecipeGuard": "Compare production Rust and indexed entries before/after build, while archived source stays pinned aee0e191. Current main may contain legitimate newer profile-aware fixture work."
+  },
+  "nextDecision": "Full fresh 3+1 recovery is the parent-selected least-complex next candidate; this diagnostic supplies no compensated-integrator change.",
+  "artifacts": {
+    "outputs/getup-coordinate-integration-diagnostic-20261019/parity-and-attribution.json": "e240baede96fd4075f1265be5a9e438d6274e67384ec7ee29235d9d8734180a6",
+    "outputs/getup-coordinate-integration-diagnostic-20261019/run-belly-observer/summary.json": "b2b2100cf73a2e93d1607488e2314189091efc47043cb27197961296e0c9d1c4",
+    "outputs/getup-coordinate-integration-diagnostic-20261019/run-belly-observer/root-internal-substeps.ndjson": "d5d4c650e15533d1a384fd249a20b5cd8960ae6bebdd20cb856b175fe4f16f1e",
+    "outputs/getup-coordinate-integration-diagnostic-20261019/observer-only.patch": "1fedd50765781e783c6f1e36ab38b8bec30593d13bd95c81d276258bda6a2696",
+    "outputs/getup-coordinate-integration-diagnostic-20261019/harness/src/main.rs": "73b47a1e874e6a3dfdf684e2ff78f500b12fb8cc41d33c0649b893b418481a8c",
+    "outputs/getup-coordinate-integration-diagnostic-20261019/harness/pinned-context.json": "5a07d6a053f96559452291e6388a74a6b1800854ec5eb4f10fc4ae019d74f07e",
+    "outputs/getup-coordinate-integration-diagnostic-20261019/harness/compare.py": "0c199cf9001b60ace54860ac7e0f05b447d03dd73b201a001f81047fc38a40f8",
+    "outputs/getup-coordinate-integration-diagnostic-20261019/binary-sha256.txt": "10a866f091e7106b7e6f7fda52c9fcea0f4b2a14ee09c5c163f678f7f4fbbb1f",
+    "outputs/getup-coordinate-integration-diagnostic-20261019/baseline-build.stderr": "70bef0a4897cf2e954bce8ce69a7e76a4f2fc64ca31340ff68030146f6340ffd",
+    "outputs/getup-coordinate-integration-diagnostic-20261019/baseline-build-corrected.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "outputs/getup-coordinate-integration-diagnostic-20261019/observer-build.stderr": "dd5f6c5b4a1ab1f321f9c0530cc49b22ed2ba4b62889e6d74d1241253a083710"
+  },
+  "maintainedProbes": {
+    "docs/evidence/probes/getup-coordinate-integration-diagnostic-2026-10-19.rs": "73b47a1e874e6a3dfdf684e2ff78f500b12fb8cc41d33c0649b893b418481a8c",
+    "docs/evidence/probes/getup-coordinate-integration-observer-2026-10-19.patch": "1fedd50765781e783c6f1e36ab38b8bec30593d13bd95c81d276258bda6a2696",
+    "docs/evidence/probes/getup-coordinate-integration-context-2026-10-19.json": "5a07d6a053f96559452291e6388a74a6b1800854ec5eb4f10fc4ae019d74f07e",
+    "docs/evidence/probes/getup-coordinate-integration-compare-2026-10-19.py": "0c199cf9001b60ace54860ac7e0f05b447d03dd73b201a001f81047fc38a40f8"
+  },
+  "stagedOrCommittedByThisTask": false
+}

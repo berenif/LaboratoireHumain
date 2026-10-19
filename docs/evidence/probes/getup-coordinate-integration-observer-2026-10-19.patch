@@ -1,0 +1,264 @@
+diff --git a/rust/vendor/rapier3d/Cargo.toml b/rust/vendor/rapier3d/Cargo.toml
+--- a/rust/vendor/rapier3d/Cargo.toml
++++ b/rust/vendor/rapier3d/Cargo.toml
+@@ -56,6 +56,8 @@
+ [features]
+ # Read-only callbacks around each CCD solve; disabled by default.
+ solver-step-observation = []
++# Bounded, observer-only free-root integration capture; disabled by default.
++coordinate-integration-diagnostic = ["std", "dim3"]
+ alloc = [
+     "nalgebra/alloc",
+     "parry3d/alloc",
+diff --git a/rust/vendor/rapier3d/src/lib.rs b/rust/vendor/rapier3d/src/lib.rs
+--- a/rust/vendor/rapier3d/src/lib.rs
++++ b/rust/vendor/rapier3d/src/lib.rs
+@@ -149,6 +149,8 @@
+ pub mod counters;
+ pub mod data;
+ pub mod dynamics;
++#[cfg(feature = "coordinate-integration-diagnostic")]
++pub mod coordinate_integration_diagnostic;
+ pub mod geometry;
+ pub mod pipeline;
+ pub mod utils;
+diff --git a/rust/vendor/rapier3d/src/dynamics/solver/staged_island_solver/helpers.rs b/rust/vendor/rapier3d/src/dynamics/solver/staged_island_solver/helpers.rs
+--- a/rust/vendor/rapier3d/src/dynamics/solver/staged_island_solver/helpers.rs
++++ b/rust/vendor/rapier3d/src/dynamics/solver/staged_island_solver/helpers.rs
+@@ -135,7 +135,15 @@
+                 .generic_solver_vels
+                 .rows(multibody.solver_id as usize, multibody.ndofs());
+             multibody.velocities.copy_from(&solver_vels);
++            #[cfg(feature = "coordinate-integration-diagnostic")]
++            let coordinate_sample = crate::coordinate_integration_diagnostic::before_integrate(
++                multibody,
++                solver_vels.as_slice(),
++                params.dt,
++            );
+             multibody.integrate(params.dt);
++            #[cfg(feature = "coordinate-integration-diagnostic")]
++            crate::coordinate_integration_diagnostic::after_integrate(multibody, coordinate_sample);
+             multibody.forward_kinematics(bodies, false);
+             multibody.update_rigid_bodies_internal(bodies, !is_last_substep, true, false);
+ 
+diff --git a/rust/vendor/rapier3d/src/dynamics/solver/staged_island_solver/worker.rs b/rust/vendor/rapier3d/src/dynamics/solver/staged_island_solver/worker.rs
+--- a/rust/vendor/rapier3d/src/dynamics/solver/staged_island_solver/worker.rs
++++ b/rust/vendor/rapier3d/src/dynamics/solver/staged_island_solver/worker.rs
+@@ -665,6 +665,23 @@
+             // including its re-applied warmstart impulse. Never infer delivery
+             // from the requested force or reconstruct it from contact loads.
+             if worker_id == 0 {
++                #[cfg(feature = "coordinate-integration-diagnostic")]
++                {
++                    let vs = unsafe { &*ctx.velocity_solver };
++                    let multibodies = unsafe { &*ctx.multibodies };
++                    for link in &vs.multibody_roots {
++                        let multibody = multibodies.get_multibody(link.multibody).unwrap();
++                        let solver_vels = vs.generic_solver_vels.rows(
++                            multibody.solver_id as usize,
++                            multibody.ndofs(),
++                        );
++                        crate::coordinate_integration_diagnostic::after_relax(
++                            multibody,
++                            solver_vels.as_slice(),
++                            params.num_internal_stabilization_iterations,
++                        );
++                    }
++                }
+                 use crate::dynamics::solver::joint_constraint::WritebackId;
+                 let joints = unsafe { core::slice::from_raw_parts_mut(ctx.joints, ctx.num_joints) };
+                 let constraints = unsafe { &*ctx.joint_constraints };
+diff --git a/rust/vendor/rapier3d/src/coordinate_integration_diagnostic.rs b/rust/vendor/rapier3d/src/coordinate_integration_diagnostic.rs
+new file mode 100644
+--- /dev/null
++++ b/rust/vendor/rapier3d/src/coordinate_integration_diagnostic.rs
+@@ -0,0 +1,189 @@
++//! Bounded, same-thread observation of free-root coordinate integration.
++//!
++//! Available only with the default-off `coordinate-integration-diagnostic` feature.
++//! Begin, step, and take on the same OS thread. The staged solver executes worker
++//! zero inline, and only worker zero accesses this capture. Samples are separate
++//! from the world, solver state, and all serde/checkpoint layouts.
++
++use crate::dynamics::Multibody;
++use crate::math::Real;
++use std::cell::RefCell;
++use std::vec::Vec;
++
++/// Hard ceiling on caller-selected storage, independent of simulated duration.
++pub const MAX_CAPTURE_SAMPLES: usize = 4096;
++
++/// Copied state around one internal integration and its following relax loop.
++#[derive(Clone, Debug)]
++pub struct RootIntegrationSample {
++    /// Root rigid-body handle's index and generation, for cross-island identity.
++    pub root_body: (u32, u32),
++    /// Generalized solver-buffer offset; may be reused in another island.
++    pub solver_id: u32,
++    /// Total number of generalized velocities in this multibody.
++    pub ndofs: usize,
++    /// Internal solver timestep, without conversion or recomputation.
++    pub dt: Real,
++    /// Root joint coordinates before integration. First three are translation;
++    /// last three are diagnostic angular coordinates, not a quaternion.
++    pub coords_before: [Real; 6],
++    /// Root generalized velocities actually passed to the integrator.
++    pub biased_root_velocity: [Real; 6],
++    /// Root joint coordinates immediately after the existing integration call.
++    pub coords_after: [Real; 6],
++    /// Root generalized velocities after all corresponding unbiased passes.
++    pub relaxed_root_velocity: [Real; 6],
++    /// Number of unbiased passes; zero explicitly means no relax pass occurred.
++    pub stabilization_iterations: usize,
++}
++
++/// Capture failure; never changes or interrupts the physics step.
++#[derive(Clone, Copy, Debug, PartialEq, Eq)]
++pub enum CaptureError {
++    /// A capture is already active; its data was retained.
++    AlreadyActive,
++    /// No capture is active on this OS thread.
++    NotActive,
++    /// Capacity must be between one and `MAX_CAPTURE_SAMPLES`, inclusive.
++    InvalidCapacity,
++    /// Preallocation failed before capture activation.
++    AllocationFailed,
++    /// More rows were requested than the caller's explicit bound.
++    Overflow { capacity: usize },
++    /// Only a six-DOF free root with at least six solver velocities is supported.
++    UnsupportedRoot { root_dofs: usize, solver_velocities: usize },
++    /// A relax observation had no matching integrated root row.
++    MissingIntegration { solver_id: u32, root_body: (u32, u32) },
++    /// Taking the capture found an integration without its relax observation.
++    MissingRelaxation { solver_id: u32, root_body: (u32, u32) },
++}
++
++struct Row {
++    sample: RootIntegrationSample,
++    relaxed: bool,
++}
++struct Capture {
++    capacity: usize,
++    rows: Vec<Row>,
++    error: Option<CaptureError>,
++}
++std::thread_local! {
++    static CAPTURE: RefCell<Option<Capture>> = const { RefCell::new(None) };
++}
++
++/// Begin a bounded capture. No world or solver state is accepted or changed.
++/// A failed call leaves an existing capture untouched.
++pub fn begin_capture(capacity: usize) -> Result<(), CaptureError> {
++    CAPTURE.with(|slot| {
++        let mut slot = slot.borrow_mut();
++        if slot.is_some() {
++            return Err(CaptureError::AlreadyActive);
++        }
++        if !(1..=MAX_CAPTURE_SAMPLES).contains(&capacity) {
++            return Err(CaptureError::InvalidCapacity);
++        }
++        let mut rows = Vec::new();
++        rows.try_reserve_exact(capacity).map_err(|_| CaptureError::AllocationFailed)?;
++        *slot = Some(Capture { capacity, rows, error: None });
++        Ok(())
++    })
++}
++
++/// Stop and consume the current capture. Overflow or incomplete pairing is an
++/// explicit error; truncated/partially paired results are never returned as valid.
++pub fn take_capture() -> Result<Vec<RootIntegrationSample>, CaptureError> {
++    CAPTURE.with(|slot| {
++        let capture = slot.borrow_mut().take().ok_or(CaptureError::NotActive)?;
++        if let Some(error) = capture.error {
++            return Err(error);
++        }
++        if let Some(row) = capture.rows.iter().find(|row| !row.relaxed) {
++            return Err(CaptureError::MissingRelaxation {
++                solver_id: row.sample.solver_id,
++                root_body: row.sample.root_body,
++            });
++        }
++        Ok(capture.rows.into_iter().map(|row| row.sample).collect())
++    })
++}
++
++pub(crate) fn before_integrate(
++    multibody: &Multibody,
++    solver_velocities: &[Real],
++    dt: Real,
++) -> Option<RootIntegrationSample> {
++    CAPTURE.with(|slot| {
++        let mut slot = slot.borrow_mut();
++        let capture = slot.as_mut()?;
++        if capture.error.is_some() {
++            return None;
++        }
++        if capture.rows.len() == capture.capacity {
++            capture.error = Some(CaptureError::Overflow { capacity: capture.capacity });
++            return None;
++        }
++        let root = multibody.root();
++        let root_dofs = root.joint().ndofs();
++        if root_dofs != 6 || solver_velocities.len() < 6 {
++            capture.error = Some(CaptureError::UnsupportedRoot {
++                root_dofs,
++                solver_velocities: solver_velocities.len(),
++            });
++            return None;
++        }
++        let coords = root.joint().coords();
++        Some(RootIntegrationSample {
++            root_body: root.rigid_body_handle().into_raw_parts(),
++            solver_id: multibody.solver_id,
++            ndofs: multibody.ndofs(),
++            dt,
++            coords_before: core::array::from_fn(|i| coords[i]),
++            biased_root_velocity: core::array::from_fn(|i| solver_velocities[i]),
++            coords_after: [0.0; 6],
++            relaxed_root_velocity: [0.0; 6],
++            stabilization_iterations: 0,
++        })
++    })
++}
++
++pub(crate) fn after_integrate(multibody: &Multibody, sample: Option<RootIntegrationSample>) {
++    let Some(mut sample) = sample else { return };
++    CAPTURE.with(|slot| {
++        let mut slot = slot.borrow_mut();
++        let Some(capture) = slot.as_mut() else { return };
++        if capture.error.is_some() {
++            return;
++        }
++        let coords = multibody.root().joint().coords();
++        sample.coords_after = core::array::from_fn(|i| coords[i]);
++        // before_integrate reserved this slot; no other capture callback occurs
++        // between the two calls, and the whole bounded vector was preallocated.
++        capture.rows.push(Row { sample, relaxed: false });
++    });
++}
++
++pub(crate) fn after_relax(
++    multibody: &Multibody,
++    solver_velocities: &[Real],
++    stabilization_iterations: usize,
++) {
++    CAPTURE.with(|slot| {
++        let mut slot = slot.borrow_mut();
++        let Some(capture) = slot.as_mut() else { return };
++        if capture.error.is_some() {
++            return;
++        }
++        let solver_id = multibody.solver_id;
++        let root_body = multibody.root().rigid_body_handle().into_raw_parts();
++        let Some(row) = capture.rows.iter_mut().rev().find(|row| {
++            !row.relaxed && row.sample.solver_id == solver_id && row.sample.root_body == root_body
++        }) else {
++            capture.error = Some(CaptureError::MissingIntegration { solver_id, root_body });
++            return;
++        };
++        // A successful before_integrate already validated this same root slice.
++        row.sample.relaxed_root_velocity = core::array::from_fn(|i| solver_velocities[i]);
++        row.sample.stabilization_iterations = stabilization_iterations;
++        row.relaxed = true;
++    });
++}
