@@ -5,12 +5,15 @@ import { existsSync, mkdirSync, readFileSync, readdirSync, symlinkSync, writeFil
 import { createRequire } from 'node:module';
 import { dirname, join, relative, resolve } from 'node:path';
 import { assertSmokeAdvanceFits, assertSmokeModelContract, readSmokeClock } from './rust-smoke-contract.mjs';
+import { assertBrowserProfileExperiment, browserProfileExperimentLabel, installBrowserProfileExperiment,
+  loadBrowserProfileExperiment } from './rust-browser-profile-experiment.mjs';
 
 // A focused browser regression, not a recovery/performance qualification.
 // Only actual Playwright mouse input starts/moves/ends grabs. Synthetic events
 // below represent browser interruptions; no worker/physics state is injected.
 const artifact = resolve(process.argv[2] ?? 'rust/dist/app');
 const output = resolve(process.argv[3] ?? `outputs/rust-grab-${new Date().toISOString().replaceAll(/[:.]/g, '-')}`);
+const profileExperiment = loadBrowserProfileExperiment(process.argv[4]);
 assert.ok(!existsSync(join(output, 'browser-result.json')), 'Use a fresh output directory');
 assert.ok(existsSync(join(artifact, 'index.html')), 'Build the Rust browser app before running this test');
 mkdirSync(output, { recursive: true });
@@ -45,8 +48,10 @@ const report = {
   recording: { mode: 'Native Playwright wall-time recording with visible manual simulation-clock label', retimed: false,
     note: 'Manual advance integrates 4 physical ticks (0.100 s) on demand. Wall footage is not a real-time physics/performance demonstration.' },
   artifact, artifactSha256: assetHashes(artifact), browserErrors: [], httpErrors: [], scenarios: [], checks: [],
+  ...(profileExperiment ? { numericalProfileExperiment: { ...profileExperiment, purpose: 'Explicit numerical-profile TEST; no production default change', pages: [] } } : {}),
   relevantSourceSha256: Object.fromEntries(['rust/crates/sim/src/grab.rs', 'rust/crates/sim/src/lib.rs',
-    'rust/crates/browser/driver.js', 'scripts/verify-rust-grab.mjs'].map(file => [file, hash(readFileSync(file))])),
+    'rust/crates/browser/driver.js', 'scripts/verify-rust-grab.mjs',
+    ...(profileExperiment ? ['scripts/rust-browser-profile-experiment.mjs'] : [])].map(file => [file, hash(readFileSync(file))])),
 };
 const save = () => writeFileSync(join(output, 'browser-result.json'), JSON.stringify(report, null, 2) + '\n');
 const server = spawn(process.execPath, ['scripts/serve-rust-preview.mjs', artifact, '0'], { stdio: ['ignore', 'pipe', 'inherit'] });
@@ -119,11 +124,13 @@ try {
   });
   browser = await chromium.launch(browserLaunchOptions(true)); report.browserVersion = browser.version();
   context = await browser.newContext({ viewport: { width: 1280, height: 900 }, recordVideo: { dir: output, size: { width: 1280, height: 900 } } });
-  await context.addInitScript(() => {
+  await installBrowserProfileExperiment(context, profileExperiment);
+  await context.addInitScript(profileLabel => {
     let api;
     Object.defineProperty(window, '__lhRust', { configurable: true, get: () => api,
       set(value) { api = value; api.setManual(true); } });
     window.__grabEvidence = { scene: 'Initialize', clockMode: 'MANUAL SIMULATION CLOCK', wallStart: performance.now(), pointerId: null, commands: [], replies: [] };
+    if (profileLabel) window.__grabEvidence.profileLabel = profileLabel;
     // Read-only transport tracing. Original messages and transfer lists pass unchanged.
     const NativeWorker = window.Worker;
     window.Worker = class extends NativeWorker {
@@ -142,16 +149,17 @@ try {
       Object.assign(banner.style, { position: 'fixed', bottom: '8px', left: '8px', zIndex: '2147483647', pointerEvents: 'none', color: '#fff', background: '#091424ed', border: '1px solid #7185a3', padding: '9px 12px', font: '13px monospace', whiteSpace: 'pre' });
       document.body.append(banner);
       const draw = () => { const d = api?.diagnostics; const e = window.__grabEvidence;
-        banner.textContent = `${e.clockMode} | ${e.scene}\nsim ${(d?.time ?? 0).toFixed(3)} s | tick ${d?.tick ?? 0} | wall ${((performance.now() - e.wallStart) / 1000).toFixed(2)} s\n${e.clockMode === 'MANUAL SIMULATION CLOCK' ? '4 ticks = 0.100 simulated s per advance | footage is wall time, not real-time physics' : 'Automatic scheduler | native wall-time footage | actual simulation time shown above'}`;
+        banner.textContent = `${e.profileLabel ? e.profileLabel + '\n' : ''}${e.clockMode} | ${e.scene}\nsim ${(d?.time ?? 0).toFixed(3)} s | tick ${d?.tick ?? 0} | wall ${((performance.now() - e.wallStart) / 1000).toFixed(2)} s\n${e.clockMode === 'MANUAL SIMULATION CLOCK' ? '4 ticks = 0.100 simulated s per advance | footage is wall time, not real-time physics' : 'Automatic scheduler | native wall-time footage | actual simulation time shown above'}`;
         requestAnimationFrame(draw); }; draw();
     });
-  });
+  }, browserProfileExperimentLabel(profileExperiment));
   page = await context.newPage(); video = page.video();
   page.on('pageerror', error => report.browserErrors.push(String(error)));
   page.on('response', response => { if (response.status() >= 400) report.httpErrors.push({ status: response.status(), url: response.url() }); });
   await page.goto(`${origin}?renderer=webgl2`);
   await page.waitForFunction(() => window.__lhRust?.diagnostics.ready && window.__lhRust.diagnostics.graphics.frames >= 3, null, { timeout: 60000 });
   const initial = await state(); assert.equal(initial.backend, 'WebGL2'); assert.equal(initial.tick, 0);
+  await assertBrowserProfileExperiment(page, profileExperiment);
   assertSmokeModelContract(initial); readSmokeClock(initial); report.initial = physical(initial);
   await page.locator('#region').selectOption('right_hand'); await idle();
   const fetchedAssets = await page.evaluate(async names => Object.fromEntries(await Promise.all(names.map(async name => {
@@ -233,6 +241,8 @@ try {
   report.final = { backend: (await state()).backend, workerInstances: (await state()).workerInstances, activePointer: (await state()).activePointer };
   assert.equal(report.final.activePointer, null);
   report.checks.push('Cancellation matches an actual released physical trajectory; continuing held-pull control diverges. This tests physical behavior, not pointer metadata alone.');
+  if (profileExperiment) report.numericalProfileExperiment.pages.push({ scene: 'deterministic manual-clock regression',
+    applied: await assertBrowserProfileExperiment(page, profileExperiment) });
 
   // Separate short wall-time scene. Unlike the deterministic regression above,
   // this lets the ordinary automatic scheduler run, and reports its actual pace.
@@ -243,6 +253,7 @@ try {
   await page.goto(`${origin}?renderer=webgl2`);
   await page.waitForFunction(() => window.__lhRust?.diagnostics.ready && window.__lhRust.diagnostics.graphics.frames >= 3, null, { timeout: 60000 });
   assert.equal((await state()).tick, 0);
+  await assertBrowserProfileExperiment(page, profileExperiment);
   await page.locator('#region').selectOption('right_hand'); await idle();
   const realtimeInput = await grab();
   await page.evaluate(() => {
@@ -276,6 +287,8 @@ try {
     observedWallSeconds: observation.wallSeconds, observation,
     screenshot: await screenshot('automatic-scheduler-after-2s-wall'),
     note: 'Separate native wall-time footage using the automatic scheduler; actual integrated time is reported, with no speed/performance admission.' };
+  if (profileExperiment) report.numericalProfileExperiment.pages.push({ scene: 'separate automatic-scheduler observation',
+    applied: await assertBrowserProfileExperiment(page, profileExperiment) });
   assert.deepEqual(report.browserErrors, []); assert.deepEqual(report.httpErrors, []);
   report.passed = true;
 } catch (error) {
