@@ -2,9 +2,14 @@ import assert from 'node:assert/strict';
 import { spawn } from 'node:child_process';
 import { chromium, browserLaunchOptions } from './rust-browser-test.mjs';
 import { assertSmokeAdvanceFits, assertSmokeModelContract, maximumSmokeTicks, readSmokeClock } from './rust-smoke-contract.mjs';
+import { assertBrowserProfileExperiment, browserProfileExperimentLabel, installBrowserProfileExperiment,
+  loadBrowserProfileExperiment } from './rust-browser-profile-experiment.mjs';
 
 // One browser, one bounded physical trajectory. UI initialization/reset checks
 // run at tick zero; no qualification, recovery campaign or hidden warm-up.
+// Optional argv[4] supplies the complete explicit TEST profile; argv[3] retains
+// its existing base-path meaning. No argument leaves production defaults alone.
+const profileExperiment = loadBrowserProfileExperiment(process.argv[4]);
 const server = spawn(process.execPath, ['scripts/serve-rust-preview.mjs', process.argv[2] ?? 'rust/dist/app', '0', process.argv[3] ?? '/'], { stdio: ['ignore', 'pipe', 'inherit'] });
 let browser;
 try {
@@ -18,7 +23,9 @@ try {
     server.once('exit', code => { clearTimeout(timeout); reject(new Error(`Preview exited ${code}`)); });
   });
   browser = await chromium.launch(browserLaunchOptions(true));
-  const page = await browser.newPage({ viewport: { width: 1280, height: 900 } });
+  const context = await browser.newContext({ viewport: { width: 1280, height: 900 } });
+  await installBrowserProfileExperiment(context, profileExperiment);
+  const page = await context.newPage();
   const errors = [];
   page.on('pageerror', error => errors.push(String(error)));
   page.on('response', response => { if (response.status() >= 400) errors.push(`${response.status()} ${response.url()}`); });
@@ -31,6 +38,13 @@ try {
   });
   await page.goto(`${origin}?renderer=webgl2`);
   await page.waitForFunction(() => window.__lhRust?.diagnostics.ready && window.__lhRust.diagnostics.graphics.frames >= 3, null, { timeout: 60000 });
+  const appliedProfile = await assertBrowserProfileExperiment(page, profileExperiment);
+  if (profileExperiment) await page.evaluate(label => {
+    const banner = document.createElement('div'); banner.textContent = label;
+    Object.assign(banner.style, { position: 'fixed', bottom: '8px', left: '8px', zIndex: '2147483647',
+      pointerEvents: 'none', color: '#fff', background: '#091424ed', padding: '8px', font: '12px monospace' });
+    document.body.append(banner);
+  }, browserProfileExperimentLabel(profileExperiment));
   const state = () => page.evaluate(() => window.__lhRust.diagnostics);
   const idle = () => page.waitForFunction(() => !window.__lhRust.diagnostics.outstanding && !window.__lhRust.diagnostics.queueDepth);
   const initial = await state();
@@ -76,7 +90,10 @@ try {
   assert.ok(final.tick <= maximumSmokeTicks && final.time <= 5.001);
   assert.equal(final.failure, null);
   assert.deepEqual(errors, []);
-  console.log(JSON.stringify({ passed: true, runtime: 'Rust/WASM', backend: final.backend, ticks: final.tick, simulatedSeconds: final.time, nativeSubsteps: readSmokeClock(final).nativeSubsteps, strikes: final.strikes, segments: final.snapshot.segments.length, physicalQualification: false }));
+  await assertBrowserProfileExperiment(page, profileExperiment);
+  console.log(JSON.stringify({ passed: true, runtime: 'Rust/WASM', backend: final.backend, ticks: final.tick, simulatedSeconds: final.time, nativeSubsteps: readSmokeClock(final).nativeSubsteps, strikes: final.strikes, segments: final.snapshot.segments.length, physicalQualification: false,
+    ...(profileExperiment ? { numericalProfileExperiment: { ...profileExperiment, appliedProfile,
+      purpose: 'Explicit numerical-profile TEST; no production default change' } } : {}) }));
 } finally {
   await browser?.close();
   server.kill();

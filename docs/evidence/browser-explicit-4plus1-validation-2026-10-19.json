@@ -1,0 +1,399 @@
+{
+  "schema": 1,
+  "checkedAt": "2026-10-19T15:23:57.286Z",
+  "scope": "Experimental full-profile initialization tests of the immutable admitted sticky-bound artifact, on desktop Linux Chromium headless-shell/WebGL2. Browser snapshot/interaction checks only; no production default change or numerical-profile, real-time, mobile, recovery or release admission.",
+  "browserChecksPassed": true,
+  "numericalProfileAdmitted": false,
+  "productionDefaultChanged": false,
+  "artifact": {
+    "path": "/workspace/scratch/5def91918e35/mvp-landing/outputs/browser-capability-20261019/app-sticky-bound-candidate",
+    "sha256": {
+      "app-1df6634f608f8d80.css": "6f9e3128c49954cf4c159cd1b3cb0375ca4293e134429847288a5e6549a44271",
+      "index.html": "e66f7147dd7ba9fab899d5be48593642a463a9f075d26d1ef807c6c40d568ccc",
+      "lh-browser-4479461c3e1613b6.js": "ec9a8317fc58b63cf4f6874c3ed03808743c61c19a9c485020f0dc64dfd9c4f5",
+      "lh-browser-4479461c3e1613b6_bg.wasm": "b72e126e7587859ae1891c1e892d1508b255d024967edaa662cf95d937934411",
+      "lh_worker.js": "f5ab14e78b52ad83577646105b61526484096924ec39f5a72d8ee039cb652da2",
+      "lh_worker_bg.wasm": "86ead4bc29abd5580d939e389f8df179755a6cdc9a59ed29ddcba793c5d0af90",
+      "sim-worker.js": "a3a2b18c222c045fc08bf19aff2e96b92f0bc18ad6023bcca660195054267996",
+      "snippets/lh-browser-575491a8d42d44d5/driver.js": "4c6281e19c4540e3ba72a74a5b1514b5d1b9c58e56c1f8a2dbfb3adb4812d74e"
+    }
+  },
+  "runtime": {
+    "browserVersion": "155.0.8059.79",
+    "renderer": "WebGL2",
+    "host": "Linux desktop headless, software rendering",
+    "provenance": "outputs/browser-capability-20261019/debian/download-provenance.json"
+  },
+  "explicitProfile": {
+    "path": "/workspace/scratch/5def91918e35/mvp-landing/outputs/getup-budget-20261019/candidate-profile.json",
+    "rawSha256": "2dbce52fb23853eb24e1304ea9cd96f0aa2f81440bee41bbc1cea10f9a1b56f6",
+    "profile": {
+      "id": "getup-800hz-4plus1-qualification-v1",
+      "dt_s": 0.00125,
+      "tick_substeps": 20,
+      "contact_friction_model": "coulomb",
+      "solver_iterations": 4,
+      "internal_pgs_iterations": 20,
+      "fall_internal_pgs_iterations": 32,
+      "additional_body_iterations": 1,
+      "allowed_linear_error_m": 0.001,
+      "prediction_distance_m": 0.002,
+      "motor_scale": 1,
+      "aggregate_motor_cap_nm": 920,
+      "angular_damping": 0,
+      "contact_skin_m": 0,
+      "max_ccd_substeps": 4,
+      "disable_solver_speed_cap": true,
+      "posture_stiffness_multiplier": 1,
+      "posture_damping_multiplier": 1,
+      "supported_tilt_gain": 2,
+      "supported_com_gain_rad_per_m": 5,
+      "supported_com_velocity_gain_s_rad_per_m": 5,
+      "supported_angular_velocity_gain_s": 2,
+      "grab_limits": {
+        "angular_frequency_rad_s": 16,
+        "target_speed_m_s": 1.5,
+        "target_acceleration_m_s2": 8,
+        "force_n": 180,
+        "torque_nm": 12,
+        "positive_power_w": 36
+      },
+      "reaching_iterations": 6,
+      "reaching_coordinate_increment_rad": 0.15,
+      "reaching_damping_m2": 0.01,
+      "corrective_steps_enabled": false,
+      "recovery_enabled": false,
+      "getup_policy_enabled": false
+    }
+  },
+  "changesFromBaseline": {
+    "fields": [
+      "id",
+      "solver_iterations",
+      "additional_body_iterations"
+    ],
+    "baseline": {
+      "solver_iterations": 20,
+      "additional_body_iterations": 5
+    },
+    "candidate": {
+      "solver_iterations": 4,
+      "additional_body_iterations": 1
+    },
+    "unchanged": {
+      "nativeHz": 800,
+      "controlHz": 40,
+      "nativeSubstepsPerTick": 20,
+      "internalPgsIterations": 20,
+      "fallInternalPgsIterations": 32,
+      "physicalGates": true
+    }
+  },
+  "initialization": {
+    "hook": "scripts/rust-browser-profile-experiment.mjs",
+    "fullProfileReplacesOnlyInitializeProfile": true,
+    "oncePerPage": true,
+    "longHoldStart": 1,
+    "longHoldEnd": 1,
+    "pointerPages": [
+      {
+        "scene": "deterministic manual-clock regression",
+        "initializations": 1
+      },
+      {
+        "scene": "separate automatic-scheduler observation",
+        "initializations": 1
+      }
+    ],
+    "harnessCommit": "dd78e08ce4223fc4ba9d615c6dcaab6f1383bcf0"
+  },
+  "shortCleanDiagnostic": {
+    "raw": "outputs/browser-capability-20261019/profile-explicit-4plus1-120/report.json",
+    "rawSha256": "4744fe449822d233c2abfb256090f916f60b1cb93674f81f61a82b9a59580795",
+    "method": "Ordinary automatic app scheduler, no input or video, tick0 through120. Native owner confirmed CPU idle. Single experimental run, not a repeated paired comparison or performance admission.",
+    "metrics": {
+      "simulationSeconds": 3,
+      "wallSeconds": 3.8178000000007453,
+      "simulationWallRatio": 0.7857928650006324,
+      "coreTick": {
+        "count": 120,
+        "mean": 21.444999999987584,
+        "p50": 20.800000000745058,
+        "p95": 25.5,
+        "max": 82.60000000149012,
+        "total": 2573.39999999851
+      },
+      "workerUpdate": {
+        "count": 120,
+        "mean": 21.785833333525808,
+        "p50": 21.100000001490116,
+        "p95": 25.900000002235174,
+        "max": 83.30000000074506,
+        "total": 2614.300000023097
+      },
+      "roundTrip": {
+        "count": 120,
+        "mean": 30.81666666669771,
+        "p50": 31.199999999254942,
+        "p95": 37,
+        "max": 111.30000000074506,
+        "total": 3698.0000000037253
+      },
+      "replyDeliveryAfterWorker": {
+        "count": 120,
+        "mean": 8.93234578302751,
+        "p50": 9.899853512644768,
+        "p95": 13.89990234375,
+        "max": 27.7998046875,
+        "total": 1071.8814939633012
+      },
+      "dispatchGap": {
+        "count": 119,
+        "mean": 0.6327731092186535,
+        "p50": 0.5,
+        "p95": 1,
+        "max": 6.400000002235174,
+        "total": 75.29999999701977
+      },
+      "presentationFrames": 225,
+      "maximumBacklogSeconds": 0.8164999999999991
+    },
+    "attributionCaveat": "Reported reply delivery starts at a timestamp evaluated before worker postMessage serialization and ends in the driver after an earlier harness snapshot-cloning listener. It includes serialization, scheduling, delivery and harness overhead; it is not pure browser queue delay."
+  },
+  "longNoInputHold": {
+    "raw": "outputs/browser-capability-20261019/hold-explicit-4plus1/result.json",
+    "rawSha256": "0c5a428c079aab4796cc2f1c28a3d82e7e61490c6b60415525ae9b1a4647f70c",
+    "method": "Ordinary rendered app automatic scheduler with FULL explicit numerical-profile initialization override; no physical inputs. Three settling plus thirty quiet physical seconds, snapshot observation only; production defaults unchanged.",
+    "performanceContext": "Experimental 4+1 numerical profile; native perturbation/regression qualification jobs run concurrently. This is physical-observation proof only; timing is not uncontended performance qualification.",
+    "settleSeconds": 3,
+    "quietSeconds": 30,
+    "final": {
+      "tick": 1320,
+      "time": 33,
+      "motion": "Upright",
+      "backend": "WebGL2",
+      "workerInstances": 1,
+      "error": "",
+      "failure": null
+    },
+    "metrics": {
+      "snapshotCount": 1321,
+      "steadySnapshotCount": 1201,
+      "referenceTime": 3,
+      "finalTime": 33,
+      "steadyPhysicalSeconds": 30,
+      "maximumSnapshotGapTicks": 1,
+      "minUpY": {
+        "torso": 0.999880918098615,
+        "pelvis": 0.9923384342538311,
+        "right_foot": 0.9999299874076694,
+        "left_foot": 0.9999289926840759
+      },
+      "minimumAggregateFootLoadsN": {
+        "right_foot": 200.26291,
+        "left_foot": 200.34444
+      },
+      "maximumLinearSpeedMps": 0.0010600856629040623,
+      "maximumAngularSpeedRadps": 0.003743078096857421,
+      "maximumPelvisDriftM": 0.00017719356621373136,
+      "maximumFootBodyDriftM": 0.0009908597089901216,
+      "maximumLoadedFootHorizontalBodySpeedProxyMps": 0.00012711135041964465,
+      "maximumFloorPenetrationM": 0.000972979,
+      "maximumSelfPenetrationM": 0,
+      "violations": [],
+      "contactPointSlipAvailable": false,
+      "slipLimit": "The ordinary snapshot exposes aggregate segment loads and body velocities, not contact-point tangential velocity. Horizontal foot-body speed is a proxy, not contact slip."
+    },
+    "observation": {
+      "wallSeconds": 45.23319999999926,
+      "simulationSeconds": 33,
+      "integratedSimulationToWallRatio": 0.7295526294845499,
+      "presentedFrames": 2418,
+      "averagePresentedFps": 53.45631085132247,
+      "lastHalfSecondPresentedFps": 60.007742934571525,
+      "appReportedSimulationToWallRatio": 0.7295800493019193
+    },
+    "noPhysicalInput": true,
+    "commands": 0,
+    "inputs": 0,
+    "workerInstances": 1,
+    "errors": [],
+    "limits": "Unchanged up>=0.97, pelvis drift<=30mm, foot-body drift<=10mm, aggregate foot loads>=3N, snapshot linear speed<=0.1m/s and angular speed<=0.5rad/s. Snapshot velocity caches are not authoritative generalized/contact-point velocities. No browser contact-slip claim."
+  },
+  "actualPointerRegression": {
+    "raw": "outputs/browser-capability-20261019/grab-explicit-4plus1/browser-result.json",
+    "rawSha256": "7be113545861feb69f8f6298ff39e49fa6b0ace0e0fbeb888d5fe858462d4edd",
+    "passed": true,
+    "scenarios": [
+      {
+        "name": "No grab"
+      },
+      {
+        "name": "Actual hand pull, mouse release, natural continuation",
+        "maximumPullVsNoGrabPositionM": 0.0019180096559975788
+      },
+      {
+        "name": "Continued held-pull control",
+        "maximumHeldVsReleasedPositionM": 0.010767080787827302
+      },
+      {
+        "name": "pointercancel",
+        "releaseEquivalence": {
+          "name": "pointercancel: physical continuation equals real mouse release despite stale held-button motion",
+          "allPoseAndVelocityComponentsExactlyEqual": true,
+          "maximumPositionDifferenceM": 0
+        },
+        "maximumFreshGrabVsNoNewGrabPositionM": 0.0025541710459559626
+      },
+      {
+        "name": "blur",
+        "releaseEquivalence": {
+          "name": "blur: physical continuation equals real mouse release despite stale held-button motion",
+          "allPoseAndVelocityComponentsExactlyEqual": true,
+          "maximumPositionDifferenceM": 0
+        }
+      },
+      {
+        "name": "Reset during active physical drag"
+      }
+    ],
+    "checks": [
+      "Every served asset matches the captured built artifact hash",
+      {
+        "name": "Identical trial initialization",
+        "allPoseAndVelocityComponentsExactlyEqual": true,
+        "maximumPositionDifferenceM": 0
+      },
+      {
+        "name": "Identical physical state before release",
+        "allPoseAndVelocityComponentsExactlyEqual": true,
+        "maximumPositionDifferenceM": 0
+      },
+      {
+        "name": "pointercancel: identical pre-cancellation physical state",
+        "allPoseAndVelocityComponentsExactlyEqual": true,
+        "maximumPositionDifferenceM": 0
+      },
+      {
+        "name": "pointercancel: physical continuation equals real mouse release despite stale held-button motion",
+        "allPoseAndVelocityComponentsExactlyEqual": true,
+        "maximumPositionDifferenceM": 0
+      },
+      {
+        "name": "blur: identical pre-cancellation physical state",
+        "allPoseAndVelocityComponentsExactlyEqual": true,
+        "maximumPositionDifferenceM": 0
+      },
+      {
+        "name": "blur: physical continuation equals real mouse release despite stale held-button motion",
+        "allPoseAndVelocityComponentsExactlyEqual": true,
+        "maximumPositionDifferenceM": 0
+      },
+      {
+        "name": "Reset restores clean physical initialization",
+        "allPoseAndVelocityComponentsExactlyEqual": true,
+        "maximumPositionDifferenceM": 0
+      },
+      {
+        "name": "Reset leaves no phantom physical force after stale held-button movement",
+        "allPoseAndVelocityComponentsExactlyEqual": true,
+        "maximumPositionDifferenceM": 0
+      },
+      "Cancellation matches an actual released physical trajectory; continuing held-pull control diverges. This tests physical behavior, not pointer metadata alone."
+    ],
+    "recordingContext": "Physical interaction regression under concurrent native qualification load. Manual-clock and automatic native wall-time clips are labeled; neither admits clean performance."
+  },
+  "boundedStrikerSmoke": {
+    "profileLog": "outputs/browser-capability-20261019/smoke-explicit-4plus1.log",
+    "defaultLog": "outputs/browser-capability-20261019/smoke-default-after-profile-harness.log",
+    "bothPassed": true,
+    "ticks": 132,
+    "simulationSeconds": 3.3,
+    "nativeSubsteps": 2640,
+    "strikes": 1,
+    "poseSlots": 25,
+    "maximumPhysicalSeconds": 5,
+    "optionalProfileArgument": "npm run verify:smoke -- ARTIFACT / PROFILE_JSON",
+    "productionDefaultChanged": false
+  },
+  "nodeTests": {
+    "passed": 93,
+    "failed": 0,
+    "log": "outputs/browser-capability-20261019/npm-test-profile-smoke.log"
+  },
+  "media": [
+    {
+      "path": "outputs/browser-capability-20261019/hold-explicit-4plus1/standing-hold-native-wall-time.mp4",
+      "sha256": "da15955df8e09b0d60b603ed6328ff9d4e18803d2b65fb5ac8a5c0fe82369a23",
+      "durationSeconds": 51.36,
+      "retimed": false,
+      "inspection": "Six-frame contact sheet and final screenshot inspected. Explicit profile TEST/hash and simulated/wall clocks remain visible."
+    },
+    {
+      "path": "outputs/browser-capability-20261019/hold-explicit-4plus1/after-thirty-quiet-physical-seconds.png",
+      "sha256": "ea42ba59fe053dfc6c10a7206ad6f9313a337a044f8fb4eccd0e355654519491"
+    }
+  ],
+  "nativeQualification": {
+    "status": "Experimental/unadmitted. Native owner reports the four distinct contact histories were oracle errors from omitting the vertical component of tangent contact impulse; the corrected full-vector momentum residual is <=2.40e-7 Ns over a single interval, with exact instrumented state parity. Corrected audit and 72 engine tests are still running when this browser checkpoint is recorded.",
+    "evidence": "docs/evidence/getup-4plus1-qualification-2026-10-19.json",
+    "blockingPerturbations": {
+      "frozenThresholdM": 0.02,
+      "torsoXCasesAboveThresholdInBothProfiles": 4,
+      "candidateWorstLoadedSlipM": 0.027301,
+      "baselineWorstLoadedSlipM": 0.024228
+    },
+    "decision": "The same frozen 20mm perturbation gate fails in both profiles, with a worse candidate maximum. Browser quiet/interaction results do not admit the 4+1 profile or justify changing defaults."
+  },
+  "nextStep": "Complete the corrected native audit and address the frozen perturbation gate before profile admission. Production transport and scheduler remain unchanged; the listener attribution is a read-only diagnostic.",
+  "replyAttribution": {
+    "raw": "outputs/browser-capability-20261019/profile-explicit-4plus1-first-listener-120/report.json",
+    "rawSha256": "522542aa3fd81db1f1746c0086b3ed69149de5490f242b8fdd8a5235c07835ab",
+    "cpuContext": "Native owner confirmed all jobs terminal and held compilation until this diagnostic completed.",
+    "workerToFirstMainListener": {
+      "count": 120,
+      "mean": 8.436616209397714,
+      "p50": 8.899951171129942,
+      "p95": 14.700048826634884,
+      "max": 40.39990234375,
+      "total": 1012.3939451277256
+    },
+    "harnessSnapshotClone": {
+      "count": 120,
+      "mean": 0.33083333326503633,
+      "p50": 0.30000000074505806,
+      "p95": 0.5,
+      "max": 2.599999997764826,
+      "total": 39.69999999180436
+    },
+    "firstListenerToDriver": {
+      "count": 120,
+      "mean": 0.36916666670391957,
+      "p50": 0.30000000074505806,
+      "p95": 0.5,
+      "max": 2.599999997764826,
+      "total": 44.30000000447035
+    },
+    "dispatchGap": {
+      "count": 119,
+      "mean": 0.5932773109055868,
+      "p50": 0.5,
+      "p95": 1.1000000014901161,
+      "max": 1.800000000745058,
+      "total": 70.59999999776483
+    },
+    "simulationWallRatio": 0.7701391384705752,
+    "interpretation": "Snapshot cloning explains only a small part of the reported delivery remainder. Worker timestamp to earliest listener still includes postMessage serialization, browser delivery and task scheduling. No production transport/scheduler change was made.",
+    "sameProfileEmittedStateParity": {
+      "raw": "outputs/browser-capability-20261019/explicit-4plus1-listener-instrumentation-exact-120.json",
+      "passed": true,
+      "snapshotCount": 121,
+      "traceSha256": "1fcb70659bc766777d7e2d506baa3f1fb88048ef6c7759d34c2ba990e05c27c7",
+      "excludedSnapshotFields": [
+        "diagnostics.controller_ms",
+        "diagnostics.update_ms"
+      ],
+      "limits": "Exact equality of all121 emitted40Hz snapshots in two120-tick automatic no-input windows with the SAME full explicit4+1 profile and identical worker/driver artifacts. The second window adds only first-listener/clone timing instrumentation. Excludes the two measured wall-clock fields; bounded emitted-value proof, not cross-profile or hidden-engine-state parity."
+    }
+  }
+}
