@@ -1,0 +1,519 @@
+{
+  "date": "2026-10-19",
+  "status": "valid negative first actual-WASM physical-roll feasibility trial; fixed five-second preparation cap rejected",
+  "sourceCommit": "11d5786d1c5eba7f47a7cb36a4ba34a34c824c04",
+  "implementationEvidence": {
+    "path": "docs/evidence/getup-physical-roll-2026-10-19.json",
+    "sha256": "b9f0557820269d697711f20c0d99ceea0f52f597b870a3b00f24348a08f5fb0d",
+    "bytes": 16060,
+    "receiptCommit": "b31a683d637532b429ef78d0940e24dcad45c4ce"
+  },
+  "planning": "The fixed supine-to-prone physical-roll route follows the Astra Codex plan. This is the first and only physical evaluation of the frozen route; native tests were pure contracts, with no prior native physical-roll rollout.",
+  "disposition": {
+    "observationValid": true,
+    "preparationAdmitted": false,
+    "completeCasePassed": false,
+    "physicalExecutabilityEstablished": false,
+    "releaseAccepted": false,
+    "productionRecoveryEnabled": false,
+    "productionDefaultsChanged": false,
+    "performanceClaim": false,
+    "retryCount": 0,
+    "conditional45DegreeCaseExecuted": false,
+    "nextAction": "Preserve the fixed negative result for planning. No alternate side, duration, gain, torque-limit change, retry or later recovery follows this rejection."
+  },
+  "platform": "Official Debian Chromium headless155.0.8059.79, desktop WebGL2/SwiftShader. No actual Android/capable-WebGPU qualification.",
+  "scope": {
+    "fixture": "BACK",
+    "headingDegrees": 0,
+    "profile": {
+      "path": "docs/evidence/profiles/getup-800hz-3plus1-repeat-cycle-v1.json",
+      "sha256": "aaa415a19767c218a26b05bad277193cccba2a726b52dcd5aac0a5444afc39d6",
+      "bytes": 1319
+    },
+    "nativeHz": 800,
+    "sourceActorHz": 40,
+    "naturalImpactNative": 480,
+    "rollFirstPhysicalNative": 481,
+    "rollPreparationCapNative": 4000,
+    "rollPreparationCapS": 5,
+    "terminalNative": 4480,
+    "originalRecoveryDeadlineNative": 20480,
+    "originalRecoveryDeadlineIncludesPreparation": true,
+    "standingConsecutiveNativeRequired": 800,
+    "postPassAnchoredHoldNativeRequired": 24000,
+    "originalFootOriginDriftMaxM": 0.01,
+    "loadedMaterialTravelStopM": 0.02,
+    "route": "right-flank-tuck-uncoil-v1",
+    "physicalInputs": "Frozen ordinary joint-motor physical preparation only; no external grab, strike, reset or restore."
+  },
+  "build": {
+    "sourceBase": "11d5786d1c5eba7f47a7cb36a4ba34a34c824c04",
+    "sourceManifest": {
+      "path": "outputs/browser-capability-20261019/recovery-fixture/physical-roll/build/source-manifest.json",
+      "sha256": "f059661c9deda8bea806dfed3ed9ba5351b83825ede2d5e19b814552bb76d483"
+    },
+    "frozenSourceFileCount": 372,
+    "cliFeatures": [
+      "lh-worker/root-translation-carry-experiment",
+      "lh-worker/getup-terminal-tail-observer-experiment",
+      "lh-sim/standing-dynamics-experiment",
+      "lh-sim/unit-root-rotation-experiment",
+      "lh-sim/getup-repeat-cycle-experiment",
+      "lh-worker/getup-physical-roll-experiment"
+    ],
+    "effectiveSimFeatures": [
+      "getup-physical-roll-experiment",
+      "getup-repeat-cycle-experiment",
+      "getup-terminal-balance-experiment",
+      "getup-terminal-tail-observer-experiment",
+      "root-translation-carry-experiment",
+      "standing-dynamics-experiment",
+      "unit-root-rotation-experiment"
+    ],
+    "target": "wasm32-unknown-unknown",
+    "toolchain": "1.89.0",
+    "wasmBindgen": "0.2.108",
+    "rustFlags": [],
+    "workerWasmSha256": "0ca955fe762b23b462efa64d1e43295df94226dbc097ec14cbb2dc88e0567ca5",
+    "workerGlueSha256": "4ed81dc0ca68e43443b4db96730d52a827cad00a3c070195b293ed276452b84c",
+    "fixedMainWasmSha256": "5895574d87e93f6a2eddec98662797b16c298c90f2ee8298f6d72917f4d1b07e",
+    "fixedDriverSha256": "4c6281e19c4540e3ba72a74a5b1514b5d1b9c58e56c1f8a2dbfb3adb4812d74e",
+    "originalTransportSha256": "a3a2b18c222c045fc08bf19aff2e96b92f0bc18ad6023bcca660195054267996",
+    "unadaptedChangesFromFixedPresentation": [
+      "lh_worker.js",
+      "lh_worker_bg.wasm"
+    ],
+    "adapter": "Copied test-only sim-worker wraps the existing read-only native observer; original driver and renderer remain byte-identical. Every app byte is pinned by the adapter manifest.",
+    "nativeFocusedPureContracts": 9,
+    "nativeContractFailures": 0,
+    "priorNativeRollIntegrations": 0
+  },
+  "validity": {
+    "observationComplete": true,
+    "rawRecorderErrors": [],
+    "nativeRowsIncludingNative0": 4481,
+    "completedNativeRows": 4480,
+    "publications": 225,
+    "contiguousNativeRange": [
+      0,
+      4480
+    ],
+    "missingNativeReceipts": 0,
+    "decisiveNative": 4480,
+    "publicationStopNative": 4480,
+    "uncreditedNativeTail": 0,
+    "analyzerRetainedReplayExactlyEqual": true,
+    "streaming": "Native rows were streamed losslessly to gzip with one-packet ACK backpressure; no new integration during analysis.",
+    "activationCalls": 1,
+    "native0CarryActivationPurity": {
+      "schemaBefore": 1,
+      "schemaAfter": 2,
+      "modelBytesEqual": true,
+      "worldBytesEqual": true,
+      "embeddedRuntimeStringExactlyEqual": true,
+      "root": [
+        0,
+        0
+      ],
+      "algorithm": "f32-dq-f64-remainder-v1",
+      "initialRemainderBits": [
+        0,
+        0,
+        0
+      ],
+      "bytesBefore": 584899,
+      "bytesAfter": 585694
+    },
+    "activationStateWordsExactlyEqual": true,
+    "activationNativePhysicsBeforeAfter": [
+      0,
+      0
+    ],
+    "activationForecastBeforeAfter": [
+      0,
+      0
+    ],
+    "triggerZeroTickPoseVelocityUnchanged": true,
+    "exactPassivePrefix": {
+      "native0match": true,
+      "matchedNativeRows": 480,
+      "verifiedThroughNative": 480,
+      "completeBeforeRoll481": true,
+      "comparator": "SHA256 canonical JSON of exact frozen common fields; raw carry JSON string preserved",
+      "baselineArchiveSha256": "957805579abd9c8fc368f9f1d1ac5a0aae59262e7f4916835d6b2e6a14e0b4eb",
+      "native0BaselineStamp": {
+        "generation": 1,
+        "schema": 4,
+        "sequence": 3,
+        "tick": 0
+      },
+      "native0ActualStamp": {
+        "generation": 1,
+        "schema": 4,
+        "sequence": 3,
+        "tick": 0
+      },
+      "native0StampAccounting": {
+        "sequenceDelta": 0,
+        "physicalTickEqual": true,
+        "generationEqual": true,
+        "explanation": "Only zero-tick publication observation sequence may differ; physical/current/carry comparison is exact and contains no stamp exclusion."
+      },
+      "triggerReadyAt480": true,
+      "independentRawLineEqualityNativeRange": [
+        0,
+        480
+      ],
+      "independentParsedNumericBitComparisons": 413126
+    },
+    "prefixComparatorCaveat": "Recorder compares every frozen common native field with raw f32 words/raw carry strings; separately checked native0 keys and full common contents match. Independent audit also checks parsed signed-zero floating bits.",
+    "noRetry": true,
+    "noReset": true,
+    "sameWorld": true
+  },
+  "terminal": {
+    "reason": "physical-roll-preparation-rejected",
+    "error": null,
+    "reportErrors": [],
+    "impactNative": 480,
+    "rejectionNative": 4480,
+    "lateralNative": null,
+    "proneNative": null,
+    "admissionNative": null,
+    "maximumQuietProneSamples": 0,
+    "phaseRows": {
+      "physical-roll-TuckRollRight": 3999,
+      "physical-roll-Rejected": 1
+    },
+    "sourceForecastsGenerated": 0,
+    "sourceStartNative": null,
+    "teacherFrames": 0,
+    "referenceFrames": 0,
+    "studentPolicyDecisions": 0,
+    "standingFirstPassNative": null,
+    "standingAnchors": null,
+    "standingHoldEntered": false,
+    "standingHoldNativeObserved": 0,
+    "standingFootDriftM": null,
+    "postPassLoadedMaterialTravelM": null,
+    "unmeasuredAccumulatorCaveat": "Raw analyzer zero drift/travel accumulators have zero eligible post-pass rows and supply no measurement or zero-slip credit.",
+    "currentAtRejection": {
+      "faceUp": 0.754499077796936,
+      "headM": 0.1673853099346161,
+      "loadN": 400.67803955078125,
+      "longUp": 0.14238962531089783,
+      "maximumAngularRadps": 0.005290651228278875,
+      "maximumLinearMps": 0.0010322186863049865,
+      "native": 4480,
+      "rightFlankLoadN": 375.6421203613281,
+      "sideUp": 0.6406688094139099
+    },
+    "massKg": 40.84401321411133,
+    "weightN": 400.6797790527344,
+    "phaseRowSemantics": "Phase is post-integration status. The native4480 rejected row still receipts the4000th preparation motor application using pre-native4479;3999 post-state tuck labels plus one terminal rejected label do not omit an interval."
+  },
+  "actuation": {
+    "all21IntendedAppliedControlsAndTorquesExactlyEqual": true,
+    "overrideRows": 0,
+    "directRootForceTorqueMaximum": 0,
+    "rollPeakAbsoluteAppliedNormalizedControl": {
+      "value": 0.640004575252533,
+      "native": 777
+    },
+    "rollPeakSumAbsoluteAppliedMotorTorqueNm": {
+      "value": 121.1616126820445,
+      "native": 893
+    },
+    "semantics": "Active equal-and-opposite body motor torque scalar receipts, not net passive/contact/constrained torques."
+  },
+  "poseDiagnostic": {
+    "finalBodyAxes": {
+      "torso": {
+        "localFaceZWorldY": 0.7544990220529411,
+        "localSideXWorldY": 0.6406687180280475,
+        "localLongYWorldY": 0.14238967470099084
+      },
+      "head": {
+        "localFaceZWorldY": 0.7544990220529411,
+        "localSideXWorldY": 0.6406687180280475,
+        "localLongYWorldY": 0.14238967470099084
+      },
+      "lower_waist": {
+        "localFaceZWorldY": 0.99975407208643,
+        "localSideXWorldY": -0.0011209789978848077,
+        "localLongYWorldY": -0.022148109460803367
+      },
+      "pelvis": {
+        "localFaceZWorldY": 0.9996574804515101,
+        "localSideXWorldY": 4.785517582844498e-05,
+        "localLongYWorldY": -0.026170966493827885
+      }
+    },
+    "calculation": "Posthoc diagnostic from raw f32 pose words, normalized quaternion in Python f64; not a re-evaluation of Rust admission thresholds. Local face Z, side X, long Y projected on world Y.",
+    "interpretation": "Torso turns while pelvis remains essentially supine. This supports internal trunk twist without the required whole-body lateral/prone transition; it does not establish that a larger limit or longer duration would work."
+  },
+  "integrity": {
+    "noIntegrityHalt": true,
+    "cumulativeMaximaThroughNative4480": {
+      "maxAnchorSeparationM": 2.3853496600168e-07,
+      "maxFloorPenetrationM": 0.0001760242594173178,
+      "maxSelfPenetrationM": 0.0003209337592124939,
+      "maxLimitErrorRad": 0.000896453857421875
+    },
+    "semantics": "Existing cumulative diagnostic maxima, not freshly reset interval-local measurements."
+  },
+  "latency": {
+    "clock": "Browser performance.now milliseconds, ordinary publications; per-native observer, streaming ACK/backpressure and encoder are included. No performance qualification.",
+    "preparationActionToImpact480WallS": 4.68760000000149,
+    "impact480PublicationToRejection4480PublicationWallS": 33.1015,
+    "firstRollRequestToRejectionPublicationWallS": 32.96370000000298,
+    "actionToTerminalListenerWallS": 37.79589999999851,
+    "physicalRollPreparationS": 5,
+    "sourceForecastBearingAdvanceWallS": null,
+    "sourceRecoveryWallS": null,
+    "postPassHoldWallS": null,
+    "unavailableReason": "Prone admission was never earned; no source forecast, recovery or hold was entered."
+  },
+  "video": {
+    "wallTimeWebm": {
+      "path": "outputs/browser-capability-20261019/recovery-fixture/physical-roll/actual-back-roll/fixed-fixture-native-wall-time.webm",
+      "sha256": "5cb1af44b3d8cc99d379843c7f816532c8ffb6f20339226ee2971f3c75770cca",
+      "bytes": 2020417
+    },
+    "wallTimeMp4": {
+      "path": "outputs/browser-capability-20261019/recovery-fixture/physical-roll/actual-back-roll/fixed-fixture-native-wall-time.mp4",
+      "sha256": "eb7dea9cf28d72f7d4cfdd3544d756ee9b418170be82f7677909ce7099fb427d",
+      "bytes": 1180708
+    },
+    "width": 1280,
+    "height": 900,
+    "framesPerSecond": 25,
+    "durationS": 40.52,
+    "transcode": "WebM to H264/MP4 at unchanged wall-time cadence; no speedup, crop or synthesized frames.",
+    "visualCheck": "Frame at video15s inspected: rendered supine body with trunk/leg joint motion, matching the failed physical route."
+  },
+  "limitations": [
+    "Preparation rejected before any source forecast, recovery, original standing pass or30s hold; those stages were not exercised and receive no failure/success qualification.",
+    "A later repeated-cycle clock guard is known to refuse a later pending impact after completed roll recovery; untested and irrelevant to this already rejected fresh preparation. No fix or repeated trial was applied.",
+    "Per-native observation, streaming and video affect wall pace; no production realtime or event-latency claim follows.",
+    "Contract comments retain source-draft language; the exact executed contract has executionApproved/schemaPinned true only after the frozen source/test and independent preexecution audit GO."
+  ],
+  "reproduction": {
+    "executedBundleCopiedExactlyTo": "docs/evidence/probes/",
+    "physicalTrial": "Historical one-shot command only; do not run again without a new explicit experimental plan. RUST_BROWSER_EXECUTABLE=<official headless binary> RUST_BROWSER_FFMPEG=/usr/bin/ffmpeg node <execution>/record-getup-physical-roll-2026-10-19.mjs <build>/app-roll-fixture <fresh-output>",
+    "readOnlyAnalysis": "node docs/evidence/probes/analyze-physical-roll-stream-2026-10-19.mjs docs/evidence/probes/physical-roll-contract-2026-10-19.json <actual>/native-trace.ndjson.gz <actual>/publications.ndjson <actual>/terminal-raw.json <analysis-output>",
+    "posthocSummary": "python outputs/browser-capability-20261019/recovery-fixture/physical-roll/analysis/summarize-retained-roll.py"
+  },
+  "independentAudit": {
+    "status": "GO; independent retained-result/claim audit completed with no blocker",
+    "summary": {
+      "path": "outputs/browser-capability-20261019/recovery-fixture/physical-roll/analysis/independent-result-audit.json",
+      "sha256": "04a293015490337d746bbe1fb3b4e6177bf263c7c4be12f17416d7e7f1b394fd",
+      "bytes": 10440
+    },
+    "checks": "All481 passive-prefix raw JSON lines byte-identical;413126 parsed numeric bit comparisons; independent checkpoint binary activation purity; exact retained analyzer replay;39/39 original receipt hashes and sizes; five executed probe copies exact."
+  },
+  "receipts": [
+    {
+      "path": "docs/evidence/getup-physical-roll-predeclared-2026-10-19.json",
+      "sha256": "437b7996601bbfad94615fde7ec372dce3beff849a45f5adf92ec76886dcefde",
+      "bytes": 3679
+    },
+    {
+      "path": "docs/evidence/getup-physical-roll-2026-10-19.json",
+      "sha256": "b9f0557820269d697711f20c0d99ceea0f52f597b870a3b00f24348a08f5fb0d",
+      "bytes": 16060
+    },
+    {
+      "path": "outputs/browser-capability-20261019/recovery-fixture/physical-roll/build/build-roll-manifest.json",
+      "sha256": "6ac780fcd60ad135e99bfe896cea3587e462a38054faeaea780e37215b6ccecf",
+      "bytes": 3695
+    },
+    {
+      "path": "outputs/browser-capability-20261019/recovery-fixture/physical-roll/build/source-manifest.json",
+      "sha256": "f059661c9deda8bea806dfed3ed9ba5351b83825ede2d5e19b814552bb76d483",
+      "bytes": 48808
+    },
+    {
+      "path": "outputs/browser-capability-20261019/recovery-fixture/physical-roll/build/build-worker.sh",
+      "sha256": "515db0bd7d659f475c3c09f99d31336aa17427ce5312870fb376c95bfe2e53a5",
+      "bytes": 1726
+    },
+    {
+      "path": "outputs/getup-physical-roll-20261019/native-contract-tests-frozen-11d5786.log",
+      "sha256": "6b728720090cdb1fca90c9263fb41abc6ff6ed7607ed6de72108fc42da3c8a2e",
+      "bytes": 3782
+    },
+    {
+      "path": "outputs/browser-capability-20261019/recovery-fixture/physical-roll/build/app-roll-fixture-fixture-adapter-manifest.json",
+      "sha256": "5b44cd85db49c122504c9a5250570fbc8d36b6b859fc34570e0e19c7396e4374",
+      "bytes": 52622
+    },
+    {
+      "path": "outputs/browser-capability-20261019/recovery-fixture/physical-roll/retained-stream-analysis.json",
+      "sha256": "d7093a46e380490c75afc19c9cb5b9d4da1038814e8fae7ff96763a307111ef7",
+      "bytes": 6658
+    },
+    {
+      "path": "outputs/browser-capability-20261019/recovery-fixture/physical-roll/analysis/summarize-retained-roll.py",
+      "sha256": "f207863a5538c3ba79e08f27c1a97dbe8306bf9e42f57f6ccb3be3cce5bd2530",
+      "bytes": 4628
+    },
+    {
+      "path": "outputs/browser-capability-20261019/recovery-fixture/physical-roll/analysis/retained-summary.json",
+      "sha256": "ea6b94f3cb4a160ad28a6c23942a82ce7359f2b344414f81243edf3cf168e61c",
+      "bytes": 16633
+    },
+    {
+      "path": "outputs/browser-capability-20261019/recovery-fixture/physical-roll/actual-back-roll/result.json",
+      "sha256": "3b982077bb98f740a4aeeacae55e578f5b9b54273c254e9415cd739ab5b3a4d3",
+      "bytes": 66725
+    },
+    {
+      "path": "outputs/browser-capability-20261019/recovery-fixture/physical-roll/actual-back-roll/native-trace.ndjson.gz",
+      "sha256": "f9c04769ee5f0455669b565a80acc4a74bb0e81d1ca565b33201eb89857768e1",
+      "bytes": 21457531
+    },
+    {
+      "path": "outputs/browser-capability-20261019/recovery-fixture/physical-roll/actual-back-roll/publications.ndjson",
+      "sha256": "526ae99be8ab206873107ac59a30832088064a3030b4debc90c56a60540ec5fc",
+      "bytes": 674046
+    },
+    {
+      "path": "outputs/browser-capability-20261019/recovery-fixture/physical-roll/actual-back-roll/terminal-raw.json",
+      "sha256": "875b6b307f74d50acd8b3b2de2ea5a209a94b057df972ea1887e6bfdf6e3a4f5",
+      "bytes": 14937
+    },
+    {
+      "path": "outputs/browser-capability-20261019/recovery-fixture/physical-roll/actual-back-roll/stop-controller.json",
+      "sha256": "5c516cd9a610d7859fcfb41e356de3c9535b98ba51ebf8c8030c7a25351868b4",
+      "bytes": 3137
+    },
+    {
+      "path": "outputs/browser-capability-20261019/recovery-fixture/physical-roll/actual-back-roll/stop-fixture.json",
+      "sha256": "1f06d2ac1b8a83d8c72e58c2737f07fedd1a6fd2748f64cd87df327f6a8bfe6c",
+      "bytes": 10254
+    },
+    {
+      "path": "outputs/browser-capability-20261019/recovery-fixture/physical-roll/actual-back-roll/activation-proof.json",
+      "sha256": "eca21ed7aaa92438d8d9047d2808b1958dda5db48f9f023ffc55a6b9812e98c7",
+      "bytes": 1613572
+    },
+    {
+      "path": "outputs/browser-capability-20261019/recovery-fixture/physical-roll/actual-back-roll/activation-before-checkpoint.bin",
+      "sha256": "fc199a05f36471a8e8827de570cb407ffcccb87a444c66c641793eff27f904d9",
+      "bytes": 584899
+    },
+    {
+      "path": "outputs/browser-capability-20261019/recovery-fixture/physical-roll/actual-back-roll/activation-after-checkpoint.bin",
+      "sha256": "0a22f0dd4af1950cbe5cfcc6f8b6dc168c1a3c936aca2784e2944138b98998b3",
+      "bytes": 585694
+    },
+    {
+      "path": "outputs/browser-capability-20261019/recovery-fixture/physical-roll/actual-back-roll/trigger-evidence.json",
+      "sha256": "5c71467bbc6b2c5c7ecb28651d5f96c952033560bdc64787c382888bcc375be1",
+      "bytes": 12952
+    },
+    {
+      "path": "outputs/browser-capability-20261019/recovery-fixture/physical-roll/actual-back-roll/trigger-controller.json",
+      "sha256": "b0f4e4c78e8e8c96f2c80c12708504a155174d0bf92c3e0a2dd75b5eab154558",
+      "bytes": 1370
+    },
+    {
+      "path": "outputs/browser-capability-20261019/recovery-fixture/physical-roll/actual-back-roll/native0-controller.json",
+      "sha256": "25c25cfab202fe4022eb0535cd74dcfd9d4904c93dc8785db29853c8650cc394",
+      "bytes": 1371
+    },
+    {
+      "path": "outputs/browser-capability-20261019/recovery-fixture/physical-roll/actual-back-roll/browser-evidence-raw.json",
+      "sha256": "9227fd591c5d2ab5ae7d54da75019e5adfa1ec76059d4fcf3a91a043a8c7d5d6",
+      "bytes": 1657005
+    },
+    {
+      "path": "outputs/browser-capability-20261019/recovery-fixture/physical-roll/actual-back-roll/initial-real-back-native0.png",
+      "sha256": "8dffd30f184803c7cf99c67a81b48722eb3aa8323aea8d1b7242d930fbf09be8",
+      "bytes": 163598
+    },
+    {
+      "path": "outputs/browser-capability-20261019/recovery-fixture/physical-roll/actual-back-roll/terminal-real-back.png",
+      "sha256": "f816c7165facbd517026c71c50980d22da79250f8f32947e6610a4c8f9b21baf",
+      "bytes": 164700
+    },
+    {
+      "path": "outputs/browser-capability-20261019/recovery-fixture/physical-roll/actual-back-roll/roll-observed-frame.png",
+      "sha256": "276bb836c0202056eb4b9e1e425c25ba54860c505ef889114fb84762db49462b",
+      "bytes": 279855
+    },
+    {
+      "path": "outputs/browser-capability-20261019/recovery-fixture/physical-roll/actual-back-roll/fixed-fixture-native-wall-time.webm",
+      "sha256": "5cb1af44b3d8cc99d379843c7f816532c8ffb6f20339226ee2971f3c75770cca",
+      "bytes": 2020417
+    },
+    {
+      "path": "outputs/browser-capability-20261019/recovery-fixture/physical-roll/actual-back-roll/fixed-fixture-native-wall-time.mp4",
+      "sha256": "eb7dea9cf28d72f7d4cfdd3544d756ee9b418170be82f7677909ce7099fb427d",
+      "bytes": 1180708
+    },
+    {
+      "path": "docs/evidence/probes/make-physical-roll-fixture-app-2026-10-19.mjs",
+      "sha256": "0b888b5658a451be8719c45eaf35856c246cf86ba21d6d3b579421c9cafb18f6",
+      "bytes": 17787
+    },
+    {
+      "path": "docs/evidence/probes/physical-roll-worker-harness-2026-10-19.js",
+      "sha256": "d4313735b9a96eb2cd5413f32213dd4a263ee3dfd1153d87ac492070eff90562",
+      "bytes": 11296
+    },
+    {
+      "path": "docs/evidence/probes/record-getup-physical-roll-2026-10-19.mjs",
+      "sha256": "d47cec9c15532915c4e0d85cafd1ecd783de87bc88b3418cbca0a737d729ec72",
+      "bytes": 27194
+    },
+    {
+      "path": "docs/evidence/probes/analyze-physical-roll-stream-2026-10-19.mjs",
+      "sha256": "c070d468127dab2c18164456dfc35a11e5951deb28e6e02109d0f60ba35d23a9",
+      "bytes": 22218
+    },
+    {
+      "path": "docs/evidence/probes/physical-roll-contract-2026-10-19.json",
+      "sha256": "ed7ec24858d75d6fcc2273c8ba19a0a3d808522b877fe2f2e780e557bbe0091b",
+      "bytes": 6214
+    },
+    {
+      "path": "outputs/browser-capability-20261019/recovery-fixture/physical-roll/build/fingerprints-roll/workspace/scratch/5def91918e35/mvp-landing/outputs/browser-capability-20261019/recovery-fixture/teacher-feasibility/build/target/wasm32-unknown-unknown/release/.fingerprint/lh-sim-54949df317b0bb7a/lib-lh_sim.json",
+      "sha256": "7f73884497b018be9091fd1f212c133e73d647b42d2815041ed721b1fa7e5bee",
+      "bytes": 1573
+    },
+    {
+      "path": "docs/evidence/profiles/getup-800hz-3plus1-repeat-cycle-v1.json",
+      "sha256": "aaa415a19767c218a26b05bad277193cccba2a726b52dcd5aac0a5444afc39d6",
+      "bytes": 1319
+    },
+    {
+      "path": "docs/evidence/probes/getup-checkpoint-envelope-2026-10-19.mjs",
+      "sha256": "d37282926f41c148c4214c2e985af7fb9ee4aa30a8dd66b861bc53edc8551c9e",
+      "bytes": 4102
+    },
+    {
+      "path": "docs/evidence/probes/make-fixed-getup-fixture-app-2026-10-19.mjs",
+      "sha256": "732e818024ee351649cb0a8dcd901d48e7166a6d483ade4f2fd80933674e93c8",
+      "bytes": 10890
+    },
+    {
+      "path": "outputs/browser-capability-20261019/recovery-fixture/terminal-tail-ab/build/build-baseline-manifest.json",
+      "sha256": "a2680afe9a2ae23f46b71babbeed0bd601be51862096b50143123c07766d3f93",
+      "bytes": 3479
+    },
+    {
+      "path": "outputs/browser-capability-20261019/recovery-fixture/right-ankle-ablation/actual-back-pair/baseline/native-trace.ndjson",
+      "sha256": "957805579abd9c8fc368f9f1d1ac5a0aae59262e7f4916835d6b2e6a14e0b4eb",
+      "bytes": 40034821
+    },
+    {
+      "path": "outputs/browser-capability-20261019/recovery-fixture/physical-roll/analysis/independent-result-audit.json",
+      "sha256": "04a293015490337d746bbe1fb3b4e6177bf263c7c4be12f17416d7e7f1b394fd",
+      "bytes": 10440
+    }
+  ]
+}

@@ -1,0 +1,131 @@
+{
+  "schema": 1,
+  "executionApproved": true,
+  "schemaPinned": true,
+  "draftReason": "SOURCE ONLY. Exact frozen11d5786 final nine focused pure-native contracts passed without roll integration. First actual-WASM physical evaluation remains blocked on independent final harness audit and owner execution approval.",
+  "experiment": "first-actual-wasm-physical-roll-right-flank-v1",
+  "sourceCommit": "11d5786d1c5eba7f47a7cb36a4ba34a34c824c04",
+  "predeclaredContract": {
+    "path": "docs/evidence/getup-physical-roll-predeclared-2026-10-19.json",
+    "sha256": "437b7996601bbfad94615fde7ec372dce3beff849a45f5adf92ec76886dcefde"
+  },
+  "profilePath": "docs/evidence/profiles/getup-800hz-3plus1-repeat-cycle-v1.json",
+  "profileSha256": "aaa415a19767c218a26b05bad277193cccba2a726b52dcd5aac0a5444afc39d6",
+  "features": [
+    "lh-worker/root-translation-carry-experiment",
+    "lh-sim/standing-dynamics-experiment",
+    "lh-sim/unit-root-rotation-experiment",
+    "lh-sim/getup-repeat-cycle-experiment",
+    "lh-worker/getup-terminal-tail-observer-experiment",
+    "lh-worker/getup-physical-roll-experiment"
+  ],
+  "nativeHz": 800,
+  "nativePerPublication": 20,
+  "preparationPollingNative": 80,
+  "triggerNative": 480,
+  "rollCapNative": 4000,
+  "recoveryDeadlineNative": 20480,
+  "standingSamples": 800,
+  "holdNative": 24000,
+  "footOriginDriftMaxM": 0.01,
+  "loadedMaterialTravelMaxM": 0.02,
+  "predicateKeys": [
+    "head",
+    "torso",
+    "bothFeetLoadedAndPersistent",
+    "footLoadFraction",
+    "onlyFeet",
+    "comInSupport",
+    "captureInSupport",
+    "linearMotion",
+    "angularMotion",
+    "footDriftFromSuppliedAnchors"
+  ],
+  "previewStartupWatchdogMs": 10000,
+  "browserStartupWatchdogMs": 60000,
+  "driverRequestWatchdogMs": 90000,
+  "totalWallWatchdogMs": 3600000,
+  "readOnlyIdleWatchdogMs": 180000,
+  "checkpointHelper": {
+    "path": "docs/evidence/probes/getup-checkpoint-envelope-2026-10-19.mjs",
+    "sha256": "d37282926f41c148c4214c2e985af7fb9ee4aa30a8dd66b861bc53edc8551c9e"
+  },
+  "fixedMaker": {
+    "path": "docs/evidence/probes/make-fixed-getup-fixture-app-2026-10-19.mjs",
+    "sha256": "732e818024ee351649cb0a8dcd901d48e7166a6d483ade4f2fd80933674e93c8"
+  },
+  "fixedPresentationManifest": {
+    "path": "outputs/browser-capability-20261019/recovery-fixture/terminal-tail-ab/build/build-baseline-manifest.json",
+    "sha256": "a2680afe9a2ae23f46b71babbeed0bd601be51862096b50143123c07766d3f93",
+    "allowedChangedAssets": [
+      "sim-worker.js",
+      "lh_worker.js",
+      "lh_worker_bg.wasm"
+    ]
+  },
+  "nativeSourceFreeze": {
+    "path": "outputs/browser-capability-20261019/recovery-fixture/physical-roll/build/source-manifest.json",
+    "sha256": "f059661c9deda8bea806dfed3ed9ba5351b83825ede2d5e19b814552bb76d483"
+  },
+  "baselinePreparation": {
+    "path": "outputs/browser-capability-20261019/recovery-fixture/right-ankle-ablation/actual-back-pair/baseline/native-trace.ndjson",
+    "sha256": "957805579abd9c8fc368f9f1d1ac5a0aae59262e7f4916835d6b2e6a14e0b4eb",
+    "throughNative": 480,
+    "native0Fields": [
+      "nativeSubsteps",
+      "physicsIntegrations",
+      "poseWords",
+      "physicalObservationWords",
+      "rootTranslationIntegratorStateJson",
+      "physicalObservationError",
+      "integratorReadError",
+      "current"
+    ],
+    "nativeFields": [
+      "commandInputNativeSubstep",
+      "counters",
+      "current",
+      "directPelvisForceN",
+      "directPelvisTorqueNm",
+      "footFloorClearanceM",
+      "getup",
+      "integrityLimits",
+      "massKg",
+      "motion",
+      "motorApplication",
+      "nativeSubsteps",
+      "originalStableFeet",
+      "physicalObservationWords",
+      "physicalSeconds",
+      "poseWords",
+      "requestedMotorEffortNm",
+      "rootTranslationIntegratorStateJson",
+      "weightN"
+    ],
+    "snapshotStampComparison": "Native0 baseline snapshot.stamp is retained separately. Only lifecycle observation sequence can differ; exact physical/current/carry word data are always compared. Native1..480 compares every common full native-observer field."
+  },
+  "pendingFreeze": {
+    "nativeSourceManifestSha256": "f059661c9deda8bea806dfed3ed9ba5351b83825ede2d5e19b814552bb76d483",
+    "approvedAppManifestSha256": "6ac780fcd60ad135e99bfe896cea3587e462a38054faeaea780e37215b6ccecf",
+    "adapterSourceSha256": "0b888b5658a451be8719c45eaf35856c246cf86ba21d6d3b579421c9cafb18f6",
+    "workerHarnessSourceSha256": "d4313735b9a96eb2cd5413f32213dd4a263ee3dfd1153d87ac492070eff90562",
+    "recorderSourceSha256": "d47cec9c15532915c4e0d85cafd1ecd783de87bc88b3418cbca0a737d729ec72",
+    "analyzerSourceSha256": "c070d468127dab2c18164456dfc35a11e5951deb28e6e02109d0f60ba35d23a9"
+  },
+  "noPerformanceClaim": true,
+  "conditionalNextCaseAuthorized": false,
+  "retries": 0,
+  "admissionObservationSemantics": "physicalRoll.state.current and lastObservedNative are retained at admission/rejection; row.current is the fresh global native diagnostic. The prone-entry interval is excluded from the120 quiet zero-motor intervals.",
+  "pendingAssumptions": [
+    "Independent audit must verify exact source, original full standing predicates, prefix comparator, observer receipts, no additional zero-tick calls inside purity brackets, streaming/backpressure, and failure-stop paths.",
+    "Owner approval of first actual-WASM physical evaluation remains required after independent harness GO. Exact frozen final nine focused pure-native contracts are already GO; no native physical roll trial exists.",
+    "Execution gate and schemaPinned remain false until both approvals; flipping either is not authorized by source preparation."
+  ],
+  "nativePureContractGo": {
+    "path": "outputs/getup-physical-roll-20261019/native-contract-tests-frozen-11d5786.log",
+    "sha256": "6b728720090cdb1fca90c9263fb41abc6ff6ed7607ed6de72108fc42da3c8a2e",
+    "focusedTests": 9,
+    "physicalRollIntegrations": 0
+  },
+  "terminalBatchSemantics": "Existing advance(1) integrates20 native samples. Exact decisive native is first failure or firstPassNative+24000; retain, structurally audit and report every already-integrated suffix row (up to19), uncredited for qualification. No next advance; any tail predicate/counter loss remains explicit."
+}
