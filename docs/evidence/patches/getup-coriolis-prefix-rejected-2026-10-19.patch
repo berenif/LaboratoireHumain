@@ -1,0 +1,530 @@
+diff --git a/rust/vendor/rapier3d/src/dynamics/joint/multibody_joint/multibody.rs b/rust/vendor/rapier3d/src/dynamics/joint/multibody_joint/multibody.rs
+index 8e0aa83..dc0c6aa 100644
+--- a/rust/vendor/rapier3d/src/dynamics/joint/multibody_joint/multibody.rs
++++ b/rust/vendor/rapier3d/src/dynamics/joint/multibody_joint/multibody.rs
+@@ -62,6 +62,49 @@ fn concat_rb_mass_matrix(
+     result
+ }
+ 
++// A beta=1 GEMM leaves a canonical +0 output tail unchanged when the
++// corresponding RHS tail is zero and its actual coefficient matrix is finite.
++fn coriolis_zero_tail<const POSITIVE_ZERO: bool, R: na::Dim, S: na::Storage<Real, R, Dyn>>(
++    matrix: &na::Matrix<Real, R, Dyn, S>,
++    first: usize,
++) -> bool {
++    matrix
++        .columns(first, matrix.ncols() - first)
++        .iter()
++        .all(|x| {
++            if POSITIVE_ZERO {
++                x.to_bits() == 0
++            } else {
++                *x == 0.0
++            }
++        })
++}
++
++// The caller proves the omitted-tail/coefficient conditions once per stage.
++fn coriolis_gemm_columns<R: na::Dim, C: na::Dim, SO, SA, SB>(
++    output: &mut na::Matrix<Real, R, Dyn, SO>,
++    alpha: Real,
++    coefficient: &na::Matrix<Real, R, C, SA>,
++    rhs: &na::Matrix<Real, C, Dyn, SB>,
++    columns: usize,
++) where
++    SO: na::StorageMut<Real, R, Dyn>,
++    SA: na::Storage<Real, R, C>,
++    SB: na::Storage<Real, C, Dyn>,
++{
++    if columns == output.ncols() || (alpha != 1.0 && alpha != -1.0) {
++        output.gemm(alpha, coefficient, rhs, 1.0);
++    } else {
++        // Keep the original static row/inner dimensions and reduction order.
++        output.columns_mut(0, columns).gemm(
++            alpha,
++            coefficient,
++            &rhs.columns(0, columns),
++            1.0,
++        );
++    }
++}
++
+ /// A holonomic coupling between two generalized coordinates of a single
+ /// [`Multibody`], `q2 = coeff · q1 + offset`, enforced as a velocity-level
+ /// equality constraint. This is how MuJoCo's `<equality><joint>` (a polynomial
+@@ -656,10 +699,14 @@ impl Multibody {
+     }
+ 
+     pub(crate) fn update_mass_matrix(&mut self, dt: Real, bodies: &RigidBodySet) {
+-        self.update_mass_matrix_impl::<true, true>(dt, bodies);
++        self.update_mass_matrix_impl::<true, true, true>(dt, bodies);
+     }
+ 
+-    fn update_mass_matrix_impl<const SKIP_ZERO_INERTIA: bool, const USE_PREFIX: bool>(
++    fn update_mass_matrix_impl<
++        const SKIP_ZERO_INERTIA: bool,
++        const USE_PREFIX: bool,
++        const CORIOLIS_PREFIX: bool,
++    >(
+         &mut self,
+         dt: Real,
+         bodies: &RigidBodySet,
+@@ -827,30 +874,133 @@ impl Multibody {
+                 coriolis_v.copy_from(parent_coriolis_v);
+                 coriolis_w.copy_from(parent_coriolis_w);
+ 
+-                // [c1 - c0].gcross() * (JDot + JDot/u * qdot)"
+-                let shift_cross_tr = vect_to_na(link.shift02).gcross_matrix_tr();
+-                coriolis_v.gemm(1.0, &shift_cross_tr, parent_coriolis_w, 1.0);
++                if CORIOLIS_PREFIX && cfg!(feature = "dim3") {
++                    // Prepare the actual coefficient matrices before deciding the
++                    // parent-stage domain. Finite source vectors alone are not
++                    // enough: the products/crosses themselves can overflow.
++                    let shift_cross_tr = vect_to_na(link.shift02).gcross_matrix_tr();
++                    let dvel_cross = vect_to_na(
++                        rb.vels.angvel.gcross(link.shift02) + 2.0 * link.joint_velocity.linvel,
++                    )
++                    .gcross_matrix_tr();
++                    let joint_velocity_cross =
++                        vect_to_na(link.joint_velocity.linvel).gcross_matrix_tr();
++                    let parent_w_shift = parent_w * shift_cross_tr;
++                    #[cfg(feature = "dim3")]
++                    let vel_wrt_joint_w = vect_to_na(link.joint_velocity.angvel).gcross_matrix();
+ 
+-                // JDot (but the 2.0 originates from the sum of two identical terms in JDot and JDot/u * gdot)
+-                let dvel_cross = vect_to_na(
+-                    rb.vels.angvel.gcross(link.shift02) + 2.0 * link.joint_velocity.linvel,
+-                )
+-                .gcross_matrix_tr();
+-                coriolis_v.gemm(1.0, &dvel_cross, &parent_j_w, 1.0);
+-
+-                // JDot/u * qdot
+-                coriolis_v.gemm(
+-                    1.0,
+-                    &vect_to_na(link.joint_velocity.linvel).gcross_matrix_tr(),
+-                    &parent_j_w,
+-                    1.0,
+-                );
+-                coriolis_v.gemm(1.0, &(parent_w * shift_cross_tr), &parent_j_w, 1.0);
++                    let parent_end = parent_link.assembly_id + parent_link.joint.ndofs();
++                    let parent_prefix = cfg!(feature = "dim3")
++                        && CORIOLIS_PREFIX
++                        && parent_end < self.ndofs
++                        && coriolis_zero_tail::<true, _, _>(coriolis_v, parent_end)
++                        && coriolis_zero_tail::<true, _, _>(coriolis_w, parent_end)
++                        && coriolis_zero_tail::<false, _, _>(&parent_j_w, parent_end)
++                        && shift_cross_tr
++                            .iter()
++                            .chain(dvel_cross.iter())
++                            .chain(joint_velocity_cross.iter())
++                            .chain(parent_w_shift.iter())
++                            .all(|x| x.is_finite());
++                    #[cfg(feature = "dim3")]
++                    let parent_prefix = parent_prefix && vel_wrt_joint_w.iter().all(|x| x.is_finite());
++                    let parent_columns = if parent_prefix { parent_end } else { self.ndofs };
++
++                    if parent_prefix {
++                        coriolis_gemm_columns(
++                            coriolis_v,
++                            1.0,
++                            &shift_cross_tr,
++                            parent_coriolis_w,
++                            parent_columns,
++                        );
++                        coriolis_gemm_columns(
++                            coriolis_v,
++                            1.0,
++                            &dvel_cross,
++                            &parent_j_w,
++                            parent_columns,
++                        );
++                        coriolis_gemm_columns(
++                            coriolis_v,
++                            1.0,
++                            &joint_velocity_cross,
++                            &parent_j_w,
++                            parent_columns,
++                        );
++                        coriolis_gemm_columns(
++                            coriolis_v,
++                            1.0,
++                            &parent_w_shift,
++                            &parent_j_w,
++                            parent_columns,
++                        );
++                        #[cfg(feature = "dim3")]
++                        coriolis_gemm_columns(
++                            coriolis_w,
++                            -1.0,
++                            &vel_wrt_joint_w,
++                            &parent_j_w,
++                            parent_columns,
++                        );
++
++                    } else {
++                        // [c1 - c0].gcross() * (JDot + JDot/u * qdot)"
++                        let shift_cross_tr = vect_to_na(link.shift02).gcross_matrix_tr();
++                        coriolis_v.gemm(1.0, &shift_cross_tr, parent_coriolis_w, 1.0);
++
++                        // JDot (but the 2.0 originates from the sum of two identical terms in JDot and JDot/u * gdot)
++                        let dvel_cross = vect_to_na(
++                            rb.vels.angvel.gcross(link.shift02) + 2.0 * link.joint_velocity.linvel,
++                        )
++                        .gcross_matrix_tr();
++                        coriolis_v.gemm(1.0, &dvel_cross, &parent_j_w, 1.0);
++
++                        // JDot/u * qdot
++                        coriolis_v.gemm(
++                            1.0,
++                            &vect_to_na(link.joint_velocity.linvel).gcross_matrix_tr(),
++                            &parent_j_w,
++                            1.0,
++                        );
++                        coriolis_v.gemm(1.0, &(parent_w * shift_cross_tr), &parent_j_w, 1.0);
++
++                        #[cfg(feature = "dim3")]
++                        {
++                            let vel_wrt_joint_w = vect_to_na(link.joint_velocity.angvel).gcross_matrix();
++                            coriolis_w.gemm(-1.0, &vel_wrt_joint_w, &parent_j_w, 1.0);
++                        }
++
++                    }
++                } else {
++                    // Preserve the original arithmetic as an independent test
++                    // reference and for the unchanged two-dimensional path.
++                    // [c1 - c0].gcross() * (JDot + JDot/u * qdot)"
++                    let shift_cross_tr = vect_to_na(link.shift02).gcross_matrix_tr();
++                    coriolis_v.gemm(1.0, &shift_cross_tr, parent_coriolis_w, 1.0);
++
++                    // JDot (but the 2.0 originates from the sum of two identical terms in JDot and JDot/u * gdot)
++                    let dvel_cross = vect_to_na(
++                        rb.vels.angvel.gcross(link.shift02) + 2.0 * link.joint_velocity.linvel,
++                    )
++                    .gcross_matrix_tr();
++                    coriolis_v.gemm(1.0, &dvel_cross, &parent_j_w, 1.0);
++
++                    // JDot/u * qdot
++                    coriolis_v.gemm(
++                        1.0,
++                        &vect_to_na(link.joint_velocity.linvel).gcross_matrix_tr(),
++                        &parent_j_w,
++                        1.0,
++                    );
++                    coriolis_v.gemm(1.0, &(parent_w * shift_cross_tr), &parent_j_w, 1.0);
++
++                    #[cfg(feature = "dim3")]
++                    {
++                        let vel_wrt_joint_w = vect_to_na(link.joint_velocity.angvel).gcross_matrix();
++                        coriolis_w.gemm(-1.0, &vel_wrt_joint_w, &parent_j_w, 1.0);
++                    }
+ 
+-                #[cfg(feature = "dim3")]
+-                {
+-                    let vel_wrt_joint_w = vect_to_na(link.joint_velocity.angvel).gcross_matrix();
+-                    coriolis_w.gemm(-1.0, &vel_wrt_joint_w, &parent_j_w, 1.0);
+                 }
+ 
+                 // JDot (but the 2.0 originates from the sum of two identical terms in JDot and JDot/u * gdot)
+@@ -884,21 +1034,61 @@ impl Multibody {
+             let coriolis_w = &mut self.coriolis_w[i];
+ 
+             {
+-                // [c3 - c2].gcross() * (JDot + JDot/u * qdot)
+-                let shift_cross_tr = vect_to_na(link.shift23).gcross_matrix_tr();
+-                coriolis_v.gemm(1.0, &shift_cross_tr, coriolis_w, 1.0);
+-
+-                // JDot
+-                let dvel_cross = vect_to_na(rb.vels.angvel.gcross(link.shift23)).gcross_matrix_tr();
+-                coriolis_v.gemm(1.0, &dvel_cross, &rb_j_w, 1.0);
+-
+-                // JDot/u * qdot
+-                coriolis_v.gemm(
+-                    1.0,
+-                    &(SimdAngVector::<Real>::from(rb.vels.angvel).gcross_matrix() * shift_cross_tr),
+-                    &rb_j_w,
+-                    1.0,
+-                );
++                if CORIOLIS_PREFIX && cfg!(feature = "dim3") {
++                    let shift_cross_tr = vect_to_na(link.shift23).gcross_matrix_tr();
++                    let dvel_cross = vect_to_na(rb.vels.angvel.gcross(link.shift23)).gcross_matrix_tr();
++                    let angular_shift =
++                        SimdAngVector::<Real>::from(rb.vels.angvel).gcross_matrix() * shift_cross_tr;
++                    let com_prefix = cfg!(feature = "dim3")
++                        && CORIOLIS_PREFIX
++                        && prefix_end < self.ndofs
++                        && coriolis_zero_tail::<true, _, _>(coriolis_v, prefix_end)
++                        && coriolis_zero_tail::<false, _, _>(coriolis_w, prefix_end)
++                        && coriolis_zero_tail::<false, _, _>(&rb_j_w, prefix_end)
++                        && shift_cross_tr
++                            .iter()
++                            .chain(dvel_cross.iter())
++                            .chain(angular_shift.iter())
++                            .all(|x| x.is_finite());
++                    let com_columns = if com_prefix { prefix_end } else { self.ndofs };
++                    if com_prefix {
++                        coriolis_gemm_columns(coriolis_v, 1.0, &shift_cross_tr, coriolis_w, com_columns);
++                        coriolis_gemm_columns(coriolis_v, 1.0, &dvel_cross, &rb_j_w, com_columns);
++                        coriolis_gemm_columns(coriolis_v, 1.0, &angular_shift, &rb_j_w, com_columns);
++                    } else {
++                        // [c3 - c2].gcross() * (JDot + JDot/u * qdot)
++                        let shift_cross_tr = vect_to_na(link.shift23).gcross_matrix_tr();
++                        coriolis_v.gemm(1.0, &shift_cross_tr, coriolis_w, 1.0);
++
++                        // JDot
++                        let dvel_cross = vect_to_na(rb.vels.angvel.gcross(link.shift23)).gcross_matrix_tr();
++                        coriolis_v.gemm(1.0, &dvel_cross, &rb_j_w, 1.0);
++
++                        // JDot/u * qdot
++                        coriolis_v.gemm(
++                            1.0,
++                            &(SimdAngVector::<Real>::from(rb.vels.angvel).gcross_matrix() * shift_cross_tr),
++                            &rb_j_w,
++                            1.0,
++                        );
++                    }
++                } else {
++                    // [c3 - c2].gcross() * (JDot + JDot/u * qdot)
++                    let shift_cross_tr = vect_to_na(link.shift23).gcross_matrix_tr();
++                    coriolis_v.gemm(1.0, &shift_cross_tr, coriolis_w, 1.0);
++
++                    // JDot
++                    let dvel_cross = vect_to_na(rb.vels.angvel.gcross(link.shift23)).gcross_matrix_tr();
++                    coriolis_v.gemm(1.0, &dvel_cross, &rb_j_w, 1.0);
++
++                    // JDot/u * qdot
++                    coriolis_v.gemm(
++                        1.0,
++                        &(SimdAngVector::<Real>::from(rb.vels.angvel).gcross_matrix() * shift_cross_tr),
++                        &rb_j_w,
++                        1.0,
++                    );
++                }
+             }
+ 
+             let coriolis_v = &mut self.coriolis_v[i];
+diff --git a/rust/vendor/rapier3d/src/dynamics/joint/multibody_joint/zero_inertia_tests.rs b/rust/vendor/rapier3d/src/dynamics/joint/multibody_joint/zero_inertia_tests.rs
+index 93429c0..11289d1 100644
+--- a/rust/vendor/rapier3d/src/dynamics/joint/multibody_joint/zero_inertia_tests.rs
++++ b/rust/vendor/rapier3d/src/dynamics/joint/multibody_joint/zero_inertia_tests.rs
+@@ -1,5 +1,5 @@
+ //! Matrix-only arithmetic fixtures, never integrated physical trajectories.
+-use super::Multibody;
++use super::{Multibody, coriolis_gemm_columns, coriolis_zero_tail};
+ use crate::alloc_prelude::*;
+ use crate::prelude::*;
+ use crate::utils::AngularInertiaOps;
+@@ -115,18 +115,22 @@ fn assert_bits(label: &str, actual: &[Real], reference: &[Real]) {
+ }
+ 
+ fn assert_matrix_and_factor_parity(mb: &Multibody, bodies: &RigidBodySet, dt: Real) {
+-    assert_matrix_and_factor_parity_against::<false>(mb, bodies, dt)
++    assert_matrix_and_factor_parity_against::<false, false>(mb, bodies, dt)
+ }
+ 
+-fn assert_matrix_and_factor_parity_against<const REFERENCE_ZERO_SKIP: bool>(
++fn assert_matrix_and_factor_parity_against<
++    const REFERENCE_ZERO_SKIP: bool,
++    const REFERENCE_MASS_PREFIX: bool,
++>(
+     mb: &Multibody,
+     bodies: &RigidBodySet,
+     dt: Real,
+ ) {
+     let mut actual = mb.clone();
+     let mut reference = mb.clone();
+-    actual.update_mass_matrix_impl::<true, true>(dt, bodies);
+-    reference.update_mass_matrix_impl::<REFERENCE_ZERO_SKIP, false>(dt, bodies);
++    actual.update_mass_matrix_impl::<true, true, true>(dt, bodies);
++    reference
++        .update_mass_matrix_impl::<REFERENCE_ZERO_SKIP, REFERENCE_MASS_PREFIX, false>(dt, bodies);
+     assert_bits(
+         "M",
+         actual.augmented_mass.as_slice(),
+@@ -205,15 +209,19 @@ fn exact_zero_inertia_elision_preserves_mass_matrices_lu_and_coriolis_bits() {
+ fn exact_zero_inertia_nonfinite_operands_retain_dense_propagation_bits() {
+     for value in [Real::NAN, Real::INFINITY] {
+         let (mb, bodies) = fixture(0.4, 0.7, 0);
++        std::eprintln!("nonfinite case: dt, {value:?}");
+         assert_matrix_and_factor_parity(&mb, &bodies, value);
+         let mut bad_jacobian = mb.clone();
+         bad_jacobian.body_jacobians[2][(0, 0)] = value;
++        std::eprintln!("nonfinite case: bad J, {value:?}");
+         assert_matrix_and_factor_parity(&bad_jacobian, &bodies, 0.00125 / 25.0);
+         let mut bad_early_massive = mb.clone();
+         bad_early_massive.body_jacobians[0][(0, 0)] = value;
++        std::eprintln!("nonfinite case: early J, {value:?}");
+         assert_matrix_and_factor_parity(&bad_early_massive, &bodies, 0.00125 / 25.0);
+         let mut bad_velocity = bodies.clone();
+         bad_velocity[mb.links[2].rigid_body].vels.angvel.x = value;
++        std::eprintln!("nonfinite case: bad velocity, {value:?}");
+         assert_matrix_and_factor_parity(&mb, &bad_velocity, 0.00125 / 25.0);
+     }
+     let (mut mb, mut bodies) = fixture(-0.4, -0.8, 0);
+@@ -235,12 +243,16 @@ fn ancestor_prefix_elision_matches_zero_only_and_dense_reference_bits() {
+                     mb.links[3].joint.kinematic = true;
+                 }
+                 for dt in [0.00125 / 25.0, 0.00125 / 10.0, -0.0] {
+-                    assert_matrix_and_factor_parity_against::<true>(&mb, &bodies, dt);
++                    assert_matrix_and_factor_parity_against::<true, false>(&mb, &bodies, dt);
+                     assert_matrix_and_factor_parity(&mb, &bodies, dt);
+                 }
+                 // Repeated matrix updates retain all scratch/reordering state.
+-                mb.update_mass_matrix_impl::<true, true>(0.00125 / 25.0, &bodies);
+-                assert_matrix_and_factor_parity_against::<true>(&mb, &bodies, 0.00125 / 25.0);
++                mb.update_mass_matrix_impl::<true, true, true>(0.00125 / 25.0, &bodies);
++                assert_matrix_and_factor_parity_against::<true, false>(
++                    &mb,
++                    &bodies,
++                    0.00125 / 25.0,
++                );
+             }
+         }
+     }
+@@ -249,7 +261,7 @@ fn ancestor_prefix_elision_matches_zero_only_and_dense_reference_bits() {
+         let mut suffix = mb.clone();
+         let end = suffix.links[3].assembly_id + suffix.links[3].joint.ndofs();
+         suffix.body_jacobians[3][(0, end)] = value;
+-        assert_matrix_and_factor_parity_against::<true>(&suffix, &bodies, 0.00125 / 25.0);
++        assert_matrix_and_factor_parity_against::<true, false>(&suffix, &bodies, 0.00125 / 25.0);
+     }
+     let mut huge = mb.clone();
+     let end = huge.links[3].assembly_id + huge.links[3].joint.ndofs();
+@@ -265,9 +277,9 @@ fn ancestor_prefix_elision_matches_zero_only_and_dense_reference_bits() {
+             .is_infinite()
+     );
+     let mut overflow_reference = huge.clone();
+-    overflow_reference.update_mass_matrix_impl::<true, false>(0.00125 / 25.0, &heavy);
++    overflow_reference.update_mass_matrix_impl::<true, false, false>(0.00125 / 25.0, &heavy);
+     assert!(overflow_reference.augmented_mass[(end, 0)].is_nan());
+-    assert_matrix_and_factor_parity_against::<true>(&huge, &heavy, 0.00125 / 25.0);
++    assert_matrix_and_factor_parity_against::<true, false>(&huge, &heavy, 0.00125 / 25.0);
+ }
+ 
+ #[test]
+@@ -279,7 +291,7 @@ fn bounded_prefix_operands_match_dense_at_and_above_eligibility_boundary() {
+         bodies[link.rigid_body].mprops.effective_inv_mass = Vector::splat(1.0 / magnitude);
+         mb.body_jacobians[3].fill(0.0);
+         mb.body_jacobians[3].columns_mut(0, end).fill(magnitude);
+-        assert_matrix_and_factor_parity_against::<true>(&mb, &bodies, 0.00125 / 25.0);
++        assert_matrix_and_factor_parity_against::<true, false>(&mb, &bodies, 0.00125 / 25.0);
+         assert_matrix_and_factor_parity(&mb, &bodies, 0.00125 / 25.0);
+     }
+ }
+@@ -299,9 +311,115 @@ fn bounded_prefix_invalidates_on_massless_coriolis_before_later_links() {
+     assert!(mb.body_jacobians[2].iter().all(|x| x.is_finite()));
+     mb.links[2].joint_velocity.linvel.x = Real::INFINITY;
+     let mut reference = mb.clone();
+-    reference.update_mass_matrix_impl::<true, false>(0.00125 / 25.0, &bodies);
++    reference.update_mass_matrix_impl::<true, false, false>(0.00125 / 25.0, &bodies);
+     assert!(reference.coriolis_v[2].iter().any(|x| x.is_nan()));
+     assert!(reference.acc_augmented_mass.iter().any(|x| x.is_nan()));
+-    assert_matrix_and_factor_parity_against::<true>(&mb, &bodies, 0.00125 / 25.0);
++    assert_matrix_and_factor_parity_against::<true, false>(&mb, &bodies, 0.00125 / 25.0);
+     assert_matrix_and_factor_parity(&mb, &bodies, 0.00125 / 25.0);
+ }
++
++#[test]
++fn coriolis_prefix_preserves_current_baseline_and_dense_workspace_bits() {
++    for fixed_root in [false, true] {
++        for kinematic in [false, true] {
++            for phase in [0.0, 0.7, -1.3] {
++                let (mut mb, bodies) = fixture_with_root(-0.6, phase, 0, fixed_root);
++                mb.links[3].joint.kinematic = kinematic;
++                for dt in [0.00125 / 25.0, 0.00125 / 10.0, -0.0] {
++                    assert_matrix_and_factor_parity_against::<true, true>(&mb, &bodies, dt);
++                    assert_matrix_and_factor_parity(&mb, &bodies, dt);
++                }
++                mb.update_mass_matrix_impl::<true, true, true>(0.00125 / 25.0, &bodies);
++                assert_matrix_and_factor_parity_against::<true, true>(&mb, &bodies, 0.00125 / 25.0);
++            }
++        }
++    }
++    let (mb, bodies) = fixture(0.4, 0.7, 0);
++    for value in [Real::NAN, Real::INFINITY, Real::MAX * 0.75] {
++        let mut bad_shift = mb.clone();
++        bad_shift.links[3].shift23.x = value;
++        assert_matrix_and_factor_parity_against::<true, true>(&bad_shift, &bodies, 0.00125 / 25.0);
++        let mut early_parent = mb.clone();
++        let end = early_parent.links[2].assembly_id + early_parent.links[2].joint.ndofs();
++        early_parent.body_jacobians[2][(3, end)] = value;
++        assert_matrix_and_factor_parity_against::<true, true>(
++            &early_parent,
++            &bodies,
++            0.00125 / 25.0,
++        );
++    }
++    // Finite primitive values can still produce a nonfinite coefficient.
++    let mut huge_shift = mb.clone();
++    let mut huge_velocity = bodies.clone();
++    huge_shift.links[3].shift02 = Vector::splat(Real::MAX * 0.75);
++    huge_velocity[huge_shift.links[2].rigid_body].vels.angvel = Vector::splat(Real::MAX * 0.75);
++    assert_matrix_and_factor_parity_against::<true, true>(
++        &huge_shift,
++        &huge_velocity,
++        0.00125 / 25.0,
++    );
++}
++
++#[test]
++fn coriolis_prefix_tail_guards_preserve_signed_zero_and_invalid_bits() {
++    let coefficient = na::Matrix3::new(0.2, -0.3, 0.4, -0.5, 0.6, -0.7, 0.8, -0.9, 1.0);
++    for end in [0, 1, 4, 5] {
++        for alpha in [-1.0, 1.0, 2.0] {
++            for retained in [0.7, Real::MAX * 0.75, Real::NAN, Real::INFINITY] {
++                let mut rhs = na::OMatrix::<Real, na::U3, na::Dyn>::zeros(5);
++                rhs.columns_mut(0, end).fill(retained);
++                let mut actual = rhs.clone();
++                let mut expected = actual.clone();
++                expected.gemm(alpha, &coefficient, &rhs, 1.0);
++                coriolis_gemm_columns(&mut actual, alpha, &coefficient, &rhs, end);
++                assert_bits("GEMM", actual.as_slice(), expected.as_slice());
++            }
++        }
++    }
++    for tail in [-0.0, 0.0, 0.1, Real::NAN, Real::INFINITY] {
++        let mut rhs = na::OMatrix::<Real, na::U3, na::Dyn>::zeros(5);
++        rhs[(1, 3)] = tail;
++        assert_eq!(coriolis_zero_tail::<false, _, _>(&rhs, 2), tail == 0.0);
++        assert_eq!(
++            coriolis_zero_tail::<true, _, _>(&rhs, 2),
++            tail.to_bits() == 0
++        );
++        for output_tail in [-0.0, 0.0, 0.1, Real::NAN, Real::INFINITY] {
++            let mut actual = na::OMatrix::<Real, na::U3, na::Dyn>::zeros(5);
++            actual[(2, 4)] = output_tail;
++            let mut expected = actual.clone();
++            let allowed = coriolis_zero_tail::<true, _, _>(&actual, 2)
++                && coriolis_zero_tail::<false, _, _>(&rhs, 2);
++            expected.gemm(-1.0, &coefficient, &rhs, 1.0);
++            coriolis_gemm_columns(
++                &mut actual,
++                -1.0,
++                &coefficient,
++                &rhs,
++                if allowed { 2 } else { 5 },
++            );
++            assert_bits("tail fallback", actual.as_slice(), expected.as_slice());
++        }
++    }
++    for value in [Real::NAN, Real::INFINITY, Real::MAX * 0.75] {
++        let primitive = na::Matrix3::repeat(value);
++        let derived = primitive * primitive;
++        assert!(derived.iter().any(|x| !x.is_finite()));
++        let rhs = na::OMatrix::<Real, na::U3, na::Dyn>::zeros(5);
++        let mut actual = rhs.clone();
++        let mut expected = actual.clone();
++        expected.gemm(1.0, &derived, &rhs, 1.0);
++        let width = if derived.iter().all(|x| x.is_finite()) {
++            2
++        } else {
++            5
++        };
++        coriolis_gemm_columns(&mut actual, 1.0, &derived, &rhs, width);
++        assert!(expected.iter().any(|x| x.is_nan()));
++        assert_bits(
++            "derived overflow fallback",
++            actual.as_slice(),
++            expected.as_slice(),
++        );
++    }
++}

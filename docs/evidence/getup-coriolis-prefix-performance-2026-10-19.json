@@ -1,0 +1,143 @@
+{
+  "schema": 1,
+  "date": "2026-10-19",
+  "baselineCommit": "1c37a78b28ef829c369b7e8742a8664e869ef876",
+  "scope": "Third narrow exact-arithmetic slice: restrict only8 full-width Coriolis propagation GEMMs to exact parent/current prefixes. No solver, controller, timestep, model or physical-gate changes.",
+  "change": {
+    "method": "Keep full parent copies, root fills, own-joint blocks and all weighted scratch. Parent-stage5 propagation GEMMs use the parent assembly prefix; COM-stage3 use the current-link prefix. Shared per-stage guards require actual derived coefficient matrices finite, omitted RHS tails exactly zero and omitted output tails bitwise+0. Otherwise original full-width arithmetic is used. Static row/inner dimensions, GEMM order and beta=1 remain unchanged. Helper also falls back for alpha outside\u00b11.",
+    "twoDimensionalPath": "Original full-width arithmetic retained.",
+    "allocationsOrSerializedFieldsAdded": false,
+    "sourceSha256": {
+      "rust/vendor/rapier3d/src/dynamics/joint/multibody_joint/multibody.rs": "e2dec1f1d48a0eb771aaccb1cab853e2c45a836c9ee205373fc15bb9f23b67f1",
+      "rust/vendor/rapier3d/src/dynamics/joint/multibody_joint/zero_inertia_tests.rs": "01977800c45f4a0c7575e52efcd66bd400abe9e40d4f00957a1019b4a24e7eb6"
+    }
+  },
+  "preSimulationArithmeticProof": {
+    "passed": true,
+    "targetedTestsPassed": 7,
+    "allEngineUnitTestsPassed": 69,
+    "testsIgnored": 0,
+    "comparison": "Bitwise matrices, both LU factors/pivots, all Cv/Cw fields and weighted scratch against both original dense reference and published bound-prefix baseline.",
+    "fixtures": "Branched25-body synthetic model with massless coordinate frames, massive descendants, free/fixed root, kinematic link, rotated/moving/repeated states and passive diagonals.",
+    "invalidCases": "NaN/Inf and huge finite retained values, RHS signed-zero/nonzero/invalid tails, output signed-zero/nonzero/invalid tails, finite source vectors producing coefficient overflow, empty/full domains, alpha\u00b11 and conservative alpha2 fallback.",
+    "logs": [
+      "outputs/getup-performance-20261019/coriolis-prefix-matrix-tests.log",
+      "outputs/getup-performance-20261019/coriolis-prefix-all-engine-unit-tests.log"
+    ],
+    "independentReferenceCorrection": {
+      "finding": "The initial reference shared coefficient hoisting with the candidate. Restoring literal original expressions exposed a NaN-sign bit difference in rejected stages. Rejected stages now execute the literal original sequence, and all bitwise checks pass against that independent source reference.",
+      "criterionUnchanged": true,
+      "retainedFailureLog": "outputs/getup-performance-20261019/coriolis-prefix-hoisted-fallback-failure.log"
+    }
+  },
+  "nativeWorkspaceParity": {
+    "passed": true,
+    "comparison": "Exact full JSON equality, no float tolerances",
+    "zeroDegreeFull40HzSnapshotsAndDiagnostics": 201,
+    "rotatedHeadingsDegrees": [
+      60,
+      -45
+    ],
+    "rotatedFullSnapshotsAndDiagnosticsPerHeadingAt1Hz": 5,
+    "nativeIntegrationsPerCandidateHeading": 4000,
+    "standingGate": "All unchanged predicates at every 800 Hz sample from 0.5 s; no failures. Full cumulative loaded slip remains <=20 mm.",
+    "filesSha256": {
+      "outputs/getup-standing-fix-20261019/continuous-0deg-poses.ndjson": "eb4ac0d7798f2df02c571802c545e05d5aa8f223183d29276fe42cdc4b44216b",
+      "outputs/getup-performance-20261019/coriolis-prefix-0deg-poses.ndjson": "eb4ac0d7798f2df02c571802c545e05d5aa8f223183d29276fe42cdc4b44216b",
+      "outputs/getup-standing-fix-20261019/continuous-final-other-headings.ndjson": "f13c29309089a6f08648a1e27dd723e2eac34170563513020780cdf7764fcb3c",
+      "outputs/getup-performance-20261019/coriolis-prefix-other-summary.ndjson": "14000e6cef4601f224b36fefe761dabf1beaef3d3b5fc51db52c90364a29b146"
+    }
+  },
+  "browserCandidate": {
+    "workerWasmSha256": "cd5e68ea73c012eb9c08459e230d3f35e1894dd153aa18306363c8e8149b548b",
+    "driverSha256": "4c6281e19c4540e3ba72a74a5b1514b5d1b9c58e56c1f8a2dbfb3adb4812d74e",
+    "appManifest": "outputs/getup-performance-20261019/coriolis-prefix-app-sha256.txt",
+    "appManifestSha256": "01e9524c1726d0d184cfd3d1f039bf1908e19e90346b244ebcf5eed992967475",
+    "matchedComparisonPending": false,
+    "immutableArtifact": "outputs/browser-capability-20261019/app-coriolis-prefix-candidate",
+    "pooledBaselineWallSeconds": 23.4405,
+    "pooledCandidateWallSeconds": 23.7218,
+    "pooledWallRegressionPercent": 1.2000597256884626,
+    "exactFullSnapshotsPerRun": 121,
+    "exactPhysicalTraceSha256": "ffa40a2f4c84f80e841115cb6711d83ffff6cb985b6eda97e01b55f0f351085d",
+    "exactParityReports": [
+      "outputs/browser-capability-20261019/coriolis-browser-physical-exact-120.json",
+      "outputs/browser-capability-20261019/coriolis-browser-physical-exact-120-repeat.json"
+    ]
+  },
+  "candidateAccepted": false,
+  "releaseAccepted": false,
+  "limits": [
+    "Candidate rejected. Functional chain not run; production remains the published sticky-bound scalar engine.",
+    "Native/backend performance and standing/recovery release qualification remain distinct.",
+    "No historical failing tests are ignored or claimed fixed."
+  ],
+  "nativeOrdinaryTickCost": {
+    "scope": "Three uncontended native ordinary advance_tick runs on the Coriolis-prefix candidate; no extra diagnostic callback,120ticks/3physical seconds/2400native integrations per run. Timing excludes construction and final JSON serialization. No real-time qualification.",
+    "passedExactFinalSnapshotParity": true,
+    "trials": [
+      {
+        "nativeIntegrations": 2400,
+        "observer": "ordinary advance_tick, no extra per-substep diagnostic callback",
+        "physicalSeconds": 3.0,
+        "simulationToWallRatio": 0.4523769587935698,
+        "ticks": 120,
+        "timingExcludes": [
+          "construction",
+          "final snapshot serialization"
+        ],
+        "trial": 0,
+        "wallSeconds": 6.631637491
+      },
+      {
+        "nativeIntegrations": 2400,
+        "observer": "ordinary advance_tick, no extra per-substep diagnostic callback",
+        "physicalSeconds": 3.0,
+        "simulationToWallRatio": 0.4354296738509126,
+        "ticks": 120,
+        "timingExcludes": [
+          "construction",
+          "final snapshot serialization"
+        ],
+        "trial": 1,
+        "wallSeconds": 6.889746336
+      },
+      {
+        "nativeIntegrations": 2400,
+        "observer": "ordinary advance_tick, no extra per-substep diagnostic callback",
+        "physicalSeconds": 3.0,
+        "simulationToWallRatio": 0.4578725510276812,
+        "ticks": 120,
+        "timingExcludes": [
+          "construction",
+          "final snapshot serialization"
+        ],
+        "trial": 2,
+        "wallSeconds": 6.5520415960000005
+      }
+    ],
+    "medianWallSeconds": 6.631637491,
+    "medianSimulationToWallRatio": 0.4523769587935698,
+    "compiler": "rustc 1.89.0 (29483883e 2025-08-04)\nbinary: rustc\ncommit-hash: 29483883eed69d5fb4db01964cdf2af4d86e9cb2\ncommit-date: 2025-08-04\nhost: x86_64-unknown-linux-gnu\nrelease: 1.89.0\nLLVM version: 20.1.7\nx86_64\n",
+    "sourceSha256": "e2dec1f1d48a0eb771aaccb1cab853e2c45a836c9ee205373fc15bb9f23b67f1",
+    "probeSha256": "e610bb8e1028bd5a0699901ad749805b84f452e9832c2be193c22c7abc95c6a2",
+    "nativeLibrarySha256": "902251d990e245bd6dec348c64efcfdc75dc5f0488e907e703e9b7e0e79370b6",
+    "candidateWorkerWasmSha256": "cd5e68ea73c012eb9c08459e230d3f35e1894dd153aa18306363c8e8149b548b",
+    "caveat": "Native x86_64 code and browser scalar WASM are different compilation/platform paths. This diagnoses the unchanged algorithm cost; it is not a controlled single-variable speedup claim."
+  },
+  "rejectionReason": "Exact arithmetic/native/browser state parity passes, but matched actual browser forward/reverse pairs show no material gain and a pooled1.2%wall-time regression. Production changes rejected.",
+  "rejectedSourcePatch": {
+    "path": "docs/evidence/patches/getup-coriolis-prefix-rejected-2026-10-19.patch",
+    "sha256": "4328e8c623f5ee45ebd769d15af14aa7769f7d9b76aaa9897f2ddabff6a3627e",
+    "baseCommit": "1c37a78b28ef829c369b7e8742a8664e869ef876"
+  },
+  "causalCpuProfile": {
+    "stickyMassOwnShare": 0.340967,
+    "candidateMassOwnShare": 0.3009,
+    "candidateNewGemmHelperOwnShare": 0.055,
+    "stickyMassInclusiveShare": 0.547194,
+    "candidateMassInclusiveShare": 0.5654,
+    "finding": "The enclosing-method saving is offset by5.5%self time in new GEMM helpers/guards; the narrower domain did not improve actual throughput.",
+    "report": "outputs/browser-capability-20261019/profile-coriolis-worker-cpu/aggregated.json"
+  }
+}
