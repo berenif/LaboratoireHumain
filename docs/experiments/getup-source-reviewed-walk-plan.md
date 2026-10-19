@@ -236,6 +236,38 @@ artifacts in ignored repository outputs with new receipts. No seed scan,
 limit relaxation, mid-run restore or final qualification is authorized by this
 recovery stage.
 
+The fresh current-input producer converges in four major iterations (216.08 s)
+and passes 123 strict samples, 603 command-grid samples and 235 numerical
+extrema evaluations (105.56 s), with zero failures. Its planned early-knee
+correction is 19.23° and COM forward progress is 37.93 mm for a 182 mm foot
+command. These remain mathematical references, not observed gait improvement.
+The same-world hold/preflight preserves identical native bytes, counter and time.
+
+Current native admission then rejects lift-25%: right_hip_x needs 0.933357 motor
+fraction versus the unchanged strict 0.925 planning reserve. The actual world
+stops at 3,200 integrations with zero changed whole-body commands; a targeted
+negative proof confirms its final payload equals the held activation input and
+all frozen sources remain unchanged. A full passing-candidate audit is not run.
+
+A zero-integration native diagnostic checks all 13 poses: 11 lack static
+equilibrium inside the original 0.95 motor bound. Static equilibrium alone does
+not establish moving-path infeasibility. Exact planned-jet inverse dynamics is
+also checked using native M*qdd+b, the same actual support points, force cones
+and motors. Physical-body velocity parity is within 5.3e−16, with acceleration
+parity within 3.6e−6 under the existing finite-difference Jdot helper. Inertia
+helps some samples and hurts others; lift-25% has no same-contact wrench even
+with diagnostic unbounded motor auxiliaries. Stationary knot endpoints require
+1.12389/1.19972/1.30857, so inertia cannot rescue those endpoints. No auxiliary
+control is applied, and this is not a global physical-impossibility proof.
+
+The approved next stage adds native effort/contact-wrench feasibility to the
+same path problem. First restore the three stationary whole-pose endpoints
+under original motor, friction, actual-support and source-joint bounds, reporting
+which experimental design bounds (including lumbar ±5°) are active. Soft body/
+knee preferences yield to feasibility. Only then attempt one bounded full
+planned-jet solve and current-state/native validation. No geometry-only proposal
+or loosened physical limit can advance this stage.
+
 ## Final acceptance
 
 Require ten alternating own-foot advances ≥180 mm in one uninterrupted world,
