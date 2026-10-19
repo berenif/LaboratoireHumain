@@ -167,7 +167,7 @@ class AnalyticPolishEvaluator:
     Every implicit foot solve retains the original fixed q0 branch seed/Newton
     cap/tolerance. Node keys include all9 position/velocity/acceleration values.
     """
-    def __init__(self,realizer,context,limits,heading,support,anchor,*,design_only=False,entry_elapsed=0.,check_control=lambda:None,constraint_nodes=None,envelope_brackets=None,global_translate_support=False,node_geometry=None):
+    def __init__(self,realizer,context,limits,heading,support,anchor,*,design_only=False,entry_elapsed=0.,check_control=lambda:None,constraint_nodes=None,envelope_brackets=None,global_translate_support=False,node_geometry=None,global_support_phases=None):
         support.validate_identity(context)
         self.r=realizer;self.context=context;self.limits=np.array(limits,float,copy=True)
         if self.limits.shape!=(21,2)or not np.isfinite(self.limits).all():raise ValueError('finite original21x2 source limits required')
@@ -185,7 +185,9 @@ class AnalyticPolishEvaluator:
         self.envelope_brackets=copy.deepcopy(envelope_brackets or[])
         self.nodes=normalized_constraint_nodes()if self.envelope_brackets else self.declared_nodes
         self.envelope_state=OrderedDict();self.jacobian_cache=OrderedDict();self.node_geometry=node_geometry
-        self.global_translate_support=bool(global_translate_support)
+        phases=tuple(global_support_phases or(('translate',)if global_translate_support else()))
+        if len(set(phases))!=len(phases)or any(p not in PHASES for p in phases):raise ValueError('unique declared global support phases required')
+        self.global_support_phases=phases;self.global_translate_support=bool(phases)
         self.eq=support.equations();self.ranges=np.asarray(realizer.arm_map.ranges)
         n=len(self.eq)
         self.envelope_specs=[]
@@ -195,10 +197,11 @@ class AnalyticPolishEvaluator:
                 self.envelope_specs.append(dict(phase=bracket['phase'],pointKind='acceleration'if bracket['phase']=='lift'else'combinedCOMCapture',
                     faceIndex=None,intervalFractions=[bracket['bracketFractions'][0],bracket['bracketFractions'][2]],
                     historicalSourceBracketFractions=bracket['bracketFractions']))
-            for point_kind in('COM','capture'):
-                for face in range(n):
-                    for left,right in zip(FRACTIONS,FRACTIONS[1:]):
-                        self.envelope_specs.append(dict(phase='translate',pointKind=point_kind,faceIndex=face,intervalFractions=[left,right]))
+            for phase in self.global_support_phases:
+                for point_kind in('COM','capture'):
+                    for face in range(n):
+                        for left,right in zip(FRACTIONS,FRACTIONS[1:]):
+                            self.envelope_specs.append(dict(phase=phase,pointKind=point_kind,faceIndex=face,intervalFractions=[left,right]))
         else:
             self.envelope_specs=[dict(phase=b['phase'],pointKind='acceleration'if b['phase']=='lift'else'combinedCOMCapture',faceIndex=None,
                 intervalFractions=[b['bracketFractions'][0],b['bracketFractions'][2]],historicalSourceBracketFractions=b['bracketFractions'])for b in self.envelope_brackets]
@@ -267,6 +270,18 @@ class AnalyticPolishEvaluator:
             closedIntervalEndpointsCompared=True,wholePathProven=False,
             boundedScalarMethod='bounded',maximumIterationsPerEnvelope=64,fractionTolerance=1e-10)
 
+
+    def phase_coverage_receipt(self):
+        records=[]
+        for j,spec in enumerate(self.envelope_specs):
+            if spec['pointKind']in('COM','capture'):
+                records.append(dict(phase=spec['phase'],pointKind=spec['pointKind'],faceIndex=spec['faceIndex'],
+                    intervalFractions=spec['intervalFractions'],rowIndex=len(self.nodes)*len(self.labels)+j))
+        return dict(schema=1,phases=list(self.global_support_phases),sourceSupportEquationsSHA256=digest(self.eq.tolist()),sourceSupportEquations=self.eq.tolist(),
+            faceCount=len(self.eq),pointKinds=['COM','capture'],originalSupportReserveM=.003,
+            intervalsFractions=[[a,b]for a,b in zip(FRACTIONS,FRACTIONS[1:])],constraints=records,
+            closedIntervalEndpointsCompared=True,wholePathProven=False,
+            boundedScalarMethod='bounded',maximumIterationsPerEnvelope=64,fractionTolerance=1e-10)
 
     def fixed_constraints(self,x,peaks):
         path=self.path(x);blocks=[self.node(path,k,f)[0]for k,f in self.nodes]
@@ -398,7 +413,8 @@ def polish_horizon(realizer,current_context,source_limits,heading,current_suppor
         design_only=False,entry_elapsed=0.,input_binding=None,max_iterations=80,max_wall_seconds=180.,
         certificate_max_wall_seconds=120.,cancellation_check=None,progress_callback=None,
         constraint_nodes=None,collocation_refinement=None,exchange_history=None,initial_knots=None,
-        global_translate_support_envelopes=False,node_geometry=None,node_geometry_binding=None):
+        global_translate_support_envelopes=False,node_geometry=None,node_geometry_binding=None,
+        global_support_phases=None,activation_retargeting=None,certificate_sampler=None,certificate_sampler_binding=None):
     """One bounded SLSQP; independently check EXACT final candidate at123 nodes.
 
     The return path exists only for successful polish plus full original strict
@@ -422,11 +438,60 @@ def polish_horizon(realizer,current_context,source_limits,heading,current_suppor
         name=geometry_binding.get('filename');h=geometry_binding.get('SHA256')
         if not isinstance(name,str)or '/'in name or not isinstance(h,str)or len(h)!=64:
             raise ValueError('explicit fast analytic geometry source binding required')
-    history=copy.deepcopy(exchange_history or[])
+    strict_sampler_binding=copy.deepcopy(certificate_sampler_binding or{})
+    if certificate_sampler is not None:
+        name=strict_sampler_binding.get('filename');h=strict_sampler_binding.get('SHA256')
+        if(not callable(getattr(certificate_sampler,'sample',None))or not isinstance(name,str)or '/'in name or not name
+                or not isinstance(h,str)or len(h)!=64):
+            raise ValueError('explicit strict complete-reference sampler/source binding required')
+    history=copy.deepcopy(exchange_history or[]);retarget=copy.deepcopy(activation_retargeting)
     initial=anchor.copy()if initial_knots is None else np.asarray(initial_knots,dtype=np.float64).reshape(27).copy()
     if not np.isfinite(initial).all():raise ValueError('finite deterministic continuation required')
-    if history:
-        if refinement is None or not global_translate_support_envelopes:raise ValueError('linked exchange requires complete global translate coverage')
+    global_phases=tuple(global_support_phases or(('translate',)if global_translate_support_envelopes else()))
+    if retarget is not None:
+
+        if refinement is None or global_phases!=PHASES:raise ValueError('actual activation requires all-phase support coverage')
+        expected=dict(schema=1,activationSourceStep=current_context.source_step,activationSourceTimeS=current_context.source_time,
+            activationContextSHA256=current_context.receipt()['contextSHA256'],retainedActivationInputSHA256=(input_binding or{}).get('inputSHA256'),
+            actualPayloadSHA256=(input_binding or{}).get('actualPayloadSHA256'),compressedPayloadSHA256=(input_binding or{}).get('compressedPayloadSHA256'),
+            objectiveAnchorSHA256=digest(anchor.reshape(3,9).tolist()),
+            originalHardLimitsUnchanged=True,referenceFamilyUnchanged=True,physicalStateInstalled=False,retargetOptimizerCalls=1)
+        if any(k not in retarget or type(retarget[k])is not type(v)or retarget[k]!=v for k,v in expected.items()):raise ValueError('explicit actual activation transition differs')
+        if(current_context.phase!='transfer'or entry_elapsed!=0. or(input_binding or{}).get('entryLiftElapsedS')!=0.
+                or(input_binding or{}).get('contextSHA256')!=current_context.receipt()['contextSHA256']
+                or(input_binding or{}).get('currentSupportSHA256')!=current_support.key):raise ValueError('actual stationary transfer input/clock identity differs')
+        if retarget.get('sourceProposalProducerOptimizerCalls')!=4:raise ValueError('explicit source proposal producer count4 required')
+        if retarget.get('sourceProposalCandidateSHA256')!=retarget.get('initialContinuationCandidateSHA256'):
+            raise ValueError('historical activation transition seed identity differs')
+        if history:
+            for entry in history:
+                if(entry.get('optimizerCalls')!=1 or entry.get('hardLimitsUnchanged')is not True
+                        or type(entry.get('optimizerSuccess'))is not bool
+                        or entry.get('objectiveAnchorSHA256')!=digest(anchor.reshape(3,9).tolist())
+                        or entry.get('inputBindingSHA256')!=digest(input_binding)
+                        or entry.get('activationRetargetingSHA256')!=digest(retarget)
+                        or entry.get('finalCandidateSHA256')!=entry.get('sourceCandidateSHA256')
+                        or entry.get('sourceCandidateSHA256')!=entry.get('initialContinuationCandidateSHA256')):
+                    raise ValueError('same-actual-input numerical exchange identity differs')
+                name=entry.get('filename');h=entry.get('SHA256')
+                if not isinstance(name,str)or '/'in name or not name or not isinstance(h,str)or len(h)!=64:
+                    raise ValueError('retained same-input parent basename/SHA required')
+                if(entry.get('optimizerSuccess')is False and(entry.get('terminalState')!='compute-cap'
+                        or entry.get('finalCandidateOrigin')!='last-completed-major-iteration'
+                        or type(entry.get('completedMajorIteration'))is not int or entry['completedMajorIteration']<1)):
+                    raise ValueError('compute-cap continuation requires an exact completed major iteration')
+            if digest(initial.reshape(3,9).tolist())!=history[-1]['sourceCandidateSHA256']:
+                raise ValueError('continuation differs from exact last same-input candidate')
+        elif retarget.get('initialContinuationCandidateSHA256')!=digest(initial.reshape(3,9).tolist()):
+            raise ValueError('first retarget continuation differs from historical source seed')
+        for name in('sourceProposalFilename','sourceProposalBindingFilename','retainedActivationInputFilename'):
+            value=retarget.get(name)
+            if not isinstance(value,str)or '/'in value or not value:raise ValueError('retained activation transition basename required')
+        for name in('sourceProposalSHA256','sourceProposalBindingSHA256'):
+            value=retarget.get(name)
+            if not isinstance(value,str)or len(value)!=64:raise ValueError('retained activation transition SHA256 required')
+    elif history:
+        if refinement is None or not global_phases:raise ValueError('linked exchange requires complete global support coverage')
         for entry in history:
             if(entry.get('optimizerCalls')!=1 or entry.get('objectiveAnchorSHA256')!=digest(anchor.reshape(3,9).tolist())
                     or entry.get('hardLimitsUnchanged')is not True or entry.get('sourceCandidateSHA256')!=entry.get('initialContinuationCandidateSHA256')):
@@ -434,8 +499,8 @@ def polish_horizon(realizer,current_context,source_limits,heading,current_suppor
             name=entry.get('parentResultFilename');h=entry.get('parentResultSHA256')
             if not isinstance(name,str)or '/'in name or not name or not isinstance(h,str)or len(h)!=64:raise ValueError('retained exchange basename/SHA required')
         if digest(initial.reshape(3,9).tolist())!=history[-1]['sourceCandidateSHA256']:raise ValueError('continuation differs from last linked final candidate')
-    elif initial_knots is not None or global_translate_support_envelopes:
-        raise ValueError('continuation/global coverage requires linked deterministic exchange')
+    elif initial_knots is not None or global_phases:
+        raise ValueError('continuation/global coverage requires linked deterministic exchange or activation transition')
     control=None;start=None
     def check_optimizer():
         nonlocal control
@@ -444,7 +509,7 @@ def polish_horizon(realizer,current_context,source_limits,heading,current_suppor
     evaluator=AnalyticPolishEvaluator(realizer,current_context,source_limits,heading,current_support,anchor,
         design_only=design_only,entry_elapsed=entry_elapsed,check_control=check_optimizer,constraint_nodes=constraint_nodes,
         envelope_brackets=None if refinement is None else refinement.get('sourceBrackets'),
-        global_translate_support=global_translate_support_envelopes,node_geometry=node_geometry)
+        global_translate_support=global_translate_support_envelopes,node_geometry=node_geometry,global_support_phases=global_phases)
     # Reject input outside original independent bounds; do not project a seed.
     if any(x<lo or x>hi for x,(lo,hi)in zip(initial,evaluator.bounds)):raise ValueError('bound source candidate outside original independent bounds')
     trace=[];progress=[];last_major=None
@@ -480,7 +545,7 @@ def polish_horizon(realizer,current_context,source_limits,heading,current_suppor
         maximumWallSeconds=certificate_max_wall_seconds,originalStrictMapUsed=True,optimizerProxyUsed=False,
         adaptiveGrid=False,wholeContinuousPathCertificate=False,liveCommandRecheckingRequired=True)
     receipt=dict(schema=1,version=VERSION_REFINEMENT if refined else VERSION_POLISH,inputBinding=input_binding or dict(contextSHA256=current_context.receipt()['contextSHA256']),
-        twoStageFeasibilityRestoration=stage,optimizerCalls=1,totalProducerOptimizerCalls=(3+len(history))if refined else 2,
+        twoStageFeasibilityRestoration=stage,optimizerCalls=1,totalProducerOptimizerCalls=(retarget['sourceProposalProducerOptimizerCalls']+1+len(history))if retarget is not None else((3+len(history))if refined else 2),
         optimizerCallsScope='this call1; recovery1 plus failed polish1 plus refinement1 when refined; opaque timeout separately recorded',
         family=dict(variables=27,independentIndices=evaluator.idx.tolist(),originalClocksS=[.8,1.2,1.],clocksS=list(evaluator.entry.durations),
             footLiftM=.04,ownFootAdvanceM=.182,sourceLandingContactPreferenceM=-.0005,sourceInteriorRad=.01,
@@ -489,8 +554,8 @@ def polish_horizon(realizer,current_context,source_limits,heading,current_suppor
             objective='minimum .5 Euclidean squared27-coordinate correction from exact bound recovery major iteration33',
             originalBodyKneeGoalShapeRetainedAsAnchor=True,newPostureOrPelvisObjective=False,optimizerConstraintFractions=list(FRACTIONS),
             phaseSpecificConstraintNodes=[dict(phase=PHASES[k],fraction=f)for k,f in evaluator.declared_nodes],
-            currentCandidateBracketEnvelopes=refined,envelopeTheoremJacobian=refined,globalTranslateSupportEnvelopes=global_translate_support_envelopes,
-            refinementConstraintStructure='original13 full blocks plus closed-quarter per-face translate and retained lift/land scalar envelopes'if history else('13 original full blocks plus3 scalar bracket envelopes'if refined else'13 original full blocks'),
+            currentCandidateBracketEnvelopes=refined,envelopeTheoremJacobian=refined,globalTranslateSupportEnvelopes=global_translate_support_envelopes,globalSupportPhases=list(global_phases),
+            refinementConstraintStructure='original13 full blocks plus all-declared-phase closed-quarter support faces and retained lift/land scalar envelopes'if retarget is not None else('original13 full blocks plus closed-quarter per-face translate and retained lift/land scalar envelopes'if history else('13 original full blocks plus3 scalar bracket envelopes'if refined else'13 original full blocks')),
             analyticCommandCOMJets=True,centralCOMDifferencing=False,optimizerOnlyRawVerifiedMapProxy=True,
             rawDomainExtrapolation=False,originalReservedMapInequalityUnchanged=True,strictOriginalMapInFinalPathAndRuntime=True,
             maxIterations=max_iterations,maxWallSeconds=max_wall_seconds,SLSQPEps=1e-6,SLSQPftol=1e-12,
@@ -507,17 +572,27 @@ def polish_horizon(realizer,current_context,source_limits,heading,current_suppor
         envelopeScalarConstraintCount=len(evaluator.envelope_specs),totalConstraintRowCount=13*len(evaluator.labels)+len(evaluator.envelope_specs),constraintLabels=list(evaluator.labels),analyticPrescreenNodes=[dict(phase=PHASES[k],fraction=f)for k,f in evaluator.declared_nodes],
         nativeAdmission=False,physicalQualification=False,nativeWorldConstructions=0,physicsIntegrations=0,stateInstallations=0,
         exactWholeNonlinearPathAdmission=False,globalInfeasibilityProven=False,repositoryRuntimeEdits=False,
-        explicitPelvisPreferenceInFlightObjective=False,referenceLandingCenterDifferenceM=.0006000015223048619,
+        explicitPelvisPreferenceInFlightObjective=False,referenceLandingCenterDifferenceM=float(current_context.feet[realizer.swing_side].translation.position[2]-json.loads(current_context.config_json)['floorTargets'][realizer.swing_side]),
         plannerFastGeometryUsed=node_geometry is not None,plannerFastGeometrySourceName=geometry_binding.get('filename'),
-        plannerFastGeometrySourceSHA256=geometry_binding.get('SHA256'),plannerFastGeometrySHA256=geometry_binding.get('SHA256'))
+        plannerFastGeometrySourceSHA256=geometry_binding.get('SHA256'),plannerFastGeometrySHA256=geometry_binding.get('SHA256'),
+        strictCertificateCacheUsed=certificate_sampler is not None,strictCertificateCacheSourceName=strict_sampler_binding.get('filename'),
+        strictCertificateCacheSHA256=strict_sampler_binding.get('SHA256'))
     if refinement is not None:receipt['collocationRefinement']=refinement
-    if history:
+    if history and retarget is None:
         receipt.update(exchangeHistory=history,initialContinuationIndependentKnotsRad=initial.reshape(3,9).tolist(),
             initialContinuationCandidateSHA256=digest(initial.reshape(3,9).tolist()),objectiveAnchorSHA256=digest(anchor.reshape(3,9).tolist()),
             globalTranslateSupportEnvelopeCoverage=evaluator.coverage_receipt(),
             translateFaceEnvelopeCoverage=[dict(quantity=r['pointKind'],faceIndex=r['faceIndex'],intervalFractions=r['intervalFractions'])for r in evaluator.coverage_receipt()['constraints']],
             activeConstraintRowCounts=dict(original=13*len(evaluator.labels),retainedLiftLandEnvelopes=2,
                 globalTranslateEnvelopes=8*len(evaluator.eq),total=13*len(evaluator.labels)+len(evaluator.envelope_specs)),
+            activeEnvelopeConfiguration=evaluator.envelope_specs,historicalCollocationBindingUnchanged=True)
+    if retarget is not None:
+        if history:receipt['exchangeHistory']=history
+        receipt.update(activationRetargeting=retarget,initialContinuationIndependentKnotsRad=initial.reshape(3,9).tolist(),
+            initialContinuationCandidateSHA256=digest(initial.reshape(3,9).tolist()),objectiveAnchorSHA256=digest(anchor.reshape(3,9).tolist()),
+            globalPhaseSupportEnvelopeCoverage=evaluator.phase_coverage_receipt(),
+            activeConstraintRowCounts=dict(original=13*len(evaluator.labels),retainedLiftLandEnvelopes=2,
+                globalPhaseSupportEnvelopes=8*len(evaluator.eq)*len(global_phases),total=13*len(evaluator.labels)+len(evaluator.envelope_specs)),
             activeEnvelopeConfiguration=evaluator.envelope_specs,historicalCollocationBindingUnchanged=True)
     if evaluator.last_fully_evaluated is not None and np.array_equal(final,evaluator.last_fully_evaluated):
         c,rows=evaluator.last_result;receipt['lastEvaluatedFinalAnalyticPrescreen']=dict(minimumSlack=float(min(c)),constraints=c.tolist(),rows=rows)
@@ -534,7 +609,7 @@ def polish_horizon(realizer,current_context,source_limits,heading,current_suppor
         else:
             certificate_cache['misses']+=1
             try:
-                sample=path.sample(PHASES[k],t);check_certificate()
+                sample=(path.sample(PHASES[k],t)if certificate_sampler is None else certificate_sampler.sample(path,PHASES[k],t));check_certificate()
                 row=_sample_row(path,sample,k,f,current_support,np.asarray(heading),np.asarray(current_context.com.position),evaluator.q0)
                 p,v,a=sample.com.arrays();eq=evaluator.eq;cp=p[:2]+math.sqrt(p[2]/9.81)*v[:2]
                 row['timeExtremaScalarSlacks']=dict(COMSpeed=MAX_TOTAL_COM_SPEED-float(np.linalg.norm(v)),
@@ -600,7 +675,13 @@ def polish_horizon(realizer,current_context,source_limits,heading,current_suppor
     all_samples=[*samples,*dense,*extrema_samples]
     strict_map=bool(len(samples)==123 and(not refined or len(dense)==dense_receipt['declaredSampleCount'])
         and all(r['originalStrictMapEvaluationPassed']for r in all_samples))
-    stage.update(maximumCorrectionRad=float(max(abs(final-anchor))),finalOriginalStrictMapRestored=strict_map,declared123SampleCertificate=True,certificateReceipt=certificate)
+    if retarget is None:
+        stage.update(maximumCorrectionRad=float(max(abs(final-anchor))),finalOriginalStrictMapRestored=strict_map,declared123SampleCertificate=True,certificateReceipt=certificate)
+    else:
+        # Historical stage is retained exactly; current strict admission is
+        # explicit, not silently substituted for its old-input certificate.
+        stage['maximumCorrectionRad']=float(max(abs(final-anchor)))
+        receipt['activationRetargeting123SampleCertificate']=certificate
     endpoints=[r for r in samples if r['fraction']==1.];liftgain=endpoints[0].get('kneeReferenceGainDeg',0.)if endpoints else 0.
     finite_pass=bool(certificate['passed']and(not refined or dense_receipt['passed']and extrema_receipt['passed']))
     accepted=bool(receipt['optimizerSuccess']and finite_pass and strict_map and liftgain>1e-6)

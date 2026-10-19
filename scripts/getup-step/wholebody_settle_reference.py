@@ -82,7 +82,10 @@ class QuietEndpoint:
     receipt_json: str
 
     def receipt(self):
-        return json.loads(self.receipt_json)
+        geometry = dict(lower=list(self.lower), full_joints=list(self.full_joints),
+            root_model=list(self.root_model))
+        return dict(json.loads(self.receipt_json), **geometry,
+            geometrySHA256=digest(geometry))
 
 
 def solve_samefoot_endpoint(model, limits, arm_map, leg_origin, *, stance_side,
@@ -351,6 +354,7 @@ class SameFootSettlePlan:
                     angular_chart(*command.orientation.arrays()), pose_chart(raw.pose(FEET[side]))),
                     Jet.rest(np.zeros(3)))))
         self.key = digest(dict(policy=POLICY, endpoint=endpoint.receipt()['inputSHA256'],
+            endpointGeometrySHA256=endpoint.receipt()['geometrySHA256'],
             incomingContext=context.receipt()['contextSHA256'], duration=duration,
             originalDuration=self.original_duration, firstCommandPhaseElapsed=self.phase_start_elapsed,
             phaseBoundary=phase_boundary))

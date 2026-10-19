@@ -5,6 +5,7 @@ import hashlib
 import json
 from pathlib import Path
 import tempfile
+import zlib
 from types import SimpleNamespace
 import unittest
 from unittest.mock import Mock, patch
@@ -14,7 +15,7 @@ from numpy.testing import assert_allclose
 import source_reviewed_wholebody as w
 from source_reference_context import (ReferenceContext, Jet as CJ, Orientation,
     Foot, canonical, prospective_unload_context)
-from coupled_posture_reference import Jet, OrientationJet
+from coupled_posture_reference import Jet, OrientationJet, CurrentSupport
 from coupled_posture_kinematics import MatrixJet
 
 
@@ -435,6 +436,142 @@ class NumericalRestorationBinding(unittest.TestCase):
             self.check()
 
 
+class ActualActivationTransition(unittest.TestCase):
+    def make_transition(self):
+        old = NumericalRestorationBinding(); old.setUp(); self.addCleanup(old.doCleanups)
+        old.make_exchanged(); seed = json.loads(json.dumps(old.result))
+        seed.update(accepted=True, optimizerSuccess=True, optimizerCalls=1)
+        seed_path = old.root/'accepted-seed.json'; seed_path.write_text(json.dumps(seed))
+        seed_binding = dict(old.binding, proposalSHA256=w.sha(seed_path), modelSHA256='a'*64,
+            sourceXMLSHA256='b'*64, armMapSemanticSHA256='c'*64,
+            originalSourceLimitsRad=[[-2., 2.]]*21, legOriginRightLeftRad=[0., 0.], stanceSide=1, swingSide=0)
+        binding_path = old.root/'accepted-seed-binding.json'; binding_path.write_text(json.dumps(seed_binding))
+        context = fixture_context(); points = ((-2., -1.), (2., -1.), (0., 2.), (2., 2.))
+        support = CurrentSupport(context.source_step, context.source_time, 1, 'transfer',
+            points, tuple((*p, 0.) for p in points), (True,)*4, (0, 1, 2), True)
+        payload = b'unchanged actual native input'; payload_path = old.root/'actual.zlib'
+        payload_path.write_bytes(zlib.compress(payload)); payload_key = hashlib.sha256(payload).hexdigest()
+        feet = [np.eye(4).tolist()]*2
+        retained = dict(referenceContext=context.receipt(), currentSupport=asdict(support),
+            currentFeetModel=feet, actualPayloadSHA256=payload_key, actualPayloadBytes=len(payload),
+            compressedPayloadSHA256=w.sha(payload_path), retainedPayload=payload_path.name,
+            proposal=dict(proposalSHA256=w.sha(seed_path), binding=seed_binding,
+                independentKnotsRad=seed['independentKnotsRad'], offlineReceiptSHA256=w.digest(seed)))
+        input_path = old.root/'actual-input.json'; input_path.write_text(json.dumps(retained))
+        candidate_key = w.digest(seed['independentKnotsRad'])
+        transition = dict(schema=1, sourceProposalFilename=seed_path.name,
+            sourceProposalSHA256=w.sha(seed_path), sourceProposalBindingFilename=binding_path.name,
+            sourceProposalBindingSHA256=w.sha(binding_path), sourceProposalCandidateSHA256=candidate_key,
+            retainedActivationInputFilename=input_path.name, retainedActivationInputSHA256=w.sha(input_path),
+            activationContextSHA256=context.receipt()['contextSHA256'], actualPayloadSHA256=payload_key,
+            compressedPayloadSHA256=w.sha(payload_path), activationSourceStep=context.source_step,
+            activationSourceTimeS=context.source_time, initialContinuationCandidateSHA256=candidate_key,
+            objectiveAnchorSHA256=seed['twoStageFeasibilityRestoration']['sourceCandidateSHA256'],
+            originalHardLimitsUnchanged=True, referenceFamilyUnchanged=True, physicalStateInstalled=False)
+        result = json.loads(json.dumps(seed)); result.update(activationRetargeting=transition,
+            inputBinding=dict(inputSHA256=w.sha(input_path), contextSHA256=context.receipt()['contextSHA256'],
+                currentSupportSHA256=support.key, actualFeetModelSHA256=w.digest(feet), sourceNativeStep=context.source_step,
+                sourceTimeS=context.source_time, entryLiftElapsedS=0., heading=None,
+                modelSHA256=seed_binding['modelSHA256'], sourceXMLSHA256=seed_binding['sourceXMLSHA256'],
+                armMapSemanticSHA256=seed_binding['armMapSemanticSHA256'],
+                support=dict(equations=support.equations().tolist())),
+            exchangeHistory=[], totalProducerOptimizerCalls=5)
+        # This protocol fixture intentionally stubs only the separately tested
+        # numeric certificate and global coverage; the transition is checked in full.
+        return result, dict(seed_binding), old.path, context, support, feet, payload
+
+    def check(self, result, binding, path):
+        with patch.object(w, 'verify_finite_path_certificate') as certificate, \
+             patch.object(w, 'verify_global_phase_support_coverage') as coverage:
+            w.verify_feasibility_stages(result, binding, path)
+            self.assertEqual(certificate.call_count, 2)  # historical seed, then current input
+            self.assertIs(certificate.call_args.args[0], result)
+            coverage.assert_called_once_with(result, required_phases=w.PHASES)
+
+    def test_explicit_changed_input_keeps_historical_seed_and_reuses_certificate(self):
+        result, binding, path, *_ = self.make_transition()
+        self.check(result, binding, path)
+
+    def test_actual_input_payload_and_anchor_cannot_be_replaced(self):
+        for mutate in (
+            lambda r:r['activationRetargeting'].update(actualPayloadSHA256='0'*64),
+            lambda r:r['inputBinding'].update(currentSupportSHA256='0'*64),
+            lambda r:r['activationRetargeting'].update(objectiveAnchorSHA256='0'*64),
+            lambda r:r.update(initialContinuationIndependentKnotsRad=np.ones((3, 9)).tolist()),
+            lambda r:r.update(totalProducerOptimizerCalls=4),
+            lambda r:r['activationRetargeting'].update(sourceProposalFilename='../accepted-seed.json')):
+            result, binding, path, *_ = self.make_transition(); mutate(result)
+            with self.assertRaises(ValueError): self.check(result, binding, path)
+
+    def test_runtime_exact_state_check_precedes_current_admission(self):
+        result, _, _, context, support, feet, payload = self.make_transition()
+        proposal = dict(activationRetargeting=result['activationRetargeting'], activationInputBinding=result['inputBinding'])
+        w.verify_current_activation_identity(proposal, context, support, feet, payload)
+        for changed_context, changed_payload in ((replace(context, source_step=3204), payload), (context, payload+b'x')):
+            with self.assertRaisesRegex(ValueError, 'causal input'):
+                w.verify_current_activation_identity(proposal, changed_context, support, feet, changed_payload)
+
+    def make_current_exchange(self):
+        result, binding, path, *_ = self.make_transition()
+        parent = json.loads(json.dumps(result)); candidate = np.full((3, 9), .0001).tolist()
+        key = w.digest(candidate)
+        parent.update(accepted=False, optimizerSuccess=False, optimizerCalls=1,
+            terminalState='compute-cap', finalCandidateOrigin='last-completed-major-iteration',
+            completedCallbackIterations=2, finalCandidateSHA256=key,
+            unadmittedFinalIndependentKnotsRad=candidate, progressRecords=[dict(iteration=2,
+                candidateSHA256=key, unadmittedIndependentKnotsRad=candidate)])
+        parent['twoStageFeasibilityRestoration']['maximumCorrectionRad'] = .0001
+        parent_path = path.parent/'current-failed-parent.json'; parent_path.write_text(json.dumps(parent))
+        entry = dict(filename=parent_path.name, SHA256=w.sha(parent_path),
+            parentResultFilename=parent_path.name, parentResultSHA256=w.sha(parent_path), sourceCandidateSHA256=key,
+            inputBindingSHA256=w.digest(result['inputBinding']),
+            activationRetargetingSHA256=w.digest(result['activationRetargeting']),
+            finalCandidateSHA256=key, initialContinuationCandidateSHA256=key,
+            objectiveAnchorSHA256=result['activationRetargeting']['objectiveAnchorSHA256'],
+            optimizerCalls=1, optimizerSuccess=False, terminalState='compute-cap',
+            finalCandidateOrigin='last-completed-major-iteration', completedMajorIteration=2,
+            hardLimitsUnchanged=True)
+        result.update(exchangeHistory=[entry], initialContinuationIndependentKnotsRad=candidate,
+            initialContinuationCandidateSHA256=key, totalProducerOptimizerCalls=6)
+        return result, binding, path, parent_path
+
+    def test_same_actual_input_exchange_retains_transition_and_exact_failed_major(self):
+        result, binding, path, _ = self.make_current_exchange()
+        self.check(result, binding, path)
+
+    def test_same_input_exchange_cannot_change_input_anchor_or_major_origin(self):
+        for mutate in (
+            lambda p:p['inputBinding'].update(currentSupportSHA256='0'*64),
+            lambda p:p['activationRetargeting'].update(actualPayloadSHA256='0'*64),
+            lambda p:p['twoStageFeasibilityRestoration'].update(sourceCandidateSHA256='0'*64),
+            lambda p:p.update(finalCandidateOrigin='last-requested-finite-difference'),
+            lambda p:p['progressRecords'][-1].update(candidateSHA256='0'*64)):
+            result, binding, path, parent_path = self.make_current_exchange()
+            parent = json.loads(parent_path.read_text()); mutate(parent)
+            parent_path.write_text(json.dumps(parent)); result['exchangeHistory'][0]['SHA256'] = w.sha(parent_path)
+            result['exchangeHistory'][0]['parentResultSHA256'] = w.sha(parent_path)
+            with self.assertRaisesRegex(ValueError, 'failed major iterate'):
+                self.check(result, binding, path)
+
+    def test_global_support_coverage_cannot_omit_a_phase_face_or_endpoint(self):
+        result, *_ = self.make_transition(); eq = result['inputBinding']['support']['equations']
+        intervals = [[0., .25], [.25, .5], [.5, .75], [.75, 1.]]
+        rows = [dict(phase=p, pointKind=k, faceIndex=i, intervalFractions=interval)
+            for p in w.PHASES for k in ('COM', 'capture') for i in range(len(eq)) for interval in intervals]
+        original = 13*(50+2*len(eq))
+        for i, row in enumerate(rows): row['rowIndex'] = original+2+i
+        result.update(globalPhaseSupportEnvelopeCoverage=dict(schema=1, phases=list(w.PHASES),
+            sourceSupportEquations=eq, sourceSupportEquationsSHA256=w.digest(eq), faceCount=len(eq),
+            pointKinds=['COM', 'capture'], originalSupportReserveM=.003, intervalsFractions=intervals,
+            constraints=rows, closedIntervalEndpointsCompared=True, wholePathProven=False),
+            activeConstraintRowCounts=dict(original=original, retainedLiftLandEnvelopes=2,
+                globalPhaseSupportEnvelopes=len(rows), total=original+2+len(rows)))
+        w.verify_global_phase_support_coverage(result, required_phases=w.PHASES)
+        result['globalPhaseSupportEnvelopeCoverage']['constraints'].pop()
+        with self.assertRaisesRegex(ValueError, 'all flight phases'):
+            w.verify_global_phase_support_coverage(result, required_phases=w.PHASES)
+
+
 class PreflightAndFailClosed(unittest.TestCase):
     def test_missing_or_failed_proposal_rejects_before_world_preparation(self):
         with patch.object(w, 'prepare_impedance', side_effect=AssertionError('native prepare called')):
@@ -570,6 +707,16 @@ class ProposalBinding(unittest.TestCase):
             self.assertEqual(frozen['binding'], binding)
             self.assertEqual(frozen['flightOptimizerCallsAtRuntime'], 0)
             self.assertEqual(path.read_bytes(), original)
+
+    def test_original_strict_certificate_cache_requires_its_own_source_binding(self):
+        with tempfile.TemporaryDirectory() as directory:
+            path, annotation, binding = self.proposal(directory)
+            result = json.loads(path.read_text()); result.update(strictCertificateCacheUsed=True,
+                strictCertificateCacheSourceName='strict_reference_cache.py', strictCertificateCacheSHA256='0'*64)
+            path.write_text(json.dumps(result)); binding['proposalSHA256'] = w.sha(path)
+            annotation.write_text(json.dumps(binding))
+            with self.assertRaisesRegex(ValueError, 'strict certificate cache source binding'):
+                w.frozen_proposal(path, annotation)
 
     def test_source_mutation_annotation_mismatch_or_incomplete_binding_reject(self):
         with tempfile.TemporaryDirectory() as directory:

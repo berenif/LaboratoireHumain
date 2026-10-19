@@ -11,6 +11,7 @@ No optimizer, integration, state installation, clipping, extrapolation, mutable
 IK seed, finite-difference derivative, or model/geometry/cap change is present.
 """
 from dataclasses import dataclass
+import copy
 import math
 import numpy as np
 
@@ -21,7 +22,51 @@ from wholebody_cycle_reference import (
 )
 from coupled_posture_kinematics import pose_jet_to_source
 
-VERSION = 'plain-triple-analytic-com-geometry-v1'
+VERSION = 'plain-triple-analytic-com-geometry-v2-sample-fk-reuse'
+
+
+class _SampleFKMemo:
+    """Exact, bounded positional-FK reuse inside ONE sample only.
+
+    Original Newton and original spatial Jacobian request identical complete
+    q/root transforms successively. Full float64 byte keys retain signed zero
+    and every coordinate. No value is rounded, no IK solution is retained, and
+    the original kinematics performs every cache miss with unchanged arithmetic.
+    The cache is discarded as soon as sample() returns or raises.
+    """
+    def __init__(self, kinematics, capacity=64):
+        self.original = kinematics
+        self.capacity = capacity
+        self.cache = {}
+        self.requests = self.hits = self.misses = self.evictions = 0
+
+    def __getattr__(self, name):
+        return getattr(self.original, name)
+
+    def forward(self, q, root):
+        key = (np.asarray(q, dtype=np.float64).tobytes(),
+               np.asarray(root, dtype=np.float64).tobytes())
+        self.requests += 1
+        if key in self.cache:
+            self.hits += 1
+            return self.cache[key]
+        self.misses += 1
+        result = self.original.forward(q, root)
+        self.cache[key] = result
+        if len(self.cache) > self.capacity:
+            self.cache.pop(next(iter(self.cache)))
+            self.evictions += 1
+        return result
+
+
+def _sample_realizer(realizer):
+    """Shallow local adapters; ORIGINAL position/Jacobian bodies are unchanged."""
+    memo = _SampleFKMemo(realizer.kin)
+    local = copy.copy(realizer)
+    local.kin = memo
+    local.fk = copy.copy(realizer.fk)
+    local.fk.kin = memo
+    return local
 
 
 def _readonly(value):
@@ -175,7 +220,10 @@ class AnalyticCOMGeometry:
         target_pose = compose_pose(subtract(tr.translation, st.at(total)),
                                   subtract(pose_chart(command), sr.at(total)))
         ip, iv, ia = path.independent_segments[k].at(t).arrays()
-        q, receipt = realizer.position(ip, target_pose, path.lower0.position)
+        # The same positional FK is needed for the original Newton residual
+        # and its original Jacobian. Share exact results within this call only.
+        local_realizer = _sample_realizer(realizer)
+        q, receipt = local_realizer.position(ip, target_pose, path.lower0.position)
         v = np.zeros(15)
         a = np.zeros(15)
         v[realizer.independent_indices] = iv
@@ -184,8 +232,8 @@ class AnalyticCOMGeometry:
         full_zero_arms = lambda: tuple(np.r_[x, np.zeros(6)] for x in (q, v, a))
         foot = FEET[realizer.swing_side]
         bias = self._forward(full_zero_arms(), root, self._swing_parts)[foot]
-        J = realizer.fk.spatial_jacobian(np.r_[q, np.zeros(6)], _ArrayPose(root),
-                                       foot, realizer.swing_indices)
+        J = local_realizer.fk.spatial_jacobian(np.r_[q, np.zeros(6)], _ArrayPose(root),
+                                             foot, realizer.swing_indices)
         target, target_w, target_a = _source_spatial(target_pose.arrays())
         current, current_w, _ = _source_spatial(bias)
         rhs = np.r_[P.T @ (target[1] - current[1]), P.T @ (target_w - current_w)]

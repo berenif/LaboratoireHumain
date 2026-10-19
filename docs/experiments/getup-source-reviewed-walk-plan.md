@@ -175,8 +175,27 @@ FK owner remains the independent final certificate. The fast analytic COM
 evaluator matches 15 archived/perturbed/arm/seek cases bit-for-bit and measures
 7.09× faster with zero optimizers or native worlds. Whole-phase exchange covers
 all 56 translate COM/capture face-quarter envelopes (890 total rows), reusing
-the same profile and hash-linked deterministic history. Prior failures remain
-immutable. No seed, goal or weight grid is permitted. Only a completely admitted
+the same profile and hash-linked deterministic history. Exchange one converges
+in two iterations and passes the original 123 samples, all 603 command samples
+and 219 strict numerical-extrema evaluations. Runtime preflight verifies the
+bound proposal. The first native trial stops safely at counter 3,200 (4 s),
+before applying any whole-body command: actual-state lift capture reserve is
+2.95678 mm against the unchanged 3 mm requirement. Its final native payload is
+identical to the retained pre-admission payload; all 32 frozen sources and an
+independent targeted negative proof are retained. The offline first-lift witness
+is not the actual stationary-transfer activation input. The same 27-coordinate
+family and original objective now retarget that exact retained current state,
+with all nine support faces covered across all three flight phases (216 closed
+quarter envelopes; 1,102 total rows). Historical input certificates remain
+historical. The next pilot must reproduce the bound actual state exactly and
+pass current analytic/static/dynamic admission. Prior failures remain immutable.
+The bounded actual-input retarget retains two complete iterates at its 300 s
+solve cap; the 180 s certificate is incomplete and records a 7.56e−8 m/s²
+acceleration excess and 4.64e−9 m reserve deficit. It is not admitted. Exact
+duplicate-FK memoization precedes a deterministic same-input continuation, with
+the original objective and bounds. The causal settle receipt now retains its
+solved endpoint geometry and binds that geometry into path identity; no numeric
+reference is changed by this evidence correction. No seed, goal or weight grid is permitted. Only a completely admitted
 proposal proceeds to one native step plus quiet,
 independent audit and actual-speed visual review, then alternating diagnostics
 and the full ten-step test.

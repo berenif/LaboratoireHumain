@@ -29,7 +29,7 @@ from source_reviewed_walk import ReviewedController, ReviewedSteps
 from source_contact_impedance_probe import prepare_impedance
 from source_arm_knee_mobility import native_bytes
 from source_robust_support_steps import actual_stance_patch
-from source_reference_context import Jet as ContextJet, Orientation, Foot, canonical, digest
+from source_reference_context import ReferenceContext, Jet as ContextJet, Orientation, Foot, canonical, digest
 from coupled_posture_reference import Jet, CurrentSupport, chart, rotation
 from coupled_posture_kinematics import ArmMap, MatrixJet, P, pose_jet_to_source
 from phase_leg_reference import AdvanceWindow, MeasuredAdvanceSample
@@ -63,6 +63,9 @@ def source_path(name):
 
 def verify_feasibility_stages(result, binding, proposal_path):
     """Verify the explicit numerical repair, never relabel its failed parent."""
+    if result.get('activationRetargeting') is not None:
+        verify_activation_retargeting(result, binding, proposal_path)
+        return
     stage = result.get('twoStageFeasibilityRestoration')
     if stage is None:
         count = result.get('totalProducerOptimizerCalls')
@@ -223,17 +226,21 @@ def verify_collocation_refinement(result, binding, proposal_path, original_stage
                 and abs(r.get('fraction', math.inf)-answer['fraction']) < 1e-14
                 and abs(r['minimumSlack']-answer['minimumSlack']) < 1e-14 for r in selection_rows):
             raise ValueError('selected source extremum has no retained strict evaluation')
+    verify_finite_path_certificate(result, parent_durations=parent.get('path', {}).get('phaseDurationsS', []))
+
+
+def verify_finite_path_certificate(result, *, parent_durations=None):
+    """Reuse the original strict command-grid/numerical-extrema contract."""
     grid = result.get('denseCommandGridCertificate', {})
     if (grid.get('passed') is not True or grid.get('originalStrictMapUsed') is not True
             or not 0. < grid.get('maximumStepS', math.inf) <= .005+1e-14):
         raise ValueError('strict 200Hz command-grid certificate required')
     rows = result.get('denseCommandSamples', [])
     durations = result.get('path', {}).get('phaseDurationsS', [])
-    parent_durations = parent.get('path', {}).get('phaseDurationsS', [])
     entry_elapsed = result.get('inputBinding', {}).get('entryLiftElapsedS')
     if (type(entry_elapsed) not in (float, int) or not math.isfinite(entry_elapsed)
             or not 0. <= entry_elapsed < .8 or len(durations) != 3
-            or not np.array_equal(np.asarray(durations), np.asarray(parent_durations))
+            or (parent_durations is not None and not np.array_equal(np.asarray(durations), np.asarray(parent_durations)))
             or max(abs(np.asarray(durations)-[.8-entry_elapsed, 1.2, 1.])) > 1e-14):
         raise ValueError('dense command-grid changed original phase clocks')
     if grid.get('sampleCount') != len(rows) or any(r.get('accepted') is not True for r in rows):
@@ -349,6 +356,178 @@ def verify_exchange_history(result, proposal_path, original_stage):
         raise ValueError('exchange does not cover every original translate face/interval')
 
 
+def retained_json(directory, name, expected, role):
+    if not isinstance(name, str) or Path(name).name != name:
+        raise ValueError('bound '+role+' basename required')
+    path = Path(directory)/name
+    if not path.is_file() or sha(path) != expected:
+        raise ValueError('retained '+role+' bytes differ')
+    return json.loads(path.read_text()), path
+
+
+def verify_global_phase_support_coverage(result, *, required_phases):
+    coverage = result.get('globalPhaseSupportEnvelopeCoverage', {})
+    equations = result['inputBinding'].get('support', {}).get('equations', [])
+    count = len(equations); intervals = [[0., .25], [.25, .5], [.5, .75], [.75, 1.]]
+    expected = {(phase, kind, face, lo, hi) for phase in required_phases
+        for kind in ('COM', 'capture') for face in range(count) for lo, hi in intervals}
+    records = coverage.get('constraints', [])
+    actual = {(r.get('phase'), r.get('pointKind'), r.get('faceIndex'),
+        *r.get('intervalFractions', [])) for r in records}
+    original = 13*(50+2*count)
+    if (count < 3 or coverage.get('schema') != 1
+            or coverage.get('phases') != list(required_phases)
+            or coverage.get('sourceSupportEquations') != equations
+            or coverage.get('sourceSupportEquationsSHA256') != digest(equations)
+            or coverage.get('faceCount') != count or coverage.get('pointKinds') != ['COM', 'capture']
+            or coverage.get('originalSupportReserveM') != .003
+            or coverage.get('intervalsFractions') != intervals
+            or coverage.get('closedIntervalEndpointsCompared') is not True
+            or coverage.get('wholePathProven') is not False
+            or len(records) != len(expected) or actual != expected
+            or {r.get('rowIndex') for r in records} != set(range(original+2, original+2+len(expected)))
+            or result.get('activeConstraintRowCounts') != dict(original=original,
+                retainedLiftLandEnvelopes=2, globalPhaseSupportEnvelopes=len(expected),
+                total=original+2+len(expected))):
+        raise ValueError('retarget does not cover every original support face across all flight phases')
+
+
+def verify_current_input_exchange(result, directory, seed_knots, anchor_key):
+    """Continue only exact failed major iterates from this same causal input."""
+    history = result.get('exchangeHistory', [])
+    if not isinstance(history, list):
+        raise ValueError('same-input exchange history must be a list')
+    initial = seed_knots
+    for index, entry in enumerate(history):
+        parent, _ = retained_json(directory, entry.get('filename'), entry.get('SHA256'),
+            'same-input exchange parent')
+        candidate = parent.get('unadmittedFinalIndependentKnotsRad')
+        candidate_key = digest(candidate)
+        array = np.asarray(candidate, dtype=float)
+        progress = parent.get('progressRecords', [])
+        expected = dict(inputBindingSHA256=digest(result['inputBinding']),
+            activationRetargetingSHA256=digest(result['activationRetargeting']),
+            parentResultFilename=entry.get('filename'), parentResultSHA256=entry.get('SHA256'),
+            sourceCandidateSHA256=candidate_key,
+            finalCandidateSHA256=candidate_key, initialContinuationCandidateSHA256=candidate_key,
+            objectiveAnchorSHA256=anchor_key, optimizerCalls=1,
+            optimizerSuccess=parent.get('optimizerSuccess'), terminalState=parent.get('terminalState'),
+            finalCandidateOrigin=parent.get('finalCandidateOrigin'),
+            completedMajorIteration=parent.get('completedCallbackIterations'), hardLimitsUnchanged=True)
+        if (array.shape != (3, 9) or not np.isfinite(array).all()
+                or type(parent.get('optimizerSuccess')) is not bool
+                or type(expected['completedMajorIteration']) is not int or expected['completedMajorIteration'] < 1
+                or parent.get('version') != REFINED_POLISH_VERSION or parent.get('accepted') is not False
+                or parent.get('inputBinding') != result['inputBinding']
+                or parent.get('activationRetargeting') != result['activationRetargeting']
+                or parent.get('exchangeHistory', []) != history[:index]
+                or parent.get('totalProducerOptimizerCalls') != 5+index
+                or parent.get('optimizerCalls') != 1
+                or parent.get('finalCandidateSHA256') != candidate_key
+                or parent.get('initialContinuationIndependentKnotsRad') != initial
+                or any(parent.get('twoStageFeasibilityRestoration', {}).get(k) != v
+                       for k, v in result['twoStageFeasibilityRestoration'].items()
+                       if k != 'maximumCorrectionRad')
+                or not progress or progress[-1].get('iteration') != expected['completedMajorIteration']
+                or progress[-1].get('candidateSHA256') != candidate_key
+                or progress[-1].get('unadmittedIndependentKnotsRad') != candidate
+                or parent.get('finalCandidateOrigin') not in
+                   ('last-completed-major-iteration', 'optimizer-returned-final')
+                or any(type(entry.get(k)) is not type(v) or entry.get(k) != v for k, v in expected.items())):
+            raise ValueError('same-input exchange changed a failed major iterate or causal problem')
+        initial = candidate
+    if (result.get('initialContinuationIndependentKnotsRad') != initial
+            or result.get('initialContinuationCandidateSHA256') != digest(initial)):
+        raise ValueError('same-input exchange did not continue its exact linked final iterate')
+    return len(history)
+
+
+def verify_activation_retargeting(result, binding, proposal_path):
+    """An explicit change of causal input, never a relabeled old certificate."""
+    transition = result['activationRetargeting']; directory = Path(proposal_path).parent
+    expected = dict(schema=1, originalHardLimitsUnchanged=True,
+        referenceFamilyUnchanged=True, physicalStateInstalled=False)
+    if (result.get('version') != REFINED_POLISH_VERSION or result.get('accepted') is not True
+            or any(type(transition.get(k)) is not type(v) or transition.get(k) != v
+                   for k, v in expected.items())):
+        raise ValueError('actual activation transition semantics differ')
+    seed, seed_path = retained_json(directory, transition.get('sourceProposalFilename'),
+        transition.get('sourceProposalSHA256'), 'source proposal')
+    seed_binding, _ = retained_json(directory, transition.get('sourceProposalBindingFilename'),
+        transition.get('sourceProposalBindingSHA256'), 'source proposal binding')
+    if (seed.get('activationRetargeting') is not None or seed.get('accepted') is not True
+            or seed_binding.get('proposalSHA256') != sha(seed_path)):
+        raise ValueError('activation source is not the retained accepted offline proposal')
+    verify_feasibility_stages(seed, seed_binding, seed_path)
+    for key in ('modelSHA256', 'sourceXMLSHA256', 'armMapSemanticSHA256',
+                'originalSourceLimitsRad', 'legOriginRightLeftRad', 'stanceSide', 'swingSide'):
+        if binding.get(key) != seed_binding.get(key):
+            raise ValueError('activation retarget changed original model/map/limits/sides')
+    retained, _ = retained_json(directory, transition.get('retainedActivationInputFilename'),
+        transition.get('retainedActivationInputSHA256'), 'actual activation input')
+    context = ReferenceContext.from_receipt(retained['referenceContext'])
+    support = CurrentSupport(**retained['currentSupport']); support.validate_identity(context)
+    support.validate_com(context.com)
+    if context.phase != 'transfer':
+        raise ValueError('actual stationary transfer input required')
+    captured = retained.get('proposal', {})
+    seed_knots = seed.get('independentKnotsRad'); seed_key = digest(seed_knots)
+    if (captured.get('proposalSHA256') != sha(seed_path)
+            or captured.get('binding') != seed_binding
+            or captured.get('independentKnotsRad') != seed_knots
+            or captured.get('offlineReceiptSHA256') != digest(seed)
+            or transition.get('sourceProposalCandidateSHA256') != seed_key
+            or transition.get('initialContinuationCandidateSHA256') != seed_key):
+        raise ValueError('activation continuation differs from the exact rejected current proposal')
+    native_name = retained.get('retainedPayload')
+    if not isinstance(native_name, str) or Path(native_name).name != native_name:
+        raise ValueError('bound actual native payload basename required')
+    native_path = directory/native_name
+    if not native_path.is_file() or sha(native_path) != retained.get('compressedPayloadSHA256'):
+        raise ValueError('retained activation native payload differs')
+    payload = zlib.decompress(native_path.read_bytes())
+    if (len(payload) != retained.get('actualPayloadBytes')
+            or hashlib.sha256(payload).hexdigest() != retained.get('actualPayloadSHA256')):
+        raise ValueError('actual activation payload identity differs')
+    identity = dict(activationContextSHA256=context.receipt()['contextSHA256'],
+        actualPayloadSHA256=retained['actualPayloadSHA256'],
+        compressedPayloadSHA256=retained['compressedPayloadSHA256'],
+        activationSourceStep=context.source_step, activationSourceTimeS=context.source_time)
+    if any(transition.get(k) != v for k, v in identity.items()):
+        raise ValueError('activation transition identifies a different current state')
+    current = result.get('inputBinding', {})
+    if (current.get('inputSHA256') != transition['retainedActivationInputSHA256']
+            or current.get('contextSHA256') != identity['activationContextSHA256']
+            or current.get('currentSupportSHA256') != support.key
+            or current.get('actualFeetModelSHA256') != digest(retained['currentFeetModel'])
+            or current.get('sourceNativeStep') != context.source_step
+            or current.get('sourceTimeS') != context.source_time
+            or current.get('entryLiftElapsedS') != 0.
+            or current.get('heading') != json.loads(context.config_json).get('heading')
+            or any(current.get(k) != binding.get(k) for k in
+                   ('modelSHA256', 'sourceXMLSHA256', 'armMapSemanticSHA256'))
+            or current.get('support', {}).get('equations') != support.equations().tolist()):
+        raise ValueError('new proposal input does not bind the retained current geometry')
+    old_stage = seed['twoStageFeasibilityRestoration']; stage = result.get('twoStageFeasibilityRestoration', {})
+    if any(stage.get(k) != v for k, v in old_stage.items() if k != 'maximumCorrectionRad'):
+        raise ValueError('activation retarget changed the original objective anchor or caps')
+    anchor = np.asarray(old_stage['sourceCandidateIndependentKnotsRad'])
+    exchange_count = verify_current_input_exchange(result, directory, seed_knots, old_stage['sourceCandidateSHA256'])
+    knots = np.asarray(result.get('independentKnotsRad'))
+    if (transition.get('objectiveAnchorSHA256') != old_stage['sourceCandidateSHA256']
+            or knots.shape != (3, 9) or not np.isfinite(knots).all()
+            or abs(stage.get('maximumCorrectionRad', math.inf)-float(np.max(abs(knots-anchor)))) > 1e-14
+            or result.get('totalProducerOptimizerCalls') != seed['totalProducerOptimizerCalls']+1+exchange_count):
+        raise ValueError('activation objective/correction/optimizer count differs')
+    samples = result.get('analyticSamples', [])
+    nodes = [(p, f) for p in PHASES for f in ANALYTIC_FRACTIONS]
+    if (len(samples) != len(nodes) or any(r.get('accepted') is not True
+            or r.get('phase') != p or r.get('fraction') != f for r, (p, f) in zip(samples, nodes))):
+        raise ValueError('complete original strict 123-sample certificate required')
+    verify_finite_path_certificate(result)
+    verify_global_phase_support_coverage(result, required_phases=PHASES)
+
+
 def frozen_proposal(proposal_path, binding_path=None):
     """Read-only preflight, deliberately independent of any native World.
 
@@ -402,15 +581,24 @@ def frozen_proposal(proposal_path, binding_path=None):
         if (not isinstance(name, str) or Path(name).name != name
                 or sources.get(name) != result.get('plannerFastGeometrySHA256')):
             raise ValueError('fast analytic planner source binding required')
+    if result.get('strictCertificateCacheUsed') is True:
+        name = result.get('strictCertificateCacheSourceName')
+        if (name != 'strict_reference_cache.py'
+                or sources.get(name) != result.get('strictCertificateCacheSHA256')):
+            raise ValueError('original strict certificate cache source binding required')
     for name, expected in sources.items():
         if Path(name).name != name or sha(source_path(name)) != expected:
             raise ValueError('proposal source differs: '+name)
     if sha(ROOT/'rust/crates/model/data/getup-v1.json') != binding['modelSHA256']:
         raise ValueError('proposal FK source model differs')
     # Canonical JSON owns all retained values, with no caller aliases or edits.
-    return canonical(dict(proposalSHA256=sha(path), proposalFilename=path.name,
+    value = dict(proposalSHA256=sha(path), proposalFilename=path.name,
         binding=binding, independentKnotsRad=knots.tolist(),
-        offlineReceiptSHA256=digest(result), flightOptimizerCallsAtRuntime=0))
+        offlineReceiptSHA256=digest(result), flightOptimizerCallsAtRuntime=0)
+    if result.get('activationRetargeting') is not None:
+        value.update(activationRetargeting=result['activationRetargeting'],
+            activationInputBinding=result['inputBinding'])
+    return canonical(value)
 
 
 def live_arm_map(mapping):
@@ -452,6 +640,21 @@ def current_support(controller, context, *, triangle=True):
         tuple(map(tuple, corners)), tuple(bool(x) for x in present), ids, bool(triangle))
     support.validate_identity(context)
     return support
+
+
+def verify_current_activation_identity(proposal, context, support, feet, payload):
+    """Retargeted geometry is valid only for its exact retained causal state."""
+    transition = proposal.get('activationRetargeting')
+    if transition is None:
+        return
+    bound = proposal.get('activationInputBinding', {})
+    if (context.source_step != transition.get('activationSourceStep')
+            or context.source_time != transition.get('activationSourceTimeS')
+            or context.receipt()['contextSHA256'] != transition.get('activationContextSHA256')
+            or hashlib.sha256(payload).hexdigest() != transition.get('actualPayloadSHA256')
+            or support.key != bound.get('currentSupportSHA256')
+            or digest([np.asarray(p).tolist() for p in feet]) != bound.get('actualFeetModelSHA256')):
+        raise ValueError('current activation differs from explicitly retargeted causal input')
 
 
 def actual_contacts(controller, support, *, both_feet=False):
@@ -621,6 +824,7 @@ class WholeBodyController(ReviewedController):
             MatrixJet.rest(feet[self.stance_side]), mapping, self.leg_origin)
         checks = []; static_samples = []; static = None
         try:
+            verify_current_activation_identity(proposal, context, support, feet, before)
             cycle = WholeBodyCycle(realizer, context, self.w.limits, self.heading,
                 proposal['independentKnotsRad'])
             for phase, duration in zip(PHASES, cycle.durations):
@@ -722,6 +926,7 @@ class WholeBodyController(ReviewedController):
             actual_hull_equations=support.equations(), source_identity=identity, heading_rad=heading)
         self._wholebody_settle_receipt = dict(accepted=False, endpoint=endpoint.receipt(),
             phaseBoundary=boundary, firstCommandIdentity=identity,
+            incomingReferenceContext=context.receipt(), outgoingReferenceContext=outgoing.receipt(),
             originalDurationS=1.52, remainingDurationS=1.52-context.elapsed,
             contactSeekOwnershipTransition='current prepared seek embedded once in outgoing slacks; coupled same-actual-foot return then owns feet',
             initialOwnedSeekJet=seek, laterSeekMustRemainRestAtSameDepth=True)

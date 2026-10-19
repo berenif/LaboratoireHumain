@@ -123,6 +123,15 @@ class EndpointTests(unittest.TestCase):
         result = self.solve(); r = result.receipt(); r['accepted'] = False
         self.assertTrue(result.receipt()['accepted'])
 
+    def test_receipt_retains_detached_solved_geometry_and_binds_its_identity(self):
+        result = self.solve(); receipt = result.receipt()
+        geometry = {k:receipt[k] for k in ('lower', 'full_joints', 'root_model')}
+        self.assertEqual([len(geometry[k]) for k in geometry], [15, 21, 16])
+        self.assertEqual(receipt['geometrySHA256'], digest(geometry))
+        self.assertEqual(tuple(receipt['lower']), result.lower)
+        receipt['lower'][0] += .01
+        self.assertEqual(tuple(result.receipt()['lower']), result.lower)
+
     def path(self):
         from wholebody_cycle_reference import StanceRealizedIK
         spec = importlib.util.spec_from_file_location('quiet_test_existing_kin', REPO/'scripts/getup-step-reference.py')
