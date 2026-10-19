@@ -1,0 +1,1741 @@
+{
+  "schema": 1,
+  "checkedAt": "2026-10-19T16:52:56.755Z",
+  "scope": "Presentation-only old-blend sampling fix, actual desktop Chromium-headless-shell/WebGL2 evidence. No worker, physical model, force, solver profile default, driver, transport or scheduler change. No extrapolation. Separate synthetic renderer fixture, exact actual-app physical state parity, clean timed standing/pointer observations and visual regressions.",
+  "rendererChecksPassed": true,
+  "interactionLatencyQualified": false,
+  "releaseAccepted": false,
+  "productionNumericalProfileChanged": false,
+  "build": {
+    "manifest": {
+      "path": "outputs/browser-capability-20261019/presentation-interpolation/build-manifest.json",
+      "sha256": "e450dc0b1ae871b91fbbbeb612dc82beabaae7d171aef17f203ed4bb15fffdfe"
+    },
+    "baseCommit": "1954c6b608abfb5270ee68f33295a9c5b32b9181",
+    "rendererSourceSha256": {
+      "rust/crates/renderer/src/gpu.rs": "1124e22ec97b9f7aaa549050f55e158366b400142bf238b7e04e7a6a61c512be",
+      "rust/crates/renderer/src/lib.rs": "3a70008d34bc2c0de814f3eba24e9da8ed5066ec4149ee896ad2838711dc1778",
+      "rust/crates/renderer/src/presentation.rs": "6f7d74d360101015a56e97aebc268ce89ffef9f6a0fcacff6811e39356d8d7e5"
+    },
+    "artifact": "outputs/browser-capability-20261019/presentation-interpolation/app-candidate-final",
+    "artifactSha256": {
+      "app-1df6634f608f8d80.css": "6f9e3128c49954cf4c159cd1b3cb0375ca4293e134429847288a5e6549a44271",
+      "index.html": "221d98d000ed295c49b44fb777e57d182caf3cc8e0e04083bbc8afb8ad206bce",
+      "lh-browser-d4ccffd02e73cb75.js": "ec9a8317fc58b63cf4f6874c3ed03808743c61c19a9c485020f0dc64dfd9c4f5",
+      "lh-browser-d4ccffd02e73cb75_bg.wasm": "5895574d87e93f6a2eddec98662797b16c298c90f2ee8298f6d72917f4d1b07e",
+      "lh_worker.js": "f5ab14e78b52ad83577646105b61526484096924ec39f5a72d8ee039cb652da2",
+      "lh_worker_bg.wasm": "4fa298cfff4340fd3c5e65ebd95d2dd714be84639b7e7acc23cb2180a4e96c07",
+      "sim-worker.js": "a3a2b18c222c045fc08bf19aff2e96b92f0bc18ad6023bcca660195054267996",
+      "snippets/lh-browser-575491a8d42d44d5/driver.js": "4c6281e19c4540e3ba72a74a5b1514b5d1b9c58e56c1f8a2dbfb3adb4812d74e"
+    },
+    "workerSha256": "4fa298cfff4340fd3c5e65ebd95d2dd714be84639b7e7acc23cb2180a4e96c07",
+    "driverSha256": "4c6281e19c4540e3ba72a74a5b1514b5d1b9c58e56c1f8a2dbfb3adb4812d74e",
+    "sameWorkerAndDriverTransport": true,
+    "toolchain": "Pinned official rust1.89.0,Trunk0.21.14,wasm-bindgen0.2.108; no extra Cargo features/target flags. Browser/main renderer only built from frozen1954c6b+three renderer files. Physical worker is immutable4fa298cf.",
+    "nativeRendererTests": {
+      "path": "outputs/browser-capability-20261019/presentation-interpolation/native-renderer-tests.log",
+      "sha256": "1bc58c3ae478ac9b500296c4d02816611eb368dc72e9203c4662a3d082eaac28",
+      "passed": 14,
+      "failed": 0,
+      "newClockTests": 8
+    },
+    "clippy": {
+      "passed": false,
+      "executed": false,
+      "reason": "Pinned official1.89.0 toolchain does not have cargo-clippy component; no substitute toolchain or dependency change.",
+      "log": "outputs/browser-capability-20261019/presentation-interpolation/native-renderer-clippy.log",
+      "sha256": "fbf1ba8a44deeb373aa9c73598907d7dfc3d5ed6d568c9dd680dbbe5948c66e9"
+    }
+  },
+  "explicitProfile": {
+    "path": "docs/evidence/profiles/getup-800hz-3plus1-qualification-v1.json",
+    "sha256": "a197f6ba375c8f502904353a540c287549034d1df616b1c125c88ba6e94ee899",
+    "profile": {
+      "id": "getup-800hz-3plus1-qualification-v1",
+      "dt_s": 0.00125,
+      "tick_substeps": 20,
+      "contact_friction_model": "coulomb",
+      "solver_iterations": 3,
+      "internal_pgs_iterations": 20,
+      "fall_internal_pgs_iterations": 32,
+      "additional_body_iterations": 1,
+      "allowed_linear_error_m": 0.001,
+      "prediction_distance_m": 0.002,
+      "motor_scale": 1,
+      "aggregate_motor_cap_nm": 920,
+      "angular_damping": 0,
+      "contact_skin_m": 0,
+      "max_ccd_substeps": 4,
+      "disable_solver_speed_cap": true,
+      "posture_stiffness_multiplier": 1,
+      "posture_damping_multiplier": 1,
+      "supported_tilt_gain": 2,
+      "supported_com_gain_rad_per_m": 5,
+      "supported_com_velocity_gain_s_rad_per_m": 5,
+      "supported_angular_velocity_gain_s": 2,
+      "grab_limits": {
+        "angular_frequency_rad_s": 16,
+        "target_speed_m_s": 1.5,
+        "target_acceleration_m_s2": 8,
+        "force_n": 180,
+        "torque_nm": 12,
+        "positive_power_w": 36
+      },
+      "reaching_iterations": 6,
+      "reaching_coordinate_increment_rad": 0.15,
+      "reaching_damping_m2": 0.01,
+      "corrective_steps_enabled": false,
+      "recovery_enabled": false,
+      "getup_policy_enabled": false
+    },
+    "outerPhysicsHz": 800,
+    "controlHz": 40,
+    "substepsPerTick": 20
+  },
+  "implementation": {
+    "cause": "Old accept_snapshot restarted its physical-interval blend from the most recently DRAWN body/environment/striker pose and time. Multiple accepted replies before a draw could repeatedly rebase from stale displayed state, accumulating presentation lag.",
+    "fix": "Shared PresentationClock samples the OLD active blend at the new arrival before replacing interval/target/arrival. New interval still comes from consecutive physical target times. One old f32 alpha rebases body,environment,striker and f64 presentation time. Displayed/picking caches remain unchanged during acceptance and update on draw. One snap policy covers first/new generation,pause,discontinuity,geometry/presence change and nonpositive target delta.",
+    "limits": "Clamped interpolation between observed endpoints only, no physical extrapolation or worker mutation. Explicit reset/discontinuity snap remains a presentation response to the existing physical snapshot. Before-first-draw caches, generation-change camera transition and pre-submit cache updates on failed draw are documented nonblocking caveats below."
+  },
+  "causalReplay": {
+    "raw": {
+      "path": "outputs/browser-capability-20261019/presentation-interpolation/trace-baseline-v2/result.json",
+      "sha256": "d1f1307e2a4bf914df0b6b7ebce26a8d85a2f54ddc9bd583fb5f6c903600d485"
+    },
+    "replay": {
+      "path": "outputs/browser-capability-20261019/presentation-interpolation/trace-baseline-v2/replay.json",
+      "sha256": "db6b665e7158b0637993fc546df703a719517fac58367b29b529ea0c35205c91"
+    },
+    "method": "Scalar-time replay of the exact ordered accept/draw calls of the original renderer. Exact original f32 alpha rounding and f64 time arithmetic reproduced. Counterfactual advances old active blend at each accept; submitted caches remain draw-only. No pose, GPU-completion or measured candidate-browser improvement claim.",
+    "traceEvents": 610,
+    "maximumOriginalReplayErrorSeconds": 0,
+    "warmAfterTick120": {
+      "observedLatestTargetMinusDisplayedMs": {
+        "count": 162,
+        "mean": 88.1388149178961,
+        "p50": 74.3886829210405,
+        "p95": 204.35437403395352,
+        "max": 242.73240073348302
+      },
+      "candidateLatestTargetMinusDisplayedMs": {
+        "count": 162,
+        "mean": 25.185951023844282,
+        "p50": 25.000000000000355,
+        "p95": 35.74825015729388,
+        "max": 37.17477665144475
+      },
+      "candidateAdvanceOverObservedMs": {
+        "count": 162,
+        "mean": 62.95286389405185,
+        "p50": 50.691185338560544,
+        "p95": 168.70396725530236,
+        "max": 208.15614188077092
+      },
+      "rafTimestampBeforeEntryMs": {
+        "count": 162,
+        "mean": 1.7888888904479716,
+        "p50": 0.40000000298005034,
+        "p95": 10.400000000745422,
+        "max": 16.60000000297987
+      }
+    },
+    "limits": "Exact baseline replay establishes the draw-dependent cause. Its sampled-old-blend values are counterfactual predictions on an identical event schedule, not measured candidate performance. Actual candidate measurements follow separately. Capture may overlap native workloads, so its absolute pace is not clean timing."
+  },
+  "actualRendererFixture": {
+    "raw": {
+      "path": "outputs/browser-capability-20261019/presentation-interpolation/renderer-fixture-final-v2/result.json",
+      "sha256": "175184b79e6694c8ae74fc9d646ea3c760a004fe680fec39a15485012a3f7f42"
+    },
+    "passed": true,
+    "scope": "Actual WASM/WebGL2 renderer-only controlled pose/clock fixture on a separate canvas. Synthetic pose inputs never enter the physical worker. Not actual-body physical proof.",
+    "fixture": {
+      "stages": [
+        {
+          "name": "no-draw-arrivals",
+          "time": 0.0294000003606081,
+          "position": [
+            -0.3219187259674072,
+            0.7912116050720215,
+            0.19161361455917358
+          ],
+          "pickingUnchangedUntilDraw": true
+        },
+        {
+          "name": "pause",
+          "time": 0.1
+        },
+        {
+          "name": "zero-time",
+          "time": 0.1
+        },
+        {
+          "name": "reset-generation",
+          "time": 0
+        },
+        {
+          "name": "stale-invalid-rejections",
+          "rejected": 8,
+          "time": 0.025
+        },
+        {
+          "name": "discontinuity",
+          "time": 0.05
+        }
+      ],
+      "physicalInputObjectsUnchanged": true,
+      "actualRightHandTrianglePicked": true,
+      "actualSubmittedPositionAndPickStableAcrossAccept": true,
+      "physicalWorker": {
+        "tick": 0,
+        "time": 0,
+        "workerInstances": 1
+      },
+      "rendererDiagnostics": {
+        "adapter": {
+          "device": 0,
+          "deviceType": "Cpu",
+          "driver": "",
+          "driverInfo": "WebGL 2.0 (OpenGL ES 3.0 Chromium)",
+          "name": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)",
+          "vendor": 0
+        },
+        "backend": "WebGL2",
+        "camera": {
+          "distance": 6.800000190734863,
+          "pitch": 0.2199999988079071,
+          "yaw": 0.6499999761581421
+        },
+        "drawCalls": 1,
+        "floorEnabled": true,
+        "frames": 10,
+        "generation": 2,
+        "height": 600,
+        "poseSlots": 25,
+        "renderFormat": "Rgba8UnormSrgb",
+        "renderedEnvironmentPieces": 0,
+        "renderedSegments": 16,
+        "renderedStrikerPieces": 4,
+        "strikerPosition": [
+          0.10000000149011612,
+          3.450000047683716,
+          2.0999999046325684
+        ],
+        "tick": 2,
+        "vertices": 27612,
+        "width": 900
+      }
+    },
+    "geometryFixture": {
+      "passed": true,
+      "kind": "protocol-to-playground-presence-change",
+      "time": 0.075,
+      "environmentPieces": 26,
+      "strikerPieces": 0,
+      "physicalWorkerTick": 0
+    },
+    "limits": "Synthetic pose/clock inputs go only to a separate real WASM/WebGL2 renderer canvas. The actual physical worker stays tick0; fixture results are not physical standing evidence. GPU wiring verifies body/striker clock coherence and26piece environment presence/snap; no compositor-completion measurement."
+  },
+  "matchedOrdinaryApp": {
+    "summary": {
+      "path": "outputs/browser-capability-20261019/presentation-interpolation/paired240-summary.json",
+      "sha256": "b98439f4bcdc2d98e325ec76534508b9fd78b540ba0577974ba7f7cd05f9e95d"
+    },
+    "method": "Sequential baseline→renderer→renderer→baseline; ordinary rendered app automatic scheduler0..240ticks,6physical seconds with complete explicit3+1 profile, no input/encoder. Physics owner held all compiles/probes idle; candidate changes only main rendererWASM. Full/after-tick120 frame summaries use exact start..final-reply window. No force/display completion claim.",
+    "exactPhysicalSnapshotsAcrossAllFour": true,
+    "snapshotsPerRun": 241,
+    "poseWordsPerSnapshot": 325,
+    "onlyExcludedFields": [
+      "snapshot.diagnostics.controller_ms",
+      "snapshot.diagnostics.update_ms"
+    ],
+    "runs": [
+      {
+        "name": "baseline-forward",
+        "raw": {
+          "path": "outputs/browser-capability-20261019/presentation-interpolation/baseline-forward-240/report.json",
+          "sha256": "9f181d9625ecca47b31a1565db0800b3ba6654a8c056e7940d14226417ec5a00"
+        },
+        "worker": "4fa298cfff4340fd3c5e65ebd95d2dd714be84639b7e7acc23cb2180a4e96c07",
+        "profileSha256": "a197f6ba375c8f502904353a540c287549034d1df616b1c125c88ba6e94ee899",
+        "wallSeconds": 6.02110000000149,
+        "simulationSeconds": 6,
+        "pace": 0.9964956569395153,
+        "workerUpdateMs": {
+          "count": 240,
+          "mean": 16.51291666685914,
+          "p50": 16.399999998509884,
+          "p95": 19.800000000745058,
+          "max": 81.70000000298023,
+          "total": 3963.1000000461936
+        },
+        "roundtripMs": {
+          "count": 240,
+          "mean": 21.46958333326814,
+          "p50": 18.199999999254942,
+          "p95": 30.5,
+          "max": 97.69999999925494,
+          "total": 5152.699999984354
+        },
+        "full": {
+          "frames": 357,
+          "snapshotAgeMs": {
+            "count": 357,
+            "mean": 64.98228783554212,
+            "p50": 53.15203560107875,
+            "p95": 107.78696100143861,
+            "p99": 411.1002441421151,
+            "max": 494.70024413987994
+          },
+          "physicalLatestMinusPresentedMs": {
+            "count": 357,
+            "mean": 44.39234187445473,
+            "p50": 38.59726499037197,
+            "p95": 101.34283050924031,
+            "p99": 155.62552161899723,
+            "max": 218.94795157037828
+          },
+          "frameIntervalMs": {
+            "count": 357,
+            "mean": 16.859383753503487,
+            "p50": 16.699999999254942,
+            "p95": 18.100000001490116,
+            "p99": 23.799999997019768,
+            "max": 43.5
+          },
+          "frameCpuMs": {
+            "count": 357,
+            "mean": 0.8683473389251393,
+            "p50": 0.8000000007450581,
+            "p95": 1.2000000029802322,
+            "p99": 1.7000000029802322,
+            "max": 18.699999999254942
+          },
+          "backlogSeconds": {
+            "count": 357,
+            "mean": 0.05070672268907619,
+            "p50": 0.03330000000000034,
+            "p95": 0.17500000000000027,
+            "p99": 0.2000000000000001,
+            "max": 0.2084000000000002
+          }
+        },
+        "warmAfterTick120": {
+          "frames": 180,
+          "snapshotAgeMs": {
+            "count": 180,
+            "mean": 49.42645161411302,
+            "p50": 47.70207706767542,
+            "p95": 70.9861932856229,
+            "p99": 87.27501195253262,
+            "max": 87.44068109228465
+          },
+          "physicalLatestMinusPresentedMs": {
+            "count": 180,
+            "mean": 36.51631254381804,
+            "p50": 32.896323535238196,
+            "p95": 72.95992025745602,
+            "p99": 96.11159096564936,
+            "max": 96.75390021385333
+          },
+          "frameIntervalMs": {
+            "count": 180,
+            "mean": 16.666111111123527,
+            "p50": 16.699999999254942,
+            "p95": 17.399999998509884,
+            "p99": 17.899999998509884,
+            "max": 18.300000000745058
+          },
+          "frameCpuMs": {
+            "count": 180,
+            "mean": 0.7799999999089373,
+            "p50": 0.8000000007450581,
+            "p95": 1.1000000014901161,
+            "p99": 1.2000000029802322,
+            "max": 1.300000000745058
+          },
+          "backlogSeconds": {
+            "count": 180,
+            "mean": 0.03332444444444497,
+            "p50": 0.03320000000000044,
+            "p95": 0.041600000000000074,
+            "p99": 0.041600000000000525,
+            "max": 0.04990000000000026
+          }
+        },
+        "bounds": {
+          "maximumQueueDepth": 0,
+          "maximumOutstandingAdvances": 1,
+          "maximumAdvanceTicks": 1,
+          "maximumTransferBuffers": 3
+        },
+        "exactNormalizedSnapshotSha256": "cdceb00fe470d43bed2eb31583960f519ba51ea7ef68673a3232274deec2db4c",
+        "poseF32WordSha256": "2eedf1c9776692781127b7f7eee9320339ac3e52d7271b78d86ae47cd2eb35e7"
+      },
+      {
+        "name": "candidate-forward",
+        "raw": {
+          "path": "outputs/browser-capability-20261019/presentation-interpolation/candidate-forward-240/report.json",
+          "sha256": "fa7152e9f944ae15c9723400bd366471314aeddb8ed0d65fcb18b131206c2267"
+        },
+        "worker": "4fa298cfff4340fd3c5e65ebd95d2dd714be84639b7e7acc23cb2180a4e96c07",
+        "profileSha256": "a197f6ba375c8f502904353a540c287549034d1df616b1c125c88ba6e94ee899",
+        "wallSeconds": 6.0620999999977645,
+        "simulationSeconds": 6,
+        "pace": 0.989756025140168,
+        "workerUpdateMs": {
+          "count": 240,
+          "mean": 16.971666666601475,
+          "p50": 16.600000001490116,
+          "p95": 21.399999998509884,
+          "max": 71.80000000074506,
+          "total": 4073.199999984354
+        },
+        "roundtripMs": {
+          "count": 240,
+          "mean": 23.326666666846723,
+          "p50": 19.5,
+          "p95": 32.80000000074506,
+          "max": 79.40000000223517,
+          "total": 5598.400000043213
+        },
+        "full": {
+          "frames": 356,
+          "snapshotAgeMs": {
+            "count": 356,
+            "mean": 44.35153612104498,
+            "p50": 35.15842369613529,
+            "p95": 57.72713603179727,
+            "p99": 501.300048828125,
+            "max": 584.5000488311052
+          },
+          "physicalLatestMinusPresentedMs": {
+            "count": 356,
+            "mean": 21.166635946237257,
+            "p50": 22.399999946355997,
+            "p95": 34.14725173298616,
+            "p99": 35.7980844530077,
+            "max": 36.46362442793749
+          },
+          "frameIntervalMs": {
+            "count": 356,
+            "mean": 17.057303370792795,
+            "p50": 16.699999999254942,
+            "p95": 20.199999999254942,
+            "p99": 29.699999999254942,
+            "max": 35.69999999925494
+          },
+          "frameCpuMs": {
+            "count": 356,
+            "mean": 0.8311797753813561,
+            "p50": 0.8000000007450581,
+            "p95": 1.2999999970197678,
+            "p99": 2.300000000745058,
+            "max": 4.100000001490116
+          },
+          "backlogSeconds": {
+            "count": 356,
+            "mean": 0.0646426966292139,
+            "p50": 0.041500000000000446,
+            "p95": 0.1748999999999999,
+            "p99": 0.18330000000000013,
+            "max": 0.19160000000000008
+          }
+        },
+        "warmAfterTick120": {
+          "frames": 179,
+          "snapshotAgeMs": {
+            "count": 179,
+            "mean": 35.90063207065149,
+            "p50": 35.35756461008714,
+            "p95": 46.3956367888095,
+            "p99": 67,
+            "max": 74.65524411391107
+          },
+          "physicalLatestMinusPresentedMs": {
+            "count": 179,
+            "mean": 20.84030378248282,
+            "p50": 22.199999913573798,
+            "p95": 33.80808773528088,
+            "p99": 35.64199896025588,
+            "max": 35.91655641405289
+          },
+          "frameIntervalMs": {
+            "count": 179,
+            "mean": 16.910055865934275,
+            "p50": 16.699999999254942,
+            "p95": 18.399999998509884,
+            "p99": 31.199999999254942,
+            "max": 35.69999999925494
+          },
+          "frameCpuMs": {
+            "count": 179,
+            "mean": 0.8100558660882812,
+            "p50": 0.8000000007450581,
+            "p95": 1.199999999254942,
+            "p99": 1.5,
+            "max": 4.100000001490116
+          },
+          "backlogSeconds": {
+            "count": 179,
+            "mean": 0.0339865921787715,
+            "p50": 0.03320000000000027,
+            "p95": 0.04160000000000082,
+            "p99": 0.05810000000000081,
+            "max": 0.06650000000000045
+          }
+        },
+        "bounds": {
+          "maximumQueueDepth": 0,
+          "maximumOutstandingAdvances": 1,
+          "maximumAdvanceTicks": 1,
+          "maximumTransferBuffers": 3
+        },
+        "exactNormalizedSnapshotSha256": "cdceb00fe470d43bed2eb31583960f519ba51ea7ef68673a3232274deec2db4c",
+        "poseF32WordSha256": "2eedf1c9776692781127b7f7eee9320339ac3e52d7271b78d86ae47cd2eb35e7"
+      },
+      {
+        "name": "candidate-reverse",
+        "raw": {
+          "path": "outputs/browser-capability-20261019/presentation-interpolation/candidate-reverse-240/report.json",
+          "sha256": "e88b2f9a3b4548fe1dc7adb05f5447ee4d52ba2c22fe83e84c1d7a82b0845f13"
+        },
+        "worker": "4fa298cfff4340fd3c5e65ebd95d2dd714be84639b7e7acc23cb2180a4e96c07",
+        "profileSha256": "a197f6ba375c8f502904353a540c287549034d1df616b1c125c88ba6e94ee899",
+        "wallSeconds": 6.038800000000745,
+        "simulationSeconds": 6,
+        "pace": 0.9935748824268497,
+        "workerUpdateMs": {
+          "count": 240,
+          "mean": 16.565833333258826,
+          "p50": 16.399999998509884,
+          "p95": 20.699999999254942,
+          "max": 86.69999999925494,
+          "total": 3975.7999999821186
+        },
+        "roundtripMs": {
+          "count": 240,
+          "mean": 21.840416666539387,
+          "p50": 17.899999998509884,
+          "p95": 33.5,
+          "max": 104.10000000149012,
+          "total": 5241.699999969453
+        },
+        "full": {
+          "frames": 353,
+          "snapshotAgeMs": {
+            "count": 353,
+            "mean": 45.786931115509056,
+            "p50": 34.21414656564593,
+            "p95": 61.49755366062527,
+            "p99": 482.99995117262006,
+            "max": 561.0999511703849
+          },
+          "physicalLatestMinusPresentedMs": {
+            "count": 353,
+            "mean": 21.506104416634216,
+            "p50": 23.100000061094583,
+            "p95": 34.20805776845198,
+            "p99": 36.785779820057925,
+            "max": 37.502504045743294
+          },
+          "frameIntervalMs": {
+            "count": 353,
+            "mean": 17.108498583571517,
+            "p50": 16.699999999254942,
+            "p95": 21.199999999254942,
+            "p99": 30.900000002235174,
+            "max": 50.900000002235174
+          },
+          "frameCpuMs": {
+            "count": 353,
+            "mean": 0.8223796035176296,
+            "p50": 0.8000000007450581,
+            "p95": 1.199999999254942,
+            "p99": 2.100000001490116,
+            "max": 5
+          },
+          "backlogSeconds": {
+            "count": 353,
+            "mean": 0.04956997167138861,
+            "p50": 0.03330000000000026,
+            "p95": 0.17500000000000016,
+            "p99": 0.2084000000000001,
+            "max": 0.22500000000000023
+          }
+        },
+        "warmAfterTick120": {
+          "frames": 180,
+          "snapshotAgeMs": {
+            "count": 180,
+            "mean": 33.56672374167368,
+            "p50": 34.0375634961365,
+            "p95": 45.550406048900186,
+            "p99": 51.87288942642044,
+            "max": 54.80000000074506
+          },
+          "physicalLatestMinusPresentedMs": {
+            "count": 180,
+            "mean": 20.548435714623142,
+            "p50": 22.499999962747097,
+            "p95": 32.799999415874304,
+            "p99": 34.67156659453696,
+            "max": 34.67327943857246
+          },
+          "frameIntervalMs": {
+            "count": 180,
+            "mean": 16.76000000000414,
+            "p50": 16.699999999254942,
+            "p95": 17.5,
+            "p99": 20.199999999254942,
+            "max": 40.599999997764826
+          },
+          "frameCpuMs": {
+            "count": 180,
+            "mean": 0.7322222223712338,
+            "p50": 0.7999999970197678,
+            "p95": 1,
+            "p99": 1.199999999254942,
+            "max": 1.199999999254942
+          },
+          "backlogSeconds": {
+            "count": 180,
+            "mean": 0.03361833333333383,
+            "p50": 0.033200000000000805,
+            "p95": 0.04160000000000044,
+            "p99": 0.04980000000000026,
+            "max": 0.049900000000000624
+          }
+        },
+        "bounds": {
+          "maximumQueueDepth": 0,
+          "maximumOutstandingAdvances": 1,
+          "maximumAdvanceTicks": 1,
+          "maximumTransferBuffers": 3
+        },
+        "exactNormalizedSnapshotSha256": "cdceb00fe470d43bed2eb31583960f519ba51ea7ef68673a3232274deec2db4c",
+        "poseF32WordSha256": "2eedf1c9776692781127b7f7eee9320339ac3e52d7271b78d86ae47cd2eb35e7"
+      },
+      {
+        "name": "baseline-reverse",
+        "raw": {
+          "path": "outputs/browser-capability-20261019/presentation-interpolation/baseline-reverse-240/report.json",
+          "sha256": "b5bec20ca3ca1f368f6ec018e09248271f622fa7f322438a8dafbc6303714d04"
+        },
+        "worker": "4fa298cfff4340fd3c5e65ebd95d2dd714be84639b7e7acc23cb2180a4e96c07",
+        "profileSha256": "a197f6ba375c8f502904353a540c287549034d1df616b1c125c88ba6e94ee899",
+        "wallSeconds": 6.030800000000745,
+        "simulationSeconds": 6,
+        "pace": 0.9948928831994526,
+        "workerUpdateMs": {
+          "count": 240,
+          "mean": 17.86041666640279,
+          "p50": 16.899999998509884,
+          "p95": 24.899999998509884,
+          "max": 81.79999999701977,
+          "total": 4286.49999993667
+        },
+        "roundtripMs": {
+          "count": 240,
+          "mean": 23.89958333343578,
+          "p50": 20.399999998509884,
+          "p95": 36.5,
+          "max": 93.5,
+          "total": 5735.900000024587
+        },
+        "full": {
+          "frames": 353,
+          "snapshotAgeMs": {
+            "count": 353,
+            "mean": 89.13245508791827,
+            "p50": 68.44754051477321,
+            "p95": 170.70051681771747,
+            "p99": 497.19999999925494,
+            "max": 590.3999999985099
+          },
+          "physicalLatestMinusPresentedMs": {
+            "count": 353,
+            "mean": 63.158210496066225,
+            "p50": 54.008926811832225,
+            "p95": 148.62447751415675,
+            "p99": 186.66976722294626,
+            "max": 211.67259888274924
+          },
+          "frameIntervalMs": {
+            "count": 353,
+            "mean": 17.090651558073656,
+            "p50": 16.699999999254942,
+            "p95": 22,
+            "p99": 28.5,
+            "max": 40.5
+          },
+          "frameCpuMs": {
+            "count": 353,
+            "mean": 0.8430594900047813,
+            "p50": 0.8000000007450581,
+            "p95": 1.2999999970197678,
+            "p99": 1.699999999254942,
+            "max": 9.899999998509884
+          },
+          "backlogSeconds": {
+            "count": 353,
+            "mean": 0.1767354107648718,
+            "p50": 0.15819999999999873,
+            "p95": 0.39159999999999945,
+            "p99": 0.40829999999999916,
+            "max": 0.41659999999999936
+          }
+        },
+        "warmAfterTick120": {
+          "frames": 168,
+          "snapshotAgeMs": {
+            "count": 168,
+            "mean": 62.12988835561745,
+            "p50": 56.11627824387597,
+            "p95": 115.7280158647336,
+            "p99": 144.50710522683767,
+            "max": 184.80710522758272
+          },
+          "physicalLatestMinusPresentedMs": {
+            "count": 168,
+            "mean": 54.09318498803873,
+            "p50": 47.1223473478215,
+            "p95": 125.42237608544804,
+            "p99": 167.32852199160808,
+            "max": 192.328521991608
+          },
+          "frameIntervalMs": {
+            "count": 168,
+            "mean": 16.86428571428128,
+            "p50": 16.699999999254942,
+            "p95": 17.5,
+            "p99": 28.5,
+            "max": 40.5
+          },
+          "frameCpuMs": {
+            "count": 168,
+            "mean": 0.7815476189633566,
+            "p50": 0.8000000007450581,
+            "p95": 1.1000000014901161,
+            "p99": 1.5,
+            "max": 1.6000000014901161
+          },
+          "backlogSeconds": {
+            "count": 168,
+            "mean": 0.05705178571428461,
+            "p50": 0.041399999999999104,
+            "p95": 0.15819999999999873,
+            "p99": 0.19159999999999874,
+            "max": 0.19159999999999877
+          }
+        },
+        "bounds": {
+          "maximumQueueDepth": 0,
+          "maximumOutstandingAdvances": 1,
+          "maximumAdvanceTicks": 1,
+          "maximumTransferBuffers": 3
+        },
+        "exactNormalizedSnapshotSha256": "cdceb00fe470d43bed2eb31583960f519ba51ea7ef68673a3232274deec2db4c",
+        "poseF32WordSha256": "2eedf1c9776692781127b7f7eee9320339ac3e52d7271b78d86ae47cd2eb35e7"
+      }
+    ],
+    "limits": "All four arms retain complete240tick/6s results. Candidate-forward short pace0.989756 is below the unchanged.99 average criterion and is preserved. Short wall-time differences are not attributed compute speedups. The clean long hold separately checks sustained average pace."
+  },
+  "cleanLongStanding": {
+    "raw": {
+      "path": "outputs/browser-capability-20261019/presentation-interpolation/hold-candidate-noencoder/result.json",
+      "sha256": "0232f5aa70fcdafc03314327f9c87d8d5d701348096c36c6b1a038bc2a419439"
+    },
+    "passed": true,
+    "method": "Ordinary rendered app automatic scheduler, one worker,1321consecutive40Hz snapshots,3settling+30quiet physical seconds, no physical commands/input, no encoder. Native owner held all compiles/trials idle.",
+    "requiredAverageRatio": 0.99,
+    "averageRatioPassed": true,
+    "observation": {
+      "wallSeconds": 33.09730000000074,
+      "simulationSeconds": 33,
+      "integratedSimulationToWallRatio": 0.9970601831569119,
+      "presentedFrames": 1936,
+      "averagePresentedFps": 58.494197411872165,
+      "lastHalfSecondPresentedFps": 58,
+      "frameCountEndpoint": "Captured inside the final target-reply listener, not after polling/screenshot delay",
+      "appReportedSimulationToWallRatio": 0.998022101653099
+    },
+    "metrics": {
+      "snapshotCount": 1321,
+      "steadySnapshotCount": 1201,
+      "referenceTime": 3,
+      "finalTime": 33,
+      "steadyPhysicalSeconds": 30,
+      "maximumSnapshotGapTicks": 1,
+      "minUpY": {
+        "torso": 0.9999091359604388,
+        "pelvis": 0.9922608382597746,
+        "right_foot": 0.9999315548667137,
+        "left_foot": 0.9999321447561974
+      },
+      "minimumAggregateFootLoadsN": {
+        "right_foot": 200.32732,
+        "left_foot": 200.32037
+      },
+      "maximumLinearSpeedMps": 0.000579200060495574,
+      "maximumAngularSpeedRadps": 0.003044331923798017,
+      "maximumPelvisDriftM": 0.00014363622837181898,
+      "maximumFootBodyDriftM": 0.00075289933197208,
+      "maximumLoadedFootHorizontalBodySpeedProxyMps": 0.00009139107276263367,
+      "maximumFloorPenetrationM": 0.00095460744,
+      "maximumSelfPenetrationM": 0,
+      "violations": [],
+      "contactPointSlipAvailable": false,
+      "slipLimit": "The ordinary snapshot exposes aggregate segment loads and body velocities, not contact-point tangential velocity. Horizontal foot-body speed is a proxy, not contact slip."
+    },
+    "commands": 0,
+    "inputs": 0,
+    "workerInstances": 1,
+    "errors": [],
+    "fullWindowTelemetry": {
+      "frameCount": 1936,
+      "snapshotAgeMs": {
+        "count": 1936,
+        "mean": 38.62784184782659,
+        "p50": 35.417525412136456,
+        "p95": 52.88957426100387,
+        "p99": 80.36984854743059,
+        "max": 561.7998535148799
+      },
+      "latestPhysicalTargetMinusPresentedMs": {
+        "count": 1936,
+        "mean": 21.952869336688224,
+        "p50": 23.399999924009762,
+        "p95": 34.606050041272596,
+        "p99": 36.83422507584311,
+        "max": 39.55610936580101
+      },
+      "frameIntervalMs": {
+        "count": 1936,
+        "mean": 17.091270661158564,
+        "p50": 16.600000001490116,
+        "p95": 21.199999999254942,
+        "p99": 31.199999999254942,
+        "max": 100.60000000149012
+      },
+      "frameCpuMs": {
+        "count": 1936,
+        "mean": 0.9712293388452843,
+        "p50": 0.8999999985098839,
+        "p95": 1.300000000745058,
+        "p99": 2.5,
+        "max": 11.599999997764826
+      },
+      "backlogSeconds": {
+        "count": 1936,
+        "mean": 0.14139498966941924,
+        "p50": 0.04099999999999672,
+        "p95": 0.6081999999999983,
+        "p99": 0.7664999999999988,
+        "max": 0.8082999999999989
+      }
+    },
+    "warmAfterTick120Telemetry": {
+      "frameCount": 1735,
+      "snapshotAgeMs": {
+        "count": 1735,
+        "mean": 35.85083033759071,
+        "p50": 34.82234959143898,
+        "p95": 49.8146306308372,
+        "p99": 63.19990234076977,
+        "max": 102.62952843766834
+      },
+      "latestPhysicalTargetMinusPresentedMs": {
+        "count": 1735,
+        "mean": 22.197979774816663,
+        "p50": 23.299999907621327,
+        "p95": 34.72152424420116,
+        "p99": 36.86395201172843,
+        "max": 39.55610936580101
+      },
+      "frameIntervalMs": {
+        "count": 1735,
+        "mean": 16.89337175792507,
+        "p50": 16.600000001490116,
+        "p95": 19.800000000745058,
+        "p99": 27,
+        "max": 88.39999999850988
+      },
+      "frameCpuMs": {
+        "count": 1735,
+        "mean": 0.9416138328440079,
+        "p50": 0.8999999985098839,
+        "p95": 1.2999999970197678,
+        "p99": 2,
+        "max": 6.5
+      },
+      "backlogSeconds": {
+        "count": 1735,
+        "mean": 0.11756299711815317,
+        "p50": 0.04069999999999742,
+        "p95": 0.5748999999999981,
+        "p99": 0.7664999999999988,
+        "max": 0.8082999999999989
+      }
+    },
+    "droppedPackets": 0,
+    "droppedFrames": 0,
+    "bounds": {
+      "maximumQueueDepth": 0,
+      "maximumOutstandingAdvances": 1,
+      "maximumAdvanceTicks": 1,
+      "maximumTransferBuffers": 3
+    },
+    "limits": "Snapshot body velocities are reported caches; they are not authoritative current generalized/contact-point velocities. Up vectors, positions/drift and aggregate loads are recorded separately. The ordinary snapshot exposes aggregate segment loads and body velocities, not contact-point tangential velocity. Horizontal foot-body speed is a proxy, not contact slip. Snapshot metrics are40Hz; native800Hz gates remain separately qualified. Cold source age retains manual initialization/setup history. One inherited screenshot overlay line says recording, but recordVideo:false and recording.enabled:false confirm this was a no-encoder observation; no video is claimed for this hold."
+  },
+  "actualPointer": {
+    "candidateSummary": {
+      "path": "outputs/browser-capability-20261019/presentation-interpolation/pointer-latency-candidate/summary.json",
+      "sha256": "b696d42acc89bce71d99bab03bb7e4a3619f253091ed88c8df353f2d07ef1701"
+    },
+    "baselineEvidence": "docs/evidence/browser-pointer-latency-2026-10-19.json",
+    "candidateTrials": [
+      {
+        "protocol": {
+          "id": "isolated-8moves-500ms",
+          "count": 8,
+          "intervalMs": 500,
+          "dx": 8
+        },
+        "final": {
+          "tick": 316,
+          "time": 7.9,
+          "motion": "Upright",
+          "failure": null,
+          "error": "",
+          "activePointer": null,
+          "workerInstances": 1
+        },
+        "profileInitializations": 1,
+        "counts": {
+          "requestedMoveCalls": 8,
+          "deliveredPressedMoves": 8,
+          "allMovesTrusted": true,
+          "driverInputRecords": 8,
+          "applicationCoalesced": 0,
+          "sentMoves": 8,
+          "sentMoveCommands": 8,
+          "acceptedMoves": 8,
+          "rejectedMoves": 0,
+          "missingAcknowledgments": 0,
+          "finiteSubmittedMovementProxy": 8,
+          "nullSubmittedMovementProxy": 0,
+          "sentNullSubmittedMovementProxy": 0,
+          "pendingVisualInputs": 0,
+          "droppedInputs": 0,
+          "droppedPackets": 0,
+          "droppedFrames": 0,
+          "deliveredEventsMissingDriverRecord": 0,
+          "missingIntegrationOpportunity": 0,
+          "integrationOpportunityEligible": 8,
+          "supersededBeforeFirstIntegration": 0,
+          "invalidClockIntervals": 0
+        },
+        "bounds": {
+          "maximumQueueDepth": 1,
+          "maximumOutstandingAdvances": 1,
+          "maximumAdvanceTicks": 1,
+          "maximumTransferBuffers": 3
+        },
+        "actualDeliveredEventIntervalsMs": {
+          "count": 7,
+          "mean": 500.09999999989356,
+          "p50": 500.5,
+          "p95": 502.0999999977648,
+          "p99": 502.0999999977648,
+          "max": 502.0999999977648
+        },
+        "eventToHandlerEntryMs": {
+          "count": 8,
+          "mean": 8.225000000558794,
+          "p50": 1.2000000029802322,
+          "p95": 16.800000000745058,
+          "p99": 16.800000000745058,
+          "max": 16.800000000745058
+        },
+        "eventToSendMs": {
+          "count": 8,
+          "mean": 18.375,
+          "p50": 15,
+          "p95": 29.100000001490116,
+          "p99": 29.100000001490116,
+          "max": 29.100000001490116
+        },
+        "eventToAcceptedPublicationMs": {
+          "count": 8,
+          "mean": 18.837384033948183,
+          "p50": 15.499951172620058,
+          "p95": 29.499902345240116,
+          "p99": 29.499902345240116,
+          "max": 29.499902345240116
+        },
+        "eventToAckReceivedMs": {
+          "count": 8,
+          "mean": 23.587499999906868,
+          "p50": 15.699999999254942,
+          "p95": 43.900000002235174,
+          "p99": 43.900000002235174,
+          "max": 43.900000002235174
+        },
+        "eventToFirstIntegrationOpportunityCompleteUpperBoundMs": {
+          "count": 8,
+          "mean": 42.71241455152631,
+          "p50": 35.099853515625,
+          "p95": 63.699853517115116,
+          "p99": 63.699853517115116,
+          "max": 63.699853517115116
+        },
+        "eventToSubmittedMovementProxyMs": {
+          "count": 8,
+          "mean": 54.887500000186265,
+          "p50": 51.80000000074506,
+          "p95": 81.69999999925494,
+          "p99": 81.69999999925494,
+          "max": 81.69999999925494
+        },
+        "noInputWarmupHandBodyMotion": {
+          "fromSimulationTime": 2.5,
+          "toSimulationTime": 3,
+          "snapshots": 21,
+          "maxDisplacementFromFirstM": 0.00018148160678146708,
+          "maximumStepM": 0.00001212835108328349,
+          "limits": "Physical snapshot body-origin motion establishes ambient motion exists; this is not direct renderer.presentation_position sampling. Therefore built-in movement threshold may be met without this command causing the motion."
+        },
+        "invalidClockIntervals": [],
+        "missingEvents": []
+      },
+      {
+        "protocol": {
+          "id": "stream-120moves-nominal60hz",
+          "count": 120,
+          "intervalMs": 16.666666666666668,
+          "dx": 8
+        },
+        "final": {
+          "tick": 275,
+          "time": 6.875,
+          "motion": "Upright",
+          "failure": null,
+          "error": "",
+          "activePointer": null,
+          "workerInstances": 1
+        },
+        "profileInitializations": 1,
+        "counts": {
+          "requestedMoveCalls": 120,
+          "deliveredPressedMoves": 120,
+          "allMovesTrusted": true,
+          "driverInputRecords": 120,
+          "applicationCoalesced": 10,
+          "sentMoves": 110,
+          "sentMoveCommands": 110,
+          "acceptedMoves": 110,
+          "rejectedMoves": 0,
+          "missingAcknowledgments": 0,
+          "finiteSubmittedMovementProxy": 110,
+          "nullSubmittedMovementProxy": 10,
+          "sentNullSubmittedMovementProxy": 0,
+          "pendingVisualInputs": 0,
+          "droppedInputs": 0,
+          "droppedPackets": 0,
+          "droppedFrames": 0,
+          "deliveredEventsMissingDriverRecord": 0,
+          "missingIntegrationOpportunity": 0,
+          "integrationOpportunityEligible": 91,
+          "supersededBeforeFirstIntegration": 19,
+          "invalidClockIntervals": 0
+        },
+        "bounds": {
+          "maximumQueueDepth": 1,
+          "maximumOutstandingAdvances": 1,
+          "maximumAdvanceTicks": 1,
+          "maximumTransferBuffers": 3
+        },
+        "actualDeliveredEventIntervalsMs": {
+          "count": 119,
+          "mean": 20.841176470600757,
+          "p50": 17.300000000745058,
+          "p95": 36.19999999925494,
+          "p99": 48.69999999925494,
+          "max": 83.19999999925494
+        },
+        "eventToHandlerEntryMs": {
+          "count": 120,
+          "mean": 4.059166666741173,
+          "p50": 2,
+          "p95": 16.399999998509884,
+          "p99": 16.800000000745058,
+          "max": 16.800000000745058
+        },
+        "eventToSendMs": {
+          "count": 110,
+          "mean": 17.905454545434225,
+          "p50": 15.900000002235174,
+          "p95": 31.699999999254942,
+          "p99": 43.80000000074506,
+          "max": 81.59999999776483
+        },
+        "eventToAcceptedPublicationMs": {
+          "count": 110,
+          "mean": 18.00072398710657,
+          "p50": 15.999755859375,
+          "p95": 31.799902342259884,
+          "p99": 44.099707029759884,
+          "max": 81.89975585788488
+        },
+        "eventToAckReceivedMs": {
+          "count": 110,
+          "mean": 20.94545454542068,
+          "p50": 16.400000002235174,
+          "p95": 32.69999999925494,
+          "p99": 46.69999999925494,
+          "max": 82.19999999925494
+        },
+        "eventToFirstIntegrationOpportunityCompleteUpperBoundMs": {
+          "count": 91,
+          "mean": 36.70199551347356,
+          "p50": 32.7998046875,
+          "p95": 50.29985351487994,
+          "p99": 101.99985351413488,
+          "max": 101.99985351413488
+        },
+        "eventToSubmittedMovementProxyMs": {
+          "count": 110,
+          "mean": 46.16363636353476,
+          "p50": 38,
+          "p95": 67,
+          "p99": 118.30000000074506,
+          "max": 133.19999999925494
+        },
+        "noInputWarmupHandBodyMotion": {
+          "fromSimulationTime": 2.5,
+          "toSimulationTime": 3,
+          "snapshots": 21,
+          "maxDisplacementFromFirstM": 0.00018148160678146708,
+          "maximumStepM": 0.00001212835108328349,
+          "limits": "Physical snapshot body-origin motion establishes ambient motion exists; this is not direct renderer.presentation_position sampling. Therefore built-in movement threshold may be met without this command causing the motion."
+        },
+        "invalidClockIntervals": [],
+        "missingEvents": []
+      }
+    ],
+    "baselineTrials": [
+      {
+        "protocol": {
+          "id": "isolated-8moves-500ms",
+          "count": 8,
+          "intervalMs": 500,
+          "dx": 8
+        },
+        "final": {
+          "tick": 317,
+          "time": 7.925,
+          "motion": "Upright",
+          "failure": null,
+          "error": "",
+          "activePointer": null,
+          "workerInstances": 1
+        },
+        "profileInitializations": 1,
+        "counts": {
+          "requestedMoveCalls": 8,
+          "deliveredPressedMoves": 8,
+          "allMovesTrusted": true,
+          "driverInputRecords": 8,
+          "applicationCoalesced": 0,
+          "sentMoves": 8,
+          "sentMoveCommands": 8,
+          "acceptedMoves": 8,
+          "rejectedMoves": 0,
+          "missingAcknowledgments": 0,
+          "finiteSubmittedMovementProxy": 8,
+          "nullSubmittedMovementProxy": 0,
+          "sentNullSubmittedMovementProxy": 0,
+          "pendingVisualInputs": 0,
+          "droppedInputs": 0,
+          "droppedPackets": 0,
+          "droppedFrames": 0,
+          "deliveredEventsMissingDriverRecord": 0,
+          "missingIntegrationOpportunity": 0,
+          "integrationOpportunityEligible": 8,
+          "supersededBeforeFirstIntegration": 0,
+          "invalidClockIntervals": 0
+        },
+        "bounds": {
+          "maximumQueueDepth": 1,
+          "maximumOutstandingAdvances": 1,
+          "maximumAdvanceTicks": 1,
+          "maximumTransferBuffers": 3
+        },
+        "actualDeliveredEventIntervalsMs": {
+          "count": 7,
+          "mean": 500.028571428465,
+          "p50": 500.69999999925494,
+          "p95": 501.8999999985099,
+          "p99": 501.8999999985099,
+          "max": 501.8999999985099
+        },
+        "eventToHandlerEntryMs": {
+          "count": 8,
+          "mean": 2.137500001117587,
+          "p50": 2.100000001490116,
+          "p95": 3.300000000745058,
+          "p99": 3.300000000745058,
+          "max": 3.300000000745058
+        },
+        "eventToSendMs": {
+          "count": 8,
+          "mean": 14.71250000083819,
+          "p50": 16,
+          "p95": 18.400000002235174,
+          "p99": 18.400000002235174,
+          "max": 18.400000002235174
+        },
+        "eventToAcceptedPublicationMs": {
+          "count": 8,
+          "mean": 15.049963381141424,
+          "p50": 16.299902345985174,
+          "p95": 18.700048830360174,
+          "p99": 18.700048830360174,
+          "max": 18.700048830360174
+        },
+        "eventToAckReceivedMs": {
+          "count": 8,
+          "mean": 16.77500000130385,
+          "p50": 16.600000001490116,
+          "p95": 18.800000000745058,
+          "p99": 18.800000000745058,
+          "max": 18.800000000745058
+        },
+        "eventToFirstIntegrationOpportunityCompleteUpperBoundMs": {
+          "count": 8,
+          "mean": 33.150000002235174,
+          "p50": 32.00004883110523,
+          "p95": 36.89995117485523,
+          "p99": 36.89995117485523,
+          "max": 36.89995117485523
+        },
+        "eventToSubmittedMovementProxyMs": {
+          "count": 8,
+          "mean": 42.77500000083819,
+          "p50": 37.69999999925494,
+          "p95": 53.30000000074506,
+          "p99": 53.30000000074506,
+          "max": 53.30000000074506
+        },
+        "noInputWarmupHandBodyMotion": {
+          "fromSimulationTime": 2.5,
+          "toSimulationTime": 3,
+          "snapshots": 21,
+          "maxDisplacementFromFirstM": 0.00018148160678146708,
+          "maximumStepM": 0.00001212835108328349,
+          "limits": "Physical snapshot body-origin motion establishes ambient motion exists; this is not direct renderer.presentation_position sampling. Therefore built-in movement threshold may be met without this command causing the motion."
+        },
+        "invalidClockIntervals": [],
+        "missingEvents": []
+      },
+      {
+        "protocol": {
+          "id": "stream-120moves-nominal60hz",
+          "count": 120,
+          "intervalMs": 16.666666666666668,
+          "dx": 8
+        },
+        "final": {
+          "tick": 301,
+          "time": 7.525,
+          "motion": "Upright",
+          "failure": null,
+          "error": "",
+          "activePointer": null,
+          "workerInstances": 1
+        },
+        "profileInitializations": 1,
+        "counts": {
+          "requestedMoveCalls": 120,
+          "deliveredPressedMoves": 120,
+          "allMovesTrusted": true,
+          "driverInputRecords": 120,
+          "applicationCoalesced": 13,
+          "sentMoves": 107,
+          "sentMoveCommands": 107,
+          "acceptedMoves": 107,
+          "rejectedMoves": 0,
+          "missingAcknowledgments": 0,
+          "finiteSubmittedMovementProxy": 107,
+          "nullSubmittedMovementProxy": 13,
+          "sentNullSubmittedMovementProxy": 0,
+          "pendingVisualInputs": 0,
+          "droppedInputs": 0,
+          "droppedPackets": 0,
+          "droppedFrames": 0,
+          "deliveredEventsMissingDriverRecord": 0,
+          "missingIntegrationOpportunity": 0,
+          "integrationOpportunityEligible": 94,
+          "supersededBeforeFirstIntegration": 13,
+          "invalidClockIntervals": 0
+        },
+        "bounds": {
+          "maximumQueueDepth": 1,
+          "maximumOutstandingAdvances": 1,
+          "maximumAdvanceTicks": 1,
+          "maximumTransferBuffers": 3
+        },
+        "actualDeliveredEventIntervalsMs": {
+          "count": 119,
+          "mean": 25.747899159663866,
+          "p50": 18.199999999254942,
+          "p95": 51.099999997764826,
+          "p99": 68.10000000149012,
+          "max": 93.80000000074506
+        },
+        "eventToHandlerEntryMs": {
+          "count": 120,
+          "mean": 4.647500000273188,
+          "p50": 2.100000001490116,
+          "p95": 16.699999999254942,
+          "p99": 17.599999997764826,
+          "max": 20.099999997764826
+        },
+        "eventToSendMs": {
+          "count": 107,
+          "mean": 21.483177570260573,
+          "p50": 17,
+          "p95": 46.19999999925494,
+          "p99": 52.69999999925494,
+          "max": 78.30000000074506
+        },
+        "eventToAcceptedPublicationMs": {
+          "count": 107,
+          "mean": 21.72065886047399,
+          "p50": 17.200097657740116,
+          "p95": 46.60014648362994,
+          "p99": 52.90019531175494,
+          "max": 78.60009765625
+        },
+        "eventToAckReceivedMs": {
+          "count": 107,
+          "mean": 24.920560747872447,
+          "p50": 17.800000000745058,
+          "p95": 47.80000000074506,
+          "p99": 53.19999999925494,
+          "max": 79.19999999925494
+        },
+        "eventToFirstIntegrationOpportunityCompleteUpperBoundMs": {
+          "count": 94,
+          "mean": 40.4809487203255,
+          "p50": 34.600195311009884,
+          "p95": 70.00009765475988,
+          "p99": 96.5,
+          "max": 96.5
+        },
+        "eventToSubmittedMovementProxyMs": {
+          "count": 107,
+          "mean": 51.61028037404763,
+          "p50": 51.70000000298023,
+          "p95": 84.09999999776483,
+          "p99": 104.69999999925494,
+          "max": 113.60000000149012
+        },
+        "noInputWarmupHandBodyMotion": {
+          "fromSimulationTime": 2.5,
+          "toSimulationTime": 3,
+          "snapshots": 21,
+          "maxDisplacementFromFirstM": 0.00018148160678146708,
+          "maximumStepM": 0.00001212835108328349,
+          "limits": "Physical snapshot body-origin motion establishes ambient motion exists; this is not direct renderer.presentation_position sampling. Therefore built-in movement threshold may be met without this command causing the motion."
+        },
+        "invalidClockIntervals": [],
+        "missingEvents": []
+      }
+    ],
+    "method": "Actual trusted pointer events, original automatic scheduler/transport/rendering, no encoder. Passive Worker tracing preserves original messages/transfer lists. Worker clocks converted by workerTimeOriginMs−mainTimeOriginMs. Applied acknowledgments establish intent accepted at a physical boundary. First completed tick after that applied tick is only an upper bound on first integration opportunity with that target active, not a force-call/nonzero-force timestamp. visibleAtMs is CPU GPU-submission-side movement+cumulative-ack proxy, not causal screen-visible response.",
+    "disposition": "Open interaction-deadline gate. Candidate stream finite proxy p95 improves84.1→67.0ms but max worsens113.6→133.2ms; isolated8move max worsens53.3→81.7ms. No per-input force/display completion claim or selective exclusion. Accepted-command and integration-opportunity bounds also vary with scheduling; physical worker/transport are identical.",
+    "limits": "Nominal60Hz stream actually delivers mean20.84ms intervals (~47.98Hz) in candidate versus25.75ms (~38.84Hz) in historical baseline; no60Hz handling admission or same-delivery-cadence attribution. Every coalesced,superseded,null,pending,dropped or missing input is counted. First integration-opportunity completion is a conservative bound, not an exact nonzero-force call. Built-in submitted movement can be caused by ambient/earlier motion and is not compositor completion."
+  },
+  "functionalRegressions": {
+    "realPointer": {
+      "raw": {
+        "path": "outputs/browser-capability-20261019/presentation-interpolation/grab-candidate/browser-result.json",
+        "sha256": "8b82ad644dc352f64d2dbcb5ae9a26b41b93f715e6ad98a9c15066bd9a196069"
+      },
+      "passed": true,
+      "scenarios": [
+        "No grab",
+        "Actual hand pull, mouse release, natural continuation",
+        "Continued held-pull control",
+        "pointercancel",
+        "blur",
+        "Reset during active physical drag"
+      ],
+      "checks": [
+        "Every served asset matches the captured built artifact hash",
+        {
+          "name": "Identical trial initialization",
+          "allPoseAndVelocityComponentsExactlyEqual": true,
+          "maximumPositionDifferenceM": 0
+        },
+        {
+          "name": "Identical physical state before release",
+          "allPoseAndVelocityComponentsExactlyEqual": true,
+          "maximumPositionDifferenceM": 0
+        },
+        {
+          "name": "pointercancel: identical pre-cancellation physical state",
+          "allPoseAndVelocityComponentsExactlyEqual": true,
+          "maximumPositionDifferenceM": 0
+        },
+        {
+          "name": "pointercancel: physical continuation equals real mouse release despite stale held-button motion",
+          "allPoseAndVelocityComponentsExactlyEqual": true,
+          "maximumPositionDifferenceM": 0
+        },
+        {
+          "name": "blur: identical pre-cancellation physical state",
+          "allPoseAndVelocityComponentsExactlyEqual": true,
+          "maximumPositionDifferenceM": 0
+        },
+        {
+          "name": "blur: physical continuation equals real mouse release despite stale held-button motion",
+          "allPoseAndVelocityComponentsExactlyEqual": true,
+          "maximumPositionDifferenceM": 0
+        },
+        {
+          "name": "Reset restores clean physical initialization",
+          "allPoseAndVelocityComponentsExactlyEqual": true,
+          "maximumPositionDifferenceM": 0
+        },
+        {
+          "name": "Reset leaves no phantom physical force after stale held-button movement",
+          "allPoseAndVelocityComponentsExactlyEqual": true,
+          "maximumPositionDifferenceM": 0
+        },
+        "Cancellation matches an actual released physical trajectory; continuing held-pull control diverges. This tests physical behavior, not pointer metadata alone."
+      ],
+      "browserErrors": [],
+      "httpErrors": []
+    },
+    "readiness": {
+      "raw": {
+        "path": "outputs/browser-capability-20261019/presentation-interpolation/readiness-candidate/result.json",
+        "sha256": "6e6950ef287333a16b2ba03133a62353e3f5fd14dfebe562ae55b9cc30d3acef"
+      },
+      "passed": true,
+      "stages": [
+        {
+          "name": "auto-fallback",
+          "backend": "WebGL2",
+          "requestedRenderer": "auto",
+          "fallback": "Error: WebGPU render check failed: OperationError: A valid external Instance reference no longer exists.. Choose Auto or WebGL2.",
+          "error": "",
+          "ready": true,
+          "tick": 0,
+          "generation": 1,
+          "workerInstances": 1,
+          "rendererChanges": 1,
+          "controller": "measured-contact-standing-balance",
+          "recoveryStep": "GetUp body · Joint balance · Learned recovery disabled"
+        },
+        {
+          "name": "explicit-webgpu-error",
+          "backend": "",
+          "requestedRenderer": "webgpu",
+          "fallback": "",
+          "error": "Graphics unavailable: Error: WebGPU render check failed: OperationError: A valid external Instance reference no longer exists.. Choose Auto or WebGL2.",
+          "ready": false,
+          "tick": 0,
+          "generation": 1,
+          "workerInstances": 1,
+          "rendererChanges": 1,
+          "controller": "measured-contact-standing-balance",
+          "recoveryStep": "GetUp body · Joint balance · Learned recovery disabled"
+        },
+        {
+          "name": "recovered-webgl2",
+          "backend": "WebGL2",
+          "requestedRenderer": "webgl2",
+          "fallback": "",
+          "error": "",
+          "ready": true,
+          "tick": 0,
+          "generation": 1,
+          "workerInstances": 1,
+          "rendererChanges": 2,
+          "controller": "measured-contact-standing-balance",
+          "recoveryStep": "GetUp body · Joint balance · Learned recovery disabled"
+        },
+        {
+          "name": "repeated-auto-fallback",
+          "backend": "WebGL2",
+          "requestedRenderer": "auto",
+          "fallback": "Error: WebGPU render check failed: OperationError: A valid external Instance reference no longer exists.. Choose Auto or WebGL2.",
+          "error": "",
+          "ready": true,
+          "tick": 0,
+          "generation": 1,
+          "workerInstances": 1,
+          "rendererChanges": 2,
+          "controller": "measured-contact-standing-balance",
+          "recoveryStep": "GetUp body · Joint balance · Learned recovery disabled"
+        },
+        {
+          "name": "reset-after-fallback",
+          "backend": "WebGL2",
+          "requestedRenderer": "auto",
+          "fallback": "Error: WebGPU render check failed: OperationError: A valid external Instance reference no longer exists.. Choose Auto or WebGL2.",
+          "error": "",
+          "ready": true,
+          "tick": 0,
+          "generation": 2,
+          "workerInstances": 1,
+          "rendererChanges": 2,
+          "controller": "measured-contact-standing-balance",
+          "recoveryStep": "GetUp body · Joint balance · Learned recovery disabled"
+        },
+        {
+          "name": "auto-without-webgpu-api",
+          "backend": "WebGL2",
+          "requestedRenderer": "auto",
+          "fallback": "",
+          "error": "",
+          "ready": true,
+          "tick": 0,
+          "generation": 1,
+          "workerInstances": 1,
+          "rendererChanges": 1,
+          "controller": "measured-contact-standing-balance",
+          "recoveryStep": "GetUp body · Joint balance · Learned recovery disabled"
+        }
+      ],
+      "errors": []
+    },
+    "strikerSmoke": {
+      "log": {
+        "path": "outputs/browser-capability-20261019/presentation-interpolation/smoke-candidate.log",
+        "sha256": "44857a833779f8147676ed5ed8102d7860a4b0cb1af44fdbd2105330600c389e"
+      },
+      "passed": true,
+      "runtime": "Rust/WASM",
+      "backend": "WebGL2",
+      "ticks": 132,
+      "simulatedSeconds": 3.3,
+      "nativeSubsteps": 2640,
+      "strikes": 1,
+      "segments": 25,
+      "physicalQualification": false,
+      "numericalProfileExperiment": {
+        "path": "/workspace/scratch/5def91918e35/mvp-landing/outputs/getup-budget-20261019/candidate3-profile.json",
+        "rawSha256": "a197f6ba375c8f502904353a540c287549034d1df616b1c125c88ba6e94ee899",
+        "profile": {
+          "id": "getup-800hz-3plus1-qualification-v1",
+          "dt_s": 0.00125,
+          "tick_substeps": 20,
+          "contact_friction_model": "coulomb",
+          "solver_iterations": 3,
+          "internal_pgs_iterations": 20,
+          "fall_internal_pgs_iterations": 32,
+          "additional_body_iterations": 1,
+          "allowed_linear_error_m": 0.001,
+          "prediction_distance_m": 0.002,
+          "motor_scale": 1,
+          "aggregate_motor_cap_nm": 920,
+          "angular_damping": 0,
+          "contact_skin_m": 0,
+          "max_ccd_substeps": 4,
+          "disable_solver_speed_cap": true,
+          "posture_stiffness_multiplier": 1,
+          "posture_damping_multiplier": 1,
+          "supported_tilt_gain": 2,
+          "supported_com_gain_rad_per_m": 5,
+          "supported_com_velocity_gain_s_rad_per_m": 5,
+          "supported_angular_velocity_gain_s": 2,
+          "grab_limits": {
+            "angular_frequency_rad_s": 16,
+            "target_speed_m_s": 1.5,
+            "target_acceleration_m_s2": 8,
+            "force_n": 180,
+            "torque_nm": 12,
+            "positive_power_w": 36
+          },
+          "reaching_iterations": 6,
+          "reaching_coordinate_increment_rad": 0.15,
+          "reaching_damping_m2": 0.01,
+          "corrective_steps_enabled": false,
+          "recovery_enabled": false,
+          "getup_policy_enabled": false
+        },
+        "appliedProfile": [
+          {
+            "path": "/workspace/scratch/5def91918e35/mvp-landing/outputs/getup-budget-20261019/candidate3-profile.json",
+            "rawSha256": "a197f6ba375c8f502904353a540c287549034d1df616b1c125c88ba6e94ee899",
+            "profile": {
+              "id": "getup-800hz-3plus1-qualification-v1",
+              "dt_s": 0.00125,
+              "tick_substeps": 20,
+              "contact_friction_model": "coulomb",
+              "solver_iterations": 3,
+              "internal_pgs_iterations": 20,
+              "fall_internal_pgs_iterations": 32,
+              "additional_body_iterations": 1,
+              "allowed_linear_error_m": 0.001,
+              "prediction_distance_m": 0.002,
+              "motor_scale": 1,
+              "aggregate_motor_cap_nm": 920,
+              "angular_damping": 0,
+              "contact_skin_m": 0,
+              "max_ccd_substeps": 4,
+              "disable_solver_speed_cap": true,
+              "posture_stiffness_multiplier": 1,
+              "posture_damping_multiplier": 1,
+              "supported_tilt_gain": 2,
+              "supported_com_gain_rad_per_m": 5,
+              "supported_com_velocity_gain_s_rad_per_m": 5,
+              "supported_angular_velocity_gain_s": 2,
+              "grab_limits": {
+                "angular_frequency_rad_s": 16,
+                "target_speed_m_s": 1.5,
+                "target_acceleration_m_s2": 8,
+                "force_n": 180,
+                "torque_nm": 12,
+                "positive_power_w": 36
+              },
+              "reaching_iterations": 6,
+              "reaching_coordinate_increment_rad": 0.15,
+              "reaching_damping_m2": 0.01,
+              "corrective_steps_enabled": false,
+              "recovery_enabled": false,
+              "getup_policy_enabled": false
+            }
+          }
+        ],
+        "purpose": "Explicit numerical-profile TEST; no production default change"
+      }
+    },
+    "independentFloorlessCom": {
+      "raw": {
+        "path": "outputs/browser-capability-20261019/presentation-interpolation/floorless-candidate/result.json",
+        "sha256": "7cbe107e502f9ee577ffc3b0d7a9ccd735746ecd8dbcc6704b52c6e4a57a8b24"
+      },
+      "passed": true,
+      "thresholdM": 0.0001,
+      "physicalSecondsPerHeading": 0.5,
+      "observerSource": {
+        "path": "scripts/rust-browser-center-of-mass.mjs",
+        "sha256": "722dc17e701aaeae67d839e02ed7df6c03a13295741d9549bf9f58b58d149d42"
+      },
+      "headings": [
+        {
+          "headingRadians": 0,
+          "maxHorizontalComDriftM": 2.7486485377555934e-7,
+          "finalTick": 20,
+          "finalTime": 0.5
+        },
+        {
+          "headingRadians": 1.0471975512,
+          "maxHorizontalComDriftM": 2.487199526180727e-7,
+          "finalTick": 20,
+          "finalTime": 0.5
+        },
+        {
+          "headingRadians": -0.7853981634,
+          "maxHorizontalComDriftM": 2.574336723178043e-7,
+          "finalTick": 20,
+          "finalTime": 0.5
+        }
+      ]
+    },
+    "context": "Physical/lifecycle-only regression and native wall-time visual recordings after clean window; native work may run concurrently. No timing claim from these video/test windows."
+  },
+  "javascriptTests": {
+    "passed": 118,
+    "failed": 0,
+    "log": {
+      "path": "outputs/browser-capability-20261019/presentation-interpolation/npm-test-final.log",
+      "sha256": "d0ef452260219df89100175e2eec39f03a85fb09357f8715f34c6ff286726272"
+    },
+    "scope": "Full current main-tree JS test suite; includes independent actuator test-tooling changes by its owner. Renderer clock tests are separately14native Rust tests."
+  },
+  "media": [
+    {
+      "path": "outputs/browser-capability-20261019/root-com-correction/grab-explicit-3plus1/grab-automatic-scheduler.mp4",
+      "sha256": "e431962f5ff12871f998c04db26628b12483392b548f14245ebded547626a1cd",
+      "arm": "baseline",
+      "metadata": {
+        "duration": "4.520000",
+        "size": "237769"
+      },
+      "retimed": false,
+      "contactSheet": {
+        "path": "outputs/browser-capability-20261019/root-com-correction/grab-explicit-3plus1/automatic-contact-sheet.png",
+        "sha256": "44fc63435a8ec04ba12558fd4b13837ed9ee3a2d4395e7afe39793a4de4cd17e"
+      },
+      "inspection": "Native wall-time before/after clips and temporal contact sheets inspected: actual hand drag/release, upright body continuation, initialized profile TEST banner and clocks visible. Clips demonstrate visual/physical regression only; different encoder/concurrent contexts and pacing are not a performance comparison."
+    },
+    {
+      "path": "outputs/browser-capability-20261019/presentation-interpolation/grab-candidate/grab-automatic-scheduler.mp4",
+      "sha256": "3403cdc8083e763b1e356a0a19926a5731e1788628047e34b2a0af474aefd0be",
+      "arm": "candidate",
+      "metadata": {
+        "duration": "4.360000",
+        "size": "285682"
+      },
+      "retimed": false,
+      "contactSheet": {
+        "path": "outputs/browser-capability-20261019/presentation-interpolation/grab-candidate/automatic-contact-sheet.png",
+        "sha256": "e9180628508ac7f34cc8e8e2e77f90726fbc8daa075554c22dba2228248cc076"
+      },
+      "inspection": "Native wall-time before/after clips and temporal contact sheets inspected: actual hand drag/release, upright body continuation, initialized profile TEST banner and clocks visible. Clips demonstrate visual/physical regression only; different encoder/concurrent contexts and pacing are not a performance comparison."
+    }
+  ],
+  "standingScreenshot": {
+    "path": "outputs/browser-capability-20261019/presentation-interpolation/hold-candidate-noencoder/after-thirty-quiet-physical-seconds.png",
+    "sha256": "52a0f9073a74e51f588381edc8c502ba68d781324f6914df15acedd37f1589cb"
+  },
+  "independentReview": {
+    "status": "No blocking defect found in three-file clock/rebase change; raw pointer attribution independently audited separately.",
+    "caveats": [
+      "Before the first draw, submitted pose caches remain zero/empty; normal app and all actual-app harnesses wait for drawn frames. Picking/focus guards for frames==0 are a possible future cleanup.",
+      "Generation changes can update camera/geometry before the next draw; the ordinary acceptance picking-cache guarantee is scoped to unchanged geometry/camera.",
+      "Draw still writes displayed caches before texture acquisition/submit. A failed draw could expose an unsubmitted pose; this pre-existing failed-draw behavior was not expanded into this narrow fix."
+    ]
+  },
+  "harnesses": [
+    {
+      "path": "outputs/browser-capability-20261019/presentation-interpolation/capture-scalar-trace.mjs",
+      "sha256": "31e0433d13686f15642c44e55ae9953f7c79ce1a3996e2cbe8a83d866399bd00"
+    },
+    {
+      "path": "outputs/browser-capability-20261019/presentation-interpolation/replay-exact-trace.mjs",
+      "sha256": "065ec17913dcaa8529ea37a4cf17c0391679d734371fe0c3e97b738d460fe0f5"
+    },
+    {
+      "path": "outputs/browser-capability-20261019/presentation-interpolation/verify-renderer-fixture.mjs",
+      "sha256": "c617c5cb636cebb7a3b9eace2359ccd09ab5cedfc3809e80c50347ebd410d9a1"
+    },
+    {
+      "path": "outputs/browser-capability-20261019/presentation-interpolation/compare-renderer-pairs.mjs",
+      "sha256": "f8d0894d95352d03b737049867047060b7445154c0e473a9baeff7652d468c08"
+    },
+    {
+      "path": "outputs/browser-capability-20261019/profile-fixed-ticks.mjs",
+      "sha256": "cb544c38a3a5c3986daccc3e39357c6cf0cdfe4542f89534c4261ecb3a6b3f69"
+    },
+    {
+      "path": "outputs/browser-capability-20261019/verify-standing-hold.mjs",
+      "sha256": "b8517777b3a7e877de973f17eb444011af2d8b132545e232440c724a81a36521"
+    },
+    {
+      "path": "outputs/browser-capability-20261019/root-com-correction/verify-pointer-latency.mjs",
+      "sha256": "8cfc36e51da49e50d1562197d06349ac974ead9ef956dbfd90a6bc3e3ffd012c"
+    },
+    {
+      "path": "outputs/browser-capability-20261019/root-com-correction/summarize-pointer-latency.mjs",
+      "sha256": "de58358f9a524a989646f7430a18f8f9522660a80c68a6d16f04de9a4bbbc7a5"
+    }
+  ],
+  "next": "Adopt only the narrow renderer correction after scoped review/commit. Keep numerical profile explicit and interaction latency/mobile/release qualification open. Preserve all before/after traces and clips; no physics or transport change follows from the presentation result."
+}

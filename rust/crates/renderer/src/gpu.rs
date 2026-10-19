@@ -1,3 +1,4 @@
+use crate::presentation::PresentationClock;
 use crate::*;
 use wasm_bindgen::prelude::*;
 use web_sys::HtmlCanvasElement;
@@ -101,9 +102,7 @@ pub struct BrowserRenderer {
     striker_current: Option<Transform>,
     striker_displayed: Option<Transform>,
     snapshot: Option<Snapshot>,
-    arrival_ms: f64,
-    interval_s: f64,
-    previous_time_s: f64,
+    presentation_clock: PresentationClock,
     displayed_time_s: f64,
     selected: String,
     frames: u64,
@@ -316,9 +315,7 @@ impl BrowserRenderer {
             striker_current: None,
             striker_displayed: None,
             snapshot: None,
-            arrival_ms: 0.0,
-            interval_s: 0.0,
-            previous_time_s: 0.0,
+            presentation_clock: PresentationClock::default(),
             displayed_time_s: 0.0,
             selected: String::new(),
             frames: 0,
@@ -336,6 +333,12 @@ impl BrowserRenderer {
         now_ms: f64,
     ) -> Result<(), JsValue> {
         let snapshot: Snapshot = serde_json::from_str(json).map_err(error)?;
+        if !now_ms.is_finite()
+            || !snapshot.simulation_time_s.is_finite()
+            || snapshot.simulation_time_s < 0.0
+        {
+            return Err(error("Invalid presentation timestamp"));
+        }
         let poses = physical_poses(&snapshot, packed, &self.mesh.model).map_err(error)?;
         if self.snapshot.as_ref().is_some_and(|old| {
             snapshot.stamp.generation < old.stamp.generation
@@ -392,48 +395,44 @@ impl BrowserRenderer {
                 self.camera.target.z += 1.1;
             }
         }
-        self.environment_previous =
-            if new_trial || paused || snapshot.discontinuity || changed_geometry {
-                environment.clone()
-            } else {
-                self.environment_displayed.clone()
-            };
+        // Rebase from where the OLD active blend is at this arrival, rather
+        // than from the last submitted frame. Replies may arrive between draws.
+        // One clock/alpha keeps bodies, environment, striker and time coherent.
+        let transition = self
+            .presentation_clock
+            .retarget(
+                snapshot.simulation_time_s,
+                now_ms,
+                new_trial || paused || snapshot.discontinuity || changed_geometry,
+            )
+            .map_err(error)?;
+        let alpha = transition.old_alpha;
+        self.environment_previous = if transition.snap {
+            environment.clone()
+        } else {
+            self.environment_previous
+                .iter()
+                .zip(&self.environment_current)
+                .map(|(a, b)| a.interpolate(*b, alpha))
+                .collect()
+        };
         self.environment_current = environment;
-        self.environment_displayed = self.environment_previous.clone();
-        self.striker_previous = if new_trial || paused || snapshot.discontinuity || changed_geometry
-        {
+        self.striker_previous = if transition.snap {
             striker
         } else {
-            self.striker_displayed
+            self.striker_previous
+                .zip(self.striker_current)
+                .map(|(a, b)| a.interpolate(b, alpha))
         };
         self.striker_current = striker;
-        self.striker_displayed = self.striker_previous;
-        if let Some(old) = &self.snapshot {
-            if snapshot.stamp.generation < old.stamp.generation
-                || (snapshot.stamp.generation == old.stamp.generation
-                    && snapshot.stamp.sequence <= old.stamp.sequence)
-            {
-                return Err(error("Stale presentation observation"));
-            }
-            self.interval_s = (snapshot.simulation_time_s - old.simulation_time_s).max(0.0);
-            let snap = paused
-                || snapshot.discontinuity
-                || snapshot.stamp.generation != old.stamp.generation
-                || self.interval_s == 0.0;
-            self.previous = if snap { poses } else { self.displayed };
-            self.previous_time_s = if snap {
-                snapshot.simulation_time_s
-            } else {
-                self.displayed_time_s
-            };
+        self.previous = if transition.snap {
+            poses
         } else {
-            self.previous = poses;
-            self.previous_time_s = snapshot.simulation_time_s;
-        }
+            std::array::from_fn(|i| self.previous[i].interpolate(self.current[i], alpha))
+        };
         self.current = poses;
-        self.displayed = self.previous;
-        self.displayed_time_s = self.previous_time_s;
-        self.arrival_ms = now_ms;
+        // displayed caches describe the most recently submitted GPU frame.
+        // Keep them untouched here so picking never observes a virtual frame.
         self.snapshot = Some(snapshot);
         Ok(())
     }
@@ -475,16 +474,11 @@ impl BrowserRenderer {
             .gpu
             .as_mut()
             .ok_or_else(|| error("Disposed graphics"))?;
-        let alpha = if self.interval_s > 0.0 {
-            ((now_ms - self.arrival_ms) / 1000.0 / self.interval_s).clamp(0.0, 1.0) as f32
-        } else {
-            1.0
-        };
+        let sample = self.presentation_clock.sample(now_ms).map_err(error)?;
+        let alpha = sample.alpha;
         self.displayed =
             std::array::from_fn(|i| self.previous[i].interpolate(self.current[i], alpha));
-        self.displayed_time_s = self.previous_time_s
-            + (self.snapshot.as_ref().unwrap().simulation_time_s - self.previous_time_s)
-                * f64::from(alpha);
+        self.displayed_time_s = sample.time_s;
         let mut uniforms = Uniforms {
             view_projection: self
                 .camera

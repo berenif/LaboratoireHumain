@@ -4,6 +4,9 @@ use lh_contracts::Snapshot;
 use lh_model::Model;
 use serde::Serialize;
 
+#[cfg(any(target_arch = "wasm32", test))]
+mod presentation;
+
 #[cfg(target_arch = "wasm32")]
 mod gpu;
 #[cfg(target_arch = "wasm32")]
