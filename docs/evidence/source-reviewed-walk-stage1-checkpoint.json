@@ -551,7 +551,7 @@
     }
   },
   "referenceOwnershipRevision": {
-    "status": "implemented-pure-paths-native-admission-pending",
+    "status": "executable-opt-in-native-blocked-no-flight-proposal",
     "approved": true,
     "oneStanceRealizedWholeBodyOwner": true,
     "COMFreeWithinOriginalSupportCaptureAndDerivativeBounds": true,
@@ -566,9 +566,26 @@
     "sameFootReturnAccelerationMps2": 0.4301002988633134,
     "frozenAccelerationCapMps2": 0.3901818436690813,
     "wholeCycleHorizonOptimizerCalls": 1,
-    "wholeCycleHorizonResult": "running",
+    "wholeCycleHorizonResult": "interrupted-at-1200s-compute-cap-no-candidate",
     "parameterOrWeightScan": false,
     "nativePilotPassed": false,
-    "finalPlanPassed": false
+    "finalPlanPassed": false,
+    "wholeCycleHorizonVerifiedExitCode": 130,
+    "wholeCycleHorizonCandidateAvailable": false,
+    "newSourceGateClaimsFalse": true,
+    "repoFocusedTestsRun": 114,
+    "repoFocusedTestsSkipped": 20,
+    "repoFocusedTestsPassed": true,
+    "portableSourceMathFixtures": true,
+    "sameFootStaticEndpointAccepted": true,
+    "sameFootStaticMotorFraction": 0.3057354424025,
+    "sameFootStaticCleanGapM": 0.07656656392147024,
+    "sameFootStaticActualPayloadUnchanged": true,
+    "sameFootStaticPhysicsIntegrations": 0,
+    "currentStatusNotPhysicalInfeasibility": true,
+    "wholeCycleComputeCapReceiptSHA256": "5d5adb223edfc72919e4fc3399c9a8b4a87661baf59f6270e21fc3940f7a2255",
+    "sameFootIndependentReceiptSHA256": "9333a7cc5c80542049ada01a20158799feeaabcff0ee707fe2d49670c917d77f",
+    "sameFootStaticReceiptSHA256": "9ab4735996af24d6c4dcd1028a98ca26094d900f8dd219a9514aadd438c9d654",
+    "zeroOptimizerProfileSHA256": "fddde6d7af7452eb1a00ff17109d8b5c7b8d9d6d57840a56f11d4c0d7ad8ac73"
   }
 }
