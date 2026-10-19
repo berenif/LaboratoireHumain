@@ -1,0 +1,89 @@
+{
+  "schema": 1,
+  "date": "2026-10-19",
+  "status": "predeclared-before-first-physical-roll-evaluation",
+  "planningTask": "task01a1560e-6d3e-7131-a0d5-74ae0b1630e8",
+  "baselineCommit": "87a6d154d2cf205d10a1b5238d247cf3a7901134",
+  "feature": "getup-physical-roll-experiment",
+  "defaultOff": true,
+  "profile": {
+    "path": "docs/evidence/profiles/getup-800hz-3plus1-repeat-cycle-v1.json",
+    "sha256": "aaa415a19767c218a26b05bad277193cccba2a726b52dcd5aac0a5444afc39d6"
+  },
+  "route": "right-flank-tuck-uncoil-v1",
+  "method": "One fixed limit-checked joint-reference proposal. No existing validated roll planner exists. Exact FK audit only; physical executability is decided by the first actual-WASM run.",
+  "referenceAudit": {
+    "path": "outputs/getup-physical-roll-20261019/reference-audit.json",
+    "sha256": "84d2dbcb7726189f863e36a5e5c7b850afa89ea7652306129abd3c2b7560a09c",
+    "physicsIntegrations": 0,
+    "entryFkPoseParityMaxAbs": 7.960451212651876e-07
+  },
+  "proposal": {
+    "activeReferenceSecondsPerPhase": 1.0,
+    "positionVelocityReference": "quintic Hermite with coherent derivative and zero endpoint acceleration",
+    "feedbackPositionNormalizedPerRad": 1.2,
+    "feedbackVelocityNormalizedPerRadps": 0.18,
+    "feedforward": "original hinge passive spring and damping only",
+    "normalizedPerActuatorCap": 0.85,
+    "aggregateTorqueCeilingNm": 782.0
+  },
+  "trigger": "Observed quiet grounded supine anatomy and true current motion; never fixture identity.",
+  "contactSequence": [
+    "supine",
+    "right-lateral for20 consecutive actual native samples",
+    "prone",
+    "passive grounded quiet prone for120 consecutive native samples"
+  ],
+  "lateralGate": {
+    "longAxisUpAbsMax": 0.35,
+    "faceUpAbsMax": 0.65,
+    "rightSideUpMin": 0.65,
+    "headMaxM": 0.5,
+    "totalFloorLoadWeightFractionMin": 0.8,
+    "rightFlankFloorLoadMinN": 3.0
+  },
+  "proneGate": {
+    "longAxisUpAbsMax": 0.35,
+    "faceUpMax": -0.8,
+    "headMaxM": 0.5,
+    "totalFloorLoadWeightFractionMin": 0.8,
+    "allBodyCurrentComLinearMaxMps": 0.22,
+    "allBodyCurrentAngularMaxRadps": 0.65,
+    "consecutiveNativeSamples": 120,
+    "consecutiveNativeSamplesAreZeroMotorIntervals": true
+  },
+  "bounds": {
+    "preparationNativeSamples": 4000,
+    "preparationSeconds": 5.0,
+    "recoveryNativeSamplesFromOriginalImpact": 20000,
+    "recoverySecondsIncludesPreparation": 25.0,
+    "standingConsecutiveNativeSamples": 800,
+    "postStandingHoldSeconds": 30.0,
+    "standingFootOriginAnchorsMaxM": 0.01,
+    "postStandingMaterialSlipMaxM": 0.02,
+    "sourceForecastCallsAfterProneAdmission": 1,
+    "oppositeSideRetries": 0,
+    "durationSweeps": 0,
+    "realWorldResets": 0
+  },
+  "firstEvaluation": {
+    "target": "actual browser WASM",
+    "fixture": "fresh original BACK",
+    "carry": "enabled once at native0 before passive fixture preparation",
+    "expectedOriginalTriggerNative": 480,
+    "stopIf": "preparation, original recovery or30s anchored hold fails; reject candidate and do not try another route"
+  },
+  "conditionalNextCase": "Only if complete first case passes: one nonidentical initial supine construction with45degree world-Y heading, same joint coordinates, route, profile and original criteria; no pose writes after construction. Then other-pose and repeated-fall regressions.",
+  "forbidden": [
+    "root force or root torque",
+    "teleport or physical pose/velocity writes",
+    "copied belly endpoint",
+    "artificial contacts",
+    "gravity disable",
+    "deadline renewal",
+    "forecast state copied into real world"
+  ],
+  "releaseAccepted": false,
+  "productionRecoveryEnabled": false,
+  "physicalExecutabilityEstablished": false
+}

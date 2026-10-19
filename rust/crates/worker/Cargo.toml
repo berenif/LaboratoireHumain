@@ -7,6 +7,7 @@ publish.workspace = true
 [features]
 root-translation-carry-experiment = ["lh-sim/root-translation-carry-experiment"]
 getup-terminal-tail-observer-experiment = ["lh-sim/getup-terminal-tail-observer-experiment"]
+getup-physical-roll-experiment = ["lh-sim/getup-physical-roll-experiment"]
 
 [lib]
 crate-type = ["cdylib", "rlib"]

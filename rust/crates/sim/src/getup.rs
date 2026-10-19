@@ -4,6 +4,7 @@ use crate::*;
 pub mod actor;
 pub mod controller;
 pub mod fixtures;
+pub mod physical_roll;
 pub mod reference;
 pub mod standing;
 mod supported_standing;

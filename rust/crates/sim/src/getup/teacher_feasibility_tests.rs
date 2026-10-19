@@ -261,6 +261,7 @@ fn synthetic_untouched_controller() -> Controller {
     // Controller::new initializes the actors, so construct only the inert
     // bookkeeping needed by the freshness gate instead.
     Controller {
+        physical_roll: None,
         status: Default::default(), started_substep: None, impact_substep: None,
         reference: Vec::new(), teacher_frames: Vec::new(), teacher_initial: None,
         teacher_native_dt_s: None, teacher_failure: None,

@@ -148,8 +148,19 @@ pub struct Controller {
     terminal_balance: Option<TerminalBalance>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     terminal_base_ready: Option<TerminalBaseReady>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    physical_roll: Option<super::physical_roll::State>,
 }
 impl Controller {
+    pub(crate) fn physical_roll_report(&self) -> Option<serde_json::Value> {
+        self.physical_roll.as_ref().map(|roll| serde_json::json!({
+            "state":roll,"impactNative":self.impact_substep,
+            "recoveryDeadlineNative":self.impact_substep.and_then(|n|n.checked_add(20000)),
+            "sourceStartNative":self.started_substep,"sourceForecastsGenerated":usize::from(self.teacher_initial.is_some()),
+            "stableStandingNativeSamples":self.stable_substeps,"standingAnchors":self.stable_feet,
+            "standingPassed":self.status.prototype_standing_passed
+        }))
+    }
     #[cfg(feature = "getup-terminal-tail-observer-experiment")]
     pub(crate) fn stable_foot_anchors(&self) -> Option<[Vec3; 2]> { self.stable_feet }
     pub(crate) fn source_recovery_active(&self) -> bool {
@@ -159,11 +170,17 @@ impl Controller {
         self.started_substep.is_some() && self.status.prototype_standing_passed
     }
     pub(crate) fn repeated_recovery_clock_valid(&self, native: u64) -> bool {
-        self.started_substep.is_none_or(|n| n <= native)
+        self.physical_roll_clock_valid(native)
+            && self.started_substep.is_none_or(|n| n <= native)
             && self.impact_substep.is_none_or(|n| n <= native)
             && self.terminal_balance.as_ref().is_none_or(|b| b.activated_native_substep <= native)
             && (self.status.prototype_standing_passed || self.started_substep.is_none_or(|start|
                 self.impact_substep.is_some_and(|epoch| epoch <= start)))
+    }
+    pub(crate) fn physical_roll_clock_valid(&self, native: u64) -> bool {
+        self.physical_roll.as_ref().is_none_or(|r| r.valid_at(native)
+            && self.impact_substep.is_some_and(|i|i <= r.start_native)
+            && self.started_substep.is_none_or(|start| r.admission_native.is_some_and(|a|a <= start)))
     }
     /// A later contact is only a pending epoch. The physical fall observer must
     /// independently establish a new fall before this cycle can be released.
@@ -195,6 +212,7 @@ impl Controller {
             stable_substeps: 0,
             stable_feet: None,
             terminal_balance: None,
+            physical_roll: None,
             terminal_base_ready: if cfg!(feature = "getup-terminal-base-ready-experiment") {
                 Some(TerminalBaseReady {
                     format: if cfg!(feature = "getup-terminal-bumpless-experiment") {
@@ -207,7 +225,9 @@ impl Controller {
         }
     }
     pub(crate) fn controller_label(&self) -> &'static str {
-        if self.terminal_balance.is_some() {
+        if self.physical_roll.as_ref().is_some_and(|r| !matches!(r.phase, super::physical_roll::Phase::Admitted)) {
+            "experimental-physical-right-flank-roll"
+        } else if self.terminal_balance.is_some() {
             if self.terminal_bumpless_variant() {
                 "experimental-recovery-bumpless-joint-balance-hold"
             } else if self.terminal_base_ready.is_some() {
@@ -226,7 +246,8 @@ impl Controller {
         }
     }
     pub(crate) fn checkpoint_variant_supported(&self) -> bool {
-        (!self.terminal_base_ready_variant()
+        (self.physical_roll.is_none() || cfg!(feature = "getup-physical-roll-experiment"))
+            && (!self.terminal_base_ready_variant()
             || cfg!(feature = "getup-terminal-base-ready-experiment"))
             && (!self.terminal_bumpless_variant()
                 || cfg!(feature = "getup-terminal-bumpless-experiment"))
@@ -433,6 +454,9 @@ impl Controller {
         Ok(())
     }
     pub fn command(&mut self, s: &Simulation, physical: &[f32; 67]) -> Result<[f32; 21], String> {
+        if !self.physical_roll_clock_valid(s.substeps_completed) {
+            return Err("Invalid physical roll native clock or source admission".into());
+        }
         if s.profile.getup_repeated_recovery.is_some() {
             if !cfg!(feature = "getup-repeat-cycle-experiment") {
                 return Err("Repeated GetUp recovery requires getup-repeat-cycle-experiment".into());
@@ -461,6 +485,17 @@ impl Controller {
         {
             self.status.refusal = Some("25-second physical recovery deadline reached".into());
             return Err(self.status.refusal.clone().unwrap());
+        }
+        #[cfg(feature = "getup-physical-roll-experiment")]
+        if let Some(roll) = &self.physical_roll {
+            if roll.phase != super::physical_roll::Phase::Admitted {
+                // Existing preparation retains authority after a later contact
+                // changes Fallen to Falling or makes the striker unavailable.
+                // Neither event renews its cap or the original impact epoch.
+                self.status.phase = format!("physical-roll-{:?}", roll.phase);
+                if let Some(refusal) = &roll.rejection { self.status.refusal = Some(refusal.clone()); }
+                return roll.command(s);
+            }
         }
         #[cfg(feature = "getup-terminal-balance-experiment")]
         if self.started_substep.is_none() && s.motion != Motion::Fallen {
@@ -546,6 +581,24 @@ impl Controller {
                 .as_ref()
                 .is_none_or(|p| p.snapshot(&s.world).available)
         {
+            #[cfg(feature = "getup-physical-roll-experiment")]
+            {
+                if self.physical_roll.is_none()
+                    && super::physical_roll::observation(s)?.settled_supine(s.total_mass() * 9.81)
+                {
+                    // Preserve the true impact/fixture epoch. An unstruck fall
+                    // gets its fallback epoch NOW, never after preparation.
+                    self.impact_substep.get_or_insert(s.substeps_completed);
+                    self.physical_roll = Some(super::physical_roll::State::new(s)?);
+                }
+                if let Some(roll) = &self.physical_roll {
+                    if roll.phase != super::physical_roll::Phase::Admitted {
+                        self.status.phase = format!("physical-roll-{:?}", roll.phase);
+                        if let Some(refusal) = &roll.rejection { self.status.refusal = Some(refusal.clone()); }
+                        return roll.command(s);
+                    }
+                }
+            }
             self.started_substep = Some(s.substeps_completed);
             // An unstruck first fall has the same bounded fallback epoch as
             // the existing command deadline. Do not let a later source-phase
@@ -738,6 +791,18 @@ impl Controller {
             return;
         }
         if self.started_substep.is_none() {
+            #[cfg(feature = "getup-physical-roll-experiment")]
+            if let Some(roll) = self.physical_roll.as_mut() {
+                if let Err(error) = roll.observe(s) {
+                    roll.phase = super::physical_roll::Phase::Rejected;
+                    roll.rejection_native = Some(s.substeps_completed);
+                    roll.rejection = Some(error);
+                }
+                self.status.phase = format!("physical-roll-{:?}", roll.phase);
+                if let Some(refusal) = &roll.rejection { self.status.refusal = Some(refusal.clone()); }
+                self.status.since_impact_s = self.impact_substep.map(|epoch|
+                    (s.substeps_completed - epoch) as f64 / 800.0);
+            }
             return;
         }
         let physical = match super::physical_observation(s) {
@@ -1043,6 +1108,73 @@ mod terminal_balance_tests;
 #[cfg(test)]
 #[path = "repeat_cycle_tests.rs"]
 mod repeat_cycle_tests;
+
+#[cfg(test)]
+mod physical_roll_controller_tests {
+    use super::*;
+    fn synthetic_roll() -> super::super::physical_roll::State {
+        serde_json::from_value(serde_json::json!({
+            "route":"right-flank-tuck-uncoil-v1","startNative":480,"capNative":4000,
+            "phase":"tuck-roll-right","phaseStartNative":480,"lateralNative":null,"proneNative":null,
+            "admissionNative":null,"rejectionNative":null,"rejection":null,"lateralSamples":0,
+            "quietProneSamples":0,"maximumQuietProneSamples":0,"lastObservedNative":480,
+            "current":{"native":480,"longUp":0.0,"faceUp":1.0,"sideUp":0.0,"headM":0.1,
+                "loadN":400.0,"rightFlankLoadN":200.0,"maximumLinearMps":0.0,"maximumAngularRadps":0.0},
+            "referenceStartQ":vec![0.0;21],"referenceStartDq":vec![0.0;21]
+        })).unwrap()
+    }
+    #[test]
+    fn physical_roll_absence_is_byte_omitted_and_requires_its_build_when_present() {
+        let s = Simulation::new(0.0, Profile::default(), false).unwrap();
+        let mut c = Controller::new(&s.model);
+        assert!(serde_json::to_value(&c).unwrap().get("physical_roll").is_none());
+        assert!(c.physical_roll_report().is_none());
+        c.physical_roll = Some(synthetic_roll());
+        assert_eq!(c.checkpoint_variant_supported(), cfg!(feature="getup-physical-roll-experiment"));
+    }
+    #[test]
+    #[cfg(feature = "getup-physical-roll-experiment")]
+    fn physical_roll_does_not_renew_original_impact_deadline_or_allow_source_before_admission() {
+        let mut s = Simulation::new(0.0, Profile::default(), false).unwrap();
+        let mut c = Controller::new(&s.model);
+        c.physical_roll = Some(synthetic_roll()); c.impact_substep = Some(480);
+        assert!(c.physical_roll_clock_valid(480));
+        c.started_substep = Some(500); assert!(!c.physical_roll_clock_valid(500));
+        c.started_substep = None;
+        // Synthetic admitted history, not a physical run. The source may wait
+        // zero extra samples at the boundary, but its deadline stays original.
+        let r = c.physical_roll.as_mut().unwrap();
+        r.phase = super::super::physical_roll::Phase::Admitted;
+        r.lateral_native = Some(500); r.prone_native = Some(501); r.admission_native = Some(720);
+        r.last_observed_native = 720; r.current.native = 720;
+        r.quiet_prone_samples = 120; r.maximum_quiet_prone_samples = 120;
+        s.substeps_completed = 20480;
+        let error = c.command(&s, &[0.0;67]).unwrap_err();
+        assert!(error.contains("25-second"), "{error}");
+        assert_eq!(c.impact_substep, Some(480));
+        assert_eq!(c.started_substep, None); assert_eq!(c.status.forecast_substeps, 0);
+        let report = c.physical_roll_report().unwrap();
+        assert_eq!(report["recoveryDeadlineNative"], 20480);
+    }
+    #[test]
+    #[cfg(feature = "getup-physical-roll-experiment")]
+    fn physical_roll_retains_motor_authority_if_another_contact_changes_motion() {
+        let mut s = Simulation::new(0.0, Profile::default(), false).unwrap();
+        s.substeps_completed = 480;
+        let world_before = bincode::serialize(&s.world).unwrap();
+        for motion in [Motion::Falling, Motion::Reacting, Motion::Upright] {
+            s.motion = motion;
+            let mut c = Controller::new(&s.model);
+            c.physical_roll = Some(synthetic_roll()); c.impact_substep = Some(480);
+            let controls = c.command(&s, &[0.0;67]).unwrap();
+            assert!(controls.iter().all(|x|x.is_finite() && x.abs() <= 0.85));
+            assert!(c.status.phase.starts_with("physical-roll-"));
+            assert_eq!(c.started_substep, None); assert_eq!(c.status.forecast_substeps, 0);
+            assert_eq!(c.impact_substep, Some(480));
+        }
+        assert_eq!(bincode::serialize(&s.world).unwrap(), world_before);
+    }
+}
 
 
 #[cfg(all(test, feature = "getup-terminal-base-ready-experiment"))]

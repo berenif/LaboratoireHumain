@@ -141,6 +141,8 @@ impl Runtime {
             #[cfg(feature = "root-translation-carry-experiment")]
             #[serde(rename = "rootTranslationCompensation", skip_serializing_if = "Option::is_none")]
             root_translation_compensation: Option<serde_json::Value>,
+            #[serde(rename = "physicalRoll", skip_serializing_if = "Option::is_none")]
+            physical_roll: Option<serde_json::Value>,
         }
         #[cfg(feature = "root-translation-carry-experiment")]
         let active_roots: Vec<_> = self.root_translation_checkpoint_entries()?.into_iter()
@@ -152,6 +154,7 @@ impl Runtime {
                     "selectedNextInternalPgsIterations":s.selected_internal_pgs_iterations(),
                     "sourceRecoveryActive":s.getup_controller.as_ref().is_some_and(|c|c.source_recovery_active())}}),
             profile: &s.profile,
+            physical_roll: s.getup_controller.as_ref().and_then(|c| c.physical_roll_report()),
             #[cfg(feature = "unit-root-rotation-experiment")]
             unit_root_rotation,
             #[cfg(feature = "root-translation-carry-experiment")]
@@ -173,6 +176,9 @@ impl Runtime {
         s.profile.validate()?;
         s.validate_unit_root_rotation_policy()?;
         if let Some(controller) = &s.getup_controller {
+            if !controller.physical_roll_clock_valid(s.substeps_completed) {
+                return Err("Invalid checkpoint physical roll native clock or source admission".into());
+            }
             if s.profile.getup_repeated_recovery.is_some()
                 && !controller.repeated_recovery_clock_valid(s.substeps_completed)
             {

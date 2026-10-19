@@ -9,6 +9,7 @@ stationary-balance-experiment = []
 standing-dynamics-experiment = []
 getup-terminal-balance-experiment = []
 getup-repeat-cycle-experiment = ["getup-terminal-balance-experiment"]
+getup-physical-roll-experiment = ["getup-repeat-cycle-experiment"]
 # Isolated, default-off immutable native observation. No persistent selector.
 getup-terminal-tail-observer-experiment = []
 getup-terminal-base-ready-experiment = ["getup-terminal-balance-experiment"]
