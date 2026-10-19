@@ -1,0 +1,599 @@
+{
+  "date": "2026-10-19",
+  "status": "completed-rejected-endpoint-only-short-back-triage",
+  "recordingCompleteByIndependentReadOnlyAnalysis": true,
+  "candidateAdmitted": false,
+  "sourceCommit": "4a54e2e9bb7eef5baa49f8ae7dffff9269b72a5b",
+  "plannedSequence": "Astra planning preceded this single fresh BACK A/B. Extended landing draft remained unbuilt; no failed-world retry, parameter sweep or new teacher tail.",
+  "scope": "One fresh actual-WASM BACK baseline and one fresh duplicate-appended-tuple candidate, desktop Debian Chromium155 headless WebGL2/SwiftShader. Original renderer5895574d/driver4c6281e1/transport cadence; no encoder or performance/Android/global recovery claim.",
+  "solePhysicalIntervention": "Appended canonical standing_target25tuple replaced by an exact duplicate of final interpolated25tuple. Teacher forecast, all interpolated prefix frames, reference count, lookahead5,40Hz control, kd/timing unchanged. No retry/landing extension.",
+  "completeProfile": {
+    "path": "docs/evidence/profiles/getup-800hz-3plus1-repeat-cycle-v1.json",
+    "sha256": "aaa415a19767c218a26b05bad277193cccba2a726b52dcd5aac0a5444afc39d6",
+    "sameInBothArms": true
+  },
+  "source": {
+    "base": "de015119c5c2019b6c2726c3d31c041296f5f94f",
+    "freeze": {
+      "path": "outputs/getup-terminal-tail-ab-20261019/source-freeze-final.json",
+      "sha256": "194251b2668e831d0bbb4f708695c04d28865202325f7c2bcb8faef71dc2da0d",
+      "bytes": 1253
+    },
+    "manifest": {
+      "path": "outputs/browser-capability-20261019/recovery-fixture/terminal-tail-ab/build/source-manifest.json",
+      "sha256": "148b2fae5aeb7ccd2d05dcdd588543be7dee1b7db5b9f2ea0c6ab379e86813ea",
+      "bytes": 48951
+    },
+    "frozenSourceFileCount": 369,
+    "candidateReplayPatch": {
+      "path": "docs/evidence/patches/getup-terminal-tail-duplicate-rejected-2026-10-19.patch",
+      "sha256": "dc07433fb7c528606a19fbd4025947800478f95bfbb7e2c08d3f1d990dbb1518",
+      "bytes": 23754
+    },
+    "nativeEvidence": {
+      "path": "docs/evidence/getup-terminal-tail-ab-2026-10-19.json",
+      "sha256": "b67ce7a53bb5ec2717173a444ec8a9c7c87f6866474bb00c80ce74e202ada4e2",
+      "bytes": 5525
+    },
+    "rustFlags": [],
+    "productionDefaultsChanged": false,
+    "rejectedFeatureInCurrentProduction": false,
+    "sharedObserverRetainedDefaultOff": true
+  },
+  "predeclaredTriage": {
+    "pinnedBeforeRun": true,
+    "requiredCurrentConsecutiveNativeSamplesAtExactCutoff": 80,
+    "historicalStreakCannotPass": true,
+    "cutoff": "actual first Holding command input+400native;2520+400=2920/3.65s",
+    "conditions": [
+      "each CURRENT foot load>=existing3N",
+      "native footLoadFraction>=.8BW",
+      "native onlyFeet nonfoot<3N",
+      "native torso up>=.97",
+      "native COM-support inclusion at existing.003m inset",
+      "native capture-support inclusion at existing.003m inset"
+    ],
+    "existingRustF32PredicatesUsed": true,
+    "noAddedProgressConditions": [
+      "40-native foot persistence",
+      "headheight",
+      "wholebody speed",
+      "10mm origin drift"
+    ],
+    "negativeAction": "Pause at bounded cutoff, preserve NEGATIVE, no25s run.",
+    "positiveRuleNotInvoked": "SAME original worker/world would need unchanged25s/native800-sample full standing and30s original anchors/counter hold."
+  },
+  "controllerComparison": {
+    "sameTeacherInitial": true,
+    "sameAll51TeacherFrames": true,
+    "teacherFrameCount": [
+      51,
+      51
+    ],
+    "sameTeacherNativeDt": true,
+    "teacherNativeDt": 0.00125,
+    "sameForecastCount": true,
+    "forecastNativeSteps": 1020,
+    "sameInterpolated102FramePrefix": true,
+    "referenceFramesExcludingAppended": [
+      102,
+      102
+    ],
+    "totalTargetTuples": [
+      103,
+      103
+    ],
+    "candidateAppendedTupleExactlyDuplicatesFinalInterpolated": true,
+    "baselineAppendedTuple": [
+      0,
+      -0.11665,
+      0,
+      -0.03601,
+      -0.03219,
+      0.05025,
+      -0.39803,
+      -0.30198,
+      0.13615,
+      -0.03601,
+      -0.03219,
+      0.05025,
+      -0.39803,
+      -0.30198,
+      -0.13615,
+      0.40763,
+      -0.41967,
+      -1.5795,
+      -0.40763,
+      0.41967,
+      -1.5795,
+      1.4,
+      0,
+      0,
+      1
+    ],
+    "candidateAppendedTuple": [
+      0.021699518,
+      0.046141375,
+      -0.28756508,
+      0.08726646,
+      0.14282267,
+      0.34906584,
+      -0.1408553,
+      0.7853985,
+      0.5065282,
+      -0.13002725,
+      0.3382014,
+      0.22507752,
+      0.034906585,
+      -0.34906602,
+      -0.29739577,
+      0.836814,
+      -0.31327668,
+      -1.2388141,
+      -0.46507037,
+      -0.7756392,
+      -1.5707964,
+      0.89128846,
+      0.123591065,
+      0.30321404,
+      0.944874
+    ],
+    "sameOriginalImpact": [
+      480,
+      480
+    ],
+    "sameStartedSubstep": [
+      480,
+      480
+    ],
+    "sameReferenceAndTeacherCounts": true
+  },
+  "nativePrefix": {
+    "fullRowsIncludingCurrentContactsPolicyControlsCarryEqualThroughNative": 2420,
+    "rowsCompared": 2421,
+    "firstPermittedAffectedNative": 2421,
+    "firstActualFullRowDifferenceNative": 2421,
+    "firstActualFullRowDifference": {
+      "path": "current.capture.x",
+      "baseline": -0.2391882836818695,
+      "candidate": -0.23930545151233673
+    },
+    "firstPoseWordsDifferenceNative": 2421,
+    "firstFreshPhysicalObservationWordsDifferenceNative": 2421,
+    "firstExactCarryStringDifferenceNative": 2421,
+    "firstRequestedControlsDifferenceNative": 2421,
+    "normalizedPrefixSha256": "8842c5c06304cd8a8f1f2e0c74125e74fb4d247891039b868b60b904fce1fb35"
+  },
+  "previousBaselineObserverPurity": {
+    "retainedUnitRootRun": {
+      "path": "/workspace/scratch/5def91918e35/mvp-landing/outputs/browser-capability-20261019/recovery-fixture/unit-root-rotation/back-thirty/result.json",
+      "sha256": "42faa957061e078a34695ea520d09e7302865e3c26fe28af84e7bd4bca5d5f01",
+      "bytes": 26937195
+    },
+    "compared40HzPublications": 147,
+    "every325PoseVelocityWordExact": true,
+    "claim": "Same-target emitted body pose/velocity parity only; not cross-target trajectory or hidden full-world bitwise equivalence."
+  },
+  "arms": {
+    "baseline": {
+      "workerSha256": "53395c6d8b968774e07ee38eeb1931047acefb0df3cd090a59bc1943b9867e28",
+      "glueSha256": "406d700bc2a55b9638db35ae77d0827cc4896d82d32698f1ef51bc10c4af5537",
+      "buildFeatures": [
+        "lh-worker/root-translation-carry-experiment",
+        "lh-sim/getup-terminal-balance-experiment",
+        "lh-sim/standing-dynamics-experiment",
+        "lh-sim/unit-root-rotation-experiment",
+        "lh-sim/getup-repeat-cycle-experiment",
+        "lh-worker/getup-terminal-tail-observer-experiment"
+      ],
+      "actualBuildIdentity": {
+        "checkpointResumeSupported": true,
+        "currentMotionSource": "fresh physicalObservationWords and current.motion; pose velocity words are cache receipts",
+        "experiment": "terminal-tail-ab-v1",
+        "maxTicksPerCall": 1,
+        "nativeTrace": "read-only-post-native-observer-v1",
+        "poseWordLayout": "per body: positionXYZ,quaternionXYZW,cachedLinearVelocityXYZ,cachedAngularVelocityXYZ",
+        "variant": "source-canonical"
+      },
+      "outcome": "NEGATIVE-bounded-triage",
+      "observationValid": true,
+      "realNativeIntegrations": 2920,
+      "forecastNativeIntegrations": 1020,
+      "rowsIncludingNative0": 2921,
+      "firstHoldingNative": 2521,
+      "holdingCommandInputNative": 2520,
+      "stopNative": 2920,
+      "stopPhysicalSeconds": 3.65,
+      "extraUncreditedRows": [],
+      "triage": {
+        "passed": false,
+        "deadlineNative": 2920,
+        "firstHoldingNative": 2521,
+        "firstHoldingCommandInputNative": 2520,
+        "first80Native": null,
+        "currentConsecutiveNative": 0,
+        "maximumConsecutiveNative": 0,
+        "acceptance": "current consecutive streak>=80 at exact cutoff; historical maximum cannot pass",
+        "evaluatedThroughNative": 2920,
+        "progressPredicates": {
+          "eachFootCurrentLoadAtLeast3N": false,
+          "currentFootLoadAtLeast80PercentBodyWeight": true,
+          "everyCurrentNonfootLoadBelow3N": true,
+          "torsoUpAtLeast097": false,
+          "currentComInSupport": false,
+          "currentCaptureInSupport": false
+        },
+        "computedProgressNumerics": {
+          "summedFootLoadN": 379.3404541015625,
+          "eightyPercentBodyWeightN": 320.5438232421875,
+          "jsFootLoadFractionDiagnosticOnly": true,
+          "jsOnlyFeetDiagnosticOnly": true,
+          "jsTorsoUpDiagnosticOnly": false
+        },
+        "currentPredicates": {
+          "angularMotion": false,
+          "bothFeetLoadedAndPersistent": false,
+          "captureInSupport": false,
+          "comInSupport": false,
+          "footDriftFromSuppliedAnchors": null,
+          "footLoadFraction": true,
+          "head": true,
+          "linearMotion": false,
+          "onlyFeet": true,
+          "torso": false
+        },
+        "torsoUp": 0.9347015619277954,
+        "reason": "bounded-native-progress-not-earned"
+      },
+      "firstNativeStandingPass": false,
+      "twentyFiveSecondRecoveryRun": false,
+      "thirtySecondHoldRun": false,
+      "cutoffCurrent": {
+        "headM": 1.4124754667282104,
+        "torsoUp": 0.9347015619277954,
+        "feetLoadN": [
+          0,
+          379.3404541015625
+        ],
+        "comVelocity": {
+          "x": 0.58387291431427,
+          "y": 0.00836291816085577,
+          "z": -0.3090772330760956
+        },
+        "maximumCurrentLinearMps": 2.3694331645965576,
+        "maximumCurrentAngularRadps": 5.620787620544434,
+        "trackingErrorRad": 0.28366783261299133,
+        "referenceComErrorM": -0.6086504459381104,
+        "stableStandingS": 0
+      },
+      "materialSlipDiagnosticOnly": {
+        "left_foot": {
+          "observedLoadedRows": 1317,
+          "unavailableLoadedRows": 0,
+          "sampledImpulseWeightedTangentTravelM": 0.2307607590516859,
+          "maximumImpulseWeightedTangentSpeedMps": 2.3197505474090576
+        },
+        "right_foot": {
+          "observedLoadedRows": 1593,
+          "unavailableLoadedRows": 0,
+          "sampledImpulseWeightedTangentTravelM": 0.5159572114376639,
+          "maximumImpulseWeightedTangentSpeedMps": 4.253908634185791
+        },
+        "interpretation": "Native800Hz sum of current impulse-weighted loaded-contact tangent speed times1/800; material contact slip, not foot-origin displacement. Missing speeds remain unavailable."
+      },
+      "activationPurity": {
+        "activationCalls": 1,
+        "livePoseAndFreshPhysicalWordsEqual": true,
+        "rootIdsEqualAndNewCarryRemainderExactlyZero": true,
+        "binaryCheckpointPurityClaim": true,
+        "candidateExportAndRestoreExplicitlyRefused": false
+      },
+      "receipts": {
+        "result": {
+          "path": "/workspace/scratch/5def91918e35/mvp-landing/outputs/browser-capability-20261019/recovery-fixture/terminal-tail-ab/actual-back-pair/baseline/result.json",
+          "sha256": "a5322db25fea6ec026f85034cef1bce5b3a6cacc85fc909db3aaafba3f9b6b6a",
+          "bytes": 340516
+        },
+        "nativeTrace": {
+          "path": "/workspace/scratch/5def91918e35/mvp-landing/outputs/browser-capability-20261019/recovery-fixture/terminal-tail-ab/actual-back-pair/baseline/native-trace.ndjson",
+          "sha256": "7be64c956845d06e69bc7503700b2f2e9be988da28f307a6862f9518ea338f3d",
+          "bytes": 44268499
+        },
+        "stopController": {
+          "path": "/workspace/scratch/5def91918e35/mvp-landing/outputs/browser-capability-20261019/recovery-fixture/terminal-tail-ab/actual-back-pair/baseline/stop-controller.json",
+          "sha256": "bb9984e50d7cec0d2a149901626953a9411444d3e267a443316493b35968feec",
+          "bytes": 4083733
+        },
+        "buildManifest": {
+          "path": "outputs/browser-capability-20261019/recovery-fixture/terminal-tail-ab/build/build-baseline-manifest.json",
+          "sha256": "a2680afe9a2ae23f46b71babbeed0bd601be51862096b50143123c07766d3f93",
+          "bytes": 3479
+        },
+        "adapterManifest": {
+          "path": "outputs/browser-capability-20261019/recovery-fixture/terminal-tail-ab/build/app-baseline-fixture-fixture-adapter-manifest.json",
+          "sha256": "c3667c023983329422d1af5c8572ace23ba50e5503e221d375282b1166d83508",
+          "bytes": 4948
+        },
+        "activationProof": {
+          "path": "outputs/browser-capability-20261019/recovery-fixture/terminal-tail-ab/actual-back-pair/baseline/activation-proof.json",
+          "sha256": "28088b329a8b8d35028ba2a3a6b60ab5b18747fccba2fb1532a5ac47bef87978",
+          "bytes": 69383
+        }
+      }
+    },
+    "candidate": {
+      "workerSha256": "17f5d1112a742bb5004d6294e6ee5056bb7f42ab1004895701c19c280736a571",
+      "glueSha256": "406d700bc2a55b9638db35ae77d0827cc4896d82d32698f1ef51bc10c4af5537",
+      "buildFeatures": [
+        "lh-worker/root-translation-carry-experiment",
+        "lh-sim/getup-terminal-balance-experiment",
+        "lh-sim/standing-dynamics-experiment",
+        "lh-sim/unit-root-rotation-experiment",
+        "lh-sim/getup-repeat-cycle-experiment",
+        "lh-worker/getup-terminal-tail-observer-experiment",
+        "lh-sim/getup-terminal-tail-duplicate-experiment"
+      ],
+      "actualBuildIdentity": {
+        "checkpointResumeSupported": false,
+        "currentMotionSource": "fresh physicalObservationWords and current.motion; pose velocity words are cache receipts",
+        "experiment": "terminal-tail-ab-v1",
+        "maxTicksPerCall": 1,
+        "nativeTrace": "read-only-post-native-observer-v1",
+        "poseWordLayout": "per body: positionXYZ,quaternionXYZW,cachedLinearVelocityXYZ,cachedAngularVelocityXYZ",
+        "variant": "last-interpolated-duplicate"
+      },
+      "outcome": "NEGATIVE-bounded-triage",
+      "observationValid": true,
+      "realNativeIntegrations": 2920,
+      "forecastNativeIntegrations": 1020,
+      "rowsIncludingNative0": 2921,
+      "firstHoldingNative": 2521,
+      "holdingCommandInputNative": 2520,
+      "stopNative": 2920,
+      "stopPhysicalSeconds": 3.65,
+      "extraUncreditedRows": [],
+      "triage": {
+        "passed": false,
+        "deadlineNative": 2920,
+        "firstHoldingNative": 2521,
+        "firstHoldingCommandInputNative": 2520,
+        "first80Native": null,
+        "currentConsecutiveNative": 0,
+        "maximumConsecutiveNative": 0,
+        "acceptance": "current consecutive streak>=80 at exact cutoff; historical maximum cannot pass",
+        "evaluatedThroughNative": 2920,
+        "progressPredicates": {
+          "eachFootCurrentLoadAtLeast3N": false,
+          "currentFootLoadAtLeast80PercentBodyWeight": false,
+          "everyCurrentNonfootLoadBelow3N": true,
+          "torsoUpAtLeast097": false,
+          "currentComInSupport": false,
+          "currentCaptureInSupport": false
+        },
+        "computedProgressNumerics": {
+          "summedFootLoadN": 300.1829833984375,
+          "eightyPercentBodyWeightN": 320.5438232421875,
+          "jsFootLoadFractionDiagnosticOnly": false,
+          "jsOnlyFeetDiagnosticOnly": true,
+          "jsTorsoUpDiagnosticOnly": false
+        },
+        "currentPredicates": {
+          "angularMotion": false,
+          "bothFeetLoadedAndPersistent": false,
+          "captureInSupport": false,
+          "comInSupport": false,
+          "footDriftFromSuppliedAnchors": null,
+          "footLoadFraction": false,
+          "head": false,
+          "linearMotion": false,
+          "onlyFeet": true,
+          "torso": false
+        },
+        "torsoUp": 0.6997407078742981,
+        "reason": "bounded-native-progress-not-earned"
+      },
+      "firstNativeStandingPass": false,
+      "twentyFiveSecondRecoveryRun": false,
+      "thirtySecondHoldRun": false,
+      "cutoffCurrent": {
+        "headM": 1.2519067525863647,
+        "torsoUp": 0.6997407078742981,
+        "feetLoadN": [
+          0,
+          300.1829833984375
+        ],
+        "comVelocity": {
+          "x": 0.8528763055801392,
+          "y": -0.33851781487464905,
+          "z": -0.17042239010334015
+        },
+        "maximumCurrentLinearMps": 2.173219680786133,
+        "maximumCurrentAngularRadps": 10.387937545776367,
+        "trackingErrorRad": 1.1344642639160156,
+        "referenceComErrorM": -0.14852410554885864,
+        "stableStandingS": 0
+      },
+      "materialSlipDiagnosticOnly": {
+        "left_foot": {
+          "observedLoadedRows": 1275,
+          "unavailableLoadedRows": 0,
+          "sampledImpulseWeightedTangentTravelM": 0.2001625357087188,
+          "maximumImpulseWeightedTangentSpeedMps": 2.3197505474090576
+        },
+        "right_foot": {
+          "observedLoadedRows": 1721,
+          "unavailableLoadedRows": 0,
+          "sampledImpulseWeightedTangentTravelM": 0.5852761777580884,
+          "maximumImpulseWeightedTangentSpeedMps": 4.253908634185791
+        },
+        "interpretation": "Native800Hz sum of current impulse-weighted loaded-contact tangent speed times1/800; material contact slip, not foot-origin displacement. Missing speeds remain unavailable."
+      },
+      "activationPurity": {
+        "activationCalls": 1,
+        "livePoseAndFreshPhysicalWordsEqual": true,
+        "rootIdsEqualAndNewCarryRemainderExactlyZero": true,
+        "binaryCheckpointPurityClaim": false,
+        "candidateExportAndRestoreExplicitlyRefused": true
+      },
+      "receipts": {
+        "result": {
+          "path": "/workspace/scratch/5def91918e35/mvp-landing/outputs/browser-capability-20261019/recovery-fixture/terminal-tail-ab/actual-back-pair/candidate/result.json",
+          "sha256": "b52228880e22368f84f34388f3e39b3a4789b1976308e85bd76f169974e47fb6",
+          "bytes": 341180
+        },
+        "nativeTrace": {
+          "path": "/workspace/scratch/5def91918e35/mvp-landing/outputs/browser-capability-20261019/recovery-fixture/terminal-tail-ab/actual-back-pair/candidate/native-trace.ndjson",
+          "sha256": "e0ef456ad1c6ad1acd0432f4fa64d9485a32acf1f0141e11e28cd9d171f71dad",
+          "bytes": 44358626
+        },
+        "stopController": {
+          "path": "/workspace/scratch/5def91918e35/mvp-landing/outputs/browser-capability-20261019/recovery-fixture/terminal-tail-ab/actual-back-pair/candidate/stop-controller.json",
+          "sha256": "7764df9418c4fc53f32e9125ab408f5a6eaf3d65e3e669c47692c4f6a2d96c10",
+          "bytes": 4089165
+        },
+        "buildManifest": {
+          "path": "outputs/browser-capability-20261019/recovery-fixture/terminal-tail-ab/build/build-candidate-manifest.json",
+          "sha256": "b1281d6d0f416ee35652d0d617737c30b1fe8cad357e559e1653aa720e0e198c",
+          "bytes": 3582
+        },
+        "adapterManifest": {
+          "path": "outputs/browser-capability-20261019/recovery-fixture/terminal-tail-ab/build/app-candidate-fixture-fixture-adapter-manifest.json",
+          "sha256": "f27a8725f728f6c4a81b73c78f148bce14ee75a4ec2f96b38170694e62529b7c",
+          "bytes": 5019
+        },
+        "activationProof": {
+          "path": "outputs/browser-capability-20261019/recovery-fixture/terminal-tail-ab/actual-back-pair/candidate/activation-proof.json",
+          "sha256": "063b948e72e02507b07e0405038899a453f15c0c8c07329e185fc8390131851c",
+          "bytes": 69621
+        }
+      }
+    }
+  },
+  "currentContactFacts": {
+    "bothFeetCurrentLoadAtLeast3NRunBeforeEndpoint": {
+      "firstNative": 2108,
+      "lastNative": 2352,
+      "firstBreakNative": 2353,
+      "firstBreakPhysicalSeconds": 2.94125,
+      "isolatedReturnNative": 2355
+    },
+    "samePreEndpointNative2420": {
+      "headM": 1.34226393699646,
+      "torsoUp": 0.8126996159553528,
+      "feetLoadN": [
+        0,
+        177.3131103515625
+      ],
+      "bodyWeightN": 400.6797790527344,
+      "comVelocity": {
+        "x": 0.32140856981277466,
+        "y": 0.7514117956161499,
+        "z": -0.008885366842150688
+      },
+      "maximumCurrentLinearMps": 1.733652949333191,
+      "maximumCurrentAngularRadps": 9.991615295410156
+    },
+    "nativeCOMAndCaptureSupportTrueSamplesPerArm": 0,
+    "supportGeometryCaveat": "False inset inclusion does not alone prove geometric departure. Existing inside_support refuses hulls with fewer than3vertices; rising feet may supply only2 solved points. Raw current points/loads remain retained. No hull rule or threshold was changed; cloned teacher contacts never treated as current loads.",
+    "materialSlipCaveat": "Every800Hz solved material-point speeds and loaded travel retained during getup, with missing loaded rows explicit. Whole-getup travel is diagnostic;20mm stop belongs established post-standing continuation and no continuation occurred."
+  },
+  "executionAndTests": {
+    "browserPairedRuns": 1,
+    "retryOrSweep": false,
+    "native0AndTrigger": "Carry once native0; original80-native BACK preparation polling; trigger+advance(0) exact325pose/velocity words and0real integrations.",
+    "candidateCheckpointLimitation": "No export/restore: both actual native refusals recorded. Live native0 pose/current67/carry receipts only; no binary-world or embeddedRuntime-string equality claim candidate.",
+    "baselineCheckpointProof": "Binarymodel/world/embeddedRuntime-string equality brackets activation ONLY; zero-tick boundary receipts outside bracket.",
+    "nativeFocusedContracts": {
+      "passingExecutions": 74,
+      "uniqueNamesAcrossArms": 47,
+      "failed": 0,
+      "ignored": 0,
+      "scope": "Focused only, not full inventory. Baseline native unit source predates extra native0/carry receipt fields; final candidate units and BOTH actualWASM artifacts use exact final observer.",
+      "receipt": {
+        "path": "outputs/getup-terminal-tail-ab-20261019/focused-contracts-summary.json",
+        "sha256": "b3139d8b963b071de349a8c2a1d8d4922bd2f2d96137a7ad39a46cfdc3eb487c",
+        "bytes": 3763
+      }
+    },
+    "recorderSyntheticTests": {
+      "passed": 32,
+      "failed": 0,
+      "scope": "Actual extracted nativeRow function;80vs79,current-vs-historical streak, nativef32 arithmetic, cutoff/gaps/epochs, original30s anchors/counters/fullgates, contact/control faults. No browser/WASM physics in synthetics.",
+      "receipt": {
+        "path": "outputs/browser-capability-20261019/recovery-fixture/terminal-tail-ab/recorder-native-row-synthetic-result.json",
+        "sha256": "903abdd410e6c8fa0f9fc0e48b6be7427594cbcf22120a535aafaf6235b14424",
+        "bytes": 3433
+      },
+      "script": {
+        "path": "outputs/browser-capability-20261019/recovery-fixture/terminal-tail-ab/test-recorder-native-row-2026-10-19.mjs",
+        "sha256": "f7b0079f1045fd96a7a71a605cdd3626493dbf1b92f525c8d9daa07b207f6d39",
+        "bytes": 12732
+      }
+    },
+    "noWorkerNativeObserverFaults": true,
+    "noPhysicalInputsCommandsResets": true,
+    "browserVersion": "155.0.8059.79",
+    "performanceClaim": false,
+    "androidClaim": false
+  },
+  "bookkeepingLimitation": {
+    "automaticComparisonAvailable": false,
+    "why": "Negative stop ends scheduling before queued triage capture is serviced. Both unconditional stop-controller exports exist read-only at exact2920 cutoff, so this independent analysis uses those same-state captures without replay.",
+    "originalRawReportPreserved": true
+  },
+  "conclusion": "The sole endpoint substitution is a clean short negative: actual native observables remain exact through2420 and differ first2421, but neither arm earns any80-native current support streak by2920. The endpoint cannot cause the earlier identical current-load trajectory. No25-second failure or long-hold claim is inferred.",
+  "nextStep": "Further Astra planning/read-only upstream tracking/contact diagnosis only; no automatic next controller implementation.",
+  "probes": [
+    {
+      "path": "docs/evidence/probes/make-terminal-tail-fixture-app-2026-10-19.mjs",
+      "sha256": "3da67108db08ee8cae54d9b4a4f301b92ce2cc2c0595c2cb989ce30292e007f4",
+      "bytes": 20127
+    },
+    {
+      "path": "docs/evidence/probes/record-getup-terminal-tail-ab-2026-10-19.mjs",
+      "sha256": "4d151ff4b8022958b34b21eb63574f94eca41062da2128c52a36571b661ae72d",
+      "bytes": 55619
+    },
+    {
+      "path": "docs/evidence/probes/analyze-terminal-tail-ab-2026-10-19.mjs",
+      "sha256": "ec56b1b8e36415a68805d24c63aec69c69244b3ba566d50efcbff7b72141282b",
+      "bytes": 11329
+    }
+  ],
+  "receipts": [
+    {
+      "path": "outputs/browser-capability-20261019/recovery-fixture/terminal-tail-ab/browser-observation-plan.json",
+      "sha256": "846624be9ce7f9915d9c158866613a7ae71d5e2a8e8d5856c230002d03b9989f",
+      "bytes": 4855
+    },
+    {
+      "path": "outputs/browser-capability-20261019/recovery-fixture/terminal-tail-ab/terminal-tail-ab-summary.json",
+      "sha256": "b33cddc54c6c781308d6afe3669cf021f6006ce5154bf171cf82c5ef6a8c5463",
+      "bytes": 83382
+    },
+    {
+      "path": "outputs/browser-capability-20261019/recovery-fixture/terminal-tail-ab/actual-back-pair/result.json",
+      "sha256": "01d49d309a4a0c37c10144902872d0b3f03bb08a75a02744ce7c76306107e5ec",
+      "bytes": 790777
+    },
+    {
+      "path": "outputs/browser-capability-20261019/recovery-fixture/terminal-tail-ab/build/build-pair.sh",
+      "sha256": "92da5c14852cf902a6f054d771f285007b9c152f80ac5209ce5d54ad854ccd1d",
+      "bytes": 1778
+    }
+  ],
+  "reproduce": {
+    "build": "Isolated exact de015119 plus preserved6-file replay patch; Cargo1.89.0 targetwasm32 release flags[], first existing5simfeatures+workerobserver, candidate adds ONLYsimduplicate; wasm-bindgen0.2.108. Both worker replacements use immutable fixedrenderer/driver base.",
+    "fixtureAdapter": "node docs/evidence/probes/make-terminal-tail-fixture-app-2026-10-19.mjs BUILT_APP FRESH_FIXTURE_APP BUILD_MANIFEST docs/evidence/profiles/getup-800hz-3plus1-repeat-cycle-v1.json baseline|candidate",
+    "actualPair": "RUST_BROWSER_EXECUTABLE=official-debian-headless-path RUST_BROWSER_NO_VIDEO=1 node docs/evidence/probes/record-getup-terminal-tail-ab-2026-10-19.mjs BASELINE_FIXTURE_APP CANDIDATE_FIXTURE_APP FRESH_OUTPUT",
+    "analysis": "node docs/evidence/probes/analyze-terminal-tail-ab-2026-10-19.mjs (reads retained exact lane, integrates0; original raw report remains unchanged)"
+  },
+  "claimLimits": [
+    "Desktop headless software rendering, not realAndroid/GPU qualification.",
+    "Short negative triage, not25s deadline or30s hold result.",
+    "Native observable-word/current-contact/rawcarry prefix equality, not entire hidden Rapier-world or native-vs-WASM trajectory bitwise equality.",
+    "Candidate checkpoint/persistence intentionally unsupported and absent from production.",
+    "Existing strict recovery/standing thresholds and defaults unchanged."
+  ],
+  "sourceCommitDisposition": "Restored canonical behavior plus default-off shared observer/native negative proof. This commit does not contain the rejected duplicate selector/checkpoint exclusions; actual candidate artifact remains exact de015119+six frozen overrides, reconstructable by the preserved replay patch."
+}
