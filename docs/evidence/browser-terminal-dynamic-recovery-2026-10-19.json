@@ -1,0 +1,360 @@
+{
+  "date": "2026-10-19",
+  "status": "experimental-actual-browser-back-thirty-second-hold-FAILED; exact-original-foot-anchor-cause-reproduced",
+  "releaseAccepted": false,
+  "qualificationClaim": false,
+  "productionRecoveryEnabled": false,
+  "defaultProfileChanged": false,
+  "physicalAcceptanceChanged": false,
+  "scope": "Frozen combined standing-dynamics + terminal-balance experimental worker on the actual Rust/WASM app, original driver/transport and fixed renderer. Source-fidelity default20+5,800Hz physics/40Hz control and frozen actors. Real autonomous back fixture, no physical input/reset/support injection. Full firstpass+30physical-second gate attempted, then a separate read-only original-anchor/checkpoint replay. Neither is admitted recovery.",
+  "artifact": {
+    "sourceBase": "aee0e191767ac2c7185366f8b757563a2c63f7c6",
+    "features": [
+      "lh-sim/standing-dynamics-experiment",
+      "lh-sim/getup-terminal-balance-experiment"
+    ],
+    "workerWasmSha256": "89408b1a8501bfeec8e203d8c97491e343aa4081d1212ae6ab30fd984307eb59",
+    "rendererWasmSha256": "5895574d87e93f6a2eddec98662797b16c298c90f2ee8298f6d72917f4d1b07e",
+    "driverSha256": "4c6281e19c4540e3ba72a74a5b1514b5d1b9c58e56c1f8a2dbfb3adb4812d74e",
+    "ordinaryWorkerTransportSha256": "a3a2b18c222c045fc08bf19aff2e96b92f0bc18ad6023bcca660195054267996",
+    "sourceManifest": {
+      "path": "outputs/browser-capability-20261019/recovery-fixture/combined-terminal-dynamics/source-manifest.json",
+      "sha256": "39e19b41d72a0a0ff4dd6f6c1ac74efe59c0c3ac6ea55f49f89976389108df2f"
+    },
+    "buildManifest": {
+      "path": "outputs/browser-capability-20261019/recovery-fixture/combined-terminal-dynamics/build-manifest.json",
+      "sha256": "a45e72f0428a62c4ccf9877480f393b3de9e1a39a08f53c49b8dd6284e9a806d"
+    },
+    "filmingAdapterManifest": {
+      "path": "outputs/browser-capability-20261019/recovery-fixture/combined-terminal-dynamics/app-fixture-test-fixture-adapter-manifest.json",
+      "sha256": "f3c7106b4d120ff3c6e7878ca2aad80c3d8d151897598436a9cbf2c2881bce83"
+    },
+    "originalAnchorAdapterManifest": {
+      "path": "outputs/browser-capability-20261019/recovery-fixture/combined-terminal-dynamics/app-historical-anchor-test-fixture-adapter-manifest.json",
+      "sha256": "d7c9d0ac155fea0e8c967a63cebcc7269baeb5292a6df1a3cbbe8e6eca970a8b"
+    },
+    "buildChange": "Only workerWASM differs from fixed renderer base; glue/renderer/driver/original transport unchanged. Worker dependency sources match prior845d88d5freeze; separate unbuilt acceptanceCLI main diff is enumerated in manifest.",
+    "toolchain": "Rust1.89.0,wasm-bindgen0.2.108,release wasm32-unknown-unknown,no extra target flags"
+  },
+  "fullSourceProfile": {
+    "id": "getup-reference-5ad52fbe",
+    "dt_s": 0.00125,
+    "tick_substeps": 20,
+    "contact_friction_model": "coulomb",
+    "solver_iterations": 20,
+    "internal_pgs_iterations": 20,
+    "fall_internal_pgs_iterations": 32,
+    "additional_body_iterations": 5,
+    "allowed_linear_error_m": 0.001,
+    "prediction_distance_m": 0.002,
+    "motor_scale": 1,
+    "aggregate_motor_cap_nm": 920,
+    "angular_damping": 0,
+    "contact_skin_m": 0,
+    "max_ccd_substeps": 4,
+    "disable_solver_speed_cap": true,
+    "posture_stiffness_multiplier": 1,
+    "posture_damping_multiplier": 1,
+    "supported_tilt_gain": 2,
+    "supported_com_gain_rad_per_m": 5,
+    "supported_com_velocity_gain_s_rad_per_m": 5,
+    "supported_angular_velocity_gain_s": 2,
+    "grab_limits": {
+      "angular_frequency_rad_s": 16,
+      "target_speed_m_s": 1.5,
+      "target_acceleration_m_s2": 8,
+      "force_n": 180,
+      "torque_nm": 12,
+      "positive_power_w": 36
+    },
+    "reaching_iterations": 6,
+    "reaching_coordinate_increment_rad": 0.15,
+    "reaching_damping_m2": 0.01,
+    "corrective_steps_enabled": false,
+    "recovery_enabled": false,
+    "getup_policy_enabled": true
+  },
+  "nativeQualificationContext": {
+    "evidence": {
+      "path": "docs/evidence/getup-terminal-dynamic-recovery-2026-10-19.json",
+      "sha256": "32015b7733eff12ef496c5d7d1b87decf33dff57bb6209800a3bbb4d84247a7e",
+      "commit": "c9ec136"
+    },
+    "focusedTestsPassed": 19,
+    "cases": "Three of four native fixtures earn original1s/25s pass; plain side does not. Native back30s passes all24000native predicates. Belly43.75mm and side-supported22.41/22.23mm fail unchanged10mm anchors; side-supported also has one foot-load-fraction failure.",
+    "nativeBackPassDoesNotQualifyWasm": "Initial FK rounding/backend differences precede integration; the actual WASM trajectory must pass independently and failed here."
+  },
+  "filmedActualBrowserAttempt": {
+    "passed": false,
+    "thirtySecondStandingObserved": false,
+    "firstPassObservedPhysicalS": 4.975,
+    "firstPassObservedNative": 3980,
+    "firstPassStableStandingS": 1.0225,
+    "firstNativePassDerivedFromStableCounter": 3962,
+    "requiredPostPassPhysicalSeconds": 30,
+    "lastGoodPhysicalS": 32.475,
+    "lastGoodPostPassSeconds": 27.5,
+    "failedObservedPhysicalS": 32.5,
+    "failedObservedPostPassSeconds": 27.525,
+    "lastGoodStableStandingS": 28.5225,
+    "failedStableStandingS": 0.00625,
+    "failedNativeSubsteps": 26000,
+    "distinctPostPassSnapshots": 1102,
+    "requiredDistinctSnapshots": 1201,
+    "duplicatePackets": 0,
+    "stopReason": "sampled-standing-continuity-failure",
+    "standingViolations": [
+      {
+        "time": 32.5,
+        "check": "original-native-stable-interval-continuity",
+        "stable": 0.00625,
+        "motion": "Upright",
+        "physicalDelta": 0.02499999999999858,
+        "stableDelta": -28.51625,
+        "nativeDelta": 20,
+        "clockSequence": true
+      }
+    ],
+    "instantaneousLateAnchorPredicatesAllPassed": true,
+    "latePostPassFootDriftM": [
+      0.00924744177609682,
+      0.00991528294980526
+    ],
+    "exactHistoricalAnchorsRetainedInThisRun": false,
+    "workerErrors": [],
+    "workerFailure": null,
+    "workerError": "",
+    "triggerNative": 480,
+    "triggerPhysical325Float32WordsUnchanged": true,
+    "physicalCommands": 0,
+    "physicalPointerInputs": 0,
+    "workerInstances": 1,
+    "workerIdentities": 1,
+    "generations": [
+      1
+    ],
+    "telemetryDrops": {
+      "droppedPackets": 0,
+      "droppedFrames": 0,
+      "droppedInputs": 0,
+      "pendingVisualInputs": 0
+    },
+    "bounds": {
+      "maximumQueueDepth": 0,
+      "maximumOutstandingAdvances": 1,
+      "maximumAdvanceTicks": 1,
+      "maximumTransferBuffers": 3
+    },
+    "framing": {
+      "ordinaryUiOnly": true,
+      "cameraFocusBody": true,
+      "preStartWheelDeltaY": 400,
+      "note": "Zoom out before any physics to keep lying and standing full body in view; no physical command."
+    }
+  },
+  "readOnlyCausalReplay": {
+    "passedStandingQualification": false,
+    "diagnosticCaptureComplete": true,
+    "recordVideo": false,
+    "performanceQualification": false,
+    "concurrency": "Root-authorized physical-only replay concurrent with isolated native observer build. Host pace is not assessed.",
+    "scheduler": "Same original one-tick automatic app path; explicit request-scheduling hold at first observed pass to export controller/checkpoint, then resume. Stop-state exports occur before retained qualification assertions. No active-world checkpoint import, reset or physical command.",
+    "originalAnchors": "Exact Controller::stable_feet read once through existing immutable getup_report at first pass, then held unchanged in observer. Each40Hz existing native standing_diagnostic uses those anchors. Never reconstructed from snapshots or rolled/reset after drift.",
+    "originalStableFeet": [
+      {
+        "x": -0.7502272,
+        "y": 0.026778294,
+        "z": 0.25689867
+      },
+      {
+        "x": -0.47137496,
+        "y": 0.026832983,
+        "z": 0.38106275
+      }
+    ],
+    "failedNativeSubsteps": 26000,
+    "failedObservedPhysicalS": 32.5,
+    "originalAnchorFootDriftM": [
+      0.009382622316479683,
+      0.01000280026346445
+    ],
+    "originalThresholdM": 0.01,
+    "failedPredicates": [
+      "footDriftFromSuppliedAnchors"
+    ],
+    "allOtherInstantaneousPredicatesPassed": true,
+    "nativeDiagnosticPhysicsIntegrations": [
+      0
+    ],
+    "standingViolations": [
+      {
+        "time": 32.5,
+        "check": "exact-original-controller-stable-feet",
+        "failed": [
+          [
+            "footDriftFromSuppliedAnchors",
+            false
+          ]
+        ],
+        "historicalFootDriftM": [
+          0.009382622316479683,
+          0.01000280026346445
+        ]
+      },
+      {
+        "time": 32.5,
+        "check": "original-native-stable-interval-continuity",
+        "stable": 0.00625,
+        "motion": "Upright",
+        "physicalDelta": 0.02499999999999858,
+        "stableDelta": -28.51625,
+        "nativeDelta": 20,
+        "clockSequence": true
+      }
+    ],
+    "checkpointCaptures": {
+      "first-pass": {
+        "checkpointPath": "outputs/browser-capability-20261019/recovery-fixture/combined-terminal-dynamics/back-original-anchor-replay/first-pass-checkpoint.bin",
+        "checkpointSha256": "1670c76fe97a770036ae09c4b7d8ed23dff2a92504a08b07cdd4102fe8a25a6c",
+        "bytes": 2584098,
+        "controllerPath": "outputs/browser-capability-20261019/recovery-fixture/combined-terminal-dynamics/back-original-anchor-replay/first-pass-controller.json",
+        "controllerSha256": "2c35c1eeb58e0680d0f5b7567654af75530ee1b302272c63b631ab06f671905b",
+        "verification": {
+          "binaryWorldDeserialized": true,
+          "bytes": 2584098,
+          "controllerEqual": true,
+          "forecastSubsteps": 940,
+          "handlesEqual": true,
+          "jointStateEqual": true,
+          "nativeSubsteps": 3980,
+          "passed": true,
+          "physicsIntegrations": 0,
+          "snapshotEqual": true
+        },
+        "time": 4.975,
+        "tick": 199,
+        "cachedPoseVelocityWordsUnchanged": true,
+        "readOnlyGuarantee": "Source methods borrow Runtime immutably; native checkpoint verification reports0integrations and matching current native clock. Cached325pose words are supplementary only."
+      },
+      "stop": {
+        "checkpointPath": "outputs/browser-capability-20261019/recovery-fixture/combined-terminal-dynamics/back-original-anchor-replay/stop-checkpoint.bin",
+        "checkpointSha256": "9e99df92e09620e25b1e6656df1370d5b583c62a3ca5add219a371436838c6f1",
+        "bytes": 2584055,
+        "controllerPath": "outputs/browser-capability-20261019/recovery-fixture/combined-terminal-dynamics/back-original-anchor-replay/stop-controller.json",
+        "controllerSha256": "8fd12caac5e9fc8051437a3ab907e185f3cf57c88718e957d02cd71d9db785eb",
+        "verification": {
+          "binaryWorldDeserialized": true,
+          "bytes": 2584055,
+          "controllerEqual": true,
+          "forecastSubsteps": 940,
+          "handlesEqual": true,
+          "jointStateEqual": true,
+          "nativeSubsteps": 26000,
+          "passed": true,
+          "physicsIntegrations": 0,
+          "snapshotEqual": true
+        },
+        "time": 32.5,
+        "tick": 1300,
+        "cachedPoseVelocityWordsUnchanged": true,
+        "readOnlyGuarantee": "Source methods borrow Runtime immutably; native checkpoint verification reports0integrations and matching current native clock. Cached325pose words are supplementary only."
+      }
+    },
+    "checkpointCaptureGuarantee": "getup_report/getup_checkpoint borrow Runtime immutably. Existing checkpoint verification reconstructs a temporary object, integrates0steps and compares native snapshot/joints/controller/handles with current source, then requires matching native clock. Cached325word before/after equality is only supplementary. No restore into activeworld.",
+    "cause": "Exact original right-foot anchor drift10.002800mm exceeds unchanged10mm, while later first-pass snapshot anchors report9.915283mm. Counter reset is genuine; fresh anchors alone would have hidden it. No threshold relaxation.",
+    "resolutionLimit": "Snapshots/observer are40Hz. They identify the failed original-anchor predicate at native26000; exact earliest failing substep between neighboring samples was not captured. The original continuous native counter proves an interval reset."
+  },
+  "readOnlyStateParity": {
+    "path": "outputs/browser-capability-20261019/recovery-fixture/combined-terminal-dynamics/filmed-versus-diagnostic-state-parity.json",
+    "sha256": "84a1f12a44ef0564570845c80eb2311c163481f1fb221ceec7194fe9600753dd"
+  },
+  "stateParitySummary": {
+    "fullSnapshotsPerRun": 1301,
+    "exactFullSnapshotsAfterExcludingOnlyProfilingClocks": 1301,
+    "excludedFields": [
+      "diagnostics.controller_ms",
+      "diagnostics.update_ms"
+    ],
+    "scope": "All other exported snapshot fields, including motor controls/counter/diagnostics, exactly equal across filmed failure and diagnostic replay. Both fail at32.5s. This proves bounded recorded trajectory equivalence, not cross-target/native or unobserved-state bit parity.",
+    "allRetainedJsonRestoredPoseVelocityF32WordsExact": 422825,
+    "representationLimit": "Retained JSON equality and JSON-restoredf32 words; JSON erases signed-zero distinctions/nonfinite payloads. No raw-engine or transfer-buffer bitwise-state claim."
+  },
+  "recordedPace": {
+    "simulationSeconds": 32.5,
+    "automaticSchedulerWallSeconds": 140.73770000000297,
+    "physicalToWallRatio": 0.23092604184947824,
+    "context": "Exclusive encoded actual-browser back observation; native owner confirms all builds/probes terminal and holds CPU work. Source-fidelity20+5; no realtime or mobile qualification.",
+    "encoded": true,
+    "retimed": false,
+    "qualifiedRealtime": false,
+    "note": "Observed source20+5 pace in this encoded desktop/headless run only. Video duration additionally includes setup and paused failure-state extraction. No comparison with concurrent diagnostic replay."
+  },
+  "proofs": {
+    "filmedRawReport": {
+      "path": "outputs/browser-capability-20261019/recovery-fixture/combined-terminal-dynamics/back-pass-plus-thirty/result.json",
+      "sha256": "d4a5c5359ea2cf0869c6799fc45a37564b5828b54e94a5f684a484d339fe11ba"
+    },
+    "diagnosticRawReport": {
+      "path": "outputs/browser-capability-20261019/recovery-fixture/combined-terminal-dynamics/back-original-anchor-replay/result.json",
+      "sha256": "ecf47e00d41b9b1d3f0863ea869f50059fc679989ecce95911a5a7ba0b003f2c"
+    },
+    "mp4": {
+      "path": "outputs/browser-capability-20261019/recovery-fixture/combined-terminal-dynamics/back-pass-plus-thirty/fixed-fixture-native-wall-time.mp4",
+      "sha256": "5c200268965458766238901e6d4ab9bb83018f8e360eb8631b994f49842a22d0",
+      "durationSeconds": 172.88,
+      "bytes": 4308533,
+      "dimensions": [
+        1280,
+        900
+      ],
+      "codec": "H264",
+      "framesPerSecond": 25,
+      "retimed": false
+    },
+    "webm": {
+      "path": "outputs/browser-capability-20261019/recovery-fixture/combined-terminal-dynamics/back-pass-plus-thirty/fixed-fixture-native-wall-time.webm",
+      "sha256": "2f7cdfffe77a75cd51a321ece16a2e13aa97ccd6c07e94ef8257415e947b580d"
+    },
+    "initialScreenshot": {
+      "path": "outputs/browser-capability-20261019/recovery-fixture/combined-terminal-dynamics/back-pass-plus-thirty/initial-fixed-fixture.png",
+      "sha256": "9fa52b2dfc1cd666eb0e2b5fa2e9d74e497e34ef93c846f679e5e3286d2f36b0"
+    },
+    "failureScreenshot": {
+      "path": "outputs/browser-capability-20261019/recovery-fixture/combined-terminal-dynamics/back-pass-plus-thirty/failure.png",
+      "sha256": "88b3dc5b1657b5d38fa54f5f3a2c8a22b49cb7ecb1581075dbfcb327710cbccb"
+    },
+    "contactSheet": {
+      "path": "outputs/browser-capability-20261019/recovery-fixture/combined-terminal-dynamics/back-pass-plus-thirty/contact-sheet.jpg",
+      "sha256": "52055be02fce2f8a8720333ca1650673b38449eca2c2a44c182b94b4a548b3c8"
+    },
+    "visualInspection": "Actual initial/failure screenshots and sixMP4frames inspected: complete lying/get-up/standing body remains in frame. The body still appears upright at the strict anchored-drift failure; no claim of a visual fall."
+  },
+  "reproduction": {
+    "probes": [
+      {
+        "path": "docs/evidence/probes/record-combined-getup-fixture-2026-10-19.mjs",
+        "sha256": "21087efe0e5df975d5b43a2fc795ccbaf63f8adad9295a613b4c4ab3c1ed3605"
+      },
+      {
+        "path": "docs/evidence/probes/make-getup-historical-anchor-observer-2026-10-19.mjs",
+        "sha256": "4c34ff56c9c3d5956d4e7f06cf8c3fde43d7847d2df1fed00b085a000d7c14a7"
+      },
+      {
+        "path": "docs/evidence/probes/replay-getup-historical-anchor-diagnostic-2026-10-19.mjs",
+        "sha256": "376fa7b1640d51400e7d366cda957766d29ced8d9400ae8bc4a9a08b9625d793"
+      }
+    ],
+    "baseFixtureBuilder": "docs/evidence/probes/make-fixed-getup-fixture-app-2026-10-19.mjs",
+    "build": "Archive aee0e191 rust source; canonical offline1.89.0cargo release wasm32 lh-worker with exactly the two named features; wasm-bindgen0.2.108; replace only workerWASM/glue in copied fixedrenderer app. Exact hashes in source/build manifests.",
+    "film": "Apply baseFixtureBuilder to pinned app-unadapted/build-manifest into a fresh artifact; run record-combined-getup-fixture-2026-10-19.mjs ARTIFACT OUTPUT back with official RUST_BROWSER_EXECUTABLE and RUST_BROWSER_FFMPEG. Expected original gate fails at32.5s.",
+    "diagnose": "Run make-getup-historical-anchor-observer-2026-10-19.mjs FILM_ARTIFACT FRESH_DIAGNOSTIC_ARTIFACT; then RUST_BROWSER_NO_VIDEO=1 replay-getup-historical-anchor-diagnostic-2026-10-19.mjs DIAGNOSTIC_ARTIFACT FRESH_OUTPUT back. Expected passed:false plus diagnosticCaptureComplete:true, both checkpoints exported.",
+    "checks": "All probes/generated modules parse. Independent read-only review approved immutable fixture integrity, full30s gates, exact original-anchor observation, request-scheduling checkpoint holds, first-error stop and zero-integration verification.",
+    "priorPartialOnlyProof": "docs/evidence/browser-terminal-balance-recovery-2026-10-19.json"
+  },
+  "openGates": [
+    "Actual WASM back firstpass+30s holding failed; native pass cannot substitute.",
+    "Broader native belly/side-supported holding and plain-side recovery remain unadmitted.",
+    "Source20+5 recovery is slow on tested desktop/headless renderer. Explicit3+1 recovery is a separate next qualification lane, not a result of this evidence.",
+    "No actual Android/mobile or capable native WebGPU qualification."
+  ]
+}
