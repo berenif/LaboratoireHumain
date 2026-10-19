@@ -7,6 +7,8 @@ pub mod fixtures;
 pub mod reference;
 pub mod standing;
 mod supported_standing;
+#[cfg(feature = "standing-dynamics-experiment")]
+pub use supported_standing::{dynamic_balance_diagnostic, dynamic_balance_fixture_invariants};
 #[cfg(feature = "stationary-balance-experiment")]
 pub mod balance;
 
@@ -233,6 +235,8 @@ pub(crate) fn configure(s: &mut Simulation) -> Result<(), String> {
             "fixture-zero-control-preparation"
         } else if s.getup_controller.is_some() {
             "pretrained-WEAK-SLOW"
+        } else if cfg!(feature = "standing-dynamics-experiment") {
+            "experimental-cop-complete-centroidal-standing-balance"
         } else {
             "measured-contact-standing-balance"
         }

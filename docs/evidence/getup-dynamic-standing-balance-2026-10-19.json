@@ -1,0 +1,1062 @@
+{
+  "date": "2026-10-19",
+  "status": "experimental-controller-native-and-browser-physical-gates-pass",
+  "releaseAccepted": false,
+  "productionDefaultChanged": false,
+  "compilerFeature": "standing-dynamics-experiment",
+  "controllerId": "experimental-cop-complete-centroidal-standing-balance",
+  "numericalProfiles": {
+    "baseline": "unchanged default20+5",
+    "candidate": "docs/evidence/profiles/getup-800hz-4plus1-qualification-v1.json"
+  },
+  "causalMismatch": "The existing feedback computed COP from a nonzero horizontal COM acceleration but inverse statics supplied only vertical reactions and omitted translational inertia. Saved lateral traces showed coherent late body/foot translation rather than chiefly local angular chatter.",
+  "correction": {
+    "resultantCop": "p_bar=sum(alpha_k*p_k), after the unchanged anatomical COP and bilateral load clamps",
+    "effectiveHeight": "COM.y-p_bar.y, using actual intended material endpoint heights",
+    "horizontalAcceleration": "a_h=9.81*(COM_h-p_bar_h)/effectiveHeight",
+    "desiredSupportForces": "F_k=alpha_k*totalMass*(9.81Y+a_h)",
+    "effectiveBodyForces": "f_i=mass_i*(-9.81Y-a_h) at each actual body COM, only inside the recursive joint torque calculation",
+    "fallback": "Existing unsupported/fallen/nonfoot/floor-loss source-PD gating unchanged; no external body/root force is applied",
+    "noNewGains": true
+  },
+  "unchanged": [
+    "800Hz outer steps",
+    "40Hz controls",
+    "original joint PD and clipping",
+    "physical model and friction",
+    "20N-capped .1s torso stimulus and3cm .25s hand stimulus",
+    "20mm cumulative loaded-contact slip stop from first integration",
+    "all standing/load/quiet thresholds",
+    "no pose/velocity/impulse/root assistance"
+  ],
+  "priorStrictStopEvidence": "docs/evidence/getup-4plus1-qualification-2026-10-19.json",
+  "algebraicFixtures": {
+    "physicsIntegrations": 0,
+    "fixtures": 15,
+    "passed": true,
+    "maxForceResidualN": 9.644908240398782e-05,
+    "maxMomentResidualNm": 1.321940665464338e-05,
+    "scope": "three headings, centered/shifted resultant COP, unequal10/90% loads, unequal reaction-point heights; exact zero-acceleration support words checked separately in unit test"
+  },
+  "pairedFrozenStrictPerturbations": {
+    "baseline": {
+      "path": "outputs/getup-budget-20261019/dynamic-balance-baseline-perturbations.ndjson",
+      "sha256": "dc71f81ee1cf8a8cd2f006d2e2458a9f5330d522dd6d0adf0fc758cca3921574",
+      "cases": 8,
+      "allPassed": true,
+      "maximumLoadedSlipM": 0.004420038959267469,
+      "results": [
+        {
+          "case": "torso-x+",
+          "heading": 0.0,
+          "stimulus": {
+            "axis": 0,
+            "body": "torso",
+            "durationS": 0.1,
+            "heldTicks": 4,
+            "mechanism": "existing bounded point-force grab; force cap temporarily sets only stimulus amplitude, restored on release",
+            "pointForceCapN": 20.0,
+            "targetDisplacementM": 1.0
+          },
+          "physicalSeconds": 9.1,
+          "failure": null,
+          "loadedSlipIntegralM": [
+            0.003948792568240908,
+            0.004059228078243964
+          ],
+          "maxFootDriftM": [
+            0.002671467373147607,
+            0.002238126238808036
+          ],
+          "minimumTorsoUp": 0.9995753765106201,
+          "minimumFootLoadN": [
+            197.9511260986328,
+            159.60044860839844
+          ],
+          "maximumBodyAngularRadps": 0.200012668967247,
+          "maximumBodyLinearMps": 0.11937689036130905,
+          "nativeSamplesAfter0_5s": 6881,
+          "finalQuietSamples": 2400,
+          "requiredPredicateFailures": {},
+          "supportFailures": {},
+          "quietFailures": {},
+          "quietMetrics": {
+            "max_angular_radps": 0.0014800550416111946,
+            "max_foot_drift_m": 0.0017673516413196921,
+            "max_linear_mps": 0.0006203363882377744,
+            "max_pelvis_drift_m": 0.0004178355447947979
+          },
+          "allPredicateFailureSamples": {},
+          "oldControllerDiagnosticLoadedSlipIntegralM": [
+            0.024139382883317642,
+            0.024161771993599087
+          ],
+          "oldControllerRequiredFailures": {
+            "cumulativeLoadedSlip20mm": 3039
+          },
+          "intention40HzObservations": {
+            "count": 363,
+            "maxForceResidualN": 0.00010681179368701236,
+            "maxCentroidalMomentResidualNm": 9.165197505092437e-05,
+            "maxRequiredFrictionRatio": 0.0152362622320652
+          },
+          "allArchivedDirectPelvisDiagnosticsZero": true
+        },
+        {
+          "case": "torso-x-",
+          "heading": 0.0,
+          "stimulus": {
+            "axis": 0,
+            "body": "torso",
+            "durationS": 0.1,
+            "heldTicks": 4,
+            "mechanism": "existing bounded point-force grab; force cap temporarily sets only stimulus amplitude, restored on release",
+            "pointForceCapN": 20.0,
+            "targetDisplacementM": -1.0
+          },
+          "physicalSeconds": 9.1,
+          "failure": null,
+          "loadedSlipIntegralM": [
+            0.003948903282382319,
+            0.004064392264661482
+          ],
+          "maxFootDriftM": [
+            0.0031000918243080378,
+            0.0025589768774807453
+          ],
+          "minimumTorsoUp": 0.9995918869972229,
+          "minimumFootLoadN": [
+            159.58450317382812,
+            197.71473693847656
+          ],
+          "maximumBodyAngularRadps": 0.19949506223201752,
+          "maximumBodyLinearMps": 0.11923403292894363,
+          "nativeSamplesAfter0_5s": 6881,
+          "finalQuietSamples": 2400,
+          "requiredPredicateFailures": {},
+          "supportFailures": {},
+          "quietFailures": {},
+          "quietMetrics": {
+            "max_angular_radps": 0.0014707378577440977,
+            "max_foot_drift_m": 0.0021934814285486937,
+            "max_linear_mps": 0.0006809689803048968,
+            "max_pelvis_drift_m": 0.000462987954961136
+          },
+          "allPredicateFailureSamples": {},
+          "oldControllerDiagnosticLoadedSlipIntegralM": [
+            0.02420459138880819,
+            0.02422803845848938
+          ],
+          "oldControllerRequiredFailures": {
+            "cumulativeLoadedSlip20mm": 3047
+          },
+          "intention40HzObservations": {
+            "count": 363,
+            "maxForceResidualN": 0.00010681584734764828,
+            "maxCentroidalMomentResidualNm": 0.0001508069631535095,
+            "maxRequiredFrictionRatio": 0.015237279236316681
+          },
+          "allArchivedDirectPelvisDiagnosticsZero": true
+        },
+        {
+          "case": "torso-z+",
+          "heading": 0.0,
+          "stimulus": {
+            "axis": 2,
+            "body": "torso",
+            "durationS": 0.1,
+            "heldTicks": 4,
+            "mechanism": "existing bounded point-force grab; force cap temporarily sets only stimulus amplitude, restored on release",
+            "pointForceCapN": 20.0,
+            "targetDisplacementM": 1.0
+          },
+          "physicalSeconds": 9.1,
+          "failure": null,
+          "loadedSlipIntegralM": [
+            0.004287291230489087,
+            0.004420038959267469
+          ],
+          "maxFootDriftM": [
+            0.0037192958407104015,
+            0.0030241122003644705
+          ],
+          "minimumTorsoUp": 0.9994687438011169,
+          "minimumFootLoadN": [
+            198.12677001953125,
+            198.02084350585938
+          ],
+          "maximumBodyAngularRadps": 0.251991331577301,
+          "maximumBodyLinearMps": 0.13561634719371796,
+          "nativeSamplesAfter0_5s": 6881,
+          "finalQuietSamples": 2400,
+          "requiredPredicateFailures": {},
+          "supportFailures": {},
+          "quietFailures": {},
+          "quietMetrics": {
+            "max_angular_radps": 0.0026027653366327286,
+            "max_foot_drift_m": 0.002811587415635586,
+            "max_linear_mps": 0.001611935906112194,
+            "max_pelvis_drift_m": 0.000529213750269264
+          },
+          "allPredicateFailureSamples": {},
+          "oldControllerDiagnosticLoadedSlipIntegralM": [
+            0.017918363149908283,
+            0.017944477420443087
+          ],
+          "oldControllerRequiredFailures": {},
+          "intention40HzObservations": {
+            "count": 363,
+            "maxForceResidualN": 9.15679450971779e-05,
+            "maxCentroidalMomentResidualNm": 6.988644758775542e-05,
+            "maxRequiredFrictionRatio": 0.015320590697228909
+          },
+          "allArchivedDirectPelvisDiagnosticsZero": true
+        },
+        {
+          "case": "torso-z-",
+          "heading": 0.0,
+          "stimulus": {
+            "axis": 2,
+            "body": "torso",
+            "durationS": 0.1,
+            "heldTicks": 4,
+            "mechanism": "existing bounded point-force grab; force cap temporarily sets only stimulus amplitude, restored on release",
+            "pointForceCapN": 20.0,
+            "targetDisplacementM": -1.0
+          },
+          "physicalSeconds": 9.1,
+          "failure": null,
+          "loadedSlipIntegralM": [
+            0.004269404081265561,
+            0.004393221563055925
+          ],
+          "maxFootDriftM": [
+            0.0009568964596837759,
+            0.001096162828616798
+          ],
+          "minimumTorsoUp": 0.9994992017745972,
+          "minimumFootLoadN": [
+            187.52239990234375,
+            185.20751953125
+          ],
+          "maximumBodyAngularRadps": 0.24950256943702698,
+          "maximumBodyLinearMps": 0.13430367410182953,
+          "nativeSamplesAfter0_5s": 6881,
+          "finalQuietSamples": 2400,
+          "requiredPredicateFailures": {},
+          "supportFailures": {},
+          "quietFailures": {},
+          "quietMetrics": {
+            "max_angular_radps": 0.00848428439348936,
+            "max_foot_drift_m": 0.001772002549842,
+            "max_linear_mps": 0.001410057651810348,
+            "max_pelvis_drift_m": 0.0005057324306108057
+          },
+          "allPredicateFailureSamples": {},
+          "oldControllerDiagnosticLoadedSlipIntegralM": [
+            0.01799316955786577,
+            0.018033272418597198
+          ],
+          "oldControllerRequiredFailures": {},
+          "intention40HzObservations": {
+            "count": 363,
+            "maxForceResidualN": 9.157260066661383e-05,
+            "maxCentroidalMomentResidualNm": 0.0001068285686067186,
+            "maxRequiredFrictionRatio": 0.01918579638004303
+          },
+          "allArchivedDirectPelvisDiagnosticsZero": true
+        },
+        {
+          "case": "hand-x+",
+          "heading": 0.0,
+          "stimulus": {
+            "axis": 0,
+            "body": "left_hand",
+            "durationS": 0.25,
+            "heldTicks": 10,
+            "mechanism": "existing bounded point-force grab; force cap temporarily sets only stimulus amplitude, restored on release",
+            "pointForceCapN": 180.0,
+            "targetDisplacementM": 0.029999999329447746
+          },
+          "physicalSeconds": 9.25,
+          "failure": null,
+          "loadedSlipIntegralM": [
+            0.0015748562108353768,
+            0.0017139158269503672
+          ],
+          "maxFootDriftM": [
+            0.004190987441688776,
+            0.00337348529137671
+          ],
+          "minimumTorsoUp": 0.9999469518661499,
+          "minimumFootLoadN": [
+            200.25367736816406,
+            195.79461669921875
+          ],
+          "maximumBodyAngularRadps": 0.11687008291482925,
+          "maximumBodyLinearMps": 0.06917599588632584,
+          "nativeSamplesAfter0_5s": 7001,
+          "finalQuietSamples": 2400,
+          "requiredPredicateFailures": {},
+          "supportFailures": {},
+          "quietFailures": {},
+          "quietMetrics": {
+            "max_angular_radps": 0.0015669052954763174,
+            "max_foot_drift_m": 0.0032884159591048956,
+            "max_linear_mps": 0.000919475220143795,
+            "max_pelvis_drift_m": 0.0005984331364743412
+          },
+          "allPredicateFailureSamples": {},
+          "oldControllerDiagnosticLoadedSlipIntegralM": [
+            0.005988464132104517,
+            0.006018419794193322
+          ],
+          "oldControllerRequiredFailures": {},
+          "intention40HzObservations": {
+            "count": 369,
+            "maxForceResidualN": 9.155368509785643e-05,
+            "maxCentroidalMomentResidualNm": 7.5533203424755044e-06,
+            "maxRequiredFrictionRatio": 0.004663752857595682
+          },
+          "allArchivedDirectPelvisDiagnosticsZero": true
+        },
+        {
+          "case": "hand-z+",
+          "heading": 0.0,
+          "stimulus": {
+            "axis": 2,
+            "body": "left_hand",
+            "durationS": 0.25,
+            "heldTicks": 10,
+            "mechanism": "existing bounded point-force grab; force cap temporarily sets only stimulus amplitude, restored on release",
+            "pointForceCapN": 180.0,
+            "targetDisplacementM": 0.029999999329447746
+          },
+          "physicalSeconds": 9.25,
+          "failure": null,
+          "loadedSlipIntegralM": [
+            0.0018172677603192288,
+            0.001958783562130294
+          ],
+          "maxFootDriftM": [
+            0.004077021032571793,
+            0.0033261876087635756
+          ],
+          "minimumTorsoUp": 0.9999469518661499,
+          "minimumFootLoadN": [
+            200.15695190429688,
+            198.69046020507812
+          ],
+          "maximumBodyAngularRadps": 0.11920817196369171,
+          "maximumBodyLinearMps": 0.07673285901546478,
+          "nativeSamplesAfter0_5s": 7001,
+          "finalQuietSamples": 2400,
+          "requiredPredicateFailures": {},
+          "supportFailures": {},
+          "quietFailures": {},
+          "quietMetrics": {
+            "max_angular_radps": 0.0014838456409052014,
+            "max_foot_drift_m": 0.0031711962074041367,
+            "max_linear_mps": 0.000947644526604563,
+            "max_pelvis_drift_m": 0.0005715262377634645
+          },
+          "allPredicateFailureSamples": {},
+          "oldControllerDiagnosticLoadedSlipIntegralM": [
+            0.005067402890280169,
+            0.005091840693743679
+          ],
+          "oldControllerRequiredFailures": {},
+          "intention40HzObservations": {
+            "count": 369,
+            "maxForceResidualN": 9.155368509785643e-05,
+            "maxCentroidalMomentResidualNm": 7.5533203424755044e-06,
+            "maxRequiredFrictionRatio": 0.004663752857595682
+          },
+          "allArchivedDirectPelvisDiagnosticsZero": true
+        },
+        {
+          "case": "rotated-torso-x+",
+          "heading": 1.0471975803375244,
+          "stimulus": {
+            "axis": 0,
+            "body": "torso",
+            "durationS": 0.1,
+            "heldTicks": 4,
+            "mechanism": "existing bounded point-force grab; force cap temporarily sets only stimulus amplitude, restored on release",
+            "pointForceCapN": 20.0,
+            "targetDisplacementM": 1.0
+          },
+          "physicalSeconds": 9.1,
+          "failure": null,
+          "loadedSlipIntegralM": [
+            0.004272032385427042,
+            0.00430699450546359
+          ],
+          "maxFootDriftM": [
+            0.0011696800356730819,
+            0.0011793376179412007
+          ],
+          "minimumTorsoUp": 0.9995461702346802,
+          "minimumFootLoadN": [
+            198.11863708496094,
+            177.21701049804688
+          ],
+          "maximumBodyAngularRadps": 0.2420254647731781,
+          "maximumBodyLinearMps": 0.13079094886779785,
+          "nativeSamplesAfter0_5s": 6881,
+          "finalQuietSamples": 2400,
+          "requiredPredicateFailures": {},
+          "supportFailures": {},
+          "quietFailures": {},
+          "quietMetrics": {
+            "max_angular_radps": 0.001881117932498455,
+            "max_foot_drift_m": 0.0008833679021336138,
+            "max_linear_mps": 0.0007395519060082734,
+            "max_pelvis_drift_m": 0.00040946219814941287
+          },
+          "allPredicateFailureSamples": {},
+          "oldControllerDiagnosticLoadedSlipIntegralM": [
+            0.022643621045846777,
+            0.022618749137448695
+          ],
+          "oldControllerRequiredFailures": {
+            "cumulativeLoadedSlip20mm": 2762
+          },
+          "intention40HzObservations": {
+            "count": 363,
+            "maxForceResidualN": 0.00010681217307459711,
+            "maxCentroidalMomentResidualNm": 0.000359311277174085,
+            "maxRequiredFrictionRatio": 0.014858863316476345
+          },
+          "allArchivedDirectPelvisDiagnosticsZero": true
+        },
+        {
+          "case": "rotated-torso-x-",
+          "heading": 1.0471975803375244,
+          "stimulus": {
+            "axis": 0,
+            "body": "torso",
+            "durationS": 0.1,
+            "heldTicks": 4,
+            "mechanism": "existing bounded point-force grab; force cap temporarily sets only stimulus amplitude, restored on release",
+            "pointForceCapN": 20.0,
+            "targetDisplacementM": -1.0
+          },
+          "physicalSeconds": 9.1,
+          "failure": null,
+          "loadedSlipIntegralM": [
+            0.004336476317077154,
+            0.004367003901750334
+          ],
+          "maxFootDriftM": [
+            0.001737478538416326,
+            0.0019316977122798562
+          ],
+          "minimumTorsoUp": 0.9994902014732361,
+          "minimumFootLoadN": [
+            177.66416931152344,
+            199.8963623046875
+          ],
+          "maximumBodyAngularRadps": 0.2401890605688095,
+          "maximumBodyLinearMps": 0.13027547299861908,
+          "nativeSamplesAfter0_5s": 6881,
+          "finalQuietSamples": 2400,
+          "requiredPredicateFailures": {},
+          "supportFailures": {},
+          "quietFailures": {},
+          "quietMetrics": {
+            "max_angular_radps": 0.0024132290855050087,
+            "max_foot_drift_m": 0.0015249676071107388,
+            "max_linear_mps": 0.0011046845465898514,
+            "max_pelvis_drift_m": 0.001061385264620185
+          },
+          "allPredicateFailureSamples": {},
+          "oldControllerDiagnosticLoadedSlipIntegralM": [
+            0.021041373662218706,
+            0.02099476263734545
+          ],
+          "oldControllerRequiredFailures": {
+            "cumulativeLoadedSlip20mm": 2367
+          },
+          "intention40HzObservations": {
+            "count": 363,
+            "maxForceResidualN": 0.0001068155978960513,
+            "maxCentroidalMomentResidualNm": 0.00043151760581760677,
+            "maxRequiredFrictionRatio": 0.018253959715366364
+          },
+          "allArchivedDirectPelvisDiagnosticsZero": true
+        }
+      ]
+    },
+    "candidate": {
+      "path": "outputs/getup-budget-20261019/dynamic-balance-candidate-perturbations.ndjson",
+      "sha256": "1f44259812aae2d452bfa2fb83b5eaec8e96ad80879568a11219de1cc4ed0a2d",
+      "cases": 8,
+      "allPassed": true,
+      "maximumLoadedSlipM": 0.00438030390362543,
+      "results": [
+        {
+          "case": "torso-x+",
+          "heading": 0.0,
+          "stimulus": {
+            "axis": 0,
+            "body": "torso",
+            "durationS": 0.1,
+            "heldTicks": 4,
+            "mechanism": "existing bounded point-force grab; force cap temporarily sets only stimulus amplitude, restored on release",
+            "pointForceCapN": 20.0,
+            "targetDisplacementM": 1.0
+          },
+          "physicalSeconds": 9.1,
+          "failure": null,
+          "loadedSlipIntegralM": [
+            0.004030345900506058,
+            0.0040694965832668165
+          ],
+          "maxFootDriftM": [
+            0.0013041732599958777,
+            0.001421552849933505
+          ],
+          "minimumTorsoUp": 0.9995761513710022,
+          "minimumFootLoadN": [
+            197.84327697753906,
+            159.62364196777344
+          ],
+          "maximumBodyAngularRadps": 0.2007564902305603,
+          "maximumBodyLinearMps": 0.1195404976606369,
+          "nativeSamplesAfter0_5s": 6881,
+          "finalQuietSamples": 2400,
+          "requiredPredicateFailures": {},
+          "supportFailures": {},
+          "quietFailures": {},
+          "quietMetrics": {
+            "max_angular_radps": 0.0024286415427923203,
+            "max_foot_drift_m": 0.00010435860167490318,
+            "max_linear_mps": 0.0004677258257288486,
+            "max_pelvis_drift_m": 0.00012719973165076226
+          },
+          "allPredicateFailureSamples": {},
+          "oldControllerDiagnosticLoadedSlipIntegralM": [
+            0.02721476132798838,
+            0.027247109892580352
+          ],
+          "oldControllerRequiredFailures": {
+            "cumulativeLoadedSlip20mm": 3239
+          },
+          "intention40HzObservations": {
+            "count": 363,
+            "maxForceResidualN": 0.00010681222608480988,
+            "maxCentroidalMomentResidualNm": 7.662856946551003e-06,
+            "maxRequiredFrictionRatio": 0.015211264602839947
+          },
+          "allArchivedDirectPelvisDiagnosticsZero": true
+        },
+        {
+          "case": "torso-x-",
+          "heading": 0.0,
+          "stimulus": {
+            "axis": 0,
+            "body": "torso",
+            "durationS": 0.1,
+            "heldTicks": 4,
+            "mechanism": "existing bounded point-force grab; force cap temporarily sets only stimulus amplitude, restored on release",
+            "pointForceCapN": 20.0,
+            "targetDisplacementM": -1.0
+          },
+          "physicalSeconds": 9.1,
+          "failure": null,
+          "loadedSlipIntegralM": [
+            0.004029040021359614,
+            0.004070313593028635
+          ],
+          "maxFootDriftM": [
+            0.0014296432491391897,
+            0.0013316438999027014
+          ],
+          "minimumTorsoUp": 0.9995831251144409,
+          "minimumFootLoadN": [
+            159.76217651367188,
+            197.7306365966797
+          ],
+          "maximumBodyAngularRadps": 0.19996313750743866,
+          "maximumBodyLinearMps": 0.11949118971824646,
+          "nativeSamplesAfter0_5s": 6881,
+          "finalQuietSamples": 2400,
+          "requiredPredicateFailures": {},
+          "supportFailures": {},
+          "quietFailures": {},
+          "quietMetrics": {
+            "max_angular_radps": 0.002424876671284437,
+            "max_foot_drift_m": 0.00010262753494316712,
+            "max_linear_mps": 0.0004593581543304026,
+            "max_pelvis_drift_m": 0.00013066091923974454
+          },
+          "allPredicateFailureSamples": {},
+          "oldControllerDiagnosticLoadedSlipIntegralM": [
+            0.027269104665149483,
+            0.027300745494955533
+          ],
+          "oldControllerRequiredFailures": {
+            "cumulativeLoadedSlip20mm": 3232
+          },
+          "intention40HzObservations": {
+            "count": 363,
+            "maxForceResidualN": 0.00010681604690850643,
+            "maxCentroidalMomentResidualNm": 7.6014548549029785e-06,
+            "maxRequiredFrictionRatio": 0.015187914483249187
+          },
+          "allArchivedDirectPelvisDiagnosticsZero": true
+        },
+        {
+          "case": "torso-z+",
+          "heading": 0.0,
+          "stimulus": {
+            "axis": 2,
+            "body": "torso",
+            "durationS": 0.1,
+            "heldTicks": 4,
+            "mechanism": "existing bounded point-force grab; force cap temporarily sets only stimulus amplitude, restored on release",
+            "pointForceCapN": 20.0,
+            "targetDisplacementM": 1.0
+          },
+          "physicalSeconds": 9.1,
+          "failure": null,
+          "loadedSlipIntegralM": [
+            0.0043332226180156745,
+            0.00437357229218862
+          ],
+          "maxFootDriftM": [
+            0.001087730866856873,
+            0.0010485132224857807
+          ],
+          "minimumTorsoUp": 0.9995210766792297,
+          "minimumFootLoadN": [
+            198.2138214111328,
+            197.92947387695312
+          ],
+          "maximumBodyAngularRadps": 0.2526983320713043,
+          "maximumBodyLinearMps": 0.13533511757850647,
+          "nativeSamplesAfter0_5s": 6881,
+          "finalQuietSamples": 2400,
+          "requiredPredicateFailures": {},
+          "supportFailures": {},
+          "quietFailures": {},
+          "quietMetrics": {
+            "max_angular_radps": 0.0028915959410369396,
+            "max_foot_drift_m": 0.0003788293106481433,
+            "max_linear_mps": 0.0008981054415926337,
+            "max_pelvis_drift_m": 0.00024151890829671174
+          },
+          "allPredicateFailureSamples": {},
+          "oldControllerDiagnosticLoadedSlipIntegralM": [
+            0.01831085437024647,
+            0.01834968848393338
+          ],
+          "oldControllerRequiredFailures": {},
+          "intention40HzObservations": {
+            "count": 363,
+            "maxForceResidualN": 9.157787665116765e-05,
+            "maxCentroidalMomentResidualNm": 3.173947356151583e-05,
+            "maxRequiredFrictionRatio": 0.015394563786685467
+          },
+          "allArchivedDirectPelvisDiagnosticsZero": true
+        },
+        {
+          "case": "torso-z-",
+          "heading": 0.0,
+          "stimulus": {
+            "axis": 2,
+            "body": "torso",
+            "durationS": 0.1,
+            "heldTicks": 4,
+            "mechanism": "existing bounded point-force grab; force cap temporarily sets only stimulus amplitude, restored on release",
+            "pointForceCapN": 20.0,
+            "targetDisplacementM": -1.0
+          },
+          "physicalSeconds": 9.1,
+          "failure": null,
+          "loadedSlipIntegralM": [
+            0.004342201437403338,
+            0.00438030390362543
+          ],
+          "maxFootDriftM": [
+            0.001877499744296074,
+            0.0019029965624213219
+          ],
+          "minimumTorsoUp": 0.9994490146636963,
+          "minimumFootLoadN": [
+            199.46351623535156,
+            199.30564880371094
+          ],
+          "maximumBodyAngularRadps": 0.2508835196495056,
+          "maximumBodyLinearMps": 0.13456912338733673,
+          "nativeSamplesAfter0_5s": 6881,
+          "finalQuietSamples": 2400,
+          "requiredPredicateFailures": {},
+          "supportFailures": {},
+          "quietFailures": {},
+          "quietMetrics": {
+            "max_angular_radps": 0.00315878470428288,
+            "max_foot_drift_m": 0.00020709296222776175,
+            "max_linear_mps": 0.0008993573719635606,
+            "max_pelvis_drift_m": 0.0004754570545628667
+          },
+          "allPredicateFailureSamples": {},
+          "oldControllerDiagnosticLoadedSlipIntegralM": [
+            0.018177998751149883,
+            0.018219399657758616
+          ],
+          "oldControllerRequiredFailures": {},
+          "intention40HzObservations": {
+            "count": 363,
+            "maxForceResidualN": 9.158377320997946e-05,
+            "maxCentroidalMomentResidualNm": 3.8641110143274795e-05,
+            "maxRequiredFrictionRatio": 0.01912856474518776
+          },
+          "allArchivedDirectPelvisDiagnosticsZero": true
+        },
+        {
+          "case": "hand-x+",
+          "heading": 0.0,
+          "stimulus": {
+            "axis": 0,
+            "body": "left_hand",
+            "durationS": 0.25,
+            "heldTicks": 10,
+            "mechanism": "existing bounded point-force grab; force cap temporarily sets only stimulus amplitude, restored on release",
+            "pointForceCapN": 180.0,
+            "targetDisplacementM": 0.029999999329447746
+          },
+          "physicalSeconds": 9.25,
+          "failure": null,
+          "loadedSlipIntegralM": [
+            0.0016470976024377428,
+            0.0016887228742410827
+          ],
+          "maxFootDriftM": [
+            0.0005112033104524016,
+            0.0004954519681632519
+          ],
+          "minimumTorsoUp": 0.9999465942382812,
+          "minimumFootLoadN": [
+            200.255615234375,
+            195.67242431640625
+          ],
+          "maximumBodyAngularRadps": 0.11788497120141983,
+          "maximumBodyLinearMps": 0.06913424283266068,
+          "nativeSamplesAfter0_5s": 7001,
+          "finalQuietSamples": 2400,
+          "requiredPredicateFailures": {},
+          "supportFailures": {},
+          "quietFailures": {},
+          "quietMetrics": {
+            "max_angular_radps": 0.0023437985219061375,
+            "max_foot_drift_m": 0.0004797733563464135,
+            "max_linear_mps": 0.0004619375104084611,
+            "max_pelvis_drift_m": 0.00010343393660150468
+          },
+          "allPredicateFailureSamples": {},
+          "oldControllerDiagnosticLoadedSlipIntegralM": [
+            0.006738396949389569,
+            0.006773452717969446
+          ],
+          "oldControllerRequiredFailures": {},
+          "intention40HzObservations": {
+            "count": 369,
+            "maxForceResidualN": 9.15534328702616e-05,
+            "maxCentroidalMomentResidualNm": 7.6014548549029785e-06,
+            "maxRequiredFrictionRatio": 0.004683688282966614
+          },
+          "allArchivedDirectPelvisDiagnosticsZero": true
+        },
+        {
+          "case": "hand-z+",
+          "heading": 0.0,
+          "stimulus": {
+            "axis": 2,
+            "body": "left_hand",
+            "durationS": 0.25,
+            "heldTicks": 10,
+            "mechanism": "existing bounded point-force grab; force cap temporarily sets only stimulus amplitude, restored on release",
+            "pointForceCapN": 180.0,
+            "targetDisplacementM": 0.029999999329447746
+          },
+          "physicalSeconds": 9.25,
+          "failure": null,
+          "loadedSlipIntegralM": [
+            0.0018832927280255528,
+            0.001924980333663201
+          ],
+          "maxFootDriftM": [
+            0.0005724369548261166,
+            0.0006121753249317408
+          ],
+          "minimumTorsoUp": 0.9999465942382812,
+          "minimumFootLoadN": [
+            200.16952514648438,
+            198.5986328125
+          ],
+          "maximumBodyAngularRadps": 0.11992118507623672,
+          "maximumBodyLinearMps": 0.07669487595558167,
+          "nativeSamplesAfter0_5s": 7001,
+          "finalQuietSamples": 2400,
+          "requiredPredicateFailures": {},
+          "supportFailures": {},
+          "quietFailures": {},
+          "quietMetrics": {
+            "max_angular_radps": 0.0023413996677845716,
+            "max_foot_drift_m": 0.00043049451778642833,
+            "max_linear_mps": 0.00047221934073604643,
+            "max_pelvis_drift_m": 0.00010335476690670475
+          },
+          "allPredicateFailureSamples": {},
+          "oldControllerDiagnosticLoadedSlipIntegralM": [
+            0.005429546052912437,
+            0.0054665767324638724
+          ],
+          "oldControllerRequiredFailures": {},
+          "intention40HzObservations": {
+            "count": 369,
+            "maxForceResidualN": 9.15534328702616e-05,
+            "maxCentroidalMomentResidualNm": 7.6014548549029785e-06,
+            "maxRequiredFrictionRatio": 0.004683688282966614
+          },
+          "allArchivedDirectPelvisDiagnosticsZero": true
+        },
+        {
+          "case": "rotated-torso-x+",
+          "heading": 1.0471975803375244,
+          "stimulus": {
+            "axis": 0,
+            "body": "torso",
+            "durationS": 0.1,
+            "heldTicks": 4,
+            "mechanism": "existing bounded point-force grab; force cap temporarily sets only stimulus amplitude, restored on release",
+            "pointForceCapN": 20.0,
+            "targetDisplacementM": 1.0
+          },
+          "physicalSeconds": 9.1,
+          "failure": null,
+          "loadedSlipIntegralM": [
+            0.004336017072782001,
+            0.004366454504980066
+          ],
+          "maxFootDriftM": [
+            0.0010726295877248049,
+            0.0011602246668189764
+          ],
+          "minimumTorsoUp": 0.9995419979095459,
+          "minimumFootLoadN": [
+            198.69334411621094,
+            176.9440155029297
+          ],
+          "maximumBodyAngularRadps": 0.243281751871109,
+          "maximumBodyLinearMps": 0.13094918429851532,
+          "nativeSamplesAfter0_5s": 6881,
+          "finalQuietSamples": 2400,
+          "requiredPredicateFailures": {},
+          "supportFailures": {},
+          "quietFailures": {},
+          "quietMetrics": {
+            "max_angular_radps": 0.0028708840254694223,
+            "max_foot_drift_m": 0.000401163415517658,
+            "max_linear_mps": 0.0008229010854847729,
+            "max_pelvis_drift_m": 0.0002519213012419641
+          },
+          "allPredicateFailureSamples": {},
+          "oldControllerDiagnosticLoadedSlipIntegralM": [
+            0.023620225298482147,
+            0.023641383764604607
+          ],
+          "oldControllerRequiredFailures": {
+            "cumulativeLoadedSlip20mm": 3127
+          },
+          "intention40HzObservations": {
+            "count": 363,
+            "maxForceResidualN": 0.00010681260443144682,
+            "maxCentroidalMomentResidualNm": 0.0002626000757454701,
+            "maxRequiredFrictionRatio": 0.014906511642038822
+          },
+          "allArchivedDirectPelvisDiagnosticsZero": true
+        },
+        {
+          "case": "rotated-torso-x-",
+          "heading": 1.0471975803375244,
+          "stimulus": {
+            "axis": 0,
+            "body": "torso",
+            "durationS": 0.1,
+            "heldTicks": 4,
+            "mechanism": "existing bounded point-force grab; force cap temporarily sets only stimulus amplitude, restored on release",
+            "pointForceCapN": 20.0,
+            "targetDisplacementM": -1.0
+          },
+          "physicalSeconds": 9.1,
+          "failure": null,
+          "loadedSlipIntegralM": [
+            0.0043469765757714485,
+            0.004372537109292275
+          ],
+          "maxFootDriftM": [
+            0.0018636004533618689,
+            0.0018312737811356783
+          ],
+          "minimumTorsoUp": 0.9994880557060242,
+          "minimumFootLoadN": [
+            178.25758361816406,
+            198.46653747558594
+          ],
+          "maximumBodyAngularRadps": 0.24105334281921387,
+          "maximumBodyLinearMps": 0.13030385971069336,
+          "nativeSamplesAfter0_5s": 6881,
+          "finalQuietSamples": 2400,
+          "requiredPredicateFailures": {},
+          "supportFailures": {},
+          "quietFailures": {},
+          "quietMetrics": {
+            "max_angular_radps": 0.003140243235975504,
+            "max_foot_drift_m": 0.0002927168388850987,
+            "max_linear_mps": 0.0008326887618750334,
+            "max_pelvis_drift_m": 0.0004245115560479462
+          },
+          "allPredicateFailureSamples": {},
+          "oldControllerDiagnosticLoadedSlipIntegralM": [
+            0.02288253467887832,
+            0.022909542760783073
+          ],
+          "oldControllerRequiredFailures": {
+            "cumulativeLoadedSlip20mm": 3032
+          },
+          "intention40HzObservations": {
+            "count": 363,
+            "maxForceResidualN": 0.0001068334904129286,
+            "maxCentroidalMomentResidualNm": 0.0003004682040976094,
+            "maxRequiredFrictionRatio": 0.018156491219997406
+          },
+          "allArchivedDirectPelvisDiagnosticsZero": true
+        }
+      ]
+    }
+  },
+  "candidate33sQuietThreeHeadings": {
+    "settleSeconds": 3,
+    "quietSeconds": 30,
+    "everyNative800HzGateFromSeconds": 0.5,
+    "results": [
+      {
+        "failure": null,
+        "heading": 0.0,
+        "loadedSlipIntegralM": [
+          0.001400933613960685,
+          0.0014462280131294846
+        ],
+        "maximumBodyAngularRadps": 0.03260020911693573,
+        "maximumBodyLinearMps": 0.018059732392430305,
+        "maximumFootOriginDriftM": [
+          0.0005461702821776271,
+          0.0004954519681632519
+        ],
+        "minimumTorsoUp": 0.9999465942382812,
+        "nativeObservedAfter0_5S": 26001,
+        "physicalSeconds": 33.0,
+        "quietFailuresAfter3S": {},
+        "quietLegacyMetrics": {
+          "max_angular_radps": 0.0025100361090153456,
+          "max_foot_drift_m": 0.0008724908111616969,
+          "max_linear_mps": 0.0005483439890667796,
+          "max_pelvis_drift_m": 0.00012379720283206552
+        },
+        "standingPredicateFailureSubsteps": {},
+        "standingSupportFailureSubsteps": 0
+      },
+      {
+        "failure": null,
+        "heading": 1.0471975803375244,
+        "loadedSlipIntegralM": [
+          0.0016263625523090018,
+          0.0016602273880787436
+        ],
+        "maximumBodyAngularRadps": 0.03278917074203491,
+        "maximumBodyLinearMps": 0.017989985644817352,
+        "maximumFootOriginDriftM": [
+          0.0009808647446334362,
+          0.0020467888098210096
+        ],
+        "minimumTorsoUp": 0.9999449253082275,
+        "nativeObservedAfter0_5S": 26001,
+        "physicalSeconds": 33.0,
+        "quietFailuresAfter3S": {},
+        "quietLegacyMetrics": {
+          "max_angular_radps": 0.015391439199447632,
+          "max_foot_drift_m": 0.0020771787967532873,
+          "max_linear_mps": 0.0010950453579425812,
+          "max_pelvis_drift_m": 0.0010402064071968198
+        },
+        "standingPredicateFailureSubsteps": {},
+        "standingSupportFailureSubsteps": 0
+      },
+      {
+        "failure": null,
+        "heading": -0.7853981852531433,
+        "loadedSlipIntegralM": [
+          0.0014000020063397022,
+          0.0013973690976554567
+        ],
+        "maximumBodyAngularRadps": 0.032662250101566315,
+        "maximumBodyLinearMps": 0.018007401376962662,
+        "maximumFootOriginDriftM": [
+          0.0004898612387478352,
+          0.0004937217454425991
+        ],
+        "minimumTorsoUp": 0.9999489784240723,
+        "nativeObservedAfter0_5S": 26001,
+        "physicalSeconds": 33.0,
+        "quietFailuresAfter3S": {},
+        "quietLegacyMetrics": {
+          "max_angular_radps": 0.0024384851567447186,
+          "max_foot_drift_m": 0.00017223558097612113,
+          "max_linear_mps": 0.00047779257874935865,
+          "max_pelvis_drift_m": 0.0001481609942857176
+        },
+        "standingPredicateFailureSubsteps": {},
+        "standingSupportFailureSubsteps": 0
+      }
+    ],
+    "maxLoadedSlipM": 0.0016602273880787436,
+    "allPassed": true
+  },
+  "unitTests": {
+    "command": "cargo test --manifest-path rust/Cargo.toml --release --offline --locked -p lh-sim --features standing-dynamics-experiment --lib getup::supported_standing::tests:: -- --nocapture",
+    "result": "5 passed,0failed,173filtered;35.94s",
+    "coverage": [
+      "independent descendant wrench sum",
+      "zero-acceleration exact statics",
+      "unsupported/floor-loss/fallen/nonfoot exact source-PD fallback",
+      "read-only control calculation",
+      "default20+5 three-heading5s every800Hz physical standing"
+    ]
+  },
+  "browserEvidence": "docs/evidence/browser-dynamic-standing-validation-2026-10-19.json",
+  "browserArtifact": {
+    "path": "outputs/browser-capability-20261019/standing-dynamics-experiment/app",
+    "workerWasmSha256": "320632179a4f73e807821d3857386389cd11988450d5912c1869d807980f908e",
+    "driverAndGlue": "byte-identical to admitted sticky artifact",
+    "nativeSourceFreeze": "outputs/getup-budget-20261019/dynamic-source-freeze",
+    "sourceSha256": {
+      "getup.rs": "0fc43b3dee5559a413162d337818d77db66c3a5510e24e4850d0bdf7c87b2011",
+      "sim-Cargo.toml": "6d1b3de0c86d07a9d39465b8f89d5d6bf32bd3087f8361bdeec142eba30db730",
+      "getup_dynamic_balance.rs": "ee8b7a5eee9972b49cc8ced1a64e75a22f81802764ff4809ed71600740c66f59",
+      "supported_standing.rs": "9d8fe4b9f650a3de85e17d781eca45ed9cc91ce559bc10b9fda5d8d0cb4525c0",
+      "getup_dynamic_quiet.rs": "3ad6e18370e45ca4866d6402c60e1d5848fdbac41c044269bb95946acd20f63d"
+    }
+  },
+  "limits": [
+    "Different controller trajectories, not bitwise parity with old dynamics",
+    "Explicit4+1 numerical profile remains unadmitted",
+    "Full constrained inverse dynamics is not claimed: angular/Coriolis tracking and individual nonuniform accelerations remain approximated",
+    "Clean browser hold.807x and short run.882x remain below realtime",
+    "Unchanged.1mm ballistic horizontal-coordinate gate remains open; root COM/Jacobian inconsistency is being diagnosed",
+    "Inherited actuator and loaded-leg fixture gaps remain visible"
+  ],
+  "next": "Read-only finite-difference root COM/Jacobian and physical momentum diagnostic before any engine correction; requalify all standing dynamics if the engine changes."
+}

@@ -122,12 +122,43 @@ fn support_reactions(s: &Simulation) -> Option<SupportReactions> {
     ])
 }
 
+/// Complete the existing COP intention with its consistent centroidal
+/// acceleration. These are desired wrenches used only in joint inverse dynamics.
+/// No force is applied to any body by this calculation.
+#[cfg(feature = "standing-dynamics-experiment")]
+fn dynamic_reactions(s: &Simulation, mut support: SupportReactions) -> (SupportReactions, Vector) {
+    let total_vertical: f32 = support.iter().map(|(_, _, f)| f.y).sum();
+    let cop = support.iter().map(|(_, p, f)| *p * (f.y / total_vertical)).sum::<Vector>();
+    let com = s.center_of_mass();
+    // Intended material endpoints retain their actual heights. Use the height
+    // above the actual clamped resultant COP, not an assumed floor-plane point.
+    let height = com.y - cop.y;
+    if height <= 0.05 || !height.is_finite() {
+        return (support, Vector::ZERO);
+    }
+    let acceleration = Vector::new(com.x - cop.x, 0.0, com.z - cop.z) * (9.81 / height);
+    if acceleration != Vector::ZERO {
+        for (_, _, force) in &mut support {
+            *force += acceleration * (force.y / 9.81);
+        }
+    }
+    (support, acceleration)
+}
+
 fn compensation(s: &Simulation, support: SupportReactions, q: &[f32; 21]) -> [f32; 21] {
+    #[cfg(feature = "standing-dynamics-experiment")]
+    let (support, acceleration) = dynamic_reactions(s, support);
     let mut forces = [Vector::ZERO; 25];
     let mut moments = [Vector::ZERO; 25];
     for (i, handle) in s.bodies.iter().enumerate() {
         let body = &s.world.bodies[*handle];
         forces[i] = Vector::NEG_Y * (body.mass() * 9.81);
+        #[cfg(feature = "standing-dynamics-experiment")]
+        if acceleration != Vector::ZERO {
+            // Matched D'Alembert force at each actual body COM. Adding desired
+            // horizontal ground reaction alone would leave a free-root residual.
+            forces[i] -= acceleration * body.mass();
+        }
         moments[i] = (body.rotation().normalize() * body.local_center_of_mass()).cross(forces[i]);
     }
     for (i, point, force) in support {
@@ -165,6 +196,66 @@ fn compensation(s: &Simulation, support: SupportReactions, q: &[f32; 21]) -> [f3
         moments[parent] += distal_moment;
     }
     result
+}
+
+#[cfg(feature = "standing-dynamics-experiment")]
+fn residual(s: &Simulation, support: SupportReactions, acceleration: Vector) -> (Vector, Vector) {
+    let com = s.center_of_mass();
+    let mut force = Vector::ZERO;
+    let mut moment = Vector::ZERO;
+    for handle in &s.bodies {
+        let b = &s.world.bodies[*handle];
+        let f = Vector::NEG_Y * (b.mass() * 9.81) - acceleration * b.mass();
+        let c = b.translation() + b.rotation().normalize() * b.local_center_of_mass();
+        force += f;
+        moment += (c - com).cross(f);
+    }
+    for (_, p, f) in support {
+        force += f;
+        moment += (p - com).cross(f);
+    }
+    (force, moment)
+}
+
+#[cfg(feature = "standing-dynamics-experiment")]
+pub fn dynamic_balance_diagnostic(s: &Simulation) -> serde_json::Value {
+    let Some(static_support) = support_reactions(s) else { return serde_json::json!({"active":false,"physicsIntegrations":0}); };
+    let (support, acceleration) = dynamic_reactions(s, static_support);
+    let (force, moment) = residual(s, support, acceleration);
+    let vertical: f32 = static_support.iter().map(|(_, _, f)| f.y).sum();
+    let cop = static_support.iter().map(|(_, p, f)| *p * (f.y / vertical)).sum::<Vector>();
+    serde_json::json!({"active":true,"physicsIntegrations":0,"accelerationMps2":vec3(acceleration),"resultantCop":vec3(cop),"loadFractions":static_support.map(|(_,_,f)|f.y/vertical),"intendedForceResidualN":vec3(force),"intendedCentroidalMomentResidualNm":vec3(moment),"intendedFrictionRatio":acceleration.length()/9.81,"supportIntentions":support.map(|(i,p,f)|serde_json::json!({"body":s.model.segments[i].id,"point":vec3(p),"forceN":vec3(f)}))})
+}
+
+/// Algebraic counterfactual fixtures only, never integrated or used as support
+/// evidence. Exercise unequal loads, endpoint heights, and clamped-resultant COPs.
+#[cfg(feature = "standing-dynamics-experiment")]
+pub fn dynamic_balance_fixture_invariants() -> Result<serde_json::Value, String> {
+    let mut results = vec![];
+    for heading in [0.0, std::f32::consts::PI/3.0, -std::f32::consts::PI/4.0] {
+        let s = Simulation::new_protocol(heading, Profile::default(), true)?;
+        let before = serde_json::to_value(s.snapshot()).unwrap();
+        let feet = ["left_foot", "right_foot"].map(|name|s.model.segments.iter().position(|p|p.id==name).unwrap());
+        let com = s.center_of_mass();
+        for (x,z,fraction) in [(0.0,0.0,0.5),(0.1,0.0,0.1),(-0.1,0.0,0.9),(0.0,0.1,0.1),(0.0,-0.1,0.9)] {
+            let offset = s.heading * Vector::new(x,0.0,z);
+            let cop = Vector::new(com.x+offset.x,0.02,com.z+offset.z);
+            let lateral = s.heading * Vector::X * 0.1;
+            let p0 = cop + lateral * (1.0-fraction) + Vector::Y*0.01;
+            let p1 = cop - lateral * fraction - Vector::Y*(0.01*fraction/(1.0-fraction));
+            let weight = s.total_mass()*9.81;
+            let static_support = [(feet[0],p0,Vector::Y*(fraction*weight)),(feet[1],p1,Vector::Y*((1.0-fraction)*weight))];
+            let (support, acceleration) = dynamic_reactions(&s, static_support);
+            let (force,moment) = residual(&s,support,acceleration);
+            if force.length()>0.001 || moment.length()>0.001 {
+                return Err(format!("Intended wrench did not close: force={force:?}, moment={moment:?}"));
+            }
+            if x==0.0 && z==0.0 && acceleration.length()>1e-6 { return Err("Zero-acceleration statics changed".into()); }
+            results.push(serde_json::json!({"heading":heading,"x":x,"z":z,"leftFraction":fraction,"accelerationMps2":vec3(acceleration),"forceResidualN":vec3(force),"momentResidualNm":vec3(moment)}));
+        }
+        if before!=serde_json::to_value(s.snapshot()).unwrap() || s.substeps_completed!=0 {return Err("Algebraic fixture modified the simulation".into());}
+    }
+    Ok(serde_json::json!({"physicsIntegrations":0,"passed":true,"fixtures":results}))
 }
 
 pub(crate) fn controls(
@@ -284,6 +375,8 @@ mod tests {
         let support = support_reactions(&s).unwrap();
         let (_, q, _) = nominal(&s);
         let recursive = compensation(&s, support, &q);
+        #[cfg(feature = "standing-dynamics-experiment")]
+        let (support, acceleration) = dynamic_reactions(&s, support);
         let mut maximum_error = 0.0_f32;
         for (i, part) in s.model.segments.iter().enumerate() {
             let Some(h) = part.reference.as_ref().and_then(|r| r.hinge.as_ref()) else {
@@ -325,8 +418,10 @@ mod tests {
                     let body = &s.world.bodies[*handle];
                     let center = body.translation()
                         + body.rotation().normalize() * body.local_center_of_mass();
-                    external +=
-                        axis.dot((center - anchor).cross(Vector::NEG_Y * body.mass() * 9.81));
+                    let force = Vector::NEG_Y * body.mass() * 9.81;
+                    #[cfg(feature = "standing-dynamics-experiment")]
+                    let force = force - acceleration * body.mass();
+                    external += axis.dot((center - anchor).cross(force));
                 }
             }
             for (foot, point, force) in support {
@@ -342,6 +437,23 @@ mod tests {
             maximum_error < 0.000002,
             "normalized torque mismatch {maximum_error}"
         );
+    }
+
+    #[cfg(feature = "standing-dynamics-experiment")]
+    #[test]
+    fn dynamic_intention_closes_wrench_and_preserves_zero_acceleration_statics() {
+        let report = dynamic_balance_fixture_invariants().unwrap();
+        assert_eq!(report["passed"], true);
+        assert_eq!(report["physicsIntegrations"], 0);
+        assert_eq!(report["fixtures"].as_array().unwrap().len(), 15);
+        let s = Simulation::new_protocol(0.0, Profile::default(), true).unwrap();
+        let com = s.center_of_mass();
+        let point = Vector::new(com.x, 0.0, com.z);
+        let force = Vector::Y * (s.total_mass() * 9.81 * 0.5);
+        let support = [(10, point, force), (16, point, force)];
+        let (actual, acceleration) = dynamic_reactions(&s, support);
+        assert_eq!(acceleration, Vector::ZERO);
+        assert_eq!(actual, support, "zero acceleration must leave every static wrench word unchanged");
     }
 
     #[test]
