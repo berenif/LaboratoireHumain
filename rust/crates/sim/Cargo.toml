@@ -17,6 +17,10 @@ numeric-parity-worker = ["experimental-solver-step-observation"]
 name = "getup_stationary_balance"
 required-features = ["stationary-balance-experiment"]
 
+[[example]]
+name = "contact_interval_probe"
+required-features = ["experimental-solver-step-observation"]
+
 [[test]]
 name = "coordination-transfer-worker"
 path = "src/lib.rs"

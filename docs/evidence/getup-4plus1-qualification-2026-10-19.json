@@ -1,0 +1,762 @@
+{
+  "date": "2026-10-19",
+  "status": "experimental-unadmitted",
+  "releaseAccepted": false,
+  "defaultChanged": false,
+  "candidateProfilePath": "docs/evidence/profiles/getup-800hz-4plus1-qualification-v1.json",
+  "candidateProfileSha256": "2dbce52fb23853eb24e1304ea9cd96f0aa2f81440bee41bbc1cea10f9a1b56f6",
+  "profileDifferencesOnly": {
+    "id": [
+      "getup-reference-5ad52fbe",
+      "getup-800hz-4plus1-qualification-v1"
+    ],
+    "solver_iterations": [
+      20,
+      4
+    ],
+    "additional_body_iterations": [
+      5,
+      1
+    ]
+  },
+  "unchanged": [
+    "800Hz outer integration",
+    "20 native integrations per40Hz control tick",
+    "internal PGS20/fall32",
+    "25body topology and physical model",
+    "controller and motor limits",
+    "contact tolerances",
+    "20mm cumulative loaded-slip stop",
+    "0.1mm ballistic horizontal-coordinate gate"
+  ],
+  "nativeQuiet33SecondsThreeHeadings": {
+    "profileSha256": "2dbce52fb23853eb24e1304ea9cd96f0aa2f81440bee41bbc1cea10f9a1b56f6",
+    "passed": true,
+    "everyNativeSample": true,
+    "headingResults": [
+      {
+        "failure": null,
+        "heading": 0.0,
+        "loadedSlipIntegralM": [
+          0.0023837555400402785,
+          0.0024285942205540373
+        ],
+        "maximumBodyAngularRadps": 0.0706700012087822,
+        "maximumBodyLinearMps": 0.034447912126779556,
+        "maximumFootOriginDriftM": [
+          0.0015281062806025147,
+          0.0013396608410403132
+        ],
+        "minimumTorsoUp": 0.9998071193695068,
+        "nativeObservedAfter0_5S": 26001,
+        "physicalSeconds": 33.0,
+        "physicsWallSeconds": 18.001563271,
+        "quietFailuresAfter3S": {},
+        "standingPredicateFailureSubsteps": {},
+        "standingSupportFailureSubsteps": 0
+      },
+      {
+        "failure": null,
+        "heading": 1.0471975803375244,
+        "loadedSlipIntegralM": [
+          0.0022665775176647887,
+          0.0022864851021420917
+        ],
+        "maximumBodyAngularRadps": 0.0663033127784729,
+        "maximumBodyLinearMps": 0.03273306041955948,
+        "maximumFootOriginDriftM": [
+          0.0007128819706849754,
+          0.0007365361670963466
+        ],
+        "minimumTorsoUp": 0.9998034238815308,
+        "nativeObservedAfter0_5S": 26001,
+        "physicalSeconds": 33.0,
+        "physicsWallSeconds": 19.575158671,
+        "quietFailuresAfter3S": {},
+        "standingPredicateFailureSubsteps": {},
+        "standingSupportFailureSubsteps": 0
+      },
+      {
+        "failure": null,
+        "heading": -0.7853981852531433,
+        "loadedSlipIntegralM": [
+          0.0024323576896748585,
+          0.002445688256745872
+        ],
+        "maximumBodyAngularRadps": 0.0719979926943779,
+        "maximumBodyLinearMps": 0.035207681357860565,
+        "maximumFootOriginDriftM": [
+          0.0019885962828993797,
+          0.001808368950150907
+        ],
+        "minimumTorsoUp": 0.9998191595077515,
+        "nativeObservedAfter0_5S": 26001,
+        "physicalSeconds": 33.0,
+        "physicsWallSeconds": 18.95546796,
+        "quietFailuresAfter3S": {},
+        "standingPredicateFailureSubsteps": {},
+        "standingSupportFailureSubsteps": 0
+      }
+    ]
+  },
+  "contactAuditEvidence": "docs/evidence/getup-contact-vector-oracle-2026-10-19.json",
+  "browserEvidence": "docs/evidence/browser-explicit-4plus1-validation-2026-10-19.json",
+  "broaderPairedRegression": {
+    "baseline": {
+      "joints": {
+        "path": "outputs/getup-budget-20261019/baseline-joints.ndjson",
+        "sha256": "c806fdb73991b1cbb07708f3686894b74c9dab78d864e2e0e18c5d349a6d584e",
+        "error": null,
+        "cases": 144,
+        "passed": 144
+      },
+      "actuators": {
+        "path": "outputs/getup-budget-20261019/baseline-actuators.ndjson",
+        "sha256": "9e0d8f6104f998df8534623de9cb81fb4c6322ee28ffd90c4f71798f6bdb8a5b",
+        "error": null,
+        "cases": 432,
+        "passed": 378
+      },
+      "chains": {
+        "path": "outputs/getup-budget-20261019/baseline-chains.ndjson",
+        "sha256": "1a004c6b9f89a1ff8e72f681d7bcafe3b345fabf3823309422255db5e82a89d6",
+        "error": "Loaded-chain topology: 7",
+        "cases": 0,
+        "passed": 0
+      },
+      "ballistic": {
+        "path": "outputs/getup-budget-20261019/baseline-ballistic.ndjson",
+        "sha256": "a55a72582b96d68aefd538626d9bba18559ce37b3f443ec99b938ffe0bbd9b9d",
+        "horizontalCoordinateToleranceM": 0.0001,
+        "headings": [
+          {
+            "heading": 0.0,
+            "maximumAbsoluteHorizontalCoordinateM": 0.00039983075112104416,
+            "passed": false
+          },
+          {
+            "heading": 1.0471975803375244,
+            "maximumAbsoluteHorizontalCoordinateM": 0.0003462536260485649,
+            "passed": false
+          },
+          {
+            "heading": -0.7853981852531433,
+            "maximumAbsoluteHorizontalCoordinateM": 0.00028276722878217697,
+            "passed": false
+          }
+        ]
+      }
+    },
+    "candidate": {
+      "joints": {
+        "path": "outputs/getup-budget-20261019/candidate-joints.ndjson",
+        "sha256": "2356cf93af5c0edad7f449b8e78f369525768b9c116d3265f529e1ba3a9fee32",
+        "error": null,
+        "cases": 144,
+        "passed": 144
+      },
+      "actuators": {
+        "path": "outputs/getup-budget-20261019/candidate-actuators.ndjson",
+        "sha256": "2c5cdeb6a28531e58ca92b1b079383b9c8b496837bb17cb8ee5a91b03cc49d40",
+        "error": null,
+        "cases": 432,
+        "passed": 378
+      },
+      "chains": {
+        "path": "outputs/getup-budget-20261019/candidate-chains.ndjson",
+        "sha256": "40cac584fa06704ea319fd77f0bbafd784540712df7f8b6b851d9d07e8e8ed14",
+        "error": "Loaded-chain topology: 7",
+        "cases": 0,
+        "passed": 0
+      },
+      "ballistic": {
+        "path": "outputs/getup-budget-20261019/candidate-ballistic.ndjson",
+        "sha256": "cda8a0b159e90bfca01cd337e4391915a60cfa9207ac8be2a1244a81f70ee9a2",
+        "horizontalCoordinateToleranceM": 0.0001,
+        "headings": [
+          {
+            "heading": 0.0,
+            "maximumAbsoluteHorizontalCoordinateM": 0.0004002237692475319,
+            "passed": false
+          },
+          {
+            "heading": 1.0471975803375244,
+            "maximumAbsoluteHorizontalCoordinateM": 0.0003465544432401657,
+            "passed": false
+          },
+          {
+            "heading": -0.7853981852531433,
+            "maximumAbsoluteHorizontalCoordinateM": 0.00028300751000642776,
+            "passed": false
+          }
+        ]
+      }
+    }
+  },
+  "perturbationProtocol": {
+    "casesFrozenBeforeResults": true,
+    "sameStimulusScheduleAndCapsBothProfiles": true,
+    "initialSettleSeconds": 3,
+    "postReleaseSettleSeconds": 3,
+    "finalQuietSeconds": 3,
+    "quietReference": "pre-input settled snapshot, never reset after input",
+    "cumulativeSlipStarts": "first physical integration, never reset after settling/input",
+    "diagnosticContinuation": "The original8case sweeps continued after recording slip failure only to observe the ensuing motion. Their downstream quiet state is NOT qualification. Strict replay below halts at the first20mm crossing.",
+    "acceptance": "Fullquiet predicates required in initial/finalquiet; only linear/angular quiet-motion predicates excluded during input/postrelease settling. All support/load/upright/slip gates remain active throughout."
+  },
+  "diagnosticPerturbations": {
+    "baseline": [
+      {
+        "case": "torso-x+",
+        "heading": 0.0,
+        "stimulus": {
+          "axis": 0,
+          "body": "torso",
+          "durationS": 0.1,
+          "heldTicks": 4,
+          "mechanism": "existing bounded point-force grab; force cap temporarily sets only stimulus amplitude, restored on release",
+          "pointForceCapN": 20.0,
+          "targetDisplacementM": 1.0
+        },
+        "physicalSeconds": 9.1,
+        "loadedSlipIntegralM": [
+          0.024139382883317642,
+          0.024161771993599087
+        ],
+        "maxFootDriftM": [
+          0.004395604133605957,
+          0.0035626457538455725
+        ],
+        "minimumTorsoUp": 0.9968061447143555,
+        "minimumFootLoadN": [
+          190.29916381835938,
+          149.21942138671875
+        ],
+        "requiredPredicateFailures": {
+          "cumulativeLoadedSlip20mm": 3039
+        },
+        "supportFailures": {},
+        "quietFailures": {}
+      },
+      {
+        "case": "torso-x-",
+        "heading": 0.0,
+        "stimulus": {
+          "axis": 0,
+          "body": "torso",
+          "durationS": 0.1,
+          "heldTicks": 4,
+          "mechanism": "existing bounded point-force grab; force cap temporarily sets only stimulus amplitude, restored on release",
+          "pointForceCapN": 20.0,
+          "targetDisplacementM": -1.0
+        },
+        "physicalSeconds": 9.1,
+        "loadedSlipIntegralM": [
+          0.02420459138880819,
+          0.02422803845848938
+        ],
+        "maxFootDriftM": [
+          0.003629636485129595,
+          0.004224276170134544
+        ],
+        "minimumTorsoUp": 0.9968309998512268,
+        "minimumFootLoadN": [
+          149.1346435546875,
+          190.1200408935547
+        ],
+        "requiredPredicateFailures": {
+          "cumulativeLoadedSlip20mm": 3047
+        },
+        "supportFailures": {},
+        "quietFailures": {}
+      },
+      {
+        "case": "torso-z+",
+        "heading": 0.0,
+        "stimulus": {
+          "axis": 2,
+          "body": "torso",
+          "durationS": 0.1,
+          "heldTicks": 4,
+          "mechanism": "existing bounded point-force grab; force cap temporarily sets only stimulus amplitude, restored on release",
+          "pointForceCapN": 20.0,
+          "targetDisplacementM": 1.0
+        },
+        "physicalSeconds": 9.1,
+        "loadedSlipIntegralM": [
+          0.017918363149908283,
+          0.017944477420443087
+        ],
+        "maxFootDriftM": [
+          0.0031346946489065886,
+          0.0033227484673261642
+        ],
+        "minimumTorsoUp": 0.9965479969978333,
+        "minimumFootLoadN": [
+          172.7134552001953,
+          176.678955078125
+        ],
+        "requiredPredicateFailures": {},
+        "supportFailures": {},
+        "quietFailures": {}
+      },
+      {
+        "case": "torso-z-",
+        "heading": 0.0,
+        "stimulus": {
+          "axis": 2,
+          "body": "torso",
+          "durationS": 0.1,
+          "heldTicks": 4,
+          "mechanism": "existing bounded point-force grab; force cap temporarily sets only stimulus amplitude, restored on release",
+          "pointForceCapN": 20.0,
+          "targetDisplacementM": -1.0
+        },
+        "physicalSeconds": 9.1,
+        "loadedSlipIntegralM": [
+          0.01799316955786577,
+          0.018033272418597198
+        ],
+        "maxFootDriftM": [
+          0.005804574117064476,
+          0.005570823792368174
+        ],
+        "minimumTorsoUp": 0.9934678673744202,
+        "minimumFootLoadN": [
+          173.88636779785156,
+          161.22740173339844
+        ],
+        "requiredPredicateFailures": {},
+        "supportFailures": {},
+        "quietFailures": {}
+      },
+      {
+        "case": "hand-x+",
+        "heading": 0.0,
+        "stimulus": {
+          "axis": 0,
+          "body": "left_hand",
+          "durationS": 0.25,
+          "heldTicks": 10,
+          "mechanism": "existing bounded point-force grab; force cap temporarily sets only stimulus amplitude, restored on release",
+          "pointForceCapN": 180.0,
+          "targetDisplacementM": 0.029999999329447746
+        },
+        "physicalSeconds": 9.25,
+        "loadedSlipIntegralM": [
+          0.005988464132104517,
+          0.006018419794193322
+        ],
+        "maxFootDriftM": [
+          0.0037364468444138765,
+          0.0031472172122448683
+        ],
+        "minimumTorsoUp": 0.9997842311859131,
+        "minimumFootLoadN": [
+          197.89505004882812,
+          195.03880310058594
+        ],
+        "requiredPredicateFailures": {},
+        "supportFailures": {},
+        "quietFailures": {}
+      },
+      {
+        "case": "hand-z+",
+        "heading": 0.0,
+        "stimulus": {
+          "axis": 2,
+          "body": "left_hand",
+          "durationS": 0.25,
+          "heldTicks": 10,
+          "mechanism": "existing bounded point-force grab; force cap temporarily sets only stimulus amplitude, restored on release",
+          "pointForceCapN": 180.0,
+          "targetDisplacementM": 0.029999999329447746
+        },
+        "physicalSeconds": 9.25,
+        "loadedSlipIntegralM": [
+          0.005067402890280169,
+          0.005091840693743679
+        ],
+        "maxFootDriftM": [
+          0.0029132787603884935,
+          0.0025061657652258873
+        ],
+        "minimumTorsoUp": 0.9997978210449219,
+        "minimumFootLoadN": [
+          198.77182006835938,
+          198.5443878173828
+        ],
+        "requiredPredicateFailures": {},
+        "supportFailures": {},
+        "quietFailures": {}
+      },
+      {
+        "case": "rotated-torso-x+",
+        "heading": 1.0471975803375244,
+        "stimulus": {
+          "axis": 0,
+          "body": "torso",
+          "durationS": 0.1,
+          "heldTicks": 4,
+          "mechanism": "existing bounded point-force grab; force cap temporarily sets only stimulus amplitude, restored on release",
+          "pointForceCapN": 20.0,
+          "targetDisplacementM": 1.0
+        },
+        "physicalSeconds": 9.1,
+        "loadedSlipIntegralM": [
+          0.022643621045846777,
+          0.022618749137448695
+        ],
+        "maxFootDriftM": [
+          0.003361173439770937,
+          0.0036556031554937363
+        ],
+        "minimumTorsoUp": 0.9970211982727051,
+        "minimumFootLoadN": [
+          189.38047790527344,
+          172.18345642089844
+        ],
+        "requiredPredicateFailures": {
+          "cumulativeLoadedSlip20mm": 2762
+        },
+        "supportFailures": {},
+        "quietFailures": {}
+      },
+      {
+        "case": "rotated-torso-x-",
+        "heading": 1.0471975803375244,
+        "stimulus": {
+          "axis": 0,
+          "body": "torso",
+          "durationS": 0.1,
+          "heldTicks": 4,
+          "mechanism": "existing bounded point-force grab; force cap temporarily sets only stimulus amplitude, restored on release",
+          "pointForceCapN": 20.0,
+          "targetDisplacementM": -1.0
+        },
+        "physicalSeconds": 9.1,
+        "loadedSlipIntegralM": [
+          0.021041373662218706,
+          0.02099476263734545
+        ],
+        "maxFootDriftM": [
+          0.004996845033019781,
+          0.00451735220849514
+        ],
+        "minimumTorsoUp": 0.9945218563079834,
+        "minimumFootLoadN": [
+          133.3880157470703,
+          186.65884399414062
+        ],
+        "requiredPredicateFailures": {
+          "cumulativeLoadedSlip20mm": 2367
+        },
+        "supportFailures": {},
+        "quietFailures": {}
+      }
+    ],
+    "candidate": [
+      {
+        "case": "torso-x+",
+        "heading": 0.0,
+        "stimulus": {
+          "axis": 0,
+          "body": "torso",
+          "durationS": 0.1,
+          "heldTicks": 4,
+          "mechanism": "existing bounded point-force grab; force cap temporarily sets only stimulus amplitude, restored on release",
+          "pointForceCapN": 20.0,
+          "targetDisplacementM": 1.0
+        },
+        "physicalSeconds": 9.1,
+        "loadedSlipIntegralM": [
+          0.02721476132798838,
+          0.027247109892580352
+        ],
+        "maxFootDriftM": [
+          0.003849665867164731,
+          0.003839625744149089
+        ],
+        "minimumTorsoUp": 0.9966344237327576,
+        "minimumFootLoadN": [
+          188.4994354248047,
+          148.4576416015625
+        ],
+        "requiredPredicateFailures": {
+          "cumulativeLoadedSlip20mm": 3239
+        },
+        "supportFailures": {},
+        "quietFailures": {}
+      },
+      {
+        "case": "torso-x-",
+        "heading": 0.0,
+        "stimulus": {
+          "axis": 0,
+          "body": "torso",
+          "durationS": 0.1,
+          "heldTicks": 4,
+          "mechanism": "existing bounded point-force grab; force cap temporarily sets only stimulus amplitude, restored on release",
+          "pointForceCapN": 20.0,
+          "targetDisplacementM": -1.0
+        },
+        "physicalSeconds": 9.1,
+        "loadedSlipIntegralM": [
+          0.027269104665149483,
+          0.027300745494955533
+        ],
+        "maxFootDriftM": [
+          0.0038953986950218678,
+          0.0038730367086827755
+        ],
+        "minimumTorsoUp": 0.9966531991958618,
+        "minimumFootLoadN": [
+          148.63243103027344,
+          188.5074005126953
+        ],
+        "requiredPredicateFailures": {
+          "cumulativeLoadedSlip20mm": 3232
+        },
+        "supportFailures": {},
+        "quietFailures": {}
+      },
+      {
+        "case": "torso-z+",
+        "heading": 0.0,
+        "stimulus": {
+          "axis": 2,
+          "body": "torso",
+          "durationS": 0.1,
+          "heldTicks": 4,
+          "mechanism": "existing bounded point-force grab; force cap temporarily sets only stimulus amplitude, restored on release",
+          "pointForceCapN": 20.0,
+          "targetDisplacementM": 1.0
+        },
+        "physicalSeconds": 9.1,
+        "loadedSlipIntegralM": [
+          0.01831085437024647,
+          0.01834968848393338
+        ],
+        "maxFootDriftM": [
+          0.0038763051852583885,
+          0.003943378571420908
+        ],
+        "minimumTorsoUp": 0.9964242577552795,
+        "minimumFootLoadN": [
+          196.15586853027344,
+          197.3174591064453
+        ],
+        "requiredPredicateFailures": {},
+        "supportFailures": {},
+        "quietFailures": {}
+      },
+      {
+        "case": "torso-z-",
+        "heading": 0.0,
+        "stimulus": {
+          "axis": 2,
+          "body": "torso",
+          "durationS": 0.1,
+          "heldTicks": 4,
+          "mechanism": "existing bounded point-force grab; force cap temporarily sets only stimulus amplitude, restored on release",
+          "pointForceCapN": 20.0,
+          "targetDisplacementM": -1.0
+        },
+        "physicalSeconds": 9.1,
+        "loadedSlipIntegralM": [
+          0.018177998751149883,
+          0.018219399657758616
+        ],
+        "maxFootDriftM": [
+          0.004852428566664457,
+          0.004620265681296587
+        ],
+        "minimumTorsoUp": 0.9936936497688293,
+        "minimumFootLoadN": [
+          198.16595458984375,
+          198.10052490234375
+        ],
+        "requiredPredicateFailures": {},
+        "supportFailures": {},
+        "quietFailures": {}
+      },
+      {
+        "case": "hand-x+",
+        "heading": 0.0,
+        "stimulus": {
+          "axis": 0,
+          "body": "left_hand",
+          "durationS": 0.25,
+          "heldTicks": 10,
+          "mechanism": "existing bounded point-force grab; force cap temporarily sets only stimulus amplitude, restored on release",
+          "pointForceCapN": 180.0,
+          "targetDisplacementM": 0.029999999329447746
+        },
+        "physicalSeconds": 9.25,
+        "loadedSlipIntegralM": [
+          0.006738396949389569,
+          0.006773452717969446
+        ],
+        "maxFootDriftM": [
+          0.0008877281798049808,
+          0.0008465144201181829
+        ],
+        "minimumTorsoUp": 0.9997924566268921,
+        "minimumFootLoadN": [
+          197.7322235107422,
+          194.693115234375
+        ],
+        "requiredPredicateFailures": {},
+        "supportFailures": {},
+        "quietFailures": {}
+      },
+      {
+        "case": "hand-z+",
+        "heading": 0.0,
+        "stimulus": {
+          "axis": 2,
+          "body": "left_hand",
+          "durationS": 0.25,
+          "heldTicks": 10,
+          "mechanism": "existing bounded point-force grab; force cap temporarily sets only stimulus amplitude, restored on release",
+          "pointForceCapN": 180.0,
+          "targetDisplacementM": 0.029999999329447746
+        },
+        "physicalSeconds": 9.25,
+        "loadedSlipIntegralM": [
+          0.005429546052912437,
+          0.0054665767324638724
+        ],
+        "maxFootDriftM": [
+          0.0007795923738740385,
+          0.0007642559939995408
+        ],
+        "minimumTorsoUp": 0.9998071193695068,
+        "minimumFootLoadN": [
+          199.8584747314453,
+          198.38165283203125
+        ],
+        "requiredPredicateFailures": {},
+        "supportFailures": {},
+        "quietFailures": {}
+      },
+      {
+        "case": "rotated-torso-x+",
+        "heading": 1.0471975803375244,
+        "stimulus": {
+          "axis": 0,
+          "body": "torso",
+          "durationS": 0.1,
+          "heldTicks": 4,
+          "mechanism": "existing bounded point-force grab; force cap temporarily sets only stimulus amplitude, restored on release",
+          "pointForceCapN": 20.0,
+          "targetDisplacementM": 1.0
+        },
+        "physicalSeconds": 9.1,
+        "loadedSlipIntegralM": [
+          0.023620225298482147,
+          0.023641383764604607
+        ],
+        "maxFootDriftM": [
+          0.0037024773191660643,
+          0.003692916827276349
+        ],
+        "minimumTorsoUp": 0.9969616532325745,
+        "minimumFootLoadN": [
+          192.86302185058594,
+          171.73609924316406
+        ],
+        "requiredPredicateFailures": {
+          "cumulativeLoadedSlip20mm": 3127
+        },
+        "supportFailures": {},
+        "quietFailures": {}
+      },
+      {
+        "case": "rotated-torso-x-",
+        "heading": 1.0471975803375244,
+        "stimulus": {
+          "axis": 0,
+          "body": "torso",
+          "durationS": 0.1,
+          "heldTicks": 4,
+          "mechanism": "existing bounded point-force grab; force cap temporarily sets only stimulus amplitude, restored on release",
+          "pointForceCapN": 20.0,
+          "targetDisplacementM": -1.0
+        },
+        "physicalSeconds": 9.1,
+        "loadedSlipIntegralM": [
+          0.02288253467887832,
+          0.022909542760783073
+        ],
+        "maxFootDriftM": [
+          0.004557525273412466,
+          0.004459592048078775
+        ],
+        "minimumTorsoUp": 0.994547963142395,
+        "minimumFootLoadN": [
+          170.8986053466797,
+          194.3391571044922
+        ],
+        "requiredPredicateFailures": {
+          "cumulativeLoadedSlip20mm": 3032
+        },
+        "supportFailures": {},
+        "quietFailures": {}
+      }
+    ]
+  },
+  "strictStopReplay": {
+    "baseline": {
+      "path": "outputs/getup-budget-20261019/baseline-perturbation-strict-torso-xplus.ndjson",
+      "sha256": "fe09d9b9ba917344392fd861d0232a50368977ffdd5483ec6f9f2bd60b29cfce",
+      "case": "torso-x+",
+      "physicalSeconds": 5.3025,
+      "failure": {
+        "check": "loaded-foot-slip-stop",
+        "measured": 0.02000495418906212,
+        "offending": "foot-1",
+        "substep": 1,
+        "threshold": 0.019999999552965164,
+        "tick": 212
+      },
+      "loadedSlipIntegralM": [
+        0.01998222242972813,
+        0.020004954194084795
+      ],
+      "finalMotion": "Halted"
+    },
+    "candidate": {
+      "path": "outputs/getup-budget-20261019/candidate-perturbation-strict-torso-xplus.ndjson",
+      "sha256": "79a9acf4900352450e4331f83910ce776c76cfa7c837e56f8a9f42ae4dec87a2",
+      "case": "torso-x+",
+      "physicalSeconds": 5.0525,
+      "failure": {
+        "check": "loaded-foot-slip-stop",
+        "measured": 0.020001504570245743,
+        "offending": "foot-1",
+        "substep": 1,
+        "threshold": 0.019999999552965164,
+        "tick": 202
+      },
+      "loadedSlipIntegralM": [
+        0.019969960020757748,
+        0.020001505442949204
+      ],
+      "finalMotion": "Halted"
+    }
+  },
+  "admissionBlockers": [
+    "Four frozen torso-X cases exceed20mm in both profiles;4+1 increases worst diagnostic slip24.228mm to27.301mm",
+    "Ballistic horizontal-coordinate drift remains about.4mm against.1mm tolerance",
+    "Loaded-leg-chain fixture rejects canonical topology7 versus historical11; explicit coverage gap",
+    "Other54 actuator fixture failures remain inherited and visible",
+    "Clean rendered browser throughput.78579x is still below real time; short mean core fits25ms but reply delivery adds latency"
+  ],
+  "nextCausalCandidate": "Complete COP-implied dynamic reaction intention with load-proportional horizontal reactions plus matched per-body D\u2019Alembert forces. Check zero net intended free-root/centroidal wrench before testing unchanged strict lateral pulls.",
+  "reproducibleProbeSources": {
+    "docs/evidence/probes/getup-4plus1-regressions-2026-10-19.rs": "2a4ee1458e8cf7086d8b0a1f07185bbe460e9e7ad1aee03fae4f6b182ace9826",
+    "docs/evidence/probes/getup-4plus1-quiet-2026-10-19.rs": "87df2afe42ccd2af65922bddb95749dff74b0d5d4587f0da39e04ed3f82d284f",
+    "docs/evidence/probes/getup-4plus1-perturbations-strict-2026-10-19.rs": "24de334fa39d8ac948a4551f4f955a10e8264e8da128d02c6bac0693d1640dc7"
+  }
+}

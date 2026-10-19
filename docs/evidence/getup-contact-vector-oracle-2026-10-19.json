@@ -1,0 +1,820 @@
+{
+  "date": "2026-10-19",
+  "scope": "Read-only contact-report audit correction; no solver, trajectory, support threshold, or default profile change",
+  "status": "full-paired-inventory-passes",
+  "physicalAcceptanceThresholdNs": 0.002,
+  "audit": "Norm of signed world-space selected-normal plus reported-tangent impulse minus full 3D COM momentum after accounting for actual gravity scale and user force",
+  "intervalScope": "Each fixture step resets only the reporting counter and requires exactly one solver interval. Multiple intervals explicitly refuse this whole-step comparison.",
+  "mechanism": "Tilted contact normals allow world-space tangential friction to have either sign of vertical component. Comparing normal.y alone to all vertical momentum was invalid.",
+  "originalRegression": {
+    "baselinePassed": 68,
+    "candidatePassed": 61,
+    "cases": 72,
+    "newFailingIndices": [
+      25,
+      28,
+      60,
+      61,
+      62,
+      63,
+      64,
+      65,
+      66,
+      67
+    ],
+    "fourDistinctHistories": true
+  },
+  "pairedCanonical": [
+    {
+      "path": "outputs/getup-budget-20261019/baseline-contacts-full-vector.ndjson",
+      "sha256": "54a70c914a71728f962c12db7b252e1858a8b5b04b72e2b6a53a49c56abf2d31",
+      "cases": 72,
+      "passed": 72,
+      "maximumFullVectorImpulseErrorNs": 4.351139068603516e-06,
+      "failures": []
+    },
+    {
+      "path": "outputs/getup-budget-20261019/candidate-contacts-full-vector.ndjson",
+      "sha256": "55ab070689e00ba9264e6e32076d0de6caa83458f97af509a8aca5e17473ce2f",
+      "cases": 72,
+      "passed": 72,
+      "maximumFullVectorImpulseErrorNs": 4.351139068603516e-06,
+      "failures": []
+    }
+  ],
+  "pairedIndividualFeet": [
+    {
+      "path": "outputs/getup-budget-20261019/baseline-feet-full-vector.ndjson",
+      "sha256": "e62edb4817b9da5dfb054557e2455f4a451c000afee7c05a56528ddf12c4e878",
+      "cases": 6,
+      "passed": 6,
+      "maximumFullVectorImpulseErrorNs": 2.389999451679614e-07,
+      "failures": []
+    },
+    {
+      "path": "outputs/getup-budget-20261019/candidate-feet-full-vector.ndjson",
+      "sha256": "68331cb605cc1404c35716716c7571dfb1307ab53f9c9ff811d3b7a68ee3ff4e",
+      "cases": 6,
+      "passed": 6,
+      "maximumFullVectorImpulseErrorNs": 1.341104507446289e-07,
+      "failures": []
+    }
+  ],
+  "boundaryReplays": [
+    {
+      "path": "outputs/getup-budget-20261019/contact-interval-baseline-left_foot-warm0-rest.json",
+      "sha256": "70f8a9cc43f231347c5d3c111d0f9f2ef76a0a9887d6f40850f34774b10e8a6e",
+      "diagnosticOnly": true,
+      "heading": -0.7853981852531433,
+      "instrumentationExactBodyStateParityEveryStep": true,
+      "maxIntervalVectorErrorNs": 2.3844768293201923e-07,
+      "maxLegacyNormalOnlyErrorNs": 0.0005244016647338867,
+      "maxSummedIntervalVectorErrorNs": 2.3844768293201923e-07,
+      "observedSolverIntervals": 960,
+      "outerSteps": 960,
+      "releaseAccepted": false,
+      "scenario": "rest",
+      "segment": "left_foot",
+      "thresholdNs": 0.002,
+      "warmstart": 0.0,
+      "firstDiscriminatingRow": {
+        "expectedContactImpulseNs": [
+          -4.3522932173800655e-06,
+          0.4426799416542053,
+          -4.689629804488504e-06
+        ],
+        "intervalResidualsNs": [
+          [
+            3.3651303965598345e-11,
+            2.9802322387695312e-08,
+            1.318767317570746e-11
+          ]
+        ],
+        "intervals": [
+          {
+            "after_velocity": [
+              0.00029113623895682395,
+              -0.00035065124393440783,
+              0.00034295403747819364
+            ],
+            "before_velocity": [
+              0.0002949839399661869,
+              -0.0003539472527336329,
+              0.0003470999654382467
+            ],
+            "dt_s": 0.0012499999720603228,
+            "manifold_normals": [
+              [
+                0.00044108429574407637,
+                0.9999997019767761,
+                -0.0006194462766870856
+              ]
+            ],
+            "normal_impulse_on_body_ns": [
+              0.00019525911193341017,
+              0.4426797032356262,
+              -0.00027421634877100587
+            ],
+            "selected_contacts": 3,
+            "tangent_impulse_on_body_ns": [
+              -0.00019961137149948627,
+              2.5500534661659913e-07,
+              0.00026952673215419054
+            ]
+          }
+        ],
+        "latestRefreshedManifoldNormals": [
+          [
+            0.00044108429574407637,
+            0.9999997019767761,
+            -0.0006194462766870856
+          ]
+        ],
+        "latestRefreshedNormalImpulseOnBodyNs": [
+          0.00019525911193341017,
+          0.4426797032356262,
+          -0.00027421634877100587
+        ],
+        "latestRefreshedSelectedContacts": 3,
+        "latestRefreshedTangentImpulseOnBodyNs": [
+          -0.00019961137149948627,
+          2.5500534661659913e-07,
+          0.00026952673215419054
+        ],
+        "legacyNormalOnlyErrorNs": 2.384185791015625e-07,
+        "outerDtS": 0.0012499999720603228,
+        "outerStep": 398,
+        "summedIntervalImpulseNs": [
+          -4.3522595660761e-06,
+          0.4426799714565277,
+          -4.689616616815329e-06
+        ],
+        "summedVectorErrorNs": 2.9802343703977385e-08
+      }
+    },
+    {
+      "path": "outputs/getup-budget-20261019/contact-interval-baseline-left_foot-warm0.5-rest.json",
+      "sha256": "fdc874e3e6171adb6dbfdf6b25f1c22c7486980a83f296c6905e0ffd32b4a991",
+      "diagnosticOnly": true,
+      "heading": -0.7853981852531433,
+      "instrumentationExactBodyStateParityEveryStep": true,
+      "maxIntervalVectorErrorNs": 1.2019474127100693e-07,
+      "maxLegacyNormalOnlyErrorNs": 0.0008733272552490234,
+      "maxSummedIntervalVectorErrorNs": 1.2019474127100693e-07,
+      "observedSolverIntervals": 960,
+      "outerSteps": 960,
+      "releaseAccepted": false,
+      "scenario": "rest",
+      "segment": "left_foot",
+      "thresholdNs": 0.002,
+      "warmstart": 0.5,
+      "firstDiscriminatingRow": {
+        "expectedContactImpulseNs": [
+          -8.789990033619688e-07,
+          0.4426777958869934,
+          -1.2036325642839074e-06
+        ],
+        "intervalResidualsNs": [
+          [
+            -5.3091753215994686e-11,
+            0.0,
+            5.093170329928398e-11
+          ]
+        ],
+        "intervals": [
+          {
+            "after_velocity": [
+              4.856056330027059e-05,
+              -0.00016688289179001004,
+              8.940813131630421e-05
+            ],
+            "before_velocity": [
+              4.933765376335941e-05,
+              -0.00016828427033033222,
+              9.047221828950569e-05
+            ],
+            "dt_s": 0.0012499999720603228,
+            "manifold_normals": [
+              [
+                0.0038676902186125517,
+                0.9999924302101135,
+                0.0
+              ]
+            ],
+            "normal_impulse_on_body_ns": [
+              0.001712127821519971,
+              0.44267117977142334,
+              0.0
+            ],
+            "selected_contacts": 4,
+            "tangent_impulse_on_body_ns": [
+              -0.001713006873615086,
+              6.625432433793321e-06,
+              -1.2035816325806081e-06
+            ]
+          }
+        ],
+        "latestRefreshedManifoldNormals": [
+          [
+            0.0038676902186125517,
+            0.9999924302101135,
+            0.0
+          ]
+        ],
+        "latestRefreshedNormalImpulseOnBodyNs": [
+          0.001712127821519971,
+          0.44267117977142334,
+          0.0
+        ],
+        "latestRefreshedSelectedContacts": 4,
+        "latestRefreshedTangentImpulseOnBodyNs": [
+          -0.001713006873615086,
+          6.625432433793321e-06,
+          -1.2035816325806081e-06
+        ],
+        "legacyNormalOnlyErrorNs": 6.616115570068359e-06,
+        "outerDtS": 0.0012499999720603228,
+        "outerStep": 398,
+        "summedIntervalImpulseNs": [
+          -8.790520951151848e-07,
+          0.4426777958869934,
+          -1.2035816325806081e-06
+        ],
+        "summedVectorErrorNs": 7.357154468978777e-11
+      }
+    },
+    {
+      "path": "outputs/getup-budget-20261019/contact-interval-baseline-right_foot-warm0-changing.json",
+      "sha256": "2f90b1bf0bac72d4e631c17b95e2f8595f3fda114d93a27e0f68532ee01f1f90",
+      "diagnosticOnly": true,
+      "heading": -0.7853981852531433,
+      "instrumentationExactBodyStateParityEveryStep": true,
+      "maxIntervalVectorErrorNs": 2.3914506641631306e-07,
+      "maxLegacyNormalOnlyErrorNs": 0.0005750060081481934,
+      "maxSummedIntervalVectorErrorNs": 2.3914506641631306e-07,
+      "observedSolverIntervals": 960,
+      "outerSteps": 960,
+      "releaseAccepted": false,
+      "scenario": "changing",
+      "segment": "right_foot",
+      "thresholdNs": 0.002,
+      "warmstart": 0.0,
+      "firstDiscriminatingRow": {
+        "expectedContactImpulseNs": [
+          7.918542337392864e-07,
+          0.44266366958618164,
+          5.737326318921987e-06
+        ],
+        "intervalResidualsNs": [
+          [
+            2.7853275241795927e-12,
+            -2.9802322387695312e-08,
+            2.8194335754960775e-11
+          ]
+        ],
+        "intervals": [
+          {
+            "after_velocity": [
+              -5.4701049521099776e-05,
+              0.0010852928971871734,
+              -0.0004781049210578203
+            ],
+            "before_velocity": [
+              -5.540109850699082e-05,
+              0.001096387510187924,
+              -0.00048317707842215896
+            ],
+            "dt_s": 0.0012499999720603228,
+            "manifold_normals": [
+              [
+                -0.0005960759008303285,
+                0.9999989867210388,
+                -0.0012914978433400393
+              ]
+            ],
+            "normal_impulse_on_body_ns": [
+              -0.000263860885752365,
+              0.4426627457141876,
+              -0.0005716985906474292
+            ],
+            "selected_contacts": 4,
+            "tangent_impulse_on_body_ns": [
+              0.0002646527427714318,
+              9.035219363795477e-07,
+              0.000577435945160687
+            ]
+          }
+        ],
+        "latestRefreshedManifoldNormals": [
+          [
+            -0.0005960759008303285,
+            0.9999989867210388,
+            -0.0012914978433400393
+          ]
+        ],
+        "latestRefreshedNormalImpulseOnBodyNs": [
+          -0.000263860885752365,
+          0.4426627457141876,
+          -0.0005716985906474292
+        ],
+        "latestRefreshedSelectedContacts": 4,
+        "latestRefreshedTangentImpulseOnBodyNs": [
+          0.0002646527427714318,
+          9.035219363795477e-07,
+          0.000577435945160687
+        ],
+        "legacyNormalOnlyErrorNs": 9.238719940185547e-07,
+        "outerDtS": 0.0012499999720603228,
+        "outerStep": 398,
+        "summedIntervalImpulseNs": [
+          7.918570190668106e-07,
+          0.44266363978385925,
+          5.737354513257742e-06
+        ],
+        "summedVectorErrorNs": 2.980233659855003e-08
+      }
+    },
+    {
+      "path": "outputs/getup-budget-20261019/contact-interval-baseline-right_foot-warm0.5-rest.json",
+      "sha256": "b4434ffa8a35e2c944351b9c1b4635f1635212546a104b1e4112ecbf12564fca",
+      "diagnosticOnly": true,
+      "heading": -0.7853981852531433,
+      "instrumentationExactBodyStateParityEveryStep": true,
+      "maxIntervalVectorErrorNs": 1.2157238415966276e-07,
+      "maxLegacyNormalOnlyErrorNs": 2.8312206268310547e-05,
+      "maxSummedIntervalVectorErrorNs": 1.2157238415966276e-07,
+      "observedSolverIntervals": 960,
+      "outerSteps": 960,
+      "releaseAccepted": false,
+      "scenario": "rest",
+      "segment": "right_foot",
+      "thresholdNs": 0.002,
+      "warmstart": 0.5,
+      "firstDiscriminatingRow": {
+        "expectedContactImpulseNs": [
+          6.116175882198149e-06,
+          0.4426839053630829,
+          4.4538201109389775e-06
+        ],
+        "intervalResidualsNs": [
+          [
+            1.3642420526593924e-12,
+            -2.9802322387695312e-08,
+            -2.7284841053187847e-12
+          ]
+        ],
+        "intervals": [
+          {
+            "after_velocity": [
+              -0.0007113325409591198,
+              -0.0008707490633241832,
+              -0.0005268671666271985
+            ],
+            "before_velocity": [
+              -0.0007167396252043545,
+              -0.0008775527821853757,
+              -0.00053080462384969
+            ],
+            "dt_s": 0.0012499999720603228,
+            "manifold_normals": [
+              [
+                -0.00015327127766795456,
+                0.9999999403953552,
+                0.00030125732882879674
+              ]
+            ],
+            "normal_impulse_on_body_ns": [
+              -6.785072037018836e-05,
+              0.4426838159561157,
+              0.00013336175470612943
+            ],
+            "selected_contacts": 3,
+            "tangent_impulse_on_body_ns": [
+              7.396689761662856e-05,
+              5.0166445220156675e-08,
+              -0.00012890793732367456
+            ]
+          }
+        ],
+        "latestRefreshedManifoldNormals": [
+          [
+            -0.00015327127766795456,
+            0.9999999403953552,
+            0.00030125732882879674
+          ]
+        ],
+        "latestRefreshedNormalImpulseOnBodyNs": [
+          -6.785072037018836e-05,
+          0.4426838159561157,
+          0.00013336175470612943
+        ],
+        "latestRefreshedSelectedContacts": 3,
+        "latestRefreshedTangentImpulseOnBodyNs": [
+          7.396689761662856e-05,
+          5.0166445220156675e-08,
+          -0.00012890793732367456
+        ],
+        "legacyNormalOnlyErrorNs": 8.940696716308594e-08,
+        "outerDtS": 0.0012499999720603228,
+        "outerStep": 398,
+        "summedIntervalImpulseNs": [
+          6.116177246440202e-06,
+          0.4426838755607605,
+          4.453817382454872e-06
+        ],
+        "summedVectorErrorNs": 2.9802322387695312e-08
+      }
+    },
+    {
+      "path": "outputs/getup-budget-20261019/contact-interval-candidate-left-warm0-rest.json",
+      "sha256": "9f1e609354621cf19340d1d88e7de90a2d796b66d9b465ecd4a04a635cd42c36",
+      "diagnosticOnly": true,
+      "heading": -0.7853981852531433,
+      "instrumentationExactBodyStateParityEveryStep": true,
+      "maxIntervalVectorErrorNs": 1.2013700256829907e-07,
+      "maxLegacyNormalOnlyErrorNs": 0.01490163803100586,
+      "maxSummedIntervalVectorErrorNs": 1.2013700256829907e-07,
+      "observedSolverIntervals": 960,
+      "outerSteps": 960,
+      "releaseAccepted": false,
+      "scenario": "rest",
+      "segment": "left_foot",
+      "thresholdNs": 0.002,
+      "warmstart": 0.0,
+      "firstDiscriminatingRow": {
+        "expectedContactImpulseNs": [
+          -0.153787761926651,
+          0.775731086730957,
+          -0.21202480792999268
+        ],
+        "intervalResidualsNs": [
+          [
+            0.0,
+            1.1920928955078125e-07,
+            -1.4901161193847656e-08
+          ]
+        ],
+        "intervals": [
+          {
+            "after_velocity": [
+              0.05801558494567871,
+              0.04287448897957802,
+              0.04962778463959694
+            ],
+            "before_velocity": [
+              0.19397364556789398,
+              -0.251567006111145,
+              0.23707105219364166
+            ],
+            "dt_s": 0.0012499999720603228,
+            "manifold_normals": [
+              [
+                0.037510309368371964,
+                0.9987237453460693,
+                0.03382077068090439
+              ]
+            ],
+            "normal_impulse_on_body_ns": [
+              0.028575416654348373,
+              0.7608294486999512,
+              0.025764718651771545
+            ],
+            "selected_contacts": 4,
+            "tangent_impulse_on_body_ns": [
+              -0.18236318230628967,
+              0.014901741407811642,
+              -0.23778954148292542
+            ]
+          }
+        ],
+        "latestRefreshedManifoldNormals": [
+          [
+            0.037510309368371964,
+            0.9987237453460693,
+            0.03382077068090439
+          ]
+        ],
+        "latestRefreshedNormalImpulseOnBodyNs": [
+          0.028575416654348373,
+          0.7608294486999512,
+          0.025764718651771545
+        ],
+        "latestRefreshedSelectedContacts": 4,
+        "latestRefreshedTangentImpulseOnBodyNs": [
+          -0.18236318230628967,
+          0.014901741407811642,
+          -0.23778954148292542
+        ],
+        "legacyNormalOnlyErrorNs": 0.01490163803100586,
+        "outerDtS": 0.0012499999720603228,
+        "outerStep": 398,
+        "summedIntervalImpulseNs": [
+          -0.153787761926651,
+          0.7757312059402466,
+          -0.21202482283115387
+        ],
+        "summedVectorErrorNs": 1.2013700256829907e-07
+      }
+    },
+    {
+      "path": "outputs/getup-budget-20261019/contact-interval-candidate-left_foot-warm0.5-rest.json",
+      "sha256": "fb9680471bc89d744bfad1e54faf0c8f4e1eaf7eac544e97ccba9f55704516c1",
+      "diagnosticOnly": true,
+      "heading": -0.7853981852531433,
+      "instrumentationExactBodyStateParityEveryStep": true,
+      "maxIntervalVectorErrorNs": 6.705522537231445e-08,
+      "maxLegacyNormalOnlyErrorNs": 0.0061740875244140625,
+      "maxSummedIntervalVectorErrorNs": 6.705522537231445e-08,
+      "observedSolverIntervals": 960,
+      "outerSteps": 960,
+      "releaseAccepted": false,
+      "scenario": "rest",
+      "segment": "left_foot",
+      "thresholdNs": 0.002,
+      "warmstart": 0.5,
+      "firstDiscriminatingRow": {
+        "expectedContactImpulseNs": [
+          0.17995694279670715,
+          0.526071310043335,
+          0.11603529006242752
+        ],
+        "intervalResidualsNs": [
+          [
+            0.0,
+            0.0,
+            -7.450580596923828e-09
+          ]
+        ],
+        "intervals": [
+          {
+            "after_velocity": [
+              -0.013551544398069382,
+              -0.0019270633347332478,
+              -0.011792536824941635
+            ],
+            "before_velocity": [
+              -0.17264480888843536,
+              -0.07565359026193619,
+              -0.1143750324845314
+            ],
+            "dt_s": 0.0012499999720603228,
+            "manifold_normals": [
+              [
+                0.0,
+                0.9990165829658508,
+                -0.04433915391564369
+              ]
+            ],
+            "normal_impulse_on_body_ns": [
+              0.0,
+              0.5198972225189209,
+              -0.023074496537446976
+            ],
+            "selected_contacts": 3,
+            "tangent_impulse_on_body_ns": [
+              0.17995694279670715,
+              0.006174077279865742,
+              0.1391097754240036
+            ]
+          }
+        ],
+        "latestRefreshedManifoldNormals": [
+          [
+            0.0,
+            0.9990165829658508,
+            -0.04433915391564369
+          ]
+        ],
+        "latestRefreshedNormalImpulseOnBodyNs": [
+          0.0,
+          0.5198972225189209,
+          -0.023074496537446976
+        ],
+        "latestRefreshedSelectedContacts": 3,
+        "latestRefreshedTangentImpulseOnBodyNs": [
+          0.17995694279670715,
+          0.006174077279865742,
+          0.1391097754240036
+        ],
+        "legacyNormalOnlyErrorNs": 0.0061740875244140625,
+        "outerDtS": 0.0012499999720603228,
+        "outerStep": 104,
+        "summedIntervalImpulseNs": [
+          0.17995694279670715,
+          0.526071310043335,
+          0.11603528261184692
+        ],
+        "summedVectorErrorNs": 7.450580596923828e-09
+      }
+    },
+    {
+      "path": "outputs/getup-budget-20261019/contact-interval-candidate-right_foot-warm0-changing.json",
+      "sha256": "f5b89569f3d0c0041a7ff0813ff472ebf99c4adb877af3768c2e7d82d3b2e2a6",
+      "diagnosticOnly": true,
+      "heading": -0.7853981852531433,
+      "instrumentationExactBodyStateParityEveryStep": true,
+      "maxIntervalVectorErrorNs": 6.664001972467304e-08,
+      "maxLegacyNormalOnlyErrorNs": 0.002773582935333252,
+      "maxSummedIntervalVectorErrorNs": 6.664001972467304e-08,
+      "observedSolverIntervals": 960,
+      "outerSteps": 960,
+      "releaseAccepted": false,
+      "scenario": "changing",
+      "segment": "right_foot",
+      "thresholdNs": 0.002,
+      "warmstart": 0.0,
+      "firstDiscriminatingRow": {
+        "expectedContactImpulseNs": [
+          1.320291448791977e-05,
+          0.4426616430282593,
+          1.73721036844654e-05
+        ],
+        "intervalResidualsNs": [
+          [
+            -5.4569682106375694e-12,
+            0.0,
+            1.0913936421275139e-11
+          ]
+        ],
+        "intervals": [
+          {
+            "after_velocity": [
+              -0.0005306185921654105,
+              0.0007734601967968047,
+              -0.0007586837164126337
+            ],
+            "before_velocity": [
+              -0.0005422907997854054,
+              0.0007863541832193732,
+              -0.0007740417495369911
+            ],
+            "dt_s": 0.0012499999720603228,
+            "manifold_normals": [
+              [
+                0.0,
+                1.0,
+                0.0
+              ]
+            ],
+            "normal_impulse_on_body_ns": [
+              0.0,
+              0.4426616430282593,
+              0.0
+            ],
+            "selected_contacts": 4,
+            "tangent_impulse_on_body_ns": [
+              1.320290903095156e-05,
+              0.0,
+              1.7372114598401822e-05
+            ]
+          }
+        ],
+        "latestRefreshedManifoldNormals": [
+          [
+            0.0,
+            1.0,
+            0.0
+          ]
+        ],
+        "latestRefreshedNormalImpulseOnBodyNs": [
+          0.0,
+          0.4426616430282593,
+          0.0
+        ],
+        "latestRefreshedSelectedContacts": 4,
+        "latestRefreshedTangentImpulseOnBodyNs": [
+          1.320290903095156e-05,
+          0.0,
+          1.7372114598401822e-05
+        ],
+        "legacyNormalOnlyErrorNs": 0.0,
+        "outerDtS": 0.0012499999720603228,
+        "outerStep": 398,
+        "summedIntervalImpulseNs": [
+          1.320290903095156e-05,
+          0.4426616430282593,
+          1.7372114598401822e-05
+        ],
+        "summedVectorErrorNs": 1.2202151615514634e-11
+      }
+    },
+    {
+      "path": "outputs/getup-budget-20261019/contact-interval-candidate-right_foot-warm0.5-rest.json",
+      "sha256": "1f2f748543ed86448f738fdf73de06e7658a74f9adfd3b92220a11bd731eae8f",
+      "diagnosticOnly": true,
+      "heading": -0.7853981852531433,
+      "instrumentationExactBodyStateParityEveryStep": true,
+      "maxIntervalVectorErrorNs": 6.664001972467304e-08,
+      "maxLegacyNormalOnlyErrorNs": 0.0020265579223632812,
+      "maxSummedIntervalVectorErrorNs": 6.664001972467304e-08,
+      "observedSolverIntervals": 960,
+      "outerSteps": 960,
+      "releaseAccepted": false,
+      "scenario": "rest",
+      "segment": "right_foot",
+      "thresholdNs": 0.002,
+      "warmstart": 0.5,
+      "firstDiscriminatingRow": {
+        "expectedContactImpulseNs": [
+          9.828328984440304e-06,
+          0.44263824820518494,
+          2.2089025151217356e-05
+        ],
+        "intervalResidualsNs": [
+          [
+            5.4569682106375694e-12,
+            -2.9802322387695312e-08,
+            -1.8189894035458565e-11
+          ]
+        ],
+        "intervals": [
+          {
+            "after_velocity": [
+              -0.000249675998929888,
+              0.0018494913820177317,
+              -0.0008567329496145248
+            ],
+            "before_velocity": [
+              -0.0002583648602012545,
+              0.0018830531043931842,
+              -0.000876261037774384
+            ],
+            "dt_s": 0.0012499999720603228,
+            "manifold_normals": [
+              [
+                0.0005299779586493969,
+                0.9999998211860657,
+                0.00024290656438097358
+              ]
+            ],
+            "normal_impulse_on_body_ns": [
+              0.00023458847135771066,
+              0.4426380693912506,
+              0.00010751972877187654
+            ],
+            "selected_contacts": 4,
+            "tangent_impulse_on_body_ns": [
+              -0.00022476013691630214,
+              1.398747002667733e-07,
+              -8.543072181055322e-05
+            ]
+          }
+        ],
+        "latestRefreshedManifoldNormals": [
+          [
+            0.0005299779586493969,
+            0.9999998211860657,
+            0.00024290656438097358
+          ]
+        ],
+        "latestRefreshedNormalImpulseOnBodyNs": [
+          0.00023458847135771066,
+          0.4426380693912506,
+          0.00010751972877187654
+        ],
+        "latestRefreshedSelectedContacts": 4,
+        "latestRefreshedTangentImpulseOnBodyNs": [
+          -0.00022476013691630214,
+          1.398747002667733e-07,
+          -8.543072181055322e-05
+        ],
+        "legacyNormalOnlyErrorNs": 1.7881393432617188e-07,
+        "outerDtS": 0.0012499999720603228,
+        "outerStep": 398,
+        "summedIntervalImpulseNs": [
+          9.828334441408515e-06,
+          0.44263821840286255,
+          2.208900696132332e-05
+        ],
+        "summedVectorErrorNs": 2.980232594040899e-08
+      }
+    }
+  ],
+  "independentSourceReview": "Signed normal belongs to collider2, reported tangent to collider1; hooks bracket force integration and impulse writeback before CCD/pose/contact refresh.",
+  "tests": {
+    "firstRun": "5 passed, 0 failed, 172 filtered",
+    "finalRun": "5 passed, 0 failed, 172 filtered; release library tests,4.56s; final source",
+    "newDiscriminatingChecks": [
+      "Actual left_foot/-45deg/warm0 step398: normal-only error exceeds .01Ns, vertical tangent closes the vector balance",
+      "Opposite measured collider reverses all impulse components",
+      "Two solver intervals are explicitly rejected",
+      "All72 explicit4+1 cases pass unchanged.002Ns 3D bound"
+    ],
+    "correctedCardinality": "Explicit2 canonical foot bodies *3headings *3warmstarts *4scenarios =72, replacing stale144 assertion",
+    "command": "cargo test --manifest-path rust/Cargo.toml --release --offline --locked -p lh-sim --lib calibration::tests:: -- --nocapture",
+    "logPath": "outputs/getup-budget-20261019/contact-oracle-final-tests.log"
+  },
+  "reproduce": "cargo run --manifest-path rust/Cargo.toml --release --offline --locked -p lh-sim --features experimental-solver-step-observation --example contact_interval_probe -- docs/evidence/profiles/getup-800hz-4plus1-qualification-v1.json left_foot 0 rest",
+  "limits": [
+    "Does not repair or relax cumulative20mm loaded-foot slip stop",
+    "Does not qualify4+1 as production default",
+    "Latest-interval reports remain explicitly not enclosing-step totals"
+  ],
+  "physicalObservableParity": "All shared physical report fields in72canonical and6individual-foot cases per profile are exactly unchanged versus pre-audit results (mean loads, drift, penetration, completed steps, contact-loss behavior); only audit/schema/result fields change.",
+  "sourceSha256": {
+    "rust/crates/sim/src/calibration.rs": "a955d89413fb532c27aa5ed49c96af9115dec9ad00afc69910df2ba344c2b96e",
+    "rust/crates/sim/src/measurement.rs": "f0736d8a895dc3ee5dd19fce89e6df0c93335dfffb986c61b9292a331d5fc690",
+    "rust/crates/sim/src/calibration/contact_interval_probe.rs": "81ccac2cf34215837eb33f356d835b5f79f6ef161c776886a6c81cc9212d3415",
+    "rust/crates/sim/examples/contact_interval_probe.rs": "ff7c997f53556c65499e12504eead76138b909c3609c1e27dab28cb0fdb34915"
+  }
+}

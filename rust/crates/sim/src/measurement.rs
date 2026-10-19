@@ -119,6 +119,23 @@ pub fn floor_tangent_impulse(
     }
     Ok(result)
 }
+/// Signed world-space normal and tangential impulse on the measured collider.
+/// Like the component reports, this covers the latest solver interval only.
+/// A whole-step momentum audit must separately establish that it had one interval.
+pub fn floor_contact_impulse(
+    world: &PhysicsWorld,
+    floor: ColliderHandle,
+    collider: ColliderHandle,
+) -> Result<Vector, String> {
+    let normal = world.narrow_phase.contact_pair(floor, collider)
+        .map(|pair| solver_normal_impulse(pair).map(|normal| {
+            normal * if pair.collider2 == collider { 1.0 } else { -1.0 }
+        }))
+        .transpose()?.unwrap_or(Vector::ZERO);
+    let total = normal + floor_tangent_impulse(world, floor, collider)?;
+    if !total.is_finite() { return Err("Non-finite summed contact impulse".into()); }
+    Ok(total)
+}
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Failure {
     pub tick: u64,

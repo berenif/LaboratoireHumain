@@ -1,8 +1,10 @@
-//! Contact impulses checked independently against vertical momentum balance.
+//! Contact impulses checked independently against linear momentum balance.
 use crate::{Profile, configure};
 use rapier3d::prelude::*;
 use serde::Serialize;
 pub mod tangent;
+#[cfg(feature = "experimental-solver-step-observation")]
+pub mod contact_interval_probe;
 
 #[derive(Debug, Serialize)]
 pub struct LoadCalibration {
@@ -152,7 +154,10 @@ mod tests {
     #[test]
     fn canonical_contacts_follow_momentum_while_cached_point_totals_do_not() {
         let reports = canonical_contact_load().expect("canonical contact fixtures");
-        assert_eq!(reports.len(), 144);
+        let feet = lh_model::Model::canonical().unwrap().segments.iter()
+            .filter(|s| matches!(s.role.as_str(), "hindfoot" | "forefoot")).count();
+        assert_eq!(feet, 2, "canonical anatomical feet");
+        assert_eq!(reports.len(), feet * 3 * 3 * 4);
         assert!(reports.iter().all(|r| r["passed"] == true), "{reports:?}");
         // The test is discriminating: the old cached-point sum fails on the
         // same trajectories and prescribed loads, without changing any solver.
@@ -161,6 +166,56 @@ mod tests {
                 .as_f64()
                 .is_some_and(|e| e > 0.002)
         }));
+    }
+
+    #[test]
+    fn tilted_contact_requires_signed_vertical_friction_in_momentum_audit() {
+        let mut profile = Profile::default();
+        profile.id = "getup-800hz-4plus1-qualification-v1".into();
+        profile.solver_iterations = 4;
+        profile.additional_body_iterations = 1;
+        let model = lh_model::Model::canonical().unwrap();
+        let foot = model.segments.iter().find(|s| s.id == "left_foot").unwrap();
+        let (mut w, body, floor, collider) = foot_fixture(foot, -std::f32::consts::PI / 4.0, true, &profile).unwrap();
+        w.integration_parameters.warmstart_coefficient = 0.0;
+        let ballast = (72.2 / 2.0 - foot.mass_kg) * 9.81;
+        let mut first = None;
+        let mut peak = 0.0;
+        for step in 0..=398 {
+            let before = w.bodies[body].linvel();
+            w.bodies[body].reset_forces(false);
+            w.bodies[body].add_force(-Vector::Y * ballast, true);
+            step_foot_fixture(&mut w);
+            audit_foot_load(&w, (body, floor, collider, ballast), (step, profile.tick_substeps), before, &mut first, &mut peak).unwrap();
+            if step == 398 {
+                let expected = w.bodies[body].mass() * (w.bodies[body].linvel() - before)
+                    - (w.gravity * w.bodies[body].mass() - Vector::Y * ballast) * profile.dt_s;
+                let normal = crate::measurement::floor_normal_impulse(&w, floor, collider).unwrap();
+                let tangent = crate::measurement::floor_tangent_impulse(&w, floor, collider).unwrap();
+                let total = crate::measurement::floor_contact_impulse(&w, floor, collider).unwrap();
+                assert!((normal - expected.y).abs() > 0.01, "normal-only audit must be discriminated");
+                assert!(tangent.y > 0.01, "world tangent has a vertical component on a tilted manifold");
+                assert!((total - expected).length() < 0.002);
+                let opposite = crate::measurement::floor_contact_impulse(&w, collider, floor).unwrap();
+                assert_eq!(total, -opposite, "opposite collider ordering must reverse every impulse component");
+            }
+        }
+        assert!(first.is_none(), "{first:?}");
+        assert!(peak < 0.002);
+        w.physics_pipeline.counters.ccd.num_substeps = 2;
+        assert!(audit_foot_load(&w, (body, floor, collider, ballast), (399, profile.tick_substeps), w.bodies[body].linvel(), &mut first, &mut peak).unwrap_err().contains("single solver interval"));
+    }
+
+    #[test]
+    fn explicit_4plus1_contacts_pass_the_same_full_vector_momentum_bound() {
+        let mut profile = Profile::default();
+        profile.id = "getup-800hz-4plus1-qualification-v1".into();
+        profile.solver_iterations = 4;
+        profile.additional_body_iterations = 1;
+        let reports = canonical_contact_load_with_profile(&profile).unwrap();
+        assert_eq!(reports.len(), 2 * 3 * 3 * 4);
+        assert!(reports.iter().all(|r| r["passed"] == true), "{reports:?}");
+        assert!(reports.iter().all(|r| r["maxMomentumImpulseErrorNs"].as_f64().unwrap() <= 0.002));
     }
 }
 
@@ -449,27 +504,31 @@ pub fn canonical_contact_load_with_profile(
                         if scenario == "contact-loss" && step == 480 {
                             w.colliders[floor].set_enabled(false);
                         }
-                        let before = w.bodies[body].linvel().y;
+                        let before = w.bodies[body].linvel();
                         w.bodies[body].reset_forces(false);
                         w.bodies[body].add_force(Vector::Y * force, true);
-                        w.step();
+                        step_foot_fixture(&mut w);
                         audit_foot_load(
                             &w,
                             (body, floor, collider, -force),
-                            step,
+                            (step, profile.tick_substeps),
                             before,
                             &mut first,
                             &mut peak,
                         )?;
                         let impulse =
                             crate::measurement::floor_normal_impulse(&w, floor, collider)?;
-                        let expected = w.bodies[body].mass() * (w.bodies[body].linvel().y - before)
-                            + (w.bodies[body].mass() * 9.81 - force) * w.integration_parameters.dt;
+                        let b = &w.bodies[body];
+                        let expected = b.mass() * (b.linvel() - before)
+                            - (w.gravity * (b.mass() * b.gravity_scale()) + b.user_force()) * w.integration_parameters.dt;
                         let raw = w
                             .narrow_phase
                             .contact_pair(floor, collider)
-                            .map_or(0.0, |p| p.total_impulse().y.abs());
-                        peak_raw = peak_raw.max((raw - expected).abs());
+                            .map_or(Vector::ZERO, |p| p.total_impulse() * if p.collider2 == collider { 1.0 } else { -1.0 });
+                        // Hold the actual signed tangent report fixed so this
+                        // diagnostic isolates cached normal-point contamination.
+                        let raw_total = raw + crate::measurement::floor_tangent_impulse(&w, floor, collider)?;
+                        peak_raw = peak_raw.max((raw_total - expected).length());
                         if step >= 480 {
                             load += impulse / w.integration_parameters.dt;
                             if scenario == "contact-loss" {
@@ -489,7 +548,7 @@ pub fn canonical_contact_load_with_profile(
                         && contact_loss_pass
                         && (scenario != "rest" || (mean - 354.141).abs() <= 3.0);
                     reports.push(
-                        serde_json::json!({"measurementSchema":2,"segment":s.id,"heading":heading,"warmstart":warm,
+                        serde_json::json!({"measurementSchema":3,"momentumAudit":"signed-world-normal-plus-tangent-3d-single-interval","segment":s.id,"heading":heading,"warmstart":warm,
                         "scenario":scenario,"samples":960,"meanObservedLoadN":mean,"passed":passed,
                         "maxMomentumImpulseErrorNs":peak,"rawCachedPairMaxErrorNs":peak_raw,
                         "firstFailure":first,"contactLossPass":contact_loss_pass}),
@@ -527,12 +586,12 @@ pub fn individual_feet_with_profile(
             for substep in 0..480 {
                 w.bodies[body].reset_forces(false);
                 w.bodies[body].add_force(-Vector::Y * ballast, true);
-                let before = w.bodies[body].linvel().y;
-                w.step();
+                let before = w.bodies[body].linvel();
+                step_foot_fixture(&mut w);
                 audit_foot_load(
                     &w,
                     (body, floor, collider, ballast),
-                    substep,
+                    (substep, profile.tick_substeps),
                     before,
                     &mut first_load_failure,
                     &mut max_momentum_error,
@@ -559,12 +618,12 @@ pub fn individual_feet_with_profile(
             for substep in 0..2400 {
                 w.bodies[body].reset_forces(false);
                 w.bodies[body].add_force(-Vector::Y * ballast, true);
-                let before = w.bodies[body].linvel().y;
-                w.step();
+                let before = w.bodies[body].linvel();
+                step_foot_fixture(&mut w);
                 audit_foot_load(
                     &w,
                     (body, floor, collider, ballast),
-                    480 + substep,
+                    (480 + substep, profile.tick_substeps),
                     before,
                     &mut first_load_failure,
                     &mut max_momentum_error,
@@ -587,9 +646,6 @@ pub fn individual_feet_with_profile(
                     .contact_pair(floor, collider)
                     .map_or(0.0, |p| p.total_impulse().y.abs())
                     / w.integration_parameters.dt;
-                let expected_impulse = w.bodies[body].mass() * (w.bodies[body].linvel().y - before)
-                    + (w.bodies[body].mass() * 9.81 + ballast) * w.integration_parameters.dt;
-                max_momentum_error = max_momentum_error.max((impulse - expected_impulse).abs());
                 if !w.bodies[body].translation().is_finite() || drift > 0.01 || penetration > 0.08 {
                     passed = false;
                     break;
@@ -600,7 +656,7 @@ pub fn individual_feet_with_profile(
                 && (mean_load - 72.2 / 2.0 * 9.81).abs() < 3.0
                 && first_load_failure.is_none();
             reports.push(FootCalibration {
-                measurement_schema: 2,
+                measurement_schema: 3,
                 segment: s.id.clone(),
                 heading,
                 completed_substeps: completed,
@@ -620,26 +676,38 @@ pub fn individual_feet_with_profile(
     Ok(reports)
 }
 
+// The engine counter is reporting-only and otherwise accumulates when timers
+// are disabled. Reset just this count to establish the report's interval scope.
+fn step_foot_fixture(w: &mut PhysicsWorld) {
+    w.physics_pipeline.counters.ccd.num_substeps = 0;
+    w.step();
+}
+
 fn audit_foot_load(
     w: &PhysicsWorld,
     fixture: (RigidBodyHandle, ColliderHandle, ColliderHandle, f32),
-    step: u32,
-    before: f32,
+    clock: (u32, u32),
+    before: Vector,
     first: &mut Option<serde_json::Value>,
     peak: &mut f32,
 ) -> Result<(), String> {
     let (body, floor, collider, ballast) = fixture;
+    let (step, tick_substeps) = clock;
     let b = &w.bodies[body];
     let dt = w.integration_parameters.dt;
-    let reported = crate::measurement::floor_normal_impulse(w, floor, collider)?;
-    let expected = b.mass() * (b.linvel().y - before) + (b.mass() * 9.81 + ballast) * dt;
-    let error = (reported - expected).abs();
+    if w.physics_pipeline.counters.ccd.num_substeps != 1 {
+        return Err("Foot momentum audit requires a single solver interval; latest-interval reports are not whole-step totals".into());
+    }
+    let reported = crate::measurement::floor_contact_impulse(w, floor, collider)?;
+    let expected = b.mass() * (b.linvel() - before)
+        - (w.gravity * (b.mass() * b.gravity_scale()) + b.user_force()) * dt;
+    let error = (reported - expected).length();
     *peak = peak.max(error);
     if first.is_none() && error > 0.002 {
         *first = Some(
-            serde_json::json!({"measurementSchema":2,"tick":step/4,"substep":step%4,"check":"contact-momentum-balance","impulseErrorNs":error,"thresholdNs":0.002,
-            "reportedImpulseNs":reported,"expectedImpulseNs":expected,"dtS":dt,"externalBallastN":ballast,"massKg":b.mass(),
-            "linearVelocityBeforeY":before,"linearVelocityAfter":super::vec3(b.linvel()),"position":super::vec3(b.translation()),"rotation":super::quat(*b.rotation())}),
+            serde_json::json!({"measurementSchema":3,"tick":step/tick_substeps,"substep":step%tick_substeps,"outerStep":step,"check":"contact-momentum-balance","impulseErrorNs":error,"thresholdNs":0.002,
+            "reportedImpulseNs":super::vec3(reported),"expectedImpulseNs":super::vec3(expected),"dtS":dt,"externalBallastN":ballast,"massKg":b.mass(),
+            "linearVelocityBefore":super::vec3(before),"linearVelocityAfter":super::vec3(b.linvel()),"position":super::vec3(b.translation()),"rotation":super::quat(*b.rotation())}),
         );
     }
     Ok(())
