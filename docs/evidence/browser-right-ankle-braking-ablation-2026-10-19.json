@@ -1,0 +1,705 @@
+{
+  "date": "2026-10-19",
+  "status": "completed bounded causal diagnostic; mixed/inconclusive; no motor-policy admission",
+  "sourceCommit": "3b07973638c76bd0419517ad5ead4cf190a98571",
+  "sourceCommitMeaning": "Restored normal-motor production observer plus native evidence. The diagnostic builds instead use exact base 6dbe6869 plus five frozen overrides, replayable by the pinned rejected diagnostic patch. Current production source contains no ablation override, candidate feature or candidate checkpoint guard.",
+  "planning": "Single actual-WASM physical A/B follows the Astra Codex plan and exact four-call archived actor crossover. No additional run, duration/joint sweep, actor inference or long recovery follows this result.",
+  "scope": {
+    "fixture": "fresh BACK independently in each arm",
+    "ordinaryApp": "Fixed renderer, driver and original transport; test-only fixture adapter drives ordinary automatic one-tick scheduling and unwraps exactly one observed runtime advance per request. Read-only observer publishes all 20 native rows.",
+    "nativeHz": 800,
+    "controllerHz": 40,
+    "preparationPollingNative": 80,
+    "originalTriggerNative": 480,
+    "stopNative": 2380,
+    "stopPhysicalSeconds": 2.975,
+    "runs": 2,
+    "retries": 0,
+    "videoEncoder": false,
+    "publicDeployment": false,
+    "performanceClaim": false,
+    "standingOrRecoveryQualificationClaim": false,
+    "policyAdmissionClaim": false,
+    "platform": "Official Debian Chromium headless 155.0.8059.79 on desktop, WebGL2/SwiftShader; no actual Android or capable-WebGPU qualification."
+  },
+  "profile": {
+    "path": "docs/evidence/profiles/getup-800hz-3plus1-repeat-cycle-v1.json",
+    "sha256": "aaa415a19767c218a26b05bad277193cccba2a726b52dcd5aac0a5444afc39d6",
+    "sameCompleteProfileBothArms": true,
+    "solverIterations": 3,
+    "additionalBodyIterations": 1,
+    "getupSolverBudget": "consistent-recovery-phase-v1"
+  },
+  "intervention": {
+    "actuator": "right_ankle_y",
+    "qposIndex": 7,
+    "actuatorIndex": 8,
+    "gearNm": 20,
+    "completedNativeInclusive": [
+      2181,
+      2200
+    ],
+    "preNativeCommandIndicesInclusive": [
+      2180,
+      2199
+    ],
+    "candidateAppliedTorqueNm": 0,
+    "normalApplicationRestoredNative": 2201,
+    "changed": "Only active scalar at actual equal/opposite body-motor application. Intended actor/PD commands are still computed normally; teacher fork excluded. Passive/contact/constraint torques remain active. Later intended commands may differ naturally through physical feedback.",
+    "allOtherAppliedMotorScalarsEqualTheirOwnIntendedScalars": true,
+    "candidateValidatedOverrideCount": 20,
+    "baselineValidatedOverrideCount": 0,
+    "directPelvisForceOrTorqueAlwaysZero": true
+  },
+  "build": {
+    "baseCommit": "6dbe68698bbfb8b39541a59ec503907490d27ff4",
+    "sourceFreezeSha256": "4b49156d9c339e3df96b9b0e74aebabac326386d3118ba3030fa7bafc7fb07da",
+    "overrides": [
+      {
+        "path": "rust/crates/sim/Cargo.toml",
+        "sha256": "64dbb280556698a491f3b195859ded7e3b10bc1cd419d10871cb650e676612a9",
+        "bytes": 2502
+      },
+      {
+        "path": "rust/crates/sim/src/getup.rs",
+        "sha256": "3337a8cde1b23fea06a113f323d01822851b982f6d1a8e6932e627bb6962303f",
+        "bytes": 31057
+      },
+      {
+        "path": "rust/crates/sim/src/lib.rs",
+        "sha256": "bfb68112fe8fdc296a7350db7e3b40d715b53480a20d0292345434e0732efcb4",
+        "bytes": 62945
+      },
+      {
+        "path": "rust/crates/sim/src/runtime.rs",
+        "sha256": "856c2398533e0e7291d18339eba15ff5a4df1840882e5c8e651184cde12e065f",
+        "bytes": 68990
+      },
+      {
+        "path": "rust/crates/sim/src/getup/braking_ablation_tests.rs",
+        "sha256": "ccf4e261cd5cbf0913e15570bce9bd189ece0e17222d920fca082ac3cde65104",
+        "bytes": 17710
+      }
+    ],
+    "rustToolchain": "1.89.0",
+    "wasmBindgen": "0.2.108",
+    "rustFlags": [],
+    "baselineFeatures": [
+      "lh-worker/root-translation-carry-experiment",
+      "lh-worker/getup-terminal-tail-observer-experiment",
+      "lh-sim/standing-dynamics-experiment",
+      "lh-sim/unit-root-rotation-experiment",
+      "lh-sim/getup-repeat-cycle-experiment"
+    ],
+    "candidateAddsOnly": "lh-sim/getup-right-ankle-braking-ablation-experiment",
+    "effectiveSimFeaturesIncludingForwarding": {
+      "baseline": [
+        "getup-repeat-cycle-experiment",
+        "getup-terminal-balance-experiment",
+        "getup-terminal-tail-observer-experiment",
+        "root-translation-carry-experiment",
+        "standing-dynamics-experiment",
+        "unit-root-rotation-experiment"
+      ],
+      "candidate": [
+        "getup-repeat-cycle-experiment",
+        "getup-right-ankle-braking-ablation-experiment",
+        "getup-terminal-balance-experiment",
+        "getup-terminal-tail-observer-experiment",
+        "root-translation-carry-experiment",
+        "standing-dynamics-experiment",
+        "unit-root-rotation-experiment"
+      ]
+    },
+    "workerWasmSha256": {
+      "baseline": "8b0b8a296d9e284f70871792b0da54fe3a30cf675c493acfc0b9e64773a7b328",
+      "candidate": "eb3c08187f062815ccd3c100977cb82e18fb9aee98d2e603b93674e31de53705"
+    },
+    "sharedWorkerGlueSha256": "406d700bc2a55b9638db35ae77d0827cc4896d82d32698f1ef51bc10c4af5537",
+    "fixedMainWasmSha256": "5895574d87e93f6a2eddec98662797b16c298c90f2ee8298f6d72917f4d1b07e",
+    "fixedDriverSha256": "4c6281e19c4540e3ba72a74a5b1514b5d1b9c58e56c1f8a2dbfb3adb4812d74e",
+    "originalTransportSha256": "a3a2b18c222c045fc08bf19aff2e96b92f0bc18ad6023bcca660195054267996",
+    "cfgTestOnlyCorrection": {
+      "path": "rust/crates/sim/src/getup/braking_ablation_tests.rs",
+      "previousSha256": "525c04f75d9e1a3040621a9f357b36c46c39485e598f459dc1117f914ade4769",
+      "currentSha256": "ccf4e261cd5cbf0913e15570bce9bd189ece0e17222d920fca082ac3cde65104",
+      "reason": "Correct native0 construction receipt assertion: constructor already applies controls; test asserts clock0, notNone. Runtime source unchanged.",
+      "usedByWorkerWasmBuild": false,
+      "cargoReason": "Module guarded #[cfg(test)], never read/compiled in release lh-worker build.",
+      "wasmRebuildPerformed": false,
+      "originalBuildSourceManifest": {
+        "path": "outputs/browser-capability-20261019/recovery-fixture/right-ankle-ablation/build/source-manifest-at-build.json",
+        "sha256": "236520375c3f4ab79a3b8d404424dcf51505c937e417f1d21144adc38a9c6c35"
+      },
+      "originalBuildFreeze": {
+        "path": "outputs/getup-ankle-braking-ablation-20261019/source-freeze-pre-test-correction.json",
+        "sha256": "7d6196570bcd488965004113b7286da7c5952ba68d0f216e8c309116c3d0ea1b"
+      }
+    },
+    "productionDefaultsChanged": false
+  },
+  "validity": {
+    "fullObservablePrefix": {
+      "range": [
+        0,
+        2180
+      ],
+      "rows": 2181,
+      "exclusions": [],
+      "fullObservableEquality": true,
+      "firstActualDifferenceNative": 2181,
+      "baselinePrefixSha256": "b938648e91995f80d86d29009338c7b5907edd1f5b60a9c34d06aed6fd84be47"
+    },
+    "teacherAndReference": {
+      "teacherInitialAndAll51FramesEqual": true,
+      "complete103ReferenceTuplesEqual": true,
+      "referenceFramesExcludingAppended": 102,
+      "totalReferenceTuples": 103,
+      "forecastIntegrations": 1020,
+      "originalImpactNative": 480
+    },
+    "retainedBaselineParity": {
+      "matchedNativeRowsIncluding0": 2381,
+      "commonRetainedSchemaExact": true,
+      "priorReceipt": {
+        "path": "/workspace/scratch/5def91918e35/mvp-landing/outputs/browser-capability-20261019/recovery-fixture/terminal-tail-ab/actual-back-pair/baseline/native-trace.ndjson",
+        "sha256": "7be64c956845d06e69bc7503700b2f2e9be988da28f307a6862f9518ea338f3d",
+        "bytes": 44268499
+      },
+      "excludedNewFields": [
+        "motorApplication",
+        "footFloorClearanceM",
+        "integrityLimits",
+        "native0.snapshot"
+      ]
+    },
+    "sameFinalCumulativeIntegrityMaxima": {
+      "maxAnchorSeparationM": 1.7916283923113951e-07,
+      "maxFloorPenetrationM": 0.0015334959607571363,
+      "maxLimitErrorRad": 0.002617359161376953,
+      "maxSelfPenetrationM": 0.001198886428028345
+    },
+    "integritySemantics": "Existing running maxima through each native, not instantaneous or interval-local values. No subtraction of maxima used.",
+    "jointObservationSemantics": "Fresh current physicalObservationWords give q[0:21] and generalized dq[46:67]. Pose velocity cache words and command-input getup receipts are retained but not mislabeled as fresh poststep motion.",
+    "noNewPhysicalGate": "The load-release diagnostic is 20 consecutive native samples below the existing 3 N left-foot load threshold after intervention. Strict signed clearance >0 separately corroborates later separation; initial unloaded samples still have nonpositive clearance.",
+    "materialSlipSemantics": "Current loaded material-contact tangent speed \u00d71/800 is diagnostic during whole get-up; neither foot-origin travel nor a changed poststanding stop rule."
+  },
+  "measurements": {
+    "baseline": {
+      "observationValid": true,
+      "rowsIncludingNative0": 2381,
+      "stopNative": 2380,
+      "stopPhysicalSeconds": 2.975,
+      "overrideNatives": [],
+      "firstLeftLoadBelow3NAfterIntervention": 2353,
+      "firstSustainedLeftLowLoadRun": {
+        "first": 2356,
+        "last": 2380,
+        "length": 25
+      },
+      "twentiethLowLoadDetectionNative": 2375,
+      "firstStrictPositiveLeftClearanceNativeAfterIntervention": 2361,
+      "leftClearanceAtFirstLowLoadM": -0.00038801319897174835,
+      "leftClearanceAtTwentiethLowLoadM": 0.0031286384910345078,
+      "sustainedRunLeftClearanceRangeM": [
+        -0.00027137063443660736,
+        0.004961395636200905
+      ],
+      "signedActiveRightAnkleWorkEstimateJ2181To2200": -4.296354282513105,
+      "postIntervention2181To2380": {
+        "leftLoadN": [
+          0,
+          752.9238891601562
+        ],
+        "rightLoadN": [
+          82.88029479980469,
+          434.2315673828125
+        ],
+        "maximumCurrentBodyLinearMps": 3.9581868648529053,
+        "maximumCurrentBodyAngularRadps": 7.602985382080078,
+        "leftClearanceM": [
+          -0.0013548191636800766,
+          0.004961395636200905
+        ],
+        "torsoUp": [
+          0.6394352912902832,
+          0.7383642792701721
+        ]
+      },
+      "rightAnkleDqAtNative2200Radps": 5.78636360168457,
+      "wholeGetupMaterialContactTravelDiagnostic": {
+        "left_foot": {
+          "loadedRows": 1033,
+          "unavailableLoadedRows": 0,
+          "observedLoadedRows": 1033,
+          "sampledImpulseWeightedTangentTravelM": 0.14750307636326834,
+          "maximumImpulseWeightedTangentSpeedMps": 2.3197505474090576
+        },
+        "right_foot": {
+          "loadedRows": 1230,
+          "unavailableLoadedRows": 0,
+          "observedLoadedRows": 1230,
+          "sampledImpulseWeightedTangentTravelM": 0.4983752683003242,
+          "maximumImpulseWeightedTangentSpeedMps": 4.253908634185791
+        }
+      },
+      "native0Activation": {
+        "activationCalls": 1,
+        "realIntegrationsBeforeAndAfter": [
+          0,
+          0
+        ],
+        "forecastIntegrationsBeforeAndAfter": [
+          0,
+          0
+        ],
+        "livePurity": {
+          "method": "read-only-live-native0-observer-receipts",
+          "beforeNativeSubsteps": 0,
+          "afterNativeSubsteps": 0,
+          "poseVelocityWordsEqual": true,
+          "freshPhysicalObservationWordsEqual": true,
+          "currentDiagnosticExactlyEqual": true,
+          "jointQExactlyEqual": true,
+          "jointDqExactlyEqual": true,
+          "root": [
+            0,
+            0
+          ],
+          "algorithm": "f32-dq-f64-remainder-v1",
+          "initialRemainderBits": [
+            0,
+            0,
+            0
+          ],
+          "binaryWorldEqualityClaim": false,
+          "embeddedRuntimeStringEqualityClaim": false
+        },
+        "binaryCheckpointPurityClaim": true,
+        "binaryPurity": {
+          "schemaBefore": 1,
+          "schemaAfter": 2,
+          "modelBytesEqual": true,
+          "worldBytesEqual": true,
+          "embeddedRuntimeStringExactlyEqual": true,
+          "root": [
+            0,
+            0
+          ],
+          "algorithm": "f32-dq-f64-remainder-v1",
+          "initialRemainderBits": [
+            0,
+            0,
+            0
+          ],
+          "bytesBefore": 584899,
+          "bytesAfter": 585694
+        },
+        "checkpointRefusals": []
+      },
+      "trigger": {
+        "native": 480,
+        "beforeNativeSubsteps": 480,
+        "afterNativeSubsteps": 480,
+        "physicalPoseVelocityBitsUnchanged": true,
+        "refreshCompletedTicks": 0
+      },
+      "workerInstances": 1,
+      "resetRequests": [],
+      "externalPhysicalInputs": [],
+      "generationAtStop": 1,
+      "traceGaps": [],
+      "workerFaults": [],
+      "observerFault": null,
+      "controllerExportAtStop": {
+        "path": "stop-controller.json",
+        "sha256": "b8fc10575c911420b15da374291feedde1cd4cfe204cfc48f99a4c7a8a05c532",
+        "native": 2380,
+        "physicalSeconds": 2.975,
+        "physicsIntegrations": 0,
+        "labelMatchesPhysicalState": true
+      }
+    },
+    "candidate": {
+      "observationValid": true,
+      "rowsIncludingNative0": 2381,
+      "stopNative": 2380,
+      "stopPhysicalSeconds": 2.975,
+      "overrideNatives": [
+        2181,
+        2182,
+        2183,
+        2184,
+        2185,
+        2186,
+        2187,
+        2188,
+        2189,
+        2190,
+        2191,
+        2192,
+        2193,
+        2194,
+        2195,
+        2196,
+        2197,
+        2198,
+        2199,
+        2200
+      ],
+      "firstLeftLoadBelow3NAfterIntervention": 2356,
+      "firstSustainedLeftLowLoadRun": {
+        "first": 2358,
+        "last": 2380,
+        "length": 23
+      },
+      "twentiethLowLoadDetectionNative": 2377,
+      "firstStrictPositiveLeftClearanceNativeAfterIntervention": 2363,
+      "leftClearanceAtFirstLowLoadM": -0.0004243459552526474,
+      "leftClearanceAtTwentiethLowLoadM": 0.0036597270518541336,
+      "sustainedRunLeftClearanceRangeM": [
+        -0.0003497730940580368,
+        0.004851827397942543
+      ],
+      "signedActiveRightAnkleWorkEstimateJ2181To2200": 0,
+      "postIntervention2181To2380": {
+        "leftLoadN": [
+          0,
+          972.7512817382812
+        ],
+        "rightLoadN": [
+          16.74592399597168,
+          407.7381591796875
+        ],
+        "maximumCurrentBodyLinearMps": 3.853177785873413,
+        "maximumCurrentBodyAngularRadps": 9.034388542175293,
+        "leftClearanceM": [
+          -0.0013594236224889755,
+          0.004851827397942543
+        ],
+        "torsoUp": [
+          0.6413553953170776,
+          0.733467161655426
+        ]
+      },
+      "rightAnkleDqAtNative2200Radps": 15.326562881469727,
+      "wholeGetupMaterialContactTravelDiagnostic": {
+        "left_foot": {
+          "loadedRows": 1036,
+          "unavailableLoadedRows": 0,
+          "observedLoadedRows": 1036,
+          "sampledImpulseWeightedTangentTravelM": 0.14735167120967596,
+          "maximumImpulseWeightedTangentSpeedMps": 2.3197505474090576
+        },
+        "right_foot": {
+          "loadedRows": 1230,
+          "unavailableLoadedRows": 0,
+          "observedLoadedRows": 1230,
+          "sampledImpulseWeightedTangentTravelM": 0.5218562535156077,
+          "maximumImpulseWeightedTangentSpeedMps": 4.253908634185791
+        }
+      },
+      "native0Activation": {
+        "activationCalls": 1,
+        "realIntegrationsBeforeAndAfter": [
+          0,
+          0
+        ],
+        "forecastIntegrationsBeforeAndAfter": [
+          0,
+          0
+        ],
+        "livePurity": {
+          "method": "read-only-live-native0-observer-receipts",
+          "beforeNativeSubsteps": 0,
+          "afterNativeSubsteps": 0,
+          "poseVelocityWordsEqual": true,
+          "freshPhysicalObservationWordsEqual": true,
+          "currentDiagnosticExactlyEqual": true,
+          "jointQExactlyEqual": true,
+          "jointDqExactlyEqual": true,
+          "root": [
+            0,
+            0
+          ],
+          "algorithm": "f32-dq-f64-remainder-v1",
+          "initialRemainderBits": [
+            0,
+            0,
+            0
+          ],
+          "binaryWorldEqualityClaim": false,
+          "embeddedRuntimeStringEqualityClaim": false
+        },
+        "binaryCheckpointPurityClaim": false,
+        "binaryPurity": null,
+        "checkpointRefusals": [
+          {
+            "expected": true,
+            "operation": "checkpoint-export",
+            "error": "Checkpoint export/resume is disabled for the right-ankle braking ablation build",
+            "evidenceOnly": true,
+            "noCheckpointBytes": true
+          },
+          {
+            "expected": true,
+            "operation": "checkpoint-export",
+            "error": "Checkpoint export/resume is disabled for the right-ankle braking ablation build",
+            "evidenceOnly": true,
+            "noCheckpointBytes": true
+          },
+          {
+            "expected": true,
+            "operation": "checkpoint-restore",
+            "error": "Checkpoint export/resume is disabled for the right-ankle braking ablation build",
+            "inputBytes": 0,
+            "noDecodedOrCreatedRuntime": true
+          }
+        ]
+      },
+      "trigger": {
+        "native": 480,
+        "beforeNativeSubsteps": 480,
+        "afterNativeSubsteps": 480,
+        "physicalPoseVelocityBitsUnchanged": true,
+        "refreshCompletedTicks": 0
+      },
+      "workerInstances": 1,
+      "resetRequests": [],
+      "externalPhysicalInputs": [],
+      "generationAtStop": 1,
+      "traceGaps": [],
+      "workerFaults": [],
+      "observerFault": null,
+      "controllerExportAtStop": {
+        "path": "stop-controller.json",
+        "sha256": "81852f5689775798f266147b90a74170a0e7434ffacfb94e20a15e1a871c1200",
+        "native": 2380,
+        "physicalSeconds": 2.975,
+        "physicsIntegrations": 0,
+        "labelMatchesPhysicalState": true
+      }
+    }
+  },
+  "conclusion": {
+    "sustainedLeftUnloadingPreventedByBound": false,
+    "onsetDelayNative": 2,
+    "onsetDelayMs": 2.5,
+    "result": "Both arms still sustain left load below 3 N and later positive geometric clearance. Candidate slightly delays the onset, but reduces the right-foot load margin and increases maximum current body angular speed. This mixed short result does not justify suppressing the braking torque or calling it globally harmful.",
+    "rightFootStillAbove3NInComparedWindow": true,
+    "noWorseMotionConditionMet": false,
+    "full25sOr30sContinuationAttempted": false
+  },
+  "workConvention": "Actual active scalar at equal/opposite motor-body application\u00d7pre-native generalizedqpos7 dq\u00d71/800, signed estimate. Optional tau\u00d7qangleincrement shown separately. Neither net constrained/passive torque nor COMforce; passive/contact torques remained active.",
+  "rawRecorderLimitation": {
+    "rawPairPassed": false,
+    "rawRecordingComplete": false,
+    "rawComparison": null,
+    "rawError": "AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:\n\n103 !== 102\n\n    at comparePair (file:///workspace/scratch/5def91918e35/mvp-landing/outputs/browser-capability-20261019/recovery-fixture/right-ankle-ablation/record-getup-right-ankle-ablation-2026-10-19.mjs:356:10)\n    at main (file:///workspace/scratch/5def91918e35/mvp-landing/outputs/browser-capability-20261019/recovery-fixture/right-ankle-ablation/record-getup-right-ankle-ablation-2026-10-19.mjs:719:27)",
+    "cause": "Executed final comparator incorrectly asserted total reference tuples 103 equals interpolated-only status.reference_frames 102. This bookkeeping failure occurred after both physical arms stopped exactly at 2380. The exact executed probe and original raw report are retained.",
+    "independentReadOnlyCompletion": true,
+    "correctArchiveRelation": "total reference tuples = status.reference_frames + 1 = 103; all 51 teacher frames and all 103 reference tuples match exactly.",
+    "noReplay": true,
+    "probePreservedAsExecuted": "The recorder copy deliberately retains its historical draft header and erroneous final 103==102 assertions; CONTRACT.confirmed is true in the exact executed bytes. Do not treat its raw exit status as a physical failure or silently repair the historical execution."
+  },
+  "tests": {
+    "sourceOnlyRecorderContracts": 21,
+    "frozenNativeBaselineNew": 11,
+    "frozenNativeBaselineExisting": 40,
+    "frozenNativeCandidateNew": 11,
+    "frozenNativeCandidateCompatibleExisting": 24,
+    "frozenNativeTotalExecutions": 86,
+    "frozenNativeUniqueNames": 52,
+    "restoredNormalObserverPureContracts": 9,
+    "nativeFailed": 0,
+    "nativeIgnored": 0,
+    "coverage": "Focused contracts only. Candidate successful checkpoint-restore tests intentionally excluded because export/resume explicitly refused. Initial test-only native0 None assertion was corrected because construction already records controls at clock 0; no runtime source changed. Synthetic recorder source tests missed the appended-reference +1 case."
+  },
+  "reproduction": {
+    "cwd": "repository root",
+    "readOnlyAnalysis": "node docs/evidence/probes/analyze-actual-pair-2026-10-19.mjs",
+    "buildRecipe": "outputs/browser-capability-20261019/recovery-fixture/right-ankle-ablation/build/build-pair.sh",
+    "adapter": "node docs/evidence/probes/make-right-ankle-ablation-fixture-app-2026-10-19.mjs <unadapted-app> <copied-fixture-app> <build-manifest> docs/evidence/profiles/getup-800hz-3plus1-repeat-cycle-v1.json <baseline|candidate>",
+    "executedPair": "RUST_BROWSER_EXECUTABLE=<official headless executable> RUST_BROWSER_NO_VIDEO=1 node docs/evidence/probes/record-getup-right-ankle-ablation-2026-10-19.mjs <baseline-fixture-app> <candidate-fixture-app> <output-dir>",
+    "recordedPairCommandExit": 1,
+    "exitReason": "Known final reference-count assertion, preserved; analysis above uses retained observations without physics replay.",
+    "rawArtifacts": "Local immutable app, source, fingerprint, checkpoint, controller and trace files are retained under the referenced output paths; large raw files are not Git source."
+  },
+  "receipts": [
+    {
+      "path": "outputs/browser-capability-20261019/recovery-fixture/right-ankle-ablation/ankle-ablation-summary.json",
+      "sha256": "8eea48a96d0264974211aa5d28143c872e984fd3a84b8dc3f10816244b3cab65",
+      "bytes": 43857
+    },
+    {
+      "path": "outputs/browser-capability-20261019/recovery-fixture/right-ankle-ablation/browser-observation-plan.json",
+      "sha256": "812bedf7c1393064283a6ea8c2ea61ec0affc530f9f1a67781c66bcb7fc0582c",
+      "bytes": 6004
+    },
+    {
+      "path": "outputs/browser-capability-20261019/recovery-fixture/right-ankle-ablation/build/source-manifest.json",
+      "sha256": "e1588dbe11a7e600303cf11ed3e953708cf99eb7ab59546b2b45e5b070ef2531",
+      "bytes": 49944
+    },
+    {
+      "path": "outputs/browser-capability-20261019/recovery-fixture/right-ankle-ablation/build/source-manifest-at-build.json",
+      "sha256": "236520375c3f4ab79a3b8d404424dcf51505c937e417f1d21144adc38a9c6c35",
+      "bytes": 48864
+    },
+    {
+      "path": "outputs/getup-ankle-braking-ablation-20261019/source-freeze.json",
+      "sha256": "4b49156d9c339e3df96b9b0e74aebabac326386d3118ba3030fa7bafc7fb07da",
+      "bytes": 1348
+    },
+    {
+      "path": "outputs/getup-ankle-braking-ablation-20261019/source-freeze-pre-test-correction.json",
+      "sha256": "7d6196570bcd488965004113b7286da7c5952ba68d0f216e8c309116c3d0ea1b",
+      "bytes": 1348
+    },
+    {
+      "path": "outputs/browser-capability-20261019/recovery-fixture/right-ankle-ablation/build/build-pair.sh",
+      "sha256": "f1a2d248e95e4a7734023886bfc834b6a7a63422f86374ce34cf24243319d8ba",
+      "bytes": 1726
+    },
+    {
+      "path": "outputs/browser-capability-20261019/recovery-fixture/right-ankle-ablation/recorder-source-only-test-result.json",
+      "sha256": "5e2a21de00021f5da6592e6a44e95ace8f33ab23ca69129f77f98eba989bbe4f",
+      "bytes": 2349
+    },
+    {
+      "path": "outputs/browser-capability-20261019/recovery-fixture/right-ankle-ablation/test-recorder-source-only-2026-10-19.mjs",
+      "sha256": "4793083f64a5d281f0e0269f051716a0b89088954f29c01b8bb745a95c060773",
+      "bytes": 9934
+    },
+    {
+      "path": "outputs/browser-capability-20261019/recovery-fixture/right-ankle-ablation/actual-back-pair/result.json",
+      "sha256": "0e78916b736af81a44d2e9788bd19f084127d23f9629829e7cc835e36c805227",
+      "bytes": 6057648
+    },
+    {
+      "path": "docs/evidence/getup-right-ankle-braking-ablation-2026-10-19.json",
+      "sha256": "0ef168718af721c71ba0007c324042377b92dcba5a8f34df12b1e4f366fec103",
+      "bytes": 10717
+    },
+    {
+      "path": "docs/evidence/patches/getup-right-ankle-braking-ablation-inconclusive-2026-10-19.patch",
+      "sha256": "d05ce145a1872939f50d67185b704fa03ed1a76416355cd3dcff8a6b17dd5f87",
+      "bytes": 31251
+    },
+    {
+      "path": "outputs/browser-capability-20261019/recovery-fixture/right-ankle-ablation/build/build-baseline-manifest.json",
+      "sha256": "93a721899f2f08a1c58bfce2cb3f90e18cf814f97856cd37f1ad2372c23d38af",
+      "bytes": 4503
+    },
+    {
+      "path": "outputs/browser-capability-20261019/recovery-fixture/right-ankle-ablation/build/build-baseline-manifest-at-build.json",
+      "sha256": "50bb1dcb12eaa6d42e1fbbffd0a8c56b88b7ef9ba52593f383724fd75c3d3e47",
+      "bytes": 3417
+    },
+    {
+      "path": "outputs/browser-capability-20261019/recovery-fixture/right-ankle-ablation/build/app-baseline-fixture-final-fixture-adapter-manifest.json",
+      "sha256": "e9a6f6921d6f33e6adbf42f52adb86a1ef9c5949f633b0819bc063740331975a",
+      "bytes": 5219
+    },
+    {
+      "path": "outputs/browser-capability-20261019/recovery-fixture/right-ankle-ablation/actual-back-pair/baseline/result.json",
+      "sha256": "c441bb3e767c8e85cd795164f672a9f3104fa9282d29ef4a98d586ff131709ae",
+      "bytes": 2649977
+    },
+    {
+      "path": "outputs/browser-capability-20261019/recovery-fixture/right-ankle-ablation/actual-back-pair/baseline/native-trace.ndjson",
+      "sha256": "957805579abd9c8fc368f9f1d1ac5a0aae59262e7f4916835d6b2e6a14e0b4eb",
+      "bytes": 40034821
+    },
+    {
+      "path": "outputs/browser-capability-20261019/recovery-fixture/right-ankle-ablation/actual-back-pair/baseline/stop-controller.json",
+      "sha256": "b8fc10575c911420b15da374291feedde1cd4cfe204cfc48f99a4c7a8a05c532",
+      "bytes": 3601363
+    },
+    {
+      "path": "outputs/browser-capability-20261019/recovery-fixture/right-ankle-ablation/build/app-baseline-fixture-final/lh_worker_bg.wasm",
+      "sha256": "8b0b8a296d9e284f70871792b0da54fe3a30cf675c493acfc0b9e64773a7b328",
+      "bytes": 14812169
+    },
+    {
+      "path": "outputs/browser-capability-20261019/recovery-fixture/right-ankle-ablation/build/app-baseline-fixture-final/lh_worker.js",
+      "sha256": "406d700bc2a55b9638db35ae77d0827cc4896d82d32698f1ef51bc10c4af5537",
+      "bytes": 25143
+    },
+    {
+      "path": "outputs/browser-capability-20261019/recovery-fixture/right-ankle-ablation/build/app-baseline-fixture-final/sim-worker.js",
+      "sha256": "c5ea758821b823efc15cd9f7854e51a18ded4b7753f0b51ccca510f71b5b3030",
+      "bytes": 34985
+    },
+    {
+      "path": "outputs/browser-capability-20261019/recovery-fixture/right-ankle-ablation/build/build-candidate-manifest.json",
+      "sha256": "77764973ad233aed8ab6b301d196d2fdb20e7ce596748416ff86ae878988672f",
+      "bytes": 4616
+    },
+    {
+      "path": "outputs/browser-capability-20261019/recovery-fixture/right-ankle-ablation/build/build-candidate-manifest-at-build.json",
+      "sha256": "cee1f1be9886aa652f95a94cd245f7d4d7759d67c4b264542e63d823e78830fb",
+      "bytes": 3530
+    },
+    {
+      "path": "outputs/browser-capability-20261019/recovery-fixture/right-ankle-ablation/build/app-candidate-fixture-final-fixture-adapter-manifest.json",
+      "sha256": "717e89cfa03f14c6a18795c439e2215322ce4455afcf734057b5497833a24449",
+      "bytes": 5301
+    },
+    {
+      "path": "outputs/browser-capability-20261019/recovery-fixture/right-ankle-ablation/actual-back-pair/candidate/result.json",
+      "sha256": "1cc7e3af29b23ea2f119a6cecc448f374949736ce731345667bb54e6e533ff48",
+      "bytes": 2652265
+    },
+    {
+      "path": "outputs/browser-capability-20261019/recovery-fixture/right-ankle-ablation/actual-back-pair/candidate/native-trace.ndjson",
+      "sha256": "19c9887896a84990d3a0e4672fa993c1e1e101afaa3c53107556210acff0b40e",
+      "bytes": 40034418
+    },
+    {
+      "path": "outputs/browser-capability-20261019/recovery-fixture/right-ankle-ablation/actual-back-pair/candidate/stop-controller.json",
+      "sha256": "81852f5689775798f266147b90a74170a0e7434ffacfb94e20a15e1a871c1200",
+      "bytes": 3601365
+    },
+    {
+      "path": "outputs/browser-capability-20261019/recovery-fixture/right-ankle-ablation/build/app-candidate-fixture-final/lh_worker_bg.wasm",
+      "sha256": "eb3c08187f062815ccd3c100977cb82e18fb9aee98d2e603b93674e31de53705",
+      "bytes": 13435500
+    },
+    {
+      "path": "outputs/browser-capability-20261019/recovery-fixture/right-ankle-ablation/build/app-candidate-fixture-final/lh_worker.js",
+      "sha256": "406d700bc2a55b9638db35ae77d0827cc4896d82d32698f1ef51bc10c4af5537",
+      "bytes": 25143
+    },
+    {
+      "path": "outputs/browser-capability-20261019/recovery-fixture/right-ankle-ablation/build/app-candidate-fixture-final/sim-worker.js",
+      "sha256": "6b83b6e4d30f905efbdbf331f495081fef53955f7b02b6e83f4bf0d0e8543c4f",
+      "bytes": 34984
+    },
+    {
+      "path": "docs/evidence/probes/make-right-ankle-ablation-fixture-app-2026-10-19.mjs",
+      "sha256": "ab279c0ef1fd860b39e3eafe32dd1ff6fd5a106cc3ea000b1c259d1fb126539f",
+      "bytes": 21060
+    },
+    {
+      "path": "docs/evidence/probes/record-getup-right-ankle-ablation-2026-10-19.mjs",
+      "sha256": "f292cccaeeb0eedb8fbcf9f24c1fcdb4d6e428bc508d3ea0c4f5520ccb8321cd",
+      "bytes": 66094
+    },
+    {
+      "path": "docs/evidence/probes/analyze-actual-pair-2026-10-19.mjs",
+      "sha256": "b5ef925b8a1f78115683d6f1cc69f75e4bc1f62fea0462090a97789d3f4e6e47",
+      "bytes": 9859
+    },
+    {
+      "path": "docs/evidence/probes/getup-checkpoint-envelope-2026-10-19.mjs",
+      "sha256": "d37282926f41c148c4214c2e985af7fb9ee4aa30a8dd66b861bc53edc8551c9e",
+      "bytes": 4102
+    },
+    {
+      "path": "docs/evidence/probes/make-fixed-getup-fixture-app-2026-10-19.mjs",
+      "sha256": "732e818024ee351649cb0a8dcd901d48e7166a6d483ade4f2fd80933674e93c8",
+      "bytes": 10890
+    }
+  ]
+}
