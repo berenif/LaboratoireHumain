@@ -1,0 +1,653 @@
+{
+  "schema": 1,
+  "checkedAt": "2026-10-19T15:44:09.273Z",
+  "scope": "Actual desktop Chromium-headless-shell/WebGL2 checks of an isolated standing-dynamics-experiment controller build with the full explicit 4+1 numerical profile. Native lateral/quiet gates and browser checks are bounded experimental results; production profile, worker and renderer defaults were not changed.",
+  "browserChecksPassed": true,
+  "controllerProfileAdmitted": false,
+  "productionDefaultsChanged": false,
+  "build": {
+    "schema": 1,
+    "at": "2026-10-19T15:39:11.640Z",
+    "purpose": "Isolated experimental COP/complete-centroidal standing controller build, not production adoption or profile admission.",
+    "baseCommit": "dddb80aea5ebed1579980ff0bde8eb0559b61c73",
+    "sourceSha256Manifest": "outputs/browser-capability-20261019/standing-dynamics-experiment/frozen-source-sha256.txt",
+    "sourceSha256ManifestHash": "c84825a98bd9f1298b26ce0313867b87fc6a25c9b75aa4344efb32537a1df010",
+    "sourceOverrides": {
+      "getup.rs": "0fc43b3dee5559a413162d337818d77db66c3a5510e24e4850d0bdf7c87b2011",
+      "getup_dynamic_balance.rs": "ee8b7a5eee9972b49cc8ced1a64e75a22f81802764ff4809ed71600740c66f59",
+      "getup_dynamic_quiet.rs": "3ad6e18370e45ca4866d6402c60e1d5848fdbac41c044269bb95946acd20f63d",
+      "sim-Cargo.toml": "6d1b3de0c86d07a9d39465b8f89d5d6bf32bd3087f8361bdeec142eba30db730",
+      "supported_standing.rs": "9d8fe4b9f650a3de85e17d781eca45ed9cc91ce559bc10b9fda5d8d0cb4525c0"
+    },
+    "toolchain": "cargo 1.89.0 (c24e10642 2025-06-23)\nrustc 1.89.0 (29483883e 2025-08-04)\nbinary: rustc\ncommit-hash: 29483883eed69d5fb4db01964cdf2af4d86e9cb2\ncommit-date: 2025-08-04\nhost: x86_64-unknown-linux-gnu\nrelease: 1.89.0\nLLVM version: 20.1.7\nwasm-bindgen 0.2.108\n",
+    "cargo": "cargo +1.89.0 build --offline --locked --release --manifest-path <frozen>/rust/Cargo.toml --target wasm32-unknown-unknown -p lh-worker --features lh-sim/standing-dynamics-experiment",
+    "targetDirectory": "outputs/browser-capability-20261019/standing-dynamics-experiment/target",
+    "inheritedTargetFlags": "RUSTFLAGS and CARGO_ENCODED_RUSTFLAGS explicitly unset",
+    "bindgen": "wasm-bindgen0.2.108 --target web --out-name lh_worker",
+    "buildLog": "outputs/browser-capability-20261019/standing-dynamics-experiment/build-feature-worker.log",
+    "bindgenLog": "outputs/browser-capability-20261019/standing-dynamics-experiment/bindgen-feature-worker.log",
+    "artifact": "outputs/browser-capability-20261019/standing-dynamics-experiment/app",
+    "artifactSha256": {
+      "app-1df6634f608f8d80.css": "6f9e3128c49954cf4c159cd1b3cb0375ca4293e134429847288a5e6549a44271",
+      "index.html": "e66f7147dd7ba9fab899d5be48593642a463a9f075d26d1ef807c6c40d568ccc",
+      "lh-browser-4479461c3e1613b6.js": "ec9a8317fc58b63cf4f6874c3ed03808743c61c19a9c485020f0dc64dfd9c4f5",
+      "lh-browser-4479461c3e1613b6_bg.wasm": "b72e126e7587859ae1891c1e892d1508b255d024967edaa662cf95d937934411",
+      "lh_worker.js": "f5ab14e78b52ad83577646105b61526484096924ec39f5a72d8ee039cb652da2",
+      "lh_worker_bg.wasm": "320632179a4f73e807821d3857386389cd11988450d5912c1869d807980f908e",
+      "sim-worker.js": "a3a2b18c222c045fc08bf19aff2e96b92f0bc18ad6023bcca660195054267996",
+      "snippets/lh-browser-575491a8d42d44d5/driver.js": "4c6281e19c4540e3ba72a74a5b1514b5d1b9c58e56c1f8a2dbfb3adb4812d74e"
+    },
+    "baselineArtifact": "outputs/browser-capability-20261019/app-sticky-bound-candidate",
+    "changedRuntimeAssets": [
+      "lh_worker_bg.wasm"
+    ],
+    "workerGlueByteIdentical": true,
+    "driverByteIdentical": true,
+    "causalLimit": "The frozen base dddb80a also includes the corrected calibration/full-vector contact audit added since sticky engine82bffca. Worker/lib, admitted GetUp controller, engine and lockfile were unchanged by those intervening commits. A comparison to sticky is not a strict same-source feature-only binary comparison; use a feature-off build from this snapshot if making that attribution. Absolute experimental app timing and physical gates do not require claiming such attribution.",
+    "snapshotBuildScope": "Worker build only. The frozen quiet example references an external docs probe not included in this rust-only archive; do not reuse for --examples/--all-targets/native qualification without freezing that input.",
+    "ui": "Immutable driver does not recognize the new controller label and would say Reference PD. Experimental browser harnesses add an explicit controller-feature TEST banner and record the authoritative diagnostic controller ID. No driver asset was changed.",
+    "manifest": {
+      "path": "outputs/browser-capability-20261019/standing-dynamics-experiment/build-manifest.json",
+      "sha256": "c6dc3712bb949f57be99c3321586c1eb6498ffa78c6b3b747944fa989a301344"
+    },
+    "independentReadOnlyAudit": "All348 frozen source hashes match, exactly three modified sim files plus two examples relative to pinned base; Cargo fingerprint enables only standing-dynamics-experiment with empty rustflags and ordinary Rapier features. Only worker WASM differs in the eight-asset copied app."
+  },
+  "explicitNumericalProfile": {
+    "path": "/workspace/scratch/5def91918e35/mvp-landing/outputs/getup-budget-20261019/candidate-profile.json",
+    "rawSha256": "2dbce52fb23853eb24e1304ea9cd96f0aa2f81440bee41bbc1cea10f9a1b56f6",
+    "profile": {
+      "id": "getup-800hz-4plus1-qualification-v1",
+      "dt_s": 0.00125,
+      "tick_substeps": 20,
+      "contact_friction_model": "coulomb",
+      "solver_iterations": 4,
+      "internal_pgs_iterations": 20,
+      "fall_internal_pgs_iterations": 32,
+      "additional_body_iterations": 1,
+      "allowed_linear_error_m": 0.001,
+      "prediction_distance_m": 0.002,
+      "motor_scale": 1,
+      "aggregate_motor_cap_nm": 920,
+      "angular_damping": 0,
+      "contact_skin_m": 0,
+      "max_ccd_substeps": 4,
+      "disable_solver_speed_cap": true,
+      "posture_stiffness_multiplier": 1,
+      "posture_damping_multiplier": 1,
+      "supported_tilt_gain": 2,
+      "supported_com_gain_rad_per_m": 5,
+      "supported_com_velocity_gain_s_rad_per_m": 5,
+      "supported_angular_velocity_gain_s": 2,
+      "grab_limits": {
+        "angular_frequency_rad_s": 16,
+        "target_speed_m_s": 1.5,
+        "target_acceleration_m_s2": 8,
+        "force_n": 180,
+        "torque_nm": 12,
+        "positive_power_w": 36
+      },
+      "reaching_iterations": 6,
+      "reaching_coordinate_increment_rad": 0.15,
+      "reaching_damping_m2": 0.01,
+      "corrective_steps_enabled": false,
+      "recovery_enabled": false,
+      "getup_policy_enabled": false
+    }
+  },
+  "unchangedClock": {
+    "nativeHz": 800,
+    "controlHz": 40,
+    "nativeSubstepsPerTick": 20
+  },
+  "controller": {
+    "requiredDiagnosticId": "experimental-cop-complete-centroidal-standing-balance",
+    "allHoldAndShortRunSnapshotsAsserted": true,
+    "productionUiLabelCaveat": "Immutable driver does not recognize the new controller label and would say Reference PD. Experimental browser harnesses add an explicit controller-feature TEST banner and record the authoritative diagnostic controller ID. No driver asset was changed.",
+    "testBanners": "Both controller-build feature and complete explicit numerical-profile filename/hash are visibly labeled TEST. Real controller identity is asserted from snapshots, not inferred from the immutable UI label."
+  },
+  "shortCleanDiagnostic": {
+    "raw": {
+      "path": "outputs/browser-capability-20261019/standing-dynamics-experiment/profile-explicit-4plus1-120/report.json",
+      "sha256": "db168f0e6d786ae95accb6d7ff6d88b65007cb04442075466fe1b1a0e59008b5"
+    },
+    "method": "Single ordinary automatic-scheduler no-input window from tick0 through120,3physical seconds/2400native integrations. No video. Every served asset hash matched the immutable experimental artifact. Native owner held all builds/tests/probes idle.",
+    "metrics": {
+      "wallSeconds": 3.4022999999970196,
+      "simulationSeconds": 3,
+      "simulationWallRatio": 0.8817564588668336,
+      "automaticTicksPerReply": [
+        1
+      ],
+      "coreTick": {
+        "count": 120,
+        "mean": 20.357500000142803,
+        "p50": 19.300000000745058,
+        "p95": 24.199999999254942,
+        "max": 104.59999999776483,
+        "total": 2442.9000000171363
+      },
+      "phases": {
+        "controllerMs": {
+          "count": 120,
+          "mean": 0.47999999979510904,
+          "p50": 0.4000000022351742,
+          "p95": 0.7000000104308128,
+          "max": 7.399999994784594,
+          "total": 57.599999975413084
+        },
+        "physicsMs": {
+          "count": 120,
+          "mean": 18.834166667672495,
+          "p50": 18,
+          "p95": 22.300000000745058,
+          "max": 89.6000000089407,
+          "total": 2260.1000001206994
+        },
+        "contactsMs": {
+          "count": 120,
+          "mean": 0.06249999981373548,
+          "p50": 0,
+          "p95": 0.19999999925494194,
+          "max": 0.30000000074505806,
+          "total": 7.499999977648258
+        },
+        "integrityMs": {
+          "count": 120,
+          "mean": 0.8241666663127641,
+          "p50": 0.7000000029802322,
+          "p95": 1.4000000022351742,
+          "max": 8.299999997019768,
+          "total": 98.89999995753169
+        },
+        "observerMs": {
+          "count": 120,
+          "mean": 0.07999999998137355,
+          "p50": 0,
+          "p95": 0.19999999552965164,
+          "max": 5.5,
+          "total": 9.599999997764826
+        }
+      },
+      "phaseShareOfCore": {
+        "controllerMs": 0.023578533699704873,
+        "physicsMs": 0.9251709034773611,
+        "contactsMs": 0.0030701215676432305,
+        "integrityMs": 0.04048466984192473,
+        "observerMs": 0.003929755617379952
+      },
+      "workerUpdate": {
+        "count": 120,
+        "mean": 20.68333333314707,
+        "p50": 19.599999997764826,
+        "p95": 24.5,
+        "max": 105.69999999925494,
+        "total": 2481.9999999776483
+      },
+      "roundTrip": {
+        "count": 120,
+        "mean": 27.591666666480403,
+        "p50": 29.599999997764826,
+        "p95": 34.69999999925494,
+        "max": 120.80000000074506,
+        "total": 3310.9999999776483
+      },
+      "roundTripBeyondWorker": {
+        "count": 120,
+        "mean": 6.908333333333333,
+        "p50": 8.699999999254942,
+        "p95": 13.699999999254942,
+        "max": 23.399999998509884,
+        "total": 829
+      },
+      "requestQueueBeforeWorker": {
+        "count": 120,
+        "mean": 0.08176880038032928,
+        "p50": 0.10004883259534836,
+        "p95": 0.2001953125,
+        "max": 0.40019531175494194,
+        "total": 9.812256045639515
+      },
+      "replyDeliveryAfterWorker": {
+        "count": 120,
+        "mean": 6.826564532953004,
+        "p50": 8.599902343004942,
+        "p95": 13.499804686754942,
+        "max": 23.099804684519768,
+        "total": 819.1877439543605
+      },
+      "workerToFirstMainListener": {
+        "count": 120,
+        "mean": 6.506564532965422,
+        "p50": 8.199902340769768,
+        "p95": 13.099902343004942,
+        "max": 22.7998046875,
+        "total": 780.7877439558506
+      },
+      "harnessSnapshotClone": {
+        "count": 120,
+        "mean": 0.2800000000745058,
+        "p50": 0.30000000074505806,
+        "p95": 0.4000000022351742,
+        "max": 0.7999999970197678,
+        "total": 33.6000000089407
+      },
+      "firstListenerToDriver": {
+        "count": 120,
+        "mean": 0.3199999999875824,
+        "p50": 0.30000000074505806,
+        "p95": 0.5,
+        "max": 0.7999999970197678,
+        "total": 38.399999998509884
+      },
+      "dispatchGap": {
+        "count": 119,
+        "mean": 0.5630252102718634,
+        "p50": 0.5,
+        "p95": 0.9000000022351742,
+        "max": 2.399999998509884,
+        "total": 67.00000002235174
+      },
+      "workerBeyondCore": {
+        "count": 120,
+        "mean": 0.32583333300426603,
+        "p50": 0.30000000074505806,
+        "p95": 0.5000000037252903,
+        "max": 2.099999997764826,
+        "total": 39.09999996051192
+      },
+      "nativeOutput": {
+        "count": 120,
+        "mean": 0.07999999982615312,
+        "p50": 0.09999999776482582,
+        "p95": 0.19999999925494194,
+        "max": 1.7999999970197678,
+        "total": 9.599999979138374
+      },
+      "jsonParse": {
+        "count": 120,
+        "mean": 0.1041666665735344,
+        "p50": 0.10000000149011612,
+        "p95": 0.19999999925494194,
+        "max": 0.30000000074505806,
+        "total": 12.499999988824129
+      },
+      "runtimeNonTick": {
+        "count": 120,
+        "mean": 0.007499999987582366,
+        "p50": 0,
+        "p95": 0.09999999776482582,
+        "max": 0.10000000149011612,
+        "total": 0.8999999985098839
+      },
+      "frameCpu": {
+        "count": 206,
+        "mean": 0.8160194174648778,
+        "p50": 0.8000000007450581,
+        "p95": 1.2000000029802322,
+        "max": 3.699999999254942,
+        "total": 168.09999999776483
+      },
+      "frameInterval": {
+        "count": 206,
+        "mean": 16.842718446591093,
+        "p50": 16.699999999254942,
+        "p95": 19.100000001490116,
+        "max": 30.200000002980232,
+        "total": 3469.599999997765
+      },
+      "maximumBacklogSeconds": 0.3998999999999975,
+      "workerUpdateFractionOfWall": 0.7295065102959241,
+      "workerRoundTripFractionOfWall": 0.9731652117627924,
+      "dispatchGapFractionOfWall": 0.019692560921262214,
+      "presentationFrames": 206
+    },
+    "cpu": {
+      "dedicatedWorkerCpuSeconds": 2.4200000000000004,
+      "workerUpdateWallSeconds": 2.4819999999776483,
+      "cpuToWorkerElapsedRatio": 0.9750201450530999
+    },
+    "attributionLimit": "Absolute experimental app observation only; not a repeated paired or feature-only speedup claim. The earliest-listener remainder includes worker postMessage serialization, browser task scheduling and delivery. The harness clone and first-listener-to-driver cost are separately measured. It remains below realtime."
+  },
+  "ordinaryNoInputHold": {
+    "raw": {
+      "path": "outputs/browser-capability-20261019/standing-dynamics-experiment/hold-explicit-4plus1/result.json",
+      "sha256": "f024b9fe3b8025c28932cebac034684f646d60de188d9cccdb41e7387dcd168b"
+    },
+    "method": "One ordinary rendered automatic-scheduler worker, no physical inputs or commands. Three settling then30quiet physical seconds. Full native wall-time video retained.",
+    "performanceContext": "Native owner confirmed all builds, feature tests and physical probes terminal before this clean ordinary-app hold and remains idle. Desktop headless software rendering; explicit controller feature and full4+1 numerical profile, no production default change.",
+    "initial": {
+      "tick": 0,
+      "time": 0,
+      "backend": "WebGL2",
+      "controller": "experimental-cop-complete-centroidal-standing-balance",
+      "fallbackReason": "Error: WebGPU render check failed: OperationError: A valid external Instance reference no longer exists.. Choose Auto or WebGL2."
+    },
+    "final": {
+      "tick": 1320,
+      "time": 33,
+      "motion": "Upright",
+      "backend": "WebGL2",
+      "workerInstances": 1,
+      "error": "",
+      "failure": null
+    },
+    "metrics": {
+      "snapshotCount": 1321,
+      "steadySnapshotCount": 1201,
+      "referenceTime": 3,
+      "finalTime": 33,
+      "steadyPhysicalSeconds": 30,
+      "maximumSnapshotGapTicks": 1,
+      "minUpY": {
+        "torso": 0.9999991507266384,
+        "pelvis": 0.99196115222074,
+        "right_foot": 0.9999316627580243,
+        "left_foot": 0.9999321372166422
+      },
+      "minimumAggregateFootLoadsN": {
+        "right_foot": 200.27649,
+        "left_foot": 200.39212
+      },
+      "maximumLinearSpeedMps": 0.0005494221751771935,
+      "maximumAngularSpeedRadps": 0.0024542614276085993,
+      "maximumPelvisDriftM": 0.00012344828753361518,
+      "maximumFootBodyDriftM": 0.0008675078546197739,
+      "maximumLoadedFootHorizontalBodySpeedProxyMps": 0.00014334218315744776,
+      "maximumFloorPenetrationM": 0.0009534769,
+      "maximumSelfPenetrationM": 0,
+      "violations": [],
+      "contactPointSlipAvailable": false,
+      "slipLimit": "The ordinary snapshot exposes aggregate segment loads and body velocities, not contact-point tangential velocity. Horizontal foot-body speed is a proxy, not contact slip."
+    },
+    "observation": {
+      "wallSeconds": 40.903,
+      "simulationSeconds": 33,
+      "integratedSimulationToWallRatio": 0.8067867882551403,
+      "presentedFrames": 2383,
+      "averagePresentedFps": 58.25978534581816,
+      "lastHalfSecondPresentedFps": 60.00774293457237,
+      "appReportedSimulationToWallRatio": 0.8072071366895188
+    },
+    "commands": 0,
+    "inputs": 0,
+    "workerInstances": 1,
+    "profileInitializationCounts": {
+      "start": 1,
+      "end": 1
+    },
+    "errors": [],
+    "gates": "Unchanged snapshot up>=0.97, pelvis drift<=30mm, foot-body drift<=10mm, aggregate foot loads>=3N, cached snapshot body linear speed<=0.1m/s/angular speed<=0.5rad/s and Upright/no-failure state.",
+    "limits": "Ordinary browser observations are40Hz snapshots, not every800Hz measurements. Snapshot body velocities are reported caches, not authoritative generalized/contact-point velocities. Foot-body drift and aggregate segment load do not establish contact-point slip; native800Hz proof is separate. Video-on throughput is reported honestly and does not qualify realtime/mobile."
+  },
+  "realPointerRegression": {
+    "raw": {
+      "path": "outputs/browser-capability-20261019/standing-dynamics-experiment/grab-explicit-4plus1/browser-result.json",
+      "sha256": "d3712cfe0cea827de311e5343d596019160e507034d3b596e920d82a5d6d8e63"
+    },
+    "passed": true,
+    "scenarios": [
+      "No grab",
+      "Actual hand pull, mouse release, natural continuation",
+      "Continued held-pull control",
+      "pointercancel",
+      "blur",
+      "Reset during active physical drag"
+    ],
+    "checks": [
+      "Every served asset matches the captured built artifact hash",
+      {
+        "name": "Identical trial initialization",
+        "allPoseAndVelocityComponentsExactlyEqual": true,
+        "maximumPositionDifferenceM": 0
+      },
+      {
+        "name": "Identical physical state before release",
+        "allPoseAndVelocityComponentsExactlyEqual": true,
+        "maximumPositionDifferenceM": 0
+      },
+      {
+        "name": "pointercancel: identical pre-cancellation physical state",
+        "allPoseAndVelocityComponentsExactlyEqual": true,
+        "maximumPositionDifferenceM": 0
+      },
+      {
+        "name": "pointercancel: physical continuation equals real mouse release despite stale held-button motion",
+        "allPoseAndVelocityComponentsExactlyEqual": true,
+        "maximumPositionDifferenceM": 0
+      },
+      {
+        "name": "blur: identical pre-cancellation physical state",
+        "allPoseAndVelocityComponentsExactlyEqual": true,
+        "maximumPositionDifferenceM": 0
+      },
+      {
+        "name": "blur: physical continuation equals real mouse release despite stale held-button motion",
+        "allPoseAndVelocityComponentsExactlyEqual": true,
+        "maximumPositionDifferenceM": 0
+      },
+      {
+        "name": "Reset restores clean physical initialization",
+        "allPoseAndVelocityComponentsExactlyEqual": true,
+        "maximumPositionDifferenceM": 0
+      },
+      {
+        "name": "Reset leaves no phantom physical force after stale held-button movement",
+        "allPoseAndVelocityComponentsExactlyEqual": true,
+        "maximumPositionDifferenceM": 0
+      },
+      "Cancellation matches an actual released physical trajectory; continuing held-pull control diverges. This tests physical behavior, not pointer metadata alone."
+    ],
+    "profilePages": [
+      {
+        "scene": "deterministic manual-clock regression",
+        "initializationCount": 1
+      },
+      {
+        "scene": "separate automatic-scheduler observation",
+        "initializationCount": 1
+      }
+    ],
+    "errors": [],
+    "httpErrors": [],
+    "performanceContext": "Physical-only checks recorded while native feature tests compiled/ran; no clean timing claim uses these clips. This suite compares release/held/cancel/reset trajectories within the same experimental controller/profile, not parity to the old numerical profile."
+  },
+  "rendererReadiness": {
+    "raw": {
+      "path": "outputs/browser-capability-20261019/standing-dynamics-experiment/readiness-explicit-4plus1/result.json",
+      "sha256": "f0ff18bd96471d4f6560c98379d02018d5e2c9006475fce9d303b3c643100189"
+    },
+    "passed": true,
+    "stages": [
+      {
+        "name": "auto-fallback",
+        "backend": "WebGL2",
+        "requestedRenderer": "auto",
+        "fallback": "Error: WebGPU render check failed: OperationError: A valid external Instance reference no longer exists.. Choose Auto or WebGL2.",
+        "error": "",
+        "ready": true,
+        "tick": 0,
+        "generation": 1,
+        "workerInstances": 1,
+        "rendererChanges": 1,
+        "controller": "experimental-cop-complete-centroidal-standing-balance",
+        "recoveryStep": "GetUp body · Reference PD · Learned recovery disabled"
+      },
+      {
+        "name": "explicit-webgpu-error",
+        "backend": "",
+        "requestedRenderer": "webgpu",
+        "fallback": "",
+        "error": "Graphics unavailable: Error: WebGPU render check failed: OperationError: A valid external Instance reference no longer exists.. Choose Auto or WebGL2.",
+        "ready": false,
+        "tick": 0,
+        "generation": 1,
+        "workerInstances": 1,
+        "rendererChanges": 1,
+        "controller": "experimental-cop-complete-centroidal-standing-balance",
+        "recoveryStep": "GetUp body · Reference PD · Learned recovery disabled"
+      },
+      {
+        "name": "recovered-webgl2",
+        "backend": "WebGL2",
+        "requestedRenderer": "webgl2",
+        "fallback": "",
+        "error": "",
+        "ready": true,
+        "tick": 0,
+        "generation": 1,
+        "workerInstances": 1,
+        "rendererChanges": 2,
+        "controller": "experimental-cop-complete-centroidal-standing-balance",
+        "recoveryStep": "GetUp body · Reference PD · Learned recovery disabled"
+      },
+      {
+        "name": "repeated-auto-fallback",
+        "backend": "WebGL2",
+        "requestedRenderer": "auto",
+        "fallback": "Error: WebGPU render check failed: OperationError: A valid external Instance reference no longer exists.. Choose Auto or WebGL2.",
+        "error": "",
+        "ready": true,
+        "tick": 0,
+        "generation": 1,
+        "workerInstances": 1,
+        "rendererChanges": 2,
+        "controller": "experimental-cop-complete-centroidal-standing-balance",
+        "recoveryStep": "GetUp body · Reference PD · Learned recovery disabled"
+      },
+      {
+        "name": "reset-after-fallback",
+        "backend": "WebGL2",
+        "requestedRenderer": "auto",
+        "fallback": "Error: WebGPU render check failed: OperationError: A valid external Instance reference no longer exists.. Choose Auto or WebGL2.",
+        "error": "",
+        "ready": true,
+        "tick": 0,
+        "generation": 2,
+        "workerInstances": 1,
+        "rendererChanges": 2,
+        "controller": "experimental-cop-complete-centroidal-standing-balance",
+        "recoveryStep": "GetUp body · Reference PD · Learned recovery disabled"
+      },
+      {
+        "name": "auto-without-webgpu-api",
+        "backend": "WebGL2",
+        "requestedRenderer": "auto",
+        "fallback": "",
+        "error": "",
+        "ready": true,
+        "tick": 0,
+        "generation": 1,
+        "workerInstances": 1,
+        "rendererChanges": 1,
+        "controller": "experimental-cop-complete-centroidal-standing-balance",
+        "recoveryStep": "GetUp body · Reference PD · Learned recovery disabled"
+      }
+    ],
+    "explicitProfileInitializationCounts": [
+      1,
+      1
+    ],
+    "errors": [],
+    "limits": "This executor reproduces a SwiftShader WebGPU canvas queue failure, so Auto/WebGL2 and explicit-failure recovery are tested. No actual native WebGPU or Android-device claim."
+  },
+  "strikerSmoke": {
+    "log": {
+      "path": "outputs/browser-capability-20261019/standing-dynamics-experiment/smoke-explicit-4plus1.log",
+      "sha256": "cb3b6a9c79778c586c899a5eb0c5a4ad1c83b9aa3a44c3f8617e933000bc2c26"
+    },
+    "passed": true,
+    "diagnosticControllerAsserted": true,
+    "tick": 132,
+    "simulationSeconds": 3.3,
+    "nativeSubsteps": 2640,
+    "strikes": 1,
+    "poseSlots": 25,
+    "maximumPhysicalSeconds": 5
+  },
+  "nodeTests": {
+    "passed": 93,
+    "failed": 0,
+    "log": {
+      "path": "outputs/browser-capability-20261019/standing-dynamics-experiment/npm-test.log",
+      "sha256": "8a7b46d87a2f2b9b81217305a7f8379aeec6b1d324fe2c72ce4a36d61467072b"
+    }
+  },
+  "nativeQualification": {
+    "evidence": "docs/evidence/getup-dynamic-standing-balance-2026-10-19.json",
+    "status": "experimental-controller-native-and-browser-physical-gates-pass",
+    "ownerReported": {
+      "frozenPerturbations": {
+        "baseline20plus5": {
+          "passed": 8,
+          "total": 8,
+          "worstCumulativeLoadedSlipM": 0.004420038959267469
+        },
+        "explicit4plus1": {
+          "passed": 8,
+          "total": 8,
+          "worstCumulativeLoadedSlipM": 0.00438030390362543
+        },
+        "unchangedStimulus": "20N point-force cap for0.1s, same eight frozen cases, strict20mm stop"
+      },
+      "quiet33Seconds": {
+        "explicit4plus1Headings": 3,
+        "allEvery800HzPredicatesPassed": true,
+        "worstCumulativeLoadedSlipM": 0.00166
+      },
+      "featureTests": {
+        "passed": 5,
+        "total": 5
+      }
+    },
+    "stillOpen": [
+      "Inherited ballistic0.1mm gate",
+      "Inherited fixture/coverage gaps",
+      "Realtime throughput and latency qualification",
+      "Actual Android/device qualification",
+      "Learned recovery remains disabled"
+    ],
+    "nativeCommit": "236a779",
+    "canonicalEvidenceSha256": "8f68384cdbbefc0bf6583bb455892052596475625fdf290e55a41ecd2f1b20a8"
+  },
+  "media": [
+    {
+      "path": "outputs/browser-capability-20261019/standing-dynamics-experiment/hold-explicit-4plus1/standing-hold-native-wall-time.mp4",
+      "sha256": "fe698b611280fd5eceea45ca511fc00e280f5792946530cc3b83742ad0b850cf",
+      "durationSeconds": 47.08,
+      "sizeBytes": 1198855,
+      "retimed": false,
+      "inspection": "Final screenshot and six-frame contact sheet inspected; continuous upright body, explicit controller/profile TEST banners, physical/wall clocks visible."
+    },
+    {
+      "path": "outputs/browser-capability-20261019/standing-dynamics-experiment/hold-explicit-4plus1/contact-sheet.png",
+      "sha256": "e8a0d3b2f4fd455143a5664750ac78a85756bd01c6ba5bc1709013c50edd7380"
+    },
+    {
+      "path": "outputs/browser-capability-20261019/standing-dynamics-experiment/hold-explicit-4plus1/after-thirty-quiet-physical-seconds.png",
+      "sha256": "d773ce128cdfa2890e81fe8d0cafd0cb9263fadfa78cf6890f39c10b3601b565"
+    }
+  ],
+  "harnesses": [
+    {
+      "path": "outputs/browser-capability-20261019/standing-dynamics-experiment/profile-fixed-ticks-used.mjs",
+      "sha256": "cb544c38a3a5c3986daccc3e39357c6cf0cdfe4542f89534c4261ecb3a6b3f69"
+    },
+    {
+      "path": "outputs/browser-capability-20261019/standing-dynamics-experiment/verify-standing-hold-used.mjs",
+      "sha256": "9aee031ebf7fc81afbddc6a7ac4b632a5b1051413580934a5bf1a80fd8b94db7"
+    },
+    {
+      "path": "outputs/browser-capability-20261019/standing-dynamics-experiment/verify-grab-dynamics-experiment.mjs",
+      "sha256": "b44cad8d08aea6fbe07c0ff0f529e1c5a9c58b8fb21e58b90094bb7885cc03b4"
+    },
+    {
+      "path": "outputs/browser-capability-20261019/standing-dynamics-experiment/smoke-dynamics-experiment.mjs",
+      "sha256": "e9d89477005eaf82235bc28db9b8b0e30d30c9fbb01e507f8f79dd67917f280a"
+    },
+    {
+      "path": "outputs/browser-capability-20261019/standing-dynamics-experiment/verify-readiness-dynamics-experiment.mjs",
+      "sha256": "b3f65dace4ec41dc4b86418ce654bd3a43ace3f9d3e58ac5de9087fcdaf69a5a"
+    }
+  ],
+  "nextStep": "Preserve this isolated artifact and physical proof. Resolve remaining native/release gates before any default promotion; diagnose remaining worker-to-main delivery costs before a causal transport experiment. Do not infer a feature-only speedup from these absolute runs."
+}
