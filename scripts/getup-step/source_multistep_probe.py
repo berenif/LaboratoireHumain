@@ -5,6 +5,7 @@ from pathlib import Path
 import numpy as np
 from source_step_probe import World,Controller,ROOT,sha
 from source_step_preview import LiveStep
+from source_walk_limits import GLOBAL_LOADED_SLIP_LIMIT_M,loaded_slip_exceeded,loaded_slip_stop_reason
 from scipy.spatial.transform import Rotation
 def posture_ready(row,c):
  com=np.array(row['com']);capture=com[:2]+np.array(row['comVelocity'])[:2]*math.sqrt(com[2]/9.81)
@@ -22,6 +23,7 @@ def loaded_settle_ready(row,c,mass):
 def unloaded_support_ready(row,c,mass):
  return posture_ready(row,c)and row['feet'][c.swing_side]['loadN']<.5 and row['feet'][c.stance_side]['loadN']>=.8*mass*9.81
 class MultiStep(LiveStep):
+ loaded_slip_limit_m=GLOBAL_LOADED_SLIP_LIMIT_M
  def __init__(self,base,helper,output,distances=(.03,.06,.09,.045),planned_support=False,time_scale=1.):
   assert .75<=time_scale<=2. and(planned_support or time_scale==1.),'time scaling requires the planned-support controller';self.time_scale=time_scale;self.planned_support=planned_support;self.distances=tuple(distances);self.step_index=0;self.step_records=[];self.ready_run=0;super().__init__(base,helper,output,maximum_integrations=getattr(self,'sequence_integration_budget',64000 if time_scale>1 else 48000));self.begin_step()
  def begin_step(self):
@@ -48,7 +50,7 @@ class MultiStep(LiveStep):
     self.u,info=c.solve(elapsed,self.phase);self.notes.append(dict(t=t,phase=self.phase,stepIndex=self.step_index+1,**info));self.max_motor=max(self.max_motor,float(max(abs(self.u))))
    w.arr(2,(21,))[:]=self.u;self.total+=1;actual=w.l.lh_step_audited(w.h,self.maximum);assert actual==self.steps+1;self.steps+=1;row=w.packet();self.slip+=np.array([f['loadedSlipSpeedMps']for f in row['feet']])*.00125;self.loaded=np.where(np.array([f['loadN']for f in row['feet']])>=3,self.loaded+1,0);self.row=self.decorate(row);self.max_clear=max(self.max_clear,row['feet'][side]['clearance']);self.journal.write(json.dumps(row,allow_nan=False)+'\n');forward=row['swingForwardDisplacementM'];swing=row['feet'][side];support=row['feet'][stance]
    if row['warnings']or row['nonfootLoadN']>=3 or all(f['loadN']<3 for f in row['feet']):self.failure='support-or-warning-guard'
-   elif max(self.slip)>.01:self.failure='global-loaded-slip-10mm'
+   elif loaded_slip_exceeded(self.slip,self.loaded_slip_limit_m):self.failure=loaded_slip_stop_reason(self.loaded_slip_limit_m)
    elif row['maximumSelfPenetrationM']>.005:self.failure='self-penetration-5mm'
    elif row['com'][2]<.65:self.failure='height-guard'
    if self.failure:self.paused=True;break
@@ -108,7 +110,7 @@ class MultiStep(LiveStep):
  def save(self,reason):
   super().save(reason)
   if hasattr(self,'folder')and hasattr(self,'step_records'):
-   (self.folder/'multistep-summary.json').write_text(json.dumps(dict(stopped=reason,passed=self.finished,steps=self.step_records,actualIntegrations=self.steps,totalActualIntegrations=self.total,physicsSimSeconds=self.steps*.00125,finalQuietS=self.quiet_run*.00125,globalLoadedSlipM=self.slip.tolist(),final=self.row,physicalStateInstallationsBetweenSteps=0,controllerSHA256=sha(ROOT/'scripts/getup-step/source_step_probe.py'),runnerSHA256=sha(__file__)),indent=2)+'\n')
+   (self.folder/'multistep-summary.json').write_text(json.dumps(dict(stopped=reason,passed=self.finished,steps=self.step_records,actualIntegrations=self.steps,totalActualIntegrations=self.total,physicsSimSeconds=self.steps*.00125,finalQuietS=self.quiet_run*.00125,globalLoadedSlipM=self.slip.tolist(),globalLoadedSlipLimitM=self.loaded_slip_limit_m,globalLoadedSlipStopEnabled=True,final=self.row,physicalStateInstallationsBetweenSteps=0,controllerSHA256=sha(ROOT/'scripts/getup-step/source_step_probe.py'),runnerSHA256=sha(__file__)),indent=2)+'\n')
 if __name__=='__main__':
  p=argparse.ArgumentParser();p.add_argument('--base',type=Path,required=True);p.add_argument('--helper',type=Path,required=True);p.add_argument('--output',type=Path,required=True);p.add_argument('--time-scale',type=float,default=1.);p.add_argument('--planned-support',action='store_true');p.add_argument('--distances',type=float,nargs='+',default=[.03,.06,.09,.045]);a=p.parse_args();assert 2<=len(a.distances)<=6 and all(.025<=d<=.09 for d in a.distances);live=MultiStep(a.base,a.helper,a.output,tuple(a.distances),a.planned_support,a.time_scale);live.paused=False;started=time.monotonic()
  try:

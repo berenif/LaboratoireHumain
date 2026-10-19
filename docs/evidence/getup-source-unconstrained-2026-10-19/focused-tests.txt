@@ -1,0 +1,11 @@
+.REPORT ONLY example {'timeS': 1.0, 'nativeStep': 800, 'stepIndex': 1, 'phase': 'transfer'}
+..REPORT ONLY nonfoot-contact {'timeS': 8.0, 'nativeStep': 6400, 'stepIndex': 1, 'phase': 'settle'}
+REPORT ONLY both-feet-unloaded {'timeS': 8.0, 'nativeStep': 6400, 'stepIndex': 1, 'phase': 'settle'}
+REPORT ONLY global-loaded-slip-20mm {'timeS': 8.0, 'nativeStep': 6400, 'stepIndex': 1, 'phase': 'settle'}
+REPORT ONLY self-penetration-5mm {'timeS': 8.0, 'nativeStep': 6400, 'stepIndex': 1, 'phase': 'settle'}
+REPORT ONLY height-below-65cm {'timeS': 8.0, 'nativeStep': 6400, 'stepIndex': 1, 'phase': 'settle'}
+.
+----------------------------------------------------------------------
+Ran 4 tests in 1.089s
+
+OK

@@ -1,0 +1,33 @@
+{
+  "schema": 1,
+  "savedDataOnly": true,
+  "physicsIntegrations": 0,
+  "currentProspectiveThresholdAppliedToRecordedTrajectory": true,
+  "assessedCumulativePerFootLimitM": 0.02,
+  "boundary": "allowed at equality; stop strictly above the limit",
+  "recordedNativeFrames": 66687,
+  "recordedPhysicalDurationS": 83.35875,
+  "finalCumulativePerFootSlipM": [
+    0.01633631598922271,
+    0.01229122664178927
+  ],
+  "maximumAccumulatorReconstructionErrorM": 1.7345733426956287e-18,
+  "slipCriterionPassed": true,
+  "firstCurrentLimitExceedance": null,
+  "historicalTenMillimetreFirstExceedance": {
+    "timeS": 49.4625,
+    "nativeStep": 39570,
+    "step": 7
+  },
+  "minimumCaptureMarginM": 0.002951397547704987,
+  "captureMinimumAt": {
+    "timeS": 69.04375,
+    "nativeStep": 55235,
+    "step": 9,
+    "phase": "land"
+  },
+  "captureReserveM": 0.003,
+  "captureReservePassed": false,
+  "fullGaitQualificationClaim": false,
+  "sourceJournalSHA256": "56c629c9007a30b0d771d50ed12c3b81d390a52dc053d95c1b9f09d363a827cb"
+}

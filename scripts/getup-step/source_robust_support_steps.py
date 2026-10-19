@@ -4,7 +4,8 @@
 The corroborated prospective-unload pressure/clearance corner is the risk case.
 All three survivors must belong to actual measured support. A bounded C2 COM
 reference shift and predictive triangle barriers precede lift admission. The
-original every-native-frame capture/slip/joint/motor guards remain unchanged.
+every-native-frame capture/joint/motor guards remain active; cumulative slip
+uses the explicit current walking-slip policy.
 This is not robustness to arbitrary corner loss: that has no positive-margin
 solution for a rectangular footprint.
 """

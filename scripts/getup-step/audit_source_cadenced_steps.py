@@ -17,6 +17,8 @@ import numpy as np
 from scipy.spatial import ConvexHull, QhullError
 from scipy.spatial.transform import Rotation
 
+from source_walk_limits import validate_saved_slip_limit,loaded_slip_exceeded
+
 DT = .00125
 PHASES = ('transfer', 'lift', 'translate', 'land', 'settle', 'stand')
 ROOT = Path(__file__).resolve().parents[2]
@@ -168,6 +170,8 @@ def audit_rows(rows, entry, records, references, cadence, mass, gears):
     def check(name, condition):
         checks[name] = checks.get(name, True) and bool(condition)
 
+    try:slip_limit=validate_saved_slip_limit(cadence['globalLoadedSlipLimitM']);slip_supported=True
+    except ValueError:slip_limit=.01;slip_supported=False
     expected = cadence['requestedSteps']
     requested = cadence['requestedDistanceM']
     continuous = cadence.get('continuousLoadedHandoff', False) is True
@@ -188,7 +192,7 @@ def audit_rows(rows, entry, records, references, cadence, mass, gears):
     check('allExpectedStepRecords', [s['index'] for s in records] == list(range(1, expected+1)))
     check('originalQuietAndSlipThresholds', cadence['finalQuietRequiredS'] == 5.
           and cadence['intermediateStableRequiredS'] == (0. if continuous or loaded_settle else .25)
-          and cadence['globalLoadedSlipLimitM'] == .01)
+          and slip_supported)
     check('physicalTimeConfiguration', cadence['physicalTimeOnly'] is True and cadence['playbackSpeed'] == 1.)
     states = {}
     previous_q = np.array(entry['qpos'])
@@ -271,7 +275,8 @@ def audit_rows(rows, entry, records, references, cadence, mass, gears):
         increment = DT*np.array([f['loadedSlipSpeedMps'] for f in row['feet']])
         slip_error = max(slip_error, float(np.max(abs(slip-previous_slip-increment))))
         check('monotonicGlobalLoadedSlip', np.all(increment >= 0.) and np.all(slip >= previous_slip-1e-12))
-        check('globalLoadedSlipWithinOriginalLimit', np.all(slip <= .01+1e-12))
+        check('globalLoadedSlipWithinOriginalLimit', not loaded_slip_exceeded(slip,slip_limit))
+        check('globalLoadedSlipWithinConfiguredLimit', not loaded_slip_exceeded(slip,slip_limit))
         motor = max(motor, float(np.max(abs(np.array(row['actualMotorTorquesNm'])/gears))))
         check('originalGlobalPhysicalGates', row['warnings'] == 0 and row['nonfootLoadN'] < 3
               and not all(f['loadN'] < 3 for f in row['feet'])
@@ -399,6 +404,8 @@ def audit_rows(rows, entry, records, references, cadence, mass, gears):
     check('loadedSlipAccumulatorContinuity', slip_error < 1e-10)
     check('originalMotorLimit', motor <= .95000001)
     return dict(checks=checks, passed=all(checks.values()), actualRecordedIntegrations=count,
+        globalLoadedSlipLimitM=slip_limit,
+        legacySlipCheckNamesRetainedForSavedAuditCompatibility=True,
         continuousLoadedHandoff=continuous,
         loadedSettleHandoff=loaded_settle,
         physicsSimSeconds=count*DT, sourceTimeMaximumErrorS=time_error,

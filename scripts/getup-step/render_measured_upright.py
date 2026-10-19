@@ -29,6 +29,9 @@ def main():
     ap.add_argument('--subtitle')
     ap.add_argument('--title',default='Grands pas · essai de contrôle du bassin et du tronc')
     ap.add_argument('--audit',type=Path)
+    ap.add_argument('--display-fps',type=int,choices=(5,10,20),default=20,
+                    help='Display sampling only; rational encoded FPS still preserves exact source duration.')
+    ap.add_argument('--width',type=int,choices=(800,1280),default=1280)
     ap.add_argument('--terminal-interrupted-journal', action='store_true',help='Explicitly confirmed terminal interrupted journal; derive duration from its actual rows, never invent a success summary.')
     ap.add_argument('--expected-model-sha')
     a = ap.parse_args()
@@ -51,11 +54,19 @@ def main():
     if has_summary:
         summary = json.loads((folder/'summary.json').read_text())
         multi = json.loads((folder/'multistep-summary.json').read_text())
+        reported_native_integrations=summary['actualIntegrations']
+        recorded=summary.get('recordedIntegrations',reported_native_integrations)
+        if recorded!=reported_native_integrations:
+            assert a.terminal_interrupted_journal and a.expected_model_sha, 'Explicit terminal recorded-prefix rendering requires the exact model hash.'
+            assert 0<recorded<reported_native_integrations
+            summary=dict(summary,actualIntegrations=recorded,physicsSimSeconds=recorded/800)
+            multi=dict(multi,passed=False)
     else:
         assert a.terminal_interrupted_journal and a.expected_model_sha,'Missing final summary: explicit confirmed terminal interruption and exact model hash required.'
         with (folder/'frames.ndjson').open('rb') as f:recorded_count=sum(1 for line in f if line.strip())
         summary=dict(actualIntegrations=recorded_count,physicsSimSeconds=recorded_count/800,modelSHA256=a.expected_model_sha,stopped='deliberately-interrupted-after-independent-audit-failure',events=[])
         multi=dict(passed=False,steps=[],finalQuietS=0.)
+        reported_native_integrations=None
     assert summary.get('physicalStateWritesAfterInitialization',0) == 0
     n = summary['actualIntegrations']
     duration = n/800
@@ -63,6 +74,7 @@ def main():
     source_xml = a.model.resolve()
     xml_sha = hashlib.sha256(source_xml.read_bytes()).hexdigest()
     assert xml_sha == summary['modelSHA256']
+    if a.expected_model_sha:assert xml_sha==a.expected_model_sha
     geometry_path = ROOT/'rust/crates/model/data/getup-v1.json'
     model = json.loads(geometry_path.read_text())
     spec = importlib.util.spec_from_file_location('upright_render_fk', ROOT/'scripts/getup-step-reference.py')
@@ -72,7 +84,7 @@ def main():
     mapping = json.loads((folder/'arm-mapping.json').read_text())
     controller = json.loads((folder/'controller-step-01.json').read_text())
     heading = np.array(controller['heading']); heading[2] = 0; heading /= np.linalg.norm(heading)
-    frames = round(duration*20)
+    frames = round(duration*a.display_fps)
     fps = Fraction(frames*800,n)
     selected = np.rint(np.arange(1,frames+1)*n/frames).astype(int)
     assert len(set(selected)) == frames and selected[-1] == n
@@ -135,18 +147,20 @@ def main():
                 multi['steps'].append(dict(index=step,swingSide='left'if last['swingSide']==0 else'right',requestedDistanceM=last['requestedForwardM'],achievedForwardM=last['swingForwardDisplacementM'],completedNativeStep=last['sourceStep'],completedTimeS=last['elapsedS'],qualification='Cycle recorded before next step; independent dynamic gates failed.'))
     assert abs(final.get('quietConsecutiveS',0)-multi.get('finalQuietS',0))<1e-9
     quiet_rows=list(quiet)
-    def is_quiet(r):
-        u=r['uprightMeasured']
+    def is_base_quiet(r):
         return (r['phase']=='stand' and all(f['loadN']>=3 for f in r['feet'])
                 and sum(f['loadN']for f in r['feet'])>=.8*model['totalMassKg']*9.81
                 and r['torsoTiltDeg']<=5 and r['maximumBodyLinearMps']<=.22
                 and r['maximumBodyAngularRadps']<=.65 and r['minimumComCaptureMarginM']is not None
                 and r['minimumComCaptureMarginM']>=.003 and .780625<=r['com'][2]<=.829976
                 and r.get('standingAnchorDriftM',999)<=.01 and r['maximumSelfPenetrationM']<=.005
-                and r['jointLimitMinimumMarginRad']>=0
-                and u['pelvis']['tiltDeg']<=5 and u['torsoRelativePelvis']['tiltDeg']<=5)
+                and r['jointLimitMinimumMarginRad']>=0)
+    def is_quiet(r):
+        u=r['uprightMeasured']
+        return is_base_quiet(r)and u['pelvis']['tiltDeg']<=5 and u['torsoRelativePelvis']['tiltDeg']<=5
+    final_base_quiet_verified=len(quiet_rows)==4000 and all(is_base_quiet(r)for r in quiet_rows)
     final_quiet_verified=len(quiet_rows)==4000 and all(is_quiet(r) for r in quiet_rows)
-    if multi.get('passed'):
+    if multi.get('sequenceAndQuietCompleted',multi.get('passed')):
         assert len(quiet_rows)==4000
         assert all(r['phase']=='stand' and abs(r['quietConsecutiveS']-(i+1)/800)<1e-9 for i,r in enumerate(quiet_rows))
         assert all(all(f['loadN']>=3 for f in r['feet']) and r['standingAnchorDriftM']<=.01 for r in quiet_rows)
@@ -208,7 +222,7 @@ def main():
     bounds=[]
     for e in extents:
         center=(e[:,0].min()+e[:,0].max())/2;bounds.append((center-xspan/2,center+xspan/2))
-    fig=plt.figure(figsize=(12.8,7.2),dpi=100,facecolor='#f7f8f5')
+    fig=plt.figure(figsize=(12.8,7.2),dpi=a.width/12.8,facecolor='#f7f8f5')
     axes=[];collections=[];rays_artist=[];dots=[];hits=[];bodyaxes=[]
     for j,B in enumerate(views):
         ax=fig.add_axes([.035+j*.495,.215,.445,.595]);ax.set_aspect('equal');ax.set_xlim(*bounds[j]);ax.set_ylim(ylo,yhi);ax.axis('off')
@@ -226,7 +240,7 @@ def main():
         fig.text(.257+j*.495,.815,'Face · rayons articulaires en surimpression' if j==0 else 'Profil · axes tronc / bassin et verticale',ha='center',fontsize=10,color='#526963')
     fig.text(.5,.959,a.title,ha='center',fontsize=18,color='#254b48')
     completed=[s for s in multi.get('steps',[])if s.get('completedNativeStep')]
-    successful=bool(multi.get('passed'))
+    successful=bool(multi.get('sequenceAndQuietCompleted',multi.get('passed')))
     dynamic_valid=min_walking>=0 and min_capture>=.003
     quiet_label=' + 5 s calmes finales vérifiées' if final_quiet_verified else ''
     qualification=' · audit dynamique non validé' if not dynamic_valid else ''
@@ -292,7 +306,7 @@ def main():
     sheet_path=out/'measured-upright-contact-sheet.png';sheet.save(sheet_path)
     video=out/'laboratoirehumain-grands-pas-debout-mesures.mp4'
     if not a.preview_only:
-        cmd=['ffmpeg','-y','-loglevel','error','-f','rawvideo','-pixel_format','rgba','-video_size','1280x720','-framerate',str(fps),'-i','-','-an','-c:v','libx264','-preset','medium','-crf','20','-pix_fmt','yuv420p','-movflags','+faststart',str(video)]
+        cmd=['ffmpeg','-y','-loglevel','error','-f','rawvideo','-pixel_format','rgba','-video_size',f'{a.width}x{a.width*9//16}','-framerate',str(fps),'-i','-','-an','-c:v','libx264','-preset','medium','-crf','20','-pix_fmt','yuv420p','-movflags','+faststart',str(video)]
         proc=subprocess.Popen(cmd,stdin=subprocess.PIPE)
         try:
             for j,i in enumerate(selected):
@@ -307,7 +321,13 @@ def main():
             subprocess.run(['ffmpeg','-y','-loglevel','error','-i',str(video),'-vf',f'select=eq(n\\,{k})','-frames:v','1',str(out/f'decoded-{tag}.png')],check=True)
     plt.close(fig)
     report=dict(video=str(video),contactSheet=str(sheet_path),sourceJournal=str(folder/'frames.ndjson'),sourceModel=str(source_xml),sourceXMLSHA256=xml_sha,sourceRecordedRows=n,sourcePhysicalDurationS=duration,encodedDurationS=duration,videoFrames=frames,exactVideoFPS=str(fps),videoSourceSteps=selected.tolist(),sourceJournalSHA256=journal_hash.hexdigest(),additionalPhysicsIntegrations=0,simulatorImportedOrRun=False,plannedPosesUsed=False,poseInterpolation=False,duplicatedVideoPoses=0,terminalTailFramesAdded=0,FKBodyCOMMaxErrorM=com_error,FKFootOriginMaxErrorM=foot_error,FKWholeFootClearanceMaxErrorM=clearance_error,FKJointRayAnchorMaxErrorM=ray_error,FKOrientationMaxWrappedErrorDeg=angle_error,validGroundRaysEveryRow=ray_invalid==0,groundRayCountPerRow=22,distinctOriginsAtFirstSample=len({tuple(np.round(x['originSource'],10))for x in samples[1]['jointGroundRays']}),measuredMaxTiltDeg=max_tilt,minimumAllSampleJointReserveDeg=float(np.rad2deg(min_margin)),startupJointOverrunEndsS=startup_end,lastOutsideJointLimitS=last_outside,minimumWalkingJointReserveDeg=float(np.rad2deg(min_walking)),minimumCaptureMarginM=min_capture,finalMeasuredQuietS=final.get('quietConsecutiveS',0),finalQuietIndependentlyVerified=final_quiet_verified,walkingJointAndCaptureGatesPass=dynamic_valid,completedSteps=completed,stopped=summary['stopped'],inputSHA256={str(p):hashlib.sha256(p.read_bytes()).hexdigest()for p in [folder/'summary.json',folder/'multistep-summary.json',geometry_path,source_xml,Path(__file__).resolve()] if p.exists()})
-    report.update(FKLimbSagittalPitchMaxErrorRad=limb_pitch_error,armTargetIdentityMaxErrorRad=target_identity_error,
+    report.update(finalBaseQuietIndependentlyVerified=final_base_quiet_verified,
+                  finalUprightQuietIndependentlyVerified=final_quiet_verified,
+                  encodedVideoCreated=not a.preview_only,displayWidthPx=a.width,
+                  displaySamplingFPS=a.display_fps,
+                  sourceNativeIntegrationsReported=reported_native_integrations,
+                  unjournaledTerminalIntegrations=(reported_native_integrations-n)if reported_native_integrations is not None else None,
+                  FKLimbSagittalPitchMaxErrorRad=limb_pitch_error,armTargetIdentityMaxErrorRad=target_identity_error,
                   maximumGaitArmTrackingErrorDeg=float(np.rad2deg(max_arm_tracking_error)),sourceFinalSummaryPresent=has_summary,
                   finalRecordedStepIndex=final['stepIndex'],finalRecordedPhase=final['phase'],finalRecordedForwardM=final['swingForwardDisplacementM'])
     if a.audit:

@@ -1,0 +1,271 @@
+{
+  "schema": 1,
+  "date": "2026-10-19",
+  "diagnosticOnly": true,
+  "qualifiedOriginalModel": false,
+  "applicationDefaultsChanged": false,
+  "mainChanged": false,
+  "deployed": false,
+  "gravityAndCollisionsRetained": true,
+  "physicalModel": "selected hip10-knee27_5 plus explicit impratio8; same retained contact model in both variants",
+  "sourceXMLSHA256": "28c2d6bbbf9845285a69798df92412d45a857c811126b1d2e4650cb49ff1a6c8",
+  "helperSHA256": "20ddefbcbdd328b1661ce163e4df6aeb0e953192c677b79d3076c904de5a0ba5",
+  "stopOnly": {
+    "requestedSteps": 10,
+    "measuredStepsCompleted": 10,
+    "actualNativeIntegrations": 66687,
+    "sourcePhysicalDurationS": 83.35875,
+    "finalQuietS": 5.0,
+    "achievedFootAdvancesM": [
+      0.18196128980745918,
+      0.1820144621026568,
+      0.181215751937159,
+      0.18198722831071404,
+      0.18141204394675356,
+      0.18199646349288193,
+      0.18140945567066588,
+      0.18200188622512714,
+      0.18102231602291,
+      0.18199349755430452
+    ],
+    "completedTimesS": [
+      9.64875,
+      17.28375,
+      24.9175,
+      32.5525,
+      40.18625,
+      47.823750000000004,
+      55.4575,
+      63.09,
+      70.7225,
+      83.35875
+    ],
+    "finalLoadedSlipM": [
+      0.01633631598922271,
+      0.01229122664178927
+    ],
+    "firstRuntimeThresholdViolations": {
+      "global-loaded-slip-10mm": {
+        "timeS": 49.4625,
+        "nativeStep": 39570,
+        "stepIndex": 7,
+        "phase": "transfer"
+      }
+    },
+    "minimumCaptureMarginM": 0.002951397547704987,
+    "captureDesignReserveM": 0.003,
+    "minimumJointMarginIncludingInheritedEntryRad": -0.009109206665376013,
+    "minimumCOMHeightM": 0.7839151770570992,
+    "maximumTorsoTiltDeg": 13.058506863903055,
+    "maximumNonfootLoadN": 0.0,
+    "maximumSelfPenetrationM": 0.0,
+    "comHorizontalTravelM": 0.8589672744852376,
+    "nominalCadenceChanged": false,
+    "planningAndMeasuredPhaseAdmissionsRetained": true,
+    "originalQualityQualificationPassed": false,
+    "wallCapContinuation": {
+      "schema": 1,
+      "reason": "1200s outer wall cap; continuation from full native checkpoint",
+      "nativeCounterBefore": 63920,
+      "nativeTimeBefore": 79.89999999994546,
+      "nativePayloadSHA256": "d3606ebf1a5f0cba62eddcb77f7744566e92ddb87467b2a635f9fee5884bb2af",
+      "nativeQposQvelExact": true,
+      "nativeBytesUnchangedDuringControllerReconstruction": true,
+      "physicsStateReset": false,
+      "rootAssistance": false,
+      "controllerStateReconstructedFromRecordedEvidence": true,
+      "controllerObjectExactRoundtripProven": false,
+      "armMapReceiptExact": true,
+      "phaseBefore": "stand",
+      "derivativeHistorySourceNativeStep": 63916,
+      "contactSeekJetRestored": true,
+      "robustCorrectionRestored": true,
+      "q0TargetRestoredFromPhaseCheckpoint": "stand",
+      "visualLoadedDurationCountersReconstructedFromTailOnly": true,
+      "runnerSHA256": "1f285fe3324b52f7f8b47ad50c43ae3bb64e3e42024174cc52e881eaa5b3074e"
+    },
+    "legacyRawMetadataRequiresThisDiagnosticInterpretation": true,
+    "executedSourceSHA256AtStart": {
+      "source_opposed_arm_swing.py": "fe1eb109c547f3482fb53f8bfcf4d4ca1ddc1ac327939b72f8916e57cd40925b",
+      "source_step_probe.py": "4abe24ee79a1629dacea4880532c89ebb83888e88c23411ef84b0d5b8210b5ee",
+      "source_multistep_probe.py": "a6df3ed82add4be1bb38aab70884f77b1230431ef09ef25f730d8fcaf0e9a948",
+      "plan_source_arm_knee.py": "b8a47f48e8d37fd8328b6fdebcc0f48ee334782ea276bb75cc1d915b119c8858",
+      "source_arm_knee_mobility.py": "7835072bdc183fe5eff5551458b5adefa7473d781b738bde5ee5987e1742c547",
+      "source_selected_step.py": "ab21d078d9c0109c987d5c5963a7dd796c06f8f54df7624594ad9fb3bb55ef90",
+      "source_upright_large_steps.py": "ec0e665d5027af9d9931c2366c6099d4c41e10ceaa16f6eb032159c0eae90d2c",
+      "source_cadenced_ten_steps.py": "6e736c4be1aebcf6bb477bfce94f545fc881ccc0c773b6f27f8d55b652794f29",
+      "source_implicit_arm_coordination.py": "3969b65f8200bab45608c1c414ac111b7f77e2166050c7fa934854d04ce91052",
+      "source_robust_support_steps.py": "17466624c38f9d1358301cf5aa75b7cd176396291fc8aae24ad35912a8b4ca47",
+      "source_contact_impedance_probe.py": "3027d148822a4e7ccac5657cf46764cd3979957b99e175c0dcbb66c8880f0f57",
+      "source_unconstrained_steps.py": "7a008bebe6926138c1256c066bc03260fddb1e9cef701e2154292c516aa0e6f8"
+    },
+    "captureMinimumAt": {
+      "timeS": 69.04375,
+      "nativeStep": 55235,
+      "step": 9,
+      "phase": "land"
+    },
+    "legacyRawPassedMeansSequenceAndQuietOnly": true
+  },
+  "relaxedPlanning": {
+    "recordedNativeFrames": 11802,
+    "lastRecordedTimeS": 14.7525,
+    "terminal": "deliberately-interrupted-after-clear-fallen-outcome",
+    "qualifiedWalking": false,
+    "commandCyclesStarted": 2,
+    "physicalLandingConsecutiveS": 0.14625,
+    "firstViolations": {
+      "joint-outside-after-inherited-entry-grace": {
+        "timeS": 0.065,
+        "sourceStep": 52,
+        "cycle": 1,
+        "phase": "transfer"
+      },
+      "capture-outside-or-undefined": {
+        "timeS": 7.11625,
+        "sourceStep": 5693,
+        "cycle": 1,
+        "phase": "settle"
+      },
+      "loaded-slip-10mm": {
+        "timeS": 7.39375,
+        "sourceStep": 5915,
+        "cycle": 1,
+        "phase": "settle"
+      },
+      "both-feet-unloaded": {
+        "timeS": 7.43875,
+        "sourceStep": 5951,
+        "cycle": 1,
+        "phase": "settle"
+      },
+      "self-penetration-5mm": {
+        "timeS": 7.51125,
+        "sourceStep": 6009,
+        "cycle": 1,
+        "phase": "settle"
+      },
+      "com-height-65cm": {
+        "timeS": 7.7725,
+        "sourceStep": 6218,
+        "cycle": 1,
+        "phase": "settle"
+      },
+      "nonfoot-load-3N": {
+        "timeS": 7.87375,
+        "sourceStep": 6299,
+        "cycle": 1,
+        "phase": "settle"
+      }
+    },
+    "extrema": {
+      "height": 0.10359618569597319,
+      "joint": -0.49843695695222373,
+      "capture": -0.700444010447883,
+      "tilt": 114.5801847815912,
+      "penetration": 0.04677394437642718,
+      "nonfoot": 3618.761247640043,
+      "linear": 12.916882640007774
+    },
+    "finalRecordedState": {
+      "com": [
+        0.9188223576045036,
+        1.55825156070365,
+        0.17831040247244312
+      ],
+      "torsoTiltDeg": 98.67149231943915,
+      "loadedSlipDistanceM": [
+        0.9257748172182582,
+        0.6530476761752363
+      ],
+      "jointLimitMinimumMarginRad": -0.1146289803966637,
+      "nonfootLoadN": 735.2532120777221
+    },
+    "journalSHA256": "28044c8d46e6a325cdab7efa40555ce36d8c471ecc2421ceb3723a7b413e9d89",
+    "optimizationInequalities": "none except actual actuator command range [-1,1]; exact dynamics equality retained",
+    "removedMotorPlanningReserve": "original planner +/-0.95 -> actual actuator range +/-1; gears/strength unchanged",
+    "phaseTransitionsScheduled": true,
+    "initialAndLaterZeroStepSetupChecksRetainedInExecutedV2": true,
+    "laterSetupChecksRemovedInCleanedSource": true,
+    "additionalUnjournaledIntegrationsNotVerified": true,
+    "executedSourceSHA256": {
+      "source_unconstrained_steps.py": "7a008bebe6926138c1256c066bc03260fddb1e9cef701e2154292c516aa0e6f8",
+      "source_unconstrained_scheduled.py": "0973371d239448abcfdc9238a23c02d61abc9733513f564cf9d7325d0e4bd379"
+    }
+  },
+  "verification": {
+    "focusedTests": 4,
+    "focusedTestsPassed": 4,
+    "robustSupportRegressionTests": 27,
+    "robustSupportRegressionsPassed": 27,
+    "nativeZeroIntegrationCheck": "finite bounded motor solve; dynamics residual <1e-6; exact native bytes/counter unchanged",
+    "fullApplicationCINotRun": true
+  },
+  "fullVideo": {
+    "status": "completed",
+    "playbackSpeed": 1.0,
+    "durationS": 83.35875,
+    "frames": 834,
+    "width": 800,
+    "height": 450,
+    "exactFPS": "222400/22229",
+    "videoSHA256": "e193082df6a47b27a4dddc04e099f81062e81f8914eca843e75789efa730c24f",
+    "fileSizeBytes": 2268682,
+    "sourceJournalSHA256": "56c629c9007a30b0d771d50ed12c3b81d390a52dc053d95c1b9f09d363a827cb",
+    "additionalPhysicsIntegrations": 0,
+    "poseInterpolation": false,
+    "repeatedTailFrames": 0,
+    "maximumFKGeometryErrorM": 1.2628786905111156e-15,
+    "finalBaseQuietIndependentlyVerified": true,
+    "finalUprightQuietIndependentlyVerified": false,
+    "uprightQuietRequiresPelvisAndRelativeTorsoTiltAtMostDeg": 5.0,
+    "legacyRendererStrictUprightQuietFlag": false
+  },
+  "currentWalkingSlipPolicy": {
+    "cumulativePerFootLimitM": 0.02,
+    "stopEnabled": true,
+    "equalityAllowed": true,
+    "strictExceedanceRequired": true,
+    "resetsBetweenSteps": false,
+    "diagnosticReportOnlyModeRemainsExplicit": true,
+    "historicalCriteriaAndEvidenceUnchanged": true,
+    "requestSourceMessage": "Sentinel_150482f1507881918a83c7f9fbe4f597",
+    "savedDataReplay": "slip-20mm-replay.json",
+    "physicalDynamicsRerunForThresholdChange": false,
+    "slipCriterionPassedOnExistingJournal": true,
+    "fullGaitQualificationClaim": false
+  },
+  "currentSourceSHA256": {
+    "source_unconstrained_steps.py": "c3e57ece02fa160ecebc8b81ce677cd18a2e48cf5fcde00f43c0a8f1fd1019aa",
+    "source_unconstrained_scheduled.py": "6a919bca8ace14f28fb80fcc44914363cc805e7d14d0aff490ea576a7edf19b2",
+    "test_source_unconstrained_steps.py": "0dbe516e0191e205de600af8bb386c4c70ec2fd6a0fb94b63fbefe2f59be9167",
+    "source_unconstrained_resume.py": "4f2030789256c64f652a16f50e6da2343138d06afabb26518449f82b788cf411",
+    "source_walk_limits.py": "231eb5944834e0f6a782e1bab07bb1393c84ec3f6fa31f3caf0db4fa4b3dec84",
+    "source_multistep_probe.py": "6399289c14cdf678a0acd78daba31b90badbebfa49dcfa562fe768a59d85f335",
+    "source_cadenced_ten_steps.py": "d206e2db73ad4da7e19087f82a6386765f62912bda5ded93f938a1259287c12b",
+    "source_robust_support_steps.py": "ce295d569c14ee3c3b9234b5bbf9baae9b0870fa0823138043c30b8569f8fec7",
+    "audit_source_cadenced_steps.py": "e0776ddde520c9e917fd0c34a6c8fffb84ccf2a339f59e2752a7588e8bfdf877",
+    "audit_source_multistep.py": "a7c4b892ddb17f5d34d710931b097ec56590c909988661c5977ac89e649bbd23",
+    "audit_source_walk_slip.py": "c236e5c007b2239a67808744215aa7d3c6c0f7319e0579f98651ca78e22aeeb6",
+    "render_measured_upright.py": "b7a5219b247578c7c814be145067cec095ba8afdb09c819e411bad3c868c8ff0",
+    "test_source_walk_limits.py": "26153e0e061841b23d2b6531331bc6e32bc13f0589038f8a836de6183221607f"
+  },
+  "currentPolicyTests": {
+    "slipBoundaryAndHistory": 4,
+    "cadencedController": 10,
+    "diagnosticFocused": 4,
+    "targetedCadencedAudit": 3,
+    "fullSyntheticAuditSuiteNotRun": true,
+    "allListedTestsPassed": true
+  },
+  "independentSavedJournalReview": {
+    "contiguousNativeCountersAndTimes": true,
+    "allTenCompletionRowsMatch": true,
+    "finalFourThousandBaseQuietRowsAndSequentialQuietCountersPass": true,
+    "checkpointPayloadMatchesRetainedReceipt": true,
+    "postGraceJointMinimumRad": 7.4049390153208e-05,
+    "postGraceJointMinimumAtS": 0.065,
+    "minimumWalkingJointReserveDeg": 0.006724693623428102,
+    "quietPolicy": "base gait quiet; upright pelvis/relative-torso alignment remains unqualified"
+  }
+}

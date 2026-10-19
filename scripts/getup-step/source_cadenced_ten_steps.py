@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Opt-in faster physical alternating steps; original measured safety gates.
+"""Opt-in faster physical alternating steps; measured gates and explicit walking-slip policy.
 
 Durations are native source seconds, not playback scaling. Ten steps share one
 world and one loaded-slip accumulator, followed by the original final 5s quiet.
@@ -116,6 +116,7 @@ class CadencedSteps(LargeStep):
         super().__init__(base, helper, output, (distance,)*count, False)
         self.code_at_start[Path(__file__).name] = sha(__file__)
         self.code_at_start['source_implicit_arm_coordination.py']=sha(Path(__file__).with_name('source_implicit_arm_coordination.py'))
+        self.code_at_start['source_walk_limits.py']=sha(Path(__file__).with_name('source_walk_limits.py'))
 
     def begin_step(self):
         previous=getattr(self,'controller',None)if self.step_index>0 else None
@@ -160,7 +161,8 @@ class CadencedSteps(LargeStep):
                     positionGain=100.,velocityGain=20.,taskWeight=2.,angularGain=-1.,targetClippingEnabled=False),
                 measuredSupportCaptureBarrier=dict(reserveM=.003,gainPerS=8.),
                 opposedArmRangeBarrier=dict(verifiedRangeReserveRad=.02,predictionHorizonS=.2,clippingEnabled=False),
-                globalLoadedSlipLimitM=.01, integrationBudget=self.sequence_integration_budget,
+                globalLoadedSlipLimitM=self.loaded_slip_limit_m,globalLoadedSlipStopEnabled=True,
+                globalLoadedSlipPolicySHA256=sha(Path(__file__).with_name('source_walk_limits.py')), integrationBudget=self.sequence_integration_budget,
                 originalContactJointMotorCollisionCaptureGates=True,
                 noInterstepStateInstallation=True),indent=2)+'\n')
 
