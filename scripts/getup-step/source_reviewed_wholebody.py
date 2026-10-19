@@ -33,7 +33,7 @@ from source_reference_context import ReferenceContext, Jet as ContextJet, Orient
 from coupled_posture_reference import Jet, CurrentSupport, chart, rotation
 from coupled_posture_kinematics import ArmMap, MatrixJet, P, pose_jet_to_source
 from phase_leg_reference import AdvanceWindow, MeasuredAdvanceSample
-from wholebody_cycle_reference import WholeBodyCycle, StanceRealizedIK, PHASES, FEET
+from wholebody_cycle_reference import WholeBodyCycle, StanceRealizedIK, PHASES, FEET, LEG_INDICES
 from wholebody_settle_reference import SameFootSettlePlan, solve_samefoot_endpoint
 from wholebody_static_admission import finite_static_admission
 
@@ -50,6 +50,8 @@ RUNTIME = ('source_reviewed_wholebody.py', 'wholebody_cycle_reference.py',
     'coupled_posture_reference.py', 'phase_leg_reference.py', 'source_reference_context.py')
 POLISH_VERSION = 'free-com-flight-feasibility-polish-v1'
 REFINED_POLISH_VERSION = 'free-com-flight-collocation-refinement-v1'
+FRESH_RECOVERY_VERSION = 'free-com-flight-fresh-recovery-v1'
+RECOVERED_ACCEPTED_COORDINATE_SHA256 = '0959186db884653611f946799df1a515871df194d6993fb892c349be98232e77'
 
 
 def source_path(name):
@@ -63,6 +65,9 @@ def source_path(name):
 
 def verify_feasibility_stages(result, binding, proposal_path):
     """Verify the explicit numerical repair, never relabel its failed parent."""
+    if result.get('freshRecoveryProblem') is not None:
+        verify_fresh_recovery_problem(result, binding, proposal_path)
+        return
     if result.get('activationRetargeting') is not None:
         verify_activation_retargeting(result, binding, proposal_path)
         return
@@ -365,7 +370,7 @@ def retained_json(directory, name, expected, role):
     return json.loads(path.read_text()), path
 
 
-def verify_global_phase_support_coverage(result, *, required_phases):
+def verify_global_phase_support_coverage(result, *, required_phases, additional_envelope_role='retainedLiftLandEnvelopes'):
     coverage = result.get('globalPhaseSupportEnvelopeCoverage', {})
     equations = result['inputBinding'].get('support', {}).get('equations', [])
     count = len(equations); intervals = [[0., .25], [.25, .5], [.5, .75], [.75, 1.]]
@@ -387,7 +392,7 @@ def verify_global_phase_support_coverage(result, *, required_phases):
             or len(records) != len(expected) or actual != expected
             or {r.get('rowIndex') for r in records} != set(range(original+2, original+2+len(expected)))
             or result.get('activeConstraintRowCounts') != dict(original=original,
-                retainedLiftLandEnvelopes=2, globalPhaseSupportEnvelopes=len(expected),
+                **{additional_envelope_role:2}, globalPhaseSupportEnvelopes=len(expected),
                 total=original+2+len(expected))):
         raise ValueError('retarget does not cover every original support face across all flight phases')
 
@@ -528,6 +533,139 @@ def verify_activation_retargeting(result, binding, proposal_path):
     verify_global_phase_support_coverage(result, required_phases=PHASES)
 
 
+def verify_fresh_recovery_problem(result, binding, proposal_path):
+    """Admit only NEW evidence after loss; old numeric coordinates are an anchor.
+
+    This profile never reconstructs missing iteration33 receipts or inherits
+    their pass flags. Its one producer call owns current-state certificates.
+    """
+    problem = result['freshRecoveryProblem']; directory = Path(proposal_path).parent
+    expected = dict(schema=1, original33AnchorAvailable=False,
+        previousRawReceiptsRecovered=False, oldCertificatesReused=False,
+        originalHardLimitsUnchanged=True, originalFootPathAndClocksUnchanged=True,
+        goalOrWeightScan=False, producerOptimizerCalls=1, entryLiftElapsedS=0.)
+    if (result.get('version') != FRESH_RECOVERY_VERSION or result.get('accepted') is not True
+            or result.get('optimizerCalls') != 1 or result.get('totalProducerOptimizerCalls') != 1
+            or any(type(problem.get(k)) is not type(v) or problem[k] != v for k, v in expected.items())
+            or any(result.get(k) is not None for k in ('twoStageFeasibilityRestoration',
+                'activationRetargeting', 'collocationRefinement', 'exchangeHistory'))):
+        raise ValueError('fresh recovery must declare one new problem without missing historical proofs')
+    for name, value in dict(nativeAdmission=False, physicalQualification=False,
+            nativeWorldConstructions=0, physicsIntegrations=0, stateInstallations=0,
+            exactWholeNonlinearPathAdmission=False, globalInfeasibilityProven=False,
+            finiteProposalAdmittedForNative=False).items():
+        if type(result.get(name)) is not type(value) or result[name] != value:
+            raise ValueError('fresh offline result contains a contradictory qualification/counter: '+name)
+    coordinates, _ = retained_json(directory, problem.get('sourceCoordinateReceiptFilename'),
+        problem.get('sourceCoordinateReceiptSHA256'), 'recovered numeric coordinates')
+    anchor = np.asarray(coordinates.get('independentKnotsRad'), float)
+    if (anchor.shape != (3, 9) or not np.isfinite(anchor).all()
+            or coordinates.get('exactCanonicalCoordinatesMatch') is not True
+            or coordinates.get('originalResultJSONBytesRecovered') is not False
+            or coordinates.get('originalCertificateRecovered') is not False
+            or coordinates.get('nativeAdmission') is not False):
+        raise ValueError('recovered coordinate bytes are not a historical certificate')
+    key = digest(anchor.tolist())
+    if (key != RECOVERED_ACCEPTED_COORDINATE_SHA256 or coordinates.get('candidateSHA256') != key
+            or coordinates.get('expectedPreviouslyRecordedCandidateSHA256') != key
+            or any(problem.get(k) != key for k in ('sourceCandidateSHA256',
+                'objectiveAnchorSHA256', 'initialContinuationCandidateSHA256'))
+            or result.get('objectiveAnchorSHA256') != key
+            or result.get('initialContinuationCandidateSHA256') != key
+            or result.get('initialContinuationIndependentKnotsRad') != anchor.tolist()):
+        raise ValueError('fresh recovery changed its declared exact numeric anchor/seed')
+    retained, input_path = retained_json(directory, problem.get('regeneratedActivationInputFilename'),
+        problem.get('regeneratedActivationInputSHA256'), 'regenerated actual activation input')
+    context = ReferenceContext.from_receipt(retained['referenceContext'])
+    support = CurrentSupport(**retained['currentSupport']); support.validate_identity(context)
+    support.validate_com(context.com); config = json.loads(context.config_json)
+    if (len(support.equations()) != 9 or result.get('activeConstraintRowCounts') != dict(
+            original=884, declaredAdditionalEnvelopes=2, globalPhaseSupportEnvelopes=216, total=1102)):
+        raise ValueError('fresh recovered problem requires original9faces/1102rows')
+    if (context.phase != 'transfer' or context.elapsed < config['phase_durations']['transfer']-1e-10
+            or any(context.com.velocity) or any(context.com.acceleration)
+            or any(context.joints.velocity) or any(context.joints.acceleration)):
+        raise ValueError('fresh recovery requires current completed stationary transfer')
+    native_name = retained.get('retainedPayload')
+    if not isinstance(native_name, str) or Path(native_name).name != native_name:
+        raise ValueError('fresh native payload basename required')
+    native_path = directory/native_name; count = retained.get('actualPayloadBytes')
+    if (not native_path.is_file() or sha(native_path) != retained.get('compressedPayloadSHA256')
+            or type(count) is not int or not 0 < count <= 32*1024*1024):
+        raise ValueError('fresh native payload bytes/hash differ')
+    decoder = zlib.decompressobj(); payload = decoder.decompress(native_path.read_bytes(), count+1)
+    if (len(payload) != count or not decoder.eof or decoder.unused_data or decoder.unconsumed_tail
+            or hashlib.sha256(payload).hexdigest() != retained.get('actualPayloadSHA256')):
+        raise ValueError('fresh actual native payload identity differs')
+    current = result.get('inputBinding', {}); captured = retained.get('proposal', {})
+    identity = dict(inputSHA256=sha(input_path), contextSHA256=context.receipt()['contextSHA256'],
+        currentSupportSHA256=support.key, actualFeetModelSHA256=digest(retained['currentFeetModel']),
+        actualPayloadSHA256=retained['actualPayloadSHA256'], compressedPayloadSHA256=retained['compressedPayloadSHA256'],
+        sourceNativeStep=context.source_step, sourceTimeS=context.source_time, entryLiftElapsedS=0.,
+        heading=config.get('heading'))
+    if (any(current.get(k) != v for k, v in identity.items())
+            or problem.get('inputBindingSHA256') != digest(current)
+            or problem.get('activationContextSHA256') != identity['contextSHA256']
+            or problem.get('actualPayloadSHA256') != identity['actualPayloadSHA256']
+            or problem.get('sourceNativeStep') != context.source_step or problem.get('sourceTimeS') != context.source_time
+            or current.get('support', {}).get('equations') != support.equations().tolist()
+            or captured.get('independentKnotsRad') != anchor.tolist()):
+        raise ValueError('fresh recovery causal input/support/coordinate identity differs')
+    for name in ('modelSHA256', 'sourceXMLSHA256', 'armMapSemanticSHA256',
+                 'originalSourceLimitsRad', 'legOriginRightLeftRad', 'stanceSide', 'swingSide'):
+        if binding.get(name) != captured.get('binding', {}).get(name):
+            raise ValueError('fresh recovery changed original model/map/limits/sides')
+        if name in ('modelSHA256', 'sourceXMLSHA256', 'armMapSemanticSHA256') and current.get(name) != binding.get(name):
+            raise ValueError('fresh recovery analytic input model binding differs')
+    samples = result.get('analyticSamples', []); nodes = [(p, f) for p in PHASES for f in ANALYTIC_FRACTIONS]
+    if (len(samples) != len(nodes) or any(r.get('accepted') is not True
+            or r.get('phase') != p or r.get('fraction') != f for r, (p, f) in zip(samples, nodes))):
+        raise ValueError('complete NEW original strict123-sample certificate required')
+    declared = problem.get('declaredAdditionalEnvelopeBrackets')
+    expected_brackets = [dict(phase='lift', bracketFractions=[.775, .8, .8250000000000001]),
+        dict(phase='land', bracketFractions=[.7000000000000001, .7250000000000001, .75])]
+    if declared != expected_brackets:
+        raise ValueError('fresh numerical envelope declarations differ')
+    files = binding.get('freshRecoveryStageFiles', {})
+    expected_files = dict(coordinateReceipt=dict(filename=problem['sourceCoordinateReceiptFilename'], SHA256=problem['sourceCoordinateReceiptSHA256']),
+        activationInput=dict(filename=problem['regeneratedActivationInputFilename'], SHA256=problem['regeneratedActivationInputSHA256']),
+        payload=dict(filename=native_name, SHA256=retained['compressedPayloadSHA256']))
+    if files != expected_files:
+        raise ValueError('fresh recovery stage-file bindings differ')
+    final_knots = np.asarray(result.get('independentKnotsRad'), float)
+    path = result.get('path', {})
+    if (final_knots.shape != (3, 9) or not np.isfinite(final_knots).all()
+            or result.get('finalCandidateSHA256') != digest(final_knots.tolist())
+            or path.get('independentKnotsRad') != final_knots.tolist()
+            or path.get('initialContextSHA256') != context.receipt()['contextSHA256']
+            or path.get('independentIndices') != [0, 1, 2, *LEG_INDICES[binding['stanceSide']]]
+            or path.get('savedFirstLiftIsOfflineDesignOnly') is not False
+            or path.get('nativeAdmission') is not False or path.get('wholeNonlinearPathProof') is not False
+            or path.get('physicsIntegrations') != 0 or path.get('stateInstallations') != 0):
+        raise ValueError('fresh final knots/path/current context identity or offline-only semantics differ')
+    maximum_correction = float(np.max(abs(np.asarray(result.get('independentKnotsRad'), float)-anchor)))
+    if (not math.isfinite(result.get('maximumCorrectionFromFreshAnchorRad', math.nan))
+            or abs(result['maximumCorrectionFromFreshAnchorRad']-maximum_correction) > 1e-14):
+        raise ValueError('fresh minimum-correction anchor receipt differs')
+    certificate = result.get('freshRecovery123SampleCertificate', {})
+    if (certificate.get('passed') is not True or certificate.get('originalStrictMapUsed') is not True
+            or certificate.get('declaredSampleCount') != 123 or result.get('finalOriginalStrictMapRestored') is not True):
+        raise ValueError('new strict123 original-map certificate missing')
+    family = result.get('family', {})
+    for name, value in dict(variables=27, footLiftM=.04, ownFootAdvanceM=.182,
+            armAndMapReserveRad=.02, supportReserveM=.003,
+            maximumCommandCOMSpeedMps=.19260552331163003,
+            maximumCommandCOMAccelerationMps2=.3901818436690813).items():
+        if family.get(name) != value:
+            raise ValueError('fresh problem changed original family/cap: '+name)
+    if (family.get('noSeedGoalWeightScan') is not True or family.get('strictOriginalMapInFinalPathAndRuntime') is not True
+            or family.get('objective') != 'minimum .5 Euclidean squared27-coordinate correction from exact recovered accepted coordinate vector'):
+        raise ValueError('fresh problem objective/map semantics differ')
+    verify_finite_path_certificate(result)
+    verify_global_phase_support_coverage(result, required_phases=PHASES,
+        additional_envelope_role='declaredAdditionalEnvelopes')
+
+
 def frozen_proposal(proposal_path, binding_path=None):
     """Read-only preflight, deliberately independent of any native World.
 
@@ -574,7 +712,7 @@ def frozen_proposal(proposal_path, binding_path=None):
     sources = binding.get('frozenSourceHashes', {})
     if not isinstance(sources, dict) or any(n not in sources for n in CRITICAL_PROPOSAL_SOURCES):
         raise ValueError('complete proposal-producing source binding required')
-    if result.get('twoStageFeasibilityRestoration') is not None and 'wholebody_feasibility_polish.py' not in sources:
+    if (result.get('twoStageFeasibilityRestoration') is not None or result.get('freshRecoveryProblem') is not None) and 'wholebody_feasibility_polish.py' not in sources:
         raise ValueError('feasibility producer source binding required')
     if result.get('plannerFastGeometryUsed') is True:
         name = result.get('plannerFastGeometrySourceName')
@@ -595,6 +733,9 @@ def frozen_proposal(proposal_path, binding_path=None):
     value = dict(proposalSHA256=sha(path), proposalFilename=path.name,
         binding=binding, independentKnotsRad=knots.tolist(),
         offlineReceiptSHA256=digest(result), flightOptimizerCallsAtRuntime=0)
+    if result.get('freshRecoveryProblem') is not None:
+        value.update(freshRecoveryProblem=result['freshRecoveryProblem'],
+            activationInputBinding=result['inputBinding'])
     if result.get('activationRetargeting') is not None:
         value.update(activationRetargeting=result['activationRetargeting'],
             activationInputBinding=result['inputBinding'])
@@ -645,6 +786,11 @@ def current_support(controller, context, *, triangle=True):
 def verify_current_activation_identity(proposal, context, support, feet, payload):
     """Retargeted geometry is valid only for its exact retained causal state."""
     transition = proposal.get('activationRetargeting')
+    if transition is None and proposal.get('freshRecoveryProblem') is not None:
+        p = proposal['freshRecoveryProblem']
+        transition = dict(activationSourceStep=p.get('sourceNativeStep'),
+            activationSourceTimeS=p.get('sourceTimeS'), activationContextSHA256=p.get('activationContextSHA256'),
+            actualPayloadSHA256=p.get('actualPayloadSHA256'))
     if transition is None:
         return
     bound = proposal.get('activationInputBinding', {})

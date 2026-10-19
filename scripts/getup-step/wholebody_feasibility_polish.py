@@ -15,6 +15,7 @@ from wholebody_cycle_reference import (WholeBodyCycle,PHASES,LEG_INDICES,VERSION
 
 VERSION_POLISH='free-com-flight-feasibility-polish-v1'
 VERSION_REFINEMENT='free-com-flight-collocation-refinement-v1'
+VERSION_FRESH_RECOVERY='free-com-flight-fresh-recovery-v1'
 FRACTIONS=(0.,.25,.5,.75,1.)
 CERTIFICATE_FRACTIONS=tuple(float(x)for x in np.linspace(0.,1.,41))
 
@@ -59,6 +60,34 @@ def _stage_binding(binding,anchor):
     result.update(schema=1,sourceCandidateIndependentKnotsRad=anchor.reshape(3,9).tolist(),polishOptimizerCalls=1,
         numericalFeasibilityOnly=True,originalHardLimitsUnchanged=True,originalFootPathAndClocksUnchanged=True,
         analyticConstraintJets=True,goalOrWeightScan=False,nativeWorldConstructions=0,physicsIntegrations=0)
+    return result
+
+
+def fresh_recovery_binding(value,anchor,initial,input_binding,context):
+    """New causal problem after missing raw proofs; never forge old stages."""
+    result=copy.deepcopy(value);key=digest(anchor.reshape(3,9).tolist())
+    expected=dict(schema=1,sourceCandidateSHA256=key,objectiveAnchorSHA256=key,initialContinuationCandidateSHA256=key,
+        regeneratedActivationInputSHA256=input_binding.get('inputSHA256'),inputBindingSHA256=digest(input_binding),
+        activationContextSHA256=context.receipt()['contextSHA256'],actualPayloadSHA256=input_binding.get('actualPayloadSHA256'),
+        sourceNativeStep=context.source_step,sourceTimeS=context.source_time,entryLiftElapsedS=0.,
+        original33AnchorAvailable=False,previousRawReceiptsRecovered=False,oldCertificatesReused=False,
+        originalHardLimitsUnchanged=True,originalFootPathAndClocksUnchanged=True,goalOrWeightScan=False,producerOptimizerCalls=1)
+    if any(k not in result or type(result[k])is not type(v)or result[k]!=v for k,v in expected.items()):
+        raise ValueError('fresh recovered-coordinate problem identity/semantics differ')
+    if digest(initial.reshape(3,9).tolist())!=key:raise ValueError('fresh anchor and sole initial candidate must be identical')
+    for name in('sourceCoordinateReceiptFilename','regeneratedActivationInputFilename'):
+        if not isinstance(result.get(name),str)or not result[name]or '/'in result[name]:raise ValueError('fresh recovery input basename required')
+    for name in('sourceCoordinateReceiptSHA256','regeneratedActivationInputSHA256'):
+        h=result.get(name)
+        if not isinstance(h,str)or len(h)!=64 or any(c not in'0123456789abcdef'for c in h):raise ValueError('fresh recovery exact input SHA256 required')
+    brackets=result.get('declaredAdditionalEnvelopeBrackets',[])
+    expected_brackets=[dict(phase='lift',bracketFractions=[.775,.8,.8250000000000001]),
+        dict(phase='land',bracketFractions=[.7000000000000001,.7250000000000001,.75])]
+    if brackets!=expected_brackets:raise ValueError('exact fresh lift/land envelope declarations required')
+    for bracket in brackets:
+        b=bracket.get('bracketFractions',[])
+        if len(b)!=3 or not all(isinstance(x,(int,float))and math.isfinite(x)for x in b)or not 0.<=b[0]<b[1]<b[2]<=1.:
+            raise ValueError('fresh finite ordered additional envelope brackets required')
     return result
 
 
@@ -409,12 +438,13 @@ def summarize_samples(samples):
         COMPolylineOmitsUnavailableIntervals=any('commandCOM'not in x for x in samples))
 
 
-def polish_horizon(realizer,current_context,source_limits,heading,current_support,source_candidate_knots,*,stage_binding,
+def polish_horizon(realizer,current_context,source_limits,heading,current_support,source_candidate_knots,*,stage_binding=None,
         design_only=False,entry_elapsed=0.,input_binding=None,max_iterations=80,max_wall_seconds=180.,
         certificate_max_wall_seconds=120.,cancellation_check=None,progress_callback=None,
         constraint_nodes=None,collocation_refinement=None,exchange_history=None,initial_knots=None,
         global_translate_support_envelopes=False,node_geometry=None,node_geometry_binding=None,
-        global_support_phases=None,activation_retargeting=None,certificate_sampler=None,certificate_sampler_binding=None):
+        global_support_phases=None,activation_retargeting=None,certificate_sampler=None,certificate_sampler_binding=None,
+        fresh_recovery_problem=None):
     """One bounded SLSQP; independently check EXACT final candidate at123 nodes.
 
     The return path exists only for successful polish plus full original strict
@@ -423,7 +453,7 @@ def polish_horizon(realizer,current_context,source_limits,heading,current_suppor
     completed major iteration (never a best iterate or FD-perturbed candidate).
     """
     nodes=normalized_constraint_nodes(constraint_nodes)
-    refined=collocation_refinement is not None
+    fresh=fresh_recovery_problem is not None;refined=collocation_refinement is not None or fresh
     for value,cap,label in((max_wall_seconds,300. if refined else 180.,'optimizer'),(certificate_max_wall_seconds,180. if refined else 120.,'certificate')):
         if not math.isfinite(value)or not 0.<value<=cap:raise ValueError(label+' wall cap must be positive and at most'+str(cap))
     if type(max_iterations)is not int or not 1<=max_iterations<=80:raise ValueError('maximum iterations in1..80 required')
@@ -431,7 +461,7 @@ def polish_horizon(realizer,current_context,source_limits,heading,current_suppor
         if value is not None and not callable(value):raise ValueError(label+' must be callable')
     anchor=np.asarray(source_candidate_knots,dtype=np.float64)
     if anchor.shape!=(3,9)or not np.isfinite(anchor).all():raise ValueError('finite bound3x9 source candidate required')
-    anchor=anchor.reshape(27).copy();stage=_stage_binding(stage_binding,anchor)
+    anchor=anchor.reshape(27).copy();stage=None if fresh else _stage_binding(stage_binding,anchor)
     refinement=refinement_binding(collocation_refinement,nodes,anchor)
     geometry_binding=copy.deepcopy(node_geometry_binding or{})
     if node_geometry is not None:
@@ -448,7 +478,17 @@ def polish_horizon(realizer,current_context,source_limits,heading,current_suppor
     initial=anchor.copy()if initial_knots is None else np.asarray(initial_knots,dtype=np.float64).reshape(27).copy()
     if not np.isfinite(initial).all():raise ValueError('finite deterministic continuation required')
     global_phases=tuple(global_support_phases or(('translate',)if global_translate_support_envelopes else()))
-    if retarget is not None:
+    fresh_problem=None
+    if fresh:
+        if(stage_binding is not None or collocation_refinement is not None or history or retarget is not None
+                or nodes!=normalized_constraint_nodes()or global_phases!=PHASES or design_only or entry_elapsed!=0.
+                or current_context.phase!='transfer'or(input_binding or{}).get('entryLiftElapsedS')!=0.
+                or(input_binding or{}).get('contextSHA256')!=current_context.receipt()['contextSHA256']
+                or len(current_support.equations())!=9
+                or(input_binding or{}).get('currentSupportSHA256')!=current_support.key):
+            raise ValueError('fresh recovery requires new stationary actual input/all-phase coverage and no historical stages')
+        fresh_problem=fresh_recovery_binding(fresh_recovery_problem,anchor,initial,input_binding or{},current_context)
+    elif retarget is not None:
 
         if refinement is None or global_phases!=PHASES:raise ValueError('actual activation requires all-phase support coverage')
         expected=dict(schema=1,activationSourceStep=current_context.source_step,activationSourceTimeS=current_context.source_time,
@@ -508,8 +548,11 @@ def polish_horizon(realizer,current_context,source_limits,heading,current_suppor
         if start is not None and time.monotonic()-start>=max_wall_seconds:control='compute-cap';raise _ControlStop(control)
     evaluator=AnalyticPolishEvaluator(realizer,current_context,source_limits,heading,current_support,anchor,
         design_only=design_only,entry_elapsed=entry_elapsed,check_control=check_optimizer,constraint_nodes=constraint_nodes,
-        envelope_brackets=None if refinement is None else refinement.get('sourceBrackets'),
+        envelope_brackets=(fresh_problem['declaredAdditionalEnvelopeBrackets']if fresh else(None if refinement is None else refinement.get('sourceBrackets'))),
         global_translate_support=global_translate_support_envelopes,node_geometry=node_geometry,global_support_phases=global_phases)
+    if fresh:
+        for spec in evaluator.envelope_specs:
+            if 'historicalSourceBracketFractions'in spec:spec['freshDeclaredBracketFractions']=spec.pop('historicalSourceBracketFractions')
     # Reject input outside original independent bounds; do not project a seed.
     if any(x<lo or x>hi for x,(lo,hi)in zip(initial,evaluator.bounds)):raise ValueError('bound source candidate outside original independent bounds')
     trace=[];progress=[];last_major=None
@@ -544,8 +587,8 @@ def polish_horizon(realizer,current_context,source_limits,heading,current_suppor
     certificate=dict(schema=1,declaredSampleCount=123,phases=list(PHASES),fractions=list(CERTIFICATE_FRACTIONS),
         maximumWallSeconds=certificate_max_wall_seconds,originalStrictMapUsed=True,optimizerProxyUsed=False,
         adaptiveGrid=False,wholeContinuousPathCertificate=False,liveCommandRecheckingRequired=True)
-    receipt=dict(schema=1,version=VERSION_REFINEMENT if refined else VERSION_POLISH,inputBinding=input_binding or dict(contextSHA256=current_context.receipt()['contextSHA256']),
-        twoStageFeasibilityRestoration=stage,optimizerCalls=1,totalProducerOptimizerCalls=(retarget['sourceProposalProducerOptimizerCalls']+1+len(history))if retarget is not None else((3+len(history))if refined else 2),
+    receipt=dict(schema=1,version=VERSION_FRESH_RECOVERY if fresh else(VERSION_REFINEMENT if refined else VERSION_POLISH),inputBinding=input_binding or dict(contextSHA256=current_context.receipt()['contextSHA256']),
+        twoStageFeasibilityRestoration=stage,optimizerCalls=1,totalProducerOptimizerCalls=1 if fresh else((retarget['sourceProposalProducerOptimizerCalls']+1+len(history))if retarget is not None else((3+len(history))if refined else 2)),
         optimizerCallsScope='this call1; recovery1 plus failed polish1 plus refinement1 when refined; opaque timeout separately recorded',
         family=dict(variables=27,independentIndices=evaluator.idx.tolist(),originalClocksS=[.8,1.2,1.],clocksS=list(evaluator.entry.durations),
             footLiftM=.04,ownFootAdvanceM=.182,sourceLandingContactPreferenceM=-.0005,sourceInteriorRad=.01,
@@ -578,6 +621,16 @@ def polish_horizon(realizer,current_context,source_limits,heading,current_suppor
         strictCertificateCacheUsed=certificate_sampler is not None,strictCertificateCacheSourceName=strict_sampler_binding.get('filename'),
         strictCertificateCacheSHA256=strict_sampler_binding.get('SHA256'))
     if refinement is not None:receipt['collocationRefinement']=refinement
+    if fresh:
+        receipt.pop('twoStageFeasibilityRestoration')
+        receipt.update(freshRecoveryProblem=fresh_problem,initialContinuationIndependentKnotsRad=initial.reshape(3,9).tolist(),
+            initialContinuationCandidateSHA256=digest(initial.reshape(3,9).tolist()),objectiveAnchorSHA256=digest(anchor.reshape(3,9).tolist()),
+            globalPhaseSupportEnvelopeCoverage=evaluator.phase_coverage_receipt(),activeEnvelopeConfiguration=evaluator.envelope_specs,
+            activeConstraintRowCounts=dict(original=13*len(evaluator.labels),declaredAdditionalEnvelopes=2,
+                globalPhaseSupportEnvelopes=8*len(evaluator.eq)*len(global_phases),total=13*len(evaluator.labels)+len(evaluator.envelope_specs)))
+        receipt['optimizerCallsScope']='this explicitly new fresh-recovery problem only; lost historical producer receipts are not relabeled'
+        receipt['family'].update(objective='minimum .5 Euclidean squared27-coordinate correction from exact recovered accepted coordinate vector',
+            originalBodyKneeGoalShapeRetainedAsAnchor=True,refinementConstraintStructure='original13 full blocks plus all-phase closed-quarter support faces and2 freshly declared scalar envelopes')
     if history and retarget is None:
         receipt.update(exchangeHistory=history,initialContinuationIndependentKnotsRad=initial.reshape(3,9).tolist(),
             initialContinuationCandidateSHA256=digest(initial.reshape(3,9).tolist()),objectiveAnchorSHA256=digest(anchor.reshape(3,9).tolist()),
@@ -675,7 +728,9 @@ def polish_horizon(realizer,current_context,source_limits,heading,current_suppor
     all_samples=[*samples,*dense,*extrema_samples]
     strict_map=bool(len(samples)==123 and(not refined or len(dense)==dense_receipt['declaredSampleCount'])
         and all(r['originalStrictMapEvaluationPassed']for r in all_samples))
-    if retarget is None:
+    if fresh:
+        receipt.update(maximumCorrectionFromFreshAnchorRad=float(max(abs(final-anchor))),freshRecovery123SampleCertificate=certificate)
+    elif retarget is None:
         stage.update(maximumCorrectionRad=float(max(abs(final-anchor))),finalOriginalStrictMapRestored=strict_map,declared123SampleCertificate=True,certificateReceipt=certificate)
     else:
         # Historical stage is retained exactly; current strict admission is

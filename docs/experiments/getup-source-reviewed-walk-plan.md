@@ -200,6 +200,42 @@ proposal proceeds to one native step plus quiet,
 independent audit and actual-speed visual review, then alternating diagnostics
 and the full ten-step test.
 
+## Recovery checkpoint (2026-10-19)
+
+The shared execution directory disappeared at about 03:09 UTC. Historical
+compact results below remain historical reports; their raw journals, certificates,
+proposal receipts and the iteration-33 vector are no longer available locally.
+Source checkpoint aaf6a7b and the ignored repository native assets survive. No
+missing receipt is reconstructed or used to qualify a new run.
+
+The contact XML rebuild matches its recorded hash exactly. The new inspector
+build differs and is labeled regenerated. One unchanged baseline replay stops
+at 3,300 native integrations. At counter 3,200 the prepared context, actual
+feet/support and original arm map reproduce their recorded hashes exactly;
+the full native payload differs, so original native-state byte equality is
+unproven. The accepted 27-coordinate vector alone is recovered exactly
+(0959186d…), without its original certificate. New 72-test and 106-test scoped
+runs pass; no recovered-raw-proof or physical-pass claim follows.
+
+The approved fallback is one explicitly new current-state problem, anchored
+and initialized only by those recovered coordinates. It preserves all original
+27-coordinate, foot, clock, map, derivative, joint and support bounds; all nine
+actual support faces across all three phases remain covered by 1,102 rows.
+Two scalar-envelope brackets are freshly declared, without attributing them to
+lost selection receipts. New source/profile checks reject historical proof
+substitution, changed anchors and contradictory qualification flags.
+
+For exact native binding, one cold-prefix world is held at counter 3,200 while
+one bounded 300 s producer and 180 s strict certificate run. No native time or
+state advances during this compute hold. Resume the same world only after
+full source/current-input preflight, analytic/static admission and a fresh
+21-command dynamic window. Record wall compute separately from physical time;
+this is not a real-time computation claim. A failed or incomplete proposal
+stops the held world without applying a changed reference. Retain all new
+artifacts in ignored repository outputs with new receipts. No seed scan,
+limit relaxation, mid-run restore or final qualification is authorized by this
+recovery stage.
+
 ## Final acceptance
 
 Require ten alternating own-foot advances ≥180 mm in one uninterrupted world,
