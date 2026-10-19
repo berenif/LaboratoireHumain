@@ -40,9 +40,18 @@ fn main() {
         .create_new(true)
         .open(out.join("started-once"))
         .unwrap();
-    let mut profile = Profile::default();
-    profile.getup_policy_enabled = true;
-    let mut runtime = Runtime::new_getup_fixture(kind).unwrap();
+    let profile = match std::env::var("LH_GETUP_FIXTURE_PROFILE") {
+        Ok(path) => serde_json::from_str::<Profile>(&fs::read_to_string(path).unwrap()).unwrap(),
+        Err(std::env::VarError::NotPresent) => {
+            let mut profile = Profile::default();
+            profile.getup_policy_enabled = true;
+            profile
+        }
+        Err(error) => panic!("Invalid explicit GetUp fixture profile path: {error}"),
+    };
+    profile.validate().unwrap();
+    assert!(profile.getup_policy_enabled, "Explicit recovery profile must enable the policy");
+    let mut runtime = Runtime::new_getup_fixture_with_profile(kind, profile.clone()).unwrap();
     let mut reply = runtime.advance(0).unwrap();
     let mut trace = File::create(out.join("trace.ndjson")).unwrap();
     let mut trigger = None;

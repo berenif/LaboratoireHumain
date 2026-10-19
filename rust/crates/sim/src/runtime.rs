@@ -54,6 +54,15 @@ impl Runtime {
     }
     pub fn new_getup_fixture(kind:&str) -> Result<Self,String> {
         let mut profile=Profile::default();profile.getup_policy_enabled=true;
+        Self::new_getup_fixture_with_profile(kind, profile)
+    }
+    /// Construct a fresh fixture with an explicit complete numerical profile.
+    /// No checkpoint or already-integrated world is reconfigured.
+    pub fn new_getup_fixture_with_profile(kind: &str, profile: Profile) -> Result<Self, String> {
+        profile.validate()?;
+        if !profile.getup_policy_enabled {
+            return Err("GetUp fixture profile must explicitly enable the policy".into());
+        }
         let mut runtime=Self::new(Mode::Protocol,0.0,profile)?;
         crate::getup::fixtures::initialize(&mut runtime.simulation,kind)?;
         Ok(runtime)
@@ -628,6 +637,10 @@ impl Runtime {
         })
     }
 }
+
+#[cfg(test)]
+#[path = "getup_fixture_profile_tests.rs"]
+mod getup_fixture_profile_tests;
 
 #[cfg(test)]
 mod tests {

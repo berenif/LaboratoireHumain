@@ -1,0 +1,398 @@
+{
+  "schema": 1,
+  "date": "2026-10-19",
+  "classification": "explicit-unadmitted-numerical-profile-fresh-four-fixture-recovery-and-native-sustained-standing",
+  "disposition": "Not globally admitted:3of4 fresh recoveries pass and all3 sustain30s, but back regresses to the unchanged25s deadline failure. No per-fixture profile selection or production default change.",
+  "baseCommit": "c9ec13643bf8fda89efd2b392485c95118788738",
+  "features": [
+    "getup-terminal-balance-experiment",
+    "standing-dynamics-experiment"
+  ],
+  "profilePath": "docs/evidence/profiles/getup-800hz-3plus1-recovery-qualification-v1.json",
+  "profileSha256": "ea6da63a9996d9528f3dc25041cf476fdf0cfa828f57c57d119b78c8ebd0f3a7",
+  "typedF32DiffFromEnabledDefault20plus5": {
+    "additional_body_iterations": [
+      5,
+      1
+    ],
+    "id": [
+      "getup-reference-5ad52fbe",
+      "getup-800hz-3plus1-recovery-qualification-v1"
+    ],
+    "solver_iterations": [
+      20,
+      3
+    ]
+  },
+  "sameActors": {
+    "teacherSha256": "f8d8d6ea787366a67aa46352cf5243ed2962dd277b5ca6b6f98a85fc3a67ab4f",
+    "studentSha256": "c489faed55bdab1669c51dab71a102db91ff2a55143789f682e45cd8169d6dbb"
+  },
+  "sourceFiles": {
+    "rust/crates/sim/src/runtime.rs": "5c046f42161233a0ca329065650c6e7513bd417c5f0f41ab387d45929acb3711",
+    "rust/crates/sim/examples/getup_terminal_recovery.rs": "a2e1b5d8e0d0a4d3939da766697a478086aafcaef7a3c827f52a9fa478f8f69c",
+    "rust/crates/worker/src/lib.rs": "1b4753161725e61dfd2a2e01acecc87b66d12189cc2ae11bf111293d1184ba4d",
+    "rust/crates/sim/src/getup_fixture_profile_tests.rs": "c179d76be1d019fc9ee35d63d35a41a03f796358dc46fd900dfca0ad176841ac"
+  },
+  "factory": {
+    "freshConstruction": true,
+    "checkpointProfileMorph": false,
+    "completeProfileRequired": true,
+    "policyMustBeExplicitlyEnabled": true,
+    "defaultWrapperUnchangedAtNativeZero": true,
+    "workerExportLengthBoundBytes": 65536,
+    "publicInitializerOrDefaultChanged": false
+  },
+  "unchangedCriteria": {
+    "outerHz": 800,
+    "nativeIntegrationsPer40HzTick": 20,
+    "recoveryDeadlineSeconds": 25,
+    "contiguousOriginalStandingNativeSamples": 800,
+    "footOriginAnchorDriftM": 0.01,
+    "loadedSlipStopMForContinuation": 0.02,
+    "wholeRecovery20mmStop": false,
+    "jointGainsOrBoundsChanged": false,
+    "bodyPoseVelocityOrRootAssist": false
+  },
+  "cases": [
+    {
+      "kind": "back",
+      "outcome": "25-second-recovery-deadline",
+      "fixtureAdmitted": true,
+      "triggerNative": 480,
+      "standingPassed": false,
+      "firstLatchedStandingPassNative": null,
+      "realNativeIntegrations": 20480,
+      "forecastNativeIntegrations": 1000,
+      "totalActualIntegrations": 21480,
+      "nativeObserverSamples": 20480,
+      "unobservedRealTailNativeSteps": 0,
+      "physicalSeconds": 25.6,
+      "maximumContiguousStableSecondsObservedAt800Hz": 0.0,
+      "maximumActualHeadM": 1.358728051185608,
+      "preparationPollingTicks": 4,
+      "terminalBalanceActivationNative": null,
+      "loadedSlipDiagnosticWholeRecoveryM": [
+        0.4397800935932911,
+        0.7130424941830511
+      ],
+      "typedF32InputProfileMatches": true,
+      "continuation": null
+    },
+    {
+      "kind": "belly",
+      "outcome": "experimental-terminal-balance-one-second-standing-pass",
+      "fixtureAdmitted": true,
+      "triggerNative": 400,
+      "standingPassed": true,
+      "firstLatchedStandingPassNative": 3198,
+      "realNativeIntegrations": 3200,
+      "forecastNativeIntegrations": 540,
+      "totalActualIntegrations": 3740,
+      "nativeObserverSamples": 3200,
+      "unobservedRealTailNativeSteps": 0,
+      "physicalSeconds": 4.0,
+      "maximumContiguousStableSecondsObservedAt800Hz": 1.0025,
+      "maximumActualHeadM": 1.4518152475357056,
+      "preparationPollingTicks": 4,
+      "terminalBalanceActivationNative": 2337,
+      "loadedSlipDiagnosticWholeRecoveryM": [
+        0.11372919727930518,
+        0.027308346136132335
+      ],
+      "typedF32InputProfileMatches": true,
+      "continuation": {
+        "outcome": "completed",
+        "requestedSimulatedSeconds": 30.0,
+        "actualContinuationIntegrations": 24000,
+        "nativeSubsteps": 24000,
+        "unobservedTerminalTailNative": 0,
+        "allStandingPredicatesPassedEveryNativeSubstep": true,
+        "standingPredicateFailureSubsteps": {},
+        "maximumFootOriginDriftM": [
+          0.006153257563710213,
+          0.00660375040024519
+        ],
+        "minimumFootLoadsN": [
+          196.357177734375,
+          203.30606079101562
+        ],
+        "loadedContactSpeedIntegralM": [
+          2.58666367596282e-05,
+          1.1557719886701236e-05
+        ],
+        "loadedSlipStopM": 0.02,
+        "maximumBodyLinearMps": 0.022489041090011597,
+        "maximumBodyAngularRadps": 0.03737597540020943,
+        "originalControllerStableCounterAtInput": 802,
+        "originalControllerStableCounterFinal": 24802,
+        "originalControllerCounterContinuousEveryNativeSubstep": true,
+        "originalControllerCounterDiscontinuitySubsteps": 0,
+        "originalStableAnchorsUnchanged": true,
+        "teacherForecastUnchanged": true,
+        "slowDecisionCountUnchanged": true,
+        "slowDecisionArchiveLengthUnchanged": true,
+        "qualifiedOnlyIfOriginalIntervalContinuous": true,
+        "inputCheckpointSha256": "3af2f0ee41e409c3c7197d7654f00b512d368c97824552e6143f9fe3d196ce7e"
+      }
+    },
+    {
+      "kind": "side-supported",
+      "outcome": "experimental-terminal-balance-one-second-standing-pass",
+      "fixtureAdmitted": true,
+      "triggerNative": 200,
+      "standingPassed": true,
+      "firstLatchedStandingPassNative": 10807,
+      "realNativeIntegrations": 10820,
+      "forecastNativeIntegrations": 680,
+      "totalActualIntegrations": 11500,
+      "nativeObserverSamples": 10820,
+      "unobservedRealTailNativeSteps": 0,
+      "physicalSeconds": 13.525,
+      "maximumContiguousStableSecondsObservedAt800Hz": 1.01625,
+      "maximumActualHeadM": 1.457444429397583,
+      "preparationPollingTicks": 1,
+      "terminalBalanceActivationNative": 9730,
+      "loadedSlipDiagnosticWholeRecoveryM": [
+        0.5323894608844837,
+        0.5635934355756433
+      ],
+      "typedF32InputProfileMatches": true,
+      "continuation": {
+        "outcome": "completed",
+        "requestedSimulatedSeconds": 30.0,
+        "actualContinuationIntegrations": 24000,
+        "nativeSubsteps": 24000,
+        "unobservedTerminalTailNative": 0,
+        "allStandingPredicatesPassedEveryNativeSubstep": true,
+        "standingPredicateFailureSubsteps": {},
+        "maximumFootOriginDriftM": [
+          0.003174667013809085,
+          0.0036029063630849123
+        ],
+        "minimumFootLoadsN": [
+          182.7538604736328,
+          215.40509033203125
+        ],
+        "loadedContactSpeedIntegralM": [
+          9.7953155702548e-05,
+          0.00044529819532272176
+        ],
+        "loadedSlipStopM": 0.02,
+        "maximumBodyLinearMps": 0.008971747010946274,
+        "maximumBodyAngularRadps": 0.018748978152871132,
+        "originalControllerStableCounterAtInput": 813,
+        "originalControllerStableCounterFinal": 24813,
+        "originalControllerCounterContinuousEveryNativeSubstep": true,
+        "originalControllerCounterDiscontinuitySubsteps": 0,
+        "originalStableAnchorsUnchanged": true,
+        "teacherForecastUnchanged": true,
+        "slowDecisionCountUnchanged": true,
+        "slowDecisionArchiveLengthUnchanged": true,
+        "qualifiedOnlyIfOriginalIntervalContinuous": true,
+        "inputCheckpointSha256": "ff8b41af49094468116ba1e58bcb5e0db0c044862cc812c5a812cbe131231f41"
+      }
+    },
+    {
+      "kind": "side",
+      "outcome": "experimental-terminal-balance-one-second-standing-pass",
+      "fixtureAdmitted": true,
+      "triggerNative": 320,
+      "standingPassed": true,
+      "firstLatchedStandingPassNative": 16319,
+      "realNativeIntegrations": 16320,
+      "forecastNativeIntegrations": 720,
+      "totalActualIntegrations": 17040,
+      "nativeObserverSamples": 16320,
+      "unobservedRealTailNativeSteps": 0,
+      "physicalSeconds": 20.4,
+      "maximumContiguousStableSecondsObservedAt800Hz": 1.00125,
+      "maximumActualHeadM": 1.4616373777389526,
+      "preparationPollingTicks": 1,
+      "terminalBalanceActivationNative": 15296,
+      "loadedSlipDiagnosticWholeRecoveryM": [
+        0.9418233391712384,
+        0.9265466146949243
+      ],
+      "typedF32InputProfileMatches": true,
+      "continuation": {
+        "outcome": "completed",
+        "requestedSimulatedSeconds": 30.0,
+        "actualContinuationIntegrations": 24000,
+        "nativeSubsteps": 24000,
+        "unobservedTerminalTailNative": 0,
+        "allStandingPredicatesPassedEveryNativeSubstep": true,
+        "standingPredicateFailureSubsteps": {},
+        "maximumFootOriginDriftM": [
+          0.0016549499705433846,
+          0.0017132180510088801
+        ],
+        "minimumFootLoadsN": [
+          184.38523864746094,
+          215.4127197265625
+        ],
+        "loadedContactSpeedIntegralM": [
+          3.478022673040671e-05,
+          2.8315834695291654e-05
+        ],
+        "loadedSlipStopM": 0.02,
+        "maximumBodyLinearMps": 0.0199432410299778,
+        "maximumBodyAngularRadps": 0.02878219448029995,
+        "originalControllerStableCounterAtInput": 801,
+        "originalControllerStableCounterFinal": 24801,
+        "originalControllerCounterContinuousEveryNativeSubstep": true,
+        "originalControllerCounterDiscontinuitySubsteps": 0,
+        "originalStableAnchorsUnchanged": true,
+        "teacherForecastUnchanged": true,
+        "slowDecisionCountUnchanged": true,
+        "slowDecisionArchiveLengthUnchanged": true,
+        "qualifiedOnlyIfOriginalIntervalContinuous": true,
+        "inputCheckpointSha256": "87e0618be5c0ee7b8ce8b7f92dd261b26f48252929f72c5028572de73d0229e4"
+      }
+    }
+  ],
+  "accounting": {
+    "recoveryRealNativeIntegrations": 50820,
+    "recoveryForecastNativeIntegrations": 2940,
+    "continuationRealNativeIntegrations": 72000,
+    "continuationForecastNativeIntegrations": 0,
+    "unobservedTerminalTailNative": 0,
+    "physicalCampaignTotalRealPlusForecastIntegrations": 125760,
+    "unitTestPhysicalWorkSeparate": true,
+    "note": "Continuation begins at each fresh passing checkpoint. Original historical Controller stable_feet and counter are retained, checked every800Hz sample, and never reset by the observer."
+  },
+  "validation": {
+    "coherentBothFeatureFocusedTests": {
+      "scope": "Focused construction/profile and existing controller/support/checkpoint gates; not full suite or broad recovery qualification.",
+      "features": [
+        "getup-terminal-balance-experiment",
+        "standing-dynamics-experiment"
+      ],
+      "testBinarySha256": "99d4220afbd3a090f8cdbae9104793f25aa192e4d1ae73f260fdae058f857ee8",
+      "coherentSingleTestBinary": true,
+      "totalPassed": 18,
+      "totalFailed": 0,
+      "totalIgnored": 0,
+      "sourceSha256": {
+        "rust/crates/sim/src/runtime.rs": "5c046f42161233a0ca329065650c6e7513bd417c5f0f41ab387d45929acb3711",
+        "rust/crates/sim/src/getup_fixture_profile_tests.rs": "c179d76be1d019fc9ee35d63d35a41a03f796358dc46fd900dfca0ad176841ac"
+      },
+      "sourceMatchesCampaignFreeze": true,
+      "constructorTestsRealIntegrations": 0,
+      "constructorTestsForecastIntegrations": 0,
+      "productionSourceChangedByTestWorker": false,
+      "physicalCriteriaChanged": false,
+      "performanceMeasurements": false,
+      "filters": [
+        {
+          "filter": "getup_fixture_profile_tests",
+          "passed": 4,
+          "failed": 0,
+          "ignored": 0,
+          "log": "outputs/getup-recovery-3plus1-20261019/tests-getup-fixture-profile.log",
+          "logSha256": "a8c689edbd229fba46c7c0a0848c36031efbd535b448280f3f6de06531b84a3a",
+          "command": [
+            "/workspace/scratch/5def91918e35/mvp-landing/rust/target/release/deps/lh_sim-d49bd9edaec50f03",
+            "getup_fixture_profile_tests",
+            "--nocapture",
+            "--test-threads=1"
+          ]
+        },
+        {
+          "filter": "terminal_balance_tests",
+          "passed": 8,
+          "failed": 0,
+          "ignored": 0,
+          "log": "outputs/getup-recovery-3plus1-20261019/tests-terminal-balance.log",
+          "logSha256": "57d7546154dae240ef4f2ddb036e2b3fb6285e7ce6baea405c88072a77fbba39",
+          "command": [
+            "/workspace/scratch/5def91918e35/mvp-landing/rust/target/release/deps/lh_sim-d49bd9edaec50f03",
+            "terminal_balance_tests",
+            "--nocapture",
+            "--test-threads=1"
+          ]
+        },
+        {
+          "filter": "runtime::tests::getup_checkpoint_round_trip_is_complete_and_never_steps",
+          "passed": 1,
+          "failed": 0,
+          "ignored": 0,
+          "log": "outputs/getup-recovery-3plus1-20261019/tests-checkpoint.log",
+          "logSha256": "ca74c2561bea7d5c4af346ec5c087ad86845f26dfeea1fa96e51084a9560b103",
+          "command": [
+            "/workspace/scratch/5def91918e35/mvp-landing/rust/target/release/deps/lh_sim-d49bd9edaec50f03",
+            "runtime::tests::getup_checkpoint_round_trip_is_complete_and_never_steps",
+            "--nocapture",
+            "--test-threads=1"
+          ]
+        },
+        {
+          "filter": "getup::supported_standing::tests",
+          "passed": 5,
+          "failed": 0,
+          "ignored": 0,
+          "log": "outputs/getup-recovery-3plus1-20261019/tests-supported-standing.log",
+          "logSha256": "688bbf534f7c349640afffcee4fa3d315275606e6e8f6875c5d20fdccd79dcc8",
+          "command": [
+            "/workspace/scratch/5def91918e35/mvp-landing/rust/target/release/deps/lh_sim-d49bd9edaec50f03",
+            "getup::supported_standing::tests",
+            "--nocapture",
+            "--test-threads=1"
+          ]
+        }
+      ]
+    },
+    "wasmWorkerReleaseCheck": {
+      "passed": true,
+      "target": "wasm32-unknown-unknown",
+      "offline": true,
+      "locked": true,
+      "features": [
+        "getup-terminal-balance-experiment",
+        "standing-dynamics-experiment"
+      ],
+      "log": "outputs/getup-recovery-3plus1-20261019/worker-wasm-check.log"
+    },
+    "wholeNativeSuiteOrBroadRecoveryCorpusQualified": false,
+    "browserRecoveryOnThisProfileExecuted": false,
+    "performanceClaim": false
+  },
+  "observerCompileCorrection": {
+    "initialFailure": "serde_json json macro recursion limit, no simulation run",
+    "correction": "Only crate recursion_limit=256 added; then identical physical observer logic linked successfully",
+    "integrationsBeforeCorrection": 0
+  },
+  "comparisonScope": {
+    "previous20plus5NativeEvidence": "docs/evidence/getup-terminal-dynamic-recovery-2026-10-19.json",
+    "previous20plus5FailedWasmHold": "docs/evidence/browser-terminal-dynamic-recovery-2026-10-19.json",
+    "trajectoryBitwiseParityClaim": false,
+    "onlyProfileBudgetChanges": true,
+    "productionProfileStill20plus5": true
+  },
+  "artifacts": {
+    "outputs/getup-recovery-3plus1-20261019/back/result.json": "2a9edd363afb7ae2515f4e867c9d6e56e0bc0770281efa096f0e008f5fe0d728",
+    "outputs/getup-recovery-3plus1-20261019/belly/result.json": "b8b808a04a8e99195687d22e16f94503ad3e13927f19e6301e49dc126a483893",
+    "outputs/getup-recovery-3plus1-20261019/belly-hold30/result.json": "e83c950172fc35ab98b55d5d941770d5a99bc8c2957452fe206277820e930cea",
+    "outputs/getup-recovery-3plus1-20261019/side-supported/result.json": "d12637c690c14eceb003f875718a45770c42d3506cbdf1662ca4af62a30dc7d3",
+    "outputs/getup-recovery-3plus1-20261019/side-supported-hold30/result.json": "f3b380ebaa34df5de0a96cb77030c61fef11f7f715b0dbbff113ec57d5ac875a",
+    "outputs/getup-recovery-3plus1-20261019/side/result.json": "87d5fb8c23c8c416ce5e2947fbcff14e18fc4ee49e837d1a30fc19e56072faab",
+    "outputs/getup-recovery-3plus1-20261019/side-hold30/result.json": "df440634a9064ed50891ab8c63c1c20de99fa8e7c91c475cff8df4db0c66f930",
+    "outputs/getup-recovery-3plus1-20261019/source-freeze.json": "8548552d3279e731150d277245527d39a1891fe67e4073a5df675d5b763f8dc7",
+    "outputs/getup-recovery-3plus1-20261019/profile-identity.json": "2bf3a3e46e2c4741047b56b0741ce64095c4e1f3d2bea9b869099ec2de75bbfd",
+    "outputs/getup-recovery-3plus1-20261019/process-ledger.json": "b901e6a9825df8482a951b52ed622939eb927ed1efcd8fac18e952e34bed49a5",
+    "outputs/getup-recovery-3plus1-20261019/hold-process-ledger.json": "3ed6803ca922660e232b4ad1f74576430f0361ce972edeebdd69778fed9d0c2d",
+    "outputs/getup-recovery-3plus1-20261019/tests-summary.json": "988ac9a5d8e7552598a200606dc2f2e681de7f5a91ad67b5385c089647cc6fbc",
+    "outputs/getup-recovery-3plus1-20261019/build.log": "d402ceae451e7b503e42ae8c337c811671a3dcab795059e4043e3014aa4672f7",
+    "outputs/getup-recovery-3plus1-20261019/worker-wasm-check.log": "5ccc0ff03b7cf2285535e5b5373ce2d4bc1406b4adf9145abd2727f9a6605999",
+    "outputs/getup-recovery-3plus1-20261019/run-recovery.py": "fac1bb52505173c5b08cf271a9dde2d35537551e84cd3052a1986f7201002507",
+    "outputs/getup-recovery-3plus1-20261019/run-holds.py": "5edc392be02d6c57d9aa0a39a81c592a69751d075ea33a36f6dbac61ac1820d2",
+    "outputs/getup-recovery-3plus1-20261019/recovery": "141a6d59221c54b23bb70ee6d2ff143d4bae4067fdeddfd835f9ec917678da8e",
+    "outputs/getup-recovery-3plus1-20261019/standing-continuation-original-anchors": "c9fa3bab6fed7329ebd0c873140fa7dc40bbc96acbcaac493fbbde2e7d963d78",
+    "outputs/getup-recovery-3plus1-20261019/liblh_sim-frozen.rlib": "0f69b7b34ad20ac9e3b8664464bc2f6bf1a5fa7c254bf4ed1be73ef5dde51a66",
+    "docs/evidence/probes/getup-standing-original-anchors-continuation-2026-10-19.rs": "f6808e50e9f45e2095ea04f04722dd02880a1a28a21577a6dd9cdf6c32ca782a",
+    "outputs/getup-recovery-3plus1-20261019/tests-getup-fixture-profile.log": "a8c689edbd229fba46c7c0a0848c36031efbd535b448280f3f6de06531b84a3a",
+    "outputs/getup-recovery-3plus1-20261019/tests-terminal-balance.log": "57d7546154dae240ef4f2ddb036e2b3fb6285e7ce6baea405c88072a77fbba39",
+    "outputs/getup-recovery-3plus1-20261019/tests-checkpoint.log": "ca74c2561bea7d5c4af346ec5c087ad86845f26dfeea1fa96e51084a9560b103",
+    "outputs/getup-recovery-3plus1-20261019/tests-supported-standing.log": "688bbf534f7c349640afffcee4fa3d315275606e6e8f6875c5d20fdccd79dcc8"
+  }
+}

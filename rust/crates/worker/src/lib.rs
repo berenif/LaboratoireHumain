@@ -195,6 +195,16 @@ mod browser {
         pub fn getup_fixture(kind:&str) -> Result<WorkerRuntime,JsValue> {
             Ok(Self { runtime:Runtime::new_getup_fixture(kind).map_err(error)?,native_output_ms:0.0 })
         }
+        pub fn getup_fixture_with_profile(kind: &str, profile_json: &str) -> Result<WorkerRuntime, JsValue> {
+            if profile_json.len() > 65536 {
+                return Err(error("GetUp fixture profile exceeds bound"));
+            }
+            let profile: Profile = serde_json::from_str(profile_json).map_err(error)?;
+            Ok(Self {
+                runtime: Runtime::new_getup_fixture_with_profile(kind, profile).map_err(error)?,
+                native_output_ms: 0.0,
+            })
+        }
         pub fn getup_fixture_report(&self) -> Result<String,JsValue> {
             self.runtime.getup_fixture_report().map_err(error)
         }
