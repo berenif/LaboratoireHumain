@@ -1,4 +1,4 @@
-//! Port of the legacy S1 point-impulse controller. Owns intent, never body poses.
+//! Bounded point-force controller. Owns intent, never body poses or velocities.
 use rapier3d::prelude::*;
 use serde::{Deserialize, Serialize};
 
@@ -83,10 +83,16 @@ impl Grab {
     pub fn apply(
         &mut self,
         body: &mut RigidBody,
+        point_velocity: Vector,
         dt: f32,
         limits: &Limits,
     ) -> Result<Vector, String> {
-        if !dt.is_finite() || dt <= 0.0 || !limits.valid() || !self.raw_target.is_finite() {
+        if !dt.is_finite()
+            || dt <= 0.0
+            || !limits.valid()
+            || !self.raw_target.is_finite()
+            || !point_velocity.is_finite()
+        {
             return Err("Invalid grab interval/limits/target".into());
         }
         let remaining = self.raw_target - self.control_target;
@@ -107,7 +113,9 @@ impl Grab {
         self.control_target += self.target_velocity * dt;
         let anchor = body.position().transform_point(self.local_anchor);
         let radius = anchor - body.center_of_mass();
-        let velocity = body.velocity_at_point(anchor);
+        // Multibody link velocity caches can lag the integrated generalized
+        // velocity. The owner supplies the current physical velocity at anchor.
+        let velocity = point_velocity;
         let m = body.mass_properties();
         let response = |j: Vector| {
             m.effective_inv_mass * j
@@ -148,7 +156,11 @@ impl Grab {
         if !impulse.is_finite() {
             return Err("Non-finite grab impulse".into());
         }
-        body.apply_impulse_at_point(impulse, anchor, true);
+        // A RigidBody impulse only changes the link's velocity cache, which a
+        // reduced-coordinate multibody overwrites. External forces enter its
+        // generalized dynamics and transmit to the rest of the articulation.
+        // Simulation clears this wrench before every 1/800 s substep.
+        body.add_force_at_point(impulse / dt, anchor, true);
         Ok(impulse)
     }
 }
@@ -174,7 +186,16 @@ mod tests {
             for tick in 0..180 {
                 grab.raw_target = direction * (0.6 * (tick as f32 / 90.0).min(1.0));
                 for _ in 0..4 {
-                    grab.apply(&mut body, dt, &limits).expect("held target");
+                    body.reset_forces(false);
+                    body.reset_torques(false);
+                    let previous_velocity = grab.target_velocity();
+                    grab.apply(&mut body, Vector::ZERO, dt, &limits)
+                        .expect("held target");
+                    assert!(grab.target_velocity().length() <= limits.target_speed_m_s + 1e-6);
+                    assert!(
+                        grab.target_velocity().distance(previous_velocity)
+                            <= limits.target_acceleration_m_s2 * dt + 1e-6
+                    );
                     saw_overshoot |= grab.target_velocity().dot(direction) < -0.01;
                     assert!(!grab.reverses(direction));
                 }
@@ -183,14 +204,17 @@ mod tests {
             grab.raw_target = -direction * 0.6;
             let mut reversed = false;
             for _ in 0..60 {
-                grab.apply(&mut body, dt, &limits).expect("reversed target");
+                body.reset_forces(false);
+                body.reset_torques(false);
+                grab.apply(&mut body, Vector::ZERO, dt, &limits)
+                    .expect("reversed target");
                 reversed |= grab.reverses(direction);
             }
             assert!(reversed);
         }
     }
     #[test]
-    fn point_impulse_obeys_force_torque_and_independent_kinetic_energy_caps() {
+    fn point_force_obeys_wrench_and_isolated_impulse_equivalent_work_caps() {
         for velocity in [Vector::ZERO, Vector::new(5.0, -2.0, 3.0)] {
             let mut body = RigidBodyBuilder::dynamic()
                 .additional_mass_properties(MassProperties::new(
@@ -212,17 +236,107 @@ mod tests {
             let limits = Limits::default();
             let dt = 1.0 / 240.0;
             for _ in 0..240 {
+                body.reset_forces(false);
+                body.reset_torques(false);
                 let before =
                     2.5 * body.linvel().length_squared() + 0.5 * body.angvel().length_squared();
                 let anchor = body.position().transform_point(grab.local_anchor);
                 let radius = anchor - body.center_of_mass();
-                let j = grab.apply(&mut body, dt, &limits).expect("bounded impulse");
-                let after =
-                    2.5 * body.linvel().length_squared() + 0.5 * body.angvel().length_squared();
+                let point_velocity = body.velocity_at_point(anchor);
+                let j = grab
+                    .apply(&mut body, point_velocity, dt, &limits)
+                    .expect("bounded force");
+                // Independent free-body impulse-equivalent energy, not a claim
+                // about immediate cache mutation or full articulated energy.
+                let after = 2.5 * (velocity + j / 5.0).length_squared()
+                    + 0.5 * radius.cross(j).length_squared();
                 assert!(j.length() <= limits.force_n * dt + 1e-5);
                 assert!(radius.cross(j).length() <= limits.torque_nm * dt + 1e-5);
                 assert!(after - before <= limits.positive_power_w * dt + 0.0001);
+                assert!(body.user_force().distance(j / dt) < 0.0001);
+                assert!(body.user_torque().distance(radius.cross(j / dt)) < 0.0001);
+                assert_eq!(body.linvel(), velocity, "force must await integration");
             }
         }
+    }
+
+    #[test]
+    fn grab_force_reaches_free_multibody_momentum_instead_of_only_link_cache() {
+        for direction in [Vector::X, -Vector::X] {
+            let mut world = PhysicsWorld::new();
+            world.gravity = Vector::ZERO;
+            world.integration_parameters.dt = 1.0 / 800.0;
+            let create = |position| {
+                RigidBodyBuilder::dynamic()
+                    .translation(position)
+                    .can_sleep(false)
+                    .additional_mass_properties(MassProperties::new(Vector::ZERO, 1.0, Vector::ONE))
+            };
+            let root = world.insert_body(create(Vector::ZERO));
+            let child = world.insert_body(create(Vector::Y));
+            world
+                .insert_multibody_joint(
+                    root,
+                    child,
+                    FixedJointBuilder::new().local_anchor1(Vector::Y).build(),
+                )
+                .expect("articulation");
+            world.step();
+            let anchor = world.bodies[child].center_of_mass();
+            let mut grab = Grab::new(0, 1, Vector::ZERO, anchor + direction * 0.2).expect("grab");
+            let impulse = grab
+                .apply(
+                    &mut world.bodies[child],
+                    Vector::ZERO,
+                    1.0 / 800.0,
+                    &Limits::default(),
+                )
+                .expect("bounded point force");
+            assert!(impulse.dot(direction) > 0.0);
+            world.step();
+            let id = *world.multibody_joints.rigid_body_link(root).unwrap();
+            let multibody = world.multibody_joints.get_multibody(id.multibody).unwrap();
+            let mut momentum = Vector::ZERO;
+            for link in multibody.links() {
+                let twist =
+                    multibody.body_jacobian(link.link_id()) * multibody.generalized_velocity();
+                let velocity = Vector::new(twist[0], twist[1], twist[2]);
+                assert!(velocity.dot(direction) > 0.0, "both links must respond");
+                momentum += velocity * world.bodies[link.rigid_body_handle()].mass();
+            }
+            assert!(
+                momentum.distance(impulse) < 0.00001,
+                "{momentum:?} vs {impulse:?}"
+            );
+        }
+    }
+
+    #[test]
+    fn damping_uses_supplied_current_point_velocity_instead_of_stale_body_cache() {
+        let mut body = RigidBodyBuilder::dynamic()
+            .additional_mass_properties(MassProperties::new(Vector::ZERO, 1.0, Vector::ONE))
+            .linvel(-Vector::X)
+            .build();
+        body.recompute_mass_properties_from_colliders(&ColliderSet::new());
+        let mut grab = Grab::new(0, 1, Vector::ZERO, Vector::ZERO).unwrap();
+        let impulse = grab
+            .apply(&mut body, Vector::X, 1.0 / 800.0, &Limits::default())
+            .unwrap();
+        assert!(
+            impulse.x < 0.0,
+            "damp actual motion, not the opposite cached velocity"
+        );
+        body.reset_forces(false);
+        body.reset_torques(false);
+        assert!(
+            grab.apply(
+                &mut body,
+                Vector::splat(f32::NAN),
+                1.0 / 800.0,
+                &Limits::default()
+            )
+            .is_err()
+        );
+        assert_eq!(body.user_force(), Vector::ZERO);
     }
 }

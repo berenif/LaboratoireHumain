@@ -22,6 +22,7 @@
     "verify:rust:recovery": "node scripts/run-rust-recovery-gates.mjs",
     "verify:rust:recovery:review": "node scripts/finalize-rust-recovery-qualification.mjs",
     "verify:rust:browser": "node scripts/verify-rust-app.mjs",
+    "verify:grab": "node scripts/verify-rust-grab.mjs",
     "lint": "node scripts/run-rust-checks.mjs lint",
     "preview": "npm start",
     "verify:smoke": "node scripts/smoke-rust-app.mjs"

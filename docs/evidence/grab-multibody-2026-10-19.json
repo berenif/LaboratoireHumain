@@ -1,0 +1,252 @@
+{
+  "schema": 1,
+  "date": "2026-10-19",
+  "scope": "Bounded physical grab-force delivery into existing GetUp Rapier multibody; no gait/recovery/rendering redesign",
+  "baselineCommit": "0d810aa8c9e928c6bce594e25c93c06d5eb94488",
+  "cause": "RigidBody::apply_impulse_at_point changed a link velocity cache; reduced-coordinate integration reconstructed link velocities from generalized coordinates and discarded the pull.",
+  "change": "Preserve bounded point-controller demand, deliver J/dt through add_force_at_point, and use current generalized CoM twist plus angular velocity cross local-anchor radius for damping/work input. Clear per-substep forces as before.",
+  "unchanged": [
+    "GetUp body/masses/inertias/contacts",
+    "standing PD and gravity",
+    "800 Hz native integration / 40 Hz worker ticks",
+    "schema 4 worker contract",
+    "public gait and recovery admission",
+    "20 mm per-foot offline walk-slip stop"
+  ],
+  "nativeBefore": {
+    "pairedTicks": 8,
+    "durationSPerBranch": 0.2,
+    "all25SegmentPositionsExactlyEqualToNoGrab": true,
+    "all25RotationsExactlyEqualToNoGrab": true,
+    "samples": [
+      {
+        "tick": 4,
+        "simulationTimeS": 0.1,
+        "released": false,
+        "maximumPositionDifferenceM": 0.0,
+        "positionDifferenceM": {
+          "torso": 0.0,
+          "right_hand": 0.0
+        }
+      },
+      {
+        "tick": 8,
+        "simulationTimeS": 0.2,
+        "released": true,
+        "maximumPositionDifferenceM": 0.0,
+        "positionDifferenceM": {
+          "torso": 0.0,
+          "right_hand": 0.0
+        }
+      }
+    ]
+  },
+  "nativeAfter": {
+    "samples": [
+      {
+        "tick": 4,
+        "simulationTimeS": 0.1,
+        "released": false,
+        "maximumPositionDifferenceM": 0.0055832755751907825,
+        "positionDifferenceM": {
+          "torso": 0.00038848223630338907,
+          "right_hand": 0.0055832755751907825
+        }
+      },
+      {
+        "tick": 8,
+        "simulationTimeS": 0.2,
+        "released": true,
+        "maximumPositionDifferenceM": 0.013135448098182678,
+        "positionDifferenceM": {
+          "torso": 0.001157703809440136,
+          "right_hand": 0.013135448098182678
+        }
+      }
+    ],
+    "release": "No active grab and exactly zero user_force on grabbed hand over four further physical ticks; momentum continues. Stale press rejected and fresh press accepted."
+  },
+  "limits": {
+    "forceN": 180,
+    "momentNm": 12,
+    "targetSpeedMS": 1.5,
+    "targetAccelerationMS2": 8,
+    "isolatedImpulseEquivalentPositivePowerW": 36,
+    "energyScope": "The isolated free-body equivalent-work regression is not a measurement or qualification of total articulated energy."
+  },
+  "tests": {
+    "npmTest": {
+      "passed": true,
+      "tests": 68
+    },
+    "targetedNative": {
+      "passed": true,
+      "tests": 8,
+      "groups": [
+        "4 grab-controller tests (wrench/work, multibody momentum, stale velocity, target speed/acceleration/reversal)",
+        "1 full-body pull/release test",
+        "3 existing runtime lifecycle/current-velocity regressions"
+      ]
+    },
+    "finalBuild": {
+      "passed": true,
+      "path": "rust/dist/final-app",
+      "sameWasmHashesAsFirstBuild": true
+    },
+    "browserRegression": {
+      "script": "npm run verify:grab",
+      "syntaxAndApiStaticReviewPassed": true,
+      "liveExecutionPassed": false,
+      "blocker": "System Chromium cannot create its singleton socket in this execution sandbox. Supported escalation wrapper fails before execution; cloud browser cannot reach separate executor loopback. Official headless-shell download also failed. No browser drag/screenshots/video or smoke pass is claimed."
+    },
+    "fullNativeWorkspace": {
+      "passed": false,
+      "failure": "acceptance/cli disturbance_exit_matches_the_scoped_result_without_release_admission: Fixture segment; same failure recorded before changes.",
+      "finalRunStatus": "completed",
+      "failureScope": "Same acceptance/cli assertion reproduced in both baseline and final aggregate runs; final exit101. Aggregate stops before remaining workspace tests.",
+      "exitCode": 101
+    },
+    "rustLint": {
+      "passed": false,
+      "stage": "rustfmt",
+      "note": "Existing broad formatting differences remain; aggregate stops before Clippy. Changed grab.rs and new/edited lib.rs regions formatted; no unrelated formatting rewrite.",
+      "exitCode": 1
+    },
+    "physicalReleaseQualification": {
+      "run": false,
+      "passed": false
+    }
+  },
+  "nativeVideo": {
+    "kind": "native-offline-reconstructed-physics",
+    "browserRecording": false,
+    "sampleHz": 40,
+    "samplesIncludingInitial": 41,
+    "physicalDurationPerBranchS": 1.0,
+    "nativeIntegratedSubstepsPerBranch": 800,
+    "frameCount": 200,
+    "videoDurationS": 5,
+    "introStillS": 2,
+    "physicalVideoSegmentS": [
+      2,
+      3
+    ],
+    "physicalPlaybackSpeed": 1,
+    "endStillS": 2,
+    "integrityFailure": null,
+    "sampledDiagnosticPeaks": {
+      "witness": {
+        "max_anchor_separation_m": 1.1973200741977053e-07,
+        "max_floor_penetration_m": 0.0009735133498907089,
+        "max_limit_error_rad": 2.0682811737060547e-05,
+        "max_self_penetration_m": 0.0
+      },
+      "pulled": {
+        "max_anchor_separation_m": 1.2013700256829907e-07,
+        "max_floor_penetration_m": 0.001085236668586731,
+        "max_limit_error_rad": 1.615285873413086e-05,
+        "max_self_penetration_m": 0.0
+      }
+    },
+    "sourceFilesChangedDuringExport": [],
+    "sourceManifestCombinedSha256": "b5a1180840343bdd4bf0907359ce72bf2fc260d619aef6fcf4d740f755312171",
+    "keySamples": [
+      {
+        "frame": 0,
+        "timeS": 0.0,
+        "phase": "pull",
+        "targetOffsetM": 0.0,
+        "handDifferenceM": null,
+        "torsoDifferenceM": null,
+        "maxDifferenceM": null
+      },
+      {
+        "frame": 8,
+        "timeS": 0.2,
+        "phase": "pull",
+        "targetOffsetM": 0.08134765923023224,
+        "handDifferenceM": 0.015572667121887207,
+        "torsoDifferenceM": 0.0013614193303510547,
+        "maxDifferenceM": 0.015572667121887207
+      },
+      {
+        "frame": 16,
+        "timeS": 0.4,
+        "phase": "pull",
+        "targetOffsetM": 0.19775390625,
+        "handDifferenceM": 0.0686551034450531,
+        "torsoDifferenceM": 0.005279878154397011,
+        "maxDifferenceM": 0.0686551034450531
+      },
+      {
+        "frame": 24,
+        "timeS": 0.6,
+        "phase": "hold",
+        "targetOffsetM": 0.20000000298023224,
+        "handDifferenceM": 0.09278526157140732,
+        "torsoDifferenceM": 0.014022606424987316,
+        "maxDifferenceM": 0.09278526157140732
+      },
+      {
+        "frame": 32,
+        "timeS": 0.8,
+        "phase": "released",
+        "targetOffsetM": 0.20000000298023224,
+        "handDifferenceM": 0.04933891072869301,
+        "torsoDifferenceM": 0.02597774937748909,
+        "maxDifferenceM": 0.04933891072869301
+      },
+      {
+        "frame": 40,
+        "timeS": 1.0,
+        "phase": "released",
+        "targetOffsetM": 0.20000000298023224,
+        "handDifferenceM": 0.027223557233810425,
+        "torsoDifferenceM": 0.03736776113510132,
+        "maxDifferenceM": 0.040881335735321045
+      }
+    ],
+    "outputs": {
+      "trajectory.json": "e216f66487909fbbf764bfc2bd15b716504545014112ac4d9f4490e4088b7f72",
+      "native-pull-release.mp4": "52b402c31485ba04102480fb137c72b7856f0e3b5799b166dcd92979d5c15f4a",
+      "decoded-overview.jpg": "3e84d70475e74129222493ca4d46cfaa5fcd53958045241404742715b93d064c"
+    },
+    "buildInputHashes": {
+      "outputs/grab-multibody-20261019/native-video/export-trajectory.rs": "5659f5fc6805b0d16f819a8864c8494c8fb1ed1a117dfe0cbe2630e7e8a73d11",
+      "outputs/grab-multibody-20261019/native-video/build-export.sh": "2d7d3a4cf3c5e80ef7be91fdac9c0706677f8f5da656a081251624c7226880ad",
+      "outputs/grab-multibody-20261019/native-video/render-native.py": "76d016e518e8739b54f177b90ba579449918fe4a1d7f2fcae4c0218f4836b372",
+      "../lateral-fixture/rust/target/release/deps/librapier3d-948bb1bd4035e1bc.rlib": "19e1006395cd4f22934804325aced0bca8872bb6cbb851a51e4d206691256e9a",
+      "../lateral-fixture/rust/target/release/deps/liblh_model-f600193c73eb0adc.rlib": "23d6bbb909a93ec48ae3fb688f6eb2f8179b5f4b17ec4a2117ae9c8f15d56f38",
+      "../lateral-fixture/rust/target/release/deps/liblh_contracts-fa6fda0ab8859675.rlib": "0f6d0f1d31b9129def6e867cd3a8e0be4073f654c225c4bfce5ef55ef75692a8",
+      "../lateral-fixture/rust/target/release/deps/libserde-20eb9759679a086b.rlib": "582a34e501aeb2c0b6b50f8a73c7b62b2b02f44a247a026c7fce152dc7e4b769",
+      "../lateral-fixture/rust/target/release/deps/libserde_json-144c00c18b0640d6.rlib": "38d71ca6be49450e1504a9cdf186d5bb579fa87b1ac3f133f775b6b785ea03fa",
+      "../lateral-fixture/rust/target/release/deps/libbincode-a9935cef594b22ab.rlib": "5a3e85527646cdd01bf437f92ab9ea93d3b119a820fec5c6c8e733b2505efe29"
+    },
+    "videoFrameMapping": {
+      "0-79": "still intro at t0",
+      "80-119": "source integrated samples1-40 at40fps",
+      "120-199": "still end at t1"
+    }
+  },
+  "sourceSha256": {
+    "rust/crates/sim/src/grab.rs": "9747c91e7ab4668dd97e65653a9fb61ac3e10a50080c8bcb4dd94ef27113b45a",
+    "rust/crates/sim/src/lib.rs": "dfefda706f4ef753a1bfa3fd1d8f973e91782e6d247b8a7e68602c6cd47c684c",
+    "scripts/verify-rust-grab.mjs": "b443200d1affd2e0b0a6c270575716413333d252748232c0ffeb25e624a67d9f"
+  },
+  "builtWasmSha256": {
+    "lh-browser-4643350ed5dec4be_bg.wasm": "b72e126e7587859ae1891c1e892d1508b255d024967edaa662cf95d937934411",
+    "lh_worker_bg.wasm": "a99f8d8f09f3f1ccaf08631ad28aef5f88ed52e7a81924a4340054e4b155a441"
+  },
+  "rawEvidenceSha256": {
+    "outputs/grab-multibody-20261019/before.json": "6e5483392919c42d7cfb15e3551109650b5d31cf16b294d5ad82a0b4628e731c",
+    "outputs/grab-multibody-20261019/after.json": "e13fdbaf819f28b2bb33b81ec3e5344e6e34b7c292f5a7489c1a7a3ffa782a4b",
+    "outputs/grab-multibody-20261019/native-video/trajectory.json": "e216f66487909fbbf764bfc2bd15b716504545014112ac4d9f4490e4088b7f72",
+    "outputs/grab-multibody-20261019/native-video/native-pull-release.mp4": "52b402c31485ba04102480fb137c72b7856f0e3b5799b166dcd92979d5c15f4a",
+    "outputs/grab-multibody-20261019/native-video/decoded-overview.jpg": "3e84d70475e74129222493ca4d46cfaa5fcd53958045241404742715b93d064c"
+  },
+  "remaining": [
+    "Actual browser real-pointer regression and smoke execution on a browser-capable runtime",
+    "Whole-body passive UI mode and complete physical qualification",
+    "Two physical grabs, stepping, walking integration, recovery, AAA appearance and device performance qualification"
+  ]
+}

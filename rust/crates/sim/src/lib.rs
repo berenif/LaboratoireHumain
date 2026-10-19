@@ -837,8 +837,8 @@ impl Simulation {
                 begin,
             };
             trace(self, event(self, profiling::Phase::Controller, true));
-            if let Some(grab) = &mut self.grab {
-                let Some(body) = self.world.bodies.get_mut(self.bodies[grab.segment]) else {
+            if let Some(grab) = &self.grab {
+                let Some(body) = self.world.bodies.get(self.bodies[grab.segment]) else {
                     let failure = measurement::Failure::new(
                         self.tick,
                         substep,
@@ -853,7 +853,22 @@ impl Simulation {
                     trace(self, event(self, profiling::Phase::Controller, false));
                     return Err(failure);
                 };
-                if let Err(error) = grab.apply(body, self.profile.dt_s, &self.profile.grab_limits) {
+                let radius =
+                    body.position().transform_point(grab.local_anchor) - body.center_of_mass();
+                let velocity = getup::current_twists(self).map(|twists| {
+                    let (linear, angular) = twists[grab.segment];
+                    linear + angular.cross(radius)
+                });
+                let result = velocity.and_then(|velocity| {
+                    let grab = self.grab.as_mut().expect("grab checked above");
+                    grab.apply(
+                        &mut self.world.bodies[self.bodies[grab.segment]],
+                        velocity,
+                        self.profile.dt_s,
+                        &self.profile.grab_limits,
+                    )
+                });
+                if let Err(error) = result {
                     let failure = measurement::Failure::new(
                         self.tick,
                         substep,
@@ -1189,6 +1204,69 @@ mod tests {
             ..Profile::default()
         };
         assert!(Simulation::new(0.0, p, true).is_err());
+    }
+    #[test]
+    fn hand_pull_changes_integrated_body_and_release_removes_external_wrench() {
+        let mut baseline = Simulation::new(0.0, Profile::default(), true).expect("baseline");
+        let mut pulled = Simulation::new(0.0, Profile::default(), true).expect("pulled");
+        let hand = pulled
+            .model
+            .segments
+            .iter()
+            .position(|p| p.id == "right_hand")
+            .unwrap();
+        let torso = pulled
+            .model
+            .segments
+            .iter()
+            .position(|p| p.id == "torso")
+            .unwrap();
+        let origin = pulled.world.bodies[pulled.bodies[hand]].translation();
+        pulled
+            .begin_grab(hand, 1, Vec3::default(), vec3(origin))
+            .unwrap();
+        pulled.move_grab(1, vec3(origin + Vector::X * 0.2)).unwrap();
+        for _ in 0..4 {
+            baseline.advance_tick().expect("baseline integrity");
+            pulled.advance_tick().expect("pull integrity");
+        }
+        let difference = |segment: usize| {
+            pulled.world.bodies[pulled.bodies[segment]]
+                .translation()
+                .distance(baseline.world.bodies[baseline.bodies[segment]].translation())
+        };
+        let hand_difference = difference(hand);
+        let torso_difference = difference(torso);
+        assert!(
+            hand_difference > 0.0001,
+            "hand must physically move: {hand_difference}"
+        );
+        assert!(
+            torso_difference > 0.000001,
+            "pull must propagate: {torso_difference}"
+        );
+        pulled.cancel_grab();
+        assert!(pulled.move_grab(1, vec3(origin)).is_err());
+        for _ in 0..4 {
+            pulled.advance_tick().expect("released integrity");
+            assert!(pulled.grab.is_none());
+            assert_eq!(
+                pulled.world.bodies[pulled.bodies[hand]].user_force(),
+                Vector::ZERO
+            );
+        }
+        let next = pulled.world.bodies[pulled.bodies[hand]].translation();
+        pulled
+            .begin_grab(hand, 2, Vec3::default(), vec3(next))
+            .expect("fresh press after release");
+        assert!(
+            pulled.move_grab(1, vec3(origin)).is_err(),
+            "old press cannot move new grab"
+        );
+        pulled.cancel_grab();
+        println!(
+            "GetUp pull after 0.1 s: hand={hand_difference} m, torso={torso_difference} m; 0.1 s release with zero hand force"
+        );
     }
     #[test]
     fn lost_grab_body_halts_and_cancels_before_any_integration() {

@@ -15,9 +15,12 @@ npm start           # http://127.0.0.1:5185
 
 Drag the body to pull, drag empty space to orbit, and scroll to zoom. Space pauses, P triggers the physical striker, R resets, G toggles the ground, F focuses the body and Home resets the camera. The UI includes terrain stations, heading, region, renderer and quality controls. Live measurements are visible; `window.__lhRust.diagnostics` exposes worker and rendering diagnostics.
 
+Grabs now deliver bounded external point forces into the GetUp multibody instead of changing a link velocity cache that the solver overwrote. The [native before/after evidence](docs/evidence/grab-multibody-2026-10-19.json) demonstrates hand-to-torso propagation and force removal on release. The accompanying reconstructed native clip is not browser footage; browser interaction verification remains blocked by the current executor's browser-launch restrictions.
+
 ```sh
 npm test                 # JavaScript tooling/fixture tests, no physical campaign
 npm run verify:smoke     # built app; one trajectory, at most 5 simulated seconds
+npm run verify:grab      # built app; real-pointer pull/release and interruption regression
 npm run test:rust        # native workspace tests
 npm run lint:rust        # Rust format and native/WASM Clippy
 ```
