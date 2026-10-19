@@ -1,0 +1,351 @@
+{
+  "schema": 1,
+  "checkedAt": "2026-10-19T14:36:57.263Z",
+  "scope": "Actual desktop Chromium-headless-shell/WebGL2 validation of bounded ancestor-prefix arithmetic on top of the admitted zero-inertia slice. Two opposite-order automatic3physical-second pairs, exact emitted-state/input parity and bounded functional checks. Intermediate CPU improvement, not realtime/mobile/recovery/release qualification.",
+  "baseline": {
+    "commit": "dbe3f4db377147f4673b73d651d44850ceed8d7e",
+    "artifact": "outputs/browser-capability-20261019/app-zero-inertia-candidate",
+    "workerWasmSha256": "be64ffb8a799d60d150710f11086c9df2e8ab8bc401b342e89cac579b00c969c",
+    "priorBrowserEvidence": "docs/evidence/browser-performance-zero-inertia-2026-10-19.json",
+    "originalLongStandingEvidence": "docs/evidence/browser-standing-validation-2026-10-19.json"
+  },
+  "candidate": {
+    "artifact": "outputs/browser-capability-20261019/app-sticky-bound-candidate",
+    "workerWasmSha256": "86ead4bc29abd5580d939e389f8df179755a6cdc9a59ed29ddcba793c5d0af90",
+    "driverSha256": "4c6281e19c4540e3ba72a74a5b1514b5d1b9c58e56c1f8a2dbfb3adb4812d74e",
+    "driverUnchanged": true,
+    "engineSourceSha256": "93e6b56e74dc288d9bbacc694b39cbe711df9a3e49f2c7768022adaf2e41c94b",
+    "nativeEngineEvidence": "docs/evidence/getup-mass-matrix-bounded-prefix-performance-2026-10-19.json",
+    "artifactSha256": {
+      "app-1df6634f608f8d80.css": "6f9e3128c49954cf4c159cd1b3cb0375ca4293e134429847288a5e6549a44271",
+      "index.html": "e66f7147dd7ba9fab899d5be48593642a463a9f075d26d1ef807c6c40d568ccc",
+      "lh-browser-4479461c3e1613b6.js": "ec9a8317fc58b63cf4f6874c3ed03808743c61c19a9c485020f0dc64dfd9c4f5",
+      "lh-browser-4479461c3e1613b6_bg.wasm": "b72e126e7587859ae1891c1e892d1508b255d024967edaa662cf95d937934411",
+      "lh_worker.js": "f5ab14e78b52ad83577646105b61526484096924ec39f5a72d8ee039cb652da2",
+      "lh_worker_bg.wasm": "86ead4bc29abd5580d939e389f8df179755a6cdc9a59ed29ddcba793c5d0af90",
+      "sim-worker.js": "a3a2b18c222c045fc08bf19aff2e96b92f0bc18ad6023bcca660195054267996",
+      "snippets/lh-browser-575491a8d42d44d5/driver.js": "4c6281e19c4540e3ba72a74a5b1514b5d1b9c58e56c1f8a2dbfb3adb4812d74e"
+    },
+    "engineCommit": "82bffcac853cd362e9a420e950a375bc2045a74a"
+  },
+  "runtime": {
+    "browserVersion": "155.0.8059.79",
+    "renderer": "WebGL2",
+    "host": "Linux desktop headless, software rendering",
+    "executable": "outputs/browser-capability-20261019/debian/unpack/usr/lib/chromium/chromium-headless-shell",
+    "provenance": "outputs/browser-capability-20261019/debian/download-provenance.json"
+  },
+  "matchedPerformance": {
+    "method": "Ordinary automatic scheduler, tick0through120,3physical seconds and2400native integrations per run; baseline→candidate then candidate→baseline. Every served asset matched its immutable local hash. Read-only40Hz snapshot/telemetry and CPU-clock capture, no video or physical inputs. Native owner left all builds/trials idle throughout both pairs and the following CPU sample.",
+    "pairs": [
+      {
+        "order": "zero-only-then-sticky",
+        "baselineReport": "outputs/browser-capability-20261019/profile-fixed-zero-only-sticky-cpu-120/report.json",
+        "candidateReport": "outputs/browser-capability-20261019/profile-fixed-sticky-bound-cpu-120/report.json",
+        "parityReport": "outputs/browser-capability-20261019/sticky-bound-browser-physical-exact-120.json",
+        "baseline": {
+          "wallSeconds": 13.368900000002235,
+          "simulationSeconds": 3,
+          "simulationWallRatio": 0.22440140924081253,
+          "coreMeanMs": 104.32083333327124,
+          "physicsMeanMs": 102.00666666564842,
+          "workerUpdateWallSeconds": 12.554699999984354,
+          "dedicatedWorkerCpuSeconds": 12.53,
+          "dedicatedWorkerCpuToWorkerUpdateWallRatio": 0.9980326093029395,
+          "mainFrameCpuMeanMs": 0.6412436547854603,
+          "processCpu": [
+            {
+              "id": 34,
+              "type": "browser",
+              "cpuSeconds": 0.06999999999999995
+            },
+            {
+              "id": 77,
+              "type": "renderer",
+              "cpuSeconds": 16.779999999999998
+            },
+            {
+              "id": 51,
+              "type": "GPU",
+              "cpuSeconds": 65.48
+            },
+            {
+              "id": 54,
+              "type": "network.mojom.NetworkService",
+              "cpuSeconds": 0
+            }
+          ]
+        },
+        "candidate": {
+          "wallSeconds": 12.01629999999702,
+          "simulationSeconds": 3,
+          "simulationWallRatio": 0.24966087730838477,
+          "coreMeanMs": 91.64000000019247,
+          "physicsMeanMs": 89.41916666748003,
+          "workerUpdateWallSeconds": 11.035500000018626,
+          "dedicatedWorkerCpuSeconds": 11,
+          "dedicatedWorkerCpuToWorkerUpdateWallRatio": 0.9967831090554514,
+          "mainFrameCpuMeanMs": 0.6825597749658862,
+          "processCpu": [
+            {
+              "id": 136,
+              "type": "browser",
+              "cpuSeconds": 0.06999999999999995
+            },
+            {
+              "id": 180,
+              "type": "renderer",
+              "cpuSeconds": 14.879999999999999
+            },
+            {
+              "id": 153,
+              "type": "GPU",
+              "cpuSeconds": 58.33
+            },
+            {
+              "id": 157,
+              "type": "network.mojom.NetworkService",
+              "cpuSeconds": 0
+            }
+          ]
+        },
+        "speedupFactor": 1.112563767549541,
+        "wallTimeReductionPercent": 10.117511538009772,
+        "exactEmittedSnapshotEquality": true,
+        "physicalSnapshotCount": 121,
+        "physicalTraceSha256": "ffa40a2f4c84f80e841115cb6711d83ffff6cb985b6eda97e01b55f0f351085d",
+        "excludedSnapshotFields": [
+          "diagnostics.controller_ms",
+          "diagnostics.update_ms"
+        ]
+      },
+      {
+        "order": "sticky-then-zero-only",
+        "baselineReport": "outputs/browser-capability-20261019/profile-fixed-zero-only-sticky-cpu-repeat-120/report.json",
+        "candidateReport": "outputs/browser-capability-20261019/profile-fixed-sticky-bound-cpu-repeat-120/report.json",
+        "parityReport": "outputs/browser-capability-20261019/sticky-bound-browser-physical-exact-120-repeat.json",
+        "baseline": {
+          "wallSeconds": 14.455800000000744,
+          "simulationSeconds": 3,
+          "simulationWallRatio": 0.20752915784666678,
+          "coreMeanMs": 110.00166666659837,
+          "physicsMeanMs": 107.41083333377416,
+          "workerUpdateWallSeconds": 13.238199999991805,
+          "dedicatedWorkerCpuSeconds": 13.25,
+          "dedicatedWorkerCpuToWorkerUpdateWallRatio": 1.0008913598531675,
+          "mainFrameCpuMeanMs": 0.659598494385611,
+          "processCpu": [
+            {
+              "id": 338,
+              "type": "browser",
+              "cpuSeconds": 0.05999999999999994
+            },
+            {
+              "id": 380,
+              "type": "renderer",
+              "cpuSeconds": 17.64
+            },
+            {
+              "id": 354,
+              "type": "GPU",
+              "cpuSeconds": 69.47999999999999
+            },
+            {
+              "id": 359,
+              "type": "network.mojom.NetworkService",
+              "cpuSeconds": 0
+            }
+          ]
+        },
+        "candidate": {
+          "wallSeconds": 12.04489999999851,
+          "simulationSeconds": 3,
+          "simulationWallRatio": 0.2490680703036448,
+          "coreMeanMs": 92.74583333336437,
+          "physicsMeanMs": 90.57666666749864,
+          "workerUpdateWallSeconds": 11.171900000017136,
+          "dedicatedWorkerCpuSeconds": 11.16,
+          "dedicatedWorkerCpuToWorkerUpdateWallRatio": 0.9989348275568957,
+          "mainFrameCpuMeanMs": 0.6195530726902145,
+          "processCpu": [
+            {
+              "id": 238,
+              "type": "browser",
+              "cpuSeconds": 0.06999999999999995
+            },
+            {
+              "id": 280,
+              "type": "renderer",
+              "cpuSeconds": 15.200000000000001
+            },
+            {
+              "id": 254,
+              "type": "GPU",
+              "cpuSeconds": 59.51
+            },
+            {
+              "id": 259,
+              "type": "network.mojom.NetworkService",
+              "cpuSeconds": 0
+            }
+          ]
+        },
+        "speedupFactor": 1.2001594035652046,
+        "wallTimeReductionPercent": 16.677734888433093,
+        "exactEmittedSnapshotEquality": true,
+        "physicalSnapshotCount": 121,
+        "physicalTraceSha256": "ffa40a2f4c84f80e841115cb6711d83ffff6cb985b6eda97e01b55f0f351085d",
+        "excludedSnapshotFields": [
+          "diagnostics.controller_ms",
+          "diagnostics.update_ms"
+        ]
+      }
+    ],
+    "pooled": {
+      "baselineWallSeconds": 27.824700000002977,
+      "candidateWallSeconds": 24.06119999999553,
+      "speedupFactor": 1.1564136452050664,
+      "wallTimeReductionPercent": 13.525752299241478
+    },
+    "interpretation": "Sticky-bound candidate improves both orders, observed1.11–1.20x over zero-only; its actual pace is0.2491–0.2497simulated seconds perwall second. The baseline itself varies by8%, so two short order-controlled observations are reported without a confidence interval. No cumulative cross-session speedup versus the original33s recording is inferred."
+  },
+  "cpuAccounting": {
+    "method": "Chromium SystemInfo.getProcessInfo process CPU clocks, plus /proc task stat clocks for the exact DedicatedWorker; no process/runtime settings changed. Clocks bracket the app window; small values above1reflect10ms clock quantization and collection overhead.",
+    "result": "DedicatedWorker CPU/worker-update elapsed ratios range0.9968–1.0009 acrossallfour runs. The solver is genuinely CPU-bound, rather than limited by app frame-budget dispatch or meaningful host descheduling.",
+    "gpuCaveat": "Software-GPU CPU use spans multiple cores on this executor; it is not a hardware-GPU/Android measurement.",
+    "quotaCaveat": "No cgroup cpu.max/cpu.stat files are exposed. No particular quota was inferred or changed."
+  },
+  "freshCpuProfile": {
+    "raw": "outputs/browser-capability-20261019/profile-sticky-bound-worker-cpu/worker.cpuprofile",
+    "aggregate": "outputs/browser-capability-20261019/profile-sticky-bound-worker-cpu/aggregated.json",
+    "sampleCount": 12290,
+    "categories": {
+      "massMatrix": {
+        "selfShare": 0.34096650225669023,
+        "inclusiveShare": 0.5471944161109676
+      },
+      "quadform": {
+        "selfShare": 0.13862577654666447,
+        "inclusiveShare": 0.13862577654666447
+      },
+      "luNew": {
+        "selfShare": 0.0465808099389494,
+        "inclusiveShare": 0.04686141403531875
+      },
+      "luSolve": {
+        "selfShare": 0.06401522734297466,
+        "inclusiveShare": 0.06401522734297466
+      },
+      "genericJointSolve": {
+        "selfShare": 0.09694069992836514,
+        "inclusiveShare": 0.09694069992836514
+      },
+      "genericContactSolve": {
+        "selfShare": 0.0255301370521811,
+        "inclusiveShare": 0.0413791678088013
+      }
+    },
+    "interpretation": "Mass-matrix inclusive54.72%, own self34.10%; quadform13.86%. Mass assembly remains the largest measured hotspot. Sampling adds overhead and does not resolve individual inlined source lines; this guides the next experiment, not performance admission."
+  },
+  "rejectedPredecessor": {
+    "workerWasmSha256": "fe926279ec82f19c090266f0a0c9f248c53a13176d7bf6e0196d1ee91d3dae18",
+    "summary": "outputs/browser-capability-20261019/prefix-rejected-browser-summary.json",
+    "nativeEvidence": "docs/evidence/getup-mass-matrix-prefix-performance-2026-10-19.json",
+    "result": "Unbounded repeated accumulator validation had exact state parity but10.15%pooled wall-time regression. That artifact was rejected; its negative result is preserved separately."
+  },
+  "exactStateComparison": {
+    "passed": true,
+    "snapshotsPerPair": 121,
+    "traceSha256": "ffa40a2f4c84f80e841115cb6711d83ffff6cb985b6eda97e01b55f0f351085d",
+    "comparison": "All emitted snapshot values match exactly, including segment poses/velocities, authoritative joint coordinates/velocities, controller observations/commands, aggregate contacts, clocks/counters and integrity diagnostics. Only diagnostics.controller_ms and diagnostics.update_ms are excluded because they are measured wall-clock costs. Hidden engine state is checked separately by the native owner.",
+    "comparator": "outputs/browser-capability-20261019/compare-fixed-tick-physics.mjs",
+    "comparatorMutationCheck": "The comparator rejects a mutation to an authoritative joint-velocity component. Only diagnostics.controller_ms/update_ms wall-clock measurements are excluded."
+  },
+  "functional": {
+    "grab": {
+      "passed": true,
+      "report": "outputs/browser-capability-20261019/grab-sticky-bound-candidate/browser-result.json",
+      "originalBaselineComparison": "outputs/browser-capability-20261019/sticky-bound-browser-grab-exact.json",
+      "exactPhysicalSnapshotAndInputEquality": true,
+      "scenarios": 6,
+      "physicalSnapshots": 23,
+      "browserErrors": [],
+      "httpErrors": [],
+      "scope": "Actual hand pull, real release vs held control, pointercancel/blur, fresh re-grab and held-button reset; exact emitted poses/velocities/motion/times plus command payloads match baseline."
+    },
+    "rendererReadiness": {
+      "passed": true,
+      "report": "outputs/browser-capability-20261019/readiness-sticky-bound-candidate/result.json",
+      "stages": [
+        {
+          "name": "auto-fallback",
+          "backend": "WebGL2",
+          "ready": true,
+          "tick": 0,
+          "workerInstances": 1,
+          "rendererChanges": 1
+        },
+        {
+          "name": "explicit-webgpu-error",
+          "backend": "",
+          "ready": false,
+          "tick": 0,
+          "workerInstances": 1,
+          "rendererChanges": 1
+        },
+        {
+          "name": "recovered-webgl2",
+          "backend": "WebGL2",
+          "ready": true,
+          "tick": 0,
+          "workerInstances": 1,
+          "rendererChanges": 2
+        },
+        {
+          "name": "repeated-auto-fallback",
+          "backend": "WebGL2",
+          "ready": true,
+          "tick": 0,
+          "workerInstances": 1,
+          "rendererChanges": 2
+        },
+        {
+          "name": "reset-after-fallback",
+          "backend": "WebGL2",
+          "ready": true,
+          "tick": 0,
+          "workerInstances": 1,
+          "rendererChanges": 2
+        },
+        {
+          "name": "auto-without-webgpu-api",
+          "backend": "WebGL2",
+          "ready": true,
+          "tick": 0,
+          "workerInstances": 1,
+          "rendererChanges": 1
+        }
+      ],
+      "limit": "This executor’s WebGPU canvas queue still fails. Auto correctly retains/falls back to WebGL2, explicit WebGPU reports an error, and recovery/repeatedAuto preserve one physical worker. This does not qualify capable-device WebGPU rendering."
+    },
+    "smoke": {
+      "passed": true,
+      "log": "outputs/browser-capability-20261019/smoke-sticky-bound-candidate.log",
+      "ticks": 132,
+      "simulatedSeconds": 3.3,
+      "nativeSubsteps": 2640,
+      "strikes": 1,
+      "segments": 25
+    },
+    "javascriptTests": {
+      "passed": 83,
+      "failed": 0,
+      "log": "outputs/browser-capability-20261019/npm-test-sticky-bound-candidate.log"
+    }
+  },
+  "limits": [
+    "No new33physical-second browser hold was run for this intermediate slice. Original long-standing proof remains separate; a final optimized app needs its own long actual-app check.",
+    "Exact emitted40Hz snapshot equality supplements native bitwise matrix and generalized-state proofs; it is not every800Hz browser observation or contact-point slip qualification.",
+    "All measurements are scoped to the exact artifacts and this desktop headless executor. Native WebGPU, Android, realtime, learned recovery and broad release admission remain unqualified."
+  ]
+}
