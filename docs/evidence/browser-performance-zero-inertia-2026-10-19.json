@@ -1,0 +1,237 @@
+{
+  "schema": 1,
+  "checkedAt": "2026-10-19T14:14:20.234Z",
+  "scope": "Actual desktop Chromium-headless-shell/WebGL2 validation of the narrow exact-zero-inertia engine fast path. Two matched automatic 3-physical-second windows in opposite orders, emitted-snapshot parity, actual-pointer interruption regression and bounded striker smoke. Intermediate performance improvement, not realtime/mobile/recovery/release qualification.",
+  "baseline": {
+    "commit": "c614027aba127aa108451ed306ae4a331da3db39",
+    "artifact": "outputs/browser-capability-20261019/app-standing-final-repeat-auto",
+    "workerWasmSha256": "411be2c58fb3c8d0135261e4d6197acf6a31e14501cbfd98b136e8837995904f",
+    "longStandingEvidence": "docs/evidence/browser-standing-validation-2026-10-19.json"
+  },
+  "candidate": {
+    "artifact": "outputs/browser-capability-20261019/app-zero-inertia-candidate",
+    "workerWasmSha256": "be64ffb8a799d60d150710f11086c9df2e8ab8bc401b342e89cac579b00c969c",
+    "driverSha256": "4c6281e19c4540e3ba72a74a5b1514b5d1b9c58e56c1f8a2dbfb3adb4812d74e",
+    "driverUnchanged": true,
+    "engineSourceSha256": "3ba32d9cdfc1e4bf7464361a688a7429c8679b0e365fc31914392029fca085bf",
+    "artifactSha256": {
+      "app-1df6634f608f8d80.css": "6f9e3128c49954cf4c159cd1b3cb0375ca4293e134429847288a5e6549a44271",
+      "index.html": "e66f7147dd7ba9fab899d5be48593642a463a9f075d26d1ef807c6c40d568ccc",
+      "lh-browser-4479461c3e1613b6.js": "ec9a8317fc58b63cf4f6874c3ed03808743c61c19a9c485020f0dc64dfd9c4f5",
+      "lh-browser-4479461c3e1613b6_bg.wasm": "b72e126e7587859ae1891c1e892d1508b255d024967edaa662cf95d937934411",
+      "lh_worker.js": "f5ab14e78b52ad83577646105b61526484096924ec39f5a72d8ee039cb652da2",
+      "lh_worker_bg.wasm": "be64ffb8a799d60d150710f11086c9df2e8ab8bc401b342e89cac579b00c969c",
+      "sim-worker.js": "a3a2b18c222c045fc08bf19aff2e96b92f0bc18ad6023bcca660195054267996",
+      "snippets/lh-browser-575491a8d42d44d5/driver.js": "4c6281e19c4540e3ba72a74a5b1514b5d1b9c58e56c1f8a2dbfb3adb4812d74e"
+    },
+    "nativeEngineEvidence": "docs/evidence/getup-mass-matrix-performance-2026-10-19.json",
+    "engineCommit": "0fb82c1"
+  },
+  "runtime": {
+    "browserVersion": "155.0.8059.79",
+    "renderer": "WebGL2",
+    "host": "Linux desktop headless, software rendering",
+    "executable": "outputs/browser-capability-20261019/debian/unpack/usr/lib/chromium/chromium-headless-shell",
+    "provenance": "outputs/browser-capability-20261019/debian/download-provenance.json"
+  },
+  "diagnosis": {
+    "report": "outputs/browser-capability-20261019/performance-diagnosis-baseline.json",
+    "phaseReport": "outputs/browser-capability-20261019/profile-standing-final-clean/report.json",
+    "cpuProfile": "outputs/browser-capability-20261019/profile-standing-worker-cpu/worker.cpuprofile",
+    "cpuAggregate": "outputs/browser-capability-20261019/profile-standing-worker-cpu/aggregated.json",
+    "baselinePhysicsFractionOfCore": 0.9793926325258436,
+    "baselineMassMatrixInclusiveFractionOfSampledWall": 0.6666390970024784,
+    "baselineQuadformSelfFractionOfSampledWall": 0.31496072444107454,
+    "conclusion": "Compute is dominant. The ordinary scheduler drains backlog immediately; no deliberate throttle accounts for the missing physical pace. Mass-matrix rebuilding is the measured major engine hotspot."
+  },
+  "matchedPerformance": {
+    "method": "Two normal automatic-scheduler windows from tick 0 to tick 120, each3physical seconds/2400native integrations, in opposite artifact orders. Read-only40Hz full-snapshot and telemetry capture; no video, physical input, solver/profile/timestep change or CPU sampling during these timings. Physics owner explicitly confirmed native builds/trials idle through both pairs. Timing stops when the ordinary final worker reply arrives.",
+    "pairs": [
+      {
+        "order": "baseline-then-candidate",
+        "baselineReport": "outputs/browser-capability-20261019/profile-fixed-baseline-120/report.json",
+        "candidateReport": "outputs/browser-capability-20261019/profile-fixed-zero-inertia-120/report.json",
+        "parityReport": "outputs/browser-capability-20261019/zero-inertia-browser-physical-exact-120.json",
+        "baseline": {
+          "wallSeconds": 15.6395,
+          "simulationSeconds": 3,
+          "simulationWallRatio": 0.19182198919402793,
+          "coreMeanMs": 123.30500000022973,
+          "physicsMeanMs": 120.79416666602096,
+          "workerMeanMs": 123.60583333354444,
+          "roundTripMeanMs": 129.53333333314706,
+          "dispatchGapMeanMs": 0.5747899161729993,
+          "replyDeliveryMeanMs": 5.93828043465813,
+          "mainFrameCpuMeanMs": 0.6325757576120429,
+          "presentationFrames": 924
+        },
+        "candidate": {
+          "wallSeconds": 12.73039999999851,
+          "simulationSeconds": 3,
+          "simulationWallRatio": 0.23565638157484065,
+          "coreMeanMs": 100.77833333328986,
+          "physicsMeanMs": 98.66916666623825,
+          "workerMeanMs": 101.1641666666915,
+          "roundTripMeanMs": 105.31916666667287,
+          "dispatchGapMeanMs": 0.5235294117709669,
+          "replyDeliveryMeanMs": 3.9690254704716303,
+          "mainFrameCpuMeanMs": 0.609829619893045,
+          "presentationFrames": 763
+        },
+        "speedupFactor": 1.2285159932132401,
+        "wallTimeReductionPercent": 18.600978292154423,
+        "physicalSnapshotCount": 121,
+        "exactEmittedSnapshotEquality": true,
+        "physicalTraceSha256": "ffa40a2f4c84f80e841115cb6711d83ffff6cb985b6eda97e01b55f0f351085d",
+        "excludedSnapshotFields": [
+          "diagnostics.controller_ms",
+          "diagnostics.update_ms"
+        ]
+      },
+      {
+        "order": "candidate-then-baseline",
+        "baselineReport": "outputs/browser-capability-20261019/profile-fixed-baseline-120-repeat/report.json",
+        "candidateReport": "outputs/browser-capability-20261019/profile-fixed-zero-inertia-120-repeat/report.json",
+        "parityReport": "outputs/browser-capability-20261019/zero-inertia-browser-physical-exact-120-repeat.json",
+        "baseline": {
+          "wallSeconds": 15.912100000001491,
+          "simulationSeconds": 3,
+          "simulationWallRatio": 0.18853576837750635,
+          "coreMeanMs": 125.37000000017385,
+          "physicsMeanMs": 122.84999999937912,
+          "workerMeanMs": 125.70333333347614,
+          "roundTripMeanMs": 131.78833333334575,
+          "dispatchGapMeanMs": 0.5521008403298735,
+          "replyDeliveryMeanMs": 5.8798079434161385,
+          "mainFrameCpuMeanMs": 0.6709539121314324,
+          "presentationFrames": 933
+        },
+        "candidate": {
+          "wallSeconds": 13.25189999999851,
+          "simulationSeconds": 3,
+          "simulationWallRatio": 0.2263826319245042,
+          "coreMeanMs": 103.16666666666667,
+          "physicsMeanMs": 100.95666666589678,
+          "workerMeanMs": 103.45749999983236,
+          "roundTripMeanMs": 109.60333333332092,
+          "dispatchGapMeanMs": 0.5621848739683628,
+          "replyDeliveryMeanMs": 5.994908041010301,
+          "mainFrameCpuMeanMs": 0.6343915344033607,
+          "presentationFrames": 756
+        },
+        "speedupFactor": 1.2007410258154136,
+        "wallTimeReductionPercent": 16.718095034613476,
+        "physicalSnapshotCount": 121,
+        "exactEmittedSnapshotEquality": true,
+        "physicalTraceSha256": "ffa40a2f4c84f80e841115cb6711d83ffff6cb985b6eda97e01b55f0f351085d",
+        "excludedSnapshotFields": [
+          "diagnostics.controller_ms",
+          "diagnostics.update_ms"
+        ]
+      }
+    ],
+    "pooled": {
+      "baselineWallSeconds": 31.551600000001493,
+      "candidateWallSeconds": 25.982299999997018,
+      "speedupFactor": 1.2143497688813198,
+      "wallTimeReductionPercent": 17.651402781488766
+    },
+    "interpretation": "The paired observed speedup is1.20–1.23x, with candidate0.226–0.236simulated seconds perwall second. This remains below realtime and is a short headless-desktop comparison; the earlier33s baseline hold has different duration/recording overhead and is not used to calculate this speedup."
+  },
+  "exactStateComparison": {
+    "passed": true,
+    "snapshotsPerPair": 121,
+    "traceSha256": "ffa40a2f4c84f80e841115cb6711d83ffff6cb985b6eda97e01b55f0f351085d",
+    "comparison": "All emitted snapshot values match exactly, including segment poses/velocities, authoritative joint coordinates/velocities, controller observations/commands, aggregate contacts, clocks/counters and integrity diagnostics. Only diagnostics.controller_ms and diagnostics.update_ms are excluded because they are measured wall-clock costs. Hidden engine state is checked separately by the native owner.",
+    "comparator": "outputs/browser-capability-20261019/compare-fixed-tick-physics.mjs",
+    "comparatorMutationCheck": "A mutation to an authoritative joint-velocity component is rejected. An initial unnormalized comparison differed at controller_ms as expected; the explicit timing-field exclusions are recorded in each final report."
+  },
+  "functional": {
+    "grab": {
+      "passed": true,
+      "report": "outputs/browser-capability-20261019/grab-zero-inertia-candidate/browser-result.json",
+      "baselineComparison": "outputs/browser-capability-20261019/zero-inertia-browser-grab-exact.json",
+      "exactPhysicalSnapshotAndInputEquality": true,
+      "scenarios": 6,
+      "physicalSnapshots": 23,
+      "browserErrors": [],
+      "httpErrors": [],
+      "scope": "Actual hand pull, real release vs held control, pointercancel/blur, fresh re-grab and held-button reset; exact emitted poses/velocities/motion/times plus command payloads match baseline."
+    },
+    "rendererReadiness": {
+      "passed": true,
+      "report": "outputs/browser-capability-20261019/readiness-zero-inertia-candidate/result.json",
+      "stages": [
+        {
+          "name": "auto-fallback",
+          "backend": "WebGL2",
+          "ready": true,
+          "tick": 0,
+          "workerInstances": 1,
+          "rendererChanges": 1
+        },
+        {
+          "name": "explicit-webgpu-error",
+          "backend": "",
+          "ready": false,
+          "tick": 0,
+          "workerInstances": 1,
+          "rendererChanges": 1
+        },
+        {
+          "name": "recovered-webgl2",
+          "backend": "WebGL2",
+          "ready": true,
+          "tick": 0,
+          "workerInstances": 1,
+          "rendererChanges": 2
+        },
+        {
+          "name": "repeated-auto-fallback",
+          "backend": "WebGL2",
+          "ready": true,
+          "tick": 0,
+          "workerInstances": 1,
+          "rendererChanges": 2
+        },
+        {
+          "name": "reset-after-fallback",
+          "backend": "WebGL2",
+          "ready": true,
+          "tick": 0,
+          "workerInstances": 1,
+          "rendererChanges": 2
+        },
+        {
+          "name": "auto-without-webgpu-api",
+          "backend": "WebGL2",
+          "ready": true,
+          "tick": 0,
+          "workerInstances": 1,
+          "rendererChanges": 1
+        }
+      ],
+      "limit": "This executor’s WebGPU canvas queue still fails. Auto correctly retains/falls back to WebGL2, explicit WebGPU reports an error, and recovery/repeatedAuto preserve one physical worker. This does not qualify capable-device WebGPU rendering."
+    },
+    "smoke": {
+      "passed": true,
+      "log": "outputs/browser-capability-20261019/smoke-zero-inertia-candidate.log",
+      "ticks": 132,
+      "simulatedSeconds": 3.3,
+      "nativeSubsteps": 2640,
+      "strikes": 1,
+      "segments": 25
+    },
+    "javascriptTests": {
+      "passed": 83,
+      "failed": 0,
+      "log": "outputs/browser-capability-20261019/npm-test-zero-inertia-candidate.log"
+    }
+  },
+  "limits": [
+    "No new33physical-second browser hold was performed on this intermediate engine slice. The existing long baseline proof remains separate; a later optimized candidate needs its own final long actual-app hold.",
+    "Exact emitted40Hz snapshots supplement, and do not replace, native matrix/LU/Coriolis and generalized-state parity or every800Hz physical qualification.",
+    "Foot body velocity caches are not contact-point slip. This test makes no new slip claim.",
+    "All conclusions are scoped to this immutable artifact and this desktop headless executor. Android hardware, native WebGPU, realtime, learned recovery and broad release admission remain unqualified."
+  ]
+}
