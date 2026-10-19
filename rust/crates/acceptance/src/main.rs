@@ -28,15 +28,16 @@ fn run() -> Result<bool, Box<dyn std::error::Error>> {
     )?;
     if args.get(1).is_some_and(|a| a == "--diagnose-actuators") {
         let reports = lh_sim::actuators::trials(&profile)?;
-        let passed = reports.len() == lh_sim::actuators::CASES
-            && reports.iter().all(|r| r["passed"] == true);
+        let passed = lh_sim::actuators::reports_passed(&reports);
         fs::write(
             format!("{out}/actuators.json"),
             serde_json::to_vec_pretty(&reports)?,
         )?;
         println!(
             "{}",
-            json!({"cases":reports.len(),"passed":passed,"releaseAccepted":false})
+            json!({"cases":reports.len(),"activeHingeCases":lh_sim::actuators::ACTIVE_CASES,
+                "fixedAttachmentCases":lh_sim::actuators::FIXED_CASES,"passed":passed,
+                "productionMultibodyTorqueReadbackCertified":false,"releaseAccepted":false})
         );
         return Ok(passed);
     }

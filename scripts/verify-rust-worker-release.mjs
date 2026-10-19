@@ -4,6 +4,7 @@ import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import { chromium, browserLaunchOptions } from './rust-browser-test.mjs';
 import { fingerprint, sourceHashes, treeHashes } from './rust-release-tools.mjs';
+import { validateActuatorReports } from './rust-actuator-contract.mjs';
 
 const [outputArg, origin, artifactArg, profileArg] = process.argv.slice(2);
 assert.ok(outputArg && origin && artifactArg && profileArg, 'Supply fresh output, origin, artifact and profile');
@@ -42,6 +43,8 @@ try {
       }, { kind, profile });
       const cases = stage.report.cases;
       stage.actualCases = cases.length;
+      if (kind === 'actuators') stage.coverage = validateActuatorReports(cases,
+        JSON.parse(readFileSync('rust/crates/model/data/getup-v1.json')));
       stage.passed = cases.length === count && cases.every(result => result.passed === true);
     } catch (error) { stage.error = String(error); }
     writeFileSync(join(output, 'report.json'), JSON.stringify(report, null, 2) + '\n');

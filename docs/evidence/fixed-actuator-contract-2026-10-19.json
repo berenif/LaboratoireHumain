@@ -1,0 +1,139 @@
+{
+  "schema": 1,
+  "date": "2026-10-19",
+  "scope": "Canonical synthetic impulse-joint fixture contract, including loaded fixed attachments; native Rust1.89 release observations only",
+  "inventory": {
+    "categories": 24,
+    "activeHingeCategories": 21,
+    "fixedAttachmentCategories": 3,
+    "masslessActiveHingeCategories": 9,
+    "cases": 432,
+    "activeHingeCases": 378,
+    "fixedAttachmentCases": 54,
+    "samples": 1728,
+    "activeSamples": 1512,
+    "fixedSamples": 216,
+    "fixedSegments": [
+      "head",
+      "right_hand",
+      "left_hand"
+    ],
+    "masslessActiveSegments": [
+      "@abdomen_z",
+      "@right_hip_x",
+      "@right_hip_z",
+      "@right_ankle_y",
+      "@left_hip_x",
+      "@left_hip_z",
+      "@left_ankle_y",
+      "@right_shoulder1",
+      "@left_shoulder1"
+    ]
+  },
+  "identityCoverage": "Exact unique segment/heading/posture/sign inventory, source hinge name/coordinate/qpos/actuator mapping and all four ordered substeps; duplicate, missing and empty evidence rejected",
+  "active": {
+    "passed": true,
+    "minimumDeliveredVectorImpulseNmS": 0.02499997802078724,
+    "maximumReadbackErrorNmS": 4.573611533942312e-08,
+    "maximumBodyMomentumResidualNmS": 4.863912650421298e-08,
+    "maximumOppositeResidualNmS": 0,
+    "maximumVectorBoundOverrunNmS": 3.725290298461914e-09,
+    "unchangedNumericalToleranceNmS": 1e-06
+  },
+  "fixed": {
+    "passed": true,
+    "maximumAnchorErrorM": 2.580956959263858e-07,
+    "maximumLockedAngularErrorRad": 0,
+    "unchangedAnchorThresholdM": 0.08,
+    "unchangedLockedAngularThresholdRad": 0.06,
+    "minimumIndependentLinearConstraintReactionNs": 23.84644317626953,
+    "minimumIndependentAngularConstraintReactionNmS": 11.379611015319824,
+    "minimumActualInjectedLinearImpulseNs": 24.999996185302734,
+    "minimumActualInjectedAngularImpulseNmS": 9.999998092651367,
+    "allMotorAxesCapsScalarAndVectorDeliveryAndWorkZero": true,
+    "cachedFinalAngularRowsEqualZero": 20,
+    "unlockedNegativeControls": {
+      "cases": 54,
+      "substepsEach": 4,
+      "required": "Every control exceeds both unchanged anchor and angular bounds; all motors remain zero",
+      "status": "passed in actuators::tests::unlocked_fixed_controls_violate_the_unchanged_anatomical_bounds"
+    }
+  },
+  "diagnosticCorrections": [
+    "Initialize isolated-body additional mass/inertia before the first applied challenge; Rapier otherwise initializes these lazily on the first pipeline step. Every sample now asserts positive actual injected impulses on both bodies.",
+    "Final cached joint rows can legitimately be zero after nonlinear correction, despite independently measured positive body reactions. Cached rows remain finite diagnostics. Positive body-momentum reactions, actual nonzero loading, unchanged residual limits and all54 unlocked controls establish nonvacuity."
+  ],
+  "validation": {
+    "featureEnabledActuatorTests": {
+      "passed": 6,
+      "failed": 0,
+      "log": "outputs/getup-terminal-balance-20261019/actuator-tests-corrected.log"
+    },
+    "featureDisabledActuatorTests": {
+      "passed": 6,
+      "failed": 0,
+      "log": "outputs/getup-terminal-balance-20261019/actuator-tests-default.log"
+    },
+    "nodeContractAndExistingReleaseSmokeTests": {
+      "passed": 32,
+      "failed": 0,
+      "newContractTests": 19,
+      "log": "evidence/fixed-actuator-contract-20261019/node-tests.log"
+    },
+    "acceptanceCallerCargoCheck": "passed offline/locked/release; default features",
+    "independentReleaseValidator": {
+      "categories": 24,
+      "activeHingeCategories": 21,
+      "fixedAttachmentCategories": 3,
+      "masslessActiveCategories": 9,
+      "cases": 432,
+      "activeHingeCases": 378,
+      "fixedAttachmentCases": 54,
+      "samples": 1728,
+      "productionMultibodyTorqueReadbackCertified": false
+    },
+    "browserWasmFixtures": "not rerun in this scoped fix",
+    "coordinatedHandoffTests": {
+      "featureEnabled": {
+        "passed": 8,
+        "failed": 0,
+        "log": "outputs/getup-terminal-balance-20261019/handoff-tests-corrected.log"
+      },
+      "featureDisabled": {
+        "passed": 3,
+        "failed": 0,
+        "log": "outputs/getup-terminal-balance-20261019/handoff-tests-default.log"
+      }
+    }
+  },
+  "evidence": {
+    "rawReports": "evidence/fixed-actuator-contract-20261019/actuators.json",
+    "rawReportsSha256": "6238c06d2f52fda81026cd4b4a19a2e661ee668612e0e6a75564e5b224ef3496",
+    "featureLibrary": "rust/target/release/deps/liblh_sim-4a816169700ed6b6.rlib",
+    "reporter": "evidence/fixed-actuator-contract-20261019/reporter.rs",
+    "reporterSha256": "851f2c3dd91c237e9ab2895438e97cb2ab51763722959ba3d576155a83cf7a8a"
+  },
+  "sourceHashes": {
+    "rust/crates/model/data/getup-v1.json": "1611ec8c988c1006b0a819ab21e2b7c410adaaf512080be425d6d6e235a8926a",
+    "rust/crates/sim/src/actuators.rs": "fa4afa39a83569ac9a8af2c64189db3ef92ec2bb3596e4b519c953de6b302cac",
+    "rust/crates/acceptance/src/main.rs": "ba87b021f12d7463ee71ea06623af9530f72bfff824dc114a6891e6a0c92e20e",
+    "scripts/rust-actuator-contract.mjs": "6af861cc734776a6f8319bcc20b9472fc1d5d142dd5e4caf9625092df5812931",
+    "scripts/verify-rust-worker-release.mjs": "9fc64c1aead39ebc2f48d668286ae867a2f9014c0373d2d714d5bb5e7126de47",
+    "tests/rust-actuator-contract.test.mjs": "0e0204fdc89d95bef7648f128e7803b67bd1ce1635ae867318bfc04dfd08713d"
+  },
+  "productionMultibodyTorqueReadbackCertified": false,
+  "loadedChainCertified": false,
+  "releaseAccepted": false,
+  "openGaps": [
+    "Production reduced-coordinate multibody torque readback and passive/constraint accounting are not established by synthetic impulse-joint motor probes.",
+    "The obsolete loaded-chain topology/dynamics/diagnostics fixture remains explicitly open and is not rewritten or admitted by this change."
+  ],
+  "reproduction": {
+    "toolchain": "Rust1.89.0; offline/locked/release; canonical package cache",
+    "actuatorTestFilter": "actuators::tests::",
+    "featureEnabledTestBuild": "cargo +1.89.0 test --manifest-path rust/Cargo.toml --offline --locked --release -p lh-sim --lib --features getup-terminal-balance-experiment --no-run --message-format=json",
+    "featureDisabledTestBuild": "cargo +1.89.0 test --manifest-path rust/Cargo.toml --offline --locked --release -p lh-sim --lib --no-run --message-format=json",
+    "reporterLink": "rustc +1.89.0 --edition=2024 -C opt-level=3 -C lto=thin -C codegen-units=1 evidence/fixed-actuator-contract-20261019/reporter.rs -L dependency=rust/target/release/deps --extern lh_sim=rust/target/release/deps/liblh_sim-4a816169700ed6b6.rlib --extern serde_json=rust/target/release/deps/libserde_json-144c00c18b0640d6.rlib -o evidence/fixed-actuator-contract-20261019/reporter",
+    "independentValidator": "scripts/rust-actuator-contract.mjs validateActuatorReports(rawReports, canonicalModel)"
+  }
+}
