@@ -530,6 +530,9 @@ class NativeUnloadPredictorPurity(unittest.TestCase):
 
 class DefaultHookParity(unittest.TestCase):
     def test_plain_posture_readiness_matches_pre_hook_function(self):
+        if subprocess.run(['git', 'cat-file', '-e', '699d22c^{commit}'], cwd=ROOT,
+                          stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL).returncode:
+            self.skipTest('historical 699d22c parity source is not retained in this checkout')
         text = subprocess.check_output(['git', 'show', '699d22c:scripts/getup-step/source_multistep_probe.py'],
                                        cwd=ROOT, text=True)
         function = next(node for node in ast.parse(text).body

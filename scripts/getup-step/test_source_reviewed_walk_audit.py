@@ -143,6 +143,7 @@ class SharedProposalBinding(unittest.TestCase):
                     coreEntryPoint='Controller.solve with immutable reviewed reference context; no preparation',
                     phase='transfer',elapsedTransferS=0.))
                 replay=ExactReviewedForecastReplay.__new__(ExactReviewedForecastReplay)
+                replay.reference_policy=None
                 replay.manifests={1:dict(selectedAtTransferS=.1,samples=[dict(sourceStep=80)])}
                 # An object with no native API establishes the failure happens
                 # before loading/importing/accessing any native world.

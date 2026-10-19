@@ -2269,7 +2269,9 @@ def audit(folder, *, reference_policy=None):
         wrenchDiagnostics=reference_proof['wrenchDiagnostics'], wrenchSummaryReplay=wrench_summary_proof,
         auditorSHA256=file_sha(Path(__file__)),
         legacyAuditorSHA256={name: file_sha(source_dir/name) for name in
-            ('audit_source_cadenced_steps.py', 'audit_source_robust_support.py', 'audit_source_contact_impedance.py')},
+            ('audit_source_cadenced_steps.py', 'audit_source_robust_support.py', 'audit_source_contact_impedance.py',
+             'audit_journal_io.py', 'audit_source_multistep.py', 'audit_source_upright_large_steps.py',
+             'audit_source_opposed_arm_swing.py', 'audit_source_arm_knee.py')},
         hashes={name: file_sha(folder/name) for name in ('reviewed-walk-config.json', 'reviewed-walk-run.json',
             'frames.ndjson', 'control.json', 'multistep-summary.json', 'summary.json', 'final.bin')},
         evidenceLimit='Every saved native sample is checked; exact retained native witnesses bind references and QP commands locally. Hashed saved data cannot exclude every unrecorded external intervention. Physical qualification alone does not establish visual/cadence improvement.')

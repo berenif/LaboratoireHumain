@@ -1,12 +1,25 @@
 #!/usr/bin/env python3
 """Audit saved multi-step data only. No engine import or integrations."""
-import argparse,hashlib,json,math
+import argparse,json,math
 from collections import OrderedDict,deque
 from pathlib import Path
 import numpy as np
 from source_walk_limits import validate_saved_slip_limit,loaded_slip_exceeded
+from audit_journal_io import digest,json_array_items
 ROOT=Path(__file__).resolve().parents[2]
-def digest(p):return hashlib.sha256(p.read_bytes()).hexdigest()
+
+def audit_control_notes(notes):
+ counts=dict(controlSolves=0,activeJointGroundBarrierSolves=0,activeSelfAvoidanceSolves=0)
+ missing=object();minimum=missing
+ for note in notes:
+  counts['controlSolves']+=1
+  counts['activeJointGroundBarrierSolves']+=note['activeJointGroundBarriers']>0
+  counts['activeSelfAvoidanceSolves']+=note['activeSelfAvoidanceBarriers']>0
+  for adjustment in note['jointGroundAdjustments']:
+   value=adjustment['adjacentColliderClearanceM'];minimum=value if minimum is missing else min(minimum,value)
+ if minimum is missing:raise ValueError('min() arg is an empty sequence')
+ return dict(**counts,minimumAdjacentNonfootColliderClearanceM=minimum)
+
 def audit(folder):
  summary=json.loads((folder/'multistep-summary.json').read_text());initial=json.loads((folder/'summary.json').read_text())['entry'];model=json.loads((ROOT/'rust/crates/model/data/getup-v1.json').read_text());gears=np.zeros(21);names=['']*21
  for part in model['segments']:
@@ -34,7 +47,7 @@ def audit(folder):
  def isquiet(row):
   feet=row['feet'];return row['phase']=='stand'and all(f['loadN']>=3 for f in feet)and sum(f['loadN']for f in feet)>=.8*model['totalMassKg']*9.81 and row['torsoTiltDeg']<=5 and row['maximumBodyLinearMps']<=.22 and row['maximumBodyAngularRadps']<=.65 and row['minimumComCaptureMarginM']is not None and row['minimumComCaptureMarginM']>=.003 and .780625<=row['com'][2]<=.829976 and row['standingAnchorDriftM']<=.01 and row['maximumSelfPenetrationM']<=.005
  finalquiet=len(quiet)==4000 and all(isquiet(r)for r in quiet);quietmin=min(r['jointLimitMinimumMarginRad']for r in quiet);motion=summary['passed']and finalquiet and nonfoot<3 and not flight and not warnings and not rayfail and maxself<=.005 and maxmotor<=.95000001 and not loaded_slip_exceeded(last_slip,slip_limit) and all(s.get('achievedForwardM',-1)>=s['requestedDistanceM']for s in summary['steps'])
- notes=json.loads((folder/'control.json').read_text());ray_controls=dict(controlSolves=len(notes),activeJointGroundBarrierSolves=sum(n['activeJointGroundBarriers']>0 for n in notes),activeSelfAvoidanceSolves=sum(n['activeSelfAvoidanceBarriers']>0 for n in notes),minimumAdjacentNonfootColliderClearanceM=min(a['adjacentColliderClearanceM']for n in notes for a in n['jointGroundAdjustments']))
+ ray_controls=audit_control_notes(json_array_items(folder/'control.json'))
  result=dict(savedDataOnly=True,globalLoadedSlipLimitM=slip_limit,globalLoadedSlipWithinConfiguredLimit=not loaded_slip_exceeded(last_slip,slip_limit),positionVelocityContinuityMaxErrorM=position_error,hingePositionVelocityContinuityMaxErrorRad=joint_error,lastOutsideJointLimitTimeS=last_outside,walkingPhaseQualificationPass=motion and walking_joint>=0 and capture_min>=0,walkingJointLimitsPass=walking_joint>=0,minimumWalkingJointReserveRad=walking_joint,minimumRecordedComCaptureMarginM=capture_min,rayControlAudit=ray_controls,physicsIntegrations=0,motionAndQuietGatesPass=motion,strictAllSampleJointLimitsPass=minimum>=0,strictAllGatesPass=motion and minimum>=0,actualRecordedIntegrations=counts,physicsSimSeconds=counts*.00125,finalQuietSamples=4000 if finalquiet else 0,finalQuietMinimumJointReserveRad=quietmin,maximumMotorFraction=maxmotor,maximumSelfPenetrationM=maxself,maximumNonfootLoadN=nonfoot,flightSamples=flight,warnings=warnings,missingOrSelfEligibleJointRayCount=rayfail,globalLoadedSlipM=last_slip.tolist(),inheritedInitialJointMarginRad=initial['jointLimitMinimumMarginRad'],worstJointSample=worst,steps=[dict(index=s['index'],side=s['swingSide'],requestedDistanceM=s['requestedDistanceM'],achievedForwardM=s['achievedForwardM'],**{k:v for k,v in phase_clear[s['index']].items()if k!='currentClear'})for s in summary['steps']],phases=[{**p,'loadedSlipIncrementM':p['loadedSlipIncrementM'].tolist()}for p in phases.values()],hashes={n:digest(folder/n)for n in ['frames.ndjson','control.json','multistep-summary.json','summary.json','final.bin']})
  return result
 if __name__=='__main__':

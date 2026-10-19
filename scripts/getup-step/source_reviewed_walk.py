@@ -10,6 +10,7 @@ from collections import deque
 import copy
 import hashlib
 import json
+import math
 import shutil
 from pathlib import Path
 import time
@@ -47,6 +48,14 @@ def serial(value):
 
 def control_sha(control):
     return hashlib.sha256(np.ascontiguousarray(control, dtype='<f8').tobytes()).hexdigest()
+
+
+def wall_cap_seconds(value):
+    """Compute time only: this never changes native clocks or phase deadlines."""
+    seconds = float(value)
+    if not math.isfinite(seconds) or not 120. <= seconds <= 7200.:
+        raise argparse.ArgumentTypeError('wall cap must be finite and between 120 and 7200 seconds')
+    return seconds
 
 
 def causal_selection_policy():
@@ -492,6 +501,9 @@ class ReviewedSteps(CadencedSteps):
             contactImpratio=8., originalModelQualificationClaim=False, selectedPresetChanged=False,
             rootAssistance=False, physicalStateInstallationsAfterInitialization=0,
             loadedSlipResetBetweenSteps=False, implicitArms=False, wrenchDiagnosticsEnabled=True)
+        receipt['executionWallCapS'] = getattr(self, 'execution_wall_cap_s', None)
+        receipt['executionWallElapsedS'] = (None if not hasattr(self, 'execution_started')
+            else time.monotonic()-self.execution_started)
         if self.reviewed_mode == 'continuous-com-load':
             receipt['softLoadPreferenceEnabled'] = True
         if self.reviewed_mode == 'continuous-com-causal':
@@ -536,6 +548,8 @@ def main():
     p.add_argument('--inspector', type=Path, required=True)
     p.add_argument('--count', type=int, choices=(1, 2, 7, 10), default=1)
     p.add_argument('--mode', choices=MODES, default='baseline-context')
+    p.add_argument('--wall-cap-s', type=wall_cap_seconds, default=1200.,
+        help='Compute-time cap only; native integration and phase limits are unchanged.')
     a = p.parse_args()
     session, helper, preparation = prepare_impedance(a.output, a.inspector, 8.)
     retained_inspector = a.output/'contact-inspector.so'
@@ -544,10 +558,12 @@ def main():
         raise ValueError('retained read-only inspector differs from preparation')
     live = ReviewedSteps(session, helper, a.output/'run', a.count, a.mode)
     live.paused = False; started = time.monotonic()
+    live.execution_wall_cap_s = a.wall_cap_s
+    live.execution_started = started
     try:
         while not live.finished and not live.failure:
-            if time.monotonic()-started >= 1200.:
-                raise RuntimeError('1200s process cap')
+            if time.monotonic()-started >= a.wall_cap_s:
+                raise RuntimeError(f'{a.wall_cap_s:g}s process cap')
             live.advance(4)
             if live.steps % 800 == 0:
                 print('progress', live.steps*.00125, 'step', live.step_index+1, live.phase,

@@ -12,6 +12,7 @@ from fractions import Fraction
 import hashlib
 import importlib.util
 import json
+import math
 import os
 from pathlib import Path
 import subprocess
@@ -19,6 +20,47 @@ import sys
 
 sys.dont_write_bytecode = True
 ROOT = Path(__file__).resolve().parents[2]
+
+
+FULL_PHYSICAL_FIELDS = ('reviewedWalkTenStepPhysicalPass', 'reviewedWalkPilotPhysicalPass',
+                        'terminalPelvisTenStepPhysicalPass', 'terminalPelvisPilotPhysicalPass')
+
+
+def select_source_steps(native_rows, display_fps):
+    """Distinct measured interval-end samples, exact 1x duration and final row."""
+    frames = round(native_rows*display_fps/800)
+    if not 0 < frames <= native_rows:
+        raise ValueError('display sampling must select at least one distinct source pose')
+    fps = Fraction(frames*800, native_rows)
+    selected = [round(Fraction(i*native_rows, frames)) for i in range(1, frames+1)]
+    assert len(set(selected)) == frames and selected[-1] == native_rows
+    assert all(a < b for a, b in zip(selected, selected[1:]))
+    assert all(abs(Fraction(step, 800)-Fraction(i, 1)/fps) <= Fraction(1, 1600)
+               for i, step in enumerate(selected, 1))
+    return selected, fps
+
+
+def gate_verdict(minimum_walking_joint, minimum_capture, undefined_capture,
+                 audit=None, native_rows=None, journal_sha256=None):
+    """Renderer observations are limited; only a bound physical audit qualifies."""
+    defined = bool(undefined_capture == 0 and minimum_capture is not None
+                   and math.isfinite(minimum_capture))
+    joints = bool(minimum_walking_joint is not None and math.isfinite(minimum_walking_joint)
+                  and minimum_walking_joint >= 0.)
+    audit_count = None if audit is None else audit.get('actualRecordedIntegrations',
+        audit.get('referenceReplay', {}).get('actualRecordedIntegrations'))
+    bound = bool(audit and audit.get('savedDataOnly') is True and audit.get('physicsIntegrations') == 0
+                 and native_rows is not None and audit_count == native_rows
+                 and journal_sha256 and audit.get('hashes', {}).get('frames.ndjson') == journal_sha256)
+    field = next((field for field in FULL_PHYSICAL_FIELDS if audit and audit.get(field) is True), None)
+    return dict(walkingJointAndCaptureGatesPass=bool(joints and defined and minimum_capture >= .003),
+                walkingJointAndCaptureGatesScope='LIMITED: walking joint reserve and all-frame defined combined COM/capture >=3 mm only; not a physical qualification.',
+                undefinedCaptureSamples=undefined_capture,
+                allFrameDefinedNonnegativeCapturePass=bool(defined and minimum_capture >= 0.),
+                allFrame3mmCaptureQualityPass=bool(defined and minimum_capture >= .003),
+                independentPhysicalAuditBoundToJournal=bound,
+                independentPhysicalAuditVerdictField=field,
+                fullPhysicalPass=bool(bound and field and joints and defined and minimum_capture >= 0.))
 
 
 def main():
@@ -84,9 +126,8 @@ def main():
     mapping = json.loads((folder/'arm-mapping.json').read_text())
     controller = json.loads((folder/'controller-step-01.json').read_text())
     heading = np.array(controller['heading']); heading[2] = 0; heading /= np.linalg.norm(heading)
-    frames = round(duration*a.display_fps)
-    fps = Fraction(frames*800,n)
-    selected = np.rint(np.arange(1,frames+1)*n/frames).astype(int)
+    source_steps, fps = select_source_steps(n,a.display_fps)
+    selected = np.asarray(source_steps,dtype=int);frames=len(selected)
     assert len(set(selected)) == frames and selected[-1] == n
     wanted = set(selected.tolist()+[1])
     # Exact phase-onset and representative lift samples for inspection.
@@ -97,7 +138,7 @@ def main():
     samples = {}; journal_hash = hashlib.sha256(); count=0;last_per_step={}; observed_events=[]
     last_phase=None; max_tilt={b:0. for b in ('torso','pelvis','torsoRelativePelvis')}
     quiet = deque(maxlen=4000); min_margin=1.; last_outside=None
-    ray_invalid=0; first_lift=None; min_walking=1.; min_capture=float('inf')
+    ray_invalid=0; first_lift=None; min_walking=None; min_capture=None; undefined_capture=0
     startup_end=None; startup_over=True; target_identity_error=0.; max_arm_tracking_error=0.
     with (folder/'frames.ndjson').open('rb') as f:
         for raw in f:
@@ -112,9 +153,10 @@ def main():
             if startup_over:
                 if margin<0:startup_end=r['elapsedS']
                 else:startup_over=False
-            if first_lift is not None:min_walking=min(min_walking,margin)
+            if first_lift is not None:min_walking=margin if min_walking is None else min(min_walking,margin)
             capture=r['minimumComCaptureMarginM']
-            if capture is not None:min_capture=min(min_capture,capture)
+            if capture is None or not math.isfinite(capture):undefined_capture+=1
+            else:min_capture=capture if min_capture is None else min(min_capture,capture)
             rays = r['jointGroundRays']; assert len(rays)==22
             for ray in rays:
                 valid=ray['hit'] and ray['ownBodyExcluded'] and not ray['anchorGroundDistanceIsColliderClearance']
@@ -137,9 +179,9 @@ def main():
     audit=None
     if a.audit:
         audit=json.loads(a.audit.read_text())
-        assert audit['actualRecordedIntegrations']==n and audit['physicsIntegrations']==0
-        if audit.get('hashes',{}).get('frames.ndjson'):
-            assert audit['hashes']['frames.ndjson']==journal_hash.hexdigest()
+        verdict=gate_verdict(min_walking,min_capture,undefined_capture,audit,n,journal_hash.hexdigest())
+        assert verdict['independentPhysicalAuditBoundToJournal'], 'Audit must be saved-data-only and match the exact journal hash and row count.'
+    verdict=gate_verdict(min_walking,min_capture,undefined_capture,audit,n,journal_hash.hexdigest())
     if not has_summary:
         summary['events']=observed_events
         for step,last in sorted(last_per_step.items()):
@@ -241,9 +283,10 @@ def main():
     fig.text(.5,.959,a.title,ha='center',fontsize=18,color='#254b48')
     completed=[s for s in multi.get('steps',[])if s.get('completedNativeStep')]
     successful=bool(multi.get('sequenceAndQuietCompleted',multi.get('passed')))
-    dynamic_valid=min_walking>=0 and min_capture>=.003
+    dynamic_valid=verdict['walkingJointAndCaptureGatesPass']
     quiet_label=' + 5 s calmes finales vérifiées' if final_quiet_verified else ''
-    qualification=' · audit dynamique non validé' if not dynamic_valid else ''
+    qualification=' · contrôle limité articulations/réserve capture 3 mm '+('réussi' if dynamic_valid else 'non validé')
+    qualification+=' · audit physique indépendant '+('validé' if verdict['fullPhysicalPass'] else 'non validé')
     subtitle=a.subtitle or (f"{len(completed)} pas enregistré{'s' if len(completed)!=1 else ''}{quiet_label}{qualification}" if successful else f"Essai arrêté · {len(completed)} pas terminé{'s' if len(completed)!=1 else ''} · fin réelle conservée{qualification}")
     fig.text(.5,.916,subtitle,ha='center',fontsize=12,color='#365f57')
     phase_text=fig.text(.5,.868,'',ha='center',fontsize=12,color='#805838')
@@ -252,7 +295,10 @@ def main():
     motion=fig.text(.5,.100,'',ha='center',fontsize=10,color='#4f655e')
     fig.text(.5,.064,'G : jambe orange / bras rose · D : jambe bleue / bras vert · points = origines des 22 rayons (axes parfois confondus)',ha='center',fontsize=8.5,color='#61716b')
     warning=f"Départ : cheville hors limite {max(0,-np.rad2deg(samples[1]['jointLimitMinimumMarginRad'])):.2f}° ({1000*(startup_end or 0):.2f} ms)"
-    if not dynamic_valid:warning+=f" · marche : excursion articulaire {max(0,-np.rad2deg(min_walking)):.2f}°, marge capture min. {min_capture*1000:+.1f} mm"
+    if not dynamic_valid:
+        joint_text=f"{max(0,-np.rad2deg(min_walking)):.2f}°" if min_walking is not None else 'indéfinie'
+        capture_text=f"{min_capture*1000:+.4f} mm" if min_capture is not None else 'indéfinie'
+        warning+=f" · marche : excursion articulaire {joint_text}, capture min. {capture_text}, {undefined_capture} indéfinie(s)"
     else:warning+=' · phases de marche dans les limites articulaires'
     fig.text(.5,.027,warning+' · vitesse réelle 1×, FK seul',ha='center',fontsize=8.5,color='#9a593c')
     light=np.array([-.2,-.4,1.]);light/=np.linalg.norm(light)
@@ -320,7 +366,10 @@ def main():
         for tag,k in [('placement',max(0,round(2*float(fps)))),('opposition',max(0,int(frames*.55))),('last',frames-1)]:
             subprocess.run(['ffmpeg','-y','-loglevel','error','-i',str(video),'-vf',f'select=eq(n\\,{k})','-frames:v','1',str(out/f'decoded-{tag}.png')],check=True)
     plt.close(fig)
-    report=dict(video=str(video),contactSheet=str(sheet_path),sourceJournal=str(folder/'frames.ndjson'),sourceModel=str(source_xml),sourceXMLSHA256=xml_sha,sourceRecordedRows=n,sourcePhysicalDurationS=duration,encodedDurationS=duration,videoFrames=frames,exactVideoFPS=str(fps),videoSourceSteps=selected.tolist(),sourceJournalSHA256=journal_hash.hexdigest(),additionalPhysicsIntegrations=0,simulatorImportedOrRun=False,plannedPosesUsed=False,poseInterpolation=False,duplicatedVideoPoses=0,terminalTailFramesAdded=0,FKBodyCOMMaxErrorM=com_error,FKFootOriginMaxErrorM=foot_error,FKWholeFootClearanceMaxErrorM=clearance_error,FKJointRayAnchorMaxErrorM=ray_error,FKOrientationMaxWrappedErrorDeg=angle_error,validGroundRaysEveryRow=ray_invalid==0,groundRayCountPerRow=22,distinctOriginsAtFirstSample=len({tuple(np.round(x['originSource'],10))for x in samples[1]['jointGroundRays']}),measuredMaxTiltDeg=max_tilt,minimumAllSampleJointReserveDeg=float(np.rad2deg(min_margin)),startupJointOverrunEndsS=startup_end,lastOutsideJointLimitS=last_outside,minimumWalkingJointReserveDeg=float(np.rad2deg(min_walking)),minimumCaptureMarginM=min_capture,finalMeasuredQuietS=final.get('quietConsecutiveS',0),finalQuietIndependentlyVerified=final_quiet_verified,walkingJointAndCaptureGatesPass=dynamic_valid,completedSteps=completed,stopped=summary['stopped'],inputSHA256={str(p):hashlib.sha256(p.read_bytes()).hexdigest()for p in [folder/'summary.json',folder/'multistep-summary.json',geometry_path,source_xml,Path(__file__).resolve()] if p.exists()})
+    report=dict(video=str(video),contactSheet=str(sheet_path),sourceJournal=str(folder/'frames.ndjson'),sourceModel=str(source_xml),sourceXMLSHA256=xml_sha,sourceRecordedRows=n,sourcePhysicalDurationS=duration,encodedDurationS=duration,videoFrames=frames,exactVideoFPS=str(fps),videoSourceSteps=selected.tolist(),sourceJournalSHA256=journal_hash.hexdigest(),additionalPhysicsIntegrations=0,simulatorImportedOrRun=False,plannedPosesUsed=False,poseInterpolation=False,duplicatedVideoPoses=0,terminalTailFramesAdded=0,FKBodyCOMMaxErrorM=com_error,FKFootOriginMaxErrorM=foot_error,FKWholeFootClearanceMaxErrorM=clearance_error,FKJointRayAnchorMaxErrorM=ray_error,FKOrientationMaxWrappedErrorDeg=angle_error,validGroundRaysEveryRow=ray_invalid==0,groundRayCountPerRow=22,distinctOriginsAtFirstSample=len({tuple(np.round(x['originSource'],10))for x in samples[1]['jointGroundRays']}),measuredMaxTiltDeg=max_tilt,minimumAllSampleJointReserveDeg=float(np.rad2deg(min_margin)),startupJointOverrunEndsS=startup_end,lastOutsideJointLimitS=last_outside,minimumWalkingJointReserveDeg=float(np.rad2deg(min_walking))if min_walking is not None else None,minimumCaptureMarginM=min_capture,finalMeasuredQuietS=final.get('quietConsecutiveS',0),finalQuietIndependentlyVerified=final_quiet_verified,completedSteps=completed,stopped=summary['stopped'],inputSHA256={str(p):hashlib.sha256(p.read_bytes()).hexdigest()for p in [folder/'summary.json',folder/'multistep-summary.json',geometry_path,source_xml,Path(__file__).resolve()] if p.exists()})
+    report.update(verdict)
+    report['maximumDisplayIntervalEndSampleErrorS']=max(abs(float(Fraction(i,1)/fps)-step/800)
+        for i,step in enumerate(source_steps,1))
     report.update(finalBaseQuietIndependentlyVerified=final_base_quiet_verified,
                   finalUprightQuietIndependentlyVerified=final_quiet_verified,
                   encodedVideoCreated=not a.preview_only,displayWidthPx=a.width,
@@ -332,8 +381,8 @@ def main():
                   finalRecordedStepIndex=final['stepIndex'],finalRecordedPhase=final['phase'],finalRecordedForwardM=final['swingForwardDisplacementM'])
     if a.audit:
         report.update(independentAudit=str(a.audit.resolve()),independentAuditSHA256=hashlib.sha256(a.audit.read_bytes()).hexdigest(),
-                      independentlyAuditedMotionPass=audit['auditedMotionPass'],independentlyAuditedUprightPass=audit['auditedUprightStepPass'])
-    (out/'measured-upright-render-report.json').write_text(json.dumps(report,indent=2)+'\n')
+                      independentlyAuditedMotionPass=audit.get('auditedMotionPass'),independentlyAuditedUprightPass=audit.get('auditedUprightStepPass'))
+    (out/'measured-upright-render-report.json').write_text(json.dumps(report,indent=2,allow_nan=False)+'\n')
     print(json.dumps({k:v for k,v in report.items()if k not in ('videoSourceSteps','completedSteps','inputSHA256')}),flush=True)
 
 

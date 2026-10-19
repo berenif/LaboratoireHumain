@@ -122,6 +122,9 @@ class MeasuredCaptureBarrier(unittest.TestCase):
 class NativeTimingParity(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
+        if subprocess.run(['git','cat-file','-e','0ffb1bb^{commit}'],cwd=source.ROOT,
+                          stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL).returncode:
+            raise unittest.SkipTest('historical 0ffb1bb parity source is not retained in this checkout')
         cls.w=source.World(BASE,HELPER)
         cls.w.restore(BASE/'slow-continuation/final.bin')
         cls.before=native_bytes(cls.w)

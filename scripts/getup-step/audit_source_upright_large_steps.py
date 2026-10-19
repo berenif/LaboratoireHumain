@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 """Reduce measured large-step journals, including stopped attempts; no physics."""
 import argparse
-import hashlib
 import json
 from collections import defaultdict,deque
 from pathlib import Path
@@ -12,6 +11,7 @@ from audit_source_opposed_arm_swing import amplitude,tracking_pass
 from source_upright_large_steps import body_orientation,TILT_LIMIT_DEG
 from source_step_preview import fk,P
 from scipy.spatial.transform import Rotation
+from audit_journal_io import digest, json_array_items
 
 
 def audit(folder):
@@ -77,7 +77,7 @@ def audit(folder):
                     fkerror=max(fkerror,max(abs((independent[k]-row['uprightMeasured'][body][k]+180.)%360.-180.)for k in independent))
         quiet.append(row);last=row
     assert count and last is not None
-    note_path=folder/'control.json';notes=json.loads(note_path.read_text())if note_path.exists() else []
+    note_path=folder/'control.json';notes=json_array_items(note_path)if note_path.exists() else ()
     minimumseparation=min((p['separationM']for n in notes for p in n['selfAvoidance']),default=None)
     orientation_summary={}
     for body,values in orientations.items():
@@ -101,7 +101,7 @@ def audit(folder):
         finalUprightQuietSamples=4000 if uprightquiet else 0,armAmplitude=amplitudes,
         armTrackingPass=bool(amplitudes)and all(tracking_pass(m)for m in amplitudes.values()),
         independentFKCheck=dict(samples=fksamples,comparedBodyTelemetry=fkcompared,allFramesHaveUprightTelemetry=upright_samples==count,maximumWrappedOrientationErrorDeg=fkerror,coveragePass=upright_samples==count and fkcompared==2*fksamples,physicsIntegrations=0),
-        hashes={name:hashlib.sha256((folder/name).read_bytes()).hexdigest()for name in ('frames.ndjson','control.json','final.bin')if(folder/name).exists()})
+        hashes={name:digest(folder/name)for name in ('frames.ndjson','control.json','final.bin')if(folder/name).exists()})
     if summary.get('passed'):
         from audit_source_multistep import audit as original_audit
         result['originalMotionAudit']=original_audit(folder)

@@ -18,6 +18,7 @@ from scipy.spatial import ConvexHull, QhullError
 from scipy.spatial.transform import Rotation
 
 from source_walk_limits import validate_saved_slip_limit,loaded_slip_exceeded
+from audit_journal_io import digest, json_array_items
 
 DT = .00125
 PHASES = ('transfer', 'lift', 'translate', 'land', 'settle', 'stand')
@@ -30,48 +31,6 @@ LOADED_SETTLE_READINESS = dict(consecutiveS=.1, minimumEachFootLoadN=3.,
     maximumComTargetErrorM=.008, maximumCaptureTargetErrorM=.01,
     maximumBodyLinearMps=.05, maximumBodyAngularRadps=.2,
     forwardMidpointOffsetM=.035)
-
-
-def digest(path):
-    return hashlib.sha256(path.read_bytes()).hexdigest()
-
-
-def json_array_items(path):
-    """Stream the saved control array without retaining every command note."""
-    decoder = json.JSONDecoder()
-    buffer, position, eof, started = '', 0, False, False
-    with Path(path).open() as source:
-        while True:
-            if not eof and (position >= len(buffer) or len(buffer)-position < 65536):
-                buffer = buffer[position:]+source.read(1048576)
-                position = 0
-                eof = len(buffer) == 0 or source.tell() == Path(path).stat().st_size
-            while position < len(buffer) and buffer[position].isspace():
-                position += 1
-            if not started:
-                if position >= len(buffer) or buffer[position] != '[':
-                    raise ValueError('control journal must be one JSON array')
-                position += 1
-                started = True
-                continue
-            if position < len(buffer) and buffer[position] == ',':
-                position += 1
-                continue
-            if position < len(buffer) and buffer[position] == ']':
-                if buffer[position+1:].strip() or source.read().strip():
-                    raise ValueError('trailing data after control journal')
-                return
-            try:
-                item, end = decoder.raw_decode(buffer, position)
-            except json.JSONDecodeError:
-                if eof:
-                    raise ValueError('incomplete control journal')
-                buffer = buffer[position:]+source.read(1048576)
-                position = 0
-                eof = source.tell() == Path(path).stat().st_size
-                continue
-            position = end
-            yield item
 
 
 def audit_implicit_provenance(cadence, receipt, notes, actual_integrations,

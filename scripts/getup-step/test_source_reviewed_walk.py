@@ -1,5 +1,6 @@
 """Reviewed-controller command ownership tests. No native integration allowed."""
 import copy
+import argparse
 from dataclasses import replace
 import json
 from pathlib import Path
@@ -22,6 +23,17 @@ from source_reference_context import prospective_unload_context
 from source_step_probe import World, Controller, clock
 from source_upright_large_steps import ExtendedArmMap
 from test_source_reference_context import BASE, HELPER, HAS_NATIVE, SHARED, native_model_fingerprint
+
+
+class ComputeWallCap(unittest.TestCase):
+    def test_finite_bounded_compute_caps(self):
+        for value in ('120', '1200', '3600', '7200'):
+            self.assertEqual(reviewed.wall_cap_seconds(value), float(value))
+
+    def test_invalid_compute_caps_cannot_remove_bound(self):
+        for value in ('nan', 'inf', '-inf', '-1', '0', '119.999', '7200.001'):
+            with self.subTest(value=value), self.assertRaises(argparse.ArgumentTypeError):
+                reviewed.wall_cap_seconds(value)
 
 
 class CausalArmPreparation(unittest.TestCase):

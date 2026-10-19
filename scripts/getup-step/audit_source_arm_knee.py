@@ -1,24 +1,29 @@
 #!/usr/bin/env python3
 """Compact saved-frame arm/knee comparison. No physical integrations."""
 import argparse
-import hashlib
 import json
 from collections import OrderedDict
 from pathlib import Path
 
 import numpy as np
 from scipy.spatial.transform import Rotation
+from audit_journal_io import digest as sha_file, json_array_items
 
 ROOT = Path(__file__).resolve().parents[2]
 DT = .00125
 
 
-def sha_file(path):
-    digest = hashlib.sha256()
-    with path.open('rb') as stream:
-        for block in iter(lambda: stream.read(1024*1024), b''):
-            digest.update(block)
-    return digest.hexdigest()
+def audit_control_notes(notes):
+    missing = object()
+    minimum_gap = max_offset = missing
+    for note in notes:
+        for adjustment in note['selfAvoidance']:
+            value = adjustment['separationM']
+            minimum_gap = value if minimum_gap is missing else min(minimum_gap, value)
+        offset = max(abs(np.array(note.get('postureExperiment', {}).get('armBalanceOffsetRad', [0.]))))
+        max_offset = offset if max_offset is missing else max(max_offset, offset)
+    return (None if minimum_gap is missing else minimum_gap,
+            0. if max_offset is missing else max_offset)
 
 
 def arm_geometry(qpos):
@@ -103,9 +108,7 @@ def audit(folder):
         phase['endpointArmGeometry'] = row['qpos']
     assert count == multi['actualIntegrations']
     assert max(abs(previous_slip-multi['globalLoadedSlipM'])) < 1e-11
-    notes = json.loads((folder/'control.json').read_text())
-    gaps = [a['separationM'] for note in notes for a in note['selfAvoidance']]
-    max_offset = max((max(abs(np.array(note.get('postureExperiment',{}).get('armBalanceOffsetRad',[0.])))) for note in notes),default=0.)
+    minimum_gap, max_offset = audit_control_notes(json_array_items(folder/'control.json'))
     phase_rows = []
     for phase in phases.values():
         phase['durationS'] = phase['samples']*DT
@@ -120,7 +123,7 @@ def audit(folder):
         steps=multi['steps'],globalLoadedSlipM=previous_slip.tolist(),
         finalComCaptureMarginM=multi['final']['minimumComCaptureMarginM'],
         maximumMotorFraction=float(max(taumax/gears)),maximumArmJointSpeedRadps=float(max(vmax[15:])),
-        maximumSelfPenetrationM=maxpen,minimumMeasuredSelfSeparationM=min(gaps,default=None),
+        maximumSelfPenetrationM=maxpen,minimumMeasuredSelfSeparationM=minimum_gap,
         maximumNonfootLoadN=nonfoot,flightSamples=int(flight),warnings=warnings,missingOrSelfEligibleGroundRays=int(bad_rays),
         jointRaysPerSample=22,footRaysPerSample=8,hingeContinuityMaximumErrorRad=continuity,
         inheritedInitialJointMarginRad=saved['entry']['jointLimitMinimumMarginRad'],minimumJointReserveRad=minjoint,
