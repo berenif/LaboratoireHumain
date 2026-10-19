@@ -1,0 +1,461 @@
+{
+  "schema": 1,
+  "date": "2026-10-19",
+  "status": "completed-rejected-one-terminal-reference-replan-negative-experiment",
+  "conclusion": "Rejected as a recovery fix. The actual WASM back trial consumed exactly one real settled-gate replan at native 6777, but earned zero original standing samples and reached the unchanged 25-second deadline at native 20480. The new teacher reached its height-only terminal; the real body briefly rose airborne and failed standing. All four native fresh/30-second-hold cases passed with the replan unused, so they never established physical retry success. The simpler committed baseline was restored; the rejected candidate is preserved by an exact replay patch.",
+  "actualPhysicalReplanSuccessDemonstrated": false,
+  "fourFreshAndFourHoldNativeBaselinePassed": true,
+  "releaseAccepted": false,
+  "qualification24Cases": false,
+  "fullNativeSuiteQualified": false,
+  "actualWasmQualified": false,
+  "nativeWasmTrajectoryEqualityClaimed": false,
+  "productionRecoveryEnabled": false,
+  "defaultPublicProfileChanged": false,
+  "physicalAcceptanceChanged": false,
+  "upstreamUserRightsResolved": false,
+  "source": {
+    "baseCommit": "4c19366f67941819955580c965d8bb01b040d568",
+    "freeze": {
+      "path": "outputs/getup-terminal-replan-20261019/source-freeze.json",
+      "sha256": "b93242f5b359517e9ba22b19f76bd3cf0020739f2aef7c2b59af8fafdd8c694a"
+    },
+    "sourceSha256": {
+      "rust/crates/sim/Cargo.toml": "70e72b0cca95a26d8b13e98b66f9aeeb2c5c9df6fc4c12224bf5dd6fb0788e54",
+      "rust/crates/sim/src/lib.rs": "af587a9d90aaa847c28f5a023e7bcc6677a08bb37e2a07568ea96ddbeaff551c",
+      "rust/crates/sim/src/runtime.rs": "fa46dca47eab061244193ada068403bce294416749fe45a50a1007b8f7dc4438",
+      "rust/crates/sim/src/getup/controller.rs": "9f54efc7f283a716ef2524f89203694bda14f10f86390ea288ee0ef3220f6154",
+      "rust/crates/sim/src/getup/terminal_replan_tests.rs": "17de06213ae073712bc63bfd19e9c83f6b51c727d989771b3dc3798175891439",
+      "docs/evidence/profiles/getup-800hz-3plus1-one-terminal-replan-v1.json": "9193400c547b0d3457e4cd8f8e609932c245b0b2a26fe037410451dba4e350e3"
+    },
+    "frozenFinalLibrary": {
+      "path": "outputs/getup-terminal-replan-20261019/liblh_sim-terminal-replan-final.rlib",
+      "sha256": "ae559562de1c45ae7f19d6d19d7a631863e799563ab6e59dae60cac022bfbf5d"
+    },
+    "features": [
+      "root-translation-carry-experiment",
+      "getup-terminal-balance-experiment",
+      "standing-dynamics-experiment",
+      "unit-root-rotation-experiment",
+      "getup-repeat-cycle-experiment",
+      "getup-terminal-replan-experiment"
+    ],
+    "designReview": {
+      "path": "outputs/getup-terminal-replan-20261019/independent-design-review.json",
+      "sha256": "0b99926d2d2dbaebea301c865cb5fc115327405c65cd96c1c79f16b9269b5fae"
+    },
+    "implementationReview": {
+      "path": "outputs/getup-terminal-replan-20261019/independent-implementation-review.json",
+      "sha256": "62a39571df1c661a365ccf7093bf420d4f769dd4a4e50abcd3f8fb6037133be9"
+    },
+    "sourceReviewVerdict": "No blocking source-level bug, arithmetic error or scope expansion found. The code matches the approved one-per-physical-world controller-only replan design. Compilation, focused contracts and fresh physical qualification remain separate verification steps.",
+    "reviewsAreSourceOnly": true,
+    "candidateSourceIdentity": "Exact frozen rejected-candidate overlay and final library, not current working-tree source. Parent restored the six candidate files to baseline after preserving the patch.",
+    "currentWorkingTreeContainsRejectedCandidate": false,
+    "rejectedPatch": {
+      "receipt": {
+        "path": "docs/evidence/patches/getup-one-terminal-replan-rejected-2026-10-19.patch",
+        "sha256": "41307f420feea87be9436432fd93ac3f79ec795a310d3c7e4a1de5b815210278"
+      },
+      "baseCommit": "4c19366f67941819955580c965d8bb01b040d568",
+      "replayReceipt": {
+        "path": "outputs/getup-terminal-replan-20261019/rejected-patch-replay.json",
+        "sha256": "9b9283076810dba582c214829861cea791ed1537d7f9826f3782d5cc86492c4d"
+      },
+      "allSixCandidateSourceHashesReproducedExact": true,
+      "candidateFrozenLibraryHashUnchanged": true
+    },
+    "independentNativeEvidenceAudit": {
+      "receipt": {
+        "path": "outputs/getup-terminal-replan-20261019/independent-native-evidence-audit.json",
+        "sha256": "5866fcf94533e5ea1d79b583092d435d09060f3f2bddad53ea72fa3ff5f30698"
+      },
+      "auditedDraftSha256": "a53fe76eb07f3ca20b9a1c1b75c48b082a66e10676861b6f6533656fe4b26f7c",
+      "pinning": "Native checks are pinned to the six-file source freeze and final library, independent of current HEAD or later final-disposition edits.",
+      "scope": "107 unique file hashes and native-only draft claims checked. Audit predates and does not certify the later browser rejection or final JSON text."
+    }
+  },
+  "boundedReplan": {
+    "profile": {
+      "rejectedCandidatePath": "docs/evidence/profiles/getup-800hz-3plus1-one-terminal-replan-v1.json",
+      "sha256": "9193400c547b0d3457e4cd8f8e609932c245b0b2a26fe037410451dba4e350e3",
+      "currentWorkingTreeFilePresent": false,
+      "reproducedByRejectedPatch": true
+    },
+    "selector": "getup_repeated_recovery=completed-cycle-one-terminal-reference-replan-v1",
+    "defaultOff": true,
+    "optionalStateFields": [
+      "format",
+      "used",
+      "settled_native_samples",
+      "attempted_native_substep",
+      "prior_forecast_substeps"
+    ],
+    "strictState": "Unknown/missing fields or formats, explicit null, unsupported profile/state combinations and future clocks are refused. Partial settlement count is below 240 and must be compatible with exhausted-reference native age. Used state requires zero partial count, an attempted native epoch no later than current time and bounded discarded forecast work from 1 through MAX_TEACHER_TICKS*20 inclusive. Unused state requires no attempt epoch and zero discarded work.",
+    "onePerWorld": "One consumed attempt per physical trial/world. used/attempt timestamp/discarded-forecast accounting survive checkpoints and later completed-cycle controller rearms. Only an actual new trial or explicit Reset replenishes the budget.",
+    "gate": "Unpassed source episode with fully exhausted reference, teacher_terminal_reached and reference_seed_matches_real both true; no teacher/runtime/refusal/halted failure; before the original 25-second epoch deadline. Require 240 consecutive actual native samples of existing strict fallen geometry, nonfoot load \u22653 N and current generalized whole-body rates \u22640.65 m/s and \u22641.8 rad/s. Any bad native resets the partial count.",
+    "action": "Consume budget before the next source command, preserve the original impact epoch, save discarded-reference forecast work, reset controller/reference state and set motion Fallen. No world/q/velocity/contact/force/carry write or synthetic impulse. A failed retry cannot replenish the budget or restart the deadline.",
+    "purityAndAccounting": "Teacher fork removes lifecycle state only while keeping the exact physical/numerical seed. Report current-reference and discarded-reference forecast work separately; physical native counts remain separate.",
+    "unchanged": "Actors, gains, caps, 800 Hz physics, 3+1 outer and consistent 32-source/20-terminal budgets, unit-root policy and all original standing/slip predicates remain unchanged."
+  },
+  "nativeZeroCarryActivation": {
+    "receipt": {
+      "path": "outputs/getup-terminal-replan-20261019/activation-zero-proof/result.json",
+      "sha256": "7f3f7cad8901f3cc5f1158a93df9c6cee9ce75ed9662def06f0902b0ee508654"
+    },
+    "checkpointSchemaTransition": "1\u21922",
+    "physicalAndForecastIntegrations": 0,
+    "nativeSubsteps": 0,
+    "modelAndWorldBytesExact": true,
+    "embeddedRuntimeStringExact": true,
+    "controllerAndInitialUnusedReplanStateExact": true,
+    "note": "The explicit replan state already exists before carry activation; activation changes only the carry envelope, not a physical state or budget."
+  },
+  "focusedContracts": {
+    "newContractTestsPassed": 13,
+    "allFocusedUniquePassed": 72,
+    "successfulInvocations": 95,
+    "failed": 0,
+    "ignored": 0,
+    "summary": {
+      "path": "outputs/getup-terminal-replan-20261019/focused-gates-summary.json",
+      "sha256": "8d326fd5df0a1b27776f499b6d64b0c8b52ec93219ab01f1c044f7c6e97700d2"
+    },
+    "scope": "Lifecycle/state/epoch/checkpoint contracts use synthetic fixtures; ordinary upright setup and a determinism tick do not demonstrate physical replanning. Other listed regressions are focused filters, not a full-suite pass."
+  },
+  "nativeBaselineCampaign": {
+    "summary": {
+      "path": "outputs/getup-terminal-replan-20261019/native-campaign-summary.json",
+      "sha256": "7ee2b01ef3c523b0258d8e9f8ec5492b49bba839e9553dd18870a7d5df95d6b1"
+    },
+    "freshRealIntegrations": 23660,
+    "holdRealIntegrations": 96000,
+    "totalRealIntegrations": 119660,
+    "forecastIntegrations": 2920,
+    "replanUsedByAnyFreshCaseOrHold": false,
+    "rows": [
+      {
+        "kind": "back",
+        "firstStandingPassNative": 4053,
+        "freshRealNativeIntegrations": 4060,
+        "forecastIntegrations": 960,
+        "holdRealIntegrations": 24000,
+        "allOriginalPredicatesEvery800HzSample": true,
+        "originalCounterAndAnchorsContinuous": true,
+        "maximumFootDriftM": [
+          0.0001562580728204921,
+          0.0001872010761871934
+        ],
+        "loadedHoldSlipM": [
+          1.1161950564630954e-05,
+          4.598432955321682e-07
+        ],
+        "replanUsedAtPassOrHoldEnd": false,
+        "freshReceipt": {
+          "path": "outputs/getup-terminal-replan-20261019/fresh-back/result.json",
+          "sha256": "c498e6b57c110e2aadb1c92d644d728b3dad5f63a0869af1f7beba10cd8a4b6d"
+        },
+        "holdReceipt": {
+          "path": "outputs/getup-terminal-replan-20261019/hold30-back/result.json",
+          "sha256": "4ed9ca0e83398a0251a84986229fce6cc88be6ef776607464d5a2b5c563d3948"
+        }
+      },
+      {
+        "kind": "belly",
+        "firstStandingPassNative": 3182,
+        "freshRealNativeIntegrations": 3200,
+        "forecastIntegrations": 540,
+        "holdRealIntegrations": 24000,
+        "allOriginalPredicatesEvery800HzSample": true,
+        "originalCounterAndAnchorsContinuous": true,
+        "maximumFootDriftM": [
+          0.00017564473091624677,
+          0.00014414257020689547
+        ],
+        "loadedHoldSlipM": [
+          3.5922098470364575e-06,
+          4.928080509788435e-06
+        ],
+        "replanUsedAtPassOrHoldEnd": false,
+        "freshReceipt": {
+          "path": "outputs/getup-terminal-replan-20261019/fresh-belly/result.json",
+          "sha256": "4c227e883024198f392283cff0952b204232ccf0d31544e61be654b13010384f"
+        },
+        "holdReceipt": {
+          "path": "outputs/getup-terminal-replan-20261019/hold30-belly/result.json",
+          "sha256": "0c2b01e936756d8b751d9ed32178e9e47a5cff44bc322d384c71c8b8aa24465f"
+        }
+      },
+      {
+        "kind": "side",
+        "firstStandingPassNative": 12830,
+        "freshRealNativeIntegrations": 12840,
+        "forecastIntegrations": 720,
+        "holdRealIntegrations": 24000,
+        "allOriginalPredicatesEvery800HzSample": true,
+        "originalCounterAndAnchorsContinuous": true,
+        "maximumFootDriftM": [
+          0.0002468925667926669,
+          0.00021040838328190148
+        ],
+        "loadedHoldSlipM": [
+          3.0644736507490114e-05,
+          1.9995781727040306e-05
+        ],
+        "replanUsedAtPassOrHoldEnd": false,
+        "freshReceipt": {
+          "path": "outputs/getup-terminal-replan-20261019/fresh-side/result.json",
+          "sha256": "077c7dd1c140202a911ce9a54dccdf275d0e4a541fea785160313c9fd76f3efe"
+        },
+        "holdReceipt": {
+          "path": "outputs/getup-terminal-replan-20261019/hold30-side/result.json",
+          "sha256": "6713d2e70b6afc96c98e95d59714bcface16c3c4f691a1eb01f9fd4c9a1dad3a"
+        }
+      },
+      {
+        "kind": "side-supported",
+        "firstStandingPassNative": 3548,
+        "freshRealNativeIntegrations": 3560,
+        "forecastIntegrations": 700,
+        "holdRealIntegrations": 24000,
+        "allOriginalPredicatesEvery800HzSample": true,
+        "originalCounterAndAnchorsContinuous": true,
+        "maximumFootDriftM": [
+          0.00030236702878028154,
+          0.00029736265423707664
+        ],
+        "loadedHoldSlipM": [
+          1.1764327411061204e-05,
+          1.9284703066517775e-05
+        ],
+        "replanUsedAtPassOrHoldEnd": false,
+        "freshReceipt": {
+          "path": "outputs/getup-terminal-replan-20261019/fresh-side-supported/result.json",
+          "sha256": "9ee40085eb7cde9904bd918497dcc6bf68348a9c724b13ef6bbe357c54d7668d"
+        },
+        "holdReceipt": {
+          "path": "outputs/getup-terminal-replan-20261019/hold30-side-supported/result.json",
+          "sha256": "1f998dde35253aa5ce72ec95b3181b8ebb68864ed74711063e5f20978b2ab688"
+        }
+      }
+    ],
+    "unchangedCriteria": {
+      "nativeHz": 800,
+      "controllerHz": 40,
+      "originalContiguousStandingNativeSamples": 800,
+      "recoveryDeadlineSecondsAfterTrigger": 25,
+      "maximumWholeBodyLinearMps": 0.22,
+      "maximumWholeBodyAngularRadps": 0.65,
+      "footOriginDriftFromOriginalStableAnchorsM": 0.01,
+      "headHeightGreaterThanM": 1.4,
+      "torsoUpAtLeast": 0.97,
+      "loadedContinuationSlipStopM": 0.02,
+      "wholeRecovery20mmStop": false,
+      "admissionCounterCanCountAsOriginalStandingSamples": false
+    }
+  },
+  "selectedStateComparison": {
+    "receipt": {
+      "path": "outputs/getup-terminal-replan-20261019/native-selected-state-unit-root-parity.json",
+      "sha256": "037e12fd09b3b752b4ff92a1609cd0dfe063fc49868ca56949d2872b103f533d"
+    },
+    "independentlyRecomputedReadOnly": true,
+    "typedF32WordsExactlyCompared": 2600,
+    "samples": "Four first-pass snapshots and four final 30-second hold snapshots against retained unit-root native evidence. 325 physical pose/velocity words per snapshot; exact including signed zero. Different explicit lifecycle profile/state excluded.",
+    "limit": "Selected states only. No unseen native trajectory, all-frame, numerical generality or native/WASM equality is claimed."
+  },
+  "compatibility": {
+    "receipt": {
+      "path": "outputs/getup-terminal-replan-20261019/legacy-exact-parity.json",
+      "sha256": "7d43a4711522f0a8acf65e19fdbd994b33705b89b4153e7f1984aa09f7413e18"
+    },
+    "noneAndBasicRepeatByteExact": true,
+    "files": [
+      "reply.json",
+      "checkpoint-after.bin",
+      "report-after.json",
+      "fixture-after.json"
+    ],
+    "newRealIntegrationsThisSlice": 60,
+    "forecastIntegrations": 0,
+    "accounting": "None uses 20 new native integrations and compares the already-retained old baseline arm; do not recount that old work. Basic repeat runs 20 old + 20 new native integrations.",
+    "currentFeatureOffProfileFactoryAndActiveCheckpointRefusal": {
+      "receipt": {
+        "path": "outputs/getup-terminal-replan-20261019/feature-off-refusal.json",
+        "sha256": "5747313be7445dd20549bab40e41308ebaec90800d880131ba2cb3cb91a73d47"
+      },
+      "physicalAndForecastIntegrations": 0
+    },
+    "oldBasicTypedEnumRefusesNewVariant": {
+      "receipt": {
+        "path": "outputs/getup-terminal-replan-20261019/old-variant-refusal.json",
+        "sha256": "9e909640b9894f76786d6fbb8f4ef5db3a01fe3fb7abcfdfb177b55f3fa3b6c9"
+      },
+      "physicsIntegrations": 0
+    }
+  },
+  "preservedPreparationIssues": {
+    "firstContractCompile": {
+      "receipt": {
+        "path": "outputs/getup-terminal-replan-20261019/contracts-first.log",
+        "sha256": "24e0d0fa5a09c00cf654e82383c7f016e68eacea0bba31fda1eaeaf06660bb1f"
+      },
+      "error": "E0614 test helper dereferenced a Vec3 returned by value; corrected test helper only. Compilation failed before tests executed.",
+      "executedTestFailures": 0
+    },
+    "firstIntermediateLibrary": {
+      "receipt": {
+        "path": "outputs/getup-terminal-replan-20261019/build-first.log",
+        "sha256": "552b99ac527afef883f4fe1bdf398db7671c3923b06a13800a78a8912c458e33"
+      },
+      "path": "outputs/getup-terminal-replan-20261019/liblh_sim-terminal-replan-first.rlib",
+      "physicallyRun": false,
+      "difference": "Built before adding teacher_terminal_reached and reference_seed_matches_real to the exhausted-reference guard. Final library was rebuilt with both guards before physical trials; intermediate library is not candidate evidence."
+    }
+  },
+  "workAccounting": {
+    "nativeBaselineCampaignReal": 119660,
+    "nativeBaselineCampaignForecast": 2920,
+    "newCompatibilityReal": 60,
+    "newCompatibilityForecast": 0,
+    "activationAndRefusalReal": 0,
+    "knownCampaignAndCompatibilityReal": 119720,
+    "knownCampaignAndCompatibilityRealPlusForecast": 122640,
+    "unitSyntheticAndPriorBaselineWorkIncluded": false,
+    "noUnobservedNativeTailInFreshOrHoldReceipts": true,
+    "performanceQualification": false,
+    "actualWasmRejectedTrialSeparatelyRecorded": {
+      "realIntegrations": 20480,
+      "forecastIntegrations": 1640,
+      "forecastSplit": [
+        1020,
+        620
+      ],
+      "note": "Separate actual-WASM primary trial, not native-campaign work. No held 30-second continuation occurred."
+    }
+  },
+  "browserSeparate": {
+    "status": "Decisive fresh back trial completed and rejected; separate browser canonical evidence owns full instrumentation/artifact/diagnostic detail.",
+    "independentCandidateBuild": {
+      "path": "outputs/browser-capability-20261019/recovery-fixture/one-terminal-replan/build/build-manifest.json",
+      "sha256": "79d8f1631235954210a398914c9206a9e5f8e610e514c820c3acf1ee14abff78"
+    },
+    "candidateWorkerWasmSha256": "9483a53b55bdc684e81000cff1b4e8d71b9df36fee9f9fbbfb192816a4756d83",
+    "buildIsNotQualification": true,
+    "priorActualUnitRootBrowserEvidence": {
+      "path": "docs/evidence/browser-unit-root-rotation-recovery-2026-10-19.json",
+      "sha256": "11a6dd9a3aad590cd1ecf64a6b4e4bb43f23f6fb151b18c1b22614ed02500a5e"
+    },
+    "priorBackBoundary": "Back failed the original 25-second standing deadline on the earlier unit-root artifact. This native no-replan campaign does not qualify that browser gate or establish that the retry helps it.",
+    "canonicalBrowserEvidencePath": "docs/evidence/browser-one-terminal-replan-2026-10-19.json"
+  },
+  "receiptSha256": {
+    "root": "outputs/getup-terminal-replan-20261019",
+    "sha256": {
+      "source-freeze.json": "b93242f5b359517e9ba22b19f76bd3cf0020739f2aef7c2b59af8fafdd8c694a",
+      "production-freeze.json": "31fd62ce327791178523495975d5dc640acfead6aa2c6a2fe7d04fc48d7e2753",
+      "native-campaign-summary.json": "7ee2b01ef3c523b0258d8e9f8ec5492b49bba839e9553dd18870a7d5df95d6b1",
+      "native-selected-state-unit-root-parity.json": "037e12fd09b3b752b4ff92a1609cd0dfe063fc49868ca56949d2872b103f533d",
+      "focused-gates-summary.json": "8d326fd5df0a1b27776f499b6d64b0c8b52ec93219ab01f1c044f7c6e97700d2",
+      "activation-zero-proof/result.json": "7f3f7cad8901f3cc5f1158a93df9c6cee9ce75ed9662def06f0902b0ee508654",
+      "independent-design-review.json": "0b99926d2d2dbaebea301c865cb5fc115327405c65cd96c1c79f16b9269b5fae",
+      "independent-implementation-review.json": "62a39571df1c661a365ccf7093bf420d4f769dd4a4e50abcd3f8fb6037133be9",
+      "contracts-first.log": "24e0d0fa5a09c00cf654e82383c7f016e68eacea0bba31fda1eaeaf06660bb1f",
+      "contracts-second.log": "578aa459d1c886afaf9f257486edeff5c3159d56a4000562bf7d49ce9f3e325b",
+      "build-first.log": "552b99ac527afef883f4fe1bdf398db7671c3923b06a13800a78a8912c458e33",
+      "build-final-guards.log": "f599ca8642abbe176f1c71d1cd6c43f53ade29d543d3c0f6363f014a6ea12fd3",
+      "feature-off-refusal.json": "5747313be7445dd20549bab40e41308ebaec90800d880131ba2cb3cb91a73d47",
+      "old-variant-refusal.json": "9e909640b9894f76786d6fbb8f4ef5db3a01fe3fb7abcfdfb177b55f3fa3b6c9",
+      "legacy-exact-parity.json": "7d43a4711522f0a8acf65e19fdbd994b33705b89b4153e7f1984aa09f7413e18",
+      "fresh-back/reference-report.json": "4eb0871ce6906206b10f2071f5eca4d65e36eb5a018c23974c7faf7c502b3187",
+      "hold30-back/reference-report.json": "c8dc0f6c83b3984bfbc6264f12501fcaacfbb8e6a3ed06012995fd58b5afffd4",
+      "fresh-belly/reference-report.json": "ef95f961a76a6adabb116b2dc9a7f200662a0d89e8a219cb1ad5d0ca3544bbf8",
+      "hold30-belly/reference-report.json": "40a3fed503b162734f16930f818d52c8fa96314aa6cef04180b9a8a3600cc6e6",
+      "fresh-side/reference-report.json": "9313a8457cb21618e033491f2c89612ec16485d4a3fc2402c8a47847dea733a0",
+      "hold30-side/reference-report.json": "1ed1f00423519b9c5e20a880f7f87c516eaa59de9acd8ed7aa80398a4dce031a",
+      "fresh-side-supported/reference-report.json": "1bd2ea94448e0e062a99116e1086234e1ccc3d2fbb975c0376c08da1a241d3ab",
+      "hold30-side-supported/reference-report.json": "1a8d818e60d062cb5d764fd1fc27bb7b45e7c3eedeeed6a5326b07f7cec06edf",
+      "rejected-patch-replay.json": "9b9283076810dba582c214829861cea791ed1537d7f9826f3782d5cc86492c4d",
+      "independent-native-evidence-audit.json": "5866fcf94533e5ea1d79b583092d435d09060f3f2bddad53ea72fa3ff5f30698"
+    }
+  },
+  "limits": [
+    "The physical replan was consumed exactly once in actual WASM and failed the original recovery deadline. Native passes with unused state do not supersede this failure.",
+    "Candidate source/profile/test files were restored to the simpler baseline. Frozen candidate identities refer to retained manifests, library and exact replay patch, not current working-tree hashes.",
+    "No other fresh browser poses or new footage were run for this rejected candidate. No 30-second recovered hold, all-case/24case/repeated-cycle acceptance, performance or Android qualification.",
+    "No public/default enablement, release acceptance, upstream rights clearance or native/WASM equality.",
+    "Tracking/support correlations and offline lookahead-command sensitivity are diagnostic leads, not intervention-proven physical causes or fixes."
+  ],
+  "documentationVerificationUtc": "2026-10-19T21:18:16.363968+00:00",
+  "classification": "rejected-unadmitted-actual-WASM-back-replan-deadline-failure",
+  "actualWasmReplanAttemptObserved": true,
+  "globalRecoveryQualified": false,
+  "actualWasmNegativeResult": {
+    "summary": {
+      "path": "outputs/browser-capability-20261019/recovery-fixture/one-terminal-replan/back-negative-summary.json",
+      "sha256": "41ad53b79a57040a284cc2752687f2666de687b20f7a98d312e1c44eeb4a4a52"
+    },
+    "rawResult": {
+      "path": "outputs/browser-capability-20261019/recovery-fixture/one-terminal-replan/back-thirty/result.json",
+      "sha256": "39b67a59b62ca8be3cd545ab3477728ac593b570fa931e73b1993751ecb7f8dd"
+    },
+    "primaryFreshBackNoEncoder": true,
+    "outcome": "Original 25-second recovery deadline failure; no standing pass or 30-second recovered hold.",
+    "originalTriggerAndImpactNative": 480,
+    "deadlineNative": 20480,
+    "finalPhysicalTimeS": 25.6,
+    "originalElapsedRecoveryS": 25,
+    "originalStandingSamplesAtStop": 0,
+    "oneAttempt": {
+      "actualConsumedNative": 6777,
+      "actualConsumedPhysicalTimeS": 8.47125,
+      "firstObservedPublicationNative": 6780,
+      "publicationDelayNative": 3,
+      "usedBudgetNeverRenewed": true,
+      "priorReferenceForecastIntegrations": 1020,
+      "newReferenceForecastIntegrations": 620,
+      "newTeacherHeightOnlyTerminalHeadM": 1.5025743
+    },
+    "actualPostReplanSampledPeak": {
+      "native": 7960,
+      "headM": 1.434860348701477,
+      "bothFootLoadsN": [
+        0,
+        0
+      ],
+      "torsoUp": 0.9510384798049927,
+      "standingCounterSeconds": 0,
+      "interpretation": "Airborne ascent with torso/motion/support predicates failing; height alone is not standing."
+    },
+    "nativeFailure": null,
+    "workerFault": false,
+    "diagnosticCaptureComplete": true,
+    "observationLimits": "Physical contact/current-twist packets are 40 Hz. Consumed state records actual native 6777 admission; first publication is 3 steps later. No immediate pre/post native-bit equality or unseen 800 Hz contact-transition claim.",
+    "teacherContactLimit": "Inherited teacher head>1.4m terminal is not quiet supported standing. Teacher snapshot contact cache and velocity caches are excluded from forecast-support/current-motion claims."
+  },
+  "exploratoryCausalArtifacts": {
+    "summary": {
+      "path": "outputs/getup-terminal-replan-20261019/tracking-causal/summary.json",
+      "sha256": "51cdcca962cc8e0b74143ffbd7258415ab86ca626aa83582c677e813d478683d"
+    },
+    "retainedMeasurements": {
+      "path": "outputs/getup-terminal-replan-20261019/tracking-causal/measurements.json",
+      "sha256": "5b6f79434dfbc371b8d14dec6aac41bc789e27eaa5b9dc72d777898c4f334ec3"
+    },
+    "offlineLookaheadSensitivity": {
+      "path": "outputs/getup-terminal-replan-20261019/tracking-causal/lookahead_sensitivity.json",
+      "sha256": "d897b0bf7fae80d493feefd9f6d22ffd0eed4c1e136b4989a4e7c812eda9e279"
+    },
+    "trackingCsv": {
+      "path": "outputs/getup-terminal-replan-20261019/tracking-causal/student_tracking.csv",
+      "sha256": "bd342006ac5ab4dcb315258ce40a67c52b86664aa0c6597f83693d346b088d52"
+    },
+    "actualSupportCsv": {
+      "path": "outputs/getup-terminal-replan-20261019/tracking-causal/actual_support.csv",
+      "sha256": "17fd81c18b279d185fce22cfa2dbf66cce6db9fab253fe19e91e6e01991fbfd3"
+    },
+    "scope": "Retained tracking/support measurements and offline frozen-actor input sensitivity only. Zero new physics, forecasts, builds or controller/gain changes.",
+    "boundedFinding": "Loaded ascent was already uncaptured before the canonical AHEAD transition. The retained j57 lookahead input changes are associated with large commanded-torque changes; offline input substitutions show actor-command sensitivity.",
+    "causalLimit": "No intervention establishes that lookahead causes unloading or that changing it repairs support, tracking or recovery. 40 Hz pairing is up to 3 native steps after student decisions. No claimed new physical rollout or proven fix."
+  }
+}

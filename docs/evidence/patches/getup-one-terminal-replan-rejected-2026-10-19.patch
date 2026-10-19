@@ -1,0 +1,951 @@
+diff --git a/rust/crates/sim/Cargo.toml b/rust/crates/sim/Cargo.toml
+index df54072..0ba2730 100644
+--- a/rust/crates/sim/Cargo.toml
++++ b/rust/crates/sim/Cargo.toml
+@@ -9,6 +9,7 @@ stationary-balance-experiment = []
+ standing-dynamics-experiment = []
+ getup-terminal-balance-experiment = []
+ getup-repeat-cycle-experiment = ["getup-terminal-balance-experiment"]
++getup-terminal-replan-experiment = ["getup-repeat-cycle-experiment"]
+ getup-terminal-base-ready-experiment = ["getup-terminal-balance-experiment"]
+ getup-terminal-bumpless-experiment = ["getup-terminal-base-ready-experiment"]
+ experimental-solver-step-observation = ["rapier3d/solver-step-observation"]
+diff --git a/rust/crates/sim/src/getup/controller.rs b/rust/crates/sim/src/getup/controller.rs
+index 458180c..2769ceb 100644
+--- a/rust/crates/sim/src/getup/controller.rs
++++ b/rust/crates/sim/src/getup/controller.rs
+@@ -120,6 +120,32 @@ struct TerminalBaseReady {
+     feet: Option<[Vec3; 2]>,
+ }
+ 
++#[derive(Clone, Copy, Serialize, Deserialize)]
++enum TerminalReferenceReplanFormat {
++    #[serde(rename = "one-terminal-reference-fall-replan-v1")]
++    V1,
++}
++
++/// One optional feedback retry in an entire physical trial, never per contact.
++/// Its budget survives completed-cycle controller resets and checkpoints.
++#[derive(Clone, Serialize, Deserialize)]
++#[serde(deny_unknown_fields)]
++struct TerminalReferenceReplan {
++    format: TerminalReferenceReplanFormat,
++    used: bool,
++    settled_native_samples: u32,
++    attempted_native_substep: Option<u64>,
++    /// Only the discarded reference's work, not all forecasts in the trial.
++    prior_forecast_substeps: u32,
++}
++
++fn present_terminal_reference_replan<'de, D: serde::Deserializer<'de>>(deserializer: D)
++    -> Result<Option<TerminalReferenceReplan>, D::Error>
++{
++    // An absent legacy field is None; an explicit null cannot erase a budget.
++    TerminalReferenceReplan::deserialize(deserializer).map(Some)
++}
++
+ #[derive(Serialize, Deserialize)]
+ pub struct Controller {
+     pub status: lh_contracts::GetUpPolicyObservation,
+@@ -142,8 +168,65 @@ pub struct Controller {
+     terminal_balance: Option<TerminalBalance>,
+     #[serde(default, skip_serializing_if = "Option::is_none")]
+     terminal_base_ready: Option<TerminalBaseReady>,
++    #[serde(default, skip_serializing_if = "Option::is_none", deserialize_with = "present_terminal_reference_replan")]
++    terminal_reference_replan: Option<TerminalReferenceReplan>,
+ }
+ impl Controller {
++    pub(crate) fn for_profile(model: &Model, profile: &Profile) -> Self {
++        let mut controller = Self::new(model);
++        if profile.terminal_reference_replan_enabled() {
++            controller.terminal_reference_replan = Some(TerminalReferenceReplan {
++                format: TerminalReferenceReplanFormat::V1,
++                used: false,
++                settled_native_samples: 0,
++                attempted_native_substep: None,
++                prior_forecast_substeps: 0,
++            });
++        }
++        controller
++    }
++    fn terminal_reference_exhausted(&self) -> bool {
++        self.started_substep.is_some() && !self.reference.is_empty() && self.holding
++            && self.status.teacher_terminal_reached && self.status.reference_seed_matches_real
++            && self.status.reference_frames as usize == self.reference.len() - 1
++            && self.status.reference_index as usize == self.reference.len() - 1
++            && self.last_decision.is_some_and(|index| index >= (self.reference.len() - 1) as u64)
++    }
++    pub(crate) fn terminal_reference_replan_valid(&self, profile: &Profile, native: u64) -> bool {
++        match (profile.terminal_reference_replan_enabled(), &self.terminal_reference_replan) {
++            (false, None) => true,
++            (true, Some(state)) if cfg!(feature = "getup-terminal-replan-experiment") => {
++                if state.used {
++                    state.settled_native_samples == 0
++                        && state.attempted_native_substep.is_some_and(|n| n <= native)
++                        && (1..=MAX_TEACHER_TICKS as u32 * 20).contains(&state.prior_forecast_substeps)
++                } else {
++                    state.attempted_native_substep.is_none() && state.prior_forecast_substeps == 0
++                        && state.settled_native_samples < 240
++                        && (state.settled_native_samples == 0 || (
++                            self.terminal_reference_exhausted()
++                            && !self.status.prototype_standing_passed
++                            && self.status.refusal.is_none() && self.teacher_failure.is_none()
++                            && self.started_substep.and_then(|start| start.checked_add(
++                                (self.reference.len() as u64 - 1).checked_mul(20)?))
++                                .and_then(|exhausted| native.checked_sub(exhausted))
++                                .is_some_and(|age| age >= u64::from(state.settled_native_samples))))
++                }
++            }
++            _ => false,
++        }
++    }
++    #[cfg(feature = "getup-terminal-replan-experiment")]
++    pub(crate) fn terminal_reference_replan_diagnostic(&self) -> Option<serde_json::Value> {
++        self.terminal_reference_replan.as_ref().map(|state| serde_json::json!({
++            "maximumReplansPerPhysicalTrial":1, "state":state,
++        }))
++    }
++    fn clear_terminal_reference_replan_samples(&mut self) {
++        if let Some(state) = &mut self.terminal_reference_replan {
++            state.settled_native_samples = 0;
++        }
++    }
+     pub(crate) fn source_recovery_active(&self) -> bool {
+         self.started_substep.is_some() && self.terminal_balance.is_none()
+     }
+@@ -187,6 +270,7 @@ impl Controller {
+             stable_substeps: 0,
+             stable_feet: None,
+             terminal_balance: None,
++            terminal_reference_replan: None,
+             terminal_base_ready: if cfg!(feature = "getup-terminal-base-ready-experiment") {
+                 Some(TerminalBaseReady {
+                     format: if cfg!(feature = "getup-terminal-bumpless-experiment") {
+@@ -425,6 +509,9 @@ impl Controller {
+         Ok(())
+     }
+     pub fn command(&mut self, s: &Simulation, physical: &[f32; 67]) -> Result<[f32; 21], String> {
++        if !self.terminal_reference_replan_valid(&s.profile, s.substeps_completed) {
++            return Err("Invalid terminal reference replan profile, state or native clock".into());
++        }
+         if s.profile.getup_repeated_recovery.is_some() {
+             if !cfg!(feature = "getup-repeat-cycle-experiment") {
+                 return Err("Repeated GetUp recovery requires getup-repeat-cycle-experiment".into());
+@@ -725,16 +812,21 @@ impl Controller {
+                 .unwrap_or(s.substeps_completed);
+             // Controller-only cycle boundary. No physical world, native clock,
+             // global counters, targets, velocity or integrator history is reset.
+-            *self = Self::new(&s.model);
++            let replan = self.terminal_reference_replan.clone();
++            *self = Self::for_profile(&s.model, &s.profile);
++            if replan.is_some() { self.terminal_reference_replan = replan; }
++            self.clear_terminal_reference_replan_samples();
+             self.impact_substep = Some(epoch);
+             return;
+         }
+         if self.started_substep.is_none() {
++            self.clear_terminal_reference_replan_samples();
+             return;
+         }
+         let physical = match super::physical_observation(s) {
+             Ok(p) => p,
+             Err(_) => {
++                self.clear_terminal_reference_replan_samples();
+                 #[cfg(feature = "getup-terminal-base-ready-experiment")]
+                 if self.terminal_balance.is_none() { self.reset_terminal_base_ready(); }
+                 return;
+@@ -840,6 +932,8 @@ impl Controller {
+             // counter proves a complete new second of genuine stability.
+             self.impact_substep = None;
+         }
++        #[cfg(feature = "getup-terminal-replan-experiment")]
++        if self.observe_terminal_reference_replan(s, loads) { return; }
+         s.motion = if self.status.prototype_standing_passed && stable {
+             Motion::Upright
+         } else if repeated && self.completed_recovery() {
+@@ -848,6 +942,47 @@ impl Controller {
+             Motion::Recovering
+         };
+     }
++    #[cfg(feature = "getup-terminal-replan-experiment")]
++    fn observe_terminal_reference_replan(&mut self, s: &mut Simulation, loads: &[f32; 25]) -> bool {
++        if !s.profile.terminal_reference_replan_enabled() { return false; }
++        let eligible = self.terminal_reference_replan.as_ref().is_some_and(|state| !state.used)
++            && self.terminal_reference_exhausted() && !self.status.prototype_standing_passed
++            && self.status.refusal.is_none() && self.teacher_failure.is_none()
++            && s.first_failure.is_none() && s.motion != Motion::Halted
++            && self.impact_substep.is_some_and(|epoch| s.substeps_completed
++                .checked_sub(epoch).is_some_and(|elapsed| elapsed < 20_000))
++            && (1..=MAX_TEACHER_TICKS as u32 * 20).contains(&self.status.forecast_substeps);
++        let pelvis = s.model.segments.iter().position(|part| part.id == "pelvis");
++        let torso = s.model.segments.iter().position(|part| part.id == "torso");
++        let fallen = pelvis.zip(torso).is_some_and(|(pelvis, torso)| {
++            s.world.bodies[s.bodies[pelvis]].translation().y - s.support_height() < 0.56
++                || (*s.world.bodies[s.bodies[torso]].rotation() * Vector::Y).y < 1.25_f32.cos()
++        });
++        let landed = s.model.segments.iter().enumerate().any(|(i, part)|
++            !matches!(part.role.as_str(), "hindfoot" | "forefoot") && loads[i] >= 3.0);
++        let settled = eligible && fallen && landed && super::current_twists(s).is_ok_and(|twists|
++            twists.iter().all(|(v, w)| v.length() <= 0.65 && w.length() <= 1.8));
++        if !settled {
++            self.clear_terminal_reference_replan_samples();
++            return false;
++        }
++        let state = self.terminal_reference_replan.as_mut().expect("eligible explicit state");
++        state.settled_native_samples += 1;
++        if state.settled_native_samples < 240 { return false; }
++        // Consume before the next command. A failed forecast, restore or later
++        // completed cycle cannot replenish this one-per-world budget.
++        state.used = true;
++        state.settled_native_samples = 0;
++        state.attempted_native_substep = Some(s.substeps_completed);
++        state.prior_forecast_substeps = self.status.forecast_substeps;
++        let state = state.clone();
++        let epoch = self.impact_substep.expect("eligible original impact epoch");
++        *self = Self::for_profile(&s.model, &s.profile);
++        self.terminal_reference_replan = Some(state);
++        self.impact_substep = Some(epoch);
++        s.motion = Motion::Fallen;
++        true
++    }
+ }
+ 
+ fn select_forecast_solver_budget(shadow: &mut Simulation) {
+@@ -1036,6 +1171,10 @@ mod terminal_balance_tests;
+ #[path = "repeat_cycle_tests.rs"]
+ mod repeat_cycle_tests;
+ 
++#[cfg(test)]
++#[path = "terminal_replan_tests.rs"]
++mod terminal_replan_tests;
++
+ #[cfg(all(test, feature = "getup-terminal-base-ready-experiment"))]
+ #[path = "terminal_base_ready_tests.rs"]
+ mod terminal_base_ready_tests;
+diff --git a/rust/crates/sim/src/lib.rs b/rust/crates/sim/src/lib.rs
+index 01eb5da..21587d1 100644
+--- a/rust/crates/sim/src/lib.rs
++++ b/rust/crates/sim/src/lib.rs
+@@ -106,6 +106,8 @@ pub enum RootRotationNormalization {
+ pub enum GetUpRepeatedRecovery {
+     #[serde(rename = "completed-cycle-confirmed-fall-v1")]
+     CompletedCycleConfirmedFallV1,
++    #[serde(rename = "completed-cycle-one-terminal-reference-replan-v1")]
++    CompletedCycleOneTerminalReferenceReplanV1,
+ }
+ #[derive(Debug, Clone, Serialize, Deserialize)]
+ #[serde(deny_unknown_fields)]
+@@ -201,6 +203,10 @@ impl Default for Profile {
+     }
+ }
+ impl Profile {
++    pub(crate) fn terminal_reference_replan_enabled(&self) -> bool {
++        self.getup_repeated_recovery
++            == Some(GetUpRepeatedRecovery::CompletedCycleOneTerminalReferenceReplanV1)
++    }
+     fn internal_pgs_for_phase(&self, recovery: bool) -> usize {
+         if recovery {
+             self.fall_internal_pgs_iterations.max(self.internal_pgs_iterations)
+@@ -209,6 +215,11 @@ impl Profile {
+         }
+     }
+     pub fn validate(&self) -> Result<(), String> {
++        if self.terminal_reference_replan_enabled()
++            && !cfg!(feature = "getup-terminal-replan-experiment")
++        {
++            return Err("Terminal reference replan requires getup-terminal-replan-experiment".into());
++        }
+         #[cfg(not(feature = "getup-repeat-cycle-experiment"))]
+         if self.getup_repeated_recovery.is_some() {
+             return Err("Repeated GetUp recovery requires getup-repeat-cycle-experiment".into());
+@@ -617,7 +628,7 @@ impl Simulation {
+         }
+         result.capture_rest_com();
+         if result.profile.getup_policy_enabled {
+-            result.getup_controller = Some(getup::controller::Controller::new(&result.model));
++            result.getup_controller = Some(getup::controller::Controller::for_profile(&result.model, &result.profile));
+         }
+         if seed.is_some() { return Err("Legacy anatomical seed is not a GetUp initial state".into()); }
+         result.configure_motors()?;
+@@ -840,6 +851,17 @@ impl Simulation {
+             .map(|h| self.world.bodies[*h].mass())
+             .sum()
+     }
++    fn validate_terminal_reference_replan_policy(&self) -> Result<(), String> {
++        let enabled = self.profile.terminal_reference_replan_enabled();
++        if enabled && !cfg!(feature = "getup-terminal-replan-experiment") {
++            return Err("Terminal reference replan requires getup-terminal-replan-experiment".into());
++        }
++        match &self.getup_controller {
++            Some(c) if c.terminal_reference_replan_valid(&self.profile, self.substeps_completed) => Ok(()),
++            None if !enabled => Ok(()),
++            _ => Err("Invalid terminal reference replan profile, state or native clock".into()),
++        }
++    }
+     pub fn snapshot(&self) -> Snapshot {
+         let mut diagnostics = self.diagnostics.clone();
+         diagnostics.recovery =
+@@ -957,6 +979,14 @@ impl Simulation {
+             return Err(failure);
+         }
+         for substep in 0..lh_contracts::SUBSTEPS {
++            if let Err(error) = self.validate_terminal_reference_replan_policy() {
++                let failure = measurement::Failure::new(self.tick, substep,
++                    "terminal-reference-replan", error, 1.0, 0.0);
++                self.motion = Motion::Halted;
++                self.first_failure = Some(failure.clone());
++                self.cancel_grab();
++                return Err(failure);
++            }
+             if (cfg!(feature = "unit-root-rotation-experiment") || self.profile.root_rotation_normalization.is_some())
+                 && let Err(error) = self.validate_unit_root_rotation_policy()
+             {
+diff --git a/rust/crates/sim/src/runtime.rs b/rust/crates/sim/src/runtime.rs
+index 2edaea1..c7f6d43 100644
+--- a/rust/crates/sim/src/runtime.rs
++++ b/rust/crates/sim/src/runtime.rs
+@@ -135,6 +135,9 @@ impl Runtime {
+             #[serde(flatten)]
+             observations: serde_json::Value,
+             profile: &'a Profile,
++            #[cfg(feature = "getup-terminal-replan-experiment")]
++            #[serde(rename = "terminalReferenceReplan", skip_serializing_if = "Option::is_none")]
++            terminal_reference_replan: Option<serde_json::Value>,
+             #[cfg(feature = "unit-root-rotation-experiment")]
+             #[serde(rename = "rootRotationNormalization", skip_serializing_if = "Option::is_none")]
+             unit_root_rotation: Option<serde_json::Value>,
+@@ -152,6 +155,9 @@ impl Runtime {
+                     "selectedNextInternalPgsIterations":s.selected_internal_pgs_iterations(),
+                     "sourceRecoveryActive":s.getup_controller.as_ref().is_some_and(|c|c.source_recovery_active())}}),
+             profile: &s.profile,
++            #[cfg(feature = "getup-terminal-replan-experiment")]
++            terminal_reference_replan: s.getup_controller.as_ref()
++                .and_then(|controller| controller.terminal_reference_replan_diagnostic()),
+             #[cfg(feature = "unit-root-rotation-experiment")]
+             unit_root_rotation,
+             #[cfg(feature = "root-translation-carry-experiment")]
+@@ -171,6 +177,7 @@ impl Runtime {
+     fn checkpoint_compatible(&self) -> Result<(), String> {
+         let s = &self.simulation;
+         s.profile.validate()?;
++        s.validate_terminal_reference_replan_policy()?;
+         s.validate_unit_root_rotation_policy()?;
+         if let Some(controller) = &s.getup_controller {
+             if s.profile.getup_repeated_recovery.is_some()
+diff --git a/rust/crates/sim/src/getup/terminal_replan_tests.rs b/rust/crates/sim/src/getup/terminal_replan_tests.rs
+new file mode 100644
+index 0000000..2fa39a8
+--- /dev/null
++++ b/rust/crates/sim/src/getup/terminal_replan_tests.rs
+@@ -0,0 +1,564 @@
++//! One-replan lifecycle contracts, not physical recovery qualification.
++//! The shared constructor integrates ordinary upright standing only. All
++//! counters, clocks, loads, rates and displaced/collapsed poses used below are
++//! explicitly synthetic. Only the final determinism test advances one real
++//! tick, from an unchanged upright world and an already-bound controller.
++use super::*;
++use serde_json::{json, Value};
++
++fn explicit_profile() -> Profile {
++    Profile {
++        getup_policy_enabled: true,
++        getup_repeated_recovery: Some(GetUpRepeatedRecovery::CompletedCycleOneTerminalReferenceReplanV1),
++        ..Profile::default()
++    }
++}
++
++fn unused_json() -> Value {
++    json!({"format":"one-terminal-reference-fall-replan-v1","used":false,
++        "settled_native_samples":0,"attempted_native_substep":null,"prior_forecast_substeps":0})
++}
++
++#[test]
++fn replan_selector_is_explicit_and_none_and_basic_repeat_keep_legacy_controller_bytes() {
++    let model = Model::canonical().unwrap();
++    let legacy = serde_json::to_value(Controller::new(&model)).unwrap();
++    assert!(legacy.get("terminal_reference_replan").is_none());
++    for mode in [None, Some(GetUpRepeatedRecovery::CompletedCycleConfirmedFallV1)] {
++        let mut profile = Profile::default();
++        profile.getup_repeated_recovery = mode;
++        assert_eq!(serde_json::to_value(Controller::for_profile(&model, &profile)).unwrap(), legacy);
++        let encoded = serde_json::to_value(&profile).unwrap();
++        if mode.is_none() { assert!(encoded.get("getup_repeated_recovery").is_none()); }
++        let decoded: Profile = serde_json::from_value(encoded.clone()).unwrap();
++        assert_eq!(serde_json::to_value(decoded).unwrap(), encoded);
++    }
++    let active = serde_json::to_value(explicit_profile()).unwrap();
++    assert_eq!(active["getup_repeated_recovery"], "completed-cycle-one-terminal-reference-replan-v1");
++    let mut future = active;
++    future["getup_repeated_recovery"] = "future-terminal-replan".into();
++    assert!(serde_json::from_value::<Profile>(future).is_err());
++}
++
++#[test]
++fn optional_replan_state_rejects_null_unknown_fields_formats_and_missing_required_fields() {
++    let model = Model::canonical().unwrap();
++    let baseline = serde_json::to_value(Controller::new(&model)).unwrap();
++    let mut active = baseline.clone();
++    active["terminal_reference_replan"] = unused_json();
++    let restored: Controller = serde_json::from_value(active.clone()).unwrap();
++    assert_eq!(serde_json::to_value(restored).unwrap(), active);
++    for case in ["null", "unknown field", "unknown format", "missing used", "missing count", "missing prior"] {
++        let mut malformed = active.clone();
++        match case {
++            "null" => malformed["terminal_reference_replan"] = Value::Null,
++            "unknown field" => malformed["terminal_reference_replan"]["unbounded_retries"] = 2.into(),
++            "unknown format" => malformed["terminal_reference_replan"]["format"] = "future-format".into(),
++            "missing used" => { malformed["terminal_reference_replan"].as_object_mut().unwrap().remove("used"); }
++            "missing count" => { malformed["terminal_reference_replan"].as_object_mut().unwrap().remove("settled_native_samples"); }
++            "missing prior" => { malformed["terminal_reference_replan"].as_object_mut().unwrap().remove("prior_forecast_substeps"); }
++            _ => unreachable!(),
++        }
++        assert!(serde_json::from_value::<Controller>(malformed).is_err(), "{case}");
++    }
++    assert_eq!(serde_json::to_value(serde_json::from_value::<Controller>(baseline.clone()).unwrap()).unwrap(), baseline);
++}
++
++#[cfg(not(feature = "getup-terminal-replan-experiment"))]
++#[test]
++fn feature_off_refuses_new_profile_factories_without_constructing_a_world() {
++    let expected = "Terminal reference replan requires getup-terminal-replan-experiment";
++    assert_eq!(explicit_profile().validate().unwrap_err(), expected);
++    assert_eq!(Simulation::new_protocol(0.0, explicit_profile(), true).err().unwrap(), expected);
++    assert_eq!(crate::runtime::Runtime::new_getup_fixture_with_profile("back", explicit_profile()).err().unwrap(), expected);
++    let model = Model::canonical().unwrap();
++    let c = Controller::for_profile(&model, &explicit_profile());
++    assert!(!c.terminal_reference_replan_valid(&explicit_profile(), 0));
++}
++
++#[cfg(feature = "getup-terminal-replan-experiment")]
++#[test]
++fn new_feature_requires_policy_and_refuses_early_or_bumpless_profiles() {
++    let expected = "Repeated GetUp recovery requires the source/terminal-balance controller without early or bumpless transfer";
++    let mut disabled = explicit_profile();
++    disabled.getup_policy_enabled = false;
++    assert_eq!(disabled.validate().unwrap_err(), expected);
++    #[cfg(feature = "getup-terminal-base-ready-experiment")]
++    assert_eq!(explicit_profile().validate().unwrap_err(), expected);
++    #[cfg(not(feature = "getup-terminal-base-ready-experiment"))]
++    explicit_profile().validate().unwrap();
++}
++
++#[cfg(all(feature = "getup-terminal-replan-experiment",
++    not(feature = "getup-terminal-base-ready-experiment")))]
++mod active {
++    use super::*;
++    use super::super::terminal_balance_tests::{settled_geometry, terminal_controller, world_words};
++    use crate::getup::{current_twists, physical_observation};
++    use bincode::Options;
++
++    fn state(c: &Controller) -> Value { serde_json::to_value(&c.terminal_reference_replan).unwrap() }
++
++    fn zero_rates(s: &mut Simulation) {
++        let root = *s.world.multibody_joints.rigid_body_link(s.bodies[0]).unwrap();
++        s.world.multibody_joints.get_multibody_mut(root.multibody).unwrap()
++            .generalized_velocity_mut().fill(0.0);
++    }
++
++    fn root_rate(s: &mut Simulation, index: usize, rate: f32) {
++        zero_rates(s);
++        let root = *s.world.multibody_joints.rigid_body_link(s.bodies[0]).unwrap();
++        s.world.multibody_joints.get_multibody_mut(root.multibody).unwrap()
++            .generalized_velocity_mut()[index] = rate;
++    }
++
++    fn pelvis_height(s: &mut Simulation, height: f32) {
++        let i = s.model.segments.iter().position(|p| p.id == "pelvis").unwrap();
++        let mut position = s.world.bodies[s.bodies[i]].translation();
++        position.y = height + s.support_height();
++        s.world.bodies[s.bodies[i]].set_translation(position, false);
++    }
++
++    fn torso_angle(s: &mut Simulation, angle: f32) {
++        let i = s.model.segments.iter().position(|p| p.id == "torso").unwrap();
++        s.world.bodies[s.bodies[i]].set_rotation(Rotation::from_rotation_x(angle), false);
++    }
++
++    fn scene() -> Simulation {
++        let mut s = settled_geometry();
++        s.profile = explicit_profile();
++        s.substeps_completed = 1_000;
++        s.motion = Motion::Recovering;
++        zero_rates(&mut s);
++        // Counterfactual predicate fixture only, never integrated or offered as
++        // a geometrically admissible fallen body.
++        pelvis_height(&mut s, 0.55);
++        torso_angle(&mut s, 0.0);
++        s
++    }
++
++    fn exhausted(s: &Simulation) -> Controller {
++        let mut c = terminal_controller(s);
++        c.started_substep = Some(100);
++        c.impact_substep = Some(80);
++        c.status.forecast_substeps = 100;
++        c.status.teacher_terminal_reached = true;
++        c.status.reference_seed_matches_real = true;
++        c.terminal_reference_replan = Controller::for_profile(&s.model, &s.profile).terminal_reference_replan;
++        assert!(c.terminal_reference_exhausted());
++        assert!(c.terminal_reference_replan_valid(&s.profile, s.substeps_completed));
++        c
++    }
++
++    fn landed_loads(s: &Simulation) -> [f32; 25] {
++        let mut loads = [0.0; 25];
++        loads[s.model.segments.iter().position(|p| p.id == "pelvis").unwrap()] = 3.0;
++        loads
++    }
++
++    fn used(c: &mut Controller, at: u64) {
++        let state = c.terminal_reference_replan.as_mut().unwrap();
++        state.used = true;
++        state.settled_native_samples = 0;
++        state.attempted_native_substep = Some(at);
++        state.prior_forecast_substeps = 100;
++    }
++
++    #[cfg(feature = "root-translation-carry-experiment")]
++    fn seed_carry(s: &mut Simulation) {
++        let root = *s.world.multibody_joints.rigid_body_link(s.bodies[0]).unwrap();
++        let mb = s.world.multibody_joints.get_multibody_mut(root.multibody).unwrap();
++        mb.set_root_translation_compensation_enabled(true).unwrap();
++        let mut state = mb.root_translation_integrator_state().unwrap();
++        let axis = state.qbits.iter().position(|bits| f32::from_bits(*bits).abs() >= 0.001).unwrap();
++        let q = f32::from_bits(state.qbits[axis]).abs();
++        state.remainderbits[axis] = ((f64::from(f32::from_bits(q.to_bits() + 1)) - f64::from(q)) * 0.25).to_bits();
++        mb.restore_root_translation_integrator_state(state).unwrap();
++    }
++
++    #[cfg(feature = "root-translation-carry-experiment")]
++    fn carries(s: &Simulation) -> Vec<Option<rapier3d::dynamics::RootTranslationIntegratorState>> {
++        s.world.multibody_joints.multibodies().map(|m| m.root_translation_integrator_state()).collect()
++    }
++
++    fn packed(s: &Simulation, encoded_controller: Value) -> Vec<u8> {
++        let mut basis = Profile::default();
++        basis.getup_policy_enabled = true;
++        let runtime = crate::runtime::Runtime::new(lh_contracts::Mode::Protocol, 0.0, basis).unwrap();
++        let mut auxiliary = serde_json::to_value(runtime).unwrap();
++        auxiliary["simulation"] = serde_json::to_value(s).unwrap();
++        auxiliary["simulation"]["getup_controller"] = encoded_controller;
++        auxiliary["timeline"]["tick"] = s.tick.into();
++        auxiliary["timeline"]["generation"] = s.generation.into();
++        let world = bincode::DefaultOptions::new().with_fixint_encoding().serialize(&s.world).unwrap();
++        let schema = 1_u32;
++        let auxiliary = auxiliary.to_string();
++        #[cfg(feature = "root-translation-carry-experiment")]
++        let (schema, auxiliary) = {
++            let mut roots: Vec<_> = s.world.multibody_joints.multibodies().map(|m| {
++                let (index, generation) = m.root().rigid_body_handle().into_raw_parts();
++                json!({"root":[index,generation],"state":m.root_translation_integrator_state()})
++            }).collect();
++            roots.sort_by_key(|entry| (entry["root"][0].as_u64(), entry["root"][1].as_u64()));
++            if roots.iter().any(|entry| !entry["state"].is_null()) {
++                (2_u32, json!({"format":"f32-dq-f64-remainder-v1","runtime":auxiliary,"roots":roots}).to_string())
++            } else { (schema, auxiliary) }
++        };
++        bincode::DefaultOptions::new().with_fixint_encoding()
++            .serialize(&(schema, lh_model::CANONICAL_JSON, world, auxiliary)).unwrap()
++    }
++
++    #[test]
++    fn malformed_state_or_profile_pairing_refuses_commands_and_real_steps_before_any_integration() {
++        for case in ["missing", "unused attempt", "unused prior", "persisted 240", "used count",
++            "used missing attempt", "used future attempt", "used zero prior", "used overbound prior",
++            "count unfinished", "count passed", "count too young", "state under None", "state under basic"]
++        {
++            let mut s = scene();
++            let mut c = exhausted(&s);
++            match case {
++                "missing" => c.terminal_reference_replan = None,
++                "unused attempt" => c.terminal_reference_replan.as_mut().unwrap().attempted_native_substep = Some(900),
++                "unused prior" => c.terminal_reference_replan.as_mut().unwrap().prior_forecast_substeps = 1,
++                "persisted 240" => c.terminal_reference_replan.as_mut().unwrap().settled_native_samples = 240,
++                "used count" => { used(&mut c, 900); c.terminal_reference_replan.as_mut().unwrap().settled_native_samples = 1; }
++                "used missing attempt" => { used(&mut c, 900); c.terminal_reference_replan.as_mut().unwrap().attempted_native_substep = None; }
++                "used future attempt" => used(&mut c, 1_001),
++                "used zero prior" => { used(&mut c, 900); c.terminal_reference_replan.as_mut().unwrap().prior_forecast_substeps = 0; }
++                "used overbound prior" => { used(&mut c, 900); c.terminal_reference_replan.as_mut().unwrap().prior_forecast_substeps = 5_001; }
++                "count unfinished" => { c.terminal_reference_replan.as_mut().unwrap().settled_native_samples = 1; c.holding = false; }
++                "count passed" => { c.terminal_reference_replan.as_mut().unwrap().settled_native_samples = 1; c.status.prototype_standing_passed = true; }
++                "count too young" => { c.terminal_reference_replan.as_mut().unwrap().settled_native_samples = 1; s.substeps_completed = 120; }
++                "state under None" => s.profile.getup_repeated_recovery = None,
++                "state under basic" => s.profile.getup_repeated_recovery = Some(GetUpRepeatedRecovery::CompletedCycleConfirmedFallV1),
++                _ => unreachable!(),
++            }
++            assert!(!c.terminal_reference_replan_valid(&s.profile, s.substeps_completed), "{case}");
++            let before_c = serde_json::to_value(&c).unwrap();
++            let before_world = world_words(&s);
++            let before_native = s.substeps_completed;
++            let before_counters = serde_json::to_value(&s.counters).unwrap();
++            assert_eq!(c.command(&s, &physical_observation(&s).unwrap()).unwrap_err(),
++                "Invalid terminal reference replan profile, state or native clock", "{case}");
++            assert_eq!(serde_json::to_value(&c).unwrap(), before_c);
++            assert!(crate::runtime::Runtime::from_getup_checkpoint(&packed(&s, before_c.clone())).is_err(), "{case}: checkpoint must not reconstruct state");
++            s.getup_controller = Some(c);
++            let failure = s.advance_tick().unwrap_err();
++            assert_eq!(failure.check, "terminal-reference-replan", "{case}");
++            assert_eq!(s.substeps_completed, before_native);
++            assert_eq!(world_words(&s), before_world);
++            assert_eq!(serde_json::to_value(&s.counters).unwrap(), before_counters);
++            assert_eq!(serde_json::to_value(s.getup_controller.as_ref().unwrap()).unwrap(), before_c);
++        }
++    }
++
++    #[test]
++    fn used_state_forecast_bounds_and_partial_gate_age_have_exact_endpoints() {
++        let mut s = scene();
++        let mut c = exhausted(&s);
++        for prior in [1, 5_000] {
++            used(&mut c, s.substeps_completed);
++            c.terminal_reference_replan.as_mut().unwrap().prior_forecast_substeps = prior;
++            assert!(c.terminal_reference_replan_valid(&s.profile, s.substeps_completed));
++        }
++        c = exhausted(&s);
++        c.terminal_reference_replan.as_mut().unwrap().settled_native_samples = 239;
++        s.substeps_completed = 100 + 20 + 238;
++        assert!(!c.terminal_reference_replan_valid(&s.profile, s.substeps_completed));
++        s.substeps_completed += 1;
++        assert!(c.terminal_reference_replan_valid(&s.profile, s.substeps_completed));
++    }
++
++    #[test]
++    fn exhausted_reference_and_all_lifecycle_guards_are_required_and_clear_partial_gate() {
++        for guard in ["not started", "empty", "unfinished index", "wrong frame count", "not holding",
++            "no decision", "decision before terminal", "already passed", "already used",
++            "refusal", "teacher failure", "world failure", "halted", "no epoch", "deadline",
++            "no prior forecast", "overbound forecast", "teacher not terminal", "seed mismatch", "basic repeat"]
++        {
++            let mut s = scene();
++            let mut c = exhausted(&s);
++            c.terminal_reference_replan.as_mut().unwrap().settled_native_samples = 239;
++            match guard {
++                "not started" => c.started_substep = None,
++                "empty" => c.reference.clear(),
++                "unfinished index" => c.status.reference_index = 0,
++                "wrong frame count" => c.status.reference_frames = 0,
++                "not holding" => c.holding = false,
++                "no decision" => c.last_decision = None,
++                "decision before terminal" => c.last_decision = Some(0),
++                "already passed" => c.status.prototype_standing_passed = true,
++                "already used" => used(&mut c, 900),
++                "refusal" => c.status.refusal = Some("synthetic rejection".into()),
++                "teacher failure" => c.teacher_failure = Some(measurement::Failure::new(0, 0, "synthetic", "contract".into(), 1.0, 0.0)),
++                "world failure" => s.first_failure = Some(measurement::Failure::new(0, 0, "synthetic", "contract".into(), 1.0, 0.0)),
++                "halted" => s.motion = Motion::Halted,
++                "no epoch" => c.impact_substep = None,
++                "deadline" => s.substeps_completed = 80 + 20_000,
++                "no prior forecast" => c.status.forecast_substeps = 0,
++                "overbound forecast" => c.status.forecast_substeps = 5_001,
++                "teacher not terminal" => c.status.teacher_terminal_reached = false,
++                "seed mismatch" => c.status.reference_seed_matches_real = false,
++                "basic repeat" => s.profile.getup_repeated_recovery = Some(GetUpRepeatedRecovery::CompletedCycleConfirmedFallV1),
++                _ => unreachable!(),
++            }
++            let before_world = world_words(&s);
++            let epoch = c.impact_substep;
++            let loads = landed_loads(&s);
++            assert!(!c.observe_terminal_reference_replan(&mut s, &loads), "{guard}");
++            assert_eq!(c.impact_substep, epoch);
++            assert_eq!(world_words(&s), before_world);
++            if guard != "basic repeat" {
++                assert_eq!(c.terminal_reference_replan.as_ref().unwrap().settled_native_samples, 0, "{guard}");
++            }
++        }
++    }
++
++    #[test]
++    fn settled_gate_requires_nonfoot_landing_strict_fall_geometry_and_current_generalized_rates() {
++        for case in ["low pelvis", "pelvis equality", "pelvis below neighbor", "tilted torso", "upright torso",
++            "load below", "feet only", "linear inclusive", "linear above", "angular inclusive", "angular above", "nonfinite rate"]
++        {
++            let mut s = scene();
++            let mut c = exhausted(&s);
++            let mut loads = landed_loads(&s);
++            let mut passes = true;
++            match case {
++                "low pelvis" => {},
++                "pelvis equality" => { pelvis_height(&mut s, 0.56); passes = false; }
++                "pelvis below neighbor" => pelvis_height(&mut s, f32::from_bits(0.56_f32.to_bits() - 1)),
++                "tilted torso" => { pelvis_height(&mut s, 0.8); torso_angle(&mut s, 1.251); }
++                "upright torso" => { pelvis_height(&mut s, 0.8); torso_angle(&mut s, 1.249); passes = false; }
++                "load below" => { loads.iter_mut().for_each(|v| *v = f32::from_bits(3.0_f32.to_bits() - 1)); passes = false; }
++                "feet only" => {
++                    loads.fill(0.0);
++                    for (i, part) in s.model.segments.iter().enumerate() {
++                        if matches!(part.role.as_str(), "hindfoot" | "forefoot") { loads[i] = 100.0; }
++                    }
++                    passes = false;
++                }
++                "linear inclusive" => root_rate(&mut s, 0, 0.65),
++                "linear above" => { root_rate(&mut s, 0, 0.6501); passes = false; }
++                "angular inclusive" | "angular above" => {
++                    // Collapsed poses isolate a generalized rigid spin's rate
++                    // predicate. They are never integrated or integrity-tested.
++                    for handle in &s.bodies {
++                        s.world.bodies[*handle].set_translation(Vector::Y * 0.55, false);
++                        s.world.bodies[*handle].set_rotation(Rotation::IDENTITY, false);
++                    }
++                    root_rate(&mut s, 4, if case == "angular inclusive" { 1.8 } else { 1.8001 });
++                    passes = case == "angular inclusive";
++                    let twists = current_twists(&s).unwrap();
++                    assert!(twists.iter().all(|(v, _)| v.length() <= 0.65), "spin fixture must isolate angular bound");
++                }
++                "nonfinite rate" => { root_rate(&mut s, 0, f32::NAN); passes = false; }
++                _ => unreachable!(),
++            }
++            let before = world_words(&s);
++            assert!(!c.observe_terminal_reference_replan(&mut s, &loads));
++            assert_eq!(c.terminal_reference_replan.as_ref().unwrap().settled_native_samples, u32::from(passes), "{case}");
++            assert_eq!(world_words(&s), before, "predicate observation is world-neutral: {case}");
++        }
++    }
++
++    #[test]
++    fn sample_239_then_240_consumes_before_command_and_resets_only_controller_and_motion() {
++        let mut s = scene();
++        #[cfg(feature = "root-translation-carry-experiment")]
++        seed_carry(&mut s);
++        let mut c = exhausted(&s);
++        let loads = landed_loads(&s);
++        for expected in 1..=239 {
++            s.substeps_completed += 1; // Synthetic native progression, no integration.
++            assert!(!c.observe_terminal_reference_replan(&mut s, &loads));
++            assert_eq!(c.terminal_reference_replan.as_ref().unwrap().settled_native_samples, expected);
++        }
++        s.substeps_completed += 1;
++        let before_world = world_words(&s);
++        let mut expected_simulation = serde_json::to_value(&s).unwrap();
++        expected_simulation["motion"] = serde_json::to_value(Motion::Fallen).unwrap();
++        #[cfg(feature = "root-translation-carry-experiment")]
++        let before_carry = carries(&s);
++        let original_epoch = c.impact_substep;
++        assert!(c.observe_terminal_reference_replan(&mut s, &loads));
++        let mut expected = Controller::for_profile(&s.model, &s.profile);
++        used(&mut expected, s.substeps_completed);
++        expected.impact_substep = original_epoch;
++        assert_eq!(serde_json::to_value(&c).unwrap(), serde_json::to_value(&expected).unwrap());
++        assert_eq!(serde_json::to_value(&s).unwrap(), expected_simulation);
++        assert_eq!(world_words(&s), before_world);
++        #[cfg(feature = "root-translation-carry-experiment")]
++        assert_eq!(carries(&s), before_carry);
++        assert_eq!(c.status.forecast_substeps, 0);
++        assert!(c.teacher_frames.is_empty() && c.reference.is_empty() && c.started_substep.is_none());
++        assert!(c.terminal_reference_replan_valid(&s.profile, s.substeps_completed));
++        let consumed = state(&c);
++        assert!(!c.observe_terminal_reference_replan(&mut s, &loads));
++        assert_eq!(state(&c), consumed);
++        // Intentionally reject the next ordinary command's teacher preflight:
++        // the source entry, not observe/restore, now owns any prospective work.
++        s.world.colliders[s.floor].set_enabled(false);
++        let before_command_world = world_words(&s);
++        assert_eq!(c.command(&s, &physical_observation(&s).unwrap()).unwrap_err(),
++            "GetUp prototype requires a free body on the protocol floor");
++        assert_eq!(c.started_substep, Some(s.substeps_completed));
++        assert_eq!(c.impact_substep, original_epoch);
++        assert_eq!(state(&c), consumed, "failed forecast preflight never refunds the budget");
++        assert_eq!(world_words(&s), before_command_world);
++    }
++
++    #[test]
++    fn one_bad_native_resets_partial_count_and_late_attempt_cannot_restart_original_deadline() {
++        let mut s = scene();
++        let mut c = exhausted(&s);
++        c.terminal_reference_replan.as_mut().unwrap().settled_native_samples = 239;
++        assert!(!c.observe_terminal_reference_replan(&mut s, &[0.0; 25]));
++        assert_eq!(c.terminal_reference_replan.as_ref().unwrap().settled_native_samples, 0);
++        let loads = landed_loads(&s);
++        assert!(!c.observe_terminal_reference_replan(&mut s, &loads));
++        assert_eq!(c.terminal_reference_replan.as_ref().unwrap().settled_native_samples, 1);
++        for elapsed in [20_000, 20_001] {
++            let mut late = exhausted(&s);
++            late.terminal_reference_replan.as_mut().unwrap().settled_native_samples = 239;
++            s.substeps_completed = 80 + elapsed;
++            let before = world_words(&s);
++            assert!(!late.observe_terminal_reference_replan(&mut s, &loads));
++            assert!(!late.terminal_reference_replan.as_ref().unwrap().used);
++            assert_eq!(late.command(&s, &physical_observation(&s).unwrap()).unwrap_err(),
++                "25-second physical recovery deadline reached");
++            assert_eq!(late.impact_substep, Some(80));
++            assert_eq!(late.status.forecast_substeps, 100);
++            assert_eq!(world_words(&s), before);
++        }
++        let mut just_in_time = exhausted(&s);
++        s.substeps_completed = 80 + 19_999;
++        just_in_time.terminal_reference_replan.as_mut().unwrap().settled_native_samples = 239;
++        assert!(just_in_time.observe_terminal_reference_replan(&mut s, &loads));
++        just_in_time.impact(s.substeps_completed);
++        assert_eq!(just_in_time.impact_substep, Some(80));
++        s.substeps_completed += 1;
++        assert_eq!(just_in_time.command(&s, &physical_observation(&s).unwrap()).unwrap_err(),
++            "25-second physical recovery deadline reached");
++        assert_eq!(just_in_time.status.forecast_substeps, 0, "new reference gets no fresh deadline");
++    }
++
++    #[test]
++    fn consumed_budget_survives_completed_cycle_rearms_and_only_explicit_reset_replenishes_it() {
++        let mut s = scene();
++        let mut c = exhausted(&s);
++        used(&mut c, 900);
++        let consumed = state(&c);
++        let loads = landed_loads(&s);
++        assert!(!c.observe_terminal_reference_replan(&mut s, &loads));
++        for motion in [Motion::Falling, Motion::Fallen] {
++            c.started_substep = Some(100);
++            c.impact_substep = Some(950);
++            c.status.prototype_standing_passed = true;
++            s.motion = motion;
++            let before = world_words(&s);
++            c.observe(&mut s, &loads);
++            assert_eq!(state(&c), consumed);
++            assert_eq!(c.impact_substep, Some(950));
++            assert_eq!(world_words(&s), before);
++        }
++        let mut runtime = crate::runtime::Runtime::from_getup_checkpoint(&packed(&s, serde_json::to_value(&c).unwrap())).unwrap();
++        let before = runtime.advance(0).unwrap().snapshot;
++        let command = lh_contracts::Command {
++            stamp: lh_contracts::Stamp { schema: before.stamp.schema, generation: before.stamp.generation,
++                sequence: before.acknowledged_sequence + 1, tick: before.stamp.tick },
++            action: lh_contracts::Action::Reset,
++        };
++        runtime.enqueue(command).unwrap();
++        let reset = runtime.advance(0).unwrap();
++        assert_eq!(reset.completed_ticks, 0);
++        assert!(reset.acknowledgements.iter().any(|ack| ack.rejected.is_none()));
++        assert_eq!(reset.snapshot.stamp.generation, before.stamp.generation + 1);
++        assert_eq!(runtime.simulation().substeps_completed, 0);
++        let restored: Controller = serde_json::from_str(&runtime.getup_report().unwrap()).unwrap();
++        assert_eq!(state(&restored), unused_json());
++        assert!(restored.started_substep.is_none());
++    }
++
++    #[test]
++    fn checkpoints_keep_partial_gate_and_consumed_pending_source_without_reconstruction_or_forecast() {
++        for phase in ["239 samples", "consumed pending source", "consumed source"] {
++            let mut s = scene();
++            let mut c = exhausted(&s);
++            match phase {
++                "239 samples" => c.terminal_reference_replan.as_mut().unwrap().settled_native_samples = 239,
++                "consumed pending source" => {
++                    c.terminal_reference_replan.as_mut().unwrap().settled_native_samples = 239;
++                    let loads = landed_loads(&s);
++                    assert!(c.observe_terminal_reference_replan(&mut s, &loads));
++                }
++                "consumed source" => used(&mut c, 900),
++                _ => unreachable!(),
++            }
++            #[cfg(feature = "root-translation-carry-experiment")]
++            seed_carry(&mut s);
++            let encoded = serde_json::to_value(&c).unwrap();
++            let bytes = packed(&s, encoded.clone());
++            let runtime = crate::runtime::Runtime::from_getup_checkpoint(&bytes).unwrap();
++            let verify: Value = serde_json::from_str(&runtime.verify_getup_checkpoint(&bytes).unwrap()).unwrap();
++            assert_eq!(verify["physicsIntegrations"], 0);
++            assert_eq!(verify["passed"], true);
++            assert_eq!(runtime.simulation().substeps_completed, s.substeps_completed);
++            assert_eq!(world_words(runtime.simulation()), world_words(&s));
++            let decoded: Controller = serde_json::from_str(&runtime.getup_report().unwrap()).unwrap();
++            assert_eq!(serde_json::to_value(&decoded).unwrap(), encoded, "{phase}");
++            let second = crate::runtime::Runtime::from_getup_checkpoint(&runtime.getup_checkpoint().unwrap()).unwrap();
++            assert_eq!(second.getup_report().unwrap(), runtime.getup_report().unwrap());
++            #[cfg(feature = "root-translation-carry-experiment")]
++            assert_eq!(carries(second.simulation()), carries(&s));
++        }
++    }
++
++    #[test]
++    fn restored_consumed_controller_has_exact_next_tick_and_no_duplicate_forecast() {
++        let mut s = settled_geometry();
++        s.profile = explicit_profile();
++        let mut c = terminal_controller(&s);
++        c.terminal_reference_replan = Controller::for_profile(&s.model, &s.profile).terminal_reference_replan;
++        used(&mut c, s.substeps_completed - 40);
++        c.stable_substeps = 80;
++        c.bind_terminal_balance(&s);
++        assert!(c.terminal_balance.is_some());
++        c.status.prototype_standing_passed = true;
++        c.stable_substeps = 800;
++        c.status.forecast_substeps = 100;
++        #[cfg(feature = "root-translation-carry-experiment")]
++        seed_carry(&mut s);
++        let bytes = packed(&s, serde_json::to_value(&c).unwrap());
++        let mut live = crate::runtime::Runtime::from_getup_checkpoint(&bytes).unwrap();
++        let mut restored = crate::runtime::Runtime::from_getup_checkpoint(&live.getup_checkpoint().unwrap()).unwrap();
++        let a = live.advance(1).unwrap();
++        let b = restored.advance(1).unwrap();
++        assert!(a.failure.is_none() && b.failure.is_none());
++        assert_eq!(a.completed_ticks, 1);
++        assert_eq!(b.completed_ticks, 1);
++        assert_eq!(world_words(live.simulation()), world_words(restored.simulation()));
++        assert_eq!(serde_json::to_value(&a).unwrap(), serde_json::to_value(&b).unwrap());
++        assert_eq!(live.getup_report().unwrap(), restored.getup_report().unwrap());
++        let final_controller: Controller = serde_json::from_str(&live.getup_report().unwrap()).unwrap();
++        assert!(final_controller.terminal_reference_replan.as_ref().unwrap().used);
++        assert_eq!(final_controller.status.forecast_substeps, 100);
++        assert!(final_controller.teacher_frames.is_empty(), "no teacher was replayed during restore or next tick");
++        #[cfg(feature = "root-translation-carry-experiment")]
++        assert_eq!(carries(live.simulation()), carries(restored.simulation()));
++    }
++
++    #[test]
++    fn teacher_fork_removes_replan_lifecycle_without_changing_world_or_numerical_profile() {
++        let mut s = settled_geometry();
++        s.profile = explicit_profile();
++        let before = world_words(&s);
++        let mut expected = s.profile.clone();
++        expected.getup_policy_enabled = false;
++        expected.getup_repeated_recovery = None;
++        let shadow = fork(&s).unwrap();
++        assert_eq!(world_words(&shadow), before);
++        assert_eq!(serde_json::to_value(&shadow.profile).unwrap(), serde_json::to_value(expected).unwrap());
++        assert!(shadow.getup_controller.is_none());
++        assert_eq!(world_words(&s), before);
++    }
++}
+diff --git a/docs/evidence/profiles/getup-800hz-3plus1-one-terminal-replan-v1.json b/docs/evidence/profiles/getup-800hz-3plus1-one-terminal-replan-v1.json
+new file mode 100644
+index 0000000..b84140a
+--- /dev/null
++++ b/docs/evidence/profiles/getup-800hz-3plus1-one-terminal-replan-v1.json
+@@ -0,0 +1,41 @@
++{
++  "id": "getup-800hz-3plus1-one-terminal-replan-v1",
++  "dt_s": 0.00125,
++  "tick_substeps": 20,
++  "contact_friction_model": "coulomb",
++  "solver_iterations": 3,
++  "internal_pgs_iterations": 20,
++  "fall_internal_pgs_iterations": 32,
++  "additional_body_iterations": 1,
++  "allowed_linear_error_m": 0.001,
++  "prediction_distance_m": 0.002,
++  "motor_scale": 1.0,
++  "aggregate_motor_cap_nm": 920.0,
++  "angular_damping": 0.0,
++  "contact_skin_m": 0.0,
++  "max_ccd_substeps": 4,
++  "disable_solver_speed_cap": true,
++  "posture_stiffness_multiplier": 1.0,
++  "posture_damping_multiplier": 1.0,
++  "supported_tilt_gain": 2.0,
++  "supported_com_gain_rad_per_m": 5.0,
++  "supported_com_velocity_gain_s_rad_per_m": 5.0,
++  "supported_angular_velocity_gain_s": 2.0,
++  "grab_limits": {
++    "angular_frequency_rad_s": 16.0,
++    "target_speed_m_s": 1.5,
++    "target_acceleration_m_s2": 8.0,
++    "force_n": 180.0,
++    "torque_nm": 12.0,
++    "positive_power_w": 36.0
++  },
++  "reaching_iterations": 6,
++  "reaching_coordinate_increment_rad": 0.15,
++  "reaching_damping_m2": 0.01,
++  "corrective_steps_enabled": false,
++  "recovery_enabled": false,
++  "getup_policy_enabled": true,
++  "getup_solver_budget": "consistent-recovery-phase-v1",
++  "root_rotation_normalization": "unit-free-root-v1",
++  "getup_repeated_recovery": "completed-cycle-one-terminal-reference-replan-v1"
++}
