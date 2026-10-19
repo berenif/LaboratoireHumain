@@ -1,0 +1,318 @@
+{
+  "date": "2026-10-19",
+  "result": "bounded-actual-back-recovery-observation-passed; experimental long-hold qualification remains open",
+  "qualificationClaim": false,
+  "productionRecoveryEnabled": false,
+  "defaultProfileChanged": false,
+  "scope": "Actual builtRust/WASM app rendered by desktop Linux Chromium155/WebGL2 software backend. Isolated copied sim-worker selects the existing fixed back fixture and trigger; ordinary original driver/one-tick automatic scheduler. Feature-gated terminal balance experiment, source-fidelity20+5 learned prototype. Approved bounded filming ends five physical seconds after first observed original native standing pass.",
+  "openGates": [
+    "All three native30s continuation cases fail unchanged10mm anchored foot-origin drift; this bounded video does not clear them.",
+    "Browser observation samples40Hz snapshots plus continuous original native stable counter; it is not a full800Hz exported predicate trace.",
+    "Native and WASM recovery trajectories differ; native firstpass4975 does not transfer to browser firstpass4302-derived.",
+    "Encoded20+5 recovery runs about0.200x physical/wall time on this desktop software renderer; no realtime or Android qualification.",
+    "Head top reaches/clips the upper viewport edge after standing because the initial camera focused the lying body. Torso/feet/get-up remain clearly visible."
+  ],
+  "artifact": {
+    "sourceBase": "6092d09e4466637a93b96782fe332b51e23d2932",
+    "app": "outputs/browser-capability-20261019/recovery-fixture/terminal-feature/app-fixture-test",
+    "extraFeatures": [
+      "lh-sim/getup-terminal-balance-experiment"
+    ],
+    "toolchain": "Rust1.89.0;wasm-bindgen0.2.108;wasm32-unknown-unknown;release;no extra target flags",
+    "buildManifest": {
+      "path": "outputs/browser-capability-20261019/recovery-fixture/terminal-feature/build-manifest.json",
+      "sha256": "3f00987b587e8e3089ab32b36995b8f03a0751e7bfc55fd9d71ba5f9d21455a9"
+    },
+    "sourceManifest": {
+      "path": "outputs/browser-capability-20261019/recovery-fixture/terminal-feature/source-manifest.json",
+      "sha256": "a8fb6895824ae4d89434147d6a01b44cc89dc272d3edf0fa1cd8c33fada45223"
+    },
+    "adapterManifest": {
+      "path": "outputs/browser-capability-20261019/recovery-fixture/terminal-feature/app-fixture-test-fixture-adapter-manifest.json",
+      "sha256": "38b68708302fa746ec882b5d645c5cfc53ecca3f6520f97d63d3681e3d4fb60f"
+    },
+    "workerWasmSha256": "845d88d5455184ab04cca1c449510fd85f45f47d58399867bf9358a66dd818e7",
+    "rendererWasmSha256": "5895574d87e93f6a2eddec98662797b16c298c90f2ee8298f6d72917f4d1b07e",
+    "ordinaryDriverSha256": "4c6281e19c4540e3ba72a74a5b1514b5d1b9c58e56c1f8a2dbfb3adb4812d74e",
+    "ordinaryWorkerTransportSha256": "a3a2b18c222c045fc08bf19aff2e96b92f0bc18ad6023bcca660195054267996",
+    "copiedTestAdapterSha256": "da24141dabdd72cba4e57c84b6d40cdd2e876f8ac1f9555c369db8ed33947df2",
+    "onlyUnadaptedAssetChangedFromFixedRendererBase": "lh_worker_bg.wasm;glue/renderer/driver/ordinary transport byte-identical"
+  },
+  "fixtureIntegrity": {
+    "kind": "back",
+    "triggerNativeSubstep": 480,
+    "beforeNativeSubsteps": 480,
+    "afterNativeSubsteps": 480,
+    "zeroAdvanceCompletedTicks": 0,
+    "physicalPoseVelocityBitsUnchanged": true,
+    "comparedFloat32Words": 325,
+    "preparation": "Existing factory; no reset/checkpoint import/support injection. Advance1tick ordinarily and inspect ready only at80-native-step boundaries, matching native back ready-poll boundaries.",
+    "workerInstances": 1,
+    "workerIdentityCount": 1,
+    "initializations": 1,
+    "physicalCommandBatches": 0,
+    "physicalPointerInputs": 0
+  },
+  "fullSourceProfile": {
+    "id": "getup-reference-5ad52fbe",
+    "dt_s": 0.00125,
+    "tick_substeps": 20,
+    "contact_friction_model": "coulomb",
+    "solver_iterations": 20,
+    "internal_pgs_iterations": 20,
+    "fall_internal_pgs_iterations": 32,
+    "additional_body_iterations": 5,
+    "allowed_linear_error_m": 0.001,
+    "prediction_distance_m": 0.002,
+    "motor_scale": 1,
+    "aggregate_motor_cap_nm": 920,
+    "angular_damping": 0,
+    "contact_skin_m": 0,
+    "max_ccd_substeps": 4,
+    "disable_solver_speed_cap": true,
+    "posture_stiffness_multiplier": 1,
+    "posture_damping_multiplier": 1,
+    "supported_tilt_gain": 2,
+    "supported_com_gain_rad_per_m": 5,
+    "supported_com_velocity_gain_s_rad_per_m": 5,
+    "supported_angular_velocity_gain_s": 2,
+    "grab_limits": {
+      "angular_frequency_rad_s": 16,
+      "target_speed_m_s": 1.5,
+      "target_acceleration_m_s2": 8,
+      "force_n": 180,
+      "torque_nm": 12,
+      "positive_power_w": 36
+    },
+    "reaching_iterations": 6,
+    "reaching_coordinate_increment_rad": 0.15,
+    "reaching_damping_m2": 0.01,
+    "corrective_steps_enabled": false,
+    "recovery_enabled": false,
+    "getup_policy_enabled": true
+  },
+  "boundedObservation": {
+    "passed": true,
+    "thirtySecondStandingObserved": false,
+    "maximumRecoveryPhysicalSeconds": 25,
+    "requiredPostPassPhysicalSeconds": 5,
+    "firstPassObservedAtPhysicalS": 5.4,
+    "firstPassObservedNativeSubstep": 4320,
+    "firstPassObservedStableStandingS": 1.0225,
+    "firstNativePassDerivedFromContinuousStableCounter": 4302,
+    "derivedTimingNote": "First800-consecutive-native-step threshold inferred from current native substep and stable count; direct browser snapshot first observes the latch18native steps later. No native/WASM state-equivalence claim.",
+    "finalPhysicalS": 10.4,
+    "postPassPhysicalSeconds": 5.0,
+    "distinctPostPass40HzSamples": 201,
+    "duplicateZeroAdvancePackets": 0,
+    "allOriginalNativeStableCounterContinuityChecksPassed": true,
+    "allSampledStandingPredicatesPassed": true,
+    "standingViolations": [],
+    "maximumFootOriginDriftFromPostPassAnchorsM": 0.0009753761696629226,
+    "minimumHeadM": 1.4533030986785889,
+    "minimumTorsoUp": 0.9988510608673096,
+    "minimumFootLoadsN": [
+      183.70652770996094,
+      199.0479278564453
+    ],
+    "finalOriginalStableStandingS": 6.0225,
+    "readOnlyStandingObserverPhysicsIntegrations": [
+      0
+    ],
+    "noDirectPelvisForceOrTorque": true,
+    "stopReason": "bounded-five-physical-seconds-after-first-pass",
+    "errors": [],
+    "droppedTelemetry": {
+      "droppedPackets": 0,
+      "droppedFrames": 0,
+      "droppedInputs": 0,
+      "pendingVisualInputs": 0
+    },
+    "bounds": {
+      "maximumQueueDepth": 0,
+      "maximumOutstandingAdvances": 1,
+      "maximumAdvanceTicks": 1,
+      "maximumTransferBuffers": 3
+    }
+  },
+  "pace": {
+    "simulationSeconds": 10.4,
+    "wallSeconds": 52.00360000000149,
+    "integratedSimulationToWallRatio": 0.19998615480466164,
+    "presentedFrames": 2591,
+    "note": "Recorded encoded/concurrency context; not realtime/mobile or native800Hz standing qualification.",
+    "context": "Exclusive browser filming window; physics owner confirmed all native jobs terminal; encoded desktop/headless bounded observation, no realtime qualification claim.",
+    "nativeWallTime": true,
+    "retimed": false,
+    "wallVideoIncludesStartupAndScreenshotOverhead": true,
+    "cleanPerformanceQualification": false
+  },
+  "nativeLongHoldFailures": {
+    "physicalThresholdM": 0.01,
+    "backFirstThresholdFailureAfterContinuationS": 21.85875,
+    "cases": [
+      {
+        "kind": "back",
+        "path": "outputs/getup-terminal-balance-20261019/back-hold30/result.json",
+        "sha256": "211c20fe2c3a7b7c79744f4b8bac2a62bf9cf8d606587e346757e9cde53bc4fc",
+        "actualContinuationIntegrations": 24000,
+        "allStandingPredicatesPassedEveryNativeSubstep": false,
+        "maximumFootOriginDriftM": [
+          0.012789449654519558,
+          0.013631900772452354
+        ],
+        "standingPredicateFailureSubsteps": {
+          "footDriftFromSuppliedAnchors": 6514
+        }
+      },
+      {
+        "kind": "belly",
+        "path": "outputs/getup-terminal-balance-20261019/belly-hold30/result.json",
+        "sha256": "8a07088e68e8ef3c56a8811985241ef58a0e2708804adb952c91cb6406b6f318",
+        "actualContinuationIntegrations": 24000,
+        "allStandingPredicatesPassedEveryNativeSubstep": false,
+        "maximumFootOriginDriftM": [
+          0.028844280168414116,
+          0.01688229665160179
+        ],
+        "standingPredicateFailureSubsteps": {
+          "footDriftFromSuppliedAnchors": 14708
+        }
+      },
+      {
+        "kind": "side-supported",
+        "path": "outputs/getup-terminal-balance-20261019/side-supported-hold30/result.json",
+        "sha256": "514196e286cec90f7cba1b0d175b6153e62596aa8bd3fb68d1174ffa05c0681b",
+        "actualContinuationIntegrations": 24000,
+        "allStandingPredicatesPassedEveryNativeSubstep": false,
+        "maximumFootOriginDriftM": [
+          0.011644870974123478,
+          0.010485316626727581
+        ],
+        "standingPredicateFailureSubsteps": {
+          "footDriftFromSuppliedAnchors": 4242,
+          "footLoadFraction": 7
+        }
+      }
+    ],
+    "disposition": "All remain qualification failures. Foot-origin drift fails in all three; side-supported also has7native footLoadFraction failures. Bounded archive remains valid. No replacement/rolling foot anchors and no weakened threshold."
+  },
+  "proofs": {
+    "rawBrowserReport": {
+      "path": "outputs/browser-capability-20261019/recovery-fixture/terminal-feature/back-pass-plus-five/result.json",
+      "sha256": "33c56a83b5de2a9c110eb2d8c5aad3e8b42ae63e73cdc68768df0b2820605138"
+    },
+    "webm": {
+      "path": "outputs/browser-capability-20261019/recovery-fixture/terminal-feature/back-pass-plus-five/fixed-fixture-native-wall-time.webm",
+      "sha256": "972632d87cc6501566531bc230f70e52df65dde3db3dd4deb9a73b9309b88209"
+    },
+    "mp4": {
+      "path": "outputs/browser-capability-20261019/recovery-fixture/terminal-feature/back-pass-plus-five/fixed-fixture-native-wall-time.mp4",
+      "sha256": "9f902501413c64c3ecfff4df90023c05627730687a424949e7e321ed86c237ad",
+      "durationSeconds": 58.68,
+      "bytes": 1790425,
+      "dimensions": [
+        1280,
+        900
+      ],
+      "codec": "H264",
+      "framesPerSecond": 25,
+      "nativeWallTime": true,
+      "retimed": false
+    },
+    "initialScreenshot": {
+      "path": "outputs/browser-capability-20261019/recovery-fixture/terminal-feature/back-pass-plus-five/initial-fixed-fixture.png",
+      "sha256": "eda22fca030b1b012331dc37dc60cd1b0de1bddc1916ee1fb2196007383d8ac3"
+    },
+    "finalScreenshot": {
+      "path": "outputs/browser-capability-20261019/recovery-fixture/terminal-feature/back-pass-plus-five/after-bounded-five-physical-seconds-standing.png",
+      "sha256": "919c4fb4cb05d9a43c80f0c83644a635735d5286758f330a65ba717564bcb706"
+    },
+    "contactSheet": {
+      "path": "outputs/browser-capability-20261019/recovery-fixture/terminal-feature/back-pass-plus-five/contact-sheet.jpg",
+      "sha256": "16ccca8e92b3b9f3b7dfecbbfb9263dd46923a624001ad4c17ff35004c0e11da"
+    },
+    "visuallyInspected": [
+      "Initial/final actual browser screenshots",
+      "Six actualMP4frames across lying/get-up/standing; head-edge clipping explicitly retained"
+    ]
+  },
+  "reproduce": {
+    "builder": {
+      "path": "docs/evidence/probes/make-fixed-getup-fixture-app-2026-10-19.mjs",
+      "sha256": "732e818024ee351649cb0a8dcd901d48e7166a6d483ade4f2fd80933674e93c8"
+    },
+    "recorder": {
+      "path": "docs/evidence/probes/record-fixed-getup-fixture-2026-10-19.mjs",
+      "sha256": "345f00a947dcbd46d297ad237b761232c319cf186b60de738a4a4974c8da39f7"
+    },
+    "syntaxChecks": "node --check both probes and generated copied sim-worker; all pass",
+    "review": "Independent read-only review reconstructed unique insertion anchors and parsed generated241-line module, verified bounded back-only mode201samples and unchanged predicates/anchor/continuity/error termination.",
+    "build": "Archive base6092d09 then apply exact sourceManifest file bytes; canonical offline Rust1.89.0 cargo build --release --locked --target wasm32-unknown-unknown -p lh-worker --features lh-sim/getup-terminal-balance-experiment;wasm-bindgen0.2.108 --target web; replace only workerWASM/glue in copied fixed renderer app. Build manifest records all bytes.",
+    "adapterCommand": "node docs/evidence/probes/make-fixed-getup-fixture-app-2026-10-19.mjs outputs/browser-capability-20261019/recovery-fixture/terminal-feature/app-unadapted outputs/browser-capability-20261019/recovery-fixture/terminal-feature/app-fixture-reproduction outputs/browser-capability-20261019/recovery-fixture/terminal-feature/build-manifest.json",
+    "recordCommand": "RUST_BROWSER_EXECUTABLE=\"$PWD/outputs/browser-capability-20261019/debian/unpack/usr/lib/chromium/chromium-headless-shell\" RUST_BROWSER_FFMPEG=/usr/bin/ffmpeg node docs/evidence/probes/record-fixed-getup-fixture-2026-10-19.mjs outputs/browser-capability-20261019/recovery-fixture/terminal-feature/app-fixture-reproduction outputs/browser-capability-20261019/recovery-fixture/terminal-feature/back-pass-plus-five-reproduction back bounded-back-pass-plus-five-seconds",
+    "recordDefault": "Without the explicit bounded mode the harness retains30s-after-first-pass observation; never use bounded success as that result. All reports preserve known frozen experimental back long-drift limitation."
+  },
+  "nativeQualificationEvidence": "docs/evidence/getup-terminal-balance-recovery-2026-10-19.json",
+  "crossTargetComparison": {
+    "proof": {
+      "path": "outputs/browser-capability-20261019/recovery-fixture/terminal-feature/native-browser-initial-trigger-comparison.json",
+      "sha256": "9f1a7855abd430b139d49e2ebbc281db651d0aa28c9c0186e41abb406039dcd4"
+    },
+    "initial": {
+      "nativeSubsteps": 0,
+      "nativeTriggerNative": null,
+      "simulationTimeS": 0.0,
+      "equalPoseVelocityF32Words": 264,
+      "comparedWords": 325,
+      "maximumAbsoluteDifference": 1.7881393432617188e-07,
+      "joints": {
+        "joint_angles_rad": {
+          "count": 21,
+          "equalF32Words": 21,
+          "maximumAbsoluteDifference": 0.0
+        },
+        "joint_velocities_radps": {
+          "count": 21,
+          "equalF32Words": 21,
+          "maximumAbsoluteDifference": 0.0
+        }
+      },
+      "maximumAbsoluteDifferenceByQuantity": {
+        "position": 1.1920928955078125e-07,
+        "rotation": 1.7881393432617188e-07,
+        "linearVelocity": 0.0,
+        "angularVelocity": 0.0
+      }
+    },
+    "trigger": {
+      "nativeSubsteps": 480,
+      "nativeTriggerNative": null,
+      "simulationTimeS": 0.6,
+      "equalPoseVelocityF32Words": 0,
+      "comparedWords": 325,
+      "maximumAbsoluteDifference": 0.005879862001165748,
+      "joints": {
+        "joint_angles_rad": {
+          "count": 21,
+          "equalF32Words": 3,
+          "maximumAbsoluteDifference": 0.0008486807346343994
+        },
+        "joint_velocities_radps": {
+          "count": 21,
+          "equalF32Words": 0,
+          "maximumAbsoluteDifference": 0.003528736822772771
+        }
+      },
+      "nativeVersusBrowserBeforeTriggerWordsEqual": false,
+      "nativeVersusBrowserAfterTriggerWordsEqual": false,
+      "maximumAbsoluteDifferenceByQuantity": {
+        "position": 0.00043633580207824707,
+        "rotation": 0.0005345046520233154,
+        "linearVelocity": 0.0006467130733653903,
+        "angularVelocity": 0.005879862001165748
+      }
+    },
+    "conclusion": "JointQ/dq are initially bit-identical but FK poses already differ before any advance: positions\u22641.19209e-7m, quaternion components\u22641.78814e-7. Later trajectory difference is not evidence that one-vs-four-tick batching changed physics; numerical/backend cause is not fully isolated. No native/WASM trajectory parity claim."
+  }
+}
