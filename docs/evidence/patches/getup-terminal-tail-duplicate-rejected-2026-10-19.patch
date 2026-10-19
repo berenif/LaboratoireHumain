@@ -1,0 +1,442 @@
+diff --git a/rust/crates/sim/Cargo.toml b/rust/crates/sim/Cargo.toml
+index df54072..b33da45 100644
+--- a/rust/crates/sim/Cargo.toml
++++ b/rust/crates/sim/Cargo.toml
+@@ -9,6 +9,9 @@ stationary-balance-experiment = []
+ standing-dynamics-experiment = []
+ getup-terminal-balance-experiment = []
+ getup-repeat-cycle-experiment = ["getup-terminal-balance-experiment"]
++# Isolated endpoint A/B only. No profile selector or persistent controller state.
++getup-terminal-tail-observer-experiment = []
++getup-terminal-tail-duplicate-experiment = ["getup-terminal-tail-observer-experiment"]
+ getup-terminal-base-ready-experiment = ["getup-terminal-balance-experiment"]
+ getup-terminal-bumpless-experiment = ["getup-terminal-base-ready-experiment"]
+ experimental-solver-step-observation = ["rapier3d/solver-step-observation"]
+diff --git a/rust/crates/sim/src/getup/controller.rs b/rust/crates/sim/src/getup/controller.rs
+index 458180c..c122026 100644
+--- a/rust/crates/sim/src/getup/controller.rs
++++ b/rust/crates/sim/src/getup/controller.rs
+@@ -144,6 +144,8 @@ pub struct Controller {
+     terminal_base_ready: Option<TerminalBaseReady>,
+ }
+ impl Controller {
++    #[cfg(feature = "getup-terminal-tail-observer-experiment")]
++    pub(crate) fn stable_foot_anchors(&self) -> Option<[Vec3; 2]> { self.stable_feet }
+     pub(crate) fn source_recovery_active(&self) -> bool {
+         self.started_substep.is_some() && self.terminal_balance.is_none()
+     }
+@@ -685,7 +687,7 @@ impl Controller {
+         }
+         self.reference = reference::interpolate(&knots, REFERENCE_SPEED)?;
+         self.status.reference_frames = self.reference.len() as u32;
+-        self.reference.push(standing_target(&real.model));
++        self.reference.push(terminal_tail_target(&self.reference, &real.model)?);
+         Ok(())
+     }
+     fn record_teacher(
+@@ -986,6 +988,19 @@ pub fn standing_target(model: &Model) -> [f32; 25] {
+     out
+ }
+ 
++fn terminal_tail_target(reference: &[[f32; 25]], model: &Model) -> Result<[f32; 25], String> {
++    #[cfg(feature = "getup-terminal-tail-duplicate-experiment")]
++    {
++        let _ = model;
++        reference.last().copied().ok_or_else(|| "Missing interpolated terminal target".into())
++    }
++    #[cfg(not(feature = "getup-terminal-tail-duplicate-experiment"))]
++    {
++        let _ = reference;
++        Ok(standing_target(model))
++    }
++}
++
+ fn fork(real: &Simulation) -> Result<Simulation, String> {
+     if real.environment.is_some()
+         || !real.world.colliders[real.floor].is_enabled()
+@@ -1036,6 +1051,10 @@ mod terminal_balance_tests;
+ #[path = "repeat_cycle_tests.rs"]
+ mod repeat_cycle_tests;
+ 
++#[cfg(test)]
++#[path = "terminal_tail_tests.rs"]
++mod terminal_tail_tests;
++
+ #[cfg(all(test, feature = "getup-terminal-base-ready-experiment"))]
+ #[path = "terminal_base_ready_tests.rs"]
+ mod terminal_base_ready_tests;
+diff --git a/rust/crates/sim/src/runtime.rs b/rust/crates/sim/src/runtime.rs
+index 2edaea1..1730582 100644
+--- a/rust/crates/sim/src/runtime.rs
++++ b/rust/crates/sim/src/runtime.rs
+@@ -292,6 +292,9 @@ impl Runtime {
+     /// Active compensated root integration additionally requires schema 2's
+     /// exact-bit sidecar: generic Rapier world serde does not preserve it.
+     pub fn getup_checkpoint(&self) -> Result<Vec<u8>, String> {
++        if cfg!(feature = "getup-terminal-tail-duplicate-experiment") {
++            return Err("Endpoint-only A/B candidate does not support checkpoint export".into());
++        }
+         self.checkpoint_compatible()?;
+         let world = bincode::DefaultOptions::new().with_fixint_encoding().with_limit(64 * 1024 * 1024)
+             .serialize(&self.simulation.world).map_err(|e| e.to_string())?;
+@@ -325,6 +328,9 @@ impl Runtime {
+     }
+ 
+     pub fn from_getup_checkpoint(bytes: &[u8]) -> Result<Self, String> {
++        if cfg!(feature = "getup-terminal-tail-duplicate-experiment") {
++            return Err("Endpoint-only A/B candidate does not support checkpoint resume".into());
++        }
+         if bytes.len() as u64 > GETUP_CHECKPOINT_LIMIT { return Err("Checkpoint exceeds size limit".into()); }
+         let (schema, model, world, auxiliary): (u32, String, Vec<u8>, String) =
+             bincode::DefaultOptions::new().with_fixint_encoding().with_limit(64 * 1024 * 1024)
+@@ -727,6 +733,84 @@ impl Runtime {
+     pub fn advance(&mut self, ticks: u32) -> Result<Reply, Reject> {
+         self.advance_traced(ticks, |_, _| {})
+     }
++    #[cfg(feature = "getup-terminal-tail-observer-experiment")]
++    pub fn terminal_tail_build_identity() -> serde_json::Value {
++        serde_json::json!({"experiment":"terminal-tail-ab-v1",
++            "variant":if cfg!(feature = "getup-terminal-tail-duplicate-experiment") {"last-interpolated-duplicate"} else {"source-canonical"},
++            "checkpointResumeSupported":!cfg!(feature = "getup-terminal-tail-duplicate-experiment"),
++            "nativeTrace":"read-only-post-native-observer-v1","maxTicksPerCall":1,
++            "poseWordLayout":"per body: positionXYZ,quaternionXYZW,cachedLinearVelocityXYZ,cachedAngularVelocityXYZ",
++            "currentMotionSource":"fresh physicalObservationWords and current.motion; pose velocity words are cache receipts"})
++    }
++    /// Test-only, bounded immutable observation of the original advance path.
++    /// Trace rows are local to this call and never enter simulation/checkpoints.
++    #[cfg(feature = "getup-terminal-tail-observer-experiment")]
++    pub fn advance_terminal_tail_observed(&mut self, ticks: u32) -> Result<serde_json::Value, Reject> {
++        if ticks > 1 { return Err(Reject::Invalid); }
++        let mut rows = Vec::with_capacity(20);
++        let mut trace_error = None;
++        let reply = self.advance_observed(ticks, |s, _| {
++            let observation = (|| -> Result<serde_json::Value, String> {
++                let snapshot = s.snapshot();
++                let pose_words: Vec<_> = snapshot.segments.iter().flat_map(|p| [
++                    p.position.x,p.position.y,p.position.z,
++                    p.rotation.x,p.rotation.y,p.rotation.z,p.rotation.w,
++                    p.linear_velocity.x,p.linear_velocity.y,p.linear_velocity.z,
++                    p.angular_velocity.x,p.angular_velocity.y,p.angular_velocity.z,
++                ].map(f32::to_bits)).collect();
++                let physical = crate::getup::physical_observation(s)?;
++                let original_anchors = s.getup_controller.as_ref().and_then(|c|c.stable_foot_anchors());
++                let diagnostic = crate::getup::controller::standing_diagnostic(s, original_anchors)?;
++                #[cfg(feature = "root-translation-carry-experiment")]
++                let carry = {
++                    let mut entries: Vec<_> = s.world.multibody_joints.multibodies().map(|mb| {
++                        let (index, generation) = mb.root().rigid_body_handle().into_raw_parts();
++                        RootTranslationCheckpointEntry { root:[index,generation], state:mb.root_translation_integrator_state() }
++                    }).collect();
++                    entries.sort_unstable_by_key(|entry|entry.root);
++                    serde_json::to_string(&entries).map_err(|error|error.to_string())?
++                };
++                #[cfg(not(feature = "root-translation-carry-experiment"))]
++                let carry = "[]";
++                Ok(serde_json::json!({"nativeSubsteps":s.substeps_completed,
++                    "commandInputNativeSubstep":s.substeps_completed.saturating_sub(1),
++                    "physicalSeconds":s.substeps_completed as f64 / 800.0,
++                    "massKg":s.total_mass(),"weightN":s.total_mass()*9.81,
++                    "originalStableFeet":original_anchors,"motion":snapshot.motion,"counters":snapshot.counters,
++                    "rootTranslationIntegratorStateJson":carry,
++                    "poseWords":pose_words,"physicalObservationWords":physical.map(f32::to_bits).to_vec(),
++                    "current":diagnostic,"getup":snapshot.diagnostics.getup,
++                    "requestedMotorEffortNm":snapshot.diagnostics.requested_motor_effort_nm,
++                    "directPelvisForceN":snapshot.diagnostics.direct_pelvis_force_n,
++                    "directPelvisTorqueNm":snapshot.diagnostics.direct_pelvis_torque_nm}))
++            })();
++            match observation {
++                Ok(row) => rows.push(row),
++                Err(error) => { if trace_error.is_none() { trace_error = Some(error); } },
++            }
++            Ok(())
++        })?;
++        let native0_state = if ticks == 0 && self.simulation.substeps_completed == 0 {
++            let s = &self.simulation;
++            let pose_words: Vec<_> = reply.snapshot.segments.iter().flat_map(|p| [
++                p.position.x,p.position.y,p.position.z,p.rotation.x,p.rotation.y,p.rotation.z,p.rotation.w,
++                p.linear_velocity.x,p.linear_velocity.y,p.linear_velocity.z,
++                p.angular_velocity.x,p.angular_velocity.y,p.angular_velocity.z,
++            ].map(f32::to_bits)).collect();
++            let physical_words = crate::getup::physical_observation(s).map(|p|p.map(f32::to_bits).to_vec());
++            #[cfg(feature = "root-translation-carry-experiment")]
++            let carry = self.root_translation_checkpoint_entries().and_then(|entries|
++                serde_json::to_string(&entries).map_err(|error|error.to_string()));
++            #[cfg(not(feature = "root-translation-carry-experiment"))]
++            let carry: Result<String,String> = Ok("[]".into());
++            Some(serde_json::json!({"nativeSubsteps":0,"physicsIntegrations":0,"poseWords":pose_words,
++                "physicalObservationWords":physical_words.as_ref().ok(),
++                "rootTranslationIntegratorStateJson":carry.as_ref().ok(),
++                "physicalObservationError":physical_words.err(),"integratorReadError":carry.err()}))
++        } else { None };
++        Ok(serde_json::json!({"reply":reply,"nativeTrace":rows,
++            "native0State":native0_state,"buildIdentity":Self::terminal_tail_build_identity(),"traceError":trace_error}))
++    }
+     /// Enable independent ownership/contact/posture evidence before integration.
+     /// The normal public command path and physical controllers are preserved.
+     pub fn enable_recovery_measurement(&mut self) -> Result<(), Reject> {
+diff --git a/rust/crates/worker/Cargo.toml b/rust/crates/worker/Cargo.toml
+index 863f826..cc2ae01 100644
+--- a/rust/crates/worker/Cargo.toml
++++ b/rust/crates/worker/Cargo.toml
+@@ -6,6 +6,7 @@ publish.workspace = true
+ 
+ [features]
+ root-translation-carry-experiment = ["lh-sim/root-translation-carry-experiment"]
++getup-terminal-tail-observer-experiment = ["lh-sim/getup-terminal-tail-observer-experiment"]
+ 
+ [lib]
+ crate-type = ["cdylib", "rlib"]
+diff --git a/rust/crates/worker/src/lib.rs b/rust/crates/worker/src/lib.rs
+index 726b588..f7d82d6 100644
+--- a/rust/crates/worker/src/lib.rs
++++ b/rust/crates/worker/src/lib.rs
+@@ -287,6 +287,15 @@ mod browser {
+                 .map_err(|reject| error(format!("{reject:?}")))?;
+             serde_json::to_string(&reply).map_err(error)
+         }
++        #[cfg(feature = "getup-terminal-tail-observer-experiment")]
++        pub fn terminal_tail_build_identity(&self) -> String {
++            Runtime::terminal_tail_build_identity().to_string()
++        }
++        #[cfg(feature = "getup-terminal-tail-observer-experiment")]
++        pub fn advance_terminal_tail_observed(&mut self, ticks: u32) -> Result<String, JsValue> {
++            self.runtime.advance_terminal_tail_observed(ticks)
++                .map(|value|value.to_string()).map_err(|reject|error(format!("{reject:?}")))
++        }
+         pub fn enable_quiet_measurement(&mut self) -> Result<(), JsValue> {
+             self.runtime
+                 .enable_quiet_measurement()
+diff --git a/rust/crates/sim/src/getup/terminal_tail_tests.rs b/rust/crates/sim/src/getup/terminal_tail_tests.rs
+new file mode 100644
+index 0000000..01008f9
+--- /dev/null
++++ b/rust/crates/sim/src/getup/terminal_tail_tests.rs
+@@ -0,0 +1,228 @@
++//! Endpoint-only A/B contracts. These fixtures never integrate a physics world.
++//! Synthetic references and native counters are not recovery qualification.
++use super::*;
++
++fn words(target: &[f32; 25]) -> [u32; 25] {
++    target.map(f32::to_bits)
++}
++
++fn reference_words(reference: &[[f32; 25]]) -> Vec<[u32; 25]> {
++    reference.iter().map(words).collect()
++}
++
++fn synthetic_knots() -> Vec<[f32; 25]> {
++    (0..8)
++        .map(|frame| {
++            std::array::from_fn(|axis| {
++                // Every coordinate varies, including CoM and torso vertical.
++                (axis as f32 - 12.0) * 0.015625
++                    + frame as f32 * 0.0078125
++                    + (frame * frame) as f32 * (axis + 1) as f32 * 0.0001220703125
++            })
++        })
++        .collect()
++}
++
++#[test]
++fn terminal_tail_append_preserves_every_interpolated_word_and_excludes_tail_from_count() {
++    let model = Model::canonical().unwrap();
++    let knots = synthetic_knots();
++    let knot_words = reference_words(&knots);
++    let interpolated = reference::interpolate(&knots, REFERENCE_SPEED).unwrap();
++    let expected_prefix = reference_words(&interpolated);
++    let mut controller = Controller::new(&model);
++    // These are synthetic teacher accounting sentinels, not a teacher rollout.
++    controller.status.teacher_decisions = knots.len() as u32;
++    controller.status.forecast_substeps = knots.len() as u32 * 20;
++    controller.status.teacher_terminal_reached = true;
++    controller.status.reference_seed_matches_real = true;
++    let teacher_accounting = serde_json::to_value(&controller.status).unwrap();
++
++    // Match the production assembly boundary: interpolate, count, then append.
++    controller.reference = interpolated;
++    controller.status.reference_frames = controller.reference.len() as u32;
++    let tail = terminal_tail_target(&controller.reference, &model).unwrap();
++    controller.reference.push(tail);
++
++    assert_eq!(controller.status.reference_frames, 16);
++    assert_eq!(controller.reference.len(), expected_prefix.len() + 1);
++    assert_eq!(
++        reference_words(&controller.reference[..expected_prefix.len()]),
++        expected_prefix
++    );
++    assert_eq!(reference_words(&knots), knot_words);
++    let mut expected_status = teacher_accounting;
++    expected_status["reference_frames"] = controller.status.reference_frames.into();
++    assert_eq!(serde_json::to_value(&controller.status).unwrap(), expected_status);
++    let expected_tail = if cfg!(feature = "getup-terminal-tail-duplicate-experiment") {
++        *controller.reference.get(expected_prefix.len() - 1).unwrap()
++    } else {
++        standing_target(&model)
++    };
++    assert_eq!(words(controller.reference.last().unwrap()), words(&expected_tail));
++}
++
++#[cfg(not(feature = "getup-terminal-tail-duplicate-experiment"))]
++#[test]
++fn terminal_tail_baseline_returns_exact_source_canonical_target() {
++    let model = Model::canonical().unwrap();
++    let expected = words(&standing_target(&model));
++    for reference in [Vec::new(), vec![[123.0; 25]], synthetic_knots()] {
++        assert_eq!(words(&terminal_tail_target(&reference, &model).unwrap()), expected);
++    }
++}
++
++#[cfg(feature = "getup-terminal-tail-duplicate-experiment")]
++#[test]
++fn terminal_tail_candidate_copies_all_twenty_five_words_and_refuses_empty_reference() {
++    let model = Model::canonical().unwrap();
++    assert!(terminal_tail_target(&[], &model).is_err());
++    let mut final_interpolated: [f32; 25] =
++        std::array::from_fn(|axis| f32::from_bits(0x3e00_0001 + axis as u32 * 7));
++    // Bitwise checks cover signed zero and subnormals as well as all target roles.
++    final_interpolated[0] = -0.0;
++    final_interpolated[1] = 0.0;
++    final_interpolated[21] = f32::from_bits(1);
++    final_interpolated[22] = f32::from_bits(0x8000_0001);
++    final_interpolated[23] = -0.0;
++    final_interpolated[24] = f32::MIN_POSITIVE;
++    let reference = [[-3.0; 25], final_interpolated];
++    assert_eq!(
++        words(&terminal_tail_target(&reference, &model).unwrap()),
++        words(&final_interpolated)
++    );
++    assert_ne!(words(&final_interpolated), words(&standing_target(&model)));
++}
++
++fn synthetic_controller(s: &Simulation, reference: Vec<[f32; 25]>, start: u64) -> Controller {
++    let mut controller = Controller::new(&s.model);
++    controller.started_substep = Some(start);
++    controller.impact_substep = Some(start);
++    controller.status.reference_frames = (reference.len() - 1) as u32;
++    controller.reference = reference;
++    controller
++}
++
++#[test]
++fn terminal_tail_both_arms_keep_exact_lookahead_policy_and_holding_clocks_without_integration() {
++    let mut s = Simulation::new_protocol(0.0, Profile::default(), true).unwrap();
++    let physical = super::super::physical_observation(&s).unwrap();
++    let world_before = bincode::serialize(&s.world).unwrap();
++    let poses_before = serde_json::to_value(s.snapshot().segments).unwrap();
++    let interpolated = reference::interpolate(&synthetic_knots(), REFERENCE_SPEED).unwrap();
++    let frame_count = interpolated.len();
++    let final_interpolated = *interpolated.last().unwrap();
++    let canonical = standing_target(&s.model);
++    assert_ne!(words(&final_interpolated), words(&canonical));
++    let mut baseline_reference = interpolated.clone();
++    baseline_reference.push(canonical);
++    let mut candidate_reference = interpolated.clone();
++    candidate_reference.push(final_interpolated);
++    let start = 37;
++    let mut baseline = synthetic_controller(&s, baseline_reference, start);
++    let mut candidate = synthetic_controller(&s, candidate_reference, start);
++    let mut first_difference = None;
++    let mut first_holding = [None; 2];
++    let native_per_policy = u64::from(policy_substeps(s.profile.dt_s).unwrap());
++    assert_eq!(native_per_policy, 20);
++
++    // Only assign synthetic counters and query commands. Never apply or step them.
++    for elapsed in 0..native_per_policy * (frame_count as u64 + 2) {
++        s.substeps_completed = start + elapsed;
++        let index = (elapsed / native_per_policy) as usize;
++        for (arm, controller) in [&mut baseline, &mut candidate].into_iter().enumerate() {
++            let controls = controller.command(&s, &physical).unwrap();
++            assert!(controls.iter().all(|x| x.is_finite()));
++            assert_eq!(controller.status.reference_frames as usize, frame_count);
++            assert_eq!(controller.reference.len(), frame_count + 1);
++            assert_eq!(controller.status.reference_index as usize, index.min(frame_count));
++            assert_eq!(controller.status.policy_decisions as usize, index + 1);
++            assert_eq!(controller.last_decision, Some(index as u64));
++            assert_eq!(controller.holding, index >= frame_count);
++            assert_eq!(controller.status.phase,
++                if index >= frame_count { "slow-holding" } else { "slow-following" });
++            if controller.holding && first_holding[arm].is_none() {
++                first_holding[arm] = Some(elapsed);
++            }
++            let now = &controller.reference[index.min(frame_count)];
++            let ahead = &controller.reference[(index + 5).min(frame_count)];
++            assert_eq!(
++                controller.decision_observation.iter().copied().map(f32::to_bits).collect::<Vec<_>>(),
++                super::super::slow_observation(&physical, now, ahead).map(f32::to_bits).to_vec()
++            );
++        }
++        let baseline_input: Vec<_> = baseline.decision_observation.iter().map(|x| x.to_bits()).collect();
++        let candidate_input: Vec<_> = candidate.decision_observation.iter().map(|x| x.to_bits()).collect();
++        if baseline_input != candidate_input && first_difference.is_none() {
++            first_difference = Some(elapsed);
++        }
++        // Identical until the appended slot enters index+5; now stays identical
++        // until the holding decision itself. Candidate value equality with the
++        // preceding interpolated frame must not move this slot-based boundary.
++        assert_eq!(baseline_input == candidate_input, index + 5 < frame_count);
++        assert_eq!(
++            &baseline_input[67..92] == &candidate_input[67..92],
++            index < frame_count
++        );
++    }
++    assert_eq!(first_difference, Some((frame_count as u64 - 5) * native_per_policy));
++    assert_eq!(first_holding, [Some(frame_count as u64 * native_per_policy); 2]);
++    assert_eq!(baseline.student_decisions.len(), frame_count + 2);
++    assert_eq!(candidate.student_decisions.len(), frame_count + 2);
++    for (a, b) in baseline.student_decisions.iter().zip(&candidate.student_decisions) {
++        assert_eq!(a.native_substep, b.native_substep);
++        assert_eq!(a.holding, b.holding);
++    }
++    assert_eq!(reference_words(&baseline.reference[..frame_count]), reference_words(&interpolated));
++    assert_eq!(reference_words(&candidate.reference[..frame_count]), reference_words(&interpolated));
++    assert_eq!(bincode::serialize(&s.world).unwrap(), world_before);
++    assert_eq!(serde_json::to_value(s.snapshot().segments).unwrap(), poses_before);
++    assert_eq!(s.tick, 0);
++}
++
++#[test]
++fn terminal_tail_append_keeps_all_source_scipy_interpolation_fixtures() {
++    let model = Model::canonical().unwrap();
++    let parity: serde_json::Value =
++        serde_json::from_str(include_str!("../../data/getup-policy/parity.json")).unwrap();
++    let fixtures = parity["splines"].as_array().unwrap();
++    assert_eq!(fixtures.len(), 12);
++    let mut maximum_error = 0.0_f64;
++    for fixture in fixtures {
++        let knots: Vec<[f32; 25]> = serde_json::from_value(fixture["knots"].clone()).unwrap();
++        let mut reference = reference::interpolate(&knots, fixture["speed"].as_f64().unwrap()).unwrap();
++        let original_words = reference_words(&reference);
++        let expected: Vec<Vec<f64>> = serde_json::from_value(fixture["expected"].clone()).unwrap();
++        assert_eq!(reference.len(), expected.len());
++        for (actual, expected) in reference.iter().flatten().zip(expected.iter().flatten()) {
++            maximum_error = maximum_error.max((f64::from(*actual) - expected).abs());
++        }
++        let tail = terminal_tail_target(&reference, &model).unwrap();
++        reference.push(tail);
++        assert_eq!(reference.len(), expected.len() + 1);
++        assert_eq!(reference_words(&reference[..expected.len()]), original_words);
++    }
++    assert!(maximum_error < 1.0e-6, "source spline maximum error {maximum_error}");
++}
++
++#[cfg(feature = "getup-terminal-tail-observer-experiment")]
++#[test]
++fn terminal_tail_build_identity_truthfully_identifies_arm_and_checkpoint_support() {
++    let identity = crate::runtime::Runtime::terminal_tail_build_identity();
++    assert_eq!(identity["experiment"], "terminal-tail-ab-v1");
++    assert_eq!(identity["variant"],
++        if cfg!(feature = "getup-terminal-tail-duplicate-experiment") {
++            "last-interpolated-duplicate"
++        } else { "source-canonical" });
++    assert_eq!(identity["checkpointResumeSupported"],
++        !cfg!(feature = "getup-terminal-tail-duplicate-experiment"));
++}
++
++#[cfg(feature = "getup-terminal-tail-duplicate-experiment")]
++#[test]
++fn terminal_tail_candidate_refuses_checkpoint_resume_before_attempting_decode() {
++    let expected = "Endpoint-only A/B candidate does not support checkpoint resume";
++    for bytes in [b"".as_slice(), b"not a checkpoint".as_slice(), &[0_u8; 64][..]] {
++        assert_eq!(crate::runtime::Runtime::from_getup_checkpoint(bytes).err().unwrap(), expected);
++    }
++}

@@ -144,6 +144,8 @@ pub struct Controller {
     terminal_base_ready: Option<TerminalBaseReady>,
 }
 impl Controller {
+    #[cfg(feature = "getup-terminal-tail-observer-experiment")]
+    pub(crate) fn stable_foot_anchors(&self) -> Option<[Vec3; 2]> { self.stable_feet }
     pub(crate) fn source_recovery_active(&self) -> bool {
         self.started_substep.is_some() && self.terminal_balance.is_none()
     }
@@ -1035,6 +1037,7 @@ mod terminal_balance_tests;
 #[cfg(test)]
 #[path = "repeat_cycle_tests.rs"]
 mod repeat_cycle_tests;
+
 
 #[cfg(all(test, feature = "getup-terminal-base-ready-experiment"))]
 #[path = "terminal_base_ready_tests.rs"]

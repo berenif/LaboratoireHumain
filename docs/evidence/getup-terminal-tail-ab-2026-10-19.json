@@ -1,0 +1,105 @@
+{
+  "date": "2026-10-19",
+  "status": "rejected-endpoint-only-short-triage; no recovery admission",
+  "plannedSequence": "Astra planning preceded this single bounded A/B. The extended landing-reference draft was preserved unbuilt outside production and was not used.",
+  "baseCommit": "de015119c5c2019b6c2726c3d31c041296f5f94f",
+  "profile": {
+    "path": "docs/evidence/profiles/getup-800hz-3plus1-repeat-cycle-v1.json",
+    "sha256": "aaa415a19767c218a26b05bad277193cccba2a726b52dcd5aac0a5444afc39d6",
+    "sameInBothArms": true
+  },
+  "solePhysicalIntervention": "The appended25-float tuple copies the final interpolated tuple instead of source standing_target; all102 preceding tuples, teacher stop, counts,40Hz decisions,800Hz integration, holding timing and damping remain unchanged.",
+  "tests": {
+    "scope": "focused contracts, not full suite or recovery qualification",
+    "passingExecutions": 74,
+    "uniqueNamesAcrossArms": 47,
+    "failed": 0,
+    "ignored": 0,
+    "baselineTail": 5,
+    "candidateTail": 6,
+    "baselineExistingExecutions": 47,
+    "candidateExistingExecutions": 16,
+    "limitations": "Baseline native unit compilation predates only extra native0/carry receipt fields; final candidate units and both actual-WASM arms use final frozen observer. Candidate checkpoint export/resume explicitly refused; successful restore contracts apply to baseline."
+  },
+  "actualBrowser": {
+    "canonicalEvidence": "docs/evidence/browser-terminal-tail-ab-2026-10-19.json",
+    "baselineWorkerSha256": "53395c6d8b968774e07ee38eeb1931047acefb0df3cd090a59bc1943b9867e28",
+    "candidateWorkerSha256": "17f5d1112a742bb5004d6294e6ee5056bb7f42ab1004895701c19c280736a571",
+    "realNativeIntegrationsPerArm": 2920,
+    "forecastNativeIntegrationsPerArm": 1020,
+    "rowsPerArmIncludingNative0": 2921,
+    "teacherFrames": 51,
+    "referenceTuplesExcludingAppended": 102,
+    "totalReferenceTuples": 103,
+    "teacherAndInterpolatedPrefixExact": true,
+    "fullNativeRowsIncludingExactCarryEqualThrough": 2420,
+    "firstPhysicalAndAppliedControlDifference": 2421,
+    "holdingCommandInputNative": 2520,
+    "cutoffNative": 2920,
+    "cutoffPhysicalSeconds": 3.65,
+    "currentAndMaximumProgressStreakPerArm": {
+      "baseline": {
+        "current": 0,
+        "maximum": 0
+      },
+      "candidate": {
+        "current": 0,
+        "maximum": 0
+      }
+    },
+    "progressRequiredCurrentNativeSamples": 80,
+    "candidateTorsoUpAtCutoff": 0.6997407078742981,
+    "baselineTorsoUpAtCutoff": 0.9347015619277954,
+    "classification": "short-triage negative, not a25-second recovery-deadline result",
+    "full25sOr30sContinuationPerformed": false,
+    "performanceClaim": false,
+    "currentContactCaveat": "COM/capture inclusion false does not alone prove geometric departure: the inset-polygon helper rejects support hulls with fewer than3 vertices; rising two-foot contact has only2 solved points. Never use cloned teacher snapshot contacts as current forecast loads.",
+    "comparisonBookkeepingLimitation": "The recorder stopped immediately on negative triage before its queued triage-label export ran, so its raw comparison flag is false. Unconditional stop-controller exports are at the same native2920 bound; the separate read-only analyzer verifies full teacher/reference and native-prefix equality from those retained files without a rerun."
+  },
+  "productionDisposition": {
+    "duplicateVariantRemoved": true,
+    "canonicalTailRestored": true,
+    "normalCheckpointBehaviorRestored": true,
+    "retainedOnly": "Default-off shared immutable native-observer feature and worker export; no persistent controller/profile/schema state added.",
+    "sourceReplay": "Apply the preserved patch to the exact base in an isolated checkout;6 frozen source hashes verified by system patch replay.",
+    "noNewDynamicsOrControllerVariantAfterNegative": true
+  },
+  "nextWork": "Read-only preterminal tracking/contact measurements and further Astra planning; no automatic endpoint sweep, extended teacher or feedback controller.",
+  "receipts": [
+    {
+      "path": "outputs/getup-terminal-tail-ab-20261019/source-freeze.json",
+      "sha256": "285f7cbe08b9473812c2189f36bcba1ea9a2e173f6294494263d7842d8bf7ba9",
+      "bytes": 1246
+    },
+    {
+      "path": "outputs/getup-terminal-tail-ab-20261019/source-freeze-final.json",
+      "sha256": "194251b2668e831d0bbb4f708695c04d28865202325f7c2bcb8faef71dc2da0d",
+      "bytes": 1253
+    },
+    {
+      "path": "outputs/getup-terminal-tail-ab-20261019/focused-contracts-summary.json",
+      "sha256": "b3139d8b963b071de349a8c2a1d8d4922bd2f2d96137a7ad39a46cfdc3eb487c",
+      "bytes": 3763
+    },
+    {
+      "path": "outputs/getup-terminal-tail-ab-20261019/candidate-patch-replay-check.json",
+      "sha256": "fba506b6c6430584e3f00f9af67d6637d8714bb62caee1753e98a9718765adc0",
+      "bytes": 898
+    },
+    {
+      "path": "outputs/getup-terminal-tail-ab-20261019/paused-landing-draft/manifest.json",
+      "sha256": "ef753ab64897443ed4db2549a6ce71107fdd809acd38ee6b4f4bc577e8f6a8b7",
+      "bytes": 1515
+    },
+    {
+      "path": "outputs/browser-capability-20261019/recovery-fixture/terminal-tail-ab/terminal-tail-ab-summary.json",
+      "sha256": "b33cddc54c6c781308d6afe3669cf021f6006ce5154bf171cf82c5ef6a8c5463",
+      "bytes": 83382
+    },
+    {
+      "path": "docs/evidence/patches/getup-terminal-tail-duplicate-rejected-2026-10-19.patch",
+      "sha256": "dc07433fb7c528606a19fbd4025947800478f95bfbb7e2c08d3f1d990dbb1518",
+      "bytes": 23754
+    }
+  ]
+}

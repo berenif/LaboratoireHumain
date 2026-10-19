@@ -727,6 +727,84 @@ impl Runtime {
     pub fn advance(&mut self, ticks: u32) -> Result<Reply, Reject> {
         self.advance_traced(ticks, |_, _| {})
     }
+    #[cfg(feature = "getup-terminal-tail-observer-experiment")]
+    pub fn terminal_tail_build_identity() -> serde_json::Value {
+        serde_json::json!({"experiment":"terminal-tail-ab-v1",
+            "variant":"source-canonical",
+            "checkpointResumeSupported":true,
+            "nativeTrace":"read-only-post-native-observer-v1","maxTicksPerCall":1,
+            "poseWordLayout":"per body: positionXYZ,quaternionXYZW,cachedLinearVelocityXYZ,cachedAngularVelocityXYZ",
+            "currentMotionSource":"fresh physicalObservationWords and current.motion; pose velocity words are cache receipts"})
+    }
+    /// Test-only, bounded immutable observation of the original advance path.
+    /// Trace rows are local to this call and never enter simulation/checkpoints.
+    #[cfg(feature = "getup-terminal-tail-observer-experiment")]
+    pub fn advance_terminal_tail_observed(&mut self, ticks: u32) -> Result<serde_json::Value, Reject> {
+        if ticks > 1 { return Err(Reject::Invalid); }
+        let mut rows = Vec::with_capacity(20);
+        let mut trace_error = None;
+        let reply = self.advance_observed(ticks, |s, _| {
+            let observation = (|| -> Result<serde_json::Value, String> {
+                let snapshot = s.snapshot();
+                let pose_words: Vec<_> = snapshot.segments.iter().flat_map(|p| [
+                    p.position.x,p.position.y,p.position.z,
+                    p.rotation.x,p.rotation.y,p.rotation.z,p.rotation.w,
+                    p.linear_velocity.x,p.linear_velocity.y,p.linear_velocity.z,
+                    p.angular_velocity.x,p.angular_velocity.y,p.angular_velocity.z,
+                ].map(f32::to_bits)).collect();
+                let physical = crate::getup::physical_observation(s)?;
+                let original_anchors = s.getup_controller.as_ref().and_then(|c|c.stable_foot_anchors());
+                let diagnostic = crate::getup::controller::standing_diagnostic(s, original_anchors)?;
+                #[cfg(feature = "root-translation-carry-experiment")]
+                let carry = {
+                    let mut entries: Vec<_> = s.world.multibody_joints.multibodies().map(|mb| {
+                        let (index, generation) = mb.root().rigid_body_handle().into_raw_parts();
+                        RootTranslationCheckpointEntry { root:[index,generation], state:mb.root_translation_integrator_state() }
+                    }).collect();
+                    entries.sort_unstable_by_key(|entry|entry.root);
+                    serde_json::to_string(&entries).map_err(|error|error.to_string())?
+                };
+                #[cfg(not(feature = "root-translation-carry-experiment"))]
+                let carry = "[]";
+                Ok(serde_json::json!({"nativeSubsteps":s.substeps_completed,
+                    "commandInputNativeSubstep":s.substeps_completed.saturating_sub(1),
+                    "physicalSeconds":s.substeps_completed as f64 / 800.0,
+                    "massKg":s.total_mass(),"weightN":s.total_mass()*9.81,
+                    "originalStableFeet":original_anchors,"motion":snapshot.motion,"counters":snapshot.counters,
+                    "rootTranslationIntegratorStateJson":carry,
+                    "poseWords":pose_words,"physicalObservationWords":physical.map(f32::to_bits).to_vec(),
+                    "current":diagnostic,"getup":snapshot.diagnostics.getup,
+                    "requestedMotorEffortNm":snapshot.diagnostics.requested_motor_effort_nm,
+                    "directPelvisForceN":snapshot.diagnostics.direct_pelvis_force_n,
+                    "directPelvisTorqueNm":snapshot.diagnostics.direct_pelvis_torque_nm}))
+            })();
+            match observation {
+                Ok(row) => rows.push(row),
+                Err(error) => { if trace_error.is_none() { trace_error = Some(error); } },
+            }
+            Ok(())
+        })?;
+        let native0_state = if ticks == 0 && self.simulation.substeps_completed == 0 {
+            let s = &self.simulation;
+            let pose_words: Vec<_> = reply.snapshot.segments.iter().flat_map(|p| [
+                p.position.x,p.position.y,p.position.z,p.rotation.x,p.rotation.y,p.rotation.z,p.rotation.w,
+                p.linear_velocity.x,p.linear_velocity.y,p.linear_velocity.z,
+                p.angular_velocity.x,p.angular_velocity.y,p.angular_velocity.z,
+            ].map(f32::to_bits)).collect();
+            let physical_words = crate::getup::physical_observation(s).map(|p|p.map(f32::to_bits).to_vec());
+            #[cfg(feature = "root-translation-carry-experiment")]
+            let carry = self.root_translation_checkpoint_entries().and_then(|entries|
+                serde_json::to_string(&entries).map_err(|error|error.to_string()));
+            #[cfg(not(feature = "root-translation-carry-experiment"))]
+            let carry: Result<String,String> = Ok("[]".into());
+            Some(serde_json::json!({"nativeSubsteps":0,"physicsIntegrations":0,"poseWords":pose_words,
+                "physicalObservationWords":physical_words.as_ref().ok(),
+                "rootTranslationIntegratorStateJson":carry.as_ref().ok(),
+                "physicalObservationError":physical_words.err(),"integratorReadError":carry.err()}))
+        } else { None };
+        Ok(serde_json::json!({"reply":reply,"nativeTrace":rows,
+            "native0State":native0_state,"buildIdentity":Self::terminal_tail_build_identity(),"traceError":trace_error}))
+    }
     /// Enable independent ownership/contact/posture evidence before integration.
     /// The normal public command path and physical controllers are preserved.
     pub fn enable_recovery_measurement(&mut self) -> Result<(), Reject> {
