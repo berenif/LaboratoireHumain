@@ -1,0 +1,570 @@
+{
+  "date": "2026-10-19",
+  "scope": "Existing centroidally consistent joint-standing dynamics combined with the default-OFF terminal recovery transfer; fresh frozen four-pose recovery and30s every-native continuations",
+  "status": "experimental-back-thirty-second-pass-other-held-poses-fail",
+  "releaseAccepted": false,
+  "productionRecoveryEnabled": false,
+  "defaultProfileChanged": false,
+  "physicalAcceptanceChanged": false,
+  "sourceCodeChangesSinceStaticTrial": false,
+  "build": {
+    "sourceCommit": "aee0e191767ac2c7185366f8b757563a2c63f7c6",
+    "features": [
+      "getup-terminal-balance-experiment",
+      "standing-dynamics-experiment"
+    ],
+    "rust": "1.89.0",
+    "cargo": "offline locked release",
+    "profile": "Default20base+5additional,800Hz native/40Hz control;3+1 not used",
+    "library": {
+      "path": "outputs/getup-terminal-dynamics-20261019/liblh_sim-frozen.rlib",
+      "sha256": "6fa3ba26faf9dbb031b9b0ebc6cbbc77edda510fd619d0b0eee62347e8442dcb"
+    },
+    "replayBinary": {
+      "path": "outputs/getup-terminal-dynamics-20261019/recovery",
+      "sha256": "3242a3dbd2b88c44ff8c386e872a271b38513519c369a1f9e9dcf94d7e6ffaf0"
+    },
+    "holdBinary": {
+      "path": "outputs/getup-terminal-dynamics-20261019/standing-continuation",
+      "sha256": "08c166c1094edebb600015da634350f824de591a44739a3e7ee79bd517353cc9"
+    },
+    "metadata": {
+      "path": "outputs/getup-terminal-dynamics-20261019/experiment.json",
+      "sha256": "4ebaf90839e5feebc72d762081f3e36e86f9c6b9175cb2bacf0bb964b8994384"
+    }
+  },
+  "baseline": {
+    "path": "docs/evidence/getup-terminal-balance-recovery-2026-10-19.json",
+    "sha256": "79d90f6259c3009bd0708d1efa5dbe1898c487454905c4148884f0bd3cb0826d"
+  },
+  "mechanism": "Existing desired COP acceleration supplies consistent horizontal desired support reactions and matching per-body D\u2019Alembert terms inside joint inverse-dynamics arithmetic. These are control intentions, never external body/root forces. No gains, targets, bounds, actor weights, native clock or acceptance thresholds changed. Static and dynamic transfer happen at the same physical seed/state after80already-valid native samples; original800-sample/25s acceptance is untouched.",
+  "focusedTests": {
+    "scope": "Focused native lh-sim library gates with both default-OFF experiment features enabled; not a full native suite qualification.",
+    "toolchain": "1.89.0",
+    "build_command": "cargo +1.89.0 test --offline --locked --release -p lh-sim --lib --no-run --message-format=json --features getup-terminal-balance-experiment,standing-dynamics-experiment",
+    "artifact": {
+      "executable": "/workspace/scratch/5def91918e35/mvp-landing/rust/target/release/deps/lh_sim-d49bd9edaec50f03",
+      "features": [
+        "getup-terminal-balance-experiment",
+        "standing-dynamics-experiment"
+      ],
+      "size_bytes": 22462112,
+      "sha256": "105de4ffcfdb39359e17525c17075eee4b2de8660611d8230197ce4848486855"
+    },
+    "binary_sha256_reverified_after_tests": true,
+    "verdicts": [
+      {
+        "filter": "terminal_balance_tests",
+        "status": "ok",
+        "passed": 8,
+        "failed": 0,
+        "ignored": 0,
+        "measured": 0,
+        "filtered_out": 183,
+        "seconds": 1.22,
+        "log": "outputs/getup-terminal-dynamics-20261019/tests-terminal-balance.log"
+      },
+      {
+        "filter": "getup::supported_standing::tests",
+        "status": "ok",
+        "passed": 5,
+        "failed": 0,
+        "ignored": 0,
+        "measured": 0,
+        "filtered_out": 186,
+        "seconds": 32.44,
+        "log": "outputs/getup-terminal-dynamics-20261019/tests-supported-standing.log"
+      },
+      {
+        "filter": "actuators::tests",
+        "status": "ok",
+        "passed": 6,
+        "failed": 0,
+        "ignored": 0,
+        "measured": 0,
+        "filtered_out": 185,
+        "seconds": 0.08,
+        "log": "outputs/getup-terminal-dynamics-20261019/tests-actuators.log"
+      }
+    ],
+    "total_passed": 19,
+    "total_failed": 0,
+    "total_ignored": 0,
+    "thresholds_changed": false,
+    "source_edits": false,
+    "index_or_ref_changes": false
+  },
+  "prefixComparison": {
+    "path": "outputs/getup-terminal-dynamics-20261019/all-prefix-comparisons.json",
+    "sha256": "77ce5b4ec1e88bc6a38c5b5da89707ba12d74b1658d88132bbb6e66695741245"
+  },
+  "cases": [
+    {
+      "kind": "back",
+      "outcome": "experimental-terminal-balance-one-second-standing-pass",
+      "fixtureAdmitted": true,
+      "triggerNative": 480,
+      "realNativeIntegrations": 4860,
+      "forecastNativeIntegrations": 980,
+      "totalActualIntegrations": 5840,
+      "nativeObserverSamples": 4860,
+      "lastObservedNative": 4860,
+      "unobservedRealTailNativeSteps": 0,
+      "firstLatchedStandingPassNative": 4847,
+      "physicalSeconds": 6.075,
+      "maximumRequestedMotorEffortNm": 713.5970458984375,
+      "standingPassed": true,
+      "maximumContiguousStableSecondsObservedAt800Hz": 1.01625,
+      "finalContiguousStableSeconds": 1.01625,
+      "firstPassSecondsAfterTrigger": 5.45875,
+      "transfer": {
+        "activated_native_substep": 3904,
+        "reference": {
+          "com": [
+            -0.5940335,
+            0.80396277,
+            -0.12266173
+          ],
+          "forward": [
+            0.8113447,
+            0.0,
+            -0.584568
+          ],
+          "lateral": [
+            -0.584568,
+            0.0,
+            -0.8113447
+          ]
+        },
+        "first_actual_control_jump_max": 0.93371916,
+        "first_saturated_controls": 0,
+        "first_compensation_active": true
+      },
+      "wholeRecoveryLoadedSlipM": [
+        0.2371677118182751,
+        0.5628224431704955
+      ],
+      "wholeRecoverySlipIsDiagnosticOnly": true,
+      "finalOriginalAnchoredPredicates": {
+        "angularMotion": true,
+        "bothFeetLoadedAndPersistent": true,
+        "captureInSupport": true,
+        "comInSupport": true,
+        "footDriftFromSuppliedAnchors": true,
+        "footLoadFraction": true,
+        "head": true,
+        "linearMotion": true,
+        "onlyFeet": true,
+        "torso": true
+      },
+      "staticFirstPassNative": 4975,
+      "raw": {
+        "path": "outputs/getup-terminal-dynamics-20261019/back/result.json",
+        "sha256": "1f20fe6ec94776ccd007df5d1f70ed02f0207f12d9914bcaa32e6967fdbe2b0b"
+      },
+      "referenceReport": {
+        "path": "outputs/getup-terminal-dynamics-20261019/back/reference-report.json",
+        "sha256": "de8e984cbe0f6b086bf8a10c4fdb27dc3cf48f2405d8c7552c9add4903264e44"
+      },
+      "checkpointVerification": {
+        "binaryWorldDeserialized": true,
+        "bytes": 3031474,
+        "controllerEqual": true,
+        "forecastSubsteps": 980,
+        "handlesEqual": true,
+        "jointStateEqual": true,
+        "nativeSubsteps": 4860,
+        "passed": true,
+        "physicsIntegrations": 0,
+        "snapshotEqual": true
+      }
+    },
+    {
+      "kind": "belly",
+      "outcome": "experimental-terminal-balance-one-second-standing-pass",
+      "fixtureAdmitted": true,
+      "triggerNative": 480,
+      "realNativeIntegrations": 3040,
+      "forecastNativeIntegrations": 540,
+      "totalActualIntegrations": 3580,
+      "nativeObserverSamples": 3040,
+      "lastObservedNative": 3040,
+      "unobservedRealTailNativeSteps": 0,
+      "firstLatchedStandingPassNative": 3030,
+      "physicalSeconds": 3.8,
+      "maximumRequestedMotorEffortNm": 679.62158203125,
+      "standingPassed": true,
+      "maximumContiguousStableSecondsObservedAt800Hz": 1.0125,
+      "finalContiguousStableSeconds": 1.0125,
+      "firstPassSecondsAfterTrigger": 3.1875,
+      "transfer": {
+        "activated_native_substep": 1984,
+        "reference": {
+          "com": [
+            0.13027704,
+            0.807034,
+            -0.55663323
+          ],
+          "forward": [
+            -0.5301658,
+            0.0,
+            0.84789395
+          ],
+          "lateral": [
+            0.84789395,
+            -0.0,
+            0.5301658
+          ]
+        },
+        "first_actual_control_jump_max": 0.9750444,
+        "first_saturated_controls": 1,
+        "first_compensation_active": true
+      },
+      "wholeRecoveryLoadedSlipM": [
+        0.08307548511303568,
+        0.0510958829784091
+      ],
+      "wholeRecoverySlipIsDiagnosticOnly": true,
+      "finalOriginalAnchoredPredicates": {
+        "angularMotion": true,
+        "bothFeetLoadedAndPersistent": true,
+        "captureInSupport": true,
+        "comInSupport": true,
+        "footDriftFromSuppliedAnchors": true,
+        "footLoadFraction": true,
+        "head": true,
+        "linearMotion": true,
+        "onlyFeet": true,
+        "torso": true
+      },
+      "staticFirstPassNative": 3094,
+      "raw": {
+        "path": "outputs/getup-terminal-dynamics-20261019/belly/result.json",
+        "sha256": "aa9eb84913d950ea05aea57148496401a8b547f8263c7132fc3ff05d1db6b79d"
+      },
+      "referenceReport": {
+        "path": "outputs/getup-terminal-dynamics-20261019/belly/reference-report.json",
+        "sha256": "aabfcc12e55700c63ddc1f8d7e9e61d95cf2f1e0bf9799521aba7efb312261ee"
+      },
+      "checkpointVerification": {
+        "binaryWorldDeserialized": true,
+        "bytes": 1792938,
+        "controllerEqual": true,
+        "forecastSubsteps": 540,
+        "handlesEqual": true,
+        "jointStateEqual": true,
+        "nativeSubsteps": 3040,
+        "passed": true,
+        "physicsIntegrations": 0,
+        "snapshotEqual": true
+      }
+    },
+    {
+      "kind": "side-supported",
+      "outcome": "experimental-terminal-balance-one-second-standing-pass",
+      "fixtureAdmitted": true,
+      "triggerNative": 200,
+      "realNativeIntegrations": 16860,
+      "forecastNativeIntegrations": 680,
+      "totalActualIntegrations": 17540,
+      "nativeObserverSamples": 16860,
+      "lastObservedNative": 16860,
+      "unobservedRealTailNativeSteps": 0,
+      "firstLatchedStandingPassNative": 16857,
+      "physicalSeconds": 21.075,
+      "maximumRequestedMotorEffortNm": 677.6972045898438,
+      "standingPassed": true,
+      "maximumContiguousStableSecondsObservedAt800Hz": 1.00375,
+      "finalContiguousStableSeconds": 1.00375,
+      "firstPassSecondsAfterTrigger": 20.82125,
+      "transfer": {
+        "activated_native_substep": 16137,
+        "reference": {
+          "com": [
+            1.2318667,
+            0.8070162,
+            0.17097135
+          ],
+          "forward": [
+            -0.74638844,
+            0.0,
+            -0.6655105
+          ],
+          "lateral": [
+            -0.6655105,
+            0.0,
+            0.74638844
+          ]
+        },
+        "first_actual_control_jump_max": 0.7748383,
+        "first_saturated_controls": 0,
+        "first_compensation_active": true
+      },
+      "wholeRecoveryLoadedSlipM": [
+        0.6969888152886498,
+        0.9972918630050673
+      ],
+      "wholeRecoverySlipIsDiagnosticOnly": true,
+      "finalOriginalAnchoredPredicates": {
+        "angularMotion": true,
+        "bothFeetLoadedAndPersistent": true,
+        "captureInSupport": true,
+        "comInSupport": true,
+        "footDriftFromSuppliedAnchors": true,
+        "footLoadFraction": true,
+        "head": true,
+        "linearMotion": true,
+        "onlyFeet": true,
+        "torso": true
+      },
+      "staticFirstPassNative": 17491,
+      "raw": {
+        "path": "outputs/getup-terminal-dynamics-20261019/side-supported/result.json",
+        "sha256": "71e98310a9860b178f990058e2636c71e69cb877867ef20b60f4d19ad6f82f3d"
+      },
+      "referenceReport": {
+        "path": "outputs/getup-terminal-dynamics-20261019/side-supported/reference-report.json",
+        "sha256": "7e86ae2e28d4a75caca688771b29bf5dd0cf2744e2a04c0569278761fde7af35"
+      },
+      "checkpointVerification": {
+        "binaryWorldDeserialized": true,
+        "bytes": 8317962,
+        "controllerEqual": true,
+        "forecastSubsteps": 680,
+        "handlesEqual": true,
+        "jointStateEqual": true,
+        "nativeSubsteps": 16860,
+        "passed": true,
+        "physicsIntegrations": 0,
+        "snapshotEqual": true
+      }
+    },
+    {
+      "kind": "side",
+      "outcome": "25-second-recovery-deadline",
+      "fixtureAdmitted": true,
+      "triggerNative": 380,
+      "realNativeIntegrations": 20380,
+      "forecastNativeIntegrations": 740,
+      "totalActualIntegrations": 21120,
+      "nativeObserverSamples": 20380,
+      "lastObservedNative": 20380,
+      "unobservedRealTailNativeSteps": 0,
+      "firstLatchedStandingPassNative": null,
+      "physicalSeconds": 25.475,
+      "maximumRequestedMotorEffortNm": 703.1237182617188,
+      "standingPassed": false,
+      "maximumContiguousStableSecondsObservedAt800Hz": 0.0,
+      "finalContiguousStableSeconds": 0.0,
+      "firstPassSecondsAfterTrigger": null,
+      "transfer": null,
+      "wholeRecoveryLoadedSlipM": [
+        0.6775613192980561,
+        1.053766362401393
+      ],
+      "wholeRecoverySlipIsDiagnosticOnly": true,
+      "finalOriginalAnchoredPredicates": null,
+      "staticFirstPassNative": null,
+      "raw": {
+        "path": "outputs/getup-terminal-dynamics-20261019/side/result.json",
+        "sha256": "9d5106933ba9cfc967d7176067d18924412dbff466ffa4800eb97d4b70d8d7da"
+      },
+      "referenceReport": {
+        "path": "outputs/getup-terminal-dynamics-20261019/side/reference-report.json",
+        "sha256": "4bfa8ab28a1b5e6ff8236f984731785e1a5951abb84e0988defb7f8ad8b38099"
+      },
+      "checkpointVerification": {
+        "binaryWorldDeserialized": true,
+        "bytes": 10252807,
+        "controllerEqual": true,
+        "forecastSubsteps": 740,
+        "handlesEqual": true,
+        "jointStateEqual": true,
+        "nativeSubsteps": 20380,
+        "passed": true,
+        "physicsIntegrations": 0,
+        "snapshotEqual": true
+      }
+    }
+  ],
+  "standingContinuations": [
+    {
+      "requestedSimulatedSeconds": 30.0,
+      "simulatedSeconds": 30.0,
+      "nativeSubsteps": 24000,
+      "actualContinuationIntegrations": 24000,
+      "unobservedTerminalTailNative": 0,
+      "allStandingPredicatesPassedEveryNativeSubstep": true,
+      "standingPredicateFailureSubsteps": {},
+      "maximumFootOriginDriftM": [
+        0.0034923090133816004,
+        0.0019251236226409674
+      ],
+      "minimumFootLoadsN": [
+        193.74563598632812,
+        204.6492919921875
+      ],
+      "maximumBodyLinearMps": 0.013723107054829597,
+      "maximumBodyAngularRadps": 0.024876369163393974,
+      "loadedContactSpeedIntegralM": [
+        1.4167477199560388e-05,
+        7.657246698585146e-05
+      ],
+      "unloadedFootSubsteps": [
+        0,
+        0
+      ],
+      "teacherForecastUnchanged": true,
+      "slowDecisionCountUnchanged": true,
+      "slowDecisionArchiveLengthUnchanged": true,
+      "loadedSlipStopM": 0.02,
+      "loadedSlipIntegralStartsAt": "First native integration after restoring this newly measured passing recovery checkpoint; unchanged recovery-wide slip remains separately reported without a whole-getup stop",
+      "kind": "back",
+      "passed": true,
+      "staticMaximumFootOriginDriftM": [
+        0.012789449654519558,
+        0.013631900772452354
+      ],
+      "staticFailures": {
+        "footDriftFromSuppliedAnchors": 6514
+      },
+      "firstFailure": null,
+      "raw": {
+        "path": "outputs/getup-terminal-dynamics-20261019/back-hold30/result.json",
+        "sha256": "1b1f9a3c85b33b87638126ce14c1203c82e167198da3ed548677f50f34167e37"
+      }
+    },
+    {
+      "requestedSimulatedSeconds": 30.0,
+      "simulatedSeconds": 30.0,
+      "nativeSubsteps": 24000,
+      "actualContinuationIntegrations": 24000,
+      "unobservedTerminalTailNative": 0,
+      "allStandingPredicatesPassedEveryNativeSubstep": false,
+      "standingPredicateFailureSubsteps": {
+        "footDriftFromSuppliedAnchors": 16914
+      },
+      "maximumFootOriginDriftM": [
+        0.04232267662882805,
+        0.043748561292886734
+      ],
+      "minimumFootLoadsN": [
+        192.41488647460938,
+        195.7097625732422
+      ],
+      "maximumBodyLinearMps": 0.005298323929309845,
+      "maximumBodyAngularRadps": 0.019707202911376953,
+      "loadedContactSpeedIntegralM": [
+        0.0013013941535254911,
+        0.0006880275134420826
+      ],
+      "unloadedFootSubsteps": [
+        0,
+        0
+      ],
+      "teacherForecastUnchanged": true,
+      "slowDecisionCountUnchanged": true,
+      "slowDecisionArchiveLengthUnchanged": true,
+      "loadedSlipStopM": 0.02,
+      "loadedSlipIntegralStartsAt": "First native integration after restoring this newly measured passing recovery checkpoint; unchanged recovery-wide slip remains separately reported without a whole-getup stop",
+      "kind": "belly",
+      "passed": false,
+      "staticMaximumFootOriginDriftM": [
+        0.028844280168414116,
+        0.01688229665160179
+      ],
+      "staticFailures": {
+        "footDriftFromSuppliedAnchors": 14708
+      },
+      "firstFailure": {
+        "observedNative": 7087,
+        "physicalSeconds": 12.65875
+      },
+      "raw": {
+        "path": "outputs/getup-terminal-dynamics-20261019/belly-hold30/result.json",
+        "sha256": "82bef7c7a1ba2ec830197bf6e6032d0c23a1a051b3414436250f04db0aa62037"
+      }
+    },
+    {
+      "requestedSimulatedSeconds": 30.0,
+      "simulatedSeconds": 30.0,
+      "nativeSubsteps": 24000,
+      "actualContinuationIntegrations": 24000,
+      "unobservedTerminalTailNative": 0,
+      "allStandingPredicatesPassedEveryNativeSubstep": false,
+      "standingPredicateFailureSubsteps": {
+        "footDriftFromSuppliedAnchors": 15946,
+        "footLoadFraction": 1
+      },
+      "maximumFootOriginDriftM": [
+        0.022414403036236763,
+        0.022227739915251732
+      ],
+      "minimumFootLoadsN": [
+        190.35699462890625,
+        124.47589874267578
+      ],
+      "maximumBodyLinearMps": 0.02575363591313362,
+      "maximumBodyAngularRadps": 0.0829111859202385,
+      "loadedContactSpeedIntegralM": [
+        0.0002912102618452268,
+        0.00144107836895741
+      ],
+      "unloadedFootSubsteps": [
+        0,
+        0
+      ],
+      "teacherForecastUnchanged": true,
+      "slowDecisionCountUnchanged": true,
+      "slowDecisionArchiveLengthUnchanged": true,
+      "loadedSlipStopM": 0.02,
+      "loadedSlipIntegralStartsAt": "First native integration after restoring this newly measured passing recovery checkpoint; unchanged recovery-wide slip remains separately reported without a whole-getup stop",
+      "kind": "side-supported",
+      "passed": false,
+      "staticMaximumFootOriginDriftM": [
+        0.011644870974123478,
+        0.010485316626727581
+      ],
+      "staticFailures": {
+        "footDriftFromSuppliedAnchors": 4242,
+        "footLoadFraction": 7
+      },
+      "firstFailure": {
+        "observedNative": 1755,
+        "physicalSeconds": 23.26875
+      },
+      "raw": {
+        "path": "outputs/getup-terminal-dynamics-20261019/side-supported-hold30/result.json",
+        "sha256": "b26cc4611a12662d158d218de2fdcd1cee5b6cc6cda29070c3755ed975ef53a8"
+      }
+    }
+  ],
+  "browserEvidence": "docs/evidence/browser-terminal-dynamic-recovery-2026-10-19.json",
+  "qualificationLimits": [
+    "Three of four fresh cases pass the original1s prototype gate; plain side remains the unchanged25s failure.",
+    "Only back passes the independent30s fixed-anchor/every800Hz hold. Belly and side-supported retain real failures, so this is not global recovery admission.",
+    "No24case admission, repeated-fall/resisted-impact lifecycle fix, production profile promotion, realtime/mobile recovery claim or redistribution-rights clearance.",
+    "Post-solve material tangent-speed integrals are not substitutes for actual foot-origin drift; all original10mm anchor and20mm continuation loaded-slip stops remain.",
+    "One saturated actuator at belly transfer is recorded; no smoothing/gain adjustment was added.",
+    "Isolated actuator fixtures do not establish production multibody torque readback or loaded-chain admission; those separate gaps remain."
+  ],
+  "next": "Read-only internal-coordinate diagnostic on worst belly drift, plus one bounded plain-side reference-entry ablation; no additional controller variants without causal evidence.",
+  "actors": {
+    "teacher.bin": {
+      "path": "rust/crates/sim/data/getup-policy/teacher.bin",
+      "sha256": "f8d8d6ea787366a67aa46352cf5243ed2962dd277b5ca6b6f98a85fc3a67ab4f"
+    },
+    "student.bin": {
+      "path": "rust/crates/sim/data/getup-policy/student.bin",
+      "sha256": "c489faed55bdab1669c51dab71a102db91ff2a55143789f682e45cd8169d6dbb"
+    }
+  },
+  "reproduction": {
+    "buildLibrary": "cargo +1.89.0 build --manifest-path rust/Cargo.toml --offline --locked --release -p lh-sim --lib --features getup-terminal-balance-experiment,standing-dynamics-experiment --message-format=json",
+    "replaySource": "rust/crates/sim/examples/getup_terminal_recovery.rs",
+    "holdSource": "docs/evidence/probes/getup-terminal-standing-continuation-2026-10-19.rs",
+    "actualThinLinkFlags": "rustc +1.89.0 --edition=2024 -C opt-level=3 -C lto=thin; coherent lh_sim and serde_json rlibs plus -L dependency=rust/target/release/deps",
+    "perCaseInvocation": "recovery KIND FRESH_OUTPUT_DIRECTORY; if its original1s standing gate passes, standing-continuation FRESH_OUTPUT_DIRECTORY/checkpoint-final.bin FRESH_HOLD_DIRECTORY 30 300",
+    "operationalBudget": "300wall-second recovery hang guard, separate from unchanged25physical-second acceptance;300compute-second continuation budget, no outcome was time-budget-incomplete."
+  }
+}

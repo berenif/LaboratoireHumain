@@ -1,0 +1,155 @@
+{
+  "date": "2026-10-19",
+  "experimentId": "getup-800hz-20plus5-friction-bias-continuation-v1",
+  "status": "rejected-worse-anchored-foot-drift",
+  "diagnosticOnly": true,
+  "defaultChanged": false,
+  "freshRecoveryQualification": false,
+  "scope": "One30physical-second continuation of the exact freshly passing back handoff checkpoint; only Rapier friction_in_bias_pass false\u2192true, all controllers/actors/gains/budgets/physical gates retained.",
+  "sourceCheckpoint": {
+    "path": "outputs/getup-terminal-balance-20261019/back/checkpoint-final.bin",
+    "sha256": "11e5bf829a901937d80e1b1e2a604d73b7411a8aa03832f54937d49c54c9dc4b"
+  },
+  "sourceLibrary": {
+    "path": "rust/target/release/deps/liblh_sim-4a816169700ed6b6.rlib",
+    "sha256": "041d7d5ed1a224c40471b140dfb28ea79bb4e9bb1ac00dbd482c0c5fc41b6dd0"
+  },
+  "identityProof": {
+    "afterIntegrationParameters": {
+      "contact_clustering": true,
+      "contact_recycling": true,
+      "contact_softness": {
+        "damping_ratio": 10.0,
+        "natural_frequency": 30.0
+      },
+      "dt": 0.0012499999720603228,
+      "friction_in_bias_pass": true,
+      "friction_model": "Coulomb",
+      "length_unit": 1.0,
+      "max_ccd_substeps": 4,
+      "min_ccd_dt": 0.00016666667943354696,
+      "normalized_allowed_linear_error": 0.0010000000474974513,
+      "normalized_contact_recycle_distance": 0.05000000074505806,
+      "normalized_max_corrective_velocity": 3.0,
+      "normalized_max_linear_velocity": 3.4028234663852886e+38,
+      "normalized_prediction_distance": 0.0020000000949949026,
+      "num_internal_pgs_iterations": 20,
+      "num_internal_stabilization_iterations": 1,
+      "num_solver_iterations": 20,
+      "static_contact_softness": {
+        "damping_ratio": 10.0,
+        "natural_frequency": 60.0
+      },
+      "warmstart_coefficient": 1.0,
+      "warmstart_joints": false
+    },
+    "beforeIntegrationParameters": {
+      "contact_clustering": true,
+      "contact_recycling": true,
+      "contact_softness": {
+        "damping_ratio": 10.0,
+        "natural_frequency": 30.0
+      },
+      "dt": 0.0012499999720603228,
+      "friction_in_bias_pass": false,
+      "friction_model": "Coulomb",
+      "length_unit": 1.0,
+      "max_ccd_substeps": 4,
+      "min_ccd_dt": 0.00016666667943354696,
+      "normalized_allowed_linear_error": 0.0010000000474974513,
+      "normalized_contact_recycle_distance": 0.05000000074505806,
+      "normalized_max_corrective_velocity": 3.0,
+      "normalized_max_linear_velocity": 3.4028234663852886e+38,
+      "normalized_prediction_distance": 0.0020000000949949026,
+      "num_internal_pgs_iterations": 20,
+      "num_internal_stabilization_iterations": 1,
+      "num_solver_iterations": 20,
+      "static_contact_softness": {
+        "damping_ratio": 10.0,
+        "natural_frequency": 60.0
+      },
+      "warmstart_coefficient": 1.0,
+      "warmstart_joints": false
+    },
+    "change": "Only friction_in_bias_pass false to true; no body pose, velocity, force, controller, budget or profile field changes",
+    "diagnosticOnly": true,
+    "freshReplayQualification": false,
+    "unchangedAuxiliaryBytes": true,
+    "unchangedSchemaAndModelBytes": true,
+    "worldBinaryDifferences": [
+      {
+        "after": 1,
+        "before": 0,
+        "offset": 98
+      }
+    ]
+  },
+  "baseline": {
+    "simulatedSeconds": 30.0,
+    "nativeSubsteps": 24000,
+    "allStandingPredicatesPassedEveryNativeSubstep": false,
+    "standingPredicateFailureSubsteps": {
+      "footDriftFromSuppliedAnchors": 6514
+    },
+    "maximumFootOriginDriftM": [
+      0.012789449654519558,
+      0.013631900772452354
+    ],
+    "loadedContactSpeedIntegralM": [
+      2.600447620153535e-05,
+      4.304694641767555e-05
+    ],
+    "minimumFootLoadsN": [
+      190.9762420654297,
+      197.54345703125
+    ],
+    "maximumBodyLinearMps": 0.007212450727820396,
+    "maximumBodyAngularRadps": 0.015186861157417297,
+    "teacherForecastUnchanged": true,
+    "slowDecisionCountUnchanged": true,
+    "slowDecisionArchiveLengthUnchanged": true,
+    "unobservedTerminalTailNative": 0
+  },
+  "candidate": {
+    "simulatedSeconds": 30.0,
+    "nativeSubsteps": 24000,
+    "allStandingPredicatesPassedEveryNativeSubstep": false,
+    "standingPredicateFailureSubsteps": {
+      "footDriftFromSuppliedAnchors": 22275
+    },
+    "maximumFootOriginDriftM": [
+      0.03010956570506096,
+      0.061095934361219406
+    ],
+    "loadedContactSpeedIntegralM": [
+      0.00459206251883189,
+      0.006138936147331147
+    ],
+    "minimumFootLoadsN": [
+      192.7326202392578,
+      190.86642456054688
+    ],
+    "maximumBodyLinearMps": 0.012522631324827671,
+    "maximumBodyAngularRadps": 0.02398056536912918,
+    "teacherForecastUnchanged": true,
+    "slowDecisionCountUnchanged": true,
+    "slowDecisionArchiveLengthUnchanged": true,
+    "unobservedTerminalTailNative": 0
+  },
+  "candidateFirstFailedObservedNative": 1726,
+  "candidateFirstFailedPhysicalSeconds": 8.3825,
+  "raw": {
+    "path": "outputs/getup-friction-bias-20261019/back-hold30/result.json",
+    "sha256": "4943d152b59911077505d89c5b20ebb4b5ab3a4802cce2e49c54bcaa727653be"
+  },
+  "explicitOverride": {
+    "path": "outputs/getup-friction-bias-20261019/back-hold30/explicit-solver-flag-override.json",
+    "sha256": "f61fabef8089af3d63e128cbceb0a43d342e0353e05ce5bcab1e473084713c91"
+  },
+  "probe": {
+    "path": "outputs/getup-friction-bias-20261019/friction-bias-continuation.rs",
+    "sha256": "8bfe57887b48beeb8665f86784c154e4e8c1732307fc0ee1afd3fd14068cbbef"
+  },
+  "interpretation": "The flag does not fix this recovered stance; foot-origin drift worsens from max13.63mm to61.10mm. Final relaxed contact-speed integral remains separately below20mm and is not a foot-origin stability proof. No blanket conclusion about all uses of friction_in_bias_pass follows.",
+  "next": "Existing dynamic/terminal-controller comparison, then pre-integration rounding-versus-relaxation diagnostic if it does not improve."
+}
