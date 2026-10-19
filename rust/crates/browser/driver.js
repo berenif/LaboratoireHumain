@@ -4,6 +4,39 @@ let active = null;
 const xyz = values => ({ x: values[0], y: values[1], z: values[2] });
 const changesTrial = action => action === 'Reset' || (typeof action === 'object'
   && ['Initialize', 'SelectStation', 'SetDifficulty'].some(key => key in action));
+
+// Adapter creation alone can succeed even when the browser cannot execute a
+// canvas render submission. Probe that path before Auto commits to WebGPU;
+// a buffer write or CPU-side draw counter does not establish render readiness.
+export async function verify_webgpu_render_queue(gpu, createCanvas, timeoutMs = 5000) {
+  let device, context, timer;
+  try {
+    if (!gpu) throw new Error('WebGPU is unavailable');
+    const adapter = await gpu.requestAdapter({ powerPreference: 'high-performance' });
+    if (!adapter) throw new Error('No WebGPU adapter is available');
+    device = await adapter.requestDevice({ label: 'WebGPU render availability probe' });
+    const canvas = createCanvas(); canvas.width = 1; canvas.height = 1;
+    context = canvas.getContext('webgpu');
+    if (!context) throw new Error('WebGPU canvas context is unavailable');
+    context.configure({ device, format: gpu.getPreferredCanvasFormat(), alphaMode: 'opaque' });
+    const encoder = device.createCommandEncoder({ label: 'WebGPU render availability probe' });
+    const pass = encoder.beginRenderPass({ colorAttachments: [{
+      view: context.getCurrentTexture().createView(), loadOp: 'clear', storeOp: 'store',
+      clearValue: { r: 0, g: 0, b: 0, a: 1 },
+    }] });
+    pass.end(); device.queue.submit([encoder.finish()]);
+    await Promise.race([
+      device.queue.onSubmittedWorkDone(),
+      new Promise((_, reject) => { timer = setTimeout(() => reject(new Error('WebGPU render submission timed out')), timeoutMs); }),
+    ]);
+  } catch (error) {
+    throw new Error('WebGPU render check failed: ' + error + '. Choose Auto or WebGL2.');
+  } finally {
+    clearTimeout(timer);
+    try { context?.unconfigure(); } catch {}
+    try { device?.destroy(); } catch {}
+  }
+}
 export function stop_bridge() { active?.dispose(); active = null; }
 export async function start_bridge() {
   for (let attempt = 0; attempt < 1000 && !window.lhBindings; attempt++) {
@@ -34,7 +67,7 @@ export async function start_bridge() {
   }
   const state = {
     disposed: false, renderer: null, canvas: null, changing: false, graphicsFault: false, graphicsError: '',
-    backendRequested: new URL(location.href).searchParams.get('renderer') || 'auto',
+    backendRequested: new URL(location.href).searchParams.get('renderer') || 'auto', backendFallbackReason: '',
     quality: 'auto', selected: '', heading: 0, floorEnabled: true, desiredFloorEnabled: true, desiredPaused: sourceStepLab,
     playground: { station: 'flat', difficulty: 'challenging' },
     visible: !document.hidden, visibleSent: true, last: null, pending: [], acknowledgements: new Map(),
@@ -62,7 +95,7 @@ export async function start_bridge() {
       halted: state.failed || state.graphicsFault,
       paused: state.desiredPaused, mode: state.last?.reply.mode || initialization.mode,
       station: state.playground.station, difficulty: state.playground.difficulty,
-      backend: graphics.backend || '', requestedRenderer: state.backendRequested, quality: state.quality, selected: state.selected,
+      backend: graphics.backend || '', requestedRenderer: state.backendRequested, rendererFallbackReason: state.backendFallbackReason, quality: state.quality, selected: state.selected,
       tick: snapshot?.stamp.tick || 0, generation: snapshot?.stamp.generation || 0,
       time: snapshot?.simulation_time_s || 0, fps: state.fps,
       realtimeRatio: state.activeWall > 0 ? (snapshot?.simulation_time_s || 0) / state.activeWall : 0,
@@ -297,14 +330,24 @@ export async function start_bridge() {
   }
   async function changeRenderer(requested) {
     if (state.changing || state.disposed) return;
-    state.changing = true; cancelPointer(); state.backendRequested = requested; notify();
-    state.renderer?.dispose(); state.renderer?.free(); state.renderer = null;
+    state.changing = true; cancelPointer(); state.backendRequested = requested; state.backendFallbackReason = ''; notify();
+    // Detach the retired canvas before destroying its device. Its asynchronous
+    // context-lost event must not overwrite the next renderer's startup result.
+    const retired = state.renderer;
+    state.renderer = null; state.canvas = null; host.replaceChildren();
+    retired?.dispose(); retired?.free();
     try {
       const first = requested === 'auto' ? (navigator.gpu ? 'webgpu' : 'webgl2') : requested;
-      try { state.renderer = await bindings.make_renderer(freshCanvas(), first); }
+      const makeRenderer = async backend => {
+        if (backend === 'webgpu') await verify_webgpu_render_queue(navigator.gpu, () => document.createElement('canvas'));
+        if (state.disposed) throw new Error('Renderer was disposed during initialization');
+        return bindings.make_renderer(freshCanvas(), backend);
+      };
+      try { state.renderer = await makeRenderer(first); }
       catch (error) {
         if (requested !== 'auto' || first !== 'webgpu') throw error;
-        state.renderer = await bindings.make_renderer(freshCanvas(), 'webgl2');
+        state.backendFallbackReason = String(error);
+        state.renderer = await makeRenderer('webgl2');
       }
       if (state.disposed) { state.renderer.dispose(); state.renderer.free(); state.renderer = null; return; }
       state.graphicsFault = false; state.graphicsError = ''; state.rendererChanges++;
@@ -345,6 +388,7 @@ export async function start_bridge() {
   listen(window, 'blur', () => cancelPointer());
   listen(host, 'webglcontextlost', event => {
     event.preventDefault();
+    if (event.target !== state.canvas) return;
     if (!state.changing && !state.disposed) { cancelPointer(); failGraphics('Graphics connection lost. Retry to rebuild the view.'); }
   }, true);
   listen(host, 'contextmenu', event => event.preventDefault());

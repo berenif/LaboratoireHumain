@@ -1,0 +1,190 @@
+{
+  "checkedAt": "2026-10-19T12:47:59.924Z",
+  "scope": "Actual desktop Linux Chromium headless Rust/WASM browser checks. Not Android/mobile, recovery, real-time performance or physical qualification.",
+  "runtime": {
+    "browser": "Debian chromium-headless-shell",
+    "version": "155.0.8059.79",
+    "playwright": "1.57.0",
+    "installation": "Workspace-only unpack of official Debian chromium-headless-shell and matching chromium-common; no system installation or security-policy change",
+    "provenance": "outputs/browser-capability-20261019/debian/download-provenance.json"
+  },
+  "webgl2": {
+    "passed": true,
+    "visuallyInspected": true,
+    "grabRegression": {
+      "report": "outputs/browser-capability-20261019/grab-with-common/browser-result.json",
+      "scenarios": [
+        "No grab",
+        "Actual hand pull, mouse release, natural continuation",
+        "Continued held-pull control",
+        "pointercancel",
+        "blur",
+        "Reset during active physical drag"
+      ],
+      "checks": [
+        "Every served asset matches the captured built artifact hash",
+        {
+          "name": "Identical trial initialization",
+          "allPoseAndVelocityComponentsExactlyEqual": true,
+          "maximumPositionDifferenceM": 0
+        },
+        {
+          "name": "Identical physical state before release",
+          "allPoseAndVelocityComponentsExactlyEqual": true,
+          "maximumPositionDifferenceM": 0
+        },
+        {
+          "name": "pointercancel: identical pre-cancellation physical state",
+          "allPoseAndVelocityComponentsExactlyEqual": true,
+          "maximumPositionDifferenceM": 0
+        },
+        {
+          "name": "pointercancel: physical continuation equals real mouse release despite stale held-button motion",
+          "allPoseAndVelocityComponentsExactlyEqual": true,
+          "maximumPositionDifferenceM": 0
+        },
+        {
+          "name": "blur: identical pre-cancellation physical state",
+          "allPoseAndVelocityComponentsExactlyEqual": true,
+          "maximumPositionDifferenceM": 0
+        },
+        {
+          "name": "blur: physical continuation equals real mouse release despite stale held-button motion",
+          "allPoseAndVelocityComponentsExactlyEqual": true,
+          "maximumPositionDifferenceM": 0
+        },
+        {
+          "name": "Reset restores clean physical initialization",
+          "allPoseAndVelocityComponentsExactlyEqual": true,
+          "maximumPositionDifferenceM": 0
+        },
+        {
+          "name": "Reset leaves no phantom physical force after stale held-button movement",
+          "allPoseAndVelocityComponentsExactlyEqual": true,
+          "maximumPositionDifferenceM": 0
+        },
+        "Cancellation matches an actual released physical trajectory; continuing held-pull control diverges. This tests physical behavior, not pointer metadata alone."
+      ],
+      "handDifferenceMAt0_1Seconds": 0.0015531075490448256,
+      "ungrabbedTorsoDifferenceMAt0_1Seconds": 0.00012500920143054115,
+      "browserErrors": [],
+      "httpErrors": []
+    },
+    "boundedUiStrikerSmoke": {
+      "passed": true,
+      "log": "outputs/browser-capability-20261019/smoke-run.log",
+      "ticks": 128,
+      "simulationSeconds": 3.2,
+      "nativeSubsteps": 2560,
+      "strikes": 1,
+      "segments": 25
+    }
+  },
+  "webgpu": {
+    "passed": false,
+    "counterChecksPassed": true,
+    "visualRenderVerified": false,
+    "adapter": "Google SwiftShader",
+    "observation": "At frame 30, canvas is blank despite successful adapter initialization and draw counters. No body, ground or striker is visible.",
+    "report": "outputs/browser-capability-20261019/webgpu-result.json",
+    "screenshot": "outputs/browser-capability-20261019/webgpu-zero-tick.png",
+    "causalIsolation": {
+      "rawCanvasClear": {
+        "passed": false,
+        "report": "outputs/browser-capability-20261019/webgpu-clear-baseline.json",
+        "failure": "GPUQueue.onSubmittedWorkDone rejects: A valid external Instance reference no longer exists; device becomes destroyed"
+      },
+      "bufferWriteOnly": {
+        "passed": true,
+        "report": "outputs/browser-capability-20261019/webgpu-queue-baseline.json",
+        "consequence": "A buffer-only capability check would fail to detect the unusable canvas path"
+      },
+      "onePixelDetachedCanvasClear": {
+        "passed": false,
+        "report": "outputs/browser-capability-20261019/webgpu-tiny-baseline.json"
+      },
+      "retainingGpuAdapterDeviceReferences": {
+        "fixedFailure": false,
+        "report": "outputs/browser-capability-20261019/webgpu-retained-result.json"
+      },
+      "inference": "Failure is in this browser execution/presentation path: a raw JavaScript canvas clear reproduces it without application, wgpu, camera, depth, uniform or shader code. No renderer-layout defect was established."
+    }
+  },
+  "recordings": {
+    "manual": {
+      "file": "outputs/browser-capability-20261019/grab-with-common/grab-manual-clock.mp4",
+      "durationSeconds": 20.44,
+      "resolution": "1280x900",
+      "fps": 25,
+      "retimed": false,
+      "note": "Native wall-time browser recording; explicit 4-tick/0.1-second manual simulation clock shown. Best complete regression clip."
+    },
+    "automatic": {
+      "file": "outputs/browser-capability-20261019/grab-with-common/grab-automatic-scheduler.mp4",
+      "durationSeconds": 4.32,
+      "resolution": "1280x900",
+      "fps": 25,
+      "retimed": false,
+      "observationWallSeconds": 2.127800000000745,
+      "integratedSimulationSeconds": 0.325,
+      "note": "Native automatic-scheduler browser recording; observed 0.325 simulated seconds over 2.128 wall seconds, not real-time performance admission."
+    }
+  },
+  "artifactSha256": {
+    "app-1df6634f608f8d80.css": "6f9e3128c49954cf4c159cd1b3cb0375ca4293e134429847288a5e6549a44271",
+    "index.html": "be6c61ef283c7e20483ff25961325a002e5fc2f1531f0875b6a377992dd02dc7",
+    "lh-browser-4643350ed5dec4be.js": "ec9a8317fc58b63cf4f6874c3ed03808743c61c19a9c485020f0dc64dfd9c4f5",
+    "lh-browser-4643350ed5dec4be_bg.wasm": "b72e126e7587859ae1891c1e892d1508b255d024967edaa662cf95d937934411",
+    "lh_worker.js": "f5ab14e78b52ad83577646105b61526484096924ec39f5a72d8ee039cb652da2",
+    "lh_worker_bg.wasm": "a99f8d8f09f3f1ccaf08631ad28aef5f88ed52e7a81924a4340054e4b155a441",
+    "sim-worker.js": "a3a2b18c222c045fc08bf19aff2e96b92f0bc18ad6023bcca660195054267996",
+    "snippets/lh-browser-575491a8d42d44d5/driver.js": "a4716367ab4cb48c3e35d0f7b5fa535129240ee99861579a06ccddbd41411ee5"
+  },
+  "relevantSourceSha256": {
+    "rust/crates/sim/src/grab.rs": "9747c91e7ab4668dd97e65653a9fb61ac3e10a50080c8bcb4dd94ef27113b45a",
+    "rust/crates/sim/src/lib.rs": "f9ebbc614cf92c7591b113d81a6844e0b7574988d50309aff02677f2c16bb4eb",
+    "rust/crates/browser/driver.js": "a4716367ab4cb48c3e35d0f7b5fa535129240ee99861579a06ccddbd41411ee5",
+    "scripts/verify-rust-grab.mjs": "b443200d1affd2e0b0a6c270575716413333d252748232c0ffeb25e624a67d9f"
+  },
+  "sourceIdentityLimit": "Source hashes are the regression script subset, not a full source-tree identity. Built asset hashes are authoritative for this run.",
+  "recipe": "outputs/browser-capability-20261019/README.md",
+  "updatedAt": "2026-10-19T13:03:25Z",
+  "rendererReadinessFix": {
+    "source": "rust/crates/browser/driver.js",
+    "sourceSha256": "ce62fb53d2ef6dc0aa3fef758cd33850f97e2da2a7abe6b26235c7281ac09d2f",
+    "behavior": [
+      "Before selecting WebGPU, clear a detached one-pixel WebGPU canvas and await completed GPU work with a five-second bound",
+      "Auto falls back to WebGL2 only when the render probe fails; capable WebGPU remains selectable",
+      "Explicit WebGPU reports a useful error with Auto/WebGL2 recovery choice",
+      "Detach retired canvas before destroying its device and ignore stale noncurrent-canvas context-loss events"
+    ],
+    "actualBrowserSwitchRegression": {
+      "passed": true,
+      "report": "outputs/browser-capability-20261019/readiness-browser-retired-canvas-fix/result.json",
+      "screenshotsVisuallyInspected": true,
+      "scenarios": [
+        "Auto fallback on unusable WebGPU",
+        "Explicit WebGPU error",
+        "Switch to WebGL2 after failure",
+        "Repeated Auto fallback",
+        "Reset after fallback",
+        "Auto with no WebGPU API"
+      ],
+      "physicalTick": 0,
+      "workerInstances": 1
+    },
+    "actualGrabRegressionAfterFix": {
+      "passed": true,
+      "report": "outputs/browser-capability-20261019/grab-after-readiness-fix/browser-result.json",
+      "samePhysicalCouplingAsBaseline": true
+    },
+    "artifactProvenanceLimit": "Renderer-only browser tests used a copy of the prior built WASM bundle with the exact updated driver source and regenerated matching driver SRI hash. They are not a new full Trunk/WASM build or verification of concurrent physics changes. A final rebuilt application must be retested.",
+    "portableJavaScriptTests": {
+      "passed": true,
+      "tests": 81,
+      "failures": 0,
+      "log": "outputs/browser-capability-20261019/npm-test-final.log",
+      "note": "Includes 13 readiness/renderer-selection tests, with deterministic mocked GPU success/failure/deadline and stale-canvas switching coverage; actual GPU/browser proof is recorded separately."
+    }
+  }
+}
