@@ -1,0 +1,809 @@
+{
+  "schema": 1,
+  "date": "2026-10-19",
+  "classification": "bounded-actual-WASM-one-genuine-strike-fall-and-second-recovery-pass",
+  "outcome": "PASS: fresh belly recovery and3s original-anchor hold, one genuine ordinary KeyP Strike, actual solver contact and confirmed fall, a genuinely new controller source/forecast, second original1s standing latch, then3s continuous original-anchor/counter hold. One worker/generation and no reset.",
+  "defaultPublicProfileChanged": false,
+  "productionRecoveryEnabled": false,
+  "releaseAccepted": false,
+  "qualification24Cases": false,
+  "allFourFreshBrowserPosesQualified": false,
+  "thirtySecondRecoveredHoldQualified": false,
+  "performanceQualified": false,
+  "actualAndroidQualified": false,
+  "nativeWasmTrajectoryEqualityClaimed": false,
+  "nativeQualification": {
+    "sourceCommit": "c5195b097ca177131c50777be04d69cf47428109",
+    "evidence": {
+      "path": "docs/evidence/getup-repeat-cycle-2026-10-19.json",
+      "sha256": "52efbb0ba5d238df785b764b013fb436c25038cf51c52524d1f549689c53ad54",
+      "bytes": 33323
+    },
+    "scope": "Separate native five actual-strike response chain: one genuine new fall/recovery and four correctly resisted contacts. Browser proof below is one fresh belly/one strike only. No five-recovery claim."
+  },
+  "sourceAndBuild": {
+    "baseCommit": "6eda23732cd4c06340a990b3df2cd7c65d3cafe3",
+    "sourceManifest": {
+      "path": "outputs/browser-capability-20261019/recovery-fixture/repeat-cycle/build/source-manifest.json",
+      "sha256": "d1c31324887aeb5e244495adf876b5099aeef8058cb3330b9a3cc60f42f54ae2",
+      "bytes": 48986
+    },
+    "sourceFreeze": {
+      "path": "outputs/getup-repeat-cycle-20261019/source-freeze-clock-guard.json",
+      "sha256": "90552916f7cb37d250201e2a745ccdf70742b3049bcc14e079277526894b31b6",
+      "bytes": 1718
+    },
+    "sourceSha256": {
+      "rust/crates/sim/Cargo.toml": "f2d0862ca4d19880a94f7aaf72865546bab0e9bf2c56491ca090f7a7b93cb7c6",
+      "rust/crates/sim/src/lib.rs": "3e80e99aa67811702f122ff95a918d5220af50b880243651575e3bd431dc8ddd",
+      "rust/crates/sim/src/motion.rs": "ffd8472cb7e5cd42b2228051a317a8136e69ba00f0d3fba3bbfdc37e0a08dcd8",
+      "rust/crates/sim/src/runtime.rs": "1daf2fc63c04a6cef8753aaca4d1f55f05510896d80266db6be27b29fce436f1",
+      "rust/crates/sim/src/getup/controller.rs": "000795c77ff99644a0735f0d3fb2c9b1e51ff8069eef15fedd76cd0e51f05b67",
+      "rust/crates/sim/src/getup/terminal_balance_tests.rs": "016b76176d5a14540f8588ac03034866e8f0bb127d88f8c6ba324622e5627bdc",
+      "rust/crates/sim/src/getup/repeat_cycle_tests.rs": "688af3de22d7c9a184a5e2f51854110657aa74a462f5df1d7109a511c57eaf32",
+      "docs/evidence/profiles/getup-800hz-3plus1-repeat-cycle-v1.json": "aaa415a19767c218a26b05bad277193cccba2a726b52dcd5aac0a5444afc39d6"
+    },
+    "all368FrozenSourceFilesReverified": true,
+    "sourceFileCount": 368,
+    "buildManifest": {
+      "path": "outputs/browser-capability-20261019/recovery-fixture/repeat-cycle/build/build-manifest.json",
+      "sha256": "4e1bf90b39800ca49afe8489e72e979863a2fc12e0b3be65ba444bddb29b4c05",
+      "bytes": 3246
+    },
+    "buildRecipe": {
+      "path": "outputs/browser-capability-20261019/recovery-fixture/repeat-cycle/build/build-worker.sh",
+      "sha256": "4989d08aadb5082fcc6431f10399ea5fa2a56926388ea85d915fa466b86f5020",
+      "bytes": 1273
+    },
+    "toolchain": "1.89.0",
+    "wasmBindgen": "0.2.108",
+    "rustFlags": [],
+    "extraFeatures": [
+      "lh-worker/root-translation-carry-experiment",
+      "lh-sim/getup-terminal-balance-experiment",
+      "lh-sim/standing-dynamics-experiment",
+      "lh-sim/unit-root-rotation-experiment",
+      "lh-sim/getup-repeat-cycle-experiment"
+    ],
+    "effectiveSimFeatures": [
+      "getup-repeat-cycle-experiment",
+      "getup-terminal-balance-experiment",
+      "root-translation-carry-experiment",
+      "standing-dynamics-experiment",
+      "unit-root-rotation-experiment"
+    ],
+    "simFingerprints": [
+      {
+        "path": "outputs/browser-capability-20261019/recovery-fixture/repeat-cycle/build/target/wasm32-unknown-unknown/release/.fingerprint/lh-sim-6fbfa15d888adc76/lib-lh_sim.json",
+        "sha256": "acb5bce53972f46fdd81cb7e90029a6016dca52922a56a85aeedff1f353353b2",
+        "features": "[\"getup-repeat-cycle-experiment\", \"getup-terminal-balance-experiment\", \"root-translation-carry-experiment\", \"standing-dynamics-experiment\", \"unit-root-rotation-experiment\"]",
+        "rustflags": []
+      }
+    ],
+    "baseReadyAndBumplessEnabled": false,
+    "workerWasmSha256": "5bd95a1b01f2d188343ae7ffd32945142593b05e9de4380cfb3bc68149fd00ad",
+    "rendererWasmSha256": "5895574d87e93f6a2eddec98662797b16c298c90f2ee8298f6d72917f4d1b07e",
+    "driverSha256": "4c6281e19c4540e3ba72a74a5b1514b5d1b9c58e56c1f8a2dbfb3adb4812d74e",
+    "originalTransportSha256": "a3a2b18c222c045fc08bf19aff2e96b92f0bc18ad6023bcca660195054267996",
+    "onlyUnadaptedAppChangesFromFixedRendererBase": [
+      "lh_worker.js",
+      "lh_worker_bg.wasm"
+    ],
+    "workerRustSha256": {
+      "rust/crates/worker/Cargo.toml": "8cc8c747a9479839dc8c080988f11f83be62cccd08799feb36299f41ef6b28b2",
+      "rust/crates/worker/src/lib.rs": "e23b855c03f314f8901b05bf26cfaa48a0a45027c3cfd7d569a0af3f17680213"
+    }
+  },
+  "explicitProfile": {
+    "document": {
+      "path": "docs/evidence/profiles/getup-800hz-3plus1-repeat-cycle-v1.json",
+      "sha256": "aaa415a19767c218a26b05bad277193cccba2a726b52dcd5aac0a5444afc39d6",
+      "bytes": 1319
+    },
+    "value": {
+      "id": "getup-800hz-3plus1-repeat-cycle-v1",
+      "dt_s": 0.00125,
+      "tick_substeps": 20,
+      "contact_friction_model": "coulomb",
+      "solver_iterations": 3,
+      "internal_pgs_iterations": 20,
+      "fall_internal_pgs_iterations": 32,
+      "additional_body_iterations": 1,
+      "allowed_linear_error_m": 0.001,
+      "prediction_distance_m": 0.002,
+      "motor_scale": 1,
+      "aggregate_motor_cap_nm": 920,
+      "angular_damping": 0,
+      "contact_skin_m": 0,
+      "max_ccd_substeps": 4,
+      "disable_solver_speed_cap": true,
+      "posture_stiffness_multiplier": 1,
+      "posture_damping_multiplier": 1,
+      "supported_tilt_gain": 2,
+      "supported_com_gain_rad_per_m": 5,
+      "supported_com_velocity_gain_s_rad_per_m": 5,
+      "supported_angular_velocity_gain_s": 2,
+      "grab_limits": {
+        "angular_frequency_rad_s": 16,
+        "target_speed_m_s": 1.5,
+        "target_acceleration_m_s2": 8,
+        "force_n": 180,
+        "torque_nm": 12,
+        "positive_power_w": 36
+      },
+      "reaching_iterations": 6,
+      "reaching_coordinate_increment_rad": 0.15,
+      "reaching_damping_m2": 0.01,
+      "corrective_steps_enabled": false,
+      "recovery_enabled": false,
+      "getup_policy_enabled": true,
+      "getup_solver_budget": "consistent-recovery-phase-v1",
+      "root_rotation_normalization": "unit-free-root-v1",
+      "getup_repeated_recovery": "completed-cycle-confirmed-fall-v1"
+    },
+    "actualTypedProfileEqualAtEveryPublication": true,
+    "selector": "getup_repeated_recovery=completed-cycle-confirmed-fall-v1",
+    "changesFromUnitRootBaseline": [
+      "id",
+      "getup_repeated_recovery"
+    ]
+  },
+  "isolatedTestRoute": {
+    "artifactPath": "/workspace/scratch/5def91918e35/mvp-landing/outputs/browser-capability-20261019/recovery-fixture/repeat-cycle/build/app-fixture-test-final",
+    "adapterManifest": {
+      "path": "outputs/browser-capability-20261019/recovery-fixture/repeat-cycle/build/app-fixture-test-final-fixture-adapter-manifest.json",
+      "sha256": "a84feda23437dde4bd09c7e40e8e45f0c7a6a49f5572c82235c06c342b39f382",
+      "bytes": 4747
+    },
+    "builder": {
+      "path": "docs/evidence/probes/make-repeat-cycle-fixture-app-2026-10-19.mjs",
+      "sha256": "1bcd248f74d77494ebc943fc63585085670a2cc4680528cb9246cd806742ab83",
+      "bytes": 14253
+    },
+    "recorder": {
+      "path": "docs/evidence/probes/record-getup-repeat-cycle-2026-10-19.mjs",
+      "sha256": "a2d90ab4431f63196a7fd13e8eedef1017e108e93988042ca79681349d66b3bc",
+      "bytes": 53524
+    },
+    "checkpointHelper": {
+      "path": "docs/evidence/probes/getup-checkpoint-envelope-2026-10-19.mjs",
+      "sha256": "d37282926f41c148c4214c2e985af7fb9ee4aa30a8dd66b861bc53edc8551c9e",
+      "bytes": 4102
+    },
+    "scope": "Copied worker only: typed fixture constructor, original preparation polling/trigger, once-only native0 carry activation with binaryworld/embeddedRuntime purity, current read-only standing metadata and epoch-aware diagnostic anchors. Only one original dedicated driver Strike is permitted after the initial earned+3s boundary. Renderer/driver/scheduler remain unchanged. No direct physical command, reset or state override.",
+    "physicalHz": 800,
+    "publicationHz": 40,
+    "ordinaryAutomaticAdvanceTicks": 1,
+    "generation": 1,
+    "workerInstances": 1,
+    "carryActivationCalls": 1,
+    "native0Purity": {
+      "proof": {
+        "path": "outputs/browser-capability-20261019/recovery-fixture/repeat-cycle/belly-one-ordinary-strike/activation-proof.json",
+        "sha256": "31eb4bb9c5a24bb9c6dcc7a984c4d03a15c5672be0560097496f750eebdb0c57",
+        "bytes": 25250
+      },
+      "before": {
+        "path": "outputs/browser-capability-20261019/recovery-fixture/repeat-cycle/belly-one-ordinary-strike/activation-before-checkpoint.bin",
+        "sha256": "12f20b5e6f86d2c478fdcb96a8507e8bae4da44d72cd9ee0cdaa4c6c3c1f614a",
+        "bytes": 584902
+      },
+      "after": {
+        "path": "outputs/browser-capability-20261019/recovery-fixture/repeat-cycle/belly-one-ordinary-strike/activation-after-checkpoint.bin",
+        "sha256": "204218608807af4c7b8f95db9ead9582ccc44d46dd21870602ce7dab55ebf85a",
+        "bytes": 585697
+      },
+      "binaryWorldAndEmbeddedRuntimeStringEqual": true,
+      "initialCarryRemainderBits": [
+        0,
+        0,
+        0
+      ]
+    },
+    "fixturePreparation": {
+      "kind": "belly",
+      "pollingNativeSubsteps": 80,
+      "triggerNativeSubstep": 400,
+      "triggerPoseVelocity325F32WordsUnchanged": true
+    },
+    "allFrozenAppHashes": {
+      "app-1df6634f608f8d80.css": "6f9e3128c49954cf4c159cd1b3cb0375ca4293e134429847288a5e6549a44271",
+      "index.html": "221d98d000ed295c49b44fb777e57d182caf3cc8e0e04083bbc8afb8ad206bce",
+      "lh-browser-d4ccffd02e73cb75.js": "ec9a8317fc58b63cf4f6874c3ed03808743c61c19a9c485020f0dc64dfd9c4f5",
+      "lh-browser-d4ccffd02e73cb75_bg.wasm": "5895574d87e93f6a2eddec98662797b16c298c90f2ee8298f6d72917f4d1b07e",
+      "lh_worker.js": "481b03a49c7bf2edcaf2449724afd5b3272542ccb827e7d09749cee9bc4421d9",
+      "lh_worker_bg.wasm": "5bd95a1b01f2d188343ae7ffd32945142593b05e9de4380cfb3bc68149fd00ad",
+      "sim-worker.js": "0b0bc7acb76c413058cf83f78a47e3a7e6012f6d6c675bdb315bda48932cd78d",
+      "snippets/lh-browser-575491a8d42d44d5/driver.js": "4c6281e19c4540e3ba72a74a5b1514b5d1b9c58e56c1f8a2dbfb3adb4812d74e"
+    }
+  },
+  "actualBrowserResult": {
+    "rawResult": {
+      "path": "outputs/browser-capability-20261019/recovery-fixture/repeat-cycle/belly-one-ordinary-strike/result.json",
+      "sha256": "b115c8264b64b7fc92939f28080c39318b5bb1d66f632fd4517d94b76749fa27",
+      "bytes": 56079553
+    },
+    "browserVersion": "155.0.8059.79",
+    "backend": "WebGL2",
+    "gpu": {
+      "device": 0,
+      "deviceType": "Cpu",
+      "driver": "",
+      "driverInfo": "WebGL 2.0 (OpenGL ES 3.0 Chromium)",
+      "name": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)",
+      "vendor": 0
+    },
+    "scope": "Desktop/headless Chromium WebGL2/SwiftShader. Read-only checkpoint pauses and native wall-time encoder; no real-time, mobile or continuous800Hz browser observer claim.",
+    "outcome": "contacted-confirmed-fall-new-source-recovery-plus3s-original-anchor-hold",
+    "initialFirstPass": {
+      "native": 4860,
+      "time": 6.075,
+      "startedAtS": 0.5,
+      "counters": {
+        "strikes": 0,
+        "falls": 1,
+        "recoveries": 1,
+        "steps": 0,
+        "upright_ticks": 1
+      }
+    },
+    "initialHold": {
+      "firstTimeS": 6.075,
+      "lastTimeS": 9.075,
+      "physicalSeconds": 2.999999999999999,
+      "firstNative": 4860,
+      "lastNative": 7260,
+      "distinct40HzObservations": 121,
+      "originalStableCounterS": [
+        1.01125,
+        4.01125
+      ],
+      "allOriginalAnchorAndPhysicalPredicatesPassed": true,
+      "originalStableFeet": [
+        {
+          "x": 0.22436495,
+          "y": 0.026823219,
+          "z": -0.53558433
+        },
+        {
+          "x": -0.037879504,
+          "y": 0.026892181,
+          "z": -0.61469865
+        }
+      ],
+      "maximumHistoricalFootOriginDriftM": [
+        3.2489653676748276e-05,
+        0.0001963011600309983
+      ],
+      "minimumHeadM": 1.4527323246002197,
+      "minimumTorsoUp": 0.999236524105072,
+      "maximumAllBodyLinearMps": 0.0060602352023124695,
+      "maximumAllBodyAngularRadps": 0.016871701925992966,
+      "nativeCounterContinuityAtPublicationBoundaries": true,
+      "every800HzNativeSampleIndependentlyRetained": false
+    },
+    "beforeStrike": {
+      "native": 7260,
+      "time": 9.075,
+      "tick": 363,
+      "sourceStartedAtS": 0.5,
+      "counters": {
+        "strikes": 0,
+        "falls": 1,
+        "recoveries": 1,
+        "steps": 0,
+        "upright_ticks": 121
+      },
+      "striker": {
+        "phase": "idle",
+        "body": {
+          "id": "striker",
+          "position": {
+            "x": 0,
+            "y": 3.45,
+            "z": 2.1
+          },
+          "rotation": {
+            "x": 0,
+            "y": 0,
+            "z": 0,
+            "w": 1
+          },
+          "linearVelocity": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "angularVelocity": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          }
+        },
+        "impactId": 0,
+        "available": true,
+        "lastImpactImpulseNs": 0
+      },
+      "originalStableFeet": [
+        {
+          "x": 0.22436495,
+          "y": 0.026823219,
+          "z": -0.53558433
+        },
+        {
+          "x": -0.037879504,
+          "y": 0.026892181,
+          "z": -0.61469865
+        }
+      ]
+    },
+    "physicalKeyboardInput": [
+      {
+        "type": "keydown",
+        "code": "KeyP",
+        "key": "p",
+        "repeat": false,
+        "isTrusted": true,
+        "atMs": 19498.39999999851,
+        "native": 7260,
+        "target": "simulation"
+      },
+      {
+        "type": "keyup",
+        "code": "KeyP",
+        "key": "p",
+        "repeat": false,
+        "isTrusted": true,
+        "atMs": 19522,
+        "native": 7260,
+        "target": "simulation"
+      }
+    ],
+    "ordinaryStampedCommand": {
+      "stamp": {
+        "schema": 4,
+        "generation": 1,
+        "sequence": 1,
+        "tick": 363
+      },
+      "action": "Strike"
+    },
+    "commandAcknowledgement": {
+      "stamp": {
+        "schema": 4,
+        "generation": 1,
+        "sequence": 1,
+        "tick": 363
+      },
+      "applied_tick": 363,
+      "rejected": null
+    },
+    "exactlyOnePhysicalInputAndNoReset": true,
+    "actualContact": {
+      "firstObservedNative": 7500,
+      "firstObservedTimeS": 9.375,
+      "actualImpactNativeInterval": {
+        "exclusiveLower": 7480,
+        "inclusiveUpper": 7500
+      },
+      "impact_id": 1,
+      "last_impulse_ns": 25.211096,
+      "striker": {
+        "phase": "retracting",
+        "body": {
+          "id": "striker",
+          "position": {
+            "x": 0.1400113,
+            "y": 1.2628757,
+            "z": -1.0801303
+          },
+          "rotation": {
+            "x": 0,
+            "y": -0.06438249,
+            "z": 0,
+            "w": 0.99792534
+          },
+          "linearVelocity": {
+            "x": 1.4134884,
+            "y": 9.536743e-05,
+            "z": -10.908985
+          },
+          "angularVelocity": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          }
+        },
+        "impactId": 1,
+        "available": false,
+        "lastImpactImpulseNs": 25.211096
+      },
+      "counters": {
+        "strikes": 1,
+        "falls": 1,
+        "recoveries": 1,
+        "steps": 0,
+        "upright_ticks": 133
+      },
+      "observationDeadlineNative": 31500
+    },
+    "confirmedNewFall": {
+      "native": 7980,
+      "time": 9.975,
+      "motion": "Falling",
+      "motionConfirmsFall": true,
+      "counterConfirmsFall": true,
+      "counters": {
+        "strikes": 1,
+        "falls": 2,
+        "recoveries": 1,
+        "steps": 0,
+        "upright_ticks": 156
+      }
+    },
+    "newSource": {
+      "observedNative": 8520,
+      "observedTimeS": 10.65,
+      "startedAtS": 10.6375,
+      "sourceNative": 8510,
+      "impactNative": 7486,
+      "recoveryDeadlineNative": 27486,
+      "metadata": {
+        "startedAtS": 10.6375,
+        "previousStartedAtS": null,
+        "observedControllerStartChanges": [
+          {
+            "from": null,
+            "to": 0.5,
+            "nativeSubsteps": 420
+          },
+          {
+            "from": 0.5,
+            "to": null,
+            "nativeSubsteps": 7980
+          },
+          {
+            "from": null,
+            "to": 10.6375,
+            "nativeSubsteps": 8520
+          }
+        ],
+        "ordinaryStrikeCommandsSeen": 1
+      },
+      "counters": {
+        "strikes": 1,
+        "falls": 2,
+        "recoveries": 1,
+        "steps": 0,
+        "upright_ticks": 156
+      },
+      "motion": "Recovering"
+    },
+    "trueImpactEpochNative": 7486,
+    "trueImpactEpochS": 9.3575,
+    "fixedRecoveryDeadlineNative": 27486,
+    "secondFirstPass": {
+      "native": 14480,
+      "time": 18.1,
+      "startedAtS": 10.6375,
+      "counters": {
+        "strikes": 1,
+        "falls": 2,
+        "recoveries": 2,
+        "steps": 0,
+        "upright_ticks": 157
+      }
+    },
+    "secondHold": {
+      "firstTimeS": 18.1,
+      "lastTimeS": 21.1,
+      "physicalSeconds": 3.0,
+      "firstNative": 14480,
+      "lastNative": 16880,
+      "distinct40HzObservations": 121,
+      "originalStableCounterS": [
+        1.00625,
+        4.00625
+      ],
+      "allOriginalAnchorAndPhysicalPredicatesPassed": true,
+      "originalStableFeet": [
+        {
+          "x": -0.6282693,
+          "y": 0.026958518,
+          "z": 0.36584756
+        },
+        {
+          "x": -0.48284358,
+          "y": 0.030556569,
+          "z": 0.20973481
+        }
+      ],
+      "maximumHistoricalFootOriginDriftM": [
+        8.491152402712032e-05,
+        0.005451260134577751
+      ],
+      "minimumHeadM": 1.4544470310211182,
+      "minimumTorsoUp": 0.9990239143371582,
+      "maximumAllBodyLinearMps": 0.024218915030360222,
+      "maximumAllBodyAngularRadps": 0.041508760303258896,
+      "nativeCounterContinuityAtPublicationBoundaries": true,
+      "every800HzNativeSampleIndependentlyRetained": false
+    },
+    "finalPhysicalStanding": {
+      "evaluatedAtNative": 16880,
+      "motion": "Upright",
+      "nativeStableStandingS": 4.00625,
+      "nativeStandingLatch": true,
+      "predicateSource": "actual-controller-original-stable_feet",
+      "originalAnchorPredicates": {
+        "angularMotion": true,
+        "bothFeetLoadedAndPersistent": true,
+        "captureInSupport": true,
+        "comInSupport": true,
+        "footDriftFromSuppliedAnchors": true,
+        "footLoadFraction": true,
+        "head": true,
+        "linearMotion": true,
+        "onlyFeet": true,
+        "torso": true
+      },
+      "originalStableFeet": [
+        {
+          "x": -0.6282693,
+          "y": 0.026958518,
+          "z": 0.36584756
+        },
+        {
+          "x": -0.48284358,
+          "y": 0.030556569,
+          "z": 0.20973481
+        }
+      ],
+      "currentRawPredicates": {
+        "angularMotion": true,
+        "bothFeetLoadedAndPersistent": true,
+        "captureInSupport": true,
+        "comInSupport": true,
+        "footDriftFromSuppliedAnchors": null,
+        "footLoadFraction": true,
+        "head": true,
+        "linearMotion": true,
+        "onlyFeet": true,
+        "torso": true
+      },
+      "failedPredicates": [],
+      "passed": true,
+      "continuousStandingAfterPerturbationClaim": false,
+      "note": "Current physical standing is evaluated separately. The30s resisted-contact observation is not a30s continuous standing qualification."
+    },
+    "finalTimeS": 21.1,
+    "finalCounters": {
+      "strikes": 1,
+      "falls": 2,
+      "recoveries": 2,
+      "steps": 0,
+      "upright_ticks": 277
+    },
+    "finalMotion": "Upright",
+    "finalNativeSubsteps": 16880,
+    "stopReason": "new-source-native-pass-plus3s-original-anchor-hold",
+    "standingViolations": [],
+    "errors": [],
+    "failure": null,
+    "checkpointCaptures": {
+      "initial-first-pass": {
+        "timeS": 6.075,
+        "nativeSubsteps": 4860,
+        "schema": 2,
+        "checkpoint": {
+          "path": "outputs/browser-capability-20261019/recovery-fixture/repeat-cycle/belly-one-ordinary-strike/initial-first-pass-checkpoint.bin",
+          "sha256": "9f10f3df67becd85f51b0d049783e25f38ec08850186b5d06a08b2a40f4685ca",
+          "bytes": 2882419
+        },
+        "controller": {
+          "path": "outputs/browser-capability-20261019/recovery-fixture/repeat-cycle/belly-one-ordinary-strike/initial-first-pass-controller.json",
+          "sha256": "2cc9840f8f9fa8c38d04df46a97defa0b1818cfc56b0d101c59db8a6e44970b5",
+          "bytes": 4127569
+        },
+        "rawAuxiliarySha256": "efcc530ef53518999a6b28084c5e0da9662ab814d53258380d411a3da98bb8f9",
+        "verification": {
+          "binaryWorldDeserialized": true,
+          "bytes": 2882419,
+          "controllerEqual": true,
+          "forecastSubsteps": 560,
+          "handlesEqual": true,
+          "jointStateEqual": true,
+          "nativeSubsteps": 4860,
+          "passed": true,
+          "physicsIntegrations": 0,
+          "rootIntegratorStateEqual": true,
+          "snapshotEqual": true
+        }
+      },
+      "before-strike": {
+        "timeS": 9.075,
+        "nativeSubsteps": 7260,
+        "schema": 2,
+        "checkpoint": {
+          "path": "outputs/browser-capability-20261019/recovery-fixture/repeat-cycle/belly-one-ordinary-strike/before-strike-checkpoint.bin",
+          "sha256": "e5f51ae30e40f8d8763c7697e602f4108c37e9cd27188f90504c5d470c307dd2",
+          "bytes": 2882469
+        },
+        "controller": {
+          "path": "outputs/browser-capability-20261019/recovery-fixture/repeat-cycle/belly-one-ordinary-strike/before-strike-controller.json",
+          "sha256": "db5d9b9104bf28a642e38a3b533dcc55f170f014ec7a5b43814c89b017eb8d66",
+          "bytes": 4127570
+        },
+        "rawAuxiliarySha256": "24b4fea0fc3cce91f19b7e0210cdf1187a70bbc68d3babb7e3dc14570253d446",
+        "verification": {
+          "binaryWorldDeserialized": true,
+          "bytes": 2882469,
+          "controllerEqual": true,
+          "forecastSubsteps": 560,
+          "handlesEqual": true,
+          "jointStateEqual": true,
+          "nativeSubsteps": 7260,
+          "passed": true,
+          "physicsIntegrations": 0,
+          "rootIntegratorStateEqual": true,
+          "snapshotEqual": true
+        }
+      },
+      "later-source-start": {
+        "timeS": 10.65,
+        "nativeSubsteps": 8520,
+        "schema": 2,
+        "checkpoint": {
+          "path": "outputs/browser-capability-20261019/recovery-fixture/repeat-cycle/belly-one-ordinary-strike/later-source-start-checkpoint.bin",
+          "sha256": "eb4ae298b54e679c79e46fb2365b8ac0fa239d408a2e147985b7932e0f73258f",
+          "bytes": 1188391
+        },
+        "controller": {
+          "path": "outputs/browser-capability-20261019/recovery-fixture/repeat-cycle/belly-one-ordinary-strike/later-source-start-controller.json",
+          "sha256": "365b93404eb11e67c41f510d9e3fdb50b6cb07adc110d1d0a06b5213681ecc1c",
+          "bytes": 1033351
+        },
+        "rawAuxiliarySha256": "32deb384101a12fd024157aa2c696e417de2ab48e409a298c3d7ad6189947e66",
+        "verification": {
+          "binaryWorldDeserialized": true,
+          "bytes": 1188391,
+          "controllerEqual": true,
+          "forecastSubsteps": 540,
+          "handlesEqual": true,
+          "jointStateEqual": true,
+          "nativeSubsteps": 8520,
+          "passed": true,
+          "physicsIntegrations": 0,
+          "rootIntegratorStateEqual": true,
+          "snapshotEqual": true
+        }
+      },
+      "second-first-pass": {
+        "timeS": 18.1,
+        "nativeSubsteps": 14480,
+        "schema": 2,
+        "checkpoint": {
+          "path": "outputs/browser-capability-20261019/recovery-fixture/repeat-cycle/belly-one-ordinary-strike/second-first-pass-checkpoint.bin",
+          "sha256": "428f9ff669bbbc7ea14db689e276457d81f9e9b09ef77b65858a6c6eaec7a252",
+          "bytes": 3769403
+        },
+        "controller": {
+          "path": "outputs/browser-capability-20261019/recovery-fixture/repeat-cycle/belly-one-ordinary-strike/second-first-pass-controller.json",
+          "sha256": "6d32672d121911cb600441779bd157d8932c82ac4c80a99cf4b9756064adcf38",
+          "bytes": 5753091
+        },
+        "rawAuxiliarySha256": "13e188fd13e0b20a181b12208909497bd8c5da5d5f56f6eef495eba177f2437c",
+        "verification": {
+          "binaryWorldDeserialized": true,
+          "bytes": 3769403,
+          "controllerEqual": true,
+          "forecastSubsteps": 540,
+          "handlesEqual": true,
+          "jointStateEqual": true,
+          "nativeSubsteps": 14480,
+          "passed": true,
+          "physicsIntegrations": 0,
+          "rootIntegratorStateEqual": true,
+          "snapshotEqual": true
+        }
+      },
+      "stop": {
+        "timeS": 21.1,
+        "nativeSubsteps": 16880,
+        "schema": 2,
+        "checkpoint": {
+          "path": "outputs/browser-capability-20261019/recovery-fixture/repeat-cycle/belly-one-ordinary-strike/stop-checkpoint.bin",
+          "sha256": "61c6af7539a6797304e80a2497ccabb3c33d813b91ae8bab8b12d6f7164f6709",
+          "bytes": 3769484
+        },
+        "controller": {
+          "path": "outputs/browser-capability-20261019/recovery-fixture/repeat-cycle/belly-one-ordinary-strike/stop-controller.json",
+          "sha256": "5a2a86814f7e6f66e96e496578f7ded8b53a021da7be7dc90e98c4b492e06627",
+          "bytes": 5753094
+        },
+        "rawAuxiliarySha256": "758d26dce28d781893682820ac8d561c98b21295996658689a8f1c8c3e152d99",
+        "verification": {
+          "binaryWorldDeserialized": true,
+          "bytes": 3769484,
+          "controllerEqual": true,
+          "forecastSubsteps": 540,
+          "handlesEqual": true,
+          "jointStateEqual": true,
+          "nativeSubsteps": 16880,
+          "passed": true,
+          "physicsIntegrations": 0,
+          "rootIntegratorStateEqual": true,
+          "snapshotEqual": true
+        }
+      }
+    },
+    "sameTargetInitialPrefix": {
+      "baseline": {
+        "path": "outputs/browser-capability-20261019/recovery-fixture/unit-root-rotation/belly-thirty/result.json",
+        "sha256": "b9ecf12c260f5f1b674ced7e741164e9a442a9262f40948806c597f6276cfea6",
+        "bytes": 69757674
+      },
+      "distinctSnapshots": 364,
+      "firstTimeS": 0,
+      "lastTimeS": 9.075,
+      "excludedFields": [
+        "diagnostics.controller_ms",
+        "diagnostics.update_ms"
+      ],
+      "remainingFullEmittedSnapshotJsonExactlyEqual": true,
+      "canonicalSortedJsonSha256": "2ddc96ecfe770a4d9878b857785ebe92ec97bf52001fc9d4b788735890427c37",
+      "scope": "Same-target initial physical/control/counter prefix only, before the intentional zero-tick Strike reply. Not hidden workspace, future-trajectory, or cross-target parity."
+    }
+  },
+  "media": {
+    "mp4": {
+      "path": "outputs/browser-capability-20261019/recovery-fixture/repeat-cycle/belly-one-ordinary-strike/repeat-cycle-native-wall-time.mp4",
+      "sha256": "ef233845327e8f2fa378fc16d0897f4c2194cf8271ab1dcb231ca2affbc3fba5",
+      "bytes": 1962030
+    },
+    "webm": {
+      "path": "outputs/browser-capability-20261019/recovery-fixture/repeat-cycle/belly-one-ordinary-strike/repeat-cycle-native-wall-time.webm",
+      "sha256": "6d9962c00501e4cbbc04092c18b3022974542da547d08069baed65e5547da2e2",
+      "bytes": 4172210
+    },
+    "durationS": 55.64,
+    "retimed": false,
+    "initial": {
+      "path": "outputs/browser-capability-20261019/recovery-fixture/repeat-cycle/belly-one-ordinary-strike/initial-fixed-belly-fixture.png",
+      "sha256": "316f8195c9d0b04195a4a304835752164d5092e82a24769fdfd931e786ff19bd",
+      "bytes": 194241
+    },
+    "beforeStrike": {
+      "path": "outputs/browser-capability-20261019/recovery-fixture/repeat-cycle/belly-one-ordinary-strike/before-one-ordinary-strike.png",
+      "sha256": "3fdd5c06cd685754eab2ae026b25dab3cdf5581d9f1108abb53390a005ab243d",
+      "bytes": 196364
+    },
+    "final": {
+      "path": "outputs/browser-capability-20261019/recovery-fixture/repeat-cycle/belly-one-ordinary-strike/bounded-repeat-cycle-stop.png",
+      "sha256": "c24a45d1374f859bd1cfeb99293828f661ac6612d8decf7b642ac39450604464",
+      "bytes": 196096
+    },
+    "contactSheet": {
+      "path": "outputs/browser-capability-20261019/recovery-fixture/repeat-cycle/belly-one-ordinary-strike/contact-sheet.png",
+      "sha256": "7b3bf7dbff1bb91a2e66ff8b6cfe430f6a0751c6ae7d65a206de1d14a5638ced",
+      "bytes": 519765
+    },
+    "strikeFrameReview": {
+      "path": "outputs/browser-capability-20261019/recovery-fixture/repeat-cycle/belly-one-ordinary-strike/strike-contact-review.png",
+      "sha256": "256658a8ba402a26347974319bc05bf6238a184356ee5057e444ee45c75439d7",
+      "bytes": 461039
+    },
+    "visualReview": "Viewed full contact sheet and4fps actual striker segment: full body, yellow apparatus contact, fall, second rise and final held stance are visible. Original native wall-time recording includes checkpoint request pauses."
+  },
+  "review": {
+    "independentSourceAdapterAndRecorderReview": "PASS: exactsource/assets, single-Strike guard/refusals, native0 activation, epoch/anchor/counter transitions, conservative no-source fallback, trueimpact deadline, trusted KeyP/stamp/ack and fault-safe export logic. Synthetic-only review before actual run.",
+    "independentActualEvidenceReview": "PASS: both121-sample holds, exactoriginal anchors/counter, all5checkpoint/controller/aux hashes and embeddedcontroller equality, sameprofile/app, exact7486impact epoch, onegen/worker/input and bounded prefix."
+  },
+  "limits": [
+    "This is one bounded fresh-belly repeated recovery; no five-fall cycle, resisted browser chain,30s recovered hold,24case sweep or release admission.",
+    "The current unit-root four-fresh-pose browser baseline still has a back25s deadline failure; earlier-back and newer-side successes are not pooled into one all-pose pass.",
+    "The3s postpass observations retain40Hz current-predicate/anchor checks and unchanged native stable-counter continuity. Every800Hz browser predicate row is not separately exported.",
+    "No performance qualification: video encoding and read-only checkpoint pauses are present. Android remains untested.",
+    "Production defaults, learned-recovery availability and prior inherited coverage/licensing gaps remain unchanged."
+  ]
+}
