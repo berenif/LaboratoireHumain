@@ -1,0 +1,132 @@
+{
+  "executionApproved": true,
+  "schemaPinned": true,
+  "draftReason": "One clone-only actual-WASM feasibility run approved by root/Astra plan, final25 pure native contracts and independent recorder/build audit GO. Real world remains at original trigger480; no retry or real recovery run.",
+  "experiment": "original-back-weak-teacher-feasibility-v1",
+  "exportMethod": "getup_teacher_feasibility",
+  "terminalNative": 480,
+  "nativeHz": 800,
+  "nativePerPublication": 20,
+  "preparationPollingNative": 80,
+  "profilePath": "docs/evidence/profiles/getup-800hz-3plus1-repeat-cycle-v1.json",
+  "profileSha256": "aaa415a19767c218a26b05bad277193cccba2a726b52dcd5aac0a5444afc39d6",
+  "features": [
+    "lh-worker/root-translation-carry-experiment",
+    "lh-sim/standing-dynamics-experiment",
+    "lh-sim/unit-root-rotation-experiment",
+    "lh-sim/getup-repeat-cycle-experiment",
+    "lh-worker/getup-terminal-tail-observer-experiment"
+  ],
+  "legacyArchivePath": "outputs/browser-capability-20261019/recovery-fixture/terminal-tail-ab/actual-back-pair/baseline/stop-controller.json",
+  "legacyArchiveSha256": "bb9984e50d7cec0d2a149901626953a9411444d3e267a443316493b35968feec",
+  "legacyPrefixFrames": 51,
+  "archiveFields": {
+    "typedInitialJson": "teacherInitialJson",
+    "typedFramesJson": "teacherFramesJson",
+    "frameCount": "teacherFrameCount"
+  },
+  "pendingArchiveContract": "Final native freeze uses authoritative direct typed-f32 teacherInitialJson and teacherFramesJson. Preserve every legacy field exactly; never round or strip fields.",
+  "receiptFields": [
+    "experiment",
+    "status",
+    "realNativeSubsteps",
+    "realPhysicsIntegrations",
+    "totalDecisionCeiling",
+    "nativePerDecision",
+    "teacherPower",
+    "teacherNativeDtS",
+    "decisionsStarted",
+    "forecastNativeIntegrations",
+    "lastDecisionNativeCount",
+    "originalHeightCutDecisions",
+    "requiredConsecutiveFullStandingSamples",
+    "maximumConsecutiveFullStandingSamples",
+    "teacherInitialJson",
+    "teacherFramesJson",
+    "teacherFrameCount",
+    "nativeAccountingValid",
+    "unobservedNativeTail",
+    "nativeTrace",
+    "endpoint",
+    "failure",
+    "referenceGenerated",
+    "canonicalAppended",
+    "realHandoffActivated",
+    "forecastCounters",
+    "archiveContactSemantics",
+    "standingIntervalSemantics"
+  ],
+  "statuses": [
+    "integrity-failure",
+    "feasible-full-standing-endpoint",
+    "no-full-standing-endpoint-within-ceiling"
+  ],
+  "nativeTraceFields": [
+    "forecastNativeSubstep",
+    "decisionIndex",
+    "withinDecisionNative",
+    "action",
+    "internalPgsIterations",
+    "current",
+    "footFloorClearanceM",
+    "standingPassed",
+    "prospectiveAnchorsUsed",
+    "prospectiveAnchorsForNext",
+    "consecutiveFullStandingSamples"
+  ],
+  "standingPredicateKeys": [
+    "head",
+    "torso",
+    "bothFeetLoadedAndPersistent",
+    "footLoadFraction",
+    "onlyFeet",
+    "comInSupport",
+    "captureInSupport",
+    "linearMotion",
+    "angularMotion",
+    "footDriftFromSuppliedAnchors"
+  ],
+  "endpointFields": [
+    "forecastNativeSubstep",
+    "decisionIndex",
+    "withinDecisionNative",
+    "consecutiveFullStandingSamples",
+    "anchors",
+    "current"
+  ],
+  "requiredConsecutiveFullStandingSamples": 80,
+  "totalDecisionCeiling": 250,
+  "maximumForecastNativeIntegrations": 5000,
+  "previewStartupWatchdogMs": 10000,
+  "browserStartupWatchdogMs": 60000,
+  "terminalWallWatchdogMs": 240000,
+  "readOnlyIdleWatchdogMs": 100000,
+  "pendingFreeze": {
+    "nativeSourceManifestSha256": "0639cd8381a346ad8c494a8896b2297b2becad6f80674021477868e460eee052",
+    "adapterSourceSha256": "de7136ffc46ea730520b9dd0f4a1a5414e0670773671f17cf6d4a713b73030db",
+    "recorderSourceSha256": "8bfd862cdb9e9d951bb8e8c7d3878b40a665b0418fb164bf140a79c703a0bbad",
+    "approvedAppManifestSha256": "6414bc914382feffe804f759575d585aacedca24d18637d16c219ca572bda057"
+  },
+  "effectiveSimulationFeatureNote": "The previous five Cargo CLI features are pinned exactly. getup-terminal-balance-experiment is implied by the worker observer feature; do not add a redundant CLI entry.",
+  "driverRequestWatchdogMs": 90000,
+  "driverRequestWatchdogNote": "Original unchanged driver bounds any GetUp request to90s; external wall watchdog is240s and never labels unchanged real480 as stalled physics. Preserve actual driver failure if clone-only export exceeds its bound.",
+  "fixedPresentationManifest": {
+    "path": "outputs/browser-capability-20261019/recovery-fixture/terminal-tail-ab/build/build-baseline-manifest.json",
+    "sha256": "a2680afe9a2ae23f46b71babbeed0bd601be51862096b50143123c07766d3f93",
+    "allowedChangedAssets": [
+      "sim-worker.js",
+      "lh_worker.js",
+      "lh_worker_bg.wasm"
+    ]
+  },
+  "teacherPower": 0.663420431,
+  "nativeSourceFreeze": {
+    "path": "outputs/getup-teacher-feasibility-20261019/source-freeze.json",
+    "sha256": "33f51beea233bd2a3caf05a622b56de8f2986fcc17e0a6f5adbe445fdf3bbcc0",
+    "base": "fb5bdb6170baa78d6df085d3dabe3fb5b98a49fb"
+  },
+  "checkpointHelper": {
+    "path": "docs/evidence/probes/getup-checkpoint-envelope-2026-10-19.mjs",
+    "sha256": "d37282926f41c148c4214c2e985af7fb9ee4aa30a8dd66b861bc53edc8551c9e"
+  }
+}

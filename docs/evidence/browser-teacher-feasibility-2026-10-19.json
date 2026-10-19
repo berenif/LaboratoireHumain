@@ -1,0 +1,518 @@
+{
+  "date": "2026-10-19",
+  "status": "valid negative forecast-only feasibility diagnostic; no full-standing endpoint within original total250 decisions",
+  "sourceCommit": "2903bfb03f9a2f0de198c36cb6e1acb21778dc9c",
+  "planning": "One teacher-only feasibility probe follows the Astra Codex plan. Extend only the original WEAK teacher past its inherited head-height stop, with total250 decisions, same power/cadence/world/profile and unchanged full-standing gates. No real following trial, suffix, handoff or parameter sweep follows this negative result.",
+  "nativeEvidence": {
+    "path": "docs/evidence/getup-teacher-feasibility-2026-10-19.json",
+    "sha256": "a27a169bfb2c5bc7e818fc265cd249ec82bf31f784a37e4d0a859a5acc9f7a46",
+    "sourceCommit": "2903bfb03f9a2f0de198c36cb6e1acb21778dc9c",
+    "receiptStatus": "final independent native/tool audit GO;25 focused pure tests"
+  },
+  "platform": "Official Debian Chromium headless155.0.8059.79, desktop WebGL2/SwiftShader. No actual Android/capable-WebGPU/performance qualification.",
+  "scope": {
+    "freshFixture": "BACK",
+    "completeProfilePath": "docs/evidence/profiles/getup-800hz-3plus1-repeat-cycle-v1.json",
+    "completeProfileSha256": "aaa415a19767c218a26b05bad277193cccba2a726b52dcd5aac0a5444afc39d6",
+    "nativeHz": 800,
+    "actorHz": 40,
+    "realPreparationIntegrations": 480,
+    "originalPreparationPollingNative": 80,
+    "naturalTriggerNative": 480,
+    "realFirstRecoveryNative481Executed": false,
+    "exportCalls": 1,
+    "forecastIntegrations": 5000,
+    "forecastDecisions": 250,
+    "totalDecisionCeiling": 250,
+    "forecastInternalPgsIterations": 32,
+    "teacherPowerF32": 0.6634204387664795,
+    "teacherNativeDtF32S": 0.0012499999720603228,
+    "originalHeightCutDecisions": 51,
+    "fullStandingRequiredConsecutiveNative": 80,
+    "newPolicySelectorOrCheckpointSchema": false,
+    "realReferenceApplication": false,
+    "realHandoff": false,
+    "realRecoveryDemonstrated": false,
+    "retryCount": 0,
+    "encoder": false,
+    "performanceClaim": false
+  },
+  "build": {
+    "sourceBase": "fb5bdb6170baa78d6df085d3dabe3fb5b98a49fb",
+    "sourceFreezePath": "outputs/getup-teacher-feasibility-20261019/source-freeze.json",
+    "sourceFreezeSha256": "33f51beea233bd2a3caf05a622b56de8f2986fcc17e0a6f5adbe445fdf3bbcc0",
+    "sourceManifest": {
+      "path": "outputs/browser-capability-20261019/recovery-fixture/teacher-feasibility/build/source-manifest.json",
+      "sha256": "0639cd8381a346ad8c494a8896b2297b2becad6f80674021477868e460eee052"
+    },
+    "frozenSourceFileCount": 371,
+    "overrides": [
+      {
+        "path": "rust/crates/sim/src/getup/controller.rs",
+        "sha256": "aef1522fc014d7c6b6be2be9f04d820f2b7d75bc3582e772cc5933d5ee3ae594",
+        "bytes": 52278
+      },
+      {
+        "path": "rust/crates/sim/src/runtime.rs",
+        "sha256": "46af0ec330581549bd76f5168f473d6728f55993c1c29d8de28ec59a270b5b46",
+        "bytes": 68385
+      },
+      {
+        "path": "rust/crates/worker/src/lib.rs",
+        "sha256": "b31e3e161adb26e760353f762ab7aee183b47d2a1c137c481f5a417a7b2bab5a",
+        "bytes": 17222
+      },
+      {
+        "path": "rust/crates/sim/src/getup/teacher_feasibility.rs",
+        "sha256": "c33d11e539668c9e5feecc7621c36400741192ac741ebdb0e026736e7b25cc16",
+        "bytes": 12999
+      },
+      {
+        "path": "rust/crates/sim/src/getup/teacher_feasibility_tests.rs",
+        "sha256": "8c9d10c2c025dc581d41ab6afcd32fbfb7b8a6749041cf63cd3cbe1080f6b311",
+        "bytes": 13217
+      }
+    ],
+    "cliFeatures": [
+      "lh-worker/root-translation-carry-experiment",
+      "lh-worker/getup-terminal-tail-observer-experiment",
+      "lh-sim/standing-dynamics-experiment",
+      "lh-sim/unit-root-rotation-experiment",
+      "lh-sim/getup-repeat-cycle-experiment"
+    ],
+    "effectiveSimFeatures": [
+      "getup-repeat-cycle-experiment",
+      "getup-terminal-balance-experiment",
+      "getup-terminal-tail-observer-experiment",
+      "root-translation-carry-experiment",
+      "standing-dynamics-experiment",
+      "unit-root-rotation-experiment"
+    ],
+    "noNewRuntimePolicyFeature": true,
+    "toolchain": "1.89.0",
+    "wasmBindgen": "0.2.108",
+    "rustFlags": [],
+    "workerWasmSha256": "cdd90a0ff74f163683fc84aec6616dd5761bb2c8f4294f041c71973c5cda447b",
+    "workerGlueSha256": "4ed81dc0ca68e43443b4db96730d52a827cad00a3c070195b293ed276452b84c",
+    "fixedMainWasmSha256": "5895574d87e93f6a2eddec98662797b16c298c90f2ee8298f6d72917f4d1b07e",
+    "fixedDriverSha256": "4c6281e19c4540e3ba72a74a5b1514b5d1b9c58e56c1f8a2dbfb3adb4812d74e",
+    "originalTransportSha256": "a3a2b18c222c045fc08bf19aff2e96b92f0bc18ad6023bcca660195054267996",
+    "unadaptedChangesFromFixedPresentation": [
+      "lh_worker.js",
+      "lh_worker_bg.wasm"
+    ],
+    "productionDefaultsChanged": false
+  },
+  "validity": {
+    "rawRecorderPassedMeans": "Observation checks passed; never standing/recovery qualification.",
+    "observationComplete": true,
+    "rawErrors": [],
+    "workerInstances": 1,
+    "workerFaults": [],
+    "observerFault": null,
+    "externalPhysicalInputs": [],
+    "terminalPublications": [
+      {
+        "native": 480,
+        "completedTicks": 1,
+        "requestId": 25,
+        "stamp": {
+          "schema": 4,
+          "generation": 1,
+          "sequence": 27,
+          "tick": 24
+        },
+        "motion": "Fallen",
+        "counters": {
+          "strikes": 0,
+          "falls": 1,
+          "recoveries": 0,
+          "steps": 0,
+          "upright_ticks": 0
+        }
+      },
+      {
+        "native": 480,
+        "completedTicks": 0,
+        "requestId": 26,
+        "stamp": {
+          "schema": 4,
+          "generation": 1,
+          "sequence": 28,
+          "tick": 24
+        },
+        "motion": "Fallen",
+        "counters": {
+          "strikes": 0,
+          "falls": 1,
+          "recoveries": 0,
+          "steps": 0,
+          "upright_ticks": 0
+        }
+      }
+    ],
+    "terminalLatch": "Set before export. One zero-tick duplicate480 reply returns before the requested ordinary advance(1); further positive advances/commands/resets/reinitialization are prohibited even after failure. Recorder pauses before original driver reply-pump.",
+    "originalTrigger": {
+      "native": 480,
+      "beforeNativeSubsteps": 480,
+      "afterNativeSubsteps": 480,
+      "physicalPoseVelocityBitsUnchanged": true,
+      "refreshCompletedTicks": 0
+    },
+    "native0CarryActivation": {
+      "schemaBefore": 1,
+      "schemaAfter": 2,
+      "modelBytesEqual": true,
+      "worldBytesEqual": true,
+      "embeddedRuntimeStringExactlyEqual": true,
+      "root": [
+        0,
+        0
+      ],
+      "algorithm": "f32-dq-f64-remainder-v1",
+      "initialRemainderBits": [
+        0,
+        0,
+        0
+      ],
+      "bytesBefore": 584899,
+      "bytesAfter": 585694
+    },
+    "native0ActivationIsSeparate": "The native0 schema1\u21922 proof is not used for export purity.",
+    "exportPurity": {
+      "exportCalls": 1,
+      "latchBeforeCall": true,
+      "realNativeBeforeAndAfter": 480,
+      "schemaBefore": 2,
+      "schemaAfter": 2,
+      "wholeCheckpointBytesEqual": true,
+      "checkpointBytes": 636142,
+      "controllerRawJsonExactlyEqual": true,
+      "fixtureRawJsonExactlyEqual": true,
+      "realControllerBeforeAndAfter": "Original construction-equivalent experimental-joint-balance-awaiting-fall, started_substep null, impact480, no teacher frames/reference/student decisions/stable history.",
+      "boundary": "Only the immutable export lies between raw checkpoints: no advance(0), verification or restore inside."
+    },
+    "teacherPrefix": {
+      "legacyArchiveSha256": "bb9984e50d7cec0d2a149901626953a9411444d3e267a443316493b35968feec",
+      "fullSeedExactlyEqual": true,
+      "first51CompleteFramesExactlyEqual": true,
+      "exactLegacyPrefixFrameCount": 51,
+      "full51ProofUnestablishedDueToEarlyIntegrityFailure": false,
+      "seedCanonicalJsonSha256": "e243ec0883173014d7a3983e63c0b3b49ddf473dd72f54b99008ad4015b013eb",
+      "first51CanonicalJsonSha256": "6805af7cde73af0a782a31d3b42dcd111c53de24a18ebcb96c43d827c9237273",
+      "fieldsOmitted": [],
+      "floatTolerance": null,
+      "contactsAndMotionPreserved": true,
+      "archiveSource": "direct typed-f32 JSON strings; full original legacy objects",
+      "currentLoadSource": "nativeTrace.current only; legacy TeacherFrame contacts are stale seed-cache evidence"
+    },
+    "freshForecastEvidence": "All5000 contiguous current diagnostics use solved loads/persistence/support geometry/current generalized motion, separately from legacy archived TeacherFrame contacts/motion. Every native uses32internal PGS and each21-action f32 vector matches its held20-native typed TeacherFrame action.",
+    "nativeAccountingValid": true,
+    "unobservedNativeTail": 0,
+    "prospectiveInterval": "Continuous from forecast native1 with fixed original10mm anchors within any qualifying interval; never reset/re-anchor at inherited height cut. Endpoint acceptance can occur only after the complete originalcut prefix. No interval actually seeds in this run.",
+    "watchdogs": "Original90s driver request bound unchanged; recorder wall bound240s. The one actual export completed without either failure."
+  },
+  "outcome": {
+    "status": "no-full-standing-endpoint-within-ceiling",
+    "forecastDecisions": 250,
+    "forecastNativeIntegrations": 5000,
+    "endpoint": null,
+    "failure": null,
+    "maximumConsecutiveFullStandingSamples": 0,
+    "prospectiveAnchorsEverEstablished": false,
+    "driftPredicateNullSamples": 5000,
+    "wholeForecast": {
+      "samples": 5000,
+      "nativeRange": [
+        1,
+        5000
+      ],
+      "truePredicateSamples": {
+        "angularMotion": 0,
+        "bothFeetLoadedAndPersistent": 318,
+        "captureInSupport": 0,
+        "comInSupport": 0,
+        "footDriftFromSuppliedAnchors": 0,
+        "footLoadFraction": 723,
+        "head": 573,
+        "linearMotion": 1,
+        "onlyFeet": 2622,
+        "torso": 182
+      },
+      "smallestAllBodyMaximumAngularRadps": {
+        "value": 1.5412967205047607,
+        "forecastNative": 1,
+        "limitingBody": "right_foot"
+      },
+      "smallestAllBodyMaximumLinearMps": {
+        "value": 0.13099630177021027,
+        "forecastNative": 1,
+        "limitingBody": "left_hand"
+      },
+      "solverSupportPointCountHistogram": {
+        "0": 2590,
+        "1": 1569,
+        "2": 631,
+        "3": 192,
+        "4": 18
+      }
+    },
+    "afterOriginalHeightCut": {
+      "samples": 3980,
+      "nativeRange": [
+        1021,
+        5000
+      ],
+      "truePredicateSamples": {
+        "angularMotion": 0,
+        "bothFeetLoadedAndPersistent": 270,
+        "captureInSupport": 0,
+        "comInSupport": 0,
+        "footDriftFromSuppliedAnchors": 0,
+        "footLoadFraction": 561,
+        "head": 546,
+        "linearMotion": 0,
+        "onlyFeet": 2219,
+        "torso": 182
+      },
+      "smallestAllBodyMaximumAngularRadps": {
+        "value": 1.5784404277801514,
+        "forecastNative": 3666,
+        "limitingBody": "@abdomen_z"
+      },
+      "smallestAllBodyMaximumLinearMps": {
+        "value": 0.4778369665145874,
+        "forecastNative": 3473,
+        "limitingBody": "left_shin"
+      },
+      "solverSupportPointCountHistogram": {
+        "0": 2108,
+        "1": 1170,
+        "2": 502,
+        "3": 182,
+        "4": 18
+      }
+    },
+    "unchangedStandingThresholds": {
+      "angularRadps": 0.6499999761581421,
+      "footDriftM": 0.01,
+      "linearMps": 0.2199999988079071,
+      "torsoUp": 0.9700000286102295
+    },
+    "footDriftInterpretation": "The drift predicate is null/unavailable in all5000 samples because no prospective anchors seed. This is untested drift, not observed foot-origin drift failure.",
+    "supportHullCaveat": "Existing COM/capture predicates can reject fewer than three hull vertices. Predicate counts are reported without claiming every false value proves a nondegenerate geometric departure; independent motion failures still preclude this endpoint.",
+    "strictEndpointRefusalIndependentOfHullCaveat": "Angular motion fails every one of5000 samples. After the inherited51-frame cut, linear motion also fails every one of3980 samples. These independent failures preclude the full endpoint regardless of COM/capture-hull interpretation.",
+    "conclusion": "Continued unchanged WEAK teaching does not reach the existing full-standing endpoint within the total250-decision ceiling. Angular-motion fails every sample, independently of COM/support-hull interpretation; linear-motion also fails every sample after the original51-frame cut. No prospective anchor interval is seeded, so the null drift predicate is unavailable/untested, not measured drift. No real recovery run or suffix/handoff is justified by this probe."
+  },
+  "tests": {
+    "pureTeacherFeasibilityContracts": 11,
+    "normalMotorObserverContracts": 9,
+    "solverBudgetContracts": 5,
+    "totalPassingExecutions": 25,
+    "failed": 0,
+    "ignored": 0,
+    "testsPerformedActorInference": false,
+    "testsPerformedPhysicsIntegration": false,
+    "coverage": "Focused pure contracts only, not full inventory. Actual physics/inference is the separately recorded5000-step forecast probe above.",
+    "independentPreExecutionAudit": "GO for source/build/profile/terminal latch/purity/prefix/schema and raw error retention. Corrected unexecuted structuredClone(function) extraction bug before the only run; endpoint/tail validation tightened before execution."
+  },
+  "nextStep": "The bounded continued-WEAK full-standing endpoint route is closed by this diagnostic. Await Astra/root planning; no real recovery run, suffix or new variant is inferred or executed.",
+  "reproduction": {
+    "cwd": "repository root",
+    "buildRecipe": "outputs/browser-capability-20261019/recovery-fixture/teacher-feasibility/build/build-worker.sh",
+    "maker": "node docs/evidence/probes/make-teacher-feasibility-fixture-app-2026-10-19.mjs <unadapted-app> <fresh-copied-fixture-app> <build-manifest> docs/evidence/profiles/getup-800hz-3plus1-repeat-cycle-v1.json",
+    "recordedRun": "RUST_BROWSER_EXECUTABLE=<official headless executable> RUST_BROWSER_NO_VIDEO=1 node docs/evidence/probes/record-getup-teacher-feasibility-2026-10-19.mjs <copied-fixture-app> <fresh-output>",
+    "executedContractSha256": "8cd6f8ac77a302345acbde85d07b37d6bb7ea61881ab89f91626c63c73e03bc2",
+    "readOnlyAnalysis": "node docs/evidence/probes/analyze-teacher-feasibility-2026-10-19.mjs",
+    "rawArtifacts": "Immutable local apps, frozen source, fingerprints, raw checkpoints/archive/trace files are retained under referenced output paths; large regenerable/raw files are not Git source.",
+    "committedProbeCopy": "Maker/recorder retain historical SOURCE-ONLY comments; exact executed contract has its approved execution gate true. The scripts and contract are copied byte-for-byte from the one execution."
+  },
+  "receipts": [
+    {
+      "path": "outputs/browser-capability-20261019/recovery-fixture/teacher-feasibility/build/source-manifest.json",
+      "bytes": 49429,
+      "sha256": "0639cd8381a346ad8c494a8896b2297b2becad6f80674021477868e460eee052"
+    },
+    {
+      "path": "outputs/getup-teacher-feasibility-20261019/source-freeze.json",
+      "bytes": 1329,
+      "sha256": "33f51beea233bd2a3caf05a622b56de8f2986fcc17e0a6f5adbe445fdf3bbcc0"
+    },
+    {
+      "path": "outputs/browser-capability-20261019/recovery-fixture/teacher-feasibility/build/build-teacher-manifest.json",
+      "bytes": 3436,
+      "sha256": "6414bc914382feffe804f759575d585aacedca24d18637d16c219ca572bda057"
+    },
+    {
+      "path": "outputs/browser-capability-20261019/recovery-fixture/teacher-feasibility/build/build-worker.sh",
+      "bytes": 1606,
+      "sha256": "7b9b7ba2cf56f0deb74f3b5915162c5cf6846aebdf7eb740a86e08d925e29008"
+    },
+    {
+      "path": "outputs/browser-capability-20261019/recovery-fixture/teacher-feasibility/build/build-teacher.log",
+      "bytes": 16631,
+      "sha256": "52b3cbb9533a10f79e9d99a5de918f420414ac4648bd3de777cf846229f5a2c5"
+    },
+    {
+      "path": "outputs/browser-capability-20261019/recovery-fixture/teacher-feasibility/build/app-teacher-fixture-fixture-adapter-manifest.json",
+      "bytes": 11210,
+      "sha256": "266b1aec92651bce1a160ca2726064c9757a8abab46227c1da62b9d804ef2d75"
+    },
+    {
+      "path": "outputs/browser-capability-20261019/recovery-fixture/teacher-feasibility/teacher-feasibility-analysis.json",
+      "bytes": 6538,
+      "sha256": "2a2d0cf840d7818db2b767a1be238372a6c77f6d53c69735208c7a5d29465b61"
+    },
+    {
+      "path": "outputs/browser-capability-20261019/recovery-fixture/teacher-feasibility/actual-back-teacher.log",
+      "bytes": 256,
+      "sha256": "b9d580c6441108fc633a35ab166486bdc1cdf0b91557ced19f08933f29a2a1e9"
+    },
+    {
+      "path": "outputs/getup-teacher-feasibility-20261019/pure-contracts.log",
+      "bytes": 4213,
+      "sha256": "261f24cd5446e3d04f9fe3a9bb8bcd33260e8dd3be0403f61300edb50c8ff339"
+    },
+    {
+      "path": "outputs/browser-capability-20261019/recovery-fixture/teacher-feasibility/actual-back-teacher/result.json",
+      "bytes": 48388,
+      "sha256": "a190ee336ba719bd323f26d6ee2c7e6dfcba3c21818be3cb20e4fd47630bf0e5"
+    },
+    {
+      "path": "outputs/browser-capability-20261019/recovery-fixture/teacher-feasibility/actual-back-teacher/browser-evidence.json",
+      "bytes": 95071,
+      "sha256": "8b81ddb7b81528506117d9875aa4229a22e60eb4e21c945a4737149c10eb7cc5"
+    },
+    {
+      "path": "outputs/browser-capability-20261019/recovery-fixture/teacher-feasibility/actual-back-teacher/browser-evidence-raw.json",
+      "bytes": 48699850,
+      "sha256": "5400f9d21a50f770510e4f7ec0a4d977b46587c3ea9de7b0b3ee0d498112029e"
+    },
+    {
+      "path": "outputs/browser-capability-20261019/recovery-fixture/teacher-feasibility/actual-back-teacher/activation-proof.json",
+      "bytes": 25206,
+      "sha256": "747c89f9966c1118f513916beac3052ac7d8e9a594b612eff67f1afc08f4f1cc"
+    },
+    {
+      "path": "outputs/browser-capability-20261019/recovery-fixture/teacher-feasibility/actual-back-teacher/activation-before-checkpoint.bin",
+      "bytes": 584899,
+      "sha256": "fc199a05f36471a8e8827de570cb407ffcccb87a444c66c641793eff27f904d9"
+    },
+    {
+      "path": "outputs/browser-capability-20261019/recovery-fixture/teacher-feasibility/actual-back-teacher/activation-after-checkpoint.bin",
+      "bytes": 585694,
+      "sha256": "0a22f0dd4af1950cbe5cfcc6f8b6dc168c1a3c936aca2784e2944138b98998b3"
+    },
+    {
+      "path": "outputs/browser-capability-20261019/recovery-fixture/teacher-feasibility/actual-back-teacher/teacher-export-before-checkpoint.bin",
+      "bytes": 636142,
+      "sha256": "c49445348d9e96543f283c8d9a318241c24ffbb0a03f938e2490bd2167ec6ed6"
+    },
+    {
+      "path": "outputs/browser-capability-20261019/recovery-fixture/teacher-feasibility/actual-back-teacher/teacher-export-after-checkpoint.bin",
+      "bytes": 636142,
+      "sha256": "c49445348d9e96543f283c8d9a318241c24ffbb0a03f938e2490bd2167ec6ed6"
+    },
+    {
+      "path": "outputs/browser-capability-20261019/recovery-fixture/teacher-feasibility/actual-back-teacher/before-controller.json",
+      "bytes": 1039,
+      "sha256": "bbe16ade65b23237b49d71f4f4cddf8fee22bbfa9d3f946edbc7d19edc15c8f5"
+    },
+    {
+      "path": "outputs/browser-capability-20261019/recovery-fixture/teacher-feasibility/actual-back-teacher/after-controller.json",
+      "bytes": 1039,
+      "sha256": "bbe16ade65b23237b49d71f4f4cddf8fee22bbfa9d3f946edbc7d19edc15c8f5"
+    },
+    {
+      "path": "outputs/browser-capability-20261019/recovery-fixture/teacher-feasibility/actual-back-teacher/before-fixture.json",
+      "bytes": 5404,
+      "sha256": "a273ce014f24604f5db778a38b2699e11f27a283ed3ffd2e81419e893578815e"
+    },
+    {
+      "path": "outputs/browser-capability-20261019/recovery-fixture/teacher-feasibility/actual-back-teacher/after-fixture.json",
+      "bytes": 5404,
+      "sha256": "a273ce014f24604f5db778a38b2699e11f27a283ed3ffd2e81419e893578815e"
+    },
+    {
+      "path": "outputs/browser-capability-20261019/recovery-fixture/teacher-feasibility/actual-back-teacher/teacher-feasibility-raw-export.json",
+      "bytes": 41433027,
+      "sha256": "526abe3694109b3844ba9894339cc3390b8a668a674f0ec5f57e4f7bb73e4d73"
+    },
+    {
+      "path": "outputs/browser-capability-20261019/recovery-fixture/teacher-feasibility/actual-back-teacher/teacher-native-trace.json",
+      "bytes": 59831313,
+      "sha256": "712b8eb85223f7c4d8157ab5ca40773c9be32840256eec4b047fda7afd0ff602"
+    },
+    {
+      "path": "outputs/browser-capability-20261019/recovery-fixture/teacher-feasibility/actual-back-teacher/teacher-initial-typed.json",
+      "bytes": 11161,
+      "sha256": "63ad5e5effcfeeb1125bcd6bccabeb4ce28066f6e69beea6ae3cfefcb2f39713"
+    },
+    {
+      "path": "outputs/browser-capability-20261019/recovery-fixture/teacher-feasibility/actual-back-teacher/teacher-frames-typed.json",
+      "bytes": 4190286,
+      "sha256": "be091e06c3ed5183361074c4a1d48ed3809e284ea91d4d9793f654ff7acd1c75"
+    },
+    {
+      "path": "docs/evidence/probes/make-teacher-feasibility-fixture-app-2026-10-19.mjs",
+      "bytes": 18839,
+      "sha256": "de7136ffc46ea730520b9dd0f4a1a5414e0670773671f17cf6d4a713b73030db"
+    },
+    {
+      "path": "docs/evidence/probes/record-getup-teacher-feasibility-2026-10-19.mjs",
+      "bytes": 30701,
+      "sha256": "8bfd862cdb9e9d951bb8e8c7d3878b40a665b0418fb164bf140a79c703a0bbad"
+    },
+    {
+      "path": "docs/evidence/probes/teacher-feasibility-contract-2026-10-19.json",
+      "bytes": 5189,
+      "sha256": "8cd6f8ac77a302345acbde85d07b37d6bb7ea61881ab89f91626c63c73e03bc2"
+    },
+    {
+      "path": "docs/evidence/probes/analyze-teacher-feasibility-2026-10-19.mjs",
+      "bytes": 7775,
+      "sha256": "3a55c943260cc9b432656fd236e63958d5714518df9b50aee31a53ab7ebfea99"
+    },
+    {
+      "path": "docs/evidence/probes/make-fixed-getup-fixture-app-2026-10-19.mjs",
+      "bytes": 10890,
+      "sha256": "732e818024ee351649cb0a8dcd901d48e7166a6d483ade4f2fd80933674e93c8"
+    },
+    {
+      "path": "docs/evidence/probes/getup-checkpoint-envelope-2026-10-19.mjs",
+      "bytes": 4102,
+      "sha256": "d37282926f41c148c4214c2e985af7fb9ee4aa30a8dd66b861bc53edc8551c9e"
+    },
+    {
+      "path": "outputs/browser-capability-20261019/recovery-fixture/teacher-feasibility/build/app-teacher-fixture/lh_worker_bg.wasm",
+      "bytes": 14856300,
+      "sha256": "cdd90a0ff74f163683fc84aec6616dd5761bb2c8f4294f041c71973c5cda447b"
+    },
+    {
+      "path": "outputs/browser-capability-20261019/recovery-fixture/teacher-feasibility/build/app-teacher-fixture/lh_worker.js",
+      "bytes": 25775,
+      "sha256": "4ed81dc0ca68e43443b4db96730d52a827cad00a3c070195b293ed276452b84c"
+    },
+    {
+      "path": "outputs/browser-capability-20261019/recovery-fixture/teacher-feasibility/build/app-teacher-fixture/sim-worker.js",
+      "bytes": 36229,
+      "sha256": "383cd06dbee8efcba82917c07ab54e75c9864877229bf735fbfffabe6a6f55b9"
+    },
+    {
+      "path": "outputs/browser-capability-20261019/recovery-fixture/terminal-tail-ab/actual-back-pair/baseline/stop-controller.json",
+      "bytes": 4083733,
+      "sha256": "bb9984e50d7cec0d2a149901626953a9411444d3e267a443316493b35968feec"
+    },
+    {
+      "path": "docs/evidence/profiles/getup-800hz-3plus1-repeat-cycle-v1.json",
+      "bytes": 1319,
+      "sha256": "aaa415a19767c218a26b05bad277193cccba2a726b52dcd5aac0a5444afc39d6"
+    },
+    {
+      "path": "docs/evidence/getup-teacher-feasibility-2026-10-19.json",
+      "bytes": 7814,
+      "sha256": "a27a169bfb2c5bc7e818fc265cd249ec82bf31f784a37e4d0a859a5acc9f7a46"
+    }
+  ],
+  "sourceCommitMeaning": "Canonical default-off forecast observer/tool source; five frozen source overrides are byte-identical to this commit. No new runtime policy or real recovery behavior is admitted."
+}
