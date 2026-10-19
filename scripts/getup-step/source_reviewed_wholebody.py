@@ -48,6 +48,8 @@ RUNTIME = ('source_reviewed_wholebody.py', 'wholebody_cycle_reference.py',
     'wholebody_horizon_solver.py', 'wholebody_settle_reference.py',
     'wholebody_static_admission.py', 'coupled_posture_kinematics.py',
     'coupled_posture_reference.py', 'phase_leg_reference.py', 'source_reference_context.py')
+POLISH_VERSION = 'free-com-flight-feasibility-polish-v1'
+REFINED_POLISH_VERSION = 'free-com-flight-collocation-refinement-v1'
 
 
 def source_path(name):
@@ -57,6 +59,294 @@ def source_path(name):
         if path.is_file():
             return path.resolve()
     raise ValueError('required source is missing: '+name)
+
+
+def verify_feasibility_stages(result, binding, proposal_path):
+    """Verify the explicit numerical repair, never relabel its failed parent."""
+    stage = result.get('twoStageFeasibilityRestoration')
+    if stage is None:
+        count = result.get('totalProducerOptimizerCalls')
+        if (result.get('version') not in (None, 'free-com-flight-horizon-once-v1')
+                or (count is not None and (type(count) is not int or count != 1))
+                or 'wholebody_feasibility_polish.py' in binding.get('frozenSourceHashes', {})):
+            raise ValueError('polish proposal lacks explicit two-stage restoration')
+        return
+    refined = result.get('version') == REFINED_POLISH_VERSION
+    if result.get('version') not in (POLISH_VERSION, REFINED_POLISH_VERSION) or stage.get('schema') != 1:
+        raise ValueError('unsupported two-stage feasibility profile')
+    if (result.get('collocationRefinement') is not None) != refined:
+        raise ValueError('collocation refinement profile was downgraded')
+    expected = dict(sourceCandidateMajorIteration=33,
+        sourceRecoveryOptimizerCalls=1, sourceRecoveryOptimizerSuccess=False,
+        sourceRecoveryTermination='compute-cap', polishOptimizerCalls=1,
+        numericalFeasibilityOnly=True, originalHardLimitsUnchanged=True,
+        originalFootPathAndClocksUnchanged=True, analyticConstraintJets=True,
+        goalOrWeightScan=False, nativeWorldConstructions=0, physicsIntegrations=0,
+        finalOriginalStrictMapRestored=True, declared123SampleCertificate=True)
+    if any(type(stage.get(k)) is not type(v) or stage.get(k) != v
+           for k, v in expected.items()):
+        raise ValueError('two-stage feasibility semantics differ')
+    history = result.get('exchangeHistory', [])
+    if not isinstance(history, list) or (history and not refined):
+        raise ValueError('exchange history requires the existing refinement profile')
+    if type(result.get('totalProducerOptimizerCalls')) is not int or result['totalProducerOptimizerCalls'] != (3+len(history) if refined else 2):
+        raise ValueError('two-stage optimizer counts differ')
+    files = binding.get('feasibilityStageFiles', {})
+    retained = {}
+    for role, key in (('recovery', 'sourceRecoverySHA256'),
+                      ('diagnostic', 'sourceDiagnosticSHA256')):
+        item = files.get(role, {})
+        name = item.get('filename')
+        if not isinstance(name, str) or Path(name).name != name:
+            raise ValueError('bound feasibility stage basename required')
+        path = Path(proposal_path).parent/name
+        if not path.is_file() or sha(path) != stage.get(key) or sha(path) != item.get('SHA256'):
+            raise ValueError('retained feasibility stage differs: '+role)
+        retained[role] = json.loads(path.read_text())
+    recovery = retained['recovery']; diagnostic = retained['diagnostic']
+    progress = recovery.get('progressRecords', [])
+    if (recovery.get('optimizerSuccess') is not False or recovery.get('optimizerCalls') != 1
+            or recovery.get('terminalState') != 'compute-cap' or not progress):
+        raise ValueError('failed recovery parent was relabeled')
+    if (result.get('inputBinding') != recovery.get('inputBinding')
+            or diagnostic.get('sourceInputBinding') != recovery.get('inputBinding')):
+        raise ValueError('feasibility stages changed the original problem input')
+    final = progress[-1]
+    source = np.asarray(stage.get('sourceCandidateIndependentKnotsRad'), dtype=float)
+    if (source.shape != (3, 9) or not np.isfinite(source).all()
+            or final.get('iteration') != 33 or final.get('candidateSHA256') != digest(source.tolist())
+            or stage.get('sourceCandidateSHA256') != final.get('candidateSHA256')
+            or not np.array_equal(source, np.asarray(final.get('unadmittedIndependentKnotsRad')))
+            or diagnostic.get('candidateSHA256') != final.get('candidateSHA256')
+            or diagnostic.get('recoveryResultSHA256') != stage['sourceRecoverySHA256']
+            or diagnostic.get('realOptimizerCalls') != 0):
+        raise ValueError('feasibility polish did not use exact final major iterate')
+    final_knots = np.asarray(result.get('independentKnotsRad'), dtype=float)
+    correction = float(np.max(abs(final_knots-source)))
+    declared_correction = stage.get('maximumCorrectionRad')
+    if (type(declared_correction) not in (int, float) or not math.isfinite(declared_correction)
+            or not math.isfinite(correction) or abs(correction-declared_correction) > 1e-14):
+        raise ValueError('feasibility correction receipt differs')
+    samples = result.get('analyticSamples', [])
+    expected_nodes = [(phase, f) for phase in PHASES for f in ANALYTIC_FRACTIONS]
+    if (len(samples) != len(expected_nodes) or any(row.get('accepted') is not True
+            or row.get('phase') != phase or abs(row.get('fraction', math.inf)-f) > 1e-14
+            for row, (phase, f) in zip(samples, expected_nodes))):
+        raise ValueError('complete original strict 123-sample certificate required')
+    if refined:
+        verify_collocation_refinement(result, binding, proposal_path, stage)
+
+
+def verify_collocation_refinement(result, binding, proposal_path, original_stage):
+    """One causal exchange, with failed sparse-grid proof and dense recheck."""
+    refinement = result['collocationRefinement']
+    expected = dict(schema=1, selectionPolicy='worst-failing-bracket-extremum-per-phase-v1',
+        anchorUnchanged=True, onlyOneRefinement=True,
+        intermediateFailedPolishOptimizerCalls=1, refinementOptimizerCalls=1)
+    if any(type(refinement.get(k)) is not type(v) or refinement.get(k) != v for k, v in expected.items()):
+        raise ValueError('collocation refinement semantics differ')
+    verify_exchange_history(result, proposal_path, original_stage)
+    item = binding.get('feasibilityStageFiles', {}).get('failedPolish', {})
+    name = item.get('filename')
+    if not isinstance(name, str) or Path(name).name != name:
+        raise ValueError('retained failed-polish basename required')
+    path = Path(proposal_path).parent/name
+    if (not path.is_file() or sha(path) != refinement.get('sourceFailedPolishSHA256')
+            or sha(path) != item.get('SHA256')):
+        raise ValueError('retained failed polish differs')
+    parent = json.loads(path.read_text())
+    if (parent.get('version') != POLISH_VERSION or parent.get('optimizerSuccess') is not True
+            or parent.get('accepted') is not False or parent.get('optimizerCalls') != 1
+            or parent.get('inputBinding') != result.get('inputBinding')
+            or parent.get('twoStageFeasibilityRestoration', {}).get('sourceCandidateSHA256')
+               != original_stage['sourceCandidateSHA256']):
+        raise ValueError('collocation failed parent or anchor differs')
+    failures = parent.get('analyticFailures', [])
+    added = refinement.get('addedConstraintNodes', [])
+    brackets = refinement.get('sourceBrackets', [])
+    extrema_results = refinement.get('bracketExtremaResults', [])
+    if len(added) != 3 or len(brackets) != 3 or len(extrema_results) != 3:
+        raise ValueError('exactly three causal constraint nodes required')
+    candidate = parent.get('unadmittedFinalIndependentKnotsRad')
+    if (refinement.get('selectionInputCandidateSHA256') != digest(candidate)
+            or parent.get('finalCandidateSHA256') != digest(candidate)):
+        raise ValueError('source-bracket selection changed failed final candidate')
+    for phase, node, bracket, answer in zip(PHASES, added, brackets, extrema_results):
+        rows = [r for r in failures if r.get('phase') == phase]
+        if not rows:
+            raise ValueError('causal failed phase is absent')
+        worst = (max(rows, key=lambda r:r['commandAccelerationMps2']) if phase == 'lift'
+                 else min(rows, key=lambda r:r['supportCaptureMarginM']))
+        source_rows = [r for r in parent.get('analyticSamples', []) if r.get('phase') == phase]
+        index = next((i for i, row in enumerate(source_rows) if abs(row['fraction']-worst['fraction']) < 1e-14), -1)
+        if not 0 < index < len(source_rows)-1:
+            raise ValueError('source worst sample has no retained neighboring bracket')
+        expected_bracket = [source_rows[i]['fraction'] for i in (index-1, index, index+1)]
+        given = bracket.get('bracketFractions', [])
+        fraction = answer.get('fraction', math.nan)
+        minimum = answer.get('minimumSlack', math.nan)
+        source_durations = parent.get('path', {}).get('phaseDurationsS', [])
+        duration = source_durations[PHASES.index(phase)] if len(source_durations) == 3 else math.nan
+        if (bracket.get('phase') != phase or len(given) != 3
+                or max(abs(np.asarray(given)-expected_bracket)) > 1e-14
+                or abs(bracket.get('worstSampleFraction', math.inf)-worst['fraction']) > 1e-14
+                or answer.get('phase') != phase or answer.get('success') is not True
+                or not math.isfinite(fraction) or not expected_bracket[0] <= fraction <= expected_bracket[2]
+                or not math.isfinite(minimum) or minimum >= 0.
+                or type(answer.get('evaluations')) is not int or answer['evaluations'] < 1
+                or not math.isfinite(duration) or not math.isfinite(answer.get('timeS', math.nan))
+                or abs(answer['timeS']-fraction*duration) > 1e-10
+                or node.get('phase') != phase or abs(node.get('fraction', math.inf)-fraction) > 1e-14):
+            raise ValueError('constraint node is not the retained causal bracket extremum')
+    selection_file = binding.get('feasibilityStageFiles', {}).get('sourceSelection', {})
+    selection_name = selection_file.get('filename')
+    if not isinstance(selection_name, str) or Path(selection_name).name != selection_name:
+        raise ValueError('bound source-selection basename required')
+    selection_path = Path(proposal_path).parent/selection_name
+    if (not selection_path.is_file() or sha(selection_path) != refinement.get('selectionReceiptSHA256')
+            or sha(selection_path) != selection_file.get('SHA256')):
+        raise ValueError('source-selection receipt differs')
+    selection = json.loads(selection_path.read_text())
+    if (selection.get('realTrajectoryOptimizerCalls') != 0 or selection.get('scalarSearchCalls') != 3
+            or selection.get('passed') is not True or selection.get('originalStrictMapUsed') is not True
+            or any(selection.get(k) != refinement.get(k) for k in ('sourceFailedPolishSHA256',
+                'selectionInputCandidateSHA256', 'sourceBrackets', 'bracketExtremaResults'))):
+        raise ValueError('source-selection provenance differs')
+    selection_rows = selection.get('strictSourceEvaluationRows', [])
+    if (sum(a['evaluations'] for a in extrema_results) != len(selection_rows)
+            or any(r.get('originalStrictMapUsed') is not True
+                or not math.isfinite(r.get('minimumSlack', math.nan))
+                or not 0. <= r.get('maximumPoseResidual', math.inf) < 2e-11 for r in selection_rows)):
+        raise ValueError('source-selection numeric evaluation evidence differs')
+    for answer in extrema_results:
+        if not any(r.get('phase') == answer['phase']
+                and abs(r.get('fraction', math.inf)-answer['fraction']) < 1e-14
+                and abs(r['minimumSlack']-answer['minimumSlack']) < 1e-14 for r in selection_rows):
+            raise ValueError('selected source extremum has no retained strict evaluation')
+    grid = result.get('denseCommandGridCertificate', {})
+    if (grid.get('passed') is not True or grid.get('originalStrictMapUsed') is not True
+            or not 0. < grid.get('maximumStepS', math.inf) <= .005+1e-14):
+        raise ValueError('strict 200Hz command-grid certificate required')
+    rows = result.get('denseCommandSamples', [])
+    durations = result.get('path', {}).get('phaseDurationsS', [])
+    parent_durations = parent.get('path', {}).get('phaseDurationsS', [])
+    entry_elapsed = result.get('inputBinding', {}).get('entryLiftElapsedS')
+    if (type(entry_elapsed) not in (float, int) or not math.isfinite(entry_elapsed)
+            or not 0. <= entry_elapsed < .8 or len(durations) != 3
+            or not np.array_equal(np.asarray(durations), np.asarray(parent_durations))
+            or max(abs(np.asarray(durations)-[.8-entry_elapsed, 1.2, 1.])) > 1e-14):
+        raise ValueError('dense command-grid changed original phase clocks')
+    if grid.get('sampleCount') != len(rows) or any(r.get('accepted') is not True for r in rows):
+        raise ValueError('dense command-grid samples differ')
+    for phase, duration in zip(PHASES, durations):
+        fractions = [r.get('fraction', math.nan) for r in rows if r.get('phase') == phase]
+        if (not math.isfinite(duration) or duration <= 0. or len(fractions) < 2
+                or fractions[0] != 0. or fractions[-1] != 1.
+                or any(not math.isfinite(f) for f in fractions)
+                or any(not 0. < (b-a)*duration <= .005+1e-12 for a, b in zip(fractions, fractions[1:]))):
+            raise ValueError('dense command-grid phase has a gap or wrong endpoints')
+    extrema = result.get('extremaVerification', {})
+    if (extrema.get('passed') is not True or extrema.get('wholePathProven') is not False
+            or extrema.get('originalStrictMapUsed') is not True):
+        raise ValueError('bounded numerical extrema check is absent or overclaimed')
+    face_count = len(result['inputBinding'].get('support', {}).get('equations', []))
+    metrics = ['COMSpeed', 'COMAcceleration', *['COMFace'+str(i) for i in range(face_count)],
+        *['captureFace'+str(i) for i in range(face_count)]]
+    coverage = extrema.get('phaseMetricCoverage', [])
+    searches = result.get('timeExtremaSearches', [])
+    evaluated = result.get('extremaCommandSamples', [])
+    if (face_count < 3 or extrema.get('metrics') != metrics
+            or len(coverage) != len(PHASES)*len(metrics)
+            or extrema.get('searchCount') != len(searches)
+            or extrema.get('evaluatedSampleCount') != len(evaluated)):
+        raise ValueError('numeric extrema coverage/count evidence is incomplete')
+    expected_searches = []
+    for item, (phase, metric) in zip(coverage, [(p, m) for p in PHASES for m in metrics]):
+        phase_rows = [r for r in rows if r['phase'] == phase]
+        values = [r.get('timeExtremaScalarSlacks', {}).get(metric, math.nan) for r in phase_rows]
+        brackets = [j for j in range(1, len(values)-1) if values[j] < values[j-1] and values[j] <= values[j+1]]
+        if (item.get('phase') != phase or item.get('metric') != metric
+                or item.get('allDenseValuesAvailable') is not True
+                or not all(math.isfinite(v) and v >= -1e-10 for v in values)
+                or not math.isfinite(item.get('minimumDenseSlack', math.nan))
+                or abs(item['minimumDenseSlack']-min(values)) > 1e-14
+                or item.get('bracketCount') != len(brackets)):
+            raise ValueError('numeric extrema dense minima or brackets differ')
+        duration = durations[PHASES.index(phase)]
+        expected_searches.extend((phase, metric,
+            [phase_rows[k]['fraction']*duration for k in (j-1, j, j+1)]) for j in brackets)
+    if len(searches) != len(expected_searches):
+        raise ValueError('numeric extrema searches omit a dense minimum bracket')
+    for search, (phase, metric, bracket) in zip(searches, expected_searches):
+        given = search.get('bracketS', [])
+        minimum = search.get('minimumSlack', math.nan)
+        if (search.get('phase') != phase or search.get('metric') != metric or search.get('success') is not True
+                or len(given) != 3 or max(abs(np.asarray(given)-bracket)) > 1e-12
+                or not math.isfinite(minimum) or minimum < -1e-10
+                or not bracket[0] <= search.get('timeS', math.inf) <= bracket[2]
+                or type(search.get('evaluations')) is not int or search['evaluations'] < 1):
+            raise ValueError('bounded numerical extrema search failed or differs')
+    if (sum(s['evaluations'] for s in searches) != len(evaluated)
+            or any(r.get('accepted') is not True or r.get('originalStrictMapEvaluationPassed') is not True
+                or any(not math.isfinite(r.get('timeExtremaScalarSlacks', {}).get(m, math.nan))
+                    or r['timeExtremaScalarSlacks'][m] < -1e-10 for m in metrics) for r in evaluated)):
+        raise ValueError('strict numeric extrema evaluation evidence differs')
+
+
+def verify_exchange_history(result, proposal_path, original_stage):
+    """Reuse one profile for deterministic, source-bound constraint exchange."""
+    history = result.get('exchangeHistory', [])
+    if not history:
+        if result.get('globalTranslateSupportEnvelopeCoverage') is not None:
+            raise ValueError('global face coverage lacks its deterministic exchange parent')
+        return
+    last_knots = None
+    for index, entry in enumerate(history):
+        name = entry.get('filename')
+        if not isinstance(name, str) or Path(name).name != name:
+            raise ValueError('bound exchange-parent basename required')
+        path = Path(proposal_path).parent/name
+        if not path.is_file() or sha(path) != entry.get('SHA256'):
+            raise ValueError('exchange parent receipt differs')
+        parent = json.loads(path.read_text())
+        last_knots = np.asarray(parent.get('unadmittedFinalIndependentKnotsRad'), dtype=float)
+        if (last_knots.shape != (3, 9) or not np.isfinite(last_knots).all()
+                or parent.get('version') != REFINED_POLISH_VERSION or parent.get('accepted') is not False
+                or parent.get('optimizerSuccess') is not True or parent.get('optimizerCalls') != 1
+                or parent.get('totalProducerOptimizerCalls') != 3+index
+                or parent.get('exchangeHistory', []) != history[:index]
+                or parent.get('inputBinding') != result.get('inputBinding')
+                or parent.get('finalCandidateSHA256') != digest(last_knots.tolist())
+                or entry.get('finalCandidateSHA256') != digest(last_knots.tolist())
+                or entry.get('initialContinuationCandidateSHA256') != digest(last_knots.tolist())
+                or entry.get('objectiveAnchorSHA256') != original_stage['sourceCandidateSHA256']
+                or entry.get('optimizerCalls') != 1 or entry.get('hardLimitsUnchanged') is not True):
+            raise ValueError('exchange changed a failed parent, continuation or objective')
+    continuation = np.asarray(result.get('initialContinuationIndependentKnotsRad'), dtype=float)
+    if (not np.array_equal(continuation, last_knots)
+            or result.get('initialContinuationCandidateSHA256') != digest(last_knots.tolist())):
+        raise ValueError('exchange did not continue the exact linked final candidate')
+    coverage = result.get('globalTranslateSupportEnvelopeCoverage', {})
+    equations = result['inputBinding'].get('support', {}).get('equations', [])
+    count = len(equations); intervals = [[0., .25], [.25, .5], [.5, .75], [.75, 1.]]
+    expected = {(kind, face, lo, hi) for kind in ('COM', 'capture')
+        for face in range(count) for lo, hi in intervals}
+    records = coverage.get('constraints', [])
+    actual = {(r.get('pointKind'), r.get('faceIndex'), *r.get('intervalFractions', [])) for r in records}
+    original_rows = 13*(50+2*count)
+    if (coverage.get('schema') != 1 or coverage.get('phase') != 'translate'
+            or coverage.get('sourceSupportEquations') != equations
+            or coverage.get('sourceSupportEquationsSHA256') != digest(equations)
+            or coverage.get('faceCount') != count or coverage.get('pointKinds') != ['COM', 'capture']
+            or coverage.get('originalSupportReserveM') != .003
+            or coverage.get('intervalsFractions') != intervals
+            or coverage.get('closedIntervalEndpointsCompared') is not True
+            or coverage.get('wholePathProven') is not False
+            or len(records) != len(expected) or actual != expected
+            or {r.get('rowIndex') for r in records} != set(range(original_rows+2, original_rows+2+len(expected)))
+            or result.get('activeConstraintRowCounts') != dict(original=original_rows,
+                retainedLiftLandEnvelopes=2, globalTranslateEnvelopes=len(expected), total=original_rows+2+len(expected))):
+        raise ValueError('exchange does not cover every original translate face/interval')
 
 
 def frozen_proposal(proposal_path, binding_path=None):
@@ -88,6 +378,7 @@ def frozen_proposal(proposal_path, binding_path=None):
         binding = result.get('runtimeProposalBinding')
     if not isinstance(binding, dict) or binding.get('schema') != 1:
         raise ValueError('explicit runtime proposal binding required')
+    verify_feasibility_stages(result, binding, path)
     for key in ('modelSHA256', 'sourceXMLSHA256', 'armMapSemanticSHA256'):
         value = binding.get(key)
         if not isinstance(value, str) or len(value) != 64:
@@ -104,6 +395,13 @@ def frozen_proposal(proposal_path, binding_path=None):
     sources = binding.get('frozenSourceHashes', {})
     if not isinstance(sources, dict) or any(n not in sources for n in CRITICAL_PROPOSAL_SOURCES):
         raise ValueError('complete proposal-producing source binding required')
+    if result.get('twoStageFeasibilityRestoration') is not None and 'wholebody_feasibility_polish.py' not in sources:
+        raise ValueError('feasibility producer source binding required')
+    if result.get('plannerFastGeometryUsed') is True:
+        name = result.get('plannerFastGeometrySourceName')
+        if (not isinstance(name, str) or Path(name).name != name
+                or sources.get(name) != result.get('plannerFastGeometrySHA256')):
+            raise ValueError('fast analytic planner source binding required')
     for name, expected in sources.items():
         if Path(name).name != name or sha(source_path(name)) != expected:
             raise ValueError('proposal source differs: '+name)
@@ -309,12 +607,22 @@ class WholeBodyController(ReviewedController):
         support = current_support(self, context)
         before = native_bytes(self.w)
         feet = current_feet_model(self.w)
+        # Preserve the causal input even if the first constructor/check rejects.
+        payload_path = self._wholebody_evidence_path.with_name('wholebody-activation.native-payload.zlib')
+        payload_path.write_bytes(zlib.compress(before, 1))
+        input_path = self._wholebody_evidence_path.with_name('wholebody-activation-input.json')
+        input_path.write_text(json.dumps(dict(referenceContext=context.receipt(),
+            currentSupport=asdict(support), currentFeetModel=[p.tolist() for p in feet],
+            actualPayloadSHA256=hashlib.sha256(before).hexdigest(), actualPayloadBytes=len(before),
+            retainedPayload=payload_path.name, compressedPayloadSHA256=sha(payload_path),
+            proposal=proposal), indent=2)+'\n')
+        retained_input = dict(filename=input_path.name, SHA256=sha(input_path))
         realizer = StanceRealizedIK(load_kinematics(), self.stance_side,
             MatrixJet.rest(feet[self.stance_side]), mapping, self.leg_origin)
-        cycle = WholeBodyCycle(realizer, context, self.w.limits, self.heading,
-            proposal['independentKnotsRad'])
         checks = []; static_samples = []; static = None
         try:
+            cycle = WholeBodyCycle(realizer, context, self.w.limits, self.heading,
+                proposal['independentKnotsRad'])
             for phase, duration in zip(PHASES, cycle.durations):
                 for fraction in ANALYTIC_FRACTIONS:
                     sample = cycle.sample(phase, fraction*duration)
@@ -335,14 +643,14 @@ class WholeBodyController(ReviewedController):
                 raise ValueError('current whole-body finite static admission failed')
         except Exception as error:
             self._wholebody_receipt = dict(accepted=False, rejection=str(error),
-                proposal=proposal, analyticChecks=checks, finiteStatic=static, optimizerCalls=0)
+                proposal=proposal, retainedActivationInput=retained_input,
+                analyticChecks=checks, finiteStatic=static, optimizerCalls=0)
             self._save_wholebody_receipt()
             raise
         if native_bytes(self.w) != before:
             raise ValueError('whole-body activation admission mutated actual native payload')
-        payload_path = self._wholebody_evidence_path.with_name('wholebody-activation.native-payload.zlib')
-        payload_path.write_bytes(zlib.compress(before, 1))
         self._wholebody_receipt = dict(accepted=True, proposal=proposal,
+            retainedActivationInput=retained_input,
             activationSourceStep=context.source_step, activationSourceTimeS=context.source_time,
             activationContextSHA256=context.receipt()['contextSHA256'],
             actualPayloadSHA256=hashlib.sha256(before).hexdigest(), actualPayloadBytes=len(before),

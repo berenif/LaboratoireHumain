@@ -4,14 +4,15 @@ The sole initializer repeats the qualified stationary independent coordinates.
 One SLSQP horizon solve is permitted; no fallback or goal/weight scan exists. Its finite-difference COM prescreen is never an admission receipt.
 Independent analytic command jets admit/reject the retained final proposal.
 """
-import json,math,time,traceback
+import json,math,time,traceback,copy
+from collections import OrderedDict
 from pathlib import Path
 import numpy as np
 from scipy.optimize import minimize
 from scipy.spatial.transform import Rotation
 from wholebody_cycle_reference import (WholeBodyCycle,Jet,MatrixJet,PHASES,FEET,LEG_INDICES,
-    P,pose_jet_to_source,MAX_TOTAL_COM_SPEED,MAX_TOTAL_COM_ACCELERATION)
-from coupled_posture_reference import digest,rotation
+    P,pose_jet_to_source,MAX_TOTAL_COM_SPEED,MAX_TOTAL_COM_ACCELERATION,VERSION)
+from coupled_posture_reference import digest,rotation,C2Segment
 
 MAX_ITERATIONS=80
 FRACTIONS=(0.,.25,.5,.75,1.)
@@ -23,7 +24,7 @@ class _ControlStop(RuntimeError):
 
 def solve_horizon(realizer,current_context,source_limits,heading,current_support,*,
         design_only=False,entry_elapsed=0.,input_binding=None,max_iterations=80,
-        analytic_fractions=ANALYTIC_FRACTIONS,max_wall_seconds=1200.,cancellation_check=None):
+        analytic_fractions=ANALYTIC_FRACTIONS,max_wall_seconds=1200.,cancellation_check=None,progress_callback=None):
     """Run exactly one bounded solve and retain its complete finite admission.
 
     Caller owns exclusive attempt bookkeeping and must freeze the returned path;
@@ -34,6 +35,8 @@ def solve_horizon(realizer,current_context,source_limits,heading,current_support
         raise ValueError('cooperative wall ceiling must be positive and at most1200seconds')
     if cancellation_check is not None and not callable(cancellation_check):
         raise ValueError('optional cancellation check must be callable')
+    if progress_callback is not None and not callable(progress_callback):
+        raise ValueError('optional progress callback must be callable')
     if type(max_iterations)is not int or not 1<=max_iterations<=80:
         raise ValueError('fixed bounded maximum iterations in1..80 required')
     if not analytic_fractions or any(not 0.<=float(f)<=1. for f in analytic_fractions):
@@ -54,6 +57,23 @@ def solve_horizon(realizer,current_context,source_limits,heading,current_support
     heading_angle=math.atan2(heading[1],heading[0]);target_body=rotation([heading_angle,math.radians(4.),0.])
     target_knee=(q0[(12,6)[r.swing_side]]-math.radians(10.),q0[(12,6)[r.swing_side]]-math.radians(5.),q0[(12,6)[r.swing_side]])
     nominal=np.tile(q0,(3,1));nominal[:,(12,6)[r.swing_side]]=target_knee
+    # One immutable entry template: only independent C2 segments and the key
+    # depend on optimizer coordinates. All entry FK/slacks/foot clocks are fixed.
+    entry_template=WholeBodyCycle(r,context,limits,heading,initial,
+        design_only=design_only,entry_elapsed=entry_elapsed)
+    key_base=dict(version=VERSION,context=context.receipt()['contextSHA256'],
+        stance=r.stance_pose.position,limits=entry_template.limits.tolist(),entryElapsed=entry_elapsed)
+    node_cache=OrderedDict();node_cache_capacity=4096
+    candidate_cache=OrderedDict();candidate_cache_capacity=128
+    cache_stats=dict(entryTemplates=1,segmentOnlyRebuilds=0,nodeHits=0,nodeMisses=0,nodeEvictions=0,exactLastEvaluationHits=0,
+        fullCandidateHits=0,fullCandidateMisses=0,fullCandidateEvictions=0)
+    def path_from_knots(knots):
+        path=copy.copy(entry_template);knots=np.array(knots,float,copy=True)
+        knots.setflags(write=False);path.independent_knots=knots
+        points=[np.array(path.lower0.position)[idx],*knots]
+        path.independent_segments=tuple(C2Segment.between(0.,T,Jet.rest(a),Jet.rest(b))for a,b,T in zip(points,points[1:],path.durations))
+        path.key=digest(dict(key_base,knots=knots.tolist()));cache_stats['segmentOnlyRebuilds']+=1
+        return path
     cached_x=None;cached=None;evaluations=0;exceptions=[]
     last_candidate=None;control_stop=None
     def check_control():
@@ -67,13 +87,21 @@ def solve_horizon(realizer,current_context,source_limits,heading,current_support
 
     def fast_geometry(path,k,t):
         check_control()
+        # Cache key is the complete exact positional input for this pure node:
+        # phase, time and independent9. Root/feet/slacks/map/seed are immutable
+        # closure inputs. No previous IK answer ever becomes a future seed.
+        independent=np.array(path.independent_segments[k].at(t).position)
+        node_key=(int(k),float(t),tuple(float(x)for x in independent))
+        if node_key in node_cache:
+            cache_stats['nodeHits']+=1;node_cache.move_to_end(node_key)
+            return node_cache[node_key]
+        cache_stats['nodeMisses']+=1
         # Existing positional FK and original archived map, no surrogate model.
         T=path.command_foot(r.swing_side,k,t,sum(path.durations[:k])+t)
         tr=pose_jet_to_source(T);total=sum(path.durations[:k])+t
         st,sr=path.foot_slacks[r.swing_side]
         from wholebody_cycle_reference import compose_pose,subtract,pose_chart
         target=compose_pose(subtract(tr.translation,st.at(total)),subtract(pose_chart(T),sr.at(total)))
-        independent=np.array(path.independent_segments[k].at(t).position)
         q,newton=r.position(independent,target,q0,allow_unconverged=True)
         poses=r.kin.forward(np.r_[q,np.zeros(6)],np.eye(4));angles=[]
         for side in ('right','left'):
@@ -85,7 +113,15 @@ def solve_horizon(realizer,current_context,source_limits,heading,current_support
         com=sum(part['massKg']*(poses[part['id']]@np.r_[np.array([part['goldenMass']['centerOfMass'][z]for z in 'xyz']),1.])[:3]
             for part in r.kin.model['segments'])/r.kin.model['totalMassKg']
         commandcom=P@com+np.array(path.com_slack.at(total).position)
-        return q,full,delta,commandcom,P@root[:3,:3]@P.T,poses,newton
+        output=(q,full,delta,commandcom,P@root[:3,:3]@P.T,poses,newton)
+        # Returned geometry is read-only; cached values cannot acquire caller
+        # mutations. This changes no scalar or numerical evaluation operation.
+        for array in output[:5]:array.setflags(write=False)
+        for array in poses.values():array.setflags(write=False)
+        node_cache[node_key]=output
+        if len(node_cache)>node_cache_capacity:
+            node_cache.popitem(last=False);cache_stats['nodeEvictions']+=1
+        return output
 
     nodes=[(k,float(f))for k in range(3)for f in FRACTIONS if not(k and f==0.)]
     count_per_node=15+15+6+6+2+2+len(support.equations())*2+4
@@ -94,8 +130,14 @@ def solve_horizon(realizer,current_context,source_limits,heading,current_support
         nonlocal cached_x,cached,evaluations,last_candidate
         last_candidate=np.array(x,copy=True)
         check_control()
-        if cached_x is not None and np.array_equal(x,cached_x):return cached
-        evaluations+=1;path=WholeBodyCycle(r,context,limits,heading,np.array(x).reshape(3,9),design_only=design_only,entry_elapsed=entry_elapsed)
+        candidate_key=np.asarray(x,dtype=np.float64).tobytes()
+        if candidate_key in candidate_cache:
+            if cached_x is not None and np.array_equal(x,cached_x):cache_stats['exactLastEvaluationHits']+=1
+            cache_stats['fullCandidateHits']+=1;candidate_cache.move_to_end(candidate_key)
+            cached_x=np.array(x,copy=True);cached=candidate_cache[candidate_key]
+            return cached
+        cache_stats['fullCandidateMisses']+=1
+        evaluations+=1;path=path_from_knots(np.array(x).reshape(3,9))
         inequalities=[];objective=0.;rows=[]
         try:
             for k,f in nodes:
@@ -124,6 +166,9 @@ def solve_horizon(realizer,current_context,source_limits,heading,current_support
             if len(exceptions)<8:exceptions.append(dict(type=type(exc).__name__,message=str(exc)))
             objective=1e6+sum((x-x0)**2);inequalities=[-1.]* (len(nodes)*count_per_node)
         cached_x=np.array(x,copy=True);cached=(float(objective),np.array(inequalities),rows)
+        cached[1].setflags(write=False);candidate_cache[candidate_key]=cached
+        if len(candidate_cache)>candidate_cache_capacity:
+            candidate_cache.popitem(last=False);cache_stats['fullCandidateEvictions']+=1
         return cached
 
     declared=dict(schema=1,version='free-com-flight-horizon-once-v1',inputBinding=binding,
@@ -139,13 +184,30 @@ def solve_horizon(realizer,current_context,source_limits,heading,current_support
             optimizerDerivativeMethod='central finite difference positional prescreen only; final admission is independent analytic FK jets',
             analyticAdmissionFractions=list(analytic_fractions),wholeNonlinearPathCertificate=False,
             initializer='qualified stationary q0 independent coordinates replicated at all three endpoint knots; no projection',
-            initializerTrace=initializer,body1Weight=4.,weakPostureWeight=.2,maxIterations=max_iterations,maxWallSeconds=max_wall_seconds,cooperativeCancellationEnabled=cancellation_check is not None,
+            initializerTrace=initializer,body1Weight=4.,weakPostureWeight=.2,maxIterations=max_iterations,maxWallSeconds=max_wall_seconds,cooperativeCancellationEnabled=cancellation_check is not None,progressCallbackEnabled=progress_callback is not None,
             optimizerInvocationsAuthorized=1,noFallback=True,noGoalWeightScan=True),
         repositoryRuntimeEdits=False,nativeWorldConstructions=0,stateInstallations=0,physicsIntegrations=0)
-    trace=[]
+    trace=[];progress_records=[]
     def callback(x):
         check_control()
         o,c,rows=evaluate(x);trace.append(dict(iteration=len(trace)+1,objective=o,minimumPrescreenSlack=float(min(c))))
+        branch_rows=[]
+        if len(rows)==len(nodes):
+            for j,(k,f)in enumerate(nodes):
+                residual=float(2e-8-c[j*count_per_node+count_per_node-1])
+                branch_rows.append(dict(phase=PHASES[k],fraction=f,maximumPoseResidual=residual,
+                    strictNewtonToleranceMet=bool(residual<2e-11),prescreenResidualAccepted=bool(residual<=2e-8)))
+        event=dict(**trace[-1],unadmittedIndependentKnotsRad=np.array(x).reshape(3,9).tolist(),
+            candidateSHA256=digest(np.array(x).reshape(3,9).tolist()),positionPrescreenEvaluations=evaluations,
+            cacheCounters=dict(cache_stats,nodeEntries=len(node_cache),fullCandidateEntries=len(candidate_cache)),
+            footBranchResidualSummary=dict(available=bool(branch_rows),rows=branch_rows,
+                maximumPoseResidual=None if not branch_rows else max(row['maximumPoseResidual']for row in branch_rows)),
+            nativeAdmission=False,physicalQualification=False)
+        progress_records.append(event)
+        if progress_callback is not None:
+            # The caller receives a detached JSON-safe copy. Its mutation cannot
+            # change retained trace, candidate, cache or future references.
+            progress_callback(json.loads(json.dumps(event,allow_nan=False)))
     start=time.monotonic();fit=None;failure=None;path=None
     try:
         fit=minimize(lambda x:evaluate(x)[0],x0,method='SLSQP',bounds=list(zip(np.tile(lo[idx],3),np.tile(hi[idx],3))),
@@ -160,7 +222,7 @@ def solve_horizon(realizer,current_context,source_limits,heading,current_support
         optimizerIterations=None if fit is None else int(fit.nit),positionPrescreenEvaluations=evaluations,prescreenExceptions=exceptions,trace=trace,
         nativeAdmission=False,globalInfeasibilityProven=False,finiteFailureNotGlobalProof=True)
     if fit is not None:
-        knots=np.array(fit.x).reshape(3,9);path=WholeBodyCycle(r,context,limits,heading,knots,design_only=design_only,entry_elapsed=entry_elapsed)
+        knots=np.array(fit.x).reshape(3,9);path=path_from_knots(knots)
         receipt['independentKnotsRad']=knots.tolist();receipt['path']=path.receipt()
         samples=[];failures=[]
         for k,phase in enumerate(PHASES):
@@ -186,6 +248,9 @@ def solve_horizon(realizer,current_context,source_limits,heading,current_support
             finiteProposalAdmittedForNative=False,
             independentPolynomialWholeBounds=[segment.component_bounds().tolist()for segment in path.independent_segments])
     receipt['optimizerElapsedPlusAdmissionS']=time.monotonic()-start
+    receipt['exactInputCaches']=dict(cache_stats,nodeCapacity=node_cache_capacity,nodeEntries=len(node_cache),
+        fullCandidateCapacity=candidate_cache_capacity,fullCandidateEntries=len(candidate_cache),exactFloat64ByteKeys=True,noMutableIKSeed=True)
+    receipt['progressRecords']=progress_records
     receipt['cooperativeControlTermination']=control_stop
     receipt['cooperativeControlGuardsPresentInThisLibrary']=True
     receipt['completedCallbackIterations']=len(trace)

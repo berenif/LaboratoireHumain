@@ -229,6 +229,212 @@ class FreshRiskAdmission(unittest.TestCase):
         self.assertFalse(c._wholebody_admitted)
 
 
+class NumericalRestorationBinding(unittest.TestCase):
+    """Synthetic protocol receipts only; these never admit a native proposal."""
+    def setUp(self):
+        directory = tempfile.TemporaryDirectory(); self.addCleanup(directory.cleanup)
+        self.root = Path(directory.name); self.path = self.root/'proposal.json'
+        q = np.zeros((3, 9)).tolist(); key = w.digest(q)
+        self.input = dict(explicitMockOnly=True, entryLiftElapsedS=.00125,
+            support=dict(equations=[[1., 0., -1.], [-1., 0., -1.], [0., 1., -1.]]))
+        recovery = dict(inputBinding=self.input, optimizerSuccess=False, optimizerCalls=1,
+            terminalState='compute-cap', progressRecords=[dict(iteration=33,
+                candidateSHA256=key, unadmittedIndependentKnotsRad=q)])
+        rp = self.root/'recovery.json'; rp.write_text(json.dumps(recovery))
+        diagnostic = dict(candidateSHA256=key, recoveryResultSHA256=w.sha(rp),
+            realOptimizerCalls=0, sourceInputBinding=self.input)
+        dp = self.root/'diagnostic.json'; dp.write_text(json.dumps(diagnostic))
+        stage = dict(schema=1, sourceRecoverySHA256=w.sha(rp), sourceDiagnosticSHA256=w.sha(dp),
+            sourceCandidateMajorIteration=33, sourceCandidateSHA256=key,
+            sourceCandidateIndependentKnotsRad=q, sourceRecoveryOptimizerCalls=1,
+            sourceRecoveryOptimizerSuccess=False, sourceRecoveryTermination='compute-cap',
+            polishOptimizerCalls=1, numericalFeasibilityOnly=True, originalHardLimitsUnchanged=True,
+            originalFootPathAndClocksUnchanged=True, analyticConstraintJets=True,
+            goalOrWeightScan=False, nativeWorldConstructions=0, physicsIntegrations=0,
+            maximumCorrectionRad=0., finalOriginalStrictMapRestored=True,
+            declared123SampleCertificate=True)
+        self.result = dict(version=w.POLISH_VERSION, inputBinding=self.input,
+            twoStageFeasibilityRestoration=stage, totalProducerOptimizerCalls=2,
+            independentKnotsRad=q, analyticSamples=[dict(phase=p, fraction=f, accepted=True)
+                for p in w.PHASES for f in w.ANALYTIC_FRACTIONS])
+        self.binding = dict(feasibilityStageFiles={role:dict(filename=p.name, SHA256=w.sha(p))
+            for role, p in [('recovery', rp), ('diagnostic', dp)]})
+
+    def check(self):
+        return w.verify_feasibility_stages(self.result, self.binding, self.path)
+
+    def test_complete_explicit_two_stage_protocol_is_verified_read_only(self):
+        before = json.dumps(self.result, sort_keys=True)
+        self.assertIsNone(self.check()); self.assertEqual(json.dumps(self.result, sort_keys=True), before)
+
+    def test_failed_parent_may_not_be_replaced_or_relabelled(self):
+        p = self.root/'recovery.json'; r = json.loads(p.read_text()); r['optimizerSuccess'] = True
+        p.write_text(json.dumps(r))
+        with self.assertRaisesRegex(ValueError, 'stage differs'):
+            self.check()
+
+    def test_exact_final_major_iterate_is_mandatory(self):
+        self.result['twoStageFeasibilityRestoration']['sourceCandidateMajorIteration'] = 32
+        with self.assertRaisesRegex(ValueError, 'semantics'):
+            self.check()
+
+    def test_new_seed_and_changed_problem_input_are_rejected(self):
+        self.result['inputBinding'] = dict(otherInput=True)
+        with self.assertRaisesRegex(ValueError, 'problem input'):
+            self.check()
+        self.result['inputBinding'] = self.input
+        self.result['twoStageFeasibilityRestoration']['sourceCandidateIndependentKnotsRad'][0][0] = .001
+        with self.assertRaisesRegex(ValueError, 'exact final'):
+            self.check()
+
+    def test_nonfinite_or_wrong_correction_is_rejected(self):
+        for value in (float('nan'), float('inf'), .001, None):
+            self.result['twoStageFeasibilityRestoration']['maximumCorrectionRad'] = value
+            with self.assertRaisesRegex(ValueError, 'correction'):
+                self.check()
+
+    def test_missing_strict_full_grid_or_changed_map_is_rejected(self):
+        self.result['analyticSamples'].pop()
+        with self.assertRaisesRegex(ValueError, '123-sample'):
+            self.check()
+        self.result['twoStageFeasibilityRestoration']['finalOriginalStrictMapRestored'] = False
+        with self.assertRaisesRegex(ValueError, 'semantics'):
+            self.check()
+
+    def test_stage_paths_cannot_escape_the_proposal_directory(self):
+        self.binding['feasibilityStageFiles']['recovery']['filename'] = '../recovery.json'
+        with self.assertRaisesRegex(ValueError, 'basename'):
+            self.check()
+
+    def test_polish_profile_cannot_omit_failed_parent_and_stage_semantics(self):
+        self.result.pop('twoStageFeasibilityRestoration')
+        with self.assertRaisesRegex(ValueError, 'explicit two-stage'):
+            self.check()
+        self.result.pop('version')
+        with self.assertRaisesRegex(ValueError, 'explicit two-stage'):
+            self.check()
+        self.result.pop('totalProducerOptimizerCalls')
+        self.binding['frozenSourceHashes'] = {'wholebody_feasibility_polish.py':'a'*64}
+        with self.assertRaisesRegex(ValueError, 'explicit two-stage'):
+            self.check()
+
+    def make_refined(self):
+        durations = [.8-self.input['entryLiftElapsedS'], 1.2, 1.]
+        failures = [dict(phase='lift', fraction=.8, commandAccelerationMps2=.404),
+            dict(phase='translate', fraction=.625, supportCaptureMarginM=.00289),
+            dict(phase='land', fraction=.725, supportCaptureMarginM=.0029999)]
+        parent = dict(version=w.POLISH_VERSION, optimizerSuccess=True, accepted=False,
+            optimizerCalls=1, inputBinding=self.input, analyticFailures=failures,
+            twoStageFeasibilityRestoration=self.result['twoStageFeasibilityRestoration'],
+            path=dict(phaseDurationsS=durations), analyticSamples=self.result['analyticSamples'],
+            unadmittedFinalIndependentKnotsRad=self.result['independentKnotsRad'],
+            finalCandidateSHA256=w.digest(self.result['independentKnotsRad']))
+        p = self.root/'failed-polish.json'; p.write_text(json.dumps(parent))
+        self.binding['feasibilityStageFiles']['failedPolish'] = dict(filename=p.name, SHA256=w.sha(p))
+        brackets = [dict(phase=r['phase'], worstSampleFraction=r['fraction'],
+            bracketFractions=[r['fraction']-.025, r['fraction'], r['fraction']+.025]) for r in failures]
+        answers = [dict(phase=r['phase'], success=True, fraction=r['fraction']+.001,
+            minimumSlack=-.001, timeS=(r['fraction']+.001)*duration, evaluations=10, iterations=10)
+            for r, duration in zip(failures, durations)]
+        selection = dict(sourceFailedPolishSHA256=w.sha(p),
+            selectionInputCandidateSHA256=parent['finalCandidateSHA256'], realTrajectoryOptimizerCalls=0,
+            scalarSearchCalls=3, sourceBrackets=brackets, bracketExtremaResults=answers,
+            passed=True, originalStrictMapUsed=True,
+            strictSourceEvaluationRows=[dict(phase=a['phase'], fraction=a['fraction'], minimumSlack=a['minimumSlack'],
+                maximumPoseResidual=1e-14, originalStrictMapUsed=True) for a in answers for _ in range(a['evaluations'])])
+        sp = self.root/'source-selection.json'; sp.write_text(json.dumps(selection))
+        self.binding['feasibilityStageFiles']['sourceSelection'] = dict(filename=sp.name, SHA256=w.sha(sp))
+        self.result.update(version=w.REFINED_POLISH_VERSION, totalProducerOptimizerCalls=3,
+            collocationRefinement=dict(schema=1, **selection, selectionReceiptSHA256=w.sha(sp),
+                addedConstraintNodes=[dict(phase=r['phase'], fraction=r['fraction']) for r in answers],
+                selectionPolicy='worst-failing-bracket-extremum-per-phase-v1', anchorUnchanged=True,
+                onlyOneRefinement=True, intermediateFailedPolishOptimizerCalls=1, refinementOptimizerCalls=1))
+        rows = [dict(phase=phase, fraction=float(f), accepted=True)
+            for phase, duration in zip(w.PHASES, durations)
+            for f in np.linspace(0., 1., int(np.ceil(duration/.005))+1)]
+        metrics = ['COMSpeed', 'COMAcceleration', *['COMFace'+str(i) for i in range(3)],
+            *['captureFace'+str(i) for i in range(3)]]
+        for row in rows: row['timeExtremaScalarSlacks'] = {m:.01 for m in metrics}
+        self.result.update(path=dict(phaseDurationsS=durations), denseCommandSamples=rows,
+            denseCommandGridCertificate=dict(passed=True, originalStrictMapUsed=True,
+                maximumStepS=.005, sampleCount=len(rows)),
+            extremaVerification=dict(passed=True, wholePathProven=False, originalStrictMapUsed=True,
+                metrics=metrics, searchCount=0, evaluatedSampleCount=0,
+                phaseMetricCoverage=[dict(phase=p, metric=m, allDenseValuesAvailable=True,
+                    minimumDenseSlack=.01, bracketCount=0) for p in w.PHASES for m in metrics]),
+            timeExtremaSearches=[], extremaCommandSamples=[])
+
+    def test_one_refinement_requires_causal_parent_and_complete_dense_grid(self):
+        self.make_refined(); self.assertIsNone(self.check())
+        self.result['denseCommandSamples'].pop(1)
+        self.result['denseCommandGridCertificate']['sampleCount'] -= 1
+        with self.assertRaisesRegex(ValueError, 'gap'):
+            self.check()
+
+    def test_refinement_cannot_change_nodes_or_downgrade_profile(self):
+        self.make_refined()
+        self.result['collocationRefinement']['addedConstraintNodes'][0]['fraction'] = .75
+        with self.assertRaisesRegex(ValueError, 'causal bracket'):
+            self.check()
+        self.result['version'] = w.POLISH_VERSION
+        with self.assertRaisesRegex(ValueError, 'downgraded'):
+            self.check()
+
+    def test_refinement_requires_numerical_extrema_and_retains_finite_claim(self):
+        self.make_refined(); self.result['extremaVerification']['wholePathProven'] = True
+        with self.assertRaisesRegex(ValueError, 'overclaimed'):
+            self.check()
+        self.result['extremaVerification'] = dict(passed=False, wholePathProven=False)
+        with self.assertRaisesRegex(ValueError, 'absent'):
+            self.check()
+
+    def test_dense_grid_cannot_shorten_original_clocks_to_hide_missing_commands(self):
+        self.make_refined(); self.result['path']['phaseDurationsS'] = [.001]*3
+        with self.assertRaisesRegex(ValueError, 'original phase clocks'):
+            self.check()
+
+    def test_extrema_pass_flags_cannot_replace_numeric_coverage(self):
+        self.make_refined(); self.result['extremaVerification']['phaseMetricCoverage'] = []
+        with self.assertRaisesRegex(ValueError, 'coverage/count'):
+            self.check()
+
+    def make_exchanged(self):
+        self.make_refined(); parent = json.loads(json.dumps(self.result))
+        candidate = parent['independentKnotsRad']; key = w.digest(candidate)
+        parent.update(accepted=False, optimizerSuccess=True, optimizerCalls=1,
+            finalCandidateSHA256=key, unadmittedFinalIndependentKnotsRad=candidate)
+        p = self.root/'rejected-refinement.json'; p.write_text(json.dumps(parent))
+        self.result.update(exchangeHistory=[dict(filename=p.name, SHA256=w.sha(p),
+            finalCandidateSHA256=key, optimizerCalls=1,
+            objectiveAnchorSHA256=self.result['twoStageFeasibilityRestoration']['sourceCandidateSHA256'],
+            initialContinuationCandidateSHA256=key, hardLimitsUnchanged=True)],
+            initialContinuationIndependentKnotsRad=candidate,
+            initialContinuationCandidateSHA256=key, totalProducerOptimizerCalls=4)
+        intervals = [[0., .25], [.25, .5], [.5, .75], [.75, 1.]]
+        eq = self.input['support']['equations']; original = 13*(50+2*len(eq))
+        entries = [dict(pointKind=kind, faceIndex=face, intervalFractions=interval)
+            for kind in ('COM', 'capture') for face in range(len(eq)) for interval in intervals]
+        for i, entry in enumerate(entries): entry['rowIndex'] = original+2+i
+        self.result.update(globalTranslateSupportEnvelopeCoverage=dict(schema=1, phase='translate',
+            sourceSupportEquationsSHA256=w.digest(eq), sourceSupportEquations=eq,
+            faceCount=len(eq), pointKinds=['COM', 'capture'], originalSupportReserveM=.003,
+            intervalsFractions=intervals, constraints=entries, closedIntervalEndpointsCompared=True,
+            wholePathProven=False), activeConstraintRowCounts=dict(original=original,
+                retainedLiftLandEnvelopes=2, globalTranslateEnvelopes=len(entries), total=original+2+len(entries)))
+
+    def test_exchange_reuses_profile_and_requires_every_whole_phase_face(self):
+        self.make_exchanged(); self.assertIsNone(self.check())
+        self.result['globalTranslateSupportEnvelopeCoverage']['constraints'].pop()
+        with self.assertRaisesRegex(ValueError, 'every original translate'):
+            self.check()
+
+    def test_exchange_cannot_select_a_different_continuation_seed(self):
+        self.make_exchanged()
+        self.result['initialContinuationIndependentKnotsRad'] = np.full((3, 9), .001).tolist()
+        with self.assertRaisesRegex(ValueError, 'exact linked final'):
+            self.check()
+
+
 class PreflightAndFailClosed(unittest.TestCase):
     def test_missing_or_failed_proposal_rejects_before_world_preparation(self):
         with patch.object(w, 'prepare_impedance', side_effect=AssertionError('native prepare called')):
@@ -274,6 +480,9 @@ class MockCurrentActivation(unittest.TestCase):
         @dataclass(frozen=True)
         class Map:
             ranges: tuple = ((-1., 1.), (-1., 1.))
+        @dataclass(frozen=True)
+        class MockSupport:
+            explicitMockOnly: bool = True
         mapping = Map(); c, state = controller(); c._wholebody_enabled = True
         c.w.xml = Path('/mock/xml'); c.w.limits = np.tile([-1., 1.], (21, 1))
         c.leg_origin = np.zeros(2); c.heading = np.array([1., 0., 0.]); c._mapping = object()
@@ -291,7 +500,7 @@ class MockCurrentActivation(unittest.TestCase):
         patches = (patch.object(w, 'live_arm_map', return_value=mapping),
             patch.object(w, 'sha', return_value='a'*64), patch.object(w, 'native_bytes', return_value=b'exact current'),
             patch.object(w, 'current_feet_model', return_value=(np.eye(4), np.eye(4))),
-            patch.object(w, 'current_support', return_value=object()),
+            patch.object(w, 'current_support', return_value=MockSupport()),
             patch.object(w, 'actual_contacts', return_value=((1, (0., 0., 0.)),)),
             patch.object(w, 'StanceRealizedIK', return_value=object()),
             patch.object(w, 'load_kinematics', return_value=object()),
@@ -316,6 +525,12 @@ class MockCurrentActivation(unittest.TestCase):
         self.assertTrue(c._wholebody_attempted)
         self.assertFalse(c._wholebody_receipt['accepted'])
         self.assertFalse(c._wholebody_receipt['finiteStatic']['accepted'])
+        retained = c._wholebody_receipt['retainedActivationInput']
+        receipt = json.loads(c._wholebody_evidence_path.with_name(retained['filename']).read_text())
+        self.assertEqual(receipt['referenceContext'], json.loads(json.dumps(context.receipt())))
+        import zlib
+        self.assertEqual(zlib.decompress(c._wholebody_evidence_path.with_name(receipt['retainedPayload']).read_bytes()),
+            b'exact current')
         with self.assertRaisesRegex(ValueError, 'no automatic replanning'):
             c._activate_wholebody(context)
 

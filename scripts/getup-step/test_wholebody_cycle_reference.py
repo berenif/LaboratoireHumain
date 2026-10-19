@@ -202,6 +202,60 @@ class CycleTests(unittest.TestCase):
                 solver.solve_horizon(self.realizer,self.context,self.limits,self.inputs['controller']['heading'],
                     self.support,design_only=True,max_wall_seconds=1200.1)
 
+    def test_optimizer_only_exact_caches_preserve_all_bits_and_fixed_seed(self):
+        import wholebody_horizon_solver as solver
+        values=[]
+        class HarnessStop(RuntimeError):pass
+        def harness(objective,initial,**kwargs):
+            constraint=kwargs['constraints'][0]['fun'];other=np.array(initial,copy=True);other[0]+=1e-6
+            for x in (initial,other,initial):values.append((float(objective(x)),np.array(constraint(x),copy=True)))
+            with self.assertRaises(ValueError):constraint(initial)[0]=123.
+            raise HarnessStop('pure cache protocol test; no actual optimizer')
+        before=self.context.receipt()
+        with patch.object(solver,'minimize',side_effect=harness):
+            path,receipt=solver.solve_horizon(self.realizer,self.context,self.limits,self.inputs['controller']['heading'],
+                self.support,design_only=True,entry_elapsed=self.context.elapsed,analytic_fractions=(0.,1.))
+        self.assertIsNone(path);self.assertEqual(len(values),3)
+        self.assertEqual(np.float64(values[0][0]).tobytes(),np.float64(values[2][0]).tobytes())
+        np.testing.assert_array_equal(values[0][1].view(np.uint64),values[2][1].view(np.uint64))
+        counters=receipt['exactInputCaches'];self.assertEqual(counters['entryTemplates'],1)
+        self.assertEqual(counters['segmentOnlyRebuilds'],2);self.assertGreaterEqual(counters['fullCandidateHits'],3)
+        self.assertLessEqual(counters['fullCandidateEntries'],128);self.assertLessEqual(counters['nodeEntries'],4096)
+        self.assertTrue(counters['exactFloat64ByteKeys']);self.assertTrue(counters['noMutableIKSeed'])
+        self.assertEqual(self.context.receipt(),before)
+
+    def test_progress_packets_are_detached_unadmitted_and_retained_on_cancel(self):
+        import wholebody_horizon_solver as solver
+        seen=[];cancel=[False]
+        def progress(event):
+            seen.append(json.loads(json.dumps(event)))
+            event['unadmittedIndependentKnotsRad'][0][0]=999.;event['iteration']=999
+        def harness(objective,initial,**kwargs):
+            kwargs['callback'](initial);kwargs['callback'](initial)
+            cancel[0]=True;objective(initial);raise AssertionError('cancel should escape')
+        with patch.object(solver,'minimize',side_effect=harness):
+            path,receipt=solver.solve_horizon(self.realizer,self.context,self.limits,self.inputs['controller']['heading'],
+                self.support,design_only=True,entry_elapsed=self.context.elapsed,cancellation_check=lambda:cancel[0],
+                progress_callback=progress,analytic_fractions=(0.,1.))
+        self.assertIsNone(path);self.assertEqual(receipt['terminalState'],'caller-cancelled')
+        self.assertEqual(len(seen),2);self.assertEqual(len(receipt['progressRecords']),2)
+        self.assertEqual([x['iteration']for x in receipt['progressRecords']],[1,2])
+        for event,trace in zip(receipt['progressRecords'],receipt['trace']):
+            self.assertEqual(set(trace),{'iteration','objective','minimumPrescreenSlack'})
+            self.assertEqual(event['objective'],trace['objective']);self.assertEqual(event['minimumPrescreenSlack'],trace['minimumPrescreenSlack'])
+            self.assertFalse(event['nativeAdmission']);self.assertFalse(event['physicalQualification'])
+            self.assertNotEqual(event['unadmittedIndependentKnotsRad'][0][0],999.)
+            self.assertTrue(event['footBranchResidualSummary']['available'])
+            self.assertEqual(len(event['footBranchResidualSummary']['rows']),13)
+            self.assertIn('nodeHits',event['cacheCounters'])
+
+    def test_progress_callback_must_be_callable(self):
+        import wholebody_horizon_solver as solver
+        with patch.object(solver,'minimize',side_effect=AssertionError('optimizer forbidden')):
+            with self.assertRaisesRegex(ValueError,'progress callback'):
+                solver.solve_horizon(self.realizer,self.context,self.limits,self.inputs['controller']['heading'],
+                    self.support,design_only=True,progress_callback=True)
+
 ARCHIVED_INPUT=Path(__file__).parent.parent/'phase-leg-reference/qualified-lift-entry-input.json'
 @unittest.skipUnless(ARCHIVED_INPUT.exists(),'optional qualified archived design witness absent')
 class OptionalQualifiedCycleTests(CycleTests):

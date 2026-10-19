@@ -133,13 +133,53 @@ measures about 0.90 s per evaluation, dominated by repeated inner Newton IK;
 initial acceleration violations cross an unconverged IK branch, not a proven
 physical acceleration demand. Converged-point derivatives agree to 1.7e−8.
 
-Preserve that timeout checkpoint. Apply a same-problem computational fix using
-immutable entry reuse and exact phase-local caches, prove output parity and
-measure it without another optimizer. Future attempts must expose progress,
-retain candidates and obey short cooperative cancellation/deadlines. No seed,
-goal or weight grid is permitted. Only a completely admitted proposal proceeds
-to one native step plus quiet, independent audit and actual-speed visual review,
-then alternating diagnostics and the full ten-step test.
+The timeout checkpoint is retained. Immutable entry reuse, phase-local caches
+and a bounded exact-float64 candidate cache preserve all 33 measured objective/
+832-constraint vectors bit-for-bit, including the invalid inner-IK branch. With
+zero optimizer calls, a full 27-coordinate objective/constraint stencil falls
+from 37.07 to 13.10 s (2.83×); the repeated constraint sweep takes 2 ms. Fixed
+seeds, tolerances, targets, bounds and arithmetic order are unchanged. Detached
+iteration packets retain unadmitted knots, residuals and cache counters; cache
+hits still check the cooperative deadline/cancellation.
+
+One identical-problem recovery stops cleanly at 180.002 s with 33 retained
+iterations. It restores every prescreen foot-pose residual to about 4e−13 and
+reduces final major-iterate slack to −4.89e−7, but does not converge or admit a
+proposal. A zero-optimizer diagnostic of that exact final major path confirms
+lift-75% analytic acceleration exceeds the cap by 5.47e−7 m/s², and the translate
+endpoint misses the same reserved map boundary by 39.2 picoradians. Neither is
+relaxed. A single approved minimum-norm feasibility polish uses analytic jets
+and all original constraints around this exact retained path, then the original
+strict 123 samples. Its explicit two-stage profile binds both failed receipts;
+missing/downgraded provenance is rejected. The requested shape is visible only
+in unadmitted math: 20.1° extra early knee bend followed by extension, with
+38.6 mm sampled COM progression for the 182 mm foot command. The polish
+converges in two iterations but rejects 12/123 strict samples: acceleration
+peaks at 0.403917 m/s² between the sparse nodes and the support/capture minimum
+is 2.89164 mm. No runtime binding or native world is created.
+
+One approved bounded refinement retains the same 27 coordinates and exact
+iteration-33 minimum-norm anchor. Three source-worst brackets supply current-candidate
+scalar envelope constraints for lift acceleration and translate/land support;
+the final certificate also checks the complete 200 Hz command grid and bounded
+numerical extrema. An explicit envelope Jacobian reuses current minimizing
+times for its 27 columns; rejected synthetic baselines cannot produce gradients.
+Original clocks are hash-bound, and numeric evidence cannot
+be replaced by pass flags. The first envelope refinement passes all 123 samples,
+but three of 603 command-grid samples and global extrema reject a newly active
+translate capture face: 2.999091 mm minimum reserve. It is not admitted. The
+shared producer now proceeds to bounded face-aware exchange over the whole
+translate phase, with deterministic continuation and the original objective.
+Repeated FK-jet object validation is optimized separately; the original strict
+FK owner remains the independent final certificate. The fast analytic COM
+evaluator matches 15 archived/perturbed/arm/seek cases bit-for-bit and measures
+7.09× faster with zero optimizers or native worlds. Whole-phase exchange covers
+all 56 translate COM/capture face-quarter envelopes (890 total rows), reusing
+the same profile and hash-linked deterministic history. Prior failures remain
+immutable. No seed, goal or weight grid is permitted. Only a completely admitted
+proposal proceeds to one native step plus quiet,
+independent audit and actual-speed visual review, then alternating diagnostics
+and the full ten-step test.
 
 ## Final acceptance
 
