@@ -1,0 +1,281 @@
+{
+  "schema": 1,
+  "checkedAt": "2026-10-19T16:34:38.645Z",
+  "scope": "Bounded actual-pointer timing on immutable corrected-engine app, existing controller, complete explicit3+1 numerical profile and original transport. Two clean no-encoder desktop/headless observations. No production changes.",
+  "capturePassed": true,
+  "latencyQualified": false,
+  "releaseAccepted": false,
+  "productionDefaultsChanged": false,
+  "workerSha256": "4fa298cfff4340fd3c5e65ebd95d2dd714be84639b7e7acc23cb2180a4e96c07",
+  "profile": {
+    "path": "docs/evidence/profiles/getup-800hz-3plus1-qualification-v1.json",
+    "sha256": "a197f6ba375c8f502904353a540c287549034d1df616b1c125c88ba6e94ee899"
+  },
+  "physicalStandingAndBuildEvidence": "docs/evidence/browser-3plus1-validation-2026-10-19.json",
+  "performanceContext": "Physics owner confirmed all native builds/probes terminal and paused for this exclusive actual-pointer diagnostic. Original worker4fa298cf, original transport, explicit3+1, rendering on, no encoder, passive command/reply/event tracing and100ms telemetry drains.",
+  "raw": {
+    "path": "outputs/browser-capability-20261019/root-com-correction/pointer-latency-explicit-3plus1/result.json",
+    "sha256": "7c56b05e9987aa4abeb66ab5514b3605c9c3da7e10a3fe84a324bc680fd0c5e7"
+  },
+  "summary": {
+    "path": "outputs/browser-capability-20261019/root-com-correction/pointer-latency-explicit-3plus1/summary.json",
+    "sha256": "23abe503ea7b35f96a8399db463330cdb6048c9de569c0d556cf8c6d7b357409"
+  },
+  "method": "Actual trusted pointer events, original automatic scheduler/transport/rendering, no encoder. Passive Worker tracing preserves original messages/transfer lists. Worker clocks converted by workerTimeOriginMs\u2212mainTimeOriginMs. Applied acknowledgments establish intent accepted at a physical boundary. First completed tick after that applied tick is only an upper bound on first integration opportunity with that target active, not a force-call/nonzero-force timestamp. visibleAtMs is CPU GPU-submission-side movement+cumulative-ack proxy, not causal screen-visible response.",
+  "trials": [
+    {
+      "protocol": {
+        "id": "isolated-8moves-500ms",
+        "count": 8,
+        "intervalMs": 500,
+        "dx": 8
+      },
+      "final": {
+        "tick": 317,
+        "time": 7.925,
+        "motion": "Upright",
+        "failure": null,
+        "error": "",
+        "activePointer": null,
+        "workerInstances": 1
+      },
+      "profileInitializations": 1,
+      "counts": {
+        "requestedMoveCalls": 8,
+        "deliveredPressedMoves": 8,
+        "allMovesTrusted": true,
+        "driverInputRecords": 8,
+        "applicationCoalesced": 0,
+        "sentMoves": 8,
+        "sentMoveCommands": 8,
+        "acceptedMoves": 8,
+        "rejectedMoves": 0,
+        "missingAcknowledgments": 0,
+        "finiteSubmittedMovementProxy": 8,
+        "nullSubmittedMovementProxy": 0,
+        "sentNullSubmittedMovementProxy": 0,
+        "pendingVisualInputs": 0,
+        "droppedInputs": 0,
+        "droppedPackets": 0,
+        "droppedFrames": 0,
+        "deliveredEventsMissingDriverRecord": 0,
+        "missingIntegrationOpportunity": 0,
+        "integrationOpportunityEligible": 8,
+        "supersededBeforeFirstIntegration": 0,
+        "invalidClockIntervals": 0
+      },
+      "bounds": {
+        "maximumQueueDepth": 1,
+        "maximumOutstandingAdvances": 1,
+        "maximumAdvanceTicks": 1,
+        "maximumTransferBuffers": 3
+      },
+      "actualDeliveredEventIntervalsMs": {
+        "count": 7,
+        "mean": 500.028571428465,
+        "p50": 500.69999999925494,
+        "p95": 501.8999999985099,
+        "p99": 501.8999999985099,
+        "max": 501.8999999985099
+      },
+      "eventToHandlerEntryMs": {
+        "count": 8,
+        "mean": 2.137500001117587,
+        "p50": 2.100000001490116,
+        "p95": 3.300000000745058,
+        "p99": 3.300000000745058,
+        "max": 3.300000000745058
+      },
+      "eventToSendMs": {
+        "count": 8,
+        "mean": 14.71250000083819,
+        "p50": 16,
+        "p95": 18.400000002235174,
+        "p99": 18.400000002235174,
+        "max": 18.400000002235174
+      },
+      "eventToAcceptedPublicationMs": {
+        "count": 8,
+        "mean": 15.049963381141424,
+        "p50": 16.299902345985174,
+        "p95": 18.700048830360174,
+        "p99": 18.700048830360174,
+        "max": 18.700048830360174
+      },
+      "eventToAckReceivedMs": {
+        "count": 8,
+        "mean": 16.77500000130385,
+        "p50": 16.600000001490116,
+        "p95": 18.800000000745058,
+        "p99": 18.800000000745058,
+        "max": 18.800000000745058
+      },
+      "eventToFirstIntegrationOpportunityCompleteUpperBoundMs": {
+        "count": 8,
+        "mean": 33.150000002235174,
+        "p50": 32.00004883110523,
+        "p95": 36.89995117485523,
+        "p99": 36.89995117485523,
+        "max": 36.89995117485523
+      },
+      "eventToSubmittedMovementProxyMs": {
+        "count": 8,
+        "mean": 42.77500000083819,
+        "p50": 37.69999999925494,
+        "p95": 53.30000000074506,
+        "p99": 53.30000000074506,
+        "max": 53.30000000074506
+      },
+      "noInputWarmupHandBodyMotion": {
+        "fromSimulationTime": 2.5,
+        "toSimulationTime": 3,
+        "snapshots": 21,
+        "maxDisplacementFromFirstM": 0.00018148160678146708,
+        "maximumStepM": 1.212835108328349e-05,
+        "limits": "Physical snapshot body-origin motion establishes ambient motion exists; this is not direct renderer.presentation_position sampling. Therefore built-in movement threshold may be met without this command causing the motion."
+      },
+      "invalidClockIntervals": [],
+      "missingEvents": []
+    },
+    {
+      "protocol": {
+        "id": "stream-120moves-nominal60hz",
+        "count": 120,
+        "intervalMs": 16.666666666666668,
+        "dx": 8
+      },
+      "final": {
+        "tick": 301,
+        "time": 7.525,
+        "motion": "Upright",
+        "failure": null,
+        "error": "",
+        "activePointer": null,
+        "workerInstances": 1
+      },
+      "profileInitializations": 1,
+      "counts": {
+        "requestedMoveCalls": 120,
+        "deliveredPressedMoves": 120,
+        "allMovesTrusted": true,
+        "driverInputRecords": 120,
+        "applicationCoalesced": 13,
+        "sentMoves": 107,
+        "sentMoveCommands": 107,
+        "acceptedMoves": 107,
+        "rejectedMoves": 0,
+        "missingAcknowledgments": 0,
+        "finiteSubmittedMovementProxy": 107,
+        "nullSubmittedMovementProxy": 13,
+        "sentNullSubmittedMovementProxy": 0,
+        "pendingVisualInputs": 0,
+        "droppedInputs": 0,
+        "droppedPackets": 0,
+        "droppedFrames": 0,
+        "deliveredEventsMissingDriverRecord": 0,
+        "missingIntegrationOpportunity": 0,
+        "integrationOpportunityEligible": 94,
+        "supersededBeforeFirstIntegration": 13,
+        "invalidClockIntervals": 0
+      },
+      "bounds": {
+        "maximumQueueDepth": 1,
+        "maximumOutstandingAdvances": 1,
+        "maximumAdvanceTicks": 1,
+        "maximumTransferBuffers": 3
+      },
+      "actualDeliveredEventIntervalsMs": {
+        "count": 119,
+        "mean": 25.747899159663866,
+        "p50": 18.199999999254942,
+        "p95": 51.099999997764826,
+        "p99": 68.10000000149012,
+        "max": 93.80000000074506
+      },
+      "eventToHandlerEntryMs": {
+        "count": 120,
+        "mean": 4.647500000273188,
+        "p50": 2.100000001490116,
+        "p95": 16.699999999254942,
+        "p99": 17.599999997764826,
+        "max": 20.099999997764826
+      },
+      "eventToSendMs": {
+        "count": 107,
+        "mean": 21.483177570260573,
+        "p50": 17,
+        "p95": 46.19999999925494,
+        "p99": 52.69999999925494,
+        "max": 78.30000000074506
+      },
+      "eventToAcceptedPublicationMs": {
+        "count": 107,
+        "mean": 21.72065886047399,
+        "p50": 17.200097657740116,
+        "p95": 46.60014648362994,
+        "p99": 52.90019531175494,
+        "max": 78.60009765625
+      },
+      "eventToAckReceivedMs": {
+        "count": 107,
+        "mean": 24.920560747872447,
+        "p50": 17.800000000745058,
+        "p95": 47.80000000074506,
+        "p99": 53.19999999925494,
+        "max": 79.19999999925494
+      },
+      "eventToFirstIntegrationOpportunityCompleteUpperBoundMs": {
+        "count": 94,
+        "mean": 40.4809487203255,
+        "p50": 34.600195311009884,
+        "p95": 70.00009765475988,
+        "p99": 96.5,
+        "max": 96.5
+      },
+      "eventToSubmittedMovementProxyMs": {
+        "count": 107,
+        "mean": 51.61028037404763,
+        "p50": 51.70000000298023,
+        "p95": 84.09999999776483,
+        "p99": 104.69999999925494,
+        "max": 113.60000000149012
+      },
+      "noInputWarmupHandBodyMotion": {
+        "fromSimulationTime": 2.5,
+        "toSimulationTime": 3,
+        "snapshots": 21,
+        "maxDisplacementFromFirstM": 0.00018148160678146708,
+        "maximumStepM": 1.212835108328349e-05,
+        "limits": "Physical snapshot body-origin motion establishes ambient motion exists; this is not direct renderer.presentation_position sampling. Therefore built-in movement threshold may be met without this command causing the motion."
+      },
+      "invalidClockIntervals": [],
+      "missingEvents": []
+    }
+  ],
+  "limitations": [
+    "No exact timestamp for the grab force call or nonzero applied force exists in this immutable worker payload. The event\u2192completed tick value bounds completion of the first integration opportunity with that accepted target active. Superseded targets are counted and excluded from this bound distribution.",
+    "The built-in visibleAtMs predicate observes any selected-segment movement>1e\u22127 plus cumulative accepted sequence and advancing tick after draw submission. It does not prove that this command caused the movement, nor GPU/compositor/display completion. Ambient warmup hand movement is separately recorded and exceeds the predicate scale.",
+    "The stream requested nominal60Hz scheduling but actual trusted event intervals averaged25.75ms (~38.8Hz), with p95 interval51.1ms. This run does not qualify60Hz input delivery/handling.",
+    "No coalesced, null, superseded, missing, pending or dropped input is silently removed from completeness counts. Finite proxy percentiles have an explicit finite sample count.",
+    "Legacy60/240Hz browser qualification thresholds were not migrated or relaxed. These exploratory figures do not close the interaction-latency gate; real Android remains untested.",
+    "These two arms release~1.2s after the last move; later-applied-release ordering is handled in attribution logic but release during a selected first integration tick was not empirically exercised here."
+  ],
+  "rendererFreshnessReview": {
+    "status": "Read-only independently reviewed",
+    "definition": "snapshotAgeMs subtracts a worker-publication timestamp interpolated at the submitted presentation_time_s from main performance.now. It is a source-freshness proxy; backlog is not added, and computation before publication or physical delay against wall schedule are not directly measured.",
+    "rendererBehavior": "Current renderer blends from its last displayed pose/time and restarts arrival on each accepted snapshot; multiple replies before the next drawn frame can preserve stale displayed state. No renderer fix is claimed in this evidence.",
+    "coldInitialization": "The manual tick0 readiness/screenshot setup retains the old initial source timestamp. It affects full-window maxima, but removing only displayed times<.025s still leaves p95 ages113.36/114.35/102.18ms. The separately labeled warm tick\u2265120 p95~96\u2013100ms remains unexplained by that cold source."
+  },
+  "harnesses": [
+    {
+      "path": "outputs/browser-capability-20261019/root-com-correction/verify-pointer-latency.mjs",
+      "sha256": "8cfc36e51da49e50d1562197d06349ac974ead9ef956dbfd90a6bc3e3ffd012c"
+    },
+    {
+      "path": "outputs/browser-capability-20261019/root-com-correction/summarize-pointer-latency.mjs",
+      "sha256": "de58358f9a524a989646f7430a18f8f9522660a80c68a6d16f04de9a4bbbc7a5"
+    }
+  ],
+  "next": "Retain latency as open. Independently review boundary/clock attribution, then use saved traces for renderer scalar-time replay before proposing any narrow isolated presentation correction.",
+  "independentReview": "Read-only independent audit reconstructed all event/sequence/applied-tick/generation/clock counts and percentile values from raw trace; no correction required. Added explicit nested integration-clock validity and missing-integration assertions for future captures."
+}
