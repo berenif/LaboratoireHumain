@@ -208,6 +208,10 @@ mod browser {
         pub fn getup_fixture_report(&self) -> Result<String,JsValue> {
             self.runtime.getup_fixture_report().map_err(error)
         }
+        #[cfg(feature = "root-translation-carry-experiment")]
+        pub fn set_root_translation_compensation_enabled(&mut self, enabled: bool) -> Result<(), JsValue> {
+            self.runtime.set_root_translation_compensation_enabled(enabled).map_err(error)
+        }
         pub fn getup_standing_diagnostic(&self, anchors_json:&str) -> Result<String,JsValue> {
             self.runtime.getup_standing_diagnostic(anchors_json).map_err(error)
         }

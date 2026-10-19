@@ -1,0 +1,1344 @@
+{
+  "schema": 1,
+  "date": "2026-10-19",
+  "classification": "completed-explicit-default-off-carry-fresh-3plus1-four-pose-recovery-and-three-native-30s-continuations",
+  "disposition": "Not globally admitted: back, belly and side-supported pass the unchanged one-second original standing gate and sustain 30 seconds; side fails the unchanged 25-second recovery deadline at 768/800 samples. Corrected root carry changes which pose fails versus matched no-carry 3+1. No per-pose profile selection.",
+  "standingQualified": false,
+  "qualification24Cases": false,
+  "releaseAccepted": false,
+  "productionRecoveryEnabled": false,
+  "defaultPublicProfileChanged": false,
+  "physicalAcceptanceChanged": false,
+  "engineCommit": "b46df904310c46c822513899776eecd9dde9040f",
+  "rawSourceFreezeBaseCommit": "2708eda150275a3544267444cb70ca0cda48fd25",
+  "experiment": {
+    "feature": "root-translation-carry-experiment",
+    "features": [
+      "getup-terminal-balance-experiment",
+      "standing-dynamics-experiment",
+      "root-translation-carry-experiment"
+    ],
+    "algorithm": "f32-dq-f64-remainder-v1",
+    "compileEnabledStartsInactive": true,
+    "arithmetic": "Existing f32 dq=velocity*dt; f64 carry only in root-coordinate addition; angular paths unchanged",
+    "freshConstruction": true,
+    "checkpointProfileMorph": false,
+    "activation": "Enabled at native zero immediately after each fresh fixture construction, before preparation, teacher forecast or trigger. Exact zero remainder. Same-live pre/post activation serialized body world and embedded Runtime string equality asserted.",
+    "continuation": "Restore each newly measured passing schema-2 checkpoint with nonzero carry intact; no reactivation, reset, fixture preparation or teacher replay.",
+    "frozenLibrary": {
+      "path": "outputs/getup-root-translation-carry-20261019/liblh_sim-carry-frozen.rlib",
+      "sha256": "ac8d054ed1412571f9f91f056255b46afda18ae3fcc04eaac30a66e12476b6dd",
+      "bytes": 24054950
+    },
+    "dependencyManifest": {
+      "path": "outputs/getup-root-translation-carry-20261019/runtime-frozen-rlib-manifest.json",
+      "sha256": "2c98fa9e10b8dcca800cc310e93d4751bc227ade7d12aee45543fdf5af50e2c6",
+      "bytes": 2041
+    },
+    "allFiveDependencyHashesReverified": true,
+    "sourceSha256": {
+      "rust/crates/sim/Cargo.toml": "93690cd613fd83ed5e04e9636f496285dfae1adfa15b944cefc009e7cc2521b1",
+      "rust/crates/sim/src/getup_fixture_profile_tests.rs": "9aabd3649be57e8a8d55977a446e9548d6e69e99cbe5c01277557e455a3852d0",
+      "rust/crates/sim/src/getup_root_translation_checkpoint_tests.rs": "ef6200665eded0fa1b10cb155c57f6c5c85059c6ee62bfb5e2627157e3299727",
+      "rust/crates/sim/src/runtime.rs": "7d7493dbcdaa4c9e2b1deb771fc6ec068f55b5d4ce73bcd25e9da53c6073b955",
+      "rust/vendor/rapier3d/Cargo.toml": "952118c8a8cad953cf9731da9f777491daedca0c2495e07a9a156d68a4ac4283",
+      "rust/vendor/rapier3d/src/dynamics/joint/multibody_joint/mod.rs": "ae3031204f216acc748c6ea330c8b09b1f2c223ae8c3c3a719e1cfeb6fba7db6",
+      "rust/vendor/rapier3d/src/dynamics/joint/multibody_joint/multibody.rs": "661b71d6df77746b04755aedcc2be2e97ad94641fec61884939d31dd6f48bd80",
+      "rust/vendor/rapier3d/src/dynamics/joint/multibody_joint/multibody_joint.rs": "34af55b12f3a7c126366f7599e8087fb2265aef18fedfd1efe00bfd82ff4bc81",
+      "rust/vendor/rapier3d/src/dynamics/joint/multibody_joint/root_translation_compensation_tests.rs": "26eff2a83a08f1de789f43529287cb6946177b5c8c97594ad349ef165b0b3ec5"
+    },
+    "allNineSourceHashesMatchEngineCommitAndCurrentFiles": true,
+    "freezeChronology": "source-freeze.json is an inherited pre-campaign receipt. Its candidateDynamicsExecuted=false and old belly inputCheckpoint describe the earlier freeze, not this completed fresh-construction campaign. Executed probes and terminal process ledgers establish the present scope. Later worker-only export/build changes outside these nine frozen source files are not imported as physics evidence."
+  },
+  "profile": {
+    "path": "docs/evidence/profiles/getup-800hz-3plus1-recovery-qualification-v1.json",
+    "sha256": "ea6da63a9996d9528f3dc25041cf476fdf0cfa828f57c57d119b78c8ebd0f3a7",
+    "completeInput": {
+      "id": "getup-800hz-3plus1-recovery-qualification-v1",
+      "dt_s": 0.00125,
+      "tick_substeps": 20,
+      "contact_friction_model": "coulomb",
+      "solver_iterations": 3,
+      "internal_pgs_iterations": 20,
+      "fall_internal_pgs_iterations": 32,
+      "additional_body_iterations": 1,
+      "allowed_linear_error_m": 0.001,
+      "prediction_distance_m": 0.002,
+      "motor_scale": 1.0,
+      "aggregate_motor_cap_nm": 920.0,
+      "angular_damping": 0.0,
+      "contact_skin_m": 0.0,
+      "max_ccd_substeps": 4,
+      "disable_solver_speed_cap": true,
+      "posture_stiffness_multiplier": 1.0,
+      "posture_damping_multiplier": 1.0,
+      "supported_tilt_gain": 2.0,
+      "supported_com_gain_rad_per_m": 5.0,
+      "supported_com_velocity_gain_s_rad_per_m": 5.0,
+      "supported_angular_velocity_gain_s": 2.0,
+      "grab_limits": {
+        "angular_frequency_rad_s": 16.0,
+        "target_speed_m_s": 1.5,
+        "target_acceleration_m_s2": 8.0,
+        "force_n": 180.0,
+        "torque_nm": 12.0,
+        "positive_power_w": 36.0
+      },
+      "reaching_iterations": 6,
+      "reaching_coordinate_increment_rad": 0.15,
+      "reaching_damping_m2": 0.01,
+      "corrective_steps_enabled": false,
+      "recovery_enabled": false,
+      "getup_policy_enabled": true
+    },
+    "byteIdenticalToMatchedNoCarryProfile": true,
+    "typedCompleteReadbackVerifiedEachFreshCaseAndHold": true,
+    "jsonRepresentation": "Result JSON Value promotes some f32 profile fields to f64 decimal strings. Exact f32 encodings of every float match the complete input and baseline; no numerical tolerance or profile change."
+  },
+  "unchangedCriteria": {
+    "nativeHz": 800,
+    "controllerHz": 40,
+    "nativeIntegrationsPerTick": 20,
+    "recoveryDeadlineSecondsAfterTrigger": 25,
+    "contiguousOriginalStandingNativeSamples": 800,
+    "footOriginDriftFromOriginalStableAnchorsM": 0.01,
+    "continuationLoadedSlipStopM": 0.02,
+    "wholeRecovery20mmStop": false,
+    "recoveryLoadedSlipCrossingsDiagnosticOnly": true,
+    "headHeightGreaterThanM": 1.4,
+    "torsoUpAtLeast": 0.97,
+    "maximumBodyLinearMps": 0.22,
+    "maximumBodyAngularRadps": 0.65,
+    "bothFeetLoadPersistenceNativeSamples": 40,
+    "footLoadFractionOfWeightAtLeast": 0.8,
+    "nonFootLoadLessThanN": 3,
+    "supportHullMarginM": 0.003,
+    "actorsGainsBodyMotorBoundsChanged": false,
+    "externalRootForceOrTorqueAssistance": false,
+    "poseOrVelocityWrites": false,
+    "noPoseVelocityWriteScope": "After fresh-fixture construction; the accepted preparation/trigger and recovery use the unchanged frozen runtime. Holds restore measured checkpoints without pose or velocity rewrites."
+  },
+  "actors": {
+    "rust/crates/sim/data/getup-policy/teacher.bin": "f8d8d6ea787366a67aa46352cf5243ed2962dd277b5ca6b6f98a85fc3a67ab4f",
+    "rust/crates/sim/data/getup-policy/student.bin": "c489faed55bdab1669c51dab71a102db91ff2a55143789f682e45cd8169d6dbb"
+  },
+  "cases": [
+    {
+      "kind": "back",
+      "outcome": "experimental-terminal-balance-one-second-standing-pass",
+      "fixtureAdmitted": true,
+      "standingPassed": true,
+      "triggerNative": 480,
+      "firstLatchedStandingPassNative": 3572,
+      "realNativeIntegrations": 3580,
+      "forecastNativeIntegrations": 960,
+      "totalActualIntegrations": 4540,
+      "nativeObserverSamples": 3580,
+      "unobservedRealTailNativeSteps": 0,
+      "physicalSeconds": 4.475,
+      "preparationPollingTicks": 4,
+      "finalContiguousStableSeconds": 1.01,
+      "maximumContiguousStableSecondsObservedAt800Hz": 1.01,
+      "minimumActualHeadM": 0.08980352431535721,
+      "maximumActualHeadM": 1.4534316062927246,
+      "maximumRequestedMotorEffortNm": 712.5015258789062,
+      "recoveryElapsedSecondsAfterTrigger": 3.875,
+      "terminalBalanceActivationNative": 2852,
+      "terminalStandingDiagnosticWithOriginalStableAnchors": {
+        "predicates": {
+          "angularMotion": true,
+          "bothFeetLoadedAndPersistent": true,
+          "captureInSupport": true,
+          "comInSupport": true,
+          "footDriftFromSuppliedAnchors": true,
+          "footLoadFraction": true,
+          "head": true,
+          "linearMotion": true,
+          "onlyFeet": true,
+          "torso": true
+        },
+        "headM": 1.4534316062927246,
+        "torsoUp": 0.9983798265457153,
+        "footDriftM": [
+          6.168489926494658e-05,
+          0.00190223497338593
+        ],
+        "thresholds": {
+          "angularRadps": 0.6499999761581421,
+          "footDriftM": 0.01,
+          "linearMps": 0.2199999988079071,
+          "torsoUp": 0.9700000286102295
+        }
+      },
+      "controllerAtRecoveryTerminal": {
+        "stableNativeSamples": 808,
+        "originalStableFeet": [
+          {
+            "x": -0.7180822,
+            "y": 0.026824845,
+            "z": 0.10622954
+          },
+          {
+            "x": -0.5981124,
+            "y": 0.02812223,
+            "z": 0.36946437
+          }
+        ],
+        "forecastNativeIntegrations": 960,
+        "slowPolicyDecisions": 119,
+        "slowDecisionArchiveLength": 119,
+        "teacherFrames": 48,
+        "referenceFrames": 97
+      },
+      "explicitActivation": {
+        "nativeIntegrations": 0,
+        "zeroRemainderAtNativeZero": true,
+        "sameLiveSerializedBodyWorldAndEmbeddedRuntimeUnchanged": true,
+        "typedCompleteProfileMatches": true
+      },
+      "checkpointVerifications": {
+        "initial": {
+          "passed": true,
+          "nativeSubsteps": 0,
+          "forecastSubsteps": 0,
+          "physicsIntegrations": 0
+        },
+        "trigger": {
+          "passed": true,
+          "nativeSubsteps": 480,
+          "forecastSubsteps": 0,
+          "physicsIntegrations": 0
+        },
+        "final": {
+          "passed": true,
+          "nativeSubsteps": 3580,
+          "forecastSubsteps": 960,
+          "physicsIntegrations": 0
+        }
+      },
+      "finalActiveRootSidecar": [
+        {
+          "root": [
+            0,
+            0
+          ],
+          "state": {
+            "qbits": [
+              3206980261,
+              1067565752,
+              1048585516
+            ],
+            "remainderbits": [
+              13701710531390341120,
+              4494772736236716032,
+              4487905732447961088
+            ]
+          }
+        }
+      ],
+      "loadedSlipDiagnosticWholeRecovery": {
+        "atTriggerM": [
+          0.0016010302194922586,
+          0.0017854125837777686
+        ],
+        "first20mmCrossingPhysicalSeconds": [
+          0.69625,
+          0.70625
+        ],
+        "loadedNativeSamples": [
+          2148,
+          2213
+        ],
+        "m": [
+          0.18190168127117015,
+          0.5722539012407941
+        ],
+        "maximumTangentSpeedMps": [
+          4.402766227722168,
+          5.381907939910889
+        ]
+      },
+      "process": {
+        "startedUtc": "2026-10-19T18:24:50.924168+00:00",
+        "finishedUtc": "2026-10-19T18:24:54.102384+00:00",
+        "status": "terminal",
+        "exitCode": 0,
+        "operationalHangTimeoutSeconds": 300
+      },
+      "continuation": {
+        "outcome": "completed",
+        "requestedSimulatedSeconds": 30.0,
+        "simulatedSeconds": 30.0,
+        "actualContinuationIntegrations": 24000,
+        "nativeSubsteps": 24000,
+        "unobservedTerminalTailNative": 0,
+        "allStandingPredicatesPassedEveryNativeSubstep": true,
+        "standingPredicateFailureSubsteps": {},
+        "firstStandingPredicateFailure": null,
+        "maximumFootOriginDriftM": [
+          0.0001576405338710174,
+          0.00017978563846554607
+        ],
+        "minimumFootLoadsN": [
+          192.14797973632812,
+          207.0302276611328
+        ],
+        "loadedContactSpeedIntegralM": [
+          2.389176678109218e-06,
+          5.39690235814573e-06
+        ],
+        "loadedSlipStopM": 0.02,
+        "maximumLoadedContactTangentSpeedMps": [
+          2.4990911242639413e-06,
+          4.0827471821103245e-06
+        ],
+        "unloadedFootSubsteps": [
+          0,
+          0
+        ],
+        "maximumBodyLinearMps": 0.03158063814043999,
+        "maximumBodyAngularRadps": 0.042654234915971756,
+        "initialCom": {
+          "x": -0.6244848370552063,
+          "y": 0.80976402759552,
+          "z": 0.22231756150722504
+        },
+        "finalCom": {
+          "x": -0.6149336099624634,
+          "y": 0.8092821836471558,
+          "z": 0.21720781922340393
+        },
+        "originalControllerStableCounterAtInput": 808,
+        "originalControllerStableCounterExpectedFinal": 24808,
+        "originalControllerStableCounterFinal": 24808,
+        "originalControllerCounterContinuousEveryNativeSubstep": true,
+        "originalControllerCounterDiscontinuitySubsteps": 0,
+        "firstOriginalControllerCounterFailure": null,
+        "originalStableAnchorsAtInput": [
+          {
+            "x": -0.7180822,
+            "y": 0.026824845,
+            "z": 0.10622954
+          },
+          {
+            "x": -0.5981124,
+            "y": 0.02812223,
+            "z": 0.36946437
+          }
+        ],
+        "originalStableAnchorsUnchanged": true,
+        "teacherForecastUnchanged": true,
+        "slowDecisionCountUnchanged": true,
+        "slowDecisionArchiveLengthUnchanged": true,
+        "noExternalSupport": true,
+        "noPoseOrVelocityWrites": true,
+        "forecastNativeIntegrations": 0,
+        "inputCheckpointSha256": "f1d36532b29c3ece65ab3437c8631c24e767433a1f49ab84a4fca6108cedd7e8",
+        "schema": 2,
+        "carryAlreadyActiveAtInput": true,
+        "activationOrResetDuringContinuation": false,
+        "exactTeacherFramesReferenceDecisionArchiveAndBalanceBindingPreserved": true,
+        "controllerCountsBeforeAndAfter": {
+          "forecastNativeIntegrations": 960,
+          "slowPolicyDecisions": 119,
+          "slowDecisionArchiveLength": 119,
+          "teacherFrames": 48,
+          "referenceFrames": 97
+        },
+        "savedControlTraceRows": 1200,
+        "savedNativeDiagnosticRows": 1200,
+        "finalActiveRootSidecar": [
+          {
+            "root": [
+              0,
+              0
+            ],
+            "state": {
+              "qbits": [
+                3206707640,
+                1067566467,
+                1047975078
+              ],
+              "remainderbits": [
+                4474587085313015808,
+                4483938227408420864,
+                4483447651119923200
+              ]
+            }
+          }
+        ],
+        "process": {
+          "startedUtc": "2026-10-19T18:26:20.082818+00:00",
+          "finishedUtc": "2026-10-19T18:26:37.852108+00:00",
+          "status": "terminal",
+          "exitCode": 0,
+          "authorizedPhysicsComputeSeconds": 240,
+          "operationalHangTimeoutSeconds": 300
+        },
+        "standingPredicatePassCounts": {
+          "angularMotion": 24000,
+          "bothFeetLoadedAndPersistent": 24000,
+          "captureInSupport": 24000,
+          "comInSupport": 24000,
+          "footDriftFromSuppliedAnchors": 24000,
+          "footLoadFraction": 24000,
+          "head": 24000,
+          "linearMotion": 24000,
+          "onlyFeet": 24000,
+          "torso": 24000
+        }
+      },
+      "firstLatchedStandingPassStableNativeSamples": 800
+    },
+    {
+      "kind": "belly",
+      "outcome": "experimental-terminal-balance-one-second-standing-pass",
+      "fixtureAdmitted": true,
+      "standingPassed": true,
+      "triggerNative": 400,
+      "firstLatchedStandingPassNative": 2551,
+      "realNativeIntegrations": 2560,
+      "forecastNativeIntegrations": 540,
+      "totalActualIntegrations": 3100,
+      "nativeObserverSamples": 2560,
+      "unobservedRealTailNativeSteps": 0,
+      "physicalSeconds": 3.2,
+      "preparationPollingTicks": 4,
+      "finalContiguousStableSeconds": 1.01125,
+      "maximumContiguousStableSecondsObservedAt800Hz": 1.01125,
+      "minimumActualHeadM": 0.08967845141887665,
+      "maximumActualHeadM": 1.4565277099609375,
+      "maximumRequestedMotorEffortNm": 684.9482421875,
+      "recoveryElapsedSecondsAfterTrigger": 2.7,
+      "terminalBalanceActivationNative": 1831,
+      "terminalStandingDiagnosticWithOriginalStableAnchors": {
+        "predicates": {
+          "angularMotion": true,
+          "bothFeetLoadedAndPersistent": true,
+          "captureInSupport": true,
+          "comInSupport": true,
+          "footDriftFromSuppliedAnchors": true,
+          "footLoadFraction": true,
+          "head": true,
+          "linearMotion": true,
+          "onlyFeet": true,
+          "torso": true
+        },
+        "headM": 1.4503620862960815,
+        "torsoUp": 0.9997913241386414,
+        "footDriftM": [
+          7.059410563670099e-05,
+          0.00029274050029926
+        ],
+        "thresholds": {
+          "angularRadps": 0.6499999761581421,
+          "footDriftM": 0.01,
+          "linearMps": 0.2199999988079071,
+          "torsoUp": 0.9700000286102295
+        }
+      },
+      "controllerAtRecoveryTerminal": {
+        "stableNativeSamples": 809,
+        "originalStableFeet": [
+          {
+            "x": 0.28549412,
+            "y": 0.026814329,
+            "z": -0.49109477
+          },
+          {
+            "x": 0.014168512,
+            "y": 0.026699273,
+            "z": -0.71186024
+          }
+        ],
+        "forecastNativeIntegrations": 540,
+        "slowPolicyDecisions": 72,
+        "slowDecisionArchiveLength": 72,
+        "teacherFrames": 27,
+        "referenceFrames": 55
+      },
+      "explicitActivation": {
+        "nativeIntegrations": 0,
+        "zeroRemainderAtNativeZero": true,
+        "sameLiveSerializedBodyWorldAndEmbeddedRuntimeUnchanged": true,
+        "typedCompleteProfileMatches": true
+      },
+      "checkpointVerifications": {
+        "initial": {
+          "passed": true,
+          "nativeSubsteps": 0,
+          "forecastSubsteps": 0,
+          "physicsIntegrations": 0
+        },
+        "trigger": {
+          "passed": true,
+          "nativeSubsteps": 400,
+          "forecastSubsteps": 0,
+          "physicsIntegrations": 0
+        },
+        "final": {
+          "passed": true,
+          "nativeSubsteps": 2560,
+          "forecastSubsteps": 540,
+          "physicsIntegrations": 0
+        }
+      },
+      "finalActiveRootSidecar": [
+        {
+          "root": [
+            0,
+            0
+          ],
+          "state": {
+            "qbits": [
+              1037150280,
+              1067537744,
+              3205283485
+            ],
+            "remainderbits": [
+              4479436490075406336,
+              13715329524411924480,
+              13714028987337408512
+            ]
+          }
+        }
+      ],
+      "loadedSlipDiagnosticWholeRecovery": {
+        "atTriggerM": [
+          0.0007808495154370121,
+          0.0009426618341228739
+        ],
+        "first20mmCrossingPhysicalSeconds": [
+          0.6075,
+          null
+        ],
+        "loadedNativeSamples": [
+          1652,
+          1601
+        ],
+        "m": [
+          0.08200915745136654,
+          0.017892619634937837
+        ],
+        "maximumTangentSpeedMps": [
+          1.9839855432510376,
+          0.8924023509025574
+        ]
+      },
+      "process": {
+        "startedUtc": "2026-10-19T18:24:54.104599+00:00",
+        "finishedUtc": "2026-10-19T18:24:56.382392+00:00",
+        "status": "terminal",
+        "exitCode": 0,
+        "operationalHangTimeoutSeconds": 300
+      },
+      "continuation": {
+        "outcome": "completed",
+        "requestedSimulatedSeconds": 30.0,
+        "simulatedSeconds": 30.0,
+        "actualContinuationIntegrations": 24000,
+        "nativeSubsteps": 24000,
+        "unobservedTerminalTailNative": 0,
+        "allStandingPredicatesPassedEveryNativeSubstep": true,
+        "standingPredicateFailureSubsteps": {},
+        "firstStandingPredicateFailure": null,
+        "maximumFootOriginDriftM": [
+          0.0001556672214064747,
+          0.00014425537665374577
+        ],
+        "minimumFootLoadsN": [
+          196.15115356445312,
+          203.27783203125
+        ],
+        "loadedContactSpeedIntegralM": [
+          6.460540562716017e-06,
+          7.974727026918154e-06
+        ],
+        "loadedSlipStopM": 0.02,
+        "maximumLoadedContactTangentSpeedMps": [
+          1.5351830597865046e-06,
+          2.3327368126047077e-06
+        ],
+        "unloadedFootSubsteps": [
+          0,
+          0
+        ],
+        "maximumBodyLinearMps": 0.019375871866941452,
+        "maximumBodyAngularRadps": 0.031888965517282486,
+        "initialCom": {
+          "x": 0.10021495074033737,
+          "y": 0.8053373694419861,
+          "z": -0.540755569934845
+        },
+        "finalCom": {
+          "x": 0.10227197408676147,
+          "y": 0.805657684803009,
+          "z": -0.5436288118362427
+        },
+        "originalControllerStableCounterAtInput": 809,
+        "originalControllerStableCounterExpectedFinal": 24809,
+        "originalControllerStableCounterFinal": 24809,
+        "originalControllerCounterContinuousEveryNativeSubstep": true,
+        "originalControllerCounterDiscontinuitySubsteps": 0,
+        "firstOriginalControllerCounterFailure": null,
+        "originalStableAnchorsAtInput": [
+          {
+            "x": 0.28549412,
+            "y": 0.026814329,
+            "z": -0.49109477
+          },
+          {
+            "x": 0.014168512,
+            "y": 0.026699273,
+            "z": -0.71186024
+          }
+        ],
+        "originalStableAnchorsUnchanged": true,
+        "teacherForecastUnchanged": true,
+        "slowDecisionCountUnchanged": true,
+        "slowDecisionArchiveLengthUnchanged": true,
+        "noExternalSupport": true,
+        "noPoseOrVelocityWrites": true,
+        "forecastNativeIntegrations": 0,
+        "inputCheckpointSha256": "f265117ad80906ed2dfd23011cc18afe8fe2e7a930ac7cb4d4c81c96bb6e303f",
+        "schema": 2,
+        "carryAlreadyActiveAtInput": true,
+        "activationOrResetDuringContinuation": false,
+        "exactTeacherFramesReferenceDecisionArchiveAndBalanceBindingPreserved": true,
+        "controllerCountsBeforeAndAfter": {
+          "forecastNativeIntegrations": 540,
+          "slowPolicyDecisions": 72,
+          "slowDecisionArchiveLength": 72,
+          "teacherFrames": 27,
+          "referenceFrames": 55
+        },
+        "savedControlTraceRows": 1200,
+        "savedNativeDiagnosticRows": 1200,
+        "finalActiveRootSidecar": [
+          {
+            "root": [
+              0,
+              0
+            ],
+            "state": {
+              "qbits": [
+                1037538306,
+                1067539916,
+                3205370343
+              ],
+              "remainderbits": [
+                13701529576250781696,
+                13722361536340521216,
+                4493652437693374080
+              ]
+            }
+          }
+        ],
+        "process": {
+          "startedUtc": "2026-10-19T18:26:37.856651+00:00",
+          "finishedUtc": "2026-10-19T18:26:55.523975+00:00",
+          "status": "terminal",
+          "exitCode": 0,
+          "authorizedPhysicsComputeSeconds": 240,
+          "operationalHangTimeoutSeconds": 300
+        },
+        "standingPredicatePassCounts": {
+          "angularMotion": 24000,
+          "bothFeetLoadedAndPersistent": 24000,
+          "captureInSupport": 24000,
+          "comInSupport": 24000,
+          "footDriftFromSuppliedAnchors": 24000,
+          "footLoadFraction": 24000,
+          "head": 24000,
+          "linearMotion": 24000,
+          "onlyFeet": 24000,
+          "torso": 24000
+        }
+      },
+      "firstLatchedStandingPassStableNativeSamples": 800
+    },
+    {
+      "kind": "side-supported",
+      "outcome": "experimental-terminal-balance-one-second-standing-pass",
+      "fixtureAdmitted": true,
+      "standingPassed": true,
+      "triggerNative": 140,
+      "firstLatchedStandingPassNative": 17085,
+      "realNativeIntegrations": 17100,
+      "forecastNativeIntegrations": 720,
+      "totalActualIntegrations": 17820,
+      "nativeObserverSamples": 17100,
+      "unobservedRealTailNativeSteps": 0,
+      "physicalSeconds": 21.375,
+      "preparationPollingTicks": 1,
+      "finalContiguousStableSeconds": 1.01875,
+      "maximumContiguousStableSecondsObservedAt800Hz": 1.01875,
+      "minimumActualHeadM": 0.144250750541687,
+      "maximumActualHeadM": 1.4619662761688232,
+      "maximumRequestedMotorEffortNm": 726.6951904296875,
+      "recoveryElapsedSecondsAfterTrigger": 21.2,
+      "terminalBalanceActivationNative": 16100,
+      "terminalStandingDiagnosticWithOriginalStableAnchors": {
+        "predicates": {
+          "angularMotion": true,
+          "bothFeetLoadedAndPersistent": true,
+          "captureInSupport": true,
+          "comInSupport": true,
+          "footDriftFromSuppliedAnchors": true,
+          "footLoadFraction": true,
+          "head": true,
+          "linearMotion": true,
+          "onlyFeet": true,
+          "torso": true
+        },
+        "headM": 1.4556493759155273,
+        "torsoUp": 0.9992954134941101,
+        "footDriftM": [
+          4.928430280415341e-05,
+          0.0012265004916116595
+        ],
+        "thresholds": {
+          "angularRadps": 0.6499999761581421,
+          "footDriftM": 0.01,
+          "linearMps": 0.2199999988079071,
+          "torsoUp": 0.9700000286102295
+        }
+      },
+      "controllerAtRecoveryTerminal": {
+        "stableNativeSamples": 815,
+        "originalStableFeet": [
+          {
+            "x": 0.5697783,
+            "y": 0.026841152,
+            "z": 0.6708417
+          },
+          {
+            "x": 0.69521624,
+            "y": 0.027728254,
+            "z": 0.4964677
+          }
+        ],
+        "forecastNativeIntegrations": 720,
+        "slowPolicyDecisions": 798,
+        "slowDecisionArchiveLength": 798,
+        "teacherFrames": 36,
+        "referenceFrames": 73
+      },
+      "explicitActivation": {
+        "nativeIntegrations": 0,
+        "zeroRemainderAtNativeZero": true,
+        "sameLiveSerializedBodyWorldAndEmbeddedRuntimeUnchanged": true,
+        "typedCompleteProfileMatches": true
+      },
+      "checkpointVerifications": {
+        "initial": {
+          "passed": true,
+          "nativeSubsteps": 0,
+          "forecastSubsteps": 0,
+          "physicsIntegrations": 0
+        },
+        "trigger": {
+          "passed": true,
+          "nativeSubsteps": 140,
+          "forecastSubsteps": 0,
+          "physicsIntegrations": 0
+        },
+        "final": {
+          "passed": true,
+          "nativeSubsteps": 17100,
+          "forecastSubsteps": 720,
+          "physicsIntegrations": 0
+        }
+      },
+      "finalActiveRootSidecar": [
+        {
+          "root": [
+            0,
+            0
+          ],
+          "state": {
+            "qbits": [
+              1058981794,
+              1067582183,
+              1057998928
+            ],
+            "remainderbits": [
+              4492220470552166400,
+              4497898240494010368,
+              4494136606308958208
+            ]
+          }
+        }
+      ],
+      "loadedSlipDiagnosticWholeRecovery": {
+        "atTriggerM": [
+          0.0,
+          0.0013864445600484034
+        ],
+        "first20mmCrossingPhysicalSeconds": [
+          0.5575,
+          0.2075
+        ],
+        "loadedNativeSamples": [
+          14042,
+          15437
+        ],
+        "m": [
+          0.7996297616117141,
+          1.0097339937969034
+        ],
+        "maximumTangentSpeedMps": [
+          1.7586034536361694,
+          1.3792855739593506
+        ]
+      },
+      "process": {
+        "startedUtc": "2026-10-19T18:24:56.384606+00:00",
+        "finishedUtc": "2026-10-19T18:25:09.089926+00:00",
+        "status": "terminal",
+        "exitCode": 0,
+        "operationalHangTimeoutSeconds": 300
+      },
+      "continuation": {
+        "outcome": "completed",
+        "requestedSimulatedSeconds": 30.0,
+        "simulatedSeconds": 30.0,
+        "actualContinuationIntegrations": 24000,
+        "nativeSubsteps": 24000,
+        "unobservedTerminalTailNative": 0,
+        "allStandingPredicatesPassedEveryNativeSubstep": true,
+        "standingPredicateFailureSubsteps": {},
+        "firstStandingPredicateFailure": null,
+        "maximumFootOriginDriftM": [
+          0.00031621515518054366,
+          0.00029708389774896204
+        ],
+        "minimumFootLoadsN": [
+          190.13099670410156,
+          209.77223205566406
+        ],
+        "loadedContactSpeedIntegralM": [
+          6.119426635748939e-06,
+          3.1124635057278295e-06
+        ],
+        "loadedSlipStopM": 0.02,
+        "maximumLoadedContactTangentSpeedMps": [
+          6.232672149053542e-06,
+          8.816779882181436e-06
+        ],
+        "unloadedFootSubsteps": [
+          0,
+          0
+        ],
+        "maximumBodyLinearMps": 0.0186116024851799,
+        "maximumBodyAngularRadps": 0.022457284852862358,
+        "initialCom": {
+          "x": 0.5906534194946289,
+          "y": 0.8106270432472229,
+          "z": 0.5574396848678589
+        },
+        "finalCom": {
+          "x": 0.5866627097129822,
+          "y": 0.8103964328765869,
+          "z": 0.5554279685020447
+        },
+        "originalControllerStableCounterAtInput": 815,
+        "originalControllerStableCounterExpectedFinal": 24815,
+        "originalControllerStableCounterFinal": 24815,
+        "originalControllerCounterContinuousEveryNativeSubstep": true,
+        "originalControllerCounterDiscontinuitySubsteps": 0,
+        "firstOriginalControllerCounterFailure": null,
+        "originalStableAnchorsAtInput": [
+          {
+            "x": 0.5697783,
+            "y": 0.026841152,
+            "z": 0.6708417
+          },
+          {
+            "x": 0.69521624,
+            "y": 0.027728254,
+            "z": 0.4964677
+          }
+        ],
+        "originalStableAnchorsUnchanged": true,
+        "teacherForecastUnchanged": true,
+        "slowDecisionCountUnchanged": true,
+        "slowDecisionArchiveLengthUnchanged": true,
+        "noExternalSupport": true,
+        "noPoseOrVelocityWrites": true,
+        "forecastNativeIntegrations": 0,
+        "inputCheckpointSha256": "2a82fd244a33588b3085ea424b7d5be762a9df20fbae853dd2a241f27b913779",
+        "schema": 2,
+        "carryAlreadyActiveAtInput": true,
+        "activationOrResetDuringContinuation": false,
+        "exactTeacherFramesReferenceDecisionArchiveAndBalanceBindingPreserved": true,
+        "controllerCountsBeforeAndAfter": {
+          "forecastNativeIntegrations": 720,
+          "slowPolicyDecisions": 798,
+          "slowDecisionArchiveLength": 798,
+          "teacherFrames": 36,
+          "referenceFrames": 73
+        },
+        "savedControlTraceRows": 1200,
+        "savedNativeDiagnosticRows": 1200,
+        "finalActiveRootSidecar": [
+          {
+            "root": [
+              0,
+              0
+            ],
+            "state": {
+              "qbits": [
+                1058866995,
+                1067582004,
+                1057941755
+              ],
+              "remainderbits": [
+                13711021250130214912,
+                4498673010700922880,
+                13692759671583014912
+              ]
+            }
+          }
+        ],
+        "process": {
+          "startedUtc": "2026-10-19T18:26:55.545485+00:00",
+          "finishedUtc": "2026-10-19T18:27:13.267879+00:00",
+          "status": "terminal",
+          "exitCode": 0,
+          "authorizedPhysicsComputeSeconds": 240,
+          "operationalHangTimeoutSeconds": 300
+        },
+        "standingPredicatePassCounts": {
+          "angularMotion": 24000,
+          "bothFeetLoadedAndPersistent": 24000,
+          "captureInSupport": 24000,
+          "comInSupport": 24000,
+          "footDriftFromSuppliedAnchors": 24000,
+          "footLoadFraction": 24000,
+          "head": 24000,
+          "linearMotion": 24000,
+          "onlyFeet": 24000,
+          "torso": 24000
+        }
+      },
+      "firstLatchedStandingPassStableNativeSamples": 800
+    },
+    {
+      "kind": "side",
+      "outcome": "25-second-recovery-deadline",
+      "fixtureAdmitted": true,
+      "standingPassed": false,
+      "triggerNative": 340,
+      "firstLatchedStandingPassNative": null,
+      "realNativeIntegrations": 20340,
+      "forecastNativeIntegrations": 700,
+      "totalActualIntegrations": 21040,
+      "nativeObserverSamples": 20340,
+      "unobservedRealTailNativeSteps": 0,
+      "physicalSeconds": 25.425,
+      "preparationPollingTicks": 1,
+      "finalContiguousStableSeconds": 0.96,
+      "maximumContiguousStableSecondsObservedAt800Hz": 0.96,
+      "minimumActualHeadM": 0.11440886557102203,
+      "maximumActualHeadM": 1.4624046087265015,
+      "maximumRequestedMotorEffortNm": 707.137939453125,
+      "recoveryElapsedSecondsAfterTrigger": 25.0,
+      "terminalBalanceActivationNative": 19652,
+      "terminalStandingDiagnosticWithOriginalStableAnchors": {
+        "predicates": {
+          "angularMotion": true,
+          "bothFeetLoadedAndPersistent": true,
+          "captureInSupport": true,
+          "comInSupport": true,
+          "footDriftFromSuppliedAnchors": true,
+          "footLoadFraction": true,
+          "head": true,
+          "linearMotion": true,
+          "onlyFeet": true,
+          "torso": true
+        },
+        "headM": 1.455833077430725,
+        "torsoUp": 0.9995424747467041,
+        "footDriftM": [
+          0.0006021573790349066,
+          0.004983036313205957
+        ],
+        "thresholds": {
+          "angularRadps": 0.6499999761581421,
+          "footDriftM": 0.01,
+          "linearMps": 0.2199999988079071,
+          "torsoUp": 0.9700000286102295
+        }
+      },
+      "controllerAtRecoveryTerminal": {
+        "stableNativeSamples": 768,
+        "originalStableFeet": [
+          {
+            "x": 0.50343317,
+            "y": 0.02723828,
+            "z": 0.74298257
+          },
+          {
+            "x": 0.6257321,
+            "y": 0.0302859,
+            "z": 0.5812944
+          }
+        ],
+        "forecastNativeIntegrations": 700,
+        "slowPolicyDecisions": 966,
+        "slowDecisionArchiveLength": 966,
+        "teacherFrames": 35,
+        "referenceFrames": 71
+      },
+      "explicitActivation": {
+        "nativeIntegrations": 0,
+        "zeroRemainderAtNativeZero": true,
+        "sameLiveSerializedBodyWorldAndEmbeddedRuntimeUnchanged": true,
+        "typedCompleteProfileMatches": true
+      },
+      "checkpointVerifications": {
+        "initial": {
+          "passed": true,
+          "nativeSubsteps": 0,
+          "forecastSubsteps": 0,
+          "physicsIntegrations": 0
+        },
+        "trigger": {
+          "passed": true,
+          "nativeSubsteps": 340,
+          "forecastSubsteps": 0,
+          "physicsIntegrations": 0
+        },
+        "final": {
+          "passed": true,
+          "nativeSubsteps": 20340,
+          "forecastSubsteps": 700,
+          "physicsIntegrations": 0
+        }
+      },
+      "finalActiveRootSidecar": [
+        {
+          "root": [
+            0,
+            0
+          ],
+          "state": {
+            "qbits": [
+              1057653847,
+              1067583115,
+              1059429746
+            ],
+            "remainderbits": [
+              13700555654668746752,
+              4491866717945593856,
+              4482929459992723456
+            ]
+          }
+        }
+      ],
+      "loadedSlipDiagnosticWholeRecovery": {
+        "atTriggerM": [
+          0.0,
+          0.004165613750374175
+        ],
+        "first20mmCrossingPhysicalSeconds": [
+          0.71625,
+          0.45875
+        ],
+        "loadedNativeSamples": [
+          16628,
+          18121
+        ],
+        "m": [
+          1.0671967320820148,
+          1.614235976009113
+        ],
+        "maximumTangentSpeedMps": [
+          2.4521005153656006,
+          1.6091082096099854
+        ]
+      },
+      "process": {
+        "startedUtc": "2026-10-19T18:25:09.091813+00:00",
+        "finishedUtc": "2026-10-19T18:25:24.211481+00:00",
+        "status": "terminal",
+        "exitCode": 0,
+        "operationalHangTimeoutSeconds": 300
+      },
+      "continuation": null,
+      "failureDisposition": "Failed the unchanged 25-second deadline with 768/800 contiguous original-gate samples. All terminal instantaneous predicates were true, which does not supply the missing 32 samples. No deadline extension or hold of the unpassed side case was executed.",
+      "firstLatchedStandingPassStableNativeSamples": null
+    }
+  ],
+  "observationContract": {
+    "everyNativeSampleEvaluated": true,
+    "recoveryObserverSamples": 43580,
+    "continuationObserverSamples": 72000,
+    "unobservedRealTailNative": 0,
+    "continuationDiagnosticAnchors": "Observer foot-origin anchors are taken at checkpoint restoration. The original controller stable_feet are retained and compared exactly before/after; the pre-existing controller stable counter is checked every native sample. None is reset or replaced by the probe to manufacture a pass. Each original counter increments by exactly 24000 and its original stable_feet array stays exactly equal.",
+    "diskSampling": "Each hold evaluates all 24000 native substeps and saves 1200 regular 40 Hz diagnostic rows plus extra failure rows if any. These passing holds each have 1200 diagnostic and 1200 control trace rows. Recovery also observes every native integration and saves regular control-boundary diagnostics/trace.",
+    "unanchoredDiagnosticLimit": "An unanchored packet has null foot drift and cannot independently establish the original gate. Anchored original-controller diagnostics and the stable counter are reported separately.",
+    "continuationLoadedSlipScope": "The continuation integral begins at the first native integration after restoring its passing fresh-recovery checkpoint. Recovery-wide slip stays separately reported. No whole-getup 20 mm acceptance stop was added."
+  },
+  "matchedNoCarryBaseline": {
+    "evidence": {
+      "path": "docs/evidence/getup-3plus1-recovery-qualification-2026-10-19.json",
+      "sha256": "84355cb1c56088f9e51a53419f9c6ec06432685cbd89f29518ca30347ca56e8e",
+      "bytes": 18290
+    },
+    "rawDirectory": "outputs/getup-recovery-3plus1-20261019",
+    "sameCompleteProfileAndActors": true,
+    "cases": [
+      {
+        "kind": "back",
+        "outcome": "25-second-recovery-deadline",
+        "standingPassed": false,
+        "firstLatchedStandingPassNative": null,
+        "realNativeIntegrations": 20480,
+        "forecastNativeIntegrations": 1000,
+        "continuation30SecondsPassed": false
+      },
+      {
+        "kind": "belly",
+        "outcome": "experimental-terminal-balance-one-second-standing-pass",
+        "standingPassed": true,
+        "firstLatchedStandingPassNative": 3198,
+        "realNativeIntegrations": 3200,
+        "forecastNativeIntegrations": 540,
+        "continuation30SecondsPassed": true
+      },
+      {
+        "kind": "side-supported",
+        "outcome": "experimental-terminal-balance-one-second-standing-pass",
+        "standingPassed": true,
+        "firstLatchedStandingPassNative": 10807,
+        "realNativeIntegrations": 10820,
+        "forecastNativeIntegrations": 680,
+        "continuation30SecondsPassed": true
+      },
+      {
+        "kind": "side",
+        "outcome": "experimental-terminal-balance-one-second-standing-pass",
+        "standingPassed": true,
+        "firstLatchedStandingPassNative": 16319,
+        "realNativeIntegrations": 16320,
+        "forecastNativeIntegrations": 720,
+        "continuation30SecondsPassed": true
+      }
+    ],
+    "rawResultHashes": {
+      "outputs/getup-recovery-3plus1-20261019/back/result.json": "2a9edd363afb7ae2515f4e867c9d6e56e0bc0770281efa096f0e008f5fe0d728",
+      "outputs/getup-recovery-3plus1-20261019/belly/result.json": "b8b808a04a8e99195687d22e16f94503ad3e13927f19e6301e49dc126a483893",
+      "outputs/getup-recovery-3plus1-20261019/belly-hold30/result.json": "e83c950172fc35ab98b55d5d941770d5a99bc8c2957452fe206277820e930cea",
+      "outputs/getup-recovery-3plus1-20261019/side-supported/result.json": "d12637c690c14eceb003f875718a45770c42d3506cbdf1662ca4af62a30dc7d3",
+      "outputs/getup-recovery-3plus1-20261019/side-supported-hold30/result.json": "f3b380ebaa34df5de0a96cb77030c61fef11f7f715b0dbbff113ec57d5ac875a",
+      "outputs/getup-recovery-3plus1-20261019/side/result.json": "87d5fb8c23c8c416ce5e2947fbcff14e18fc4ee49e837d1a30fc19e56072faab",
+      "outputs/getup-recovery-3plus1-20261019/side-hold30/result.json": "df440634a9064ed50891ab8c63c1c20de99fa8e7c91c475cff8df4db0c66f930"
+    },
+    "interpretation": "No-carry back failed; belly, side-supported and side passed and sustained 30 seconds. Carry makes back pass but side miss its deadline. These bounded campaigns do not establish global 3+1 admission, fixture-dependent carry selection, bitwise trajectory parity or performance."
+  },
+  "accounting": {
+    "recoveryRealNativeIntegrations": 43580,
+    "recoveryForecastNativeIntegrations": 2920,
+    "continuationRealNativeIntegrations": 72000,
+    "continuationForecastNativeIntegrations": 0,
+    "totalRealNativeIntegrations": 115580,
+    "totalForecastNativeIntegrations": 2920,
+    "physicalCampaignTotalRealPlusForecastIntegrations": 118500,
+    "checkpointVerificationIntegrations": 0,
+    "unitChecksSeparate": true,
+    "earlier20plus5ExperimentExcluded": true,
+    "browserAndPerformanceRunsExcluded": true
+  },
+  "existingCorrectnessGates": {
+    "evidence": {
+      "path": "docs/evidence/getup-root-translation-carry-2026-10-19.json",
+      "sha256": "988d1374643d50891ccad6f539485dd06c4c19001f10d967b3f9bf72a247fe52",
+      "bytes": 26881
+    },
+    "newTestsExecutedByThisEvidenceTask": 0,
+    "focusedSimFinalPassed": 34,
+    "vendorFullLibPassed": 94,
+    "vendorFocusedPassedOverlapsFullSuite": 19,
+    "notRecountedAsNewCampaignTests": true,
+    "malformedCheckpointCasesFailClosed": "The existing enabled root-checkpoint log records malformed/missing/duplicate/wrong-generation/invalid-bit sidecars rejected. Feature-off schema-2 refusal and bounded-input rejection remain upstream gates.",
+    "preservedEarlierFailures": {
+      "passed": 3,
+      "failed": 4,
+      "realNativeIntegrations": 80,
+      "forecastIntegrations": 0
+    },
+    "preservedEarlierCompileFailure": {
+      "exitCode": 101,
+      "cause": "Missing test-only vec! macro import",
+      "testsExecuted": 0,
+      "nativeDynamicsBeforeCorrection": 0
+    },
+    "scope": "Existing correctness gates and their initial failures stay in the linked evidence. They are not all-pose standing qualification, WASM proof or performance evidence."
+  },
+  "executedProbeSources": [
+    {
+      "maintainedSource": {
+        "path": "docs/evidence/probes/getup-root-carry-3plus1-fresh-recovery-2026-10-19.rs",
+        "sha256": "681aea74df50f2a55f2b95c91232be1a7a934ec3ecc7eb76b4ff010ed48df302",
+        "bytes": 13587
+      },
+      "executedSource": "outputs/getup-root-translation-carry-20261019/fresh-recovery.rs",
+      "sourceByteIdentical": true,
+      "executedBinary": {
+        "path": "outputs/getup-root-translation-carry-20261019/fresh-recovery",
+        "sha256": "e6138f34758e0c6251ca96f264dcce4ca2c3aa87e536a187d3051f73b41e4490",
+        "bytes": 16670400
+      }
+    },
+    {
+      "maintainedSource": {
+        "path": "docs/evidence/probes/getup-root-carry-3plus1-active-standing-continuation-2026-10-19.rs",
+        "sha256": "8ea17e4411c5f559f42ec6d6167c9d5121db40b7013793a7a06770d4af93a994",
+        "bytes": 12495
+      },
+      "executedSource": "outputs/getup-root-translation-carry-20261019/active-standing-continuation.rs",
+      "sourceByteIdentical": true,
+      "executedBinary": {
+        "path": "outputs/getup-root-translation-carry-20261019/active-standing-continuation",
+        "sha256": "56cb608a1b0757bf45fab4c72c7ae011e720d626f0541a61d04e788dd599fa4d",
+        "bytes": 16621656
+      }
+    }
+  ],
+  "limitations": [
+    "Side is an observed failure; no 32-sample extension or hold of that unpassed checkpoint.",
+    "Three passing 30-second holds do not qualify all poses or the 24-case standing suite.",
+    "No browser or WASM proof is claimed for this fresh candidate here; any bounded back/belly browser build or result is separate.",
+    "No performance claim or default/public promotion.",
+    "Actor/source asset rights remain on hold; numerical evidence does not authorize publication.",
+    "Root translation carry only; angular paths are unchanged.",
+    "Raw Rapier world serialization alone does not preserve active carry. Schema 2 uses a validated exact-bit root sidecar. Rapier serde still skips pipeline/CCD workspaces and the initial topology-refresh queue; these isolated GetUp proofs do not establish generic raw-world checkpoint completeness."
+  ],
+  "evidencePreparation": {
+    "sourceEdits": false,
+    "buildsOrPhysicsExecuted": false,
+    "stagingOrCommit": false,
+    "checks": "Read-only JSON/ledger/source inspection; nine frozen source files checked against current files and engine commit; library and five dependency hashes checked; schema-2 envelopes and zero/nonzero remainder bits inspected; checkpoint metadata checked; exact archives/teacher/reference/balance bindings compared; 3600 saved hold diagnostic rows and 3600 trace rows counted; byte-identical maintained copies of the two executed probes."
+  },
+  "rawArtifacts": {
+    "baseDirectory": "outputs/getup-root-translation-carry-20261019",
+    "sha256": {
+      "fresh-3plus1/source-freeze.json": "99b05e1aae56a753c3ab8226dc13ef010fa8ed0eb8252273c3035951a99db203",
+      "fresh-3plus1/process-ledger.json": "6aa55447e85811ee74d69dd4ed1fd46925bf8110e7df43cb7eb8889ccd1617bd",
+      "fresh-3plus1/hold-process-ledger.json": "206f687ebf21263f633b917e8e9c1c4197e3ba13c640ebea5e4767ec706652fa",
+      "fresh-3plus1/profile.json": "ea6da63a9996d9528f3dc25041cf476fdf0cfa828f57c57d119b78c8ebd0f3a7",
+      "fresh-3plus1/run-recovery.py": "c2302fa1bb0283dceee514a39f0fb00a11861205b6d7065b0dfecbc1b27aed3e",
+      "fresh-3plus1/run-holds.py": "2b9714d855d5a7bfc024c3175a0e342d02cd13a0191ea665027c193b05bd2f50",
+      "fresh-3plus1/back/checkpoint-initial.bin": "a15c1406ae8e3e93d96be5fa6e98819b042c7fdcb497e273185c2b79a1681dca",
+      "fresh-3plus1/back/checkpoint-initial.json": "f5195a8b6619b578c725cfe44010a810c3c67b08f29343ba93d8bb05d87709cf",
+      "fresh-3plus1/back/checkpoint-trigger.bin": "1b7c1341103d9198d1319a648059975ef052ef4f355b371e0abfcfa8d7f835d4",
+      "fresh-3plus1/back/checkpoint-trigger.json": "2d7a225858d87ecd7937e4f1a3d426606ff5d1149c124fb11684780164e57771",
+      "fresh-3plus1/back/checkpoint-final.bin": "f1d36532b29c3ece65ab3437c8631c24e767433a1f49ab84a4fca6108cedd7e8",
+      "fresh-3plus1/back/checkpoint-final.json": "0b748bcc35ed38b4889b4fa943f1183291c9c95febbcff97bdc70d15103599dd",
+      "fresh-3plus1/back/result.json": "10f2fe5bd4dfd699323e8aad6d88c4a1b820b489e8dd21131ae9d3ee9c6a1965",
+      "fresh-3plus1/back/explicit-carry-mode.json": "5e2e12b993ba02b79ce01b212f7e42b2ae1c6577e0bf0935e5e645fb25ef9ed7",
+      "fresh-3plus1/back/fixture-at-trigger.json": "8ea1d83e0495c1869268d15187179fefdc6101342d1e526eb5aeb34d4e5b0986",
+      "fresh-3plus1/back/reference-report.json": "aaf46dec2c72f6f445747b38ace3f21eec280c0ddafba08cad57c8c9d5e11c9c",
+      "fresh-3plus1/back/trace.ndjson": "874eea372cd635a5eb8c8ce2a2edd3efd2ed79aa0d19b5e98ee350cbe5836886",
+      "fresh-3plus1/back/diagnostics-40hz.ndjson": "7f4ab6ef1894ceea8aa68412976568f66a43e67e90968f58bfe0cbc67dd80f80",
+      "fresh-3plus1/back/stderr.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "fresh-3plus1/back-hold30/result.json": "250caee513de5d06315906a10160a2ba46f26c68f70d82800f64c2107c6c2d95",
+      "fresh-3plus1/back-hold30/explicit-integration-mode.json": "21d419ba83905cf64b55bc849849dd84800fb05125b0707bcd07ba5521614e40",
+      "fresh-3plus1/back-hold30/checkpoint-input-verification.json": "ca1719065fdabedcfd72364a12db9297fcb4817c6319da9690bbaf307691cd97",
+      "fresh-3plus1/back-hold30/checkpoint-final-verification.json": "37c12dc8d20ec93808759c86ae55c259e00846ad03eae3bad260387ab19f5300",
+      "fresh-3plus1/back-hold30/checkpoint-final.bin": "c512aa0f89777418921882affe210be351c00762404b7eef9c5aa902b02cd3dd",
+      "fresh-3plus1/back-hold30/initial-diagnostic.json": "b83db04d2bd1f8e795bf03f8d78fc0ac1e0d8a285d641c6728306436a735b483",
+      "fresh-3plus1/back-hold30/final-diagnostic.json": "95f18eae217e3001ea54c366e4221f77e30bf7add96d9c2001db0c56027c5c6a",
+      "fresh-3plus1/back-hold30/reference-report.json": "1c5e25fa2e4c2109ba3e99e52dd6ff8f2eec835bb382c1fb1468dd47862545ec",
+      "fresh-3plus1/back-hold30/native-diagnostics.ndjson": "0d49e778a437fcac180dadb428f84e51d49ab3db596874defbd114e0cf58dc34",
+      "fresh-3plus1/back-hold30/trace.ndjson": "83764e5813ccfa18ba6b23395c6b7e65491c2d2c86a97170b18cff996bdd3472",
+      "fresh-3plus1/back-hold30/stderr.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "fresh-3plus1/belly/checkpoint-initial.bin": "439df20cf7f9db8e532eb8935b07fecf4165e2035ae8d2223b5413fb001077e1",
+      "fresh-3plus1/belly/checkpoint-initial.json": "710dbf7fbdffdf6e8b8c85f6cd6f87f9868530b5a8f4eed586e053fe49ed0997",
+      "fresh-3plus1/belly/checkpoint-trigger.bin": "6cf7323fb3ab794c5c492ae82a3a4198a5e3fdbee9d0b1fcbe71f7c8f46984ba",
+      "fresh-3plus1/belly/checkpoint-trigger.json": "2ae2d984369ee98057bef77155684f2b3c53dddc5d54886cb7efb62252dc0dd7",
+      "fresh-3plus1/belly/checkpoint-final.bin": "f265117ad80906ed2dfd23011cc18afe8fe2e7a930ac7cb4d4c81c96bb6e303f",
+      "fresh-3plus1/belly/checkpoint-final.json": "ff1b3498d852fb4d5b49810613fda37963c2e9c994345ba7660cfdce32e30383",
+      "fresh-3plus1/belly/result.json": "d8dba1755e34157943a51b32ed35995ea5c347d84ef3d7a67a44221788199ec5",
+      "fresh-3plus1/belly/explicit-carry-mode.json": "68e5448e0be7d9d102ffd66bb25f723dba9604816fe3930717f94aedc0b9ea9e",
+      "fresh-3plus1/belly/fixture-at-trigger.json": "893bbeb03c35790803ead0af0306d3fee5817b83030453b60529efaef0765315",
+      "fresh-3plus1/belly/reference-report.json": "2b0c3f2ba370340e1fac4455eb71bf94cca2a32d23054c8d1f04ca00d6f21459",
+      "fresh-3plus1/belly/trace.ndjson": "ee6fb097901a74d6699fad4b05c1d38c4138f8de27cda69aa987e3acb65656df",
+      "fresh-3plus1/belly/diagnostics-40hz.ndjson": "594cf8841c55548af30387c03dfcaa7f99aaa409a431ad27cc36759e4fdf5bf6",
+      "fresh-3plus1/belly/stderr.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "fresh-3plus1/belly-hold30/result.json": "9dbb55e197eb3f8768f853541c4463f01ea6143cab005aed6c27419ef35157a8",
+      "fresh-3plus1/belly-hold30/explicit-integration-mode.json": "476f616d469f95a567db9b0568f55e51795b9397d56e68c2aba2d25eba48b0ca",
+      "fresh-3plus1/belly-hold30/checkpoint-input-verification.json": "99646400233b53b42d538cb66efe4c9a4e1d2e03cb6e5809616bbcf2d111e0c8",
+      "fresh-3plus1/belly-hold30/checkpoint-final-verification.json": "ff3f563f52cd194efd494d389dbec5bf0010754ced9d21ae1c2a0a387c61ce20",
+      "fresh-3plus1/belly-hold30/checkpoint-final.bin": "2f018092c0b276d7fe803394070430305688fe36fee86b996266830db6f54599",
+      "fresh-3plus1/belly-hold30/initial-diagnostic.json": "858b0bba0f4ff8bb5516047bc907f31d1ef9054198d32a7125fa60ec63b3d11b",
+      "fresh-3plus1/belly-hold30/final-diagnostic.json": "d693219c26d0dd0776640ccea359592d18941a0af0eb949494c8bc0e56bfc2fd",
+      "fresh-3plus1/belly-hold30/reference-report.json": "7f9a7e2f330028df1ae5e1010b52052ffb72eb93c5e915cf56f843e30e0c71ad",
+      "fresh-3plus1/belly-hold30/native-diagnostics.ndjson": "4fc3d55d1f1424d445c43658e0208857af2d16bfbd33d93038695dc93deaca73",
+      "fresh-3plus1/belly-hold30/trace.ndjson": "77350126d19afbe069e13907102ec47b1d2f000964845d6ddb45139e64571d6d",
+      "fresh-3plus1/belly-hold30/stderr.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "fresh-3plus1/side-supported/checkpoint-initial.bin": "a616785970734aad4b7c275ef7957f514318b33e2af46ac967231b826bdaf5f7",
+      "fresh-3plus1/side-supported/checkpoint-initial.json": "7608313e6dfb8c3d80ff586fb03d45cb32abd4d3c66e12654bf1f7c5d7121876",
+      "fresh-3plus1/side-supported/checkpoint-trigger.bin": "8af919fba5b885fb73a4e702c1c64b773d82896a36451e13af63832e58f92a37",
+      "fresh-3plus1/side-supported/checkpoint-trigger.json": "21ef3808aff19d7c03e1a3169441e7f3f19cf81ba6714b18ca564dafaee4f945",
+      "fresh-3plus1/side-supported/checkpoint-final.bin": "2a82fd244a33588b3085ea424b7d5be762a9df20fbae853dd2a241f27b913779",
+      "fresh-3plus1/side-supported/checkpoint-final.json": "9e976a9013067879dd12329a758ebbc069da863a224e8faed6f35e16a179652a",
+      "fresh-3plus1/side-supported/result.json": "f450a297c75c65a69096c93d4d6fa6e406c7d59d42789b325fb33480fcf53628",
+      "fresh-3plus1/side-supported/explicit-carry-mode.json": "9d6017a483391883815a24ed9c5f6ab6d2ea509f1fbf802edb2ba14ba863f281",
+      "fresh-3plus1/side-supported/fixture-at-trigger.json": "d81e8d0a130dc00902d17a9d27ee1165b4f11804e5164d9cd3b6441304c518b9",
+      "fresh-3plus1/side-supported/reference-report.json": "15099bdb79b6f6217c57ebd2bafe44bb681273a69203ff0ef7d992b50f710a34",
+      "fresh-3plus1/side-supported/trace.ndjson": "0420e8df5e0e68f20d2d1fc75522875a753d9d691c09cfc23b3cb8b66e60dd16",
+      "fresh-3plus1/side-supported/diagnostics-40hz.ndjson": "38e2bc1066ebcd560d83d2a393864c2d5f1f1e8cab164a3cecc21990642c4caa",
+      "fresh-3plus1/side-supported/stderr.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "fresh-3plus1/side-supported-hold30/result.json": "ff04c6a99f41d9f1b3147fd9bb1f34fcd82a1bc98419e6192e34ae2db633d91f",
+      "fresh-3plus1/side-supported-hold30/explicit-integration-mode.json": "a39fe159d29fc3d63ac869f5a7b109de76060b5d6071e8d1df626a3e764f824c",
+      "fresh-3plus1/side-supported-hold30/checkpoint-input-verification.json": "b35529e969028aee6e00501b6fdb9ae0bd5307dd94a9f5fd6d06b67652f63d65",
+      "fresh-3plus1/side-supported-hold30/checkpoint-final-verification.json": "5ad5006ae1110c69910f0e4b1ed8256163365278318417afeac9d25e064240aa",
+      "fresh-3plus1/side-supported-hold30/checkpoint-final.bin": "daee20db352023c0edfde9af880d25bad7633c48ac26721e78636186dae042f8",
+      "fresh-3plus1/side-supported-hold30/initial-diagnostic.json": "39c6011c7f9358e71a2b97b611781d3dba264692be13aa3078777490e2d1ba07",
+      "fresh-3plus1/side-supported-hold30/final-diagnostic.json": "5f8c50dee1331de71e0549a20d83cdf4cc2c3173c9551d10e7665c5656a0ebf9",
+      "fresh-3plus1/side-supported-hold30/reference-report.json": "36811599c69335dcc79f3a6710dc6596ebae4aeed9d3fedaca1a3eda7950f7ab",
+      "fresh-3plus1/side-supported-hold30/native-diagnostics.ndjson": "5d2d19c238629ed861f64cdb9e63ccd195568d582e286783b0f3b4a0248961bd",
+      "fresh-3plus1/side-supported-hold30/trace.ndjson": "e4284b2e19e9c091139ffe19d5a8dae87c4e0b55cd908cf901a70f4fd4c4cb89",
+      "fresh-3plus1/side-supported-hold30/stderr.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "fresh-3plus1/side/checkpoint-initial.bin": "fd1a642528b532ee0ed4d75ddc5e3c15a180f8006f2e453e9d35f0c5a7008377",
+      "fresh-3plus1/side/checkpoint-initial.json": "b85f24471aca9bba78ff6d1dd69c012cc1c8dd418fbb9015a2f7d1ee8215aca0",
+      "fresh-3plus1/side/checkpoint-trigger.bin": "92813129fbd5cebb84d06c5f928de78a47f6984b11347943138fd8245c2774fb",
+      "fresh-3plus1/side/checkpoint-trigger.json": "18f8c8bce354cca559de8829ed13a98ae9176956c24a3fe13180511bd25b73b5",
+      "fresh-3plus1/side/checkpoint-final.bin": "8dabf4f28289cbe872c974e936a59e65c40426f1d2d43db32f484053259c3c1c",
+      "fresh-3plus1/side/checkpoint-final.json": "485d284fa282377123ded8aae73b6a61c10377acd6064b232b1196ee9565fa07",
+      "fresh-3plus1/side/result.json": "5846d4729c471f68e177083971ae6dc2eaa225163282c1e9978eb69c4831a10a",
+      "fresh-3plus1/side/explicit-carry-mode.json": "998a664c674452f273584a4bd4194130621d3a79c1376de2d6537e9fdd775f12",
+      "fresh-3plus1/side/fixture-at-trigger.json": "39f1543010d0e8bf1d01929dc3a2fbb8c7d59bc548caa8b8e6dd331367ac75a9",
+      "fresh-3plus1/side/reference-report.json": "2d22535ba45532bfccff775852ca0d6d613d83dd06bbaf972bc367d5e829fc2a",
+      "fresh-3plus1/side/trace.ndjson": "fd320070e8ae573801ee53d0a2fff73d3dc72843f65fb146ae2e187aabc6106e",
+      "fresh-3plus1/side/diagnostics-40hz.ndjson": "fb70b756a21f64c2889345e28b01ed5d78573921fda3e7e1736137ff4b30fbcd",
+      "fresh-3plus1/side/stderr.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "runtime-frozen-rlib-manifest.json": "2c98fa9e10b8dcca800cc310e93d4751bc227ade7d12aee45543fdf5af50e2c6",
+      "runtime-gate-ledger.json": "e73261ed14d7d7e59577cc17e88edf0eeaf6c5ed0a1381361bd22d9ef9ff9639",
+      "runtime-enabled-root-checkpoint-tests.log": "37d28398941d420916d11e3af31787820c8d3048f2b0f4f7f2a401a9989b2c51",
+      "vendor-gates-summary.json": "4c2bc56ad54ff328732913c3b1d6cf0f597d0845fcdc26ef4c228c8180cecf25"
+    }
+  },
+  "workerActivationExport": {
+    "sourceFiles": {
+      "rust/crates/worker/Cargo.toml": "8cc8c747a9479839dc8c080988f11f83be62cccd08799feb36299f41ef6b28b2",
+      "rust/crates/worker/src/lib.rs": "e23b855c03f314f8901b05bf26cfaa48a0a45027c3cfd7d569a0af3f17680213"
+    },
+    "feature": "lh-worker/root-translation-carry-experiment",
+    "export": "WorkerRuntime.set_root_translation_compensation_enabled(bool)",
+    "featureOnWasmCheckExitCode": 0,
+    "featureOffWasmCheckExitCode": 0,
+    "target": "wasm32-unknown-unknown",
+    "compiler": "1.89.0",
+    "offlineLockedRelease": true,
+    "activationImplementation": "Delegates to the tested Runtime API; no initializer change. Enabled binaries still start inactive.",
+    "browserDynamicsExecutedByTheseChecks": false,
+    "logs": {
+      "outputs/getup-root-translation-carry-20261019/worker-carry-wasm-check.log": "e94c30882d65b37b120f23a8e52db06f99ecabc88b28d449f20ac2c15737b0a4",
+      "outputs/getup-root-translation-carry-20261019/worker-carry-feature-off-wasm-check.log": "bbf54ed5e0ae448fe1867915e449806f2f22e1355a26ca8a2d5499e5a593c5c6"
+    }
+  }
+}

@@ -4,6 +4,9 @@ version.workspace = true
 edition.workspace = true
 publish.workspace = true
 
+[features]
+root-translation-carry-experiment = ["lh-sim/root-translation-carry-experiment"]
+
 [lib]
 crate-type = ["cdylib", "rlib"]
 
