@@ -102,6 +102,11 @@ pub enum RootRotationNormalization {
     #[serde(rename = "unit-free-root-v1")]
     UnitFreeRootV1,
 }
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
+pub enum GetUpRepeatedRecovery {
+    #[serde(rename = "completed-cycle-confirmed-fall-v1")]
+    CompletedCycleConfirmedFallV1,
+}
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub struct Profile {
@@ -120,6 +125,9 @@ pub struct Profile {
     /// Physical quaternion integration policy; disabled in historical profiles.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub root_rotation_normalization: Option<RootRotationNormalization>,
+    /// Opt-in lifecycle for a genuinely new fall after a completed recovery.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub getup_repeated_recovery: Option<GetUpRepeatedRecovery>,
     pub additional_body_iterations: usize,
     pub allowed_linear_error_m: f32,
     pub prediction_distance_m: f32,
@@ -165,6 +173,7 @@ impl Default for Profile {
             fall_internal_pgs_iterations: default_fall_iterations(),
             getup_solver_budget: None,
             root_rotation_normalization: None,
+            getup_repeated_recovery: None,
             additional_body_iterations: 5,
             allowed_linear_error_m: 0.001,
             prediction_distance_m: 0.002,
@@ -200,6 +209,15 @@ impl Profile {
         }
     }
     pub fn validate(&self) -> Result<(), String> {
+        #[cfg(not(feature = "getup-repeat-cycle-experiment"))]
+        if self.getup_repeated_recovery.is_some() {
+            return Err("Repeated GetUp recovery requires getup-repeat-cycle-experiment".into());
+        }
+        if self.getup_repeated_recovery.is_some()
+            && (!self.getup_policy_enabled || cfg!(feature = "getup-terminal-base-ready-experiment"))
+        {
+            return Err("Repeated GetUp recovery requires the source/terminal-balance controller without early or bumpless transfer".into());
+        }
         #[cfg(not(feature = "unit-root-rotation-experiment"))]
         if self.root_rotation_normalization.is_some() {
             return Err("Unit root rotation requires unit-root-rotation-experiment".into());

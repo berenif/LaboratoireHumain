@@ -173,6 +173,11 @@ impl Runtime {
         s.profile.validate()?;
         s.validate_unit_root_rotation_policy()?;
         if let Some(controller) = &s.getup_controller {
+            if s.profile.getup_repeated_recovery.is_some()
+                && !controller.repeated_recovery_clock_valid(s.substeps_completed)
+            {
+                return Err("Invalid checkpoint repeated GetUp recovery clock".into());
+            }
             if controller.terminal_bumpless_variant()
                 && !cfg!(feature = "getup-terminal-bumpless-experiment")
             {

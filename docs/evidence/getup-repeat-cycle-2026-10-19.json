@@ -1,0 +1,563 @@
+{
+  "schema": 1,
+  "date": "2026-10-19",
+  "classification": "native-five-valid-actual-strike-responses-one-new-recovery-four-resisted-contacts",
+  "outcome": "One continuous final trial validates five actual positive-impulse strike responses. The first contact produces a genuine new fall, controller rearm, forecast, original one-second standing pass and 813 native-sample postpass hold. The next four contacts are physically resisted without a new fall or recovery; each resolves after 25.04375 seconds with the original last 800 standing samples and entire-response loaded-slip gate valid. This does not demonstrate five fall/recovery cycles.",
+  "qualification24Cases": false,
+  "fullNativeSuiteQualified": false,
+  "performanceQualified": false,
+  "actualWasmRepeatCycleQualified": false,
+  "nativeWasmEqualityClaimed": false,
+  "releaseAccepted": false,
+  "productionRecoveryEnabled": false,
+  "defaultPublicProfileChanged": false,
+  "physicalAcceptanceChanged": false,
+  "upstreamUserRightsResolved": false,
+  "sourceAndBuild": {
+    "baseCommit": "6eda23732cd4c06340a990b3df2cd7c65d3cafe3",
+    "sourceFreeze": {
+      "path": "outputs/getup-repeat-cycle-20261019/source-freeze-clock-guard.json",
+      "sha256": "90552916f7cb37d250201e2a745ccdf70742b3049bcc14e079277526894b31b6",
+      "bytes": 1718
+    },
+    "sourceSha256": {
+      "rust/crates/sim/Cargo.toml": "f2d0862ca4d19880a94f7aaf72865546bab0e9bf2c56491ca090f7a7b93cb7c6",
+      "rust/crates/sim/src/lib.rs": "3e80e99aa67811702f122ff95a918d5220af50b880243651575e3bd431dc8ddd",
+      "rust/crates/sim/src/motion.rs": "ffd8472cb7e5cd42b2228051a317a8136e69ba00f0d3fba3bbfdc37e0a08dcd8",
+      "rust/crates/sim/src/runtime.rs": "1daf2fc63c04a6cef8753aaca4d1f55f05510896d80266db6be27b29fce436f1",
+      "rust/crates/sim/src/getup/controller.rs": "000795c77ff99644a0735f0d3fb2c9b1e51ff8069eef15fedd76cd0e51f05b67",
+      "rust/crates/sim/src/getup/terminal_balance_tests.rs": "016b76176d5a14540f8588ac03034866e8f0bb127d88f8c6ba324622e5627bdc",
+      "rust/crates/sim/src/getup/repeat_cycle_tests.rs": "688af3de22d7c9a184a5e2f51854110657aa74a462f5df1d7109a511c57eaf32",
+      "docs/evidence/profiles/getup-800hz-3plus1-repeat-cycle-v1.json": "aaa415a19767c218a26b05bad277193cccba2a726b52dcd5aac0a5444afc39d6"
+    },
+    "allEightCurrentHashesReverified": true,
+    "frozenLibrary": {
+      "path": "outputs/getup-repeat-cycle-20261019/liblh_sim-repeat-cycle-clock-guard.rlib",
+      "sha256": "e7ff28fbd0d7af4218ba2eabd1374e41f9e221e62b73c94a2781a5f9b87d12dc",
+      "bytes": 24839678
+    },
+    "features": [
+      "root-translation-carry-experiment",
+      "getup-terminal-balance-experiment",
+      "standing-dynamics-experiment",
+      "unit-root-rotation-experiment",
+      "getup-repeat-cycle-experiment"
+    ],
+    "baseReadyEnabled": false,
+    "bumplessEnabled": false,
+    "independentImplementationReview": {
+      "path": "outputs/getup-repeat-cycle-20261019/independent-implementation-review.json",
+      "sha256": "c137f5cecc628eef634f639a308592b1713b4bf3d26cb6015f4bac2a17aff098",
+      "bytes": 9262
+    },
+    "reviewVerdict": "No source-level blocking defect found in the final frozen bounded post-completion lifecycle. All eight manifest file hashes and the retained library hash match. Execution evidence remains the parent task\u2019s verification responsibility and was not reproduced by this reviewer.",
+    "reviewIsSourceOnly": true
+  },
+  "explicitPolicy": {
+    "profile": {
+      "path": "docs/evidence/profiles/getup-800hz-3plus1-repeat-cycle-v1.json",
+      "sha256": "aaa415a19767c218a26b05bad277193cccba2a726b52dcd5aac0a5444afc39d6",
+      "bytes": 1319
+    },
+    "selector": "getup_repeated_recovery=completed-cycle-confirmed-fall-v1",
+    "defaultOff": true,
+    "profileOnlyDifferencesFromUnitRootBaseline": [
+      "id",
+      "getup_repeated_recovery"
+    ],
+    "scope": "A completed controller records a later real contact as pending. Existing physical fall observation must independently confirm Falling/Fallen before one controller-only rearm. It preserves the physical world, global/native clocks, counters, q/velocity, contact state and translation-carry history. Active source recovery retains the first episode epoch; later contacts cannot extend its deadline. Future start/impact/activation epochs are refused before integration.",
+    "resistedContact": "The production controller clears a pending contact only after both a new 800-sample stable interval and 800-native age. It does not fabricate a fall or forecast solely to satisfy a strike count. The external evidence classifier waits longer, beyond the original 25-second deadline.",
+    "settlement": "Explicit repeated mode observes current generalized twists for Falling settlement at existing 0.65 m/s and 1.8 rad/s bounds. Default-None retains the historical cache-based path. No initial-episode trajectory equality is claimed.",
+    "initialEverWeakStrike": "Initial/first-impact fall-label semantics remain legacy. A first-ever resisted weak strike is not fixed or qualified here.",
+    "unchangedActorSha256": {
+      "rust/crates/sim/data/getup-policy/teacher.bin": "f8d8d6ea787366a67aa46352cf5243ed2962dd277b5ca6b6f98a85fc3a67ab4f",
+      "rust/crates/sim/data/getup-policy/student.bin": "c489faed55bdab1669c51dab71a102db91ff2a55143789f682e45cd8169d6dbb"
+    },
+    "gainsCapsForcesNumericalIntegrationPoliciesAndAcceptanceChanged": false
+  },
+  "unchangedCriteria": {
+    "nativeHz": 800,
+    "controllerHz": 40,
+    "originalContiguousStandingNativeSamples": 800,
+    "recoveryDeadlineSecondsAfterTrigger": 25,
+    "maximumWholeBodyLinearMps": 0.22,
+    "maximumWholeBodyAngularRadps": 0.65,
+    "footOriginDriftFromOriginalStableAnchorsM": 0.01,
+    "headHeightGreaterThanM": 1.4,
+    "torsoUpAtLeast": 0.97,
+    "loadedContinuationSlipStopM": 0.02,
+    "wholeRecovery20mmStop": false,
+    "admissionCounterCanCountAsOriginalStandingSamples": false
+  },
+  "seedChronology": {
+    "freshBack": {
+      "receipt": {
+        "path": "outputs/getup-repeat-cycle-20261019/fresh-back/result.json",
+        "sha256": "0f1c0a58f934d8d544e8b14ffbb2249f7c113ae875063a80a7280f2a1189acc0",
+        "bytes": 111091
+      },
+      "triggerNative": 480,
+      "firstOriginalStandingPassNative": 4053,
+      "polledTerminalNative": 4060,
+      "realNativeIntegrations": 4060,
+      "forecastNativeIntegrations": 960
+    },
+    "freshThreeSecondHold": {
+      "receipt": {
+        "path": "outputs/getup-repeat-cycle-20261019/fresh-back-hold3/result.json",
+        "sha256": "0162759a4bd632601889e0efd177ec8803dd3334113cbe67d87812f315e9247d",
+        "bytes": 55136
+      },
+      "actualNativeIntegrations": 2400,
+      "physicalSeconds": 3,
+      "originalStableCounterInput": 807,
+      "originalStableCounterFinal": 3207,
+      "everyOriginalPredicateCounterAndAnchorsPassed": true,
+      "teacherForecastUnchanged": true
+    },
+    "finalChainInput": {
+      "path": "outputs/getup-repeat-cycle-20261019/fresh-back-hold3/checkpoint-final.bin",
+      "sha256": "d6404ea2b455d93dda28b6b21b7d0d83821b8542812854a143673af779ea664b",
+      "bytes": 2991472
+    },
+    "importAndVerificationIntegrations": 0,
+    "finalChainStartsNative": 6460,
+    "noFixtureResetProfileMorphOrAnatomicalPoseVelocityWrites": true
+  },
+  "finalPhysicalChain": {
+    "receipt": {
+      "path": "outputs/getup-repeat-cycle-20261019/fresh-back-five-strike-responses/result.json",
+      "sha256": "9c490f471865fb23e569ce6e6a921b78162b067f3c3cdde59827143ccd9ab3fb",
+      "bytes": 45974053
+    },
+    "allFiveActualStrikeResponsesValid": true,
+    "genuineNewFallsAndRecoveries": 1,
+    "contactsResistedWithoutNewFall": 4,
+    "strikerSpeedMps": 4,
+    "actualNativeIntegrations": 88620,
+    "forecastNativeIntegrations": 1040,
+    "initialNative": 6460,
+    "finalNative": 95080,
+    "initialCounters": {
+      "falls": 1,
+      "recoveries": 1,
+      "steps": 0,
+      "strikes": 0,
+      "upright_ticks": 121
+    },
+    "finalCounters": {
+      "falls": 2,
+      "recoveries": 2,
+      "steps": 0,
+      "strikes": 5,
+      "upright_ticks": 4256
+    },
+    "responses": [
+      {
+        "iteration": 1,
+        "classification": "fell-and-genuinely-recovered",
+        "passed": true,
+        "beforeNative": 6460,
+        "contactNative": 6649,
+        "contactImpulseNs": 23.90102767944336,
+        "afterNative": 14200,
+        "realNativeIntegrations": 7740,
+        "forecastNativeIntegrations": 1040,
+        "observedNativeIntegrations": 7740,
+        "unobservedNativeTail": 0,
+        "strikeCommandZeroIntegrationAndAnatomicalF32WordsUnchanged": true,
+        "beforeAndAfterCheckpointVerifiedZeroIntegration": true,
+        "result": {
+          "path": "outputs/getup-repeat-cycle-20261019/fresh-back-five-strike-responses/cycle-01/result.json",
+          "sha256": "7f2af87221441bc5b6249f27a0302802767f6c40bac57dd6643ff61b29b9512b",
+          "bytes": 7485831
+        },
+        "newFallNative": 7470,
+        "newSourceFirstObservedNative": 8482,
+        "newSourceStartNative": 8481,
+        "newFirstStandingPassNative": 13387,
+        "newPassSecondsFromActualContact": 8.4225,
+        "postpassHoldNativeSamples": 813,
+        "postpassCommandBoundaryTailNative": 13,
+        "postpassOriginalPredicatesCountersAndExactAnchorsPassed": true,
+        "postpassLoadedTangentIntegralM": [
+          4.313533085031907e-07,
+          1.412814239021287e-07
+        ],
+        "wholeGetupLoadedTangentIntegralMReportedNotGated": [
+          0.5535295091081895,
+          0.5665125830801528
+        ]
+      },
+      {
+        "iteration": 2,
+        "classification": "resisted-without-new-fall",
+        "passed": true,
+        "beforeNative": 14200,
+        "contactNative": 14385,
+        "contactImpulseNs": 8.331915855407715,
+        "afterNative": 34420,
+        "realNativeIntegrations": 20220,
+        "forecastNativeIntegrations": 0,
+        "observedNativeIntegrations": 20220,
+        "unobservedNativeTail": 0,
+        "strikeCommandZeroIntegrationAndAnatomicalF32WordsUnchanged": true,
+        "beforeAndAfterCheckpointVerifiedZeroIntegration": true,
+        "result": {
+          "path": "outputs/getup-repeat-cycle-20261019/fresh-back-five-strike-responses/cycle-02/result.json",
+          "sha256": "febe77f2f240375e2e00f3b8851fead0b84b1c1ce4d22e02a536d4c3982e4f79",
+          "bytes": 8354575
+        },
+        "resistedSecondsFromActualContact": 25.04375,
+        "noNewFallRecoverySourceOrForecastThroughout": true,
+        "pendingImpactCleared": true,
+        "terminalBindingExactF32WordsUnchanged": true,
+        "last800OriginalPredicatesCountersAndExactAnchorsPassed": true,
+        "last800NativeRange": [
+          33621,
+          34420
+        ],
+        "last800LoadedTangentIntegralM": [
+          1.0543122597164648e-07,
+          9.853999018552269e-08
+        ],
+        "entireResponseCumulativeLoadedTangentIntegralM": [
+          0.0003601843777737225,
+          0.00010330435592784622
+        ],
+        "entireResponseCumulativeSlipGateM": 0.02,
+        "cumulativeIntegralNotReset": true
+      },
+      {
+        "iteration": 3,
+        "classification": "resisted-without-new-fall",
+        "passed": true,
+        "beforeNative": 34420,
+        "contactNative": 34605,
+        "contactImpulseNs": 8.175363540649414,
+        "afterNative": 54640,
+        "realNativeIntegrations": 20220,
+        "forecastNativeIntegrations": 0,
+        "observedNativeIntegrations": 20220,
+        "unobservedNativeTail": 0,
+        "strikeCommandZeroIntegrationAndAnatomicalF32WordsUnchanged": true,
+        "beforeAndAfterCheckpointVerifiedZeroIntegration": true,
+        "result": {
+          "path": "outputs/getup-repeat-cycle-20261019/fresh-back-five-strike-responses/cycle-03/result.json",
+          "sha256": "e9ad4ee10875a75555d5ec5330a2eea10f42b2f203aebc6b593ce723e0a3360d",
+          "bytes": 8354332
+        },
+        "resistedSecondsFromActualContact": 25.04375,
+        "noNewFallRecoverySourceOrForecastThroughout": true,
+        "pendingImpactCleared": true,
+        "terminalBindingExactF32WordsUnchanged": true,
+        "last800OriginalPredicatesCountersAndExactAnchorsPassed": true,
+        "last800NativeRange": [
+          53841,
+          54640
+        ],
+        "last800LoadedTangentIntegralM": [
+          5.178751305044137e-08,
+          9.396769137023202e-08
+        ],
+        "entireResponseCumulativeLoadedTangentIntegralM": [
+          0.0007618388275318082,
+          7.813790454453091e-05
+        ],
+        "entireResponseCumulativeSlipGateM": 0.02,
+        "cumulativeIntegralNotReset": true
+      },
+      {
+        "iteration": 4,
+        "classification": "resisted-without-new-fall",
+        "passed": true,
+        "beforeNative": 54640,
+        "contactNative": 54825,
+        "contactImpulseNs": 8.100143432617188,
+        "afterNative": 74860,
+        "realNativeIntegrations": 20220,
+        "forecastNativeIntegrations": 0,
+        "observedNativeIntegrations": 20220,
+        "unobservedNativeTail": 0,
+        "strikeCommandZeroIntegrationAndAnatomicalF32WordsUnchanged": true,
+        "beforeAndAfterCheckpointVerifiedZeroIntegration": true,
+        "result": {
+          "path": "outputs/getup-repeat-cycle-20261019/fresh-back-five-strike-responses/cycle-04/result.json",
+          "sha256": "a6dabac501f7b32c30b10524e4d869cc12e0b6b617fd90c38369dc4e754939f7",
+          "bytes": 8354168
+        },
+        "resistedSecondsFromActualContact": 25.04375,
+        "noNewFallRecoverySourceOrForecastThroughout": true,
+        "pendingImpactCleared": true,
+        "terminalBindingExactF32WordsUnchanged": true,
+        "last800OriginalPredicatesCountersAndExactAnchorsPassed": true,
+        "last800NativeRange": [
+          74061,
+          74860
+        ],
+        "last800LoadedTangentIntegralM": [
+          7.765295442296603e-08,
+          1.0709165946036293e-07
+        ],
+        "entireResponseCumulativeLoadedTangentIntegralM": [
+          0.00030496321818178476,
+          7.930455406132447e-05
+        ],
+        "entireResponseCumulativeSlipGateM": 0.02,
+        "cumulativeIntegralNotReset": true
+      },
+      {
+        "iteration": 5,
+        "classification": "resisted-without-new-fall",
+        "passed": true,
+        "beforeNative": 74860,
+        "contactNative": 75045,
+        "contactImpulseNs": 7.963892936706543,
+        "afterNative": 95080,
+        "realNativeIntegrations": 20220,
+        "forecastNativeIntegrations": 0,
+        "observedNativeIntegrations": 20220,
+        "unobservedNativeTail": 0,
+        "strikeCommandZeroIntegrationAndAnatomicalF32WordsUnchanged": true,
+        "beforeAndAfterCheckpointVerifiedZeroIntegration": true,
+        "result": {
+          "path": "outputs/getup-repeat-cycle-20261019/fresh-back-five-strike-responses/cycle-05/result.json",
+          "sha256": "da1feb8a03b4fec9eb731822805a1145ba0cdb0ee4865070cc4ce9956b5366e4",
+          "bytes": 8354408
+        },
+        "resistedSecondsFromActualContact": 25.04375,
+        "noNewFallRecoverySourceOrForecastThroughout": true,
+        "pendingImpactCleared": true,
+        "terminalBindingExactF32WordsUnchanged": true,
+        "last800OriginalPredicatesCountersAndExactAnchorsPassed": true,
+        "last800NativeRange": [
+          94281,
+          95080
+        ],
+        "last800LoadedTangentIntegralM": [
+          9.376600063050195e-08,
+          9.664201459541882e-08
+        ],
+        "entireResponseCumulativeLoadedTangentIntegralM": [
+          0.00024860496297602323,
+          0.0001002203273414218
+        ],
+        "entireResponseCumulativeSlipGateM": 0.02,
+        "cumulativeIntegralNotReset": true
+      }
+    ],
+    "finalCheckpoint": {
+      "path": "outputs/getup-repeat-cycle-20261019/fresh-back-five-strike-responses/checkpoint-final.bin",
+      "sha256": "c3695f3b04959fa8a8323f883a08da935868fe2fe80e8a39b1b6b6b3af415af9",
+      "bytes": 3529674
+    },
+    "finalCheckpointVerifiedZeroIntegration": true
+  },
+  "probeAcceptance": {
+    "apparatus": "Use existing public Strike with the current stamp and next acknowledged sequence. Check accepted zero-native boundary and exact f32 anatomical pose/velocity words; require a real positive-impulse contact and full 800 Hz observation coverage. No impact within 5 seconds is a failure.",
+    "genuineRecovery": "Require a genuinely new physical fall, later source start, new forecast and recovery-counter increment, with original pass within 25 seconds of actual contact. Observe all original standing predicates/counters/anchors for 800 additional native samples; retain all gates through the normal 0..19-sample control-boundary tail. Gate loaded-contact tangent integral 20 mm only during this postpass hold; whole-getup slip is reported separately and may exceed 20 mm.",
+    "resistedResponse": "Require no new fall/recovery/source/forecast throughout the response and unchanged terminal binding. At a normal control boundary after at least 20,020 native samples from contact, require Upright, pending epoch cleared, last 800 original predicates/counters, exact unchanged f32 current anchors across those 800 samples and the actual current-anchor diagnostic. Both last 800 integral and cumulative loaded-foot tangent integral from the beginning of this whole response must be\u226420mm. The cumulative integral never resets inside a resisted response.",
+    "comparison": "Restore physical f32 words from either expanded typed JSON or shortest-f32 text; preserve signed zero. Anchor, anatomical pose and terminal-binding comparisons are exact words, with no new tolerance.",
+    "forecastAccounting": "Initialize previous counter from imported controller. Sum positive observed increments; record controller rearm downward reset separately, requiring zero rather than subtracting final minus initial across reset. One observed reset 960\u21920 at native7470 precedes 1,040 new forecast integrations.",
+    "boundedWindow": "30 seconds after contact is an observation bound, not an extended recovery deadline. Resisted success exits normally; no injected success-stop Failure or partial-tick edits."
+  },
+  "preservedHarnessCorrections": [
+    {
+      "attempt": "first JSON-value anchor oracle",
+      "receipt": {
+        "path": "outputs/getup-repeat-cycle-20261019/fresh-back-five-strikes/result.json",
+        "sha256": "aa239a3e1a1bf404a0c080998465e6e84d26b428cde1909c2e2b0fd7ba3fbe18",
+        "bytes": 8393336
+      },
+      "realNativeIntegrations": 7740,
+      "forecastNativeIntegrations": 1040,
+      "physicalOutcome": "New fall/recovery and 813 native postpass samples succeeded, with no physical/controller/gate failure. The harness incorrectly rejected anchor equality between expanded f64 JSON values and shortest-f32 text.",
+      "independentlyVerified": "Stored JSON anchor values differ, but all six restored f32 anchor words are exactly equal. Final probe uses exact restored f32 words, preserving signed zero.",
+      "productionSourceOrPhysicalGateChanged": false
+    },
+    {
+      "attempt": "f32-correct oracle still demanded a new fall after every contact",
+      "receipt": {
+        "path": "outputs/getup-repeat-cycle-20261019/fresh-back-five-strikes-f32-oracle/result.json",
+        "sha256": "5cc5fc00494e3cc107eff1c4e713162e69c3f40d124111decaa13fa3092621d6",
+        "bytes": 8401415
+      },
+      "realNativeIntegrations": 31925,
+      "forecastNativeIntegrations": 1040,
+      "physicalOutcome": "First new recovery passes. Second real contact is resisted with no new fall/source/forecast; old harness inserts its 30-second diagnostic-window stop because it only recognizes recovery. It is not a demonstrated recovery failure.",
+      "correction": "Final external classifier distinguishes real recovery from resisted contact and adds strict entire-response and last 800-sample checks. It does not force a physical fall, clear the world or relax the original recovery gate.",
+      "productionSourceOrPhysicalGateChanged": false
+    }
+  ],
+  "correctnessAndCompatibility": {
+    "focusedSimUniquePassed": 59,
+    "successfulInvocations": 62,
+    "failed": 0,
+    "ignored": 0,
+    "parsedNamesSummary": {
+      "path": "outputs/getup-repeat-cycle-20261019/focused-gates-summary.json",
+      "sha256": "f139addad6889ca030a187adfdaaa7b084e8ea27ae5b78d5b46ee1dbdf43768a",
+      "bytes": 10165
+    },
+    "lifecycleClockGuardPassed": 12,
+    "preGuardElevenTestRunPreserved": {
+      "path": "outputs/getup-repeat-cycle-20261019/lifecycle-tests-first.log",
+      "sha256": "227a51a014cf3ef408bb11c7580aa5733ec835268eb3aaf794cf71f214aac89c",
+      "bytes": 4203
+    },
+    "legacyNoneActualNextTickParity": {
+      "receipt": {
+        "path": "outputs/getup-repeat-cycle-20261019/legacy-exact-parity.json",
+        "sha256": "d2bed94179a16910a96b5e87fa598310b07b75ab16980c84ca6282b8c6b69c52",
+        "bytes": 796
+      },
+      "actualRealIntegrations": 40,
+      "forecastIntegrations": 0,
+      "unitRootPolicyStillActive": true,
+      "byteExactFiles": [
+        "reply.json",
+        "checkpoint-after.bin",
+        "report-after.json",
+        "fixture-after.json"
+      ]
+    },
+    "featureOffActiveProfileFactoryRefusal": {
+      "receipt": {
+        "path": "outputs/getup-repeat-cycle-20261019/feature-off-profile-refusal.json",
+        "sha256": "3b8e7dce0a331e98f356b8a369c989eb4643c8962e7d519d4596ccdd92e4ee94",
+        "bytes": 158
+      },
+      "physicsIntegrations": 0
+    },
+    "retainedOldLibraryRejectsNewProfileCheckpoint": {
+      "receipt": {
+        "path": "outputs/getup-repeat-cycle-20261019/old-profile-checkpoint-refusal.json",
+        "sha256": "a057229c703f90ed4d9f1a871339ed6545c1ac676f08f1b1451265ddcf8e316a",
+        "bytes": 1062
+      },
+      "physicsIntegrations": 0,
+      "rejectedField": "getup_repeated_recovery"
+    },
+    "scope": "Focused native tests and bounded compatibility receipts only; no full-suite or native/WASM equality."
+  },
+  "workAccounting": {
+    "canonicalFreshSeedRealNativeIntegrations": 4060,
+    "canonicalSeedHoldRealNativeIntegrations": 2400,
+    "canonicalFinalResponseChainRealNativeIntegrations": 88620,
+    "canonicalPhysicalChainRealNativeIntegrations": 95080,
+    "canonicalPhysicalChainForecastNativeIntegrations": 2000,
+    "compatibilityRealNativeIntegrations": 40,
+    "canonicalPlusCompatibilityRealNativeIntegrations": 95120,
+    "canonicalPlusCompatibilityRealPlusForecastIntegrations": 97120,
+    "firstFalseOracleReplayRealNativeIntegrations": 7740,
+    "secondFalseOracleReplayRealNativeIntegrations": 31925,
+    "bothFalseOracleReplayForecastIntegrations": 2080,
+    "earlierLegacyFrozenControllerDiagnosticRealNativeIntegrations": 20200,
+    "earlierLegacyDiagnosticForecastIntegrations": 0,
+    "allTheseRetainedExternalRunsRealNativeIntegrations": 154985,
+    "allTheseRetainedExternalRunsForecastIntegrations": 4080,
+    "unitAndSyntheticTestWorkIncluded": false,
+    "unobservedCanonicalNativeTail": 0,
+    "checkpointAndImportAddedIntegrations": 0,
+    "timing": "Untimed bounded correctness observations; no performance result."
+  },
+  "priorActualWasmBoundary": {
+    "evidence": {
+      "path": "docs/evidence/browser-unit-root-rotation-recovery-2026-10-19.json",
+      "sha256": "11a6dd9a3aad590cd1ecf64a6b4e4bb43f23f6fb151b18c1b22614ed02500a5e",
+      "bytes": 50495
+    },
+    "priorPolicy": "consistent solver budget plus unit-root normalization, without repeated lifecycle",
+    "back": "Actual WASM back never earned a standing sample and stopped at the unchanged 25-second recovery deadline. Native back success does not supersede this failure.",
+    "newRepeatCycleBrowserQualified": false
+  },
+  "reproducibleExternalProbe": {
+    "executedSource": {
+      "path": "outputs/getup-repeat-cycle-20261019/repeated-actual-striker.rs",
+      "sha256": "253edd8e68dbe10bbce4cef6af3d35aaf7ff41f9dee078f6eaf01fbb1a192e89",
+      "bytes": 45594
+    },
+    "retainedExactCopy": {
+      "path": "scripts/probes/getup-repeat-cycle.rs",
+      "sha256": "253edd8e68dbe10bbce4cef6af3d35aaf7ff41f9dee078f6eaf01fbb1a192e89",
+      "bytes": 45594
+    },
+    "byteIdentical": true,
+    "compileContract": "Link this unchanged probe against the frozen e7ff28fb library and its matching release dependencies, with serde_json; preserve its relative include_str path to the complete repeat-cycle profile.",
+    "invocation": "getup-repeat-cycle FRESH_RECOVERED_CHECKPOINT NEW_OUTPUT_DIRECTORY",
+    "input": "Use the canonical fresh-back-hold3/checkpoint-final.bin. No legacy-profile conversion is permitted."
+  },
+  "rawReceiptSha256": {
+    "root": "outputs/getup-repeat-cycle-20261019",
+    "sha256": {
+      "source-freeze-clock-guard.json": "90552916f7cb37d250201e2a745ccdf70742b3049bcc14e079277526894b31b6",
+      "independent-implementation-review.json": "c137f5cecc628eef634f639a308592b1713b4bf3d26cb6015f4bac2a17aff098",
+      "independent-design-review.json": "10687145949d07857a9e8704bfeadb3aa5749ba8946fabacf8b7ef928e9b96e2",
+      "library-build-clock-guard.log": "6e2243efaadcfb230c0fc8130b0167fbcc888cfeb059fa3266cca887ff255f42",
+      "library-build-clock-guard.exit": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa",
+      "focused-gates-summary.json": "f139addad6889ca030a187adfdaaa7b084e8ea27ae5b78d5b46ee1dbdf43768a",
+      "lifecycle-tests-clock-guard.log": "93243288579599e20826fc38a1b54e17d420dd6782617960019eeca712dcea0e",
+      "lifecycle-tests-first.log": "227a51a014cf3ef408bb11c7580aa5733ec835268eb3aaf794cf71f214aac89c",
+      "legacy-exact-parity.json": "d2bed94179a16910a96b5e87fa598310b07b75ab16980c84ca6282b8c6b69c52",
+      "legacy-resume.rs": "79311ec75629d89d9ca2692cde637c21f2e60f91fd5960c696574e53636f5a78",
+      "feature-off-profile-refusal.json": "3b8e7dce0a331e98f356b8a369c989eb4643c8962e7d519d4596ccdd92e4ee94",
+      "feature-off-profile-refusal.rs": "65456c0748904876950b0a726e20f689c11666acd93731328ca345c1c3e31838",
+      "old-profile-checkpoint-refusal.json": "a057229c703f90ed4d9f1a871339ed6545c1ac676f08f1b1451265ddcf8e316a",
+      "old-profile-checkpoint-refusal.rs": "8a7739c15af5c1d62de8ceed7d20efda8e70f59688c625e017e1bd4436d49cf0",
+      "fresh-back/result.json": "0f1c0a58f934d8d544e8b14ffbb2249f7c113ae875063a80a7280f2a1189acc0",
+      "fresh-back/reference-report.json": "63b0e7b8b024250a858c5f544e9dfedcb6203c33ab10e0318f1c665e07d67993",
+      "fresh-back/trace.ndjson": "3e8ad662cfc3df5c8670051a549be817e38035616b95b1f5d10828f599a9d7b9",
+      "fresh-back-hold3/result.json": "0162759a4bd632601889e0efd177ec8803dd3334113cbe67d87812f315e9247d",
+      "fresh-back-hold3/reference-report.json": "51c5ec56c290c2935f909905db021a463b1be3ec0a6ee2c71d9617b298612dfb",
+      "fresh-back-hold3/native-diagnostics.ndjson": "03622a383ea55482584a98bb75477e310d5c0fd2f15f0db2282fd97541385ea1",
+      "fresh-back-five-strikes/result.json": "aa239a3e1a1bf404a0c080998465e6e84d26b428cde1909c2e2b0fd7ba3fbe18",
+      "fresh-back-five-strikes-f32-oracle/result.json": "5cc5fc00494e3cc107eff1c4e713162e69c3f40d124111decaa13fa3092621d6",
+      "repeated-actual-striker-first-json-oracle.rs": "e386acd7124a883d1c509ec55d5fff753abe2a74b95d882ba2284cdd0fd18f6b",
+      "repeated-actual-striker-before-resisted-classification.rs": "508f5af64646e2dd3b9daa9994e27421821af825995ef74e12442fb530e6aa7c",
+      "repeated-actual-striker.rs": "253edd8e68dbe10bbce4cef6af3d35aaf7ff41f9dee078f6eaf01fbb1a192e89",
+      "fresh-back-five-strike-responses/result.json": "9c490f471865fb23e569ce6e6a921b78162b067f3c3cdde59827143ccd9ab3fb",
+      "back-actual-strike/result.json": "21ca8f94de4e00b46e6b6760ee1530dcb56f5d6e6acb01e6681472aadcfb1bd8",
+      "fresh-back-five-strike-responses/cycle-01/result.json": "7f2af87221441bc5b6249f27a0302802767f6c40bac57dd6643ff61b29b9512b",
+      "fresh-back-five-strike-responses/cycle-01/strike-ack.json": "83e63494a4a1b82d5821feb74b3ddebf5db89db50bba7420629697893e748c30",
+      "fresh-back-five-strike-responses/cycle-01/events-800hz.ndjson": "ede3bec007a3c8d474750320de79eb322010a9e0ef0b936c335687e32e818dad",
+      "fresh-back-five-strike-responses/cycle-01/trace-40hz.ndjson": "4a05e009038d96f2e929f8de0762df8a5a0714cc5836a5cb9573a5c0e173d98f",
+      "fresh-back-five-strike-responses/cycle-01/checkpoint-before-verification.json": "bdfb1dd2849fab98cfbe142226242eecf1901b1f6e610e587e353d3a0395adb6",
+      "fresh-back-five-strike-responses/cycle-01/checkpoint-after-verification.json": "f3d2278d306f206e396d2ff613883583856555112ce941e9bdad9e984458b7ab",
+      "fresh-back-five-strike-responses/cycle-02/result.json": "febe77f2f240375e2e00f3b8851fead0b84b1c1ce4d22e02a536d4c3982e4f79",
+      "fresh-back-five-strike-responses/cycle-02/strike-ack.json": "2943a453a24c6b940c2c7d7d84d7f6f63ef79479ffa8c1991c53a096dde674f6",
+      "fresh-back-five-strike-responses/cycle-02/events-800hz.ndjson": "7effd67e3e51ca1cfcb2bc0494d6678cb856bebaf29eec2078abf924884c9742",
+      "fresh-back-five-strike-responses/cycle-02/trace-40hz.ndjson": "ffbb85e294e817a7de3ca7380831e73b776e7fb1e969f7fa114b91416ad715ee",
+      "fresh-back-five-strike-responses/cycle-02/checkpoint-before-verification.json": "da4f3b27fc02b5a9572003f68be56ab9baa55d9cbd57e123a79b2deb28e78f7a",
+      "fresh-back-five-strike-responses/cycle-02/checkpoint-after-verification.json": "b4646f8cf46f7889e32c029f461692c4ec0b469d24368bd8e563c9f6e40ca56e",
+      "fresh-back-five-strike-responses/cycle-02/resisted-response-resolution.json": "a74de9fd57182047130225e81a3ec9f536f04ec107dd07c07d2617c80b6683bd",
+      "fresh-back-five-strike-responses/cycle-03/result.json": "e9ad4ee10875a75555d5ec5330a2eea10f42b2f203aebc6b593ce723e0a3360d",
+      "fresh-back-five-strike-responses/cycle-03/strike-ack.json": "cefdad654793fbae1d45b748265ab5b287e474213731bbf843b1054c8e658604",
+      "fresh-back-five-strike-responses/cycle-03/events-800hz.ndjson": "b05e15aa888f3908969116dd741d5c03d1882648614e0df7346e5787a6900472",
+      "fresh-back-five-strike-responses/cycle-03/trace-40hz.ndjson": "98f06d268377402f3381b6c699057462441542fc249e1d622a34c69a2b7a7b9e",
+      "fresh-back-five-strike-responses/cycle-03/checkpoint-before-verification.json": "73c9935b468803aec352df4df4c7bb86bb1f157bc896f9765a58f80c7fbe7a47",
+      "fresh-back-five-strike-responses/cycle-03/checkpoint-after-verification.json": "a6c3d7cb76ac2b95822cbdfc54eb36042bf8b14b505486dc3c499f3dcd9f2fe4",
+      "fresh-back-five-strike-responses/cycle-03/resisted-response-resolution.json": "0652d1b2f15e6c10784bb75292effb71c73ba5009233cb4c4686f613cbb85e49",
+      "fresh-back-five-strike-responses/cycle-04/result.json": "a6dabac501f7b32c30b10524e4d869cc12e0b6b617fd90c38369dc4e754939f7",
+      "fresh-back-five-strike-responses/cycle-04/strike-ack.json": "cde7510ce2b8de44dc6439939e78a67ed512cab3fc308c5b69e8a44787b4965e",
+      "fresh-back-five-strike-responses/cycle-04/events-800hz.ndjson": "3ade499546d0c57b5c7b435c9868d22f9b29f0f111f45a14f39320f79f6c8947",
+      "fresh-back-five-strike-responses/cycle-04/trace-40hz.ndjson": "050192090531eca94f8ddb64c45108abeaa13db1aad7ed0b8fe63fe16e44fd0f",
+      "fresh-back-five-strike-responses/cycle-04/checkpoint-before-verification.json": "7477090c903ede0668c64cfddd4ad15899e3acb6d37c8e6e8ec06b5bb83fea6f",
+      "fresh-back-five-strike-responses/cycle-04/checkpoint-after-verification.json": "3eb0c4db92d3b699dc07505b1c9be75e71715353e7489de02a7ae0b2620fbcca",
+      "fresh-back-five-strike-responses/cycle-04/resisted-response-resolution.json": "ba4ef4191a6de7ffdf1177ea8e39e23299645aff766efbacdbda168395ef4dcd",
+      "fresh-back-five-strike-responses/cycle-05/result.json": "da1feb8a03b4fec9eb731822805a1145ba0cdb0ee4865070cc4ce9956b5366e4",
+      "fresh-back-five-strike-responses/cycle-05/strike-ack.json": "c999bc29c59c3e78b5bf39f43cb8fe26403c9dadf2799912bcf57692a7ba3b93",
+      "fresh-back-five-strike-responses/cycle-05/events-800hz.ndjson": "036b51fee0fece07e9312186c752247ec2cc45818f9fb7014652640a1d7b246f",
+      "fresh-back-five-strike-responses/cycle-05/trace-40hz.ndjson": "c1854408d8ee2c7fc5eb0b1cd9feda165d32d60894aaf44df7f3c9818f5d5ad4",
+      "fresh-back-five-strike-responses/cycle-05/checkpoint-before-verification.json": "d742d212f816411d8f9cf38e90b3c44849dcbb32aeec7e48599d8a9512dce1a1",
+      "fresh-back-five-strike-responses/cycle-05/checkpoint-after-verification.json": "ca1b6de5013fa239a02d390c7915afa7fb83e218306aa1b5d27b32f2dca94634",
+      "fresh-back-five-strike-responses/cycle-05/resisted-response-resolution.json": "f56beae050615802d1d9a20b2c70fd86e67ef10ded4f1870bb797567e54d1b89"
+    }
+  },
+  "limits": [
+    "One fresh back setup, one genuine new fall/recovery and four resisted contacts. Five genuine physical fall/recovery cycles remain unproved.",
+    "Initial-ever weak-contact fall-label behavior remains legacy; unstruck/mid-source lifecycle cases have focused source tests, not this five-contact physical campaign.",
+    "No repeated-cycle actual-WASM qualification, 24-case qualification, full-suite green, global admission, public recovery enablement, performance acceptance or upstream rights clearance.",
+    "The resisted 20 mm gate covers the entire response interval from cycle start. The genuine recovery whole-motion slip is diagnostic, while its unchanged stable interval and postpass hold have their own original gates."
+  ],
+  "documentationVerificationUtc": "2026-10-19T20:43:25.515677+00:00"
+}

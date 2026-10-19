@@ -8,6 +8,7 @@ publish.workspace = true
 stationary-balance-experiment = []
 standing-dynamics-experiment = []
 getup-terminal-balance-experiment = []
+getup-repeat-cycle-experiment = ["getup-terminal-balance-experiment"]
 getup-terminal-base-ready-experiment = ["getup-terminal-balance-experiment"]
 getup-terminal-bumpless-experiment = ["getup-terminal-base-ready-experiment"]
 experimental-solver-step-observation = ["rapier3d/solver-step-observation"]

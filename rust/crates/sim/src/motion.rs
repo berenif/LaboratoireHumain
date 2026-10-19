@@ -50,6 +50,17 @@ mod parity_tests {
 
 impl Simulation {
     pub(crate) fn observe_impact(&mut self) {
+        let completed_contact = self.profile.getup_repeated_recovery.is_some()
+            && matches!(self.motion, Motion::Upright | Motion::Reacting)
+            && self.getup_controller.as_mut().is_some_and(|controller|
+                controller.completed_cycle_impact(self.substeps_completed));
+        if completed_contact {
+            self.motion = Motion::Reacting;
+            self.recovery = None;
+            self.stepping = None;
+            self.cancel_grab();
+            return;
+        }
         if let Some(controller) = &mut self.getup_controller { controller.impact(self.substeps_completed); }
         if matches!(self.motion, Motion::Upright | Motion::Reacting) {
             self.counters.falls += 1;
@@ -64,7 +75,15 @@ impl Simulation {
         if self.motion == Motion::Halted {
             return;
         }
-        if self.getup_controller.as_ref().is_some_and(|c| c.started_substep.is_some()) { return; }
+        let completed_cycle_observer = self.profile.getup_repeated_recovery.is_some()
+            && self.getup_controller.as_ref().is_some_and(|c| c.completed_recovery());
+        if self.getup_controller.as_ref().is_some_and(|c| c.started_substep.is_some())
+            && !completed_cycle_observer { return; }
+        if completed_cycle_observer && self.motion == Motion::Recovering {
+            // A failed standing predicate alone is not a new physical fall.
+            // Re-observe the same integrated pose with the existing fall gates.
+            self.motion = Motion::Reacting;
+        }
         if self.motion == Motion::Recovering {
             self.observe_recovery();
             return;
@@ -114,6 +133,9 @@ impl Simulation {
             {
                 self.motion = Motion::Falling;
                 self.counters.falls += 1;
+                if self.profile.getup_repeated_recovery.is_some() {
+                    self.motion_observation.settled_s = 0.0;
+                }
                 self.cancel_grab();
             } else {
                 self.motion = if self.grab.is_some() {
@@ -127,10 +149,13 @@ impl Simulation {
             let landed = self.model.segments.iter().enumerate().any(|(i, part)| {
                 !matches!(part.role.as_str(), "hindfoot" | "forefoot") && loads_n[i] >= 3.0
             });
-            let settled = self.bodies.iter().all(|handle| {
+            let settled = if self.profile.getup_repeated_recovery.is_some() {
+                crate::getup::current_twists(self).is_ok_and(|twists|
+                    twists.iter().all(|(v, w)| v.length() <= 0.65 && w.length() <= 1.8))
+            } else { self.bodies.iter().all(|handle| {
                 let body = &self.world.bodies[*handle];
                 body.linvel().length() <= 0.65 && body.angvel().length() <= 1.8
-            });
+            }) };
             self.motion_observation.settled_s = if landed && settled {
                 self.motion_observation.settled_s + self.profile.dt_s
             } else {

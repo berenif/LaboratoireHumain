@@ -147,6 +147,23 @@ impl Controller {
     pub(crate) fn source_recovery_active(&self) -> bool {
         self.started_substep.is_some() && self.terminal_balance.is_none()
     }
+    pub(crate) fn completed_recovery(&self) -> bool {
+        self.started_substep.is_some() && self.status.prototype_standing_passed
+    }
+    pub(crate) fn repeated_recovery_clock_valid(&self, native: u64) -> bool {
+        self.started_substep.is_none_or(|n| n <= native)
+            && self.impact_substep.is_none_or(|n| n <= native)
+            && self.terminal_balance.as_ref().is_none_or(|b| b.activated_native_substep <= native)
+            && (self.status.prototype_standing_passed || self.started_substep.is_none_or(|start|
+                self.impact_substep.is_some_and(|epoch| epoch <= start)))
+    }
+    /// A later contact is only a pending epoch. The physical fall observer must
+    /// independently establish a new fall before this cycle can be released.
+    pub(crate) fn completed_cycle_impact(&mut self, native: u64) -> bool {
+        if !self.completed_recovery() { return false; }
+        self.impact_substep = Some(native);
+        true
+    }
     pub fn new(model: &Model) -> Self {
         let _ = (actor::teacher(), actor::student());
         Self {
@@ -408,6 +425,14 @@ impl Controller {
         Ok(())
     }
     pub fn command(&mut self, s: &Simulation, physical: &[f32; 67]) -> Result<[f32; 21], String> {
+        if s.profile.getup_repeated_recovery.is_some() {
+            if !cfg!(feature = "getup-repeat-cycle-experiment") {
+                return Err("Repeated GetUp recovery requires getup-repeat-cycle-experiment".into());
+            }
+            if !self.repeated_recovery_clock_valid(s.substeps_completed) {
+                return Err("Invalid repeated GetUp recovery epoch or native clock".into());
+            }
+        }
         if self.terminal_bumpless_variant() && !cfg!(feature = "getup-terminal-bumpless-experiment") {
             return Err("Terminal bumpless transfer requires its experimental controller build".into());
         }
@@ -514,6 +539,12 @@ impl Controller {
                 .is_none_or(|p| p.snapshot(&s.world).available)
         {
             self.started_substep = Some(s.substeps_completed);
+            // An unstruck first fall has the same bounded fallback epoch as
+            // the existing command deadline. Do not let a later source-phase
+            // contact replace it and become a false pending next-cycle epoch.
+            if s.profile.getup_repeated_recovery.is_some() && self.impact_substep.is_none() {
+                self.impact_substep = Some(s.substeps_completed);
+            }
             self.status.phase = "teacher-reference".into();
             self.status.started_at_s = Some(s.substeps_completed as f64 / 800.0);
             if let Err(error) = self.generate_reference(s) {
@@ -685,6 +716,19 @@ impl Controller {
         Ok(target)
     }
     pub fn observe(&mut self, s: &mut Simulation, loads: &[f32; 25]) {
+        let repeated = s.profile.getup_repeated_recovery.is_some();
+        if repeated && self.completed_recovery()
+            && matches!(s.motion, Motion::Falling | Motion::Fallen)
+        {
+            let old_start = self.started_substep.expect("completed recovery has a start");
+            let epoch = self.impact_substep.filter(|n| *n > old_start)
+                .unwrap_or(s.substeps_completed);
+            // Controller-only cycle boundary. No physical world, native clock,
+            // global counters, targets, velocity or integrator history is reset.
+            *self = Self::new(&s.model);
+            self.impact_substep = Some(epoch);
+            return;
+        }
         if self.started_substep.is_none() {
             return;
         }
@@ -780,9 +824,26 @@ impl Controller {
         {
             self.status.prototype_standing_passed = true;
             s.counters.recoveries += 1;
+            if repeated {
+                // The old fall observer was paused while source control ran.
+                // Its unsupported/settled timers cannot seed a second fall.
+                s.motion_observation = Default::default();
+            }
+        }
+        if repeated && self.completed_recovery() && stable && self.stable_substeps >= 800
+            && self.impact_substep.is_some_and(|epoch|
+                epoch > self.started_substep.unwrap()
+                    && s.substeps_completed.checked_sub(epoch).is_some_and(|n| n >= 800))
+        {
+            // A fully resisted contact must not poison a much later unstruck
+            // fall with an expired contact deadline. The unchanged acceptance
+            // counter proves a complete new second of genuine stability.
+            self.impact_substep = None;
         }
         s.motion = if self.status.prototype_standing_passed && stable {
             Motion::Upright
+        } else if repeated && self.completed_recovery() {
+            s.motion
         } else {
             Motion::Recovering
         };
@@ -934,6 +995,10 @@ fn fork(real: &Simulation) -> Result<Simulation, String> {
     }
     let mut profile = real.profile.clone();
     profile.getup_policy_enabled = false;
+    // The forecast has no real recovery lifecycle or recursive controller.
+    // Retain every numerical integration policy; only the new lifecycle
+    // selector is inapplicable once the learned controller is disabled.
+    profile.getup_repeated_recovery = None;
     let mut shadow = Simulation::new(0.0, profile, true)?;
     let w = &real.world;
     shadow.world = PhysicsWorld {
@@ -966,6 +1031,10 @@ fn fork(real: &Simulation) -> Result<Simulation, String> {
 #[cfg(test)]
 #[path = "terminal_balance_tests.rs"]
 mod terminal_balance_tests;
+
+#[cfg(test)]
+#[path = "repeat_cycle_tests.rs"]
+mod repeat_cycle_tests;
 
 #[cfg(all(test, feature = "getup-terminal-base-ready-experiment"))]
 #[path = "terminal_base_ready_tests.rs"]

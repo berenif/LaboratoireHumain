@@ -10,12 +10,12 @@ use crate::getup::supported_standing;
 use bincode::Options;
 use std::sync::OnceLock;
 
-fn world_words(s: &Simulation) -> Vec<u8> {
+pub(super) fn world_words(s: &Simulation) -> Vec<u8> {
     // Solved Rapier maps have compound keys and cannot be compared as JSON.
     bincode::serialize(&s.world).unwrap()
 }
 
-fn settled_geometry() -> Simulation {
+pub(super) fn settled_geometry() -> Simulation {
     static SETTLED: OnceLock<(String, Vec<u8>)> = OnceLock::new();
     let (auxiliary, world) = SETTLED.get_or_init(|| {
         let mut s = Simulation::new_protocol(0.0, Profile::default(), true).unwrap();
@@ -37,7 +37,7 @@ fn settled_geometry() -> Simulation {
 }
 
 /// Synthetic lifecycle state only: no fall, teacher, or recovery is claimed.
-fn terminal_controller(s: &Simulation) -> Controller {
+pub(super) fn terminal_controller(s: &Simulation) -> Controller {
     let mut c = Controller::new(&s.model);
     c.terminal_base_ready = None; // This suite specifies the retained legacy variant.
     c.started_substep = Some(s.substeps_completed - 20);
