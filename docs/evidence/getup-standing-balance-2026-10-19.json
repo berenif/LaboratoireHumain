@@ -1,0 +1,318 @@
+{
+  "schema": 1,
+  "date": "2026-10-19",
+  "branch": "agent/contact-landing-mvp",
+  "baseCommit": "3712ffa709383b8d942f0d0a93992a743a22a162",
+  "scope": "Default flat-floor GetUp reference-standing controller; actual native dynamics. No recovery, walking, robustness or release qualification.",
+  "model": {
+    "id": "getup-v1",
+    "sha256": "1611ec8c988c1006b0a819ab21e2b7c410adaaf512080be425d6d6e235a8926a",
+    "massKg": 40.84402,
+    "bodies": 25,
+    "massiveBodies": 16,
+    "exactlyMasslessCoordinateFrames": 9,
+    "actuatedHinges": 21,
+    "engine": "Vendored Rapier3D 0.35.0, f32",
+    "profile": "Profile::default()",
+    "controlTickHz": 40,
+    "nativeIntegrationsPerTick": 20,
+    "nativeIntegrationHz": 800,
+    "schema": 4,
+    "scheduling": "40 Hz external tick/policy schedule with20 native integrations; source PD and new joint compensation are recomputed on the existing800 Hz motor-configure path."
+  },
+  "causalBaseline": {
+    "controller": "source-standing-pd-zero-residual",
+    "controllerSourceSha256": "7e1fe7e1e66db017aef75a75d0e44d926d02bded3b679a32091430414dc3819c",
+    "trial": "Simulation::new_protocol(0.0, Profile::default(), true), no commands, 5 physical seconds",
+    "recordedTorsoUpByPhysicalSecond": {
+      "0.5": 0.9955623745918274,
+      "1": 0.9962570667266846,
+      "2": 0.996052622795105,
+      "3": 0.7736888527870178,
+      "5": 0.06004483997821808
+    },
+    "observation": "Uncompensated source PD under gravity reaches ankle lower limits, knee sag and rearward COM motion; torso-up fails the unchanged0.97 gate by3 s.",
+    "trace": "outputs/getup-standing-fix-20261019/baseline.ndjson"
+  },
+  "change": {
+    "controller": "measured-contact-standing-balance",
+    "method": "Retain source normalized joint PD, then add recursive inverse-statics joint feedforward. Use measured current COM and authoritative generalized COM velocity for ankle-strategy COP intention; constrain each intention to the finite anatomical sole segment over the floor footprint. Desired vertical reactions sum mg and are only internal joint-torque calculation inputs.",
+    "contactGate": "Floor enabled, torso-up>=0.9, actual bilateral floor-normal load>=3 N, bilateral aggregate load>=3 N, no non-foot aggregate load>=3 N. Unsupported or fallen cases return exactly source PD.",
+    "motorPath": "Unchanged normalized [-1,1] clamp, source gear multiplication and equal/opposite hinge torque pairs in getup::apply_controls.",
+    "unchanged": [
+      "Canonical model, masses, inertia, collision geometry, passive properties and source PD gains",
+      "SLOW/WEAK learned-controller path and experimental residual-controller path",
+      "Solver parameters, substeps, physical timestep and integrity/contact acceptance thresholds",
+      "Public recovery and corrective stepping remain disabled",
+      "No root assistance, external holding forces, pose/velocity writes, impulses, checkpoint restoration or per-sample resets in continuous standing trials"
+    ],
+    "sourceSha256": {
+      "rust/crates/sim/src/getup.rs": "a39f6f5e3b66d5761b0ec18f1c33fbde6c82a26c54f5066f85a4182fd9388ecd",
+      "rust/crates/sim/src/getup/supported_standing.rs": "173e9f52ff6b99b42003a89e8c38c34c97b1db4cd5e50dad222e7bbd8a1f11b3"
+    }
+  },
+  "rejectedHypotheses": [
+    {
+      "candidate": "Unbounded desired COP inverse statics",
+      "outcome": "Held standing but rejected because no finite sole constraint"
+    },
+    {
+      "candidate": "Instantaneous positive-impulse support segment",
+      "outcome": "Early toe-only touchdown disabled compensation; failed standing"
+    },
+    {
+      "candidate": "Loaded-contact endpoint bridging and COM feedback",
+      "outcome": "Isolated every-native-sample total-foot-load failures remained at-45 degrees0.54125 s and60 degrees4.965 s. At the first event, disappearing contact features switched ankle command from approximately0.626 to0.020; not admitted as noise."
+    },
+    {
+      "candidate": "Final continuous anatomical-sole intention with independent actual-contact gating",
+      "outcome": "Avoids feature-swap discontinuity without fabricating contacts; final runs below passed all observed physical predicates"
+    }
+  ],
+  "nativeQualification": {
+    "probeSource": "outputs/getup-standing-fix-20261019/native-final.rs",
+    "probeSourceSha256": "a5aba0fe3a342d37568b38685d6509d9729fc7cfdc4b4d90e527500d8c81a9af",
+    "continuousRuns": [
+      {
+        "failure": null,
+        "heading": 0.0,
+        "loadedSlipIntegralM": [
+          0.0024055216742042353,
+          0.0024513311073894994
+        ],
+        "maximumBodyAngularRadps": 0.06540840864181519,
+        "maximumBodyLinearMps": 0.03287365660071373,
+        "maximumFootOriginDriftM": [
+          0.00849093496799469,
+          0.00739210145547986
+        ],
+        "minimumTorsoUp": 0.9996291399002075,
+        "nativeObservedAfter0_5S": 26001,
+        "physicalSeconds": 33.0,
+        "physicsWallSeconds": 107.705844759,
+        "quietFailuresAfter3S": {},
+        "quietLegacyMetrics": {
+          "max_angular_radps": 0.0023862908128648996,
+          "max_foot_drift_m": 0.007101133931428194,
+          "max_linear_mps": 0.0012231908040121198,
+          "max_pelvis_drift_m": 0.001591790234670043
+        },
+        "standingPredicateFailureSubsteps": {},
+        "standingSupportFailureSubsteps": 0,
+        "trace": "outputs/getup-standing-fix-20261019/continuous-final-33s.ndjson",
+        "headingDegrees": 0.0,
+        "integrations": 26400
+      },
+      {
+        "failure": null,
+        "heading": 1.0471975803375244,
+        "loadedSlipIntegralM": [
+          0.002268492646396965,
+          0.0022464627737093564
+        ],
+        "maximumBodyAngularRadps": 0.06450112909078598,
+        "maximumBodyLinearMps": 0.03185576945543289,
+        "maximumFootOriginDriftM": [
+          0.0015087681822478771,
+          0.001951811253093183
+        ],
+        "minimumTorsoUp": 0.9998183250427246,
+        "nativeObservedAfter0_5S": 9201,
+        "physicalSeconds": 12.0,
+        "physicsWallSeconds": 38.910967203,
+        "quietFailuresAfter3S": {},
+        "quietLegacyMetrics": {
+          "max_angular_radps": 0.003545113606378436,
+          "max_foot_drift_m": 0.001393146114423871,
+          "max_linear_mps": 0.0015197800239548087,
+          "max_pelvis_drift_m": 0.0004913434386253357
+        },
+        "standingPredicateFailureSubsteps": {},
+        "standingSupportFailureSubsteps": 0,
+        "trace": "outputs/getup-standing-fix-20261019/continuous-final-other-headings.ndjson",
+        "headingDegrees": 60.0,
+        "integrations": 9600
+      },
+      {
+        "failure": null,
+        "heading": -0.7853981852531433,
+        "loadedSlipIntegralM": [
+          0.004278101882606493,
+          0.0042732826128542185
+        ],
+        "maximumBodyAngularRadps": 0.08526019006967545,
+        "maximumBodyLinearMps": 0.033094484359025955,
+        "maximumFootOriginDriftM": [
+          0.009609499014914036,
+          0.009585708379745483
+        ],
+        "minimumTorsoUp": 0.9995129108428955,
+        "nativeObservedAfter0_5S": 9201,
+        "physicalSeconds": 12.0,
+        "physicsWallSeconds": 39.305108566,
+        "quietFailuresAfter3S": {},
+        "quietLegacyMetrics": {
+          "max_angular_radps": 0.07959982752799988,
+          "max_foot_drift_m": 0.006219217553734779,
+          "max_linear_mps": 0.009596936404705048,
+          "max_pelvis_drift_m": 0.001952247228473425
+        },
+        "standingPredicateFailureSubsteps": {},
+        "standingSupportFailureSubsteps": 0,
+        "trace": "outputs/getup-standing-fix-20261019/continuous-final-other-headings.ndjson",
+        "headingDegrees": -45.0,
+        "integrations": 9600
+      }
+    ],
+    "noFailureOutputFiles": [
+      "outputs/getup-standing-fix-20261019/continuous-final-33s-failures.ndjson",
+      "outputs/getup-standing-fix-20261019/continuous-final-other-failures.ndjson"
+    ],
+    "observation": "Integrity/finite/ownership/penetration/limit observer runs every integration from start. Existing standing_support and all standing_diagnostic predicates run every native sample from0.5 s; one reference is captured there for foot-origin drift. All predicates, including every-sample total foot load and bilateral physical-foot orientation, remain unchanged. QuietMetrics additionally run every integration from3 s.",
+    "quietWindowSeconds": {
+      "heading0": 30,
+      "headings60AndMinus45": 9
+    },
+    "thresholds": {
+      "standingUpMin": 0.97,
+      "maximumFootOriginDriftM": 0.01,
+      "supportReserveM": 0.003,
+      "bodyLinearMps": 0.22,
+      "bodyAngularRadps": 0.65,
+      "minimumFootNormalLoadN": 3,
+      "minimumTotalFootLoadFractionBodyWeight": 0.8,
+      "perFootCumulativeLoadedSlipStopM": 0.02
+    },
+    "slipDefinition": "For each physical foot from first integration, accumulate dt times positive-normal-impulse-weighted tangential speed at solved foot-side contacts whenever aggregate load>=3 N. Use authoritative current generalized velocities; no cancellation, no reset after settling and no per-contact maximum substitution.",
+    "minimumFocussedRegression": {
+      "newTestsPassed": 4,
+      "newTestsFailed": 0,
+      "newTestsIgnored": 0,
+      "threeHeadingTestNativeIntegrationsEach": 4000,
+      "standingSamplesPerHeading": 3601,
+      "sourceGetupTestsPassed": 4,
+      "grabTestsPassed": 4,
+      "ownershipTestsPassed": 1,
+      "jsTestsPassed": 82
+    },
+    "logs": [
+      "outputs/getup-standing-fix-20261019/final-guard-tests.log",
+      "outputs/getup-standing-fix-20261019/final-existing-tests.log",
+      "outputs/getup-standing-fix-20261019/final-js-tests.log"
+    ],
+    "fullWorkspace": {
+      "command": "npm run test:rust",
+      "simPassed": 84,
+      "simFailed": 79,
+      "simIgnored": 12,
+      "otherCrateTestsPassed": 17,
+      "exitCode": 101,
+      "simRunSeconds": 305.26,
+      "introducedFailureNamesVersusOriginalBaseline": [],
+      "failureNamesIdenticalToOriginalBaseline": true,
+      "newIgnoredOrRemovedTests": false,
+      "standingFourTestGroupPassed": true,
+      "compiledRuntimeSourceSha256": "d2d1fe8208bdb09249221c069a2c49d8c5751cd380137e4b9ecb278dc8fe4212",
+      "scope": "Final production controller plus corrected clock counts; the compiled runtime test retains the pre-existing stale10 impulse-leg assertion. A subsequent test-only contract clarification is rerun separately and is not included in these full-suite counts.",
+      "runtimeRemainingFailure": "runtime.rs819 expected10 impulse-joint leg diagnostics; current GetUp uses multibody legs, currently unsupported by that diagnostic. Earlier48 s physical/count/time/independent-parity checks passed. Empty diagnostics are not qualified.",
+      "log": "outputs/getup-standing-fix-20261019/continuous-final-workspace-tests.log",
+      "namedComparison": "outputs/getup-standing-fix-20261019/continuous-final-test-inventory-comparison.json"
+    },
+    "lint": "Repository cargo fmt --check remains failing with192 pre-existing diff blocks across25files; Clippy is not reached. No broad formatting rewrite included. The new supported_standing.rs passes standalone rustfmt --edition2024 --check, and git diff --check passes.",
+    "recordedDirectPelvisWrenchAtEvery1HzFrame": {
+      "maximumForceN": 0,
+      "maximumTorqueNm": 0,
+      "samplesAcrossThreeRuns": 57,
+      "interpretation": "Recorded diagnostics supplement the read-only source torque-path audit; they are not an independently calibrated force sensor."
+    },
+    "velocityInterpretation": "Standing_diagnostic predicates and cumulative contact slip use authoritative current generalized twists at every800 Hz integration. Existing QuietMetrics and snapshot velocity fields still use rigid-body caches; recorded1 Hz magnitudes differ by up to0.002135 m/s and0.009047 rad/s across these runs. Clock observer parity alone is not independent current-velocity validation. The30 s standing claim relies on the authoritative full-rate diagnostic campaign.",
+    "quietObserverAccountingFollowup": {
+      "separateEvidence": "docs/evidence/quiet-clock-accounting-2026-10-19.json",
+      "uniqueRuntimeTestsPassed": 13,
+      "expensiveExactTrialRuns": 1,
+      "physicalClockSeconds": 48,
+      "note": "Separate clock/test-contract change; not included in the recorded full-suite snapshot counts."
+    }
+  },
+  "browserQualification": {
+    "status": "PASS: actual ordinary rendered browser app, no-input3+30 physical seconds; actual real-pointer interaction and renderer lifecycle are tested separately.",
+    "artifact": "rust/dist/app",
+    "immutableTestCopy": "outputs/browser-capability-20261019/app-standing-final-repeat-auto",
+    "workerWasmSha256": "411be2c58fb3c8d0135261e4d6197acf6a31e14501cbfd98b136e8837995904f",
+    "driverSha256": "4c6281e19c4540e3ba72a74a5b1514b5d1b9c58e56c1f8a2dbfb3adb4812d74e",
+    "appHashManifest": "outputs/getup-standing-fix-20261019/continuous-final-repeat-auto-app-sha256.txt",
+    "appHashManifestSha256": "077423e1856b651e94e76ac82979a128a9612a56710c4699eaedf5291a1186e8",
+    "buildLog": "outputs/getup-standing-fix-20261019/continuous-final-repeat-auto-build.log",
+    "holdReport": "outputs/browser-capability-20261019/hold-standing-final-repeat-auto/result.json",
+    "holdPassed": true,
+    "metrics": {
+      "snapshotCount": 1321,
+      "steadySnapshotCount": 1201,
+      "referenceTime": 3,
+      "finalTime": 33,
+      "steadyPhysicalSeconds": 30,
+      "maximumSnapshotGapTicks": 1,
+      "minUpY": {
+        "torso": 0.999628318842122,
+        "pelvis": 0.992446321346018,
+        "right_foot": 0.9999290110961281,
+        "left_foot": 0.9999287545989171
+      },
+      "minimumAggregateFootLoadsN": {
+        "right_foot": 200.18544,
+        "left_foot": 200.28545
+      },
+      "maximumLinearSpeedMps": 0.0013172332063142935,
+      "maximumAngularSpeedRadps": 0.002419007675544633,
+      "maximumPelvisDriftM": 0.0015912281829895932,
+      "maximumFootBodyDriftM": 0.007079828505136335,
+      "maximumLoadedFootHorizontalBodySpeedProxyMps": 0.0005090337770086754,
+      "maximumFloorPenetrationM": 0.0010222999,
+      "maximumSelfPenetrationM": 0,
+      "violations": [],
+      "contactPointSlipAvailable": false,
+      "slipLimit": "The ordinary snapshot exposes aggregate segment loads and body velocities, not contact-point tangential velocity. Horizontal foot-body speed is a proxy, not contact slip."
+    },
+    "observation": {
+      "wallSeconds": 187.00860000000148,
+      "simulationSeconds": 33,
+      "integratedSimulationToWallRatio": 0.17646247284884084,
+      "presentedFrames": 10426,
+      "averagePresentedFps": 55.751446724909535,
+      "lastHalfSecondPresentedFps": 60,
+      "appReportedSimulationToWallRatio": 0.17647766621653607
+    },
+    "final": {
+      "tick": 1320,
+      "time": 33,
+      "motion": "Upright",
+      "backend": "WebGL2",
+      "workerInstances": 1,
+      "error": "",
+      "failure": null
+    },
+    "scope": "Ordinary rendered Rust/WASM app, automatic scheduler, no physical inputs: visible initial settling of at least3s followed by at least30 physical seconds of standing. Snapshot-level independent measurements only; not every-800Hz quiet/recovery/mobile/real-time qualification.",
+    "readinessReport": "outputs/browser-capability-20261019/readiness-standing-final-repeat-auto/result.json",
+    "readinessPassed": true,
+    "interaction": "Worker411be2c5 passed full actual-pointer drag/release/cancel/blur/re-grab/reset before the driver-only repeat-Auto repair; final-driver regression is being repeated separately.",
+    "limits": "Ordinary snapshots at40 Hz, not every800 Hz browser standing proof. Snapshot speed fields are cached, contact-point slip is unavailable. Desktop/headless WebGL2 only; no mobile, WebGPU or real-time qualification."
+  },
+  "visualEvidence": {
+    "image": "outputs/getup-standing-fix-20261019/comparison.png",
+    "video": "outputs/getup-standing-fix-20261019/standing-comparison.mp4",
+    "physicalDurationS": 5,
+    "playbackRate": 1,
+    "videoFps": 20,
+    "sourcePoseRecordingHz": 40,
+    "interpretation": "Recorded native Rapier poses reconstructed for face/profile views; not a browser interaction or real-time performance proof."
+  },
+  "knownLimits": [
+    "Original contact-free ballistic horizontal COM drift gate remains failing at0.0001 m; prior observed drift is0.393 mm, not0.393 m.",
+    "Native acceptance is flat floor and deterministic headings only; perturbation, platforms, uneven terrain, pathological-start and full release/recovery suites remain unqualified.",
+    "Separate quiet-observer clock fix derives counts from40 Hz/20substeps without changing120settling or1920terminal ticks; its evidence and commit are separate.",
+    "The -45-degree12-second case reaches9.6095 mm foot-origin displacement against the unchanged10 mm gate, although cumulative loaded tangential slip remains4.2781 mm. Longer rotated holds are not qualified.",
+    "Quiet driftTrace leg coordinates currently cover impulse joints only and are empty for GetUp multibody legs. Test cardinality now acknowledges that unsupported diagnostic gap; empty-array parity is not diagnostic validation.",
+    "Actual uncontended ordinary browser app runs at0.17646 simulated/wall speed despite55.75 presentedfps. This blocks real-time interactive-MVP qualification; next work is measured performance optimization without reducing800 Hz integration or physical gates."
+  ],
+  "releaseAccepted": false
+}

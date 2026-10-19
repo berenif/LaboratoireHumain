@@ -6,6 +6,7 @@ pub mod controller;
 pub mod fixtures;
 pub mod reference;
 pub mod standing;
+mod supported_standing;
 #[cfg(feature = "stationary-balance-experiment")]
 pub mod balance;
 
@@ -225,7 +226,7 @@ pub(crate) fn configure(s: &mut Simulation) -> Result<(), String> {
         let reference: [f32; 21] = controller::standing_target(&s.model)[..21]
             .try_into()
             .unwrap();
-        slow_controls(&s.model, &reference, &[0.0; 21], q, dq, true)
+        supported_standing::controls(s, &reference, q, dq)
     };
     s.diagnostics.getup = Some(lh_contracts::GetUpObservation {
         controller: if s.getup_fixture.as_ref().is_some_and(|f|f.preparing) {
@@ -233,7 +234,7 @@ pub(crate) fn configure(s: &mut Simulation) -> Result<(), String> {
         } else if s.getup_controller.is_some() {
             "pretrained-WEAK-SLOW"
         } else {
-            "source-standing-pd-zero-residual"
+            "measured-contact-standing-balance"
         }
         .into(),
         learned_policy_loaded: s.getup_controller.is_some(),
