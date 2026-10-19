@@ -1,0 +1,523 @@
+{
+  "schema": 1,
+  "date": "2026-10-19",
+  "classification": "four-pose-native-pass-explicit-consistent-getup-solver-budget",
+  "outcome": "All four fresh fixtures pass the unchanged 800-native-sample standing gate within 25 seconds after trigger, and all four complete 30-second native holds. Side first passes after 13.5375 seconds. This is a native causal checkpoint, not release or full-suite qualification.",
+  "fourPoseNativeAcceptancePassed": true,
+  "fourThirtySecondNativeHoldsPassed": true,
+  "qualification24Cases": false,
+  "releaseAccepted": false,
+  "productionRecoveryEnabled": false,
+  "defaultPublicProfileChanged": false,
+  "physicalAcceptanceChanged": false,
+  "browserQualificationForThisSelector": false,
+  "lineage": {
+    "repositoryHeadAtDocumentation": "4e6a881246205e57036658e3d6eb627b4c42f4ff",
+    "negativeBumplessV2PreservedCommit": "4e6a881246205e57036658e3d6eb627b4c42f4ff",
+    "baselineDirectory": "outputs/getup-root-translation-carry-20261019/fresh-3plus1",
+    "sourceFreeze": {
+      "path": "outputs/getup-consistent-solver-budget-20261019/source-freeze.json",
+      "sha256": "4a8b66d22196447f442978088366b9af024551bb690343a938a32c83dd278bda",
+      "bytes": 1782
+    },
+    "sourceSha256": {
+      "rust/crates/sim/src/lib.rs": "8922d26a78f5c51520dd920d2f3c24294f6c858f8249066beb06f3cdc488976c",
+      "rust/crates/sim/src/getup/controller.rs": "7a7f33027575ab745109ece30c647e92e39bf88712a900e9ceec0a3671da6c74",
+      "rust/crates/sim/src/runtime.rs": "bee390edfffb3ae4e2a1c33d0d22ec2be182572816d7f1792041c4c574fe2f2a",
+      "rust/crates/sim/src/getup/solver_budget_tests.rs": "032531e5615d6ee12f5c96a133636cbc85c31489ad49c2c854f95e873a69136f",
+      "docs/evidence/profiles/getup-800hz-3plus1-consistent-recovery-budget-v1.json": "da054ad1556556b20e9469c042e6e5fd4088f3630092a9d4a7b992de43f2199c",
+      "rust/crates/sim/src/getup_root_translation_checkpoint_tests.rs": "e869ba91c1bdb4341c0e75a88f60398a282e728f155723a8c385a6026832941b"
+    },
+    "allSixSourceHashesReverified": true,
+    "frozenLibrary": {
+      "path": "outputs/getup-consistent-solver-budget-20261019/liblh_sim-consistent-budget-frozen.rlib",
+      "sha256": "6e5ee5b9e363659276d800002f81ff2cf58a2856594f9910f019e1644409fd9a",
+      "bytes": 24699418
+    },
+    "testCorrection": "The native0 test initially compared complete checkpoint bytes containing the known unordered pending to_join HashSet. The corrected test reuses the existing exact named-to_join construction comparator, exact auxiliary/envelope checks and zero-native checkpoint verification. It changes no production selector, dynamics or physical threshold.",
+    "sourceFreezeBeforeTestCorrection": {
+      "path": "outputs/getup-consistent-solver-budget-20261019/source-freeze-before-test-correction.json",
+      "sha256": "fa5a46e244436a539da110466eac4f5012274460dfa76d37dc7fc3e2752c8e14",
+      "bytes": 1058
+    }
+  },
+  "numericalCauseAndChange": {
+    "legacyMismatch": "At the measured trigger checkpoint the teacher clones 32 internal PGS passes. In the retained ordinary GetUp source phase the old real-world selection falls back to 20 after its first integration because its Recovering gate only recognized the legacy recovery controller. The teacher clone retains its trigger parameters.",
+    "mismatchEvidence": {
+      "path": "outputs/getup-consistent-solver-budget-20261019/audit-getup-solver-budget-receipt.ndjson",
+      "sha256": "f1055711c0b97eaf376c69b79fd036b4c37d6145f3eed536e0a446898be9216d",
+      "bytes": 4558
+    },
+    "auditMethod": "Decode retained actual checkpoints and inspect world/profile parameters without integrating. Source inspection establishes the first-step phase-selection path; the zero-step audit alone does not observe an unseen live first-step trajectory.",
+    "selector": {
+      "field": "getup_solver_budget",
+      "value": "consistent-recovery-phase-v1",
+      "legacyOmittedValue": "None preserves historical semantics",
+      "activeSourceRecoveryInternalPGS": 32,
+      "terminalStandingInternalPGS": 20,
+      "normalInternalPGS": 20,
+      "outerSolverIterations": 3,
+      "additionalBodyIterations": 1
+    },
+    "scope": "The explicit selector aligns real active source recovery and teacher forecast numerical phase budgets. The exact fork/seed boundary is kept; forecasting selects its budget after the exact copy. No policy actor, control gain, motor cap, 800Hz clock, fixture or acceptance change.",
+    "features": [
+      "getup-terminal-balance-experiment",
+      "standing-dynamics-experiment",
+      "root-translation-carry-experiment"
+    ],
+    "baseReadyEnabled": false,
+    "bumplessEnabled": false,
+    "canonicalActorSha256": {
+      "rust/crates/sim/data/getup-policy/teacher.bin": "f8d8d6ea787366a67aa46352cf5243ed2962dd277b5ca6b6f98a85fc3a67ab4f",
+      "rust/crates/sim/data/getup-policy/student.bin": "c489faed55bdab1669c51dab71a102db91ff2a55143789f682e45cd8169d6dbb"
+    }
+  },
+  "profile": {
+    "path": "docs/evidence/profiles/getup-800hz-3plus1-consistent-recovery-budget-v1.json",
+    "sha256": "da054ad1556556b20e9469c042e6e5fd4088f3630092a9d4a7b992de43f2199c",
+    "bytes": 1213
+  },
+  "profileOnlyDifferencesFromRetained3plus1": [
+    "id",
+    "getup_solver_budget"
+  ],
+  "freshCarry": "Explicit carry activation at native0 for all four; zero integrations and serialized body-world/runtime unchanged at activation. Holds use their newly measured passing checkpoint and existing carry without reactivation.",
+  "unchangedCriteria": {
+    "nativeHz": 800,
+    "controllerHz": 40,
+    "originalContiguousStandingNativeSamples": 800,
+    "recoveryDeadlineSecondsAfterTrigger": 25,
+    "maximumWholeBodyLinearMps": 0.22,
+    "maximumWholeBodyAngularRadps": 0.65,
+    "footOriginDriftFromOriginalStableAnchorsM": 0.01,
+    "headHeightGreaterThanM": 1.4,
+    "torsoUpAtLeast": 0.97,
+    "loadedContinuationSlipStopM": 0.02,
+    "wholeRecovery20mmStop": false,
+    "admissionCounterCanCountAsOriginalStandingSamples": false
+  },
+  "freshRecovery": [
+    {
+      "kind": "side",
+      "standingPassed": true,
+      "triggerNative": 340,
+      "terminalBalanceActivationNative": 10099,
+      "firstLatchedStandingPassNative": 11170,
+      "firstPassSecondsAfterTrigger": 13.5375,
+      "polledTerminalNative": 11180,
+      "originalStableNativeSamplesAtTerminal": 810,
+      "realNativeIntegrations": 11180,
+      "forecastNativeIntegrations": 700,
+      "resultSha256": "2fc623d46c56b77516fe7390d1b5eb6d67835f0ad6f4488a51215b4bb6f5a199"
+    },
+    {
+      "kind": "back",
+      "standingPassed": true,
+      "triggerNative": 480,
+      "terminalBalanceActivationNative": 2943,
+      "firstLatchedStandingPassNative": 3987,
+      "firstPassSecondsAfterTrigger": 4.38375,
+      "polledTerminalNative": 4000,
+      "originalStableNativeSamplesAtTerminal": 813,
+      "realNativeIntegrations": 4000,
+      "forecastNativeIntegrations": 960,
+      "resultSha256": "25c0c72e47ce69f265deec8036f5d54ae11a6a00fa295321b81282335e3fa423"
+    },
+    {
+      "kind": "belly",
+      "standingPassed": true,
+      "triggerNative": 400,
+      "terminalBalanceActivationNative": 1818,
+      "firstLatchedStandingPassNative": 2538,
+      "firstPassSecondsAfterTrigger": 2.6725,
+      "polledTerminalNative": 2540,
+      "originalStableNativeSamplesAtTerminal": 802,
+      "realNativeIntegrations": 2540,
+      "forecastNativeIntegrations": 540,
+      "resultSha256": "ebb650f05b00a9c17fe30cf1d7e36b8ff7c251481e75ead08bfc28cd3775b32f"
+    },
+    {
+      "kind": "side-supported",
+      "standingPassed": true,
+      "triggerNative": 140,
+      "terminalBalanceActivationNative": 18386,
+      "firstLatchedStandingPassNative": 19106,
+      "firstPassSecondsAfterTrigger": 23.7075,
+      "polledTerminalNative": 19120,
+      "originalStableNativeSamplesAtTerminal": 814,
+      "realNativeIntegrations": 19120,
+      "forecastNativeIntegrations": 720,
+      "resultSha256": "6f54214da666668e6511d7ec801eefeb89f799fd574047b0105dfd532b840250"
+    }
+  ],
+  "standingContinuations": [
+    {
+      "kind": "side",
+      "outcome": "completed",
+      "simulatedSeconds": 30,
+      "actualNativeIntegrations": 24000,
+      "everyNativeStandingPredicatePassed": true,
+      "originalCounterContinuous": true,
+      "originalStableCounterInput": 810,
+      "originalStableCounterFinal": 24810,
+      "originalAnchorsUnchanged": true,
+      "maximumFootOriginDriftM": [
+        0.0003891524684149772,
+        0.002702342811971903
+      ],
+      "loadedContactSpeedIntegralM": [
+        7.805262263026668e-05,
+        0.00040456703629274826
+      ],
+      "maximumBodyLinearMps": 0.009417871944606304,
+      "maximumBodyAngularRadps": 0.021613677963614464,
+      "teacherAndSlowCountsUnchanged": true,
+      "noExternalSupportOrPoseVelocityWrites": true,
+      "unobservedTerminalTailNative": 0,
+      "resultSha256": "e351f12107df7267566b15f38a9941895883e635942fca67667b71f9923d0721"
+    },
+    {
+      "kind": "back",
+      "outcome": "completed",
+      "simulatedSeconds": 30,
+      "actualNativeIntegrations": 24000,
+      "everyNativeStandingPredicatePassed": true,
+      "originalCounterContinuous": true,
+      "originalStableCounterInput": 813,
+      "originalStableCounterFinal": 24813,
+      "originalAnchorsUnchanged": true,
+      "maximumFootOriginDriftM": [
+        0.00011888892913702875,
+        5.25628165632952e-05
+      ],
+      "loadedContactSpeedIntegralM": [
+        1.662610061091148e-06,
+        5.193837021706402e-06
+      ],
+      "maximumBodyLinearMps": 0.033608198165893555,
+      "maximumBodyAngularRadps": 0.03324135020375252,
+      "teacherAndSlowCountsUnchanged": true,
+      "noExternalSupportOrPoseVelocityWrites": true,
+      "unobservedTerminalTailNative": 0,
+      "resultSha256": "35397b09adb7aa765fdab097d0d1c86190c88162990d2c25911ea1878734e9a9"
+    },
+    {
+      "kind": "belly",
+      "outcome": "completed",
+      "simulatedSeconds": 30,
+      "actualNativeIntegrations": 24000,
+      "everyNativeStandingPredicatePassed": true,
+      "originalCounterContinuous": true,
+      "originalStableCounterInput": 802,
+      "originalStableCounterFinal": 24802,
+      "originalAnchorsUnchanged": true,
+      "maximumFootOriginDriftM": [
+        8.538478141417727e-05,
+        0.00012058210268151015
+      ],
+      "loadedContactSpeedIntegralM": [
+        8.3869443570528e-06,
+        9.799446528164794e-06
+      ],
+      "maximumBodyLinearMps": 0.015405120328068733,
+      "maximumBodyAngularRadps": 0.030926624312996864,
+      "teacherAndSlowCountsUnchanged": true,
+      "noExternalSupportOrPoseVelocityWrites": true,
+      "unobservedTerminalTailNative": 0,
+      "resultSha256": "ced683760e25bb22a0de562ba29bc2a723c0c181bbd69f1f2650c3a159852c06"
+    },
+    {
+      "kind": "side-supported",
+      "outcome": "completed",
+      "simulatedSeconds": 30,
+      "actualNativeIntegrations": 24000,
+      "everyNativeStandingPredicatePassed": true,
+      "originalCounterContinuous": true,
+      "originalStableCounterInput": 814,
+      "originalStableCounterFinal": 24814,
+      "originalAnchorsUnchanged": true,
+      "maximumFootOriginDriftM": [
+        0.0003931077371817082,
+        0.00042039051186293364
+      ],
+      "loadedContactSpeedIntegralM": [
+        1.0845838895043733e-05,
+        1.550451134017846e-05
+      ],
+      "maximumBodyLinearMps": 0.03573403134942055,
+      "maximumBodyAngularRadps": 0.04331862926483154,
+      "teacherAndSlowCountsUnchanged": true,
+      "noExternalSupportOrPoseVelocityWrites": true,
+      "unobservedTerminalTailNative": 0,
+      "resultSha256": "c623e11d256372196e3cd07075fb6dc0cc1d31b2df34b68a5e57b4353e37dc19"
+    }
+  ],
+  "causalComparison": {
+    "receipt": {
+      "path": "outputs/getup-consistent-solver-budget-20261019/matched-causal-seed-and-teacher.json",
+      "sha256": "57650c922babf3535f868126832fa824b901b3c2afd0867687b56f7c4dd6ca47",
+      "bytes": 2811
+    },
+    "cases": [
+      {
+        "kind": "side",
+        "exactPreparationSamples": 18,
+        "triggerPhysicalFactsExact": true,
+        "teacherInitialSnapshotExact": true,
+        "completeTeacherArchiveExact": true,
+        "completeReferenceExact": true,
+        "teacherDecisions": 35,
+        "observed40HzBudgetCurrentNextSourceCounts": {
+          "(20, 20, False)": 56,
+          "(32, 32, False)": 18,
+          "(32, 32, True)": 487
+        }
+      },
+      {
+        "kind": "back",
+        "exactPreparationSamples": 7,
+        "triggerPhysicalFactsExact": true,
+        "teacherInitialSnapshotExact": true,
+        "completeTeacherArchiveExact": true,
+        "completeReferenceExact": true,
+        "teacherDecisions": 48,
+        "observed40HzBudgetCurrentNextSourceCounts": {
+          "(20, 20, False)": 54,
+          "(32, 32, False)": 7,
+          "(32, 32, True)": 123
+        }
+      },
+      {
+        "kind": "belly",
+        "exactPreparationSamples": 6,
+        "triggerPhysicalFactsExact": true,
+        "teacherInitialSnapshotExact": true,
+        "completeTeacherArchiveExact": true,
+        "completeReferenceExact": true,
+        "teacherDecisions": 27,
+        "observed40HzBudgetCurrentNextSourceCounts": {
+          "(20, 20, False)": 38,
+          "(32, 32, False)": 6,
+          "(32, 32, True)": 70
+        }
+      },
+      {
+        "kind": "side-supported",
+        "exactPreparationSamples": 8,
+        "triggerPhysicalFactsExact": true,
+        "teacherInitialSnapshotExact": true,
+        "completeTeacherArchiveExact": true,
+        "completeReferenceExact": true,
+        "teacherDecisions": 36,
+        "observed40HzBudgetCurrentNextSourceCounts": {
+          "(20, 20, False)": 38,
+          "(32, 32, False)": 8,
+          "(32, 32, True)": 912
+        }
+      }
+    ],
+    "independentlyRecomputedReadOnly": true,
+    "method": "Compare every saved preparation snapshot and physical fixture facts, excluding only changed profile identity/selector and added solverBudget diagnostics. Compare trigger physical facts and complete teacher initial snapshot, teacher frames and reference arrays exactly.",
+    "limit": "Real SLOW trajectories intentionally diverge after integration because 32 replaces 20; no subsequent real-trajectory or unseen 800 Hz prefix parity is claimed. The comparator was executed inline; the retained rawJSON is its receipt."
+  },
+  "focusedGates": {
+    "successfulInvocations": 42,
+    "uniquePassedTests": 39,
+    "failedFinal": 0,
+    "ignoredFinal": 0,
+    "logs": [
+      {
+        "log": "outputs/getup-consistent-solver-budget-20261019/solver-budget-tests-corrected.log",
+        "passedInvocations": 6,
+        "failed": 0,
+        "ignored": 0,
+        "sha256": "8261f0dfd39085b904da1dacd6bb6fcce3e788c8821b1361fae387ec60ff4648"
+      },
+      {
+        "log": "outputs/getup-consistent-solver-budget-20261019/gates/getup_fixture_profile_tests.log",
+        "passedInvocations": 4,
+        "failed": 0,
+        "ignored": 0,
+        "sha256": "f507aebfa74eb3c4db0f14b509a550113c46e813a4a97a3b9692e645585f853d"
+      },
+      {
+        "log": "outputs/getup-consistent-solver-budget-20261019/gates/getup_root_translation_checkpoint_tests.log",
+        "passedInvocations": 9,
+        "failed": 0,
+        "ignored": 0,
+        "sha256": "dfddfcde23eb4f0c2d9131a1b5777ba4749f196dba6b076219c8f492f245278b"
+      },
+      {
+        "log": "outputs/getup-consistent-solver-budget-20261019/gates/supported_standing__tests.log",
+        "passedInvocations": 5,
+        "failed": 0,
+        "ignored": 0,
+        "sha256": "87dc356c6de97ff29b378ada3b99863265c6a6cfe7a7bef24b190027987fe131"
+      },
+      {
+        "log": "outputs/getup-consistent-solver-budget-20261019/gates/terminal.log",
+        "passedInvocations": 18,
+        "failed": 0,
+        "ignored": 0,
+        "sha256": "2266db4accd952e94942098ed6b5a04c0b80dfc9ba7ee2df421caade16030a44"
+      }
+    ],
+    "repeatedTestNames": {
+      "runtime::getup_fixture_profile_tests::complete_three_plus_one_profile_changes_only_id_and_solver_budgets": 2,
+      "getup::controller::solver_budget_tests::solver_budget_real_phase_distinguishes_awaiting_source_and_terminal_handoff": 2,
+      "runtime::getup_root_translation_checkpoint_tests::solver_budget_typed_profile_roundtrips_without_native_integration": 2
+    },
+    "initialAttempt": {
+      "passed": 5,
+      "failed": 1,
+      "ignored": 0,
+      "receipt": {
+        "path": "outputs/getup-consistent-solver-budget-20261019/solver-budget-tests-first-attempt.log",
+        "sha256": "326436c31cea96d668b5860840d03cfe8d489616aacf4b57e4736bc6c453dce8",
+        "bytes": 4664975
+      },
+      "disposition": "Construction HashSet byte-order assertion corrected as described; the original failure log remains preserved."
+    },
+    "buildAndProbeCompileExitCodes": 0,
+    "initialContinuationCompileAttempt": "Missing explicit bincode linkage, preserved in hold-probe-link-first-attempt.log; corrected link exits0. No physical run was produced by that failed compile.",
+    "scope": "Focused filters only, not the whole suite. Solver-budget helper and typed-profile checkpoint tests perform no native integration.",
+    "parsedNamesSummary": {
+      "path": "outputs/getup-consistent-solver-budget-20261019/focused-gates-summary.json",
+      "sha256": "163f246b5aef0fc096e6aca6a9b06abf9263276b7dbd5cf980ba53020e41f0a7",
+      "bytes": 7210
+    }
+  },
+  "checkpointCompatibility": {
+    "actualOldLibraryRefusal": {
+      "path": "outputs/getup-consistent-solver-budget-20261019/old-profile-checkpoint-refusal.json",
+      "sha256": "c56553ab72417a18aea54b5a2eb98e1e4b6f7903c94fa93fc5359dfc02e9bbb6",
+      "bytes": 1456
+    },
+    "passed": true,
+    "physicsIntegrations": 0,
+    "fieldRefused": "getup_solver_budget",
+    "legacyNoneSerialization": "Omitted optional field and old phase arithmetic retained; covered by focused tests.",
+    "scope": "Actual new-profile checkpoint refusal and zero-step typed-profile roundtrip only. No cross-library next-tick parity or native/WASM parity is claimed for this selector.",
+    "retainedPreSelectorLibrary": {
+      "path": "outputs/getup-root-translation-carry-20261019/liblh_sim-carry-frozen.rlib",
+      "sha256": "ac8d054ed1412571f9f91f056255b46afda18ae3fcc04eaac30a66e12476b6dd",
+      "bytes": 24054950
+    }
+  },
+  "workAccounting": {
+    "freshRealNativeIntegrations": 36840,
+    "freshForecastNativeIntegrations": 2920,
+    "holdRealNativeIntegrations": 96000,
+    "combinedCampaignRealNativeIntegrations": 132840,
+    "combinedCampaignRealPlusForecastNativeIntegrations": 135760,
+    "decodeAuditAndOldLibraryRefusalNativeIntegrations": 0,
+    "unitWorkIncluded": false,
+    "allFourFreshProcessesTerminal": true,
+    "allFourHoldProcessesTerminal": true,
+    "unobservedRealTailNativeIntegrations": 0,
+    "processExitZeroIsSeparateFromPhysicalAcceptance": true,
+    "timing": "Untimed causal physics campaign; compile/test work could overlap. Process wall time is not a simulation performance benchmark."
+  },
+  "executedProbeCopies": [
+    {
+      "executedSource": "outputs/getup-consistent-solver-budget-20261019/fresh-recovery.rs",
+      "retainedExactCopy": "docs/evidence/probes/getup-consistent-solver-budget-fresh-recovery-2026-10-19.rs",
+      "sha256": "681aea74df50f2a55f2b95c91232be1a7a934ec3ecc7eb76b4ff010ed48df302"
+    },
+    {
+      "executedSource": "outputs/getup-consistent-solver-budget-20261019/active-standing-continuation.rs",
+      "retainedExactCopy": "docs/evidence/probes/getup-consistent-solver-budget-active-standing-continuation-2026-10-19.rs",
+      "sha256": "8ea17e4411c5f559f42ec6d6167c9d5121db40b7013793a7a06770d4af93a994"
+    }
+  ],
+  "rawReceiptSha256": {
+    "root": "outputs/getup-consistent-solver-budget-20261019",
+    "sha256": {
+      "source-freeze.json": "4a8b66d22196447f442978088366b9af024551bb690343a938a32c83dd278bda",
+      "source-freeze-before-test-correction.json": "fa5a46e244436a539da110466eac4f5012274460dfa76d37dc7fc3e2752c8e14",
+      "library-build.log": "3e19b45101664282c65d1656bff4fb93302dab79a3cf50cc525305f499b9c9ab",
+      "library-build.exit": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa",
+      "side-process-ledger.json": "3d5e28fbf87872b75bc6fc3a0fee18d71ad3a59eded31a7c773dabf2a3095f93",
+      "fresh-3plus1/process-ledger.json": "cd94d049515fc0177a9efb0fae9d6843a4ff64bd905bcdbd2b5009698bd7a7a2",
+      "fresh-3plus1/hold-process-ledger.json": "3aa8d44abdd2458c2d1fcc81a3eecf7ffa14775a801df49c7314e111a82bb074",
+      "audit-getup-solver-budget.rs": "f7db69e91b7d19bdc625ecc4a2881242ab6d9c440eb5c9368ac6d72230ee5780",
+      "audit-getup-solver-budget-receipt.ndjson": "f1055711c0b97eaf376c69b79fd036b4c37d6145f3eed536e0a446898be9216d",
+      "matched-causal-seed-and-teacher.json": "57650c922babf3535f868126832fa824b901b3c2afd0867687b56f7c4dd6ca47",
+      "solver-budget-tests-first-attempt.log": "326436c31cea96d668b5860840d03cfe8d489616aacf4b57e4736bc6c453dce8",
+      "solver-budget-tests-corrected.log": "8261f0dfd39085b904da1dacd6bb6fcce3e788c8821b1361fae387ec60ff4648",
+      "solver-budget-tests-corrected.exit": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa",
+      "hold-probe-link-first-attempt.log": "294880ef6e146eb5fdfe40c7e46ee566090c9a7d4a3d1694c58168bb4a395960",
+      "hold-probe-link.exit": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa",
+      "probe-link.exit": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa",
+      "old-profile-checkpoint-refusal.rs": "613208ea3bb7ba6a240c805a70c289809cc089c86a28a086be577a24c5f85cad",
+      "old-profile-checkpoint-refusal.json": "c56553ab72417a18aea54b5a2eb98e1e4b6f7903c94fa93fc5359dfc02e9bbb6",
+      "old-profile-refusal.exit": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa",
+      "run-side.py": "db976d3d937299e0c07412523b82329a18794c4c9b133a06b4a2cdb732ff2e4b",
+      "run-recovery.py": "9a3144251210e84d64fd09dc644d00cb91ac94c1c122428eee0d36fce7232db2",
+      "run-holds.py": "f450150bab6e506322c911a87989fc7c481c35785f2767e16f9850aa94f86e96",
+      "fresh-3plus1/side/trace.ndjson": "80447a29a927dacf108af69e861af5fd6146a099312f2343d100bb2c88e56440",
+      "fresh-3plus1/side/reference-report.json": "af5acc4bd35530338195c40a786b48ca76438fad68c68e2dcc2d63825be7a8e5",
+      "fresh-3plus1/side/checkpoint-initial.json": "03e1efd2642c2d5ca5e4d1778d3467c1b403a8a246bfae68b4de33b712913780",
+      "fresh-3plus1/side/checkpoint-trigger.json": "da9ee786333fc13bb44d46d9160b41c834477a81052bc1ed8373cdeff7d7dabb",
+      "fresh-3plus1/side/checkpoint-final.json": "6247a01d3d685df2662c11f71dc32035ffbd2235f373b9b9c1a4714bf328cb7f",
+      "fresh-3plus1/side-hold30/trace.ndjson": "d9bb1fd2a9f84e8bbbe95aef65b4bf78637242ccee4e1e28f4e199fb7711bdc5",
+      "fresh-3plus1/side-hold30/native-diagnostics.ndjson": "c9e05a5a576d06bc167fe8469e182a223ad15711d6c52c3dc21de56d2a1e23aa",
+      "fresh-3plus1/side-hold30/checkpoint-input-verification.json": "20566f2a9741b6a85352ab6c3f82a09d9ccea65a946cbaef53f3dd8a996d9d66",
+      "fresh-3plus1/side-hold30/checkpoint-final-verification.json": "c6e19fe472393c8768342990eb9e226f47fe09df139cd36a9ebe54b805ca6eea",
+      "fresh-3plus1/back/trace.ndjson": "55fb806202baa09713a1b27b7f22aaedd254ec6d9768404e235d9267f72f57b7",
+      "fresh-3plus1/back/reference-report.json": "36d19b1585c76d82362851b4891ab6d1872eb794c7682872beff401854a94549",
+      "fresh-3plus1/back/checkpoint-initial.json": "b104d0d91e7ee2a75c6506ceaa6a524595dc98ab678047524f4f90f27cb3505a",
+      "fresh-3plus1/back/checkpoint-trigger.json": "765cf5ebd874408edcb432b18ef4f3cf26808c4f80ac503cb3f0c8e4ad013960",
+      "fresh-3plus1/back/checkpoint-final.json": "785184a82b683a4eb7730031473a74733808ba86798d2e13d263c40a6b65762f",
+      "fresh-3plus1/back-hold30/trace.ndjson": "f299c6a00f0968b2573486bd4cfe0470fcbfc569b0ff8b3a7857c50ad6ce143b",
+      "fresh-3plus1/back-hold30/native-diagnostics.ndjson": "0bcaee8159f5f73e2d9f9293d167d55670cdbc3f87d821f38ea11a9cfdb7f22b",
+      "fresh-3plus1/back-hold30/checkpoint-input-verification.json": "e6b393078b14d28af5e2ea2784b1307803a189804d517f9adf4bb3b655aa240c",
+      "fresh-3plus1/back-hold30/checkpoint-final-verification.json": "09da00dad3fe40498db3a27f9716bc4b878d1bf762b826b4915d47e9b6688692",
+      "fresh-3plus1/belly/trace.ndjson": "d64aa69ae639fd577cdabd91066ac8709b3eb086f997081403f99975faf6e93f",
+      "fresh-3plus1/belly/reference-report.json": "47cdbad302691bccd026f894e99bd883c34a66cd38b961f47f1e58a35157797b",
+      "fresh-3plus1/belly/checkpoint-initial.json": "4495b45e502f378fc0bcead1e66ba878dcc2548d774f9f4c94470dd8ddca57e4",
+      "fresh-3plus1/belly/checkpoint-trigger.json": "90fcb94b23e7d58b43e11018db3ca7788e45a284454ac62b44e1480271d5b789",
+      "fresh-3plus1/belly/checkpoint-final.json": "62947b7f0e39c6d2c873c4c2b162aae852ed48e03a63a4006f43fe09f3526dc4",
+      "fresh-3plus1/belly-hold30/trace.ndjson": "83d9f26b925a8d90f566f8d4634d9a300361d1474558741b5ea3ab3258e5ba3b",
+      "fresh-3plus1/belly-hold30/native-diagnostics.ndjson": "2a995313f6fbd494760501d0927e19fc9d8b5f4dce7db553b191099c63b59e74",
+      "fresh-3plus1/belly-hold30/checkpoint-input-verification.json": "a1fc6d5affcff71302721998f92cd16e11a5315b261edfd76e523818613a3aef",
+      "fresh-3plus1/belly-hold30/checkpoint-final-verification.json": "40ff7eb5104c87d69ca59203c09f8613d67aea62893388dba9140552d9706345",
+      "fresh-3plus1/side-supported/trace.ndjson": "d772f20be8e266a936a8c75902909bb7ae1310a57a4ba9447bc9109cc492b51e",
+      "fresh-3plus1/side-supported/reference-report.json": "1b45c2bebe8230966122d086c0670f84b81abbde3c957bbae86388b6aed3d47c",
+      "fresh-3plus1/side-supported/checkpoint-initial.json": "f8af969e64e58ff90db0167e39354e4d031bd4dc1ca47638f75617389c8a7af8",
+      "fresh-3plus1/side-supported/checkpoint-trigger.json": "9f075e9f29992bcbb1b30aaedf3f05b32456640b84e76f9f1d4cca36da7bed14",
+      "fresh-3plus1/side-supported/checkpoint-final.json": "e16f0405213b5910ecb2a4ba31c9b74b513369b8961e3d44d5c99f07b5de7aab",
+      "fresh-3plus1/side-supported-hold30/trace.ndjson": "4e76546b940f17740991c7a183c6d158beedc0b26581b596f3fae3412de565db",
+      "fresh-3plus1/side-supported-hold30/native-diagnostics.ndjson": "72c0cc0eb37a5752180c237fe4869a6eebed3c4af9233f84046d32f9cacd2498",
+      "fresh-3plus1/side-supported-hold30/checkpoint-input-verification.json": "7c3aa29b96386317e5dc2161eec1c9e62b21f15575111b9d68a2a309d5707452",
+      "fresh-3plus1/side-supported-hold30/checkpoint-final-verification.json": "ee9fb6f0eabadef8f2bb7fdcc61f45430841b6c4edd7ab1bea10fa2628e84ef2"
+    }
+  },
+  "limits": [
+    "Four poses and four 30-second holds only; no 24-case qualification, release promotion or public recovery enablement.",
+    "No browser/WASM qualification is claimed here. Any later browser proof must independently identify the selected profile and exact artifact.",
+    "Passing native physical outcomes support this bounded numerical correction. They do not establish general model accuracy, all-condition recovery or smooth delivered torque."
+  ],
+  "documentationVerificationUtc": "2026-10-19T19:38:53.729267+00:00",
+  "libraryBuildManifest": {
+    "receipt": {
+      "path": "outputs/getup-consistent-solver-budget-20261019/frozen-library-manifest.json",
+      "sha256": "9981b394a9b110095d443cd258914fdaca9ca2891a78fcc17090a38969dcf831",
+      "bytes": 2034
+    },
+    "exactSixFileBuildProvenance": true,
+    "builtAfterTestOnlyCorrection": true,
+    "compileExitCode": 0
+  },
+  "independentSourceReview": {
+    "receipt": {
+      "path": "outputs/getup-consistent-solver-budget-20261019/independent-source-review.json",
+      "sha256": "c85ab987988c19656d8d76f3917a3d4e42227ffc00fea1e85db85bb51212d83f",
+      "bytes": 1596
+    },
+    "scope": "Static production and focused-test review",
+    "blockingFindings": [],
+    "legacyFixtureReportByteParityClaimed": false,
+    "note": "Read-only solverBudget metadata changes fixture-report JSON. Legacy dynamics and omitted selector semantics remain separate from report-byte equality."
+  }
+}

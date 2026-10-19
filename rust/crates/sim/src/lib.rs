@@ -91,6 +91,12 @@ pub enum ContactFriction {
     Simplified,
     Coulomb,
 }
+/// Explicit numerical semantics for an experimental GetUp qualification.
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
+pub enum GetUpSolverBudget {
+    #[serde(rename = "consistent-recovery-phase-v1")]
+    ConsistentRecoveryPhaseV1,
+}
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub struct Profile {
@@ -103,6 +109,9 @@ pub struct Profile {
     pub internal_pgs_iterations: usize,
     #[serde(default = "default_fall_iterations")]
     pub fall_internal_pgs_iterations: usize,
+    /// Omitted profiles retain the historical teacher/real phase selection.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub getup_solver_budget: Option<GetUpSolverBudget>,
     pub additional_body_iterations: usize,
     pub allowed_linear_error_m: f32,
     pub prediction_distance_m: f32,
@@ -146,6 +155,7 @@ impl Default for Profile {
             solver_iterations: 20,
             internal_pgs_iterations: 20,
             fall_internal_pgs_iterations: default_fall_iterations(),
+            getup_solver_budget: None,
             additional_body_iterations: 5,
             allowed_linear_error_m: 0.001,
             prediction_distance_m: 0.002,
@@ -173,6 +183,13 @@ impl Default for Profile {
     }
 }
 impl Profile {
+    fn internal_pgs_for_phase(&self, recovery: bool) -> usize {
+        if recovery {
+            self.fall_internal_pgs_iterations.max(self.internal_pgs_iterations)
+        } else {
+            self.internal_pgs_iterations
+        }
+    }
     pub fn validate(&self) -> Result<(), String> {
         if self.recovery_enabled || self.recovery_first_phase_only || self.corrective_steps_enabled {
             return Err("Legacy body controllers are unavailable for the GetUp reference body".into());
@@ -335,6 +352,16 @@ fn checkpoint_model() -> Model {
     Model::canonical().expect("pinned GetUp model")
 }
 impl Simulation {
+    fn selected_internal_pgs_iterations(&self) -> usize {
+        let active_getup = self.profile.getup_solver_budget
+            == Some(GetUpSolverBudget::ConsistentRecoveryPhaseV1)
+            && self.getup_controller.as_ref().is_some_and(|c| c.source_recovery_active());
+        self.profile.internal_pgs_for_phase(
+            matches!(self.motion, Motion::Falling | Motion::Fallen)
+                || self.motion == Motion::Recovering
+                    && (self.recovery.as_ref().is_some_and(|r| !r.handed_off()) || active_getup),
+        )
+    }
     pub fn new(heading: f32, profile: Profile, floor_enabled: bool) -> Result<Self, String> {
         Self::build(heading, profile, floor_enabled, None, None)
     }
@@ -947,19 +974,8 @@ impl Simulation {
             }
             // The retained recovery path resolves passive limb/contact loads
             // with 32 internal passes. Keep quiet-standing's budget unchanged.
-            self.world
-                .integration_parameters
-                .num_internal_pgs_iterations =
-                if matches!(self.motion, Motion::Falling | Motion::Fallen)
-                    || self.motion == Motion::Recovering
-                        && self.recovery.as_ref().is_some_and(|r| !r.handed_off())
-                {
-                    self.profile
-                        .fall_internal_pgs_iterations
-                        .max(self.profile.internal_pgs_iterations)
-                } else {
-                    self.profile.internal_pgs_iterations
-                };
+            self.world.integration_parameters.num_internal_pgs_iterations =
+                self.selected_internal_pgs_iterations();
             #[cfg(test)]
             if let Err(failure) = recovery::offline_trajectory_before_step(self, substep) {
                 self.first_failure = Some(failure.clone());

@@ -560,3 +560,29 @@ mod compensated {
         assert!(Runtime::from_getup_checkpoint(&reversed).is_err());
     }
 }
+
+    #[test]
+    fn solver_budget_typed_profile_roundtrips_without_native_integration() {
+        let mut profile = Profile::default();
+        profile.getup_policy_enabled = true;
+        profile.getup_solver_budget = Some(crate::GetUpSolverBudget::ConsistentRecoveryPhaseV1);
+        let runtime = Runtime::new_getup_fixture_with_profile("side", profile).unwrap();
+        let bytes = runtime.getup_checkpoint().unwrap();
+        let restored = Runtime::from_getup_checkpoint(&bytes).unwrap();
+        assert_eq!(restored.simulation.profile.getup_solver_budget,
+            Some(crate::GetUpSolverBudget::ConsistentRecoveryPhaseV1));
+        assert_eq!(restored.simulation.substeps_completed, 0);
+        assert_eq!(restored.simulation.world.integration_parameters.num_internal_pgs_iterations, 20);
+        // Reuse the established native-zero comparator: only the named
+        // pending to_join HashSet order may vary. Every other world/envelope
+        // byte remains exact; observations/controller also verify unchanged.
+        assert_same_construction_world(&runtime, &restored);
+        assert_same_checkpoint_envelope(&bytes, &restored.getup_checkpoint().unwrap());
+        let verification: serde_json::Value = serde_json::from_str(&runtime.verify_getup_checkpoint(&bytes).unwrap()).unwrap();
+        assert_eq!(verification["passed"], true);
+        assert_eq!(verification["physicsIntegrations"], 0);
+        let report: serde_json::Value = serde_json::from_str(&runtime.getup_fixture_report().unwrap()).unwrap();
+        assert_eq!(report["profile"]["getup_solver_budget"], "consistent-recovery-phase-v1");
+        assert_eq!(report["solverBudget"]["currentInternalPgsIterations"], 20);
+        assert_eq!(report["solverBudget"]["selectedNextInternalPgsIterations"], 20);
+    }

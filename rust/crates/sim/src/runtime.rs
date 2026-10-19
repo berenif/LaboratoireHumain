@@ -132,7 +132,10 @@ impl Runtime {
             .filter(|entry| entry.state.is_some()).map(|entry| entry.root).collect();
         serde_json::to_string(&Report {
             observations: serde_json::json!({"state":s.getup_fixture,"nativeSubsteps":s.substeps_completed,
-                "jointQ":q,"jointDq":dq,"colliderBounds":bounds,"massKg":s.total_mass()}),
+                "jointQ":q,"jointDq":dq,"colliderBounds":bounds,"massKg":s.total_mass(),
+                "solverBudget":{"currentInternalPgsIterations":s.world.integration_parameters.num_internal_pgs_iterations,
+                    "selectedNextInternalPgsIterations":s.selected_internal_pgs_iterations(),
+                    "sourceRecoveryActive":s.getup_controller.as_ref().is_some_and(|c|c.source_recovery_active())}}),
             profile: &s.profile,
             #[cfg(feature = "root-translation-carry-experiment")]
             root_translation_compensation: (!active_roots.is_empty()).then(|| serde_json::json!({

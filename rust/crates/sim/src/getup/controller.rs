@@ -144,6 +144,9 @@ pub struct Controller {
     terminal_base_ready: Option<TerminalBaseReady>,
 }
 impl Controller {
+    pub(crate) fn source_recovery_active(&self) -> bool {
+        self.started_substep.is_some() && self.terminal_balance.is_none()
+    }
     pub fn new(model: &Model) -> Self {
         let _ = (actor::teacher(), actor::student());
         Self {
@@ -587,6 +590,11 @@ impl Controller {
         if !self.status.reference_seed_matches_real {
             return Err("GetUp branch changed its initial state".into());
         }
+        // The branch has no controller/observer lifecycle of its own. Select
+        // the same explicit source-recovery budget as the real SLOW phase,
+        // after preserving the exact-copy fork/seed boundary. Legacy profiles
+        // retain the historical cloned parameters byte for byte.
+        select_forecast_solver_budget(&mut shadow);
         // Predict the actual native world. Changing its timestep to the source
         // MuJoCo teacher's 5 ms changed Rapier's contact/CCD behavior and broke a
         // welded link in the retained forecast. Keep every cloned parameter;
@@ -777,6 +785,15 @@ impl Controller {
     }
 }
 
+fn select_forecast_solver_budget(shadow: &mut Simulation) {
+    if shadow.profile.getup_solver_budget
+        == Some(GetUpSolverBudget::ConsistentRecoveryPhaseV1)
+    {
+        shadow.world.integration_parameters.num_internal_pgs_iterations =
+            shadow.profile.internal_pgs_for_phase(true);
+    }
+}
+
 fn normalized_controls_valid(controls: &[f32; 21]) -> bool {
     controls.iter().all(|x| x.is_finite() && (-1.0..=1.0).contains(x))
 }
@@ -953,6 +970,10 @@ mod terminal_base_ready_tests;
 #[cfg(all(test, feature = "getup-terminal-bumpless-experiment"))]
 #[path = "terminal_bumpless_tests.rs"]
 mod terminal_bumpless_tests;
+
+#[cfg(test)]
+#[path = "solver_budget_tests.rs"]
+mod solver_budget_tests;
 
 #[cfg(test)]
 mod tests {
