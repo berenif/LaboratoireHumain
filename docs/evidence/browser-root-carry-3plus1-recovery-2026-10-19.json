@@ -1,0 +1,667 @@
+{
+  "schema": 1,
+  "date": "2026-10-19",
+  "status": "experimental-actual-browser-back-and-belly-first-pass-plus-thirty-physical-seconds-PASS",
+  "releaseAccepted": false,
+  "qualificationClaim": false,
+  "productionRecoveryEnabled": false,
+  "defaultProfileChanged": false,
+  "physicalAcceptanceChanged": false,
+  "disposition": "Both bounded browser cases pass their unchanged original-counter/original-anchor gates. Native four-pose coverage remains 3/4: plain side fails the unchanged25s deadline. No global recovery admission or real-time/mobile qualification.",
+  "scope": "Fresh native0 carry activation on an isolated actual Rust/WASM app using the complete explicit3+1 recovery profile. Autonomous learned recovery and unchanged800Hz physics/40Hz control. Original driver/renderer/one-tick scheduler; copied worker adapter uses existing factory/trigger/read-only observers. No physical input/reset/support injection or midworld profile change.",
+  "artifact": {
+    "sourceBase": "b46df904310c46c822513899776eecd9dde9040f",
+    "sourceEquivalentRuntimeCommit": "ef720d4603f41cfbf8426f0f72522dc69c7e1eda",
+    "features": [
+      "lh-worker/root-translation-carry-experiment",
+      "lh-sim/getup-terminal-balance-experiment",
+      "lh-sim/standing-dynamics-experiment"
+    ],
+    "artifactSha256": {
+      "app-1df6634f608f8d80.css": "6f9e3128c49954cf4c159cd1b3cb0375ca4293e134429847288a5e6549a44271",
+      "index.html": "221d98d000ed295c49b44fb777e57d182caf3cc8e0e04083bbc8afb8ad206bce",
+      "lh-browser-d4ccffd02e73cb75.js": "ec9a8317fc58b63cf4f6874c3ed03808743c61c19a9c485020f0dc64dfd9c4f5",
+      "lh-browser-d4ccffd02e73cb75_bg.wasm": "5895574d87e93f6a2eddec98662797b16c298c90f2ee8298f6d72917f4d1b07e",
+      "lh_worker.js": "481b03a49c7bf2edcaf2449724afd5b3272542ccb827e7d09749cee9bc4421d9",
+      "lh_worker_bg.wasm": "a6d3c0b3166626c3ac22be316e1086643ae0e6290a682c473489ebd5810b626c",
+      "sim-worker.js": "a3a2b18c222c045fc08bf19aff2e96b92f0bc18ad6023bcca660195054267996",
+      "snippets/lh-browser-575491a8d42d44d5/driver.js": "4c6281e19c4540e3ba72a74a5b1514b5d1b9c58e56c1f8a2dbfb3adb4812d74e"
+    },
+    "sourceManifest": {
+      "path": "outputs/browser-capability-20261019/recovery-fixture/carry-3plus1/build/source-manifest.json",
+      "sha256": "08f65ae7162277462d55a5b6e77bf745fd42aea6ed30d51d7fe52057ce5542c9",
+      "bytes": 46587
+    },
+    "buildManifest": {
+      "path": "outputs/browser-capability-20261019/recovery-fixture/carry-3plus1/build/build-manifest.json",
+      "sha256": "11b1a3a2fad2fbc58bdcf95a906e33505194029683b37b142b53cfdabe5f9c77",
+      "bytes": 4096
+    },
+    "fixtureAdapterManifest": {
+      "path": "outputs/browser-capability-20261019/recovery-fixture/carry-3plus1/build/app-fixture-test-fixture-adapter-manifest.json",
+      "sha256": "9fc87ccebcfdd0acc537cd6299825c4b984a638d85a1e76e28b33f114d06a08a",
+      "bytes": 4224
+    },
+    "fixtureAdapterSha256": "e658e370db384261a03c1e00f89c7d327571ea398746d5bca574f31a20ed71da",
+    "buildChange": "Only workerWASM and its required generated glue differ from fixed renderer base. Test-only copied sim-worker adapter differs from original transport; driver and renderer are unchanged. Separate later readiness/schema3 edits are excluded.",
+    "toolchain": "Rust1.89.0/wasm-bindgen0.2.108,release wasm32-unknown-unknown,no extra target flags"
+  },
+  "completeExplicitProfile": {
+    "path": "docs/evidence/profiles/getup-800hz-3plus1-recovery-qualification-v1.json",
+    "sha256": "ea6da63a9996d9528f3dc25041cf476fdf0cfa828f57c57d119b78c8ebd0f3a7",
+    "bytes": 1152,
+    "actualTypedRuntimeReadbackVerifiedBothCases": true,
+    "value": {
+      "id": "getup-800hz-3plus1-recovery-qualification-v1",
+      "dt_s": 0.00125,
+      "tick_substeps": 20,
+      "contact_friction_model": "coulomb",
+      "solver_iterations": 3,
+      "internal_pgs_iterations": 20,
+      "fall_internal_pgs_iterations": 32,
+      "additional_body_iterations": 1,
+      "allowed_linear_error_m": 0.001,
+      "prediction_distance_m": 0.002,
+      "motor_scale": 1.0,
+      "aggregate_motor_cap_nm": 920.0,
+      "angular_damping": 0.0,
+      "contact_skin_m": 0.0,
+      "max_ccd_substeps": 4,
+      "disable_solver_speed_cap": true,
+      "posture_stiffness_multiplier": 1.0,
+      "posture_damping_multiplier": 1.0,
+      "supported_tilt_gain": 2.0,
+      "supported_com_gain_rad_per_m": 5.0,
+      "supported_com_velocity_gain_s_rad_per_m": 5.0,
+      "supported_angular_velocity_gain_s": 2.0,
+      "grab_limits": {
+        "angular_frequency_rad_s": 16.0,
+        "target_speed_m_s": 1.5,
+        "target_acceleration_m_s2": 8.0,
+        "force_n": 180.0,
+        "torque_nm": 12.0,
+        "positive_power_w": 36.0
+      },
+      "reaching_iterations": 6,
+      "reaching_coordinate_increment_rad": 0.15,
+      "reaching_damping_m2": 0.01,
+      "corrective_steps_enabled": false,
+      "recovery_enabled": false,
+      "getup_policy_enabled": true
+    }
+  },
+  "nativeQualificationContext": {
+    "evidence": {
+      "path": "docs/evidence/getup-root-carry-3plus1-recovery-2026-10-19.json",
+      "sha256": "308db8249411446e1b445ce69b08524267b8fcdb97f0ec966dec2eb08e24392f",
+      "bytes": 58118
+    },
+    "commit": "ef720d4",
+    "disposition": "Not globally admitted: back, belly and side-supported pass the unchanged one-second original standing gate and sustain 30 seconds; side fails the unchanged 25-second recovery deadline at 768/800 samples. Corrected root carry changes which pose fails versus matched no-carry 3+1. No per-pose profile selection.",
+    "nativeObserver": "Three successful cases retain every800Hz original standing predicate for24000steps each. Browser observation below is sampled40Hz and independent.",
+    "crossTargetLimit": "Native and WASM first-pass timings and trajectories differ. Native back3572/belly2551 native steps versus browser observed4780/2740; no bitwise or trajectory parity claim."
+  },
+  "observationContract": {
+    "browser": "Chromium155.0.8059.79 desktop/headless WebGL2 SwiftShader",
+    "rendererChoice": "ExplicitWebGL2 for these physical trials. Prior Auto fallback proof is separate.",
+    "sampling": "1201 distinct consecutive20-native-step samples over30physical seconds after first observed original1s pass in each case. Original stable counter checked every published40Hz sample and native diagnostic checks current original anchors.",
+    "originalAnchors": "Actual immutable Controller::stable_feet retained from getup_report at first pass; pass and stop controller exports equal those same anchors. Fresh postpass anchors are supplementary only.",
+    "activationPurity": "Before any integration: exact same-live serialized model/world bytes and embedded original Runtime JSON STRING before/after activation; schema1\u21922 only adds exact-zero integrator history. Independent bounded binary parser and native0integration verifier. Nonzero u64 sidecar values are never reserialized or numerically compared through JavaScript Numbers; retained raw checkpoint bytes are authoritative.",
+    "lifecycle": "Carry enabled once at native0 before preparation/forecast, never reset after trigger/pass. Trigger+advance(0) preserve325cached f32 pose/velocity words and native clock. Schema2 pass/stop checkpoints retain history and verify native snapshot/controller/handles/joints/root state with0integrations.",
+    "checkpointHolds": "Harness stops request scheduling at firstpass and terminal checkpoint export, then resumes unchanged one-tick automatic scheduling. No physical pause or pose change; these holds plus encoding/concurrent native work exclude performance qualification.",
+    "presentation": "Ordinary focus-body click plus wheel400 before native0 start. MP4 transcodes preserve native wall time; no speedup."
+  },
+  "cases": [
+    {
+      "kind": "back",
+      "passed": true,
+      "requiredPostPassPhysicalSeconds": 30,
+      "firstPassObservedPhysicalS": 5.975,
+      "firstPassObservedNative": 4780,
+      "firstNativePassDerivedFromOriginalStableCounter": 4770,
+      "finalPhysicalS": 35.975,
+      "finalNative": 28780,
+      "originalCounterS": {
+        "first": 1.0125,
+        "final": 31.0125,
+        "continuousAllSamples": true
+      },
+      "distinctPostPassSamples": 1201,
+      "duplicatePostPassPackets": 0,
+      "standingPredicateViolations": 0,
+      "maximumOriginalAnchorDriftM": [
+        0.00013633490016218275,
+        6.384099106071517e-05
+      ],
+      "maximumFreshPostPassAnchorDriftM": [
+        7.066776743158698e-05,
+        3.692597238114104e-05
+      ],
+      "unchangedOriginalStableFeet": [
+        {
+          "x": -0.8656806,
+          "y": 0.02676724,
+          "z": 0.031939898
+        },
+        {
+          "x": -0.6962738,
+          "y": 0.02674835,
+          "z": 0.40453687
+        }
+      ],
+      "sampledPredicateNames": [
+        "angularMotion",
+        "bothFeetLoadedAndPersistent",
+        "captureInSupport",
+        "comInSupport",
+        "footDriftFromSuppliedAnchors",
+        "footLoadFraction",
+        "head",
+        "linearMotion",
+        "onlyFeet",
+        "torso"
+      ],
+      "thresholds": {
+        "angularRadps": 0.6499999761581421,
+        "footDriftM": 0.01,
+        "linearMps": 0.2199999988079071,
+        "torsoUp": 0.9700000286102295
+      },
+      "nativeFirstPassNative": 3572,
+      "crossTargetTrajectoryParityClaim": false,
+      "triggerNative": 480,
+      "triggerPoseVelocityF32WordsUnchanged": true,
+      "fixturePreparationPollingTicks": 4,
+      "activation": {
+        "calls": 1,
+        "purity": {
+          "schemaBefore": 1,
+          "schemaAfter": 2,
+          "modelBytesEqual": true,
+          "worldBytesEqual": true,
+          "embeddedRuntimeStringExactlyEqual": true,
+          "root": [
+            0,
+            0
+          ],
+          "algorithm": "f32-dq-f64-remainder-v1",
+          "initialRemainderBits": [
+            0,
+            0,
+            0
+          ],
+          "bytesBefore": 584744,
+          "bytesAfter": 585527
+        },
+        "actualTypedProfileEqualsCompleteInput": true,
+        "actualAlgorithmReadback": {
+          "activeRoots": [
+            [
+              0,
+              0
+            ]
+          ],
+          "algorithm": "f32-dq-f64-remainder-v1"
+        },
+        "nativePhysicsBefore": 0,
+        "nativePhysicsAfter": 0,
+        "forecastBefore": 0,
+        "forecastAfter": 0,
+        "poseVelocityF32WordsUnchanged": 325,
+        "beforeVerification": {
+          "binaryWorldDeserialized": true,
+          "bytes": 584744,
+          "controllerEqual": true,
+          "forecastSubsteps": 0,
+          "handlesEqual": true,
+          "jointStateEqual": true,
+          "nativeSubsteps": 0,
+          "passed": true,
+          "physicsIntegrations": 0,
+          "rootIntegratorStateEqual": true,
+          "snapshotEqual": true
+        },
+        "afterVerification": {
+          "binaryWorldDeserialized": true,
+          "bytes": 585527,
+          "controllerEqual": true,
+          "forecastSubsteps": 0,
+          "handlesEqual": true,
+          "jointStateEqual": true,
+          "nativeSubsteps": 0,
+          "passed": true,
+          "physicsIntegrations": 0,
+          "rootIntegratorStateEqual": true,
+          "snapshotEqual": true
+        },
+        "beforeCheckpoint": {
+          "path": "outputs/browser-capability-20261019/recovery-fixture/carry-3plus1/back-thirty/activation-before-checkpoint.bin",
+          "sha256": "7f157a0f76aa358e73a4aa9e46bc6571bd6aa659c0404b1127c662736deab67e",
+          "bytes": 584744
+        },
+        "afterCheckpoint": {
+          "path": "outputs/browser-capability-20261019/recovery-fixture/carry-3plus1/back-thirty/activation-after-checkpoint.bin",
+          "sha256": "c6b9afe425f12625af004deff87865883139771a6749f2687042acf80d5b658e",
+          "bytes": 585527
+        },
+        "fullProof": {
+          "path": "outputs/browser-capability-20261019/recovery-fixture/carry-3plus1/back-thirty/activation-proof.json",
+          "sha256": "5a2c3e124e353cfb82b5c34e7e26dd718a5f03fac99e479eff22ce2af22e12c9",
+          "bytes": 24058
+        }
+      },
+      "checkpoints": {
+        "first-pass": {
+          "checkpoint": {
+            "path": "outputs/browser-capability-20261019/recovery-fixture/carry-3plus1/back-thirty/first-pass-checkpoint.bin",
+            "sha256": "be8437083387059693818085bcee5f7b024bff0412df35325b0d42ef668e95d4",
+            "bytes": 3180439
+          },
+          "controller": {
+            "path": "outputs/browser-capability-20261019/recovery-fixture/carry-3plus1/back-thirty/first-pass-controller.json",
+            "sha256": "d354d2deaa8db129bf1dba298d2233644f1a1db9480b218595e5092c70f2797c",
+            "bytes": 4700430
+          },
+          "schema": 2,
+          "rawAuxiliarySha256": "12dccca59bca8a095de57220b201c0081e69278aaa5158151f52bfd06f330a35",
+          "verification": {
+            "binaryWorldDeserialized": true,
+            "bytes": 3180439,
+            "controllerEqual": true,
+            "forecastSubsteps": 960,
+            "handlesEqual": true,
+            "jointStateEqual": true,
+            "nativeSubsteps": 4780,
+            "passed": true,
+            "physicsIntegrations": 0,
+            "rootIntegratorStateEqual": true,
+            "snapshotEqual": true
+          },
+          "timeS": 5.975,
+          "native": 4780,
+          "cachedPoseVelocityWordsUnchanged": true
+        },
+        "stop": {
+          "checkpoint": {
+            "path": "outputs/browser-capability-20261019/recovery-fixture/carry-3plus1/back-thirty/stop-checkpoint.bin",
+            "sha256": "c968d94b1cd20ac989d32a36bc7de56f2ed017ac3c514ebfdc169fa87a000d88",
+            "bytes": 3180572
+          },
+          "controller": {
+            "path": "outputs/browser-capability-20261019/recovery-fixture/carry-3plus1/back-thirty/stop-controller.json",
+            "sha256": "42452f792a994b86472870f276ca2c1197359b768d3848b0e7901e996f62bfdf",
+            "bytes": 4700434
+          },
+          "schema": 2,
+          "rawAuxiliarySha256": "9309ba2f92d8eff4cdb82f0f4343d8a55147d6d84f13a4861dddd2cbacfdbf8b",
+          "verification": {
+            "binaryWorldDeserialized": true,
+            "bytes": 3180572,
+            "controllerEqual": true,
+            "forecastSubsteps": 960,
+            "handlesEqual": true,
+            "jointStateEqual": true,
+            "nativeSubsteps": 28780,
+            "passed": true,
+            "physicsIntegrations": 0,
+            "rootIntegratorStateEqual": true,
+            "snapshotEqual": true
+          },
+          "timeS": 35.975,
+          "native": 28780,
+          "cachedPoseVelocityWordsUnchanged": true
+        }
+      },
+      "workerInstances": 1,
+      "physicalCommands": 0,
+      "pointerInputs": 0,
+      "errors": 0,
+      "telemetry": {
+        "bounds": {
+          "maximumQueueDepth": 0,
+          "maximumOutstandingAdvances": 1,
+          "maximumAdvanceTicks": 1,
+          "maximumTransferBuffers": 3
+        },
+        "droppedPackets": 0,
+        "droppedFrames": 0,
+        "droppedInputs": 0,
+        "pendingVisualInputs": 0
+      },
+      "rawResult": {
+        "path": "outputs/browser-capability-20261019/recovery-fixture/carry-3plus1/back-thirty/result.json",
+        "sha256": "a8fa7aebb743948474cbe7f0ce9e6ae2df0c4dc8cfe2707a914329f9f9a8365a",
+        "bytes": 71632964
+      },
+      "performanceContext": "Physical-only encoded carry+explicit3+1 back test; concurrent native development may be active; first-pass checkpoint scheduler hold. No clean timing/performance/realtime/mobile qualification.",
+      "encodedObservedPaceExcludedFromPerformanceQualification": {
+        "simulationSeconds": 35.975,
+        "wallSeconds": 46.94970000000298,
+        "integratedSimulationToWallRatio": 0.7662455777139731,
+        "presentedFrames": 2431,
+        "note": "Recorded encoded/concurrency context; not realtime/mobile or native800Hz standing qualification."
+      },
+      "video": {
+        "path": "outputs/browser-capability-20261019/recovery-fixture/carry-3plus1/back-thirty/fixed-fixture-native-wall-time.mp4",
+        "sha256": "6a79b1fd0d733abcd245d103f47406910e5bfc98af8f3b056bd63e64c71e59da",
+        "bytes": 2239025,
+        "durationS": 71.36,
+        "retimed": false,
+        "note": "Native wall time, including initialization and checkpoint holds. Full body visually inspected."
+      },
+      "webm": {
+        "path": "outputs/browser-capability-20261019/recovery-fixture/carry-3plus1/back-thirty/fixed-fixture-native-wall-time.webm",
+        "sha256": "7cccd106deeee0bc12d449490666632943702e22067b837fa646bb2604e63a78",
+        "bytes": 4474986
+      },
+      "screenshots": [
+        {
+          "path": "outputs/browser-capability-20261019/recovery-fixture/carry-3plus1/back-thirty/initial-fixed-fixture.png",
+          "sha256": "5b17b829fbcff6e90eaf71adc996b194a5d11faad4c1bf7ed7b921b5d3fb11cd",
+          "bytes": 193178
+        },
+        {
+          "path": "outputs/browser-capability-20261019/recovery-fixture/carry-3plus1/back-thirty/after-thirty-physical-seconds-standing.png",
+          "sha256": "2ecaafc2e72816a056041bf3f43cec27ade44fc95111192e427759460512bcd3",
+          "bytes": 195586
+        }
+      ],
+      "contactSheet": {
+        "path": "outputs/browser-capability-20261019/recovery-fixture/carry-3plus1/back-thirty/clip-contact-sheet.jpg",
+        "sha256": "4c055d641b39a0b93d250d6d28df35b3855e7bcc4ad5a0da39752912c47cb298",
+        "bytes": 63647
+      }
+    },
+    {
+      "kind": "belly",
+      "passed": true,
+      "requiredPostPassPhysicalSeconds": 30,
+      "firstPassObservedPhysicalS": 3.425,
+      "firstPassObservedNative": 2740,
+      "firstNativePassDerivedFromOriginalStableCounter": 2726,
+      "finalPhysicalS": 33.425,
+      "finalNative": 26740,
+      "originalCounterS": {
+        "first": 1.0175,
+        "final": 31.0175,
+        "continuousAllSamples": true
+      },
+      "distinctPostPassSamples": 1201,
+      "duplicatePostPassPackets": 0,
+      "standingPredicateViolations": 0,
+      "maximumOriginalAnchorDriftM": [
+        0.0018708741990849376,
+        0.00019464844081085175
+      ],
+      "maximumFreshPostPassAnchorDriftM": [
+        0.00012322138354647905,
+        8.286087540909648e-05
+      ],
+      "unchangedOriginalStableFeet": [
+        {
+          "x": 0.15838908,
+          "y": 0.02810507,
+          "z": -0.6118045
+        },
+        {
+          "x": -0.06428938,
+          "y": 0.026988769,
+          "z": -0.7394484
+        }
+      ],
+      "sampledPredicateNames": [
+        "angularMotion",
+        "bothFeetLoadedAndPersistent",
+        "captureInSupport",
+        "comInSupport",
+        "footDriftFromSuppliedAnchors",
+        "footLoadFraction",
+        "head",
+        "linearMotion",
+        "onlyFeet",
+        "torso"
+      ],
+      "thresholds": {
+        "angularRadps": 0.6499999761581421,
+        "footDriftM": 0.01,
+        "linearMps": 0.2199999988079071,
+        "torsoUp": 0.9700000286102295
+      },
+      "nativeFirstPassNative": 2551,
+      "crossTargetTrajectoryParityClaim": false,
+      "triggerNative": 400,
+      "triggerPoseVelocityF32WordsUnchanged": true,
+      "fixturePreparationPollingTicks": 4,
+      "activation": {
+        "calls": 1,
+        "purity": {
+          "schemaBefore": 1,
+          "schemaAfter": 2,
+          "modelBytesEqual": true,
+          "worldBytesEqual": true,
+          "embeddedRuntimeStringExactlyEqual": true,
+          "root": [
+            0,
+            0
+          ],
+          "algorithm": "f32-dq-f64-remainder-v1",
+          "initialRemainderBits": [
+            0,
+            0,
+            0
+          ],
+          "bytesBefore": 584747,
+          "bytesAfter": 585530
+        },
+        "actualTypedProfileEqualsCompleteInput": true,
+        "actualAlgorithmReadback": {
+          "activeRoots": [
+            [
+              0,
+              0
+            ]
+          ],
+          "algorithm": "f32-dq-f64-remainder-v1"
+        },
+        "nativePhysicsBefore": 0,
+        "nativePhysicsAfter": 0,
+        "forecastBefore": 0,
+        "forecastAfter": 0,
+        "poseVelocityF32WordsUnchanged": 325,
+        "beforeVerification": {
+          "binaryWorldDeserialized": true,
+          "bytes": 584747,
+          "controllerEqual": true,
+          "forecastSubsteps": 0,
+          "handlesEqual": true,
+          "jointStateEqual": true,
+          "nativeSubsteps": 0,
+          "passed": true,
+          "physicsIntegrations": 0,
+          "rootIntegratorStateEqual": true,
+          "snapshotEqual": true
+        },
+        "afterVerification": {
+          "binaryWorldDeserialized": true,
+          "bytes": 585530,
+          "controllerEqual": true,
+          "forecastSubsteps": 0,
+          "handlesEqual": true,
+          "jointStateEqual": true,
+          "nativeSubsteps": 0,
+          "passed": true,
+          "physicsIntegrations": 0,
+          "rootIntegratorStateEqual": true,
+          "snapshotEqual": true
+        },
+        "beforeCheckpoint": {
+          "path": "outputs/browser-capability-20261019/recovery-fixture/carry-3plus1/belly-thirty/activation-before-checkpoint.bin",
+          "sha256": "cbd4dbd0a767d76fc255d94939b82c9a0449d2714a78f07bf274c14397a0d71f",
+          "bytes": 584747
+        },
+        "afterCheckpoint": {
+          "path": "outputs/browser-capability-20261019/recovery-fixture/carry-3plus1/belly-thirty/activation-after-checkpoint.bin",
+          "sha256": "f11457dcbd717c6fb43a0e13a0ff8f4da320aed4ec69b605f6af520403a70444",
+          "bytes": 585530
+        },
+        "fullProof": {
+          "path": "outputs/browser-capability-20261019/recovery-fixture/carry-3plus1/belly-thirty/activation-proof.json",
+          "sha256": "e4555d62d70af5b7da2d0376edface1ddd848ff0b343cf9b4c25769194860472",
+          "bytes": 24106
+        }
+      },
+      "checkpoints": {
+        "first-pass": {
+          "checkpoint": {
+            "path": "outputs/browser-capability-20261019/recovery-fixture/carry-3plus1/belly-thirty/first-pass-checkpoint.bin",
+            "sha256": "7222421bb89e10306295111f82ffd3c6d659564d358fcdbe568be3896e62eec9",
+            "bytes": 1925272
+          },
+          "controller": {
+            "path": "outputs/browser-capability-20261019/recovery-fixture/carry-3plus1/belly-thirty/first-pass-controller.json",
+            "sha256": "b4e68be4326071308dfcb9a6ff3473122da1bad9f5faf6d9ee634d493e9d2b8f",
+            "bytes": 2387154
+          },
+          "schema": 2,
+          "rawAuxiliarySha256": "693f6f4d889e9628b066d4da14f91b61f47471133f2ba71227c71d198cafbc06",
+          "verification": {
+            "binaryWorldDeserialized": true,
+            "bytes": 1925272,
+            "controllerEqual": true,
+            "forecastSubsteps": 540,
+            "handlesEqual": true,
+            "jointStateEqual": true,
+            "nativeSubsteps": 2740,
+            "passed": true,
+            "physicsIntegrations": 0,
+            "rootIntegratorStateEqual": true,
+            "snapshotEqual": true
+          },
+          "timeS": 3.425,
+          "native": 2740,
+          "cachedPoseVelocityWordsUnchanged": true
+        },
+        "stop": {
+          "checkpoint": {
+            "path": "outputs/browser-capability-20261019/recovery-fixture/carry-3plus1/belly-thirty/stop-checkpoint.bin",
+            "sha256": "5b645b2882134d211c8f584aeac89a534549389d9f80046d5f657d9da5aeef01",
+            "bytes": 1925441
+          },
+          "controller": {
+            "path": "outputs/browser-capability-20261019/recovery-fixture/carry-3plus1/belly-thirty/stop-controller.json",
+            "sha256": "6e45c901aff475d4a35d8b07682f160a6733a20b173cae60300bce5196831085",
+            "bytes": 2387158
+          },
+          "schema": 2,
+          "rawAuxiliarySha256": "5f2f77f090de32834b53ad198c802d65b28bce9f64556b262ea726cd7933036a",
+          "verification": {
+            "binaryWorldDeserialized": true,
+            "bytes": 1925441,
+            "controllerEqual": true,
+            "forecastSubsteps": 540,
+            "handlesEqual": true,
+            "jointStateEqual": true,
+            "nativeSubsteps": 26740,
+            "passed": true,
+            "physicsIntegrations": 0,
+            "rootIntegratorStateEqual": true,
+            "snapshotEqual": true
+          },
+          "timeS": 33.425,
+          "native": 26740,
+          "cachedPoseVelocityWordsUnchanged": true
+        }
+      },
+      "workerInstances": 1,
+      "physicalCommands": 0,
+      "pointerInputs": 0,
+      "errors": 0,
+      "telemetry": {
+        "bounds": {
+          "maximumQueueDepth": 0,
+          "maximumOutstandingAdvances": 1,
+          "maximumAdvanceTicks": 1,
+          "maximumTransferBuffers": 3
+        },
+        "droppedPackets": 0,
+        "droppedFrames": 0,
+        "droppedInputs": 0,
+        "pendingVisualInputs": 0
+      },
+      "rawResult": {
+        "path": "outputs/browser-capability-20261019/recovery-fixture/carry-3plus1/belly-thirty/result.json",
+        "sha256": "ff136c16535acbf19cc9e9ce6e4f3badbf04725ab7943b8e5d9a0f89265c8169",
+        "bytes": 66474613
+      },
+      "performanceContext": "Physical-only encoded carry+explicit3+1 belly trial; native readiness Cargo work may run concurrently; first-pass checkpoint hold included; no clean performance qualification",
+      "encodedObservedPaceExcludedFromPerformanceQualification": {
+        "simulationSeconds": 33.425,
+        "wallSeconds": 42.38630000000447,
+        "integratedSimulationToWallRatio": 0.7885802723992534,
+        "presentedFrames": 2099,
+        "note": "Recorded encoded/concurrency context; not realtime/mobile or native800Hz standing qualification."
+      },
+      "video": {
+        "path": "outputs/browser-capability-20261019/recovery-fixture/carry-3plus1/belly-thirty/fixed-fixture-native-wall-time.mp4",
+        "sha256": "a37d500ab708d2e45f56a984a8b706fe71966fb0724e0a45b0556cdeae7a8fe7",
+        "bytes": 1829946,
+        "durationS": 63.4,
+        "retimed": false,
+        "note": "Native wall time, including initialization and checkpoint holds. Full body visually inspected."
+      },
+      "webm": {
+        "path": "outputs/browser-capability-20261019/recovery-fixture/carry-3plus1/belly-thirty/fixed-fixture-native-wall-time.webm",
+        "sha256": "3ce0aee2f8a0ff7b987a195e615650727336021f5aeb293c4c492ce7ce2d64b1",
+        "bytes": 4028167
+      },
+      "screenshots": [
+        {
+          "path": "outputs/browser-capability-20261019/recovery-fixture/carry-3plus1/belly-thirty/initial-fixed-fixture.png",
+          "sha256": "f4d7445a1bf5bb2da733a03f8ddadf9081ed3dc31732f1e59d1e88838b740298",
+          "bytes": 192408
+        },
+        {
+          "path": "outputs/browser-capability-20261019/recovery-fixture/carry-3plus1/belly-thirty/after-thirty-physical-seconds-standing.png",
+          "sha256": "f42d4da1c60eb1f9b043cbbb92be6e1328557a4526eaaf0f19248268ce3ee75b",
+          "bytes": 194858
+        }
+      ],
+      "contactSheet": {
+        "path": "outputs/browser-capability-20261019/recovery-fixture/carry-3plus1/belly-thirty/clip-contact-sheet.jpg",
+        "sha256": "2f611fbd9d0c4b5671e7870e8646111a46ff0de5aa0a519689a89cc1c1175280",
+        "bytes": 64495
+      }
+    }
+  ],
+  "probes": [
+    {
+      "path": "docs/evidence/probes/getup-checkpoint-envelope-2026-10-19.mjs",
+      "sha256": "d37282926f41c148c4214c2e985af7fb9ee4aa30a8dd66b861bc53edc8551c9e",
+      "bytes": 4102
+    },
+    {
+      "path": "docs/evidence/probes/make-carry-getup-fixture-app-2026-10-19.mjs",
+      "sha256": "2bc8ee9fe5e1a128d826f09ff26cdf8cdb9a2b0064ed6dfc4ce21d05399d6cde",
+      "bytes": 8625
+    },
+    {
+      "path": "docs/evidence/probes/record-getup-carry-3plus1-2026-10-19.mjs",
+      "sha256": "5394880984c51a6d0eb4d2d9e62f7389c865fb8d41cc376b34217a4e183fa92f",
+      "bytes": 27530
+    }
+  ],
+  "reproduction": {
+    "cwd": "Repository root",
+    "build": "Freeze ef720d4; build lh-worker with exactly the three listed features using the canonical toolchain and no RUSTFLAGS. Replace only workerWASM/glue in copied fixed-renderer base; create the hashed build manifest.",
+    "adapt": "node docs/evidence/probes/make-carry-getup-fixture-app-2026-10-19.mjs <app-unadapted> <fresh-app-fixture-test> <build-manifest.json> docs/evidence/profiles/getup-800hz-3plus1-recovery-qualification-v1.json",
+    "observe": "RUST_BROWSER_EXECUTABLE=<official-headless-shell> RUST_BROWSER_FFMPEG=/usr/bin/ffmpeg FIXTURE_PERFORMANCE_CONTEXT=<honest-concurrency-context> node docs/evidence/probes/record-getup-carry-3plus1-2026-10-19.mjs <app-fixture-test> <fresh-output> <back|belly>"
+  },
+  "limitations": [
+    "Onlyback/belly tested in actual browser on this artifact; no claim for side/side-supported, headings, perturbations,24-case qualification or all fixtures.",
+    "Native plain side still fails25s at768/800 stable samples. Experimental features/default-off carry/full explicit profile are not production admission.",
+    "Browser standing diagnostics are40Hz snapshots, not independent800Hz observer instrumentation. Original native stable counter supplements them; native campaign remains separate.",
+    "Foot-origin drift is not integrated contact slip. Whole recovery includes intentional loaded repositioning; no20mm whole-recovery slip acceptance is asserted.",
+    "Video/firstpass checkpoint holds/concurrent native compiles make wall pace unsuitable for clean performance, touch latency, Android or capable WebGPU qualification.",
+    "Native/WASM trajectory parity is neither expected nor established. Prior default20+5 no-carry32.5s browser failure is retained unchanged as a separate historical negative proof."
+  ]
+}
