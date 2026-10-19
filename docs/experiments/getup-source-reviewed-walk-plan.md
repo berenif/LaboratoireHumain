@@ -1,6 +1,6 @@
 # Five-reviewed gait correction implementation
 
-Status: experimental and opt-in. Final acceptance is unmet. No stable preset,
+Status: stopped on bounded numerical-solver failure. Final acceptance is unmet. No stable preset,
 original-contact qualification, main merge or deployment is changed. Detailed
 hashes, numeric checkpoints and failed attempts remain in the existing
 `docs/evidence/source-reviewed-walk-stage1-checkpoint.json`.
@@ -185,6 +185,28 @@ and stationary endpoints, and unchanged actual-world bytes. The feature profile
 `reviewed-native-planned-jets-wholebody-one-step-v1` remains unqualified. A full
 moving producer, exact current-input integration, passing native pilot, new-profile
 independent audit and actual-speed visual review are still required.
+
+## Terminal result and stop
+
+Physical-lumbar attempt 003 reaches the 300.04 s compute cap after three genuine
+accepted path updates, four LPs and four local QPs. Remaining maximum planner
+inequality violation is 0.0129714. All eight rejected full/half trials fail the
+fixed Newton branch at the land endpoint, so global steps accept only α=.25.
+The closest 27-coordinate candidate and exact hashes are preserved in the
+existing evidence JSON. This is numerical nonconvergence, not a proof that no
+physical trajectory exists.
+
+The same actual world remains at native 3,200 / 4 s with identical full payload,
+800 original-prefix commands, zero changed whole-body commands and no reset or
+pose write. Targeted safe-rejection proof passes; no full native qualification
+was run. There is no new changed-motion video. Further optimizer/native variants
+are stopped. Endpoint-freeze/block-backtracking is an untested hypothesis only.
+
+Historical reproduction uses source 92742f0c…, the retained 003 input/table,
+source-freeze manifest, original ABI and two ignored staging wrappers listed
+with hashes/arguments in the evidence JSON. The retained attempt is exclusive;
+raw witnesses/binaries are not committed. Regeneration would require explicitly
+new provenance, not a claim to recover missing original bytes.
 
 ## Final acceptance
 
