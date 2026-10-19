@@ -1,0 +1,1070 @@
+{
+  "date": "2026-10-19",
+  "scope": "Explicit3+1 numerical solver profile on the corrected root-COM/source-freejoint engine and existing static contact standing controller; no controller or outer timestep change",
+  "status": "native-target-and-bounded-browser-gates-pass-with-inherited-coverage-and-latency-gaps",
+  "releaseAccepted": false,
+  "productionDefaultChanged": false,
+  "physicsSourceCommits": [
+    "68361ca",
+    "579e7d6"
+  ],
+  "profile": {
+    "path": "docs/evidence/profiles/getup-800hz-3plus1-qualification-v1.json",
+    "sha256": "a197f6ba375c8f502904353a540c287549034d1df616b1c125c88ba6e94ee899",
+    "baseline": "Explicit4+1 on the same corrected engine",
+    "diffFrom4plus1": {
+      "id": [
+        "getup-800hz-4plus1-qualification-v1",
+        "getup-800hz-3plus1-qualification-v1"
+      ],
+      "solver_iterations": [
+        4,
+        3
+      ]
+    },
+    "additionalBodyIterations": 1,
+    "outerPhysicsHz": 800,
+    "controlHz": 40,
+    "internalPgsIterations": 20,
+    "fallPgsIterations": 32,
+    "unchangedThresholds": true
+  },
+  "controller": "measured-contact-standing-balance",
+  "experimentalControllerFeatureEnabled": false,
+  "acceptance": {
+    "loadedFootCumulativeSlipStopM": 0.02,
+    "ballisticHorizontalDriftM": 0.0001,
+    "quietProtocol": "3settle+30quiet seconds at all three headings;800Hz observers from0.5s, unchanged quiet gate from3s",
+    "perturbationProtocol": "Same eight strict torso/hand/heading histories, original force/power/torque caps, pre-input quiet reference retained",
+    "stopImplementation": "The quiet and perturbation probes return an immediate Failure at the first native sample whose cumulative loaded-foot integral exceeds20mm, measured from the first integration. No crossing occurred."
+  },
+  "quiet33S": {
+    "path": "outputs/getup-budget-20261019/root-com-freejoint-3plus1-quiet33.ndjson",
+    "sha256": "2257d9d763527fdb0ff06ba1dc7228c567a646bb9fe4e0d864c8d7e134f7ca07",
+    "cases": [
+      {
+        "heading": 0.0,
+        "physicalSeconds": 33.0,
+        "nativeObservedAfter0_5S": 26001,
+        "failure": null,
+        "standingSupportFailureSubsteps": 0,
+        "standingPredicateFailureSubsteps": {},
+        "quietFailuresAfter3S": {},
+        "loadedSlipIntegralM": [
+          0.00016459851294617058,
+          0.0002818858236140674
+        ],
+        "maximumFootOriginDriftM": [
+          0.0009293124894611537,
+          0.0006387564935721457
+        ],
+        "minimumTorsoUp": 0.9998415112495422,
+        "quietLegacyMetrics": {
+          "max_angular_radps": 0.0029784690123051405,
+          "max_foot_drift_m": 0.0007642596028745174,
+          "max_linear_mps": 0.0005819821381010115,
+          "max_pelvis_drift_m": 0.0001336265413556248
+        }
+      },
+      {
+        "heading": 1.0471975803375244,
+        "physicalSeconds": 33.0,
+        "nativeObservedAfter0_5S": 26001,
+        "failure": null,
+        "standingSupportFailureSubsteps": 0,
+        "standingPredicateFailureSubsteps": {},
+        "quietFailuresAfter3S": {},
+        "loadedSlipIntegralM": [
+          0.00012384863516375218,
+          0.0001941663498748984
+        ],
+        "maximumFootOriginDriftM": [
+          0.0004905955283902586,
+          0.0005424626870080829
+        ],
+        "minimumTorsoUp": 0.99983811378479,
+        "quietLegacyMetrics": {
+          "max_angular_radps": 0.0029211470391601324,
+          "max_foot_drift_m": 0.00048094376688823104,
+          "max_linear_mps": 0.0005975472740828991,
+          "max_pelvis_drift_m": 0.00011951080523431301
+        }
+      },
+      {
+        "heading": -0.7853981852531433,
+        "physicalSeconds": 33.0,
+        "nativeObservedAfter0_5S": 26001,
+        "failure": null,
+        "standingSupportFailureSubsteps": 0,
+        "standingPredicateFailureSubsteps": {},
+        "quietFailuresAfter3S": {},
+        "loadedSlipIntegralM": [
+          0.00018701090193741764,
+          0.00021887002858205642
+        ],
+        "maximumFootOriginDriftM": [
+          0.0017295072320848703,
+          0.0015996897127479315
+        ],
+        "minimumTorsoUp": 0.9998399615287781,
+        "quietLegacyMetrics": {
+          "max_angular_radps": 0.0035063070245087147,
+          "max_foot_drift_m": 0.0013593691401183605,
+          "max_linear_mps": 0.0007050351123325527,
+          "max_pelvis_drift_m": 0.00022357872512657195
+        }
+      }
+    ],
+    "allTargetGatesPassed": true,
+    "maximumLoadedSlipM": 0.0002818858236140674
+  },
+  "strictPerturbations": {
+    "path": "outputs/getup-budget-20261019/root-com-freejoint-3plus1-perturbations.ndjson",
+    "sha256": "23dca460f616728a66d98a0aad6598b21f28bbf0e50375b5d941fab3e763bd76",
+    "cases": [
+      {
+        "case": "torso-x+",
+        "heading": 0.0,
+        "physicalSeconds": 9.1,
+        "failure": null,
+        "requiredPredicateFailures": {},
+        "supportFailures": {},
+        "quietFailures": {},
+        "finalQuietSamples": 2400,
+        "loadedSlipIntegralM": [
+          0.0001711767263987229,
+          0.0002651724134302863
+        ],
+        "maxFootDriftM": [
+          0.00027316383784636855,
+          0.00019776428234763443
+        ],
+        "minimumTorsoUp": 0.9983264207839966,
+        "minimumFootLoadN": [
+          199.0220184326172,
+          151.42233276367188
+        ],
+        "finalCounters": {
+          "falls": 0,
+          "recoveries": 0,
+          "steps": 0,
+          "strikes": 0,
+          "upright_ticks": 364
+        },
+        "schedule": {
+          "finalQuietTicks": 120,
+          "initialSettleTicks": 120,
+          "postReleaseSettleTicks": 120,
+          "quietReference": "pre-input settled snapshot; not reset after input"
+        },
+        "stimulus": {
+          "axis": 0,
+          "body": "torso",
+          "durationS": 0.1,
+          "heldTicks": 4,
+          "mechanism": "existing bounded point-force grab; force cap temporarily sets only stimulus amplitude, restored on release",
+          "pointForceCapN": 20.0,
+          "targetDisplacementM": 1.0
+        }
+      },
+      {
+        "case": "torso-x-",
+        "heading": 0.0,
+        "physicalSeconds": 9.1,
+        "failure": null,
+        "requiredPredicateFailures": {},
+        "supportFailures": {},
+        "quietFailures": {},
+        "finalQuietSamples": 2400,
+        "loadedSlipIntegralM": [
+          0.00017030434953399016,
+          0.00026361397315337033
+        ],
+        "maxFootDriftM": [
+          0.0002341570216231048,
+          0.00017263948393519968
+        ],
+        "minimumTorsoUp": 0.9983474612236023,
+        "minimumFootLoadN": [
+          151.5003662109375,
+          198.94615173339844
+        ],
+        "finalCounters": {
+          "falls": 0,
+          "recoveries": 0,
+          "steps": 0,
+          "strikes": 0,
+          "upright_ticks": 364
+        },
+        "schedule": {
+          "finalQuietTicks": 120,
+          "initialSettleTicks": 120,
+          "postReleaseSettleTicks": 120,
+          "quietReference": "pre-input settled snapshot; not reset after input"
+        },
+        "stimulus": {
+          "axis": 0,
+          "body": "torso",
+          "durationS": 0.1,
+          "heldTicks": 4,
+          "mechanism": "existing bounded point-force grab; force cap temporarily sets only stimulus amplitude, restored on release",
+          "pointForceCapN": 20.0,
+          "targetDisplacementM": -1.0
+        }
+      },
+      {
+        "case": "torso-z+",
+        "heading": 0.0,
+        "physicalSeconds": 9.1,
+        "failure": null,
+        "requiredPredicateFailures": {},
+        "supportFailures": {},
+        "quietFailures": {},
+        "finalQuietSamples": 2400,
+        "loadedSlipIntegralM": [
+          0.00016239413200939558,
+          0.00026152174155245797
+        ],
+        "maxFootDriftM": [
+          0.0002906697918660939,
+          0.00020347368263173848
+        ],
+        "minimumTorsoUp": 0.9985132217407227,
+        "minimumFootLoadN": [
+          197.59523010253906,
+          197.41078186035156
+        ],
+        "finalCounters": {
+          "falls": 0,
+          "recoveries": 0,
+          "steps": 0,
+          "strikes": 0,
+          "upright_ticks": 364
+        },
+        "schedule": {
+          "finalQuietTicks": 120,
+          "initialSettleTicks": 120,
+          "postReleaseSettleTicks": 120,
+          "quietReference": "pre-input settled snapshot; not reset after input"
+        },
+        "stimulus": {
+          "axis": 2,
+          "body": "torso",
+          "durationS": 0.1,
+          "heldTicks": 4,
+          "mechanism": "existing bounded point-force grab; force cap temporarily sets only stimulus amplitude, restored on release",
+          "pointForceCapN": 20.0,
+          "targetDisplacementM": 1.0
+        }
+      },
+      {
+        "case": "torso-z-",
+        "heading": 0.0,
+        "physicalSeconds": 9.1,
+        "failure": null,
+        "requiredPredicateFailures": {},
+        "supportFailures": {},
+        "quietFailures": {},
+        "finalQuietSamples": 2400,
+        "loadedSlipIntegralM": [
+          0.0001623023195400005,
+          0.0002648811679061978
+        ],
+        "maxFootDriftM": [
+          0.00018236428149975836,
+          0.00013690892956219614
+        ],
+        "minimumTorsoUp": 0.9967479705810547,
+        "minimumFootLoadN": [
+          199.35101318359375,
+          199.32977294921875
+        ],
+        "finalCounters": {
+          "falls": 0,
+          "recoveries": 0,
+          "steps": 0,
+          "strikes": 0,
+          "upright_ticks": 364
+        },
+        "schedule": {
+          "finalQuietTicks": 120,
+          "initialSettleTicks": 120,
+          "postReleaseSettleTicks": 120,
+          "quietReference": "pre-input settled snapshot; not reset after input"
+        },
+        "stimulus": {
+          "axis": 2,
+          "body": "torso",
+          "durationS": 0.1,
+          "heldTicks": 4,
+          "mechanism": "existing bounded point-force grab; force cap temporarily sets only stimulus amplitude, restored on release",
+          "pointForceCapN": 20.0,
+          "targetDisplacementM": -1.0
+        }
+      },
+      {
+        "case": "hand-x+",
+        "heading": 0.0,
+        "physicalSeconds": 9.25,
+        "failure": null,
+        "requiredPredicateFailures": {},
+        "supportFailures": {},
+        "quietFailures": {},
+        "finalQuietSamples": 2400,
+        "loadedSlipIntegralM": [
+          0.00016188066894619877,
+          0.00026158638899662073
+        ],
+        "maxFootDriftM": [
+          0.00042821886017918587,
+          0.0002982612350024283
+        ],
+        "minimumTorsoUp": 0.9998415112495422,
+        "minimumFootLoadN": [
+          200.21925354003906,
+          195.7696075439453
+        ],
+        "finalCounters": {
+          "falls": 0,
+          "recoveries": 0,
+          "steps": 0,
+          "strikes": 0,
+          "upright_ticks": 370
+        },
+        "schedule": {
+          "finalQuietTicks": 120,
+          "initialSettleTicks": 120,
+          "postReleaseSettleTicks": 120,
+          "quietReference": "pre-input settled snapshot; not reset after input"
+        },
+        "stimulus": {
+          "axis": 0,
+          "body": "left_hand",
+          "durationS": 0.25,
+          "heldTicks": 10,
+          "mechanism": "existing bounded point-force grab; force cap temporarily sets only stimulus amplitude, restored on release",
+          "pointForceCapN": 180.0,
+          "targetDisplacementM": 0.029999999329447746
+        }
+      },
+      {
+        "case": "hand-z+",
+        "heading": 0.0,
+        "physicalSeconds": 9.25,
+        "failure": null,
+        "requiredPredicateFailures": {},
+        "supportFailures": {},
+        "quietFailures": {},
+        "finalQuietSamples": 2400,
+        "loadedSlipIntegralM": [
+          0.00016181035821504186,
+          0.00027000467775035195
+        ],
+        "maxFootDriftM": [
+          0.0006513572880066931,
+          0.0004475413297768682
+        ],
+        "minimumTorsoUp": 0.9998415112495422,
+        "minimumFootLoadN": [
+          200.27786254882812,
+          198.70571899414062
+        ],
+        "finalCounters": {
+          "falls": 0,
+          "recoveries": 0,
+          "steps": 0,
+          "strikes": 0,
+          "upright_ticks": 370
+        },
+        "schedule": {
+          "finalQuietTicks": 120,
+          "initialSettleTicks": 120,
+          "postReleaseSettleTicks": 120,
+          "quietReference": "pre-input settled snapshot; not reset after input"
+        },
+        "stimulus": {
+          "axis": 2,
+          "body": "left_hand",
+          "durationS": 0.25,
+          "heldTicks": 10,
+          "mechanism": "existing bounded point-force grab; force cap temporarily sets only stimulus amplitude, restored on release",
+          "pointForceCapN": 180.0,
+          "targetDisplacementM": 0.029999999329447746
+        }
+      },
+      {
+        "case": "rotated-torso-x+",
+        "heading": 1.0471975803375244,
+        "physicalSeconds": 9.1,
+        "failure": null,
+        "requiredPredicateFailures": {},
+        "supportFailures": {},
+        "quietFailures": {},
+        "finalQuietSamples": 2400,
+        "loadedSlipIntegralM": [
+          0.00012692319029795055,
+          0.00018208724999221206
+        ],
+        "maxFootDriftM": [
+          0.00015392588102258742,
+          0.00012088580842828378
+        ],
+        "minimumTorsoUp": 0.998633861541748,
+        "minimumFootLoadN": [
+          199.61314392089844,
+          172.0740203857422
+        ],
+        "finalCounters": {
+          "falls": 0,
+          "recoveries": 0,
+          "steps": 0,
+          "strikes": 0,
+          "upright_ticks": 364
+        },
+        "schedule": {
+          "finalQuietTicks": 120,
+          "initialSettleTicks": 120,
+          "postReleaseSettleTicks": 120,
+          "quietReference": "pre-input settled snapshot; not reset after input"
+        },
+        "stimulus": {
+          "axis": 0,
+          "body": "torso",
+          "durationS": 0.1,
+          "heldTicks": 4,
+          "mechanism": "existing bounded point-force grab; force cap temporarily sets only stimulus amplitude, restored on release",
+          "pointForceCapN": 20.0,
+          "targetDisplacementM": 1.0
+        }
+      },
+      {
+        "case": "rotated-torso-x-",
+        "heading": 1.0471975803375244,
+        "physicalSeconds": 9.1,
+        "failure": null,
+        "requiredPredicateFailures": {},
+        "supportFailures": {},
+        "quietFailures": {},
+        "finalQuietSamples": 2400,
+        "loadedSlipIntegralM": [
+          0.000130385179265402,
+          0.0001849645184255
+        ],
+        "maxFootDriftM": [
+          7.81098278821446e-05,
+          8.619354775873944e-05
+        ],
+        "minimumTorsoUp": 0.9971630573272705,
+        "minimumFootLoadN": [
+          175.23460388183594,
+          199.56959533691406
+        ],
+        "finalCounters": {
+          "falls": 0,
+          "recoveries": 0,
+          "steps": 0,
+          "strikes": 0,
+          "upright_ticks": 364
+        },
+        "schedule": {
+          "finalQuietTicks": 120,
+          "initialSettleTicks": 120,
+          "postReleaseSettleTicks": 120,
+          "quietReference": "pre-input settled snapshot; not reset after input"
+        },
+        "stimulus": {
+          "axis": 0,
+          "body": "torso",
+          "durationS": 0.1,
+          "heldTicks": 4,
+          "mechanism": "existing bounded point-force grab; force cap temporarily sets only stimulus amplitude, restored on release",
+          "pointForceCapN": 20.0,
+          "targetDisplacementM": -1.0
+        }
+      }
+    ],
+    "allTargetGatesPassed": true,
+    "maximumLoadedSlipM": 0.00027000467775035195
+  },
+  "ballistic": {
+    "path": "outputs/getup-budget-20261019/root-com-freejoint-3plus1-ballistic-native.ndjson",
+    "sha256": "69529685babc4ae680324da3065e0605f805fd804f1e8116e67adc94b4114b40",
+    "headings": [
+      {
+        "headingRad": 0.0,
+        "nativeSamples": 601,
+        "physicalSeconds": 0.75,
+        "maxHorizontalDriftMIndependentF64": 3.3168016260495873e-07,
+        "maxHorizontalDriftMOrdinaryF32": 3.402228055952306e-07,
+        "allSamplesPassUnchanged0_1mmGate": true
+      },
+      {
+        "headingRad": 1.0471975803375244,
+        "nativeSamples": 601,
+        "physicalSeconds": 0.75,
+        "maxHorizontalDriftMIndependentF64": 2.9743629780422084e-07,
+        "maxHorizontalDriftMOrdinaryF32": 3.112582594054184e-07,
+        "allSamplesPassUnchanged0_1mmGate": true
+      },
+      {
+        "headingRad": -0.7853981852531433,
+        "nativeSamples": 601,
+        "physicalSeconds": 0.75,
+        "maxHorizontalDriftMIndependentF64": 2.9958833880036345e-07,
+        "maxHorizontalDriftMOrdinaryF32": 3.1331358001260264e-07,
+        "allSamplesPassUnchanged0_1mmGate": true
+      }
+    ],
+    "observer": "Independent f64 mass/pose COM plus ordinary COM,601 samples/head including every800Hz integration through0.75s; no correction/subtraction applied for acceptance"
+  },
+  "pairedRegressionInventory": [
+    {
+      "category": "joints",
+      "casesPerProfile": 144,
+      "baseline4plus1Passed": 144,
+      "candidate3plus1Passed": 144,
+      "newFailureIndices": [],
+      "inheritedFailureIndices": [],
+      "raw": [
+        {
+          "path": "outputs/getup-budget-20261019/root-com-freejoint-4plus1-joints.ndjson",
+          "sha256": "2356cf93af5c0edad7f449b8e78f369525768b9c116d3265f529e1ba3a9fee32"
+        },
+        {
+          "path": "outputs/getup-budget-20261019/root-com-freejoint-3plus1-joints.ndjson",
+          "sha256": "d8f55bfbdd7340d3610955447c0e39ffc62f8cfd42a06b57aa4b3a311385ea23"
+        }
+      ]
+    },
+    {
+      "category": "contacts",
+      "casesPerProfile": 72,
+      "baseline4plus1Passed": 72,
+      "candidate3plus1Passed": 72,
+      "newFailureIndices": [],
+      "inheritedFailureIndices": [],
+      "raw": [
+        {
+          "path": "outputs/getup-budget-20261019/root-com-freejoint-4plus1-contacts.ndjson",
+          "sha256": "55ab070689e00ba9264e6e32076d0de6caa83458f97af509a8aca5e17473ce2f"
+        },
+        {
+          "path": "outputs/getup-budget-20261019/root-com-freejoint-3plus1-contacts.ndjson",
+          "sha256": "8747b13e37402b4dde278140bb20324107d1a858b9a752bc47fc6fe353f1088d"
+        }
+      ],
+      "maximumFullVectorMomentumImpulseErrorNs": [
+        4.351139068603516e-06,
+        4.351139068603516e-06
+      ],
+      "thresholdNs": 0.002,
+      "audit": "Signed full world-space normal-plus-tangent selected-contact impulse, with actual momentum/force and exactly one reported solver interval"
+    },
+    {
+      "category": "feet",
+      "casesPerProfile": 6,
+      "baseline4plus1Passed": 6,
+      "candidate3plus1Passed": 6,
+      "newFailureIndices": [],
+      "inheritedFailureIndices": [],
+      "raw": [
+        {
+          "path": "outputs/getup-budget-20261019/root-com-freejoint-4plus1-feet.ndjson",
+          "sha256": "68331cb605cc1404c35716716c7571dfb1307ab53f9c9ff811d3b7a68ee3ff4e"
+        },
+        {
+          "path": "outputs/getup-budget-20261019/root-com-freejoint-3plus1-feet.ndjson",
+          "sha256": "926ea82e62ab63980952010d39e3b423a684dd7f3c8bfdf8157dd0ac3dade709"
+        }
+      ],
+      "maximumFullVectorMomentumImpulseErrorNs": [
+        1.341104507446289e-07,
+        1.7881772862438083e-07
+      ]
+    },
+    {
+      "category": "actuators",
+      "casesPerProfile": 432,
+      "baseline4plus1Passed": 378,
+      "candidate3plus1Passed": 378,
+      "newFailureIndices": [],
+      "inheritedFailureIndices": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        342,
+        343,
+        344,
+        345,
+        346,
+        347,
+        348,
+        349,
+        350,
+        351,
+        352,
+        353,
+        354,
+        355,
+        356,
+        357,
+        358,
+        359,
+        414,
+        415,
+        416,
+        417,
+        418,
+        419,
+        420,
+        421,
+        422,
+        423,
+        424,
+        425,
+        426,
+        427,
+        428,
+        429,
+        430,
+        431
+      ],
+      "raw": [
+        {
+          "path": "outputs/getup-budget-20261019/root-com-freejoint-4plus1-actuators.ndjson",
+          "sha256": "2c5cdeb6a28531e58ca92b1b079383b9c8b496837bb17cb8ee5a91b03cc49d40"
+        },
+        {
+          "path": "outputs/getup-budget-20261019/root-com-freejoint-3plus1-actuators.ndjson",
+          "sha256": "d5f3f4ac43ed3f515c4ba3f8dcee36d778d094fbb5d6b89fd9261bcecf04354e"
+        }
+      ],
+      "inheritedFailures": [
+        {
+          "segment": "head",
+          "heading": 0.0,
+          "posture": "neutral",
+          "sign": -1.0
+        },
+        {
+          "segment": "head",
+          "heading": 0.0,
+          "posture": "neutral",
+          "sign": 1.0
+        },
+        {
+          "segment": "head",
+          "heading": 0.0,
+          "posture": "near-min",
+          "sign": -1.0
+        },
+        {
+          "segment": "head",
+          "heading": 0.0,
+          "posture": "near-min",
+          "sign": 1.0
+        },
+        {
+          "segment": "head",
+          "heading": 0.0,
+          "posture": "near-max",
+          "sign": -1.0
+        },
+        {
+          "segment": "head",
+          "heading": 0.0,
+          "posture": "near-max",
+          "sign": 1.0
+        },
+        {
+          "segment": "head",
+          "heading": 1.0471975803375244,
+          "posture": "neutral",
+          "sign": -1.0
+        },
+        {
+          "segment": "head",
+          "heading": 1.0471975803375244,
+          "posture": "neutral",
+          "sign": 1.0
+        },
+        {
+          "segment": "head",
+          "heading": 1.0471975803375244,
+          "posture": "near-min",
+          "sign": -1.0
+        },
+        {
+          "segment": "head",
+          "heading": 1.0471975803375244,
+          "posture": "near-min",
+          "sign": 1.0
+        },
+        {
+          "segment": "head",
+          "heading": 1.0471975803375244,
+          "posture": "near-max",
+          "sign": -1.0
+        },
+        {
+          "segment": "head",
+          "heading": 1.0471975803375244,
+          "posture": "near-max",
+          "sign": 1.0
+        },
+        {
+          "segment": "head",
+          "heading": -0.7853981852531433,
+          "posture": "neutral",
+          "sign": -1.0
+        },
+        {
+          "segment": "head",
+          "heading": -0.7853981852531433,
+          "posture": "neutral",
+          "sign": 1.0
+        },
+        {
+          "segment": "head",
+          "heading": -0.7853981852531433,
+          "posture": "near-min",
+          "sign": -1.0
+        },
+        {
+          "segment": "head",
+          "heading": -0.7853981852531433,
+          "posture": "near-min",
+          "sign": 1.0
+        },
+        {
+          "segment": "head",
+          "heading": -0.7853981852531433,
+          "posture": "near-max",
+          "sign": -1.0
+        },
+        {
+          "segment": "head",
+          "heading": -0.7853981852531433,
+          "posture": "near-max",
+          "sign": 1.0
+        },
+        {
+          "segment": "right_hand",
+          "heading": 0.0,
+          "posture": "neutral",
+          "sign": -1.0
+        },
+        {
+          "segment": "right_hand",
+          "heading": 0.0,
+          "posture": "neutral",
+          "sign": 1.0
+        },
+        {
+          "segment": "right_hand",
+          "heading": 0.0,
+          "posture": "near-min",
+          "sign": -1.0
+        },
+        {
+          "segment": "right_hand",
+          "heading": 0.0,
+          "posture": "near-min",
+          "sign": 1.0
+        },
+        {
+          "segment": "right_hand",
+          "heading": 0.0,
+          "posture": "near-max",
+          "sign": -1.0
+        },
+        {
+          "segment": "right_hand",
+          "heading": 0.0,
+          "posture": "near-max",
+          "sign": 1.0
+        },
+        {
+          "segment": "right_hand",
+          "heading": 1.0471975803375244,
+          "posture": "neutral",
+          "sign": -1.0
+        },
+        {
+          "segment": "right_hand",
+          "heading": 1.0471975803375244,
+          "posture": "neutral",
+          "sign": 1.0
+        },
+        {
+          "segment": "right_hand",
+          "heading": 1.0471975803375244,
+          "posture": "near-min",
+          "sign": -1.0
+        },
+        {
+          "segment": "right_hand",
+          "heading": 1.0471975803375244,
+          "posture": "near-min",
+          "sign": 1.0
+        },
+        {
+          "segment": "right_hand",
+          "heading": 1.0471975803375244,
+          "posture": "near-max",
+          "sign": -1.0
+        },
+        {
+          "segment": "right_hand",
+          "heading": 1.0471975803375244,
+          "posture": "near-max",
+          "sign": 1.0
+        },
+        {
+          "segment": "right_hand",
+          "heading": -0.7853981852531433,
+          "posture": "neutral",
+          "sign": -1.0
+        },
+        {
+          "segment": "right_hand",
+          "heading": -0.7853981852531433,
+          "posture": "neutral",
+          "sign": 1.0
+        },
+        {
+          "segment": "right_hand",
+          "heading": -0.7853981852531433,
+          "posture": "near-min",
+          "sign": -1.0
+        },
+        {
+          "segment": "right_hand",
+          "heading": -0.7853981852531433,
+          "posture": "near-min",
+          "sign": 1.0
+        },
+        {
+          "segment": "right_hand",
+          "heading": -0.7853981852531433,
+          "posture": "near-max",
+          "sign": -1.0
+        },
+        {
+          "segment": "right_hand",
+          "heading": -0.7853981852531433,
+          "posture": "near-max",
+          "sign": 1.0
+        },
+        {
+          "segment": "left_hand",
+          "heading": 0.0,
+          "posture": "neutral",
+          "sign": -1.0
+        },
+        {
+          "segment": "left_hand",
+          "heading": 0.0,
+          "posture": "neutral",
+          "sign": 1.0
+        },
+        {
+          "segment": "left_hand",
+          "heading": 0.0,
+          "posture": "near-min",
+          "sign": -1.0
+        },
+        {
+          "segment": "left_hand",
+          "heading": 0.0,
+          "posture": "near-min",
+          "sign": 1.0
+        },
+        {
+          "segment": "left_hand",
+          "heading": 0.0,
+          "posture": "near-max",
+          "sign": -1.0
+        },
+        {
+          "segment": "left_hand",
+          "heading": 0.0,
+          "posture": "near-max",
+          "sign": 1.0
+        },
+        {
+          "segment": "left_hand",
+          "heading": 1.0471975803375244,
+          "posture": "neutral",
+          "sign": -1.0
+        },
+        {
+          "segment": "left_hand",
+          "heading": 1.0471975803375244,
+          "posture": "neutral",
+          "sign": 1.0
+        },
+        {
+          "segment": "left_hand",
+          "heading": 1.0471975803375244,
+          "posture": "near-min",
+          "sign": -1.0
+        },
+        {
+          "segment": "left_hand",
+          "heading": 1.0471975803375244,
+          "posture": "near-min",
+          "sign": 1.0
+        },
+        {
+          "segment": "left_hand",
+          "heading": 1.0471975803375244,
+          "posture": "near-max",
+          "sign": -1.0
+        },
+        {
+          "segment": "left_hand",
+          "heading": 1.0471975803375244,
+          "posture": "near-max",
+          "sign": 1.0
+        },
+        {
+          "segment": "left_hand",
+          "heading": -0.7853981852531433,
+          "posture": "neutral",
+          "sign": -1.0
+        },
+        {
+          "segment": "left_hand",
+          "heading": -0.7853981852531433,
+          "posture": "neutral",
+          "sign": 1.0
+        },
+        {
+          "segment": "left_hand",
+          "heading": -0.7853981852531433,
+          "posture": "near-min",
+          "sign": -1.0
+        },
+        {
+          "segment": "left_hand",
+          "heading": -0.7853981852531433,
+          "posture": "near-min",
+          "sign": 1.0
+        },
+        {
+          "segment": "left_hand",
+          "heading": -0.7853981852531433,
+          "posture": "near-max",
+          "sign": -1.0
+        },
+        {
+          "segment": "left_hand",
+          "heading": -0.7853981852531433,
+          "posture": "near-max",
+          "sign": 1.0
+        }
+      ],
+      "coverageWarning": "This historical canonical actuator audit still fails54 cases. No failures are ignored or converted to passes, and this is not certification of complete active multibody motor diagnostics."
+    }
+  ],
+  "loadedChainCoverage": [
+    {
+      "path": "outputs/getup-budget-20261019/root-com-freejoint-4plus1-chains.ndjson",
+      "sha256": "40cac584fa06704ea319fd77f0bbafd784540712df7f8b6b851d9d07e8e8ed14",
+      "profile": "4+1",
+      "error": "Loaded-chain topology: 7",
+      "passed": false,
+      "interpretation": "Explicit fixture topology refusal; not valid empty diagnostics and not a physical pass"
+    },
+    {
+      "path": "outputs/getup-budget-20261019/root-com-freejoint-3plus1-chains.ndjson",
+      "sha256": "6ff83d30a20bf949ac392e57a03d81d39d62fbec58e26139ae5ccdec0c2cd69a",
+      "profile": "3+1",
+      "error": "Loaded-chain topology: 7",
+      "passed": false,
+      "interpretation": "Explicit fixture topology refusal; not valid empty diagnostics and not a physical pass"
+    }
+  ],
+  "reproducers": {
+    "profileEnvironment": "LH_BUDGET_PROFILE=<complete profile JSON path>",
+    "files": [
+      {
+        "path": "docs/evidence/probes/getup-numerical-profile-quiet-2026-10-19.rs",
+        "sha256": "2cf78a57ad670deaa67344ece5129d37a4c50ba82c50b7063ff6ccc007cac7d1"
+      },
+      {
+        "path": "docs/evidence/probes/getup-numerical-profile-perturbations-2026-10-19.rs",
+        "sha256": "f391b4e6091d8f3922d49fb5e5f5b4a7c32fad368c2a87f291096126ea1be6d5"
+      },
+      {
+        "path": "docs/evidence/probes/getup-numerical-profile-regressions-2026-10-19.rs",
+        "sha256": "90ff45c8dd7f1eb8a623f9759cbb2e3f5daf5d2de523f93e45adf2b6f2aad32b"
+      },
+      {
+        "path": "docs/evidence/probes/getup-numerical-profile-ballistic-2026-10-19.rs",
+        "sha256": "a7b5caaec80d404e9167c2bd617f8d2f6b14a172627f0822d632c414db535f4d"
+      }
+    ],
+    "build": "Pinned rustc1.89 release thin LTO linked against the ordinary corrected lh-sim library with no extra features; actor/model/controller unchanged"
+  },
+  "browser": {
+    "canonicalEvidence": "docs/evidence/browser-3plus1-validation-2026-10-19.json",
+    "workerSha256": "4fa298cfff4340fd3c5e65ebd95d2dd714be84639b7e7acc23cb2180a4e96c07",
+    "profileSha256": "a197f6ba375c8f502904353a540c287549034d1df616b1c125c88ba6e94ee899",
+    "transport": "Original production route, one tick per outstanding advance",
+    "cleanNoEncoderRendered33SRepeats": {
+      "physicalSnapshotGatesPassed": [
+        true,
+        true,
+        true
+      ],
+      "simulationToWallRatios": [
+        0.999164,
+        0.999234,
+        0.998726
+      ],
+      "allMeetUnchangedAverageRatio0_99": true,
+      "snapshotCountEach": 1321,
+      "latencyQualification": "Only average physical pace is established. Round-trip/snapshot-age spikes remain and are reported separately in browser evidence.",
+      "pooledSimulationToWallRatio": 0.999041
+    },
+    "videoRecorded33SHold": {
+      "physicalSnapshotGatesPassed": true,
+      "simulationToWallRatio": 0.916,
+      "timingContext": "Recording workload, separately reported rather than pooled with no-encoder pace"
+    },
+    "status": "All final pointer, renderer-readiness, striker and three-heading floorless regressions passed on the same immutable worker",
+    "realtimeQualified": "Bounded desktop standing average pace only; not broad realtime, mobile or recovery certification",
+    "functionalChecks": {
+      "pointerScenariosPassed": 6,
+      "rendererStagesPassed": 6,
+      "strikerSmokePassed": true,
+      "floorlessHeadingsPassed": 3
+    },
+    "warmSnapshotAgeP95ApproxMs": [
+      96,
+      100
+    ]
+  },
+  "limits": [
+    "This is a different numerical budget, not a bitwise-equivalent optimization",
+    "54 inherited canonical actuator failures and unsupported loaded-chain fixture remain open and visible",
+    "No production numerical profile promotion, walking, learned recovery, mobile or full release qualification"
+  ]
+}
