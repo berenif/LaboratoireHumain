@@ -27,6 +27,8 @@ rust.unexpected_cfgs = { level = "warn", check-cfg = [
 default = ["dim3", "f32", "std"] # , "block-solver"]
 dim3 = []
 f32 = []
+# Explicitly activated, canonical free-root unit-quaternion integration.
+unit-root-rotation = []
 # Enables the 2x2 block solver for contact manifolds (couples the two normal
 # constraints of a contact pair into a single 2x2 MLCP solve). Disabling it
 # also removes the extra per-contact `r_mat_elts` field from the solver's

@@ -615,6 +615,10 @@ impl Controller {
             input[67] = TEACHER_POWER;
             let action = actor::teacher().infer(&input)?.action;
             for substep in 0..native_per_policy {
+                if cfg!(feature = "unit-root-rotation-experiment") || shadow.profile.root_rotation_normalization.is_some() {
+                    shadow.validate_unit_root_rotation_policy()
+                        .map_err(|error| format!("Teacher unit root rotation: {error}"))?;
+                }
                 for h in &shadow.bodies {
                     shadow.world.bodies[*h].reset_forces(false);
                     shadow.world.bodies[*h].reset_torques(false);

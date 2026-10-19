@@ -93,3 +93,19 @@ fn solver_budget_forecast_selects_explicit_recovery_after_exact_fork() {
         assert_eq!(serde_json::to_value(&real.world).unwrap(), serde_json::to_value(&shadow.world).unwrap());
     }
 }
+
+#[cfg(feature = "unit-root-rotation-experiment")]
+#[test]
+fn unit_root_teacher_clone_preserves_policy_and_all_seed_bits_without_integration() {
+    let mut p = explicit();
+    p.root_rotation_normalization = Some(crate::RootRotationNormalization::UnitFreeRootV1);
+    let real = Simulation::new(0.0, p, true).unwrap();
+    let shadow = fork(&real).unwrap();
+    assert!(!shadow.profile.getup_policy_enabled);
+    assert!(shadow.getup_controller.is_none());
+    assert_eq!(shadow.profile.root_rotation_normalization, real.profile.root_rotation_normalization);
+    shadow.validate_unit_root_rotation_policy().unwrap();
+    assert_eq!(serde_json::to_value(&real.world).unwrap(), serde_json::to_value(&shadow.world).unwrap());
+    assert_eq!(serde_json::to_value(real.snapshot().segments).unwrap(), serde_json::to_value(shadow.snapshot().segments).unwrap());
+    assert_eq!(real.substeps_completed, 0); assert_eq!(shadow.substeps_completed, 0);
+}

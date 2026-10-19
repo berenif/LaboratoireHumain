@@ -113,6 +113,18 @@ impl Runtime {
     }
     pub fn getup_fixture_report(&self) -> Result<String,String> {
         let s=&self.simulation;
+        #[cfg(feature = "unit-root-rotation-experiment")]
+        let unit_root_rotation = {
+            let root = *s.bodies.first().ok_or("Missing root")?;
+            let link = s.world.multibody_joints.rigid_body_link(root).ok_or("Missing root articulation")?;
+            let mb = s.world.multibody_joints.get_multibody(link.multibody).ok_or("Missing root articulation")?;
+            (s.profile.root_rotation_normalization.is_some() || mb.unit_root_rotation_enabled()).then(|| serde_json::json!({
+                "algorithm":"unit-free-root-v1", "enabled":mb.unit_root_rotation_enabled(),
+                "root":root.into_raw_parts(),
+                "validationError":mb.validate_unit_root_rotation().err(),
+                "rootNormSquared":s.world.bodies[root].rotation().length_squared(),
+            }))
+        };
         let bounds:Vec<_>=s.colliders.iter().enumerate().filter(|(_,h)|s.world.colliders[**h].is_enabled()).map(|(i,h)|{
             let a=s.world.colliders[*h].compute_aabb();serde_json::json!({"body":s.model.segments[i].id,
                 "min":[a.mins.x,a.mins.y,a.mins.z],"max":[a.maxs.x,a.maxs.y,a.maxs.z]})
@@ -123,6 +135,9 @@ impl Runtime {
             #[serde(flatten)]
             observations: serde_json::Value,
             profile: &'a Profile,
+            #[cfg(feature = "unit-root-rotation-experiment")]
+            #[serde(rename = "rootRotationNormalization", skip_serializing_if = "Option::is_none")]
+            unit_root_rotation: Option<serde_json::Value>,
             #[cfg(feature = "root-translation-carry-experiment")]
             #[serde(rename = "rootTranslationCompensation", skip_serializing_if = "Option::is_none")]
             root_translation_compensation: Option<serde_json::Value>,
@@ -137,6 +152,8 @@ impl Runtime {
                     "selectedNextInternalPgsIterations":s.selected_internal_pgs_iterations(),
                     "sourceRecoveryActive":s.getup_controller.as_ref().is_some_and(|c|c.source_recovery_active())}}),
             profile: &s.profile,
+            #[cfg(feature = "unit-root-rotation-experiment")]
+            unit_root_rotation,
             #[cfg(feature = "root-translation-carry-experiment")]
             root_translation_compensation: (!active_roots.is_empty()).then(|| serde_json::json!({
                 "algorithm": rapier3d::dynamics::RootTranslationIntegratorState::ALGORITHM,
@@ -153,6 +170,8 @@ impl Runtime {
     }
     fn checkpoint_compatible(&self) -> Result<(), String> {
         let s = &self.simulation;
+        s.profile.validate()?;
+        s.validate_unit_root_rotation_policy()?;
         if let Some(controller) = &s.getup_controller {
             if controller.terminal_bumpless_variant()
                 && !cfg!(feature = "getup-terminal-bumpless-experiment")
@@ -341,6 +360,7 @@ impl Runtime {
         #[cfg(not(feature = "root-translation-carry-experiment"))]
         if schema != 1 { return Err("Checkpoint schema/model differs".into()); }
         let mut restored: Self = serde_json::from_str(&auxiliary).map_err(|e| e.to_string())?;
+        restored.simulation.profile.validate()?;
         let terminal_base_ready_variant = restored.simulation.getup_controller.as_ref()
             .is_some_and(|controller| controller.terminal_base_ready_variant());
         #[cfg(not(feature = "getup-terminal-base-ready-experiment"))]
@@ -352,6 +372,7 @@ impl Runtime {
         }
         restored.simulation.world = bincode::DefaultOptions::new().with_fixint_encoding()
             .with_limit(64 * 1024 * 1024).reject_trailing_bytes().deserialize(&world).map_err(|e| e.to_string())?;
+        restored.simulation.restore_unit_root_rotation_policy()?;
         restored.checkpoint_compatible()?;
         #[cfg(feature = "root-translation-carry-experiment")]
         if let Some(roots) = roots {

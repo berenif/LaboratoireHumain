@@ -189,6 +189,11 @@ fn depth(a: &Collider, b: &Collider, aabb_a: &Aabb, aabb_b: &Aabb) -> Result<f32
     })
 }
 pub fn inspect(s: &mut Simulation, substep: u32) -> Result<(), Failure> {
+    if (cfg!(feature = "unit-root-rotation-experiment") || s.profile.root_rotation_normalization.is_some())
+        && let Err(error) = s.validate_unit_root_rotation_policy()
+    {
+        return Err(Failure::new(s.tick, substep, "unit-root-rotation", error, 1.0, 0.0));
+    }
     let mut diagnostics = s.diagnostics.clone();
     let result = inspect_world(s, &s.world, &mut diagnostics, substep);
     s.diagnostics = diagnostics;
@@ -236,6 +241,14 @@ pub(crate) fn inspect_world(
             || !body.angvel().is_finite()
         {
             return Err(fail("finite", s.model.segments[i].id.clone(), 0.0, 0.0));
+        }
+        // Match the existing renderer's physical-pose domain. This guard is
+        // explicit in the integration experiment, never a render-only repair.
+        if s.profile.root_rotation_normalization.is_some() {
+            let error = (body.rotation().length_squared() - 1.0).abs();
+            if error > 0.001 {
+                return Err(fail("unit-quaternion", s.model.segments[i].id.clone(), error, 0.001));
+            }
         }
         if c.is_enabled() {
         let body_bounds = *bounds[i].get_or_insert_with(|| c.compute_aabb());

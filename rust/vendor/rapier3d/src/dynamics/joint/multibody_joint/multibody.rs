@@ -134,6 +134,12 @@ pub struct Multibody {
     #[cfg_attr(feature = "serde-serialize", serde(skip))]
     root_translation_integrator: Option<RootTranslationIntegrator>,
 
+    // Policy only, no integration history. Explicit activation is required;
+    // runtime configuration restores it separately from raw world bincode.
+    #[cfg(feature = "unit-root-rotation")]
+    #[cfg_attr(feature = "serde-serialize", serde(skip))]
+    unit_root_rotation_enabled: bool,
+
     /*
      * Workspaces.
      */
@@ -178,6 +184,8 @@ impl Multibody {
             couplings: Vec::new(),
             #[cfg(feature = "compensated-root-integration")]
             root_translation_integrator: None,
+            #[cfg(feature = "unit-root-rotation")]
+            unit_root_rotation_enabled: false,
             // solver_workspace: Some(SolverWorkspace::new()),
         }
     }
@@ -264,6 +272,10 @@ impl Multibody {
     }
 
     pub(crate) fn append(&mut self, mut rhs: Multibody, parent: usize, joint: MultibodyJoint) {
+        #[cfg(feature = "unit-root-rotation")]
+        {
+            self.unit_root_rotation_enabled = false;
+        }
         #[cfg(feature = "compensated-root-integration")]
         self.reset_root_translation_compensation();
         let joint_ndofs = joint.ndofs();
@@ -350,6 +362,10 @@ impl Multibody {
     /// Mutable reference to the first link of this multibody.
     #[inline]
     pub fn root_mut(&mut self) -> &mut MultibodyLink {
+        #[cfg(feature = "unit-root-rotation")]
+        {
+            self.unit_root_rotation_enabled = false;
+        }
         #[cfg(feature = "compensated-root-integration")]
         self.reset_root_translation_compensation();
         &mut self.links[0]
@@ -368,6 +384,10 @@ impl Multibody {
     /// Return `None` if the given id does not identifies a multibody link part of `self`.
     #[inline]
     pub fn link_mut(&mut self, id: usize) -> Option<&mut MultibodyLink> {
+        #[cfg(feature = "unit-root-rotation")]
+        if id == 0 {
+            self.unit_root_rotation_enabled = false;
+        }
         #[cfg(feature = "compensated-root-integration")]
         if id == 0 {
             self.reset_root_translation_compensation();
@@ -391,9 +411,72 @@ impl Multibody {
     ///
     /// All link are guaranteed to be yielded before its descendant.
     pub fn links_mut(&mut self) -> impl Iterator<Item = &mut MultibodyLink> {
+        #[cfg(feature = "unit-root-rotation")]
+        {
+            self.unit_root_rotation_enabled = false;
+        }
         #[cfg(feature = "compensated-root-integration")]
         self.reset_root_translation_compensation();
         self.links.iter_mut()
+    }
+
+    #[cfg(feature = "unit-root-rotation")]
+    fn unit_root_rotation_eligible(&self) -> bool {
+        self.root_is_dynamic
+            && self.links.first().is_some_and(|root| {
+                root.internal_id == 0
+                    && root.assembly_id == 0
+                    && !root.joint.kinematic
+                    && root.joint.data.locked_axes.is_empty()
+                    && root.joint.data.local_frame1 == Pose::IDENTITY
+                    && root.joint.data.local_frame2 == Pose::IDENTITY
+            })
+    }
+
+    /// Enables/disables unit-quaternion projection after free-root updates.
+    ///
+    /// This changes only policy, never quaternion, pose, velocity, angular
+    /// coordinates or translation carry. Invalid activation is atomic.
+    #[cfg(feature = "unit-root-rotation")]
+    pub fn set_unit_root_rotation_enabled(&mut self, enabled: bool) -> Result<(), &'static str> {
+        if enabled {
+            if !self.unit_root_rotation_eligible() {
+                return Err("unit root rotation requires a dynamic canonical free root");
+            }
+            MultibodyJoint::validate_physical_unit_root_rotation(self.links[0].joint.joint_rot)?;
+        }
+        self.unit_root_rotation_enabled = enabled;
+        Ok(())
+    }
+
+    /// Whether unit-quaternion free-root integration is explicitly active.
+    #[cfg(feature = "unit-root-rotation")]
+    pub fn unit_root_rotation_enabled(&self) -> bool {
+        self.unit_root_rotation_enabled
+    }
+
+    /// Checks an active policy's eligibility and physical quaternion domain.
+    ///
+    /// Inactive policies return `Ok`. Callers using this experiment must check
+    /// before and after every physics step, including teacher steps. This is a
+    /// read-only validity guard, not a normalization. It requires finite nonzero
+    /// components and the existing physical bound `abs(norm² - 1) <= 0.001`.
+    #[cfg(feature = "unit-root-rotation")]
+    pub fn validate_unit_root_rotation(&self) -> Result<(), &'static str> {
+        if !self.unit_root_rotation_enabled {
+            return Ok(());
+        }
+        if !self.unit_root_rotation_eligible() {
+            return Err("active unit root rotation has an ineligible root");
+        }
+        MultibodyJoint::validate_physical_unit_root_rotation(self.links[0].joint.joint_rot)
+    }
+
+    #[cfg(feature = "unit-root-rotation")]
+    fn revalidate_unit_root_rotation_policy(&mut self) {
+        if self.unit_root_rotation_enabled && !self.unit_root_rotation_eligible() {
+            self.unit_root_rotation_enabled = false;
+        }
     }
 
     #[cfg(feature = "compensated-root-integration")]
@@ -568,6 +651,10 @@ impl Multibody {
         dof: MultibodyJoint,
         body: RigidBodyHandle,
     ) -> &mut MultibodyLink {
+        #[cfg(feature = "unit-root-rotation")]
+        {
+            self.unit_root_rotation_enabled = false;
+        }
         #[cfg(feature = "compensated-root-integration")]
         self.reset_root_translation_compensation();
         assert!(
@@ -1344,6 +1431,8 @@ impl Multibody {
 
     #[inline]
     pub(crate) fn integrate(&mut self, dt: Real) {
+        #[cfg(feature = "unit-root-rotation")]
+        self.revalidate_unit_root_rotation_policy();
         #[cfg(feature = "compensated-root-integration")]
         self.synchronize_root_translation_compensation();
         for rb in self.links.iter_mut() {
@@ -1355,11 +1444,19 @@ impl Multibody {
                         &self.velocities.as_slice()[rb.assembly_id..],
                         integrator,
                     );
+                    #[cfg(feature = "unit-root-rotation")]
+                    if self.unit_root_rotation_enabled {
+                        rb.joint.project_root_rotation_or_preserve_invalid();
+                    }
                     continue;
                 }
             }
             rb.joint
-                .integrate(dt, &self.velocities.as_slice()[rb.assembly_id..])
+                .integrate(dt, &self.velocities.as_slice()[rb.assembly_id..]);
+            #[cfg(feature = "unit-root-rotation")]
+            if self.unit_root_rotation_enabled && rb.internal_id == 0 {
+                rb.joint.project_root_rotation_or_preserve_invalid();
+            }
         }
     }
 
@@ -1368,6 +1465,8 @@ impl Multibody {
     /// Note this does **not** updates the link poses, only their generalized coordinates.
     /// To update the link poses and associated rigid-bodies, call [`Self::forward_kinematics`].
     pub fn apply_displacements(&mut self, disp: &[Real]) {
+        #[cfg(feature = "unit-root-rotation")]
+        self.revalidate_unit_root_rotation_policy();
         #[cfg(feature = "compensated-root-integration")]
         self.synchronize_root_translation_compensation();
         for link in self.links.iter_mut() {
@@ -1379,16 +1478,31 @@ impl Multibody {
                         &disp[link.assembly_id..],
                         integrator,
                     );
+                    #[cfg(feature = "unit-root-rotation")]
+                    if self.unit_root_rotation_enabled {
+                        link.joint.project_root_rotation_or_preserve_invalid();
+                    }
                     continue;
                 }
             }
-            link.joint.apply_displacement(&disp[link.assembly_id..])
+            link.joint.apply_displacement(&disp[link.assembly_id..]);
+            #[cfg(feature = "unit-root-rotation")]
+            if self.unit_root_rotation_enabled && link.internal_id == 0 {
+                link.joint.project_root_rotation_or_preserve_invalid();
+            }
         }
     }
 
     pub(crate) fn update_root_type(&mut self, bodies: &RigidBodySet, take_body_pose: bool) {
         if let Some(rb) = bodies.get(self.links[0].rigid_body) {
-            #[cfg(feature = "compensated-root-integration")]
+            #[cfg(feature = "unit-root-rotation")]
+            if rb.is_dynamic() != self.root_is_dynamic {
+                self.unit_root_rotation_enabled = false;
+            }
+            #[cfg(any(
+                feature = "compensated-root-integration",
+                feature = "unit-root-rotation"
+            ))]
             let routine_pose_import = take_body_pose
                 && rb.is_dynamic() == self.root_is_dynamic
                 && !rb.changes.intersects(
@@ -1470,7 +1584,18 @@ impl Multibody {
             // Make sure the positions are properly set to match the rigid-body’s.
             if take_body_pose {
                 if self.links[0].joint.data.locked_axes.is_empty() {
-                    self.links[0].joint.set_free_pos(*rb.position());
+                    #[cfg(feature = "unit-root-rotation")]
+                    let mut root_pose = *rb.position();
+                    #[cfg(feature = "unit-root-rotation")]
+                    if self.unit_root_rotation_enabled && routine_pose_import {
+                        // Identity pose products may canonicalize signed zero.
+                        // A routine import retains authoritative rotation bits;
+                        // it is not another quaternion coordinate update.
+                        root_pose.rotation = self.links[0].joint.joint_rot;
+                    }
+                    #[cfg(not(feature = "unit-root-rotation"))]
+                    let root_pose = *rb.position();
+                    self.links[0].joint.set_free_pos(root_pose);
                     #[cfg(feature = "compensated-root-integration")]
                     if routine_pose_import {
                         if let Some(integrator) = &mut self.root_translation_integrator {
@@ -1495,6 +1620,8 @@ impl Multibody {
         }
         #[cfg(feature = "compensated-root-integration")]
         self.synchronize_root_translation_compensation();
+        #[cfg(feature = "unit-root-rotation")]
+        self.revalidate_unit_root_rotation_policy();
     }
 
     /// Update the rigid-body poses based on this multibody joint poses.
@@ -1701,6 +1828,11 @@ impl Multibody {
                 #[cfg(not(feature = "compensated-root-integration"))]
                 link.joint
                     .apply_displacement(&displacement[link.assembly_id..]);
+                #[cfg(feature = "unit-root-rotation")]
+                if *i == 0 && self.unit_root_rotation_enabled && self.unit_root_rotation_eligible()
+                {
+                    link.joint.project_root_rotation_or_preserve_invalid();
+                }
             }
 
             let parent_to_world;
@@ -2221,3 +2353,7 @@ mod zero_inertia_tests;
 #[cfg(all(test, feature = "dim3"))]
 #[path = "root_com_tests.rs"]
 mod root_com_tests;
+
+#[cfg(all(test, feature = "unit-root-rotation"))]
+#[path = "unit_root_rotation_tests.rs"]
+mod unit_root_rotation_tests;

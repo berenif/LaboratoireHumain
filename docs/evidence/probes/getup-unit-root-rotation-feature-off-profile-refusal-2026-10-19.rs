@@ -1,0 +1,2 @@
+use lh_sim::{Profile,runtime::Runtime};
+fn main(){let a:Vec<_>=std::env::args().collect();assert_eq!(a.len(),2);let p:Profile=serde_json::from_str(&std::fs::read_to_string(&a[1]).unwrap()).unwrap();let error=p.validate().unwrap_err();assert!(error.contains("unit-root-rotation-experiment"),"{error}");assert!(Runtime::new_getup_fixture_with_profile("side",p).is_err());println!("{}",serde_json::json!({"passed":true,"physicsIntegrations":0,"error":error,"factoryRefused":true,"featureEnabled":false}));}

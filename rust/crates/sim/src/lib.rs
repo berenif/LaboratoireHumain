@@ -97,6 +97,11 @@ pub enum GetUpSolverBudget {
     #[serde(rename = "consistent-recovery-phase-v1")]
     ConsistentRecoveryPhaseV1,
 }
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
+pub enum RootRotationNormalization {
+    #[serde(rename = "unit-free-root-v1")]
+    UnitFreeRootV1,
+}
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub struct Profile {
@@ -112,6 +117,9 @@ pub struct Profile {
     /// Omitted profiles retain the historical teacher/real phase selection.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub getup_solver_budget: Option<GetUpSolverBudget>,
+    /// Physical quaternion integration policy; disabled in historical profiles.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub root_rotation_normalization: Option<RootRotationNormalization>,
     pub additional_body_iterations: usize,
     pub allowed_linear_error_m: f32,
     pub prediction_distance_m: f32,
@@ -156,6 +164,7 @@ impl Default for Profile {
             internal_pgs_iterations: 20,
             fall_internal_pgs_iterations: default_fall_iterations(),
             getup_solver_budget: None,
+            root_rotation_normalization: None,
             additional_body_iterations: 5,
             allowed_linear_error_m: 0.001,
             prediction_distance_m: 0.002,
@@ -191,6 +200,10 @@ impl Profile {
         }
     }
     pub fn validate(&self) -> Result<(), String> {
+        #[cfg(not(feature = "unit-root-rotation-experiment"))]
+        if self.root_rotation_normalization.is_some() {
+            return Err("Unit root rotation requires unit-root-rotation-experiment".into());
+        }
         if self.recovery_enabled || self.recovery_first_phase_only || self.corrective_steps_enabled {
             return Err("Legacy body controllers are unavailable for the GetUp reference body".into());
         }
@@ -352,6 +365,51 @@ fn checkpoint_model() -> Model {
     Model::canonical().expect("pinned GetUp model")
 }
 impl Simulation {
+    /// Restore policy only. Saved quaternion/velocity/contact/carry bits are
+    /// never projected or otherwise edited by construction/checkpoint plumbing.
+    fn restore_unit_root_rotation_policy(&mut self) -> Result<(), String> {
+        let enabled = self.profile.root_rotation_normalization.is_some();
+        #[cfg(not(feature = "unit-root-rotation-experiment"))]
+        {
+            if enabled { return Err("Unit root rotation requires unit-root-rotation-experiment".into()); }
+            Ok(())
+        }
+        #[cfg(feature = "unit-root-rotation-experiment")]
+        {
+            let root = *self.bodies.first().ok_or("Missing GetUp root")?;
+            let link = *self.world.multibody_joints.rigid_body_link(root).ok_or("Missing root articulation")?;
+            if link.id != 0 { return Err("GetUp root is not an articulation root".into()); }
+            self.world.multibody_joints.get_multibody_mut(link.multibody)
+                .ok_or("Missing root articulation")?
+                .set_unit_root_rotation_enabled(enabled).map_err(str::to_string)
+        }
+    }
+
+    fn validate_unit_root_rotation_policy(&self) -> Result<(), String> {
+        let expected = self.profile.root_rotation_normalization.is_some();
+        #[cfg(not(feature = "unit-root-rotation-experiment"))]
+        {
+            if expected { return Err("Unit root rotation requires unit-root-rotation-experiment".into()); }
+            Ok(())
+        }
+        #[cfg(feature = "unit-root-rotation-experiment")]
+        {
+            let root = *self.bodies.first().ok_or("Missing GetUp root")?;
+            let link = *self.world.multibody_joints.rigid_body_link(root).ok_or("Missing root articulation")?;
+            if link.id != 0 { return Err("GetUp root is not an articulation root".into()); }
+            let mb = self.world.multibody_joints.get_multibody(link.multibody).ok_or("Missing root articulation")?;
+            if mb.unit_root_rotation_enabled() != expected {
+                return Err("Unit root rotation profile/runtime policy mismatch".into());
+            }
+            mb.validate_unit_root_rotation().map_err(str::to_string)?;
+            if self.world.multibody_joints.multibodies().any(|other|
+                other.root().rigid_body_handle() != root && other.unit_root_rotation_enabled())
+            {
+                return Err("Unit root rotation enabled on an unrelated articulation".into());
+            }
+            Ok(())
+        }
+    }
     fn selected_internal_pgs_iterations(&self) -> usize {
         let active_getup = self.profile.getup_solver_budget
             == Some(GetUpSolverBudget::ConsistentRecoveryPhaseV1)
@@ -536,6 +594,9 @@ impl Simulation {
             getup_fixture: None,
         };
         getup::assemble(&mut result, spawn_offset.y)?;
+        if result.profile.root_rotation_normalization.is_some() {
+            result.restore_unit_root_rotation_policy()?;
+        }
         result.capture_rest_com();
         if result.profile.getup_policy_enabled {
             result.getup_controller = Some(getup::controller::Controller::new(&result.model));
@@ -878,6 +939,16 @@ impl Simulation {
             return Err(failure);
         }
         for substep in 0..lh_contracts::SUBSTEPS {
+            if (cfg!(feature = "unit-root-rotation-experiment") || self.profile.root_rotation_normalization.is_some())
+                && let Err(error) = self.validate_unit_root_rotation_policy()
+            {
+                let failure = measurement::Failure::new(self.tick, substep,
+                    "unit-root-rotation", error, 1.0, 0.0);
+                self.motion = Motion::Halted;
+                self.first_failure = Some(failure.clone());
+                self.cancel_grab();
+                return Err(failure);
+            }
             for handle in &self.bodies {
                 self.world.bodies[*handle].reset_forces(false);
                 self.world.bodies[*handle].reset_torques(false);

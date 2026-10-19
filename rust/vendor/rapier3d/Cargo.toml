@@ -58,6 +58,8 @@ status = "actively-developed"
 solver-step-observation = []
 # Explicitly activated, root-only f32 translation accumulation experiment.
 compensated-root-integration = []
+# Explicitly activated, canonical free-root unit-quaternion integration.
+unit-root-rotation = []
 alloc = [
     "nalgebra/alloc",
     "parry3d/alloc",

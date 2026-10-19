@@ -16,6 +16,12 @@ use crate::utils::RotationOps;
 use crate::utils::vect_to_na;
 use na::DVectorViewMut;
 
+#[cfg(all(
+    feature = "unit-root-rotation",
+    not(all(feature = "f32", feature = "dim3"))
+))]
+compile_error!("unit-root-rotation is only supported for f32/dim3");
+
 /// Exact sidecar representation of an explicitly activated root accumulator.
 ///
 /// The ordinary serialized multibody intentionally omits this state. Active
@@ -166,6 +172,69 @@ impl MultibodyJoint {
     /// The joint’s angular coordinates converted to a rotation.
     pub fn joint_rot(&self) -> Rotation {
         self.joint_rot
+    }
+
+    /// Returns the unit representative of a finite nonzero f32 quaternion.
+    ///
+    /// This pure helper preserves quaternion sign and represented orientation
+    /// to f32 rounding. Four squared finite f32 components, including the
+    /// smallest subnormals and largest finite values, fit safely in f64.
+    /// Invalid input returns an error; it is never replaced with identity.
+    #[cfg(feature = "unit-root-rotation")]
+    pub fn project_unit_root_rotation(rotation: Rotation) -> Result<Rotation, &'static str> {
+        let components = rotation.to_array();
+        let norm_squared = Self::root_rotation_norm_squared(rotation)?;
+        let norm = na::ComplexField::sqrt(norm_squared);
+        let unit = components.map(|component| (f64::from(component) / norm) as f32);
+        Ok(Rotation::from_xyzw(unit[0], unit[1], unit[2], unit[3]))
+    }
+
+    #[cfg(feature = "unit-root-rotation")]
+    fn root_rotation_norm_squared(rotation: Rotation) -> Result<f64, &'static str> {
+        let components = rotation.to_array();
+        if components.iter().any(|component| !component.is_finite()) {
+            return Err("unit root rotation requires finite quaternion components");
+        }
+        let norm_squared: f64 = components
+            .iter()
+            .map(|component| {
+                let value = f64::from(*component);
+                value * value
+            })
+            .sum();
+        if norm_squared == 0.0 {
+            return Err("unit root rotation requires a nonzero quaternion");
+        }
+        Ok(norm_squared)
+    }
+
+    #[cfg(feature = "unit-root-rotation")]
+    pub(super) fn validate_physical_unit_root_rotation(
+        rotation: Rotation,
+    ) -> Result<(), &'static str> {
+        let norm_squared = Self::root_rotation_norm_squared(rotation)?;
+        // Match the existing physical/rendering unit-quaternion domain. This
+        // guard admits ordinary accumulated f32 drift, not arbitrarily scaled
+        // finite quaternions. Projection is still a coordinate-update action.
+        if (norm_squared - 1.0).abs() > 0.001 {
+            return Err("unit root rotation lies outside the physical quaternion norm domain");
+        }
+        Ok(())
+    }
+
+    /// Projects after a coordinate update. The infallible engine integration
+    /// API cannot propagate a Result: invalid input is deliberately preserved,
+    /// so `Multibody::validate_unit_root_rotation` and the caller's mandatory
+    /// pre/post-step validity guards observe and reject the failure. For finite
+    /// nonzero f32 input the f64 projection cannot overflow or underflow to zero.
+    #[cfg(feature = "unit-root-rotation")]
+    pub(super) fn project_root_rotation_or_preserve_invalid(&mut self) {
+        if Self::validate_physical_unit_root_rotation(self.joint_rot).is_err() {
+            return;
+        }
+        if let Ok(unit) = Self::project_unit_root_rotation(self.joint_rot) {
+            self.joint_rot = unit;
+        }
     }
 
     fn num_free_lin_dofs(&self) -> usize {

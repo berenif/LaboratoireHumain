@@ -1,0 +1,528 @@
+{
+  "schema": 1,
+  "date": "2026-10-19",
+  "classification": "four-pose-native-pass-explicit-unit-free-root-rotation",
+  "outcome": "All four fresh native recoveries earn the unchanged one-second standing gate within 25 seconds, then all four complete 30-second holds with original anchors/counters and every native standing predicate intact. Maximum observed actual-body quaternion norm-squared error is 1.774498577522543e-6 within the existing 0.001 domain. This is bounded native evidence; browser qualification is separate.",
+  "fourPoseNativeAcceptancePassed": true,
+  "fourThirtySecondNativeHoldsPassed": true,
+  "qualification24Cases": false,
+  "releaseAccepted": false,
+  "productionRecoveryEnabled": false,
+  "defaultPublicProfileChanged": false,
+  "physicalAcceptanceChanged": false,
+  "browserQualificationClaimed": false,
+  "nativeWasmEqualityClaimed": false,
+  "upstreamUserRightsResolved": false,
+  "sourceAndBuild": {
+    "baseCommit": "91f1196f4f52085d7860bf0e3651e90e61664441",
+    "sourceFreeze": {
+      "path": "outputs/getup-unit-root-rotation-20261019/source-freeze.json",
+      "sha256": "5c96d0feb5d6479e81cf6bb9a78b520f1414958e146efb20b355f40ab2c06962",
+      "bytes": 2170
+    },
+    "sourceSha256": {
+      "rust/vendor/rapier3d/Cargo.toml": "f810f2043febf166778d33110446671dd286d4c3d03a8bb978ef65b4477142f1",
+      "rust/vendor/rapier3d/Cargo.toml.orig": "60d811b5f5ff2e30520910ae84d6a7142a8c63cf67626e88643856db961832c3",
+      "rust/vendor/rapier3d/src/dynamics/joint/multibody_joint/multibody.rs": "330530513c64959c5d9fc303ea4a38461ecece338c132dcb7fa46a628beadb07",
+      "rust/vendor/rapier3d/src/dynamics/joint/multibody_joint/multibody_joint.rs": "d1ad4400a3c13c1d7d6d98ca38268ce54bb4d61bfbe2466ef89e865a2ac4e7a1",
+      "rust/vendor/rapier3d/src/dynamics/joint/multibody_joint/unit_root_rotation_tests.rs": "fe7f746de574ba67e1618a620bfd230c5890f97e3d683ff2ad474ab44bf1e031",
+      "rust/crates/sim/Cargo.toml": "05b2ab396bc9ba2955d1914857ab3ae47f1ce566cb7efd4aca9cc2d791182ff4",
+      "rust/crates/sim/src/lib.rs": "da06903042a99a1d9d996a57e1892a09fda7081517894d18f389bdc6d0668344",
+      "rust/crates/sim/src/runtime.rs": "70baae466f726daf533c2d31ed13f7bc3a1554bacd92df21ead23c5f5823af8b",
+      "rust/crates/sim/src/measurement.rs": "36005e21b8d88d6fa175c44906f2af9fd342716c529e638e6cd32ee2446e1714",
+      "rust/crates/sim/src/getup/controller.rs": "6b3811234c940a884bea335863ed49567a9e8a4ddc43e04e2d77274ad61271b8",
+      "rust/crates/sim/src/getup/solver_budget_tests.rs": "4bcf5bdb3d680314fd782dba1229dab1fda1f298cd1716475e24ae3e7ea602ed",
+      "rust/crates/sim/src/getup_root_translation_checkpoint_tests.rs": "3c02f67342f564f9549d37c2bea045301d02d5e787244f698b1edbff0c1021e3",
+      "docs/evidence/profiles/getup-800hz-3plus1-unit-root-rotation-v1.json": "28628473ec243da9080eeebab9190f15bba2142f72ffaf0836c3a99fd83c7ea1"
+    },
+    "all13CurrentHashesReverified": true,
+    "frozenLibrary": {
+      "path": "outputs/getup-unit-root-rotation-20261019/liblh_sim-unit-root-frozen.rlib",
+      "sha256": "147df1fb734f458266db7722dedffb66b112ffae3014012909c2138460f8c2a7",
+      "bytes": 24783218
+    },
+    "libraryBuildLog": {
+      "path": "outputs/getup-unit-root-rotation-20261019/library-build.log",
+      "sha256": "6f7de7fa0b68fc6bf4b90fd69650980421368ced955776ee21781a1a00679378",
+      "bytes": 13821
+    },
+    "buildExitCode": 0,
+    "features": [
+      "root-translation-carry-experiment",
+      "getup-terminal-balance-experiment",
+      "standing-dynamics-experiment",
+      "unit-root-rotation-experiment"
+    ],
+    "baseReadyEnabled": false,
+    "bumplessEnabled": false,
+    "independentSourceReview": {
+      "path": "outputs/getup-unit-root-rotation-20261019/independent-source-review.json",
+      "sha256": "1f7774a562e2f41d93ca9df573cc222faffcf20ca2f6c01a3c822d9ed1df4fcd",
+      "bytes": 9771
+    },
+    "reviewVerdict": "No remaining source-review blocker. Compilation, native dynamics and actual WASM qualification are separate gates.",
+    "reviewIsSourceOnly": true
+  },
+  "experiment": {
+    "profile": {
+      "path": "docs/evidence/profiles/getup-800hz-3plus1-unit-root-rotation-v1.json",
+      "sha256": "28628473ec243da9080eeebab9190f15bba2142f72ffaf0836c3a99fd83c7ea1",
+      "bytes": 1259
+    },
+    "profileOnlyDifferencesFromConsistentBudgetBaseline": [
+      "id",
+      "root_rotation_normalization"
+    ],
+    "selector": "root_rotation_normalization=unit-free-root-v1",
+    "defaultOff": true,
+    "policy": "Explicit pure quaternion normalization after eligible free-root angular-coordinate updates. Uses f64 norm calculation and preserves represented orientation/sign to f32 rounding. It changes neither angular velocity nor the chosen force/control law.",
+    "eligibility": "Dynamic canonical identity-frame six-free-axis root only. Invalid, zero, nonfinite or out-of-domain physical candidates remain invalid and are refused by guards; no identity fallback or renderer-only repair.",
+    "coverage": "Ordinary and compensated root integration, explicit displacement and copied branch-FK displacement. Nonroot hinge integration retains its existing path.",
+    "lifecycle": "Activation and checkpoint restoration change policy only, preserving saved quaternion/velocity/contact/translation-carry bits. The skipped policy bool is restored from the explicit typed Profile and validated; no new integration-history sidecar. Teacher clones retain policy; actual and teacher pre/post guards enforce policy agreement and the physical quaternion domain.",
+    "sameConsistentSolverBudget": "32 internal PGS passes in active source recovery,20 terminal standing;800 Hz native/40 Hz control, 3+1 outer solver.",
+    "unchangedActorSha256": {
+      "rust/crates/sim/data/getup-policy/teacher.bin": "f8d8d6ea787366a67aa46352cf5243ed2962dd277b5ca6b6f98a85fc3a67ab4f",
+      "rust/crates/sim/data/getup-policy/student.bin": "c489faed55bdab1669c51dab71a102db91ff2a55143789f682e45cd8169d6dbb"
+    },
+    "gainsMotorCapsForcesAndTranslationCarryAlgorithmChanged": false,
+    "note": "Quaternion projection intentionally changes numerical trajectories, including preparation trigger times. No same-trajectory, same-teacher-archive or native/WASM equality is claimed."
+  },
+  "unchangedCriteria": {
+    "nativeHz": 800,
+    "controllerHz": 40,
+    "originalContiguousStandingNativeSamples": 800,
+    "recoveryDeadlineSecondsAfterTrigger": 25,
+    "maximumWholeBodyLinearMps": 0.22,
+    "maximumWholeBodyAngularRadps": 0.65,
+    "footOriginDriftFromOriginalStableAnchorsM": 0.01,
+    "headHeightGreaterThanM": 1.4,
+    "torsoUpAtLeast": 0.97,
+    "loadedContinuationSlipStopM": 0.02,
+    "wholeRecovery20mmStop": false,
+    "admissionCounterCanCountAsOriginalStandingSamples": false
+  },
+  "quaternionObservation": {
+    "thresholdAbsoluteNormSquaredError": 0.001,
+    "method": "For every observed actual native integration, sum squares of all physical-body f32 quaternion components in f64; retain maximum abs(norm-squared-1), assert finite and within the existing domain. Runtime/teacher physical guards remain separate from this extra read-only harness observation.",
+    "maximumObservedActualError": 1.774498577522543e-06,
+    "observerAddedPhysicsIntegrations": 0,
+    "forecastIncludedInReportedMaximum": false,
+    "rendererThresholdRelaxed": false
+  },
+  "freshRecovery": [
+    {
+      "kind": "side",
+      "standingPassed": true,
+      "triggerNative": 320,
+      "terminalBalanceActivationNative": 11811,
+      "firstLatchedStandingPassNative": 12830,
+      "secondsFromTriggerToFirstPass": 15.6375,
+      "polledTerminalNative": 12840,
+      "originalStableSamplesAtTerminal": 810,
+      "realNativeIntegrations": 12840,
+      "forecastNativeIntegrations": 720,
+      "maximumActualBodyQuaternionNormSquaredError": 1.774498577522543e-06,
+      "resultSha256": "ff68fd638a93b19d4e808bca89781d588c6446cf39703bdecdca879a6e2e9a9d"
+    },
+    {
+      "kind": "back",
+      "standingPassed": true,
+      "triggerNative": 480,
+      "terminalBalanceActivationNative": 3333,
+      "firstLatchedStandingPassNative": 4053,
+      "secondsFromTriggerToFirstPass": 4.46625,
+      "polledTerminalNative": 4060,
+      "originalStableSamplesAtTerminal": 807,
+      "realNativeIntegrations": 4060,
+      "forecastNativeIntegrations": 960,
+      "maximumActualBodyQuaternionNormSquaredError": 1.6687508272994478e-06,
+      "resultSha256": "f7cf4bd8b9e94ebfcc6988027e8221abe005d25a95c2504f74fffbdb4347845c"
+    },
+    {
+      "kind": "belly",
+      "standingPassed": true,
+      "triggerNative": 400,
+      "terminalBalanceActivationNative": 2076,
+      "firstLatchedStandingPassNative": 3182,
+      "secondsFromTriggerToFirstPass": 3.4775,
+      "polledTerminalNative": 3200,
+      "originalStableSamplesAtTerminal": 818,
+      "realNativeIntegrations": 3200,
+      "forecastNativeIntegrations": 540,
+      "maximumActualBodyQuaternionNormSquaredError": 1.4822374405643046e-06,
+      "resultSha256": "eebab4f1b3c848134650c3c6e0bea3fa8c689d5ba972b30ad462ec46cc071796"
+    },
+    {
+      "kind": "side-supported",
+      "standingPassed": true,
+      "triggerNative": 160,
+      "terminalBalanceActivationNative": 2707,
+      "firstLatchedStandingPassNative": 3548,
+      "secondsFromTriggerToFirstPass": 4.235,
+      "polledTerminalNative": 3560,
+      "originalStableSamplesAtTerminal": 812,
+      "realNativeIntegrations": 3560,
+      "forecastNativeIntegrations": 700,
+      "maximumActualBodyQuaternionNormSquaredError": 1.6872707238047013e-06,
+      "resultSha256": "7d063696c93bf52d3cb4e293d4d0c938c2d5b563a1ce285f1f16d9ca38a0d0e2"
+    }
+  ],
+  "standingContinuations": [
+    {
+      "kind": "side",
+      "outcome": "completed",
+      "physicalSeconds": 30,
+      "actualNativeIntegrations": 24000,
+      "everyNativeStandingPredicatePassed": true,
+      "originalCounterContinuous": true,
+      "originalStableCounterInput": 810,
+      "originalStableCounterFinal": 24810,
+      "originalAnchorsUnchanged": true,
+      "maximumFootOriginDriftM": [
+        0.0002468925667926669,
+        0.00021040838328190148
+      ],
+      "loadedContactSpeedIntegralM": [
+        3.0644736507490114e-05,
+        1.9995781727040306e-05
+      ],
+      "maximumBodyLinearMps": 0.02319345436990261,
+      "maximumBodyAngularRadps": 0.031607773154973984,
+      "maximumActualBodyQuaternionNormSquaredError": 1.5818156312574772e-06,
+      "teacherAndSlowCountsUnchanged": true,
+      "noExternalSupportOrPoseVelocityWrites": true,
+      "unobservedTerminalTailNative": 0,
+      "resultSha256": "b44ceb60d8f3bcde1b7992c2e4a54d2fa1bdec6bbe8b99356fbd6fc87c20f6cf"
+    },
+    {
+      "kind": "back",
+      "outcome": "completed",
+      "physicalSeconds": 30,
+      "actualNativeIntegrations": 24000,
+      "everyNativeStandingPredicatePassed": true,
+      "originalCounterContinuous": true,
+      "originalStableCounterInput": 807,
+      "originalStableCounterFinal": 24807,
+      "originalAnchorsUnchanged": true,
+      "maximumFootOriginDriftM": [
+        0.0001562580728204921,
+        0.0001872010761871934
+      ],
+      "loadedContactSpeedIntegralM": [
+        1.1161950564630954e-05,
+        4.598432955321682e-07
+      ],
+      "maximumBodyLinearMps": 0.016663238406181335,
+      "maximumBodyAngularRadps": 0.025774676352739334,
+      "maximumActualBodyQuaternionNormSquaredError": 1.7038329096497051e-06,
+      "teacherAndSlowCountsUnchanged": true,
+      "noExternalSupportOrPoseVelocityWrites": true,
+      "unobservedTerminalTailNative": 0,
+      "resultSha256": "cf9551a7055fc5db41e62601524fd6cb6fdecb92ef10c0133931ee708726a652"
+    },
+    {
+      "kind": "belly",
+      "outcome": "completed",
+      "physicalSeconds": 30,
+      "actualNativeIntegrations": 24000,
+      "everyNativeStandingPredicatePassed": true,
+      "originalCounterContinuous": true,
+      "originalStableCounterInput": 818,
+      "originalStableCounterFinal": 24818,
+      "originalAnchorsUnchanged": true,
+      "maximumFootOriginDriftM": [
+        0.00017564473091624677,
+        0.00014414257020689547
+      ],
+      "loadedContactSpeedIntegralM": [
+        3.5922098470364575e-06,
+        4.928080509788435e-06
+      ],
+      "maximumBodyLinearMps": 0.017079735174775124,
+      "maximumBodyAngularRadps": 0.02339109778404236,
+      "maximumActualBodyQuaternionNormSquaredError": 1.6258035897553924e-06,
+      "teacherAndSlowCountsUnchanged": true,
+      "noExternalSupportOrPoseVelocityWrites": true,
+      "unobservedTerminalTailNative": 0,
+      "resultSha256": "ca07de42ad173bb370cb57bd3b0ccc4ac2eb9151c2a71d91424000e7f73359b8"
+    },
+    {
+      "kind": "side-supported",
+      "outcome": "completed",
+      "physicalSeconds": 30,
+      "actualNativeIntegrations": 24000,
+      "everyNativeStandingPredicatePassed": true,
+      "originalCounterContinuous": true,
+      "originalStableCounterInput": 812,
+      "originalStableCounterFinal": 24812,
+      "originalAnchorsUnchanged": true,
+      "maximumFootOriginDriftM": [
+        0.00030236702878028154,
+        0.00029736265423707664
+      ],
+      "loadedContactSpeedIntegralM": [
+        1.1764327411061204e-05,
+        1.9284703066517775e-05
+      ],
+      "maximumBodyLinearMps": 0.01286486815661192,
+      "maximumBodyAngularRadps": 0.02347806841135025,
+      "maximumActualBodyQuaternionNormSquaredError": 1.6375139820778983e-06,
+      "teacherAndSlowCountsUnchanged": true,
+      "noExternalSupportOrPoseVelocityWrites": true,
+      "unobservedTerminalTailNative": 0,
+      "resultSha256": "12dffbe02640946a631093b598d87e72b570212808bea1132a63c8a67c5c30a3"
+    }
+  ],
+  "priorBrowserFailure": {
+    "evidence": {
+      "path": "docs/evidence/browser-consistent-solver-budget-2026-10-19.json",
+      "sha256": "da99cafac92dc490c63aa23c6449464e3821cca5e784fd00c1ae6f8ecef31e61",
+      "bytes": 45812
+    },
+    "workerWasmSha256": "5f07c8e459f7131ab41d952ff71cc051e7bec989a4ed5fa794e54fbc75e918c7",
+    "plainSideStoppedAtPhysicalSeconds": 17.05,
+    "native": 13640,
+    "maximumBodyNormSquaredF64Diagnostic": 1.0010023307866005,
+    "cause": "The retained consistent-budget WASM was stopped by the unchanged renderer abs(norm-squared-1)>0.001 guard. This motivates the opt-in physical integration correction; these new native runs alone do not establish that the browser issue is fixed.",
+    "newCandidateBrowserStatus": "Separate build/qualification pending; no result imported into this native report."
+  },
+  "workAccounting": {
+    "freshRealNativeIntegrations": 23660,
+    "freshForecastNativeIntegrations": 2920,
+    "holdRealNativeIntegrations": 96000,
+    "campaignRealNativeIntegrations": 119660,
+    "campaignRealPlusForecastNativeIntegrations": 122580,
+    "unitAndSyntheticTestWorkIncluded": false,
+    "allFourFreshAndFourHoldProcessesTerminal": true,
+    "unobservedRealTailNativeIntegrations": 0,
+    "timing": "Untimed physical campaign; wall time is not a performance benchmark.",
+    "disabledPolicyCompatibilityRealNativeIntegrations": 40,
+    "disabledPolicyCompatibilityForecastIntegrations": 0,
+    "featureOffRefusalNativeIntegrations": 0,
+    "oldLibraryFailedLinkNativeIntegrations": 0,
+    "campaignAndCompatibilityRealNativeIntegrations": 119700,
+    "campaignAndCompatibilityRealPlusForecastNativeIntegrations": 122620
+  },
+  "executedProbeCopies": [
+    {
+      "executedSource": "outputs/getup-unit-root-rotation-20261019/fresh-recovery.rs",
+      "retainedExactCopy": "docs/evidence/probes/getup-unit-root-rotation-fresh-recovery-2026-10-19.rs",
+      "sha256": "5135b83700c4c82bc5146e61c9069dd0d7baac083e0ab941890628ce7792fa3e"
+    },
+    {
+      "executedSource": "outputs/getup-unit-root-rotation-20261019/active-standing-continuation.rs",
+      "retainedExactCopy": "docs/evidence/probes/getup-unit-root-rotation-active-standing-continuation-2026-10-19.rs",
+      "sha256": "b08d7b42f4dd5337eea8f682ef15227313043ac843fe74150a6799dec7873602"
+    },
+    {
+      "executedSource": "outputs/getup-unit-root-rotation-20261019/feature-off-profile-refusal.rs",
+      "retainedExactCopy": "docs/evidence/probes/getup-unit-root-rotation-feature-off-profile-refusal-2026-10-19.rs",
+      "sha256": "e47aa8736a9cd76f46025e340e6ebe6ae04c59d8d50862fc389a76e3d54db88e"
+    },
+    {
+      "executedSource": "outputs/getup-unit-root-rotation-20261019/disabled-policy-resume.rs",
+      "retainedExactCopy": "docs/evidence/probes/getup-unit-root-rotation-disabled-policy-resume-2026-10-19.rs",
+      "sha256": "05c9464d75c56895ce9e906ac6c76bf6fd689eb68c0d0ca6a74f033760a1ee10"
+    }
+  ],
+  "rawReceiptSha256": {
+    "root": "outputs/getup-unit-root-rotation-20261019",
+    "sha256": {
+      "source-freeze.json": "5c96d0feb5d6479e81cf6bb9a78b520f1414958e146efb20b355f40ab2c06962",
+      "vendor-source-freeze.json": "1a93659dd10682ef5538987e8800176d3b7860dff785c6a21303c05212eec679",
+      "vendor-owned.patch": "ff34773b0c9da0625ef6b37a1c5edc10fc6519ae739e4bb1b45e4bca2c848f09",
+      "library-build.log": "6f7de7fa0b68fc6bf4b90fd69650980421368ced955776ee21781a1a00679378",
+      "library-build.exit": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa",
+      "side-process-ledger.json": "48b12dbfc71e52c2f066924b27a025e4f84e123cedac995c2f8da268867193a6",
+      "fresh-3plus1/process-ledger.json": "c02f4f9080e64cb79797649fcf5877e5984e9aa58a3a539e62e114d679f80113",
+      "fresh-3plus1/hold-process-ledger.json": "7c59facec70e14668e1259f75f594cb56c02fbbcc8daf0f19946e064b699b7d0",
+      "sim-unit-root-tests.log": "8900d8f507920fc852fbcc7fed3a17a493f23bffe892cd04bf1ae5145ccf9d65",
+      "sim-unit-root-tests.exit": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa",
+      "vendor-full-tests.log": "9541b382eb1a2dd628a9b6e23048ada0e3f6d004edad5f6a226bdea6b9bfbc77",
+      "vendor-full-tests.exit": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa",
+      "vendor-tests.log": "8377c92c711a03934a88ef285da4e0d6bfc25d582e74d6c7f423f046cf321fe1",
+      "vendor-tests.exit": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa",
+      "vendor-tests-first-command-error.log": "d7fab35ee6e9d92ae66dc1032738dc3cbad802cd3a3702e1ceafa6088713a9e3",
+      "fresh-probe-link.exit": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa",
+      "hold-probe-link.exit": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa",
+      "run-side.py": "b3540d1f38180129c58844e4e40c24489ea68e76d635e3c4d1dc59e80abda5fb",
+      "run-recovery.py": "9477607efc6b8c85206359192154b591a99f8d705ce5dbd39d89ddff59d79375",
+      "run-holds.py": "3e95a8db0151747f252f6bbf4b6ba4cb59a57ee6d3e1ea8311e72cb93fcbac1b",
+      "independent-source-review.json": "1f7774a562e2f41d93ca9df573cc222faffcf20ca2f6c01a3c822d9ed1df4fcd",
+      "fresh-3plus1/side/checkpoint-initial.json": "9d17c67a3898409764ea1029d863cc61e5b852170d4042bf1cb3ed35de4bf821",
+      "fresh-3plus1/side/checkpoint-trigger.json": "d7b491a8c6f88c4a40df267354ebff39a09841c6e1d20f00f30f8aa399129ea1",
+      "fresh-3plus1/side/checkpoint-final.json": "b9453feca574f0c1136ad2618e3fb6b0fb91f7349cec97784f596f1173f562f5",
+      "fresh-3plus1/side/trace.ndjson": "4ec18bab730be312018d1be2a31040ab4b5446d88cc84678b4881ae51e4fff7e",
+      "fresh-3plus1/side/reference-report.json": "83430f47d542ffeeffd11b15dd8999a97b57e31a416907f74ee4930a107bd0fa",
+      "fresh-3plus1/side-hold30/checkpoint-input-verification.json": "da783ed89cb06a6856fdfc73c9fc1e0af2fe9306acd85577531de392e3360b09",
+      "fresh-3plus1/side-hold30/checkpoint-final-verification.json": "fe3bb89def5fb8d23f8472eea3288e2f988ebc4141630e472b2b333156c9225a",
+      "fresh-3plus1/side-hold30/native-diagnostics.ndjson": "368a14d583be0db66ada9634ef3e5abd92997214c5fd199e0a1efcd5aa720e85",
+      "fresh-3plus1/back/checkpoint-initial.json": "a8931961f9eda8c2e0d0b442536bcd23cf25eb9a4d6addfb85cbe9ddee296ab3",
+      "fresh-3plus1/back/checkpoint-trigger.json": "5d6ef391459921becac810b7568534f9b57d364eb6fa540f777a5f4aa69c0b54",
+      "fresh-3plus1/back/checkpoint-final.json": "3a3ac582ae694e6152488baaa79fb0b49ddd73f2d9dd4a6e4e0e101198f66a9d",
+      "fresh-3plus1/back/trace.ndjson": "0743bdb84ca19b520355275d3ec20be42a2a46af5ade2f852a80c6b0d6b5bfc1",
+      "fresh-3plus1/back/reference-report.json": "63b0e7b8b024250a858c5f544e9dfedcb6203c33ab10e0318f1c665e07d67993",
+      "fresh-3plus1/back-hold30/checkpoint-input-verification.json": "61aafc89be1a1add37e4b7d0d760a21f76f5edc4275f4a57f301d0ef91c85200",
+      "fresh-3plus1/back-hold30/checkpoint-final-verification.json": "c7a25d460de22b51c597c49713a7c9ab07f072a07e2511395edb42187b55cdd7",
+      "fresh-3plus1/back-hold30/native-diagnostics.ndjson": "ae2a097bef6794f6120022b5a11103f5e61cea2aff82d9040c418addcc324346",
+      "fresh-3plus1/belly/checkpoint-initial.json": "cacb3e4fcbdb952e273e96f9e90b5ac2994e17f18f842617108d01fc9795797a",
+      "fresh-3plus1/belly/checkpoint-trigger.json": "440708483d763828122c77ee656b1913bad1aa9e530e71c503146d06d9bce847",
+      "fresh-3plus1/belly/checkpoint-final.json": "96b828122b59344bc749e59e0e86f3561d5e4eff5444c6ed50cd5788f6c5e8cd",
+      "fresh-3plus1/belly/trace.ndjson": "adf1114581ef9c90d1a6a9bb5fc0cbc046af1235536825c45c599e55f66734dc",
+      "fresh-3plus1/belly/reference-report.json": "7f0000d730235a8c5f88ff4deea0d38f105f70ef0093d89e7ad75b0755b5383f",
+      "fresh-3plus1/belly-hold30/checkpoint-input-verification.json": "6b2d798a014882d7e1d061807d5ffbd94c5378628feee93b53bf5f2996d193f7",
+      "fresh-3plus1/belly-hold30/checkpoint-final-verification.json": "de821ff180d465ab072a28b56ca071f7c6f219b85db8b40cd688d234428cb309",
+      "fresh-3plus1/belly-hold30/native-diagnostics.ndjson": "783462ef1c6e7698942c9677534303588ebf478fa97059b121d6ad6822a2ef8d",
+      "fresh-3plus1/side-supported/checkpoint-initial.json": "cd51bc5bda1f1f8890dde2402c69d4fbe06dca32e264b96d2529b2cf2f42f9e8",
+      "fresh-3plus1/side-supported/checkpoint-trigger.json": "db40406f0787b430c13fb0fa8188a6815500a689e5629c536f782d452c1c2d28",
+      "fresh-3plus1/side-supported/checkpoint-final.json": "0cab3bc8a2f401531247d748abddce23563c6d9a300cb87fdd0f727355a8e403",
+      "fresh-3plus1/side-supported/trace.ndjson": "7290fb27ab0f841b3289299c52836b78317153bae874144939d8e0351bb50cfb",
+      "fresh-3plus1/side-supported/reference-report.json": "46c2d876b40c9c3804f08937d077fe37d1fdc6b7124ada0cbcb7302f3ba70ccb",
+      "fresh-3plus1/side-supported-hold30/checkpoint-input-verification.json": "07793de767ccbd6337d3891e8f5a2dc477244b452f5c668e14105c264e7cac84",
+      "fresh-3plus1/side-supported-hold30/checkpoint-final-verification.json": "41e972ac6cf470ed542dec577f40d7a76a2aceec1846c5409c69463ab63c89c6",
+      "fresh-3plus1/side-supported-hold30/native-diagnostics.ndjson": "e2d31810f76ebd834aeecccc3444800f96ed2d3abadaf6dbda9eadf9af00a53f",
+      "focused-gates-summary.json": "9acb448917d5db57ce60e346d26fa42b54a8505efb012ba286d7f27bdfc9f8b2",
+      "disabled-policy-exact-parity.json": "19b20d05c56717a39326be6562af506241428dc6a27496939aa0d32f410e6b9a",
+      "feature-off-profile-refusal.json": "d49de1d70bbc95570353c0bb937fc3abd93b8e565775897a96547f09e18480b4",
+      "feature-off-profile-refusal.rs": "e47aa8736a9cd76f46025e340e6ebe6ae04c59d8d50862fc389a76e3d54db88e",
+      "disabled-policy-resume.rs": "05c9464d75c56895ce9e906ac6c76bf6fd689eb68c0d0ca6a74f033760a1ee10",
+      "feature-off-library-build.exit": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa",
+      "feature-off-library-build.log": "c9cfc3a87a1d850ae1177c682f1b05c6aaed9ecd978c22b9a82248e12d6b415e",
+      "old-profile-refusal-link.log": "3f06fa134478021b272d8bffe7a3296f47abb90efea569de6c5492137ed438e3",
+      "old-profile-checkpoint-refusal.rs": "6c05752feb6d6f2769df2e2b8b6c83112b4ff5ef0d355dde35df06f7f304b4df",
+      "disabled-policy-old/result.json": "baf048afc4468cc81a0108f2c56f7a05e56700fdf44ce23a5c7decd08313266a",
+      "disabled-policy-new/result.json": "baf048afc4468cc81a0108f2c56f7a05e56700fdf44ce23a5c7decd08313266a"
+    }
+  },
+  "limits": [
+    "Four fresh poses and four 30-second native holds only; not the 24-case qualification suite.",
+    "Default/public recovery stays disabled; no release acceptance. Upstream compatibility/rights remain separate unresolved questions.",
+    "No browser proof, native/WASM equality, general stability guarantee or delivered-torque smoothness claim.",
+    "Vendor 108 is the recorded native library test configuration;14 focused tests are a repeated subset, not 14 additional unique tests.",
+    "All physics campaign counts exclude unit/synthetic test work and any separate compatibility runs."
+  ],
+  "documentationVerificationUtc": "2026-10-19T20:01:38.003207+00:00",
+  "correctnessGates": {
+    "uniqueSimTestsPassed": 46,
+    "simSuccessfulInvocations": 56,
+    "simFailed": 0,
+    "simIgnored": 0,
+    "simParsedNamesSummary": {
+      "path": "outputs/getup-unit-root-rotation-20261019/focused-gates-summary.json",
+      "sha256": "9acb448917d5db57ce60e346d26fa42b54a8505efb012ba286d7f27bdfc9f8b2",
+      "bytes": 9079
+    },
+    "simRuns": [
+      {
+        "log": "outputs/getup-unit-root-rotation-20261019/sim-unit-root-tests.log",
+        "passedInvocations": 7,
+        "sha256": "8900d8f507920fc852fbcc7fed3a17a493f23bffe892cd04bf1ae5145ccf9d65"
+      },
+      {
+        "log": "outputs/getup-unit-root-rotation-20261019/gates/getup_fixture_profile_tests.log",
+        "passedInvocations": 4,
+        "sha256": "833d3323ee3c0445c7f6e033a099590349704781b97d62333309b9de9c270ac6"
+      },
+      {
+        "log": "outputs/getup-unit-root-rotation-20261019/gates/getup_root_translation_checkpoint_tests.log",
+        "passedInvocations": 15,
+        "sha256": "ec38c312d9bad862624638b0703475d74b690a70c45aa1dd6e567a4954840e64"
+      },
+      {
+        "log": "outputs/getup-unit-root-rotation-20261019/gates/solver_budget.log",
+        "passedInvocations": 7,
+        "sha256": "6bc4ce0595c2f093a83fc61b02b6ecdee2a2d7762dd8c836f3d939a065f97b6d"
+      },
+      {
+        "log": "outputs/getup-unit-root-rotation-20261019/gates/supported_standing__tests.log",
+        "passedInvocations": 5,
+        "sha256": "2552fbffdf9a61199c932cfe5566f48ac83999c57608b8044beef7f53889ab05"
+      },
+      {
+        "log": "outputs/getup-unit-root-rotation-20261019/gates/terminal.log",
+        "passedInvocations": 18,
+        "sha256": "1777d6e2a3a45ab7d15a30244e207307c320ea06b2631eda4dea37d6d61ee714"
+      }
+    ],
+    "vendorLibraryTests": {
+      "passed": 108,
+      "failed": 0,
+      "ignored": 0,
+      "log": {
+        "path": "outputs/getup-unit-root-rotation-20261019/vendor-full-tests.log",
+        "sha256": "9541b382eb1a2dd628a9b6e23048ada0e3f6d004edad5f6a226bdea6b9bfbc77",
+        "bytes": 13214
+      }
+    },
+    "vendorFocusedSubset": {
+      "passed": 14,
+      "includedIn108": true,
+      "log": {
+        "path": "outputs/getup-unit-root-rotation-20261019/vendor-tests.log",
+        "sha256": "8377c92c711a03934a88ef285da4e0d6bfc25d582e74d6c7f423f046cf321fe1",
+        "bytes": 19215
+      }
+    },
+    "initialVendorCommandError": "The first command attempted feature selection through a package outside the workspace. It ran no tests; corrected manifest targeting succeeded. Original command-error log retained.",
+    "scope": "Focused sim regressions and the recorded vendor library configuration only. Repeated test names are deduplicated within sim; the 14 vendor focused cases are already included in 108. This is not a full-workspace or all-feature test pass."
+  },
+  "checkpointCompatibility": {
+    "disabledPolicyActualCrossLibraryContinuation": {
+      "receipt": {
+        "path": "outputs/getup-unit-root-rotation-20261019/disabled-policy-exact-parity.json",
+        "sha256": "19b20d05c56717a39326be6562af506241428dc6a27496939aa0d32f410e6b9a",
+        "bytes": 729
+      },
+      "oldLibrary": {
+        "path": "outputs/getup-consistent-solver-budget-20261019/liblh_sim-consistent-budget-frozen.rlib",
+        "sha256": "6e5ee5b9e363659276d800002f81ff2cf58a2856594f9910f019e1644409fd9a",
+        "bytes": 24699418
+      },
+      "newLibrary": {
+        "path": "outputs/getup-unit-root-rotation-20261019/liblh_sim-unit-root-frozen.rlib",
+        "sha256": "147df1fb734f458266db7722dedffb66b112ffae3014012909c2138460f8c2a7",
+        "bytes": 24783218
+      },
+      "inputCheckpoint": {
+        "path": "outputs/getup-consistent-solver-budget-20261019/fresh-3plus1/back/checkpoint-final.bin",
+        "sha256": "9572d9e7c1ac3809c4bc57e6ae54726514fe516ad6f803ee7a7a6afefdc3ef3b",
+        "bytes": 2802891
+      },
+      "oldBranchNativeIntegrations": 20,
+      "newBranchNativeIntegrations": 20,
+      "forecastIntegrations": 0,
+      "byteExactFiles": [
+        "reply.json",
+        "checkpoint-after.bin",
+        "report-after.json",
+        "fixture-after.json"
+      ],
+      "scope": "Same actual retained consistent-budget checkpoint with root_rotation_normalization omitted; one physical tick in each frozen library. Feature compiled on with policy None preserves these exact old physical/arithmetic/serialization results. No active-policy native/WASM equality claim."
+    },
+    "currentFeatureOffRefusal": {
+      "receipt": {
+        "path": "outputs/getup-unit-root-rotation-20261019/feature-off-profile-refusal.json",
+        "sha256": "d49de1d70bbc95570353c0bb937fc3abd93b8e565775897a96547f09e18480b4",
+        "bytes": 153
+      },
+      "library": {
+        "path": "outputs/getup-unit-root-rotation-20261019/liblh_sim-unit-root-feature-off-frozen.rlib",
+        "sha256": "3e90d4dc87829424aa771b7359272a653d014f40f4ce3b028d453061b87bf36b",
+        "bytes": 24774086
+      },
+      "buildExitCode": 0,
+      "method": "Current feature-OFF library decodes the typed active Profile, rejects its validation and fixture construction, and integrates zero native steps. This is a Profile/factory refusal, not an executed active-checkpoint restore."
+    },
+    "oldLibraryActiveProfileAttempt": {
+      "status": "not-executed-link-failed",
+      "log": {
+        "path": "outputs/getup-unit-root-rotation-20261019/old-profile-refusal-link.log",
+        "sha256": "3f06fa134478021b272d8bffe7a3296f47abb90efea569de6c5492137ed438e3",
+        "bytes": 309
+      },
+      "errorCode": "E0463",
+      "reason": "The later feature-OFF Cargo build replaced dependency rlibs needed by the retained old library. Probe linking failed before execution; no semantic old-library active-profile refusal result is claimed.",
+      "physicsIntegrations": 0
+    }
+  }
+}

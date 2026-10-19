@@ -586,3 +586,137 @@ mod compensated {
         assert_eq!(report["solverBudget"]["currentInternalPgsIterations"], 20);
         assert_eq!(report["solverBudget"]["selectedNextInternalPgsIterations"], 20);
     }
+
+#[cfg(feature = "unit-root-rotation-experiment")]
+mod unit_root_tests {
+    use super::*;
+
+    fn profile() -> Profile {
+        let mut profile = Profile::default();
+        profile.getup_policy_enabled = true;
+        profile.root_rotation_normalization = Some(crate::RootRotationNormalization::UnitFreeRootV1);
+        profile
+    }
+
+    fn enabled(runtime: &Runtime) -> bool {
+        let root = runtime.simulation.bodies[0];
+        let id = runtime.simulation.world.multibody_joints.rigid_body_link(root).unwrap();
+        runtime.simulation.world.multibody_joints.get_multibody(id.multibody).unwrap()
+            .unit_root_rotation_enabled()
+    }
+
+    #[test]
+    fn unit_root_profile_is_explicit_and_activation_changes_no_physical_bits() {
+        let mut off = profile(); off.root_rotation_normalization = None;
+        assert!(serde_json::to_value(&off).unwrap().get("root_rotation_normalization").is_none());
+        let left = Runtime::new(Mode::Protocol, 0.0, off).unwrap();
+        let right = Runtime::new(Mode::Protocol, 0.0, profile()).unwrap();
+        assert!(!enabled(&left)); assert!(enabled(&right));
+        assert_same_construction_world(&left, &right);
+        assert_eq!(serde_json::to_value(left.simulation.snapshot()).unwrap(),
+            serde_json::to_value(right.simulation.snapshot()).unwrap());
+        assert_eq!(right.simulation.substeps_completed, 0);
+        let mut bad = serde_json::to_value(profile()).unwrap();
+        bad["root_rotation_normalization"] = "unqualified-future-mode".into();
+        assert!(serde_json::from_value::<Profile>(bad).is_err());
+    }
+
+    #[test]
+    fn unit_root_checkpoint_restores_policy_without_reprojecting_or_losing_carry() {
+        for carry in [false, true] {
+            let mut runtime = Runtime::new_getup_fixture_with_profile("side", profile()).unwrap();
+            #[cfg(feature = "root-translation-carry-experiment")]
+            if carry { runtime.set_root_translation_compensation_enabled(true).unwrap(); }
+            #[cfg(not(feature = "root-translation-carry-experiment"))]
+            if carry { continue; }
+            let before = world_bytes(&runtime);
+            let checkpoint = runtime.getup_checkpoint().unwrap();
+            let restored = Runtime::from_getup_checkpoint(&checkpoint).unwrap();
+            assert!(enabled(&restored));
+            assert_same_construction_world(&runtime, &restored);
+            assert_same_checkpoint_envelope(&checkpoint, &restored.getup_checkpoint().unwrap());
+            assert_eq!(world_bytes(&runtime), before, "export does not project saved q");
+            let verify: serde_json::Value = serde_json::from_str(&runtime.verify_getup_checkpoint(&checkpoint).unwrap()).unwrap();
+            assert_eq!(verify["passed"], true);
+            assert_eq!(verify["physicsIntegrations"], 0);
+            #[cfg(feature = "root-translation-carry-experiment")]
+            assert_eq!(runtime.root_translation_checkpoint_entries().unwrap(),
+                restored.root_translation_checkpoint_entries().unwrap());
+        }
+    }
+
+    #[test]
+    fn unit_root_restored_and_continuous_first_ticks_match() {
+        let mut runtime = Runtime::new_getup_fixture_with_profile("side", profile()).unwrap();
+        #[cfg(feature = "root-translation-carry-experiment")]
+        runtime.set_root_translation_compensation_enabled(true).unwrap();
+        let checkpoint = runtime.getup_checkpoint().unwrap();
+        let mut restored = Runtime::from_getup_checkpoint(&checkpoint).unwrap();
+        let left = runtime.advance(1).unwrap();
+        let right = restored.advance(1).unwrap();
+        assert_eq!(left.completed_ticks, 1); assert!(left.failure.is_none());
+        assert_eq!(serde_json::to_value(&left).unwrap(), serde_json::to_value(&right).unwrap());
+        assert_exact_bytes(&world_bytes(&runtime), &world_bytes(&restored));
+        assert_same_checkpoint_envelope(&runtime.getup_checkpoint().unwrap(), &restored.getup_checkpoint().unwrap());
+        assert_eq!(runtime.simulation.substeps_completed, 20);
+    }
+
+    #[test]
+    fn unit_root_reset_preserves_typed_policy_but_starts_a_fresh_clock() {
+        let mut runtime = Runtime::new_getup_fixture_with_profile("side", profile()).unwrap();
+        runtime.advance(1).unwrap();
+        runtime.enqueue(Command {stamp:lh_contracts::Stamp::new(runtime.timeline.generation, 1, runtime.timeline.tick),
+            action:Action::Reset}).unwrap();
+        let reply = runtime.advance(0).unwrap();
+        assert_eq!(reply.completed_ticks, 0);
+        assert!(reply.acknowledgements.iter().any(|ack| ack.rejected.is_none()));
+        assert!(enabled(&runtime));
+        assert_eq!(runtime.simulation.profile.root_rotation_normalization, profile().root_rotation_normalization);
+        assert_eq!(runtime.simulation.substeps_completed, 0);
+        assert_eq!(runtime.simulation.generation, 2);
+        assert!(runtime.simulation.getup_fixture.is_none());
+    }
+
+    #[test]
+    fn unit_root_profile_policy_mismatch_refuses_export_without_changing_world() {
+        let mut runtime = Runtime::new_getup_fixture_with_profile("side", profile()).unwrap();
+        let root = runtime.simulation.bodies[0];
+        let index = runtime.simulation.world.multibody_joints.rigid_body_link(root).unwrap().multibody;
+        runtime.simulation.world.multibody_joints.get_multibody_mut(index).unwrap()
+            .root_mut();
+        let before = world_bytes(&runtime);
+        assert!(runtime.getup_checkpoint().unwrap_err().contains("policy mismatch"));
+        assert_eq!(before, world_bytes(&runtime));
+        assert_eq!(runtime.simulation.substeps_completed, 0);
+        let reply = runtime.advance(1).unwrap();
+        assert_eq!(reply.completed_ticks, 0);
+        assert_eq!(reply.failure.unwrap().check, "unit-root-rotation");
+        assert_eq!(runtime.simulation.substeps_completed, 0);
+        assert_eq!(before, world_bytes(&runtime), "mismatch halts before physics/force reset");
+    }
+
+    #[test]
+    fn unit_root_inverse_profile_policy_mismatch_refuses_physics() {
+        let mut off = profile(); off.root_rotation_normalization = None;
+        let mut runtime = Runtime::new_getup_fixture_with_profile("side", off).unwrap();
+        let root = runtime.simulation.bodies[0];
+        let index = runtime.simulation.world.multibody_joints.rigid_body_link(root).unwrap().multibody;
+        runtime.simulation.world.multibody_joints.get_multibody_mut(index).unwrap()
+            .set_unit_root_rotation_enabled(true).unwrap();
+        let before = world_bytes(&runtime);
+        let reply = runtime.advance(1).unwrap();
+        assert_eq!(reply.completed_ticks, 0);
+        assert_eq!(reply.failure.unwrap().check, "unit-root-rotation");
+        assert_eq!(runtime.simulation.substeps_completed, 0);
+        assert_eq!(before, world_bytes(&runtime));
+    }
+}
+
+#[cfg(not(feature = "unit-root-rotation-experiment"))]
+#[test]
+fn unit_root_feature_off_refuses_active_profile_without_integrating() {
+    let mut profile = Profile::default(); profile.getup_policy_enabled = true;
+    profile.root_rotation_normalization = Some(crate::RootRotationNormalization::UnitFreeRootV1);
+    assert!(profile.validate().unwrap_err().contains("unit-root-rotation-experiment"));
+    assert!(Runtime::new_getup_fixture_with_profile("side", profile).is_err());
+}
