@@ -1,0 +1,231 @@
+{
+  "schema": 1,
+  "checkedAt": "2026-10-19T15:59:25.222Z",
+  "scope": "Bounded negative browser reply-task experiment. Production defaults, driver, worker assets and scheduler remain unchanged. Both experimental timing arms serve identical copied app assets; only test-harness binding of a dedicated snapshot MessagePort differs.",
+  "releaseAccepted": false,
+  "productionTransportChanged": false,
+  "decision": "REJECTED for production adoption:2.89% pooled variable gain does not justify transport/lifecycle complexity or close the end-to-end gap.",
+  "manifest": {
+    "path": "outputs/browser-capability-20261019/standing-dynamics-experiment/reply-channel/manifest.json",
+    "sha256": "c5ebcff07ca85137d41ccc66721b2256d252553e42a86cc34fcb849916a73292",
+    "at": "2026-10-19T15:51:21.185Z",
+    "controlArtifact": "outputs/browser-capability-20261019/standing-dynamics-experiment/reply-channel/app",
+    "candidateArtifact": "outputs/browser-capability-20261019/standing-dynamics-experiment/reply-channel/app",
+    "controlAssetSha256": {
+      "app-1df6634f608f8d80.css": "6f9e3128c49954cf4c159cd1b3cb0375ca4293e134429847288a5e6549a44271",
+      "index.html": "e66f7147dd7ba9fab899d5be48593642a463a9f075d26d1ef807c6c40d568ccc",
+      "lh-browser-4479461c3e1613b6.js": "ec9a8317fc58b63cf4f6874c3ed03808743c61c19a9c485020f0dc64dfd9c4f5",
+      "lh-browser-4479461c3e1613b6_bg.wasm": "b72e126e7587859ae1891c1e892d1508b255d024967edaa662cf95d937934411",
+      "lh_worker.js": "f5ab14e78b52ad83577646105b61526484096924ec39f5a72d8ee039cb652da2",
+      "lh_worker_bg.wasm": "320632179a4f73e807821d3857386389cd11988450d5912c1869d807980f908e",
+      "sim-worker.js": "37b4bed8638e1a5d7ba8a72a5ee21f7e1a907f5e2ea6d5d41c847f36a8643a07",
+      "snippets/lh-browser-575491a8d42d44d5/driver.js": "4c6281e19c4540e3ba72a74a5b1514b5d1b9c58e56c1f8a2dbfb3adb4812d74e"
+    },
+    "candidateAssetSha256": {
+      "app-1df6634f608f8d80.css": "6f9e3128c49954cf4c159cd1b3cb0375ca4293e134429847288a5e6549a44271",
+      "index.html": "e66f7147dd7ba9fab899d5be48593642a463a9f075d26d1ef807c6c40d568ccc",
+      "lh-browser-4479461c3e1613b6.js": "ec9a8317fc58b63cf4f6874c3ed03808743c61c19a9c485020f0dc64dfd9c4f5",
+      "lh-browser-4479461c3e1613b6_bg.wasm": "b72e126e7587859ae1891c1e892d1508b255d024967edaa662cf95d937934411",
+      "lh_worker.js": "f5ab14e78b52ad83577646105b61526484096924ec39f5a72d8ee039cb652da2",
+      "lh_worker_bg.wasm": "320632179a4f73e807821d3857386389cd11988450d5912c1869d807980f908e",
+      "sim-worker.js": "37b4bed8638e1a5d7ba8a72a5ee21f7e1a907f5e2ea6d5d41c847f36a8643a07",
+      "snippets/lh-browser-575491a8d42d44d5/driver.js": "4c6281e19c4540e3ba72a74a5b1514b5d1b9c58e56c1f8a2dbfb3adb4812d74e"
+    },
+    "changedRuntimeAssets": [
+      "sim-worker.js"
+    ],
+    "mainAdapter": "outputs/browser-capability-20261019/standing-dynamics-experiment/reply-channel/adapter.mjs",
+    "adapterSha256": "d579c93c6472fefc4120e96b5944d32a63f9987ec730c31392cb1c3099bdeeb7",
+    "harness": "outputs/browser-capability-20261019/standing-dynamics-experiment/profile-reply-channel.mjs",
+    "harnessSha256": "a8f59d19da9d588bb0aecd0d9a2311d60d3b7305b7ddbed89b0409f736d31b2f",
+    "productionDefaultsChanged": false,
+    "semantics": "Requests,recycle,ready,error,shutdown stay native. Only snapshots use one dedicated MessagePort, then are dispatched without cloning on their owning Worker. One automatic tick/request, one outstanding, three pose buffers and original command/generation/request/ownership guards remain.",
+    "oldNativeInstrumentationReference": "outputs/browser-capability-20261019/standing-dynamics-experiment/postmessage-timing/app",
+    "comparison": "Both arms use IDENTICAL app bytes (including dual-route instrumented sim-worker.js), same main-side snapshot bookkeeping and timing harness. Only candidate binds the dedicated reply port; control remains native Worker replies.",
+    "initOrdering": "Adapter and profiler are installed in one ordered script; every timing row additionally asserts adapter timestamp<=profiler first-listener timestamp.",
+    "oldNativeInstrumentationAssetSha256": {
+      "app-1df6634f608f8d80.css": "6f9e3128c49954cf4c159cd1b3cb0375ca4293e134429847288a5e6549a44271",
+      "index.html": "e66f7147dd7ba9fab899d5be48593642a463a9f075d26d1ef807c6c40d568ccc",
+      "lh-browser-4479461c3e1613b6.js": "ec9a8317fc58b63cf4f6874c3ed03808743c61c19a9c485020f0dc64dfd9c4f5",
+      "lh-browser-4479461c3e1613b6_bg.wasm": "b72e126e7587859ae1891c1e892d1508b255d024967edaa662cf95d937934411",
+      "lh_worker.js": "f5ab14e78b52ad83577646105b61526484096924ec39f5a72d8ee039cb652da2",
+      "lh_worker_bg.wasm": "320632179a4f73e807821d3857386389cd11988450d5912c1869d807980f908e",
+      "sim-worker.js": "09e95da4e066bd92e90a1c5d4e0dee8330e4c751e53262a3495d290158da0007",
+      "snippets/lh-browser-575491a8d42d44d5/driver.js": "4c6281e19c4540e3ba72a74a5b1514b5d1b9c58e56c1f8a2dbfb3adb4812d74e"
+    }
+  },
+  "result": {
+    "at": "2026-10-19T15:58:32.387Z",
+    "decision": "REJECTED for production adoption:2.89% pooled variable gain does not justify transport/lifecycle complexity or close the end-to-end gap.",
+    "scope": "Isolated snapshot-reply task candidate, same eight app assets and dual-route workerJS/WASM/controller/profile in all four runs. Same ordered instrumentation; only binding one MessagePort differs. No batching/cadence/payload changes. This is a small two-pair experiment, not broad realtime/latency qualification.",
+    "passed": true,
+    "profileSha256": "2dbce52fb23853eb24e1304ea9cd96f0aa2f81440bee41bbc1cea10f9a1b56f6",
+    "workerSha256": "320632179a4f73e807821d3857386389cd11988450d5912c1869d807980f908e",
+    "runs": [
+      {
+        "name": "native-forward",
+        "raw": "outputs/browser-capability-20261019/standing-dynamics-experiment/reply-channel/profile-native-forward-120/report.json",
+        "wallSeconds": 3.65289999999851,
+        "simulationSeconds": 3,
+        "pace": 0.8212652960664742,
+        "coreMeanMs": 21.19250000001242,
+        "workerMeanMs": 21.495000000080715,
+        "roundtripMeanMs": 29.665833333383002,
+        "firstListenerRemainderMeanMs": 7.80739949401468,
+        "synchronousPostMeanMs": 0.13166666673496366,
+        "cloneMeanMs": 0.20916666649281979,
+        "dispatchMeanMs": 0.5764705881852061,
+        "portReplies": 0,
+        "workerCpuSeconds": 2.52,
+        "workerElapsedSeconds": 2.5794000000096857,
+        "bounds": {
+          "maximumQueueDepth": 0,
+          "maximumOutstandingAdvances": 1,
+          "maximumAdvanceTicks": 1,
+          "maximumTransferBuffers": 3
+        }
+      },
+      {
+        "name": "channel-forward",
+        "raw": "outputs/browser-capability-20261019/standing-dynamics-experiment/reply-channel/profile-channel-forward-120/report.json",
+        "wallSeconds": 3.472800000000745,
+        "simulationSeconds": 3,
+        "pace": 0.863856254319096,
+        "coreMeanMs": 20.900833333252617,
+        "workerMeanMs": 21.18416666649282,
+        "roundtripMeanMs": 28.177500000130387,
+        "firstListenerRemainderMeanMs": 6.754109700613966,
+        "synchronousPostMeanMs": 0.15333333366240065,
+        "cloneMeanMs": 0.1899999998199443,
+        "dispatchMeanMs": 0.5394957981878469,
+        "portReplies": 121,
+        "workerCpuSeconds": 2.5100000000000002,
+        "workerElapsedSeconds": 2.5420999999791385,
+        "bounds": {
+          "maximumQueueDepth": 0,
+          "maximumOutstandingAdvances": 1,
+          "maximumAdvanceTicks": 1,
+          "maximumTransferBuffers": 3
+        }
+      },
+      {
+        "name": "channel-reverse",
+        "raw": "outputs/browser-capability-20261019/standing-dynamics-experiment/reply-channel/profile-channel-reverse-120/report.json",
+        "wallSeconds": 3.3342000000029803,
+        "simulationSeconds": 3,
+        "pace": 0.8997660608233814,
+        "coreMeanMs": 20.135000000180057,
+        "workerMeanMs": 20.461666666592162,
+        "roundtripMeanMs": 27.060000000117967,
+        "firstListenerRemainderMeanMs": 6.175828858061383,
+        "synchronousPostMeanMs": 0.13749999993791182,
+        "cloneMeanMs": 0.17750000031664967,
+        "dispatchMeanMs": 0.5176470587108316,
+        "portReplies": 121,
+        "workerCpuSeconds": 2.42,
+        "workerElapsedSeconds": 2.455399999991059,
+        "bounds": {
+          "maximumQueueDepth": 0,
+          "maximumOutstandingAdvances": 1,
+          "maximumAdvanceTicks": 1,
+          "maximumTransferBuffers": 3
+        }
+      },
+      {
+        "name": "native-reverse",
+        "raw": "outputs/browser-capability-20261019/standing-dynamics-experiment/reply-channel/profile-native-reverse-120/report.json",
+        "wallSeconds": 3.3565999999977647,
+        "simulationSeconds": 3,
+        "pace": 0.8937615444205439,
+        "coreMeanMs": 20.16749999995033,
+        "workerMeanMs": 20.45916666695848,
+        "roundtripMeanMs": 27.175833333314706,
+        "firstListenerRemainderMeanMs": 6.370874836451064,
+        "synchronousPostMeanMs": 0.15833333311602474,
+        "cloneMeanMs": 0.19333333326503635,
+        "dispatchMeanMs": 0.5588235294117647,
+        "portReplies": 0,
+        "workerCpuSeconds": 2.41,
+        "workerElapsedSeconds": 2.4551000000350176,
+        "bounds": {
+          "maximumQueueDepth": 0,
+          "maximumOutstandingAdvances": 1,
+          "maximumAdvanceTicks": 1,
+          "maximumTransferBuffers": 3
+        }
+      }
+    ],
+    "parity": {
+      "excludedFields": [
+        "reply.snapshot.diagnostics.controller_ms",
+        "reply.snapshot.diagnostics.update_ms"
+      ],
+      "fullReplyCount": 121,
+      "poseWordsPerReply": 325,
+      "limits": "The325 transferred Uint32 pose words preserve every bit, including signed zero/NaN payloads. The complete exported-reply JSON values are compared exactly after excluding measured cost fields; JSON does not preserve float signed-zero/NaN distinctions or hidden engine state. No cross-profile, long-run or arbitrary wall-input parity claim.",
+      "allFourFullReplyStreamsExactlyEqual": true,
+      "allFourTransferredPoseStreamsExactlyEqual": true,
+      "replyTraceSha256": "f34475e0a1595b98adf27d8fea12e3fda97c80f2a492f2f73c7b4bceae65f6b9",
+      "poseTraceSha256": "fe7edde4f78aa0e8c59c437e1ab5c1fcc67cfaee4669caf5278768b1dd8272d1"
+    },
+    "orderingLifecycle": "ordering-exact-parity.json",
+    "unitAdapter": "test-adapter-result.json",
+    "remainingQualification": [
+      "Actual native crash/hang and native MessagePort decoding failure injection",
+      "Artificial startup-delay test",
+      "Full actual-app backlog plus tick-stamped grab/move/release replay",
+      "Long-input-latency and soak qualification",
+      "Any production integration/review"
+    ],
+    "comparison": {
+      "forwardWallReductionPercent": 4.930329327324545,
+      "reverseWallReductionPercent": 0.6673419530119573,
+      "pooledNativeWallSeconds": 7.009499999996274,
+      "pooledChannelWallSeconds": 6.807000000003725,
+      "pooledWallReductionPercent": 2.888936443293477,
+      "pooledSpeedRatio": 1.0297487880112293,
+      "interpretation": "Both orders improved, but effect is small and varies strongly by order; no uncertainty estimate from these two pairs. Core costs vary too. Remaining6.18–6.75ms mean earliest-listener cost and sub1×pace show the gap is not closed. The result measures the complete synthetic-Worker adapter route, not native MessagePort cost in isolation."
+    }
+  },
+  "rawReportSha256": {
+    "outputs/browser-capability-20261019/standing-dynamics-experiment/reply-channel/profile-native-forward-120/report.json": "b32f2df136dbc1dc1b8182374abf0fcf24fcfcece1ae9d5286449cf7a73934d9",
+    "outputs/browser-capability-20261019/standing-dynamics-experiment/reply-channel/profile-channel-forward-120/report.json": "26ce2f665fe841137ed13fc5ed314dade4e44d14682802c0e96bc06749e64335",
+    "outputs/browser-capability-20261019/standing-dynamics-experiment/reply-channel/profile-channel-reverse-120/report.json": "734b25b9138bd96455a03a58190958544a7e713da34819d658631dc4d1345ad9",
+    "outputs/browser-capability-20261019/standing-dynamics-experiment/reply-channel/profile-native-reverse-120/report.json": "7fffeac2298c1b77a4241b97f771cc34ab6f8704673e52599678363b71c20e69"
+  },
+  "ordering": {
+    "path": "outputs/browser-capability-20261019/standing-dynamics-experiment/reply-channel/ordering-exact-parity.json",
+    "sha256": "7b6c2f0b115923ab14dd547aaf186c3d0841d64f3f37bf9ed5b986af2fd886a7",
+    "at": "2026-10-19T15:56:59.585Z",
+    "scope": "Actual-app deterministic ordering cases compare every complete emitted reply and325 transferred Uint32 pose words before dispose, plus all recorded requests/commands. Only measured controller/update wall-cost fields excluded. Wall-timed UI input general equivalence is not claimed.",
+    "passed": true,
+    "control": "outputs/browser-capability-20261019/standing-dynamics-experiment/reply-channel/ordering-control-v3/result.json",
+    "candidate": "outputs/browser-capability-20261019/standing-dynamics-experiment/reply-channel/ordering-candidate-v3/result.json",
+    "replyCount": 12,
+    "requestCount": 24,
+    "traceSha256": "37902914ed97ddcd40ff4fc8e0374636fb448c8fcaa1f3860731db27a4f12a72"
+  },
+  "unitAdapter": {
+    "path": "outputs/browser-capability-20261019/standing-dynamics-experiment/reply-channel/test-adapter-result.json",
+    "sha256": "2f42400396bbf0b69f0ec360a2b12955e64c80729f5dd4f8c7c1e6ee60b1d04f",
+    "passed": true,
+    "checks": [
+      "bind is first native Worker message",
+      "snapshot payload/buffer identity and Worker target preserved",
+      "requests/transfer arguments unchanged",
+      "owning-worker termination closes port",
+      "retired packet cannot reach old or replacement worker",
+      "port messageerror reaches native failure path and retires",
+      "native worker error closes port"
+    ]
+  },
+  "review": "Read-only review checked initialization FIFO, existing Worker ownership/request guards, command priority, buffer transfer/recycle, port messageerror and retired-callback handling. Init ordering was consolidated into one script and asserted per reply. No production change was proposed after the small measured result.",
+  "coverageLimits": [
+    "Actual native crash/hang and native MessagePort decoding failure injection",
+    "Artificial startup-delay test",
+    "Full actual-app backlog plus tick-stamped grab/move/release replay",
+    "Long-input-latency and soak qualification",
+    "Any production integration/review"
+  ],
+  "next": "Retain the negative result, await the root-COM corrected engine, and measure its ordinary app using the original production transport. No dispatch hack or cadence change."
+}

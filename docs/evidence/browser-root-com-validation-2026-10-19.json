@@ -1,0 +1,660 @@
+{
+  "schema": 1,
+  "checkedAt": "2026-10-19T16:16:22.601Z",
+  "scope": "Actual desktop Chromium-headless-shell/WebGL2 tests of the root-COM/freejoint corrected engine with the existing static controller and full explicit 4+1 numerical profile. No experimental controller feature, no transport/scheduler changes. Bounded browser physical results, not full release/realtime/mobile/recovery qualification.",
+  "browserChecksPassed": true,
+  "releaseAccepted": false,
+  "numericalProfileDefaultChanged": false,
+  "controllerFeatureEnabled": false,
+  "build": {
+    "manifest": {
+      "path": "outputs/browser-capability-20261019/root-com-correction/build-manifest.json",
+      "sha256": "03ef1b874f66199f3dd3eb3f3c07f27360343833b864495ad9311381fa8bfedc"
+    },
+    "at": "2026-10-19T16:09:12.856Z",
+    "baseCommit": "bef4985565c040230d0f4a17243527e211e50254",
+    "sourceOverrides": {
+      "getup.rs": "86ff3d2db91e6782f8f015e6e0c5b1eafa5ef704cf3e5e834e9369640b1026ed",
+      "multibody.rs": "35831f4433acf35ab2b059fa8b1e3af972274a63a2b2e1b37d94b454d07f2bb2",
+      "root_com_tests.rs": "b783e8adf3d0a854532a93f26b1527707f2d3653bda110a500acf3d0c30f0b88"
+    },
+    "sourceManifest": {
+      "path": "outputs/browser-capability-20261019/root-com-correction/frozen-source-sha256.txt",
+      "sha256": "f8b913c8c1e38d3ab904b8d262006aa2f55a6a4474e258a91f15669f38aa15a4"
+    },
+    "invocation": {
+      "argv": [
+        "cargo",
+        "+1.89.0",
+        "build",
+        "--offline",
+        "--locked",
+        "--release",
+        "--manifest-path",
+        "<lane>/source/rust/Cargo.toml",
+        "--target",
+        "wasm32-unknown-unknown",
+        "-p",
+        "lh-worker"
+      ],
+      "cwd": "/workspace/scratch/5def91918e35/mvp-landing",
+      "environment": {
+        "CARGO_HOME": "/workspace/scratch/5def91918e35/lateral-fixture/.toolchain/cargo",
+        "RUSTUP_HOME": "/workspace/scratch/5def91918e35/lateral-fixture/.toolchain/rustup",
+        "CARGO_TARGET_DIR": "/workspace/scratch/5def91918e35/mvp-landing/outputs/browser-capability-20261019/root-com-correction/target",
+        "CARGO_NET_OFFLINE": "true",
+        "RUSTFLAGS": "unset",
+        "CARGO_ENCODED_RUSTFLAGS": "unset"
+      },
+      "extraFeatures": [],
+      "bindgen": {
+        "version": "0.2.108",
+        "argv": [
+          "<installed>/wasm-bindgen",
+          "<lane>/target/wasm32-unknown-unknown/release/lh_worker.wasm",
+          "--target",
+          "web",
+          "--out-dir",
+          "<lane>/bindgen-worker",
+          "--out-name",
+          "lh_worker"
+        ]
+      }
+    },
+    "toolchain": "cargo 1.89.0 (c24e10642 2025-06-23)\nrustc 1.89.0 (29483883e 2025-08-04)\nbinary: rustc\ncommit-hash: 29483883eed69d5fb4db01964cdf2af4d86e9cb2\ncommit-date: 2025-08-04\nhost: x86_64-unknown-linux-gnu\nrelease: 1.89.0\nLLVM version: 20.1.7\nwasm-bindgen 0.2.108\n",
+    "buildLog": "outputs/browser-capability-20261019/root-com-correction/build-worker.log",
+    "bindgenLog": "outputs/browser-capability-20261019/root-com-correction/bindgen-worker.log",
+    "rawWorkerWasmSha256": "4942b96f61b3b0dd845fde95526bddc282f874e09a6252259bf5546dd0aa380d",
+    "artifact": "outputs/browser-capability-20261019/root-com-correction/app",
+    "artifactSha256": {
+      "app-1df6634f608f8d80.css": "6f9e3128c49954cf4c159cd1b3cb0375ca4293e134429847288a5e6549a44271",
+      "index.html": "e66f7147dd7ba9fab899d5be48593642a463a9f075d26d1ef807c6c40d568ccc",
+      "lh-browser-4479461c3e1613b6.js": "ec9a8317fc58b63cf4f6874c3ed03808743c61c19a9c485020f0dc64dfd9c4f5",
+      "lh-browser-4479461c3e1613b6_bg.wasm": "b72e126e7587859ae1891c1e892d1508b255d024967edaa662cf95d937934411",
+      "lh_worker.js": "f5ab14e78b52ad83577646105b61526484096924ec39f5a72d8ee039cb652da2",
+      "lh_worker_bg.wasm": "4fa298cfff4340fd3c5e65ebd95d2dd714be84639b7e7acc23cb2180a4e96c07",
+      "sim-worker.js": "a3a2b18c222c045fc08bf19aff2e96b92f0bc18ad6023bcca660195054267996",
+      "snippets/lh-browser-575491a8d42d44d5/driver.js": "4c6281e19c4540e3ba72a74a5b1514b5d1b9c58e56c1f8a2dbfb3adb4812d74e"
+    },
+    "changedRuntimeAssets": [
+      "lh_worker_bg.wasm"
+    ],
+    "controllerDiagnostic": "measured-contact-standing-balance",
+    "effectiveFeatures": {
+      "worker": [],
+      "sim": [],
+      "rapier": [
+        "alloc",
+        "dim3",
+        "f32",
+        "serde-serialize",
+        "std"
+      ],
+      "rustflags": [],
+      "simd128": false
+    },
+    "correctionScope": "Combined root-COM mapping/cached-velocity correction and zero free-root damping/armature. Expected trajectories change; no old-engine bitwise parity claim or exclusive attribution to one part.",
+    "independentReadOnlyAudit": "All349 frozen source files hash-match, exactly two replacements and one added vendor test. Official pinned compiler/bindgen and terminal Cargo fingerprints checked. Only served workerWASM differs; glue,driver,renderer,sim-worker,HTML,CSS identical.",
+    "productionDefaults": "No experimental Cargo controller feature, no transport modifications, no production numerical profile promotion; full4+1 remains test-only initialize override."
+  },
+  "explicitProfile": {
+    "path": "/workspace/scratch/5def91918e35/mvp-landing/outputs/getup-budget-20261019/candidate-profile.json",
+    "rawSha256": "2dbce52fb23853eb24e1304ea9cd96f0aa2f81440bee41bbc1cea10f9a1b56f6",
+    "profile": {
+      "id": "getup-800hz-4plus1-qualification-v1",
+      "dt_s": 0.00125,
+      "tick_substeps": 20,
+      "contact_friction_model": "coulomb",
+      "solver_iterations": 4,
+      "internal_pgs_iterations": 20,
+      "fall_internal_pgs_iterations": 32,
+      "additional_body_iterations": 1,
+      "allowed_linear_error_m": 0.001,
+      "prediction_distance_m": 0.002,
+      "motor_scale": 1,
+      "aggregate_motor_cap_nm": 920,
+      "angular_damping": 0,
+      "contact_skin_m": 0,
+      "max_ccd_substeps": 4,
+      "disable_solver_speed_cap": true,
+      "posture_stiffness_multiplier": 1,
+      "posture_damping_multiplier": 1,
+      "supported_tilt_gain": 2,
+      "supported_com_gain_rad_per_m": 5,
+      "supported_com_velocity_gain_s_rad_per_m": 5,
+      "supported_angular_velocity_gain_s": 2,
+      "grab_limits": {
+        "angular_frequency_rad_s": 16,
+        "target_speed_m_s": 1.5,
+        "target_acceleration_m_s2": 8,
+        "force_n": 180,
+        "torque_nm": 12,
+        "positive_power_w": 36
+      },
+      "reaching_iterations": 6,
+      "reaching_coordinate_increment_rad": 0.15,
+      "reaching_damping_m2": 0.01,
+      "corrective_steps_enabled": false,
+      "recovery_enabled": false,
+      "getup_policy_enabled": false
+    }
+  },
+  "clock": {
+    "outerPhysicsHz": 800,
+    "controlHz": 40,
+    "nativeSubstepsPerTick": 20
+  },
+  "runtime": {
+    "browser": "155.0.8059.79",
+    "renderer": "WebGL2",
+    "host": "Linux desktop headless, software rendering",
+    "provenance": "outputs/browser-capability-20261019/debian/download-provenance.json"
+  },
+  "cleanObservation": {
+    "short": {
+      "raw": {
+        "path": "outputs/browser-capability-20261019/root-com-correction/profile-explicit-4plus1-120/report.json",
+        "sha256": "08bef26654d2eef9bf05a4c455ceddacef61be58743c996acea7756987c41611"
+      },
+      "simulationSeconds": 3,
+      "wallSeconds": 3.642,
+      "pace": 0.8237232289950577,
+      "coreMeanMs": 21.564166666722546,
+      "coreP95Ms": 27.899999998509884,
+      "coreMaxMs": 95.80000000074506,
+      "workerMeanMs": 21.9024999997889,
+      "roundtripMeanMs": 29.526666666629414,
+      "workerToFirstMainListenerMeanMs": 7.104887286822001,
+      "harnessCloneMeanMs": 0.3083333332712452,
+      "dispatchMeanMs": 0.5680672269032783,
+      "workerCpuSeconds": 2.5500000000000003,
+      "workerElapsedSeconds": 2.628299999974668,
+      "maximumBacklogSeconds": 0.6414999999999984,
+      "method": "One ordinary automatic no-input tick 0..120 window, no video, native owner held all builds/tests/probes idle. Original production transport. Single absolute observation, not an attributed speedup or realtime admission."
+    },
+    "longHold": {
+      "raw": {
+        "path": "outputs/browser-capability-20261019/root-com-correction/hold-explicit-4plus1/result.json",
+        "sha256": "f29e82526ce2a75acb4bbf0912750c8f0c56ef4e2e4af035febdf4e1f4ed1794"
+      },
+      "method": "One ordinary rendered automatic-scheduler worker, no physical inputs/commands,3 settling + 30 quiet physical seconds, full native wall-time video.",
+      "performanceContext": "Native owner confirmed all builds, tests and physical probes terminal before this clean ordinary-app hold and remains idle. Original production transport, existing controller, root-COM engine correction, no extra Cargo features. Full4+1 profile remains explicit; desktop headless software rendering.",
+      "initial": {
+        "tick": 0,
+        "time": 0,
+        "backend": "WebGL2",
+        "controller": "measured-contact-standing-balance",
+        "fallbackReason": "Error: WebGPU render check failed: OperationError: A valid external Instance reference no longer exists.. Choose Auto or WebGL2."
+      },
+      "final": {
+        "tick": 1320,
+        "time": 33,
+        "motion": "Upright",
+        "backend": "WebGL2",
+        "workerInstances": 1,
+        "error": "",
+        "failure": null
+      },
+      "metrics": {
+        "snapshotCount": 1321,
+        "steadySnapshotCount": 1201,
+        "referenceTime": 3,
+        "finalTime": 33,
+        "steadyPhysicalSeconds": 30,
+        "maximumSnapshotGapTicks": 1,
+        "minUpY": {
+          "torso": 0.9999008364279491,
+          "pelvis": 0.9922679722218376,
+          "right_foot": 0.9999327945188528,
+          "left_foot": 0.9999319347618605
+        },
+        "minimumAggregateFootLoadsN": {
+          "right_foot": 200.26826,
+          "left_foot": 200.3898
+        },
+        "maximumLinearSpeedMps": 0.000780666254725864,
+        "maximumAngularSpeedRadps": 0.0032863367675170434,
+        "maximumPelvisDriftM": 0.00018557465224056037,
+        "maximumFootBodyDriftM": 0.0010706220609650267,
+        "maximumLoadedFootHorizontalBodySpeedProxyMps": 0.00012621879234507206,
+        "maximumFloorPenetrationM": 0.00097002886,
+        "maximumSelfPenetrationM": 0,
+        "violations": [],
+        "contactPointSlipAvailable": false,
+        "slipLimit": "The ordinary snapshot exposes aggregate segment loads and body velocities, not contact-point tangential velocity. Horizontal foot-body speed is a proxy, not contact slip."
+      },
+      "observation": {
+        "wallSeconds": 39.57719999999925,
+        "simulationSeconds": 33,
+        "integratedSimulationToWallRatio": 0.8338134077196119,
+        "presentedFrames": 2379,
+        "averagePresentedFps": 60.11036657469566,
+        "lastHalfSecondPresentedFps": 60,
+        "appReportedSimulationToWallRatio": 0.8340684087743998
+      },
+      "commands": 0,
+      "inputs": 0,
+      "workerInstances": 1,
+      "profileInitializations": {
+        "start": 1,
+        "end": 1
+      },
+      "errors": []
+    },
+    "limits": "40 Hz snapshot-level browser observations. Snapshot body velocities remain cached reports, not authoritative generalized/contact-point velocities. Aggregate foot loads and foot-body drift do not establish contact-point slip. Native800 Hz quiet/contact proof remains separate. Both observed paces remain below1×; video-on and non-video windows are labeled independently."
+  },
+  "independentFloorlessCom": {
+    "raw": {
+      "path": "outputs/browser-capability-20261019/root-com-correction/floorless-explicit-4plus1-v3/result.json",
+      "sha256": "76e7c4a7c0f3e613e760cfb2325edc5717b35202468afa4abcf54afd58aad3bf"
+    },
+    "passed": true,
+    "profile": "2dbce52fb23853eb24e1304ea9cd96f0aa2f81440bee41bbc1cea10f9a1b56f6",
+    "model": {
+      "path": "rust/crates/model/data/getup-v1.json",
+      "sha256": "1611ec8c988c1006b0a819ab21e2b7c410adaaf512080be425d6d6e235a8926a",
+      "quaternionHandling": "Pinned-engine full raw Hamilton q*(0,p)*conjugate(q) formula, no normalization and no unit-only shortcut. Source mass/localCOM and exported pose components restored to f32; transform/weighted sum independently accumulated in f64. Norm drift recorded; unchanged0.1mm horizontal COM criterion.",
+      "formula": "sum(m_i*(snapshot body-origin position + snapshot rotation * model.goldenMass.centerOfMass))/sum(m_i); positive-mass16source bodies only,9zero-mass coordinate frames excluded. f64 observation arithmetic, f32 exported poses; no body-origin-as-COM shortcut."
+    },
+    "observerSource": {
+      "path": "scripts/rust-browser-center-of-mass.mjs",
+      "sha256": "722dc17e701aaeae67d839e02ed7df6c03a13295741d9549bf9f58b58d149d42"
+    },
+    "observerTests": "tests/rust-browser-center-of-mass.test.mjs",
+    "horizontalRadialThresholdM": 0.0001,
+    "physicalSecondsPerHeading": 0.5,
+    "headings": [
+      {
+        "headingRadians": 0,
+        "finalTick": 20,
+        "finalTime": 0.5,
+        "maximumHorizontalComDriftM": 3.026132627612029e-7,
+        "maximumQuaternionNormError": 0.000008586625995787855,
+        "contributors": 16,
+        "nominalF32SourceMassKg": 40.84402072429657,
+        "workerInstances": 1,
+        "floorEnabled": false,
+        "contactsEmpty": true,
+        "initializationsAtStart": 1,
+        "initializationsAtEnd": 1,
+        "commands": [
+          [
+            {
+              "stamp": {
+                "schema": 4,
+                "generation": 1,
+                "sequence": 1,
+                "tick": 0
+              },
+              "action": {
+                "Initialize": {
+                  "mode": "protocol",
+                  "heading": 0
+                }
+              }
+            }
+          ],
+          [
+            {
+              "stamp": {
+                "schema": 4,
+                "generation": 2,
+                "sequence": 2,
+                "tick": 0
+              },
+              "action": {
+                "SetFloorEnabled": {
+                  "enabled": false
+                }
+              }
+            }
+          ]
+        ],
+        "screenshot": "floorless-heading-0.png"
+      },
+      {
+        "headingRadians": 1.0471975512,
+        "finalTick": 20,
+        "finalTime": 0.5,
+        "maximumHorizontalComDriftM": 2.7140458547238876e-7,
+        "maximumQuaternionNormError": 0.000008628333745486216,
+        "contributors": 16,
+        "nominalF32SourceMassKg": 40.84402072429657,
+        "workerInstances": 1,
+        "floorEnabled": false,
+        "contactsEmpty": true,
+        "initializationsAtStart": 1,
+        "initializationsAtEnd": 1,
+        "commands": [
+          [
+            {
+              "stamp": {
+                "schema": 4,
+                "generation": 1,
+                "sequence": 1,
+                "tick": 0
+              },
+              "action": {
+                "Initialize": {
+                  "mode": "protocol",
+                  "heading": 1.0471975512
+                }
+              }
+            }
+          ],
+          [
+            {
+              "stamp": {
+                "schema": 4,
+                "generation": 2,
+                "sequence": 2,
+                "tick": 0
+              },
+              "action": {
+                "SetFloorEnabled": {
+                  "enabled": false
+                }
+              }
+            }
+          ]
+        ],
+        "screenshot": "floorless-heading-1.png"
+      },
+      {
+        "headingRadians": -0.7853981634,
+        "finalTick": 20,
+        "finalTime": 0.5,
+        "maximumHorizontalComDriftM": 2.293177773135315e-7,
+        "maximumQuaternionNormError": 0.000008605565225305867,
+        "contributors": 16,
+        "nominalF32SourceMassKg": 40.84402072429657,
+        "workerInstances": 1,
+        "floorEnabled": false,
+        "contactsEmpty": true,
+        "initializationsAtStart": 1,
+        "initializationsAtEnd": 1,
+        "commands": [
+          [
+            {
+              "stamp": {
+                "schema": 4,
+                "generation": 1,
+                "sequence": 1,
+                "tick": 0
+              },
+              "action": {
+                "Initialize": {
+                  "mode": "protocol",
+                  "heading": -0.7853981634
+                }
+              }
+            }
+          ],
+          [
+            {
+              "stamp": {
+                "schema": 4,
+                "generation": 2,
+                "sequence": 2,
+                "tick": 0
+              },
+              "action": {
+                "SetFloorEnabled": {
+                  "enabled": false
+                }
+              }
+            }
+          ]
+        ],
+        "screenshot": "floorless-heading-2.png"
+      }
+    ],
+    "review": "Independent review confirmed body-origin snapshots, source mass/localCOM provenance, floor-collider disabling acknowledgement, exactly16 positive-mass bodies/9 massless frames, complete unique poses and isolated pages. Raw full Hamilton quaternion product is required; no normalization/unit-only shortcut.",
+    "observerCorrectionHistory": "Initial observer used a unit-quaternion shortcut and an arbitrary2e-6norm precondition. Review exposed non-unit exported norm drift (~8.6e-6). Final maintained observer uses full raw q*(0,p)*conjugate(q), restores f32 constants/poses, then independently accumulates in f64. Fresh v3 browser trials and7 regression tests pass with the0.1mm COM scale unchanged. Earlier observer runs are preserved as historical diagnostics, not used for final proof.",
+    "limits": "Independent snapshot-derived material-COM estimate, not bit-exact cached engine COM. Model mass/localCOM are source constants; engine mass reciprocal and f32/JSON rounding can differ by tiny amounts. Browser checks0.5s and radial horizontal drift<=0.1mm; native fixture is0.75s with per-axis0.1mm and additional vertical/momentum checks. This does not replace native ballistic qualification."
+  },
+  "realPointer": {
+    "raw": {
+      "path": "outputs/browser-capability-20261019/root-com-correction/grab-explicit-4plus1/browser-result.json",
+      "sha256": "43b5e1114f44c74e7c974b72eddedfa9b319c5df4b5e6e6916ce1c3e8afc21aa"
+    },
+    "passed": true,
+    "scenarios": [
+      "No grab",
+      "Actual hand pull, mouse release, natural continuation",
+      "Continued held-pull control",
+      "pointercancel",
+      "blur",
+      "Reset during active physical drag"
+    ],
+    "checks": [
+      "Every served asset matches the captured built artifact hash",
+      {
+        "name": "Identical trial initialization",
+        "allPoseAndVelocityComponentsExactlyEqual": true,
+        "maximumPositionDifferenceM": 0
+      },
+      {
+        "name": "Identical physical state before release",
+        "allPoseAndVelocityComponentsExactlyEqual": true,
+        "maximumPositionDifferenceM": 0
+      },
+      {
+        "name": "pointercancel: identical pre-cancellation physical state",
+        "allPoseAndVelocityComponentsExactlyEqual": true,
+        "maximumPositionDifferenceM": 0
+      },
+      {
+        "name": "pointercancel: physical continuation equals real mouse release despite stale held-button motion",
+        "allPoseAndVelocityComponentsExactlyEqual": true,
+        "maximumPositionDifferenceM": 0
+      },
+      {
+        "name": "blur: identical pre-cancellation physical state",
+        "allPoseAndVelocityComponentsExactlyEqual": true,
+        "maximumPositionDifferenceM": 0
+      },
+      {
+        "name": "blur: physical continuation equals real mouse release despite stale held-button motion",
+        "allPoseAndVelocityComponentsExactlyEqual": true,
+        "maximumPositionDifferenceM": 0
+      },
+      {
+        "name": "Reset restores clean physical initialization",
+        "allPoseAndVelocityComponentsExactlyEqual": true,
+        "maximumPositionDifferenceM": 0
+      },
+      {
+        "name": "Reset leaves no phantom physical force after stale held-button movement",
+        "allPoseAndVelocityComponentsExactlyEqual": true,
+        "maximumPositionDifferenceM": 0
+      },
+      "Cancellation matches an actual released physical trajectory; continuing held-pull control diverges. This tests physical behavior, not pointer metadata alone."
+    ],
+    "profilePageInitializations": [
+      {
+        "scene": "deterministic manual-clock regression",
+        "count": 1
+      },
+      {
+        "scene": "separate automatic-scheduler observation",
+        "count": 1
+      }
+    ],
+    "browserErrors": [],
+    "httpErrors": [],
+    "context": "Physical-only regression after the clean window; native profile qualification may run concurrently. No performance claim uses these clips."
+  },
+  "readiness": {
+    "raw": {
+      "path": "outputs/browser-capability-20261019/root-com-correction/readiness-explicit-4plus1/result.json",
+      "sha256": "8b11300c796b1ca4446a5e14d412efa684f901f5af8426de7070c2655f60ea7a"
+    },
+    "passed": true,
+    "stages": [
+      {
+        "name": "auto-fallback",
+        "backend": "WebGL2",
+        "requestedRenderer": "auto",
+        "fallback": "Error: WebGPU render check failed: OperationError: A valid external Instance reference no longer exists.. Choose Auto or WebGL2.",
+        "error": "",
+        "ready": true,
+        "tick": 0,
+        "generation": 1,
+        "workerInstances": 1,
+        "rendererChanges": 1,
+        "controller": "measured-contact-standing-balance",
+        "recoveryStep": "GetUp body · Joint balance · Learned recovery disabled"
+      },
+      {
+        "name": "explicit-webgpu-error",
+        "backend": "",
+        "requestedRenderer": "webgpu",
+        "fallback": "",
+        "error": "Graphics unavailable: Error: WebGPU render check failed: OperationError: A valid external Instance reference no longer exists.. Choose Auto or WebGL2.",
+        "ready": false,
+        "tick": 0,
+        "generation": 1,
+        "workerInstances": 1,
+        "rendererChanges": 1,
+        "controller": "measured-contact-standing-balance",
+        "recoveryStep": "GetUp body · Joint balance · Learned recovery disabled"
+      },
+      {
+        "name": "recovered-webgl2",
+        "backend": "WebGL2",
+        "requestedRenderer": "webgl2",
+        "fallback": "",
+        "error": "",
+        "ready": true,
+        "tick": 0,
+        "generation": 1,
+        "workerInstances": 1,
+        "rendererChanges": 2,
+        "controller": "measured-contact-standing-balance",
+        "recoveryStep": "GetUp body · Joint balance · Learned recovery disabled"
+      },
+      {
+        "name": "repeated-auto-fallback",
+        "backend": "WebGL2",
+        "requestedRenderer": "auto",
+        "fallback": "Error: WebGPU render check failed: OperationError: A valid external Instance reference no longer exists.. Choose Auto or WebGL2.",
+        "error": "",
+        "ready": true,
+        "tick": 0,
+        "generation": 1,
+        "workerInstances": 1,
+        "rendererChanges": 2,
+        "controller": "measured-contact-standing-balance",
+        "recoveryStep": "GetUp body · Joint balance · Learned recovery disabled"
+      },
+      {
+        "name": "reset-after-fallback",
+        "backend": "WebGL2",
+        "requestedRenderer": "auto",
+        "fallback": "Error: WebGPU render check failed: OperationError: A valid external Instance reference no longer exists.. Choose Auto or WebGL2.",
+        "error": "",
+        "ready": true,
+        "tick": 0,
+        "generation": 2,
+        "workerInstances": 1,
+        "rendererChanges": 2,
+        "controller": "measured-contact-standing-balance",
+        "recoveryStep": "GetUp body · Joint balance · Learned recovery disabled"
+      },
+      {
+        "name": "auto-without-webgpu-api",
+        "backend": "WebGL2",
+        "requestedRenderer": "auto",
+        "fallback": "",
+        "error": "",
+        "ready": true,
+        "tick": 0,
+        "generation": 1,
+        "workerInstances": 1,
+        "rendererChanges": 1,
+        "controller": "measured-contact-standing-balance",
+        "recoveryStep": "GetUp body · Joint balance · Learned recovery disabled"
+      }
+    ],
+    "profileInitializations": [
+      1,
+      1
+    ],
+    "errors": [],
+    "limits": "SwiftShader WebGPU queue failure is environment-specific. Auto fallback/WebGL2 and explicit error/recovery are tested, not capable native WebGPU hardware."
+  },
+  "strikerSmoke": {
+    "log": {
+      "path": "outputs/browser-capability-20261019/root-com-correction/smoke-explicit-4plus1.log",
+      "sha256": "309554dbb1299b9f8258f8227e6b0b3f83d63e6ca03a9fd7f156fee60d1019ea"
+    },
+    "passed": true,
+    "tick": 132,
+    "simulationSeconds": 3.3,
+    "nativeSubsteps": 2640,
+    "strikes": 1,
+    "poseSlots": 25,
+    "maximumPhysicalSeconds": 5
+  },
+  "nodeTests": {
+    "passed": 100,
+    "failed": 0,
+    "log": {
+      "path": "outputs/browser-capability-20261019/root-com-correction/npm-test.log",
+      "sha256": "4e1297adb14e1ab9760e50c66c8d2bf0d891c48e22dd4537eec342ae8e6de4b5"
+    },
+    "newObserverTests": 7
+  },
+  "nativeEvidence": {
+    "engine": "docs/evidence/getup-root-com-mapping-2026-10-19.json",
+    "sourceAndCombinedQualification": "docs/evidence/getup-source-freejoint-2026-10-19.json",
+    "status": "Separately authored canonical native engine mechanics,ballistic,33s quiet/strict perturbation qualification; browser proof does not substitute for those every800 Hz gates.",
+    "engineCommit": "68361ca",
+    "sourceAndCombinedCommit": "579e7d6",
+    "engineSha256": "10b0a40812ebe0cbb8c81d5ebd54a7c2d0dd2693ef8601458ae5e3d9682d4ed5",
+    "sourceAndCombinedSha256": "e339ba095a4c8f70dea57126e1a539726847ef0cc362dc870f68a6bd040fd4c5"
+  },
+  "media": [
+    {
+      "path": "outputs/browser-capability-20261019/root-com-correction/hold-explicit-4plus1/standing-hold-native-wall-time.mp4",
+      "sha256": "07a9c469cb980eb23bb9d96d0d2d756e5f952721610fbcb06ff3d331e1a56074",
+      "durationSeconds": 45.84,
+      "sizeBytes": 1163540,
+      "retimed": false,
+      "inspection": "Final screenshot and six-frame contact sheet inspected; body continuously upright, accurate Joint balance label, explicit root-correction/profile TEST banners and physical/wall clocks visible."
+    },
+    {
+      "path": "outputs/browser-capability-20261019/root-com-correction/hold-explicit-4plus1/contact-sheet.png",
+      "sha256": "ff63d30013a31c8514cd5f19497c39b0ccac98bb1cdd47325d801adddd7d34df"
+    },
+    {
+      "path": "outputs/browser-capability-20261019/root-com-correction/hold-explicit-4plus1/after-thirty-quiet-physical-seconds.png",
+      "sha256": "09932a182db791f27a0cd4100668c26a5dc7635799099245fb1c49541dfe1ca8"
+    }
+  ],
+  "harnesses": [
+    {
+      "path": "outputs/browser-capability-20261019/root-com-correction/profile-fixed-ticks-used.mjs",
+      "sha256": "cb544c38a3a5c3986daccc3e39357c6cf0cdfe4542f89534c4261ecb3a6b3f69"
+    },
+    {
+      "path": "outputs/browser-capability-20261019/root-com-correction/verify-standing-hold-used.mjs",
+      "sha256": "9aee031ebf7fc81afbddc6a7ac4b632a5b1051413580934a5bf1a80fd8b94db7"
+    },
+    {
+      "path": "outputs/browser-capability-20261019/root-com-correction/verify-floorless-com.mjs",
+      "sha256": "3ddc8cec732efdf8fd492099f0464965bbf695f8844d8fda9fd858b4ab62e809"
+    },
+    {
+      "path": "scripts/rust-browser-center-of-mass.mjs",
+      "sha256": "722dc17e701aaeae67d839e02ed7df6c03a13295741d9549bf9f58b58d149d42"
+    },
+    {
+      "path": "outputs/browser-capability-20261019/root-com-correction/verify-readiness.mjs",
+      "sha256": "dfb0c90d46f0ec1b46f4d5efc7f8751ff61dd40bc3502b264dfa4458fb61d4a0"
+    }
+  ],
+  "negativeTransportExperiment": "docs/evidence/browser-reply-task-experiment-2026-10-19.json",
+  "next": "Retain the corrected existing controller and original production transport. Explicit 3+1 numerical-budget qualification may be measured on this same immutable worker only after native gates pass; no default promotion or dispatch hack."
+}
