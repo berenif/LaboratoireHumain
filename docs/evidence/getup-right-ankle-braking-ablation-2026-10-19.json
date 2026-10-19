@@ -1,0 +1,215 @@
+{
+  "date": "2026-10-19",
+  "status": "mixed/inconclusive short diagnostic; motor-ablation candidate removed; no recovery admission",
+  "planning": "Astra Codex planning preceded this single physical ablation, after exact four-case zero-world WASM actor replay. No endpoint/duration/joint sweep or further inference/dynamics followed the mixed result.",
+  "baseCommit": "6dbe68698bbfb8b39541a59ec503907490d27ff4",
+  "profile": {
+    "path": "docs/evidence/profiles/getup-800hz-3plus1-repeat-cycle-v1.json",
+    "sha256": "aaa415a19767c218a26b05bad277193cccba2a726b52dcd5aac0a5444afc39d6",
+    "sameCompleteProfileBothArms": true
+  },
+  "solePhysicalIntervention": "Only the active right_ankle_y motor scalar (qpos index 7 / actuator 8, gear 20 Nm) is zero for completed native integrations 2181\u20132200. Controller intended commands are calculated normally every 1.25 ms; all other motor applications, passive/contact/constraint dynamics, actor weights, reference, gains and limits stay normal. Teacher fork is excluded. All motors resume normal application at 2201.",
+  "scope": {
+    "freshBackWorldPerArm": true,
+    "realIntegrationsPerArm": 2380,
+    "rowsPerArmIncludingNative0": 2381,
+    "stopPhysicalSeconds": 2.975,
+    "stoppedBeforeCanonicalTailInfluenceNative2421": true,
+    "full25sRecoveryOr30sHoldAttempted": false,
+    "performanceClaim": false
+  },
+  "validity": {
+    "fullNativeRowsExactThrough": 2180,
+    "firstDifferentNative": 2181,
+    "candidateZeroOverrideNatives": [
+      2181,
+      2182,
+      2183,
+      2184,
+      2185,
+      2186,
+      2187,
+      2188,
+      2189,
+      2190,
+      2191,
+      2192,
+      2193,
+      2194,
+      2195,
+      2196,
+      2197,
+      2198,
+      2199,
+      2200
+    ],
+    "baselineOverrideCount": 0,
+    "candidateOverrideCount": 20,
+    "allOtherAppliedTorquesEqualTheirOwnIntendedTorques": true,
+    "normalAgainAt2201": true,
+    "teacherInitialAndAll51FramesExact": true,
+    "all103ReferenceTuplesExact": true,
+    "interpolatedTuplesExcludingAppended": 102,
+    "newBaselineMatchesAll2381RetainedCanonicalCommonSchemaRows": true,
+    "nativeWorkerOrObserverFault": false,
+    "candidateCheckpointExportResume": "explicitly refused; native0 live-state carry activation purity was separately measured, not a successful checkpoint-roundtrip claim"
+  },
+  "measurements": {
+    "baseline": {
+      "overrideNatives": [],
+      "firstLeftLoadBelow3NAfter2180": 2353,
+      "firstSustainedLeftUnloadOnsetNative": 2356,
+      "twentiethLowLoadDetectionNative": 2375,
+      "firstStrictPositiveLeftClearanceNative": 2361,
+      "signedActiveAnkleWorkEstimateJ2181Through2200": -4.296354282513105,
+      "minimumRightLoadN2181Through2380": 82.88029479980469,
+      "maximumCurrentBodyAngularRadps2181Through2380": 7.602985382080078,
+      "maximumCurrentBodyLinearMps2181Through2380": 3.9581868648529053
+    },
+    "candidate": {
+      "overrideNatives": [
+        2181,
+        2182,
+        2183,
+        2184,
+        2185,
+        2186,
+        2187,
+        2188,
+        2189,
+        2190,
+        2191,
+        2192,
+        2193,
+        2194,
+        2195,
+        2196,
+        2197,
+        2198,
+        2199,
+        2200
+      ],
+      "firstLeftLoadBelow3NAfter2180": 2356,
+      "firstSustainedLeftUnloadOnsetNative": 2358,
+      "twentiethLowLoadDetectionNative": 2377,
+      "firstStrictPositiveLeftClearanceNative": 2363,
+      "signedActiveAnkleWorkEstimateJ2181Through2200": 0.0,
+      "minimumRightLoadN2181Through2380": 16.74592399597168,
+      "maximumCurrentBodyAngularRadps2181Through2380": 9.034388542175293,
+      "maximumCurrentBodyLinearMps2181Through2380": 3.853177785873413
+    },
+    "sustainedUnloadDefinition": "First onset of 20 consecutive native samples with left-foot solved load below the unchanged 3 N threshold, counted after intervention. Onsets 2356/2358, not detections 2375/2377. Strictly positive signed lowest primitive-to-floor clearance is separate geometric corroboration.",
+    "rightFootSupportInterpretation": "Right foot remains above 3 N in both compared windows. Candidate minimum 16.746 N is a reduced margin versus 82.880 N, not a lost-right-support event.",
+    "workConvention": "Sum of actual active motor scalar \u00d7 pre-native current generalized dq 7 \u00d7 1/800 s over completed 2181\u20132200. This signed motor-work estimate excludes passive/contact/constraint torque and is not direct COM force.",
+    "integrityInterpretation": "Existing four integrity diagnostics are cumulative maxima through each native; all final maxima equal between arms. No new threshold, instantaneous decomposition or interval subtraction.",
+    "materialSlipScope": "Loaded material-contact travel remains diagnostic during whole get-up. The existing 20 mm poststanding cumulative-foot criterion was not changed or repurposed into a get-up gate."
+  },
+  "conclusion": "Mixed/inconclusive. Zeroing braking delays sustained left unloading by only 2 native steps (2.5 ms), while ankle dq at 2200 rises 5.786\u219215.327 rad/s and maximum current body angular speed rises 7.603\u21929.034 rad/s. The predeclared no-worse-motion condition is not met. No inference that braking is globally harmful or a production residual/torque suppression is justified.",
+  "bookkeepingLimitation": "The executed recorder completed both physical arms but its paired comparison asserted 103!=102 by conflating total reference tuples with interpolated-only tuples. Original error/raw files remain unchanged. Separate read-only analysis of retained stop controllers verifies 51 teacher frames/all 103 references; independent raw-row analysis verifies full prefix/actual 20 overrides and retained baseline parity. No rerun.",
+  "tests": {
+    "finalFrozenDiagnosticPassingExecutions": 86,
+    "uniqueNames": 52,
+    "failed": 0,
+    "ignored": 0,
+    "scope": "focused motor/observer/controller contracts, not full inventory",
+    "initialTestOnlyCorrection": "One early assertion incorrectly expected no native0 receipt after construction. It was corrected to accept the constructor native0 control evaluation; runtime source was unchanged and final batches reran.",
+    "restoredObserverContracts": {
+      "passingExecutions": 9,
+      "failed": 0,
+      "ignored": 0,
+      "scope": "Restored normal motor force/receipt/geometry/checkpoint contracts; zero physics integrations and no actor inference",
+      "path": "outputs/getup-ankle-braking-ablation-20261019/restored-observer-contracts.log",
+      "sha256": "a90ce9925c7e7fbd2014db22400eb0b11bd237ec1773e71236f7415373b61bcc"
+    }
+  },
+  "productionDisposition": {
+    "ablationFeatureRemoved": true,
+    "motorOverrideRemoved": true,
+    "normalMotorArithmeticRestored": true,
+    "normalCheckpointExportResumeRestored": true,
+    "retained": "Only common default-off immutable native motor receipts, signed source-primitive foot clearance, existing cumulative integrity readback, and zero-integration tests. No controller/profile/schema or public feature enable.",
+    "exactDiagnosticReplayPatch": {
+      "path": "docs/evidence/patches/getup-right-ankle-braking-ablation-inconclusive-2026-10-19.patch",
+      "sha256": "d05ce145a1872939f50d67185b704fa03ed1a76416355cd3dcff8a6b17dd5f87",
+      "bytes": 31251
+    },
+    "replayAll5FrozenSourceHashesExact": true,
+    "independentSourceAudit": "GO: no candidate feature, predicate, override or checkpoint restriction remains; normal torque math, actor/controller/profile/solver and checkpoint code match the prior source baseline.",
+    "restoredSourceHashes": [
+      {
+        "path": "rust/crates/sim/Cargo.toml",
+        "sha256": "3f7a3ac721df516425a0657c636ccda4d1114a9c0501f76dfdf4baf0116aca7f"
+      },
+      {
+        "path": "rust/crates/sim/src/getup.rs",
+        "sha256": "9f77ee6fb56d50e375247edf8b205835247d9de614359df9b973ef0b20562cd3"
+      },
+      {
+        "path": "rust/crates/sim/src/lib.rs",
+        "sha256": "bfb68112fe8fdc296a7350db7e3b40d715b53480a20d0292345434e0732efcb4"
+      },
+      {
+        "path": "rust/crates/sim/src/runtime.rs",
+        "sha256": "176a29d85dff796e1ccb1728883cab9fc605dd836a3ff1305c2a0d306a60bd77"
+      },
+      {
+        "path": "rust/crates/sim/src/getup/motor_application_tests.rs",
+        "sha256": "8afc85116274a9b7aed3a2bc6ee11a61c3243e501d9aca3faa65fc43bcafec34"
+      }
+    ]
+  },
+  "browserEvidence": "docs/evidence/browser-right-ankle-braking-ablation-2026-10-19.json",
+  "nextStep": "Await Astra planning before any further feature or physical experiment.",
+  "receipts": [
+    {
+      "path": "outputs/getup-ankle-braking-ablation-20261019/source-freeze.json",
+      "sha256": "4b49156d9c339e3df96b9b0e74aebabac326386d3118ba3030fa7bafc7fb07da",
+      "bytes": 1348
+    },
+    {
+      "path": "outputs/getup-ankle-braking-ablation-20261019/source-freeze-pre-test-correction.json",
+      "sha256": "7d6196570bcd488965004113b7286da7c5952ba68d0f216e8c309116c3d0ea1b",
+      "bytes": 1348
+    },
+    {
+      "path": "outputs/getup-ankle-braking-ablation-20261019/candidate-patch-replay-check.json",
+      "sha256": "2355d60731d6a15fc1d1e97556f3bdfa75bb18b2bf33b07882bef99834840e68",
+      "bytes": 1332
+    },
+    {
+      "path": "outputs/getup-ankle-braking-ablation-20261019/focused-contracts-summary.json",
+      "sha256": "5d354c1c5ef3405204c56a8e750ac7650fc6c81b37efbdd64e047d8297299713",
+      "bytes": 14847
+    },
+    {
+      "path": "outputs/getup-ankle-braking-ablation-20261019/paired-analysis/verify.py",
+      "sha256": "02542c881a988a585ce354e975633a55fe1780dba616a91d9403840a3521ddef",
+      "bytes": 3626
+    },
+    {
+      "path": "outputs/getup-ankle-braking-ablation-20261019/paired-analysis/independent-summary.json",
+      "sha256": "aa8037f064d6c3f5ed915037e110bd089d06a9ef95407b9b46345a4c2d721251",
+      "bytes": 14674
+    },
+    {
+      "path": "outputs/getup-ankle-braking-ablation-20261019/paired-analysis/motion-addendum.json",
+      "sha256": "f89b18d2d71fb4ca73da1c84e0f07cfa81bf7f5a957608633f1ef5f59d06eafb",
+      "bytes": 2531
+    },
+    {
+      "path": "outputs/browser-capability-20261019/recovery-fixture/right-ankle-ablation/ankle-ablation-summary.json",
+      "sha256": "8eea48a96d0264974211aa5d28143c872e984fd3a84b8dc3f10816244b3cab65",
+      "bytes": 43857
+    },
+    {
+      "path": "docs/evidence/patches/getup-right-ankle-braking-ablation-inconclusive-2026-10-19.patch",
+      "sha256": "d05ce145a1872939f50d67185b704fa03ed1a76416355cd3dcff8a6b17dd5f87",
+      "bytes": 31251
+    },
+    {
+      "path": "outputs/getup-ankle-braking-ablation-20261019/restored-observer-contracts.log",
+      "sha256": "a90ce9925c7e7fbd2014db22400eb0b11bd237ec1773e71236f7415373b61bcc",
+      "bytes": 3836
+    }
+  ]
+}

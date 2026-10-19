@@ -1,0 +1,600 @@
+diff --git a/rust/crates/sim/Cargo.toml b/rust/crates/sim/Cargo.toml
+index 823c6ce..5487df6 100644
+--- a/rust/crates/sim/Cargo.toml
++++ b/rust/crates/sim/Cargo.toml
+@@ -9,8 +9,9 @@ stationary-balance-experiment = []
+ standing-dynamics-experiment = []
+ getup-terminal-balance-experiment = []
+ getup-repeat-cycle-experiment = ["getup-terminal-balance-experiment"]
+-# Isolated endpoint A/B only. No profile selector or persistent controller state.
++# Isolated, default-off causal observations/ablation. No persistent selector.
+ getup-terminal-tail-observer-experiment = []
++getup-right-ankle-braking-ablation-experiment = ["getup-terminal-tail-observer-experiment"]
+ getup-terminal-base-ready-experiment = ["getup-terminal-balance-experiment"]
+ getup-terminal-bumpless-experiment = ["getup-terminal-base-ready-experiment"]
+ experimental-solver-step-observation = ["rapier3d/solver-step-observation"]
+diff --git a/rust/crates/sim/src/getup.rs b/rust/crates/sim/src/getup.rs
+index f5c7ffe..7c66857 100644
+--- a/rust/crates/sim/src/getup.rs
++++ b/rust/crates/sim/src/getup.rs
+@@ -261,11 +261,38 @@ pub(crate) fn configure(s: &mut Simulation) -> Result<(), String> {
+     apply_controls(s, &controls?)
+ }
+ 
++/// Fixed, one-shot causal experiment; never used by the disabled teacher fork.
++fn braking_ablation_active(profile: &Profile, command_native: u64, qpos: usize, actuator: usize) -> bool {
++    cfg!(feature = "getup-right-ankle-braking-ablation-experiment")
++        && profile.getup_policy_enabled && (2180..2200).contains(&command_native)
++        && qpos == 7 && actuator == 8
++}
++
++#[cfg(feature = "getup-terminal-tail-observer-experiment")]
++#[derive(Clone, Serialize)]
++#[serde(rename_all = "camelCase")]
++pub(crate) struct MotorApplication {
++    command_input_native_substep: u64,
++    intended_controls: [f32; 21],
++    applied_controls: [f32; 21],
++    intended_torque_nm: [f32; 21],
++    applied_torque_nm: [f32; 21],
++    override_applied: bool,
++    overridden_actuator_indices: Vec<usize>,
++}
++
+ pub(crate) fn apply_controls(s: &mut Simulation, controls: &[f32; 21]) -> Result<(), String> {
+     if controls.iter().any(|x| !x.is_finite() || x.abs() > 1.0) {
+         return Err("Invalid normalized motor control".into());
+     }
+     let mut effort = 0.0;
++    #[cfg(feature = "getup-terminal-tail-observer-experiment")]
++    let mut receipt = MotorApplication {
++        command_input_native_substep: s.substeps_completed,
++        intended_controls: *controls, applied_controls: *controls,
++        intended_torque_nm: [0.0; 21], applied_torque_nm: [0.0; 21],
++        override_applied: false, overridden_actuator_indices: Vec::new(),
++    };
+     for (i, p) in s.model.segments.iter().enumerate() {
+         if let Some(h) = p.reference.as_ref().and_then(|r| r.hinge.as_ref()) {
+             let parent = s
+@@ -279,16 +306,38 @@ pub(crate) fn apply_controls(s: &mut Simulation, controls: &[f32; 21]) -> Result
+                 * rotation(jp.parent_frame.rotation)
+                 * Vector::X)
+                 .normalize();
+-            let tau = h.gear * controls[h.actuator_index];
++            let intended_tau = h.gear * controls[h.actuator_index];
++            let overridden = h.name == "right_ankle_y"
++                && braking_ablation_active(&s.profile, s.substeps_completed, h.qpos_index, h.actuator_index);
++            // Exact POST-native integrations2181..2200, restoring the normal
++            // 800Hz source calculation at2201. All passive/contact dynamics
++            // remain in the same world. No residual, reference, or actor edit.
++            let tau = if overridden { 0.0 } else { intended_tau };
+             s.world.bodies[s.bodies[i]].add_torque(axis * tau, true);
+             s.world.bodies[s.bodies[parent]].add_torque(-axis * tau, true);
+-            effort += tau.abs();
++            effort += intended_tau.abs();
++            #[cfg(feature = "getup-terminal-tail-observer-experiment")]
++            {
++                receipt.intended_torque_nm[h.actuator_index] = intended_tau;
++                receipt.applied_torque_nm[h.actuator_index] = tau;
++                if overridden {
++                    receipt.applied_controls[h.actuator_index] = 0.0;
++                    receipt.override_applied = true;
++                    receipt.overridden_actuator_indices.push(h.actuator_index);
++                }
++            }
+         }
+     }
+     s.diagnostics.requested_motor_effort_nm = effort;
++    #[cfg(feature = "getup-terminal-tail-observer-experiment")]
++    { s.last_motor_application = Some(receipt); }
+     Ok(())
+ }
+ 
++#[cfg(test)]
++#[path = "getup/braking_ablation_tests.rs"]
++mod braking_ablation_tests;
++
+ /// Current twists from the articulation's generalized velocities, never stale
+ /// RigidBody velocity caches. Returned linear velocities are at each body's CoM.
+ /// Root generalized translation is the derivative of its free-joint origin.
+@@ -419,6 +468,29 @@ pub fn slow_observation(physical: &[f32; 67], now: &[f32; 25], ahead: &[f32; 25]
+     out
+ }
+ 
++/// Signed primitive-to-floor vertical clearance, independent of whether a
++/// unilateral contact currently carries impulse. This is observation only.
++#[cfg(feature = "getup-terminal-tail-observer-experiment")]
++pub(crate) fn foot_floor_clearance(s: &Simulation) -> Result<[f32; 2], String> {
++    let floor_top = s.world.colliders[s.floor].compute_aabb().maxs.y;
++    let mut clearance = [0.0; 2];
++    for (side, name) in ["left_foot", "right_foot"].into_iter().enumerate() {
++        let i = s.model.segments.iter().position(|part| part.id == name)
++            .ok_or("Missing observed foot")?;
++        let body = &s.world.bodies[s.bodies[i]];
++        let reference = s.model.segments[i].reference.as_ref().ok_or("Missing observed foot primitives")?;
++        let bottom = reference.primitives.iter().flat_map(|primitive| {
++            let endpoints = if primitive.kind == "sphere" { [primitive.a, primitive.a] }
++                else { [primitive.a, primitive.b] };
++            endpoints.map(|endpoint|
++                (body.rotation() * vector(endpoint) + body.translation()).y - primitive.radius)
++        }).fold(f32::INFINITY, f32::min);
++        clearance[side] = bottom - floor_top;
++    }
++    if clearance.iter().any(|v| !v.is_finite()) { return Err("Invalid observed foot clearance".into()); }
++    Ok(clearance)
++}
++
+ #[cfg(test)]
+ mod tests {
+     use super::*;
+diff --git a/rust/crates/sim/src/lib.rs b/rust/crates/sim/src/lib.rs
+index 01eb5da..f2ae1a5 100644
+--- a/rust/crates/sim/src/lib.rs
++++ b/rust/crates/sim/src/lib.rs
+@@ -364,6 +364,11 @@ pub struct Simulation {
+     integrated_support_substeps: [u64; 25],
+     integrated_support_loads_n: [f32; 25],
+     pub diagnostics: Diagnostics,
++    /// Ephemeral test-only receipt written by the actual actuator application.
++    /// Never controller state, a checkpoint field, or a source of commands.
++    #[cfg(feature = "getup-terminal-tail-observer-experiment")]
++    #[serde(skip)]
++    last_motor_application: Option<getup::MotorApplication>,
+     pub first_failure: Option<measurement::Failure>,
+     motor_ceiling_sum: f32,
+     substeps_completed: u64,
+@@ -600,6 +605,8 @@ impl Simulation {
+             integrated_support_substeps: [0; 25],
+             integrated_support_loads_n: [0.0; 25],
+             diagnostics: Diagnostics::default(),
++            #[cfg(feature = "getup-terminal-tail-observer-experiment")]
++            last_motor_application: None,
+             first_failure: None,
+             motor_ceiling_sum,
+             substeps_completed: 0,
+diff --git a/rust/crates/sim/src/runtime.rs b/rust/crates/sim/src/runtime.rs
+index 660a51c..045c271 100644
+--- a/rust/crates/sim/src/runtime.rs
++++ b/rust/crates/sim/src/runtime.rs
+@@ -292,6 +292,9 @@ impl Runtime {
+     /// Active compensated root integration additionally requires schema 2's
+     /// exact-bit sidecar: generic Rapier world serde does not preserve it.
+     pub fn getup_checkpoint(&self) -> Result<Vec<u8>, String> {
++        if cfg!(feature = "getup-right-ankle-braking-ablation-experiment") {
++            return Err("Checkpoint export/resume is disabled for the right-ankle braking ablation build".into());
++        }
+         self.checkpoint_compatible()?;
+         let world = bincode::DefaultOptions::new().with_fixint_encoding().with_limit(64 * 1024 * 1024)
+             .serialize(&self.simulation.world).map_err(|e| e.to_string())?;
+@@ -325,6 +328,9 @@ impl Runtime {
+     }
+ 
+     pub fn from_getup_checkpoint(bytes: &[u8]) -> Result<Self, String> {
++        if cfg!(feature = "getup-right-ankle-braking-ablation-experiment") {
++            return Err("Checkpoint export/resume is disabled for the right-ankle braking ablation build".into());
++        }
+         if bytes.len() as u64 > GETUP_CHECKPOINT_LIMIT { return Err("Checkpoint exceeds size limit".into()); }
+         let (schema, model, world, auxiliary): (u32, String, Vec<u8>, String) =
+             bincode::DefaultOptions::new().with_fixint_encoding().with_limit(64 * 1024 * 1024)
+@@ -729,9 +735,19 @@ impl Runtime {
+     }
+     #[cfg(feature = "getup-terminal-tail-observer-experiment")]
+     pub fn terminal_tail_build_identity() -> serde_json::Value {
+-        serde_json::json!({"experiment":"terminal-tail-ab-v1",
+-            "variant":"source-canonical",
+-            "checkpointResumeSupported":true,
++        let candidate = cfg!(feature = "getup-right-ankle-braking-ablation-experiment");
++        serde_json::json!({"experiment":"right-ankle-y-braking-ablation-v1",
++            "variant":if candidate {"zero-applied-right-ankle-y-2181-2200"} else {"source-normal-motors"},
++            "checkpointResumeSupported":!candidate,"checkpointExportSupported":!candidate,
++            "candidateFeature":"getup-right-ankle-braking-ablation-experiment",
++            "candidateFeatureEnabled":candidate,
++            "observerFeature":"getup-terminal-tail-observer-experiment",
++            "intervention":{"qposIndex":7,"actuatorIndex":8,"joint":"right_ankle_y",
++                "firstPostNative":2181,"lastPostNative":2200,"normalAgainPostNative":2201,
++                "teacherExcludedBy":"fork clears getup_policy_enabled"},
++            "footFloorClearance":{"order":["left_foot","right_foot"],"units":"metres",
++                "source":"minimum transformed source primitive endpoint Y minus radius minus actual floor collider AABB maximum Y",
++                "separationCorroboration":"strictly positive; independent of the existing 3 N unload criterion"},
+             "nativeTrace":"read-only-post-native-observer-v1","maxTicksPerCall":1,
+             "poseWordLayout":"per body: positionXYZ,quaternionXYZW,cachedLinearVelocityXYZ,cachedAngularVelocityXYZ",
+             "currentMotionSource":"fresh physicalObservationWords and current.motion; pose velocity words are cache receipts"})
+@@ -755,6 +771,12 @@ impl Runtime {
+                 let physical = crate::getup::physical_observation(s)?;
+                 let original_anchors = s.getup_controller.as_ref().and_then(|c|c.stable_foot_anchors());
+                 let diagnostic = crate::getup::controller::standing_diagnostic(s, original_anchors)?;
++                let motor_application = s.last_motor_application.as_ref().ok_or("Missing applied motor receipt")?;
++                let motor_json = serde_json::to_value(motor_application).map_err(|error|error.to_string())?;
++                if motor_json["commandInputNativeSubstep"].as_u64() != s.substeps_completed.checked_sub(1) {
++                    return Err("Stale applied motor receipt".into());
++                }
++                let foot_clearance = crate::getup::foot_floor_clearance(s)?;
+                 #[cfg(feature = "root-translation-carry-experiment")]
+                 let carry = {
+                     let mut entries: Vec<_> = s.world.multibody_joints.multibodies().map(|mb| {
+@@ -774,6 +796,11 @@ impl Runtime {
+                     "rootTranslationIntegratorStateJson":carry,
+                     "poseWords":pose_words,"physicalObservationWords":physical.map(f32::to_bits).to_vec(),
+                     "current":diagnostic,"getup":snapshot.diagnostics.getup,
++                    "motorApplication":motor_json,"footFloorClearanceM":foot_clearance,
++                    "integrityLimits":{"maxAnchorSeparationM":snapshot.diagnostics.max_anchor_separation_m,
++                        "maxFloorPenetrationM":snapshot.diagnostics.max_floor_penetration_m,
++                        "maxSelfPenetrationM":snapshot.diagnostics.max_self_penetration_m,
++                        "maxLimitErrorRad":snapshot.diagnostics.max_limit_error_rad},
+                     "requestedMotorEffortNm":snapshot.diagnostics.requested_motor_effort_nm,
+                     "directPelvisForceN":snapshot.diagnostics.direct_pelvis_force_n,
+                     "directPelvisTorqueNm":snapshot.diagnostics.direct_pelvis_torque_nm}))
+diff --git a/rust/crates/sim/src/getup/braking_ablation_tests.rs b/rust/crates/sim/src/getup/braking_ablation_tests.rs
+new file mode 100644
+index 0000000..9ca1800
+--- /dev/null
++++ b/rust/crates/sim/src/getup/braking_ablation_tests.rs
+@@ -0,0 +1,368 @@
++//! Force-application contracts only. These fixtures never integrate physics,
++//! run an actor, or qualify recovery. Native counters below are synthetic.
++use super::*;
++
++fn profile(enabled: bool) -> Profile {
++    Profile { getup_policy_enabled: enabled, ..Profile::default() }
++}
++
++fn simulation(enabled: bool) -> Simulation {
++    Simulation::new(0.0, profile(enabled), true).unwrap()
++}
++
++fn reset_torques(s: &mut Simulation) {
++    for handle in &s.bodies {
++        s.world.bodies[*handle].reset_torques(false);
++    }
++}
++
++fn torque_words(s: &Simulation) -> Vec<[u32; 3]> {
++    s.bodies.iter().map(|handle| {
++        let torque = s.world.bodies[*handle].user_torque();
++        [torque.x, torque.y, torque.z].map(f32::to_bits)
++    }).collect()
++}
++
++fn motion_words(s: &Simulation) -> Vec<u32> {
++    let mut words = Vec::new();
++    for handle in &s.bodies {
++        let rb = &s.world.bodies[*handle];
++        let p = rb.translation();
++        let q = rb.rotation();
++        let v = rb.linvel();
++        let w = rb.angvel();
++        words.extend([p.x, p.y, p.z, q.x, q.y, q.z, q.w,
++            v.x, v.y, v.z, w.x, w.y, w.z].map(f32::to_bits));
++    }
++    let root = s.world.multibody_joints.rigid_body_link(s.bodies[0]).unwrap();
++    let mb = s.world.multibody_joints.get_multibody(root.multibody).unwrap();
++    for link in mb.links() {
++        words.extend(link.joint.coords().iter().map(|v| v.to_bits()));
++    }
++    words.extend(mb.generalized_velocity().iter().map(|v| v.to_bits()));
++    let (q, dq) = joint_state(s).unwrap();
++    words.extend(q.map(f32::to_bits));
++    words.extend(dq.map(f32::to_bits));
++    words
++}
++
++#[cfg(feature = "getup-terminal-tail-observer-experiment")]
++fn torques_in_actuator_order(s: &Simulation, controls: &[f32; 21]) -> [f32; 21] {
++    let mut torques = [0.0; 21];
++    let mut seen = [false; 21];
++    for part in &s.model.segments {
++        if let Some(h) = part.reference.as_ref().and_then(|r| r.hinge.as_ref()) {
++            assert!(!seen[h.actuator_index]);
++            seen[h.actuator_index] = true;
++            torques[h.actuator_index] = h.gear * controls[h.actuator_index];
++        }
++    }
++    assert!(seen.into_iter().all(|present| present));
++    torques
++}
++
++/// Independent copy of the established force pair, without the production
++/// predicate or receipt. The optional zero is only the expected test scalar.
++fn expected_force_application(s: &mut Simulation, controls: &[f32; 21], zero_ankle: bool) {
++    for (i, part) in s.model.segments.iter().enumerate() {
++        if let Some(h) = part.reference.as_ref().and_then(|r| r.hinge.as_ref()) {
++            let parent = s.model.segments.iter()
++                .position(|p| Some(&p.id) == part.parent.as_ref()).unwrap();
++            let jp = part.joint_profile.as_ref().unwrap();
++            let axis = (*s.world.bodies[s.bodies[parent]].rotation()
++                * rotation(jp.parent_frame.rotation) * Vector::X).normalize();
++            let tau = if zero_ankle && h.qpos_index == 7 && h.actuator_index == 8 {
++                0.0
++            } else {
++                h.gear * controls[h.actuator_index]
++            };
++            s.world.bodies[s.bodies[i]].add_torque(axis * tau, true);
++            s.world.bodies[s.bodies[parent]].add_torque(-axis * tau, true);
++        }
++    }
++}
++
++fn nonuniform_controls() -> [f32; 21] {
++    std::array::from_fn(|i| (i as f32 - 10.0) / 16.0)
++}
++
++#[test]
++fn braking_ablation_selects_exactly_twenty_pre_commands_and_their_post_integrations() {
++    let enabled = profile(true);
++    let pre: Vec<_> = (0..=2220)
++        .filter(|native| braking_ablation_active(&enabled, *native, 7, 8)).collect();
++    if cfg!(feature = "getup-right-ankle-braking-ablation-experiment") {
++        assert_eq!(pre, (2180..2200).collect::<Vec<_>>());
++        assert_eq!(pre.len(), 20);
++        let post: Vec<_> = pre.iter().map(|native| native + 1).collect();
++        assert_eq!(post, (2181..=2200).collect::<Vec<_>>());
++        assert!(!braking_ablation_active(&enabled, 2179, 7, 8));
++        assert!(!braking_ablation_active(&enabled, 2200, 7, 8));
++        assert!(cfg!(feature = "getup-terminal-tail-observer-experiment"));
++    } else {
++        assert!(pre.is_empty());
++    }
++}
++
++#[test]
++fn braking_ablation_requires_the_exact_profile_clock_qpos_and_actuator() {
++    for enabled in [false, true] {
++        let p = profile(enabled);
++        for native in [0, 2179, 2180, 2181, 2199, 2200, 2201, u64::MAX] {
++            for qpos in (0..=21).chain([usize::MAX]) {
++                for actuator in (0..=21).chain([usize::MAX]) {
++                    let expected = cfg!(feature = "getup-right-ankle-braking-ablation-experiment")
++                        && enabled && (2180..2200).contains(&native)
++                        && qpos == 7 && actuator == 8;
++                    assert_eq!(braking_ablation_active(&p, native, qpos, actuator), expected,
++                        "enabled={enabled}, native={native}, qpos={qpos}, actuator={actuator}");
++                }
++            }
++        }
++    }
++}
++
++#[test]
++fn braking_ablation_target_is_the_pinned_right_ankle_y_not_its_neighbor() {
++    let s = simulation(false);
++    let selected: Vec<_> = s.model.segments.iter().filter_map(|part| {
++        part.reference.as_ref().and_then(|r| r.hinge.as_ref())
++            .filter(|h| h.qpos_index == 7 || h.actuator_index == 8)
++            .map(|h| (part.id.as_str(), h.name.as_str(), h.qpos_index, h.actuator_index, h.gear))
++    }).collect();
++    assert_eq!(selected, vec![("@right_ankle_y", "right_ankle_y", 7, 8, 20.0)]);
++    assert_eq!(s.substeps_completed, 0);
++}
++
++#[test]
++fn braking_ablation_force_application_preserves_all_coordinates_velocities_and_controller_state() {
++    let controls = nonuniform_controls();
++    for enabled in [false, true] {
++        let mut s = simulation(enabled);
++        let before_motion = motion_words(&s);
++        let before_multibody = bincode::serialize(&s.world.multibody_joints).unwrap();
++        let before_controller = serde_json::to_string(&s.getup_controller).unwrap();
++        let before_counters = serde_json::to_string(&s.counters).unwrap();
++        for native in [2179, 2180, 2199, 2200] {
++            s.substeps_completed = native;
++            reset_torques(&mut s);
++            apply_controls(&mut s, &controls).unwrap();
++            assert_eq!(motion_words(&s), before_motion);
++            assert_eq!(bincode::serialize(&s.world.multibody_joints).unwrap(), before_multibody);
++            assert_eq!(serde_json::to_string(&s.getup_controller).unwrap(), before_controller);
++            assert_eq!(serde_json::to_string(&s.counters).unwrap(), before_counters);
++            assert_eq!(s.substeps_completed, native);
++            assert_eq!(s.tick, 0);
++        }
++    }
++}
++
++#[test]
++fn braking_ablation_changes_only_the_expected_actual_body_torque_pair() {
++    let controls = nonuniform_controls();
++    for enabled in [false, true] {
++        let mut actual = simulation(enabled);
++        let mut expected = simulation(enabled);
++        for native in [0, 2179, 2180, 2181, 2199, 2200, 2201, u64::MAX] {
++            actual.substeps_completed = native;
++            expected.substeps_completed = native;
++            reset_torques(&mut actual);
++            reset_torques(&mut expected);
++            let active = cfg!(feature = "getup-right-ankle-braking-ablation-experiment")
++                && enabled && (2180..2200).contains(&native);
++            expected_force_application(&mut expected, &controls, active);
++            apply_controls(&mut actual, &controls).unwrap();
++            assert_eq!(torque_words(&actual), torque_words(&expected),
++                "actual force-buffer words: enabled={enabled}, native={native}");
++            let effort = actual.model.segments.iter().filter_map(|part| {
++                part.reference.as_ref().and_then(|r| r.hinge.as_ref())
++                    .map(|h| (h.gear * controls[h.actuator_index]).abs())
++            }).sum::<f32>();
++            assert_eq!(actual.diagnostics.requested_motor_effort_nm.to_bits(), effort.to_bits());
++        }
++    }
++}
++
++#[test]
++fn braking_ablation_isolated_actuator_eight_is_zero_inside_and_normal_at_2201() {
++    let mut s = simulation(true);
++    let mut controls = [0.0; 21];
++    controls[8] = -0.375;
++    let child = s.model.segments.iter().position(|part| part.id == "@right_ankle_y").unwrap();
++    let parent = s.model.segments.iter().position(|part|
++        Some(&part.id) == s.model.segments[child].parent.as_ref()).unwrap();
++    for native in [2179, 2180, 2199, 2200] {
++        s.substeps_completed = native;
++        reset_torques(&mut s);
++        apply_controls(&mut s, &controls).unwrap();
++        let active = cfg!(feature = "getup-right-ankle-braking-ablation-experiment")
++            && (2180..2200).contains(&native);
++        for (i, handle) in s.bodies.iter().enumerate() {
++            let torque = s.world.bodies[*handle].user_torque();
++            if active || (i != child && i != parent) {
++                assert_eq!(torque.length(), 0.0, "native={native}, body={i}");
++            } else {
++                assert!((torque.length() - 7.5).abs() < 1e-6,
++                    "native={native}, body={i}, torque={torque:?}");
++            }
++        }
++        let child_torque = s.world.bodies[s.bodies[child]].user_torque();
++        let parent_torque = s.world.bodies[s.bodies[parent]].user_torque();
++        assert_eq!((child_torque + parent_torque).length(), 0.0);
++        assert_eq!(s.diagnostics.requested_motor_effort_nm, 7.5);
++        assert_eq!(s.substeps_completed, native);
++    }
++}
++
++#[cfg(feature = "getup-terminal-tail-observer-experiment")]
++#[test]
++fn braking_ablation_receipts_record_all_twenty_one_actual_applications_in_actuator_order() {
++    let controls = nonuniform_controls();
++    for enabled in [false, true] {
++        let mut s = simulation(enabled);
++        // Construction evaluates the native0 controls without integration.
++        // A receipt may therefore already exist; each application below must
++        // replace it with the exact current pre-command clock.
++        if let Some(receipt) = &s.last_motor_application {
++            assert_eq!(receipt.command_input_native_substep, 0);
++        }
++        let intended_torque = torques_in_actuator_order(&s, &controls);
++        // Consecutive synthetic command boundaries prove the receipt is
++        // replaced, including restoration immediately after the twenty slots.
++        for native in 2179..=2200 {
++            s.substeps_completed = native;
++            reset_torques(&mut s);
++            apply_controls(&mut s, &controls).unwrap();
++            let active = cfg!(feature = "getup-right-ankle-braking-ablation-experiment")
++                && enabled && (2180..2200).contains(&native);
++            let receipt = s.last_motor_application.as_ref().unwrap();
++            assert_eq!(receipt.command_input_native_substep, native);
++            assert_eq!(receipt.intended_controls.map(f32::to_bits), controls.map(f32::to_bits));
++            assert_eq!(receipt.intended_torque_nm.map(f32::to_bits), intended_torque.map(f32::to_bits));
++            assert_eq!(receipt.override_applied, active);
++            assert_eq!(receipt.overridden_actuator_indices,
++                if active { vec![8] } else { Vec::<usize>::new() });
++            for actuator in 0..21 {
++                let applied_control = if active && actuator == 8 { 0.0 } else { controls[actuator] };
++                let applied_torque = if active && actuator == 8 { 0.0 } else { intended_torque[actuator] };
++                assert_eq!(receipt.applied_controls[actuator].to_bits(), applied_control.to_bits(),
++                    "enabled={enabled}, native={native}, actuator={actuator}");
++                assert_eq!(receipt.applied_torque_nm[actuator].to_bits(), applied_torque.to_bits(),
++                    "enabled={enabled}, native={native}, actuator={actuator}");
++            }
++        }
++    }
++}
++
++#[cfg(feature = "getup-terminal-tail-observer-experiment")]
++#[test]
++fn braking_ablation_receipt_is_ephemeral_in_json_and_binary_simulation_serialization() {
++    let mut s = simulation(true);
++    s.substeps_completed = 2180;
++    let mut controls = [-0.0; 21];
++    controls[8] = 0.5;
++    apply_controls(&mut s, &controls).unwrap();
++    assert!(s.last_motor_application.is_some());
++    let with_json = serde_json::to_string(&s).unwrap();
++    let with_binary = bincode::serialize(&s).unwrap();
++    let value: serde_json::Value = serde_json::from_str(&with_json).unwrap();
++    assert!(value.get("last_motor_application").is_none());
++    assert!(value.get("lastMotorApplication").is_none());
++    let restored: Simulation = serde_json::from_str(&with_json).unwrap();
++    assert!(restored.last_motor_application.is_none());
++    s.last_motor_application = None;
++    assert_eq!(serde_json::to_string(&s).unwrap(), with_json);
++    assert_eq!(bincode::serialize(&s).unwrap(), with_binary);
++    assert_eq!(s.substeps_completed, 2180);
++    assert_eq!(s.tick, 0);
++}
++
++#[cfg(feature = "getup-right-ankle-braking-ablation-experiment")]
++#[test]
++fn braking_ablation_candidate_explicitly_refuses_checkpoint_export_and_resume() {
++    let runtime = crate::runtime::Runtime::new(lh_contracts::Mode::Protocol, 0.0, profile(true)).unwrap();
++    let before = serde_json::to_string(&runtime).unwrap();
++    let world = bincode::serialize(&runtime.simulation().world).unwrap();
++    let refusal = "Checkpoint export/resume is disabled for the right-ankle braking ablation build";
++    assert_eq!(runtime.getup_checkpoint().err().unwrap(), refusal);
++    assert_eq!(crate::runtime::Runtime::from_getup_checkpoint(&[]).err().unwrap(), refusal);
++    let identity = crate::runtime::Runtime::terminal_tail_build_identity();
++    assert_eq!(identity["checkpointExportSupported"], false);
++    assert_eq!(identity["checkpointResumeSupported"], false);
++    assert_eq!(serde_json::to_string(&runtime).unwrap(), before);
++    assert_eq!(bincode::serialize(&runtime.simulation().world).unwrap(), world);
++    assert_eq!(runtime.simulation().substeps_completed, 0);
++}
++
++#[cfg(not(feature = "getup-right-ankle-braking-ablation-experiment"))]
++#[test]
++fn braking_ablation_disabled_build_preserves_normal_checkpoint_export_and_resume() {
++    let runtime = crate::runtime::Runtime::new(lh_contracts::Mode::Protocol, 0.0, profile(true)).unwrap();
++    let before = serde_json::to_string(&runtime).unwrap();
++    let checkpoint = runtime.getup_checkpoint().unwrap();
++    assert!(!checkpoint.is_empty());
++    let restored = crate::runtime::Runtime::from_getup_checkpoint(&checkpoint).unwrap();
++    assert_eq!(serde_json::to_string(&restored).unwrap(), before);
++    assert_eq!(motion_words(restored.simulation()), motion_words(runtime.simulation()));
++    assert_eq!(restored.simulation().substeps_completed, 0);
++    assert_eq!(runtime.simulation().substeps_completed, 0);
++    #[cfg(feature = "getup-terminal-tail-observer-experiment")]
++    {
++        let identity = crate::runtime::Runtime::terminal_tail_build_identity();
++        assert_eq!(identity["checkpointExportSupported"], true);
++        assert_eq!(identity["checkpointResumeSupported"], true);
++    }
++}
++
++#[cfg(feature = "getup-terminal-tail-observer-experiment")]
++#[test]
++fn braking_ablation_foot_clearance_matches_source_capsule_endpoints_and_actual_floor_top() {
++    let s = simulation(true);
++    let world = bincode::serialize(&s.world).unwrap();
++    let before_motion = motion_words(&s);
++    let floor_top = s.world.colliders[s.floor].compute_aabb().maxs.y;
++    let actual = foot_floor_clearance(&s).unwrap();
++    for (side, name) in ["left_foot", "right_foot"].into_iter().enumerate() {
++        let part = s.model.segments.iter().position(|part| part.id == name).unwrap();
++        let primitives = &s.model.segments[part].reference.as_ref().unwrap().primitives;
++        assert_eq!(primitives.len(), 2);
++        assert!(primitives.iter().all(|primitive| primitive.kind == "capsule"));
++        let body_pose = s.world.bodies[s.bodies[part]].position();
++        let mut expected = f32::INFINITY;
++        for capsule in primitives {
++            for endpoint in [capsule.a, capsule.b] {
++                let point = body_pose.transform_point(vector(endpoint));
++                expected = expected.min(point.y - capsule.radius - floor_top);
++            }
++        }
++        assert!((actual[side] - expected).abs() < 1e-7,
++            "{name}: actual={}, direct capsule clearance={expected}", actual[side]);
++    }
++    assert_eq!(motion_words(&s), before_motion);
++    assert_eq!(bincode::serialize(&s.world).unwrap(), world);
++    assert_eq!(s.substeps_completed, 0);
++}
++
++#[cfg(feature = "getup-terminal-tail-observer-experiment")]
++#[test]
++fn braking_ablation_foot_clearance_reads_changed_floor_shape_without_any_pose_or_velocity_write() {
++    let mut s = simulation(true);
++    let before_motion = motion_words(&s);
++    let before = foot_floor_clearance(&s).unwrap();
++    let old_floor_top = s.world.colliders[s.floor].compute_aabb().maxs.y;
++    // Synthetic geometry fixture only: change floor thickness, keeping its
++    // transform and every body coordinate untouched. No integration occurs.
++    s.world.colliders[s.floor].set_shape(SharedShape::cuboid(12.0, 0.33, 10.5));
++    let new_floor_top = s.world.colliders[s.floor].compute_aabb().maxs.y;
++    let rise = new_floor_top - old_floor_top;
++    assert!((rise - 0.25).abs() < 1e-7);
++    let world = bincode::serialize(&s.world).unwrap();
++    let after = foot_floor_clearance(&s).unwrap();
++    for side in 0..2 {
++        assert!((after[side] - (before[side] - rise)).abs() < 1e-7);
++        assert!(after[side] < 0.0, "signed clearance reports intersection with the raised floor top");
++    }
++    assert_eq!(motion_words(&s), before_motion);
++    assert_eq!(bincode::serialize(&s.world).unwrap(), world);
++    assert_eq!(s.substeps_completed, 0);
++}

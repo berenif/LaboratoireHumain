@@ -261,11 +261,31 @@ pub(crate) fn configure(s: &mut Simulation) -> Result<(), String> {
     apply_controls(s, &controls?)
 }
 
+#[cfg(feature = "getup-terminal-tail-observer-experiment")]
+#[derive(Clone, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub(crate) struct MotorApplication {
+    command_input_native_substep: u64,
+    intended_controls: [f32; 21],
+    applied_controls: [f32; 21],
+    intended_torque_nm: [f32; 21],
+    applied_torque_nm: [f32; 21],
+    override_applied: bool,
+    overridden_actuator_indices: Vec<usize>,
+}
+
 pub(crate) fn apply_controls(s: &mut Simulation, controls: &[f32; 21]) -> Result<(), String> {
     if controls.iter().any(|x| !x.is_finite() || x.abs() > 1.0) {
         return Err("Invalid normalized motor control".into());
     }
     let mut effort = 0.0;
+    #[cfg(feature = "getup-terminal-tail-observer-experiment")]
+    let mut receipt = MotorApplication {
+        command_input_native_substep: s.substeps_completed,
+        intended_controls: *controls, applied_controls: *controls,
+        intended_torque_nm: [0.0; 21], applied_torque_nm: [0.0; 21],
+        override_applied: false, overridden_actuator_indices: Vec::new(),
+    };
     for (i, p) in s.model.segments.iter().enumerate() {
         if let Some(h) = p.reference.as_ref().and_then(|r| r.hinge.as_ref()) {
             let parent = s
@@ -283,11 +303,22 @@ pub(crate) fn apply_controls(s: &mut Simulation, controls: &[f32; 21]) -> Result
             s.world.bodies[s.bodies[i]].add_torque(axis * tau, true);
             s.world.bodies[s.bodies[parent]].add_torque(-axis * tau, true);
             effort += tau.abs();
+            #[cfg(feature = "getup-terminal-tail-observer-experiment")]
+            {
+                receipt.intended_torque_nm[h.actuator_index] = tau;
+                receipt.applied_torque_nm[h.actuator_index] = tau;
+            }
         }
     }
     s.diagnostics.requested_motor_effort_nm = effort;
+    #[cfg(feature = "getup-terminal-tail-observer-experiment")]
+    { s.last_motor_application = Some(receipt); }
     Ok(())
 }
+
+#[cfg(test)]
+#[path = "getup/motor_application_tests.rs"]
+mod motor_application_tests;
 
 /// Current twists from the articulation's generalized velocities, never stale
 /// RigidBody velocity caches. Returned linear velocities are at each body's CoM.
@@ -417,6 +448,29 @@ pub fn slow_observation(physical: &[f32; 67], now: &[f32; 25], ahead: &[f32; 25]
     out[92..117].copy_from_slice(ahead);
     out[117] = 1.0;
     out
+}
+
+/// Signed primitive-to-floor vertical clearance, independent of whether a
+/// unilateral contact currently carries impulse. This is observation only.
+#[cfg(feature = "getup-terminal-tail-observer-experiment")]
+pub(crate) fn foot_floor_clearance(s: &Simulation) -> Result<[f32; 2], String> {
+    let floor_top = s.world.colliders[s.floor].compute_aabb().maxs.y;
+    let mut clearance = [0.0; 2];
+    for (side, name) in ["left_foot", "right_foot"].into_iter().enumerate() {
+        let i = s.model.segments.iter().position(|part| part.id == name)
+            .ok_or("Missing observed foot")?;
+        let body = &s.world.bodies[s.bodies[i]];
+        let reference = s.model.segments[i].reference.as_ref().ok_or("Missing observed foot primitives")?;
+        let bottom = reference.primitives.iter().flat_map(|primitive| {
+            let endpoints = if primitive.kind == "sphere" { [primitive.a, primitive.a] }
+                else { [primitive.a, primitive.b] };
+            endpoints.map(|endpoint|
+                (body.rotation() * vector(endpoint) + body.translation()).y - primitive.radius)
+        }).fold(f32::INFINITY, f32::min);
+        clearance[side] = bottom - floor_top;
+    }
+    if clearance.iter().any(|v| !v.is_finite()) { return Err("Invalid observed foot clearance".into()); }
+    Ok(clearance)
 }
 
 #[cfg(test)]

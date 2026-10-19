@@ -364,6 +364,11 @@ pub struct Simulation {
     integrated_support_substeps: [u64; 25],
     integrated_support_loads_n: [f32; 25],
     pub diagnostics: Diagnostics,
+    /// Ephemeral test-only receipt written by the actual actuator application.
+    /// Never controller state, a checkpoint field, or a source of commands.
+    #[cfg(feature = "getup-terminal-tail-observer-experiment")]
+    #[serde(skip)]
+    last_motor_application: Option<getup::MotorApplication>,
     pub first_failure: Option<measurement::Failure>,
     motor_ceiling_sum: f32,
     substeps_completed: u64,
@@ -600,6 +605,8 @@ impl Simulation {
             integrated_support_substeps: [0; 25],
             integrated_support_loads_n: [0.0; 25],
             diagnostics: Diagnostics::default(),
+            #[cfg(feature = "getup-terminal-tail-observer-experiment")]
+            last_motor_application: None,
             first_failure: None,
             motor_ceiling_sum,
             substeps_completed: 0,

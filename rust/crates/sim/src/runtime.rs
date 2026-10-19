@@ -729,9 +729,13 @@ impl Runtime {
     }
     #[cfg(feature = "getup-terminal-tail-observer-experiment")]
     pub fn terminal_tail_build_identity() -> serde_json::Value {
-        serde_json::json!({"experiment":"terminal-tail-ab-v1",
-            "variant":"source-canonical",
-            "checkpointResumeSupported":true,
+        serde_json::json!({"experiment":"native-motor-observer-v1",
+            "variant":"source-normal-motors",
+            "checkpointResumeSupported":true,"checkpointExportSupported":true,
+            "observerFeature":"getup-terminal-tail-observer-experiment",
+            "footFloorClearance":{"order":["left_foot","right_foot"],"units":"metres",
+                "source":"minimum transformed source primitive endpoint Y minus radius minus actual floor collider AABB maximum Y",
+                "separationCorroboration":"strictly positive; independent of the existing 3 N unload criterion"},
             "nativeTrace":"read-only-post-native-observer-v1","maxTicksPerCall":1,
             "poseWordLayout":"per body: positionXYZ,quaternionXYZW,cachedLinearVelocityXYZ,cachedAngularVelocityXYZ",
             "currentMotionSource":"fresh physicalObservationWords and current.motion; pose velocity words are cache receipts"})
@@ -755,6 +759,12 @@ impl Runtime {
                 let physical = crate::getup::physical_observation(s)?;
                 let original_anchors = s.getup_controller.as_ref().and_then(|c|c.stable_foot_anchors());
                 let diagnostic = crate::getup::controller::standing_diagnostic(s, original_anchors)?;
+                let motor_application = s.last_motor_application.as_ref().ok_or("Missing applied motor receipt")?;
+                let motor_json = serde_json::to_value(motor_application).map_err(|error|error.to_string())?;
+                if motor_json["commandInputNativeSubstep"].as_u64() != s.substeps_completed.checked_sub(1) {
+                    return Err("Stale applied motor receipt".into());
+                }
+                let foot_clearance = crate::getup::foot_floor_clearance(s)?;
                 #[cfg(feature = "root-translation-carry-experiment")]
                 let carry = {
                     let mut entries: Vec<_> = s.world.multibody_joints.multibodies().map(|mb| {
@@ -774,6 +784,11 @@ impl Runtime {
                     "rootTranslationIntegratorStateJson":carry,
                     "poseWords":pose_words,"physicalObservationWords":physical.map(f32::to_bits).to_vec(),
                     "current":diagnostic,"getup":snapshot.diagnostics.getup,
+                    "motorApplication":motor_json,"footFloorClearanceM":foot_clearance,
+                    "integrityLimits":{"maxAnchorSeparationM":snapshot.diagnostics.max_anchor_separation_m,
+                        "maxFloorPenetrationM":snapshot.diagnostics.max_floor_penetration_m,
+                        "maxSelfPenetrationM":snapshot.diagnostics.max_self_penetration_m,
+                        "maxLimitErrorRad":snapshot.diagnostics.max_limit_error_rad},
                     "requestedMotorEffortNm":snapshot.diagnostics.requested_motor_effort_nm,
                     "directPelvisForceN":snapshot.diagnostics.direct_pelvis_force_n,
                     "directPelvisTorqueNm":snapshot.diagnostics.direct_pelvis_torque_nm}))
