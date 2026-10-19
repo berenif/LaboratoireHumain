@@ -3,6 +3,12 @@
 use super::{actor, reference};
 use crate::*;
 
+#[cfg(feature = "getup-terminal-tail-observer-experiment")]
+#[path = "teacher_feasibility.rs"]
+mod teacher_feasibility;
+#[cfg(feature = "getup-terminal-tail-observer-experiment")]
+pub(crate) use teacher_feasibility::probe as teacher_feasibility_probe;
+
 pub const TEACHER_POWER: f32 = 0.663420431;
 pub const REFERENCE_SPEED: f64 = 0.5;
 pub const MAX_TEACHER_TICKS: usize = 250;

@@ -740,6 +740,12 @@ impl Runtime {
             "poseWordLayout":"per body: positionXYZ,quaternionXYZW,cachedLinearVelocityXYZ,cachedAngularVelocityXYZ",
             "currentMotionSource":"fresh physicalObservationWords and current.motion; pose velocity words are cache receipts"})
     }
+    /// Forecast-only diagnostic. No command, boundary, or real-world step.
+    #[cfg(feature = "getup-terminal-tail-observer-experiment")]
+    pub fn getup_teacher_feasibility(&self) -> Result<serde_json::Value, String> {
+        self.checkpoint_compatible()?;
+        crate::getup::controller::teacher_feasibility_probe(&self.simulation)
+    }
     /// Test-only, bounded immutable observation of the original advance path.
     /// Trace rows are local to this call and never enter simulation/checkpoints.
     #[cfg(feature = "getup-terminal-tail-observer-experiment")]

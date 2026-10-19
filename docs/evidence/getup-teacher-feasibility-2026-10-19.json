@@ -1,0 +1,145 @@
+{
+  "date": "2026-10-19",
+  "status": "negative at the single predeclared ceiling; simple extended-WEAK endpoint approach closed",
+  "planning": "Astra Codex planning preceded this one forecast-only feasibility probe. No real controller candidate, reference suffix, endpoint sweep, horizon extension or retry was implemented.",
+  "baseCommit": "fb5bdb6170baa78d6df085d3dabe3fb5b98a49fb",
+  "profile": {
+    "path": "docs/evidence/profiles/getup-800hz-3plus1-repeat-cycle-v1.json",
+    "sha256": "aaa415a19767c218a26b05bad277193cccba2a726b52dcd5aac0a5444afc39d6"
+  },
+  "scope": {
+    "freshOriginalBackTriggerNative": 480,
+    "realPhysicsIntegrationsDuringProbe": 0,
+    "forecastDecisions": 250,
+    "forecastNativeIntegrations": 5000,
+    "nativePerDecision": 20,
+    "forecastInternalPgsIterations": 32,
+    "totalCeilingIncludesOriginal51Decisions": true,
+    "originalHeightCutDecisions": 51,
+    "extendedForecastNativesAfterCut": 3980,
+    "sourcePolicyAndGainsUnchanged": true,
+    "actualWasmWorker": true,
+    "realRecoveryDemonstrated": false,
+    "performanceClaim": false,
+    "teacherPowerSourceLiteral": 0.663420431,
+    "teacherPowerActualF32": 0.6634204387664795
+  },
+  "endpointContract": "The existing full native standing checker: head, torso up, bilateral persistent minimum load, total foot load at least80% bodyweight, feet-only support, COM and capture inside support, all-body current generalized linear/angular motion and prospective10 mm foot anchors. At least80 consecutive native samples, with continuous original interval/anchors; endpoint cannot be accepted before the complete inherited height-cut prefix. No reset at that cut. This is feasibility only, not the800-native/25 s real recovery gate.",
+  "purityAndPrefix": {
+    "wholeRealCheckpointBeforeAfterByteIdentical": true,
+    "checkpointBytes": 636142,
+    "checkpointSha256": "c49445348d9e96543f283c8d9a318241c24ffbb0a03f938e2490bd2167ec6ed6",
+    "realNativeBeforeAfter": 480,
+    "typedSimulationSeedAndAll51OriginalFramesExact": true,
+    "allReportedNumericValuesIncludingSignedZerosExact": true,
+    "sourceCompatibleArchive": "Raw typed serde strings preserve original f32 representation; legacy TeacherFrame snapshot.contacts remains stale and is never current-load evidence.",
+    "currentObservation": "Every successful forecast native refreshes all25 solved support loads and original threshold persistence, current generalized motion, sole geometry and existing full standing diagnostics.",
+    "all5000CurrentPersistenceUpdatesIndependentlyVerified": true,
+    "all5000CadenceAnd32PgsVerified": true,
+    "unobservedNativeTail": 0,
+    "realControllerReferenceAndCountersUnchanged": true,
+    "referenceGenerated": false,
+    "canonicalAppended": false,
+    "handoffActivated": false
+  },
+  "result": {
+    "endpoint": null,
+    "integrityFailure": null,
+    "maximumFullStandingStreak": 0,
+    "allNineInstantaneousBasePredicatePassSamples": 0,
+    "predicateTrueSamples": {
+      "angularMotion": 0,
+      "bothFeetLoadedAndPersistent": 318,
+      "captureInSupport": 0,
+      "comInSupport": 0,
+      "footDriftFromSuppliedAnchors": 0,
+      "footLoadFraction": 723,
+      "head": 573,
+      "linearMotion": 1,
+      "onlyFeet": 2622,
+      "torso": 182
+    },
+    "predicateMaxConsecutive": {
+      "angularMotion": 0,
+      "bothFeetLoadedAndPersistent": 117,
+      "captureInSupport": 0,
+      "comInSupport": 0,
+      "footDriftFromSuppliedAnchors": 0,
+      "footLoadFraction": 110,
+      "head": 393,
+      "linearMotion": 1,
+      "onlyFeet": 1503,
+      "torso": 86
+    },
+    "maximumSolverSupportPointCount": 4,
+    "minimumAllBodyMaximumAngularRadps": 1.5412967205047607,
+    "minimumPostCutAllBodyMaximumAngularRadps": 1.5784404277801514,
+    "minimumPostCutAllBodyMaximumLinearMps": 0.4778369665145874,
+    "unchangedAngularThresholdRadps": 0.6499999761581421,
+    "unchangedLinearThresholdMps": 0.2199999988079071,
+    "driftInterpretation": "All5000 drift predicates are null because no eligible interval is seeded; zero true samples is not a measured drift failure.",
+    "supportGeometryCaveat": "A hull with fewer than3 points cannot pass the existing polygon helper. That caveat does not explain away this result: angular motion independently fails every sample, and linear motion fails every post-cut sample."
+  },
+  "tests": {
+    "pureFocusedExecutionsPassed": 25,
+    "failed": 0,
+    "ignored": 0,
+    "scope": "11 synthetic interval/persistence/cut/admission tests plus9 unchanged motor observer and5 solver-budget contracts. No actual forecast, actor inference or world integration in these selected unit tests.",
+    "independentSourceAudit": "GO: immutable real Runtime access, unchanged original forecast operations, complete untouched-controller guard, total250/5000 budget, full existing predicates and prefix gating."
+  },
+  "productionDisposition": "Only a bounded default-off observer/tool export and its synthetic tests are retained under the existing native-observer feature. No new runtime policy feature, profile selector, schema, physical setting or public recovery enable. The earlier paused landing-reference draft remains preserved and closed; no suffix implementation is authorized by this negative result.",
+  "browserEvidence": "docs/evidence/browser-teacher-feasibility-2026-10-19.json",
+  "nextStep": "Await further Astra planning before another feature or physical experiment.",
+  "receipts": [
+    {
+      "path": "outputs/getup-teacher-feasibility-20261019/source-freeze.json",
+      "sha256": "33f51beea233bd2a3caf05a622b56de8f2986fcc17e0a6f5adbe445fdf3bbcc0",
+      "bytes": 1329
+    },
+    {
+      "path": "outputs/getup-teacher-feasibility-20261019/focused-contracts-summary.json",
+      "sha256": "346df8085c5c4fe1f210a942e6fb2e76997430ac9194dbe912bf693893fa312b",
+      "bytes": 4537
+    },
+    {
+      "path": "outputs/getup-teacher-feasibility-20261019/analysis/verify.py",
+      "sha256": "4a792e0791c1d4bd624601560cf90b554b7bcc9489c9eed884afca9e67e91506",
+      "bytes": 4268
+    },
+    {
+      "path": "outputs/getup-teacher-feasibility-20261019/analysis/independent-summary.json",
+      "sha256": "becb649e26f0d12299ea63f4f8286adba9683dfbc733be28c66eaef4705771b3",
+      "bytes": 1923
+    },
+    {
+      "path": "outputs/browser-capability-20261019/recovery-fixture/teacher-feasibility/actual-back-teacher/result.json",
+      "sha256": "a190ee336ba719bd323f26d6ee2c7e6dfcba3c21818be3cb20e4fd47630bf0e5",
+      "bytes": 48388
+    },
+    {
+      "path": "outputs/browser-capability-20261019/recovery-fixture/teacher-feasibility/actual-back-teacher/teacher-feasibility-raw-export.json",
+      "sha256": "526abe3694109b3844ba9894339cc3390b8a668a674f0ec5f57e4f7bb73e4d73",
+      "bytes": 41433027
+    },
+    {
+      "path": "outputs/browser-capability-20261019/recovery-fixture/teacher-feasibility/actual-back-teacher/teacher-initial-typed.json",
+      "sha256": "63ad5e5effcfeeb1125bcd6bccabeb4ce28066f6e69beea6ae3cfefcb2f39713",
+      "bytes": 11161
+    },
+    {
+      "path": "outputs/browser-capability-20261019/recovery-fixture/teacher-feasibility/actual-back-teacher/teacher-frames-typed.json",
+      "sha256": "be091e06c3ed5183361074c4a1d48ed3809e284ea91d4d9793f654ff7acd1c75",
+      "bytes": 4190286
+    },
+    {
+      "path": "outputs/browser-capability-20261019/recovery-fixture/teacher-feasibility/actual-back-teacher/teacher-export-before-checkpoint.bin",
+      "sha256": "c49445348d9e96543f283c8d9a318241c24ffbb0a03f938e2490bd2167ec6ed6",
+      "bytes": 636142
+    },
+    {
+      "path": "outputs/browser-capability-20261019/recovery-fixture/teacher-feasibility/actual-back-teacher/teacher-export-after-checkpoint.bin",
+      "sha256": "c49445348d9e96543f283c8d9a318241c24ffbb0a03f938e2490bd2167ec6ed6",
+      "bytes": 636142
+    }
+  ]
+}

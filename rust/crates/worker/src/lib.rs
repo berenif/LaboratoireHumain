@@ -292,6 +292,10 @@ mod browser {
             Runtime::terminal_tail_build_identity().to_string()
         }
         #[cfg(feature = "getup-terminal-tail-observer-experiment")]
+        pub fn getup_teacher_feasibility(&self) -> Result<String, JsValue> {
+            self.runtime.getup_teacher_feasibility().map(|value| value.to_string()).map_err(error)
+        }
+        #[cfg(feature = "getup-terminal-tail-observer-experiment")]
         pub fn advance_terminal_tail_observed(&mut self, ticks: u32) -> Result<String, JsValue> {
             self.runtime.advance_terminal_tail_observed(ticks)
                 .map(|value|value.to_string()).map_err(|reject|error(format!("{reject:?}")))
