@@ -3,7 +3,7 @@ use crate::{
     Simulation,
     measurement::{Failure, QuietMetrics},
 };
-use lh_contracts::Snapshot;
+use lh_contracts::{SUBSTEPS, Snapshot, TICK_HZ};
 use serde_json::{Value, json};
 
 pub(crate) const SETTLE_TICKS: u64 = 120;
@@ -42,7 +42,9 @@ impl QuietObservation {
         if let Some(trace) = &mut self.drift_trace {
             // One physical sample per second, plus the first failing substep.
             // This clock uses completed integrations, including a partial tick.
-            if (substep == 3 && (simulation.tick + 1) % 60 == 0) || result.is_err() {
+            if (substep == SUBSTEPS - 1 && (simulation.tick + 1) % u64::from(TICK_HZ) == 0)
+                || result.is_err()
+            {
                 trace.push(drift_sample(simulation, Some(substep)));
             }
         }
@@ -74,8 +76,8 @@ impl QuietObservation {
     pub fn progress(&self, simulation: &Simulation) -> Value {
         let passed = simulation.first_failure.is_none()
             && simulation.tick == END_TICK
-            && self.settling_substeps == 480
-            && self.quiet_substeps == 7200
+            && u64::from(self.settling_substeps) == SETTLE_TICKS * u64::from(SUBSTEPS)
+            && u64::from(self.quiet_substeps) == (END_TICK - SETTLE_TICKS) * u64::from(SUBSTEPS)
             && self.settled.is_some();
         json!({"completedTicks": simulation.tick, "settlingSubsteps": self.settling_substeps,
             "quietSubsteps": self.quiet_substeps, "done": simulation.tick == END_TICK || simulation.first_failure.is_some(),

@@ -1,0 +1,140 @@
+{
+  "schema": 1,
+  "date": "2026-10-19",
+  "baselineCommit": "12a708eb7828039c4dfba19712ade0c8a29e616f",
+  "scope": "Quiet-observer clock accounting and the corresponding runtime test contract only. Default profile, heading 0 radians. This is not broader native-suite, recovery, gait, release or leg-coordinate diagnostic qualification.",
+  "cause": "The observer still expected 480 settling and 7200 quiet substeps and sampled substep 3 every 60 ticks, although the current runtime advances 20 substeps per 40 Hz tick.",
+  "changes": [
+    "Derive successful terminal settling/quiet sample counts from unchanged SETTLE_TICKS=120, END_TICK=1920 and the existing SUBSTEPS constant.",
+    "Sample drift at the last integration of each TICK_HZ-tick second, plus the first failing integration.",
+    "Assert the current counts, exact whole-second trace cadence, independent snapshot/metric parity and frozen terminal behavior in the existing runtime test.",
+    "Derive impulse-joint-only leg diagnostic cardinality from model roles/profiles and joint representation; explicitly assert and document unsupported multibody-leg presence rather than treating empty leg arrays as qualified diagnostics.",
+    "Replace the misleading QuietMetrics 1/240-second documentation with clock-independent physical-integration wording."
+  ],
+  "unchanged": {
+    "settleTicks": 120,
+    "endTick": 1920,
+    "tickHz": 40,
+    "substepsPerTick": 20,
+    "integrationHz": 800,
+    "controllerModelProfilesAndHistoricalFixturesChangedByThisCommit": false,
+    "physicalThresholdsChanged": false,
+    "quietThresholds": {
+      "linearSpeedMps": 0.1,
+      "angularSpeedRadps": 0.5,
+      "pelvisDriftM": 0.03,
+      "footDriftM": 0.01
+    },
+    "allExistingStandingSupportPredicatesPreserved": true,
+    "ignoredTestsChanged": false
+  },
+  "velocityMeasurementCaveat": {
+    "quietMetricsVelocitySource": "Rapier rigid-body linear/angular velocity caches, not authoritative current generalized twists.",
+    "independentNativeRuntimeEquality": "Validates observer parity and accounting; it does not validate the physical accuracy of the velocity caches.",
+    "accountingScope": "The 48-second observer pass by itself is not authoritative-motion validation.",
+    "separateAuthoritativeMotionProof": "The separate 33-second standing campaign checks authoritative motion at 800 Hz and supports the bounded 30-second physical-standing claim.",
+    "separateEvidence": "docs/evidence/getup-standing-balance-2026-10-19.json",
+    "separateEvidenceSection": "nativeQualification"
+  },
+  "observed": {
+    "completedTicks": 1920,
+    "done": true,
+    "firstFailure": null,
+    "passed": true,
+    "quietSubsteps": 36000,
+    "settlingSubsteps": 2400,
+    "settlingPhysicalSeconds": 3.0,
+    "quietPhysicalSeconds": 45.0,
+    "totalPhysicalSeconds": 48.0,
+    "totalIntegrations": 38400,
+    "driftTrace": {
+      "samplesIncludingInitial": 49,
+      "allWholeSecondIntegrations": true,
+      "firstTimeS": 0.0,
+      "lastTimeS": 48.0
+    },
+    "quietMetrics": {
+      "max_angular_radps": 0.0023862908128648996,
+      "max_foot_drift_m": 0.008590107783675194,
+      "max_linear_mps": 0.0012231908040121198,
+      "max_pelvis_drift_m": 0.002052935538813472
+    },
+    "independentInitialSettledFinalSnapshotsExactlyMatchRuntime": true,
+    "independentQuietMetricsExactlyMatchRuntime": true,
+    "postTerminalAdvanceCompletedTicks": 0,
+    "terminalReportFrozen": true
+  },
+  "diagnosticCoverageGap": {
+    "scope": "Leg-coordinate entries in driftTrace.samples[].legs",
+    "status": "Multibody legs unsupported by the impulse-joint-only diagnostic",
+    "observedEntriesPerSample": 0,
+    "currentModelLegSegmentCount": 6,
+    "qualifiesMultibodyLegDiagnostics": false,
+    "independentSnapshotParityDoesNotValidateEmptyLegDiagnostics": true,
+    "testContract": "Derive impulse-joint cardinality from leg roles, joint profiles and actual joint representation; explicitly assert current unsupported multibody-leg presence."
+  },
+  "targetedChecks": {
+    "independentObserverParityAndTerminal": {
+      "status": "passed",
+      "log": "outputs/getup-standing-fix-20261019/quiet-clock-full-trial-exact.log",
+      "passed": 1,
+      "failed": 0,
+      "ignored": 0,
+      "exit": 0,
+      "command": "cargo +1.89.0 test --offline --locked --release --manifest-path rust/Cargo.toml -p lh-sim --lib runtime::tests::full_quiet_trial_matches_the_independent_native_observer_and_stops_at_1920 -- --exact --nocapture"
+    },
+    "runtimeRemaining": {
+      "status": "passed",
+      "log": "outputs/getup-standing-fix-20261019/quiet-clock-runtime-remaining.log",
+      "passed": 12,
+      "failed": 0,
+      "ignored": 0,
+      "exit": 0,
+      "command": "rust/target/release/deps/lh_sim-9362ae33b049daed runtime::tests:: --skip full_quiet_trial_matches_the_independent_native_observer_and_stops_at_1920 --nocapture"
+    }
+  },
+  "combinedRuntimeCoverage": {
+    "uniqueTestsPassed": 13,
+    "failed": 0,
+    "ignored": 0,
+    "fullQuietTestExecutedOnceInFinalChecks": true,
+    "remainingRuntimeTestsExplicitlySkipFullQuiet": true,
+    "remainingHarnessBuiltByTheExactCargoCheck": true,
+    "equivalentRemainingCargoCommand": "cargo +1.89.0 test --offline --locked --release --manifest-path rust/Cargo.toml -p lh-sim --lib runtime::tests:: -- --skip full_quiet_trial_matches_the_independent_native_observer_and_stops_at_1920 --nocapture"
+  },
+  "canceledDuplicate": {
+    "exit": 130,
+    "testExecutionStarted": false,
+    "log": "outputs/getup-standing-fix-20261019/quiet-clock-runtime-duplicate-canceled.log",
+    "reason": "Avoid duplicate expensive full quiet trial; combine one exact test with the remaining 12 runtime tests via --skip."
+  },
+  "priorStaleDiagnosticAssertion": {
+    "exactTest": {
+      "passed": 0,
+      "failed": 1,
+      "ignored": 0,
+      "log": "outputs/getup-standing-fix-20261019/quiet-clock-full-trial-stale-legs.log"
+    },
+    "runtimeSubgroup": {
+      "passed": 12,
+      "failed": 1,
+      "ignored": 0,
+      "log": "outputs/getup-standing-fix-20261019/quiet-clock-runtime-stale-legs.log"
+    },
+    "failure": "The unchanged historical assertion expected 10 impulse-joint leg entries. Current GetUp trace had none; all time/count/snapshot/metric parity assertions before that assertion passed.",
+    "resolution": "Mechanical impulse-joint test contract correction only. No multibody leg-coordinate diagnostic implementation or qualification."
+  },
+  "otherChecks": {
+    "gitDiffCheckExit": 0,
+    "scopedRustfmtCheck": "Fails on pre-existing formatting outside this change in runtime.rs and measurement.rs; unrelated formatting is preserved.",
+    "scopedRustfmtLog": "outputs/getup-standing-fix-20261019/quiet-clock-format-check.log"
+  },
+  "testedSourceSha256": {
+    "rust/crates/sim/src/quiet.rs": "58395baa099dca267941cb93f7cf662843f896128c9f3ffb7a5a43792597d6b1",
+    "rust/crates/sim/src/runtime.rs": "24139ca61a056704dd8778f3c5702a735e2e199fbd742a7af7422b369761d801",
+    "rust/crates/sim/src/measurement.rs": "2ad90972224bd1f0e913f36cf01c8313947142dbd78e2ad333bda51e4b019de5",
+    "rust/crates/sim/src/getup.rs": "a39f6f5e3b66d5761b0ec18f1c33fbde6c82a26c54f5066f85a4182fd9388ecd",
+    "rust/crates/sim/src/getup/supported_standing.rs": "173e9f52ff6b99b42003a89e8c38c34c97b1db4cd5e50dad222e7bbd8a1f11b3"
+  },
+  "rawReportLog": "outputs/getup-standing-fix-20261019/quiet-clock-observed-report.log"
+}

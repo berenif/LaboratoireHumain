@@ -383,7 +383,7 @@ pub struct QuietMetrics {
     pub max_foot_drift_m: f32,
 }
 impl QuietMetrics {
-    /// Called after every 1/240 s integration, never just at snapshot boundaries.
+    /// Called after every physical integration, never just at snapshot boundaries.
     pub fn observe(
         &mut self,
         s: &Simulation,

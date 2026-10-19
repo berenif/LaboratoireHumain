@@ -773,8 +773,17 @@ mod tests {
         assert_eq!(owner.advance(4).unwrap().completed_ticks, 1);
         let report = owner.quiet_report().unwrap();
         assert_eq!(report["progress"]["passed"], true);
-        assert_eq!(report["progress"]["settlingSubsteps"], 480);
-        assert_eq!(report["progress"]["quietSubsteps"], 7200);
+        assert_eq!(
+            report["progress"]["settlingSubsteps"],
+            crate::quiet::SETTLE_TICKS * u64::from(lh_contracts::SUBSTEPS)
+        );
+        assert_eq!(
+            report["progress"]["quietSubsteps"],
+            (crate::quiet::END_TICK - crate::quiet::SETTLE_TICKS)
+                * u64::from(lh_contracts::SUBSTEPS)
+        );
+        assert_eq!(report["settled"]["simulation_time_s"], 3.0);
+        assert_eq!(report["final"]["simulation_time_s"], 48.0);
         assert_eq!(report["initial"], serde_json::to_value(initial).unwrap());
         assert_eq!(report["settled"], serde_json::to_value(settled).unwrap());
         assert_eq!(
@@ -786,17 +795,64 @@ mod tests {
             serde_json::to_value(metrics).unwrap()
         );
         let samples = report["driftTrace"]["samples"].as_array().unwrap();
-        assert_eq!(samples.len(), 33);
-        assert_eq!(samples[0]["completedSubsteps"], 0);
-        assert_eq!(samples[32]["completedSubsteps"], 7680);
         assert_eq!(
-            samples[32]["simulationTimeS"],
+            samples.len() as u64,
+            1 + crate::quiet::END_TICK / u64::from(lh_contracts::TICK_HZ)
+        );
+        assert_eq!(samples[0]["completedSubsteps"], 0);
+        for (second, sample) in samples.iter().enumerate() {
+            assert_eq!(
+                sample["completedSubsteps"],
+                second as u64 * u64::from(lh_contracts::TICK_HZ * lh_contracts::SUBSTEPS)
+            );
+            assert_eq!(sample["simulationTimeS"], second as f64);
+        }
+        let last = samples.last().unwrap();
+        assert_eq!(
+            last["completedSubsteps"],
+            crate::quiet::END_TICK * u64::from(lh_contracts::SUBSTEPS)
+        );
+        assert_eq!(
+            last["simulationTimeS"],
             report["final"]["simulation_time_s"]
         );
+        // Leg coordinates in this trace currently cover impulse joints only.
+        // Empty arrays do not qualify the current model's multibody legs.
+        let leg_indices: Vec<_> = direct
+            .model
+            .segments
+            .iter()
+            .enumerate()
+            .filter(|(_, segment)| {
+                matches!(
+                    segment.role.as_str(),
+                    "thigh" | "shin" | "ankle" | "hindfoot" | "forefoot"
+                ) && segment.joint_profile.is_some()
+            })
+            .map(|(i, _)| i)
+            .collect();
+        let impulse_joint_leg_count = leg_indices
+            .iter()
+            .filter(|&&i| direct.joints[i].is_some())
+            .count();
+        let unsupported_multibody_leg_count = leg_indices
+            .iter()
+            .filter(|&&i| {
+                direct
+                    .world
+                    .multibody_joints
+                    .rigid_body_link(direct.bodies[i])
+                    .is_some()
+            })
+            .count();
         assert!(
-            samples
-                .iter()
-                .all(|sample| sample["legs"].as_array().unwrap().len() == 10)
+            unsupported_multibody_leg_count > 0,
+            "current GetUp fixture must expose the unsupported multibody-leg diagnostic gap"
+        );
+        assert!(
+            samples.iter().all(|sample| {
+                sample["legs"].as_array().unwrap().len() == impulse_joint_leg_count
+            })
         );
         assert_eq!(owner.enable_quiet_drift_trace(), Err(Reject::Invalid));
         assert_eq!(owner.advance(4).unwrap().completed_ticks, 0);
