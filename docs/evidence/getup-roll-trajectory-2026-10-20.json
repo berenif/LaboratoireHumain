@@ -1,0 +1,362 @@
+{
+  "schema": "getup-roll-finite-trajectory-result-v1",
+  "dateUTC": "2026-10-20",
+  "status": "rejected-hard-optimizer-wall-cap-no-admitted-trajectory",
+  "sourceCommit": "e00ea94c881bce03492664c8e736dd0e2df78fd0",
+  "predeclaredContract": "docs/evidence/getup-roll-trajectory-predeclared-2026-10-19.json",
+  "prestallGeometryReceipt": "docs/evidence/getup-roll-prestall-contacts-2026-10-19.json",
+  "startedUTC": "2026-10-19T23:54:25.299790+00:00",
+  "endedUTC": "2026-10-20T00:14:25Z",
+  "optimization": {
+    "trajectoryOptimizerInvocations": 1,
+    "maxIterations": 600,
+    "hardWholeProcessWallCapSeconds": 1200,
+    "observedWholeProcessWallSecondsInteger": 1200,
+    "exitCode": 137,
+    "termination": "External timeout --signal=KILL1200s; optimizer never returned a final solve-report. No restart or second solve.",
+    "lastLoggedIpoptIteration": 275,
+    "lastLoggedPrimalViolation": 0.00309,
+    "retainedCallbackCheckpoint": {
+      "iteration": 270,
+      "wallSeconds": 1172.6563114149976,
+      "objective": 7.262928279357855,
+      "maxNormalizedViolation": 0.0024240604517801316
+    },
+    "predeclaredInputsAndSourcesUnchanged": true,
+    "objectiveOrConstraintOrMeshOrSequenceChangesAfterLaunch": false,
+    "nominalTrajectoryAdmitted": false,
+    "interpretation": "Budget-limited failure to obtain a feasible/admitted full trajectory. This is not a proof that physical rolling is globally impossible.",
+    "lastLoggedPrimalViolationPrecision": "Rounded printed Ipopt primal-violation value3.09e-3, not an exact retained scalar."
+  },
+  "physicalEvaluation": {
+    "newCandidateExecuted": false,
+    "nativeIntegrations": 0,
+    "sourceForecasts": 0,
+    "studentGenerations": 0,
+    "standingSamplesEarned": 0,
+    "anchoredHoldAttempted": false,
+    "recoveryWallLatencySeconds": null,
+    "sourceForecastWallLatencySeconds": null,
+    "holdWallLatencySeconds": null,
+    "originalImpactNative": 480,
+    "originalRecoveryDeadlineNative": 20480,
+    "originalRollDeadlineNative": 4480,
+    "preservedPrefixCheckpointNative": 1940,
+    "remainingOriginalRollSeconds": 3.175,
+    "clockResetOrPoseRepairOrExternalAssistance": false,
+    "canAuthorizePhysicalTrial": false
+  },
+  "retainedIterateAnalysis": {
+    "purpose": "Read-only diagnosis of callback counter270 (objective7.262928279357855), corresponding to printed Ipopt iteration269. This differs from the final printed timeout iteration275. All evaluation is offline; no physical world was advanced and no optimizer was constructed.",
+    "audit": "outputs/getup-roll-trajectory-20261019/one-solve/retained-iterate-audit.json",
+    "optimizerInvocationsInAudit": 0,
+    "meshAdmitted": false,
+    "meshMaximumNormalizedViolation": 0.0024240604517801316,
+    "initialRootOriginHeightMismatchM": 0.0002890065697233324,
+    "meshResiduals": {
+      "initial_configuration": {
+        "maxNativeUnitViolation": 0.0002890065697233324,
+        "maxNormalizedViolation": 0.0002890065697233324,
+        "rows": 28,
+        "allFinite": true,
+        "worstLocation": "native1940"
+      },
+      "initial_velocity": {
+        "maxNativeUnitViolation": 1.939020238404365e-05,
+        "maxNormalizedViolation": 1.939020238404365e-05,
+        "rows": 27,
+        "allFinite": true,
+        "worstLocation": "native1940"
+      },
+      "position_integration_m": {
+        "maxNativeUnitViolation": 0.0018929326894038916,
+        "maxNormalizedViolation": 0.0018929326894038916,
+        "rows": 192,
+        "allFinite": true,
+        "worstLocation": {
+          "node": 59,
+          "timeS": 2.95,
+          "phase": "brake_prone"
+        }
+      },
+      "orientation_integration": {
+        "maxNativeUnitViolation": 0.0008275226770028312,
+        "maxNormalizedViolation": 0.0008275226770028312,
+        "rows": 192,
+        "allFinite": true,
+        "worstLocation": {
+          "node": 60,
+          "timeS": 3.0,
+          "phase": "brake_prone"
+        }
+      },
+      "velocity_integration": {
+        "maxNativeUnitViolation": 0.0003260257042553144,
+        "maxNormalizedViolation": 0.0003260257042553144,
+        "rows": 1728,
+        "allFinite": true,
+        "worstLocation": {
+          "node": 46,
+          "timeS": 2.3,
+          "phase": "acquire_prone"
+        }
+      },
+      "floor_clearance_m": {
+        "maxNativeUnitViolation": 0.0017008013334973912,
+        "maxNormalizedViolation": 0.0017008013334973912,
+        "rows": 2470,
+        "allFinite": true,
+        "worstLocation": {
+          "node": 59,
+          "timeS": 2.95,
+          "phase": "brake_prone"
+        }
+      },
+      "friction_cone_N2": {
+        "maxNativeUnitViolation": 114.3881384899088,
+        "maxNormalizedViolation": 0.0007125018419338897,
+        "rows": 529,
+        "allFinite": true,
+        "worstLocation": {
+          "node": 59,
+          "timeS": 2.95,
+          "phase": "brake_prone",
+          "slot": "left_shin_left_shin_b"
+        }
+      },
+      "force_separation_Nm": {
+        "maxNativeUnitViolation": 0.4039085209990733,
+        "maxNormalizedViolation": 0.0010080579865186646,
+        "rows": 529,
+        "allFinite": true,
+        "worstLocation": {
+          "node": 62,
+          "timeS": 3.1,
+          "phase": "brake_prone",
+          "slot": "pelvis_a"
+        }
+      },
+      "coulomb_maximum_dissipation_Nmps": {
+        "maxNativeUnitViolation": 0.9712721738083566,
+        "maxNormalizedViolation": 0.0024240604517801316,
+        "rows": 866,
+        "allFinite": true,
+        "worstLocation": {
+          "node": 59,
+          "timeS": 2.95,
+          "phase": "brake_prone",
+          "slot": "left_shin_left_shin_b"
+        }
+      },
+      "slip_speed_definition_m2ps2": {
+        "maxNativeUnitViolation": 0.00099984690680599,
+        "maxNormalizedViolation": 0.00099984690680599,
+        "rows": 433,
+        "allFinite": true,
+        "worstLocation": {
+          "node": 56,
+          "timeS": 2.8,
+          "phase": "brake_prone",
+          "slot": "right_shin_right_shin_b"
+        }
+      },
+      "dynamics_N_or_Nm": {
+        "maxNativeUnitViolation": 0.250210295024786,
+        "maxNormalizedViolation": 0.0006244643851163157,
+        "rows": 1755,
+        "allFinite": true,
+        "worstLocation": {
+          "node": 59,
+          "timeS": 2.95,
+          "phase": "brake_prone"
+        }
+      }
+    },
+    "coherentDenseSamples": 2552,
+    "coherentDenseAdmitted": false,
+    "denseResiduals": {
+      "dynamics_N_or_Nm": {
+        "maxNativeUnitViolation": 236.10777430911392,
+        "allFinite": true,
+        "worstTimeS": 2.79,
+        "threshold": 0.01
+      },
+      "inactive_force_N": {
+        "maxNativeUnitViolation": 0.3740389732802073,
+        "allFinite": true,
+        "worstTimeS": 1.49875,
+        "threshold": 1e-07
+      },
+      "rolling_material_point_velocity_mps": {
+        "maxNativeUnitViolation": 0.5690597615191277,
+        "allFinite": true,
+        "worstTimeS": 1.49875,
+        "threshold": 1e-06
+      },
+      "friction_cone_N2": {
+        "maxNativeUnitViolation": 114.3881384899088,
+        "allFinite": true,
+        "worstTimeS": 2.95,
+        "threshold": 0.0001
+      },
+      "force_separation_Nm": {
+        "maxNativeUnitViolation": 0.4039085209990733,
+        "allFinite": true,
+        "worstTimeS": 3.1,
+        "threshold": 0.0001
+      },
+      "coulomb_maximum_dissipation_Nmps": {
+        "maxNativeUnitViolation": 64.75214661814955,
+        "allFinite": true,
+        "worstTimeS": 2.6750000000000003,
+        "threshold": 0.0001
+      },
+      "loaded_normal_velocity_Nmps": {
+        "maxNativeUnitViolation": 48.7875919646822,
+        "allFinite": true,
+        "worstTimeS": 2.97375,
+        "threshold": 0.0001
+      },
+      "lateral_pelvis_torso_face_up": {
+        "maxNativeUnitViolation": 0.014414367904966086,
+        "allFinite": true,
+        "worstTimeS": 1.475,
+        "threshold": 1e-06
+      },
+      "acceleration_bound": {
+        "maxNativeUnitViolation": 1.4398274439268182,
+        "allFinite": true,
+        "worstTimeS": 2.95875,
+        "threshold": 1e-07
+      }
+    },
+    "environmentClearance": {
+      "minimumSidewallOrCeilingClearanceM": 3.1884266738921987,
+      "allSampledPrimitiveExtentsInsideRoom": true,
+      "wallReactionVariablesApplied": false,
+      "parkedStrikerCollisionDisabled": true,
+      "qualification": "Separate conservative exact planar-room clearance check on rejected data only; room constraints were not in the frozen NLP and this check cannot authorize a timeout iterate."
+    },
+    "qualification": "The frozen NLP modeled human self-collision and floor but no room-wall reactions/constraints. A separate read-only conservative planar-wall check finds rejected sampled geometry3.188m clear. This cannot revive a timeout candidate. Continuous dynamics/implicit Rapier/PGS mismatch remains explicitly unqualified.",
+    "retainedCallbackCounter": 270,
+    "correspondingPrintedIpoptIteration": 269
+  },
+  "verification": {
+    "nativeReadOnlyCheckpointInspection": "Exact runtime/checkpoint and world bytes unchanged; zero integrations.",
+    "dynamicsPureTestsPassed": 12,
+    "plannerPureBuildTestsPassed": 10,
+    "independentFrozenAdmissionCodeReview": "GO for nominal optimizer+mesh+dense conjunction; no physical feasibility claim. Timeout progress/last iterate cannot authorize execution.",
+    "postSolveSourceHashAudit": true,
+    "finalSolveReportExists": false
+  },
+  "decision": {
+    "selectedSequenceAndHorizonClosed": true,
+    "additionalOptimizerOrPhysicalRetryAllowedByThisExperiment": false,
+    "nextFeatureOrDynamicsRunPerformed": false,
+    "publicDefaultsOrLearnedAssetsPromoted": false,
+    "baselineWorkingPoliciesModified": false,
+    "notes": "Offline source/model helpers are retained for diagnosis. No real-time control or performance claim is made."
+  },
+  "receipts": [
+    {
+      "path": "docs/evidence/getup-roll-prestall-contacts-2026-10-19.json",
+      "sha256": "9b05e45cfc40031697aa2f1f985e3eb0a9bc448c22385e132d6852805e08daf2",
+      "bytes": 30496
+    },
+    {
+      "path": "docs/evidence/getup-roll-trajectory-predeclared-2026-10-19.json",
+      "sha256": "794e61159482d273da1d1dfb4707ebe22a5f9f012e6d0fbb74066e9168c92f7a",
+      "bytes": 9866
+    },
+    {
+      "path": "docs/evidence/physical-roll-prestall-checkpoint-2026-10-19.json",
+      "sha256": "9f044406e5a4e5179fdbeddedb38759c16f563e87de8826513687c3b4b18b15f",
+      "bytes": 10448
+    },
+    {
+      "path": "scripts/getup-roll-dynamics.py",
+      "sha256": "604e79b7785d5e16a10de285f8c087f001ee043372cd7bee9320ed7b407fca2e",
+      "bytes": 23290
+    },
+    {
+      "path": "scripts/getup-roll-dynamics-test.py",
+      "sha256": "ebca7ff31ac674c3b8ffcf98175638d84153fc79115a69770094391918ea2b30",
+      "bytes": 13878
+    },
+    {
+      "path": "scripts/plan-getup-roll-trajectory.py",
+      "sha256": "9e4bdf31af3e951b1d7727cef8304664da9b7715f6aa7410c6eef25031a4d5e3",
+      "bytes": 60053
+    },
+    {
+      "path": "scripts/plan-getup-roll-trajectory-test.py",
+      "sha256": "441ff96896d43f6c0985eedef2438058b730f525547388d5b47cb3606090db53",
+      "bytes": 13118
+    },
+    {
+      "path": "outputs/getup-roll-trajectory-20261019/audit-retained-iterate.py",
+      "sha256": "a65df513f5e0afa436e97ac65a60a6d8ce6ea4106cfbb6a0e77c270680305c66",
+      "bytes": 3656
+    },
+    {
+      "path": "outputs/getup-roll-trajectory-20261019/actual-prestall-contacts.png",
+      "sha256": "6c782e876869a4e85601416cd3377c3203402de7fdd1d1b35741f7301e6508ea",
+      "bytes": 233165
+    },
+    {
+      "path": "outputs/getup-roll-trajectory-20261019/render-prestall-contacts.py",
+      "sha256": "728955d61a35b881b606ea44f02ed890fa7f0d9edd6797fb6edf0e387f6cb370",
+      "bytes": 3286
+    },
+    {
+      "path": "outputs/getup-roll-trajectory-20261019/one-solve/invocation.json",
+      "sha256": "9ebf89252ec42d34378fbba7e680d08324e24d54db11c2c71746174c355dcaad",
+      "bytes": 1434
+    },
+    {
+      "path": "outputs/getup-roll-trajectory-20261019/one-solve/optimizer.log",
+      "sha256": "53a48f6c8d7e20517d4d95a924a46069d8c7372b711a36cd24a835d49e94c7d6",
+      "bytes": 30273
+    },
+    {
+      "path": "outputs/getup-roll-trajectory-20261019/one-solve/process-exit.json",
+      "sha256": "10bca220b261cc7761ccdfa951efb3fee7fe90751fba78b73c5706da5103c237",
+      "bytes": 89
+    },
+    {
+      "path": "outputs/getup-roll-trajectory-20261019/one-solve/build-report.json",
+      "sha256": "5d1c97bf5f0457034347de8a245c19c38bd0eb0fa506e06aa487fdb72735cfdb",
+      "bytes": 45259
+    },
+    {
+      "path": "outputs/getup-roll-trajectory-20261019/one-solve/progress.json",
+      "sha256": "183d2575b3483bd956df84729adadf0040288cb4f3194f49a1280464f9722c0b",
+      "bytes": 10038
+    },
+    {
+      "path": "outputs/getup-roll-trajectory-20261019/one-solve/progress.ndjson",
+      "sha256": "a14b264804e5d629f03b3f9614e1987af3fc61c224a2a440e2dc078f8b5322bf",
+      "bytes": 213891
+    },
+    {
+      "path": "outputs/getup-roll-trajectory-20261019/one-solve/checkpoint-last-iterate.npz",
+      "sha256": "5c803a3e848fc3e0f794dc11e8ab96802c1b22226002357e5bc0411beb3b4bd4",
+      "bytes": 68134
+    },
+    {
+      "path": "outputs/getup-roll-trajectory-20261019/one-solve/retained-iterate-audit.json",
+      "sha256": "2d894d0e0f5e8599b766eb0895d46f511bf9d2eb9261ba11c4d23843badb669b",
+      "bytes": 22095
+    },
+    {
+      "path": "outputs/getup-roll-trajectory-20261019/one-solve/retained-iterate-audit.log",
+      "sha256": "901d7e87b73ccb5341e8988001747b71ab26055687a02b8e39862bc2336403c7",
+      "bytes": 103
+    },
+    {
+      "path": "outputs/getup-roll-trajectory-20261019/one-solve/rejected-retained-reference.json",
+      "sha256": "d4af58304311db1d53f7f070566d40ce99cb737cf8f29c5c6bd862c01dc23a98",
+      "bytes": 12750148
+    }
+  ]
+}
