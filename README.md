@@ -33,4 +33,6 @@ Install the smoke-test browser with `npx playwright install chromium`. `RUST_BRO
 
 A native-only [stationary balance experiment](docs/experiments/getup-stationary-balance.md) exposes GetUp-style residual actions, a fixed-location objective and contact-aware evaluation for future SAC fine-tuning. A [bounded CPU SAC pilot](docs/evidence/getup-stationary-balance-pilot-2026-10-17/README.md) trained an experimental candidate, which was rejected on all four held-out comparisons. No learned stationary-balance controller is enabled in the application.
 
+A [bounded actual-WASM frozen-feature adaptation pilot](docs/experiments/getup-wasm-policy-adaptation.md) also rejected its single candidate: the original BACK case retained zero qualifying measured interval, despite improvement on one narrowly related heldout state and preserved belly holds. The local correction head remains default-off; no trained weights are embedded or published.
+
 Source lives in `rust/crates/`, with browser assets in `rust/browser/` and build/test helpers in `scripts/`. The legacy TypeScript application is retained in Git history. Existing reports and immutable experiment records under `docs/` are historical evidence, not current build instructions; start with this README.

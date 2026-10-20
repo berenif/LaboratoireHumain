@@ -43,6 +43,14 @@ mod browser {
         let input: Vec<f32> = serde_json::from_str(observation).map_err(error)?;
         serde_json::to_string(&lh_sim::getup::actor::infer(actor, &input).map_err(error)?).map_err(error)
     }
+    #[cfg(feature = "getup-policy-adaptation-experiment")]
+    #[wasm_bindgen]
+    pub fn getup_correction_head(head: &str, features: &str) -> Result<String, JsValue> {
+        if head.len() > 1024*1024 || features.len() > 32768 { return Err(error("Correction inference input exceeds bound")); }
+        let head: lh_sim::getup::adaptation::Head = serde_json::from_str(head).map_err(error)?;
+        let features: Vec<f32> = serde_json::from_str(features).map_err(error)?;
+        serde_json::to_string(&head.correction(&features).map_err(error)?).map_err(error)
+    }
     #[wasm_bindgen]
     pub fn getup_trial_profile() -> String {
         let mut profile = Profile::default(); profile.getup_policy_enabled = true;
@@ -226,6 +234,22 @@ mod browser {
         }
         pub fn from_getup_checkpoint(bytes: &[u8]) -> Result<WorkerRuntime, JsValue> {
             Ok(Self { runtime: Runtime::from_getup_checkpoint(bytes).map_err(error)?, native_output_ms: 0.0 })
+        }
+        #[cfg(feature = "getup-policy-adaptation-experiment")]
+        pub fn getup_adaptation_state(&self) -> Result<String, JsValue> {
+            self.runtime.getup_adaptation_state().map_err(error)
+        }
+        #[cfg(feature = "getup-policy-adaptation-experiment")]
+        pub fn set_getup_adaptation_head(&mut self, json: &str) -> Result<(), JsValue> {
+            self.runtime.set_getup_adaptation_head(json).map_err(error)
+        }
+        #[cfg(feature = "getup-policy-adaptation-experiment")]
+        pub fn getup_adaptation_preview(&self) -> Result<String, JsValue> {
+            self.runtime.getup_adaptation_preview().map_err(error)
+        }
+        #[cfg(feature = "getup-policy-adaptation-experiment")]
+        pub fn queue_getup_correction(&mut self, json: &str) -> Result<(), JsValue> {
+            self.runtime.queue_getup_correction(json).map_err(error)
         }
         pub fn getup_report(&self) -> Result<String, JsValue> { self.runtime.getup_report().map_err(error) }
         #[wasm_bindgen(constructor)]

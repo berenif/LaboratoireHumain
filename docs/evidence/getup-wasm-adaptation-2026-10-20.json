@@ -1,0 +1,188 @@
+{
+  "schema": 1,
+  "date": "2026-10-20",
+  "experiment": "bounded-frozen-feature-actual-WASM-correction-v1",
+  "engineeringPassed": true,
+  "physicalSignal": false,
+  "candidateAccepted": false,
+  "releaseAccepted": false,
+  "reason": "Original BACK has zero qualifying measured interval before and after; both-case80-native improvement criterion fails. No wider correction, gain, horizon, candidate selection or retry.",
+  "caps": {
+    "schema": 1,
+    "wallSeconds": 3600,
+    "nativeIntegrations": 600000,
+    "trainingDecisionCap": 8192,
+    "replayCapacity": 10240,
+    "criticOnlyUpdates": 256,
+    "jointUpdates": 256,
+    "batchSize": 128,
+    "successfulRehearsalFraction": 0.25,
+    "gamma": 0.999000499833375,
+    "discountMeaning": "25second time constant; terminal signal at1000decisions retains exp(-1)",
+    "parityDecisions": 122,
+    "originalCheckpointSha256": "c49445348d9e96543f283c8d9a318241c24ffbb0a03f938e2490bd2167ec6ed6",
+    "heldoutProcedure": "one fresh BACK construction; carry enabled atnative0; zero-control prepare fixed560native; require ready,faceUp>=.8,abs(longUp)<=.35,head<=.5,load>=.8BW,maxV<=.22,maxW<=.65; physicalQorDq differs fromoriginal480; save then trigger once; no retry/no search/no performance before freezing",
+    "reward": "100success-100failure+2(gamma*Phi(next)-Phi(current))-.0025-.01mean(c^2)-.005mean((c-previous_c)^2); terminalPhi0; Phi=supportFraction*(.25torsoUpright+.25clippedHeadHeight/1.4+.25footWeightFraction+.25/(1+maxV+maxW))*(onlyFeet?1:.5); all fractions clipped0..1; NO physicalCOM sentinel target",
+    "success": "existing800consecutive native standing gate before original25s impactdeadline",
+    "failure": "existingintegrity/refusal/original25s deadline; no low-height earlyfailure",
+    "evaluation": "one finalcheckpoint originalBACK+narrow560BACK improve longestnative feet-only loaded torso-upright lowmotion interval>=80samples each; belly retains existing qualification; diagnostic isnot full800gate+30hold qualification",
+    "head": "frozen118input two1024ReLU trunk; only1024to21 correctionmean + stochasticlogstd trained; residual=tanh(originalRaw+.05c), c=tanh(normal); zero uses original actionbits; replay/critic/entropy action=c"
+  },
+  "actual": {
+    "trainingDecisions": 8192,
+    "replayEntries": 8361,
+    "successfulRehearsalEntries": 169,
+    "criticOnlyUpdates": 256,
+    "jointUpdates": 256,
+    "allUpdateMetricsAndParametersFinite": true,
+    "maximumCollectedSameStateResidualChangeRad": 0.010392889380455017
+  },
+  "adapterParity": {
+    "passed": true,
+    "legacyBaselineRejectsActiveSchema4": true,
+    "pendingCorrectionCheckpointExact": true,
+    "comparedNativeSamples": 2440,
+    "parityDecisions": 122,
+    "checkpointResumedSamples": 2240,
+    "wallSeconds": 16.547805850999996,
+    "ledger": {
+      "schema": 1,
+      "startedAt": "2026-10-20T00:31:30.983Z",
+      "deadlineUnixMs": 1792459890983,
+      "nativeIntegrations": 38720,
+      "realIntegrations": 23500,
+      "forecastIntegrations": 10200,
+      "completedCalls": 1176,
+      "uncertainCalls": [
+        {
+          "at": "2026-10-20T00:33:59.672911+00:00",
+          "chargedUpperBound": 5020,
+          "reason": "Parent interrupted harness before learning to fix packet-prefix metric and success/failure precedence; last outstanding call conservatively charged maximum20real+5000forecast."
+        }
+      ],
+      "limit": 600000,
+      "trainingDecisions": 0,
+      "releaseAccepted": false
+    }
+  },
+  "headExportParity": {
+    "pureFeatureCases": 32,
+    "pureMaximumCorrectionError": 2.9802322387695312e-08,
+    "rolloutMaximumCorrectionError": 1.7881393432617188e-07,
+    "tolerance": 2e-06
+  },
+  "fixed25Comparisons": [
+    {
+      "case": "original",
+      "baseline": {
+        "longestNativeSamples": 0,
+        "passed800Gate": false,
+        "endpointNative": 20480,
+        "finalCheckpointSha256": "ece7c8a36af46dfc57b0a773bfbf88959d1594f0bf67423cc8f5861b6208569a"
+      },
+      "candidate": {
+        "longestNativeSamples": 0,
+        "passed800Gate": false,
+        "endpointNative": 20480,
+        "finalCheckpointSha256": "4ede73a1f2956a764a46957dde9358b50b1a0b08510685bb0de6a00b18de251c"
+      },
+      "improvementNativeSamples": 0
+    },
+    {
+      "case": "heldout",
+      "baseline": {
+        "longestNativeSamples": 15608,
+        "passed800Gate": true,
+        "endpointNative": 20560,
+        "finalCheckpointSha256": "508bcba12dde020235511bf7d839cfee6e8cf04ff74113aa1a8fd1856868cd07"
+      },
+      "candidate": {
+        "longestNativeSamples": 17670,
+        "passed800Gate": true,
+        "endpointNative": 20560,
+        "finalCheckpointSha256": "d1a072d761c8b78d79c360daa2c25b48213dffe1e77339d50b24b52d3dd07066"
+      },
+      "improvementNativeSamples": 2062
+    }
+  ],
+  "bellyNonRegression": [
+    {
+      "label": "baseline",
+      "firstSuccessObservedNative": 4860,
+      "stableSamplesAtObservation": 809,
+      "finalStableSamples": 24809,
+      "holdNativeSamples": 24000,
+      "holdSeconds": 30,
+      "maximumOriginalFootOriginDriftM": 0.0013127924541417942,
+      "maximumAnchoredFootMaterialPointExcursionM": 0.00231084711334123,
+      "finalCheckpointSha256": "9104da66130e720bc92d196e265d5fa4d81b12adedda7d90e11be6671f13413f"
+    },
+    {
+      "label": "candidate",
+      "firstSuccessObservedNative": 4940,
+      "stableSamplesAtObservation": 819,
+      "finalStableSamples": 24819,
+      "holdNativeSamples": 24000,
+      "holdSeconds": 30,
+      "maximumOriginalFootOriginDriftM": 0.001372806597620018,
+      "maximumAnchoredFootMaterialPointExcursionM": 0.00229682320635383,
+      "finalCheckpointSha256": "053ea498bb8d09f565e03efd11c21d8c369e8c595ba4089a43e3f149f877e1da"
+    }
+  ],
+  "budget": {
+    "startedAt": "2026-10-20T00:31:30.983Z",
+    "endedAt": "2026-10-20T00:47:51.015472+00:00",
+    "elapsedWallSecondsIncludingEngineeringPausesAndAudit": 980.032472,
+    "limitWallSeconds": 3600,
+    "mainChargedIntegrations": 332520,
+    "additionalBaselineIntegrations": 14800,
+    "additionalFinalCandidateIntegrations": 16860,
+    "actualRealIntegrations": 330620,
+    "forecastIntegrations": 28540,
+    "uncertainOutstandingConservativeCharge": 5020,
+    "totalChargedIntegrations": 364180,
+    "limitIntegrations": 600000
+  },
+  "limitations": [
+    "Nearby heldout uses same initial BACK construction with continued passive contact settling to560 rather than480; no broad independent-fall generalization.",
+    "First20native source decision is original/uncorrected on every training and final branch; candidate head starts next40Hz boundary.",
+    "Successful BACK metrics originally stopped at first800success; retained same-world continuations correct both evaluations to fixed original25s endpoints. Original censored report is retained and superseded for acceptance.",
+    "Diagnostic interval does not replace all800-native standing predicates or30s anchor hold.",
+    "Material metric is maximum anchored excursion, separate from10mm foot-origin drift, not cumulative travel.",
+    "Single-cycle adapter only: existing completed-cycle reset drops the head; adapted repeated-fall lifecycle is unqualified.",
+    "Actual WASM under Node; no candidate browser/mobile/public qualification.",
+    "All trained weights, replay and checkpoints remain local; base-policy redistribution rights unresolved."
+  ],
+  "provenance": {
+    "baseCommit": "cdb8c21b7ffc19f3c82c3bc5fb320f9681640cf8",
+    "candidateWasmSha256": "921a373a0964db6ecaa86f3c1f10a91124f6f672b3dc123f0a0232721424cf56",
+    "frozenBaselineWasmSha256": "53395c6d8b968774e07ee38eeb1931047acefb0df3cd090a59bc1943b9867e28",
+    "candidateHeadLocalSha256": "4f7e4c1e98e3b639bcf8a6cc97d4f946904dcde2e9c876212f4217ccbbc37bbb",
+    "frozenConfigSha256": "e9d5f0fbe9cc6757266ec7d835cc9308956388b1c77ca11d8ba870c1d468c7dc",
+    "fixed25MetricCorrectionSha256": "719abb43672e84516ddb5b7004a9acadcd107a09955e25f8013b1bd12ac83f52",
+    "rawPilotReportSha256": "3ebb3157cf584746c1836e7f72122dd054f4a3d13dedac0e24dbd91bc0698ce6",
+    "transitionsSha256": "b9b44bf1e2a9d44df08e954c749123061baf521f10ae3640789d54560b15f305",
+    "updatesSha256": "8fbf7e032848c35b4e4e64d895f641519925d8d9c9d871dada79251e18e4ad06",
+    "replayLocalSha256": "7a4218e4efcd16f3b5d7b7266a214bc09c4d0a679341b952b47ca76fcc6b38f9",
+    "sourcePolicyChanged": false,
+    "productionDefaultChanged": false
+  },
+  "validation": {
+    "javascriptTestsPassed": 121,
+    "focusedPythonTestsPassed": 5,
+    "focusedRustZeroIntegrationTestsPassed": 2,
+    "experimentalWasmReleaseBuildPassed": true,
+    "defaultOffWasmCheckPassed": true,
+    "reusedTrainingOutputRefusedWithoutChangingLedgerOrWeights": true,
+    "broaderHistoricalPhysicalReleaseSuiteClaimedPassing": false,
+    "existingRustWarnings": "Default-off check reports47 existing unused-code warnings; focused feature test reports6. No full lint/release qualification is claimed.",
+    "finalExperimentalWasmApiCheckPassed": true
+  },
+  "sourceAfterPilotHardening": [
+    "Reused training outputs are refused before any process/model work.",
+    "Reported first-success metrics are explicitly provisional pending fixed25 audit.",
+    "Conservative global-elapsed throughput excludes uncertain charges.",
+    "Counter reset accounting conservatively charges before refusing; no reset occurred in this pilot.",
+    "External correction input is size-bounded and missing controllers return an error instead of panicking; numerical policy path unchanged."
+  ]
+}

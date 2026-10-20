@@ -5,6 +5,7 @@ edition.workspace = true
 publish.workspace = true
 
 [features]
+getup-policy-adaptation-experiment = ["lh-sim/getup-policy-adaptation-experiment"]
 root-translation-carry-experiment = ["lh-sim/root-translation-carry-experiment"]
 getup-terminal-tail-observer-experiment = ["lh-sim/getup-terminal-tail-observer-experiment"]
 getup-physical-roll-experiment = ["lh-sim/getup-physical-roll-experiment"]

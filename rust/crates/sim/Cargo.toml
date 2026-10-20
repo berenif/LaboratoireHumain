@@ -5,6 +5,7 @@ edition.workspace = true
 publish.workspace = true
 
 [features]
+getup-policy-adaptation-experiment = []
 stationary-balance-experiment = []
 standing-dynamics-experiment = []
 getup-terminal-balance-experiment = []

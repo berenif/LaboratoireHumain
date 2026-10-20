@@ -85,6 +85,13 @@ impl Actor {
         })
     }
     pub fn infer(&self, input: &[f32]) -> Result<Prediction, String> {
+        self.forward(input, false).map(|(prediction, _)| prediction)
+    }
+    #[cfg(feature = "getup-policy-adaptation-experiment")]
+    pub fn infer_with_features(&self, input: &[f32]) -> Result<(Prediction, Vec<f32>), String> {
+        self.forward(input, true).map(|(prediction, features)| (prediction, features.unwrap()))
+    }
+    fn forward(&self, input: &[f32], capture: bool) -> Result<(Prediction, Option<Vec<f32>>), String> {
         if input.len() != self.input
             || input.iter().any(|v| !v.is_finite())
             || !(0.0..=1.0).contains(input.last().unwrap())
@@ -92,6 +99,7 @@ impl Actor {
             return Err("Invalid GetUp actor observation".into());
         }
         let mut previous = input.to_vec();
+        let mut features = None;
         for (index, layer) in self.layers.iter().enumerate() {
             let mut next = Vec::with_capacity(layer.bias.len());
             for (weights, bias) in layer.weights.chunks_exact(layer.width).zip(&layer.bias) {
@@ -104,15 +112,16 @@ impl Actor {
                     as f32;
                 next.push(if index < 2 { sum.max(0.0) } else { sum });
             }
+            if capture && index == 1 { features = Some(next.clone()); }
             previous = next;
         }
         if previous.iter().any(|x| !x.is_finite()) {
             return Err("Nonfinite GetUp inference".into());
         }
-        Ok(Prediction {
+        Ok((Prediction {
             action: std::array::from_fn(|i| previous[i].tanh() * input[self.input - 1]),
             raw: previous,
-        })
+        }, features))
     }
 }
 pub fn teacher() -> &'static Actor {

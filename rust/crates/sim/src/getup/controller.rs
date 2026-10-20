@@ -150,8 +150,67 @@ pub struct Controller {
     terminal_base_ready: Option<TerminalBaseReady>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     physical_roll: Option<super::physical_roll::State>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    adaptation: Option<super::adaptation::State>,
 }
 impl Controller {
+    pub(crate) fn adaptation_valid(&self, native: u64) -> bool {
+        self.adaptation.as_ref().is_none_or(|a| a.valid(native)
+            && a.pending.as_ref().is_none_or(|_| self.adaptation_boundary(native))
+            && a.last.as_ref().is_none_or(|r| self.started_substep.and_then(|start|
+                r.reference_decision.checked_mul(20).and_then(|offset|start.checked_add(offset))) == Some(r.native_substep)
+                && self.last_decision == Some(r.reference_decision)
+                && self.residual.map(f32::to_bits) == r.applied_residual.map(f32::to_bits)))
+    }
+    pub(crate) fn adaptation_active(&self) -> bool { self.adaptation.is_some() }
+    #[cfg(feature = "getup-policy-adaptation-experiment")]
+    pub(crate) fn adaptation_diagnostic(&self) -> serde_json::Value {
+        serde_json::json!({"status":self.status,"residual":self.residual,
+            "started_substep":self.started_substep,"impact_substep":self.impact_substep,
+            "last_decision":self.last_decision,
+            "adaptation":{"last":self.adaptation.as_ref().and_then(|a|a.last.as_ref())}})
+    }
+    fn adaptation_boundary(&self, native: u64) -> bool {
+        self.started_substep.is_some_and(|start| native.checked_sub(start).is_some_and(|elapsed|
+            elapsed%20 == 0 && self.last_decision != Some(elapsed/20)))
+            && self.terminal_balance.is_none() && !self.reference.is_empty()
+    }
+    #[cfg(feature = "getup-policy-adaptation-experiment")]
+    pub(crate) fn set_adaptation_head(&mut self, head: Option<super::adaptation::Head>) -> Result<(), String> {
+        if head.as_ref().is_some_and(|h| !h.validate()) { return Err("Invalid correction head".into()); }
+        let last = self.adaptation.as_mut().and_then(|a| a.last.take());
+        self.adaptation = Some(super::adaptation::State { format:super::adaptation::FORMAT.into(),
+            head, pending:None, last });
+        Ok(())
+    }
+    #[cfg(feature = "getup-policy-adaptation-experiment")]
+    pub(crate) fn queue_adaptation(&mut self, native: u64, correction: [f32;21]) -> Result<(), String> {
+        if !self.adaptation_boundary(native) { return Err("Correction requires an unapplied 40 Hz source boundary".into()); }
+        if !super::adaptation::valid_correction(&correction) { return Err("Correction must be finite in [-1,1]".into()); }
+        let state = self.adaptation.as_mut().ok_or("Enable local adaptation first")?;
+        if state.head.is_some() || state.pending.is_some() { return Err("Correction head/pending command already owns this decision".into()); }
+        state.pending = Some(super::adaptation::Pending {native_substep:native,correction});
+        Ok(())
+    }
+    #[cfg(feature = "getup-policy-adaptation-experiment")]
+    pub(crate) fn adaptation_preview(&self, s: &Simulation) -> Result<serde_json::Value, String> {
+        let start = self.started_substep.ok_or("Source recovery has not started")?;
+        if self.terminal_balance.is_some() || self.reference.is_empty() || s.substeps_completed < start
+            || (s.substeps_completed-start)%20 != 0 {
+            return Err("Preview requires an active exact 40 Hz source boundary".into());
+        }
+        let index = ((s.substeps_completed-start)/20) as usize;
+        if self.last_decision == Some(index as u64) { return Err("Current decision already applied".into()); }
+        let end = self.reference.len()-1;
+        let input = super::slow_observation(&super::physical_observation(s)?,
+            &self.reference[index.min(end)], &self.reference[(index+5).min(end)]);
+        let (prediction,features) = actor::student().infer_with_features(&input)?;
+        Ok(serde_json::json!({"nativeSubsteps":s.substeps_completed,"referenceDecision":index,
+            "referenceIndex":index.min(end),"observation":input.to_vec(),"features":features,
+            "originalRaw":prediction.raw,"originalResidual":prediction.action,
+            "lastAdaptation":self.adaptation.as_ref().and_then(|a|a.last.as_ref()),
+            "physicsIntegrations":0}))
+    }
     pub(crate) fn physical_roll_report(&self) -> Option<serde_json::Value> {
         self.physical_roll.as_ref().map(|roll| serde_json::json!({
             "state":roll,"impactNative":self.impact_substep,
@@ -213,6 +272,7 @@ impl Controller {
             stable_feet: None,
             terminal_balance: None,
             physical_roll: None,
+            adaptation: None,
             terminal_base_ready: if cfg!(feature = "getup-terminal-base-ready-experiment") {
                 Some(TerminalBaseReady {
                     format: if cfg!(feature = "getup-terminal-bumpless-experiment") {
@@ -246,7 +306,8 @@ impl Controller {
         }
     }
     pub(crate) fn checkpoint_variant_supported(&self) -> bool {
-        (self.physical_roll.is_none() || cfg!(feature = "getup-physical-roll-experiment"))
+        (self.adaptation.is_none() || cfg!(feature = "getup-policy-adaptation-experiment"))
+            && (self.physical_roll.is_none() || cfg!(feature = "getup-physical-roll-experiment"))
             && (!self.terminal_base_ready_variant()
             || cfg!(feature = "getup-terminal-base-ready-experiment"))
             && (!self.terminal_bumpless_variant()
@@ -625,7 +686,14 @@ impl Controller {
                 let now = &self.reference[index.min(end)];
                 let ahead = &self.reference[(index + 5).min(end)];
                 let input = super::slow_observation(physical, now, ahead);
-                self.residual = actor::student().infer(&input)?.action;
+                #[cfg(feature = "getup-policy-adaptation-experiment")]
+                let residual = if let Some(adaptation) = self.adaptation.as_mut() {
+                    let (prediction, features) = actor::student().infer_with_features(&input)?;
+                    adaptation.apply(s.substeps_completed, index as u64, &prediction, &features)?
+                } else { actor::student().infer(&input)?.action };
+                #[cfg(not(feature = "getup-policy-adaptation-experiment"))]
+                let residual = actor::student().infer(&input)?.action;
+                self.residual = residual;
                 self.reference_pose.copy_from_slice(&now[..21]);
                 self.holding = index >= end;
                 self.status.phase = if self.holding {

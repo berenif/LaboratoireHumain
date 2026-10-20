@@ -52,6 +52,15 @@ struct RootTranslationCheckpoint {
     roots: Vec<RootTranslationCheckpointEntry>,
 }
 
+#[cfg(feature = "getup-policy-adaptation-experiment")]
+#[derive(Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+struct AdaptationCheckpoint {
+    format: String,
+    inner_schema: u32,
+    auxiliary: String,
+}
+
 #[derive(Serialize)]
 pub struct Reply {
     pub completed_ticks: u32,
@@ -176,6 +185,7 @@ impl Runtime {
         s.profile.validate()?;
         s.validate_unit_root_rotation_policy()?;
         if let Some(controller) = &s.getup_controller {
+            if !controller.adaptation_valid(s.substeps_completed) { return Err("Invalid checkpoint adaptation state/clock".into()); }
             if !controller.physical_roll_clock_valid(s.substeps_completed) {
                 return Err("Invalid checkpoint physical roll native clock or source admission".into());
             }
@@ -326,6 +336,11 @@ impl Runtime {
                 auxiliary,
             }).map_err(|e| e.to_string())?)
         } else { (schema, auxiliary) };
+        #[cfg(feature = "getup-policy-adaptation-experiment")]
+        let (schema, auxiliary) = if self.simulation.getup_controller.as_ref().is_some_and(|c|c.adaptation_active()) {
+            (4_u32, serde_json::to_string(&AdaptationCheckpoint {format:crate::getup::adaptation::FORMAT.into(),
+                inner_schema:schema, auxiliary}).map_err(|e|e.to_string())?)
+        } else { (schema,auxiliary) };
         bincode::DefaultOptions::new().with_fixint_encoding().with_limit(64 * 1024 * 1024)
             .serialize(&(schema, lh_model::CANONICAL_JSON, world, auxiliary)).map_err(|e| e.to_string())
     }
@@ -338,6 +353,17 @@ impl Runtime {
         if model != lh_model::CANONICAL_JSON {
             return Err("Checkpoint schema/model differs".into());
         }
+        let adaptation_checkpoint = schema == 4;
+        #[cfg(not(feature = "getup-policy-adaptation-experiment"))]
+        if adaptation_checkpoint { return Err("Checkpoint requires getup-policy-adaptation-experiment".into()); }
+        #[cfg(feature = "getup-policy-adaptation-experiment")]
+        let (schema, auxiliary) = if adaptation_checkpoint {
+            let wrapper: AdaptationCheckpoint = serde_json::from_str(&auxiliary).map_err(|e|e.to_string())?;
+            if wrapper.format != crate::getup::adaptation::FORMAT || !matches!(wrapper.inner_schema,1|2|3) {
+                return Err("Invalid bounded adaptation checkpoint envelope".into());
+            }
+            (wrapper.inner_schema,wrapper.auxiliary)
+        } else { (schema,auxiliary) };
         #[cfg(not(feature = "getup-terminal-base-ready-experiment"))]
         if schema == 3 {
             return Err("Checkpoint requires getup-terminal-base-ready-experiment".into());
@@ -372,6 +398,9 @@ impl Runtime {
         if schema != 1 { return Err("Checkpoint schema/model differs".into()); }
         let mut restored: Self = serde_json::from_str(&auxiliary).map_err(|e| e.to_string())?;
         restored.simulation.profile.validate()?;
+        if restored.simulation.getup_controller.as_ref().is_some_and(|c|c.adaptation_active()) != adaptation_checkpoint {
+            return Err("Checkpoint adaptation marker/controller differs".into());
+        }
         let terminal_base_ready_variant = restored.simulation.getup_controller.as_ref()
             .is_some_and(|controller| controller.terminal_base_ready_variant());
         #[cfg(not(feature = "getup-terminal-base-ready-experiment"))]
@@ -428,6 +457,29 @@ impl Runtime {
         Ok(report.to_string())
     }
 
+    #[cfg(feature = "getup-policy-adaptation-experiment")]
+    pub fn getup_adaptation_state(&self) -> Result<String, String> {
+        self.simulation.getup_controller.as_ref().ok_or_else(|| "Missing source controller".to_string())
+            .map(|c|c.adaptation_diagnostic().to_string())
+    }
+    #[cfg(feature = "getup-policy-adaptation-experiment")]
+    pub fn set_getup_adaptation_head(&mut self, json: &str) -> Result<(), String> {
+        if json.len() > 1024 * 1024 { return Err("Correction head exceeds bound".into()); }
+        let head: Option<crate::getup::adaptation::Head> = serde_json::from_str(json).map_err(|e| e.to_string())?;
+        self.simulation.getup_controller.as_mut().ok_or("Missing source controller")?.set_adaptation_head(head)
+    }
+    #[cfg(feature = "getup-policy-adaptation-experiment")]
+    pub fn getup_adaptation_preview(&self) -> Result<String, String> {
+        self.simulation.getup_controller.as_ref().ok_or("Missing source controller")?
+            .adaptation_preview(&self.simulation).map(|v|v.to_string())
+    }
+    #[cfg(feature = "getup-policy-adaptation-experiment")]
+    pub fn queue_getup_correction(&mut self, json: &str) -> Result<(), String> {
+        if json.len() > 1024 { return Err("Correction input exceeds bound".into()); }
+        let correction: [f32;21] = serde_json::from_str(json).map_err(|e|e.to_string())?;
+        let native = self.simulation.substeps_completed;
+        self.simulation.getup_controller.as_mut().ok_or("Missing source controller")?.queue_adaptation(native,correction)
+    }
     /// Recorded teacher branch/reference only; this never advances either world.
     pub fn getup_report(&self) -> Result<String, String> {
         serde_json::to_string(&self.simulation.getup_controller).map_err(|e| e.to_string())

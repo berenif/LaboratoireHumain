@@ -2,6 +2,7 @@
 //! Serial reduced-coordinate hinges retain oblique axes and offset ankle pivots.
 use crate::*;
 pub mod actor;
+pub mod adaptation;
 pub mod controller;
 pub mod fixtures;
 pub mod physical_roll;
