@@ -157,7 +157,8 @@ def future_admission(path,output,worker,shared,run_id):
         manifest['files']['profile']['path'])
     if admission.get('corrected_build_receipt_sha256')!=sha256(manifest['files']['source_identity']['path']):
         raise ContractError('Corrected semantic build is not admitted')
-    from getup_qualification import PLAN_PATH,PLAN,validate_growth_sources
+    from getup_qualification import (PLAN_PATH,PLAN,validate_growth_sources,
+        validate_shared_reuse,qualification_staging_scope,validate_owner_inventory)
     validate_growth_sources(ROOT)
     if admission.get('qualification_plan_sha256')!=sha256(PLAN_PATH):
         raise ContractError('Exact reviewed qualification-only operation/byte plan required')
@@ -177,8 +178,11 @@ def future_admission(path,output,worker,shared,run_id):
     if item['bytes']+PLAN['seed_archive_bytes']>12*1024**2:
         raise ContractError('Corrected shared+futureseed archive allowance exceeded')
     receipts={'shared':(item,bundle)}
+    reused_shared=validate_shared_reuse(admission['verified_shared'],item,bundle,time.time())
+    admission['_verified_shared']=reused_shared
     storage=admission['storage']
-    if (storage['cumulative_uploaded_bytes']<22056886 or storage['cumulative_uploaded_bytes']>160*1024**2
+    staging_limit=qualification_staging_scope(admission)
+    if (storage['cumulative_uploaded_bytes']<37690936 or storage['cumulative_uploaded_bytes']>160*1024**2
             or not storage.get('owner_inventory_reference')):
         raise ContractError('Complete prior cumulative/owner storage admission required')
     measured=0
@@ -200,11 +204,13 @@ def future_admission(path,output,worker,shared,run_id):
         verify_bundle(request['archive_path'],request['archive_sha256'],64*1024**2)
         prior.append(dict(manifest_sha256=request['manifest_sha256'],archive_sha256=request['archive_sha256'],
             application_verified=True,owned=True,drive_file_id=receipt['drive_file_id'],
-            payload_bytes=request['payload_bytes'],archive_path=request['archive_path'],archive_bytes=request['archive_bytes']))
+            payload_bytes=request['payload_bytes'],archive_path=request['archive_path'],archive_bytes=request['archive_bytes'],
+            generation_nonce=request.get('generation_nonce')))
     if len(prior)!=2 or len({x['drive_file_id'] for x in prior})!=len(prior):
         raise ContractError('Exact current/previous remote generation inventory required')
     if storage['remote_payload_bytes']<sum(x['payload_bytes'] for x in prior):
         raise ContractError('Remote payload inventory omits retained generations')
+    validate_owner_inventory(admission,prior)
     from getup_drive_slots import qualification_storage_envelope
     shared_local=sum(p.stat().st_size for p in shared.rglob('*') if p.is_file())
     archive_metadata=sum(p.stat().st_size for p in archive.parent.rglob('*') if p.is_file())-archive.stat().st_size
@@ -213,7 +219,8 @@ def future_admission(path,output,worker,shared,run_id):
         corrected_shared_payload_bytes=shared_local,corrected_shared_archive_bytes=admission['corrected_shared_archive']['bytes'],
         seed_payload_bytes=2*1024**2,seed_archive_bytes=PLAN['seed_archive_bytes'],
         prior_cumulative_before_corrected_inputs=storage['cumulative_uploaded_bytes'],
-        slot_archive_bytes=[x['archive_bytes'] for x in prior],active_working_bytes=0)
+        slot_archive_bytes=[x['archive_bytes'] for x in prior],active_working_bytes=0,
+        staging_limit_bytes=staging_limit,shared_already_verified=True)
     admission['_verified_prior_generations']=prior
     return admission,readiness,manifest,receipts,commit
 
@@ -236,7 +243,7 @@ def run(output,worker,shared,run_id,continuation_path=None,admission_path=None):
     from experiment_backup import restore_bundle
     from getup_cold_start_engine import CoherentRecovery,DrivePhaseTransport
     from getup_qualification import (QualificationPilot,QualificationPlan,QualificationByteGuard,
-        untouched_learner_bytes,request_existing_shared,PLAN)
+        untouched_learner_bytes,restore_verified_shared,PLAN)
     if continuation_path is not None:
         raise ContractError('Qualification amendment is consumed/closed; no continuation or new clock')
     admission,readiness,inputs,immutable,commit=future_admission(admission_path,output,worker,shared,run_id)
@@ -249,6 +256,7 @@ def run(output,worker,shared,run_id,continuation_path=None,admission_path=None):
     exchange=TwoSlotDriveExchange(output/'recovery',run_id,source,deadline,
         slots=admission['_verified_prior_generations'])
     exchange.remote_uploaded_bytes=admission['storage']['cumulative_uploaded_bytes']
+    exchange.local_staging_limit_bytes=admission['storage']['staging_bytes']
     exchange.verified=admission['_verified_prior_generations']
     exchange.retired_payload_bytes=admission['storage']['remote_payload_bytes']-sum(x['payload_bytes'] for x in exchange.verified)
     # Closed local evidence stays untouched; remote current/previous retention
@@ -260,7 +268,7 @@ def run(output,worker,shared,run_id,continuation_path=None,admission_path=None):
         'deadlineUnix':deadline,'source':source,'admissionSha256':sha256(admission_path),
         'softwareReadinessSha256':admission['software_readiness']['sha256'],
         'actualTrialAuthorized':True,'releaseAccepted':False,'candidateAccepted':False,
-        'historicalRecoveryClaimed':False,'reusedImmutableArchives':False,
+        'historicalRecoveryClaimed':False,'reusedImmutableArchives':True,
         'mode':'qualification-only','optimizerAuthorized':False,'candidateEvaluationAuthorized':False,
         'storageEnvelope':admission['_qualification_storage']}
     atomic_json(output/'cold-start-report.json',report)
@@ -295,7 +303,6 @@ def run(output,worker,shared,run_id,continuation_path=None,admission_path=None):
         return {'runtime_active':True,'ledger':ledger,'receipt':result,'bridge':bridge,'state':state}
     try:
         plan.assert_inputs_ready(clock.now())
-        request=request_existing_shared(exchange,admission['corrected_shared_archive'],started+300)
         def restore_shared(restored,manifest):
             files={x['role']:restored/x['path'] for x in manifest['files']}
             result=run_restore(files['worker_glue'],files['worker_wasm'],
@@ -303,12 +310,20 @@ def run(output,worker,shared,run_id,continuation_path=None,admission_path=None):
             if any(x['native']!=0 for x in result['cases']):raise ContractError('Corrected inputs are not unstepped')
             report['sharedOperationalRestore']=result
             return result
-        transfer(request,restore_shared)
+        # Prior private application proof + fresh exact private readback were
+        # preflighted. Restore the SAME locally hash-verified archive inside the
+        # new clock; no upload/request or cumulative upload quota charge.
+        shared_item,_=immutable['shared']
+        prior_shared=admission['_verified_shared']['request']
+        restore_verified_shared(exchange,shared_item,prior_shared,restore_shared,started+300)
+        plan.assert_inputs_ready(clock.now())
         proof=output/'operational-inputs.json'
         atomic_json(proof,dict(schema='lh-cold-start-operational-inputs/v1',passed=True,
-            physicsIntegrations=0,privateDriveRoundtrip=True,previousPrivateRoundtripReused=False,
-            newRemoteTransfer=True,manifestSha256=sha256(shared/'input-manifest.json'),
-            sharedManifestSha256=exchange.shared_sha256))
+            physicsIntegrations=0,privateDriveRoundtrip=True,previousPrivateRoundtripReused=True,
+            newRemoteTransfer=False,manifestSha256=sha256(shared/'input-manifest.json'),
+            sharedManifestSha256=exchange.shared_sha256,
+            freshReadOnlyReadbackVerifiedBeforeClock=True,
+            previousPrivateProof=admission['verified_shared']))
         legacy=interfaces.load_legacy();factory=lambda:interfaces.SACLearner(legacy)
         learner=factory();learner_bytes=untouched_learner_bytes(learner)
         seed_paths={case:str(output/(case+'-seed.bin')) for case in ('original','heldout','belly')}

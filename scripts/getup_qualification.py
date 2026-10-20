@@ -50,6 +50,116 @@ def request_existing_shared(exchange,item,deadline):
     path=exchange.directory/'corrected-shared.request.json';atomic_json(path,request);return path
 
 
+def validate_shared_reuse(proof,item,manifest,now):
+    """No upload: prior application proof plus fresh exact private readback."""
+    from experiment_backup import sha256
+    from getup_cold_start import validate_backup_identity
+    documents={}
+    for role in ('request','receipt','application','private_identity'):
+        bound=proof[role];path=Path(bound['path'])
+        if sha256(path)!=bound['sha256']:raise ContractError('Reused shared proof changed: '+role)
+        documents[role]=json.loads(path.read_text())
+    request,receipt,application,private=(documents[x] for x in
+        ('request','receipt','application','private_identity'))
+    validate_backup_identity(request,receipt,application,request['run_id'])
+    if (request['kind']!='shared' or any(request[k]!=item[k.replace('archive_','')] for k in
+            ('archive_sha256','archive_bytes'))
+            or request['required_roles']!=manifest['required_roles']
+            or request['payload_bytes']!=sum(x['bytes'] for x in manifest['files'])):
+        raise ContractError('Reused shared archive/roles differ')
+    import hashlib,zipfile
+    with zipfile.ZipFile(item['path']) as bundle:
+        if hashlib.sha256(bundle.read('manifest.json')).hexdigest()!=request['manifest_sha256']:
+            raise ContractError('Reused shared manifest differs')
+    if (private.get('schema')!='lh-reused-shared-private-identity/v1'
+            or private.get('drive_file_id')!=receipt['drive_file_id']
+            or private.get('archive_sha256')!=item['sha256'] or private.get('archive_bytes')!=item['bytes']
+            or private.get('owner_only') is not True or private.get('shared') is not False
+            or private.get('new_upload') is not False or private.get('new_download') is not True
+            or private.get('download_completed') is not True
+            or private.get('downloaded_archive_sha256')!=item['sha256']
+            or private.get('downloaded_archive_bytes')!=item['bytes']
+            or private.get('previous_application_sha256')!=proof['application']['sha256']
+            or not 0<=now-private.get('verified_at_unix',0)<=1800
+            or not 0<=now-private.get('readback_verified_at_unix',0)<=1800):
+        raise ContractError('Fresh compatible private shared identity absent')
+    metadata=private.get('current_metadata',{})
+    if metadata.get('id')!=receipt['drive_file_id'] or int(metadata.get('size',-1))!=item['bytes']:
+        raise ContractError('Current private shared metadata differs')
+    return documents
+
+
+def restore_verified_shared(exchange,item,request,validator,deadline):
+    """Production local rehydrate of already-backed-up bytes, never a transfer."""
+    import tempfile
+    from experiment_backup import restore_bundle
+    if exchange.now()>=deadline:raise ContractError('Reused input restore deadline')
+    if exchange.retired_payload_bytes<request['payload_bytes']:
+        raise ContractError('Retained shared payload inventory incomplete')
+    with tempfile.TemporaryDirectory(prefix='shared-reuse-',dir=exchange.directory) as tmp:
+        restored=Path(tmp)/'payload'
+        manifest=restore_bundle(item['path'],restored,item['sha256'],32*1024**2)
+        result=validator(restored,manifest)
+        if result.get('passed') is not True or result.get('physics_integrations')!=0:
+            raise ContractError('Reused inputs require actual unstepped application restore')
+    if exchange.now()>=deadline:raise ContractError('Reused input restore deadline')
+    exchange.shared_sha256=request['manifest_sha256']
+    exchange.shared_bytes=request['payload_bytes']
+    exchange.shared_archive=Path(item['path'])
+    exchange.retired_payload_bytes-=exchange.shared_bytes
+    return result
+
+
+def qualification_staging_scope(admission):
+    storage=admission['storage'];limit=storage['staging_bytes']
+    if limit==160*1024**2:return limit
+    if (limit!=192*1024**2 or storage.get('staging_scope_run_id')!=admission['run_id']
+            or not storage.get('staging_amendment_reference')
+            or storage.get('active_output_bytes')!=32*1024**2
+            or storage.get('archive_bytes')!=18*1024**2
+            or storage.get('cumulative_archive_bytes')!=160*1024**2
+            or storage.get('mutable_uploads')!=1):
+        raise ContractError('192MiB is a scoped local amendment, not remote/output/cadence permission')
+    return limit
+
+
+def validate_owner_inventory(admission,prior):
+    from experiment_backup import sha256
+    storage=admission['storage'];bound=storage['owner_inventory'];path=Path(bound['path'])
+    if sha256(path)!=bound['sha256']:raise ContractError('Owner inventory changed')
+    inventory=json.loads(path.read_text());ledger_path=Path(inventory['ledger_path'])
+    if sha256(ledger_path)!=inventory['ledger_sha256']:raise ContractError('Closed transfer ledger changed')
+    ledger=json.loads(ledger_path.read_text())
+    if (inventory.get('schema')!='lh-drive-owner-qualification-inventory/v1'
+            or inventory.get('planned_run_id')!=admission['run_id']
+            or inventory.get('unknown_transfers') is not False
+            or inventory.get('cumulative_uploaded_bytes')!=ledger.get('cumulative_uploaded_bytes')
+            or storage['cumulative_uploaded_bytes']!=ledger.get('cumulative_uploaded_bytes')
+            or storage['cumulative_uploaded_bytes']<37690936
+            or inventory.get('live_archive_bytes')!=ledger.get('live_bytes')
+            or storage.get('live_archive_bytes')!=ledger.get('live_bytes')
+            or inventory.get('trashed_archive_bytes')!=ledger.get('trashed_bytes')
+            or storage.get('trashed_archive_bytes')!=ledger.get('trashed_bytes')):
+        raise ContractError('Owner counters differ or refund closed exposure')
+    pending=ledger.get('pending_replacement')
+    if pending and pending.get('status')!='application-verified-pointer-committed':
+        raise ContractError('Unresolved prior replacement')
+    keys=('drive_file_id','archive_sha256','manifest_sha256','archive_bytes','payload_bytes')
+    expected=[ledger['older_slot'],ledger['current_slot']]
+    if len(prior)!=2 or len(inventory['prior_generations'])!=2:
+        raise ContractError('Owner requires two ordered slots')
+    for proposed,recorded,owned in zip(prior,expected,inventory['prior_generations']):
+        if any(proposed[k]!=recorded[k] or proposed[k]!=owned[k] for k in keys):
+            raise ContractError('Owner current/older generation identity differs')
+        if recorded.get('generation_nonce') and (
+                proposed.get('generation_nonce')!=recorded['generation_nonce']
+                or owned.get('generation_nonce')!=recorded['generation_nonce']):
+            raise ContractError('Owner generation nonce differs')
+    if storage['remote_payload_bytes']<inventory['all_project_retained_payload_bytes']+inventory['synthetic_test_archive_bytes']:
+        raise ContractError('Owner retained payload omitted')
+    return inventory
+
+
 def untouched_learner_bytes(learner):
     import io
     stream=io.BytesIO()

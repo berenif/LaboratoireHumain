@@ -14,7 +14,8 @@ from getup_learning_loop import ContractError
 def qualification_storage_envelope(*,protected_local_bytes,corrected_shared_payload_bytes,
         corrected_shared_archive_bytes,seed_payload_bytes,seed_archive_bytes,
         prior_cumulative_before_corrected_inputs,slot_archive_bytes,active_working_bytes,
-        terminal_payload_bytes=32*1024**2,terminal_archive_bytes=18*1024**2):
+        terminal_payload_bytes=32*1024**2,terminal_archive_bytes=18*1024**2,
+        staging_limit_bytes=160*1024**2,shared_already_verified=False):
     """One terminal generation only. Old slot archives are already protected.
 
     This is sizing/admission arithmetic, not permission to upload or run. The
@@ -22,8 +23,11 @@ def qualification_storage_envelope(*,protected_local_bytes,corrected_shared_payl
     is nevertheless reported separately. No quota credit for overwritten bytes.
     """
     values=locals().copy()
-    if any(type(x) is not int or x<0 for name,x in values.items() if name!='slot_archive_bytes'):
+    if any(type(x) is not int or x<0 for name,x in values.items()
+           if name not in ('slot_archive_bytes','shared_already_verified')):
         raise ContractError('Measured nonnegative integer storage inventory required')
+    if staging_limit_bytes not in (160*1024**2,192*1024**2) or type(shared_already_verified) is not bool:
+        raise ContractError('Explicit bounded local staging scope required')
     if len(slot_archive_bytes)!=2 or any(type(x) is not int or x<=0 for x in slot_archive_bytes):
         raise ContractError('Exactly two measured owned slot archive sizes required')
     if (terminal_payload_bytes>32*1024**2 or terminal_archive_bytes>18*1024**2
@@ -40,13 +44,17 @@ def qualification_storage_envelope(*,protected_local_bytes,corrected_shared_payl
         'terminal_create':base+max(2*terminal_payload_bytes,terminal_payload_bytes+terminal_archive_bytes)+margin,
         'older_slot_prewrite_readback':base+terminal_archive_bytes+max(slot_archive_bytes)+margin,
         'terminal_transfer_restore':base+2*terminal_archive_bytes+terminal_payload_bytes+margin}
-    cumulative=prior_cumulative_before_corrected_inputs+corrected_shared_archive_bytes+seed_archive_bytes+terminal_archive_bytes
-    if max(stages.values())>160*1024**2 or cumulative>160*1024**2:
-        raise ContractError('One-generation qualification staging/cumulative envelope exceeds160MiB')
+    cumulative=prior_cumulative_before_corrected_inputs+(0 if shared_already_verified else corrected_shared_archive_bytes)+seed_archive_bytes+terminal_archive_bytes
+    if max(stages.values())>staging_limit_bytes or cumulative>160*1024**2:
+        raise ContractError('One-generation qualification staging/cumulative envelope exceeds scoped cap')
     return {'stage_peaks_bytes':stages,'staging_peak_bytes':max(stages.values()),
         'active_original_working_bytes':active_working_bytes,
         'total_recovery_artifact_peak_bytes':max(stages.values())+active_working_bytes,
+        'active_output_bound_bytes':32*1024**2,
+        'total_recovery_artifact_bound_bytes':max(stages.values())+32*1024**2,
         'cumulative_archive_bytes':cumulative,'mutable_generations':1,
+        'local_staging_limit_bytes':staging_limit_bytes,'remote_cumulative_limit_bytes':160*1024**2,
+        'shared_transfer_reused':shared_already_verified,
         'active_working_copy_in_staging_cap':False,'physics_authorized':False}
 
 

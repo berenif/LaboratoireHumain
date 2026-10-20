@@ -71,7 +71,7 @@ const qualificationCounters=w=>{const c=report(w);return {sourceDecisions:c?.sta
 const guard=(reserve=5020)=>{if(inputContract)return guardProtocolCall(ledger,protectedEvaluationIntegrations,protectedEvaluationWallMs,Date.now());assert(Date.now()+protectedEvaluationWallMs<ledger.deadlineUnixMs,'Experiment60minute wall cap');assert(ledger.nativeIntegrations+reserve+protectedEvaluationIntegrations<=ledger.limit,'Aggregate integration cap');};
 const report=w=>JSON.parse(w.getup_adaptation_state?w.getup_adaptation_state():w.getup_report());
 const fixture=w=>JSON.parse(w.getup_fixture_report());
-const call=(w,ticks=1)=>{
+const call=(w,ticks=1,{firstSourceCall=false}={})=>{
  track(w);
  if(qualificationOnly)qualificationStorageGuard();
  if(continuationClaim){
@@ -81,7 +81,7 @@ const call=(w,ticks=1)=>{
   limitedPhysicalCalls++;
  }
  if(qualificationOnly)guardQualificationCall(ledger);
- guard();const before=fixture(w).nativeSubsteps, bf=report(w)?.status.forecast_substeps??0;
+ guard();const beforeFixture=fixture(w),before=beforeFixture.nativeSubsteps, bf=report(w)?.status.forecast_substeps??0;
  const qualificationBefore=qualificationOnly?qualificationCounters(w):null;
  if(inputContract){beginProtocolCall(ledger,before,bf);save();}
  if(qualificationOnly){beginQualificationSource(ledger);save();}
@@ -105,12 +105,21 @@ const call=(w,ticks=1)=>{
   const audit={command:commandName,preNative:before,postNative:after,
    before:qualificationBefore,after:qualificationCounters(w),
    nativeTraceSha256:hash(JSON.stringify(result.nativeTrace)),nativeSamples:result.nativeTrace.length,
-   failure:result.reply.failure??null,phase:status?.phase,solverBudget:f.solverBudget};
+   failure:result.reply.failure??null,phase:status?.phase,solverBudget:f.solverBudget,
+   motion:result.reply.snapshot.motion,preSolverBudget:beforeFixture.solverBudget,
+   solverAuditInputs:{ticks,nativeRows:result.nativeTrace.length,firstSourceCall,
+    precedingMotion:result.nativeTrace.at(-2)?.motion??null,
+    lastCommandController:result.nativeTrace.at(-1)?.getup?.controller??null,
+    lastPolicyPhase:result.nativeTrace.at(-1)?.getup?.policy?.phase??null,
+    lastStartedAtSeconds:result.nativeTrace.at(-1)?.getup?.policy?.started_at_s??null,
+    scope:result.reply.failure?'physical-failure-preserved':'last-integrated-and-selected-next'}};
   appendFileSync(join(output,'qualification-native.ndjson'),JSON.stringify(audit)+'\n');
   try{
    finishQualificationSource(ledger,qualificationBefore,audit.after);
    assert(!String(status?.phase).startsWith('physical-roll'),'Forbidden physical-roll route');
-   assertQualificationSolverBudget(f.solverBudget,status?.phase);
+   assertQualificationSolverBudget(f.solverBudget,{motion:result.reply.snapshot.motion,
+    preBudget:beforeFixture.solverBudget,nativeTrace:result.nativeTrace,ticks,
+    failure:result.reply.failure??null,firstSourceCall});
   }
   catch(error){ledger.qualificationFailure=String(error);save();throw error;}
   save();
@@ -213,16 +222,15 @@ async function command(q){
   let resumed=null,samples=0,resumedSamples=0;
   const started=performance.now();
   for(let i=0;i<20;i++){
-   const packets=runs.map(w=>call(w));assert.deepEqual(packets[0].nativeTrace,packets[1].nativeTrace,'Zero correction changed actual physical trace');
+   const packets=runs.map(w=>call(w,1,{firstSourceCall:i===0}));assert.deepEqual(packets[0].nativeTrace,packets[1].nativeTrace,'Zero correction changed actual physical trace');
    if(qualificationOnly){
     packets.forEach(packet=>assert(!packet.reply.failure,JSON.stringify(packet.reply.failure)));
     for(const w of runs){
-     const c=report(w),f=fixture(w);
+     const c=report(w);
      assert.equal(c.impact_substep,480,'Original BACK impact epoch preserved');
      assert.equal(c.started_substep,480,'Original BACK must enter WEAK/reference then SLOW without preparation route');
      assert(c.status.forecast_substeps>0&&c.status.reference_frames>0&&c.status.reference_seed_matches_real);
      assert(!c.status.phase.startsWith('physical-roll'));
-     assertQualificationSolverBudget(f.solverBudget,c.status.phase,i===0);
     }
    }
    samples+=packets[0].nativeTrace.length;

@@ -3,9 +3,57 @@ import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import {createHash} from 'node:crypto';
 export const qualificationPlan=JSON.parse(readFileSync(new URL('./getup-qualification-plan.json',import.meta.url)));
-export function assertQualificationSolverBudget(budget,phase,firstSourceCall=false){
- if(firstSourceCall||budget.sourceRecoveryActive)assert.equal(budget.currentInternalPgsIterations,32);
- if(String(phase).startsWith('experimental-joint-balance'))assert.equal(budget.currentInternalPgsIterations,20);
+// Frozen profile has recovery_enabled=false. Mirror lib.rs's selector, not a
+// controller phase prefix: an awaiting-fall fixture is Falling and uses32.
+export function qualificationSelectedPasses(motion,sourceActive){
+ assert(['Upright','Reacting','Falling','Fallen','Recovering','Halted'].includes(motion),'Unknown motion');
+ assert.equal(typeof sourceActive,'boolean');
+ return motion==='Falling'||motion==='Fallen'||motion==='Recovering'&&sourceActive?32:20;
+}
+function commandSourceActive(getup){
+ assert(getup&&getup.policy,'Missing native command observation');
+ const {controller,policy}=getup;
+ const phases=['awaiting-physical-fall','experimental-joint-balance-awaiting-fall',
+  'teacher-reference','slow-following','slow-holding','experimental-joint-balance-holding'];
+ assert(phases.includes(policy.phase),'Unreviewed native command phase');
+ const started=policy.started_at_s!==null;
+ assert(!started||Number.isFinite(policy.started_at_s),'Invalid source start');
+ if(controller==='fixture-zero-control-preparation'){
+  assert(!started,'Preparation cannot contain active source recovery');return false;
+ }
+ if(controller==='experimental-recovery-joint-balance-ready'){
+  assert(!started&&policy.phase==='experimental-joint-balance-awaiting-fall');return false;
+ }
+ if(controller==='experimental-recovery-joint-balance-hold'){
+  assert(started&&policy.phase==='experimental-joint-balance-holding');return false;
+ }
+ assert.equal(controller,'pretrained-WEAK-SLOW','Unreviewed command controller');
+ return started;
+}
+export function assertQualificationSolverBudget(budget,{motion,preBudget,nativeTrace,ticks=1,failure=null,firstSourceCall=false}){
+ // A physical refusal has primary diagnostic authority, not a later audit.
+ // In particular a failing unobserved integration can have changed the current
+ // scalar before Halted selectedNext becomes20. Do not infer it from zero rows.
+ if(failure!==null)return {scope:'physical-failure-preserved',solverVerified:false};
+ assert([20,32].includes(budget.currentInternalPgsIterations),'Unreviewed current solver passes');
+ assert.equal(budget.selectedNextInternalPgsIterations,
+  qualificationSelectedPasses(motion,budget.sourceRecoveryActive),'Selected-next solver mismatch');
+ assert([0,1].includes(ticks)&&Array.isArray(nativeTrace)&&nativeTrace.length===ticks*20,
+  'Successful call requires requested ticks worth of complete native rows');
+ let expected;
+ if(!nativeTrace.length){
+  expected=preBudget.currentInternalPgsIterations; // ticks=0 does not integrate.
+ }else{
+  const previous=nativeTrace.at(-2),last=nativeTrace.at(-1);
+  // getup.rs records controller ownership BEFORE physics; policy is refreshed
+  // and motion observed AFTER physics. The last command owner and PREVIOUS
+  // motion reconstruct the final integration's selector. A controller rearm
+  // is separately rejected by the source-epoch/counter guard before this audit.
+  expected=qualificationSelectedPasses(previous.motion,commandSourceActive(last.getup));
+ }
+ assert.equal(budget.currentInternalPgsIterations,expected,'Last-integrated solver mismatch');
+ if(firstSourceCall)assert.equal(budget.currentInternalPgsIterations,32,'First WEAK/SLOW call requires32');
+ return {scope:'last-integrated-and-selected-next',solverVerified:true,currentExpected:expected};
 }
 export function validateQualificationGrowthSources(root){
  for(const [path,digest] of Object.entries(qualificationPlan.growth_bound_source_sha256))

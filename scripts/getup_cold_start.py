@@ -339,6 +339,7 @@ class DriveExchange:
         self.retired_payload_bytes = 0  # Recoverable Drive Trash can still consume quota.
         self.remote_uploaded_bytes = 394  # Existing explicitly scoped tiny Drive drill.
         self.external_local_bytes = 0
+        self.local_staging_limit_bytes = PROTOCOL['retained_payload_bytes']
         self.operation_deadline = deadline
         self.verified = []
         self.failed = False
@@ -384,7 +385,9 @@ class DriveExchange:
         retained_local = self.external_local_bytes + sum(p.stat().st_size for p in self.directory.rglob('*') if p.is_file())
         staging=(max(2*total,total+2*18*1024**2,
             18*1024**2+config.get('slot_prewrite_download_bytes',0)) if qualification else 3*total)
-        if retained_local + staging + 4*1024**2 > PROTOCOL['retained_payload_bytes']:
+        if self.local_staging_limit_bytes not in (160*1024**2,192*1024**2):
+            raise ContractError('Unreviewed local staging cap')
+        if retained_local + staging + 4*1024**2 > self.local_staging_limit_bytes:
             raise ContractError('Local archive/staging peak exceeds backup byte cap before copying')
         if kind == 'generation' and any(item['role'] in SHARED_ROLES for item in artifacts):
             raise ContractError('Generation must reference immutable inputs, not copy them')

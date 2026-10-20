@@ -181,10 +181,12 @@ The **1,024 source-decision cap includes qualification, reset-generated first
 SLOW decisions, both parity executions and preservation**. Counts are actual
 controller deltas with one decision precharged before each call; WEAK teacher
 work is separate. The global4,096 ceiling is not a substitute. The original
-impact epoch, WEAK/reference-to-SLOW route, no physical roll, and32 active /20
-terminal solver passes are checked in the budgeted calls. The first BACK call
-requires32; later valid terminal handoff uses20 rather than being falsely
-required to remain on32 for the entire qualification window.
+impact epoch, WEAK/reference-to-SLOW route and no physical roll are checked in
+the budgeted calls. Solver selection follows motion and command ownership, not
+the diagnostic phase's string prefix. Falling/Fallen use32; Recovering uses32
+while source recovery is active; otherwise the frozen profile selects20.
+The first BACK call requires32. Current (last-integrated) and selected-next
+passes are distinct at a final-sample handoff or newly observed fall.
 
 The hour begins before the first upload/load. Each full stage allowance must fit
 before dispatch; physics stops atT+2,100 and all retention atT+3,600. Work advances
@@ -280,3 +282,80 @@ The corrected compiled-capability probe and exact build-receipt validation also
 passed without constructing a runtime or integrating physics. Real semantic,
 transition parity, preservation, remote two-slot overwrite and populated real
 application-restore gates remain untested by this software-only checkpoint.
+
+## Closed qualification and solver-audit correction
+
+The subsequent authorized qualification stopped after20 real integrations,
+zero forecasts, zero source decisions and zero optimizer attempts. Its
+awaiting-fall fixture was physically `Falling`, correctly using32 passes.
+The JavaScript audit incorrectly treated every `experimental-joint-balance`
+phase prefix as a post-handoff20-pass state. This was an audit failure, not a
+failed physical preservation result. The attempt remains closed; its original
+ledger and failed runtime are retained, with no refunded steps or restart.
+
+Corrected native-zero shared inputs passed private transfer and operational
+restore. The one terminal two-slot replacement passed exact readback and
+diagnostic application verification before the current pointer changed.
+There was no populated replay, transition-parity or physical-qualification
+success. The terminal manifest remains nonresumable. Cumulative transferred
+bytes are37,690,936; visible current file heads are32,492,670. Drive revision
+quota is unknown and no overwrite is treated as a quota refund.
+
+The software correction reconstructs the frozen selector
+(`sim/src/lib.rs`, `selected_internal_pgs_iterations`) and audits:
+
+- every combination of the six motion states and source-active boolean;
+- awaiting-fall preparation, WEAK/reference, SLOW following and holding;
+- final-sample handoff (current32/next20), terminal standing, and a newly
+  observed fall (current20/next32);
+- zero-tick calls preserving current and partial physical failures retaining
+  their primary error, without fabricating a solver-verification result;
+- rejection of unreviewed phases/controllers and malformed solver evidence.
+
+Timing matters: `getup.rs` records command-controller ownership before physics;
+`lib.rs` refreshes policy diagnostics and motion after controller observation.
+For a successful20-row call, the preceding row's motion and final row's
+command-controller owner identify the last integration's selector. The final
+reply motion plus actual source-active flag identify selected-next. A successful
+zero-tick call preserves the pre-call current value. No extra runtime call,
+Rust change, worker rebuild, profile change or physics was needed for this fix.
+The12 JavaScript accounting/matrix tests are software evidence only.
+The cohesive correction was checked with119 passing software tests:14 engine,
+14 corrective/reuse/storage,8 qualification,16 cold contracts,23 learning-loop,
+23 archive/restore and21 JavaScript checks. The compiled capability probe still
+constructs no runtime and integrates no physics.
+
+All closed evidence remains retained. The previous worst-case staging proof
+must be remeasured before any proposed next attempt; the newly retained bytes
+are not free space. The compatible corrected shared archive should be reused,
+not uploaded again. This correction itself authorizes no further trial.
+
+### Explicit next-attempt storage amendment and immutable reuse
+
+Keeping every closed proof raises the measured protected roots to68,180,951
+bytes, plus3,728 bytes of archive metadata. The unchanged32 MiB payload and
+18 MiB archive envelopes then project174,580,362 bytes of local recovery
+staging, beyond the old160 MiB staging cap. The root resource decision explicitly
+permits **192 MiB temporary LOCAL staging for one next attempt**, identified in
+its admission; the default stays160 MiB. This is not an automatic extension.
+Active output remains separately bounded to32 MiB, archive to18 MiB, one mutable
+terminal upload, and **remote cumulative exposure to160 MiB**. No prior evidence
+is deleted to fit. The total staging-plus-active bound is208,134,794 bytes, not
+a total-workspace cap; existing toolchains/build/venv remain separately reported.
+
+The already verified corrected shared archive is reused. Admission checks its
+exact local bytes and roles against current inputs/build, previous private
+request/receipt/application proofs, and fresh exact read-only download/hash plus
+owner-only file identity. Native0
+application restoration is rerun locally inside the next clock. It creates no
+transfer request or new upload, does not refund historical bytes, and explicitly
+labels the prior application proof as reused and the pre-clock exact readback
+separately. No uninterrupted historical metadata continuity is claimed.
+
+The fresh owner inventory must hash-bind the closed transfer ledger, cumulative
+37,690,936-byte exposure, and the ordered older/current nonce-and-hash identities.
+Stale counters, swapped slots, unresolved writes, incompatible inputs, stale
+privacy evidence or a missing scoped storage decision fail before runtime.
+The projected cumulative ceiling with reused shared inputs, maximum new seeds
+and one terminal archive is58,528,163 bytes. A further real attempt still needs
+independent review, publication, fresh preflight and an explicit resource decision.

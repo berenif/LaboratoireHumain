@@ -203,4 +203,139 @@ assert.throws(()=>check({...x,effectiveSimFeatures:x.effectiveSimFeatures.filter
         with self.assertRaisesRegex(ContractError,'envelope'):
             qualification_storage_envelope(**dict(args,terminal_payload_bytes=33*1024**2))
 
+    def test_scoped_local_amendment_never_extends_remote_output_or_cadence(self):
+        from getup_qualification import qualification_staging_scope
+        from getup_drive_slots import qualification_storage_envelope
+        admission={'run_id':'future-software-only','storage':dict(staging_bytes=192*1024**2,
+            staging_scope_run_id='future-software-only',staging_amendment_reference='explicit root scoped amendment',
+            active_output_bytes=32*1024**2,archive_bytes=18*1024**2,
+            cumulative_archive_bytes=160*1024**2,mutable_uploads=1)}
+        self.assertEqual(qualification_staging_scope(admission),192*1024**2)
+        for key,value in [('staging_bytes',193*1024**2),('staging_scope_run_id','other'),
+            ('staging_amendment_reference',''),('active_output_bytes',33*1024**2),
+            ('cumulative_archive_bytes',192*1024**2),('archive_bytes',19*1024**2),('mutable_uploads',2)]:
+            changed=copy.deepcopy(admission);changed['storage'][key]=value
+            with self.assertRaises(ContractError):qualification_staging_scope(changed)
+        args=dict(protected_local_bytes=68184679,corrected_shared_payload_bytes=16218147,
+            corrected_shared_archive_bytes=10620053,seed_payload_bytes=2097152,
+            seed_archive_bytes=1962859,prior_cumulative_before_corrected_inputs=37690936,
+            slot_archive_bytes=[5889728,5013997],active_working_bytes=32*1024**2,
+            shared_already_verified=True)
+        with self.assertRaises(ContractError):qualification_storage_envelope(**args)
+        result=qualification_storage_envelope(**args,staging_limit_bytes=192*1024**2)
+        self.assertEqual(result['staging_peak_bytes'],174580362)
+        self.assertEqual(result['total_recovery_artifact_peak_bytes'],208134794)
+        self.assertEqual(result['cumulative_archive_bytes'],58528163)
+        with self.assertRaises(ContractError):
+            qualification_storage_envelope(**dict(args,prior_cumulative_before_corrected_inputs=159*1024**2),
+                staging_limit_bytes=192*1024**2)
+        with tempfile.TemporaryDirectory() as tmp:
+            root=Path(tmp);x=self.setup_exchange(root);x.external_local_bytes=170*1024**2
+            with self.assertRaisesRegex(ContractError,'Local archive'):self.request(x,root)
+            x.local_staging_limit_bytes=192*1024**2
+            path,q=self.request(x,root)
+            self.assertEqual(q['max_retained_payload_bytes'],160*1024**2)
+
+    def test_shared_reuse_binds_exact_private_proofs_without_new_transfer(self):
+        from getup_qualification import validate_shared_reuse
+        import hashlib,zipfile
+        with tempfile.TemporaryDirectory() as tmp:
+            root=Path(tmp);now=time.time()
+            manifest={'required_roles':['software-fixture'],'files':[{'bytes':3}]}
+            raw=json.dumps(manifest).encode();archive=root/'fixture.zip'
+            with zipfile.ZipFile(archive,'w') as z:z.writestr('manifest.json',raw)
+            item={'path':str(archive),'bytes':archive.stat().st_size,'sha256':sha256(archive)}
+            request={'run_id':'prior-unit-fixture','kind':'shared','synthetic':False,
+                'archive_sha256':item['sha256'],'archive_bytes':item['bytes'],'payload_bytes':3,
+                'manifest_sha256':hashlib.sha256(raw).hexdigest(),'required_roles':['software-fixture']}
+            receipt=dict(request,schema='lh-private-drive-receipt/v1',owner_only=True,shared=False,
+                download_completed=True,drive_file_id='not-a-real-remote-id')
+            application={'passed':True,'physics_integrations':0,'archive_sha256':item['sha256']}
+            proof={}
+            for role,value in [('request',request),('receipt',receipt),('application',application)]:
+                path=root/(role+'.json');atomic_json(path,value);proof[role]={'path':str(path),'sha256':sha256(path)}
+            private={'schema':'lh-reused-shared-private-identity/v1','drive_file_id':receipt['drive_file_id'],
+                'archive_sha256':item['sha256'],'archive_bytes':item['bytes'],'owner_only':True,'shared':False,
+                'new_upload':False,'new_download':True,'download_completed':True,
+                'downloaded_archive_sha256':item['sha256'],'downloaded_archive_bytes':item['bytes'],
+                'readback_verified_at_unix':now,'immutable_identity_unchanged':False,
+                'previous_application_sha256':proof['application']['sha256'],'verified_at_unix':now,
+                'current_metadata':{'id':receipt['drive_file_id'],'size':str(item['bytes'])}}
+            path=root/'private.json'
+            def bind(value):
+                atomic_json(path,value);proof['private_identity']={'path':str(path),'sha256':sha256(path)}
+            bind(private)
+            result=validate_shared_reuse(proof,item,manifest,now)
+            self.assertFalse(result['private_identity']['new_upload'])
+            for key,value in [('shared',True),('owner_only',False),('download_completed',False),
+                ('archive_sha256','f'*64),('new_upload',True),('verified_at_unix',now-1801),
+                ('readback_verified_at_unix',now-1801),('downloaded_archive_sha256','d'*64),
+                ('drive_file_id','another-id'),('previous_application_sha256','e'*64)]:
+                bind(dict(private,**{key:value}))
+                with self.assertRaises(ContractError):validate_shared_reuse(proof,item,manifest,now)
+            bind(private)
+            with self.assertRaises(ContractError):
+                validate_shared_reuse(proof,item,dict(manifest,required_roles=['wrong']),now)
+            archive.write_bytes(b'corrupt')
+            with self.assertRaises(Exception):validate_shared_reuse(proof,item,manifest,now)
+
+    def test_owner_inventory_rejects_refund_stale_slots_and_unresolved_replacement(self):
+        from getup_qualification import validate_owner_inventory
+        with tempfile.TemporaryDirectory() as tmp:
+            root=Path(tmp);x=self.setup_exchange(root);prior=copy.deepcopy(x.verified)
+            ledger={'cumulative_uploaded_bytes':37690936,'live_bytes':32492670,'trashed_bytes':0,
+                'older_slot':prior[0],'current_slot':prior[1]}
+            ledger_path=root/'ledger.json';inventory_path=root/'owner.json'
+            inventory={'schema':'lh-drive-owner-qualification-inventory/v1','planned_run_id':'future',
+                'unknown_transfers':False,'ledger_path':str(ledger_path),'prior_generations':prior,
+                'cumulative_uploaded_bytes':37690936,'live_archive_bytes':32492670,'trashed_archive_bytes':0,
+                'all_project_retained_payload_bytes':100,'synthetic_test_archive_bytes':394}
+            admission={'run_id':'future','storage':{'cumulative_uploaded_bytes':37690936,
+                'live_archive_bytes':32492670,'trashed_archive_bytes':0,'remote_payload_bytes':494}}
+            def bind():
+                atomic_json(ledger_path,ledger);inventory['ledger_sha256']=sha256(ledger_path)
+                atomic_json(inventory_path,inventory)
+                admission['storage']['owner_inventory']={'path':str(inventory_path),'sha256':sha256(inventory_path)}
+            bind();validate_owner_inventory(admission,prior)
+            for key,value in [('cumulative_uploaded_bytes',22056886),('live_archive_bytes',37690936),
+                ('trashed_archive_bytes',1),('remote_payload_bytes',493)]:
+                bad=copy.deepcopy(admission);bad['storage'][key]=value
+                with self.assertRaises(ContractError):validate_owner_inventory(bad,prior)
+            with self.assertRaises(ContractError):validate_owner_inventory(admission,list(reversed(prior)))
+            inventory['unknown_transfers']=True;bind()
+            with self.assertRaises(ContractError):validate_owner_inventory(admission,prior)
+            inventory['unknown_transfers']=False;ledger['pending_replacement']={'status':'uncertain'};bind()
+            with self.assertRaises(ContractError):validate_owner_inventory(admission,prior)
+
+    def test_production_reuse_restore_adapter_has_no_upload_or_double_charge(self):
+        from getup_qualification import restore_verified_shared
+        from experiment_backup import create_snapshot
+        from getup_cold_start import DriveExchange
+        import zipfile,hashlib
+        with tempfile.TemporaryDirectory() as tmp:
+            root=Path(tmp);payload=root/'payload';payload.write_bytes(b'explicit synthetic input')
+            archive=create_snapshot(root/'archive',dict(run_id='synthetic-test',synthetic=True,
+                source={'commit':'a'*40,'dirty':False,'description':'software fixture only'},
+                provenance='software-test',config={},seed=1,
+                artifacts=[artifact('fixture',payload,'synthetic-test/v1')],required_roles=['fixture'],
+                excluded_dependencies=[],max_payload_bytes=1024,application_resume_eligible=False))
+            item={'path':str(archive),'sha256':sha256(archive),'bytes':archive.stat().st_size}
+            request={'manifest_sha256':hashlib.sha256(zipfile.ZipFile(archive).read('manifest.json')).hexdigest(),
+                'payload_bytes':payload.stat().st_size}
+            x=DriveExchange(root/'exchange','synthetic-next',{'commit':'b'*40},time.time()+3600,synthetic=True)
+            x.remote_uploaded_bytes=37690936;x.retired_payload_bytes=1000
+            def validate(restored,manifest):
+                self.assertTrue(manifest['synthetic'])
+                self.assertEqual((restored/manifest['files'][0]['path']).read_bytes(),payload.read_bytes())
+                return {'passed':True,'physics_integrations':0,'synthetic':True}
+            with mock.patch.object(x,'snapshot',side_effect=AssertionError('NO NEW REQUEST')):
+                result=restore_verified_shared(x,item,request,validate,time.time()+60)
+            self.assertTrue(result['synthetic']);self.assertEqual(x.remote_uploaded_bytes,37690936)
+            self.assertEqual(x.retired_payload_bytes,1000-payload.stat().st_size)
+            self.assertEqual(x.shared_sha256,request['manifest_sha256'])
+            self.assertFalse(list(x.directory.glob('*.request.json')))
+            self.assertFalse(list(x.directory.glob('shared-reuse-*')))
+            with self.assertRaises(ContractError):
+                restore_verified_shared(x,item,request,validate,time.time()-1)
+
 if __name__=='__main__':unittest.main()
