@@ -113,7 +113,7 @@ class Record:
     def validate(self):
         if self.category not in CATEGORIES or self.phase not in ('pre_holding', 'holding'):
             raise ContractError('Unknown replay category/phase')
-        if not self.episode or not self.behavior or self.source not in ('retained_verified', 'fresh_wasm'):
+        if not self.episode or not self.behavior or self.source not in ('retained_verified', 'fresh_wasm', 'synthetic_rehearsal'):
             raise ContractError('Replay requires episode, behavior and real provenance')
         if self.episode_outcome not in ('pending', 'success', 'failure', 'truncation'):
             raise ContractError('Unknown episode outcome')
@@ -169,7 +169,7 @@ class EpisodeReplay:
         if outcome not in ('success', 'failure', 'truncation') or truncated != (outcome == 'truncation'):
             raise ContractError('Invalid episode completion receipt')
         indices = [i for i, row in enumerate(self.rows) if row.episode == episode]
-        if not indices or any(self.rows[i].source != 'fresh_wasm' for i in indices):
+        if not indices or any(self.rows[i].source not in ('fresh_wasm','synthetic_rehearsal') for i in indices):
             raise ContractError('Only the current fresh episode can be finalized')
         last=self.rows[indices[-1]]
         if truncated and any(self.rows[i].terminal or self.rows[i].complete_episode for i in indices):

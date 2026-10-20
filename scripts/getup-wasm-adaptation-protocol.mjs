@@ -90,6 +90,7 @@ async function command(q){
  }
  if(continuationClaim&&['coldPrepare','coldQualify','step','hold','heldout','qualify'].includes(q.op))
   assert.fail('Qualification amendment admits only one bootstrap reset, no other physics');
+ if(q.op==='coldDrop'){assert(config.coldStart);active?.free();active=null;label=null;previousC=Array(21).fill(0);longest=0;interval=0;return {physicsIntegrations:0};}
  if(q.op==='state'){assert(active);return state(active);}
  if(q.op==='bridgeState')return {label,previousC,longest,interval,protectedEvaluationIntegrations,protectedEvaluationWallMs,
   lastSnapshot:active?lastSnapshots.get(active)??null:null};

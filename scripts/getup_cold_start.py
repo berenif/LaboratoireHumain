@@ -64,6 +64,7 @@ def validate_qualification_boundary(report, ledger, config, amendment, run_id, c
 
 def validate_backup_identity(request, receipt, application, run_id):
     if (not all(isinstance(x,dict) for x in (request,receipt,application))
+            or any(x.get('synthetic',False) is not False for x in (request,receipt,application))
             or request.get('run_id')!=run_id
             or receipt.get('schema')!='lh-private-drive-receipt/v1'
             or receipt.get('owner_only') is not True or receipt.get('shared') is not False
@@ -237,7 +238,7 @@ class FreshMapper:
     The mapper consumes executed source/result pairs, not reconstructed audit
     labels. Pending origin survives a pause and its final reward remains folded.
     """
-    def __init__(self, builder, episode, behavior, case, first_raw_line=0):
+    def __init__(self, builder, episode, behavior, case, first_raw_line=0, *, synthetic=False):
         if case not in ('original', 'heldout', 'belly'):
             raise ContractError('Unknown fresh physical case')
         self.builder, self.episode, self.behavior, self.case = builder, episode, behavior, case
@@ -248,6 +249,7 @@ class FreshMapper:
         self.pending_line = None
         self.mapping = []
         self.finished = False
+        self.synthetic = synthetic
 
     def push(self, source, correction, result):
         if self.finished:
@@ -276,12 +278,16 @@ class FreshMapper:
             origin, action = self.pending_origin
             holding = origin['preview']['referenceDecision'] >= origin['status']['reference_frames']
             duration = (post['native'] - origin['native']) // 20
+            import struct
+            def f32(values):
+                return struct.unpack('<'+str(len(values))+'f',struct.pack('<'+str(len(values))+'f',*values))
             row = Record(self.episode, 'back_holding' if holding else 'back_pre_holding',
                 'holding' if holding else 'pre_holding', self.behavior,
-                tuple(transition[0]), action, tuple(transition[2]), float(transition[3]),
+                f32(transition[0]), f32(action), f32(transition[2]), float(transition[3]),
                 0. if result['terminal'] else self.builder.gamma ** duration,
                 bool(result['terminal']), False, origin['native'], post['native'],
-                origin['impactEpoch'], bool(result['terminal']), 'fresh_wasm',
+                origin['impactEpoch'], bool(result['terminal']),
+                'synthetic_rehearsal' if self.synthetic else 'fresh_wasm',
                 'success' if result['success'] else 'failure' if result['terminal'] else 'pending',
                 False).validate()
             self.rows.append(row)
@@ -320,7 +326,8 @@ class DriveExchange:
     are independently checked here. A receipt is NOT a restart authorization.
     No connector credentials, download URL, or generic Library workaround exist.
     """
-    def __init__(self, directory, run_id, source, deadline, shared_sha256=None):
+    def __init__(self, directory, run_id, source, deadline, shared_sha256=None, *, clock=None, synthetic=False):
+        self.clock=clock;self.synthetic=synthetic
         self.directory = Path(directory)
         self.directory.mkdir(parents=True, exist_ok=True)
         self.run_id, self.source, self.deadline = run_id, source, deadline
@@ -331,15 +338,22 @@ class DriveExchange:
         self.seed_bytes = 0
         self.retired_payload_bytes = 0  # Recoverable Drive Trash can still consume quota.
         self.remote_uploaded_bytes = 394  # Existing explicitly scoped tiny Drive drill.
+        self.external_local_bytes = 0
         self.operation_deadline = deadline
         self.verified = []
         self.failed = False
+
+    def now(self):return self.clock.now() if self.clock else time.time()
+
+    def sleep(self,seconds):
+        if self.clock:self.clock.sleep(seconds)
+        else:time.sleep(seconds)
 
     def snapshot(self, artifacts, config, boundary, kind='generation', wall_reserve=0.):
         if self.failed:
             raise ContractError('Prior failed/uncertain Drive operation; no automatic retry')
         self.operation_deadline=self.deadline-wall_reserve
-        if not 0<=wall_reserve<3600 or time.time() >= self.operation_deadline:
+        if not 0<=wall_reserve<3600 or self.now() >= self.operation_deadline:
             raise ContractError('Original cold-start deadline reached')
         if kind not in ('shared', 'seeds', 'generation') or (kind == 'shared' and self.shared_sha256):
             raise ContractError('Immutable shared inputs are retained once')
@@ -363,26 +377,26 @@ class DriveExchange:
             raise ContractError('Peak shared+current+previous+pending exceeds byte cap before upload')
         # Backup-root storage only; the original working inputs are not copied
         # here until admission. Reserve payload + archive simultaneously.
-        retained_local = sum(p.stat().st_size for p in self.directory.rglob('*') if p.is_file())
+        retained_local = self.external_local_bytes + sum(p.stat().st_size for p in self.directory.rglob('*') if p.is_file())
         if retained_local + 3 * total + 4*1024**2 > PROTOCOL['retained_payload_bytes']:
             raise ContractError('Local archive/staging peak exceeds backup byte cap before copying')
         if kind == 'generation' and any(item['role'] in SHARED_ROLES for item in artifacts):
             raise ContractError('Generation must reference immutable inputs, not copy them')
         archive = create_snapshot(self.directory / 'bundles', dict(run_id=self.run_id,
-            synthetic=False, source=self.source, provenance=boundary,
+            synthetic=self.synthetic, source=self.source, provenance=boundary,
             config={'cold_start': config, 'shared_manifest_sha256': self.shared_sha256,
                     'seed_manifest_sha256':self.seed_sha256},
             seed=20261020, artifacts=artifacts, required_roles=[x['role'] for x in artifacts],
             excluded_dependencies=[], max_payload_bytes=limit,
             application_resume_eligible=(kind=='generation' and config.get('resumeAuthorized') is not False),
             previous_manifest_sha256=self.verified[-1]['manifest_sha256'] if self.verified else None))
-        if archive.stat().st_size > limit + 1024**2:
+        if archive.stat().st_size > min(32*1024**2,limit + 1024**2):
             raise ContractError('Measured compressed bundle exceeds byte cap')
         if self.remote_uploaded_bytes+archive.stat().st_size>PROTOCOL['retained_payload_bytes']:
             raise ContractError('Cumulative remote archive bytes including Trash exceed cap before upload')
         manifest = verify_bundle(archive, max_payload_bytes=limit)
         request = {'schema': 'lh-private-drive-request/v1', 'run_id': self.run_id,
-            'kind': kind, 'boundary': boundary, 'archive_path': str(archive),
+            'synthetic':self.synthetic,'kind': kind, 'boundary': boundary, 'archive_path': str(archive),
             'archive_sha256': sha256(archive), 'archive_bytes': archive.stat().st_size,
             'payload_bytes': total, 'manifest_sha256': hashlib.sha256(
                 __import__('zipfile').ZipFile(archive).read('manifest.json')).hexdigest(),
@@ -403,9 +417,12 @@ class DriveExchange:
         if self.failed:
             raise ContractError('Prior failed/uncertain Drive operation; no retry')
         try:
-            if time.time() >= self.operation_deadline:
+            if self.now() >= self.operation_deadline:
                 raise ContractError('Original cold-start deadline expired during backup')
             request, receipt = [json.loads(Path(p).read_text()) for p in (request_path, receipt_path)]
+            if (receipt.get('synthetic',False) is not self.synthetic
+                    or request.get('synthetic',False) is not self.synthetic):
+                raise ContractError('Scripted and actual Drive receipts cannot be mixed')
             expected = ('run_id', 'kind', 'archive_sha256', 'archive_bytes', 'manifest_sha256')
             if receipt.get('schema') != 'lh-private-drive-receipt/v1' or any(receipt.get(k) != request[k] for k in expected):
                 raise ContractError('Drive receipt does not bind the exact requested bundle')
@@ -417,6 +434,8 @@ class DriveExchange:
                 raise ContractError('Remote downloaded byte count differs')
             manifest = verify_bundle(downloaded, request['archive_sha256'],
                 PROTOCOL['shared_payload_bytes' if request['kind'] in ('shared','seeds') else 'generation_payload_bytes'])
+            if manifest['synthetic'] is not self.synthetic:
+                raise ContractError('Scripted archive cannot open an actual recovery gate')
             if set(manifest['required_roles']) != set(request['required_roles']):
                 raise ContractError('Downloaded required roles differ')
             if hashlib.sha256(__import__('zipfile').ZipFile(downloaded).read('manifest.json')).hexdigest() != request['manifest_sha256']:
@@ -435,7 +454,7 @@ class DriveExchange:
             finally:
                 shutil.rmtree(restored)
             verified_path=Path(request_path).with_name(Path(request_path).name.replace('.request.json','.application-verified.json'))
-            atomic_json(verified_path,{'passed':True,'archive_sha256':request['archive_sha256'],
+            atomic_json(verified_path,{'passed':True,'synthetic':self.synthetic,'archive_sha256':request['archive_sha256'],
                 'physics_integrations':0,'downloaded_path':str(downloaded)})
             generations = self.verified + [dict(manifest_sha256=request['manifest_sha256'],
                 drive_file_id=receipt['drive_file_id'], payload_bytes=request['payload_bytes'],
@@ -462,9 +481,9 @@ class DriveExchange:
                         'deadline_unix':self.operation_deadline,'receipt':str(prune_receipt)})
                     print(json.dumps({'event':'DRIVE_PRUNE_REQUEST','request':str(prune_request)}),flush=True)
                     while not prune_receipt.exists():
-                        if time.time()>=self.operation_deadline:
+                        if self.now()>=self.operation_deadline:
                             raise ContractError('Deadline expired awaiting exact owned-generation cleanup')
-                        time.sleep(.5)
+                        self.sleep(.5)
                     pruned=json.loads(prune_receipt.read_text())
                     if (pruned.get('replacement_manifest_sha256')!=request['manifest_sha256']
                             or set(pruned.get('deleted_drive_file_ids',[]))!=expected_ids):
@@ -477,9 +496,10 @@ class DriveExchange:
                 for old in stale:
                     old_archive = Path(old['archive_path']).resolve()
                     # Delete only exact generations created by this instance.
-                    if old_archive.parent.parent != (self.directory / 'bundles').resolve():
-                        raise ContractError('Refuse cleanup outside owned backup generations')
-                    shutil.rmtree(old_archive.parent)
+                    if old_archive.parent.parent == (self.directory / 'bundles').resolve():
+                        shutil.rmtree(old_archive.parent)
+                    # Prior closed-run evidence outside this instance is NEVER
+                    # deleted; its bytes remain in external_local_bytes.
             return manifest
         except BaseException:
             self.failed = True

@@ -6,7 +6,6 @@ Run once, then service *.request.json using the authorized private Drive worker.
 """
 from __future__ import annotations
 import argparse
-from dataclasses import asdict, replace
 import importlib.util
 import json
 from pathlib import Path
@@ -15,11 +14,8 @@ import sys
 import time
 
 from experiment_backup import atomic_json, sha256
-from getup_cold_start import (PROTOCOL, PROTOCOL_PATH, SHARED_ROLES, ColdPhase,
-    DriveExchange, FreshMapper, artifact, input_preflight, require_full_phase_capacity,
-    verify_qualification_amendment)
-from getup_learning_loop import (ContractError, EpisodeReplay, FixedWitness,
-    UpdateGuard, remaining_seconds)
+from getup_cold_start import PROTOCOL,PROTOCOL_PATH,DriveExchange,input_preflight
+from getup_learning_loop import ContractError,remaining_seconds
 
 ROOT = Path(__file__).resolve().parents[1]
 spec = importlib.util.spec_from_file_location('historical_interfaces',
@@ -97,504 +93,231 @@ def verify_stop_documents(restored, manifest, output, roles):
             'scope':'terminal-documents-not-runtime-resume'}
 
 
-def run(output, worker, shared, run_id, continuation_path=None):
-    if output.exists() and continuation_path is None:
-        raise ContractError('No cold-start restart/output reuse or deadline renewal')
-    if subprocess.check_output(['git','diff','HEAD','--name-only'],cwd=ROOT,text=True).strip():
-        raise ContractError('Commit reviewed tracked source before the single pilot')
-    for source in ('scripts/train-getup-cold-start.py','scripts/getup_cold_start.py',
-                   'scripts/getup-cold-start-protocol.json'):
-        subprocess.run(['git','ls-files','--error-unmatch',source],cwd=ROOT,
-                       check=True,stdout=subprocess.DEVNULL)
+class SystemClock:
+    def now(self):return time.time()
+    def work(self,kind):pass
+
+
+SOFTWARE_SOURCE_FILES=(
+    'scripts/getup_cold_start_engine.py','scripts/getup_cold_start_rehearsal.py',
+    'scripts/getup-cold-start-engine-test.py','scripts/train-getup-cold-start.py',
+    'scripts/getup_cold_start.py','scripts/getup_cold_start_verify.py',
+    'scripts/getup_learning_loop.py','scripts/train-getup-learning-loop.py',
+    'scripts/train-getup-wasm-adaptation.py','scripts/getup-wasm-adaptation-protocol.mjs',
+    'scripts/getup-cold-start-restore.mjs','scripts/getup-cold-start-protocol-contract.mjs',
+    'scripts/getup-learning-loop-protocol-contract.mjs','scripts/experiment_backup.py',
+    'scripts/getup-cold-start-protocol.json')
+
+
+def future_admission(path,output,worker,shared,run_id):
+    """Pure pre-clock checks. Software success never grants trial authority."""
+    from experiment_backup import verify_bundle
+    from getup_cold_start import validate_backup_identity
+    if output.exists():raise ContractError('Closed/output attempt cannot be reused or restarted')
+    if path is None:raise ContractError('Future root resource decision/admission required; software tests authorize no trial')
+    admission=json.loads(Path(path).read_text())
     commit=subprocess.check_output(['git','rev-parse','HEAD'],cwd=ROOT,text=True).strip()
-    amendment=None
-    if continuation_path:
-        amendment,report,config,exchange=verify_qualification_amendment(
-            output,continuation_path,run_id,commit,time.time())
-        started=report['startedAtUnix'];deadline=report['deadlineUnix']
-        # This amendment admits one bounded initialization, not final evaluation.
-        # The stopped report and its durable receipt remain immutable evidence.
-        history=output/'amendments';history.mkdir(exist_ok=True)
-        original_report=history/'original-stop-report.json'
-        if original_report.exists():raise ContractError('Continuation was already initiated')
-        original_report.write_bytes((output/'cold-start-report.json').read_bytes())
-        (history/'qualification-amendment.json').write_bytes(Path(continuation_path).read_bytes())
-        report=dict(report,continuation={'amendmentSha256':sha256(continuation_path),
-            'originalStopReportSha256':sha256(original_report),'amendedSourceCommit':commit,
-            'originalDeadlineUnchanged':True,'genericResume':False})
-        report.pop('stopped',None);report.pop('error',None)
-    else:
-        output.mkdir(parents=True)
-        started=time.time();deadline=started+PROTOCOL['wall_seconds']
-    source={'commit':commit,'dirty':False,'description':'Reviewed cold-start source; prior lost experience not recovered'}
-    if not amendment:
-        report={'schema':PROTOCOL['schema'],'runId':run_id,'source':source,
-            'startedAtUnix':started,'deadlineUnix':deadline,'protocol':PROTOCOL,
-            'trainingExecuted':False,'physicalExperimentExecuted':False,'releaseAccepted':False,
-            'candidateAccepted':False,'historicalRecoveryClaimed':False,'accepted':0,'rejected':0}
+    if subprocess.check_output(['git','diff','HEAD','--name-only'],cwd=ROOT,text=True).strip():
+        raise ContractError('Reviewed committed source is required')
+    if (admission.get('schema')!='lh-cold-future-admission/v1'
+            or admission.get('actual_run_authorized') is not True
+            or admission.get('run_id')!=run_id or admission.get('source_commit')!=commit
+            or not admission.get('resource_decision_reference')):
+        raise ContractError('Explicit future run/source/resource decision is absent')
+    ready=admission['software_readiness'];ready_path=Path(ready['path'])
+    if sha256(ready_path)!=ready['sha256']:raise ContractError('Software readiness receipt changed')
+    readiness=json.loads(ready_path.read_text())
+    if (readiness.get('software_passed') is not True or readiness.get('actual_trial_authorized') is not False
+            or not admission.get('independent_review_reference')):
+        raise ContractError('Software/independent-review gate absent; never a physical acceptance')
+    if set(readiness['source_files'])!=set(SOFTWARE_SOURCE_FILES):
+        raise ContractError('Incomplete software-tested source inventory')
+    import importlib.metadata
+    if any(importlib.metadata.version(name)!=version for name,version in readiness['dependencies'].items()):
+        raise ContractError('Software-tested dependencies changed')
+    for name,digest in readiness['source_files'].items():
+        if sha256(ROOT/name)!=digest:raise ContractError('Software-tested source differs: '+name)
+    if (sha256(worker/'lh_worker.js')!=readiness['worker_glue_sha256']
+            or sha256(worker/'lh_worker_bg.wasm')!=readiness['worker_sha256']
+            or sha256(PROTOCOL_PATH)!=readiness['protocol_sha256']):
+        raise ContractError('Worker/protocol differs from software readiness identity')
+    manifest_path=shared/'input-manifest.json';input_preflight(manifest_path)
+    manifest=json.loads(manifest_path.read_text())
+    receipts={}
+    for kind in ('shared','seeds'):
+        item=admission['immutable'][kind]
+        documents={key:json.loads(Path(item[key]['path']).read_text()) for key in ('request','receipt','application')}
+        for key in documents:
+            if sha256(Path(item[key]['path']))!=item[key]['sha256']:raise ContractError('Immutable proof changed')
+        request,receipt,application=(documents[key] for key in ('request','receipt','application'))
+        validate_backup_identity(request,receipt,application,request['run_id'])
+        if request['kind']!=kind:raise ContractError('Wrong immutable archive kind')
+        archive=Path(request['archive_path'])
+        bundle=verify_bundle(archive,request['archive_sha256'],32*1024**2)
+        import zipfile,hashlib
+        with zipfile.ZipFile(archive) as zipped:manifest_hash=hashlib.sha256(zipped.read('manifest.json')).hexdigest()
+        if archive.stat().st_size!=request['archive_bytes'] or manifest_hash!=request['manifest_sha256']:
+            raise ContractError('Immutable archive size/manifest changed')
+        entries={x['role']:x for x in bundle['files']}
+        paths=({role:Path(info['path']) for role,info in manifest['files'].items()} if kind=='shared'
+               else {case+'_seed':Path(admission['seed_paths'][case]) for case in ('original','heldout','belly')})
+        paths.update({'input_manifest':manifest_path} if kind=='shared' else {})
+        for role,p in paths.items():
+            if role not in entries or sha256(p)!=entries[role]['sha256']:
+                raise ContractError('Immutable working input differs: '+role)
+        receipts[kind]=(request,receipt,bundle)
+    storage=admission['storage']
+    if (storage['cumulative_uploaded_bytes']<16167158 or storage['cumulative_uploaded_bytes']>160*1024**2
+            or storage['remote_payload_bytes']<sum(r[0]['payload_bytes'] for r in receipts.values())
+            or not storage.get('owner_inventory_reference')):
+        raise ContractError('Complete cumulative/Trash/owner storage admission required')
+    measured=0
+    for directory in storage['protected_local_backup_roots']:
+        path=Path(directory).resolve()
+        if not path.is_relative_to(ROOT/'outputs'/'cold-start'):
+            raise ContractError('Protected evidence root must remain in the owned cold-start area')
+        measured+=sum(p.stat().st_size for p in path.rglob('*') if p.is_file())
+    if measured!=storage['protected_local_backup_bytes'] or measured>160*1024**2:
+        raise ContractError('Protected local evidence byte inventory differs')
+    prior=[]
+    for item in storage['prior_generations']:
+        documents={key:json.loads(Path(item[key]['path']).read_text()) for key in ('request','receipt','application')}
+        for key in documents:
+            if sha256(Path(item[key]['path']))!=item[key]['sha256']:raise ContractError('Prior generation proof changed')
+        request,receipt,application=(documents[key] for key in ('request','receipt','application'))
+        validate_backup_identity(request,receipt,application,request['run_id'])
+        if request['kind']!='generation':raise ContractError('Prior generation role differs')
+        verify_bundle(request['archive_path'],request['archive_sha256'],64*1024**2)
+        prior.append(dict(manifest_sha256=request['manifest_sha256'],drive_file_id=receipt['drive_file_id'],
+            payload_bytes=request['payload_bytes'],archive_path=request['archive_path'],archive_bytes=request['archive_bytes']))
+    if len(prior)>2 or len({x['drive_file_id'] for x in prior})!=len(prior):
+        raise ContractError('Exact current/previous remote generation inventory required')
+    if storage['remote_payload_bytes']<sum(x['payload_bytes'] for x in prior)+sum(r[0]['payload_bytes'] for r in receipts.values()):
+        raise ContractError('Remote payload inventory omits retained generations')
+    admission['_verified_prior_generations']=prior
+    return admission,readiness,manifest,receipts,commit
+
+
+def run(output,worker,shared,run_id,continuation_path=None,admission_path=None):
+    """One future authorized process; no generic resume of the closed attempt."""
+    from dataclasses import asdict
+    import shutil
+    import tempfile
+    from experiment_backup import restore_bundle
+    from getup_cold_start_engine import ColdPilot,CoherentRecovery,DrivePhaseTransport,PhasePlan
+    if continuation_path is not None:
+        raise ContractError('Qualification amendment is consumed/closed; no continuation or new clock')
+    admission,readiness,inputs,immutable,commit=future_admission(admission_path,output,worker,shared,run_id)
+    # All new runtime loading, operational restoration and qualification are
+    # INSIDE this one absolute clock, not relabeled software preparation.
+    started=time.time();deadline=started+3600;clock=SystemClock()
+    plan=PhasePlan(started,deadline,started+2100,started+3300)
+    output.mkdir(parents=True)
+    source={'commit':commit,'dirty':False,'description':'Reviewed source; no exact historical recovery claim'}
+    exchange=DriveExchange(output/'recovery',run_id,source,deadline)
+    exchange.remote_uploaded_bytes=admission['storage']['cumulative_uploaded_bytes']
+    exchange.verified=admission['_verified_prior_generations']
+    exchange.retired_payload_bytes=admission['storage']['remote_payload_bytes']-sum(
+        r[0]['payload_bytes'] for r in immutable.values())-sum(x['payload_bytes'] for x in exchange.verified)
+    # Closed local evidence stays untouched; remote current/previous retention
+    # still retires the exact old IDs only AFTER replacement restore succeeds.
+    # All prior/Trash bytes remain in cumulative storage; no quota refund.
+    exchange.external_local_bytes=admission['storage']['protected_local_backup_bytes']
+    watchdog=interfaces.AbsoluteWatchdog(deadline);wasm=None;pilot=None
+    report={'schema':'lh-cold-runtime-admission/v1','runId':run_id,'startedAtUnix':started,
+        'deadlineUnix':deadline,'source':source,'admissionSha256':sha256(admission_path),
+        'softwareReadinessSha256':admission['software_readiness']['sha256'],
+        'actualTrialAuthorized':True,'releaseAccepted':False,'candidateAccepted':False,
+        'historicalRecoveryClaimed':False,'reusedImmutableArchives':True}
     atomic_json(output/'cold-start-report.json',report)
     print(json.dumps({'event':'START','run_id':run_id,'started':started,'deadline':deadline,
-                      'protocol_sha256':sha256(PROTOCOL_PATH)}),flush=True)
-    watchdog=interfaces.AbsoluteWatchdog(deadline)
-    if not amendment:exchange=DriveExchange(output/'recovery',run_id,source,deadline)
-    wasm=learner=replay=None
-    mapper=None;state=None;episode_number=0;episode_id=None
-    phase=None;mapping=[];bootstrap_indices=[];bootstrap_outcomes=[]
-    if not amendment:config={}
-    protected_wall=180.;pending_indices=[];backup_failed=False
-    def wall():
-        watchdog.assert_alive()
-        remaining_seconds(deadline,time.time(),protected_wall)
-    def save_report():
+        'protocol_sha256':sha256(PROTOCOL_PATH),'absolutePhaseCutoffs':asdict(plan)}),flush=True)
+    def run_restore(glue,wasm_path,checkpoints,state_file=None,operation_deadline=None):
+        end=min(operation_deadline or plan.work_end,deadline)
+        remaining_seconds(end,time.time())
+        command=['node',str(ROOT/'scripts/getup-cold-start-restore.mjs'),str(glue),str(wasm_path),
+                 *[str(x) for x in checkpoints]]
+        if state_file:command+=['--controller',str(state_file)]
+        result=subprocess.run(command,cwd=ROOT,text=True,capture_output=True,check=True,
+            timeout=min(120.,remaining_seconds(end,time.time())))
+        remaining_seconds(end,time.time());return json.loads(result.stdout)
+    def transfer(request,validator):
+        details=json.loads(request.read_text());end=details['deadline_unix']
+        receipt=request.with_name(request.name.replace('.request.json','.receipt.json'))
+        print(json.dumps({'event':'DRIVE_REQUEST','request':str(request),'receipt':str(receipt),'details':details}),flush=True)
+        while not receipt.exists():
+            watchdog.assert_alive();remaining_seconds(end,time.time());time.sleep(.5)
+        result=exchange.verify_receipt(request,receipt,validator)
+        remaining_seconds(end,time.time());return result
+    def controller_factory(path,bridge,state,ledger):
+        # Independent process, fresh native runtime. Runtime-free snapshots
+        # intentionally do not launch a worker or call state/checkpoint.
+        if path is None:return {'runtime_active':False,'ledger':ledger}
+        with tempfile.TemporaryDirectory(prefix='controller-restore-',dir=output) as tmp:
+            expected=Path(tmp)/'controller.json'
+            atomic_json(expected,{'state':state,'bridge':bridge})
+            result=run_restore(worker/'lh_worker.js',worker/'lh_worker_bg.wasm',[path],expected,
+                pilot.phase_deadline if pilot else plan.work_end)
+        return {'runtime_active':True,'ledger':ledger,'receipt':result,'bridge':bridge,'state':state}
+    try:
+        # Reuse immutable archives once. Their proven private Drive receipts and
+        # archived transfer hashes remain bound; this is a NEW local operational
+        # load, NOT a claim of a new remote download/upload.
+        for kind,(request,receipt,bundle) in immutable.items():
+            with tempfile.TemporaryDirectory(prefix='immutable-restore-',dir=output) as tmp:
+                restored=Path(tmp)/'payload'
+                restored_manifest=restore_bundle(request['archive_path'],restored,
+                    request['archive_sha256'],32*1024**2)
+                files={x['role']:restored/x['path'] for x in restored_manifest['files']}
+                if kind=='shared':
+                    result=run_restore(files['worker_glue'],files['worker_wasm'],
+                        [files['back_unstepped'],files['belly_unstepped']])
+                    if any(x['native']!=0 for x in result['cases']):raise ContractError('Not unstepped inputs')
+                    exchange.shared_sha256=request['manifest_sha256'];exchange.shared_bytes=request['payload_bytes']
+                    exchange.shared_archive=request['archive_path']
+                else:
+                    result=run_restore(worker/'lh_worker.js',worker/'lh_worker_bg.wasm',
+                        [files[case+'_seed'] for case in ('original','heldout','belly')])
+                    exchange.seed_sha256=request['manifest_sha256'];exchange.seed_bytes=request['payload_bytes']
+                report[kind+'OperationalRestore']=result
+        proof=output/'operational-inputs.json'
+        atomic_json(proof,dict(schema='lh-cold-start-operational-inputs/v1',passed=True,
+            physicsIntegrations=0,privateDriveRoundtrip=True,previousPrivateRoundtripReused=True,
+            newRemoteTransfer=False,manifestSha256=sha256(shared/'input-manifest.json'),
+            sharedManifestSha256=exchange.shared_sha256))
+        config={'wallSeconds':3600,'nativeIntegrations':300000,'gamma':interfaces.GAMMA,
+            'coldStart':{'schema':PROTOCOL['schema'],'manifest':str(shared/'input-manifest.json'),'operationalProof':str(proof)},
+            'inputContract':{'startedAtUnixMs':round(started*1000),'deadlineUnixMs':round(started*1000)+3600000,
+                'files':inputs['files'],'profile':inputs['files']['profile']['path'],
+                'checkpoints':admission['seed_paths']}}
+        atomic_json(output/'frozen-config.json',config)
+        legacy=interfaces.load_legacy();factory=lambda:interfaces.SACLearner(legacy)
+        learner=factory();wasm=interfaces.BoundedWasm(legacy,output,worker,deadline,watchdog);wasm.synthetic=False
+        recovery=CoherentRecovery(DrivePhaseTransport(exchange,transfer,clock),controller_factory,synthetic=False)
+        identity={'runId':run_id,'sourceCommit':commit,'workerSha256':sha256(worker/'lh_worker_bg.wasm'),
+            'protocolSha256':sha256(PROTOCOL_PATH),'sharedManifestSha256':exchange.shared_sha256,
+            'seedManifestSha256':exchange.seed_sha256,'admissionSha256':sha256(admission_path)}
+        pilot=ColdPilot(output=output,learner=learner,learner_factory=factory,
+            builder_factory=lambda:legacy.SourceTransition(interfaces.GAMMA),bridge=wasm,
+            recovery=recovery,clock=clock,plan=plan,identity=identity,synthetic=False)
+        # Qualification consumes the same ledger/cutoffs, and does not replace
+        # the next-transition/reward/mapping/coherent-replay gates in pilot.run.
+        pilot.admit_sequence(prefix_seconds=60,prefix_integrations=1000)
+        pilot.enter('zero-correction-qualification',60,1000)
+        report['nativeQualification']=pilot.call({'op':'coldQualify'},physical=True,upper_bound=1000)
+        report['phaseResult']=pilot.run()
+    except BaseException as error:
+        report.update(stopped='runtime-admission-safe-stop',error=str(error))
+        if pilot is not None:
+            pilot.failure_latched=True
+            try:pilot.backup('terminal-stop',retention=True)
+            except BaseException as stop_error:report['terminalRetentionError']=str(stop_error)
+    finally:
         report['elapsedWallSeconds']=time.time()-started
         atomic_json(output/'cold-start-report.json',report)
-    def run_restore(glue, wasm_path, checkpoints):
-        wall()
-        result=subprocess.run(['node',str(ROOT/'scripts/getup-cold-start-restore.mjs'),
-            str(glue),str(wasm_path),*[str(x) for x in checkpoints]],cwd=ROOT,text=True,
-            capture_output=True,check=True,timeout=min(120.,remaining_seconds(deadline,time.time(),protected_wall)))
-        return json.loads(result.stdout)
-    def verify_shared(restored, manifest):
-        files={item['role']:restored/item['path'] for item in manifest['files']}
-        result=run_restore(files['worker_glue'],files['worker_wasm'],
-                           [files['back_unstepped'],files['belly_unstepped']])
-        if any(case['native']!=0 for case in result['cases']):
-            raise ContractError('Shared runtime restore is not unstepped')
-        return result
-    def transfer(request, validator):
-        nonlocal backup_failed
-        receipt=request.with_name(request.name.replace('.request.json','.receipt.json'))
-        print(json.dumps({'event':'DRIVE_REQUEST','request':str(request),'receipt':str(receipt),
-                          'details':json.loads(request.read_text())}),flush=True)
-        try:
-            while not receipt.exists():
-                wall();time.sleep(.5)
-            result=exchange.verify_receipt(request,receipt,validator)
-            wall()
-            return result
-        except BaseException:
-            backup_failed=True
-            raise
-    def call(request):
-        wall()
-        return wasm.call(request)
-    def raw_lines():
-        path=output/'transitions.ndjson'
-        return sum(1 for _ in path.open()) if path.exists() else 0
-    def ledger():
-        return call({'op':'ledger'})
-    def create_mapper(case, policy):
-        nonlocal state,mapper,episode_number,episode_id,pending_indices
-        episode_number+=1;episode_id=f'cold-{case}-{episode_number:03d}'
-        state=call({'op':'reset','case':case,'label':episode_id,'external':True,'prepared':True})
-        mapper=FreshMapper(legacy.SourceTransition(interfaces.GAMMA),episode_id,policy,case,raw_lines())
-        pending_indices=[]
-    def one_step(action, collection_phase):
-        nonlocal state
-        result=call({'op':'step','c':action,'training':bool(state.get('preview')),
-            'collectionPhase':collection_phase,'episodeId':episode_id,'policyId':mapper.behavior})
-        row=mapper.push(state,action,result);state=result['state']
-        if result['failure'] and result['failure'].get('check')!='original25s-deadline':
-            raise ContractError('Actual physical integrity failure: '+json.dumps(result['failure']))
-        return row,result
-    def verify_live(restored, manifest):
-        files={item['role']:restored/item['path'] for item in manifest['files']}
-        result=run_restore(worker/'lh_worker.js',worker/'lh_worker_bg.wasm',[files['runtime_checkpoint']])
-        # Exact bytes were verified first; loading this self-produced trusted
-        # Torch artifact is not remote arbitrary-pickle execution.
-        stored=learner.torch.load(files['learner'],weights_only=False,map_location='cpu')
-        before=learner.capture_learning_state()
-        learner.restore_learning_state(stored)
-        from getup_cold_start_verify import assert_state_equal, verify_replay_mapping
-        assert_state_equal(before,learner.capture_learning_state())
-        arrays=learner.np.load(files['replay'],allow_pickle=False)
-        metadata=json.loads(files['replay_metadata'].read_text())
-        cursor=json.loads(files['cursor'].read_text())
-        restored_mapping=json.loads(files['mapping'].read_text())
-        if restored_mapping!=mapping or cursor['mapping']!=mapping:
-            raise ContractError('Downloaded mapper lineage differs from paused live mapping')
-        raw=[json.loads(line) for line in files['transitions'].open()]
-        verified_mapping=verify_replay_mapping(arrays,metadata,restored_mapping,raw,interfaces.GAMMA)
-        parity=json.loads(files['resume_parity'].read_text())
-        if any(raw[i].get('training') is True and i!=parity['firstExcludedRawLine']
-               for i in verified_mapping['unmappedRawLines']):
-            raise ContractError('Executed fresh training transition has no mapping/exclusion')
-        for key in ('features','correction','next_features'):
-            expected=learner.np.asarray([getattr(row,key) for row in replay.rows],dtype='float32')
-            if not learner.np.array_equal(arrays[key],expected):
-                raise ContractError('Downloaded replay tensors differ from paused live replay')
-        expected_metadata=[{k:v for k,v in asdict(row).items()
-            if k not in ('features','correction','next_features')} for row in replay.rows]
-        if metadata!=expected_metadata:
-            raise ContractError('Downloaded replay episode metadata differs')
-        def encoded(value):
-            return json.loads(json.dumps(value,default=jsonable))
-        if (cursor['replayRng']!=encoded(replay.rng.getstate())
-                or cursor['pendingOrigin']!=encoded(mapper.pending_origin if mapper else None)
-                or cursor['pendingTransition']!=encoded(mapper.builder.pending if mapper else None)
-                or cursor['cachedState']!=encoded(state)
-                or cursor['phase']!=encoded(vars(phase) if phase else None)):
-            raise ContractError('Downloaded pending mapper/phase/replay RNG differs')
-        # Rehydrate independent pending transition and RNG, without consuming
-        # the live learner/replay streams or advancing the physical runtime.
-        if mapper:
-            restored_builder=legacy.SourceTransition(interfaces.GAMMA)
-            restored_builder.pending=cursor['pendingTransition']
-            if encoded(restored_builder.pending)!=encoded(mapper.builder.pending):
-                raise ContractError('Pending SourceTransition rehydration differs')
-        def tuples(value):
-            return tuple(map(tuples,value)) if isinstance(value,list) else value
-        import random
-        restored_rng=random.Random();restored_rng.setstate(tuples(cursor['replayRng']))
-        if restored_rng.getstate()!=replay.rng.getstate():
-            raise ContractError('Replay RNG rehydration differs')
-        if cursor['absoluteDeadlineUnix']!=deadline or cursor['ledger']!=ledger():
-            raise ContractError('Restored deadline/cumulative ledger differs')
-        if cursor['bridge']!=call({'op':'bridgeState'}):
-            raise ContractError('Restored bridge reward/metric/snapshot state differs')
-        saved_state=call({'op':'state'})
-        restored_state=call({'op':'coldRestore','path':str(files['runtime_checkpoint']),
-            'sha256':sha256(files['runtime_checkpoint']),'bridge':cursor['bridge']})
-        if restored_state['physicsIntegrations']!=0 or restored_state['state']!=saved_state:
-            raise ContractError('Operational runtime restore changed exact paused state')
-        return result
-    def checkpoint(boundary):
-        nonlocal backup_failed
-        wall()
-        current=call({'op':'state'})
-        call({'op':'checkpoint','name':'runtime-checkpoint.bin'})
-        learner.torch.save(learner.capture_learning_state(),output/'learner.pt')
-        learner.np.savez_compressed(output/'replay.npz',
-            features=learner.np.asarray([r.features for r in replay.rows],dtype='float32'),
-            correction=learner.np.asarray([r.correction for r in replay.rows],dtype='float32'),
-            next_features=learner.np.asarray([r.next_features for r in replay.rows],dtype='float32'))
-        metadata=[{k:v for k,v in asdict(row).items() if k not in ('features','correction','next_features')}
-                  for row in replay.rows]
-        atomic_json(output/'replay-metadata.json',metadata)
-        atomic_json(output/'mapping.json',mapping)
-        cursor={'schema':1,'boundary':boundary,'absoluteStartedUnix':started,'absoluteDeadlineUnix':deadline,
-            'phase':vars(phase) if phase else None,'episodeId':episode_id,'episodeCounter':episode_number,
-            'cachedState':state,'authoritativeState':current,'ledger':ledger(),
-            'bridge':call({'op':'bridgeState'}),'replayRng':replay.rng.getstate(),
-            'pendingOrigin':mapper.pending_origin if mapper else None,
-            'pendingTransition':mapper.builder.pending if mapper else None,
-            'mapperRawCalls':mapper.raw_calls if mapper else None,'mapping':mapping,
-            'bootstrapIndices':bootstrap_indices,'restartAuthorized':False}
-        (output/'cursor.json').write_text(json.dumps(cursor,default=jsonable,allow_nan=False)+'\n')
-        save_report()
-        roles={'learner':'learner.pt','replay':'replay.npz','replay_metadata':'replay-metadata.json',
-            'mapping':'mapping.json','cursor':'cursor.json','runtime_checkpoint':'runtime-checkpoint.bin',
-            'transitions':'transitions.ndjson','ledger':'budget-ledger.json',
-            'config':'frozen-config.json','report':'cold-start-report.json',
-            'fixtures':'cold-fixtures.json','parity':'cold-adapter-parity.json',
-            'resume_parity':'cold-transition-resume-parity.json'}
-        # Triggered seeds live once in the separate shared-seed generation.
-        artifacts=[artifact(role,output/name,'cold-start/v1') for role,name in roles.items()]
-        try:
-            request=exchange.snapshot(artifacts,config,boundary,wall_reserve=protected_wall)
-            transfer(request,verify_live)
-        except BaseException:
-            backup_failed=True
-            raise
-        report.setdefault('recoveryPoints',[]).append({'boundary':boundary,
-            'manifestSha256':exchange.verified[-1]['manifest_sha256']})
-        save_report()
-    try:
-        if amendment:
-            # Exact one-time post-qualification reentry. No unstepped creation,
-            # preparation, qualification or immutable re-upload is repeated.
-            legacy=interfaces.load_legacy();learner=interfaces.SACLearner(legacy)
-            claim={'schema':'lh-cold-qualification-claim/v1','runId':run_id,
-                'amendmentPath':str(Path(continuation_path).resolve()),
-                'amendmentSha256':sha256(continuation_path),
-                'ledgerSha256':sha256(output/'budget-ledger.json'),
-                'originalDeadlineUnixMs':round(deadline*1000),
-                'maximumNewIntegrations':5020,'maximumPhysicalCalls':1,
-                'operation':'bootstrap-belly-initialization'}
-            with (output/'continuation-claim.json').open('x') as stream:
-                json.dump(claim,stream)
-            startup=time.time()
-            wasm=interfaces.BoundedWasm(legacy,output,worker,deadline,watchdog)
-            before=wasm.call({'op':'ledger'})
-            startup_seconds=time.time()-startup
-            call({'op':'reserve','integrations':147000,'wallSeconds':180.})
-            dispatch=time.time();operation_deadline=min(deadline-180.,dispatch+120.)
-            if operation_deadline<=dispatch:
-                raise ContractError('No original wall remaining for limited initialization')
-            wasm.call({'op':'admitUseful','maximumIntegrations':5020,
-                'deadlineUnixMs':int(operation_deadline*1000)})
-            wasm.deadline=operation_deadline
-            try:
-                state=wasm.call({'op':'reset','case':'belly','label':'cold-belly-001',
-                    'external':True,'prepared':True})
-            finally:wasm.deadline=deadline
-            after=wasm.call({'op':'ledger'})
-            result={'schema':'lh-cold-limited-initialization/v1',
-                'scope':'one-required-bootstrap-initialization-not-replay-or-evaluation',
-                'dispatchUnix':dispatch,'operationDeadlineUnix':operation_deadline,
-                'originalDeadlineUnix':deadline,'startupWallSeconds':startup_seconds,
-                'operationWallSeconds':time.time()-dispatch,'beforeLedger':before,
-                'afterLedger':after,'state':state,'nextOperationAuthorized':False,
-                'trainingExecuted':False,'maximumChargedIntegrations':5020,
-                'nativeCallTiming':after.get('limitedCallTiming'),
-                'forecastObserved':after['forecastIntegrations']>before['forecastIntegrations'],
-                'fullEvaluationTimingEstablished':False}
-            atomic_json(output/'limited-bootstrap-initialization.json',result)
-            report['limitedInitialization']=result
-            raise ContractError('Limited useful initialization completed; further phase admission required')
-        else:
-            # Build products and pure tests predate the pilot. Input/runtime backup,
-            # all qualification, preparation and any optimizer work do not.
-            shared.mkdir(parents=True,exist_ok=True)
-            subprocess.run(['node',str(ROOT/'scripts/getup-cold-start-unstepped.mjs'),str(worker),
-                str(ROOT/'docs/evidence/profiles/getup-800hz-3plus1-repeat-cycle-v1.json'),str(shared)],
-                cwd=ROOT,check=True,capture_output=True,timeout=min(120.,remaining_seconds(deadline,time.time())))
-            atomic_json(shared/'source-identity.json',dict(source,repository='https://github.com/berenif/LaboratoireHumain',
-                model_bins={name:sha256(ROOT/'rust/crates/sim/data/getup-policy'/name)
-                            for name in ('teacher.bin','student.bin')},
-                worker_features=['getup-policy-adaptation-experiment','root-translation-carry-experiment',
-                    'getup-terminal-tail-observer-experiment','getup-physical-roll-experiment',
-                    'lh-sim/unit-root-rotation-experiment']))
-            files=dict(worker_wasm=worker/'lh_worker_bg.wasm',worker_glue=worker/'lh_worker.js',
-                profile=ROOT/'docs/evidence/profiles/getup-800hz-3plus1-repeat-cycle-v1.json',
-                back_unstepped=shared/'back-unstepped.bin',belly_unstepped=shared/'belly-unstepped.bin',
-                runtime_unstepped_receipt=shared/'unstepped-runtime.json',cold_start_protocol=PROTOCOL_PATH,
-                source_identity=shared/'source-identity.json')
-            manifest={'schema':PROTOCOL['schema'],'synthetic':False,'protocol':PROTOCOL,
-                'files':{role:{'path':str(path.resolve()),'sha256':sha256(path),'bytes':path.stat().st_size}
-                         for role,path in files.items()}}
-            manifest_path=shared/'input-manifest.json';atomic_json(manifest_path,manifest)
-            input_preflight(manifest_path)
-            artifacts=[artifact(role,path,'cold-input/v1') for role,path in files.items()]
-            artifacts.append(artifact('input_manifest',manifest_path,'cold-input-manifest/v1'))
-            request=exchange.snapshot(artifacts,PROTOCOL,'actual-unstepped-required-inputs','shared',wall_reserve=protected_wall)
-            transfer(request,verify_shared)
-            proof=output/'operational-inputs.json'
-            atomic_json(proof,dict(schema='lh-cold-start-operational-inputs/v1',passed=True,
-                physicsIntegrations=0,privateDriveRoundtrip=True,manifestSha256=sha256(manifest_path),
-                sharedManifestSha256=exchange.shared_sha256))
-            config={'wallSeconds':3600,'nativeIntegrations':300000,'gamma':interfaces.GAMMA,
-                'coldStart':{'schema':PROTOCOL['schema'],'manifest':str(manifest_path),'operationalProof':str(proof)},
-                'inputContract':{'startedAtUnixMs':round(started*1000),'deadlineUnixMs':round(started*1000)+3600000,
-                    'files':manifest['files'],'profile':str(files['profile']),
-                    'checkpoints':{case:str(output/(case+'-seed.bin')) for case in ('original','heldout','belly')}}}
-            atomic_json(output/'frozen-config.json',config)
-            legacy=interfaces.load_legacy();learner=interfaces.SACLearner(legacy)
-            wasm=interfaces.BoundedWasm(legacy,output,worker,deadline,watchdog)
-            call({'op':'reserve','integrations':147000,'wallSeconds':protected_wall})
-            report['physicalExperimentExecuted']=True;save_report()
-            report['fixtures']=call({'op':'coldPrepare'})
-            def verify_seeds(restored, manifest):
-                seed_files={item['role']:restored/item['path'] for item in manifest['files']}
-                return run_restore(worker/'lh_worker.js',worker/'lh_worker_bg.wasm',
-                    [seed_files[case+'_seed'] for case in ('original','heldout','belly')])
-            seeds=[artifact(case+'_seed',output/(case+'-seed.bin'),'fresh-triggered-seed/v1')
-                   for case in ('original','heldout','belly')]
-            transfer(exchange.snapshot(seeds,config,'fresh-triggered-immutable-seeds','seeds',wall_reserve=protected_wall),verify_seeds)
-            report['adapterParity']=call({'op':'coldQualify'})
-        # Fixed connector overhead cannot be extrapolated per integration. The
-        # approved amendment is one initialization, not a full phase capacity gate.
-        require_full_phase_capacity()
-        wall();call({'op':'reserve','integrations':147000,'wallSeconds':protected_wall})
-        bootstrap=[]
-        for case in ('belly','heldout','original'):
-            # Always leave a full future block and final evaluation untouched;
-            # bootstrap cannot knowingly consume its own learning admission.
-            if ledger()['nativeIntegrations']+20000+10000+15120+147000+5020>300000:
-                raise ContractError('No room for next bootstrap episode plus a block and final reserve')
-            create_mapper(case,'baseline-deterministic-zero')
-            if case=='belly':
-                # Real same-runtime pause/restore + next trace/reward/mapping
-                # parity. Both actual calls are charged, neither silently retried.
-                paused=call({'op':'checkpoint','name':'resume-probe.bin'})
-                bridge=call({'op':'bridgeState'});before=state
-                action=[0.]*21 if before.get('preview') else None
-                query={'op':'step','c':action,'training':bool(action),'collectionPhase':'bootstrap',
-                    'episodeId':episode_id,'policyId':mapper.behavior}
-                first=call(query)
-                call({'op':'coldRestore','path':str(output/'resume-probe.bin'),'sha256':paused['sha256'],'bridge':bridge})
-                second=call(query)
-                if first!=second:raise ContractError('Actual next transition/reward/terminal restore parity failed')
-                mapper.first_raw_line=raw_lines()-1
-                row=mapper.push(before,action,second);state=second['state']
-                atomic_json(output/'cold-transition-resume-parity.json',
-                    {'passed':True,'firstExcludedRawLine':raw_lines()-2,'retainedRawLine':raw_lines()-1,
-                     'reason':'duplicate physical restore validation, both calls charged',
-                     'sameNextStateRewardTerminal':True,'originalEpochsPreserved':True})
-            while not mapper.finished:
-                used=ledger().get('bootstrapDecisions',0)
-                if used>=1024 and mapper.builder.pending is None:
-                    break
-                action=[0.]*21 if state.get('preview') else None
-                if action is not None and used>=1024:
-                    raise ContractError('Bootstrap decision cap reached before pending tail closure')
-                one_step(action,'bootstrap')
-            if case!='original':
-                rows=mapper.completed_rows(preservation=True)
-            elif mapper.finished:
-                rows=mapper.completed_rows()
-            else:
-                if not mapper.rows or mapper.builder.pending is not None:
-                    raise ContractError('Incomplete bootstrap source transition')
-                rows=[replace(r,episode_outcome='truncation',complete_episode=False,
-                    truncated=i==len(mapper.rows)-1).validate() for i,r in enumerate(mapper.rows)]
-            offset=len(bootstrap);bootstrap.extend(rows)
-            for entry in mapper.mapping:
-                mapping.append(dict(entry,replay_index=entry['replay_index']+offset))
-            bootstrap_outcomes.append({'case':case,'rows':len(rows),'outcome':rows[-1].episode_outcome})
-        replay=EpisodeReplay(bootstrap,fresh_allowance=3072)
-        bootstrap_indices=list(range(len(bootstrap)))
-        used=ledger()['nativeIntegrations']
-        per_block_estimate=256*20+2*5000
-        planned_blocks=min(12,(300000-used-147000-5020)//per_block_estimate)
-        if planned_blocks<1:raise ContractError('Bootstrap leaves no full iterative block plus final reserve')
-        phase=ColdPhase(ledger()['bootstrapDecisions'],planned_blocks)
-        report['bootstrap']=bootstrap_outcomes
-        report['bootstrapDecisions']=phase.bootstrap_decisions
-        report['predeclaredIterativeBlocks']=phase.planned_blocks
-        checkpoint('bootstrap-before-any-optimizer-update')
-        # Re-admit the complete remaining worst-case collection + evaluation,
-        # with separately measured phase costs, future backup/restore and margin.
-        used=ledger()['nativeIntegrations']
-        projected_collection=phase.planned_blocks*per_block_estimate+5020
-        if used+projected_collection+147000>300000:
-            raise ContractError('Bootstrap leaves insufficient integration budget for fixed iterative pilot')
-        require_full_phase_capacity()
-        call({'op':'reserve','integrations':147000,'wallSeconds':protected_wall})
-        while phase.phase=='warmup':
-            wall();learner.critic_attempt(learner.batch(replay));learner.polyak()
-            report['trainingExecuted']=True
-            if not learner.finite():raise ContractError('Nonfinite cold critic warmup')
-            phase.warmup_done()
-        checkpoint('critic-warmup-complete')
-        state=None;mapper=None
-        while phase.phase=='ready_collection':
-            policy=learner.policy_id();phase.begin_collection(policy);recent=[]
-            while phase.phase=='collection' or (mapper and mapper.builder.pending is not None):
-                wall()
-                if state is None:
-                    create_mapper('original',policy)
-                mapper.behavior=policy
-                if learner.policy_id()!=policy:raise ContractError('Collection policy changed mid-block')
-                action=learner.action(state['preview']['features']) if state.get('preview') else None
-                row,result=one_step(action,'iterative')
-                if action is not None:phase.collected(policy)
-                if row:
-                    index=replay.add(row);recent.append(index);pending_indices.append(index)
-                    mapping.append(dict(mapper.mapping[-1],replay_index=index))
-                if result['terminal']:
-                    replay.finish_episode(episode_id,'success' if result['success'] else 'failure')
-                    state=None;mapper=None
-                if phase.phase=='updates' and (mapper is None or mapper.builder.pending is None):break
-            if len(recent)!=256:raise ContractError('Full256-transition collection required')
-            checkpoint(f'collection-{phase.cycle:02d}')
-            # Witness historical portion is strictly bootstrap, never this block.
-            ids=list(recent)
-            for category in ('back_pre_holding','baseline_preservation'):
-                groups={}
-                for i in bootstrap_indices:
-                    r=replay.rows[i]
-                    if r.category==category:groups.setdefault(r.episode,[]).append(i)
-                episodes=sorted(groups)
-                for _ in range(64):
-                    candidates=groups[episodes[replay.rng.randrange(len(episodes))]]
-                    ids.append(candidates[replay.rng.randrange(len(candidates))])
-            features=[replay.rows[i].features for i in ids]
-            witness=FixedWitness(features,learner.gaussians(features),policy)
-            guard=UpdateGuard(learner,replay,phase,witness)
-            before=call({'op':'checkpoint','name':'before-updates.bin'})
-            before_state=call({'op':'state'})
-            for _ in range(64):
-                wall();decision,metrics,accepted=guard.attempt(lambda:learner.batch(replay))
-                report['accepted' if accepted else 'rejected']+=1
-            after=call({'op':'checkpoint','name':'after-updates.bin'})
-            if before!=after or call({'op':'state'})!=before_state:
-                raise ContractError('Learning pause advanced physical/controller state')
-            phase.finish_block();checkpoint(f'updates-{phase.cycle:02d}')
-        if state is not None and mapper and not mapper.finished:
-            replay.finish_episode(episode_id,'truncation',truncated=True)
-        if phase.phase!='finished':
-            raise ContractError('No accepted actor update in block; no candidate evaluation')
-        report['evaluationStarted']=True
-        protected_wall=0.;call({'op':'reserve','integrations':0,'wallSeconds':0})
-        head=learner.actor.exported();atomic_json(output/'candidate-head.json',head)
-        for i in ids:
-            features=replay.rows[i].features
-            actual=call({'op':'headparity','head':head,'features':features})
-            if actual['physicsIntegrations']!=0 or max(abs(a-b) for a,b in
-                zip(actual['correction'],learner.action(features,deterministic=True)))>2e-6:
-                raise ContractError('Final deterministic export parity failed')
-        report['final']=[]
-        for case in ('original','heldout','belly'):
-            state=call({'op':'reset','case':case,'label':'final-'+case,'head':head,'prepared':True})
-            mapper=None;episode_id='final-'+case
-            while True:
-                result=call({'op':'step'})
-                if state.get('preview'):
-                    applied=result['state']['lastCorrection']
-                    if applied['native_substep']!=state['native'] or max(abs(a-b) for a,b in
-                        zip(applied['correction'],learner.action(state['preview']['features'],deterministic=True)))>2e-6:
-                        raise ContractError('Final applied correction parity failed')
-                state=result['state']
-                if result['terminal']:break
-            row={'case':case,'success':result['success'],'failure':result['failure'],
-                 'longestMeasuredInterval':result['longestMeasuredInterval']}
-            if result['success']:
-                first=call({'op':'standingReceipt'})
-                row['hold']=call({'op':'hold','firstSuccessReceipt':first})
-                state=call({'op':'state'})
-                row['longestMeasuredInterval']=row['hold']['longestMeasuredInterval']
-            report['final'].append(row)
-            if not row['success'] or (case=='original' and row['longestMeasuredInterval']==0):
-                break
-        report['physicalQualificationPassed']=len(report['final'])==3 and all(
-            r['success'] and r.get('hold',{}).get('passed') for r in report['final'])
-        report['stopped']='single-cold-candidate-finished-no-promotion'
-        checkpoint('terminal-stop')
-    except BaseException as error:
-        report['stopped']='cold-start-safe-stop';report['error']=str(error)
-        if wasm:
-            try:report['ledger']=wasm.call({'op':'ledger'})
-            except BaseException:
-                path=output/'budget-ledger.json'
-                if path.exists():report['ledger']=json.loads(path.read_text())
-        report['backupFailureLatched']=backup_failed
-        save_report()
-        # Safe-stop retention is not an experiment restart or another candidate.
-        # It preserves partial evidence when bootstrap fails an honest gate,
-        # without presenting incomplete strata as trainable replay.
-        if not backup_failed and not exchange.failed and exchange.shared_sha256 and time.time()<deadline-30:
-            try:
-                protected_wall=0.
-                if replay:
-                    # Previously persisted replay remains coherent with its
-                    # prior paused checkpoint, not this partial cursor.
-                    report['latestCoherentRecoveryRetainedSeparately']=bool(exchange.verified)
-                roles=collect_stop_evidence(output,report,deadline,wasm=wasm,learner=learner,
-                    state=state,mapper=mapper,mapping=mapping,replay=replay)
-                def verify_stop(restored, manifest):
-                    result=verify_stop_documents(restored,manifest,output,roles)
-                    files={item['role']:restored/item['path'] for item in manifest['files']}
-                    if 'stopped_runtime' in files:
-                        run_restore(worker/'lh_worker.js',worker/'lh_worker_bg.wasm',[files['stopped_runtime']])
-                        from getup_cold_start_verify import assert_state_equal
-                        stored=learner.torch.load(files['stopped_learner'],weights_only=False,map_location='cpu')
-                        assert_state_equal(stored,learner.capture_learning_state())
-                    return result
-                request=exchange.snapshot([artifact(role,output/name,'cold-stop-not-resumable/v1')
-                    for role,name in roles.items()],dict(config,resumeAuthorized=False,
-                        incompleteBootstrap=replay is None),'partial-safe-stop-evidence')
-                transfer(request,verify_stop)
-                report['partialStopEvidenceDurable']=True
-            except BaseException as retention_error:
-                report['partialStopRetentionError']=str(retention_error)
-            save_report()
-        print(json.dumps({'event':'STOP','report':report}),flush=True)
-        raise
-    finally:
-        save_report()
         if wasm:wasm.close()
         watchdog.close()
+    return report
 
 
 def main():
@@ -603,11 +326,11 @@ def main():
     parser.add_argument('--worker',type=Path,required=True)
     parser.add_argument('--shared',type=Path,required=True)
     parser.add_argument('--run-id',required=True)
-    parser.add_argument('--continue-after-qualification',type=Path)
+    parser.add_argument('--admission',type=Path,required=True,
+        help='Future root resource decision + reviewed software/immutable/storage identities; never generated by tests')
     args=parser.parse_args()
     run(args.output.resolve(),args.worker.resolve(),args.shared.resolve(),args.run_id,
-        args.continue_after_qualification.resolve() if args.continue_after_qualification else None)
+        admission_path=args.admission.resolve())
 
 
-if __name__=='__main__':
-    main()
+if __name__=='__main__':main()

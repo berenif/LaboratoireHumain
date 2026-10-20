@@ -93,44 +93,14 @@ class ColdContracts(unittest.TestCase):
                 cold.validate_qualification_boundary(report,ledger,config,amendment,
                     'test-one-attempt','b'*40,time.time())
 
-    def test_limited_reentry_dispatches_one_reset_no_prepare_qualify_or_optimizer(self):
-        report,ledger,config,amendment=self.boundary()
-        original_report=copy.deepcopy(report)
+    def test_consumed_qualification_path_never_restarts_or_starts_clock(self):
         with tempfile.TemporaryDirectory() as directory:
-            output=Path(directory)/'existing';output.mkdir()
-            for name,value in [('cold-start-report.json',report),('budget-ledger.json',ledger)]:
-                cold.atomic_json(output/name,value)
-            path=Path(directory)/'amendment.json';cold.atomic_json(path,amendment)
-            exchange=mock.Mock(failed=True);calls=[]
-            bridge=mock.Mock();bridge.deadline=report['deadlineUnix']
-            def command(query):
-                calls.append(query['op'])
-                if query['op']=='ledger':return copy.deepcopy(ledger)
-                if query['op']=='reset':
-                    ledger['nativeIntegrations']+=20;ledger['realIntegrations']+=20;ledger['completedCalls']+=1
-                    return {'native':360}
-                return {}
-            bridge.call.side_effect=command
-            learner=mock.Mock()
-            with mock.patch.object(cold_runner,'verify_qualification_amendment',
-                    return_value=(amendment,copy.deepcopy(report),config,exchange)), \
-                 mock.patch.object(cold_runner.subprocess,'check_output',side_effect=lambda cmd,**k: '' if 'diff' in cmd else 'b'*40), \
-                 mock.patch.object(cold_runner.subprocess,'run'), \
-                 mock.patch.object(cold_runner.interfaces,'AbsoluteWatchdog',
-                    return_value=mock.Mock(spec=['assert_alive','close'])), \
-                 mock.patch.object(cold_runner.interfaces,'load_legacy'), \
-                 mock.patch.object(cold_runner.interfaces,'SACLearner',return_value=learner), \
-                 mock.patch.object(cold_runner.interfaces,'BoundedWasm',return_value=bridge):
-                with self.assertRaisesRegex(ContractError,'Limited useful initialization completed'):
-                    cold_runner.run(output,Path(directory),Path(directory),'test-one-attempt',path)
-            self.assertEqual([x for x in calls if x in ('reset','step','coldPrepare','coldQualify','hold')],['reset'])
-            self.assertEqual(ledger['nativeIntegrations'],2400)
-            learner.joint_attempt.assert_not_called();learner.critic_attempt.assert_not_called()
-            retained=json.loads((output/'amendments/original-stop-report.json').read_text())
-            self.assertEqual(retained,original_report)
-            result=json.loads((output/'limited-bootstrap-initialization.json').read_text())
-            self.assertFalse(result['nextOperationAuthorized'])
-            self.assertEqual(result['originalDeadlineUnix'],report['deadlineUnix'])
+            with mock.patch.object(cold_runner.time,'time',side_effect=AssertionError('clock started')), \
+                 mock.patch.object(cold_runner.interfaces,'BoundedWasm') as bridge:
+                with self.assertRaisesRegex(ContractError,'consumed/closed'):
+                    cold_runner.run(Path(directory)/'closed',Path(directory),Path(directory),'old-run',
+                                    Path(directory)/'amendment.json')
+                bridge.assert_not_called()
 
     def test_javascript_limited_claim_rejects_reduced_ledger_and_renewal(self):
         report,ledger,config,amendment=self.boundary()
@@ -159,7 +129,9 @@ for(const mutate of [
         for r,a in ((None,application),(receipt,None),({},application),
                     (dict(receipt,owner_only=False),application),
                     (receipt,dict(application,passed=False)),
-                    (dict(receipt,manifest_sha256='c'*64),application)):
+                    (dict(receipt,manifest_sha256='c'*64),application),
+                    (dict(receipt,synthetic=True),application),
+                    (receipt,dict(application,synthetic=True))):
             with self.assertRaisesRegex(ContractError,'receipt'):
                 cold.validate_backup_identity(request,r,a,'one')
         with self.assertRaisesRegex(ContractError,'unadmitted'):
