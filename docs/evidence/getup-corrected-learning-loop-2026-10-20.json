@@ -1,0 +1,92 @@
+{
+  "schema": 1,
+  "date": "2026-10-20",
+  "status": "source-only; actual experiment blocked and unexecuted",
+  "previousPilotDisposition": "closed/rejected; unchanged",
+  "restoredSourceCommit": "0776a3ba7d1ff32195b8d1eb9501c19678b8a233",
+  "restoredSourceTree": "c85b1870a790aa1766e17085891a8893405478b4",
+  "experimentStarted": false,
+  "experimentStartedAt": null,
+  "experimentDeadline": null,
+  "trainingExecuted": false,
+  "physicalExperimentExecuted": false,
+  "freshDecisions": 0,
+  "jointAttempts": 0,
+  "newNativeIntegrations": 0,
+  "durableRemoteUploadSucceeded": false,
+  "durableRemoteBlocker": "Official private-Library helper authentication returned HTTP403; no bypass or fallback upload",
+  "capsForProspectiveApprovedRun": {
+    "wallSeconds": 3600,
+    "freshDecisions": 4096,
+    "jointAttempts": 1024,
+    "nativeIntegrations": 300000,
+    "criticWarmup": 256,
+    "cycles": 16,
+    "decisionsPerBlock": 256,
+    "attemptsPerBlock": 64
+  },
+  "guards": {
+    "replayFractions": [
+      0.5,
+      0.25,
+      0.25
+    ],
+    "episodeUniformWithinCategory": true,
+    "eviction": "none; retained count plus4096",
+    "collectingPolicyWitness": "fixed for full block; all256 recent+64 historical pre-holding+64 preservation",
+    "kl": "mean statewise KL(collecting||candidate), sum21 dimensions <=0.1",
+    "maximumDeterministicCorrectionChange": 0.05,
+    "rejection": "restore full learning/optimizer/gradient/target/alpha/RNG state; exposure counters monotonic",
+    "executionGate": "unconditional source-only guard; --run cannot override"
+  },
+  "missingPrerequisites": [
+    "exact retained replay.npz",
+    "exact raw transitions.ndjson",
+    "retained-learning-audit.json",
+    "retained-replay-provenance-audit.json",
+    "original native480 checkpoint",
+    "nearby native560 checkpoint",
+    "successful belly seed checkpoint",
+    "exact candidate/baseline WASM+glue",
+    "reviewed real audit-to-replay mapping",
+    "verified private durable recovery point"
+  ],
+  "validation": {
+    "pureSyntheticPythonTestsPassed": 23,
+    "focusedJavaScriptTestsPassed": 9,
+    "syntaxChecksPassed": true,
+    "missingInputCliRefusedBeforeOutputOrRuntime": true,
+    "actualTorchOptimizerRoundtripTested": false,
+    "actualWasmReplayOrInferenceTested": false,
+    "actualPhysicsTested": false,
+    "actualDurableRestoreTested": false,
+    "broaderJavaScriptLastAttempt": {
+      "passed": 114,
+      "failedToImportSuites": 2,
+      "reason": "Playwright dependency absent after workspace replacement",
+      "claimedFullyPassing": false
+    }
+  },
+  "sourceSha256": {
+    "scripts/getup_learning_loop.py": "31d8411be962610d0ead162b879d848bbddc2e6362e6ce4921a816bea43c7fb7",
+    "scripts/train-getup-learning-loop.py": "f87420174cdaba68227968d3f02f65c4b6de27630155c6d98d3c3164b3203536",
+    "scripts/getup-learning-loop-test.py": "8326bba34f04a58de7cee49e92c00b14e24f61c963f7d8dc1513af38f738749c",
+    "scripts/getup-learning-loop-protocol-contract.mjs": "14fbdebf5d0a8e9b2e545597fb70d4f71fa18fba84d6569e407d9f6a216b3873",
+    "scripts/getup-wasm-adaptation-protocol.mjs": "765cbb1cd3d2da4966ff724fbff8f90b4a29f446bbc0ef21c930d9b0495a2d70",
+    "tests/rust-getup-learning-loop.test.mjs": "3c869857e39b3c3d25087527d00e4b1474b3a7dcde220acce5ba7b4e0d195467",
+    "docs/experiments/getup-corrected-learning-loop.md": "3b3744a133aef73b00e1ac277c6a022d9cd0db70c1a5e2bc9921912ebf6a8063"
+  },
+  "defaultsChanged": false,
+  "trainedWeightsPublished": false,
+  "syntheticFixturesAcceptedAsRealReplay": false,
+  "independentReview": {
+    "disposition": "GO for source-only unrun commit",
+    "runnerSha256": "f87420174cdaba68227968d3f02f65c4b6de27630155c6d98d3c3164b3203536",
+    "remainingExecutionBlockers": [
+      "exact raw/audit adapter unavailable",
+      "unconditional execution gate remains closed",
+      "private Library HTTP403 and no remote recovery proof",
+      "actual tensor/runtime resume untested"
+    ]
+  }
+}

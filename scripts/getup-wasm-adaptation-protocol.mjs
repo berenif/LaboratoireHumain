@@ -6,40 +6,44 @@ import {createHash} from 'node:crypto';
 import {createInterface} from 'node:readline';
 import assert from 'node:assert/strict';
 import {appendInterval} from './getup-wasm-adaptation-math.mjs';
-const root=process.cwd(), output=resolve(process.argv[2]); mkdirSync(output,{recursive:true});
+import {protocolSettings,guardProtocolCall,beginProtocolCall,finishProtocolCall,rowsThroughNative} from './getup-learning-loop-protocol-contract.mjs';
+const root=process.cwd(), output=resolve(process.argv[2]);
 const candidatePath=resolve(process.argv[3]);
-const baselinePath=resolve('outputs/browser-capability-20261019/recovery-fixture/terminal-tail-ab/build/app-baseline-unadapted');
-const originalPath=resolve('outputs/browser-capability-20261019/recovery-fixture/teacher-feasibility/actual-back-teacher/teacher-export-before-checkpoint.bin');
-const profile=JSON.parse(readFileSync('docs/evidence/profiles/getup-800hz-3plus1-repeat-cycle-v1.json'));
+const {config,input:inputContract,baselinePath,originalPath,profilePath}=protocolSettings(output,candidatePath);
+const profile=JSON.parse(readFileSync(profilePath));
 const hash=x=>createHash('sha256').update(x).digest('hex');
 const load=async path=>{let m=await import(pathToFileURL(join(path,'lh_worker.js')).href);m.initSync({module:readFileSync(join(path,'lh_worker_bg.wasm'))});return m;};
-const candidate=await load(candidatePath), baseline=await load(baselinePath);
-const config=JSON.parse(readFileSync(join(output,'frozen-config.json')));
 const priorLedgerPath=join(output,'budget-ledger.json');
 let priorLedger;try{priorLedger=JSON.parse(readFileSync(priorLedgerPath));}catch{}
-const ledger=priorLedger??{schema:1,startedAt:new Date().toISOString(),deadlineUnixMs:Date.now()+config.wallSeconds*1000,
+assert(!inputContract||!priorLedger,'No corrected-loop restart or ledger reuse');
+const candidate=await load(candidatePath), baseline=await load(baselinePath);
+const ledger=priorLedger??{schema:1,startedAt:new Date(inputContract?.startedAtUnixMs??Date.now()).toISOString(),deadlineUnixMs:inputContract?.deadlineUnixMs??Date.now()+config.wallSeconds*1000,
  nativeIntegrations:0,realIntegrations:0,forecastIntegrations:0,completedCalls:0,uncertainCalls:[],limit:config.nativeIntegrations,
  trainingDecisions:0,releaseAccepted:false};
 const save=()=>writeFileSync(join(output,'budget-ledger.json'),JSON.stringify(ledger,null,2)+'\n');save();
 let protectedEvaluationIntegrations=0,protectedEvaluationWallMs=0;
-const guard=(reserve=5020)=>{assert(Date.now()+protectedEvaluationWallMs<ledger.deadlineUnixMs,'Experiment60minute wall cap');assert(ledger.nativeIntegrations+reserve+protectedEvaluationIntegrations<=ledger.limit,'Aggregate integration cap');};
+const guard=(reserve=5020)=>{if(inputContract)return guardProtocolCall(ledger,protectedEvaluationIntegrations,protectedEvaluationWallMs,Date.now());assert(Date.now()+protectedEvaluationWallMs<ledger.deadlineUnixMs,'Experiment60minute wall cap');assert(ledger.nativeIntegrations+reserve+protectedEvaluationIntegrations<=ledger.limit,'Aggregate integration cap');};
 const report=w=>JSON.parse(w.getup_adaptation_state?w.getup_adaptation_state():w.getup_report());
 const fixture=w=>JSON.parse(w.getup_fixture_report());
 const call=(w,ticks=1)=>{
  guard();const before=fixture(w).nativeSubsteps, bf=report(w)?.status.forecast_substeps??0;
+ if(inputContract){beginProtocolCall(ledger,before,bf);save();}
  let result;
  try{result=JSON.parse(w.advance_terminal_tail_observed(ticks));}
- catch(error){ledger.uncertainCalls.push({at:new Date().toISOString(),chargedUpperBound:5020,error:String(error)});ledger.nativeIntegrations+=5020;save();throw error;}
+ catch(error){ledger.uncertainCalls.push({at:new Date().toISOString(),chargedUpperBound:5020,error:String(error)});if(!inputContract)ledger.nativeIntegrations+=5020;save();throw error;}
  const after=fixture(w).nativeSubsteps,af=report(w)?.status.forecast_substeps??0;
  const realDelta=after>=before?after-before:20,forecastDelta=af>=bf?af-bf:5000;
- ledger.realIntegrations+=realDelta;ledger.forecastIntegrations+=forecastDelta;ledger.nativeIntegrations+=realDelta+forecastDelta;ledger.completedCalls++;save();
+ if(inputContract)finishProtocolCall(ledger,after,af);
+ else{ledger.realIntegrations+=realDelta;ledger.forecastIntegrations+=forecastDelta;ledger.nativeIntegrations+=realDelta+forecastDelta;ledger.completedCalls++;}save();
  assert(after>=before&&af>=bf,'Physical/reference counter reset during a bounded single-cycle call');
- assert(!result.traceError,result.traceError);return result;
+ assert(!result.traceError,result.traceError);lastSnapshots.set(w,result.reply.snapshot);return result;
 };
+const lastSnapshots=new WeakMap();
 const success=w=>report(w)?.status.prototype_standing_passed===true;
 const preview=w=>{try{return JSON.parse(w.getup_adaptation_preview());}catch{return null;}};
 function state(w){const f=fixture(w),c=report(w),d=JSON.parse(w.getup_standing_diagnostic('null'));
  return {native:f.nativeSubsteps,forecast:c?.status.forecast_substeps??0,status:c?.status,fixture:f.state,
+  impactEpoch:c?.impact_substep,sourceEpoch:c?.started_substep,
   preview:preview(w),current:d,lastCorrection:c?.adaptation?.last??null};}
 function potential(d){const p=d.predicates;
  const support=Math.min(1,Math.max(0,d.loadsN.reduce((a,b)=>a+b,0)/(40.84401321411133*9.81)));
@@ -52,10 +56,14 @@ function potential(d){const p=d.predicates;
 }
 let active=null,label=null,previousC=Array(21).fill(0),longest=0,interval=0;
 async function command(q){
- if(q.op==='reserve'){protectedEvaluationIntegrations=q.integrations;protectedEvaluationWallMs=q.wallSeconds*1000;ledger.evaluationReserveIntegrations=q.integrations;ledger.evaluationReserveWallSeconds=q.wallSeconds;save();return {protectedEvaluationIntegrations,protectedEvaluationWallMs};}
+ if(q.op==='state'){assert(active);return state(active);}
+ if(q.op==='bridgeState')return {label,previousC,longest,interval,protectedEvaluationIntegrations,protectedEvaluationWallMs};
+ if(q.op==='standingReceipt'){assert(active);const c=JSON.parse(active.getup_report());return {native:fixture(active).nativeSubsteps,stableNative:c.stable_substeps,anchors:c.stable_feet};}
+ if(q.op==='reserve'){assert(Number.isSafeInteger(q.integrations)&&q.integrations>=0&&q.integrations<=ledger.limit);assert(Number.isFinite(q.wallSeconds)&&q.wallSeconds>=0);protectedEvaluationIntegrations=q.integrations;protectedEvaluationWallMs=q.wallSeconds*1000;ledger.evaluationReserveIntegrations=q.integrations;ledger.evaluationReserveWallSeconds=q.wallSeconds;save();return {protectedEvaluationIntegrations,protectedEvaluationWallMs};}
  if(q.op==='headparity'){return {correction:JSON.parse(candidate.getup_correction_head(JSON.stringify(q.head),JSON.stringify(q.features))),physicsIntegrations:0};}
  if(q.op==='identity')return {candidateWasmSha256:hash(readFileSync(join(candidatePath,'lh_worker_bg.wasm'))),baselineWasmSha256:hash(readFileSync(join(baselinePath,'lh_worker_bg.wasm'))),ledger};
  if(q.op==='qualify'){
+  assert(!inputContract,'Corrected loop must reuse verified qualification; no extra collection');
   const seed=readFileSync(originalPath);assert.equal(hash(seed),config.originalCheckpointSha256);
   const runs=[baseline.WorkerRuntime.from_getup_checkpoint(seed),candidate.WorkerRuntime.from_getup_checkpoint(seed),candidate.WorkerRuntime.from_getup_checkpoint(seed)];
   runs[2].set_getup_adaptation_head(JSON.stringify({weights:Array(21*1024).fill(0),bias:Array(21).fill(0)}));
@@ -83,6 +91,7 @@ async function command(q){
   writeFileSync(join(output,'adapter-parity.json'),JSON.stringify(result,null,2)+'\n');runs.forEach(w=>w.free());restored?.free();return result;
  }
  if(q.op==='heldout'){
+  assert(!inputContract,'Retained heldout is mandatory; no substitute generation');
   assert(!readFileSync(join(output,'frozen-config.json')).includes('REPLACE'));
   const w=candidate.WorkerRuntime.getup_fixture_with_profile('back',JSON.stringify(profile));w.set_root_translation_compensation_enabled(true);
   for(let n=0;n<560;n+=20){const r=call(w);assert(!r.reply.failure,JSON.stringify(r.reply.failure));}
@@ -99,19 +108,24 @@ async function command(q){
   writeFileSync(join(output,'heldout-admission.json'),JSON.stringify(result,null,2)+'\n');w.free();original.free();return result;
  }
  if(q.op==='reset'){
-  active?.free();const path=q.case==='heldout'?join(output,'heldout-back-560.bin'):q.case==='belly'?join(output,'belly-seed.bin'):originalPath;
-  if(q.case==='belly'&&!q.prepared){const w=candidate.WorkerRuntime.getup_fixture_with_profile('belly',JSON.stringify(profile));w.set_root_translation_compensation_enabled(true);
+  assert(['original','heldout','belly'].includes(q.case));
+  active?.free();const path=inputContract?inputContract.checkpoints[q.case]:q.case==='heldout'?join(output,'heldout-back-560.bin'):q.case==='belly'?join(output,'belly-seed.bin'):originalPath;
+  if(q.case==='belly'&&!q.prepared&&!inputContract){const w=candidate.WorkerRuntime.getup_fixture_with_profile('belly',JSON.stringify(profile));w.set_root_translation_compensation_enabled(true);
    while(!fixture(w).state.ready){for(let i=0;i<4;i++){const r=call(w);assert(!r.reply.failure);}assert(fixture(w).nativeSubsteps<=2000);}
    w.trigger_getup_fixture();call(w,0);writeFileSync(path,w.getup_checkpoint());w.free();}
   active=candidate.WorkerRuntime.from_getup_checkpoint(readFileSync(path));
   label=q.label;previousC=Array(21).fill(0);longest=0;interval=0;
   // First20native are original actor for all branches. No stale latched observation is offered to learner.
   const r=call(active);assert(!r.reply.failure,JSON.stringify(r.reply.failure));
+  if(inputContract){const measured=appendInterval({longest,tail:interval},r.nativeTrace);longest=measured.longest;interval=measured.tail;}
   if(q.head)active.set_getup_adaptation_head(JSON.stringify(q.head));else if(q.external)active.set_getup_adaptation_head('null');
   return state(active);
  }
  if(q.op==='step'){
+  if(inputContract&&q.training)assert(ledger.trainingDecisions<4096,'Fresh decision cap');
   assert(active);const pre=state(active);
+  if(inputContract&&q.training)assert(pre.preview&&q.c&&q.episodeId&&q.policyId,'Fresh decision requires current preview/action/episode/policy identity');
+  if(inputContract&&q.c)assert(pre.preview,'No new correction outside a source boundary');
   let c=q.c??Array(21).fill(0);if(q.c&&pre.preview)active.queue_getup_correction(JSON.stringify(c));
   const packet=call(active),post=state(active);
   const failure=packet.reply.failure??(!success(active)&&post.status.since_impact_s>=25?{check:"original25s-deadline",native:post.native}:null);
@@ -120,7 +134,8 @@ async function command(q){
   const energy=c.reduce((a,b)=>a+b*b,0)/21,slew=c.reduce((a,b,i)=>a+(b-previousC[i])**2,0)/21;
   const reward=100*Number(success(active)&&!failure)-100*Number(!!failure)+2*(config.gamma*phi1-phi0)-.0025-.01*energy-.005*slew;
   const measured=appendInterval({longest,tail:interval},packet.nativeTrace);longest=measured.longest;interval=measured.tail;
-  const provenance={label,preNative:pre.native,postNative:post.native,preObservation:pre.preview?.observation??null,
+  const provenance={label,episodeId:q.episodeId??label,behaviorPolicyId:q.policyId??null,impactEpoch:pre.impactEpoch,sourceEpoch:pre.sourceEpoch,
+   prePhase:pre.status.phase,preNative:pre.native,postNative:post.native,preObservation:pre.preview?.observation??null,
    postObservation:post.preview?.observation??null,referenceDecision:pre.preview?.referenceDecision??null,correction:c,
    appliedResidual:post.lastCorrection?.applied_residual??report(active).residual,originalResidual:pre.preview?.originalResidual??null,
    postPhysicalWords:packet.nativeTrace.at(-1)?.physicalObservationWords,postPoseWords:packet.nativeTrace.at(-1)?.poseWords,
@@ -132,8 +147,15 @@ async function command(q){
  }
  if(q.op==='hold'){
   assert(active&&success(active),'Hold requires original800-sample success');
-  const originalAnchors=JSON.parse(active.getup_report()).stable_feet;assert(originalAnchors);
-  const initial=call(active,0).reply.snapshot,diagnostic=JSON.parse(active.getup_standing_diagnostic(JSON.stringify(originalAnchors)));
+  const initialController=JSON.parse(active.getup_report()),initialNative=fixture(active).nativeSubsteps;
+  const diagnosticDeadline=initialController.impact_substep+20000;
+  const originalAnchors=initialController.stable_feet;assert(originalAnchors);
+  if(inputContract){assert(initialController.stable_substeps>=800);assert(q.firstSuccessReceipt,'First800 success receipt is required');
+   assert.equal(initialController.stable_substeps-q.firstSuccessReceipt.stableNative,initialNative-q.firstSuccessReceipt.native,'Original standing counter reset after first success');
+   assert.deepEqual(originalAnchors,q.firstSuccessReceipt.anchors,'Original anchors changed after first success');}
+  if(inputContract)writeFileSync(join(output,label+'-first800-checkpoint.bin'),active.getup_checkpoint());
+  const initial=inputContract?lastSnapshots.get(active):call(active,0).reply.snapshot;assert(initial,'Retained latest snapshot required');
+  const diagnostic=JSON.parse(active.getup_standing_diagnostic(JSON.stringify(originalAnchors)));
   const xyz=p=>[p.x,p.y,p.z],sub=(a,b)=>a.map((v,i)=>v-b[i]);
   const cross=(a,b)=>[a[1]*b[2]-a[2]*b[1],a[2]*b[0]-a[0]*b[2],a[0]*b[1]-a[1]*b[0]];
   const rotate=(q,v)=>{const a=q.slice(0,3),c=cross(a,v),cc=cross(a,c);return v.map((x,i)=>x+2*(q[3]*c[i]+cc[i]));};
@@ -146,7 +168,9 @@ async function command(q){
   const bits=new DataView(new ArrayBuffer(4));const float=w=>{bits.setUint32(0,w,true);return bits.getFloat32(0,true);};
   let maximumOriginDriftM=0,maximumMaterialSlipM=0,samples=0;
   for(let tick=0;tick<1200;tick++){
+   const beforeNative=fixture(active).nativeSubsteps;
    const packet=call(active);assert(!packet.reply.failure,JSON.stringify(packet.reply.failure));
+   if(inputContract){const measured=appendInterval({longest,tail:interval},rowsThroughNative(packet.nativeTrace,beforeNative,diagnosticDeadline));longest=measured.longest;interval=measured.tail;}
    for(const row of packet.nativeTrace){
     assert(Object.entries(row.current.predicates).filter(([k])=>k!=='footDriftFromSuppliedAnchors').every(([,v])=>v===true),'Original standing predicate failed in30s hold');
     row.current.feet.forEach((foot,i)=>{const d=Math.hypot(...sub(xyz(foot),xyz(originalAnchors[i])));maximumOriginDriftM=Math.max(maximumOriginDriftM,d);assert(d<=.01,'Original10mm origin-anchor hold failed');});
@@ -156,8 +180,14 @@ async function command(q){
     samples++;
    }
   }
+  const finalController=JSON.parse(active.getup_report()),finalNative=fixture(active).nativeSubsteps;
+  if(inputContract){assert.equal(finalNative-initialNative,24000);assert.equal(finalController.stable_substeps-initialController.stable_substeps,24000,'Original native standing counter reset during hold');assert.deepEqual(finalController.stable_feet,originalAnchors);}
   const result={passed:true,samples,physicalSeconds:30,maximumOriginDriftM,maximumMaterialSlipM,
+   diagnosticEndpointNative:inputContract?diagnosticDeadline:null,longestMeasuredInterval:longest,diagnosticTail:interval,
+   materialMetric:'maximum anchored material-point excursion, not cumulative travel',
+   originalStableNativeBefore:initialController.stable_substeps,originalStableNativeAfter:finalController.stable_substeps,
    originAnchorSource:'original controller stable_feet, preserved at first800-native success',materialAnchorSource:'positive-impulse foot material points at first800-native success'};
+  if(inputContract){const bytes=active.getup_checkpoint();writeFileSync(join(output,label+'-30s-hold-checkpoint.bin'),bytes);result.finalCheckpointSha256=hash(bytes);}
   writeFileSync(join(output,label+'-30s-hold.json'),JSON.stringify(result,null,2)+'\n');return result;
  }
  if(q.op==='checkpoint'){assert(active);const bytes=active.getup_checkpoint();writeFileSync(join(output,q.name),bytes);return {sha256:hash(bytes),bytes:bytes.length};}
