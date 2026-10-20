@@ -123,6 +123,9 @@ def create_snapshot(root, spec):
     validate_source(spec.get('source'))
     if type(spec.get('synthetic')) is not bool or not spec.get('provenance'):
         raise RecoveryError('Explicit synthetic flag and experiment provenance are required')
+    eligible = spec.get('application_resume_eligible', True)
+    if type(eligible) is not bool:
+        raise RecoveryError('Application resume eligibility must be explicit Boolean')
     if 'config' not in spec or 'seed' not in spec:
         raise RecoveryError('Frozen config and seed are required')
     artifacts = spec.get('artifacts', [])
@@ -184,7 +187,8 @@ def create_snapshot(root, spec):
                     'source': spec['source'], 'config': spec['config'], 'seed': spec['seed'],
                     'provenance': spec['provenance'], 'files': files, 'required_roles': required,
                     'excluded_dependencies': dependencies, 'previous_manifest_sha256': previous,
-                    'full_resume_ready': bool(required) and not spec['synthetic'] and not incomplete,
+                    'application_resume_eligible': eligible,
+                    'full_resume_ready': bool(required) and not spec['synthetic'] and not incomplete and eligible,
                     'producer_contract': 'writers-paused; explicit-files; no-hidden-automatic-globs'}
         atomic_json(staging / 'manifest.json', manifest)
         filename = 'LaboratoireHumain-backup-' + run_id + '-' + generation + '.zip'
@@ -257,7 +261,9 @@ def verify_bundle(bundle, expected_sha256=None, max_payload_bytes=DEFAULT_MAX_BY
         for item in dependencies:
             if not SHA.fullmatch(item.get('sha256', '')) or not item.get('reason') or not item.get('reacquisition') or type(item.get('required_for_resume')) is not bool:
                 raise RecoveryError('Invalid excluded dependency')
-        ready = bool(required) and not manifest['synthetic'] and not any(item['required_for_resume'] for item in dependencies)
+        eligible=manifest.get('application_resume_eligible',True)  # Older v1 manifests remain readable.
+        if type(eligible) is not bool:raise RecoveryError('Invalid application resume eligibility')
+        ready = bool(required) and not manifest['synthetic'] and not any(item['required_for_resume'] for item in dependencies) and eligible
         if manifest.get('full_resume_ready') is not ready:
             raise RecoveryError('Invalid full-resume claim')
         return manifest

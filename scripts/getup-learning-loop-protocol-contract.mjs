@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import {resolve,join,dirname} from 'node:path';
 import {createHash} from 'node:crypto';
+import {coldSettings} from './getup-cold-start-protocol-contract.mjs';
 const roles=['learning_audit','provenance_audit','replay','replay_metadata','original_seed',
  'nearby_seed','belly_seed','worker_wasm','worker_glue','baseline_wasm','baseline_glue',
  'profile','baseline_receipt','transitions'];
@@ -34,6 +35,7 @@ export function finishProtocolCall(ledger,native,forecast){
 export function protocolSettings(output,candidatePath){
  const config=JSON.parse(readFileSync(join(output,'frozen-config.json')));
  const input=config.inputContract;
+ if(config.coldStart)return coldSettings(config,candidatePath);
  if(!input)return {config,input:null,
   baselinePath:resolve('outputs/browser-capability-20261019/recovery-fixture/terminal-tail-ab/build/app-baseline-unadapted'),
   originalPath:resolve('outputs/browser-capability-20261019/recovery-fixture/teacher-feasibility/actual-back-teacher/teacher-export-before-checkpoint.bin'),

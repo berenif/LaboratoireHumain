@@ -16,7 +16,7 @@ const load=async path=>{let m=await import(pathToFileURL(join(path,'lh_worker.js
 const priorLedgerPath=join(output,'budget-ledger.json');
 let priorLedger;try{priorLedger=JSON.parse(readFileSync(priorLedgerPath));}catch{}
 assert(!inputContract||!priorLedger,'No corrected-loop restart or ledger reuse');
-const candidate=await load(candidatePath), baseline=await load(baselinePath);
+const candidate=await load(candidatePath), baseline=config.coldStart?candidate:await load(baselinePath);
 const ledger=priorLedger??{schema:1,startedAt:new Date(inputContract?.startedAtUnixMs??Date.now()).toISOString(),deadlineUnixMs:inputContract?.deadlineUnixMs??Date.now()+config.wallSeconds*1000,
  nativeIntegrations:0,realIntegrations:0,forecastIntegrations:0,completedCalls:0,uncertainCalls:[],limit:config.nativeIntegrations,
  trainingDecisions:0,releaseAccepted:false};
@@ -57,11 +57,66 @@ function potential(d){const p=d.predicates;
 let active=null,label=null,previousC=Array(21).fill(0),longest=0,interval=0;
 async function command(q){
  if(q.op==='state'){assert(active);return state(active);}
- if(q.op==='bridgeState')return {label,previousC,longest,interval,protectedEvaluationIntegrations,protectedEvaluationWallMs};
+ if(q.op==='bridgeState')return {label,previousC,longest,interval,protectedEvaluationIntegrations,protectedEvaluationWallMs,
+  lastSnapshot:active?lastSnapshots.get(active)??null:null};
  if(q.op==='standingReceipt'){assert(active);const c=JSON.parse(active.getup_report());return {native:fixture(active).nativeSubsteps,stableNative:c.stable_substeps,anchors:c.stable_feet};}
  if(q.op==='reserve'){assert(Number.isSafeInteger(q.integrations)&&q.integrations>=0&&q.integrations<=ledger.limit);assert(Number.isFinite(q.wallSeconds)&&q.wallSeconds>=0);protectedEvaluationIntegrations=q.integrations;protectedEvaluationWallMs=q.wallSeconds*1000;ledger.evaluationReserveIntegrations=q.integrations;ledger.evaluationReserveWallSeconds=q.wallSeconds;save();return {protectedEvaluationIntegrations,protectedEvaluationWallMs};}
  if(q.op==='headparity'){return {correction:JSON.parse(candidate.getup_correction_head(JSON.stringify(q.head),JSON.stringify(q.features))),physicsIntegrations:0};}
  if(q.op==='identity')return {candidateWasmSha256:hash(readFileSync(join(candidatePath,'lh_worker_bg.wasm'))),baselineWasmSha256:hash(readFileSync(join(baselinePath,'lh_worker_bg.wasm'))),ledger};
+ if(q.op==='coldPrepare'){
+  assert(config.coldStart&&!active,'Separate cold-start preparation only');
+  assert.equal(ledger.trainingDecisions,0);assert.equal(ledger.nativeIntegrations,0,'No preparation replay/restart');
+  const result={schema:'lh-cold-fixtures/v1',historicalRecoveryClaimed:false,cases:{}};
+  for(const name of ['original','heldout','belly']){
+   const role=name==='belly'?'belly_unstepped':'back_unstepped';
+   const w=candidate.WorkerRuntime.from_getup_checkpoint(readFileSync(inputContract.files[role].path));
+   const target=name==='original'?480:name==='heldout'?560:null;
+   do{const r=call(w);assert(!r.reply.failure,JSON.stringify(r.reply.failure));
+    assert(fixture(w).nativeSubsteps<=2000,'Cold fixture preparation cap; no retry');
+   }while(target?fixture(w).nativeSubsteps<target:!fixture(w).state.ready);
+   const f=fixture(w),s=f.state;
+   assert(s.preparing&&s.ready,'Fresh fixture readiness, no synthetic pose injection');
+   if(name!=='belly')assert(s.torso_face_up>=.8&&Math.abs(s.torso_long_axis_up)<=.35&&s.head_height_m<=.5
+    &&s.ground_load_n>=.8*f.massKg*9.81&&s.maximum_body_com_speed_mps<=.22&&s.maximum_angular_radps<=.65,
+    'Fresh one-shot BACK admission failed; no retry');
+   if(name==='heldout')assert(JSON.stringify(f.jointQ)!==JSON.stringify(result.cases.original.fixture.jointQ)
+    ||JSON.stringify(f.jointDq)!==JSON.stringify(result.cases.original.fixture.jointDq),'Nearby state must differ');
+   w.trigger_getup_fixture();call(w,0);
+   const cp=w.getup_checkpoint();writeFileSync(inputContract.checkpoints[name],cp);
+   result.cases[name]={fixture:f,checkpointSha256:hash(cp),checkpointBytes:cp.length,policyPerformanceObserved:false};
+   w.free();
+  }
+  writeFileSync(join(output,'cold-fixtures.json'),JSON.stringify(result,null,2)+'\n');return result;
+ }
+ if(q.op==='coldQualify'){
+  assert(config.coldStart&&!active);assert.equal(ledger.trainingDecisions,0);
+  const seed=readFileSync(inputContract.checkpoints.original);
+  const runs=[candidate.WorkerRuntime.from_getup_checkpoint(seed),candidate.WorkerRuntime.from_getup_checkpoint(seed)];
+  runs[1].set_getup_adaptation_head(JSON.stringify({weights:Array(21*1024).fill(0),bias:Array(21).fill(0)}));
+  let resumed=null,samples=0,resumedSamples=0;
+  const started=performance.now();
+  for(let i=0;i<20;i++){
+   const packets=runs.map(w=>call(w));assert.deepEqual(packets[0].nativeTrace,packets[1].nativeTrace,'Zero correction changed actual physical trace');
+   samples+=packets[0].nativeTrace.length;
+   if(resumed){const packet=call(resumed);assert.deepEqual(packet.nativeTrace,packets[1].nativeTrace,'Actual next-state checkpoint parity');resumedSamples+=packet.nativeTrace.length;}
+   if(i===9)resumed=candidate.WorkerRuntime.from_getup_checkpoint(runs[1].getup_checkpoint());
+  }
+  runs.forEach(w=>w.free());resumed.free();
+  const result={passed:true,physicsIntegrations:ledger.nativeIntegrations,zeroCorrectionSamples:samples,
+   resumedSamples,wallSeconds:(performance.now()-started)/1000,historicalBaselineClaimed:false};
+  writeFileSync(join(output,'cold-adapter-parity.json'),JSON.stringify(result,null,2)+'\n');return result;
+ }
+ if(q.op==='coldRestore'){
+  assert(config.coldStart);assert(q.bridge&&q.path);
+  const bytes=readFileSync(q.path);assert.equal(hash(bytes),q.sha256);
+  const restored=candidate.WorkerRuntime.from_getup_checkpoint(bytes);
+  const check=JSON.parse(restored.verify_getup_checkpoint(bytes));
+  assert(check.jointStateEqual&&check.handlesEqual&&check.snapshotEqual&&check.controllerEqual&&check.rootIntegratorStateEqual);
+  active?.free();active=restored;
+  ({label,previousC,longest,interval,protectedEvaluationIntegrations,protectedEvaluationWallMs}=q.bridge);
+  if(q.bridge.lastSnapshot)lastSnapshots.set(active,q.bridge.lastSnapshot);
+  return {state:state(active),physicsIntegrations:0,ledger};
+ }
  if(q.op==='qualify'){
   assert(!inputContract,'Corrected loop must reuse verified qualification; no extra collection');
   const seed=readFileSync(originalPath);assert.equal(hash(seed),config.originalCheckpointSha256);
@@ -123,6 +178,11 @@ async function command(q){
  }
  if(q.op==='step'){
   if(inputContract&&q.training)assert(ledger.trainingDecisions<4096,'Fresh decision cap');
+  if(config.coldStart&&q.training){
+   assert(['bootstrap','iterative'].includes(q.collectionPhase),'Explicit cold decision allocation');
+   const key=q.collectionPhase==='bootstrap'?'bootstrapDecisions':'iterativeDecisions';
+   assert((ledger[key]??0)<(q.collectionPhase==='bootstrap'?1024:3072),'Cold phase decision cap');
+  }
   assert(active);const pre=state(active);
   if(inputContract&&q.training)assert(pre.preview&&q.c&&q.episodeId&&q.policyId,'Fresh decision requires current preview/action/episode/policy identity');
   if(inputContract&&q.c)assert(pre.preview,'No new correction outside a source boundary');
@@ -141,9 +201,17 @@ async function command(q){
    postPhysicalWords:packet.nativeTrace.at(-1)?.physicalObservationWords,postPoseWords:packet.nativeTrace.at(-1)?.poseWords,
    intervalPredicateWords:packet.nativeTrace.map(row=>['torso','bothFeetLoadedAndPersistent','footLoadFraction','onlyFeet','linearMotion','angularMotion'].reduce((mask,key,i)=>mask|(Number(row.current.predicates[key])<<i),0)),
    reward,terminal,success:success(active),failure,status:post.status};
+  if(config.coldStart){
+   const featureHash=values=>hash(Buffer.from(new Float32Array(values??Array(1024).fill(0)).buffer));
+   provenance.sourceFeaturesSha256=featureHash(pre.preview?.features);
+   provenance.nextFeaturesSha256=featureHash(post.preview?.features);
+   provenance.training=q.training===true;provenance.collectionPhase=q.collectionPhase??'evaluation';
+   provenance.nativeTraceSha256=hash(JSON.stringify(packet.nativeTrace));
+  }
   appendFileSync(join(output,'transitions.ndjson'),JSON.stringify(provenance)+'\n');
-  previousC=c;if(q.training)ledger.trainingDecisions++;save();
-  return {state:post,reward,terminal,success:success(active),failure,longestMeasuredInterval:longest,native:post.native};
+  previousC=c;if(q.training){ledger.trainingDecisions++;if(config.coldStart){const key=q.collectionPhase==='bootstrap'?'bootstrapDecisions':'iterativeDecisions';ledger[key]=(ledger[key]??0)+1;}}save();
+  return {state:post,reward,terminal,success:success(active),failure,longestMeasuredInterval:longest,native:post.native,
+   ...(config.coldStart?{nativeTraceSha256:provenance.nativeTraceSha256}:{})};
  }
  if(q.op==='hold'){
   assert(active&&success(active),'Hold requires original800-sample success');
