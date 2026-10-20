@@ -32,6 +32,65 @@ def jsonable(value):
     raise TypeError(type(value).__name__)
 
 
+def collect_stop_evidence(output, report, deadline, *, wasm=None, learner=None,
+                          state=None, mapper=None, mapping=(), replay=None):
+    """Retain diagnostics even when qualification leaves no active runtime.
+
+    This does not create/reset a runtime or advance physics. Optional live-state
+    capture failure must not discard the report and authoritative disk ledger.
+    Every result remains explicitly ineligible for application resume.
+    """
+    cursor={'restartAuthorized':False,'applicationResumeEligible':False,
+        'bootstrapReplayConstructed':replay is not None,
+        'coherentBootstrapBackupVerified':any(
+            x.get('boundary')=='bootstrap-before-any-optimizer-update'
+            for x in report.get('recoveryPoints',[])),
+        'absoluteDeadlineUnix':deadline,'ledger':report.get('ledger'),
+        'runtimeCaptured':False,'runtimeOmission':'no-active-runtime',
+        'pendingTransition':mapper.builder.pending if mapper else None,
+        'pendingOrigin':mapper.pending_origin if mapper else None,
+        'mapping':list(mapping)}
+    roles={'stopped_cursor':'stopped-cursor.json','report':'cold-start-report.json'}
+    if state is not None and wasm is not None and learner is not None:
+        try:
+            live=wasm.call({'op':'state'})
+            bridge=wasm.call({'op':'bridgeState'})
+            wasm.call({'op':'checkpoint','name':'stopped-runtime.bin'})
+            learner.torch.save(learner.capture_learning_state(),output/'stopped-learner.pt')
+            cursor.update(state=live,bridge=bridge,runtimeCaptured=True,runtimeOmission=None)
+            roles.update(stopped_runtime='stopped-runtime.bin',stopped_learner='stopped-learner.pt')
+        except Exception as error:
+            cursor['runtimeOmission']='live-state-capture-failed'
+            cursor['runtimeCaptureError']=str(error)
+    (output/'stopped-cursor.json').write_text(json.dumps(cursor,default=jsonable,allow_nan=False)+'\n')
+    for role,name in [('ledger','budget-ledger.json'),('config','frozen-config.json'),
+                      ('transitions','transitions.ndjson'),('fixtures','cold-fixtures.json'),
+                      ('parity','cold-adapter-parity.json')]:
+        if (output/name).is_file():roles[role]=name
+    atomic_json(output/'cold-start-report.json',report)
+    return roles
+
+
+def verify_stop_documents(restored, manifest, output, roles):
+    """Operationally decode terminal diagnostics; never assert runtime readiness."""
+    if manifest.get('application_resume_eligible') is not False or manifest.get('full_resume_ready') is not False:
+        raise ContractError('Partial stop evidence must be explicitly nonresumable')
+    files={item['role']:restored/item['path'] for item in manifest['files']}
+    if set(files)!=set(roles):
+        raise ContractError('Terminal evidence roles differ')
+    for role,name in roles.items():
+        if name.endswith('.json'):
+            if json.loads(files[role].read_text())!=json.loads((output/name).read_text()):
+                raise ContractError('Restored terminal diagnostic differs: '+role)
+    cursor=json.loads(files['stopped_cursor'].read_text())
+    if cursor.get('restartAuthorized') is not False or cursor.get('applicationResumeEligible') is not False:
+        raise ContractError('Terminal cursor cannot authorize resume')
+    if 'ledger' in files and cursor['ledger']!=json.loads(files['ledger'].read_text()):
+        raise ContractError('Terminal cursor/ledger disagreement')
+    return {'passed':True,'physics_integrations':0,'application_resume_eligible':False,
+            'scope':'terminal-documents-not-runtime-resume'}
+
+
 def run(output, worker, shared, run_id):
     if output.exists():
         raise ContractError('No cold-start restart/output reuse or deadline renewal')
@@ -56,7 +115,7 @@ def run(output, worker, shared, run_id):
     exchange=DriveExchange(output/'recovery',run_id,source,deadline)
     wasm=learner=replay=None
     mapper=None;state=None;episode_number=0;episode_id=None
-    phase=None;mapping=[];bootstrap_indices=[];bootstrap_outcomes=[]
+    phase=None;mapping=[];bootstrap_indices=[];bootstrap_outcomes=[];config={}
     protected_wall=180.;pending_indices=[];backup_failed=False
     def wall():
         watchdog.assert_alive()
@@ -436,39 +495,23 @@ def run(output, worker, shared, run_id):
         # Safe-stop retention is not an experiment restart or another candidate.
         # It preserves partial evidence when bootstrap fails an honest gate,
         # without presenting incomplete strata as trainable replay.
-        if wasm and learner and not backup_failed and not exchange.failed and time.time()<deadline-30:
+        if not backup_failed and not exchange.failed and exchange.shared_sha256 and time.time()<deadline-30:
             try:
                 protected_wall=0.
-                stop_state=wasm.call({'op':'state'})
-                wasm.call({'op':'checkpoint','name':'stopped-runtime.bin'})
-                learner.torch.save(learner.capture_learning_state(),output/'stopped-learner.pt')
-                stopped_cursor={'restartAuthorized':False,'bootstrapReplayConstructed':replay is not None,
-                    'coherentBootstrapBackupVerified':any(x.get('boundary')=='bootstrap-before-any-optimizer-update'
-                        for x in report.get('recoveryPoints',[])),
-                    'absoluteDeadlineUnix':deadline,'ledger':report.get('ledger'),
-                    'state':stop_state,'bridge':wasm.call({'op':'bridgeState'}),
-                    'pendingTransition':mapper.builder.pending if mapper else None,
-                    'pendingOrigin':mapper.pending_origin if mapper else None,
-                    'mapping':mapping}
-                (output/'stopped-cursor.json').write_text(json.dumps(stopped_cursor,default=jsonable)+'\n')
-                roles={'stopped_runtime':'stopped-runtime.bin','stopped_learner':'stopped-learner.pt',
-                    'stopped_cursor':'stopped-cursor.json','report':'cold-start-report.json',
-                    'ledger':'budget-ledger.json','config':'frozen-config.json'}
-                for role,name in [('transitions','transitions.ndjson'),('fixtures','cold-fixtures.json'),
-                                  ('parity','cold-adapter-parity.json')]:
-                    if (output/name).exists():roles[role]=name
                 if replay:
                     # Previously persisted replay remains coherent with its
                     # prior paused checkpoint, not this partial cursor.
                     report['latestCoherentRecoveryRetainedSeparately']=bool(exchange.verified)
+                roles=collect_stop_evidence(output,report,deadline,wasm=wasm,learner=learner,
+                    state=state,mapper=mapper,mapping=mapping,replay=replay)
                 def verify_stop(restored, manifest):
+                    result=verify_stop_documents(restored,manifest,output,roles)
                     files={item['role']:restored/item['path'] for item in manifest['files']}
-                    result=run_restore(worker/'lh_worker.js',worker/'lh_worker_bg.wasm',[files['stopped_runtime']])
-                    from getup_cold_start_verify import assert_state_equal
-                    stored=learner.torch.load(files['stopped_learner'],weights_only=False,map_location='cpu')
-                    assert_state_equal(stored,learner.capture_learning_state())
-                    if json.loads(files['stopped_cursor'].read_text())!=json.loads((output/'stopped-cursor.json').read_text()):
-                        raise ContractError('Partial safe-stop cursor differs')
+                    if 'stopped_runtime' in files:
+                        run_restore(worker/'lh_worker.js',worker/'lh_worker_bg.wasm',[files['stopped_runtime']])
+                        from getup_cold_start_verify import assert_state_equal
+                        stored=learner.torch.load(files['stopped_learner'],weights_only=False,map_location='cpu')
+                        assert_state_equal(stored,learner.capture_learning_state())
                     return result
                 request=exchange.snapshot([artifact(role,output/name,'cold-stop-not-resumable/v1')
                     for role,name in roles.items()],dict(config,resumeAuthorized=False,

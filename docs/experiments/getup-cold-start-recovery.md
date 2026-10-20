@@ -93,13 +93,21 @@ Partial safe-stop evidence is explicitly application-resume-ineligible in the
 backup manifest. Complete checkpoint state still does not authorize automatic
 restart or renewed time/integration budgets.
 
-## Software verification before the physical run
+Qualification uses temporary runtimes and can leave no active runtime. A stop
+at that boundary retains the report, ledger, configuration and available parity
+evidence without creating a runtime or invoking physics. Optional live runtime
+capture failure likewise cannot discard terminal documents. Their restore
+validator checks decoded documents and ledger agreement, not runtime-resume
+readiness; an unavailable runtime is explicitly recorded rather than fabricated.
+
+## Software verification (separate from physical acceptance)
 
 - Real CPU Torch 2.9.1: populated Adam states for all optimizers, model/target
   weights, gradients, modes, alpha, counters and Python/NumPy/Torch/replay RNG
   restore exactly after a forced guard rejection and serialization roundtrip.
-- Ten new cold-start tests pass, including feature corruption, cap exhaustion,
-  historical-runner closure and restore-before-prune ordering.
+- Twelve cold-start tests pass, including feature corruption, cap exhaustion,
+  historical-runner closure, restore-before-prune ordering and nonphysics
+  terminal retention with an absent or unavailable active runtime.
 - Existing corrected-loop and backup suites: 23 + 23 tests pass.
 - Full JavaScript test suite: 129 tests pass.
 - Rebuilt actual flagged WASM: both unstepped runtime checkpoints load and

@@ -23,6 +23,10 @@ spec = importlib.util.spec_from_file_location('corrected_runner',
     Path(__file__).with_name('train-getup-learning-loop.py'))
 runner = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(runner)
+spec = importlib.util.spec_from_file_location('cold_runner',
+    Path(__file__).with_name('train-getup-cold-start.py'))
+cold_runner = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(cold_runner)
 
 
 def record(category, episode):
@@ -51,6 +55,51 @@ def recursive_equal(test, left, right):
 
 
 class ColdContracts(unittest.TestCase):
+    def test_terminal_evidence_without_active_runtime_never_calls_physics(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root=Path(directory)
+            ledger={'nativeIntegrations':2380,'trainingDecisions':0}
+            report={'stopped':'cold-start-safe-stop','ledger':ledger,'trainingExecuted':False}
+            cold.atomic_json(root/'budget-ledger.json',ledger)
+            wasm=mock.Mock();learner=mock.Mock()
+            roles=cold_runner.collect_stop_evidence(root,report,time.time()+60,
+                wasm=wasm,learner=learner,state=None)
+            wasm.call.assert_not_called()
+            learner.capture_learning_state.assert_not_called()
+            self.assertNotIn('stopped_runtime',roles)
+            cursor=json.loads((root/'stopped-cursor.json').read_text())
+            self.assertFalse(cursor['runtimeCaptured'])
+            self.assertFalse(cursor['bootstrapReplayConstructed'])
+            self.assertFalse(cursor['coherentBootstrapBackupVerified'])
+            self.assertEqual(cursor['runtimeOmission'],'no-active-runtime')
+            exchange=cold.DriveExchange(root/'exchange','synthetic-terminal-test',
+                {'commit':'a'*40,'dirty':False,'description':'unit test'},time.time()+60,'a'*64)
+            request=exchange.snapshot([cold.artifact(role,root/name,'test/v1')
+                for role,name in roles.items()],{'resumeAuthorized':False},'partial-safe-stop-evidence')
+            value=json.loads(request.read_text())
+            manifest=cold.restore_bundle(value['archive_path'],root/'restored',value['archive_sha256'])
+            proof=cold_runner.verify_stop_documents(root/'restored',manifest,root,roles)
+            self.assertTrue(proof['passed'])
+            self.assertEqual(proof['physics_integrations'],0)
+            self.assertFalse(manifest['full_resume_ready'])
+            for key in ('application_resume_eligible','full_resume_ready'):
+                changed=dict(manifest);changed[key]=True
+                with self.assertRaisesRegex(ContractError,'nonresumable'):
+                    cold_runner.verify_stop_documents(root/'restored',changed,root,roles)
+
+    def test_terminal_live_capture_failure_still_retains_diagnostics(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root=Path(directory);wasm=mock.Mock()
+            wasm.call.side_effect=RuntimeError('no active runtime')
+            report={'stopped':'cold-start-safe-stop','ledger':None}
+            roles=cold_runner.collect_stop_evidence(root,report,time.time()+60,
+                wasm=wasm,learner=mock.Mock(),state={'native':500})
+            self.assertEqual(set(roles),{'report','stopped_cursor'})
+            cursor=json.loads((root/'stopped-cursor.json').read_text())
+            self.assertEqual(cursor['runtimeOmission'],'live-state-capture-failed')
+            self.assertFalse(cursor['runtimeCaptured'])
+            self.assertFalse(cursor['restartAuthorized'])
+
     def test_historical_runner_still_unconditionally_closed(self):
         with tempfile.TemporaryDirectory() as directory:
             out = Path(directory) / 'absent'
