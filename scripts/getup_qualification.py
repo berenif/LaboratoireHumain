@@ -192,6 +192,23 @@ class QualificationPilot(ColdPilot):
         self.replay.rng.setstate(before)
 
     def write_snapshot(self,boundary):
+        unverified_seeds={}
+        if not self.identity.get('seedManifestSha256'):
+            # Preparation can stop after an earlier fixture was checkpointed
+            # and freed, but before the once-only immutable seed transaction.
+            # Its sole checkpoint is terminal evidence, not a verified seed.
+            for case in ('original','heldout','belly'):
+                name=case+'-seed.bin'
+                if (self.output/name).is_file():
+                    unverified_seeds['unverified_preparation_'+case+'_seed']=name
+        self.report['unverifiedPreparationSeedEvidence']=list(unverified_seeds.values())
+        seed_bytes=sum((self.output/name).stat().st_size for name in unverified_seeds.values())
+        self.report['unverifiedPreparationSeedBytes']=seed_bytes
+        # The immutable allowance can fail without discarding already-created
+        # diagnostic state. JS writeCheckpoint reserved those exact bytes plus
+        # complete terminal capture BEFORE writing; normal32MiB/18MiB terminal
+        # limits still apply, and this never admits a seed upload or reuse.
+        self.report['immutableSeedAdmissionFailed']=seed_bytes>2*1024**2
         try:
             capture=self.bridge.call({'op':'qualificationCapture'})
             self.report['terminalRuntimeCapture']=capture
@@ -202,6 +219,7 @@ class QualificationPilot(ColdPilot):
                 self.state=capture['state'];self.cursor.active=True
         except BaseException as error:self.report['terminalRuntimeCaptureError']=str(error)
         roles,cursor,_=super().write_snapshot('terminal-stop' if self.failure_latched else boundary)
+        roles.update(unverified_seeds)
         if self.replay is not None:
             cursor['diagnostic_membership']=diagnostic_membership(self.replay.rows,self.mapping)
             atomic_json(self.output/'phase-cursor.json',cursor)

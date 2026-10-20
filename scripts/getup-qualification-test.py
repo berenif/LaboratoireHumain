@@ -118,5 +118,43 @@ class QualificationTests(unittest.TestCase):
                 self.assertEqual(cursor['state'],p.bridge.state)
                 self.assertTrue(cursor['runtime_active'])
                 self.assertFalse(manifest['application_resume_eligible'])
+    def test_early_preparation_seed_is_retained_once_until_immutable_verified(self):
+        from experiment_backup import restore_bundle
+        for verified in (False,True):
+            with self.subTest(verified=verified),tempfile.TemporaryDirectory() as tmp:
+                p,t=build(tmp)
+                p.identity=dict(p.identity,seedManifestSha256='c'*64 if verified else None)
+                exact=b'synthetic exact first prepared checkpoint; no physics'
+                (p.output/'original-seed.bin').write_bytes(exact)
+                # Later failed tracked runtime exists without a completed
+                # Python reset/mapper; terminal capture must preserve both.
+                p.bridge.case='belly';p.bridge.label='failed-preparation'
+                p.bridge.state=p.bridge.current()
+                p.failure_latched=True;p.report['error']='scripted later preparation failure'
+                r=p.finalize();self.assertNotIn('terminalRetentionError',r)
+                archive=t.retained[-1]['archive'];target=Path(tmp)/'inspect'
+                manifest=restore_bundle(archive,target,sha256(archive))
+                files={x['role']:target/x['path'] for x in manifest['files']}
+                role='unverified_preparation_original_seed'
+                self.assertEqual(role in files,not verified)
+                if not verified:self.assertEqual(files[role].read_bytes(),exact)
+                self.assertIn('runtime',files)
+                self.assertFalse(manifest['application_resume_eligible'])
+    def test_oversized_unverified_seed_is_diagnostic_under_terminal_caps(self):
+        from experiment_backup import restore_bundle
+        with tempfile.TemporaryDirectory() as tmp:
+            p,t=build(tmp);p.identity=dict(p.identity,seedManifestSha256=None)
+            path=p.output/'original-seed.bin';path.write_bytes(b's'*(2*1024**2+1))
+            p.failure_latched=True;p.report['error']='immutable seed allowance exceeded'
+            r=p.finalize();self.assertNotIn('terminalRetentionError',r)
+            self.assertTrue(r['immutableSeedAdmissionFailed'])
+            self.assertFalse(r.get('syntheticQualificationRestorePassed',False))
+            archive=t.retained[-1]['archive'];target=Path(tmp)/'inspect'
+            manifest=restore_bundle(archive,target,sha256(archive))
+            files={x['role']:target/x['path'] for x in manifest['files']}
+            self.assertEqual(sha256(files['unverified_preparation_original_seed']),sha256(path))
+            self.assertFalse(manifest['application_resume_eligible'])
+            self.assertLess(sum(x['bytes'] for x in manifest['files']),32*1024**2)
+            self.assertLess(archive.stat().st_size,18*1024**2)
 
 if __name__=='__main__':unittest.main()

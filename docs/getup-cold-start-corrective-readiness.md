@@ -226,7 +226,13 @@ runtimes, full trajectories or holds fit. Those states are measured before each
 dispatch; an administrative byte stop can preserve useful partial qualification.
 
 Complete source/provenance rows, failures, duplicates, mapping, runtime state and
-learner/RNG are retained. Successful holds check all24,000 native samples each,
+learner/RNG are retained. If preparation stops before immutable seed verification,
+any already-created seed checkpoint is included once as unverified, nonresumable
+terminal evidence. Exceeding the2 MiB immutable-seed allowance closes seed
+upload/readiness, but already-created bytes remain diagnostic evidence under
+the unchanged32 MiB terminal and18 MiB archive caps. Their exact output and
+complete terminal capture are reserved before each checkpoint write. Verified
+immutable seeds are referenced rather than duplicated. Successful holds check all24,000 native samples each,
 retain full-sample extrema/stability and first800/final checkpoints; they do
 **not archive all48,000 raw hold nativeTrace samples**. A failed hold retains its
 checked/passed sample counts, observed maxima, original anchors and first error.
@@ -261,8 +267,8 @@ completion follows from this readiness checkpoint.
 
 ## Software verification at this checkpoint
 
-107 focused checks passed:14 production-engine rehearsal,10 corrective/slot
-fault-path,6 qualification end-to-end,16 cold-contract,23 learning-loop,
+109 focused checks passed:14 production-engine rehearsal,10 corrective/slot
+fault-path,8 qualification end-to-end,16 cold-contract,23 learning-loop,
 23 archive/restore,9 existing JS contracts and6 qualification-budget checks.
 The qualification rehearsal uses real mapper/replay/learner serialization and
 independent restoration with scripted physics/transport; its sole terminal ZIP
