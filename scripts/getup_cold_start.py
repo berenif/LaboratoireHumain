@@ -361,7 +361,11 @@ class DriveExchange:
             raise ContractError('Shared inputs must be remotely verified first')
         if kind=='seeds' and self.seed_sha256:
             raise ContractError('Triggered immutable seeds are retained once')
+        if kind in getattr(self,'pending_immutable',{}):
+            raise ContractError('Unresolved immutable upload; no retry')
         limit = PROTOCOL['shared_payload_bytes' if kind in ('shared','seeds') else 'generation_payload_bytes']
+        qualification=kind=='generation' and config.get('plan',{}).get('qualification_only') is True
+        if qualification:limit=min(limit,32*1024**2)
         total = 0
         for item in artifacts:
             path = Path(item['path']).resolve()
@@ -378,7 +382,9 @@ class DriveExchange:
         # Backup-root storage only; the original working inputs are not copied
         # here until admission. Reserve payload + archive simultaneously.
         retained_local = self.external_local_bytes + sum(p.stat().st_size for p in self.directory.rglob('*') if p.is_file())
-        if retained_local + 3 * total + 4*1024**2 > PROTOCOL['retained_payload_bytes']:
+        staging=(max(2*total,total+2*18*1024**2,
+            18*1024**2+config.get('slot_prewrite_download_bytes',0)) if qualification else 3*total)
+        if retained_local + staging + 4*1024**2 > PROTOCOL['retained_payload_bytes']:
             raise ContractError('Local archive/staging peak exceeds backup byte cap before copying')
         if kind == 'generation' and any(item['role'] in SHARED_ROLES for item in artifacts):
             raise ContractError('Generation must reference immutable inputs, not copy them')
@@ -390,7 +396,7 @@ class DriveExchange:
             excluded_dependencies=[], max_payload_bytes=limit,
             application_resume_eligible=(kind=='generation' and config.get('resumeAuthorized') is not False),
             previous_manifest_sha256=self.verified[-1]['manifest_sha256'] if self.verified else None))
-        if archive.stat().st_size > min(32*1024**2,limit + 1024**2):
+        if archive.stat().st_size > min(18*1024**2 if qualification else 32*1024**2,limit + 1024**2):
             raise ContractError('Measured compressed bundle exceeds byte cap')
         if self.remote_uploaded_bytes+archive.stat().st_size>PROTOCOL['retained_payload_bytes']:
             raise ContractError('Cumulative remote archive bytes including Trash exceed cap before upload')
@@ -409,9 +415,25 @@ class DriveExchange:
             'privacy': 'owner-only; no shared link; exact archive only',
             'retention': 'current+previous only; NEVER prune before application-verified prune request',
             'download_cleanup': 'transfer owner removes its exact temporary download only after application-verified marker'}
-        request_path = self.directory / (manifest['generation'] + '.request.json')
+        suffix='.slot-draft.json' if getattr(self,'_unpublished_slot_request',False) else '.request.json'
+        request_path = self.directory / (manifest['generation'] + suffix)
+        if config.get('qualification_immutable') is True:
+            self.precharge_immutable(request)
         atomic_json(request_path, request)
         return request_path
+
+    def precharge_immutable(self,request):
+        kind=request['kind']
+        if kind not in ('shared','seeds') or kind in getattr(self,'pending_immutable',{}):
+            raise ContractError('Immutable upload already pending; no retry')
+        after=self.remote_uploaded_bytes+request['archive_bytes']
+        if after>PROTOCOL['retained_payload_bytes']:
+            raise ContractError('Pending immutable exposure exceeds cumulative cap')
+        self.pending_immutable=getattr(self,'pending_immutable',{})
+        self.pending_immutable[kind]=request['archive_sha256']
+        request.update(cumulative_precharged=True,remote_cumulative_exposure_after=after,
+            uncertain_write_policy='charged before request; no refund or automatic retry')
+        self.remote_uploaded_bytes=after
 
     def verify_receipt(self, request_path, receipt_path, restore_validator):
         if self.failed:
@@ -456,54 +478,62 @@ class DriveExchange:
             verified_path=Path(request_path).with_name(Path(request_path).name.replace('.request.json','.application-verified.json'))
             atomic_json(verified_path,{'passed':True,'synthetic':self.synthetic,'archive_sha256':request['archive_sha256'],
                 'physics_integrations':0,'downloaded_path':str(downloaded)})
-            generations = self.verified + [dict(manifest_sha256=request['manifest_sha256'],
-                drive_file_id=receipt['drive_file_id'], payload_bytes=request['payload_bytes'],
-                archive_path=request['archive_path'],archive_bytes=request['archive_bytes'])]
-            self.remote_uploaded_bytes+=request['archive_bytes']
-            if request['kind'] == 'shared':
-                self.shared_sha256 = request['manifest_sha256']
-                self.shared_bytes = request['payload_bytes']
-                self.shared_archive = request['archive_path']
-            elif request['kind']=='seeds':
-                self.seed_sha256=request['manifest_sha256']
-                self.seed_bytes=request['payload_bytes']
-            else:
-                stale = generations[:-2]
-                if receipt.get('pruned_drive_file_ids'):
-                    raise ContractError('Prior generation was pruned before application restore validation')
-                if stale:
-                    prune_request=Path(request_path).with_name(Path(request_path).name.replace('.request.json','.prune-request.json'))
-                    prune_receipt=prune_request.with_name(prune_request.name.replace('.prune-request.json','.pruned.json'))
-                    expected_ids={x['drive_file_id'] for x in stale}
-                    atomic_json(prune_request,{'schema':'lh-private-drive-prune/v1','run_id':self.run_id,
-                        'replacement_manifest_sha256':request['manifest_sha256'],
-                        'application_verified':str(verified_path),'drive_file_ids':sorted(expected_ids),
-                        'deadline_unix':self.operation_deadline,'receipt':str(prune_receipt)})
-                    print(json.dumps({'event':'DRIVE_PRUNE_REQUEST','request':str(prune_request)}),flush=True)
-                    while not prune_receipt.exists():
-                        if self.now()>=self.operation_deadline:
-                            raise ContractError('Deadline expired awaiting exact owned-generation cleanup')
-                        self.sleep(.5)
-                    pruned=json.loads(prune_receipt.read_text())
-                    if (pruned.get('replacement_manifest_sha256')!=request['manifest_sha256']
-                            or set(pruned.get('deleted_drive_file_ids',[]))!=expected_ids):
-                        raise ContractError('Current+previous retention cleanup is not acknowledged')
-                generations = generations[-2:]
-                self.retired_payload_bytes+=sum(x['payload_bytes'] for x in stale)
-                if self.shared_bytes+self.seed_bytes+self.retired_payload_bytes + sum(x['payload_bytes'] for x in generations) > 167772160:
-                    raise ContractError('Total retained payload cap')
-                self.verified = generations
-                for old in stale:
-                    old_archive = Path(old['archive_path']).resolve()
-                    # Delete only exact generations created by this instance.
-                    if old_archive.parent.parent == (self.directory / 'bundles').resolve():
-                        shutil.rmtree(old_archive.parent)
-                    # Prior closed-run evidence outside this instance is NEVER
-                    # deleted; its bytes remain in external_local_bytes.
+            self.commit_verified(request, receipt, request_path, verified_path)
             return manifest
         except BaseException:
             self.failed = True
             raise
+
+
+    def commit_verified(self, request, receipt, request_path, verified_path):
+        generations = self.verified + [dict(manifest_sha256=request['manifest_sha256'],
+            drive_file_id=receipt['drive_file_id'], payload_bytes=request['payload_bytes'],
+            archive_path=request['archive_path'],archive_bytes=request['archive_bytes'])]
+        if request.get('cumulative_precharged'):
+            if getattr(self,'pending_immutable',{}).get(request['kind'])!=request['archive_sha256']:
+                raise ContractError('Immutable cumulative reservation identity differs')
+            del self.pending_immutable[request['kind']]
+        else:self.remote_uploaded_bytes+=request['archive_bytes']
+        if request['kind'] == 'shared':
+            self.shared_sha256 = request['manifest_sha256']
+            self.shared_bytes = request['payload_bytes']
+            self.shared_archive = request['archive_path']
+        elif request['kind']=='seeds':
+            self.seed_sha256=request['manifest_sha256']
+            self.seed_bytes=request['payload_bytes']
+        else:
+            stale = generations[:-2]
+            if receipt.get('pruned_drive_file_ids'):
+                raise ContractError('Prior generation was pruned before application restore validation')
+            if stale:
+                prune_request=Path(request_path).with_name(Path(request_path).name.replace('.request.json','.prune-request.json'))
+                prune_receipt=prune_request.with_name(prune_request.name.replace('.prune-request.json','.pruned.json'))
+                expected_ids={x['drive_file_id'] for x in stale}
+                atomic_json(prune_request,{'schema':'lh-private-drive-prune/v1','run_id':self.run_id,
+                    'replacement_manifest_sha256':request['manifest_sha256'],
+                    'application_verified':str(verified_path),'drive_file_ids':sorted(expected_ids),
+                    'deadline_unix':self.operation_deadline,'receipt':str(prune_receipt)})
+                print(json.dumps({'event':'DRIVE_PRUNE_REQUEST','request':str(prune_request)}),flush=True)
+                while not prune_receipt.exists():
+                    if self.now()>=self.operation_deadline:
+                        raise ContractError('Deadline expired awaiting exact owned-generation cleanup')
+                    self.sleep(.5)
+                pruned=json.loads(prune_receipt.read_text())
+                if (pruned.get('replacement_manifest_sha256')!=request['manifest_sha256']
+                        or set(pruned.get('deleted_drive_file_ids',[]))!=expected_ids):
+                    raise ContractError('Current+previous retention cleanup is not acknowledged')
+            generations = generations[-2:]
+            self.retired_payload_bytes+=sum(x['payload_bytes'] for x in stale)
+            if self.shared_bytes+self.seed_bytes+self.retired_payload_bytes + sum(x['payload_bytes'] for x in generations) > 167772160:
+                raise ContractError('Total retained payload cap')
+            self.verified = generations
+            for old in stale:
+                old_archive = Path(old['archive_path']).resolve()
+                # Delete only exact generations created by this instance.
+                if old_archive.parent.parent == (self.directory / 'bundles').resolve():
+                    shutil.rmtree(old_archive.parent)
+                # Prior closed-run evidence outside this instance is NEVER
+                # deleted; its bytes remain in external_local_bytes.
 
 
 def artifact(role, path, schema):

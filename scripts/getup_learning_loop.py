@@ -143,16 +143,34 @@ class Record:
             raise ContractError('Real terminal transitions must not bootstrap')
         return self
 
+def diagnostic_membership(rows,mapping):
+    """Case-bound diagnostic inventory, never infer BACK from provisional rows."""
+    if len(rows)!=len(mapping):raise ContractError('Diagnostic mapping membership incomplete')
+    by_case={};coverage={category:0 for category in CATEGORIES}
+    for index,(row,entry) in enumerate(zip(rows,mapping)):
+        case=entry['case']
+        if entry['replay_index']!=index or entry['episode_id']!=row.episode or case not in ('original','heldout','belly'):
+            raise ContractError('Diagnostic case/episode/index differs')
+        key=f'{case}:{row.episode_outcome}:{row.phase}'
+        by_case[key]=by_case.get(key,0)+1
+        if case=='original' and row.category in CATEGORIES[:2]:coverage[row.category]+=1
+        if case!='original' and row.category=='baseline_preservation' and row.complete_episode and row.baseline_success:
+            coverage['baseline_preservation']+=1
+    return {'byCaseOutcomePhase':by_case,'approvedStratumRows':coverage,
+        'missingStrata':[category for category,n in coverage.items() if n==0]}
+
+
 class EpisodeReplay:
     """Keep all records. No eviction or category success-rate interpretation."""
-    def __init__(self, retained, fresh_allowance=4096, seed=20261020):
+    def __init__(self, retained, fresh_allowance=4096, seed=20261020, *, diagnostic_only=False):
+        self.diagnostic_only=diagnostic_only
         self.rows = []
         self.groups = {category: {} for category in CATEGORIES}
         self.capacity = len(retained) + fresh_allowance
         self.rng = random.Random(seed)
         for row in retained:
             self.add(row)
-        if any(not self.groups[c] for c in CATEGORIES):
+        if not diagnostic_only and any(not self.groups[c] for c in CATEGORIES):
             raise ContractError('Every approved replay category needs verified episodes')
 
     def add(self, row):
@@ -193,11 +211,18 @@ class EpisodeReplay:
         return result
 
     def batch_indices(self, size=128):
+        if self.diagnostic_only:
+            raise ContractError('Diagnostic partial replay cannot supply a training batch')
         if size != 128:
             raise ContractError('Frozen batch size128 required')
         return (self.category_indices(CATEGORIES[0], 64)
                 + self.category_indices(CATEGORIES[1], 32)
                 + self.category_indices(CATEGORIES[2], 32))
+
+    def diagnostic_sample_indices(self,count):
+        if not self.diagnostic_only or not self.rows or type(count) is not int or count<0:
+            raise ContractError('Populated diagnostic replay and explicit sample count required')
+        return [self.rng.randrange(len(self.rows)) for _ in range(count)]
 
     def witness_indices(self, recent):
         if len(recent) != 256:

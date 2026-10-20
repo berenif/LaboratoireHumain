@@ -1,0 +1,100 @@
+{
+  "schema": "lh-corrected-qualification-only/v1",
+  "mode": "qualification-only",
+  "optimizer_updates": 0,
+  "candidate_evaluations": 0,
+  "wall_seconds": 3600,
+  "physics_cutoff_seconds": 2100,
+  "normal_integrations": 137060,
+  "shared_uncertainty_reserve": 5020,
+  "maximum_qualification_integrations": 142080,
+  "protected_evaluation_integrations": 147000,
+  "source_decisions": 1024,
+  "active_output_bytes": 33554432,
+  "terminal_payload_bytes": 33554432,
+  "terminal_archive_bytes": 18874368,
+  "corrected_immutable_archive_bytes": 12582912,
+  "seed_archive_bytes": 1962859,
+  "mutable_uploads": 1,
+  "next_call_growth_bytes": 20971520,
+  "growth_components_bytes": {
+    "controller": 12582912,
+    "world_contacts": 6291456,
+    "auxiliary_head": 2097152
+  },
+  "frozen_geometry": {
+    "body_pose_slots": 25,
+    "body_primitives": 19,
+    "floor": 1,
+    "striker": 1,
+    "room_walls": 5,
+    "maximum_primitive_pairs": 325,
+    "maximum_colliders": 32,
+    "maximum_dofs": 27,
+    "geometry_insertion_allowed": false
+  },
+  "phases": {
+    "immutable-input-restore": {
+      "seconds": 300,
+      "normal": 0,
+      "forecasts": 0
+    },
+    "fixture-preparation": {
+      "seconds": 120,
+      "normal": 3040,
+      "forecasts": 0
+    },
+    "seed-backup": {
+      "seconds": 180,
+      "normal": 0,
+      "forecasts": 0
+    },
+    "zero-correction-qualification": {
+      "seconds": 120,
+      "normal": 11000,
+      "forecasts": 2
+    },
+    "transition-parity": {
+      "seconds": 60,
+      "normal": 5060,
+      "forecasts": 1
+    },
+    "belly-preservation": {
+      "seconds": 360,
+      "normal": 43960,
+      "forecasts": 0
+    },
+    "heldout-preservation": {
+      "seconds": 360,
+      "normal": 49000,
+      "forecasts": 1
+    },
+    "original-diagnostic": {
+      "seconds": 240,
+      "normal": 25000,
+      "forecasts": 1
+    },
+    "coherent-terminal-restore": {
+      "seconds": 180,
+      "normal": 0,
+      "forecasts": 0
+    },
+    "terminal-retention": {
+      "seconds": 300,
+      "normal": 0,
+      "forecasts": 0
+    }
+  },
+  "hold_evidence": "All required samples checked; full-sample extrema, continuous stability, first800/final checkpoints; nativeTrace samples summarized, not all archived",
+  "original_diagnostic": "Optional fresh reset from the metered original BACK seed, recovery only up to original25s deadline; no extra30s hold",
+  "automatic_next_trial": false,
+  "physical_acceptance_changed": false,
+  "growth_bound_source_sha256": {
+    "rust/crates/model/data/getup-v1.json": "1611ec8c988c1006b0a819ab21e2b7c410adaaf512080be425d6d6e235a8926a",
+    "rust/crates/sim/src/getup/controller.rs": "16ab7f910328cc0a4f14dc18807a32afac0fc2cf2e0d923d881433ba855b502f",
+    "rust/crates/sim/src/getup/reference.rs": "bde04aea19b120ba5f32958eab9d3b3ae4fb5a4190f3af64466cb698add67042",
+    "rust/crates/sim/src/runtime.rs": "52ebb907deba521d200b72d0f881fa50c41e4aa5457b10ee7d4617db9ff6e833",
+    "rust/crates/sim/src/lib.rs": "bfb68112fe8fdc296a7350db7e3b40d715b53480a20d0292345434e0732efcb4",
+    "rust/crates/sim/src/striker.rs": "63ce3efde29b331f8b5dce45f2a702286b816d7c4511cb80040739c4b97ef1e6"
+  }
+}

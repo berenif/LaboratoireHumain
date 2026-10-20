@@ -14,10 +14,10 @@ import shutil
 from experiment_backup import create_snapshot, restore_bundle, sha256, verify_bundle
 from getup_learning_loop import ContractError
 from getup_cold_start_engine import PhasePlan,DrivePhaseTransport
-from getup_cold_start import DriveExchange
+from getup_drive_slots import TwoSlotDriveExchange
 from experiment_backup import atomic_json
 
-EXISTING_REMOTE_BYTES=16167158
+EXISTING_REMOTE_BYTES=22056886 + 12*1024**2  # Existing bytes + conservative corrected immutable reserve.
 EXISTING_IMMUTABLE_PAYLOAD=18052670
 
 
@@ -181,25 +181,19 @@ class LocalRehearsalTransport:
         self.root=Path(root);self.root.mkdir(parents=True,exist_ok=True);self.clock=clock
         self.delay=delay;self.fail_boundary=fail_boundary;self.failed=False
         self.cumulative=initial_cumulative;self.retained=[];self.sizes=[];self.requests=[];self.after_verified=None
-        self.exchange=DriveExchange(self.root,'software-rehearsal',
+        slots=[]
+        for i in range(2):
+            p=self.root/f'initial-slot-{i}.bin';p.write_bytes(b'prior')
+            slots.append({'drive_file_id':f'synthetic-slot-{i}','archive_path':str(p),
+                'archive_sha256':sha256(p),'archive_bytes':5,'payload_bytes':5,
+                'manifest_sha256':str(i+1)*64,'application_verified':True,'owned':True})
+        self.exchange=TwoSlotDriveExchange(self.root,'software-rehearsal',
             {'commit':'a'*40,'dirty':False,'description':'DISPOSABLE SOFTWARE REHEARSAL'},
-            clock.now()+3600,shared_sha256='b'*64,clock=clock,synthetic=True)
+            clock.now()+3600,shared_sha256='b'*64,clock=clock,synthetic=True,slots=slots)
         self.exchange.shared_bytes=EXISTING_IMMUTABLE_PAYLOAD
         self.exchange.remote_uploaded_bytes=initial_cumulative
         self.exchange.seed_sha256='c'*64
         self.port=DrivePhaseTransport(self.exchange,self.transfer,clock)
-        self.clock.on_sleep=self.acknowledge_prune
-
-    def acknowledge_prune(self):
-        for path in self.root.glob('*.prune-request.json'):
-            request=json.loads(path.read_text());receipt=Path(request['receipt'])
-            if receipt.exists():continue
-            application=json.loads(Path(request['application_verified']).read_text())
-            if application.get('passed') is not True or application.get('synthetic') is not True:
-                raise ContractError('Prune cannot precede synthetic application restore')
-            atomic_json(receipt,{'synthetic':True,'replacement_manifest_sha256':request['replacement_manifest_sha256'],
-                'deleted_drive_file_ids':request['drive_file_ids']})
-
     def transfer(self,request_path,validator):
         request=json.loads(request_path.read_text());archive=Path(request['archive_path'])
         downloaded=self.root/'download.zip';shutil.copyfile(archive,downloaded)
@@ -211,7 +205,9 @@ class LocalRehearsalTransport:
             ('run_id','kind','archive_sha256','archive_bytes','manifest_sha256')}|{
             'schema':'lh-private-drive-receipt/v1','synthetic':True,'owner_only':True,'shared':False,
             'download_completed':True,'downloaded_path':str(downloaded),
-            'drive_file_id':'synthetic-local-only-'+request['manifest_sha256']})
+            'drive_file_id':request['target_drive_file_id'],'generation_nonce':request['generation_nonce'],
+            'prewrite_target_archive_sha256':request['expected_target_archive_sha256'],
+            'protected_current_untouched':True,'write_count':1,'operation':'replace-owned-slot'})
         try:
             manifest=self.exchange.verify_receipt(request_path,receipt,validator)
             if self.after_verified:self.after_verified(archive,manifest,request['boundary'])
@@ -226,7 +222,7 @@ class LocalRehearsalTransport:
         except BaseException:
             self.failed=True;raise
         self.retained=[{'archive':Path(x['archive_path']),'payload':x['payload_bytes'],
-            'manifest':x['manifest_sha256']} for x in self.exchange.verified]
+            'manifest':x['manifest_sha256']} for x in self.exchange.verified if 'bundles' in Path(x['archive_path']).parts]
         self.sizes.append(proof['archive_bytes'])
         return dict(proof,projectedCumulativeBytes=self.cumulative)
 

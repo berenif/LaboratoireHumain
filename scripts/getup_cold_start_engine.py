@@ -15,7 +15,7 @@ import random
 from experiment_backup import atomic_json, sha256
 from getup_cold_start import ColdPhase, FreshMapper, PROTOCOL, artifact
 from getup_cold_start_verify import assert_state_equal, verify_replay_mapping
-from getup_learning_loop import ContractError, EpisodeReplay, FixedWitness, Gaussian, Record, UpdateGuard
+from getup_learning_loop import ContractError, EpisodeReplay, FixedWitness, Gaussian, Record, UpdateGuard, diagnostic_membership
 
 
 def encoded(value):
@@ -42,8 +42,8 @@ class PhasePlan:
     block_integrations: int = 20140
     parity_integrations: int = 15060
     evaluation_integrations: int = 147000
-    backup_payload_envelope_bytes: int = 18*1024**2
-    backup_archive_envelope_bytes: int = 20*1024**2
+    backup_payload_envelope_bytes: int = 17*1024**2
+    backup_archive_envelope_bytes: int = 18*1024**2
 
     def validate(self):
         if (self.deadline-self.started!=3600 or self.deadline-self.evaluation_end<300
@@ -81,7 +81,7 @@ class PhasePlan:
                 +(self.warmup_seconds+self.backup_seconds if warmup else 0)
                 +blocks*(self.collection_seconds+self.updates_seconds+2*self.backup_seconds))
 
-    def admit_sequence(self, now, ledger, *, maximum_blocks=2, prefix_seconds=0., prefix_integrations=0, cumulative_uploaded_bytes=0, retained_payload_bytes=0):
+    def admit_sequence(self, now, ledger, *, maximum_blocks=2, prefix_seconds=0., prefix_integrations=0, cumulative_uploaded_bytes=0, retained_payload_bytes=0, replacement_slots=False):
         self.validate()
         if prefix_seconds<0 or prefix_integrations<0:
             raise ContractError('Prefix allowance cannot refund wall or integrations')
@@ -92,7 +92,7 @@ class PhasePlan:
                    +blocks*self.block_integrations+self.evaluation_integrations)
             backups=3+2*blocks
             storage_fits=(cumulative_uploaded_bytes+backups*self.backup_archive_envelope_bytes<=160*1024**2
-                and retained_payload_bytes+backups*self.backup_payload_envelope_bytes<=160*1024**2)
+                and retained_payload_bytes+(1 if replacement_slots else backups)*self.backup_payload_envelope_bytes<=160*1024**2)
             if storage_fits and steps<=300000 and now+prefix_seconds+self.sequence_seconds(blocks)<=self.work_end:
                 return blocks
         raise ContractError('Complete two-block cadence, backups and final reserves do not fit')
@@ -226,7 +226,24 @@ class ColdPilot:
         # Retain its observed state/raw evidence and original failure, never turn
         # that zero-step refusal into replay or mask it with the +20 row contract.
         self.state=result['state']
+        if result['failure'] is not None and (not isinstance(result['failure'],dict)
+                or not isinstance(result['failure'].get('check'),str) or not result['failure']['check']):
+            raise ContractError('Malformed bridge failure diagnostic')
         if result['failure'] and result['failure'].get('check')!='original25s-deadline':
+            post=result['state']
+            if result['native']==source['native'] or (isinstance(post,dict) and post.get('native')==source['native']):
+                fields={'native','impactEpoch','sourceEpoch','preview'}
+                valid=(isinstance(post,dict) and fields<=source.keys() and fields<=post.keys()
+                    and result['native']==post['native']==source['native']
+                    and source['impactEpoch'] is not None and post['impactEpoch']==source['impactEpoch']
+                    and source['sourceEpoch'] is None and post['sourceEpoch'] is None
+                    and source['preview'] is None and post['preview'] is None and action is None
+                    and result['terminal'] is True and result['success'] is False
+                    and result.get('nativeTraceSha256')==hashlib.sha256(b'[]').hexdigest()
+                    and self.mapper.builder.pending is None and self.mapper.pending_origin is None
+                    and self.mapper.pending_line is None)
+                if not valid:
+                    raise ContractError('Malformed zero-step refusal diagnostic contract')
             raise ContractError('Physical integrity failure: '+json.dumps(result['failure']))
         row=self.mapper.push(source,action,result)
         return row,result
@@ -306,6 +323,8 @@ class ColdPilot:
         self.report.setdefault('recoveryPoints',[]).append(proof)
 
     def optimizer_gate(self):
+        if self.replay is not None and self.replay.diagnostic_only:
+            raise ContractError('Qualification diagnostic replay never authorizes optimizer')
         if not (self.cursor.bootstrap_complete and self.cursor.transition_parity
                 and self.cursor.coherent_before_updates):
             raise ContractError('Real parity/coherent replay gates must precede optimizer')
@@ -434,7 +453,7 @@ class ColdPilot:
                     raise ContractError('Remaining interleaved sequence no longer fits')
                 usage=self.recovery.storage_usage();backups=remaining*2+1
                 if (usage['cumulative_uploaded_bytes']+backups*self.plan.backup_archive_envelope_bytes>160*1024**2
-                        or usage['retained_payload_bytes']+backups*self.plan.backup_payload_envelope_bytes>160*1024**2):
+                        or usage['retained_payload_bytes']+(1 if usage.get('replacement_slots') else backups)*self.plan.backup_payload_envelope_bytes>160*1024**2):
                     raise ContractError('Remaining cadence backup byte envelopes no longer fit')
                 self.collect();self.backup(f'collection-{self.phase.cycle:02d}')
                 self.updates();self.backup(f'updates-{self.phase.cycle:02d}')
@@ -506,6 +525,7 @@ class ColdPilot:
             'ledger':ledger,'policy_id':self.learner.policy_id(),'policy_history':self.policy_history,
             'mapper':mapper,'replay_exists':self.replay is not None,
             'replay_capacity':self.replay.capacity if self.replay else None,
+            'replay_diagnostic_only':self.replay.diagnostic_only if self.replay else False,
             'replay_groups':self.replay.groups if self.replay else None,
             'replay_rng':encoded(self.replay.rng.getstate()) if self.replay else None,
             'bootstrap_indices':self.bootstrap_indices,'excluded_raw_lines':self.excluded_lines,
@@ -595,7 +615,9 @@ def restore_coherent(restored, manifest, *, expected_identity, expected_plan, ex
         rows.append(row)
     replay=None
     if cursor['replay_exists']:
-        replay=EpisodeReplay(rows,fresh_allowance=0)
+        replay=EpisodeReplay(rows,fresh_allowance=0,diagnostic_only=cursor.get('replay_diagnostic_only',False))
+        if replay.diagnostic_only and cursor.get('diagnostic_membership')!=diagnostic_membership(rows,lineage['mapping']):
+            raise ContractError('Diagnostic case/completion/membership differs')
         if cursor['replay_capacity']<len(rows):raise ContractError('Restored replay capacity reduced')
         replay.capacity=cursor['replay_capacity'];replay.rng.setstate(tuples(cursor['replay_rng']))
         if encoded(replay.groups)!=cursor['replay_groups']:
@@ -668,8 +690,9 @@ class CoherentRecovery:
             for item in artifacts:item['provenance']='DISPOSABLE SOFTWARE REHEARSAL; not physical experience'
         config={'identity':pilot.identity,'snapshot_id':cursor['snapshot_id'],
             'plan':asdict(pilot.plan),'synthetic':self.synthetic,'resumeAuthorized':eligible}
+        diagnostic_restore=bool(getattr(pilot,'diagnostic_restore_required',False))
         def validate(restored,manifest):
-            if eligible:
+            if eligible or diagnostic_restore:
                 state=restore_coherent(restored,manifest,expected_identity=pilot.identity,
                     expected_plan=pilot.plan,expected_ledger=cursor['ledger'],
                     learner_factory=pilot.learner_factory,builder_factory=pilot.builder_factory,
@@ -678,6 +701,14 @@ class CoherentRecovery:
                         or state.mapper is not None and state.mapper is pilot.mapper):
                     raise ContractError('Independent reconstruction reused a live object')
                 assert_state_equal(before,state.learner.capture_learning_state())
+                if diagnostic_restore:
+                    if not state.replay.diagnostic_only:
+                        raise ContractError('Qualification replay lost its nontrainable status')
+                    live_rng=pilot.replay.rng.getstate()
+                    try:
+                        if state.replay.diagnostic_sample_indices(16)!=pilot.replay.diagnostic_sample_indices(16):
+                            raise ContractError('Fresh diagnostic membership/sample/RNG differs')
+                    finally:pilot.replay.rng.setstate(live_rng)
                 self.last_restored=state
             else:
                 # Terminal partial evidence is useful but cannot become a resume gate.
@@ -687,11 +718,11 @@ class CoherentRecovery:
                     raise ContractError('Partial terminal diagnostic restoration differs')
                 if manifest['application_resume_eligible'] is not False:
                     raise ContractError('Incomplete terminal state claimed resumable')
-            return {'passed':True,'physics_integrations':0,'coherent':eligible,'synthetic':self.synthetic}
+            return {'passed':True,'physics_integrations':0,'coherent':eligible or diagnostic_restore,'synthetic':self.synthetic}
         began=pilot.clock.now()
         try:
             proof=self.transport.checkpoint(artifacts,config,boundary,deadline,validate,eligible)
-            return dict(proof,synthetic=self.synthetic,coherent=eligible)
+            return dict(proof,synthetic=self.synthetic,coherent=eligible or diagnostic_restore)
         finally:
             pilot.report['costs']['transportRestoreSeconds']+=pilot.clock.now()-began
             # Even a rejected fresh restore must not reset the live global RNG.
@@ -707,8 +738,10 @@ class DrivePhaseTransport:
 
     def storage_usage(self):
         return {'cumulative_uploaded_bytes':self.exchange.remote_uploaded_bytes,
+            'replacement_slots':hasattr(self.exchange,'pointer'),
             'retained_payload_bytes':self.exchange.shared_bytes+self.exchange.seed_bytes+
-                self.exchange.retired_payload_bytes+sum(x['payload_bytes'] for x in self.exchange.verified)}
+                self.exchange.retired_payload_bytes+sum(max(x['payload_bytes'],17*1024**2) if hasattr(self.exchange,'pointer')
+                else x['payload_bytes'] for x in self.exchange.verified)}
 
     def checkpoint(self,artifacts,config,boundary,deadline,validator,eligible):
         if self.failed:raise ContractError('Failed/uncertain transfer; no retry')

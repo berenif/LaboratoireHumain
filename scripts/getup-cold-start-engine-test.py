@@ -109,8 +109,12 @@ class ProductionRehearsal(unittest.TestCase):
             self.assertTrue(report['syntheticEvaluationPassed'])
             self.assertEqual(len(pilot.replay.rows),522) # duplicate parity decision is charged, not inserted twice
             self.assertTrue(all(r.source=='synthetic_rehearsal' for r in pilot.replay.rows))
+            with __import__('zipfile').ZipFile(transport.retained[-1]['archive']) as zipped:
+                final_payload={x.filename:{'payload_bytes':x.file_size,'compressed_bytes':x.compress_size}
+                    for x in zipped.infolist() if x.filename.startswith('payload/')}
             print(json.dumps({'softwareRehearsalArchiveBytes':transport.sizes,
                 'projectedCumulativeBytes':transport.cumulative,'actualRemoteBytesAdded':0,
+                'finalSyntheticPayloadFiles':final_payload,
                 'localRetainedBytes':sum(p.stat().st_size for p in Path(tmp).rglob('*') if p.is_file())}))
 
     def test_partial_bootstrap_malformed_and_uncertain_keep_nonresumable_evidence(self):
@@ -226,9 +230,10 @@ class ProductionRehearsal(unittest.TestCase):
         observed=dict(source,status={'phase':'physical-roll-Rejected'})
         failure={'check':'getup-policy','offending':'fixed5-second quiet-prone refusal'}
         result={'state':observed,'native':4560,'reward':-100.,'terminal':True,
-                'success':False,'failure':failure}
+                'success':False,'failure':failure,'nativeTraceSha256':hashlib.sha256(b'[]').hexdigest()}
         pilot.state=source;pilot.cursor=SimpleNamespace(active=True,episode_id='refused')
-        pilot.mapper=SimpleNamespace(behavior='baseline-deterministic-zero',push=mock.Mock())
+        pilot.mapper=SimpleNamespace(behavior='baseline-deterministic-zero',push=mock.Mock(),
+            builder=SimpleNamespace(pending=None),pending_origin=None,pending_line=None)
         pilot.call=mock.Mock(return_value=result)
         with self.assertRaisesRegex(ContractError,'Physical integrity failure:.*getup-policy'):
             pilot.step(None,'bootstrap')

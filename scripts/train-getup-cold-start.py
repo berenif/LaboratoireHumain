@@ -16,6 +16,8 @@ import time
 from experiment_backup import atomic_json, sha256
 from getup_cold_start import PROTOCOL,PROTOCOL_PATH,DriveExchange,input_preflight
 from getup_learning_loop import ContractError,remaining_seconds
+from getup_worker_build import validate_build_receipt
+from getup_drive_slots import TwoSlotDriveExchange
 
 ROOT = Path(__file__).resolve().parents[1]
 spec = importlib.util.spec_from_file_location('historical_interfaces',
@@ -106,7 +108,13 @@ SOFTWARE_SOURCE_FILES=(
     'scripts/train-getup-wasm-adaptation.py','scripts/getup-wasm-adaptation-protocol.mjs',
     'scripts/getup-cold-start-restore.mjs','scripts/getup-cold-start-protocol-contract.mjs',
     'scripts/getup-learning-loop-protocol-contract.mjs','scripts/experiment_backup.py',
-    'scripts/getup-cold-start-protocol.json')
+    'scripts/getup-cold-start-protocol.json','scripts/getup_drive_slots.py',
+    'scripts/getup_worker_build.py','scripts/getup-cold-worker-contract.json',
+    'scripts/getup-cold-worker-contract.mjs','scripts/getup-cold-worker-capabilities.mjs',
+    'scripts/build-getup-cold-worker.py','scripts/getup-cold-start-unstepped.mjs',
+    'scripts/getup_qualification.py','scripts/getup-qualification-plan.json',
+    'scripts/getup-qualification-budget.mjs','scripts/getup-qualification-budget.test.mjs',
+    'scripts/getup-qualification-test.py','scripts/getup-corrective-readiness-test.py')
 
 
 def future_admission(path,output,worker,shared,run_id):
@@ -122,7 +130,7 @@ def future_admission(path,output,worker,shared,run_id):
     if (admission.get('schema')!='lh-cold-future-admission/v1'
             or admission.get('actual_run_authorized') is not True
             or admission.get('output_path')!=str(output.resolve())
-            or admission.get('exact_blocks')!=2
+            or admission.get('mode')!='qualification-only' or admission.get('exact_blocks')!=0
             or admission.get('run_id')!=run_id or admission.get('source_commit')!=commit
             or not admission.get('resource_decision_reference')):
         raise ContractError('Explicit future run/source/resource decision is absent')
@@ -145,34 +153,34 @@ def future_admission(path,output,worker,shared,run_id):
         raise ContractError('Worker/protocol differs from software readiness identity')
     manifest_path=shared/'input-manifest.json';input_preflight(manifest_path)
     manifest=json.loads(manifest_path.read_text())
-    receipts={}
-    for kind in ('shared','seeds'):
-        item=admission['immutable'][kind]
-        documents={key:json.loads(Path(item[key]['path']).read_text()) for key in ('request','receipt','application')}
-        for key in documents:
-            if sha256(Path(item[key]['path']))!=item[key]['sha256']:raise ContractError('Immutable proof changed')
-        request,receipt,application=(documents[key] for key in ('request','receipt','application'))
-        validate_backup_identity(request,receipt,application,request['run_id'])
-        if request['kind']!=kind:raise ContractError('Wrong immutable archive kind')
-        archive=Path(request['archive_path'])
-        bundle=verify_bundle(archive,request['archive_sha256'],32*1024**2)
-        import zipfile,hashlib
-        with zipfile.ZipFile(archive) as zipped:manifest_hash=hashlib.sha256(zipped.read('manifest.json')).hexdigest()
-        if archive.stat().st_size!=request['archive_bytes'] or manifest_hash!=request['manifest_sha256']:
-            raise ContractError('Immutable archive size/manifest changed')
-        entries={x['role']:x for x in bundle['files']}
-        paths=({role:Path(info['path']) for role,info in manifest['files'].items()} if kind=='shared'
-               else {case+'_seed':Path(admission['seed_paths'][case]) for case in ('original','heldout','belly')})
-        paths.update({'input_manifest':manifest_path} if kind=='shared' else {})
-        for role,p in paths.items():
-            if role not in entries or sha256(p)!=entries[role]['sha256']:
-                raise ContractError('Immutable working input differs: '+role)
-        receipts[kind]=(request,receipt,bundle)
+    build=validate_build_receipt(manifest['files']['source_identity']['path'],worker,
+        manifest['files']['profile']['path'])
+    if admission.get('corrected_build_receipt_sha256')!=sha256(manifest['files']['source_identity']['path']):
+        raise ContractError('Corrected semantic build is not admitted')
+    from getup_qualification import PLAN_PATH,PLAN,validate_growth_sources
+    validate_growth_sources(ROOT)
+    if admission.get('qualification_plan_sha256')!=sha256(PLAN_PATH):
+        raise ContractError('Exact reviewed qualification-only operation/byte plan required')
+    if type(admission.get('include_original_diagnostic')) is not bool:
+        raise ContractError('Optional original recovery-only workload must be frozen explicitly')
+    item=admission['corrected_shared_archive'];archive=Path(item['path'])
+    if sha256(archive)!=item['sha256'] or archive.stat().st_size!=item['bytes']:
+        raise ContractError('Corrected shared archive differs')
+    bundle=verify_bundle(archive,item['sha256'],32*1024**2)
+    if bundle['synthetic'] or bundle['application_resume_eligible']:
+        raise ContractError('Corrected shared archive must be actual unstepped inputs only')
+    entries={x['role']:x for x in bundle['files']}
+    paths={role:Path(info['path']) for role,info in manifest['files'].items()}
+    paths['input_manifest']=manifest_path
+    if set(entries)!=set(paths) or any(sha256(p)!=entries[role]['sha256'] for role,p in paths.items()):
+        raise ContractError('Corrected archive does not contain exact bound inputs')
+    if item['bytes']+PLAN['seed_archive_bytes']>12*1024**2:
+        raise ContractError('Corrected shared+futureseed archive allowance exceeded')
+    receipts={'shared':(item,bundle)}
     storage=admission['storage']
-    if (storage['cumulative_uploaded_bytes']<16167158 or storage['cumulative_uploaded_bytes']>160*1024**2
-            or storage['remote_payload_bytes']<sum(r[0]['payload_bytes'] for r in receipts.values())
+    if (storage['cumulative_uploaded_bytes']<22056886 or storage['cumulative_uploaded_bytes']>160*1024**2
             or not storage.get('owner_inventory_reference')):
-        raise ContractError('Complete cumulative/Trash/owner storage admission required')
+        raise ContractError('Complete prior cumulative/owner storage admission required')
     measured=0
     for directory in storage['protected_local_backup_roots']:
         path=Path(directory).resolve()
@@ -190,12 +198,22 @@ def future_admission(path,output,worker,shared,run_id):
         validate_backup_identity(request,receipt,application,request['run_id'])
         if request['kind']!='generation':raise ContractError('Prior generation role differs')
         verify_bundle(request['archive_path'],request['archive_sha256'],64*1024**2)
-        prior.append(dict(manifest_sha256=request['manifest_sha256'],drive_file_id=receipt['drive_file_id'],
+        prior.append(dict(manifest_sha256=request['manifest_sha256'],archive_sha256=request['archive_sha256'],
+            application_verified=True,owned=True,drive_file_id=receipt['drive_file_id'],
             payload_bytes=request['payload_bytes'],archive_path=request['archive_path'],archive_bytes=request['archive_bytes']))
-    if len(prior)>2 or len({x['drive_file_id'] for x in prior})!=len(prior):
+    if len(prior)!=2 or len({x['drive_file_id'] for x in prior})!=len(prior):
         raise ContractError('Exact current/previous remote generation inventory required')
-    if storage['remote_payload_bytes']<sum(x['payload_bytes'] for x in prior)+sum(r[0]['payload_bytes'] for r in receipts.values()):
+    if storage['remote_payload_bytes']<sum(x['payload_bytes'] for x in prior):
         raise ContractError('Remote payload inventory omits retained generations')
+    from getup_drive_slots import qualification_storage_envelope
+    shared_local=sum(p.stat().st_size for p in shared.rglob('*') if p.is_file())
+    archive_metadata=sum(p.stat().st_size for p in archive.parent.rglob('*') if p.is_file())-archive.stat().st_size
+    admission['_qualification_storage']=qualification_storage_envelope(
+        protected_local_bytes=measured+archive_metadata,
+        corrected_shared_payload_bytes=shared_local,corrected_shared_archive_bytes=admission['corrected_shared_archive']['bytes'],
+        seed_payload_bytes=2*1024**2,seed_archive_bytes=PLAN['seed_archive_bytes'],
+        prior_cumulative_before_corrected_inputs=storage['cumulative_uploaded_bytes'],
+        slot_archive_bytes=[x['archive_bytes'] for x in prior],active_working_bytes=0)
     admission['_verified_prior_generations']=prior
     return admission,readiness,manifest,receipts,commit
 
@@ -216,31 +234,35 @@ def run(output,worker,shared,run_id,continuation_path=None,admission_path=None):
     import shutil
     import tempfile
     from experiment_backup import restore_bundle
-    from getup_cold_start_engine import ColdPilot,CoherentRecovery,DrivePhaseTransport,PhasePlan
+    from getup_cold_start_engine import CoherentRecovery,DrivePhaseTransport
+    from getup_qualification import (QualificationPilot,QualificationPlan,QualificationByteGuard,
+        untouched_learner_bytes,request_existing_shared,PLAN)
     if continuation_path is not None:
         raise ContractError('Qualification amendment is consumed/closed; no continuation or new clock')
     admission,readiness,inputs,immutable,commit=future_admission(admission_path,output,worker,shared,run_id)
     # All new runtime loading, operational restoration and qualification are
     # INSIDE this one absolute clock, not relabeled software preparation.
     started=admitted_start(admission,time.time());deadline=started+3600;clock=SystemClock()
-    plan=PhasePlan(started,deadline,started+2100,started+3300)
+    plan=QualificationPlan(started,deadline,started+2100,started+3300)
     output.mkdir(parents=True)
     source={'commit':commit,'dirty':False,'description':'Reviewed source; no exact historical recovery claim'}
-    exchange=DriveExchange(output/'recovery',run_id,source,deadline)
+    exchange=TwoSlotDriveExchange(output/'recovery',run_id,source,deadline,
+        slots=admission['_verified_prior_generations'])
     exchange.remote_uploaded_bytes=admission['storage']['cumulative_uploaded_bytes']
     exchange.verified=admission['_verified_prior_generations']
-    exchange.retired_payload_bytes=admission['storage']['remote_payload_bytes']-sum(
-        r[0]['payload_bytes'] for r in immutable.values())-sum(x['payload_bytes'] for x in exchange.verified)
+    exchange.retired_payload_bytes=admission['storage']['remote_payload_bytes']-sum(x['payload_bytes'] for x in exchange.verified)
     # Closed local evidence stays untouched; remote current/previous retention
-    # still retires the exact old IDs only AFTER replacement restore succeeds.
+    # only overwrites the older owned slot; current stays intact until restore.
     # All prior/Trash bytes remain in cumulative storage; no quota refund.
-    exchange.external_local_bytes=admission['storage']['protected_local_backup_bytes']
+    exchange.external_local_bytes=admission['storage']['protected_local_backup_bytes']+sum(p.stat().st_size for p in shared.rglob('*') if p.is_file())+admission['corrected_shared_archive']['bytes']
     watchdog=interfaces.AbsoluteWatchdog(deadline);wasm=None;pilot=None
     report={'schema':'lh-cold-runtime-admission/v1','runId':run_id,'startedAtUnix':started,
         'deadlineUnix':deadline,'source':source,'admissionSha256':sha256(admission_path),
         'softwareReadinessSha256':admission['software_readiness']['sha256'],
         'actualTrialAuthorized':True,'releaseAccepted':False,'candidateAccepted':False,
-        'historicalRecoveryClaimed':False,'reusedImmutableArchives':True}
+        'historicalRecoveryClaimed':False,'reusedImmutableArchives':False,
+        'mode':'qualification-only','optimizerAuthorized':False,'candidateEvaluationAuthorized':False,
+        'storageEnvelope':admission['_qualification_storage']}
     atomic_json(output/'cold-start-report.json',report)
     print(json.dumps({'event':'START','run_id':run_id,'started':started,'deadline':deadline,
         'protocol_sha256':sha256(PROTOCOL_PATH),'absolutePhaseCutoffs':asdict(plan)}),flush=True)
@@ -272,66 +294,76 @@ def run(output,worker,shared,run_id,continuation_path=None,admission_path=None):
                 pilot.phase_deadline if pilot else plan.work_end)
         return {'runtime_active':True,'ledger':ledger,'receipt':result,'bridge':bridge,'state':state}
     try:
-        # Reuse immutable archives once. Their proven private Drive receipts and
-        # archived transfer hashes remain bound; this is a NEW local operational
-        # load, NOT a claim of a new remote download/upload.
         plan.assert_inputs_ready(clock.now())
-        for kind,(request,receipt,bundle) in immutable.items():
-            plan.assert_inputs_ready(clock.now())
-            with tempfile.TemporaryDirectory(prefix='immutable-restore-',dir=output) as tmp:
-                restored=Path(tmp)/'payload'
-                restored_manifest=restore_bundle(request['archive_path'],restored,
-                    request['archive_sha256'],32*1024**2)
-                files={x['role']:restored/x['path'] for x in restored_manifest['files']}
-                if kind=='shared':
-                    result=run_restore(files['worker_glue'],files['worker_wasm'],
-                        [files['back_unstepped'],files['belly_unstepped']])
-                    if any(x['native']!=0 for x in result['cases']):raise ContractError('Not unstepped inputs')
-                    exchange.shared_sha256=request['manifest_sha256'];exchange.shared_bytes=request['payload_bytes']
-                    exchange.shared_archive=request['archive_path']
-                else:
-                    result=run_restore(worker/'lh_worker.js',worker/'lh_worker_bg.wasm',
-                        [files[case+'_seed'] for case in ('original','heldout','belly')])
-                    exchange.seed_sha256=request['manifest_sha256'];exchange.seed_bytes=request['payload_bytes']
-                report[kind+'OperationalRestore']=result
-                plan.assert_inputs_ready(clock.now())
+        request=request_existing_shared(exchange,admission['corrected_shared_archive'],started+300)
+        def restore_shared(restored,manifest):
+            files={x['role']:restored/x['path'] for x in manifest['files']}
+            result=run_restore(files['worker_glue'],files['worker_wasm'],
+                [files['back_unstepped'],files['belly_unstepped']])
+            if any(x['native']!=0 for x in result['cases']):raise ContractError('Corrected inputs are not unstepped')
+            report['sharedOperationalRestore']=result
+            return result
+        transfer(request,restore_shared)
         proof=output/'operational-inputs.json'
         atomic_json(proof,dict(schema='lh-cold-start-operational-inputs/v1',passed=True,
-            physicsIntegrations=0,privateDriveRoundtrip=True,previousPrivateRoundtripReused=True,
-            newRemoteTransfer=False,manifestSha256=sha256(shared/'input-manifest.json'),
+            physicsIntegrations=0,privateDriveRoundtrip=True,previousPrivateRoundtripReused=False,
+            newRemoteTransfer=True,manifestSha256=sha256(shared/'input-manifest.json'),
             sharedManifestSha256=exchange.shared_sha256))
+        legacy=interfaces.load_legacy();factory=lambda:interfaces.SACLearner(legacy)
+        learner=factory();learner_bytes=untouched_learner_bytes(learner)
+        seed_paths={case:str(output/(case+'-seed.bin')) for case in ('original','heldout','belly')}
         config={'wallSeconds':3600,'nativeIntegrations':300000,'gamma':interfaces.GAMMA,
+            'qualificationOnly':True,'qualificationPlan':PLAN,
+            'qualificationStorage':{'untouchedLearnerBytes':learner_bytes},
             'coldStart':{'schema':PROTOCOL['schema'],'manifest':str(shared/'input-manifest.json'),'operationalProof':str(proof)},
             'inputContract':{'startedAtUnixMs':round(started*1000),'deadlineUnixMs':round(started*1000)+3600000,
                 'files':inputs['files'],'profile':inputs['files']['profile']['path'],
-                'checkpoints':admission['seed_paths']}}
+                'checkpoints':seed_paths}}
         atomic_json(output/'frozen-config.json',config)
         plan.assert_inputs_ready(clock.now())
-        legacy=interfaces.load_legacy();factory=lambda:interfaces.SACLearner(legacy)
-        learner=factory();wasm=interfaces.BoundedWasm(legacy,output,worker,deadline,watchdog);wasm.synthetic=False
+        wasm=interfaces.BoundedWasm(legacy,output,worker,deadline,watchdog);wasm.synthetic=False
         recovery=CoherentRecovery(DrivePhaseTransport(exchange,transfer,clock),controller_factory,synthetic=False)
         identity={'runId':run_id,'sourceCommit':commit,'workerSha256':sha256(worker/'lh_worker_bg.wasm'),
             'protocolSha256':sha256(PROTOCOL_PATH),'sharedManifestSha256':exchange.shared_sha256,
             'seedManifestSha256':exchange.seed_sha256,'admissionSha256':sha256(admission_path)}
-        pilot=ColdPilot(output=output,learner=learner,learner_factory=factory,
+        pilot=QualificationPilot(output=output,learner=learner,learner_factory=factory,
+            byte_guard=QualificationByteGuard(learner_bytes),
             builder_factory=lambda:legacy.SourceTransition(interfaces.GAMMA),bridge=wasm,
             recovery=recovery,clock=clock,plan=plan,identity=identity,synthetic=False)
         plan.assert_inputs_ready(clock.now())
         report['inputsCompletedAtUnix']=clock.now()
-        # Qualification consumes the same ledger/cutoffs, and does not replace
-        # the next-transition/reward/mapping/coherent-replay gates in pilot.run.
-        pilot.admit_sequence(prefix_seconds=60,prefix_integrations=1000)
-        pilot.enter('zero-correction-qualification',60,1000)
-        report['nativeQualification']=pilot.call({'op':'coldQualify'},physical=True,upper_bound=1000)
-        report['phaseResult']=pilot.run()
+        pilot.enter('fixture-preparation',120,3040)
+        report['freshFixtures']=pilot.call({'op':'coldPrepare'},physical=True,upper_bound=8060)
+        if sum(Path(path).stat().st_size for path in seed_paths.values())>2*1024**2:
+            raise ContractError('Measured fresh seed payload exceeds frozen2MiB allowance')
+        pilot.enter('seed-backup',180,0)
+        from getup_cold_start import artifact
+        seed_request=exchange.snapshot([artifact(case+'_seed',path,'getup-native-checkpoint') for case,path in seed_paths.items()],
+            {'corrected_worker_sha256':identity['workerSha256'],
+             'qualification_immutable':True,
+             'metered_preparation_ledger_sha256':sha256(output/'budget-ledger.json'),'resumeAuthorized':False},
+            'metered-corrected-triggered-seeds','seeds',deadline-pilot.phase_deadline)
+        details=json.loads(seed_request.read_text())
+        if details['archive_bytes']>PLAN['seed_archive_bytes'] or details['archive_bytes']+admission['corrected_shared_archive']['bytes']>12*1024**2:
+            raise ContractError('Measured corrected immutable archive allowance exceeded before upload')
+        def restore_seeds(restored,manifest):
+            files={x['role']:restored/x['path'] for x in manifest['files']}
+            return run_restore(worker/'lh_worker.js',worker/'lh_worker_bg.wasm',
+                [files[case+'_seed'] for case in ('original','heldout','belly')],operation_deadline=pilot.phase_deadline)
+        transfer(seed_request,restore_seeds)
+        pilot.identity['seedManifestSha256']=exchange.seed_sha256
+        report['phaseResult']=pilot.run_qualification(include_original=admission['include_original_diagnostic'])
     except BaseException as error:
         report.update(stopped='runtime-admission-safe-stop',error=str(error))
         if pilot is not None:
             pilot.failure_latched=True
-            try:pilot.backup('terminal-stop',retention=True)
+            pilot.report.update(stopped='qualification-safe-stop',error=str(error))
+            try:report['phaseResult']=pilot.finalize()
             except BaseException as stop_error:report['terminalRetentionError']=str(stop_error)
     finally:
         report['elapsedWallSeconds']=time.time()-started
+        report['cumulativeRemoteExposureBytes']=exchange.remote_uploaded_bytes
+        report['pendingImmutableExposure']=getattr(exchange,'pending_immutable',{})
         atomic_json(output/'cold-start-report.json',report)
         if wasm:wasm.close()
         watchdog.close()

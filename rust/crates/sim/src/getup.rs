@@ -6,6 +6,7 @@ pub mod adaptation;
 pub mod controller;
 pub mod fixtures;
 pub mod physical_roll;
+pub mod build_identity;
 #[cfg(feature = "getup-terminal-tail-observer-experiment")]
 pub mod roll_inspection;
 pub mod reference;

@@ -1,0 +1,42 @@
+{
+  "effective_sim_features": [
+    "getup-policy-adaptation-experiment",
+    "getup-repeat-cycle-experiment",
+    "getup-terminal-balance-experiment",
+    "getup-terminal-tail-observer-experiment",
+    "root-translation-carry-experiment",
+    "standing-dynamics-experiment",
+    "unit-root-rotation-experiment"
+  ],
+  "forbidden_sim_features": [
+    "coordination-transfer-worker",
+    "coordination-worker",
+    "experimental-joint-velocity-cache",
+    "experimental-simd8",
+    "experimental-solver-step-observation",
+    "getup-physical-roll-experiment",
+    "getup-terminal-base-ready-experiment",
+    "getup-terminal-bumpless-experiment",
+    "numeric-parity-worker",
+    "stationary-balance-experiment"
+  ],
+  "historical_baseline_wasm_sha256": "53395c6d8b968774e07ee38eeb1931047acefb0df3cd090a59bc1943b9867e28",
+  "historical_binary_equivalence_claimed": false,
+  "model_sha256": {
+    "student.bin": "c489faed55bdab1669c51dab71a102db91ff2a55143789f682e45cd8169d6dbb",
+    "teacher.bin": "f8d8d6ea787366a67aa46352cf5243ed2962dd277b5ca6b6f98a85fc3a67ab4f"
+  },
+  "physics_authorized": false,
+  "profile_sha256": "aaa415a19767c218a26b05bad277193cccba2a726b52dcd5aac0a5444afc39d6",
+  "root_features": [
+    "lh-worker/root-translation-carry-experiment",
+    "lh-sim/getup-terminal-balance-experiment",
+    "lh-sim/standing-dynamics-experiment",
+    "lh-sim/unit-root-rotation-experiment",
+    "lh-sim/getup-repeat-cycle-experiment",
+    "lh-worker/getup-terminal-tail-observer-experiment",
+    "lh-worker/getup-policy-adaptation-experiment"
+  ],
+  "schema": "lh-cold-worker-contract/v1",
+  "wrong_variant_wasm_sha256": "ff3da0d06c22d444972ecb7cde04b66304b6b65ae88f07ca73d876b1f3a1bdc1"
+}

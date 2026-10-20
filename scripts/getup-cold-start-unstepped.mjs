@@ -1,3 +1,4 @@
+import {checkColdWorkerCapabilities} from './getup-cold-worker-contract.mjs';
 // Read/write real WorkerRuntime checkpoints, with strictly ZERO physical steps.
 import assert from 'node:assert/strict';
 import {readFileSync,writeFileSync,mkdirSync} from 'node:fs';
@@ -10,8 +11,9 @@ const worker=resolve(workerArg),output=resolve(outputArg),profile=JSON.parse(rea
 mkdirSync(output,{recursive:true});
 const m=await import(pathToFileURL(join(worker,'lh_worker.js')));
 m.initSync({module:readFileSync(join(worker,'lh_worker_bg.wasm'))});
+const capabilities=checkColdWorkerCapabilities(JSON.parse(m.getup_build_capabilities()));
 const hash=x=>createHash('sha256').update(x).digest('hex');
-const receipt={schema:'lh-cold-start-unstepped-runtime/v1',physicsIntegrations:0,passed:false,cases:{}};
+const receipt={schema:'lh-cold-start-unstepped-runtime/v1',physicsIntegrations:0,passed:false,compiledCapabilities:capabilities,cases:{}};
 for(const name of ['back','belly']){
  const runtime=m.WorkerRuntime.getup_fixture_with_profile(name,JSON.stringify(profile));
  runtime.set_root_translation_compensation_enabled(true);

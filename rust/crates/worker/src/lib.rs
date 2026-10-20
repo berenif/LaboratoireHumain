@@ -36,6 +36,11 @@ mod browser {
     pub fn wire_schema() -> u16 {
         SCHEMA_VERSION
     }
+    /// Compile-time feature receipt. No Runtime/Simulation is constructed.
+    #[wasm_bindgen]
+    pub fn getup_build_capabilities() -> String {
+        lh_sim::getup::build_identity::capabilities().to_string()
+    }
     /// Fixed-observation validation boundary; no Simulation is constructed.
     #[wasm_bindgen]
     pub fn getup_actor(actor: &str, observation: &str) -> Result<String, JsValue> {

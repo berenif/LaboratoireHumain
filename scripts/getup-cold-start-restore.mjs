@@ -1,4 +1,8 @@
+import {checkColdWorkerCapabilities} from './getup-cold-worker-contract.mjs';
 // Fresh-process operational loading only: no advance/step call is permitted.
+// Deserialization is NOT a variant-compatibility proof. Production callers must
+// first verify the archive's source/worker identity and checkpoint hashes; this
+// low-level helper only checks the already-bound runtime's logical roundtrip.
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import {pathToFileURL} from 'node:url';
@@ -10,6 +14,7 @@ assert(glue&&wasm&&checkpoints.length);
 if(expected){assert.equal(checkpoints.length,1);assert(expected.bridge&&expected.state);}
 const module=await import(pathToFileURL(glue));
 module.initSync({module:readFileSync(wasm)});
+checkColdWorkerCapabilities(JSON.parse(module.getup_build_capabilities()));
 const cases=[];
 for(const path of checkpoints){
  const bytes=readFileSync(path),runtime=module.WorkerRuntime.from_getup_checkpoint(bytes);
