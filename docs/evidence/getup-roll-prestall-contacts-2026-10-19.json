@@ -1,0 +1,911 @@
+{
+  "schema": "getup-roll-prestall-contact-inspection-v1",
+  "date": "2026-10-19",
+  "status": "read-only-geometry-extracted-no-solve-no-new-physical-candidate",
+  "nativeSubsteps": 1940,
+  "originalImpactNative": 480,
+  "originalRollDeadlineNative": 4480,
+  "elapsedRollSeconds": 1.825,
+  "remainingOriginalRollSeconds": 3.175,
+  "physicsIntegrations": 0,
+  "runtimeCheckpointBytesUnchanged": true,
+  "realWorldBytesUnchanged": true,
+  "checkpoint": {
+    "path": "outputs/browser-capability-20261019/recovery-fixture/physical-roll/prestall-context/replay-native1940-archive-boundary/checkpoint-native1940.bin",
+    "sha256": "3bd941cbaa823fc998424d8334c027314425248b453fb56a8f684f17893bb9f9",
+    "bytes": 635931
+  },
+  "inspection": {
+    "path": "outputs/getup-roll-trajectory-20261019/native1940-inspection-allcontacts.json",
+    "sha256": "e38f242a58b47a394877e0108239002c01544d653c6d45603bb09d75c574f552"
+  },
+  "checkpointParityReceipt": "docs/evidence/physical-roll-prestall-checkpoint-2026-10-19.json",
+  "loadedFloorBodies": [
+    {
+      "body": "pelvis",
+      "bodyIndex": 4,
+      "contacts": [
+        {
+          "cachedSolverDistanceM": -6.964086060179397e-05,
+          "currentPointVelocityMps": {
+            "x": 5.403351224231301e-06,
+            "y": 2.0720126485684887e-05,
+            "z": -7.034956070128828e-06
+          },
+          "currentSolverPointVelocityMps": {
+            "x": 5.406478976510698e-06,
+            "y": 2.0713810954475775e-05,
+            "z": -7.059832569211721e-06
+          },
+          "floorPoint": {
+            "x": -0.06991502642631531,
+            "y": 1.7881393432617188e-07,
+            "z": 0.43183428049087524
+          },
+          "manifoldIndex": 0,
+          "normal": {
+            "x": 8.617431376478635e-06,
+            "y": 1.0,
+            "z": 1.3257587170301122e-06
+          },
+          "normalImpulseNs": 0.12238854914903641,
+          "point": {
+            "x": -0.06994972378015518,
+            "y": -6.94170594215393e-05,
+            "z": 0.43184733390808105
+          },
+          "signedGapM": -6.959615711821243e-05,
+          "solverComputesImpulses": true,
+          "solverIndex": 0,
+          "solverLeverFromCom": {
+            "x": -0.06998614966869354,
+            "y": -0.08996595442295074,
+            "z": 0.001659393310546875
+          },
+          "sourcePointIndex": 0,
+          "tangentImpulseWorldNs": {
+            "x": -0.056534234434366226,
+            "y": 5.902977022742562e-07,
+            "z": -0.07864218205213547
+          }
+        },
+        {
+          "cachedSolverDistanceM": -6.964086787775159e-05,
+          "currentPointVelocityMps": {
+            "x": 5.403349859989248e-06,
+            "y": 2.0720150132547133e-05,
+            "z": -7.0349633460864425e-06
+          },
+          "currentSolverPointVelocityMps": {
+            "x": 5.406482159742154e-06,
+            "y": 2.071375638479367e-05,
+            "z": -7.059825293254107e-06
+          },
+          "floorPoint": {
+            "x": -0.06991472840309143,
+            "y": 1.862645149230957e-07,
+            "z": 0.43183407187461853
+          },
+          "manifoldIndex": 0,
+          "normal": {
+            "x": 8.617431376478635e-06,
+            "y": 1.0,
+            "z": 1.3257587170301122e-06
+          },
+          "normalImpulseNs": 0.12146154791116714,
+          "point": {
+            "x": -0.06994973123073578,
+            "y": -6.940960884094238e-05,
+            "z": 0.43184736371040344
+          },
+          "signedGapM": -6.959615711821243e-05,
+          "solverComputesImpulses": true,
+          "solverIndex": 1,
+          "solverLeverFromCom": {
+            "x": -0.0699860006570816,
+            "y": -0.08996595442295074,
+            "z": 0.0016593337059020996
+          },
+          "sourcePointIndex": 2,
+          "tangentImpulseWorldNs": {
+            "x": 0.06534366309642792,
+            "y": -5.776158218395722e-07,
+            "z": 0.011074588634073734
+          }
+        },
+        {
+          "cachedSolverDistanceM": -6.476827547885478e-05,
+          "currentPointVelocityMps": {
+            "x": 5.5157861424959265e-06,
+            "y": 7.785562047502026e-06,
+            "z": -7.125345291569829e-08
+          },
+          "currentSolverPointVelocityMps": {
+            "x": 5.5170876294141635e-06,
+            "y": 7.80342634243425e-06,
+            "z": -9.428185876458883e-08
+          },
+          "floorPoint": {
+            "x": 0.07006789743900299,
+            "y": 1.7881393432617188e-07,
+            "z": 0.42964860796928406
+          },
+          "manifoldIndex": 0,
+          "normal": {
+            "x": 8.617431376478635e-06,
+            "y": 1.0,
+            "z": 1.3257587170301122e-06
+          },
+          "normalImpulseNs": 0.14487741887569427,
+          "point": {
+            "x": 0.07003200054168701,
+            "y": -6.45369291305542e-05,
+            "z": 0.42959627509117126
+          },
+          "signedGapM": -6.471612869063392e-05,
+          "solverComputesImpulses": true,
+          "solverIndex": 2,
+          "solverLeverFromCom": {
+            "x": 0.06999623030424118,
+            "y": -0.08996352553367615,
+            "z": -0.0005589425563812256
+          },
+          "sourcePointIndex": 1,
+          "tangentImpulseWorldNs": {
+            "x": 0.0004941469524055719,
+            "y": -8.426928843618953e-08,
+            "z": 0.061019908636808395
+          }
+        }
+      ],
+      "enabledCollider": true,
+      "floorFriction": 1.0,
+      "integratedLoadN": 310.9820251464844,
+      "massKg": 6.616194248199463,
+      "supportNativeSamples": 1847
+    },
+    {
+      "body": "right_foot",
+      "bodyIndex": 10,
+      "contacts": [
+        {
+          "cachedSolverDistanceM": 0.0009350553154945374,
+          "currentPointVelocityMps": {
+            "x": -5.639645678456873e-06,
+            "y": 4.7343201003968716e-06,
+            "z": 3.4961034543812275e-05
+          },
+          "currentSolverPointVelocityMps": {
+            "x": -5.438356311060488e-06,
+            "y": 6.122259947005659e-06,
+            "z": 3.633258165791631e-05
+          },
+          "floorPoint": {
+            "x": -0.13032448291778564,
+            "y": 5.140900611877441e-07,
+            "z": 1.2198495864868164
+          },
+          "manifoldIndex": 0,
+          "normal": {
+            "x": 0.0,
+            "y": 1.0,
+            "z": 0.0
+          },
+          "normalImpulseNs": 0.0,
+          "point": {
+            "x": -0.13036561012268066,
+            "y": 0.0009358525276184082,
+            "z": 1.2189083099365234
+          },
+          "signedGapM": 0.0009353384375572205,
+          "solverComputesImpulses": true,
+          "solverIndex": 0,
+          "solverLeverFromCom": {
+            "x": -0.014612525701522827,
+            "y": -0.12931324541568756,
+            "z": -0.022910356521606445
+          },
+          "sourcePointIndex": 0,
+          "tangentImpulseWorldNs": {
+            "x": -0.0,
+            "y": -0.0,
+            "z": -0.0
+          }
+        },
+        {
+          "cachedSolverDistanceM": -7.850772090023383e-05,
+          "currentPointVelocityMps": {
+            "x": -5.5701384553685784e-06,
+            "y": -4.408866516314447e-07,
+            "z": 2.268003299832344e-05
+          },
+          "currentSolverPointVelocityMps": {
+            "x": -5.317328032106161e-06,
+            "y": 4.822068149223924e-07,
+            "z": 2.2552645532414317e-05
+          },
+          "floorPoint": {
+            "x": -0.11036621034145355,
+            "y": 5.001420504413545e-07,
+            "z": 1.2200748920440674
+          },
+          "manifoldIndex": 0,
+          "normal": {
+            "x": 0.0,
+            "y": 1.0,
+            "z": 0.0
+          },
+          "normalImpulseNs": 0.03169852867722511,
+          "point": {
+            "x": -0.11039607226848602,
+            "y": -7.77319073677063e-05,
+            "z": 1.219448447227478
+          },
+          "signedGapM": -7.823204941814765e-05,
+          "solverComputesImpulses": true,
+          "solverIndex": 1,
+          "solverLeverFromCom": {
+            "x": 0.00535140186548233,
+            "y": -0.1298200488090515,
+            "z": -0.022527575492858887
+          },
+          "sourcePointIndex": 2,
+          "tangentImpulseWorldNs": {
+            "x": 0.0035553735215216875,
+            "y": -0.0,
+            "z": 0.018995219841599464
+          }
+        }
+      ],
+      "enabledCollider": true,
+      "floorFriction": 1.0,
+      "integratedLoadN": 25.358823776245117,
+      "massKg": 1.131141185760498,
+      "supportNativeSamples": 1811
+    },
+    {
+      "body": "right_upper_arm",
+      "bodyIndex": 18,
+      "contacts": [
+        {
+          "cachedSolverDistanceM": -3.976369043812156e-05,
+          "currentPointVelocityMps": {
+            "x": -1.596714719198644e-05,
+            "y": 5.6600430980324745e-05,
+            "z": -1.4890742022544146e-05
+          },
+          "currentSolverPointVelocityMps": {
+            "x": -1.5918398275971413e-05,
+            "y": 5.662738112732768e-05,
+            "z": -1.494656316936016e-05
+          },
+          "floorPoint": {
+            "x": -0.16241292655467987,
+            "y": 1.862645149230957e-08,
+            "z": -0.0577702596783638
+          },
+          "manifoldIndex": 0,
+          "normal": {
+            "x": 7.830815775378142e-06,
+            "y": 1.0,
+            "z": -1.8644799411049462e-06
+          },
+          "normalImpulseNs": 0.03798150271177292,
+          "point": {
+            "x": -0.16241036355495453,
+            "y": -3.970041871070862e-05,
+            "z": -0.05778902769088745
+          },
+          "signedGapM": -3.9718986954540014e-05,
+          "solverComputesImpulses": true,
+          "solverIndex": 0,
+          "solverLeverFromCom": {
+            "x": 0.054888635873794556,
+            "y": -0.06379415094852448,
+            "z": -0.12504848837852478
+          },
+          "sourcePointIndex": 2,
+          "tangentImpulseWorldNs": {
+            "x": -0.012090676464140415,
+            "y": 1.0031465080828639e-07,
+            "z": 0.002954348223283887
+          }
+        },
+        {
+          "cachedSolverDistanceM": -3.975624713348225e-05,
+          "currentPointVelocityMps": {
+            "x": -1.5967234503477812e-05,
+            "y": 5.6600430980324745e-05,
+            "z": -1.4890712918713689e-05
+          },
+          "currentSolverPointVelocityMps": {
+            "x": -1.5917670680209994e-05,
+            "y": 5.66261587664485e-05,
+            "z": -1.4945806469768286e-05
+          },
+          "floorPoint": {
+            "x": -0.16241252422332764,
+            "y": 3.725290298461914e-09,
+            "z": -0.05777067691087723
+          },
+          "manifoldIndex": 0,
+          "normal": {
+            "x": 7.830815775378142e-06,
+            "y": 1.0,
+            "z": -1.8644799411049462e-06
+          },
+          "normalImpulseNs": 0.04241326078772545,
+          "point": {
+            "x": -0.16241036355495453,
+            "y": -3.971904516220093e-05,
+            "z": -0.057789020240306854
+          },
+          "signedGapM": -3.972271952079609e-05,
+          "solverComputesImpulses": true,
+          "solverIndex": 1,
+          "solverLeverFromCom": {
+            "x": 0.054888829588890076,
+            "y": -0.06379416584968567,
+            "z": -0.1250486969947815
+          },
+          "sourcePointIndex": 0,
+          "tangentImpulseWorldNs": {
+            "x": -0.0005938351387158036,
+            "y": -2.432051537937241e-08,
+            "z": -0.015189494006335735
+          }
+        }
+      ],
+      "enabledCollider": true,
+      "floorFriction": 1.0,
+      "integratedLoadN": 64.31581115722656,
+      "massKg": 1.6610803604125977,
+      "supportNativeSamples": 1046
+    }
+  ],
+  "selectedSelfContactPairs": [
+    {
+      "a": "right_hand",
+      "actualSelectedSolverContacts": [
+        {
+          "cachedSolverDistanceM": -0.00017641112208366394,
+          "normalAtoB": {
+            "x": 0.7099059820175171,
+            "y": 0.6958657503128052,
+            "z": -0.10864575207233429
+          },
+          "normalImpulseNs": 0.00974504929035902,
+          "pointA": {
+            "x": -0.26087602972984314,
+            "y": 0.3511277437210083,
+            "z": 0.008450854569673538
+          },
+          "pointB": {
+            "x": -0.2610014081001282,
+            "y": 0.3510051667690277,
+            "z": 0.008470326662063599
+          },
+          "signedGapM": -0.0001764195185387507,
+          "solverComputesImpulses": true
+        }
+      ],
+      "b": "left_lower_arm",
+      "friction": 0.0,
+      "geometricQueryNotSolverContact": true,
+      "query": {
+        "normalAtoB": {
+          "x": 0.7099085450172424,
+          "y": 0.6958632469177246,
+          "z": -0.10864149034023285
+        },
+        "pointA": {
+          "x": -0.2608761191368103,
+          "y": 0.35112786293029785,
+          "z": 0.008451070636510849
+        },
+        "pointB": {
+          "x": -0.2610012888908386,
+          "y": 0.35100501775741577,
+          "z": 0.008470356464385986
+        },
+        "signedGapM": -0.00017648935317993164
+      }
+    }
+  ],
+  "detachedMatrixAndJacobianParity": {
+    "physicsIntegrations": 0,
+    "bodies": 25,
+    "massiveBodies": 16,
+    "configurationSize": 28,
+    "velocitySize": 27,
+    "rootDamping": [
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "rootArmature": [
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "nativeInspectionParity": {
+      "physicsIntegrations": 0,
+      "nativeSubsteps": 1940,
+      "nativeReportedPhysicsIntegrations": 0,
+      "nativeReportedBytesUnchanged": true,
+      "inverseMass": {
+        "maxAbsoluteError": 5.520331359321062e-05,
+        "maxErrorRelativeToReferenceMax": 7.191060816636323e-07,
+        "relativeFrobeniusError": 1.4370771106887682e-06,
+        "maxElementwiseRelativeErrorAboveThreshold": 0.003056112295297878,
+        "elementwiseRelativeReferenceThreshold": 0.001,
+        "maxAbsoluteErrorIndex": [
+          14,
+          14
+        ]
+      },
+      "mass": {
+        "maxAbsoluteError": 4.6076901146108185e-05,
+        "maxErrorRelativeToReferenceMax": 1.1281174798468576e-06,
+        "relativeFrobeniusError": 1.2406841763964468e-06,
+        "maxElementwiseRelativeErrorAboveThreshold": 0.0015559573734188331,
+        "elementwiseRelativeReferenceThreshold": 0.001,
+        "maxAbsoluteErrorIndex": [
+          1,
+          3
+        ]
+      },
+      "allBodyComSpatialJacobians": {
+        "maxAbsoluteError": 1.8182370398189818e-06,
+        "maxErrorRelativeToReferenceMax": 1.4741427853855509e-06,
+        "relativeFrobeniusError": 5.053220941782886e-07,
+        "maxElementwiseRelativeErrorAboveThreshold": 0.00015791660141537635,
+        "elementwiseRelativeReferenceThreshold": 0.001,
+        "maxAbsoluteErrorIndex": [
+          87,
+          18
+        ]
+      },
+      "allBodyCurrentTwists": {
+        "maxAbsoluteError": 1.4882112790368107e-09,
+        "maxErrorRelativeToReferenceMax": 2.039931961936392e-07,
+        "relativeFrobeniusError": 1.8641776412121138e-07,
+        "maxElementwiseRelativeErrorAboveThreshold": 1.0971067379606207e-06,
+        "elementwiseRelativeReferenceThreshold": 0.001,
+        "maxAbsoluteErrorIndex": [
+          1,
+          16
+        ]
+      },
+      "posePositionMaxErrorM": 5.156996356614485e-07,
+      "poseRotationMatrixMaxError": 2.4979432397542745e-07,
+      "bodyComPositionMaxErrorM": 5.156996356614485e-07,
+      "comMaxErrorM": 7.083564446119794e-08,
+      "comVelocityMaxErrorMps": 1.7098131927730951e-10,
+      "generalizedVelocityMaxError": 0.0,
+      "armatureMaxError": 2.2351741811588166e-10,
+      "dampingMaxError": 2.980232227667301e-09,
+      "inverseMassErrorWithoutHingeArmature": 265.4392933178573,
+      "nativeInverseMassSymmetryMaxError": 8.64267349243164e-06,
+      "sourceVsNativeLimitMaxErrorRad": 8.123658146175217e-08,
+      "limits": [
+        {
+          "qpos": 0,
+          "joint": "abdomen_z",
+          "measuredRad": 0.7045495510101318,
+          "sourceLimitsRad": [
+            -0.7853981633974483,
+            0.7853981633974483
+          ],
+          "nativeFloat32LimitsRad": [
+            -0.7853981852531433,
+            0.7853981852531433
+          ],
+          "measuredMinusNativeLowerRad": 1.4899477362632751,
+          "nativeUpperMinusMeasuredRad": 0.08084863424301147
+        },
+        {
+          "qpos": 1,
+          "joint": "abdomen_y",
+          "measuredRad": -0.16085417568683624,
+          "sourceLimitsRad": [
+            -1.3089969389957472,
+            0.5235987755982988
+          ],
+          "nativeFloat32LimitsRad": [
+            -1.3089969158172607,
+            0.5235987901687622
+          ],
+          "measuredMinusNativeLowerRad": 1.1481427401304245,
+          "nativeUpperMinusMeasuredRad": 0.6844529658555984
+        },
+        {
+          "qpos": 2,
+          "joint": "abdomen_x",
+          "measuredRad": -0.04511155188083649,
+          "sourceLimitsRad": [
+            -0.6108652381980153,
+            0.6108652381980153
+          ],
+          "nativeFloat32LimitsRad": [
+            -0.6108652353286743,
+            0.6108652353286743
+          ],
+          "measuredMinusNativeLowerRad": 0.5657536834478378,
+          "nativeUpperMinusMeasuredRad": 0.6559767872095108
+        },
+        {
+          "qpos": 3,
+          "joint": "right_hip_x",
+          "measuredRad": -0.03722719848155975,
+          "sourceLimitsRad": [
+            -0.4363323129985824,
+            0.08726646259971647
+          ],
+          "nativeFloat32LimitsRad": [
+            -0.4363323152065277,
+            0.0872664600610733
+          ],
+          "measuredMinusNativeLowerRad": 0.39910511672496796,
+          "nativeUpperMinusMeasuredRad": 0.12449365854263306
+        },
+        {
+          "qpos": 4,
+          "joint": "right_hip_z",
+          "measuredRad": 0.05200841650366783,
+          "sourceLimitsRad": [
+            -0.5235987755982988,
+            0.4363323129985824
+          ],
+          "nativeFloat32LimitsRad": [
+            -0.5235987901687622,
+            0.4363323152065277
+          ],
+          "measuredMinusNativeLowerRad": 0.57560720667243,
+          "nativeUpperMinusMeasuredRad": 0.3843238987028599
+        },
+        {
+          "qpos": 5,
+          "joint": "right_hip_y",
+          "measuredRad": -0.23542478680610657,
+          "sourceLimitsRad": [
+            -1.9198621771937625,
+            0.3490658503988659
+          ],
+          "nativeFloat32LimitsRad": [
+            -1.919862151145935,
+            0.3490658402442932
+          ],
+          "measuredMinusNativeLowerRad": 1.6844373643398285,
+          "nativeUpperMinusMeasuredRad": 0.5844906270503998
+        },
+        {
+          "qpos": 6,
+          "joint": "right_knee",
+          "measuredRad": -0.5586379766464233,
+          "sourceLimitsRad": [
+            -2.792526803190927,
+            0.03490658503988659
+          ],
+          "nativeFloat32LimitsRad": [
+            -2.7925267219543457,
+            0.03490658476948738
+          ],
+          "measuredMinusNativeLowerRad": 2.2338887453079224,
+          "nativeUpperMinusMeasuredRad": 0.5935445614159107
+        },
+        {
+          "qpos": 7,
+          "joint": "right_ankle_y",
+          "measuredRad": -0.07818040996789932,
+          "sourceLimitsRad": [
+            -0.3490658503988659,
+            0.7853981633974483
+          ],
+          "nativeFloat32LimitsRad": [
+            -0.3490658402442932,
+            0.7853981852531433
+          ],
+          "measuredMinusNativeLowerRad": 0.2708854302763939,
+          "nativeUpperMinusMeasuredRad": 0.8635785952210426
+        },
+        {
+          "qpos": 8,
+          "joint": "right_ankle_x",
+          "measuredRad": -0.0013200159883126616,
+          "sourceLimitsRad": [
+            -0.8726646259971648,
+            0.8726646259971648
+          ],
+          "nativeFloat32LimitsRad": [
+            -0.8726646304130554,
+            0.8726646304130554
+          ],
+          "measuredMinusNativeLowerRad": 0.8713446144247428,
+          "nativeUpperMinusMeasuredRad": 0.8739846464013681
+        },
+        {
+          "qpos": 9,
+          "joint": "left_hip_x",
+          "measuredRad": 0.06296778470277786,
+          "sourceLimitsRad": [
+            -0.4363323129985824,
+            0.08726646259971647
+          ],
+          "nativeFloat32LimitsRad": [
+            -0.4363323152065277,
+            0.0872664600610733
+          ],
+          "measuredMinusNativeLowerRad": 0.4993000999093056,
+          "nativeUpperMinusMeasuredRad": 0.02429867535829544
+        },
+        {
+          "qpos": 10,
+          "joint": "left_hip_z",
+          "measuredRad": 0.36234039068222046,
+          "sourceLimitsRad": [
+            -0.5235987755982988,
+            0.4363323129985824
+          ],
+          "nativeFloat32LimitsRad": [
+            -0.5235987901687622,
+            0.4363323152065277
+          ],
+          "measuredMinusNativeLowerRad": 0.8859391808509827,
+          "nativeUpperMinusMeasuredRad": 0.07399192452430725
+        },
+        {
+          "qpos": 11,
+          "joint": "left_hip_y",
+          "measuredRad": -1.1503605842590332,
+          "sourceLimitsRad": [
+            -1.9198621771937625,
+            0.3490658503988659
+          ],
+          "nativeFloat32LimitsRad": [
+            -1.919862151145935,
+            0.3490658402442932
+          ],
+          "measuredMinusNativeLowerRad": 0.7695015668869019,
+          "nativeUpperMinusMeasuredRad": 1.4994264245033264
+        },
+        {
+          "qpos": 12,
+          "joint": "left_knee",
+          "measuredRad": -1.8226858377456665,
+          "sourceLimitsRad": [
+            -2.792526803190927,
+            0.03490658503988659
+          ],
+          "nativeFloat32LimitsRad": [
+            -2.7925267219543457,
+            0.03490658476948738
+          ],
+          "measuredMinusNativeLowerRad": 0.9698408842086792,
+          "nativeUpperMinusMeasuredRad": 1.8575924225151539
+        },
+        {
+          "qpos": 13,
+          "joint": "left_ankle_y",
+          "measuredRad": 0.02924283593893051,
+          "sourceLimitsRad": [
+            -0.3490658503988659,
+            0.7853981633974483
+          ],
+          "nativeFloat32LimitsRad": [
+            -0.3490658402442932,
+            0.7853981852531433
+          ],
+          "measuredMinusNativeLowerRad": 0.3783086761832237,
+          "nativeUpperMinusMeasuredRad": 0.7561553493142128
+        },
+        {
+          "qpos": 14,
+          "joint": "left_ankle_x",
+          "measuredRad": -0.00825582630932331,
+          "sourceLimitsRad": [
+            -0.8726646259971648,
+            0.8726646259971648
+          ],
+          "nativeFloat32LimitsRad": [
+            -0.8726646304130554,
+            0.8726646304130554
+          ],
+          "measuredMinusNativeLowerRad": 0.8644088041037321,
+          "nativeUpperMinusMeasuredRad": 0.8809204567223787
+        },
+        {
+          "qpos": 15,
+          "joint": "right_shoulder1",
+          "measuredRad": 0.5076596736907959,
+          "sourceLimitsRad": [
+            -1.4835298641951802,
+            1.0471975511965976
+          ],
+          "nativeFloat32LimitsRad": [
+            -1.483529806137085,
+            1.0471975803375244
+          ],
+          "measuredMinusNativeLowerRad": 1.9911894798278809,
+          "nativeUpperMinusMeasuredRad": 0.5395379066467285
+        },
+        {
+          "qpos": 16,
+          "joint": "right_shoulder2",
+          "measuredRad": 0.015402369201183319,
+          "sourceLimitsRad": [
+            -1.4835298641951802,
+            1.0471975511965976
+          ],
+          "nativeFloat32LimitsRad": [
+            -1.483529806137085,
+            1.0471975803375244
+          ],
+          "measuredMinusNativeLowerRad": 1.4989321753382683,
+          "nativeUpperMinusMeasuredRad": 1.031795211136341
+        },
+        {
+          "qpos": 17,
+          "joint": "right_elbow",
+          "measuredRad": 0.1593743860721588,
+          "sourceLimitsRad": [
+            -1.5707963267948966,
+            0.8726646259971648
+          ],
+          "nativeFloat32LimitsRad": [
+            -1.5707963705062866,
+            0.8726646304130554
+          ],
+          "measuredMinusNativeLowerRad": 1.7301707565784454,
+          "nativeUpperMinusMeasuredRad": 0.7132902443408966
+        },
+        {
+          "qpos": 18,
+          "joint": "left_shoulder1",
+          "measuredRad": -1.0471998453140259,
+          "sourceLimitsRad": [
+            -1.0471975511965976,
+            1.4835298641951802
+          ],
+          "nativeFloat32LimitsRad": [
+            -1.0471975803375244,
+            1.483529806137085
+          ],
+          "measuredMinusNativeLowerRad": -2.2649765014648438e-06,
+          "nativeUpperMinusMeasuredRad": 2.530729651451111
+        },
+        {
+          "qpos": 19,
+          "joint": "left_shoulder2",
+          "measuredRad": -0.4231742322444916,
+          "sourceLimitsRad": [
+            -1.0471975511965976,
+            1.4835298641951802
+          ],
+          "nativeFloat32LimitsRad": [
+            -1.0471975803375244,
+            1.483529806137085
+          ],
+          "measuredMinusNativeLowerRad": 0.6240233480930328,
+          "nativeUpperMinusMeasuredRad": 1.9067040383815765
+        },
+        {
+          "qpos": 20,
+          "joint": "left_elbow",
+          "measuredRad": -0.1869991570711136,
+          "sourceLimitsRad": [
+            -1.5707963267948966,
+            0.8726646259971648
+          ],
+          "nativeFloat32LimitsRad": [
+            -1.5707963705062866,
+            0.8726646304130554
+          ],
+          "measuredMinusNativeLowerRad": 1.383797213435173,
+          "nativeUpperMinusMeasuredRad": 1.059663787484169
+        }
+      ],
+      "biasCertificate": false,
+      "interpretation": "Physical M and instantaneous COM J comparison only; no native force-bias certificate or trajectory feasibility claim"
+    }
+  },
+  "interpretation": {
+    "floorPoints": "Actual selected Rapier solver anchors with normals, signed current paired gaps, cached distances, impulses and current material motion. Zero-impulse selected rows retained. These are observations, never prescribed future fixed material anchors.",
+    "selfPoints": "The existing selected frictionless right-hand/left-forearm reaction is included. Exact shape-query geometry is separately labeled, not relabeled a solved contact.",
+    "state": "The exact retained native1940 configuration and raw checkpoint27 generalized velocities are preserved. Tiny host observer arithmetic differences in COM reductions do not modify world bytes.",
+    "modelQualification": "Mass/Jacobian parity only. No native bias/discrete PGS/contact-transition or future trajectory certificate.",
+    "contactSupport": "Pelvis carries310.982N, proximal right upper arm64.316N, rear right foot25.359N. The first authored attempt rotated mostly torso above supine pelvis, so the proposed finite plan must explicitly rotate both pelvis and torso."
+  },
+  "paritySource": {
+    "path": "outputs/getup-roll-trajectory-20261019/symbolic-native1940-parity-rawvelocity.json",
+    "sha256": "fd1caf0c1090230eaecd3101c6e945d026f50c1a0d0d029d6a62020335bd80be"
+  },
+  "preSolveArtifactReceipts": [
+    {
+      "path": "rust/crates/sim/src/getup/roll_inspection.rs",
+      "sha256": "22c77e7910f92b351dddb0128d6bc98415811a4f836c3a537fec8ed1d26d37aa",
+      "bytes": 9342
+    },
+    {
+      "path": "rust/crates/sim/examples/getup_roll_inspect.rs",
+      "sha256": "d2a48bd7e4b695e30ee82db4f0973a89a3c06583290d57bb41b611a2f0a453d4",
+      "bytes": 1072
+    },
+    {
+      "path": "scripts/getup-roll-dynamics.py",
+      "sha256": "604e79b7785d5e16a10de285f8c087f001ee043372cd7bee9320ed7b407fca2e",
+      "bytes": 23290
+    },
+    {
+      "path": "scripts/getup-roll-dynamics-test.py",
+      "sha256": "ebca7ff31ac674c3b8ffcf98175638d84153fc79115a69770094391918ea2b30",
+      "bytes": 13878
+    },
+    {
+      "path": "scripts/plan-getup-roll-trajectory.py",
+      "sha256": "9e4bdf31af3e951b1d7727cef8304664da9b7715f6aa7410c6eef25031a4d5e3",
+      "bytes": 60053
+    },
+    {
+      "path": "scripts/plan-getup-roll-trajectory-test.py",
+      "sha256": "441ff96896d43f6c0985eedef2438058b730f525547388d5b47cb3606090db53",
+      "bytes": 13118
+    },
+    {
+      "path": "docs/evidence/getup-roll-trajectory-predeclared-2026-10-19.json",
+      "sha256": "794e61159482d273da1d1dfb4707ebe22a5f9f012e6d0fbb74066e9168c92f7a",
+      "bytes": 9866
+    },
+    {
+      "path": "outputs/getup-roll-trajectory-20261019/build-only/build-report.json",
+      "sha256": "fc405b0de5e278ff04a7aba236c728356851010f7b901d9003f2680be4020831",
+      "bytes": 45259
+    },
+    {
+      "path": "outputs/getup-roll-trajectory-20261019/build-only/planner-tests.log",
+      "sha256": "de4897d554f8b90702aeb96ff081e59c1a955292e4ae4f3f05f872885c32b211",
+      "bytes": 1542
+    },
+    {
+      "path": "outputs/getup-roll-trajectory-20261019/build-only/jacobian-audit.json",
+      "sha256": "04d7e6dd5e76297854c65f4ba574f3d2410fc3c288c353177d84bebafafe51f4",
+      "bytes": 104
+    },
+    {
+      "path": "outputs/getup-roll-trajectory-20261019/build-only/dense-initial-guess-audit.json",
+      "sha256": "89b489adb17876ab2c1cb5138d7c4450f4dd85d9e898255d4bb00907730bfe41",
+      "bytes": 7347
+    },
+    {
+      "path": "outputs/getup-roll-trajectory-20261019/build-only/test-history.json",
+      "sha256": "f813fa5af21ea4cdb0d955578f7ac8d53e562e7c2e6b7d21aa64277643bf5c88",
+      "bytes": 742
+    },
+    {
+      "path": "outputs/getup-roll-trajectory-20261019/dynamics-tests.log",
+      "sha256": "02b0c5827dc84f9b4f07431edc54df3b7bd5291ef85095fd207bff2976e91a42",
+      "bytes": 111
+    }
+  ],
+  "preSolveQualification": {
+    "dynamicsPureTestsPassed": 12,
+    "plannerPureBuildTestsPassed": 10,
+    "fullTrajectorySolverInvocations": 0,
+    "physicsIntegrations": 0,
+    "formulationNodes": 65,
+    "formulationVariables": 10205,
+    "formulationConstraints": 20591,
+    "primitiveCollisionPairs": 142,
+    "sparseJacobianNonzeros": 459533,
+    "sparseJacobianAllFinite": true,
+    "denseInitialGuessSamples": 2552,
+    "unoptimizedInitialGuessAdmitted": false,
+    "interpretation": "Build/geometry/model qualification only. A single separately bounded trajectory optimization may now be attempted. Earlier two-parameter segment-distance minimizations were unit crosschecks only, accurately recorded in retained test-history.json; no trajectory solver was invoked."
+  }
+}

@@ -5,6 +5,8 @@ pub mod actor;
 pub mod controller;
 pub mod fixtures;
 pub mod physical_roll;
+#[cfg(feature = "getup-terminal-tail-observer-experiment")]
+pub mod roll_inspection;
 pub mod reference;
 pub mod standing;
 mod supported_standing;

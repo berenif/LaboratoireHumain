@@ -43,6 +43,10 @@ required-features = ["standing-dynamics-experiment"]
 name = "getup_terminal_recovery"
 required-features = ["getup-terminal-balance-experiment"]
 
+[[example]]
+name = "getup_roll_inspect"
+required-features = ["getup-terminal-tail-observer-experiment", "getup-physical-roll-experiment", "root-translation-carry-experiment", "unit-root-rotation-experiment"]
+
 [[test]]
 name = "coordination-transfer-worker"
 path = "src/lib.rs"

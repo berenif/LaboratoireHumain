@@ -752,6 +752,13 @@ impl Runtime {
         self.checkpoint_compatible()?;
         crate::getup::controller::teacher_feasibility_probe(&self.simulation)
     }
+    /// Read-only contact/mass inspection of an exact restored physical world.
+    /// All matrix refreshes are confined to a detached multibody clone.
+    #[cfg(feature = "getup-terminal-tail-observer-experiment")]
+    pub fn getup_roll_checkpoint_diagnostic(&self) -> Result<serde_json::Value, String> {
+        self.checkpoint_compatible()?;
+        crate::getup::roll_inspection::diagnostic(&self.simulation)
+    }
     /// Test-only, bounded immutable observation of the original advance path.
     /// Trace rows are local to this call and never enter simulation/checkpoints.
     #[cfg(feature = "getup-terminal-tail-observer-experiment")]
