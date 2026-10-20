@@ -219,6 +219,24 @@ class ProductionRehearsal(unittest.TestCase):
             self.assertEqual(a,b);self.assertEqual(pilot.mapper.mapping,restored.mapper.mapping)
             self.assertEqual(pilot.mapper.mapping[-1]['transition_line_end']-pilot.mapper.mapping[-1]['transition_line_start']+1,2)
 
+    def test_zero_step_physical_refusal_preserves_cause_without_replay_or_retry(self):
+        from types import SimpleNamespace
+        pilot=ColdPilot.__new__(ColdPilot)
+        source={'native':4560,'impactEpoch':560,'sourceEpoch':None,'preview':None}
+        observed=dict(source,status={'phase':'physical-roll-Rejected'})
+        failure={'check':'getup-policy','offending':'fixed5-second quiet-prone refusal'}
+        result={'state':observed,'native':4560,'reward':-100.,'terminal':True,
+                'success':False,'failure':failure}
+        pilot.state=source;pilot.cursor=SimpleNamespace(active=True,episode_id='refused')
+        pilot.mapper=SimpleNamespace(behavior='baseline-deterministic-zero',push=mock.Mock())
+        pilot.call=mock.Mock(return_value=result)
+        with self.assertRaisesRegex(ContractError,'Physical integrity failure:.*getup-policy'):
+            pilot.step(None,'bootstrap')
+        self.assertIs(pilot.state,observed)
+        pilot.mapper.push.assert_not_called()
+        pilot.call.assert_called_once()
+        self.assertFalse(pilot.call.call_args.args[0]['training'])
+
     def test_absolute_stage_cutoffs_and_exactly_two_blocks(self):
         clock=ScriptClock();plan=make_plan(clock)
         expected={'immutable-input-restore':120,'zero-correction-qualification':180,

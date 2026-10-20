@@ -222,9 +222,13 @@ class ColdPilot:
             'policyId':self.mapper.behavior},physical=True)
         if not isinstance(result,dict) or not {'state','native','reward','terminal','success','failure'}<=result.keys():
             raise ContractError('Malformed bridge transition')
-        row=self.mapper.push(source,action,result);self.state=result['state']
+        # A native refusal can legitimately terminate before integrating a sample.
+        # Retain its observed state/raw evidence and original failure, never turn
+        # that zero-step refusal into replay or mask it with the +20 row contract.
+        self.state=result['state']
         if result['failure'] and result['failure'].get('check')!='original25s-deadline':
             raise ContractError('Physical integrity failure: '+json.dumps(result['failure']))
+        row=self.mapper.push(source,action,result)
         return row,result
 
     def parity(self):
