@@ -12,6 +12,7 @@ from pathlib import Path
 import tempfile
 import time
 import unittest
+import subprocess
 from unittest import mock
 
 import getup_cold_start as cold
@@ -55,6 +56,115 @@ def recursive_equal(test, left, right):
 
 
 class ColdContracts(unittest.TestCase):
+    def boundary(self):
+        started=time.time()-300;deadline=started+3600
+        ledger={'nativeIntegrations':2380,'realIntegrations':2380,'forecastIntegrations':0,
+            'trainingDecisions':0,'completedCalls':122,'uncertainIntegrations':0,
+            'uncertainCalls':[],'limit':300000,'evaluationReserveIntegrations':147000,
+            'deadlineUnixMs':round(deadline*1000)}
+        config={'inputContract':{'startedAtUnixMs':round(started*1000),'deadlineUnixMs':round(deadline*1000)}}
+        report={'runId':'test-one-attempt','source':{'commit':'a'*40},'startedAtUnix':started,
+            'deadlineUnix':deadline,'ledger':ledger,'trainingExecuted':False,'accepted':0,'rejected':0,
+            'stopped':'cold-start-safe-stop','backupFailureLatched':False,'candidateAccepted':False,
+            'error':'Original absolute deadline or protected evaluation wall reached',
+            'adapterParity':{'passed':True,'physicsIntegrations':2380}}
+        amendment={'schema':'lh-cold-qualification-amendment/v1','runId':report['runId'],
+            'boundary':'after-coldQualify-before-first-bootstrap-reset','amendedSourceCommit':'b'*40,
+            'originalSourceCommit':'a'*40,'startedAtUnix':started,'deadlineUnix':deadline,
+            'learnerSeed':20261020,'genericResumeAuthorized':False,'limitedUsefulOperationOnly':True}
+        return report,ledger,config,amendment
+
+    def test_exact_reentry_rejects_identity_deadline_counter_and_uncertain_changes(self):
+        original=self.boundary()
+        result=cold.validate_qualification_boundary(*original,'test-one-attempt','b'*40,time.time())
+        self.assertEqual(result['before_evaluation_integrations'],150620)
+        for defect in ('run','deadline','counter','boundary','uncertain','pending','decisions','updates','scope'):
+            report,ledger,config,amendment=copy.deepcopy(original)
+            if defect=='run':amendment['runId']='different'
+            if defect=='deadline':amendment['deadlineUnix']+=1
+            if defect=='counter':ledger['nativeIntegrations']-=1
+            if defect=='boundary':amendment['boundary']='any-checkpoint'
+            if defect=='uncertain':ledger['uncertainCalls']=[{'chargedUpperBound':5020}]
+            if defect=='pending':ledger['pendingCall']={'chargedUpperBound':5020}
+            if defect=='decisions':ledger['trainingDecisions']=1
+            if defect=='updates':report['accepted']=1
+            if defect=='scope':amendment['limitedUsefulOperationOnly']=False
+            with self.subTest(defect=defect),self.assertRaises(ContractError):
+                cold.validate_qualification_boundary(report,ledger,config,amendment,
+                    'test-one-attempt','b'*40,time.time())
+
+    def test_limited_reentry_dispatches_one_reset_no_prepare_qualify_or_optimizer(self):
+        report,ledger,config,amendment=self.boundary()
+        original_report=copy.deepcopy(report)
+        with tempfile.TemporaryDirectory() as directory:
+            output=Path(directory)/'existing';output.mkdir()
+            for name,value in [('cold-start-report.json',report),('budget-ledger.json',ledger)]:
+                cold.atomic_json(output/name,value)
+            path=Path(directory)/'amendment.json';cold.atomic_json(path,amendment)
+            exchange=mock.Mock(failed=True);calls=[]
+            bridge=mock.Mock();bridge.deadline=report['deadlineUnix']
+            def command(query):
+                calls.append(query['op'])
+                if query['op']=='ledger':return copy.deepcopy(ledger)
+                if query['op']=='reset':
+                    ledger['nativeIntegrations']+=20;ledger['realIntegrations']+=20;ledger['completedCalls']+=1
+                    return {'native':360}
+                return {}
+            bridge.call.side_effect=command
+            learner=mock.Mock()
+            with mock.patch.object(cold_runner,'verify_qualification_amendment',
+                    return_value=(amendment,copy.deepcopy(report),config,exchange)), \
+                 mock.patch.object(cold_runner.subprocess,'check_output',side_effect=lambda cmd,**k: '' if 'diff' in cmd else 'b'*40), \
+                 mock.patch.object(cold_runner.subprocess,'run'), \
+                 mock.patch.object(cold_runner.interfaces,'AbsoluteWatchdog',
+                    return_value=mock.Mock(spec=['assert_alive','close'])), \
+                 mock.patch.object(cold_runner.interfaces,'load_legacy'), \
+                 mock.patch.object(cold_runner.interfaces,'SACLearner',return_value=learner), \
+                 mock.patch.object(cold_runner.interfaces,'BoundedWasm',return_value=bridge):
+                with self.assertRaisesRegex(ContractError,'Limited useful initialization completed'):
+                    cold_runner.run(output,Path(directory),Path(directory),'test-one-attempt',path)
+            self.assertEqual([x for x in calls if x in ('reset','step','coldPrepare','coldQualify','hold')],['reset'])
+            self.assertEqual(ledger['nativeIntegrations'],2400)
+            learner.joint_attempt.assert_not_called();learner.critic_attempt.assert_not_called()
+            retained=json.loads((output/'amendments/original-stop-report.json').read_text())
+            self.assertEqual(retained,original_report)
+            result=json.loads((output/'limited-bootstrap-initialization.json').read_text())
+            self.assertFalse(result['nextOperationAuthorized'])
+            self.assertEqual(result['originalDeadlineUnix'],report['deadlineUnix'])
+
+    def test_javascript_limited_claim_rejects_reduced_ledger_and_renewal(self):
+        report,ledger,config,amendment=self.boundary()
+        claim={'schema':'lh-cold-qualification-claim/v1','runId':report['runId'],
+            'maximumNewIntegrations':5020,'maximumPhysicalCalls':1,
+            'operation':'bootstrap-belly-initialization','originalDeadlineUnixMs':ledger['deadlineUnixMs']}
+        script="""import assert from 'node:assert/strict';
+import {validateColdQualificationClaim as check} from './scripts/getup-cold-start-protocol-contract.mjs';
+const [c,a,l,f]=JSON.parse(process.argv[1]);check(c,a,l,f,Date.now());
+for(const mutate of [
+ x=>x[0].maximumPhysicalCalls=2,x=>x[2].nativeIntegrations=0,
+ x=>x[2].deadlineUnixMs+=1,x=>x[2].pendingCall={},
+ x=>x[1].boundary='generic',x=>x[2].uncertainCalls=[{}]]){
+ const x=structuredClone([c,a,l,f]);mutate(x);assert.throws(()=>check(...x,Date.now()));
+}"""
+        subprocess.run(['node','--input-type=module','-e',script,json.dumps([claim,amendment,ledger,config])],
+            cwd=cold_runner.ROOT,check=True,capture_output=True)
+
+    def test_reentry_requires_exact_private_application_receipts(self):
+        request={'run_id':'one','kind':'shared','archive_sha256':'a'*64,
+                 'archive_bytes':3,'manifest_sha256':'b'*64}
+        receipt=dict(request,schema='lh-private-drive-receipt/v1',owner_only=True,
+            shared=False,download_completed=True,drive_file_id='test-not-remote')
+        application={'passed':True,'physics_integrations':0,'archive_sha256':'a'*64}
+        cold.validate_backup_identity(request,receipt,application,'one')
+        for r,a in ((None,application),(receipt,None),({},application),
+                    (dict(receipt,owner_only=False),application),
+                    (receipt,dict(application,passed=False)),
+                    (dict(receipt,manifest_sha256='c'*64),application)):
+            with self.assertRaisesRegex(ContractError,'receipt'):
+                cold.validate_backup_identity(request,r,a,'one')
+        with self.assertRaisesRegex(ContractError,'unadmitted'):
+            cold.require_full_phase_capacity()
+
     def test_terminal_evidence_without_active_runtime_never_calls_physics(self):
         with tempfile.TemporaryDirectory() as directory:
             root=Path(directory)

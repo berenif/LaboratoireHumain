@@ -16,7 +16,8 @@ import time
 
 from experiment_backup import atomic_json, sha256
 from getup_cold_start import (PROTOCOL, PROTOCOL_PATH, SHARED_ROLES, ColdPhase,
-    DriveExchange, FreshMapper, artifact, input_preflight)
+    DriveExchange, FreshMapper, artifact, input_preflight, require_full_phase_capacity,
+    verify_qualification_amendment)
 from getup_learning_loop import (ContractError, EpisodeReplay, FixedWitness,
     UpdateGuard, remaining_seconds)
 
@@ -65,7 +66,12 @@ def collect_stop_evidence(output, report, deadline, *, wasm=None, learner=None,
     (output/'stopped-cursor.json').write_text(json.dumps(cursor,default=jsonable,allow_nan=False)+'\n')
     for role,name in [('ledger','budget-ledger.json'),('config','frozen-config.json'),
                       ('transitions','transitions.ndjson'),('fixtures','cold-fixtures.json'),
-                      ('parity','cold-adapter-parity.json')]:
+                      ('parity','cold-adapter-parity.json'),
+                      ('limited_initialization','limited-bootstrap-initialization.json'),
+                      ('amendment','amendments/qualification-amendment.json'),
+                      ('continuation_claim','continuation-claim.json'),
+                      ('bridge_claim','continuation-bridge-consumed.json'),
+                      ('original_stop_report','amendments/original-stop-report.json')]:
         if (output/name).is_file():roles[role]=name
     atomic_json(output/'cold-start-report.json',report)
     return roles
@@ -91,8 +97,8 @@ def verify_stop_documents(restored, manifest, output, roles):
             'scope':'terminal-documents-not-runtime-resume'}
 
 
-def run(output, worker, shared, run_id):
-    if output.exists():
+def run(output, worker, shared, run_id, continuation_path=None):
+    if output.exists() and continuation_path is None:
         raise ContractError('No cold-start restart/output reuse or deadline renewal')
     if subprocess.check_output(['git','diff','HEAD','--name-only'],cwd=ROOT,text=True).strip():
         raise ContractError('Commit reviewed tracked source before the single pilot')
@@ -101,21 +107,40 @@ def run(output, worker, shared, run_id):
         subprocess.run(['git','ls-files','--error-unmatch',source],cwd=ROOT,
                        check=True,stdout=subprocess.DEVNULL)
     commit=subprocess.check_output(['git','rev-parse','HEAD'],cwd=ROOT,text=True).strip()
-    output.mkdir(parents=True)
-    started=time.time();deadline=started+PROTOCOL['wall_seconds']
+    amendment=None
+    if continuation_path:
+        amendment,report,config,exchange=verify_qualification_amendment(
+            output,continuation_path,run_id,commit,time.time())
+        started=report['startedAtUnix'];deadline=report['deadlineUnix']
+        # This amendment admits one bounded initialization, not final evaluation.
+        # The stopped report and its durable receipt remain immutable evidence.
+        history=output/'amendments';history.mkdir(exist_ok=True)
+        original_report=history/'original-stop-report.json'
+        if original_report.exists():raise ContractError('Continuation was already initiated')
+        original_report.write_bytes((output/'cold-start-report.json').read_bytes())
+        (history/'qualification-amendment.json').write_bytes(Path(continuation_path).read_bytes())
+        report=dict(report,continuation={'amendmentSha256':sha256(continuation_path),
+            'originalStopReportSha256':sha256(original_report),'amendedSourceCommit':commit,
+            'originalDeadlineUnchanged':True,'genericResume':False})
+        report.pop('stopped',None);report.pop('error',None)
+    else:
+        output.mkdir(parents=True)
+        started=time.time();deadline=started+PROTOCOL['wall_seconds']
     source={'commit':commit,'dirty':False,'description':'Reviewed cold-start source; prior lost experience not recovered'}
-    report={'schema':PROTOCOL['schema'],'runId':run_id,'source':source,
-        'startedAtUnix':started,'deadlineUnix':deadline,'protocol':PROTOCOL,
-        'trainingExecuted':False,'physicalExperimentExecuted':False,'releaseAccepted':False,
-        'candidateAccepted':False,'historicalRecoveryClaimed':False,'accepted':0,'rejected':0}
+    if not amendment:
+        report={'schema':PROTOCOL['schema'],'runId':run_id,'source':source,
+            'startedAtUnix':started,'deadlineUnix':deadline,'protocol':PROTOCOL,
+            'trainingExecuted':False,'physicalExperimentExecuted':False,'releaseAccepted':False,
+            'candidateAccepted':False,'historicalRecoveryClaimed':False,'accepted':0,'rejected':0}
     atomic_json(output/'cold-start-report.json',report)
     print(json.dumps({'event':'START','run_id':run_id,'started':started,'deadline':deadline,
                       'protocol_sha256':sha256(PROTOCOL_PATH)}),flush=True)
     watchdog=interfaces.AbsoluteWatchdog(deadline)
-    exchange=DriveExchange(output/'recovery',run_id,source,deadline)
+    if not amendment:exchange=DriveExchange(output/'recovery',run_id,source,deadline)
     wasm=learner=replay=None
     mapper=None;state=None;episode_number=0;episode_id=None
-    phase=None;mapping=[];bootstrap_indices=[];bootstrap_outcomes=[];config={}
+    phase=None;mapping=[];bootstrap_indices=[];bootstrap_outcomes=[]
+    if not amendment:config={}
     protected_wall=180.;pending_indices=[];backup_failed=False
     def wall():
         watchdog.assert_alive()
@@ -275,58 +300,101 @@ def run(output, worker, shared, run_id):
             'manifestSha256':exchange.verified[-1]['manifest_sha256']})
         save_report()
     try:
-        # Build products and pure tests predate the pilot. Input/runtime backup,
-        # all qualification, preparation and any optimizer work do not.
-        shared.mkdir(parents=True,exist_ok=True)
-        subprocess.run(['node',str(ROOT/'scripts/getup-cold-start-unstepped.mjs'),str(worker),
-            str(ROOT/'docs/evidence/profiles/getup-800hz-3plus1-repeat-cycle-v1.json'),str(shared)],
-            cwd=ROOT,check=True,capture_output=True,timeout=min(120.,remaining_seconds(deadline,time.time())))
-        atomic_json(shared/'source-identity.json',dict(source,repository='https://github.com/berenif/LaboratoireHumain',
-            model_bins={name:sha256(ROOT/'rust/crates/sim/data/getup-policy'/name)
-                        for name in ('teacher.bin','student.bin')},
-            worker_features=['getup-policy-adaptation-experiment','root-translation-carry-experiment',
-                'getup-terminal-tail-observer-experiment','getup-physical-roll-experiment',
-                'lh-sim/unit-root-rotation-experiment']))
-        files=dict(worker_wasm=worker/'lh_worker_bg.wasm',worker_glue=worker/'lh_worker.js',
-            profile=ROOT/'docs/evidence/profiles/getup-800hz-3plus1-repeat-cycle-v1.json',
-            back_unstepped=shared/'back-unstepped.bin',belly_unstepped=shared/'belly-unstepped.bin',
-            runtime_unstepped_receipt=shared/'unstepped-runtime.json',cold_start_protocol=PROTOCOL_PATH,
-            source_identity=shared/'source-identity.json')
-        manifest={'schema':PROTOCOL['schema'],'synthetic':False,'protocol':PROTOCOL,
-            'files':{role:{'path':str(path.resolve()),'sha256':sha256(path),'bytes':path.stat().st_size}
-                     for role,path in files.items()}}
-        manifest_path=shared/'input-manifest.json';atomic_json(manifest_path,manifest)
-        input_preflight(manifest_path)
-        artifacts=[artifact(role,path,'cold-input/v1') for role,path in files.items()]
-        artifacts.append(artifact('input_manifest',manifest_path,'cold-input-manifest/v1'))
-        request=exchange.snapshot(artifacts,PROTOCOL,'actual-unstepped-required-inputs','shared',wall_reserve=protected_wall)
-        transfer(request,verify_shared)
-        proof=output/'operational-inputs.json'
-        atomic_json(proof,dict(schema='lh-cold-start-operational-inputs/v1',passed=True,
-            physicsIntegrations=0,privateDriveRoundtrip=True,manifestSha256=sha256(manifest_path),
-            sharedManifestSha256=exchange.shared_sha256))
-        config={'wallSeconds':3600,'nativeIntegrations':300000,'gamma':interfaces.GAMMA,
-            'coldStart':{'schema':PROTOCOL['schema'],'manifest':str(manifest_path),'operationalProof':str(proof)},
-            'inputContract':{'startedAtUnixMs':round(started*1000),'deadlineUnixMs':round(started*1000)+3600000,
-                'files':manifest['files'],'profile':str(files['profile']),
-                'checkpoints':{case:str(output/(case+'-seed.bin')) for case in ('original','heldout','belly')}}}
-        atomic_json(output/'frozen-config.json',config)
-        legacy=interfaces.load_legacy();learner=interfaces.SACLearner(legacy)
-        wasm=interfaces.BoundedWasm(legacy,output,worker,deadline,watchdog)
-        call({'op':'reserve','integrations':147000,'wallSeconds':protected_wall})
-        report['physicalExperimentExecuted']=True;save_report()
-        report['fixtures']=call({'op':'coldPrepare'})
-        def verify_seeds(restored, manifest):
-            seed_files={item['role']:restored/item['path'] for item in manifest['files']}
-            return run_restore(worker/'lh_worker.js',worker/'lh_worker_bg.wasm',
-                [seed_files[case+'_seed'] for case in ('original','heldout','belly')])
-        seeds=[artifact(case+'_seed',output/(case+'-seed.bin'),'fresh-triggered-seed/v1')
-               for case in ('original','heldout','belly')]
-        transfer(exchange.snapshot(seeds,config,'fresh-triggered-immutable-seeds','seeds',wall_reserve=protected_wall),verify_seeds)
-        report['adapterParity']=call({'op':'coldQualify'})
-        rate=ledger()['nativeIntegrations']/max(.001,time.time()-started)
-        # Conservative measured rate includes upload wall time, not just a fast kernel.
-        protected_wall=147000/rate+180
+        if amendment:
+            # Exact one-time post-qualification reentry. No unstepped creation,
+            # preparation, qualification or immutable re-upload is repeated.
+            legacy=interfaces.load_legacy();learner=interfaces.SACLearner(legacy)
+            claim={'schema':'lh-cold-qualification-claim/v1','runId':run_id,
+                'amendmentPath':str(Path(continuation_path).resolve()),
+                'amendmentSha256':sha256(continuation_path),
+                'ledgerSha256':sha256(output/'budget-ledger.json'),
+                'originalDeadlineUnixMs':round(deadline*1000),
+                'maximumNewIntegrations':5020,'maximumPhysicalCalls':1,
+                'operation':'bootstrap-belly-initialization'}
+            with (output/'continuation-claim.json').open('x') as stream:
+                json.dump(claim,stream)
+            startup=time.time()
+            wasm=interfaces.BoundedWasm(legacy,output,worker,deadline,watchdog)
+            before=wasm.call({'op':'ledger'})
+            startup_seconds=time.time()-startup
+            call({'op':'reserve','integrations':147000,'wallSeconds':180.})
+            dispatch=time.time();operation_deadline=min(deadline-180.,dispatch+120.)
+            if operation_deadline<=dispatch:
+                raise ContractError('No original wall remaining for limited initialization')
+            wasm.call({'op':'admitUseful','maximumIntegrations':5020,
+                'deadlineUnixMs':int(operation_deadline*1000)})
+            wasm.deadline=operation_deadline
+            try:
+                state=wasm.call({'op':'reset','case':'belly','label':'cold-belly-001',
+                    'external':True,'prepared':True})
+            finally:wasm.deadline=deadline
+            after=wasm.call({'op':'ledger'})
+            result={'schema':'lh-cold-limited-initialization/v1',
+                'scope':'one-required-bootstrap-initialization-not-replay-or-evaluation',
+                'dispatchUnix':dispatch,'operationDeadlineUnix':operation_deadline,
+                'originalDeadlineUnix':deadline,'startupWallSeconds':startup_seconds,
+                'operationWallSeconds':time.time()-dispatch,'beforeLedger':before,
+                'afterLedger':after,'state':state,'nextOperationAuthorized':False,
+                'trainingExecuted':False,'maximumChargedIntegrations':5020,
+                'nativeCallTiming':after.get('limitedCallTiming'),
+                'forecastObserved':after['forecastIntegrations']>before['forecastIntegrations'],
+                'fullEvaluationTimingEstablished':False}
+            atomic_json(output/'limited-bootstrap-initialization.json',result)
+            report['limitedInitialization']=result
+            raise ContractError('Limited useful initialization completed; further phase admission required')
+        else:
+            # Build products and pure tests predate the pilot. Input/runtime backup,
+            # all qualification, preparation and any optimizer work do not.
+            shared.mkdir(parents=True,exist_ok=True)
+            subprocess.run(['node',str(ROOT/'scripts/getup-cold-start-unstepped.mjs'),str(worker),
+                str(ROOT/'docs/evidence/profiles/getup-800hz-3plus1-repeat-cycle-v1.json'),str(shared)],
+                cwd=ROOT,check=True,capture_output=True,timeout=min(120.,remaining_seconds(deadline,time.time())))
+            atomic_json(shared/'source-identity.json',dict(source,repository='https://github.com/berenif/LaboratoireHumain',
+                model_bins={name:sha256(ROOT/'rust/crates/sim/data/getup-policy'/name)
+                            for name in ('teacher.bin','student.bin')},
+                worker_features=['getup-policy-adaptation-experiment','root-translation-carry-experiment',
+                    'getup-terminal-tail-observer-experiment','getup-physical-roll-experiment',
+                    'lh-sim/unit-root-rotation-experiment']))
+            files=dict(worker_wasm=worker/'lh_worker_bg.wasm',worker_glue=worker/'lh_worker.js',
+                profile=ROOT/'docs/evidence/profiles/getup-800hz-3plus1-repeat-cycle-v1.json',
+                back_unstepped=shared/'back-unstepped.bin',belly_unstepped=shared/'belly-unstepped.bin',
+                runtime_unstepped_receipt=shared/'unstepped-runtime.json',cold_start_protocol=PROTOCOL_PATH,
+                source_identity=shared/'source-identity.json')
+            manifest={'schema':PROTOCOL['schema'],'synthetic':False,'protocol':PROTOCOL,
+                'files':{role:{'path':str(path.resolve()),'sha256':sha256(path),'bytes':path.stat().st_size}
+                         for role,path in files.items()}}
+            manifest_path=shared/'input-manifest.json';atomic_json(manifest_path,manifest)
+            input_preflight(manifest_path)
+            artifacts=[artifact(role,path,'cold-input/v1') for role,path in files.items()]
+            artifacts.append(artifact('input_manifest',manifest_path,'cold-input-manifest/v1'))
+            request=exchange.snapshot(artifacts,PROTOCOL,'actual-unstepped-required-inputs','shared',wall_reserve=protected_wall)
+            transfer(request,verify_shared)
+            proof=output/'operational-inputs.json'
+            atomic_json(proof,dict(schema='lh-cold-start-operational-inputs/v1',passed=True,
+                physicsIntegrations=0,privateDriveRoundtrip=True,manifestSha256=sha256(manifest_path),
+                sharedManifestSha256=exchange.shared_sha256))
+            config={'wallSeconds':3600,'nativeIntegrations':300000,'gamma':interfaces.GAMMA,
+                'coldStart':{'schema':PROTOCOL['schema'],'manifest':str(manifest_path),'operationalProof':str(proof)},
+                'inputContract':{'startedAtUnixMs':round(started*1000),'deadlineUnixMs':round(started*1000)+3600000,
+                    'files':manifest['files'],'profile':str(files['profile']),
+                    'checkpoints':{case:str(output/(case+'-seed.bin')) for case in ('original','heldout','belly')}}}
+            atomic_json(output/'frozen-config.json',config)
+            legacy=interfaces.load_legacy();learner=interfaces.SACLearner(legacy)
+            wasm=interfaces.BoundedWasm(legacy,output,worker,deadline,watchdog)
+            call({'op':'reserve','integrations':147000,'wallSeconds':protected_wall})
+            report['physicalExperimentExecuted']=True;save_report()
+            report['fixtures']=call({'op':'coldPrepare'})
+            def verify_seeds(restored, manifest):
+                seed_files={item['role']:restored/item['path'] for item in manifest['files']}
+                return run_restore(worker/'lh_worker.js',worker/'lh_worker_bg.wasm',
+                    [seed_files[case+'_seed'] for case in ('original','heldout','belly')])
+            seeds=[artifact(case+'_seed',output/(case+'-seed.bin'),'fresh-triggered-seed/v1')
+                   for case in ('original','heldout','belly')]
+            transfer(exchange.snapshot(seeds,config,'fresh-triggered-immutable-seeds','seeds',wall_reserve=protected_wall),verify_seeds)
+            report['adapterParity']=call({'op':'coldQualify'})
+        # Fixed connector overhead cannot be extrapolated per integration. The
+        # approved amendment is one initialization, not a full phase capacity gate.
+        require_full_phase_capacity()
         wall();call({'op':'reserve','integrations':147000,'wallSeconds':protected_wall})
         bootstrap=[]
         for case in ('belly','heldout','original'):
@@ -386,13 +454,12 @@ def run(output, worker, shared, run_id):
         report['predeclaredIterativeBlocks']=phase.planned_blocks
         checkpoint('bootstrap-before-any-optimizer-update')
         # Re-admit the complete remaining worst-case collection + evaluation,
-        # using measured end-to-end throughput including durable operations.
-        used=ledger()['nativeIntegrations'];rate=used/max(.001,time.time()-started)
+        # with separately measured phase costs, future backup/restore and margin.
+        used=ledger()['nativeIntegrations']
         projected_collection=phase.planned_blocks*per_block_estimate+5020
         if used+projected_collection+147000>300000:
             raise ContractError('Bootstrap leaves insufficient integration budget for fixed iterative pilot')
-        protected_wall=147000/rate+180
-        remaining_seconds(deadline,time.time(),protected_wall+projected_collection/rate)
+        require_full_phase_capacity()
         call({'op':'reserve','integrations':147000,'wallSeconds':protected_wall})
         while phase.phase=='warmup':
             wall();learner.critic_attempt(learner.batch(replay));learner.polyak()
@@ -448,6 +515,7 @@ def run(output, worker, shared, run_id):
             replay.finish_episode(episode_id,'truncation',truncated=True)
         if phase.phase!='finished':
             raise ContractError('No accepted actor update in block; no candidate evaluation')
+        report['evaluationStarted']=True
         protected_wall=0.;call({'op':'reserve','integrations':0,'wallSeconds':0})
         head=learner.actor.exported();atomic_json(output/'candidate-head.json',head)
         for i in ids:
@@ -535,8 +603,10 @@ def main():
     parser.add_argument('--worker',type=Path,required=True)
     parser.add_argument('--shared',type=Path,required=True)
     parser.add_argument('--run-id',required=True)
+    parser.add_argument('--continue-after-qualification',type=Path)
     args=parser.parse_args()
-    run(args.output.resolve(),args.worker.resolve(),args.shared.resolve(),args.run_id)
+    run(args.output.resolve(),args.worker.resolve(),args.shared.resolve(),args.run_id,
+        args.continue_after_qualification.resolve() if args.continue_after_qualification else None)
 
 
 if __name__=='__main__':

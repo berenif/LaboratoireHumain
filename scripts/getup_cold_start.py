@@ -24,6 +24,145 @@ FORBIDDEN_PARTS = {'.git', '.toolchain', '.sites-runtime', 'node_modules',
                    '__pycache__', 'target', 'target-wasm', 'venv'}
 
 
+def validate_qualification_boundary(report, ledger, config, amendment, run_id, commit, now):
+    """One exact stopped boundary, not generic checkpoint resume or a new run."""
+    if (amendment.get('schema')!='lh-cold-qualification-amendment/v1'
+            or amendment.get('boundary')!='after-coldQualify-before-first-bootstrap-reset'
+            or amendment.get('runId')!=run_id or report.get('runId')!=run_id
+            or amendment.get('amendedSourceCommit')!=commit
+            or amendment.get('originalSourceCommit')!=report.get('source',{}).get('commit')):
+        raise ContractError('Wrong same-attempt identity/source/boundary')
+    started,deadline=report['startedAtUnix'],report['deadlineUnix']
+    if (amendment.get('startedAtUnix')!=started or amendment.get('deadlineUnix')!=deadline
+            or deadline-started!=3600 or now>=deadline
+            or config['inputContract']['startedAtUnixMs']!=round(started*1000)
+            or config['inputContract']['deadlineUnixMs']!=round(deadline*1000)
+            or ledger.get('deadlineUnixMs')!=round(deadline*1000)):
+        raise ContractError('Original start/deadline cannot be renewed')
+    exact={'nativeIntegrations':2380,'realIntegrations':2380,'forecastIntegrations':0,
+           'trainingDecisions':0,'completedCalls':122,'uncertainIntegrations':0,
+           'limit':300000,'evaluationReserveIntegrations':147000}
+    if any(ledger.get(key)!=value for key,value in exact.items()):
+        raise ContractError('Exact consumed qualification counters required; no refund')
+    if (ledger.get('pendingCall') or ledger.get('uncertainCalls')
+            or ledger.get('bootstrapDecisions',0) or ledger.get('iterativeDecisions',0)
+            or report.get('ledger')!=ledger or report.get('trainingExecuted') is not False
+            or report.get('accepted')!=0 or report.get('rejected')!=0
+            or report.get('stopped')!='cold-start-safe-stop'
+            or report.get('backupFailureLatched') is not False
+            or report.get('error')!='Original absolute deadline or protected evaluation wall reached'
+            or report.get('adapterParity',{}).get('passed') is not True
+            or report.get('adapterParity',{}).get('physicsIntegrations')!=2380
+            or 'bootstrap' in report or report.get('candidateAccepted') is not False):
+        raise ContractError('Not the untouched, certain post-qualification stop boundary')
+    if (amendment.get('learnerSeed')!=20261020 or amendment.get('genericResumeAuthorized') is not False
+            or amendment.get('limitedUsefulOperationOnly') is not True):
+        raise ContractError('Only untouched deterministic constructor reconstruction is allowed')
+    return {'remaining_integrations':297620,'before_evaluation_integrations':150620,
+            'deadline':deadline,'started':started}
+
+
+def validate_backup_identity(request, receipt, application, run_id):
+    if (not all(isinstance(x,dict) for x in (request,receipt,application))
+            or request.get('run_id')!=run_id
+            or receipt.get('schema')!='lh-private-drive-receipt/v1'
+            or receipt.get('owner_only') is not True or receipt.get('shared') is not False
+            or receipt.get('download_completed') is not True
+            or not receipt.get('drive_file_id') or application.get('passed') is not True
+            or application.get('physics_integrations')!=0
+            or application.get('archive_sha256')!=request.get('archive_sha256')
+            or any(receipt.get(k)!=request.get(k) for k in
+                   ('run_id','kind','archive_sha256','archive_bytes','manifest_sha256'))):
+        raise ContractError('Missing exact private operational backup receipt')
+
+
+def verify_qualification_amendment(output, amendment_path, run_id, commit, now):
+    """Bind original artifacts/receipts and restore cumulative storage accounting."""
+    output=Path(output);amendment=json.loads(Path(amendment_path).read_text())
+    report=json.loads((output/'cold-start-report.json').read_text())
+    ledger=json.loads((output/'budget-ledger.json').read_text())
+    config=json.loads((output/'frozen-config.json').read_text())
+    validate_qualification_boundary(report,ledger,config,amendment,run_id,commit,now)
+    import importlib.metadata,platform,subprocess
+    dependencies={'python':platform.python_version(),
+                  'torch':importlib.metadata.version('torch'),'numpy':importlib.metadata.version('numpy')}
+    if amendment.get('dependencies')!=dependencies:
+        raise ContractError('Untouched learner dependency identity differs')
+    root=Path(__file__).resolve().parents[1]
+    constructors=('scripts/train-getup-learning-loop.py','scripts/train-getup-wasm-adaptation.py',
+                  'scripts/getup-training/SAC.py')
+    if set(amendment.get('constructorSources',{}))!=set(constructors):
+        raise ContractError('Exact untouched learner constructor source bindings required')
+    for name in constructors:
+        digest=sha256(root/name)
+        original=subprocess.check_output(['git','show',report['source']['commit']+':'+name],cwd=root)
+        if digest!=amendment['constructorSources'][name] or hashlib.sha256(original).hexdigest()!=digest:
+            raise ContractError('Untouched seeded constructor changed')
+    required={'cold-start-report.json','budget-ledger.json','frozen-config.json',
+              'cold-fixtures.json','cold-adapter-parity.json','operational-inputs.json',
+              'original-seed.bin','heldout-seed.bin','belly-seed.bin'}
+    if set(amendment.get('bindings',{}))!=required:
+        raise ContractError('Exact boundary artifact bindings required')
+    for name,digest in amendment['bindings'].items():
+        if sha256(output/name)!=digest:raise ContractError('Boundary artifact changed: '+name)
+    for name in ('transitions.ndjson','replay.npz','learner.pt','runtime-checkpoint.bin'):
+        if (output/name).exists():raise ContractError('Bootstrap/learning already began')
+    if (output/'continuation-claim.json').exists():
+        raise ContractError('Same-attempt amendment already consumed; no repeat')
+    manifest,_=input_preflight(config['coldStart']['manifest'])
+    fixtures=json.loads((output/'cold-fixtures.json').read_text())
+    for case in ('original','heldout','belly'):
+        if sha256(output/(case+'-seed.bin'))!=fixtures['cases'][case]['checkpointSha256']:
+            raise ContractError('Triggered immutable seed changed')
+    exchange=DriveExchange(output/'recovery',run_id,
+        {'commit':commit,'dirty':False,'description':'Audited same-attempt boundary amendment'},
+        report['deadlineUnix'])
+    seen=set()
+    for item in amendment.get('backups',[]):
+        paths={kind:output/item[kind] for kind in ('request','receipt','application')}
+        for kind,path in paths.items():
+            if sha256(path)!=item[kind+'_sha256']:raise ContractError('Backup evidence changed')
+        request,receipt,application=[json.loads(paths[k].read_text()) for k in ('request','receipt','application')]
+        validate_backup_identity(request,receipt,application,run_id)
+        if sha256(request['archive_path'])!=request['archive_sha256']:
+            raise ContractError('Immutable original archive changed')
+        archived=verify_bundle(request['archive_path'],request['archive_sha256'])
+        archived_hashes={entry['role']:entry['sha256'] for entry in archived['files']}
+        kind=request['kind']
+        if kind in seen:raise ContractError('Duplicate boundary backup kind')
+        seen.add(kind);exchange.remote_uploaded_bytes+=request['archive_bytes']
+        if kind=='shared':
+            if archived_hashes.get('input_manifest')!=sha256(config['coldStart']['manifest']):
+                raise ContractError('Original operational inputs differ from retained archive')
+            exchange.shared_sha256=request['manifest_sha256'];exchange.shared_bytes=request['payload_bytes']
+            exchange.shared_archive=request['archive_path']
+        elif kind=='seeds':
+            if any(archived_hashes.get(case+'_seed')!=sha256(output/(case+'-seed.bin'))
+                   for case in ('original','heldout','belly')):
+                raise ContractError('Triggered seeds differ from retained archive')
+            exchange.seed_sha256=request['manifest_sha256'];exchange.seed_bytes=request['payload_bytes']
+        elif kind=='generation':
+            if request['boundary']!='partial-safe-stop-evidence':raise ContractError('Wrong stop evidence')
+            if any(archived_hashes.get(role)!=sha256(output/name) for role,name in
+                   [('report','cold-start-report.json'),('ledger','budget-ledger.json'),
+                    ('config','frozen-config.json')]):
+                raise ContractError('Original terminal report/ledger differs from retained archive')
+            exchange.verified.append(dict(manifest_sha256=request['manifest_sha256'],
+                drive_file_id=receipt['drive_file_id'],payload_bytes=request['payload_bytes'],
+                archive_path=request['archive_path'],archive_bytes=request['archive_bytes']))
+        else:raise ContractError('Unexpected backup kind')
+    owner=json.loads((output/'recovery/drive-transfer-owner-ledger.json').read_text())
+    if (seen!={'shared','seeds','generation'} or exchange.remote_uploaded_bytes!=owner['cumulative_uploaded_bytes']
+            or owner['trashed_bytes']!=0
+            or exchange.remote_uploaded_bytes>PROTOCOL['retained_payload_bytes']):
+        raise ContractError('Original cumulative Drive accounting/receipts incomplete')
+    return amendment,report,config,exchange
+
+
+def require_full_phase_capacity():
+    raise ContractError('Full phase capacity remains unadmitted; one initialization is not evaluation/learning evidence')
+
+
 def checked_files(files):
     """Hash exact allowlisted files; reject build caches and unbounded payloads."""
     result = {}

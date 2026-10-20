@@ -10,6 +10,31 @@ The separately authorized cold-start path is `train-getup-cold-start.py`, with
 the immutable `getup-cold-start-protocol.json` contract. It constructs new
 experience and does not relabel it as retained historical experience.
 
+## Narrow same-attempt qualification amendment
+
+The optional `--continue-after-qualification` path is **not generic resume**.
+It accepts only the exact certain boundary after preparation and qualification:
+2,380 consumed real integrations, zero forecasts/decisions/updates, no bootstrap
+artifacts, and the original start/deadline. An immutable amendment binds the
+original stop report, ledger, configuration, triggered seeds, operational Drive
+receipts, original source, audited amended source, unchanged learner constructor
+sources/dependencies and seed 20261020. It restores cumulative Drive accounting
+without re-uploading shared inputs. The initial stop report remains preserved.
+
+This amendment admits **one useful BELLY bootstrap initialization only**:
+at most one native call, conservatively precharged 5,020 integrations and a hard
+120-second response deadline inside the original hour. Ordinary output reuse
+and ledger reuse remain forbidden. Single-use claims exist in both Python and
+the bridge. Preparation, qualification, steps, holds and optimizer work are
+forbidden on this path. It stops unconditionally after the initialization and
+retains nonresumable evidence and timing. A timeout is not retried.
+
+The old formulas that extrapolated fixed connector waits per integration are
+removed. The complete learning/evaluation phase remains closed pending separate
+controlled-physics, forecast, learning, serialization/restore and sized future
+backup projections. A qualification rate or one initialization does not establish
+full evaluation capacity. Repair and publication wall time is never refunded.
+
 ## Admission order
 
 1. Rebuild the pinned project worker, locally, CPU only. Reuse one build output
@@ -105,9 +130,10 @@ readiness; an unavailable runtime is explicitly recorded rather than fabricated.
 - Real CPU Torch 2.9.1: populated Adam states for all optimizers, model/target
   weights, gradients, modes, alpha, counters and Python/NumPy/Torch/replay RNG
   restore exactly after a forced guard rejection and serialization roundtrip.
-- Twelve cold-start tests pass, including feature corruption, cap exhaustion,
+- Sixteen cold-start tests pass, including feature corruption, cap exhaustion,
   historical-runner closure, restore-before-prune ordering and nonphysics
-  terminal retention with an absent or unavailable active runtime.
+  terminal retention with an absent or unavailable active runtime; exact-boundary
+  negative tests and a no-physics one-reset dispatch test cover the amendment.
 - Existing corrected-loop and backup suites: 23 + 23 tests pass.
 - Full JavaScript test suite: 129 tests pass.
 - Rebuilt actual flagged WASM: both unstepped runtime checkpoints load and

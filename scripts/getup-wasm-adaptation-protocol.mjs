@@ -7,6 +7,7 @@ import {createInterface} from 'node:readline';
 import assert from 'node:assert/strict';
 import {appendInterval} from './getup-wasm-adaptation-math.mjs';
 import {protocolSettings,guardProtocolCall,beginProtocolCall,finishProtocolCall,rowsThroughNative} from './getup-learning-loop-protocol-contract.mjs';
+import {validateColdQualificationClaim} from './getup-cold-start-protocol-contract.mjs';
 const root=process.cwd(), output=resolve(process.argv[2]);
 const candidatePath=resolve(process.argv[3]);
 const {config,input:inputContract,baselinePath,originalPath,profilePath}=protocolSettings(output,candidatePath);
@@ -15,24 +16,47 @@ const hash=x=>createHash('sha256').update(x).digest('hex');
 const load=async path=>{let m=await import(pathToFileURL(join(path,'lh_worker.js')).href);m.initSync({module:readFileSync(join(path,'lh_worker_bg.wasm'))});return m;};
 const priorLedgerPath=join(output,'budget-ledger.json');
 let priorLedger;try{priorLedger=JSON.parse(readFileSync(priorLedgerPath));}catch{}
-assert(!inputContract||!priorLedger,'No corrected-loop restart or ledger reuse');
+let continuationClaim=null;
+if(inputContract&&priorLedger){
+ assert(config.coldStart,'No corrected-loop restart or ledger reuse');
+ continuationClaim=JSON.parse(readFileSync(join(output,'continuation-claim.json')));
+ assert.equal(continuationClaim.ledgerSha256,hash(readFileSync(priorLedgerPath)));
+ const amendmentBytes=readFileSync(continuationClaim.amendmentPath);
+ assert.equal(continuationClaim.amendmentSha256,hash(amendmentBytes));
+ validateColdQualificationClaim(continuationClaim,JSON.parse(amendmentBytes),priorLedger,config,Date.now());
+ writeFileSync(join(output,'continuation-bridge-consumed.json'),JSON.stringify({
+  amendmentSha256:continuationClaim.amendmentSha256,originalLedgerSha256:continuationClaim.ledgerSha256,
+  consumedAt:new Date().toISOString()}),{flag:'wx'});
+}
 const candidate=await load(candidatePath), baseline=config.coldStart?candidate:await load(baselinePath);
 const ledger=priorLedger??{schema:1,startedAt:new Date(inputContract?.startedAtUnixMs??Date.now()).toISOString(),deadlineUnixMs:inputContract?.deadlineUnixMs??Date.now()+config.wallSeconds*1000,
  nativeIntegrations:0,realIntegrations:0,forecastIntegrations:0,completedCalls:0,uncertainCalls:[],limit:config.nativeIntegrations,
  trainingDecisions:0,releaseAccepted:false};
 const save=()=>writeFileSync(join(output,'budget-ledger.json'),JSON.stringify(ledger,null,2)+'\n');save();
 let protectedEvaluationIntegrations=0,protectedEvaluationWallMs=0;
+let usefulAdmission=null,limitedPhysicalCalls=0;
 const guard=(reserve=5020)=>{if(inputContract)return guardProtocolCall(ledger,protectedEvaluationIntegrations,protectedEvaluationWallMs,Date.now());assert(Date.now()+protectedEvaluationWallMs<ledger.deadlineUnixMs,'Experiment60minute wall cap');assert(ledger.nativeIntegrations+reserve+protectedEvaluationIntegrations<=ledger.limit,'Aggregate integration cap');};
 const report=w=>JSON.parse(w.getup_adaptation_state?w.getup_adaptation_state():w.getup_report());
 const fixture=w=>JSON.parse(w.getup_fixture_report());
 const call=(w,ticks=1)=>{
+ if(continuationClaim){
+  assert(usefulAdmission&&limitedPhysicalCalls===0,'One limited physical initialization only');
+  assert(Date.now()<usefulAdmission.deadlineUnixMs,'Limited operation wall deadline');
+  assert(ledger.nativeIntegrations+5020<=usefulAdmission.maximumCumulativeIntegrations);
+  limitedPhysicalCalls++;
+ }
  guard();const before=fixture(w).nativeSubsteps, bf=report(w)?.status.forecast_substeps??0;
  if(inputContract){beginProtocolCall(ledger,before,bf);save();}
- let result;
+ let result;const advanceStarted=performance.now();
  try{result=JSON.parse(w.advance_terminal_tail_observed(ticks));}
  catch(error){ledger.uncertainCalls.push({at:new Date().toISOString(),chargedUpperBound:5020,error:String(error)});if(!inputContract)ledger.nativeIntegrations+=5020;save();throw error;}
  const after=fixture(w).nativeSubsteps,af=report(w)?.status.forecast_substeps??0;
  const realDelta=after>=before?after-before:20,forecastDelta=af>=bf?af-bf:5000;
+ if(continuationClaim)ledger.limitedCallTiming={
+  advanceAndStateReadWallSeconds:(performance.now()-advanceStarted)/1000,
+  realIntegrations:realDelta,forecastIntegrations:forecastDelta,
+  category:forecastDelta?'mixed-controlled-and-forecast':'controlled-only',
+  separateForecastDurationMeasured:false};
  if(inputContract)finishProtocolCall(ledger,after,af);
  else{ledger.realIntegrations+=realDelta;ledger.forecastIntegrations+=forecastDelta;ledger.nativeIntegrations+=realDelta+forecastDelta;ledger.completedCalls++;}save();
  assert(after>=before&&af>=bf,'Physical/reference counter reset during a bounded single-cycle call');
@@ -56,6 +80,16 @@ function potential(d){const p=d.predicates;
 }
 let active=null,label=null,previousC=Array(21).fill(0),longest=0,interval=0;
 async function command(q){
+ if(q.op==='admitUseful'){
+  assert(continuationClaim&&!usefulAdmission&&limitedPhysicalCalls===0);
+  assert.equal(q.maximumIntegrations,5020);
+  assert(q.deadlineUnixMs>Date.now()&&q.deadlineUnixMs<=Date.now()+120000);
+  assert(q.deadlineUnixMs<=ledger.deadlineUnixMs-protectedEvaluationWallMs);
+  usefulAdmission={deadlineUnixMs:q.deadlineUnixMs,maximumCumulativeIntegrations:ledger.nativeIntegrations+5020};
+  return usefulAdmission;
+ }
+ if(continuationClaim&&['coldPrepare','coldQualify','step','hold','heldout','qualify'].includes(q.op))
+  assert.fail('Qualification amendment admits only one bootstrap reset, no other physics');
  if(q.op==='state'){assert(active);return state(active);}
  if(q.op==='bridgeState')return {label,previousC,longest,interval,protectedEvaluationIntegrations,protectedEvaluationWallMs,
   lastSnapshot:active?lastSnapshots.get(active)??null:null};
@@ -163,6 +197,7 @@ async function command(q){
   writeFileSync(join(output,'heldout-admission.json'),JSON.stringify(result,null,2)+'\n');w.free();original.free();return result;
  }
  if(q.op==='reset'){
+  if(continuationClaim)assert(q.case==='belly'&&q.external===true&&q.prepared===true&&limitedPhysicalCalls===0);
   assert(['original','heldout','belly'].includes(q.case));
   active?.free();const path=inputContract?inputContract.checkpoints[q.case]:q.case==='heldout'?join(output,'heldout-back-560.bin'):q.case==='belly'?join(output,'belly-seed.bin'):originalPath;
   if(q.case==='belly'&&!q.prepared&&!inputContract){const w=candidate.WorkerRuntime.getup_fixture_with_profile('belly',JSON.stringify(profile));w.set_root_translation_compensation_enabled(true);

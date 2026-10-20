@@ -4,6 +4,26 @@ import {readFileSync} from 'node:fs';
 import {resolve,join} from 'node:path';
 import {createHash} from 'node:crypto';
 const sha=x=>createHash('sha256').update(x).digest('hex');
+export function validateColdQualificationClaim(claim,amendment,ledger,config,now){
+ assert.equal(claim.schema,'lh-cold-qualification-claim/v1');
+ assert.equal(amendment.schema,'lh-cold-qualification-amendment/v1');
+ assert.equal(amendment.boundary,'after-coldQualify-before-first-bootstrap-reset');
+ assert.equal(claim.runId,amendment.runId);
+ assert.equal(claim.maximumNewIntegrations,5020);assert.equal(claim.maximumPhysicalCalls,1);
+ assert.equal(claim.operation,'bootstrap-belly-initialization');
+ assert.equal(amendment.limitedUsefulOperationOnly,true);
+ assert.equal(amendment.learnerSeed,20261020);assert.equal(amendment.genericResumeAuthorized,false);
+ assert.equal(claim.originalDeadlineUnixMs,config.inputContract.deadlineUnixMs);
+ assert.equal(ledger.deadlineUnixMs,claim.originalDeadlineUnixMs);
+ assert.equal(Math.round(amendment.deadlineUnix*1000),ledger.deadlineUnixMs);
+ assert.equal(Math.round(amendment.startedAtUnix*1000),config.inputContract.startedAtUnixMs);
+ assert(now<ledger.deadlineUnixMs);assert.equal(amendment.deadlineUnix-amendment.startedAtUnix,3600);
+ for(const [key,value] of Object.entries({nativeIntegrations:2380,realIntegrations:2380,
+  forecastIntegrations:0,trainingDecisions:0,completedCalls:122,uncertainIntegrations:0,
+  limit:300000,evaluationReserveIntegrations:147000}))assert.equal(ledger[key],value,key);
+ assert(!ledger.pendingCall);assert.deepEqual(ledger.uncertainCalls,[]);
+ assert.equal(ledger.bootstrapDecisions??0,0);assert.equal(ledger.iterativeDecisions??0,0);
+}
 export function coldSettings(config,candidatePath){
  const input=config.inputContract, cold=config.coldStart;
  assert.equal(cold.schema,'lh-getup-cold-start/v1');
