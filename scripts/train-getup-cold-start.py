@@ -121,6 +121,8 @@ def future_admission(path,output,worker,shared,run_id):
         raise ContractError('Reviewed committed source is required')
     if (admission.get('schema')!='lh-cold-future-admission/v1'
             or admission.get('actual_run_authorized') is not True
+            or admission.get('output_path')!=str(output.resolve())
+            or admission.get('exact_blocks')!=2
             or admission.get('run_id')!=run_id or admission.get('source_commit')!=commit
             or not admission.get('resource_decision_reference')):
         raise ContractError('Explicit future run/source/resource decision is absent')
@@ -198,6 +200,16 @@ def future_admission(path,output,worker,shared,run_id):
     return admission,readiness,manifest,receipts,commit
 
 
+def admitted_start(admission,now):
+    # Frozen before launch and announced to the owner. Validation/notification
+    # time consumes this same hour; the runner never renews the timestamp.
+    import math
+    started=admission.get('started_at_unix')
+    if not isinstance(started,(int,float)) or not math.isfinite(started) or not 0<=now-started<120:
+        raise ContractError('Fixed admission start is future/stale/missing; no clock renewal')
+    return started
+
+
 def run(output,worker,shared,run_id,continuation_path=None,admission_path=None):
     """One future authorized process; no generic resume of the closed attempt."""
     from dataclasses import asdict
@@ -210,7 +222,7 @@ def run(output,worker,shared,run_id,continuation_path=None,admission_path=None):
     admission,readiness,inputs,immutable,commit=future_admission(admission_path,output,worker,shared,run_id)
     # All new runtime loading, operational restoration and qualification are
     # INSIDE this one absolute clock, not relabeled software preparation.
-    started=time.time();deadline=started+3600;clock=SystemClock()
+    started=admitted_start(admission,time.time());deadline=started+3600;clock=SystemClock()
     plan=PhasePlan(started,deadline,started+2100,started+3300)
     output.mkdir(parents=True)
     source={'commit':commit,'dirty':False,'description':'Reviewed source; no exact historical recovery claim'}
@@ -233,7 +245,7 @@ def run(output,worker,shared,run_id,continuation_path=None,admission_path=None):
     print(json.dumps({'event':'START','run_id':run_id,'started':started,'deadline':deadline,
         'protocol_sha256':sha256(PROTOCOL_PATH),'absolutePhaseCutoffs':asdict(plan)}),flush=True)
     def run_restore(glue,wasm_path,checkpoints,state_file=None,operation_deadline=None):
-        end=min(operation_deadline or plan.work_end,deadline)
+        end=min(operation_deadline or plan.stage_cutoff('immutable-input-restore'),deadline)
         remaining_seconds(end,time.time())
         command=['node',str(ROOT/'scripts/getup-cold-start-restore.mjs'),str(glue),str(wasm_path),
                  *[str(x) for x in checkpoints]]
@@ -263,7 +275,9 @@ def run(output,worker,shared,run_id,continuation_path=None,admission_path=None):
         # Reuse immutable archives once. Their proven private Drive receipts and
         # archived transfer hashes remain bound; this is a NEW local operational
         # load, NOT a claim of a new remote download/upload.
+        plan.assert_inputs_ready(clock.now())
         for kind,(request,receipt,bundle) in immutable.items():
+            plan.assert_inputs_ready(clock.now())
             with tempfile.TemporaryDirectory(prefix='immutable-restore-',dir=output) as tmp:
                 restored=Path(tmp)/'payload'
                 restored_manifest=restore_bundle(request['archive_path'],restored,
@@ -280,6 +294,7 @@ def run(output,worker,shared,run_id,continuation_path=None,admission_path=None):
                         [files[case+'_seed'] for case in ('original','heldout','belly')])
                     exchange.seed_sha256=request['manifest_sha256'];exchange.seed_bytes=request['payload_bytes']
                 report[kind+'OperationalRestore']=result
+                plan.assert_inputs_ready(clock.now())
         proof=output/'operational-inputs.json'
         atomic_json(proof,dict(schema='lh-cold-start-operational-inputs/v1',passed=True,
             physicsIntegrations=0,privateDriveRoundtrip=True,previousPrivateRoundtripReused=True,
@@ -291,6 +306,7 @@ def run(output,worker,shared,run_id,continuation_path=None,admission_path=None):
                 'files':inputs['files'],'profile':inputs['files']['profile']['path'],
                 'checkpoints':admission['seed_paths']}}
         atomic_json(output/'frozen-config.json',config)
+        plan.assert_inputs_ready(clock.now())
         legacy=interfaces.load_legacy();factory=lambda:interfaces.SACLearner(legacy)
         learner=factory();wasm=interfaces.BoundedWasm(legacy,output,worker,deadline,watchdog);wasm.synthetic=False
         recovery=CoherentRecovery(DrivePhaseTransport(exchange,transfer,clock),controller_factory,synthetic=False)
@@ -300,6 +316,8 @@ def run(output,worker,shared,run_id,continuation_path=None,admission_path=None):
         pilot=ColdPilot(output=output,learner=learner,learner_factory=factory,
             builder_factory=lambda:legacy.SourceTransition(interfaces.GAMMA),bridge=wasm,
             recovery=recovery,clock=clock,plan=plan,identity=identity,synthetic=False)
+        plan.assert_inputs_ready(clock.now())
+        report['inputsCompletedAtUnix']=clock.now()
         # Qualification consumes the same ledger/cutoffs, and does not replace
         # the next-transition/reward/mapping/coherent-replay gates in pilot.run.
         pilot.admit_sequence(prefix_seconds=60,prefix_integrations=1000)

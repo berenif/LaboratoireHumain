@@ -48,6 +48,7 @@ class PhasePlan:
     def validate(self):
         if (self.deadline-self.started!=3600 or self.deadline-self.evaluation_end<300
                 or self.evaluation_end-self.work_end<1200
+                or self.work_end!=self.started+2100 or self.evaluation_end!=self.started+3300
                 or not self.started<self.work_end<self.evaluation_end<self.deadline
                 or self.evaluation_integrations!=147000
                 or self.backup_payload_envelope_bytes>64*1024**2
@@ -58,18 +59,35 @@ class PhasePlan:
                 raise ContractError('Invalid finite positive phase envelope: '+key)
         return self
 
+    def stage_cutoff(self,name,cycle=0):
+        fixed={'immutable-input-restore':120,'zero-correction-qualification':180,
+            'transition-parity':240,'bootstrap':600,'warmup':900,
+            'backup:bootstrap-before-any-optimizer-update':600,
+            'backup:critic-warmup-complete':900,'backup:collection-00':1500,
+            'backup:updates-01':1500,'backup:collection-01':2100,
+            'backup:updates-02':2100,'evaluation':3300,'backup:terminal-stop':3600}
+        if name in ('collection','updates'):
+            if cycle not in (0,1):raise ContractError('Exactly two blocks; unused capacity grants no extra cycle')
+            return self.started+(1500 if cycle==0 else 2100)
+        if name not in fixed:raise ContractError('Unknown fixed pilot stage: '+name)
+        return self.started+fixed[name]
+
+    def assert_inputs_ready(self,now):
+        if now>=self.stage_cutoff('immutable-input-restore'):
+            raise ContractError('Absolute two-minute input restoration cutoff reached')
+
     def sequence_seconds(self, blocks, *, bootstrap=True, warmup=True):
         return ((self.parity_seconds+self.bootstrap_seconds+self.backup_seconds if bootstrap else 0)
                 +(self.warmup_seconds+self.backup_seconds if warmup else 0)
                 +blocks*(self.collection_seconds+self.updates_seconds+2*self.backup_seconds))
 
-    def admit_sequence(self, now, ledger, *, maximum_blocks=12, prefix_seconds=0., prefix_integrations=0, cumulative_uploaded_bytes=0, retained_payload_bytes=0):
+    def admit_sequence(self, now, ledger, *, maximum_blocks=2, prefix_seconds=0., prefix_integrations=0, cumulative_uploaded_bytes=0, retained_payload_bytes=0):
         self.validate()
         if prefix_seconds<0 or prefix_integrations<0:
             raise ContractError('Prefix allowance cannot refund wall or integrations')
         if ledger.get('pendingCall') or ledger.get('uncertainCalls') or ledger.get('uncertainIntegrations',0):
             raise ContractError('Unresolved execution is terminal; never retry or refund')
-        for blocks in range(min(12,maximum_blocks),1,-1):
+        for blocks in range(min(2,maximum_blocks),1,-1):
             steps=(ledger['nativeIntegrations']+prefix_integrations+self.parity_integrations+self.bootstrap_integrations
                    +blocks*self.block_integrations+self.evaluation_integrations)
             backups=3+2*blocks
@@ -137,7 +155,8 @@ class ColdPilot:
         return value
 
     def enter(self, name, seconds, integrations=0, *, evaluation=False, retention=False):
-        end=self.plan.deadline if retention else self.plan.evaluation_end if evaluation else self.plan.work_end
+        end=self.plan.stage_cutoff(name,self.phase.cycle if self.phase else 0)
+        end=min(end,self.plan.deadline if retention else self.plan.evaluation_end if evaluation else self.plan.work_end)
         now=self.clock.now()
         if self.failure_latched and not retention:raise ContractError('Failure latched; no next phase')
         if now+seconds>end:raise ContractError('Full phase allowance exceeds absolute cutoff: '+name)

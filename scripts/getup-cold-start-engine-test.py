@@ -201,14 +201,14 @@ class ProductionRehearsal(unittest.TestCase):
             pilot,transport=build(tmp,pending_tail=True)
             pilot.cursor.planned_blocks=2;pilot.parity();pilot.bootstrap()
             pilot.backup('bootstrap-before-any-optimizer-update')
-            pilot.enter('pending-tail-test',120,20140)
+            pilot.enter('collection',120,20140)
             pilot.reset('belly','baseline-deterministic-zero')
             for _ in range(3):
                 row,result=pilot.step([0.]*21,'bootstrap')
                 if row:
                     index=pilot.replay.add(row);pilot.mapping.append(dict(pilot.mapper.mapping[-1],replay_index=index))
             self.assertIsNotNone(pilot.mapper.builder.pending)
-            pilot.backup('pending-tail')
+            pilot.backup('terminal-stop',retention=True)
             restored=pilot.recovery.last_restored
             query={'op':'step','c':None,'training':False,'collectionPhase':'bootstrap',
                    'episodeId':pilot.cursor.episode_id,'policyId':pilot.mapper.behavior}
@@ -219,9 +219,39 @@ class ProductionRehearsal(unittest.TestCase):
             self.assertEqual(a,b);self.assertEqual(pilot.mapper.mapping,restored.mapper.mapping)
             self.assertEqual(pilot.mapper.mapping[-1]['transition_line_end']-pilot.mapper.mapping[-1]['transition_line_start']+1,2)
 
+    def test_absolute_stage_cutoffs_and_exactly_two_blocks(self):
+        clock=ScriptClock();plan=make_plan(clock)
+        expected={'immutable-input-restore':120,'zero-correction-qualification':180,
+            'transition-parity':240,'bootstrap':600,'backup:bootstrap-before-any-optimizer-update':600,
+            'warmup':900,'backup:critic-warmup-complete':900,'backup:collection-00':1500,
+            'backup:updates-01':1500,'backup:collection-01':2100,'backup:updates-02':2100,
+            'evaluation':3300,'backup:terminal-stop':3600}
+        for name,offset in expected.items():self.assertEqual(plan.stage_cutoff(name),plan.started+offset)
+        self.assertEqual(plan.stage_cutoff('collection',0),plan.started+1500)
+        self.assertEqual(plan.stage_cutoff('updates',1),plan.started+2100)
+        with self.assertRaises(ContractError):plan.stage_cutoff('collection',2)
+        with self.assertRaisesRegex(ContractError,'two-minute'):plan.assert_inputs_ready(plan.started+120)
+        fast=replace(plan,parity_seconds=1,bootstrap_seconds=1,backup_seconds=1,
+            warmup_seconds=1,collection_seconds=1,updates_seconds=1,
+            bootstrap_integrations=1,block_integrations=1,parity_integrations=1,
+            backup_archive_envelope_bytes=1,backup_payload_envelope_bytes=1)
+        self.assertEqual(fast.admit_sequence(clock.now(),{'nativeIntegrations':0},maximum_blocks=12),2)
+        with tempfile.TemporaryDirectory() as tmp:
+            pilot,transport=build(tmp)
+            for name in ('zero-correction-qualification','transition-parity','bootstrap',
+                         'backup:bootstrap-before-any-optimizer-update','warmup','backup:updates-01'):
+                pilot.clock.value=pilot.plan.stage_cutoff(name)-59.99
+                before=pilot.bridge.physical_calls
+                with self.assertRaisesRegex(ContractError,'absolute cutoff'):pilot.enter(name,60)
+                self.assertEqual(pilot.bridge.physical_calls,before)
+
     def test_missing_resource_admission_and_closed_output_do_not_start_clock(self):
         spec=importlib.util.spec_from_file_location('cold_entry',Path(__file__).with_name('train-getup-cold-start.py'))
         entry=importlib.util.module_from_spec(spec);spec.loader.exec_module(entry)
+        self.assertEqual(entry.admitted_start({'started_at_unix':1000.},1005.),1000.)
+        for value in (None,float('nan'),1006.,800.):
+            with self.subTest(start=value),self.assertRaisesRegex(ContractError,'no clock renewal'):
+                entry.admitted_start({'started_at_unix':value},1005.)
         with tempfile.TemporaryDirectory() as tmp:
             output=Path(tmp)/'not-created'
             with mock.patch.object(entry.time,'time',side_effect=AssertionError('clock started')):

@@ -39,9 +39,13 @@ work/cold-start/venv/bin/python scripts/experiment-backup-test.py
 npm test
 ```
 
-Final local results: **12/12 engine**, **16/16 cold contracts**, **23/23 historical
+Readiness baseline results: **12/12 engine**, **16/16 cold contracts**, **23/23 historical
 loop**, **23/23 backup**, and **129/129 JavaScript tests** passed. The final engine
 suite took 56.49 seconds. JavaScript syntax and `git diff --check` also passed.
+
+The subsequent absolute-stage-cutoff amendment passed **13/13 engine** tests
+(53.838 seconds) and **16/16 cold contracts** (2.380 seconds), without native
+physics, network transfers, or changes to the closed attempt.
 
 The engine suite covers 256 critic warmups and two complete 256-source-decision /
 64-attempt blocks. The second collection uses an accepted updated actor. It covers
@@ -64,6 +68,15 @@ protected evaluation integrations. Absolute work/evaluation/retention cutoffs ar
 start + 2,100 / 3,300 / 3,600 seconds. Evaluation and retention reserve 1,200 and
 300 seconds respectively. Qualification's 60 seconds / 1,000 integrations are
 included **before** admitting the complete meaningful suffix.
+
+The reviewed narrow deadline amendment fixes **exactly two blocks**, even when
+unused time/integrations/storage could fit more. Input restoration must complete
+by start +120 seconds; qualification +180; transition parity +240; bootstrap plus
+verified backup +600; warmup plus backup +900; block one plus both backups +1,500;
+block two plus both backups +2,100. These are executable absolute stage cutoffs,
+not waits or timing assumptions. Full per-phase allowance must fit its cutoff.
+The original ≤20 mm material metric remains maximum anchored material-point
+excursion, not cumulative path travel; no physical acceptance criterion changed.
 
 The conservative default admits two blocks: 1,920 seconds of work-phase envelopes
 including the six in-work backups, plus terminal retention. Every reset/forecast
@@ -111,6 +124,9 @@ A future admission file binds an explicit resource-decision reference, new run I
 exact reviewed commit, software receipt/source inventory, independent review,
 immutable request/receipt/application hashes, seed paths, and complete owner
 storage inventory including current/previous generations and protected local roots.
+The admission also binds one output path and an announced `started_at_unix`;
+launch validation/notification elapsed time remains spent, never refunded by a
+new timestamp. A future or ≥120-second-old start is rejected before runtime load.
 The tests never generate an authorized admission. No generic resume or automatic
 new trial is enabled.
 
