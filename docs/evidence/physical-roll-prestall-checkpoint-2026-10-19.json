@@ -1,0 +1,203 @@
+{
+  "date": "2026-10-19",
+  "status": "exact original-WASM geometry-baseline checkpoint capture at native1940; no new candidate evaluation",
+  "sourceCommit": "11d5786d1c5eba7f47a7cb36a4ba34a34c824c04",
+  "purpose": "Supply actual pre-stall solver-contact geometry through a pure full-world checkpoint for the next finite whole-body contact-torque feasibility plan. This receipt does not implement or evaluate that plan.",
+  "priorBrowserProof": {
+    "path": "docs/evidence/browser-physical-roll-2026-10-19.json",
+    "sha256": "7400b4e3d3c47f977ff514802dbdb32f947e735607240ba0818fe4a94ff8b96b",
+    "bytes": 23849
+  },
+  "artifact": {
+    "workerWasmSha256": "0ca955fe762b23b462efa64d1e43295df94226dbc097ec14cbb2dc88e0567ca5",
+    "workerGlueSha256": "4ed81dc0ca68e43443b4db96730d52a827cad00a3c070195b293ed276452b84c",
+    "completeProfileSha256": "aaa415a19767c218a26b05bad277193cccba2a726b52dcd5aac0a5444afc39d6",
+    "features": "Unchanged frozen11d5786 physical-roll artifact; see prior browser proof for the six CLI/seven effective sim features.",
+    "newBuild": false,
+    "executionHost": "Node original immutable scalar WebAssembly module; browser renderer not involved. Exact retained browser state parity gates every row."
+  },
+  "baselineReplay": {
+    "triggerNative": 480,
+    "stopNative": 1940,
+    "matchedNativeRowsIncluding0": 1941,
+    "nativeHz": 800,
+    "ordinaryAdvanceTicks": 1,
+    "nativePerAdvance": 20,
+    "preparationPollingNative": 80,
+    "forecastIntegrations": 0,
+    "newPhysicalInputs": [],
+    "remainingOriginalPreparationNative": 2540,
+    "remainingOriginalPreparationS": 3.175,
+    "originalRollCapAbsoluteNative": 4480,
+    "originalRecoveryDeadlineNative": 20480,
+    "noNewCandidate": true,
+    "stopOnAnyParityMismatch": true
+  },
+  "parity": {
+    "all1941ArchiveLinesExact": true,
+    "rawPoseWordsPerRow": 325,
+    "rawPhysicalWordsPerRow": 67,
+    "rawStateArraysDeepStrictEqual": true,
+    "rawCarryJsonStringsExactlyEqual": true,
+    "native0BeforeAfterActivationCheckpointBytesExactlyMatchOriginal": true,
+    "serializedComparisonBoundary": "Exact original browser JSON.stringify archive bytes, plus independent deep-strict raw Uint32 pose/current words and raw carry JSON strings; JSON-number signed-zero normalization is historical archive semantics",
+    "semantics": "Browser archive serialized parsed Rust JSON with JSON.stringify. Its JSON-number\u22120 is therefore0. Matching this exact historical boundary does not relax raw Uint32 state arrays or raw carry strings, nor any nonzero diagnostic value.",
+    "historicalExecutedProbesRewritten": false,
+    "futureProbeHelper": "docs/evidence/probes/exact-archive-row-parity.mjs"
+  },
+  "checkpoint": {
+    "schema": 2,
+    "bytes": 635931,
+    "sha256": "3bd941cbaa823fc998424d8334c027314425248b453fb56a8f684f17893bb9f9",
+    "twoConsecutivePureExportsByteEqual": true,
+    "controllerRawStringBeforeAfterEqual": true,
+    "fixtureRawStringBeforeAfterEqual": true,
+    "readOnlyContactInspection": "Separate native inspector may deserialize actual Rapier world contact manifolds/solver anchors and report nonfoot points/normals/gaps without integration or cache refresh. This capture alone does not claim that inspection completed."
+  },
+  "selectedPrestallState": {
+    "native": 1940,
+    "maximumCurrentLinearMps": 0.00308609870262444,
+    "maximumCurrentAngularRadps": 0.008278795517981052,
+    "headM": 0.16729208827018738,
+    "loadedBodiesN": {
+      "pelvis": 310.9820251464844,
+      "right_foot": 25.358823776245117,
+      "right_upper_arm": 64.31581115722656
+    },
+    "selection": "Native1936..1940 retain linear<.005m/s and angular<.02rad/s, with1940 an existing20-native publication boundary. This is diagnostic selection, not a new acceptance gate."
+  },
+  "priorBookkeepingStop": {
+    "executedNativeIntegrations": 60,
+    "comparisonStoppedAtNative": 45,
+    "lastVerifiedNative": 44,
+    "cause": "Rust JSON diagnostic\u22120 versus historical browser JSON.stringify0; no roll/candidate entered",
+    "rootApprovedArchiveBoundaryRestart": true,
+    "archivedError": {
+      "path": "outputs/browser-capability-20261019/recovery-fixture/physical-roll/prestall-context/replay-native1940/error.json",
+      "sha256": "104b53b9a460f68c547ccd21412fbce7abba4b62464e0ebe049047821c3115e0",
+      "bytes": 1383
+    },
+    "actualCompletedAdvanceEndNative": 60,
+    "physicalRollEntered": false,
+    "firstAttemptWorldFreedBeforeRestart": true,
+    "claim": "This failed serialization comparator attempt is explicitly disclosed; it is not counted as a completed geometry observation or candidate trial."
+  },
+  "helperPureTests": {
+    "checksPassed": 6,
+    "physicsIntegrations": 0,
+    "actorInferences": 0,
+    "checks": [
+      "Historical JSON-number signed-zero boundary accepted",
+      "Input object remains unchanged",
+      "Raw pose-word mismatch refused",
+      "Raw physical-word mismatch refused",
+      "Raw carry-string mismatch refused",
+      "Nonzero diagnostic mismatch refused"
+    ]
+  },
+  "qualification": {
+    "newRecoveryDemonstrated": false,
+    "newRollDemonstrated": false,
+    "releaseAccepted": false,
+    "productionDefaultsChanged": false,
+    "performanceClaim": false,
+    "actualAndroidTest": false
+  },
+  "reproduction": "Historical exact replay script is preserved, with a fresh-output one-shot guard. Do not rerun physical baseline or any candidate without the current experimental plan. Pure archive comparison helper is independently reusable.",
+  "independentAudit": {
+    "status": "GO; independent checkpoint, archive, compact receipt and copied-probe audit",
+    "summary": {
+      "path": "outputs/browser-capability-20261019/recovery-fixture/physical-roll/prestall-context/independent-checkpoint-audit.json",
+      "sha256": "184698cc7377e4a921b1519119ac5a0c7128593e289a5f2ed78d1a16dbd7b788",
+      "bytes": 4053
+    },
+    "checks": "1941 raw archive lines,630825 pose uint32s,130047 physical uint32s, exact raw carry; repeated schema2 export, decoded native1940/tick97/zero forecast;16 original receipt hashes/sizes, exact copied probes and6 pure helper checks."
+  },
+  "receipts": [
+    {
+      "path": "outputs/browser-capability-20261019/recovery-fixture/physical-roll/prestall-context/replay-native1940-archive-boundary/result.json",
+      "sha256": "2a2d63a9d00a97372849cf042a497ae7b2423e1c21a460b97baf679ac56dd2df",
+      "bytes": 1713
+    },
+    {
+      "path": "outputs/browser-capability-20261019/recovery-fixture/physical-roll/prestall-context/replay-native1940-archive-boundary/checkpoint-native1940.bin",
+      "sha256": "3bd941cbaa823fc998424d8334c027314425248b453fb56a8f684f17893bb9f9",
+      "bytes": 635931
+    },
+    {
+      "path": "outputs/browser-capability-20261019/recovery-fixture/physical-roll/prestall-context/replay-native1940-archive-boundary/checkpoint-native1940-second.bin",
+      "sha256": "3bd941cbaa823fc998424d8334c027314425248b453fb56a8f684f17893bb9f9",
+      "bytes": 635931
+    },
+    {
+      "path": "outputs/browser-capability-20261019/recovery-fixture/physical-roll/prestall-context/replay-native1940-archive-boundary/fixture-native1940.json",
+      "sha256": "0a587f2d643d25a63d25e0328122171efd8488aa9db38d46b52f42b0f6473173",
+      "bytes": 7148
+    },
+    {
+      "path": "outputs/browser-capability-20261019/recovery-fixture/physical-roll/prestall-context/replay-native1940-archive-boundary/controller-native1940.json",
+      "sha256": "69f8695254cbc6e71aac4f5ba61c1b5b39f11e0ddb2c05e4647d9a1a54e2d97b",
+      "bytes": 2147
+    },
+    {
+      "path": "outputs/browser-capability-20261019/recovery-fixture/physical-roll/prestall-context/replay-native1940-archive-boundary/latest-native-packet.json",
+      "sha256": "44087038f61fa9825acf02195dffcf4a8d7ab4af06fcb2ffd02df651de493117",
+      "bytes": 25358
+    },
+    {
+      "path": "outputs/browser-capability-20261019/recovery-fixture/physical-roll/prestall-context/replay-native1940-archive-boundary/exact-native0-1940.ndjson",
+      "sha256": "716036db30291b0a12a7c538b706afa30d9f751e61cd201305589b75f91f274e",
+      "bytes": 33719575
+    },
+    {
+      "path": "outputs/browser-capability-20261019/recovery-fixture/physical-roll/prestall-context/replay-native1940/error.json",
+      "sha256": "104b53b9a460f68c547ccd21412fbce7abba4b62464e0ebe049047821c3115e0",
+      "bytes": 1383
+    },
+    {
+      "path": "outputs/browser-capability-20261019/recovery-fixture/physical-roll/prestall-context/replay-original-wasm-to1940-before-archive-boundary.mjs",
+      "sha256": "4505256b9b9fa1899e8cb723bd1661391315147492c526f15c8f5db5ebd51bf1",
+      "bytes": 6897
+    },
+    {
+      "path": "outputs/browser-capability-20261019/recovery-fixture/physical-roll/prestall-context/replay-original-wasm-to1940.mjs",
+      "sha256": "dabef0238d92c9cf0faa0340081adc8fd2dd63066eae663fc17c8f96ee4e7b6b",
+      "bytes": 7290
+    },
+    {
+      "path": "outputs/browser-capability-20261019/recovery-fixture/physical-roll/prestall-context/exact-archive-row-parity.mjs",
+      "sha256": "e323afd3cef16fccd9745ef16d81a8c78e694761ed5c03eb95d2c1b1e24e3a11",
+      "bytes": 612
+    },
+    {
+      "path": "outputs/browser-capability-20261019/recovery-fixture/physical-roll/prestall-context/retained-native1936-1940.json",
+      "sha256": "e52a4743c7d7950e0614aa63215270b9d92da0f001bbbaf9928a929bde6e78cd",
+      "bytes": 96294
+    },
+    {
+      "path": "docs/evidence/probes/exact-archive-row-parity.mjs",
+      "sha256": "e323afd3cef16fccd9745ef16d81a8c78e694761ed5c03eb95d2c1b1e24e3a11",
+      "bytes": 612
+    },
+    {
+      "path": "docs/evidence/probes/replay-original-wasm-to1940-2026-10-19.mjs",
+      "sha256": "dabef0238d92c9cf0faa0340081adc8fd2dd63066eae663fc17c8f96ee4e7b6b",
+      "bytes": 7290
+    },
+    {
+      "path": "docs/evidence/browser-physical-roll-2026-10-19.json",
+      "sha256": "7400b4e3d3c47f977ff514802dbdb32f947e735607240ba0818fe4a94ff8b96b",
+      "bytes": 23849
+    },
+    {
+      "path": "outputs/browser-capability-20261019/recovery-fixture/physical-roll/actual-back-roll/native-trace.ndjson.gz",
+      "sha256": "f9c04769ee5f0455669b565a80acc4a74bb0e81d1ca565b33201eb89857768e1",
+      "bytes": 21457531
+    },
+    {
+      "path": "outputs/browser-capability-20261019/recovery-fixture/physical-roll/prestall-context/independent-checkpoint-audit.json",
+      "sha256": "184698cc7377e4a921b1519119ac5a0c7128593e289a5f2ed78d1a16dbd7b788",
+      "bytes": 4053
+    }
+  ]
+}
