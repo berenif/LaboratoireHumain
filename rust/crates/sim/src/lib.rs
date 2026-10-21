@@ -456,6 +456,12 @@ impl Simulation {
         Ok(s)
     }
     pub fn request_strike(&mut self) -> Result<bool, String> {
+        self.request_strike_direction(false)
+    }
+    pub fn request_strike_from_behind(&mut self) -> Result<bool, String> {
+        self.request_strike_direction(true)
+    }
+    fn request_strike_direction(&mut self, from_behind: bool) -> Result<bool, String> {
         if self.first_failure.is_some() {
             return Ok(false);
         }
@@ -466,10 +472,11 @@ impl Simulation {
             .position(|s| s.id == "torso")
             .ok_or("Missing torso")?;
         let target = self.world.bodies[self.bodies[torso]].translation();
+        let forward = *self.world.bodies[self.bodies[torso]].rotation() * Vector::Z;
         self.striker
             .as_mut()
             .ok_or("Not a protocol trial")?
-            .request(&mut self.world, &self.colliders, target)
+            .request_direction(&mut self.world, &self.colliders, target, from_behind.then_some(forward))
     }
     pub fn new_playground(
         heading: f32,

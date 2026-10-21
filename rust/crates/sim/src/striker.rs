@@ -364,6 +364,12 @@ impl Striker {
         anatomy: &[ColliderHandle],
         torso: Vector,
     ) -> Result<bool, String> {
+        self.request_direction(world, anatomy, torso, None)
+    }
+    pub fn request_direction(
+        &mut self, world: &mut PhysicsWorld, anatomy: &[ColliderHandle],
+        torso: Vector, forward: Option<Vector>,
+    ) -> Result<bool, String> {
         if !self.available() || !torso.is_finite() {
             return Ok(false);
         }
@@ -375,11 +381,18 @@ impl Striker {
         let inward = Vector::new(-torso.x, 0.0, -torso.z)
             .try_normalize()
             .unwrap_or(-Vector::Z);
+        // A declared behind-strike has one exact body-relative approach. If
+        // blocked, reject; never silently choose a different impact direction.
+        let fixed = if let Some(v) = forward {
+            if !v.is_finite() { return Ok(false); }
+            let Some(v) = Vector::new(v.x, 0.0, v.z).try_normalize() else { return Ok(false); };
+            Some(v)
+        } else { None };
         let mut candidates = Vec::new();
-        for i in 0..2048 {
+        for i in 0..if fixed.is_some() { 1 } else { 2048 } {
             let angle = i as f32 * std::f32::consts::TAU / 2048.0;
-            let direction = Vector::new(angle.sin(), 0.0, angle.cos());
-            let score = direction.dot(inward);
+            let direction = fixed.unwrap_or(Vector::new(angle.sin(), 0.0, angle.cos()));
+            let score = if fixed.is_some() { 1.0 } else { direction.dot(inward) };
             if score <= 0.001 {
                 continue;
             }
@@ -605,8 +618,36 @@ impl Striker {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::{Profile, runtime::Runtime};
+    use crate::{Profile, Simulation, runtime::Runtime};
     use lh_contracts::{Action, Command, Mode, Reject, Stamp};
+    #[test]
+    fn minimal_behind_strike_preserves_body_and_uses_exact_forward() {
+        for heading in [0.0_f32, 1.0, std::f32::consts::PI] {
+            let mut s = Simulation::new_protocol(heading, Profile::default(), true).unwrap();
+            let before = serde_json::to_value(s.snapshot().segments).unwrap();
+            let torso = s.model.segments.iter().position(|p| p.id == "torso").unwrap();
+            let forward = *s.world.bodies[s.bodies[torso]].rotation() * Vector::Z;
+            let expected = Vector::new(forward.x, 0.0, forward.z).normalize();
+            assert!(s.request_strike_from_behind().unwrap());
+            assert!(s.striker.as_ref().unwrap().direction.distance(expected) < 1e-6);
+            assert_eq!(before, serde_json::to_value(s.snapshot().segments).unwrap());
+            assert_eq!(s.substeps_completed, 0);
+            assert_eq!(s.counters.strikes, 0); // Contact, not request, increments it.
+        }
+    }
+    #[test]
+    fn minimal_behind_strike_has_no_invalid_direction_fallback() {
+        let mut world = PhysicsWorld::new();
+        let mut striker = Striker::new(&mut world).unwrap();
+        assert!(!striker.request_direction(&mut world, &[], Vector::new(0.0,1.2,0.0), Some(Vector::Y)).unwrap());
+        assert_eq!(striker.phase, StrikePhase::Idle);
+        // A valid horizontal direction whose required behind standoff is
+        // outside the room must not silently turn into a sideways approach.
+        assert!(!striker.request_direction(&mut world, &[], Vector::new(0.0,1.2,4.4), Some(-Vector::Z)).unwrap());
+        assert_eq!(striker.phase, StrikePhase::Idle);
+        assert!(!striker.request_direction(&mut world, &[], Vector::new(100.0,1.2,0.0), Some(Vector::Z)).unwrap());
+        assert_eq!(striker.phase, StrikePhase::Idle);
+    }
     #[test]
     fn misses_remain_misses_and_clear_room_paths_retract_at_walls_and_corners() {
         for target in [

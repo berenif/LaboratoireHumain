@@ -368,7 +368,7 @@ impl QualificationObservation {
     }
     pub(crate) fn applied(&mut self, s: &Simulation, action: &Action) {
         match action {
-            Action::Strike => {
+            Action::Strike | Action::StrikeFromBehind => {
                 if self.cycle.is_some()
                     && !(self.release_accepted
                         && self.stable_substeps

@@ -558,7 +558,7 @@ impl Runtime {
         if command.stamp.generation != self.timeline.generation {
             return Err(Reject::Generation);
         }
-        if matches!(command.action, Action::Strike)
+        if matches!(command.action, Action::Strike | Action::StrikeFromBehind)
             && self.mode == Mode::Protocol
             && (self.paused
                 || !self.visible
@@ -593,6 +593,7 @@ impl Runtime {
                 | Action::SelectStation { .. }
                 | Action::SetDifficulty { .. }
                 | Action::Strike
+                | Action::StrikeFromBehind
         ) && command.stamp.tick != self.timeline.tick
         {
             return Err(Reject::Late);
@@ -731,18 +732,17 @@ impl Runtime {
                     },
                 )?;
             }
-            Action::Strike if self.mode == Mode::Protocol => {
-                if self.paused
-                    || !self.visible
-                    || !self
-                        .simulation
-                        .request_strike()
-                        .map_err(|_| Reject::Invalid)?
+            ref action @ (Action::Strike | Action::StrikeFromBehind) if self.mode == Mode::Protocol => {
+                if self.paused || !self.visible { return Err(Reject::Cancelled); }
+                let requested = if matches!(action, Action::StrikeFromBehind) {
+                    self.simulation.request_strike_from_behind()
+                } else { self.simulation.request_strike() };
+                if !requested.map_err(|_| Reject::Invalid)?
                 {
                     return Err(Reject::Cancelled);
                 }
             }
-            Action::Strike | Action::SelectStation { .. } | Action::SetDifficulty { .. } => {
+            Action::Strike | Action::StrikeFromBehind | Action::SelectStation { .. } | Action::SetDifficulty { .. } => {
                 return Err(Reject::Unsupported);
             }
             _ => {

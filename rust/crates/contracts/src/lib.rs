@@ -122,6 +122,9 @@ pub enum Action {
     SetFloorEnabled {
         enabled: bool,
     },
+    /// Physical apparatus input along the current torso forward direction.
+    /// Appended to preserve existing binary enum indices. No alternate-angle fallback.
+    StrikeFromBehind,
 }
 impl Action {
     pub fn valid(&self) -> bool {
