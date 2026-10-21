@@ -1,9 +1,11 @@
 // One real WASM world, visibly prone at construction. No mid-run reset,
 // pose edits, snapshot substitution or external support.
-import init,{WorkerRuntime,getup_build_capabilities,wire_schema} from './lh_worker.js';
+// The full app keeps one shared recovery binary; standalone preview serves it beside this file.
+const assetBase=new URL(self.location.pathname.includes('/minimal/')?'../recovery/':'./',self.location.href);
+const {default:init,WorkerRuntime,getup_build_capabilities,wire_schema}=await import(new URL('lh_worker.js',assetBase));
 await init();
-const profile=await (await fetch('./profile.json')).json();
-const contract=await (await fetch('./capabilities.json')).json();
+const profile=await (await fetch(new URL('profile.json',assetBase))).json();
+const contract=await (await fetch(new URL('capabilities.json',assetBase))).json();
 const capabilities=JSON.parse(getup_build_capabilities());
 if(JSON.stringify(capabilities.effectiveSimFeatures)!==JSON.stringify(contract.effective_sim_features))throw Error('Wrong controller build');
 if(!profile.getup_policy_enabled||profile.getup_repeated_recovery!=='completed-cycle-confirmed-fall-v1')throw Error('Wrong recovery profile');

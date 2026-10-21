@@ -5,7 +5,7 @@ import vm from 'node:vm';
 
 // Runs the actual bridge against a deterministic browser/worker scheduler.
 // It checks transport ordering; physical acceptance remains in real WASM.
-async function driverHarness(qualified = true, getup = false, diagnostics = {}) {
+async function driverHarness(qualified = true, getup = false, diagnostics = {}, recoveryDemo = false) {
   const messages = [], workers = [], timers = new Map();
   let clock = 0, timerId = 0, raf;
   const listenable = () => ({ addEventListener() {}, removeEventListener() {} });
@@ -16,7 +16,7 @@ async function driverHarness(qualified = true, getup = false, diagnostics = {}) 
     select_region() {}, set_floor_enabled() {}, accept_snapshot() {}, resize() {}, draw: () => false,
     dispose() {}, free() {} };
   class Worker {
-    constructor() { workers.push(this); }
+    constructor(url) { this.url=String(url); workers.push(this); }
     postMessage(message) { messages.push(structuredClone(message)); }
     terminate() { this.terminated = true; }
   }
@@ -25,7 +25,7 @@ async function driverHarness(qualified = true, getup = false, diagnostics = {}) 
   if (qualified) window.__lhQualification = { kind: 'recovery', profile };
   if (getup) window.__lhGetUpTrial = true;
   const context = vm.createContext({ window, Worker, ArrayBuffer, Float32Array, URL, structuredClone,
-    location: { href: 'http://localhost/?renderer=webgl2' }, navigator: {}, devicePixelRatio: 1,
+    location: { href: 'http://localhost/?renderer=webgl2'+(recoveryDemo?'&mode=recovery':'') }, navigator: {}, devicePixelRatio: 1,
     document: { ...listenable(), hidden: false, baseURI: 'http://localhost/', getElementById: () => host, createElement: canvas },
     performance: { timeOrigin: 1000, now: () => clock }, CustomEvent: class { constructor(type, detail) { this.type = type; this.detail = detail; } },
     requestAnimationFrame: callback => { raf = callback; return 1; }, cancelAnimationFrame() {},
@@ -157,5 +157,19 @@ test('GetUp report resolves or rejects without advancing or resetting the physic
     assert.equal(h.messages.filter(m => m.type === 'advance' || m.type === 'commands').length, 0);
     assert.equal(h.workers.length, 1);
     assert.equal(h.bridge.diagnostics.tick, 0);
+  } finally { h.close(); }
+});
+
+
+test('explicit Recovery route selects separate worker and withholds strike without current readiness', async () => {
+  const h = await driverHarness(false, false, {getup:{policy:{prototype_standing_passed:true,stable_standing_s:2}}}, true);
+  try {
+    assert.equal(h.worker.url,'http://localhost/recovery/sim-worker.js');
+    const initialization=h.latest('initialize');
+    assert.equal(initialization.mode,'protocol');assert.equal(initialization.recoveryDemo,true);
+    assert.equal(initialization.getupTrial,undefined);assert.equal(initialization.profile,undefined);
+    assert.equal(h.bridge.diagnostics.mode,'recovery');assert.equal(h.bridge.diagnostics.canStrike,false);
+    h.frame(30);assert([...h.timers.values()].some(x=>x.ms===90000),'Recovery forecast uses explicit long-call watchdog');
+    assert.equal(h.workers.length,1);
   } finally { h.close(); }
 });

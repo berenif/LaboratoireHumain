@@ -63,6 +63,8 @@ mod browser {
         motion: String,
         recovery_step: String,
         falls: u32,
+        recoveries: u32,
+        stable_seconds: f64,
         contacts: u32,
         max_self_penetration_m: f64,
         max_floor_penetration_m: f64,
@@ -112,9 +114,11 @@ mod browser {
                     <h1>"A body in"<br/>"balance."</h1>
                     <p class="intro">"Explore how a physical body responds to a gentle pull. Drag a surface, release it, and watch its response."</p>
                     <div class="mode-tabs" role="group" aria-label="Experiment mode">
-                        <button class:active=move||status.get().mode=="protocol" disabled=move||!status.get().ready on:click=move|_|emit(serde_json::json!({"type":"mode","value":"protocol"}))>"Impact protocol"</button>
-                        <button class:active=move||status.get().mode=="playground" disabled=move||!status.get().ready on:click=move|_|emit(serde_json::json!({"type":"mode","value":"playground"}))>"Balance playground"</button>
+                        <button class:active=move||status.get().mode=="protocol" disabled=move||!status.get().can_reset on:click=move|_|emit(serde_json::json!({"type":"mode","value":"protocol"}))>"Impact protocol"</button>
+                        <button class:active=move||status.get().mode=="playground" disabled=move||!status.get().can_reset on:click=move|_|emit(serde_json::json!({"type":"mode","value":"playground"}))>"Balance playground"</button>
+                        <button class:active=move||status.get().mode=="recovery" disabled=move||!status.get().can_reset on:click=move|_|emit(serde_json::json!({"type":"mode","value":"recovery"}))>"Recovery demo"</button>
                     </div>
+                    <Show when=move||status.get().mode=="recovery"><p class="migration-note">"Visible prone start, autonomous get-up, then rear impacts. Wait for stable recovery and three seconds before striking. Two cycles verified; arbitrary impacts are experimental. Switching modes or Reset starts a new trial."</p></Show>
                     <div class="controls">
                         <div class="control-heading"><h2>"Trial controls"</h2><span class="key">"SPACE"</span></div>
                         <div class="button-row">
@@ -122,7 +126,7 @@ mod browser {
                             <button id="reset" disabled=move||!status.get().can_reset on:click=move|_|emit(serde_json::json!({"type":"reset"}))>"Reset"</button>
                         </div>
                         <label class="toggle"><input id="floor" type="checkbox" disabled=move||!status.get().ready prop:checked=move||status.get().desired_floor_enabled on:change=move|e|emit(serde_json::json!({"type":"floor","value":event_target_checked(&e)}))/><span>"Ground enabled"</span></label>
-                        <label>"Starting heading"<select id="heading" disabled=move||!status.get().ready prop:value=move||status.get().heading.to_string() on:change=move|e|emit(serde_json::json!({"type":"heading","value":event_target_value(&e)}))><option value="0">"Front · 0°"</option><option value="1.0471975512">"Turn · +60°"</option><option value="-0.7853981634">"Turn · −45°"</option></select></label>
+                        <label>"Starting heading"<select id="heading" disabled=move||!status.get().ready||status.get().mode=="recovery" prop:value=move||status.get().heading.to_string() on:change=move|e|emit(serde_json::json!({"type":"heading","value":event_target_value(&e)}))><option value="0">"Front · 0°"</option><option value="1.0471975512">"Turn · +60°"</option><option value="-0.7853981634">"Turn · −45°"</option></select></label>
                         <label>"Select a region"<select id="region" prop:value=move||status.get().selected on:change=move|e|emit(serde_json::json!({"type":"region","value":event_target_value(&e)}))>
                             <option value="">"All surfaces"</option><option value="head">"Head"</option><option value="torso">"Torso"</option><option value="pelvis">"Pelvis"</option>
                             <option value="left_hand">"Left hand"</option><option value="right_hand">"Right hand"</option><option value="left_foot">"Left foot"</option><option value="right_foot">"Right foot"</option>
@@ -136,9 +140,9 @@ mod browser {
                             </select></label>
                             <p class="migration-note">"Changing stations or difficulty starts a fresh trial."</p>
                         </Show>
-                        <Show when=move||status.get().mode=="protocol">
+                        <Show when=move||status.get().mode!="playground">
                             <div class="control-heading"><h2>"Impact protocol"</h2><kbd>"P"</kbd></div>
-                            <button id="strike" class="primary" disabled=move||!status.get().can_strike on:click=move|_|emit(serde_json::json!({"type":"strike"}))>"Strike"</button>
+                            <button id="strike" class="primary" disabled=move||!status.get().can_strike on:click=move|_|emit(serde_json::json!({"type":"strike"}))>{move||if status.get().mode=="recovery" {"Strike from behind"} else {"Strike"}}</button>
                             <p aria-live="polite">{move||format!("{} · {} measured impacts",status.get().striker_phase,status.get().strikes)}</p>
                         </Show>
                     </div>
@@ -156,7 +160,7 @@ mod browser {
                     <div class="error-banner" hidden=move||status.get().error.is_empty()><p>{move||status.get().error}</p><button id="graphics-retry" on:click=move|_|emit(serde_json::json!({"type":"retry"}))>"Retry graphics"</button></div>
                 </section>
                 <section class="metrics" aria-label="Live trial measurements">
-                    <div><span>"BODY STATE"</span><strong id="motion">{move||status.get().motion}</strong><small>{move||format!("{} falls",status.get().falls)}</small></div>
+                    <div><span>"BODY STATE"</span><strong id="motion">{move||status.get().motion}</strong><small>{move||format!("{} falls",status.get().falls)}</small><small>{move||format!("{} recoveries · {:.2} s current stability",status.get().recoveries,status.get().stable_seconds)}</small></div>
                     <div><span>"PHYSICS TIME"</span><strong>{move||format!("{:.2}",status.get().time)}<small>" s"</small></strong></div>
                     <div><span>"MEASURED SUPPORT"</span><strong>{move||status.get().contacts}<small>" segments"</small></strong><small id="penetration-diagnostic">{move||format!("Max overlap: body {:.2} mm · ground {:.2} mm",status.get().max_self_penetration_m*1000.0,status.get().max_floor_penetration_m*1000.0)}</small></div>
                     <div><span>"COMPLETED STEPS"</span><strong>{move||status.get().steps}</strong></div>
@@ -164,7 +168,7 @@ mod browser {
                     <div><span>"SIMULATION / WALL"</span><strong>{move||format!("{:.2}×",status.get().realtime_ratio)}</strong></div>
                 </section>
             </main>
-            <footer>"GetUp reference body. Pretrained recovery is experimental and disabled by default."</footer>
+            <footer>"GetUp reference body. Recovery is explicit and experimental; protocol and playground are not recovery-qualified. "<a href="minimal/">"Compact recovery view"</a></footer>
         }
     }
     pub fn run() {

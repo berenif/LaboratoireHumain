@@ -50,8 +50,10 @@ export async function start_bridge() {
   const sourceStepLab = new URL(location.href).searchParams.get('sourceStepLab') === '1';
   if (sourceStepLab && location.hostname !== '127.0.0.1') throw new Error('Source step preview requires loopback');
   let rayOverlay = null;
+  const recoveryDemo = new URL(location.href).searchParams.get('mode') === 'recovery';
   const initialMode = new URL(location.href).searchParams.get('mode') === 'playground' ? 'playground' : 'protocol';
-  let initialization = { mode: initialMode, heading: 0, generation: 1, floorEnabled: true };
+  let initialization = { mode: initialMode, heading: 0, generation: 1, floorEnabled: true, ...(recoveryDemo ? { recoveryDemo: true } : {}) };
+  if (recoveryDemo && (window.__lhGetUpTrial !== undefined || window.__lhQualification !== undefined || sourceStepLab)) throw new Error('Recovery demo cannot mix qualification preloads');
   // Only an explicit automation preload enables the recovery observer. Ordinary
   // pages continue to initialize their existing public mode and default profile.
   const qualification = window.__lhQualification;
@@ -79,6 +81,7 @@ export async function start_bridge() {
     packets: [], frames: [], droppedPackets: 0, droppedFrames: 0, previousFrameMs: null,
     snapshotSources: [], inputSamples: [], visualInputs: [], droppedInputs: 0,
     maximumQueueDepth: 0, maximumOutstandingAdvances: 0, maximumAdvanceTicks: 0, maximumTransferBuffers: 0,
+    recoveryReadyAfterTick: null,
     recoveryContinuity: { packets: 0, initial: null, latest: null, violations: [] },
   };
   function listen(target, type, callback, options) {
@@ -93,19 +96,20 @@ export async function start_bridge() {
       ready: Boolean(state.last && state.renderer && !state.changing && !state.graphicsFault && !state.failed),
       canReset: Boolean(state.last || state.workerFault), heading: state.heading,
       halted: state.failed || state.graphicsFault,
-      paused: state.desiredPaused, mode: state.last?.reply.mode || initialization.mode,
+      paused: state.desiredPaused, mode: recoveryDemo ? 'recovery' : state.last?.reply.mode || initialization.mode,
       station: state.playground.station, difficulty: state.playground.difficulty,
       backend: graphics.backend || '', requestedRenderer: state.backendRequested, rendererFallbackReason: state.backendFallbackReason, quality: state.quality, selected: state.selected,
       tick: snapshot?.stamp.tick || 0, generation: snapshot?.stamp.generation || 0,
       time: snapshot?.simulation_time_s || 0, fps: state.fps,
       realtimeRatio: state.activeWall > 0 ? (snapshot?.simulation_time_s || 0) / state.activeWall : 0,
+      recoveries: snapshot?.counters.recoveries || 0, stableSeconds: getup?.policy?.stable_standing_s || 0,
       steps: snapshot?.counters.steps || 0, contacts: snapshot?.contacts.filter(c => c.normal_load_n >= 3).length || 0,
       maxSelfPenetrationM: snapshot?.diagnostics.max_self_penetration_m ?? 0,
       maxFloorPenetrationM: snapshot?.diagnostics.max_floor_penetration_m ?? 0,
       strikes: snapshot?.counters.strikes || 0, strikerPhase: snapshot?.striker?.phase || '',
-      canStrike: Boolean(snapshot?.striker?.available && state.renderer && !state.changing && !state.graphicsFault && !state.desiredPaused && state.visible && !state.failed && !state.workerFault && !state.outstanding?.strike && !state.pending.some(entry => entry.action === 'Strike')),
+      canStrike: Boolean((!recoveryDemo || (snapshot?.motion === 'Upright' && getup?.policy?.prototype_standing_passed && getup.policy.stable_standing_s >= 1 && state.recoveryReadyAfterTick !== null && snapshot.stamp.tick >= state.recoveryReadyAfterTick)) && snapshot?.striker?.available && state.renderer && !state.changing && !state.graphicsFault && !state.desiredPaused && state.visible && !state.failed && !state.workerFault && !state.outstanding?.strike && !state.pending.some(entry => ['Strike','StrikeFromBehind'].includes(entry.action))),
       motion: snapshot?.motion || 'Starting', falls: snapshot?.counters.falls || 0,
-      recoveryStep: sourceStepLab ? `Native source lab · ${state.last?.reply.sourceStepLab?.phase || 'paused'} · ${state.last?.reply.sourceStepLab?.quietSeconds?.toFixed(2) || '0.00'} s quiet` : getup ? getup.learned_policy_loaded
+      recoveryStep: recoveryDemo ? `Recovery demo · ${getup?.policy?.phase || 'visible prone start'} · ${getup?.policy?.stable_standing_s?.toFixed(2) || '0.00'} s current stability` : sourceStepLab ? `Native source lab · ${state.last?.reply.sourceStepLab?.phase || 'paused'} · ${state.last?.reply.sourceStepLab?.quietSeconds?.toFixed(2) || '0.00'} s quiet` : getup ? getup.learned_policy_loaded
         ? `GetUp pretrained · ${getup.policy?.phase || 'initializing'} · Experimental`
         : `GetUp body · ${getup.controller === 'measured-contact-standing-balance' ? 'Joint balance' : 'Reference PD'} · Learned recovery disabled` : '',
       floorEnabled: state.floorEnabled, desiredFloorEnabled: state.desiredFloorEnabled, error: state.error || state.graphicsError, workerMs: state.workerMs,
@@ -133,7 +137,7 @@ export async function start_bridge() {
     fail('Physical worker stopped: ' + failure.message + '. Reset to start a fresh trial.');
   }
   function spawnWorker() {
-    const current = new Worker(new URL(sourceStepLab ? '/__source_step/worker.js' : 'sim-worker.js', document.baseURI), { type: 'module', name: 'physical-body' });
+    const current = new Worker(new URL(sourceStepLab ? '/__source_step/worker.js' : recoveryDemo ? 'recovery/sim-worker.js' : 'sim-worker.js', document.baseURI), { type: 'module', name: 'physical-body' });
     worker = current; state.workerInstances++;
     current.onmessage = event => { if (worker === current) onWorkerMessage(event); };
     current.onerror = event => {
@@ -144,6 +148,7 @@ export async function start_bridge() {
     state.watchdog = setTimeout(() => { if (worker === current) workerFailed('Worker startup timed out'); }, 30000);
   }
   function restartWorker() {
+    if (recoveryDemo) { location.reload(); return; } // Explicit user new trial, never recovery.
     initialization = { mode: state.last?.reply.mode || initialization.mode, heading: state.heading,
       generation: (state.last?.reply.snapshot.stamp.generation || initialization.generation) + 1,
       floorEnabled: state.floorEnabled, playground: state.playground };
@@ -160,13 +165,13 @@ export async function start_bridge() {
       state.maximumAdvanceTicks = Math.max(state.maximumAdvanceTicks, message.ticks);
     }
     state.outstanding = { id: message.requestId, type: message.type, sent: performance.now(), manualResolve,
-      strike: message.commands?.some(command => command.action === 'Strike') || false,
+      strike: message.commands?.some(command => ['Strike','StrikeFromBehind'].includes(command.action)) || false,
       commandSequences: message.commands?.map(command => command.stamp.sequence) || [] };
     const current = worker;
     clearWatchdog();
     state.watchdog = setTimeout(() => {
       if (worker === current && state.outstanding?.id === message.requestId) workerFailed('Worker request timed out');
-    }, message.type === 'initialize' ? 10000 : getupTrial ? 90000 : 5000);
+    }, message.type === 'initialize' ? 10000 : (getupTrial || recoveryDemo) ? 90000 : 5000);
     try { current.postMessage(message); } catch (error) { workerFailed(error); }
   }
   function cancelPointer(sendCancellation = true, clearTouches = true) {
@@ -264,6 +269,7 @@ export async function start_bridge() {
       }
       if (message.type !== 'snapshot' || !(message.poseBuffer instanceof ArrayBuffer) || message.poseBuffer.byteLength !== 1300) throw new Error('Invalid worker packet');
       const oldGeneration = state.last?.reply.snapshot.stamp.generation;
+      if (recoveryDemo) state.recoveryReadyAfterTick = message.recoveryDemo?.readyAfterTick ?? null;
       const receivedAtMs = performance.now();
       state.last = { reply: message.reply, poses: new Float32Array(message.poseBuffer).slice(), timing: message.timing,
         recoveryProgress: message.recoveryProgress, workerIdentity: message.workerIdentity };
@@ -372,6 +378,13 @@ export async function start_bridge() {
     finally { state.changing = false; state.accumulator = 0; state.lastClock = performance.now(); notify(); }
   }
   function action(value) {
+    if (value.type === 'mode' && (recoveryDemo || value.value === 'recovery')) {
+      if (!['protocol','playground','recovery'].includes(value.value)) return;
+      const url = new URL(location.href); url.searchParams.set('mode', value.value);
+      location.assign(url.href); return; // Explicit mode choice starts a new trial with its own compiled worker.
+    }
+    if (recoveryDemo && value.type === 'reset') { location.reload(); return; }
+    if (recoveryDemo && ['heading','station','difficulty'].includes(value.type)) return;
     if (sourceStepLab && ['floor', 'mode', 'heading', 'station', 'difficulty', 'strike'].includes(value.type)) return;
     if (['pause', 'reset', 'floor', 'mode', 'heading', 'station', 'difficulty', 'strike'].includes(value.type)) {
       if (value.type === 'reset' && state.workerFault) { restartWorker(); return; }
@@ -385,7 +398,7 @@ export async function start_bridge() {
       case 'heading': state.heading = Number(value.value); queue({ Initialize: { mode: state.last?.reply.mode || 'protocol', heading: state.heading } }); break;
       case 'station': queue({ SelectStation: { station: value.value } }); break;
       case 'difficulty': queue({ SetDifficulty: { difficulty: value.value } }); break;
-      case 'strike': if (status().canStrike) queue('Strike'); break;
+      case 'strike': if (status().canStrike) queue(recoveryDemo ? 'StrikeFromBehind' : 'Strike'); break;
       case 'region': state.selected = value.value; state.renderer?.select_region(value.value); break;
       case 'renderer': void changeRenderer(value.value); break;
       case 'quality': state.quality = value.value; break;

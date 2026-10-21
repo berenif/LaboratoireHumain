@@ -1,5 +1,5 @@
 // This module owns the only simulation instance in the browser.
-import init, { WorkerRuntime, wire_schema, calibrate_tangent_contact, calibrate_foundation, calibrate_recovery_fixture, getup_trial_profile } from './lh_worker.js';
+import init, { WorkerRuntime, wire_schema, calibrate_tangent_contact, calibrate_foundation, calibrate_recovery_fixture, getup_trial_profile, getup_build_capabilities } from './lh_worker.js';
 
 const wasm = await init();
 const poseBytes = 25 * 13 * Float32Array.BYTES_PER_ELEMENT;
@@ -9,6 +9,30 @@ let lastRequest = 0;
 let profiling = true;
 let quietQualification = false;
 let recoveryQualification = false;
+let recoveryDemo = false, recoveryTriggered = false, readyAfterTick = null, lastRecoveries = 0, lastSnapshot = null;
+const recoveryProfileHash = 'aaa415a19767c218a26b05bad277193cccba2a726b52dcd5aac0a5444afc39d6';
+function completeRecoveryEntry(reply) {
+  if (!recoveryDemo) return reply;
+  if (!recoveryTriggered && !reply.failure && reply.snapshot.stamp.tick === 20) {
+    if (!JSON.parse(runtime.getup_fixture_report()).state.ready) throw new Error('Initial prone body did not settle');
+    runtime.trigger_getup_fixture(); // Declared initial lifecycle only; no body/clock edit.
+    const triggered = JSON.parse(runtime.advance(0));
+    reply = { ...reply, snapshot: triggered.snapshot, failure: triggered.failure };
+    recoveryTriggered = true;
+  }
+  if (reply.snapshot.counters.recoveries > lastRecoveries) {
+    lastRecoveries = reply.snapshot.counters.recoveries;
+    readyAfterTick = reply.snapshot.stamp.tick + 120;
+  }
+  lastSnapshot = reply.snapshot;
+  return reply;
+}
+function recoveryCanStrike() {
+  const p = lastSnapshot?.diagnostics.getup?.policy;
+  return recoveryTriggered && lastSnapshot?.motion === 'Upright' && p?.prototype_standing_passed
+    && p.stable_standing_s >= 1 && readyAfterTick !== null && lastSnapshot.stamp.tick >= readyAfterTick
+    && lastSnapshot.striker?.available;
+}
 const workerIdentity = globalThis.crypto?.randomUUID?.() ?? `${performance.timeOrigin}:${Math.random()}`;
 
 function publish(requestId, reply, started, timing) {
@@ -32,11 +56,12 @@ function publish(requestId, reply, started, timing) {
     timing,
     wasmLinearBytes: wasm.memory?.buffer.byteLength ?? null,
     transferBuffersAllocated: buffers.length,
+    ...(recoveryDemo ? { recoveryDemo: { readyAfterTick, initialTriggered: recoveryTriggered }, workerIdentity } : {}),
     ...(quietQualification ? { quietProgress: JSON.parse(runtime.quiet_progress()) } : {}),
     ...(recoveryQualification ? { recoveryProgress: JSON.parse(runtime.recovery_progress()), workerIdentity } : {}) }, [slot.buffer]);
 }
 
-self.onmessage = event => {
+self.onmessage = async event => {
   const message = event.data;
   const started = performance.now();
   try {
@@ -109,19 +134,34 @@ self.onmessage = event => {
       if (message.profile !== undefined && (typeof message.profile !== 'object' || message.profile === null || Array.isArray(message.profile))) throw new Error('Invalid initial profile');
       if (message.getupTrial !== undefined && (message.getupTrial !== true || message.mode !== 'protocol'
         || message.floorEnabled === false || message.profile !== undefined || message.qualification !== undefined)) throw new Error('Invalid GetUp prototype preload');
-      const profile = message.getupTrial ? getup_trial_profile() : message.profile === undefined ? undefined : JSON.stringify(message.profile);
+      if (message.recoveryDemo !== undefined && (message.recoveryDemo !== true || message.mode !== 'protocol'
+        || message.heading !== 0 || (message.generation ?? 1) !== 1 || message.floorEnabled !== true
+        || message.profile !== undefined || message.qualification !== undefined || message.getupTrial !== undefined)) throw new Error('Invalid explicit recovery demo');
+      let demoProfile;
+      if (message.recoveryDemo) {
+        const [profileResponse, capabilityResponse] = await Promise.all([fetch('./profile.json'), fetch('./capabilities.json')]);
+        if (!profileResponse.ok || !capabilityResponse.ok) throw new Error('Recovery assets unavailable');
+        demoProfile = await profileResponse.text();
+        const hash = [...new Uint8Array(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(demoProfile)))].map(x=>x.toString(16).padStart(2,'0')).join('');
+        const expected = await capabilityResponse.json(), actual = JSON.parse(getup_build_capabilities());
+        if (hash !== recoveryProfileHash || JSON.stringify(actual.effectiveSimFeatures) !== JSON.stringify(expected.effective_sim_features)
+          || !actual.effectiveSimFeatures.includes('getup-repeat-balance-acquire-experiment')) throw new Error('Unreviewed recovery profile or worker');
+      }
+      const profile = demoProfile ?? (message.getupTrial ? getup_trial_profile() : message.profile === undefined ? undefined : JSON.stringify(message.profile));
       if (profile !== undefined && profile.length > 65536) throw new Error('Initial profile exceeds bound');
       if (message.qualification === 'recovery' && (message.mode !== 'protocol' || message.floorEnabled === false
         || !message.profile || message.profile.recovery_enabled !== true)) throw new Error('Recovery qualification requires an explicit recovery profile and protocol floor');
       const playground = message.playground === undefined ? undefined : JSON.stringify(message.playground);
       if (playground && playground.length > 256) throw new Error('Playground settings exceed bound');
-      const next = new WorkerRuntime(message.mode, message.heading, String(message.generation ?? 1), message.floorEnabled, profile, playground);
+      const next = message.recoveryDemo ? WorkerRuntime.getup_fixture_with_profile('belly', profile)
+        : new WorkerRuntime(message.mode, message.heading, String(message.generation ?? 1), message.floorEnabled, profile, playground);
       try {
+        if (message.recoveryDemo) next.set_root_translation_compensation_enabled(true);
         if (['quiet', 'quiet-drift'].includes(message.qualification)) next.enable_quiet_measurement();
         if (message.qualification === 'quiet-drift') next.enable_quiet_drift_trace();
         if (message.qualification === 'recovery') next.enable_recovery_measurement();
       } catch (error) { next.free(); throw error; }
-      runtime = next;
+      runtime = next; recoveryDemo = message.recoveryDemo === true;
       profiling = message.profiling !== false;
       quietQualification = ['quiet', 'quiet-drift'].includes(message.qualification);
       recoveryQualification = message.qualification === 'recovery';
@@ -129,6 +169,9 @@ self.onmessage = event => {
       if (!runtime) throw new Error('Worker is not initialized');
       if (message.type === 'commands') {
         if (!Array.isArray(message.commands) || message.commands.length > 128) throw new Error('Command batch exceeds bound');
+        if (recoveryDemo && message.commands.some(c => c.action === 'Reset' || (typeof c.action === 'object' && ['Initialize','SelectStation','SetDifficulty'].some(k=>k in c.action)))) throw new Error('Recovery reset/mode changes require an explicit new page trial');
+        if (recoveryDemo && message.commands.some(c => ['Strike','StrikeFromBehind'].includes(c.action))
+          && (!recoveryCanStrike() || message.commands.some(c=>c.action==='Strike'))) throw new Error('Recovery rear striker is not ready');
         runtime.enqueue_batch(JSON.stringify(message.commands));
       } else if (message.type === 'visible') {
         if (typeof message.visible !== 'boolean') throw new Error('Invalid visibility');
@@ -137,16 +180,17 @@ self.onmessage = event => {
         if (!Number.isInteger(message.ticks) || message.ticks < 0 || message.ticks > 4) throw new Error('Advance exceeds bound');
       } else throw new Error('Unknown worker request');
     }
-    const ticks = message.type === 'advance' ? message.ticks : 0;
+    let ticks = message.type === 'advance' ? message.ticks : 0;
+    if (recoveryDemo && !recoveryTriggered) ticks = Math.min(ticks, 20 - (lastSnapshot?.stamp.tick ?? 0));
     if (profiling) {
       const json = runtime.advance_profiled(ticks);
       const parseStarted = performance.now();
       const result = JSON.parse(json);
       const parseMs = performance.now() - parseStarted;
-      publish(message.requestId, result.reply, started, { ticks: result.timings, clockValid: result.clockValid,
+      publish(message.requestId, completeRecoveryEntry(result.reply), started, { ticks: result.timings, clockValid: result.clockValid,
         runtimeMs: result.runtimeMs, runtimeNonTickMs: result.runtimeNonTickMs,
         nativeOutputMs: runtime.native_output_ms(), jsonParseMs: parseMs });
-    } else publish(message.requestId, JSON.parse(runtime.advance(ticks)), started, null);
+    } else publish(message.requestId, completeRecoveryEntry(JSON.parse(runtime.advance(ticks))), started, null);
   } catch (error) {
     self.postMessage({ type: 'error', requestId: message?.requestId ?? null, workerIdentity, message: String(error) });
   }

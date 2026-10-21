@@ -36,3 +36,22 @@ A native-only [stationary balance experiment](docs/experiments/getup-stationary-
 A [bounded actual-WASM frozen-feature adaptation pilot](docs/experiments/getup-wasm-policy-adaptation.md) also rejected its single candidate: the original BACK case retained zero qualifying measured interval, despite improvement on one narrowly related heldout state and preserved belly holds. The local correction head remains default-off; no trained weights are embedded or published.
 
 Source lives in `rust/crates/`, with browser assets in `rust/browser/` and build/test helpers in `scripts/`. The legacy TypeScript application is retained in Git history. Existing reports and immutable experiment records under `docs/` are historical evidence, not current build instructions; start with this README.
+
+## Full interface with the explicit recovery demo
+
+The complete interface remains in `rust/crates/browser` and `rust/crates/renderer`.
+The compact view is an alternate diagnostic, not a replacement for grabbing,
+terrain stations, camera, rendering or metrics. `?mode=recovery` selects the
+separate tested V3 worker/profile and a declared prone start; normal protocol and
+playground retain their default worker. Switching between these variants or
+resetting Recovery explicitly begins a new page trial. No recovery action resets
+the world. Recovery’s rear strike requires current standing and a three-second
+wait. Arbitrary pulls, impacts, terrain recovery and corrective walking are not
+made qualified by the narrow two-cycle result.
+
+`node scripts/build-restored-browser.mjs <verified-V3-assets> <new-output>` builds
+one current default worker and the full frontend in the existing shared target,
+then copies the hash-pinned V3 artifact separately. It never rebuilds or overwrites
+that tested artifact. The homepage preserves both original modes and adds the
+Recovery mode; `/minimal/` shares the same recovery binary. See the compact
+[measured scope](rust/browser/minimal/README.md), not a full-MVP acceptance claim.
