@@ -193,25 +193,41 @@ class LocalRehearsalTransport:
         self.exchange.shared_bytes=EXISTING_IMMUTABLE_PAYLOAD
         self.exchange.remote_uploaded_bytes=initial_cumulative
         self.exchange.seed_sha256='c'*64
-        self.port=DrivePhaseTransport(self.exchange,self.transfer,clock)
+        self.remote=self.root.parent/'fake-private-server';self.remote.mkdir(exist_ok=True)
+        self.port=DrivePhaseTransport(self.exchange,self.transfer,clock,self.fetch_dependency)
     def transfer(self,request_path,validator):
         request=json.loads(request_path.read_text());archive=Path(request['archive_path'])
-        downloaded=self.root/'download.zip';shutil.copyfile(archive,downloaded)
+        remote=self.remote/request['archive_sha256'];shutil.copyfile(archive,remote)
+        downloaded=self.root/'download.zip';shutil.copyfile(remote,downloaded)
         self.cumulative+=request['archive_bytes'];self.clock.advance(self.delay)
         if request['boundary']==self.fail_boundary or self.clock.now()>=request['deadline_unix']:
             downloaded.unlink();raise ContractError('Scripted backup failure/delay; no retry')
         receipt=request_path.with_name(request_path.name.replace('.request.json','.receipt.json'))
-        atomic_json(receipt,{key:request[key] for key in
+        value={key:request[key] for key in
             ('run_id','kind','archive_sha256','archive_bytes','manifest_sha256')}|{
             'schema':'lh-private-drive-receipt/v1','synthetic':True,'owner_only':True,'shared':False,
             'download_completed':True,'downloaded_path':str(downloaded),
-            'drive_file_id':request['target_drive_file_id'],'generation_nonce':request['generation_nonce'],
-            'prewrite_target_archive_sha256':request['expected_target_archive_sha256'],
-            'protected_current_untouched':True,'write_count':1,'operation':'replace-owned-slot'})
+            'drive_file_id':'synthetic-phase-'+request['archive_sha256']}
+        if request['kind']=='generation':
+            value.update(drive_file_id=request['target_drive_file_id'],generation_nonce=request['generation_nonce'],
+                prewrite_target_archive_sha256=request['expected_target_archive_sha256'],
+                protected_current_untouched=True,write_count=1,operation='replace-owned-slot')
+        atomic_json(receipt,value)
         try:
             manifest=self.exchange.verify_receipt(request_path,receipt,validator)
             if self.after_verified:self.after_verified(archive,manifest,request['boundary'])
         finally:downloaded.unlink(missing_ok=True)
+
+    def fetch_dependency(self,reference,deadline):
+        if self.clock.now()>=deadline:raise ContractError('Dependency readback deadline')
+        remote=self.remote/reference['archive_sha256']
+        directory=self.exchange.directory/'dependency-cache';directory.mkdir(exist_ok=True)
+        path=directory/(reference['archive_sha256']+'.zip')
+        shutil.copyfile(remote,path);self.clock.advance(self.delay)
+        if self.clock.now()>=deadline:raise ContractError('Dependency readback deadline')
+        return path
+
+    def dependency(self,reference,deadline):return self.port.dependency(reference,deadline)
 
     def storage_usage(self):return self.port.storage_usage()
 

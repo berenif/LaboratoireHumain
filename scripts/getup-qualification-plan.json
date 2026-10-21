@@ -1,13 +1,13 @@
 {
-  "schema": "lh-corrected-qualification-only/v1",
+  "schema": "lh-corrected-qualification-phases/v2",
   "mode": "qualification-only",
   "optimizer_updates": 0,
   "candidate_evaluations": 0,
   "wall_seconds": 3600,
   "physics_cutoff_seconds": 2100,
-  "normal_integrations": 137060,
+  "normal_integrations": 112060,
   "shared_uncertainty_reserve": 5020,
-  "maximum_qualification_integrations": 142080,
+  "maximum_qualification_integrations": 117080,
   "protected_evaluation_integrations": 147000,
   "source_decisions": 1024,
   "active_output_bytes": 33554432,
@@ -16,7 +16,7 @@
   "corrected_immutable_archive_bytes": 12582912,
   "seed_archive_bytes": 1962859,
   "mutable_uploads": 1,
-  "next_call_growth_bytes": 20971520,
+  "next_call_growth_bytes": null,
   "growth_components_bytes": {
     "controller": 12582912,
     "world_contacts": 6291456,
@@ -69,11 +69,6 @@
       "normal": 49000,
       "forecasts": 1
     },
-    "original-diagnostic": {
-      "seconds": 240,
-      "normal": 25000,
-      "forecasts": 1
-    },
     "coherent-terminal-restore": {
       "seconds": 180,
       "normal": 0,
@@ -83,10 +78,20 @@
       "seconds": 300,
       "normal": 0,
       "forecasts": 0
+    },
+    "parity-proof": {
+      "seconds": 180,
+      "normal": 0,
+      "forecasts": 0
+    },
+    "belly-proof": {
+      "seconds": 180,
+      "normal": 0,
+      "forecasts": 0
     }
   },
   "hold_evidence": "All required samples checked; full-sample extrema, continuous stability, first800/final checkpoints; nativeTrace samples summarized, not all archived",
-  "original_diagnostic": "Optional fresh reset from the metered original BACK seed, recovery only up to original25s deadline; no extra30s hold",
+  "original_diagnostic": "Omitted permanently from this mandatory-only plan; no substitute workload",
   "automatic_next_trial": false,
   "physical_acceptance_changed": false,
   "growth_bound_source_sha256": {
@@ -96,5 +101,13 @@
     "rust/crates/sim/src/runtime.rs": "52ebb907deba521d200b72d0f881fa50c41e4aa5457b10ee7d4617db9ff6e833",
     "rust/crates/sim/src/lib.rs": "bfb68112fe8fdc296a7350db7e3b40d715b53480a20d0292345434e0732efcb4",
     "rust/crates/sim/src/striker.rs": "63ce3efde29b331f8b5dce45f2a702286b816d7c4511cb80040739c4b97ef1e6"
-  }
+  },
+  "immutable_phase_uploads": 2,
+  "generation_uploads": 3,
+  "serialized_bound": "replacement-aware;20MiB additive growth is superseded, never an RSS claim",
+  "phase_proofs": [
+    "PARITY",
+    "BELLY"
+  ],
+  "completion_contract": "Operational next-call+complete terminal capture; no universal trajectory completion guarantee"
 }

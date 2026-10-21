@@ -18,8 +18,8 @@ def validate_growth_sources(root):
     for name,digest in PLAN['growth_bound_source_sha256'].items():
         if sha256(Path(root)/name)!=digest:
             raise ContractError('Frozen runtime growth source changed: '+name)
-    if PLAN['next_call_growth_bytes']!=20*1024**2:
-        raise ContractError('Reviewed20MiB per-call growth bound changed')
+    if PLAN['schema']!='lh-corrected-qualification-phases/v2' or PLAN['next_call_growth_bytes'] is not None:
+        raise ContractError('Reviewed replacement-aware serialized bound changed')
     model=json.loads((Path(root)/'rust/crates/model/data/getup-v1.json').read_text())
     primitives=[p for segment in model['segments'] for p in segment['reference']['primitives']]
     hinges=[s['reference']['hinge'] for s in model['segments'] if s['reference']['hinge']]
@@ -135,7 +135,7 @@ def validate_owner_inventory(admission,prior):
             or inventory.get('unknown_transfers') is not False
             or inventory.get('cumulative_uploaded_bytes')!=ledger.get('cumulative_uploaded_bytes')
             or storage['cumulative_uploaded_bytes']!=ledger.get('cumulative_uploaded_bytes')
-            or storage['cumulative_uploaded_bytes']<37690936
+            or storage['cumulative_uploaded_bytes']<43566444
             or inventory.get('live_archive_bytes')!=ledger.get('live_bytes')
             or storage.get('live_archive_bytes')!=ledger.get('live_bytes')
             or inventory.get('trashed_archive_bytes')!=ledger.get('trashed_bytes')
@@ -180,7 +180,12 @@ class QualificationByteGuard:
         # metadata/mapping record and ZIP overhead;2MiB bounds cursor/pending,
         # state/report/ledger and final small JSON evidence.
         terminal=self.learner_bytes+2*1024**2+11000*rows
-        proof=pilot.bridge.call({'op':'qualificationStorage','terminalBaseBytes':terminal})
+        exchange=pilot.recovery.transport.exchange
+        staging=exchange.external_local_bytes+sum(p.stat().st_size for p in exchange.directory.rglob('*') if p.is_file())
+        dependencies=max((r['archive_bytes']+r['payload_bytes'] for r in pilot.proofs.references),default=0)
+        proof=pilot.bridge.call({'op':'qualificationStorage','terminalBaseBytes':terminal,
+            'stagingBaseBytes':staging,'dependencyRestoreBytes':dependencies,
+            'stagingLimitBytes':exchange.local_staging_limit_bytes})
         pilot.report['byteGuard']=proof
         return proof
 
@@ -209,15 +214,20 @@ class QualificationPlan(PhasePlan):
 
 class QualificationPilot(ColdPilot):
     """One continuous qualification, one terminal application restore, no retry."""
-    def __init__(self,*args,byte_guard,**kwargs):
+    def __init__(self,*args,byte_guard,native_validator=None,**kwargs):
         super().__init__(*args,**kwargs)
         self.byte_guard=byte_guard;self.terminal_attempted=False
+        self.physical_proof_mode=None;self.prior_raw_bytes=b'';self.last_snapshot_roles={}
+        self.committed_raw_duplicate=None
+        from getup_phase_proofs import PhaseProofs
+        def missing_validator(paths):raise ContractError('Native phase restore validator missing')
+        self.proofs=PhaseProofs(self,native_validator or missing_validator)
         self.diagnostic_restore_required=False
         self.untouched_learning_state=self.learner.capture_learning_state()
         self.report.update(mode='qualification-only',optimizerAuthorized=False,
             fullTrainingReplayReady=False,physicalQualificationPassed=False,
-            holdEvidenceGranularity=PLAN['hold_evidence'],normalIntegrationEnvelope=137060,
-            sharedReserveIntegrations=5020,maximumQualificationIntegrations=142080)
+            holdEvidenceGranularity=PLAN['hold_evidence'],normalIntegrationEnvelope=112060,
+            sharedReserveIntegrations=5020,maximumQualificationIntegrations=117080)
 
     def enter(self,name,seconds,integrations=0,*,evaluation=False,retention=False):
         if evaluation:raise ContractError('No candidate evaluation in qualification')
@@ -228,7 +238,7 @@ class QualificationPilot(ColdPilot):
         phase=PLAN['phases'].get(name)
         if not phase or seconds!=phase['seconds'] or integrations!=phase['normal']:
             raise ContractError('Exact named qualification phase allowance required')
-        if self.ledger()['nativeIntegrations']+integrations+5020>142080:
+        if self.ledger()['nativeIntegrations']+integrations+5020>117080:
             raise ContractError('One shared reserve cannot be repeatedly allocated')
         super().enter(name,seconds,integrations+5020)
         if integrations:
@@ -238,7 +248,7 @@ class QualificationPilot(ColdPilot):
         if physical:
             self.byte_guard(self,query,upper_bound)
             ledger=self.ledger()
-            if ledger['nativeIntegrations']+upper_bound>142080:
+            if ledger['nativeIntegrations']+upper_bound>117080:
                 raise ContractError('Qualification aggregate including single reserve exhausted')
             if ledger.get('bootstrapDecisions',0)>=1024:
                 raise ContractError('Inclusive qualification source cap reached')
@@ -274,16 +284,45 @@ class QualificationPilot(ColdPilot):
         self.state=self.call({'op':'state'})
         self.report.setdefault('preservation',{})[case]={'passed':True,'rows':len(rows),'hold':hold}
 
-    def original_diagnostic(self):
-        phase=PLAN['phases']['original-diagnostic']
-        self.enter('original-diagnostic',phase['seconds'],phase['normal'])
-        self.reset('original','baseline-deterministic-zero')
-        while not self.mapper.finished:
-            action=[0.]*21 if self.state.get('preview') else None
-            self.step(action,'bootstrap')
-        rows=self.finish_episode_rows(False)
-        self.report['originalDiagnostic']={'rows':len(rows),'outcome':rows[-1].episode_outcome,
-            'extra30sHold':False,'learningTargetMayFail':True}
+    def current_raw_bytes(self):
+        import hashlib
+        path=self.output/'transitions.ndjson'
+        current=path.read_bytes() if path.exists() else b''
+        if self.committed_raw_duplicate is not None:
+            if hashlib.sha256(current).hexdigest()!=self.committed_raw_duplicate:
+                raise ContractError('Committed raw cache changed during interrupted eviction')
+            return b'' # exact durable dependency already owns these rows
+        return current
+
+    def raw_lines(self):
+        raw=self.prior_raw_bytes+self.current_raw_bytes()
+        return [json.loads(line) for line in raw.splitlines()]
+
+    def validate_dependencies(self,restored,manifest):
+        return self.proofs.resolve(restored,manifest)
+
+    def verify_dependency_union(self,state,closure):
+        from getup_cold_start_engine import encoded
+        previous=closure.get('prior_rows',[])
+        if encoded([asdict(x) for x in state.rows[:len(previous)]])!=encoded([asdict(x) for x in previous]):
+            raise ContractError('Diagnostic replay union changed prior phase membership')
+        if state.mapping!=self.mapping:
+            raise ContractError('Diagnostic replay union changed global raw-span mapping')
+
+    def prove_phase(self,phase):
+        name=phase.lower()+'-proof';self.enter(name,180,0)
+        if phase=='BELLY':self.diagnostic_replay()
+        self.proofs.persist() # bind the now-verified seed identity, without changing old evidence
+        self.physical_proof_mode=phase
+        try:proof=self.recovery.checkpoint(self,'qualification-'+phase.lower(),self.phase_deadline)
+        finally:self.physical_proof_mode=None
+        ref=self.proofs.commit(phase,proof)
+        # Only after durable reference + exact remote/application proof. This
+        # releases a transient WASM object, never a required original checkpoint.
+        self.call({'op':'qualificationRelease'})
+        self.cursor.active=False;self.state=None;self.mapper=None;self.replay=None
+        self.report.setdefault('immutablePhaseProofs',[]).append(ref)
+        return ref
 
     def diagnostic_replay(self):
         rows=list(self.bootstrap_rows)
@@ -328,7 +367,20 @@ class QualificationPilot(ColdPilot):
                 # that command or pretend the old cached state is current.
                 self.state=capture['state'];self.cursor.active=True
         except BaseException as error:self.report['terminalRuntimeCaptureError']=str(error)
-        roles,cursor,_=super().write_snapshot('terminal-stop' if self.failure_latched else boundary)
+        roles,cursor,_=super().write_snapshot('terminal-stop' if self.failure_latched else boundary,
+            include_learner=not self.physical_proof_mode)
+        import hashlib
+        raw=self.output/'transitions.ndjson'
+        current=self.current_raw_bytes()
+        if self.committed_raw_duplicate is not None:
+            # Interrupted cache eviction is not replay. Keep its exact original
+            # local bytes, but archive an empty NEW segment and reference them.
+            (self.output/'phase-current-transitions.ndjson').write_bytes(current)
+            roles['transitions']='phase-current-transitions.ndjson'
+        cursor['raw_sha256']=hashlib.sha256(self.prior_raw_bytes+current).hexdigest()
+        cursor['raw_current_start_line']=len(self.prior_raw_bytes.splitlines())
+        atomic_json(self.output/'phase-cursor.json',cursor)
+        self.proofs.persist();roles['phase_dependencies']='phase-dependencies.json'
         roles.update(unverified_seeds)
         if self.replay is not None:
             cursor['diagnostic_membership']=diagnostic_membership(self.replay.rows,self.mapping)
@@ -338,7 +390,9 @@ class QualificationPilot(ColdPilot):
         for role,name in [('native_call_evidence','qualification-native.ndjson'),
             ('fixtures','cold-fixtures.json'),('native_parity','cold-adapter-parity.json'),
             ('operational_inputs','operational-inputs.json'),('config','frozen-config.json'),
-            ('transition_parity_runtime','parity-runtime.bin')]:
+            ('transition_parity_runtime','parity-runtime.bin'),
+            ('native_parity_runtime','native-parity-resume.bin'),
+            ('immutable_input_references','phase-inputs.json')]:
             if (self.output/name).is_file():roles[role]=name
         for path in sorted(self.output.glob('cold-*-*.json'))+sorted(self.output.glob('cold-*-checkpoint.bin')):
             if path.name in roles.values() or path.name=='cold-start-report.json':continue
@@ -352,15 +406,18 @@ class QualificationPilot(ColdPilot):
         self.report['activeOutputBytes']=working
         # This is independently restorable diagnostic evidence, never an
         # automatic runtime resume or a training-readiness claim.
+        self.last_snapshot_roles=roles.copy()
         return roles,cursor,False
 
     def run_qualification(self,*,include_original=False):
         try:
+            if include_original:raise ContractError('Optional original workload permanently omitted')
             self.enter('zero-correction-qualification',120,11000)
             self.report['nativeQualification']=self.call({'op':'coldQualify'},physical=True,upper_bound=16020)
+            self.prove_phase('PARITY')
             self.parity()
-            self.preservation('belly');self.preservation('heldout')
-            if include_original:self.original_diagnostic()
+            self.preservation('belly');self.prove_phase('BELLY')
+            self.preservation('heldout')
             self.report['qualificationPhysicalGatesPassed']=True
             self.report['stopped']='qualification-only-complete-no-training'
         except BaseException as error:

@@ -114,7 +114,9 @@ SOFTWARE_SOURCE_FILES=(
     'scripts/build-getup-cold-worker.py','scripts/getup-cold-start-unstepped.mjs',
     'scripts/getup_qualification.py','scripts/getup-qualification-plan.json',
     'scripts/getup-qualification-budget.mjs','scripts/getup-qualification-budget.test.mjs',
-    'scripts/getup-qualification-test.py','scripts/getup-corrective-readiness-test.py')
+    'scripts/getup-qualification-test.py','scripts/getup-corrective-readiness-test.py',
+    'scripts/getup_phase_proofs.py','scripts/getup-qualification-checkpoint-budget.mjs',
+    'scripts/getup-qualification-checkpoint-budget.test.mjs')
 
 
 def future_admission(path,output,worker,shared,run_id):
@@ -162,8 +164,8 @@ def future_admission(path,output,worker,shared,run_id):
     validate_growth_sources(ROOT)
     if admission.get('qualification_plan_sha256')!=sha256(PLAN_PATH):
         raise ContractError('Exact reviewed qualification-only operation/byte plan required')
-    if type(admission.get('include_original_diagnostic')) is not bool:
-        raise ContractError('Optional original recovery-only workload must be frozen explicitly')
+    if admission.get('include_original_diagnostic') is not False:
+        raise ContractError('Optional original workload permanently omitted')
     item=admission['corrected_shared_archive'];archive=Path(item['path'])
     if sha256(archive)!=item['sha256'] or archive.stat().st_size!=item['bytes']:
         raise ContractError('Corrected shared archive differs')
@@ -182,7 +184,9 @@ def future_admission(path,output,worker,shared,run_id):
     admission['_verified_shared']=reused_shared
     storage=admission['storage']
     staging_limit=qualification_staging_scope(admission)
-    if (storage['cumulative_uploaded_bytes']<37690936 or storage['cumulative_uploaded_bytes']>160*1024**2
+    if storage.get('immutable_phase_uploads')!=2 or storage.get('total_generation_archives')!=3:
+        raise ContractError('Exact two immutable proofs plus one terminal slot required')
+    if (storage['cumulative_uploaded_bytes']<43566444 or storage['cumulative_uploaded_bytes']>160*1024**2
             or not storage.get('owner_inventory_reference')):
         raise ContractError('Complete prior cumulative/owner storage admission required')
     measured=0
@@ -220,7 +224,7 @@ def future_admission(path,output,worker,shared,run_id):
         seed_payload_bytes=2*1024**2,seed_archive_bytes=PLAN['seed_archive_bytes'],
         prior_cumulative_before_corrected_inputs=storage['cumulative_uploaded_bytes'],
         slot_archive_bytes=[x['archive_bytes'] for x in prior],active_working_bytes=0,
-        staging_limit_bytes=staging_limit,shared_already_verified=True)
+        staging_limit_bytes=staging_limit,shared_already_verified=True,immutable_phase_uploads=2)
     admission['_verified_prior_generations']=prior
     return admission,readiness,manifest,receipts,commit
 
@@ -291,6 +295,30 @@ def run(output,worker,shared,run_id,continuation_path=None,admission_path=None):
             watchdog.assert_alive();remaining_seconds(end,time.time());time.sleep(.5)
         result=exchange.verify_receipt(request,receipt,validator)
         remaining_seconds(end,time.time());return result
+    def fetch_dependency(reference,end):
+        import uuid
+        remaining_seconds(end,time.time())
+        directory=exchange.directory/'dependency-cache';directory.mkdir(exist_ok=True)
+        destination=directory/(reference['archive_sha256']+'.zip')
+        nonce=uuid.uuid4().hex;request=exchange.directory/(nonce+'.dependency-request.json')
+        receipt=exchange.directory/(nonce+'.dependency-receipt.json')
+        value={'schema':'lh-private-phase-readback/v1','operation':'read-private-phase',
+            'run_id':run_id,'nonce':nonce,'drive_file_id':reference['drive_file_id'],
+            'archive_sha256':reference['archive_sha256'],'archive_bytes':reference['archive_bytes'],
+            'manifest_sha256':reference['manifest_sha256'],'deadline_unix':end,
+            'destination':str(destination),'receipt':str(receipt),'new_upload':False}
+        atomic_json(request,value)
+        print(json.dumps({'event':'DRIVE_DEPENDENCY_READBACK','request':str(request),'details':value}),flush=True)
+        while not receipt.exists():
+            watchdog.assert_alive();remaining_seconds(end,time.time());time.sleep(.5)
+        proof=json.loads(receipt.read_text())
+        if (any(proof.get(k)!=value[k] for k in ('nonce','run_id','drive_file_id','archive_sha256',
+                'archive_bytes','manifest_sha256','new_upload'))
+                or proof.get('owner_only') is not True or proof.get('shared') is not False
+                or proof.get('download_completed') is not True
+                or proof.get('downloaded_path')!=str(destination)):
+            raise ContractError('Immutable dependency private readback receipt differs')
+        remaining_seconds(end,time.time());return destination
     def controller_factory(path,bridge,state,ledger):
         # Independent process, fresh native runtime. Runtime-free snapshots
         # intentionally do not launch a worker or call state/checkpoint.
@@ -337,12 +365,14 @@ def run(output,worker,shared,run_id,continuation_path=None,admission_path=None):
         atomic_json(output/'frozen-config.json',config)
         plan.assert_inputs_ready(clock.now())
         wasm=interfaces.BoundedWasm(legacy,output,worker,deadline,watchdog);wasm.synthetic=False
-        recovery=CoherentRecovery(DrivePhaseTransport(exchange,transfer,clock),controller_factory,synthetic=False)
+        recovery=CoherentRecovery(DrivePhaseTransport(exchange,transfer,clock,fetch_dependency),controller_factory,synthetic=False)
         identity={'runId':run_id,'sourceCommit':commit,'workerSha256':sha256(worker/'lh_worker_bg.wasm'),
             'protocolSha256':sha256(PROTOCOL_PATH),'sharedManifestSha256':exchange.shared_sha256,
             'seedManifestSha256':exchange.seed_sha256,'admissionSha256':sha256(admission_path)}
         pilot=QualificationPilot(output=output,learner=learner,learner_factory=factory,
             byte_guard=QualificationByteGuard(learner_bytes),
+            native_validator=lambda paths:run_restore(worker/'lh_worker.js',worker/'lh_worker_bg.wasm',
+                paths,operation_deadline=pilot.phase_deadline),
             builder_factory=lambda:legacy.SourceTransition(interfaces.GAMMA),bridge=wasm,
             recovery=recovery,clock=clock,plan=plan,identity=identity,synthetic=False)
         plan.assert_inputs_ready(clock.now())
@@ -367,6 +397,15 @@ def run(output,worker,shared,run_id,continuation_path=None,admission_path=None):
                 [files[case+'_seed'] for case in ('original','heldout','belly')],operation_deadline=pilot.phase_deadline)
         transfer(seed_request,restore_seeds)
         pilot.identity['seedManifestSha256']=exchange.seed_sha256
+        def input_reference(request,receipt,manifest):
+            return {'drive_file_id':receipt['drive_file_id'],
+                **{key:request[key] for key in ('archive_sha256','archive_bytes','manifest_sha256')},
+                'members':manifest['files'],'status':'private-application-verified'}
+        seed_receipt=json.loads(seed_request.with_name(seed_request.name.replace('.request.json','.receipt.json')).read_text())
+        from experiment_backup import verify_bundle
+        atomic_json(output/'phase-inputs.json',{'schema':'lh-phase-input-references/v1','identity':pilot.identity,
+            'shared':input_reference(prior_shared,admission['_verified_shared']['receipt'],immutable['shared'][1]),
+            'seeds':input_reference(details,seed_receipt,verify_bundle(details['archive_path'],details['archive_sha256']))})
         report['phaseResult']=pilot.run_qualification(include_original=admission['include_original_diagnostic'])
     except BaseException as error:
         report.update(stopped='runtime-admission-safe-stop',error=str(error))

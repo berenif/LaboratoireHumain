@@ -7,15 +7,15 @@ const ledger=()=>({nativeIntegrations:0,realIntegrations:0,forecastIntegrations:
 const counters=(source=0,forecast=0)=>({sourceDecisions:source,weakDecisions:forecast/20,
  forecast,sourceEpoch:480,impactEpoch:480});
 test('qualification normal totals and one shared reserve are immutable',()=>{
- assert.equal(Object.values(p.phases).reduce((n,x)=>n+x.normal,0),137060);
- assert.equal(p.normal_integrations+p.shared_uncertainty_reserve,142080);
- assert(142080+147000<300000);assert.equal(p.optimizer_updates,0);
- const l=ledger();enterQualificationStage(l,'original-diagnostic');
+ assert.equal(Object.values(p.phases).reduce((n,x)=>n+x.normal,0),112060);
+ assert.equal(p.normal_integrations+p.shared_uncertainty_reserve,117080);
+ assert(117080+147000<300000);assert.equal(p.optimizer_updates,0);
+ const l=ledger();enterQualificationStage(l,'heldout-preservation');
  l.nativeIntegrations=l.qualificationStage.normalEnd-20;
  guardQualificationCall(l);beginProtocolCall(l,0,0);beginQualificationSource(l);
  finishProtocolCall(l,20,5000);
  assert.throws(()=>finishQualificationSource(l,counters(),counters(1,5000)),/reserve consumed/);
- assert.equal(l.nativeIntegrations,30000); // 5000 beyond the25000 normal bound, charged.
+ assert.equal(l.nativeIntegrations,54000); // 5000 beyond49000 normal, still charged.
 });
 test('forecast at limit and late hold rearm stop without refund or retry',()=>{
  const l=ledger();enterQualificationStage(l,'belly-preservation');
@@ -129,12 +129,21 @@ test('frozen source orders command diagnostic then solver selection then observa
  const runtime=readFileSync('rust/crates/sim/src/runtime.rs','utf8');
  assert(runtime.includes('"getup":snapshot.diagnostics.getup'));
 });
-test('measured-current20MiB bound reserves complete terminal output before dispatch',()=>{
+test('legacy additive physical guard is closed; nonphysical exact capture stays bounded',()=>{
  validateQualificationGrowthSources(process.cwd());
- const proof=qualificationByteProjection(2*1024**2,640000,5500000+2*1024**2);
- assert(proof.projectedActiveOutputBytes<32*1024**2);
- assert.equal(proof.nextGrowthBytes,20*1024**2);
- assert.throws(()=>qualificationByteProjection(10*1024**2,640000,5500000+2*1024**2),/BEFORE dispatch/);
+ assert.throws(()=>qualificationByteProjection(0,0,0),/Legacy additive/);
  const capture=qualificationByteProjection(10*1024**2,640000,5500000+2*1024**2,0,false);
  assert.equal(capture.nextGrowthBytes,0);assert.equal(capture.physicalDispatchAuthorized,false);
+});
+
+import {retainMeasuredHold} from './getup-qualification-budget.mjs';
+test('late hold checkpoint byte rejection retains measured counts and extrema without passed proof',()=>{
+ const result={samples:24000,physicalSeconds:30,maximumOriginDriftM:.004,maximumMaterialSlipM:.009};
+ const retained=[];
+ assert.throws(()=>retainMeasuredHold(result,x=>retained.push(x),()=>{throw Error('byte guard final copy');}),/byte guard/);
+ assert.equal(retained.at(-1).passed,false);assert.equal(retained.at(-1).checkpointBound,false);
+ assert.equal(retained.at(-1).samples,24000);assert.equal(retained.at(-1).maximumMaterialSlipM,.009);
+ assert.equal(retained.at(-1).finalCheckpointSha256,undefined);
+ const passed=retainMeasuredHold(result,x=>retained.push(x),()=> 'a'.repeat(64));
+ assert.equal(passed.passed,true);assert.equal(passed.checkpointBound,true);
 });

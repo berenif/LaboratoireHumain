@@ -356,16 +356,18 @@ class DriveExchange:
         self.operation_deadline=self.deadline-wall_reserve
         if not 0<=wall_reserve<3600 or self.now() >= self.operation_deadline:
             raise ContractError('Original cold-start deadline reached')
-        if kind not in ('shared', 'seeds', 'generation') or (kind == 'shared' and self.shared_sha256):
+        if kind not in ('shared', 'seeds', 'generation','phase-proof') or (kind == 'shared' and self.shared_sha256):
             raise ContractError('Immutable shared inputs are retained once')
-        if kind in ('seeds','generation') and not self.shared_sha256:
+        if kind in ('seeds','generation','phase-proof') and not self.shared_sha256:
             raise ContractError('Shared inputs must be remotely verified first')
         if kind=='seeds' and self.seed_sha256:
             raise ContractError('Triggered immutable seeds are retained once')
-        if kind in getattr(self,'pending_immutable',{}):
+        if kind=='phase-proof' and getattr(self,'phase_proof_count',0)>=2:
+            raise ContractError('Exactly two immutable phase proofs maximum')
+        if any(getattr(self,'pending_immutable',{}).values()):
             raise ContractError('Unresolved immutable upload; no retry')
         limit = PROTOCOL['shared_payload_bytes' if kind in ('shared','seeds') else 'generation_payload_bytes']
-        qualification=kind=='generation' and config.get('plan',{}).get('qualification_only') is True
+        qualification=kind in ('generation','phase-proof') and config.get('plan',{}).get('qualification_only') is True
         if qualification:limit=min(limit,32*1024**2)
         total = 0
         for item in artifacts:
@@ -377,13 +379,13 @@ class DriveExchange:
             raise ContractError('Measured payload exceeds hard byte cap before copying/upload')
         if kind=='seeds' and self.shared_bytes+total>PROTOCOL['shared_payload_bytes']:
             raise ContractError('Combined immutable input+seed byte cap')
-        peak = self.shared_bytes + self.seed_bytes + self.retired_payload_bytes + sum(x['payload_bytes'] for x in self.verified) + total
+        peak = self.shared_bytes + self.seed_bytes + self.retired_payload_bytes + getattr(self,'phase_proof_payload_bytes',0) + sum(x['payload_bytes'] for x in self.verified) + total
         if peak > PROTOCOL['retained_payload_bytes']:
             raise ContractError('Peak shared+current+previous+pending exceeds byte cap before upload')
         # Backup-root storage only; the original working inputs are not copied
         # here until admission. Reserve payload + archive simultaneously.
         retained_local = self.external_local_bytes + sum(p.stat().st_size for p in self.directory.rglob('*') if p.is_file())
-        staging=(max(2*total,total+2*18*1024**2,
+        staging=(max(2*total,total+2*18*1024**2+config.get('dependency_peak_bytes',0),
             18*1024**2+config.get('slot_prewrite_download_bytes',0)) if qualification else 3*total)
         if self.local_staging_limit_bytes not in (160*1024**2,192*1024**2):
             raise ContractError('Unreviewed local staging cap')
@@ -416,18 +418,19 @@ class DriveExchange:
             'verified_generations': self.verified,
             'max_verified_generations': 2, 'max_retained_payload_bytes': 167772160,
             'privacy': 'owner-only; no shared link; exact archive only',
-            'retention': 'current+previous only; NEVER prune before application-verified prune request',
+            'retention': ('immutable physical phase proof; never overwrite or prune' if kind=='phase-proof' else
+                'current+previous only; NEVER prune before application-verified prune request'),
             'download_cleanup': 'transfer owner removes its exact temporary download only after application-verified marker'}
         suffix='.slot-draft.json' if getattr(self,'_unpublished_slot_request',False) else '.request.json'
         request_path = self.directory / (manifest['generation'] + suffix)
-        if config.get('qualification_immutable') is True:
+        if config.get('qualification_immutable') is True or kind=='phase-proof':
             self.precharge_immutable(request)
         atomic_json(request_path, request)
         return request_path
 
     def precharge_immutable(self,request):
         kind=request['kind']
-        if kind not in ('shared','seeds') or kind in getattr(self,'pending_immutable',{}):
+        if kind not in ('shared','seeds','phase-proof') or kind in getattr(self,'pending_immutable',{}):
             raise ContractError('Immutable upload already pending; no retry')
         after=self.remote_uploaded_bytes+request['archive_bytes']
         if after>PROTOCOL['retained_payload_bytes']:
@@ -504,6 +507,10 @@ class DriveExchange:
         elif request['kind']=='seeds':
             self.seed_sha256=request['manifest_sha256']
             self.seed_bytes=request['payload_bytes']
+        elif request['kind']=='phase-proof':
+            self.phase_proof_count=getattr(self,'phase_proof_count',0)+1
+            self.phase_proof_payload_bytes=getattr(self,'phase_proof_payload_bytes',0)+request['payload_bytes']
+            # Immutable phase evidence is not a mutable slot and is never pruned.
         else:
             stale = generations[:-2]
             if receipt.get('pruned_drive_file_ids'):

@@ -283,21 +283,21 @@ assert.throws(()=>check({...x,effectiveSimFeatures:x.effectiveSimFeatures.filter
         from getup_qualification import validate_owner_inventory
         with tempfile.TemporaryDirectory() as tmp:
             root=Path(tmp);x=self.setup_exchange(root);prior=copy.deepcopy(x.verified)
-            ledger={'cumulative_uploaded_bytes':37690936,'live_bytes':32492670,'trashed_bytes':0,
+            ledger={'cumulative_uploaded_bytes':43566444,'live_bytes':32478450,'trashed_bytes':0,
                 'older_slot':prior[0],'current_slot':prior[1]}
             ledger_path=root/'ledger.json';inventory_path=root/'owner.json'
             inventory={'schema':'lh-drive-owner-qualification-inventory/v1','planned_run_id':'future',
                 'unknown_transfers':False,'ledger_path':str(ledger_path),'prior_generations':prior,
-                'cumulative_uploaded_bytes':37690936,'live_archive_bytes':32492670,'trashed_archive_bytes':0,
+                'cumulative_uploaded_bytes':43566444,'live_archive_bytes':32478450,'trashed_archive_bytes':0,
                 'all_project_retained_payload_bytes':100,'synthetic_test_archive_bytes':394}
-            admission={'run_id':'future','storage':{'cumulative_uploaded_bytes':37690936,
-                'live_archive_bytes':32492670,'trashed_archive_bytes':0,'remote_payload_bytes':494}}
+            admission={'run_id':'future','storage':{'cumulative_uploaded_bytes':43566444,
+                'live_archive_bytes':32478450,'trashed_archive_bytes':0,'remote_payload_bytes':494}}
             def bind():
                 atomic_json(ledger_path,ledger);inventory['ledger_sha256']=sha256(ledger_path)
                 atomic_json(inventory_path,inventory)
                 admission['storage']['owner_inventory']={'path':str(inventory_path),'sha256':sha256(inventory_path)}
             bind();validate_owner_inventory(admission,prior)
-            for key,value in [('cumulative_uploaded_bytes',22056886),('live_archive_bytes',37690936),
+            for key,value in [('cumulative_uploaded_bytes',22056886),('live_archive_bytes',43566444),
                 ('trashed_archive_bytes',1),('remote_payload_bytes',493)]:
                 bad=copy.deepcopy(admission);bad['storage'][key]=value
                 with self.assertRaises(ContractError):validate_owner_inventory(bad,prior)
@@ -306,6 +306,21 @@ assert.throws(()=>check({...x,effectiveSimFeatures:x.effectiveSimFeatures.filter
             with self.assertRaises(ContractError):validate_owner_inventory(admission,prior)
             inventory['unknown_transfers']=False;ledger['pending_replacement']={'status':'uncertain'};bind()
             with self.assertRaises(ContractError):validate_owner_inventory(admission,prior)
+
+    def test_three_phase_cadence_charges_all_immutable_and_terminal_archives(self):
+        from getup_drive_slots import qualification_storage_envelope
+        args=dict(protected_local_bytes=85203687,corrected_shared_payload_bytes=16218147,
+            corrected_shared_archive_bytes=10620053,seed_payload_bytes=2*1024**2,
+            seed_archive_bytes=1962859,prior_cumulative_before_corrected_inputs=43566444,
+            slot_archive_bytes=[5013997,5526206],active_working_bytes=0,
+            staging_limit_bytes=192*1024**2,shared_already_verified=True,immutable_phase_uploads=2)
+        result=qualification_storage_envelope(**args)
+        self.assertEqual(result['cumulative_archive_bytes'],102152407)
+        self.assertEqual(result['staging_peak_bytes'],191599370)
+        self.assertTrue(result['dependency_restore_peak_requires_measured_per_readback_admission'])
+        self.assertEqual(result['total_recovery_artifact_bound_bytes'],225153802)
+        with self.assertRaises(ContractError):qualification_storage_envelope(**dict(args,immutable_phase_uploads=3))
+        with self.assertRaises(ContractError):qualification_storage_envelope(**dict(args,prior_cumulative_before_corrected_inputs=120*1024**2))
 
     def test_production_reuse_restore_adapter_has_no_upload_or_double_charge(self):
         from getup_qualification import restore_verified_shared

@@ -59,7 +59,8 @@ export function validateQualificationGrowthSources(root){
  for(const [path,digest] of Object.entries(qualificationPlan.growth_bound_source_sha256))
   assert.equal(createHash('sha256').update(readFileSync(`${root}/${path}`)).digest('hex'),digest,
    'Frozen geometry/controller serialization source changed: '+path);
- assert.equal(qualificationPlan.next_call_growth_bytes,20*1024**2);
+ assert.equal(qualificationPlan.next_call_growth_bytes,null);
+ assert.equal(qualificationPlan.schema,'lh-corrected-qualification-phases/v2');
  assert.deepEqual(qualificationPlan.growth_components_bytes,
   {controller:12*1024**2,world_contacts:6*1024**2,auxiliary_head:2*1024**2});
  const model=JSON.parse(readFileSync(`${root}/rust/crates/model/data/getup-v1.json`));
@@ -71,7 +72,8 @@ export function validateQualificationGrowthSources(root){
 }
 export function qualificationByteProjection(active,current,terminal,extra=0,physical=true){
  for(const n of [active,current,terminal,extra])assert(Number.isSafeInteger(n)&&n>=0);
- const growth=physical?qualificationPlan.next_call_growth_bytes:0;
+ assert(!physical,'Legacy additive physical bound closed; use replacementCheckpointBound');
+ const growth=0;
  const projected=active+current+terminal+extra+growth+65536;
  assert(projected<=qualificationPlan.active_output_bytes,
   `Qualification byte stop BEFORE dispatch: active=${active} terminal=${terminal} currentRuntime=${current} nextGrowth=${growth} extra=${extra} projected=${projected}`);
@@ -118,4 +120,16 @@ export function finishQualificationSource(ledger,before,after){
  assert(before.sourceEpoch===null||before.sourceEpoch===after.sourceEpoch,'Source epoch rearmed; stop physics');
  assert(before.impactEpoch===after.impactEpoch,'Original impact epoch changed');
  assert(ledger.nativeIntegrations<=stage.normalEnd,'Shared reserve consumed; stop physics');
+}
+
+export function retainMeasuredHold(result,writeSummary,completeCheckpoint){
+ // Measured samples survive a final-copy/anchor assertion failure. Only the
+ // completed callback permits a passed, hash-bound physical proof.
+ const pending={...result,passed:false,physicalSamplesChecked:true,checkpointBound:false};
+ writeSummary(pending);
+ try{
+  const digest=completeCheckpoint();assert.equal(typeof digest,'string');assert.equal(digest.length,64);
+  const completed={...result,passed:true,checkpointBound:true,finalCheckpointSha256:digest};
+  writeSummary(completed);return completed;
+ }catch(error){writeSummary({...pending,finalizationError:String(error)});throw error;}
 }

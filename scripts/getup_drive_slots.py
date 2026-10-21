@@ -15,8 +15,8 @@ def qualification_storage_envelope(*,protected_local_bytes,corrected_shared_payl
         corrected_shared_archive_bytes,seed_payload_bytes,seed_archive_bytes,
         prior_cumulative_before_corrected_inputs,slot_archive_bytes,active_working_bytes,
         terminal_payload_bytes=32*1024**2,terminal_archive_bytes=18*1024**2,
-        staging_limit_bytes=160*1024**2,shared_already_verified=False):
-    """One terminal generation only. Old slot archives are already protected.
+        staging_limit_bytes=160*1024**2,shared_already_verified=False,immutable_phase_uploads=0):
+    """One terminal slot plus optional two immutable phase proofs. Old slots are protected.
 
     This is sizing/admission arithmetic, not permission to upload or run. The
     staging cap excludes the live original output, whose measured disk footprint
@@ -28,6 +28,7 @@ def qualification_storage_envelope(*,protected_local_bytes,corrected_shared_payl
         raise ContractError('Measured nonnegative integer storage inventory required')
     if staging_limit_bytes not in (160*1024**2,192*1024**2) or type(shared_already_verified) is not bool:
         raise ContractError('Explicit bounded local staging scope required')
+    if immutable_phase_uploads not in (0,2):raise ContractError('Exact two-phase immutable cadence required')
     if len(slot_archive_bytes)!=2 or any(type(x) is not int or x<=0 for x in slot_archive_bytes):
         raise ContractError('Exactly two measured owned slot archive sizes required')
     if (terminal_payload_bytes>32*1024**2 or terminal_archive_bytes>18*1024**2
@@ -44,7 +45,7 @@ def qualification_storage_envelope(*,protected_local_bytes,corrected_shared_payl
         'terminal_create':base+max(2*terminal_payload_bytes,terminal_payload_bytes+terminal_archive_bytes)+margin,
         'older_slot_prewrite_readback':base+terminal_archive_bytes+max(slot_archive_bytes)+margin,
         'terminal_transfer_restore':base+2*terminal_archive_bytes+terminal_payload_bytes+margin}
-    cumulative=prior_cumulative_before_corrected_inputs+(0 if shared_already_verified else corrected_shared_archive_bytes)+seed_archive_bytes+terminal_archive_bytes
+    cumulative=prior_cumulative_before_corrected_inputs+(0 if shared_already_verified else corrected_shared_archive_bytes)+seed_archive_bytes+(1+immutable_phase_uploads)*terminal_archive_bytes
     if max(stages.values())>staging_limit_bytes or cumulative>160*1024**2:
         raise ContractError('One-generation qualification staging/cumulative envelope exceeds scoped cap')
     return {'stage_peaks_bytes':stages,'staging_peak_bytes':max(stages.values()),
@@ -53,6 +54,9 @@ def qualification_storage_envelope(*,protected_local_bytes,corrected_shared_payl
         'active_output_bound_bytes':32*1024**2,
         'total_recovery_artifact_bound_bytes':max(stages.values())+32*1024**2,
         'cumulative_archive_bytes':cumulative,'mutable_generations':1,
+        'immutable_phase_uploads':immutable_phase_uploads,
+        'new_phase_archive_caches_evicted_only_after_durable_proof':immutable_phase_uploads==2,
+        'dependency_restore_peak_requires_measured_per_readback_admission':True,
         'local_staging_limit_bytes':staging_limit_bytes,'remote_cumulative_limit_bytes':160*1024**2,
         'shared_transfer_reused':shared_already_verified,
         'active_working_copy_in_staging_cap':False,'physics_authorized':False}

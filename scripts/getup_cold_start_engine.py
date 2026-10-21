@@ -471,7 +471,7 @@ class ColdPilot:
             atomic_json(self.output/'phase-report.json',self.report)
         return self.report
 
-    def write_snapshot(self, boundary):
+    def write_snapshot(self, boundary, *, include_learner=True):
         """One paused generation, no immutable/model/build-input duplication."""
         import uuid
         nonce=uuid.uuid4().hex
@@ -503,8 +503,9 @@ class ColdPilot:
                 ('episode','behavior','case','pending_origin','raw_calls','first_raw_line',
                  'pending_line','mapping','finished','synthetic')}
             mapper.update(row_indices=indices,pending_transition=encoded(self.mapper.builder.pending))
-        self.learner.torch.save({'snapshot_id':nonce,'identity':self.identity,
-            'state':self.learner.capture_learning_state()},self.output/'phase-learner.pt')
+        if include_learner:
+            self.learner.torch.save({'snapshot_id':nonce,'identity':self.identity,
+                'state':self.learner.capture_learning_state()},self.output/'phase-learner.pt')
         arrays={key:self.learner.np.asarray([getattr(row,key) for row in rows],dtype='float32').reshape(
             len(rows),21 if key=='correction' else 1024) for key in ('features','correction','next_features')}
         self.learner.np.savez_compressed(self.output/'phase-replay.npz',snapshot_id=nonce,**arrays)
@@ -538,6 +539,7 @@ class ColdPilot:
             'replay_metadata':'phase-replay-metadata.json','mapping':'phase-mapping.json',
             'cursor':'phase-cursor.json','report':'phase-snapshot-report.json',
             'ledger':'phase-ledger.json','transitions':'transitions.ndjson'}
+        if not include_learner:roles.pop('learner')
         if runtime_active:roles['runtime']='phase-runtime.bin'
         eligible=self.replay is not None and self.cursor.transition_parity and not unresolved and not runtime_capture_error and not self.failure_latched
         return roles,cursor,eligible
@@ -557,7 +559,7 @@ class RestoredPilotState:
 
 
 def restore_coherent(restored, manifest, *, expected_identity, expected_plan, expected_ledger,
-                     learner_factory, builder_factory, controller_factory, synthetic):
+                     learner_factory, builder_factory, controller_factory, synthetic, physical_only=False, raw_prefix=b''):
     """Construct fresh objects from one exact generation; never mutate a live pilot."""
     files={entry['role']:Path(restored)/entry['path'] for entry in manifest['files']}
     cursor=json.loads(files['cursor'].read_text());nonce=cursor['snapshot_id']
@@ -575,20 +577,24 @@ def restore_coherent(restored, manifest, *, expected_identity, expected_plan, ex
     if cursor.get('automatic_restart_authorized') is not False:
         raise ContractError('Archive cannot authorize an automatic retry')
     learner=learner_factory()
-    learning=learner.torch.load(files['learner'],weights_only=False,map_location='cpu')
-    if learning['snapshot_id']!=nonce or learning['identity']!=expected_identity:
-        raise ContractError('Mixed learner generation')
-    learner.restore_learning_state(learning['state'])
-    assert_state_equal(learning['state'],learner.capture_learning_state())
+    if physical_only:
+        if 'learner' in files:raise ContractError('Intermediate physical proof cannot claim learner restore')
+    else:
+        learning=learner.torch.load(files['learner'],weights_only=False,map_location='cpu')
+        if learning['snapshot_id']!=nonce or learning['identity']!=expected_identity:
+            raise ContractError('Mixed learner generation')
+        learner.restore_learning_state(learning['state'])
+        assert_state_equal(learning['state'],learner.capture_learning_state())
     if learner.policy_id()!=cursor['policy_id']:raise ContractError('Restored policy identity differs')
     arrays=learner.np.load(files['replay'],allow_pickle=False)
     metadata=json.loads(files['replay_metadata'].read_text())
     lineage=json.loads(files['mapping'].read_text())
     if arrays['snapshot_id'].item()!=nonce or metadata['snapshot_id']!=nonce or lineage['snapshot_id']!=nonce:
         raise ContractError('Mixed replay/mapping generation')
-    if sha256(files['transitions'])!=cursor['raw_sha256']:
+    raw_bytes=raw_prefix+files['transitions'].read_bytes()
+    if hashlib.sha256(raw_bytes).hexdigest()!=cursor['raw_sha256']:
         raise ContractError('Raw transition lineage differs')
-    raw=[json.loads(line) for line in files['transitions'].read_text().splitlines()]
+    raw=[json.loads(line) for line in raw_bytes.splitlines()]
     tensor_arrays={key:arrays[key] for key in ('features','correction','next_features')}
     class Arrays(dict):
         @property
@@ -688,19 +694,27 @@ class CoherentRecovery:
             raise ContractError('Measured generation exceeds predeclared cadence payload envelope')
         if self.synthetic:
             for item in artifacts:item['provenance']='DISPOSABLE SOFTWARE REHEARSAL; not physical experience'
+        physical_only=bool(getattr(pilot,'physical_proof_mode',None))
         config={'identity':pilot.identity,'snapshot_id':cursor['snapshot_id'],
-            'plan':asdict(pilot.plan),'synthetic':self.synthetic,'resumeAuthorized':eligible}
+            'plan':asdict(pilot.plan),'synthetic':self.synthetic,'resumeAuthorized':eligible,
+            'physical_phase_proof':getattr(pilot,'physical_proof_mode',None),
+            'learner_restore_claimed':not physical_only,
+            'dependency_peak_bytes':max((r['archive_bytes']+r['payload_bytes'] for r in
+                getattr(getattr(pilot,'proofs',None),'references',[])),default=0)}
         diagnostic_restore=bool(getattr(pilot,'diagnostic_restore_required',False))
         def validate(restored,manifest):
-            if eligible or diagnostic_restore:
+            closure=pilot.validate_dependencies(restored,manifest) if hasattr(pilot,'validate_dependencies') else {}
+            if eligible or diagnostic_restore or physical_only:
                 state=restore_coherent(restored,manifest,expected_identity=pilot.identity,
                     expected_plan=pilot.plan,expected_ledger=cursor['ledger'],
                     learner_factory=pilot.learner_factory,builder_factory=pilot.builder_factory,
-                    controller_factory=self.controller_factory,synthetic=self.synthetic)
-                if (state.learner is pilot.learner or state.replay is pilot.replay
+                    controller_factory=self.controller_factory,synthetic=self.synthetic,
+                    physical_only=physical_only,raw_prefix=closure.get('raw_prefix',b''))
+                if (state.learner is pilot.learner or state.replay is not None and state.replay is pilot.replay
                         or state.mapper is not None and state.mapper is pilot.mapper):
                     raise ContractError('Independent reconstruction reused a live object')
-                assert_state_equal(before,state.learner.capture_learning_state())
+                if not physical_only:assert_state_equal(before,state.learner.capture_learning_state())
+                if hasattr(pilot,'verify_dependency_union'):pilot.verify_dependency_union(state,closure)
                 if diagnostic_restore:
                     if not state.replay.diagnostic_only:
                         raise ContractError('Qualification replay lost its nontrainable status')
@@ -718,7 +732,8 @@ class CoherentRecovery:
                     raise ContractError('Partial terminal diagnostic restoration differs')
                 if manifest['application_resume_eligible'] is not False:
                     raise ContractError('Incomplete terminal state claimed resumable')
-            return {'passed':True,'physics_integrations':0,'coherent':eligible or diagnostic_restore,'synthetic':self.synthetic}
+            return {'passed':True,'physics_integrations':0,'coherent':eligible or diagnostic_restore,
+                'physical_proof':physical_only,'learner_restored':not physical_only and (eligible or diagnostic_restore),'synthetic':self.synthetic}
         began=pilot.clock.now()
         try:
             proof=self.transport.checkpoint(artifacts,config,boundary,deadline,validate,eligible)
@@ -732,9 +747,22 @@ class CoherentRecovery:
 class DrivePhaseTransport:
     """Keep the existing operator-mediated official transfer handshake alive."""
     synthetic=False
-    def __init__(self,exchange,transfer,clock):
+    def __init__(self,exchange,transfer,clock,dependency_fetch=None):
         self.exchange=exchange;self.transfer=transfer;self.clock=clock;self.failed=False
-        self.synthetic=exchange.synthetic
+        self.synthetic=exchange.synthetic;self.dependency_fetch=dependency_fetch
+
+    def dependency(self,reference,deadline):
+        if self.dependency_fetch is None:raise ContractError('Exact dependency readback port absent')
+        # Current archive/download/extraction already exist: reserve the next
+        # dependency download AND full extraction before issuing its request.
+        current=self.exchange.external_local_bytes+sum(p.stat().st_size for p in
+            self.exchange.directory.rglob('*') if p.is_file())
+        if current+reference['archive_bytes']+reference['payload_bytes']+4*1024**2>self.exchange.local_staging_limit_bytes:
+            raise ContractError('Dependency readback/extraction staging would exceed scoped cap')
+        path=Path(self.dependency_fetch(reference,deadline))
+        if sha256(path)!=reference['archive_sha256'] or path.stat().st_size!=reference['archive_bytes']:
+            raise ContractError('Exact immutable phase readback differs')
+        return path
 
     def storage_usage(self):
         return {'cumulative_uploaded_bytes':self.exchange.remote_uploaded_bytes,
@@ -747,6 +775,7 @@ class DrivePhaseTransport:
         if self.failed:raise ContractError('Failed/uncertain transfer; no retry')
         try:
             request=self.exchange.snapshot(artifacts,config,boundary,
+                kind='phase-proof' if config.get('physical_phase_proof') else 'generation',
                 wall_reserve=self.exchange.deadline-deadline)
             details=json.loads(request.read_text())
             if details['archive_bytes']>config['plan']['backup_archive_envelope_bytes']:
@@ -759,4 +788,4 @@ class DrivePhaseTransport:
         value=json.loads(request.read_text())
         return {'passed':True,'archive_bytes':value['archive_bytes'],
             'manifest_sha256':value['manifest_sha256'],'boundary':boundary,
-            'actualRemoteWrite':not self.synthetic}
+            'actualRemoteWrite':not self.synthetic,'request_path':str(request)}
