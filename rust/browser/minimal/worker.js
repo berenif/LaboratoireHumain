@@ -7,6 +7,9 @@ const capabilities=JSON.parse(getup_build_capabilities());
 if(JSON.stringify(capabilities.effectiveSimFeatures)!==JSON.stringify(contract.effective_sim_features))throw Error('Wrong controller build');
 if(!profile.getup_policy_enabled||profile.getup_repeated_recovery!=='completed-cycle-confirmed-fall-v1')throw Error('Wrong recovery profile');
 const runtime=new WorkerRuntime('protocol',0,'1',true,JSON.stringify(profile));
+// Same numerical integrator carry as the verified worker fixtures; no force,
+// pose, velocity or clock change (runtime.rs set_root_translation_compensation_enabled).
+runtime.set_root_translation_compensation_enabled(true);
 const identity=crypto.randomUUID();let sequence=0,reply=JSON.parse(runtime.advance(0)),halted=false;
 self.onmessage=({data:q})=>{
  try{
