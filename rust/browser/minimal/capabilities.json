@@ -1,0 +1,14 @@
+{
+  "effective_sim_features": [
+    "getup-policy-adaptation-experiment",
+    "getup-repeat-balance-acquire-experiment",
+    "getup-repeat-cycle-experiment",
+    "getup-terminal-balance-experiment",
+    "getup-terminal-base-ready-experiment",
+    "getup-terminal-bumpless-experiment",
+    "getup-terminal-tail-observer-experiment",
+    "root-translation-carry-experiment",
+    "standing-dynamics-experiment",
+    "unit-root-rotation-experiment"
+  ]
+}
