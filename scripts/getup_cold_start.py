@@ -387,7 +387,7 @@ class DriveExchange:
         retained_local = self.external_local_bytes + sum(p.stat().st_size for p in self.directory.rglob('*') if p.is_file())
         staging=(max(2*total,total+2*18*1024**2+config.get('dependency_peak_bytes',0),
             18*1024**2+config.get('slot_prewrite_download_bytes',0)) if qualification else 3*total)
-        if self.local_staging_limit_bytes not in (160*1024**2,192*1024**2):
+        if self.local_staging_limit_bytes not in (160*1024**2,192*1024**2,224*1024**2):
             raise ContractError('Unreviewed local staging cap')
         if retained_local + staging + 4*1024**2 > self.local_staging_limit_bytes:
             raise ContractError('Local archive/staging peak exceeds backup byte cap before copying')

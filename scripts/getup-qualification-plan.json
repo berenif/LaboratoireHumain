@@ -100,7 +100,8 @@
     "rust/crates/sim/src/getup/reference.rs": "bde04aea19b120ba5f32958eab9d3b3ae4fb5a4190f3af64466cb698add67042",
     "rust/crates/sim/src/runtime.rs": "52ebb907deba521d200b72d0f881fa50c41e4aa5457b10ee7d4617db9ff6e833",
     "rust/crates/sim/src/lib.rs": "bfb68112fe8fdc296a7350db7e3b40d715b53480a20d0292345434e0732efcb4",
-    "rust/crates/sim/src/striker.rs": "63ce3efde29b331f8b5dce45f2a702286b816d7c4511cb80040739c4b97ef1e6"
+    "rust/crates/sim/src/striker.rs": "63ce3efde29b331f8b5dce45f2a702286b816d7c4511cb80040739c4b97ef1e6",
+    "rust/crates/sim/src/motion.rs": "ffd8472cb7e5cd42b2228051a317a8136e69ba00f0d3fba3bbfdc37e0a08dcd8"
   },
   "immutable_phase_uploads": 2,
   "generation_uploads": 3,
@@ -116,7 +117,7 @@
     "shared_uncertainty_reserve": 5020,
     "maximum_qualification_integrations": 103040,
     "historical_source_decisions": 50,
-    "source_decisions": 974,
+    "source_decisions": 923,
     "phase_proofs": [
       "BELLY"
     ],
@@ -124,6 +125,11 @@
     "generation_uploads": 2,
     "seed_reuse_required": true,
     "external_parity_required": true,
-    "no_coldPrepare_or_coldQualify": true
+    "no_coldPrepare_or_coldQualify": true,
+    "prior_closed_source_decisions": 51,
+    "prior_closed_integrations": 1560,
+    "historical_parity_integrations": 4420,
+    "cross_proof_integrations": 117080,
+    "cross_proof_source_decisions": 1024
   }
 }

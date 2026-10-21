@@ -64,12 +64,39 @@ reference/residual/status scalars, first-control/terminal binding and other fixe
 simulation fields. Another 16 KiB covers root/envelope sidecars. These categories
 are source-bound; they are not averages inferred from a favorable trajectory.
 
-Only freshly constructed, artifact-bound BACK comparison lineages can omit the
-fresh-reference alternative after their first reference: each lineage has at
-most 400 real source samples, whereas rearm requires 800 stable observed native
-samples. Forecast integrations do not call the observer. The resumed comparator
-inherits this exact provenance. Holds and all other lineages retain the fallback.
-Rearm replaces the whole controller; it does not append a second teacher history.
+The pre-call checkpoint is decoded without constructing a runtime. Certification
+requires the pinned runtime profile (1.25 ms, 20 substeps, repeat-cycle token),
+unchanged model/profile/generation lineage, a started, aligned source with a
+reference, explicit completion boolean, no known failure and an empty lifecycle
+queue. A normal finite, native-bound pending correction is not a lifecycle reset.
+The source-bound next-call branches are:
+
+| Pre-call state | Serialized alternative |
+|---|---|
+| Incomplete, stable counter + 20 < 800 | Retained runtime + 24 KiB aligned decision + existing mutation/wrapper allowances |
+| Incomplete, possibly crossing 800 | Maximum of that branch and retained runtime + 64 KiB empty controller + mutation/wrapper allowances |
+| Completed, motion Upright or Reacting | Same bounded empty-controller alternative |
+| Unstarted, absent reference, completed Falling/Fallen/Recovering/Halted, or uncertified lineage | Full retained-or-fresh-reference fallback |
+| Queued lifecycle command, disposed runtime, invalid schema/alignment/lineage | No dispatch |
+
+Why the extra branches are safe: first success resets both motion timers and
+sets Upright. A completed Upright/Reacting-to-Falling transition resets the
+settling timer. At most 20 × 1.25 ms cannot satisfy the unchanged 0.3-second
+Fallen threshold. The controller can be replaced once with an empty controller,
+but cannot create a new reference in that call. Completed Falling with an old
+settling timer is a counterexample and keeps the full fallback. Forecasts never
+call the real observer. Source anchors are `motion.rs` fall/settling transitions,
+`controller.rs` reference creation, rearm and first-success blocks; their exact
+hashes are frozen in the plan. No native/controller code is changed.
+
+The empty-controller bound is explicit: 33 controller/status fields, 42 f32
+slots, bounded phase/refusal strings and fixed overhead give at most 7,780 raw
+JSON bytes, or 31,126 bytes after two string-escaping layers. We reserve 64 KiB
+**in addition to the whole existing normalized runtime**, without subtracting
+or reconstructing old history. The 6 MiB world, 2 MiB mutable and 16 KiB wrapper
+allowances stay unchanged. Every actual call still reserves 5,020 integrations.
+The compact branch inputs and projection are retained with native call evidence
+and terminal capture, including partial/failed calls.
 
 This guard can stop before a complete trajectory. It makes **no universal
 32 MiB completion guarantee**. It reserves a complete terminal capture before
@@ -171,13 +198,21 @@ without treating the foreign ledger or old raw rows as new experience.
 | Total stage allowances | 1,440 s | 98,020 |
 
 One shared 5,020 reserve gives **103,040** maximum new integrations. The new
-source cap is **974**, so the historical 50 plus at most 974 remains at most
-1,024. Both actual transition-parity executions count; both raw records are
+source cap is **923**: historical PARITY 50 plus closed preservation 51
+plus at most 923 remains at most 1,024. The prior 4,420 + 1,560 integrations
+remain charged; adding the new 103,040 envelope gives **109,020**, below the
+original cross-proof ceiling of 117,080. Hash-bound closed ledger/report checks
+validate these charges without importing state or reviving either attempt. Both actual transition-parity executions count; both raw records are
 retained and only the duplicate replay entry is excluded. The new diagnostic
 replay contains only new executions. WEAK forecasts are counted separately;
 every call retains its 5,020 pre-dispatch bound. Physics still stops at T+2,100,
 all work at T+3,600, and the 147,000 candidate reserve is untouched. There is no
 optimizer, candidate evaluation, optional original workload or automatic retry.
+
+The foreign PARITY reference retains its original `new_source_decisions: 974`
+allocation metadata and original hash. It is not rewritten. The new plan and
+`closedExecutionBudget` supersede that historical allocation with the enforced
+923 cap; neither Python nor JS takes its current allowance from the old reference.
 
 Intermediate BELLY evidence omits the duplicate learner and makes no learner
 restore claim. The terminal proof restores fresh new replay/mapper/runtime and
@@ -186,18 +221,24 @@ and restores the paused live learner state in `finally` even if validation fails
 The original 25-second impact deadline, 800 continuous stable samples, anchored
 foot-origin/material-point limits and 30-second holds are unchanged.
 
-Prospective sizing includes every closed local proof. At the measured inventory,
-protected closed roots occupy 95,592,872 bytes. With shared and seed reuse, one
-immutable BELLY archive and one final mutable archive, the conservative remote
-ceiling is **82,466,040 bytes**: 44,717,304 after separately authorized retention
-(including the denied write reservation, without refund), plus two 18 MiB caps.
-The corresponding staging envelope is **199,842,414 bytes** under the scoped
-192 MiB allowance; the separately reported total with 32 MiB active output is
-233,396,846 bytes. The foreign proof requires 2,633,952 bytes for ZIP plus extracted
-payload. Actual dependency readbacks and packaging remain independently checked
-against measured occupancy; these figures are not a completion guarantee or a
-whole-workspace cap. Future admission must remeasure inventory and explicitly
-scope the local allowance. No old proof is deleted to make room.
+Prospective sizing includes every closed local proof. The seven protected roots
+now occupy **113,034,515 bytes**; the corrected immutable inputs remain counted
+separately. The unchanged worst-case staging requirement is **217,284,057 bytes**,
+which does not fit the previous 192 MiB scope (15,957,465 bytes over). The explicit
+next-attempt-only local amendment is **224 MiB / 234,881,024 bytes**. It is not an
+automatic trial authorization or permission to increase any other cap. Active
+output remains 32 MiB, each ZIP 18 MiB, and remote cumulative storage 160 MiB.
+The corresponding total recovery bound including active output is 250,838,489
+bytes; toolchains/venv are separate and this is not a whole-workspace cap.
+
+Conservative remote exposure is now 50,604,514 bytes, including the denied
+reservation without refund. One immutable BELLY and one final mutable archive
+at 18 MiB each give **88,353,250 bytes** maximum cumulative exposure. The foreign
+proof needs 2,633,952 bytes for ZIP plus extraction. Actual metadata, dependency
+readbacks and packaging must still fit measured occupancy; no old proof is
+removed, no compression gain is assumed, and no trajectory completion is promised.
+The production preflight rejects absent/wrong run-specific amendment, stale
+inventories, any larger active/ZIP/remote cap, or a different archive cadence.
 
 Software coverage exercises the production CLI and archive adapter with scripted
 physics/transport but real mapper, replay and learner serialization. It checks

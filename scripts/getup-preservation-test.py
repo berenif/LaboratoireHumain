@@ -8,7 +8,7 @@ from types import SimpleNamespace
 from unittest import mock
 from experiment_backup import create_snapshot,restore_bundle,verify_bundle,sha256,atomic_json
 from getup_cold_start import artifact
-from getup_external_parity import validate_external_parity,restore_external_parity
+from getup_external_parity import validate_external_parity,restore_external_parity,validate_closed_execution_budget
 from getup_qualification import QualificationPilot,QualificationPlan,QualificationByteGuard,untouched_learner_bytes,PLAN
 from getup_cold_start_engine import CoherentRecovery,restore_coherent
 from dataclasses import asdict
@@ -97,6 +97,26 @@ def rng_fingerprint():
 
 
 class PreservationTests(unittest.TestCase):
+    def test_closed_charge_conservation_not_a_resume(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root=Path(tmp);prior=prior_fixture(root/'prior')
+            ledger={'nativeIntegrations':1560,'realIntegrations':1020,'forecastIntegrations':540,
+                'trainingDecisions':51,'bootstrapDecisions':51,'uncertainCalls':[]}
+            report={'runId':'closed-preservation','mode':'preservation-only','phaseResult':{
+                'ledger':ledger,'synthetic':True,'externalQualification':prior.validated['reference'],
+                'trainingExecuted':False,'accepted':0,'stopped':'qualification-safe-stop'}}
+            atomic_json(root/'closed-ledger.json',ledger);atomic_json(root/'closed-report.json',report)
+            proof={'schema':'lh-closed-execution-budget/v1','ledger':doc(root/'closed-ledger.json'),'report':doc(root/'closed-report.json')}
+            result=validate_closed_execution_budget(proof,prior.validated['reference'],'new',synthetic=True)
+            self.assertEqual(result['prior_integrations'],5980);self.assertEqual(result['prior_source_decisions'],101)
+            self.assertEqual(result['new_source_cap'],923);self.assertEqual(result['maximum_cross_proof_integrations'],109020)
+            self.assertFalse(result['state_imported']);self.assertFalse(result['automatic_resume_authorized'])
+            for key,value in [('nativeIntegrations',1540),('bootstrapDecisions',50),('pendingCall',{'unknown':True})]:
+                bad=dict(ledger,**{key:value});atomic_json(root/'closed-ledger.json',bad)
+                wrong=dict(proof,ledger=doc(root/'closed-ledger.json'))
+                with self.assertRaises(ContractError):validate_closed_execution_budget(wrong,prior.validated['reference'],'new',synthetic=True)
+            with self.assertRaises(ContractError):validate_closed_execution_budget(None,prior.validated['reference'],'new',synthetic=True)
+
     def test_complete_new_chain_omits_history_and_two_archive_cadence(self):
         with tempfile.TemporaryDirectory() as tmp:
             prior=prior_fixture(Path(tmp)/'prior');p,t=new_pilot(Path(tmp)/'new',prior)
@@ -108,7 +128,7 @@ class PreservationTests(unittest.TestCase):
             self.assertFalse({'coldPrepare','coldQualify'}&set(p.bridge.calls))
             self.assertEqual(sha256(prior.old.output/'budget-ledger.json'),prior.ledger_sha)
             self.assertLess(result['ledger']['bootstrapDecisions'],50)
-            self.assertEqual(result['sourceDecisionCap'],974);self.assertEqual(result['maximumQualificationIntegrations'],103040)
+            self.assertEqual(result['sourceDecisionCap'],923);self.assertEqual(result['maximumQualificationIntegrations'],103040)
             self.assertEqual(len(p.raw_lines()),len(p.mapping)+1) # retain both parity calls; exclude only duplicate
             self.assertEqual(len(p.excluded_lines),1)
             self.assertEqual({x['case'] for x in p.mapping},{'belly','heldout'})
@@ -143,7 +163,8 @@ class PreservationTests(unittest.TestCase):
                 'verified_shared':prior.shared,'_verified_shared':shared_docs,
                 '_external_qualification':prior.validated,'_external_prerequisite':prior.prerequisite,
                 '_verified_prior_generations':copy.deepcopy(transport.exchange.verified),'_qualification_storage':{},
-                'storage':{'cumulative_uploaded_bytes':44717304,'staging_bytes':192*1024**2,
+                '_closed_execution_budget':{'prior_integrations':5980,'prior_source_decisions':101,'new_source_cap':923,'state_imported':False},
+                'storage':{'cumulative_uploaded_bytes':50604514,'staging_bytes':224*1024**2,
                     'remote_payload_bytes':shared_payload+seed_payload+10,'protected_local_backup_bytes':0}}
             inputs={'files':{k:{'path':str(v)} for k,v in prior.shared_paths.items()}}
             immutable={'shared':(prior.shared['archive'],prior.shared_manifest),
@@ -178,6 +199,8 @@ class PreservationTests(unittest.TestCase):
             self.assertEqual(report['externalQualificationRestore']['foreign_ledger_imported'],False)
             self.assertFalse(report['externalQualificationRestore']['learner_restored'])
             self.assertEqual(report['source']['commit'],'d'*40)
+            self.assertEqual(report['closedExecutionBudget'],admission['_closed_execution_budget'])
+            self.assertEqual(report['phaseResult']['closedExecutionBudget'],admission['_closed_execution_budget'])
 
     def test_foreign_restore_never_constructs_learner_and_preserves_rng_on_failure(self):
         with tempfile.TemporaryDirectory() as tmp:
@@ -206,7 +229,7 @@ class PreservationTests(unittest.TestCase):
             prior=prior_fixture(Path(tmp)/'prior');p,t=new_pilot(Path(tmp)/'new',prior)
             for name,seconds,steps in [('fixture-preparation',120,3040),('zero-correction-qualification',120,11000)]:
                 with self.assertRaises(ContractError):p.enter(name,seconds,steps)
-            p.bridge.ledger['bootstrapDecisions']=974
+            p.bridge.ledger['bootstrapDecisions']=923
             with self.assertRaisesRegex(ContractError,'source cap'):p.call({'op':'reset'},physical=True)
             self.assertEqual(p.bridge.physical_calls,0)
 

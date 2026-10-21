@@ -113,13 +113,16 @@ def restore_verified_shared(exchange,item,request,validator,deadline):
 def qualification_staging_scope(admission):
     storage=admission['storage'];limit=storage['staging_bytes']
     if limit==160*1024**2:return limit
-    if (limit!=192*1024**2 or storage.get('staging_scope_run_id')!=admission['run_id']
+    if (limit not in (192*1024**2,224*1024**2) or storage.get('staging_scope_run_id')!=admission['run_id']
             or not storage.get('staging_amendment_reference')
             or storage.get('active_output_bytes')!=32*1024**2
             or storage.get('archive_bytes')!=18*1024**2
             or storage.get('cumulative_archive_bytes')!=160*1024**2
             or storage.get('mutable_uploads')!=1):
-        raise ContractError('192MiB is a scoped local amendment, not remote/output/cadence permission')
+        raise ContractError('Local staging amendment is scoped, not remote/output/cadence permission')
+    if limit==224*1024**2 and (admission.get('mode')!='preservation-only'
+            or storage.get('immutable_phase_uploads')!=1 or storage.get('total_generation_archives')!=2):
+        raise ContractError('224MiB scope is one preservation attempt with exactly two archives')
     return limit
 
 

@@ -211,6 +211,22 @@ assert.throws(()=>check({...x,effectiveSimFeatures:x.effectiveSimFeatures.filter
             active_output_bytes=32*1024**2,archive_bytes=18*1024**2,
             cumulative_archive_bytes=160*1024**2,mutable_uploads=1)}
         self.assertEqual(qualification_staging_scope(admission),192*1024**2)
+        future=copy.deepcopy(admission);future['mode']='preservation-only'
+        future['storage'].update(staging_bytes=224*1024**2,immutable_phase_uploads=1,total_generation_archives=2)
+        self.assertEqual(qualification_staging_scope(future),224*1024**2)
+        for change in ({'staging_bytes':225*1024**2},{'immutable_phase_uploads':2},{'total_generation_archives':3}):
+            wrong=copy.deepcopy(future);wrong['storage'].update(change)
+            with self.assertRaises(ContractError):qualification_staging_scope(wrong)
+        measured=dict(protected_local_bytes=113034515+3728,corrected_shared_payload_bytes=16218147,
+            corrected_shared_archive_bytes=10620053,seed_payload_bytes=1910142,seed_archive_bytes=349304,
+            prior_cumulative_before_corrected_inputs=50604514,slot_archive_bytes=[5526206,5887210],
+            active_working_bytes=0,shared_already_verified=True,seeds_already_verified=True,
+            external_prerequisite_bytes=2633952,immutable_phase_uploads=1)
+        with self.assertRaises(ContractError):qualification_storage_envelope(**measured,staging_limit_bytes=192*1024**2)
+        bounded=qualification_storage_envelope(**measured,staging_limit_bytes=224*1024**2)
+        self.assertEqual(bounded['staging_peak_bytes'],217284057)
+        self.assertEqual(bounded['cumulative_archive_bytes'],88353250)
+        self.assertEqual(bounded['total_recovery_artifact_bound_bytes'],250838489)
         for key,value in [('staging_bytes',193*1024**2),('staging_scope_run_id','other'),
             ('staging_amendment_reference',''),('active_output_bytes',33*1024**2),
             ('cumulative_archive_bytes',192*1024**2),('archive_bytes',19*1024**2),('mutable_uploads',2)]:

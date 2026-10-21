@@ -18,6 +18,38 @@ def bound_document(item):
     return json.loads(path.read_text())
 
 
+def validate_closed_execution_budget(proof,external_reference,new_run_id,*,synthetic=False):
+    """Conserve a closed attempt's charges; NEVER import its runtime/RNG/cursor."""
+    from getup_qualification import PLAN
+    limits=PLAN['preservation_only']
+    if not isinstance(proof,dict) or proof.get('schema')!='lh-closed-execution-budget/v1':
+        raise ContractError('Hash-bound closed preservation charges required')
+    ledger=bound_document(proof['ledger']);report=bound_document(proof['report'])
+    phase=report.get('phaseResult',{})
+    if (report.get('runId') in (new_run_id,external_reference['run_id'],None)
+            or report.get('mode')!='preservation-only' or phase.get('ledger')!=ledger
+            or bool(phase.get('synthetic',False)) is not synthetic
+            or phase.get('externalQualification',{}).get('reference_sha256')!=external_reference['reference_sha256']
+            or ledger.get('nativeIntegrations')!=limits['prior_closed_integrations']
+            or ledger.get('realIntegrations')!=1020 or ledger.get('forecastIntegrations')!=540
+            or ledger.get('trainingDecisions')!=limits['prior_closed_source_decisions']
+            or ledger.get('bootstrapDecisions')!=limits['prior_closed_source_decisions']
+            or ledger.get('pendingCall') or ledger.get('uncertainCalls') or ledger.get('uncertainIntegrations')
+            or phase.get('trainingExecuted') is not False or phase.get('accepted')!=0
+            or phase.get('stopped')!='qualification-safe-stop'):
+        raise ContractError('Closed preservation ledger/report identity or charges differ')
+    prior_native=external_reference['original_ledger']['nativeIntegrations']+ledger['nativeIntegrations']
+    prior_source=external_reference['historical_source_decisions']+ledger['bootstrapDecisions']
+    if (prior_native+limits['maximum_qualification_integrations']>limits['cross_proof_integrations']
+            or prior_source+limits['source_decisions']!=limits['cross_proof_source_decisions']):
+        raise ContractError('Cross-proof cumulative budget exceeded')
+    return {'closed_run_id':report['runId'],'ledger_sha256':proof['ledger']['sha256'],
+        'report_sha256':proof['report']['sha256'],'prior_integrations':prior_native,
+        'prior_source_decisions':prior_source,'new_source_cap':limits['source_decisions'],
+        'maximum_cross_proof_integrations':prior_native+limits['maximum_qualification_integrations'],
+        'state_imported':False,'automatic_resume_authorized':False}
+
+
 def private_proof(proof,*,synthetic=False):
     documents={k:bound_document(proof[k]) for k in ('request','receipt','application')}
     q,r,a=(documents[k] for k in ('request','receipt','application'))

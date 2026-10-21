@@ -27,7 +27,7 @@ def qualification_storage_envelope(*,protected_local_bytes,corrected_shared_payl
     if any(type(x) is not int or x<0 for name,x in values.items()
            if name not in ('slot_archive_bytes','shared_already_verified','seeds_already_verified')):
         raise ContractError('Measured nonnegative integer storage inventory required')
-    if staging_limit_bytes not in (160*1024**2,192*1024**2) or type(shared_already_verified) is not bool:
+    if staging_limit_bytes not in (160*1024**2,192*1024**2,224*1024**2) or type(shared_already_verified) is not bool:
         raise ContractError('Explicit bounded local staging scope required')
     if immutable_phase_uploads not in (0,1,2):raise ContractError('Exact two-phase immutable cadence required')
     if len(slot_archive_bytes)!=2 or any(type(x) is not int or x<=0 for x in slot_archive_bytes):

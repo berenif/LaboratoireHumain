@@ -19,6 +19,9 @@ const preservationOnly=config.preservationOnly===true;
 assert(!preservationOnly||qualificationOnly);
 if(qualificationOnly){assert.deepEqual(config.qualificationPlan,qualificationPlan);validateQualificationGrowthSources(root);}
 const profile=JSON.parse(readFileSync(profilePath));
+if(qualificationOnly)assert(profile.id==='getup-800hz-3plus1-repeat-cycle-v1'&&profile.dt_s===.00125&&
+ profile.tick_substeps===20&&profile.getup_repeated_recovery==='completed-cycle-confirmed-fall-v1'&&
+ profile.recovery_enabled===false,'Serialized branch proof requires the exact reviewed repeat-cycle profile');
 const hash=x=>createHash('sha256').update(x).digest('hex');
 const load=async path=>{let m=await import(pathToFileURL(join(path,'lh_worker.js')).href);m.initSync({module:readFileSync(join(path,'lh_worker_bg.wasm'))});return m;};
 const priorLedgerPath=join(output,'budget-ledger.json');
@@ -45,7 +48,7 @@ let protectedEvaluationIntegrations=0,protectedEvaluationWallMs=0;
 let usefulAdmission=null,limitedPhysicalCalls=0;
 let commandName=null;
 const qualificationRuntimes=new Set();
-const coldParityLineages=new WeakSet();
+const qualificationLineages=new WeakMap();
 let qualificationTerminalBase=null;
 const track=w=>{if(qualificationOnly)qualificationRuntimes.add(w);return w;};
 const free=w=>{qualificationRuntimes.delete(w);w.free();};
@@ -56,14 +59,18 @@ function activeOutputBytes(path=output){
  },0);
 }
 let qualificationStaging=null;
+let qualificationLastDispatchProof=null;
 function qualificationStorageGuard(extraOutput=0,physical=true,advancedRuntime=null,ticks=1){
  if(!qualificationOnly)return;
  assert(Number.isSafeInteger(qualificationTerminalBase)&&qualificationTerminalBase>=config.qualificationStorage.untouchedLearnerBytes+2*1024**2);
  const runtimes=[...qualificationRuntimes],shapes=runtimes.map(w=>checkpointShape(w.getup_checkpoint()));
+ for(let i=0;i<runtimes.length;i++)if(!qualificationLineages.has(runtimes[i]))
+  qualificationLineages.set(runtimes[i],{modelSha256:shapes[i].modelSha256,profileSha256:shapes[i].profileSha256,
+   generation:shapes[i].generation,profile:profile.id});
  assert(!physical||advancedRuntime&&runtimes.includes(advancedRuntime));
  const proof=replacementProjection({active:activeOutputBytes(),terminal:qualificationTerminalBase,shapes,
   advanced:physical?runtimes.indexOf(advancedRuntime):-1,ticks,
-  lineage:physical&&coldParityLineages.has(advancedRuntime),extra:extraOutput});
+  lineage:physical?qualificationLineages.get(advancedRuntime):null,extra:extraOutput});
  if(qualificationStaging){
   const p=proof.projectedActiveOutputBytes,s=qualificationStaging;
   const peak=s.base+Math.max(2*p,p+2*18*1024**2+s.dependencies)+4*1024**2;
@@ -84,7 +91,9 @@ const report=w=>JSON.parse(w.getup_adaptation_state?w.getup_adaptation_state():w
 const fixture=w=>JSON.parse(w.getup_fixture_report());
 const call=(w,ticks=1,{firstSourceCall=false}={})=>{
  track(w);
- if(qualificationOnly)qualificationStorageGuard(0,true,w,ticks);
+ let storageProof=null;
+ if(qualificationOnly)try{storageProof=qualificationStorageGuard(0,true,w,ticks);qualificationLastDispatchProof=storageProof;}
+ catch(error){qualificationLastDispatchProof=error.projection??{physicalDispatchAuthorized:false,error:String(error)};throw error;}
  if(continuationClaim){
   assert(usefulAdmission&&limitedPhysicalCalls===0,'One limited physical initialization only');
   assert(Date.now()<usefulAdmission.deadlineUnixMs,'Limited operation wall deadline');
@@ -113,7 +122,7 @@ const call=(w,ticks=1,{firstSourceCall=false}={})=>{
  lastSnapshots.set(w,result.reply.snapshot);
  if(qualificationOnly){
   const f=fixture(w),status=report(w)?.status;
-  const audit={command:commandName,preNative:before,postNative:after,
+  const audit={command:commandName,preNative:before,postNative:after,serializedAdmission:storageProof,
    callSequence:ledger.completedCalls,ledgerNativeEnd:ledger.nativeIntegrations,
    before:qualificationBefore,after:qualificationCounters(w),
    nativeTraceSha256:hash(JSON.stringify(result.nativeTrace)),nativeSamples:result.nativeTrace.length,
@@ -161,7 +170,7 @@ async function command(q){
  if(q.op==='qualificationStorage'){
   assert(qualificationOnly&&Number.isSafeInteger(q.terminalBaseBytes));
   qualificationTerminalBase=q.terminalBaseBytes;
-  assert([160*1024**2,192*1024**2].includes(q.stagingLimitBytes));
+  assert([160*1024**2,192*1024**2,224*1024**2].includes(q.stagingLimitBytes));
   assert([q.stagingBaseBytes,q.dependencyRestoreBytes].every(x=>Number.isSafeInteger(x)&&x>=0));
   qualificationStaging={base:q.stagingBaseBytes,dependencies:q.dependencyRestoreBytes,limit:q.stagingLimitBytes};
   return qualificationStorageGuard(0,false);
@@ -179,7 +188,7 @@ async function command(q){
     uncertain:w===active&&unresolved});
    if(w!==active)free(w);
   }
-  return {physicsIntegrations:0,files,activeOutputBytes:activeOutputBytes(),
+  return {physicsIntegrations:0,files,activeOutputBytes:activeOutputBytes(),lastDispatchProof:qualificationLastDispatchProof,
    activeKnown:!!active&&!unresolved,state:active&&!unresolved?state(active):null};
  }
  if(q.op==='qualificationRelease'){
@@ -242,7 +251,7 @@ async function command(q){
   const runs=[track(candidate.WorkerRuntime.from_getup_checkpoint(seed)),track(candidate.WorkerRuntime.from_getup_checkpoint(seed))];
   runs[1].set_getup_adaptation_head(JSON.stringify({weights:Array(21*1024).fill(0),bias:Array(21).fill(0)}));
   if(qualificationOnly)for(const w of runs){const shape=checkpointShape(w.getup_checkpoint());
-   assert.equal(shape.native,480);assert.equal(shape.source,null);assert.equal(shape.stable,0);assert(!shape.completed);coldParityLineages.add(w);}
+   assert.equal(shape.native,480);assert.equal(shape.source,null);assert.equal(shape.stable,0);assert(!shape.completed);}
   let resumed=null,samples=0,resumedSamples=0;
   const started=performance.now();
   for(let i=0;i<20;i++){
@@ -262,7 +271,7 @@ async function command(q){
    if(i===9){const cp=runs[1].getup_checkpoint();
     writeCheckpoint(join(output,'native-parity-resume.bin'),cp);
     resumed=track(candidate.WorkerRuntime.from_getup_checkpoint(cp));
-    if(qualificationOnly)coldParityLineages.add(resumed);}
+   }
   }
   runs.forEach(free);free(resumed);
   const result={passed:true,physicsIntegrations:ledger.nativeIntegrations,zeroCorrectionSamples:samples,

@@ -182,13 +182,15 @@ def future_admission(path,output,worker,shared,run_id):
     receipts={'shared':(item,bundle)}
     preservation=admission['mode']=='preservation-only'
     if preservation:
-        from getup_external_parity import validate_external_parity
+        from getup_external_parity import validate_external_parity,validate_closed_execution_budget
         bound=admission.get('external_qualification')
         if not isinstance(bound,dict):raise ContractError('Durable external PARITY prerequisite required before clock')
         external_path=Path(bound['path'])
         if sha256(external_path)!=bound['sha256']:raise ContractError('External prerequisite record changed')
         prerequisite=json.loads(external_path.read_text())
         external=validate_external_parity(prerequisite,bundle,run_id,sha256(PROTOCOL_PATH))
+        admission['_closed_execution_budget']=validate_closed_execution_budget(
+            admission.get('closed_execution_budget'),external['reference'],run_id)
         admission['_external_qualification']=external
         admission['_external_prerequisite']=prerequisite
         receipts['seeds']=(prerequisite['seeds']['archive'],external['seed_manifest'])
@@ -198,7 +200,7 @@ def future_admission(path,output,worker,shared,run_id):
     staging_limit=qualification_staging_scope(admission)
     if storage.get('immutable_phase_uploads')!=(1 if preservation else 2) or storage.get('total_generation_archives')!=(2 if preservation else 3):
         raise ContractError('Exact admitted immutable-proof/terminal cadence required')
-    if (storage['cumulative_uploaded_bytes']<(44717304 if preservation else 43566444) or storage['cumulative_uploaded_bytes']>160*1024**2
+    if (storage['cumulative_uploaded_bytes']<(50604514 if preservation else 43566444) or storage['cumulative_uploaded_bytes']>160*1024**2
             or not storage.get('owner_inventory_reference')):
         raise ContractError('Complete prior cumulative/owner storage admission required')
     measured=0
@@ -290,7 +292,8 @@ def run(output,worker,shared,run_id,continuation_path=None,admission_path=None):
         'actualTrialAuthorized':True,'releaseAccepted':False,'candidateAccepted':False,
         'historicalRecoveryClaimed':False,'reusedImmutableArchives':True,
         'mode':admission['mode'],'optimizerAuthorized':False,'candidateEvaluationAuthorized':False,
-        'storageEnvelope':admission['_qualification_storage']}
+        'storageEnvelope':admission['_qualification_storage'],
+        'closedExecutionBudget':admission.get('_closed_execution_budget')}
     atomic_json(output/'cold-start-report.json',report)
     print(json.dumps({'event':'START','run_id':run_id,'started':started,'deadline':deadline,
         'protocol_sha256':sha256(PROTOCOL_PATH),'absolutePhaseCutoffs':asdict(plan)}),flush=True)
@@ -397,6 +400,7 @@ def run(output,worker,shared,run_id,continuation_path=None,admission_path=None):
         learner=factory();learner_bytes=untouched_learner_bytes(learner)
         seed_paths={case:str(output/(case+'-seed.bin')) for case in ('original','heldout','belly')}
         config={'wallSeconds':3600,'nativeIntegrations':300000,'gamma':interfaces.GAMMA,
+            'closedExecutionBudget':admission.get('_closed_execution_budget'),
             'qualificationOnly':True,'preservationOnly':preservation,'qualificationPlan':PLAN,
             'qualificationStorage':{'untouchedLearnerBytes':learner_bytes},
             'coldStart':{'schema':PROTOCOL['schema'],'manifest':str(shared/'input-manifest.json'),'operationalProof':str(proof)},
@@ -416,6 +420,7 @@ def run(output,worker,shared,run_id,continuation_path=None,admission_path=None):
                 paths,operation_deadline=pilot.phase_deadline),
             builder_factory=lambda:legacy.SourceTransition(interfaces.GAMMA),bridge=wasm,
             recovery=recovery,clock=clock,plan=plan,identity=identity,synthetic=False)
+        pilot.report['closedExecutionBudget']=admission.get('_closed_execution_budget')
         plan.assert_inputs_ready(clock.now())
         report['inputsCompletedAtUnix']=clock.now()
         if not preservation:

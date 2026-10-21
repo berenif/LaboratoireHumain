@@ -147,17 +147,17 @@ test('late hold checkpoint byte rejection retains measured counts and extrema wi
  const passed=retainMeasuredHold(result,x=>retained.push(x),()=> 'a'.repeat(64));
  assert.equal(passed.passed,true);assert.equal(passed.checkpointBound,true);
 });
-test('preservation-only keeps historical50 separate and admits only974 NEW source decisions',()=>{
+test('preservation-only keeps historical101 separate and admits only923 NEW source decisions',()=>{
  const l={...ledger(),qualificationMode:'preservation-only'};
  assert.equal(p.preservation_only.normal_integrations,5060+43960+49000);
  assert.equal(p.preservation_only.maximum_qualification_integrations,103040);
- assert.equal(p.preservation_only.source_decisions+50,1024);
+ assert.equal(p.preservation_only.source_decisions+50+51,1024);
  assert.throws(()=>enterQualificationStage(l,'fixture-preparation'),/historical/);
  assert.throws(()=>enterQualificationStage(l,'zero-correction-qualification'),/historical/);
- enterQualificationStage(l,'transition-parity');l.bootstrapDecisions=973;l.trainingDecisions=973;
+ enterQualificationStage(l,'transition-parity');l.bootstrapDecisions=922;l.trainingDecisions=922;
  guardQualificationCall(l);beginProtocolCall(l,340,0);beginQualificationSource(l);
  finishProtocolCall(l,360,0);finishQualificationSource(l,counters(0),counters(1));
- assert.equal(l.bootstrapDecisions,974);assert.equal(l.nativeIntegrations,20);
+ assert.equal(l.bootstrapDecisions,923);assert.equal(l.nativeIntegrations,20);
  assert.throws(()=>guardQualificationCall(l),/source-decision cap/);
 });
 test('preservation-only one5020 reserve remains charged on uncertainty at aggregate limit',()=>{
