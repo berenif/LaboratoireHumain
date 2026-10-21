@@ -182,7 +182,8 @@ class QualificationByteGuard:
         terminal=self.learner_bytes+2*1024**2+11000*rows
         exchange=pilot.recovery.transport.exchange
         staging=exchange.external_local_bytes+sum(p.stat().st_size for p in exchange.directory.rglob('*') if p.is_file())
-        dependencies=max((r['archive_bytes']+r['payload_bytes'] for r in pilot.proofs.references),default=0)
+        dependencies=max((r['archive_bytes']+r['payload_bytes'] for r in
+            pilot.proofs.references+([pilot.external_qualification] if pilot.external_qualification else [])),default=0)
         proof=pilot.bridge.call({'op':'qualificationStorage','terminalBaseBytes':terminal,
             'stagingBaseBytes':staging,'dependencyRestoreBytes':dependencies,
             'stagingLimitBytes':exchange.local_staging_limit_bytes})
@@ -197,6 +198,7 @@ class QualificationPlan(PhasePlan):
     backup_payload_envelope_bytes:int=32*1024**2
     backup_archive_envelope_bytes:int=18*1024**2
     qualification_only:bool=True
+    preservation_only:bool=False
 
     def stage_cutoff(self,name,cycle=0):
         if name=='immutable-input-restore':return self.started+300
@@ -214,9 +216,15 @@ class QualificationPlan(PhasePlan):
 
 class QualificationPilot(ColdPilot):
     """One continuous qualification, one terminal application restore, no retry."""
-    def __init__(self,*args,byte_guard,native_validator=None,**kwargs):
+    def __init__(self,*args,byte_guard,native_validator=None,external_qualification=None,**kwargs):
         super().__init__(*args,**kwargs)
         self.byte_guard=byte_guard;self.terminal_attempted=False
+        self.external_qualification=external_qualification
+        if self.plan.preservation_only and not external_qualification:
+            raise ContractError('Preservation requires a separately verified external native proof')
+        self.limits=PLAN['preservation_only'] if self.plan.preservation_only else PLAN
+        self.proof_order=self.limits['phase_proofs']
+
         self.physical_proof_mode=None;self.prior_raw_bytes=b'';self.last_snapshot_roles={}
         self.committed_raw_duplicate=None
         from getup_phase_proofs import PhaseProofs
@@ -224,10 +232,11 @@ class QualificationPilot(ColdPilot):
         self.proofs=PhaseProofs(self,native_validator or missing_validator)
         self.diagnostic_restore_required=False
         self.untouched_learning_state=self.learner.capture_learning_state()
-        self.report.update(mode='qualification-only',optimizerAuthorized=False,
+        self.report.update(mode='preservation-only' if self.plan.preservation_only else 'qualification-only',optimizerAuthorized=False,
             fullTrainingReplayReady=False,physicalQualificationPassed=False,
-            holdEvidenceGranularity=PLAN['hold_evidence'],normalIntegrationEnvelope=112060,
-            sharedReserveIntegrations=5020,maximumQualificationIntegrations=117080)
+            holdEvidenceGranularity=PLAN['hold_evidence'],normalIntegrationEnvelope=self.limits['normal_integrations'],
+            sharedReserveIntegrations=5020,maximumQualificationIntegrations=self.limits['maximum_qualification_integrations'],
+            sourceDecisionCap=self.limits['source_decisions'],externalQualification=external_qualification)
 
     def enter(self,name,seconds,integrations=0,*,evaluation=False,retention=False):
         if evaluation:raise ContractError('No candidate evaluation in qualification')
@@ -235,10 +244,12 @@ class QualificationPilot(ColdPilot):
             if self.terminal_attempted:raise ContractError('One terminal generation only; no retry')
             self.terminal_attempted=True
             return super().enter(name,seconds,0,retention=True)
+        if self.plan.preservation_only and name in ('fixture-preparation','seed-backup','zero-correction-qualification','parity-proof'):
+            raise ContractError('Historical preparation/qualification cannot run again')
         phase=PLAN['phases'].get(name)
         if not phase or seconds!=phase['seconds'] or integrations!=phase['normal']:
             raise ContractError('Exact named qualification phase allowance required')
-        if self.ledger()['nativeIntegrations']+integrations+5020>117080:
+        if self.ledger()['nativeIntegrations']+integrations+5020>self.limits['maximum_qualification_integrations']:
             raise ContractError('One shared reserve cannot be repeatedly allocated')
         super().enter(name,seconds,integrations+5020)
         if integrations:
@@ -248,9 +259,9 @@ class QualificationPilot(ColdPilot):
         if physical:
             self.byte_guard(self,query,upper_bound)
             ledger=self.ledger()
-            if ledger['nativeIntegrations']+upper_bound>117080:
+            if ledger['nativeIntegrations']+upper_bound>self.limits['maximum_qualification_integrations']:
                 raise ContractError('Qualification aggregate including single reserve exhausted')
-            if ledger.get('bootstrapDecisions',0)>=1024:
+            if ledger.get('bootstrapDecisions',0)>=self.limits['source_decisions']:
                 raise ContractError('Inclusive qualification source cap reached')
         return super().call(query,physical=physical,upper_bound=upper_bound)
 
@@ -297,6 +308,23 @@ class QualificationPilot(ColdPilot):
     def raw_lines(self):
         raw=self.prior_raw_bytes+self.current_raw_bytes()
         return [json.loads(line) for line in raw.splitlines()]
+
+    def restore_external_dependency(self):
+        if self.external_qualification is None:return
+        from getup_external_parity import restore_external_parity
+        from experiment_backup import restore_bundle
+        import tempfile
+        ref=self.external_qualification
+        downloaded=Path(self.recovery.transport.dependency(ref,self.phase_deadline));verified=False
+        try:
+            with tempfile.TemporaryDirectory(prefix='external-parity-',dir=self.recovery.transport.exchange.directory) as tmp:
+                target=Path(tmp)/'payload';manifest=restore_bundle(downloaded,target,ref['archive_sha256'],18*1024**2)
+                result=restore_external_parity(target,manifest,ref,self.proofs.native_validator,synthetic=self.synthetic)
+                if result.get('foreign_ledger_imported') is not False:raise ContractError('Foreign ledger import forbidden')
+                verified=True
+        finally:
+            if verified and downloaded.parent==self.recovery.transport.exchange.directory/'dependency-cache':
+                downloaded.unlink(missing_ok=True)
 
     def validate_dependencies(self,restored,manifest):
         return self.proofs.resolve(restored,manifest)
@@ -412,9 +440,10 @@ class QualificationPilot(ColdPilot):
     def run_qualification(self,*,include_original=False):
         try:
             if include_original:raise ContractError('Optional original workload permanently omitted')
-            self.enter('zero-correction-qualification',120,11000)
-            self.report['nativeQualification']=self.call({'op':'coldQualify'},physical=True,upper_bound=16020)
-            self.prove_phase('PARITY')
+            if not self.plan.preservation_only:
+                self.enter('zero-correction-qualification',120,11000)
+                self.report['nativeQualification']=self.call({'op':'coldQualify'},physical=True,upper_bound=16020)
+                self.prove_phase('PARITY')
             self.parity()
             self.preservation('belly');self.prove_phase('BELLY')
             self.preservation('heldout')

@@ -132,3 +132,77 @@ stops. Packaging can be diagnosed later without rerunning completed work.
 Software rehearsals use the production archive/receipt adapter and real
 mapper/replay/learner serialization, but scripted physics and transfers. Their
 success establishes neither real parity/preservation nor a physical acceptance.
+
+## Preservation-only continuation of evidence, not of a closed run
+
+A separate, explicitly admitted preservation attempt may use a **durable foreign
+PARITY proof**. This does not reopen its source attempt, reuse its deadline or
+import its execution ledger. The prerequisite must bind the exact original ZIP,
+manifest and every member, original run/source/plan/ledger, private readback and
+application-restore receipt. A denied or merely local archive is insufficient.
+Its original 4,420 integrations and 50 source decisions remain historical facts,
+not entries in the new run. No new physical attempt is authorized by this source.
+
+Pure preflight rejects missing, nondurable or incompatible prerequisites before
+creating an output, loading a runtime or starting a clock. Compatibility includes
+the exact corrected worker/glue, compiled seven-feature build, model, actors,
+profile, protocol and all three triggered seed hashes. The foreign archive is
+validated under its **original** identity and plan; its 400-sample off/zero and
+200-sample restored comparisons are not executed again. Nonstepping operational
+restoration occurs inside the new clock. A physical-only restore never constructs
+a learner and therefore cannot reset global Python, NumPy or Torch RNG, including
+on failure. The foreign cursor, mapper, raw rows, replay and RNG are not imported.
+
+The new process reuses the exact verified seed archive. It restores the untouched
+triggered BELLY and nearby BACK seeds, preserving impact/source counters. It does
+not call `coldPrepare` or `coldQualify`, upload seeds again, or substitute a new
+fixture. Its own dependency chain is **BELLY → terminal**; the historical PARITY
+reference is separate. Every final dependency restore verifies both closures,
+without treating the foreign ledger or old raw rows as new experience.
+
+| New stage | Wall allowance | Normal integration envelope |
+|---|---:|---:|
+| Input verification and nonstepping restoration | 300 s | 0 |
+| BELLY initialization and actual transition/reward/terminal/mapping parity | 60 s | 5,060 |
+| Remaining BELLY recovery and 30-second hold | 360 s | 43,960 |
+| Immutable BELLY proof and application restore | 180 s | 0 |
+| Nearby BACK recovery and 30-second hold | 360 s | 49,000 |
+| Terminal coherent restore | 180 s | 0 |
+| Total stage allowances | 1,440 s | 98,020 |
+
+One shared 5,020 reserve gives **103,040** maximum new integrations. The new
+source cap is **974**, so the historical 50 plus at most 974 remains at most
+1,024. Both actual transition-parity executions count; both raw records are
+retained and only the duplicate replay entry is excluded. The new diagnostic
+replay contains only new executions. WEAK forecasts are counted separately;
+every call retains its 5,020 pre-dispatch bound. Physics still stops at T+2,100,
+all work at T+3,600, and the 147,000 candidate reserve is untouched. There is no
+optimizer, candidate evaluation, optional original workload or automatic retry.
+
+Intermediate BELLY evidence omits the duplicate learner and makes no learner
+restore claim. The terminal proof restores fresh new replay/mapper/runtime and
+the untouched learner/optimizers/RNG, verifies exact membership and sample RNG,
+and restores the paused live learner state in `finally` even if validation fails.
+The original 25-second impact deadline, 800 continuous stable samples, anchored
+foot-origin/material-point limits and 30-second holds are unchanged.
+
+Prospective sizing includes every closed local proof. At the measured inventory,
+protected closed roots occupy 95,592,872 bytes. With shared and seed reuse, one
+immutable BELLY archive and one final mutable archive, the conservative remote
+ceiling is **82,466,040 bytes**: 44,717,304 after separately authorized retention
+(including the denied write reservation, without refund), plus two 18 MiB caps.
+The corresponding staging envelope is **199,842,414 bytes** under the scoped
+192 MiB allowance; the separately reported total with 32 MiB active output is
+233,396,846 bytes. The foreign proof requires 2,633,952 bytes for ZIP plus extracted
+payload. Actual dependency readbacks and packaging remain independently checked
+against measured occupancy; these figures are not a completion guarantee or a
+whole-workspace cap. Future admission must remeasure inventory and explicitly
+scope the local allowance. No old proof is deleted to make room.
+
+Software coverage exercises the production CLI and archive adapter with scripted
+physics/transport but real mapper, replay and learner serialization. It checks
+foreign-proof rejection before runtime, no historical commands, separate ledgers,
+charged parity duplicates, exact two-archive cadence, dependency corruption,
+no-learner/RNG-safe physical restoration and pending-tail reconstruction. These
+synthetic results do not establish actual BELLY/nearby preservation, a durable
+foreign proof, operational readiness, a trained policy or MVP delivery.

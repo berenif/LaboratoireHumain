@@ -109,5 +109,21 @@
     "PARITY",
     "BELLY"
   ],
-  "completion_contract": "Operational next-call+complete terminal capture; no universal trajectory completion guarantee"
+  "completion_contract": "Operational next-call+complete terminal capture; no universal trajectory completion guarantee",
+  "preservation_only": {
+    "mode": "preservation-only",
+    "normal_integrations": 98020,
+    "shared_uncertainty_reserve": 5020,
+    "maximum_qualification_integrations": 103040,
+    "historical_source_decisions": 50,
+    "source_decisions": 974,
+    "phase_proofs": [
+      "BELLY"
+    ],
+    "immutable_phase_uploads": 1,
+    "generation_uploads": 2,
+    "seed_reuse_required": true,
+    "external_parity_required": true,
+    "no_coldPrepare_or_coldQualify": true
+  }
 }

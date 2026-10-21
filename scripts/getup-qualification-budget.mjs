@@ -80,7 +80,11 @@ export function qualificationByteProjection(active,current,terminal,extra=0,phys
  return {activeOutputBytes:active,currentRuntimeBytes:current,terminalBaseBytes:terminal,
   nextGrowthBytes:growth,projectedActiveOutputBytes:projected,physicalDispatchAuthorized:physical};
 }
+export function qualificationLimits(ledger){
+ return ledger.qualificationMode==='preservation-only'?qualificationPlan.preservation_only:qualificationPlan;
+}
 export function enterQualificationStage(ledger,name){
+ if(ledger.qualificationMode==='preservation-only')assert(['transition-parity','belly-preservation','heldout-preservation'].includes(name),'No repeated historical preparation/qualification');
  const phase=qualificationPlan.phases[name];assert(phase&&phase.normal>0,'Named physical qualification phase');
  assert(!ledger.pendingCall&&!ledger.qualificationSourcePending&&!ledger.qualificationFailure,'No uncertain/repeated qualification call');
  ledger.qualificationStages??=[];
@@ -94,8 +98,8 @@ export function guardQualificationCall(ledger){
  const stage=ledger.qualificationStage;
  assert(stage&&!ledger.qualificationFailure&&!ledger.qualificationSourcePending);
  assert(ledger.nativeIntegrations<stage.normalEnd,'Normal phase complete; shared reserve is not another rollout');
- assert(ledger.nativeIntegrations+5020<=qualificationPlan.maximum_qualification_integrations,'One shared reserve, never per-phase extension');
- assert((ledger.bootstrapDecisions??0)<qualificationPlan.source_decisions,'Inclusive qualification source-decision cap');
+ assert(ledger.nativeIntegrations+5020<=qualificationLimits(ledger).maximum_qualification_integrations,'One shared reserve, never per-phase extension');
+ assert((ledger.bootstrapDecisions??0)<qualificationLimits(ledger).source_decisions,'Inclusive qualification source-decision cap');
  assert.equal(ledger.evaluationReserveIntegrations,147000);
 }
 export function beginQualificationSource(ledger){
@@ -113,7 +117,7 @@ export function finishQualificationSource(ledger,before,after){
  ledger.trainingDecisions+=source-1;ledger.bootstrapDecisions+=source-1;
  ledger.qualificationWeakDecisions=(ledger.qualificationWeakDecisions??0)+weak;
  delete ledger.qualificationSourcePending;
- assert(source<=1&&ledger.bootstrapDecisions<=1024,'Source-decision exposure exceeded frozen cap');
+ assert(source<=1&&ledger.bootstrapDecisions<=qualificationLimits(ledger).source_decisions,'Source-decision exposure exceeded frozen cap');
  const forecast=after.forecast-before.forecast,stage=ledger.qualificationStage;
  if(forecast>0)stage.forecasts++;
  assert(forecast>=0&&forecast<=5000&&stage.forecasts<=stage.forecastAllowance,'Unexpected forecast/rearm; stop physics');

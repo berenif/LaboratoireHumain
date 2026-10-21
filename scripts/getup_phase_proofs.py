@@ -31,6 +31,7 @@ class PhaseProofs:
     def persist(self):
         atomic_json(self.path,{'schema':'lh-qualification-phase-dependencies/v1',
             'identity':self.pilot.identity,'references':self.references,
+            'external_qualification':getattr(self.pilot,'external_qualification',None),
             'automatic_restart_authorized':False})
 
     def verify_native(self,restored,manifest):
@@ -98,8 +99,8 @@ class PhaseProofs:
         else:raise ContractError('Unreviewed immutable physical phase')
 
     def commit(self,phase,proof):
-        expected=['PARITY','BELLY']
-        if len(self.references)>=2 or phase!=expected[len(self.references)]:
+        expected=self.pilot.proof_order
+        if len(self.references)>=len(expected) or phase!=expected[len(self.references)]:
             raise ContractError('Exact ordered immutable phase proofs required')
         request_path=Path(proof['request_path']);request=json.loads(request_path.read_text())
         receipt_path=request_path.with_name(request_path.name.replace('.request.json','.receipt.json'))
@@ -161,12 +162,14 @@ class PhaseProofs:
         files={x['role']:Path(restored)/x['path'] for x in manifest['files']}
         if 'phase_dependencies' not in files:raise ContractError('Phase dependency manifest missing')
         journal=json.loads(files['phase_dependencies'].read_text())
-        if journal.get('identity')!=self.pilot.identity or journal.get('references')!=self.references:
+        if (journal.get('identity')!=self.pilot.identity or journal.get('references')!=self.references
+                or journal.get('external_qualification')!=getattr(self.pilot,'external_qualification',None)):
             raise ContractError('Phase dependency closure differs from committed journal')
+        if getattr(self.pilot,'external_qualification',None):self.pilot.restore_external_dependency()
         raw_prefix=b'';rows=[];last=None
         for index,ref in enumerate(journal['references']):
             value=dict(ref);digest=value.pop('reference_sha256')
-            if (reference_hash(value)!=digest or ref['phase']!=['PARITY','BELLY'][index]
+            if (reference_hash(value)!=digest or ref['phase']!=self.pilot.proof_order[index]
                     or ref['identity']!=self.pilot.identity or ref['status']!='application-verified'
                     or ref['dependencies']!=[x['reference_sha256'] for x in journal['references'][:index]]):
                 raise ContractError('Mixed/corrupt phase dependency')

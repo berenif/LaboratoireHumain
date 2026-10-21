@@ -362,7 +362,7 @@ class DriveExchange:
             raise ContractError('Shared inputs must be remotely verified first')
         if kind=='seeds' and self.seed_sha256:
             raise ContractError('Triggered immutable seeds are retained once')
-        if kind=='phase-proof' and getattr(self,'phase_proof_count',0)>=2:
+        if kind=='phase-proof' and getattr(self,'phase_proof_count',0)>=getattr(self,'phase_proof_limit',2):
             raise ContractError('Exactly two immutable phase proofs maximum')
         if any(getattr(self,'pending_immutable',{}).values()):
             raise ContractError('Unresolved immutable upload; no retry')
@@ -483,7 +483,7 @@ class DriveExchange:
                 shutil.rmtree(restored)
             verified_path=Path(request_path).with_name(Path(request_path).name.replace('.request.json','.application-verified.json'))
             atomic_json(verified_path,{'passed':True,'synthetic':self.synthetic,'archive_sha256':request['archive_sha256'],
-                'physics_integrations':0,'downloaded_path':str(downloaded)})
+                'physics_integrations':0,'downloaded_path':str(downloaded),'operational':operational})
             self.commit_verified(request, receipt, request_path, verified_path)
             return manifest
         except BaseException:

@@ -115,7 +115,7 @@ SOFTWARE_SOURCE_FILES=(
     'scripts/getup_qualification.py','scripts/getup-qualification-plan.json',
     'scripts/getup-qualification-budget.mjs','scripts/getup-qualification-budget.test.mjs',
     'scripts/getup-qualification-test.py','scripts/getup-corrective-readiness-test.py',
-    'scripts/getup_phase_proofs.py','scripts/getup-qualification-checkpoint-budget.mjs',
+    'scripts/getup_phase_proofs.py','scripts/getup-preservation-test.py','scripts/getup_external_parity.py','scripts/getup-qualification-checkpoint-budget.mjs',
     'scripts/getup-qualification-checkpoint-budget.test.mjs')
 
 
@@ -132,7 +132,7 @@ def future_admission(path,output,worker,shared,run_id):
     if (admission.get('schema')!='lh-cold-future-admission/v1'
             or admission.get('actual_run_authorized') is not True
             or admission.get('output_path')!=str(output.resolve())
-            or admission.get('mode')!='qualification-only' or admission.get('exact_blocks')!=0
+            or admission.get('mode') not in ('qualification-only','preservation-only') or admission.get('exact_blocks')!=0
             or admission.get('run_id')!=run_id or admission.get('source_commit')!=commit
             or not admission.get('resource_decision_reference')):
         raise ContractError('Explicit future run/source/resource decision is absent')
@@ -180,13 +180,25 @@ def future_admission(path,output,worker,shared,run_id):
     if item['bytes']+PLAN['seed_archive_bytes']>12*1024**2:
         raise ContractError('Corrected shared+futureseed archive allowance exceeded')
     receipts={'shared':(item,bundle)}
+    preservation=admission['mode']=='preservation-only'
+    if preservation:
+        from getup_external_parity import validate_external_parity
+        bound=admission.get('external_qualification')
+        if not isinstance(bound,dict):raise ContractError('Durable external PARITY prerequisite required before clock')
+        external_path=Path(bound['path'])
+        if sha256(external_path)!=bound['sha256']:raise ContractError('External prerequisite record changed')
+        prerequisite=json.loads(external_path.read_text())
+        external=validate_external_parity(prerequisite,bundle,run_id,sha256(PROTOCOL_PATH))
+        admission['_external_qualification']=external
+        admission['_external_prerequisite']=prerequisite
+        receipts['seeds']=(prerequisite['seeds']['archive'],external['seed_manifest'])
     reused_shared=validate_shared_reuse(admission['verified_shared'],item,bundle,time.time())
     admission['_verified_shared']=reused_shared
     storage=admission['storage']
     staging_limit=qualification_staging_scope(admission)
-    if storage.get('immutable_phase_uploads')!=2 or storage.get('total_generation_archives')!=3:
-        raise ContractError('Exact two immutable proofs plus one terminal slot required')
-    if (storage['cumulative_uploaded_bytes']<43566444 or storage['cumulative_uploaded_bytes']>160*1024**2
+    if storage.get('immutable_phase_uploads')!=(1 if preservation else 2) or storage.get('total_generation_archives')!=(2 if preservation else 3):
+        raise ContractError('Exact admitted immutable-proof/terminal cadence required')
+    if (storage['cumulative_uploaded_bytes']<(44717304 if preservation else 43566444) or storage['cumulative_uploaded_bytes']>160*1024**2
             or not storage.get('owner_inventory_reference')):
         raise ContractError('Complete prior cumulative/owner storage admission required')
     measured=0
@@ -221,10 +233,12 @@ def future_admission(path,output,worker,shared,run_id):
     admission['_qualification_storage']=qualification_storage_envelope(
         protected_local_bytes=measured+archive_metadata,
         corrected_shared_payload_bytes=shared_local,corrected_shared_archive_bytes=admission['corrected_shared_archive']['bytes'],
-        seed_payload_bytes=2*1024**2,seed_archive_bytes=PLAN['seed_archive_bytes'],
+        seed_payload_bytes=(sum(x['bytes'] for x in external['seed_manifest']['files']) if preservation else 2*1024**2),
+        seed_archive_bytes=(prerequisite['seeds']['archive']['bytes'] if preservation else PLAN['seed_archive_bytes']),
         prior_cumulative_before_corrected_inputs=storage['cumulative_uploaded_bytes'],
         slot_archive_bytes=[x['archive_bytes'] for x in prior],active_working_bytes=0,
-        staging_limit_bytes=staging_limit,shared_already_verified=True,immutable_phase_uploads=2)
+        staging_limit_bytes=staging_limit,shared_already_verified=True,immutable_phase_uploads=1 if preservation else 2,
+        seeds_already_verified=preservation,external_prerequisite_bytes=(external['reference']['archive_bytes']+external['reference']['payload_bytes'] if preservation else 0))
     admission['_verified_prior_generations']=prior
     return admission,readiness,manifest,receipts,commit
 
@@ -254,11 +268,13 @@ def run(output,worker,shared,run_id,continuation_path=None,admission_path=None):
     # All new runtime loading, operational restoration and qualification are
     # INSIDE this one absolute clock, not relabeled software preparation.
     started=admitted_start(admission,time.time());deadline=started+3600;clock=SystemClock()
-    plan=QualificationPlan(started,deadline,started+2100,started+3300)
+    preservation=admission['mode']=='preservation-only'
+    plan=QualificationPlan(started,deadline,started+2100,started+3300,preservation_only=preservation)
     output.mkdir(parents=True)
     source={'commit':commit,'dirty':False,'description':'Reviewed source; no exact historical recovery claim'}
     exchange=TwoSlotDriveExchange(output/'recovery',run_id,source,deadline,
         slots=admission['_verified_prior_generations'])
+    exchange.phase_proof_limit=1 if preservation else 2
     exchange.remote_uploaded_bytes=admission['storage']['cumulative_uploaded_bytes']
     exchange.local_staging_limit_bytes=admission['storage']['staging_bytes']
     exchange.verified=admission['_verified_prior_generations']
@@ -273,7 +289,7 @@ def run(output,worker,shared,run_id,continuation_path=None,admission_path=None):
         'softwareReadinessSha256':admission['software_readiness']['sha256'],
         'actualTrialAuthorized':True,'releaseAccepted':False,'candidateAccepted':False,
         'historicalRecoveryClaimed':False,'reusedImmutableArchives':True,
-        'mode':'qualification-only','optimizerAuthorized':False,'candidateEvaluationAuthorized':False,
+        'mode':admission['mode'],'optimizerAuthorized':False,'candidateEvaluationAuthorized':False,
         'storageEnvelope':admission['_qualification_storage']}
     atomic_json(output/'cold-start-report.json',report)
     print(json.dumps({'event':'START','run_id':run_id,'started':started,'deadline':deadline,
@@ -352,11 +368,36 @@ def run(output,worker,shared,run_id,continuation_path=None,admission_path=None):
             sharedManifestSha256=exchange.shared_sha256,
             freshReadOnlyReadbackVerifiedBeforeClock=True,
             previousPrivateProof=admission['verified_shared']))
+        external_reference=None;restored_seeds=None
+        if preservation:
+            from getup_external_parity import restore_external_parity
+            external=admission['_external_qualification'];prerequisite=admission['_external_prerequisite']
+            external_reference=external['reference']
+            with tempfile.TemporaryDirectory(prefix='external-initial-',dir=exchange.directory) as tmp:
+                payload=Path(tmp)/'payload'
+                manifest=restore_bundle(prerequisite['parity']['archive']['path'],payload,
+                    external_reference['archive_sha256'],18*1024**2)
+                report['externalQualificationRestore']=restore_external_parity(payload,manifest,external_reference,
+                    lambda paths:run_restore(worker/'lh_worker.js',worker/'lh_worker_bg.wasm',paths,operation_deadline=started+300),
+                    synthetic=manifest['synthetic'])
+            with tempfile.TemporaryDirectory(prefix='seed-reuse-',dir=exchange.directory) as tmp:
+                payload=Path(tmp)/'payload';seed_item,seed_manifest=immutable['seeds']
+                restore_bundle(seed_item['path'],payload,seed_item['sha256'],18*1024**2)
+                members={x['role']:payload/x['path'] for x in seed_manifest['files']}
+                report['seedOperationalRestore']=run_restore(worker/'lh_worker.js',worker/'lh_worker_bg.wasm',
+                    [members[case+'_seed'] for case in ('original','heldout','belly')],operation_deadline=started+300)
+                for case in ('original','heldout','belly'):
+                    shutil.copyfile(members[case+'_seed'],output/(case+'-seed.bin'))
+            restored_seeds=external['seed_documents'];exchange.seed_sha256=restored_seeds['request']['manifest_sha256']
+            exchange.seed_bytes=sum(x['bytes'] for x in seed_manifest['files']);exchange.seed_archive=Path(seed_item['path'])
+            if exchange.retired_payload_bytes<exchange.seed_bytes:raise ContractError('Retained seed inventory incomplete')
+            exchange.retired_payload_bytes-=exchange.seed_bytes
+            plan.assert_inputs_ready(clock.now())
         legacy=interfaces.load_legacy();factory=lambda:interfaces.SACLearner(legacy)
         learner=factory();learner_bytes=untouched_learner_bytes(learner)
         seed_paths={case:str(output/(case+'-seed.bin')) for case in ('original','heldout','belly')}
         config={'wallSeconds':3600,'nativeIntegrations':300000,'gamma':interfaces.GAMMA,
-            'qualificationOnly':True,'qualificationPlan':PLAN,
+            'qualificationOnly':True,'preservationOnly':preservation,'qualificationPlan':PLAN,
             'qualificationStorage':{'untouchedLearnerBytes':learner_bytes},
             'coldStart':{'schema':PROTOCOL['schema'],'manifest':str(shared/'input-manifest.json'),'operationalProof':str(proof)},
             'inputContract':{'startedAtUnixMs':round(started*1000),'deadlineUnixMs':round(started*1000)+3600000,
@@ -370,42 +411,48 @@ def run(output,worker,shared,run_id,continuation_path=None,admission_path=None):
             'protocolSha256':sha256(PROTOCOL_PATH),'sharedManifestSha256':exchange.shared_sha256,
             'seedManifestSha256':exchange.seed_sha256,'admissionSha256':sha256(admission_path)}
         pilot=QualificationPilot(output=output,learner=learner,learner_factory=factory,
-            byte_guard=QualificationByteGuard(learner_bytes),
+            byte_guard=QualificationByteGuard(learner_bytes),external_qualification=external_reference,
             native_validator=lambda paths:run_restore(worker/'lh_worker.js',worker/'lh_worker_bg.wasm',
                 paths,operation_deadline=pilot.phase_deadline),
             builder_factory=lambda:legacy.SourceTransition(interfaces.GAMMA),bridge=wasm,
             recovery=recovery,clock=clock,plan=plan,identity=identity,synthetic=False)
         plan.assert_inputs_ready(clock.now())
         report['inputsCompletedAtUnix']=clock.now()
-        pilot.enter('fixture-preparation',120,3040)
-        report['freshFixtures']=pilot.call({'op':'coldPrepare'},physical=True,upper_bound=8060)
-        if sum(Path(path).stat().st_size for path in seed_paths.values())>2*1024**2:
-            raise ContractError('Measured fresh seed payload exceeds frozen2MiB allowance')
-        pilot.enter('seed-backup',180,0)
-        from getup_cold_start import artifact
-        seed_request=exchange.snapshot([artifact(case+'_seed',path,'getup-native-checkpoint') for case,path in seed_paths.items()],
-            {'corrected_worker_sha256':identity['workerSha256'],
-             'qualification_immutable':True,
-             'metered_preparation_ledger_sha256':sha256(output/'budget-ledger.json'),'resumeAuthorized':False},
-            'metered-corrected-triggered-seeds','seeds',deadline-pilot.phase_deadline)
-        details=json.loads(seed_request.read_text())
-        if details['archive_bytes']>PLAN['seed_archive_bytes'] or details['archive_bytes']+admission['corrected_shared_archive']['bytes']>12*1024**2:
-            raise ContractError('Measured corrected immutable archive allowance exceeded before upload')
-        def restore_seeds(restored,manifest):
-            files={x['role']:restored/x['path'] for x in manifest['files']}
-            return run_restore(worker/'lh_worker.js',worker/'lh_worker_bg.wasm',
-                [files[case+'_seed'] for case in ('original','heldout','belly')],operation_deadline=pilot.phase_deadline)
-        transfer(seed_request,restore_seeds)
-        pilot.identity['seedManifestSha256']=exchange.seed_sha256
+        if not preservation:
+            pilot.enter('fixture-preparation',120,3040)
+            report['freshFixtures']=pilot.call({'op':'coldPrepare'},physical=True,upper_bound=8060)
+            if sum(Path(path).stat().st_size for path in seed_paths.values())>2*1024**2:
+                raise ContractError('Measured fresh seed payload exceeds frozen2MiB allowance')
+            pilot.enter('seed-backup',180,0)
+            from getup_cold_start import artifact
+            seed_request=exchange.snapshot([artifact(case+'_seed',path,'getup-native-checkpoint') for case,path in seed_paths.items()],
+                {'corrected_worker_sha256':identity['workerSha256'],
+                 'qualification_immutable':True,
+                 'metered_preparation_ledger_sha256':sha256(output/'budget-ledger.json'),'resumeAuthorized':False},
+                'metered-corrected-triggered-seeds','seeds',deadline-pilot.phase_deadline)
+            details=json.loads(seed_request.read_text())
+            if details['archive_bytes']>PLAN['seed_archive_bytes'] or details['archive_bytes']+admission['corrected_shared_archive']['bytes']>12*1024**2:
+                raise ContractError('Measured corrected immutable archive allowance exceeded before upload')
+            def restore_seeds(restored,manifest):
+                files={x['role']:restored/x['path'] for x in manifest['files']}
+                return run_restore(worker/'lh_worker.js',worker/'lh_worker_bg.wasm',
+                    [files[case+'_seed'] for case in ('original','heldout','belly')],operation_deadline=pilot.phase_deadline)
+            transfer(seed_request,restore_seeds)
+            pilot.identity['seedManifestSha256']=exchange.seed_sha256
+        else:
+            details=restored_seeds['request'];seed_receipt=restored_seeds['receipt']
+            seed_manifest=immutable['seeds'][1]
+            pilot.identity['seedManifestSha256']=exchange.seed_sha256
         def input_reference(request,receipt,manifest):
             return {'drive_file_id':receipt['drive_file_id'],
                 **{key:request[key] for key in ('archive_sha256','archive_bytes','manifest_sha256')},
                 'members':manifest['files'],'status':'private-application-verified'}
-        seed_receipt=json.loads(seed_request.with_name(seed_request.name.replace('.request.json','.receipt.json')).read_text())
+        if not preservation:
+            seed_receipt=json.loads(seed_request.with_name(seed_request.name.replace('.request.json','.receipt.json')).read_text())
         from experiment_backup import verify_bundle
         atomic_json(output/'phase-inputs.json',{'schema':'lh-phase-input-references/v1','identity':pilot.identity,
             'shared':input_reference(prior_shared,admission['_verified_shared']['receipt'],immutable['shared'][1]),
-            'seeds':input_reference(details,seed_receipt,verify_bundle(details['archive_path'],details['archive_sha256']))})
+            'seeds':input_reference(details,seed_receipt,seed_manifest if preservation else verify_bundle(details['archive_path'],details['archive_sha256']))})
         report['phaseResult']=pilot.run_qualification(include_original=admission['include_original_diagnostic'])
     except BaseException as error:
         report.update(stopped='runtime-admission-safe-stop',error=str(error))

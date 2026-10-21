@@ -15,6 +15,8 @@ const root=process.cwd(), output=resolve(process.argv[2]);
 const candidatePath=resolve(process.argv[3]);
 const {config,input:inputContract,baselinePath,originalPath,profilePath}=protocolSettings(output,candidatePath);
 const qualificationOnly=config.qualificationOnly===true;
+const preservationOnly=config.preservationOnly===true;
+assert(!preservationOnly||qualificationOnly);
 if(qualificationOnly){assert.deepEqual(config.qualificationPlan,qualificationPlan);validateQualificationGrowthSources(root);}
 const profile=JSON.parse(readFileSync(profilePath));
 const hash=x=>createHash('sha256').update(x).digest('hex');
@@ -37,7 +39,7 @@ const candidate=await load(candidatePath), baseline=config.coldStart?candidate:a
 if(config.coldStart)checkColdWorkerCapabilities(JSON.parse(candidate.getup_build_capabilities()));
 const ledger=priorLedger??{schema:1,startedAt:new Date(inputContract?.startedAtUnixMs??Date.now()).toISOString(),deadlineUnixMs:inputContract?.deadlineUnixMs??Date.now()+config.wallSeconds*1000,
  nativeIntegrations:0,realIntegrations:0,forecastIntegrations:0,completedCalls:0,uncertainCalls:[],limit:config.nativeIntegrations,
- trainingDecisions:0,releaseAccepted:false};
+ trainingDecisions:0,releaseAccepted:false,...(preservationOnly?{qualificationMode:'preservation-only'}:{})};
 const save=()=>writeFileSync(join(output,'budget-ledger.json'),JSON.stringify(ledger,null,2)+'\n');save();
 let protectedEvaluationIntegrations=0,protectedEvaluationWallMs=0;
 let usefulAdmission=null,limitedPhysicalCalls=0;
@@ -207,6 +209,7 @@ async function command(q){
  if(q.op==='headparity'){return {correction:JSON.parse(candidate.getup_correction_head(JSON.stringify(q.head),JSON.stringify(q.features))),physicsIntegrations:0};}
  if(q.op==='identity')return {candidateWasmSha256:hash(readFileSync(join(candidatePath,'lh_worker_bg.wasm'))),baselineWasmSha256:hash(readFileSync(join(baselinePath,'lh_worker_bg.wasm'))),ledger};
  if(q.op==='coldPrepare'){
+  assert(!preservationOnly,'Historical preparation is forbidden in preservation-only run');
   assert(config.coldStart&&!active,'Separate cold-start preparation only');
   assert.equal(ledger.trainingDecisions,0);assert.equal(ledger.nativeIntegrations,0,'No preparation replay/restart');
   const result={schema:'lh-cold-fixtures/v1',historicalRecoveryClaimed:false,cases:{}};
@@ -233,6 +236,7 @@ async function command(q){
   writeFileSync(join(output,'cold-fixtures.json'),JSON.stringify(result,null,2)+'\n');return result;
  }
  if(q.op==='coldQualify'){
+  assert(!preservationOnly,'Historical qualification is forbidden in preservation-only run');
   assert(config.coldStart&&!active);assert.equal(ledger.trainingDecisions,0);
   const seed=readFileSync(inputContract.checkpoints.original);
   const runs=[track(candidate.WorkerRuntime.from_getup_checkpoint(seed)),track(candidate.WorkerRuntime.from_getup_checkpoint(seed))];

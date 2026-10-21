@@ -55,6 +55,7 @@ class PhasePlan:
                 or self.backup_archive_envelope_bytes>32*1024**2):
             raise ContractError('Immutable absolute work/evaluation/retention cutoffs required')
         for key,value in asdict(self).items():
+            if key=='preservation_only' and type(value) is bool:continue
             if not __import__('math').isfinite(value) or value<=0:
                 raise ContractError('Invalid finite positive phase envelope: '+key)
         return self
@@ -576,17 +577,23 @@ def restore_coherent(restored, manifest, *, expected_identity, expected_plan, ex
         raise ContractError('Mixed, reduced, renewed or uncertain ledger')
     if cursor.get('automatic_restart_authorized') is not False:
         raise ContractError('Archive cannot authorize an automatic retry')
-    learner=learner_factory()
+    # A physical proof is not a learner checkpoint. In particular, constructing
+    # SACLearner here resets global Python/NumPy/Torch RNG even on later failure.
+    learner=None
     if physical_only:
         if 'learner' in files:raise ContractError('Intermediate physical proof cannot claim learner restore')
+        if len(cursor.get('policy_id',''))!=64:
+            raise ContractError('Physical proof policy identity absent')
+        import numpy as np
     else:
+        learner=learner_factory();np=learner.np
         learning=learner.torch.load(files['learner'],weights_only=False,map_location='cpu')
         if learning['snapshot_id']!=nonce or learning['identity']!=expected_identity:
             raise ContractError('Mixed learner generation')
         learner.restore_learning_state(learning['state'])
         assert_state_equal(learning['state'],learner.capture_learning_state())
-    if learner.policy_id()!=cursor['policy_id']:raise ContractError('Restored policy identity differs')
-    arrays=learner.np.load(files['replay'],allow_pickle=False)
+    if learner is not None and learner.policy_id()!=cursor['policy_id']:raise ContractError('Restored policy identity differs')
+    arrays=np.load(files['replay'],allow_pickle=False)
     metadata=json.loads(files['replay_metadata'].read_text())
     lineage=json.loads(files['mapping'].read_text())
     if arrays['snapshot_id'].item()!=nonce or metadata['snapshot_id']!=nonce or lineage['snapshot_id']!=nonce:
@@ -644,12 +651,12 @@ def restore_coherent(restored, manifest, *, expected_identity, expected_plan, ex
             raise ContractError('Pending mapper/cursor lineage is incoherent')
         if pending:
             segment=[raw[i] for i in sorted(pending)];origin,action=mapper.pending_origin
-            values=learner.np.asarray(origin['preview']['features'],dtype='<f4')
+            values=np.asarray(origin['preview']['features'],dtype='<f4')
             reward=sum(builder_factory().gamma**i*x['reward'] for i,x in enumerate(segment))
             if (hashlib.sha256(values.tobytes()).hexdigest()!=segment[0]['sourceFeaturesSha256']
                     or segment[0]['preNative']!=origin['native']
-                    or not learner.np.array_equal(learner.np.asarray(action,'float32'),
-                                                  learner.np.asarray(segment[0]['correction'],'float32'))
+                    or not np.array_equal(np.asarray(action,'float32'),
+                                          np.asarray(segment[0]['correction'],'float32'))
                     or any(x['episodeId']!=mapper.episode or x['behaviorPolicyId']!=mapper.behavior for x in segment)
                     or abs(reward-mapper.builder.pending[3])>1e-10
                     or len(segment)!=mapper.builder.pending[5]):
@@ -700,7 +707,8 @@ class CoherentRecovery:
             'physical_phase_proof':getattr(pilot,'physical_proof_mode',None),
             'learner_restore_claimed':not physical_only,
             'dependency_peak_bytes':max((r['archive_bytes']+r['payload_bytes'] for r in
-                getattr(getattr(pilot,'proofs',None),'references',[])),default=0)}
+                [*getattr(getattr(pilot,'proofs',None),'references',[]),
+                 *([pilot.external_qualification] if getattr(pilot,'external_qualification',None) else [])]),default=0)}
         diagnostic_restore=bool(getattr(pilot,'diagnostic_restore_required',False))
         def validate(restored,manifest):
             closure=pilot.validate_dependencies(restored,manifest) if hasattr(pilot,'validate_dependencies') else {}
