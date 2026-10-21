@@ -10,6 +10,7 @@ pub fn capabilities() -> serde_json::Value {
     if cfg!(feature = "getup-policy-adaptation-experiment") { features.push("getup-policy-adaptation-experiment"); }
     if cfg!(feature = "getup-repeat-balance-acquire-experiment") { features.push("getup-repeat-balance-acquire-experiment"); }
     if cfg!(feature = "getup-repeat-cycle-experiment") { features.push("getup-repeat-cycle-experiment"); }
+    if cfg!(feature = "getup-supported-transfer-experiment") { features.push("getup-supported-transfer-experiment"); }
     if cfg!(feature = "getup-terminal-balance-experiment") { features.push("getup-terminal-balance-experiment"); }
     if cfg!(feature = "getup-terminal-base-ready-experiment") { features.push("getup-terminal-base-ready-experiment"); }
     if cfg!(feature = "getup-terminal-bumpless-experiment") { features.push("getup-terminal-bumpless-experiment"); }

@@ -156,6 +156,8 @@ pub struct Controller {
     physical_roll: Option<super::physical_roll::State>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     adaptation: Option<super::adaptation::State>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    supported_transfer: Option<super::transfer::State>,
 }
 impl Controller {
     pub(crate) fn adaptation_valid(&self, native: u64) -> bool {
@@ -277,6 +279,7 @@ impl Controller {
             terminal_balance: None,
             physical_roll: None,
             adaptation: None,
+            supported_transfer: None,
             terminal_base_ready: if cfg!(feature = "getup-terminal-base-ready-experiment") {
                 Some(TerminalBaseReady {
                     format: if cfg!(feature = "getup-repeat-balance-acquire-experiment") {
@@ -290,8 +293,37 @@ impl Controller {
             } else { None },
         }
     }
+    pub(crate) fn transfer_valid(&self, s: &Simulation) -> bool {
+        self.supported_transfer.as_ref().is_none_or(|t|t.valid(s,self.started_substep)
+            && (!t.active() || (self.completed_recovery() && self.terminal_balance.as_ref()
+                .is_some_and(|b|s.substeps_completed.checked_sub(b.activated_native_substep).is_some_and(|n|n>=20)))))
+    }
+    pub(crate) fn transfer_report(&self)->serde_json::Value {serde_json::to_value(&self.supported_transfer).unwrap()}
+    pub(crate) fn transfer_restore_allowed(&self)->bool {
+        self.supported_transfer.as_ref().is_none_or(|t|!t.active())
+    }
+    #[cfg(feature="getup-supported-transfer-experiment")]
+    pub(crate) fn begin_transfer(&mut self,s:&Simulation,side:usize)->Result<(),String>{
+        if !self.completed_recovery() || self.stable_substeps<800
+            || self.supported_transfer.as_ref().is_some_and(|t|t.phase!=super::transfer::Phase::Passed)
+        {return Err("Transfer requires earned 800-sample recovery and no failed/active predecessor".into());}
+        let balance=self.terminal_balance.as_ref().ok_or("Transfer requires terminal joint balance")?;
+        if s.substeps_completed.checked_sub(balance.activated_native_substep).is_none_or(|n|n<20) {
+            return Err("Transfer cannot interrupt recovery blend".into());
+        }
+        let mut transfer=super::transfer::State::begin(s,side,self.started_substep.unwrap(),self.reference_pose,balance.reference)?;
+        let first=transfer.command(s)?; // immutable preview and 5% reserve before granting ownership.
+        let (q,dq)=super::joint_state(s)?;
+        let old=super::supported_standing::terminal_control_preview(s,&balance.reference,&self.reference_pose,&q,&dq)?;
+        if first.iter().zip(old.controls).any(|(a,b)|(*a-b).abs()>1e-5) {
+            return Err("Transfer would change the first standing motor command".into());
+        }
+        self.supported_transfer=Some(transfer);Ok(())
+    }
     pub(crate) fn controller_label(&self) -> &'static str {
-        if self.physical_roll.as_ref().is_some_and(|r| !matches!(r.phase, super::physical_roll::Phase::Admitted)) {
+        if self.supported_transfer.as_ref().is_some_and(|t|t.active()) {
+            "experimental-gravity-only-supported-transfer"
+        } else if self.physical_roll.as_ref().is_some_and(|r| !matches!(r.phase, super::physical_roll::Phase::Admitted)) {
             "experimental-physical-right-flank-roll"
         } else if self.terminal_balance.is_some() {
             if self.terminal_bumpless_variant() {
@@ -312,7 +344,8 @@ impl Controller {
         }
     }
     pub(crate) fn checkpoint_variant_supported(&self) -> bool {
-        (!self.balance_acquire_variant() || cfg!(feature = "getup-repeat-balance-acquire-experiment"))
+        (self.supported_transfer.is_none() || cfg!(feature="getup-supported-transfer-experiment"))
+            && (!self.balance_acquire_variant() || cfg!(feature = "getup-repeat-balance-acquire-experiment"))
             && (self.adaptation.is_none() || cfg!(feature = "getup-policy-adaptation-experiment"))
             && (self.physical_roll.is_none() || cfg!(feature = "getup-physical-roll-experiment"))
             && (!self.terminal_base_ready_variant()
@@ -534,6 +567,9 @@ impl Controller {
         Ok(())
     }
     pub fn command(&mut self, s: &Simulation, physical: &[f32; 67]) -> Result<[f32; 21], String> {
+        if let Some(transfer)=self.supported_transfer.as_ref().filter(|t|t.phase==super::transfer::Phase::Failed) {
+            return Err(transfer.failure.clone().unwrap_or_else(||"Transfer failed".into()));
+        }
         if !self.physical_roll_clock_valid(s.substeps_completed) {
             return Err("Invalid physical roll native clock or source admission".into());
         }
@@ -590,6 +626,15 @@ impl Controller {
                 s, &self.reference_pose,
                 physical[..21].try_into().unwrap(), physical[46..67].try_into().unwrap(),
             );
+        }
+        if let Some(transfer)=self.supported_transfer.as_mut().filter(|t|t.active()) {
+            // A physical fall normally cancels in observe before the next command.
+            // This defensive branch cannot apply a stale gait motor intention.
+            if matches!(s.motion,Motion::Falling|Motion::Fallen|Motion::Halted) {
+                transfer.cancel("Actual fall cancelled transfer before motor application");
+                return Err("Stale transfer owner after physical fall".into());
+            }
+            return transfer.command(s);
         }
         #[cfg(feature = "getup-terminal-balance-experiment")]
         if let Some(balance) = self.terminal_balance.as_mut() {
@@ -876,7 +921,10 @@ impl Controller {
                 .unwrap_or(s.substeps_completed);
             // Controller-only cycle boundary. No physical world, native clock,
             // global counters, targets, velocity or integrator history is reset.
+            let mut transfer=self.supported_transfer.take();
+            if let Some(t)=transfer.as_mut(){t.cancel("Actual fall cancelled transfer; same-world recovery owns next command");}
             *self = Self::new(&s.model);
+            self.supported_transfer=transfer; // Retain terminal evidence, never an active owner.
             self.impact_substep = Some(epoch);
             return;
         }
@@ -1002,6 +1050,11 @@ impl Controller {
             // fall with an expired contact deadline. The unchanged acceptance
             // counter proves a complete new second of genuine stability.
             self.impact_substep = None;
+        }
+        if let Some(transfer)=self.supported_transfer.as_mut() {
+            if let Err(reason)=transfer.observe(s,self.stable_substeps) {
+                self.status.refusal=Some(reason);
+            }
         }
         s.motion = if self.status.prototype_standing_passed && stable {
             Motion::Upright
@@ -1162,6 +1215,9 @@ fn fork(real: &Simulation) -> Result<Simulation, String> {
     // Retain every numerical integration policy; only the new lifecycle
     // selector is inapplicable once the learned controller is disabled.
     profile.getup_repeated_recovery = None;
+    // Transfer ownership belongs only to the real recovered controller, never
+    // the controller-free WEAK forecast. Numerical policies remain identical.
+    profile.getup_supported_transfer = None;
     let mut shadow = Simulation::new(0.0, profile, true)?;
     let w = &real.world;
     shadow.world = PhysicsWorld {
@@ -1312,5 +1368,59 @@ mod tests {
         shadow.world.bodies[shadow.bodies[0]].add_torque(crate::Vector::X, true);
         assert_eq!(serde_json::to_value(real.snapshot()).unwrap(), before);
         assert!(shadow.getup_controller.is_none());
+    }
+}
+
+#[cfg(all(test,feature="getup-supported-transfer-experiment"))]
+mod transfer_owner_tests {
+    use super::*;
+    #[test]
+    fn forecast_fork_clears_only_real_transfer_ownership_profile(){
+        let profile=Profile{getup_policy_enabled:true,
+            getup_repeated_recovery:Some(GetUpRepeatedRecovery::CompletedCycleConfirmedFallV1),
+            getup_supported_transfer:Some(super::super::transfer::Profile::GravityOnlyV1),..Profile::default()};
+        let s=Simulation::new_protocol(0.,profile,true).unwrap();
+        let before=bincode::serialize(&s.world).unwrap();let shadow=fork(&s).unwrap();
+        assert!(shadow.getup_controller.is_none());
+        let mut expected=s.profile.clone();expected.getup_policy_enabled=false;
+        expected.getup_repeated_recovery=None;expected.getup_supported_transfer=None;
+        assert_eq!(serde_json::to_value(&shadow.profile).unwrap(),serde_json::to_value(&expected).unwrap());
+        assert_eq!(before,bincode::serialize(&s.world).unwrap());
+        assert_eq!(super::super::joint_state(&s).unwrap(),super::super::joint_state(&shadow).unwrap());
+        assert_eq!(serde_json::to_value(s.snapshot().segments).unwrap(),serde_json::to_value(shadow.snapshot().segments).unwrap());
+        assert_eq!(s.substeps_completed,0);assert_eq!(shadow.substeps_completed,0);
+    }
+    #[test]
+    fn transfer_cannot_take_ownership_at_80_or_before_completed_blend(){
+        let s=Simulation::new_protocol(0.,Profile::default(),true).unwrap();let mut c=Controller::new(&s.model);
+        c.started_substep=Some(0);c.status.prototype_standing_passed=true;c.stable_substeps=80;
+        assert!(c.begin_transfer(&s,0).unwrap_err().contains("800"));
+        c.stable_substeps=800;assert!(c.begin_transfer(&s,0).unwrap_err().contains("terminal joint balance"));
+        c.terminal_balance=Some(TerminalBalance{activated_native_substep:0,
+            reference:super::super::supported_standing::StandingReference{com:s.center_of_mass(),forward:Vector::Z,lateral:Vector::X},
+            last_slow_controls:[0.;21],first_balance_controls:None,first_actual_control_jump_max:None,
+            first_actual_torque_jump_max_nm:None,first_saturated_controls:None,
+            first_compensation_active:None,first_control_transition:None,bumpless:None});
+        let mut before_blend=s;before_blend.substeps_completed=19;
+        assert!(c.begin_transfer(&before_blend,0).unwrap_err().contains("interrupt recovery blend"));
+        assert!(c.supported_transfer.is_none());
+    }
+    #[test]
+    fn physical_fall_cancels_owner_before_next_command_without_world_reset(){
+        let mut s=Simulation::new_protocol(0.,Profile::default(),true).unwrap();
+        s.profile.getup_repeated_recovery=Some(GetUpRepeatedRecovery::CompletedCycleConfirmedFallV1);
+        let mut c=Controller::new(&s.model);c.started_substep=Some(0);c.impact_substep=Some(0);
+        c.status.prototype_standing_passed=true;c.supported_transfer=Some(super::super::transfer::synthetic_state(&s));
+        s.motion=Motion::Falling;let before=bincode::serialize(&s.world).unwrap();let loads=s.integrated_support_loads_n;
+        c.observe(&mut s,&loads);
+        assert!(c.started_substep.is_none());assert_eq!(c.supported_transfer.as_ref().unwrap().phase,super::super::transfer::Phase::Cancelled);
+        assert_eq!(before,bincode::serialize(&s.world).unwrap());assert_eq!(s.substeps_completed,0);
+    }
+    #[test]
+    fn failed_transfer_never_silently_returns_motor_ownership_to_standing(){
+        let s=Simulation::new_protocol(0.,Profile::default(),true).unwrap();let mut c=Controller::new(&s.model);
+        let mut state=super::super::transfer::synthetic_state(&s);state.phase=super::super::transfer::Phase::Failed;state.failure=Some("test transfer refusal".into());
+        c.supported_transfer=Some(state);assert_eq!(c.command(&s,&[0.;67]).unwrap_err(),"test transfer refusal");
+        assert_eq!(s.substeps_completed,0);assert!(c.student_decisions.is_empty());
     }
 }

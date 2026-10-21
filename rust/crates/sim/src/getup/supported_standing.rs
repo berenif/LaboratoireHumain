@@ -621,3 +621,80 @@ mod tests {
         }
     }
 }
+
+/// Separate transfer-only support intention. The bilateral standing functions
+/// above remain unchanged. Measured contacts admit unloading; these hypothetical
+/// reactions only contribute equal/opposite joint torques via compensation().
+pub(super) fn transfer_controls(
+    s: &Simulation, reference: &StandingReference, target: &[f32;21], retained_side:usize, transfer_fraction:f32,
+)->Result<[f32;21],String>{
+    if !cfg!(feature="getup-supported-transfer-experiment") || retained_side>1 || s.grab.is_some() {
+        return Err("Unsupported or externally loaded gravity-only transfer".into());
+    }
+    let ids=["left_foot","right_foot"].map(|name|s.model.segments.iter().position(|p|p.id==name).unwrap());
+    let contacts=super::standing::contacts(s)?;
+    let actual=ids.map(|i|contacts.iter().filter(|c|c.body==i).map(|c|c.impulse).sum::<f32>()/s.profile.dt_s);
+    if actual[retained_side]<3. || s.integrated_support_loads_n.iter().enumerate().any(|(i,l)|!ids.contains(&i)&&*l>=3.) {
+        return Err("Transfer has no actual retained-foot-only floor support".into());
+    }
+    let com=s.center_of_mass();let twists=super::current_twists(s)?;
+    let velocity=s.bodies.iter().zip(twists).map(|(h,(v,_))|v*s.world.bodies[*h].mass()).sum::<Vector>()/s.total_mass();
+    let height=com.y-s.world.colliders[s.floor].compute_aabb().maxs.y;
+    if height<=0.05 || !height.is_finite(){return Err("Invalid transfer COM height".into());}
+    let desired=com+((com-reference.com)*4.+velocity*4.)*(height/9.81);
+    let mut points=[Vector::ZERO;2];
+    for side in 0..2 {
+        let b=&s.world.bodies[s.bodies[ids[side]]];
+        let primitives=&s.model.segments[ids[side]].reference.as_ref().ok_or("Missing sole geometry")?.primitives;
+        if primitives.is_empty(){return Err("Missing sole primitives".into());}
+        let point=|p,r|b.translation()+b.rotation().normalize()*vector(p)-Vector::Y*r;
+        let back=primitives.iter().map(|p|point(p.a,p.radius)).sum::<Vector>()/primitives.len() as f32;
+        let front=primitives.iter().map(|p|point(p.b,p.radius)).sum::<Vector>()/primitives.len() as f32;
+        let delta=front-back;let span=delta.dot(reference.forward);
+        if span<=0.05 {return Err("Invalid transfer sole orientation".into());}
+        points[side]=back+delta*((desired-back).dot(reference.forward)/span).clamp(0.,1.);
+        let floor=s.world.colliders[s.floor].compute_aabb();
+        if points[side].x<floor.mins.x || points[side].x>floor.maxs.x || points[side].z<floor.mins.z || points[side].z>floor.maxs.z {
+            return Err("Transfer intention outside finite floor".into());
+        }
+    }
+    let span=(points[0]-points[1]).dot(reference.lateral);
+    if span.abs()<0.01{return Err("Degenerate transfer sole span".into());}
+    let minimum_fraction=0.1*(1.-transfer_fraction);
+    let fraction=if actual[1-retained_side]<3. {if retained_side==0 {1.}else{0.}}
+        else {((desired-points[1]).dot(reference.lateral)/span).clamp(minimum_fraction,1.-minimum_fraction)};
+    let weight=s.total_mass()*9.81;
+    let support=[(ids[0],points[0],Vector::Y*(weight*fraction)),(ids[1],points[1],Vector::Y*(weight*(1.-fraction)))];
+    let (q,dq)=super::joint_state(s)?;let feed=compensation(s,support,&q);
+    let mut controls=[0.;21];
+    for p in &s.model.segments {if let Some(h)=p.reference.as_ref().and_then(|r|r.hinge.as_ref()){
+        let pd=target[h.qpos_index]-q[h.qpos_index]-0.2*dq[h.qpos_index];
+        let raw=pd+feed[h.actuator_index];
+        if !pd.is_finite() || pd.abs()>=1. || !raw.is_finite() || raw.abs()>0.95 {
+            return Err("Transfer command lacks finite unclipped 5% normalized torque reserve".into());
+        }
+        controls[h.actuator_index]=raw;
+    }}
+    Ok(controls)
+}
+
+#[cfg(all(test,feature="getup-supported-transfer-experiment"))]
+mod transfer_wrench_tests {
+    use super::*;
+    #[test]
+    fn either_single_support_intention_closes_root_wrench_without_body_force(){
+        let s=Simulation::new_protocol(0.4,Profile::default(),true).unwrap();
+        let before=bincode::serialize(&s.world).unwrap();let com=s.center_of_mass();
+        let feet=["left_foot","right_foot"].map(|name|s.model.segments.iter().position(|p|p.id==name).unwrap());
+        for fraction in [0.,0.1,0.5,0.9,1.] {
+            let support=[(feet[0],Vector::new(com.x-0.08,0.,com.z),Vector::Y*(s.total_mass()*9.81*fraction)),
+                (feet[1],Vector::new(com.x+0.08,0.,com.z),Vector::Y*(s.total_mass()*9.81*(1.-fraction)))];
+            let (support,a)=dynamic_reactions(&s,support);let (f,m)=residual(&s,support,a);
+            assert!(f.length()<0.001 && m.length()<0.001);
+            let (q,_)=super::super::joint_state(&s).unwrap();
+            assert!(compensation(&s,[(feet[0],Vector::new(com.x-0.08,0.,com.z),Vector::Y*(s.total_mass()*9.81*fraction)),
+                (feet[1],Vector::new(com.x+0.08,0.,com.z),Vector::Y*(s.total_mass()*9.81*(1.-fraction)))],&q).iter().all(|x|x.is_finite()));
+        }
+        assert_eq!(before,bincode::serialize(&s.world).unwrap());assert_eq!(s.substeps_completed,0);
+    }
+}

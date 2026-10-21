@@ -11,6 +11,7 @@ pub mod build_identity;
 pub mod roll_inspection;
 pub mod reference;
 pub mod standing;
+pub mod transfer;
 mod supported_standing;
 #[cfg(feature = "standing-dynamics-experiment")]
 pub use supported_standing::{dynamic_balance_diagnostic, dynamic_balance_fixture_invariants};

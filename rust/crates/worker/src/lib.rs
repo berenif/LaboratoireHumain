@@ -256,6 +256,12 @@ mod browser {
         pub fn queue_getup_correction(&mut self, json: &str) -> Result<(), JsValue> {
             self.runtime.queue_getup_correction(json).map_err(error)
         }
+        #[cfg(feature="getup-supported-transfer-experiment")]
+        pub fn begin_getup_transfer(&mut self,side:u32)->Result<(),JsValue>{
+            self.runtime.begin_getup_transfer(side as usize).map_err(error)
+        }
+        #[cfg(feature="getup-supported-transfer-experiment")]
+        pub fn getup_transfer_report(&self)->String {self.runtime.getup_transfer_report()}
         pub fn getup_report(&self) -> Result<String, JsValue> { self.runtime.getup_report().map_err(error) }
         #[wasm_bindgen(constructor)]
         pub fn new(

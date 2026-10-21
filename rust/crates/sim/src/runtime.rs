@@ -185,6 +185,7 @@ impl Runtime {
         s.profile.validate()?;
         s.validate_unit_root_rotation_policy()?;
         if let Some(controller) = &s.getup_controller {
+            if !controller.transfer_valid(s) {return Err("Invalid/unsupported transfer checkpoint state".into());}
             if !controller.adaptation_valid(s.substeps_completed) { return Err("Invalid checkpoint adaptation state/clock".into()); }
             if !controller.physical_roll_clock_valid(s.substeps_completed) {
                 return Err("Invalid checkpoint physical roll native clock or source admission".into());
@@ -401,6 +402,9 @@ impl Runtime {
         if schema != 1 { return Err("Checkpoint schema/model differs".into()); }
         let mut restored: Self = serde_json::from_str(&auxiliary).map_err(|e| e.to_string())?;
         restored.simulation.profile.validate()?;
+        if restored.simulation.getup_controller.as_ref().is_some_and(|c|!c.transfer_restore_allowed()) {
+            return Err("Active supported-transfer restoration is not admitted; exact state is diagnostic only".into());
+        }
         if restored.simulation.getup_controller.as_ref().is_some_and(|c|c.adaptation_active()) != adaptation_checkpoint {
             return Err("Checkpoint adaptation marker/controller differs".into());
         }
@@ -484,6 +488,19 @@ impl Runtime {
         self.simulation.getup_controller.as_mut().ok_or("Missing source controller")?.queue_adaptation(native,correction)
     }
     /// Recorded teacher branch/reference only; this never advances either world.
+    #[cfg(feature="getup-supported-transfer-experiment")]
+    pub fn begin_getup_transfer(&mut self,side:usize)->Result<(),String>{
+        self.checkpoint_compatible()?;
+        let s=&mut self.simulation;
+        let mut controller=s.getup_controller.take().ok_or("Missing GetUp controller")?;
+        let result=controller.begin_transfer(s,side);
+        s.getup_controller=Some(controller);result
+    }
+    #[cfg(feature="getup-supported-transfer-experiment")]
+    pub fn getup_transfer_report(&self)->String {
+        serde_json::json!({"native":self.simulation.substeps_completed,"motion":self.simulation.motion,
+            "transfer":self.simulation.getup_controller.as_ref().map(|c|c.transfer_report())}).to_string()
+    }
     pub fn getup_report(&self) -> Result<String, String> {
         serde_json::to_string(&self.simulation.getup_controller).map_err(|e| e.to_string())
     }
@@ -1574,5 +1591,28 @@ mod tests {
         let reply = r.advance(0).expect("fresh packet");
         assert!(reply.acknowledgements[0].rejected.is_none());
         assert!(!reply.paused);
+    }
+}
+
+#[cfg(all(test,feature="getup-supported-transfer-experiment"))]
+mod supported_transfer_restore_tests {
+    use super::*;
+    #[test]
+    fn active_transfer_checkpoint_is_rejected_before_any_physical_advance(){
+        let profile=Profile{getup_policy_enabled:true,
+            getup_repeated_recovery:Some(crate::GetUpRepeatedRecovery::CompletedCycleConfirmedFallV1),
+            getup_supported_transfer:Some(crate::getup::transfer::Profile::GravityOnlyV1),..Profile::default()};
+        let runtime=Runtime::new_getup_fixture_with_profile("belly",profile).unwrap();
+        let bytes=runtime.getup_checkpoint().unwrap();
+        let (schema,model,world,aux):(u32,String,Vec<u8>,String)=bincode::DefaultOptions::new().with_fixint_encoding().deserialize(&bytes).unwrap();
+        assert_eq!(schema,3);
+        let mut wrapper:TerminalBaseReadyCheckpoint=serde_json::from_str(&aux).unwrap();
+        let mut value:serde_json::Value=serde_json::from_str(&wrapper.auxiliary).unwrap();
+        value["simulation"]["getup_controller"]["supported_transfer"]=serde_json::to_value(crate::getup::transfer::synthetic_state(&runtime.simulation)).unwrap();
+        wrapper.auxiliary=serde_json::to_string(&value).unwrap();
+        let changed=bincode::DefaultOptions::new().with_fixint_encoding().serialize(&(schema,model,world,serde_json::to_string(&wrapper).unwrap())).unwrap();
+        let error=Runtime::from_getup_checkpoint(&changed).err().expect("active restore must reject");
+        assert!(error.contains("Active supported-transfer restoration"),"{error}");
+        assert_eq!(runtime.simulation.substeps_completed,0);
     }
 }

@@ -128,6 +128,9 @@ pub struct Profile {
     /// Opt-in lifecycle for a genuinely new fall after a completed recovery.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub getup_repeated_recovery: Option<GetUpRepeatedRecovery>,
+    /// Explicit gravity-only transfer experiment; never enables the legacy gait.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub getup_supported_transfer: Option<getup::transfer::Profile>,
     pub additional_body_iterations: usize,
     pub allowed_linear_error_m: f32,
     pub prediction_distance_m: f32,
@@ -174,6 +177,7 @@ impl Default for Profile {
             getup_solver_budget: None,
             root_rotation_normalization: None,
             getup_repeated_recovery: None,
+            getup_supported_transfer: None,
             additional_body_iterations: 5,
             allowed_linear_error_m: 0.001,
             prediction_distance_m: 0.002,
@@ -209,6 +213,12 @@ impl Profile {
         }
     }
     pub fn validate(&self) -> Result<(), String> {
+        if self.getup_supported_transfer.is_some()
+            && (!cfg!(feature = "getup-supported-transfer-experiment")
+                || !self.getup_policy_enabled || self.getup_repeated_recovery.is_none())
+        {
+            return Err("Supported transfer requires its explicit build and repeated GetUp profile".into());
+        }
         #[cfg(not(feature = "getup-repeat-cycle-experiment"))]
         if self.getup_repeated_recovery.is_some() {
             return Err("Repeated GetUp recovery requires getup-repeat-cycle-experiment".into());
