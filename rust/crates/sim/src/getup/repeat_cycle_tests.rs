@@ -49,13 +49,13 @@ fn repeated_profile_requires_policy_and_excludes_early_and_bumpless_transfer() {
     let mut disabled = explicit_profile();
     disabled.getup_policy_enabled = false;
     assert_eq!(disabled.validate().unwrap_err(), expected);
-    #[cfg(feature = "getup-terminal-base-ready-experiment")]
+    #[cfg(all(feature = "getup-terminal-base-ready-experiment", not(feature = "getup-repeat-balance-acquire-experiment")))]
     {
         assert_eq!(explicit_profile().validate().unwrap_err(), expected);
         assert_eq!(crate::runtime::Runtime::new_getup_fixture_with_profile("belly",
             explicit_profile()).err().unwrap(), expected);
     }
-    #[cfg(not(feature = "getup-terminal-base-ready-experiment"))]
+    #[cfg(any(not(feature = "getup-terminal-base-ready-experiment"), feature = "getup-repeat-balance-acquire-experiment"))]
     explicit_profile().validate().unwrap();
 }
 
@@ -435,4 +435,43 @@ mod active {
         assert_eq!(s.counters.recoveries, 2);
         assert_eq!(world_words(&s), before_world);
     }
+}
+
+#[cfg(feature = "getup-repeat-balance-acquire-experiment")]
+#[test]
+fn minimal_balance_acquire_reset_preserves_world_and_never_claims_success() {
+    let mut s = Simulation::new_protocol(0.0, explicit_profile(), true).unwrap();
+    s.substeps_completed = 2000; // Synthetic clock; zero physics in this test.
+    s.motion = Motion::Falling;
+    let before = bincode::serialize(&s.world).unwrap();
+    let mut c = Controller::new(&s.model);
+    assert!(c.balance_acquire_variant());
+    assert!(c.terminal_bumpless_variant());
+    c.started_substep=Some(100); c.impact_substep=Some(1500);
+    c.terminal_base_ready.as_mut().unwrap().consecutive_substeps=80;
+    assert!(!c.completed_recovery()); // Control admission is not acceptance.
+    c.status.prototype_standing_passed=true; // Synthetic prior completed cycle.
+    c.observe(&mut s, &[0.0;25]);
+    assert!(c.balance_acquire_variant());
+    assert_eq!(c.terminal_base_ready.as_ref().unwrap().consecutive_substeps,0);
+    assert_eq!(c.impact_substep,Some(1500));
+    assert_eq!(c.started_substep,None);
+    assert!(!c.completed_recovery());
+    assert!(c.terminal_balance.is_none());
+    assert_eq!(before,bincode::serialize(&s.world).unwrap());
+    assert_eq!(s.substeps_completed,2000);
+}
+
+#[cfg(feature = "getup-repeat-balance-acquire-experiment")]
+#[test]
+fn minimal_balance_acquire_requires_its_full_preview_guard_even_when_already_balanced() {
+    let s = Simulation::new_protocol(0.0, explicit_profile(), true).unwrap();
+    let mut c = Controller::new(&s.model);
+    c.stable_substeps = 800;
+    assert!(!c.terminal_admission_ready());
+    c.terminal_base_ready.as_mut().unwrap().consecutive_substeps = 79;
+    assert!(!c.terminal_admission_ready());
+    c.terminal_base_ready.as_mut().unwrap().consecutive_substeps = 80;
+    assert!(c.terminal_admission_ready());
+    assert!(!c.completed_recovery());
 }

@@ -10,6 +10,8 @@ stationary-balance-experiment = []
 standing-dynamics-experiment = []
 getup-terminal-balance-experiment = []
 getup-repeat-cycle-experiment = ["getup-terminal-balance-experiment"]
+# Explicit default-off control admission; final physical acceptance is unchanged.
+getup-repeat-balance-acquire-experiment = ["getup-repeat-cycle-experiment", "getup-terminal-bumpless-experiment"]
 getup-physical-roll-experiment = ["getup-repeat-cycle-experiment"]
 # Isolated, default-off immutable native observation. No persistent selector.
 getup-terminal-tail-observer-experiment = []

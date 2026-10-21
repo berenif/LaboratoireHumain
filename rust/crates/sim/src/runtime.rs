@@ -194,6 +194,9 @@ impl Runtime {
             {
                 return Err("Invalid checkpoint repeated GetUp recovery clock".into());
             }
+            if self.simulation.profile.getup_repeated_recovery.is_some()
+                && controller.terminal_base_ready_variant() && !controller.balance_acquire_variant()
+            { return Err("Repeated early transfer requires explicit balance acquisition variant".into()); }
             if controller.terminal_bumpless_variant()
                 && !cfg!(feature = "getup-terminal-bumpless-experiment")
             {

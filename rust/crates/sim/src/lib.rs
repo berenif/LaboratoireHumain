@@ -214,7 +214,8 @@ impl Profile {
             return Err("Repeated GetUp recovery requires getup-repeat-cycle-experiment".into());
         }
         if self.getup_repeated_recovery.is_some()
-            && (!self.getup_policy_enabled || cfg!(feature = "getup-terminal-base-ready-experiment"))
+            && (!self.getup_policy_enabled || (cfg!(feature = "getup-terminal-base-ready-experiment")
+                && !cfg!(feature = "getup-repeat-balance-acquire-experiment")))
         {
             return Err("Repeated GetUp recovery requires the source/terminal-balance controller without early or bumpless transfer".into());
         }

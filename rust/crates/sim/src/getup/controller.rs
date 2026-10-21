@@ -88,6 +88,8 @@ enum TerminalAdmission {
     FullBody80,
     #[serde(rename = "early-base80")]
     EarlyBase80,
+    #[serde(rename = "supported-upright80")]
+    SupportedUpright80,
 }
 
 #[derive(Serialize, Deserialize)]
@@ -116,6 +118,8 @@ enum TerminalBaseReadyFormat {
     V1,
     #[serde(rename = "terminal-base-ready-bumpless-v2")]
     BumplessV2,
+    #[serde(rename = "terminal-balance-acquire-v3")]
+    BalanceAcquireV3,
 }
 
 #[derive(Serialize, Deserialize)]
@@ -275,7 +279,9 @@ impl Controller {
             adaptation: None,
             terminal_base_ready: if cfg!(feature = "getup-terminal-base-ready-experiment") {
                 Some(TerminalBaseReady {
-                    format: if cfg!(feature = "getup-terminal-bumpless-experiment") {
+                    format: if cfg!(feature = "getup-repeat-balance-acquire-experiment") {
+                        TerminalBaseReadyFormat::BalanceAcquireV3
+                    } else if cfg!(feature = "getup-terminal-bumpless-experiment") {
                         TerminalBaseReadyFormat::BumplessV2
                     } else { TerminalBaseReadyFormat::V1 },
                     consecutive_substeps: 0,
@@ -306,7 +312,8 @@ impl Controller {
         }
     }
     pub(crate) fn checkpoint_variant_supported(&self) -> bool {
-        (self.adaptation.is_none() || cfg!(feature = "getup-policy-adaptation-experiment"))
+        (!self.balance_acquire_variant() || cfg!(feature = "getup-repeat-balance-acquire-experiment"))
+            && (self.adaptation.is_none() || cfg!(feature = "getup-policy-adaptation-experiment"))
             && (self.physical_roll.is_none() || cfg!(feature = "getup-physical-roll-experiment"))
             && (!self.terminal_base_ready_variant()
             || cfg!(feature = "getup-terminal-base-ready-experiment"))
@@ -322,7 +329,10 @@ impl Controller {
     }
     pub(crate) fn terminal_bumpless_variant(&self) -> bool {
         self.terminal_base_ready.as_ref().is_some_and(|ready|
-            ready.format == TerminalBaseReadyFormat::BumplessV2)
+            matches!(ready.format, TerminalBaseReadyFormat::BumplessV2 | TerminalBaseReadyFormat::BalanceAcquireV3))
+    }
+    pub(crate) fn balance_acquire_variant(&self) -> bool {
+        self.terminal_base_ready.as_ref().is_some_and(|r| r.format == TerminalBaseReadyFormat::BalanceAcquireV3)
     }
     pub(crate) fn terminal_base_ready_variant_valid(&self) -> bool {
         let bumpless = self.terminal_bumpless_variant();
@@ -330,8 +340,10 @@ impl Controller {
             if !bumpless { return balance.bumpless.is_none(); }
             balance.bumpless.as_ref().is_some_and(|blend| {
                 let admission_valid = match blend.admission {
-                    TerminalAdmission::FullBody80 => blend.stable_substeps_at_binding >= 80,
-                    TerminalAdmission::EarlyBase80 => blend.stable_substeps_at_binding < 80
+                    TerminalAdmission::FullBody80 => !self.balance_acquire_variant() && blend.stable_substeps_at_binding >= 80,
+                    TerminalAdmission::SupportedUpright80 => self.balance_acquire_variant()
+                        && self.terminal_base_ready.as_ref().is_some_and(|r| r.consecutive_substeps == 80),
+                    TerminalAdmission::EarlyBase80 => !self.balance_acquire_variant() && blend.stable_substeps_at_binding < 80
                         && self.terminal_base_ready.as_ref().is_some_and(|ready|
                             ready.consecutive_substeps == 80),
                 };
@@ -394,9 +406,9 @@ impl Controller {
         let bumpless = if self.terminal_bumpless_variant() {
             if !normalized_controls_valid(&last_slow_controls) { return; }
             Some(TerminalBumpless {
-                admission: if self.stable_substeps >= 80 {
-                    TerminalAdmission::FullBody80
-                } else { TerminalAdmission::EarlyBase80 },
+                admission: if self.balance_acquire_variant() { TerminalAdmission::SupportedUpright80 }
+                else if self.stable_substeps >= 80 { TerminalAdmission::FullBody80 }
+                else { TerminalAdmission::EarlyBase80 },
                 stable_substeps_at_binding: self.stable_substeps,
                 first_intended_controls: None,
                 first_intended_control_jump_max: None,
@@ -470,8 +482,15 @@ impl Controller {
             && physical[36] >= contract.stable_up_dot
             && ids.iter().all(|i| loads[*i] >= contract.minimum_load_n && s.integrated_support_substeps[*i] >= 40)
             && foot_load >= 0.8 * s.total_mass() * 9.81
-            && only_feet && balanced
-            && terminal_base_ready_motion_passes(&s.model, &twists))
+            && only_feet && (balanced || self.balance_acquire_variant())
+            && if self.balance_acquire_variant() {
+                // Control may recruit ankle balance to correct COM/capture.
+                // This is NOT standing acceptance: use all original body-motion
+                // limits and keep observe()'s COM/capture/800-sample gate intact.
+                twists.iter().all(|(v,w)| v.is_finite() && w.is_finite()
+                    && v.length() <= contract.stable_linear_mps
+                    && w.length() <= contract.stable_angular_radps)
+            } else { terminal_base_ready_motion_passes(&s.model, &twists) })
         { return None; }
         let reference = super::supported_standing::recovered_reference(s)?;
         let preview = super::supported_standing::terminal_control_preview(
@@ -525,6 +544,9 @@ impl Controller {
             if !self.repeated_recovery_clock_valid(s.substeps_completed) {
                 return Err("Invalid repeated GetUp recovery epoch or native clock".into());
             }
+        }
+        if self.balance_acquire_variant() && !cfg!(feature = "getup-repeat-balance-acquire-experiment") {
+            return Err("Unsupported balance acquisition control variant".into());
         }
         if self.terminal_bumpless_variant() && !cfg!(feature = "getup-terminal-bumpless-experiment") {
             return Err("Terminal bumpless transfer requires its experimental controller build".into());

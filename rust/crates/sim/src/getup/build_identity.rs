@@ -8,6 +8,7 @@ pub fn capabilities() -> serde_json::Value {
     if cfg!(feature = "experimental-solver-step-observation") { features.push("experimental-solver-step-observation"); }
     if cfg!(feature = "getup-physical-roll-experiment") { features.push("getup-physical-roll-experiment"); }
     if cfg!(feature = "getup-policy-adaptation-experiment") { features.push("getup-policy-adaptation-experiment"); }
+    if cfg!(feature = "getup-repeat-balance-acquire-experiment") { features.push("getup-repeat-balance-acquire-experiment"); }
     if cfg!(feature = "getup-repeat-cycle-experiment") { features.push("getup-repeat-cycle-experiment"); }
     if cfg!(feature = "getup-terminal-balance-experiment") { features.push("getup-terminal-balance-experiment"); }
     if cfg!(feature = "getup-terminal-base-ready-experiment") { features.push("getup-terminal-base-ready-experiment"); }
