@@ -98,13 +98,9 @@ impl State {
         { return Err("Transfer requires its gravity-only, quiet flat-floor protocol".into()); }
         let ids=feet(s)?;let contacts=super::standing::contacts(s)?;
         let points:Vec<_>=contacts.iter().filter(|c|c.body==ids[retained_side]).map(|c|[c.point.x,c.point.z]).collect();
-        let center=points.iter().fold(Vector::ZERO,|a,p|a+Vector::new(p[0],0.,p[1])) / points.len().max(1) as f32;
-        if !crate::stepping::inside_support(points,[center.x,center.z],0.003) {
-            return Err("Retained actual contact hull has no 3 mm interior at its centroid".into());
-        }
         let start_com=reference.com;
-        let target_com=Vector::new(center.x,start_com.y,center.z);
-        if target_com.distance(start_com)<0.0001 || target_com.distance(start_com)>MAX_SHIFT {return Err("Required COM shift exceeds explicit 120 mm command bound".into());}
+        let selected=nearest_retained_target(&points,[start_com.x,start_com.z])?;
+        let target_com=Vector::new(selected[0],start_com.y,selected[1]);
         let target_q=posture_target(s,target_com-s.center_of_mass())?;
         let material=contacts.iter().map(|c|MaterialAnchor{body:c.body,
             local:vec3(s.world.bodies[s.bodies[c.body]].position().inverse_transform_point(c.point)),world:vec3(c.point)}).collect::<Vec<_>>();
@@ -205,6 +201,51 @@ impl State {
         Ok(())
     }
 }
+/// Euclidean projection into the actual contact hull inset. The extra 10 um
+/// is numerical clearance only; qualification still uses the original 3 mm.
+/// No contact/pose is changed, and the unchanged f32 acceptance is checked last.
+fn nearest_retained_target(points:&[[f32;2]],start:[f32;2])->Result<[f32;2],String>{
+    if !points.iter().flatten().chain(start.iter()).all(|x|x.is_finite()) {
+        return Err("Nonfinite retained contact geometry".into());
+    }
+    let cross=|a:[f64;2],b:[f64;2],p:[f64;2]|(b[0]-a[0])*(p[1]-a[1])-(b[1]-a[1])*(p[0]-a[0]);
+    let mut sorted=points.iter().map(|p|p.map(f64::from)).collect::<Vec<_>>();
+    sorted.sort_by(|a,b|a[0].total_cmp(&b[0]).then(a[1].total_cmp(&b[1])));sorted.dedup();
+    let half=|p:Vec<[f64;2]>|{let mut h=Vec::new();for p in p {
+        while h.len()>=2&&cross(h[h.len()-2],h[h.len()-1],p)<=0. {h.pop();}h.push(p);
+    }h};
+    let mut lower=half(sorted.clone());let mut upper=half(sorted.into_iter().rev().collect());
+    lower.pop();upper.pop();lower.extend(upper);let hull=lower;
+    if hull.len()<3 {return Err("Degenerate retained contact hull".into());}
+    let mut inner=hull.clone();
+    for i in 0..hull.len(){let a=hull[i];let b=hull[(i+1)%hull.len()];
+        let length=(b[0]-a[0]).hypot(b[1]-a[1]);
+        let value=|p|cross(a,b,p)/length-0.00301;
+        let old=inner;inner=Vec::new();
+        for j in 0..old.len(){let p=old[j];let q=old[(j+1)%old.len()];let vp=value(p);let vq=value(q);
+            if vp>=0. {inner.push(p);}
+            if (vp>=0.)!=(vq>=0.) {let t=vp/(vp-vq);inner.push([p[0]+t*(q[0]-p[0]),p[1]+t*(q[1]-p[1])]);}
+        }
+    }
+    if inner.len()<3 {return Err("Retained contact hull has no 3 mm interior".into());}
+    let p=start.map(f64::from);
+    let inside=inner.iter().enumerate().all(|(i,a)|cross(*a,inner[(i+1)%inner.len()],p)>=0.);
+    let mut selected=p;let mut minimum=if inside {0.}else{f64::INFINITY};
+    if !inside {for i in 0..inner.len(){let a=inner[i];let b=inner[(i+1)%inner.len()];
+        let d=[b[0]-a[0],b[1]-a[1]];let squared=d[0]*d[0]+d[1]*d[1];if squared<=0. {continue;}
+        let t=(((p[0]-a[0])*d[0]+(p[1]-a[1])*d[1])/squared).clamp(0.,1.);
+        let q=[a[0]+t*d[0],a[1]+t*d[1]];let distance=(q[0]-p[0]).hypot(q[1]-p[1]);
+        if distance<minimum {minimum=distance;selected=q;}
+    }}
+    let selected=selected.map(|x|x as f32);
+    if !crate::stepping::inside_support(points.to_vec(),selected,0.003) {
+        return Err("Rounded retained target does not meet original 3 mm interior".into());
+    }
+    let distance=(selected[0]-start[0]).hypot(selected[1]-start[1]);
+    if distance<0.0001 {return Err(format!("Required COM shift is near zero ({distance:.9} m); unload is not qualified"));}
+    if distance>MAX_SHIFT {return Err(format!("Nearest retained COM target exceeds explicit 120 mm bound ({distance:.9} m)"));}
+    Ok(selected)
+}
 fn feet(s:&Simulation)->Result<[usize;2],String>{
     let find=|name|s.model.segments.iter().position(|p|p.id==name).ok_or_else(||format!("Missing {name}"));
     Ok([find("left_foot")?,find("right_foot")?])
@@ -286,6 +327,31 @@ pub(crate) fn synthetic_state(s:&Simulation)->State {
 #[cfg(test)]
 mod transfer_tests {
     use super::*;
+    #[test]
+    fn nearest_contact_target_preserves_original_gate_and_bound(){
+        let start=[0.06573287,-0.4884942];
+        let left=[[0.17181185,-0.40325284],[0.2571382,-0.59930384],[0.23054932,-0.39003935]];
+        let right=[[-0.108854234,-0.48710507],[-0.04293592,-0.68748975],[-0.05033266,-0.4738415]];
+        let error=nearest_retained_target(&left,start).unwrap_err();assert!(error.contains("120 mm"));assert!(error.contains("0.134"));
+        let target=nearest_retained_target(&right,start).unwrap();
+        let d=(target[0]-start[0]).hypot(target[1]-start[1]);assert!((d-0.11849905).abs()<1e-6);
+        assert!(crate::stepping::inside_support(right.to_vec(),target,0.003));
+        assert!(crate::stepping::inside_support(right.to_vec(),target,0.003005));
+        let mut reversed=right.to_vec();reversed.reverse();reversed.push(right[0]);
+        assert_eq!(target,nearest_retained_target(&reversed,start).unwrap());
+    }
+    #[test]
+    fn nearest_projection_is_not_centroid_ray_and_rejects_invalid_geometry(){
+        let rectangle=[[0.,0.],[0.2,0.],[0.2,0.1],[0.,0.1]];
+        let p=nearest_retained_target(&rectangle,[-0.05,0.07]).unwrap();
+        assert!((p[0]-0.00301).abs()<1e-7 && (p[1]-0.07).abs()<1e-7);
+        assert!(nearest_retained_target(&rectangle,[0.1,0.05]).unwrap_err().contains("near zero"));
+        for points in [vec![],vec![[0.,0.],[0.1,0.]],vec![[0.,0.],[0.1,0.],[0.2,0.]],
+            vec![[0.,0.],[0.002,0.],[0.,0.002]],vec![[f32::NAN,0.],[0.1,0.],[0.,0.1]]] {
+            assert!(nearest_retained_target(&points,[-0.05,0.]).is_err());
+        }
+        assert!(nearest_retained_target(&rectangle,[f32::INFINITY,0.]).is_err());
+    }
     #[test]
     fn ramp_is_bounded_and_finishes_inside_transfer_deadline(){
         for distance in [0.001,0.05,0.12] {

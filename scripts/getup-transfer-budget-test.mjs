@@ -1,6 +1,6 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
-import {Budget,main,transferEntryReady} from './check-getup-transfer.mjs';
+import {Budget,main,transferEntryReady,rightPilotPrior} from './check-getup-transfer.mjs';
 test('forecast accounting survives controller-local cycle reset',()=>{
  const b=new Budget();b.reserve();b.reconcile(20,1000,0.025);b.reserve();b.reconcile(40,1000,0.025);
  b.reserve();b.reconcile(60,0,null);b.reserve();b.reconcile(80,500,0.1);
@@ -32,4 +32,14 @@ test('earned recovery alone is not completed terminal blend',()=>{
 test('second closed ledger is carried once against the original cap',()=>{
  const b=new Budget(5480);b.real=26520;assert.throws(()=>b.reserve());
  b.real=26500;b.reserve();assert.equal(b.charged,37000);
+});
+
+test('geometry and all prior executions remain charged once for right-only pilot',()=>{
+ const previous={schema:'lh-supported-transfer-budget/v1',limit:37000,priorCharged:5480,real:4800,forecast:560,reserved:0,charged:10840};
+ const prior={schema:'lh-transfer-geometry-ledger/v1',aggregateLimit:37000,priorCharged:10840,real:4800,forecast:560,reserved:0,charged:16200,calls:240};
+ assert.equal(rightPilotPrior(prior,previous),16200);
+ assert.throws(()=>rightPilotPrior({...prior,charged:10840},previous));
+ assert.throws(()=>rightPilotPrior({...prior,reserved:5020},previous));
+ const b=new Budget(rightPilotPrior(prior,previous));b.real=15780;b.reserve();assert.equal(b.charged,37000);
+ b.reconcile(15800,0,null);assert.throws(()=>b.reserve());assert.equal(b.charged,32000);
 });

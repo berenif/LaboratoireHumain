@@ -13,7 +13,7 @@ completed 20-sample V3 blend. It never takes authority at the earlier 80-sample
 control-admission boundary.
 
 One bounded linear intention uses the actual GetUp source-hinge Jacobians to
-shift COM toward the retained foot's actual contact centroid, while requesting
+shift COM toward the nearest point in the retained foot's actual 3 mm-inset contact hull, while requesting
 fixed positions/orientations for both feet and fixed torso orientation. Virtual
 root coordinates participate only in this algebraic intention: only the 21
 joint targets reach `apply_controls`, as equal/opposite joint torques. No pose,
@@ -99,3 +99,29 @@ ledgers total 5,480 integrations (400 + 4,520 real + 560 forecast), leaving at m
 31,520 new integrations and 594 seconds under the same original allocation.
 Both ledger hashes are required by the corrected entrypoint. This is a JS-only
 correction using the same verified worker, not a changed physical controller.
+
+### Geometry diagnosis and the right-only bounded proposal
+
+The correctly timed third request was refused before any transfer motor command.
+A separate unchanged-worker replay stopped at the same earned standing entry and
+read actual contacts: the left centroid was 156.004 mm from the bound COM
+reference, and the right 146.413 mm. This was the over-distance branch, not the
+previously conflated near-zero case. The closest 3 mm-inset points require
+134.283 mm on the left and 118.489 mm on the right. **Left is infeasible under
+this command bound at this stance.** No physical transfer has yet passed.
+
+Selection now projects the bound reference onto the convex hull inset instead
+of targeting its centroid. It uses double precision for clipping/projection,
+10 micrometres of additional inward numerical clearance, then checks the
+rounded target with the existing 3 mm predicate and unchanged 120 mm limit.
+Near-zero and over-distance refusals are separate and include actual distance.
+All posture, torque, speed, time and measured-support gates remain unchanged.
+This does not manufacture support or prove dynamic reachability.
+
+The next proposed pilot requests **only right transfer and return**, not both
+sides or a step. The three closed pilots plus geometry replay charge 16,200
+integrations once against the original 37,000, leaving at most 20,800 new.
+Its last two ledger inputs are the geometry ledger and its hash-bound prior
+pilot ledger. Full 5,020 dispatch reservations remain, with an outer 584-second
+timeout and a fresh output directory. It stops at the first failure; no bound
+increase, swing, stance widening, reset or automatic retry is authorized.

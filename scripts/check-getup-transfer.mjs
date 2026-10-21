@@ -28,6 +28,18 @@ export function transferEntryReady(snapshot){
   return snapshot.motion==='Upright'&&p?.prototype_standing_passed===true&&p.stable_standing_s>=1
     &&p.phase==='experimental-joint-balance-holding';
 }
+export function rightPilotPrior(prior,previous){
+  assert.equal(prior.schema,'lh-transfer-geometry-ledger/v1');
+  assert.equal(prior.aggregateLimit,37000);assert.equal(prior.priorCharged,10840);
+  assert.equal(prior.real,4800);assert.equal(prior.forecast,560);assert.equal(prior.reserved,0);
+  assert.equal(prior.charged,16200);assert.equal(prior.calls,240);
+  assert.equal(previous.schema,'lh-supported-transfer-budget/v1');assert.equal(previous.limit,37000);
+  assert.equal(previous.priorCharged,5480);assert.equal(previous.real,4800);assert.equal(previous.forecast,560);
+  assert.equal(previous.reserved,0);assert.equal(previous.charged,10840);
+  assert.equal(previous.charged,previous.priorCharged+previous.real+previous.forecast);
+  assert.equal(prior.charged,previous.charged+prior.real+prior.forecast);
+  return prior.charged;
+}
 const sha=x=>createHash('sha256').update(x).digest('hex');
 function durable(path,value){
   const created=!existsSync(path),fd=openSync(path,'w');
@@ -36,14 +48,11 @@ function durable(path,value){
 }
 export async function main(args){
   assert.equal(args[0],'--execute','No physical execution without explicit --execute');
-  const [assets,receiptPath,out,priorLedgerPath,firstLedgerPath]=args.slice(1).map(x=>resolve(x));assert(assets&&receiptPath&&out&&priorLedgerPath&&firstLedgerPath);
+  const [assets,receiptPath,out,priorLedgerPath,previousTransferLedgerPath]=args.slice(1).map(x=>resolve(x));assert(assets&&receiptPath&&out&&priorLedgerPath&&previousTransferLedgerPath);
   const priorBytes=readFileSync(priorLedgerPath),prior=JSON.parse(priorBytes);
-  assert.equal(prior.schema,'lh-supported-transfer-budget/v1');
-  assert.equal(prior.limit,37000);assert.equal(prior.real,4520);assert.equal(prior.forecast,560);
-  assert.equal(prior.reserved,0);assert.equal(prior.priorCharged,400);assert.equal(prior.charged,5480);assert.equal(prior.calls,226);
-  const firstBytes=readFileSync(firstLedgerPath),first=JSON.parse(firstBytes);
-  assert.equal(sha(firstBytes),prior.priorLedgerSha256);assert.equal(first.real,400);
-  assert.equal(first.forecast,0);assert.equal(first.reserved,0);assert.equal(first.charged,400);
+  const previousBytes=readFileSync(previousTransferLedgerPath),previous=JSON.parse(previousBytes);
+  assert.equal(sha(previousBytes),prior.priorLedgerSha256);
+  rightPilotPrior(prior,previous);
   assert(!existsSync(out),'New output directory required; never resume an attempt');
   const receiptBytes=readFileSync(receiptPath),receipt=JSON.parse(receiptBytes);
   assert.equal(receipt.schema,'lh-supported-transfer-build/v1');
@@ -65,9 +74,9 @@ export async function main(args){
   mkdirSync(out);const directory=openSync(dirname(out),'r');try{fsyncSync(directory);}finally{closeSync(directory);}
   const start=Date.now(),budget=new Budget(prior.charged),trace=[],completed=[],requests=[];
   const ledger=()=>({schema:'lh-supported-transfer-budget/v1',startedAt:new Date(start).toISOString(),
-    limit:37000,wallLimitSeconds:594,firstLedgerSha256:sha(firstBytes),priorLedgerSha256:sha(priorBytes),priorSourceTree:prior.sourceTree,...budget,charged:budget.charged,sourceTree:harnessTree,buildSourceTree:receipt.source_tree});
+    limit:37000,wallLimitSeconds:584,previousTransferLedgerSha256:sha(previousBytes),priorLedgerSha256:sha(priorBytes),priorSourceTree:prior.sourceTree,...budget,charged:budget.charged,sourceTree:harnessTree,buildSourceTree:receipt.source_tree});
   durable(join(out,'ledger.json'),ledger());
-  let w,reply,triggered=false,reason='unstarted',error=null,side=0,lastKey='',lastTransfer=null;
+  let w,reply,triggered=false,reason='unstarted',error=null,side=1,lastKey='',lastTransfer=null;
   try{
     const mod=await import(pathToFileURL(join(assets,'lh_worker.js')));mod.initSync({module:wasm});
     assert.deepEqual(JSON.parse(mod.getup_build_capabilities()).effectiveSimFeatures,FEATURES);
@@ -75,7 +84,7 @@ export async function main(args){
     w.set_root_translation_compensation_enabled(true);reply=JSON.parse(w.advance(0));
     assert.equal(JSON.parse(w.getup_transfer_report()).native,0);
     while(true){
-      assert(Date.now()-start<594000,'Remaining 594-second wall deadline');
+      assert(Date.now()-start<584000,'Remaining 584-second wall deadline');
       const s=reply.snapshot,status=s.diagnostics.getup?.policy,t=JSON.parse(w.getup_transfer_report());lastTransfer=t;
       assert.equal(s.stamp.generation,1);assert.equal(s.diagnostics.direct_pelvis_force_n,0);assert.equal(s.diagnostics.direct_pelvis_torque_nm,0);
       const key=JSON.stringify([s.motion,s.counters,t.transfer?.phase,status?.phase]);
@@ -85,10 +94,11 @@ export async function main(args){
       if(t.transfer&&['failed','cancelled'].includes(t.transfer.phase)){reason='transfer-stopped';break;}
       if(!triggered&&t.native===400){assert(JSON.parse(w.getup_fixture_report()).state.ready);
         w.trigger_getup_fixture();triggered=true;reply=JSON.parse(w.advance(0));continue;}
-      if(triggered&&t.transfer?.phase==='passed'&&completed.length===side){completed.push(t.transfer);side++;}
-      if(side===2){reason='both-transfers-and-returns-passed';break;}
+      if(triggered&&t.transfer?.phase==='passed'){completed.push(t.transfer);reason='right-transfer-and-return-passed';break;}
       if(triggered&&(!t.transfer||t.transfer.phase==='passed')&&transferEntryReady(s)){
-        requests.push({side,native:t.native});w.begin_getup_transfer(side);continue;
+        const report=JSON.parse(w.getup_report()),standing=JSON.parse(w.getup_standing_diagnostic('null'));
+        requests.push({side,native:t.native,reference:report.terminal_balance.reference,com:standing.com,
+          capture:standing.capture,feet:standing.contactMotion.feet});w.begin_getup_transfer(side);continue;
       }
       budget.reserve();durable(join(out,'ledger.json'),ledger());
       try{
@@ -107,12 +117,12 @@ export async function main(args){
   }catch(e){error=String(e?.stack??e);reason='bounded-or-control-stop';}
   finally{
     if(w){try{lastTransfer=JSON.parse(w.getup_transfer_report());}catch{}w.free();}
-    const result={passed:reason==='both-transfers-and-returns-passed',reason,error,
+    const result={passed:reason==='right-transfer-and-return-passed',reason,error,
       sourceCommit:harnessCommit,sourceTree:harnessTree,buildSourceCommit:receipt.source_commit,buildSourceTree:receipt.source_tree,harnessSha256:sha(readFileSync(new URL(import.meta.url))),buildReceiptSha256:sha(receiptBytes),
       workerSha256:sha(wasm),glueSha256:sha(glue),profileSha256:sha(profile),initialProne:true,
       constructors:w?1:0,resets:0,restores:0,strikes:0,liftCommands:0,gravityOnly:true,browserValidated:false,
       ...ledger(),schema:'lh-supported-transfer-pilot/v1',finalFailure:reply?.failure,finalPolicy:reply?.snapshot?.diagnostics?.getup?.policy,elapsedWallSeconds:(Date.now()-start)/1000,requests,completed,lastTransfer,
-      activeStateResumable:false,trace};
+      activeStateResumable:false,requestedSides:[1],leftNotAttempted:true,trace};
     const bytes=JSON.stringify(result)+'\n';assert(Buffer.byteLength(bytes)<=1024*1024,'Compact result exceeds 1 MiB');
     durable(join(out,'result.json'),result);console.log(JSON.stringify({passed:result.passed,reason,charged:budget.charged,
       real:budget.real,forecast:budget.forecast,uncertainReservation:budget.reserved,completed:completed.length,error}));
