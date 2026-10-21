@@ -180,9 +180,20 @@ impl Runtime {
         let anchors: Option<[lh_model::Vec3;2]> = serde_json::from_str(anchors_json).map_err(|e|e.to_string())?;
         crate::getup::controller::standing_diagnostic(&self.simulation,anchors).map(|v|v.to_string())
     }
+    pub fn getup_native_observation(&self)->Result<String,String> {
+        crate::getup::locomotion::observation(&self.simulation).map(|v|v.to_string())
+    }
+    #[cfg(feature="getup-native-locomotion-experiment")]
+    pub fn set_getup_native_mode(&mut self, mode:&str)->Result<(),String> {
+        if self.disposed || self.timeline.depth()!=0 { return Err("Native mode requires a live, empty command boundary".into()); }
+        let mode=match mode {"passive"=>crate::getup::locomotion::Mode::Passive,
+            "active"=>crate::getup::locomotion::Mode::Active,_=>return Err("Unknown native motor mode".into())};
+        crate::getup::locomotion::set_mode(&mut self.simulation,mode)
+    }
     fn checkpoint_compatible(&self) -> Result<(), String> {
         let s = &self.simulation;
         s.profile.validate()?;
+        crate::getup::locomotion::validate(s)?;
         s.validate_unit_root_rotation_policy()?;
         if let Some(controller) = &s.getup_controller {
             if !controller.transfer_valid(s) {return Err("Invalid/unsupported transfer checkpoint state".into());}
@@ -443,18 +454,20 @@ impl Runtime {
         let same_snapshot = serde_json::to_value(self.simulation.snapshot()).map_err(|e| e.to_string())?
             == serde_json::to_value(restored.simulation.snapshot()).map_err(|e| e.to_string())?;
         let same_controller = self.getup_report()? == restored.getup_report()?;
+        let same_native_owner = serde_json::to_string(&self.simulation.native_locomotion).map_err(|e|e.to_string())?
+            == serde_json::to_string(&restored.simulation.native_locomotion).map_err(|e|e.to_string())?;
         #[cfg(feature = "root-translation-carry-experiment")]
         let same_integrator = self.root_translation_checkpoint_entries()? == restored.root_translation_checkpoint_entries()?;
         #[cfg(feature = "root-translation-carry-experiment")]
         if !same_integrator { return Err("Checkpoint round-trip changed root integrator state".into()); }
-        if !same_joints || !same_handles || !same_snapshot || !same_controller {
-            return Err(format!("Checkpoint round-trip changed data: joints={same_joints}, handles={same_handles}, snapshot={same_snapshot}, controller={same_controller}"));
+        if !same_joints || !same_handles || !same_snapshot || !same_controller || !same_native_owner {
+            return Err(format!("Checkpoint round-trip changed data: joints={same_joints}, handles={same_handles}, snapshot={same_snapshot}, controller={same_controller}, nativeOwner={same_native_owner}"));
         }
         let report = serde_json::json!({"passed":true,"physicsIntegrations":0,"bytes":bytes.len(),
             "nativeSubsteps":restored.simulation.substeps_completed,
             "forecastSubsteps":restored.simulation.getup_controller.as_ref().unwrap().status.forecast_substeps,
             "binaryWorldDeserialized":true,"jointStateEqual":same_joints,"handlesEqual":same_handles,
-            "snapshotEqual":same_snapshot,"controllerEqual":same_controller});
+            "snapshotEqual":same_snapshot,"controllerEqual":same_controller,"nativeOwnerEqual":same_native_owner});
         #[cfg(feature = "root-translation-carry-experiment")]
         let report = {
             let mut report = report;
@@ -547,6 +560,7 @@ impl Runtime {
             }
         };
         simulation.generation = generation;
+        if let Some(state)=&mut simulation.native_locomotion {state.set_initial_generation(generation);}
         Ok(Self {
             timeline: Timeline::new(simulation.generation),
             simulation,
@@ -696,6 +710,7 @@ impl Runtime {
         }
         .map_err(|_| Reject::Invalid)?;
         next.generation = generation;
+        if let Some(state)=&mut next.native_locomotion {state.set_initial_generation(generation);}
         next.last_press = self.highest_press;
         // Construct first so a failed initialization preserves the old world.
         self.cancel_pointer_intent();
@@ -1614,5 +1629,28 @@ mod supported_transfer_restore_tests {
         let error=Runtime::from_getup_checkpoint(&changed).err().expect("active restore must reject");
         assert!(error.contains("Active supported-transfer restoration"),"{error}");
         assert_eq!(runtime.simulation.substeps_completed,0);
+    }
+}
+
+#[cfg(all(test,feature="getup-native-locomotion-experiment"))]
+mod native_owner_roundtrip_tests {
+    use super::*;
+    #[test]
+    fn native_contract_owner_mode_and_activation_are_part_of_exact_verification() {
+        let p=Profile{getup_policy_enabled:true,
+            getup_repeated_recovery:Some(crate::GetUpRepeatedRecovery::CompletedCycleConfirmedFallV1),
+            getup_native_locomotion:Some(crate::getup::locomotion::Profile::NativeJointOwnerV1),..Profile::default()};
+        let mut r=Runtime::new(Mode::Protocol,0.0,p).unwrap();
+        let active=r.getup_checkpoint().unwrap();
+        assert!(r.verify_getup_checkpoint(&active).is_ok());
+        r.set_getup_native_mode("passive").unwrap();
+        assert!(r.verify_getup_checkpoint(&active).unwrap_err().contains("nativeOwner=false"));
+        let passive=r.getup_checkpoint().unwrap();
+        assert!(r.verify_getup_checkpoint(&passive).is_ok());
+        r.set_getup_native_mode("active").unwrap();
+        assert!(r.verify_getup_checkpoint(&active).unwrap_err().contains("nativeOwner=false"));
+        let ramp=r.getup_checkpoint().unwrap();
+        assert!(r.verify_getup_checkpoint(&ramp).is_ok());
+        assert_eq!(r.simulation.substeps_completed,0);
     }
 }

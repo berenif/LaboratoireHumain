@@ -6,6 +6,7 @@ pub fn capabilities() -> serde_json::Value {
     if cfg!(feature = "experimental-joint-velocity-cache") { features.push("experimental-joint-velocity-cache"); }
     if cfg!(feature = "experimental-simd8") { features.push("experimental-simd8"); }
     if cfg!(feature = "experimental-solver-step-observation") { features.push("experimental-solver-step-observation"); }
+    if cfg!(feature = "getup-native-locomotion-experiment") { features.push("getup-native-locomotion-experiment"); }
     if cfg!(feature = "getup-physical-roll-experiment") { features.push("getup-physical-roll-experiment"); }
     if cfg!(feature = "getup-policy-adaptation-experiment") { features.push("getup-policy-adaptation-experiment"); }
     if cfg!(feature = "getup-repeat-balance-acquire-experiment") { features.push("getup-repeat-balance-acquire-experiment"); }

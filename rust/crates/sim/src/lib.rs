@@ -131,6 +131,9 @@ pub struct Profile {
     /// Explicit gravity-only transfer experiment; never enables the legacy gait.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub getup_supported_transfer: Option<getup::transfer::Profile>,
+    /// Native 21-hinge owner experiment. Never enables the legacy StepController.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub getup_native_locomotion: Option<getup::locomotion::Profile>,
     pub additional_body_iterations: usize,
     pub allowed_linear_error_m: f32,
     pub prediction_distance_m: f32,
@@ -178,6 +181,7 @@ impl Default for Profile {
             root_rotation_normalization: None,
             getup_repeated_recovery: None,
             getup_supported_transfer: None,
+            getup_native_locomotion: None,
             additional_body_iterations: 5,
             allowed_linear_error_m: 0.001,
             prediction_distance_m: 0.002,
@@ -213,6 +217,11 @@ impl Profile {
         }
     }
     pub fn validate(&self) -> Result<(), String> {
+        if self.getup_native_locomotion.is_some()
+            && (!cfg!(feature = "getup-native-locomotion-experiment")
+                || !self.getup_policy_enabled || self.getup_repeated_recovery.is_none()
+                || self.getup_supported_transfer.is_some())
+        { return Err("Native locomotion requires its explicit V3 build/profile and excludes static transfer".into()); }
         if self.getup_supported_transfer.is_some()
             && (!cfg!(feature = "getup-supported-transfer-experiment")
                 || !self.getup_policy_enabled || self.getup_repeated_recovery.is_none())
@@ -394,6 +403,11 @@ pub struct Simulation {
     getup_controller: Option<getup::controller::Controller>,
     #[serde(default)]
     getup_fixture: Option<getup::fixtures::State>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    native_locomotion: Option<getup::locomotion::State>,
+    /// Actual user wrench receipt, never restored as a pending force.
+    #[serde(skip)]
+    native_grab_application: Option<getup::locomotion::GrabApplication>,
 }
 fn checkpoint_model() -> Model {
     Model::canonical().expect("pinned GetUp model")
@@ -635,6 +649,8 @@ impl Simulation {
             recovery: None,
             getup_controller: None,
             getup_fixture: None,
+            native_locomotion: None,
+            native_grab_application: None,
         };
         getup::assemble(&mut result, spawn_offset.y)?;
         if result.profile.root_rotation_normalization.is_some() {
@@ -643,6 +659,9 @@ impl Simulation {
         result.capture_rest_com();
         if result.profile.getup_policy_enabled {
             result.getup_controller = Some(getup::controller::Controller::new(&result.model));
+        }
+        if result.profile.getup_native_locomotion.is_some() {
+            result.native_locomotion = Some(getup::locomotion::State::new(result.generation));
         }
         if seed.is_some() { return Err("Legacy anatomical seed is not a GetUp initial state".into()); }
         result.configure_motors()?;
@@ -1004,6 +1023,7 @@ impl Simulation {
                 begin,
             };
             trace(self, event(self, profiling::Phase::Controller, true));
+            self.native_grab_application = None;
             if let Some(grab) = &self.grab {
                 let Some(body) = self.world.bodies.get(self.bodies[grab.segment]) else {
                     let failure = measurement::Failure::new(
@@ -1035,6 +1055,19 @@ impl Simulation {
                         &self.profile.grab_limits,
                     )
                 });
+                if let Ok(impulse) = result.as_ref() {
+                    if self.native_locomotion.is_some() {
+                        let grab = self.grab.as_ref().unwrap();
+                        let body = &self.world.bodies[self.bodies[grab.segment]];
+                        let anchor = body.position().transform_point(grab.local_anchor);
+                        let force = *impulse / self.profile.dt_s;
+                        self.native_grab_application = Some(getup::locomotion::GrabApplication {
+                            native_input:self.substeps_completed, press:grab.press, body:grab.segment,
+                            anchor_world:anchor.to_array(), impulse_ns:impulse.to_array(), force_n:force.to_array(),
+                            torque_about_body_com_nm:(anchor-body.center_of_mass()).cross(force).to_array(),
+                        });
+                    }
+                }
                 if let Err(error) = result {
                     let failure = measurement::Failure::new(
                         self.tick,

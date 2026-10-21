@@ -12,6 +12,7 @@ pub mod roll_inspection;
 pub mod reference;
 pub mod standing;
 pub mod transfer;
+pub mod locomotion;
 mod supported_standing;
 #[cfg(feature = "standing-dynamics-experiment")]
 pub use supported_standing::{dynamic_balance_diagnostic, dynamic_balance_fixture_invariants};
@@ -195,6 +196,7 @@ pub fn slow_controls(
 }
 
 pub(crate) fn configure(s: &mut Simulation) -> Result<(), String> {
+    locomotion::validate(s)?;
     let physical = physical_observation(s)?;
     let q: &[f32; 21] = physical[..21].try_into().unwrap();
     let dq: &[f32; 21] = physical[46..67].try_into().unwrap();
@@ -231,6 +233,8 @@ pub(crate) fn configure(s: &mut Simulation) -> Result<(), String> {
     }
     let controls = if s.getup_fixture.as_ref().is_some_and(|f|f.preparing) {
         Ok([0.0;21])
+    } else if locomotion::passive(s) {
+        Ok([0.0;21])
     } else if let Some(mut controller) = s.getup_controller.take() {
         let result = controller.command(s, &physical);
         s.getup_controller = Some(controller);
@@ -241,9 +245,18 @@ pub(crate) fn configure(s: &mut Simulation) -> Result<(), String> {
             .unwrap();
         supported_standing::controls(s, &reference, q, dq)
     };
+    let owner = if s.getup_fixture.as_ref().is_some_and(|f|f.preparing) {
+        locomotion::Owner::FixturePreparation
+    } else if locomotion::passive(s) { locomotion::Owner::Passive
+    } else if s.getup_controller.as_ref().is_some_and(|c|c.native_recovery_owner(s.motion,s.substeps_completed)) {
+        locomotion::Owner::Recovery
+    } else { locomotion::Owner::Balance };
+    let controls = controls.and_then(|c|locomotion::finish_command(s,owner,c));
     s.diagnostics.getup = Some(lh_contracts::GetUpObservation {
         controller: if s.getup_fixture.as_ref().is_some_and(|f|f.preparing) {
             "fixture-zero-control-preparation"
+        } else if locomotion::passive(s) {
+            "native-passive-zero-motors"
         } else if let Some(controller) = &s.getup_controller {
             controller.controller_label()
         } else if cfg!(feature = "standing-dynamics-experiment") {
@@ -264,7 +277,10 @@ pub(crate) fn configure(s: &mut Simulation) -> Result<(), String> {
         observation: physical.to_vec(),
         policy: s.getup_controller.as_ref().map(|c| c.status.clone()),
     });
-    apply_controls(s, &controls?)
+    let controls = controls?;
+    apply_controls(s, &controls)?;
+    locomotion::record_application(s,owner,controls);
+    Ok(())
 }
 
 #[cfg(feature = "getup-terminal-tail-observer-experiment")]
@@ -458,7 +474,6 @@ pub fn slow_observation(physical: &[f32; 67], now: &[f32; 25], ahead: &[f32; 25]
 
 /// Signed primitive-to-floor vertical clearance, independent of whether a
 /// unilateral contact currently carries impulse. This is observation only.
-#[cfg(feature = "getup-terminal-tail-observer-experiment")]
 pub(crate) fn foot_floor_clearance(s: &Simulation) -> Result<[f32; 2], String> {
     let floor_top = s.world.colliders[s.floor].compute_aabb().maxs.y;
     let mut clearance = [0.0; 2];

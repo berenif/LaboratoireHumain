@@ -160,6 +160,18 @@ pub struct Controller {
     supported_transfer: Option<super::transfer::State>,
 }
 impl Controller {
+    pub(crate) fn native_recovery_owner(&self, motion: Motion, native:u64) -> bool {
+        matches!(motion,Motion::Falling|Motion::Fallen|Motion::Recovering)
+            || (self.started_substep.is_some() && (self.terminal_balance.as_ref()
+                .is_none_or(|b|native.checked_sub(b.activated_native_substep).is_none_or(|n|n<20))
+                || !self.completed_recovery()))
+    }
+    /// Actual current readiness, never inferred from a phase string.
+    pub(crate) fn native_balance_ready(&self, native:u64)->bool {
+        self.completed_recovery() && self.stable_substeps>=800
+            && self.terminal_balance.as_ref().is_some_and(|b|
+                native.checked_sub(b.activated_native_substep).is_some_and(|n|n>=20))
+    }
     pub(crate) fn adaptation_valid(&self, native: u64) -> bool {
         self.adaptation.as_ref().is_none_or(|a| a.valid(native)
             && a.pending.as_ref().is_none_or(|_| self.adaptation_boundary(native))
@@ -1218,6 +1230,7 @@ fn fork(real: &Simulation) -> Result<Simulation, String> {
     // Transfer ownership belongs only to the real recovered controller, never
     // the controller-free WEAK forecast. Numerical policies remain identical.
     profile.getup_supported_transfer = None;
+    profile.getup_native_locomotion = None;
     let mut shadow = Simulation::new(0.0, profile, true)?;
     let w = &real.world;
     shadow.world = PhysicsWorld {
@@ -1245,6 +1258,44 @@ fn fork(real: &Simulation) -> Result<Simulation, String> {
     shadow.motion = real.motion;
     shadow.diagnostics = Diagnostics::default();
     Ok(shadow)
+}
+
+#[cfg(all(test,feature="getup-native-locomotion-experiment"))]
+mod native_owner_tests {
+    use super::*;
+    #[test]
+    fn native_contract_earned_state_requires_800_and_completed_blend_not_phase_text() {
+        let s=Simulation::new(0.0,Profile::default(),true).unwrap();
+        let mut c=Controller::new(&s.model);
+        c.status.phase="experimental-joint-balance-holding".into();
+        assert!(!c.native_balance_ready(100));
+        c.started_substep=Some(0);c.status.prototype_standing_passed=true;c.stable_substeps=800;
+        assert!(!c.native_balance_ready(100));
+        assert!(c.native_recovery_owner(Motion::Upright,100));
+        c.terminal_balance=Some(TerminalBalance{activated_native_substep:80,
+            reference:super::super::supported_standing::StandingReference{com:s.center_of_mass(),forward:Vector::Z,lateral:Vector::X},
+            last_slow_controls:[0.;21],first_balance_controls:None,first_actual_control_jump_max:None,
+            first_actual_torque_jump_max_nm:None,first_saturated_controls:None,
+            first_compensation_active:None,first_control_transition:None,bumpless:None});
+        assert!(!c.native_balance_ready(99));assert!(c.native_balance_ready(100));
+        assert!(c.native_recovery_owner(Motion::Upright,99));
+        assert!(!c.native_recovery_owner(Motion::Upright,100));
+        c.stable_substeps=799;assert!(!c.native_balance_ready(100));
+        assert!(c.native_recovery_owner(Motion::Falling,100));
+        assert_eq!(s.substeps_completed,0); // Synthetic counters, zero world integrations.
+    }
+    #[test]
+    fn native_contract_forecast_fork_never_inherits_real_motor_owner() {
+        let p=Profile{getup_policy_enabled:true,
+            getup_repeated_recovery:Some(GetUpRepeatedRecovery::CompletedCycleConfirmedFallV1),
+            getup_native_locomotion:Some(super::super::locomotion::Profile::NativeJointOwnerV1),..Profile::default()};
+        let s=Simulation::new_protocol(0.0,p,true).unwrap();let before=bincode::serialize(&s.world).unwrap();
+        let shadow=fork(&s).unwrap();assert!(shadow.native_locomotion.is_none());
+        assert!(shadow.profile.getup_native_locomotion.is_none());
+        assert!(shadow.getup_controller.is_none());assert_eq!(before,bincode::serialize(&s.world).unwrap());
+        assert_eq!(super::super::joint_state(&s).unwrap(),super::super::joint_state(&shadow).unwrap());
+        assert_eq!(s.substeps_completed,0);assert_eq!(shadow.substeps_completed,0);
+    }
 }
 
 #[cfg(test)]
@@ -1422,5 +1473,28 @@ mod transfer_owner_tests {
         let mut state=super::super::transfer::synthetic_state(&s);state.phase=super::super::transfer::Phase::Failed;state.failure=Some("test transfer refusal".into());
         c.supported_transfer=Some(state);assert_eq!(c.command(&s,&[0.;67]).unwrap_err(),"test transfer refusal");
         assert_eq!(s.substeps_completed,0);assert!(c.student_decisions.is_empty());
+    }
+}
+
+#[cfg(all(test,feature="getup-native-locomotion-experiment"))]
+mod native_owner_handoff_tests {
+    use super::*;
+    #[test]
+    fn native_contract_completed_counter_cannot_interrupt_unfinished_handoff() {
+        let p=Profile{getup_policy_enabled:true,
+            getup_repeated_recovery:Some(GetUpRepeatedRecovery::CompletedCycleConfirmedFallV1),
+            getup_native_locomotion:Some(super::super::locomotion::Profile::NativeJointOwnerV1),..Profile::default()};
+        let mut s=Simulation::new(0.0,p,true).unwrap();
+        let mut c=s.getup_controller.take().unwrap();
+        c.started_substep=Some(0);c.status.prototype_standing_passed=true;c.stable_substeps=800;
+        s.getup_controller=Some(c);
+        assert!(super::super::locomotion::set_mode(&mut s,super::super::locomotion::Mode::Passive).is_err());
+        s.getup_controller.as_mut().unwrap().terminal_balance=Some(TerminalBalance{activated_native_substep:0,
+            reference:super::super::supported_standing::StandingReference{com:s.center_of_mass(),forward:Vector::Z,lateral:Vector::X},
+            last_slow_controls:[0.;21],first_balance_controls:None,first_actual_control_jump_max:None,
+            first_actual_torque_jump_max_nm:None,first_saturated_controls:None,
+            first_compensation_active:None,first_control_transition:None,bumpless:None});
+        assert!(super::super::locomotion::set_mode(&mut s,super::super::locomotion::Mode::Passive).is_err());
+        assert_eq!(s.substeps_completed,0);
     }
 }

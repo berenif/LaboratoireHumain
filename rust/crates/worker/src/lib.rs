@@ -262,6 +262,13 @@ mod browser {
         }
         #[cfg(feature="getup-supported-transfer-experiment")]
         pub fn getup_transfer_report(&self)->String {self.runtime.getup_transfer_report()}
+        pub fn getup_native_observation(&self)->Result<String,JsValue> {
+            self.runtime.getup_native_observation().map_err(error)
+        }
+        #[cfg(feature="getup-native-locomotion-experiment")]
+        pub fn set_getup_native_mode(&mut self,mode:&str)->Result<(),JsValue> {
+            self.runtime.set_getup_native_mode(mode).map_err(error)
+        }
         pub fn getup_report(&self) -> Result<String, JsValue> { self.runtime.getup_report().map_err(error) }
         #[wasm_bindgen(constructor)]
         pub fn new(
