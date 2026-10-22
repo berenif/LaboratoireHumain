@@ -25,10 +25,13 @@ pub(crate) struct Reference {
     target: [f32;21],
     elapsed: f32,
     braking: bool,
+    #[serde(default="reference_duration")]
+    duration: f32,
 }
+fn reference_duration()->f32 {DURATION}
 impl Reference {
     fn new(q:[f32;21],dq:[f32;21],target:[f32;21])->Self {
-        Self {q,dq,start:q,velocity:dq,target,elapsed:0.,braking:false}
+        Self {q,dq,start:q,velocity:dq,target,elapsed:0.,braking:false,duration:DURATION}
     }
     /// Quintic Hermite in physical seconds, not one entire displacement per
     /// control evaluation. The measured state is used by feedback, not as a
@@ -41,20 +44,20 @@ impl Reference {
                 let (q,v,a)=brake_reference(self.q[i],self.dq[i],bounds[i],dt)?;
                 next.q[i]=q;next.dq[i]=v;acceleration[i]=a;
             }
-            next.elapsed=(self.elapsed+dt).min(DURATION);
+            next.elapsed=(self.elapsed+dt).min(self.duration);
             return Ok((next,acceleration));
         }
-        let t=(self.elapsed+dt).min(DURATION);let x=t/DURATION;
+        let t=(self.elapsed+dt).min(self.duration);let x=t/self.duration;
         let h=10.*x.powi(3)-15.*x.powi(4)+6.*x.powi(5);
-        let dh=(30.*x.powi(2)-60.*x.powi(3)+30.*x.powi(4))/DURATION;
-        let ddh=(60.*x-180.*x.powi(2)+120.*x.powi(3))/DURATION.powi(2);
+        let dh=(30.*x.powi(2)-60.*x.powi(3)+30.*x.powi(4))/self.duration;
+        let ddh=(60.*x-180.*x.powi(2)+120.*x.powi(3))/self.duration.powi(2);
         let v=x-6.*x.powi(3)+8.*x.powi(4)-3.*x.powi(5);
         let dv=1.-18.*x.powi(2)+32.*x.powi(3)-15.*x.powi(4);
-        let ddv=(-36.*x+96.*x.powi(2)-60.*x.powi(3))/DURATION;
+        let ddv=(-36.*x+96.*x.powi(2)-60.*x.powi(3))/self.duration;
         let mut next=self.clone();next.elapsed=t;let mut ddq=[0.;21];
         for i in 0..21 {
             let delta=self.target[i]-self.start[i];
-            next.q[i]=self.start[i]+delta*h+self.velocity[i]*DURATION*v;
+            next.q[i]=self.start[i]+delta*h+self.velocity[i]*self.duration*v;
             next.dq[i]=delta*dh+self.velocity[i]*dv;
             ddq[i]=delta*ddh+self.velocity[i]*ddv;
             if !next.q[i].is_finite() || !next.dq[i].is_finite() || !ddq[i].is_finite()
@@ -87,6 +90,8 @@ pub(crate) struct State {
     separated:bool,
     separation_samples:u32,
     landed_samples:u32,
+    #[serde(default)]
+    last_reactions:Vec<Reaction>,
 }
 impl State {
     pub fn active(&self)->bool { self.phase!=Phase::Cancelled }
@@ -95,7 +100,9 @@ impl State {
             && self.last_native<=native && self.separation_samples<=3 && self.landed_samples<=20
             && self.com.is_finite() && self.forward.is_finite()
             && self.foot_goal.is_finite() && self.reference.elapsed.is_finite()
-            && (0.0..=DURATION).contains(&self.reference.elapsed)
+            && self.reference.duration.is_finite() && self.reference.duration>0. && self.reference.duration<=DURATION
+            && (0.0..=self.reference.duration).contains(&self.reference.elapsed)
+            && self.last_reactions.iter().all(|(_,p,f)|p.is_finite() && f.is_finite())
             && self.reference_acceleration.iter().all(|x|x.is_finite() && x.abs()<=REFERENCE_ACCELERATION)
             && self.reference.q.iter().chain(&self.reference.dq).chain(&self.reference.start)
                 .chain(&self.reference.velocity).chain(&self.reference.target).all(|x|x.is_finite())
@@ -121,7 +128,7 @@ impl State {
         let target=posture(s,side,com,foot_goal)?;
         Ok(Self {format:FORMAT.into(),phase:Phase::Retraction,side,last_native:s.substeps_completed,
             started_native:s.substeps_completed,reference:Reference::new(q,dq,target),reference_acceleration:[0.;21],com,forward,
-            foot_goal,separated:false,separation_samples:0,landed_samples:0})
+            foot_goal,separated:false,separation_samples:0,landed_samples:0,last_reactions:vec![]})
     }
     pub fn command(&mut self,s:&Simulation)->Result<[f32;21],String> {
         if s.grab.is_some() {return Err("Step pilot external grab dynamics are not qualified".into());}
@@ -135,7 +142,7 @@ impl State {
         if elapsed>0 && !self.reference.braking && self.phase==Phase::Retraction && self.separated {
             self.phase=Phase::Swing;self.foot_goal+=self.forward*0.025+Vector::Y*0.015;
             self.reference=Reference::new(self.reference.q,self.reference.dq,posture(s,self.side,self.com,self.foot_goal)?);
-        } else if elapsed>0 && !self.reference.braking && self.reference.elapsed>=DURATION {
+        } else if elapsed>0 && !self.reference.braking && self.reference.elapsed>=self.reference.duration {
             match self.phase {
                 Phase::Retraction=>return Err("Step retraction ended without whole-capsule separation and unloading".into()),
                 Phase::Swing=>{
@@ -151,12 +158,20 @@ impl State {
                 _=>{},
             }
         }
-        let (candidate,ddq)=if elapsed==0 {(self.reference.clone(),self.reference_acceleration)}
-            else {self.reference.proposal(s.profile.dt_s,&joint_bounds(s))?};
-        // Transaction: measured q/dq never overwritten; candidate is committed
-        // only after bounds AND both dynamics evaluations pass.
-        let controls=command_for_reference(s,&candidate,&ddq,self.side,self.separated)?;
-        self.reference=candidate;self.reference_acceleration=ddq;self.last_native=s.substeps_completed;
+        let bounds=joint_bounds(s);
+        let nominal=if elapsed==0 {(self.reference.clone(),self.reference_acceleration)}
+            else {self.reference.proposal(s.profile.dt_s,&bounds)?};
+        // Alpha zero advances time and brakes existing reference velocity. It
+        // never freezes q while discarding dq or resets the measured state.
+        let baseline=if elapsed==0 {nominal.clone()} else {
+            let mut braking=self.reference.clone();braking.braking=true;
+            braking.proposal(s.profile.dt_s,&bounds)?
+        };
+        let (controls,candidate,ddq,reactions)=command_for_family(s,&baseline,&nominal,self.side,self.separated,&self.last_reactions)?;
+        // This State itself is a clone owned by locomotion::step_command.
+        // Reference, acceleration and intended allocation commit together.
+        self.reference=candidate;self.reference_acceleration=ddq;
+        self.last_reactions=reactions;self.last_native=s.substeps_completed;
         Ok(controls)
     }
 }
@@ -400,89 +415,150 @@ fn force_in_cone(force:Vector,normal:Vector)->bool {
     f.iter().all(|x|x.is_finite()) && load>=0. && (f-n*load).norm()<=load
 }
 
-/// Bounded Dykstra projections onto the affine wrench balance and the product
-/// of Coulomb cones (mu=1). No change to wrench, contacts, or physical friction.
-/// Nonconvergence is a solver refusal, never proof of global infeasibility.
+/// Common allocator: wrench equality, individual Coulomb cones, all motor
+/// bands and one progression interval. The 256 bound counts whole projection
+/// cycles. Anderson accelerates the same fixed point; every proposed result
+/// still passes the original physical constraints after f32 conversion.
 fn allocate_contact_wrench(a:&DMatrix<f32>,desired:&DVector<f32>,normals:&[Vector],record:&mut serde_json::Value)
     ->Result<DVector<f32>,String> {
-    if a.nrows()!=6 || a.ncols()!=3*normals.len() || desired.len()!=6 || normals.is_empty()
+    allocate_motor_wrench(a,desired,&DVector::zeros(6),normals,&DMatrix::zeros(0,a.ncols()),
+        &DVector::zeros(0),&DVector::zeros(0),&DVector::zeros(0),(1.,1.),None,record).map(|x|x.0)
+}
+fn allocate_motor_wrench(a:&DMatrix<f32>,w0:&DVector<f32>,dw:&DVector<f32>,normals:&[Vector],
+    contact:&DMatrix<f32>,t0:&DVector<f32>,dt:&DVector<f32>,caps:&DVector<f32>,
+    interval:(f32,f32),warm:Option<&DVector<f32>>,record:&mut serde_json::Value)
+    ->Result<(DVector<f32>,f32),String> {
+    let nf=a.ncols();let nm=caps.len();let n=nf+1;let scale=400.;
+    if a.nrows()!=6 || nf!=normals.len()*3 || normals.is_empty() || w0.len()!=6 || dw.len()!=6
+        || contact.shape()!=(nm,nf) || t0.len()!=nm || dt.len()!=nm
+        || interval.0<0. || interval.1>1. || interval.0>interval.1
         || normals.iter().any(|n|!n.is_finite() || n.length()<0.5)
-        || a.iter().chain(desired.iter()).any(|x|!x.is_finite()) {
-        return Err("Invalid contact allocation inputs".into());
+        || a.iter().chain(w0.iter()).chain(dw.iter()).chain(contact.iter()).chain(t0.iter()).chain(dt.iter()).chain(caps.iter()).any(|x|!x.is_finite()) {
+        return Err("Invalid joint contact/motor allocation inputs".into());
     }
-    record["allocationMethod"]=serde_json::json!("bounded-dykstra-affine-coulomb-mu1");
-    record["frictionCoefficient"]=serde_json::json!(1.);
-    record["normals"]=serde_json::json!(normals.iter().map(|n|n.to_array()).collect::<Vec<_>>());
-    let initial=allocate_wrench_recorded(a,desired,record)?;
+    let ns:Vec<_>=normals.iter().map(|v|Vector3::new(v.x as f64,v.y as f64,v.z as f64).normalize()).collect();
+    let mut eq=DMatrix::<f64>::zeros(6,n);eq.columns_mut(0,nf).copy_from(&a.map(|v|v as f64));
+    eq.set_column(nf,&dw.map(|v|-(v as f64)/scale));let target=w0.map(|v|v as f64);
+    let svd=eq.clone().svd(true,true);let cutoff=svd.singular_values.max()*1e-10;
+    let inverse=svd.solve(&DMatrix::identity(6,6),cutoff).map_err(|e|format!("Joint affine projector: {e}"))?;
+    let mut bands=DMatrix::<f64>::zeros(nm,n);bands.columns_mut(0,nf).copy_from(&contact.map(|v|v as f64));
+    bands.set_column(nf,&dt.map(|v|v as f64/scale));
+    let initial=allocate_wrench_recorded(a,&(w0+dw*interval.1),record)?;
+    let mut x=DVector::zeros(n);x.rows_mut(0,nf).copy_from(&warm.filter(|w|w.len()==nf && w.iter().all(|v|v.is_finite())).unwrap_or(&initial).map(|v|v as f64));
+    x[nf]=scale*interval.1 as f64;
+    record["allocationMethod"]=serde_json::json!("bounded-dykstra-anderson-wrench-cones-motors-progression");
+    record["frictionCoefficient"]=serde_json::json!(1.);record["normals"]=serde_json::json!(normals.iter().map(|n|n.to_array()).collect::<Vec<_>>());
     record["unconstrainedForcesN"]=serde_json::json!(initial.as_slice());
-    let matrix=a.map(|x|x as f64);let target=desired.map(|x|x as f64);
-    let initial_residual=&matrix*initial.map(|x|x as f64)-&target;
-    if initial_residual.rows(0,3).norm()<0.0001 && initial_residual.rows(3,3).norm()<0.0001
-        && (0..normals.len()).all(|k|force_in_cone(Vector::new(initial[3*k],initial[3*k+1],initial[3*k+2]),normals[k])) {
-        record["coneIterations"]=serde_json::json!(0);return Ok(initial);
-    }
-    let svd=matrix.clone().svd(true,true);let cutoff=svd.singular_values.max()*1e-10;
-    let inverse=svd.solve(&DMatrix::identity(6,6),cutoff).map_err(|e|format!("Contact affine projector: {e}"))?;
-    let normals:Vec<_>=normals.iter().map(|n|Vector3::new(n.x as f64,n.y as f64,n.z as f64).normalize()).collect();
-    let mut x=DVector::zeros(a.ncols());let mut affine_memory=x.clone();let mut cone_memory=x.clone();
-    for iteration in 1..=256 {
-        let shifted=&x+&affine_memory;
-        let affine=&shifted+&inverse*(&target-&matrix*&shifted);
-        affine_memory=shifted-&affine;
-        let shifted=affine+&cone_memory;x=shifted.clone();
-        for (k,n) in normals.iter().enumerate() {
-            let f=Vector3::new(x[3*k],x[3*k+1],x[3*k+2]);let load=f.dot(n);
-            let tangent=f-n*load;let t=tangent.norm();
-            let projected=if t<=load {f} else if t<=-load {Vector3::zeros()}
-                else {(n+tangent/t)*((load+t)*0.5)};
-            for j in 0..3 {x[3*k+j]=projected[j];}
-        }
-        cone_memory=shifted-&x;
-        // Round only an already cone-projected solution. A tiny inward normal
-        // nudge protects exact cone admission from f64 -> f32 rounding.
-        let mut allocated=x.map(|v|v as f32);
-        for (k,n) in normals.iter().enumerate() {
-            let f=Vector3::new(allocated[3*k] as f64,allocated[3*k+1] as f64,allocated[3*k+2] as f64);
-            let load=f.dot(n);
-            if load<0. || (f-n*load).norm()>load {
-                let rounded=f+n*(4.*f32::EPSILON as f64*(1.+f.norm()));
-                for j in 0..3 {allocated[3*k+j]=rounded[j] as f32;}
+    record["wrenchBaseline"]=serde_json::json!(w0.as_slice());record["wrenchDelta"]=serde_json::json!(dw.as_slice());
+    record["motorContactColumnMajor"]=serde_json::json!(contact.as_slice());record["motorBaselineNm"]=serde_json::json!(t0.as_slice());
+    record["motorDeltaNm"]=serde_json::json!(dt.as_slice());record["motorCapsNm"]=serde_json::json!(caps.as_slice());
+    record["alphaInterval"]=serde_json::json!([interval.0,interval.1]);record["warmStart"]=serde_json::json!(warm.is_some());
+    let sets=nm+3;let mut state=DVector::zeros(n*(sets+1));state.rows_mut(0,n).copy_from(&x);
+    let mut history:Vec<(DVector<f64>,DVector<f64>)>=vec![];
+    for iteration in 0..=256 {
+        if iteration>0 {
+            let before=state.clone();let mut out=state.clone();x=state.rows(0,n).into_owned();
+            for set in 0..sets {
+                let offset=n*(set+1);let shifted=&x+state.rows(offset,n);
+                let mut next=shifted.clone();
+                if set==0 {next+=&inverse*(&target-&eq*&shifted);}
+                else if set==1 {for (k,no) in ns.iter().enumerate() {
+                    let f=Vector3::new(shifted[3*k],shifted[3*k+1],shifted[3*k+2]);let load=f.dot(no);let tangent=f-no*load;let t=tangent.norm();
+                    let projected=if t<=load {f} else if t<=-load {Vector3::zeros()} else {(no+tangent/t)*((load+t)*0.5)};
+                    for j in 0..3 {next[3*k+j]=projected[j];}
+                }} else if set==sets-1 {next[nf]=next[nf].clamp(scale*interval.0 as f64,scale*interval.1 as f64);}
+                else {
+                    let j=set-2;let row=bands.row(j).transpose();let norm=row.norm_squared();
+                    // Inward numerical reserve only, derived from f32 roundoff.
+                    // The final RNEA still checks the unchanged physical cap.
+                    let cap=(caps[j] as f64-16.*f32::EPSILON as f64*(1.+caps[j].abs() as f64)).max(0.);
+                    let value=t0[j] as f64+row.dot(&shifted);
+                    if norm>1e-24 {next+=row*((value.clamp(-cap,cap)-value)/norm);}
+                }
+                out.rows_mut(offset,n).copy_from(&(&shifted-&next));x=next;
+            }
+            out.rows_mut(0,n).copy_from(&x);let residual=&out-&before;
+            history.push((out.clone(),residual.clone()));if history.len()>9 {history.remove(0);}
+            state=out.clone();
+            if history.len()>1 {
+                let mut dr=DMatrix::zeros(state.len(),history.len()-1);let mut dout=dr.clone();
+                for (j,(o,r)) in history.iter().take(history.len()-1).enumerate() {dr.set_column(j,&(r-&residual));dout.set_column(j,&(o-&out));}
+                let svd=dr.svd(true,true);let tol=(svd.singular_values.max()*1e-10).max(1e-12);
+                if let Ok(c)=svd.solve(&(-residual),tol) {
+                    let accelerated=&out+dout*c;
+                    if accelerated.iter().all(|v|v.is_finite()) {state=accelerated;}
+                }
             }
         }
-        let residual=&matrix*allocated.map(|v|v as f64)-&target;
-        let cones_ok=normals.iter().enumerate().all(|(k,n)| {
-            let f=Vector3::new(allocated[3*k] as f64,allocated[3*k+1] as f64,allocated[3*k+2] as f64);
-            let load=f.dot(n);load>=0. && (f-n*load).norm()<=load
-        });
-        record["coneIterations"]=serde_json::json!(iteration);
-        record["allocatedForcesN"]=serde_json::json!(allocated.as_slice());
-        record["residualN_Nm"]=serde_json::json!(residual.as_slice());
-        if cones_ok && residual.rows(0,3).norm()<0.0001 && residual.rows(3,3).norm()<0.0001 {
-            return Ok(allocated);
+        let alpha=(x[nf]/scale) as f32;
+        let mut force=x.rows(0,nf).map(|v|v as f32).into_owned();
+        for (k,no) in ns.iter().enumerate() {
+            let f=Vector3::new(force[3*k] as f64,force[3*k+1] as f64,force[3*k+2] as f64);let load=f.dot(no);let deficit=(f-no*load).norm()-load;
+            if deficit>0. || load<0. {
+                let rounded=f+no*(deficit.max(-load)+f32::EPSILON as f64*(1.+load.abs()));
+                for j in 0..3 {force[3*k+j]=rounded[j] as f32;}
+            }
         }
+        let wanted=w0+dw*alpha;let residual=a.map(|v|v as f64)*force.map(|v|v as f64)-wanted.map(|v|v as f64);
+        let torque=t0+dt*alpha+contact*&force;
+        record["coneIterations"]=serde_json::json!(iteration);record["alpha"]=serde_json::json!(alpha);
+        record["allocatedForcesN"]=serde_json::json!(force.as_slice());record["desiredWrenchN_Nm"]=serde_json::json!(wanted.as_slice());
+        record["residualN_Nm"]=serde_json::json!(residual.as_slice());record["allocatedMotorTorqueNm"]=serde_json::json!(torque.as_slice());
+        if alpha>=interval.0 && alpha<=interval.1 && force.iter().all(|v|v.is_finite())
+            && residual.rows(0,3).norm()<0.0001 && residual.rows(3,3).norm()<0.0001
+            && (0..normals.len()).all(|k|force_in_cone(Vector::new(force[3*k],force[3*k+1],force[3*k+2]),normals[k]))
+            && torque.iter().zip(caps.iter()).all(|(t,c)|t.is_finite() && t.abs()<=*c) {return Ok((force,alpha));}
     }
-    Err("Step constrained contact allocation did not converge within 256 projections; not global infeasibility".into())
+    Err("Step joint allocation did not converge within 256 projections in the current affine region; not global infeasibility".into())
 }
 
-fn command_for_reference(s:&Simulation,reference:&Reference,ddq:&[f32;21],side:usize,exclusive:bool)->Result<[f32;21],String> {
-    let mut record=serde_json::json!({"native":s.substeps_completed,"proposedReference":reference,
-        "referenceAcceleration":ddq,"side":side,"exclusive":exclusive,"units":"world N / Nm about torso origin"});
-    let result=command_for_reference_recorded(s,reference,ddq,side,exclusive,&mut record);
+/// Exact affine region of clamp(PD(alpha), -2, 2) containing alpha=1.
+/// At a breakpoint choose the regime approached from below. No search across
+/// other regions: failure here never claims that the alpha=0 brake is infeasible.
+fn acceleration_region(raw0:&[f32;21],raw1:&[f32;21])->([f32;21],[f32;21],f32) {
+    let mut a0=[0.;21];let mut da=[0.;21];let mut low=0f32;
+    for i in 0..21 {
+        let v=raw1[i];let d=v-raw0[i];
+        let saturated=if v>REFERENCE_ACCELERATION || (v==REFERENCE_ACCELERATION && d<0.) {Some(REFERENCE_ACCELERATION)}
+            else if v< -REFERENCE_ACCELERATION || (v== -REFERENCE_ACCELERATION && d>0.) {Some(-REFERENCE_ACCELERATION)} else {None};
+        if let Some(bound)=saturated {a0[i]=bound;} else {a0[i]=raw0[i];da[i]=d;}
+        if d!=0. {for bound in [-REFERENCE_ACCELERATION,REFERENCE_ACCELERATION] {
+            let crossing=(bound-raw0[i])/d;if crossing>0. && crossing<1. {low=low.max(crossing);}
+        }}
+    }(a0,da,low)
+}
+fn blend_reference(baseline:&(Reference,[f32;21]),nominal:&(Reference,[f32;21]),alpha:f32,dt:f32)->Result<(Reference,[f32;21]),String> {
+    if alpha==1. {return Ok(nominal.clone());}
+    if alpha==0. {return Ok(baseline.clone());}
+    let mut r=nominal.0.clone();let a=std::array::from_fn(|i|baseline.1[i]+alpha*(nominal.1[i]-baseline.1[i]));
+    for i in 0..21 {r.q[i]=baseline.0.q[i]+alpha*(nominal.0.q[i]-baseline.0.q[i]);r.dq[i]=baseline.0.dq[i]+alpha*(nominal.0.dq[i]-baseline.0.dq[i]);}
+    if !r.braking {
+        // Rebase the remaining quintic from the accepted continuous q/dq.
+        // Preserve its physical deadline; never jump back to the old origin.
+        let remaining=r.duration-r.elapsed;
+        if remaining<=dt {return Err("Step cannot rebase a partial reference within its remaining duration".into());}
+        r.duration=remaining;r.elapsed=0.;r.start=r.q;r.velocity=r.dq;
+    }
+    Ok((r,a))
+}
+
+type CommandProposal=([f32;21],Reference,[f32;21],Vec<Reaction>);
+fn command_for_family(s:&Simulation,baseline:&(Reference,[f32;21]),nominal:&(Reference,[f32;21]),side:usize,exclusive:bool,warm:&[Reaction])->Result<CommandProposal,String> {
+    let mut record=serde_json::json!({"native":s.substeps_completed,"nominalReference":nominal.0,
+        "baselineReference":baseline.0,"side":side,"exclusive":exclusive,"units":"world N / Nm about torso origin"});
+    let result=command_for_family_recorded(s,baseline,nominal,side,exclusive,warm,&mut record);
     record["error"]=serde_json::json!(result.as_ref().err());
-    record["controls"]=serde_json::json!(result.as_ref().ok());
+    record["controls"]=serde_json::json!(result.as_ref().ok().map(|x|x.0));
     #[cfg(feature="numeric-integration-budget")]
     crate::integration_budget::record_step_command(record);
     result
 }
-fn command_for_reference_recorded(s:&Simulation,reference:&Reference,ddq:&[f32;21],side:usize,exclusive:bool,record:&mut serde_json::Value)->Result<[f32;21],String> {
-    let (q,dq)=super::joint_state(s)?;let geometry=geometry(s)?;
-    let retained=feet(s)?[1-side];
-    let desired_acceleration=std::array::from_fn(|i|
-        (ddq[i]+16.*(reference.q[i]-q[i])+8.*(reference.dq[i]-dq[i]))
-            .clamp(-REFERENCE_ACCELERATION,REFERENCE_ACCELERATION));
-    record["q"]=serde_json::json!(q);record["dq"]=serde_json::json!(dq);
-    record["desiredAcceleration"]=serde_json::json!(desired_acceleration);
-    record["geometry"]=serde_json::json!(geometry);
+fn command_for_family_recorded(s:&Simulation,baseline:&(Reference,[f32;21]),nominal:&(Reference,[f32;21]),side:usize,exclusive:bool,warm:&[Reaction],record:&mut serde_json::Value)->Result<CommandProposal,String> {
+    let (q,dq)=super::joint_state(s)?;let geometry=geometry(s)?;let retained=feet(s)?[1-side];
+    let raw=|r:&(Reference,[f32;21])|std::array::from_fn(|i|r.1[i]+16.*(r.0.q[i]-q[i])+8.*(r.0.dq[i]-dq[i]));
+    let (a0,da,alpha_min)=acceleration_region(&raw(baseline),&raw(nominal));
+    let desired_acceleration=std::array::from_fn(|i|a0[i]+da[i]);
+    record["q"]=serde_json::json!(q);record["dq"]=serde_json::json!(dq);record["geometry"]=serde_json::json!(geometry);
     let ddq=&desired_acceleration;
     let (_,force,moment)=rnea(s,&q,&dq,ddq,&[],retained)?;
     let mut points=vec![];let mut candidates=vec![];let mut normals=vec![];
@@ -518,9 +594,39 @@ fn command_for_reference_recorded(s:&Simulation,reference:&Reference,ddq:&[f32;2
         let e=[Vector::X,Vector::Y,Vector::Z][j];let m=(*point-root).cross(e);a[(j,3*k+j)]=1.;
         for r in 0..3 {a[(r+3,3*k+j)]=m[r];}
     }}
-    let desired=DVector::from_column_slice(&[force.x,force.y,force.z,moment.x,moment.y,moment.z]);
+    let vector6=|f:Vector,m:Vector|DVector::from_column_slice(&[f.x,f.y,f.z,m.x,m.y,m.z]);
+    let (t0,f0,m0)=rnea(s,&q,&dq,&a0,&[],retained)?;
+    let (t1,_,_)=rnea(s,&q,&dq,ddq,&[],retained)?;
+    let w0=vector6(f0,m0);let dw=vector6(force,moment)-&w0;
+    let t0=DVector::from_column_slice(&t0);let dt=DVector::from_column_slice(&t1)-&t0;
+    let mut contact=DMatrix::zeros(21,3*points.len());let mut caps=DVector::zeros(21);
+    for (k,(body,point)) in points.iter().enumerate() {
+        let jac=jacobian(s,*body,*point)?;
+        for part in &s.model.segments {if let Some(h)=part.reference.as_ref().and_then(|r|r.hinge.as_ref()) {
+            for axis in 0..3 {contact[(h.actuator_index,3*k+axis)]=-jac[(axis,6+h.qpos_index)];}
+            caps[h.actuator_index]=part.joint_profile.as_ref().unwrap().axes[0].max_motor_torque_nm.min(h.gear.abs());
+        }}
+    }
+    // Reuse previous intended forces only for matching live geometric points.
+    // These are solver intentions, never recycled measured contact impulses.
+    let mut seed=DVector::zeros(3*points.len());let mut matched=0;
+    for (k,(body,point)) in points.iter().enumerate() {
+        if let Some((_,_,f))=warm.iter().filter(|(b,p,_)|b==body && (*p-*point).length()<0.01)
+            .min_by(|a,b|(a.1-*point).length_squared().total_cmp(&(b.1-*point).length_squared())) {
+            for j in 0..3 {seed[3*k+j]=f[j];}matched+=1;
+        }
+    }
     record["rootOrigin"]=serde_json::json!(root.to_array());
-    let allocated=allocate_contact_wrench(&a,&desired,&normals,record)?;
+    let (allocated,alpha)=allocate_motor_wrench(&a,&w0,&dw,&normals,&contact,&t0,&dt,&caps,(alpha_min,1.),
+        if matched>0 {Some(&seed)} else {None},record)?;
+    let (reference,reference_ddq)=blend_reference(baseline,nominal,alpha,s.profile.dt_s)?;
+    let full_acceleration:[f32;21]=std::array::from_fn(|i|(reference_ddq[i]+16.*(reference.q[i]-q[i])+8.*(reference.dq[i]-dq[i])).clamp(-REFERENCE_ACCELERATION,REFERENCE_ACCELERATION));
+    if (0..21).any(|i|(full_acceleration[i]-(a0[i]+alpha*da[i])).abs()>0.00001) {
+        return Err("Step candidate left its certified affine PD region".into());
+    }
+    record["proposedReference"]=serde_json::json!(reference);record["referenceAcceleration"]=serde_json::json!(reference_ddq);
+    record["desiredAcceleration"]=serde_json::json!(full_acceleration);
+    let ddq=&full_acceleration;
     let mut support=vec![];
     for (k,(body,point)) in points.into_iter().enumerate() {
         let f=Vector::new(allocated[3*k],allocated[3*k+1],allocated[3*k+2]);
@@ -549,12 +655,49 @@ fn command_for_reference_recorded(s:&Simulation,reference:&Reference,ddq:&[f32;2
         let cap=(axis.max_motor_torque_nm/h.gear.abs()).min(1.);
         if !raw.is_finite() || raw.abs()>cap {return Err(format!("Step proposed-reference torque cap at hinge {i}"));}
         controls[j]=raw;
-    }}Ok(controls)
+    }}Ok((controls,reference,reference_ddq,support))
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[test] fn native_step_pure_joint_allocator_progression_and_motor_limit() {
+        let mut a=DMatrix::zeros(6,3);a[(1,1)]=1.;
+        let mut w0=DVector::zeros(6);w0[1]=80.;let mut dw=DVector::zeros(6);dw[1]=20.;
+        let mut motor=DMatrix::zeros(1,3);motor[(0,1)]=1.;let mut record=serde_json::json!({});
+        let (f,alpha)=allocate_motor_wrench(&a,&w0,&dw,&[Vector::Y],&motor,&DVector::zeros(1),
+            &DVector::from_element(1,100.),&DVector::from_element(1,100.),(0.,1.),None,&mut record).unwrap();
+        assert!(alpha>0.1 && alpha<0.17,"{record}");
+        assert!((f[1]-(80.+20.*alpha)).abs()<0.0001);assert!(f[1]+100.*alpha<=100.);
+        assert!(force_in_cone(Vector::new(f[0],f[1],f[2]),Vector::Y));
+    }
+    #[test] fn native_step_pure_joint_alpha_brakes_and_rebases_without_velocity_reset() {
+        let r=Reference::new([0.;21],[0.02;21],[0.005;21]);let nominal=r.proposal(0.00125,&[(-1.,1.);21]).unwrap();
+        let mut brake=r.clone();brake.braking=true;let baseline=brake.proposal(0.00125,&[(-1.,1.);21]).unwrap();
+        let (zero,_)=blend_reference(&baseline,&nominal,0.,0.00125).unwrap();assert!(zero.q[0]>0. && zero.dq[0]>0. && zero.dq[0]<r.dq[0]);
+        let (half,_)=blend_reference(&baseline,&nominal,0.5,0.00125).unwrap();assert!(half.dq[0]>zero.dq[0]);
+        assert_eq!(half.start,half.q);assert_eq!(half.velocity,half.dq);assert_eq!(half.elapsed,0.);
+        assert!((half.duration+nominal.0.elapsed-DURATION).abs()<1e-7);
+        let next=half.proposal(0.00125,&[(-1.,1.);21]).unwrap().0;
+        assert!(next.q[0]>half.q[0]);assert!((next.dq[0]-half.dq[0]).abs()<0.001);
+    }
+    #[test] fn native_step_pure_joint_partial_terminal_reference_cannot_jump_to_target() {
+        let mut nominal=Reference::new([0.;21],[0.;21],[0.01;21]);nominal.elapsed=nominal.duration;
+        nominal.q=nominal.target;let mut baseline=nominal.clone();baseline.q=[0.;21];baseline.braking=true;
+        assert!(blend_reference(&(baseline.clone(),[0.;21]),&(nominal.clone(),[0.;21]),0.5,0.00125).err().unwrap().contains("remaining duration"));
+        nominal.elapsed=nominal.duration-0.0005;
+        assert!(blend_reference(&(baseline,[0.;21]),&(nominal,[0.;21]),0.5,0.00125).is_err());
+    }
+    #[test] fn native_step_pure_joint_clipped_pd_region_includes_endpoint() {
+        let mut raw0=[0.;21];let mut raw1=[0.;21];raw0[0]=-3.;raw1[0]=3.;
+        raw0[1]=3.;raw1[1]=2.; // endpoint saturation approached from above
+        let (a,da,low)=acceleration_region(&raw0,&raw1);
+        assert!((low-5./6.).abs()<1e-6);
+        for alpha in [low,(low+1.)*0.5,1.] {for i in 0..21 {
+            let real=(raw0[i]+alpha*(raw1[i]-raw0[i])).clamp(-2.,2.);
+            assert!((real-(a[i]+alpha*da[i])).abs()<1e-6);
+        }}
+    }
     #[test] fn native_step_pure_constrained_exact_refusal_4756() {
         let fixture:serde_json::Value=serde_json::from_str(include_str!("../../tests/fixtures/native-step-friction-4756.json")).unwrap();
         let data:Vec<f32>=serde_json::from_value(fixture["matrixColumnMajor"].clone()).unwrap();

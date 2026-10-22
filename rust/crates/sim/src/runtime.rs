@@ -1134,6 +1134,35 @@ mod tests {
     use super::*;
     use lh_model::Vec3;
 
+    #[cfg(all(feature="numeric-integration-budget",feature="getup-native-locomotion-experiment"))]
+    #[test]
+    #[ignore = "requires the explicitly supplied durable native4757 checkpoint; no integration"]
+    fn native_step_pure_joint_exact_checkpoint_4757() {
+        let path=std::env::var("LH_STEP_CHECKPOINT").expect("explicit checkpoint path required");
+        let bytes=std::fs::read(path).unwrap();let mut runtime=Runtime::from_getup_checkpoint(&bytes).unwrap();
+        let verified:serde_json::Value=serde_json::from_str(&runtime.verify_getup_checkpoint(&bytes).unwrap()).unwrap();
+        assert_eq!(verified["passed"],true);assert_eq!(runtime.simulation.substeps_completed,4757);
+        let before=bincode::serialize(&runtime.simulation.world).unwrap();
+        let joints=crate::getup::joint_state(&runtime.simulation).unwrap();
+        let forecast=runtime.simulation.getup_controller.as_ref().unwrap().status.forecast_substeps;
+        #[cfg(feature="root-translation-carry-experiment")]
+        let root_before=runtime.root_translation_checkpoint_entries().unwrap();
+        let command=crate::getup::locomotion::step_command(&mut runtime.simulation);
+        let diagnostics=crate::integration_budget::step_command_diagnostics();
+        println!("JOINT_PREFLIGHT {}",serde_json::json!({"command":command,"diagnostics":diagnostics,"restoration":verified,"newIntegrations":0}));
+        let controls=command.unwrap();assert!(controls.iter().all(|c|c.is_finite() && c.abs()<=1.));
+        assert_eq!(diagnostics["firstAdmitted"]["alpha"],1.);
+        assert_eq!(runtime.simulation.substeps_completed,4757);assert_eq!(runtime.simulation.getup_controller.as_ref().unwrap().status.forecast_substeps,forecast);
+        assert_eq!(crate::getup::joint_state(&runtime.simulation).unwrap(),joints);
+        assert_eq!(bincode::serialize(&runtime.simulation.world).unwrap(),before);
+        #[cfg(feature="root-translation-carry-experiment")]
+        assert_eq!(runtime.root_translation_checkpoint_entries().unwrap(),root_before);
+        // A second evaluation at the same boundary reuses only admitted force
+        // intentions. It must be algebraic and leave the physical world alone.
+        crate::getup::locomotion::step_command(&mut runtime.simulation).unwrap();
+        assert_eq!(bincode::serialize(&runtime.simulation.world).unwrap(),before);
+    }
+
     #[test]
     fn getup_checkpoint_round_trip_is_complete_and_never_steps() {
         let mut profile = Profile::default();
