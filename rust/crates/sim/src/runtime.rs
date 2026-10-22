@@ -1191,6 +1191,21 @@ mod tests {
         assert!(wrong.resume_getup_native_step_4757().is_err());assert!(wrong.simulation.first_failure.is_some());
     }
 
+    #[cfg(all(feature="numeric-integration-budget",feature="getup-native-locomotion-experiment"))]
+    #[test]
+    #[ignore="requires exact native5339 checkpoint; pure candidate, no integration"]
+    fn native_step_pure_contact_candidate_checkpoint_5339() {
+        let bytes=std::fs::read(std::env::var("LH_STEP_CHECKPOINT").unwrap()).unwrap();
+        let mut runtime=Runtime::from_getup_checkpoint(&bytes).unwrap();
+        let verification:serde_json::Value=serde_json::from_str(&runtime.verify_getup_checkpoint(&bytes).unwrap()).unwrap();
+        assert_eq!(verification["passed"],true);assert_eq!(runtime.simulation.substeps_completed,5339);
+        let before=bincode::serialize(&runtime.simulation.world).unwrap();
+        let result=crate::getup::locomotion::step_command(&mut runtime.simulation);
+        println!("CONTACT_PREFLIGHT {}",serde_json::json!({"result":result,"diagnostics":crate::integration_budget::step_command_diagnostics(),"restoration":verification,"newIntegrations":0}));
+        assert_eq!(before,bincode::serialize(&runtime.simulation.world).unwrap());assert_eq!(runtime.simulation.substeps_completed,5339);
+        assert!(result.is_ok(),"{result:?}");
+    }
+
     #[test]
     fn getup_checkpoint_round_trip_is_complete_and_never_steps() {
         let mut profile = Profile::default();

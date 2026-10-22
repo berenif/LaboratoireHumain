@@ -35,6 +35,22 @@ impl Reference {
     fn new(q:[f32;21],dq:[f32;21],target:[f32;21])->Self {
         Self {q,dq,start:q,velocity:dq,target,elapsed:0.,braking:false,duration:DURATION,limit_braking:[false;21]}
     }
+    /// Rebuild from continuous q/v, with a sufficient Bernstein envelope for
+    /// the whole quintic. DURATION remains a design horizon, not a certificate
+    /// of physical capture. If it is insufficient, require new preparation.
+    fn retimed(&self)->Result<Self,String> {
+        let mut duration=0.00125f64;
+        for i in 0..21 {if self.limit_braking[i] {continue;}
+            let d=(self.target[i]-self.q[i]).abs() as f64;let v=self.dq[i].abs() as f64;
+            if v>=0.25 {return Err("Step retiming needs braking/preparation before a new horizon".into());}
+            duration=duration.max((12.*v+(144.*v*v+160.*d).sqrt())/4.);
+            duration=duration.max(5.*d/(0.5-2.*v));
+        }
+        if duration>DURATION as f64 {return Err("Step realizable reference exceeds pilot horizon: change preparation/placement; physical capture not certified".into());}
+        let mut r=self.clone();r.start=r.q;r.velocity=r.dq;r.elapsed=0.;
+        r.duration=(duration as f32*(1.+16.*f32::EPSILON)).min(DURATION);
+        Ok(r)
+    }
     /// Quintic Hermite in physical seconds, not one entire displacement per
     /// control evaluation. The measured state is used by feedback, not as a
     /// replacement for the persistent trajectory origin.
@@ -177,13 +193,15 @@ impl State {
         }
         let bounds=joint_bounds(s);
         let nominal=if elapsed==0 {(self.reference.clone(),self.reference_acceleration)}
-            else {self.reference.proposal(s.profile.dt_s,&bounds)?};
+            else {match self.reference.proposal(s.profile.dt_s,&bounds) {
+                Ok(p)=>p,Err(e) if e=="Step reference exceeds pilot speed/acceleration envelope"=>self.reference.retimed()?.proposal(s.profile.dt_s,&bounds)?,Err(e)=>return Err(e)
+            }};
         // Alpha zero advances time and brakes existing reference velocity. It
         // never freezes q while discarding dq or resets the measured state.
         let baseline=if elapsed==0 {nominal.clone()} else {
             self.reference.braking_proposal(s.profile.dt_s,&bounds)?
         };
-        let (controls,candidate,ddq,reactions)=command_for_family(s,&baseline,&nominal,self.side,self.separated,&self.last_reactions)?;
+        let (controls,candidate,ddq,reactions)=command_for_family(s,&baseline,&nominal,self.side,self.separated,matches!(self.phase,Phase::Retraction|Phase::Swing),&self.last_reactions)?;
         // This State itself is a clone owned by locomotion::step_command.
         // Reference, acceleration and intended allocation commit together.
         self.reference=candidate;self.reference_acceleration=ddq;
@@ -361,8 +379,18 @@ fn passive_inverse(k:f32,d:f32,armature:f32,q:f32,v:f32,a:f32,h:f32)->f32 {
 /// and its residual must be supplied by feasible ground intentions, not motors.
 fn rnea(s:&Simulation,q:&[f32;21],dq:&[f32;21],ddq:&[f32;21],support:&[Reaction],retained:usize)
     ->Result<([f32;21],Vector,Vector),String> {
-    let n=s.bodies.len();let twists=super::current_twists(s)?;
     let (linear,angular)=retained_accelerations(s,dq,ddq,retained)?;
+    rnea_accelerations(s,q,dq,ddq,support,&linear,&angular)
+}
+fn rnea_free(s:&Simulation,q:&[f32;21],dq:&[f32;21],a:&DVector<f32>,support:&[Reaction])
+    ->Result<([f32;21],Vector,Vector),String> {
+    let ddq=std::array::from_fn(|i|a[6+i]);
+    let (linear,angular)=accelerations(s,dq,&ddq,(Vector::new(a[0],a[1],a[2]),Vector::new(a[3],a[4],a[5])))?;
+    rnea_accelerations(s,q,dq,&ddq,support,&linear,&angular)
+}
+fn rnea_accelerations(s:&Simulation,q:&[f32;21],dq:&[f32;21],ddq:&[f32;21],support:&[Reaction],linear:&[Vector],angular:&[Vector])
+    ->Result<([f32;21],Vector,Vector),String> {
+    let n=s.bodies.len();let twists=super::current_twists(s)?;
     let h_step=solver_h(s);
     let mut forces=vec![Vector::ZERO;n];let mut moments=vec![Vector::ZERO;n];
     for i in 0..n {
@@ -416,10 +444,11 @@ fn allocate_wrench_recorded(a:&DMatrix<f32>,desired:&DVector<f32>,record:&mut se
     let allocated=svd.solve(&target,cutoff).map_err(|e|format!("Step wrench SVD: {e}"))?.map(|x|x as f32);
     let residual=&matrix*allocated.map(|x|x as f64)-target;
     let force=residual.rows(0,3).norm();let moment=residual.rows(3,3).norm();
+    let extra=residual.rows(6,residual.len()-6).iter().fold(0f64,|m,x|m.max(x.abs()));
     record["allocatedForcesN"]=serde_json::json!(allocated.as_slice());
     record["residualN_Nm"]=serde_json::json!(residual.as_slice());
-    if !allocated.iter().all(|x|x.is_finite()) || !force.is_finite() || !moment.is_finite() || force>0.01 || moment>0.01 {
-        return Err(format!("Step contact allocation residual: force={force} N moment={moment} Nm; no global infeasibility claim"));
+    if !allocated.iter().all(|x|x.is_finite()) || !force.is_finite() || !moment.is_finite() || force>0.01 || moment>0.01 || extra>0.0001 {
+        return Err(format!("Step contact allocation residual: force={force} N moment={moment} Nm extra={extra}; no global infeasibility claim"));
     }
     Ok(allocated)
 }
@@ -444,8 +473,8 @@ fn allocate_motor_wrench(a:&DMatrix<f32>,w0:&DVector<f32>,dw:&DVector<f32>,norma
     contact:&DMatrix<f32>,t0:&DVector<f32>,dt:&DVector<f32>,caps:&DVector<f32>,
     interval:(f32,f32),warm:Option<&DVector<f32>>,record:&mut serde_json::Value)
     ->Result<(DVector<f32>,f32),String> {
-    let nf=a.ncols();let nm=caps.len();let n=nf+1;let scale=400.;
-    if a.nrows()!=6 || nf!=normals.len()*3 || normals.is_empty() || w0.len()!=6 || dw.len()!=6
+    let nf=a.ncols();let ne=a.nrows();let nm=caps.len();let n=nf+1;let scale=400.;
+    if ne<6 || nf!=normals.len()*3 || normals.is_empty() || w0.len()!=ne || dw.len()!=ne
         || contact.shape()!=(nm,nf) || t0.len()!=nm || dt.len()!=nm
         || interval.0<0. || interval.1>1. || interval.0>interval.1
         || normals.iter().any(|n|!n.is_finite() || n.length()<0.5)
@@ -453,13 +482,18 @@ fn allocate_motor_wrench(a:&DMatrix<f32>,w0:&DVector<f32>,dw:&DVector<f32>,norma
         return Err("Invalid joint contact/motor allocation inputs".into());
     }
     let ns:Vec<_>=normals.iter().map(|v|Vector3::new(v.x as f64,v.y as f64,v.z as f64).normalize()).collect();
-    let mut eq=DMatrix::<f64>::zeros(6,n);eq.columns_mut(0,nf).copy_from(&a.map(|v|v as f64));
+    let mut eq=DMatrix::<f64>::zeros(ne,n);eq.columns_mut(0,nf).copy_from(&a.map(|v|v as f64));
     eq.set_column(nf,&dw.map(|v|-(v as f64)/scale));let target=w0.map(|v|v as f64);
     let svd=eq.clone().svd(true,true);let cutoff=svd.singular_values.max()*1e-10;
-    let inverse=svd.solve(&DMatrix::identity(6,6),cutoff).map_err(|e|format!("Joint affine projector: {e}"))?;
+    let inverse=svd.solve(&DMatrix::identity(ne,ne),cutoff).map_err(|e|format!("Joint affine projector: {e}"))?;
     let mut bands=DMatrix::<f64>::zeros(nm,n);bands.columns_mut(0,nf).copy_from(&contact.map(|v|v as f64));
     bands.set_column(nf,&dt.map(|v|v as f64/scale));
-    let initial=allocate_wrench_recorded(a,&(w0+dw*interval.1),record)?;
+    // The alpha=1 least-squares vector is only a seed. Its residual must not
+    // reject a family that may be feasible at a smaller progression.
+    let seed_svd=a.map(|v|v as f64).svd(true,true);
+    let seed_cutoff=(seed_svd.singular_values.max()*1e-10).max(1e-12);
+    let initial=seed_svd.solve(&(w0+dw*interval.1).map(|v|v as f64),seed_cutoff)
+        .map_err(|e|format!("Joint allocation seed: {e}"))?.map(|v|v as f32);
     let mut x=DVector::zeros(n);x.rows_mut(0,nf).copy_from(&warm.filter(|w|w.len()==nf && w.iter().all(|v|v.is_finite())).unwrap_or(&initial).map(|v|v as f64));
     x[nf]=scale*interval.1 as f64;
     record["allocationMethod"]=serde_json::json!("bounded-dykstra-anderson-wrench-cones-motors-progression");
@@ -522,6 +556,7 @@ fn allocate_motor_wrench(a:&DMatrix<f32>,w0:&DVector<f32>,dw:&DVector<f32>,norma
         record["residualN_Nm"]=serde_json::json!(residual.as_slice());record["allocatedMotorTorqueNm"]=serde_json::json!(torque.as_slice());
         if alpha>=interval.0 && alpha<=interval.1 && force.iter().all(|v|v.is_finite())
             && residual.rows(0,3).norm()<0.0001 && residual.rows(3,3).norm()<0.0001
+            && residual.rows(6,ne-6).iter().all(|v|v.abs()<0.0001)
             && (0..normals.len()).all(|k|force_in_cone(Vector::new(force[3*k],force[3*k+1],force[3*k+2]),normals[k]))
             && torque.iter().zip(caps.iter()).all(|(t,c)|t.is_finite() && t.abs()<=*c) {return Ok((force,alpha));}
     }
@@ -543,140 +578,212 @@ fn acceleration_region(raw0:&[f32;21],raw1:&[f32;21])->([f32;21],[f32;21],f32) {
         }}
     }(a0,da,low)
 }
-fn blend_reference(baseline:&(Reference,[f32;21]),nominal:&(Reference,[f32;21]),alpha:f32,dt:f32)->Result<(Reference,[f32;21]),String> {
+fn blend_reference(baseline:&(Reference,[f32;21]),nominal:&(Reference,[f32;21]),alpha:f32,_dt:f32)->Result<(Reference,[f32;21]),String> {
     if alpha==1. {return Ok(nominal.clone());}
     if alpha==0. {return Ok(baseline.clone());}
     let mut r=nominal.0.clone();let a=std::array::from_fn(|i|baseline.1[i]+alpha*(nominal.1[i]-baseline.1[i]));
     for i in 0..21 {r.q[i]=baseline.0.q[i]+alpha*(nominal.0.q[i]-baseline.0.q[i]);r.dq[i]=baseline.0.dq[i]+alpha*(nominal.0.dq[i]-baseline.0.dq[i]);}
     if !r.braking {
-        // Rebase the remaining quintic from the accepted continuous q/dq.
-        // Preserve its physical deadline; never jump back to the old origin.
-        let remaining=r.duration-r.elapsed;
-        if remaining<=dt {return Err("Step cannot rebase a partial reference within its remaining duration".into());}
-        r.duration=remaining;r.elapsed=0.;r.start=r.q;r.velocity=r.dq;
+        // Allocation changed progress, not the amount of physical time left.
+        // Preserve accepted q/dq and derive a fresh feasible local duration.
+        r=r.retimed()?;
     }
     Ok((r,a))
 }
 
 type CommandProposal=([f32;21],Reference,[f32;21],Vec<Reaction>);
-fn command_for_family(s:&Simulation,baseline:&(Reference,[f32;21]),nominal:&(Reference,[f32;21]),side:usize,exclusive:bool,warm:&[Reaction])->Result<CommandProposal,String> {
+fn command_for_family(s:&Simulation,baseline:&(Reference,[f32;21]),nominal:&(Reference,[f32;21]),side:usize,exclusive:bool,request_withdrawal:bool,warm:&[Reaction])->Result<CommandProposal,String> {
     let mut record=serde_json::json!({"native":s.substeps_completed,"nominalReference":nominal.0,
         "baselineReference":baseline.0,"side":side,"exclusive":exclusive,"units":"world N / Nm about torso origin"});
-    let result=command_for_family_recorded(s,baseline,nominal,side,exclusive,warm,&mut record);
+    let result=command_for_family_recorded(s,baseline,nominal,side,exclusive,request_withdrawal,warm,&mut record);
     record["error"]=serde_json::json!(result.as_ref().err());
     record["controls"]=serde_json::json!(result.as_ref().ok().map(|x|x.0));
     #[cfg(feature="numeric-integration-budget")]
     crate::integration_budget::record_step_command(record);
     result
 }
-fn command_for_family_recorded(s:&Simulation,baseline:&(Reference,[f32;21]),nominal:&(Reference,[f32;21]),side:usize,exclusive:bool,warm:&[Reaction],record:&mut serde_json::Value)->Result<CommandProposal,String> {
-    let (q,dq)=super::joint_state(s)?;let geometry=geometry(s)?;let retained=feet(s)?[1-side];
-    let raw=|r:&(Reference,[f32;21])|std::array::from_fn(|i|r.1[i]+16.*(r.0.q[i]-q[i])+8.*(r.0.dq[i]-dq[i]));
-    let (a0,da,alpha_min)=acceleration_region(&raw(baseline),&raw(nominal));
-    let desired_acceleration=std::array::from_fn(|i|a0[i]+da[i]);
-    record["q"]=serde_json::json!(q);record["dq"]=serde_json::json!(dq);record["geometry"]=serde_json::json!(geometry);
-    let ddq=&desired_acceleration;
-    let (_,force,moment)=rnea(s,&q,&dq,ddq,&[],retained)?;
-    let mut points=vec![];let mut candidates=vec![];let mut normals=vec![];
-    let observed_contacts=super::standing::contacts_including_unloaded(s)?;
-    if s.world.colliders[s.floor].friction()!=1. || geometry.iter().any(|g|s.world.colliders[s.colliders[g.body]].friction()!=1.) {
-        return Err("Step cone allocator requires unchanged mu=1 foot/floor materials".into());
+/// Rapier generic multibody biased normal projection, expressed at a frozen
+/// measured configuration. This is a local prediction, not a replacement for
+/// Rapier's four substeps and final unbiased stabilization pass.
+fn contact_bias(gap:f32,h:f32,erp_inv_dt:f32,max_correction:f32)->f32 {
+    gap.max(0.)/h+(erp_inv_dt*gap).clamp(-max_correction,0.)
+}
+fn command_for_family_recorded(s:&Simulation,baseline:&(Reference,[f32;21]),nominal:&(Reference,[f32;21]),side:usize,exclusive:bool,request_withdrawal:bool,warm:&[Reaction],record:&mut serde_json::Value)->Result<CommandProposal,String> {
+    if !request_withdrawal {
+        record["contactMode"]=serde_json::json!("bilateral-landing-support");
+        return contact_mode_command(s,baseline,nominal,side,false,warm,record);
     }
-    let (linear,angular)=retained_accelerations(s,&dq,ddq,retained)?;
-    let twists=super::current_twists(s)?;
-    let floor=s.world.colliders[s.floor].compute_aabb().maxs.y;
-    for (n,g) in geometry.iter().enumerate() {
-        if exclusive && n==side {continue;}
-        for point in &g.points {
-            let offset=*point-s.world.bodies[s.bodies[g.body]].translation();let omega=twists[g.body].1;
-            let acceleration=linear[g.body]+angular[g.body].cross(offset)+omega.cross(omega.cross(offset));
-            let used=contact_can_react(point.y-floor,acceleration.y)?;
-            candidates.push(serde_json::json!({"body":g.body,"point":point.to_array(),"gap":point.y-floor,"desiredNormalAcceleration":acceleration.y,"used":used}));
-            if used {
-                // Same foot's closest resolved point supplies only its normal,
-                // never its measured impulse. Pure flat-floor geometry is +Y
-                // when no solver manifold exists (zero load is not deletion).
-                let normal=observed_contacts.iter().filter(|c|c.body==g.body)
-                    .min_by(|a,b|(a.point-*point).length_squared().total_cmp(&(b.point-*point).length_squared()))
-                    .map_or(Vector::Y,|c|c.normal);
-                points.push((g.body,*point));normals.push(normal);
-            }
+    let mut withdrawal=serde_json::json!({});
+    match contact_mode_command(s,baseline,nominal,side,true,warm,&mut withdrawal) {
+        Ok(c)=>{if let Some(fields)=withdrawal.as_object() {for (k,v) in fields {record[k]=v.clone();}}
+            record["contactMode"]=serde_json::json!("requested-withdrawal");Ok(c)},
+        Err(e)=>{
+            record["withdrawalRefusal"]=serde_json::json!({"reason":e,"candidate":withdrawal});
+            if exclusive {return Err(e);}
+            let result=contact_mode_command(s,baseline,nominal,side,false,warm,record);
+            record["contactMode"]=serde_json::json!("bilateral-dynamic-preparation");result
         }
     }
-    record["candidates"]=serde_json::json!(candidates);
-    if points.is_empty(){return Err("Step has no geometric support candidates".into());}
-    let root=s.world.bodies[s.bodies[0]].translation();let mut a=DMatrix::zeros(6,3*points.len());
-    for (k,(_,point)) in points.iter().enumerate(){for j in 0..3 {
-        let e=[Vector::X,Vector::Y,Vector::Z][j];let m=(*point-root).cross(e);a[(j,3*k+j)]=1.;
-        for r in 0..3 {a[(r+3,3*k+j)]=m[r];}
-    }}
+}
+fn contact_mode_command(s:&Simulation,baseline:&(Reference,[f32;21]),nominal:&(Reference,[f32;21]),side:usize,withdrawal:bool,warm:&[Reaction],record:&mut serde_json::Value)->Result<CommandProposal,String> {
+    let (q,dq)=super::joint_state(s)?;let feet=feet(s)?;
+    let contacts=super::standing::contacts_including_unloaded(s)?;
+    // A retained manifold is not proof that its points are still touching.
+    let live:Vec<_>=contacts.iter().filter(|c|c.signed_gap_m<=0.).collect();
+    if live.is_empty() {return Err("Step has no actual touching solver points".into());}
+    if s.world.colliders[s.floor].friction()!=1. || feet.iter().any(|i|s.world.colliders[s.colliders[*i]].friction()!=1.) {
+        return Err("Step cone allocator requires unchanged mu=1 foot/floor materials".into());
+    }
+    // Withdrawal keeps the geometric rows but requests ZERO reaction there.
+    // It does not remove or mutate any Rapier contact or report actual liftoff.
+    let points:Vec<_>=live.iter().filter(|c|!withdrawal || c.body!=feet[side]).map(|c|(c.body,c.point)).collect();
+    let normals:Vec<_>=live.iter().filter(|c|!withdrawal || c.body!=feet[side]).map(|c|c.normal).collect();
+    if points.is_empty() {return Err("Step mode has no retained support points".into());}
+    let nf=3*points.len();let nc=live.len();
+    let raw=|r:&(Reference,[f32;21])|std::array::from_fn(|i|r.1[i]+16.*(r.0.q[i]-q[i])+8.*(r.0.dq[i]-dq[i]));
+    let (pd0,pdd,alpha_min)=acceleration_region(&raw(baseline),&raw(nominal));
+    let mut desired0=DVector::zeros(27);let mut desired_delta=DVector::zeros(27);
+    for i in 0..21 {desired0[6+i]=pd0[i];desired_delta[6+i]=pdd[i];}
+    let (linear_bias,angular_bias)=accelerations(s,&dq,&[0.;21],(Vector::ZERO,Vector::ZERO))?;
+    let twists=super::current_twists(s)?;let h=solver_h(s);
+    let params=&s.world.integration_parameters;let softness=&params.static_contact_softness;
+    let kappa=1./softness.cfm_factor(h)-1.;
+    let root_link=s.world.multibody_joints.rigid_body_link(s.bodies[0]).ok_or("Missing free root")?;
+    let mb=s.world.multibody_joints.get_multibody(root_link.multibody).ok_or("Missing articulation")?;
+    if mb.ndofs()!=27 || mb.links().any(|link|link.joint.kinematic) {
+        return Err("Step contact mass requires 27 dynamic coordinates without kinematic reduction".into());
+    }
+    let mut c=DMatrix::zeros(nc,27);let mut compliance=DMatrix::zeros(nc,nf);let mut rhs=DVector::zeros(nc);
+    let mut laws=vec![];
+    for (row,ct) in live.iter().enumerate() {
+        let jac=jacobian(s,ct.body,ct.point)?;
+        for j in 0..27 {c[(row,j)]=(0..3).map(|axis|ct.normal[axis]*jac[(axis,j)]).sum();}
+        let offset=ct.point-s.world.bodies[s.bodies[ct.body]].translation();let omega=twists[ct.body].1;
+        let bias=ct.normal.dot(linear_bias[ct.body]+angular_bias[ct.body].cross(offset)+omega.cross(omega.cross(offset)));
+        let b=contact_bias(ct.signed_gap_m,h,softness.erp_inv_dt(h),params.max_corrective_velocity());
+        let velocity=ct.velocity.dot(ct.normal);
+        let boundary=-(velocity+b)/h;
+        let release=withdrawal && ct.body==feet[side];
+        let wanted=if release {boundary.max(2.*0.005/DURATION.powi(2))} else {boundary};
+        rhs[row]=wanted-bias;
+        // Rapier cached augmented mass/Jacobian in assembly coordinates; this
+        // avoids confusing assembly DOF order with qpos/actuator order.
+        let link=s.world.multibody_joints.rigid_body_link(s.bodies[ct.body]).ok_or("Missing contact link")?;
+        let j=mb.body_jacobian(link.id);let torque=ct.solver_lever_from_com.cross(ct.normal);
+        let covector=DVector::from_fn(j.ncols(),|col,_|(0..3).map(|axis|ct.normal[axis]*j[(axis,col)]+torque[axis]*j[(3+axis,col)]).sum());
+        let inverse=mb.inv_augmented_mass().solve(&covector).ok_or("Contact inverse mass unavailable")?;
+        let inverse_mass=covector.dot(&inverse);let gamma=kappa*inverse_mass;
+        if !gamma.is_finite() || gamma<=0. {return Err("Invalid contact compliance".into());}
+        if !release {let k=points.iter().position(|(body,p)|*body==ct.body && *p==ct.point).ok_or("Missing reaction point")?;
+            for axis in 0..3 {compliance[(row,3*k+axis)]=gamma*ct.normal[axis];}
+        }
+        laws.push(serde_json::json!({"body":ct.body,"point":ct.point.to_array(),"gapM":ct.signed_gap_m,"velocityMps":velocity,
+            "solverVelocityMps":ct.solver_point_velocity.dot(ct.normal),"biasMps":b,"gammaInverseKg":gamma,"accelerationBias":bias,
+            "normalTarget":wanted,"requestedZeroReaction":release}));
+    }
+    // Project the desired floating acceleration onto the same local contact
+    // equations used by allocation: a = u0 + alpha*du + H*f. No root actuator.
+    let svd=c.map(|v|v as f64).svd(true,true);let cutoff=(svd.singular_values.max()*1e-7).max(1e-10);
+    let pinv=svd.solve(&DMatrix::identity(nc,nc),cutoff).map_err(|e|format!("Contact acceleration projector: {e}"))?.map(|v|v as f32);
+    let u0=&desired0+&pinv*(&rhs-&c*&desired0);
+    let du=&desired_delta-&pinv*(&c*&desired_delta);
+    let hf=-&pinv*&compliance;
     let vector6=|f:Vector,m:Vector|DVector::from_column_slice(&[f.x,f.y,f.z,m.x,m.y,m.z]);
-    let (t0,f0,m0)=rnea(s,&q,&dq,&a0,&[],retained)?;
-    let (t1,_,_)=rnea(s,&q,&dq,ddq,&[],retained)?;
-    let w0=vector6(f0,m0);let dw=vector6(force,moment)-&w0;
-    let t0=DVector::from_column_slice(&t0);let dt=DVector::from_column_slice(&t1)-&t0;
-    let mut contact=DMatrix::zeros(21,3*points.len());let mut caps=DVector::zeros(21);
-    for (k,(body,point)) in points.iter().enumerate() {
-        let jac=jacobian(s,*body,*point)?;
+    let zero=DVector::zeros(27);let (tz,fz,mz)=rnea_free(s,&q,&dq,&zero,&[])?;
+    let tz=DVector::from_column_slice(&tz);let wz=vector6(fz,mz);
+    let mut motor_mass=DMatrix::zeros(21,27);let mut root_mass=DMatrix::zeros(6,27);
+    for col in 0..27 {let mut unit=zero.clone();unit[col]=1.;let (t,f,m)=rnea_free(s,&q,&dq,&unit,&[])?;
+        motor_mass.set_column(col,&(DVector::from_column_slice(&t)-&tz));root_mass.set_column(col,&(vector6(f,m)-&wz));}
+    let root=s.world.bodies[s.bodies[0]].translation();let mut wrench=DMatrix::zeros(6,nf);let mut contact=DMatrix::zeros(21,nf);
+    let mut caps=DVector::zeros(42);
+    for (k,(body,point)) in points.iter().enumerate() {let jac=jacobian(s,*body,*point)?;
+        for axis in 0..3 {let e=[Vector::X,Vector::Y,Vector::Z][axis];let m=(*point-root).cross(e);wrench[(axis,3*k+axis)]=1.;
+            for row in 0..3 {wrench[(row+3,3*k+axis)]=m[row];}}
         for part in &s.model.segments {if let Some(h)=part.reference.as_ref().and_then(|r|r.hinge.as_ref()) {
             for axis in 0..3 {contact[(h.actuator_index,3*k+axis)]=-jac[(axis,6+h.qpos_index)];}
             caps[h.actuator_index]=part.joint_profile.as_ref().unwrap().axes[0].max_motor_torque_nm.min(h.gear.abs());
         }}
     }
-    // Reuse previous intended forces only for matching live geometric points.
-    // These are solver intentions, never recycled measured contact impulses.
-    let mut seed=DVector::zeros(3*points.len());let mut matched=0;
-    for (k,(body,point)) in points.iter().enumerate() {
-        if let Some((_,_,f))=warm.iter().filter(|(b,p,_)|b==body && (*p-*point).length()<0.01)
-            .min_by(|a,b|(a.1-*point).length_squared().total_cmp(&(b.1-*point).length_squared())) {
-            for j in 0..3 {seed[3*k+j]=f[j];}matched+=1;
-        }
+    // A pseudoinverse alone cannot satisfy dependent contact rows for every
+    // force. Preserve their left-null compatibility in the SAME allocation.
+    let compatibility=DMatrix::identity(nc,nc)-&c*&pinv;
+    let mut a=DMatrix::zeros(6+nc,nf);a.rows_mut(0,6).copy_from(&(wrench-&root_mass*&hf));
+    a.rows_mut(6,nc).copy_from(&(&compatibility*&compliance));
+    let mut w0=DVector::zeros(6+nc);w0.rows_mut(0,6).copy_from(&(&wz+&root_mass*&u0));w0.rows_mut(6,nc).copy_from(&(&compatibility*&rhs));
+    let mut dw=DVector::zeros(6+nc);dw.rows_mut(0,6).copy_from(&(&root_mass*&du));
+    let mut bands=DMatrix::zeros(42,nf);bands.rows_mut(0,21).copy_from(&(&contact+&motor_mass*&hf));bands.rows_mut(21,21).copy_from(&hf.rows(6,21));
+    let mut t0=DVector::zeros(42);t0.rows_mut(0,21).copy_from(&(&tz+&motor_mass*&u0));t0.rows_mut(21,21).copy_from(&u0.rows(6,21));
+    let mut dt=DVector::zeros(42);dt.rows_mut(0,21).copy_from(&(&motor_mass*&du));dt.rows_mut(21,21).copy_from(&du.rows(6,21));
+    caps.rows_mut(21,21).fill(REFERENCE_ACCELERATION);
+    let mut seed=DVector::zeros(nf);for (k,(body,p)) in points.iter().enumerate() {
+        if let Some((_,_,f))=warm.iter().filter(|(b,point,_)|b==body && (*point-*p).length()<0.01)
+            .min_by(|a,b|(a.1-*p).length_squared().total_cmp(&(b.1-*p).length_squared())) {for j in 0..3 {seed[3*k+j]=f[j];}}
     }
-    record["rootOrigin"]=serde_json::json!(root.to_array());
-    let (allocated,alpha)=allocate_motor_wrench(&a,&w0,&dw,&normals,&contact,&t0,&dt,&caps,(alpha_min,1.),
-        if matched>0 {Some(&seed)} else {None},record)?;
+    record["localContactLaw"]=serde_json::json!({"scope":"biased normal projection at frozen geometry; not complete Rapier substeps","h":h,"kappa":kappa,"points":laws});
+    let (allocated,alpha)=allocate_motor_wrench(&a,&w0,&dw,&normals,&bands,&t0,&dt,&caps,(alpha_min,1.),Some(&seed),record)?;
     let (reference,reference_ddq)=blend_reference(baseline,nominal,alpha,s.profile.dt_s)?;
-    let full_acceleration:[f32;21]=std::array::from_fn(|i|(reference_ddq[i]+16.*(reference.q[i]-q[i])+8.*(reference.dq[i]-dq[i])).clamp(-REFERENCE_ACCELERATION,REFERENCE_ACCELERATION));
-    if (0..21).any(|i|(full_acceleration[i]-(a0[i]+alpha*da[i])).abs()>0.00001) {
-        return Err("Step candidate left its certified affine PD region".into());
+    let full_pd=DVector::from_fn(27,|i,_|if i<6 {0.} else {let j=i-6;(reference_ddq[j]+16.*(reference.q[j]-q[j])+8.*(reference.dq[j]-dq[j])).clamp(-REFERENCE_ACCELERATION,REFERENCE_ACCELERATION)});
+    let acceleration=&full_pd+&pinv*(&rhs-&c*&full_pd-&compliance*&allocated);
+    if (&acceleration-(&u0+&du*alpha+&hf*&allocated)).amax()>1e-4 {return Err("Step candidate left projected PD region".into());}
+    if acceleration.rows(6,21).iter().any(|v|!v.is_finite() || v.abs()>REFERENCE_ACCELERATION) {
+        return Err("Step recomputed contact acceleration exceeds unchanged envelope".into());
     }
+    let residual=&c*&acceleration+&compliance*&allocated-&rhs;
+    record["contactAccelerationResidual"]=serde_json::json!(residual.as_slice());record["generalizedAcceleration"]=serde_json::json!(acceleration.as_slice());
+    if residual.amax()>1e-4 {return Err("Step local contact acceleration equations inconsistent; not global infeasibility".into());}
+    let support:Vec<_>=points.iter().enumerate().map(|(k,(b,p))|(*b,*p,Vector::new(allocated[3*k],allocated[3*k+1],allocated[3*k+2]))).collect();
+    let (bias,_,_)=rnea_free(s,&q,&dq,&zero,&support)?;
+    let (dynamic,rf,rm)=rnea_free(s,&q,&dq,&acceleration,&support)?;
     record["proposedReference"]=serde_json::json!(reference);record["referenceAcceleration"]=serde_json::json!(reference_ddq);
-    record["desiredAcceleration"]=serde_json::json!(full_acceleration);
-    let ddq=&full_acceleration;
-    let mut support=vec![];
-    for (k,(body,point)) in points.into_iter().enumerate() {
-        let f=Vector::new(allocated[3*k],allocated[3*k+1],allocated[3*k+2]);
-        // Conservative intention cone (mu <= existing foot coefficient 1).
-        if !force_in_cone(f,normals[k]) {
-            return Err(format!("Step constrained allocation violates unilateral/friction constraints: point={k} force_N={:?}; not global infeasibility",f.to_array()));
-        }support.push((body,point,f));
-    }
-    // Both evaluations use the SAME measured q/dq and SAME desired allocation.
-    let (bias,_,_)=rnea(s,&q,&dq,&[0.;21],&support,retained)?;
-    let (dynamic,residual_f,residual_m)=rnea(s,&q,&dq,ddq,&support,retained)?;
-    record["rneaResidualForceN"]=serde_json::json!(residual_f.to_array());
-    record["rneaResidualMomentNm"]=serde_json::json!(residual_m.to_array());
-    record["biasTorqueNm"]=serde_json::json!(bias);record["dynamicTorqueNm"]=serde_json::json!(dynamic);
-    if residual_f.length()>0.01 || residual_m.length()>0.01 {return Err("Step unactuated-root residual".into());}
-    let mut controls=[0.;21];
-    for part in &s.model.segments {if let Some(h)=part.reference.as_ref().and_then(|r|r.hinge.as_ref()) {
+    record["dynamicTorqueNm"]=serde_json::json!(dynamic);record["biasTorqueNm"]=serde_json::json!(bias);
+    record["rneaResidualForceN"]=serde_json::json!(rf.to_array());record["rneaResidualMomentNm"]=serde_json::json!(rm.to_array());
+    if rf.length()>0.01 || rm.length()>0.01 {return Err("Step contact-consistent root residual".into());}
+    let mut controls=[0.;21];for part in &s.model.segments {if let Some(h)=part.reference.as_ref().and_then(|r|r.hinge.as_ref()) {
         let axis=&part.joint_profile.as_ref().unwrap().axes[0];let i=h.qpos_index;let j=h.actuator_index;
-        if reference.q[i]<axis.min_radians || reference.q[i]>axis.max_radians {
-            return Err("Step proposed reference outside unchanged joint bounds".into());
-        }
-        let acceleration_torque=dynamic[j]-bias[j];
-        let raw=(bias[j]+acceleration_torque)/h.gear;
-        // Recompute the motor cap for the PROPOSED reference, before commit.
-        // No clipping of measured q/dq, no impulse/limit reconstruction.
-        let cap=(axis.max_motor_torque_nm/h.gear.abs()).min(1.);
-        if !raw.is_finite() || raw.abs()>cap {return Err(format!("Step proposed-reference torque cap at hinge {i}"));}
-        controls[j]=raw;
-    }}Ok((controls,reference,reference_ddq,support))
+        if reference.q[i]<axis.min_radians || reference.q[i]>axis.max_radians {return Err("Step proposed reference outside unchanged joint bounds".into());}
+        let raw=dynamic[j]/h.gear;let cap=(axis.max_motor_torque_nm/h.gear.abs()).min(1.);
+        if !raw.is_finite() || raw.abs()>cap {return Err(format!("Step contact-consistent torque cap at hinge {i}"));}controls[j]=raw;
+    }}
+    Ok((controls,reference,reference_ddq,support))
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[test] fn native_step_pure_infeasible_nominal_seed_can_reduce_progression() {
+        let mut a=DMatrix::zeros(7,3);a[(1,1)]=1.;
+        let mut w0=DVector::zeros(7);w0[1]=100.;w0[6]=-0.5;
+        let mut dw=DVector::zeros(7);dw[6]=1.;
+        let (f,alpha)=allocate_motor_wrench(&a,&w0,&dw,&[Vector::Y],&DMatrix::zeros(0,3),
+            &DVector::zeros(0),&DVector::zeros(0),&DVector::zeros(0),(0.,1.),None,&mut serde_json::json!({})).unwrap();
+        assert!((alpha-0.5).abs()<1e-5);assert!((f[1]-100.).abs()<1e-4);
+    }
+    #[test] fn native_step_pure_joint_allocation_preserves_dependent_contact_compatibility() {
+        let mut a=DMatrix::zeros(7,6);a[(1,1)]=1.;a[(1,4)]=1.;a[(6,1)]=1.;a[(6,4)]=-1.;
+        let mut desired=DVector::zeros(7);desired[1]=100.;desired[6]=20.;
+        let (f,_)=allocate_motor_wrench(&a,&desired,&DVector::zeros(7),&[Vector::Y,Vector::Y],&DMatrix::zeros(0,6),
+            &DVector::zeros(0),&DVector::zeros(0),&DVector::zeros(0),(1.,1.),None,&mut serde_json::json!({})).unwrap();
+        assert!((f[1]-60.).abs()<1e-4);assert!((f[4]-40.).abs()<1e-4);
+    }
+    #[test] fn native_step_pure_retime_preserves_q_v_without_deadline_compression() {
+        let mut r=Reference::new([0.;21],[-0.065298;21],[-0.01960036;21]);r.duration=0.10125059;r.elapsed=0.00125;
+        let next=r.retimed().unwrap();assert_eq!(next.q,r.q);assert_eq!(next.dq,r.dq);assert!(next.duration>0.4);
+        let mut p=next;for _ in 0..640 {p=p.proposal(0.00125,&[(-1.,1.);21]).unwrap().0;}
+        assert!((p.q[0]-r.target[0]).abs()<1e-5);assert!(p.dq[0].abs()<1e-5);
+    }
+    #[test] fn native_step_pure_discrete_contact_bias_has_no_slop_deadzone() {
+        let h=0.0003125;let erp=18.739173;
+        assert_eq!(contact_bias(0.,h,erp,3.),0.);
+        assert!((contact_bias(-0.00001,h,erp,3.)+0.00018739173).abs()<1e-9);
+        assert_eq!(contact_bias(0.001,h,erp,3.),0.001/h);
+        let v=-0.01;let b=contact_bias(-0.00001,h,erp,3.);let gamma=0.4;let force=20.;
+        let a=-(v+b)/h-gamma*force;
+        assert!((v+h*a+b+h*gamma*force).abs()<1e-8);
+        // Withdrawal requests zero force and the separating inequality, while
+        // the actual contact remains available to Rapier.
+        let release=(-(v+b)/h).max(0.01);assert!(v+h*release+b>=-1e-8);
+        assert!(contact_can_react(-0.00001,release).unwrap());assert!(!contact_can_react(0.001,release).unwrap());
+    }
     #[test] fn native_step_pure_reference_single_stop_preserves_other_motion() {
         let mut r=Reference::new([0.;21],[0.02;21],[0.005;21]);
         r.q[20]=0.9999997;r.start[20]=r.q[20];r.velocity[20]=-0.000000007;r.dq[20]=r.velocity[20];r.target[20]=1.;
@@ -739,16 +846,17 @@ mod tests {
         let (zero,_)=blend_reference(&baseline,&nominal,0.,0.00125).unwrap();assert!(zero.q[0]>0. && zero.dq[0]>0. && zero.dq[0]<r.dq[0]);
         let (half,_)=blend_reference(&baseline,&nominal,0.5,0.00125).unwrap();assert!(half.dq[0]>zero.dq[0]);
         assert_eq!(half.start,half.q);assert_eq!(half.velocity,half.dq);assert_eq!(half.elapsed,0.);
-        assert!((half.duration+nominal.0.elapsed-DURATION).abs()<1e-7);
+        assert!(half.duration>0.00125 && half.duration<=DURATION);
         let next=half.proposal(0.00125,&[(-1.,1.);21]).unwrap().0;
         assert!(next.q[0]>half.q[0]);assert!((next.dq[0]-half.dq[0]).abs()<0.001);
     }
     #[test] fn native_step_pure_joint_partial_terminal_reference_cannot_jump_to_target() {
         let mut nominal=Reference::new([0.;21],[0.;21],[0.01;21]);nominal.elapsed=nominal.duration;
         nominal.q=nominal.target;let mut baseline=nominal.clone();baseline.q=[0.;21];baseline.braking=true;
-        assert!(blend_reference(&(baseline.clone(),[0.;21]),&(nominal.clone(),[0.;21]),0.5,0.00125).err().unwrap().contains("remaining duration"));
-        nominal.elapsed=nominal.duration-0.0005;
-        assert!(blend_reference(&(baseline,[0.;21]),&(nominal,[0.;21]),0.5,0.00125).is_err());
+        let (half,_)=blend_reference(&(baseline,[0.;21]),&(nominal,[0.;21]),0.5,0.00125).unwrap();
+        assert_eq!(half.q,[0.005;21]);assert_eq!(half.dq,[0.;21]);assert_eq!(half.elapsed,0.);
+        assert!(half.duration>0.00125);assert_eq!(half.target,[0.01;21]);
+        let next=half.proposal(0.00125,&[(-1.,1.);21]).unwrap().0;assert!(next.q[0]<0.00501);
     }
     #[test] fn native_step_pure_joint_clipped_pd_region_includes_endpoint() {
         let mut raw0=[0.;21];let mut raw1=[0.;21];raw0[0]=-3.;raw1[0]=3.;
