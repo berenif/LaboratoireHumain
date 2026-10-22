@@ -112,8 +112,8 @@ impl State {
         initialize_reference(s,&mut q,&mut dq);
         let mut forward=*s.world.bodies[s.bodies[0]].rotation()*Vector::Z;forward.y=0.;
         let forward=forward.try_normalize().ok_or("Invalid Step heading")?;
-        let foot=*s.world.bodies[s.bodies[feet[side]]].translation();
-        let retained=*s.world.bodies[s.bodies[feet[1-side]]].translation();
+        let foot=s.world.bodies[s.bodies[feet[side]]].translation();
+        let retained=s.world.bodies[s.bodies[feet[1-side]]].translation();
         let mut com=s.center_of_mass();let shift=retained-com;
         com+=Vector::new(shift.x,0.,shift.z).clamp_length_max(0.01);
         // Retraction starts while BOTH unilateral contacts remain available.
@@ -252,7 +252,7 @@ fn jacobian(s:&Simulation,body:usize,point:Vector)->Result<DMatrix<f32>,String> 
 /// eliminated by the retained-foot constraint, never actuated. Failed intention is not a proof of global infeasibility.
 fn posture(s:&Simulation,side:usize,com_goal:Vector,foot_goal:Vector)->Result<[f32;21],String> {
     let retained=feet(s)?[1-side];
-    let stance=jacobian(s,retained,*s.world.bodies[s.bodies[retained]].translation())?;
+    let stance=jacobian(s,retained,s.world.bodies[s.bodies[retained]].translation())?;
     let root_map=stance.columns(0,6).into_owned().lu().solve(&(-stance.columns(6,21).into_owned()))
         .ok_or("Singular retained-foot root elimination")?;
     let mut elimination=DMatrix::zeros(27,21);
@@ -264,11 +264,11 @@ fn posture(s:&Simulation,side:usize,com_goal:Vector,foot_goal:Vector)->Result<[f
         let a=task*&elimination;normal+=a.transpose()*&a*w;rhs+=a.transpose()*b*w;
     };
     for (n,i) in feet(s)?.into_iter().enumerate() {
-        let point=*s.world.bodies[s.bodies[i]].translation();let delta=if n==side {foot_goal-point}else{Vector::ZERO};
+        let point=s.world.bodies[s.bodies[i]].translation();let delta=if n==side {foot_goal-point}else{Vector::ZERO};
         let mut target=DVector::zeros(6);for r in 0..3 {target[r]=delta[r];}
         add(jacobian(s,i,point)?,target,100.);
     }
-    let root=jacobian(s,0,*s.world.bodies[s.bodies[0]].translation())?;
+    let root=jacobian(s,0,s.world.bodies[s.bodies[0]].translation())?;
     add(root.rows(3,3).into_owned(),DVector::zeros(3),10.);
     let mut com=DMatrix::zeros(3,27);
     for (i,h) in s.bodies.iter().enumerate(){let b=&s.world.bodies[*h];
@@ -293,8 +293,8 @@ fn accelerations(s:&Simulation,dq:&[f32;21],ddq:&[f32;21],root:(Vector,Vector))
     let mut linear=vec![Vector::ZERO;n];let mut angular=vec![Vector::ZERO;n];
     linear[0]=root.0;angular[0]=root.1;
     for i in 1..n {
-        let p=parent(s,i)?;let origin=*s.world.bodies[s.bodies[i]].translation();
-        let po=*s.world.bodies[s.bodies[p]].translation();let wp=twists[p].1;
+        let p=parent(s,i)?;let origin=s.world.bodies[s.bodies[i]].translation();
+        let po=s.world.bodies[s.bodies[p]].translation();let wp=twists[p].1;
         if let Some(h)=s.model.segments[i].reference.as_ref().and_then(|r|r.hinge.as_ref()) {
             let (axis,anchor)=axis_anchor(s,i,p)?;
             angular[i]=angular[p]+axis*ddq[h.qpos_index]+wp.cross(axis*dq[h.qpos_index]);
@@ -345,7 +345,7 @@ fn rnea(s:&Simulation,q:&[f32;21],dq:&[f32;21],ddq:&[f32;21],support:&[Reaction]
     for (i,point,force) in support {forces[*i]-=*force;moments[*i]-=(*point-s.world.bodies[s.bodies[*i]].translation()).cross(*force);}
     let mut torque=[0.;21];
     for i in (1..n).rev() {
-        let p=parent(s,i)?;let origin=*s.world.bodies[s.bodies[i]].translation();
+        let p=parent(s,i)?;let origin=s.world.bodies[s.bodies[i]].translation();
         if let Some(h)=s.model.segments[i].reference.as_ref().and_then(|r|r.hinge.as_ref()) {
             let (axis,anchor)=axis_anchor(s,i,p)?;let a=&s.model.segments[i].joint_profile.as_ref().unwrap().axes[0];
             torque[h.actuator_index]=axis.dot(moments[i]+(origin-anchor).cross(forces[i]))
@@ -439,7 +439,7 @@ mod tests {
     #[test] fn native_step_pure_rnea_is_affine_at_fixed_state_and_allocation() {
         let s=Simulation::new(0.,crate::Profile::default(),true).unwrap();
         let before=serde_json::to_value(&s).unwrap();let (q,dq)=super::super::joint_state(&s).unwrap();
-        let ids=feet(&s).unwrap();let allocation=vec![(ids[0],*s.world.bodies[s.bodies[ids[0]]].translation(),Vector::Y*20.)];
+        let ids=feet(&s).unwrap();let allocation=vec![(ids[0],s.world.bodies[s.bodies[ids[0]]].translation(),Vector::Y*20.)];
         let (zero,f0,m0)=rnea(&s,&q,&dq,&[0.;21],&allocation,ids[0]).unwrap();
         let (full,f1,m1)=rnea(&s,&q,&dq,&[0.1;21],&allocation,ids[0]).unwrap();
         let (half,fh,mh)=rnea(&s,&q,&dq,&[0.05;21],&allocation,ids[0]).unwrap();
