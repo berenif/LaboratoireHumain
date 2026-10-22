@@ -863,6 +863,8 @@ impl Controller {
                     shadow.world.bodies[*h].reset_torques(false);
                 }
                 super::apply_controls(&mut shadow, &action)?;
+                #[cfg(feature="numeric-integration-budget")]
+                crate::integration_budget::debit(crate::integration_budget::Kind::Forecast)?;
                 shadow.world.step_with_events(&shadow.filter, &());
                 self.status.forecast_substeps += 1;
                 shadow.substeps_completed += 1;

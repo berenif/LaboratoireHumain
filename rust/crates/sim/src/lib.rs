@@ -1,4 +1,6 @@
 //! Dynamic f32 simulation with read-only substep inspection and no DOM/GPU dependencies.
+#[cfg(feature="numeric-integration-budget")]
+pub mod integration_budget;
 pub mod actuators;
 #[cfg(not(target_arch = "wasm32"))]
 pub mod articulation;
@@ -1084,6 +1086,12 @@ impl Simulation {
                     return Err(failure);
                 }
             }
+            #[cfg(feature="numeric-integration-budget")]
+            if let Err(reason) = integration_budget::available() {
+                let failure = measurement::Failure::new(self.tick, substep, "integration-budget", reason, 0., 0.);
+                self.first_failure=Some(failure.clone()); self.motion=Motion::Halted;
+                return Err(failure);
+            }
             if let Err(error) = self.configure_motors() {
                 let check = if self.getup_controller.is_some() { "getup-policy" } else { "ownership" };
                 let f = measurement::Failure::new(self.tick, substep, check, error, 0.0, 0.0);
@@ -1143,6 +1151,12 @@ impl Simulation {
                 let failure = measurement::Failure::new(self.tick, substep, "coordination-admission", reason, 1., 0.);
                 self.first_failure = Some(failure.clone());
                 self.motion = Motion::Halted;
+                return Err(failure);
+            }
+            #[cfg(feature="numeric-integration-budget")]
+            if let Err(reason) = integration_budget::debit(integration_budget::Kind::Real) {
+                let failure = measurement::Failure::new(self.tick, substep, "integration-budget", reason, 0., 0.);
+                self.first_failure=Some(failure.clone()); self.motion=Motion::Halted;
                 return Err(failure);
             }
             self.world.step_with_events(&self.filter, &());
