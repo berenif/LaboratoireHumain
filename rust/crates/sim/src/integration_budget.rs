@@ -42,6 +42,7 @@ pub fn install()->Result<(),String> { install_limit(3064) }
 pub fn install_continuation()->Result<(),String> { install_limit(2400) }
 #[cfg(test)]
 pub(crate) fn install_identification()->Result<(),String> { install_limit(4) }
+pub fn install_comparative_5339()->Result<(),String> { install_limit(2000) }
 pub fn install_coordinated_resume()->Result<(),String> { install_limit(2200) }
 pub fn install_short_resume()->Result<(),String> { install_limit(800) }
 fn install_limit(limit:u64)->Result<(),String> {
