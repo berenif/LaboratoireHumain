@@ -190,6 +190,11 @@ impl Runtime {
             "active"=>crate::getup::locomotion::Mode::Active,_=>return Err("Unknown native motor mode".into())};
         crate::getup::locomotion::set_mode(&mut self.simulation,mode)
     }
+    #[cfg(feature="getup-native-locomotion-experiment")]
+    pub fn begin_getup_native_step(&mut self, side:usize)->Result<(),String> {
+        if self.disposed || self.timeline.depth()!=0 {return Err("Step requires a live empty command boundary".into());}
+        crate::getup::locomotion::begin_step(&mut self.simulation,side)
+    }
     fn checkpoint_compatible(&self) -> Result<(), String> {
         let s = &self.simulation;
         s.profile.validate()?;

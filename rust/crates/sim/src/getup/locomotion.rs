@@ -35,21 +35,58 @@ pub(crate) struct State {
     pub mode: Mode,
     activation_native: Option<u64>,
     pub last_application: Option<Application>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    step: Option<super::native_step::State>,
 }
 
 impl State {
     pub fn new(generation: u64) -> Self {
         Self { format: FORMAT.into(), generation, mode: Mode::Active,
-            activation_native: None, last_application: None }
+            activation_native: None, last_application: None, step: None }
     }
     pub(crate) fn set_initial_generation(&mut self,generation:u64) {self.generation=generation;}
     fn valid(&self, s: &Simulation) -> bool {
         self.format == FORMAT && self.generation == s.generation
             && self.activation_native.is_none_or(|n| n <= s.substeps_completed)
             && self.last_application.as_ref().is_none_or(|a|
-                a.native_input <= s.substeps_completed && a.owner != Owner::Step
+                a.native_input <= s.substeps_completed
+                && (a.owner != Owner::Step || self.step.is_some())
                 && a.controls.iter().all(|v| v.is_finite() && v.abs() <= 1.0))
+            && self.step.as_ref().is_none_or(|step|step.valid(s.substeps_completed))
     }
+}
+
+
+pub(crate) fn step_active(s:&Simulation)->bool {
+    s.native_locomotion.as_ref().is_some_and(|state|state.step.as_ref().is_some_and(|x|x.active()))
+}
+#[cfg(feature="getup-native-locomotion-experiment")]
+pub(crate) fn begin_step(s:&mut Simulation,side:usize)->Result<(),String> {
+    validate(s)?;
+    let state=s.native_locomotion.as_ref().ok_or("Native Step requires the explicit pilot profile")?;
+    if state.mode!=Mode::Active || step_active(s) || s.first_failure.is_some() || s.motion==Motion::Halted
+        || s.getup_fixture.as_ref().is_some_and(|f|f.preparing)
+        || !s.getup_controller.as_ref().is_some_and(|c|c.native_balance_ready(s.substeps_completed)
+            && !c.native_recovery_owner(s.motion,s.substeps_completed))
+        || state.activation_native.is_some_and(|n|s.substeps_completed.saturating_sub(n)<20)
+    {return Err("Step needs earned recovered balance and exclusive active motor ownership".into());}
+    let mut step=super::native_step::State::begin(s,side)?;
+    step.command(s)?; // Read-only algebraic admission, no integration or motor application.
+    s.native_locomotion.as_mut().unwrap().step=Some(step);
+    Ok(())
+}
+pub(crate) fn cancel_step_for_recovery(s:&mut Simulation) {
+    let recovery=s.getup_fixture.as_ref().is_some_and(|f|f.preparing)
+        || s.getup_controller.as_ref().is_some_and(|c|c.native_recovery_owner(s.motion,s.substeps_completed));
+    if recovery && let Some(step)=s.native_locomotion.as_mut().and_then(|x|x.step.as_mut()) {step.cancel();}
+}
+pub(crate) fn step_command(s:&mut Simulation)->Result<[f32;21],String> {
+    // Evaluate a clone of the controller state, never a clone of the world.
+    // All state transitions are committed atomically with a feasible command.
+    let mut step=s.native_locomotion.as_ref().and_then(|x|x.step.clone()).ok_or("Missing Step owner")?;
+    let controls=step.command(s)?;
+    s.native_locomotion.as_mut().unwrap().step=Some(step);
+    Ok(controls)
 }
 
 /// Receipt of the REAL bounded external user impulse, not a pointer intention.
@@ -100,6 +137,7 @@ pub(crate) fn set_mode(s: &mut Simulation, mode: Mode) -> Result<(), String> {
         || (mode == Mode::Passive && s.getup_controller.as_ref()
             .is_some_and(|c| c.native_recovery_owner(s.motion,s.substeps_completed)))
     { return Err("Cannot interrupt fixture preparation or incomplete recovery".into()); }
+    if step_active(s) {return Err("Step pilot owns motors until recovery or explicit trial stop".into());}
     let state = s.native_locomotion.as_mut().unwrap();
     state.mode = mode;
     state.activation_native = (mode == Mode::Active).then_some(s.substeps_completed);
@@ -110,7 +148,7 @@ pub(crate) fn finish_command(s: &mut Simulation, owner: Owner, mut controls: [f3
     -> Result<[f32; 21], String>
 {
     if let Some(state) = &s.native_locomotion {
-        if owner == Owner::Step { return Err("Step owner has no admitted native command yet".into()); }
+        if owner == Owner::Step && !step_active(s) { return Err("Step owner has no active explicit pilot".into()); }
         if owner == Owner::Passive && controls != [0.0; 21] {
             return Err("Passive owner attempted active motor torque".into());
         }
@@ -147,10 +185,10 @@ pub fn observation(s: &Simulation) -> Result<serde_json::Value, String> {
     if q.iter().chain(dq.iter()).any(|x|!x.is_finite()) || !com.is_finite()
         || !com_velocity.is_finite() || twists.iter().any(|(v,w)|!v.is_finite() || !w.is_finite())
     { return Err("Non-finite native observation".into()); }
-    let contacts = super::standing::contacts(s)?;
+    let contacts = super::standing::contacts_including_unloaded(s)?;
     if contacts.iter().any(|c| !c.point.is_finite() || !c.floor_point.is_finite()
         || !c.normal.is_finite() || !c.velocity.is_finite() || !c.tangent_impulse_world.is_finite()
-        || !c.impulse.is_finite() || c.impulse<=0.0 || !c.signed_gap_m.is_finite()) {
+        || !c.impulse.is_finite() || c.impulse<0.0 || !c.signed_gap_m.is_finite()) {
         return Err("Non-finite/invalid resolved native contact".into());
     }
     let contacts:Vec<_> = contacts.iter().map(|c|serde_json::json!({
@@ -159,6 +197,10 @@ pub fn observation(s: &Simulation) -> Result<serde_json::Value, String> {
         "normalImpulseNs":c.impulse, "tangentImpulseNs":c.tangent_impulse_world.to_array(),
         "pointVelocityMps":c.velocity.to_array(), "signedGapM":c.signed_gap_m
     })).collect();
+    let foot_geometry=match super::native_step::geometry(s) {
+        Ok(feet)=>serde_json::json!({"feet":feet,"scope":"flat-floor capsule extrema"}),
+        Err(reason)=>serde_json::json!({"unavailable":reason}),
+    };
     let bodies:Vec<_> = s.model.segments.iter().enumerate().map(|(i,p)|serde_json::json!({
         "id":p.id,"massKg":p.mass_kg,"position":s.world.bodies[s.bodies[i]].translation().to_array(),
         "rotation":s.world.bodies[s.bodies[i]].rotation().to_array(),
@@ -173,8 +215,10 @@ pub fn observation(s: &Simulation) -> Result<serde_json::Value, String> {
             "rotation":root.rotation().to_array(),"comVelocityMps":twists[0].0.to_array(),
             "angularVelocityRadps":twists[0].1.to_array()},
         "com":com.to_array(),"comVelocityMps":com_velocity.to_array(),"massKg":mass,
-        "bodies":bodies,"floorFootContacts":contacts,"contactNativeCompleted":s.substeps_completed,
-        "contactScope":"resolved foot contacts with the flat floor only; no inferred sole support",
+        "bodies":bodies,"floorFootContacts":contacts,
+        "floorFootGeometry":foot_geometry,
+        "footGeometryContract":"capsule extrema independent of impulse; geometric proximity is not load","contactNativeCompleted":s.substeps_completed,
+        "contactScope":"flat-floor solver foot contacts including zero impulse; geometry is not load",
         "activeGrab":s.grab.as_ref().map(|g|serde_json::json!({"press":g.press,
             "body":s.model.segments[g.segment].id,"localAnchor":g.local_anchor.to_array(),
             "rawTarget":g.raw_target.to_array(),"filteredTarget":g.control_target().to_array()})),
@@ -191,6 +235,18 @@ mod tests {
         p.getup_repeated_recovery=Some(GetUpRepeatedRecovery::CompletedCycleConfirmedFallV1);
         p.getup_native_locomotion=Some(Profile::NativeJointOwnerV1);
         Simulation::new(0.0,p,true).unwrap()
+    }
+    #[test] fn native_step_pure_entry_requires_earned_state_without_mutation() {
+        let mut s=simulation();let before=serde_json::to_value(&s).unwrap();
+        assert!(begin_step(&mut s,0).is_err());
+        assert_eq!(serde_json::to_value(&s).unwrap(),before);assert_eq!(s.substeps_completed,0);
+        assert!(finish_command(&mut s,Owner::Step,[0.;21]).is_err());
+    }
+    #[test] fn native_step_pure_geometry_preserves_zero_load_candidates() {
+        let s=simulation();let before=serde_json::to_value(&s).unwrap();
+        let feet=super::super::native_step::geometry(&s).unwrap();
+        assert!(feet.iter().all(|f|f.load==0. && !f.points.is_empty()));
+        assert_eq!(serde_json::to_value(&s).unwrap(),before);assert_eq!(s.substeps_completed,0);
     }
     #[test] fn native_contract_native_observation_is_fresh_and_nonstepping() {
         let s=simulation();let before=serde_json::to_value(s.snapshot()).unwrap();

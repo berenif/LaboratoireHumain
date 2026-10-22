@@ -13,6 +13,7 @@ pub mod reference;
 pub mod standing;
 pub mod transfer;
 pub mod locomotion;
+pub(crate) mod native_step;
 mod supported_standing;
 #[cfg(feature = "standing-dynamics-experiment")]
 pub use supported_standing::{dynamic_balance_diagnostic, dynamic_balance_fixture_invariants};
@@ -231,10 +232,14 @@ pub(crate) fn configure(s: &mut Simulation) -> Result<(), String> {
             Vector::new(s.balance_torso_force_n[0], 0.0, s.balance_torso_force_n[1]), true);
         return Ok(());
     }
+    locomotion::cancel_step_for_recovery(s);
+    let step_owns = locomotion::step_active(s);
     let controls = if s.getup_fixture.as_ref().is_some_and(|f|f.preparing) {
         Ok([0.0;21])
     } else if locomotion::passive(s) {
         Ok([0.0;21])
+    } else if step_owns {
+        locomotion::step_command(s)
     } else if let Some(mut controller) = s.getup_controller.take() {
         let result = controller.command(s, &physical);
         s.getup_controller = Some(controller);
@@ -250,6 +255,7 @@ pub(crate) fn configure(s: &mut Simulation) -> Result<(), String> {
     } else if locomotion::passive(s) { locomotion::Owner::Passive
     } else if s.getup_controller.as_ref().is_some_and(|c|c.native_recovery_owner(s.motion,s.substeps_completed)) {
         locomotion::Owner::Recovery
+    } else if step_owns { locomotion::Owner::Step
     } else { locomotion::Owner::Balance };
     let controls = controls.and_then(|c|locomotion::finish_command(s,owner,c));
     s.diagnostics.getup = Some(lh_contracts::GetUpObservation {
@@ -257,6 +263,8 @@ pub(crate) fn configure(s: &mut Simulation) -> Result<(), String> {
             "fixture-zero-control-preparation"
         } else if locomotion::passive(s) {
             "native-passive-zero-motors"
+        } else if step_owns {
+            "native-step-pilot-unqualified"
         } else if let Some(controller) = &s.getup_controller {
             controller.controller_label()
         } else if cfg!(feature = "standing-dynamics-experiment") {

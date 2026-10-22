@@ -22,6 +22,14 @@ fn point_velocity(linear: Vector, angular: Vector, offset_from_com: Vector) -> V
 }
 
 pub(crate) fn contacts(s: &Simulation) -> Result<Vec<FootContact>, String> {
+    collect_contacts(s, false)
+}
+/// Native pilot observation keeps unloaded solver contact geometry. Legacy
+/// standing callers still receive their original strictly-loaded contact set.
+pub(crate) fn contacts_including_unloaded(s: &Simulation) -> Result<Vec<FootContact>, String> {
+    collect_contacts(s, true)
+}
+fn collect_contacts(s: &Simulation, include_unloaded: bool) -> Result<Vec<FootContact>, String> {
     let twists = super::current_twists(s)?;
     let mut out = Vec::new();
     for name in ["left_foot", "right_foot"] {
@@ -47,7 +55,7 @@ pub(crate) fn contacts(s: &Simulation) -> Result<Vec<FootContact>, String> {
             for contact in &manifold.data.solver_contacts {
                 let point_data = &manifold.points[contact.contact_indices()[0] as usize].data;
                 let impulse = point_data.impulse;
-                if impulse <= 0.0 {
+                if impulse <= 0.0 && !(include_unloaded && impulse == 0.0) {
                     continue;
                 }
                 let (a, b) = manifold

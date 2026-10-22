@@ -269,6 +269,10 @@ mod browser {
         pub fn set_getup_native_mode(&mut self,mode:&str)->Result<(),JsValue> {
             self.runtime.set_getup_native_mode(mode).map_err(error)
         }
+        #[cfg(feature="getup-native-locomotion-experiment")]
+        pub fn begin_getup_native_step(&mut self,side:usize)->Result<(),JsValue> {
+            self.runtime.begin_getup_native_step(side).map_err(error)
+        }
         pub fn getup_report(&self) -> Result<String, JsValue> { self.runtime.getup_report().map_err(error) }
         #[wasm_bindgen(constructor)]
         pub fn new(
