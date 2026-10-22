@@ -24,6 +24,10 @@ pub enum Phase { Retraction, Swing, Landing, Complete, Cancelled }
 pub(crate) struct Reference {
     pub q: [f32;21],
     pub dq: [f32;21],
+    #[serde(default)]
+    acceleration: [f32;21],
+    #[serde(default)]
+    acceleration_initialized: bool,
     start: [f32;21],
     velocity: [f32;21],
     target: [f32;21],
@@ -37,50 +41,56 @@ pub(crate) struct Reference {
 fn reference_duration()->f32 {DURATION}
 impl Reference {
     fn new(q:[f32;21],dq:[f32;21],target:[f32;21])->Self {
-        Self {q,dq,start:q,velocity:dq,target,elapsed:0.,braking:false,duration:DURATION,limit_braking:[false;21]}
+        Self {q,dq,acceleration:[0.;21],acceleration_initialized:true,start:q,velocity:dq,target,elapsed:0.,braking:false,duration:DURATION,limit_braking:[false;21]}
     }
-    /// Rebuild from continuous q/v, with a sufficient Bernstein envelope for
-    /// the whole quintic. MAX_REFERENCE_DURATION remains a design horizon, not a certificate
-    /// of physical capture. If it is insufficient, require new preparation.
+    /// Replan only for a changed target, preserving accepted q/v/a. Estimate
+    /// settling time using envelopes of this flow, not the removed quintic.
+    /// Partial allocation can delay arrival: actual reference settling is also
+    /// checked at phase boundaries. The original pilot deadline never changes.
     fn retimed(&self)->Result<Self,String> {
-        let mut duration=0.00125f64;
-        for i in 0..21 {if self.limit_braking[i] {continue;}
-            let d=(self.target[i]-self.q[i]).abs() as f64;let v=self.dq[i].abs() as f64;
-            if v>=0.25 {return Err("Step retiming needs braking/preparation before a new horizon".into());}
-            duration=duration.max((12.*v+(144.*v*v+160.*d).sqrt())/4.);
-            duration=duration.max(5.*d/(0.5-2.*v));
-        }
-        if duration>MAX_REFERENCE_DURATION as f64 {return Err("Step realizable reference exceeds pilot horizon: change preparation/placement; physical capture not certified".into());}
+        let settled_by=|t:f64|->bool {
+            let w=4./DURATION as f64;let decay=(-w*t).exp();
+            (0..21).all(|i| {
+                if self.limit_braking[i] {return true;}
+                let c0=(self.q[i]-self.target[i]) as f64;
+                let c1=self.dq[i] as f64+w*c0;
+                let c2=0.5*(self.acceleration[i] as f64+2.*w*self.dq[i] as f64+w*w*c0);
+                let p=c0.abs()+c1.abs()*t+c2.abs()*t*t;
+                let v=(c1-w*c0).abs()+(2.*c2-w*c1).abs()*t+(w*c2).abs()*t*t;
+                let a=(2.*c2-2.*w*c1+w*w*c0).abs()+(w*w*c1-4.*w*c2).abs()*t+(w*w*c2).abs()*t*t;
+                p*decay<=0.001 && v*decay<=0.005 && a*decay<=0.02
+            })
+        };
+        let mut lo=DURATION as f64;let mut hi=MAX_REFERENCE_DURATION as f64;
+        if !settled_by(hi) {return Err("Step realizable reference exceeds pilot horizon: change preparation/placement; physical capture not certified".into());}
+        // Past 0.8 s all degree <=2 exponential envelope terms decrease.
+        for _ in 0..24 {let mid=(lo+hi)*0.5;if settled_by(mid) {hi=mid;} else {lo=mid;}}
         let mut r=self.clone();r.start=r.q;r.velocity=r.dq;r.elapsed=0.;
-        r.duration=(duration as f32*(1.+16.*f32::EPSILON)).min(MAX_REFERENCE_DURATION);
+        r.duration=(hi as f32*(1.+16.*f32::EPSILON)).min(MAX_REFERENCE_DURATION);
         Ok(r)
     }
-    /// Quintic Hermite in physical seconds, not one entire displacement per
-    /// control evaluation. The measured state is used by feedback, not as a
-    /// replacement for the persistent trajectory origin.
+    fn settled(&self)->bool {
+        (0..21).all(|i|self.limit_braking[i] || ((self.q[i]-self.target[i]).abs()<=0.001
+            && self.dq[i].abs()<=0.005 && self.acceleration[i].abs()<=0.02))
+    }
+    /// Exact local third-order critically damped reference flow (5 / s).
+    /// The accepted q/v/a is its initial condition, including after allocation.
+    /// Target replacement changes jerk, never q/v/a; no polynomial clock restarts.
+    /// This is a design trajectory, not a physical feasibility certificate.
     fn proposal(&self,dt:f32,bounds:&[(f32,f32);21])->Result<(Self,[f32;21]),String> {
         if !dt.is_finite() || dt<=0. || dt>0.025 {return Err("Invalid Step reference interval".into());}
-        if self.braking {
-            if self.dq.iter().any(|v|*v!=0.) {return self.braking_proposal(dt,bounds);}
-            // A completed whole-reference brake may resume the unfinished
-            // intention from continuous q/dq. The measured world is untouched.
-            let mut resumed=Self::new(self.q,self.dq,self.target);
-            resumed.limit_braking=self.limit_braking;
-            return resumed.proposal(dt,bounds);
-        }
-        let t=(self.elapsed+dt).min(self.duration);let x=t/self.duration;
-        let h=10.*x.powi(3)-15.*x.powi(4)+6.*x.powi(5);
-        let dh=(30.*x.powi(2)-60.*x.powi(3)+30.*x.powi(4))/self.duration;
-        let ddh=(60.*x-180.*x.powi(2)+120.*x.powi(3))/self.duration.powi(2);
-        let v=x-6.*x.powi(3)+8.*x.powi(4)-3.*x.powi(5);
-        let dv=1.-18.*x.powi(2)+32.*x.powi(3)-15.*x.powi(4);
-        let ddv=(-36.*x+96.*x.powi(2)-60.*x.powi(3))/self.duration;
+        if self.braking && self.dq.iter().any(|v|*v!=0.) {return self.braking_proposal(dt,bounds);}
+        let t=(self.elapsed+dt).min(self.duration);
         let mut next=self.clone();next.elapsed=t;let mut ddq=[0.;21];
         for i in 0..21 {
-            let delta=self.target[i]-self.start[i];
-            next.q[i]=self.start[i]+delta*h+self.velocity[i]*self.duration*v;
-            next.dq[i]=delta*dh+self.velocity[i]*dv;
-            ddq[i]=delta*ddh+self.velocity[i]*ddv;
+            let w=4. / DURATION as f64;let h=dt as f64;
+            let c0=(self.q[i]-self.target[i]) as f64;
+            let c1=self.dq[i] as f64+w*c0;
+            let c2=0.5*(self.acceleration[i] as f64+2.*w*self.dq[i] as f64+w*w*c0);
+            let p=c0+c1*h+c2*h*h;let dp=c1+2.*c2*h;let decay=(-w*h).exp();
+            next.q[i]=(self.target[i] as f64+p*decay) as f32;
+            next.dq[i]=((dp-w*p)*decay) as f32;
+            ddq[i]=((2.*c2-2.*w*dp+w*w*p)*decay) as f32;
             // A tiny inward return to one joint stop must not brake all 21
             // coordinates or prevent the support phase from progressing.
             if self.limit_braking[i] || needs_braking(self.q[i],self.dq[i],bounds[i],dt)
@@ -94,6 +104,8 @@ impl Reference {
                 return Err("Step reference exceeds pilot speed/acceleration envelope".into());
             }
         }
+        next.braking=false;next.acceleration=ddq;
+        for i in 0..21 {if next.limit_braking[i] && next.dq[i]==0. {next.acceleration[i]=0.;}}
         Ok((next,ddq))
     }
     /// Explicit alpha-zero fallback: brake current reference velocities and
@@ -102,8 +114,26 @@ impl Reference {
         if !dt.is_finite() || dt<=0. || dt>0.025 {return Err("Invalid Step brake interval".into());}
         let mut next=self.clone();next.braking=true;let mut acceleration=[0.;21];
         for i in 0..21 {
-            let (q,v,a)=brake_reference(self.q[i],self.dq[i],bounds[i],dt)?;
-            next.q[i]=q;next.dq[i]=v;acceleration[i]=a;
+            // A limited allocation must not inject a fresh +/-2 acceleration
+            // every tick. Smooth ordinary braking from the accepted acceleration.
+            // Joint-stop braking remains higher priority and bounded as before.
+            let a0=self.acceleration[i];
+            let goal=(-self.dq[i]/0.025).clamp(-REFERENCE_ACCELERATION,REFERENCE_ACCELERATION);
+            let a1=a0+(goal-a0)*(1.-(-dt/0.025).exp());
+            let mut v=self.dq[i]+(a0+a1)*dt*0.5;
+            let mut q=self.q[i]+self.dq[i]*dt+(2.*a0+a1)*dt*dt/6.;
+            let mut terminal=a1;
+            if self.limit_braking[i] || needs_braking(self.q[i],self.dq[i],bounds[i],dt)
+                || q<bounds[i].0 || q>bounds[i].1
+                || (self.dq[i]!=0. && self.dq[i]*v<=0.) {
+                let stopped=brake_reference(self.q[i],self.dq[i],bounds[i],dt)?;
+                q=stopped.0;v=stopped.1;terminal=if v==0. {0.} else {stopped.2};
+            }
+            if !q.is_finite() || !v.is_finite() || v.abs()>0.5 || terminal.abs()>REFERENCE_ACCELERATION {
+                return Err("Step brake exceeds pilot speed/acceleration envelope".into());
+            }
+            next.q[i]=q;next.dq[i]=v;next.acceleration[i]=terminal;
+            acceleration[i]=((v-self.dq[i])/dt).clamp(-REFERENCE_ACCELERATION,REFERENCE_ACCELERATION);
         }
         next.elapsed=(self.elapsed+dt).min(self.duration);
         Ok((next,acceleration))
@@ -165,7 +195,7 @@ impl State {
             && self.last_reactions.iter().all(|(_,p,f)|p.is_finite() && f.is_finite())
             && self.reference_acceleration.iter().all(|x|x.is_finite() && x.abs()<=REFERENCE_ACCELERATION)
             && self.reference.q.iter().chain(&self.reference.dq).chain(&self.reference.start)
-                .chain(&self.reference.velocity).chain(&self.reference.target).all(|x|x.is_finite())
+                .chain(&self.reference.velocity).chain(&self.reference.acceleration).chain(&self.reference.target).all(|x|x.is_finite())
     }
     pub fn cancel(&mut self) {self.phase=Phase::Cancelled;}
     #[cfg(feature="getup-native-locomotion-experiment")]
@@ -193,6 +223,14 @@ impl State {
         let elapsed=s.substeps_completed.checked_sub(self.last_native).ok_or("Step clock reversed")?;
         if elapsed>1 {return Err("Step missed a native command boundary".into());}
         if !pilot_budget_available(self.started_native,s.substeps_completed) {return Err("Step pilot exceeded 2400 native intervals".into());}
+        // Older checkpoints store accepted acceleration on State only.
+        if !self.reference.acceleration_initialized {
+            self.reference.acceleration=std::array::from_fn(|i| {
+                if self.reference.dq[i]==0. && (self.reference.braking || self.reference.limit_braking[i]) {0.}
+                else {self.reference_acceleration[i]}
+            });
+            self.reference.acceleration_initialized=true;
+        }
         let support=geometry(s)?;
         if support[1-self.side].load<3. || support[1-self.side].clearance>0. {return Err("Step lost measured retained-foot support".into());}
         let foot=&support[self.side];
@@ -216,7 +254,7 @@ impl State {
                 else {self.foot_goal.y=origin.y+SOLE_GUARD-foot.clearance;}
                 self.reference.target=posture(s,self.side,self.com,self.foot_goal)?;
                 self.reference=self.reference.retimed()?;
-                self.reference_acceleration=[0.;21];
+
                 let remaining=(LIMIT_NATIVE-(s.substeps_completed-self.started_native)) as f32*s.profile.dt_s;
                 if self.reference.duration>remaining {return Err("Step preparation needs more time than this pilot reserve; change preparation/placement".into());}
                 if let Some(p)=&mut self.preparation {p.updated=s.substeps_completed;} else {
@@ -235,13 +273,16 @@ impl State {
             // without a prescribed 134 mm transfer or a static-balance gate.
             let catch=com+horizontal(velocity)*time+lateral*horizontal(origin-com).dot(lateral);
             self.foot_goal=Vector::new(catch.x,origin.y+SOLE_GUARD-foot.clearance,catch.z);
-            self.reference=Reference::new(self.reference.q,self.reference.dq,posture(s,self.side,self.com,self.foot_goal)?).retimed()?;
+            self.reference.target=posture(s,self.side,self.com,self.foot_goal)?;
+            self.reference=self.reference.retimed()?;
         } else if elapsed>0 && !self.reference.braking && self.reference.elapsed>=self.reference.duration {
             match self.phase {
                 Phase::Retraction=>return Err("Step retraction ended without whole-capsule separation and unloading".into()),
                 Phase::Swing=>{
+                    if !self.reference.settled() {return Err("Step reference deadline reached before swing target settled".into());}
                     self.phase=Phase::Landing;self.foot_goal.y-=SOLE_GUARD;
-                    self.reference=Reference::new(self.reference.q,self.reference.dq,posture(s,self.side,self.com,self.foot_goal)?).retimed()?;
+                    self.reference.target=posture(s,self.side,self.com,self.foot_goal)?;
+            self.reference=self.reference.retimed()?;
                 },
                 Phase::Landing=>{
                     if elapsed>0 && foot.load>=3. && foot.clearance<=0.001 {self.landed_samples=(self.landed_samples+1).min(20);} else {self.landed_samples=0;}
@@ -254,9 +295,7 @@ impl State {
         }
         let bounds=joint_bounds(s);
         let nominal=if elapsed==0 {(self.reference.clone(),self.reference_acceleration)}
-            else {match self.reference.proposal(s.profile.dt_s,&bounds) {
-                Ok(p)=>p,Err(e) if e=="Step reference exceeds pilot speed/acceleration envelope"=>self.reference.retimed()?.proposal(s.profile.dt_s,&bounds)?,Err(e)=>return Err(e)
-            }};
+            else {self.reference.proposal(s.profile.dt_s,&bounds)?};
         // Alpha zero advances time and brakes existing reference velocity. It
         // never freezes q while discarding dq or resets the measured state.
         let baseline=if elapsed==0 {nominal.clone()} else {
@@ -650,26 +689,38 @@ fn blend_reference(baseline:&(Reference,[f32;21]),nominal:&(Reference,[f32;21]),
     if alpha==0. {return Ok(baseline.clone());}
     let mut r=nominal.0.clone();let a=std::array::from_fn(|i|baseline.1[i]+alpha*(nominal.1[i]-baseline.1[i]));
     for i in 0..21 {r.q[i]=baseline.0.q[i]+alpha*(nominal.0.q[i]-baseline.0.q[i]);r.dq[i]=baseline.0.dq[i]+alpha*(nominal.0.dq[i]-baseline.0.dq[i]);}
-    if !r.braking {
-        // Allocation changed progress, not the amount of physical time left.
-        // Preserve accepted q/dq and derive a fresh feasible local duration.
-        r=r.retimed()?;
-    }
+    // Limited progress is not a new target or a new planning horizon.
+    // The accepted acceleration seeds the next flow, not an implicit zero.
+    r.acceleration=std::array::from_fn(|i|baseline.0.acceleration[i]+alpha*(nominal.0.acceleration[i]-baseline.0.acceleration[i]));
     Ok((r,a))
 }
 
-/// Shift the existing projection's preferred point toward zero free-foot
-/// reaction. Contact cones/equalities/motor bands can move away from it.
+/// Set a preferred load split for propulsion then capture/withdrawal. Contact cones/equalities/motor bands can move away from it.
 /// Inputs are previous intentions only, never measured impulses.
-fn prefer_unloading(seed:&mut DVector<f32>,points:&[(usize,Vector)],free:usize,total:Vector)->Result<(),String> {
+fn prefer_unloading(seed:&mut DVector<f32>,points:&[(usize,Vector)],free:usize,total:Vector,free_share:f32)->Result<(),String> {
     let retained=points.iter().filter(|(body,_)|*body!=free).count();
     if retained==0 {return Err("No retained points for load preference".into());}
-    let mut sum=Vector::ZERO;
-    for (k,(body,_)) in points.iter().enumerate() {if *body==free {for j in 0..3 {seed[3*k+j]=0.;}}
-        else {sum+=Vector::new(seed[3*k],seed[3*k+1],seed[3*k+2]);}}
-    let shift=(total-sum)/retained as f32;
-    for (k,(body,_)) in points.iter().enumerate() {if *body!=free {for j in 0..3 {seed[3*k+j]+=shift[j];}}}
+    for is_free in [true,false] {
+        let count=points.iter().filter(|(body,_)|(*body==free)==is_free).count();
+        if count==0 {continue;}
+        let desired=total*if is_free {free_share}else{1.-free_share};
+        let sum=points.iter().enumerate().filter(|(_, (body,_))|(*body==free)==is_free)
+            .map(|(k,_)|Vector::new(seed[3*k],seed[3*k+1],seed[3*k+2])).sum::<Vector>();
+        let shift=(desired-sum)/count as f32;
+        for (k,(body,_)) in points.iter().enumerate() {if (*body==free)==is_free {for j in 0..3 {seed[3*k+j]+=shift[j];}}}
+    }
     Ok(())
+}
+/// Pendulum COP heuristic only: accelerate toward the retained support first,
+/// brake the measured capture velocity as it approaches, then unload the free
+/// foot. Neither this preference nor the rigid-base model proves feasibility.
+fn preferred_free_share(com:Vector,velocity:Vector,free:Vector,retained:Vector)->f32 {
+    let height=(com.y-retained.y).max(0.01);let omega=(9.81/height).sqrt();
+    let acceleration=horizontal(retained-com)*(omega*omega)-horizontal(velocity)*(2.*omega);
+    let cop=horizontal(com)-acceleration*(height/9.81);
+    let span=horizontal(retained-free);
+    if span.length_squared()<1e-8 {return 0.5;}
+    (1.-(cop-horizontal(free)).dot(span)/span.length_squared()).clamp(0.,1.)
 }
 type CommandProposal=([f32;21],Reference,[f32;21],Vec<Reaction>);
 fn command_for_family(s:&Simulation,baseline:&(Reference,[f32;21]),nominal:&(Reference,[f32;21]),side:usize,exclusive:bool,unload:bool,warm:&[Reaction])->Result<CommandProposal,String> {
@@ -743,10 +794,14 @@ fn command_for_family_recorded(s:&Simulation,baseline:&(Reference,[f32;21]),nomi
     }
     if unload {
         let target_force=Vector::new(w0[0]+dw[0],w0[1]+dw[1],w0[2]+dw[2]);
-        prefer_unloading(&mut seed,&points,feet(s)?[side],target_force)?;
+        let feet_geometry=&geometry;
+        let share=if exclusive {0.} else {preferred_free_share(s.center_of_mass(),measured_com_velocity(s)?,
+            support_center(&feet_geometry[side]),support_center(&feet_geometry[1-side]))};
+        prefer_unloading(&mut seed,&points,feet(s)?[side],target_force,share)?;
+        record["preferredFreeLoadFraction"]=serde_json::json!(share);
         matched=points.len();
     }
-    record["loadPreference"]=serde_json::json!({"freeFootZeroPreferred":unload,"hardZeroReactionConstraint":false,"monotonicLoadRequired":false});
+    record["loadPreference"]=serde_json::json!({"captureDirectedPreference":unload,"hardZeroReactionConstraint":false,"monotonicLoadRequired":false});
     record["rootOrigin"]=serde_json::json!(root.to_array());
     let (allocated,alpha)=allocate_motor_wrench(&a,&w0,&dw,&normals,&contact,&t0,&dt,&caps,(alpha_min,1.),
         if matched>0 {Some(&seed)} else {None},record)?;
@@ -850,6 +905,62 @@ pub(crate) fn identify_transition(before:&Simulation,after:&Simulation,controls:
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[test] fn native_step_pure_propulsion_precedes_unloading_from_measured_capture() {
+        let free=Vector::new(-0.1,0.,0.);let support=Vector::new(0.1,0.,0.);
+        let com=Vector::new(0.,0.8,0.);
+        assert!(preferred_free_share(com,Vector::ZERO,free,support)>0.9);
+        // Approaching the support while moving toward it calls for braking:
+        // the preferred COP moves toward support, permitting free-foot unloading.
+        assert!(preferred_free_share(Vector::new(0.09,0.8,0.),Vector::new(0.1,0.,0.),free,support)<0.1);
+        // Same position, opposite velocity: feedback requests propulsion again.
+        assert!(preferred_free_share(com,Vector::new(-0.1,0.,0.),free,support)>0.9);
+    }
+    #[test]
+    #[ignore="reads exact recorded observation; reference updates only, no Rapier integration"]
+    fn native_step_pure_recorded_5499_target_replacement_and_partial_progress() {
+        let data:serde_json::Value=serde_json::from_slice(&std::fs::read(std::env::var("LH_STEP_TRIAL").unwrap()).unwrap()).unwrap();
+        let state=&data["result"]["finalObservation"]["ownership"]["step"];
+        let mut r:Reference=serde_json::from_value(state["reference"].clone()).unwrap();
+        r.acceleration=serde_json::from_value(state["reference_acceleration"].clone()).unwrap();
+        let initial=r.clone();let replanned=r.retimed().unwrap();
+        assert_eq!(replanned.q,r.q);assert_eq!(replanned.dq,r.dq);assert_eq!(replanned.acceleration,r.acceleration);
+        // Recorded left knee: the new goal extends, inherited velocity flexes.
+        assert!(r.target[12]>r.q[12] && r.dq[12]<0.);
+        let model=lh_model::Model::canonical().unwrap();let mut bounds=[(0.,0.);21];
+        for p in &model.segments {if let Some(h)=p.reference.as_ref().and_then(|r|r.hinge.as_ref()) {
+            let a=&p.joint_profile.as_ref().unwrap().axes[0];bounds[h.qpos_index]=(a.min_radians,a.max_radians);
+        }}
+        let mut first_positive=None;
+        for update in 1..=320 {
+            let nominal=r.proposal(0.00125,&bounds).unwrap();let baseline=r.braking_proposal(0.00125,&bounds).unwrap();
+            let (next,a)=blend_reference(&baseline,&nominal,0.96,0.00125).unwrap();
+            assert_eq!(next.acceleration[12],baseline.0.acceleration[12]+0.96*(nominal.0.acceleration[12]-baseline.0.acceleration[12]));assert!(next.elapsed>=r.elapsed);
+            assert!((next.dq[12]-r.dq[12]).abs()<=2.*0.00125+1e-6);
+            // Hold measured q/dq fixed to isolate reference tracking, not simulate motion.
+            let tracking=a[12]+16.*(next.q[12]-(-0.384538621))+8.*(next.dq[12]-(-0.20407295));
+            if tracking>0. && next.dq[12]>0. && first_positive.is_none() {first_positive=Some(update);}
+            r=next;
+            if update%40==0 {
+                let before=r.clone();r=r.retimed().unwrap();
+                assert_eq!(r.q,before.q);assert_eq!(r.dq,before.dq);assert_eq!(r.acceleration,before.acceleration);
+            }
+        }
+        assert!(first_positive.is_some());assert!(r.q[12]>initial.q[12]+0.005);
+        assert!(r.dq[12]>0.);assert_eq!(r.target,initial.target);
+        println!("REFERENCE_ONLY native5499 direction recovered at update {:?}; knee reference delta {}; physics integrations 0",first_positive,r.q[12]-initial.q[12]);
+        let first=&data["result"]["commands"]["firstAdmitted"];
+        let mut r:Reference=serde_json::from_value(first["proposedReference"].clone()).unwrap();
+        r.acceleration=serde_json::from_value(first["referenceAcceleration"].clone()).unwrap();
+        let q=first["q"][12].as_f64().unwrap() as f32;let v=first["dq"][12].as_f64().unwrap() as f32;
+        let effort=|r:&Reference,a:f32|a+16.*(r.q[12]-q)+8.*(r.dq[12]-v);
+        let effort_before=effort(&r,r.acceleration[12]);assert!(effort_before<0.);
+        for _ in 0..320 {
+            let nominal=r.proposal(0.00125,&bounds).unwrap();let baseline=r.braking_proposal(0.00125,&bounds).unwrap();
+            r=blend_reference(&baseline,&nominal,0.96,0.00125).unwrap().0;
+        }
+        assert!(effort(&r,r.acceleration[12])>0. && r.dq[12]>0.);
+        println!("REFERENCE_ONLY native5339 tracking acceleration {} -> {}; reference speed {}; physics integrations 0",effort_before,effort(&r,r.acceleration[12]),r.dq[12]);
+    }
     #[test] fn native_step_pure_geometry_and_velocity_drive_transfer_and_sole_guard() {
         let com=Vector::new(0.,0.8,0.);let support=Vector::new(0.2,0.,0.1);
         let still=transfer_goal(com,Vector::ZERO,support);
@@ -862,7 +973,7 @@ mod tests {
     #[test] fn native_step_pure_unloading_is_a_preference_not_contact_removal() {
         let points=vec![(0,Vector::ZERO),(1,Vector::X),(1,Vector::Z)];
         let mut seed=DVector::from_vec(vec![0.,200.,0., 0.,100.,0., 0.,100.,0.]);
-        prefer_unloading(&mut seed,&points,0,Vector::new(0.,400.,0.)).unwrap();
+        prefer_unloading(&mut seed,&points,0,Vector::new(0.,400.,0.),0.).unwrap();
         assert_eq!(seed[1],0.);assert_eq!(seed[4]+seed[7],400.);assert_eq!(points.len(),3);
         assert!(contact_can_react(-0.0004,0.1).unwrap());assert!(!contact_can_react(0.001,0.).unwrap());
         // The preferred free load is not an equality: retained force cap100
@@ -892,8 +1003,8 @@ mod tests {
     #[test] fn native_step_pure_retime_preserves_q_v_without_deadline_compression() {
         let mut r=Reference::new([0.;21],[-0.065298;21],[-0.01960036;21]);r.duration=0.10125059;r.elapsed=0.00125;
         let next=r.retimed().unwrap();assert_eq!(next.q,r.q);assert_eq!(next.dq,r.dq);assert!(next.duration>0.4);
-        let mut p=next;for _ in 0..640 {p=p.proposal(0.00125,&[(-1.,1.);21]).unwrap().0;}
-        assert!((p.q[0]-r.target[0]).abs()<1e-5);assert!(p.dq[0].abs()<1e-5);
+        let count=(next.duration/0.00125).ceil() as usize;let mut p=next;for _ in 0..count {p=p.proposal(0.00125,&[(-1.,1.);21]).unwrap().0;}
+        assert!(p.settled());
     }
     #[test] fn native_step_pure_discrete_contact_bias_has_no_slop_deadzone() {
         let h=0.0003125;let erp=18.739173;
@@ -919,14 +1030,14 @@ mod tests {
     }
     #[test] fn native_step_pure_reference_global_brake_resumes_but_alpha_zero_holds() {
         let mut r=Reference::new([0.;21],[0.005;21],[0.005;21]);r.braking=true;
-        r=r.proposal(0.00125,&[(-1.,1.);21]).unwrap().0;
-        r=r.proposal(0.00125,&[(-1.,1.);21]).unwrap().0;
+        for _ in 0..200 {if r.dq.iter().all(|v|*v==0.) {break;}
+            r=r.proposal(0.00125,&[(-1.,1.);21]).unwrap().0;}
         assert!(r.dq.iter().all(|v|*v==0.));let stopped=r.clone();
         let held=r.braking_proposal(0.00125,&[(-1.,1.);21]).unwrap().0;
         assert!(held.braking);assert_eq!(held.q,stopped.q);assert_eq!(held.dq,stopped.dq);
         let next=r.proposal(0.00125,&[(-1.,1.);21]).unwrap().0;
         assert!(!next.braking);assert!(next.q[0]>=stopped.q[0]);assert!(next.dq[0]>0.);
-        assert_eq!(next.start,stopped.q);assert_eq!(next.velocity,stopped.dq);
+        assert_eq!(next.target,stopped.target);
     }
     #[test]
     #[ignore="requires recorded trial observation; evolves references only, never Rapier"]
@@ -969,16 +1080,16 @@ mod tests {
         let mut brake=r.clone();brake.braking=true;let baseline=brake.proposal(0.00125,&[(-1.,1.);21]).unwrap();
         let (zero,_)=blend_reference(&baseline,&nominal,0.,0.00125).unwrap();assert!(zero.q[0]>0. && zero.dq[0]>0. && zero.dq[0]<r.dq[0]);
         let (half,_)=blend_reference(&baseline,&nominal,0.5,0.00125).unwrap();assert!(half.dq[0]>zero.dq[0]);
-        assert_eq!(half.start,half.q);assert_eq!(half.velocity,half.dq);assert_eq!(half.elapsed,0.);
-        assert!(half.duration>0.00125 && half.duration<=DURATION);
+        assert_eq!(half.start,r.start);assert_eq!(half.elapsed,0.00125);
+        assert!(half.duration>0.00125 && half.duration==DURATION);
         let next=half.proposal(0.00125,&[(-1.,1.);21]).unwrap().0;
-        assert!(next.q[0]>half.q[0]);assert!((next.dq[0]-half.dq[0]).abs()<0.001);
+        assert!(next.q[0]>half.q[0]);assert!((next.dq[0]-half.dq[0]).abs()<=REFERENCE_ACCELERATION*0.00125);
     }
     #[test] fn native_step_pure_joint_partial_terminal_reference_cannot_jump_to_target() {
         let mut nominal=Reference::new([0.;21],[0.;21],[0.01;21]);nominal.elapsed=nominal.duration;
         nominal.q=nominal.target;let mut baseline=nominal.clone();baseline.q=[0.;21];baseline.braking=true;
         let (half,_)=blend_reference(&(baseline,[0.;21]),&(nominal,[0.;21]),0.5,0.00125).unwrap();
-        assert_eq!(half.q,[0.005;21]);assert_eq!(half.dq,[0.;21]);assert_eq!(half.elapsed,0.);
+        assert_eq!(half.q,[0.005;21]);assert_eq!(half.dq,[0.;21]);assert_eq!(half.elapsed,DURATION);
         assert!(half.duration>0.00125);assert_eq!(half.target,[0.01;21]);
         let next=half.proposal(0.00125,&[(-1.,1.);21]).unwrap().0;assert!(next.q[0]<0.00501);
     }
