@@ -1,7 +1,7 @@
 //! Explicit native pilot only. Read measured state, propose references, check
 //! inverse dynamics, then return joint controls. Never advance or write the world.
 use crate::*;
-use rapier3d::na::{DMatrix, DVector};
+use rapier3d::na::{DMatrix, DVector, Vector3};
 
 const FORMAT: &str = "native-step-pilot-v2";
 const DURATION: f32 = 0.8;
@@ -393,6 +393,77 @@ fn allocate_wrench_recorded(a:&DMatrix<f32>,desired:&DVector<f32>,record:&mut se
     Ok(allocated)
 }
 
+fn force_in_cone(force:Vector,normal:Vector)->bool {
+    let f=Vector3::new(force.x as f64,force.y as f64,force.z as f64);
+    let n=Vector3::new(normal.x as f64,normal.y as f64,normal.z as f64).normalize();
+    let load=f.dot(&n);
+    f.iter().all(|x|x.is_finite()) && load>=0. && (f-n*load).norm()<=load
+}
+
+/// Bounded Dykstra projections onto the affine wrench balance and the product
+/// of Coulomb cones (mu=1). No change to wrench, contacts, or physical friction.
+/// Nonconvergence is a solver refusal, never proof of global infeasibility.
+fn allocate_contact_wrench(a:&DMatrix<f32>,desired:&DVector<f32>,normals:&[Vector],record:&mut serde_json::Value)
+    ->Result<DVector<f32>,String> {
+    if a.nrows()!=6 || a.ncols()!=3*normals.len() || desired.len()!=6 || normals.is_empty()
+        || normals.iter().any(|n|!n.is_finite() || n.length()<0.5)
+        || a.iter().chain(desired.iter()).any(|x|!x.is_finite()) {
+        return Err("Invalid contact allocation inputs".into());
+    }
+    record["allocationMethod"]=serde_json::json!("bounded-dykstra-affine-coulomb-mu1");
+    record["frictionCoefficient"]=serde_json::json!(1.);
+    record["normals"]=serde_json::json!(normals.iter().map(|n|n.to_array()).collect::<Vec<_>>());
+    let initial=allocate_wrench_recorded(a,desired,record)?;
+    record["unconstrainedForcesN"]=serde_json::json!(initial.as_slice());
+    let matrix=a.map(|x|x as f64);let target=desired.map(|x|x as f64);
+    let initial_residual=&matrix*initial.map(|x|x as f64)-&target;
+    if initial_residual.rows(0,3).norm()<0.0001 && initial_residual.rows(3,3).norm()<0.0001
+        && (0..normals.len()).all(|k|force_in_cone(Vector::new(initial[3*k],initial[3*k+1],initial[3*k+2]),normals[k])) {
+        record["coneIterations"]=serde_json::json!(0);return Ok(initial);
+    }
+    let svd=matrix.clone().svd(true,true);let cutoff=svd.singular_values.max()*1e-10;
+    let inverse=svd.solve(&DMatrix::identity(6,6),cutoff).map_err(|e|format!("Contact affine projector: {e}"))?;
+    let normals:Vec<_>=normals.iter().map(|n|Vector3::new(n.x as f64,n.y as f64,n.z as f64).normalize()).collect();
+    let mut x=DVector::zeros(a.ncols());let mut affine_memory=x.clone();let mut cone_memory=x.clone();
+    for iteration in 1..=256 {
+        let shifted=&x+&affine_memory;
+        let affine=&shifted+&inverse*(&target-&matrix*&shifted);
+        affine_memory=shifted-&affine;
+        let shifted=affine+&cone_memory;x=shifted.clone();
+        for (k,n) in normals.iter().enumerate() {
+            let f=Vector3::new(x[3*k],x[3*k+1],x[3*k+2]);let load=f.dot(n);
+            let tangent=f-n*load;let t=tangent.norm();
+            let projected=if t<=load {f} else if t<=-load {Vector3::zeros()}
+                else {(n+tangent/t)*((load+t)*0.5)};
+            for j in 0..3 {x[3*k+j]=projected[j];}
+        }
+        cone_memory=shifted-&x;
+        // Round only an already cone-projected solution. A tiny inward normal
+        // nudge protects exact cone admission from f64 -> f32 rounding.
+        let mut allocated=x.map(|v|v as f32);
+        for (k,n) in normals.iter().enumerate() {
+            let f=Vector3::new(allocated[3*k] as f64,allocated[3*k+1] as f64,allocated[3*k+2] as f64);
+            let load=f.dot(n);
+            if load<0. || (f-n*load).norm()>load {
+                let rounded=f+n*(4.*f32::EPSILON as f64*(1.+f.norm()));
+                for j in 0..3 {allocated[3*k+j]=rounded[j] as f32;}
+            }
+        }
+        let residual=&matrix*allocated.map(|v|v as f64)-&target;
+        let cones_ok=normals.iter().enumerate().all(|(k,n)| {
+            let f=Vector3::new(allocated[3*k] as f64,allocated[3*k+1] as f64,allocated[3*k+2] as f64);
+            let load=f.dot(n);load>=0. && (f-n*load).norm()<=load
+        });
+        record["coneIterations"]=serde_json::json!(iteration);
+        record["allocatedForcesN"]=serde_json::json!(allocated.as_slice());
+        record["residualN_Nm"]=serde_json::json!(residual.as_slice());
+        if cones_ok && residual.rows(0,3).norm()<0.0001 && residual.rows(3,3).norm()<0.0001 {
+            return Ok(allocated);
+        }
+    }
+    Err("Step constrained contact allocation did not converge within 256 projections; not global infeasibility".into())
+}
+
 fn command_for_reference(s:&Simulation,reference:&Reference,ddq:&[f32;21],side:usize,exclusive:bool)->Result<[f32;21],String> {
     let mut record=serde_json::json!({"native":s.substeps_completed,"proposedReference":reference,
         "referenceAcceleration":ddq,"side":side,"exclusive":exclusive,"units":"world N / Nm about torso origin"});
@@ -414,7 +485,11 @@ fn command_for_reference_recorded(s:&Simulation,reference:&Reference,ddq:&[f32;2
     record["geometry"]=serde_json::json!(geometry);
     let ddq=&desired_acceleration;
     let (_,force,moment)=rnea(s,&q,&dq,ddq,&[],retained)?;
-    let mut points=vec![];let mut candidates=vec![];
+    let mut points=vec![];let mut candidates=vec![];let mut normals=vec![];
+    let observed_contacts=super::standing::contacts_including_unloaded(s)?;
+    if s.world.colliders[s.floor].friction()!=1. || geometry.iter().any(|g|s.world.colliders[s.colliders[g.body]].friction()!=1.) {
+        return Err("Step cone allocator requires unchanged mu=1 foot/floor materials".into());
+    }
     let (linear,angular)=retained_accelerations(s,&dq,ddq,retained)?;
     let twists=super::current_twists(s)?;
     let floor=s.world.colliders[s.floor].compute_aabb().maxs.y;
@@ -425,7 +500,15 @@ fn command_for_reference_recorded(s:&Simulation,reference:&Reference,ddq:&[f32;2
             let acceleration=linear[g.body]+angular[g.body].cross(offset)+omega.cross(omega.cross(offset));
             let used=contact_can_react(point.y-floor,acceleration.y)?;
             candidates.push(serde_json::json!({"body":g.body,"point":point.to_array(),"gap":point.y-floor,"desiredNormalAcceleration":acceleration.y,"used":used}));
-            if used {points.push((g.body,*point));}
+            if used {
+                // Same foot's closest resolved point supplies only its normal,
+                // never its measured impulse. Pure flat-floor geometry is +Y
+                // when no solver manifold exists (zero load is not deletion).
+                let normal=observed_contacts.iter().filter(|c|c.body==g.body)
+                    .min_by(|a,b|(a.point-*point).length_squared().total_cmp(&(b.point-*point).length_squared()))
+                    .map_or(Vector::Y,|c|c.normal);
+                points.push((g.body,*point));normals.push(normal);
+            }
         }
     }
     record["candidates"]=serde_json::json!(candidates);
@@ -437,13 +520,13 @@ fn command_for_reference_recorded(s:&Simulation,reference:&Reference,ddq:&[f32;2
     }}
     let desired=DVector::from_column_slice(&[force.x,force.y,force.z,moment.x,moment.y,moment.z]);
     record["rootOrigin"]=serde_json::json!(root.to_array());
-    let allocated=allocate_wrench_recorded(&a,&desired,record)?;
+    let allocated=allocate_contact_wrench(&a,&desired,&normals,record)?;
     let mut support=vec![];
     for (k,(body,point)) in points.into_iter().enumerate() {
         let f=Vector::new(allocated[3*k],allocated[3*k+1],allocated[3*k+2]);
         // Conservative intention cone (mu <= existing foot coefficient 1).
-        if !f.is_finite() || f.y<0. || Vector::new(f.x,0.,f.z).length()>f.y {
-            return Err(format!("Step minimum-norm allocation violates unilateral/friction constraints: point={k} force_N={:?}; not global infeasibility",f.to_array()));
+        if !force_in_cone(f,normals[k]) {
+            return Err(format!("Step constrained allocation violates unilateral/friction constraints: point={k} force_N={:?}; not global infeasibility",f.to_array()));
         }support.push((body,point,f));
     }
     // Both evaluations use the SAME measured q/dq and SAME desired allocation.
@@ -472,6 +555,36 @@ fn command_for_reference_recorded(s:&Simulation,reference:&Reference,ddq:&[f32;2
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[test] fn native_step_pure_constrained_exact_refusal_4756() {
+        let fixture:serde_json::Value=serde_json::from_str(include_str!("../../tests/fixtures/native-step-friction-4756.json")).unwrap();
+        let data:Vec<f32>=serde_json::from_value(fixture["matrixColumnMajor"].clone()).unwrap();
+        let wrench:Vec<f32>=serde_json::from_value(fixture["desiredWrenchN_Nm"].clone()).unwrap();
+        let ns:Vec<[f32;3]>=serde_json::from_value(fixture["normals"].clone()).unwrap();
+        let normals:Vec<_>=ns.into_iter().map(Vector::from_array).collect();
+        let a=DMatrix::from_column_slice(6,24,&data);let b=DVector::from_column_slice(&wrench);
+        let old:Vec<f32>=serde_json::from_value(fixture["allocatedForcesN"].clone()).unwrap();
+        assert!(!force_in_cone(Vector::new(old[0],old[1],old[2]),normals[0]));
+        let mut receipt=serde_json::json!({});let f=allocate_contact_wrench(&a,&b,&normals,&mut receipt).unwrap();
+        let residual=a.map(|v|v as f64)*f.map(|v|v as f64)-b.map(|v|v as f64);
+        assert!(residual.rows(0,3).norm()<0.0001);assert!(residual.rows(3,3).norm()<0.0001);
+        for k in 0..8 {
+            let n=Vector3::new(normals[k].x as f64,normals[k].y as f64,normals[k].z as f64).normalize();
+            let force=Vector3::new(f[3*k] as f64,f[3*k+1] as f64,f[3*k+2] as f64);
+            let load=force.dot(&n);assert!(load>=0.);assert!((force-n*load).norm()<=load);
+        }
+        assert!(receipt["coneIterations"].as_u64().unwrap()<=256);
+        let repeated=allocate_contact_wrench(&a,&b,&normals,&mut serde_json::json!({})).unwrap();
+        assert_eq!(f.as_slice(),repeated.as_slice());
+        assert_eq!(receipt["frictionCoefficient"],1.);
+    }
+    #[test] fn native_step_pure_constrained_zero_and_tensile_wrench() {
+        let mut a=DMatrix::zeros(6,3);for i in 0..3 {a[(i,i)]=1.;}
+        let normals=[Vector::Y];
+        assert_eq!(allocate_contact_wrench(&a,&DVector::zeros(6),&normals,&mut serde_json::json!({})).unwrap(),DVector::zeros(3));
+        let mut receipt=serde_json::json!({});let b=DVector::from_column_slice(&[0.,-1.,0.,0.,0.,0.]);
+        let error=allocate_contact_wrench(&a,&b,&normals,&mut receipt).unwrap_err();
+        assert!(error.contains("not global infeasibility"));assert_eq!(receipt["coneIterations"],256);
+    }
     #[test] fn native_step_pure_min_norm_removes_ridge_bias_without_admitting_tension() {
         // Algebra-only regression fixture derived from recorded extrema at
         // native4541, not a checkpoint or replay of the lost Rapier world.

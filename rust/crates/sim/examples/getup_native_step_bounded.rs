@@ -72,10 +72,10 @@ fn main()->Result<(),Box<dyn std::error::Error>> {
     budget::install()?;
     let outcome=trial(Path::new(&args[2]));
     let ledger=budget::snapshot()?;
-    let result=json!({"format":"bounded-native-step-trial-v1","historical":12601,
-        "ledger":ledger,"historicalPlusReservedIntegrations":12601+ledger.real+ledger.forecast,
-        "prospectiveCumulativeLimit":21401,"authorizedTrialReserve":8800,
-        "remainingAuthorizedBudget":8800-ledger.real-ledger.forecast,
+    let result=json!({"format":"bounded-native-step-trial-v1","historical":18337,
+        "ledger":ledger,"historicalPlusReservedIntegrations":18337+ledger.real+ledger.forecast,
+        "prospectiveCumulativeLimit":21401,"authorizedTrialReserve":3064,
+        "remainingAuthorizedBudget":3064-ledger.real-ledger.forecast,
         "result":outcome.as_ref().ok(),"error":outcome.as_ref().err(),
         "motionQualified":false});
     let bytes=serde_json::to_vec_pretty(&result)?;
