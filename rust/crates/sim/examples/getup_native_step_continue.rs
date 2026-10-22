@@ -1,5 +1,5 @@
-//! One continuation from the exact native6153 stop.
-//! Controller d99ef39a; original world and pilot clock preserved, never acquire/reset.
+//! One continuation from the exact native6182 stop.
+//! Controller93b435f; original world and pilot clock preserved, never acquire/reset.
 use lh_sim::{getup,integration_budget as budget,measurement::Failure,runtime::Runtime};
 use serde_json::{Value,json};
 use std::{fs::OpenOptions,io::{Write,Seek,SeekFrom},path::Path};
@@ -13,12 +13,12 @@ fn run(input:&Path,out:&Path,preflight_only:bool)->Result<Value,String> {
     let mut runtime=Runtime::from_getup_checkpoint(&bytes)?;
     let restored:Value=serde_json::from_str(&runtime.verify_getup_checkpoint(&bytes)?).map_err(|e|e.to_string())?;
     let before:Value=serde_json::from_str(&runtime.getup_native_observation()?).map_err(|e|e.to_string())?;
-    if restored["passed"]!=true || before["nativeCompleted"]!=6153 || before["failure"]["offending"]!="Step joint allocation did not converge within 256 projections in the current affine region; not global infeasibility" {
-        return Err("Resume requires verified saved native6153 refusal".into());
+    if restored["passed"]!=true || before["nativeCompleted"]!=6182 || before["failure"]["offending"]!="Step joint allocation did not converge within 256 projections in the current affine region; not global infeasibility" {
+        return Err("Resume requires verified saved native6182 refusal".into());
     }
     // This performs the complete reference/posture, passive/dynamic RNEA,
     // cone allocation and unchanged motor-cap admission, without integration.
-    let admission=runtime.resume_getup_native_step_6153();
+    let admission=runtime.resume_getup_native_step_6182();
     let after_admission:Value=serde_json::from_str(&runtime.getup_native_observation()?).map_err(|e|e.to_string())?;
     let started=before["ownership"]["step"]["started_native"].as_u64().ok_or("Missing original Step clock")?;
     let native=before["nativeCompleted"].as_u64().ok_or("Missing native clock")?;
@@ -26,7 +26,7 @@ fn run(input:&Path,out:&Path,preflight_only:bool)->Result<Value,String> {
     let pilot_remaining=2400u64.checked_sub(elapsed).ok_or("Original pilot expired")?;
     let duration=after_admission["ownership"]["step"]["reference"]["duration"].as_f64().ok_or("Missing reference duration")?;
     let reference_elapsed=after_admission["ownership"]["step"]["reference"]["elapsed"].as_f64().ok_or("Missing reference elapsed")?;
-    let remaining_seconds=pilot_remaining.min(1200) as f64*0.00125;
+    let remaining_seconds=pilot_remaining.min(1000) as f64*0.00125;
     let horizon_error=if admission.is_ok() && duration-reference_elapsed>remaining_seconds {Some(format!("Reference needs {} s, original pilot/reserve has {remaining_seconds} s; no compression/reset/extension",duration-reference_elapsed))} else {None};
     let preflight=json!({"restoration":restored,"nativeBefore":before["nativeCompleted"],
         "originalStartedNative":started,"originalPilotRemainingNative":pilot_remaining,"referenceRemainingSeconds":duration-reference_elapsed,"availableSeconds":remaining_seconds,
@@ -104,12 +104,12 @@ fn main()->Result<(),Box<dyn std::error::Error>> {
     }
     let mut file=OpenOptions::new().write(true).create_new(true).open(&args[3])?;
     file.write_all(b"{\"status\":\"started; final outcome pending\"}\n")?;file.sync_all()?;
-    budget::install_resume_6153()?;
+    budget::install_resume_6182()?;
     let result=run(Path::new(&args[2]),Path::new(&args[3]),args[1]=="--preflight-stop");
     let ledger=budget::snapshot()?;
-    let receipt=json!({"format":"native-step-continuation-from-6153-v1","controllerCommit":"d99ef39a59aa1d19f95ed1134c43e9831e5075cf","historical":20111,"trialLimit":1200,
-        "cumulativeLimit":21401,"totalConsumed":20111+ledger.real+ledger.forecast,
-        "remainingGlobalBudget":1290-ledger.real-ledger.forecast,"ledger":ledger,
+    let receipt=json!({"format":"native-step-continuation-from-6182-v1","controllerCommit":"93b435f983076dd278c5f16b7445467b2db1684a","historical":20140,"trialLimit":1000,
+        "cumulativeLimit":21401,"totalConsumed":20140+ledger.real+ledger.forecast,
+        "remainingGlobalBudget":1261-ledger.real-ledger.forecast,"ledger":ledger,
         "inputCheckpoint":args[2],"result":result.as_ref().ok(),"error":result.as_ref().err(),"motionQualified":false});
     let bytes=serde_json::to_vec(&receipt)?;
     if bytes.len()>250_000 {return Err("result exceeds reserved 250000 bytes".into());}
