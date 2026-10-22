@@ -216,7 +216,7 @@ impl State {
         let com=transfer_goal(s.center_of_mass(),measured_com_velocity(s)?,support_center(&support[1-side]));
         // Retreat and lift begin concurrently with dynamic support preparation.
         let foot_goal=guarded_foot_goal(foot,support[side].clearance,forward);
-        let target=posture(s,side,com,foot_goal)?;
+        let target=posture(s,side,com,foot_goal,SOLE_GUARD)?;
         Ok(Self {format:FORMAT.into(),phase:Phase::Retraction,side,last_native:s.substeps_completed,
             started_native:s.substeps_completed,reference:Reference::new(q,dq,target).retimed()?,reference_acceleration:[0.;21],com,forward,
             foot_goal,separated:false,separation_samples:0,landed_samples:0,last_reactions:vec![],preparation:None})
@@ -255,7 +255,7 @@ impl State {
                 if self.preparation.is_none() {proposed_foot=guarded_foot_goal(origin,foot.clearance,self.forward);}
                 else {proposed_foot.y=origin.y+SOLE_GUARD-foot.clearance;}
                 let mut proposed_reference=self.reference.clone();
-                proposed_reference.target=posture(s,self.side,proposed_com,proposed_foot)?;
+                proposed_reference.target=posture(s,self.side,proposed_com,proposed_foot,SOLE_GUARD)?;
                 // retimed currently refuses only its planning horizon. Such a
                 // refusal is optional too; actual command limits still propagate.
                 let proposed_reference=proposed_reference.retimed();
@@ -287,7 +287,7 @@ impl State {
             // without a prescribed 134 mm transfer or a static-balance gate.
             let catch=com+horizontal(velocity)*time+lateral*horizontal(origin-com).dot(lateral);
             self.foot_goal=Vector::new(catch.x,origin.y+SOLE_GUARD-foot.clearance,catch.z);
-            self.reference.target=posture(s,self.side,self.com,self.foot_goal)?;
+            self.reference.target=posture(s,self.side,self.com,self.foot_goal,SOLE_GUARD)?;
             self.reference=self.reference.retimed()?;
         } else if elapsed>0 && !self.reference.braking && self.reference.elapsed>=self.reference.duration {
             match self.phase {
@@ -295,7 +295,7 @@ impl State {
                 Phase::Swing=>{
                     if !self.reference.settled() {return Err("Step reference deadline reached before swing target settled".into());}
                     self.phase=Phase::Landing;self.foot_goal.y-=SOLE_GUARD;
-                    self.reference.target=posture(s,self.side,self.com,self.foot_goal)?;
+                    self.reference.target=posture(s,self.side,self.com,self.foot_goal,0.)?;
             self.reference=self.reference.retimed()?;
                 },
                 Phase::Landing=>{
@@ -425,9 +425,19 @@ fn jacobian(s:&Simulation,body:usize,point:Vector)->Result<DMatrix<f32>,String> 
         }i=p;
     }Ok(j)
 }
+/// Unilateral lift objectives at CURRENT capsule extrema. Already-clear
+/// points do not pull the foot down. Landing instead requests floor approach.
+/// These DLS objectives never replace measured separation or Rapier contacts.
+fn sole_guard_tasks(points:&[Vector],floor:f32,clearance_goal:f32)->Vec<(Vector,f32)> {
+    points.iter().filter_map(|p| {
+        let delta=clearance_goal-(p.y-floor);
+        if clearance_goal>0. {if delta>0. {Some((*p,delta))} else {None}}
+        else {Some((*p,delta))}
+    }).collect()
+}
 /// Whole-body posture intention with the six predicted root coordinates
 /// eliminated by the retained-foot constraint, never actuated. Failed intention is not a proof of global infeasibility.
-fn posture(s:&Simulation,side:usize,com_goal:Vector,foot_goal:Vector)->Result<[f32;21],String> {
+fn posture(s:&Simulation,side:usize,com_goal:Vector,foot_goal:Vector,clearance_goal:f32)->Result<[f32;21],String> {
     let retained=feet(s)?[1-side];
     let stance=jacobian(s,retained,s.world.bodies[s.bodies[retained]].translation())?;
     let root_map=stance.columns(0,6).into_owned().lu().solve(&(-stance.columns(6,21).into_owned()))
@@ -444,7 +454,19 @@ fn posture(s:&Simulation,side:usize,com_goal:Vector,foot_goal:Vector)->Result<[f
         let point=s.world.bodies[s.bodies[i]].translation();let delta=if n==side {foot_goal-point}else{Vector::ZERO};
         let mut target=DVector::zeros(6);for r in 0..3 {target[r]=delta[r];}
         let jac=jacobian(s,i,point)?;
-        add(jac.rows(0,3).into_owned(),target.rows(0,3).into_owned(),TRANSLATION_PRIORITY);
+        if n==side {
+            // Horizontal retreat/placement remains an origin task. Its stored
+            // Y goal is legacy telemetry, not a clearance constraint.
+            for row in [0,2] {add(jac.rows(row,1).into_owned(),target.rows(row,1).into_owned(),TRANSLATION_PRIORITY);}
+            let sole=geometry(s)?;let floor=s.world.colliders[s.floor].compute_aabb().maxs.y;
+            let tasks=sole_guard_tasks(&sole[side].points,floor,clearance_goal);
+            let weight=TRANSLATION_PRIORITY/tasks.len().max(1) as f32;
+            for (extremum,delta_y) in tasks {
+                // Endpoint minus world-Y radius: the vertical Jacobian equals
+                // that of the capsule centerline endpoint. Radius does not rotate.
+                add(jacobian(s,i,extremum)?.rows(1,1).into_owned(),DVector::from_element(1,delta_y),weight);
+            }
+        } else {add(jac.rows(0,3).into_owned(),target.rows(0,3).into_owned(),TRANSLATION_PRIORITY);}
         add(jac.rows(3,3).into_owned(),DVector::zeros(3),POSTURE_PRIORITY);
     }
     let root=jacobian(s,0,s.world.bodies[s.bodies[0]].translation())?;
@@ -983,6 +1005,25 @@ mod tests {
         // wrench family. This says nothing about another acceleration/strategy.
         println!("PURE_SEPARATOR {}",serde_json::json!({"dualConeMarginM":minimum_dual_margin,
             "endpointWrenchPairingNm":[left,left+slope],"physicsIntegrations":0}));
+    }
+    #[test] fn native_step_pure_capsule_guard_uses_current_extrema_not_origin() {
+        // Actual native6153 extrema. Origin has risen18.8mm but one end stays
+        // below the floor. Reaching the old origin target would still not clear it.
+        let points=[Vector::new(-0.66542566,0.004832344,0.3556114),Vector::new(-0.49647248,0.06636602,0.24530092),
+            Vector::new(-0.6552332,-0.00009908527,0.3720976),Vector::new(-0.46589506,0.05157175,0.2947595)];
+        let tasks=sole_guard_tasks(&points,0.,SOLE_GUARD);assert_eq!(tasks.len(),2);
+        assert!((tasks[1].1-0.020099085).abs()<1e-8);
+        let old_origin_remaining=0.047581717-0.045768335;
+        assert!(points[2].y+old_origin_remaining<SOLE_GUARD);
+        for (point,dy) in &tasks {assert!((point.y+dy-SOLE_GUARD).abs()<1e-7);}
+        let raised:Vec<_>=points.iter().map(|p|*p+Vector::Y*0.03).collect();
+        assert!(sole_guard_tasks(&raised,0.,SOLE_GUARD).is_empty());
+        let shifted:Vec<_>=points.iter().map(|p|*p+Vector::Y).collect();
+        let translated=sole_guard_tasks(&shifted,1.,SOLE_GUARD);
+        assert_eq!(translated.len(),tasks.len());
+        for (a,b) in tasks.iter().zip(translated) {assert!((a.1-b.1).abs()<1e-7);}
+        let landing=sole_guard_tasks(&raised,0.,0.);assert_eq!(landing.len(),4);
+        assert!(landing.iter().all(|(_,dy)|*dy<0.));
     }
     #[test] fn native_step_pure_optional_retarget_preserves_active_deadline() {
         let active=Reference::new([0.;21],[0.01;21],[0.02;21]);let before=serde_json::to_value(&active).unwrap();
