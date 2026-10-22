@@ -41,7 +41,8 @@ static RESERVE: Mutex<Option<Ledger>>=Mutex::new(None);
 pub fn install()->Result<(),String> {
     let mut slot=RESERVE.lock().map_err(|_|"budget lock poisoned")?;
     if slot.is_some() {return Err("global reserve already installed".into());}
-    *slot=Some(Ledger::new());Ok(())
+    let mut reserve=Ledger::new();reserve.remaining=3399;
+    *slot=Some(reserve);Ok(())
 }
 pub fn snapshot()->Result<Ledger,String> {
     RESERVE.lock().map_err(|_|"budget lock poisoned")?.clone().ok_or("budget not installed".into())
@@ -64,7 +65,7 @@ mod tests {
         let b=std::thread::spawn(||for _ in 0..10 {debit(Kind::Forecast).unwrap();});
         a.join().unwrap();b.join().unwrap();
         assert!(install().is_err());
-        let b=snapshot().unwrap();assert_eq!((b.real,b.forecast,b.remaining),(10,10,8780));
+        let b=snapshot().unwrap();assert_eq!((b.real,b.forecast,b.remaining),(10,10,3379));
     }
     #[test] fn budget_pure_shared_real_forecast_last_token() {
         let shared=Mutex::new(Ledger::new());
@@ -85,5 +86,36 @@ mod tests {
         b.begin_step().unwrap();for _ in 0..2400 {b.debit(Kind::Forecast).unwrap();}
         assert_eq!(b.remaining,0);assert_eq!(b.debit(Kind::Real).unwrap_err(),"total-integration-limit");
         assert_eq!(b.debit(Kind::Forecast).unwrap_err(),"total-integration-limit");assert_eq!(b.real+b.forecast,8800);
+    }
+}
+
+// Small process-local diagnostic, never fed back into the controller or forces.
+static COMMANDS: Mutex<(Option<serde_json::Value>,Option<serde_json::Value>)>=Mutex::new((None,None));
+pub fn record_step_command(record:serde_json::Value) {
+    if let Ok(mut saved)=COMMANDS.lock() {
+        let slot=if record["error"].is_null() {&mut saved.0} else {&mut saved.1};
+        if slot.is_none() {*slot=Some(record);}
+    }
+}
+pub fn step_command_diagnostics()->serde_json::Value {
+    match COMMANDS.lock() {
+        Ok(saved)=>serde_json::json!({"firstAdmitted":saved.0,"firstRefused":saved.1}),
+        Err(_)=>serde_json::json!({"error":"diagnostic lock poisoned"}),
+    }
+}
+
+#[cfg(test)]
+mod diagnostic_tests {
+    use super::*;
+    #[test] fn budget_pure_diagnostic_preserves_first_refusal_exactly() {
+        let measured=f32::from_bits(0x3e9e0652);
+        record_step_command(serde_json::json!({"error":null,"native":10}));
+        record_step_command(serde_json::json!({"error":"first","native":11,"measured":measured}));
+        record_step_command(serde_json::json!({"error":"later","native":12}));
+        let saved=step_command_diagnostics();
+        assert_eq!(saved["firstAdmitted"]["native"],10);
+        assert_eq!(saved["firstRefused"]["native"],11);
+        let recovered:f32=serde_json::from_value(saved["firstRefused"]["measured"].clone()).unwrap();
+        assert_eq!(recovered.to_bits(),measured.to_bits());
     }
 }

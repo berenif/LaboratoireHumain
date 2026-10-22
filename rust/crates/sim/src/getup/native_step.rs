@@ -357,30 +357,36 @@ fn rnea(s:&Simulation,q:&[f32;21],dq:&[f32;21],ddq:&[f32;21],support:&[Reaction]
     }Ok((torque,forces[0],moments[0]))
 }
 
-/// Phase hysteresis is not a contact constraint. A positive geometric gap or a
-/// separating desired normal acceleration carries ZERO intended reaction even
-/// while phase remains Retraction. A penetrating intention is refused; it is
-/// not repaired by inventing a root wrench or an impact solve.
+/// Desired acceleration is an intention, not evidence that contact vanished.
+/// Keep geometric contacts through bilateral unloading. Conversely a positive
+/// actual gap carries no reaction, even while phase hysteresis is pending.
 fn contact_can_react(gap:f32,normal_acceleration:f32)->Result<bool,String> {
     if !gap.is_finite() || !normal_acceleration.is_finite() {return Err("Invalid contact intention".into());}
-    if gap>0. {return Ok(false);}
-    if normal_acceleration < -1e-4 {return Err("Step intention accelerates into a geometric contact".into());}
-    Ok(normal_acceleration<=1e-4)
+    Ok(gap<=0.)
 }
 
 /// Solve the small unconstrained wrench allocation directly, without the bias
 /// introduced by ridge-regularized normal equations. This is NOT a unilateral
 /// solver; the existing cone checks still decide admission afterwards.
 fn allocate_wrench(a:&DMatrix<f32>,desired:&DVector<f32>)->Result<DVector<f32>,String> {
+    allocate_wrench_recorded(a,desired,&mut serde_json::json!({}))
+}
+fn allocate_wrench_recorded(a:&DMatrix<f32>,desired:&DVector<f32>,record:&mut serde_json::Value)->Result<DVector<f32>,String> {
     // Coordinates: world forces in N; world moments about torso origin in Nm.
     // Normalize moments by a fixed 1 m length for the algebraic solve. Check
     // force and moment residuals separately in their physical units below.
     let matrix=a.map(|x|x as f64);let target=desired.map(|x|x as f64);
     let svd=matrix.clone().svd(true,true);
     let cutoff=svd.singular_values.max()*1e-10;
+    record["matrixRows"]=serde_json::json!(a.nrows());record["matrixColumns"]=serde_json::json!(a.ncols());
+    record["matrixColumnMajor"]=serde_json::json!(a.as_slice());record["desiredWrenchN_Nm"]=serde_json::json!(desired.as_slice());
+    record["singularValues"]=serde_json::json!(svd.singular_values.as_slice());
+    record["rank"]=serde_json::json!(svd.singular_values.iter().filter(|x|**x>cutoff).count());
     let allocated=svd.solve(&target,cutoff).map_err(|e|format!("Step wrench SVD: {e}"))?.map(|x|x as f32);
     let residual=&matrix*allocated.map(|x|x as f64)-target;
     let force=residual.rows(0,3).norm();let moment=residual.rows(3,3).norm();
+    record["allocatedForcesN"]=serde_json::json!(allocated.as_slice());
+    record["residualN_Nm"]=serde_json::json!(residual.as_slice());
     if !allocated.iter().all(|x|x.is_finite()) || !force.is_finite() || !moment.is_finite() || force>0.01 || moment>0.01 {
         return Err(format!("Step contact allocation residual: force={force} N moment={moment} Nm; no global infeasibility claim"));
     }
@@ -388,14 +394,27 @@ fn allocate_wrench(a:&DMatrix<f32>,desired:&DVector<f32>)->Result<DVector<f32>,S
 }
 
 fn command_for_reference(s:&Simulation,reference:&Reference,ddq:&[f32;21],side:usize,exclusive:bool)->Result<[f32;21],String> {
+    let mut record=serde_json::json!({"native":s.substeps_completed,"proposedReference":reference,
+        "referenceAcceleration":ddq,"side":side,"exclusive":exclusive,"units":"world N / Nm about torso origin"});
+    let result=command_for_reference_recorded(s,reference,ddq,side,exclusive,&mut record);
+    record["error"]=serde_json::json!(result.as_ref().err());
+    record["controls"]=serde_json::json!(result.as_ref().ok());
+    #[cfg(feature="numeric-integration-budget")]
+    crate::integration_budget::record_step_command(record);
+    result
+}
+fn command_for_reference_recorded(s:&Simulation,reference:&Reference,ddq:&[f32;21],side:usize,exclusive:bool,record:&mut serde_json::Value)->Result<[f32;21],String> {
     let (q,dq)=super::joint_state(s)?;let geometry=geometry(s)?;
     let retained=feet(s)?[1-side];
     let desired_acceleration=std::array::from_fn(|i|
         (ddq[i]+16.*(reference.q[i]-q[i])+8.*(reference.dq[i]-dq[i]))
             .clamp(-REFERENCE_ACCELERATION,REFERENCE_ACCELERATION));
+    record["q"]=serde_json::json!(q);record["dq"]=serde_json::json!(dq);
+    record["desiredAcceleration"]=serde_json::json!(desired_acceleration);
+    record["geometry"]=serde_json::json!(geometry);
     let ddq=&desired_acceleration;
     let (_,force,moment)=rnea(s,&q,&dq,ddq,&[],retained)?;
-    let mut points=vec![];
+    let mut points=vec![];let mut candidates=vec![];
     let (linear,angular)=retained_accelerations(s,&dq,ddq,retained)?;
     let twists=super::current_twists(s)?;
     let floor=s.world.colliders[s.floor].compute_aabb().maxs.y;
@@ -404,9 +423,12 @@ fn command_for_reference(s:&Simulation,reference:&Reference,ddq:&[f32;21],side:u
         for point in &g.points {
             let offset=*point-s.world.bodies[s.bodies[g.body]].translation();let omega=twists[g.body].1;
             let acceleration=linear[g.body]+angular[g.body].cross(offset)+omega.cross(omega.cross(offset));
-            if contact_can_react(point.y-floor,acceleration.y)? {points.push((g.body,*point));}
+            let used=contact_can_react(point.y-floor,acceleration.y)?;
+            candidates.push(serde_json::json!({"body":g.body,"point":point.to_array(),"gap":point.y-floor,"desiredNormalAcceleration":acceleration.y,"used":used}));
+            if used {points.push((g.body,*point));}
         }
     }
+    record["candidates"]=serde_json::json!(candidates);
     if points.is_empty(){return Err("Step has no geometric support candidates".into());}
     let root=s.world.bodies[s.bodies[0]].translation();let mut a=DMatrix::zeros(6,3*points.len());
     for (k,(_,point)) in points.iter().enumerate(){for j in 0..3 {
@@ -414,7 +436,8 @@ fn command_for_reference(s:&Simulation,reference:&Reference,ddq:&[f32;21],side:u
         for r in 0..3 {a[(r+3,3*k+j)]=m[r];}
     }}
     let desired=DVector::from_column_slice(&[force.x,force.y,force.z,moment.x,moment.y,moment.z]);
-    let allocated=allocate_wrench(&a,&desired)?;
+    record["rootOrigin"]=serde_json::json!(root.to_array());
+    let allocated=allocate_wrench_recorded(&a,&desired,record)?;
     let mut support=vec![];
     for (k,(body,point)) in points.into_iter().enumerate() {
         let f=Vector::new(allocated[3*k],allocated[3*k+1],allocated[3*k+2]);
@@ -426,6 +449,9 @@ fn command_for_reference(s:&Simulation,reference:&Reference,ddq:&[f32;21],side:u
     // Both evaluations use the SAME measured q/dq and SAME desired allocation.
     let (bias,_,_)=rnea(s,&q,&dq,&[0.;21],&support,retained)?;
     let (dynamic,residual_f,residual_m)=rnea(s,&q,&dq,ddq,&support,retained)?;
+    record["rneaResidualForceN"]=serde_json::json!(residual_f.to_array());
+    record["rneaResidualMomentNm"]=serde_json::json!(residual_m.to_array());
+    record["biasTorqueNm"]=serde_json::json!(bias);record["dynamicTorqueNm"]=serde_json::json!(dynamic);
     if residual_f.length()>0.01 || residual_m.length()>0.01 {return Err("Step unactuated-root residual".into());}
     let mut controls=[0.;21];
     for part in &s.model.segments {if let Some(h)=part.reference.as_ref().and_then(|r|r.hinge.as_ref()) {
@@ -465,6 +491,28 @@ mod tests {
         assert!((&m*force.map(|x|x as f64)-target).norm()<0.001);
         // Solving the equality cannot conceal the unilateral violation.
         assert!(force[1] < -1500.);
+    }
+    #[test] fn native_step_pure_bilateral_allocation_keeps_geometric_candidates() {
+        // Six touching extrema from the saved observation; no Rapier world.
+        // Checks candidate retention and wrench allocation only, NOT realization
+        // of desired accelerations or dynamic unloading/transfer.
+        let root=Vector::new(-0.48699132,1.2573017,0.51681453);
+        let points=[Vector::new(-0.66118604,-0.00002062507,0.34502047),
+            Vector::new(-0.6517557,-0.00027231313,0.36265582),Vector::new(-0.45713937,-0.0005102437,0.2812652),
+            Vector::new(-0.29174295,-0.00026358292,0.69674224),Vector::new(-0.4980225,-0.0001147259,0.7528557),
+            Vector::new(-0.31804687,-0.0007823948,0.64281785)];
+        let mut a=DMatrix::zeros(6,18);
+        for (k,p) in points.iter().enumerate() {
+            assert!(contact_can_react(p.y,if k<3 {0.2}else{0.00006}).unwrap());
+            for j in 0..3 {let e=[Vector::X,Vector::Y,Vector::Z][j];let m=(*p-root).cross(e);a[(j,3*k+j)]=1.;
+                for r in 0..3 {a[(r+3,3*k+j)]=m[r];}}
+        }
+        let b=DVector::from_column_slice(&[2.9607882,404.15958,11.857897,2.8018434,-0.2523685,9.532738]);
+        let mut receipt=serde_json::json!({});let forces=allocate_wrench_recorded(&a,&b,&mut receipt).unwrap();
+        assert_eq!(receipt["rank"],6);assert_eq!(receipt["matrixColumnMajor"].as_array().unwrap().len(),108);
+        for k in 0..6 {let f=Vector::new(forces[3*k],forces[3*k+1],forces[3*k+2]);
+            assert!(f.y>0. && Vector::new(f.x,0.,f.z).length()<f.y);}
+        assert!(!contact_can_react(0.004,0.2).unwrap());
     }
     #[test] fn native_step_pure_min_norm_rejects_unrepresentable_wrench() {
         let mut a=DMatrix::zeros(6,3);for i in 0..3 {a[(i,i)]=1.;}
@@ -517,8 +565,8 @@ mod tests {
     #[test] fn native_step_pure_hysteresis_never_creates_absent_contact_force() {
         assert!(!contact_can_react(0.00001,-1.).unwrap());
         assert!(contact_can_react(0.,0.).unwrap()); // zero charge still may contact
-        assert!(!contact_can_react(0.,0.01).unwrap()); // separating, force must be zero
-        assert!(contact_can_react(0.,-0.01).is_err());
+        assert!(contact_can_react(0.,0.01).unwrap()); // desire does not remove geometry
+        assert!(contact_can_react(0.,-0.01).unwrap()); // allocation must coordinate contact, not discard it
         let mut separated=false;let mut count=0;
         update_separation(&mut separated,&mut count,0.004,0.);
         assert!(!separated);assert!(!contact_can_react(0.004,0.).unwrap());
