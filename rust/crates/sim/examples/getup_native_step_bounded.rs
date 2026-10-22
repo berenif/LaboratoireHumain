@@ -3,17 +3,9 @@ use lh_sim::{Profile, getup, integration_budget as budget, measurement::Failure,
 use serde_json::{Value,json};
 use std::{fs::OpenOptions,io::Write,path::Path};
 
-fn save_checkpoint(runtime:&Runtime,path:&Path)->Result<Value,String> {
-    let bytes=runtime.getup_checkpoint()?;
-    // Two 7 MiB checkpoints + 1 MiB result stay below 16 MiB total.
-    if bytes.len()>7*1024*1024 {return Err("checkpoint exceeds 7 MiB reserve".into());}
-    let mut file=OpenOptions::new().write(true).create_new(true).open(path).map_err(|e|format!("checkpoint {}: {e}",path.display()))?;
-    file.write_all(&bytes).and_then(|_|file.sync_all()).map_err(|e|format!("checkpoint write {}: {e}",path.display()))?;
-    let verification=runtime.verify_getup_checkpoint(&bytes);
-    Ok(json!({"path":path,"bytes":bytes.len(),"restored":verification.is_ok(),
-        "verification":verification.as_ref().ok().and_then(|s|serde_json::from_str::<Value>(s).ok()),
-        "restoreError":verification.as_ref().err(),"scope":"exact serialized state; next-step continuity not tested"}))
-}
+#[path="support/checkpoint.rs"]
+mod checkpoint;
+use checkpoint::save_checkpoint;
 fn trial(result_path:&Path)->Result<Value,String> {
     let mut profile:Profile=serde_json::from_str(include_str!("../../../../docs/evidence/profiles/getup-800hz-3plus1-repeat-cycle-v1.json")).map_err(|e|e.to_string())?;
     profile.getup_native_locomotion=Some(getup::locomotion::Profile::NativeJointOwnerV1);

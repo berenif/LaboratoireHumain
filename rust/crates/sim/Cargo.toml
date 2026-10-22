@@ -94,3 +94,7 @@ bincode = "=1.3.3"
 [[example]]
 name = "getup_native_step_bounded"
 required-features = ["numeric-integration-budget", "getup-native-locomotion-experiment", "unit-root-rotation-experiment", "root-translation-carry-experiment"]
+
+[[example]]
+name = "getup_native_step_continue"
+required-features = ["numeric-integration-budget", "getup-native-locomotion-experiment", "unit-root-rotation-experiment", "root-translation-carry-experiment"]

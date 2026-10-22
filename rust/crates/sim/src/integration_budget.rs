@@ -38,11 +38,13 @@ impl Ledger {
     }
 }
 static RESERVE: Mutex<Option<Ledger>>=Mutex::new(None);
-pub fn install()->Result<(),String> {
+pub fn install()->Result<(),String> { install_limit(3064) }
+pub fn install_continuation()->Result<(),String> { install_limit(2400) }
+fn install_limit(limit:u64)->Result<(),String> {
     let mut slot=RESERVE.lock().map_err(|_|"budget lock poisoned")?;
     if slot.is_some() {return Err("global reserve already installed".into());}
     // Second trial consumed 5736; no new trial authorized by this reserve.
-    let mut reserve=Ledger::new();reserve.remaining=3064;
+    let mut reserve=Ledger::new();reserve.remaining=limit;
     *slot=Some(reserve);Ok(())
 }
 pub fn snapshot()->Result<Ledger,String> {
