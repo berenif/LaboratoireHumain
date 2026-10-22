@@ -27,25 +27,26 @@ pub(crate) struct Reference {
     braking: bool,
     #[serde(default="reference_duration")]
     duration: f32,
+    #[serde(default)]
+    limit_braking: [bool;21],
 }
 fn reference_duration()->f32 {DURATION}
 impl Reference {
     fn new(q:[f32;21],dq:[f32;21],target:[f32;21])->Self {
-        Self {q,dq,start:q,velocity:dq,target,elapsed:0.,braking:false,duration:DURATION}
+        Self {q,dq,start:q,velocity:dq,target,elapsed:0.,braking:false,duration:DURATION,limit_braking:[false;21]}
     }
     /// Quintic Hermite in physical seconds, not one entire displacement per
     /// control evaluation. The measured state is used by feedback, not as a
     /// replacement for the persistent trajectory origin.
     fn proposal(&self,dt:f32,bounds:&[(f32,f32);21])->Result<(Self,[f32;21]),String> {
         if !dt.is_finite() || dt<=0. || dt>0.025 {return Err("Invalid Step reference interval".into());}
-        if self.braking || (0..21).any(|i|needs_braking(self.q[i],self.dq[i],bounds[i],dt)) {
-            let mut next=self.clone();next.braking=true;let mut acceleration=[0.;21];
-            for i in 0..21 {
-                let (q,v,a)=brake_reference(self.q[i],self.dq[i],bounds[i],dt)?;
-                next.q[i]=q;next.dq[i]=v;acceleration[i]=a;
-            }
-            next.elapsed=(self.elapsed+dt).min(self.duration);
-            return Ok((next,acceleration));
+        if self.braking {
+            if self.dq.iter().any(|v|*v!=0.) {return self.braking_proposal(dt,bounds);}
+            // A completed whole-reference brake may resume the unfinished
+            // intention from continuous q/dq. The measured world is untouched.
+            let mut resumed=Self::new(self.q,self.dq,self.target);
+            resumed.limit_braking=self.limit_braking;
+            return resumed.proposal(dt,bounds);
         }
         let t=(self.elapsed+dt).min(self.duration);let x=t/self.duration;
         let h=10.*x.powi(3)-15.*x.powi(4)+6.*x.powi(5);
@@ -60,18 +61,34 @@ impl Reference {
             next.q[i]=self.start[i]+delta*h+self.velocity[i]*self.duration*v;
             next.dq[i]=delta*dh+self.velocity[i]*dv;
             ddq[i]=delta*ddh+self.velocity[i]*ddv;
+            // A tiny inward return to one joint stop must not brake all 21
+            // coordinates or prevent the support phase from progressing.
+            if self.limit_braking[i] || needs_braking(self.q[i],self.dq[i],bounds[i],dt)
+                || next.q[i]<bounds[i].0 || next.q[i]>bounds[i].1
+                || needs_braking(next.q[i],next.dq[i],bounds[i],dt) {
+                let (q,v,a)=brake_reference(self.q[i],self.dq[i],bounds[i],dt)?;
+                next.q[i]=q;next.dq[i]=v;ddq[i]=a;next.limit_braking[i]=true;
+            }
             if !next.q[i].is_finite() || !next.dq[i].is_finite() || !ddq[i].is_finite()
                 || next.dq[i].abs()>0.5 || ddq[i].abs()>REFERENCE_ACCELERATION {
                 return Err("Step reference exceeds pilot speed/acceleration envelope".into());
             }
         }
-        if (0..21).any(|i|next.q[i]<bounds[i].0 || next.q[i]>bounds[i].1
-            || needs_braking(next.q[i],next.dq[i],bounds[i],dt)) {
-            let mut braking=self.clone();braking.braking=true;
-            return braking.proposal(dt,bounds);
-        }
         Ok((next,ddq))
     }
+    /// Explicit alpha-zero fallback: brake current reference velocities and
+    /// hold once stopped. Unlike nominal proposal this never resumes a target.
+    fn braking_proposal(&self,dt:f32,bounds:&[(f32,f32);21])->Result<(Self,[f32;21]),String> {
+        if !dt.is_finite() || dt<=0. || dt>0.025 {return Err("Invalid Step brake interval".into());}
+        let mut next=self.clone();next.braking=true;let mut acceleration=[0.;21];
+        for i in 0..21 {
+            let (q,v,a)=brake_reference(self.q[i],self.dq[i],bounds[i],dt)?;
+            next.q[i]=q;next.dq[i]=v;acceleration[i]=a;
+        }
+        next.elapsed=(self.elapsed+dt).min(self.duration);
+        Ok((next,acceleration))
+    }
+
 }
 
 #[derive(Clone, Serialize, Deserialize)]
@@ -164,8 +181,7 @@ impl State {
         // Alpha zero advances time and brakes existing reference velocity. It
         // never freezes q while discarding dq or resets the measured state.
         let baseline=if elapsed==0 {nominal.clone()} else {
-            let mut braking=self.reference.clone();braking.braking=true;
-            braking.proposal(s.profile.dt_s,&bounds)?
+            self.reference.braking_proposal(s.profile.dt_s,&bounds)?
         };
         let (controls,candidate,ddq,reactions)=command_for_family(s,&baseline,&nominal,self.side,self.separated,&self.last_reactions)?;
         // This State itself is a clone owned by locomotion::step_command.
@@ -661,6 +677,52 @@ fn command_for_family_recorded(s:&Simulation,baseline:&(Reference,[f32;21]),nomi
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[test] fn native_step_pure_reference_single_stop_preserves_other_motion() {
+        let mut r=Reference::new([0.;21],[0.02;21],[0.005;21]);
+        r.q[20]=0.9999997;r.start[20]=r.q[20];r.velocity[20]=-0.000000007;r.dq[20]=r.velocity[20];r.target[20]=1.;
+        // Use an outward speed at the upper stop to trigger its local brake.
+        r.dq[20]=0.000000007;r.velocity[20]=r.dq[20];
+        let next=r.proposal(0.00125,&[(-1.,1.);21]).unwrap().0;
+        assert!(next.limit_braking[20]);assert!(!next.braking);
+        assert!(next.dq[0]>0.019);assert!(next.q[0]>r.q[0]);assert_eq!(next.dq[20],0.);
+    }
+    #[test] fn native_step_pure_reference_global_brake_resumes_but_alpha_zero_holds() {
+        let mut r=Reference::new([0.;21],[0.005;21],[0.005;21]);r.braking=true;
+        r=r.proposal(0.00125,&[(-1.,1.);21]).unwrap().0;
+        r=r.proposal(0.00125,&[(-1.,1.);21]).unwrap().0;
+        assert!(r.dq.iter().all(|v|*v==0.));let stopped=r.clone();
+        let held=r.braking_proposal(0.00125,&[(-1.,1.);21]).unwrap().0;
+        assert!(held.braking);assert_eq!(held.q,stopped.q);assert_eq!(held.dq,stopped.dq);
+        let next=r.proposal(0.00125,&[(-1.,1.);21]).unwrap().0;
+        assert!(!next.braking);assert!(next.q[0]>=stopped.q[0]);assert!(next.dq[0]>0.);
+        assert_eq!(next.start,stopped.q);assert_eq!(next.velocity,stopped.dq);
+    }
+    #[test]
+    #[ignore="requires recorded trial observation; evolves references only, never Rapier"]
+    fn native_step_pure_reference_recorded_4757_resumes_unfinished_transfer() {
+        let path=std::env::var("LH_STEP_TRIAL").unwrap();let data:serde_json::Value=serde_json::from_slice(&std::fs::read(path).unwrap()).unwrap();
+        let mut reference:Reference=serde_json::from_value(data["result"]["finalObservation"]["ownership"]["step"]["reference"].clone()).unwrap();
+        let entry:Reference=serde_json::from_value(data["result"]["commands"]["firstAdmitted"]["proposedReference"].clone()).unwrap();
+        let model=lh_model::Model::canonical().unwrap();
+        let mut bounds=[(0.,0.);21];for part in &model.segments {if let Some(h)=part.reference.as_ref().and_then(|r|r.hinge.as_ref()) {
+            let a=&part.joint_profile.as_ref().unwrap().axes[0];bounds[h.qpos_index]=(a.min_radians,a.max_radians);
+        }}
+        let mut from_entry=entry;let mut first_mask=None;
+        for step in 1..=217 {let next=from_entry.proposal(0.00125,&bounds).unwrap().0;
+            if first_mask.is_none() && next.limit_braking.iter().any(|x|*x) {first_mask=Some((step,next.limit_braking));}from_entry=next;}
+        assert_eq!(first_mask.as_ref().unwrap().1.iter().filter(|x|**x).count(),1);assert!(first_mask.as_ref().unwrap().1[20]);
+        let initial_distance: f32=(0..21).map(|i|(reference.target[i]-reference.q[i]).abs()).sum();
+        let mut resumed_at=None;let mut nonzero_after=false;
+        for step in 1..=700 {let next=reference.proposal(0.00125,&bounds).unwrap().0;
+            assert!((0..21).all(|i|(next.q[i]-reference.q[i]).abs()<=0.5*0.00125+1e-6));
+            if resumed_at.is_none() && !next.braking {resumed_at=Some(step);}
+            if resumed_at.is_some() && next.dq[6].abs()>0.001 {nonzero_after=true;}
+            reference=next;
+        }
+        let final_distance:f32=(0..21).map(|i|(reference.target[i]-reference.q[i]).abs()).sum();
+        assert!(resumed_at.unwrap()<=24);assert!(nonzero_after);assert!(final_distance<initial_distance*0.1);
+        println!("REFERENCE_ONLY {}",serde_json::json!({"firstLimitedCoordinateFromEntry":first_mask,"resumedAfterReferenceUpdates":resumed_at,"initialTargetDistanceRad":initial_distance,"finalTargetDistanceRad":final_distance,"newPhysicsIntegrations":0}));
+    }
     #[test] fn native_step_pure_joint_allocator_progression_and_motor_limit() {
         let mut a=DMatrix::zeros(6,3);a[(1,1)]=1.;
         let mut w0=DVector::zeros(6);w0[1]=80.;let mut dw=DVector::zeros(6);dw[1]=20.;
@@ -811,11 +873,11 @@ mod tests {
         let (q,v,_) = brake_reference(q,v,(-1.,1.),0.025).unwrap();assert!(q<1.);assert_eq!(v,0.);
         assert!(brake_reference(1.,0.1,(-1.,1.),0.00125).is_err());
     }
-    #[test] fn native_step_pure_braking_latches_without_restarting_old_trajectory() {
+    #[test] fn native_step_pure_limit_braking_holds_only_the_stopped_coordinates() {
         let mut r=Reference::new([0.99997;21],[0.01;21],[1.;21]);
         for _ in 0..10 {let old=r.clone();r=r.proposal(0.00125,&[(-1.,1.);21]).unwrap().0;
             assert!(r.q[0]>=old.q[0] && r.q[0]<=1.);assert!(r.dq[0]<=old.dq[0]);}
-        assert!(r.braking);assert_eq!(r.dq[0],0.);let held=r.q;
+        assert!(!r.braking);assert!(r.limit_braking.iter().all(|x|*x));assert_eq!(r.dq[0],0.);let held=r.q;
         r=r.proposal(0.025,&[(-1.,1.);21]).unwrap().0;assert_eq!(r.q,held);
     }
     #[test] fn native_step_pure_hysteresis_never_creates_absent_contact_force() {
