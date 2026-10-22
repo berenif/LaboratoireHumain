@@ -1,5 +1,5 @@
-//! Comparative trial from the preserved native5339 entry, NOT continuation of5499.
-//! Controller6cb1115d; original world and pilot clock preserved, never acquire/reset.
+//! One continuation from the exact native5579 stop.
+//! Controller97dc83ec; original world and pilot clock preserved, never acquire/reset.
 use lh_sim::{getup,integration_budget as budget,measurement::Failure,runtime::Runtime};
 use serde_json::{Value,json};
 use std::{fs::OpenOptions,io::{Write,Seek,SeekFrom},path::Path};
@@ -7,16 +7,18 @@ use std::{fs::OpenOptions,io::{Write,Seek,SeekFrom},path::Path};
 mod checkpoint;
 
 fn run(input:&Path,out:&Path,preflight_only:bool)->Result<Value,String> {
-    let bytes=std::fs::read(input).map_err(|e|e.to_string())?;
+    let decoded=std::process::Command::new("gzip").args(["-d","-c"]).arg(input).output().map_err(|e|e.to_string())?;
+    if !decoded.status.success() {return Err("Input gzip decoding failed".into());}
+    let bytes=decoded.stdout;
     let mut runtime=Runtime::from_getup_checkpoint(&bytes)?;
     let restored:Value=serde_json::from_str(&runtime.verify_getup_checkpoint(&bytes)?).map_err(|e|e.to_string())?;
     let before:Value=serde_json::from_str(&runtime.getup_native_observation()?).map_err(|e|e.to_string())?;
-    if restored["passed"]!=true || before["nativeCompleted"]!=5339 || before["failure"]["offending"]!="Step reference exceeds pilot speed/acceleration envelope" {
-        return Err("Resume requires verified saved native5339 refusal".into());
+    if restored["passed"]!=true || before["nativeCompleted"]!=5579 || before["failure"]["offending"]!="Step preparation needs more time than this pilot reserve; change preparation/placement" {
+        return Err("Resume requires verified saved native5579 refusal".into());
     }
     // This performs the complete reference/posture, passive/dynamic RNEA,
     // cone allocation and unchanged motor-cap admission, without integration.
-    let admission=runtime.resume_getup_native_step_5339();
+    let admission=runtime.resume_getup_native_step_5579();
     let after_admission:Value=serde_json::from_str(&runtime.getup_native_observation()?).map_err(|e|e.to_string())?;
     let started=before["ownership"]["step"]["started_native"].as_u64().ok_or("Missing original Step clock")?;
     let native=before["nativeCompleted"].as_u64().ok_or("Missing native clock")?;
@@ -24,7 +26,7 @@ fn run(input:&Path,out:&Path,preflight_only:bool)->Result<Value,String> {
     let pilot_remaining=2400u64.checked_sub(elapsed).ok_or("Original pilot expired")?;
     let duration=after_admission["ownership"]["step"]["reference"]["duration"].as_f64().ok_or("Missing reference duration")?;
     let reference_elapsed=after_admission["ownership"]["step"]["reference"]["elapsed"].as_f64().ok_or("Missing reference elapsed")?;
-    let remaining_seconds=pilot_remaining.min(2000) as f64*0.00125;
+    let remaining_seconds=pilot_remaining.min(1500) as f64*0.00125;
     let horizon_error=if admission.is_ok() && duration-reference_elapsed>remaining_seconds {Some(format!("Reference needs {} s, original pilot/reserve has {remaining_seconds} s; no compression/reset/extension",duration-reference_elapsed))} else {None};
     let preflight=json!({"restoration":restored,"nativeBefore":before["nativeCompleted"],
         "originalStartedNative":started,"originalPilotRemainingNative":pilot_remaining,"referenceRemainingSeconds":duration-reference_elapsed,"availableSeconds":remaining_seconds,
@@ -64,9 +66,9 @@ fn run(input:&Path,out:&Path,preflight_only:bool)->Result<Value,String> {
                 max_clearance=max_clearance.max(clearance);
                 let measured=json!({"native":o["nativeCompleted"],"com":o["com"],"comVelocityMps":o["comVelocityMps"],"freeLoadN":free_load,"retainedLoadN":o["floorFootGeometry"]["feet"][1]["load"],"wholeSoleClearanceM":clearance,"retreatM":retreat,"phase":phase});
                 if free_load<min_free_load {min_free_load=free_load;minimum_load_sample=Some(measured.clone());}
-                let refresh=o["ownership"]["step"]["preparation"]["updated"].as_u64();
+                let refresh=o["ownership"]["step"]["preparation"]["attempted"].as_u64().or_else(||o["ownership"]["step"]["preparation"]["updated"].as_u64());
                 if refresh!=last_refresh {
-                    refresh_trace.push(json!({"observedNative":o["nativeCompleted"],"updatedNative":refresh,
+                    refresh_trace.push(json!({"observedNative":o["nativeCompleted"],"attemptedNative":refresh,"preparation":o["ownership"]["step"]["preparation"],
                         "comGoal":o["ownership"]["step"]["com"],"footGoal":o["ownership"]["step"]["foot_goal"],
                         "reference":o["ownership"]["step"]["reference"],"measured":measured}));
                     last_refresh=refresh;
@@ -102,12 +104,12 @@ fn main()->Result<(),Box<dyn std::error::Error>> {
     }
     let mut file=OpenOptions::new().write(true).create_new(true).open(&args[3])?;
     file.write_all(b"{\"status\":\"started; final outcome pending\"}\n")?;file.sync_all()?;
-    budget::install_comparative_5339()?;
+    budget::install_resume_5579()?;
     let result=run(Path::new(&args[2]),Path::new(&args[3]),args[1]=="--preflight-stop");
     let ledger=budget::snapshot()?;
-    let receipt=json!({"format":"native-step-comparison-from-5339-v1","controllerCommit":"6cb1115dba2829fbb07f7480ae7fd5d314a9bb81","historical":19297,"trialLimit":2000,
-        "cumulativeLimit":21401,"totalConsumed":19297+ledger.real+ledger.forecast,
-        "remainingGlobalBudget":2104-ledger.real-ledger.forecast,"ledger":ledger,
+    let receipt=json!({"format":"native-step-continuation-from-5579-v1","controllerCommit":"97dc83ec47e9461eb4992cb6972b98e9b4cbd843","historical":19537,"trialLimit":1500,
+        "cumulativeLimit":21401,"totalConsumed":19537+ledger.real+ledger.forecast,
+        "remainingGlobalBudget":1864-ledger.real-ledger.forecast,"ledger":ledger,
         "inputCheckpoint":args[2],"result":result.as_ref().ok(),"error":result.as_ref().err(),"motionQualified":false});
     let bytes=serde_json::to_vec(&receipt)?;
     if bytes.len()>500_000 {return Err("result exceeds reserved 500000 bytes".into());}
