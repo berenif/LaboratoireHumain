@@ -315,7 +315,7 @@ impl State {
         if let Some(path)=&mut self.placement {
             if path.due(s.substeps_completed) {
                 if !path.started {
-                    if self.phase!=Phase::Swing || !self.separated {return Err("Placement needs confirmed historical separation".into());}
+                    if self.phase!=Phase::Swing || !self.separated || self.separation_samples<3 || foot.clearance<0.003 || foot.load>1. {return Err("Placement needs confirmed historical separation AND current unloaded whole-capsule clearance".into());}
                     path.start(s.substeps_completed,&self.reference)?;
                 }
                 let (reference,a,descending,com,goal)=path.sample(s.substeps_completed,s.profile.dt_s,&self.reference)?;
@@ -998,6 +998,8 @@ fn contact_bias(gap:f32,h:f32,erp_inv_dt:f32,max_correction:f32)->f32 {
     gap.max(0.)/h+(erp_inv_dt*gap).clamp(-max_correction,0.)
 }
 fn command_for_family_recorded(s:&Simulation,baseline:&(Reference,[f32;21]),nominal:&(Reference,[f32;21]),side:usize,exclusive:bool,unload:bool,warm:&[Reaction],com_goal:Vector,clearance_goal:f32,record:&mut serde_json::Value)->Result<CommandProposal,String> {
+    record["requestedNominalReference"]=serde_json::json!(nominal.0);record["requestedReferenceAcceleration"]=serde_json::json!(nominal.1);
+    record["requestedComGoal"]=serde_json::json!(com_goal);record["requestedSoleGuardM"]=serde_json::json!(clearance_goal);
     let (q,dq)=super::joint_state(s)?;let geometry=geometry(s)?;
     let raw=|r:&(Reference,[f32;21])|std::array::from_fn(|i|r.1[i]+16.*(r.0.q[i]-q[i])+8.*(r.0.dq[i]-dq[i]));
     let (a0,da,alpha_min)=acceleration_region(&raw(baseline),&raw(nominal));

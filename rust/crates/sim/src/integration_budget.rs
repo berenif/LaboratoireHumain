@@ -13,15 +13,16 @@ pub struct Ledger {
     pub acquisition: u64,
     pub step: u64,
     pub in_step: bool,
+    step_limit:u64,
     pub first_stop: Option<String>,
 }
 impl Ledger {
-    fn new() -> Self { Self {remaining:8800,real:0,forecast:0,acquisition:0,step:0,in_step:false,first_stop:None} }
+    fn new() -> Self { Self {remaining:8800,real:0,forecast:0,acquisition:0,step:0,in_step:false,step_limit:2400,first_stop:None} }
     fn available(&mut self) -> Result<(),String> {
         if let Some(reason)=&self.first_stop {return Err(reason.clone());}
         let reason=if self.remaining==0 {Some("total-integration-limit")}
             else if !self.in_step && self.acquisition>=6400 {Some("acquisition-integration-limit")}
-            else if self.in_step && self.step>=2400 {Some("step-integration-limit")} else {None};
+            else if self.in_step && self.step>=self.step_limit {Some("step-integration-limit")} else {None};
         if let Some(reason)=reason {self.first_stop=Some(reason.into());return Err(reason.into());}
         Ok(())
     }
@@ -42,6 +43,7 @@ pub fn install()->Result<(),String> { install_limit(3064) }
 pub fn install_continuation()->Result<(),String> { install_limit(2400) }
 #[cfg(test)]
 pub(crate) fn install_identification()->Result<(),String> { install_limit(4) }
+pub fn install_post_separation_025()->Result<(),String> { install_limit_with_step(12450,12450) }
 pub fn install_reception010_replay()->Result<(),String> { install_limit(2000) }
 pub fn install_resume_6186()->Result<(),String> { install_limit(1000) }
 pub fn install_resume_6182()->Result<(),String> { install_limit(1000) }
@@ -50,11 +52,12 @@ pub fn install_resume_5579()->Result<(),String> { install_limit(1500) }
 pub fn install_comparative_5339()->Result<(),String> { install_limit(2000) }
 pub fn install_coordinated_resume()->Result<(),String> { install_limit(2200) }
 pub fn install_short_resume()->Result<(),String> { install_limit(800) }
-fn install_limit(limit:u64)->Result<(),String> {
+fn install_limit(limit:u64)->Result<(),String> {install_limit_with_step(limit,2400)}
+fn install_limit_with_step(limit:u64,step_limit:u64)->Result<(),String> {
     let mut slot=RESERVE.lock().map_err(|_|"budget lock poisoned")?;
     if slot.is_some() {return Err("global reserve already installed".into());}
     // Second trial consumed 5736; no new trial authorized by this reserve.
-    let mut reserve=Ledger::new();reserve.remaining=limit;
+    let mut reserve=Ledger::new();reserve.remaining=limit;reserve.step_limit=step_limit;
     *slot=Some(reserve);Ok(())
 }
 pub fn snapshot()->Result<Ledger,String> {
@@ -134,4 +137,13 @@ mod diagnostic_tests {
         let recovered:f32=serde_json::from_value(saved["firstRefused"]["measured"].clone()).unwrap();
         assert_eq!(recovered.to_bits(),measured.to_bits());
     }
+}
+
+#[cfg(test)]
+#[test]
+fn placement_budget_pure_real_and_forecast_share_one_reserve() {
+ let mut b=Ledger::new();b.remaining=12450;b.step_limit=12450;b.begin_step().unwrap();
+ for i in 0..12450 {b.debit(if i%2==0 {Kind::Real}else{Kind::Forecast}).unwrap();}
+ assert_eq!((b.real,b.forecast,b.step,b.remaining),(6225,6225,12450,0));
+ assert!(b.debit(Kind::Real).is_err());assert!(b.begin_step().is_err());
 }
