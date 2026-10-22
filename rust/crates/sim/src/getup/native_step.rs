@@ -6,6 +6,11 @@ use rapier3d::na::{DMatrix, DVector};
 const FORMAT: &str = "native-step-pilot-v2";
 const DURATION: f32 = 0.8;
 const REFERENCE_ACCELERATION: f32 = 2.;
+const LIMIT_NATIVE: u64 = 2400;
+
+fn pilot_budget_available(started:u64,completed:u64)->bool {
+    completed.checked_sub(started).is_some_and(|elapsed|elapsed<LIMIT_NATIVE)
+}
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
 pub enum Phase { Retraction, Swing, Landing, Complete, Cancelled }
@@ -122,7 +127,7 @@ impl State {
         if s.grab.is_some() {return Err("Step pilot external grab dynamics are not qualified".into());}
         let elapsed=s.substeps_completed.checked_sub(self.last_native).ok_or("Step clock reversed")?;
         if elapsed>1 {return Err("Step missed a native command boundary".into());}
-        if s.substeps_completed-self.started_native>2400 {return Err("Step pilot exceeded 2400 native intervals".into());}
+        if !pilot_budget_available(self.started_native,s.substeps_completed) {return Err("Step pilot exceeded 2400 native intervals".into());}
         let support=geometry(s)?;
         if support[1-self.side].load<3. || support[1-self.side].clearance>0. {return Err("Step lost measured retained-foot support".into());}
         let foot=&support[self.side];
@@ -425,6 +430,12 @@ fn command_for_reference(s:&Simulation,reference:&Reference,ddq:&[f32;21],side:u
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[test] fn native_step_pure_budget_refuses_command_for_integration_2401() {
+        assert!(pilot_budget_available(4800,4800));
+        assert!(pilot_budget_available(4800,7199));
+        assert!(!pilot_budget_available(4800,7200));
+        assert!(!pilot_budget_available(4800,4799));
+    }
     #[test] fn native_step_pure_rnea_is_affine_at_fixed_state_and_allocation() {
         let s=Simulation::new(0.,crate::Profile::default(),true).unwrap();
         let before=serde_json::to_value(&s).unwrap();let (q,dq)=super::super::joint_state(&s).unwrap();
