@@ -195,6 +195,26 @@ impl Runtime {
         if self.disposed || self.timeline.depth()!=0 {return Err("Step requires a live empty command boundary".into());}
         crate::getup::locomotion::begin_step(&mut self.simulation,side)
     }
+    /// Explicit experiment-only acknowledgement of the saved native4757
+    /// algebraic refusal. No body, joint, integrator or clock is reset.
+    #[cfg(all(feature="numeric-integration-budget",feature="getup-native-locomotion-experiment"))]
+    pub fn resume_getup_native_step_4757(&mut self)->Result<String,String> {
+        if self.disposed || self.paused || !self.visible || self.timeline.depth()!=0
+            || self.simulation.substeps_completed!=4757 || self.simulation.motion!=lh_contracts::Motion::Halted
+            || self.simulation.grab.is_some() {
+            return Err("Resume requires the halted native4757 empty Step boundary".into());
+        }
+        let failure=self.simulation.first_failure.clone().ok_or("Missing saved refusal")?;
+        if failure.check!="getup-policy" || failure.offending!="Step proposed-reference torque cap at hinge 7" {
+            return Err("Resume refuses any other saved failure".into());
+        }
+        let controls=crate::getup::locomotion::step_command(&mut self.simulation)?;
+        // Reacting re-enables ordinary integrated fall observation; it does not
+        // assert a newly earned upright state or advance its observation timers.
+        self.simulation.first_failure=None;self.simulation.motion=lh_contracts::Motion::Reacting;
+        Ok(serde_json::json!({"acknowledgedFailure":failure,"native":4757,"controls":controls,
+            "administrativeMotion":"Reacting","physicsIntegrations":0}).to_string())
+    }
     fn checkpoint_compatible(&self) -> Result<(), String> {
         let s = &self.simulation;
         s.profile.validate()?;
@@ -1161,6 +1181,14 @@ mod tests {
         // intentions. It must be algebraic and leave the physical world alone.
         crate::getup::locomotion::step_command(&mut runtime.simulation).unwrap();
         assert_eq!(bincode::serialize(&runtime.simulation.world).unwrap(),before);
+        let mut resumed=Runtime::from_getup_checkpoint(&bytes).unwrap();
+        let acknowledgement:serde_json::Value=serde_json::from_str(&resumed.resume_getup_native_step_4757().unwrap()).unwrap();
+        assert_eq!(acknowledgement["acknowledgedFailure"]["offending"],"Step proposed-reference torque cap at hinge 7");
+        assert!(resumed.simulation.first_failure.is_none());assert_eq!(resumed.simulation.motion,lh_contracts::Motion::Reacting);
+        assert_eq!(resumed.simulation.substeps_completed,4757);assert_eq!(bincode::serialize(&resumed.simulation.world).unwrap(),before);
+        assert!(resumed.resume_getup_native_step_4757().is_err());
+        let mut wrong=Runtime::from_getup_checkpoint(&bytes).unwrap();wrong.simulation.first_failure.as_mut().unwrap().offending="different failure".into();
+        assert!(wrong.resume_getup_native_step_4757().is_err());assert!(wrong.simulation.first_failure.is_some());
     }
 
     #[test]
