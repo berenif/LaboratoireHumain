@@ -188,7 +188,7 @@ impl Reception {
  #[cfg(feature="getup-native-locomotion-experiment")]
  fn command(&mut self,s:&Simulation)->Result<[f32;21],String> {
   let k=s.substeps_completed.checked_sub(self.started).ok_or("Reception clock reversed")?;
-  let (live,mut report)=s.getup_controller.as_ref().ok_or("Missing C")?.reception_requested(s,&self.frame,self.anchor)?;
+  let (live,mut report)=s.getup_controller.as_ref().ok_or("Missing C")?.reception_requested(s,&self.frame,self.anchor,&self.captured_q)?;
   if let Ok(anchor)=serde_json::from_value(report["anchor"].clone()) {self.anchor=Some(anchor);}
   let w=super::controller::terminal_bumpless_weight((k.min(20) as f64)/20.);
   let requested:[f32;21]=std::array::from_fn(|i|if k==0 {self.source[i]}else{((1.-w)*self.source[i] as f64+w*live[i] as f64) as f32});
@@ -1665,14 +1665,36 @@ mod reception010_tests {
   assert_eq!(state.reference.dq,[0.;21]);assert_eq!(state.reception.as_ref().unwrap().captured_dq,actual.1);
   assert_eq!(state.landed_samples,0);assert!(state.valid(6678));
   let run=state.reception.as_mut().unwrap();let count=run.saturated_intervals;run.command(s).unwrap();assert_eq!(run.saturated_intervals,count);
-  let (live,report)=s.getup_controller.as_ref().unwrap().reception_requested(s,&run.frame,run.anchor).unwrap();
+  let (live,report)=s.getup_controller.as_ref().unwrap().reception_requested(s,&run.frame,run.anchor,&run.captured_q).unwrap();
   assert!(live.iter().all(|x|x.is_finite()));
+  let target:[f32;21]=serde_json::from_value(report["postureTarget"].clone()).unwrap();
+  let raw_pd:[f32;21]=serde_json::from_value(report["rawPd"].clone()).unwrap();
+  let old:serde_json::Value=serde_json::to_value(s.getup_controller.as_ref().unwrap()).unwrap();
+  for part in &s.model.segments {if let Some(h)=part.reference.as_ref().and_then(|r|r.hinge.as_ref()) {
+    let i=h.qpos_index;let axis=&part.joint_profile.as_ref().unwrap().axes[0];
+    let leg=h.name.contains("_hip_") || h.name.ends_with("_knee") || h.name.contains("_ankle_");
+    if leg {assert_eq!(target[i],actual.0[i].clamp(axis.min_radians,axis.max_radians));}
+    else {assert_eq!(target[i],old["reference_pose"][i].as_f64().unwrap() as f32);}
+    assert_eq!(raw_pd[h.actuator_index],target[i]-actual.0[i]-0.2*actual.1[i]);
+  }}
+
   // Pure endpoint evaluation: no clock or physical state edited.
   let bounded=limit_reception_total(s,live).unwrap();
   for part in &s.model.segments {if let Some(h)=part.reference.as_ref().and_then(|r|r.hinge.as_ref()) {assert!((bounded.0[h.actuator_index]*h.gear).abs()<=part.joint_profile.as_ref().unwrap().axes[0].max_motor_torque_nm);}}
   assert_eq!(world,bincode::serialize(&s.world).unwrap());assert_eq!(actual,super::super::joint_state(s).unwrap());
   assert_eq!(observation,super::super::locomotion::observation(s).unwrap());
   println!("RECEPTION010_PURE {}",serde_json::json!({"precontact6186BitIdentical":true,"capture6678Continuous":true,"physicsIntegrations":0,"C":report,"limiting":bounded.1}));
+ }
+ #[test] #[ignore="pure captured contact6589 data from trial023; no restored world at contact claimed"]
+ fn reception010_captured_legs_remove_v3_knee_return() {
+  let rt=restored("reception010-replay-023");let s=rt.simulation();let o=super::super::locomotion::observation(s).unwrap();
+  let state:State=serde_json::from_value(o["ownership"]["step"].clone()).unwrap();let r=state.reception.unwrap();assert_eq!(r.started,6589);
+  let c=s.getup_controller.as_ref().unwrap();let target=c.reception_posture(s,&r.captured_q).unwrap();
+  let old=serde_json::to_value(c).unwrap();let i=12;assert_eq!(target[i],r.captured_q[i]);
+  let old_position=(old["reference_pose"][i].as_f64().unwrap() as f32-r.captured_q[i])*80.;
+  let damping=-0.2*r.captured_dq[i]*80.;assert!((old_position+21.51697).abs()<0.001);
+  assert_eq!((target[i]-r.captured_q[i])*80.,0.);assert!(damping*r.captured_dq[i]<=0.);
+  println!("CAPTURE6589_KNEE oldPositionNm={old_position} newPositionNm=0 dampingNm={damping}; no state/time edits");
  }
  #[test] fn reception010_contact_is_not_stability() {
   assert!(!loaded_touchdown(Phase::Swing,0.0001,2.999));

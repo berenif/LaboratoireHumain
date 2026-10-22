@@ -168,9 +168,23 @@ impl Controller {
     }
     /// Scoped Reception delegation; leaves the earned V3 binding untouched.
     #[cfg(feature="getup-native-locomotion-experiment")]
-    pub(super) fn reception_requested(&self,s:&Simulation,reference:&super::supported_standing::StandingReference,anchor:Option<(usize,[f32;3])>) ->Result<([f32;21],serde_json::Value),String> {
+    pub(super) fn reception_posture(&self,s:&Simulation,captured_q:&[f32;21])->Result<[f32;21],String> {
+        let mut target=self.reference_pose;let mut legs=0;
+        for part in &s.model.segments {if let Some(h)=part.reference.as_ref().and_then(|r|r.hinge.as_ref()) {
+            if h.name.contains("_hip_") || h.name.ends_with("_knee") || h.name.contains("_ankle_") {
+                let axis=&part.joint_profile.as_ref().ok_or("Missing leg profile")?.axes[0];
+                let q=captured_q[h.qpos_index];if !q.is_finite() {return Err("Nonfinite captured leg target".into());}
+                target[h.qpos_index]=q.clamp(axis.min_radians,axis.max_radians);legs+=1;
+            }
+        }}
+        if legs!=12 {return Err("Reception requires the canonical twelve leg hinges".into());}
+        Ok(target)
+    }
+    #[cfg(feature="getup-native-locomotion-experiment")]
+    pub(super) fn reception_requested(&self,s:&Simulation,reference:&super::supported_standing::StandingReference,anchor:Option<(usize,[f32;3])>,captured_q:&[f32;21]) ->Result<([f32;21],serde_json::Value),String> {
         if self.terminal_balance.is_none() || !self.completed_recovery() {return Err("Reception needs the existing earned C binding".into());}
-        super::supported_standing::reception_requested(s,reference,&self.reference_pose,anchor)
+        let target=self.reception_posture(s,captured_q)?;
+        super::supported_standing::reception_requested(s,reference,&target,anchor)
     }
     /// Actual current readiness, never inferred from a phase string.
     pub(crate) fn native_balance_ready(&self, native:u64)->bool {

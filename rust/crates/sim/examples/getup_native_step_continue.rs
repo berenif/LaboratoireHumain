@@ -68,6 +68,8 @@ fn run(input:&Path,out:&Path,preflight_only:bool)->Result<Value,String> {
     let ids=pose_ids(&before);let mut poses=open_poses(&out.with_extension("poses.bin"),&ids)?;
     write_pose(&mut poses,&before,&ids)?;let mut last_pose_native=native;
     let mut progress=OpenOptions::new().write(true).create_new(true).open(out.with_extension("progress.jsonl")).map_err(|e|e.to_string())?;
+    let mut events=OpenOptions::new().write(true).create_new(true).open(out.with_extension("events.jsonl")).map_err(|e|e.to_string())?;
+    let mut previous_signature:Option<([bool;2],bool,String)>=None;
     let mut stable_anchors=None;let mut stable_start=None;let mut stable_intervals=0u64;let mut max_stable_intervals=0u64;
     let mut stability_last=json!({});let mut reception_start=None;let mut old_deadline_crossed=None;
     let original_deadline=started+2400;
@@ -107,6 +109,19 @@ fn run(input:&Path,out:&Path,preflight_only:bool)->Result<Value,String> {
                 }
 
                 let phase=o["ownership"]["step"]["phase"].as_str().unwrap_or("missing");
+                let loads=std::array::from_fn(|i|o["floorFootGeometry"]["feet"][i]["load"].as_f64().unwrap_or(0.)>=3.);
+                let separated=o["floorFootGeometry"]["feet"][0]["clearance"].as_f64().unwrap_or(0.)>0.;
+                let signature=(loads,separated,phase.to_string());
+                if previous_signature.as_ref()!=Some(&signature) {
+                    let command=budget::last_step_command().unwrap_or(Value::Null);
+                    // Full measured boundary, including q/dq, root/body poses and
+                    // velocities, current contact points/impulses and owner state.
+                    // This is an observation, not a reconstructible Rapier checkpoint.
+                    let line=serde_json::to_vec(&json!({"native":native,"loadedFeet":loads,"capsuleSeparated":separated,"observation":o,"ledger":budget::snapshot().ok(),"command":{"native":command["native"],"controlMode":command["controlMode"],"reason":command["reason"],"requestedCop":command["requestedCopXZ"],"commandedCop":command["commandedCopXZ"],"pointForces":command["pointForces"],"postureTarget":command["postureTarget"],"rawPd":command["rawPd"],"compensationControls":command["compensationControls"],"requestedControls":command["requestedControls"],"controls":command["controls"],"motorLimiting":command["motorLimiting"]}})).map_err(|e|Failure::new(s.tick,substep,"event",e.to_string(),0.,0.))?;
+                    if events.metadata().map_err(|e|Failure::new(s.tick,substep,"event",e.to_string(),0.,0.))?.len()+line.len() as u64>1_200_000 {return Err(Failure::new(s.tick,substep,"event-reserve","event reserve exhausted".into(),0.,0.));}
+                    events.write_all(&line).and_then(|_|events.write_all(b"\n")).and_then(|_|events.sync_data()).map_err(|e|Failure::new(s.tick,substep,"event",e.to_string(),0.,0.))?;
+                    previous_signature=Some(signature);
+                }
                 separated_seen|=o["ownership"]["step"]["separated"]==true;
                 landed_seen|=o["ownership"]["step"]["landed_samples"].as_u64().unwrap_or(0)>0;
                 let foot:[f64;3]=serde_json::from_value(o["bodies"][foot_index]["position"].clone()).map_err(|e|Failure::new(s.tick,substep,"foot-observation",e.to_string(),0.,0.))?;
@@ -134,7 +149,7 @@ fn run(input:&Path,out:&Path,preflight_only:bool)->Result<Value,String> {
                 if samples==1 || samples%20==0 {
                     trace.push(measured.clone());
                     let command=budget::last_step_command().unwrap_or(Value::Null);
-                    let line=serde_json::to_vec(&json!({"measurement":measured,"ledger":budget::snapshot().ok(),"receptionStarted":reception_start,"compensationActive":command["compensationActive"],"controlMode":command["controlMode"],"requestedCop":command["requestedCopXZ"],"commandedCop":command["commandedCopXZ"],"copResidual":command["copResidualM"],"motorLimiting":command["motorLimiting"],"transitionNative":command["transitionNative"],"stability":stability_last})).map_err(|e|Failure::new(s.tick,substep,"progress",e.to_string(),0.,0.))?;
+                    let line=serde_json::to_vec(&json!({"measurement":measured,"ledger":budget::snapshot().ok(),"receptionStarted":reception_start,"compensationActive":command["compensationActive"],"reason":command["reason"],"controlMode":command["controlMode"],"requestedCop":command["requestedCopXZ"],"commandedCop":command["commandedCopXZ"],"copResidual":command["copResidualM"],"motorLimiting":command["motorLimiting"],"transitionNative":command["transitionNative"],"stability":stability_last})).map_err(|e|Failure::new(s.tick,substep,"progress",e.to_string(),0.,0.))?;
                     if progress.metadata().map_err(|e|Failure::new(s.tick,substep,"progress",e.to_string(),0.,0.))?.len()+line.len() as u64>600_000 {return Err(Failure::new(s.tick,substep,"proof-reserve","progress reserve exhausted".into(),0.,0.));}
                     progress.write_all(&line).and_then(|_|progress.write_all(b"\n")).and_then(|_|progress.sync_data()).map_err(|e|Failure::new(s.tick,substep,"progress",e.to_string(),0.,0.))?;
                 }
@@ -174,9 +189,9 @@ fn main()->Result<(),Box<dyn std::error::Error>> {
     budget::install_reception010_replay()?;
     let result=run(Path::new(&args[2]),Path::new(&args[3]),args[1]=="--preflight-stop");
     let ledger=budget::snapshot()?;
-    let receipt=json!({"format":"reception010-replay-from-6186-v1","historicalFlightController":"e5151e23f3c1401abac9aa993364a7a88d30505b","receptionImplementation":"local/reception-010-fix; see build identity","historical":33600,"trialLimit":2000,
-        "cumulativeLimit":39600,"totalConsumed":33600+ledger.real+ledger.forecast,
-        "remainingGlobalBudget":6000-ledger.real-ledger.forecast,"ledger":ledger,
+    let receipt=json!({"format":"reception024-captured-leg-comparison-from-6186-v1","historicalFlightController":"e5151e23f3c1401abac9aa993364a7a88d30505b","receptionImplementation":"local/reception-010-fix; see build identity","historical":34945,"trialLimit":2000,
+        "cumulativeLimit":39600,"totalConsumed":34945+ledger.real+ledger.forecast,
+        "remainingGlobalBudget":4655-ledger.real-ledger.forecast,"ledger":ledger,
         "inputCheckpoint":args[2],"result":result.as_ref().ok(),"error":result.as_ref().err(),"motionQualified":false});
     let bytes=serde_json::to_vec(&receipt)?;
     if bytes.len()>250_000 {return Err("result exceeds reserved 250000 bytes".into());}
