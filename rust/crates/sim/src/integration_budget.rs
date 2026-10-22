@@ -42,6 +42,7 @@ pub fn install()->Result<(),String> { install_limit(3064) }
 pub fn install_continuation()->Result<(),String> { install_limit(2400) }
 #[cfg(test)]
 pub(crate) fn install_identification()->Result<(),String> { install_limit(4) }
+pub fn install_reception010_replay()->Result<(),String> { install_limit(2000) }
 pub fn install_resume_6186()->Result<(),String> { install_limit(1000) }
 pub fn install_resume_6182()->Result<(),String> { install_limit(1000) }
 pub fn install_resume_6153()->Result<(),String> { install_limit(1200) }
@@ -103,7 +104,10 @@ mod tests {
 
 // Small process-local diagnostic, never fed back into the controller or forces.
 static COMMANDS: Mutex<(Option<serde_json::Value>,Option<serde_json::Value>)>=Mutex::new((None,None));
+static LAST_COMMAND: Mutex<Option<serde_json::Value>>=Mutex::new(None);
+pub fn last_step_command()->Option<serde_json::Value> {LAST_COMMAND.lock().ok().and_then(|v|v.clone())}
 pub fn record_step_command(record:serde_json::Value) {
+    if let Ok(mut last)=LAST_COMMAND.lock() {*last=Some(record.clone());}
     if let Ok(mut saved)=COMMANDS.lock() {
         let slot=if record["error"].is_null() {&mut saved.0} else {&mut saved.1};
         if slot.is_none() {*slot=Some(record);}

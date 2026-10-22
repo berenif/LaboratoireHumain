@@ -1,12 +1,40 @@
-//! One continuation from the exact native6186 stop.
-//! Controller e5151e23; original world and pilot clock preserved, never acquire/reset.
+//! Prepared replay from native6186: historical flight, explicit reception only.
+//! No execution authorized by compilation; --resume-stop requires a separate GO.
+//! Flight controller e5151e23; new reception is not attributed to the historical commit.
 use lh_sim::{getup,integration_budget as budget,measurement::Failure,runtime::Runtime};
 use serde_json::{Value,json};
 use std::{fs::OpenOptions,io::{Write,Seek,SeekFrom},path::Path};
 #[path="support/checkpoint.rs"]
 mod checkpoint;
 
+// Fixed-size frames: native:u64 + 16*(position:3f32, rotation:4f32).
+// Metadata is a length-prefixed JSON header; each frame is synced immediately.
+fn pose_ids(o:&Value)->Vec<String> {
+    o["bodies"].as_array().unwrap().iter().filter(|b|b["massKg"].as_f64().unwrap_or(0.)>0.).map(|b|b["id"].as_str().unwrap().to_string()).collect()
+}
+fn open_poses(path:&Path,ids:&[String])->Result<std::fs::File,String> {
+    if ids.len()!=16 {return Err("Capture requires 16 physical bodies".into());}
+    let mut f=OpenOptions::new().write(true).create_new(true).open(path).map_err(|e|e.to_string())?;
+    let h=serde_json::to_vec(&json!({"format":"native-poses-f32le-v1","ids":ids,"dtSeconds":0.00125,"strideNative":20,"frameBytes":456})).map_err(|e|e.to_string())?;
+    f.write_all(&(h.len() as u32).to_le_bytes()).and_then(|_|f.write_all(&h)).and_then(|_|f.sync_all()).map_err(|e|e.to_string())?;Ok(f)
+}
+fn write_pose(f:&mut std::fs::File,o:&Value,ids:&[String])->Result<(),String> {
+    let mut bytes=Vec::with_capacity(456);
+    bytes.extend_from_slice(&o["nativeCompleted"].as_u64().ok_or("Missing pose native")?.to_le_bytes());
+    for id in ids {
+        let b=o["bodies"].as_array().ok_or("Missing bodies")?.iter().find(|b|b["id"].as_str()==Some(id)).ok_or("Missing capture body")?;
+        for (field,n) in [("position",3),("rotation",4)] {
+            let values=b[field].as_array().ok_or("Missing pose component")?;if values.len()!=n {return Err("Invalid pose length".into());}
+            for v in values {let v=v.as_f64().ok_or("Invalid pose number")? as f32;if !v.is_finite(){return Err("Nonfinite pose".into());}bytes.extend_from_slice(&v.to_le_bytes());}
+        }
+    }
+    if bytes.len()!=456 {return Err("Invalid frame size".into());}
+    f.write_all(&bytes).and_then(|_|f.sync_data()).map_err(|e|e.to_string())
+}
+
 fn run(input:&Path,out:&Path,preflight_only:bool)->Result<Value,String> {
+    let digest=std::process::Command::new("sha256sum").arg(input).output().map_err(|e|e.to_string())?;
+    if !digest.status.success() || String::from_utf8_lossy(&digest.stdout).split_whitespace().next()!=Some("0737e7b3f237336486af699a28f0f92b5b27cf3afa622a96b70d9a563f9224fa") {return Err("Input is not the preserved exact native6186 checkpoint".into());}
     let decoded=std::process::Command::new("gzip").args(["-d","-c"]).arg(input).output().map_err(|e|e.to_string())?;
     if !decoded.status.success() {return Err("Input gzip decoding failed".into());}
     let bytes=decoded.stdout;
@@ -26,7 +54,7 @@ fn run(input:&Path,out:&Path,preflight_only:bool)->Result<Value,String> {
     let pilot_remaining=2400u64.checked_sub(elapsed).ok_or("Original pilot expired")?;
     let duration=after_admission["ownership"]["step"]["reference"]["duration"].as_f64().ok_or("Missing reference duration")?;
     let reference_elapsed=after_admission["ownership"]["step"]["reference"]["elapsed"].as_f64().ok_or("Missing reference elapsed")?;
-    let remaining_seconds=pilot_remaining.min(1000) as f64*0.00125;
+    let remaining_seconds=pilot_remaining.min(2000) as f64*0.00125;
     let horizon_error=if admission.is_ok() && duration-reference_elapsed>remaining_seconds {Some(format!("Reference needs {} s, original pilot/reserve has {remaining_seconds} s; no compression/reset/extension",duration-reference_elapsed))} else {None};
     let preflight=json!({"restoration":restored,"nativeBefore":before["nativeCompleted"],
         "originalStartedNative":started,"originalPilotRemainingNative":pilot_remaining,"referenceRemainingSeconds":duration-reference_elapsed,"availableSeconds":remaining_seconds,
@@ -37,6 +65,13 @@ fn run(input:&Path,out:&Path,preflight_only:bool)->Result<Value,String> {
     }
     // All later integration, including forecasts, uses the same global reserve.
     budget::begin_step()?;
+    let ids=pose_ids(&before);let mut poses=open_poses(&out.with_extension("poses.bin"),&ids)?;
+    write_pose(&mut poses,&before,&ids)?;let mut last_pose_native=native;
+    let mut progress=OpenOptions::new().write(true).create_new(true).open(out.with_extension("progress.jsonl")).map_err(|e|e.to_string())?;
+    let mut stable_anchors=None;let mut stable_start=None;let mut stable_intervals=0u64;let mut max_stable_intervals=0u64;
+    let mut stability_last=json!({});let mut reception_start=None;let mut old_deadline_crossed=None;
+    let original_deadline=started+2400;
+
     let mut first_stop=None;let mut separated_seen=false;let mut landed_seen=false;
     let mut positive_clearance_samples=0u64;let mut positive_clearance_run=0u64;let mut maximum_positive_clearance_run=0u64;
     let mut confirmed_separation_samples=0u64;
@@ -54,6 +89,23 @@ fn run(input:&Path,out:&Path,preflight_only:bool)->Result<Value,String> {
             let reply=runtime.advance_observed(1,|s,substep| {
                 let o=getup::locomotion::observation(s).map_err(|e|Failure::new(s.tick,substep,"continuation-observation",e,0.,0.))?;
                 samples+=1;
+                let native=o["nativeCompleted"].as_u64().ok_or_else(||Failure::new(s.tick,substep,"clock","missing native".into(),0.,0.))?;
+                if native-last_pose_native>=20 {write_pose(&mut poses,&o,&ids).map_err(|e|Failure::new(s.tick,substep,"pose-write",e,0.,0.))?;last_pose_native=native;}
+                if native>original_deadline && old_deadline_crossed.is_none() {old_deadline_crossed=Some(native);}
+                let reception=o["ownership"]["step"]["reception"]["started"].as_u64();
+                if reception_start.is_none() {reception_start=reception;}
+                if reception.is_some() {
+                    let d=getup::controller::standing_diagnostic(s,stable_anchors).map_err(|e|Failure::new(s.tick,substep,"stability",e,0.,0.))?;
+                    let predicates=d["predicates"].as_object().ok_or_else(||Failure::new(s.tick,substep,"stability","missing predicates".into(),0.,0.))?;
+                    let passes=predicates.iter().all(|(k,v)|v==true || (k=="footDriftFromSuppliedAnchors" && stable_anchors.is_none()));
+                    if passes {
+                        if stable_anchors.is_none() {stable_anchors=Some(serde_json::from_value(d["feet"].clone()).map_err(|e|Failure::new(s.tick,substep,"stability",e.to_string(),0.,0.))?);}
+                        let start=*stable_start.get_or_insert(native);stable_intervals=native-start;
+                        max_stable_intervals=max_stable_intervals.max(stable_intervals);
+                    } else {stable_start=None;stable_anchors=None;stable_intervals=0;}
+                    stability_last=json!({"native":native,"predicates":d["predicates"],"thresholds":d["thresholds"],"continuousIntervals":stable_intervals});
+                }
+
                 let phase=o["ownership"]["step"]["phase"].as_str().unwrap_or("missing");
                 separated_seen|=o["ownership"]["step"]["separated"]==true;
                 landed_seen|=o["ownership"]["step"]["landed_samples"].as_u64().unwrap_or(0)>0;
@@ -65,11 +117,12 @@ fn run(input:&Path,out:&Path,preflight_only:bool)->Result<Value,String> {
                 }
                 let clearance=o["floorFootGeometry"]["feet"][0]["clearance"].as_f64().ok_or_else(||Failure::new(s.tick,substep,"sole-observation","missing capsule clearance".into(),0.,0.))?;
                 let free_load=o["floorFootGeometry"]["feet"][0]["load"].as_f64().ok_or_else(||Failure::new(s.tick,substep,"load-observation","missing load".into(),0.,0.))?;
+                landed_seen|=phase=="Reception" && clearance<=0.001 && free_load>=3.;
                 max_clearance=max_clearance.max(clearance);
                 if clearance>0. {positive_clearance_samples+=1;positive_clearance_run+=1;} else {positive_clearance_run=0;}
                 maximum_positive_clearance_run=maximum_positive_clearance_run.max(positive_clearance_run);
                 if o["ownership"]["step"]["separated"]==true {confirmed_separation_samples+=1;}
-                let measured=json!({"native":o["nativeCompleted"],"com":o["com"],"comVelocityMps":o["comVelocityMps"],"freeLoadN":free_load,"retainedLoadN":o["floorFootGeometry"]["feet"][1]["load"],"wholeSoleClearanceM":clearance,"retreatM":retreat,"phase":phase});
+                let measured=json!({"native":o["nativeCompleted"],"com":o["com"],"comVelocityMps":o["comVelocityMps"],"freeLoadN":free_load,"retainedLoadN":o["floorFootGeometry"]["feet"][1]["load"],"wholeSoleClearanceM":clearance,"retreatM":retreat,"phase":phase,"rootRotation":o["bodies"][0]["rotation"],"rootAngularVelocity":o["root"]["angularVelocityRadps"],"stableIntervals":stable_intervals});
                 if free_load<min_free_load {min_free_load=free_load;minimum_load_sample=Some(measured.clone());}
                 let refresh=o["ownership"]["step"]["preparation"]["attempted"].as_u64().or_else(||o["ownership"]["step"]["preparation"]["updated"].as_u64());
                 if refresh!=last_refresh {
@@ -78,11 +131,17 @@ fn run(input:&Path,out:&Path,preflight_only:bool)->Result<Value,String> {
                         "reference":o["ownership"]["step"]["reference"],"measured":measured}));
                     last_refresh=refresh;
                 }
-                if samples==1 || samples%40==0 {trace.push(measured.clone());}
+                if samples==1 || samples%20==0 {
+                    trace.push(measured.clone());
+                    let command=budget::last_step_command().unwrap_or(Value::Null);
+                    let line=serde_json::to_vec(&json!({"measurement":measured,"ledger":budget::snapshot().ok(),"receptionStarted":reception_start,"compensationActive":command["compensationActive"],"controlMode":command["controlMode"],"requestedCop":command["requestedCopXZ"],"commandedCop":command["commandedCopXZ"],"copResidual":command["copResidualM"],"motorLimiting":command["motorLimiting"],"transitionNative":command["transitionNative"],"stability":stability_last})).map_err(|e|Failure::new(s.tick,substep,"progress",e.to_string(),0.,0.))?;
+                    if progress.metadata().map_err(|e|Failure::new(s.tick,substep,"progress",e.to_string(),0.,0.))?.len()+line.len() as u64>600_000 {return Err(Failure::new(s.tick,substep,"proof-reserve","progress reserve exhausted".into(),0.,0.));}
+                    progress.write_all(&line).and_then(|_|progress.write_all(b"\n")).and_then(|_|progress.sync_data()).map_err(|e|Failure::new(s.tick,substep,"progress",e.to_string(),0.,0.))?;
+                }
                 if separated_seen && separation.is_none() {separation=Some(measured.clone());}
                 if landed_seen && landing.is_none() {landing=Some(measured);}
                 extrema=json!({"retreatM":retreat,"liftM":foot[1]-initial_foot[1],"braking":o["ownership"]["step"]["reference"]["braking"],"native":o["nativeCompleted"],"phase":phase,"feet":o["floorFootGeometry"],"separated":o["ownership"]["step"]["separated"],"landedSamples":o["ownership"]["step"]["landed_samples"]});
-                let reason=if phase=="Complete" {Some("step-complete")} else if phase=="Cancelled" {Some("step-cancelled")}
+                let reason=if stable_intervals>=800 {Some("early-reception-one-second-stable-observed")} else if reception_start.is_some_and(|n|native>=n+1200) {Some("reception-window-ended")} else if phase=="Complete" {Some("step-complete")} else if phase=="Cancelled" {Some("step-cancelled")}
                     else if o["ownership"]["last_application"]["owner"]!="step" {Some("step-ownership-lost")}
                     else if matches!(s.motion,lh_contracts::Motion::Falling|lh_contracts::Motion::Fallen|lh_contracts::Motion::Recovering|lh_contracts::Motion::Halted) {Some("step-fall-or-halt")} else {None};
                 if let Some(reason)=reason {first_stop=Some(reason.into());return Err(Failure::new(s.tick,substep,"continuation-stop",reason.into(),0.,0.));}
@@ -94,9 +153,12 @@ fn run(input:&Path,out:&Path,preflight_only:bool)->Result<Value,String> {
         Ok(())
     })();
     if let Err(e)=outcome {if first_stop.is_none(){first_stop=Some(e);}}
+    let final_observation:Value=serde_json::from_str(&runtime.getup_native_observation()?).map_err(|e|e.to_string())?;
+    if final_observation["nativeCompleted"].as_u64()!=Some(last_pose_native) {write_pose(&mut poses,&final_observation,&ids)?;}
+    writeln!(progress,"{}",json!({"finalNative":final_observation["nativeCompleted"],"ledger":budget::snapshot()?,"firstStop":first_stop})).and_then(|_|progress.sync_all()).map_err(|e|e.to_string())?;
     let stop=checkpoint::save_compressed_checkpoint_bounded(&runtime,&out.with_extension("stop.bin.gz"),800_000);
     Ok(json!({"preflight":preflight,"integrated":budget::snapshot()?.real>0,"firstStop":first_stop,
-        "initialCom":initial_com,"initialComVelocityMps":before["comVelocityMps"],"measuredTrace":trace,"minimumLoadSample":minimum_load_sample,"refreshTrace":refresh_trace,"firstSeparation":separation,"firstLanding":landing,"maximumWholeSoleClearanceM":max_clearance,"minimumFreeLoadN":min_free_load,
+        "receptionStartedNative":reception_start,"receptionDeadlineNative":reception_start.map(|n|n+1200),"originalDeadlineCrossedNative":old_deadline_crossed,"maximumContinuousStableSeconds":max_stable_intervals as f64*0.00125,"oneSecondStableObserved":max_stable_intervals>=800,"stabilityLast":stability_last,"nominalPlacementSuccess":false,"poses":out.with_extension("poses.bin"),"initialCom":initial_com,"initialComVelocityMps":before["comVelocityMps"],"measuredTrace":trace,"minimumLoadSample":minimum_load_sample,"refreshTrace":"omitted; poses/progress saved durably","firstSeparation":separation,"firstLanding":landing,"maximumWholeSoleClearanceM":max_clearance,"minimumFreeLoadN":min_free_load,
         "positiveClearanceSamples":positive_clearance_samples,"maximumPositiveClearanceRunSeconds":maximum_positive_clearance_run as f64*0.00125,"confirmedSeparationSamples":confirmed_separation_samples,"observedSamples":samples,"brakeExit":brake_exit,"maximumRetreatM":max_retreat,"maximumLiftM":max_lift,"separatedSeen":separated_seen,"landingSeen":landed_seen,"lastMeasuredSupport":extrema,
         "stopCheckpoint":stop.as_ref().ok(),"stopCheckpointError":stop.as_ref().err(),
         "commands":budget::step_command_diagnostics(),
@@ -109,12 +171,12 @@ fn main()->Result<(),Box<dyn std::error::Error>> {
     }
     let mut file=OpenOptions::new().write(true).create_new(true).open(&args[3])?;
     file.write_all(b"{\"status\":\"started; final outcome pending\"}\n")?;file.sync_all()?;
-    budget::install_resume_6186()?;
+    budget::install_reception010_replay()?;
     let result=run(Path::new(&args[2]),Path::new(&args[3]),args[1]=="--preflight-stop");
     let ledger=budget::snapshot()?;
-    let receipt=json!({"format":"native-step-continuation-from-6186-v1","controllerCommit":"e5151e23f3c1401abac9aa993364a7a88d30505b","historical":20144,"trialLimit":1000,
-        "cumulativeLimit":21401,"totalConsumed":20144+ledger.real+ledger.forecast,
-        "remainingGlobalBudget":1257-ledger.real-ledger.forecast,"ledger":ledger,
+    let receipt=json!({"format":"reception010-replay-from-6186-v1","historicalFlightController":"e5151e23f3c1401abac9aa993364a7a88d30505b","receptionImplementation":"local/reception-010-fix; see build identity","historical":33600,"trialLimit":2000,
+        "cumulativeLimit":39600,"totalConsumed":33600+ledger.real+ledger.forecast,
+        "remainingGlobalBudget":6000-ledger.real-ledger.forecast,"ledger":ledger,
         "inputCheckpoint":args[2],"result":result.as_ref().ok(),"error":result.as_ref().err(),"motionQualified":false});
     let bytes=serde_json::to_vec(&receipt)?;
     if bytes.len()>250_000 {return Err("result exceeds reserved 250000 bytes".into());}

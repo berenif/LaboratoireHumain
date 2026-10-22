@@ -92,6 +92,114 @@ fn support_reactions(s: &Simulation) -> Option<SupportReactions> {
     support_reactions_in_frame(s, s.rest_com, s.heading * Vector::Z, s.heading * Vector::X)
 }
 
+/// Existing polygon projection plus its degenerate point/segment cases.
+/// This selects a resultant location, never creates a rectangular sole.
+pub(super) fn contact_cop_projection(points:&[[f32;2]],desired:[f32;2])->Option<[f32;2]> {
+    if let Some(p)=stepping::project_support(points,desired,0.) {return Some(p);}
+    let a=*points.first()?;let b=*points.iter().max_by(|x,y| {
+        let d=|p:&&[f32;2]|(p[0]-a[0]).powi(2)+(p[1]-a[1]).powi(2);d(x).total_cmp(&d(y))
+    })?;
+    let d=[b[0]-a[0],b[1]-a[1]];let n=d[0]*d[0]+d[1]*d[1];
+    if n<1e-12 {return Some(a);}
+    if points.iter().any(|p|((p[0]-a[0])*d[1]-(p[1]-a[1])*d[0]).abs()>1e-8) {return None;}
+    let mut lo=0f32;let mut hi=0f32;
+    for p in points {let t=((p[0]-a[0])*d[0]+(p[1]-a[1])*d[1])/n;lo=lo.min(t);hi=hi.max(t);}
+    let t=(((desired[0]-a[0])*d[0]+(desired[1]-a[1])*d[1])/n).clamp(lo,hi);
+    Some([a[0]+t*d[0],a[1]+t*d[1]])
+}
+
+/// Fan barycentrics of the EXISTING convex contact hull. A persistent contact
+/// anchors the fan; crossing a shared triangle edge has identical limiting
+/// weights, so contact ordering does not pick a new load split arbitrarily.
+/// Point/segment degeneracies are represented without manufacturing area.
+fn contact_barycentrics(points:&[[f32;2]],desired:[f32;2],anchor:usize)->Option<Vec<f32>> {
+    if points.is_empty() || anchor>=points.len() {return None;}
+    let mut hull=stepping::support_hull(points.to_vec());
+    if hull.is_empty() {hull=points.to_vec();hull.sort_by(|a,b|a[0].total_cmp(&b[0]).then(a[1].total_cmp(&b[1])));hull.dedup();}
+    let index=|p:[f32;2]|points.iter().position(|q|*q==p).unwrap();
+    let cross=|a:[f64;2],b:[f64;2]|a[0]*b[1]-a[1]*b[0];
+    let sub=|a:[f32;2],b:[f32;2]|[a[0] as f64-b[0] as f64,a[1] as f64-b[1] as f64];
+    let finish=|indices:&[usize],values:&[f64]|->Option<Vec<f32>> {
+        if values.iter().any(|w|!w.is_finite() || *w< -1e-10) {return None;}
+        let mut weights=vec![0f32;points.len()];let sum=values.iter().map(|w|w.max(0.)).sum::<f64>();if sum<=0. {return None;}
+        for (&i,&w) in indices.iter().zip(values) {weights[i]+=(w.max(0.)/sum) as f32;}
+        let p=points.iter().zip(&weights).fold([0f64;2],|r,(p,w)|[r[0]+p[0] as f64* *w as f64,r[1]+p[1] as f64* *w as f64]);
+        if (p[0]-desired[0] as f64).hypot(p[1]-desired[1] as f64)>1e-5 {return None;}Some(weights)
+    };
+    if hull.len()==1 {return finish(&[index(hull[0])],&[1.]);}
+    if hull.len()==2 {
+        let d=sub(hull[1],hull[0]);let v=sub(desired,hull[0]);let n=d[0]*d[0]+d[1]*d[1];if n<=0. {return None;}
+        let t=(v[0]*d[0]+v[1]*d[1])/n;return finish(&[index(hull[0]),index(hull[1])],&[1.-t,t]);
+    }
+    for edge in 0..hull.len() {
+        let b=hull[edge];let c=hull[(edge+1)%hull.len()];let a=points[anchor];
+        let u=sub(b,a);let v=sub(c,a);let p=sub(desired,a);let det=cross(u,v);
+        if det.abs()<1e-14 {continue;}
+        let wb=cross(p,v)/det;let wc=cross(u,p)/det;
+        if let Some(w)=finish(&[anchor,index(b),index(c)],&[1.-wb-wc,wb,wc]) {return Some(w);}
+    }
+    // A near-collinear f32 contact triangle can be thinner than a coordinate
+    // ulp. Even its f32 centroid may lie outside its f64 triangle. Admit only
+    // an edge representation within the input's rounding uncertainty, not a
+    // projected COP at a mechanically meaningful distance outside support.
+    let scale=points.iter().flatten().chain(desired.iter()).map(|v|v.abs()).fold(1f32,f32::max) as f64;
+    let rounding=4.*f32::EPSILON as f64*scale;
+    for edge in 0..hull.len() {
+        let a=hull[edge];let b=hull[(edge+1)%hull.len()];let d=sub(b,a);let v=sub(desired,a);
+        let n=d[0]*d[0]+d[1]*d[1];if n<=0. {continue;}
+        let t=((v[0]*d[0]+v[1]*d[1])/n).clamp(0.,1.);
+        if (v[0]-t*d[0]).hypot(v[1]-t*d[1])<=rounding {
+            if let Some(w)=finish(&[index(a),index(b)],&[1.-t,t]) {return Some(w);}
+        }
+    }
+    None
+}
+
+/// Reception-only C allocation. The original C operating domain and gains
+/// are retained. Reactions are desired torques only, never injected forces.
+#[cfg(feature="getup-native-locomotion-experiment")]
+pub(super) fn reception_requested(s:&Simulation,reference:&StandingReference,target:&[f32;21],anchor:Option<(usize,[f32;3])>)
+ ->Result<([f32;21],serde_json::Value),String> {
+ let (q,dq)=super::joint_state(s)?;let mut raw_pd=[0.;21];
+ for part in &s.model.segments {if let Some(h)=part.reference.as_ref().and_then(|r|r.hinge.as_ref()) {
+  raw_pd[h.actuator_index]=target[h.qpos_index]-q[h.qpos_index]-0.2*dq[h.qpos_index];
+ }}
+ if raw_pd.iter().any(|v|!v.is_finite()) {return Err("Nonfinite Reception C feedback".into());}
+ let pd=raw_pd.map(|v|v.clamp(-1.,1.));
+ let fallback=|reason:String| Ok((pd,serde_json::json!({"compensationActive":false,"controlMode":"C posture-PD only; no absent-contact reaction","reason":reason,"rawPd":raw_pd,"postureTarget":target,"pointForces":[],"theoreticalReactionsRealized":false})));
+ if support_reactions_in_frame(s,reference.com,reference.forward,reference.lateral).is_none() {
+  return fallback("outside unchanged C bilateral/upright compensation domain".into());
+ }
+ let ids=["left_foot","right_foot"].map(|n|s.model.segments.iter().position(|p|p.id==n).unwrap());
+ let contacts=super::standing::contacts_including_unloaded(s)?;
+ let current:Vec<_>=contacts.iter().filter(|c|ids.contains(&c.body)&&c.signed_gap_m<=0.).collect();
+ let points:Vec<_>=current.iter().map(|c|[c.point.x,c.point.z]).collect();
+ let com=s.center_of_mass();let twists=super::current_twists(s)?;
+ let velocity=s.bodies.iter().zip(twists).map(|(h,(v,_))|v*s.world.bodies[*h].mass()).sum::<Vector>()/s.total_mass();
+ let floor=s.world.colliders[s.floor].compute_aabb().maxs.y;let height=com.y-floor;
+ if !height.is_finite() || height<=0.05 {return fallback("invalid C COM height".into());}
+ let desired=com+((com-reference.com)*4.+velocity*4.)*(height/9.81);
+ let Some(cop)=contact_cop_projection(&points,[desired.x,desired.z]) else{return fallback("no current support polygon".into());};
+ let local=|c:&&super::standing::FootContact|s.world.bodies[s.bodies[c.body]].position().inverse_transform_point(c.point);
+ let index=anchor.and_then(|(body,p)|current.iter().enumerate().filter(|(_,c)|c.body==body).min_by(|(_,a),(_,b)|local(a).distance_squared(Vector::from_array(p)).total_cmp(&local(b).distance_squared(Vector::from_array(p)))).map(|(i,_)|i)).unwrap_or(0);
+ let Some(weights)=contact_barycentrics(&points,cop,index) else{return fallback("current COP representation unavailable".into());};
+ let mut support=[(ids[0],Vector::ZERO,Vector::ZERO),(ids[1],Vector::ZERO,Vector::ZERO)];let mut fractions=[0.;2];
+ for (c,w) in current.iter().zip(&weights) {let side=ids.iter().position(|i|*i==c.body).unwrap();fractions[side]+=w;support[side].1+=c.point* *w;}
+ for side in 0..2 {if fractions[side]>0. {support[side].1/=fractions[side];support[side].2=Vector::Y*(fractions[side]*s.total_mass()*9.81);}}
+ let (dynamic,acceleration)=dynamic_reactions(s,support);
+ let (force_residual,moment_residual)=residual(s,dynamic,acceleration);
+ let total:f32=support.iter().map(|(_,_,f)|f.y).sum();
+ let actual_cop=support.iter().map(|(_,p,f)|*p*(f.y/total)).sum::<Vector>();
+ let forces:Vec<_>=weights.iter().map(|w|(Vector::Y*9.81+acceleration)*(s.total_mass()* *w)).collect();
+ for (c,f) in current.iter().zip(&forces) {let n=c.normal.normalize();let normal=f.dot(n);
+  if normal<0. || (*f-n*normal).length()>normal || s.world.colliders[s.floor].friction()!=1. || s.world.colliders[s.colliders[c.body]].friction()!=1. {return fallback("C requested reaction outside unchanged friction domain".into());}
+ }
+ let feed=compensation(s,support,&q);let raw=std::array::from_fn(|i|pd[i]+feed[i]);
+ if raw.iter().any(|v|!v.is_finite()) {return Err("Nonfinite Reception total request".into());}
+ let anchor_contact=current[index];let anchor_local=local(&anchor_contact);
+ Ok((raw,serde_json::json!({"compensationActive":true,"controlMode":"C PD plus governed-current-contact compensation","rawPd":raw_pd,"compensationControls":feed,"postureTarget":target,"anchor":(anchor_contact.body,anchor_local.to_array()),"requestedCopXZ":[desired.x,desired.z],"commandedCopXZ":[actual_cop.x,actual_cop.z],"copResidualM":[desired.x-actual_cop.x,desired.z-actual_cop.z],"predictedComAcceleration":acceleration.to_array(),"fractions":fractions,"pointForces":current.iter().zip(&forces).map(|(c,f)|serde_json::json!({"body":s.model.segments[c.body].id,"point":c.point.to_array(),"force":f.to_array()})).collect::<Vec<_>>(),"forceResidualN":force_residual.to_array(),"momentResidualNm":moment_residual.to_array(),"groupedReactions":dynamic.map(|(i,p,f)|(i,p.to_array(),f.to_array())),"theoreticalReactionsRealized":false})))
+}
+
 fn support_reactions_in_frame(
     s: &Simulation,
     reference_com: Vector,

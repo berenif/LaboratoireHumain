@@ -166,6 +166,12 @@ impl Controller {
                 .is_none_or(|b|native.checked_sub(b.activated_native_substep).is_none_or(|n|n<20))
                 || !self.completed_recovery()))
     }
+    /// Scoped Reception delegation; leaves the earned V3 binding untouched.
+    #[cfg(feature="getup-native-locomotion-experiment")]
+    pub(super) fn reception_requested(&self,s:&Simulation,reference:&super::supported_standing::StandingReference,anchor:Option<(usize,[f32;3])>) ->Result<([f32;21],serde_json::Value),String> {
+        if self.terminal_balance.is_none() || !self.completed_recovery() {return Err("Reception needs the existing earned C binding".into());}
+        super::supported_standing::reception_requested(s,reference,&self.reference_pose,anchor)
+    }
     /// Actual current readiness, never inferred from a phase string.
     pub(crate) fn native_balance_ready(&self, native:u64)->bool {
         self.completed_recovery() && self.stable_substeps>=800
@@ -1096,7 +1102,7 @@ fn normalized_controls_valid(controls: &[f32; 21]) -> bool {
 /// Endpoint-reference crossfade only. Sample-held torques and live feedback
 /// need not be C2 through contact switches or the standing controller's clamps.
 #[cfg(feature = "getup-terminal-bumpless-experiment")]
-fn terminal_bumpless_weight(s: f64) -> f64 {
+pub(super) fn terminal_bumpless_weight(s: f64) -> f64 {
     let s = s.clamp(0.0, 1.0);
     (10.0 * s.powi(3) - 15.0 * s.powi(4) + 6.0 * s.powi(5)).clamp(0.0, 1.0)
 }

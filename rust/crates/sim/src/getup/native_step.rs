@@ -17,7 +17,7 @@ fn pilot_budget_available(started:u64,completed:u64)->bool {
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
-pub enum Phase { Retraction, Swing, Landing, Complete, Cancelled }
+pub enum Phase { Retraction, Swing, Landing, Complete, Cancelled, Reception }
 
 #[derive(Clone, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
@@ -161,7 +161,48 @@ pub(crate) struct State {
     last_reactions:Vec<Reaction>,
     #[serde(default)]
     preparation:Option<Preparation>,
+    #[serde(default,skip_serializing_if="Option::is_none")]
+    reception:Option<Reception>,
 }
+#[derive(Clone,Serialize,Deserialize)]
+struct Reception {
+ started:u64, frame:super::supported_standing::StandingReference, source:[f32;21],
+ captured_q:[f32;21], captured_dq:[f32;21], anchor:Option<(usize,[f32;3])>, saturated_intervals:u64, last_counted:Option<u64>,
+}
+impl Reception {
+ #[cfg(not(feature="getup-native-locomotion-experiment"))]
+ fn command(&mut self,_s:&Simulation)->Result<[f32;21],String> {Err("Reception feature is not enabled".into())}
+ fn capture(s:&Simulation)->Result<Self,String> {
+  let ids=feet(s)?;let contacts=super::standing::contacts_including_unloaded(s)?;
+  let points:Vec<_>=contacts.iter().filter(|c|ids.contains(&c.body)&&c.signed_gap_m<=0.).map(|c|[c.point.x,c.point.z]).collect();
+  let com=s.center_of_mass();let p=super::supported_standing::contact_cop_projection(&points,[com.x,com.z]).ok_or("Reception requires actual support geometry")?;
+  let mut forward=Vector::ZERO;
+  for id in ids {let b=&s.world.bodies[s.bodies[id]];for primitive in &s.model.segments[id].reference.as_ref().ok_or("Missing foot geometry")?.primitives {forward+=horizontal(b.rotation().normalize()*(vector(primitive.b)-vector(primitive.a)));}}
+  let forward=forward.try_normalize().ok_or("Invalid Reception heading")?;
+  let frame=super::supported_standing::StandingReference{com:Vector::new(p[0],com.y,p[1]),forward,lateral:Vector::Y.cross(forward)};
+  let previous=s.native_locomotion.as_ref().and_then(|n|n.last_application.as_ref()).filter(|a|a.owner==super::locomotion::Owner::Step && s.substeps_completed.checked_sub(a.native_input).is_some_and(|n|n<=1)).ok_or("Reception requires last actual Step command")?;
+  let (q,dq)=super::joint_state(s)?;
+  if q.iter().chain(&dq).any(|x|!x.is_finite()) {return Err("Nonfinite Reception capture".into());}
+  Ok(Self{started:s.substeps_completed,frame,source:previous.controls,captured_q:q,captured_dq:dq,anchor:None,saturated_intervals:0,last_counted:None})
+ }
+ #[cfg(feature="getup-native-locomotion-experiment")]
+ fn command(&mut self,s:&Simulation)->Result<[f32;21],String> {
+  let k=s.substeps_completed.checked_sub(self.started).ok_or("Reception clock reversed")?;
+  let (live,mut report)=s.getup_controller.as_ref().ok_or("Missing C")?.reception_requested(s,&self.frame,self.anchor)?;
+  if let Ok(anchor)=serde_json::from_value(report["anchor"].clone()) {self.anchor=Some(anchor);}
+  let w=super::controller::terminal_bumpless_weight((k.min(20) as f64)/20.);
+  let requested:[f32;21]=std::array::from_fn(|i|if k==0 {self.source[i]}else{((1.-w)*self.source[i] as f64+w*live[i] as f64) as f32});
+  let (applied,limiting,saturated)=limit_reception_total(s,requested)?;
+  if self.last_counted!=Some(s.substeps_completed) {if saturated {self.saturated_intervals+=1;}self.last_counted=Some(s.substeps_completed);}
+  report["native"]=serde_json::json!(s.substeps_completed);report["phase"]=serde_json::json!("Reception");report["owner"]=serde_json::json!("step");
+  report["transitionNative"]=serde_json::json!(k);report["capturedQ"]=serde_json::json!(self.captured_q);report["capturedPhysicalDq"]=serde_json::json!(self.captured_dq);
+  report["reference"]=serde_json::json!(self.frame);report["requestedControls"]=serde_json::json!(requested);report["controls"]=serde_json::json!(applied);report["motorLimiting"]=serde_json::json!(limiting);
+  report["saturatedIntervals"]=serde_json::json!(self.saturated_intervals);report["saturatedDurationSeconds"]=serde_json::json!(self.saturated_intervals as f32*s.profile.dt_s);report["error"]=serde_json::Value::Null;
+  #[cfg(feature="numeric-integration-budget")] crate::integration_budget::record_step_command(report);
+  Ok(applied)
+ }
+}
+
 #[derive(Clone, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 struct Preparation {started:u64,updated:u64,com_origin:Vector,toward:Vector,clearance:f32,
@@ -188,7 +229,7 @@ fn support_center(g:&FootGeometry)->Vector {g.points.iter().copied().sum::<Vecto
 impl State {
     pub fn active(&self)->bool { self.phase!=Phase::Cancelled }
     pub fn valid(&self,native:u64)->bool {
-        self.format==FORMAT && self.side<2 && self.started_native<=self.last_native
+        self.format==FORMAT && self.reception.as_ref().is_none_or(|r|cfg!(feature="getup-native-locomotion-experiment") && r.started<=native && r.source.iter().all(|v|v.is_finite()) && r.frame.com.is_finite()) && self.side<2 && self.started_native<=self.last_native
             && self.last_native<=native && self.separation_samples<=3 && self.landed_samples<=20
             && self.com.is_finite() && self.forward.is_finite()
             && self.foot_goal.is_finite() && self.reference.elapsed.is_finite()
@@ -219,13 +260,13 @@ impl State {
         let target=posture(s,side,com,foot_goal,SOLE_GUARD)?;
         Ok(Self {format:FORMAT.into(),phase:Phase::Retraction,side,last_native:s.substeps_completed,
             started_native:s.substeps_completed,reference:Reference::new(q,dq,target).retimed()?,reference_acceleration:[0.;21],com,forward,
-            foot_goal,separated:false,separation_samples:0,landed_samples:0,last_reactions:vec![],preparation:None})
+            foot_goal,separated:false,separation_samples:0,landed_samples:0,last_reactions:vec![],preparation:None,reception:None})
     }
     pub fn command(&mut self,s:&Simulation)->Result<[f32;21],String> {
         if s.grab.is_some() {return Err("Step pilot external grab dynamics are not qualified".into());}
         let elapsed=s.substeps_completed.checked_sub(self.last_native).ok_or("Step clock reversed")?;
         if elapsed>1 {return Err("Step missed a native command boundary".into());}
-        if !pilot_budget_available(self.started_native,s.substeps_completed) {return Err("Step pilot exceeded 2400 native intervals".into());}
+        if self.reception.as_ref().map_or(!pilot_budget_available(self.started_native,s.substeps_completed),|r|s.substeps_completed>=r.started+1200) {return Err("Step pilot exceeded 2400 native intervals".into());}
         // Older checkpoints store accepted acceleration on State only.
         if !self.reference.acceleration_initialized {
             self.reference.acceleration=std::array::from_fn(|i| {
@@ -238,6 +279,26 @@ impl State {
         if support[1-self.side].load<3. || support[1-self.side].clearance>0. {return Err("Step lost measured retained-foot support".into());}
         let foot=&support[self.side];
         if elapsed>0 {update_separation(&mut self.separated,&mut self.separation_samples,foot.clearance,foot.load);}
+        // Historical computation above is unchanged until the actual loaded
+        // touchdown. This is reception entry, never a landing-success claim.
+        if elapsed>0 && loaded_touchdown(self.phase,foot.clearance,foot.load) {
+            let capture=Reception::capture(s)?;
+            // Desired stop reference only: measured velocities remain untouched.
+            let mut q=capture.captured_q;
+            for part in &s.model.segments {if let Some(h)=part.reference.as_ref().and_then(|r|r.hinge.as_ref()) {
+                let axis=&part.joint_profile.as_ref().unwrap().axes[0];
+                q[h.qpos_index]=q[h.qpos_index].clamp(axis.min_radians,axis.max_radians);
+            }}
+            self.reference=Reference::new(q,[0.;21],q);self.reference.braking=true;
+            self.reference_acceleration=[0.;21];
+            self.foot_goal=s.world.bodies[s.bodies[feet(s)?[self.side]]].translation();
+            self.reception=Some(capture);self.phase=Phase::Reception;self.landed_samples=0;
+        }
+        if self.phase==Phase::Reception {
+            let run=self.reception.as_mut().ok_or("Missing Reception owner state")?;
+            let controls=run.command(s)?;self.com=run.frame.com;self.last_reactions.clear();self.last_native=s.substeps_completed;
+            return Ok(controls);
+        }
         if self.phase==Phase::Retraction {
             if let Some(p)=&self.preparation {
                 if s.substeps_completed.saturating_sub(p.started)>=640
@@ -1557,4 +1618,68 @@ mod tests {
         assert!(separated);update_separation(&mut separated,&mut count,0.002,2.);assert!(separated);
         update_separation(&mut separated,&mut count,0.002,4.);assert!(!separated);
     }
+}
+
+fn limit_reception_total(s:&Simulation,requested:[f32;21])->Result<([f32;21],Vec<serde_json::Value>,bool),String> {
+ let mut applied=requested;let mut limiting=vec![];let mut saturated=false;
+  for part in &s.model.segments {if let Some(h)=part.reference.as_ref().and_then(|r|r.hinge.as_ref()) {
+   let j=h.actuator_index;let cap=part.joint_profile.as_ref().unwrap().axes[0].max_motor_torque_nm.min(h.gear.abs());
+   if !requested[j].is_finite() || !cap.is_finite() || cap<=0. || h.gear==0. {return Err("Invalid Reception motor request/cap".into());}
+   applied[j]=requested[j].clamp(-cap/h.gear.abs(),cap/h.gear.abs());let raw=requested[j]*h.gear;let torque=applied[j]*h.gear;
+   saturated|=raw!=torque;limiting.push(serde_json::json!({"joint":h.name,"qpos":h.qpos_index,"actuator":j,"gearNm":h.gear,"capNm":cap,"requestedNm":raw,"appliedNm":torque,"residualNm":raw-torque}));
+  }}
+ Ok((applied,limiting,saturated))
+}
+fn loaded_touchdown(phase:Phase,clearance:f32,load:f32)->bool {
+ matches!(phase,Phase::Swing|Phase::Landing) && clearance<=0.001 && load>=3.
+}
+
+#[cfg(all(test,feature="numeric-integration-budget",feature="getup-native-locomotion-experiment"))]
+mod reception010_tests {
+ use super::*;
+ fn restored(name:&str)->crate::runtime::Runtime {
+  let root=std::env::var("LH_RECEPTION_PROOFS").expect("preserved proof directory required");
+  let decoded=std::process::Command::new("gzip").args(["-d","-c"]).arg(format!("{root}/{name}.stop.bin.gz")).output().unwrap();assert!(decoded.status.success());
+  let runtime=crate::runtime::Runtime::from_getup_checkpoint(&decoded.stdout).unwrap();
+  let v:serde_json::Value=serde_json::from_str(&runtime.verify_getup_checkpoint(&decoded.stdout).unwrap()).unwrap();assert_eq!(v["passed"],true);runtime
+ }
+ #[test] #[ignore="pure exact preserved checkpoint test; no integration"]
+ fn reception010_exact_precontact_and_capture() {
+  let root=std::env::var("LH_RECEPTION_PROOFS").unwrap();
+  let rt=restored("continuation-009");let s=rt.simulation();assert_eq!(s.substeps_completed,6186);
+  let observation=super::super::locomotion::observation(s).unwrap();
+  let world=bincode::serialize(&s.world).unwrap();
+  let mut state:State=serde_json::from_value(observation["ownership"]["step"].clone()).unwrap();
+  let controls=state.command(s).unwrap();
+  let saved:serde_json::Value=serde_json::from_slice(&std::fs::read(format!("{root}/continuation-010-preflight.json")).unwrap()).unwrap();
+  let expected:[f32;21]=serde_json::from_value(saved["result"]["preflight"]["acknowledgement"]["controls"].clone()).unwrap();
+  assert_eq!(controls.map(f32::to_bits),expected.map(f32::to_bits));assert!(state.reception.is_none());
+  assert_eq!(world,bincode::serialize(&s.world).unwrap());
+  assert_eq!(observation,super::super::locomotion::observation(s).unwrap());
+  let rt=restored("continuation-010");let s=rt.simulation();assert_eq!(s.substeps_completed,6678);
+  let observation=super::super::locomotion::observation(s).unwrap();let world=bincode::serialize(&s.world).unwrap();
+  let mut state:State=serde_json::from_value(observation["ownership"]["step"].clone()).unwrap();
+  let source=s.native_locomotion.as_ref().unwrap().last_application.as_ref().unwrap().controls;
+  let actual=super::super::joint_state(s).unwrap();let controls=state.command(s).unwrap();
+  assert_eq!(controls.map(f32::to_bits),source.map(f32::to_bits));assert_eq!(state.phase,Phase::Reception);
+  assert_eq!(state.reference.dq,[0.;21]);assert_eq!(state.reception.as_ref().unwrap().captured_dq,actual.1);
+  assert_eq!(state.landed_samples,0);assert!(state.valid(6678));
+  let run=state.reception.as_mut().unwrap();let count=run.saturated_intervals;run.command(s).unwrap();assert_eq!(run.saturated_intervals,count);
+  let (live,report)=s.getup_controller.as_ref().unwrap().reception_requested(s,&run.frame,run.anchor).unwrap();
+  assert!(live.iter().all(|x|x.is_finite()));
+  // Pure endpoint evaluation: no clock or physical state edited.
+  let bounded=limit_reception_total(s,live).unwrap();
+  for part in &s.model.segments {if let Some(h)=part.reference.as_ref().and_then(|r|r.hinge.as_ref()) {assert!((bounded.0[h.actuator_index]*h.gear).abs()<=part.joint_profile.as_ref().unwrap().axes[0].max_motor_torque_nm);}}
+  assert_eq!(world,bincode::serialize(&s.world).unwrap());assert_eq!(actual,super::super::joint_state(s).unwrap());
+  assert_eq!(observation,super::super::locomotion::observation(s).unwrap());
+  println!("RECEPTION010_PURE {}",serde_json::json!({"precontact6186BitIdentical":true,"capture6678Continuous":true,"physicsIntegrations":0,"C":report,"limiting":bounded.1}));
+ }
+ #[test] fn reception010_contact_is_not_stability() {
+  assert!(!loaded_touchdown(Phase::Swing,0.0001,2.999));
+  assert!(!loaded_touchdown(Phase::Swing,0.0011,3.));
+  assert!(loaded_touchdown(Phase::Swing,0.001,3.));
+  assert!(loaded_touchdown(Phase::Landing,0.,3.));
+  assert!(!loaded_touchdown(Phase::Retraction,-0.001,300.));
+  assert!(!loaded_touchdown(Phase::Reception,0.002,0.));
+ }
 }

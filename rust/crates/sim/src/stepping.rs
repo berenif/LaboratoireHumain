@@ -1264,7 +1264,7 @@ fn lifted(raise: f32, load: f32, clearance: f32, skin: f32) -> bool {
 
 // Monotone-chain hull of the exact loaded sole vertices in heading coordinates.
 // A bounding rectangle would incorrectly admit points outside a tapered sole.
-fn support_hull(mut points: Vec<[f32; 2]>) -> Vec<[f32; 2]> {
+pub(crate) fn support_hull(mut points: Vec<[f32; 2]>) -> Vec<[f32; 2]> {
     points.sort_by(|a, b| a[0].total_cmp(&b[0]).then(a[1].total_cmp(&b[1])));
     points.dedup();
     if points.len() < 3 {
