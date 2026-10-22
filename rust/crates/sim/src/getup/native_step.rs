@@ -846,6 +846,8 @@ fn blend_reference(baseline:&(Reference,[f32;21]),nominal:&(Reference,[f32;21]),
 fn prefer_unloading(seed:&mut DVector<f32>,points:&[(usize,Vector)],free:usize,total:Vector,free_share:f32)->Result<(),String> {
     let retained=points.iter().filter(|(body,_)|*body!=free).count();
     if retained==0 {return Err("No retained points for load preference".into());}
+    // Hysteresis does not reserve support for an absent geometric group.
+    let free_share=if points.iter().any(|(body,_)|*body==free) {free_share} else {0.};
     for is_free in [true,false] {
         let count=points.iter().filter(|(body,_)|(*body==free)==is_free).count();
         if count==0 {continue;}
@@ -935,6 +937,7 @@ fn command_for_family_recorded(s:&Simulation,baseline:&(Reference,[f32;21]),nomi
     record["basePreferredDelta"]=serde_json::json!(base_delta.as_slice());
     record["baseBasisColumnMajor"]=serde_json::json!(base_basis.as_slice());
     record["wrenchBaseColumnMajor"]=serde_json::json!(base_w.as_slice());
+    record["motorBaseColumnMajor"]=serde_json::json!(base_t.as_slice());
     let mut contact=DMatrix::zeros(21,3*points.len());let mut caps=DVector::zeros(21);
     for (k,(body,point)) in points.iter().enumerate() {
         let jac=jacobian(s,*body,*point)?;
@@ -1220,6 +1223,15 @@ mod tests {
         let foot=Vector::new(-0.2,0.03,0.);let gap=-0.0004;let goal=guarded_foot_goal(foot,gap,Vector::Z);
         assert!((gap+goal.y-foot.y-SOLE_GUARD).abs()<1e-7);assert_eq!(goal.z,-SOLE_GUARD);
         assert!(TRANSLATION_PRIORITY>POSTURE_PRIORITY);
+    }
+    #[test] fn native_step_pure_absent_free_contact_keeps_full_retained_preference() {
+        let points=vec![(10,Vector::ZERO),(10,Vector::X),(10,Vector::Z)];
+        let mut seed=DVector::from_column_slice(&[19.46621,370.20123,-64.63462,1.631024,15.114378,7.529111,3.862818,19.109674,13.427917]);
+        let total=Vector::new(31.925089,403.81964,-40.066803);
+        prefer_unloading(&mut seed,&points,16,total,0.15284866).unwrap();
+        let sum=(0..3).map(|k|Vector::new(seed[3*k],seed[3*k+1],seed[3*k+2])).sum::<Vector>();
+        assert!((sum-total).length()<0.0001);
+        assert!((0..3).all(|k|seed[3*k+1]>0.));
     }
     #[test] fn native_step_pure_unloading_is_a_preference_not_contact_removal() {
         let points=vec![(0,Vector::ZERO),(1,Vector::X),(1,Vector::Z)];
