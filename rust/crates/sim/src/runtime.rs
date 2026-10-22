@@ -1233,7 +1233,47 @@ mod tests {
 
     #[cfg(all(feature="numeric-integration-budget",feature="getup-native-locomotion-experiment"))]
     #[test]
-    #[ignore="exact native6153 refusal replay; pure command, no integration"]
+    #[ignore="exact native6153 free-base candidate; pure command, no integration"]
+    fn native_step_pure_rolling_candidate_checkpoint_6153() {
+        let path=std::env::var("LH_STEP_CHECKPOINT").unwrap();
+        let decoded=std::process::Command::new("gzip").args(["-d","-c",&path]).output().unwrap();assert!(decoded.status.success());
+        let mut runtime=Runtime::from_getup_checkpoint(&decoded.stdout).unwrap();
+        let verification:serde_json::Value=serde_json::from_str(&runtime.verify_getup_checkpoint(&decoded.stdout).unwrap()).unwrap();
+        assert_eq!(verification["passed"],true);assert_eq!(runtime.simulation.substeps_completed,6153);
+        let world=bincode::serialize(&runtime.simulation.world).unwrap();
+        let posture=crate::getup::native_step::rolling_posture_diagnostic(&runtime.simulation).unwrap();
+        assert!(posture["predictedLimitingLiftM"].as_f64().unwrap()>0.);
+        assert!(posture["jointMaxRad"].as_f64().unwrap()<=0.150001);
+        let result=crate::getup::locomotion::step_command(&mut runtime.simulation);
+        let records=crate::integration_budget::step_command_diagnostics();
+        let candidate=if result.is_ok() {&records["firstAdmitted"]} else {&records["firstRefused"]};
+        println!("PURE_ROLLING {}",serde_json::json!({"result":result,"posture":posture,
+            "baseAcceleration":candidate["baseAcceleration"],"alpha":candidate["alpha"],"iterations":candidate["coneIterations"],
+            "soleVerticalAcceleration":candidate["predictedSoleVerticalAccelerations"],
+            "forceResidual":candidate["rneaResidualForceN"],"momentResidual":candidate["rneaResidualMomentNm"],
+            "motorTorque":candidate["dynamicTorqueNm"],"motorCaps":candidate["motorCapsNm"],"newIntegrations":0}));
+        assert_eq!(world,bincode::serialize(&runtime.simulation.world).unwrap());
+        assert_eq!(runtime.simulation.substeps_completed,6153);assert!(result.is_ok(),"{result:?}");
+        // Check the allocated candidate, not just the independent posture direction.
+        for acceleration in candidate["predictedSoleVerticalAccelerations"].as_array().unwrap() {
+            assert!(acceleration.as_f64().unwrap()>0., "The final candidate must raise the capsule extrema");
+        }
+        for (torque,cap) in candidate["dynamicTorqueNm"].as_array().unwrap().iter()
+            .zip(candidate["motorCapsNm"].as_array().unwrap()) {
+            assert!(torque.as_f64().unwrap().abs()<=cap.as_f64().unwrap());
+        }
+        for field in ["rneaResidualForceN","rneaResidualMomentNm"] {
+            let squared:f64=candidate[field].as_array().unwrap().iter().map(|v|v.as_f64().unwrap().powi(2)).sum();
+            assert!(squared<0.01f64.powi(2));
+        }
+        assert!(candidate["alpha"].as_f64().unwrap()>0.9);
+        let retained=posture["predictedRetainedTwistDisplacement"].as_array().unwrap();
+        assert!(retained[3..].iter().any(|v|v.as_f64().unwrap().abs()>1e-4),"No fictitious orientation weld");
+    }
+
+    #[cfg(all(feature="numeric-integration-budget",feature="getup-native-locomotion-experiment"))]
+    #[test]
+    #[ignore="historical welded-base replay: run at c788b72, superseded by rolling candidate test"]
     fn native_step_pure_allocation_refusal_checkpoint_6153() {
         let path=std::env::var("LH_STEP_CHECKPOINT").unwrap();
         let decoded=std::process::Command::new("gzip").args(["-d","-c",&path]).output().unwrap();assert!(decoded.status.success());
