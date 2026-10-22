@@ -1233,6 +1233,29 @@ mod tests {
 
     #[cfg(all(feature="numeric-integration-budget",feature="getup-native-locomotion-experiment"))]
     #[test]
+    #[ignore="exact native6153 refusal replay; pure command, no integration"]
+    fn native_step_pure_allocation_refusal_checkpoint_6153() {
+        let path=std::env::var("LH_STEP_CHECKPOINT").unwrap();
+        let decoded=std::process::Command::new("gzip").args(["-d","-c",&path]).output().unwrap();assert!(decoded.status.success());
+        let mut runtime=Runtime::from_getup_checkpoint(&decoded.stdout).unwrap();
+        assert_eq!(runtime.simulation.substeps_completed,6153);
+        let world=bincode::serialize(&runtime.simulation.world).unwrap();
+        let before=runtime.getup_native_observation().unwrap();
+        let error=crate::getup::locomotion::step_command(&mut runtime.simulation).unwrap_err();
+        assert_eq!(error,"Step joint allocation did not converge within 256 projections in the current affine region; not global infeasibility");
+        assert_eq!(world,bincode::serialize(&runtime.simulation.world).unwrap());
+        assert_eq!(before,runtime.getup_native_observation().unwrap());
+        let diagnostics=crate::integration_budget::step_command_diagnostics();let refused=&diagnostics["firstRefused"];
+        let saved:serde_json::Value=serde_json::from_slice(&std::fs::read(std::env::var("LH_STEP_TRIAL").unwrap()).unwrap()).unwrap();
+        let old=&saved["result"]["commands"]["firstRefused"];
+        for key in ["wrenchBaseline","wrenchDelta","motorBaselineNm","motorDeltaNm","motorContactColumnMajor","candidates","allocatedForcesN","residualN_Nm"] {
+            assert_eq!(refused[key],old[key],"replay mismatch {key}");
+        }
+        println!("PURE_EXACT_REPLAY {}",serde_json::json!({"trace":refused["pureIterationTrace"],"newIntegrations":0}));
+    }
+
+    #[cfg(all(feature="numeric-integration-budget",feature="getup-native-locomotion-experiment"))]
+    #[test]
     #[ignore="reads preserved gzip native5579 checkpoint; pure command, no integration"]
     fn native_step_pure_optional_retarget_checkpoint_5579() {
         let path=std::env::var("LH_STEP_CHECKPOINT").unwrap();

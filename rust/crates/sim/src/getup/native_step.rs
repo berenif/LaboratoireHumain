@@ -685,6 +685,21 @@ fn allocate_motor_wrench(a:&DMatrix<f32>,w0:&DVector<f32>,dw:&DVector<f32>,norma
         }
         let wanted=w0+dw*alpha;let residual=a.map(|v|v as f64)*force.map(|v|v as f64)-wanted.map(|v|v as f64);
         let torque=t0+dt*alpha+contact*&force;
+        #[cfg(test)]
+        if matches!(iteration,0|1|2|4|8|16|32|64|128|192|256) {
+            if record.get("pureIterationTrace").is_none() {record["pureIterationTrace"]=serde_json::json!([]);}
+            let raw_force=x.rows(0,nf).into_owned();
+            let raw_residual=a.map(|v|v as f64)*&raw_force-(w0.map(|v|v as f64)+dw.map(|v|v as f64)*(x[nf]/scale));
+            let raw_cone_deficit=ns.iter().enumerate().map(|(k,no)|{
+                let f=Vector3::new(x[3*k],x[3*k+1],x[3*k+2]);let load=f.dot(no);
+                ((f-no*load).norm()-load).max(-load)
+            }).fold(0f64,f64::max);
+            record["pureIterationTrace"].as_array_mut().unwrap().push(serde_json::json!({"iteration":iteration,"alpha":alpha,
+                "rawForceResidualN":raw_residual.rows(0,3).norm(),"rawMomentResidualNm":raw_residual.rows(3,3).norm(),
+                "rawConeDeficitN":raw_cone_deficit,"normalRepairN":(force.map(|v|v as f64)-raw_force).norm(),
+                "finalForceResidualN":residual.rows(0,3).norm(),"finalMomentResidualNm":residual.rows(3,3).norm(),
+                "finalTorqueExcessNm":torque.iter().zip(caps.iter()).map(|(v,c)|(v.abs()-c).max(0.)).fold(0f32,f32::max)}));
+        }
         record["coneIterations"]=serde_json::json!(iteration);record["alpha"]=serde_json::json!(alpha);
         record["allocatedForcesN"]=serde_json::json!(force.as_slice());record["desiredWrenchN_Nm"]=serde_json::json!(wanted.as_slice());
         record["residualN_Nm"]=serde_json::json!(residual.as_slice());record["allocatedMotorTorqueNm"]=serde_json::json!(torque.as_slice());
@@ -933,6 +948,42 @@ pub(crate) fn identify_transition(before:&Simulation,after:&Simulation,controls:
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[test]
+    #[ignore="reads exact refusal6153; diagnostic witness only, no product gate or integration"]
+    fn native_step_pure_refusal_6153_wrench_separator() {
+        let data:serde_json::Value=serde_json::from_slice(&std::fs::read(std::env::var("LH_STEP_TRIAL").unwrap()).unwrap()).unwrap();
+        let d=&data["result"]["commands"]["firstRefused"];assert_eq!(d["native"],6153);
+        let root=Vector::from_array(serde_json::from_value(d["rootOrigin"].clone()).unwrap());
+        let points:Vec<Vector>=d["candidates"].as_array().unwrap().iter().filter(|c|c["used"]==true)
+            .map(|c|Vector::from_array(serde_json::from_value(c["point"].clone()).unwrap())).collect();
+        assert_eq!(points.len(),4);
+        let normals:Vec<[f32;3]>=serde_json::from_value(d["normals"].clone()).unwrap();
+        // Fixed diagnostic witness derived from the recorded wrench. Force
+        // coefficients have units m; moment coefficients are dimensionless.
+        // Increasing the vertical coefficient by 1e-6 gives a strict reserve.
+        let y=DVector::from_column_slice(&[0.3758930357959235,0.005506428698872378,1.,
+            0.8052047337324387,-0.0007026634552326635,-0.30266698333638253]);
+        let mut minimum_dual_margin=f64::INFINITY;
+        for (point,normal) in points.iter().zip(normals) {
+            let mut a=DMatrix::<f64>::zeros(6,3);
+            for (j,e) in [Vector::X,Vector::Y,Vector::Z].into_iter().enumerate() {
+                let m=(*point-root).cross(e);a[(j,j)]=1.;for k in 0..3 {a[(3+k,j)]=m[k] as f64;}
+            }
+            let dual=a.transpose()*&y;let n=Vector3::new(normal[0] as f64,normal[1] as f64,normal[2] as f64).normalize();
+            let normal=dual.dot(&n);let tangent=(&dual-n*normal).norm();
+            minimum_dual_margin=minimum_dual_margin.min(normal-tangent);
+            assert!(normal-tangent>0.0000009);
+        }
+        let w0:Vec<f64>=serde_json::from_value(d["wrenchBaseline"].clone()).unwrap();
+        let dw:Vec<f64>=serde_json::from_value(d["wrenchDelta"].clone()).unwrap();
+        let left=y.dot(&DVector::from_vec(w0));let slope=y.dot(&DVector::from_vec(dw));
+        assert!(left< -8.8 && left+slope< -7.7);
+        // Every allowed reaction has y·A f >=0, but both affine endpoints
+        // are strictly negative. Hence no alpha in[0,1] satisfies this frozen
+        // wrench family. This says nothing about another acceleration/strategy.
+        println!("PURE_SEPARATOR {}",serde_json::json!({"dualConeMarginM":minimum_dual_margin,
+            "endpointWrenchPairingNm":[left,left+slope],"physicsIntegrations":0}));
+    }
     #[test] fn native_step_pure_optional_retarget_preserves_active_deadline() {
         let active=Reference::new([0.;21],[0.01;21],[0.02;21]);let before=serde_json::to_value(&active).unwrap();
         let mut proposed=active.clone();proposed.duration=2.;proposed.target=[0.2;21];
