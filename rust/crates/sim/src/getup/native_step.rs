@@ -25,7 +25,7 @@ pub(crate) struct Reference {
     pub q: [f32;21],
     pub dq: [f32;21],
     #[serde(default)]
-    acceleration: [f32;21],
+    pub(super) acceleration: [f32;21],
     #[serde(default)]
     acceleration_initialized: bool,
     start: [f32;21],
@@ -163,6 +163,8 @@ pub(crate) struct State {
     preparation:Option<Preparation>,
     #[serde(default,skip_serializing_if="Option::is_none")]
     reception:Option<Reception>,
+    #[serde(default,skip_serializing_if="Option::is_none")]
+    placement:Option<super::post_separation_path::Path>,
 }
 #[derive(Clone,Serialize,Deserialize)]
 struct Reception {
@@ -241,6 +243,15 @@ impl State {
             && self.reference.q.iter().chain(&self.reference.dq).chain(&self.reference.start)
                 .chain(&self.reference.velocity).chain(&self.reference.acceleration).chain(&self.reference.target).all(|x|x.is_finite())
     }
+    pub(crate) fn arm_placement(&mut self,s:&Simulation,json:&str)->Result<(),String> {
+        if self.placement.is_some() || self.phase!=Phase::Retraction || self.separated {return Err("Placement must be explicitly armed before separation".into());}
+        let path=super::post_separation_path::Path::parse(json,&joint_bounds(s))?;
+        if !path.can_arm(s.substeps_completed) {return Err("Placement cannot extend a running/expired flight".into());}
+        self.placement=Some(path);Ok(())
+    }
+    pub(crate) fn placement_valid(&self,s:&Simulation)->bool {
+        self.placement.as_ref().is_none_or(|p|p.validate(&joint_bounds(s)).is_ok())
+    }
     pub fn cancel(&mut self) {self.phase=Phase::Cancelled;}
     #[cfg(feature="getup-native-locomotion-experiment")]
     pub fn begin(s:&Simulation,side:usize)->Result<Self,String> {
@@ -260,13 +271,13 @@ impl State {
         let target=posture(s,side,com,foot_goal,SOLE_GUARD)?;
         Ok(Self {format:FORMAT.into(),phase:Phase::Retraction,side,last_native:s.substeps_completed,
             started_native:s.substeps_completed,reference:Reference::new(q,dq,target).retimed()?,reference_acceleration:[0.;21],com,forward,
-            foot_goal,separated:false,separation_samples:0,landed_samples:0,last_reactions:vec![],preparation:None,reception:None})
+            foot_goal,separated:false,separation_samples:0,landed_samples:0,last_reactions:vec![],preparation:None,reception:None,placement:None})
     }
     pub fn command(&mut self,s:&Simulation)->Result<[f32;21],String> {
         if s.grab.is_some() {return Err("Step pilot external grab dynamics are not qualified".into());}
         let elapsed=s.substeps_completed.checked_sub(self.last_native).ok_or("Step clock reversed")?;
         if elapsed>1 {return Err("Step missed a native command boundary".into());}
-        if self.reception.as_ref().map_or(!pilot_budget_available(self.started_native,s.substeps_completed),|r|s.substeps_completed>=r.started+1200) {return Err("Step pilot exceeded 2400 native intervals".into());}
+        if self.reception.as_ref().map_or_else(||self.placement.as_ref().filter(|p|p.started).map_or(!pilot_budget_available(self.started_native,s.substeps_completed),|p|p.remaining(s.substeps_completed,s.profile.dt_s)<0.),|r|s.substeps_completed>=r.started+1200) {return Err("Step pilot exceeded 2400 native intervals".into());}
         // Older checkpoints store accepted acceleration on State only.
         if !self.reference.acceleration_initialized {
             self.reference.acceleration=std::array::from_fn(|i| {
@@ -298,6 +309,24 @@ impl State {
             let run=self.reception.as_mut().ok_or("Missing Reception owner state")?;
             let controls=run.command(s)?;self.com=run.frame.com;self.last_reactions.clear();self.last_native=s.substeps_completed;
             return Ok(controls);
+        }
+        // Opt-in only, after the historical separation decision and command.
+        // Historical QP owns transport; C continues to own Reception only.
+        if let Some(path)=&mut self.placement {
+            if path.due(s.substeps_completed) {
+                if !path.started {
+                    if self.phase!=Phase::Swing || !self.separated {return Err("Placement needs confirmed historical separation".into());}
+                    path.start(s.substeps_completed,&self.reference)?;
+                }
+                let (reference,a,descending,com,goal)=path.sample(s.substeps_completed,s.profile.dt_s,&self.reference)?;
+                let nominal=(reference,a);
+                // Same prescribed C2 curve at both affine endpoints: allocation
+                // cannot silently rescale a clock or break its derivatives.
+                let (controls,reference,a,reactions)=command_for_family(s,&nominal,&nominal,self.side,self.separated,true,&self.last_reactions,com,if descending {0.} else {SOLE_GUARD})?;
+                self.reference=reference;self.reference_acceleration=a;self.last_reactions=reactions;
+                self.com=com;self.foot_goal=goal;self.phase=if descending {Phase::Landing}else{Phase::Swing};self.last_native=s.substeps_completed;
+                return Ok(controls);
+            }
         }
         if self.phase==Phase::Retraction {
             if let Some(p)=&self.preparation {
@@ -1703,5 +1732,42 @@ mod reception010_tests {
   assert!(loaded_touchdown(Phase::Landing,0.,3.));
   assert!(!loaded_touchdown(Phase::Retraction,-0.001,300.));
   assert!(!loaded_touchdown(Phase::Reception,0.002,0.));
+ }
+}
+
+#[cfg(all(test,feature="getup-native-locomotion-experiment",feature="numeric-integration-budget"))]
+mod placement_pure_tests {
+ use super::*;
+ #[test] #[ignore="requires preserved proofs; zero Rapier integration"]
+ fn placement_path_pure_precontact_and_curve() {
+  let root=std::env::var("LH_RECEPTION_PROOFS").unwrap();
+  let bytes=std::process::Command::new("gzip").args(["-d","-c"]).arg(format!("{root}/continuation-009.stop.bin.gz")).output().unwrap();assert!(bytes.status.success());
+  let mut rt=crate::runtime::Runtime::from_getup_checkpoint(&bytes.stdout).unwrap();
+  let before=rt.getup_native_observation().unwrap();let world=bincode::serialize(&rt.simulation().world).unwrap();
+  let json=std::fs::read_to_string(format!("{root}/placement6309-path.json")).unwrap();rt.arm_getup_post_separation_path(&json).unwrap();
+  let s=rt.simulation();let o:serde_json::Value=serde_json::from_str(&rt.getup_native_observation().unwrap()).unwrap();
+  let mut armed:State=serde_json::from_value(o["ownership"]["step"].clone()).unwrap();
+  let original:serde_json::Value=serde_json::from_str(&before).unwrap();let mut historical:State=serde_json::from_value(original["ownership"]["step"].clone()).unwrap();
+  assert_eq!(armed.command(s).unwrap().map(f32::to_bits),historical.command(s).unwrap().map(f32::to_bits));
+  assert_eq!(world,bincode::serialize(&s.world).unwrap());assert_eq!(s.substeps_completed,6186);
+  let events=std::fs::read_to_string(format!("{root}/reception010-replay-024.events.jsonl")).unwrap();
+  let entry:serde_json::Value=events.lines().map(|l|serde_json::from_str::<serde_json::Value>(l).unwrap()).find(|e|e["native"]==6309).unwrap();
+  // This is a reference from an observation, NOT a restored physical world.
+  let r:Reference=serde_json::from_value(entry["observation"]["ownership"]["step"]["reference"].clone()).unwrap();
+  let mut path=super::super::post_separation_path::Path::parse(&json,&joint_bounds(s)).unwrap();
+  assert!(path.start(6308,&r).is_err());path.start(6309,&r).unwrap();
+  let initial=path.sample(6309,s.profile.dt_s,&r).unwrap();
+  assert_eq!(initial.0.q.map(f32::to_bits),r.q.map(f32::to_bits));assert_eq!(initial.0.dq.map(f32::to_bits),r.dq.map(f32::to_bits));
+  let mut max_v=0f32;let mut max_a=0f32;let mut count=0;
+  for native in 6309..20000 {
+   if path.remaining(native,s.profile.dt_s)<0. {break;}
+   let (sample,a,_,_,_)=path.sample(native,s.profile.dt_s,&r).unwrap();
+   for (i,(lo,hi)) in joint_bounds(s).into_iter().enumerate() {assert!(sample.q[i]>=lo-1e-7 && sample.q[i]<=hi+1e-7);assert!(sample.dq[i].abs()<=0.5 && a[i].abs()<=2.);max_v=max_v.max(sample.dq[i].abs());max_a=max_a.max(a[i].abs());}
+   count+=1;
+  }
+  let mut bad:serde_json::Value=serde_json::from_str(&json).unwrap();bad["segments"][0]["bezier"][1][0]=serde_json::json!(100.);
+  assert!(super::super::post_separation_path::Path::parse(&bad.to_string(),&joint_bounds(s)).is_err());
+  assert_eq!(world,bincode::serialize(&s.world).unwrap());
+  println!("PLACEMENT_PURE {}",serde_json::json!({"physicsIntegrations":0,"precontact6186BitIdentical":true,"referenceSamples":count,"maxVelocity":max_v,"maxAcceleration":max_a,"postSeparationFullCommandVerified":false,"reason":"no exact Rapier checkpoint at native6309; saved observation is not a checkpoint"}));
  }
 }

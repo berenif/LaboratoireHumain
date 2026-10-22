@@ -315,6 +315,11 @@ impl Runtime {
         Ok(serde_json::json!({"acknowledgedFailure":failure,"native":6186,"controls":controls,
             "administrativeMotion":"Reacting","physicsIntegrations":0}).to_string())
     }
+    /// Arms only a desired reference experiment; never integrates or edits bodies.
+    #[cfg(feature="getup-native-locomotion-experiment")]
+    pub fn arm_getup_post_separation_path(&mut self,json:&str)->Result<(),String> {
+        crate::getup::locomotion::arm_post_separation_path(&mut self.simulation,json)
+    }
     fn checkpoint_compatible(&self) -> Result<(), String> {
         let s = &self.simulation;
         s.profile.validate()?;

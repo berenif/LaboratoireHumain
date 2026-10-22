@@ -14,6 +14,7 @@ pub mod standing;
 pub mod transfer;
 pub mod locomotion;
 pub(crate) mod native_step;
+pub(crate) mod post_separation_path;
 mod supported_standing;
 #[cfg(feature = "standing-dynamics-experiment")]
 pub use supported_standing::{dynamic_balance_diagnostic, dynamic_balance_fixture_invariants};

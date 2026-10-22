@@ -32,7 +32,7 @@ fn write_pose(f:&mut std::fs::File,o:&Value,ids:&[String])->Result<(),String> {
     f.write_all(&bytes).and_then(|_|f.sync_data()).map_err(|e|e.to_string())
 }
 
-fn run(input:&Path,out:&Path,preflight_only:bool)->Result<Value,String> {
+fn run(input:&Path,out:&Path,preflight_only:bool,placement:Option<&Path>)->Result<Value,String> {
     let digest=std::process::Command::new("sha256sum").arg(input).output().map_err(|e|e.to_string())?;
     if !digest.status.success() || String::from_utf8_lossy(&digest.stdout).split_whitespace().next()!=Some("0737e7b3f237336486af699a28f0f92b5b27cf3afa622a96b70d9a563f9224fa") {return Err("Input is not the preserved exact native6186 checkpoint".into());}
     let decoded=std::process::Command::new("gzip").args(["-d","-c"]).arg(input).output().map_err(|e|e.to_string())?;
@@ -46,6 +46,10 @@ fn run(input:&Path,out:&Path,preflight_only:bool)->Result<Value,String> {
     }
     // This performs the complete reference/posture, passive/dynamic RNEA,
     // cone allocation and unchanged motor-cap admission, without integration.
+    if let Some(path)=placement {
+        if !preflight_only {return Err("Placement preparation is pure-only; prospective runtime budget not installed".into());}
+        runtime.arm_getup_post_separation_path(&std::fs::read_to_string(path).map_err(|e|e.to_string())?)?;
+    }
     let admission=runtime.resume_getup_native_step_6186();
     let after_admission:Value=serde_json::from_str(&runtime.getup_native_observation()?).map_err(|e|e.to_string())?;
     let started=before["ownership"]["step"]["started_native"].as_u64().ok_or("Missing original Step clock")?;
@@ -56,10 +60,14 @@ fn run(input:&Path,out:&Path,preflight_only:bool)->Result<Value,String> {
     let reference_elapsed=after_admission["ownership"]["step"]["reference"]["elapsed"].as_f64().ok_or("Missing reference elapsed")?;
     let remaining_seconds=pilot_remaining.min(2000) as f64*0.00125;
     let horizon_error=if admission.is_ok() && duration-reference_elapsed>remaining_seconds {Some(format!("Reference needs {} s, original pilot/reserve has {remaining_seconds} s; no compression/reset/extension",duration-reference_elapsed))} else {None};
-    let preflight=json!({"restoration":restored,"nativeBefore":before["nativeCompleted"],
+    let mut preflight=json!({"restoration":restored,"nativeBefore":before["nativeCompleted"],
         "originalStartedNative":started,"originalPilotRemainingNative":pilot_remaining,"referenceRemainingSeconds":duration-reference_elapsed,"availableSeconds":remaining_seconds,
         "commandAdmitted":admission.is_ok(),"horizonError":horizon_error,"acknowledgement":admission.as_ref().ok().and_then(|s|serde_json::from_str::<Value>(s).ok()),"error":admission.as_ref().err(),"commands":budget::step_command_diagnostics(),
         "ledger":budget::snapshot()?});
+    if let Some(path)=placement {
+        let plan:Value=serde_json::from_slice(&std::fs::read(path).map_err(|e|e.to_string())?).map_err(|e|e.to_string())?;
+        preflight["postSeparationPlacement"]=json!({"entryNative":plan["entryNative"],"durationSeconds":plan["durationSeconds"],"descentAtSeconds":plan["descentAtSeconds"],"fullPostSeparationCommandVerified":false,"runtimeAuthorized":false});
+    }
     if preflight_only || admission.is_err() || horizon_error.is_some() {
         return Ok(json!({"preflight":preflight,"integrated":false,"firstStop":admission.err().or(horizon_error)}));
     }
@@ -181,18 +189,23 @@ fn run(input:&Path,out:&Path,preflight_only:bool)->Result<Value,String> {
 }
 fn main()->Result<(),Box<dyn std::error::Error>> {
     let args:Vec<_>=std::env::args().collect();
-    if args.len()!=4 || !matches!(args[1].as_str(),"--preflight-stop"|"--resume-stop") {
+    if !(args.len()==4 || (args.len()==5 && args[1]=="--preflight-stop")) || !matches!(args[1].as_str(),"--preflight-stop"|"--resume-stop") {
         return Err("usage: getup_native_step_continue --preflight-stop|--resume-stop ENTRY.bin NEW_RESULT.json".into());
     }
     let mut file=OpenOptions::new().write(true).create_new(true).open(&args[3])?;
     file.write_all(b"{\"status\":\"started; final outcome pending\"}\n")?;file.sync_all()?;
     budget::install_reception010_replay()?;
-    let result=run(Path::new(&args[2]),Path::new(&args[3]),args[1]=="--preflight-stop");
+    let result=run(Path::new(&args[2]),Path::new(&args[3]),args[1]=="--preflight-stop",args.get(4).map(|p|Path::new(p)));
     let ledger=budget::snapshot()?;
-    let receipt=json!({"format":"reception024-captured-leg-comparison-from-6186-v1","historicalFlightController":"e5151e23f3c1401abac9aa993364a7a88d30505b","receptionImplementation":"local/reception-010-fix; see build identity","historical":34945,"trialLimit":2000,
+    let mut receipt=json!({"format":"reception024-captured-leg-comparison-from-6186-v1","historicalFlightController":"e5151e23f3c1401abac9aa993364a7a88d30505b","receptionImplementation":"local/reception-010-fix; see build identity","historical":34945,"trialLimit":2000,
         "cumulativeLimit":39600,"totalConsumed":34945+ledger.real+ledger.forecast,
         "remainingGlobalBudget":4655-ledger.real-ledger.forecast,"ledger":ledger,
         "inputCheckpoint":args[2],"result":result.as_ref().ok(),"error":result.as_ref().err(),"motionQualified":false});
+    if args.len()==5 {
+        receipt["format"]=json!("post-separation-placement-pure-preflight-v1");receipt["historical"]=json!(36249);
+        receipt["trialLimit"]=json!(0);receipt["totalConsumed"]=json!(36249+ledger.real+ledger.forecast);
+        receipt["remainingGlobalBudget"]=json!(3351-ledger.real-ledger.forecast);
+    }
     let bytes=serde_json::to_vec(&receipt)?;
     if bytes.len()>250_000 {return Err("result exceeds reserved 250000 bytes".into());}
     file.seek(SeekFrom::Start(0))?;file.write_all(&bytes)?;file.set_len(bytes.len() as u64)?;file.sync_all()?;

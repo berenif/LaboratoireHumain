@@ -52,7 +52,7 @@ impl State {
                 a.native_input <= s.substeps_completed
                 && (a.owner != Owner::Step || self.step.is_some())
                 && a.controls.iter().all(|v| v.is_finite() && v.abs() <= 1.0))
-            && self.step.as_ref().is_none_or(|step|step.valid(s.substeps_completed))
+            && self.step.as_ref().is_none_or(|step|step.valid(s.substeps_completed) && step.placement_valid(s))
     }
 }
 
@@ -288,4 +288,10 @@ mod tests {
         let s=Simulation::new(0.0,p,true).unwrap();
         assert!(serde_json::to_value(&s).unwrap().get("native_locomotion").is_none());
     }
+}
+
+#[cfg(feature="getup-native-locomotion-experiment")]
+pub(crate) fn arm_post_separation_path(s:&mut Simulation,json:&str)->Result<(),String> {
+    let mut step=s.native_locomotion.as_ref().and_then(|n|n.step.clone()).ok_or("Missing Step owner")?;
+    step.arm_placement(s,json)?;s.native_locomotion.as_mut().unwrap().step=Some(step);Ok(())
 }
