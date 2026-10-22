@@ -1206,6 +1206,49 @@ mod tests {
         assert!(result.is_ok(),"{result:?}");
     }
 
+    #[cfg(all(feature="numeric-integration-budget",feature="getup-native-locomotion-experiment"))]
+    #[test]
+    #[ignore="authorized one-shot identification only; advances ONE native tick, no forecast"]
+    fn native_step_identification_5339_one_tick() {
+        use std::io::Write;
+        let bytes=std::fs::read(std::env::var("LH_STEP_CHECKPOINT").unwrap()).unwrap();
+        let before=Runtime::from_getup_checkpoint(&bytes).unwrap();
+        let mut clone=Runtime::from_getup_checkpoint(&bytes).unwrap();
+        let verification:serde_json::Value=serde_json::from_str(&clone.verify_getup_checkpoint(&bytes).unwrap()).unwrap();
+        assert_eq!(verification["passed"],true);assert_eq!(clone.simulation.substeps_completed,5339);
+        let owner=clone.simulation.native_locomotion.as_ref().unwrap();
+        let receipt=owner.last_application.as_ref().unwrap();assert_eq!(receipt.native_input,5338);
+        assert_eq!(serde_json::to_value(receipt.owner).unwrap(),"step");
+        let controls=receipt.controls;
+        assert_eq!(controls.map(f32::to_bits),[1037760651, 996603770, 3158962054, 1057252068, 3188456623, 3177912868, 1037963563, 1039379365, 1053265083, 1056630288, 3170348331, 1034046246, 3139049104, 3187770562, 1057462890, 3188868196, 1022121446, 1016979607, 1040529197, 3170976873, 1017224241]);
+        assert!(clone.simulation.grab.is_none() && clone.simulation.environment.is_none() && clone.simulation.striker.is_none());
+        let parameters=bincode::serialize(&clone.simulation.world.integration_parameters).unwrap();
+        let mut out=std::fs::OpenOptions::new().write(true).create_new(true).open(std::env::var("LH_IDENTIFICATION_RESULT").unwrap()).unwrap();
+        let emit=|out:&mut std::fs::File,value:serde_json::Value| {writeln!(out,"{}",value).unwrap();out.flush().unwrap();out.sync_all().unwrap();};
+        emit(&mut out,serde_json::json!({"stage":"restored","verification":verification,"historical":19136,"maximumNewNative":4,"executedPlanNative":1,
+            "checkpointSha256":"ff61a05bf2341f67e2fc8313389c42579b54dcece851bdd13b6de86f3a4d2ac3","commandF32LeSha256":"cbca4a5f5aaa83b7c62488250ca307adc6a60b6afc86fe24582f654c9c9e03ab","controls":controls}));
+        crate::integration_budget::install_identification().unwrap();crate::integration_budget::begin_step().unwrap();
+        let s=&mut clone.simulation;
+        // Same ordinary native force-buffer preparation. Passives, gravity,
+        // armature and constraints remain Rapier's restored parameters.
+        for handle in &s.bodies {s.world.bodies[*handle].reset_forces(false);s.world.bodies[*handle].reset_torques(false);}
+        crate::getup::apply_controls(s,&controls).unwrap();
+        let transmitted:Vec<_>=s.bodies.iter().map(|h|serde_json::json!({"force":s.world.bodies[*h].user_force().to_array(),"torque":s.world.bodies[*h].user_torque().to_array()})).collect();
+        crate::integration_budget::debit(crate::integration_budget::Kind::Real).unwrap();
+        emit(&mut out,serde_json::json!({"stage":"debited-before-integration","ledger":crate::integration_budget::snapshot().unwrap(),"transmittedBodyBuffers":transmitted}));
+        // No configure_motors: that would replace the pinned command with a
+        // new planner candidate. This diagnostic is not a product resume API.
+        s.world.step_with_events(&s.filter,&());s.substeps_completed+=1;
+        // Refresh observation caches from the newly completed native interval,
+        // just as the ordinary loop does; never recycle these into forces.
+        for i in 0..s.colliders.len() {s.integrated_support_loads_n[i]=s.support_normal_impulse(s.colliders[i]).unwrap()/s.profile.dt_s;}
+        let unchanged=bincode::serialize(&s.world.integration_parameters).unwrap()==parameters;
+        let comparison=crate::getup::native_step::identify_transition(&before.simulation,s,controls);
+        let ledger=crate::integration_budget::snapshot().unwrap();
+        emit(&mut out,serde_json::json!({"stage":"completed","comparison":comparison,"parametersUnchanged":unchanged,"ledger":ledger,"totalConsumed":19136+ledger.real+ledger.forecast,"stop":"one-native-identification-complete; no automatic continuation"}));
+        assert!(unchanged);assert_eq!((ledger.real,ledger.forecast),(1,0));assert!(comparison.is_ok());
+    }
+
     #[test]
     fn getup_checkpoint_round_trip_is_complete_and_never_steps() {
         let mut profile = Profile::default();

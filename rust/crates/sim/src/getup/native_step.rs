@@ -747,6 +747,63 @@ fn contact_mode_command(s:&Simulation,baseline:&(Reference,[f32;21]),nominal:&(R
     Ok((controls,reference,reference_ddq,support))
 }
 
+/// Diagnostic only: no allocation, reference update, admission or integration.
+/// Compare a frozen-state inverse-dynamics approximation to an observed full
+/// native transition. End-of-tick differences are NOT biased-pass samples.
+#[cfg(test)]
+pub(crate) fn identify_transition(before:&Simulation,after:&Simulation,controls:[f32;21])->Result<serde_json::Value,String> {
+    let dt=before.profile.dt_s;let h=solver_h(before);
+    let (q0,v0)=super::joint_state(before)?;let (q1,v1)=super::joint_state(after)?;
+    let root_velocity=|s:&Simulation|->Result<DVector<f32>,String> {
+        let id=s.world.multibody_joints.rigid_body_link(s.bodies[0]).ok_or("Missing root")?;
+        let mb=s.world.multibody_joints.get_multibody(id.multibody).ok_or("Missing articulation")?;
+        Ok(mb.joint_velocity(mb.link(id.id).ok_or("Missing root link")?).into_owned())
+    };
+    let rv0=root_velocity(before)?;let rv1=root_velocity(after)?;
+    let mut acceleration=DVector::zeros(27);for i in 0..6 {acceleration[i]=(rv1[i]-rv0[i])/dt;}
+    for i in 0..21 {acceleration[6+i]=(v1[i]-v0[i])/dt;}
+    let c0=super::standing::contacts_including_unloaded(before)?;let c1=super::standing::contacts_including_unloaded(after)?;
+    let twists1=super::current_twists(after)?;let mut support=vec![];let mut laws=vec![];
+    let params=&before.world.integration_parameters;let soft=&params.static_contact_softness;
+    let kappa=1./soft.cfm_factor(h)-1.;
+    let root=before.world.multibody_joints.rigid_body_link(before.bodies[0]).ok_or("Missing root")?;
+    let mb=before.world.multibody_joints.get_multibody(root.multibody).ok_or("Missing articulation")?;
+    if mb.ndofs()!=27 || mb.links().any(|l|l.joint.kinematic) {return Err("Unexpected mass-coordinate reduction".into());}
+    for old in &c0 {
+        let b0=&before.world.bodies[before.bodies[old.body]];let b1=&after.world.bodies[after.bodies[old.body]];
+        let local=b0.rotation().inverse()*(old.point-b0.translation());let material_point=b1.translation()+b1.rotation()*local;
+        let com=b1.translation()+b1.rotation().normalize()*b1.local_center_of_mass();
+        let vn0=old.velocity.dot(old.normal);let vn1=(twists1[old.body].0+twists1[old.body].1.cross(material_point-com)).dot(old.normal);
+        let matching=c1.iter().filter(|c|c.body==old.body).min_by(|a,b|(a.point-material_point).length_squared().total_cmp(&(b.point-material_point).length_squared()));
+        let matched=matching.filter(|c|(c.point-material_point).length()<0.001);
+        let link=before.world.multibody_joints.rigid_body_link(before.bodies[old.body]).ok_or("Missing contact link")?;
+        let jac=mb.body_jacobian(link.id);let torque=old.solver_lever_from_com.cross(old.normal);
+        let row=DVector::from_fn(jac.ncols(),|col,_|(0..3).map(|axis|old.normal[axis]*jac[(axis,col)]+torque[axis]*jac[(3+axis,col)]).sum());
+        let inv=mb.inv_augmented_mass().solve(&row).ok_or("Mass solve failed")?;let gamma=kappa*row.dot(&inv);
+        let bias=contact_bias(old.signed_gap_m,h,soft.erp_inv_dt(h),params.max_corrective_velocity());
+        let mean_force=matched.map(|c|c.impulse/dt);
+        laws.push(serde_json::json!({"body":before.model.segments[old.body].id,"pointBefore":old.point.to_array(),"materialPointAfter":material_point.to_array(),
+            "gapBeforeM":old.signed_gap_m,"gapAfterM":matched.map(|c|c.signed_gap_m),"vnBeforeMps":vn0,"vnAfterMps":vn1,"meanNormalAcceleration":(vn1-vn0)/dt,
+            "matchingDistanceM":matched.map(|c|(c.point-material_point).length()),"normalImpulseNativeNs":matched.map(|c|c.impulse),"tangentImpulseNativeNs":matched.map(|c|c.tangent_impulse_world.to_array()),
+            "gammaInverseKg":gamma,"biasedRhsMps":bias,"biasedFrozenModelResidualMps":mean_force.map(|f|vn0+h*(vn1-vn0)/dt+bias+h*gamma*f),
+            "scope":"native mean acceleration/force substituted into biased substep law; not a measured biased-pass residual"}));
+    }
+    for ct in &c1 {support.push((ct.body,ct.point,(ct.normal*ct.impulse+ct.tangent_impulse_world)/dt));}
+    let (required,rf,rm)=rnea_free(before,&q0,&v0,&acceleration,&support)?;
+    let mut applied=[0.;21];let mut limits=vec![];
+    for part in &before.model.segments {if let Some(h)=part.reference.as_ref().and_then(|r|r.hinge.as_ref()) {
+        applied[h.actuator_index]=h.gear*controls[h.actuator_index];let axis=&part.joint_profile.as_ref().unwrap().axes[0];
+        limits.push(serde_json::json!({"joint":h.name,"qpos":h.qpos_index,"q":q1[h.qpos_index],"min":axis.min_radians,"max":axis.max_radians,
+            "meanAcceleration":acceleration[6+h.qpos_index],"design2Exceeded":acceleration[6+h.qpos_index].abs()>2.,"torqueNm":applied[h.actuator_index],"capNm":axis.max_motor_torque_nm.min(h.gear.abs())}));
+    }}
+    Ok(serde_json::json!({"nativeFrom":before.substeps_completed,"nativeTo":after.substeps_completed,"dt":dt,"solverH":h,
+        "qBefore":q0,"qAfter":q1,"dqBefore":v0,"dqAfter":v1,"generalizedMeanAcceleration":acceleration.as_slice(),"controls":controls,"appliedJointTorqueNm":applied,
+        "comBefore":before.center_of_mass().to_array(),"comAfter":after.center_of_mass().to_array(),"rootPositionBefore":before.world.bodies[before.bodies[0]].translation().to_array(),
+        "rootPositionAfter":after.world.bodies[after.bodies[0]].translation().to_array(),"feetBefore":geometry(before)?,"feetAfter":geometry(after)?,"contacts":laws,"limits":limits,
+        "frozenRneaRequiredTorqueNm":required,"frozenRneaTorqueResidualNm":std::array::from_fn::<_,21,_>(|i|required[i]-applied[i]),"frozenRneaRootForceResidualN":rf.to_array(),"frozenRneaRootMomentResidualNm":rm.to_array(),
+        "limitations":"No internal pre/post-stabilization samples. Frozen pre-state RNEA uses full-native mean acceleration and contact force; discretization/contact-position error is not actuator failure. No withdrawal objective imposed."}))
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
