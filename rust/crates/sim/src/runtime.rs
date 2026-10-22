@@ -215,6 +215,26 @@ impl Runtime {
         Ok(serde_json::json!({"acknowledgedFailure":failure,"native":4757,"controls":controls,
             "administrativeMotion":"Reacting","physicsIntegrations":0}).to_string())
     }
+    /// Explicit experiment-only acknowledgement of the saved native5339
+    /// algebraic refusal. No body, joint, integrator or clock is reset.
+    #[cfg(all(feature="numeric-integration-budget",feature="getup-native-locomotion-experiment"))]
+    pub fn resume_getup_native_step_5339(&mut self)->Result<String,String> {
+        if self.disposed || self.paused || !self.visible || self.timeline.depth()!=0
+            || self.simulation.substeps_completed!=5339 || self.simulation.motion!=lh_contracts::Motion::Halted
+            || self.simulation.grab.is_some() {
+            return Err("Resume requires the halted native5339 empty Step boundary".into());
+        }
+        let failure=self.simulation.first_failure.clone().ok_or("Missing saved refusal")?;
+        if failure.check!="getup-policy" || failure.offending!="Step reference exceeds pilot speed/acceleration envelope" {
+            return Err("Resume refuses any other saved failure".into());
+        }
+        let controls=crate::getup::locomotion::step_command(&mut self.simulation)?;
+        // Reacting re-enables ordinary integrated fall observation; it does not
+        // assert a newly earned upright state or advance its observation timers.
+        self.simulation.first_failure=None;self.simulation.motion=lh_contracts::Motion::Reacting;
+        Ok(serde_json::json!({"acknowledgedFailure":failure,"native":5339,"controls":controls,
+            "administrativeMotion":"Reacting","physicsIntegrations":0}).to_string())
+    }
     fn checkpoint_compatible(&self) -> Result<(), String> {
         let s = &self.simulation;
         s.profile.validate()?;
