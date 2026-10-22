@@ -368,6 +368,25 @@ fn contact_can_react(gap:f32,normal_acceleration:f32)->Result<bool,String> {
     Ok(normal_acceleration<=1e-4)
 }
 
+/// Solve the small unconstrained wrench allocation directly, without the bias
+/// introduced by ridge-regularized normal equations. This is NOT a unilateral
+/// solver; the existing cone checks still decide admission afterwards.
+fn allocate_wrench(a:&DMatrix<f32>,desired:&DVector<f32>)->Result<DVector<f32>,String> {
+    // Coordinates: world forces in N; world moments about torso origin in Nm.
+    // Normalize moments by a fixed 1 m length for the algebraic solve. Check
+    // force and moment residuals separately in their physical units below.
+    let matrix=a.map(|x|x as f64);let target=desired.map(|x|x as f64);
+    let svd=matrix.clone().svd(true,true);
+    let cutoff=svd.singular_values.max()*1e-10;
+    let allocated=svd.solve(&target,cutoff).map_err(|e|format!("Step wrench SVD: {e}"))?.map(|x|x as f32);
+    let residual=&matrix*allocated.map(|x|x as f64)-target;
+    let force=residual.rows(0,3).norm();let moment=residual.rows(3,3).norm();
+    if !allocated.iter().all(|x|x.is_finite()) || !force.is_finite() || !moment.is_finite() || force>0.01 || moment>0.01 {
+        return Err(format!("Step contact allocation residual: force={force} N moment={moment} Nm; no global infeasibility claim"));
+    }
+    Ok(allocated)
+}
+
 fn command_for_reference(s:&Simulation,reference:&Reference,ddq:&[f32;21],side:usize,exclusive:bool)->Result<[f32;21],String> {
     let (q,dq)=super::joint_state(s)?;let geometry=geometry(s)?;
     let retained=feet(s)?[1-side];
@@ -395,16 +414,13 @@ fn command_for_reference(s:&Simulation,reference:&Reference,ddq:&[f32;21],side:u
         for r in 0..3 {a[(r+3,3*k+j)]=m[r];}
     }}
     let desired=DVector::from_column_slice(&[force.x,force.y,force.z,moment.x,moment.y,moment.z]);
-    let dual=(&a*a.transpose()+DMatrix::identity(6,6)*1e-6).lu().solve(&desired)
-        .ok_or("Step minimum-norm contact allocation failed; no global infeasibility claim")?;
-    let allocated=a.transpose()*dual;
-    if (&a*&allocated-&desired).norm()>0.01 {return Err("Step contact allocation residual exceeds pilot tolerance".into());}
+    let allocated=allocate_wrench(&a,&desired)?;
     let mut support=vec![];
     for (k,(body,point)) in points.into_iter().enumerate() {
         let f=Vector::new(allocated[3*k],allocated[3*k+1],allocated[3*k+2]);
         // Conservative intention cone (mu <= existing foot coefficient 1).
         if !f.is_finite() || f.y<0. || Vector::new(f.x,0.,f.z).length()>f.y {
-            return Err("Step minimum-norm allocation violates unilateral/friction constraints; not global infeasibility".into());
+            return Err(format!("Step minimum-norm allocation violates unilateral/friction constraints: point={k} force_N={:?}; not global infeasibility",f.to_array()));
         }support.push((body,point,f));
     }
     // Both evaluations use the SAME measured q/dq and SAME desired allocation.
@@ -430,6 +446,31 @@ fn command_for_reference(s:&Simulation,reference:&Reference,ddq:&[f32;21],side:u
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[test] fn native_step_pure_min_norm_removes_ridge_bias_without_admitting_tension() {
+        // Algebra-only regression fixture derived from recorded extrema at
+        // native4541, not a checkpoint or replay of the lost Rapier world.
+        let root=Vector::new(-0.48699132,1.2573017,0.51681453);
+        let points=[Vector::new(-0.29174295,-0.00026358292,0.69674224),
+            Vector::new(-0.4980225,-0.0001147259,0.7528557),Vector::new(-0.31804687,-0.0007823948,0.64281785)];
+        let mut a=DMatrix::zeros(6,9);
+        for (k,p) in points.iter().enumerate() {for j in 0..3 {
+            let e=[Vector::X,Vector::Y,Vector::Z][j];let m=(*p-root).cross(e);a[(j,3*k+j)]=1.;
+            for r in 0..3 {a[(r+3,3*k+j)]=m[r];}
+        }}
+        let b=DVector::from_column_slice(&[2.9607882,404.15958,11.857897,2.8018434,-0.2523685,9.532738]);
+        let m=a.map(|x|x as f64);let target=b.map(|x|x as f64);
+        let old=m.transpose()*(&m*m.transpose()+DMatrix::identity(6,6)*1e-6).lu().solve(&target).unwrap();
+        assert!((&m*old-&target).norm()>0.08);
+        let force=allocate_wrench(&a,&b).unwrap();
+        assert!((&m*force.map(|x|x as f64)-target).norm()<0.001);
+        // Solving the equality cannot conceal the unilateral violation.
+        assert!(force[1] < -1500.);
+    }
+    #[test] fn native_step_pure_min_norm_rejects_unrepresentable_wrench() {
+        let mut a=DMatrix::zeros(6,3);for i in 0..3 {a[(i,i)]=1.;}
+        let b=DVector::from_column_slice(&[0.,400.,0.,1.,0.,0.]);
+        assert!(allocate_wrench(&a,&b).is_err());
+    }
     #[test] fn native_step_pure_budget_refuses_command_for_integration_2401() {
         assert!(pilot_budget_available(4800,4800));
         assert!(pilot_budget_available(4800,7199));
