@@ -1,5 +1,5 @@
-//! One continuation from the exact native6182 stop.
-//! Controller93b435f; original world and pilot clock preserved, never acquire/reset.
+//! One continuation from the exact native6186 stop.
+//! Controller e5151e23; original world and pilot clock preserved, never acquire/reset.
 use lh_sim::{getup,integration_budget as budget,measurement::Failure,runtime::Runtime};
 use serde_json::{Value,json};
 use std::{fs::OpenOptions,io::{Write,Seek,SeekFrom},path::Path};
@@ -13,12 +13,12 @@ fn run(input:&Path,out:&Path,preflight_only:bool)->Result<Value,String> {
     let mut runtime=Runtime::from_getup_checkpoint(&bytes)?;
     let restored:Value=serde_json::from_str(&runtime.verify_getup_checkpoint(&bytes)?).map_err(|e|e.to_string())?;
     let before:Value=serde_json::from_str(&runtime.getup_native_observation()?).map_err(|e|e.to_string())?;
-    if restored["passed"]!=true || before["nativeCompleted"]!=6182 || before["failure"]["offending"]!="Step joint allocation did not converge within 256 projections in the current affine region; not global infeasibility" {
-        return Err("Resume requires verified saved native6182 refusal".into());
+    if restored["passed"]!=true || before["nativeCompleted"]!=6186 || before["failure"]["offending"]!="Step joint allocation did not converge within 256 projections in the current affine region; not global infeasibility" {
+        return Err("Resume requires verified saved native6186 refusal".into());
     }
     // This performs the complete reference/posture, passive/dynamic RNEA,
     // cone allocation and unchanged motor-cap admission, without integration.
-    let admission=runtime.resume_getup_native_step_6182();
+    let admission=runtime.resume_getup_native_step_6186();
     let after_admission:Value=serde_json::from_str(&runtime.getup_native_observation()?).map_err(|e|e.to_string())?;
     let started=before["ownership"]["step"]["started_native"].as_u64().ok_or("Missing original Step clock")?;
     let native=before["nativeCompleted"].as_u64().ok_or("Missing native clock")?;
@@ -38,6 +38,8 @@ fn run(input:&Path,out:&Path,preflight_only:bool)->Result<Value,String> {
     // All later integration, including forecasts, uses the same global reserve.
     budget::begin_step()?;
     let mut first_stop=None;let mut separated_seen=false;let mut landed_seen=false;
+    let mut positive_clearance_samples=0u64;let mut positive_clearance_run=0u64;let mut maximum_positive_clearance_run=0u64;
+    let mut confirmed_separation_samples=0u64;
     let mut samples=0u64;let mut extrema=json!({});let mut brake_exit=None;
     let foot_index=before["bodies"].as_array().ok_or("missing bodies")?.iter().position(|b|b["id"]=="left_foot").ok_or("missing left foot")?;
     let initial_foot:[f64;3]=serde_json::from_value(before["bodies"][foot_index]["position"].clone()).map_err(|e|e.to_string())?;
@@ -64,6 +66,9 @@ fn run(input:&Path,out:&Path,preflight_only:bool)->Result<Value,String> {
                 let clearance=o["floorFootGeometry"]["feet"][0]["clearance"].as_f64().ok_or_else(||Failure::new(s.tick,substep,"sole-observation","missing capsule clearance".into(),0.,0.))?;
                 let free_load=o["floorFootGeometry"]["feet"][0]["load"].as_f64().ok_or_else(||Failure::new(s.tick,substep,"load-observation","missing load".into(),0.,0.))?;
                 max_clearance=max_clearance.max(clearance);
+                if clearance>0. {positive_clearance_samples+=1;positive_clearance_run+=1;} else {positive_clearance_run=0;}
+                maximum_positive_clearance_run=maximum_positive_clearance_run.max(positive_clearance_run);
+                if o["ownership"]["step"]["separated"]==true {confirmed_separation_samples+=1;}
                 let measured=json!({"native":o["nativeCompleted"],"com":o["com"],"comVelocityMps":o["comVelocityMps"],"freeLoadN":free_load,"retainedLoadN":o["floorFootGeometry"]["feet"][1]["load"],"wholeSoleClearanceM":clearance,"retreatM":retreat,"phase":phase});
                 if free_load<min_free_load {min_free_load=free_load;minimum_load_sample=Some(measured.clone());}
                 let refresh=o["ownership"]["step"]["preparation"]["attempted"].as_u64().or_else(||o["ownership"]["step"]["preparation"]["updated"].as_u64());
@@ -92,7 +97,7 @@ fn run(input:&Path,out:&Path,preflight_only:bool)->Result<Value,String> {
     let stop=checkpoint::save_compressed_checkpoint_bounded(&runtime,&out.with_extension("stop.bin.gz"),800_000);
     Ok(json!({"preflight":preflight,"integrated":budget::snapshot()?.real>0,"firstStop":first_stop,
         "initialCom":initial_com,"initialComVelocityMps":before["comVelocityMps"],"measuredTrace":trace,"minimumLoadSample":minimum_load_sample,"refreshTrace":refresh_trace,"firstSeparation":separation,"firstLanding":landing,"maximumWholeSoleClearanceM":max_clearance,"minimumFreeLoadN":min_free_load,
-        "observedSamples":samples,"brakeExit":brake_exit,"maximumRetreatM":max_retreat,"maximumLiftM":max_lift,"separatedSeen":separated_seen,"landingSeen":landed_seen,"lastMeasuredSupport":extrema,
+        "positiveClearanceSamples":positive_clearance_samples,"maximumPositiveClearanceRunSeconds":maximum_positive_clearance_run as f64*0.00125,"confirmedSeparationSamples":confirmed_separation_samples,"observedSamples":samples,"brakeExit":brake_exit,"maximumRetreatM":max_retreat,"maximumLiftM":max_lift,"separatedSeen":separated_seen,"landingSeen":landed_seen,"lastMeasuredSupport":extrema,
         "stopCheckpoint":stop.as_ref().ok(),"stopCheckpointError":stop.as_ref().err(),
         "commands":budget::step_command_diagnostics(),
         "finalObservation":runtime.getup_native_observation().ok().and_then(|s|serde_json::from_str::<Value>(&s).ok())}))
@@ -104,12 +109,12 @@ fn main()->Result<(),Box<dyn std::error::Error>> {
     }
     let mut file=OpenOptions::new().write(true).create_new(true).open(&args[3])?;
     file.write_all(b"{\"status\":\"started; final outcome pending\"}\n")?;file.sync_all()?;
-    budget::install_resume_6182()?;
+    budget::install_resume_6186()?;
     let result=run(Path::new(&args[2]),Path::new(&args[3]),args[1]=="--preflight-stop");
     let ledger=budget::snapshot()?;
-    let receipt=json!({"format":"native-step-continuation-from-6182-v1","controllerCommit":"93b435f983076dd278c5f16b7445467b2db1684a","historical":20140,"trialLimit":1000,
-        "cumulativeLimit":21401,"totalConsumed":20140+ledger.real+ledger.forecast,
-        "remainingGlobalBudget":1261-ledger.real-ledger.forecast,"ledger":ledger,
+    let receipt=json!({"format":"native-step-continuation-from-6186-v1","controllerCommit":"e5151e23f3c1401abac9aa993364a7a88d30505b","historical":20144,"trialLimit":1000,
+        "cumulativeLimit":21401,"totalConsumed":20144+ledger.real+ledger.forecast,
+        "remainingGlobalBudget":1257-ledger.real-ledger.forecast,"ledger":ledger,
         "inputCheckpoint":args[2],"result":result.as_ref().ok(),"error":result.as_ref().err(),"motionQualified":false});
     let bytes=serde_json::to_vec(&receipt)?;
     if bytes.len()>250_000 {return Err("result exceeds reserved 250000 bytes".into());}
