@@ -6,6 +6,8 @@ use std::{fs::OpenOptions,io::Write,path::Path};
 #[path="support/checkpoint.rs"]
 mod checkpoint;
 use checkpoint::save_checkpoint;
+#[path="support/getup_video.rs"]
+mod getup_video;
 fn trial(result_path:&Path)->Result<Value,String> {
     let mut profile:Profile=serde_json::from_str(include_str!("../../../../docs/evidence/profiles/getup-800hz-3plus1-repeat-cycle-v1.json")).map_err(|e|e.to_string())?;
     profile.getup_native_locomotion=Some(getup::locomotion::Profile::NativeJointOwnerV1);
@@ -57,6 +59,7 @@ fn trial(result_path:&Path)->Result<Value,String> {
 }
 fn main()->Result<(),Box<dyn std::error::Error>> {
     let args:Vec<_>=std::env::args().collect();
+    if args.len()==3 && args[1]=="--capture-getup-belly" {return getup_video::capture(Path::new(&args[2])).map_err(Into::into);}
     if args.len()!=3 || args[1]!="--run-numeric-trial" {return Err("usage: getup_native_step_bounded --run-numeric-trial NEW_RESULT.json".into());}
     // Reserve the small result path before doing work. Never overwrite evidence.
     let mut file=OpenOptions::new().write(true).create_new(true).open(&args[2])?;
