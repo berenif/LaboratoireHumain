@@ -3,8 +3,9 @@
 use crate::*;
 use rapier3d::na::{DMatrix, DVector};
 
-const FORMAT: &str = "native-step-pilot-v1";
+const FORMAT: &str = "native-step-pilot-v2";
 const DURATION: f32 = 0.8;
+const REFERENCE_ACCELERATION: f32 = 2.;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
 pub enum Phase { Retraction, Swing, Landing, Complete, Cancelled }
@@ -18,16 +19,26 @@ pub(crate) struct Reference {
     velocity: [f32;21],
     target: [f32;21],
     elapsed: f32,
+    braking: bool,
 }
 impl Reference {
     fn new(q:[f32;21],dq:[f32;21],target:[f32;21])->Self {
-        Self {q,dq,start:q,velocity:dq,target,elapsed:0.}
+        Self {q,dq,start:q,velocity:dq,target,elapsed:0.,braking:false}
     }
     /// Quintic Hermite in physical seconds, not one entire displacement per
     /// control evaluation. The measured state is used by feedback, not as a
     /// replacement for the persistent trajectory origin.
-    fn proposal(&self,dt:f32)->Result<(Self,[f32;21]),String> {
+    fn proposal(&self,dt:f32,bounds:&[(f32,f32);21])->Result<(Self,[f32;21]),String> {
         if !dt.is_finite() || dt<=0. || dt>0.025 {return Err("Invalid Step reference interval".into());}
+        if self.braking || (0..21).any(|i|needs_braking(self.q[i],self.dq[i],bounds[i],dt)) {
+            let mut next=self.clone();next.braking=true;let mut acceleration=[0.;21];
+            for i in 0..21 {
+                let (q,v,a)=brake_reference(self.q[i],self.dq[i],bounds[i],dt)?;
+                next.q[i]=q;next.dq[i]=v;acceleration[i]=a;
+            }
+            next.elapsed=(self.elapsed+dt).min(DURATION);
+            return Ok((next,acceleration));
+        }
         let t=(self.elapsed+dt).min(DURATION);let x=t/DURATION;
         let h=10.*x.powi(3)-15.*x.powi(4)+6.*x.powi(5);
         let dh=(30.*x.powi(2)-60.*x.powi(3)+30.*x.powi(4))/DURATION;
@@ -42,9 +53,14 @@ impl Reference {
             next.dq[i]=delta*dh+self.velocity[i]*dv;
             ddq[i]=delta*ddh+self.velocity[i]*ddv;
             if !next.q[i].is_finite() || !next.dq[i].is_finite() || !ddq[i].is_finite()
-                || next.dq[i].abs()>0.5 || ddq[i].abs()>2. {
+                || next.dq[i].abs()>0.5 || ddq[i].abs()>REFERENCE_ACCELERATION {
                 return Err("Step reference exceeds pilot speed/acceleration envelope".into());
             }
+        }
+        if (0..21).any(|i|next.q[i]<bounds[i].0 || next.q[i]>bounds[i].1
+            || needs_braking(next.q[i],next.dq[i],bounds[i],dt)) {
+            let mut braking=self.clone();braking.braking=true;
+            return braking.proposal(dt,bounds);
         }
         Ok((next,ddq))
     }
@@ -59,6 +75,7 @@ pub(crate) struct State {
     last_native:u64,
     started_native:u64,
     reference:Reference,
+    reference_acceleration:[f32;21],
     com:Vector,
     forward:Vector,
     foot_goal:Vector,
@@ -74,6 +91,7 @@ impl State {
             && self.com.is_finite() && self.forward.is_finite()
             && self.foot_goal.is_finite() && self.reference.elapsed.is_finite()
             && (0.0..=DURATION).contains(&self.reference.elapsed)
+            && self.reference_acceleration.iter().all(|x|x.is_finite() && x.abs()<=REFERENCE_ACCELERATION)
             && self.reference.q.iter().chain(&self.reference.dq).chain(&self.reference.start)
                 .chain(&self.reference.velocity).chain(&self.reference.target).all(|x|x.is_finite())
     }
@@ -82,11 +100,11 @@ impl State {
     pub fn begin(s:&Simulation,side:usize)->Result<Self,String> {
         if side>1 || s.environment.is_some() || s.grab.is_some() {return Err("Step pilot requires a named foot, flat floor and released grab".into());}
         let feet=feet(s)?;let support=geometry(s)?;
-        if support.iter().any(|f|f.clearance>0.001 || f.load<3.) {
+        if support.iter().any(|f|f.clearance>0. || f.load<3.) {
             return Err("Step pilot entry requires measured bilateral support".into());
         }
         let (mut q,mut dq)=super::joint_state(s)?;
-        bound_reference(s,&mut q,&mut dq,&mut [0.;21]);
+        initialize_reference(s,&mut q,&mut dq);
         let mut forward=*s.world.bodies[s.bodies[0]].rotation()*Vector::Z;forward.y=0.;
         let forward=forward.try_normalize().ok_or("Invalid Step heading")?;
         let foot=*s.world.bodies[s.bodies[feet[side]]].translation();
@@ -97,7 +115,7 @@ impl State {
         let foot_goal=foot-forward*0.005+Vector::Y*0.005;
         let target=posture(s,side,com,foot_goal)?;
         Ok(Self {format:FORMAT.into(),phase:Phase::Retraction,side,last_native:s.substeps_completed,
-            started_native:s.substeps_completed,reference:Reference::new(q,dq,target),com,forward,
+            started_native:s.substeps_completed,reference:Reference::new(q,dq,target),reference_acceleration:[0.;21],com,forward,
             foot_goal,separated:false,separation_samples:0,landed_samples:0})
     }
     pub fn command(&mut self,s:&Simulation)->Result<[f32;21],String> {
@@ -106,13 +124,13 @@ impl State {
         if elapsed>1 {return Err("Step missed a native command boundary".into());}
         if s.substeps_completed-self.started_native>2400 {return Err("Step pilot exceeded 2400 native intervals".into());}
         let support=geometry(s)?;
-        if support[1-self.side].load<3. {return Err("Step lost measured retained-foot support".into());}
+        if support[1-self.side].load<3. || support[1-self.side].clearance>0. {return Err("Step lost measured retained-foot support".into());}
         let foot=&support[self.side];
         if elapsed>0 {update_separation(&mut self.separated,&mut self.separation_samples,foot.clearance,foot.load);}
-        if self.phase==Phase::Retraction && self.separated {
+        if elapsed>0 && !self.reference.braking && self.phase==Phase::Retraction && self.separated {
             self.phase=Phase::Swing;self.foot_goal+=self.forward*0.025+Vector::Y*0.015;
             self.reference=Reference::new(self.reference.q,self.reference.dq,posture(s,self.side,self.com,self.foot_goal)?);
-        } else if elapsed>0 && self.reference.elapsed>=DURATION {
+        } else if elapsed>0 && !self.reference.braking && self.reference.elapsed>=DURATION {
             match self.phase {
                 Phase::Retraction=>return Err("Step retraction ended without whole-capsule separation and unloading".into()),
                 Phase::Swing=>{
@@ -128,30 +146,44 @@ impl State {
                 _=>{},
             }
         }
-        let (mut candidate,mut ddq)=if elapsed==0 {(self.reference.clone(),[0.;21])}
-            else {self.reference.proposal(s.profile.dt_s)?};
-        bound_reference(s,&mut candidate.q,&mut candidate.dq,&mut ddq);
+        let (candidate,ddq)=if elapsed==0 {(self.reference.clone(),self.reference_acceleration)}
+            else {self.reference.proposal(s.profile.dt_s,&joint_bounds(s))?};
         // Transaction: measured q/dq never overwritten; candidate is committed
         // only after bounds AND both dynamics evaluations pass.
         let controls=command_for_reference(s,&candidate,&ddq,self.side,self.separated)?;
-        self.reference=candidate;self.last_native=s.substeps_completed;
+        self.reference=candidate;self.reference_acceleration=ddq;self.last_native=s.substeps_completed;
         Ok(controls)
     }
 }
 
-/// Reference-only projection. The actual measured angle/velocity are untouched,
-/// including an outward velocity at a physical stop. Feedback requests braking;
-/// the ordinary torque gate can reject it, and Rapier handles the stop impulse.
-fn project_axis(q:&mut f32,dq:&mut f32,ddq:&mut f32,lo:f32,hi:f32) {
-    *q=(*q).clamp(lo,hi);
-    if (*q<=lo && *dq<0.) || (*q>=hi && *dq>0.) {*dq=0.;}
-    if (*q<=lo && *ddq<0.) || (*q>=hi && *ddq>0.) {*ddq=0.;}
+/// Initial reference only: measured state stays untouched even beyond a stop.
+fn initialize_reference(s:&Simulation,q:&mut [f32;21],dq:&mut [f32;21]) {
+    for (i,(lo,hi)) in joint_bounds(s).into_iter().enumerate() {
+        q[i]=q[i].clamp(lo,hi);
+        if (q[i]<=lo && dq[i]<0.) || (q[i]>=hi && dq[i]>0.) {dq[i]=0.;}
+    }
 }
-fn bound_reference(s:&Simulation,q:&mut [f32;21],dq:&mut [f32;21],ddq:&mut [f32;21]) {
+fn joint_bounds(s:&Simulation)->[(f32,f32);21] {
+    let mut bounds=[(0.,0.);21];
     for p in &s.model.segments {if let Some(h)=p.reference.as_ref().and_then(|r|r.hinge.as_ref()) {
-        let a=&p.joint_profile.as_ref().unwrap().axes[0];let i=h.qpos_index;
-        project_axis(&mut q[i],&mut dq[i],&mut ddq[i],a.min_radians,a.max_radians);
-    }}
+        let a=&p.joint_profile.as_ref().unwrap().axes[0];bounds[h.qpos_index]=(a.min_radians,a.max_radians);
+    }}bounds
+}
+fn needs_braking(q:f32,v:f32,(lo,hi):(f32,f32),dt:f32)->bool {
+    if v==0. {return false;}
+    let distance=if v>0. {hi-q}else{q-lo};
+    distance<=v*v/(2.*REFERENCE_ACCELERATION)+v.abs()*dt+1e-6
+}
+/// Continuous q/dq, constant bounded deceleration, then hold. This is reference
+/// braking, not an impact solver. Motor feasibility is checked separately before
+/// commit; if insufficient, report failure without altering the physical state.
+fn brake_reference(q:f32,v:f32,(lo,hi):(f32,f32),dt:f32)->Result<(f32,f32,f32),String> {
+    let t=dt.min(v.abs()/REFERENCE_ACCELERATION);
+    let a=-v.signum()*REFERENCE_ACCELERATION;
+    let next=q+v*t+0.5*a*t*t;
+    let speed=if t<dt {0.}else{v+a*t};
+    if !next.is_finite() || next<lo || next>hi {return Err("Reference cannot brake inside joint bounds".into());}
+    Ok((next,speed,((speed-v)/dt).clamp(-REFERENCE_ACCELERATION,REFERENCE_ACCELERATION)))
 }
 
 fn update_separation(separated:&mut bool,count:&mut u32,clearance:f32,load:f32) {
@@ -211,11 +243,21 @@ fn jacobian(s:&Simulation,body:usize,point:Vector)->Result<DMatrix<f32>,String> 
         }i=p;
     }Ok(j)
 }
-/// Whole-body least-squares posture INTENTION; the six root columns are never
-/// actuated. Failed intention is not a proof of global infeasibility.
+/// Whole-body posture intention with the six predicted root coordinates
+/// eliminated by the retained-foot constraint, never actuated. Failed intention is not a proof of global infeasibility.
 fn posture(s:&Simulation,side:usize,com_goal:Vector,foot_goal:Vector)->Result<[f32;21],String> {
-    let mut normal=DMatrix::identity(27,27)*0.001;let mut rhs=DVector::zeros(27);
-    let mut add=|a:DMatrix<f32>,b:DVector<f32>,w:f32| {normal+=a.transpose()*&a*w;rhs+=a.transpose()*b*w;};
+    let retained=feet(s)?[1-side];
+    let stance=jacobian(s,retained,*s.world.bodies[s.bodies[retained]].translation())?;
+    let root_map=stance.columns(0,6).into_owned().lu().solve(&(-stance.columns(6,21).into_owned()))
+        .ok_or("Singular retained-foot root elimination")?;
+    let mut elimination=DMatrix::zeros(27,21);
+    elimination.view_mut((0,0),(6,21)).copy_from(&root_map);
+    for i in 0..21 {elimination[(6+i,i)]=1.;}
+    if (&stance*&elimination).norm()>1e-4 {return Err("Retained-foot elimination residual".into());}
+    let mut normal=DMatrix::identity(21,21)*0.001;let mut rhs=DVector::zeros(21);
+    let mut add=|task:DMatrix<f32>,b:DVector<f32>,w:f32| {
+        let a=task*&elimination;normal+=a.transpose()*&a*w;rhs+=a.transpose()*b*w;
+    };
     for (n,i) in feet(s)?.into_iter().enumerate() {
         let point=*s.world.bodies[s.bodies[i]].translation();let delta=if n==side {foot_goal-point}else{Vector::ZERO};
         let mut target=DVector::zeros(6);for r in 0..3 {target[r]=delta[r];}
@@ -232,18 +274,19 @@ fn posture(s:&Simulation,side:usize,com_goal:Vector,foot_goal:Vector)->Result<[f
     let (q,_)=super::joint_state(s)?;let mut target=q;
     for part in &s.model.segments {if let Some(h)=part.reference.as_ref().and_then(|r|r.hinge.as_ref()) {
         let a=&part.joint_profile.as_ref().unwrap().axes[0];let i=h.qpos_index;
-        if !delta[6+i].is_finite() || delta[6+i].abs()>0.15 {return Err("Step posture outside pilot envelope".into());}
-        target[i]=(q[i]+delta[6+i]).clamp(a.min_radians,a.max_radians);
+        if !delta[i].is_finite() || delta[i].abs()>0.15 {return Err("Step posture outside pilot envelope".into());}
+        target[i]=(q[i]+delta[i]).clamp(a.min_radians,a.max_radians);
     }}Ok(target)
 }
 
 type Reaction=(usize,Vector,Vector);
-/// Measured-state recursive Newton/Euler. Acceleration is affine; root is free
-/// and its residual must be supplied by feasible ground intentions, not motors.
-fn rnea(s:&Simulation,q:&[f32;21],dq:&[f32;21],ddq:&[f32;21],support:&[Reaction])
-    ->Result<([f32;21],Vector,Vector),String> {
+/// World origin/angular accelerations from measured twists and a predicted
+/// free-root acceleration. Pure algebra, no multibody state mutation.
+fn accelerations(s:&Simulation,dq:&[f32;21],ddq:&[f32;21],root:(Vector,Vector))
+    ->Result<(Vec<Vector>,Vec<Vector>),String> {
     let n=s.bodies.len();let twists=super::current_twists(s)?;
     let mut linear=vec![Vector::ZERO;n];let mut angular=vec![Vector::ZERO;n];
+    linear[0]=root.0;angular[0]=root.1;
     for i in 1..n {
         let p=parent(s,i)?;let origin=*s.world.bodies[s.bodies[i]].translation();
         let po=*s.world.bodies[s.bodies[p]].translation();let wp=twists[p].1;
@@ -254,6 +297,37 @@ fn rnea(s:&Simulation,q:&[f32;21],dq:&[f32;21],ddq:&[f32;21],support:&[Reaction]
             linear[i]=linear[p]+angular[p].cross(a)+wp.cross(wp.cross(a))+angular[i].cross(b)+w.cross(w.cross(b));
         } else {angular[i]=angular[p];let r=origin-po;linear[i]=linear[p]+angular[p].cross(r)+wp.cross(wp.cross(r));}
     }
+    Ok((linear,angular))
+}
+fn retained_accelerations(s:&Simulation,dq:&[f32;21],ddq:&[f32;21],retained:usize)
+    ->Result<(Vec<Vector>,Vec<Vector>),String> {
+    let (bias,alpha)=accelerations(s,dq,ddq,(Vector::ZERO,Vector::ZERO))?;
+    let offset=s.world.bodies[s.bodies[retained]].translation()-s.world.bodies[s.bodies[0]].translation();
+    let root_alpha=-alpha[retained];let root_linear=-bias[retained]-root_alpha.cross(offset);
+    let result=accelerations(s,dq,ddq,(root_linear,root_alpha))?;
+    if result.0[retained].length()>1e-4 || result.1[retained].length()>1e-4 {
+        return Err("Retained-foot predicted acceleration residual".into());
+    }Ok(result)
+}
+/// Matches staged_island_solver/init.rs: multibody scenes form one solve group.
+fn solver_h(s:&Simulation)->f32 {
+    let extra=s.bodies.iter().map(|h|s.world.bodies[*h].additional_solver_iterations()).max().unwrap_or(0);
+    s.world.integration_parameters.dt/(s.world.integration_parameters.num_solver_iterations+extra) as f32
+}
+/// Rapier subtracts Kq + (D+hK)v and augments M by armature+hD+h²K.
+/// Add those terms once to the requested motor torque to compensate them;
+/// do not apply a second passive force or alter Rapier's coefficients.
+fn passive_inverse(k:f32,d:f32,armature:f32,q:f32,v:f32,a:f32,h:f32)->f32 {
+    k*q+(d+h*k)*v+(armature+h*d+h*h*k)*a
+}
+
+/// Measured-state recursive Newton/Euler. Acceleration is affine; root is free
+/// and its residual must be supplied by feasible ground intentions, not motors.
+fn rnea(s:&Simulation,q:&[f32;21],dq:&[f32;21],ddq:&[f32;21],support:&[Reaction],retained:usize)
+    ->Result<([f32;21],Vector,Vector),String> {
+    let n=s.bodies.len();let twists=super::current_twists(s)?;
+    let (linear,angular)=retained_accelerations(s,dq,ddq,retained)?;
+    let h_step=solver_h(s);
     let mut forces=vec![Vector::ZERO;n];let mut moments=vec![Vector::ZERO;n];
     for i in 0..n {
         let b=&s.world.bodies[s.bodies[i]];let r=b.rotation().normalize();let offset=r*b.local_center_of_mass();let w=twists[i].1;
@@ -270,21 +344,44 @@ fn rnea(s:&Simulation,q:&[f32;21],dq:&[f32;21],ddq:&[f32;21],support:&[Reaction]
         if let Some(h)=s.model.segments[i].reference.as_ref().and_then(|r|r.hinge.as_ref()) {
             let (axis,anchor)=axis_anchor(s,i,p)?;let a=&s.model.segments[i].joint_profile.as_ref().unwrap().axes[0];
             torque[h.actuator_index]=axis.dot(moments[i]+(origin-anchor).cross(forces[i]))
-                +h.armature*ddq[h.qpos_index]+a.passive_stiffness_nm_per_rad*q[h.qpos_index]+a.damping_nms_per_rad*dq[h.qpos_index];
+                +passive_inverse(a.passive_stiffness_nm_per_rad,a.damping_nms_per_rad,h.armature,
+                    q[h.qpos_index],dq[h.qpos_index],ddq[h.qpos_index],h_step);
         }
         let f=forces[i];let m=moments[i]+(origin-s.world.bodies[s.bodies[p]].translation()).cross(f);
         forces[p]+=f;moments[p]+=m;
     }Ok((torque,forces[0],moments[0]))
 }
 
+/// Phase hysteresis is not a contact constraint. A positive geometric gap or a
+/// separating desired normal acceleration carries ZERO intended reaction even
+/// while phase remains Retraction. A penetrating intention is refused; it is
+/// not repaired by inventing a root wrench or an impact solve.
+fn contact_can_react(gap:f32,normal_acceleration:f32)->Result<bool,String> {
+    if !gap.is_finite() || !normal_acceleration.is_finite() {return Err("Invalid contact intention".into());}
+    if gap>0. {return Ok(false);}
+    if normal_acceleration < -1e-4 {return Err("Step intention accelerates into a geometric contact".into());}
+    Ok(normal_acceleration<=1e-4)
+}
+
 fn command_for_reference(s:&Simulation,reference:&Reference,ddq:&[f32;21],side:usize,exclusive:bool)->Result<[f32;21],String> {
     let (q,dq)=super::joint_state(s)?;let geometry=geometry(s)?;
-    let (_,force,moment)=rnea(s,&q,&dq,ddq,&[])?;
+    let retained=feet(s)?[1-side];
+    let desired_acceleration=std::array::from_fn(|i|
+        (ddq[i]+16.*(reference.q[i]-q[i])+8.*(reference.dq[i]-dq[i]))
+            .clamp(-REFERENCE_ACCELERATION,REFERENCE_ACCELERATION));
+    let ddq=&desired_acceleration;
+    let (_,force,moment)=rnea(s,&q,&dq,ddq,&[],retained)?;
     let mut points=vec![];
+    let (linear,angular)=retained_accelerations(s,&dq,ddq,retained)?;
+    let twists=super::current_twists(s)?;
     let floor=s.world.colliders[s.floor].compute_aabb().maxs.y;
     for (n,g) in geometry.iter().enumerate() {
         if exclusive && n==side {continue;}
-        for point in &g.points {if point.y-floor<=0.003 {points.push((g.body,*point));}}
+        for point in &g.points {
+            let offset=*point-s.world.bodies[s.bodies[g.body]].translation();let omega=twists[g.body].1;
+            let acceleration=linear[g.body]+angular[g.body].cross(offset)+omega.cross(omega.cross(offset));
+            if contact_can_react(point.y-floor,acceleration.y)? {points.push((g.body,*point));}
+        }
     }
     if points.is_empty(){return Err("Step has no geometric support candidates".into());}
     let root=s.world.bodies[s.bodies[0]].translation();let mut a=DMatrix::zeros(6,3*points.len());
@@ -306,8 +403,8 @@ fn command_for_reference(s:&Simulation,reference:&Reference,ddq:&[f32;21],side:u
         }support.push((body,point,f));
     }
     // Both evaluations use the SAME measured q/dq and SAME desired allocation.
-    let (bias,_,_)=rnea(s,&q,&dq,&[0.;21],&support)?;
-    let (dynamic,residual_f,residual_m)=rnea(s,&q,&dq,ddq,&support)?;
+    let (bias,_,_)=rnea(s,&q,&dq,&[0.;21],&support,retained)?;
+    let (dynamic,residual_f,residual_m)=rnea(s,&q,&dq,ddq,&support,retained)?;
     if residual_f.length()>0.01 || residual_m.length()>0.01 {return Err("Step unactuated-root residual".into());}
     let mut controls=[0.;21];
     for part in &s.model.segments {if let Some(h)=part.reference.as_ref().and_then(|r|r.hinge.as_ref()) {
@@ -316,7 +413,7 @@ fn command_for_reference(s:&Simulation,reference:&Reference,ddq:&[f32;21],side:u
             return Err("Step proposed reference outside unchanged joint bounds".into());
         }
         let acceleration_torque=dynamic[j]-bias[j];
-        let raw=(bias[j]+acceleration_torque)/h.gear+reference.q[i]-q[i]+0.2*(reference.dq[i]-dq[i]);
+        let raw=(bias[j]+acceleration_torque)/h.gear;
         // Recompute the motor cap for the PROPOSED reference, before commit.
         // No clipping of measured q/dq, no impulse/limit reconstruction.
         let cap=(axis.max_motor_torque_nm/h.gear.abs()).min(1.);
@@ -332,31 +429,60 @@ mod tests {
         let s=Simulation::new(0.,crate::Profile::default(),true).unwrap();
         let before=serde_json::to_value(&s).unwrap();let (q,dq)=super::super::joint_state(&s).unwrap();
         let ids=feet(&s).unwrap();let allocation=vec![(ids[0],*s.world.bodies[s.bodies[ids[0]]].translation(),Vector::Y*20.)];
-        let (zero,f0,m0)=rnea(&s,&q,&dq,&[0.;21],&allocation).unwrap();
-        let (full,f1,m1)=rnea(&s,&q,&dq,&[0.1;21],&allocation).unwrap();
-        let (half,fh,mh)=rnea(&s,&q,&dq,&[0.05;21],&allocation).unwrap();
+        let (zero,f0,m0)=rnea(&s,&q,&dq,&[0.;21],&allocation,ids[0]).unwrap();
+        let (full,f1,m1)=rnea(&s,&q,&dq,&[0.1;21],&allocation,ids[0]).unwrap();
+        let (half,fh,mh)=rnea(&s,&q,&dq,&[0.05;21],&allocation,ids[0]).unwrap();
         for i in 0..21 {assert!((half[i]-(zero[i]+full[i])*0.5).abs()<1e-3);}
         assert!((fh-(f0+f1)*0.5).length()<1e-3);assert!((mh-(m0+m1)*0.5).length()<1e-3);
         assert_eq!(serde_json::to_value(&s).unwrap(),before);assert_eq!(s.substeps_completed,0);
     }
     #[test] fn native_step_pure_reference_is_cadence_independent() {
         let start=Reference::new([0.;21],[0.;21],[0.005;21]);let mut fine=start.clone();let mut coarse=start;
-        for _ in 0..20 {fine=fine.proposal(0.00125).unwrap().0;}
-        coarse=coarse.proposal(0.025).unwrap().0;
+        for _ in 0..20 {fine=fine.proposal(0.00125,&[(-1.,1.);21]).unwrap().0;}
+        coarse=coarse.proposal(0.025,&[(-1.,1.);21]).unwrap().0;
         assert!((fine.q[0]-coarse.q[0]).abs()<1e-8);assert!(fine.q[0]<0.00001);
         assert!(fine.dq[0]>0.);assert_eq!(fine.start,[0.;21]);
     }
     #[test] fn native_step_pure_reference_preserves_velocity_and_rejects_without_commit() {
-        let r=Reference::new([0.;21],[0.02;21],[0.005;21]);let (next,_)=r.proposal(0.00125).unwrap();
+        let r=Reference::new([0.;21],[0.02;21],[0.005;21]);let (next,_)=r.proposal(0.00125,&[(-1.,1.);21]).unwrap();
         assert!((next.dq[0]-0.02).abs()<1e-5);assert_eq!(r.elapsed,0.);
-        assert!(r.proposal(f32::NAN).is_err());assert_eq!(r.q,[0.;21]);
+        assert!(r.proposal(f32::NAN,&[(-1.,1.);21]).is_err());assert_eq!(r.q,[0.;21]);
     }
-    #[test] fn native_step_pure_stop_projects_reference_only() {
-        let measured=(1.01,0.3);let (mut q,mut dq) = measured;let mut ddq=2.;
-        project_axis(&mut q,&mut dq,&mut ddq,-1.,1.);
-        assert_eq!((q,dq,ddq),(1.,0.,0.));assert_eq!(measured,(1.01,0.3));
-        dq=-0.2;ddq=-1.;project_axis(&mut q,&mut dq,&mut ddq,-1.,1.);
-        assert_eq!((dq,ddq),(-0.2,-1.));
+    #[test] fn native_step_pure_reference_brakes_before_stop_continuously() {
+        let measured=(0.999,0.02);let (q,v,a)=brake_reference(measured.0,measured.1,(-1.,1.),0.00125).unwrap();
+        assert!(q>measured.0 && q<1.);assert!(v>0. && v<measured.1);
+        assert!((a+REFERENCE_ACCELERATION).abs()<1e-5);assert_eq!(measured,(0.999,0.02));
+        let (q,v,_) = brake_reference(q,v,(-1.,1.),0.025).unwrap();assert!(q<1.);assert_eq!(v,0.);
+        assert!(brake_reference(1.,0.1,(-1.,1.),0.00125).is_err());
+    }
+    #[test] fn native_step_pure_braking_latches_without_restarting_old_trajectory() {
+        let mut r=Reference::new([0.99997;21],[0.01;21],[1.;21]);
+        for _ in 0..10 {let old=r.clone();r=r.proposal(0.00125,&[(-1.,1.);21]).unwrap().0;
+            assert!(r.q[0]>=old.q[0] && r.q[0]<=1.);assert!(r.dq[0]<=old.dq[0]);}
+        assert!(r.braking);assert_eq!(r.dq[0],0.);let held=r.q;
+        r=r.proposal(0.025,&[(-1.,1.);21]).unwrap().0;assert_eq!(r.q,held);
+    }
+    #[test] fn native_step_pure_hysteresis_never_creates_absent_contact_force() {
+        assert!(!contact_can_react(0.00001,-1.).unwrap());
+        assert!(contact_can_react(0.,0.).unwrap()); // zero charge still may contact
+        assert!(!contact_can_react(0.,0.01).unwrap()); // separating, force must be zero
+        assert!(contact_can_react(0.,-0.01).is_err());
+        let mut separated=false;let mut count=0;
+        update_separation(&mut separated,&mut count,0.004,0.);
+        assert!(!separated);assert!(!contact_can_react(0.004,0.).unwrap());
+    }
+    #[test] fn native_step_pure_implicit_passives_match_rapier_equation_once() {
+        let (k,d,arm,q,v,a,h)=(5.,2.,0.1,0.2,-0.3,0.4,0.00125);
+        let motor=passive_inverse(k,d,arm,q,v,a,h);
+        let rhs=motor-k*q-(d+h*k)*v;
+        assert!((rhs-(arm+h*d+h*h*k)*a).abs()<1e-6);
+    }
+    #[test] fn native_step_pure_retained_root_is_eliminated_not_dropped() {
+        let s=Simulation::new(0.,crate::Profile::default(),true).unwrap();
+        let (_,dq)=super::super::joint_state(&s).unwrap();
+        let (linear,angular)=retained_accelerations(&s,&dq,&[0.2;21],feet(&s).unwrap()[0]).unwrap();
+        let foot=feet(&s).unwrap()[0];assert!(linear[foot].length()<1e-4);assert!(angular[foot].length()<1e-4);
+        assert!(linear[0].length()+angular[0].length()>1e-5);assert_eq!(s.substeps_completed,0);
     }
     #[test] fn native_step_pure_unloaded_geometry_is_not_liftoff() {
         let mut separated=false;let mut count=0;
