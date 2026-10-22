@@ -700,11 +700,11 @@ fn allocate_motor_wrench(a:&DMatrix<f32>,w0:&DVector<f32>,dw:&DVector<f32>,norma
     interval:(f32,f32),warm:Option<&DVector<f32>>,record:&mut serde_json::Value)
     ->Result<(DVector<f32>,f32),String> {
     allocate_motor_wrench_base(a,w0,dw,normals,contact,t0,dt,caps,interval,warm,
-        &DMatrix::zeros(a.nrows(),0),&DMatrix::zeros(caps.len(),0),record).map(|(f,a,_)|(f,a))
+        &DMatrix::zeros(a.nrows(),0),&DMatrix::zeros(caps.len(),0),None,record).map(|(f,a,_)|(f,a))
 }
 fn allocate_motor_wrench_base(a:&DMatrix<f32>,w0:&DVector<f32>,dw:&DVector<f32>,normals:&[Vector],
     contact:&DMatrix<f32>,t0:&DVector<f32>,dt:&DVector<f32>,caps:&DVector<f32>,
-    interval:(f32,f32),warm:Option<&DVector<f32>>,base_w:&DMatrix<f32>,base_t:&DMatrix<f32>,record:&mut serde_json::Value)
+    interval:(f32,f32),warm:Option<&DVector<f32>>,base_w:&DMatrix<f32>,base_t:&DMatrix<f32>,previous:Option<&DVector<f32>>,record:&mut serde_json::Value)
     ->Result<(DVector<f32>,f32,DVector<f32>),String> {
     let nf=a.ncols();let ne=a.nrows();let nm=caps.len();let nb=base_w.ncols();let n=nf+1+nb;let scale=400.;
     if base_w.nrows()!=ne || base_t.shape()!=(nm,nb) || base_w.iter().chain(base_t.iter()).any(|x|!x.is_finite())
@@ -739,6 +739,24 @@ fn allocate_motor_wrench_base(a:&DMatrix<f32>,w0:&DVector<f32>,dw:&DVector<f32>,
     record["motorDeltaNm"]=serde_json::json!(dt.as_slice());record["motorCapsNm"]=serde_json::json!(caps.as_slice());
     record["alphaInterval"]=serde_json::json!([interval.0,interval.1]);record["warmStart"]=serde_json::json!(warm.is_some());
     let sets=nm+3;let mut state=DVector::zeros(n*(sets+1));state.rows_mut(0,n).copy_from(&x);
+    // Feasibility comes before preference optimization. Rebuild the COMPLETE
+    // candidate in the current affine region: current nominal alpha, previous
+    // intended forces at matching live points, beta in the CURRENT base basis.
+    // Old beta/controls cannot be copied across changing geometry. No measured
+    // impulses are used. The ordinary cone/torque/wrench gate below still applies.
+    let mut revalidated_previous=false;
+    if nb>0 {if let Some(previous)=previous.filter(|p|p.len()==nf && p.iter().all(|v|v.is_finite())) {
+        let b=base_w.map(|v|v as f64);let svd=b.svd(true,true);
+        let tolerance=(svd.singular_values.max()*1e-10).max(1e-12);
+        let needed=a.map(|v|v as f64)*previous.map(|v|v as f64)
+            -w0.map(|v|v as f64)-dw.map(|v|v as f64)*interval.1 as f64;
+        if let Ok(beta)=svd.solve(&needed,tolerance) {if beta.iter().all(|v|v.is_finite()) {
+            x.rows_mut(0,nf).copy_from(&previous.map(|v|v as f64));
+            x.rows_mut(nf+1,nb).copy_from(&beta);revalidated_previous=true;
+        }}
+    }}
+    // If this candidate fails, iteration1 starts from the untouched preference
+    // state above; no failed seed or dual corrections contaminate that search.
     let mut history:Vec<(DVector<f64>,DVector<f64>)>=vec![];
     for iteration in 0..=256 {
         if iteration>0 {
@@ -802,6 +820,7 @@ fn allocate_motor_wrench_base(a:&DMatrix<f32>,w0:&DVector<f32>,dw:&DVector<f32>,
                 "finalForceResidualN":residual.rows(0,3).norm(),"finalMomentResidualNm":residual.rows(3,3).norm(),
                 "finalTorqueExcessNm":torque.iter().zip(caps.iter()).map(|(v,c)|(v.abs()-c).max(0.)).fold(0f32,f32::max)}));
         }
+        record["admissionCandidate"]=serde_json::json!(if iteration==0 && revalidated_previous {"previous-forces-revalidated-current-alpha-beta"} else {"preference-projection"});
         record["coneIterations"]=serde_json::json!(iteration);record["alpha"]=serde_json::json!(alpha);
         record["baseCorrectionCoordinates"]=serde_json::json!(beta.as_slice());
         record["allocatedForcesN"]=serde_json::json!(force.as_slice());record["desiredWrenchN_Nm"]=serde_json::json!(wanted.as_slice());
@@ -955,6 +974,7 @@ fn command_for_family_recorded(s:&Simulation,baseline:&(Reference,[f32;21]),nomi
             for j in 0..3 {seed[3*k+j]=f[j];}matched+=1;
         }
     }
+    let previous_seed=if matched==points.len() {Some(seed.clone())} else {None};
     if unload {
         let target_force=Vector::new(w0[0]+dw[0],w0[1]+dw[1],w0[2]+dw[2]);
         let feet_geometry=&geometry;
@@ -967,7 +987,7 @@ fn command_for_family_recorded(s:&Simulation,baseline:&(Reference,[f32;21]),nomi
     record["loadPreference"]=serde_json::json!({"captureDirectedPreference":unload,"hardZeroReactionConstraint":false,"monotonicLoadRequired":false});
     record["rootOrigin"]=serde_json::json!(root.to_array());
     let (allocated,alpha,beta)=allocate_motor_wrench_base(&a,&w0,&dw,&normals,&contact,&t0,&dt,&caps,(alpha_min,1.),
-        if matched>0 {Some(&seed)} else {None},&base_w,&base_t,record)?;
+        if matched>0 {Some(&seed)} else {None},&base_w,&base_t,previous_seed.as_ref(),record)?;
     let base_acceleration=&base0+&base_delta*alpha+&base_basis*&beta;
     record["baseAcceleration"]=serde_json::json!(base_acceleration.as_slice());
     let (reference,reference_ddq)=blend_reference(baseline,nominal,alpha,s.profile.dt_s)?;
@@ -1223,6 +1243,27 @@ mod tests {
         let foot=Vector::new(-0.2,0.03,0.);let gap=-0.0004;let goal=guarded_foot_goal(foot,gap,Vector::Z);
         assert!((gap+goal.y-foot.y-SOLE_GUARD).abs()<1e-7);assert_eq!(goal.z,-SOLE_GUARD);
         assert!(TRANSLATION_PRIORITY>POSTURE_PRIORITY);
+    }
+    #[test] fn native_step_pure_complete_previous_candidate_is_revalidated_before_preference() {
+        let mut a=DMatrix::zeros(6,3);for i in 0..3 {a[(i,i)]=1.;}
+        let mut w=DVector::zeros(6);w[1]=8.;
+        let mut motor=DMatrix::zeros(1,3);motor[(0,1)]=1.;
+        let preferred=DVector::from_vec(vec![0.,8.,0.]);
+        for (previous_load,expected_iteration) in [(5.,0u64),(20.,1u64)] {
+            let previous=DVector::from_vec(vec![0.,previous_load,0.]);let mut record=serde_json::json!({});
+            let (force,alpha,beta)=allocate_motor_wrench_base(&a,&w,&DVector::zeros(6),&[Vector::Y],
+                &motor,&DVector::zeros(1),&DVector::zeros(1),&DVector::from_element(1,10.),(0.,1.),Some(&preferred),
+                &DMatrix::identity(6,6),&DMatrix::zeros(1,6),Some(&previous),&mut record).unwrap();
+            assert_eq!(record["coneIterations"],expected_iteration);assert_eq!(alpha,1.);
+            assert!((&a*&force-&w-&beta).norm()<0.0001);assert!(force[1]<=10.);
+            if previous_load<10. {
+                assert!((force[1]-5.).abs()<0.0001);assert!((beta[1]+3.).abs()<0.0001);
+                assert_eq!(record["admissionCandidate"],"previous-forces-revalidated-current-alpha-beta");
+            } else {
+                assert!((force[1]-8.).abs()<0.0001);
+                assert_eq!(record["admissionCandidate"],"preference-projection");
+            }
+        }
     }
     #[test] fn native_step_pure_absent_free_contact_keeps_full_retained_preference() {
         let points=vec![(10,Vector::ZERO),(10,Vector::X),(10,Vector::Z)];

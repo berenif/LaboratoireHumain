@@ -1288,7 +1288,8 @@ mod tests {
         assert!(result.is_ok(), "{result:?}");
         let records=crate::integration_budget::step_command_diagnostics();let candidate=&records["firstAdmitted"];
         assert!(candidate["candidates"].as_array().unwrap().iter().filter(|c|c["used"]==true).all(|c|c["body"]==10));
-        assert!(candidate["coneIterations"].as_u64().unwrap()<256);
+        assert_eq!(candidate["coneIterations"],0);
+        assert_eq!(candidate["admissionCandidate"],"previous-forces-revalidated-current-alpha-beta");
         assert!(candidate["alpha"].as_f64().unwrap()>0.9);
         for (t,c) in candidate["dynamicTorqueNm"].as_array().unwrap().iter().zip(candidate["motorCapsNm"].as_array().unwrap()) {
             assert!(t.as_f64().unwrap().abs()<=c.as_f64().unwrap());
@@ -1297,6 +1298,35 @@ mod tests {
             let norm:f64=candidate[field].as_array().unwrap().iter().map(|v|v.as_f64().unwrap().powi(2)).sum();assert!(norm<0.01f64.powi(2));
         }
         println!("RESULT_6182 {result:?}");
+    }
+
+    #[cfg(all(feature="numeric-integration-budget",feature="getup-native-locomotion-experiment"))]
+    #[test]
+    #[ignore="exact native6186 diagnostic; no integration"]
+    fn native_step_pure_candidate_checkpoint_6186() {
+        let path=std::env::var("LH_STEP_CHECKPOINT").unwrap();
+        let decoded=std::process::Command::new("gzip").args(["-d","-c",&path]).output().unwrap();assert!(decoded.status.success());
+        let mut runtime=Runtime::from_getup_checkpoint(&decoded.stdout).unwrap();
+        let verification:serde_json::Value=serde_json::from_str(&runtime.verify_getup_checkpoint(&decoded.stdout).unwrap()).unwrap();
+        assert_eq!(verification["passed"],true);assert_eq!(runtime.simulation.substeps_completed,6186);
+        let world=bincode::serialize(&runtime.simulation.world).unwrap();
+        let result=crate::getup::locomotion::step_command(&mut runtime.simulation);
+        println!("PURE_6186 {}",crate::integration_budget::step_command_diagnostics());
+        assert_eq!(world,bincode::serialize(&runtime.simulation.world).unwrap());
+        assert_eq!(runtime.simulation.substeps_completed,6186);
+        assert!(result.is_ok(), "{result:?}");
+        let records=crate::integration_budget::step_command_diagnostics();let candidate=&records["firstAdmitted"];
+        assert!(candidate["candidates"].as_array().unwrap().iter().filter(|c|c["used"]==true).all(|c|c["body"]==10));
+        assert_eq!(candidate["coneIterations"],0);
+        assert_eq!(candidate["admissionCandidate"],"previous-forces-revalidated-current-alpha-beta");
+        assert!(candidate["alpha"].as_f64().unwrap()>0.9);
+        for (t,c) in candidate["dynamicTorqueNm"].as_array().unwrap().iter().zip(candidate["motorCapsNm"].as_array().unwrap()) {
+            assert!(t.as_f64().unwrap().abs()<=c.as_f64().unwrap());
+        }
+        for field in ["rneaResidualForceN","rneaResidualMomentNm"] {
+            let norm:f64=candidate[field].as_array().unwrap().iter().map(|v|v.as_f64().unwrap().powi(2)).sum();assert!(norm<0.01f64.powi(2));
+        }
+        println!("RESULT_6186 {result:?}");
     }
 
     #[cfg(all(feature="numeric-integration-budget",feature="getup-native-locomotion-experiment"))]
