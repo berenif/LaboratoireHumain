@@ -41,7 +41,8 @@ static RESERVE: Mutex<Option<Ledger>>=Mutex::new(None);
 pub fn install()->Result<(),String> {
     let mut slot=RESERVE.lock().map_err(|_|"budget lock poisoned")?;
     if slot.is_some() {return Err("global reserve already installed".into());}
-    let mut reserve=Ledger::new();reserve.remaining=3399;
+    // One prospectively authorized second trial; historical 12601 stays in receipt.
+    let reserve=Ledger::new();
     *slot=Some(reserve);Ok(())
 }
 pub fn snapshot()->Result<Ledger,String> {
@@ -65,7 +66,7 @@ mod tests {
         let b=std::thread::spawn(||for _ in 0..10 {debit(Kind::Forecast).unwrap();});
         a.join().unwrap();b.join().unwrap();
         assert!(install().is_err());
-        let b=snapshot().unwrap();assert_eq!((b.real,b.forecast,b.remaining),(10,10,3379));
+        let b=snapshot().unwrap();assert_eq!((b.real,b.forecast,b.remaining),(10,10,8780));
     }
     #[test] fn budget_pure_shared_real_forecast_last_token() {
         let shared=Mutex::new(Ledger::new());
