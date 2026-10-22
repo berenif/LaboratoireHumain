@@ -1221,7 +1221,10 @@ mod tests {
         assert_eq!(serde_json::to_value(receipt.owner).unwrap(),"step");
         let controls=receipt.controls;
         assert_eq!(controls.map(f32::to_bits),[1037760651, 996603770, 3158962054, 1057252068, 3188456623, 3177912868, 1037963563, 1039379365, 1053265083, 1056630288, 3170348331, 1034046246, 3139049104, 3187770562, 1057462890, 3188868196, 1022121446, 1016979607, 1040529197, 3170976873, 1017224241]);
-        assert!(clone.simulation.grab.is_none() && clone.simulation.environment.is_none() && clone.simulation.striker.is_none());
+        assert!(clone.simulation.grab.is_none() && clone.simulation.environment.is_none());
+        // A parked protocol object is not an external solicitation. Preserve
+        // it exactly; its ordinary pre/post hooks are no-ops while idle.
+        assert!(clone.simulation.striker.as_ref().is_none_or(|striker|striker.available()));
         let parameters=bincode::serialize(&clone.simulation.world.integration_parameters).unwrap();
         let mut out=std::fs::OpenOptions::new().write(true).create_new(true).open(std::env::var("LH_IDENTIFICATION_RESULT").unwrap()).unwrap();
         let emit=|out:&mut std::fs::File,value:serde_json::Value| {writeln!(out,"{}",value).unwrap();out.flush().unwrap();out.sync_all().unwrap();};
