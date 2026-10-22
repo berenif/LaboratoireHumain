@@ -164,7 +164,10 @@ pub(crate) struct State {
 }
 #[derive(Clone, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
-struct Preparation {started:u64,updated:u64,com_origin:Vector,toward:Vector,clearance:f32}
+struct Preparation {started:u64,updated:u64,com_origin:Vector,toward:Vector,clearance:f32,
+    #[serde(default)] attempted:Option<u64>,
+    #[serde(default)] retarget_rejection:Option<String>,
+}
 fn horizontal(v:Vector)->Vector {Vector::new(v.x,0.,v.z)}
 /// Pendulum time is a directional heuristic from measured height and speed,
 /// never a requirement to achieve a static COM projection before lifting.
@@ -191,7 +194,7 @@ impl State {
             && self.foot_goal.is_finite() && self.reference.elapsed.is_finite()
             && self.reference.duration.is_finite() && self.reference.duration>0. && self.reference.duration<=MAX_REFERENCE_DURATION
             && (0.0..=self.reference.duration).contains(&self.reference.elapsed)
-            && self.preparation.as_ref().is_none_or(|p|p.started<=p.updated && p.updated<=native && p.com_origin.is_finite() && p.toward.is_finite() && p.clearance.is_finite())
+            && self.preparation.as_ref().is_none_or(|p|p.started<=p.updated && p.updated<=native && p.attempted.is_none_or(|n|n>=p.updated && n<=native) && p.com_origin.is_finite() && p.toward.is_finite() && p.clearance.is_finite())
             && self.last_reactions.iter().all(|(_,p,f)|p.is_finite() && f.is_finite())
             && self.reference_acceleration.iter().all(|x|x.is_finite() && x.abs()<=REFERENCE_ACCELERATION)
             && self.reference.q.iter().chain(&self.reference.dq).chain(&self.reference.start)
@@ -243,23 +246,34 @@ impl State {
                     return Err("Step preparation stayed stationary for 0.8 s: stop this candidate, no standing fallback".into());
                 }
             }
-            let refresh=self.preparation.as_ref().is_none_or(|p|s.substeps_completed.saturating_sub(p.updated)>=40);
+            let refresh=self.preparation.as_ref().is_none_or(|p|s.substeps_completed.saturating_sub(p.attempted.unwrap_or(p.updated))>=40);
             if refresh {
                 let center=support_center(&support[1-self.side]);
-                self.com=transfer_goal(s.center_of_mass(),measured_com_velocity(s)?,center);
+                let proposed_com=transfer_goal(s.center_of_mass(),measured_com_velocity(s)?,center);
                 let origin=s.world.bodies[s.bodies[feet(s)?[self.side]]].translation();
-                // Keep the original horizontal retreat destination during this
-                // preparation; only update clearance for the actual capsule pose.
-                if self.preparation.is_none() {self.foot_goal=guarded_foot_goal(origin,foot.clearance,self.forward);}
-                else {self.foot_goal.y=origin.y+SOLE_GUARD-foot.clearance;}
-                self.reference.target=posture(s,self.side,self.com,self.foot_goal)?;
-                self.reference=self.reference.retimed()?;
-
+                let mut proposed_foot=self.foot_goal;
+                if self.preparation.is_none() {proposed_foot=guarded_foot_goal(origin,foot.clearance,self.forward);}
+                else {proposed_foot.y=origin.y+SOLE_GUARD-foot.clearance;}
+                let mut proposed_reference=self.reference.clone();
+                proposed_reference.target=posture(s,self.side,proposed_com,proposed_foot)?;
+                // retimed currently refuses only its planning horizon. Such a
+                // refusal is optional too; actual command limits still propagate.
+                let proposed_reference=proposed_reference.retimed();
                 let remaining=(LIMIT_NATIVE-(s.substeps_completed-self.started_native)) as f32*s.profile.dt_s;
-                if self.reference.duration>remaining {return Err("Step preparation needs more time than this pilot reserve; change preparation/placement".into());}
-                if let Some(p)=&mut self.preparation {p.updated=s.substeps_completed;} else {
-                    self.preparation=Some(Preparation {started:s.substeps_completed,updated:s.substeps_completed,com_origin:s.center_of_mass(),
-                        toward:horizontal(center-s.center_of_mass()).try_normalize().unwrap_or(Vector::ZERO),clearance:foot.clearance});
+                let proposed_duration=proposed_reference.as_ref().ok().map(|r|r.duration);
+                let retiming_reason=proposed_reference.as_ref().err().cloned();
+                let adopt=admit_retarget(&self.reference,proposed_duration,remaining,s.profile.dt_s,&joint_bounds(s))?;
+                if adopt {
+                    self.com=proposed_com;self.foot_goal=proposed_foot;self.reference=proposed_reference.expect("admitted retiming");
+                    if let Some(p)=&mut self.preparation {p.updated=s.substeps_completed;} else {
+                        self.preparation=Some(Preparation {started:s.substeps_completed,updated:s.substeps_completed,com_origin:s.center_of_mass(),
+                            toward:horizontal(center-s.center_of_mass()).try_normalize().unwrap_or(Vector::ZERO),clearance:foot.clearance,
+                            attempted:None,retarget_rejection:None});
+                    }
+                }
+                if let Some(p)=&mut self.preparation {
+                    p.attempted=Some(s.substeps_completed);
+                    p.retarget_rejection=if adopt {None} else {Some(format!("optional retarget duration {:?} s / {:?}; kept active reference with {} s left inside {} s pilot",proposed_duration,retiming_reason,self.reference.duration-self.reference.elapsed,remaining))};
                 }
             }
         }
@@ -338,6 +352,20 @@ fn brake_reference(q:f32,v:f32,(lo,hi):(f32,f32),dt:f32)->Result<(f32,f32,f32),S
     let speed=if t<dt {0.}else{v+a*t};
     if !next.is_finite() || next<lo || next>hi {return Err("Reference cannot brake inside joint bounds".into());}
     Ok((next,speed,((speed-v)/dt).clamp(-REFERENCE_ACCELERATION,REFERENCE_ACCELERATION)))
+}
+
+/// Timing refusal of an optional target does not invalidate an active path.
+/// This only permits trying its next command: full RNEA/contact/motor admission
+/// below remains mandatory. Neither path may extend the original pilot clock.
+fn admit_retarget(active:&Reference,proposed_duration:Option<f32>,remaining:f32,dt:f32,bounds:&[(f32,f32);21])->Result<bool,String> {
+    if proposed_duration.is_some_and(|duration|duration<=remaining) {return Ok(true);}
+    let active_remaining=active.duration-active.elapsed;
+    if !active.braking && active_remaining>0. && active_remaining<=remaining {
+        let next=active.proposal(dt,bounds)?.0;
+        let distance=|r:&Reference|->f64 {(0..21).map(|i|(r.target[i] as f64-r.q[i] as f64).powi(2)).sum()};
+        if distance(&next)<distance(active) {return Ok(false);}
+    }
+    Err("Step preparation needs more time than this pilot reserve and no progressing active reference fits; change preparation/placement".into())
 }
 
 fn update_separation(separated:&mut bool,count:&mut u32,clearance:f32,load:f32) {
@@ -905,6 +933,18 @@ pub(crate) fn identify_transition(before:&Simulation,after:&Simulation,controls:
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[test] fn native_step_pure_optional_retarget_preserves_active_deadline() {
+        let active=Reference::new([0.;21],[0.01;21],[0.02;21]);let before=serde_json::to_value(&active).unwrap();
+        let mut proposed=active.clone();proposed.duration=2.;proposed.target=[0.2;21];
+        assert!(!admit_retarget(&active,Some(proposed.duration),1.,0.00125,&[(-1.,1.);21]).unwrap());
+        assert!(!admit_retarget(&active,None,1.,0.00125,&[(-1.,1.);21]).unwrap());
+        assert_eq!(serde_json::to_value(&active).unwrap(),before);
+        assert!(admit_retarget(&active,Some(proposed.duration),0.1,0.00125,&[(-1.,1.);21]).is_err());
+        let mut stopped=active.clone();stopped.target=stopped.q;stopped.dq=[0.;21];
+        assert!(admit_retarget(&stopped,Some(proposed.duration),1.,0.00125,&[(-1.,1.);21]).is_err());
+        let mut expired=active;expired.elapsed=expired.duration;
+        assert!(admit_retarget(&expired,Some(proposed.duration),1.,0.00125,&[(-1.,1.);21]).is_err());
+    }
     #[test] fn native_step_pure_propulsion_precedes_unloading_from_measured_capture() {
         let free=Vector::new(-0.1,0.,0.);let support=Vector::new(0.1,0.,0.);
         let com=Vector::new(0.,0.8,0.);

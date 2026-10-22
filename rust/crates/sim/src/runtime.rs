@@ -1213,6 +1213,36 @@ mod tests {
 
     #[cfg(all(feature="numeric-integration-budget",feature="getup-native-locomotion-experiment"))]
     #[test]
+    #[ignore="reads preserved gzip native5579 checkpoint; pure command, no integration"]
+    fn native_step_pure_optional_retarget_checkpoint_5579() {
+        let path=std::env::var("LH_STEP_CHECKPOINT").unwrap();
+        let decoded=std::process::Command::new("gzip").args(["-d","-c",&path]).output().unwrap();assert!(decoded.status.success());
+        let mut runtime=Runtime::from_getup_checkpoint(&decoded.stdout).unwrap();
+        let verification:serde_json::Value=serde_json::from_str(&runtime.verify_getup_checkpoint(&decoded.stdout).unwrap()).unwrap();
+        assert_eq!(verification["passed"],true);assert_eq!(runtime.simulation.substeps_completed,5579);
+        let world=bincode::serialize(&runtime.simulation.world).unwrap();
+        let before:serde_json::Value=serde_json::from_str(&runtime.getup_native_observation().unwrap()).unwrap();
+        let old=&before["ownership"]["step"];
+        assert_eq!(old["last_native"],5578);assert_eq!(old["preparation"]["updated"],5539);
+        let result=crate::getup::locomotion::step_command(&mut runtime.simulation);
+        assert!(result.is_ok(),"{result:?}");
+        let after:serde_json::Value=serde_json::from_str(&runtime.getup_native_observation().unwrap()).unwrap();let new=&after["ownership"]["step"];
+        assert_eq!(new["reference"]["target"],old["reference"]["target"]);
+        assert_eq!(new["reference"]["duration"],old["reference"]["duration"]);
+        assert_eq!(new["com"],old["com"]);assert_eq!(new["foot_goal"],old["foot_goal"]);
+        assert_eq!(new["preparation"]["updated"],5539);assert_eq!(new["preparation"]["attempted"],5579);
+        assert!(new["preparation"]["retarget_rejection"].is_string());
+        assert!(new["reference"]["elapsed"].as_f64().unwrap()>old["reference"]["elapsed"].as_f64().unwrap());
+        assert_eq!(new["started_native"],old["started_native"]);assert_eq!(new["last_native"],5579);
+        assert_eq!(world,bincode::serialize(&runtime.simulation.world).unwrap());
+        assert_eq!(runtime.simulation.substeps_completed,5579);
+        assert_eq!(before["failure"],after["failure"]); // no restore alteration or recovery claim
+        println!("PURE_RETARGET {}",serde_json::json!({"admitted":true,"rejection":new["preparation"]["retarget_rejection"],
+            "referenceElapsedBefore":old["reference"]["elapsed"],"referenceElapsedAfter":new["reference"]["elapsed"],"newIntegrations":0}));
+    }
+
+    #[cfg(all(feature="numeric-integration-budget",feature="getup-native-locomotion-experiment"))]
+    #[test]
     #[ignore="requires exact native5339 checkpoint; pure candidate, no integration"]
     fn native_step_pure_contact_candidate_checkpoint_5339() {
         let bytes=std::fs::read(std::env::var("LH_STEP_CHECKPOINT").unwrap()).unwrap();
