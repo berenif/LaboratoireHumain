@@ -17,6 +17,9 @@ pub fn save_checkpoint(runtime:&Runtime,path:&Path)->Result<Value,String> {
 /// One compact stop state. Compression is the installed system gzip, not a
 /// project dependency; no intermediate uncompressed file or input copy.
 pub fn save_compressed_checkpoint(runtime:&Runtime,path:&Path)->Result<Value,String> {
+    save_compressed_checkpoint_bounded(runtime,path,1_300_000)
+}
+pub fn save_compressed_checkpoint_bounded(runtime:&Runtime,path:&Path,limit:usize)->Result<Value,String> {
     fn gzip(args:&[&str],bytes:Vec<u8>)->Result<Vec<u8>,String> {
         use std::process::{Command,Stdio};
         let mut child=Command::new("gzip").args(args).stdin(Stdio::piped()).stdout(Stdio::piped()).stderr(Stdio::piped()).spawn().map_err(|e|e.to_string())?;
@@ -29,7 +32,7 @@ pub fn save_compressed_checkpoint(runtime:&Runtime,path:&Path)->Result<Value,Str
     }
     let bytes=runtime.getup_checkpoint()?;let raw_size=bytes.len();
     let compressed=gzip(&["-n","-6","-c"],bytes.clone())?;
-    if compressed.len()>1_300_000 {return Err(format!("compressed checkpoint {} exceeds 1300000-byte reserved proof space",compressed.len()));}
+    if compressed.len()>limit {return Err(format!("compressed checkpoint {} exceeds {limit}-byte reserved proof space",compressed.len()));}
     let decoded=gzip(&["-d","-c"],compressed.clone())?;
     if decoded!=bytes {return Err("compressed checkpoint roundtrip mismatch".into());}
     let verification:Value=serde_json::from_str(&runtime.verify_getup_checkpoint(&decoded)?).map_err(|e|e.to_string())?;
