@@ -60,7 +60,21 @@ try{
  assert(pure.firstCommand.exactHistoricalHolding&&pure.firstCommand.maxRatio<=1&&pure.firstCommand.gearError<2e-4&&pure.firstCommand.rootZero);
  assert(pure.forceExact&&pure.pulseEnded&&Math.abs(pure.scheduledImpulseNs-2.25)<1e-12&&pure.physicalStateUnchanged&&pure.rootAndOtherForcesZero&&pure.liveAttachmentUnchanged&&pure.noPushWithoutCalm&&pure.errorAtBudgetIsFailure);
  assert.equal(errors.length,0);
- if(!run){write('pure.json',{pure,criteria:'same calm thresholds; native-step physical stop; one 120-step 15N+X pulse after 800 calm steps; last 800 steps calm; 4000 maximum',diskGrowth:disk()});console.log(JSON.stringify({pure,ticks:0}));}
+ if(!run){
+  // Browser scheduling test with advance replaced by a NO-INTEGRATION stub.
+  // Reproduces the busy-control refresh path without another physical trial.
+  await page.evaluate(async()=>{
+   const {SlowContinuation}=await import('/web/mujoco/local-getup/continuation.js');window.__pureAdvances=0;
+   SlowContinuation.prototype.advance=function(){window.__pureAdvances++;return this.last;};
+  });
+  await page.click('#getup-continue');await page.waitForFunction(()=>window.__pureAdvances>=2);
+  await page.click('#pause');assert(await page.evaluate(()=>window.__lhMujoco.state.paused));
+  const calls=await page.evaluate(()=>window.__pureAdvances);await page.click('#zoom-in');await page.click('#camera-reset');await page.waitForTimeout(100);
+  assert.equal(await page.evaluate(()=>window.__pureAdvances),calls);assert.equal(await page.evaluate(()=>window.__lhMujoco.state.steps),0);
+  await page.click('#pause');await page.waitForFunction(c=>window.__pureAdvances>c,calls);await page.click('#pause');
+  assert.equal(await page.evaluate(()=>window.__lhMujoco.state.steps),0);pure.pauseCameraZeroIntegrationStub=true;
+  write('pure.json',{pure,criteria:'same calm thresholds; native-step physical stop; one 120-step 15N+X pulse after 800 calm steps; last 800 steps calm; 4000 maximum',diskGrowth:disk()});console.log(JSON.stringify({pure,ticks:0}));
+ }
  else{
   assert(fs.existsSync(`${dir}/pure.json`),'Pure checks must pass before runtime');
   ledger={source:execFileSync('git',['rev-parse','HEAD'],{encoding:'utf8'}).trim(),confirmedBefore:before,priorUnknownPreserved:true,maximumNewTicks:4000,newTicks:0,pendingMaxTicks:0,completed:false,pure};

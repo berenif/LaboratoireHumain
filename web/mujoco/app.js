@@ -52,7 +52,7 @@ async function frame(now){
    }else{while(accumulator>=physics.dt){physics.step();accumulator-=physics.dt;}physics.forward();}
   }
   draw();refresh();
- }catch(e){fail(e);if(getup?.continuation){try{await window.__lhGetupAudit?.({kind:'final',summary:getup.summary(),state:getup.stateVector(),spec:getup.assets.entry.spec});}catch(auditError){console.error('Sauvegarde finale non confirmée',auditError);}}}finally{getupBusy=false;requestAnimationFrame(frame);}
+ }catch(e){fail(e);if(getup?.continuation){try{await window.__lhGetupAudit?.({kind:'final',summary:getup.summary(),state:getup.stateVector(),spec:getup.assets.entry.spec});}catch(auditError){console.error('Sauvegarde finale non confirmée',auditError);}}}finally{getupBusy=false;refresh();requestAnimationFrame(frame);}
 }requestAnimationFrame(frame);
 try{physics=await Physics.create();for(const id of ['pause','push','small-push','reset'])$('#'+id).disabled=false;refresh();}catch(e){fail(e);}
 // Read-only diagnostics for browser acceptance; physical interactions use UI handlers.

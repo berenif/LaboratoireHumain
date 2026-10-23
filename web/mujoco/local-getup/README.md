@@ -345,3 +345,39 @@ terminal full state and report are durable. `render-getup-local.mjs
 --slow-continuation` replays only those recorded poses, never integrates.
 The preview uses the already-running repository server on127.0.0.1:5199.
 No Library/network retry, deployment or weights distribution is authorized.
+
+### Continuation result — one physical run
+
+Runtime60405ded377828e3c23ae8e4a06edb9ef37668a6 completed4000 native steps,
+zero forecasts/replay/preparation. t22.500→27.500s, MuJoCo191459 confirmed
+PLUS the prior unknown run; Rapier45735 unchanged. Ledger completed=true,
+pendingMaxTicks=0. The exact233-value final state round-trips through mj_set/get
+with zero integrations (SHA2567d954fc41d529504cfd565b65558712d7cde098d71edd1dcdf271dcc2a91e383).
+
+All first-second samples satisfy calm. The single torso+X pulse ran from23.500
+to23.650s, exactly120 steps. No loss of bilateral loaded support, new flight,
+nonfoot support or fall triggered the native-step guard. Final132 consecutive
+calm40Hz samples =3.300s by sample-count convention (3.275s between endpoints),
+including all40 samples of the last second. Peak COMspeed.06803m/s falls to
+.001099m/s. Peak torso tilt2.973deg, final2.118deg. Final loadsR206.73/L193.96N;
+minimum sampled loadsR157.64/L136.71N. Maximum actual torque ratio.484079,
+gear error0; no saturation or unrequested external force. Root actuator torque0.
+Maximum horizontal COM excursion22.78mm; foot-origin excursionsR11.35/L10.16mm
+include any rolling/rotation and are not a measurement of pure contact slip.
+This establishes this one bounded response, not general standing robustness.
+
+The physical run finished and wrote final state before the browser QA exited1:
+its attempted Pause click timed out because refresh ran while getupBusy was
+true, leaving the button disabled between expensive frames. No physical error
+or ambiguous tick remains. The UI-only correction refreshes after clearing busy.
+A no-integration advance stub then verifies Pause/resume/camera; actual physical
+pause/resume has NOT been retested. No second physical run was made.
+
+Local media: `getup-slow-continuation/LaboratoireHumain-SLOW-maintien.mp4`,
+257599B,1280×720,40fps,7.025s =5s physical recording plus endpoint frame and2s
+explicitly paused display. Recorded201 poses are replayed without interpolation
+or engine integration. Decoded beginning/pulse/final images were inspected:
+whole body/ground visible, small bounded sway and loaded feet, final caption
+in header so it does not obscure the head. The earlier render with an overlapping
+caption remains preserved; the `-maintien` video is the delivery candidate.
+No Library attempt/ID (known403 restriction), site change or weights package.
