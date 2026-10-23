@@ -33,7 +33,7 @@ try{
  await page.goto('http://127.0.0.1:5199/web/dist/index.html?getup=local');await page.waitForFunction(()=>window.__lhMujoco?.state);
  assert(await page.locator('#getup-panel').isVisible());
  // No stepping: reset, selection, camera and grab/release still work paused.
- await page.selectOption('#mode','balance');await page.click('#reset');await page.click('#reset');
+ await page.selectOption('#mode','balance');await page.click('#reset');await page.click('#reset');assert.equal(await page.evaluate(()=>window.__lhMujoco.state.mode),'balance');
  const pos=await page.evaluate(()=>window.__lhMujoco.state.screen.find(p=>p.name==='left_hand'));
  const rect=await page.locator('#simulation').boundingBox();
  await page.mouse.move(rect.x+pos.x,rect.y+pos.y);await page.mouse.down();

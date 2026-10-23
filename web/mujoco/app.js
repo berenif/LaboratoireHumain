@@ -28,7 +28,7 @@ $('#pause').onclick=()=>{if(!physics||failed||getupLoading||getupBusy||getup?.do
 $('#mode').onchange=()=>{if(physics&&!getup&&!getupLoading){physics.setMode($('#mode').value);refresh();}};
 $('#small-push').onclick=()=>{if(!physics||failed||getup||getupLoading)return;physics.smallPush($('#push-direction').value);paused=false;refresh();};
 $('#push').onclick=()=>{if(!physics||failed||getup||getupLoading)return;physics.pushBody();paused=false;refresh();};
-$('#reset').onclick=()=>{if(!physics||getupBusy||getupLoading)return;if(getup){if(!getup.done)getup.finish('Arrêt demandé — retour au MVP');getup.dispose();getup=null;physics.model.opt.timestep=.00125;}release();physics.reset();paused=true;failed=false;accumulator=0;$('#error').hidden=true;refresh();};
+$('#reset').onclick=()=>{if(!physics||getupBusy||getupLoading)return;if(getup){if(!getup.done)getup.finish('Arrêt demandé — retour au MVP');getup.dispose();getup=null;physics.model.opt.timestep=.00125;}release();physics.setMode($('#mode').value);physics.reset();paused=true;failed=false;accumulator=0;$('#error').hidden=true;refresh();};
 window.addEventListener('blur',()=>{release();paused=true;accumulator=0;refresh();});document.addEventListener('visibilitychange',()=>{if(document.hidden){release();paused=true;accumulator=0;refresh();}});
 window.addEventListener('keydown',e=>{if(e.target.matches('input,select,button'))return;if(e.code==='Space'){e.preventDefault();$('#pause').click();}if(e.code==='KeyP')$('#push').click();if(e.code==='KeyR')$('#reset').click();});
 // During the local cycle, this is the ONLY stepping path. Physics.step()/balance
@@ -67,6 +67,7 @@ function refreshGetup(){
 }
 if(localGetup){
  document.body.classList.add('local-getup');
+ document.querySelector('footer').textContent='Essai GetUp local depuis un départ connu. Aucun relevage général ni marche validée.';
  $('#getup-panel').hidden=false;
  $('#getup-start').onclick=async()=>{
   if(!physics||getupStarted||getupBusy||getupLoading)return;

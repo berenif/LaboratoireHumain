@@ -272,3 +272,38 @@ reference generated from the failed WEAK rollout as a stable teacher.
 Existing ledger/poses prohibit a repeated run. No physical validation is implied
 by the pure check. No Library retry, public package or deployment is part of this
 local experiment; GetUp rights and the official media-transfer403 remain blockers.
+
+### Browser acceptance result (one execution, no retry)
+
+Runtime commit a3a9a68, Chromium1440x1000, official WASM3.17.0: 400 passive +
+9800 SLOW =10200 actual steps. No extra preparation or forecasts. Confirmed
+MuJoCo187459 PLUS the prior unknown run; Rapier45735 unchanged. The subsequent
+UI reset/pure checks integrated zero steps. `getup-browser-cycle/ledger.json`
+has completed=true,pendingMaxTicks=0, and a final233-value integration state.
+
+All571 sampled qpos, qvel and ctrl vectors are EXACTLY equal to af04325, as is
+the complete final integration state. Thus the UI extraction did not change the
+recorded trajectory. Sole initial restoration, continuous time and full state
+preservation at200→800Hz passed. All21 applied efforts respected gears/caps;
+maxratio1, gear error0, root actuation/external applied forces0 per tick.
+
+Terminal reception at18.850s; no new flight after that reception observed at40Hz.
+150 final observation samples,85 consecutive calm samples at the end (2.125s
+sample-count convention;2.100s between first/last sample). Final head1.45168m,
+tilt1.789deg,COMspeed.01321m/s,loads R211.62/L189.04N. This observed reception
+and calm is distinct from the unchanged historical automatic FAIL. Neither a
+reference from a stable teacher nor arbitrary-fall robustness is established.
+
+UI evidence: local-only opt-in, default path no weights fetched, paused
+mode/reset/camera/grab/release checks, physical cycle through the button, command
+selection/push locked during the cycle, persistent terminal report, no ticks
+while paused after completion, explicit reset returns to MVP. A final pure fix
+also preserves the previously selected passive/balance mode across that reset.
+No phone test or deployment occurred.
+
+Video LaboratoireHumain-GetUp-navigateur.mp4:915710bytes,1280x720,40fps,16.275s.
+It replays only measured poses:14.25s physical movement plus final frame/2s
+explicit EN PAUSE display. Beginning/fall/moving/reception/final/paused frames
+were decoded from the MP4 and visually inspected; body and ground remain visible.
+The UI screenshot shows the persistent report. No extra physical replay, weights
+inside media, upload attempt or new Library ID. Official helper403 remains.
