@@ -69,11 +69,16 @@ fn run(input:&Path,out:&Path,preflight_only:bool,placement:Option<&Path>)->Resul
     let duration=after_admission["ownership"]["step"]["reference"]["duration"].as_f64().ok_or("Missing reference duration")?;
     let reference_elapsed=after_admission["ownership"]["step"]["reference"]["elapsed"].as_f64().ok_or("Missing reference elapsed")?;
     let remaining_seconds=pilot_remaining.min(if resume6330{1856}else{2000}) as f64*0.00125;
-    let horizon_error=if admission.is_ok() && duration-reference_elapsed>remaining_seconds {Some(format!("Reference needs {} s, original pilot/reserve has {remaining_seconds} s; no compression/reset/extension",duration-reference_elapsed))} else {None};
+    let horizon_error=if !resume6330 && admission.is_ok() && duration-reference_elapsed>remaining_seconds {Some(format!("Reference needs {} s, original pilot/reserve has {remaining_seconds} s; no compression/reset/extension",duration-reference_elapsed))} else {None};
     let mut preflight=json!({"restoration":restored,"nativeBefore":before["nativeCompleted"],
         "originalStartedNative":started,"originalPilotRemainingNative":pilot_remaining,"referenceRemainingSeconds":duration-reference_elapsed,"availableSeconds":remaining_seconds,
         "commandAdmitted":admission.is_ok(),"horizonError":horizon_error,"acknowledgement":admission.as_ref().ok().and_then(|s|serde_json::from_str::<Value>(s).ok()),"error":admission.as_ref().err(),"commands":budget::step_command_diagnostics(),
         "ledger":budget::snapshot()?});
+    if resume6330 {
+        let path=&before["ownership"]["step"]["placement"];
+        preflight["preservedPlacementDeadlineNative"]=json!(path["entryNative"].as_u64().ok_or("Missing placement entry")? as f64+path["durationSeconds"].as_f64().ok_or("Missing placement duration")?/0.00125);
+        preflight["horizonPolicy"]=json!("Saved path and Reception deadlines remain authoritative; nominal reference duration is not a requirement to finish before the next valid command");
+    }
     if let Some(path)=placement {
         let plan:Value=serde_json::from_slice(&std::fs::read(path).map_err(|e|e.to_string())?).map_err(|e|e.to_string())?;
         preflight["postSeparationPlacement"]=json!({"entryNative":plan["entryNative"],"durationSeconds":plan["durationSeconds"],"descentAtSeconds":plan["descentAtSeconds"],"fullPostSeparationCommandVerified":false,"runtimeAuthorized":!preflight_only});
