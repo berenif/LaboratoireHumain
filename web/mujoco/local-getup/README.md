@@ -381,3 +381,44 @@ whole body/ground visible, small bounded sway and loaded feet, final caption
 in header so it does not obscure the head. The earlier render with an overlapping
 caption remains preserved; the `-maintien` video is the delivery candidate.
 No Library attempt/ID (known403 restriction), site change or weights package.
+
+## Live cycle → continuation validation — incomplete, no retry
+
+The single authorized browser execution used harness899229c and the unchanged
+872d878 application/controllers. It completed10200 real steps, t8.25→22.50s:
+400 passive plus9800 SLOW, zero forecasts. All571 recorded cycle geometries,
+qpos, qvel and commands match the preceding browser-cycle recording. Terminal
+reception18.850s and final85 calm samples (2.125s sample-count convention) were
+observed again. The cycle's final pause froze the entire233-value integration
+state and counters over the measured wall-time pause.
+
+The actual “Continuer SLOW” click attached a new continuation to the SAME living
+Physics object, with exactly the same233-value integration state, no checkpoint
+restore and zero intermediate mj_setState calls. However, the harness interpreted
+the previous cycle's done=true during the asynchronous module import as an end
+of the new continuation. Its assertion then stopped the attempt using the
+existing blur/pause handler. The saved state proves continuation0, pulse0,
+worldsteps10200, pending0, paused=true; it equals the cycle final state exactly.
+There is no ambiguous ongoing execution. This is a validation-script failure,
+not an observed physical failure of the continuation, and not a complete PASS.
+
+Only the harness wait was corrected to require continuation===true before
+accepting its pause/terminal event, while retaining an independent app-failure
+exit. `node scripts/verify-getup-live-journey.mjs --check-waits` checks seven
+states, including the stale completed cycle, with ZERO integrations. No second
+physical run was performed. Pause/camera/resume DURING the scheduled pulse and
+the complete live continuation remain unvalidated by this attempt. The earlier
+4000-step checkpoint continuation result and historical af04325 FAIL stay intact.
+
+Evidence: `web/proofs/getup-live-journey/ledger.json`, `cycle-final.json`,
+`stopped-state.json`, progressive compressed poses, and compact audit. A partial
+video/capture replays ONLY these actual geometries at40Hz, with no physics,
+interpolation, omitted physical phase or invented continuation. The duplicate
+zero-duration handoff sample is omitted only from rendering. The final caption
+explicitly states interruption before continuation/push; it is not a screenshot
+of the original UI, whose browser closed after the harness failure.
+
+New10200 steps; confirmed MuJoCo201659 PLUS the unchanged old unknown run.
+Rapier45735 remains frozen. Application, controllers, reference, weights,
+deployed private site and all historical results remain unchanged. No transfer
+was attempted under the known403 restriction; no new Library ID exists.

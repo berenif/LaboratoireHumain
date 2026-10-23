@@ -1,5 +1,24 @@
 // Existing UI journey only. No controller replacement. --run is a single trial.
 import fs from 'node:fs';import assert from 'node:assert/strict';import crypto from 'node:crypto';import {execFileSync} from 'node:child_process';import {gzipSync,gunzipSync} from 'node:zlib';
+// The previous cycle remains done while the asynchronous continuation import
+// is pending. Its terminal flag is not a continuation event.
+function continuationEventReady(){
+ const s=window.__lhMujoco.state;
+ if(document.querySelector('#reset').disabled)return false;
+ return !!(s.failed||(s.getup?.continuation===true&&(window.__journey.pauseClickAccepted||s.getup.done)));
+}
+if(process.argv.includes('--check-waits')){
+ const evaluate=new Function('window','document',`return (${continuationEventReady.toString()})();`);
+ const check=(getup,{failed=false,disabled=false,pause=false}={})=>evaluate({__lhMujoco:{state:{getup,failed}},__journey:{pauseClickAccepted:pause}},{querySelector:()=>({disabled})});
+ assert.equal(check({done:true}),false,'Old completed cycle must not terminate continuation wait');
+ assert.equal(check({done:true},{disabled:true}),false);
+ assert.equal(check({continuation:true,done:false}),false);
+ assert.equal(check({continuation:true,done:false},{pause:true}),true);
+ assert.equal(check({continuation:true,done:false},{pause:true,disabled:true}),false);
+ assert.equal(check({continuation:true,done:true}),true);
+ assert.equal(check({done:true},{failed:true}),true,'Load failure must still escape wait');
+ console.log(JSON.stringify({waitRegression:true,cases:7,ticks:0}));process.exit(0);
+}
 const {chromium}=await import('/opt/codex/cua_node/lib/node_modules/playwright/index.mjs');
 const dir='web/proofs/getup-live-journey',run=process.argv.includes('--run'),before=191459,max=14200;
 const disk=()=>Number(execFileSync('du',['-s','-B1','/workspace'],{encoding:'utf8'}).split(/\s/)[0])-419647488;
@@ -92,7 +111,7 @@ try{
   await page.waitForTimeout(150);assert.deepEqual(await page.evaluate(()=>window.__journeyInspect()),pausedCycle);
   ledger.cyclePause={physicsFrozen:true,t:pausedCycle.time,ticks:pausedCycle.physicsSteps};write('ledger.json',ledger);
   assert(await page.locator('#getup-continue').isEnabled());await page.click('#getup-continue');
-  await page.waitForFunction(()=>window.__journey.pauseClickAccepted||((window.__lhMujoco.state.getup?.done||window.__lhMujoco.state.failed)&&!document.querySelector('#reset').disabled),{},{timeout:90000});
+  await page.waitForFunction(continuationEventReady,{},{timeout:90000});
   assert(await page.evaluate(()=>window.__journey.pauseClickAccepted),'Did not pause during pulse');
   const paused=await page.evaluate(()=>window.__journeyInspect());assert.equal(paused.pushAppliedTicks,40);assert.equal(paused.physicsSteps,11040);assert(paused.paused&&paused.push);
   await page.click('#zoom-in');const camera=await page.evaluate(()=>window.__lhMujoco.state.camera);assert.notDeepEqual(camera,paused.camera);
