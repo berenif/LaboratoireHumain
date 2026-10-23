@@ -178,3 +178,61 @@ Library `libfile_142bcb53156081919b67d724ac5c17af`. Beginning, fallen state, com
 resumption, returned-standing state and final fall checked visually. Caption:
 replay of recorded poses, real speed; no new simulation. No weights in video,
 no package/push/deployment, GetUp rights still unresolved.
+
+## Continuous passive fall → existing SLOW (single approved iteration)
+
+`run-getup-continuous-slow.mjs` reuses the same entry, model, actor reader,
+observations and source PD. No new teacher, gains, model or controller. The
+candidate comes from the FAILED preceding WEAK cycle. Existing
+measured_teacher_frames/source_retime selects170 post-decision samples from
+10.275s through the first head>1.4m at14.475s plus one at14.500s. Speed.5 gives
+340 targets /8.5s. Its last measured state is AIRBORNE: right foot minimum8.03mm,
+left58.51mm, no solved loads. It is not a stable teacher or validated landing
+trajectory. The terminal target remains existing standingPose/sentinel1.4/001.
+
+Preflight checks the timestep setter leaves all233 integration-state values
+unchanged. Actual trial restores only the same standing entry before the cycle.
+After400 passive ticks, qpos/qvel/time match the previous trial exactly. In this
+same world the timestep changes200→800Hz: full integration state preserved,
+no qpos/qvel installation, no scaled physical velocity or warmstart reset.
+The retimed qvel exists only in the reference file. SLOW40Hz/PD800Hz, kd.1/.2,
+21 motors and source caps unchanged; applied root/generalized/body assistance0.
+
+Observation: full340 moving +150 holding decisions completed. No fall during
+the3.75s observation. At reference end t18.75s a flight already started at18.70s
+continues: minima R15.4/L40.1mm. First loaded right contact18.825s (1181N),
+bilateral18.85s (R808/L141N); both feet stay loaded through22.50s, with no new
+flight or nonfoot support after landing. Reactions refer to the last solved
+substep; geometry is refreshed after it (1.25ms stage difference in SLOW).
+
+The predeclared AUTOMATIC verdict remains false: it rejected ANY airborne
+sample after the reference, including two samples from this pre-existing
+flight, rather than distinguishing a new flight after reception. We do not
+rewrite this verdict or tune/retry. Measured reception is nevertheless retained:
+3.65s bilateral support and final85 consecutive40Hz calm samples (2.125s).
+Calm means bilateral>=3N each, summed feet>=.8bodyweight, no nonfoot>=3N,
+head>1.4m, torso tilt<20deg, COM speed<.05m/s, root angular speed<.5rad/s.
+No displacement veto. Final head1.452m, tilt1.789deg, COM speed.01321m/s,
+loads R211.62/L189.04N. Last1s maxCOMspeed.02368m/s; tilt.975–1.789deg.
+Foot-origin drift since bilateral reception R37.88/L35.61mm (not exact contact
+slip). This is not proof of fixed-foot equilibrium or arbitrary-fall recovery.
+
+Per-tick torque/gear equality and21 caps passed (maxfraction1); rootactuation
+and external forces remained zero, finite state/time continuity passed.
+New400 passive+9800 SLOW=10200 ticks, preparation0; confirmed177259 PLUS old
+unknown run retained. Rapier45735 unchanged. No second attempt.
+
+Evidence under `web/proofs/getup-continuous-slow/`: reference+audit, preflight,
+progressive ledger/571 poses at40Hz, fallen/holding/final full states. Video
+`LaboratoireHumain-SLOW-cycle-observe.mp4` shows all14.25s physical cycle at real
+speed (file14.275s includes last frame), no interpolation or physics replay.
+The original rendering's automatic-failure caption is preserved in
+`LaboratoireHumain-SLOW-cycle-continu.mp4`; the delivery rendering changes only
+that final caption to observed reception/calm duration, not the recorded motion
+or ledger verdict. Six-frame board and final PNG extracted from delivery MP4
+and visually inspected. No omitted phase. Côté mapping R=body7/L=body10.
+
+Official Library batch helper failed before upload confirmation:
+`hosted apps tools/list request failed: network`. No confirmed Library IDs and
+no switch to another transfer route. Local deliverables remain available.
+No weights packaged, deployment, public push, installation or site change.
