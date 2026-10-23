@@ -1013,7 +1013,35 @@ fn command_for_family(s:&Simulation,baseline:&(Reference,[f32;21]),nominal:&(Ref
 fn command_for_family_mode(s:&Simulation,baseline:&(Reference,[f32;21]),nominal:&(Reference,[f32;21]),side:usize,exclusive:bool,unload:bool,warm:&[Reaction],com_goal:Vector,clearance_goal:f32,limited:bool)->Result<CommandProposal,String> {
     let mut record=serde_json::json!({"limitedPlacementExperiment":limited,"native":s.substeps_completed,"nominalReference":nominal.0,
         "baselineReference":baseline.0,"side":side,"exclusive":exclusive,"units":"world N / Nm about torso origin"});
-    let result=command_for_family_recorded(s,baseline,nominal,side,exclusive,unload,warm,com_goal,clearance_goal,&mut record);
+    let mut result=command_for_family_recorded(s,baseline,nominal,side,exclusive,unload,warm,com_goal,clearance_goal,&mut record);
+    // Experimental limited following only: a failed preference search does not
+    // prove that its alpha=0 endpoint is infeasible. Re-solve that endpoint at
+    // CURRENT q/dq and contacts, including free-base equations and full RNEA.
+    // Commit the complete proposal together; never reuse old forces/controls.
+    if limited && result.is_err() {
+        let primary_error=result.as_ref().err().cloned();
+        let mut fallback=serde_json::json!({"limitedPlacementExperiment":true,"native":s.substeps_completed});
+        let candidate=command_for_family_recorded(s,baseline,baseline,side,exclusive,unload,warm,com_goal,clearance_goal,&mut fallback);
+        if candidate.is_ok() {
+            let (q,dq)=super::joint_state(s)?;
+            let accepted:[f32;21]=serde_json::from_value(fallback["desiredAcceleration"].clone()).map_err(|e|e.to_string())?;
+            fallback["accelerationTaskResidualRadps2"]=serde_json::json!(std::array::from_fn::<_,21,_>(|i|nominal.1[i]+16.*(nominal.0.q[i]-q[i])+8.*(nominal.0.dq[i]-dq[i])-accepted[i]));
+            fallback["requestedNominalReference"]=serde_json::json!(nominal.0);
+            fallback["requestedReferenceAcceleration"]=serde_json::json!(nominal.1);
+            fallback["fallbackUsed"]=serde_json::json!(true);
+            fallback["fallbackParameterization"]=serde_json::json!("current-state baseline endpoint; original family alpha=0; allocator alpha is local to identical endpoints");
+            fallback["effectiveOriginalFamilyAlpha"]=serde_json::json!(0.);
+            fallback["primarySearchError"]=serde_json::json!(primary_error);
+            // Preserve exact failed-search diagnostics without calling it an
+            // applied command or claiming improved tracking.
+            fallback["primarySearch"]=record;
+            record=fallback;
+            result=candidate;
+        } else {
+            record["baselineFallbackError"]=serde_json::json!(candidate.as_ref().err());
+            record["baselineFallback"]=fallback;
+        }
+    }
     record["error"]=serde_json::json!(result.as_ref().err());
     record["controls"]=serde_json::json!(result.as_ref().ok().map(|x|x.0));
     #[cfg(feature="numeric-integration-budget")]
@@ -1830,5 +1858,51 @@ mod limited027_tests {
   }
   assert!(maximum_v>0.5 && maximum_a>2.);
   println!("LIMITED027_PURE {}",serde_json::json!({"physicsIntegrations":0,"precontactBitIdentical":true,"curveSamples":441,"maxDesiredSpeed":maximum_v,"maxDesiredAcceleration":maximum_a,"worldUnchanged":world==bincode::serialize(&s.world).unwrap(),"full6309Allocation":"requires live state; no reconstructed checkpoint claimed"}));
+ }
+}
+
+#[cfg(all(test,feature="getup-native-locomotion-experiment",feature="numeric-integration-budget"))]
+mod stop6330_diagnostic {
+ use super::*;
+ #[test] #[ignore="pure exact6330 retained command/current contacts; no Rapier tick"]
+ fn stop6330_pure_revalidate_previous_intention() {
+  let root=std::env::var("LH_RECEPTION_PROOFS").unwrap();
+  let bytes=std::process::Command::new("gzip").args(["-d","-c"]).arg(format!("{root}/limited027-trial.stop.bin.gz")).output().unwrap();assert!(bytes.status.success());
+  let rt=crate::runtime::Runtime::from_getup_checkpoint(&bytes.stdout).unwrap();let s=rt.simulation();assert_eq!(s.substeps_completed,6330);
+  let world=bincode::serialize(&s.world).unwrap();let obs=super::super::locomotion::observation(s).unwrap();let st:State=serde_json::from_value(obs["ownership"]["step"].clone()).unwrap();
+  let previous=(st.reference.clone(),st.reference_acceleration);
+  let mut advancing=previous.clone();let dt=s.profile.dt_s;
+  for i in 0..21 {advancing.0.q[i]+=previous.0.dq[i]*dt+0.5*previous.1[i]*dt*dt;advancing.0.dq[i]+=previous.1[i]*dt;}
+  let brake=st.reference.braking_proposal_mode(dt,&joint_bounds(s),true).unwrap();
+  let (nom,a,_,com,_) =st.placement.as_ref().unwrap().sample(s.substeps_completed,dt,&st.reference).unwrap();let nominal=(nom,a);
+  let mut records=vec![];
+  for (name,base,goal) in [("current-family",&brake,&nominal),("last-reference-current-state",&previous,&previous),("last-intention-advanced",&advancing,&advancing),("brake-only",&brake,&brake)] {
+   let mut record=serde_json::json!({"limitedPlacementExperiment":true,"native":6330,"case":name});
+   let result=command_for_family_recorded(s,base,goal,st.side,st.separated,true,&st.last_reactions,com,SOLE_GUARD,&mut record);
+   record["error"]=serde_json::json!(result.as_ref().err());record["controls"]=serde_json::json!(result.as_ref().ok().map(|r|r.0));
+   println!("STOP6330_CASE {}",serde_json::json!({"case":name,"error":record["error"],"iterations":record["coneIterations"],"alpha":record["alpha"],"forceResidual":record["rneaResidualForceN"],"momentResidual":record["rneaResidualMomentNm"]}));records.push(record);
+  }
+  let admitted=command_for_family_mode(s,&brake,&nominal,st.side,st.separated,true,&st.last_reactions,com,SOLE_GUARD,true).unwrap();
+  let fallback=crate::integration_budget::last_step_command().unwrap();
+  assert_eq!(fallback["fallbackUsed"],true);assert_eq!(fallback["effectiveOriginalFamilyAlpha"],0.);
+  assert_eq!(serde_json::to_value(&admitted.1).unwrap(),serde_json::to_value(&brake.0).unwrap());
+  assert_eq!(admitted.2,brake.1);
+  for part in &s.model.segments {if let Some(h)=part.reference.as_ref().and_then(|r|r.hinge.as_ref()) {
+   let cap=(part.joint_profile.as_ref().unwrap().axes[0].max_motor_torque_nm/h.gear.abs()).min(1.);
+   assert!(admitted.0[h.actuator_index].is_finite() && admitted.0[h.actuator_index].abs()<=cap);
+  }}
+  // Exercise the real owner path too: one atomic reference/reaction commit,
+  // no Rapier integration and no mutation of the restored world.
+  let mut owner=st.clone();let controls=owner.command(s).unwrap();
+  assert_eq!(controls,admitted.0);assert_eq!(owner.last_native,6330);
+  assert_eq!(serde_json::to_value(&owner.reference).unwrap(),serde_json::to_value(&admitted.1).unwrap());
+  assert_eq!(owner.reference_acceleration,admitted.2);
+  assert_eq!(crate::integration_budget::last_step_command().unwrap()["appliedExactlyMatchesAllocation"],true);
+  let residual:Vec<f32>=serde_json::from_value(fallback["accelerationTaskResidualRadps2"].clone()).unwrap();
+  assert!(residual.iter().any(|x|x.abs()>1.));
+  println!("STOP6330_FALLBACK {}",serde_json::json!({"iterations":fallback["coneIterations"],"trackingResidualRadps2":residual,"dynamicTorqueNm":fallback["dynamicTorqueNm"],"forceResidual":fallback["rneaResidualForceN"],"momentResidual":fallback["rneaResidualMomentNm"]}));
+  assert_eq!(world,bincode::serialize(&s.world).unwrap());assert_eq!(obs,super::super::locomotion::observation(s).unwrap());
+  let out=serde_json::to_vec(&serde_json::json!({"physicsIntegrations":0,"native":6330,"worldUnchanged":true,"records":records})).unwrap();assert!(out.len()<250_000);
+  std::fs::write(format!("{root}/stop6330-pure-diagnostic.json"),out).unwrap();
  }
 }
