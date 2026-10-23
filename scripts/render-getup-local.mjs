@@ -1,0 +1,36 @@
+// Replay of measured geometries only. No physics module is loaded.
+import fs from 'node:fs';import assert from 'node:assert/strict';import{spawn}from'node:child_process';import{once}from'node:events';
+const{chromium}=await import('/opt/codex/cua_node/lib/node_modules/playwright/index.mjs');
+const dir='web/proofs/getup-weak-seed10',ledger=JSON.parse(fs.readFileSync(`${dir}/ledger.json`));assert(ledger.completed&&ledger.pendingMaxTicks===0);
+const all=fs.readFileSync(`${dir}/poses.ndjson`,'utf8').trim().split('\n').map(JSON.parse),slow=all.filter(r=>r.phase.startsWith('SLOW')),rows=slow.length?slow:all.filter(r=>r.t>=2-1e-8);
+for(let i=1;i<rows.length;i++)assert(Math.abs(rows[i].t-rows[i-1].t-.025)<1e-8);
+const output=`${dir}/LaboratoireHumain-GetUp-relevage.mp4`;assert(!fs.existsSync(output),'Existing video');
+const browser=await chromium.launch({headless:true,executablePath:'/usr/bin/chromium',args:['--no-sandbox']});
+const page=await browser.newPage({viewport:{width:1280,height:720},deviceScaleFactor:1});await page.setContent('<html><body style="margin:0"><canvas width="1280" height="720"></canvas></body></html>');
+await page.evaluate(({rows,isSlow,passed})=>{
+ const canvas=document.querySelector('canvas'),c=canvas.getContext('2d');
+ // Same capsule/sphere painter as the application, camera fitted to all actual geometry.
+ const yaw=.65,pitch=.26,cy=Math.cos(yaw),sy=Math.sin(yaw),cp=Math.cos(pitch),sp=Math.sin(pitch);
+ const basis=p=>[p[0]*cy+p[1]*sy,p[2]*cp-(p[0]*sy-p[1]*cy)*sp,p[2]*sp+(p[0]*sy-p[1]*cy)*cp];
+ const pts=rows.flatMap(r=>r.geoms.flatMap(g=>[g.a,g.b].flatMap(p=>[basis([p[0]-g.radius,p[1]-g.radius,p[2]-g.radius]),basis([p[0]+g.radius,p[1]+g.radius,p[2]+g.radius])])));
+ const min=[0,1].map(k=>Math.min(...pts.map(p=>p[k]))),max=[0,1].map(k=>Math.max(...pts.map(p=>p[k]))),scale=Math.min(900/(max[0]-min[0]),470/(max[1]-min[1])),mid=min.map((v,k)=>(v+max[k])/2);
+ const project=p=>{const v=basis(p);return{x:640+(v[0]-mid[0])*scale,y:365-(v[1]-mid[1])*scale,depth:v[2]};};
+ const line=(a,b,color,width)=>{c.strokeStyle=color;c.lineWidth=width;c.beginPath();c.moveTo(a.x,a.y);c.lineTo(b.x,b.y);c.stroke();};
+ window.drawFrame=index=>{
+ const row=rows[index];c.fillStyle='#e7e3d8';c.fillRect(0,0,1280,720);c.lineCap='round';
+ for(let i=-12;i<=12;i++){line(project([i*.25,-3,0]),project([i*.25,3,0]),'#bdc4b5',1);line(project([-3,i*.25,0]),project([3,i*.25,0]),'#bdc4b5',1);}
+ const parts=row.geoms.map(g=>({...g,pa:project(g.a),pb:project(g.b),r:g.radius*scale}));
+ for(const p of parts)line(project([p.a[0],p.a[1],.001]),project([p.b[0],p.b[1],.001]),'#72827133',p.r*1.6);
+ parts.sort((a,b)=>(b.pa.depth+b.pb.depth)-(a.pa.depth+a.pb.depth));
+ for(const p of parts){const col=p.name.includes('head')?'#d8cbb1':p.name.includes('foot')?'#709d86':'#9fc7b9';line(p.pa,p.pb,'#31554e',2*p.r+2);line(p.pa,p.pb,col,2*p.r);if(Math.hypot(p.pa.x-p.pb.x,p.pa.y-p.pb.y)<.1){c.fillStyle=col;c.beginPath();c.arc(p.pa.x,p.pa.y,p.r,0,Math.PI*2);c.fill();}}
+ c.fillStyle='#142c32';c.fillRect(0,0,1280,100);c.fillRect(0,638,1280,82);c.fillStyle='#f0f5f2';c.font='bold 27px sans-serif';
+ c.fillText(isSlow?'GetUp SLOW — relevage puis maintien de 3,75 s':'GetUp WEAK — résultat réel du relevage',32,40);
+ c.font='18px sans-serif';c.fillStyle='#bed2cd';c.fillText(isSlow?'Épisode distinct depuis une pose WEAK mesurée · aucun relais vers notre équilibre':'Une seule tentative · aucune assistance au bassin',32,76);
+ c.fillStyle='#f0f5f2';c.font='21px sans-serif';const phase=row.phase==='SLOW-holding'?'Maintien natif SLOW':isSlow?'Relevage SLOW':'Relevage WEAK';
+ c.fillText(phase,32,670);c.fillText(`Temps simulé : ${row.t.toFixed(3)} s`,960,670);
+ c.fillStyle='#bed2cd';c.font='17px sans-serif';c.fillText('Relecture des poses enregistrées à 40 Hz · vitesse réelle · aucune simulation rejouée',32,702);
+ if(index===rows.length-1){c.fillStyle='#142c32';c.fillRect(800,112,450,42);c.fillStyle='#f0f5f2';c.font='20px sans-serif';c.fillText(passed?'Maintien traversé sans retomber':'Objectif de maintien non atteint',815,140);}
+ };
+},{rows,isSlow:!!slow.length,passed:!!ledger.slow?.passed});
+const ff=spawn('ffmpeg',['-hide_banner','-loglevel','error','-f','image2pipe','-vcodec','png','-framerate','40','-i','pipe:0','-an','-c:v','libx264','-preset','fast','-crf','21','-pix_fmt','yuv420p','-movflags','+faststart',output],{stdio:['pipe','inherit','inherit']});
+try{for(let i=0;i<rows.length;i++){await page.evaluate(i=>window.drawFrame(i),i);const b=await page.screenshot({type:'png'});if([0,Math.floor(rows.length/2),rows.length-1].includes(i))fs.writeFileSync(`${dir}/video-check-${i}.png`,b);if(!ff.stdin.write(b))await once(ff.stdin,'drain');}ff.stdin.end();const [code]=await once(ff,'exit');assert.equal(code,0);console.log(JSON.stringify({output,frames:rows.length,seconds:rows.length/40,bytes:fs.statSync(output).size}));}finally{await browser.close();}

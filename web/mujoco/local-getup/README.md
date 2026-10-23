@@ -64,3 +64,71 @@ run. Rapier45,735 unchanged. Durable result and entry state hash/data:
 `web/proofs/slow-holding-comparison.json`; pending count0 on completed exit.
 Other evidence: `slow-local-parity.json`, `slow-local-browser.json`.
 The normal UI/default controller and deployed site are unchanged.
+
+## Seed10 WEAK → measured-reference SLOW (local, 23 October 2026)
+
+Approved single WEAK episode and single SLOW reprise, no tuning. Scripts:
+`run-getup-weak-local.mjs`, `verify-getup-weak-browser.mjs`,
+`getup-step/local_seed_reference.py`, `render-getup-local.mjs`.
+The normal UI, build, active balance controller and deployed site are unchanged.
+
+Preparation reuses the actual `source_positive_control.sample_pose` AST with
+NumPy RandomState(10), compiled model joint order/ranges and contact rejection.
+The first candidate is accepted. The full source high-frequency XML is retained;
+its presentation includes/materials are removed exactly as in the MVP build.
+For WEAK only, timestep becomes .005 and Euler is explicit. Static historical
+XML and old initial state remain unavailable; this is MuJoCo 3.17.0, not a claim
+of identical 2.1.3 dynamics. Source `mj_step2 -> mj_step1` stepping is used.
+WEAK physical67+power feeds teacher68, 40Hz decisions, five 200Hz substeps,
+power .663420431 once, direct actuator controls without PD or root assistance.
+Chromium 16 WEAK fixtures: raw2.670288e-5/action3.293157e-6, zero ticks.
+
+WEAK: 400 passive +1250 active ticks =8.25s. At the active entry head=.20153m,
+torso-up=.02057 (lying, not advertised as a prescribed prone pose). First head
+above1.4m after .975s; 3.825s continuous upright bilateral foot support observed.
+Final head1.47744m, tilt3.258deg; right foot alone loaded446.67N at the final
+sample while the other readjusts. An initial software gate requiring bilateral
+load at this exact final instant marked false; the original ledger is preserved
+in `weak-completed-original-ledger.json`. This gate contradicted the approved
+permission for foot readjustments. Qualification was corrected using the actual
+standing interval and final upright foot-only support, with no WEAK rerun,
+gain or seed change. This does not qualify WEAK as a quiet fixed-foot controller.
+
+SLOW: measured post-decision teacher frames through head>1.4m plus one extra
+frame. The common `reference.measured_teacher_frames` collector no longer assumes
+40/80 frames; this actual trial happens to give40 measured ->80 cubic frames
+at speed .5, through the existing source_retime. Pure recomputation is identical
+for all recorded reference arrays; a6-frame case and missing-extra-frame rejection
+also pass. A distinct SLOW episode initializes from the first measured posture
+and source-retimed velocity (qvel ×.5); no solver cache is copied across rates.
+No state is rewritten during either episode. This is a reprise, not a hidden
+continuation from the final WEAK standing state.
+
+SLOW student118 uses current/+5 targets, terminal sentinel1.4,40Hz inference,
+800Hz PD kd.1 moving/.2 holding,21 bounded motor controls.80 moving decisions
++150 holding decisions =4600 ticks /5.75s. All150 holding samples are upright
+on both feet, no nonfoot support, no fall, no balance-controller fallback.
+Final head1.44924m, tilt2.243deg, COM speed.001456m/s, foot loads204.41/196.28N.
+During the3.75s hold: maximum tilt17.034deg, COM speed.17675m/s, foot-origin drift
+54.73/32.93mm (readjustments allowed; not exact contact slip). Final1s: max COM
+speed.004060m/s, tilt2.236–2.267deg, foot-origin drift1.341/.991mm. Thus the
+observed motion settles; it does not demonstrate arbitrary-pose get-up or
+long-term balance. No 30mm drift veto was used.
+
+Every integrated substep checked actuator gear×control torque equality (max
+error0), finite state and unactuated six root coordinates, with all applied
+external generalized/body forces zero. Max cap fractionWEAK=.66342044;
+SLOW reaches1 during the motion. At40Hz holding samples none is saturated;
+this does not claim absence of saturation between sampled holding commands.
+
+Durable local evidence: `web/proofs/getup-weak-seed10/` preflight, ledger,
+initial/final mjSTATE_INTEGRATION snapshots, teacher/reference arrays and
+progressively flushed poses/contacts at40Hz. New6250 ticks; confirmed MuJoCo
+165444 PLUS unchanged unknown historical run. Rapier45735 unchanged.
+
+Video: `LaboratoireHumain-GetUp-relevage.mp4`,331946bytes,5.775s,1280×720/40fps.
+It shows only the continuous SLOW episode, replaying recorded real geometries
+in the browser renderer; no physics replay or pose interpolation. Beginning,
+middle and end visually checked. Library `libfile_71395547e5508191b644368d8e38b20b`.
+Weights/sources are not embedded in the video or published; rights remain
+unresolved. No new dependencies, public push or deployment.

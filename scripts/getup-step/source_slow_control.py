@@ -12,7 +12,7 @@ from actors import DenseActor
 from native_env import ROOT,atomic_json,sha256
 from source_engine import World as TeacherWorld,old,torch_actor
 from source_math import ORDER,slow_controls,student_observation,source_terminal
-from reference import source_retime,UniformReference
+from reference import source_retime,UniformReference,measured_teacher_frames
 from source_positive_control import validate_source_frame
 
 HOLD_DECISIONS=240
@@ -45,19 +45,13 @@ class SlowWorld(TeacherWorld):
 
 def reference_from_measured_teacher(base):
     rows=[json.loads(s)for s in(base/'corrected-attempt/positive-control-frames.ndjson').read_text().splitlines()]
-    frames=[];end_next=False
-    for r in rows:
-        if r['stage']!='frozen-WEAK-getup'or r['hold']!=4:continue
-        frames.append(r)
-        if end_next:break
-        if r['physicalObservation'][21]>1.4:end_next=True
-    if not end_next or len(frames)!=40:raise ValueError('actual source collector did not match40-frame admission')
+    frames=measured_teacher_frames(rows)
     trajectory=dict(qpos=np.array([r['qpos']for r in frames]),qvel=np.array([r['qvel']for r in frames]),com=np.array([r['comSource']for r in frames]),com_ori=np.array([r['physicalObservation'][34:37]for r in frames]))
     data=source_retime(trajectory,.5)
     model=json.loads((ROOT/'rust/crates/model/data/getup-v1.json').read_text());standing=np.array(model['referenceMetadata']['standingPose'])
     terminal=np.r_[standing,1.4,0.,0.,1.]
     ref=UniformReference(data,terminal,kind='source-fixture')
-    if ref.length!=80:raise ValueError('SLOW length differs from source speed.5')
+    if ref.length!=math.ceil(len(frames)/.5):raise ValueError('SLOW length differs from measured source speed.5')
     return ref,standing,frames
 
 

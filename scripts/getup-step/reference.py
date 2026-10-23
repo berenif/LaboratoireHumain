@@ -25,6 +25,30 @@ def source_retime(trajectory,speed):
     return result
 
 
+def measured_teacher_frames(rows):
+    """Source collector: post-decision measurements through height threshold + one.
+
+    Length belongs to the measured rollout, never to the old seed10 fixture.
+    This extracts a reference; callers must separately qualify the real get-up.
+    """
+    frames=[]; extra=False
+    for row in rows:
+        if 'stage' in row and (row['stage']!='frozen-WEAK-getup' or row['hold']!=4):
+            continue
+        frames.append(row)
+        if extra:
+            break
+        physical=row.get('physicalObservation',row.get('physical'))
+        if physical[21]>1.4:
+            extra=True
+    if len(frames)<4 or not extra:
+        raise ValueError('Measured teacher needs >=4 frames and height threshold')
+    prior=frames[-2].get('physicalObservation',frames[-2].get('physical'))
+    if prior[21]<=1.4:
+        raise ValueError('Measured teacher missing the extra post-threshold frame')
+    return frames
+
+
 @dataclass
 class PhaseClock:
     tau:float
