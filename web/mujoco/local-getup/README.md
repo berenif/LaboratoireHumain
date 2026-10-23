@@ -132,3 +132,49 @@ in the browser renderer; no physics replay or pose interpolation. Beginning,
 middle and end visually checked. Library `libfile_71395547e5508191b644368d8e38b20b`.
 Weights/sources are not embedded in the video or published; rights remain
 unresolved. No new dependencies, public push or deployment.
+
+## One continuous passive-fall → WEAK cycle (23 October 2026)
+
+Plan reviewed/approved before implementation. `run-getup-continuous-weak.mjs`
+adds only sequencing and recording; it imports the existing DenseActor,
+physicalObservation and Physics. Same model hash as previous WEAK, Euler200Hz,
+policy40Hz, power.663420431, direct geared controls, no PD or SLOW. No deployed
+site changes. Entry is the actual prior WEAK final state at t8.25s (not SLOW):
+`getup-weak-seed10/weak-final.json`, SHA256
+`8b9ef9f76bd26ec5047c5b1d13ecbf4715820ef3c9a8324568dd7cdbc9473281`.
+All233 mjSTATE_INTEGRATION values, qpos and qvel were restored and read back
+exactly before the cycle. Entry head1.47744m/tilt3.258deg, COM speed.15044m/s;
+it is upright but is not claimed to be a stationary equilibrium. Preparation
+cost0 ticks. State/time installation occurs only once before this cycle.
+
+Predeclared in `getup-continuous-weak/preflight.json`: exactly400 passive ticks;
+fall=head<.9m and (torso vertical<.5 or nonfoot load>=3N), four consecutive40Hz
+samples, also present at the end of passive fall. Return standing=head>1.4m,
+tilt<30deg, feet carry >=half body weight, no nonfoot load>=3N, ten consecutive
+40Hz samples. Either foot may carry load; no foot-drift veto. Once standing,
+at most750 WEAK holding ticks; persistent measured fall stops immediately.
+Maximum1250 recovery ticks, total maximum2400. No gains, caps or friction changed.
+
+Single result: FAIL of the complete cycle. Passive fall observed at t8.95s,
+then WEAK reactivated at t10.25s with the actual fallen q/dq, no state reset.
+At passive end head.08972m, torso tilt92.438deg. Standing gate reached after
+980 recovery ticks /4.9s at t15.15s: head1.47413m, tilt15.750deg, COM speed
+.36211m/s, right foot336.38N. This is a mobile recovery, not calm standing.
+After235 holding ticks /1.175s, persistent fall at t16.325s stopped the trial:
+head.12716m, tilt76.415deg, nonfoot impact. No retry, alternate posture or gain
+adjustment. Holding3.75s was NOT achieved.
+
+All1615 integrated ticks checked motor caps and gear×control equality (maxerror0),
+zero root actuator forces, zero applied external body/generalized forces,
+finite state and continuous time. Maxmotorfraction=.66342044.400+980+235=1615
+new ticks; preparation0. Confirmed MuJoCo167059 PLUS prior unknown run preserved;
+Rapier45735 unchanged. Poses at40Hz contain324 frames, actual simulation8.075s;
+video8.1s includes the final displayed frame. The whole cycle is shown without
+phase cuts, speed changes or interpolation. Initial/fallen/recovery-entry/
+holding-entry/final integration states and progressive ledger remain local.
+
+Video `LaboratoireHumain-WEAK-cycle-continu.mp4`,655396bytes,1280×720/40fps,
+Library `libfile_142bcb53156081919b67d724ac5c17af`. Beginning, fallen state, command
+resumption, returned-standing state and final fall checked visually. Caption:
+replay of recorded poses, real speed; no new simulation. No weights in video,
+no package/push/deployment, GetUp rights still unresolved.
