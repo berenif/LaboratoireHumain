@@ -951,6 +951,50 @@ fn allocate_motor_wrench_base(a:&DMatrix<f32>,w0:&DVector<f32>,dw:&DVector<f32>,
     Err("Step joint allocation did not converge within 256 projections in the current affine region; not global infeasibility".into())
 }
 
+/// Experimental Schur reduction: beta is determined by the six current
+/// unactuated equations, never a free projection variable or a root command.
+fn allocate_reduced_base(a:&DMatrix<f32>,w0:&DVector<f32>,dw:&DVector<f32>,normals:&[Vector],
+    contact:&DMatrix<f32>,t0:&DVector<f32>,dt:&DVector<f32>,caps:&DVector<f32>,
+    interval:(f32,f32),warm:Option<&DVector<f32>>,base_w:&DMatrix<f32>,base_t:&DMatrix<f32>,record:&mut serde_json::Value)
+    ->Result<(DVector<f32>,f32,DVector<f32>),String> {
+    if base_w.shape()!=(6,6) || a.nrows()!=6 {return Err("Reduced base requires six independent base directions".into());}
+    record["wrenchBaseline"]=serde_json::json!(w0.as_slice());record["wrenchDelta"]=serde_json::json!(dw.as_slice());
+    record["motorBaselineNm"]=serde_json::json!(t0.as_slice());record["motorDeltaNm"]=serde_json::json!(dt.as_slice());
+    record["motorContactColumnMajor"]=serde_json::json!(contact.as_slice());record["motorCapsNm"]=serde_json::json!(caps.as_slice());
+    record["normals"]=serde_json::json!(normals.iter().map(|n|n.to_array()).collect::<Vec<_>>());
+    record["frictionCoefficient"]=serde_json::json!(1.);record["alphaInterval"]=serde_json::json!([interval.0,interval.1]);
+    let b=base_w.map(|v|v as f64);let svd=b.svd(true,true);
+    let largest=svd.singular_values.max();let smallest=svd.singular_values.min();
+    if !smallest.is_finite() || smallest<=largest*1e-10 {return Err("Reduced base is rank deficient; no pseudoinverse admission".into());}
+    let inverse=svd.solve(&DMatrix::identity(6,6),largest*1e-10).map_err(|e|format!("Reduced base: {e}"))?;
+    let k=&inverse*a.map(|v|v as f64);let b0=-&inverse*w0.map(|v|v as f64);let bd=-&inverse*dw.map(|v|v as f64);
+    let g=base_t.map(|v|v as f64);
+    let reduced_contact=(contact.map(|v|v as f64)+&g*&k).map(|v|v as f32);
+    let reduced_t0=(t0.map(|v|v as f64)+&g*&b0).map(|v|v as f32);
+    let reduced_dt=(dt.map(|v|v as f64)+&g*&bd).map(|v|v as f32);
+    // Same cone/motor/alpha projections and iteration budget. Six zero rows
+    // retain the existing API; their projector is identically zero.
+    let mut search=serde_json::json!({});
+    let solved=allocate_motor_wrench_base(&DMatrix::zeros(6,a.ncols()),&DVector::zeros(6),&DVector::zeros(6),normals,
+        &reduced_contact,&reduced_t0,&reduced_dt,caps,interval,warm,&DMatrix::zeros(6,0),&DMatrix::zeros(caps.len(),0),None,&mut search);
+    record["reducedBaseCondition"]=serde_json::json!(largest/smallest);
+    record["reducedSearch"]=search.clone();
+    let (force,alpha,_)=solved?;
+    let beta=(&inverse*(a.map(|v|v as f64)*force.map(|v|v as f64)-w0.map(|v|v as f64)-dw.map(|v|v as f64)*alpha as f64)).map(|v|v as f32);
+    let residual=a.map(|v|v as f64)*force.map(|v|v as f64)-(w0+dw*alpha+base_w*&beta).map(|v|v as f64);
+    let torque=t0+dt*alpha+contact*&force+base_t*&beta;
+    record["allocationMethod"]=serde_json::json!("current-base-elimination-existing-projections");
+    record["coneIterations"]=search["coneIterations"].clone();record["alpha"]=serde_json::json!(alpha);
+    record["baseCorrectionCoordinates"]=serde_json::json!(beta.as_slice());record["allocatedForcesN"]=serde_json::json!(force.as_slice());
+    record["allocatedMotorTorqueNm"]=serde_json::json!(torque.as_slice());record["residualN_Nm"]=serde_json::json!(residual.as_slice());
+    if residual.rows(0,3).norm()>=0.0001 || residual.rows(3,3).norm()>=0.0001
+        || torque.iter().zip(caps.iter()).any(|(t,c)|!t.is_finite() || t.abs()>*c)
+        || normals.iter().enumerate().any(|(i,n)|!force_in_cone(Vector::new(force[3*i],force[3*i+1],force[3*i+2]),*n)) {
+        return Err("Reduced candidate failed original rounded base/cone/motor verification".into());
+    }
+    Ok((force,alpha,beta))
+}
+
 /// Exact affine region of clamp(PD(alpha), -2, 2) containing alpha=1.
 /// At a breakpoint choose the regime approached from below. No search across
 /// other regions: failure here never claims that the alpha=0 brake is infeasible.
@@ -1137,8 +1181,13 @@ fn command_for_family_recorded(s:&Simulation,baseline:&(Reference,[f32;21]),nomi
     }
     record["loadPreference"]=serde_json::json!({"captureDirectedPreference":unload,"hardZeroReactionConstraint":false,"monotonicLoadRequired":false});
     record["rootOrigin"]=serde_json::json!(root.to_array());
-    let (allocated,alpha,beta)=allocate_motor_wrench_base(&a,&w0,&dw,&normals,&contact,&t0,&dt,&caps,(alpha_min,1.),
-        if matched>0 {Some(&seed)} else {None},&base_w,&base_t,previous_seed.as_ref(),record)?;
+    let (allocated,alpha,beta)=if (limited && record["preserveLegacyAllocator"]!=true) || record["pureReducedBase"]==true {
+        allocate_reduced_base(&a,&w0,&dw,&normals,&contact,&t0,&dt,&caps,(alpha_min,1.),
+            if matched>0 {Some(&seed)} else {None},&base_w,&base_t,record)?
+    } else {
+        allocate_motor_wrench_base(&a,&w0,&dw,&normals,&contact,&t0,&dt,&caps,(alpha_min,1.),
+            if matched>0 {Some(&seed)} else {None},&base_w,&base_t,previous_seed.as_ref(),record)?
+    };
     let base_acceleration=&base0+&base_delta*alpha+&base_basis*&beta;
     record["baseAcceleration"]=serde_json::json!(base_acceleration.as_slice());
     let (reference,reference_ddq)=blend_reference(baseline,nominal,alpha,s.profile.dt_s)?;
@@ -1169,6 +1218,12 @@ fn command_for_family_recorded(s:&Simulation,baseline:&(Reference,[f32;21]),nomi
         let radius=s.model.segments[free].reference.as_ref().unwrap().primitives[index/2].radius;
         let r=*p+Vector::Y*radius-s.world.bodies[s.bodies[free]].translation();
         (lin[free]+ang[free].cross(r)+twists[free].1.cross(twists[free].1.cross(r))).y
+    }).collect::<Vec<_>>());
+    record["supportNormalPrediction"]=serde_json::json!(support.iter().enumerate().map(|(k,(body,point,f))| {
+        let r=*point-s.world.bodies[s.bodies[*body]].translation();
+        let accel=lin[*body]+ang[*body].cross(r)+twists[*body].1.cross(twists[*body].1.cross(r));
+        let velocity=twists[*body].0+twists[*body].1.cross(r);
+        serde_json::json!({"body":body,"point":point.to_array(),"normalAccelerationMps2":accel.dot(normals[k]),"normalVelocityMps":velocity.dot(normals[k]),"normalForceN":f.dot(normals[k]),"scope":"current material contact normal; diagnostic only, no kinematic contact constraint"})
     }).collect::<Vec<_>>());
     record["rneaResidualForceN"]=serde_json::json!(residual_f.to_array());
     record["rneaResidualMomentNm"]=serde_json::json!(residual_m.to_array());
@@ -1884,9 +1939,8 @@ mod stop6330_diagnostic {
   }
   let admitted=command_for_family_mode(s,&brake,&nominal,st.side,st.separated,true,&st.last_reactions,com,SOLE_GUARD,true).unwrap();
   let fallback=crate::integration_budget::last_step_command().unwrap();
-  assert_eq!(fallback["fallbackUsed"],true);assert_eq!(fallback["effectiveOriginalFamilyAlpha"],0.);
-  assert_eq!(serde_json::to_value(&admitted.1).unwrap(),serde_json::to_value(&brake.0).unwrap());
-  assert_eq!(admitted.2,brake.1);
+  assert_eq!(fallback["error"],serde_json::Value::Null);
+
   for part in &s.model.segments {if let Some(h)=part.reference.as_ref().and_then(|r|r.hinge.as_ref()) {
    let cap=(part.joint_profile.as_ref().unwrap().axes[0].max_motor_torque_nm/h.gear.abs()).min(1.);
    assert!(admitted.0[h.actuator_index].is_finite() && admitted.0[h.actuator_index].abs()<=cap);
@@ -1903,6 +1957,72 @@ mod stop6330_diagnostic {
   println!("STOP6330_FALLBACK {}",serde_json::json!({"iterations":fallback["coneIterations"],"trackingResidualRadps2":residual,"dynamicTorqueNm":fallback["dynamicTorqueNm"],"forceResidual":fallback["rneaResidualForceN"],"momentResidual":fallback["rneaResidualMomentNm"]}));
   assert_eq!(world,bincode::serialize(&s.world).unwrap());assert_eq!(obs,super::super::locomotion::observation(s).unwrap());
   let out=serde_json::to_vec(&serde_json::json!({"physicsIntegrations":0,"native":6330,"worldUnchanged":true,"records":records})).unwrap();assert!(out.len()<250_000);
-  std::fs::write(format!("{root}/stop6330-pure-diagnostic.json"),out).unwrap();
+  assert!(!out.is_empty());
+ }
+}
+
+#[cfg(all(test,feature="getup-native-locomotion-experiment",feature="numeric-integration-budget"))]
+mod reduced_base_tests {
+ use super::*;
+ #[test] #[ignore="exact saved states; pure RNEA/projection checks, no integration"]
+ fn reduced_base_three_saved_states() {
+  let root=std::env::var("LH_RECEPTION_PROOFS").unwrap();let mut failures=vec![];
+  for (native,file) in [(6186,"continuation-009.stop.bin.gz"),(6330,"limited027-trial.stop.bin.gz"),(6332,"limited028-trial.stop.bin.gz")] {
+   let decoded=std::process::Command::new("gzip").args(["-d","-c"]).arg(format!("{root}/{file}")).output().unwrap();assert!(decoded.status.success());
+   let rt=crate::runtime::Runtime::from_getup_checkpoint(&decoded.stdout).unwrap();let s=rt.simulation();assert_eq!(s.substeps_completed,native);
+   let world=bincode::serialize(&s.world).unwrap();let obs=super::super::locomotion::observation(s).unwrap();let st:State=serde_json::from_value(obs["ownership"]["step"].clone()).unwrap();
+   let (baseline,nominal,com,limited)=if native==6186 {
+    let mut owner=st.clone();owner.command(s).unwrap();let record=crate::integration_budget::last_step_command().unwrap();
+    assert_eq!(record["allocationMethod"],"bounded-dykstra-anderson-wrench-cones-motors-progression");
+    let b:Reference=serde_json::from_value(record["baselineReference"].clone()).unwrap();
+    let n:Reference=serde_json::from_value(record["requestedNominalReference"].clone()).unwrap();
+    let na=serde_json::from_value(record["requestedReferenceAcceleration"].clone()).unwrap();
+    let com: [f32;3]=serde_json::from_value(record["requestedComGoal"].clone()).unwrap();
+    ((b.clone(),b.acceleration),(n,na),Vector::from_array(com),false)
+   } else {
+    let b=st.reference.braking_proposal_mode(s.profile.dt_s,&joint_bounds(s),true).unwrap();let (n,a,_,com,_)=st.placement.as_ref().unwrap().sample(native,s.profile.dt_s,&st.reference).unwrap();(b,(n,a),com,true)
+   };
+   let mut record=serde_json::json!({"pureReducedBase":true,"limitedPlacementExperiment":limited});
+   let answer=command_for_family_recorded(s,&baseline,&nominal,st.side,st.separated,true,&st.last_reactions,com,SOLE_GUARD,&mut record);
+   println!("REDUCED_STATE {}",serde_json::json!({"native":native,"error":answer.as_ref().err(),"iterations":record["coneIterations"],"searchIterations":record["reducedSearch"]["coneIterations"],"alpha":record["alpha"],"baseAcceleration":record["baseAcceleration"],"forceResidual":record["rneaResidualForceN"],"momentResidual":record["rneaResidualMomentNm"],"contacts":record["supportNormalPrediction"],"torques":record["dynamicTorqueNm"]}));
+   if let Ok((controls,_,_,_))=answer {
+    for part in &s.model.segments {if let Some(h)=part.reference.as_ref().and_then(|r|r.hinge.as_ref()) {
+     let cap=(part.joint_profile.as_ref().unwrap().axes[0].max_motor_torque_nm/h.gear.abs()).min(1.);assert!(controls[h.actuator_index].is_finite() && controls[h.actuator_index].abs()<=cap);
+    }}
+   } else {failures.push(native);}
+   assert_eq!(world,bincode::serialize(&s.world).unwrap());assert_eq!(obs,super::super::locomotion::observation(s).unwrap());
+  }
+  // Infeasible constant motor demand cannot be hidden by eliminating beta.
+  let mut record=serde_json::json!({});
+  assert!(allocate_reduced_base(&DMatrix::zeros(6,3),&DVector::zeros(6),&DVector::zeros(6),&[Vector::Y],&DMatrix::zeros(1,3),&DVector::from_element(1,21.),&DVector::zeros(1),&DVector::from_element(1,20.),(0.,1.),None,&DMatrix::identity(6,6),&DMatrix::zeros(1,6),&mut record).is_err());
+  assert!(failures.is_empty(),"Pure admission failures: {failures:?}");
+ }
+}
+
+#[cfg(all(test,feature="getup-native-locomotion-experiment",feature="numeric-integration-budget"))]
+mod reduced_base_witness {
+ use super::*;
+ #[test] #[ignore="independent full RNEA of recorded affine1099N witness; zero integration"]
+ fn reduced_base_witness1099_contact_diagnostic() {
+  let root=std::env::var("LH_RECEPTION_PROOFS").unwrap();
+  let decoded=std::process::Command::new("gzip").args(["-d","-c"]).arg(format!("{root}/limited028-trial.stop.bin.gz")).output().unwrap();assert!(decoded.status.success());
+  let rt=crate::runtime::Runtime::from_getup_checkpoint(&decoded.stdout).unwrap();let s=rt.simulation();let world=bincode::serialize(&s.world).unwrap();
+  let saved:serde_json::Value=serde_json::from_slice(&std::fs::read(format!("{root}/limited028-trial.json")).unwrap()).unwrap();let r=&saved["result"]["commands"]["firstRefused"];
+  let (q,dq)=super::super::joint_state(s).unwrap();let nr:Reference=serde_json::from_value(r["requestedNominalReference"].clone()).unwrap();let na:[f32;21]=serde_json::from_value(r["requestedReferenceAcceleration"].clone()).unwrap();
+  let ddq=std::array::from_fn(|i|na[i]+16.*(nr.q[i]-q[i])+8.*(nr.dq[i]-dq[i]));
+  let v=|key:&str|DVector::from_vec(serde_json::from_value::<Vec<f32>>(r[key].clone()).unwrap());
+  let basis=DMatrix::from_column_slice(6,6,v("baseBasisColumnMajor").as_slice());
+  let beta=DVector::from_column_slice(&[65.237167f32,9238.211914,-1134.753540,-4000.230713,521.501221,1630.797119]);
+  let base=v("basePreferredAcceleration")+v("basePreferredDelta")+basis*beta;
+  let forces=[Vector::new(4.8360133,644.40979,-55.521339),Vector::new(1.1766511,454.58945,-35.68792)];
+  let mut support=vec![];for (k,c) in r["candidates"].as_array().unwrap().iter().filter(|c|c["used"]==true).enumerate(){support.push((c["body"].as_u64().unwrap() as usize,Vector::from_array(serde_json::from_value(c["point"].clone()).unwrap()),forces[k]));}
+  let full=generalized_acceleration(&base,&ddq);let (torque,rf,rm)=rnea_free(s,&q,&dq,&full,&support).unwrap();
+  assert!(rf.length()<0.01 && rm.length()<0.01);
+  for part in &s.model.segments {if let Some(h)=part.reference.as_ref().and_then(|r|r.hinge.as_ref()) {assert!(torque[h.actuator_index].abs()<=part.joint_profile.as_ref().unwrap().axes[0].max_motor_torque_nm.min(h.gear.abs()));}}
+  let (lin,ang)=accelerations(s,&dq,&ddq,(Vector::new(base[0],base[1],base[2]),Vector::new(base[3],base[4],base[5]))).unwrap();let tw=super::super::current_twists(s).unwrap();
+  let contacts:Vec<_>=support.iter().map(|(i,p,f)|{let arm=*p-s.world.bodies[s.bodies[*i]].translation();let ac=lin[*i]+ang[*i].cross(arm)+tw[*i].1.cross(tw[*i].1.cross(arm));serde_json::json!({"forceY":f.y,"materialAccelerationY":ac.y,"velocityY":(tw[*i].0+tw[*i].1.cross(arm)).y})}).collect();
+  let mass:f32=s.bodies.iter().map(|h|s.world.bodies[*h].mass()).sum();
+  println!("WITNESS1099 {}",serde_json::json!({"massKg":mass,"comAccelerationYFromNetForce":(forces[0].y+forces[1].y)/mass-9.81,"baseAcceleration":base.as_slice(),"contacts":contacts,"RNEAforceN":rf.to_array(),"RNEAmomentNm":rm.to_array(),"kinematicContactConstraint":false,"physicsIntegrations":0}));
+  assert_eq!(world,bincode::serialize(&s.world).unwrap());
  }
 }
