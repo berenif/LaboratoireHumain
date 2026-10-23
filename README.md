@@ -1,5 +1,32 @@
 # Laboratoire Humain
 
+## Active MVP: MuJoCo/WASM
+
+The default app now uses the official, pinned MuJoCo 3.17.0 WASM distribution.
+The existing GetUp mannequin and compact capsule rendering are retained.
+This first milestone provides real contacts, grab/pull/release, a push, pause,
+reset and camera controls. It is a **passive body**: active balance, walking and
+get-up are not implemented or claimed for this MVP.
+
+```sh
+npm ci
+npm run build
+npm start        # loopback-only: http://127.0.0.1:5185
+npm test         # Chromium interaction checks; CHROMIUM_PATH can override path
+```
+
+No Rust/WASM SDK build is needed for the active app. Runtime assets are local;
+there is no CDN or telemetry. See [MVP notes](web/mujoco/README.md).
+No public deployment or GitHub push accompanies this migration.
+
+Legacy features and evidence remain preserved in the repository, with
+`build:legacy`, `start:legacy`, and `test:legacy` commands. They are outside the
+new MVP's active path. The following documentation describes that **historical
+Rapier application**, not current MuJoCo capabilities.
+
+---
+
+
 An experimental physical human simulation. **Rust/WASM is the only application runtime**: Leptos provides the UI, wgpu renders with WebGPU or WebGL2, and Rapier runs in a dedicated WASM worker. JavaScript handles browser events and worker transport.
 
 Requires Node 22.13+, npm, rustup and a browser with WebGPU or WebGL2.

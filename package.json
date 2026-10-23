@@ -8,13 +8,13 @@
   "scripts": {
     "install:ci": "npm ci",
     "dev": "npm run build && npm start",
-    "build": "node scripts/build-rust-browser.mjs",
+    "build": "node scripts/build-mujoco-mvp.mjs",
     "build:pages": "node scripts/build-rust-browser.mjs rust/dist/pages /LaboratoireHumain/",
     "build:rust": "node scripts/build-rust-browser.mjs",
     "setup:rust": "node scripts/setup-rust.mjs",
     "preview:rust": "node scripts/serve-rust-preview.mjs rust/dist/app 5185",
-    "start": "node scripts/serve-rust-preview.mjs rust/dist/app 5185",
-    "test": "node --test tests/rust-*.test.mjs",
+    "start": "node scripts/serve-rust-preview.mjs web/dist 5185",
+    "test": "npm run build && npm run test:mujoco",
     "test:rust": "node scripts/run-rust-checks.mjs test",
     "lint:rust": "node scripts/run-rust-checks.mjs lint",
     "verify:rust": "node scripts/run-rust-gates.mjs",
@@ -25,10 +25,17 @@
     "verify:grab": "node scripts/verify-rust-grab.mjs",
     "lint": "node scripts/run-rust-checks.mjs lint",
     "preview": "npm start",
-    "verify:smoke": "node scripts/smoke-rust-app.mjs"
+    "verify:smoke": "node scripts/smoke-rust-app.mjs",
+    "build:legacy": "node scripts/build-rust-browser.mjs",
+    "start:legacy": "node scripts/serve-rust-preview.mjs rust/dist/app 5185",
+    "test:mujoco": "node scripts/verify-mujoco-mvp.mjs",
+    "test:legacy": "node --test tests/rust-*.test.mjs"
   },
   "devDependencies": {
     "playwright": "1.57.0"
   },
-  "type": "module"
+  "type": "module",
+  "dependencies": {
+    "@mujoco/mujoco": "3.17.0"
+  }
 }
