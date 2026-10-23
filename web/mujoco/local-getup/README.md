@@ -307,3 +307,41 @@ explicit EN PAUSE display. Beginning/fall/moving/reception/final/paused frames
 were decoded from the MP4 and visually inspected; body and ground remain visible.
 The UI screenshot shows the persistent report. No extra physical replay, weights
 inside media, upload attempt or new Library ID. Official helper403 remains.
+
+## Explicit SLOW continuation (one approved bounded observation)
+
+The historical cycle remains unchanged. Its completed local UI now offers a
+separate continuation, attaching to the living final world without any state
+setter. For the authorized comparison only, the local URL
+`?getup=local&continue=checkpoint` exposes the explicit button “Restaurer la fin
+enregistrée puis continuer SLOW”. This restores once all233 integration values
+from `getup-browser-cycle/final-state.json`, SHA256
+`a8f29036d655785d8450ebe657b1b613dc929f5178ef0cb3a7a457fb43b95049`.
+No fall/get-up is replayed; start time remains22.499999999997232s.
+
+SLOW retains the same terminal target, stateless actor,40Hz decisions and800Hz
+per-substep PD(.2 holding damping), source gears and limits. No Balance or
+`Physics.step()` call occurs while it owns commands. The existing user-force
+writer is factored as `applyPush()` without changing ordinary MVP behavior.
+After800 calm native steps, exactly120 steps apply15N world+X at the torso COM;
+no external moment or other body force. The maximum is4000 new steps (5s),
+zero forecasts. Camera/pause remain available; other interactions stay locked
+for this measurement. It finishes explicitly paused, preserving both reports.
+
+Before runtime the criteria are fixed: existing calm = each foot>=3N, combined
+foot load>=80%weight, no other body>=3N, head>1.4m,torso<20deg,COMspeed<.05m/s,
+root angular speed<.5rad/s. Calm is sampled at40Hz. Loss before the first second
+stops without pushing. At every native substep, stop on either foot<3N,
+nonfoot>=3N,new flight (total load<.1N and both gaps>1mm), measured fall, invalid
+state or actuator error. Normal completion additionally requires the final
+800 steps covered by consecutive calm samples. These finite-case criteria do
+not establish arbitrary-disturbance stability. Reactions remain last-substep
+values; refreshed geometry is1.25ms later. Historical af04325 FAIL is unchanged.
+
+`node scripts/verify-getup-continuation.mjs` is pure/browser wiring only.
+`--run` executes the single authorized observation and refuses an existing
+ledger/pose file. Reserve20 before each decision, then save actual ticks/poses;
+terminal full state and report are durable. `render-getup-local.mjs
+--slow-continuation` replays only those recorded poses, never integrates.
+The preview uses the already-running repository server on127.0.0.1:5199.
+No Library/network retry, deployment or weights distribution is authorized.

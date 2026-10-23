@@ -16,6 +16,7 @@ export class Physics {
  smallPush(direction='forward'){const vectors={forward:[15,0,0],backward:[-15,0,0],lateral:[0,15,0]};if(!vectors[direction])throw Error('Direction invalide');this.push={body:1,remaining:.15,force:vectors[direction]};}
  pushBody(body=1){this.push={body,remaining:.06,force:[110,0,25]};}
  apply(body,point,force){const torque=cross(sub(point,Array.from(this.data.xipos.slice(body*3,body*3+3))),force);for(let i=0;i<3;i++){this.data.xfrc_applied[body*6+i]+=force[i];this.data.xfrc_applied[body*6+3+i]+=torque[i];}}
+ applyPush(){if(this.push){this.apply(this.push.body,Array.from(this.data.xipos.slice(this.push.body*3,this.push.body*3+3)),this.push.force);this.push.remaining-=this.dt;if(this.push.remaining<=0)this.push=null;}}
  setMode(mode){if(!['passive','balance'].includes(mode))throw Error('Mode invalide');this.mode=mode;this.cycle=null;this.fallen=false;this.previousCom=null;}
  // Optional experiment. Existing passive/balance paths are untouched without a cycle.
  startFootCycle(){
@@ -95,7 +96,7 @@ export class Physics {
  }
  step(){const d=this.data;d.xfrc_applied.fill(0);d.ctrl.fill(0);this.lastForce=0;this.control();
   if(this.grab){const g=this.grab,p=this.worldPoint(g.body,g.local),velocity=mul(sub(p,g.previous),1/this.dt);let f=sub(mul(sub(g.target,p),120),mul(velocity,12));const length=Math.hypot(...f);if(length>180)f=mul(f,180/length);this.lastForce=Math.hypot(...f);this.apply(g.body,p,f);g.previous=p;}
-  if(this.push){this.apply(this.push.body,Array.from(d.xipos.slice(this.push.body*3,this.push.body*3+3)),this.push.force);this.push.remaining-=this.dt;if(this.push.remaining<=0)this.push=null;}
+  this.applyPush();
   if(!Array.from(d.ctrl).every(Number.isFinite))throw Error('Commande non finie : simulation arrêtée');
   this.mj.mj_step(this.model,d);this.steps++;this.readReactions();if(!Array.from(d.qpos).every(Number.isFinite)||!Array.from(d.qvel).every(Number.isFinite))throw Error('État physique non fini : simulation arrêtée');
  }

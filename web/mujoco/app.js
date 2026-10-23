@@ -3,7 +3,9 @@
 import {Physics,add,sub,mul} from './engine.js';
 const $=s=>document.querySelector(s),canvas=$('#simulation'),ctx=canvas.getContext('2d');
 let getup=null,getupBusy=false,getupLoading=false,getupStarted=false,getupModule=null;
+let getupContinuationStarted=false;
 const localGetup=['127.0.0.1','localhost','[::1]'].includes(location.hostname)&&new URLSearchParams(location.search).get('getup')==='local';
+const checkpointContinuation=localGetup&&new URLSearchParams(location.search).get('continue')==='checkpoint';
 let physics=null,paused=true,failed=false,yaw=.65,pitch=.28,zoom=1,last=performance.now(),accumulator=0,pointer=null,parts=[];
 const vworld=p=>[p[0],p[2],-p[1]], fromView=p=>[p[0],-p[2],p[1]];
 function project(p){const center=getup&&physics?physics.data.subtree_com.slice(3,5):[0,0];const v=vworld([p[0]-center[0],p[1]-center[1],p[2]]),c=Math.cos(yaw),s=Math.sin(yaw),x=v[0]*c-v[2]*s,z=v[0]*s+v[2]*c,y=(v[1]-.75)*Math.cos(pitch)-z*Math.sin(pitch),depth=z*Math.cos(pitch)+(v[1]-.75)*Math.sin(pitch),scale=Math.min(canvas.width/(canvas.clientWidth<500?2.5:4),canvas.height/2.7)*zoom*5/Math.max(1,5+depth);return {x:canvas.width/2+x*scale,y:canvas.height*.53-y*scale,scale,depth};}
@@ -50,7 +52,7 @@ async function frame(now){
    }else{while(accumulator>=physics.dt){physics.step();accumulator-=physics.dt;}physics.forward();}
   }
   draw();refresh();
- }catch(e){fail(e);}finally{getupBusy=false;requestAnimationFrame(frame);}
+ }catch(e){fail(e);if(getup?.continuation){try{await window.__lhGetupAudit?.({kind:'final',summary:getup.summary(),state:getup.stateVector(),spec:getup.assets.entry.spec});}catch(auditError){console.error('Sauvegarde finale non confirmée',auditError);}}}finally{getupBusy=false;requestAnimationFrame(frame);}
 }requestAnimationFrame(frame);
 try{physics=await Physics.create();for(const id of ['pause','push','small-push','reset'])$('#'+id).disabled=false;refresh();}catch(e){fail(e);}
 // Read-only diagnostics for browser acceptance; physical interactions use UI handlers.
@@ -60,17 +62,23 @@ function refreshGetup(){
  const locked=!!getup||getupLoading;
  for(const id of ['mode','push','small-push','push-direction'])$('#'+id).disabled=locked;
  $('#reset').disabled=getupBusy||getupLoading;$('#pause').disabled=getupBusy||getupLoading||!!getup?.done;
+ $('#getup-continue').disabled=getupContinuationStarted||getupBusy||getupLoading||!(checkpointContinuation&&!getup||getup?.done&&!getup.continuation&&getup.summary().observedHold);
  if(!getup)return;
- const s=getup.summary(),o=s.last,labels={'passive-fall':'Chute passive','SLOW-moving':'Relevage SLOW','SLOW-holding':'Réception et observation'};
+ const s=getup.summary(),o=s.last,labels={'passive-fall':'Chute passive','SLOW-moving':'Relevage SLOW','SLOW-holding':'Réception et observation','SLOW-continuation':'Continuation SLOW · maintien et poussée prévue'};
  $('#getup-result').hidden=false;
+ if(getup.continuation){
+  $('#getup-result').textContent=`${getup.done?'EN PAUSE · '+getup.reason:labels[getup.phase]}\nDepuis ${getup.origin} · ${s.ticks} / 4 000 pas · t=${physics.data.time.toFixed(3)} s\n${o?.bilateral?'Deux pieds chargés':'Appuis à examiner'} · calme continu : ${s.calmSeconds.toFixed(3)} s\nPoussée torse +X : 15 N · ${s.pushAppliedTicks} / 120 pas (150 ms prévus après 1 s calme)\n${getup.done?(s.observedHold?'Poussée traversée et dernière seconde calme observée sur ce cas.':'Critères de continuation non tous observés.'):'Caméra et pause disponibles. Pas de traction ou autre poussée pendant la mesure.'}\n${getup.done?'Fin en pause explicite. Aucun relais vers Équilibre.':''}`;
+  return;
+ }
  $('#getup-result').textContent=`${getup.done?'EN PAUSE · '+getup.reason:labels[getup.phase]}\n${s.ticks} / 10 200 pas · t=${physics.data.time.toFixed(3)} s\n${o?.air?'En vol':o?.bilateral?'Deux pieds chargés':o?.feet.some(f=>f>=3)?'Un pied chargé':'Autres contacts'} · ${s.receptionTime===null?'réception non encore observée':'réception observée à '+s.receptionTime.toFixed(3)+' s'}\nCalme continu : ${s.calmSeconds.toFixed(3)} s · nouveaux envols après réception : ${s.newFlightSamples} échantillons\n${getup.done?(s.observedHold?'Réception et calme observés sur ce cas uniquement.':'Critères de réception calme non tous observés.'):'Traction, poussées et sélection de commande indisponibles pendant le scénario.'}\n${getup.done?'Aucune intégration après ce bilan. Recommencer quitte cet essai et réinitialise explicitement le MVP.':''}`;
 }
 if(localGetup){
  document.body.classList.add('local-getup');
  document.querySelector('footer').textContent='Essai GetUp local depuis un départ connu. Aucun relevage général ni marche validée.';
  $('#getup-panel').hidden=false;
+ if(checkpointContinuation){$('#getup-start').disabled=true;$('#getup-continue').textContent='Restaurer la fin enregistrée puis continuer SLOW';}
  $('#getup-start').onclick=async()=>{
-  if(!physics||getupStarted||getupBusy||getupLoading)return;
+  if(!physics||checkpointContinuation||getupStarted||getupBusy||getupLoading)return;
   paused=true;release();getupLoading=true;$('#getup-start').disabled=true;
   try{
    getupModule=await import('/web/mujoco/local-getup/cycle.js');
@@ -80,6 +88,25 @@ if(localGetup){
    physics.dispose();physics=nextPhysics;getup=nextCycle;getupStarted=true;
    await window.__lhGetupAudit?.({kind:'start',row:getup.last,summary:getup.summary(),identities:assets.identities});
    accumulator=0;last=performance.now();failed=false;paused=false;
+  }catch(e){fail(e);}finally{getupLoading=false;refresh();}
+ };
+ $('#getup-continue').onclick=async()=>{
+  if(!physics||getupContinuationStarted||getupBusy||getupLoading||!(checkpointContinuation&&!getup||getup?.done&&!getup.continuation&&getup.summary().observedHold))return;
+  paused=true;release();getupLoading=true;$('#getup-continue').disabled=true;
+  try{
+   const {SlowContinuation,loadFinalCheckpoint,FINAL_STATE_SHA}=await import('/web/mujoco/local-getup/continuation.js');
+   let assets=getup?.assets,checkpoint=null,nextPhysics=physics;
+   const previousSummary=getup?.summary();
+   if(!getup){
+    getupModule=await import('/web/mujoco/local-getup/cycle.js');assets=await getupModule.loadCycleAssets();checkpoint=await loadFinalCheckpoint();
+    nextPhysics=new Physics(physics.mj,assets.xml);nextPhysics.model.opt.timestep=.00125;
+   }
+   const next=new SlowContinuation(nextPhysics,assets,{checkpoint,previousSummary});
+   getup?.dispose();if(nextPhysics!==physics)physics.dispose();physics=nextPhysics;getup=next;getupContinuationStarted=true;
+   $('#getup-previous').hidden=false;$('#getup-previous').textContent=`Bilan du cycle conservé : ${next.previousSummary.ticks} pas, calme final ${next.previousSummary.calmSeconds.toFixed(3)} s. Historique af04325 FAIL inchangé. Cette continuation est une observation distincte.`;
+   await window.__lhGetupAudit?.({kind:'start',row:getup.last,summary:getup.summary(),identities:{...assets.identities,checkpoint:checkpoint?FINAL_STATE_SHA:null},initialState:getup.initialState});
+   if(getup.done)await window.__lhGetupAudit?.({kind:'final',summary:getup.summary(),state:getup.stateVector(),spec:getup.assets.entry.spec});
+   accumulator=0;last=performance.now();failed=false;paused=getup.done;
   }catch(e){fail(e);}finally{getupLoading=false;refresh();}
  };
 }
