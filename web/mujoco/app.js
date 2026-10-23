@@ -12,7 +12,7 @@ function draw(){const ratio=Math.min(devicePixelRatio,2),w=Math.round(canvas.cli
  for(const p of parts){const a=project([p.a[0],p.a[1],.001]),b=project([p.b[0],p.b[1],.001]);line(a,b,'#8b998833',p.r*1.7);}
  parts.sort((a,b)=>b.depth-a.depth);for(const p of parts){const active=physics.grab?.body===p.body;line(p.pa,p.pb,'#31554e',p.r*2+2*ratio);const color=active?'#e6b471':p.name.includes('head')?'#d8cbb1':p.name.includes('foot')?'#6d9481':'#a0c8bb';line(p.pa,p.pb,color,p.r*2);if(Math.hypot(p.pa.x-p.pb.x,p.pa.y-p.pb.y)<.1){ctx.fillStyle=color;ctx.beginPath();ctx.arc(p.pa.x,p.pa.y,p.r,0,Math.PI*2);ctx.fill();}}
  if(physics.grab){const a=project(physics.worldPoint(physics.grab.body,physics.grab.local)),b=project(physics.grab.target);line(a,b,'#b96e39',2*ratio);ctx.strokeStyle='#b96e39';ctx.beginPath();ctx.arc(b.x,b.y,5*ratio,0,Math.PI*2);ctx.stroke();}}
-function refresh(){if(!physics)return;$('#pause').textContent=paused?'Démarrer / reprendre':'Pause';$('#status').textContent=failed?'Simulation arrêtée':physics.grab?'Membre saisi':paused?'En pause':'Simulation en cours';$('#time').textContent=physics.data.time.toFixed(2)+' s';$('#contacts').textContent=physics.data.ncon;$('#force').textContent=physics.lastForce.toFixed(0)+' N';}
+function refresh(){if(!physics)return;$('#pause').textContent=paused?'Démarrer / reprendre':'Pause';$('#status').textContent=failed?'Simulation arrêtée':physics.grab?'Membre saisi':paused?'En pause':physics.fallen?'Chute · commande relâchée':physics.mode==='balance'?'Équilibre · double appui':'Passif';$('#time').textContent=physics.data.time.toFixed(2)+' s';$('#contacts').textContent=physics.data.ncon;$('#force').textContent=physics.lastForce.toFixed(0)+' N';}
 function fail(e){failed=true;paused=true;physics?.release();$('#error').hidden=false;$('#error').textContent=String(e);refresh();}
 function release(){if(pointer&&canvas.hasPointerCapture(pointer.id))canvas.releasePointerCapture(pointer.id);pointer=null;physics?.release();canvas.classList.remove('grabbing');}
 function xy(e){const r=canvas.getBoundingClientRect();return [(e.clientX-r.left)*canvas.width/r.width,(e.clientY-r.top)*canvas.height/r.height];}
@@ -23,11 +23,13 @@ for(const event of ['pointerup','pointercancel','lostpointercapture'])canvas.add
 canvas.addEventListener('wheel',e=>{e.preventDefault();zoom=Math.max(.5,Math.min(2.5,zoom*Math.exp(-e.deltaY*.001)));},{passive:false});
 $('#zoom-in').onclick=()=>zoom=Math.min(2.5,zoom*1.15);$('#zoom-out').onclick=()=>zoom=Math.max(.5,zoom/1.15);$('#camera-reset').onclick=()=>{yaw=.65;pitch=.28;zoom=1;};
 $('#pause').onclick=()=>{if(!physics||failed)return;paused=!paused;release();accumulator=0;refresh();};
+$('#mode').onchange=()=>{if(physics){physics.setMode($('#mode').value);refresh();}};
+$('#small-push').onclick=()=>{if(!physics||failed)return;physics.smallPush($('#push-direction').value);paused=false;refresh();};
 $('#push').onclick=()=>{if(!physics||failed)return;physics.pushBody();paused=false;refresh();};
 $('#reset').onclick=()=>{if(!physics)return;release();physics.reset();paused=true;failed=false;accumulator=0;$('#error').hidden=true;refresh();};
 window.addEventListener('blur',()=>{release();paused=true;accumulator=0;refresh();});document.addEventListener('visibilitychange',()=>{if(document.hidden){release();paused=true;accumulator=0;refresh();}});
 window.addEventListener('keydown',e=>{if(e.target.matches('input,select,button'))return;if(e.code==='Space'){e.preventDefault();$('#pause').click();}if(e.code==='KeyP')$('#push').click();if(e.code==='KeyR')$('#reset').click();});
 function frame(now){const elapsed=Math.min(.05,(now-last)/1000);last=now;try{if(physics&&!paused&&!failed&&!document.hidden){accumulator=Math.min(.05,accumulator+elapsed);while(accumulator>=physics.dt){physics.step();accumulator-=physics.dt;}physics.forward();}draw();refresh();}catch(e){fail(e);}requestAnimationFrame(frame);}requestAnimationFrame(frame);
-try{physics=await Physics.create();for(const id of ['pause','push','reset'])$('#'+id).disabled=false;refresh();}catch(e){fail(e);}
+try{physics=await Physics.create();for(const id of ['pause','push','small-push','reset'])$('#'+id).disabled=false;refresh();}catch(e){fail(e);}
 // Read-only diagnostics for browser acceptance; physical interactions use UI handlers.
 window.__lhMujoco={get state(){return physics?{...physics.state(),paused,failed,camera:{yaw,pitch,zoom},geometries:physics.geometries(),screen:parts.map(p=>({body:p.body,name:p.name,x:(p.pa.x+p.pb.x)/2/canvas.width*canvas.clientWidth,y:(p.pa.y+p.pb.y)/2/canvas.height*canvas.clientHeight}))}:null;}};
