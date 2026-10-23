@@ -52,8 +52,11 @@ fn run(input:&Path,out:&Path,preflight_only:bool,placement:Option<&Path>)->Resul
     }
     // This performs the complete reference/posture, passive/dynamic RNEA,
     // cone allocation and unchanged motor-cap admission, without integration.
+    let mut limited=false;
     if let Some(path)=placement {
-        runtime.arm_getup_post_separation_path(&std::fs::read_to_string(path).map_err(|e|e.to_string())?)?;
+        let input=std::fs::read_to_string(path).map_err(|e|e.to_string())?;
+        let plan:Value=serde_json::from_str(&input).map_err(|e|e.to_string())?;limited=plan["format"]=="post-separation-limited-curve-v2";
+        runtime.arm_getup_post_separation_path(&input)?;
     }
     let admission=runtime.resume_getup_native_step_6186();
     let after_admission:Value=serde_json::from_str(&runtime.getup_native_observation()?).map_err(|e|e.to_string())?;
@@ -132,7 +135,7 @@ fn run(input:&Path,out:&Path,preflight_only:bool,placement:Option<&Path>)->Resul
                     // velocities, current contact points/impulses and owner state.
                     // This is an observation, not a reconstructible Rapier checkpoint.
                     let line=serde_json::to_vec(&json!({"native":native,"loadedFeet":loads,"capsuleSeparated":separated,"observation":compact_observation(&o),"ledger":budget::snapshot().ok(),"command":{"native":command["native"],"controlMode":command["controlMode"],"reason":command["reason"],"requestedCop":command["requestedCopXZ"],"commandedCop":command["commandedCopXZ"],"pointForces":command["pointForces"],"postureTarget":command["postureTarget"],"rawPd":command["rawPd"],"compensationControls":command["compensationControls"],"requestedControls":command["requestedControls"],"controls":command["controls"],"motorLimiting":command["motorLimiting"]}})).map_err(|e|Failure::new(s.tick,substep,"event",e.to_string(),0.,0.))?;
-                    if events.metadata().map_err(|e|Failure::new(s.tick,substep,"event",e.to_string(),0.,0.))?.len()+line.len() as u64>1_500_000 {return Err(Failure::new(s.tick,substep,"event-reserve","event reserve exhausted".into(),0.,0.));}
+                    if events.metadata().map_err(|e|Failure::new(s.tick,substep,"event",e.to_string(),0.,0.))?.len()+line.len() as u64>if limited{1_000_000}else{1_500_000} {return Err(Failure::new(s.tick,substep,"event-reserve","event reserve exhausted".into(),0.,0.));}
                     events.write_all(&line).and_then(|_|events.write_all(b"\n")).and_then(|_|events.sync_data()).map_err(|e|Failure::new(s.tick,substep,"event",e.to_string(),0.,0.))?;
                     previous_signature=Some(signature);
                 }
@@ -163,8 +166,8 @@ fn run(input:&Path,out:&Path,preflight_only:bool,placement:Option<&Path>)->Resul
                 if samples==1 || samples%20==0 {
                     trace.push(measured.clone());
                     let command=budget::last_step_command().unwrap_or(Value::Null);
-                    let line=serde_json::to_vec(&json!({"measurement":measured,"ledger":budget::snapshot().ok(),"receptionStarted":reception_start,"compensationActive":command["compensationActive"],"reason":command["reason"],"controlMode":command["controlMode"],"requestedCop":command["requestedCopXZ"],"commandedCop":command["commandedCopXZ"],"copResidual":command["copResidualM"],"motorLimiting":command["motorLimiting"],"controls":o["ownership"]["last_application"]["controls"],"requestedControls":command["requestedControls"],"forceResidual":command["rneaResidualForceN"],"momentResidual":command["rneaResidualMomentNm"],"contactGeometry":o["floorFootContacts"],"placementStarted":path_started,"transitionNative":command["transitionNative"],"stability":stability_last})).map_err(|e|Failure::new(s.tick,substep,"progress",e.to_string(),0.,0.))?;
-                    if progress.metadata().map_err(|e|Failure::new(s.tick,substep,"progress",e.to_string(),0.,0.))?.len()+line.len() as u64>3_000_000 {return Err(Failure::new(s.tick,substep,"proof-reserve","progress reserve exhausted".into(),0.,0.));}
+                    let line=serde_json::to_vec(&json!({"measurement":measured,"ledger":budget::snapshot().ok(),"receptionStarted":reception_start,"compensationActive":command["compensationActive"],"reason":command["reason"],"controlMode":command["controlMode"],"requestedCop":command["requestedCopXZ"],"commandedCop":command["commandedCopXZ"],"copResidual":command["copResidualM"],"motorLimiting":command["motorLimiting"],"controls":o["ownership"]["last_application"]["controls"],"requestedControls":command["requestedControls"],"allocationAlpha":command["alpha"],"accelerationTaskResidualRadps2":command["accelerationTaskResidualRadps2"],"transitionResidualControls":command["commandTransitionResidualControls"],"appliedExactlyMatchesAllocation":command["appliedExactlyMatchesAllocation"],"forceResidual":command["rneaResidualForceN"],"momentResidual":command["rneaResidualMomentNm"],"contactGeometry":o["floorFootContacts"],"placementStarted":path_started,"transitionNative":command["transitionNative"],"stability":stability_last})).map_err(|e|Failure::new(s.tick,substep,"progress",e.to_string(),0.,0.))?;
+                    if progress.metadata().map_err(|e|Failure::new(s.tick,substep,"progress",e.to_string(),0.,0.))?.len()+line.len() as u64>if limited{800_000}else{3_000_000} {return Err(Failure::new(s.tick,substep,"proof-reserve","progress reserve exhausted".into(),0.,0.));}
                     progress.write_all(&line).and_then(|_|progress.write_all(b"\n")).and_then(|_|progress.sync_data()).map_err(|e|Failure::new(s.tick,substep,"progress",e.to_string(),0.,0.))?;
                 }
                 if separated_seen && separation.is_none() {separation=Some(measured.clone());}
@@ -200,7 +203,8 @@ fn main()->Result<(),Box<dyn std::error::Error>> {
     }
     let mut file=OpenOptions::new().write(true).create_new(true).open(&args[3])?;
     file.write_all(b"{\"status\":\"started; final outcome pending\"}\n")?;file.sync_all()?;
-    if args.len()==5 {budget::install_post_separation_025()?;}else{budget::install_reception010_replay()?;}
+    let limited=if args.len()==5 {let p:Value=serde_json::from_slice(&std::fs::read(&args[4])?)?;p["format"]=="post-separation-limited-curve-v2"}else{false};
+    if args.len()==5 && !limited {budget::install_post_separation_025()?;}else{budget::install_reception010_replay()?;}
     let result=run(Path::new(&args[2]),Path::new(&args[3]),args[1]=="--preflight-stop",args.get(4).map(|p|Path::new(p)));
     let ledger=budget::snapshot()?;
     let mut receipt=json!({"format":"reception024-captured-leg-comparison-from-6186-v1","historicalFlightController":"e5151e23f3c1401abac9aa993364a7a88d30505b","receptionImplementation":"local/reception-010-fix; see build identity","historical":34945,"trialLimit":2000,
@@ -212,6 +216,7 @@ fn main()->Result<(),Box<dyn std::error::Error>> {
         receipt["trialLimit"]=json!(12450);receipt["cumulativeLimit"]=json!(48699);receipt["totalConsumed"]=json!(36249+ledger.real+ledger.forecast);
         receipt["remainingGlobalBudget"]=json!(12450-ledger.real-ledger.forecast);
     }
+    if limited {receipt["format"]=json!("limited-post-separation-following027-v1");receipt["historical"]=json!(45589);receipt["trialLimit"]=json!(2000);receipt["cumulativeLimit"]=json!(47589);receipt["totalConsumed"]=json!(45589+ledger.real+ledger.forecast);receipt["remainingGlobalBudget"]=json!(2000-ledger.real-ledger.forecast);}
     let bytes=serde_json::to_vec(&receipt)?;
     if bytes.len()>750_000 {return Err("result exceeds reserved 750000 bytes".into());}
     file.seek(SeekFrom::Start(0))?;file.write_all(&bytes)?;file.set_len(bytes.len() as u64)?;file.sync_all()?;

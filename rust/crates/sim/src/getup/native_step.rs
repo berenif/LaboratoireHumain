@@ -110,7 +110,8 @@ impl Reference {
     }
     /// Explicit alpha-zero fallback: brake current reference velocities and
     /// hold once stopped. Unlike nominal proposal this never resumes a target.
-    fn braking_proposal(&self,dt:f32,bounds:&[(f32,f32);21])->Result<(Self,[f32;21]),String> {
+    fn braking_proposal(&self,dt:f32,bounds:&[(f32,f32);21])->Result<(Self,[f32;21]),String> {self.braking_proposal_mode(dt,bounds,false)}
+    fn braking_proposal_mode(&self,dt:f32,bounds:&[(f32,f32);21],limited:bool)->Result<(Self,[f32;21]),String> {
         if !dt.is_finite() || dt<=0. || dt>0.025 {return Err("Invalid Step brake interval".into());}
         let mut next=self.clone();next.braking=true;let mut acceleration=[0.;21];
         for i in 0..21 {
@@ -118,7 +119,7 @@ impl Reference {
             // every tick. Smooth ordinary braking from the accepted acceleration.
             // Joint-stop braking remains higher priority and bounded as before.
             let a0=self.acceleration[i];
-            let goal=(-self.dq[i]/0.025).clamp(-REFERENCE_ACCELERATION,REFERENCE_ACCELERATION);
+            let goal=if limited{-self.dq[i]/0.025}else{(-self.dq[i]/0.025).clamp(-REFERENCE_ACCELERATION,REFERENCE_ACCELERATION)};
             let a1=a0+(goal-a0)*(1.-(-dt/0.025).exp());
             let mut v=self.dq[i]+(a0+a1)*dt*0.5;
             let mut q=self.q[i]+self.dq[i]*dt+(2.*a0+a1)*dt*dt/6.;
@@ -126,14 +127,14 @@ impl Reference {
             if self.limit_braking[i] || needs_braking(self.q[i],self.dq[i],bounds[i],dt)
                 || q<bounds[i].0 || q>bounds[i].1
                 || (self.dq[i]!=0. && self.dq[i]*v<=0.) {
-                let stopped=brake_reference(self.q[i],self.dq[i],bounds[i],dt)?;
+                let stopped=if limited{brake_limited_reference(self.q[i],self.dq[i],bounds[i],dt)?}else{brake_reference(self.q[i],self.dq[i],bounds[i],dt)?};
                 q=stopped.0;v=stopped.1;terminal=if v==0. {0.} else {stopped.2};
             }
-            if !q.is_finite() || !v.is_finite() || v.abs()>0.5 || terminal.abs()>REFERENCE_ACCELERATION {
+            if !q.is_finite() || !v.is_finite() || !terminal.is_finite() || (!limited && (v.abs()>0.5 || terminal.abs()>REFERENCE_ACCELERATION)) {
                 return Err("Step brake exceeds pilot speed/acceleration envelope".into());
             }
             next.q[i]=q;next.dq[i]=v;next.acceleration[i]=terminal;
-            acceleration[i]=((v-self.dq[i])/dt).clamp(-REFERENCE_ACCELERATION,REFERENCE_ACCELERATION);
+            acceleration[i]=if limited{terminal}else{((v-self.dq[i])/dt).clamp(-REFERENCE_ACCELERATION,REFERENCE_ACCELERATION)};
         }
         next.elapsed=(self.elapsed+dt).min(self.duration);
         Ok((next,acceleration))
@@ -239,7 +240,7 @@ impl State {
             && (0.0..=self.reference.duration).contains(&self.reference.elapsed)
             && self.preparation.as_ref().is_none_or(|p|p.started<=p.updated && p.updated<=native && p.attempted.is_none_or(|n|n>=p.updated && n<=native) && p.com_origin.is_finite() && p.toward.is_finite() && p.clearance.is_finite())
             && self.last_reactions.iter().all(|(_,p,f)|p.is_finite() && f.is_finite())
-            && self.reference_acceleration.iter().all(|x|x.is_finite() && x.abs()<=REFERENCE_ACCELERATION)
+            && self.reference_acceleration.iter().all(|x|x.is_finite() && (self.placement.as_ref().is_some_and(|p|p.limited() && p.started) || x.abs()<=REFERENCE_ACCELERATION))
             && self.reference.q.iter().chain(&self.reference.dq).chain(&self.reference.start)
                 .chain(&self.reference.velocity).chain(&self.reference.acceleration).chain(&self.reference.target).all(|x|x.is_finite())
     }
@@ -316,13 +317,23 @@ impl State {
             if path.due(s.substeps_completed) {
                 if !path.started {
                     if self.phase!=Phase::Swing || !self.separated || self.separation_samples<3 || foot.clearance<0.003 || foot.load>1. {return Err("Placement needs confirmed historical separation AND current unloaded whole-capsule clearance".into());}
-                    path.start(s.substeps_completed,&self.reference)?;
+                    path.start_measured(s,&mut self.reference)?;
                 }
                 let (reference,a,descending,com,goal)=path.sample(s.substeps_completed,s.profile.dt_s,&self.reference)?;
                 let nominal=(reference,a);
                 // Same prescribed C2 curve at both affine endpoints: allocation
                 // cannot silently rescale a clock or break its derivatives.
-                let (controls,reference,a,reactions)=command_for_family(s,&nominal,&nominal,self.side,self.separated,true,&self.last_reactions,com,if descending {0.} else {SOLE_GUARD})?;
+                let baseline=if path.limited(){self.reference.braking_proposal_mode(s.profile.dt_s,&joint_bounds(s),true)?}else{nominal.clone()};
+                let (controls,reference,a,reactions)=command_for_family_mode(s,&baseline,&nominal,self.side,self.separated,true,&self.last_reactions,com,if descending {0.} else {SOLE_GUARD},path.limited())?;
+                let requested=controls;let transitioned=path.transition(s.substeps_completed,controls)?;
+                let (controls,limiting,_)=limit_reception_total(s,transitioned)?;
+                #[cfg(feature="numeric-integration-budget")] if path.limited(){if let Some(mut record)=crate::integration_budget::last_step_command(){
+                    record["allocationControls"]=serde_json::json!(requested);record["controls"]=serde_json::json!(controls);
+                    record["commandTransitionResidualControls"]=serde_json::json!(std::array::from_fn::<_,21,_>(|i|controls[i]-requested[i]));
+                    record["motorLimiting"]=serde_json::json!(limiting);record["appliedExactlyMatchesAllocation"]=serde_json::json!(controls==requested);
+                    record["transitionScope"]=serde_json::json!("bounded single-owner transition; allocation wrench is a prediction, not claimed realized during blend");
+                    crate::integration_budget::record_step_command(record);
+                }}
                 self.reference=reference;self.reference_acceleration=a;self.last_reactions=reactions;
                 self.com=com;self.foot_goal=goal;self.phase=if descending {Phase::Landing}else{Phase::Swing};self.last_native=s.substeps_completed;
                 return Ok(controls);
@@ -442,6 +453,22 @@ fn brake_reference(q:f32,v:f32,(lo,hi):(f32,f32),dt:f32)->Result<(f32,f32,f32),S
     let speed=if t<dt {0.}else{v+a*t};
     if !next.is_finite() || next<lo || next>hi {return Err("Reference cannot brake inside joint bounds".into());}
     Ok((next,speed,((speed-v)/dt).clamp(-REFERENCE_ACCELERATION,REFERENCE_ACCELERATION)))
+}
+
+/// Desired-reference stop inside ROM. The old 2 rad/s² design envelope is not
+/// an actuator limit. This finite request still goes through the same motor /
+/// wrench allocator; measured q/dq are never changed by this calculation.
+fn brake_limited_reference(q:f32,v:f32,(lo,hi):(f32,f32),dt:f32)->Result<(f32,f32,f32),String> {
+    if !q.is_finite() || !v.is_finite() || q<lo || q>hi {return Err("Invalid bounded placement brake state".into());}
+    let distance=if v>0. {hi-q}else{q-lo};
+    if v==0. {return Ok((q,0.,0.));}
+    if distance<=0. {return Ok((q,0.,0.));} // desired stop at a bound, not measured velocity clipping
+    let a=(v as f64).powi(2)/(2.*distance as f64);
+    let a=a.max(REFERENCE_ACCELERATION as f64);let t=(dt as f64).min(v.abs() as f64/a);
+    let next=(q as f64+v as f64*t-0.5*(v.signum() as f64)*a*t*t).clamp(lo as f64,hi as f64) as f32;
+    let speed=if t<dt as f64{0.}else{(v as f64-v.signum() as f64*a*t) as f32};
+    let requested=((speed-v) as f64/dt as f64) as f32;
+    if !requested.is_finite(){return Err("Nonfinite desired placement brake".into());}Ok((next,speed,requested))
 }
 
 /// Timing refusal of an optional target does not invalidate an active path.
@@ -981,7 +1008,10 @@ fn preferred_free_share(com:Vector,velocity:Vector,free:Vector,retained:Vector)-
 }
 type CommandProposal=([f32;21],Reference,[f32;21],Vec<Reaction>);
 fn command_for_family(s:&Simulation,baseline:&(Reference,[f32;21]),nominal:&(Reference,[f32;21]),side:usize,exclusive:bool,unload:bool,warm:&[Reaction],com_goal:Vector,clearance_goal:f32)->Result<CommandProposal,String> {
-    let mut record=serde_json::json!({"native":s.substeps_completed,"nominalReference":nominal.0,
+    command_for_family_mode(s,baseline,nominal,side,exclusive,unload,warm,com_goal,clearance_goal,false)
+}
+fn command_for_family_mode(s:&Simulation,baseline:&(Reference,[f32;21]),nominal:&(Reference,[f32;21]),side:usize,exclusive:bool,unload:bool,warm:&[Reaction],com_goal:Vector,clearance_goal:f32,limited:bool)->Result<CommandProposal,String> {
+    let mut record=serde_json::json!({"limitedPlacementExperiment":limited,"native":s.substeps_completed,"nominalReference":nominal.0,
         "baselineReference":baseline.0,"side":side,"exclusive":exclusive,"units":"world N / Nm about torso origin"});
     let result=command_for_family_recorded(s,baseline,nominal,side,exclusive,unload,warm,com_goal,clearance_goal,&mut record);
     record["error"]=serde_json::json!(result.as_ref().err());
@@ -1002,7 +1032,8 @@ fn command_for_family_recorded(s:&Simulation,baseline:&(Reference,[f32;21]),nomi
     record["requestedComGoal"]=serde_json::json!(com_goal);record["requestedSoleGuardM"]=serde_json::json!(clearance_goal);
     let (q,dq)=super::joint_state(s)?;let geometry=geometry(s)?;
     let raw=|r:&(Reference,[f32;21])|std::array::from_fn(|i|r.1[i]+16.*(r.0.q[i]-q[i])+8.*(r.0.dq[i]-dq[i]));
-    let (a0,da,alpha_min)=acceleration_region(&raw(baseline),&raw(nominal));
+    let limited=record["limitedPlacementExperiment"]==true;
+    let (a0,da,alpha_min)=if limited{let b=raw(baseline);let n=raw(nominal);(b,std::array::from_fn(|i|n[i]-b[i]),0.)}else{acceleration_region(&raw(baseline),&raw(nominal))};
     let desired_acceleration=std::array::from_fn(|i|a0[i]+da[i]);
     record["q"]=serde_json::json!(q);record["dq"]=serde_json::json!(dq);record["geometry"]=serde_json::json!(geometry);
     let ddq=&desired_acceleration;
@@ -1083,7 +1114,8 @@ fn command_for_family_recorded(s:&Simulation,baseline:&(Reference,[f32;21]),nomi
     let base_acceleration=&base0+&base_delta*alpha+&base_basis*&beta;
     record["baseAcceleration"]=serde_json::json!(base_acceleration.as_slice());
     let (reference,reference_ddq)=blend_reference(baseline,nominal,alpha,s.profile.dt_s)?;
-    let full_acceleration:[f32;21]=std::array::from_fn(|i|(reference_ddq[i]+16.*(reference.q[i]-q[i])+8.*(reference.dq[i]-dq[i])).clamp(-REFERENCE_ACCELERATION,REFERENCE_ACCELERATION));
+    let full_acceleration:[f32;21]=std::array::from_fn(|i|{let a=reference_ddq[i]+16.*(reference.q[i]-q[i])+8.*(reference.dq[i]-dq[i]);if limited{a}else{a.clamp(-REFERENCE_ACCELERATION,REFERENCE_ACCELERATION)}});
+    if limited{record["accelerationTaskResidualRadps2"]=serde_json::json!(std::array::from_fn::<_,21,_>(|i|raw(nominal)[i]-full_acceleration[i]));}
     if (0..21).any(|i|(full_acceleration[i]-(a0[i]+alpha*da[i])).abs()>0.00001) {
         return Err("Step candidate left its certified affine PD region".into());
     }
@@ -1771,5 +1803,32 @@ mod placement_pure_tests {
   assert!(super::super::post_separation_path::Path::parse(&bad.to_string(),&joint_bounds(s)).is_err());
   assert_eq!(world,bincode::serialize(&s.world).unwrap());
   println!("PLACEMENT_PURE {}",serde_json::json!({"physicsIntegrations":0,"precontact6186BitIdentical":true,"referenceSamples":count,"maxVelocity":max_v,"maxAcceleration":max_a,"postSeparationFullCommandVerified":false,"reason":"no exact Rapier checkpoint at native6309; saved observation is not a checkpoint"}));
+ }
+}
+
+#[cfg(all(test,feature="getup-native-locomotion-experiment",feature="numeric-integration-budget"))]
+mod limited027_tests {
+ use super::*;
+ #[test] #[ignore="preserved native6186 and measured6309 proof; zero integration"]
+ fn limited027_pure_precontact_reference_and_brake() {
+  let root=std::env::var("LH_RECEPTION_PROOFS").unwrap();
+  let bytes=std::process::Command::new("gzip").args(["-d","-c"]).arg(format!("{root}/continuation-009.stop.bin.gz")).output().unwrap();assert!(bytes.status.success());
+  let mut rt=crate::runtime::Runtime::from_getup_checkpoint(&bytes.stdout).unwrap();
+  let before:serde_json::Value=serde_json::from_str(&rt.getup_native_observation().unwrap()).unwrap();let world=bincode::serialize(&rt.simulation().world).unwrap();
+  let json=std::fs::read_to_string(format!("{root}/limited027-path.json")).unwrap();rt.arm_getup_post_separation_path(&json).unwrap();
+  let s=rt.simulation();let after:serde_json::Value=serde_json::from_str(&rt.getup_native_observation().unwrap()).unwrap();
+  let mut old:State=serde_json::from_value(before["ownership"]["step"].clone()).unwrap();let mut armed:State=serde_json::from_value(after["ownership"]["step"].clone()).unwrap();
+  assert_eq!(old.command(s).unwrap().map(f32::to_bits),armed.command(s).unwrap().map(f32::to_bits));
+  assert_eq!(world,bincode::serialize(&s.world).unwrap());assert_eq!(s.substeps_completed,6186);
+  let plan:serde_json::Value=serde_json::from_str(&json).unwrap();let mut path=super::super::post_separation_path::Path::parse(&json,&joint_bounds(s)).unwrap();assert!(path.limited());path.started=true;
+  let r=&armed.reference;let mut maximum_v=0f32;let mut maximum_a=0f32;let bounds=joint_bounds(s);
+  for n in 6309..=6749 {
+   let (reference,a,_,_,_)=path.sample(n,s.profile.dt_s,r).unwrap();
+   for i in 0..21 {assert!(reference.q[i]>=bounds[i].0 && reference.q[i]<=bounds[i].1);assert!(a[i].is_finite());maximum_v=maximum_v.max(reference.dq[i].abs());maximum_a=maximum_a.max(a[i].abs());}
+   reference.braking_proposal_mode(s.profile.dt_s,&bounds,true).unwrap();
+   if n==6309 {for i in 0..21 {assert!((reference.q[i]-plan["entryQ"][i].as_f64().unwrap() as f32).abs()<2e-6);assert!((reference.dq[i]-plan["entryDq"][i].as_f64().unwrap() as f32).abs()<2e-6);}}
+  }
+  assert!(maximum_v>0.5 && maximum_a>2.);
+  println!("LIMITED027_PURE {}",serde_json::json!({"physicsIntegrations":0,"precontactBitIdentical":true,"curveSamples":441,"maxDesiredSpeed":maximum_v,"maxDesiredAcceleration":maximum_a,"worldUnchanged":world==bincode::serialize(&s.world).unwrap(),"full6309Allocation":"requires live state; no reconstructed checkpoint claimed"}));
  }
 }
