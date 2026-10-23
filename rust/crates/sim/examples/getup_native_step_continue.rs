@@ -40,27 +40,28 @@ fn compact_observation(o:&Value)->Value {
 
 fn run(input:&Path,out:&Path,preflight_only:bool,placement:Option<&Path>)->Result<Value,String> {
     let digest=std::process::Command::new("sha256sum").arg(input).output().map_err(|e|e.to_string())?;
-    let resume6330=String::from_utf8_lossy(&digest.stdout).split_whitespace().next()==Some("aae8968730b9b37263da4b0aa9908e291ffe294f91a51c18c3df641a502e1e24");
-    if !digest.status.success() || !resume6330 && String::from_utf8_lossy(&digest.stdout).split_whitespace().next()!=Some("0737e7b3f237336486af699a28f0f92b5b27cf3afa622a96b70d9a563f9224fa") {return Err("Input is not the preserved exact native6186 checkpoint".into());}
+    let resume6332=String::from_utf8_lossy(&digest.stdout).split_whitespace().next()==Some("f1574aaba5e9db17f68059e321d0ac94e491984dc7bc9f7b85fafe19ee15eff3");
+    let resume_saved=resume6332 || String::from_utf8_lossy(&digest.stdout).split_whitespace().next()==Some("aae8968730b9b37263da4b0aa9908e291ffe294f91a51c18c3df641a502e1e24");
+    if !digest.status.success() || !resume_saved && String::from_utf8_lossy(&digest.stdout).split_whitespace().next()!=Some("0737e7b3f237336486af699a28f0f92b5b27cf3afa622a96b70d9a563f9224fa") {return Err("Input is not the preserved exact native6186 checkpoint".into());}
     let decoded=std::process::Command::new("gzip").args(["-d","-c"]).arg(input).output().map_err(|e|e.to_string())?;
     if !decoded.status.success() {return Err("Input gzip decoding failed".into());}
     let bytes=decoded.stdout;
     let mut runtime=Runtime::from_getup_checkpoint(&bytes)?;
     let restored:Value=serde_json::from_str(&runtime.verify_getup_checkpoint(&bytes)?).map_err(|e|e.to_string())?;
     let before:Value=serde_json::from_str(&runtime.getup_native_observation()?).map_err(|e|e.to_string())?;
-    if restored["passed"]!=true || before["nativeCompleted"]!=if resume6330{6330}else{6186} || before["failure"]["offending"]!="Step joint allocation did not converge within 256 projections in the current affine region; not global infeasibility" {
+    if restored["passed"]!=true || before["nativeCompleted"]!=if resume6332{6332}else if resume_saved{6330}else{6186} || before["failure"]["offending"]!="Step joint allocation did not converge within 256 projections in the current affine region; not global infeasibility" {
         return Err("Resume requires verified saved native6186 refusal".into());
     }
     // This performs the complete reference/posture, passive/dynamic RNEA,
     // cone allocation and unchanged motor-cap admission, without integration.
-    let mut limited=resume6330;
-    if resume6330 && (placement.is_some() || before["ownership"]["step"]["placement"]["started"]!=true) {return Err("6330 must retain its armed saved path without replacement".into());}
+    let mut limited=resume_saved;
+    if resume_saved && (placement.is_some() || before["ownership"]["step"]["placement"]["started"]!=true) {return Err("6330 must retain its armed saved path without replacement".into());}
     if let Some(path)=placement {
         let input=std::fs::read_to_string(path).map_err(|e|e.to_string())?;
         let plan:Value=serde_json::from_str(&input).map_err(|e|e.to_string())?;limited=plan["format"]=="post-separation-limited-curve-v2";
         runtime.arm_getup_post_separation_path(&input)?;
     }
-    let admission=if resume6330{runtime.resume_getup_native_step_6330()}else{runtime.resume_getup_native_step_6186()};
+    let admission=if resume6332{runtime.resume_getup_native_step_6332()}else if resume_saved{runtime.resume_getup_native_step_6330()}else{runtime.resume_getup_native_step_6186()};
     let after_admission:Value=serde_json::from_str(&runtime.getup_native_observation()?).map_err(|e|e.to_string())?;
     let started=before["ownership"]["step"]["started_native"].as_u64().ok_or("Missing original Step clock")?;
     let native=before["nativeCompleted"].as_u64().ok_or("Missing native clock")?;
@@ -68,13 +69,13 @@ fn run(input:&Path,out:&Path,preflight_only:bool,placement:Option<&Path>)->Resul
     let pilot_remaining=2400u64.checked_sub(elapsed).ok_or("Original pilot expired")?;
     let duration=after_admission["ownership"]["step"]["reference"]["duration"].as_f64().ok_or("Missing reference duration")?;
     let reference_elapsed=after_admission["ownership"]["step"]["reference"]["elapsed"].as_f64().ok_or("Missing reference elapsed")?;
-    let remaining_seconds=pilot_remaining.min(if resume6330{1856}else{2000}) as f64*0.00125;
-    let horizon_error=if !resume6330 && admission.is_ok() && duration-reference_elapsed>remaining_seconds {Some(format!("Reference needs {} s, original pilot/reserve has {remaining_seconds} s; no compression/reset/extension",duration-reference_elapsed))} else {None};
+    let remaining_seconds=pilot_remaining.min(if resume6332{1854}else if resume_saved{1856}else{2000}) as f64*0.00125;
+    let horizon_error=if !resume_saved && admission.is_ok() && duration-reference_elapsed>remaining_seconds {Some(format!("Reference needs {} s, original pilot/reserve has {remaining_seconds} s; no compression/reset/extension",duration-reference_elapsed))} else {None};
     let mut preflight=json!({"restoration":restored,"nativeBefore":before["nativeCompleted"],
         "originalStartedNative":started,"originalPilotRemainingNative":pilot_remaining,"referenceRemainingSeconds":duration-reference_elapsed,"availableSeconds":remaining_seconds,
         "commandAdmitted":admission.is_ok(),"horizonError":horizon_error,"acknowledgement":admission.as_ref().ok().and_then(|s|serde_json::from_str::<Value>(s).ok()),"error":admission.as_ref().err(),"commands":budget::step_command_diagnostics(),
         "ledger":budget::snapshot()?});
-    if resume6330 {
+    if resume_saved {
         let path=&before["ownership"]["step"]["placement"];
         preflight["preservedPlacementDeadlineNative"]=json!(path["entryNative"].as_u64().ok_or("Missing placement entry")? as f64+path["durationSeconds"].as_f64().ok_or("Missing placement duration")?/0.00125);
         preflight["horizonPolicy"]=json!("Saved path and Reception deadlines remain authoritative; nominal reference duration is not a requirement to finish before the next valid command");
@@ -108,11 +109,34 @@ fn run(input:&Path,out:&Path,preflight_only:bool,placement:Option<&Path>)->Resul
     let initial_com:[f64;3]=serde_json::from_value(before["com"].clone()).map_err(|e|e.to_string())?;
     let mut trace=vec![];let mut separation=None;let mut landing=None;let mut minimum_load_sample=None;
     let mut refresh_trace=vec![];let mut last_refresh=None;
+    let mut last_observation=before.clone();
     let outcome=(||->Result<(),String> {
         loop {
             if let Err(e)=budget::available(){first_stop=Some(e);break;}
+            // Material points sampled BEFORE this native integration. This is
+            // a measured finite difference, not a frozen-contact feasibility gate.
+            let pre_com: [f32;3]=serde_json::from_value(last_observation["comVelocityMps"].clone()).map_err(|e|e.to_string())?;
+            let mut material=vec![];
+            if resume6332 {let s=runtime.simulation();for c in last_observation["floorFootContacts"].as_array().ok_or("Missing live contacts")? {
+                let i=last_observation["bodies"].as_array().unwrap().iter().position(|b|b["id"]==c["body"]).ok_or("Contact body missing")?;
+                let body=&s.world.bodies[s.bodies[i]];
+                let p=rapier3d::prelude::Vector::from_array(serde_json::from_value(c["point"].clone()).map_err(|e|e.to_string())?);
+                let n=rapier3d::prelude::Vector::from_array(serde_json::from_value(c["normal"].clone()).map_err(|e|e.to_string())?);
+                let local=body.rotation().inverse()*(p-body.translation());
+                let com=body.translation()+body.rotation()*body.local_center_of_mass();
+                let v=body.linvel()+body.angvel().cross(p-com);
+                material.push((i,local,n,v));
+            }}
             let reply=runtime.advance_observed(1,|s,substep| {
                 let o=getup::locomotion::observation(s).map_err(|e|Failure::new(s.tick,substep,"continuation-observation",e,0.,0.))?;
+                let post_com:[f32;3]=serde_json::from_value(o["comVelocityMps"].clone()).map_err(|e|Failure::new(s.tick,substep,"com-measure",e.to_string(),0.,0.))?;
+                let measured_com_acc:[f32;3]=std::array::from_fn(|i|(post_com[i]-pre_com[i])/s.profile.dt_s);
+                let measured_normals:Vec<_>=material.iter().map(|(i,local,n,v0)| {
+                    let b=&s.world.bodies[s.bodies[*i]];let p=b.translation()+b.rotation()* *local;
+                    let com=b.translation()+b.rotation()*b.local_center_of_mass();let v=b.linvel()+b.angvel().cross(p-com);
+                    json!({"body":i,"point":p.to_array(),"normalAccelerationMps2":((v-*v0)/s.profile.dt_s).dot(*n),"normalVelocityMps":v.dot(*n)})
+                }).collect();
+                last_observation=o.clone();
                 samples+=1;
                 let native=o["nativeCompleted"].as_u64().ok_or_else(||Failure::new(s.tick,substep,"clock","missing native".into(),0.,0.))?;
                 if native-last_pose_native>=20 {write_pose(&mut poses,&o,&ids).map_err(|e|Failure::new(s.tick,substep,"pose-write",e,0.,0.))?;last_pose_native=native;}
@@ -141,8 +165,8 @@ fn run(input:&Path,out:&Path,preflight_only:bool,placement:Option<&Path>)->Resul
                     // Full measured boundary, including q/dq, root/body poses and
                     // velocities, current contact points/impulses and owner state.
                     // This is an observation, not a reconstructible Rapier checkpoint.
-                    let line=serde_json::to_vec(&json!({"native":native,"loadedFeet":loads,"capsuleSeparated":separated,"observation":compact_observation(&o),"ledger":budget::snapshot().ok(),"command":{"native":command["native"],"controlMode":command["controlMode"],"reason":command["reason"],"requestedCop":command["requestedCopXZ"],"commandedCop":command["commandedCopXZ"],"pointForces":command["pointForces"],"postureTarget":command["postureTarget"],"rawPd":command["rawPd"],"compensationControls":command["compensationControls"],"requestedControls":command["requestedControls"],"controls":command["controls"],"motorLimiting":command["motorLimiting"]}})).map_err(|e|Failure::new(s.tick,substep,"event",e.to_string(),0.,0.))?;
-                    if events.metadata().map_err(|e|Failure::new(s.tick,substep,"event",e.to_string(),0.,0.))?.len()+line.len() as u64>if resume6330{800_000}else if limited{1_000_000}else{1_500_000} {return Err(Failure::new(s.tick,substep,"event-reserve","event reserve exhausted".into(),0.,0.));}
+                    let line=serde_json::to_vec(&json!({"native":native,"loadedFeet":loads,"capsuleSeparated":separated,"observation":if resume6332{json!({"com":o["com"],"comVelocityMps":o["comVelocityMps"],"feet":o["floorFootGeometry"],"contacts":o["floorFootContacts"],"phase":phase})}else{compact_observation(&o)},"ledger":budget::snapshot().ok(),"command":{"native":command["native"],"controlMode":command["controlMode"],"reason":command["reason"],"requestedCop":command["requestedCopXZ"],"commandedCop":command["commandedCopXZ"],"pointForces":command["pointForces"],"postureTarget":command["postureTarget"],"rawPd":command["rawPd"],"compensationControls":command["compensationControls"],"requestedControls":command["requestedControls"],"controls":command["controls"],"motorLimiting":command["motorLimiting"]}})).map_err(|e|Failure::new(s.tick,substep,"event",e.to_string(),0.,0.))?;
+                    if events.metadata().map_err(|e|Failure::new(s.tick,substep,"event",e.to_string(),0.,0.))?.len()+line.len() as u64>if resume6332{150_000}else if resume_saved{800_000}else if limited{1_000_000}else{1_500_000} {return Err(Failure::new(s.tick,substep,"event-reserve","event reserve exhausted".into(),0.,0.));}
                     events.write_all(&line).and_then(|_|events.write_all(b"\n")).and_then(|_|events.sync_data()).map_err(|e|Failure::new(s.tick,substep,"event",e.to_string(),0.,0.))?;
                     previous_signature=Some(signature);
                 }
@@ -173,8 +197,8 @@ fn run(input:&Path,out:&Path,preflight_only:bool,placement:Option<&Path>)->Resul
                 if samples==1 || samples%20==0 {
                     trace.push(measured.clone());
                     let command=budget::last_step_command().unwrap_or(Value::Null);
-                    let line=serde_json::to_vec(&json!({"measurement":measured,"ledger":budget::snapshot().ok(),"receptionStarted":reception_start,"compensationActive":command["compensationActive"],"reason":command["reason"],"controlMode":command["controlMode"],"requestedCop":command["requestedCopXZ"],"commandedCop":command["commandedCopXZ"],"copResidual":command["copResidualM"],"motorLimiting":command["motorLimiting"],"controls":o["ownership"]["last_application"]["controls"],"requestedControls":command["requestedControls"],"allocationAlpha":command["alpha"],"fallbackUsed":command["fallbackUsed"],"effectiveOriginalFamilyAlpha":command["effectiveOriginalFamilyAlpha"],"primarySearchError":command["primarySearchError"],"accelerationTaskResidualRadps2":command["accelerationTaskResidualRadps2"],"transitionResidualControls":command["commandTransitionResidualControls"],"appliedExactlyMatchesAllocation":command["appliedExactlyMatchesAllocation"],"forceResidual":command["rneaResidualForceN"],"momentResidual":command["rneaResidualMomentNm"],"contactGeometry":o["floorFootContacts"],"placementStarted":path_started,"transitionNative":command["transitionNative"],"stability":stability_last})).map_err(|e|Failure::new(s.tick,substep,"progress",e.to_string(),0.,0.))?;
-                    if progress.metadata().map_err(|e|Failure::new(s.tick,substep,"progress",e.to_string(),0.,0.))?.len()+line.len() as u64>if limited{800_000}else{3_000_000} {return Err(Failure::new(s.tick,substep,"proof-reserve","progress reserve exhausted".into(),0.,0.));}
+                    let line=serde_json::to_vec(&json!({"measurement":measured,"measuredComAccelerationMps2":measured_com_acc,"measuredMaterialContacts":measured_normals,"predictedContacts":command["supportNormalPrediction"],"predictedForces":command["allocatedForcesN"],"placementGoal":o["ownership"]["step"]["foot_goal"],"footPosition":foot,"ledger":budget::snapshot().ok(),"receptionStarted":reception_start,"compensationActive":command["compensationActive"],"reason":command["reason"],"controlMode":command["controlMode"],"requestedCop":command["requestedCopXZ"],"commandedCop":command["commandedCopXZ"],"copResidual":command["copResidualM"],"motorLimiting":command["motorLimiting"],"controls":o["ownership"]["last_application"]["controls"],"requestedControls":command["requestedControls"],"allocationAlpha":command["alpha"],"fallbackUsed":command["fallbackUsed"],"effectiveOriginalFamilyAlpha":command["effectiveOriginalFamilyAlpha"],"primarySearchError":command["primarySearchError"],"accelerationTaskResidualRadps2":command["accelerationTaskResidualRadps2"],"transitionResidualControls":command["commandTransitionResidualControls"],"appliedExactlyMatchesAllocation":command["appliedExactlyMatchesAllocation"],"forceResidual":command["rneaResidualForceN"],"momentResidual":command["rneaResidualMomentNm"],"contactGeometry":o["floorFootContacts"],"placementStarted":path_started,"transitionNative":command["transitionNative"],"stability":stability_last})).map_err(|e|Failure::new(s.tick,substep,"progress",e.to_string(),0.,0.))?;
+                    if progress.metadata().map_err(|e|Failure::new(s.tick,substep,"progress",e.to_string(),0.,0.))?.len()+line.len() as u64>if resume6332{500_000}else if limited{800_000}else{3_000_000} {return Err(Failure::new(s.tick,substep,"proof-reserve","progress reserve exhausted".into(),0.,0.));}
                     progress.write_all(&line).and_then(|_|progress.write_all(b"\n")).and_then(|_|progress.sync_data()).map_err(|e|Failure::new(s.tick,substep,"progress",e.to_string(),0.,0.))?;
                 }
                 if separated_seen && separation.is_none() {separation=Some(measured.clone());}
@@ -210,9 +234,10 @@ fn main()->Result<(),Box<dyn std::error::Error>> {
     }
     let mut file=OpenOptions::new().write(true).create_new(true).open(&args[3])?;
     file.write_all(b"{\"status\":\"started; final outcome pending\"}\n")?;file.sync_all()?;
-    let resume6330=args[2].ends_with("limited027-trial.stop.bin.gz");
+    let resume6332=args[2].ends_with("limited028-trial.stop.bin.gz");
+    let resume_saved=resume6332 || args[2].ends_with("limited027-trial.stop.bin.gz");
     let limited=if args.len()==5 {let p:Value=serde_json::from_slice(&std::fs::read(&args[4])?)?;p["format"]=="post-separation-limited-curve-v2"}else{false};
-    if resume6330 {budget::install_resume_6330()?;}else if args.len()==5 && !limited {budget::install_post_separation_025()?;}else{budget::install_reception010_replay()?;}
+    if resume6332 {budget::install_resume_6332()?;}else if resume_saved {budget::install_resume_6330()?;}else if args.len()==5 && !limited {budget::install_post_separation_025()?;}else{budget::install_reception010_replay()?;}
     let result=run(Path::new(&args[2]),Path::new(&args[3]),args[1]=="--preflight-stop",args.get(4).map(|p|Path::new(p)));
     let ledger=budget::snapshot()?;
     let mut receipt=json!({"format":"reception024-captured-leg-comparison-from-6186-v1","historicalFlightController":"e5151e23f3c1401abac9aa993364a7a88d30505b","receptionImplementation":"local/reception-010-fix; see build identity","historical":34945,"trialLimit":2000,
@@ -225,9 +250,10 @@ fn main()->Result<(),Box<dyn std::error::Error>> {
         receipt["remainingGlobalBudget"]=json!(12450-ledger.real-ledger.forecast);
     }
     if limited {receipt["format"]=json!("limited-post-separation-following027-v1");receipt["historical"]=json!(45589);receipt["trialLimit"]=json!(2000);receipt["cumulativeLimit"]=json!(47589);receipt["totalConsumed"]=json!(45589+ledger.real+ledger.forecast);receipt["remainingGlobalBudget"]=json!(2000-ledger.real-ledger.forecast);}
-    if resume6330 {receipt["format"]=json!("limited028-continuation-from6330-v1");receipt["historical"]=json!(45733);receipt["trialLimit"]=json!(1856);receipt["cumulativeLimit"]=json!(47589);receipt["totalConsumed"]=json!(45733+ledger.real+ledger.forecast);receipt["remainingGlobalBudget"]=json!(1856-ledger.real-ledger.forecast);}
+    if resume_saved {receipt["format"]=json!("limited028-continuation-from6330-v1");receipt["historical"]=json!(45733);receipt["trialLimit"]=json!(1856);receipt["cumulativeLimit"]=json!(47589);receipt["totalConsumed"]=json!(45733+ledger.real+ledger.forecast);receipt["remainingGlobalBudget"]=json!(1856-ledger.real-ledger.forecast);}
+    if resume6332 {receipt["format"]=json!("reduced-base029-continuation-from6332-v1");receipt["historical"]=json!(45735);receipt["trialLimit"]=json!(1854);receipt["totalConsumed"]=json!(45735+ledger.real+ledger.forecast);receipt["remainingGlobalBudget"]=json!(1854-ledger.real-ledger.forecast);}
     let bytes=serde_json::to_vec(&receipt)?;
-    if bytes.len()>if resume6330{650_000}else{750_000} {return Err("result exceeds reserved 750000 bytes".into());}
+    if bytes.len()>if resume6332{400_000}else if resume_saved{650_000}else{750_000} {return Err("result exceeds reserved 750000 bytes".into());}
     file.seek(SeekFrom::Start(0))?;file.write_all(&bytes)?;file.set_len(bytes.len() as u64)?;file.sync_all()?;
     println!("{}",json!({"ledger":ledger,"totalConsumed":receipt["totalConsumed"],"error":receipt["error"],"firstStop":receipt["result"]["firstStop"],"output":args[3]}));Ok(())
 }
