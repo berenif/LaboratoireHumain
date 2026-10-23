@@ -47,6 +47,7 @@ pub(crate) fn install_identification()->Result<(),String> { install_limit(4) }
 pub fn install_getup_video_capture()->Result<(),String> {install_limits(8000,2400,8000)}
 pub fn install_post_separation_025()->Result<(),String> { install_limit_with_step(12450,12450) }
 pub fn install_reception010_replay()->Result<(),String> { install_limit(2000) }
+pub fn install_resume_6330()->Result<(),String> { install_limit(1856) }
 pub fn install_resume_6186()->Result<(),String> { install_limit(1000) }
 pub fn install_resume_6182()->Result<(),String> { install_limit(1000) }
 pub fn install_resume_6153()->Result<(),String> { install_limit(1200) }
