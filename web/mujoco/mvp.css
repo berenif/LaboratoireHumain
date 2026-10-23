@@ -1,3 +1,7 @@
 .controls button{margin:0 5px 8px 0}.view-controls p{font-size:12px;line-height:1.8}.metrics{grid-column:2}.scene{min-height:570px}.backend{white-space:nowrap}button:disabled{opacity:.5;cursor:wait}#simulation{cursor:grab}#simulation.grabbing{cursor:grabbing}.error-banner[hidden]{display:none}@media(max-width:650px){.scene{min-height:460px;width:100%}.metrics{width:100%;box-sizing:border-box}.controls,.view-controls{width:100%}.view-controls p{display:inline-block;margin-right:20px}.backend{font-size:9px}}
 
 .controls select{width:100%;padding:9px;border:1px solid #809b90;border-radius:6px;background:#fff;color:#233e37;margin-bottom:10px}.controls label{display:block;font-size:12px;margin-top:10px;margin-bottom:5px}
+
+#getup-panel[hidden],#getup-result[hidden]{display:none}#getup-panel p{font-size:12px;line-height:1.5}#getup-result{display:block;white-space:pre-line;border-left:3px solid #31554e;background:#eff5ee;padding:10px;font-size:12px;line-height:1.6}#getup-panel{margin-top:16px}
+
+@media(min-width:651px){.local-getup .workspace{grid-template-rows:minmax(500px,calc(100vh - 290px)) 100px}.local-getup .panel{max-height:calc(100vh - 160px);overflow:auto;scrollbar-width:thin}.local-getup .scene{min-height:0}}

@@ -236,3 +236,39 @@ Official Library batch helper failed before upload confirmation:
 `hosted apps tools/list request failed: network`. No confirmed Library IDs and
 no switch to another transfer route. Local deliverables remain available.
 No weights packaged, deployment, public push, installation or site change.
+
+## Local browser scenario (approved bounded integration)
+
+Open `/web/dist/index.html?getup=local` through the existing repository-root
+loopback preview server. The normal deployed MVP does not expose this button;
+`local-getup/`, checkpoints, reference and weights remain excluded from its build.
+The entry, model, reference and actor are checked by SHA256 before replacement
+of the current world. GetUp is explicitly a KNOWN-ENTRY experiment, not a policy
+that can be activated from any MVP posture. The sole initial restoration includes
+positions, velocities, time and all233 mjSTATE_INTEGRATION values.
+
+`cycle.js` extracts the sequencing of `run-getup-continuous-slow.mjs`: 400 passive
+steps at200Hz,340 SLOW decisions then150 holding decisions,20 steps each at800Hz.
+Same network/observation/PD functions, source gears and gains; no new reference.
+No `Physics.step()`/balance call is made while GetUp owns commands. The camera
+tracks the measured COM horizontally only for framing; it never writes state.
+Grab/push/mode are temporarily unavailable, camera/pause remain available.
+Reset explicitly quits the scenario; finishing pauses integrations and retains
+its visible report. No silent handoff to the balance controller.
+
+The prospective observer logs the whole movement but evaluates terminal reception
+within the final observation window. Bilateral loads during the get-up propulsion
+(e.g. t18.350, head.757m) are not mislabeled as completed terminal reception.
+A flight already underway at the end of the reference can land during this
+window; a new flight AFTER its loaded reception is reported separately. Same
+3N/foot,.8weight,head1.4m,tilt20deg,COMspeed.05m/s,angularspeed.5rad/s thresholds.
+Contact observations remain40Hz with last-substep reaction/refreshed-geometry
+stage distinction. This does not edit the af04325 FAIL verdict or qualify a
+reference generated from the failed WEAK rollout as a stable teacher.
+
+`node scripts/verify-getup-cycle-ui.mjs` performs only replay/pure/UI checks.
+`--run` is a single-use browser acceptance, with pending reserve before each
+5/20-step decision, durable compressed40Hz samples, final state and10200 cap.
+Existing ledger/poses prohibit a repeated run. No physical validation is implied
+by the pure check. No Library retry, public package or deployment is part of this
+local experiment; GetUp rights and the official media-transfer403 remain blockers.
