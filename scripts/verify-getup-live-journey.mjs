@@ -157,7 +157,7 @@ try{
   assert(ledger.completed&&ledger.pendingMaxTicks===0&&latestState.paused&&latestState.physicsSteps===ledger.newTicks);
   const frozen=JSON.stringify(latestState);await page.waitForTimeout(150);assert.equal(JSON.stringify(await page.evaluate(()=>window.__journeyInspect())),frozen);
   assert.equal(errors.length,0);assert.equal(ledger.continuationSummary.pushAppliedTicks,120);
-  ledger.finalPauseFrozen=true;ledger.passed=(restored?ledger.fullStartExact:ledger.cycleSummary.observedHold&&ledger.liveHandoff.full233StateExact)&&ledger.continuationSummary.observedHold&&ledger.pushPause.fullPhysicalStateFrozen;
+  ledger.finalPauseFrozen=true;const physicalAndPausePassed=(restored?ledger.fullStartExact:ledger.cycleSummary.observedHold&&ledger.liveHandoff.full233StateExact)&&ledger.continuationSummary.observedHold&&ledger.pushPause.fullPhysicalStateFrozen;
   assert(ledger.newTicks<=max);write('ledger.json',ledger);
   if(fullFinal){
    await page.locator('#getup-result').scrollIntoViewIfNeeded();
@@ -167,11 +167,14 @@ try{
   }
   await page.screenshot({path:`${dir}/ui-final.png`});
   write('ui.json',{state:await page.evaluate(()=>window.__lhMujoco.state),report:await page.locator('#getup-result').textContent(),previous:await page.locator('#getup-previous').textContent(),errors});
+  // Publish the combined verdict only after the required visible report and
+  // capture are actually preserved. A capture/assertion failure is not PASS.
+  ledger.passed=physicalAndPausePassed&&(!fullFinal||ledger.reportVisible);write('ledger.json',ledger);
   console.log(JSON.stringify({passed:ledger.passed,newTicks:ledger.newTicks,confirmedTotal:ledger.confirmedTotal,liveHandoff:ledger.liveHandoff,pushPause:ledger.pushPause,summary:ledger.continuationSummary,diskGrowth:disk()}));
  }
 }catch(error){
  if(ledger){
-  ledger.harnessError=String(error);write('ledger.json',ledger);
+  ledger.passed=false;ledger.harnessError=String(error);write('ledger.json',ledger);
   try{
    // Stop through the existing blur/pause handler, then let any already-reserved
    // decision finish before reading. Never restart or restore after a failure.
