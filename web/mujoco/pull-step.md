@@ -441,3 +441,95 @@ MuJoCo remains 228794 confirmed plus unknown history; Rapier remains 45735.
 There is no activation in the controller, dynamic-readiness claim, push or site
 change. This result neither proves physical impossibility nor supplies a safe
 feedback controller; it identifies the remaining failed local condition.
+
+## Recentered axis guards — fixed-state PASS, no physical step
+
+The next authorized diagnostic is `scripts/verify-pull-axis-native-pure.mjs`.
+It reuses the complete native response above as its centre, at the same exact
+233-value physical input and the same recorded arm force. There is no new
+baseline evaluation. The 21 finite differences are 0.001 control units, directed
+inward whenever a positive perturbation would leave the ORIGINAL ±0.1 envelope.
+Their directions are recorded before the first call; no failed sample is replaced.
+
+All original targets, scales, weights, caps, friction and 92 conditions remain.
+With `d = u-uc` and `offset = uc-u0`, the objective regularizes
+`lambda*||offset+d||²`; its normal-equation RHS includes `-lambda*offset`.
+Motor/trust rows bound the total `u-u0`, not an additional ±0.1 around `uc`.
+There is no command clipping after admission.
+
+Six additional linear guards bound each body-local angular velocity component:
+`|omega_i + h*alpha_i| <= |omega_i|`, with the actual `h=0.00125s`.
+These prohibit compensation between axes and cover axial rotation too. They are
+a conservative, first-order braking guard for this particular entry, not a
+universal balance law or proof that an intended lateral lean is impossible.
+
+The old scalar condition remains. Its predicted limit reserves the already
+declared error allowance: `g_pred + max(1e-10, .2*|g_pred-g_center|) <= 0`.
+Since `g_center=+0.0002857760814277`, the interior limit is
+`-0.00007144402035693 s^-3`. The allowance is still tested against the native
+response; it is not assumed to bound every future state or active-set change.
+
+The 12 new algebra checks cover frames, centripetal acceleration, finite
+differences of rotation, signed/zero angular velocities, inter-axis cancellation,
+the error reserve and the non-cumulative control envelope. The 19 existing
+Cholesky/active-set checks also pass. They instantiate no model and add no native
+dynamics evaluations. A streaming-format test additionally checks that flushed
+gzip records can be decoded before end-of-stream, entirely in memory.
+
+The single authorized calculation completes **21 sensitivities + one candidate**.
+Every sensitivity and the candidate retain the saved constraint regime; the
+right-knee limit stays satisfied and the left one stays active. All raw native
+outputs are compressed and flushed before guards. The journal has 22 begin,
+22 native-response and 22 end records. The solve uses 25/64 pivots, with
+normalized primal violation 1.32e-14, stationarity 1.56e-15 and complementarity
+1.13e-16. Every one of the 98 native conditions passes separately:
+
+| Condition group | Count | Native value / worst residual |
+|---|---:|---|
+| Tilt acceleration and upright-vector speed derivative | 2 | -0.001901072738 rad/s²; -0.00007144402014 s⁻³ |
+| Nonnegative normals | 8 | minimum 25.212511 N |
+| Pyramidal friction facets | 32 | worst residual -18.317063 N |
+| Retained right load >=100 N | 1 | 136.643656 N |
+| Current right capsule endpoint gap jets | 4 | -0.724586 to -0.427440 mm |
+| Per-axis angular-velocity guards | 6 | worst residual -7.55e-15 rad/s |
+| Original motor and trust envelope | 42 | worst residual +1.32e-14 control units, within unchanged 1e-10 tolerance |
+| Lateral progress | 1 | COM ay -0.291901267 m/s² |
+| Global-roll moment bounds | 2 | HdotX +0.334472135 Nm, below original +0.350796094 Nm |
+
+The tilt/scalar predictions are -0.001901072744 rad/s² and
+-0.00007144402039186 s⁻³. Scalar error is 2.51e-13 versus the reserved
+7.1444e-5 allowance. All 53 feature prediction checks pass; common normalized
+output error is 6.51e-14 versus 0.000903789. Maximum 27-equation dynamics residual
+is 1.48e-14, including the unactuated base. Maximum motor utilization remains
+70.4211% (left ankle-y 14.084219/20 Nm). No root effort is applied.
+
+Body-local angular accelerations are approximately [0, -0.001624442, +20.320248]
+rad/s², giving the *first-order proxy* velocities
+[0.002344882, 0.043978620, -0.094870253] rad/s from
+[0.002344882, 0.043980650, -0.120270563]. Thus axial rotation is braked;
+it is not a new axial acceleration in the direction of the current spin.
+COM acceleration is [0.244811952, -0.291901267, -0.026339877] m/s².
+The lateral change supplies 56.31% of the original requested correction.
+Loads are 136.643656/262.836976 N (right/left), still bilateral. Task cost is
+0.001678960 versus 0.001624616 at the prior centre and 0.010228501 at the original
+baseline; the tighter constraints slightly worsen the objective, as expected.
+
+**This is only a fixed-state command PASS.** Tilt speed remains positive at
+0.043957781 rad/s; its braking is weak. Neither support persistence, left-foot
+unloading, clearance, placement nor reception has been observed. The instantaneous
+limits do not certify enough braking before the existing 20-degree stop, and this
+diagnostic is not installed in the controller. A separate reviewed dynamic
+observation would be required; no such permission is inferred from this PASS.
+
+Evidence: `web/proofs/pull-step-axis-pure/`, **61,617 bytes**, including all
+predicted/native condition values. Result gzip SHA256
+`9b54af040aaefa9155513549f2b0b9ec3e2fa3e2139d41baed6ca52d14e000d3`;
+journal gzip SHA256
+`d505e2dfe772d1d8e83c1ecf6ca086de2e1f05c553052f78f149b7b8ed188802`.
+The saved-data-only audit `verify-pull-axis-recording.mjs` independently
+reconstructs all 98 conditions and checks exact inputs, efforts, original bounds,
+record ordering, source hashes and the scalar reserve. It adds no evaluations.
+Native calls total 6.140 ms; algebra 14.996 ms; whole diagnostic 347.077 ms on
+this cloud. This is not a mobile or online-control performance measurement.
+MuJoCo stays 228794 confirmed plus unknown history, Rapier 45735; zero ticks and
+forecasts, no retry, active-controller modification, push, deployment or install.
