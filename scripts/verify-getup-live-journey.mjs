@@ -20,7 +20,9 @@ if(process.argv.includes('--check-waits')){
  console.log(JSON.stringify({waitRegression:true,cases:7,ticks:0}));process.exit(0);
 }
 const {chromium}=await import('/opt/codex/cua_node/lib/node_modules/playwright/index.mjs');
-const restored=process.argv.includes('--restored-pause'),dir=restored?'web/proofs/getup-restored-pause':'web/proofs/getup-live-journey',run=process.argv.includes('--run'),before=restored?201659:191459,max=restored?4000:14200;
+const restored=process.argv.includes('--restored-pause'),fullFinal=process.argv.includes('--full-journey-final');
+assert(!(restored&&fullFinal),'Select one authorized observation only');
+const dir=fullFinal?'web/proofs/getup-full-journey-final':restored?'web/proofs/getup-restored-pause':'web/proofs/getup-live-journey',run=process.argv.includes('--run'),before=fullFinal?205659:restored?201659:191459,max=restored?4000:14200;
 const disk=()=>Number(execFileSync('du',['-s','-B1','/workspace'],{encoding:'utf8'}).split(/\s/)[0])-419647488;
 const sha=b=>crypto.createHash('sha256').update(b).digest('hex'),json=p=>JSON.parse(fs.readFileSync(p));
 const write=(name,value)=>{fs.writeFileSync(`${dir}/${name}.tmp`,JSON.stringify(value));fs.renameSync(`${dir}/${name}.tmp`,`${dir}/${name}`);};
@@ -28,7 +30,7 @@ assert(disk()+(restored?5000000:7000000)<1500000000,'Evidence reserve exceeds di
 fs.mkdirSync(dir,{recursive:true});
 if(run)assert(!fs.existsSync(`${dir}/ledger.json`)&&!fs.existsSync(`${dir}/poses.ndjson.gz`),'Existing/uncertain run: never repeat');
 for(const f of ['app.js','engine.js','index.html'])assert.equal(sha(fs.readFileSync(`web/dist/${f}`)),sha(fs.readFileSync(`web/mujoco/${f}`)),'Built/source mismatch: '+f);
-assert(json(restored?'web/proofs/getup-live-journey/ledger.json':'web/proofs/getup-slow-continuation/ledger.json').confirmedTotal===before);
+assert(json(fullFinal?'web/proofs/getup-restored-pause/ledger.json':restored?'web/proofs/getup-live-journey/ledger.json':'web/proofs/getup-slow-continuation/ledger.json').confirmedTotal===before);
 assert(json('web/proofs/getup-slow-continuation/pure.json').pure.pauseCameraZeroIntegrationStub);
 const checkpoint=json('web/proofs/getup-browser-cycle/final-state.json');
 if(restored){assert.deepEqual(checkpoint,json('web/proofs/getup-live-journey/cycle-final.json'));assert.deepEqual(checkpoint.state,json('web/proofs/getup-live-journey/stopped-state.json').inspection.state);}
@@ -43,7 +45,7 @@ try{
  assert.equal(await page.evaluate(()=>window.__lhMujoco.state.steps),0);
  assert.equal(await page.locator('#getup-start').isEnabled(),!restored);assert.equal(await page.locator('#getup-continue').isEnabled(),restored);
  if(!run){
-  let restoration=null;
+  let restoration=null,reportVisibility=null;
   if(restored)restoration=await page.evaluate(async()=>{
    const {loadCycleAssets}=await import('/web/mujoco/local-getup/cycle.js');
    const {SlowContinuation,loadFinalCheckpoint,FINAL_STATE_SHA}=await import('/web/mujoco/local-getup/continuation.js');
@@ -54,10 +56,19 @@ try{
    c.dispose();p.dispose();return result;
   });
   if(restored){assert(restoration.exact&&restoration.restored&&restoration.calm&&restoration.ticks===0);assert.deepEqual(restoration.initialState,checkpoint.state);}
-  const preflight={source,protocol,ticks:0,restoration,priorPure:'getup-slow-continuation/pure.json',diskGrowth:disk(),sourceAndBuiltFilesIdentical:true,initialUI:restored?'paused; cycle disabled; explicit checkpoint continuation enabled':'paused; cycle enabled; continuation disabled'};
+  if(fullFinal){
+   // UI-only layout fixture in this disposable, paused preflight page. No
+   // controller is started; this text is never recorded as a physical result.
+   await page.evaluate(()=>{const r=document.querySelector('#getup-result');r.hidden=false;r.textContent='Vérification de cadrage uniquement\nAucun essai lancé\nBilan final lisible\nÉtat en pause\nSans intégration\nFin de la vérification';});
+   await page.locator('#getup-result').scrollIntoViewIfNeeded();
+   reportVisibility=await page.evaluate(()=>{const r=document.querySelector('#getup-result').getBoundingClientRect(),p=document.querySelector('.panel').getBoundingClientRect();return r.top>=Math.max(0,p.top)&&r.bottom<=Math.min(innerHeight,p.bottom)&&r.left>=0&&r.right<=innerWidth;});
+   assert(reportVisibility);assert.equal(await page.evaluate(()=>window.__lhMujoco.state.steps),0);
+  }
+  const preflight={source,protocol,ticks:0,restoration,reportVisibility,harnessSha256:sha(fs.readFileSync('scripts/verify-getup-live-journey.mjs')),priorPure:'getup-slow-continuation/pure.json',diskGrowth:disk(),sourceAndBuiltFilesIdentical:true,initialUI:restored?'paused; cycle disabled; explicit checkpoint continuation enabled':'paused; cycle enabled; continuation disabled'};
   write('preflight.json',preflight);console.log(JSON.stringify(preflight));
  }else{
   assert(fs.existsSync(`${dir}/preflight.json`),'Preflight required');
+  if(fullFinal){const pf=json(`${dir}/preflight.json`);assert(pf.reportVisibility&&pf.ticks===0);assert.equal(pf.harnessSha256,sha(fs.readFileSync('scripts/verify-getup-live-journey.mjs')),'Harness changed after preflight');}
   ledger={source,protocol,confirmedBefore:before,priorUnknownPreserved:true,newTicks:0,confirmedTotal:before,cycleTicks:0,continuationTicks:0,pendingMaxTicks:0,completed:false};
   fs.writeFileSync(`${dir}/ledger.json`,JSON.stringify(ledger),{flag:'wx'});fd=fs.openSync(`${dir}/poses.ndjson.gz`,'wx');
   await page.exposeFunction('__journeyAudit',message=>{
@@ -77,6 +88,7 @@ try{
    assert(message.worldSame&&message.setStateCalls===0,'World changed or intermediate state setter');
    if(message.kind==='reserve'){
     assert.equal(offset+message.ticks,ledger.newTicks);assert(ledger.newTicks+message.pending<=max);
+    if(fullFinal&&ledger.newTicks%400===0){const growth=disk();ledger.peakMeasuredDiskGrowth=Math.max(ledger.peakMeasuredDiskGrowth||0,growth);assert(growth+500000<Math.min(1500000000,1490710528+7000000),'Disk reserve exhausted');}
     ledger.pendingMaxTicks=message.pending;write('ledger.json',ledger);
    }else if(message.kind==='start'||message.kind==='sample'){
     const total=offset+message.summary.ticks;assert.equal(message.physicsSteps,total);assert(total<=max&&total>=ledger.newTicks);
@@ -147,6 +159,12 @@ try{
   assert.equal(errors.length,0);assert.equal(ledger.continuationSummary.pushAppliedTicks,120);
   ledger.finalPauseFrozen=true;ledger.passed=(restored?ledger.fullStartExact:ledger.cycleSummary.observedHold&&ledger.liveHandoff.full233StateExact)&&ledger.continuationSummary.observedHold&&ledger.pushPause.fullPhysicalStateFrozen;
   assert(ledger.newTicks<=max);write('ledger.json',ledger);
+  if(fullFinal){
+   await page.locator('#getup-result').scrollIntoViewIfNeeded();
+   const reportVisible=await page.evaluate(()=>{const r=document.querySelector('#getup-result').getBoundingClientRect(),p=document.querySelector('.panel').getBoundingClientRect();return r.top>=Math.max(0,p.top)&&r.bottom<=Math.min(innerHeight,p.bottom)&&r.left>=0&&r.right<=innerWidth;});
+   assert(reportVisible,'Final report is outside the captured viewport');assert.equal(JSON.stringify(await page.evaluate(()=>window.__journeyInspect())),frozen);
+   ledger.reportVisible=true;ledger.peakMeasuredDiskGrowth=Math.max(ledger.peakMeasuredDiskGrowth||0,disk());write('ledger.json',ledger);
+  }
   await page.screenshot({path:`${dir}/ui-final.png`});
   write('ui.json',{state:await page.evaluate(()=>window.__lhMujoco.state),report:await page.locator('#getup-result').textContent(),previous:await page.locator('#getup-previous').textContent(),errors});
   console.log(JSON.stringify({passed:ledger.passed,newTicks:ledger.newTicks,confirmedTotal:ledger.confirmedTotal,liveHandoff:ledger.liveHandoff,pushPause:ledger.pushPause,summary:ledger.continuationSummary,diskGrowth:disk()}));
