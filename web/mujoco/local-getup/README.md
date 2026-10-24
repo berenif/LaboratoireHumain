@@ -462,3 +462,49 @@ whole body and floor visible, upright; the textual terminal report is separately
 preserved in ui.json. No redundant video, new Library attempt, deployment or
 weights package. New4000 steps, confirmed MuJoCo205659 PLUS the old unknown run;
 Rapier45735 frozen. No retry or second physical execution.
+
+## Complete live browser journey (24 October 2026)
+
+Single approved execution, runtime0ba3df0, application/controllers unchanged.
+`verify-getup-live-journey.mjs --full-journey-final` is zero-integration preflight;
+`--run` uses a new guarded evidence folder, current cumulative counter and the
+existing UI/phase-wait/pause checks. It never selects the checkpoint-continuation
+URL. The final report is brought into view using the EXISTING sidebar scroll.
+Only the verification script changed, not the renderer, model, policy or UI.
+
+Result: PASS LIMITED TO THIS KNOWN-ENTRY JOURNEY. 10200 cycle steps plus4000
+continuation steps =14200 actual integrations, zero forecasts, t8.25→27.50s.
+One initial known-entry restoration precedes passive fall; then the SAME world
+runs passive200Hz→SLOW800Hz, cycle-final pause, actual Continuer SLOW click,
+continuation and final pause. The233 values at the live handoff match exactly;
+no intermediate state setter/world replacement/checkpoint or Balance handoff.
+The initial cycle has observed terminal reception and2.125s sampled final calm.
+
+After800 calm continuation steps, the existing torso15N+X pulse runs. Actual
+Pause at global tick11040 (continuation840, force40, t23.550s) plus camera
+zoom/reset freezes all233 integration values, time, counters and.100s remaining
+pulse for368.8ms wall time. Resume applies exactly80 more force ticks. Total
+force120 native steps/.150s, t23.500→23.650s; no duration extension from UI pause.
+Final132 consecutive calm40Hz samples=3.300s, including all40 final-second
+samples; no continuation support-loss/nonfoot/flight/fall guard fires. Final
+pause and frozen counters verified again, also after scrolling the report.
+
+Final COMspeed.001099m/s, tilt2.118deg, foot loadsR206.73/L193.96N. Continuation
+peak COMspeed.06803m/s, tilt2.973deg, applied torque fraction.4840783, gear error0.
+Cycle max torque fraction1; all21 caps remain enforced. Reactions retain the
+last-substep/refreshed-geometry distinction. All571 cycle samples and all201
+continuation samples match their earlier physical recordings in qpos/qvel/ctrl/
+geometries; final233 values match the prior restored continuation. Raw772 rows
+retain the duplicated zero-duration live handoff sample explicitly.
+
+Evidence `web/proofs/getup-full-journey-final/`: progressive compressed poses,
+cycle/final full states, pause comparison, ledger, compact audit and original
+browser screenshot. The screenshot was inspected: mannequin/ground and BOTH
+persisted reports are visible, with no redundant video or replay. The combined
+PASS is written only after this evidence is saved. Browser then closes cleanly.
+
+This closes the complete local known-entry journey gap; it does not establish
+arbitrary-fall recovery, unrestricted post-get-up interaction or phone delivery.
+Historical af04325 FAIL and the earlier INCOMPLETE live attempt remain intact.
+Confirmed MuJoCo219859 PLUS the unchanged unknown old run; Rapier45735 frozen.
+No retry, transfer under403, weights distribution, public push or deployment.
