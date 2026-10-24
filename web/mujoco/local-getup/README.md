@@ -1,4 +1,13 @@
-# Local GetUp SLOW holding adapter — not distributed
+# GetUp adapter and preserved local experiment record
+
+Current packaging (24 October 2026): the known-entry scenario and live SLOW
+continuation are included in the static build, using the explicitly authorized
+tracked runtime inputs. The controller and all historical verdicts below remain
+unchanged. Earlier descriptions of local-only packaging describe those experiments
+at the time, not the current build. GetUp rights remain unverified; this note is
+not a statement that absence of a located license proves a legal prohibition.
+
+## Original local holding adapter
 
 Pinned GetUp source: `5ad52fbe1b5b7c56522a1aa10ccf17fb81c0d79e`.
 The binary format and arithmetic follow `getup/actor.rs` and `actors.py`:
@@ -523,12 +532,13 @@ From the repository root, with Node >=22.13 and a browser available:
 ```sh
 npm ci
 npm run build
-node scripts/serve-rust-preview.mjs . 5199
+node scripts/verify-mujoco-package.mjs # no physics
+npm start
 ```
 
-Open `http://127.0.0.1:5199/web/dist/index.html?getup=local`. The repository root
-must be served because the scenario loads modules and data outside `web/dist`.
-The ordinary `npm start` serves only `web/dist` and is for the normal MVP.
+Open `http://127.0.0.1:5185/`. The build copies the existing modules and links
+immutable runtime inputs into `web/dist/getup-assets`, with relative URLs and
+identity checks. Serving only dist now supports the complete known-entry flow.
 The page starts paused; clicking Essai GetUp runs the known-entry scenario.
 Continuer SLOW uses its live final world; it needs no saved final checkpoint.
 
@@ -536,7 +546,8 @@ Continuer SLOW uses its live final world; it needs no saved final checkpoint.
 its integrity hash. A fresh install needs the package registry or a matching
 cache; vendor WASM, node_modules and build output are not in this backup.
 The optional `continue=checkpoint` path and historical audit harness still
-require excluded local evidence and, for the harness, environment-specific
+require the repository-root loopback server, excluded local evidence and, for
+the harness, environment-specific
 browser tooling. Media and other checkpoints remain excluded. This backup
 does not deploy the site or establish arbitrary-pose or phone support.
 Only data/schema/hash and Git checks accompanied this addition: no clean

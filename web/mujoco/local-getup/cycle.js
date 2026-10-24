@@ -13,15 +13,18 @@ const files={
   actor:['/rust/crates/sim/data/getup-policy/student.bin','c489faed55bdab1669c51dab71a102db91ff2a55143789f682e45cd8169d6dbb'],
   model:['/web/dist/humanoid.xml','7a6e3dfc83a9e30bebe81e3e8c6e6b146f8447d1dbfaacd83de90f4937ea5765'],
 };
-export async function loadCycleAssets(){
-  check(['127.0.0.1','localhost','[::1]'].includes(location.hostname),'Essai réservé au serveur local');
+export async function loadCycleAssets({assetBase=null}={}){
+  // Hosted builds provide an explicit same-origin asset base. The legacy
+  // repository-root loader remains local-only for retained diagnostic scripts.
+  if(!assetBase)check(['127.0.0.1','localhost','[::1]'].includes(location.hostname),'Essai réservé au serveur local');
+  const packaged={entry:'weak-final.json',reference:'reference.json',actor:'student.bin',model:'../humanoid.xml'};
   const bytes={};
   await Promise.all(Object.entries(files).map(async([key,[url,sha]])=>{
-    const r=await fetch(url);check(r.ok,`Fichier local indisponible : ${key}`);
+    const r=await fetch(assetBase?new URL(packaged[key],assetBase):url);check(r.ok,`Ressource GetUp indisponible : ${key}`);
     bytes[key]=await r.arrayBuffer();check(await hash(bytes[key])===sha,`Identité incorrecte : ${key}`);
   }));
   const json=b=>JSON.parse(new TextDecoder().decode(b));
-  const metadataResponse=await fetch('/rust/crates/model/data/getup-v1.json');check(metadataResponse.ok,'Métadonnées absentes');
+  const metadataResponse=await fetch(assetBase?new URL('getup-v1.json',assetBase):'/rust/crates/model/data/getup-v1.json');check(metadataResponse.ok,'Métadonnées absentes');
   const metadata=await metadataResponse.json(),terminal=target(metadata.referenceMetadata.standingPose);
   const xml=new TextDecoder().decode(bytes.model).replace('<option timestep=".00125"/>','<option timestep=".005" integrator="Euler"/>');
   check(await hash(new TextEncoder().encode(xml))==='edf53e8509ea56be6f00d873e7a03d32d1e2f69b0c6a13ac95887ec8e8308655','Modèle WEAK différent');

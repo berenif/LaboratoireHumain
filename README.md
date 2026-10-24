@@ -4,20 +4,28 @@
 
 The default app now uses the official, pinned MuJoCo 3.17.0 WASM distribution.
 The existing GetUp mannequin and compact capsule rendering are retained.
-This first milestone provides real contacts, grab/pull/release, a push, pause,
-reset and camera controls. It is a **passive body**: active balance, walking and
-get-up are not implemented or claimed for this MVP.
+The app provides real contacts, passive and double-support balance modes,
+grab/pull/release, push, pause, reset and camera controls. The experimental
+**Essai GetUp** button runs the validated known-entry fall/get-up scenario;
+**Continuer SLOW** continues from its live final state. This is not arbitrary-fall
+recovery or walking. During the scripted scenario, unrestricted interactions
+are unavailable; pause and camera remain available.
 
 ```sh
 npm ci
 npm run build
 npm start        # loopback-only: http://127.0.0.1:5185
-npm test         # Chromium interaction checks; CHROMIUM_PATH can override path
+node scripts/verify-mujoco-package.mjs # pure package/policy checks, zero physics
+# npm test runs additional physical Chromium tests; it is not a packaging check.
 ```
 
 No Rust/WASM SDK build is needed for the active app. Runtime assets are local;
 there is no CDN or telemetry. See [MVP notes](web/mujoco/README.md).
-No public deployment or GitHub push accompanies this migration.
+The build contains all known-entry runtime inputs under `web/dist`; serving the
+repository root is unnecessary. Source backup and deployment are separate: a
+public GitHub repository does not make the owner-private Sites app public.
+Packaging checks preserve the previously validated controller byte-for-byte;
+they do not repeat or broaden its physical validation.
 
 Legacy features and evidence remain preserved in the repository, with
 `build:legacy`, `start:legacy`, and `test:legacy` commands. They are outside the

@@ -1,4 +1,4 @@
-name: Rust application
+name: MuJoCo static package
 
 on:
   push:
@@ -12,7 +12,7 @@ permissions:
 jobs:
   application:
     runs-on: ubuntu-24.04
-    timeout-minutes: 40
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
       - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
@@ -20,20 +20,8 @@ jobs:
           node-version: 22.13.0
           cache: npm
       - run: npm ci
-      - run: npm run setup:rust
-      - run: npm test
       - run: npm run build
-      - run: npx playwright install --with-deps chromium
-      - name: One bounded browser integration smoke
-        run: npm run verify:smoke
-      - run: npm run build:pages
-      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
-        with:
-          name: experimental-rust-application
-          path: |
-            rust/dist/app
-            rust/dist/pages
-          if-no-files-found: error
-          retention-days: 14
-      # This checks the application, not physical qualification or publication.
-      # Full acceptance remains an explicit qualify-rust-pages workflow.
+      - name: Check paths, asset hashes and frozen policy fixtures without integration
+        run: node scripts/verify-mujoco-package.mjs
+      # No simulation, SDK installation, Pages publication or media transfer.
+      # Legacy Rust qualification workflows remain manual and unchanged.

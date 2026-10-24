@@ -4,8 +4,10 @@ import {Physics,add,sub,mul} from './engine.js';
 const $=s=>document.querySelector(s),canvas=$('#simulation'),ctx=canvas.getContext('2d');
 let getup=null,getupBusy=false,getupLoading=false,getupStarted=false,getupModule=null;
 let getupContinuationStarted=false;
-const localGetup=['127.0.0.1','localhost','[::1]'].includes(location.hostname)&&new URLSearchParams(location.search).get('getup')==='local';
-const checkpointContinuation=localGetup&&new URLSearchParams(location.search).get('continue')==='checkpoint';
+const loopback=['127.0.0.1','localhost','[::1]'].includes(location.hostname);
+const localGetup=document.documentElement.dataset.getup==='known-entry'||loopback&&new URLSearchParams(location.search).get('getup')==='local';
+const checkpointContinuation=loopback&&localGetup&&new URLSearchParams(location.search).get('continue')==='checkpoint';
+const getupAssets={assetBase:new URL('./getup-assets/',import.meta.url)};
 let physics=null,paused=true,failed=false,yaw=.65,pitch=.28,zoom=1,last=performance.now(),accumulator=0,pointer=null,parts=[];
 const vworld=p=>[p[0],p[2],-p[1]], fromView=p=>[p[0],-p[2],p[1]];
 function project(p){const center=getup&&physics?physics.data.subtree_com.slice(3,5):[0,0];const v=vworld([p[0]-center[0],p[1]-center[1],p[2]]),c=Math.cos(yaw),s=Math.sin(yaw),x=v[0]*c-v[2]*s,z=v[0]*s+v[2]*c,y=(v[1]-.75)*Math.cos(pitch)-z*Math.sin(pitch),depth=z*Math.cos(pitch)+(v[1]-.75)*Math.sin(pitch),scale=Math.min(canvas.width/(canvas.clientWidth<500?2.5:4),canvas.height/2.7)*zoom*5/Math.max(1,5+depth);return {x:canvas.width/2+x*scale,y:canvas.height*.53-y*scale,scale,depth};}
@@ -74,15 +76,15 @@ function refreshGetup(){
 }
 if(localGetup){
  document.body.classList.add('local-getup');
- document.querySelector('footer').textContent='Essai GetUp local depuis un départ connu. Aucun relevage général ni marche validée.';
+ document.querySelector('footer').textContent='Essai GetUp depuis un départ connu. Aucun relevage général ni marche validée.';
  $('#getup-panel').hidden=false;
  if(checkpointContinuation){$('#getup-start').disabled=true;$('#getup-continue').textContent='Restaurer la fin enregistrée puis continuer SLOW';}
  $('#getup-start').onclick=async()=>{
   if(!physics||checkpointContinuation||getupStarted||getupBusy||getupLoading)return;
   paused=true;release();getupLoading=true;$('#getup-start').disabled=true;
   try{
-   getupModule=await import('/web/mujoco/local-getup/cycle.js');
-   const assets=await getupModule.loadCycleAssets();
+   getupModule=await import('./local-getup/cycle.js');
+   const assets=await getupModule.loadCycleAssets(getupAssets);
    const nextPhysics=new Physics(physics.mj,assets.xml);
    const nextCycle=new getupModule.GetUpCycle(nextPhysics,assets);
    physics.dispose();physics=nextPhysics;getup=nextCycle;getupStarted=true;
@@ -94,11 +96,11 @@ if(localGetup){
   if(!physics||getupContinuationStarted||getupBusy||getupLoading||!(checkpointContinuation&&!getup||getup?.done&&!getup.continuation&&getup.summary().observedHold))return;
   paused=true;release();getupLoading=true;$('#getup-continue').disabled=true;
   try{
-   const {SlowContinuation,loadFinalCheckpoint,FINAL_STATE_SHA}=await import('/web/mujoco/local-getup/continuation.js');
+   const {SlowContinuation,loadFinalCheckpoint,FINAL_STATE_SHA}=await import('./local-getup/continuation.js');
    let assets=getup?.assets,checkpoint=null,nextPhysics=physics;
    const previousSummary=getup?.summary();
    if(!getup){
-    getupModule=await import('/web/mujoco/local-getup/cycle.js');assets=await getupModule.loadCycleAssets();checkpoint=await loadFinalCheckpoint();
+    getupModule=await import('./local-getup/cycle.js');assets=await getupModule.loadCycleAssets(getupAssets);checkpoint=await loadFinalCheckpoint();
     nextPhysics=new Physics(physics.mj,assets.xml);nextPhysics.model.opt.timestep=.00125;
    }
    const next=new SlowContinuation(nextPhysics,assets,{checkpoint,previousSummary});
