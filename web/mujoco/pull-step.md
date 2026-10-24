@@ -313,3 +313,56 @@ time totals11.146ms (maximum3.268ms), whole diagnostic386.937ms on this cloud;
 this is not a browser/phone control-rate benchmark. Existing evidence refuses
 a duplicate execution. MuJoCo remains228794 confirmed plus preserved unknown
 history, Rapier45735. No runtime controller, main, site or dependency changed.
+
+## Constrained witness — algebra feasible, native regime guard rejects
+
+The next local diagnostic (`verify-pull-constrained-native-pure.mjs`) reuses
+the complete saved baseline, eight-output Jacobian, scales, weights, lambda1e-4
+and0.1 control trust radius. Exactly21 one-sided perturbations recover the
+missing torso/contact sensitivities; every common output matches its former
+sample exactly. There is no new baseline forward solve. The only additional
+candidate brings the total to22 completed native forward evaluations, zero
+physical ticks and zero forecasts.
+
+The small active-set Cholesky adapter passes19 algebra tests (including a
+contradictory system and an independent2D active-face enumeration). It finds a
+solution in23 of64 permitted pivots. All92 linear inequalities pass individually:
+two torso constraints, eight nonnegative normals,32 native pyramidal-friction
+facets, retained load>=100N, four endpoint-gap guards,42 motor/trust bounds,
+lateral progress and two global-roll bounds. Caps and trust are in the solve;
+there is no final command clipping or scaling. The torso conditions are
+thetaDD<=0 for the currently growing tilt and upDot·upDD<=0. The latter bounds
+squared orientation speed, not physical kinetic energy. These are constraints,
+not higher objective weights.
+
+Gap jets use the actual capsule endpoint centres minus radius, including their
+Jdot*qvel, rather than a permanently fixed contact material point. Their
+1.25ms Taylor margins are a conservative local diagnostic only. Positive normal
+acceleration is not rejected in isolation and no physical contact is welded.
+
+**The candidate is NOT natively admitted.** The22nd forward calculation finishes,
+then the full `efc_state` comparison fails, before candidate telemetry is saved.
+There are22 durable begin records and21 end records; the catch result independently
+records22 completed evaluations. This is a known completed call, not an uncertain
+or retryable runtime. The exception text says `Native contact regime changed`,
+but that array contains joint-limit rows as well as contacts.
+
+A position-stage-only metadata read (no acceleration/force solve, qacc and all233
+integration values unchanged) identifies row0 as the **right-knee soft limit**,
+joint7. It changes QUADRATIC(1)→SATISFIED(0). The34 rows comprise two knee limits
+and32 contact-pyramid rows. This invalidates the assumed constant constraint
+regime; it does not establish foot support loss. The geometry signature comparison
+had passed. The full final constraint-state array and force/acceleration telemetry
+were not preserved, so no claim is made about all remaining native constraints.
+
+Only the linear prediction is available: ay−0.286565m/s², tilt acceleration
+−0.339359rad/s², right load135.895N and endpoint gaps−0.427…−0.725mm. These are
+NOT measured native candidate results. The constrained algebra is feasible;
+physical feasibility after the regime change remains undetermined. No other
+candidate, parameter adjustment, forward retry or integration follows this stop.
+
+`web/proofs/pull-step-constrained-pure/` preserves protocol, evaluation journal,
+result and a saved-data audit, including the missing-telemetry limitation.
+Native time totals7.393ms, complete diagnostic382.740ms on this cloud. MuJoCo
+stays228794 confirmed plus unknown history; Rapier45735. Active controllers,
+stable main/site, all previous verdicts and dependencies remain unchanged.
