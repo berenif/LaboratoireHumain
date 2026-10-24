@@ -1,6 +1,6 @@
 import {mkdir,copyFile,readFile,writeFile,link} from 'node:fs/promises';
 const out='web/dist';await mkdir(out+'/vendor',{recursive:true});
-for(const f of ['index.html','app.js','engine.js','mvp.css','LICENSE-MuJoCo.txt'])await copyFile('web/mujoco/'+f,out+'/'+f);
+for(const f of ['index.html','app.js','engine.js','pull-step.js','mvp.css','LICENSE-MuJoCo.txt'])await copyFile('web/mujoco/'+f,out+'/'+f);
 await copyFile('rust/browser/app.css',out+'/app.css');
 for(const f of ['mujoco.js','mujoco.wasm'])await copyFile('node_modules/@mujoco/mujoco/'+f,out+'/vendor/'+f);
 // Only presentation includes/materials are removed. Body/joint/actuator,

@@ -15,19 +15,20 @@ for(const [name,[source,hash]] of Object.entries(assets)){
  assert.equal(sha(read(root+name)),hash,name);assert(read(root+name).equals(read(source)),name);
 }
 assert.equal(sha(read(root+'humanoid.xml')),'7a6e3dfc83a9e30bebe81e3e8c6e6b146f8447d1dbfaacd83de90f4937ea5765');
-for(const file of ['app.js','engine.js','index.html','mvp.css','LICENSE-MuJoCo.txt','local-getup/cycle.js','local-getup/continuation.js','local-getup/slow.js'])assert(read(root+file).equals(read('web/mujoco/'+file)),file);
+for(const file of ['app.js','engine.js','pull-step.js','index.html','mvp.css','LICENSE-MuJoCo.txt','local-getup/cycle.js','local-getup/continuation.js','local-getup/slow.js'])assert(read(root+file).equals(read('web/mujoco/'+file)),file);
 for(const file of ['mujoco.js','mujoco.wasm'])assert(read(root+'vendor/'+file).equals(read('node_modules/@mujoco/mujoco/'+file)),file);
 assert.equal(JSON.parse(read('node_modules/@mujoco/mujoco/package.json')).version,'3.17.0');
 assert.match(read(root+'index.html').toString(),/data-getup="known-entry"/);
 const app=read(root+'app.js').toString();
 assert(app.includes("import('./local-getup/cycle.js')")&&app.includes("loadCycleAssets(getupAssets)"));
 assert(!app.includes("import('/web/"));
-// Freeze the already executed controller, observer, engine and policy math.
+// Freeze SLOW/observer math. The opt-in pull-step engine is additionally
+// checked against the stable 21-command Balance in verify-mujoco-pull-step-pure.mjs.
 for(const [file,marker,hash] of [
  ['local-getup/cycle.js','export class CycleObserver','983d62ff367f2c77a99a298b8fee75f8565e1d1227dc0c8deedf0227341171c3'],
  ['local-getup/continuation.js','export class SlowContinuation','1fd083a81cd761a015a5561d0c548a1d9cbb8deb3f806e9008b5a8d5b4902f17'],
  ['local-getup/slow.js',null,'069f5cf1222e93f2ce7c06a8133b4764ec98c2ec142cbe2a24ff4f418e2bde81'],
- ['engine.js',null,'8e6f0383161a0506f510b236b1d1e262be8efef327710d3d6ea441aea02d7d40'],
+ ['engine.js',null,'2be91bc54bdcd66f2c498df3b0feebe4c2ed596340984c96c9349470191d5be0'],
 ]){let bytes=read(root+file);if(marker)bytes=bytes.subarray(bytes.indexOf(marker));assert.equal(sha(bytes),hash,file);}
 const fixture=JSON.parse(read('rust/crates/sim/data/getup-policy/parity.json'));
 const binary=read(root+'getup-assets/student.bin'),actor=new DenseActor(binary.buffer.slice(binary.byteOffset,binary.byteOffset+binary.length));
@@ -38,5 +39,5 @@ for(const f of fixture.actors.filter(f=>f.actor==='student')){
 for(const f of fixture.pd){const actual=controls(f.reference,f.residual,f.q,f.dq,f.holding);pd=Math.max(pd,...actual.map((v,i)=>Math.abs(v-f.controls[i])));}
 assert(raw<=2e-4&&action<=5e-5&&pd<=2e-7);
 const files=fs.readdirSync(root,{recursive:true}).filter(p=>fs.statSync(root+p).isFile());
-assert.equal(files.length,16);assert(!files.some(p=>/proofs|\.mp4$|\.png$|teacher\.bin/.test(p)));
-console.log(JSON.stringify({passed:true,integrations:0,files:files.length,assetBytes:files.reduce((n,p)=>n+fs.statSync(root+p).size,0),controllerUnchanged:true,studentFixtures:fixture.actors.filter(f=>f.actor==='student').length,pdFixtures:fixture.pd.length,raw,action,pd}));
+assert.equal(files.length,17);assert(!files.some(p=>/proofs|\.mp4$|\.png$|teacher\.bin/.test(p)));
+console.log(JSON.stringify({passed:true,integrations:0,files:files.length,assetBytes:files.reduce((n,p)=>n+fs.statSync(root+p).size,0),slowUnchanged:true,pullStepOptIn:true,studentFixtures:fixture.actors.filter(f=>f.actor==='student').length,pdFixtures:fixture.pd.length,raw,action,pd}));

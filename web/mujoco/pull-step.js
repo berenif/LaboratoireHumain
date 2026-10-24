@@ -1,0 +1,156 @@
+// Local, opt-in experiment. Joint REFERENCES only; Physics.control owns all torques.
+// All FK/Jacobian work uses a separate MjData. The physical root is never written.
+const clamp=(x,a,b)=>Math.max(a,Math.min(b,x)),add=(a,b)=>a.map((x,i)=>x+b[i]),sub=(a,b)=>a.map((x,i)=>x-b[i]),mul=(a,k)=>a.map(x=>x*k);
+const cross=(a,b)=>[a[1]*b[2]-a[2]*b[1],a[2]*b[0]-a[0]*b[2],a[0]*b[1]-a[1]*b[0]];
+const rot=(r,v)=>[0,1,2].map(i=>r[3*i]*v[0]+r[3*i+1]*v[1]+r[3*i+2]*v[2]);
+const inv=(r,v)=>[0,1,2].map(i=>r[i]*v[0]+r[3+i]*v[1]+r[6+i]*v[2]);
+const relR=(a,b)=>[0,1,2].flatMap(i=>[0,1,2].map(j=>a[i]*b[j]+a[3+i]*b[3+j]+a[6+i]*b[6+j]));
+const column=(r,i)=>[r[i],r[3+i],r[6+i]];
+const orientationError=(now,goal)=>mul([0,1,2].reduce((e,i)=>add(e,cross(column(now,i),column(goal,i))),[0,0,0]),.5);
+export const PULL_PROTOCOL=Object.freeze({prepareSeconds:10,interactionSeconds:6,maxTicks:12800,body:15,targetOffsetX:.25,rampSeconds:.5,releaseAfter:3.8,forceTriggerN:8,captureAdvanceTriggerM:.008,velocityTriggerMps:.02,transferSeconds:1.8,unloadDeadline:2.3,unloadN:15,unloadDwell:.075,retainedN:100,clearTargetM:.02,clearRequiredM:.008,clearDwell:.05,liftSeconds:.4,liftDeadline:.7,transportSeconds:.6,lowerSeconds:.5,landingDeadline:.8,returnSeconds:.6,calmSeconds:1,footSlipMaxM:.025,tiltMaxRad:20*Math.PI/180,speedCalmMps:.03,taskResidualM:.002});
+export const smooth=x=>{x=clamp(x,0,1);return x*x*x*(10+x*(-15+6*x));};
+export class RelativeFootIK {
+ constructor(p,stance=7,free=10){
+  this.p=p;this.m=p.model;this.mj=p.mj;this.d=new p.mj.MjData(p.model);this.stance=stance;this.free=free;
+  this.joints=p.joints.filter(j=>/abdomen|hip|knee|ankle/.test(j.name));this.n=this.joints.length;
+  this.jp=new p.mj.DoubleBuffer(3*this.m.nv);this.jr=new p.mj.DoubleBuffer(3*this.m.nv);this.jc=new p.mj.DoubleBuffer(3*this.m.nv);this.matrix=new p.mj.DoubleBuffer(this.n*this.n);this.solution=new p.mj.DoubleBuffer(this.n);
+ }
+ set(q){this.d.qpos.set(q);this.mj.mj_kinematics(this.m,this.d);this.mj.mj_comPos(this.m,this.d);}
+ pos(b){return Array.from(this.d.xpos.slice(3*b,3*b+3));}
+ mat(b){return Array.from(this.d.xmat.slice(9*b,9*b+9));}
+ features(){const s=this.pos(this.stance),r=this.mat(this.stance);return {com:inv(r,sub(Array.from(this.d.subtree_com.slice(3,6)),s)),foot:inv(r,sub(this.pos(this.free),s)),footR:relR(r,this.mat(this.free)),torsoR:relR(r,this.mat(1))};}
+ bodyJac(b){this.mj.mj_jacBody(this.m,this.d,this.jp,this.jr,b);return {p:Array.from(this.jp.GetView()),r:Array.from(this.jr.GetView())};}
+ jacobians(){
+  const nv=this.m.nv,stance=this.bodyJac(this.stance),free=this.bodyJac(this.free),torso=this.bodyJac(1),r=this.mat(this.stance),origin=this.pos(this.stance);
+  this.mj.mj_jacSubtreeCom(this.m,this.d,this.jc,1);const com=Array.from(this.jc.GetView());
+  const col=(j,v)=>[j[v],j[nv+v],j[2*nv+v]];
+  const relative=(j,point)=>this.joints.map(({v})=>inv(r,sub(sub(col(j,v),col(stance.p,v)),cross(col(stance.r,v),sub(point,origin)))));
+  const angular=j=>this.joints.map(({v})=>inv(r,sub(col(j,v),col(stance.r,v))));
+  const transpose=cols=>[0,1,2].map(i=>cols.map(c=>c[i]));
+  return [...transpose(relative(com,Array.from(this.d.subtree_com.slice(3,6)))),...transpose(relative(free.p,this.pos(this.free))),...transpose(angular(free.r)),...transpose(angular(torso.r))];
+ }
+ solve(seed,goal){
+  let q=seed.slice(),errors=null;
+  for(let it=0;it<70;it++){
+   this.set(q);const f=this.features();errors=[...sub(goal.com,f.com),...sub(goal.foot,f.foot),...orientationError(f.footR,goal.footR),...orientationError(f.torsoR,goal.torsoR)];
+   if(Math.max(...errors.filter((_,i)=>i<6&&i!==2).map(Math.abs))<.00015&&Math.max(...errors.slice(6).map(Math.abs))<.001)break;
+   const jac=this.jacobians(),weights=[1,1,.1,2,2,2,.2,.2,.2,.2,.2,.2],a=this.matrix.GetView(),rhs=Array(this.n).fill(0);a.fill(0);
+   for(let i=0;i<this.n;i++){
+    for(let k=0;k<12;k++)rhs[i]+=jac[k][i]*weights[k]**2*errors[k];
+    for(let j=0;j<this.n;j++)for(let k=0;k<12;k++)a[i*this.n+j]+=jac[k][i]*jac[k][j]*weights[k]**2;
+    a[i*this.n+i]+=.00001;
+   }
+   const normal=Array.from(a),blocked=new Set();let step;
+   // Re-solve after excluding outward motion at an active ROM bound. Clipping
+   // an unconstrained direction would repeatedly spend motion on a blocked hip.
+   for(let pass=0;pass<=this.n;pass++){
+    a.set(normal);const b=rhs.slice();for(const i of blocked){for(let j=0;j<this.n;j++)a[i*this.n+j]=a[j*this.n+i]=0;a[i*this.n+i]=1;b[i]=0;}
+    if(this.mj.mju_cholFactor(this.matrix,1e-12)!==this.n)throw Error('Relative IK rank');
+    this.mj.mju_cholSolve(this.solution,Array.from(a),b);step=Array.from(this.solution.GetView());
+    let changed=false;this.joints.forEach((j,i)=>{if(!blocked.has(i)&&((q[j.q]<=this.m.jnt_range[2*j.j]+1e-7&&step[i]<0)||(q[j.q]>=this.m.jnt_range[2*j.j+1]-1e-7&&step[i]>0))){blocked.add(i);changed=true;}});if(!changed)break;
+   }
+   const scale=Math.min(1,.035/Math.max(...step.map(Math.abs)));
+   this.joints.forEach((j,i)=>{q[j.q]=clamp(q[j.q]+scale*step[i],this.m.jnt_range[2*j.j],this.m.jnt_range[2*j.j+1]);});
+  }
+  this.set(q);const f=this.features();const positionError=Math.max(...sub(goal.com,f.com).slice(0,2).map(Math.abs),...sub(goal.foot,f.foot).map(Math.abs)),angleError=Math.max(...orientationError(f.footR,goal.footR).map(Math.abs),...orientationError(f.torsoR,goal.torsoR).map(Math.abs));
+  return {q,positionError,angleError,heightError:f.com[2]-goal.com[2],features:f};
+ }
+ path(seed,goal,duration){
+  this.set(seed);const initial=this.features(),nodes=[seed.slice()],reports=[];
+  for(let k=1;k<=12;k++){
+   const s=k/12,g={...goal,com:add(initial.com,mul(sub(goal.com,initial.com),s)),foot:add(initial.foot,mul(sub(goal.foot,initial.foot),s))};
+   const result=this.solve(nodes.at(-1),g);reports.push(result);if(result.positionError>PULL_PROTOCOL.taskResidualM||result.angleError>.015||Math.abs(result.heightError)>.03)throw Error(`Relative FK not admitted: ${result.positionError.toFixed(6)} m / ${result.angleError.toFixed(6)} rad`);nodes.push(result.q);
+  }
+  // COM height is a secondary posture objective (30 mm envelope), not an
+  // equality imposing an impossible straight-legged transfer. Horizontal COM
+  // and free-foot pose remain measured FK tasks with explicit residuals.
+  // Continuous monotone Hermite curve, then quintic time progress; intermediate
+  // waypoints are NOT stops. Check FK also between nodes, on this same curve.
+  const tangent=(i,j)=>{
+   if(i===0)return nodes[1][j]-nodes[0][j];if(i===12)return nodes[12][j]-nodes[11][j];
+   const left=nodes[i][j]-nodes[i-1][j],right=nodes[i+1][j]-nodes[i][j];return left*right<=0?0:2*left*right/(left+right);
+  };
+  const at=u=>{
+   const x=clamp(u,0,1)*12,i=Math.min(11,Math.floor(x)),t=x-i;
+   return nodes[i].map((v,j)=>{if(j<7)return v;const b=nodes[i+1],m0=tangent(i,j),m1=tangent(i+1,j);return (2*t**3-3*t*t+1)*v+(t**3-2*t*t+t)*m0+(-2*t**3+3*t*t)*b[j]+(t**3-t*t)*m1;});
+  };
+  let residual=0,maxSpeed=0;
+  for(let i=0;i<=96;i++){
+   const u=i/96,q=at(u);this.set(q);const f=this.features();
+   residual=Math.max(residual,...sub(f.com,add(initial.com,mul(sub(goal.com,initial.com),u))).slice(0,2).map(Math.abs),...sub(f.foot,add(initial.foot,mul(sub(goal.foot,initial.foot),u))).map(Math.abs));
+   for(const j of this.joints)if(q[j.q]<this.m.jnt_range[j.j*2]-1e-9||q[j.q]>this.m.jnt_range[j.j*2+1]+1e-9)throw Error('Reference ROM');
+   if(i){const prev=at((i-1)/96);maxSpeed=Math.max(maxSpeed,...this.joints.map(j=>Math.abs(q[j.q]-prev[j.q])*96*1.875/duration));}
+  }
+  if(residual>PULL_PROTOCOL.taskResidualM)throw Error('Interpolated relative FK residual '+residual);
+  return {at,duration,initial,goal,nodes,residual,maxSpeed};
+ }
+ dispose(){for(const b of [this.d,this.jp,this.jr,this.jc,this.matrix,this.solution])b.delete();}
+}
+export class PullStep {
+ constructor(p){this.p=p;this.phase='armed';this.events=[];this.quietCom=null;this.stance=7;this.free=10;this.ik=new RelativeFootIK(p);this.lastTick=-1;this.stable=0;this.saturation=0;this.released=false;this.complete=false;}
+ event(phase){this.phase=phase;this.phaseStart=this.p.data.time;this.events.push({phase,t:this.phaseStart});this.dwell=0;}
+ fail(reason){if(!this.reason){this.reason=reason;this.event('failed');}return null;}
+ release(){this.released=true;}
+ snapshot(){return {phase:this.phase,reason:this.reason||null,events:this.events,stance:this.stance,free:this.free,destination:this.destination,stable:this.stable,clearDwell:this.clearDwell||0,measuredAdvance:this.measuredAdvance||0,flightAdvance:this.flightAdvance||0,referenceResidual:this.path?.residual,maxReferenceSpeed:this.path?.maxSpeed,progress:this.progress,servoLimitResidual:this.servoLimitResidual||[],loadShare:this.loadShare,complete:this.complete,released:this.released};}
+ makePath(goal,duration){this.path=this.ik.path(this.qref,goal,duration);this.pathStart=this.p.data.time;this.progress=0;}
+ step(com,velocity,feet){
+  const p=this.p,d=p.data,c=PULL_PROTOCOL,t=d.time,loads=p.reactions.normalLoads;
+  if(['failed','complete','cancelled'].includes(this.phase))return this.reference||null;
+  if(this.phase==='armed'){
+   if(p.balance.tilt<c.tiltMaxRad&&Math.hypot(...velocity)<.03&&(loads[7]||0)>50&&(loads[10]||0)>50&&!p.grab)this.quietCom=com.slice();
+   const force=p.grabForce(),capture=com[0]+velocity[0]*Math.sqrt(Math.max(.3,com[2])/9.81);
+   if(!this.quietCom||!p.grab||![11,12,13,14,15,16].includes(p.grab.body)||force[0]<c.forceTriggerN||force[0]<Math.abs(force[1])||!(capture-this.quietCom[0]>c.captureAdvanceTriggerM||velocity[0]>c.velocityTriggerMps))return null;
+   if((loads[7]||0)<50||(loads[10]||0)<50)return this.fail('initial double support absent');
+   this.qref=Array.from(d.qpos);this.entryQ=this.qref.slice();this.servoOffset=Array.from(d.qpos,()=>0);for(const j of p.joints)this.servoOffset[j.q]=(j.name.includes('elbow')?-.15:0)-d.qpos[j.q];this.entryTorques=p.commandPrevious?.map(x=>x.applied)||p.joints.map(()=>0);this.entry=t;this.stanceOrigin=feet[0].slice();this.freeOrigin=feet[1].slice();this.ik.set(this.qref);this.initial=this.ik.features();
+   const r=Array.from(d.xmat.slice(63,72));this.loadShare=.5;this.stanceR=r;this.feedbackOffset=inv(r,sub(mul(add(feet[0],feet[1]),.5),com));
+   // Placement is linked to the measured forward capture displacement and force.
+   // It is a bounded first step, not a claim that capture-point geometry proves viability.
+   this.advance=clamp(capture-feet[1][0]+force[0]/(40.84*9.81)*.2,.04,.09);
+   this.destination=add(feet[1],[this.advance,0,0]);
+   // Support-relative COM goal: centre of actual two-capsule stance footprint.
+   // Keep initial sagittal COM coordinate, limited to interior of sole length.
+   this.transferGoal={...this.initial,com:[clamp(this.initial.com[0],-.04,.10),0,this.initial.com[2]-.005]};
+   try{this.makePath(this.transferGoal,c.transferSeconds);}catch(e){return this.fail(String(e));}
+   this.event('transfer');
+  }
+  if(p.fallen)return this.fail('measured fall');
+  if(p.reactions.supportedBodies.some(b=>![7,10].includes(b)))return this.fail('loaded non-foot contact');
+  const stanceSlip=Math.hypot(feet[0][0]-this.stanceOrigin[0],feet[0][1]-this.stanceOrigin[1]);
+  if(stanceSlip>c.footSlipMaxM)return this.fail('retained foot drift exceeded 25 mm');
+  if((loads[7]||0)<1){this.supportLost=(this.supportLost||0)+p.dt;if(this.supportLost>=.025)return this.fail('retained support lost');}else this.supportLost=0;
+  if(p.balance.tilt>c.tiltMaxRad)return this.fail('torso tilt exceeded 20 degrees');
+  if(this.released&&this.phase==='transfer'){this.event('cancel-return');this.makePath(this.initial,c.returnSeconds);}
+  const elapsed=t-this.phaseStart;
+  if(this.phase==='transfer'){
+   this.dwell=(loads[10]||0)<c.unloadN&&(loads[7]||0)>c.retainedN?this.dwell+p.dt:0;
+   if(this.dwell>=c.unloadDwell){this.ik.set(this.qref);const f=this.ik.features(),worldMin=p.footClearance(10),up=inv(this.stanceR,[0,0,Math.max(0,c.clearTargetM-worldMin)]);this.event('lift');this.makePath({...f,com:this.transferGoal.com,foot:add(f.foot,up)},c.liftSeconds);}
+   else if(elapsed>=c.unloadDeadline)return this.fail('unloading not observed by deadline');
+  }else if(this.phase==='lift'){
+   this.clearDwell=p.footClearance(10)>=c.clearRequiredM&&(loads[10]||0)<1?(this.clearDwell||0)+p.dt:0;
+   if(this.clearDwell>=c.clearDwell){this.flightStart=feet[1].slice();this.ik.set(this.qref);const f=this.ik.features();this.event('transport');this.makePath({...f,foot:add(f.foot,inv(this.stanceR,[this.advance,0,0]))},c.transportSeconds);}
+   else if(elapsed>=c.liftDeadline)return this.fail('whole sole clearance not observed');
+  }else if(this.phase==='transport'&&elapsed>=c.transportSeconds){this.ik.set(this.qref);const f=this.ik.features();this.event('lower');this.makePath({...f,foot:sub(f.foot,inv(this.stanceR,[0,0,c.clearTargetM]))},c.lowerSeconds);
+  }else if(this.phase==='lower'){
+   this.dwell=(loads[10]||0)>30?this.dwell+p.dt:0;
+   if(this.dwell>=.05){this.measuredAdvance=feet[1][0]-this.freeOrigin[0];this.flightAdvance=feet[1][0]-this.flightStart[0];this.ik.set(this.qref);const f=this.ik.features();this.event('return');this.makePath({...f,com:[f.foot[0]/2,f.foot[1]/2,this.initial.com[2]]},c.returnSeconds);}
+   else if(elapsed>=c.landingDeadline)return this.fail('loaded reception absent');
+  }else if(['return','cancel-return'].includes(this.phase)&&elapsed>=c.returnSeconds)this.event('settle');
+  if(this.phase==='settle'){
+   const calm=this.released&&(loads[7]||0)>30&&(loads[10]||0)>30&&Math.hypot(...velocity)<c.speedCalmMps&&p.balance.tilt<.2;
+   this.stable=calm?this.stable+p.dt:0;
+   if(this.stable>=1){this.complete=!!(this.clearDwell>=c.clearDwell&&this.measuredAdvance>=.03&&this.flightAdvance>=.03);this.event(this.complete?'complete':'cancelled');}
+  }
+  const s=smooth((t-this.pathStart)/this.path.duration);this.progress=s;this.qref=this.path.at(s);
+  // Same time progress for joints and COM feedback, expressed in ACTUAL stance frame.
+  const desired=add(this.path.initial.com,mul(sub(this.path.goal.com,this.path.initial.com),s));
+  const support=add(feet[0],rot(Array.from(d.xmat.slice(63,72)),add(desired,this.feedbackOffset)));
+  const servoQ=this.qref.map((x,i)=>x+this.servoOffset[i]);
+  // Preserve the established PD preload: desired SHAPE delta modifies the
+  // existing Balance reference, never erases its equilibrium effort. These
+  // compliant servo targets are distinct from the FK geometry prediction.
+  this.servoLimitResidual=[];for(const j of p.joints){const desired=servoQ[j.q];servoQ[j.q]=clamp(desired,p.model.jnt_range[j.j*2],p.model.jnt_range[j.j*2+1]);if(desired!==servoQ[j.q])this.servoLimitResidual.push({joint:j.name,desired,commanded:servoQ[j.q],residual:desired-servoQ[j.q]});}
+  const total=(loads[7]||0)+(loads[10]||0);if(total>1)this.loadShare+=(1-Math.exp(-p.dt/.05))*((loads[7]||0)/total-this.loadShare);
+  this.reference={q:servoQ,geometryQ:this.qref,support,loadShare:this.loadShare,blend:clamp((t-this.entry)/.025,0,1),entryTorques:this.entryTorques};return this.reference;
+ }
+ dispose(){this.ik.dispose();}
+}

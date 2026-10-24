@@ -1,6 +1,7 @@
 // Official MuJoCo WASM. External body forces are exclusively user grab/push.
 // Balance writes only the 21 actuator controls; the root remains unactuated.
 import loadMujoco from './vendor/mujoco.js';
+import {PullStep} from './pull-step.js';
 export const add=(a,b)=>a.map((x,i)=>x+b[i]), sub=(a,b)=>a.map((x,i)=>x-b[i]), mul=(a,k)=>a.map(x=>x*k);
 export const cross=(a,b)=>[a[1]*b[2]-a[2]*b[1],a[2]*b[0]-a[0]*b[2],a[0]*b[1]-a[1]*b[0]];
 export const rotate=(m,v)=>[0,1,2].map(i=>m[i*3]*v[0]+m[i*3+1]*v[1]+m[i*3+2]*v[2]);
@@ -12,12 +13,14 @@ export class Physics {
  worldPoint(body,local){return add(Array.from(this.data.xpos.slice(body*3,body*3+3)),rotate(this.data.xmat.slice(body*9,body*9+9),local));}
  beginGrab(body,point){if(!Number.isInteger(body)||body<1||body>=this.model.nbody)throw Error('Corps invalide');this.grab={body,local:inverseRotate(this.data.xmat.slice(body*9,body*9+9),sub(point,Array.from(this.data.xpos.slice(body*3,body*3+3)))),target:[...point],previous:[...point]};}
  moveGrab(point){if(this.grab&&point.length===3&&point.every(Number.isFinite))this.grab.target=[...point];}
- release(){this.grab=null;this.lastForce=0;this.data.xfrc_applied.fill(0);}
+ release(){if(this.grab)this.pullStep?.release();this.grab=null;this.lastForce=0;this.data.xfrc_applied.fill(0);}
  smallPush(direction='forward'){const vectors={forward:[15,0,0],backward:[-15,0,0],lateral:[0,15,0]};if(!vectors[direction])throw Error('Direction invalide');this.push={body:1,remaining:.15,force:vectors[direction]};}
  pushBody(body=1){this.push={body,remaining:.06,force:[110,0,25]};}
  apply(body,point,force){const torque=cross(sub(point,Array.from(this.data.xipos.slice(body*3,body*3+3))),force);for(let i=0;i<3;i++){this.data.xfrc_applied[body*6+i]+=force[i];this.data.xfrc_applied[body*6+3+i]+=torque[i];}}
  applyPush(){if(this.push){this.apply(this.push.body,Array.from(this.data.xipos.slice(this.push.body*3,this.push.body*3+3)),this.push.force);this.push.remaining-=this.dt;if(this.push.remaining<=0)this.push=null;}}
- setMode(mode){if(!['passive','balance'].includes(mode))throw Error('Mode invalide');this.mode=mode;this.cycle=null;this.fallen=false;this.previousCom=null;}
+ enablePullStep(){if(this.mode!=='balance'||this.pullStep)throw Error('Pull step requires fresh Balance');this.pullStep=new PullStep(this);}
+ grabForce(){if(!this.grab)return [0,0,0];const g=this.grab,p=this.worldPoint(g.body,g.local),v=mul(sub(p,g.previous),1/this.dt);let f=sub(mul(sub(g.target,p),120),mul(v,12));const n=Math.hypot(...f);return n>180?mul(f,180/n):f;}
+ setMode(mode){if(this.pullStep){this.pullStep.dispose();this.pullStep=null;}if(!['passive','balance'].includes(mode))throw Error('Mode invalide');this.mode=mode;this.cycle=null;this.fallen=false;this.previousCom=null;}
  // Optional experiment. Existing passive/balance paths are untouched without a cycle.
  startFootCycle(){
   if(this.mode!=='balance'||this.fallen||this.cycle&&!['complete','failed'].includes(this.cycle.phase))return false;
@@ -60,7 +63,7 @@ export class Physics {
  // World axes: Z up, X sagittal, Y lateral. Ankle X axis is oblique.
  // No integral state, inverse dynamics, gravity force or root compensation.
  control(){
-  const d=this.data,m=this.model;this.command=[];
+  const d=this.data,m=this.model;this.commandPrevious=this.command;this.command=[];
   const com=Array.from(d.subtree_com.slice(3,6));
   const vel=this.previousCom?mul(sub(com,this.previousCom),1/this.dt):[0,0,0];this.previousCom=com;
   const feet=[7,10].map(b=>Array.from(d.xpos.slice(3*b,3*b+3)));
@@ -69,9 +72,11 @@ export class Physics {
   if(this.mode!=='balance'||this.fallen)return;
   if(d.time>.5&&(d.xpos[5]<.65||r[8]<.4)){this.fallen=true;if(this.cycle){this.cycle.phase='failed';this.cycle.reason='measured fall';}return;}
   const cycle=this.cycleReference(com,vel,feet);
+  let pull=null;if(this.pullStep){try{pull=this.pullStep.step(com,vel,feet);}catch(e){this.pullStep.fail(String(e));pull=this.pullStep.reference||null;}}
   // Midpoint of measured foot frames: double-support reference, not a fixed world anchor.
-  const forward=200*(com[0]-support[0])+80*vel[0];
-  const lateral=200*(com[1]-support[1]-(cycle?.dy||0))+80*vel[1];
+  const targetSupport=pull?.support||support;
+  const forward=200*(com[0]-targetSupport[0])+80*vel[0];
+  const lateral=200*(com[1]-targetSupport[1]-(cycle?.dy||0))+80*vel[1];
   for(const j of this.joints){
    const leg=/hip|knee|ankle/.test(j.name);let kp=leg?300:200,kd=leg?20:15,target=0;
    if(j.name.includes('elbow'))target=-.15;
@@ -84,21 +89,29 @@ export class Physics {
     if(j.name==='left_ankle_y')target=-.2*cycle.lift;
     target=Math.max(m.jnt_range[2*j.j],Math.min(m.jnt_range[2*j.j+1],target));
    }
+   if(pull)target=pull.q[j.q];
    let torque=kp*(target-d.qpos[j.q])-kd*d.qvel[j.v];
-   const weight=cycle?(j.name.startsWith('right_')?1+cycle.shift:1-cycle.shift):1;
+   const weight=pull?(j.name.startsWith('right_')?2*pull.loadShare:2*(1-pull.loadShare)):cycle?(j.name.startsWith('right_')?1+cycle.shift:1-cycle.shift):1;
    if(j.name.endsWith('ankle_y'))torque+=weight*forward;
    if(j.name.endsWith('ankle_x'))torque-=weight*lateral/.8944271909999159;
    if(j.name.includes('hip_y'))torque+=10*r[2];
+   // Convex transition of TOTAL motor requests, then the unchanged final cap.
+   if(pull&&pull.blend<1){
+    const nominal=j.name.includes('elbow')?-.15:0;let before=kp*(nominal-d.qpos[j.q])-kd*d.qvel[j.v];
+    if(j.name.endsWith('ankle_y'))before+=200*(com[0]-support[0])+80*vel[0];
+    if(j.name.endsWith('ankle_x'))before-=(200*(com[1]-support[1])+80*vel[1])/.8944271909999159;
+    if(j.name.includes('hip_y'))before+=10*r[2];torque=(1-pull.blend)*before+pull.blend*torque;
+   }
    const applied=Math.max(-Math.abs(j.gear),Math.min(Math.abs(j.gear),torque));
    d.ctrl[j.a]=applied/j.gear;this.command.push({name:j.name,requested:torque,applied});
    if(applied!==torque)this.balance.saturated.push(j.name);
   }
  }
- step(){const d=this.data;d.xfrc_applied.fill(0);d.ctrl.fill(0);this.lastForce=0;this.control();
-  if(this.grab){const g=this.grab,p=this.worldPoint(g.body,g.local),velocity=mul(sub(p,g.previous),1/this.dt);let f=sub(mul(sub(g.target,p),120),mul(velocity,12));const length=Math.hypot(...f);if(length>180)f=mul(f,180/length);this.lastForce=Math.hypot(...f);this.apply(g.body,p,f);g.previous=p;}
+ step(){const d=this.data;d.xfrc_applied.fill(0);d.ctrl.fill(0);this.lastForce=0;this.control();if(this.pullStep&&this.fallen)this.pullStep.fail('measured fall');if(this.pullStep?.phase==='failed')return false;
+  if(this.grab){const g=this.grab,p=this.worldPoint(g.body,g.local),f=this.grabForce();this.lastForce=Math.hypot(...f);this.lastForceVector=f;this.apply(g.body,p,f);g.previous=p;}else this.lastForceVector=[0,0,0];
   this.applyPush();
   if(!Array.from(d.ctrl).every(Number.isFinite))throw Error('Commande non finie : simulation arrêtée');
-  this.mj.mj_step(this.model,d);this.steps++;this.readReactions();if(!Array.from(d.qpos).every(Number.isFinite)||!Array.from(d.qvel).every(Number.isFinite))throw Error('État physique non fini : simulation arrêtée');
+  this.mj.mj_step(this.model,d);this.steps++;this.readReactions();if(!Array.from(d.qpos).every(Number.isFinite)||!Array.from(d.qvel).every(Number.isFinite))throw Error('État physique non fini : simulation arrêtée');return true;
  }
  // Read solved impulses as forces for diagnostics only; never feed them back as applied forces.
  readReactions(){
@@ -116,8 +129,8 @@ export class Physics {
   contacts.delete();this.reactions={normalLoads:loads,supportedBodies:supported,atTime:this.data.time};
  }
  forward(){this.mj.mj_forward(this.model,this.data);}
- reset(){this.cycle=null;this.reactions={normalLoads:{},supportedBodies:[],atTime:0};this.balance=null;this.previousCom=null;this.fallen=false;this.command=[];this.grab=null;this.push=null;this.lastForce=0;this.mj.mj_resetData(this.model,this.data);this.forward();this.resets++;}
+ reset(){if(this.pullStep){this.pullStep.dispose();this.pullStep=null;}this.cycle=null;this.reactions={normalLoads:{},supportedBodies:[],atTime:0};this.balance=null;this.previousCom=null;this.fallen=false;this.command=[];this.grab=null;this.push=null;this.lastForce=0;this.mj.mj_resetData(this.model,this.data);this.forward();this.resets++;}
  geometries(){const m=this.model,d=this.data,result=[];for(let i=0;i<m.ngeom;i++){const body=m.geom_bodyid[i];if(!body)continue;const p=Array.from(d.geom_xpos.slice(i*3,i*3+3)),mat=d.geom_xmat.slice(i*9,i*9+9),radius=m.geom_size[i*3],half=m.geom_type[i]===3?m.geom_size[i*3+1]:0,axis=[mat[2],mat[5],mat[8]];result.push({id:i,body,name:this.names[body],a:sub(p,mul(axis,half)),b:add(p,mul(axis,half)),radius});}return result;}
- state(){return {cycle:this.cycle,mode:this.mode,fallen:this.fallen,balance:this.balance,reactions:this.reactions,command:this.command,engine:'MuJoCo '+this.mj.mj_versionString(),time:this.data.time,steps:this.steps,resets:this.resets,contacts:this.data.ncon,grab:this.grab?{body:this.grab.body,target:this.grab.target}:null,force:this.lastForce,qpos:Array.from(this.data.qpos),qvel:Array.from(this.data.qvel),physicalBodies:Array.from(this.model.body_mass).filter(x=>x>0).length,actuators:this.model.nu};}
- dispose(){this.release();this.contactBuffer.delete();this.data.delete();this.model.delete();}
+ state(){return {pullStep:this.pullStep?.snapshot()||null,cycle:this.cycle,mode:this.mode,fallen:this.fallen,balance:this.balance,reactions:this.reactions,command:this.command,engine:'MuJoCo '+this.mj.mj_versionString(),time:this.data.time,steps:this.steps,resets:this.resets,contacts:this.data.ncon,grab:this.grab?{body:this.grab.body,target:this.grab.target}:null,force:this.lastForce,qpos:Array.from(this.data.qpos),qvel:Array.from(this.data.qvel),physicalBodies:Array.from(this.model.body_mass).filter(x=>x>0).length,actuators:this.model.nu};}
+ dispose(){this.release();this.pullStep?.dispose();this.contactBuffer.delete();this.data.delete();this.model.delete();}
 }
