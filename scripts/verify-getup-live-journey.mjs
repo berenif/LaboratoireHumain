@@ -20,28 +20,41 @@ if(process.argv.includes('--check-waits')){
  console.log(JSON.stringify({waitRegression:true,cases:7,ticks:0}));process.exit(0);
 }
 const {chromium}=await import('/opt/codex/cua_node/lib/node_modules/playwright/index.mjs');
-const dir='web/proofs/getup-live-journey',run=process.argv.includes('--run'),before=191459,max=14200;
+const restored=process.argv.includes('--restored-pause'),dir=restored?'web/proofs/getup-restored-pause':'web/proofs/getup-live-journey',run=process.argv.includes('--run'),before=restored?201659:191459,max=restored?4000:14200;
 const disk=()=>Number(execFileSync('du',['-s','-B1','/workspace'],{encoding:'utf8'}).split(/\s/)[0])-419647488;
 const sha=b=>crypto.createHash('sha256').update(b).digest('hex'),json=p=>JSON.parse(fs.readFileSync(p));
 const write=(name,value)=>{fs.writeFileSync(`${dir}/${name}.tmp`,JSON.stringify(value));fs.renameSync(`${dir}/${name}.tmp`,`${dir}/${name}`);};
-assert(disk()+7000000<1500000000,'Need 7 MB for compact poses/state/media');
+assert(disk()+(restored?5000000:7000000)<1500000000,'Evidence reserve exceeds disk budget');
 fs.mkdirSync(dir,{recursive:true});
 if(run)assert(!fs.existsSync(`${dir}/ledger.json`)&&!fs.existsSync(`${dir}/poses.ndjson.gz`),'Existing/uncertain run: never repeat');
 for(const f of ['app.js','engine.js','index.html'])assert.equal(sha(fs.readFileSync(`web/dist/${f}`)),sha(fs.readFileSync(`web/mujoco/${f}`)),'Built/source mismatch: '+f);
-assert(json('web/proofs/getup-slow-continuation/ledger.json').confirmedTotal===before);
+assert(json(restored?'web/proofs/getup-live-journey/ledger.json':'web/proofs/getup-slow-continuation/ledger.json').confirmedTotal===before);
 assert(json('web/proofs/getup-slow-continuation/pure.json').pure.pauseCameraZeroIntegrationStub);
+const checkpoint=json('web/proofs/getup-browser-cycle/final-state.json');
+if(restored){assert.deepEqual(checkpoint,json('web/proofs/getup-live-journey/cycle-final.json'));assert.deepEqual(checkpoint.state,json('web/proofs/getup-live-journey/stopped-state.json').inspection.state);}
 const source=execFileSync('git',['rev-parse','HEAD'],{encoding:'utf8'}).trim();
-const protocol={cycleTicks:10200,continuationTicks:4000,maximumTicks:max,push:'same torso +X15N,120 native steps after800 calm steps',pause:'during pulse at40 applied native steps; camera then resume; full physical state and pulse counter must remain fixed',continuity:'one initial known-entry restoration; same Physics object and full233-state handoff; no intermediate setter/reset; SLOW sole owner',success:'both existing observedHold results, live handoff, actual pause/resume,120 force ticks, last second calm, final pause'};
+const protocol={cycleTicks:restored?0:10200,continuationTicks:4000,maximumTicks:max,push:'same torso +X15N,120 native steps after800 calm steps',pause:'during pulse at40 applied native steps; camera then resume; full physical state and pulse counter must remain fixed',continuity:restored?'EXPLICITLY RESTORED endpoint, no fall/get-up replay; no intermediate setter/reset; SLOW sole owner; does NOT validate the interrupted live journey':'one initial known-entry restoration; same Physics object and full233-state handoff; no intermediate setter/reset; SLOW sole owner',success:restored?'exact233-state restoration, actual pause/resume,120 force ticks, last second calm, final pause':'both existing observedHold results, live handoff, actual pause/resume,120 force ticks, last second calm, final pause'};
 const browser=await chromium.launch({headless:true,executablePath:'/usr/bin/chromium',args:['--no-sandbox','--disk-cache-size=1','--media-cache-size=1']});
 let fd,ledger,cycleFinal,offset=0,latestState,page;
 try{
  page=await browser.newPage({viewport:{width:1440,height:1100},deviceScaleFactor:1});const errors=[];
  page.on('pageerror',e=>errors.push(String(e)));
- await page.goto('http://127.0.0.1:5199/web/dist/index.html?getup=local');await page.waitForFunction(()=>window.__lhMujoco?.state);
+ await page.goto('http://127.0.0.1:5199/web/dist/index.html?getup=local'+(restored?'&continue=checkpoint':''));await page.waitForFunction(()=>window.__lhMujoco?.state);
  assert.equal(await page.evaluate(()=>window.__lhMujoco.state.steps),0);
- assert(await page.locator('#getup-start').isEnabled());assert(await page.locator('#getup-continue').isDisabled());
+ assert.equal(await page.locator('#getup-start').isEnabled(),!restored);assert.equal(await page.locator('#getup-continue').isEnabled(),restored);
  if(!run){
-  const preflight={source,protocol,ticks:0,priorPure:'getup-slow-continuation/pure.json',diskGrowth:disk(),sourceAndBuiltFilesIdentical:true,initialUI:'paused; cycle enabled; continuation disabled'};
+  let restoration=null;
+  if(restored)restoration=await page.evaluate(async()=>{
+   const {loadCycleAssets}=await import('/web/mujoco/local-getup/cycle.js');
+   const {SlowContinuation,loadFinalCheckpoint,FINAL_STATE_SHA}=await import('/web/mujoco/local-getup/continuation.js');
+   const {Physics}=await import('/web/dist/engine.js');
+   const mj=await(await import('/web/dist/vendor/mujoco.js')).default(),assets=await loadCycleAssets(),checkpoint=await loadFinalCheckpoint(),p=new Physics(mj,assets.xml);p.model.opt.timestep=.00125;
+   // Only constructor/forward/state reads, never advance or an integrator.
+   const c=new SlowContinuation(p,assets,{checkpoint}),result={checkpoint:FINAL_STATE_SHA,initialState:c.initialState,exact:c.initialState.every((v,i)=>v===checkpoint.state[i]),ticks:p.steps,calm:c.observer.last.calm,restored:c.restoredExact};
+   c.dispose();p.dispose();return result;
+  });
+  if(restored){assert(restoration.exact&&restoration.restored&&restoration.calm&&restoration.ticks===0);assert.deepEqual(restoration.initialState,checkpoint.state);}
+  const preflight={source,protocol,ticks:0,restoration,priorPure:'getup-slow-continuation/pure.json',diskGrowth:disk(),sourceAndBuiltFilesIdentical:true,initialUI:restored?'paused; cycle disabled; explicit checkpoint continuation enabled':'paused; cycle enabled; continuation disabled'};
   write('preflight.json',preflight);console.log(JSON.stringify(preflight));
  }else{
   assert(fs.existsSync(`${dir}/preflight.json`),'Preflight required');
@@ -50,10 +63,16 @@ try{
   await page.exposeFunction('__journeyAudit',message=>{
    const continuing=!!message.summary?.continuation;
    if(message.kind==='start'&&continuing){
-    assert(cycleFinal&&ledger.cycleTicks===10200&&ledger.cycleSummary.observedHold);
-    assert.deepEqual(message.initialState,cycleFinal.state,'Full state changed at live handoff');
-    assert.equal(message.summary.restoredExact,false);assert.equal(message.identities.checkpoint,null);
-    offset=10200;ledger.liveHandoff={full233StateExact:true,restoredCheckpoint:false,samePhysics:message.worldSame,physicsSteps:message.physicsSteps,t:message.row.t};
+    if(restored){
+     assert.deepEqual(message.initialState,checkpoint.state,'Full checkpoint restoration differs');assert.equal(message.initialState.length,233);
+     assert.equal(message.summary.restoredExact,true);assert.equal(message.identities.checkpoint,sha(fs.readFileSync('web/proofs/getup-browser-cycle/final-state.json')));
+     assert.equal(message.physicsSteps,0);ledger.fullStartExact=true;ledger.identities=message.identities;
+    }else{
+     assert(cycleFinal&&ledger.cycleTicks===10200&&ledger.cycleSummary.observedHold);
+     assert.deepEqual(message.initialState,cycleFinal.state,'Full state changed at live handoff');
+     assert.equal(message.summary.restoredExact,false);assert.equal(message.identities.checkpoint,null);
+     offset=10200;ledger.liveHandoff={full233StateExact:true,restoredCheckpoint:false,samePhysics:message.worldSame,physicsSteps:message.physicsSteps,t:message.row.t};
+    }
    }
    assert(message.worldSame&&message.setStateCalls===0,'World changed or intermediate state setter');
    if(message.kind==='reserve'){
@@ -102,18 +121,19 @@ try{
    };
    window.__journeyInspect=()=>{const c=audit.current;return {state:c.stateVector(),physicsSteps:c.p.steps,ticks:c.ticks,pushAppliedTicks:c.pushAppliedTicks||0,push:c.p.push?structuredClone(c.p.push):null,time:c.p.data.time,setStateCalls:audit.setStateCalls,sameWorld:c.p===audit.world,paused:window.__lhMujoco.state.paused,camera:window.__lhMujoco.state.camera};};
   });
-  // The one cycle launch; its only restoration is the already-known initial entry.
-  await page.click('#getup-start');
+  // The restored variant NEVER launches the fall/get-up cycle.
+  if(!restored){await page.click('#getup-start');
   await page.waitForFunction(()=>(window.__lhMujoco.state.getup?.done||window.__lhMujoco.state.failed)&&!document.querySelector('#reset').disabled,{},{timeout:180000});
   assert(!await page.evaluate(()=>window.__lhMujoco.state.failed),await page.locator('#error').textContent());
   assert(cycleFinal&&ledger.cycleSummary.observedHold,'Cycle did not qualify; no continuation');
   const pausedCycle=await page.evaluate(()=>window.__journeyInspect());assert(pausedCycle.paused);
   await page.waitForTimeout(150);assert.deepEqual(await page.evaluate(()=>window.__journeyInspect()),pausedCycle);
   ledger.cyclePause={physicsFrozen:true,t:pausedCycle.time,ticks:pausedCycle.physicsSteps};write('ledger.json',ledger);
+  }
   assert(await page.locator('#getup-continue').isEnabled());await page.click('#getup-continue');
   await page.waitForFunction(continuationEventReady,{},{timeout:90000});
   assert(await page.evaluate(()=>window.__journey.pauseClickAccepted),'Did not pause during pulse');
-  const paused=await page.evaluate(()=>window.__journeyInspect());assert.equal(paused.pushAppliedTicks,40);assert.equal(paused.physicsSteps,11040);assert(paused.paused&&paused.push);
+  const paused=await page.evaluate(()=>window.__journeyInspect());assert.equal(paused.pushAppliedTicks,40);assert.equal(paused.physicsSteps,(restored?0:10200)+840);assert(paused.paused&&paused.push);
   await page.click('#zoom-in');const camera=await page.evaluate(()=>window.__lhMujoco.state.camera);assert.notDeepEqual(camera,paused.camera);
   await page.click('#camera-reset');await page.waitForTimeout(250);
   const stayed=await page.evaluate(()=>window.__journeyInspect());assert.deepEqual(stayed,paused,'Physical/pulse state advanced while paused');
@@ -125,7 +145,7 @@ try{
   assert(ledger.completed&&ledger.pendingMaxTicks===0&&latestState.paused&&latestState.physicsSteps===ledger.newTicks);
   const frozen=JSON.stringify(latestState);await page.waitForTimeout(150);assert.equal(JSON.stringify(await page.evaluate(()=>window.__journeyInspect())),frozen);
   assert.equal(errors.length,0);assert.equal(ledger.continuationSummary.pushAppliedTicks,120);
-  ledger.finalPauseFrozen=true;ledger.passed=ledger.cycleSummary.observedHold&&ledger.continuationSummary.observedHold&&ledger.liveHandoff.full233StateExact&&ledger.pushPause.fullPhysicalStateFrozen;
+  ledger.finalPauseFrozen=true;ledger.passed=(restored?ledger.fullStartExact:ledger.cycleSummary.observedHold&&ledger.liveHandoff.full233StateExact)&&ledger.continuationSummary.observedHold&&ledger.pushPause.fullPhysicalStateFrozen;
   assert(ledger.newTicks<=max);write('ledger.json',ledger);
   await page.screenshot({path:`${dir}/ui-final.png`});
   write('ui.json',{state:await page.evaluate(()=>window.__lhMujoco.state),report:await page.locator('#getup-result').textContent(),previous:await page.locator('#getup-previous').textContent(),errors});
