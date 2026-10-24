@@ -108,3 +108,51 @@ not a new simulation. No video/export/publication was produced.
 MuJoCo confirmed total228054 PLUS the preserved prior unknown run; Rapier45735
 unchanged. Main, remote branches and the private deployed site are unchanged.
 Only this local experimental branch contains the candidate and its failure.
+
+## Prospective correction and restored continuation 002
+
+Only the entry validator changes. A measured geometric anchor may contain the
+exact nominal-ROM excess already observed; the first Hermite segment must reduce
+that excess monotonically, reach strict ROM at its first solved node, and never
+introduce an excess elsewhere. The full cubic extrema and derivative extrema
+are checked analytically on every segment, including between sampled FK checks.
+The explicit anchor must equal the first configuration. All subsequent paths
+remain strict. This exception does not apply to motor references, which remain
+ROM-admissible from entry. Physical q/dq and native limits are never projected.
+The desired shape starts with zero time derivative via the existing quintic;
+this does not erase the outward physical knee velocities used by PD damping.
+
+Exact001 checkpoint SHA256
+`bdc3c9bd7167a8bc23ea583b55628d0c8d5ee878dd7a6fe3336a03bac41c743c`:
+233 native integration values restored and compared exactly. The entry path
+residual is0.327260mm, global speed bound1.365378rad/s (dense observed1.214929),
+piecewise acceleration bound57.726326rad/s². These finite reference bounds are
+not physical actuator authority or a claim of exact following. Intermediate
+points remain C1 continuous; no physical velocity cap or gain is increased.
+The complete entry command equals current Balance at the same restored state;
+its largest difference from the preceding physically applied command is0.062205Nm
+(the state has advanced since that preceding command). Physical knee damping
+contributions remain−0.656052/−0.679578Nm. Six adverse ROM/nonfinite fixtures
+are rejected. Future-reference command snapshots on the unchanged observed
+state are finite and capped; their largest request69.770Nm is not a prediction
+of future physical torque demand.
+
+The old native snapshot does NOT include grab.previous. Continuation002 explicitly
+starts a new grab point history on the same body15/local[.09,−.09,.09]. During
+20 ticks (25ms), its external arm force is the convex quintic blend of the last
+recorded force[12.599545569839282,0.69783056692452,0.12339019719056488]N and the
+unchanged current grab law. The first newly computed point velocity uses native
+Jacobian×physical qvel; later values use successive real point samples as before.
+At tick0 the transmitted force is exactly the recorded force, at tick20 it is
+entirely current grab. Both endpoints and the convex blend obey180N. No force is
+applied to the root or another body. This is an authorized different interaction
+entry, NOT a reconstruction of missing history or bitwise historical continuation.
+Target timing, point, gains and caps remain unchanged; release at absolute13.8s.
+
+`verify-pull-entry-pure.mjs` performs no integration. After it and the prior pure
+checks pass, `continue-mujoco-pull-step.mjs web/proofs/pull-step-002` is authorized
+once: at most4605 new native ticks, zero forecasts, absolute end16s. No new10s
+preparation. Transfer entry/deadline remain10.24375/12.54375s; all physical stops
+and observable step criteria above remain unchanged. The failed001 evidence is
+immutable. The new checkpoint also retains full grab/bridge metadata. Proofs
+are progressive and limited to2MB, including a geometry replay contact sheet.

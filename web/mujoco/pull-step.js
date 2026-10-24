@@ -9,6 +9,39 @@ const column=(r,i)=>[r[i],r[3+i],r[6+i]];
 const orientationError=(now,goal)=>mul([0,1,2].reduce((e,i)=>add(e,cross(column(now,i),column(goal,i))),[0,0,0]),.5);
 export const PULL_PROTOCOL=Object.freeze({prepareSeconds:10,interactionSeconds:6,maxTicks:12800,body:15,targetOffsetX:.25,rampSeconds:.5,releaseAfter:3.8,forceTriggerN:8,captureAdvanceTriggerM:.008,velocityTriggerMps:.02,transferSeconds:1.8,unloadDeadline:2.3,unloadN:15,unloadDwell:.075,retainedN:100,clearTargetM:.02,clearRequiredM:.008,clearDwell:.05,liftSeconds:.4,liftDeadline:.7,transportSeconds:.6,lowerSeconds:.5,landingDeadline:.8,returnSeconds:.6,calmSeconds:1,footSlipMaxM:.025,tiltMaxRad:20*Math.PI/180,speedCalmMps:.03,taskResidualM:.002});
 export const smooth=x=>{x=clamp(x,0,1);return x*x*x*(10+x*(-15+6*x));};
+// Exact cubic extrema/derivative checks, not a sampled enlarged ROM tolerance.
+// Only an explicitly supplied, byte-identical measured entry may start outside.
+export function jointCurve(nodes,joints,model,duration,measuredAnchor=null){
+ if(!(duration>0&&Number.isFinite(duration)))throw Error('Reference duration');
+ const n=nodes.length-1;
+ if(measuredAnchor&&nodes[0].some((v,i)=>v!==measuredAnchor[i]))throw Error('Measured anchor mismatch');
+ const tangent=(i,j)=>{if(i===0)return nodes[1][j]-nodes[0][j];if(i===n)return nodes[n][j]-nodes[n-1][j];const l=nodes[i][j]-nodes[i-1][j],r=nodes[i+1][j]-nodes[i][j];return l*r<=0?0:2*l*r/(l+r);};
+ const poly=(i,j)=>{const a=nodes[i][j],b=nodes[i+1][j],m=tangent(i,j),k=tangent(i+1,j);return [a,m,3*(b-a)-2*m-k,2*(a-b)+m+k];};
+ const val=(c,t)=>c[0]+t*(c[1]+t*(c[2]+t*c[3]));
+ const derivative=(c,t)=>c[1]+t*(2*c[2]+3*c[3]*t);
+ const roots=(a,b,c)=>{if(Math.abs(a)<1e-15)return Math.abs(b)<1e-15?[]:[-c/b];const d=b*b-4*a*c;return d<0?[]:[(-b-Math.sqrt(d))/(2*a),(-b+Math.sqrt(d))/(2*a)];};
+ let maxDu=0,maxDuu=0;const entrance=[];
+ for(const j of joints){
+  const lo=model.jnt_range[2*j.j],hi=model.jnt_range[2*j.j+1],q0=nodes[0][j.q],side=q0<lo?-1:q0>hi?1:0;
+  if(side&&!measuredAnchor)throw Error('Reference ROM: unapproved entry '+j.name);
+  if(side)entrance.push({joint:j.name,measured:q0,bound:side<0?lo:hi,excess:side<0?lo-q0:q0-hi});
+  for(let i=0;i<n;i++){
+   const c=poly(i,j.q);if(!c.every(Number.isFinite))throw Error('Nonfinite reference');
+   const extrema=[0,1,...roots(3*c[3],2*c[2],c[1]).filter(t=>t>0&&t<1)];
+   const dExtrema=[0,1,...(Math.abs(c[3])>1e-15?[-c[2]/(3*c[3])].filter(t=>t>0&&t<1):[])];
+   const bridge=i===0&&side!==0;
+   if(bridge&&!(nodes[1][j.q]>=lo-1e-9&&nodes[1][j.q]<=hi+1e-9))throw Error('Entry does not reach ROM');
+   for(const t of extrema){const q=val(c,t);if(q<Math.min(lo,bridge?q0:lo)-1e-9||q>Math.max(hi,bridge?q0:hi)+1e-9)throw Error('Reference ROM: '+j.name);}
+   if(bridge&&dExtrema.some(t=>side*derivative(c,t)>1e-12))throw Error('Entry excess increases: '+j.name);
+   maxDu=Math.max(maxDu,...dExtrema.map(t=>Math.abs(derivative(c,t))*n));
+   maxDuu=Math.max(maxDuu,Math.abs(2*c[2])*n*n,Math.abs(2*c[2]+6*c[3])*n*n);
+  }
+ }
+ const at=u=>{const x=clamp(u,0,1)*n,i=Math.min(n-1,Math.floor(x)),t=x-i;return nodes[i].map((v,j)=>j<7?v:val(poly(i,j),t));};
+ // Composition q(s(t/T)): exact cubic extrema and global bounds of quintic
+ // s'=1.875, |s''|=10/sqrt(3). No physical velocity cap is invented here.
+ return {at,maxSpeed:maxDu*1.875/duration,maxAcceleration:(maxDuu*1.875**2+maxDu*10/Math.sqrt(3))/duration**2,entrance,firstAdmittedProgress:1/n};
+}
 export class RelativeFootIK {
  constructor(p,stance=7,free=10){
   this.p=p;this.m=p.model;this.mj=p.mj;this.d=new p.mj.MjData(p.model);this.stance=stance;this.free=free;
@@ -55,7 +88,7 @@ export class RelativeFootIK {
   this.set(q);const f=this.features();const positionError=Math.max(...sub(goal.com,f.com).slice(0,2).map(Math.abs),...sub(goal.foot,f.foot).map(Math.abs)),angleError=Math.max(...orientationError(f.footR,goal.footR).map(Math.abs),...orientationError(f.torsoR,goal.torsoR).map(Math.abs));
   return {q,positionError,angleError,heightError:f.com[2]-goal.com[2],features:f};
  }
- path(seed,goal,duration){
+ path(seed,goal,duration,measuredAnchor=null){
   this.set(seed);const initial=this.features(),nodes=[seed.slice()],reports=[];
   for(let k=1;k<=12;k++){
    const s=k/12,g={...goal,com:add(initial.com,mul(sub(goal.com,initial.com),s)),foot:add(initial.foot,mul(sub(goal.foot,initial.foot),s))};
@@ -66,23 +99,14 @@ export class RelativeFootIK {
   // and free-foot pose remain measured FK tasks with explicit residuals.
   // Continuous monotone Hermite curve, then quintic time progress; intermediate
   // waypoints are NOT stops. Check FK also between nodes, on this same curve.
-  const tangent=(i,j)=>{
-   if(i===0)return nodes[1][j]-nodes[0][j];if(i===12)return nodes[12][j]-nodes[11][j];
-   const left=nodes[i][j]-nodes[i-1][j],right=nodes[i+1][j]-nodes[i][j];return left*right<=0?0:2*left*right/(left+right);
-  };
-  const at=u=>{
-   const x=clamp(u,0,1)*12,i=Math.min(11,Math.floor(x)),t=x-i;
-   return nodes[i].map((v,j)=>{if(j<7)return v;const b=nodes[i+1],m0=tangent(i,j),m1=tangent(i+1,j);return (2*t**3-3*t*t+1)*v+(t**3-2*t*t+t)*m0+(-2*t**3+3*t*t)*b[j]+(t**3-t*t)*m1;});
-  };
-  let residual=0,maxSpeed=0;
+  const curve=jointCurve(nodes,this.p.joints,this.m,duration,measuredAnchor),at=curve.at;
+  let residual=0;
   for(let i=0;i<=96;i++){
    const u=i/96,q=at(u);this.set(q);const f=this.features();
    residual=Math.max(residual,...sub(f.com,add(initial.com,mul(sub(goal.com,initial.com),u))).slice(0,2).map(Math.abs),...sub(f.foot,add(initial.foot,mul(sub(goal.foot,initial.foot),u))).map(Math.abs));
-   for(const j of this.joints)if(q[j.q]<this.m.jnt_range[j.j*2]-1e-9||q[j.q]>this.m.jnt_range[j.j*2+1]+1e-9)throw Error('Reference ROM');
-   if(i){const prev=at((i-1)/96);maxSpeed=Math.max(maxSpeed,...this.joints.map(j=>Math.abs(q[j.q]-prev[j.q])*96*1.875/duration));}
   }
   if(residual>PULL_PROTOCOL.taskResidualM)throw Error('Interpolated relative FK residual '+residual);
-  return {at,duration,initial,goal,nodes,residual,maxSpeed};
+  return {...curve,duration,initial,goal,nodes,residual};
  }
  dispose(){for(const b of [this.d,this.jp,this.jr,this.jc,this.matrix,this.solution])b.delete();}
 }
@@ -92,7 +116,7 @@ export class PullStep {
  fail(reason){if(!this.reason){this.reason=reason;this.event('failed');}return null;}
  release(){this.released=true;}
  snapshot(){return {phase:this.phase,reason:this.reason||null,events:this.events,stance:this.stance,free:this.free,destination:this.destination,stable:this.stable,clearDwell:this.clearDwell||0,measuredAdvance:this.measuredAdvance||0,flightAdvance:this.flightAdvance||0,referenceResidual:this.path?.residual,maxReferenceSpeed:this.path?.maxSpeed,progress:this.progress,servoLimitResidual:this.servoLimitResidual||[],loadShare:this.loadShare,complete:this.complete,released:this.released};}
- makePath(goal,duration){this.path=this.ik.path(this.qref,goal,duration);this.pathStart=this.p.data.time;this.progress=0;}
+ makePath(goal,duration,measuredAnchor=null){this.path=this.ik.path(this.qref,goal,duration,measuredAnchor);this.pathStart=this.p.data.time;this.progress=0;}
  step(com,velocity,feet){
   const p=this.p,d=p.data,c=PULL_PROTOCOL,t=d.time,loads=p.reactions.normalLoads;
   if(['failed','complete','cancelled'].includes(this.phase))return this.reference||null;
@@ -110,7 +134,7 @@ export class PullStep {
    // Support-relative COM goal: centre of actual two-capsule stance footprint.
    // Keep initial sagittal COM coordinate, limited to interior of sole length.
    this.transferGoal={...this.initial,com:[clamp(this.initial.com[0],-.04,.10),0,this.initial.com[2]-.005]};
-   try{this.makePath(this.transferGoal,c.transferSeconds);}catch(e){return this.fail(String(e));}
+   try{this.makePath(this.transferGoal,c.transferSeconds,this.entryQ);}catch(e){return this.fail(String(e));}
    this.event('transfer');
   }
   if(p.fallen)return this.fail('measured fall');
