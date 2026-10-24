@@ -104,3 +104,21 @@ The packaging change also passed a Chromium load from dist alone: visible
 button, all assets fetched, exact 233-value initial state on an unstepped clone,
 and camera/pause state unchanged. No new dynamic test or clean install was run
 for this packaging change. Deployment is a separate owner-private Sites action.
+
+## Mobile layout acceptance (24 October 2026)
+
+The same Pause and camera elements now share a compact sticky toolbar; GetUp
+and Continue follow the scene, with the known-entry state replacement warning
+always visible. Long explanations use native details/summary; the recorded
+reports remain outside the collapsed section. Landscape uses two columns with
+a viewport-height scene instead of a 500 px minimum. Touch targets are at least
+44 × 44 CSS pixels. No application handlers, physics, model or policies changed.
+
+`node scripts/verify-mujoco-mobile-layout.mjs <new-proof-directory>` checks
+360×800, 390×844, 844×390 and 1366×900 in installed Chromium. It never clicks
+Start, GetUp, Push or Reset: camera, details and scrolling leave time, qpos/qvel,
+forces and counters unchanged at zero steps. The report is an explicitly
+labelled DOM layout fixture, not a simulated or restored result. The test checks
+control identities, bounds and the rendered mannequin; portrait and landscape
+screenshots were inspected. This is touch emulation, not a real Android test.
+The optional LH_PLAYWRIGHT_MODULE and CHROMIUM_PATH select existing tooling.
