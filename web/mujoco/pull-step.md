@@ -156,3 +156,44 @@ preparation. Transfer entry/deadline remain10.24375/12.54375s; all physical stop
 and observable step criteria above remain unchanged. The failed001 evidence is
 immutable. The new checkpoint also retains full grab/bridge metadata. Proofs
 are progressive and limited to2MB, including a geometry replay contact sheet.
+
+## Observed continuation002 — FAIL, tilt stop before unloading
+
+Tested source `5ad172d`. Exactly740 additional native ticks, zero forecasts:
+10.24375→11.16875s (0.925s). Scenario counter8935; confirmed MuJoCo total228794
+plus the preserved unknown historical run. Rapier45735 remains frozen. No retry.
+The233-value native restoration passed; the declared25ms arm-force entry was
+used. The original001 checkpoint and FAIL remain unchanged.
+
+The corrected geometric reference was admitted and transfer executed. The
+measured torso tilt grew8.081→20.009°, triggering the unchanged20° stop before
+release or unloading deadline. The body's ground-fall flag remained false:
+this is loss of acceptable balance, not an observed impact on the ground.
+COM moved+162.225mm forward,34.861mm toward the retained right side, and29.658mm
+down; final forward velocity0.387154m/s. The left load first increased to a
+sampled226.739N and never reached the<15N unload criterion (minimum187.162N).
+Final right/left loads179.129/187.162N. The entire left sole never cleared the
+floor (best−0.748mm, final−0.986mm); retained-foot drift≤2.132mm. No flight,
+placement, loaded reception, release or final calm were reached.
+
+Both sagittal ankles saturated under the unchanged20Nm caps. Final total
+requests146.020/154.493Nm were applied as20/20Nm. Saturation is visible by the
+10.4s trace sample; its exact first tick/duration was not recorded. Sampled grab
+force maximum23.959N, only on the forearm; no generalized/root support force.
+All21 actual torques were checked every executed tick for finitude, cap and
+gear×ctrl equality. This is an applied-cap PASS, not exact following of requests.
+
+Observed cause of termination: forward lean/speed grew with feet planted while
+the sagittal motor requests exceeded capacity. Hypothesis, not established
+uniquely: this transfer does not unload soon enough for the imposed pull before
+fixed-foot balance authority is exhausted. Neither a global inability to step
+nor a gain adjustment is justified by this one result. The validator correction
+is verified; mechanical step success is still absent.
+
+`web/proofs/pull-step-002/` contains the progressive ledger and40 trace rows,
+compact review, exact final native checkpoint and one inspected six-frame replay
+sheet. Full body/ground remain visible from entry through increasing forward
+lean; both feet remain planted. No additional simulation, video, media export,
+push, deployment or controller adjustment after the result.
+Final gzip SHA256:
+`e00b3428d6ec07351f1f869641ff7990bf11a109086578ba9b73c04a9d30c9fd`.
