@@ -422,3 +422,43 @@ New10200 steps; confirmed MuJoCo201659 PLUS the unchanged old unknown run.
 Rapier45735 remains frozen. Application, controllers, reference, weights,
 deployed private site and all historical results remain unchanged. No transfer
 was attempted under the known403 restriction; no new Library ID exists.
+
+## Restored Pause/camera/resume acceptance (24 October 2026)
+
+Approved single test, runtime8a114f6, unchanged application/controller872d878.
+`verify-getup-live-journey.mjs --restored-pause` selects the EXISTING explicit
+checkpoint-continuation UI and performs a zero-integration restoration preflight;
+adding `--run` executes once into its own `getup-restored-pause/` evidence folder.
+The 233 integration values match both the saved live-journey stop and the existing
+checkpoint exactly, before any integration. This is an explicitly RESTORED
+observation, not a continuation of the closed browser world or a replay of the
+fall/get-up. Source/model/actor/PD/gains/caps are unchanged; SLOW remains sole owner.
+
+Result: limited PASS. 4000 native800Hz steps, t22.500→27.500s, zero forecasts.
+After800 calm steps, torso+X force15N starts23.500s. At continuation tick840
+(40 force ticks, t23.550s), the real Pause handler is activated. Camera zoom/reset
+works during a347.6ms wall-time pause. All233 state values, simulated time,
+integration/pulse counters and remaining pulse (.100s) are exactly unchanged.
+Resume executes the remaining80 force ticks; total120 ticks/.150s, ending23.650s.
+No intermediate state setter, world replacement, root actuation or extra force.
+
+All40 first-second and40 final-second samples satisfy the existing calm criteria.
+Final132 consecutive calm40Hz samples=3.300s (3.275s between sampled endpoints).
+No native-step support loss, nonfoot support, new flight or fall guard fired.
+Final COMspeed.001099m/s, torso tilt2.118deg, loadsR206.73/L193.96N.
+Maximum COMspeed.06803m/s, tilt2.973deg, actual torque fraction.4840783;
+gear error0, no saturation. Reactions remain last solved substep, geometry
+refreshed (1.25ms stage distinction). Final pause and frozen counters verified.
+
+All201 recorded qpos/qvel/ctrl/geometry samples and the full final integration
+state equal the earlier unpaused checkpoint continuation. Thus the actual UI
+pause did not change the simulated pulse duration or this measured trajectory.
+This finite restored test does NOT turn the incomplete live journey into PASS,
+does not change historical af04325 FAIL, and does not establish general recovery.
+
+Durable ledger/pause/full final state/compact audit and original final browser
+screenshot are saved in `web/proofs/getup-restored-pause/`. Screenshot inspected:
+whole body and floor visible, upright; the textual terminal report is separately
+preserved in ui.json. No redundant video, new Library attempt, deployment or
+weights package. New4000 steps, confirmed MuJoCo205659 PLUS the old unknown run;
+Rapier45735 frozen. No retry or second physical execution.
