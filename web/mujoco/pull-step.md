@@ -75,3 +75,36 @@ failure. It does not establish single-support or contact feasibility.
 single-run runner; never invoke it without a separately authorized runtime.
 It saves counters/poses progressively and a complete final native state. Proof
 budget2MB; no media transfer or publication. Historical FAIL results remain.
+
+## Observed single-run result — FAIL before transfer
+
+Source40d62457dcaf22f96b3e9908f6ee7b978f944282. The only physical run stopped
+at10.24375s /8195 ticks (8000 standing +195 with grab). The trigger did react to
+real forward traction12.5995N and COM vx0.02057m/s, but the finite-path ROM check
+rejected the measured initial shape before a transfer command was applied.
+
+The native soft joint limits had allowed right/left knees to2.05042° /2.05698°
+against the nominal2° bound. The input pose at path parameter0 is required to be
+exactly the measured pose; the strict nominal-ROM assertion rejects that input.
+This is a demonstrable initialization/validation mismatch, not evidence that
+single support is physically impossible. The pure tests used a nominal-ROM seed
+and missed this observed entry. No guard, gain, controller or cap was changed
+following the result, and no retry was made.
+
+At stop: COM+1.218mm forward since grab, torso tilt8.081°, right/left loads
+195.840/203.680N; minimum whole left sole−0.748mm (native contact penetration).
+No unload, lift, flight, placement or reception occurred; retained-foot drift
+was0.038mm. Requested/applied motors stayed within the original caps; initial
+reset landing had reached caps, while the largest at stop was60.42% of its cap.
+No nonfoot contact or physical fall. The arm force remained an explicit user
+grab, with no root/generalized assistance. The FK trajectory remains unvalidated.
+
+Local proof directory `web/proofs/pull-step-001/`: progressive compressed trace,
+ledger, exact native final checkpoint (pure state restore verified), diagnostic
+and one inspected contact sheet. The sheet shows the full mannequin and floor,
+with actual positions at0,10,10.05,10.125,10.2,10.24375s; it is labelled replay,
+not a new simulation. No video/export/publication was produced.
+
+MuJoCo confirmed total228054 PLUS the preserved prior unknown run; Rapier45735
+unchanged. Main, remote branches and the private deployed site are unchanged.
+Only this local experimental branch contains the candidate and its failure.
