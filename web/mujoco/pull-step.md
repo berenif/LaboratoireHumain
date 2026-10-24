@@ -254,3 +254,62 @@ The historical relative-FK/entry/Balance/policy/package pure checks still pass.
 No integration or forecast was performed; MuJoCo stays228794 confirmed plus the
 preserved unknown historical run, Rapier45735. No gain sweep, tangential solver,
 new physical trial, media export, push or deployment follows this rejected gate.
+
+## Coupled native-response witness — 44 evaluations, zero integration
+
+`scripts/verify-pull-coupled-pure.mjs` is a standalone diagnostic, **not wired
+into the controller**. It evaluates one baseline, 42 central motor perturbations
+and one candidate on independent copies of the exact001 native233 state.
+Each copy includes the same warmstart; the current recorded arm force is applied
+at body15's same material point. No root/generalized force is added. `mj_forward`
+computes the native normal/tangential reactions and all27 accelerations; no
+`mj_step`, transition finite differences, forecast or physical integration occurs.
+The native saved ctrl is a later unintegrated proposal, not the last applied
+command. After exact restoration, the diagnostic explicitly installs the last
+applied command from the ledger; the maximum difference is0.032659Nm.
+
+The objective was fixed before evaluation. Outputs are COM acceleration xyz,
+centroidal angular-momentum rate xyz and right/left normal loads. Scales are
+g, mgh and mg (h above the current contact plane); task weights are1 for the
+six centroidal components and0.25 for the two loads. Lateral acceleration and
+load goals retain the previous declared demand, roll moment targets zero, and
+the other centroidal outputs retain their baseline values. Motor variables are
+gear-normalized controls. Regularization is1e-4 times squared control change;
+central perturbations are0.001. One Cholesky solve supplies one direction,
+scaled analytically by0.473909 to respect a fixed0.1 control trust radius and
+the unchanged caps. This is a local limited least-squares direction, not a claim
+to solve a general bounded optimization or a new feedback controller.
+
+The sole candidate passes all declared local gates. Native COM ay changes
++0.014596→−0.242923m/s² toward the right support, against a−0.529679 goal
+(47.314% of the requested change). Centroidal roll-moment rate decreases
+0.350796→0.184064Nm. Ground lateral force changes−0.101661→−10.619803N;
+right/left normal loads change195.817/203.668→150.437/249.048N. Thus this is
+an initial propulsive redistribution, **not left-foot unloading already achieved**.
+The largest changes are left/right hip-x−4.000/+3.998Nm and abdomen-x−1.744Nm;
+sagittal ankle changes are only+0.00539/−0.00318Nm. The full21 commands and
+actual native efforts are saved in the result, with maximum effort60.405% of cap.
+
+The independently assembled27 dynamic residuals are≤1.231e-13, including the
+six free-base equations. Friction utilization is≤0.19914. All eight contacts
+remain active, with the same native constraint regime for all44 evaluations.
+Normalized nonlinear prediction error is6.122e-15, below the predeclared0.009577
+limit. Task cost decreases0.0102285→0.00283592; regularization cost is2.230e-6.
+Terminal002 is still rejected at20.009° by the unchanged controller guard,
+using kinematics only and zero direct dynamics evaluations.
+
+**This PASS is only a fixed-state command witness.** The native right-contact
+normal accelerations are+0.175…+0.601m/s² and left-contact values
+−0.592…−0.180m/s². These compliant-contact accelerations are not a prediction
+that support persists. Root local angular acceleration x increases
+0.0802→1.2763rad/s² despite the smaller whole-body roll-moment rate; centroidal
+moment control does not by itself establish upright torso control. Neither a
+future motor transition, unloading, flight, placement nor reception was tested.
+The candidate must not be described as a completed support-transfer controller.
+
+Evidence is `web/proofs/pull-step-coupled-pure/{protocol.json,evaluations.ndjson,
+result.json}` (49,535bytes). All44 begin/end records are durable. Native solve
+time totals11.146ms (maximum3.268ms), whole diagnostic386.937ms on this cloud;
+this is not a browser/phone control-rate benchmark. Existing evidence refuses
+a duplicate execution. MuJoCo remains228794 confirmed plus preserved unknown
+history, Rapier45735. No runtime controller, main, site or dependency changed.
