@@ -110,12 +110,52 @@ export class RelativeFootIK {
  }
  dispose(){for(const b of [this.d,this.jp,this.jr,this.jc,this.matrix,this.solution])b.delete();}
 }
+// Pure-gate FAILED on001: keep this candidate opt-in/off by default. Normal
+// redistribution alone produced the wrong lateral acceleration and roll moment.
+// Experimental load feedback: desired ground reactions are goals, never forces
+// injected into the world. The existing PD remains the only motor owner.
+export function loadExchange(p,servo,goalCom,com,velocity,priorDelta=null){
+ const points=(p.reactions.points||[]).filter(x=>[7,10].includes(x.body)&&x.load>0),loads=p.reactions.normalLoads;
+ const zero=p.joints.map(()=>0),off={active:false,delta:zero,q:servo.slice(),reason:'await solved bilateral contact points'};
+ if(!(loads[7]>1&&loads[10]>1)||!points.some(x=>x.body===7)||!points.some(x=>x.body===10))return off;
+ if(points.some(x=>x.normal[2]<.999))return {...off,reason:'flat-ground normal model unavailable'};
+ const N=loads[7]+loads[10],mass=Array.from(p.model.body_mass).reduce((a,b)=>a+b,0),h=com[2]-points.reduce((s,x)=>s+x.position[2]*x.load/N,0);
+ if(!(h>.3&&N>1))return {...off,reason:'invalid height/load'};
+ const centroid=b=>points.filter(x=>x.body===b).reduce((a,x)=>add(a,mul(x.position,x.load/loads[b])),[0,0,0]);
+ const right=centroid(7),left=centroid(10),dy=left[1]-right[1];if(!(dy>.02))return {...off,reason:'lateral support geometry degenerate'};
+ const omega=Math.sqrt(9.81/h),ay=omega*omega*(goalCom[1]-com[1])-2*omega*velocity[1];
+ const external=p.grabForce(),application=p.grab?p.worldPoint(p.grab.body,p.grab.local):com,externalMoment=cross(sub(application,com),external);
+ // Approximate zero roll-angular-momentum-rate target. The external arm moment
+ // and ground tangential reaction required by ay are included, not silently zero.
+ const groundY=mass*ay-external[1],copWanted=com[1]+(-h*groundY-externalMoment[0])/N;
+ const rightWanted=N*(left[1]-copWanted)/dy;
+ const rightTarget=clamp(rightWanted,Math.min(PULL_PROTOCOL.retainedN,N),N),leftTarget=N-rightTarget;
+ const copCommand=(rightTarget*right[1]+leftTarget*left[1])/N;
+ const groundYCommanded=(-N*(copCommand-com[1])-externalMoment[0])/h,ayCommanded=(groundYCommanded+external[1])/mass;
+ const jp=new p.mj.DoubleBuffer(3*p.model.nv),jr=new p.mj.DoubleBuffer(3*p.model.nv),generalized=Array(p.model.nv).fill(0),deltaForce=[0,0,0],deltaMoment=[0,0,0];
+ const changes=[];
+ for(const point of points){
+  const total=loads[point.body],target=point.body===7?rightTarget:leftTarget,dN=(target-total)*point.load/total,df=mul(point.normal,dN);
+  p.mj.mj_jac(p.model,p.data,jp,jr,point.position,point.body);const j=jp.GetView();
+  for(let v=0;v<p.model.nv;v++)for(let k=0;k<3;k++)generalized[v]-=j[k*p.model.nv+v]*df[k];
+  const moment=cross(sub(point.position,com),df);for(let k=0;k<3;k++){deltaForce[k]+=df[k];deltaMoment[k]+=moment[k];}
+  changes.push({body:point.body,position:point.position,normal:point.normal,measuredN:point.load,targetN:point.load+dN});
+ }
+ jp.delete();jr.delete();
+ // -Jc^T delta-f has Nm units. Kp^-1 maps only its ACTUATED part to radians.
+ // The nonzero base part is diagnostic, never written to qfrc_applied.
+ const wanted=p.joints.map(j=>generalized[j.v]/(/hip|knee|ankle/.test(j.name)?300:200));
+ // Reuse the already declared25ms command-entry timescale, no integral state.
+ const blend=1-Math.exp(-p.dt/.025),delta=wanted.map((x,i)=>(priorDelta?.[i]||0)+blend*(x-(priorDelta?.[i]||0))),q=servo.slice(),projection=[];
+ for(const [i,j]of p.joints.entries()){const raw=q[j.q]+delta[i];q[j.q]=clamp(raw,p.model.jnt_range[2*j.j],p.model.jnt_range[2*j.j+1]);projection.push(raw-q[j.q]);}
+ return {active:true,q,delta,wanted,requestedTau:p.joints.map(j=>generalized[j.v]),realizedReferenceTau:p.joints.map(j=>(/hip|knee|ankle/.test(j.name)?300:200)*(q[j.q]-servo[j.q])),unactuatedGeneralizedNotApplied:generalized.slice(0,6),deltaForce,deltaMoment,ayWanted:ay,ayCommanded,groundYWanted:groundY,groundYCommanded,externalMoment,copWanted,copCommand,copResidual:copWanted-copCommand,rightTarget,leftTarget,measured:[loads[7],loads[10]],changes,projection,omega,desiredMomentRateX:0,targetIsApproximate:true};
+}
 export class PullStep {
- constructor(p){this.p=p;this.phase='armed';this.events=[];this.quietCom=null;this.stance=7;this.free=10;this.ik=new RelativeFootIK(p);this.lastTick=-1;this.stable=0;this.saturation=0;this.released=false;this.complete=false;}
+ constructor(p,{loadFeedback=false}={}){this.loadFeedback=loadFeedback;this.p=p;this.phase='armed';this.events=[];this.quietCom=null;this.stance=7;this.free=10;this.ik=new RelativeFootIK(p);this.lastTick=-1;this.stable=0;this.saturation=0;this.released=false;this.complete=false;}
  event(phase){this.phase=phase;this.phaseStart=this.p.data.time;this.events.push({phase,t:this.phaseStart});this.dwell=0;}
  fail(reason){if(!this.reason){this.reason=reason;this.event('failed');}return null;}
  release(){this.released=true;}
- snapshot(){return {phase:this.phase,reason:this.reason||null,events:this.events,stance:this.stance,free:this.free,destination:this.destination,stable:this.stable,clearDwell:this.clearDwell||0,measuredAdvance:this.measuredAdvance||0,flightAdvance:this.flightAdvance||0,referenceResidual:this.path?.residual,maxReferenceSpeed:this.path?.maxSpeed,progress:this.progress,servoLimitResidual:this.servoLimitResidual||[],loadShare:this.loadShare,complete:this.complete,released:this.released};}
+ snapshot(){return {phase:this.phase,reason:this.reason||null,events:this.events,stance:this.stance,free:this.free,destination:this.destination,stable:this.stable,clearDwell:this.clearDwell||0,measuredAdvance:this.measuredAdvance||0,flightAdvance:this.flightAdvance||0,loadFeedback:this.loadFeedback,loadIntent:this.loadIntent?{active:this.loadIntent.active,reason:this.loadIntent.reason,ayWanted:this.loadIntent.ayWanted,ayCommanded:this.loadIntent.ayCommanded,rightTarget:this.loadIntent.rightTarget,leftTarget:this.loadIntent.leftTarget,measured:this.loadIntent.measured,copWanted:this.loadIntent.copWanted,copCommand:this.loadIntent.copCommand,deltaMoment:this.loadIntent.deltaMoment,requestedTau:this.loadIntent.requestedTau,realizedReferenceTau:this.loadIntent.realizedReferenceTau,unactuatedGeneralizedNotApplied:this.loadIntent.unactuatedGeneralizedNotApplied}:null,referenceResidual:this.path?.residual,maxReferenceSpeed:this.path?.maxSpeed,progress:this.progress,servoLimitResidual:this.servoLimitResidual||[],loadShare:this.loadShare,complete:this.complete,released:this.released};}
  makePath(goal,duration,measuredAnchor=null){this.path=this.ik.path(this.qref,goal,duration,measuredAnchor);this.pathStart=this.p.data.time;this.progress=0;}
  step(com,velocity,feet){
   const p=this.p,d=p.data,c=PULL_PROTOCOL,t=d.time,loads=p.reactions.normalLoads;
@@ -174,6 +214,16 @@ export class PullStep {
   // compliant servo targets are distinct from the FK geometry prediction.
   this.servoLimitResidual=[];for(const j of p.joints){const desired=servoQ[j.q];servoQ[j.q]=clamp(desired,p.model.jnt_range[j.j*2],p.model.jnt_range[j.j*2+1]);if(desired!==servoQ[j.q])this.servoLimitResidual.push({joint:j.name,desired,commanded:servoQ[j.q],residual:desired-servoQ[j.q]});}
   const total=(loads[7]||0)+(loads[10]||0);if(total>1)this.loadShare+=(1-Math.exp(-p.dt/.05))*((loads[7]||0)/total-this.loadShare);
+  if(this.loadFeedback&&this.phase==='transfer'){
+   const goalWorld=add(feet[0],rot(Array.from(d.xmat.slice(63,72)),this.transferGoal.com));
+   this.loadIntent=loadExchange(p,servoQ,goalWorld,com,velocity,this.loadDelta);this.loadDelta=this.loadIntent.delta;
+   for(const j of p.joints)servoQ[j.q]=this.loadIntent.q[j.q];
+  }else if(this.loadFeedback){
+   // Fade the previous reference offset instead of dropping it at a phase edge.
+   this.loadDelta=(this.loadDelta||p.joints.map(()=>0)).map(x=>x*Math.exp(-p.dt/.025));
+   for(const [i,j]of p.joints.entries())servoQ[j.q]=clamp(servoQ[j.q]+this.loadDelta[i],p.model.jnt_range[2*j.j],p.model.jnt_range[2*j.j+1]);
+   this.loadIntent={active:false,reason:'no bilateral transfer reaction requested'};
+  }
   this.reference={q:servoQ,geometryQ:this.qref,support,loadShare:this.loadShare,blend:clamp((t-this.entry)/.025,0,1),entryTorques:this.entryTorques};return this.reference;
  }
  dispose(){this.ik.dispose();}

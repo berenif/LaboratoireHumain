@@ -197,3 +197,60 @@ lean; both feet remain planted. No additional simulation, video, media export,
 push, deployment or controller adjustment after the result.
 Final gzip SHA256:
 `e00b3428d6ec07351f1f869641ff7990bf11a109086578ba9b73c04a9d30c9fd`.
+
+## Load-feedback candidate — rejected by the pure dynamic gate, no trial003
+
+This implementation remains opt-in (`loadFeedback:false` by default), local and
+unpublished. Stable Balance and SLOW commands are unchanged. It records solved
+contact positions, normals and full forces, and proposes a feedback correction
+through the existing PD reference, not an external force. For ground reaction
+changes δf, δτ=−Jcontactᵀδf and δq=Kp⁻¹δτ on the21 actuated axes. Root components
+are reported and never applied. Existing ROM and final motor caps remain active;
+the reference offset is filtered on the already declared25ms entry timescale.
+There is no integral accumulator. Existing PD gains, friction and motor limits
+are unchanged; this candidate is explicitly a new load-feedback law.
+
+The approximate lateral goal uses the current COM height's natural frequency
+ω=√(g/h), acceleration ω²(yGoal−y)−2ω·vy, and the measured arm force/moment.
+A zero roll angular-momentum-rate target gives a desired CoP using the ground
+lateral force required by that acceleration. Normal loads are projected to the
+present two-foot resultant segment while reserving100N on the retained foot.
+The implied acceleration is recalculated after projection and reported apart
+from the unrestricted goal. This is an approximation, not a physical guarantee.
+
+**The native pure check rejects this normal-only command formulation.** On the
+exact001 q/dq at10.24375s, using recorded COM velocity and frozen recorded grab
+force in both compared commands, the projected goal is ay=−0.529679m/s² (right).
+The desired right/left loads are100/299.498N; full correction predicts native
+94.667/304.810N, so it DOES affect load distribution with the intended sign.
+But predicted COM ay is+0.099248m/s² (left), versus+0.014576 without correction,
+and roll angular-momentum rate grows0.363299→22.741934Nm rather than approaching
+its requested zero. The first filtered update also shifts the wrong way:
+ay+0.018705m/s² and roll moment1.454718Nm. These are fixed-state evaluations,
+not a forecast or an observation of a future fall/25ms transient.
+
+The target's required tangential reaction is not commanded by the normal-only
+correction. Opposite vertical-force changes sum to zero but create18.437Nm of
+roll moment. Dropping the six unactuated components does not make that moment
+vanish. Native MuJoCo resolves a physically consistent response that differs
+from the requested task. The six independently recomputed base-equation
+residuals are below8.2e−13; no generalized/root force was applied. Virtual-work
+sign/unit error is below1.4e−17. All21 native evaluated motor efforts remain finite/capped;
+contact friction ratio≤0.117 and servo ROM checks pass. This therefore is a
+command/task failure, not solver nonconvergence or proof that walking is impossible.
+
+002 is independently rejected by the existing20° physical stop. A preview beyond
+that guard would expose nominal Balance commands which the runtime would NOT
+integrate; these are not reused as a valid continuation. No trial is launched
+from either checkpoint. The placement-retarget implementation is left pending
+because its required support-exchange primitive failed this gate; updating a
+foot destination cannot repair this demonstrated roll/force mismatch.
+
+`node scripts/verify-pull-load-pure.mjs` tests the two saved states, normal-only
+virtual work, projected moment/force demand, complete native response, friction,
+ROM/caps, absence of a load command on missing contact, and physical-state
+immutability. `web/proofs/pull-step-load-pure/result.json` is the compact result.
+The historical relative-FK/entry/Balance/policy/package pure checks still pass.
+No integration or forecast was performed; MuJoCo stays228794 confirmed plus the
+preserved unknown historical run, Rapier45735. No gain sweep, tangential solver,
+new physical trial, media export, push or deployment follows this rejected gate.

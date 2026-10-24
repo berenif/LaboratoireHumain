@@ -28,7 +28,7 @@ for(const [file,marker,hash] of [
  ['local-getup/cycle.js','export class CycleObserver','983d62ff367f2c77a99a298b8fee75f8565e1d1227dc0c8deedf0227341171c3'],
  ['local-getup/continuation.js','export class SlowContinuation','1fd083a81cd761a015a5561d0c548a1d9cbb8deb3f806e9008b5a8d5b4902f17'],
  ['local-getup/slow.js',null,'069f5cf1222e93f2ce7c06a8133b4764ec98c2ec142cbe2a24ff4f418e2bde81'],
- ['engine.js',null,'2be91bc54bdcd66f2c498df3b0feebe4c2ed596340984c96c9349470191d5be0'],
+ ['engine.js',null,'efa9a4f488be760274859cf6645e7e11e9de47f3fb32e84ec42adc0c02675b6c'],
 ]){let bytes=read(root+file);if(marker)bytes=bytes.subarray(bytes.indexOf(marker));assert.equal(sha(bytes),hash,file);}
 const fixture=JSON.parse(read('rust/crates/sim/data/getup-policy/parity.json'));
 const binary=read(root+'getup-assets/student.bin'),actor=new DenseActor(binary.buffer.slice(binary.byteOffset,binary.byteOffset+binary.length));

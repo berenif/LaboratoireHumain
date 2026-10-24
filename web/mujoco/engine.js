@@ -18,7 +18,7 @@ export class Physics {
  pushBody(body=1){this.push={body,remaining:.06,force:[110,0,25]};}
  apply(body,point,force){const torque=cross(sub(point,Array.from(this.data.xipos.slice(body*3,body*3+3))),force);for(let i=0;i<3;i++){this.data.xfrc_applied[body*6+i]+=force[i];this.data.xfrc_applied[body*6+3+i]+=torque[i];}}
  applyPush(){if(this.push){this.apply(this.push.body,Array.from(this.data.xipos.slice(this.push.body*3,this.push.body*3+3)),this.push.force);this.push.remaining-=this.dt;if(this.push.remaining<=0)this.push=null;}}
- enablePullStep(){if(this.mode!=='balance'||this.pullStep)throw Error('Pull step requires fresh Balance');this.pullStep=new PullStep(this);}
+ enablePullStep(options={}){if(this.mode!=='balance'||this.pullStep)throw Error('Pull step requires fresh Balance');this.pullStep=new PullStep(this,options);}
  grabForce(){if(!this.grab)return [0,0,0];const g=this.grab,p=this.worldPoint(g.body,g.local),v=mul(sub(p,g.previous),1/this.dt);let f=sub(mul(sub(g.target,p),120),mul(v,12));const n=Math.hypot(...f);return n>180?mul(f,180/n):f;}
  setMode(mode){if(this.pullStep){this.pullStep.dispose();this.pullStep=null;}if(!['passive','balance'].includes(mode))throw Error('Mode invalide');this.mode=mode;this.cycle=null;this.fallen=false;this.previousCom=null;}
  // Optional experiment. Existing passive/balance paths are untouched without a cycle.
@@ -115,7 +115,7 @@ export class Physics {
  }
  // Read solved impulses as forces for diagnostics only; never feed them back as applied forces.
  readReactions(){
-  const contacts=this.data.contact,loads={};const supported=[];
+  const contacts=this.data.contact,loads={};const supported=[],points=[];
   for(let i=0;i<this.data.ncon;i++){
    const c=contacts.get(i),a=this.model.geom_bodyid[c.geom1],b=this.model.geom_bodyid[c.geom2];
    if(a===0||b===0){
@@ -123,10 +123,11 @@ export class Physics {
     const force=this.contactBuffer.GetView(),body=a||b;
     loads[body]=(loads[body]||0)+force[0];
     if(force[0]>.1&&!supported.includes(body))supported.push(body);
+    if(force[0]>0)points.push({body,position:Array.from(c.pos),normal:Array.from(c.frame.slice(0,3)).map(x=>a===0?x:-x),load:force[0],forceWorld:[0,1,2].map(k=>(a===0?1:-1)*(c.frame[k]*force[0]+c.frame[3+k]*force[1]+c.frame[6+k]*force[2])),friction:Array.from(c.friction),dim:c.dim});
    }
    c.delete();
   }
-  contacts.delete();this.reactions={normalLoads:loads,supportedBodies:supported,atTime:this.data.time};
+  contacts.delete();this.reactions={normalLoads:loads,supportedBodies:supported,points,atTime:this.data.time};
  }
  forward(){this.mj.mj_forward(this.model,this.data);}
  reset(){if(this.pullStep){this.pullStep.dispose();this.pullStep=null;}this.cycle=null;this.reactions={normalLoads:{},supportedBodies:[],atTime:0};this.balance=null;this.previousCom=null;this.fallen=false;this.command=[];this.grab=null;this.push=null;this.lastForce=0;this.mj.mj_resetData(this.model,this.data);this.forward();this.resets++;}

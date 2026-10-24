@@ -4,7 +4,7 @@ import{Physics}from'../web/dist/engine.js';import{PULL_PROTOCOL as c,smooth}from
 export const INPUT='web/proofs/pull-step-001',EXPECTED='bdc3c9bd7167a8bc23ea583b55628d0c8d5ee878dd7a6fe3336a03bac41c743c';
 export const sha=b=>crypto.createHash('sha256').update(b).digest('hex');
 export function nativeState(p,spec){const b=new p.mj.DoubleBuffer(p.mj.mj_stateSize(p.model,spec));p.mj.mj_getState(p.model,p.data,b,spec);const s=Array.from(b.GetView());b.delete();return s;}
-export function restorePullEntry(mj){
+export function restorePullEntry(mj,{loadFeedback=false}={}){
  const bytes=fs.readFileSync(INPUT+'/final.json.gz');assert.equal(sha(bytes),EXPECTED);
  const cp=JSON.parse(gunzipSync(bytes)),ledger=JSON.parse(fs.readFileSync(INPUT+'/ledger.json')),xml=fs.readFileSync('web/dist/humanoid.xml','utf8');
  assert.equal(sha(xml),cp.modelSHA256);assert.equal(cp.state.length,233);assert.equal(ledger.confirmedTotal,228054);assert(ledger.completed&&ledger.pendingMaxTicks===0);assert.equal(cp.physics.steps,8195);
@@ -14,7 +14,7 @@ export function restorePullEntry(mj){
  mj.mj_setState(p.model,p.data,cp.state,cp.spec);assert.deepEqual(nativeState(p,cp.spec),cp.state);
  Object.assign(p,{mode:cp.physics.mode,fallen:cp.physics.fallen,steps:cp.physics.steps,resets:cp.physics.resets,reactions:structuredClone(cp.physics.reactions),previousCom:cp.previousCom.slice(),balance:structuredClone(cp.physics.balance)});
  p.command=p.joints.map((j,i)=>({name:j.name,requested:ledger.summary.last.command[i][0],applied:ledger.summary.last.command[i][1]}));
- p.enablePullStep();Object.assign(p.pullStep,structuredClone(cp.plan));
+ p.enablePullStep({loadFeedback});Object.assign(p.pullStep,structuredClone(cp.plan));p.pullStep.loadFeedback=loadFeedback;
  // A failed optional pure proposal is replaced transactionally. Physical state,
  // original phase clock, entry shape, destination and deadline remain intact.
  const path=p.pullStep.ik.path(cp.plan.entryQ,cp.plan.transferGoal,c.transferSeconds,cp.plan.entryQ);
