@@ -366,3 +366,78 @@ result and a saved-data audit, including the missing-telemetry limitation.
 Native time totals7.393ms, complete diagnostic382.740ms on this cloud. MuJoCo
 stays228794 confirmed plus unknown history; Rapier45735. Active controllers,
 stable main/site, all previous verdicts and dependencies remain unchanged.
+
+## Exact candidate telemetry repair — one native recheck, still rejected
+
+The previous Node process had exited; its missing response was not recoverable
+in memory. The saved baseline controls and 21 IEEE754 increments do preserve
+the exact candidate: the same `u0[i] + saved.solve.x[i]` expression is evaluated,
+without optimization, clipping or new perturbations. The input checkpoint,
+model, prior result and sensitivity journal are hash-checked. All 233 native
+integration values are checked immediately after restoration, before installing
+the same command and recorded arm force at the same material point.
+
+`verify-pull-constrained-native-pure.mjs --recheck-saved-candidate` performs exactly
+one `mj_forward`, with a separate exclusive proof directory. It writes all native
+forces, accelerations, actuator efforts, contacts, constraint types/IDs/states
+and constraint residual inputs **before** the first comparison. No old proof is
+overwritten. The old nonqualified result is preserved; this is an explicitly
+authorized additional diagnostic, not a retroactive PASS or a simulation retry.
+
+The eight contacts and all 32 ground-contact constraint states are unchanged.
+Only the right-knee joint-limit row changes QUADRATIC → SATISFIED; its reaction
+is zero. The left-knee limit remains active. This is not a foot losing contact.
+The following are now native results, not predictions:
+
+| Existing condition | Native result | Outcome |
+|---|---:|---|
+| Growing tilt: thetaDD <= 0 | -0.333019963 rad/s² | Pass |
+| `upDot·upDD <= 0` | +0.000285776081 s⁻³ | **Fail**, tolerance 1e-10 |
+| Eight normal forces >= 0 | minimum 26.335201 N | 8/8 pass |
+| 32 pyramidal friction facets | worst residual -17.734491 N | 32/32 pass |
+| Retained right load >= 100 N | 135.924908 N | Pass |
+| Four current right endpoint gap jets | -0.724521 to -0.427486 mm | 4/4 pass |
+| 42 motor/trust inequalities | largest violation 9.47e-15 control units | 42/42 pass |
+| Lateral progress | COM ay -0.286637694 m/s² | Pass |
+| Two non-worsening global-roll bounds | HdotX +0.345334055 Nm, baseline +0.350796094 | 2/2 pass |
+
+Thus **91/92 inequalities pass; the candidate remains rejected**. The failing
+quantity is half the derivative of squared upright-vector speed, not rotational
+kinetic energy or full angular speed including yaw. It falls from the baseline
+0.027054679 to 0.000285776 s⁻³, but stays positive. Its three dot-product
+contributions are -0.014300040, +0.014863300 and -0.000277483 s⁻³. Decreasing the
+scalar tilt acceleration therefore does not satisfy the separate orientation
+speed condition. No tolerance is widened to accept this result.
+
+The linear model put this condition on its boundary (2.64e-15 s⁻³). The native
+error 0.000285776 is within the previously declared prediction-error allowance
+0.005410936, while the native inequality itself fails. These are different tests.
+All other feature prediction checks pass; normalized common-output error is
+0.000481402 versus its 0.012236428 bound. The one observed joint-limit regime
+change invalidates exact affine equivalence. Lower task cost (0.010228501 →
+0.001624616) likewise does not qualify the command.
+
+COM acceleration xyz is [0.248276773, -0.286637694, -0.025535670] m/s²;
+right/left loads are 135.924908/263.588570 N. Largest motor utilization is
+70.4211% (left ankle-y, 14.084219/20 Nm); no root actuator effort is present.
+All 27 independently assembled dynamics residuals, including six free-base
+equations, are <= 3.91e-14. Current right material-contact normal accelerations
+are +0.2245 to +1.0600 m/s² with penetration and small signed normal velocities.
+This is compatible with the soft-contact response at this instant; the local
+gap jets do not establish persistent support, unloading or a step. Root local
+angular accelerations are [5.444564, -0.283786, -26.123648] rad/s², also retained
+explicitly rather than conflated with centroidal moment or upright-vector speed.
+
+Evidence: `web/proofs/pull-step-constrained-recheck/`, 61,612 bytes. Native raw
+SHA256 `1c537202749fce9115edd93620a078b1052e253eaf67eb7cb66a94fd753a4d3e`;
+result SHA256 `e3d7b13b84cc503d2cedb7ebbe28ab3efdb8915b8b7c70981a1ae6837ae3d02a`.
+`node scripts/verify-pull-recheck-recording.mjs` audits the saved response,
+reconstructs the contact/cap/gap conditions and verifies that rejection did not
+discard telemetry. It imports no engine and performs no native evaluation.
+
+Cost: one completed forward call, 1.973 ms native / 214.707 ms whole diagnostic
+on this cloud. Zero optimizer calls, perturbations, integration ticks or forecasts.
+MuJoCo remains 228794 confirmed plus unknown history; Rapier remains 45735.
+There is no activation in the controller, dynamic-readiness claim, push or site
+change. This result neither proves physical impossibility nor supplies a safe
+feedback controller; it identifies the remaining failed local condition.
