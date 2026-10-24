@@ -508,3 +508,36 @@ arbitrary-fall recovery, unrestricted post-get-up interaction or phone delivery.
 Historical af04325 FAIL and the earlier INCOMPLETE live attempt remain intact.
 Confirmed MuJoCo219859 PLUS the unchanged unknown old run; Rapier45735 frozen.
 No retry, transfer under403, weights distribution, public push or deployment.
+
+## Reconstructing the local scenario from the Git backup
+
+The two runtime inputs are now tracked at their original paths, byte-for-byte:
+`web/proofs/getup-weak-seed10/weak-final.json` (3,507 bytes, the complete known
+entry state) and `web/proofs/getup-continuous-slow/reference.json` (421,156 bytes,
+the measured/retimed candidate). `cycle.js` verifies their SHA256 identities.
+The reference still comes from the failed WEAK cycle; its provenance and the
+historical verdict are unchanged. These files are inputs, not a video replay.
+
+From the repository root, with Node >=22.13 and a browser available:
+
+```sh
+npm ci
+npm run build
+node scripts/serve-rust-preview.mjs . 5199
+```
+
+Open `http://127.0.0.1:5199/web/dist/index.html?getup=local`. The repository root
+must be served because the scenario loads modules and data outside `web/dist`.
+The ordinary `npm start` serves only `web/dist` and is for the normal MVP.
+The page starts paused; clicking Essai GetUp runs the known-entry scenario.
+Continuer SLOW uses its live final world; it needs no saved final checkpoint.
+
+`package-lock.json` pins the official Apache-2.0 MuJoCo package to 3.17.0 with
+its integrity hash. A fresh install needs the package registry or a matching
+cache; vendor WASM, node_modules and build output are not in this backup.
+The optional `continue=checkpoint` path and historical audit harness still
+require excluded local evidence and, for the harness, environment-specific
+browser tooling. Media and other checkpoints remain excluded. This backup
+does not deploy the site or establish arbitrary-pose or phone support.
+Only data/schema/hash and Git checks accompanied this addition: no clean
+install or new physical execution was performed.

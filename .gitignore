@@ -58,4 +58,11 @@ venv/
 
 # Reproducible MuJoCo MVP output and local browser evidence (not public assets).
 /web/dist/
-/web/proofs/
+/web/proofs/*
+# Explicitly approved runtime inputs; keep every other local proof ignored.
+!/web/proofs/getup-weak-seed10/
+/web/proofs/getup-weak-seed10/*
+!/web/proofs/getup-weak-seed10/weak-final.json
+!/web/proofs/getup-continuous-slow/
+/web/proofs/getup-continuous-slow/*
+!/web/proofs/getup-continuous-slow/reference.json
