@@ -1,5 +1,102 @@
 # Local arm-pull first-step experiment (24 October 2026)
 
+## Direct-QR whole-body003 protocol (25 October)
+
+The local numerical port preserves exactly the existing135 direct cost rows
+(66 tasks,45 diagonal regularizers,24 force preferences) and124 entry inequalities.
+`pull-direct-qr.mjs` uses column-pivoted Householder QR, a particular active-face
+solution and an orthonormal nullspace. It solves CZ directly and reconstructs
+multipliers, reusing the existing add/drop/dual-segment active-set policy with
+64 changes maximum. C'C and AH^-1A' are never used to solve; H remains a saved
+historical diagnostic. QR rank uses dimension/machine-precision scaling and
+stops on ambiguous dependency. Original residual checks are preserved. Bounded
+triangular QR-factor refinement and active-equality reconstruction correct
+floating-point arithmetic only, before certification; no clipping of motors
+or physical-state projection occurs.
+
+32 deterministic algebra cases pass: QR reconstruction/orthogonality, known
+solutions, independent edge/vertex enumeration, units and cost-scale changes,
+45-variable cases, dependency, nonfinite and cap rejection. A synthetic extreme
+cost amplification remains conservatively rejected by the unchanged absolute
+complementarity criterion; no tolerance is raised to make it pass. Standard
+Householder v[0]=1/tau form avoids spurious dense leakage in exact coordinate
+permutations. The separate COM/cone/measured-phase tests also pass.
+
+ONE generic solve of the immutable whole-body002 saved QP (no active set supplied)
+passes in8 changes. LS cost0.05457566716637501 vs independent0.054575667166374846;
+max motor difference3.3711e-9Nm, backward error3.4234e-17, primal1.2519e-18,
+complementarity3.0186e-18. Original-H KKT is separately checked. No native calls
+or ticks occurred during this qualification. The JS solve took182.70ms, so200Hz
+real-time use is NOT qualified. No gains/weights/model/caps/contact law changed.
+
+Next authorized invocation is ONE offline observation from the same8210/native233
+checkpoint with complete grab memory. Raw QP and actual blend are evaluated
+separately, full C,d/constraints are saved before guards, independent RNEA and
+physical checks precede integration. <=4 NEW pure forwards, <=1324 NEW forwards
+TOTAL (1326 whole-body cumulative), <=2640 ticks,0 forecasts,2MB new proof.
+All previous deadlines/lift/physical stops remain. No retry after result.
+
+### Whole-body003 result: native preflight passed,208 ticks, numerical stop
+
+The single invocation qualified raw-QP AND actual-blend commands separately at
+entry, preserved the exact233 native values before integration, zero initial
+command jump and actual nonzero velocities, original caps/mapping/root isolation,
+posture ROM and terminal002 physical rejection. Independent RNEA/mass error was
+5.3291e-15. Three pure forwards were used. No optimized contact force was applied.
+The source stayed unchanged during this invocation; there was no retry.
+
+208 actual800Hz ticks (0.260s) ran, with52 accepted command solves. At8418/
+t10.52250000000077 the53rd solve stopped after13 add/drop changes with
+`active-set numerical stagnation`. The failure branch found no multiplier to
+drop after its dual segment; contact-3-cone--1-1 retained1.0880e-18. This points
+to a finite-arithmetic blocking-face issue, NOT demonstrated physical infeasibility.
+The trial multipliers/fraction were not retained, and the returned failure x is
+from the preceding outer iteration; it must not be treated as an accepted new
+command or a complete intermediate KKT witness. Full last C,d/constraints and
+physical state survive for review. No solver or threshold was adjusted afterward.
+Native contact count varied8,7,6,5,4,3 without a fixed-topology veto; final QP had
+33 variables/four contacts. The last applied command and complete grab/bridge/
+previous material-point memory plus pending interaction are in final.json.gz.
+
+Measured COM displacement was(+4.921,-1.232,-4.449)mm. Final COM velocity was
+(-18.580,-12.916,-105.993)mm/s versus(+25.297,-3.412,-2.002)mm/s at entry.
+Tilt grew8.1172->8.8430deg; angular rateY grew0.02131->0.09391rad/s.
+Final right/left loads154.23/168.65N (initial137.92/262.45N), minimum left load
+132.58N, maximum whole-left-foot clearance-0.612mm. No unload<15N, no8mm
+separation or lift occurred. Retained-body horizontal drift peaked4.848mm.
+No physical guard triggered. The1.8s reference endpoint was NOT reached, so this
+short window does not establish whether the complete transfer would work.
+All actually transmitted motor fractions were<=1.0. The largest observed command
+change was55.149Nm on left_hip_y at10.4675s, from+40.186 to-14.963Nm under its
+120Nm cap. Initial continuity does not imply later torque continuity.
+
+The first unblended same-command native check exposes the auxiliary-force model
+limit. Predicted right/left reactions232.895/167.837N versus native216.406/190.798N;
+COM X acceleration predicted-0.16816 versus native+0.09071m/s²; torso Y predicted
+-0.19351 versus native+0.38694rad/s². These are distinct from desired tasks
+(-0.32886m/s² COM X and-0.25572rad/s² torso Y). Exact algebraic elimination and
+QR optimality therefore did NOT ensure the native task response, despite finite
+bounded motors. The frozen limit reaction and free auxiliary contact-force
+allocation remain approximations, not constitutive contact predictions.
+
+Result: numerical port QUALIFIED on entry, measured first transfer response,
+whole movement INCOMPLETE due numerical stop. No step, successful unload or lift
+is claimed. Solving the QR problem does not qualify a usable walking controller.
+Counts:208 new ticks,106 new explicit forwards (108 whole-body cumulative),
+0 forecasts, no pending call. MuJoCo229017 confirmed PLUS historical unknown;
+Rapier45735 frozen. Native time22.063ms, solves7594.896ms, process9079.164ms:
+offline only, not real-time200Hz. Stable main/site are unchanged.
+
+Proofs `web/proofs/pull-step-whole-body-003/`: algebraic qualification, complete
+initial/latest QP, progressive journal/40Hz geometry trace, raw entry/native
+responses, audit and final exact checkpoint. Corrected contact sheet inspected
+across beginning/middle/end: full mannequin and ground, both feet down, small
+body motion. The first render's inherited wrong20deg caption is preserved as
+`initial-render-label-error.png`; `observed-contact-sheet.png` correctly labels
+the numerical stop. Rendering adds no physics. No video or media upload.
+Final checkpoint SHA256
+`9992a1343dfbd8badaaf3861c85fe740a98e6b4ab81ed6cced408c770c3c6c1e`.
+
 ## Bounded numerical correction of whole-body001 (25 October)
 
 This prospective continuation preserves whole-body001's zero-tick refusal.
