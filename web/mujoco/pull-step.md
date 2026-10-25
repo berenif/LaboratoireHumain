@@ -1,5 +1,103 @@
 # Local arm-pull first-step experiment (24 October 2026)
 
+## Force-identity repair and SAME observation continuation (25 October)
+
+Only the signed-zero force-write defect is repaired. The evaluator now uses
+the same cross/sub arithmetic and += accumulation as unmodified Physics.apply.
+The strict assert.deepEqual of all233 inputs is retained; no tolerance or
+mechanical setting changes. Pure tests compare four force/lever-arm cases
+including signed zeros and reproduce the old direct-set mismatch. Nonzero
+differences1e-12 and Number.MIN_VALUE are both still rejected.
+
+The sole continuation starts from native8232,t10.29000, annotated checkpoint
+SHA25657075055ec9a856d5b71d1330bf889db48759c3973271dc6f8ca86cd0ce06746.
+No35-tick replay. The pending validated vector, pending material-point force,
+actual previous command, complete grab memory, original reference bindings,
+all closed exceptions and233 native values are restored separately. ONE fresh
+native forward revalidates that exact pending command, with NO new preflight
+optimization, before it can be integrated. The original recovery age37 and
+deadline96ticks (59left), original peaks and absolute end13.54375 remain.
+
+This resumes the same bounded contract/admission cadence and all physical
+guards. Maximum2603 NEW real ticks,5208 NEW explicit forwards,5926 NEW FK,
+64 pivots/solve,0forecast. No gain/cap/model/phase-objective changes or retries.
+New code/proofs <2000000bytes, global growth <=1530000000bytes. Step journals
+record all admission/prediction outcomes and changed commands; an omitted u
+means exactly held previous command, no lossy command rounding. Poses/full
+metrics40Hz and full initial/terminal/fault matrices remain separately saved.
+
+### Force repair continuation result — recovery PASS, preparation incomplete
+
+The exact pending vector was natively revalidated once WITHOUT optimization
+and integrated as the first new tick. No prior35 ticks were replayed. All233
+values, binding/sample, servo nodes, original recovery definition, closed
+exceptions and grab/pending material-point interaction matched the checkpoint.
+The8 new force-identity checks,12 existing bounded-recovery checks and32 native
+contact algebra checks pass. Strict signed-zero-sensitive input identity stays
+enabled and passes throughout; no tolerance, gain, cap or mechanical change.
+
+**Recovery is actually observed at t10.36375, original tick96**, after59 NEW
+ticks. Right/left knees are both at2deg, velocities-.04641711/-.04950196rad/s.
+Their exceptions are permanently closed and transfer starts at that same time.
+The last recovery row is logged before phase advance (closed=false there);
+the immediately following closure events/snapshot record closed=true,n96.
+Uncompressed preparation remains1.8s; unloading deadline is12.66375 and global
+end13.54375. None of those clocks is retrospectively extended.
+
+The sole continuation stops before the next tick at t10.90875/native8727,
+after495 NEW ticks/.61875s, of which436ticks/.545s are in transfer.
+The next candidate solves the local QR in11 pivots but fails native120ms
+Euler endpoint predictors after a contact-branch change:
+
+| candidate joint | allowed acceleration | native acceleration | residual |
+| --- | ---: | ---: | ---: |
+| left_knee |<=.007556762 |.023455904 |.015899142rad/s2 |
+| right_shoulder2 |<=-6.174799296 |-6.174606734 |.000192561rad/s2 |
+
+The freshly recomputed held command also fails right_hip_x/right_shoulder2
+endpoint predictors (residuals.1668041/.9998281rad/s2), so no qualified fallback
+exists among these two commands. The next-position constraints pass, the
+actual state remains inside ROM, and no fall/support-loss/20deg/drift stop
+has occurred. This is refusal by the DECLARED command-prediction contract,
+not an applied physical violation or proof that no other command can work.
+The rejected candidate is never installed in the live world or integrated.
+No extra candidate, regime-rebuild iteration, tuning or retry follows.
+
+No unload/lift/step is qualified. The measured COM moves29.72mm forward,
+23.95mm toward the FREE left side,17.92mm down from this continuation entry.
+Relative COM lateral coordinate increases .087899 -> .106579m, while the
+current reference asks .072770m (curve progress.166774). Thus the commanded
+rightward transfer is not realized during the partial preparation observed.
+Final right/left loads153.327/192.280N, minimum left load192.280N, whole free
+capsule clearance remains negative (maximum-.64834mm), retained drift1.658mm,
+tilt10.14024deg. Both feet stay on the ground.
+
+Actual motor outputs remain within unchanged caps. Left ankle_y reaches its
+cap for325ticks/.40625s TOTAL, right ankle_y155ticks/.19375s TOTAL. Those are
+aggregate durations, not claimed continuous intervals. Maximum applied torque
+jump38.0281Nm at abdomen_y,t10.73875; torque continuity was never claimed.
+Root actuation/qfrc_applied remain0, native reactions only, explicit grab only.
+All495 applied steps pass native Euler prediction/integration agreement:
+max velocity error5.14e-14, hinge-position error6.94e-17rad.
+
+New counts:495 real ticks,991 explicit forwards,993 FK,495 QR solves including
+371 corrective,0forecasts. Cumulative MuJoCo229565 confirmed PLUS unchanged
+historical unknown; Rapier45735. Native191.272881ms, QR11661.653599ms,
+runner54766.027205ms for.61875s simulated: no interactive qualification.
+The actual three-frame geometry replay was inspected (resume, after recovery,
+final), whole mannequin/ground, explicitly no step and no physics replay.
+
+Proofs: `web/proofs/pull-force-identity-repair-001/`, compact checked-step
+journal,26 actual geometry frames, full native/QP/refusal and original pending
+revalidation, audit and full final checkpoint. Checkpoint SHA256
+`0c8729412e3c88cb838f69e8759413e50b829b21ba7c9601d11a523f7d274fd4`.
+It stores the actually applied command, closed exceptions/bindings, reference
+clocks and complete grab. No pending command/integration exists. Its legacy
+applicationStatus.recoveryTicksUsed is the elapsed original clock532; actual
+recovery duration is authoritatively recorded as96 in the closure events.
+Historical software stop stays INCOMPLETE; this experiment is CLOSED without
+publication, replay, discarded evidence, dependency or stable main/site change.
+
 ## Prospective substep-admitted bounded recovery (25 October)
 
 This separate campaign starts from c9809e1's exact final native8197,

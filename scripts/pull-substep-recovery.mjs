@@ -18,7 +18,7 @@ export class SubstepReference extends CoordinatedReference{
   super(p,nodes);assert(saved.phase==='recovery'&&!saved.zPolynomial,'This continuation is only the recorded pre-transfer state');
   for(const k of ['feet','com','goal','torso','joint'])this[k]=structuredClone(bindings[k]);
   for(const k of ['phase','start','phaseStart','transferDeadline','unloaded','clearDwell','events','entryControls','globalStart','recovery','recoveryDone'])this[k]=structuredClone(saved[k]);
-  assert(Math.round((p.data.time-this.recovery.start)/h)===2);this.closed={};
+  const age=Math.round((p.data.time-this.recovery.start)/h);assert(age>=0&&age<96);this.closed=structuredClone(saved.closed??{});
   this.servoNodes=structuredClone(saved.servoNodes);this.servoCurve=jointCurve(this.servoNodes,p.joints,p.model,1.8);this.servoJets=hermite(this.servoNodes);
  }
  at(t){return RecoveryReference.prototype.at.call(this,t);}
