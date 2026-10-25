@@ -1,5 +1,112 @@
 # Local arm-pull first-step experiment (24 October 2026)
 
+## Prospective initial-recovery campaign (25 October)
+
+Source284a4e9 and its ZERO-tick refusal stay preserved. The separate
+`run-pull-entry-recovery.mjs` restores the same native001 state233 exactly and
+keeps the declared20-tick material-point hand-force bridge (missing historical
+grab.previous is NOT invented). Only21 motor controls are decisions; native
+contacts and soft joint limits supply their own reactions. No root actuation,
+physical pose projection, external assistance, altered caps/gains or solver.
+
+Recovery, transfer, decompression and lift are separate phases. The initial
+geometric reference remains the measured anchor; servo references instead use
+the existing Hermite/quintic curve with admissible servo knots. Its q/dq/ddq
+come from that same curve; geometric-to-servo residuals are recorded. During
+recovery progress is0, desired velocity0, measured velocities remain unchanged
+and are damped by the existing terms. No phase forces a contact to disappear.
+
+The fixed96-tick recovery envelope is derived ONCE from001. For h=.00125,
+H=.12, b=2*(q0-limit+H*v0)/(H*(H+h)), it is
+v_env(n)=v0-n*h*b and q_env(n)=q0+n*h*v0-.5*b*h*h*n*(n+1).
+Right/left b=.6620299538253861/.6971730675970672rad/s2; maximum discrete
+angles2.095811867310513/2.103205093482908deg. Those are conditional,
+state-specific limits for the two recorded inherited excesses only. At every
+integrated substep q and v must lie below this original envelope; no reset or
+envelope recalculation is allowed. No other or recurring ROM excess is admitted.
+Both knees must return inside ROM with nonoutward velocity within96 ticks.
+
+All command stopping rows and native admission use the verified damped Euler
+map a_E=(M+h*D)^-1*M*a, with T stored as columns. Other joint endpoint predictors
+use H*(H+h), not H^2. Existing native numerical uncertainty tightens admission;
+the1e-8 acceleration-residual comparison tolerance is unchanged. Endpoint
+predictors remain conditional command checks, not physical forecasts or proof
+of interval safety. The actual integrated recovery envelope is checked separately.
+
+One QR proposal is evaluated natively and, if qualified, applied unchanged.
+There is no post-admission blend; exact torque continuity is NOT claimed.
+Every total-command jump is journaled in Nm. A recomputed previous command is
+eligible only if currently admitted. Cost improvement over an INADMISSIBLE
+centre is not required; it cannot veto an otherwise qualified recovery command.
+Against a valid centre the existing transactional cost comparison is retained.
+
+One preflight candidate only. Refusal means ZERO ticks, no tuning/retry.
+If admitted: one continuous execution, recovery <=.12s, then an uncompressed
+1.8s transfer and unloading deadline2.3s from its real entry. Existing lift
+and physical stops remain. Whole observation <=3.3s/2640 ticks including
+recovery; <=6 pure forwards, <=1326 explicit forwards TOTAL, <=5000 FK,
+64 pivots/solve,0 forecasts. All233 native values, command, grab memory,
+reaction timestamps, phase clocks and reference state are saved progressively.
+Code/new evidence <=2000000bytes and global growth <=1530000000bytes.
+This remains an offline experiment, not a real-time/browser-qualified step.
+
+### Recovery001 result — stopped after TWO ticks, no retry
+
+The single preflight candidate passes all42 native Euler command checks. QR
+uses2 pivots; maximum linear-row residual3.02e-14. The former centre still
+fails both recovery bounds and is never reapplied. The qualified21-vector is
+applied UNCHANGED: max motor fraction.58623175, max total-command jump2.1805595Nm
+(left_hip_y). Native root actuation and qfrc_applied remain0; the declared hand
+grab is the only external force. No post-admission blend or hidden owner exists.
+
+The8 original kinematic checks,8 recovery algebra checks and9 servo/recovery
+checks pass;32 existing native-contact algebra tests also pass without forwards.
+Servo ROM excess0, q/dq/ddq derivative error6.47e-10, measured physical dq
+preserved. Native-state restoration and final round-trip preserve233 values.
+
+**The declared fixed recovery envelope FAILS at tick2** (t10.24625).
+No recovery, preparation, decompression or lift is qualified. The first actual
+Euler velocity increment agrees with the native preflight prediction to
+floating-point rounding. On the second substep, with the same held motor
+command and the prescribed evolving hand input, braking weakens:
+
+| knee | required a_E | measured tick1 | measured tick2 | q above fixed envelope | v above fixed envelope |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| right |-.66202995 |-.66202995 |-.44316628 |3.41974e-7rad |.000273580rad/s |
+| left |-.69717307 |-.69717307 |-.52268168 |2.72643e-7rad |.000218114rad/s |
+
+Final angles2.05495807/2.06167426deg remain below the prospective peak caps,
+but the stronger time-indexed position/velocity envelope is already violated.
+This is an explicitly observed recovery-contract failure, NOT a motor-cap
+violation, observed fall or proof that another recovery is physically impossible.
+Both braking inequalities were active without reserve; admitting instantaneous
+acceleration did not establish its validity over the200Hz command-hold interval.
+The code stops at the first failed substep, without updating the envelope,
+gains, cadence, command or tolerance and without another native candidate.
+
+Actual COM change [+51.858,+3.093,-3.875]micrometres is not useful transfer.
+Tilt8.081446 ->8.087712deg; last-resolved right/left loads195.949/203.563N;
+retained-foot drift1.804micrometres. No foot lifted and neither support was lost.
+Reaction timestamps identify the last solved substep separately from final
+updated geometry. A59,076byte beginning/end geometry-replay sheet was actually
+inspected: full mannequin/ground, honestly labeled2ticks/2.5ms/no step.
+
+Counters:2 new real ticks,2 explicit forwards,413 FK,1 QR solve,0 forecasts.
+MuJoCo229035 confirmed PLUS unchanged historical unknown; Rapier45735 frozen.
+Native calls3.02033ms, QR27.338914ms, whole runner490.342911ms for2.5ms simulated;
+no real-time qualification. No process/integration remains pending.
+
+Proofs: `web/proofs/pull-entry-recovery-001/` with ledger, journal, full native
+response/QP/command checks, trace, pure receipts, audit and final checkpoint.
+Gzip checkpoint SHA256
+`c8785ab2b7b7f5932964b8fa208aa690125f2ae47469ed8f6298e718327b29f5`.
+The saved-data audit independently checks motor mapping, full generalized
+dynamics residual5.11e-13, applied-vs-qualified command identity, both observed
+substeps, the fixed envelope and all counters. Its mapping agreement6.40e-14
+is inside the scale-dependent128*epsilon arithmetic allowance2.89e-13.
+No dynamic reevaluation is used for this audit or the rendering.
+Experiment CLOSED; historical source/model/deployed application/main/site unchanged.
+
 
 ## Dynamic coordinated stance001 — preflight stopped, ZERO ticks (25 October)
 
