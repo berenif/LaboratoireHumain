@@ -6,7 +6,6 @@ let getup=null,getupBusy=false,getupLoading=false,getupStarted=false,getupModule
 let getupContinuationStarted=false;
 const loopback=['127.0.0.1','localhost','[::1]'].includes(location.hostname);
 const localGetup=document.documentElement.dataset.getup==='known-entry'||loopback&&new URLSearchParams(location.search).get('getup')==='local';
-const pullExperiment=loopback&&new URLSearchParams(location.search).get('pull-step')==='local';
 const checkpointContinuation=loopback&&localGetup&&new URLSearchParams(location.search).get('continue')==='checkpoint';
 const getupAssets={assetBase:new URL('./getup-assets/',import.meta.url)};
 let physics=null,paused=true,failed=false,yaw=.65,pitch=.28,zoom=1,last=performance.now(),accumulator=0,pointer=null,parts=[];
@@ -19,7 +18,7 @@ function draw(){const ratio=Math.min(devicePixelRatio,2),w=Math.round(canvas.cli
  for(const p of parts){const a=project([p.a[0],p.a[1],.001]),b=project([p.b[0],p.b[1],.001]);line(a,b,'#8b998833',p.r*1.7);}
  parts.sort((a,b)=>b.depth-a.depth);for(const p of parts){const active=physics.grab?.body===p.body;line(p.pa,p.pb,'#31554e',p.r*2+2*ratio);const color=active?'#e6b471':p.name.includes('head')?'#d8cbb1':p.name.includes('foot')?'#6d9481':'#a0c8bb';line(p.pa,p.pb,color,p.r*2);if(Math.hypot(p.pa.x-p.pb.x,p.pa.y-p.pb.y)<.1){ctx.fillStyle=color;ctx.beginPath();ctx.arc(p.pa.x,p.pa.y,p.r,0,Math.PI*2);ctx.fill();}}
  if(physics.grab){const a=project(physics.worldPoint(physics.grab.body,physics.grab.local)),b=project(physics.grab.target);line(a,b,'#b96e39',2*ratio);ctx.strokeStyle='#b96e39';ctx.beginPath();ctx.arc(b.x,b.y,5*ratio,0,Math.PI*2);ctx.stroke();}}
-function refresh(){if(!physics)return;refreshGetup();$('#pause').textContent=paused?'Démarrer / reprendre':'Pause';$('#status').textContent=getup?(getup.done?'Essai GetUp terminé · en pause':paused?'Essai GetUp · en pause':getup.phase==='passive-fall'?'Essai GetUp · chute passive':getup.phase==='SLOW-moving'?'Essai GetUp · relevage':'Essai GetUp · réception / observation'):failed?'Simulation arrêtée':physics.grab?'Membre saisi':paused?'En pause':physics.fallen?'Chute · commande relâchée':physics.pullStep?'Pas par traction · '+physics.pullStep.phase:physics.mode==='balance'?'Équilibre · double appui':'Passif';$('#time').textContent=physics.data.time.toFixed(2)+' s';$('#contacts').textContent=physics.data.ncon;$('#force').textContent=physics.lastForce.toFixed(0)+' N';}
+function refresh(){if(!physics)return;refreshGetup();$('#pause').textContent=paused?'Démarrer / reprendre':'Pause';$('#status').textContent=getup?(getup.done?'Essai GetUp terminé · en pause':paused?'Essai GetUp · en pause':getup.phase==='passive-fall'?'Essai GetUp · chute passive':getup.phase==='SLOW-moving'?'Essai GetUp · relevage':'Essai GetUp · réception / observation'):failed?'Simulation arrêtée':physics.grab?'Membre saisi':paused?'En pause':physics.fallen?'Chute · commande relâchée':physics.mode==='balance'?'Équilibre · double appui':'Passif';$('#time').textContent=physics.data.time.toFixed(2)+' s';$('#contacts').textContent=physics.data.ncon;$('#force').textContent=physics.lastForce.toFixed(0)+' N';}
 function fail(e){if(getup&&!getup.done)getup.finish('Erreur — arrêt de l’essai : '+String(e));failed=true;paused=true;physics?.release();$('#error').hidden=false;$('#error').textContent=String(e);refresh();}
 function release(){if(pointer&&canvas.hasPointerCapture(pointer.id))canvas.releasePointerCapture(pointer.id);pointer=null;physics?.release();canvas.classList.remove('grabbing');}
 function xy(e){const r=canvas.getBoundingClientRect();return [(e.clientX-r.left)*canvas.width/r.width,(e.clientY-r.top)*canvas.height/r.height];}
@@ -30,10 +29,10 @@ for(const event of ['pointerup','pointercancel','lostpointercapture'])canvas.add
 canvas.addEventListener('wheel',e=>{e.preventDefault();zoom=Math.max(.5,Math.min(2.5,zoom*Math.exp(-e.deltaY*.001)));},{passive:false});
 $('#zoom-in').onclick=()=>zoom=Math.min(2.5,zoom*1.15);$('#zoom-out').onclick=()=>zoom=Math.max(.5,zoom/1.15);$('#camera-reset').onclick=()=>{yaw=.65;pitch=.28;zoom=1;};
 $('#pause').onclick=()=>{if(!physics||failed||getupLoading||getupBusy||getup?.done)return;paused=!paused;release();accumulator=0;refresh();};
-$('#mode').onchange=()=>{if(physics&&!getup&&!getupLoading){physics.setMode($('#mode').value);if(pullExperiment&&physics.mode==='balance')physics.enablePullStep();refresh();}};
+$('#mode').onchange=()=>{if(physics&&!getup&&!getupLoading){physics.setMode($('#mode').value);refresh();}};
 $('#small-push').onclick=()=>{if(!physics||failed||getup||getupLoading)return;physics.smallPush($('#push-direction').value);paused=false;refresh();};
 $('#push').onclick=()=>{if(!physics||failed||getup||getupLoading)return;physics.pushBody();paused=false;refresh();};
-$('#reset').onclick=()=>{if(!physics||getupBusy||getupLoading)return;if(getup){if(!getup.done)getup.finish('Arrêt demandé — retour au MVP');getup.dispose();getup=null;physics.model.opt.timestep=.00125;}release();physics.setMode($('#mode').value);physics.reset();if(pullExperiment&&physics.mode==='balance')physics.enablePullStep();paused=true;failed=false;accumulator=0;$('#error').hidden=true;refresh();};
+$('#reset').onclick=()=>{if(!physics||getupBusy||getupLoading)return;if(getup){if(!getup.done)getup.finish('Arrêt demandé — retour au MVP');getup.dispose();getup=null;physics.model.opt.timestep=.00125;}release();physics.setMode($('#mode').value);physics.reset();paused=true;failed=false;accumulator=0;$('#error').hidden=true;refresh();};
 window.addEventListener('blur',()=>{release();paused=true;accumulator=0;refresh();});document.addEventListener('visibilitychange',()=>{if(document.hidden){release();paused=true;accumulator=0;refresh();}});
 window.addEventListener('keydown',e=>{if(e.target.matches('input,select,button'))return;if(e.code==='Space'){e.preventDefault();$('#pause').click();}if(e.code==='KeyP')$('#push').click();if(e.code==='KeyR')$('#reset').click();});
 // During the local cycle, this is the ONLY stepping path. Physics.step()/balance
@@ -52,7 +51,7 @@ async function frame(now){
      accumulator-=.025;
      if(getup.done){paused=true;accumulator=0;await window.__lhGetupAudit?.({kind:'final',summary:getup.summary(),state:getup.stateVector(),spec:getup.assets.entry.spec});}
     }
-   }else{while(accumulator>=physics.dt){if(physics.step()===false){paused=true;accumulator=0;break;}accumulator-=physics.dt;if(physics.pullStep?.phase==='failed'){paused=true;accumulator=0;break;}}physics.forward();}
+   }else{while(accumulator>=physics.dt){physics.step();accumulator-=physics.dt;}physics.forward();}
   }
   draw();refresh();
  }catch(e){fail(e);if(getup?.continuation){try{await window.__lhGetupAudit?.({kind:'final',summary:getup.summary(),state:getup.stateVector(),spec:getup.assets.entry.spec});}catch(auditError){console.error('Sauvegarde finale non confirmée',auditError);}}}finally{getupBusy=false;refresh();requestAnimationFrame(frame);}
@@ -113,5 +112,3 @@ if(localGetup){
   }catch(e){fail(e);}finally{getupLoading=false;refresh();}
  };
 }
-
-if(pullExperiment){document.querySelector('.migration-note').textContent='EXPÉRIENCE LOCALE : un seul pas avant par traction du bras. Équilibre puis stabilisation avant de tirer. Réception terminée au relâchement, aucune marche continue validée.';}

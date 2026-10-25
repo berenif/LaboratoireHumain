@@ -1,6 +1,15 @@
-import {mkdir,copyFile,readFile,writeFile,link} from 'node:fs/promises';
+import {mkdir,copyFile,readFile,writeFile,link,rename} from 'node:fs/promises';
+// Experimental controllers stay in Git/history, outside the playable release.
+// Move an old generated copy aside rather than packaging it or deleting evidence.
+try{
+ const stale=await readFile('web/dist/pull-step.js');
+ const {createHash}=await import('node:crypto');
+ const hash=createHash('sha256').update(stale).digest('hex');
+ await mkdir('web/proofs/build-preserved',{recursive:true});
+ await rename('web/dist/pull-step.js','web/proofs/build-preserved/pull-step-'+hash+'.js');
+}catch(e){if(e.code!=='ENOENT')throw e;}
 const out='web/dist';await mkdir(out+'/vendor',{recursive:true});
-for(const f of ['index.html','app.js','engine.js','pull-step.js','mvp.css','LICENSE-MuJoCo.txt'])await copyFile('web/mujoco/'+f,out+'/'+f);
+for(const f of ['index.html','app.js','engine.js','mvp.css','LICENSE-MuJoCo.txt'])await copyFile('web/mujoco/'+f,out+'/'+f);
 await copyFile('rust/browser/app.css',out+'/app.css');
 for(const f of ['mujoco.js','mujoco.wasm'])await copyFile('node_modules/@mujoco/mujoco/'+f,out+'/vendor/'+f);
 // Only presentation includes/materials are removed. Body/joint/actuator,
