@@ -636,3 +636,103 @@ this cloud; not a real-time800Hz/browser/mobile performance qualification.
 MuJoCo is228807 confirmed PLUS historical unknown; Rapier45735 unchanged.
 No default controller, main/site, dependency, Library transfer or publication
 changes. The declared160tick window was not completed and no pas is claimed.
+
+## Euler/island diagnostic correction — qualified pure candidate, stopped after two ticks
+
+The 91c3d60 result above remains INCOMPLETE. Its identical global `efc_state`
+arrays did not establish an unchanged resolved regime: in MuJoCo3.17 Newton's
+island path, resolved states live in `iefc_state`. Forces are gathered back;
+states are not. The new adapter uses `map_efc2iefc`, verifies the inverse mapping,
+row type/id and island/global force agreement, and independently checks the
+native pyramidal/limit force law against `J*qacc-aref`. No engine flag changes.
+
+The Euler adapter applies `(M+h*B)^-1*M*qacc` using the existing Cholesky,
+current mass and declared linear joint damping. It explicitly rejects unsupported
+polynomial/servo damping, integrators or non-default flags. Rebuilding mass at
+the saved001 state (kinematics/comPos/makeM, no forward) reproduces all27
+accelerations actually integrated in the old first tick to1.63536e-13, hence
+velocity error2.04420e-16. Native233 values stay exact. Old first-tick X/Y
+angular acceleration is now correctly rejected by the discrete velocity guard.
+The original instantaneous torso guards remain. Gap jets use the semi-implicit
+Euler coefficient; these jets are predictions, not measured future contacts.
+
+Current resolved-branch inequalities are added to the SAME Cholesky active-set
+search. The existing20% reserve also protects the diagnostic torso, gap, axial,
+global-roll and branch boundaries. Normals, friction, caps, objective eight
+outputs/scales/weights, lambda1e-4, perturbation.001 and TOTAL originalu0±.1
+remain unchanged. Axis non-growth is still a conservative local diagnostic,
+not a necessary condition for walking. Branch guards constrain this local
+linear model, not physical contacts. Raw native outputs precede guards.
+
+One exclusive runner was launched: `run-pull-euler-window.mjs`, source91c3d60
+plus source hashes in started.json. It restores the exact8208/t10.260 state and
+COMPLETE grab.previous/target/local/20tick bridge/pending input. The first
+frozen input exactly matches the saved pending input. No13tick replay or new
+force bridge. Maximum24 pure forwards, then128 physical ticks,2968 explicit
+forwards total,64 pivots/solve,0forecasts,2MB proofs; no retry.
+
+**Pure PASS, dynamic window INCOMPLETE/stopped.** Reproduction of the old
+rejected14th response is exact (qacc max error0), and confirms its stale global
+states versus resolved island states. The first qualified candidate passes all
+131 native inequalities (98 previous conditions, corrected discrete predictors,
+plus33 branch-domain conditions), all per-feature prediction checks, and all
+linear reserve rows in38pivots. Pure calls are exactly24. The next admitted
+candidate also passes131 conditions in37pivots. Native normalized prediction
+errors are1.403e-14 and1.958e-14. The two actual Euler velocity errors are
+6.9294e-15 and2.2204e-16, below the fixed1e-12 check.
+
+Exactly TWO physical ticks were applied:8208→8210,10.260→10.2625s. The next
+CENTRE forward (before sensitivities, solve or proposal) fails the unchanged
+independent27-equation residual guard1e-7. Saved-only audit reconstructs its
+maximum root residual2.332787e-3Nm on root rotationX, maximum joint residual
+1.698278e-3Nm. The native Newton solve reported ONE iteration, not exhaustion
+of its100-iteration model budget. Resolved branch/force-law checks still pass.
+This response does not satisfy our declared residual certificate; it does NOT
+prove physical infeasibility, a cap violation or a measured support loss.
+The recorded data do not identify which native stopping criterion fired;
+solver cost/decrement statistics were not saved. No tolerance, iteration limit,
+controller gain or command was changed after this stop.
+
+| Measured quantity | Restored entry | After two ticks |
+|---|---:|---:|
+| COM forward velocity |24.6411mm/s|25.2969mm/s|
+| COM lateral velocity |−2.9413mm/s|−3.4115mm/s|
+| Torso local angular velocityY |.0216871rad/s|.0213057rad/s|
+| Torso tilt |8.114106deg|8.117159deg|
+| Last resolved right/left loads |137.749/262.300N|137.922/262.447N|
+| Whole left-sole minimum |−.8375mm|−.8546mm|
+
+COM movement is+.06283mm forward,−.00825mm rightward,−.00498mm vertically.
+This is no useful transfer/unloading or step. Maximum retained-foot drift from
+original001 is.04706mm, command jump from last APPLIED command6.04914Nm,
+motor utilization70.4211%. No fall/non-foot support/retained-support-loss guard
+fires. Reactions are now labelled at the PRE-integration resolution time;
+geometry is updated at the POST-integration time (1.25ms apart).
+
+Counts:48 COMPLETED explicit forwards =1 reproduction +2×23 qualified batches
++1 rejected centre. Each of the2 physical mj_step calls also invokes its native
+internal forward; no extra explicit calls or forecasts were made. MuJoCo228809
+confirmed PLUS unchanged historical unknown, Rapier45735. The last applied
+command, full233 native state and complete grab/pending input are saved.
+`verify-pull-euler-window-recording.mjs` reconstructs the residual via only
+kinematics/mass/Jacobians and verifies all counts/conditions/restoration with
+ZERO additional forwards/steps. Separate tests pass15 torso/reserve cases,
+19 existing Cholesky cases, island permutation/force/type counterexamples and
+the recorded Euler transition.
+
+Evidence: `web/proofs/pull-step-euler-window/`. Final checkpoint gzip SHA256
+`b0b188d3e5e80a980ea81108e316e8af27ca93c52f4973069edaa4411b1201bd`;
+journal SHA256
+`2c2908660086d47dbe788bba8df1fef037d14a333b7859f25f9bb9d0dbe66f69`.
+The beginning/end collision-geometry replay was inspected (full mannequin and
+ground, explicitly two ticks/no step). Native explicit calls11.338ms,
+Cholesky82.207ms, full runner919.814ms on this cloud; no real-time/browser
+performance qualification. No active app controller/main/site/push/Library
+change, no dependency, no reset or deleted pre-existing proof. Further physics
+requires review of the native residual certificate AND transfer task; this
+experiment is closed without retry.
+
+Primary implementation references:
+- https://raw.githubusercontent.com/google-deepmind/mujoco/3.17.0/src/engine/engine_forward.c
+- https://raw.githubusercontent.com/google-deepmind/mujoco/3.17.0/src/engine/engine_solver.c
+- https://raw.githubusercontent.com/google-deepmind/mujoco/3.17.0/src/engine/engine_core_smooth.c
