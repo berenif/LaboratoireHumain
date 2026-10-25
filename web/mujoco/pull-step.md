@@ -1,5 +1,94 @@
 # Local arm-pull first-step experiment (24 October 2026)
 
+## Prospective whole-body source-task increment (25 October)
+
+The fixed-regime finite-difference diagnostic is closed at42cf275: eight native
+evaluations, zero new ticks. A cone edge changed state while its contact retained
+8.88N. This is not a lost ground contact or a cap violation.
+
+`scripts/pull-whole-body.mjs` ports the COM/torso/foot/posture tasks of
+`scripts/getup-step/source_step_probe.py`, retaining source acceleration feedback
+gains: COM45/13, torso40/12, feet100/20 and posture20/8. Cost weights12/4/25
+(stance),20(swing)/0.2 remain declared engineering priorities. Residual units
+are normalized by g for translation, g/entryCOMheight for rotation/joints,
+body weight for contact forces, and gear for motor controls. Source diagonal
+regularizers1e-3 motors,1e-5 accelerations,1e-8 forces and shear0.1/normal0.001
+preferences remain declared, not a parameter sweep. No actuator authority,
+model, friction, hip range or stable application mode changes.
+
+All27 dynamics equations eliminate acceleration; decision variables are21
+controls plus3 contact-frame force/BW coordinates per PRESENT native foot
+constraint. The actual anisotropic pyramidal cone replaces the old source box.
+No contact is added/removed by phase, no force is transmitted except joint
+actuation and the recorded user grab. Current native joint-limit reactions are
+explicit frozen inputs for one command, then recomputed; soft-contact force
+realization and any change of limit reaction remain approximations, measured by
+the native candidate response. Optimized forces are never injected. Native
+branch changes, changing contact counts, nonmonotone angular components and
+the initial100R/299L allocation are not universal safety/admission conditions.
+
+The current support-point centroid is a convex combination inside the observed
+right-foot hull (also meaningful for segment/point degeneracy). A1.8s quintic
+COM task provides acceleration then braking toward that point. Current COM
+height and torso/feet orientation are soft measured-state references, not
+virtual root motion or rigid stance constraints. All desired posture angles
+are within ROM; actual soft-limit excursions/velocities are untouched. A25ms
+convex transition of total controls from the recorded command occurs BEFORE
+native evaluation, never after admission. One motor owner replaces Balance;
+its torques are not added to Balance PD.
+
+One opt-in command200Hz/physics800Hz trial starts from exact233-value8210
+checkpoint at10.2625s, with complete grab/bridge memory, not a new preparation.
+The original transfer deadline10.24375+2.3s is retained. Left<15N/right>100N
+for75ms permits a20mm whole-sole lift task. Measured sole>=8mm and left<1N
+for100ms qualifies ONLY this first lift; it does not qualify a step or landing.
+Stop at qualification, deadline, physical guard or2640 new ticks/3.3s.
+Limits:6 pure forwards,1326 total explicit forwards,64 active-set pivots per
+solve,0 forecasts,2MB proofs. There is no automatic retry or gain adjustment.
+The commanded body-point grab, clock, caps,20degree tilt,25mm retained drift,
+retained load<1N for25ms, fall/nonplantar and finite-state checks are preserved.
+
+`verify-pull-whole-body-pure.mjs` checks signs, quintic jets, anisotropic cones,
+absent contacts, cap/nonfinite counterexamples and measured phase gates with
+zero native dynamics calls. The single-run harness additionally verifies exact
+state/command entry, native actuator mapping, independent full RNEA and actual
+terminal002 geometry. Complete last prediction/response and checkpoint survive
+any refusal, alongside progressive compact commands, native responses and40Hz
+body geometries. These changes are experimental local files, not deployed UI.
+
+### Whole-body001 result: stopped in pure solve, zero ticks
+
+The single invocation used ONE native forward at exact8210/t10.2625 with the
+saved grab input. The45-variable problem used8 contacts and8 active-set pivots.
+The existing solver returned `solved:false`: normalized primal violation
+9.647838e-13, dual violation0 and complementarity9.013367e-13 pass its checks,
+but absolute stationarity9.732289e-8 exceeds its unchanged1e-8 condition.
+Its failure message lacks a reason for this terminal KKT check (`undefined`);
+the complete retained diagnostics identify the stationarity gate precisely.
+
+No candidate native forward, RNEA candidate check, physical tick, lift or unload
+was performed. Initial algebraic sign/cone/cap/phase counterexamples passed;
+complete pure/native qualification remains INCOMPLETE/FAIL. The vector's tiny
+inequality residual is not native support feasibility, and the optimality
+failure does not prove mechanical impossibility. Both ankle-y entries of the
+unapplied vector are at the physical20Nm cap within numerical error. No
+tolerance, gain, cap, model or solver-policy adjustment/retry followed.
+
+Measured state and grab memory are exactly unchanged: COM
+[.053643713,.000039258,.845361060]m, velocity
+[.025296924,-.003411506,-.002002370]m/s, tilt8.117161degrees and last resolved
+right/left137.9217/262.4470N. Native time remains10.2625s. The fixed historical
+verdicts are unchanged. New count:0 ticks/1 explicit forward/0 forecasts;
+MuJoCo228809 confirmed PLUS preserved unknown history, Rapier45735 frozen.
+
+Cost: native3.069ms, active-set solve27.879ms, process286.487ms. This single
+solve does not establish real-time200Hz operation. No walking claim follows.
+Proofs are `web/proofs/pull-step-whole-body-001/`: progressive journal, raw last
+native centre, complete last optimization result, ledger, audit, exact final
+checkpoint and inspected two-frame replay. Both frames show the same actual
+pose and full mannequin/floor, correctly labelled zero ticks. Checkpoint SHA256
+`216bf912ab5a3fe9b6f44ee4b76ee8ba17b16e27f79fcb0f20024723d823321c`.
+
 Opt-in only: `?pull-step=local` on loopback, then select Balance. Main/site and
 ordinary Balance, passive and GetUp remain separate. This is not continuous
 walking. The preserved old foot-cycle is not invoked.
