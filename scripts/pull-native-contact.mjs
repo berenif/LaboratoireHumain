@@ -7,8 +7,8 @@ function solver(mj,H){const n=Math.sqrt(H.length),b=new mj.DoubleBuffer(H.length
 export function contactLaw(J,D,aref,a){return J.map((j,i)=>Math.max(0,-D[i]*(dot(j,a)-aref[i])));}
 export function residual(M,J,D,aref,a,smooth){const f=contactLaw(J,D,aref,a),n=a.length;return {f,r:a.map((_,i)=>dot(M.slice(i*n,(i+1)*n),a)-smooth[i]-sum(J.map((j,k)=>j[i]*f[k])))};}
 export function errorBound(M,J,D,aref,a,smooth,solveM){const {f,r}=residual(M,J,D,aref,a,smooth),v=solveM(r),square=dot(r,v);assert(Number.isFinite(square)&&square>=-128*eps*Math.max(1,dot(r,r)));return {eta:Math.sqrt(Math.max(0,square)),r,forces:f};}
-export function nativeAssembly(p,interaction,ref){
- const old=assemble(p,interaction,ref),{model:m,data:d,mj}=p,nv=27,J=denseConstraintJacobian(m,d),D=Array.from(d.efc_D).slice(0,d.nefc),aref=Array.from(d.efc_aref).slice(0,d.nefc),states=remapIslandStates(d).states,types=Array.from(d.efc_type).slice(0,d.nefc);
+export function nativeAssembly(p,interaction,ref,assembly=assemble){
+ const old=assembly(p,interaction,ref),{model:m,data:d,mj}=p,nv=27,J=denseConstraintJacobian(m,d),D=Array.from(d.efc_D).slice(0,d.nefc),aref=Array.from(d.efc_aref).slice(0,d.nefc),states=remapIslandStates(d).states,types=Array.from(d.efc_type).slice(0,d.nefc);
  assert(types.every(t=>t===3||t===6)&&states.every(s=>s===0||s===1)&&D.every(v=>v>0&&Number.isFinite(v)),'Unsupported native constitutive law');assert(!d.efm_active&&m.opt.disableflags===0&&m.opt.enableflags===0);
  const smooth=old.rhs.map((v,i)=>v-old.limits[i]),active=states.map(s=>s===1),K=old.M.map((v,k)=>v+sum(J.map((j,i)=>active[i]?D[i]*j[Math.floor(k/nv)]*j[k%nv]:0))),solveK=solver(mj,K),solveM=solver(mj,old.M),constant=smooth.map((v,k)=>v+sum(J.map((j,i)=>active[i]?j[k]*D[i]*aref[i]:0))),a0=solveK(constant),A=old.B.slice(0,21).map(solveK);
  const l0=J.map((j,i)=>active[i]?-D[i]*(dot(j,a0)-aref[i]):0),LA=J.map((j,i)=>A.map(a=>active[i]?-D[i]*dot(j,a):0));

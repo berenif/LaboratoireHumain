@@ -1,0 +1,25 @@
+// Kinematics/algebra only; called once by the bounded runner before any native forward.
+import assert from 'node:assert/strict';
+import {jointCurve} from '../web/mujoco/pull-step.js';
+import {worldFeatures,relativePosition,relativeAngular,quintic,cross,CoordinatedReference} from './pull-dynamic-stance.mjs';
+import {sub,add,mul,rot,inv,maxabs,hermite} from './pull-stance-geometry.mjs';
+const dot=(a,b)=>a.reduce((s,v,i)=>s+v*b[i],0),norm=a=>Math.hypot(...a);
+export function verify(p,nodes,kin){const {mj,model:m}=p,ref=new CoordinatedReference(p,nodes),scratch={...p,data:new mj.MjData(m)},nativeBefore=Array.from(p.data.qpos),velocityBefore=Array.from(p.data.qvel);let finiteError=0,accError=0,angularError=0,spatialResidual=0,derivativeError=0,tests=0;
+ try{
+  const I=[1,0,0,0,1,0,0,0,1],zero=[0,0,0],axis=[.2,-.3,.4],delta=[.4,.2,.8],w=[.6,-.8,.3],alpha=[.1,.2,-.1],v=[.3,-.2,.1],bp=[.2,-.1,.5],row=x=>x.map(v=>[v]),s={pos:zero,R:I,jp:row(zero),jr:row(axis),v,w,bp,br:alpha},f={pos:delta,R:I,jp:row(cross(axis,delta)),jr:row(axis),v:add(v,cross(w,delta)),w,bp:add(bp,add(cross(alpha,delta),cross(w,cross(w,delta)))),br:alpha},r=relativePosition(s,f),a=relativeAngular(s,f);
+  assert(maxabs([...r.velocity,...r.bias,...r.jac.flat(),...a.velocity,...a.bias,...a.jac.flat()])<1e-14,'Common rigid rotation must cancel');tests++;
+  assert(norm(cross(w,cross(w,delta)))>.1,'Nontrivial centrifugal counterexample');tests++;
+  const q0=Array.from(p.data.qpos),v0=Array.from(p.data.qvel);v0.splice(3,3,.7,-.4,.3);p.joints.forEach((j,i)=>v0[j.v]=.2*Math.sin(i+1));
+  function at(dt){scratch.data.qpos.set(q0);mj.mj_integratePos(m,scratch.data.qpos,new Float64Array(v0),dt);scratch.data.qvel.set(v0);kin(scratch);const f=worldFeatures(scratch);return {p:relativePosition(f.stance,f.com),f:relativePosition(f.stance,f.free),a:relativeAngular(f.stance,f.torso)};}
+  const h=.0001,mid=at(0),left=at(-h),right=at(h);for(const name of ['p','f']){const fd=sub(right[name].position,left[name].position).map(v=>v/(2*h)),dd=mid[name].position.map((v,k)=>(right[name].position[k]-2*v+left[name].position[k])/(h*h));finiteError=Math.max(finiteError,maxabs(sub(fd,mid[name].velocity)));accError=Math.max(accError,maxabs(sub(dd,mid[name].bias)));}angularError=maxabs(sub(sub(right.a.velocity,left.a.velocity).map(v=>v/(2*h)),mid.a.bias));assert(finiteError<1e-7&&accError<2e-5&&angularError<2e-6,'Moving-frame native kinematic finite differences '+JSON.stringify({finiteError,accError,angularError}));tests++;
+  const jets=hermite(nodes),curve=jointCurve(nodes,p.joints,m,1.8,nodes[0]);let prior=nodes[0],excessIncrease=0;
+  const first=ref.at(ref.start),last=ref.at(ref.start+1.8);const from={com:first.com.position.slice(),foot:first.foot.position.slice()},to={com:last.com.position.slice(),foot:last.foot.position.slice()};
+  for(let i=0;i<=384;i++){const u=i/384,x=jets.at(u);assert(maxabs(sub(x.q,curve.at(u)))<1e-12);scratch.data.qpos.set(x.q);scratch.data.qvel.fill(0);kin(scratch);const f=worldFeatures(scratch),com=relativePosition(f.stance,f.com).position,foot=relativePosition(f.stance,f.free).position;spatialResidual=Math.max(spatialResidual,...sub(com,add(from.com,mul(sub(to.com,from.com),u))).slice(0,2).map(Math.abs),...sub(foot,add(from.foot,mul(sub(to.foot,from.foot),u))).map(Math.abs));for(const j of p.joints){const lo=m.jnt_range[2*j.j],hi=m.jnt_range[2*j.j+1],ex=q=>Math.max(0,lo-q[j.q],q[j.q]-hi);excessIncrease=Math.max(excessIncrease,ex(x.q)-ex(prior));}prior=x.q;}
+  assert(spatialResidual<.002&&excessIncrease<1e-12,'Reserved finite interpolated curve');tests++;
+  for(const t of [.13,.43,.81,1.17,1.57]){const x=ref.at(ref.start+t),l=ref.at(ref.start+t-h),r=ref.at(ref.start+t+h);derivativeError=Math.max(derivativeError,maxabs(sub(sub(r.com.position,l.com.position).map(v=>v/(2*h)),x.com.velocity)),maxabs(sub(sub(r.com.velocity,l.com.velocity).map(v=>v/(2*h)),x.com.acceleration)));}assert(derivativeError<1e-5,'Same-curve reference jets');tests++;
+  const z=quintic(.03,.02,-.01,.05,.7),z0=z(0),z1=z(.7);assert(maxabs(sub([z0.position,z0.velocity,z0.acceleration],[.03,.02,-.01]))<1e-14&&maxabs(sub([z1.position,z1.velocity,z1.acceleration],[.05,0,0]))<1e-13,'C2 phase vertical splice');tests++;
+  const toy={jnt_range:[-1,1]},js=[{name:'toy',j:0,q:7}],q=x=>[0,0,0,1,0,0,0,x];assert.throws(()=>jointCurve([q(1.01),q(.9),q(1.001)],js,toy,1,q(1.01)),/ROM/);assert.throws(()=>quintic(0,0,0,NaN,1));tests+=2;
+  assert.deepEqual(Array.from(p.data.qpos),nativeBefore);assert.deepEqual(Array.from(p.data.qvel),velocityBefore);
+  ref.at(ref.start);return {passed:true,tests,movingFrameVelocityError:finiteError,movingFrameAccelerationError:accError,angularBiasError:angularError,interpolationMaxResidualM:spatialResidual,referenceJetError:derivativeError,curveSpeedBoundRadS:curve.maxSpeed,curveAccelerationBoundRadS2:curve.maxAcceleration,referenceOnly:true,conditionalBaseNeverApplied:true,initialMeasuredDqPreserved:true,initialDesiredDqZero:true,knotAccelerationJumpsBounded:true};
+ }finally{ref.dispose();scratch.data.delete();}
+}

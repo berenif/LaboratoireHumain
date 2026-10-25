@@ -1,5 +1,102 @@
 # Local arm-pull first-step experiment (24 October 2026)
 
+
+## Dynamic coordinated stance001 — preflight stopped, ZERO ticks (25 October)
+
+Source11f2710b. One prospective campaign, with no controller/model/gain/cap
+change in the deployed application. New opt-in files: pull-dynamic-stance.mjs,
+verify/run/audit-pull-dynamic-stance.mjs and a saved-geometry sheet renderer.
+The old nativeAssembly accepts an optional task-assembly callback; its default
+and all previous runners retain their original behavior.
+
+The candidate reuses static001's13 reserved geometric knots, jointCurve and
+its differentiated Hermite/quintic clock. Joint posture, COM and torso/foot
+relative tasks derive from that SAME curve. No conditional base transform is
+installed or credited. The right world-Z tracking row is absent; right XY and
+orientation remain soft tasks. Native21-motor elimination includes all27
+accelerations, actual contact pyramid edges AND limits. Reactions are never
+injected. Equal-normal soft regularization, existing objective weights/gains,
+friction, model settings, caps and QR are retained.
+
+For r=R_s'*(p-p_s), velocity is R_s'*(v-v_s)-omega_s_local cross r.
+Acceleration includes -alpha_s_local cross r, -2*omega_s_local cross
+R_s'*(v-v_s), and +omega_s_local cross(omega_s_local cross r).
+Relative angular acceleration also includes -omega_s_local cross
+R_s'*(omega_body-omega_s). Reference jets use these same formulas, with
+reference joint q/dq/ddq and no physical-root write.
+
+Prepared phases:1.8s coordinated transfer; after measured readiness,0.5s
+world-Z decompression to0.1mm whole-foot clearance; actual left<15N and
+right>100N for75ms admit the existing20mm lift. Required whole-foot clearance
+is8mm with left<1N for100ms. Readiness uses source8mm COM error,50mm/s
+relative COM speed,0.2rad/s torso speed and5mrad ROM reserve. Deadline2.3s
+and physical stops are unchanged. These phases were NOT dynamically reached.
+Phase command entry reuses the25ms total-command blend. Vertical phase jets
+are C2 spliced; a checkpoint stores polynomial coefficients when applicable.
+No forces are set to zero by phase. Actual native branch changes are diagnostic;
+the native result, caps and joint stopping test govern selection. At most one
+proposal and a freshly evaluated centre are available; no model-rebuild loop.
+
+Checks completed, with all original233 integration values and physical dq
+preserved:
+
+-8 new kinematic/algebra checks: common rigid motion cancellation, nontrivial
+ centrifugal example, actual FK finite differences, reserved curve and
+ inherited-excess interpolation, same-curve jets, C2 phase splice and rejection
+ of a new ROM excess/nonfinite target.
+- Moving-frame velocity error4.32e-11m/s; acceleration error2.40e-7m/s²;
+ angular bias error1.27e-11rad/s². Interpolated geometric residual0.6063mm;
+ reference-jet error9.37e-8. Existing32 contact-law algebra checks also pass.
+- The curve is C1 with bounded knot acceleration jumps. Bounds1.4311rad/s
+ and52.9664rad/s² are reference bounds, not invented physical limits. Desired
+ entry velocity is zero; measured joint velocities remain nonzero and damped.
+- Initial matrix solve succeeds in2 pivots, maximum linear inequality residual
+ 1.60e-14. Runtime23.6583ms; this is not a200Hz real-time qualification.
+
+The preflight exposes an ENTRY CONTRACT CONFLICT, not a measured physical
+failure or a proof of dynamic infeasibility. At t10.24375 the25ms blend is0,
+so the actually evaluated proposal is exactly the recorded old total command.
+It remains inside all21 motor caps (largest fraction0.605844), has zero root
+actuation and no external force except the declared hand grab. However, the
+inherited120ms constant-acceleration stopping bounds reject both knees:
+
+| Joint | measured angle | dq rad/s | native qdd rad/s² | stopping bound rad/s² |
+| --- | ---: | ---: | ---: | ---: |
+| right_knee |2.05041765deg |+0.03280262 |+0.34527242 |<=-0.66892610 |
+| left_knee |2.05697876deg |+0.03397889 |+0.34689638 |<=-0.70443529 |
+
+Nominal upper limit is2deg. The restored physical state already has these
+small excesses and outward velocities. Recovering geometric target references
+does not make the first unchanged total command meet that predictive test.
+The unblended QR vector is only model-admitted; it was not separately natively
+evaluated or applied. No bypass, threshold change, abrupt command replacement,
+physical projection, or new native attempt followed this failure. This guard
+is a planning condition, not evidence that the bounded entry command violates
+a motor cap or that every dynamic transition is impossible. Review must decide
+how entry recovery and a continuous command can be qualified together before
+any integration; merely relaxing a numeric threshold would not resolve it.
+
+Two earlier ZERO-native preparation receipts are preserved: the WASM input
+format check first used an ordinary array, then an external typed array whose
+mutation did not provide the intended FK test. The test now integrates into a
+WASM-backed qpos view; finite differences pass. These were preparation-code
+repairs, not physical retries. Counts include their FK work.
+
+Final totals for this campaign:416 explicit FK,2 explicit native forwards,
+ONE QR solve, ZERO ticks/forecasts. MuJoCo remains229033 confirmed plus unknown
+history; Rapier45735. No physical attempt started. The exact233 final state
+matches001; full new grab history/bridge, reference, command and pending input
+are saved in pull-dynamic-stance-001-verified/final.json.gz. SHA256:
+a574fd9750b33503b9cd76fab804920496461c64b8c2216de40c83c63b6b2047.
+
+Local evidence is preserved under web/proofs/pull-dynamic-stance-001*/.
+The verified directory contains raw native and QP outputs BEFORE guards,
+pure checks, independent saved-data audit, progressive ledger, final checkpoint
+and observed-contact-sheet.png. The sheet was inspected: it shows the same
+restored pose twice, explicitly0ticks, no suggestion of transfer or lift.
+Main/private site9 and all historical failures remain unchanged. No publication,
+installation, new media transfer or physics retry.
+
 ## Reserved static stance001 — rejected conditional pose (25 October)
 
 ONE candidate, based on57db62b. It keeps geometry001's declared COM35mm
