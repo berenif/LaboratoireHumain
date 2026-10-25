@@ -1,5 +1,85 @@
 # Local arm-pull first-step experiment (24 October 2026)
 
+## Pure evaluator-contract repair — no native evaluation, no search restart
+
+This revision repairs only the offline horizon evaluator. The historical
+`pull-native-horizon-001-qualified/` result remains CLOSED INCONCLUSIVE: one
+SLSQP invocation, 90 forecast steps, zero completed paths. Its executed sources,
+checkpoint and ledgers are preserved byte for byte. Missing pre-step quantities
+at its failure cannot be reconstructed by this repair.
+
+`pull-horizon-contract.mjs` is pure JavaScript, reusing the existing Householder
+QR for an approximate inverse/solution. It does not import WASM or an optimizer.
+For H=M+h*diag(damping), outward-rounded binary64 interval arithmetic encloses
+H, rhs=M*qacc, the force rhs, and their residuals. Given an approximate inverse B,
+rho=||I-BH||inf<1 certifies ||H^-1||inf <= ||B||inf/(1-rho), and therefore an
+acceleration reconstruction error <= ||H^-1||inf*||H*a_hat-rhs||inf. The log
+contains rho, condition upper bound, inverse norm bound and residual intervals.
+Singularity, unresolved rank, overflow or rho>=1 produces INCONCLUSIVE. No old
+128*epsilon identity threshold is widened or reused as a certificate.
+
+This certificate covers exact real linear systems on the SUPPLIED binary64
+matrix/force intervals. It does not certify that MuJoCo's own implicit solve
+satisfies an independently known velocity-error bound, nor that a cached matrix
+belongs to a different time. A native identity verdict requires that independent
+bound. The live diagnostic supplies NO invented bound: it reports numerical
+INCONCLUSIVE. Analytic fixtures alone may supply the known zero solve-error
+bound. No bound is fitted from the discrepancy being tested. This is an explicit
+qualification limit, not a claimed repair of the lost engine comparison.
+
+The worker now writes an atomic, overwritten last-substep gzip snapshot before
+gates: native state233 before/after (also base64 binary64 for signed zero), grab
+memory, command, interaction, all generalized/external forces, qacc, time,
+damping and M, followed by H/rhs/residuals, all 27 velocity discrepancies, mapped
+21 hinge-position checks, contact loads and current path minima. Nonfinite
+numbers are tagged instead of silently becoming JSON null. A fault copies this
+in-flight snapshot. Frames are excluded from the overwritten diagnostic file;
+there is no growing collection of per-step dumps. Native reaction timestamps
+remain pre-integration, updated geometry timestamps post-integration.
+
+Finite path violations return finite signed constraints to SLSQP unchanged.
+They are not motor failures. Status distinguishes `finite-infeasible`,
+`finite-feasible`, `numerical-inconclusive`, and `demonstrated-anomaly`; the
+numerical status is kept separately even on a physically infeasible path.
+A numerically inconclusive finite path may inform the optimizer, but cannot be
+reported as qualified feasible. Proven state/time/motor/nonfinitude faults abort;
+generic evaluator/budget failures are no longer labelled engine inconsistency.
+
+Retained support is lost at 20 consecutive resolved samples below 1 N. Each
+20-sample window has margin max(loads)-1 N; the path minimum is returned. At
+exactly 1 N the run is broken. This is equivalent to the existing 25 ms rule at
+800 Hz, avoids floating duration accumulation and has useful violation magnitude.
+A nonplantar ground contact is loaded only above .1 N, as in readReactions:
+margin=(.1-max(nonfoot per-contact normal loads))/.1. Exactly .1 N is allowed;
+loads are NOT newly summed per nonfoot body. Unknown pre-checkpoint load history
+is not fabricated (the current source has lostSeconds=0). ROM uses the unchanged
+existing rounding allowance and actual finite path states; no new relaxation.
+
+Tests: `node scripts/verify-pull-horizon-contract.mjs` (19 groups, including all
+27 velocity components, 28/27 mapping, known damping/residual, certified inverse,
+analytic wrong-velocity rejection, inconclusive missing-native-bound case,
+ROM callback payloads, journal-before-throw/signed-zero checks, 19/20 sample boundaries, exact thresholds and archived
+hashes). `python -B scripts/run-pull-native-horizon.py --check` runs seven pure
+callback/cache assertions without calling minimize or starting the worker.
+Syntax and diff checks pass. No new forward, inverse, FK, step, forecast or
+SLSQP call has occurred. Pure receipt: docs/experiments/pull-horizon-contract-pure.json.
+The interpolation description is corrected to the ALREADY USED quintic C2
+smoothstep; interpolation/commands themselves are unchanged.
+
+Any later minimize call is a NEW research campaign, not continuation: neither
+the SLSQP workspace nor the first evaluation's complete path history was saved.
+The old source-revision pins deliberately remain locked; this change does not
+authorize a runner launch. Before a qualified new search, independently establish
+the native integration-error contract (or explicitly review a qualification
+based on native propagation without treating this observer as a certificate).
+The prior family would require a fresh budget of at most 128 complete evaluations
+including finite differences and terminal verification, 400 substeps each =
+51,200 counted forecast steps, one SLSQP call/64 iterations, 900 seconds total,
+zero live ticks and <=500 kB code/evidence reserve within the global disk cap.
+This is an estimate/ceiling for a future authorization, not a budget exercised
+or granted by this repair. Logging cost and the modified worker have NOT been
+measured in native execution. Stable main/site/controllers are unchanged.
+
 ## Native dynamic horizon001 — INCONCLUSIVE, 90 forecast steps, no real ticks
 
 Source `e066a3b8557f82ab2ed81f9b9380b0a4f86dab50`, exact native233 at

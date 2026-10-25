@@ -36,6 +36,18 @@ def key(x):
     return np.asarray(x, dtype=np.float64).tobytes()
 
 
+def validated_response(obj):
+    # Finite infeasibility is data for SLSQP, not a worker/motor failure.
+    assert obj['evaluated'] and obj['summary']['steps'] == 400
+    assert len(obj['constraints']) == len(obj['labels'])
+    assert np.isfinite(obj['constraints']).all()
+    summary = obj['summary']
+    assert summary['status'] in ('finite-infeasible', 'finite-feasible', 'numerical-inconclusive')
+    assert summary['physicalFeasible'] == all(v >= 0 for v in obj['constraints'])
+    assert not summary['feasible'] or (summary['physicalFeasible'] and summary['numericalStatus'] == 'certified')
+    return obj
+
+
 def tests():
     # Verify callback caching, signed normalized constraints and finite-difference
     # accounting WITHOUT invoking an optimizer, worker, or native dynamics.
@@ -53,14 +65,25 @@ def tests():
     assert key([0.]) != key([-0.])
     assert MAX_EVALUATIONS*400 == 51200
     assert math.isfinite(np.sqrt(np.finfo(float).eps))
-    return {'passed': True, 'checks': 5, 'optimizerCalls': 0,
+    reply = dict(evaluated=True, labels=['ROM upper'], constraints=[-.01],
+        summary=dict(steps=400, status='finite-infeasible', physicalFeasible=False,
+            feasible=False, numericalStatus='inconclusive'))
+    assert validated_response(reply)['constraints'] == [-.01]
+    bad = {**reply, 'summary': {**reply['summary'], 'feasible': True}}
+    try:
+        validated_response(bad)
+    except AssertionError:
+        pass
+    else:
+        raise AssertionError('Uncertified candidate claimed feasible')
+    return {'passed': True, 'checks': 7, 'optimizerCalls': 0,
             'nativeSteps': 0, 'cacheCountsSyntheticOnly': True}
 
 
 def run(out, setup_repair_of=None):
     assert not out.exists(), 'Refuse existing campaign; no duplicate/restart'
     assert subprocess.check_output(['git', 'rev-parse', 'HEAD'], cwd=ROOT, text=True).strip() == 'e066a3b8557f82ab2ed81f9b9380b0a4f86dab50'
-    additions = ['scripts/pull-native-horizon.mjs', 'scripts/evaluate-pull-native-horizon.mjs', 'scripts/run-pull-native-horizon.py']
+    additions = ['scripts/pull-native-horizon.mjs', 'scripts/evaluate-pull-native-horizon.mjs', 'scripts/run-pull-native-horizon.py', 'scripts/pull-horizon-contract.mjs']
     before = int(subprocess.check_output(['du', '-sx', '-B1', '/workspace']).split()[0])-419647488+13123543
     assert before+500000 < 1530000000
     if setup_repair_of:
@@ -75,7 +98,7 @@ def run(out, setup_repair_of=None):
         dt=.00125, substepsPerEvaluation=400, maxEvaluations=128,
         maxPredictiveSteps=51200, maxSeconds=900, realTicks=0,
         oneOptimizerCall=True, maxIterations=64, variables=42,
-        interpolation='convex C1 cubic smoothstep at0/.25/.5seconds; u0 fixed',
+        interpolation='convex C2 quintic smoothstep at0/.25/.5seconds; u0 fixed',
         initializer='repeat recorded actual command at both free nodes',
         objective='mean squared normalized torque400x21, no posture/force weight tuning',
         constraints='native actual path ROM/caps/20deg/25mm/support1N25ms/nonplantar/fall, terminal5mm world AND relative, velocities<=0, tilt<=entry, omega<=.2',
@@ -112,7 +135,7 @@ def run(out, setup_repair_of=None):
         obj = json.loads(line)
         if obj.get('fatal'):
             worker_fatal = True
-            raise StopCampaign('Native engine/copy inconsistency: '+obj['error'])
+            raise StopCampaign('Worker stopped ['+obj.get('kind', 'unclassified')+']: '+obj['error'])
         return obj
     def send(obj):
         worker.stdin.write(json.dumps(obj, separators=(',', ':'))+'\n')
@@ -132,11 +155,10 @@ def run(out, setup_repair_of=None):
         save(out/'search-ledger.json', ledger)
         send({'action': 'evaluate', 'x': np.asarray(x).tolist(), 'deadlineEpochMs': epoch_deadline})
         obj = receive()
-        assert obj['evaluated'] and obj['summary']['steps'] == 400
+        validated_response(obj)
         if labels is None:
             labels = obj['labels']
         assert labels == obj['labels'], 'Fixed constraint order/dimension required'
-        assert len(obj['constraints']) == len(labels) and np.isfinite(obj['constraints']).all()
         cache[k] = obj
         ledger.update(pendingEvaluation=False, nativeEvaluations=len(cache),
             predictiveSteps=obj['summary']['predictiveSteps'])
@@ -146,7 +168,7 @@ def run(out, setup_repair_of=None):
                 'predictiveSteps': ledger['predictiveSteps'], 'objective': obj['summary']['objective'],
                 'violation': obj['summary']['maxNormalizedViolation'],
                 'worldGain': obj['summary']['terminal']['worldGain'],
-                'relativeGain': obj['summary']['terminal']['relativeGain']}), flush=True)
+                'relativeGain': obj['summary']['terminal']['relativeGain'], 'status': obj['summary']['status']}), flush=True)
         return obj
     result, reason, optimizer_x_key = None, 'not started', None
     try:
@@ -174,6 +196,7 @@ def run(out, setup_repair_of=None):
             optimizerIterations=int(result.nit) if result is not None else None,
             optimizerXActuallyEvaluated=evaluated_result is not None,
             optimizerResultFeasible=evaluated_result['summary']['feasible'] if evaluated_result else None,
+            optimizerResultStatus=evaluated_result['summary']['status'] if evaluated_result else None,
             nativeEvaluations=len(cache), predictiveSteps=ledger['predictiveSteps'],
             realTicks=0, elapsedSeconds=time.monotonic()-started,
             interpretation='Only actual evaluated native paths are evidence; search nonconvergence is not physical impossibility.')

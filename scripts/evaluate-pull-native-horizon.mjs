@@ -1,8 +1,9 @@
 // Persistent MuJoCo3.17 shooting evaluator. Every mj_step is a counted forecast.
 import fs from 'node:fs';import readline from 'node:readline';import assert from 'node:assert/strict';import crypto from 'node:crypto';import {gzipSync,gunzipSync} from 'node:zlib';import {execFileSync} from 'node:child_process';
 import load from '../web/dist/vendor/mujoco.js';import {Physics} from '../web/dist/engine.js';
-import {PLAN,command,grabInput,terminal,tests,velocityIdentity} from './pull-native-horizon.mjs';
-import {nativeState} from './pull-step-restoration.mjs';import {accumulateInteraction} from './pull-external-force.mjs';import {eulerAcceleration} from './pull-native-step-map.mjs';
+import {PLAN,command,grabInput,terminal,tests} from './pull-native-horizon.mjs';
+import {nativeState} from './pull-step-restoration.mjs';import {accumulateInteraction} from './pull-external-force.mjs';
+import {diagnosticText,recordBeforeGuard,eulerDiagnostic,validateJointMapping,hingeChecks,SupportWindows,nonplantarMargin,romMargins,outcome,evaluationResponse} from './pull-horizon-contract.mjs';
 import {worldFeatures} from './pull-dynamic-stance.mjs';import {inv,sub,norm} from './pull-stance-geometry.mjs';
 const out=process.argv[2];assert(out&&fs.existsSync(out+'/protocol.json')&&!fs.existsSync(out+'/worker-ledger.json'),'New prepared campaign only');
 const source='web/proofs/pull-gravity-frame-001/final.json.gz',sha=b=>crypto.createHash('sha256').update(b).digest('hex'),bytes=fs.readFileSync(source),cp=JSON.parse(gunzipSync(bytes)),xml=fs.readFileSync('web/dist/humanoid.xml','utf8');
@@ -12,12 +13,14 @@ const growth=()=>Number(execFileSync('du',['-sx','-B1','/workspace'],{encoding:'
 assert(growth()+500000<PLAN.maxGrowth,'Global reserve');
 const ledger={evaluations:0,predictiveSteps:0,pendingPredictiveSteps:0,realTicks:0,explicitForwards:0,confirmedBefore:229565,unknownHistoryPreserved:true,completed:false,sourceSHA256:sha(bytes),growthBefore:growth(),nativeMs:0,kinematicPasses:0};
 const proofBytes=()=>fs.readdirSync(out).reduce((s,n)=>s+fs.statSync(out+'/'+n).size,0);
-function save(name,x){const b=gzipSync(JSON.stringify(x),{level:9});assert(proofBytes()+b.length<350000,'Compact evidence reserve');fs.writeFileSync(out+'/'+name,b);}
+function save(name,x){const b=gzipSync(diagnosticText(x),{level:9}),path=out+'/'+name,old=fs.existsSync(path)?fs.statSync(path).size:0;assert(proofBytes()-old+b.length<350000,'Compact evidence reserve');fs.writeFileSync(path+'.tmp',b);fs.renameSync(path+'.tmp',path);}
+function abort(kind,message){const e=new Error(message);e.kind=kind;throw e;}
+function invariant(condition,message){if(!condition)abort('demonstrated-anomaly',message);}
 function persist(){fs.writeFileSync(out+'/worker-ledger.tmp',JSON.stringify(ledger));fs.renameSync(out+'/worker-ledger.tmp',out+'/worker-ledger.json');}
 persist();const pure=tests(),engine=await load();
 const mj=new Proxy(engine,{get(o,k){const f=o[k];if(['mj_forward','mj_forwardSkip','mj_inverse','mj_step1','mj_step2','mjd_transitionFD','mjd_inverseFD'].includes(k))return()=>{throw Error('Undeclared native entry point '+k);};return f;}});
 const model=mj.MjModel.from_xml_string(xml),joints=Array.from({length:model.nu},(_,a)=>{const j=model.actuator_trnid[2*a];return {a,j,q:model.jnt_qposadr[j],v:model.jnt_dofadr[j],name:mj.mj_id2name(model,mj.mjtObj.mjOBJ_JOINT.value,j),gear:model.actuator_gear[6*a]};}),names=Array.from({length:model.nbody},(_,i)=>mj.mj_id2name(model,mj.mjtObj.mjOBJ_BODY.value,i));
-assert.equal(mj.mj_versionString(),cp.engine);assert.equal(model.nv,27);assert.equal(model.nu,21);assert.equal(model.opt.timestep,PLAN.dt);assert.equal(model.opt.integrator.value??model.opt.integrator,0);assert.equal(cp.state.length,233);
+assert.equal(mj.mj_versionString(),cp.engine);assert.equal(model.nv,27);assert.equal(model.nu,21);assert.equal(model.opt.timestep,PLAN.dt);assert.equal(model.opt.integrator.value??model.opt.integrator,0);assert.equal(cp.state.length,233);validateJointMapping(joints,model.nq,model.nv);
 assert(cp.experimental.reference.recoveryDone&&Object.keys(cp.experimental.reference.closed).length===2);assert(!cp.experimental.applicationStatus.nativeIntegrationPending);assert(!cp.experimental.applicationStatus.pendingValidatedControls);
 const u0=cp.experimental.applicationStatus.lastAppliedControls.slice(),Rg=cp.experimental.reference.equilibriumFrame?.Rg??JSON.parse(gunzipSync(fs.readFileSync('web/proofs/pull-gravity-frame-001/last-qp.json.gz'))).gravity.Rg;
 const work=Object.create(Physics.prototype);Object.assign(work,{mj,model,joints,names,data:new mj.MjData(model),contactBuffer:new mj.DoubleBuffer(6),steps:cp.physics.steps});assert.equal(work.dt,PLAN.dt);
@@ -44,38 +47,57 @@ try{
   const request=JSON.parse(line);if(request.action==='finish'){ledger.completed=true;ledger.reason=request.reason;ledger.growthAfter=growth();ledger.bestEvaluation=best?.index??null;assert.equal(sha(fs.readFileSync(source)),ledger.sourceSHA256);persist();process.stdout.write(JSON.stringify({finished:true,ledger,best:best?.summary??null})+'\n');break;}
   assert(request.action==='evaluate');assert(ledger.evaluations<PLAN.maxEvaluations&&ledger.predictiveSteps+400<=PLAN.maxPredictiveSteps);assert(Date.now()<request.deadlineEpochMs,'Campaign deadline');
   const x=request.x;assert(x.length===42&&x.every(v=>Number.isFinite(v)&&Math.abs(v)<=1),'Input outside original motor caps');restore();assert.deepEqual(grabInput(work,cp),int);
-  const index=++ledger.evaluations,beforeSteps=ledger.predictiveSteps,frames=[pose(initial)],constraints=new Map(),margins=new Map(),firstViolations={};let effort=0,lost=cp.experimental.lostSeconds,maxLost=lost,maxJump=0,prior=u0.slice(),last=initial,maxVE=0,maxQE=0,minRight=Infinity,minLeft=Infinity,maxTilt=initial.tilt,maxDrift=0,atCapSamples=Array(21).fill(0);
+  assert.equal(cp.experimental.lostSeconds,0,'Unknown prior support-load window; cannot invent contact history');
+  const support=new SupportWindows(),index=++ledger.evaluations,beforeSteps=ledger.predictiveSteps,frames=[pose(initial)],constraints=new Map(),margins=new Map(),firstViolations={};let effort=0,maxJump=0,prior=u0.slice(),last=initial,maxVE=0,maxQE=0,minRight=Infinity,minLeft=Infinity,maxTilt=initial.tilt,maxDrift=0,atCapSamples=Array(21).fill(0),numericalStatus='certified',inconclusiveComparisons=0;
   inFlight={index,x,u0,frames,initial,sourceSHA256:sha(bytes),label:'INCOMPLETE native prediction, never applied live',partial:true};
   function constrain(label,value,raw){const old=constraints.get(label);if(old===undefined||value<old){constraints.set(label,value);margins.set(label,raw);}if(value<0&&!firstViolations[label])firstViolations[label]={step:work.steps-cp.physics.steps,t:work.data.time,value,raw};}
   for(let n=0;n<400;n++){
-   assert(Date.now()<request.deadlineEpochMs,'Campaign wall deadline during prediction');assert(ledger.predictiveSteps<PLAN.maxPredictiveSteps);const d=work.data,u=command(u0,x,n*PLAN.dt),interaction=grabInput(work,cp),q0=Array.from(d.qpos),v0=Array.from(d.qvel),t0=d.time;
+   assert(Date.now()<request.deadlineEpochMs,'Campaign wall deadline during prediction');assert(ledger.predictiveSteps<PLAN.maxPredictiveSteps);const d=work.data,beforeState=nativeState(work,cp.spec),beforeGrab=structuredClone(work.grab),u=command(u0,x,n*PLAN.dt),interaction=grabInput(work,cp),q0=Array.from(d.qpos),v0=Array.from(d.qvel),t0=d.time;
    assert(u.every(v=>Number.isFinite(v)&&Math.abs(v)<=1),'Interpolation cap inconsistency');for(let j=0;j<21;j++){effort+=u[j]*u[j]/(400*21);maxJump=Math.max(maxJump,Math.abs((u[j]-prior[j])*joints[j].gear));if(Math.abs(u[j])>=1-1e-10)atCapSamples[j]++;}prior=u;
-   Object.assign(inFlight,{attemptedStep:n+1,beforeQ:q0,beforeV:v0,beforeTime:t0,controls:u,interaction,lastMeasured:last,firstViolations});
-   d.ctrl.set(u);d.qfrc_applied.fill(0);d.xfrc_applied.fill(0);accumulateInteraction(d,15,interaction);work.grab.previous=interaction.point.slice();ledger.pendingPredictiveSteps=1;persist();const clock=performance.now();mj.mj_step(model,d);ledger.nativeMs+=performance.now()-clock;ledger.predictiveSteps++;work.steps++;ledger.pendingPredictiveSteps=0;
-   assert([...d.qpos,...d.qvel,...d.qacc].every(Number.isFinite),'Native nonfinitude');assert(Math.abs(d.time-(t0+PLAN.dt))<=arithmetic*Math.max(1,Math.abs(d.time)),'Native time reset/inconsistency');
-   assert(d.qfrc_actuator.slice(0,6).every(v=>v===0)&&d.qfrc_applied.every(v=>v===0),'Root/generalized assistance');
-   for(const [j,k]of joints.entries()){const expected=u[j]*k.gear,actual=d.qfrc_actuator[k.v];assert(Math.abs(actual-expected)<=arithmetic*Math.max(1,Math.abs(expected)),'Actual motor mapping mismatch');constrain('motor-'+k.name,(k.gear-Math.abs(actual))/k.gear,{applied:actual,cap:k.gear});}
-   // qacc/M are the pre-integration solved fields; damping is implicit in Euler.
-   const effective=eulerAcceleration(mj,model,d),velocityChecks=velocityIdentity(v0,Array.from(d.qvel),effective);
-   Object.assign(inFlight,{effective,qacc:Array.from(d.qacc),afterQ:Array.from(d.qpos),afterV:Array.from(d.qvel),velocityChecks});
-   // Preserve complete diagnostic values before checking identity. No threshold change.
+   // Fresh snapshot: never attach previous-step matrices/diagnoses to a new fault.
+   inFlight={index,x,u0,frames,initial,sourceSHA256:sha(bytes),label:'INCOMPLETE native prediction, never applied live',partial:true,attemptedStep:n+1,beforeState,beforeStateBinary64:Buffer.from(new Float64Array(beforeState).buffer).toString('base64'),beforeGrab,beforeQ:q0,beforeV:v0,beforeTime:t0,controls:u,interaction,lastMeasured:last,firstViolations,priorRows:[...constraints].map(([label,value])=>({label,value,raw:margins.get(label)})),supportHistoryBefore:support.loads.slice(),supportRunBefore:support.run,partialEffortIncludingThisCommand:effort};
+   d.ctrl.set(u);d.qfrc_applied.fill(0);d.xfrc_applied.fill(0);accumulateInteraction(d,15,interaction);work.grab.previous=interaction.point.slice();inFlight.appliedInput={ctrl:Array.from(d.ctrl),qfrc_applied:Array.from(d.qfrc_applied),xfrc_applied:Array.from(d.xfrc_applied)};save('last-integrated-diagnostic.json.gz',{...inFlight,frames:undefined});ledger.pendingPredictiveSteps=1;persist();const clock=performance.now();mj.mj_step(model,d);ledger.nativeMs+=performance.now()-clock;ledger.predictiveSteps++;work.steps++;ledger.pendingPredictiveSteps=0;
+   // Capture raw native input/output BEFORE any numerical or physical gate.
+   Object.assign(inFlight,{afterState:nativeState(work,cp.spec),afterStateBinary64:Buffer.from(new Float64Array(nativeState(work,cp.spec)).buffer).toString('base64'),afterGrab:structuredClone(work.grab),afterQ:Array.from(d.qpos),afterV:Array.from(d.qvel),qacc:Array.from(d.qacc),nativeForces:Object.fromEntries(['qfrc_smooth','qfrc_constraint','qfrc_bias','qfrc_passive','qfrc_actuator','qfrc_applied','xfrc_applied'].map(k=>[k,Array.from(d[k])])),afterTime:d.time,dt:PLAN.dt,damping:Array.from(model.dof_damping)});
+   recordBeforeGuard({...inFlight,frames:undefined},snapshot=>save('last-integrated-diagnostic.json.gz',snapshot),()=>{
+   invariant([...d.qpos,...d.qvel,...d.qacc,...Object.values(inFlight.nativeForces).flat()].every(Number.isFinite),'Native nonfinitude');
+   invariant(Math.abs(d.time-(t0+PLAN.dt))<=arithmetic*Math.max(1,Math.abs(d.time)),'Native time reset/inconsistency');
+   invariant(d.qfrc_actuator.slice(0,6).every(v=>v===0)&&d.qfrc_applied.every(v=>v===0),'Root/generalized assistance');
+   for(const [j,k]of joints.entries()){const expected=u[j]*k.gear,actual=d.qfrc_actuator[k.v];invariant(Math.abs(actual-expected)<=arithmetic*Math.max(1,Math.abs(expected)),'Actual motor mapping mismatch');constrain('motor-'+k.name,(k.gear-Math.abs(actual))/k.gear,{applied:actual,cap:k.gear});}
+   });
+   // M/qacc/forces below belong to the solved PRE-integration configuration.
+   // No kinematics/forward occurs between mj_step and this snapshot.
+   const massBuffer=new mj.DoubleBuffer(model.nv**2);let M;
+   try{mj.mj_fullM(model,d,massBuffer);M=Array.from(massBuffer.GetView());}finally{massBuffer.delete();}
+   Object.assign(inFlight,{M,matrixConfigurationAt:t0,matrixCaptureAt:d.time,matrixProvenance:'cached solved fields after mj_step, before kinematic refresh; Euler pre-integration provenance is an adapter assumption',integrator:model.opt.integrator.value??model.opt.integrator,disableflags:model.opt.disableflags,enableflags:model.opt.enableflags,efm_active:d.efm_active,dampingPolynomial:Array.from(model.dof_dampingpoly),jointActuatorIds:Array.from(model.jnt_actuatorid),joints});
    save('last-integrated-diagnostic.json.gz',{...inFlight,frames:undefined});
-   for(const c of velocityChecks){maxVE=Math.max(maxVE,c.err);assert(c.err<=c.bound,'Euler velocity inconsistency');}
-   for(const k of joints){const expected=q0[k.q]+PLAN.dt*d.qvel[k.v],err=Math.abs(expected-d.qpos[k.q]);maxQE=Math.max(maxQE,err);assert(err<=arithmetic*Math.max(1,Math.abs(expected)),'Euler hinge-position inconsistency');}
-   work.readReactions();work.reactions.atTime=t0;for(const p of work.reactions.points){assert(p.forceWorld.every(Number.isFinite)&&p.load>=0,'Invalid native reaction');const cf=work.reactions.supportedBodies.filter(b=>![7,10].includes(b));constrain('nonplantar load',cf.length?-1:1,{supportedBodies:cf});}
-   if(!work.reactions.points.length)constrain('nonplantar load',1,{supportedBodies:[]});
-   kin();last=measure(work.reactions);minRight=Math.min(minRight,last.loads[0]);minLeft=Math.min(minLeft,last.loads[1]);lost=last.loads[0]<1?lost+PLAN.dt:0;maxLost=Math.max(maxLost,lost);maxTilt=Math.max(maxTilt,last.tilt);const drift=norm(sub(last.stance,cp.experimental.initialFeet[0]).slice(0,2));maxDrift=Math.max(maxDrift,drift);
-   constrain('torso tilt20deg',(20*Math.PI/180-last.tilt)/(20*Math.PI/180),{rad:last.tilt});constrain('retained foot drift25mm',(.025-drift)/.025,{m:drift});constrain('retained support lost25ms',(.025-lost)/.025,{seconds:lost,load:last.loads[0]});constrain('torso height .65m',(last.torsoHeight-.65)/.65,{m:last.torsoHeight});constrain('torso up .4',(last.up-.4)/.4,{up:last.up});
-   for(const [i,k]of joints.entries()){const q=d.qpos[k.q],v=d.qvel[k.v],[lo,hi]=ranges[i],round=arithmetic*Math.max(1,Math.abs(q),Math.abs(v));constrain('ROM lower '+k.name,(q-lo+round)/(hi-lo),{q,v,lo,hi,round});constrain('ROM upper '+k.name,(hi-q+round)/(hi-lo),{q,v,lo,hi,round});}
+   const supportedEuler=model.opt.disableflags===0&&model.opt.enableflags===0&&d.efm_active===0&&Array.from(model.dof_dampingpoly).every(v=>v===0)&&Array.from(model.jnt_actuatorid).every(v=>v===-1);
+   const diagnostic=supportedEuler?eulerDiagnostic({M,damping:inFlight.damping,qacc:inFlight.qacc,h:PLAN.dt,beforeV:v0,afterV:inFlight.afterV,smooth:inFlight.nativeForces.qfrc_smooth,constraint:inFlight.nativeForces.qfrc_constraint}):{status:'inconclusive',reason:'Unsupported Euler reconstruction flags/damping'};
+   const hinges=hingeChecks(q0,inFlight.afterQ,inFlight.afterV,joints,PLAN.dt);
+   Object.assign(inFlight,{euler:diagnostic,hinges});
+   save('last-integrated-diagnostic.json.gz',{...inFlight,frames:undefined});
+   if(diagnostic.status==='demonstrated-anomaly')abort('demonstrated-anomaly','Euler disagreement under independent certified native-error bound');
+   if(diagnostic.status!=='certified'||hinges.some(c=>!c.passed)){numericalStatus='inconclusive';inconclusiveComparisons++;}
+   for(const c of diagnostic.checks??[])maxVE=Math.max(maxVE,c.error);
+   for(const c of hinges)maxQE=Math.max(maxQE,Math.abs(q0[c.q]+PLAN.dt*d.qvel[c.v]-d.qpos[c.q]));
+   work.readReactions();work.reactions.atTime=t0;
+   inFlight.reactions=structuredClone(work.reactions);save('last-integrated-diagnostic.json.gz',{...inFlight,frames:undefined});
+   invariant(work.reactions.points.every(p=>p.forceWorld.every(Number.isFinite)&&Number.isFinite(p.load)&&p.load>=0),'Invalid native reaction');
+   const nonplantar=nonplantarMargin(work.reactions.points);constrain('nonplantar load',nonplantar.value,nonplantar);
+   kin();last=measure(work.reactions);minRight=Math.min(minRight,last.loads[0]);minLeft=Math.min(minLeft,last.loads[1]);const supportRow=support.update(last.loads[0]);maxTilt=Math.max(maxTilt,last.tilt);const drift=norm(sub(last.stance,cp.experimental.initialFeet[0]).slice(0,2));maxDrift=Math.max(maxDrift,drift);
+   constrain('torso tilt20deg',(20*Math.PI/180-last.tilt)/(20*Math.PI/180),{rad:last.tilt});constrain('retained foot drift25mm',(.025-drift)/.025,{m:drift});constrain('retained support lost25ms',supportRow.value,supportRow);constrain('torso height .65m',(last.torsoHeight-.65)/.65,{m:last.torsoHeight});constrain('torso up .4',(last.up-.4)/.4,{up:last.up});
+   for(const [i,k]of joints.entries()){const r=romMargins(d.qpos[k.q],d.qvel[k.v],...ranges[i]);constrain('ROM lower '+k.name,r.lower,r.raw);constrain('ROM upper '+k.name,r.upper,r.raw);}
+   Object.assign(inFlight,{lastMeasured:last,firstViolations,partialRows:[...constraints].map(([label,value])=>({label,value,raw:margins.get(label)})),partialEffort:effort,supportWindow:supportRow});
+   save('last-integrated-diagnostic.json.gz',{...inFlight,frames:undefined});
    if((n+1)%20===0)frames.push(pose(last));
   }
   assert.equal(ledger.predictiveSteps-beforeSteps,400);const end=terminal(initial,last,Rg);for(const [label,value]of end.rows)constrain('terminal '+label,value,end);
-  const rows=[...constraints].map(([label,value])=>({label,value,raw:margins.get(label)})),violations=rows.filter(x=>x.value<0),strictDwell=maxLost<.025,feasible=violations.length===0&&strictDwell,deficit=Math.max(0,...rows.map(x=>-x.value));
-  const summary={index,steps:400,objective:effort,feasible,maxNormalizedViolation:deficit,violations,firstViolations,terminal:end,final:last,minRight,minLeft,maxTilt,maxDrift,maxLost,strictDwell,maxTorqueStepNm:maxJump,atCapSamples,maximumVelocityIdentityError:maxVE,maximumHingeIdentityError:maxQE,realTicks:0,predictiveSteps:ledger.predictiveSteps};
+  const rows=[...constraints].map(([label,value])=>({label,value,raw:margins.get(label)})),classification=outcome(rows,numericalStatus),{feasible,maxNormalizedViolation:deficit}=classification;
+  const summary={index,steps:400,objective:effort,...classification,inconclusiveComparisons,firstViolations,terminal:end,final:last,minRight,minLeft,maxTilt,maxDrift,maxLost:support.maxRun*PLAN.dt,lostSupportTicks:support.maxRun,strictDwell:support.maxRun<20,maxTorqueStepNm:maxJump,atCapSamples,maximumVelocityIdentityError:maxVE,maximumHingeIdentityError:maxQE,realTicks:0,predictiveSteps:ledger.predictiveSteps};
   if(!best||(feasible&&!best.summary.feasible)||(feasible===best.summary.feasible&&(deficit<best.summary.maxNormalizedViolation||(deficit===best.summary.maxNormalizedViolation&&effort<best.summary.objective)))){best={index,summary};save('best-trajectory.json.gz',{summary,x,u0,frames,finalState:nativeState(work,cp.spec),finalGrab:work.grab,closed:cp.experimental.reference.closed,originalPhaseClocks:declaration.clocks,sourceSHA256:sha(bytes),label:'PREDICTION native0.5s on disposable copy; never applied live',phase:'transfer prediction only; no phase/contact imposed'});}
   fs.appendFileSync(out+'/evaluations.ndjson',JSON.stringify({index,objective:effort,feasible,violation:deficit,terminal:end,firstFault:Object.entries(firstViolations)[0]??null})+'\n');ledger.bestEvaluation=best.index;persist();
   inFlight=null;
-  process.stdout.write(JSON.stringify({evaluated:true,summary,constraints:rows.map(x=>x.value),labels:rows.map(x=>x.label)})+'\n');
+  process.stdout.write(JSON.stringify(evaluationResponse({evaluated:true,summary,constraints:rows.map(x=>x.value),labels:rows.map(x=>x.label)}))+'\n');
  }
-}catch(e){ledger.error=String(e);ledger.completed=false;ledger.uncertainPrediction=ledger.pendingPredictiveSteps!==0;persist();save('engine-failure.json.gz',{error:String(e),stack:e.stack,state:nativeState(work,cp.spec),grab:work.grab,ledger,best,inFlight});process.stdout.write(JSON.stringify({fatal:true,error:String(e),ledger})+'\n');process.exitCode=1;}
+}catch(e){ledger.failureKind=e.kind??'evaluator-error-or-budget';ledger.error=String(e);ledger.completed=false;ledger.uncertainPrediction=ledger.pendingPredictiveSteps!==0;persist();save('engine-failure.json.gz',{kind:ledger.failureKind,error:String(e),stack:e.stack,state:nativeState(work,cp.spec),grab:work.grab,ledger,best,inFlight});process.stdout.write(JSON.stringify({fatal:true,kind:ledger.failureKind,error:String(e),ledger})+'\n');process.exitCode=1;}
 finally{pointJP.delete();pointJR.delete();velocityBuffer.delete();work.contactBuffer.delete();work.data.delete();model.delete();}
