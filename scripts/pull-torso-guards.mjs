@@ -15,10 +15,13 @@ export function axisResiduals(omega,alpha,h){
  return omega.flatMap((w,i)=>[-1,1].map(sign=>({label:`angular-axis-${i}-${sign}`,value:sign*(w+h*alpha[i])-Math.abs(w)})));
 }
 export function robustNonpositiveLimit(center,relative,tolerance){
- if(!(Number.isFinite(center)&&center>0&&relative>=0&&relative<1&&tolerance>=0))throw Error('Expected positive saved scalar and declared error allowance');
- // For g_pred<=0 and positive center: g_pred+r*|g_pred-center|<=0.
- // The absolute tolerance part of max(tolerance, r*change) is reserved too.
- return -Math.max(tolerance,relative*center/(1-relative));
+ return Math.min(...robustNonpositiveRows(center,relative,tolerance).map(r=>r.bound/r.factor));
+}
+export function robustNonpositiveRows(center,relative,tolerance){
+ if(!(Number.isFinite(center)&&relative>=0&&relative<1&&Number.isFinite(relative)&&tolerance>=0&&Number.isFinite(tolerance)))throw Error('Expected finite scalar and declared error allowance');
+ // gp + max(tol, r*abs(gp-center)) <= 0, for ANY sign of center.
+ // Three exact affine inequalities; no added tolerance or new gain.
+ return [{factor:1,bound:-tolerance},{factor:1+relative,bound:relative*center},{factor:1-relative,bound:-relative*center}];
 }
 export function recenteredControlBound(u0,center,trust,sign){
  return Math.min(trust-sign*(center-u0),1-sign*center);

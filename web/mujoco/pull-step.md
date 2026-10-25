@@ -533,3 +533,106 @@ Native calls total 6.140 ms; algebra 14.996 ms; whole diagnostic 347.077 ms on
 this cloud. This is not a mobile or online-control performance measurement.
 MuJoCo stays 228794 confirmed plus unknown history, Rapier 45735; zero ticks and
 forecasts, no retry, active-controller modification, push, deployment or install.
+
+## Short dynamic axis window — 13 ticks, candidate 14 rejected
+
+The next separately authorized experiment is `scripts/run-pull-axis-window.mjs`.
+It is a local runner, never imported by the app. Its prospective maximum is160
+actual ticks (200ms),3680 explicit `mj_forward` calls and64 pivots per solve,
+with zero forecasts. No second attempt or automatic extension is allowed. The
+original001233-value checkpoint is restored exactly at10.24375s; the prior
+20tick declared grab-force entry is reused, with point history now retained.
+
+Every live tick calculates the arm force ONCE, freezes it in all copied states,
+evaluates one centre,21 inward sensitivities and one sole native candidate, then
+applies at most one `mj_step`. The admitted total controls have a single owner;
+`Physics.control` is never called and no blending/clipping is added afterward.
+All geometry, contact frames, Jacobians and velocity biases are rebuilt at the
+current state. Sensitivities/candidate are compared with their current centre's
+regime, not the historical entry's regime. The original fixed `u0±0.1` envelope,
+objectives, scales, regularization and caps remain. An inter-tick regime change
+is reported; it is not alone interpreted as physical contact loss.
+
+The scalar reserve now handles any sign of the centre, using three equivalent
+linear inequalities: `gp<=-tol`, `(1+r)gp-r*gc<=0`, `(1-r)gp+r*gc<=0`, with the
+unchangedr=.2. Fifteen guard algebra tests (including three signs and rejected
+counterexamples) and19 active-set tests pass. The old saved98-condition audit
+also still passes; no historical result is rewritten. Raw native accelerations,
+contact forces and constraint states are gzip-flushed before guards. A full last
+native response and the exact live checkpoint are retained on stop. An uncertain
+integration reservation is never cleared merely by entering a cleanup block.
+
+**Observed result: window INCOMPLETE/rejected, no physical retry.** Exactly13
+steps were integrated,8195→8208 and10.24375→10.26000s (16.25ms). All13 applied
+commands passed98 native conditions and the prediction checks. The14th command
+was calculated but NOT applied. The322 explicit forward calls all completed
+(14×23); no pending integration/forward or count uncertainty remains.
+
+| Measured quantity | Entry | Final live state |
+|---|---:|---:|
+| COM lateral velocity (right is negativeY) | +1.189mm/s | -2.941mm/s |
+| COM forward velocity | 20.569mm/s | 24.641mm/s |
+| Body-local angular velocityY | .043981rad/s | .021687rad/s |
+| Body-local angular velocityZ | -.120271rad/s | -.047244rad/s |
+| Torso tilt | 8.08145deg | 8.11410deg |
+| Last resolved right/left loads | 195.840/203.680N | 137.749/262.300N |
+| Whole left-sole minimum | -.7478mm | -.8375mm |
+
+COM displacement is+.3695mm forward,-.0187mm toward the right support and
+-.0282mm vertically. Maximum retained-foot horizontal drift is.0378mm. No
+non-foot support, loss of retained support or20degree stop occurs. Maximum
+actual motor utilization is70.4211%. The largest command jump is12.0000Nm at
+activation, within the unchanged120Nm hip caps. This is explicitly a bounded
+activation, not continuous torque or a reproduced historical grab gesture.
+The tiny lateral displacement and increased left load establish no unloading,
+clearance, flight, placement or landing.
+
+At the rejected14th command,96/98 native inequalities pass. Two declared
+LOCAL DIAGNOSTIC guards fail:
+
+- Negative axial-velocity guard: predicted residual approximately-1.27e-16rad/s,
+  native+1.5302724e-6rad/s, versus unchanged1e-10 tolerance.
+- Global roll-moment rate: predicted+.350796094Nm at the allowed boundary,
+  native+.365499871Nm, exceeding the declared reference by.014703778Nm.
+
+Five per-feature prediction-error checks also fail (two contact0 rows, one
+contact3 row, right load and one gap jet). These are prediction failures, not
+negative actual normal loads or actual cone/cap violations. The combined
+normalized output error.000473521 remains below its.004701763 allowance; that
+aggregate check does not override individual failures. All candidate friction,
+normal-force and physical motor caps pass. Independent27-equation residuals
+across evaluations are<=6.26e-13. All14 algebra solves succeed (maximum42/64
+pivots). The current centre regime is unchanged within every set of23 calls;
+a real regime change between live ticks is retained in the records. Thus a
+constant final regime did NOT suffice to establish exact affine prediction.
+This does not certify infeasibility or establish the source of prediction error.
+
+A separate limitation is already visible in the applied transitions. At tick0,
+root angular `qacc` is approximately[0,-.000270740,20.320292]rad/s², whereas
+`(qvel_after-qvel_before)/dt` is[.004177446,.018113760,19.471470]rad/s². The
+first-order angular guards therefore did not bound the actual integrated
+components: X/Y briefly grow despite the predicted guards. The native step
+and direct forward are distinct calculations. The implementation records both
+`nativeStepQacc` and integrated acceleration; implicit damping/integration is a
+hypothesis to inspect in code/documentation, not a demonstrated cause here.
+This issue must be distinguished from candidate14's linearization error before
+proposing another dynamic test. No tolerance/gain/model change follows the stop.
+
+`verify-pull-axis-window-recording.mjs` imports no engine and adds zero calls or
+steps. It verifies322 begin/native/end records,13 application events, reconstructs
+all98 conditions at rejection, and confirms that the live checkpoint contains
+command13 (not the rejected command14). All233 values roundtrip exactly in the
+runner. Grab.previous, target, local point, bridge and pending frozen input are
+saved. Source/model/input hashes and old evidence are preserved. The compact
+start/end geometry replay was visually inspected: full body/ground visible,
+labelled13ticks, no suggestion that a step occurred.
+
+Proofs: `web/proofs/pull-step-axis-window/`. Final checkpoint gzip SHA256
+`808e25db5e819b0bb228c619f7c09a987dd451ee272f3210b99e4495b428f430`;
+forward journal SHA256
+`42fb63cfcabcfb3a95d62c81b8c7da6bbe9fe870190ab594b84c3316f2ed0380`.
+Native calls total36.848ms, active-set solves161.089ms, whole runner1423.349ms on
+this cloud; not a real-time800Hz/browser/mobile performance qualification.
+MuJoCo is228807 confirmed PLUS historical unknown; Rapier45735 unchanged.
+No default controller, main/site, dependency, Library transfer or publication
+changes. The declared160tick window was not completed and no pas is claimed.
