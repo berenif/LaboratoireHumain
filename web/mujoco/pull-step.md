@@ -1,5 +1,97 @@
 # Local arm-pull first-step experiment (24 October 2026)
 
+
+## Native-contact continuation001 — closed after16 ticks (25 October)
+
+Source9133949 plus the file hashes in started.json. This iteration repairs the
+QR dual blocker by retaining the minimum-ratio INDEX before interpolation,
+removing that exact face even if interpolation leaves a positive rounding
+residue. Exact ties use original row order; zero-length pivots remove a face.
+Repeated numerical states and the64-change limit stop the solve. Failure
+outputs now reconstruct x from current z and retain the full last dual segment.
+No multiplier tolerance, weight, gain, physical cap or model option changed.
+
+32 existing direct-QR cases,6 blocker/output cases and32 native-law algebra
+cases pass, without engine calls. Exactly ONE generic saved solve each of003's
+entry and terminal QPs passes:8/22 pivots, costs.05457566716637501/10.05732267709922,
+backward errors3.4234e-17/1.8736e-16. Both original-H certificates pass. The
+terminal stagnation is repaired without fixing its active set in advance.
+
+The new module keeps21 motor decisions. It uses present native pyramid edges
+AND joint-limit rows, remapped from island states. At fixed q,v and grab,
+force=max(0,-D*(J*a-aref)); on the current branch K=M+J_A'*D_A*J_A.
+All27 accelerations, including the free base, follow this law and motor torques.
+Existing task, force-preference and regularization costs are substituted through
+that affine map; no free auxiliary reactions remain. Only controls and the
+explicit user grab are applied. No optimized reaction is injected. Topology and
+branch changes are not treated as physical faults. The error estimate uses
+strong monotonicity in the mass metric: ||a-a*||_M <= sqrt(F(a)'M^-1F(a)),
+propagated to tasks, force bounds and damped Euler velocity. It permits zero
+edges. This is an analytical numerical estimate with floating-point checks,
+not an interval-arithmetic proof or guarantee of future contact persistence.
+
+Prospective bound:4 pure forwards, then at most2432 actual800Hz ticks,1828 NEW
+explicit forwards total,200Hz commands,64 QR pivots per solve,0forecasts,2MB.
+Each command permits centre plus at most TWO native candidates. A first local
+model inconsistency allows exactly one rebuild from its candidate's native
+branch; the second inconsistency stops this approach. No new blend, phase reset,
+horizon compression or ref capture is introduced. Native objective cost must
+improve over the same-state/same-grab centre beyond its estimated uncertainty.
+The original reference start10.2625, unloading deadline12.54375 and run end
+13.5625 are preserved. The right stance/left swing mapping remains bodies7/10.
+
+The ONE invocation restored003's exact233 native values at8418/t10.5225 and
+complete grab/bridge/material-point memory. The pending grab matched the saved
+audit exactly. Reproduction of the old unblended8210 response has qacc error0;
+independent RNEA/mass error5.6843e-14. Pure forwards are exactly4: reproduction,
+centre8418 and two candidates. The second candidate qualifies; native objective
+cost6003.97063 ->20.7763491. Its torso-world-Y acceleration is predicted
+-.6722739632324 and native-.6722739632319rad/s², removing the previous opposite
+sign for this command. This cost comparison is instantaneous, not stability.
+
+Exactly16 new ticks20ms were integrated,4 command blocks, then the fifth
+command point8434/t10.5425 stopped after both local models remained inconsistent.
+All10 QR solves pass (4..7 pivots); no physical guard fires. The terminal second
+candidate's assumed active left-foot pyramid row16 predicts edge force
+-.647147577N while the full native law gives0. This is substantially above
+roundoff. The actual native torso-Y acceleration remains close to its prediction
+(-.891723954 vs-.890750675rad/s²), and its cost30.9211 is below centre309.6343,
+but those facts do NOT certify the affine contact-law model. The mass-based
+model-error allowance is too conservative for qualification across this branch.
+Both terminal candidates are retained and rejected; neither was applied. No
+third candidate, new threshold, tuning, retry or extra integration follows.
+This refusal is NOT a physical impossibility or a measured support loss.
+
+Measured initial -> final:
+- COM displacement(-.40646,-.52271,-2.27779)mm; lateral movement is toward right.
+- COM velocity(-18.58,-12.92,-105.99) ->(-17.44,-43.01,-112.25)mm/s.
+- Tilt8.84297 ->8.94759deg; local torso/base rateY.093906 ->.077250rad/s,
+  while X rate becomes more negative. No global stability claim.
+- Resolved right/left loads154.23/168.65 ->101.27/304.45N; minimum left147.98N.
+- Whole-left-sole maximum-.54884mm; no unloading,8mm clearance or lift.
+- Retained-body drift5.058mm from original entry; maximum applied command jump
+ 29.236Nm. All applied controls <= their original caps; root actuator force0.
+
+Native forces refer to the last pre-integration resolution, while geometry is
+post-integration (1.25ms apart). The two actual saved geometry frames were
+inspected: full mannequin/ground and both feet down. The replay explicitly says
+16ticks/20ms and numerical stop. No video, replay simulation or media transfer.
+
+Counts:16 NEW explicit forwards (4 pure +4*3 subsequent),16 actual ticks,
+10 QR solves,0forecasts, no pending call. MuJoCo229033 confirmed PLUS preserved
+unknown history; Rapier45735 frozen. Explicit native time7.043ms, QR367.820ms,
+full runner1539.052ms: offline only, not real-time200Hz. The existing main/site
+and previous evidence/verdicts stay unchanged.
+
+Proofs: web/proofs/pull-step-native-contact-001/. Saved-data audit adds no engine
+calls. Full terminal QP, solve, both terminal comparisons, native response,
+progressive commands/measures, geometry frames and exact final checkpoint are
+retained. The journal preserves all applied command blocks; speculative earlier
+candidates have compact response records, while full candidate vectors are
+retained for the terminal pair. Final native233 restoration was verified.
+Checkpoint SHA25685fbb64e6fbf27a1b843a8bdf749f0a0de7f38eda38ac27dd236fafcee0dc25a.
+
+
 ## Direct-QR whole-body003 protocol (25 October)
 
 The local numerical port preserves exactly the existing135 direct cost rows

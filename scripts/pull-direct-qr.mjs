@@ -2,6 +2,13 @@
 // No C'C, H inverse, Schur matrix, native dynamics, or forces applied.
 import {dot,sum} from './pull-constrained-ls.mjs';
 const maxabs=a=>Math.max(0,...a.map(Math.abs));
+export function dualBlocker(active,old,trial){
+ const ratios=active.flatMap((i,k)=>trial[k]<0?[{index:i,old:old[i],trial:trial[k],ratio:old[i]/(old[i]-trial[k])}]:[]);
+ if(!ratios.length)throw Error('dual segment without blocker');
+ ratios.sort((a,b)=>a.ratio-b.ratio||a.index-b.index);const blocker=ratios[0];
+ if(!Number.isFinite(blocker.ratio)||blocker.ratio<0||blocker.ratio>1)throw Error('invalid dual ratio');
+ return {fraction:blocker.ratio,blocker:blocker.index,ratios};
+}
 export function qrFactor(input){
  const m=input.length,n=input[0]?.length||0;if(!m||!n||m<n||input.some(r=>r.length!==n||!r.every(Number.isFinite)))throw Error('invalid/nonfinite QR dimensions');
  const R=input.map(r=>r.slice()),permutation=Array.from({length:n},(_,i)=>i),reflectors=[],scale=Math.max(...permutation.map(j=>Math.hypot(...R.map(r=>r[j])))),rankThreshold=Number.EPSILON*Math.max(m,n)*scale;
@@ -33,8 +40,8 @@ export function directCertificate(C,d,rows,x,lambda,tolerance=1e-10){
  return {passed:failures.length===0,failures,normalizedPrimalViolation:primal,dualViolation:dual,stationarity:maxabs(gradient),backwardError,complementarity,cost:.5*dot(residual,residual),stationarityVector:gradient,originalConstraintResiduals:raw};
 }
 export function constrainedDirectLS(C,d,rows,{maxPivots=64,tolerance=1e-10}={}){
- const n=C[0]?.length||0,history=[],active=[];let pivots=0,qrFactorizations=0,z,x,D,lambda=rows.map(()=>0),scaled;
- const output=(reason,cert)=>({solved:!reason,reason,method:'Householder CPQR/direct active-face nullspace',x,pivots,active:active.map(i=>rows[i].label),lambda:scaled?lambda.map((v,i)=>v/scaled[i].norm):undefined,history,qrFactorizations,scaling:D,...cert});
+ const n=C[0]?.length||0,history=[],active=[],seen=new Set();let pivots=0,qrFactorizations=0,z,x,D,lambda=rows.map(()=>0),scaled,lastSegment;
+ const output=(reason,cert)=>({solved:!reason,reason,method:'Householder CPQR/direct active-face nullspace',x:z&&D?z.map((v,j)=>v*D[j]):x,pivots,active:active.map(i=>rows[i].label),lambda:scaled?lambda.map((v,i)=>v/scaled[i].norm):undefined,history,lastSegment,qrFactorizations,scaling:D,...cert});
  try{
   if(!n||C.length!==d.length||C.some(r=>r.length!==n)||rows.some(r=>r.a.length!==n)||![...C.flat(),...d,...rows.flatMap(r=>[...r.a,r.bound])].every(Number.isFinite))return output('invalid/nonfinite direct LS');
   const norms=Array.from({length:n},(_,j)=>Math.hypot(...C.map(r=>r[j])));if(norms.some(v=>v===0))return output('unresolved zero cost column');D=norms.map(v=>1/v);
@@ -56,11 +63,11 @@ export function constrainedDirectLS(C,d,rows,{maxPivots=64,tolerance=1e-10}={}){
    if(entering<0){const cert=directCertificate(C,d,rows,x,lambda.map((v,i)=>v/scaled[i].norm),tolerance);return output(cert.passed?undefined:'direct KKT certificate failed: '+cert.failures.join(', '),cert);}
    if(pivots>=maxPivots)return output('active-set pivot budget');active.push(entering);pivots++;history.push({action:'add',row:rows[entering].label});
    while(true){
+    const key=JSON.stringify([active.slice().sort((a,b)=>a-b),z,lambda]);if(seen.has(key))return output('active-set repeated numerical state');seen.add(key);
     const trial=face();if(trial.lambda.every(v=>v>=0)){z=trial.z;lambda.fill(0);active.forEach((i,k)=>lambda[i]=trial.lambda[k]);break;}
-    let fraction=1;active.forEach((i,k)=>{if(trial.lambda[k]<0)fraction=Math.min(fraction,lambda[i]/(lambda[i]-trial.lambda[k]));});
+    const segment=dualBlocker(active,lambda,trial.lambda),{fraction,blocker}=segment;lastSegment={...segment,active:active.slice(),oldLambda:lambda.slice(),trialLambda:trial.lambda.slice(),oldZ:z.slice(),trialZ:trial.z.slice()};
     z=z.map((v,j)=>v+fraction*(trial.z[j]-v));active.forEach((i,k)=>lambda[i]+=fraction*(trial.lambda[k]-lambda[i]));
-    const removed=active.filter((i,k)=>trial.lambda[k]<0&&lambda[i]<=0);if(!removed.length)return output('active-set numerical stagnation');
-    for(const i of removed){if(pivots>=maxPivots)return output('active-set pivot budget');active.splice(active.indexOf(i),1);lambda[i]=0;pivots++;history.push({action:'drop',row:rows[i].label});}
+    if(pivots>=maxPivots)return output('active-set pivot budget');active.splice(active.indexOf(blocker),1);lambda[blocker]=0;pivots++;history.push({action:'drop',row:rows[blocker].label,fraction,blocker,ratios:segment.ratios});
    }
   }
  }catch(e){return output('QR/dependency failure; feasibility undetermined: '+String(e));}
