@@ -1,5 +1,96 @@
 # Local arm-pull first-step experiment (24 October 2026)
 
+## Prospective gravity-heading equilibrium task qualification (25 October)
+
+Restore exact recovered transfer checkpoint native8727,t10.90875, SHA256
+0c8729412e3c88cb838f69e8759413e50b829b21ba7c9601d11a523f7d274fd4.
+No recovery replay. Preserve native233, current total command, complete grab,
+closed exceptions/peaks, recovery origin, transfer start10.36375, unloading
+deadline12.66375, global end13.54375 and geometric/servo reference curves.
+
+Only COM/torso equilibrium coordinates change. Rg has the ORIGINAL stance
+heading and world gravity vertical; Ranchor is the fixed original measured
+stance rotation. Measured COM is Rg'*(COM-current stance origin), with
+J=Rg'*(Jcom-Jstance) and bias=Rg'*(Jdotcom-Jdotstance)*v. No foot angular
+acceleration/Coriolis/centrifugal terms enter this nonrotating frame. Desired
+COM q/v/a are all transformed by the SAME constant Rg'*Ranchor from the
+existing geometric relative curve. Desired torso orientation is
+Ranchor*Rtorso_relative; its angular velocity/acceleration are rotated by the
+same constant Ranchor. Actual torso uses world R/omega/alpha. Free-foot tasks,
+soft stance tasks, posture, gains, weights, caps, native contacts/limits and
+all existing admissions remain. The stance origin is measured, not fixed.
+Readiness uses the same gravity coordinates; no phase/contact is forced.
+
+Algebra/copy-FK tests cover common translations, common roll relative to gravity,
+foot-roll-independent axes, finite-difference J/Jdot and same-curve target jets.
+Then exactly ONE QR candidate, 64 pivots maximum, and TWO preflight forwards:
+reproduce the archived current-state centre, then native candidate evaluation.
+Candidate must pass existing motor/force/ROM/admission guards AND native
+WORLD-Y COM acceleration+numerical uncertainty<0. Any refusal means zero ticks,
+no threshold/shoulder/weight change or second candidate. Native/Euler/task
+outputs are saved before admission. No branch-identity veto is introduced.
+
+Only if admitted, one400-tick/.5s continuation, command200Hz, physics800Hz,
+existing native admission every tick and at most one corrective candidate.
+No post-admission blend. Same frozen grab input for copy and integration.
+Jalon: inward lateral velocity plus>=5mm COM progress toward right in BOTH
+world-heading and translated-support coordinates, increased right load fraction,
+all physical guards retained. This is a transfer milestone, never a step.
+Maximum802 explicit forwards TOTAL,1000 FK,0forecast; code/evidence<1000000B,
+global growth<=1530000000B from current1515630551B. No retry/tuning, publication,
+installation or media transfer. This controller remains offline only.
+
+### Gravity-heading001 result — braking qualification REFUSED, zero ticks
+
+Seven algebra/scratch-FK checks pass: common translations, visible common roll
+relative to gravity, axes independent of foot roll, frame conversion, actual
+Jacobian/Jdot finite differences and reference jets. Velocity/bias discrepancies
+are5.36e-9/5.74e-8, reference-jet error9.38e-8. The old geometric/servo sample,
+native233, grab, bindings, closed knee exceptions and all phase clocks match.
+The archived native centre J/D/aref/contact positions/forces reproduces exactly.
+
+ONE QR candidate solves in11 pivots (backward error7.08e-17). Its21 evaluated
+motor outputs are finite, correctly mapped and capped; native contacts satisfy
+friction/unilateral conditions; all84 existing admissions pass. Both sagittal
+ankles reach20Nm in this un-applied candidate. No root actuation/assistance.
+
+It fails the useful braking criterion: native world COM acceleration-Y is
++0.734286371m/s2 (Euler map agrees), uncertainty5.33e-14. Thus no continuation
+is launched and NO candidate is applied. Native control/time/positions/velocities
+remain the input checkpoint exactly, with no pending integration. This is a
+rejected candidate, not an observed new fall or a certificate of impossibility.
+
+The corrected gravity-relative COM-Y task asks-3.768319151m/s2; local model
+predicts+0.708164036 and native gives+0.708164036. The small difference from
+WORLD-Y acceleration includes measured stance-origin acceleration/projection;
+there is no foot-angular-acceleration credit in this task. Candidate total cost
+falls26.92804 ->23.83768, while COM task cost remains20.83801 (feet1.29568,
+torso1.04108, posture.66101). This is still an objective compromise under the
+current caps/active endpoint constraints, not a disagreement with native forces.
+Current-state grab contributes25.76478N leftward and native feet4.22643N
+leftward; dividing their sum by40.84402kg reproduces world COM acceleration-Y.
+Coordinate correction alone therefore fails this candidate; no weights/caps/
+shoulder guard/tolerance are adjusted and no second candidate is sought.
+
+Counts:0 real ticks,2 explicit forwards,24 FK,1 QR solve,0forecast. Confirmed
+MuJoCo remains229565 PLUS unchanged unknown history; Rapier45735. Native
+5.445427ms, QR81.826172ms, runner254.452844ms. No real-time qualification.
+
+Proof folder `web/proofs/pull-gravity-frame-001/`: raw centre/candidate, full
+QP/solve,84 admissions, frame/current/target data, audit and final checkpoint.
+Final gzip SHA256
+3bf174a791649512792b8dea38acbacb54094e509d75b526d26ea43dc1311304.
+Its native233 equals the old checkpoint; experimental frame metadata describes
+the evaluated proposal, while last actually applied controller remains the
+previous native-substep-admitted21 command. Recovery remains qualified at
+original tick96; transfer start10.36375/deadline12.66375 are unchanged.
+
+The inspected `observed-contact-sheet-v2.png` shows ONE actual saved full-body
+pose with ground and explicit0-tick refusal, not a motion replay. The earlier
+render draft omitted the head sphere and is retained but not the final proof.
+No simulation, retry, media transfer, publication, dependency or active-site
+change follows this refusal.
+
 ## Force-identity repair and SAME observation continuation (25 October)
 
 Only the signed-zero force-write defect is repaired. The evaluator now uses
