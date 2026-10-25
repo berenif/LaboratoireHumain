@@ -1,5 +1,69 @@
 # Local arm-pull first-step experiment (24 October 2026)
 
+## Directional feasibility diagnostic — fixed native8727, 25 October
+
+From source commit2cde6bb, one offline SciPy1.17.0/HiGHS dual-simplex LP
+minimizes WORLD COM acceleration-Y, with no posture, force-distribution,
+regularization or other objective. Reuses archived a=a0+A*u, all156 original
+constraints (42 motor,84 damped-Euler ROM/admission,30 contact) and24 branch
+conditions J_i*a<=aref_i for the current active pyramidal edges. The six free
+base equations remain in the eliminated27-DOF dynamics; no force is injected.
+The exact stored grab is unchanged. All actuator caps remain the native gears.
+The previous admissible command is checked as a numerical feasible witness.
+No variable nonnegativity is silently introduced by SciPy defaults.
+
+Eight algebraic checks cover objective signs/mapping, multiplier signs, an
+out-of-cap counterexample and branch inequalities. Exactly ONE LP call,
+20 iterations/64 maximum,9.679626ms/10s maximum. Independent original-unit
+certificate: normalized primal violation4.25746e-16, componentwise backward
+stationarity2.74839e-16, complementarity4.05964e-16. HiGHS marginals are negated
+and unscaled. For G*u<=h and |u|<=1, the independently recomputed bound is
+L=c0-h'*lambda-||c+G'*lambda||1. Exact binary-rational summation and outward
+rounding give L=-3.3783442100933536m/s2 (outward allowance4.44e-16).
+Candidate objective=-3.3783442100933505. Its maximum exact row violation is
+3.66898e-13 in original mixed row units: this is a numerical primal witness,
+NOT a strictly certified exact primal upper bound. No clipping or repair occurs.
+The dual lower bound applies only to this saved rounded affine polytope.
+
+Exactly ONE mj_forward evaluates this command on a copy restored from the233
+native integration values at10.90875;0ticks,0forecast, no command applied to a
+live world. Full output is saved before guards. Native world COM acceleration
+[-.782587735,-3.378344210,+2.191392006]m/s2 confirms instant rightward braking;
+lateral numerical error3.70303e-12. All84 native ROM/admission checks pass;
+all21 actual torques are strictly at or below their original caps, root
+actuation/generalized applied forces zero. Six base residual components have
+max1.15108e-11; existing mass-energy precision propagation qualifies the native
+comparison without a new absolute residual threshold.
+
+This does NOT qualify a viable transfer command: torso angular acceleration is
+[-130.842259,+170.243606,-72.103277]rad/s2, omega dot alpha=+17.690595rad2/s3.
+Right/free-left loads166.499746/282.768570N; right fraction falls from45.21%
+in the previous candidate to37.06%. Contact lateral force=-163.749940N
+counteracts unchanged grab+25.764777N. Eight motors saturate; maximum requested
+torque jump from last physically applied command50.604943Nm is never applied.
+Old weighted cost rises23.83768->37743.91832, dominated by feet34538.12248
+and torso3118.09957. This demonstrates an instantaneous feasible braking
+direction under the retained admissions, while destroying the former soft
+support/torso objectives. It does not demonstrate unloading, sustained support,
+an admissible moving trajectory, or a step.
+
+Edges3/7/11/13/15 reach zero boundaries. Native states3/13 select satisfied
+instead of active there; the constitutive force law and acceleration agree
+within independently propagated numerical bounds. Zero-force boundary choices
+are not treated as artificial contact removal or a physical failure. No branch
+sweep, second candidate, controller change, new tolerance or rollout follows.
+
+Evidence: `web/proofs/pull-directional-001/` contains source hashes, branch
+rows/objective, raw LP, rational dual certificate, exact candidate input, full
+native output, torso/support results, independent audit and durable ledger.
+Tools: `scripts/pull-directional-lp.py`,
+`scripts/check-pull-directional-native.mjs`, `scripts/audit-pull-directional.py`.
+The first two refuse duplicate executions in an existing result; the audit
+reads saved data only and performs no solve/native call. Source checkpoint
+SHA256 remains3bf174a791649512792b8dea38acbacb54094e509d75b526d26ea43dc1311304.
+Confirmed MuJoCo229565 PLUS unchanged unknown history; Rapier45735. Native
+forward2.604023ms, offline only. No media, publication or active-site change.
+
 ## Prospective gravity-heading equilibrium task qualification (25 October)
 
 Restore exact recovered transfer checkpoint native8727,t10.90875, SHA256
