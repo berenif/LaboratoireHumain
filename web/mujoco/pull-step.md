@@ -1,5 +1,88 @@
 # Local arm-pull first-step experiment (24 October 2026)
 
+## Coordinated stance geometry001 — pure milestone (25 October)
+
+This is one geometric candidate from exact001/8195 at10.24375s, not a
+continuation or a physical step. The native233 state, qvel and existing
+controller are unchanged. No dynamic forward, inverse dynamics, integration or
+forecast was called. Existing native-contact001 remains closed with its verdict.
+
+`pull-stance-geometry.mjs` reuses the geometric construction of
+`getup-step/plan_source_stance.py` and the current `RelativeFootIK`/`jointCurve`.
+It does not import the old World, Clarabel, MuJoCo2.1.3, the force LP or the
+source torque-reserve objective. Before solving, the protocol declares one
+candidate: COM35mm forward of the measured right-foot origin,15mm below the
+measured COM; left-foot XY unchanged, horizontal heading and whole-capsule
+clearance0.1mm. The retained frame is the measured frame. Unlike the source
+planner, no1.15mm foot compression or stance flattening is introduced. These
+are reference construction choices, not controller gains or physical writes.
+
+Thirteen configurations share one Hermite curve and a1.8s quintic progress
+clock. All21 articulation targets and the COM/torso/feet tasks come from its
+finite FK. The conditional base pose is exported separately: it is the rigid
+alignment needed to place the predicted retained foot on the measured frame,
+never a root actuator or an acquired physical motion. Recomputing FK of each
+conditional generalized pose reproduces all exported world tasks within
+2.89e-15. The initial measured qpos remains the first geometric knot.
+
+Results:
+
+- Articulation-induced COM displacement relative to the retained foot:
+  −18.470/−89.848/−12.761mm. Conditional world COM displacement:
+  −18.704/−89.835/−12.510mm. Target horizontal error is below22µm per axis;
+  final vertical error is+2.490mm. Obtained sole-hull inset is9.932mm.
+- A continuous chord bound uses conservative serial-chain second derivatives
+  on552 intervals, beyond the13 IK knots: maximum position residual bound
+  0.4252mm, secondary height bound7.5542mm, orientation bound0.003074rad.
+  It certifies this geometric curve, not future contacts or dynamic viability.
+- Both inherited knee excesses decrease monotonically; exact cubic extrema
+  admit no new ROM excess. After the first knot, minimum margin is0: the
+  right hip-x and both knees reach a limit. Source20mrad joint reserve is
+  therefore NOT established. Raw12x15 task Jacobians have rank12 at all13
+  knots, minimum singular value0.003098 in their declared mixed task units;
+  this is not a uniform condition-number or dynamic feasibility certificate.
+- Joint speed/acceleration bounds are1.4544rad/s and35.101rad/s². Actual
+  reference maxima sampled are0.9494rad/s and27.950rad/s². They are reference
+  derivatives, not new physical caps. The curve is C1; finite acceleration
+  jumps remain at Hermite knots. Spatial derivatives of this same curve were
+  checked with0.2/0.1ms reference-time differences away from knots: maximum
+  changes9.61e-8 in velocity and4.70e-7 in acceleration units. No simulation
+  clock advances during these checks.
+
+Important limitations before any new dynamic work:
+
+- With the physical root held at its measured pose, the same joint shape moves
+  COM25.323mm LEFT and the right foot115.232mm LEFT. Only the relative COM
+  shift is independent of common root motion. The separate conditional
+  reference requires up to117.802mm of rigid alignment translation; zero of
+  that is credited as measured or commanded root motion.
+- The reference starts with zero desired velocity while measured joint dq
+  reaches0.07623rad/s. Physical dq is preserved. A command/velocity handoff is
+  not certified, and this curve cannot simply replace the motor input.
+- The measured geometry already compresses the ground: right/left minima
+  −0.7251/−0.7478mm. Final left clearance is+0.0800mm. Continuous conservative
+  lower bounds are−0.9373/−0.9226mm; no zero-penetration or loaded-contact claim
+  follows from this reference. Sole hull is geometric, not a measured COP.
+- No torque, reaction, friction, unloading, foot lift, real-time control or
+  walking success is qualified. The missing source torque-reserve term is a
+  substantive next dynamic question, especially at the active ROM limits.
+
+Local evidence: `web/proofs/pull-stance-geometry-001/` contains the declared
+protocol, targets, finite reference, result, independent curve audit, spatial
+jets and explicitly conditional generalized reference. `reference.json`
+SHA256 is8cbd27890be66a1d025626abf791ec849ed538b69c1b17587ae54093a154ad44.
+Eight rejection/negative counterexamples plus a positive common-rigid-transform
+invariance check pass (the original audit field groups these as nine checks;
+the jets receipt clarifies the label). Finite-difference derivative checks and
+full native233 immutability pass. Total1235 kinematics,1235 COM-position and128
+Jacobian calls; ZERO dynamic forwards/ticks/forecasts. MuJoCo remains229033
+confirmed PLUS unknown history; Rapier45735, main and private site9 unchanged.
+
+The new scripts use only the installed WASM and NumPy. No additional SDK,
+weights, engine, download or physics replay. Run in a NEW evidence directory:
+`run-pull-stance-geometry.mjs`, then `audit-pull-stance-geometry.mjs`,
+`verify-pull-stance-jets.mjs` and `export-pull-stance-reference.mjs` with Node,
+each given that directory. They preserve existing files and refuse overwrites.
 
 ## Native-contact continuation001 — closed after16 ticks (25 October)
 
