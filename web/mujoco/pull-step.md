@@ -1,5 +1,81 @@
 # Local arm-pull first-step experiment (24 October 2026)
 
+## Reserved static stance001 — rejected conditional pose (25 October)
+
+ONE candidate, based on57db62b. It keeps geometry001's declared COM35mm
+forward/15mm lower, conditional torso and feet, and adds the source planner's
+20mrad articulation reserve. `pull-stance-static.mjs` reuses the existing
+RelativeFootIK features/Jacobians, identical DLS weights, damping,70-iteration
+limit, blocked-variable Cholesky and35mrad step bound. Only its scratch planning
+interval is inset; no active controller or physical model interval changes.
+Twelve fixed continuation targets are numerical construction of one terminal
+candidate, not alternative poses or physical phases. Projection of a scratch
+seed never changes the measured anchor or physical velocities. This milestone
+does not generate or qualify a new time curve/command handoff.
+
+The geometry passes at all twelve targets. Terminal horizontal COM residuals
+in the measured stance frame are18.42/15.23micrometres, free-foot position
+residual60.90micrometres, orientation residual0.0002053rad and secondary COM
+height residual+0.8878mm. Minimum physical ROM margin across21 joints is0.020rad;
+the right hip-x and both knees reach the inset planning boundary, not the
+physical boundary. Conditional world COM is(.03454336,-.08977299,.83128203)m;
+the actual articulation-shape COM change relative to the stance foot is
+(-18.4324,-89.8479,-14.3638)mm. Independent FK of the conditional generalized
+pose reproduces its coordinated tasks within8.89e-16. No base motion is
+applied or credited. Interpolation/velocity continuity is not established here.
+
+Before any native verdict, algebra verifies virtual work, traction sign,
+subtraction exactly once, gear mapping, planning bounds and rejection of
+nonfinite inputs, missing reserve and actual cap excess. Native baseline
+validation then restores the same233 values and uses the recorded qvel/qacc,
+force and body15 material point. `mj_inverse` reproduces the known generalized
+actuator efforts within2.31e-14Nm/N and its recorded hand point exactly.
+Independent RNEA+armature-passive-J'constraint agrees within1.14e-13.
+
+The candidate is a clearly hypothetical static endpoint: qvel=qacc=0, with
+the recorded world traction(12.59955,.697831,.123390)N frozen at the same hand
+material point. This is not a future prediction of the interactive grab law.
+The native inverse reports four right-foot contacts, no left contact and no
+joint-limit reaction. Right-foot normal reaction sums to197.265589N, whereas
+weight minus vertical traction requires400.556458N. The fixed retained-foot
+compression(-0.7251mm minimum) does not magically become full support when the
+other foot is clear(+0.03891mm minimum).
+
+After subtracting J_hand'F once, the required unactuated wrench is:
+
+- World translation: (-12.599546,-0.697831,+203.290869)N.
+- Free-root local rotational tangent: (+5.964001,+14.934132,+4.075714)Nm.
+
+These values are orders of magnitude above the independently checked inverse
+arithmetic allowance (<=7.31e-10 on base components). Independent whole-body
+force/moment balance from recorded contacts, gravity at COM and hand traction
+reproduces them within5.69e-14. RNEA error at the candidate is3.56e-15.
+All21 conditional motor efforts are below the source92.5% reserve threshold;
+the largest fraction is right_ankle_y11.61949/20Nm=58.0974%. This bounded motor
+vector is NOT an admissible command without the missing unactuated balance.
+Native shear is zero under the exact zero-velocity/zero-acceleration hypothesis;
+this static failure must not be generalized to all slow motion under traction.
+
+Decision: REJECT this fixed conditional static pose. No forward or integration
+is permitted after this refusal. A viable preparation would have to determine
+posture and the normal/tangential contact response together, allowing real
+base motion/compliance, rather than prescribe the retained frame and then
+discard the six required base efforts. That coupled preparation is not supplied
+by the geometric IK module. This is a precise limit of the current port,
+not proof that walking or another trajectory is physically impossible. No
+contact depth, pose, force, tolerance, gain or cap was retuned after the result.
+
+Counts:48 explicit FK,48COM-position,86Jacobian calls,2native inverses and
+2independent RNEA calls; ZERO dynamic forwards, physical ticks or forecasts.
+Internal computations of each inverse are included in that inverse call, not
+double-counted as explicit FK. MuJoCo remains229033 confirmed plus preserved
+unknown history; Rapier45735 frozen. Exact native233 values, model ranges,
+checkpoint bytes and existing grab record remain unchanged. Evidence is local
+in `web/proofs/pull-stance-static-001/`: protocol/targets, progressive geometry,
+candidate, both inverse responses, result and a saved-data global-wrench audit.
+Run/audit scripts refuse overwrites. No active controller, main/site, package
+or build changes, publication, installation or media transfer.
+
 ## Coordinated stance geometry001 — pure milestone (25 October)
 
 This is one geometric candidate from exact001/8195 at10.24375s, not a
