@@ -1,5 +1,107 @@
 # Local arm-pull first-step experiment (24 October 2026)
 
+## Prospective substep-admitted bounded recovery (25 October)
+
+This separate campaign starts from c9809e1's exact final native8197,
+t10.24625, gzip SHA256
+`c8785ab2b7b7f5932964b8fa208aa690125f2ae47469ed8f6298e718327b29f5`.
+The historical parabola FAIL stays unchanged. Native233, previous total
+command, reference sample/curves, complete grab history and pending interaction
+are restored. Immutable original001 binding fields omitted by the older
+snapshot are reconstructed on a separate original001 KINEMATIC copy; no live
+world restoration or replay occurs. The restored reference sample must match
+the archived sample exactly; future snapshots explicitly retain these bindings.
+
+The new bounded contract keeps original recovery origin10.24375, its96-tick
+deadline and peaks2.095811867310513/2.103205093482908deg;94 ticks remain.
+The old per-tick parabola is diagnostic only. Each exception is closed forever
+on measured ROM return with nonoutward velocity. While open, the existing QR
+uses a_E<=-b with b the maximum of the fixed-deadline, terminal-velocity and
+all remaining constant-braking peak inequalities, from CURRENT q/v and N.
+No peak, deadline, physical state, cap, gain or model parameter is reset.
+This conditional planning rule is not proof of future dynamic feasibility.
+
+Every actual substep requires a fresh native evaluation of the applied total
+command and native Euler prediction. Nominal solves remain200Hz (original
+cadence); a rejected held command permits at most ONE immediate corrective
+solve/candidate. The same233-state input, total command and single frozen grab
+force are required for evaluation and integration. No post-admission blend or
+unqualified fallback. Next hinge-position inequalities are added using the
+same Euler map; previous endpoint predictors remain explicit. All27 velocity
+increments and21 hinge positions are compared against the actual integrated
+result, with existing native residual uncertainty and128*epsilon rounding
+allowances propagated; no tolerance tuning or branch-change veto.
+
+One preflight candidate; refusal means0 new ticks. If qualified, one continuous
+execution up to2638 new ticks, absolute end13.54375, recovery then existing
+uncompressed1.8s preparation/unloading/lift. Existing measured physical stops
+and lift qualifications remain. Bounds:4 pure/5280 total explicit forwards,
+6000 FK,64 pivots/solve,0 forecasts; new code/evidence <2000000bytes and global
+growth <=1530000000bytes. No parameter search, physical retry or publication.
+Performance is measured separately; this is an offline experiment.
+
+### Substep recovery001 result — INCOMPLETE after35 new ticks
+
+One preflight candidate passes, followed by35 new real ticks/43.75ms. All35
+native next-step predictions agree with integration: maximum velocity error
+6.66e-16rad/s (linear dofs in m/s), hinge-position error3.47e-18rad. Every
+executed step passes the new fixed-peak/ROM checks. No joint exception has
+closed yet; no preparation, decompression or lift is reached. Original
+parabola FAIL and its two ticks remain unchanged, not reclassified as PASS.
+
+| knee | restored angle -> final | velocity restored -> final | fixed peak |
+| --- | --- | --- | --- |
+| right |2.05495807 ->2.09571028deg |.03142112 ->.00194661rad/s |2.09581187deg |
+| left |2.06167426 ->2.10315661deg |.03245407 ->.00154245rad/s |2.10320509deg |
+
+**Stop is a software identity assertion BEFORE the36th new tick**, not a
+physical/admission rejection. The hand material point equals its body COM,
+so r=0. When the vertical hand force becomes negative, the explicit cross
+product produces torque-X -0. The scratch evaluator directly SETS that -0;
+Physics.apply ADDS it to +0, yielding +0. Node assert.deepEqual distinguishes
+these representations although their physical force difference is0. The
+error is index224 of native233, xfrc_applied[15*6+3]. The archived native
+inputs are numerically equal in ALL233 entries (JSON canonicalizes -0).
+The saved-data audit reproduces the signed-zero arithmetic without an engine.
+No tolerance was changed, guard bypassed, new native call or physical retry
+performed after this result. The appropriate next code correction is a shared
+force-write procedure with identical additive semantics on copy/live; the
+strict identity guard need not be weakened. It is not applied in this campaign.
+
+At stop: t10.29000, native step8232, recovery age37ticks (2old+35new),59ticks
+remain before the ORIGINAL recovery deadline and2603 before the ORIGINAL
+global end13.54375. The next candidate passed all84 native checks but was NOT
+integrated. Its pending controls and hand force were already latched in the
+native state when the identity assertion stopped. Thus physics.command is
+the last actually applied command, while experimental.previousControls is
+the pending validated vector. This distinction is explicitly documented in
+the metadata-only annotated checkpoint, with no native-state alteration.
+
+COM moves [+0.9850,+0.0987,-0.0986]mm, not useful transfer. Tilt8.087712 ->
+8.191171deg; final right/left loads194.674/204.304N; retained drift0.04863mm.
+Both feet remain loaded; no fall, unloading or lift. Actual motor fraction
+max.6218203, pending fraction.6229109; maximum APPLIED torque jump.202179Nm.
+Root actuation/qfrc_applied remain0, explicit hand grab only. Reactions refer
+to the last solved substep, separately timestamped from updated geometry.
+
+Counts:35 new real ticks,72 explicit forwards (36centres+36candidates),
+36 QR solves including26 corrective,74 FK,0 forecasts. MuJoCo229070 confirmed
+PLUS unchanged historical unknown, Rapier45735.12 new algebra checks and32
+existing native-contact tests pass. Native23.952703ms, QR536.112062ms,
+runner4452.016633ms for43.75ms simulated; this is NOT interactive performance.
+The actual saved-geometry beginning/end sheet62,500bytes was visually inspected;
+it shows full mannequin/ground and explicitly labels the software stop/no lift.
+
+Proofs `web/proofs/pull-substep-recovery-001/`: original final checkpoint,
+annotated final-with-pending.json.gz, ledger, all35 checked increments, full
+pending native/QP/command, restoration receipt, audit, actual geometry sheet.
+Original final SHA256
+`ed5c450783bd8768a1663f7a1be62f3d47c66f565dc325cfe2b198a4eeaadf08`;
+annotated (same233 native values) SHA256
+`57075055ec9a856d5b71d1330bf889db48759c3973271dc6f8ca86cd0ce06746`.
+Experiment CLOSED without retry; no integration/process remains pending.
+Stable app/main/site, caps/gains/model and previous unique evidence preserved.
+
 ## Prospective initial-recovery campaign (25 October)
 
 Source284a4e9 and its ZERO-tick refusal stay preserved. The separate
