@@ -1,5 +1,80 @@
 # Local arm-pull first-step experiment (24 October 2026)
 
+## Native dynamic horizon001 — INCONCLUSIVE, 90 forecast steps, no real ticks
+
+Source `e066a3b8557f82ab2ed81f9b9380b0a4f86dab50`, exact native233 at
+10.908750000000968, checkpoint SHA256
+3bf174a791649512792b8dea38acbacb54094e509d75b526d26ea43dc1311304.
+The application/main/site are not changed. The complete grab history, native
+velocities, original phase clocks and permanently closed knee exceptions are
+retained. All candidate worlds are disposable predictions, never live commands.
+
+The declared family is400 Euler substeps/.5s, two21-command free nodes at.25/.5s,
+C1 convex cubic interpolation from the last actually applied command. The sole
+initializer repeats that command. Objective: mean squared normalized motor
+effort over400x21, with no posture/force weight scan. Native actual path checks
+cover caps, ROM,20degree tilt,25mm retained drift,1N support loss for25ms,
+nonplantar support and fall. Terminal constraints require5mm progress in both
+world-Y and gravity-heading COM-relative-to-foot coordinates, both lateral
+velocities nonpositive, tilt<=entry and torso omega norm<=.2. No monotone load
+fraction is required. The old120ms constant-acceleration predictors remain
+historical diagnostics; they do not certify this changing-command trajectory.
+Infeasible forecast paths were to be completed for optimization constraints;
+they are never applied. Engine/copy inconsistencies stop the entire campaign.
+
+Two setup-only failures preceded the search, both with ZERO optimizer calls,
+forwards or steps, preserved in `pull-native-horizon-001/` and
+`pull-native-horizon-001-search/`: writing the inherited read-only dt getter,
+then a force-identity test whose fresh comparison data lacked derived kinematics.
+Both are software setup repairs, not physical retries. The qualified setup
+checks exact233 restoration, complete first grab/material-point force identity,
+root actuator absence, motor mapping and velocity API/Jacobian agreement.
+Algebraic tests cover interpolation endpoints/caps, relative-progress signs,
+exact cache reuse, finite-difference counting and budget rejection.
+
+Exactly ONE SLSQP invocation starts in `pull-native-horizon-001-qualified/`.
+Its FIRST initialization evaluation stops at substep90,t11.021250000001025:
+`Euler velocity inconsistency`. No400-step evaluation completes; no finite
+difference candidate or optimized trajectory exists. Counts are90 predictive
+steps,0 real ticks,0 explicit forwards. Confirmed real count remains229565
+PLUS unchanged unknown history; combined known real+new forecasts229655.
+Rapier45735 remains frozen. Native step time15.155829ms in aggregate; wall
+time to the failure~.51s. Finalization took72.83s including a readline/shutdown
+wait, manually ended only after the worker had stopped integration and freed
+its native data. There were no pending native steps or uncertain integrations.
+
+The executed identity guard uses128*epsilon scaled by velocity, without a
+condition-number/error-propagation certificate for its independent mass solve.
+Its failure therefore DOES NOT establish a MuJoCo engine defect. Critically,
+the executed worker failed to save pre-step velocity/effective acceleration and
+the discrepancy magnitude before the assertion. These values cannot be
+recovered from the final checkpoint alone. No replay/forward is used to fill
+that gap. The code now saves all comparison components before the same guard
+and closes the worker input on fatal errors; these repairs were checked only
+algebraically/syntactically, with NO resumed or restarted search. Executed
+source bytes and hashes are archived separately from these post-stop repairs.
+
+An independent archived-state audit performs only TWO kinematic passes and
+no dynamics. On the partial constant-command prediction, COM moves13.217mm
+toward the free foot in the world and13.184mm relative to retained origin;
+lateral velocities end+.1370/+.1403m/s. Tilt rises10.140->10.858degrees and
+torso angular speed reaches.5310rad/s. Final retained drift1.962mm is below
+25mm. Final actual angles exceed ROM at right_hip_x by.24470degrees,
+right_shoulder1 by.33347degrees and right_shoulder2 by.88060degrees. Knee
+angles are inside ROM. These are measured final-pose violations of the
+initialization, not a result for the unperformed optimizer search. Full-path
+extrema, first violation times and final contact forces were lost with the
+in-memory partial journal and are explicitly UNKNOWN. No complete-path
+qualification or best trajectory is claimed. No media is produced.
+
+Evidence: `web/proofs/pull-native-horizon-001-qualified/` contains immutable
+protocol/source hashes, declaration, pure receipt, failed native233+grab,
+executed source archives, search/worker ledgers, and `partial-audit.json` plus
+the two actual archived prediction poses. Tools are
+`scripts/pull-native-horizon.mjs`, `scripts/evaluate-pull-native-horizon.mjs`,
+`scripts/run-pull-native-horizon.py`, `scripts/audit-pull-native-horizon.mjs`.
+All evidence is local. No installation, publication, deployment or transfer.
+
 ## Directional feasibility diagnostic — fixed native8727, 25 October
 
 From source commit2cde6bb, one offline SciPy1.17.0/HiGHS dual-simplex LP
