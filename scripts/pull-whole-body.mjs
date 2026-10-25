@@ -39,7 +39,7 @@ export function targets(ref,time,clearance){
 export function updatePhase(ref,m,dt){
  if(ref.phase==='transfer'){
   ref.unloaded=m.loads[1]<15&&m.loads[0]>100?ref.unloaded+dt:0;
-  if(ref.unloaded>=.075){ref.phase='lift';ref.phaseStart=m.t;ref.liftDelta=Math.max(0,.02-m.clear[1]);ref.feet[1].position=m.feet[1].slice();ref.events.push({phase:'lift',t:m.t,loads:m.loads});}
+  if(ref.unloaded>=.075&&m.t-ref.start>=SOURCE_TASKS.transferSeconds){ref.phase='lift';ref.phaseStart=m.t;ref.liftDelta=Math.max(0,.02-m.clear[1]);ref.feet[1].position=m.feet[1].slice();ref.events.push({phase:'lift',t:m.t,loads:m.loads});}
   else if(m.t>=ref.transferDeadline)return 'unloading not observed by deadline';
  }else if(ref.phase==='lift'){
   ref.clearDwell=m.clear[1]>=.008&&m.loads[1]<1?ref.clearDwell+dt:0;
@@ -86,8 +86,8 @@ export function assemble(p,interaction,ref){
  assert([...H,...b,...rows.flatMap(r=>[...r.a,r.bound])].every(Number.isFinite),'Nonfinite assembly');
  return {n,M,B,A,a0,rhs,external,limits,limitRows,contacts,mass,mg,rows,H,b,tasks,target,scales:{linearAcceleration:9.81,angularAcceleration:rotScale,force:mg,motor:'gear'},modelAssumption:'Joint-limit reactions frozen at current native centre for this command only; soft-contact force realization is NOT imposed by this QP'};
 }
-export function solveWholeBody(p,interaction,ref){
- const qp=assemble(p,interaction,ref),started=performance.now(),solve=constrainedLS(p.mj,qp.H,qp.b,qp.rows,{maxPivots:64,tolerance:1e-10}),solveMs=performance.now()-started;
+export function solveWholeBody(p,interaction,ref,beforeSolve=()=>{}){
+ const qp=assemble(p,interaction,ref);beforeSolve(qp);const started=performance.now(),solve=constrainedLS(p.mj,qp.H,qp.b,qp.rows,{maxPivots:64,tolerance:1e-10}),solveMs=performance.now()-started;
  const prediction={solve,solveMs,variables:qp.n,contacts:qp.contacts.map(({J,...c})=>c),target:qp.target,scales:qp.scales,limitRows:qp.limitRows,modelAssumption:qp.modelAssumption};
  if(!solve.solved)return {prediction,qp};
  const x=solve.x,controls=x.slice(0,21);capCheck(controls);const acceleration=qp.a0.map((v,i)=>v+qp.A.reduce((s,col,j)=>s+col[i]*x[j],0)),residual=Array.from({length:27},(_,i)=>dot(qp.M.slice(i*27,(i+1)*27),acceleration)-qp.rhs[i]-qp.B.reduce((s,col,j)=>s+col[i]*x[j],0));

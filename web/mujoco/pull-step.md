@@ -1,5 +1,75 @@
 # Local arm-pull first-step experiment (24 October 2026)
 
+## Bounded numerical correction of whole-body001 (25 October)
+
+This prospective continuation preserves whole-body001's zero-tick refusal.
+The same QP is transformed by x=Dz, Dii=1/sqrt(Hii), including H,b and every
+constraint; its Hessian factor is shared by all right-hand sides. At most three
+KKT refinement corrections reuse the final active-face factor, within64 pivots.
+Original-coordinate compensated residuals are retained. Stationarity is now
+certified by componentwise backward error <=1e-10, with explicit zero-denominator
+handling; primal/dual tolerances1e-10 and complementarity1e-8 are unchanged.
+This is numerical backward accuracy, not a forward-error bound or native support
+certificate. No objective weight, gain, regularizer, cap, model or friction changes.
+Algebra tests use a known45-variable optimum, changes of units and objective
+scale, face enumeration, rank/cap/nonfinite counterexamples and injected linear
+solve errors to verify refinement and no-improvement rejection.
+
+Before solver admission the complete initial and latest QP are stored. The raw
+QP vector is evaluated natively on a scratch copy separately from the actually
+applied25ms blend. Prediction/native differences are compared only for identical
+commands; during blending, the actual response is compared with desired tasks
+and explicitly not mislabeled as prediction error. Both native responses and
+independent RNEA are required by the entry preflight. Early unload cannot skip
+the complete1.8s COM reference acceleration/braking; the measured75ms load dwell
+is still necessary, and time alone is never physical braking qualification.
+
+ONE invocation from unchanged checkpoint8210/t10.2625 with233 exact native values
+and complete grab memory: <=5 NEW pure forwards (six including whole-body001),
+<=1325 NEW forwards total (1326 cumulative), <=2640 ticks/3.3s, no forecast/retry,
+2MB new evidence. All prior measured physical/lift stops and transfer deadline
+remain. This is offline at simulated200Hz command/800Hz physics, not qualified
+real-time control. Stable main/site and all historical FAILs are preserved.
+
+### Whole-body002 result: equilibrated factorization refusal, zero ticks
+
+The single authorized invocation reconstructed the exact8210/t10.2625 native
+state and complete grab memory. It consumed ONE new centre forward, no candidate
+forward, no tick or forecast. The bounded runner stopped with zero pivots before
+completing the Hessian factor: existing MuJoCo Cholesky minDiag1e-12 rejected the
+equilibrated matrix. No retry, cutoff adjustment or physical command followed.
+Raw-QP and blended-command native checks, RNEA and dynamic lift remain NOT REACHED.
+The32 numerical algebra tests and separate task/cone/phase checks pass, including
+manufactured45-variable KKT, units/cost scaling, injected refinement success,
+no-improvement rejection, invalid ranks and cap counterexamples. An exact COM
+transition test initially distinguished +0 and -0; it was corrected to mathematical
+equality before the single native invocation, with no physical parameter change.
+
+Unlike001,002 preserves H,b,124 constraint rows, elimination matrices, tasks,
+external input and limit reactions before solver admission. Read-only NumPy
+inspection of these saved matrices (no optimized candidate or native call) finds:
+original Hessian diagonal1327.11..56816270.45; original eigenvalue estimate
+9.9486e-7..1.2913e8 (condition~1.298e14); equilibrated estimate9.7148e-14..10.2384
+(condition~1.054e14). Independent Cholesky succeeds, minimum squared pivot
+6.8877e-13 AFTER equilibration versus1.9928e-5 before. Its relative factorization
+residual is1.49e-16. The retained absolute1e-12 factor pivot floor therefore changes
+the numerical rank decision under an otherwise exact congruence. These estimates
+indicate serious conditioning; they do not prove accurate commands, impossible
+motion or exact mathematical rank. This is a numerical-policy blocker requiring
+review, not grounds to relax caps or declare a physical impossibility.
+
+Complete proof: `web/proofs/pull-step-whole-body-002/`, with initial/latest full QP,
+progressive ledger/journal, matrix diagnosis, algebra receipt, inspected identical
+beginning/end mannequin images and exact native final checkpoint. Native233 and
+complete grab both match input; no pending call/integration. Final checkpoint SHA256
+`f8e782d2c1c61225e480a4a6c6558e447375791b954b4b49a3aa47b74cab18aa`.
+QP SHA256`18456fd8d6c5428d03213787e6f0ab4d0608a87231a3226a10d3af595d43fb39`.
+New count0ticks/1forward, whole-body cumulative2forwards. MuJoCo remains228809
+confirmed PLUS preserved unknown history; Rapier45735 frozen. Last resolved loads
+remain137.92N right/262.45N left, minimum left clearance-0.855mm, tilt8.117deg.
+Native cost2.686ms, refused solve2.872ms; no real-time qualification follows.
+Main/site and all historical FAILs are preserved. No new step/lift is demonstrated.
+
 ## Prospective whole-body source-task increment (25 October)
 
 The fixed-regime finite-difference diagnostic is closed at42cf275: eight native

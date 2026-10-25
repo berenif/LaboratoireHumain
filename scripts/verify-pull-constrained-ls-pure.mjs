@@ -20,3 +20,24 @@ for(let k=0;k<12;k++){
  check(H,b,rows,feasible[0]);
 }
 console.log(JSON.stringify({algebraTestsPassed:cases,dynamicsEvaluations:0,integrations:0,forecasts:0,impossibleHandling:impossible.reason}));
+// A 45-variable manufactured KKT optimum: no reference solver shares the adapter.
+const n=45,star=Array.from({length:n},(_,i)=>.2*Math.sin(i+.2)),H=Array(n*n).fill(0);
+for(let i=0;i<n;i+=2){const a=10**((i%9)-4),d=10**(((i+4)%9)-4);if(i===n-1){H[i*n+i]=a;break;}H[i*n+i]=.36*a+.64*d;H[(i+1)*n+i+1]=.64*a+.36*d;H[i*n+i+1]=H[(i+1)*n+i]=.48*(a-d);}
+const face=Array.from({length:8},(_,i)=>({a:Array.from({length:n},(_,j)=>j===i?(i%2?1:-1):0),bound:(i%2?1:-1)*star[i],label:'known-'+i}));
+const rhs=Array.from({length:n},(_,i)=>dot(H.slice(i*n,(i+1)*n),star)+face.reduce((s,r,k)=>s+r.a[i]*(.1+.01*k),0));
+const original=check(H,rhs,face,star);assert(original.backwardError<=1e-10);assert.equal(original.hessianFactorizations,1);assert(original.refinements.length<=3);
+for(const costScale of[1e-6,1e6])check(H.map(v=>v*costScale),rhs.map(v=>v*costScale),face,star);
+const units=Array.from({length:n},(_,i)=>10**((i%7)-3));
+check(H.map((v,k)=>v*units[Math.floor(k/n)]*units[k%n]),rhs.map((v,i)=>v*units[i]),face.map(r=>({...r,a:r.a.map((v,i)=>v*units[i])})),star.map((v,i)=>v/units[i]));
+assert(!constrainedLS(mj,[NaN],[0],[]).solved);assert(!constrainedLS(mj,[0],[0],[]).solved);assert(!constrainedLS(mj,[1],[0],[{a:[0],bound:-1,label:'zero'}]).solved);cases+=3;
+const {certificate}=await import('./pull-constrained-ls.mjs');
+assert(certificate([1],[0],[],[0],[]).passed,'Zero denominator has exact zero residual');
+assert(!certificate([1e12],[1e12],[{a:[1],bound:1,label:'motor-cap'}],[1.001],[0]).passed,'Large objective cannot hide a real motor-cap violation');
+assert(constrainedLS(mj,[1],[2],[{a:[1],bound:1,label:'face'},{a:[2],bound:2,label:'same-face'}]).solved,'Redundant inactive row does not imply impossibility');cases+=3;
+console.log(JSON.stringify({extendedAlgebraTestsPassed:cases,nativeForwards:0,ticks:0,manufactured45:original,interpretation:'Backward error and primal constraints, not a bound on physical contact realization'}));
+// Inject linear-solve error only in algebra, to exercise refinement and its stop.
+function faulty(always){let calls=0;return {DoubleBuffer:mj.DoubleBuffer,mju_cholFactor:(...a)=>mj.mju_cholFactor(...a),mju_cholSolve(out,...args){mj.mju_cholSolve(out,...args);if(always||calls++===0)out.GetView()[0]+=.01;}};}
+const refined=constrainedLS(faulty(false),[1],[2],[]);assert(refined.solved);assert.equal(refined.refinements.length,1);close(refined.x,[2]);
+const stagnant=constrainedLS(faulty(true),[1],[2],[]);assert(!stagnant.solved);assert(stagnant.reason.includes('without improvement'));assert(stagnant.refinements.length<=3);
+assert(!constrainedLS(mj,[1,2,2,1],[0,0],[]).solved,'Indefinite Hessian must not be regularized into acceptance');
+console.log(JSON.stringify({additionalFaultTestsPassed:3,refinement:refined.refinements,stagnation:stagnant.reason,nativeForwards:0,ticks:0}));
