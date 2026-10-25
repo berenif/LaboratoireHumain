@@ -736,3 +736,91 @@ Primary implementation references:
 - https://raw.githubusercontent.com/google-deepmind/mujoco/3.17.0/src/engine/engine_forward.c
 - https://raw.githubusercontent.com/google-deepmind/mujoco/3.17.0/src/engine/engine_solver.c
 - https://raw.githubusercontent.com/google-deepmind/mujoco/3.17.0/src/engine/engine_core_smooth.c
+
+## Stationarity certificate — final diagnostic attempt closed before integration
+
+The c9fb8aa window and its two ticks remain INCOMPLETE. This separate attempt
+implements only the reviewed numerical certificate; it does not alter the web
+controller, model, native solver tolerance, gains, caps, objectives, regularizer,
+original u0±.1 envelope or any of the131 admission conditions. Historical
+runners/evidence are preserved. The eight-contact topology and fixed100/299.498N
+right/left targets remain restricted to this initial propulsion observation.
+
+`pull-numeric-certificate.mjs` independently reconstructs M from qpos on a
+scratch MjData (kinematics/comPos/makeM only) and J from contact frames, point
+Jacobians, pyramid edges and joint-limit signs. It checks these against native
+M/J and J'force. With r=M*a-smooth-J'force and the resolved current branch,
+K=M+J_A'D_AJ_A, it solves K*deltaA=-r with the existing Cholesky. Backward error,
+finite values, positive definiteness, unchanged branch with floating-point sign
+margin, and normalized Newton decrement <= UNCHANGED native1e-8 are required.
+Constraint generalized forces have their native units: contact N, hinge-limit
+Nm. The normalized decrement follows the native coordinate metric, not a new
+uniform physical force/torque threshold. The module never writes controls,
+native qacc, qpos, qvel, forces, flags or time.
+
+Correction effects are mapped through (M+hB)^-1*M into Euler acceleration and
+velocity, and through -D*J into contact forces. Shadow feature evaluations at
+the SAME q/qdot quantify their effect on torso, gap, axis, branch, friction,
+loads and centroidal outputs. They are numerical-error estimates within the
+verified piecewise-quadratic region, not physical forecasts or interval-arithmetic
+proofs. Their absolute effect plus a128*machine-epsilon arithmetic allowance
+is added to native guard margins. Centre uncertainty tightens search rows;
+candidate/centre/sensitivity uncertainty is propagated through finite differences
+and added to prediction errors. The existing20% linearization error budget stays
+separate and unchanged. An inconclusive branch/certificate stops the attempt;
+no branch search, epsilon tuning or native solver refinement is attempted.
+
+The zero-forward test checks bad mapping, large residual, nonfinite input,
+wrong solve sign, branch crossing and insufficient margins. On the saved8210
+state it reconstructs exactly the recorded branch Jacobians and generalized
+contact force; all233 state values remain exact. The normalized decrement is
+5.676850123495e-10, corrected minimum edge .001284046061N, maximum Euler velocity
+correction4.254368842e-7rad/s and backward residual3.04e-18. This passes the new
+certificate without claiming the old1e-7 guard passed.
+
+One exclusive `run-pull-certified-window.mjs` launch was made from native8210,
+t10.262500000000637, gzip SHA256
+b0b188d3e5e80a980ea81108e316e8af27ca93c52f4973069edaa4411b1201bd.
+It restores all233 native values and complete grab/bridge/pending input. No
+13-tick or2-tick replay. The frozen interaction matches saved pending input
+exactly: force [15.2097812,1.1061050,-.8716042]N at the same material point.
+The retained reaction/force metrics in the initial trace refer to the LAST
+APPLIED tick, one substep earlier, not this unevaluated future input.
+Declared bounds:1 reproduction +126*23 explicit forwards=2899,126 steps,
+64 pivots/solve,0forecasts,2MB evidence, original end10.4200. Source c9fb8aa
+plus tested file hashes are recorded in started.json.
+
+**STOP during pure sensitivities: ZERO new ticks, no candidate or solve.**
+Exactly8 explicit forwards completed: reproduction, centre and sensitivities0..5.
+All8 numerical certificates pass. Reproduction qacc error is0. The +.001
+normalized right_hip_y perturbation (+.12Nm on an independent copy only) changes
+resolved pyramid row12/contact2/right foot from QUADRATIC1 to SATISFIED0.
+Its unconstrained edge lambda changes+.001960296783N to-.006659797797N;
+the native edge force therefore becomes0. The contact itself remains loaded:
+perturbed contact normal8.87774877N, all-contact minimum friction facet slack
+3.86962607N, right/left totals137.233854/263.580617N. Thus the fixed-branch
+linear sensitivity domain failed; this is not a measured lost foot or physical
+infeasibility. No modified perturbation, candidate, active-set solve, command
+application, retry or post-result tuning follows this stop.
+
+Final native233 values, time,8210 steps, last applied controls and complete
+grab memory remain EXACTLY the input values. No integration or forward is
+pending/uncertain. All raw outputs precede guards; full failed native response
+and checkpoint are saved. `verify-pull-certified-recording.mjs` audits counts,
+state/command ownership and branch transition from saved files only, without
+importing MuJoCo. New ticks0, forecasts0; MuJoCo228809 confirmed PLUS unchanged
+historical unknown, Rapier45735. No physical progress, unloading, lift or step
+was newly observed. The two identical geometry-replay panels were visually
+inspected; their explicit0-tick label and ground/full-body view are retained.
+
+Proofs: web/proofs/pull-step-certified-window/. Checkpoint gzip SHA256
+`a8732adaf30a4a706ded2da7227cb41b040acfd491be12067318257a85a4aa49`;
+journal SHA256
+`45a080e92cb5dbd36297299312fc6ac477c5914586d51e23007b714aaa3312a1`.
+Native calls4.407ms, certificate work26.693ms, no active-set solve, whole runner
+625.333ms; no real-time/browser qualification. This diagnostic phase is CLOSED.
+The structural next issue is a transfer task that transitions propulsion to
+braking/unloading using actual contacts: a forever-fixed8-contact regime and
+100D/299.498G load target cannot constitute that transition. This result does
+not authorize another numerical micro-window. Main/site, Library, dependencies,
+previous evidence and historical verdicts remain unchanged.
